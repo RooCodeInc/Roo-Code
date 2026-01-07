@@ -65,34 +65,41 @@ describe("createReadFileTool", () => {
 	})
 
 	describe("partialReadsEnabled option", () => {
-		it("should include line_ranges in description when partialReadsEnabled is true", () => {
+		it("should include offset and mode in description when partialReadsEnabled is true", () => {
 			const tool = createReadFileTool({ partialReadsEnabled: true })
 			const description = getFunctionDef(tool).description
 
-			expect(description).toContain("line_ranges")
-			expect(description).toContain("Example with line ranges")
+			expect(description).toContain("offset")
+			expect(description).toContain("mode")
+			expect(description).toContain("slice")
+			expect(description).toContain("indentation")
 		})
 
-		it("should not include line_ranges in description when partialReadsEnabled is false", () => {
+		it("should not include offset and mode in description when partialReadsEnabled is false", () => {
 			const tool = createReadFileTool({ partialReadsEnabled: false })
 			const description = getFunctionDef(tool).description
 
-			expect(description).not.toContain("line_ranges")
-			expect(description).not.toContain("Example with line ranges")
+			expect(description).not.toContain("offset")
+			expect(description).not.toContain("'slice'")
+			expect(description).not.toContain("'indentation'")
 		})
 
-		it("should include line_ranges parameter in schema when partialReadsEnabled is true", () => {
+		it("should include offset, mode, and indentation parameters in schema when partialReadsEnabled is true", () => {
 			const tool = createReadFileTool({ partialReadsEnabled: true })
 			const schema = getFunctionDef(tool).parameters as any
 
-			expect(schema.properties.files.items.properties).toHaveProperty("line_ranges")
+			expect(schema.properties.files.items.properties).toHaveProperty("offset")
+			expect(schema.properties.files.items.properties).toHaveProperty("mode")
+			expect(schema.properties.files.items.properties).toHaveProperty("indentation")
 		})
 
-		it("should not include line_ranges parameter in schema when partialReadsEnabled is false", () => {
+		it("should not include offset, mode, and indentation parameters in schema when partialReadsEnabled is false", () => {
 			const tool = createReadFileTool({ partialReadsEnabled: false })
 			const schema = getFunctionDef(tool).parameters as any
 
-			expect(schema.properties.files.items.properties).not.toHaveProperty("line_ranges")
+			expect(schema.properties.files.items.properties).not.toHaveProperty("offset")
+			expect(schema.properties.files.items.properties).not.toHaveProperty("mode")
+			expect(schema.properties.files.items.properties).not.toHaveProperty("indentation")
 		})
 	})
 
@@ -147,7 +154,7 @@ describe("createReadFileTool", () => {
 			const description = getFunctionDef(tool).description
 
 			expect(description).toContain("maximum of 2 files")
-			expect(description).toContain("line_ranges")
+			expect(description).toContain("offset")
 			expect(description).toContain("within 2-file limit")
 		})
 
@@ -159,7 +166,7 @@ describe("createReadFileTool", () => {
 			const description = getFunctionDef(tool).description
 
 			expect(description).toContain("only read one file at a time")
-			expect(description).not.toContain("line_ranges")
+			expect(description).not.toContain("offset")
 			expect(description).not.toContain("Example multiple files")
 		})
 
@@ -170,8 +177,9 @@ describe("createReadFileTool", () => {
 			})
 			const description = getFunctionDef(tool).description
 
-			// Should have both line_ranges and image support
-			expect(description).toContain("line_ranges")
+			// Should have both offset/mode and image support
+			expect(description).toContain("offset")
+			expect(description).toContain("mode")
 			expect(description).toContain(
 				"Automatically processes and returns image files (PNG, JPG, JPEG, GIF, BMP, SVG, WEBP, ICO, AVIF) for visual analysis",
 			)
@@ -184,8 +192,8 @@ describe("createReadFileTool", () => {
 			})
 			const description = getFunctionDef(tool).description
 
-			// Should have image support but no line_ranges
-			expect(description).not.toContain("line_ranges")
+			// Should have image support but no offset/mode
+			expect(description).not.toContain("offset")
 			expect(description).toContain(
 				"Automatically processes and returns image files (PNG, JPG, JPEG, GIF, BMP, SVG, WEBP, ICO, AVIF) for visual analysis",
 			)
@@ -200,7 +208,7 @@ describe("createReadFileTool", () => {
 			const description = getFunctionDef(tool).description
 
 			expect(description).toContain("maximum of 3 files")
-			expect(description).toContain("line_ranges")
+			expect(description).toContain("offset")
 			expect(description).toContain(
 				"Automatically processes and returns image files (PNG, JPG, JPEG, GIF, BMP, SVG, WEBP, ICO, AVIF) for visual analysis",
 			)
@@ -220,8 +228,15 @@ describe("createReadFileTool", () => {
 			expect(tool.type).toBe("function")
 		})
 
-		it("should have strict mode enabled", () => {
+		it("should have strict mode disabled when partialReadsEnabled is true (default)", () => {
+			// When partialReadsEnabled is true, strict is false to allow optional parameters
 			const tool = createReadFileTool()
+
+			expect(getFunctionDef(tool).strict).toBe(false)
+		})
+
+		it("should have strict mode enabled when partialReadsEnabled is false", () => {
+			const tool = createReadFileTool({ partialReadsEnabled: false })
 
 			expect(getFunctionDef(tool).strict).toBe(true)
 		})
@@ -238,6 +253,29 @@ describe("createReadFileTool", () => {
 			const schema = getFunctionDef(tool).parameters as any
 
 			expect(schema.properties.files.items.required).toContain("path")
+		})
+	})
+
+	describe("maxReadFileLine option", () => {
+		it("should include line limit in description when maxReadFileLine is set", () => {
+			const tool = createReadFileTool({ maxReadFileLine: 2000 })
+			const description = getFunctionDef(tool).description
+
+			expect(description).toContain("up to 2000 lines")
+		})
+
+		it("should include line limit in offset description when partialReadsEnabled is true", () => {
+			const tool = createReadFileTool({ partialReadsEnabled: true, maxReadFileLine: 1000 })
+			const schema = getFunctionDef(tool).parameters as any
+
+			expect(schema.properties.files.items.properties.offset.description).toContain("1000 lines")
+		})
+
+		it("should not include line limit info when maxReadFileLine is not set", () => {
+			const tool = createReadFileTool({ partialReadsEnabled: true })
+			const description = getFunctionDef(tool).description
+
+			expect(description).not.toContain("returns up to")
 		})
 	})
 })
