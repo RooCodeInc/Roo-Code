@@ -1,5 +1,5 @@
 import type OpenAI from "openai"
-import { createReadFileTool, type ReadFileToolOptions } from "../read_file"
+import { createReadFileTool, type CreateReadFileToolOptions } from "../read_file"
 
 // Helper type to access function tools
 type FunctionTool = OpenAI.Chat.ChatCompletionTool & { type: "function" }
