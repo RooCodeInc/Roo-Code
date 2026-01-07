@@ -77,6 +77,21 @@ Otherwise, if you have not completed the task and do not need additional informa
 (This is an automated message, so do not respond to it conversationally.)`
 	},
 
+	noAssistantMessage: (protocol?: ToolProtocol) => {
+		const instructions = getToolInstructionsReminder(protocol)
+
+		return `[ERROR] Your previous response was empty or contained only reasoning without any message content or tool use. Please retry with a proper response.
+
+${instructions}
+
+# Next Steps
+
+If you have completed the user's task, use the attempt_completion tool.
+If you require additional information from the user, use the ask_followup_question tool.
+Otherwise, if you have not completed the task and do not need additional information, then proceed with the next step of the task.
+(This is an automated message, so do not respond to it conversationally.)`
+	},
+
 	tooManyMistakes: (feedback?: string, protocol?: ToolProtocol) => {
 		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
 			return JSON.stringify({

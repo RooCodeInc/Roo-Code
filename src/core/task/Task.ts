@@ -3531,93 +3531,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// This provides a "grace retry" - first failure retries silently
 					if (this.consecutiveNoAssistantMessagesCount >= 2) {
 						await this.say("error", "MODEL_NO_ASSISTANT_MESSAGES")
+						// Only count toward mistake limit after second consecutive failure
+						this.consecutiveMistakeCount++
 					}
 
-					// IMPORTANT: For native tool protocol, we already added the user message to
-					// apiConversationHistory at line 1876. Since the assistant failed to respond,
-					// we need to remove that message before retrying to avoid having two consecutive
-					// user messages (which would cause tool_result validation errors).
-					let state = await this.providerRef.deref()?.getState()
-					// Use the task's locked protocol, NOT current settings
-					if (isNativeProtocol(this._taskToolProtocol ?? "xml") && this.apiConversationHistory.length > 0) {
-						const lastMessage = this.apiConversationHistory[this.apiConversationHistory.length - 1]
-						if (lastMessage.role === "user") {
-							// Remove the last user message that we added earlier
-							this.apiConversationHistory.pop()
-						}
-					}
-
-					// Check if we should auto-retry or prompt the user
-					// Reuse the state variable from above
-					if (state?.autoApprovalEnabled) {
-						// Auto-retry with backoff - don't persist failure message when retrying
-						await this.backoffAndAnnounce(
-							currentItem.retryAttempt ?? 0,
-							new Error(
-								"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
-							),
-						)
-
-						// Check if task was aborted during the backoff
-						if (this.abort) {
-							console.log(
-								`[Task#${this.taskId}.${this.instanceId}] Task aborted during empty-assistant retry backoff`,
-							)
-							break
-						}
-
-						// Push the same content back onto the stack to retry, incrementing the retry attempt counter
-						// Mark that user message was removed so it gets re-added on retry
-						stack.push({
-							userContent: currentUserContent,
-							includeFileDetails: false,
-							retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
-							userMessageWasRemoved: true,
-						})
-
-						// Continue to retry the request
-						continue
-					} else {
-						// Prompt the user for retry decision
-						const { response } = await this.ask(
-							"api_req_failed",
-							"The model returned no assistant messages. This may indicate an issue with the API or the model's output.",
-						)
-
-						if (response === "yesButtonClicked") {
-							await this.say("api_req_retried")
-
-							// Push the same content back to retry
-							stack.push({
-								userContent: currentUserContent,
-								includeFileDetails: false,
-								retryAttempt: (currentItem.retryAttempt ?? 0) + 1,
-							})
-
-							// Continue to retry the request
-							continue
-						} else {
-							// User declined to retry
-							// For native protocol, re-add the user message we removed
-							// Use the task's locked protocol, NOT current settings
-							if (isNativeProtocol(this._taskToolProtocol ?? "xml")) {
-								await this.addToApiConversationHistory({
-									role: "user",
-									content: currentUserContent,
-								})
-							}
-
-							await this.say(
-								"error",
-								"Unexpected API Response: The language model did not provide any assistant messages. This may indicate an issue with the API or the model's output.",
-							)
-
-							await this.addToApiConversationHistory({
-								role: "assistant",
-								content: [{ type: "text", text: "Failure: I did not provide a response." }],
-							})
-						}
-					}
+					// Use the task's locked protocol for consistent behavior
+					this.userMessageContent.push({
+						type: "text",
+						text: formatResponse.noAssistantMessage(this._taskToolProtocol ?? "xml"),
+					})
 				}
 
 				// If we reach here without continuing, return false (will always be false for now)
