@@ -38,7 +38,7 @@ export const mistralModels = {
 	},
 	"codestral-latest": {
 		maxTokens: 8192,
-		contextWindow: 131_000,
+		contextWindow: 128_000,
 		supportsImages: false,
 		supportsPromptCache: false,
 		supportsNativeTools: true,
