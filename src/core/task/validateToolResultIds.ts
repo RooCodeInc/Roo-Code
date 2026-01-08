@@ -42,6 +42,7 @@ export class MissingToolResultError extends Error {
  * - Message editing scenarios
  * - Resume/delegation scenarios
  * - Missing tool_result blocks for tool_use calls
+ * - Cross-message orphan tool_results from race conditions (GitHub #10494)
  *
  * @param userMessage - The user message being added to history
  * @param apiConversationHistory - The conversation history to find the previous assistant message from
@@ -109,12 +110,56 @@ export function validateAndFixToolResultIds(
 	// Build a set of valid tool_use IDs
 	const validToolUseIds = new Set(toolUseBlocks.map((block) => block.id))
 
+	// === Cross-message orphan filtering (GitHub #10494) ===
+	// Scan forward through conversation history to find which tool_use_ids have
+	// already been paired with tool_results in previous user messages.
+	// This prevents orphaned tool_results from duplicate responses (e.g., queued
+	// message deletion race condition, retry logic, etc.) from being submitted.
+	const alreadyPairedToolUseIds = new Set<string>()
+	for (let i = prevAssistantIdx + 1; i < apiConversationHistory.length; i++) {
+		const msg = apiConversationHistory[i]
+		if (msg.role === "user" && Array.isArray(msg.content)) {
+			const previousToolResults = msg.content.filter(
+				(block): block is Anthropic.ToolResultBlockParam => block.type === "tool_result",
+			)
+			previousToolResults.forEach((tr) => alreadyPairedToolUseIds.add(tr.tool_use_id))
+		}
+	}
+
+	// Filter out tool_results that reference tool_uses which are already paired
+	// (i.e., they are orphans - the tool_use is no longer available for pairing)
+	if (alreadyPairedToolUseIds.size > 0) {
+		const contentArray = userMessage.content as Anthropic.Messages.ContentBlockParam[]
+		const filteredContent = contentArray.filter((block: Anthropic.Messages.ContentBlockParam) => {
+			if (block.type !== "tool_result") {
+				return true // Keep all non-tool_result blocks
+			}
+			// Filter out tool_results that reference already-paired tool_uses
+			if (alreadyPairedToolUseIds.has(block.tool_use_id)) {
+				return false // This is an orphan - tool_use already paired in previous message
+			}
+			return true
+		})
+
+		userMessage = {
+			...userMessage,
+			content: filteredContent,
+		}
+
+		// Re-extract toolResults from filtered content for subsequent processing
+		toolResults = filteredContent.filter(
+			(block: Anthropic.Messages.ContentBlockParam): block is Anthropic.ToolResultBlockParam =>
+				block.type === "tool_result",
+		)
+	}
+	// === End cross-message orphan filtering ===
+
 	// Build a set of existing tool_result IDs
 	const existingToolResultIds = new Set(toolResults.map((r) => r.tool_use_id))
 
 	// Check for missing tool_results (tool_use IDs that don't have corresponding tool_results)
 	const missingToolUseIds = toolUseBlocks
-		.filter((toolUse) => !existingToolResultIds.has(toolUse.id))
+		.filter((toolUse) => !existingToolResultIds.has(toolUse.id) && !alreadyPairedToolUseIds.has(toolUse.id))
 		.map((toolUse) => toolUse.id)
 
 	// Check if any tool_result has an invalid ID
@@ -212,7 +257,7 @@ export function validateAndFixToolResultIds(
 			.map((r: Anthropic.ToolResultBlockParam) => r.tool_use_id),
 	)
 
-	const stillMissingToolUseIds = toolUseBlocks.filter((toolUse) => !coveredToolUseIds.has(toolUse.id))
+	const stillMissingToolUseIds = toolUseBlocks.filter((toolUse) => !coveredToolUseIds.has(toolUse.id) && !alreadyPairedToolUseIds.has(toolUse.id))
 
 	// Build final content: add missing tool_results at the beginning if any
 	const missingToolResults: Anthropic.ToolResultBlockParam[] = stillMissingToolUseIds.map((toolUse) => ({
