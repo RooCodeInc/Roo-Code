@@ -329,8 +329,9 @@
 		},
 		"release": {
 			"heading": "新機能:",
-			"skills": "Rooが<skillsLink>Agent Skills</skillsLink>に対応しました - Rooの機能を拡張するためのプロンプト、ツール、リソースの再利用可能なパッケージです。",
-			"nativeToolCalling": "すべての新しいタスクではネイティブツール呼び出しが必須になりました。<blogLink>詳しく知る</blogLink>理由と問題が発生した場合の対応方法について。"
+			"stickyProfiles": "スティッキープロバイダープロファイル - タスクはAPI設定を記憶するようになったため、セッション途中にプロファイルを切り替えても実行中のタスクに影響しません。",
+			"imageMentions": "画像ファイル@メンション - @メンションを使用してチャット内で画像を直接参照し、コンテキストに含めることができます。",
+			"brrrMode": "YOLOがBRRRに - すべてを自動承認する機能が「YOLO」から「BRRR」に名前変更されました。当然です。"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",

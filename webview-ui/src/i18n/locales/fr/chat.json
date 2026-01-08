@@ -329,8 +329,9 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"skills": "Roo supporte maintenant les <skillsLink>Agent Skills</skillsLink> - des packages réutilisables de prompts, d'outils et de ressources pour étendre les capacités de Roo.",
-			"nativeToolCalling": "L'appel natif des outils est maintenant obligatoire pour toutes les nouvelles tâches. <blogLink>En savoir plus</blogLink> sur la motivation et ce qu'il faut faire si tu rencontres des problèmes."
+			"stickyProfiles": "Profils de fournisseur persistants - Les tâches se souviennent maintenant de leur configuration API, donc changer de profil en cours de session n'affecte pas les tâches en cours d'exécution.",
+			"imageMentions": "Mentions de fichiers d'image - Référencez les images directement dans le chat en utilisant les mentions @ pour les inclure dans votre contexte.",
+			"brrrMode": "YOLO est maintenant BRRR - L'approbation automatique de tout a été renommée de \"YOLO\" en \"BRRR\". Évidemment."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",

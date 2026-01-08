@@ -329,8 +329,9 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"skills": "Roo ara suporta <skillsLink>Agent Skills</skillsLink> - paquets reutilitzables de prompts, ferramentes i recursos per estendre les capacitats de Roo.",
-			"nativeToolCalling": "L'invocació nativa d'eines és ara obligatòria per a totes les noves tasques. <blogLink>Més informació</blogLink> sobre la motivació i què fer si trobes problemes."
+			"stickyProfiles": "Perfils de proveïdor persistents - Les tasques ara recorden la seva configuració API, per tant, canviar de perfil a mitja sessió no afecta les tasques en execució.",
+			"imageMentions": "Mencions de fitxers d'imatge - Fes referència a imatges directament al xat usant mencions @ per incloure-les al teu context.",
+			"brrrMode": "YOLO ara és BRRR - Aprovar-ho tot automàticament s'ha reanomenat de \"YOLO\" a \"BRRR\". Òbviament."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",

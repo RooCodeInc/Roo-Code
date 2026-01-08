@@ -306,8 +306,9 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"skills": "Roo ondersteunt nu <skillsLink>Agent Skills</skillsLink> - herbruikbare pakketten van prompts, tools en resources om de mogelijkheden van Roo uit te breiden.",
-			"nativeToolCalling": "Native tool calling is nu vereist voor alle nieuwe taken. <blogLink>Meer informatie</blogLink> over de motivatie en wat je moet doen als je problemen ondervindt."
+			"stickyProfiles": "Sticky Provider Profielen - Taken onthouden nu hun API-configuratie, dus het wisselen van profiel in het midden van een sessie beïnvloedt niet de lopende taken.",
+			"imageMentions": "Bestand @mentions afbeelding - Referentie afbeeldingen rechtstreeks in de chat met behulp van @ mentions om ze in uw context op te nemen.",
+			"brrrMode": "YOLO is nu BRRR - Alles automatisch goedkeuren is hernoemd van \"YOLO\" naar \"BRRR\". Uiteraard."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

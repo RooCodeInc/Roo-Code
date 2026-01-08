@@ -329,8 +329,9 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"skills": "Roo는 이제 <skillsLink>Agent Skills</skillsLink>를 지원합니다 - Roo의 기능을 확장하기 위한 프롬프트, 도구 및 리소스의 재사용 가능한 패키지입니다.",
-			"nativeToolCalling": "모든 새 작업에 이제 네이티브 도구 호출이 필요합니다. <blogLink>자세히 알아보기</blogLink> 동기 및 문제가 발생한 경우 수행할 작업에 대해."
+			"stickyProfiles": "스티커 제공자 프로필 - 작업이 이제 API 구성을 기억하므로 세션 중에 프로필을 전환해도 실행 중인 작업에 영향을 주지 않습니다.",
+			"imageMentions": "이미지 파일 @mentions - @mentions를 사용하여 채팅에서 직접 이미지를 참조하여 컨텍스트에 포함시킵니다.",
+			"brrrMode": "YOLO가 BRRR로 변경됨 - 모든 것을 자동 승인하는 기능의 이름이 \"YOLO\"에서 \"BRRR\"로 변경되었습니다. 당연하죠."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

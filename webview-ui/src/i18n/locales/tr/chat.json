@@ -330,8 +330,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"skills": "Roo artık <skillsLink>Agent Skills</skillsLink>'i destekliyor - Roo'nun yeteneklerini genişletmek için yeniden kullanılabilir istem, araç ve kaynak paketleri.",
-			"nativeToolCalling": "Tüm yeni görevler için artık yerel araç çağrısı gereklidir. <blogLink>Daha fazla bilgi edinin</blogLink> motivasyon ve sorunlarla karşılaşırsanız ne yapacağınız hakkında."
+			"stickyProfiles": "Yapışkan Sağlayıcı Profilleri - Görevler artık API yapılandırmalarını hatırlıyor, bu nedenle oturum ortasında profil değiştirmek çalışan görevleri etkilemez.",
+			"imageMentions": "Görüntü Dosyası @Mentions - Bağlamınıza dahil etmek için @mentions kullanarak sohbette doğrudan görüntülere başvurun.",
+			"brrrMode": "YOLO artık BRRR - Her şeyi otomatik onaylama \"YOLO\"dan \"BRRR\" olarak yeniden adlandırıldı. Tabii ki."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

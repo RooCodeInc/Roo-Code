@@ -342,8 +342,9 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"skills": "Roo sekarang mendukung <skillsLink>Agent Skills</skillsLink> - paket yang dapat digunakan kembali dari prompt, alat, dan sumber daya untuk memperluas kemampuan Roo.",
-			"nativeToolCalling": "Pemanggilan alat native sekarang diperlukan untuk semua tugas baru. <blogLink>Pelajari lebih lanjut</blogLink> tentang motivasi dan apa yang harus dilakukan jika mengalami masalah."
+			"stickyProfiles": "Profil Penyedia Lengket - Tugas sekarang mengingat konfigurasi API mereka, jadi beralih profil di tengah sesi tidak mempengaruhi tugas yang sedang berjalan.",
+			"imageMentions": "Mention File Gambar - Referensikan gambar secara langsung dalam obrolan menggunakan mention @ untuk memasukkannya dalam konteks Anda.",
+			"brrrMode": "YOLO sekarang BRRR - Persetujuan otomatis untuk semuanya telah diubah namanya dari \"YOLO\" menjadi \"BRRR\". Jelas."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

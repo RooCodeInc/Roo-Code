@@ -330,8 +330,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"skills": "Roo hiện hỗ trợ <skillsLink>Agent Skills</skillsLink> - các gói có thể tái sử dụng gồm các lời nhắc, công cụ và tài nguyên để mở rộng khả năng của Roo.",
-			"nativeToolCalling": "Gọi công cụ gốc hiện được yêu cầu cho tất cả các tác vụ mới. <blogLink>Tìm hiểu thêm</blogLink> về động lực và những gì cần làm nếu bạn gặp sự cố."
+			"stickyProfiles": "Hồ sơ nhà cung cấp dính - Các tác vụ hiện nhớ cấu hình API của chúng, vì vậy việc chuyển đổi hồ sơ giữa phiên không ảnh hưởng đến các tác vụ đang chạy.",
+			"imageMentions": "Đề cập @image files - Tham chiếu hình ảnh trực tiếp trong trò chuyện bằng cách sử dụng @mentions để đưa chúng vào ngữ cảnh của bạn.",
+			"brrrMode": "YOLO giờ là BRRR - Phê duyệt tự động mọi thứ đã được đổi tên từ \"YOLO\" thành \"BRRR\". Rõ ràng rồi."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

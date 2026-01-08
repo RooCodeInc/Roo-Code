@@ -340,8 +340,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"skills": "Roo 現已支援 <skillsLink>Agent Skills</skillsLink> - 可重複使用的提示詞、工具和資源套件，用於擴展 Roo 的功能。",
-			"nativeToolCalling": "所有新工作現在都需要原生工具呼叫。<blogLink>深入了解</blogLink>相關動機以及遇到問題時的解決方案。"
+			"stickyProfiles": "固定式提供商設定檔 - 工作現在會記住其 API 設定，因此在會話中途切換設定檔不會影響正在執行的工作。",
+			"imageMentions": "圖像檔案 @mentions - 在聊天中直接使用 @mentions 引用圖像，將其包含在您的上下文中。",
+			"brrrMode": "YOLO 現在是 BRRR - 自動批准一切已從 \"YOLO\" 更名為 \"BRRR\"。顯然。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",
