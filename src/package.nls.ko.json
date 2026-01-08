@@ -24,6 +24,7 @@
 	"command.openInEditor.title": "에디터에서 열기",
 	"command.cloud.title": "Cloud",
 	"command.settings.title": "설정",
+	"command.worktrees.title": "Worktrees",
 	"command.documentation.title": "문서",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "'항상 실행 작업 승인' 이 활성화되어 있을 때 자동으로 실행할 수 있는 명령어",

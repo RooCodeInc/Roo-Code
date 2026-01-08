@@ -24,6 +24,7 @@
 	"command.openInEditor.title": "एडिटर में खोलें",
 	"command.cloud.title": "Cloud",
 	"command.settings.title": "सेटिंग्स",
+	"command.worktrees.title": "Worktrees",
 	"command.documentation.title": "दस्तावेज़ीकरण",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "वे कमांड जो स्वचालित रूप से निष्पादित की जा सकती हैं जब 'हमेशा निष्पादन संचालन को स्वीकृत करें' सक्रिय हो",
