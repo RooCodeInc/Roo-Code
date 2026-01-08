@@ -1,5 +1,34 @@
 # Roo Code Changelog
 
+## 3.39.0
+
+![3.39.0 Release - Kangaroo go BRRR](/releases/3.39.0-release.png)
+
+- Implement sticky provider profile for task-level API config persistence (#8010 by @hannesrudolph, PR #10018 by @hannesrudolph)
+- Add support for image file @mentions (PR #10189 by @hannesrudolph)
+- Rename YOLO to BRRR (#8574 by @mojomast, PR #10507 by @roomote)
+- Add debug-mode proxy routing for debugging API calls (#7042 by @SleeperSmith, PR #10467 by @hannesrudolph)
+- Add Kimi K2 thinking model to Fireworks AI provider (#9201 by @kavehsfv, PR #9202 by @roomote)
+- Add xhigh reasoning effort to OpenAI compatible endpoints (#10060 by @Soorma718, PR #10061 by @roomote)
+- Filter @ mention file search results using .rooignore (#10169 by @jerrill-johnson-bitwerx, PR #10174 by @roomote)
+- Add image support documentation to read_file native tool description (#10440 by @nabilfreeman, PR #10442 by @roomote)
+- Add zai-glm-4.7 to Cerebras models (PR #10500 by @sebastiand-cerebras)
+- VSCode shim and basic CLI for running Roo Code headlessly (PR #10452 by @cte)
+- Add CLI installer for headless Roo Code (PR #10474 by @cte)
+- Add option to use CLI for evals (PR #10456 by @cte)
+- Remember last Roo model selection in web-evals and add evals skill (PR #10470 by @hannesrudolph)
+- Tweak the style of follow up suggestion modes (PR #9260 by @mrubens)
+- Fix: Handle PowerShell ENOENT error in os-name on Windows (#9859 by @Yang-strive, PR #9897 by @roomote)
+- Fix: Make command chaining examples shell-aware for Windows compatibility (#10352 by @AlexNek, PR #10434 by @roomote)
+- Fix: Preserve tool_use blocks for all tool_results in kept messages during condensation (PR #10471 by @daniel-lxs)
+- Fix: Add additionalProperties: false to MCP tool schemas for OpenAI Responses API (PR #10472 by @daniel-lxs)
+- Fix: Prevent duplicate tool_result blocks causing API errors (PR #10497 by @daniel-lxs)
+- Fix: Add explicit deduplication for duplicate tool_result blocks (#10465 by @nabilfreeman, PR #10466 by @roomote)
+- Fix: Use task stored API config as fallback for rate limit (PR #10266 by @roomote)
+- Fix: Remove legacy Claude 2 series models from Bedrock provider (#9220 by @KevinZhao, PR #10501 by @roomote)
+- Fix: Add missing description fields for debugProxy configuration (PR #10505 by @roomote)
+- Fix: Glitchy kangaroo bounce animation on welcome screen (PR #10035 by @objectiveSee)
+
 ## [3.38.3] - 2026-01-03
 
 - Feat: Add option in Context settings to recursively load `.roo/rules` and `AGENTS.md` from subdirectories (PR #10446 by @mrubens)
