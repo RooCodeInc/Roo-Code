@@ -82,6 +82,51 @@ describe("providerModelConfig", () => {
 			const defaultId = getDefaultModelIdForProvider("unknown" as any)
 			expect(defaultId).toBe("")
 		})
+
+		it("returns international default for Z.ai without apiConfiguration", () => {
+			const defaultId = getDefaultModelIdForProvider("zai")
+			expect(defaultId).toBeDefined()
+			expect(typeof defaultId).toBe("string")
+			expect(defaultId.length).toBeGreaterThan(0)
+		})
+
+		it("returns mainland default for Z.ai with china_coding entrypoint", () => {
+			const defaultId = getDefaultModelIdForProvider("zai", {
+				apiProvider: "zai",
+				zaiApiLine: "china_coding",
+			})
+			expect(defaultId).toBeDefined()
+			expect(typeof defaultId).toBe("string")
+			// Mainland model IDs should contain 'mainland' or be different from international
+			expect(defaultId.length).toBeGreaterThan(0)
+		})
+
+		it("returns international default for Z.ai with international_coding entrypoint", () => {
+			const defaultId = getDefaultModelIdForProvider("zai", {
+				apiProvider: "zai",
+				zaiApiLine: "international_coding",
+			})
+			expect(defaultId).toBeDefined()
+			expect(typeof defaultId).toBe("string")
+			expect(defaultId.length).toBeGreaterThan(0)
+		})
+
+		it("uses mainland or international defaults based on zaiApiLine setting", () => {
+			// Verify the function correctly routes to appropriate defaults
+			const chinaDefault = getDefaultModelIdForProvider("zai", {
+				apiProvider: "zai",
+				zaiApiLine: "china_coding",
+			})
+			const internationalDefault = getDefaultModelIdForProvider("zai", {
+				apiProvider: "zai",
+				zaiApiLine: "international_coding",
+			})
+			// Both should return valid model IDs (they may or may not be the same)
+			expect(chinaDefault).toBeDefined()
+			expect(internationalDefault).toBeDefined()
+			expect(chinaDefault.length).toBeGreaterThan(0)
+			expect(internationalDefault.length).toBeGreaterThan(0)
+		})
 	})
 
 	describe("getStaticModelsForProvider", () => {

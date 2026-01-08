@@ -1,4 +1,4 @@
-import type { ProviderName, ModelInfo } from "@roo-code/types"
+import type { ProviderName, ModelInfo, ProviderSettings } from "@roo-code/types"
 import {
 	anthropicDefaultModelId,
 	bedrockDefaultModelId,
@@ -15,6 +15,7 @@ import {
 	groqDefaultModelId,
 	sambaNovaDefaultModelId,
 	internationalZAiDefaultModelId,
+	mainlandZAiDefaultModelId,
 	fireworksDefaultModelId,
 	featherlessDefaultModelId,
 	minimaxDefaultModelId,
@@ -82,7 +83,14 @@ export const getProviderServiceConfig = (provider: ProviderName): ProviderServic
 	return PROVIDER_SERVICE_CONFIG[provider] ?? { serviceName: provider, serviceUrl: "" }
 }
 
-export const getDefaultModelIdForProvider = (provider: ProviderName): string => {
+export const getDefaultModelIdForProvider = (provider: ProviderName, apiConfiguration?: ProviderSettings): string => {
+	// Handle Z.ai's China/International entrypoint distinction
+	if (provider === "zai" && apiConfiguration) {
+		return apiConfiguration.zaiApiLine === "china_coding"
+			? mainlandZAiDefaultModelId
+			: internationalZAiDefaultModelId
+	}
+
 	return PROVIDER_DEFAULT_MODEL_IDS[provider] ?? ""
 }
 
