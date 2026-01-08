@@ -70,9 +70,14 @@ export default `
 (new_expression
   (type_identifier) @name) @reference.class
 
+; Variables initialized with identifier reference
 (initialized_variable_definition
   name: (identifier)
-  value: (identifier) @name 
+  value: (identifier) @name) @reference.class
+
+; Variables initialized with selector/method call
+(initialized_variable_definition
+  name: (identifier)
   value: (selector
 	"!"?
 	(argument_part 

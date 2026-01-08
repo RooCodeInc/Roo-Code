@@ -257,4 +257,18 @@ class StringBuilder {
 	it("should handle static methods and properties", () => {
 		expect(parseResult).toMatch(/static double circleArea/)
 	})
+
+	it("should parse variable initialization with identifier reference", () => {
+		expect(parseResult).toMatch(/var instance = MyClass/)
+		expect(parseResult).toMatch(/var status = Status/)
+	})
+
+	it("should parse variable initialization with method calls", () => {
+		expect(parseResult).toMatch(/var logger = LoggerFactory\.create\(\)/)
+	})
+
+	it("should parse reference patterns", () => {
+		expect(parseResult).toMatch(/instance\.greet/)
+		expect(parseResult).toMatch(/status\.displayName/)
+	})
 })
