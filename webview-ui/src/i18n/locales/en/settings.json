@@ -527,7 +527,18 @@
 			"description": "Optional path to your Claude Code CLI. Defaults to 'claude' if not set.",
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Max Output Tokens",
-			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000."
+			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000.",
+			"signInButton": "Sign in to Claude Code",
+			"signOutButton": "Sign Out",
+			"manualAuthDescription": "For remote environments (GitHub Codespaces, SSH, etc.) where localhost callbacks don't work:",
+			"openAuthPage": "1. Open Authentication Page",
+			"manualAuthStep1": "This will open Anthropic's sign-in page. After signing in, you'll see an authorization code.",
+			"pasteCodeLabel": "2. Paste the authorization code:",
+			"codePlaceholder": "Paste your authorization code here",
+			"exchangingCode": "Signing in...",
+			"submitCode": "3. Complete Sign In",
+			"backToNormalAuth": "← Back to normal sign in",
+			"remoteEnvLink": "Using a remote environment? Click here for manual sign in"
 		}
 	},
 	"browser": {
