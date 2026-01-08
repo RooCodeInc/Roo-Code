@@ -456,7 +456,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	public getThoughtSignature(): string | undefined {
-		return this.lastThoughtSignature
+		// Disabled to prevent "Corrupted thought signature" errors on task resumption.
+		// Gemini thought signatures are session-specific and cannot be reliably reused
+		// across API calls or after task resumption from history.
+		return undefined
 	}
 
 	public getResponseId(): string | undefined {
