@@ -75,7 +75,7 @@ const keyBenefits = [
 	{
 		title: "Centralized Billing",
 		description:
-			"Single billing point for all team members using Cloud Agents and the Roo Code Cloud Provider. No more API key management.",
+			"Single billing point for all team members using Cloud Agents and the Roo Code Router. No more API key management.",
 		icon: DollarSign,
 	},
 	{

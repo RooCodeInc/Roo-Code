@@ -85,7 +85,7 @@
 - Fix: Drain queued messages while waiting for ask to prevent message loss (PR #10315 by @hannesrudolph)
 - Feat: Add grace retry for empty assistant messages to improve reliability (PR #10297 by @hannesrudolph)
 - Feat: Enable mergeToolResultText for all OpenAI-compatible providers for better tool result handling (PR #10299 by @hannesrudolph)
-- Feat: Enable mergeToolResultText for Roo Code Cloud provider (PR #10301 by @hannesrudolph)
+- Feat: Enable mergeToolResultText for Roo Code Router (PR #10301 by @hannesrudolph)
 - Feat: Strengthen native tool-use guidance in prompts for improved model behavior (PR #10311 by @hannesrudolph)
 - UX: Account-centric signup flow for improved onboarding experience (PR #10306 by @brunobergher)
 
@@ -379,7 +379,7 @@
 - Native tool calling support expanded across many providers: Bedrock (PR #9698 by @mrubens), Cerebras (PR #9692 by @mrubens), Chutes with auto-detection from API (PR #9715 by @daniel-lxs), DeepInfra (PR #9691 by @mrubens), DeepSeek and Doubao (PR #9671 by @daniel-lxs), Groq (PR #9673 by @daniel-lxs), LiteLLM (PR #9719 by @daniel-lxs), Ollama (PR #9696 by @mrubens), OpenAI-compatible providers (PR #9676 by @daniel-lxs), Requesty (PR #9672 by @daniel-lxs), Unbound (PR #9699 by @mrubens), Vercel AI Gateway (PR #9697 by @mrubens), Vertex Gemini (PR #9678 by @daniel-lxs), and xAI with new Grok 4 Fast and Grok 4.1 Fast models (PR #9690 by @mrubens)
 - Fix: Preserve tool_use blocks in summary for parallel tool calls (#9700 by @SilentFlower, PR #9714 by @SilentFlower)
 - Default Grok Code Fast to native tools for better performance (PR #9717 by @mrubens)
-- UX improvements to the Roo Code Cloud provider-centric onboarding flow (PR #9709 by @brunobergher)
+- UX improvements to the Roo Code Router-centric onboarding flow (PR #9709 by @brunobergher)
 - UX toolbar cleanup and settings consolidation for a cleaner interface (PR #9710 by @brunobergher)
 - Add model-specific tool customization via `excludedTools` and `includedTools` configuration (PR #9641 by @daniel-lxs)
 - Add new `apply_patch` native tool for more efficient file editing operations (PR #9663 by @hannesrudolph)
@@ -478,7 +478,7 @@
 - Show the prompt for image generation in the UI (PR #9505 by @mrubens)
 - Fix double todo list display issue (PR #9517 by @mrubens)
 - Add tracking for cloud synced messages (PR #9518 by @mrubens)
-- Enable the Roo Code Cloud provider in evals (PR #9492 by @cte)
+- Enable the Roo Code Router in evals (PR #9492 by @cte)
 
 ## [3.34.0] - 2025-11-21
 
@@ -558,7 +558,7 @@
 - Use VSCode theme color for outline button borders (PR #9336 by @app/roomote)
 - Replace broken badgen.net badges with shields.io (PR #9318 by @app/roomote)
 - Add max git status files setting to evals (PR #9322 by @mrubens)
-- Roo Code Cloud Provider pricing page and changes elsewhere (PR #9195 by @brunobergher)
+- Roo Code Router pricing page and changes elsewhere (PR #9195 by @brunobergher)
 
 ## [3.32.1] - 2025-11-14
 
@@ -584,7 +584,7 @@
 ![3.31.3 Release - Kangaroo Decrypting a Message](/releases/3.31.3-release.png)
 
 - Fix: OpenAI Native encrypted_content handling and remove gpt-5-chat-latest verbosity flag (#9225 by @politsin, PR by @hannesrudolph)
-- Fix: Roo Code Cloud provider Anthropic input token normalization to avoid double-counting (thanks @hannesrudolph!)
+- Fix: Roo Code Router Anthropic input token normalization to avoid double-counting (thanks @hannesrudolph!)
 - Refactor: Rename sliding-window to context-management and truncateConversationIfNeeded to manageContext (thanks @hannesrudolph!)
 
 ## [3.31.2] - 2025-11-12
@@ -724,7 +724,7 @@
 
 - Add token-budget based file reading with intelligent preview to avoid context overruns (thanks @daniel-lxs!)
 - Enable browser-use tool for all image-capable models (#8116 by @hannesrudolph, PR by @app/roomote!)
-- Add dynamic model loading for Roo Code Cloud provider (thanks @app/roomote!)
+- Add dynamic model loading for Roo Code Router (thanks @app/roomote!)
 - Fix: Respect nested .gitignore files in search_files (#7921 by @hannesrudolph, PR by @daniel-lxs)
 - Fix: Preserve trailing newlines in stripLineNumbers for apply_diff (#8020 by @liyi3c, PR by @app/roomote)
 - Fix: Exclude max tokens field for models that don't support it in export (#7944 by @hannesrudolph, PR by @elianiva)
@@ -882,7 +882,7 @@
 - UX: Responsive Auto-Approve (thanks @brunobergher!)
 - Add telemetry retry queue for network resilience (thanks @daniel-lxs!)
 - Fix: Transform keybindings in nightly build to fix command+y shortcut (thanks @app/roomote!)
-- New code-supernova stealth model in the Roo Code Cloud provider (thanks @mrubens!)
+- New code-supernova stealth model in the Roo Code Router (thanks @mrubens!)
 
 ## [3.28.3] - 2025-09-16
 
@@ -1093,11 +1093,11 @@
 
 ## [3.25.19] - 2025-08-19
 
-- Fix issue where new users couldn't select the Roo Code Cloud provider (thanks @daniel-lxs!)
+- Fix issue where new users couldn't select the Roo Code Router (thanks @daniel-lxs!)
 
 ## [3.25.18] - 2025-08-19
 
-- Add new stealth Sonic model through the Roo Code Cloud provider
+- Add new stealth Sonic model through the Roo Code Router
 - Fix: respect enableReasoningEffort setting when determining reasoning usage (#7048 by @ikbencasdoei, PR by @app/roomote)
 - Fix: prevent duplicate LM Studio models with case-insensitive deduplication (#6954 by @fbuechler, PR by @daniel-lxs)
 - Feat: simplify ask_followup_question prompt documentation (thanks @daniel-lxs!)
