@@ -93,6 +93,9 @@ function applyReplacement(
 export class EditFileTool extends BaseTool<"edit_file"> {
 	readonly name = "edit_file" as const
 
+	// Track the last seen path during streaming to detect when the path has stabilized
+	private lastSeenPartialPath: string | undefined = undefined
+
 	parseLegacy(params: Partial<Record<string, string>>): EditFileParams {
 		return {
 			file_path: params.file_path || "",
@@ -327,18 +330,31 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 			// Record successful tool usage and cleanup
 			task.recordToolUsage("edit_file")
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
 		} catch (error) {
 			await handleError("edit_file", error as Error)
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 		}
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"edit_file">): Promise<void> {
 		const filePath: string | undefined = block.params.file_path
 		const oldString: string | undefined = block.params.old_string
+
+		// During streaming, the partial-json library may return truncated string values
+		// when chunk boundaries fall mid-value. To avoid showing incorrect file paths,
+		// we wait until the path stops changing between consecutive partial blocks before
+		// displaying the tool UI. This ensures we have the complete, final path value.
+		const pathHasStabilized = this.lastSeenPartialPath !== undefined && this.lastSeenPartialPath === filePath
+		this.lastSeenPartialPath = filePath
+
+		if (!pathHasStabilized || !filePath) {
+			return
+		}
 
 		let operationPreview: string | undefined
 		if (oldString !== undefined) {
@@ -351,13 +367,13 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 		}
 
 		// Determine relative path for display
-		let relPath = filePath || ""
-		if (filePath && path.isAbsolute(filePath)) {
+		let relPath = filePath
+		if (path.isAbsolute(filePath)) {
 			relPath = path.relative(task.cwd, filePath)
 		}
 
-		const absolutePath = relPath ? path.resolve(task.cwd, relPath) : ""
-		const isOutsideWorkspace = absolutePath ? isPathOutsideWorkspace(absolutePath) : false
+		const absolutePath = path.resolve(task.cwd, relPath)
+		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",
@@ -367,6 +383,13 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 		}
 
 		await task.ask("tool", JSON.stringify(sharedMessageProps), block.partial).catch(() => {})
+	}
+
+	/**
+	 * Reset state when the tool finishes (called from execute or on error)
+	 */
+	resetPartialState(): void {
+		this.lastSeenPartialPath = undefined
 	}
 }
 

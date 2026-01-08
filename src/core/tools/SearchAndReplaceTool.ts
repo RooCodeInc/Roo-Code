@@ -27,6 +27,9 @@ interface SearchAndReplaceParams {
 export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 	readonly name = "search_and_replace" as const
 
+	// Track the last seen path during streaming to detect when it stabilizes
+	private lastSeenPartialPath: string | undefined = undefined
+
 	parseLegacy(params: Partial<Record<string, string>>): SearchAndReplaceParams {
 		// Parse operations from JSON string if provided
 		let operations: SearchReplaceOperation[] = []
@@ -45,6 +48,9 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 	}
 
 	async execute(params: SearchAndReplaceParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		// Reset partial state at start of execution
+		this.resetPartialState()
+
 		const { path: relPath, operations } = params
 		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 
@@ -259,17 +265,30 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 			// Record successful tool usage and cleanup
 			task.recordToolUsage("search_and_replace")
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
 		} catch (error) {
 			await handleError("search and replace", error as Error)
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 		}
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"search_and_replace">): Promise<void> {
 		const relPath: string | undefined = block.params.path
+
+		// Wait until path stops changing between consecutive partial blocks.
+		// This prevents displaying truncated paths when parameters arrive
+		// in different orders during native tool call streaming.
+		const pathHasStabilized = this.lastSeenPartialPath !== undefined && this.lastSeenPartialPath === relPath
+		this.lastSeenPartialPath = relPath
+
+		if (!pathHasStabilized || !relPath) {
+			return
+		}
+
 		const operationsStr: string | undefined = block.params.operations
 
 		let operationsPreview: string | undefined
@@ -295,6 +314,14 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 		}
 
 		await task.ask("tool", JSON.stringify(sharedMessageProps), block.partial).catch(() => {})
+	}
+
+	/**
+	 * Reset streaming state. Called at start of execute() to ensure
+	 * fresh state for each tool invocation.
+	 */
+	resetPartialState(): void {
+		this.lastSeenPartialPath = undefined
 	}
 }
 
