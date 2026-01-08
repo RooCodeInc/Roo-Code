@@ -255,6 +255,9 @@ export interface WebviewMessage {
 		codebaseIndexSearchMinScore?: number
 		codebaseIndexOpenRouterSpecificProvider?: string // OpenRouter provider routing
 
+		codebaseIndexOllamaEmbeddingTimeoutMs?: number
+		codebaseIndexOllamaValidationTimeoutMs?: number
+
 		// Secret settings
 		codeIndexOpenAiKey?: string
 		codeIndexQdrantApiKey?: string

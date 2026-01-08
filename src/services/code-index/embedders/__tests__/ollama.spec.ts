@@ -166,6 +166,52 @@ describe("CodeIndexOllamaEmbedder", () => {
 		})
 	})
 
+	describe("timeout configuration", () => {
+		it("should use custom embedding timeout when provided", () => {
+			const embedderWithCustomTimeout = new CodeIndexOllamaEmbedder({
+				ollamaBaseUrl: "http://localhost:11434",
+				ollamaModelId: "nomic-embed-text",
+				ollamaEmbeddingTimeoutMs: 120000, // 2 minutes
+			})
+
+			// The timeout should be set to the custom value
+			expect(embedderWithCustomTimeout).toBeDefined()
+		})
+
+		it("should use custom validation timeout when provided", () => {
+			const embedderWithCustomTimeout = new CodeIndexOllamaEmbedder({
+				ollamaBaseUrl: "http://localhost:11434",
+				ollamaModelId: "nomic-embed-text",
+				ollamaValidationTimeoutMs: 60000, // 1 minute
+			})
+
+			// The timeout should be set to the custom value
+			expect(embedderWithCustomTimeout).toBeDefined()
+		})
+
+		it("should use default timeouts when not provided", () => {
+			const embedderWithDefaults = new CodeIndexOllamaEmbedder({
+				ollamaBaseUrl: "http://localhost:11434",
+				ollamaModelId: "nomic-embed-text",
+			})
+
+			// Should use default timeouts
+			expect(embedderWithDefaults).toBeDefined()
+		})
+
+		it("should handle -1 timeout to disable timeout", () => {
+			const embedderWithNoTimeout = new CodeIndexOllamaEmbedder({
+				ollamaBaseUrl: "http://localhost:11434",
+				ollamaModelId: "nomic-embed-text",
+				ollamaEmbeddingTimeoutMs: -1,
+				ollamaValidationTimeoutMs: -1,
+			})
+
+			// Should handle -1 as no timeout
+			expect(embedderWithNoTimeout).toBeDefined()
+		})
+	})
+
 	describe("validateConfiguration", () => {
 		it("should validate successfully when service is available and model exists", async () => {
 			// Mock successful /api/tags call

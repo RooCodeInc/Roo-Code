@@ -55,6 +55,8 @@ export class CodeIndexConfigManager {
 			codebaseIndexSearchMaxResults: undefined,
 			codebaseIndexBedrockRegion: "us-east-1",
 			codebaseIndexBedrockProfile: "",
+			codebaseIndexOllamaEmbeddingTimeoutMs: undefined,
+			codebaseIndexOllamaValidationTimeoutMs: undefined,
 		}
 
 		const {
@@ -128,6 +130,8 @@ export class CodeIndexConfigManager {
 
 		this.ollamaOptions = {
 			ollamaBaseUrl: codebaseIndexEmbedderBaseUrl,
+			ollamaEmbeddingTimeoutMs: codebaseIndexConfig.codebaseIndexOllamaEmbeddingTimeoutMs,
+			ollamaValidationTimeoutMs: codebaseIndexConfig.codebaseIndexOllamaValidationTimeoutMs,
 		}
 
 		this.openAiCompatibleOptions =
@@ -183,6 +187,8 @@ export class CodeIndexConfigManager {
 			modelDimension: this.modelDimension,
 			openAiKey: this.openAiOptions?.openAiNativeApiKey ?? "",
 			ollamaBaseUrl: this.ollamaOptions?.ollamaBaseUrl ?? "",
+			ollamaEmbeddingTimeoutMs: this.ollamaOptions?.ollamaEmbeddingTimeoutMs,
+			ollamaValidationTimeoutMs: this.ollamaOptions?.ollamaValidationTimeoutMs,
 			openAiCompatibleBaseUrl: this.openAiCompatibleOptions?.baseUrl ?? "",
 			openAiCompatibleApiKey: this.openAiCompatibleOptions?.apiKey ?? "",
 			geminiApiKey: this.geminiOptions?.apiKey ?? "",
@@ -301,6 +307,8 @@ export class CodeIndexConfigManager {
 		const prevProvider = prev?.embedderProvider ?? "openai"
 		const prevOpenAiKey = prev?.openAiKey ?? ""
 		const prevOllamaBaseUrl = prev?.ollamaBaseUrl ?? ""
+		const prevOllamaEmbeddingTimeoutMs = prev?.ollamaEmbeddingTimeoutMs
+		const prevOllamaValidationTimeoutMs = prev?.ollamaValidationTimeoutMs
 		const prevOpenAiCompatibleBaseUrl = prev?.openAiCompatibleBaseUrl ?? ""
 		const prevOpenAiCompatibleApiKey = prev?.openAiCompatibleApiKey ?? ""
 		const prevModelDimension = prev?.modelDimension
@@ -343,6 +351,8 @@ export class CodeIndexConfigManager {
 		// Authentication changes (API keys)
 		const currentOpenAiKey = this.openAiOptions?.openAiNativeApiKey ?? ""
 		const currentOllamaBaseUrl = this.ollamaOptions?.ollamaBaseUrl ?? ""
+		const currentOllamaEmbeddingTimeoutMs = this.ollamaOptions?.ollamaEmbeddingTimeoutMs
+		const currentOllamaValidationTimeoutMs = this.ollamaOptions?.ollamaValidationTimeoutMs
 		const currentOpenAiCompatibleBaseUrl = this.openAiCompatibleOptions?.baseUrl ?? ""
 		const currentOpenAiCompatibleApiKey = this.openAiCompatibleOptions?.apiKey ?? ""
 		const currentModelDimension = this.modelDimension
@@ -361,6 +371,12 @@ export class CodeIndexConfigManager {
 		}
 
 		if (prevOllamaBaseUrl !== currentOllamaBaseUrl) {
+			return true
+		}
+		if (
+			prevOllamaEmbeddingTimeoutMs !== currentOllamaEmbeddingTimeoutMs ||
+			prevOllamaValidationTimeoutMs !== currentOllamaValidationTimeoutMs
+		) {
 			return true
 		}
 

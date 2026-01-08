@@ -103,7 +103,11 @@ describe("CodeIndexConfigManager", () => {
 				embedderProvider: "openai",
 				modelId: undefined,
 				openAiOptions: { openAiNativeApiKey: "" },
-				ollamaOptions: { ollamaBaseUrl: "" },
+				ollamaOptions: {
+					ollamaBaseUrl: "",
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
+				},
 				bedrockOptions: { region: "us-east-1", profile: undefined },
 				qdrantUrl: "http://localhost:6333",
 				qdrantApiKey: "",
@@ -135,7 +139,11 @@ describe("CodeIndexConfigManager", () => {
 				embedderProvider: "openai",
 				modelId: "text-embedding-3-large",
 				openAiOptions: { openAiNativeApiKey: "test-openai-key" },
-				ollamaOptions: { ollamaBaseUrl: "" },
+				ollamaOptions: {
+					ollamaBaseUrl: "",
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
+				},
 				qdrantUrl: "http://qdrant.local",
 				qdrantApiKey: "test-qdrant-key",
 				searchMinScore: 0.4,
@@ -168,7 +176,11 @@ describe("CodeIndexConfigManager", () => {
 				embedderProvider: "openai-compatible",
 				modelId: "text-embedding-3-large",
 				openAiOptions: { openAiNativeApiKey: "" },
-				ollamaOptions: { ollamaBaseUrl: "" },
+				ollamaOptions: {
+					ollamaBaseUrl: "",
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
+				},
 				openAiCompatibleOptions: {
 					baseUrl: "https://api.example.com/v1",
 					apiKey: "test-openai-compatible-key",
@@ -206,7 +218,11 @@ describe("CodeIndexConfigManager", () => {
 				modelId: "custom-model",
 				modelDimension: 1024,
 				openAiOptions: { openAiNativeApiKey: "" },
-				ollamaOptions: { ollamaBaseUrl: "" },
+				ollamaOptions: {
+					ollamaBaseUrl: "",
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
+				},
 				openAiCompatibleOptions: {
 					baseUrl: "https://api.example.com/v1",
 					apiKey: "test-openai-compatible-key",
@@ -243,7 +259,11 @@ describe("CodeIndexConfigManager", () => {
 				embedderProvider: "openai-compatible",
 				modelId: "custom-model",
 				openAiOptions: { openAiNativeApiKey: "" },
-				ollamaOptions: { ollamaBaseUrl: "" },
+				ollamaOptions: {
+					ollamaBaseUrl: "",
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
+				},
 				openAiCompatibleOptions: {
 					baseUrl: "https://api.example.com/v1",
 					apiKey: "test-openai-compatible-key",
@@ -282,7 +302,11 @@ describe("CodeIndexConfigManager", () => {
 				modelId: "custom-model",
 				modelDimension: undefined, // Invalid dimension is converted to undefined
 				openAiOptions: { openAiNativeApiKey: "" },
-				ollamaOptions: { ollamaBaseUrl: "" },
+				ollamaOptions: {
+					ollamaBaseUrl: "",
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
+				},
 				openAiCompatibleOptions: {
 					baseUrl: "https://api.example.com/v1",
 					apiKey: "test-openai-compatible-key",
@@ -1292,7 +1316,11 @@ describe("CodeIndexConfigManager", () => {
 				embedderProvider: "openai",
 				modelId: "text-embedding-3-large",
 				openAiOptions: { openAiNativeApiKey: "test-openai-key" },
-				ollamaOptions: { ollamaBaseUrl: undefined },
+				ollamaOptions: {
+					ollamaBaseUrl: undefined,
+					ollamaEmbeddingTimeoutMs: undefined,
+					ollamaValidationTimeoutMs: undefined,
+				},
 				geminiOptions: undefined,
 				openAiCompatibleOptions: undefined,
 				qdrantUrl: "http://qdrant.local",
