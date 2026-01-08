@@ -781,10 +781,8 @@ const ApiOptions = ({
 							}
 
 							// Clear reasoning effort when switching models to allow the new model's default to take effect
-							// This is especially important for GPT-5 models which default to "medium"
-							if (selectedProvider === "openai-native") {
-								setApiConfigurationField("reasoningEffort", undefined)
-							}
+							// Different models within the same provider can have different reasoning effort defaults/options
+							setApiConfigurationField("reasoningEffort", undefined)
 						}}
 					/>
 
