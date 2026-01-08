@@ -33,7 +33,7 @@ if (typeof globalThis !== "undefined" && !globalThis._navigatorShimApplied) {
 	   standalone: false,
 	   onLine: true,
 	 };
-	 globalThis.navigator = globalThis.navigator || navigatorStub;
+	 globalThis.navigator = navigatorStub;
 	 globalThis._navigatorShimApplied = true;
 }
 `
