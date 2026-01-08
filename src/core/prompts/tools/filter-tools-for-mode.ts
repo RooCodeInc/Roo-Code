@@ -1,11 +1,37 @@
 import type OpenAI from "openai"
-import type { ModeConfig, ToolName, ToolGroup, ModelInfo } from "@roo-code/types"
+import type { ModeConfig, ToolName, ToolGroup, ModelInfo, EditToolVariant } from "@roo-code/types"
 import { getModeBySlug, getToolsForMode } from "../../../shared/modes"
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, TOOL_ALIASES } from "../../../shared/tools"
 import { defaultModeSlug } from "../../../shared/modes"
 import type { CodeIndexManager } from "../../../services/code-index/manager"
 import type { McpHub } from "../../../services/mcp/McpHub"
 import { isToolAllowedForMode } from "../../../core/tools/validateToolUse"
+
+/**
+ * Central edit tool configuration.
+ *
+ * `toolName` is the internal native tool name.
+ * `displayName` is the name shown to (and called by) the model.
+ *
+ * By default, edit tool variants are presented as "edit_file".
+ * The codex variant is presented as "apply_patch" so:
+ * - the model calls `apply_patch`
+ * - the tool is stored in API conversation history as `apply_patch`
+ * - execution is still routed through the canonical `edit_file` tool via aliases
+ */
+const EDIT_TOOL_VARIANTS: Record<EditToolVariant, { toolName: string; displayName: string }> = {
+	roo: { toolName: "edit_file_roo", displayName: "edit_file" },
+	anthropic: { toolName: "edit_file_anthropic", displayName: "edit_file" },
+	grok: { toolName: "edit_file_grok", displayName: "edit_file" },
+	gemini: { toolName: "edit_file_gemini", displayName: "edit_file" },
+	codex: { toolName: "edit_file_codex", displayName: "apply_patch" },
+}
+
+/**
+ * All edit tool variant names that should be filtered.
+ * Only one of these (based on editToolVariant) will be included and renamed to the configured display name.
+ */
+const ALL_EDIT_TOOL_VARIANTS = new Set(Object.values(EDIT_TOOL_VARIANTS).map((variant) => variant.toolName))
 
 /**
  * Reverse lookup map - maps alias name to canonical tool name.
@@ -296,15 +322,34 @@ export function filterNativeToolsForMode(
 		allowedToolNames.delete("browser_action")
 	}
 
-	// Conditionally exclude apply_diff if diffs are disabled
-	if (settings?.diffEnabled === false) {
-		allowedToolNames.delete("apply_diff")
-	}
-
 	// Conditionally exclude access_mcp_resource if MCP is not enabled or there are no resources
 	if (!mcpHub || !hasAnyMcpResources(mcpHub)) {
 		allowedToolNames.delete("access_mcp_resource")
 	}
+
+	// Handle edit tool variant selection:
+	for (const variantTool of ALL_EDIT_TOOL_VARIANTS) {
+		allowedToolNames.delete(variantTool)
+	}
+
+	// Determine which edit tool variant to use (default: "roo")
+	const editToolVariant: EditToolVariant = modelInfo?.editToolVariant ?? "roo"
+	const selectedEditToolName = EDIT_TOOL_VARIANTS[editToolVariant].toolName
+	const editToolDisplayName = EDIT_TOOL_VARIANTS[editToolVariant].displayName
+
+	// Check if diffs are disabled - if so, skip edit tool entirely
+	const diffEnabled = settings?.diffEnabled !== false
+
+	// Check if mode has "edit" group (required for edit tools)
+	const allowedGroups = new Set(
+		modeConfig.groups.map((groupEntry) => (Array.isArray(groupEntry) ? groupEntry[0] : groupEntry)),
+	)
+	const modeHasEditGroup = allowedGroups.has("edit")
+
+	// Check if edit_file is excluded by model config
+	const isEditFileExcluded = modelInfo?.excludedTools?.some(
+		(tool) => resolveToolAlias(tool) === "edit_file" || tool === "edit_file",
+	)
 
 	// Filter native tools based on allowed tool names and apply alias renames
 	const filteredTools: OpenAI.Chat.ChatCompletionTool[] = []
@@ -313,6 +358,23 @@ export function filterNativeToolsForMode(
 		// Handle both ChatCompletionTool and ChatCompletionCustomTool
 		if ("function" in tool && tool.function) {
 			const toolName = tool.function.name
+
+			// Special handling for edit tool variants
+			if (ALL_EDIT_TOOL_VARIANTS.has(toolName)) {
+				// Only include if:
+				// 1. This is the selected variant
+				// 2. Diffs are enabled
+				// 3. Mode has "edit" group
+				// 4. edit_file is not excluded by model config
+				if (toolName === selectedEditToolName && diffEnabled && modeHasEditGroup && !isEditFileExcluded) {
+					// Rename the selected variant to the configured display name.
+					// The tool will still execute via the unified `edit_file` tool name through aliases.
+					filteredTools.push(getOrCreateRenamedTool(tool, editToolDisplayName))
+				}
+				continue
+			}
+
+			// Regular tool processing
 			if (allowedToolNames.has(toolName)) {
 				// Check if this tool should be renamed to an alias
 				const aliasName = aliasRenames.get(toolName)

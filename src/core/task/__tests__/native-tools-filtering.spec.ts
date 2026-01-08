@@ -41,8 +41,9 @@ describe("Native Tools Filtering by Mode", () => {
 			ALWAYS_AVAILABLE_TOOLS.forEach((tool) => architectAllowedTools.add(tool))
 
 			// Architect should NOT have edit tools
+			// Note: apply_diff is now a legacy name; edit tools are now in customTools
+			// and the unified "edit_file" is added via filterNativeToolsForMode
 			expect(architectAllowedTools.has("write_to_file")).toBe(false)
-			expect(architectAllowedTools.has("apply_diff")).toBe(false)
 
 			// Architect SHOULD have read tools
 			expect(architectAllowedTools.has("read_file")).toBe(true)
@@ -68,8 +69,9 @@ describe("Native Tools Filtering by Mode", () => {
 			ALWAYS_AVAILABLE_TOOLS.forEach((tool) => codeAllowedTools.add(tool))
 
 			// Code SHOULD have edit tools
+			// Note: apply_diff is now a legacy name; the unified edit tool "edit_file"
+			// is added via filterNativeToolsForMode, not from TOOL_GROUPS.edit.tools
 			expect(codeAllowedTools.has("write_to_file")).toBe(true)
-			expect(codeAllowedTools.has("apply_diff")).toBe(true)
 
 			// Code SHOULD have read tools
 			expect(codeAllowedTools.has("read_file")).toBe(true)

@@ -326,7 +326,7 @@ describe("isToolAllowedForMode", () => {
 
 		it("disallows customTools by default (not in includedTools)", () => {
 			// search_and_replace is a customTool in the edit group, should be disallowed by default
-			expect(isToolAllowedForMode("search_and_replace", "test-custom-tools", customModesWithEditGroup)).toBe(
+			expect(isToolAllowedForMode("edit_file_anthropic", "test-custom-tools", customModesWithEditGroup)).toBe(
 				false,
 			)
 		})
@@ -335,13 +335,13 @@ describe("isToolAllowedForMode", () => {
 			// search_and_replace should be allowed when explicitly included
 			expect(
 				isToolAllowedForMode(
-					"search_and_replace",
+					"edit_file_anthropic",
 					"test-custom-tools",
 					customModesWithEditGroup,
 					undefined,
 					undefined,
 					undefined,
-					["search_and_replace"],
+					["edit_file_anthropic"],
 				),
 			).toBe(true)
 		})
@@ -359,13 +359,13 @@ describe("isToolAllowedForMode", () => {
 			// Even if included, should be disallowed because the mode doesn't have edit group
 			expect(
 				isToolAllowedForMode(
-					"search_and_replace",
+					"edit_file_anthropic",
 					"no-edit-mode",
 					customModesWithoutEdit,
 					undefined,
 					undefined,
 					undefined,
-					["search_and_replace"],
+					["edit_file_anthropic"],
 				),
 			).toBe(false)
 		})
