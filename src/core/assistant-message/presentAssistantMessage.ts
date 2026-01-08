@@ -200,13 +200,24 @@ export async function presentAssistantMessage(cline: Task) {
 
 				if (response !== "yesButtonClicked") {
 					if (text) {
-						await cline.say("user_feedback", text, images)
-						pushToolResult(
-							formatResponse.toolResult(
-								formatResponse.toolDeniedWithFeedback(text, toolProtocol),
-								images,
-							),
-						)
+						// Check if the text is a slash command (starts with /)
+						// Slash commands should not be treated as feedback to the model
+						const isSlashCommand = text.trimStart().startsWith("/")
+						
+						if (isSlashCommand) {
+							// Treat slash commands as simple denial without feedback
+							// This prevents commands from being captured as denial feedback
+							pushToolResult(formatResponse.toolDenied(toolProtocol))
+						} else {
+							// Normal text feedback
+							await cline.say("user_feedback", text, images)
+							pushToolResult(
+								formatResponse.toolResult(
+									formatResponse.toolDeniedWithFeedback(text, toolProtocol),
+									images,
+								),
+							)
+						}
 					} else {
 						pushToolResult(formatResponse.toolDenied(toolProtocol))
 					}
@@ -589,13 +600,24 @@ export async function presentAssistantMessage(cline: Task) {
 				if (response !== "yesButtonClicked") {
 					// Handle both messageResponse and noButtonClicked with text.
 					if (text) {
-						await cline.say("user_feedback", text, images)
-						pushToolResult(
-							formatResponse.toolResult(
-								formatResponse.toolDeniedWithFeedback(text, toolProtocol),
-								images,
-							),
-						)
+						// Check if the text is a slash command (starts with /)
+						// Slash commands should not be treated as feedback to the model
+						const isSlashCommand = text.trimStart().startsWith("/")
+						
+						if (isSlashCommand) {
+							// Treat slash commands as simple denial without feedback
+							// This prevents commands from being captured as denial feedback
+							pushToolResult(formatResponse.toolDenied(toolProtocol))
+						} else {
+							// Normal text feedback
+							await cline.say("user_feedback", text, images)
+							pushToolResult(
+								formatResponse.toolResult(
+									formatResponse.toolDeniedWithFeedback(text, toolProtocol),
+									images,
+								),
+							)
+						}
 					} else {
 						pushToolResult(formatResponse.toolDenied(toolProtocol))
 					}
