@@ -1,6 +1,6 @@
 # Roo Code Changelog
 
-## 3.39.0
+## [3.39.0] - 2026-01-08
 
 ![3.39.0 Release - Kangaroo go BRRR](/releases/3.39.0-release.png)
 
