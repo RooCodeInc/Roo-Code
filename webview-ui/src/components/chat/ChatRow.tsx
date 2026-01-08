@@ -353,6 +353,12 @@ export const ChatRowContent = ({
 					),
 				]
 			case "followup":
+				// Parse followup data to check for hideHeader flag
+				const followUpDataForIcon = message.partial ? null : safeJsonParse<FollowUpData>(message.text)
+
+				if (followUpDataForIcon?.hideHeader) {
+					return [null, null] // No header
+				}
 				return [
 					<MessageCircleQuestionMark className="w-4 shrink-0" aria-label="Question icon" />,
 					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:questions.hasQuestion")}</span>,
@@ -1614,9 +1620,12 @@ export const ChatRowContent = ({
 								</div>
 							)}
 							<div className="flex flex-col gap-2 ml-6">
-								<Markdown
-									markdown={message.partial === true ? message?.text : followUpData?.question}
-								/>
+								{/* Only show markdown if hideHeader is false - when true, the text was already shown in a previous message */}
+								{!followUpData?.hideHeader && (
+									<Markdown
+										markdown={message.partial === true ? message?.text : followUpData?.question}
+									/>
+								)}
 								<FollowUpSuggest
 									suggestions={followUpData?.suggest}
 									onSuggestionClick={onSuggestionClick}

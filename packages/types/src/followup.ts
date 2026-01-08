@@ -10,6 +10,8 @@ export interface FollowUpData {
 	question?: string
 	/** Array of suggested answers that the user can select */
 	suggest?: Array<SuggestionItem>
+	/** If true, hide the "Roo has a question" header in the UI */
+	hideHeader?: boolean
 }
 
 /**
@@ -36,6 +38,7 @@ export const suggestionItemSchema = z.object({
 export const followUpDataSchema = z.object({
 	question: z.string().optional(),
 	suggest: z.array(suggestionItemSchema).optional(),
+	hideHeader: z.boolean().optional(),
 })
 
 export type FollowUpDataType = z.infer<typeof followUpDataSchema>

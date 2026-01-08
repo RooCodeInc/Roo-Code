@@ -26,6 +26,7 @@ suite.skip("Roo Code Subtasks", () => {
 				alwaysAllowModeSwitch: true,
 				alwaysAllowSubtasks: true,
 				autoApprovalEnabled: true,
+				alwaysAllowFollowupQuestions: true,
 				enableCheckpoints: false,
 			},
 			text:

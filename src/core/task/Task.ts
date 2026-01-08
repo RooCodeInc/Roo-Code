@@ -33,6 +33,7 @@ import {
 	type CreateTaskOptions,
 	type ModelInfo,
 	type ToolProtocol,
+	type FollowUpData,
 	RooCodeEventName,
 	TelemetryEventName,
 	TaskStatus,
@@ -3486,21 +3487,35 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					)
 
 					if (!didToolUse) {
-						// Increment consecutive no-tool-use counter
-						this.consecutiveNoToolUseCount++
+						// Reset counter when we get a response (even without tools)
+						this.consecutiveNoToolUseCount = 0
 
-						// Only show error and count toward mistake limit after 2 consecutive failures
-						if (this.consecutiveNoToolUseCount >= 2) {
-							await this.say("error", "MODEL_NO_TOOLS_USED")
-							// Only count toward mistake limit after second consecutive failure
-							this.consecutiveMistakeCount++
+						const state = await this.providerRef.deref()?.getState()
+
+						if (state?.autoApprovalEnabled && state?.alwaysAllowFollowupQuestions) {
+							// Auto-approval enabled: tell model to use a tool and continue
+							this.userMessageContent.push({
+								type: "text",
+								text: formatResponse.noToolsUsed(this._taskToolProtocol ?? "xml"),
+							})
+						} else {
+							// Auto-approval disabled: present message to user, wait for response
+							// Use the assistant's text content as the message (hide "has a question" header)
+							const followUpData: FollowUpData = { question: assistantMessage, hideHeader: true }
+							const { text, images } = await this.ask("followup", JSON.stringify(followUpData), false)
+							await this.say("user_feedback", text ?? "", images)
+
+							// formatResponse.toolResult can return string or array, handle both
+							const toolResult = formatResponse.toolResult(`<answer>\n${text}\n</answer>`, images)
+							if (typeof toolResult === "string") {
+								this.userMessageContent.push({
+									type: "text",
+									text: toolResult,
+								})
+							} else {
+								this.userMessageContent.push(...toolResult)
+							}
 						}
-
-						// Use the task's locked protocol for consistent behavior
-						this.userMessageContent.push({
-							type: "text",
-							text: formatResponse.noToolsUsed(this._taskToolProtocol ?? "xml"),
-						})
 					} else {
 						// Reset counter when tools are used successfully
 						this.consecutiveNoToolUseCount = 0
