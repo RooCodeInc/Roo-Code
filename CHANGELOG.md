@@ -1,5 +1,11 @@
 # Roo Code Changelog
 
+## [3.39.1] - 2026-01-08
+
+- Fix: Stabilize file paths during native tool call streaming to prevent path corruption (PR #10555 by @daniel-lxs)
+- Fix: Disable Gemini thought signature persistence to prevent corrupted signature errors (PR #10554 by @daniel-lxs)
+- Fix: Change minItems from 2 to 1 for Anthropic API compatibility (PR #10551 by @daniel-lxs)
+
 ## [3.39.0] - 2026-01-08
 
 ![3.39.0 Release - Kangaroo go BRRR](/releases/3.39.0-release.png)
