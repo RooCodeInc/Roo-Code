@@ -21,7 +21,7 @@ import { getEnvVarName, getApiKeyFromEnv, getDefaultExtensionPath } from "./util
 const DEFAULTS = {
 	mode: "code",
 	reasoningEffort: "medium" as const,
-	model: "anthropic/claude-sonnet-4.5",
+	model: "anthropic/claude-opus-4.5",
 }
 
 const REASONING_EFFORTS = [...reasoningEffortsExtended, "unspecified", "disabled"]
