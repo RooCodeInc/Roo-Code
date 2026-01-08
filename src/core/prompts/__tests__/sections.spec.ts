@@ -128,7 +128,9 @@ describe("getCommandChainOperator", () => {
 	})
 
 	it("returns ; for PowerShell", () => {
-		vi.spyOn(shellUtils, "getShell").mockReturnValue("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe")
+		vi.spyOn(shellUtils, "getShell").mockReturnValue(
+			"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+		)
 		expect(getCommandChainOperator()).toBe(";")
 	})
 
@@ -137,9 +139,9 @@ describe("getCommandChainOperator", () => {
 		expect(getCommandChainOperator()).toBe(";")
 	})
 
-	it("returns & for cmd.exe", () => {
+	it("returns && for cmd.exe", () => {
 		vi.spyOn(shellUtils, "getShell").mockReturnValue("C:\\Windows\\System32\\cmd.exe")
-		expect(getCommandChainOperator()).toBe("&")
+		expect(getCommandChainOperator()).toBe("&&")
 	})
 
 	it("returns && for Git Bash on Windows", () => {
@@ -170,23 +172,27 @@ describe("getRulesSection shell-aware command chaining", () => {
 	})
 
 	it("uses ; for PowerShell in command chaining example", () => {
-		vi.spyOn(shellUtils, "getShell").mockReturnValue("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe")
+		vi.spyOn(shellUtils, "getShell").mockReturnValue(
+			"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+		)
 		const result = getRulesSection(cwd)
 
 		expect(result).toContain("cd (path to project) ; (command")
 		expect(result).toContain("Note: Using `;` for PowerShell command chaining")
 	})
 
-	it("uses & for cmd.exe in command chaining example", () => {
+	it("uses && for cmd.exe in command chaining example", () => {
 		vi.spyOn(shellUtils, "getShell").mockReturnValue("C:\\Windows\\System32\\cmd.exe")
 		const result = getRulesSection(cwd)
 
-		expect(result).toContain("cd (path to project) & (command")
-		expect(result).toContain("Note: Using `&` for cmd.exe command chaining")
+		expect(result).toContain("cd (path to project) && (command")
+		expect(result).toContain("Note: Using `&&` for cmd.exe command chaining")
 	})
 
 	it("includes Unix utility guidance for PowerShell", () => {
-		vi.spyOn(shellUtils, "getShell").mockReturnValue("C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe")
+		vi.spyOn(shellUtils, "getShell").mockReturnValue(
+			"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+		)
 		const result = getRulesSection(cwd)
 
 		expect(result).toContain("IMPORTANT: When using PowerShell, avoid Unix-specific utilities")

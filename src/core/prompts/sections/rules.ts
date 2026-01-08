@@ -7,7 +7,7 @@ import { getShell } from "../../../utils/shell"
  * Returns the appropriate command chaining operator based on the user's shell.
  * - Unix shells (bash, zsh, etc.): `&&` (run next command only if previous succeeds)
  * - PowerShell: `;` (semicolon for command separation)
- * - cmd.exe: `&` (single ampersand for command chaining)
+ * - cmd.exe: `&&` (conditional execution, same as Unix)
  * @internal Exported for testing purposes
  */
 export function getCommandChainOperator(): string {
@@ -20,7 +20,7 @@ export function getCommandChainOperator(): string {
 
 	// Check for cmd.exe
 	if (shell.includes("cmd.exe")) {
-	return "&&"
+		return "&&"
 	}
 
 	// Default to Unix-style && for bash, zsh, sh, and other shells
@@ -41,7 +41,7 @@ function getCommandChainNote(): string {
 
 	// Check for cmd.exe
 	if (shell.includes("cmd.exe")) {
-		return "Note: Using `&` for cmd.exe command chaining. For bash/zsh use `&&`, for PowerShell use `;`. IMPORTANT: When using cmd.exe, avoid Unix-specific utilities like `sed`, `grep`, `awk`, `cat`, `rm`, `cp`, `mv`. Use built-in commands like `type` for cat, `del` for rm, `copy` for cp, `move` for mv, `find`/`findstr` for grep, or consider using PowerShell commands instead."
+		return "Note: Using `&&` for cmd.exe command chaining (conditional execution). For bash/zsh use `&&`, for PowerShell use `;`. IMPORTANT: When using cmd.exe, avoid Unix-specific utilities like `sed`, `grep`, `awk`, `cat`, `rm`, `cp`, `mv`. Use built-in commands like `type` for cat, `del` for rm, `copy` for cp, `move` for mv, `find`/`findstr` for grep, or consider using PowerShell commands instead."
 	}
 
 	// Unix shells
