@@ -4,7 +4,7 @@ import { Writable } from "stream"
 import * as path from "path"
 import * as os from "os"
 
-import { safeWriteJson } from "../safeWriteJson"
+import { safeWriteJson, cleanupStaleLocks, LOCK_STALE_MS } from "../safeWriteJson"
 
 const originalFsPromisesRename = actualFsPromises.rename
 const originalFsPromisesUnlink = actualFsPromises.unlink
@@ -476,5 +476,221 @@ describe("safeWriteJson", () => {
 		)
 
 		consoleErrorSpy.mockRestore()
+	})
+})
+
+describe("cleanupStaleLocks", () => {
+	let tempDir: string
+
+	beforeEach(async () => {
+		// Create a temporary directory for each test
+		tempDir = await actualFsPromises.mkdtemp(path.join(os.tmpdir(), "cleanupStaleLocks-test-"))
+	})
+
+	afterEach(async () => {
+		// Clean up the temporary directory after each test
+		await actualFsPromises.rm(tempDir, { recursive: true, force: true })
+	})
+
+	test("should return 0 when directory does not exist", async () => {
+		const nonExistentPath = path.join(tempDir, "non-existent")
+		const result = await cleanupStaleLocks(nonExistentPath)
+		expect(result).toBe(0)
+	})
+
+	test("should return 0 when directory is empty", async () => {
+		const result = await cleanupStaleLocks(tempDir)
+		expect(result).toBe(0)
+	})
+
+	test("should return 0 when no lock files exist", async () => {
+		// Create some regular files (not locks)
+		await actualFsPromises.writeFile(path.join(tempDir, "file1.json"), "{}")
+		await actualFsPromises.writeFile(path.join(tempDir, "file2.txt"), "test")
+
+		const result = await cleanupStaleLocks(tempDir)
+		expect(result).toBe(0)
+
+		// Verify regular files still exist
+		await expect(actualFsPromises.access(path.join(tempDir, "file1.json"))).resolves.toBeUndefined()
+		await expect(actualFsPromises.access(path.join(tempDir, "file2.txt"))).resolves.toBeUndefined()
+	})
+
+	test("should remove stale .lock directory", async () => {
+		// Create a stale lock directory
+		const lockPath = path.join(tempDir, "file.json.lock")
+		await actualFsPromises.mkdir(lockPath)
+
+		// Set mtime to be older than LOCK_STALE_MS
+		const staleTime = new Date(Date.now() - LOCK_STALE_MS - 5000)
+		await actualFsPromises.utimes(lockPath, staleTime, staleTime)
+
+		const result = await cleanupStaleLocks(tempDir)
+		expect(result).toBe(1)
+
+		// Verify lock directory was removed
+		await expect(actualFsPromises.access(lockPath)).rejects.toThrow()
+	})
+
+	test("should remove stale .lock file", async () => {
+		// Create a stale lock file
+		const lockPath = path.join(tempDir, "file.json.lock")
+		await actualFsPromises.writeFile(lockPath, "")
+
+		// Set mtime to be older than LOCK_STALE_MS
+		const staleTime = new Date(Date.now() - LOCK_STALE_MS - 5000)
+		await actualFsPromises.utimes(lockPath, staleTime, staleTime)
+
+		const result = await cleanupStaleLocks(tempDir)
+		expect(result).toBe(1)
+
+		// Verify lock file was removed
+		await expect(actualFsPromises.access(lockPath)).rejects.toThrow()
+	})
+
+	test("should NOT remove recent .lock directory", async () => {
+		// Create a recent lock directory (not stale)
+		const lockPath = path.join(tempDir, "file.json.lock")
+		await actualFsPromises.mkdir(lockPath)
+
+		// mtime will be recent (now)
+
+		const result = await cleanupStaleLocks(tempDir)
+		expect(result).toBe(0)
+
+		// Verify lock directory still exists
+		await expect(actualFsPromises.access(lockPath)).resolves.toBeUndefined()
+	})
+
+	test("should remove multiple stale locks", async () => {
+		// Create multiple stale lock directories
+		const lock1 = path.join(tempDir, "file1.json.lock")
+		const lock2 = path.join(tempDir, "file2.json.lock")
+		const lock3 = path.join(tempDir, "settings.lock")
+
+		await actualFsPromises.mkdir(lock1)
+		await actualFsPromises.mkdir(lock2)
+		await actualFsPromises.writeFile(lock3, "")
+
+		// Set mtime to be older than LOCK_STALE_MS
+		const staleTime = new Date(Date.now() - LOCK_STALE_MS - 5000)
+		await actualFsPromises.utimes(lock1, staleTime, staleTime)
+		await actualFsPromises.utimes(lock2, staleTime, staleTime)
+		await actualFsPromises.utimes(lock3, staleTime, staleTime)
+
+		const result = await cleanupStaleLocks(tempDir)
+		expect(result).toBe(3)
+
+		// Verify all locks were removed
+		await expect(actualFsPromises.access(lock1)).rejects.toThrow()
+		await expect(actualFsPromises.access(lock2)).rejects.toThrow()
+		await expect(actualFsPromises.access(lock3)).rejects.toThrow()
+	})
+
+	test("should recursively clean subdirectories by default", async () => {
+		// Create nested directory structure with locks
+		const subDir = path.join(tempDir, "subdir")
+		await actualFsPromises.mkdir(subDir)
+
+		const lock1 = path.join(tempDir, "file1.json.lock")
+		const lock2 = path.join(subDir, "file2.json.lock")
+
+		await actualFsPromises.mkdir(lock1)
+		await actualFsPromises.mkdir(lock2)
+
+		// Set mtime to be older than LOCK_STALE_MS
+		const staleTime = new Date(Date.now() - LOCK_STALE_MS - 5000)
+		await actualFsPromises.utimes(lock1, staleTime, staleTime)
+		await actualFsPromises.utimes(lock2, staleTime, staleTime)
+
+		const result = await cleanupStaleLocks(tempDir, { recursive: true })
+		expect(result).toBe(2)
+
+		// Verify both locks were removed
+		await expect(actualFsPromises.access(lock1)).rejects.toThrow()
+		await expect(actualFsPromises.access(lock2)).rejects.toThrow()
+
+		// Verify subdir still exists (only locks removed)
+		await expect(actualFsPromises.access(subDir)).resolves.toBeUndefined()
+	})
+
+	test("should not recursively clean when recursive is false", async () => {
+		// Create nested directory structure with locks
+		const subDir = path.join(tempDir, "subdir")
+		await actualFsPromises.mkdir(subDir)
+
+		const lock1 = path.join(tempDir, "file1.json.lock")
+		const lock2 = path.join(subDir, "file2.json.lock")
+
+		await actualFsPromises.mkdir(lock1)
+		await actualFsPromises.mkdir(lock2)
+
+		// Set mtime to be older than LOCK_STALE_MS
+		const staleTime = new Date(Date.now() - LOCK_STALE_MS - 5000)
+		await actualFsPromises.utimes(lock1, staleTime, staleTime)
+		await actualFsPromises.utimes(lock2, staleTime, staleTime)
+
+		const result = await cleanupStaleLocks(tempDir, { recursive: false })
+		expect(result).toBe(1)
+
+		// Verify only top-level lock was removed
+		await expect(actualFsPromises.access(lock1)).rejects.toThrow()
+
+		// Lock in subdir should still exist
+		await expect(actualFsPromises.access(lock2)).resolves.toBeUndefined()
+	})
+
+	test("should use custom staleDurationMs when provided", async () => {
+		// Create a lock directory
+		const lockPath = path.join(tempDir, "file.json.lock")
+		await actualFsPromises.mkdir(lockPath)
+
+		// Set mtime to 10 seconds ago
+		const tenSecondsAgo = new Date(Date.now() - 10000)
+		await actualFsPromises.utimes(lockPath, tenSecondsAgo, tenSecondsAgo)
+
+		// Should not remove with default stale duration (31s)
+		const result1 = await cleanupStaleLocks(tempDir)
+		expect(result1).toBe(0)
+
+		// Should remove with custom stale duration (5s)
+		const result2 = await cleanupStaleLocks(tempDir, { staleDurationMs: 5000 })
+		expect(result2).toBe(1)
+
+		// Verify lock was removed
+		await expect(actualFsPromises.access(lockPath)).rejects.toThrow()
+	})
+
+	test("should handle errors gracefully and continue", async () => {
+		// Create a stale lock directory
+		const lockPath = path.join(tempDir, "file.json.lock")
+		await actualFsPromises.mkdir(lockPath)
+
+		// Set mtime to be older than LOCK_STALE_MS
+		const staleTime = new Date(Date.now() - LOCK_STALE_MS - 5000)
+		await actualFsPromises.utimes(lockPath, staleTime, staleTime)
+
+		// Suppress console output during this test
+		const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+		const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {})
+
+		// Mock rm to fail for this specific lock
+		const rmSpy = vi.spyOn(actualFsPromises, "rm").mockRejectedValueOnce(new Error("Permission denied"))
+
+		const result = await cleanupStaleLocks(tempDir)
+
+		// Should return 0 because removal failed
+		expect(result).toBe(0)
+
+		// Verify console.warn was called
+		expect(consoleWarnSpy).toHaveBeenCalled()
+
+		consoleWarnSpy.mockRestore()
+		consoleLogSpy.mockRestore()
+		rmSpy.mockRestore()
+	})
+
+	test("should export LOCK_STALE_MS constant", () => {
+		expect(LOCK_STALE_MS).toBe(31000)
 	})
 })
