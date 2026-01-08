@@ -1015,13 +1015,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// This ensures the first message is not read, future user messages are
 		// labeled as `user_feedback`.
 		if (lastMessage && messages.length > 1) {
+			// Capture text in a local variable to prevent TOCTOU (time-of-check-time-of-use) issues
+			// where lastMessage.text could change between the type check and startsWith call
+			const messageText = lastMessage.text
 			if (
-				typeof lastMessage.text === "string" && // has text (must be string for startsWith)
+				typeof messageText === "string" && // has text (must be string for startsWith)
 				(lastMessage.say === "text" || lastMessage.say === "completion_result") && // is a text message
 				!lastMessage.partial && // not a partial message
-				!lastMessage.text.startsWith("{") // not a json object
+				!messageText.startsWith("{") // not a json object
 			) {
-				let text = lastMessage?.text || ""
+				let text = messageText || ""
 				const mermaidRegex = /```mermaid[\s\S]*?```/g
 				// remove mermaid diagrams from text
 				text = text.replace(mermaidRegex, "")
