@@ -259,17 +259,25 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 			// Record successful tool usage and cleanup
 			task.recordToolUsage("search_and_replace")
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
 		} catch (error) {
 			await handleError("search and replace", error as Error)
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 		}
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"search_and_replace">): Promise<void> {
 		const relPath: string | undefined = block.params.path
+
+		// Wait for path to stabilize before showing UI (prevents truncated paths)
+		if (!this.hasPathStabilized(relPath)) {
+			return
+		}
+
 		const operationsStr: string | undefined = block.params.operations
 
 		let operationsPreview: string | undefined
@@ -284,12 +292,13 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 			}
 		}
 
-		const absolutePath = relPath ? path.resolve(task.cwd, relPath) : ""
-		const isOutsideWorkspace = absolutePath ? isPathOutsideWorkspace(absolutePath) : false
+		// relPath is guaranteed non-null after hasPathStabilized
+		const absolutePath = path.resolve(task.cwd, relPath!)
+		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",
-			path: getReadablePath(task.cwd, relPath || ""),
+			path: getReadablePath(task.cwd, relPath!),
 			diff: operationsPreview,
 			isOutsideWorkspace,
 		}

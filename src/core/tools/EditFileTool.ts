@@ -327,18 +327,25 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 			// Record successful tool usage and cleanup
 			task.recordToolUsage("edit_file")
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
 		} catch (error) {
 			await handleError("edit_file", error as Error)
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 		}
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"edit_file">): Promise<void> {
 		const filePath: string | undefined = block.params.file_path
 		const oldString: string | undefined = block.params.old_string
+
+		// Wait for path to stabilize before showing UI (prevents truncated paths)
+		if (!this.hasPathStabilized(filePath)) {
+			return
+		}
 
 		let operationPreview: string | undefined
 		if (oldString !== undefined) {
@@ -350,14 +357,14 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 			}
 		}
 
-		// Determine relative path for display
-		let relPath = filePath || ""
-		if (filePath && path.isAbsolute(filePath)) {
-			relPath = path.relative(task.cwd, filePath)
+		// Determine relative path for display (filePath is guaranteed non-null after hasPathStabilized)
+		let relPath = filePath!
+		if (path.isAbsolute(relPath)) {
+			relPath = path.relative(task.cwd, relPath)
 		}
 
-		const absolutePath = relPath ? path.resolve(task.cwd, relPath) : ""
-		const isOutsideWorkspace = absolutePath ? isPathOutsideWorkspace(absolutePath) : false
+		const absolutePath = path.resolve(task.cwd, relPath)
+		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",

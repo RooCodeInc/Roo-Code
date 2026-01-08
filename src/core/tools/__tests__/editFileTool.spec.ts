@@ -363,13 +363,18 @@ describe("editFileTool", () => {
 	})
 
 	describe("partial block handling", () => {
-		it("handles partial block without errors", async () => {
+		it("handles partial block without errors after path stabilizes", async () => {
+			// Path stabilization requires two consecutive calls with the same path
+			// First call sets lastSeenPartialPath, second call sees it has stabilized
+			await executeEditFileTool({}, { isPartial: true })
 			await executeEditFileTool({}, { isPartial: true })
 
 			expect(mockTask.ask).toHaveBeenCalled()
 		})
 
 		it("shows creating new file preview when old_string is empty", async () => {
+			// Path stabilization requires two consecutive calls with the same path
+			await executeEditFileTool({ old_string: "" }, { isPartial: true })
 			await executeEditFileTool({ old_string: "" }, { isPartial: true })
 
 			expect(mockTask.ask).toHaveBeenCalled()
