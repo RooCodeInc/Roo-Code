@@ -133,6 +133,7 @@
 		"streaming": "API-verzoek...",
 		"cancelled": "API-verzoek geannuleerd",
 		"streamingFailed": "API-streaming mislukt",
+		"rateLimitWait": "Snelheidsbeperking",
 		"errorTitle": "Fout van provider {{code}}",
 		"errorMessage": {
 			"docs": "Documentatie",
@@ -257,7 +258,9 @@
 	"modelResponseIncomplete": "Modelrespons onvolledig",
 	"modelResponseErrors": {
 		"noToolsUsed": "Het model heeft geen tools gebruikt in zijn reactie. Dit gebeurt meestal wanneer het model alleen tekst/redenering levert zonder de vereiste tools aan te roepen om de taak te voltooien.",
-		"noToolsUsedDetails": "Het model heeft tekst/redenering geleverd maar heeft geen van de vereiste tools aangeroepen. Dit geeft meestal aan dat het model de taak verkeerd heeft begrepen of moeite heeft om te bepalen welke tool te gebruiken. Het model is automatisch gevraagd om opnieuw te proberen met correct gebruik van tools."
+		"noToolsUsedDetails": "Het model heeft tekst/redenering geleverd maar heeft geen van de vereiste tools aangeroepen. Dit geeft meestal aan dat het model de taak verkeerd heeft begrepen of moeite heeft om te bepalen welke tool te gebruiken. Het model is automatisch gevraagd om opnieuw te proberen met correct gebruik van tools.",
+		"noAssistantMessages": "Het model heeft geen reactie-inhoud geleverd. Dit kan wijzen op een probleem met de API of de output van het model.",
+		"noAssistantMessagesDetails": "Het taalmodel heeft een lege reactie geretourneerd zonder tekst of tool-aanroepen. Dit kan gebeuren door API-problemen, snelheidslimieten of modelspecifieke problemen. Het model is automatisch gevraagd om opnieuw te proberen."
 	},
 	"diffError": {
 		"title": "Bewerking mislukt"
@@ -289,7 +292,7 @@
 		"triggerLabel_zero": "0 automatisch goedgekeurd",
 		"triggerLabel_one": "1 automatisch goedgekeurd",
 		"triggerLabel_other": "{{count}} automatisch goedgekeurd",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} uitgebracht",
@@ -303,9 +306,9 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"minimaxM21": "Snelle en betaalbare MiniMax M2.1 model nu beschikbaar in Roo Code Cloud, MiniMax en meer",
-			"glm47": "Z.AI GLM-4.7 model met ondersteuning voor thinking mode toegevoegd aan Roo Code Cloud, Z.AI en meer",
-			"customTools": "Experimentele aangepaste tool-ondersteuning voor het definiëren van je eigen tools in TypeScript"
+			"stickyProfiles": "Sticky Provider Profielen - Taken onthouden nu hun API-configuratie, dus het wisselen van profiel in het midden van een sessie beïnvloedt niet de lopende taken.",
+			"imageMentions": "Bestand @mentions afbeelding - Referentie afbeeldingen rechtstreeks in de chat met behulp van @ mentions om ze in uw context op te nemen.",
+			"brrrMode": "YOLO is nu BRRR - Alles automatisch goedkeuren is hernoemd van \"YOLO\" naar \"BRRR\". Uiteraard."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

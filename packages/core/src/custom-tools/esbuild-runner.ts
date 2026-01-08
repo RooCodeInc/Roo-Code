@@ -11,8 +11,26 @@
 
 import path from "path"
 import fs from "fs"
+import { builtinModules } from "module"
 import { fileURLToPath } from "url"
 import { execa } from "execa"
+
+/**
+ * Node.js built-in modules that should never be bundled.
+ * These are always available in Node.js runtime and bundling them causes issues.
+ *
+ * Uses Node.js's authoritative list from `module.builtinModules` and adds
+ * the `node:` prefixed versions for comprehensive coverage.
+ */
+export const NODE_BUILTIN_MODULES: readonly string[] = [...builtinModules, ...builtinModules.map((m) => `node:${m}`)]
+
+/**
+ * Banner code to add to bundled output.
+ * This provides a CommonJS-compatible `require` function for ESM bundles,
+ * which is needed when bundled npm packages use `require()` internally.
+ */
+export const COMMONJS_REQUIRE_BANNER = `import { createRequire as __roo_createRequire } from 'module';
+var require = __roo_createRequire(import.meta.url);`
 
 // Get the directory where this module is located.
 function getModuleDir(): string | undefined {
@@ -50,6 +68,10 @@ export interface EsbuildOptions {
 	packages?: "bundle" | "external"
 	/** Additional paths for module resolution */
 	nodePaths?: string[]
+	/** Modules to exclude from bundling (resolved at runtime) */
+	external?: readonly string[]
+	/** JavaScript code to prepend to the output bundle */
+	banner?: string
 }
 
 /**
@@ -156,6 +178,18 @@ export async function runEsbuild(options: EsbuildOptions, extensionPath?: string
 
 	if (options.packages) {
 		args.push(`--packages=${options.packages}`)
+	}
+
+	// Add external modules - these won't be bundled and will be resolved at runtime.
+	if (options.external && options.external.length > 0) {
+		for (const ext of options.external) {
+			args.push(`--external:${ext}`)
+		}
+	}
+
+	// Add banner code (e.g., for CommonJS require shim in ESM bundles).
+	if (options.banner) {
+		args.push(`--banner:js=${options.banner}`)
 	}
 
 	// Build environment with NODE_PATH for module resolution.

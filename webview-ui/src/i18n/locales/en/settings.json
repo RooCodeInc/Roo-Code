@@ -257,8 +257,9 @@
 	"providers": {
 		"providerDocumentation": "{{provider}} documentation",
 		"configProfile": "Configuration Profile",
-		"description": "Save different provider configurations to quickly switch between them.",
-		"apiProvider": "Inference Provider",
+		"description": "Save different API configurations to quickly switch between providers and settings.",
+		"apiProvider": "API Provider",
+		"apiProviderDocs": "Provider Docs",
 		"model": "Model",
 		"nameEmpty": "Name cannot be empty",
 		"nameExists": "A profile with this name already exists",
@@ -302,7 +303,6 @@
 		"getRequestyApiKey": "Create new Requesty API Key",
 		"getRequestyBaseUrl": "Base URL",
 		"requestyUseCustomBaseUrl": "Use custom base URL",
-		"openRouterTransformsText": "Compress prompts and message chains to the context size (<a>OpenRouter Transforms</a>)",
 		"anthropicApiKey": "Anthropic API Key",
 		"getAnthropicApiKey": "Get Anthropic API Key",
 		"anthropicUseAuthToken": "Pass Anthropic API Key as Authorization header instead of X-Api-Key",
@@ -442,10 +442,6 @@
 		"getUnboundApiKey": "Get Unbound API Key",
 		"unboundRefreshModelsSuccess": "Models list updated! You can now select from the latest models.",
 		"unboundInvalidApiKey": "Invalid API key. Please check your API key and try again.",
-		"humanRelay": {
-			"description": "No API key is required, but the user needs to help copy and paste the information to the web chat AI.",
-			"instructions": "During use, a dialog box will pop up and the current message will be copied to the clipboard automatically. You need to paste these to web versions of AI (such as ChatGPT or Claude), then copy the AI's reply back to the dialog box and click the confirm button."
-		},
 		"roo": {
 			"authenticatedMessage": "Securely authenticated through your Roo Code Cloud account.",
 			"connectButton": "Connect to Roo Code Cloud"
@@ -673,6 +669,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max files",
 			"description": "Maximum number of file entries to include in git status context. Set to 0 to disable. Branch info is always shown when > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Enable subfolder rules",
+			"description": "Recursively discover and load .roo/rules and AGENTS.md files from subdirectories. Useful for monorepos with per-package rules."
 		}
 	},
 	"terminal": {

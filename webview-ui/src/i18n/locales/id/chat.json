@@ -147,6 +147,7 @@
 		"streaming": "Permintaan API...",
 		"cancelled": "Permintaan API Dibatalkan",
 		"streamingFailed": "Streaming API Gagal",
+		"rateLimitWait": "Pembatasan rate",
 		"errorTitle": "Kesalahan Penyedia {{code}}",
 		"errorMessage": {
 			"docs": "Dokumentasi",
@@ -293,7 +294,9 @@
 	"modelResponseIncomplete": "Respons Model Tidak Lengkap",
 	"modelResponseErrors": {
 		"noToolsUsed": "Model gagal menggunakan alat apa pun dalam responsnya. Ini biasanya terjadi ketika model hanya memberikan teks/penalaran tanpa memanggil alat yang diperlukan untuk menyelesaikan tugas.",
-		"noToolsUsedDetails": "Model memberikan teks/penalaran tetapi tidak memanggil alat yang diperlukan. Ini biasanya menunjukkan bahwa model salah memahami tugas atau mengalami kesulitan menentukan alat mana yang akan digunakan. Model telah secara otomatis diminta untuk mencoba lagi dengan penggunaan alat yang tepat."
+		"noToolsUsedDetails": "Model memberikan teks/penalaran tetapi tidak memanggil alat yang diperlukan. Ini biasanya menunjukkan bahwa model salah memahami tugas atau mengalami kesulitan menentukan alat mana yang akan digunakan. Model telah secara otomatis diminta untuk mencoba lagi dengan penggunaan alat yang tepat.",
+		"noAssistantMessages": "Model tidak memberikan konten respons apa pun. Ini mungkin menunjukkan masalah dengan API atau output model.",
+		"noAssistantMessagesDetails": "Model bahasa mengembalikan respons kosong tanpa teks atau panggilan alat apa pun. Ini dapat terjadi karena masalah API, pembatasan laju, atau masalah khusus model. Model telah secara otomatis diminta untuk mencoba lagi."
 	},
 	"diffError": {
 		"title": "Edit Tidak Berhasil"
@@ -325,7 +328,7 @@
 		"triggerLabel_zero": "0 disetujui otomatis",
 		"triggerLabel_one": "1 disetujui otomatis",
 		"triggerLabel_other": "{{count}} disetujui otomatis",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} Dirilis",
@@ -339,9 +342,9 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"minimaxM21": "Model MiniMax M2.1 yang cepat dan terjangkau sekarang tersedia di Roo Code Cloud, MiniMax, dan lainnya",
-			"glm47": "Model Z.AI GLM-4.7 dengan dukungan mode pemikiran ditambahkan ke Roo Code Cloud, Z.AI, dan lainnya",
-			"customTools": "Dukungan eksperimental untuk alat khusus untuk mendefinisikan alat Anda sendiri dalam TypeScript"
+			"stickyProfiles": "Profil Penyedia Lengket - Tugas sekarang mengingat konfigurasi API mereka, jadi beralih profil di tengah sesi tidak mempengaruhi tugas yang sedang berjalan.",
+			"imageMentions": "Mention File Gambar - Referensikan gambar secara langsung dalam obrolan menggunakan mention @ untuk memasukkannya dalam konteks Anda.",
+			"brrrMode": "YOLO sekarang BRRR - Persetujuan otomatis untuk semuanya telah diubah namanya dari \"YOLO\" menjadi \"BRRR\". Jelas."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

@@ -568,6 +568,7 @@ describe("ClineProvider", () => {
 			browserToolEnabled: true,
 			telemetrySetting: "unset",
 			showRooIgnoredFiles: false,
+			enableSubfolderRules: false,
 			renderContext: "sidebar",
 			maxReadFileLine: 500,
 			maxImageFileSize: 5,
@@ -3050,7 +3051,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			expect(mockCline.overwriteClineMessages).toHaveBeenCalledWith([mockMessages[0]])
 			expect(mockCline.overwriteApiConversationHistory).toHaveBeenCalledWith([{ ts: 1000 }])
 			// Verify submitUserMessage was called with the edited content
-			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with preserved images", undefined)
+			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with preserved images", [])
 		})
 
 		test("handles editing messages with file attachments", async () => {
@@ -3103,7 +3104,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			})
 
 			expect(mockCline.overwriteClineMessages).toHaveBeenCalled()
-			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with file attachment", undefined)
+			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with file attachment", [])
 		})
 	})
 
@@ -3634,7 +3635,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				await messageHandler({ type: "editMessageConfirm", messageTs: 2000, text: largeEditedContent })
 
 				expect(mockCline.overwriteClineMessages).toHaveBeenCalled()
-				expect(mockCline.submitUserMessage).toHaveBeenCalledWith(largeEditedContent, undefined)
+				expect(mockCline.submitUserMessage).toHaveBeenCalledWith(largeEditedContent, [])
 			})
 
 			test("handles deleting messages with large payloads", async () => {

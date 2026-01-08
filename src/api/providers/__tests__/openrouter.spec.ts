@@ -268,36 +268,9 @@ describe("OpenRouterHandler", () => {
 					stream_options: { include_usage: true },
 					temperature: 0,
 					top_p: undefined,
-					transforms: ["middle-out"],
 				}),
 				{ headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" } },
 			)
-		})
-
-		it("supports the middle-out transform", async () => {
-			const handler = new OpenRouterHandler({
-				...mockOptions,
-				openRouterUseMiddleOutTransform: true,
-			})
-			const mockStream = {
-				async *[Symbol.asyncIterator]() {
-					yield {
-						id: "test-id",
-						choices: [{ delta: { content: "test response" } }],
-					}
-				},
-			}
-
-			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
-			;(OpenAI as any).prototype.chat = {
-				completions: { create: mockCreate },
-			} as any
-
-			await handler.createMessage("test", []).next()
-
-			expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ transforms: ["middle-out"] }), {
-				headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" },
-			})
 		})
 
 		it("adds cache control for supported models", async () => {

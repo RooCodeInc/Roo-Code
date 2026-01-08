@@ -138,6 +138,7 @@
 		"streaming": "Solicitud API...",
 		"cancelled": "Solicitud API cancelada",
 		"streamingFailed": "Transmisión API falló",
+		"rateLimitWait": "Limitación de tasa",
 		"errorTitle": "Error del proveedor {{code}}",
 		"errorMessage": {
 			"docs": "Documentación",
@@ -261,7 +262,9 @@
 	"modelResponseIncomplete": "Respuesta del modelo incompleta",
 	"modelResponseErrors": {
 		"noToolsUsed": "El modelo no utilizó ninguna herramienta en su respuesta. Esto suele ocurrir cuando el modelo solo proporciona texto/razonamiento sin llamar a las herramientas necesarias para completar la tarea.",
-		"noToolsUsedDetails": "El modelo proporcionó texto/razonamiento pero no llamó a ninguna de las herramientas necesarias. Esto generalmente indica que el modelo malinterpretó la tarea o tiene dificultades para determinar qué herramienta usar. El modelo ha sido solicitado automáticamente para reintentar con el uso adecuado de herramientas."
+		"noToolsUsedDetails": "El modelo proporcionó texto/razonamiento pero no llamó a ninguna de las herramientas necesarias. Esto generalmente indica que el modelo malinterpretó la tarea o tiene dificultades para determinar qué herramienta usar. El modelo ha sido solicitado automáticamente para reintentar con el uso adecuado de herramientas.",
+		"noAssistantMessages": "El modelo no proporcionó ningún contenido de respuesta. Esto puede indicar un problema con la API o la salida del modelo.",
+		"noAssistantMessagesDetails": "El modelo de lenguaje devolvió una respuesta vacía sin texto ni llamadas a herramientas. Esto puede ocurrir debido a problemas de API, limitación de velocidad o problemas específicos del modelo. El modelo ha sido solicitado automáticamente para reintentar."
 	},
 	"errorDetails": {
 		"link": "Detalles",
@@ -289,7 +292,7 @@
 		"triggerLabel_zero": "0 aprobaciones automáticas",
 		"triggerLabel_one": "1 aprobación automática",
 		"triggerLabel_other": "{{count}} aprobaciones automáticas",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Pensando",
@@ -326,9 +329,9 @@
 		},
 		"release": {
 			"heading": "Qué hay de nuevo:",
-			"minimaxM21": "El modelo MiniMax M2.1 rápido y económico ya está disponible en Roo Code Cloud, MiniMax y más",
-			"glm47": "Modelo Z.AI GLM-4.7 con soporte de modo de pensamiento añadido a Roo Code Cloud, Z.AI y más",
-			"customTools": "Soporte experimental de herramientas personalizadas para definir tus propias herramientas en TypeScript"
+			"stickyProfiles": "Perfiles de proveedor persistentes - Las tareas ahora recuerdan su configuración de API, por lo que cambiar de perfil a mitad de sesión no afecta las tareas en ejecución.",
+			"imageMentions": "Menciones de archivos de imagen - Haz referencia a imágenes directamente en el chat usando menciones @ para incluirlas en tu contexto.",
+			"brrrMode": "YOLO ahora es BRRR - Aprobar todo automáticamente ha sido renombrado de \"YOLO\" a \"BRRR\". Obviamente."
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",

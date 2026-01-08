@@ -250,6 +250,7 @@
 		"configProfile": "設定檔",
 		"description": "儲存不同的 API 設定以快速切換供應商和設定。",
 		"apiProvider": "API 供應商",
+		"apiProviderDocs": "供應商文檔",
 		"model": "模型",
 		"nameEmpty": "名稱不能為空",
 		"nameExists": "已存在同名的設定檔",
@@ -293,7 +294,6 @@
 		"getRequestyApiKey": "取得 Requesty API 金鑰",
 		"getRequestyBaseUrl": "基礎 URL",
 		"requestyUseCustomBaseUrl": "使用自訂基礎 URL",
-		"openRouterTransformsText": "將提示和訊息鏈壓縮到上下文大小 (<a>OpenRouter 轉換</a>)",
 		"anthropicApiKey": "Anthropic API 金鑰",
 		"getAnthropicApiKey": "取得 Anthropic API 金鑰",
 		"anthropicUseAuthToken": "將 Anthropic API 金鑰作為 Authorization 標頭傳遞，而非使用 X-Api-Key",
@@ -433,10 +433,6 @@
 		"getUnboundApiKey": "取得 Unbound API 金鑰",
 		"unboundRefreshModelsSuccess": "模型列表已更新！您現在可以從最新模型中選擇。",
 		"unboundInvalidApiKey": "無效的 API 金鑰。請檢查您的 API 金鑰並重試。",
-		"humanRelay": {
-			"description": "不需要 API 金鑰，但使用者需要協助將資訊複製並貼上到網頁聊天 AI。",
-			"instructions": "使用期間會彈出對話框，並自動將目前訊息複製到剪貼簿。您需要將這些內容貼上到網頁版 AI（如 ChatGPT 或 Claude），然後將 AI 的回覆複製回對話框並點選確認按鈕。"
-		},
 		"roo": {
 			"authenticatedMessage": "已透過 Roo Code Cloud 帳戶安全認證。",
 			"connectButton": "連接到 Roo Code Cloud"
@@ -666,6 +662,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git 狀態最大檔案數",
 			"description": "git狀態上下文中包含的最大檔案條目數。設為0禁用。分支資訊和提交在>0時始終顯示。"
+		},
+		"enableSubfolderRules": {
+			"label": "啟用子資料夾規則",
+			"description": "遞迴發現並載入子目錄中的 .roo/rules 和 AGENTS.md 檔案。適用於具有每包規則的 monorepo。"
 		}
 	},
 	"terminal": {

@@ -138,6 +138,7 @@
 		"streaming": "Sol·licitud API...",
 		"cancelled": "Sol·licitud API cancel·lada",
 		"streamingFailed": "Transmissió API ha fallat",
+		"rateLimitWait": "Limitació de taxa",
 		"errorTitle": "Error de proveïdor {{code}}",
 		"errorMessage": {
 			"docs": "Documentació",
@@ -261,7 +262,9 @@
 	"modelResponseIncomplete": "Resposta del model incompleta",
 	"modelResponseErrors": {
 		"noToolsUsed": "El model no ha utilitzat cap eina en la seva resposta. Això sol passar quan el model només proporciona text/raonament sense cridar les eines necessàries per completar la tasca.",
-		"noToolsUsedDetails": "El model ha proporcionat text/raonament però no ha cridat cap de les eines necessàries. Això sol indicar que el model ha entès malament la tasca o té dificultats per determinar quina eina utilitzar. El model ha estat sol·licitat automàticament per tornar-ho a provar amb l'ús adequat de les eines."
+		"noToolsUsedDetails": "El model ha proporcionat text/raonament però no ha cridat cap de les eines necessàries. Això sol indicar que el model ha entès malament la tasca o té dificultats per determinar quina eina utilitzar. El model ha estat sol·licitat automàticament per tornar-ho a provar amb l'ús adequat de les eines.",
+		"noAssistantMessages": "El model no ha proporcionat cap contingut de resposta. Això pot indicar un problema amb l'API o la sortida del model.",
+		"noAssistantMessagesDetails": "El model de llenguatge ha retornat una resposta buida sense text ni crides a eines. Això pot passar a causa de problemes d'API, limitació de velocitat o problemes específics del model. El model ha estat sol·licitat automàticament per tornar-ho a provar."
 	},
 	"errorDetails": {
 		"link": "Details",
@@ -289,7 +292,7 @@
 		"triggerLabel_zero": "0 aprovacions automàtiques",
 		"triggerLabel_one": "1 aprovació automàtica",
 		"triggerLabel_other": "{{count}} aprovacions automàtiques",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Pensant",
@@ -326,9 +329,9 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"minimaxM21": "Model MiniMax M2.1 ràpid i assequible ara disponible a Roo Code Cloud, MiniMax i més",
-			"glm47": "Model Z.AI GLM-4.7 amb suport de mode de pensament afegit a Roo Code Cloud, Z.AI i més",
-			"customTools": "Suport experimental de ferramentes personalitzades per definir les teves pròpies ferramentes en TypeScript"
+			"stickyProfiles": "Perfils de proveïdor persistents - Les tasques ara recorden la seva configuració API, per tant, canviar de perfil a mitja sessió no afecta les tasques en execució.",
+			"imageMentions": "Mencions de fitxers d'imatge - Fes referència a imatges directament al xat usant mencions @ per incloure-les al teu context.",
+			"brrrMode": "YOLO ara és BRRR - Aprovar-ho tot automàticament s'ha reanomenat de \"YOLO\" a \"BRRR\". Òbviament."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",

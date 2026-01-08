@@ -188,6 +188,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		terminalZdotdir,
 		writeDelayMs,
 		showRooIgnoredFiles,
+		enableSubfolderRules,
 		remoteBrowserEnabled,
 		maxReadFileLine,
 		maxImageFileSize,
@@ -395,6 +396,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
 					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
 					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
+					enableSubfolderRules: enableSubfolderRules ?? false,
 					maxReadFileLine: maxReadFileLine ?? -1,
 					maxImageFileSize: maxImageFileSize ?? 5,
 					maxTotalImageSize: maxTotalImageSize ?? 20,
@@ -771,6 +773,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							maxOpenTabsContext={maxOpenTabsContext}
 							maxWorkspaceFiles={maxWorkspaceFiles ?? 200}
 							showRooIgnoredFiles={showRooIgnoredFiles}
+							enableSubfolderRules={enableSubfolderRules}
 							maxReadFileLine={maxReadFileLine}
 							maxImageFileSize={maxImageFileSize}
 							maxTotalImageSize={maxTotalImageSize}

@@ -2,7 +2,7 @@ import fs from "fs"
 import os from "os"
 import path from "path"
 
-import { getEsbuildScriptPath, runEsbuild } from "../esbuild-runner.js"
+import { getEsbuildScriptPath, runEsbuild, NODE_BUILTIN_MODULES, COMMONJS_REQUIRE_BANNER } from "../esbuild-runner.js"
 
 describe("getEsbuildScriptPath", () => {
 	it("should find esbuild-wasm script in node_modules in development", () => {
@@ -153,4 +153,101 @@ describe("runEsbuild", () => {
 		// File should be created successfully.
 		expect(fs.existsSync(outputFile)).toBe(true)
 	}, 30000)
+
+	it("should keep external modules as imports instead of bundling", async () => {
+		const inputFile = path.join(tempDir, "input.ts")
+		const outputFile = path.join(tempDir, "output.mjs")
+
+		// Write code that imports fs (a Node.js built-in).
+		fs.writeFileSync(
+			inputFile,
+			`
+				import fs from "fs"
+				export function fileExists(p: string): boolean {
+					return fs.existsSync(p)
+				}
+			`,
+		)
+
+		await runEsbuild({
+			entryPoint: inputFile,
+			outfile: outputFile,
+			format: "esm",
+			bundle: true,
+			external: ["fs"],
+		})
+
+		const outputContent = fs.readFileSync(outputFile, "utf-8")
+		// fs should remain as an import, not bundled.
+		expect(outputContent).toMatch(/import.*from\s*["']fs["']/)
+	}, 30000)
+
+	it("should add banner code when specified", async () => {
+		const inputFile = path.join(tempDir, "input.ts")
+		const outputFile = path.join(tempDir, "output.mjs")
+
+		fs.writeFileSync(inputFile, `export const greeting = "Hello"`)
+
+		const customBanner = "// This is a custom banner comment"
+		await runEsbuild({
+			entryPoint: inputFile,
+			outfile: outputFile,
+			format: "esm",
+			banner: customBanner,
+		})
+
+		const outputContent = fs.readFileSync(outputFile, "utf-8")
+		// Banner should be at the start of the file.
+		expect(outputContent.startsWith(customBanner)).toBe(true)
+	}, 30000)
+
+	it("should add CommonJS require shim banner for ESM bundles", async () => {
+		const inputFile = path.join(tempDir, "input.ts")
+		const outputFile = path.join(tempDir, "output.mjs")
+
+		fs.writeFileSync(inputFile, `export const value = 42`)
+
+		await runEsbuild({
+			entryPoint: inputFile,
+			outfile: outputFile,
+			format: "esm",
+			banner: COMMONJS_REQUIRE_BANNER,
+		})
+
+		const outputContent = fs.readFileSync(outputFile, "utf-8")
+		// Should contain the createRequire shim.
+		expect(outputContent).toContain("createRequire")
+		expect(outputContent).toContain("import.meta.url")
+	}, 30000)
+})
+
+describe("NODE_BUILTIN_MODULES", () => {
+	it("should include common Node.js built-in modules", () => {
+		expect(NODE_BUILTIN_MODULES).toContain("fs")
+		expect(NODE_BUILTIN_MODULES).toContain("path")
+		expect(NODE_BUILTIN_MODULES).toContain("crypto")
+		expect(NODE_BUILTIN_MODULES).toContain("http")
+		expect(NODE_BUILTIN_MODULES).toContain("https")
+		expect(NODE_BUILTIN_MODULES).toContain("os")
+		expect(NODE_BUILTIN_MODULES).toContain("child_process")
+		expect(NODE_BUILTIN_MODULES).toContain("stream")
+		expect(NODE_BUILTIN_MODULES).toContain("util")
+		expect(NODE_BUILTIN_MODULES).toContain("events")
+	})
+
+	it("should be an array of strings", () => {
+		expect(Array.isArray(NODE_BUILTIN_MODULES)).toBe(true)
+		expect(NODE_BUILTIN_MODULES.every((m) => typeof m === "string")).toBe(true)
+	})
+})
+
+describe("COMMONJS_REQUIRE_BANNER", () => {
+	it("should provide createRequire shim", () => {
+		expect(COMMONJS_REQUIRE_BANNER).toContain("createRequire")
+		expect(COMMONJS_REQUIRE_BANNER).toContain("import.meta.url")
+	})
+
+	it("should define require variable", () => {
+		expect(COMMONJS_REQUIRE_BANNER).toMatch(/var require\s*=/)
+	})
 })

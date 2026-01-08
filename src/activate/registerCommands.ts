@@ -9,8 +9,6 @@ import { getCommand } from "../utils/commands"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import { ContextProxy } from "../core/config/ContextProxy"
 import { focusPanel } from "../utils/focusPanel"
-
-import { registerHumanRelayCallback, unregisterHumanRelayCallback, handleHumanRelayResponse } from "./humanRelay"
 import { handleNewTask } from "./handleTask"
 import { CodeIndexManager } from "../services/code-index/manager"
 import { importSettingsWithFeedback } from "../core/config/importExport"
@@ -136,20 +134,6 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		if (!visibleProvider) return
 		visibleProvider.postMessageToWebview({ type: "action", action: "marketplaceButtonClicked" })
 	},
-	showHumanRelayDialog: (params: { requestId: string; promptText: string }) => {
-		const panel = getPanel()
-
-		if (panel) {
-			panel?.webview.postMessage({
-				type: "showHumanRelayDialog",
-				requestId: params.requestId,
-				promptText: params.promptText,
-			})
-		}
-	},
-	registerHumanRelayCallback: registerHumanRelayCallback,
-	unregisterHumanRelayCallback: unregisterHumanRelayCallback,
-	handleHumanRelayResponse: handleHumanRelayResponse,
 	newTask: handleNewTask,
 	setCustomStoragePath: async () => {
 		const { promptForCustomStoragePath } = await import("../utils/storage")

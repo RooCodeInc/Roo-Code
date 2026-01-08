@@ -54,6 +54,8 @@ import { exportSettings, importSettingsWithFeedback } from "../config/importExpo
 import { getOpenAiModels } from "../../api/providers/openai"
 import { getVsCodeLmModels } from "../../api/providers/vscode-lm"
 import { openMention } from "../mentions"
+import { resolveImageMentions } from "../mentions/resolveImageMentions"
+import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getWorkspacePath } from "../../utils/path"
 import { Mode, defaultModeSlug } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
@@ -78,6 +80,26 @@ export const webviewMessageHandler = async (
 
 	const getCurrentCwd = () => {
 		return provider.getCurrentTask()?.cwd || provider.cwd
+	}
+
+	/**
+	 * Resolves image file mentions in incoming messages.
+	 * Matches read_file behavior: respects size limits and model capabilities.
+	 */
+	const resolveIncomingImages = async (payload: { text?: string; images?: string[] }) => {
+		const text = payload.text ?? ""
+		const images = payload.images
+		const currentTask = provider.getCurrentTask()
+		const state = await provider.getState()
+		const resolved = await resolveImageMentions({
+			text,
+			images,
+			cwd: getCurrentCwd(),
+			rooIgnoreController: currentTask?.rooIgnoreController,
+			maxImageFileSize: state.maxImageFileSize,
+			maxTotalImageSize: state.maxTotalImageSize,
+		})
+		return resolved
 	}
 	/**
 	 * Shared utility to find message indices based on timestamp.
@@ -505,7 +527,8 @@ export const webviewMessageHandler = async (
 			// agentically running promises in old instance don't affect our new
 			// task. This essentially creates a fresh slate for the new task.
 			try {
-				await provider.createTask(message.text, message.images)
+				const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
+				await provider.createTask(resolved.text, resolved.images)
 				// Task created successfully - notify the UI to reset
 				await provider.postMessageToWebview({ type: "invoke", invoke: "newChat" })
 			} catch (error) {
@@ -522,7 +545,12 @@ export const webviewMessageHandler = async (
 			break
 
 		case "askResponse":
-			provider.getCurrentTask()?.handleWebviewAskResponse(message.askResponse!, message.text, message.images)
+			{
+				const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
+				provider
+					.getCurrentTask()
+					?.handleWebviewAskResponse(message.askResponse!, resolved.text, resolved.images)
+			}
 			break
 
 		case "updateSettings":
@@ -1708,12 +1736,39 @@ export const webviewMessageHandler = async (
 					20, // Use default limit, as filtering is now done in the backend
 				)
 
-				// Send results back to webview
-				await provider.postMessageToWebview({
-					type: "fileSearchResults",
-					results,
-					requestId: message.requestId,
-				})
+				// Get the RooIgnoreController from the current task, or create a new one
+				const currentTask = provider.getCurrentTask()
+				let rooIgnoreController = currentTask?.rooIgnoreController
+				let tempController: RooIgnoreController | undefined
+
+				// If no current task or no controller, create a temporary one
+				if (!rooIgnoreController) {
+					tempController = new RooIgnoreController(workspacePath)
+					await tempController.initialize()
+					rooIgnoreController = tempController
+				}
+
+				try {
+					// Get showRooIgnoredFiles setting from state
+					const { showRooIgnoredFiles = false } = (await provider.getState()) ?? {}
+
+					// Filter results using RooIgnoreController if showRooIgnoredFiles is false
+					let filteredResults = results
+					if (!showRooIgnoredFiles && rooIgnoreController) {
+						const allowedPaths = rooIgnoreController.filterPaths(results.map((r) => r.path))
+						filteredResults = results.filter((r) => allowedPaths.includes(r.path))
+					}
+
+					// Send results back to webview
+					await provider.postMessageToWebview({
+						type: "fileSearchResults",
+						results: filteredResults,
+						requestId: message.requestId,
+					})
+				} finally {
+					// Dispose temporary controller to prevent resource leak
+					tempController?.dispose()
+				}
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error)
 
@@ -1877,11 +1932,12 @@ export const webviewMessageHandler = async (
 			break
 		case "editMessageConfirm":
 			if (message.messageTs && message.text) {
+				const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
 				await handleEditMessageConfirm(
 					message.messageTs,
-					message.text,
+					resolved.text,
 					message.restoreCheckpoint,
-					message.images,
+					resolved.images,
 				)
 			}
 			break
@@ -2218,25 +2274,6 @@ export const webviewMessageHandler = async (
 				})
 			}
 			break
-		case "humanRelayResponse":
-			if (message.requestId && message.text) {
-				vscode.commands.executeCommand(getCommand("handleHumanRelayResponse"), {
-					requestId: message.requestId,
-					text: message.text,
-					cancelled: false,
-				})
-			}
-			break
-
-		case "humanRelayCancel":
-			if (message.requestId) {
-				vscode.commands.executeCommand(getCommand("handleHumanRelayResponse"), {
-					requestId: message.requestId,
-					cancelled: true,
-				})
-			}
-			break
-
 		case "telemetrySetting": {
 			const telemetrySetting = message.text as TelemetrySetting
 			const previousSetting = getGlobalState("telemetrySetting") || "unset"
@@ -2382,6 +2419,12 @@ export const webviewMessageHandler = async (
 				vscode.window.showErrorMessage(`${t("common:errors.manual_url_auth_error")}: ${errorMessage}`)
 			}
 
+			break
+		}
+		case "clearCloudAuthSkipModel": {
+			// Clear the flag that indicates auth completed without model selection
+			await provider.context.globalState.update("roo-auth-skip-model", undefined)
+			await provider.postStateToWebview()
 			break
 		}
 		case "switchOrganization": {
@@ -3065,7 +3108,8 @@ export const webviewMessageHandler = async (
 		 */
 
 		case "queueMessage": {
-			provider.getCurrentTask()?.messageQueueService.addMessage(message.text ?? "", message.images)
+			const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
+			provider.getCurrentTask()?.messageQueueService.addMessage(resolved.text, resolved.images)
 			break
 		}
 		case "removeQueuedMessage": {

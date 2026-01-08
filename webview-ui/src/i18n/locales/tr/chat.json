@@ -138,6 +138,7 @@
 		"streaming": "API İsteği...",
 		"cancelled": "API İsteği İptal Edildi",
 		"streamingFailed": "API Akışı Başarısız",
+		"rateLimitWait": "Hız sınırlaması",
 		"errorTitle": "Sağlayıcı Hatası {{code}}",
 		"errorMessage": {
 			"docs": "Belgeler",
@@ -262,7 +263,9 @@
 	"modelResponseIncomplete": "Model yanıtı eksik",
 	"modelResponseErrors": {
 		"noToolsUsed": "Model yanıtında herhangi bir araç kullanamadı. Bu genellikle model, görevi tamamlamak için gerekli araçları çağırmadan yalnızca metin/akıl yürütme sağladığında olur.",
-		"noToolsUsedDetails": "Model metin/akıl yürütme sağladı ancak gerekli araçlardan hiçbirini çağırmadı. Bu genellikle modelin görevi yanlış anladığını veya hangi aracı kullanacağını belirlemekte zorlandığını gösterir. Model, uygun araç kullanımıyla yeniden denemesi için otomatik olarak istenmiştir."
+		"noToolsUsedDetails": "Model metin/akıl yürütme sağladı ancak gerekli araçlardan hiçbirini çağırmadı. Bu genellikle modelin görevi yanlış anladığını veya hangi aracı kullanacağını belirlemekte zorlandığını gösterir. Model, uygun araç kullanımıyla yeniden denemesi için otomatik olarak istenmiştir.",
+		"noAssistantMessages": "Model herhangi bir yanıt içeriği sağlamadı. Bu, API veya modelin çıktısıyla ilgili bir sorunu gösterebilir.",
+		"noAssistantMessagesDetails": "Dil modeli herhangi bir metin veya araç çağrısı olmadan boş bir yanıt döndürdü. Bu, API sorunları, hız sınırlaması veya modele özgü sorunlar nedeniyle olabilir. Model otomatik olarak yeniden denemeye yönlendirildi."
 	},
 	"errorDetails": {
 		"link": "Details",
@@ -290,7 +293,7 @@
 		"triggerLabel_zero": "0 otomatik onaylandı",
 		"triggerLabel_one": "1 otomatik onaylandı",
 		"triggerLabel_other": "{{count}} otomatik onaylandı",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Düşünüyor",
@@ -327,9 +330,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"minimaxM21": "Hızlı ve uygun fiyatlı MiniMax M2.1 modeli artık Roo Code Cloud, MiniMax ve daha fazlasında mevcut",
-			"glm47": "Düşünme modu desteğine sahip Z.AI GLM-4.7 modeli Roo Code Cloud, Z.AI ve daha fazlasına eklendi",
-			"customTools": "TypeScript'te kendi araçlarınızı tanımlamak için deneysel özel araç desteği"
+			"stickyProfiles": "Yapışkan Sağlayıcı Profilleri - Görevler artık API yapılandırmalarını hatırlıyor, bu nedenle oturum ortasında profil değiştirmek çalışan görevleri etkilemez.",
+			"imageMentions": "Görüntü Dosyası @Mentions - Bağlamınıza dahil etmek için @mentions kullanarak sohbette doğrudan görüntülere başvurun.",
+			"brrrMode": "YOLO artık BRRR - Her şeyi otomatik onaylama \"YOLO\"dan \"BRRR\" olarak yeniden adlandırıldı. Tabii ki."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

@@ -196,6 +196,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 			const result = { ...schema }
 
+			// OpenAI Responses API requires additionalProperties: false on all object schemas
+			// Only add if not already set to false (to avoid unnecessary mutations)
+			if (result.additionalProperties !== false) {
+				result.additionalProperties = false
+			}
+
 			if (result.properties) {
 				const allKeys = Object.keys(result.properties)
 				result.required = allKeys
@@ -210,6 +216,42 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 						newProps[key] = {
 							...prop,
 							items: ensureAllRequired(prop.items),
+						}
+					}
+				}
+				result.properties = newProps
+			}
+
+			return result
+		}
+
+		// Adds additionalProperties: false to all object schemas recursively
+		// without modifying required array. Used for MCP tools with strict: false
+		// to comply with OpenAI Responses API requirements.
+		const ensureAdditionalPropertiesFalse = (schema: any): any => {
+			if (!schema || typeof schema !== "object" || schema.type !== "object") {
+				return schema
+			}
+
+			const result = { ...schema }
+
+			// OpenAI Responses API requires additionalProperties: false on all object schemas
+			// Only add if not already set to false (to avoid unnecessary mutations)
+			if (result.additionalProperties !== false) {
+				result.additionalProperties = false
+			}
+
+			if (result.properties) {
+				// Recursively process nested objects
+				const newProps = { ...result.properties }
+				for (const key of Object.keys(result.properties)) {
+					const prop = newProps[key]
+					if (prop && prop.type === "object") {
+						newProps[key] = ensureAdditionalPropertiesFalse(prop)
+					} else if (prop && prop.type === "array" && prop.items?.type === "object") {
+						newProps[key] = {
+							...prop,
+							items: ensureAdditionalPropertiesFalse(prop.items),
 						}
 					}
 				}
@@ -295,12 +337,15 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					.map((tool) => {
 						// MCP tools use the 'mcp--' prefix - disable strict mode for them
 						// to preserve optional parameters from the MCP server schema
+						// But we still need to add additionalProperties: false for OpenAI Responses API
 						const isMcp = isMcpTool(tool.function.name)
 						return {
 							type: "function",
 							name: tool.function.name,
 							description: tool.function.description,
-							parameters: isMcp ? tool.function.parameters : ensureAllRequired(tool.function.parameters),
+							parameters: isMcp
+								? ensureAdditionalPropertiesFalse(tool.function.parameters)
+								: ensureAllRequired(tool.function.parameters),
 							strict: !isMcp,
 						}
 					}),

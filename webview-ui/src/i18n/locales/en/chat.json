@@ -144,6 +144,7 @@
 		"streaming": "API Request...",
 		"cancelled": "API Request Cancelled",
 		"streamingFailed": "API Streaming Failed",
+		"rateLimitWait": "Rate limiting",
 		"errorTitle": "Provider Error {{code}}",
 		"errorMessage": {
 			"docs": "Docs",
@@ -288,7 +289,9 @@
 	"modelResponseIncomplete": "Model Response Incomplete",
 	"modelResponseErrors": {
 		"noToolsUsed": "The model failed to use any tools in its response. This typically happens when the model provides only text/reasoning without calling the required tools to complete the task.",
-		"noToolsUsedDetails": "The model provided text/reasoning but did not call any of the required tools. This usually indicates the model misunderstood the task or is having difficulty determining which tool to use. The model has been automatically prompted to retry with proper tool usage."
+		"noToolsUsedDetails": "The model provided text/reasoning but did not call any of the required tools. This usually indicates the model misunderstood the task or is having difficulty determining which tool to use. The model has been automatically prompted to retry with proper tool usage.",
+		"noAssistantMessages": "The model did not provide any response content. This may indicate an issue with the API or the model's output.",
+		"noAssistantMessagesDetails": "The language model returned an empty response without any text or tool calls. This can happen due to API issues, rate limiting, or model-specific problems. The model has been automatically prompted to retry."
 	},
 	"errorDetails": {
 		"link": "Details",
@@ -319,7 +322,7 @@
 		"triggerLabel_zero": "0 auto-approve",
 		"triggerLabel_one": "1 auto-approved",
 		"triggerLabel_other": "{{count}} auto-approved",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} Released",
@@ -333,9 +336,9 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"minimaxM21": "Fast and affordable MiniMax M2.1 model now available in Roo Code Cloud, MiniMax, and more",
-			"glm47": "Z.AI GLM-4.7 model with thinking mode support added to Roo Code Cloud, Z.AI, and more",
-			"customTools": "Experimental custom tool support for defining your own tools in TypeScript"
+			"stickyProfiles": "Sticky provider profiles - Tasks now remember their API configuration, so switching profiles mid-session doesn't affect running tasks.",
+			"imageMentions": "Image file @mentions - Reference images directly in chat using @ mentions to include them in your context.",
+			"brrrMode": "YOLO is now BRRR - Auto-approving everything has been renamed from \"YOLO\" to \"BRRR\". Obviously."
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",

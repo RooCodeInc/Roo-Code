@@ -266,6 +266,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
 	generate_image: "generate images",
+	custom_tool: "use custom tools",
 } as const
 
 // Define available tool groups.

@@ -250,6 +250,7 @@
 		"configProfile": "Perfil de configuració",
 		"description": "Deseu diferents configuracions d'API per canviar ràpidament entre proveïdors i configuracions.",
 		"apiProvider": "Proveïdor d'API",
+		"apiProviderDocs": "Documentació del proveïdor",
 		"model": "Model",
 		"nameEmpty": "El nom no pot estar buit",
 		"nameExists": "Ja existeix un perfil amb aquest nom",
@@ -293,7 +294,6 @@
 		"getRequestyApiKey": "Obtenir clau API de Requesty",
 		"getRequestyBaseUrl": "URL base",
 		"requestyUseCustomBaseUrl": "Utilitza l'URL base personalitzada",
-		"openRouterTransformsText": "Comprimir prompts i cadenes de missatges a la mida del context (<a>Transformacions d'OpenRouter</a>)",
 		"anthropicApiKey": "Clau API d'Anthropic",
 		"getAnthropicApiKey": "Obtenir clau API d'Anthropic",
 		"anthropicUseAuthToken": "Passar la clau API d'Anthropic com a capçalera d'autorització en lloc de X-Api-Key",
@@ -433,10 +433,6 @@
 		"getUnboundApiKey": "Obtenir clau API d'Unbound",
 		"unboundRefreshModelsSuccess": "Llista de models actualitzada! Ara podeu seleccionar entre els últims models.",
 		"unboundInvalidApiKey": "Clau API no vàlida. Si us plau, comproveu la vostra clau API i torneu-ho a provar.",
-		"humanRelay": {
-			"description": "No es requereix clau API, però l'usuari necessita ajuda per copiar i enganxar informació al xat d'IA web.",
-			"instructions": "Durant l'ús, apareixerà un diàleg i el missatge actual es copiarà automàticament al porta-retalls. Necessiteu enganxar-lo a les versions web d'IA (com ChatGPT o Claude), després copiar la resposta de l'IA de nou al diàleg i fer clic al botó de confirmació."
-		},
 		"roo": {
 			"authenticatedMessage": "Autenticat de forma segura a través del teu compte de Roo Code Cloud.",
 			"connectButton": "Connecta amb Roo Code Cloud"
@@ -665,6 +661,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status màx. fitxers",
 			"description": "Nombre màxim d'entrades de fitxers a incloure en el context d'estat de git. Establiu a 0 per desactivar. La informació de la branca i els commits sempre es mostren quan és > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activa les regles dels subdirectoris",
+			"description": "Descobreix i carrega recursivament fitxers .roo/rules i AGENTS.md des de subdirectoris. Útil per a monorepos amb regles per paquet."
 		}
 	},
 	"terminal": {
