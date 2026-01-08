@@ -24,9 +24,6 @@ interface ApplyDiffParams {
 export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 	readonly name = "apply_diff" as const
 
-	// Track the last seen path during streaming to detect when the path has stabilized
-	private lastSeenPartialPath: string | undefined = undefined
-
 	parseLegacy(params: Partial<Record<string, string>>): ApplyDiffParams {
 		return {
 			path: params.path || "",
@@ -281,14 +278,8 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 		const relPath: string | undefined = block.params.path
 		const diffContent: string | undefined = block.params.diff
 
-		// During streaming, the partial-json library may return truncated string values
-		// when chunk boundaries fall mid-value. To avoid showing incorrect file paths,
-		// we wait until the path stops changing between consecutive partial blocks before
-		// displaying the tool UI. This ensures we have the complete, final path value.
-		const pathHasStabilized = this.lastSeenPartialPath !== undefined && this.lastSeenPartialPath === relPath
-		this.lastSeenPartialPath = relPath
-
-		if (!pathHasStabilized || !relPath) {
+		// Wait for path to stabilize before showing UI (prevents truncated paths)
+		if (!this.hasPathStabilized(relPath)) {
 			return
 		}
 
@@ -309,13 +300,6 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 		}
 
 		await task.ask("tool", JSON.stringify(sharedMessageProps), block.partial, toolProgressStatus).catch(() => {})
-	}
-
-	/**
-	 * Reset state when the tool finishes (called from execute or on error)
-	 */
-	resetPartialState(): void {
-		this.lastSeenPartialPath = undefined
 	}
 }
 
