@@ -13,8 +13,8 @@
 		"noMatchFound": "No modes found"
 	},
 	"apiConfiguration": {
-		"title": "API Configuration",
-		"select": "Select which API configuration to use for this mode"
+		"title": "Provider Configuration",
+		"select": "Select which provider configuration to use for this mode"
 	},
 	"tools": {
 		"title": "Available Tools",
@@ -34,7 +34,7 @@
 	"roleDefinition": {
 		"title": "Role Definition",
 		"resetToDefault": "Reset to default",
-		"description": "Define Roo's expertise and personality for this mode. This description shapes how Roo presents itself and approaches tasks."
+		"description": "Roo's expertise and personality for this mode. This shapes how Roo presents itself and approaches tasks."
 	},
 	"description": {
 		"title": "Short description (for humans)",
@@ -178,19 +178,19 @@
 		},
 		"description": {
 			"label": "Short description (for humans)",
-			"description": "A brief description shown in the mode selector dropdown."
+			"description": "Shown in the mode selector."
 		},
 		"whenToUse": {
 			"label": "When to Use (optional)",
-			"description": "Guidance for Roo for when this mode should be used. This helps the Orchestrator choose the right mode for a task."
+			"description": "This helps the Roo choose the right mode for a task."
 		},
 		"tools": {
 			"label": "Available Tools",
-			"description": "Select which tools this mode can use."
+			"description": "Narrow down tools this mode can use."
 		},
 		"customInstructions": {
 			"label": "Custom Instructions (optional)",
-			"description": "Add behavioral guidelines specific to this mode."
+			"description": "Behavioral guidelines specific to this mode."
 		},
 		"buttons": {
 			"cancel": "Cancel",

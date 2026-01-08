@@ -293,9 +293,11 @@ export const ChatRowContent = ({
 				]
 			case "completion_result":
 				return [
-					<span
-						className="codicon codicon-check"
-						style={{ color: successColor, marginBottom: "-1.5px" }}></span>,
+					<MessageCircle
+						className="size-4 shrink-0"
+						aria-label="Speech bubble icon"
+						style={{ color: successColor }}
+					/>,
 					<span style={{ color: successColor, fontWeight: "bold" }}>{t("chat:taskCompleted")}</span>,
 				]
 			case "api_req_retry_delayed":

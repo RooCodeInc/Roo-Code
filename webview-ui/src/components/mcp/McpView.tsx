@@ -101,7 +101,6 @@ const McpView = () => {
 									</VSCodeLink>
 									<strong>new</strong>
 								</Trans>
-								<p style={{ marginTop: "8px" }}>{t("mcp:enableServerCreation.hint")}</p>
 							</div>
 						</div>
 

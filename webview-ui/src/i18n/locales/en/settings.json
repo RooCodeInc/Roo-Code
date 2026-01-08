@@ -31,7 +31,7 @@
 		"contextManagement": "Context",
 		"terminal": "Terminal",
 		"slashCommands": "Slash Commands",
-		"prompts": "Prompts",
+		"prompts": "Support Prompts",
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Language",
@@ -58,7 +58,7 @@
 		"manageSettings": "Manage Settings"
 	},
 	"slashCommands": {
-		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
+		"description": "Slash commands allow you to quickly execute custom workflows. <DocsLink>Learn more</DocsLink>"
 	},
 	"ui": {
 		"collapseThinking": {
@@ -71,11 +71,11 @@
 		}
 	},
 	"prompts": {
-		"description": "Configure support prompts that are used for quick actions like enhancing prompts, explaining code, and fixing issues. These prompts help Roo provide better assistance for common development tasks."
+		"description": "There are the prompts powering non-task-related actions in Roo Code, like enhancing instructions, explaining code, and fixing issues."
 	},
 	"codeIndex": {
 		"title": "Codebase Indexing",
-		"description": "Configure codebase indexing settings to enable semantic search of your project. <0>Learn more</0>",
+		"description": "Enable semantic search of your project. <0>Learn more</0>",
 		"statusTitle": "Status",
 		"enableLabel": "Enable Codebase Indexing",
 		"enableDescription": "Enable code indexing for improved search and context understanding",
@@ -183,7 +183,7 @@
 	},
 	"autoApprove": {
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust and if you understand the security risks.",
-		"toggleShortcut": "You can configure a keyboard shortcut for this setting <SettingsLink>in your IDE preferences</SettingsLink>.",
+		"toggleShortcut": "Configure a keyboard shortcut for this setting <SettingsLink>in your IDE preferences</SettingsLink>.",
 		"enabled": "Auto-Approve Enabled",
 		"readOnly": {
 			"label": "Read",
@@ -257,8 +257,8 @@
 	"providers": {
 		"providerDocumentation": "{{provider}} documentation",
 		"configProfile": "Configuration Profile",
-		"description": "Save different API configurations to quickly switch between providers and settings.",
-		"apiProvider": "API Provider",
+		"description": "Save different provider configurations to quickly switch between them.",
+		"apiProvider": "Inference Provider",
 		"model": "Model",
 		"nameEmpty": "Name cannot be empty",
 		"nameExists": "A profile with this name already exists",
@@ -537,11 +537,10 @@
 	"browser": {
 		"enable": {
 			"label": "Enable browser tool",
-			"description": "When enabled, Roo can use a browser to interact with websites when using models that support computer use. <0>Learn more</0>"
+			"description": "Allow Roo to use an internal browser to interact with websites. Requires a model that supports computer use. <0>Learn more</0>"
 		},
 		"viewport": {
 			"label": "Viewport size",
-			"description": "Select the viewport size for browser interactions. This affects how websites are displayed and interacted with.",
 			"options": {
 				"largeDesktop": "Large Desktop (1280x800)",
 				"smallDesktop": "Small Desktop (900x600)",
@@ -551,7 +550,7 @@
 		},
 		"screenshotQuality": {
 			"label": "Screenshot quality",
-			"description": "Adjust the WebP quality of browser screenshots. Higher values provide clearer screenshots but increase token usage."
+			"description": "Higher values, clearer images, but also higher token usage."
 		},
 		"remote": {
 			"label": "Use remote browser connection",
@@ -565,34 +564,34 @@
 	"checkpoints": {
 		"timeout": {
 			"label": "Checkpoint initialization timeout (seconds)",
-			"description": "Maximum time to wait for checkpoint service initialization. Default is 15 seconds. Range: 10-60 seconds."
+			"description": "Maximum time to wait for checkpoint initialization before moving on. Default is 15."
 		},
 		"enable": {
 			"label": "Enable automatic checkpoints",
-			"description": "When enabled, Roo will automatically create checkpoints during task execution, making it easy to review changes or revert to earlier states. <0>Learn more</0>"
+			"description": "Automatically create checkpoints during task execution, making it easy to review file changes or revert to earlier states. <0>Learn more</0>"
 		}
 	},
 	"notifications": {
 		"sound": {
 			"label": "Enable sound effects",
-			"description": "When enabled, Roo will play sound effects for notifications and events.",
+			"description": "Play sound effects for notifications and events. Pairs well with Auto-approve.",
 			"volumeLabel": "Volume"
 		},
 		"tts": {
 			"label": "Enable text-to-speech",
-			"description": "When enabled, Roo will read aloud its responses using text-to-speech.",
+			"description": "Allows Roo will read aloud its responses.",
 			"speedLabel": "Speed"
 		}
 	},
 	"contextManagement": {
-		"description": "Control what information is included in the AI's context window, affecting token usage and response quality",
+		"description": "Control what information is included in the model's context window. In general, higher values lead to more context but can cost in token usage or performance. Experiment wisely.",
 		"autoCondenseContextPercent": {
 			"label": "Threshold to trigger intelligent context condensing",
 			"description": "When the context window reaches this threshold, Roo will automatically condense it."
 		},
 		"condensingApiConfiguration": {
-			"label": "API Configuration for Context Condensing",
-			"description": "Select which API configuration to use for context condensing operations. Leave unselected to use the current active configuration.",
+			"label": "Provider Configuration for Context Condensing",
+			"description": "Select which Provider configuration to use for context condensing operations. Leave unselected to use the current active configuration.",
 			"useCurrentConfig": "Default"
 		},
 		"customCondensingPrompt": {
@@ -608,11 +607,11 @@
 		},
 		"openTabs": {
 			"label": "Open tabs context limit",
-			"description": "Maximum number of VSCode open tabs to include in context. Higher values provide more context but increase token usage."
+			"description": "Maximum number of VSCode open tabs to include in context."
 		},
 		"workspaceFiles": {
 			"label": "Workspace files context limit",
-			"description": "Maximum number of files to include in current working directory details. Higher values provide more context but increase token usage."
+			"description": "Maximum number of files to include in current working directory details."
 		},
 		"rooignore": {
 			"label": "Show .rooignore'd files in lists and searches",
@@ -620,7 +619,7 @@
 		},
 		"maxConcurrentFileReads": {
 			"label": "Concurrent file reads limit",
-			"description": "Maximum number of files the 'read_file' tool can process concurrently. Higher values may speed up reading multiple small files but increase memory usage."
+			"description": "Maximum number of files the 'read_file' tool can process concurrently."
 		},
 		"maxReadFile": {
 			"label": "File read auto-truncate threshold",

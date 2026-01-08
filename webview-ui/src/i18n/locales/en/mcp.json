@@ -6,16 +6,15 @@
 	"instructions": "Instructions",
 	"enableToggle": {
 		"title": "Enable MCP Servers",
-		"description": "Turn this ON to let Roo use tools from connected MCP servers. This gives Roo more capabilities. If you don't plan to use these extra tools, turn it OFF to help reduce API token costs."
+		"description": "When enabled, Roo will have access to tools from connected MCP servers. Disable it if you don't plan on using them, to reduce token costs."
 	},
 	"enableServerCreation": {
 		"title": "Enable MCP Server Creation",
-		"description": "Enable this to have Roo help you build <1>new</1> custom MCP servers. <0>Learn about server creation</0>",
-		"hint": "Hint: To reduce API token costs, disable this setting when you are not actively asking Roo to create a new MCP server."
+		"description": "Enable when having Roo help you build <1>new</1> custom MCP servers. <0>Learn about server creation</0>",
+		"hint": "Tip: To reduce API token costs, disable this setting when you're not actively asking Roo to create a new MCP server."
 	},
 	"editGlobalMCP": "Edit Global MCP",
 	"editProjectMCP": "Edit Project MCP",
-	"refreshMCP": "Refresh MCP Servers",
 	"learnMoreEditingSettings": "Learn more about editing MCP settings files",
 	"tool": {
 		"alwaysAllow": "Always allow",
@@ -57,6 +56,7 @@
 		"retrying": "Retrying...",
 		"retryConnection": "Retry Connection"
 	},
+	"refreshMCP": "Refresh MCP Servers",
 	"execution": {
 		"running": "Running",
 		"completed": "Completed",

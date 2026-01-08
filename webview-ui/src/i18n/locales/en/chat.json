@@ -37,7 +37,7 @@
 		"tooltip": "Try the operation again"
 	},
 	"startNewTask": {
-		"title": "Start New Task",
+		"title": "New Task",
 		"tooltip": "Begin a new task"
 	},
 	"proceedAnyways": {
@@ -75,7 +75,7 @@
 		"tooltip": "Execute this command"
 	},
 	"proceedWhileRunning": {
-		"title": "Proceed While Running",
+		"title": "Proceed while running",
 		"tooltip": "Continue despite warnings"
 	},
 	"killCommand": {
@@ -83,11 +83,11 @@
 		"tooltip": "Kill the current command"
 	},
 	"resumeTask": {
-		"title": "Resume Task",
+		"title": "Continue",
 		"tooltip": "Continue the current task"
 	},
 	"terminate": {
-		"title": "Terminate",
+		"title": "Close",
 		"tooltip": "End the current task"
 	},
 	"cancel": {
@@ -111,8 +111,8 @@
 			"description": "Use your own provider key or even run local inference — Roo doesn't charge for it"
 		}
 	},
-	"selectMode": "Select mode for interaction",
-	"selectApiConfig": "Select API configuration",
+	"selectMode": "Mode",
+	"selectApiConfig": "Provider configuration",
 	"enhancePrompt": "Enhance prompt with additional context",
 	"modeSelector": {
 		"title": "Modes",
@@ -155,7 +155,7 @@
 			"429": "Too many requests. You're being rate-limited by the provider. Please wait a bit before your next API call.",
 			"500": "Provider server error. Something is wrong on the provider side, there's nothing wrong with your request.",
 			"connection": "Connection error. Make sure you have a working internet connection.",
-			"unknown": "Unknown API error. Please contact Roo Code support.",
+			"unknown": "Unknown API error. Please send error details to Roo Code support.",
 			"claudeCodeNotAuthenticated": "You need to sign in to use Claude Code. Go to Settings and click \"Sign in to Claude Code\" to authenticate."
 		}
 	},
@@ -283,7 +283,7 @@
 	"questions": {
 		"hasQuestion": "Roo has a question"
 	},
-	"taskCompleted": "Task Completed",
+	"taskCompleted": "Roo is done",
 	"error": "Error",
 	"modelResponseIncomplete": "Model Response Incomplete",
 	"modelResponseErrors": {

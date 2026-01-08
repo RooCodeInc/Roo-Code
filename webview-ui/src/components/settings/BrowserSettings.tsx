@@ -153,9 +153,6 @@ export const BrowserSettings = ({
 									</SelectGroup>
 								</SelectContent>
 							</Select>
-							<div className="text-vscode-descriptionForeground text-sm mt-1">
-								{t("settings:browser.viewport.description")}
-							</div>
 						</div>
 
 						<div>
@@ -198,6 +195,9 @@ export const BrowserSettings = ({
 
 						{remoteBrowserEnabled && (
 							<>
+								<div className="text-vscode-descriptionForeground text-sm mt-1">
+									{t("settings:browser.remote.instructions")}
+								</div>
 								<div className="flex items-center gap-2">
 									<VSCodeTextField
 										value={remoteBrowserHost ?? ""}
@@ -223,9 +223,6 @@ export const BrowserSettings = ({
 										{testResult.text}
 									</div>
 								)}
-								<div className="text-vscode-descriptionForeground text-sm mt-1">
-									{t("settings:browser.remote.instructions")}
-								</div>
 							</>
 						)}
 					</div>
