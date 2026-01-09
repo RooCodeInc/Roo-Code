@@ -1588,8 +1588,24 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
-	async handleTerminalOperation(terminalOperation: "continue" | "abort") {
+	/**
+	 * Handle terminal operations (continue/abort) with optional user message.
+	 *
+	 * When the user sends a message while a command is running (command_output ask),
+	 * we need to both continue the terminal AND resolve the pending ask with the
+	 * user's message. This prevents the UI from hanging.
+	 *
+	 * @param terminalOperation - "continue" to proceed or "abort" to kill the command
+	 * @param text - Optional user message text
+	 * @param images - Optional user message images
+	 */
+	async handleTerminalOperation(terminalOperation: "continue" | "abort", text?: string, images?: string[]) {
 		if (terminalOperation === "continue") {
+			// If user provided a message, resolve the pending ask with their message
+			// This allows the user to provide feedback while the command runs
+			if (text || (images && images.length > 0)) {
+				this.handleWebviewAskResponse("messageResponse", text, images)
+			}
 			this.terminalProcess?.continue()
 		} else if (terminalOperation === "abort") {
 			this.terminalProcess?.abort()

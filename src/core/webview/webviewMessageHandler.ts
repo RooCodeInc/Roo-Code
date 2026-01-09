@@ -655,7 +655,11 @@ export const webviewMessageHandler = async (
 
 		case "terminalOperation":
 			if (message.terminalOperation) {
-				provider.getCurrentTask()?.handleTerminalOperation(message.terminalOperation)
+				// Pass text/images if user sent a message with the terminal operation
+				// This allows the user to provide additional context when continuing
+				// a long-running command
+				const resolved = await resolveIncomingImages({ text: message.text, images: message.images })
+				provider.getCurrentTask()?.handleTerminalOperation(message.terminalOperation, resolved.text, resolved.images)
 			}
 			break
 		case "clearTask":

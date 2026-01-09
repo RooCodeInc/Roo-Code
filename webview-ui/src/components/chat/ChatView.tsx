@@ -616,11 +616,26 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					switch (
 						clineAskRef.current // Use clineAskRef.current
 					) {
+						case "command_output":
+							// For command_output, send terminalOperation with user's message
+							// instead of askResponse. This allows the command to continue
+							// running in the background while keeping the UI responsive.
+							// The user's message is passed to the backend to be used as
+							// additional context when the command finishes.
+							vscode.postMessage({
+								type: "terminalOperation",
+								terminalOperation: "continue",
+								text,
+								images,
+							})
+							// Clear input but don't fully reset UI to avoid hang
+							setInputValue("")
+							setSelectedImages([])
+							return // Don't call handleChatReset
 						case "followup":
 						case "tool":
 						case "browser_action_launch":
 						case "command": // User can provide feedback to a tool or command use.
-						case "command_output": // User can send input to command stdin.
 						case "use_mcp_server":
 						case "completion_result": // If this happens then the user has feedback for the completion result.
 						case "resume_task":
