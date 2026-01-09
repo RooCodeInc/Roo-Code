@@ -120,15 +120,18 @@ export const About = ({ telemetrySetting, setTelemetrySetting, debug, setDebug, 
 						</span>
 					</div>
 					{setDebug && (
-						<div className="flex items-start gap-2 mt-4 pt-4 border-t border-vscode-settings-headerBorder">
+						<div className="flex flex-col gap-2 mt-4 pt-4 border-t border-vscode-settings-headerBorder">
 							<VSCodeCheckbox
 								checked={debug ?? false}
 								onChange={(e: any) => {
 									const checked = e.target.checked === true
 									setDebug(checked)
 								}}>
-								Enable debug mode
+								{t("settings:about.debugMode.label")}
 							</VSCodeCheckbox>
+							<p className="text-vscode-descriptionForeground text-sm mt-0">
+								{t("settings:about.debugMode.description")}
+							</p>
 						</div>
 					)}
 				</div>
