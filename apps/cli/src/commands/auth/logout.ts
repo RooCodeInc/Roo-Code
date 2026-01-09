@@ -1,0 +1,29 @@
+import { clearToken } from "../../storage/credentials.js"
+import { hasToken } from "../../storage/credentials.js"
+import { getCredentialsPath } from "../../storage/credentials.js"
+
+export interface LogoutOptions {
+	verbose?: boolean
+}
+
+export interface LogoutResult {
+	success: boolean
+	wasLoggedIn: boolean
+}
+
+export async function logout({ verbose = false }: LogoutOptions = {}): Promise<LogoutResult> {
+	const wasLoggedIn = await hasToken()
+
+	if (!wasLoggedIn) {
+		console.log("You are not currently logged in.")
+		return { success: true, wasLoggedIn: false }
+	}
+
+	if (verbose) {
+		console.log(`[Auth] Removing credentials from ${getCredentialsPath()}`)
+	}
+
+	await clearToken()
+	console.log("✓ Successfully logged out")
+	return { success: true, wasLoggedIn: true }
+}

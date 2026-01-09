@@ -6,7 +6,6 @@ import type { WebviewMessage } from "@roo-code/types"
 import { getGlobalCommandsForAutocomplete } from "../utils/globalCommands.js"
 import { arePathsEqual } from "../utils/pathUtils.js"
 import { getContextWindow } from "../utils/getContextWindow.js"
-import type { AppProps } from "./types.js"
 import * as theme from "./theme.js"
 
 import { useCLIStore } from "./store.js"
@@ -55,6 +54,7 @@ import {
 } from "./components/autocomplete/index.js"
 import { ScrollArea, useScrollToBottom } from "./components/ScrollArea.js"
 import ScrollIndicator from "./components/ScrollIndicator.js"
+import { ExtensionHostOptions } from "../extension-host.js"
 
 const PICKER_HEIGHT = 10
 
@@ -67,24 +67,12 @@ interface ExtensionHostInterface {
 	dispose(): Promise<void>
 }
 
-interface ExtensionHostFactoryOptions {
-	mode: string
-	reasoningEffort?: string
-	apiProvider: string
-	apiKey: string
-	model: string
-	workspacePath: string
-	extensionPath: string
-	verbose: boolean
-	quiet: boolean
-	nonInteractive: boolean
-	disableOutput: boolean
-	ephemeral?: boolean
-}
-
-export interface TUIAppProps extends AppProps {
-	/** Extension host factory - allows dependency injection for testing. */
-	createExtensionHost: (options: ExtensionHostFactoryOptions) => ExtensionHostInterface
+export interface TUIAppProps extends ExtensionHostOptions {
+	initialPrompt: string
+	debug: boolean
+	exitOnComplete: boolean
+	version: string
+	createExtensionHost: (options: ExtensionHostOptions) => ExtensionHostInterface
 }
 
 /**
@@ -94,18 +82,18 @@ function AppInner({
 	initialPrompt,
 	workspacePath,
 	extensionPath,
-	apiProvider,
+	user,
+	provider,
 	apiKey,
 	model,
 	mode,
-	nonInteractive,
-	verbose,
+	nonInteractive = false,
 	debug,
 	exitOnComplete,
 	reasoningEffort,
 	ephemeral,
-	createExtensionHost,
 	version,
+	createExtensionHost,
 }: TUIAppProps) {
 	const { exit } = useApp()
 
@@ -173,35 +161,32 @@ function AppInner({
 	const [scrollState, setScrollState] = useState({ scrollTop: 0, maxScroll: 0, isAtBottom: true })
 	const { scrollToBottomTrigger, scrollToBottom } = useScrollToBottom()
 
-	// RAF-style throttle refs for scroll updates (prevents multiple state updates per event loop tick)
+	// RAF-style throttle refs for scroll updates (prevents multiple state updates per event loop tick).
 	const rafIdRef = useRef<NodeJS.Immediate | null>(null)
 	const pendingScrollRef = useRef<{ scrollTop: number; maxScroll: number; isAtBottom: boolean } | null>(null)
 
-	// Toast notifications for ephemeral messages (e.g., mode changes)
+	// Toast notifications for ephemeral messages (e.g., mode changes).
 	const { currentToast, showInfo } = useToast()
 
-	// Initialize message handlers hook - provides refs and handler
 	const {
 		handleExtensionMessage,
 		seenMessageIds,
 		pendingCommandRef: _pendingCommandRef,
 		firstTextMessageSkipped,
 	} = useMessageHandlers({
-		verbose,
 		nonInteractive,
 	})
 
-	// Initialize extension host hook
 	const { sendToExtension, runTask, cleanup } = useExtensionHost({
 		initialPrompt,
 		mode,
 		reasoningEffort,
-		apiProvider,
+		user,
+		provider,
 		apiKey,
 		model,
 		workspacePath,
 		extensionPath,
-		verbose,
 		debug,
 		nonInteractive,
 		ephemeral,
@@ -462,12 +447,11 @@ function AppInner({
 		<Text color={theme.dimText}>? for shortcuts</Text>
 	) : null
 
-	// Get render function for picker items based on active trigger
 	const getPickerRenderItem = () => {
 		if (pickerState.activeTrigger) {
 			return pickerState.activeTrigger.renderItem
 		}
-		// Default render
+
 		return (item: FileResult | SlashCommandResult, isSelected: boolean) => (
 			<Box paddingLeft={2}>
 				<Text color={isSelected ? "cyan" : undefined}>{item.key}</Text>
@@ -480,9 +464,11 @@ function AppInner({
 			{/* Header - fixed size */}
 			<Box flexShrink={0}>
 				<Header
+					cwd={workspacePath}
+					user={user}
+					provider={provider}
 					model={model}
 					mode={currentMode || mode}
-					cwd={workspacePath}
 					reasoningEffort={reasoningEffort}
 					version={version}
 					tokenUsage={tokenUsage}

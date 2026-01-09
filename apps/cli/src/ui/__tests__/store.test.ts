@@ -1,3 +1,5 @@
+import { RooCodeSettings } from "@roo-code/types"
+
 import { useCLIStore } from "../store.js"
 
 describe("useCLIStore", () => {
@@ -166,7 +168,8 @@ describe("useCLIStore", () => {
 		})
 
 		it("should PRESERVE apiConfiguration", () => {
-			const config = { apiProvider: "openai", apiModelId: "gpt-4" }
+			const config: RooCodeSettings = { apiProvider: "openai", apiModelId: "gpt-4" }
+
 			useCLIStore
 				.getState()
 				.setApiConfiguration(config as ReturnType<typeof useCLIStore.getState>["apiConfiguration"])

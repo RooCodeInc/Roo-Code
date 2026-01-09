@@ -16,16 +16,13 @@ import fs from "fs"
 import os from "os"
 import readline from "readline"
 
-import {
-	ProviderName,
-	ReasoningEffortExtended,
-	RooCodeSettings,
-	ExtensionMessage,
-	WebviewMessage,
-} from "@roo-code/types"
+import { ReasoningEffortExtended, RooCodeSettings, ExtensionMessage, WebviewMessage } from "@roo-code/types"
 import { createVSCodeAPI, setRuntimeConfigValues } from "@roo-code/vscode-shim"
 import { debugLog, DebugLogger } from "@roo-code/core/debug-log"
+
+import { SupportedProvider } from "./types.js"
 import { FOLLOWUP_TIMEOUT_SECONDS } from "./constants.js"
+import { User } from "./sdk/types.js"
 
 // Pre-configured logger for CLI message activity debugging
 const cliLogger = new DebugLogger("CLI")
@@ -37,15 +34,15 @@ const CLI_PACKAGE_ROOT = path.resolve(__dirname, "..")
 
 export interface ExtensionHostOptions {
 	mode: string
-	reasoningEffort?: ReasoningEffortExtended | "disabled"
-	apiProvider: ProviderName
+	reasoningEffort?: ReasoningEffortExtended | "unspecified" | "disabled"
+	user: User | null
+	provider: SupportedProvider
 	apiKey?: string
 	model: string
 	workspacePath: string
 	extensionPath: string
-	verbose?: boolean
-	quiet?: boolean
 	nonInteractive?: boolean
+	debug?: boolean
 	/**
 	 * When true, completely disables all direct stdout/stderr output.
 	 * Use this when running in TUI mode where Ink controls the terminal.
@@ -143,11 +140,7 @@ export class ExtensionHost extends EventEmitter {
 	 * but allows console.error through for critical errors.
 	 */
 	private setupQuietMode(): void {
-		if (!this.options.quiet) {
-			return
-		}
-
-		// Save original console methods
+		// Save original console methods.
 		this.originalConsole = {
 			log: console.log,
 			warn: console.warn,
@@ -156,12 +149,11 @@ export class ExtensionHost extends EventEmitter {
 			info: console.info,
 		}
 
-		// Replace with no-op functions (except error)
+		// Replace with no-op functions (except error).
 		console.log = () => {}
 		console.warn = () => {}
 		console.debug = () => {}
 		console.info = () => {}
-		// Keep console.error for critical errors
 	}
 
 	/**
@@ -352,7 +344,7 @@ export class ExtensionHost extends EventEmitter {
 			settings.mode = activeMode
 		}
 
-		if (this.options.reasoningEffort) {
+		if (this.options.reasoningEffort && this.options.reasoningEffort !== "unspecified") {
 			if (this.options.reasoningEffort === "disabled") {
 				settings.enableReasoningEffort = false
 			} else {
@@ -395,8 +387,7 @@ export class ExtensionHost extends EventEmitter {
 	 * Falls back to environment variables for API keys when not explicitly passed
 	 */
 	private buildApiConfiguration(): RooCodeSettings {
-		const provider = this.options.apiProvider || "anthropic"
-		// Try explicit API key first, then fall back to environment variable
+		const provider = this.options.provider
 		const apiKey = this.options.apiKey || this.getApiKeyFromEnv(provider)
 		const model = this.options.model
 
@@ -409,142 +400,29 @@ export class ExtensionHost extends EventEmitter {
 				if (apiKey) config.apiKey = apiKey
 				if (model) config.apiModelId = model
 				break
-
-			case "openrouter":
-				if (apiKey) config.openRouterApiKey = apiKey
-				if (model) config.openRouterModelId = model
-				break
-
-			case "gemini":
-				if (apiKey) config.geminiApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
 			case "openai-native":
 				if (apiKey) config.openAiNativeApiKey = apiKey
 				if (model) config.apiModelId = model
 				break
-
-			case "openai":
-				if (apiKey) config.openAiApiKey = apiKey
-				if (model) config.openAiModelId = model
-				break
-
-			case "mistral":
-				if (apiKey) config.mistralApiKey = apiKey
+			case "gemini":
+				if (apiKey) config.geminiApiKey = apiKey
 				if (model) config.apiModelId = model
 				break
-
-			case "deepseek":
-				if (apiKey) config.deepSeekApiKey = apiKey
-				if (model) config.apiModelId = model
+			case "openrouter":
+				if (apiKey) config.openRouterApiKey = apiKey
+				if (model) config.openRouterModelId = model
 				break
-
-			case "xai":
-				if (apiKey) config.xaiApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "groq":
-				if (apiKey) config.groqApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "fireworks":
-				if (apiKey) config.fireworksApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "cerebras":
-				if (apiKey) config.cerebrasApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "sambanova":
-				if (apiKey) config.sambaNovaApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "ollama":
-				if (apiKey) config.ollamaApiKey = apiKey
-				if (model) config.ollamaModelId = model
-				break
-
-			case "lmstudio":
-				if (model) config.lmStudioModelId = model
-				break
-
-			case "litellm":
-				if (apiKey) config.litellmApiKey = apiKey
-				if (model) config.litellmModelId = model
-				break
-
-			case "huggingface":
-				if (apiKey) config.huggingFaceApiKey = apiKey
-				if (model) config.huggingFaceModelId = model
-				break
-
-			case "chutes":
-				if (apiKey) config.chutesApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "featherless":
-				if (apiKey) config.featherlessApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "unbound":
-				if (apiKey) config.unboundApiKey = apiKey
-				if (model) config.unboundModelId = model
-				break
-
-			case "requesty":
-				if (apiKey) config.requestyApiKey = apiKey
-				if (model) config.requestyModelId = model
-				break
-
-			case "deepinfra":
-				if (apiKey) config.deepInfraApiKey = apiKey
-				if (model) config.deepInfraModelId = model
-				break
-
 			case "vercel-ai-gateway":
 				if (apiKey) config.vercelAiGatewayApiKey = apiKey
 				if (model) config.vercelAiGatewayModelId = model
 				break
-
-			case "zai":
-				if (apiKey) config.zaiApiKey = apiKey
+			case "roo":
+				if (apiKey) config.rooApiKey = apiKey
 				if (model) config.apiModelId = model
-				break
-
-			case "baseten":
-				if (apiKey) config.basetenApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "doubao":
-				if (apiKey) config.doubaoApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "moonshot":
-				if (apiKey) config.moonshotApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "minimax":
-				if (apiKey) config.minimaxApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-
-			case "io-intelligence":
-				if (apiKey) config.ioIntelligenceApiKey = apiKey
-				if (model) config.ioIntelligenceModelId = model
 				break
 
 			default:
+				console.log(provider, "unknown provider")
 				// Default to apiKey and apiModelId for unknown providers.
 				if (apiKey) config.apiKey = apiKey
 				if (model) config.apiModelId = model
@@ -1232,12 +1110,7 @@ export class ExtensionHost extends EventEmitter {
 	 */
 	private promptForInputWithTimeout(prompt: string, timeoutMs: number, defaultValue: string): Promise<string> {
 		return new Promise((resolve) => {
-			// Temporarily restore console for interactive prompts
-			const wasQuiet = this.options.quiet
-
-			if (wasQuiet) {
-				this.restoreConsole()
-			}
+			this.restoreConsole()
 
 			// Put stdin in raw mode to detect individual keypresses.
 			const wasRaw = process.stdin.isRaw
@@ -1275,10 +1148,7 @@ export class ExtensionHost extends EventEmitter {
 				}
 
 				process.stdin.pause()
-
-				if (wasQuiet) {
-					this.setupQuietMode()
-				}
+				this.setupQuietMode()
 			}
 
 			// Handle keypress data
@@ -1579,48 +1449,29 @@ export class ExtensionHost extends EventEmitter {
 	 */
 	private promptForInput(prompt: string): Promise<string> {
 		return new Promise((resolve, reject) => {
-			// Temporarily restore console for interactive prompts
-			const wasQuiet = this.options.quiet
-			if (wasQuiet) {
-				this.restoreConsole()
-			}
-
-			const rl = readline.createInterface({
-				input: process.stdin,
-				output: process.stdout,
-			})
+			this.restoreConsole()
+			const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 
 			rl.question(prompt, (answer) => {
 				rl.close()
-
-				// Restore quiet mode if it was enabled
-				if (wasQuiet) {
-					this.setupQuietMode()
-				}
-
+				this.setupQuietMode()
 				resolve(answer)
 			})
 
-			// Handle stdin close (e.g., piped input ended)
 			rl.on("close", () => {
-				if (wasQuiet) {
-					this.setupQuietMode()
-				}
+				this.setupQuietMode()
 			})
 
-			// Handle errors
 			rl.on("error", (err) => {
 				rl.close()
-				if (wasQuiet) {
-					this.setupQuietMode()
-				}
+				this.setupQuietMode()
 				reject(err)
 			})
 		})
 	}
 
 	/**
-	 * Prompt user for yes/no input
+	 * Prompt user for yes/no input.
 	 */
 	private async promptForYesNo(prompt: string): Promise<boolean> {
 		const answer = await this.promptForInput(prompt)

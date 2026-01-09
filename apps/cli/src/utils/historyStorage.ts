@@ -1,6 +1,7 @@
 import * as fs from "fs/promises"
 import * as path from "path"
-import * as os from "os"
+
+import { ensureConfigDir, getConfigDir } from "../storage/index.js"
 
 /** Maximum number of history entries to keep */
 export const MAX_HISTORY_ENTRIES = 500
@@ -17,30 +18,7 @@ interface HistoryData {
  * Get the path to the history file
  */
 export function getHistoryFilePath(): string {
-	return path.join(os.homedir(), ".roo", "cli-history.json")
-}
-
-/**
- * Get the path to the .roo directory
- */
-function getRooDir(): string {
-	return path.join(os.homedir(), ".roo")
-}
-
-/**
- * Ensure the .roo directory exists
- */
-async function ensureRooDir(): Promise<void> {
-	const rooDir = getRooDir()
-	try {
-		await fs.mkdir(rooDir, { recursive: true })
-	} catch (err) {
-		// Directory may already exist, that's fine
-		const error = err as NodeJS.ErrnoException
-		if (error.code !== "EEXIST") {
-			throw err
-		}
-	}
+	return path.join(getConfigDir(), "cli-history.json")
 }
 
 /**
@@ -95,7 +73,7 @@ export async function saveHistory(entries: string[]): Promise<void> {
 	}
 
 	try {
-		await ensureRooDir()
+		await ensureConfigDir()
 		await fs.writeFile(filePath, JSON.stringify(data, null, "\t"), "utf-8")
 	} catch (err) {
 		const error = err as NodeJS.ErrnoException

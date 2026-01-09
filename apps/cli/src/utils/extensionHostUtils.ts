@@ -1,32 +1,24 @@
-/**
- * Utility functions for the Roo Code CLI
- */
-
 import path from "path"
 import fs from "fs"
 
-/**
- * Get the environment variable name for a provider's API key
- */
-export function getEnvVarName(provider: string): string {
-	const envVarMap: Record<string, string> = {
-		anthropic: "ANTHROPIC_API_KEY",
-		openai: "OPENAI_API_KEY",
-		openrouter: "OPENROUTER_API_KEY",
-		google: "GOOGLE_API_KEY",
-		gemini: "GOOGLE_API_KEY",
-		bedrock: "AWS_ACCESS_KEY_ID",
-		ollama: "OLLAMA_API_KEY",
-		mistral: "MISTRAL_API_KEY",
-		deepseek: "DEEPSEEK_API_KEY",
-	}
-	return envVarMap[provider.toLowerCase()] || `${provider.toUpperCase()}_API_KEY`
+import type { SupportedProvider } from "../types.js"
+
+const envVarMap: Record<SupportedProvider, string> = {
+	// Frontier Labs
+	anthropic: "ANTHROPIC_API_KEY",
+	"openai-native": "OPENAI_API_KEY",
+	gemini: "GOOGLE_API_KEY",
+	// Routers
+	openrouter: "OPENROUTER_API_KEY",
+	"vercel-ai-gateway": "VERCEL_AI_GATEWAY_API_KEY",
+	roo: "ROO_API_KEY",
 }
 
-/**
- * Get API key from environment variable based on provider
- */
-export function getApiKeyFromEnv(provider: string): string | undefined {
+export function getEnvVarName(provider: SupportedProvider): string {
+	return envVarMap[provider]
+}
+
+export function getApiKeyFromEnv(provider: SupportedProvider): string | undefined {
 	const envVar = getEnvVarName(provider)
 	return process.env[envVar]
 }

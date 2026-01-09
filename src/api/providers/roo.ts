@@ -42,7 +42,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	private currentReasoningDetails: any[] = []
 
 	constructor(options: ApiHandlerOptions) {
-		const sessionToken = getSessionToken()
+		const sessionToken = options.rooApiKey ?? getSessionToken()
 
 		let baseURL = process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
 
@@ -64,6 +64,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 
 		// Load dynamic models asynchronously - strip /v1 from baseURL for fetcher
 		this.fetcherBaseURL = baseURL.endsWith("/v1") ? baseURL.slice(0, -3) : baseURL
+
 		this.loadDynamicModels(this.fetcherBaseURL, sessionToken).catch((error) => {
 			console.error("[RooHandler] Failed to load dynamic models:", error)
 		})
@@ -110,7 +111,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 
 		try {
-			this.client.apiKey = getSessionToken()
+			this.client.apiKey = this.options.rooApiKey ?? getSessionToken()
 			return this.client.chat.completions.create(rooParams, requestOptions)
 		} catch (error) {
 			throw handleOpenAIError(error, this.providerName)
@@ -333,7 +334,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	}
 	override async completePrompt(prompt: string): Promise<string> {
 		// Update API key before making request to ensure we use the latest session token
-		this.client.apiKey = getSessionToken()
+		this.client.apiKey = this.options.rooApiKey ?? getSessionToken()
 		return super.completePrompt(prompt)
 	}
 
@@ -400,7 +401,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		inputImage?: string,
 		apiMethod?: ImageGenerationApiMethod,
 	): Promise<ImageGenerationResult> {
-		const sessionToken = getSessionToken()
+		const sessionToken = this.options.rooApiKey ?? getSessionToken()
 
 		if (!sessionToken || sessionToken === "unauthenticated") {
 			return {

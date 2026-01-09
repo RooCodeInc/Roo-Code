@@ -14,7 +14,6 @@ import {
 } from "../utils/toolDataUtils.js"
 
 export interface UseMessageHandlersOptions {
-	verbose: boolean
 	nonInteractive: boolean
 }
 
@@ -35,7 +34,7 @@ export interface UseMessageHandlersReturn {
  *
  * Transforms ClineMessage format to TUIMessage format and updates the store.
  */
-export function useMessageHandlers({ verbose, nonInteractive }: UseMessageHandlersOptions): UseMessageHandlersReturn {
+export function useMessageHandlers({ nonInteractive }: UseMessageHandlersOptions): UseMessageHandlersReturn {
 	const {
 		addMessage,
 		setPendingAsk,
@@ -72,7 +71,7 @@ export function useMessageHandlers({ verbose, nonInteractive }: UseMessageHandle
 				return
 			}
 
-			if (say === "api_req_started" && !verbose) {
+			if (say === "api_req_started") {
 				return
 			}
 
@@ -126,7 +125,7 @@ export function useMessageHandlers({ verbose, nonInteractive }: UseMessageHandle
 				toolData,
 			})
 		},
-		[addMessage, verbose],
+		[addMessage],
 	)
 
 	/**
