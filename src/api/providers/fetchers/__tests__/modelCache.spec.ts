@@ -59,7 +59,7 @@ vi.mock("../../../core/config/ContextProxy", () => ({
 import type { Mock } from "vitest"
 import * as fsSync from "fs"
 import NodeCache from "node-cache"
-import { getModels, getModelsFromCache } from "../modelCache"
+import { getModels, getModelsFromCache, getCacheKey } from "../modelCache"
 import { getLiteLLMModels } from "../litellm"
 import { getOpenRouterModels } from "../openrouter"
 import { getRequestyModels } from "../requesty"
@@ -471,6 +471,230 @@ describe("empty cache protection", () => {
 			const [result1, result2] = await Promise.all([promise1, promise2])
 			expect(result1).toEqual(mockModels)
 			expect(result2).toEqual(mockModels)
+		})
+	})
+})
+
+describe("multi-instance provider caching", () => {
+	describe("getCacheKey", () => {
+		it("returns provider name for non-multi-instance providers", () => {
+			expect(getCacheKey({ provider: "openrouter" })).toBe("openrouter")
+			expect(getCacheKey({ provider: "huggingface" })).toBe("huggingface")
+			expect(getCacheKey({ provider: "vercel-ai-gateway" })).toBe("vercel-ai-gateway")
+		})
+
+		it("returns provider name for multi-instance providers without baseUrl", () => {
+			expect(getCacheKey({ provider: "litellm", apiKey: "test-key", baseUrl: "" })).toBe("litellm")
+			expect(getCacheKey({ provider: "ollama" })).toBe("ollama")
+			expect(getCacheKey({ provider: "lmstudio" })).toBe("lmstudio")
+		})
+
+		it("returns unique key for multi-instance providers with baseUrl", () => {
+			const key1 = getCacheKey({
+				provider: "litellm",
+				apiKey: "test-key",
+				baseUrl: "http://localhost:4000",
+			})
+			const key2 = getCacheKey({
+				provider: "litellm",
+				apiKey: "test-key",
+				baseUrl: "http://localhost:5000",
+			})
+
+			// Keys should be different for different URLs
+			expect(key1).not.toBe(key2)
+			// Keys should start with provider name
+			expect(key1).toMatch(/^litellm_/)
+			expect(key2).toMatch(/^litellm_/)
+		})
+
+		it("returns same key for same provider and baseUrl", () => {
+			const key1 = getCacheKey({
+				provider: "litellm",
+				apiKey: "key1",
+				baseUrl: "http://localhost:4000",
+			})
+			const key2 = getCacheKey({
+				provider: "litellm",
+				apiKey: "different-key", // Different API key should not affect cache key
+				baseUrl: "http://localhost:4000",
+			})
+
+			expect(key1).toBe(key2)
+		})
+
+		it("generates unique keys for all multi-instance providers", () => {
+			const baseUrl = "http://localhost:8080"
+
+			const litellmKey = getCacheKey({ provider: "litellm", apiKey: "key", baseUrl })
+			const ollamaKey = getCacheKey({ provider: "ollama", baseUrl })
+			const lmstudioKey = getCacheKey({ provider: "lmstudio", baseUrl })
+			const requestyKey = getCacheKey({ provider: "requesty", baseUrl })
+			const deepinfraKey = getCacheKey({ provider: "deepinfra", baseUrl })
+			const rooKey = getCacheKey({ provider: "roo", baseUrl })
+
+			// All should have hash suffix
+			expect(litellmKey).toMatch(/^litellm_[a-f0-9]{8}$/)
+			expect(ollamaKey).toMatch(/^ollama_[a-f0-9]{8}$/)
+			expect(lmstudioKey).toMatch(/^lmstudio_[a-f0-9]{8}$/)
+			expect(requestyKey).toMatch(/^requesty_[a-f0-9]{8}$/)
+			expect(deepinfraKey).toMatch(/^deepinfra_[a-f0-9]{8}$/)
+			expect(rooKey).toMatch(/^roo_[a-f0-9]{8}$/)
+		})
+	})
+
+	describe("getModels with different LiteLLM instances", () => {
+		let mockCache: any
+		let mockSet: Mock
+
+		beforeEach(() => {
+			vi.clearAllMocks()
+			const MockedNodeCache = vi.mocked(NodeCache)
+			mockCache = new MockedNodeCache()
+			mockSet = mockCache.set
+			mockCache.get.mockReturnValue(undefined)
+		})
+
+		it("uses unique cache keys for different LiteLLM base URLs", async () => {
+			const modelsInstance1 = {
+				"model-a": {
+					maxTokens: 4096,
+					contextWindow: 128000,
+					supportsPromptCache: false,
+					description: "Model A",
+				},
+			}
+
+			mockGetLiteLLMModels.mockResolvedValue(modelsInstance1)
+
+			await getModels({
+				provider: "litellm",
+				apiKey: "test-key",
+				baseUrl: "http://localhost:4000",
+			})
+
+			// Should cache with unique key including hash
+			expect(mockSet).toHaveBeenCalledWith(expect.stringMatching(/^litellm_[a-f0-9]{8}$/), modelsInstance1)
+		})
+
+		it("caches separately for different LiteLLM instances", async () => {
+			const modelsInstance1 = {
+				"model-instance-1": {
+					maxTokens: 4096,
+					contextWindow: 128000,
+					supportsPromptCache: false,
+					description: "Model from instance 1",
+				},
+			}
+			const modelsInstance2 = {
+				"model-instance-2": {
+					maxTokens: 8192,
+					contextWindow: 200000,
+					supportsPromptCache: true,
+					description: "Model from instance 2",
+				},
+			}
+
+			// First instance returns models
+			mockGetLiteLLMModels.mockResolvedValueOnce(modelsInstance1)
+			await getModels({
+				provider: "litellm",
+				apiKey: "test-key",
+				baseUrl: "http://localhost:4000",
+			})
+
+			// Second instance returns different models
+			mockGetLiteLLMModels.mockResolvedValueOnce(modelsInstance2)
+			await getModels({
+				provider: "litellm",
+				apiKey: "test-key",
+				baseUrl: "http://localhost:5000",
+			})
+
+			// Should have been called twice with different cache keys
+			expect(mockSet).toHaveBeenCalledTimes(2)
+
+			// Get the cache keys used
+			const cacheKey1 = mockSet.mock.calls[0][0]
+			const cacheKey2 = mockSet.mock.calls[1][0]
+
+			// Keys should be different
+			expect(cacheKey1).not.toBe(cacheKey2)
+
+			// Both should be litellm keys
+			expect(cacheKey1).toMatch(/^litellm_/)
+			expect(cacheKey2).toMatch(/^litellm_/)
+		})
+	})
+
+	describe("refreshModels with different instances", () => {
+		let mockCache: any
+		let mockSet: Mock
+
+		beforeEach(() => {
+			vi.clearAllMocks()
+			const MockedNodeCache = vi.mocked(NodeCache)
+			mockCache = new MockedNodeCache()
+			mockSet = mockCache.set
+			mockCache.get.mockReturnValue(undefined)
+		})
+
+		it("tracks in-flight requests separately for different instances", async () => {
+			const models1 = {
+				"model-1": {
+					maxTokens: 4096,
+					contextWindow: 128000,
+					supportsPromptCache: false,
+				},
+			}
+			const models2 = {
+				"model-2": {
+					maxTokens: 8192,
+					contextWindow: 200000,
+					supportsPromptCache: false,
+				},
+			}
+
+			// Create delayed responses to simulate API latency
+			let resolve1: (value: typeof models1) => void
+			let resolve2: (value: typeof models2) => void
+			const promise1 = new Promise<typeof models1>((resolve) => {
+				resolve1 = resolve
+			})
+			const promise2 = new Promise<typeof models2>((resolve) => {
+				resolve2 = resolve
+			})
+
+			mockGetLiteLLMModels
+				.mockReturnValueOnce(promise1)
+				.mockReturnValueOnce(promise2)
+
+			const { refreshModels } = await import("../modelCache")
+
+			// Start concurrent refreshes for different instances
+			const refresh1 = refreshModels({
+				provider: "litellm",
+				apiKey: "key",
+				baseUrl: "http://instance1:4000",
+			})
+			const refresh2 = refreshModels({
+				provider: "litellm",
+				apiKey: "key",
+				baseUrl: "http://instance2:5000",
+			})
+
+			// Both should call the API since they are different instances
+			expect(mockGetLiteLLMModels).toHaveBeenCalledTimes(2)
+
+			// Resolve both
+			resolve1!(models1)
+			resolve2!(models2)
+
+			const [result1, result2] = await Promise.all([refresh1, refresh2])
+
+			// Results should be different
+			expect(result1).toEqual(models1)
+			expect(result2).toEqual(models2)
 		})
 	})
 })
