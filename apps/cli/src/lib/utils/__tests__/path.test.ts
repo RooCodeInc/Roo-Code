@@ -1,18 +1,29 @@
 import { normalizePath, arePathsEqual } from "../path.js"
 
+// Helper to create platform-specific expected paths
+const expectedPath = (...segments: string[]) => {
+	// On Windows, path.normalize converts forward slashes to backslashes
+	// and paths like /Users become \Users (without a drive letter)
+	if (process.platform === "win32") {
+		return "\\" + segments.join("\\")
+	}
+
+	return "/" + segments.join("/")
+}
+
 describe("normalizePath", () => {
 	it("should remove trailing slashes", () => {
-		expect(normalizePath("/Users/test/project/")).toBe("/Users/test/project")
-		expect(normalizePath("/Users/test/project//")).toBe("/Users/test/project")
+		expect(normalizePath("/Users/test/project/")).toBe(expectedPath("Users", "test", "project"))
+		expect(normalizePath("/Users/test/project//")).toBe(expectedPath("Users", "test", "project"))
 	})
 
 	it("should handle paths without trailing slashes", () => {
-		expect(normalizePath("/Users/test/project")).toBe("/Users/test/project")
+		expect(normalizePath("/Users/test/project")).toBe(expectedPath("Users", "test", "project"))
 	})
 
 	it("should normalize path separators", () => {
 		// path.normalize handles this
-		expect(normalizePath("/Users//test/project")).toBe("/Users/test/project")
+		expect(normalizePath("/Users//test/project")).toBe(expectedPath("Users", "test", "project"))
 	})
 })
 
