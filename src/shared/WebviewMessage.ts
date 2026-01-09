@@ -128,6 +128,8 @@ export interface WebviewMessage {
 		| "rooCloudManualUrl"
 		| "claudeCodeSignIn"
 		| "claudeCodeSignOut"
+		| "claudeCodeStartManualAuth"
+		| "claudeCodeSubmitManualCode"
 		| "switchOrganization"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"

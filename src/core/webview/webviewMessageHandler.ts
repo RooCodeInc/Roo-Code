@@ -2367,6 +2367,54 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "claudeCodeStartManualAuth": {
+			// Start manual auth flow for remote environments (e.g., GitHub Codespaces)
+			try {
+				const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
+				const authUrl = claudeCodeOAuthManager.startManualAuthorizationFlow()
+
+				// Open the authorization URL in the browser
+				await vscode.env.openExternal(vscode.Uri.parse(authUrl))
+
+				// Notify the webview that manual auth flow has started
+				await provider.postMessageToWebview({
+					type: "claudeCodeManualAuthStarted",
+					text: authUrl,
+				})
+			} catch (error) {
+				provider.log(`Claude Code manual OAuth failed: ${error}`)
+				vscode.window.showErrorMessage("Claude Code manual sign in failed to start.")
+			}
+			break
+		}
+		case "claudeCodeSubmitManualCode": {
+			// Exchange manually-entered authorization code for tokens
+			try {
+				const code = message.text?.trim()
+				if (!code) {
+					vscode.window.showErrorMessage("Please enter the authorization code.")
+					break
+				}
+
+				const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
+
+				if (!claudeCodeOAuthManager.hasPendingManualAuth()) {
+					vscode.window.showErrorMessage(
+						"No pending authorization. Please click 'Sign in manually' first.",
+					)
+					break
+				}
+
+				await claudeCodeOAuthManager.exchangeManualCode(code)
+				vscode.window.showInformationMessage("Successfully signed in to Claude Code")
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(`Claude Code manual code exchange failed: ${error}`)
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				vscode.window.showErrorMessage(`Claude Code sign in failed: ${errorMessage}`)
+			}
+			break
+		}
 		case "claudeCodeSignOut": {
 			try {
 				const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")

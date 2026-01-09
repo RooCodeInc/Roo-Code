@@ -10,6 +10,8 @@ export const CLAUDE_CODE_OAUTH_CONFIG = {
 	tokenEndpoint: "https://console.anthropic.com/v1/oauth/token",
 	clientId: "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
 	redirectUri: "http://localhost:54545/callback",
+	// Out-of-band redirect URI for manual auth flow (remote environments like Codespaces)
+	oobRedirectUri: "urn:ietf:wg:oauth:2.0:oob",
 	scopes: "org:create_api_key user:profile user:inference",
 	callbackPort: 54545,
 } as const
@@ -163,6 +165,24 @@ export function buildAuthorizationUrl(codeChallenge: string, state: string): str
 }
 
 /**
+ * Builds the authorization URL for manual/OOB OAuth flow
+ * Used for remote environments where localhost redirect is not possible
+ */
+export function buildManualAuthorizationUrl(codeChallenge: string, state: string): string {
+	const params = new URLSearchParams({
+		client_id: CLAUDE_CODE_OAUTH_CONFIG.clientId,
+		redirect_uri: CLAUDE_CODE_OAUTH_CONFIG.oobRedirectUri,
+		scope: CLAUDE_CODE_OAUTH_CONFIG.scopes,
+		code_challenge: codeChallenge,
+		code_challenge_method: "S256",
+		response_type: "code",
+		state,
+	})
+
+	return `${CLAUDE_CODE_OAUTH_CONFIG.authorizationEndpoint}?${params.toString()}`
+}
+
+/**
  * Exchanges the authorization code for tokens
  */
 export async function exchangeCodeForTokens(
@@ -176,6 +196,58 @@ export async function exchangeCodeForTokens(
 		grant_type: "authorization_code",
 		client_id: CLAUDE_CODE_OAUTH_CONFIG.clientId,
 		redirect_uri: CLAUDE_CODE_OAUTH_CONFIG.redirectUri,
+		code_verifier: codeVerifier,
+	}
+
+	const response = await fetch(CLAUDE_CODE_OAUTH_CONFIG.tokenEndpoint, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(body),
+		signal: AbortSignal.timeout(30000),
+	})
+
+	if (!response.ok) {
+		const errorText = await response.text()
+		throw new Error(`Token exchange failed: ${response.status} ${response.statusText} - ${errorText}`)
+	}
+
+	const data = await response.json()
+	const tokenResponse = tokenResponseSchema.parse(data)
+
+	if (!tokenResponse.refresh_token) {
+		// The access token is unusable without a refresh token for persistence.
+		throw new Error("Token exchange did not return a refresh_token")
+	}
+
+	// Calculate expiry time
+	const expiresAt = new Date(Date.now() + tokenResponse.expires_in * 1000)
+
+	return {
+		type: "claude",
+		access_token: tokenResponse.access_token,
+		refresh_token: tokenResponse.refresh_token,
+		expired: expiresAt.toISOString(),
+		email: tokenResponse.email,
+	}
+}
+
+/**
+ * Exchanges the manually-entered authorization code for tokens (OOB flow)
+ * Used for remote environments where localhost redirect is not possible
+ */
+export async function exchangeManualCodeForTokens(
+	code: string,
+	codeVerifier: string,
+	state: string,
+): Promise<ClaudeCodeCredentials> {
+	const body = {
+		code,
+		state,
+		grant_type: "authorization_code",
+		client_id: CLAUDE_CODE_OAUTH_CONFIG.clientId,
+		redirect_uri: CLAUDE_CODE_OAUTH_CONFIG.oobRedirectUri,
 		code_verifier: codeVerifier,
 	}
 
@@ -484,6 +556,61 @@ export class ClaudeCodeOAuthManager {
 		}
 
 		return buildAuthorizationUrl(codeChallenge, state)
+	}
+
+	/**
+	 * Start the manual OAuth authorization flow (OOB/device flow)
+	 * Used for remote environments like GitHub Codespaces where localhost redirect is not possible
+	 * Returns the authorization URL to open in browser
+	 */
+	startManualAuthorizationFlow(): string {
+		// Cancel any existing authorization flow before starting a new one
+		this.cancelAuthorizationFlow()
+
+		const codeVerifier = generateCodeVerifier()
+		const codeChallenge = generateCodeChallenge(codeVerifier)
+		const state = generateState()
+
+		this.pendingAuth = {
+			codeVerifier,
+			state,
+		}
+
+		this.log("[claude-code-oauth] Starting manual authorization flow (OOB)")
+		return buildManualAuthorizationUrl(codeChallenge, state)
+	}
+
+	/**
+	 * Exchange a manually-entered authorization code for tokens
+	 * Used for remote environments where localhost redirect is not possible
+	 * @param code The authorization code copied by the user from the browser
+	 */
+	async exchangeManualCode(code: string): Promise<ClaudeCodeCredentials> {
+		if (!this.pendingAuth) {
+			throw new Error("No pending authorization flow. Please start the manual auth flow first.")
+		}
+
+		const { codeVerifier, state } = this.pendingAuth
+
+		try {
+			this.log("[claude-code-oauth] Exchanging manual authorization code for tokens")
+			const credentials = await exchangeManualCodeForTokens(code, codeVerifier, state)
+			await this.saveCredentials(credentials)
+			this.log("[claude-code-oauth] Manual auth successful, credentials saved")
+			this.pendingAuth = null
+			return credentials
+		} catch (error) {
+			this.logError("[claude-code-oauth] Manual code exchange failed:", error)
+			this.pendingAuth = null
+			throw error
+		}
+	}
+
+	/**
+	 * Check if there is a pending manual auth flow
+	 */
+	hasPendingManualAuth(): boolean {
+		return this.pendingAuth !== null && !this.pendingAuth.server
 	}
 
 	/**

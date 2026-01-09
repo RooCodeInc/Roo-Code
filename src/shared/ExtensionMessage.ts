@@ -131,6 +131,7 @@ export interface ExtensionMessage {
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
 		| "claudeCodeRateLimits"
+		| "claudeCodeManualAuthStarted"
 		| "customToolsResult"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
