@@ -1,17 +1,22 @@
 #!/bin/bash
 # Roo Code CLI Release Script
-# 
+#
 # Usage:
-#   ./apps/cli/scripts/release.sh [version]
+#   ./apps/cli/scripts/release.sh [options] [version]
+#
+# Options:
+#   --dry-run    Run all steps except creating the GitHub release
 #
 # Examples:
 #   ./apps/cli/scripts/release.sh           # Use version from package.json
 #   ./apps/cli/scripts/release.sh 0.1.0     # Specify version
+#   ./apps/cli/scripts/release.sh --dry-run # Test the release flow without pushing
+#   ./apps/cli/scripts/release.sh --dry-run 0.1.0  # Dry run with specific version
 #
 # This script:
 # 1. Builds the extension and CLI
 # 2. Creates a tarball for the current platform
-# 3. Creates a GitHub release and uploads the tarball
+# 3. Creates a GitHub release and uploads the tarball (unless --dry-run)
 #
 # Prerequisites:
 #   - GitHub CLI (gh) installed and authenticated
@@ -19,6 +24,27 @@
 #   - Run from the monorepo root directory
 
 set -e
+
+# Parse arguments
+DRY_RUN=false
+VERSION_ARG=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --dry-run)
+            DRY_RUN=true
+            shift
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            exit 1
+            ;;
+        *)
+            VERSION_ARG="$1"
+            shift
+            ;;
+    esac
+done
 
 # Colors
 RED='\033[0;31m'
@@ -83,8 +109,8 @@ check_prerequisites() {
 
 # Get version
 get_version() {
-    if [ -n "$1" ]; then
-        VERSION="$1"
+    if [ -n "$VERSION_ARG" ]; then
+        VERSION="$VERSION_ARG"
     else
         VERSION=$(node -p "require('$CLI_DIR/package.json').version")
     fi
@@ -198,10 +224,12 @@ create_tarball() {
         type: 'module',
         dependencies: {
           '@inkjs/ui': pkg.dependencies['@inkjs/ui'],
+          '@trpc/client': pkg.dependencies['@trpc/client'],
           'commander': pkg.dependencies.commander,
           'fuzzysort': pkg.dependencies.fuzzysort,
           'ink': pkg.dependencies.ink,
           'react': pkg.dependencies.react,
+          'superjson': pkg.dependencies.superjson,
           'zustand': pkg.dependencies.zustand
         }
       };
@@ -248,6 +276,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Set environment variables for the CLI
+// ROO_CLI_ROOT is the installed CLI package root (where node_modules/@vscode/ripgrep is)
+process.env.ROO_CLI_ROOT = join(__dirname, '..');
 process.env.ROO_EXTENSION_PATH = join(__dirname, '..', 'extension');
 process.env.ROO_RIPGREP_PATH = join(__dirname, 'rg');
 
@@ -518,6 +548,24 @@ print_summary() {
     echo ""
 }
 
+# Print dry-run summary
+print_dry_run_summary() {
+    echo ""
+    printf "${YELLOW}${BOLD}✓ Dry run complete for v$VERSION${NC}\n"
+    echo ""
+    echo "  The following artifacts were created:"
+    echo "    - $TARBALL"
+    if [ -f "${TARBALL}.sha256" ]; then
+        echo "    - ${TARBALL}.sha256"
+    fi
+    echo ""
+    echo "  To complete the release, run without --dry-run:"
+    echo "    ./apps/cli/scripts/release.sh $VERSION"
+    echo ""
+    echo "  Or manually upload the tarball to a new GitHub release."
+    echo ""
+}
+
 # Main
 main() {
     echo ""
@@ -526,20 +574,31 @@ main() {
     echo "  │   Roo Code CLI Release Script   │"
     echo "  ╰─────────────────────────────────╯"
     printf "${NC}"
+    
+    if [ "$DRY_RUN" = true ]; then
+        printf "${YELLOW}  │           (DRY RUN MODE)        │${NC}\n"
+    fi
     echo ""
     
     detect_platform
     check_prerequisites
-    get_version "$1"
+    get_version
     get_changelog_content
     build
     create_tarball
     verify_local_install
     create_checksum
-    check_existing_release
-    create_release
-    cleanup
-    print_summary
+    
+    if [ "$DRY_RUN" = true ]; then
+        step "7/8" "Skipping existing release check (dry run)"
+        step "8/8" "Skipping GitHub release creation (dry run)"
+        print_dry_run_summary
+    else
+        check_existing_release
+        create_release
+        cleanup
+        print_summary
+    fi
 }
 
-main "$@"
+main

@@ -49,10 +49,11 @@ import { AskDispatcher } from "./ask-dispatcher.js"
 const cliLogger = new DebugLogger("CLI")
 
 // Get the CLI package root directory (for finding node_modules/@vscode/ripgrep)
-// At runtime, this file is at apps/cli/dist/extension-host/extension-host.js
-// So we need to go up two levels to reach apps/cli (where node_modules is located)
+// When running from a release tarball, ROO_CLI_ROOT is set by the wrapper script.
+// In development, we fall back to calculating from __dirname.
+// After bundling with tsup, the code is in dist/index.js (flat), so we go up one level.
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const CLI_PACKAGE_ROOT = path.resolve(__dirname, "../..")
+const CLI_PACKAGE_ROOT = process.env.ROO_CLI_ROOT || path.resolve(__dirname, "..")
 
 // =============================================================================
 // Types
