@@ -425,6 +425,97 @@ describe("editFileTool", () => {
 		})
 	})
 
+	describe("consecutive error display behavior", () => {
+		it("does NOT show diff_error to user on first no_match failure", async () => {
+			await executeEditFileTool({ old_string: "NonExistent" }, { fileContent: "Line 1\nLine 2\nLine 3" })
+
+			expect(mockTask.consecutiveMistakeCountForEditFile.get(testFilePath)).toBe(1)
+			expect(mockTask.say).not.toHaveBeenCalledWith("diff_error", expect.any(String))
+			expect(mockTask.recordToolError).toHaveBeenCalledWith(
+				"edit_file",
+				expect.stringContaining("No match found"),
+			)
+		})
+
+		it("shows diff_error to user on second consecutive no_match failure", async () => {
+			// First failure
+			await executeEditFileTool({ old_string: "NonExistent" }, { fileContent: "Line 1\nLine 2\nLine 3" })
+
+			// Second failure on same file
+			await executeEditFileTool({ old_string: "AlsoNonExistent" }, { fileContent: "Line 1\nLine 2\nLine 3" })
+
+			expect(mockTask.consecutiveMistakeCountForEditFile.get(testFilePath)).toBe(2)
+			expect(mockTask.say).toHaveBeenCalledWith("diff_error", expect.stringContaining("No match found"))
+		})
+
+		it("does NOT show diff_error to user on first occurrence_mismatch failure", async () => {
+			await executeEditFileTool(
+				{ old_string: "Line", expected_replacements: "1" },
+				{ fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			expect(mockTask.consecutiveMistakeCountForEditFile.get(testFilePath)).toBe(1)
+			expect(mockTask.say).not.toHaveBeenCalledWith("diff_error", expect.any(String))
+			expect(mockTask.recordToolError).toHaveBeenCalledWith(
+				"edit_file",
+				expect.stringContaining("Occurrence count mismatch"),
+			)
+		})
+
+		it("shows diff_error to user on second consecutive occurrence_mismatch failure", async () => {
+			// First failure
+			await executeEditFileTool(
+				{ old_string: "Line", expected_replacements: "1" },
+				{ fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			// Second failure on same file
+			await executeEditFileTool(
+				{ old_string: "Line", expected_replacements: "5" },
+				{ fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			expect(mockTask.consecutiveMistakeCountForEditFile.get(testFilePath)).toBe(2)
+			expect(mockTask.say).toHaveBeenCalledWith("diff_error", expect.stringContaining("Occurrence count mismatch"))
+		})
+
+		it("resets consecutive error counter on successful edit", async () => {
+			// First failure
+			await executeEditFileTool({ old_string: "NonExistent" }, { fileContent: "Line 1\nLine 2\nLine 3" })
+
+			expect(mockTask.consecutiveMistakeCountForEditFile.get(testFilePath)).toBe(1)
+
+			// Successful edit
+			await executeEditFileTool(
+				{ old_string: "Line 2", new_string: "Modified Line 2" },
+				{ fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			// Counter should be deleted (reset) for the file
+			expect(mockTask.consecutiveMistakeCountForEditFile.has(testFilePath)).toBe(false)
+		})
+
+		it("tracks errors independently per file", async () => {
+			const otherFilePath = "other/file.txt"
+
+			// First failure on original file
+			await executeEditFileTool({ old_string: "NonExistent" }, { fileContent: "Line 1\nLine 2\nLine 3" })
+
+			// First failure on other file
+			await executeEditFileTool(
+				{ file_path: otherFilePath, old_string: "NonExistent" },
+				{ fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			// Both files should have count of 1, not 2
+			expect(mockTask.consecutiveMistakeCountForEditFile.get(testFilePath)).toBe(1)
+			expect(mockTask.consecutiveMistakeCountForEditFile.get(otherFilePath)).toBe(1)
+
+			// Neither should have triggered diff_error display
+			expect(mockTask.say).not.toHaveBeenCalledWith("diff_error", expect.any(String))
+		})
+	})
+
 	describe("file creation", () => {
 		it("creates new file when old_string is empty and file does not exist", async () => {
 			await executeEditFileTool({ old_string: "", new_string: "New file content" }, { fileExists: false })
