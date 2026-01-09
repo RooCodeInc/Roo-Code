@@ -64,6 +64,16 @@
 			"form-data": ">=4.0.4",
 			"bluebird": ">=3.7.2",
 			"glob": ">=11.1.0"
-		}
+		},
+		"onlyBuiltDependencies": [
+			"@tailwindcss/oxide",
+			"@vscode/vsce-sign",
+			"better-sqlite3",
+			"core-js",
+			"esbuild",
+			"keytar",
+			"puppeteer-chromium-resolver",
+			"sharp"
+		]
 	}
 }
