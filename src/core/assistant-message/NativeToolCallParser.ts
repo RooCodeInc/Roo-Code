@@ -298,40 +298,74 @@ export class NativeToolCallParser {
 	}
 
 	/**
-	 * Convert raw file entries from API (with line_ranges) to FileEntry objects
-	 * (with lineRanges). Handles multiple formats for compatibility:
+	 * Convert raw file entries from API to FileEntry objects.
+	 * Supports the new slice/indentation API:
 	 *
-	 * New tuple format: { path: string, line_ranges: [[1, 50], [100, 150]] }
-	 * Object format: { path: string, line_ranges: [{ start: 1, end: 50 }] }
-	 * Legacy string format: { path: string, line_ranges: ["1-50"] }
+	 * { path: string, offset?: number, mode?: "slice" | "indentation", indentation?: {...} }
 	 *
-	 * Returns: { path: string, lineRanges: [{ start: 1, end: 50 }] }
+	 * Note: limit is intentionally not exposed to models - it's controlled by the maxReadFileLine setting.
 	 */
 	private static convertFileEntries(files: any[]): FileEntry[] {
 		return files.map((file: any) => {
 			const entry: FileEntry = { path: file.path }
-			if (file.line_ranges && Array.isArray(file.line_ranges)) {
-				entry.lineRanges = file.line_ranges
-					.map((range: any) => {
-						// Handle tuple format: [start, end]
-						if (Array.isArray(range) && range.length >= 2) {
-							return { start: Number(range[0]), end: Number(range[1]) }
-						}
-						// Handle object format: { start: number, end: number }
-						if (typeof range === "object" && range !== null && "start" in range && "end" in range) {
-							return { start: Number(range.start), end: Number(range.end) }
-						}
-						// Handle legacy string format: "1-50"
-						if (typeof range === "string") {
-							const match = range.match(/^(\d+)-(\d+)$/)
-							if (match) {
-								return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
-							}
-						}
-						return null
-					})
-					.filter(Boolean)
+
+			// Map offset parameter
+			if (file.offset !== undefined) {
+				const offset = Number(file.offset)
+				if (!isNaN(offset) && offset > 0) {
+					entry.offset = offset
+				}
 			}
+
+			// Map mode parameter
+			if (file.mode === "slice" || file.mode === "indentation") {
+				entry.mode = file.mode
+			}
+
+			// Map indentation configuration
+			if (file.indentation && typeof file.indentation === "object") {
+				const indent = file.indentation
+				const indentConfig: FileEntry["indentation"] = {}
+
+				// anchorLine
+				if (indent.anchorLine !== undefined) {
+					const anchorLine = Number(indent.anchorLine)
+					if (!isNaN(anchorLine) && anchorLine > 0) {
+						indentConfig.anchorLine = anchorLine
+					}
+				}
+
+				// maxLevels
+				if (indent.maxLevels !== undefined) {
+					const maxLevels = Number(indent.maxLevels)
+					if (!isNaN(maxLevels) && maxLevels >= 0) {
+						indentConfig.maxLevels = maxLevels
+					}
+				}
+
+				// includeSiblings
+				if (indent.includeSiblings !== undefined) {
+					indentConfig.includeSiblings = Boolean(indent.includeSiblings)
+				}
+
+				// includeHeader
+				if (indent.includeHeader !== undefined) {
+					indentConfig.includeHeader = Boolean(indent.includeHeader)
+				}
+
+				// maxLines
+				if (indent.maxLines !== undefined) {
+					const maxLines = Number(indent.maxLines)
+					if (!isNaN(maxLines) && maxLines > 0) {
+						indentConfig.maxLines = maxLines
+					}
+				}
+
+				if (Object.keys(indentConfig).length > 0) {
+					entry.indentation = indentConfig
+				}
+			}
+
 			return entry
 		})
 	}

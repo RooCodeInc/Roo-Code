@@ -1,6 +1,7 @@
 {
 	"readFile": {
 		"linesRange": " ({{start}}-{{end}}행)",
+		"startingFromLine": " ({{start}}행부터)",
 		"definitionsOnly": " (정의만)",
 		"maxLines": " (최대 {{max}}행)",
 		"imageTooLarge": "이미지 파일이 너무 큽니다 ({{size}} MB). 최대 허용 크기는 {{max}} MB입니다.",

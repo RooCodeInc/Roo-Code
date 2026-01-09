@@ -76,6 +76,16 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			},
 			say: vi.fn().mockResolvedValue(undefined),
 			ask: vi.fn().mockResolvedValue({ response: "yesButtonClicked" }),
+			sayAndCreateMissingParamError: vi.fn().mockResolvedValue("Missing required parameter"),
+			cwd: "/test/workspace",
+			apiConfiguration: {},
+			taskToolProtocol: "native",
+			rooIgnoreController: {
+				validateAccess: vi.fn().mockReturnValue(true),
+			},
+			fileContextTracker: {
+				trackFileContext: vi.fn().mockResolvedValue(undefined),
+			},
 		}
 
 		// Add pushToolResultToUserContent method after mockTask is created so it can reference mockTask

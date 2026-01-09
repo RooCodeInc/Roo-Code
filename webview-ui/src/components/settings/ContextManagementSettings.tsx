@@ -244,7 +244,7 @@ export const ContextManagementSettings = ({
 							<VSCodeCheckbox
 								checked={maxReadFileLine === -1}
 								onChange={(e: any) =>
-									setCachedStateField("maxReadFileLine", e.target.checked ? -1 : 500)
+									setCachedStateField("maxReadFileLine", e.target.checked ? -1 : 2000)
 								}
 								data-testid="max-read-file-always-full-checkbox">
 								{t("settings:contextManagement.maxReadFile.always_full_read")}
