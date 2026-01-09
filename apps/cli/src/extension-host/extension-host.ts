@@ -49,8 +49,10 @@ import { AskDispatcher } from "./ask-dispatcher.js"
 const cliLogger = new DebugLogger("CLI")
 
 // Get the CLI package root directory (for finding node_modules/@vscode/ripgrep)
+// At runtime, this file is at apps/cli/dist/extension-host/extension-host.js
+// So we need to go up two levels to reach apps/cli (where node_modules is located)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const CLI_PACKAGE_ROOT = path.resolve(__dirname, "..")
+const CLI_PACKAGE_ROOT = path.resolve(__dirname, "../..")
 
 // =============================================================================
 // Types
@@ -524,11 +526,13 @@ export class ExtensionHost extends EventEmitter {
 	}
 
 	async runTask(prompt: string): Promise<void> {
-		cliLogger.debug("runTask:start", { prompt: prompt?.substring(0, 100) })
-
 		if (!this.isWebviewReady) {
 			await new Promise<void>((resolve) => this.once("webviewReady", resolve))
 		}
+
+		// Send initial webview messages to trigger proper extension initialization
+		// This is critical for the extension to start sending state updates properly
+		this.sendToExtension({ type: "webviewDidLaunch" })
 
 		const baseSettings: RooCodeSettings = {
 			commandExecutionTimeout: 30,
@@ -565,8 +569,10 @@ export class ExtensionHost extends EventEmitter {
 		await this.waitForCompletion()
 	}
 
-	private waitForCompletion(): Promise<void> {
+	private waitForCompletion(timeoutMs: number = 110000): Promise<void> {
 		return new Promise((resolve, reject) => {
+			let timeoutId: NodeJS.Timeout | null = null
+
 			const completeHandler = () => {
 				cleanup()
 				resolve()
@@ -575,10 +581,23 @@ export class ExtensionHost extends EventEmitter {
 				cleanup()
 				reject(new Error(error))
 			}
+			const timeoutHandler = () => {
+				cleanup()
+				reject(
+					new Error(`Task completion timeout after ${timeoutMs}ms - no completion or error event received`),
+				)
+			}
 			const cleanup = () => {
+				if (timeoutId) {
+					clearTimeout(timeoutId)
+					timeoutId = null
+				}
 				this.off("taskComplete", completeHandler)
 				this.off("taskError", errorHandler)
 			}
+
+			// Set timeout to prevent indefinite hanging
+			timeoutId = setTimeout(timeoutHandler, timeoutMs)
 
 			this.once("taskComplete", completeHandler)
 			this.once("taskError", errorHandler)
