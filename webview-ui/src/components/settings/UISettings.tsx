@@ -12,12 +12,14 @@ import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
 	enterBehavior: "send" | "newline"
+	showTimestamps: boolean
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
 export const UISettings = ({
 	reasoningBlockCollapsed,
 	enterBehavior,
+	showTimestamps,
 	setCachedStateField,
 	...props
 }: UISettingsProps) => {
@@ -45,6 +47,15 @@ export const UISettings = ({
 		// Track telemetry event
 		telemetryClient.capture("ui_settings_enter_behavior_changed", {
 			behavior: newBehavior,
+		})
+	}
+
+	const handleShowTimestampsChange = (value: boolean) => {
+		setCachedStateField("showTimestamps", value)
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_show_timestamps_changed", {
+			enabled: value,
 		})
 	}
 
@@ -84,6 +95,19 @@ export const UISettings = ({
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 							{t("settings:ui.requireCtrlEnterToSend.description", { primaryMod })}
+						</div>
+					</div>
+
+					{/* Show Timestamps Setting */}
+					<div className="flex flex-col gap-1">
+						<VSCodeCheckbox
+							checked={showTimestamps}
+							onChange={(e: any) => handleShowTimestampsChange(e.target.checked)}
+							data-testid="show-timestamps-checkbox">
+							<span className="font-medium">{t("settings:ui.showTimestamps.label")}</span>
+						</VSCodeCheckbox>
+						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
+							{t("settings:ui.showTimestamps.description")}
 						</div>
 					</div>
 				</div>

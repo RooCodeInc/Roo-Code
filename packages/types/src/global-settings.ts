@@ -193,6 +193,11 @@ export const globalSettingsSchema = z.object({
 	 * @default "send"
 	 */
 	enterBehavior: z.enum(["send", "newline"]).optional(),
+	/**
+	 * Whether to show timestamps on chat messages
+	 * @default false
+	 */
+	showTimestamps: z.boolean().optional(),
 	profileThresholds: z.record(z.string(), z.number()).optional(),
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
