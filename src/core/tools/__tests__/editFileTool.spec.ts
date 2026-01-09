@@ -106,7 +106,9 @@ describe("editFileTool", () => {
 
 		mockTask.cwd = "/"
 		mockTask.consecutiveMistakeCount = 0
+		mockTask.consecutiveMistakeCountForEditFile = new Map()
 		mockTask.didEditFile = false
+		mockTask.didToolFailInCurrentTurn = false
 		mockTask.providerRef = {
 			deref: vi.fn().mockReturnValue({
 				getState: vi.fn().mockResolvedValue({
@@ -211,6 +213,7 @@ describe("editFileTool", () => {
 			expect(result).toBe("Missing param error")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file")
+			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
 		})
 
 		it("treats undefined new_string as empty string (deletion)", async () => {
@@ -237,8 +240,10 @@ describe("editFileTool", () => {
 				new_string: "same",
 			})
 
-			expect(result).toContain("Error:")
+			expect(result).toContain("No changes to apply")
+			expect(result).toContain("<error_details>")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
 		})
 	})
 
@@ -246,9 +251,10 @@ describe("editFileTool", () => {
 		it("returns error when file does not exist and old_string is not empty", async () => {
 			const result = await executeEditFileTool({}, { fileExists: false })
 
-			expect(result).toContain("Error:")
-			expect(result).toContain("File not found")
+			expect(result).toContain("File does not exist")
+			expect(result).toContain("<error_details>")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
 		})
 
 		it("returns error when access is denied", async () => {
@@ -265,10 +271,21 @@ describe("editFileTool", () => {
 				{ fileContent: "Line 1\nLine 2\nLine 3" },
 			)
 
-			expect(result).toContain("Error:")
 			expect(result).toContain("No match found")
+			expect(result).toContain("<error_details>")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file", "no_match")
+			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
+			expect(mockTask.recordToolError).toHaveBeenCalledWith(
+				"edit_file",
+				expect.stringContaining("No match found"),
+			)
+		})
+
+		it("emits diff_error on the 2nd consecutive failure for the same file", async () => {
+			await executeEditFileTool({ old_string: "NonExistent" }, { fileContent: "Line 1\nLine 2\nLine 3" })
+			await executeEditFileTool({ old_string: "NonExistent" }, { fileContent: "Line 1\nLine 2\nLine 3" })
+
+			expect(mockTask.say).toHaveBeenCalledWith("diff_error", expect.stringContaining("No match found"))
 		})
 
 		it("returns error when occurrence count does not match expected_replacements", async () => {
@@ -277,10 +294,14 @@ describe("editFileTool", () => {
 				{ fileContent: "Line 1\nLine 2\nLine 3" },
 			)
 
-			expect(result).toContain("Error:")
 			expect(result).toContain("Expected 1 occurrence(s) but found 3")
+			expect(result).toContain("<error_details>")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
-			expect(mockTask.recordToolError).toHaveBeenCalledWith("edit_file", "occurrence_mismatch")
+			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
+			expect(mockTask.recordToolError).toHaveBeenCalledWith(
+				"edit_file",
+				expect.stringContaining("Occurrence count mismatch"),
+			)
 		})
 
 		it("succeeds when occurrence count matches expected_replacements", async () => {
@@ -314,8 +335,8 @@ describe("editFileTool", () => {
 				{ fileContent: "Line 1\nLine 2\nLine 3\nLine 4" },
 			)
 
-			expect(result).toContain("Error:")
 			expect(result).toContain("Expected 1 occurrence(s) but found 4")
+			expect(result).toContain("<error_details>")
 		})
 	})
 
@@ -334,9 +355,11 @@ describe("editFileTool", () => {
 				{ fileExists: true, fileContent: "Existing content" },
 			)
 
-			expect(result).toContain("Error:")
+			expect(result).toContain("File already exists")
+			expect(result).toContain("<error_details>")
 			expect(result).toContain("already exists")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
 		})
 	})
 
@@ -379,6 +402,43 @@ describe("editFileTool", () => {
 
 			expect(mockTask.ask).toHaveBeenCalled()
 		})
+
+		it("finalizes a partial tool preview row on failure (no stuck spinner)", async () => {
+			// Path stabilization requires two consecutive calls with the same path
+			await executeEditFileTool({ old_string: "NonExistent" }, { isPartial: true })
+			await executeEditFileTool({ old_string: "NonExistent" }, { isPartial: true })
+
+			await executeEditFileTool(
+				{ old_string: "NonExistent" },
+				{ isPartial: false, fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			const askCalls = mockTask.ask.mock.calls
+			const hasFinalToolAsk = askCalls.some((call: any[]) => call[0] === "tool" && call[2] === false)
+			expect(hasFinalToolAsk).toBe(true)
+		})
+
+		it("finalizes a partial tool preview row on no-op success (no changes needed)", async () => {
+			// Path stabilization requires two consecutive calls with the same path
+			await executeEditFileTool(
+				{ old_string: " Line 2", new_string: "Line 2" },
+				{ isPartial: true, fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+			await executeEditFileTool(
+				{ old_string: " Line 2", new_string: "Line 2" },
+				{ isPartial: true, fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			const result = await executeEditFileTool(
+				{ old_string: " Line 2", new_string: "Line 2" },
+				{ isPartial: false, fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			expect(result).toContain("No changes needed")
+			const askCalls = mockTask.ask.mock.calls
+			const hasFinalToolAsk = askCalls.some((call: any[]) => call[0] === "tool" && call[2] === false)
+			expect(hasFinalToolAsk).toBe(true)
+		})
 	})
 
 	describe("error handling", () => {
@@ -409,9 +469,10 @@ describe("editFileTool", () => {
 				toolProtocol: "native",
 			})
 
-			expect(capturedResult).toContain("Error:")
 			expect(capturedResult).toContain("Failed to read file")
+			expect(capturedResult).toContain("<error_details>")
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
+			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
 		})
 
 		it("handles general errors and resets diff view", async () => {
@@ -433,7 +494,7 @@ describe("editFileTool", () => {
 	})
 
 	describe("CRLF normalization", () => {
-		it("normalizes CRLF to LF when reading file", async () => {
+		it("preserves CRLF line endings on output", async () => {
 			const contentWithCRLF = "Line 1\r\nLine 2\r\nLine 3"
 
 			await executeEditFileTool(
@@ -443,6 +504,68 @@ describe("editFileTool", () => {
 
 			expect(mockTask.consecutiveMistakeCount).toBe(0)
 			expect(mockAskApproval).toHaveBeenCalled()
+			expect(mockTask.diffViewProvider.update).toHaveBeenCalledWith("Line 1\r\nModified Line 2\r\nLine 3", true)
+		})
+
+		it("normalizes CRLF in old_string for matching against LF file content", async () => {
+			await executeEditFileTool(
+				{
+					old_string: "Line 1\r\nLine 2\r\nLine 3",
+					new_string: "Line 1\r\nModified Line 2\r\nLine 3",
+				},
+				{ fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
+			expect(mockAskApproval).toHaveBeenCalled()
+			expect(mockTask.diffViewProvider.update).toHaveBeenCalledWith("Line 1\nModified Line 2\nLine 3", true)
+		})
+	})
+
+	describe("deterministic fallback matching", () => {
+		it("recovers from whitespace/indentation mismatch (whitespace-tolerant regex)", async () => {
+			await executeEditFileTool(
+				{
+					old_string: "start\nif (true) {\n    return 1\n}\nend",
+					new_string: "start\nif (true) {\n    return 2\n}\nend",
+				},
+				{ fileContent: "start\nif (true) {\n\treturn 1\n}\nend" },
+			)
+
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
+			expect(mockAskApproval).toHaveBeenCalled()
+			expect(mockTask.diffViewProvider.update).toHaveBeenCalledWith(
+				"start\nif (true) {\n    return 2\n}\nend",
+				true,
+			)
+		})
+
+		it("keeps $ literal under regex fallback replacement", async () => {
+			await executeEditFileTool(
+				{
+					old_string: "Line 1\n    Line 2\nLine 3",
+					new_string: "Line 1\n    Cost: $100\nLine 3",
+				},
+				{ fileContent: "Line 1\n\tLine 2\nLine 3" },
+			)
+
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
+			expect(mockAskApproval).toHaveBeenCalled()
+			expect(mockTask.diffViewProvider.update).toHaveBeenCalledWith("Line 1\n    Cost: $100\nLine 3", true)
+		})
+
+		it("falls back to token-based regex when whitespace-tolerant regex cannot match", async () => {
+			await executeEditFileTool(
+				{
+					old_string: " Line 2",
+					new_string: "Row 2",
+				},
+				{ fileContent: "Line 1\nLine 2\nLine 3" },
+			)
+
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
+			expect(mockAskApproval).toHaveBeenCalled()
+			expect(mockTask.diffViewProvider.update).toHaveBeenCalledWith("Line 1\nRow 2\nLine 3", true)
 		})
 	})
 
