@@ -278,7 +278,6 @@
 		"useCustomBaseUrl": "Özel temel URL kullan",
 		"useReasoning": "Akıl yürütmeyi etkinleştir",
 		"useHostHeader": "Özel Host başlığı kullan",
-		"useLegacyFormat": "Eski OpenAI API formatını kullan",
 		"customHeaders": "Özel Başlıklar",
 		"headerName": "Başlık adı",
 		"headerValue": "Başlık değeri",

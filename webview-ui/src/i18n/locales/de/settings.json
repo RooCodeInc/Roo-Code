@@ -280,7 +280,6 @@
 		"useCustomBaseUrl": "Benutzerdefinierte Basis-URL verwenden",
 		"useReasoning": "Reasoning aktivieren",
 		"useHostHeader": "Benutzerdefinierten Host-Header verwenden",
-		"useLegacyFormat": "Altes OpenAI API-Format verwenden",
 		"customHeaders": "Benutzerdefinierte Headers",
 		"headerName": "Header-Name",
 		"headerValue": "Header-Wert",

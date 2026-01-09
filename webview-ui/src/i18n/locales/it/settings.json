@@ -278,7 +278,6 @@
 		"useCustomBaseUrl": "Usa URL base personalizzato",
 		"useReasoning": "Abilita ragionamento",
 		"useHostHeader": "Usa intestazione Host personalizzata",
-		"useLegacyFormat": "Usa formato API OpenAI legacy",
 		"customHeaders": "Intestazioni personalizzate",
 		"headerName": "Nome intestazione",
 		"headerValue": "Valore intestazione",

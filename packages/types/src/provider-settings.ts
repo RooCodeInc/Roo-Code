@@ -242,7 +242,6 @@ const vertexSchema = apiModelIdProviderModelSchema.extend({
 const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiBaseUrl: z.string().optional(),
 	openAiApiKey: z.string().optional(),
-	openAiLegacyFormat: z.boolean().optional(),
 	openAiR1FormatEnabled: z.boolean().optional(),
 	openAiModelId: z.string().optional(),
 	openAiCustomModelInfo: modelInfoSchema.nullish(),
