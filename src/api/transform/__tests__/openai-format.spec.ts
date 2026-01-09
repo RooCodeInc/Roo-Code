@@ -225,6 +225,36 @@ describe("convertToOpenAiMessages", () => {
 		expect(assistantMessage.tool_calls![0].id).toBe("custom_toolu_123")
 	})
 
+	it("should use empty string for content when assistant message has only tool calls (Gemini compatibility)", () => {
+		// This test ensures that assistant messages with only tool_use blocks (no text)
+		// have content set to "" instead of undefined. Gemini (via OpenRouter) requires
+		// every message to have at least one "parts" field, which fails if content is undefined.
+		// See: ROO-425
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						id: "tool-123",
+						name: "read_file",
+						input: { path: "test.ts" },
+					},
+				],
+			},
+		]
+
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+		expect(openAiMessages).toHaveLength(1)
+
+		const assistantMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionAssistantMessageParam
+		expect(assistantMessage.role).toBe("assistant")
+		// Content should be an empty string, NOT undefined
+		expect(assistantMessage.content).toBe("")
+		expect(assistantMessage.tool_calls).toHaveLength(1)
+		expect(assistantMessage.tool_calls![0].id).toBe("tool-123")
+	})
+
 	describe("mergeToolResultText option", () => {
 		it("should merge text content into last tool message when mergeToolResultText is true", () => {
 			const anthropicMessages: Anthropic.Messages.MessageParam[] = [

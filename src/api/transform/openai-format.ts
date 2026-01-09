@@ -223,7 +223,9 @@ export function convertToOpenAiMessages(
 					reasoning_details?: any[]
 				} = {
 					role: "assistant",
-					content,
+					// Use empty string instead of undefined for providers like Gemini (via OpenRouter)
+					// that require every message to have content in the "parts" field
+					content: content ?? "",
 				}
 
 				// Pass through reasoning_details to preserve the original shape from the API.
