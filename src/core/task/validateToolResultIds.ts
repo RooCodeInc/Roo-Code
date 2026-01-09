@@ -83,8 +83,10 @@ export function validateAndFixToolResultIds(
 	)
 
 	// Deduplicate tool_result blocks to prevent API protocol violations (GitHub #10465)
-	// Terminal fallback race conditions can generate duplicate tool_results with the same tool_use_id.
-	// Filter out duplicates before validation since Set-based checks below would miss them.
+	// This serves as a safety net for any potential race conditions that could generate
+	// duplicate tool_results with the same tool_use_id. The root cause (approval feedback
+	// creating duplicate results) has been fixed in presentAssistantMessage.ts, but this
+	// deduplication remains as a defensive measure for unknown edge cases.
 	const seenToolResultIds = new Set<string>()
 	const deduplicatedContent = userMessage.content.filter((block) => {
 		if (block.type !== "tool_result") {
