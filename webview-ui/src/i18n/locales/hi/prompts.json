@@ -207,5 +207,11 @@
 		"descriptionNoRules": "क्या आप वाकई इस कस्टम मोड को हटाना चाहते हैं?",
 		"confirm": "हटाएं",
 		"cancel": "रद्द करें"
+	},
+	"mcpServers": {
+		"title": "MCP Servers",
+		"description": "Configure which MCP servers this mode can access.",
+		"useAllServers": "Use all servers (default)",
+		"useSelectedServers": "Use selected servers only"
 	}
 }

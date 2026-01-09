@@ -207,5 +207,11 @@
 		"descriptionNoRules": "Bạn có chắc chắn muốn xóa chế độ tùy chỉnh này không?",
 		"confirm": "Xóa",
 		"cancel": "Hủy"
+	},
+	"mcpServers": {
+		"title": "MCP Servers",
+		"description": "Configure which MCP servers this mode can access.",
+		"useAllServers": "Use all servers (default)",
+		"useSelectedServers": "Use selected servers only"
 	}
 }

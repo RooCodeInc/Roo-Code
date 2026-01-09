@@ -469,6 +469,8 @@ describe("ClineProvider", () => {
 			listResources: vi.fn().mockResolvedValue([]),
 			readResource: vi.fn().mockResolvedValue({ contents: [] }),
 			getAllServers: vi.fn().mockReturnValue([]),
+			setActiveMode: vi.fn(),
+			getModeToProfileMapping: vi.fn().mockReturnValue({}),
 		})
 	})
 

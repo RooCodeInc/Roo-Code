@@ -207,5 +207,11 @@
 		"descriptionNoRules": "Weet je zeker dat je deze aangepaste modus wilt verwijderen?",
 		"confirm": "Verwijderen",
 		"cancel": "Annuleren"
+	},
+	"mcpServers": {
+		"title": "MCP Servers",
+		"description": "Configure which MCP servers this mode can access.",
+		"useAllServers": "Use all servers (default)",
+		"useSelectedServers": "Use selected servers only"
 	}
 }

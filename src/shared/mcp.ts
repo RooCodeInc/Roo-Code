@@ -1,8 +1,13 @@
+import type { ModeToProfileMapping } from "@roo-code/types"
+
 export type McpErrorEntry = {
 	message: string
 	timestamp: number
 	level: "error" | "warn" | "info"
 }
+
+// Re-export ModeToProfileMapping for backend usage
+export type { ModeToProfileMapping }
 
 export type McpServer = {
 	name: string

@@ -11,6 +11,13 @@ export interface McpServerUse {
 }
 
 /**
+ * Mode to Profile Mapping
+ * Maps mode slugs to arrays of MCP server names
+ * Example: { "debug": ["serverA"], "research": ["serverB", "serverC"] }
+ */
+export type ModeToProfileMapping = Record<string, string[]>
+
+/**
  * McpExecutionStatus
  */
 

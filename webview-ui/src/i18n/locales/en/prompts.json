@@ -31,6 +31,12 @@
 		},
 		"noTools": "None"
 	},
+	"mcpServers": {
+		"title": "MCP Servers",
+		"description": "Configure which MCP servers this mode can access.",
+		"useAllServers": "Use all servers (default)",
+		"useSelectedServers": "Use selected servers only"
+	},
 	"roleDefinition": {
 		"title": "Role Definition",
 		"resetToDefault": "Reset to default",

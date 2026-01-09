@@ -12,6 +12,46 @@ vitest.mock("@src/utils/vscode", () => ({
 	},
 }))
 
+// Mock i18n TranslationContext
+vitest.mock("@src/i18n/TranslationContext", () => ({
+	useAppTranslation: () => ({
+		t: (key: string) => {
+			// Return actual English translations for MCP server keys
+			const translations: Record<string, string> = {
+				"prompts:mcpServers.title": "MCP Servers",
+				"prompts:mcpServers.description": "Configure which MCP servers this mode can access.",
+				"prompts:mcpServers.useAllServers": "Use all servers (default)",
+				"prompts:mcpServers.useSelectedServers": "Use selected servers only",
+			}
+			return translations[key] || key
+		},
+	}),
+}))
+
+const baseMcpServers = [{ name: "serverA" }, { name: "serverB" }, { name: "serverC" }]
+
+// Mock modes with mcp group enabled
+const mockModesWithMcp = [
+	{
+		slug: "code",
+		name: "Code",
+		roleDefinition: "You are a code assistant",
+		groups: ["read", "edit", "browser", "command", "mcp"] as const,
+	},
+	{
+		slug: "ask",
+		name: "Ask",
+		roleDefinition: "You are a helpful assistant",
+		groups: ["read", "mcp"] as const,
+	},
+	{
+		slug: "architect",
+		name: "Architect",
+		roleDefinition: "You are an architect",
+		groups: ["read", "mcp"] as const,
+	},
+]
+
 const mockExtensionState = {
 	customModePrompts: {},
 	listApiConfigMeta: [
@@ -21,11 +61,13 @@ const mockExtensionState = {
 	enhancementApiConfigId: "",
 	setEnhancementApiConfigId: vitest.fn(),
 	mode: "code",
-	customModes: [],
+	customModes: mockModesWithMcp,
 	customSupportPrompts: [],
 	currentApiConfigName: "",
 	customInstructions: "Initial instructions",
 	setCustomInstructions: vitest.fn(),
+	mcpServers: baseMcpServers,
+	mcpEnabled: true,
 }
 
 const renderPromptsView = (props = {}) => {
@@ -35,6 +77,8 @@ const renderPromptsView = (props = {}) => {
 		</ExtensionStateContext.Provider>,
 	)
 }
+
+const renderModesView = renderPromptsView
 
 Element.prototype.scrollIntoView = vitest.fn()
 
@@ -92,7 +136,8 @@ describe("PromptsView", () => {
 	})
 
 	it("handles prompt changes correctly", async () => {
-		renderPromptsView()
+		// Use customModes: [] to ensure code is treated as a built-in mode for this test
+		renderPromptsView({ customModes: [] })
 
 		// Get the textarea
 		const textarea = await waitFor(() => screen.getByTestId("code-prompt-textarea"))
@@ -263,5 +308,340 @@ describe("PromptsView", () => {
 
 		// Verify popover remains closed
 		expect(selectTrigger).toHaveAttribute("aria-expanded", "false")
+	})
+})
+
+describe("ModesView MCP Server Selection UI", () => {
+	beforeEach(() => {
+		vitest.clearAllMocks()
+	})
+
+	describe("Rendering Tests", () => {
+		it("renders MCP servers section when enabled and servers exist", () => {
+			renderModesView()
+			expect(screen.getByText("MCP Servers")).toBeInTheDocument()
+			// Radio buttons should be present
+			expect(screen.getByLabelText(/Use all servers/i)).toBeInTheDocument()
+			expect(screen.getByLabelText(/Use selected servers only/i)).toBeInTheDocument()
+			// Server list is hidden by default (Use all servers mode)
+			expect(screen.queryByTestId("mcp-server-serverA")).not.toBeInTheDocument()
+		})
+
+		it("does not render MCP servers section when MCP disabled", () => {
+			renderModesView({ mcpEnabled: false })
+			expect(screen.queryByText("MCP Servers")).not.toBeInTheDocument()
+		})
+
+		it("does not render MCP servers section when no servers", () => {
+			renderModesView({ mcpServers: [] })
+			expect(screen.queryByText("MCP Servers")).not.toBeInTheDocument()
+		})
+
+		it('defaults to "Use all servers" mode', () => {
+			renderModesView({ mcpServers: baseMcpServers, mcpEnabled: true })
+			const allRadio = screen.getByLabelText(/Use all servers/i)
+			expect(allRadio).toBeChecked()
+		})
+
+		it('shows "Use selected servers only" option', () => {
+			renderModesView({ mcpServers: baseMcpServers, mcpEnabled: true })
+			expect(screen.getByLabelText(/Use selected servers only/i)).toBeInTheDocument()
+		})
+
+		it("hides server list when 'Use all servers' is selected", () => {
+			renderModesView({ mcpServers: baseMcpServers, mcpEnabled: true })
+			const allRadio = screen.getByLabelText(/Use all servers/i)
+			expect(allRadio).toBeChecked()
+			// Server list should not be visible
+			expect(screen.queryByTestId("mcp-server-serverA")).not.toBeInTheDocument()
+		})
+
+		it("shows server list when 'Use selected servers' is selected", async () => {
+			renderModesView({ mcpServers: baseMcpServers, mcpEnabled: true })
+			const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+			fireEvent.click(selectedRadio)
+
+			await waitFor(() => {
+				expect(screen.getByTestId("mcp-server-serverA")).toBeInTheDocument()
+				expect(screen.getByTestId("mcp-server-serverB")).toBeInTheDocument()
+				expect(screen.getByTestId("mcp-server-serverC")).toBeInTheDocument()
+			})
+		})
+
+		it("shows selected server names when servers are selected", async () => {
+			renderModesView({ mcpServers: baseMcpServers, mcpEnabled: true })
+			// Switch to selected mode
+			const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+			fireEvent.click(selectedRadio)
+
+			await waitFor(() => {
+				expect(screen.getByTestId("mcp-server-serverA")).toBeInTheDocument()
+			})
+
+			const serverRowA = screen.getByTestId("mcp-server-serverA")
+			const serverRowB = screen.getByTestId("mcp-server-serverB")
+			const toggleA = serverRowA.querySelector('[role="switch"]') as HTMLElement
+			const toggleB = serverRowB.querySelector('[role="switch"]') as HTMLElement
+
+			fireEvent.click(toggleA)
+			fireEvent.click(toggleB)
+
+			await waitFor(() => {
+				expect(screen.getByText("Selected: serverA, serverB")).toBeInTheDocument()
+			})
+		})
+	})
+
+	describe("Selection Tests", () => {
+		it("clicking a server toggle in selected mode toggles selection", async () => {
+			renderModesView()
+			// Switch to selected mode first
+			const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+			fireEvent.click(selectedRadio)
+
+			await waitFor(() => {
+				expect(screen.getByTestId("mcp-server-serverA")).toBeInTheDocument()
+			})
+
+			const serverRow = screen.getByTestId("mcp-server-serverA")
+			const toggle = serverRow.querySelector('[role="switch"]') as HTMLElement
+			expect(toggle).toHaveAttribute("aria-checked", "false")
+
+			fireEvent.click(toggle)
+			await waitFor(() => {
+				expect(toggle).toHaveAttribute("aria-checked", "true")
+			})
+
+			fireEvent.click(toggle)
+			await waitFor(() => {
+				expect(toggle).toHaveAttribute("aria-checked", "false")
+			})
+		})
+
+		it("selected toggles have correct state", async () => {
+			renderModesView()
+			// Switch to selected mode
+			const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+			fireEvent.click(selectedRadio)
+
+			await waitFor(() => {
+				expect(screen.getByTestId("mcp-server-serverB")).toBeInTheDocument()
+			})
+
+			const serverRow = screen.getByTestId("mcp-server-serverB")
+			const toggle = serverRow.querySelector('[role="switch"]') as HTMLElement
+			expect(toggle).toHaveAttribute("aria-checked", "false")
+
+			fireEvent.click(toggle)
+			await waitFor(() => {
+				expect(toggle).toHaveAttribute("aria-checked", "true")
+			})
+		})
+
+		it("multiple servers can be selected", async () => {
+			renderModesView()
+			// Switch to selected mode
+			const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+			fireEvent.click(selectedRadio)
+
+			await waitFor(() => {
+				expect(screen.getByTestId("mcp-server-serverA")).toBeInTheDocument()
+			})
+
+			const serverRowA = screen.getByTestId("mcp-server-serverA")
+			const serverRowB = screen.getByTestId("mcp-server-serverB")
+			const toggleA = serverRowA.querySelector('[role="switch"]') as HTMLElement
+			const toggleB = serverRowB.querySelector('[role="switch"]') as HTMLElement
+
+			fireEvent.click(toggleA)
+			fireEvent.click(toggleB)
+			await waitFor(() => {
+				expect(toggleA).toHaveAttribute("aria-checked", "true")
+				expect(toggleB).toHaveAttribute("aria-checked", "true")
+			})
+		})
+
+		it('switching back to "Use all servers" clears selection', async () => {
+			renderModesView()
+			// Switch to selected mode
+			const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+			fireEvent.click(selectedRadio)
+
+			await waitFor(() => {
+				expect(screen.getByTestId("mcp-server-serverA")).toBeInTheDocument()
+			})
+
+			// Select a server
+			const serverRow = screen.getByTestId("mcp-server-serverA")
+			const toggle = serverRow.querySelector('[role="switch"]') as HTMLElement
+			fireEvent.click(toggle)
+
+			// Switch back to all mode
+			const allRadio = screen.getByLabelText(/Use all servers/i)
+			fireEvent.click(allRadio)
+
+			await waitFor(() => {
+				// Server list should be hidden
+				expect(screen.queryByTestId("mcp-server-serverA")).not.toBeInTheDocument()
+			})
+		})
+
+		it("stays in selected mode when last server is toggled off", async () => {
+			renderModesView()
+			// Switch to selected mode
+			const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+			fireEvent.click(selectedRadio)
+
+			await waitFor(() => {
+				expect(screen.getByTestId("mcp-server-serverA")).toBeInTheDocument()
+			})
+
+			// Select one server
+			const serverRow = screen.getByTestId("mcp-server-serverA")
+			const toggle = serverRow.querySelector('[role="switch"]') as HTMLElement
+			fireEvent.click(toggle)
+
+			await waitFor(() => {
+				expect(toggle).toHaveAttribute("aria-checked", "true")
+			})
+
+			// Toggle it off again
+			fireEvent.click(toggle)
+
+			await waitFor(() => {
+				expect(toggle).toHaveAttribute("aria-checked", "false")
+				// Should still be in selected mode (not switch back to "all")
+				const selectedRadioAfter = screen.getByLabelText(/Use selected servers only/i)
+				expect(selectedRadioAfter).toBeChecked()
+				// Server list should still be visible
+				expect(screen.getByTestId("mcp-server-serverA")).toBeInTheDocument()
+			})
+		})
+	})
+
+	describe("Mode Switching Tests", () => {
+		it("loads correct server selection when switching modes", async () => {
+			const mapping = { code: ["serverA"], ask: ["serverB"] }
+			const { unmount } = renderModesView({ mode: "code" })
+
+			// Simulate backend response with mapping
+			window.dispatchEvent(new MessageEvent("message", { data: { type: "modeToProfileMapping", mapping } }))
+
+			// code mode should be in "selected" mode with serverA selected
+			await waitFor(() => {
+				const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+				expect(selectedRadio).toBeChecked()
+			})
+
+			// Cleanup before switching modes
+			unmount()
+
+			// Switch to ask mode
+			renderModesView({ mode: "ask" })
+
+			// Simulate backend response with mapping
+			window.dispatchEvent(new MessageEvent("message", { data: { type: "modeToProfileMapping", mapping } }))
+
+			await waitFor(() => {
+				const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+				expect(selectedRadio).toBeChecked()
+			})
+		})
+
+		it("shows all mode for modes not in mapping", async () => {
+			const mapping = { code: ["serverA"] }
+			renderModesView({ mode: "ask" })
+
+			// Simulate backend response with mapping
+			window.dispatchEvent(new MessageEvent("message", { data: { type: "modeToProfileMapping", mapping } }))
+
+			await waitFor(() => {
+				const allRadio = screen.getByLabelText(/Use all servers/i)
+				expect(allRadio).toBeChecked()
+			})
+		})
+
+		it("handles undefined mode correctly", async () => {
+			renderModesView({ mode: undefined })
+			// MCP section should not show for undefined mode (no mcp group)
+			expect(screen.queryByText("MCP Servers")).not.toBeInTheDocument()
+		})
+	})
+
+	describe("Backend Communication Tests", () => {
+		it("sends getModeToProfileMapping on mount", () => {
+			renderModesView()
+			expect(vscode.postMessage).toHaveBeenCalledWith({ type: "getModeToProfileMapping" })
+		})
+
+		it("sends updateModeToProfileMapping when selection changes", async () => {
+			renderModesView()
+			// Switch to selected mode first
+			const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+			fireEvent.click(selectedRadio)
+
+			await waitFor(() => {
+				expect(screen.getByTestId("mcp-server-serverA")).toBeInTheDocument()
+			})
+
+			const serverRow = screen.getByTestId("mcp-server-serverA")
+			const toggle = serverRow.querySelector('[role="switch"]') as HTMLElement
+			fireEvent.click(toggle)
+
+			await waitFor(() => {
+				expect(vscode.postMessage).toHaveBeenCalledWith(
+					expect.objectContaining({ type: "updateModeToProfileMapping" }),
+				)
+			})
+		})
+
+		it("handles modeToProfileMapping response correctly", async () => {
+			renderModesView()
+			const mapping = { code: ["serverA"] }
+			window.dispatchEvent(new MessageEvent("message", { data: { type: "modeToProfileMapping", mapping } }))
+			await waitFor(() => {
+				// Should switch to selected mode
+				const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+				expect(selectedRadio).toBeChecked()
+				// Server list should be visible
+				expect(screen.getByTestId("mcp-server-serverA")).toBeInTheDocument()
+			})
+		})
+	})
+
+	describe("Edge Cases", () => {
+		it("handles empty modeToProfile mapping", () => {
+			renderModesView({ modeToProfile: {} })
+			// Should default to "Use all servers" mode
+			const allRadio = screen.getByLabelText(/Use all servers/i)
+			expect(allRadio).toBeChecked()
+		})
+
+		it("handles mode not in mapping", () => {
+			renderModesView({ mode: "nonexistent", modeToProfile: { code: ["serverA"] } })
+			// MCP section should not show for nonexistent mode (no mcp group)
+			expect(screen.queryByText("MCP Servers")).not.toBeInTheDocument()
+		})
+
+		it("handles invalid server names gracefully", async () => {
+			const mapping = { code: ["invalidServer"] }
+			renderModesView({ mode: "code" })
+
+			// Simulate backend response with mapping containing invalid server
+			window.dispatchEvent(new MessageEvent("message", { data: { type: "modeToProfileMapping", mapping } }))
+
+			// Should be in selected mode
+			await waitFor(() => {
+				const selectedRadio = screen.getByLabelText(/Use selected servers only/i)
+				expect(selectedRadio).toBeChecked()
+			})
+
+			// All valid servers should still be rendered
+			await waitFor(() => {
+				baseMcpServers.forEach((s) => {
+					expect(screen.getByTestId(`mcp-server-${s.name}`)).toBeInTheDocument()
+				})
+			})
+		})
 	})
 })

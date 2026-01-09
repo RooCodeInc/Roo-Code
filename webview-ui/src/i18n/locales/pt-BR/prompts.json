@@ -207,5 +207,11 @@
 		"descriptionNoRules": "Tem certeza de que deseja excluir este modo personalizado?",
 		"confirm": "Excluir",
 		"cancel": "Cancelar"
+	},
+	"mcpServers": {
+		"title": "Servidores MCP",
+		"description": "Configure quais servidores MCP este modo pode acessar.",
+		"useAllServers": "Usar todos os servidores (padrão)",
+		"useSelectedServers": "Usar apenas servidores selecionados"
 	}
 }

@@ -30,6 +30,7 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { Section } from "@src/components/settings/Section"
 import { SectionHeader } from "@src/components/settings/SectionHeader"
+import MCPServerRow from "@src/components/mcp/MCPServerRow"
 import {
 	Button,
 	Select,
@@ -75,6 +76,8 @@ const ModesView = () => {
 		customInstructions,
 		setCustomInstructions,
 		customModes,
+		mcpServers,
+		mcpEnabled,
 	} = useExtensionState()
 
 	// Use a local state to track the visually active mode
@@ -123,6 +126,11 @@ const ModesView = () => {
 	const [localRenames, setLocalRenames] = useState<Record<string, string>>({})
 	// Display list that overlays optimistic names
 	const displayModes = (modes || []).map((m) => (localRenames[m.slug] ? { ...m, name: localRenames[m.slug] } : m))
+
+	// MCP server selection state
+	const [modeToProfile, setModeToProfile] = useState<Record<string, string[]>>({})
+	const [selectedMcpServers, setSelectedMcpServers] = useState<string[]>([])
+	const [mcpSelectionMode, setMcpSelectionMode] = useState<"all" | "selected">("all")
 
 	// Direct update functions
 	const updateAgentPrompt = useCallback(
@@ -217,6 +225,87 @@ const ModesView = () => {
 	useEffect(() => {
 		setVisualMode(mode)
 	}, [mode])
+
+	// Load modeToProfile mapping on mount
+	useEffect(() => {
+		vscode.postMessage({ type: "getModeToProfileMapping" })
+	}, [])
+
+	// Update selected MCP servers when mode changes
+	useEffect(() => {
+		if (visualMode && modeToProfile) {
+			// Check if mode is in the mapping
+			const hasMapping = visualMode in modeToProfile
+			const servers = modeToProfile[visualMode] || []
+			setSelectedMcpServers(servers)
+			// Set selection mode:
+			// - If mode is in mapping (even with empty array) → "selected" mode
+			// - If mode is not in mapping → "all" mode (default)
+			setMcpSelectionMode(hasMapping ? "selected" : "all")
+		}
+	}, [visualMode, modeToProfile])
+
+	// Handle radio button change for MCP selection mode
+	const handleMcpSelectionModeChange = useCallback(
+		(mode: "all" | "selected") => {
+			setMcpSelectionMode(mode)
+
+			if (mode === "all") {
+				// Clear the selection - remove this mode from the mapping
+				const newMapping = { ...modeToProfile }
+				delete newMapping[visualMode]
+
+				setModeToProfile(newMapping)
+				setSelectedMcpServers([])
+
+				// Send update to backend
+				vscode.postMessage({
+					type: "updateModeToProfileMapping",
+					mapping: newMapping,
+				})
+				// If switching to 'selected' mode, keep current selections (or start with empty)
+			} else {
+				// Add mode to mapping with current selection (or empty array)
+				const newMapping = {
+					...modeToProfile,
+					[visualMode]: selectedMcpServers,
+				}
+				setModeToProfile(newMapping)
+				vscode.postMessage({
+					type: "updateModeToProfileMapping",
+					mapping: newMapping,
+				})
+			}
+		},
+		[visualMode, modeToProfile, selectedMcpServers],
+	)
+
+	// Handle MCP server selection changes
+	const handleMcpServerToggle = useCallback(
+		(serverName: string) => {
+			const newSelection = selectedMcpServers.includes(serverName)
+				? selectedMcpServers.filter((name) => name !== serverName)
+				: [...selectedMcpServers, serverName]
+
+			setSelectedMcpServers(newSelection)
+
+			// Update the mapping - keep empty array to indicate "selected mode with no servers"
+			// This is different from missing/undefined which means "use all servers"
+			const newMapping = {
+				...modeToProfile,
+				[visualMode]: newSelection,
+			}
+
+			setModeToProfile(newMapping)
+
+			// Send update to backend
+			vscode.postMessage({
+				type: "updateModeToProfileMapping",
+				mapping: newMapping,
+			})
+		},
+		[visualMode, modeToProfile, selectedMcpServers],
+	)
 
 	// Handler for popover open state change
 	const onOpenChange = useCallback((open: boolean) => {
@@ -557,6 +646,11 @@ const ModesView = () => {
 					...prev,
 					[message.slug]: message.hasContent,
 				}))
+			} else if (message.type === "modeToProfileMapping") {
+				// Received the mode-to-profile mapping from backend
+				if (message.mapping) {
+					setModeToProfile(message.mapping)
+				}
 			} else if (message.type === "deleteCustomModeCheck") {
 				// Handle the check response
 				// Use the ref to get the current modeToDelete value
@@ -1194,6 +1288,90 @@ const ModesView = () => {
 						)}
 					</div>
 				</>
+
+				{/* MCP Servers section */}
+				{mcpEnabled &&
+					mcpServers &&
+					mcpServers.length > 0 &&
+					(() => {
+						const currentMode = getCurrentMode()
+						const enabledGroups = currentMode?.groups || []
+						return enabledGroups.some((group) => getGroupName(group) === "mcp")
+					})() && (
+						<div className="mb-4">
+							<div className="font-bold mb-1">{t("prompts:mcpServers.title")}</div>
+							<div className="text-sm text-vscode-descriptionForeground mb-3">
+								{t("prompts:mcpServers.description")}
+							</div>
+
+							{/* Radio button selection */}
+							<div className="flex flex-col gap-2">
+								<label className="flex items-center gap-2 cursor-pointer">
+									<input
+										type="radio"
+										name="mcp-selection-mode"
+										value="all"
+										checked={mcpSelectionMode === "all"}
+										onChange={(e) =>
+											handleMcpSelectionModeChange(e.target.value as "all" | "selected")
+										}
+										className="cursor-pointer"
+									/>
+									<span style={{ fontWeight: mcpSelectionMode === "all" ? "500" : "400" }}>
+										{t("prompts:mcpServers.useAllServers")}
+									</span>
+								</label>
+								<label className="flex items-center gap-2 cursor-pointer">
+									<input
+										type="radio"
+										name="mcp-selection-mode"
+										value="selected"
+										checked={mcpSelectionMode === "selected"}
+										onChange={(e) =>
+											handleMcpSelectionModeChange(e.target.value as "all" | "selected")
+										}
+										className="cursor-pointer"
+									/>
+									<span style={{ fontWeight: mcpSelectionMode === "selected" ? "500" : "400" }}>
+										{t("prompts:mcpServers.useSelectedServers")}
+									</span>
+								</label>
+							</div>
+
+							{/* Server selection list - only shown when "selected" mode is active */}
+							{mcpSelectionMode === "selected" && (
+								<>
+									<div className="flex flex-col gap-0 mt-3">
+										{mcpServers
+											.slice()
+											.sort((a, b) => a.name.localeCompare(b.name))
+											.map((server) => {
+												const isSelected = selectedMcpServers.includes(server.name)
+												return (
+													<MCPServerRow
+														key={server.name}
+														server={server}
+														simplified={true}
+														checked={isSelected}
+														onToggle={() => handleMcpServerToggle(server.name)}
+														data-testid={`mcp-server-${server.name}`}
+													/>
+												)
+											})}
+									</div>
+									{selectedMcpServers.length > 0 ? (
+										<div className="text-xs text-vscode-descriptionForeground mt-2">
+											Selected: {selectedMcpServers.join(", ")}
+										</div>
+									) : (
+										<div className="text-xs text-vscode-descriptionForeground mt-2 italic">
+											No servers selected - mode will have no MCP access
+										</div>
+									)}
+								</>
+							)}
+						</div>
+					)}
 
 				{/* Role definition for both built-in and custom modes */}
 				<div className="mb-2">

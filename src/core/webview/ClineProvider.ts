@@ -431,6 +431,12 @@ export class ClineProvider
 	}
 
 	async performPreparationTasks(cline: Task) {
+		// Set the active mode for MCP filtering
+		const mcpHub = this.getMcpHub()
+		if (mcpHub && cline.taskMode) {
+			await mcpHub.setActiveMode(cline.taskMode)
+		}
+
 		// LMStudio: We need to force model loading in order to read its context
 		// size; we do it now since we're starting a task with that model selected.
 		if (cline.apiConfiguration && cline.apiConfiguration.apiProvider === "lmstudio") {
@@ -1307,6 +1313,12 @@ export class ClineProvider
 		await this.updateGlobalState("mode", newMode)
 
 		this.emit(RooCodeEventName.ModeChanged, newMode)
+
+		// Update MCP Hub with the new active mode
+		const mcpHub = this.getMcpHub()
+		if (mcpHub) {
+			await mcpHub.setActiveMode(newMode)
+		}
 
 		// Load the saved API config for the new mode if it exists.
 		const savedConfigId = await this.providerSettingsManager.getModeConfigId(newMode)
