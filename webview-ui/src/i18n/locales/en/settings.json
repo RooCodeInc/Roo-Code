@@ -179,7 +179,12 @@
 			"baseUrlRequired": "Base URL is required",
 			"modelDimensionMinValue": "Model dimension must be greater than 0"
 		},
-		"optional": "optional"
+		"optional": "optional",
+		"excludedDirectories": {
+			"title": "Excluded Directories",
+			"description": "These directories are automatically excluded from indexing to improve performance. Files in these directories will not be indexed or searchable.",
+			"hiddenDirectoriesNote": "Additionally, all hidden directories (starting with a dot) are excluded."
+		}
 	},
 	"autoApprove": {
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust and if you understand the security risks.",
