@@ -73,7 +73,7 @@ export function usePickerHandlers({
 				const modeItem = item as ModeResult
 
 				if (sendToExtension) {
-					sendToExtension({ type: "mode", mode: modeItem.slug })
+					sendToExtension({ type: "mode", text: modeItem.slug })
 				}
 
 				autocompleteRef.current?.closePicker()

@@ -98,7 +98,7 @@ export function useGlobalInput({
 			const nextMode = availableModes[nextIndex]
 
 			if (nextMode && sendToExtension) {
-				sendToExtension({ type: "mode", mode: nextMode.slug })
+				sendToExtension({ type: "mode", text: nextMode.slug })
 				showInfo(`Switched to ${nextMode.name}`, 2000)
 			}
 
