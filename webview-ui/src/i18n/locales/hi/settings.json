@@ -55,7 +55,11 @@
 		},
 		"community": "सुझाव चाहिए या बस अन्य Roo Code उपयोगकर्ताओं के साथ घूमना चाहते हैं? <redditLink>reddit.com/r/RooCode</redditLink> या <discordLink>discord.gg/roocode</discordLink> में शामिल हों",
 		"contactAndCommunity": "संपर्क और समुदाय",
-		"manageSettings": "सेटिंग्स प्रबंधित करें"
+		"manageSettings": "सेटिंग्स प्रबंधित करें",
+		"debugMode": {
+			"label": "डिबग मोड सक्षम करें",
+			"description": "UI में डिबग जानकारी दिखाएँ और डिबग लॉग सक्षम करें। यह समस्याओं का निवारण करने में मदद करता है।"
+		}
 	},
 	"slashCommands": {
 		"description": "कस्टम वर्कफ़्लो और क्रियाओं को तेज़ी से निष्पादित करने के लिए अपने स्लैश कमांड प्रबंधित करें। <DocsLink>और जानें</DocsLink>"

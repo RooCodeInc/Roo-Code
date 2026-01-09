@@ -55,7 +55,11 @@
 		},
 		"community": "Quer dicas ou apenas conversar com outros usuários do Roo Code? Junte-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contato e Comunidade",
-		"manageSettings": "Gerenciar Configurações"
+		"manageSettings": "Gerenciar Configurações",
+		"debugMode": {
+			"label": "Ativar modo de debug",
+			"description": "Mostra informações de debug na UI e ativa logs de debug. Isso é útil para solucionar problemas."
+		}
 	},
 	"slashCommands": {
 		"description": "Gerencie seus comandos de barra para executar rapidamente fluxos de trabalho e ações personalizadas. <DocsLink>Saiba mais</DocsLink>"

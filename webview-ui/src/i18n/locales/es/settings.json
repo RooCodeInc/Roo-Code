@@ -55,7 +55,11 @@
 		},
 		"community": "¿Quieres consejos o simplemente pasar el rato con otros usuarios de Roo Code? Únete a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contacto y Comunidad",
-		"manageSettings": "Gestionar Configuración"
+		"manageSettings": "Gestionar Configuración",
+		"debugMode": {
+			"label": "Activar modo de depuración",
+			"description": "Muestra información de depuración en la UI y activa los registros de depuración. Esto es útil para solucionar problemas."
+		}
 	},
 	"slashCommands": {
 		"description": "Gestiona tus comandos de barra para ejecutar rápidamente flujos de trabajo y acciones personalizadas. <DocsLink>Saber más</DocsLink>"

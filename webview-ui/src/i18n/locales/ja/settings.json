@@ -55,7 +55,11 @@
 		},
 		"community": "ヒントが欲しいですか、または他のRoo Codeユーザーと交流したいですか？<redditLink>reddit.com/r/RooCode</redditLink>または<discordLink>discord.gg/roocode</discordLink>に参加してください",
 		"contactAndCommunity": "お問い合わせとコミュニティ",
-		"manageSettings": "設定を管理"
+		"manageSettings": "設定を管理",
+		"debugMode": {
+			"label": "デバッグモードを有効にする",
+			"description": "UI にデバッグ情報を表示し、デバッグログを有効にします。問題の切り分けに役立ちます。"
+		}
 	},
 	"slashCommands": {
 		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>"

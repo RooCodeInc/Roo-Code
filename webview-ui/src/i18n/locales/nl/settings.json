@@ -55,7 +55,11 @@
 		},
 		"community": "Wil je tips of gewoon even hangen met andere Roo Code-gebruikers? Sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contact & Gemeenschap",
-		"manageSettings": "Instellingen Beheren"
+		"manageSettings": "Instellingen Beheren",
+		"debugMode": {
+			"label": "Debugmodus inschakelen",
+			"description": "Toont debuginformatie in de UI en schakelt debuglogs in. Handig bij het oplossen van problemen."
+		}
 	},
 	"slashCommands": {
 		"description": "Beheer je slash-commando's om snel aangepaste workflows en acties uit te voeren. <DocsLink>Meer informatie</DocsLink>"
