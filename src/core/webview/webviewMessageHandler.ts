@@ -12,9 +12,14 @@ import {
 	type ClineMessage,
 	type TelemetrySetting,
 	type UserSettingsConfig,
+	type ModelRecord,
+	type WebviewMessage,
+	type EditQueuedMessagePayload,
 	TelemetryEventName,
 	RooCodeSettings,
 	ExperimentId,
+	checkoutDiffPayloadSchema,
+	checkoutRestorePayloadSchema,
 } from "@roo-code/types"
 import { customToolRegistry } from "@roo-code/core"
 import { CloudService } from "@roo-code/cloud"
@@ -29,15 +34,9 @@ import { handleCheckpointRestoreOperation } from "./checkpointRestoreHandler"
 import { generateErrorDiagnostics } from "./diagnosticsHandler"
 import { changeLanguage, t } from "../../i18n"
 import { Package } from "../../shared/package"
-import { type RouterName, type ModelRecord, toRouterName } from "../../shared/api"
+import { type RouterName, toRouterName } from "../../shared/api"
 import { MessageEnhancer } from "./messageEnhancer"
 
-import {
-	type WebviewMessage,
-	type EditQueuedMessagePayload,
-	checkoutDiffPayloadSchema,
-	checkoutRestorePayloadSchema,
-} from "../../shared/WebviewMessage"
 import { checkExistKey } from "../../shared/checkExistApiConfig"
 import { experimentDefault } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
@@ -2884,7 +2883,7 @@ export const webviewMessageHandler = async (
 
 		case "switchTab": {
 			if (message.tab) {
-				// Capture tab shown event for all switchTab messages (which are user-initiated)
+				// Capture tab shown event for all switchTab messages (which are user-initiated).
 				if (TelemetryService.hasInstance()) {
 					TelemetryService.instance.captureTabShown(message.tab)
 				}
@@ -2903,7 +2902,6 @@ export const webviewMessageHandler = async (
 				const { getCommands } = await import("../../services/command/commands")
 				const commands = await getCommands(getCurrentCwd())
 
-				// Convert to the format expected by the frontend
 				const commandList = commands.map((command) => ({
 					name: command.name,
 					source: command.source,
@@ -2912,17 +2910,26 @@ export const webviewMessageHandler = async (
 					argumentHint: command.argumentHint,
 				}))
 
-				await provider.postMessageToWebview({
-					type: "commands",
-					commands: commandList,
-				})
+				await provider.postMessageToWebview({ type: "commands", commands: commandList })
 			} catch (error) {
 				provider.log(`Error fetching commands: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
-				// Send empty array on error
-				await provider.postMessageToWebview({
-					type: "commands",
-					commands: [],
-				})
+				await provider.postMessageToWebview({ type: "commands", commands: [] })
+			}
+			break
+		}
+		case "requestModes": {
+			try {
+				const modes = await provider.getModes()
+				await provider.postMessageToWebview({ type: "modes", modes })
+			} catch (error) {
+				provider.log(`Error fetching modes: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				await provider.postMessageToWebview({ type: "modes", modes: [] })
+			}
+			break
+		}
+		case "switchMode": {
+			if (message.mode) {
+				await provider.handleModeSwitch(message.mode as Mode)
 			}
 			break
 		}

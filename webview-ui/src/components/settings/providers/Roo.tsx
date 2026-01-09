@@ -1,6 +1,9 @@
-import { type ProviderSettings, type OrganizationAllowList, rooDefaultModelId } from "@roo-code/types"
-
-import type { RouterModels } from "@roo/api"
+import {
+	type ProviderSettings,
+	type OrganizationAllowList,
+	type RouterModels,
+	rooDefaultModelId,
+} from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"

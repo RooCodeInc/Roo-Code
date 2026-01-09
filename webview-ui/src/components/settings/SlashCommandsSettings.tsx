@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Plus, Globe, Folder, Settings, SquareSlash } from "lucide-react"
 import { Trans } from "react-i18next"
 
-import type { Command } from "@roo/ExtensionMessage"
+import type { Command } from "@roo-code/types"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"

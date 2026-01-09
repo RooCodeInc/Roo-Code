@@ -2,6 +2,8 @@ import {
 	type ProviderName,
 	type ProviderSettings,
 	type ModelInfo,
+	type ModelRecord,
+	type RouterModels,
 	anthropicModels,
 	bedrockModels,
 	cerebrasModels,
@@ -35,8 +37,6 @@ import {
 	getProviderDefaultModelId,
 	NATIVE_TOOL_DEFAULTS,
 } from "@roo-code/types"
-
-import type { ModelRecord, RouterModels } from "@roo/api"
 
 import { useRouterModels } from "./useRouterModels"
 import { useOpenRouterModelProviders } from "./useOpenRouterModelProviders"

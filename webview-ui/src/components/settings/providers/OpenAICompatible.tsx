@@ -8,11 +8,10 @@ import {
 	type ModelInfo,
 	type ReasoningEffort,
 	type OrganizationAllowList,
+	type ExtensionMessage,
 	azureOpenAiDefaultApiVersion,
 	openAiModelInfoSaneDefaults,
 } from "@roo-code/types"
-
-import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Button, StandardTooltip } from "@src/components/ui"

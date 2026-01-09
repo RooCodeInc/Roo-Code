@@ -407,7 +407,8 @@ const qwenCodeSchema = apiModelIdProviderModelSchema.extend({
 })
 
 const rooSchema = apiModelIdProviderModelSchema.extend({
-	// No additional fields needed - uses cloud authentication.
+	// Can use cloud authentication or provide an API key (cli).
+	rooApiKey: z.string().optional(),
 })
 
 const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
