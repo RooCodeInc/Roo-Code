@@ -1084,13 +1084,15 @@ describe("AwsBedrockHandler", () => {
 		})
 
 		describe("service tier with cross-region inference", () => {
-			it("should apply service tier pricing with cross-region inference prefix", () => {
+			it("should apply service tier pricing without cross-region prefix for unsupported models", () => {
+				// amazon.nova-lite-v1:0 supports service tiers but NOT cross-region inference
+				// Cross-region inference is only supported for Anthropic Claude models
 				const handler = new AwsBedrockHandler({
 					apiModelId: supportedModelId,
 					awsAccessKey: "test",
 					awsSecretKey: "test",
 					awsRegion: "us-east-1",
-					awsUseCrossRegionInference: true,
+					awsUseCrossRegionInference: true, // This should be ignored for non-Claude models
 					awsBedrockServiceTier: "FLEX",
 				})
 
@@ -1100,8 +1102,8 @@ describe("AwsBedrockHandler", () => {
 					outputPrice: number
 				}
 
-				// Model ID should have cross-region prefix
-				expect(model.id).toBe(`us.${supportedModelId}`)
+				// Model ID should NOT have cross-region prefix because amazon.nova-lite-v1:0 doesn't support it
+				expect(model.id).toBe(supportedModelId)
 
 				// FLEX tier pricing should still be applied
 				expect(model.info.inputPrice).toBe(baseModel.inputPrice * 0.5)

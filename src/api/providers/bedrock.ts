@@ -28,6 +28,7 @@ import {
 	AWS_INFERENCE_PROFILE_MAPPING,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	BEDROCK_GLOBAL_INFERENCE_MODEL_IDS,
+	BEDROCK_CROSS_REGION_INFERENCE_MODEL_IDS,
 	BEDROCK_SERVICE_TIER_MODEL_IDS,
 	BEDROCK_SERVICE_TIER_PRICING,
 	ApiProviderError,
@@ -1105,11 +1106,16 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			) {
 				modelConfig.id = `global.${baseIdForGlobal}`
 			}
-			// Otherwise, add cross-region inference prefix if enabled
+			// Otherwise, add cross-region inference prefix if enabled and model supports it
 			else if (this.options.awsUseCrossRegionInference && this.options.awsRegion) {
-				const prefix = AwsBedrockHandler.getPrefixForRegion(this.options.awsRegion)
-				if (prefix) {
-					modelConfig.id = `${prefix}${modelConfig.id}`
+				// Only apply cross-region inference prefix to models that support it
+				// This prevents invalid model identifiers for models like Qwen that don't support cross-region inference
+				const baseIdForCrossRegion = this.parseBaseModelId(modelConfig.id)
+				if (BEDROCK_CROSS_REGION_INFERENCE_MODEL_IDS.includes(baseIdForCrossRegion as any)) {
+					const prefix = AwsBedrockHandler.getPrefixForRegion(this.options.awsRegion)
+					if (prefix) {
+						modelConfig.id = `${prefix}${modelConfig.id}`
+					}
 				}
 			}
 		}
