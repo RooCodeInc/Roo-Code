@@ -147,7 +147,11 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 	}
 
 	async execute(params: EditFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { file_path, old_string, new_string, expected_replacements = 1 } = params
+		// Coerce old_string/new_string to handle malformed native tool calls where they could be undefined
+		const file_path = params.file_path
+		const old_string = typeof params.old_string === "string" ? params.old_string : (params.old_string ?? "")
+		const new_string = typeof params.new_string === "string" ? params.new_string : (params.new_string ?? "")
+		const expected_replacements = params.expected_replacements ?? 1
 		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 		let relPathForErrorHandling: string | undefined
 		let operationPreviewForErrorHandling: string | undefined

@@ -245,6 +245,91 @@ describe("editFileTool", () => {
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(mockTask.didToolFailInCurrentTurn).toBe(true)
 		})
+
+		describe("native tool mode coercion", () => {
+			/**
+			 * Helper to execute edit_file with native tool args (simulating native protocol)
+			 */
+			async function executeWithNativeArgs(
+				nativeArgs: Record<string, unknown>,
+				options: { fileExists?: boolean; fileContent?: string } = {},
+			): Promise<ToolResponse | undefined> {
+				const fileExists = options.fileExists ?? true
+				const fileContent = options.fileContent ?? testFileContent
+
+				mockedFileExistsAtPath.mockResolvedValue(fileExists)
+				mockedFsReadFile.mockResolvedValue(fileContent)
+				mockTask.rooIgnoreController.validateAccess.mockReturnValue(true)
+
+				const toolUse: ToolUse = {
+					type: "tool_use",
+					name: "edit_file",
+					params: {},
+					partial: false,
+					nativeArgs: nativeArgs as any,
+				}
+
+				let capturedResult: ToolResponse | undefined
+				const localPushToolResult = vi.fn((result: ToolResponse) => {
+					capturedResult = result
+				})
+
+				await editFileTool.handle(mockTask, toolUse as ToolUse<"edit_file">, {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: localPushToolResult,
+					removeClosingTag: mockRemoveClosingTag,
+					toolProtocol: "native",
+				})
+
+				return capturedResult
+			}
+
+			it("coerces undefined old_string to empty string in native mode (file creation)", async () => {
+				await executeWithNativeArgs(
+					{ file_path: testFilePath, old_string: undefined, new_string: "New content" },
+					{ fileExists: false },
+				)
+
+				expect(mockTask.consecutiveMistakeCount).toBe(0)
+				expect(mockTask.diffViewProvider.editType).toBe("create")
+				expect(mockAskApproval).toHaveBeenCalled()
+			})
+
+			it("coerces undefined new_string to empty string in native mode (deletion)", async () => {
+				await executeWithNativeArgs(
+					{ file_path: testFilePath, old_string: "Line 2", new_string: undefined },
+					{ fileContent: "Line 1\nLine 2\nLine 3" },
+				)
+
+				expect(mockTask.consecutiveMistakeCount).toBe(0)
+				expect(mockAskApproval).toHaveBeenCalled()
+			})
+
+			it("handles both old_string and new_string as undefined in native mode", async () => {
+				await executeWithNativeArgs(
+					{ file_path: testFilePath, old_string: undefined, new_string: undefined },
+					{ fileExists: false },
+				)
+
+				// Both undefined means: old_string = "" (create file), new_string = "" (empty file)
+				expect(mockTask.consecutiveMistakeCount).toBe(0)
+				expect(mockTask.diffViewProvider.editType).toBe("create")
+				expect(mockAskApproval).toHaveBeenCalled()
+			})
+
+			it("handles null values as strings in native mode", async () => {
+				await executeWithNativeArgs(
+					{ file_path: testFilePath, old_string: null, new_string: "New content" },
+					{ fileExists: false },
+				)
+
+				// null is coerced to "" via ?? operator
+				expect(mockTask.consecutiveMistakeCount).toBe(0)
+				expect(mockTask.diffViewProvider.editType).toBe("create")
+				expect(mockAskApproval).toHaveBeenCalled()
+			})
+		})
 	})
 
 	describe("file access", () => {
