@@ -190,25 +190,41 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 
 				if (occurrences === 0) {
 					task.consecutiveMistakeCount++
+					const currentCount = (task.consecutiveMistakeCountForApplyDiff.get(relPath) || 0) + 1
+					task.consecutiveMistakeCountForApplyDiff.set(relPath, currentCount)
+
+					// User-friendly error for display
+					const userError = `Unable to edit file: ${absolutePath}\n\n<error_details>\nThe specified content to replace was not found in the file.\n</error_details>`
+
+					// Detailed error for the AI with instructions
+					const agentError = `No match found for the specified 'old_string'. Please ensure it matches the file contents exactly, including all whitespace and indentation.`
+
+					if (currentCount >= 2) {
+						await task.say("diff_error", userError)
+					}
+
 					task.recordToolError("edit_file", "no_match")
-					pushToolResult(
-						formatResponse.toolError(
-							`No match found for the specified 'old_string'. Please ensure it matches the file contents exactly, including all whitespace and indentation.`,
-							toolProtocol,
-						),
-					)
+					pushToolResult(formatResponse.toolError(agentError, toolProtocol))
 					return
 				}
 
 				if (occurrences !== expected_replacements) {
 					task.consecutiveMistakeCount++
+					const currentCount = (task.consecutiveMistakeCountForApplyDiff.get(relPath) || 0) + 1
+					task.consecutiveMistakeCountForApplyDiff.set(relPath, currentCount)
+
+					// User-friendly error for display
+					const userError = `Unable to edit file: ${absolutePath}\n\n<error_details>\nThe expected number of replacements did not match (expected ${expected_replacements}, found ${occurrences}).\n</error_details>`
+
+					// Detailed error for the AI with instructions
+					const agentError = `Expected ${expected_replacements} occurrence(s) but found ${occurrences}. Please adjust your old_string to match exactly ${expected_replacements} occurrence(s), or set expected_replacements to ${occurrences}.`
+
+					if (currentCount >= 2) {
+						await task.say("diff_error", userError)
+					}
+
 					task.recordToolError("edit_file", "occurrence_mismatch")
-					pushToolResult(
-						formatResponse.toolError(
-							`Expected ${expected_replacements} occurrence(s) but found ${occurrences}. Please adjust your old_string to match exactly ${expected_replacements} occurrence(s), or set expected_replacements to ${occurrences}.`,
-							toolProtocol,
-						),
-					)
+					pushToolResult(formatResponse.toolError(agentError, toolProtocol))
 					return
 				}
 
@@ -236,6 +252,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 			}
 
 			task.consecutiveMistakeCount = 0
+			task.consecutiveMistakeCountForApplyDiff.delete(relPath)
 
 			// Initialize diff view
 			task.diffViewProvider.editType = isNewFile ? "create" : "modify"
