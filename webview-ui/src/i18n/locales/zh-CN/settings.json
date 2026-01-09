@@ -278,7 +278,6 @@
 		"useCustomBaseUrl": "使用自定义基础 URL",
 		"useReasoning": "启用推理",
 		"useHostHeader": "使用自定义 Host 标头",
-		"useLegacyFormat": "使用传统 OpenAI API 格式",
 		"customHeaders": "自定义标头",
 		"headerName": "标头名称",
 		"headerValue": "标头值",

@@ -278,7 +278,6 @@
 		"useCustomBaseUrl": "Utiliser une URL de base personnalisée",
 		"useReasoning": "Activer le raisonnement",
 		"useHostHeader": "Utiliser un en-tête Host personnalisé",
-		"useLegacyFormat": "Utiliser le format API OpenAI hérité",
 		"customHeaders": "En-têtes personnalisés",
 		"headerName": "Nom de l'en-tête",
 		"headerValue": "Valeur de l'en-tête",

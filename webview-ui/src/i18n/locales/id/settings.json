@@ -282,7 +282,6 @@
 		"useCustomBaseUrl": "Gunakan base URL kustom",
 		"useReasoning": "Aktifkan reasoning",
 		"useHostHeader": "Gunakan Host header kustom",
-		"useLegacyFormat": "Gunakan format API OpenAI legacy",
 		"customHeaders": "Header Kustom",
 		"headerName": "Nama header",
 		"headerValue": "Nilai header",

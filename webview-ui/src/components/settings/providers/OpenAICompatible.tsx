@@ -40,7 +40,6 @@ export const OpenAICompatible = ({
 	const { t } = useAppTranslation()
 
 	const [azureApiVersionSelected, setAzureApiVersionSelected] = useState(!!apiConfiguration?.azureApiVersion)
-	const [openAiLegacyFormatSelected, setOpenAiLegacyFormatSelected] = useState(!!apiConfiguration?.openAiLegacyFormat)
 
 	const [openAiModels, setOpenAiModels] = useState<Record<string, ModelInfo> | null>(null)
 
@@ -154,16 +153,6 @@ export const OpenAICompatible = ({
 				onChange={handleInputChange("openAiR1FormatEnabled", noTransform)}
 				openAiR1FormatEnabled={apiConfiguration?.openAiR1FormatEnabled ?? false}
 			/>
-			<div>
-				<Checkbox
-					checked={openAiLegacyFormatSelected}
-					onChange={(checked: boolean) => {
-						setOpenAiLegacyFormatSelected(checked)
-						setApiConfigurationField("openAiLegacyFormat", checked)
-					}}>
-					{t("settings:providers.useLegacyFormat")}
-				</Checkbox>
-			</div>
 			<Checkbox
 				checked={apiConfiguration?.openAiStreamingEnabled ?? true}
 				onChange={handleInputChange("openAiStreamingEnabled", noTransform)}>

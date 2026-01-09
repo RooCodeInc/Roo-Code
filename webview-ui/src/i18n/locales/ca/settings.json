@@ -278,7 +278,6 @@
 		"useCustomBaseUrl": "Utilitzar URL base personalitzada",
 		"useReasoning": "Activar raonament",
 		"useHostHeader": "Utilitzar capçalera Host personalitzada",
-		"useLegacyFormat": "Utilitzar el format d'API OpenAI antic",
 		"customHeaders": "Capçaleres personalitzades",
 		"headerName": "Nom de la capçalera",
 		"headerValue": "Valor de la capçalera",

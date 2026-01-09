@@ -278,7 +278,6 @@
 		"useCustomBaseUrl": "カスタムベースURLを使用",
 		"useReasoning": "推論を有効化",
 		"useHostHeader": "カスタムHostヘッダーを使用",
-		"useLegacyFormat": "レガシーOpenAI API形式を使用",
 		"customHeaders": "カスタムヘッダー",
 		"headerName": "ヘッダー名",
 		"headerValue": "ヘッダー値",
