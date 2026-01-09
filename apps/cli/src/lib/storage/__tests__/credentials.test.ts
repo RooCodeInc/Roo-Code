@@ -74,7 +74,8 @@ describe("Token Storage", () => {
 			expect(dirStats.isDirectory()).toBe(true)
 		})
 
-		it("should set restrictive file permissions", async () => {
+		// Unix file permissions don't apply on Windows - skip this test
+		it.skipIf(process.platform === "win32")("should set restrictive file permissions", async () => {
 			const token = "test-token-perms"
 			await saveToken(token)
 
