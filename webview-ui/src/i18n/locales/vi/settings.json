@@ -55,7 +55,11 @@
 		},
 		"community": "Muốn nhận mẹo hoặc chỉ muốn giao lưu với những người dùng Roo Code khác? Tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Liên Hệ & Cộng Đồng",
-		"manageSettings": "Quản Lý Cài Đặt"
+		"manageSettings": "Quản Lý Cài Đặt",
+		"debugMode": {
+			"label": "Bật chế độ debug",
+			"description": "Bật chế độ debug để hiển thị các nút bổ sung trong tiêu đề nhiệm vụ cho phép xem lịch sử hội thoại API và tin nhắn UI dưới dạng JSON được định dạng trong các tệp tạm thời."
+		}
 	},
 	"slashCommands": {
 		"description": "Quản lý các lệnh slash của bạn để thực thi nhanh các quy trình công việc và hành động tùy chỉnh. <DocsLink>Tìm hiểu thêm</DocsLink>"

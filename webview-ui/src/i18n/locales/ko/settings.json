@@ -55,7 +55,11 @@
 		},
 		"community": "팁을 얻거나 다른 Roo Code 사용자들과 교류하고 싶으신가요? <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 참여하세요",
 		"contactAndCommunity": "문의 및 커뮤니티",
-		"manageSettings": "설정 관리"
+		"manageSettings": "설정 관리",
+		"debugMode": {
+			"label": "디버그 모드 활성화",
+			"description": "디버그 모드를 활성화하여 작업 헤더에 API 대화 기록과 UI 메시지를 임시 파일에 포맷된 JSON으로 볼 수 있는 추가 버튼을 표시합니다."
+		}
 	},
 	"slashCommands": {
 		"description": "사용자 지정 워크플로와 작업을 신속하게 실행하기 위해 슬래시 명령을 관리합니다. <DocsLink>더 알아보기</DocsLink>"

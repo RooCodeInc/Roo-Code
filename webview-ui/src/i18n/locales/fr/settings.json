@@ -55,7 +55,11 @@
 		},
 		"community": "Vous voulez des conseils ou simplement discuter avec d'autres utilisateurs de Roo Code ? Rejoignez <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contact et Communauté",
-		"manageSettings": "Gérer les Paramètres"
+		"manageSettings": "Gérer les Paramètres",
+		"debugMode": {
+			"label": "Activer le mode debug",
+			"description": "Active le mode debug pour afficher des boutons supplémentaires dans l'en-tête de la tâche permettant de consulter l'historique de conversation de l'API et les messages de l'interface utilisateur au format JSON dans des fichiers temporaires."
+		}
 	},
 	"slashCommands": {
 		"description": "Gérez vos commandes slash pour exécuter rapidement des flux de travail et des actions personnalisées. <DocsLink>En savoir plus</DocsLink>"

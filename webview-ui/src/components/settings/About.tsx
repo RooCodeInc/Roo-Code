@@ -28,9 +28,11 @@ import { Section } from "./Section"
 type AboutProps = HTMLAttributes<HTMLDivElement> & {
 	telemetrySetting: TelemetrySetting
 	setTelemetrySetting: (setting: TelemetrySetting) => void
+	debug?: boolean
+	setDebug?: (debug: boolean) => void
 }
 
-export const About = ({ telemetrySetting, setTelemetrySetting, className, ...props }: AboutProps) => {
+export const About = ({ telemetrySetting, setTelemetrySetting, debug, setDebug, className, ...props }: AboutProps) => {
 	const { t } = useAppTranslation()
 
 	return (
@@ -117,6 +119,21 @@ export const About = ({ telemetrySetting, setTelemetrySetting, className, ...pro
 							/>
 						</span>
 					</div>
+					{setDebug && (
+						<div className="flex flex-col gap-2 mt-4 pt-4 border-t border-vscode-settings-headerBorder">
+							<VSCodeCheckbox
+								checked={debug ?? false}
+								onChange={(e: any) => {
+									const checked = e.target.checked === true
+									setDebug(checked)
+								}}>
+								{t("settings:about.debugMode.label")}
+							</VSCodeCheckbox>
+							<p className="text-vscode-descriptionForeground text-sm mt-0">
+								{t("settings:about.debugMode.description")}
+							</p>
+						</div>
+					)}
 				</div>
 			</Section>
 

@@ -55,7 +55,11 @@
 		},
 		"community": "Möchtest du Tipps oder dich einfach mit anderen Roo Code-Nutzern austauschen? Tritt <redditLink>reddit.com/r/RooCode</redditLink> oder <discordLink>discord.gg/roocode</discordLink> bei",
 		"contactAndCommunity": "Kontakt & Community",
-		"manageSettings": "Einstellungen verwalten"
+		"manageSettings": "Einstellungen verwalten",
+		"debugMode": {
+			"label": "Debug-Modus aktivieren",
+			"description": "Aktiviere den Debug-Modus, um zusätzliche Buttons im Task-Header zum Anzeigen der API-Konversationshistorie und UI-Nachrichten als formatiertes JSON in temporären Dateien zu erhalten."
+		}
 	},
 	"slashCommands": {
 		"description": "Verwalte deine Slash-Befehle, um benutzerdefinierte Workflows und Aktionen schnell auszuführen. <DocsLink>Mehr erfahren</DocsLink>"

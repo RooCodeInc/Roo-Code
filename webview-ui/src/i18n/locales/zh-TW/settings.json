@@ -55,7 +55,11 @@
 		},
 		"community": "想要獲取使用技巧或與其他 Roo Code 使用者交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "聯絡與社群",
-		"manageSettings": "管理設定"
+		"manageSettings": "管理設定",
+		"debugMode": {
+			"label": "啟用偵錯模式",
+			"description": "啟用偵錯模式以在工作標題顯示額外按鈕，用於在暫存檔案中檢視 API 對話歷史記錄和 UI 訊息的格式化 JSON。"
+		}
 	},
 	"slashCommands": {
 		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>"

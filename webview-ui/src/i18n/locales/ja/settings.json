@@ -55,7 +55,11 @@
 		},
 		"community": "ヒントが欲しいですか、または他のRoo Codeユーザーと交流したいですか？<redditLink>reddit.com/r/RooCode</redditLink>または<discordLink>discord.gg/roocode</discordLink>に参加してください",
 		"contactAndCommunity": "お問い合わせとコミュニティ",
-		"manageSettings": "設定を管理"
+		"manageSettings": "設定を管理",
+		"debugMode": {
+			"label": "デバッグモードを有効にする",
+			"description": "デバッグモードを有効にすると、タスクヘッダーにAPI会話履歴とUIメッセージをフォーマットされたJSONとして一時ファイルで表示するための追加ボタンが表示されます。"
+		}
 	},
 	"slashCommands": {
 		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>"
