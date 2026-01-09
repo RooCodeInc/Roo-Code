@@ -57,16 +57,34 @@ export function SearchableSelect({
 	// Find the selected option
 	const selectedOption = options.find((option) => option.value === value)
 
-	// Filter options based on search, always limit for performance
+	// Filter options based on search, always limit for performance.
+	// Ensure the selected option remains visible even when truncating.
 	const filteredOptions = React.useMemo(() => {
-		if (!searchValue) {
-			// When not searching, limit to maxDisplayItems for performance
-			return options.slice(0, maxDisplayItems)
+		const normalizedSearch = searchValue.trim().toLowerCase()
+		const matchingOptions =
+			normalizedSearch.length === 0
+				? options
+				: options.filter((option) => option.label.toLowerCase().includes(normalizedSearch))
+
+		if (matchingOptions.length <= maxDisplayItems) {
+			return matchingOptions
 		}
-		// When searching, filter then limit to avoid rendering hundreds of items
-		const filtered = options.filter((option) => option.label.toLowerCase().includes(searchValue.toLowerCase()))
-		return filtered.slice(0, maxDisplayItems)
-	}, [options, searchValue, maxDisplayItems])
+
+		const limitedOptions = matchingOptions.slice(0, maxDisplayItems)
+		if (!selectedOption) {
+			return limitedOptions
+		}
+
+		// If the selected option would be truncated away, prepend it (but only if it matches the current filter).
+		if (
+			matchingOptions.includes(selectedOption) &&
+			!limitedOptions.some((option) => option.value === selectedOption.value)
+		) {
+			return [selectedOption, ...limitedOptions.slice(0, maxDisplayItems - 1)]
+		}
+
+		return limitedOptions
+	}, [options, searchValue, maxDisplayItems, selectedOption])
 
 	// Cleanup timeout on unmount
 	React.useEffect(() => {

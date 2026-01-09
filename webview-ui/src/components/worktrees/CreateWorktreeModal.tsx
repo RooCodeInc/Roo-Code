@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 
-import type { WorktreeDefaultsResponse, BranchInfo } from "@roo-code/types"
+import type { WorktreeDefaultsResponse, BranchInfo, WorktreeIncludeStatus } from "@roo-code/types"
 
 import { vscode } from "@/utils/vscode"
 import { useAppTranslation } from "@/i18n/TranslationContext"
@@ -39,7 +39,7 @@ export const CreateWorktreeModal = ({
 	// Data state
 	const [defaults, setDefaults] = useState<WorktreeDefaultsResponse | null>(null)
 	const [branches, setBranches] = useState<BranchInfo | null>(null)
-	const [baseBranchHasInclude, setBaseBranchHasInclude] = useState<boolean | null>(null)
+	const [includeStatus, setIncludeStatus] = useState<WorktreeIncludeStatus | null>(null)
 
 	// UI state
 	const [isCreating, setIsCreating] = useState(false)
@@ -50,16 +50,9 @@ export const CreateWorktreeModal = ({
 		if (open) {
 			vscode.postMessage({ type: "getWorktreeDefaults" })
 			vscode.postMessage({ type: "getAvailableBranches" })
+			vscode.postMessage({ type: "getWorktreeIncludeStatus" })
 		}
 	}, [open])
-
-	// Check if selected base branch has .worktreeinclude
-	useEffect(() => {
-		if (baseBranch) {
-			setBaseBranchHasInclude(null) // Reset while checking
-			vscode.postMessage({ type: "checkBranchWorktreeInclude", worktreeBranch: baseBranch })
-		}
-	}, [baseBranch])
 
 	// Handle messages from extension
 	useEffect(() => {
@@ -79,8 +72,8 @@ export const CreateWorktreeModal = ({
 					setBaseBranch(data.currentBranch || "main")
 					break
 				}
-				case "branchWorktreeIncludeResult": {
-					setBaseBranchHasInclude(message.hasWorktreeInclude ?? false)
+				case "worktreeIncludeStatus": {
+					setIncludeStatus(message.worktreeIncludeStatus)
 					break
 				}
 				case "worktreeResult": {
@@ -150,8 +143,8 @@ export const CreateWorktreeModal = ({
 				</DialogHeader>
 
 				<div className="flex flex-col gap-3">
-					{/* No .worktreeinclude warning - shows when base branch doesn't have .worktreeinclude */}
-					{baseBranchHasInclude === false && (
+					{/* No .worktreeinclude warning - shows when the current worktree doesn't have .worktreeinclude */}
+					{includeStatus?.exists === false && (
 						<div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder text-sm">
 							<span className="codicon codicon-warning text-vscode-charts-yellow flex-shrink-0" />
 							<span className="text-vscode-foreground">

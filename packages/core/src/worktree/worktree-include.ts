@@ -5,7 +5,7 @@
  * Used to copy untracked files (like node_modules) when creating worktrees.
  */
 
-import { exec } from "child_process"
+import { execFile } from "child_process"
 import * as fs from "fs/promises"
 import * as path from "path"
 import { promisify } from "util"
@@ -14,7 +14,7 @@ import ignore, { type Ignore } from "ignore"
 
 import type { WorktreeIncludeStatus } from "./types.js"
 
-const execAsync = promisify(exec)
+const execFileAsync = promisify(execFile)
 
 /**
  * Service for managing .worktreeinclude files and copying files to new worktrees.
@@ -40,8 +40,9 @@ export class WorktreeIncludeService {
 	 */
 	async branchHasWorktreeInclude(cwd: string, branch: string): Promise<boolean> {
 		try {
-			// Use git show to check if the file exists on the branch
-			await execAsync(`git show "${branch}:.worktreeinclude"`, { cwd })
+			const ref = `${branch}:.worktreeinclude`
+			// Use git cat-file -e to check if the file exists on the branch (without printing contents)
+			await execFileAsync("git", ["cat-file", "-e", "--", ref], { cwd })
 			return true
 		} catch {
 			// File doesn't exist on this branch
@@ -228,20 +229,25 @@ export class WorktreeIncludeService {
 			// Use robocopy on Windows (more reliable than xcopy)
 			// robocopy returns non-zero for success, so we check the exit code
 			try {
-				await execAsync(`robocopy "${source}" "${target}" /E /NFL /NDL /NJH /NJS /nc /ns /np`, {
-					shell: "cmd.exe",
-				})
+				await execFileAsync(
+					"robocopy",
+					[source, target, "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/nc", "/ns", "/np"],
+					{ windowsHide: true },
+				)
 			} catch (error) {
-				// robocopy returns 1 for success with files copied
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				if ((error as any).code && (error as any).code < 8) {
+				// robocopy returns non-zero for success (values < 8)
+				const exitCode =
+					typeof (error as { code?: unknown }).code === "number"
+						? (error as { code: number }).code
+						: undefined
+				if (exitCode !== undefined && exitCode < 8) {
 					return // Success
 				}
 				throw error
 			}
 		} else {
 			// Use cp -r on Unix-like systems
-			await execAsync(`cp -r "${source}" "${target}"`)
+			await execFileAsync("cp", ["-r", "--", source, target])
 		}
 	}
 }

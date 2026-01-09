@@ -62,6 +62,7 @@ const CommandList = React.forwardRef<
 		(e: React.WheelEvent<HTMLDivElement>) => {
 			// Manually handle scroll to work around VSCode webview scroll issues
 			const target = e.currentTarget
+			e.preventDefault()
 			target.scrollTop += e.deltaY
 			e.stopPropagation()
 			onWheel?.(e)

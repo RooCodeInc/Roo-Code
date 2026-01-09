@@ -1,8 +1,17 @@
 import * as fs from "fs/promises"
 import * as path from "path"
 import * as os from "os"
+import { execFile } from "child_process"
+import { promisify } from "util"
 
 import { WorktreeIncludeService } from "../worktree-include.js"
+
+const execFileAsync = promisify(execFile)
+
+async function execGit(cwd: string, args: string[]): Promise<string> {
+	const { stdout } = await execFileAsync("git", args, { cwd, encoding: "utf8" })
+	return stdout
+}
 
 describe("WorktreeIncludeService", () => {
 	let service: WorktreeIncludeService
@@ -42,6 +51,32 @@ describe("WorktreeIncludeService", () => {
 			const result = await service.hasWorktreeInclude("/non/existent/path")
 
 			expect(result).toBe(false)
+		})
+	})
+
+	describe("branchHasWorktreeInclude", () => {
+		it("should detect .worktreeinclude on the specified branch", async () => {
+			const repoDir = path.join(tempDir, "repo")
+			await fs.mkdir(repoDir, { recursive: true })
+
+			await execGit(repoDir, ["init"])
+			await execGit(repoDir, ["config", "user.name", "Test User"])
+			await execGit(repoDir, ["config", "user.email", "test@example.com"])
+
+			await fs.writeFile(path.join(repoDir, "README.md"), "test")
+			await execGit(repoDir, ["add", "README.md"])
+			await execGit(repoDir, ["commit", "-m", "init"])
+
+			const baseBranch = (await execGit(repoDir, ["rev-parse", "--abbrev-ref", "HEAD"])).trim()
+
+			expect(await service.branchHasWorktreeInclude(repoDir, baseBranch)).toBe(false)
+
+			await execGit(repoDir, ["checkout", "-b", "with-include"])
+			await fs.writeFile(path.join(repoDir, ".worktreeinclude"), "node_modules")
+			await execGit(repoDir, ["add", ".worktreeinclude"])
+			await execGit(repoDir, ["commit", "-m", "add include"])
+
+			expect(await service.branchHasWorktreeInclude(repoDir, "with-include")).toBe(true)
 		})
 	})
 
