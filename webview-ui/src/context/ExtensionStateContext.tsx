@@ -163,6 +163,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setIncludeCurrentTime: (value: boolean) => void
 	includeCurrentCost?: boolean
 	setIncludeCurrentCost: (value: boolean) => void
+	showTimestamps?: boolean
+	setShowTimestamps: (value: boolean) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -297,6 +299,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
 	const [includeCurrentTime, setIncludeCurrentTime] = useState(true)
 	const [includeCurrentCost, setIncludeCurrentCost] = useState(true)
+	const [showTimestamps, setShowTimestamps] = useState(false) // Default to false (timestamps hidden)
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -341,6 +344,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					// Update includeCurrentCost if present in state message
 					if ((newState as any).includeCurrentCost !== undefined) {
 						setIncludeCurrentCost((newState as any).includeCurrentCost)
+					}
+					// Update showTimestamps if present in state message
+					if ((newState as any).showTimestamps !== undefined) {
+						setShowTimestamps((newState as any).showTimestamps)
 					}
 					// Handle marketplace data if present in state message
 					if (newState.marketplaceItems !== undefined) {
@@ -592,6 +599,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setIncludeCurrentTime,
 		includeCurrentCost,
 		setIncludeCurrentCost,
+		showTimestamps,
+		setShowTimestamps,
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

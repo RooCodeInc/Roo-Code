@@ -209,6 +209,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		openRouterImageGenerationSelectedModel,
 		reasoningBlockCollapsed,
 		enterBehavior,
+		showTimestamps,
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
@@ -830,6 +831,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						<UISettings
 							reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
 							enterBehavior={enterBehavior ?? "send"}
+							showTimestamps={showTimestamps ?? false}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}

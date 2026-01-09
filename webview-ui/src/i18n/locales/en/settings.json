@@ -68,6 +68,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "Require {{primaryMod}}+Enter to send messages",
 			"description": "When enabled, you must press {{primaryMod}}+Enter to send messages instead of just Enter"
+		},
+		"showTimestamps": {
+			"label": "Show timestamps on messages",
+			"description": "When enabled, timestamps will be displayed on the right side of message headers"
 		}
 	},
 	"prompts": {

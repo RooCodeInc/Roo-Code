@@ -15,6 +15,7 @@ import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
 import { vscode } from "@src/utils/vscode"
 import { formatPathTooltip } from "@src/utils/formatPathTooltip"
+import { formatTimestamp } from "@src/utils/formatTimestamp"
 
 import { ToolUseBlock, ToolUseBlockHeader } from "../common/ToolUseBlock"
 import UpdateTodoListToolBlock from "./UpdateTodoListToolBlock"
@@ -167,7 +168,8 @@ export const ChatRowContent = ({
 }: ChatRowContentProps) => {
 	const { t, i18n } = useTranslation()
 
-	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, clineMessages } = useExtensionState()
+	const { mcpServers, alwaysAllowMcp, currentCheckpoint, mode, apiConfiguration, clineMessages, showTimestamps } =
+		useExtensionState()
 	const { info: model } = useSelectedModel(apiConfiguration)
 	const [isEditing, setIsEditing] = useState(false)
 	const [editedContent, setEditedContent] = useState("")
@@ -379,6 +381,13 @@ export const ChatRowContent = ({
 		marginBottom: "10px",
 		wordBreak: "break-word",
 	}
+
+	// Timestamp element to be displayed on the right side of headers
+	const timestampElement = showTimestamps ? (
+		<span className="text-vscode-descriptionForeground ml-auto shrink-0" style={{ fontWeight: "normal" }}>
+			{formatTimestamp(message.ts)}
+		</span>
+	) : null
 
 	const tool = useMemo(
 		() => (message.ask === "tool" ? safeJsonParse<ClineSayTool>(message.text) : null),
@@ -1200,6 +1209,7 @@ export const ChatRowContent = ({
 							<div style={headerStyle}>
 								<MessageCircle className="w-4 shrink-0" aria-label="Speech bubble icon" />
 								<span style={{ fontWeight: "bold" }}>{t("chat:text.rooSaid")}</span>
+								{timestampElement}
 							</div>
 							<div className="pl-6">
 								<Markdown markdown={message.text} partial={message.partial} />
@@ -1219,6 +1229,7 @@ export const ChatRowContent = ({
 							<div style={headerStyle}>
 								<User className="w-4 shrink-0" aria-label="User icon" />
 								<span style={{ fontWeight: "bold" }}>{t("chat:feedback.youSaid")}</span>
+								{timestampElement}
 							</div>
 							<div
 								className={cn(
@@ -1336,6 +1347,7 @@ export const ChatRowContent = ({
 							<div style={headerStyle}>
 								{icon}
 								{title}
+								{timestampElement}
 							</div>
 							<div className="border-l border-green-600/30 ml-2 pl-4 pb-1">
 								<Markdown markdown={message.text} />
