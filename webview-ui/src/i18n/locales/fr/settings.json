@@ -58,7 +58,7 @@
 		"manageSettings": "Gérer les Paramètres",
 		"debugMode": {
 			"label": "Activer le mode debug",
-			"description": "Affiche des infos de debug dans l’UI et active les logs de debug. C’est utile pour dépanner."
+			"description": "Active le mode debug pour afficher des boutons supplémentaires permettant de consulter l'historique de conversation de l'API et les messages de l'interface utilisateur au format JSON dans des fichiers temporaires."
 		}
 	},
 	"slashCommands": {

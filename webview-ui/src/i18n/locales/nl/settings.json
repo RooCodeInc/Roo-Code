@@ -58,7 +58,7 @@
 		"manageSettings": "Instellingen Beheren",
 		"debugMode": {
 			"label": "Debugmodus inschakelen",
-			"description": "Toont debuginformatie in de UI en schakelt debuglogs in. Handig bij het oplossen van problemen."
+			"description": "Schakel de debugmodus in om extra knoppen te tonen voor het bekijken van API-gesprekgeschiedenis en UI-berichten als opgemaakte JSON in tijdelijke bestanden."
 		}
 	},
 	"slashCommands": {

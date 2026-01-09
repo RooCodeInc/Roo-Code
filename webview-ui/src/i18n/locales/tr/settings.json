@@ -58,7 +58,7 @@
 		"manageSettings": "Ayarları Yönet",
 		"debugMode": {
 			"label": "Debug modunu etkinleştir",
-			"description": "UI'da debug bilgilerini gösterir ve debug loglarını etkinleştirir. Sorun giderirken faydalıdır."
+			"description": "API konuşma geçmişini ve UI mesajlarını geçici dosyalarda biçimlendirilmiş JSON olarak görüntülemek için ek düğmeler göstermek üzere debug modunu etkinleştirin."
 		}
 	},
 	"slashCommands": {

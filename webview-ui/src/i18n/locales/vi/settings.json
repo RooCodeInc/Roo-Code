@@ -58,7 +58,7 @@
 		"manageSettings": "Quản Lý Cài Đặt",
 		"debugMode": {
 			"label": "Bật chế độ debug",
-			"description": "Hiển thị thông tin debug trong UI và bật log debug. Điều này hữu ích khi khắc phục sự cố."
+			"description": "Bật chế độ debug để hiển thị các nút bổ sung cho phép xem lịch sử hội thoại API và tin nhắn UI dưới dạng JSON được định dạng trong các tệp tạm thời."
 		}
 	},
 	"slashCommands": {

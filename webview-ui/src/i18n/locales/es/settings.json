@@ -58,7 +58,7 @@
 		"manageSettings": "Gestionar Configuración",
 		"debugMode": {
 			"label": "Activar modo de depuración",
-			"description": "Muestra información de depuración en la UI y activa los registros de depuración. Esto es útil para solucionar problemas."
+			"description": "Activa el modo de depuración para mostrar botones adicionales que permitan ver el historial de conversación de la API y los mensajes de la UI como JSON formateado en archivos temporales."
 		}
 	},
 	"slashCommands": {

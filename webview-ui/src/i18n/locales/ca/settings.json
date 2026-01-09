@@ -58,7 +58,7 @@
 		"manageSettings": "Gestionar Configuració",
 		"debugMode": {
 			"label": "Activa el mode de depuració",
-			"description": "Mostra informació de depuració a la IU i activa els registres de depuració. És útil per resoldre problemes."
+			"description": "Activa el mode de depuració per mostrar botons addicionals que permetin veure l'historial de conversa de l'API i els missatges de la UI com a JSON formatejat en fitxers temporals."
 		}
 	},
 	"slashCommands": {

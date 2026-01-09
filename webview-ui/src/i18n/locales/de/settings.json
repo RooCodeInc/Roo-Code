@@ -58,7 +58,7 @@
 		"manageSettings": "Einstellungen verwalten",
 		"debugMode": {
 			"label": "Debug-Modus aktivieren",
-			"description": "Zeige Debug-Informationen in der UI und aktiviere Debug-Logs. Das ist hilfreich, um Probleme zu beheben."
+			"description": "Aktiviere den Debug-Modus, um zusätzliche Buttons zum Anzeigen der API-Konversationshistorie und UI-Nachrichten als formatiertes JSON in temporären Dateien zu erhalten."
 		}
 	},
 	"slashCommands": {

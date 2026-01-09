@@ -58,7 +58,7 @@
 		"manageSettings": "Zarządzaj Ustawieniami",
 		"debugMode": {
 			"label": "Włącz tryb debugowania",
-			"description": "Pokazuj informacje debugowania w UI i włącz logi debugowania. To przydaje się przy rozwiązywaniu problemów."
+			"description": "Włącz tryb debugowania, aby wyświetlić dodatkowe przyciski umożliwiające przeglądanie historii konwersacji API i komunikatów UI jako sformatowany JSON w plikach tymczasowych."
 		}
 	},
 	"slashCommands": {

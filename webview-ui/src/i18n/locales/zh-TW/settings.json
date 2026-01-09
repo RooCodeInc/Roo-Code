@@ -58,7 +58,7 @@
 		"manageSettings": "管理設定",
 		"debugMode": {
 			"label": "啟用偵錯模式",
-			"description": "在 UI 中顯示偵錯資訊並啟用偵錯日誌。這有助於排除問題。"
+			"description": "啟用偵錯模式以顯示額外按鈕，用於在暫存檔案中檢視 API 對話歷史記錄和 UI 訊息的格式化 JSON。"
 		}
 	},
 	"slashCommands": {

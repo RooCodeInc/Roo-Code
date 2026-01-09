@@ -58,7 +58,7 @@
 		"manageSettings": "Manage Settings",
 		"debugMode": {
 			"label": "Enable debug mode",
-			"description": "Show debug information in the UI and enable debug logs. This is useful for troubleshooting issues."
+			"description": "Enable debug mode to show additional buttons for viewing API conversation history and UI messages as prettified JSON in temporary files."
 		}
 	},
 	"slashCommands": {
