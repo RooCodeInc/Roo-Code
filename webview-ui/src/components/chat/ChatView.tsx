@@ -867,6 +867,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "interactionRequired":
 					playSound("notification")
 					break
+				case "breakpointHit":
+					// Play celebration sound when a todo breakpoint is hit (same as task complete)
+					playSound("celebration")
+					break
 			}
 			// textAreaRef.current is not explicitly required here since React
 			// guarantees that ref will be stable across re-renders, and we're

@@ -1,4 +1,4 @@
-import { type ClineAsk, type McpServerUse, type FollowUpData, isNonBlockingAsk } from "@roo-code/types"
+import { type ClineAsk, type McpServerUse, type FollowUpData, type TodoItem, isNonBlockingAsk } from "@roo-code/types"
 
 import type { ClineSayTool, ExtensionState } from "../../shared/ExtensionMessage"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
@@ -32,7 +32,7 @@ export type AutoApprovalStateOptions =
 export type CheckAutoApprovalResult =
 	| { decision: "approve" }
 	| { decision: "deny" }
-	| { decision: "ask" }
+	| { decision: "ask"; breakpointHit?: boolean }
 	| {
 			decision: "timeout"
 			timeout: number
@@ -44,11 +44,13 @@ export async function checkAutoApproval({
 	ask,
 	text,
 	isProtected,
+	todoList,
 }: {
 	state?: Pick<ExtensionState, AutoApprovalState | AutoApprovalStateOptions>
 	ask: ClineAsk
 	text?: string
 	isProtected?: boolean
+	todoList?: TodoItem[]
 }): Promise<CheckAutoApprovalResult> {
 	if (isNonBlockingAsk(ask)) {
 		return { decision: "approve" }
@@ -56,6 +58,15 @@ export async function checkAutoApproval({
 
 	if (!state || !state.autoApprovalEnabled) {
 		return { decision: "ask" }
+	}
+
+	// Check for breakpoint on current in-progress todo item
+	// If there's an in-progress todo with a breakpoint, pause auto-approval
+	if (todoList && todoList.length > 0) {
+		const inProgressTodo = todoList.find((t) => t.status === "in_progress")
+		if (inProgressTodo?.breakpoint) {
+			return { decision: "ask", breakpointHit: true }
+		}
 	}
 
 	if (ask === "followup") {

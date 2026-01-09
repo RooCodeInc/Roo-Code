@@ -1,9 +1,17 @@
 import { cn } from "@/lib/utils"
+import { vscode } from "@/utils/vscode"
 import { t } from "i18next"
-import { ArrowRight, Check, ListChecks, SquareDashed } from "lucide-react"
-import { useState, useRef, useMemo, useEffect } from "react"
+import { ArrowRight, Check, Circle, ListChecks, SquareDashed } from "lucide-react"
+import { useState, useRef, useMemo, useEffect, useCallback } from "react"
 
 type TodoStatus = "completed" | "in_progress" | "pending"
+
+interface TodoItem {
+	id: string
+	content: string
+	status: TodoStatus
+	breakpoint?: boolean
+}
 
 function getTodoIcon(status: TodoStatus | null) {
 	switch (status) {
@@ -16,22 +24,42 @@ function getTodoIcon(status: TodoStatus | null) {
 	}
 }
 
-export function TodoListDisplay({ todos }: { todos: any[] }) {
+export function TodoListDisplay({ todos }: { todos: TodoItem[] }) {
 	const [isCollapsed, setIsCollapsed] = useState(true)
+	// Session-only breakpoint state (doesn't persist across sessions)
+	const [breakpoints, setBreakpoints] = useState<Record<string, boolean>>({})
 	const ulRef = useRef<HTMLUListElement>(null)
 	const itemRefs = useRef<(HTMLLIElement | null)[]>([])
 	const scrollIndex = useMemo(() => {
-		const inProgressIdx = todos.findIndex((todo: any) => todo.status === "in_progress")
+		const inProgressIdx = todos.findIndex((todo: TodoItem) => todo.status === "in_progress")
 		if (inProgressIdx !== -1) return inProgressIdx
-		return todos.findIndex((todo: any) => todo.status !== "completed")
+		return todos.findIndex((todo: TodoItem) => todo.status !== "completed")
 	}, [todos])
 
 	// Find the most important todo to display when collapsed
 	const mostImportantTodo = useMemo(() => {
-		const inProgress = todos.find((todo: any) => todo.status === "in_progress")
+		const inProgress = todos.find((todo: TodoItem) => todo.status === "in_progress")
 		if (inProgress) return inProgress
-		return todos.find((todo: any) => todo.status !== "completed")
+		return todos.find((todo: TodoItem) => todo.status !== "completed")
 	}, [todos])
+
+	// Toggle breakpoint on a todo item
+	const toggleBreakpoint = useCallback(
+		(todoId: string, e: React.MouseEvent) => {
+			e.stopPropagation() // Prevent collapsing the list
+			const newBreakpointState = !breakpoints[todoId]
+			setBreakpoints((prev) => ({
+				...prev,
+				[todoId]: newBreakpointState,
+			}))
+			// Notify extension about the breakpoint change
+			vscode.postMessage({
+				type: "toggleTodoBreakpoint",
+				values: { todoId, breakpoint: newBreakpointState },
+			})
+		},
+		[breakpoints],
+	)
 	useEffect(() => {
 		if (isCollapsed) return
 		if (!ulRef.current) return
@@ -78,26 +106,47 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 				)}
 			</div>
 			{/* Inline expanded list */}
-			{!isCollapsed && (
-				<ul ref={ulRef} className="list-none max-h-[300px] overflow-y-auto mt-2 -mb-1 pb-0 px-2 cursor-default">
-					{todos.map((todo: any, idx: number) => {
-						const icon = getTodoIcon(todo.status as TodoStatus)
-						return (
-							<li
-								key={todo.id || todo.content}
-								ref={(el) => (itemRefs.current[idx] = el)}
-								className={cn(
-									"font-light flex flex-row gap-2 items-start min-h-[20px] leading-normal mb-2",
-									todo.status === "in_progress" && "text-vscode-charts-yellow",
-									todo.status !== "in_progress" && todo.status !== "completed" && "opacity-60",
-								)}>
-								{icon}
-								<span>{todo.content}</span>
-							</li>
-						)
-					})}
-				</ul>
-			)}
+				{!isCollapsed && (
+					<ul ref={ulRef} className="list-none max-h-[300px] overflow-y-auto mt-2 -mb-1 pb-0 px-2 cursor-default">
+						{todos.map((todo: TodoItem, idx: number) => {
+							const icon = getTodoIcon(todo.status as TodoStatus)
+							const hasBreakpoint = breakpoints[todo.id] || false
+							const canHaveBreakpoint = todo.status === "pending" // Only pending items can have breakpoints
+							return (
+								<li
+									key={todo.id || todo.content}
+									ref={(el) => (itemRefs.current[idx] = el)}
+									className={cn(
+										"font-light flex flex-row gap-2 items-start min-h-[20px] leading-normal mb-2 group",
+										todo.status === "in_progress" && "text-vscode-charts-yellow",
+										todo.status !== "in_progress" && todo.status !== "completed" && "opacity-60",
+									)}>
+									{icon}
+									<span className="flex-1">{todo.content}</span>
+									{/* Breakpoint toggle button - only show for pending items */}
+									{canHaveBreakpoint && (
+										<button
+											onClick={(e) => toggleBreakpoint(todo.id, e)}
+											className={cn(
+												"shrink-0 p-0.5 rounded hover:bg-vscode-toolbar-hoverBackground transition-colors",
+												hasBreakpoint
+													? "text-vscode-charts-red opacity-100"
+													: "text-vscode-descriptionForeground opacity-0 group-hover:opacity-60",
+											)}
+											title={
+												hasBreakpoint ? t("chat:todo.removeBreakpoint") : t("chat:todo.addBreakpoint")
+											}>
+											<Circle
+												className={cn("size-2.5", hasBreakpoint && "fill-current")}
+												strokeWidth={hasBreakpoint ? 0 : 2}
+											/>
+										</button>
+									)}
+								</li>
+							)
+						})}
+					</ul>
+				)}
 		</div>
 	)
 }
