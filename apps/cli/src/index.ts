@@ -97,8 +97,8 @@ program
 					if (token) {
 						const client = createClient({ url: SDK_BASE_URL, authToken: token })
 						const me = await client.auth.me.query()
-						apiKey = token
 						provider = "roo"
+						apiKey = token
 						user = me?.type === "user" ? me.user : null
 					}
 				}

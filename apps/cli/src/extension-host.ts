@@ -417,7 +417,7 @@ export class ExtensionHost extends EventEmitter {
 				if (model) config.vercelAiGatewayModelId = model
 				break
 			case "roo":
-				if (apiKey) config.apiKey = apiKey
+				if (apiKey) config.rooApiKey = apiKey
 				if (model) config.apiModelId = model
 				break
 
