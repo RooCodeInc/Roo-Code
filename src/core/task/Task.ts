@@ -1871,16 +1871,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	private async resumeTaskFromHistory() {
-		// Reset abort and streaming state to ensure clean continuation.
-		// This matches the behavior in resumeAfterDelegation() and prevents
-		// corrupted state from a previous cancellation.
-		this.abort = false
-		this.abandoned = false
-		this.abortReason = undefined
-		this.didFinishAbortingStream = false
-		this.isStreaming = false
-		this.isWaitingForFirstChunk = false
-
 		if (this.enableBridge) {
 			try {
 				await BridgeOrchestrator.subscribeToTask(this)
@@ -1981,22 +1971,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.isInitialized = true
 
-		let response: ClineAskResponse
-		let text: string | undefined
-		let images: string[] | undefined
-
-		try {
-			const result = await this.ask(askType) // Calls `postStateToWebview`.
-			response = result.response
-			text = result.text
-			images = result.images
-		} catch (error) {
-			// Handle abort gracefully - if task was aborted during the ask, don't throw
-			if (this.abort) {
-				return
-			}
-			throw error
-		}
+		const { response, text, images } = await this.ask(askType) // Calls `postStateToWebview`.
 
 		let responseText: string | undefined
 		let responseImages: string[] | undefined
@@ -2181,14 +2156,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await this.overwriteApiConversationHistory(modifiedApiConversationHistory)
 
 		// Task resuming from history item.
-		await this.initiateTaskLoop(newUserContent).catch((error) => {
-			// Swallow loop rejection when the task was intentionally abandoned/aborted
-			// during delegation or user cancellation to prevent unhandled rejections.
-			if (this.abandoned === true || this.abortReason === "user_cancelled") {
-				return
-			}
-			throw error
-		})
+		await this.initiateTaskLoop(newUserContent)
 	}
 
 	/**
