@@ -130,7 +130,6 @@ export interface ExtensionMessage {
 		| "interactionRequired"
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
-		| "claudeCodeRateLimits"
 		| "customToolsResult"
 	text?: string
 	payload?: any // Add a generic payload for now, can refine later
@@ -359,7 +358,6 @@ export type ExtensionState = Pick<
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
-	claudeCodeIsAuthenticated?: boolean
 	debug?: boolean
 }
 

@@ -126,8 +126,6 @@ export interface WebviewMessage {
 		| "cloudLandingPageSignIn"
 		| "rooCloudSignOut"
 		| "rooCloudManualUrl"
-		| "claudeCodeSignIn"
-		| "claudeCodeSignOut"
 		| "switchOrganization"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
@@ -178,7 +176,6 @@ export interface WebviewMessage {
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
 		| "downloadErrorDiagnostics"
-		| "requestClaudeCodeRateLimits"
 		| "refreshCustomTools"
 	text?: string
 	editedMessageContent?: string
