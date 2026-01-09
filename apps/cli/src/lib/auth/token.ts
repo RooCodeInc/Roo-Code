@@ -12,7 +12,7 @@ export interface DecodedToken {
 	}
 }
 
-export function decodeToken(token: string): DecodedToken | null {
+function decodeToken(token: string): DecodedToken | null {
 	try {
 		const parts = token.split(".")
 

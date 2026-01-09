@@ -1,5 +1,5 @@
-import { loadToken, loadCredentials, getCredentialsPath } from "../../lib/storage/credentials.js"
-import { isTokenExpired, isTokenValid, getTokenExpirationDate } from "../../lib/auth/token.js"
+import { loadToken, loadCredentials, getCredentialsPath } from "../../lib/storage/index.js"
+import { isTokenExpired, isTokenValid, getTokenExpirationDate } from "../../lib/auth/index.js"
 
 export interface StatusOptions {
 	verbose?: boolean
