@@ -95,11 +95,15 @@ program
 					const token = await loadToken()
 
 					if (token) {
-						const client = createClient({ url: SDK_BASE_URL, authToken: token })
-						const me = await client.auth.me.query()
-						provider = "roo"
-						apiKey = token
-						user = me?.type === "user" ? me.user : null
+						try {
+							const client = createClient({ url: SDK_BASE_URL, authToken: token })
+							const me = await client.auth.me.query()
+							provider = "roo"
+							apiKey = token
+							user = me?.type === "user" ? me.user : null
+						} catch {
+							// Token may be expired or invalid - user will need to re-authenticate
+						}
 					}
 				}
 			}
