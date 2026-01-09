@@ -963,6 +963,10 @@
 		}
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "Habilitar títulos de tareas editables",
+			"description": "Mostrar y editar títulos personalizados para las tareas en el chat y el historial en lugar de solo el texto original de la tarea"
+		},
 		"collapseThinking": {
 			"label": "Colapsar mensajes de pensamiento por defecto",
 			"description": "Cuando está activado, los bloques de pensamiento se colapsarán por defecto hasta que interactúes con ellos"

@@ -1960,6 +1960,7 @@ export class ClineProvider
 			historyPreviewCollapsed,
 			reasoningBlockCollapsed,
 			enterBehavior,
+			taskTitlesEnabled,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
@@ -2050,6 +2051,7 @@ export class ClineProvider
 			taskHistory: (taskHistory || [])
 				.filter((item: HistoryItem) => item.ts && item.task)
 				.sort((a: HistoryItem, b: HistoryItem) => b.ts - a.ts),
+			taskTitlesEnabled: taskTitlesEnabled ?? false,
 			soundEnabled: soundEnabled ?? false,
 			ttsEnabled: ttsEnabled ?? false,
 			ttsSpeed: ttsSpeed ?? 1.0,
@@ -2358,6 +2360,7 @@ export class ClineProvider
 			historyPreviewCollapsed: stateValues.historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: stateValues.reasoningBlockCollapsed ?? true,
 			enterBehavior: stateValues.enterBehavior ?? "send",
+			taskTitlesEnabled: stateValues.taskTitlesEnabled ?? false,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
@@ -2428,13 +2431,19 @@ export class ClineProvider
 		const existingItemIndex = history.findIndex((h) => h.id === item.id)
 
 		if (existingItemIndex !== -1) {
-			// Preserve existing metadata (e.g., delegation fields) unless explicitly overwritten.
-			// This prevents loss of status/awaitingChildId/delegatedToId when tasks are reopened,
-			// terminated, or when routine message persistence occurs.
-			history[existingItemIndex] = {
-				...history[existingItemIndex],
+			const existingItem = history[existingItemIndex]
+			const hasTitleProp = Object.prototype.hasOwnProperty.call(item, "title")
+			// Preserve existing metadata unless explicitly overwritten.
+			// Title is only cleared when explicitly provided (including undefined).
+			const mergedItem: HistoryItem = {
+				...existingItem,
 				...item,
 			}
+			if (!hasTitleProp) {
+				mergedItem.title = existingItem.title
+			}
+
+			history[existingItemIndex] = mergedItem
 		} else {
 			history.push(item)
 		}

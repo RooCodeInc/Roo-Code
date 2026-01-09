@@ -1230,4 +1230,63 @@ describe("ClineProvider - Sticky Mode", () => {
 			})
 		})
 	})
+
+	describe("updateTaskHistory", () => {
+		beforeEach(async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+		})
+
+		it("preserves existing title when update omits the title property", async () => {
+			const baseItem: HistoryItem = {
+				id: "task-with-title",
+				number: 1,
+				ts: Date.now(),
+				task: "Original task",
+				tokensIn: 10,
+				tokensOut: 20,
+				cacheWrites: 0,
+				cacheReads: 0,
+				totalCost: 0,
+				title: "Custom title",
+			}
+
+			await provider.updateTaskHistory(baseItem)
+
+			const itemWithoutTitle = { ...baseItem }
+			delete (itemWithoutTitle as any).title
+			itemWithoutTitle.tokensIn = 42
+
+			await provider.updateTaskHistory(itemWithoutTitle as HistoryItem)
+
+			const history = mockContext.globalState.get("taskHistory") as HistoryItem[]
+			expect(history[0]?.title).toBe("Custom title")
+		})
+
+		it("allows clearing a title when explicitly set to undefined", async () => {
+			const baseItem: HistoryItem = {
+				id: "task-clear-title",
+				number: 1,
+				ts: Date.now(),
+				task: "Another task",
+				tokensIn: 5,
+				tokensOut: 15,
+				cacheWrites: 0,
+				cacheReads: 0,
+				totalCost: 0,
+				title: "Temporary title",
+			}
+
+			await provider.updateTaskHistory(baseItem)
+
+			const clearedItem: HistoryItem = {
+				...baseItem,
+				title: undefined,
+			}
+
+			await provider.updateTaskHistory(clearedItem)
+
+			const history = mockContext.globalState.get("taskHistory") as HistoryItem[]
+			expect(history[0]?.title).toBeUndefined()
+		})
+	})
 })
