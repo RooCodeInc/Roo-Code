@@ -15,7 +15,8 @@
 		"test": "vitest run",
 		"build": "tsup",
 		"dev": "tsup --watch",
-		"start": "node dist/index.js",
+		"start": "ROO_SDK_BASE_URL=http://localhost:3001 ROO_AUTH_BASE_URL=http://localhost:3000 node dist/index.js",
+		"start:production": "node dist/index.js",
 		"release": "scripts/release.sh",
 		"clean": "rimraf dist .turbo"
 	},

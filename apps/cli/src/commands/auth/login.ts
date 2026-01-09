@@ -18,9 +18,12 @@ export interface LoginResult {
 	orgId?: string | null
 }
 
+const LOCALHOST = "127.0.0.1"
+
 export async function login({ timeout = 5 * 60 * 1000, verbose = false }: LoginOptions = {}): Promise<LoginResult> {
 	const state = randomBytes(16).toString("hex")
 	const port = await getAvailablePort()
+	const host = `http://${LOCALHOST}:${port}`
 
 	if (verbose) {
 		console.log(`[Auth] Starting local callback server on port ${port}`)
@@ -29,7 +32,7 @@ export async function login({ timeout = 5 * 60 * 1000, verbose = false }: LoginO
 	// Create promise that will be resolved when we receive the callback.
 	const tokenPromise = new Promise<{ token: string; state: string }>((resolve, reject) => {
 		const server = http.createServer((req, res) => {
-			const url = new URL(req.url!, `http://localhost:${port}`)
+			const url = new URL(req.url!, host)
 
 			if (url.pathname === "/callback") {
 				const receivedState = url.searchParams.get("state")
@@ -80,12 +83,16 @@ export async function login({ timeout = 5 * 60 * 1000, verbose = false }: LoginO
 			}
 		})
 
-		server.listen(port, "127.0.0.1")
+		server.listen(port, LOCALHOST)
 
 		const timeoutId = setTimeout(() => {
 			server.close()
 			reject(new Error("Authentication timed out"))
 		}, timeout)
+
+		server.on("listening", () => {
+			console.log(`[Auth] Callback server listening on port ${port}`)
+		})
 
 		server.on("close", () => {
 			console.log("[Auth] Callback server closed")
@@ -95,7 +102,7 @@ export async function login({ timeout = 5 * 60 * 1000, verbose = false }: LoginO
 
 	const authUrl = new URL(`${AUTH_BASE_URL}/cli/sign-in`)
 	authUrl.searchParams.set("state", state)
-	authUrl.searchParams.set("callback", `http://localhost:${port}/callback`)
+	authUrl.searchParams.set("callback", `${host}/callback`)
 
 	console.log("Opening browser for authentication...")
 	console.log(`If the browser doesn't open, visit: ${authUrl.toString()}`)
@@ -143,7 +150,7 @@ async function getAvailablePort(startPort = 49152, endPort = 65535): Promise<num
 				})
 			})
 
-			server.listen(port, "127.0.0.1")
+			server.listen(port, LOCALHOST)
 		}
 
 		tryPort()
