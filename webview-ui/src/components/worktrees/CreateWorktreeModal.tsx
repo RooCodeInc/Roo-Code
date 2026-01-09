@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 
-import type { WorktreeDefaultsResponse, BranchInfo, WorktreeIncludeStatus } from "@roo-code/types"
+import type { WorktreeDefaultsResponse, BranchInfo } from "@roo-code/types"
 
 import { vscode } from "@/utils/vscode"
 import { useAppTranslation } from "@/i18n/TranslationContext"
@@ -13,14 +13,8 @@ import {
 	DialogTitle,
 	Button,
 	Input,
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
 } from "@/components/ui"
+import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/searchable-select"
 
 interface CreateWorktreeModalProps {
 	open: boolean
@@ -45,7 +39,7 @@ export const CreateWorktreeModal = ({
 	// Data state
 	const [defaults, setDefaults] = useState<WorktreeDefaultsResponse | null>(null)
 	const [branches, setBranches] = useState<BranchInfo | null>(null)
-	const [includeStatus, setIncludeStatus] = useState<WorktreeIncludeStatus | null>(null)
+	const [baseBranchHasInclude, setBaseBranchHasInclude] = useState<boolean | null>(null)
 
 	// UI state
 	const [isCreating, setIsCreating] = useState(false)
@@ -56,9 +50,16 @@ export const CreateWorktreeModal = ({
 		if (open) {
 			vscode.postMessage({ type: "getWorktreeDefaults" })
 			vscode.postMessage({ type: "getAvailableBranches" })
-			vscode.postMessage({ type: "getWorktreeIncludeStatus" })
 		}
 	}, [open])
+
+	// Check if selected base branch has .worktreeinclude
+	useEffect(() => {
+		if (baseBranch) {
+			setBaseBranchHasInclude(null) // Reset while checking
+			vscode.postMessage({ type: "checkBranchWorktreeInclude", worktreeBranch: baseBranch })
+		}
+	}, [baseBranch])
 
 	// Handle messages from extension
 	useEffect(() => {
@@ -78,8 +79,8 @@ export const CreateWorktreeModal = ({
 					setBaseBranch(data.currentBranch || "main")
 					break
 				}
-				case "worktreeIncludeStatus": {
-					setIncludeStatus(message as WorktreeIncludeStatus)
+				case "branchWorktreeIncludeResult": {
+					setBaseBranchHasInclude(message.hasWorktreeInclude ?? false)
 					break
 				}
 				case "worktreeResult": {
@@ -121,6 +122,25 @@ export const CreateWorktreeModal = ({
 
 	const isValid = branchName.trim() && worktreePath.trim() && baseBranch.trim()
 
+	// Convert branches to SearchableSelect options format
+	const branchOptions = useMemo((): SearchableSelectOption[] => {
+		if (!branches) return []
+
+		const localOptions: SearchableSelectOption[] = branches.localBranches.map((branch) => ({
+			value: branch,
+			label: branch,
+			icon: <span className="codicon codicon-git-branch mr-2 text-vscode-descriptionForeground" />,
+		}))
+
+		const remoteOptions: SearchableSelectOption[] = branches.remoteBranches.map((branch) => ({
+			value: branch,
+			label: branch,
+			icon: <span className="codicon codicon-cloud mr-2 text-vscode-descriptionForeground" />,
+		}))
+
+		return [...localOptions, ...remoteOptions]
+	}, [branches])
+
 	return (
 		<Dialog open={open} onOpenChange={(isOpen: boolean) => !isOpen && onClose()}>
 			<DialogContent className="max-w-lg">
@@ -130,9 +150,9 @@ export const CreateWorktreeModal = ({
 				</DialogHeader>
 
 				<div className="flex flex-col gap-3">
-					{/* No .worktreeinclude warning */}
-					{includeStatus && !includeStatus.exists && (
-						<div className="flex items-center gap-2 px-2 py-1.5 rounded bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder text-sm">
+					{/* No .worktreeinclude warning - shows when base branch doesn't have .worktreeinclude */}
+					{baseBranchHasInclude === false && (
+						<div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder text-sm">
 							<span className="codicon codicon-warning text-vscode-charts-yellow flex-shrink-0" />
 							<span className="text-vscode-foreground">
 								<span className="font-medium">{t("worktrees:noIncludeFileWarning")}</span>
@@ -151,40 +171,29 @@ export const CreateWorktreeModal = ({
 							value={branchName}
 							onChange={(e) => setBranchName(e.target.value)}
 							placeholder={defaults?.suggestedBranch || "worktree/feature-name"}
+							className="rounded-full"
 						/>
 					</div>
 
 					{/* Base branch selector */}
-					{branches && (
-						<div className="flex flex-col gap-1">
-							<label className="text-sm text-vscode-foreground">{t("worktrees:baseBranch")}</label>
-							<Select value={baseBranch} onValueChange={setBaseBranch}>
-								<SelectTrigger className="w-full rounded-xs">
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectGroup>
-										<SelectLabel>{t("worktrees:localBranches")}</SelectLabel>
-										{branches.localBranches.map((branch) => (
-											<SelectItem key={branch} value={branch}>
-												{branch}
-											</SelectItem>
-										))}
-									</SelectGroup>
-									{branches.remoteBranches.length > 0 && (
-										<SelectGroup>
-											<SelectLabel>{t("worktrees:remoteBranches")}</SelectLabel>
-											{branches.remoteBranches.map((branch) => (
-												<SelectItem key={branch} value={branch}>
-													{branch}
-												</SelectItem>
-											))}
-										</SelectGroup>
-									)}
-								</SelectContent>
-							</Select>
-						</div>
-					)}
+					<div className="flex flex-col gap-1">
+						<label className="text-sm text-vscode-foreground">{t("worktrees:baseBranch")}</label>
+						{!branches ? (
+							<div className="flex items-center gap-2 h-8 px-2 text-sm text-vscode-descriptionForeground">
+								<span className="codicon codicon-loading codicon-modifier-spin" />
+								<span>{t("worktrees:loadingBranches")}</span>
+							</div>
+						) : (
+							<SearchableSelect
+								value={baseBranch}
+								onValueChange={setBaseBranch}
+								options={branchOptions}
+								placeholder={t("worktrees:selectBranch")}
+								searchPlaceholder={t("worktrees:searchBranch")}
+								emptyMessage={t("worktrees:noBranchFound")}
+							/>
+						)}
+					</div>
 
 					{/* Worktree path */}
 					<div className="flex flex-col gap-1">
@@ -193,13 +202,14 @@ export const CreateWorktreeModal = ({
 							value={worktreePath}
 							onChange={(e) => setWorktreePath(e.target.value)}
 							placeholder={defaults?.suggestedPath || "/path/to/worktree"}
+							className="rounded-full"
 						/>
 						<p className="text-xs text-vscode-descriptionForeground">{t("worktrees:pathHint")}</p>
 					</div>
 
 					{/* Error message */}
 					{error && (
-						<div className="flex items-center gap-2 px-2 py-1.5 rounded bg-vscode-inputValidation-errorBackground border border-vscode-inputValidation-errorBorder text-sm">
+						<div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-vscode-inputValidation-errorBackground border border-vscode-inputValidation-errorBorder text-sm">
 							<span className="codicon codicon-error text-vscode-errorForeground flex-shrink-0" />
 							<p className="text-vscode-errorForeground">{error}</p>
 						</div>

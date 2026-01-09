@@ -13,6 +13,7 @@ export {
 	handleGetAvailableBranches,
 	handleGetWorktreeDefaults,
 	handleGetWorktreeIncludeStatus,
+	handleCheckBranchWorktreeInclude,
 	handleCreateWorktreeInclude,
 	handleCheckoutBranch,
 	handleMergeWorktree,

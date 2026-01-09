@@ -187,20 +187,24 @@ export class WorktreeService {
 	 */
 	async getAvailableBranches(cwd: string, includeWorktreeBranches = false): Promise<BranchInfo> {
 		try {
-			// Get all worktrees to find branches already in use
-			const worktrees = await this.listWorktrees(cwd)
+			// Run all git commands in parallel for better performance
+			const [worktrees, localResult, remoteResult, currentBranch] = await Promise.all([
+				this.listWorktrees(cwd),
+				execAsync('git branch --format="%(refname:short)"', { cwd }),
+				execAsync('git branch -r --format="%(refname:short)"', { cwd }),
+				this.getCurrentBranch(cwd),
+			])
+
 			const branchesInWorktrees = new Set(worktrees.map((wt) => wt.branch).filter(Boolean))
 
-			// Get local branches
-			const { stdout: localOutput } = await execAsync('git branch --format="%(refname:short)"', { cwd })
-			const localBranches = localOutput
+			// Filter local branches
+			const localBranches = localResult.stdout
 				.trim()
 				.split("\n")
 				.filter((b) => b && (includeWorktreeBranches || !branchesInWorktrees.has(b)))
 
-			// Get remote branches
-			const { stdout: remoteOutput } = await execAsync('git branch -r --format="%(refname:short)"', { cwd })
-			const remoteBranches = remoteOutput
+			// Filter remote branches
+			const remoteBranches = remoteResult.stdout
 				.trim()
 				.split("\n")
 				.filter(
@@ -210,13 +214,10 @@ export class WorktreeService {
 						(includeWorktreeBranches || !branchesInWorktrees.has(b.replace(/^origin\//, ""))),
 				)
 
-			// Get current branch
-			const currentBranch = (await this.getCurrentBranch(cwd)) || ""
-
 			return {
 				localBranches,
 				remoteBranches,
-				currentBranch,
+				currentBranch: currentBranch || "",
 			}
 		} catch {
 			return {

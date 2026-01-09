@@ -281,14 +281,14 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 						<p className="text-center">{error}</p>
 					</div>
 				) : (
-					<div className="flex flex-col gap-2 py-2">
+					<div className="flex flex-col gap-1 py-2">
 						{worktrees.map((worktree) => (
 							<div
 								key={worktree.path}
-								className={`p-3 rounded border ${
+								className={`p-3 rounded-xl border transition-colors ${
 									worktree.isCurrent
 										? "border-vscode-focusBorder bg-vscode-list-activeSelectionBackground"
-										: "border-vscode-panel-border bg-vscode-editor-background"
+										: "border-transparent bg-vscode-editor-background hover:bg-vscode-editor-foreground/10"
 								}`}>
 								<div className="flex items-start justify-between">
 									<div className="flex-1 min-w-0">

@@ -74,6 +74,7 @@ import {
 	handleGetAvailableBranches,
 	handleGetWorktreeDefaults,
 	handleGetWorktreeIncludeStatus,
+	handleCheckBranchWorktreeInclude,
 	handleCreateWorktreeInclude,
 	handleCheckoutBranch,
 	handleMergeWorktree,
@@ -3545,6 +3546,35 @@ export const webviewMessageHandler = async (
 						hasGitignore: false,
 						gitignoreContent: undefined,
 					},
+					error: errorMessage,
+				})
+			}
+
+			break
+		}
+
+		case "checkBranchWorktreeInclude": {
+			try {
+				const branch = message.worktreeBranch
+				if (!branch) {
+					await provider.postMessageToWebview({
+						type: "branchWorktreeIncludeResult",
+						hasWorktreeInclude: false,
+						error: "No branch specified",
+					})
+					break
+				}
+				const hasWorktreeInclude = await handleCheckBranchWorktreeInclude(provider, branch)
+				await provider.postMessageToWebview({
+					type: "branchWorktreeIncludeResult",
+					branch,
+					hasWorktreeInclude,
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				await provider.postMessageToWebview({
+					type: "branchWorktreeIncludeResult",
+					hasWorktreeInclude: false,
 					error: errorMessage,
 				})
 			}

@@ -236,6 +236,11 @@ export async function handleGetWorktreeIncludeStatus(provider: ClineProvider): P
 	return worktreeIncludeService.getStatus(cwd)
 }
 
+export async function handleCheckBranchWorktreeInclude(provider: ClineProvider, branch: string): Promise<boolean> {
+	const cwd = provider.cwd
+	return worktreeIncludeService.branchHasWorktreeInclude(cwd, branch)
+}
+
 export async function handleCreateWorktreeInclude(provider: ClineProvider, content: string): Promise<WorktreeResult> {
 	const cwd = provider.cwd
 

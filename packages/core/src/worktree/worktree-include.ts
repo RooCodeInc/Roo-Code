@@ -34,6 +34,22 @@ export class WorktreeIncludeService {
 	}
 
 	/**
+	 * Check if a specific branch has .worktreeinclude file (in git, not local filesystem)
+	 * @param cwd - Current working directory (git repo)
+	 * @param branch - Branch name to check
+	 */
+	async branchHasWorktreeInclude(cwd: string, branch: string): Promise<boolean> {
+		try {
+			// Use git show to check if the file exists on the branch
+			await execAsync(`git show "${branch}:.worktreeinclude"`, { cwd })
+			return true
+		} catch {
+			// File doesn't exist on this branch
+			return false
+		}
+	}
+
+	/**
 	 * Get the status of .worktreeinclude and .gitignore
 	 */
 	async getStatus(dir: string): Promise<WorktreeIncludeStatus> {

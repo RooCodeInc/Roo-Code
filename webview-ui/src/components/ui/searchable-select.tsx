@@ -31,6 +31,8 @@ interface SearchableSelectProps {
 	emptyMessage: string
 	className?: string
 	disabled?: boolean
+	/** Maximum items to display when not searching. Defaults to 50 for performance. */
+	maxDisplayItems?: number
 	"data-testid"?: string
 }
 
@@ -43,6 +45,7 @@ export function SearchableSelect({
 	emptyMessage,
 	className,
 	disabled,
+	maxDisplayItems = 50,
 	"data-testid": dataTestId,
 }: SearchableSelectProps) {
 	const [open, setOpen] = React.useState(false)
@@ -54,11 +57,16 @@ export function SearchableSelect({
 	// Find the selected option
 	const selectedOption = options.find((option) => option.value === value)
 
-	// Filter options based on search
+	// Filter options based on search, always limit for performance
 	const filteredOptions = React.useMemo(() => {
-		if (!searchValue) return options
-		return options.filter((option) => option.label.toLowerCase().includes(searchValue.toLowerCase()))
-	}, [options, searchValue])
+		if (!searchValue) {
+			// When not searching, limit to maxDisplayItems for performance
+			return options.slice(0, maxDisplayItems)
+		}
+		// When searching, filter then limit to avoid rendering hundreds of items
+		const filtered = options.filter((option) => option.label.toLowerCase().includes(searchValue.toLowerCase()))
+		return filtered.slice(0, maxDisplayItems)
+	}, [options, searchValue, maxDisplayItems])
 
 	// Cleanup timeout on unmount
 	React.useEffect(() => {
@@ -129,7 +137,7 @@ export function SearchableSelect({
 				</Button>
 			</PopoverTrigger>
 			<PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]">
-				<Command>
+				<Command shouldFilter={false}>
 					<div className="relative">
 						<CommandInput
 							ref={searchInputRef}
