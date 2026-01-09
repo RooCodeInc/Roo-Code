@@ -2379,6 +2379,61 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "claudeCodeStartOobFlow": {
+			// Start OOB (out-of-band) OAuth flow for remote environments
+			// This flow displays the auth code on a webpage for manual entry
+			try {
+				const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
+				const authUrl = claudeCodeOAuthManager.startOobAuthorizationFlow()
+
+				// Open the authorization URL in the browser
+				await vscode.env.openExternal(vscode.Uri.parse(authUrl))
+
+				// Notify webview that OOB flow has started
+				await provider.postMessageToWebview({
+					type: "claudeCodeOobFlowStarted",
+					success: true,
+				})
+			} catch (error) {
+				provider.log(`Claude Code OOB OAuth failed: ${error}`)
+				vscode.window.showErrorMessage("Claude Code sign in failed.")
+				await provider.postMessageToWebview({
+					type: "claudeCodeOobFlowStarted",
+					success: false,
+					error: error instanceof Error ? error.message : String(error),
+				})
+			}
+			break
+		}
+		case "claudeCodeExchangeManualCode": {
+			// Exchange manually entered auth code for tokens (OOB flow)
+			try {
+				const code = message.text?.trim()
+				if (!code) {
+					throw new Error("No authorization code provided")
+				}
+
+				const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
+				await claudeCodeOAuthManager.exchangeManualCode(code)
+
+				vscode.window.showInformationMessage("Successfully signed in to Claude Code")
+				await provider.postStateToWebview()
+				await provider.postMessageToWebview({
+					type: "claudeCodeManualCodeResult",
+					success: true,
+				})
+			} catch (error) {
+				provider.log(`Claude Code manual code exchange failed: ${error}`)
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				vscode.window.showErrorMessage(`Claude Code sign in failed: ${errorMessage}`)
+				await provider.postMessageToWebview({
+					type: "claudeCodeManualCodeResult",
+					success: false,
+					error: errorMessage,
+				})
+			}
+			break
+		}
 		case "rooCloudManualUrl": {
 			try {
 				if (!message.text) {
