@@ -184,6 +184,8 @@ export const globalSettingsSchema = z.object({
 	customSupportPrompts: customSupportPromptsSchema.optional(),
 	enhancementApiConfigId: z.string().optional(),
 	includeTaskHistoryInEnhance: z.boolean().optional(),
+	// Auto-delete task history on extension reload. "never" | "90" | "60" | "30" | "7" | "3"
+	taskHistoryRetention: z.union([z.enum(["never", "90", "60", "30", "7", "3"]), z.number()]).optional(),
 	historyPreviewCollapsed: z.boolean().optional(),
 	reasoningBlockCollapsed: z.boolean().optional(),
 	/**

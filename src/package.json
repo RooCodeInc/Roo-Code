@@ -429,6 +429,19 @@
 					"default": false,
 					"description": "%settings.debugProxy.tlsInsecure.description%",
 					"markdownDescription": "%settings.debugProxy.tlsInsecure.description%"
+				},
+				"roo-cline.taskHistoryRetention": {
+					"type": "string",
+					"enum": [
+						"never",
+						"90",
+						"60",
+						"30",
+						"7",
+						"3"
+					],
+					"default": "never",
+					"description": "%settings.taskHistoryRetention.description%"
 				}
 			}
 		}
