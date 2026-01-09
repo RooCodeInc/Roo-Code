@@ -80,7 +80,10 @@ function normalizePath(p: string): string {
 }
 
 export function getReadablePath(cwd: string, relPath?: string): string {
-	relPath = relPath || ""
+	// Return empty string if relPath is undefined or empty (no path to show)
+	if (!relPath) {
+		return ""
+	}
 	// path.resolve is flexible in that it will resolve relative paths like '../../' to the cwd and even ignore the cwd if the relPath is actually an absolute path
 	const absolutePath = path.resolve(cwd, relPath)
 	if (arePathsEqual(cwd, path.join(os.homedir(), "Desktop"))) {
