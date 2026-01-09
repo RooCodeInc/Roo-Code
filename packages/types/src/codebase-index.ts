@@ -12,6 +12,11 @@ export const CODEBASE_INDEX_DEFAULTS = {
 	MAX_SEARCH_SCORE: 1,
 	DEFAULT_SEARCH_MIN_SCORE: 0.4,
 	SEARCH_SCORE_STEP: 0.05,
+	// Batch retry settings
+	MIN_BATCH_RETRIES: 1,
+	MAX_BATCH_RETRIES: 10,
+	DEFAULT_BATCH_RETRIES: 3,
+	BATCH_RETRIES_STEP: 1,
 } as const
 
 /**
@@ -41,6 +46,11 @@ export const codebaseIndexConfigSchema = z.object({
 		.number()
 		.min(CODEBASE_INDEX_DEFAULTS.MIN_SEARCH_RESULTS)
 		.max(CODEBASE_INDEX_DEFAULTS.MAX_SEARCH_RESULTS)
+		.optional(),
+	codebaseIndexMaxBatchRetries: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_BATCH_RETRIES)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_BATCH_RETRIES)
 		.optional(),
 	// OpenAI Compatible specific fields
 	codebaseIndexOpenAiCompatibleBaseUrl: z.string().optional(),

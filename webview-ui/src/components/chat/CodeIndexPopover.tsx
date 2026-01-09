@@ -66,6 +66,7 @@ interface LocalCodeIndexSettings {
 	codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
 	codebaseIndexSearchMaxResults?: number
 	codebaseIndexSearchMinScore?: number
+	codebaseIndexMaxBatchRetries?: number
 
 	// Bedrock-specific settings
 	codebaseIndexBedrockRegion?: string
@@ -214,6 +215,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexEmbedderModelDimension: undefined,
 		codebaseIndexSearchMaxResults: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+		codebaseIndexMaxBatchRetries: CODEBASE_INDEX_DEFAULTS.DEFAULT_BATCH_RETRIES,
 		codebaseIndexBedrockRegion: "",
 		codebaseIndexBedrockProfile: "",
 		codeIndexOpenAiKey: "",
@@ -253,6 +255,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					codebaseIndexConfig.codebaseIndexSearchMaxResults ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 				codebaseIndexSearchMinScore:
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+				codebaseIndexMaxBatchRetries:
+					codebaseIndexConfig.codebaseIndexMaxBatchRetries ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_BATCH_RETRIES,
 				codebaseIndexBedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion || "",
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
 				codeIndexOpenAiKey: "",
@@ -1580,6 +1584,50 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 													updateSetting(
 														"codebaseIndexSearchMaxResults",
 														CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
+													)
+												}>
+												<span className="codicon codicon-discard" />
+											</VSCodeButton>
+										</div>
+									</div>
+	
+									{/* Maximum Batch Retries Slider */}
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.maxBatchRetriesLabel")}
+											</label>
+											<StandardTooltip
+												content={t("settings:codeIndex.maxBatchRetriesDescription")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<div className="flex items-center gap-2">
+											<Slider
+												min={CODEBASE_INDEX_DEFAULTS.MIN_BATCH_RETRIES}
+												max={CODEBASE_INDEX_DEFAULTS.MAX_BATCH_RETRIES}
+												step={CODEBASE_INDEX_DEFAULTS.BATCH_RETRIES_STEP}
+												value={[
+													currentSettings.codebaseIndexMaxBatchRetries ??
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_BATCH_RETRIES,
+												]}
+												onValueChange={(values) =>
+													updateSetting("codebaseIndexMaxBatchRetries", values[0])
+												}
+												className="flex-1"
+												data-testid="max-batch-retries-slider"
+											/>
+											<span className="w-12 text-center">
+												{currentSettings.codebaseIndexMaxBatchRetries ??
+													CODEBASE_INDEX_DEFAULTS.DEFAULT_BATCH_RETRIES}
+											</span>
+											<VSCodeButton
+												appearance="icon"
+												title={t("settings:codeIndex.resetToDefault")}
+												onClick={() =>
+													updateSetting(
+														"codebaseIndexMaxBatchRetries",
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_BATCH_RETRIES,
 													)
 												}>
 												<span className="codicon codicon-discard" />
