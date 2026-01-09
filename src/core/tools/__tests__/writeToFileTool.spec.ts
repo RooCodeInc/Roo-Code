@@ -281,11 +281,11 @@ describe("writeToFileTool", () => {
 		it.skipIf(process.platform === "win32")(
 			"creates parent directories when path has stabilized (partial)",
 			async () => {
-				// First call - path not yet stabilized
-				await executeWriteFileTool({}, { fileExists: false, isPartial: true })
+				// First call with undefined path - no action yet
+				await executeWriteFileTool({ path: undefined }, { fileExists: false, isPartial: true })
 				expect(mockedCreateDirectoriesForFile).not.toHaveBeenCalled()
 
-				// Second call with same path - path is now stabilized
+				// Second call with valid path - path is now considered stable (first valid after undefined)
 				await executeWriteFileTool({}, { fileExists: false, isPartial: true })
 				expect(mockedCreateDirectoriesForFile).toHaveBeenCalledWith(absoluteFilePath)
 			},
@@ -400,12 +400,12 @@ describe("writeToFileTool", () => {
 		})
 
 		it("streams content updates during partial execution after path stabilizes", async () => {
-			// First call - path not yet stabilized, early return (no file operations)
-			await executeWriteFileTool({}, { isPartial: true })
+			// First call with undefined path - early return (no file operations)
+			await executeWriteFileTool({ path: undefined }, { isPartial: true })
 			expect(mockCline.ask).not.toHaveBeenCalled()
 			expect(mockCline.diffViewProvider.open).not.toHaveBeenCalled()
 
-			// Second call with same path - path is now stabilized, file operations proceed
+			// Second call with valid path - path is considered stable (first valid after undefined)
 			await executeWriteFileTool({}, { isPartial: true })
 			expect(mockCline.ask).toHaveBeenCalled()
 			expect(mockCline.diffViewProvider.open).toHaveBeenCalledWith(testFilePath)
@@ -455,11 +455,11 @@ describe("writeToFileTool", () => {
 		it("handles partial streaming errors after path stabilizes", async () => {
 			mockCline.diffViewProvider.open.mockRejectedValue(new Error("Open failed"))
 
-			// First call - path not yet stabilized, no error yet
-			await executeWriteFileTool({}, { isPartial: true })
+			// First call with undefined path - no error yet (no file operations attempted)
+			await executeWriteFileTool({ path: undefined }, { isPartial: true })
 			expect(mockHandleError).not.toHaveBeenCalled()
 
-			// Second call with same path - path is now stabilized, error occurs
+			// Second call with valid path - path is considered stable, error occurs during file operations
 			await executeWriteFileTool({}, { isPartial: true })
 			expect(mockHandleError).toHaveBeenCalledWith("handling partial write_to_file", expect.any(Error))
 		})

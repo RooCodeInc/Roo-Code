@@ -132,8 +132,18 @@ export abstract class BaseTool<TName extends ToolName> {
 	 *
 	 * During native tool call streaming, the partial-json library may return truncated
 	 * string values when chunk boundaries fall mid-value. This method tracks the path
-	 * value between consecutive handlePartial() calls and returns true only when the
-	 * path has stopped changing (stabilized).
+	 * value between consecutive handlePartial() calls and returns true when the path
+	 * is ready to display.
+	 *
+	 * A path is considered stable when:
+	 * 1. The same non-empty value is seen twice consecutively (handles incremental streaming
+	 *    where paths grow char-by-char until stabilizing)
+	 * 2. A non-empty value appears after undefined (handles providers like Gemini that
+	 *    send complete args in one chunk - the first valid path is the complete path)
+	 *
+	 * For incremental streaming providers, option 2 may briefly show truncated paths,
+	 * but these quickly update as more chunks arrive. This is preferable to showing
+	 * nothing or showing incorrect paths (like CWD basename).
 	 *
 	 * Usage in handlePartial():
 	 * ```typescript
@@ -144,12 +154,25 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * ```
 	 *
 	 * @param path - The current path value from the partial block
-	 * @returns true if path has stabilized (same value seen twice) and is non-empty, false otherwise
+	 * @returns true if path has stabilized and is non-empty, false otherwise
 	 */
 	protected hasPathStabilized(path: string | undefined): boolean {
-		const pathHasStabilized = this.lastSeenPartialPath !== undefined && this.lastSeenPartialPath === path
+		const previousPath = this.lastSeenPartialPath
 		this.lastSeenPartialPath = path
-		return pathHasStabilized && !!path
+
+		// Must have a valid path to consider it stable
+		if (!path) {
+			return false
+		}
+
+		// Case 1: Same non-empty value seen twice (incremental streaming stabilized)
+		const sameValueTwice = previousPath !== undefined && previousPath === path
+
+		// Case 2: First valid value after undefined (Gemini-style complete args)
+		// This handles providers that send undefined first (name only), then complete args
+		const firstValidAfterUndefined = previousPath === undefined
+
+		return sameValueTwice || firstValidAfterUndefined
 	}
 
 	/**
