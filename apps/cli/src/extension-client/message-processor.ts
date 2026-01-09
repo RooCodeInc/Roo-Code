@@ -170,6 +170,16 @@ export class MessageProcessor {
 			return
 		}
 
+		// Debug: log all message types in this state update
+		const lastMsg = clineMessages[clineMessages.length - 1]
+		console.error("[DEBUG MessageProcessor] handleStateMessage", {
+			msgCount: clineMessages.length,
+			lastMsgType: lastMsg?.type,
+			lastMsgAsk: lastMsg?.ask,
+			lastMsgSay: lastMsg?.say,
+			partial: lastMsg?.partial,
+		})
+
 		// Get previous state for comparison
 		const previousState = this.store.getAgentState()
 
@@ -201,6 +211,15 @@ export class MessageProcessor {
 				isRunning: currentState.isRunning,
 			})
 		}
+
+		// Debug: log state transition
+		console.error("[DEBUG MessageProcessor] state transition", {
+			prevState: previousState.state,
+			currState: currentState.state,
+			prevAsk: previousState.currentAsk,
+			currAsk: currentState.currentAsk,
+			isWaitingForInput: currentState.isWaitingForInput,
+		})
 
 		// Emit events based on state changes
 		this.emitStateChangeEvents(previousState, currentState)
@@ -329,11 +348,10 @@ export class MessageProcessor {
 
 		// Task completed
 		if (taskCompleted(previousState, currentState)) {
-			if (this.options.debug) {
-				debugLog("[MessageProcessor] EMIT taskCompleted", {
-					success: currentState.currentAsk === "completion_result",
-				})
-			}
+			console.error("[DEBUG MessageProcessor] EMIT taskCompleted", {
+				success: currentState.currentAsk === "completion_result",
+				currentAsk: currentState.currentAsk,
+			})
 			const completedEvent: TaskCompletedEvent = {
 				success: currentState.currentAsk === "completion_result",
 				stateInfo: currentState,

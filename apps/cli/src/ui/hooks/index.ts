@@ -12,6 +12,9 @@ export { useTaskSubmit } from "./useTaskSubmit.js"
 export { useGlobalInput } from "./useGlobalInput.js"
 export { usePickerHandlers } from "./usePickerHandlers.js"
 
+// Profiling hooks
+export { useRenderProfiler, withRenderProfiler } from "./useRenderProfiler.js"
+
 // Export types
 export type { UseFollowupCountdownOptions } from "./useFollowupCountdown.js"
 export type { UseFocusManagementOptions, UseFocusManagementReturn } from "./useFocusManagement.js"
@@ -20,3 +23,4 @@ export type { UseExtensionHostOptions, UseExtensionHostReturn } from "./useExten
 export type { UseTaskSubmitOptions, UseTaskSubmitReturn } from "./useTaskSubmit.js"
 export type { UseGlobalInputOptions } from "./useGlobalInput.js"
 export type { UsePickerHandlersOptions, UsePickerHandlersReturn } from "./usePickerHandlers.js"
+export type { UseRenderProfilerOptions } from "./useRenderProfiler.js"

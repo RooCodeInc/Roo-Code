@@ -32,6 +32,8 @@ export type FlagOptions = {
 	waitOnComplete: boolean
 	ephemeral: boolean
 	tui: boolean
+	/** Enable render performance profiling (writes to ~/.roo/cli-render.log) */
+	profileRenders: boolean
 }
 
 export enum OnboardingProviderChoice {

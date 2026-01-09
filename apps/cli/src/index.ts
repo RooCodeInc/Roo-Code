@@ -32,6 +32,7 @@ program
 	)
 	.option("--ephemeral", "Run without persisting state (uses temporary storage)", false)
 	.option("--no-tui", "Disable TUI, use plain text output")
+	.option("--profile-renders", "Enable render performance profiling (writes to ~/.roo/cli-render.log)", false)
 	.action(run)
 
 const authCommand = program.command("auth").description("Manage authentication for Roo Code Cloud")

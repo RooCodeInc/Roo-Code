@@ -9,6 +9,9 @@ import { setLogger } from "@roo-code/vscode-shim"
 
 import { FlagOptions, isSupportedProvider, OnboardingProviderChoice, supportedProviders } from "../../types/types.js"
 import { ASCII_ROO, DEFAULT_FLAGS, REASONING_EFFORTS, SDK_BASE_URL } from "../../types/constants.js"
+import { RenderProfiler, getRenderLogPath } from "../../ui/utils/renderProfiler.js"
+import { startFrameTracking } from "../../ui/utils/frameTiming.js"
+import { wrapStoreWithProfiler } from "../../ui/utils/storeProfiler.js"
 
 import { ExtensionHost, ExtensionHostOptions } from "../../extension-host/index.js"
 
@@ -110,6 +113,22 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 
 	if (options.tui && !isTuiSupported) {
 		console.log("[CLI] TUI disabled (no TTY support), falling back to plain text mode")
+	}
+
+	// Initialize render profiler if enabled via flag or environment variable
+	const profileRenders = options.profileRenders || process.env.ROO_PROFILE_RENDERS === "1"
+	if (profileRenders && useTui) {
+		RenderProfiler.getInstance().configure({ enabled: true })
+		startFrameTracking() // Start event loop timing measurements
+
+		// Wrap Zustand stores with profiler (must be done before App renders)
+		// Dynamic import to avoid loading stores unless profiling is enabled
+		const { useCLIStore } = await import("../../ui/store.js")
+		const { useUIStateStore } = await import("../../ui/stores/uiStateStore.js")
+		wrapStoreWithProfiler(useCLIStore, "CLIStore")
+		wrapStoreWithProfiler(useUIStateStore, "UIStateStore")
+
+		console.log(`[CLI] Render profiling enabled. Writing to: ${getRenderLogPath()}`)
 	}
 
 	if (!useTui && !options.prompt) {

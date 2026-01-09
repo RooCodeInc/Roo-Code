@@ -23,6 +23,7 @@ import {
 	useFollowupCountdown,
 	useFocusManagement,
 	usePickerHandlers,
+	useRenderProfiler,
 } from "./hooks/index.js"
 
 // Import extracted utilities
@@ -96,6 +97,13 @@ function AppInner({
 	createExtensionHost,
 }: TUIAppProps) {
 	const { exit } = useApp()
+
+	// Profile renders for the root App component
+	useRenderProfiler({
+		name: "AppInner",
+		trackProps: true,
+		props: { isLoading: false, hasMessages: false }, // Simplified - actual values tracked below
+	})
 
 	const {
 		messages,

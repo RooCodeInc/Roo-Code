@@ -5,6 +5,7 @@ import * as theme from "../theme.js"
 import type { TUIMessage } from "../types.js"
 import TodoDisplay from "./TodoDisplay.js"
 import { getToolRenderer } from "./tools/index.js"
+import { useRenderProfiler } from "../hooks/useRenderProfiler.js"
 
 /**
  * Tool categories for styling
@@ -174,6 +175,15 @@ interface ChatHistoryItemProps {
 }
 
 function ChatHistoryItem({ message }: ChatHistoryItemProps) {
+	// Profile renders for this frequently-rendered component
+	useRenderProfiler({
+		name: "ChatHistoryItem",
+		trackProps: true,
+		props: { messageId: message.id, role: message.role, partial: message.partial },
+		propsToTrack: ["messageId", "role", "partial"],
+		warnOnFrequentRenders: 20, // Warn if > 20 renders/sec for a single message
+	})
+
 	const content = sanitizeContent(message.content || "...")
 
 	switch (message.role) {
