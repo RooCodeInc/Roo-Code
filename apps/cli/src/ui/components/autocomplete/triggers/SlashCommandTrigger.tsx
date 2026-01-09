@@ -115,6 +115,7 @@ export function toSlashCommandResult(command: {
 	description?: string
 	argumentHint?: string
 	source: "global" | "project" | "built-in"
+	action?: string
 }): SlashCommandResult {
 	return {
 		key: command.name,
@@ -122,5 +123,6 @@ export function toSlashCommandResult(command: {
 		description: command.description,
 		argumentHint: command.argumentHint,
 		source: command.source,
+		action: command.action as GlobalCommandAction | undefined,
 	}
 }
