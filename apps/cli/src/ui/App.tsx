@@ -3,9 +3,9 @@ import { Select } from "@inkjs/ui"
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import type { WebviewMessage } from "@roo-code/types"
 
-import { getGlobalCommandsForAutocomplete } from "../utils/globalCommands.js"
-import { arePathsEqual } from "../utils/pathUtils.js"
-import { getContextWindow } from "../utils/getContextWindow.js"
+import { getGlobalCommandsForAutocomplete } from "../lib/utils/commands.js"
+import { arePathsEqual } from "../lib/utils/path.js"
+import { getContextWindow } from "../lib/utils/context-window.js"
 import * as theme from "./theme.js"
 
 import { useCLIStore } from "./store.js"
@@ -54,7 +54,7 @@ import {
 } from "./components/autocomplete/index.js"
 import { ScrollArea, useScrollToBottom } from "./components/ScrollArea.js"
 import ScrollIndicator from "./components/ScrollIndicator.js"
-import { ExtensionHostOptions } from "../extension-host.js"
+import { ExtensionHostOptions } from "../extension-host/extension-host.js"
 
 const PICKER_HEIGHT = 10
 

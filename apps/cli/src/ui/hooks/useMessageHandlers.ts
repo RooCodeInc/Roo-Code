@@ -2,16 +2,10 @@ import { useCallback, useRef } from "react"
 import type { ExtensionMessage, ClineMessage, ClineAsk, ClineSay, TodoItem } from "@roo-code/types"
 import { consolidateTokenUsage, consolidateApiRequests, consolidateCommands } from "@roo-code/core/message-utils"
 
-import { toolInspectorLog } from "../../utils/toolInspectorLogger.js"
 import type { TUIMessage, ToolData } from "../types.js"
 import type { FileResult, SlashCommandResult, ModeResult } from "../components/autocomplete/index.js"
 import { useCLIStore } from "../store.js"
-import {
-	extractToolData,
-	formatToolOutput,
-	formatToolAskMessage,
-	parseTodosFromToolInfo,
-} from "../utils/toolDataUtils.js"
+import { extractToolData, formatToolOutput, formatToolAskMessage, parseTodosFromToolInfo } from "../utils/tools.js"
 
 export interface UseMessageHandlersOptions {
 	nonInteractive: boolean
@@ -104,7 +98,6 @@ export function useMessageHandlers({ nonInteractive }: UseMessageHandlersOptions
 				toolDisplayName = "bash"
 				toolDisplayOutput = text
 				const trackedCommand = pendingCommandRef.current
-				toolInspectorLog("say:command_output", { ts, trackedCommand, outputLength: text?.length })
 				toolData = { tool: "execute_command", command: trackedCommand || undefined, output: text }
 				pendingCommandRef.current = null
 			} else if (say === "reasoning") {
@@ -209,7 +202,6 @@ export function useMessageHandlers({ nonInteractive }: UseMessageHandlersOptions
 			// Track pending command BEFORE nonInteractive handling
 			// This ensures we capture the command text for later injection into command_output toolData
 			if (ask === "command") {
-				toolInspectorLog("ask:command:tracking", { ts, text })
 				pendingCommandRef.current = text
 			}
 
@@ -227,15 +219,6 @@ export function useMessageHandlers({ nonInteractive }: UseMessageHandlersOptions
 
 					try {
 						const toolInfo = JSON.parse(text) as Record<string, unknown>
-
-						// Log tool payload for inspection (nonInteractive ask)
-						toolInspectorLog("ask:tool:nonInteractive", {
-							ts,
-							rawText: text,
-							parsedToolInfo: toolInfo,
-							partial,
-						})
-
 						toolName = toolInfo.tool as string
 						toolDisplayName = toolInfo.tool as string
 						toolDisplayOutput = formatToolOutput(toolInfo)
@@ -294,15 +277,6 @@ export function useMessageHandlers({ nonInteractive }: UseMessageHandlersOptions
 			} else if (ask === "tool") {
 				try {
 					const toolInfo = JSON.parse(text) as Record<string, unknown>
-
-					// Log tool payload for inspection (interactive ask)
-					toolInspectorLog("ask:tool:interactive", {
-						ts,
-						rawText: text,
-						parsedToolInfo: toolInfo,
-						partial,
-					})
-
 					questionText = formatToolAskMessage(toolInfo)
 				} catch {
 					// Use raw text if not valid JSON

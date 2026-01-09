@@ -3,10 +3,9 @@ import { useApp } from "ink"
 import { randomUUID } from "crypto"
 import type { ExtensionMessage, WebviewMessage } from "@roo-code/types"
 
-import { toolInspectorLog, clearToolInspectorLog } from "../../utils/toolInspectorLogger.js"
 import { useCLIStore } from "../store.js"
 
-import { ExtensionHostOptions } from "../../extension-host.js"
+import { ExtensionHostOptions } from "../../extension-host/extension-host.js"
 
 interface ExtensionHostInterface {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,14 +71,6 @@ export function useExtensionHost({
 
 	useEffect(() => {
 		const init = async () => {
-			clearToolInspectorLog()
-
-			toolInspectorLog("session:start", {
-				timestamp: new Date().toISOString(),
-				mode,
-				nonInteractive,
-			})
-
 			try {
 				const host = createExtensionHost({
 					mode,

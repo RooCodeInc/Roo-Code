@@ -2,7 +2,8 @@ import { useCallback } from "react"
 import { randomUUID } from "crypto"
 import type { WebviewMessage } from "@roo-code/types"
 
-import { getGlobalCommand } from "../../utils/globalCommands.js"
+import { getGlobalCommand } from "../../lib/utils/commands.js"
+
 import { useCLIStore } from "../store.js"
 import { useUIStateStore } from "../stores/uiStateStore.js"
 

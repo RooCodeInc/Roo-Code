@@ -3,8 +3,8 @@ import { randomBytes } from "crypto"
 import net from "net"
 import { exec } from "child_process"
 
-import { AUTH_BASE_URL } from "../../constants.js"
-import { saveToken } from "../../storage/credentials.js"
+import { AUTH_BASE_URL } from "../../types/constants.js"
+import { saveToken } from "../../lib/storage/credentials.js"
 
 export interface LoginOptions {
 	timeout?: number

@@ -2,7 +2,7 @@ import { Box, Text } from "ink"
 import fuzzysort from "fuzzysort"
 
 import type { AutocompleteTrigger, AutocompleteItem, TriggerDetectionResult } from "../types.js"
-import { GlobalCommandAction } from "../../../../utils/globalCommands.js"
+import { GlobalCommandAction } from "../../../../lib/utils/commands.js"
 
 export interface SlashCommandResult extends AutocompleteItem {
 	name: string

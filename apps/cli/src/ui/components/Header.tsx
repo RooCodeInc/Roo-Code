@@ -3,8 +3,8 @@ import { Text, Box } from "ink"
 
 import type { TokenUsage } from "@roo-code/types"
 
-import { ASCII_ROO } from "../../constants.js"
-import { User } from "../../sdk/types.js"
+import { ASCII_ROO } from "../../types/constants.js"
+import { User } from "../../lib/sdk/types.js"
 import { useTerminalSize } from "../hooks/TerminalSizeContext.js"
 import * as theme from "../theme.js"
 
