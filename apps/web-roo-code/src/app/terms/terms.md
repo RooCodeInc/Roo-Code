@@ -278,7 +278,7 @@ Roo Code shall implement and maintain appropriate technical and organisational m
 ### 8. Subprocessing
 
 1. Entity hereby grants Roo Code general written authorisation to engage sub-processors to process the Data, including (a) Roo Code's affiliates; and (b) any other subprocessors engaged as of the date of this Addendum.
-2. To the extent that Roo Code is required to do so under the GDPR, Roo Code shall notify Entity of any proposed engagement or replacement of sub-processors at least 10 days prior to its effective date (which notice may, at Roo Code's option, be provided on Roo Code's website or through any other effective mechanism). Entity may object in writing to such proposed appointment or replacement on demonstrated and valid data protection grounds no later than 7 days of Roo Code's notice; provided that if Roo Code does not agree with Client's objections, Entity may upon prior written notice to Roo Code terminate the relevant part of the services in accordance with the Agreement.
+2. To the extent that Roo Code is required to do so under the GDPR, Roo Code shall notify Entity of any proposed engagement or replacement of sub-processors at least 10 days prior to its effective date (which notice may, at Roo Code's option, be provided on Roo Code's website or through any other effective mechanism). Entity may object in writing to such proposed appointment or replacement on demonstrated and valid data protection grounds no later than 7 days of Roo Code's notice; provided that if Roo Code does not agree with Entity's objections, Entity may upon prior written notice to Roo Code terminate the relevant part of the services in accordance with the Agreement.
 3. To the extent that Roo Code is required to do so under the GDPR, Roo Code shall undertake reasonable efforts to agree data protection terms with any such subprocessor engaged following the date of this Agreement such that the Data is protected materially to the same extent as the protections afforded to the Data under this Addendum.
 
 ### 9. Cooperation and Data Subjects' Rights
@@ -296,9 +296,9 @@ Upon becoming aware of a Security Incident, Roo Code shall inform Entity without
 
 ### 11. Deletion or Return of Data
 
-To the extent required under the GDPR, upon termination or expiry of the Agreement, Roo Code shall at Client's request (which request must be exercised promptly) either:
+To the extent required under the GDPR, upon termination or expiry of the Agreement, Roo Code shall at Entity's request (which request must be exercised promptly) either:
 
-1. return to Client, and/or
+1. return to Entity, and/or
 2. destroy or permanently erase,
 
 in each case, all Data in its possession or control; provided that Roo Code shall be excused from its obligations under (ii) above to the extent required or allowed by applicable law.
