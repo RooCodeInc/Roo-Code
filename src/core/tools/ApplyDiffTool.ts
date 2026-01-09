@@ -1,10 +1,9 @@
 import path from "path"
 import fs from "fs/promises"
 
+import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
-import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 
-import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { getReadablePath } from "../../utils/path"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
@@ -13,8 +12,9 @@ import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
-import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+
+import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface ApplyDiffParams {
 	path: string

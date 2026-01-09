@@ -1,12 +1,12 @@
 import {
 	type ClineAsk,
+	type ClineSayTool,
 	type McpServerUse,
 	type FollowUpData,
 	type ExtensionState,
 	isNonBlockingAsk,
 } from "@roo-code/types"
 
-import type { ClineSayTool } from "../../shared/ExtensionMessage"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 
 import { isWriteToolAction, isReadOnlyToolAction } from "./tools"

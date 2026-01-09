@@ -16,16 +16,15 @@ import {
 	geminiModels,
 	ApiProviderError,
 } from "@roo-code/types"
+import { safeJsonParse } from "@roo-code/core"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import type { ApiHandlerOptions } from "../../shared/api"
-import { safeJsonParse } from "../../shared/safeJsonParse"
 
 import { convertAnthropicMessageToGemini } from "../transform/gemini-format"
 import { t } from "i18next"
 import type { ApiStream, GroundingSource } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
-import { handleProviderError } from "./utils/error-handler"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
