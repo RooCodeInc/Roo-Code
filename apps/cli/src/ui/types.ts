@@ -108,23 +108,6 @@ export interface PendingAsk {
 	suggestions?: Array<{ answer: string; mode?: string | null }>
 }
 
-export interface AppProps {
-	initialPrompt: string
-	workspacePath: string
-	extensionPath: string
-	apiProvider: string
-	apiKey: string
-	model: string
-	mode: string
-	nonInteractive: boolean
-	verbose: boolean
-	debug: boolean
-	exitOnComplete: boolean
-	reasoningEffort?: string
-	ephemeral?: boolean
-	version: string
-}
-
 export type View = "UserInput" | "AgentResponse" | "ToolUse" | "Default"
 
 export interface TaskHistoryItem {

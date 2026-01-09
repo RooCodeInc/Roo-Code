@@ -101,6 +101,50 @@ In non-interactive mode:
 - Followup questions show a 60-second timeout, then auto-select the first suggestion
 - Typing any key cancels the timeout and allows manual input
 
+### Roo Code Cloud Authentication
+
+To use Roo Code Cloud features (like the provider proxy), you need to authenticate:
+
+```bash
+# Log in to Roo Code Cloud (opens browser)
+roo auth login
+
+# Check authentication status
+roo auth status
+
+# Log out
+roo auth logout
+```
+
+The `auth login` command:
+
+1. Opens your browser to authenticate with Roo Code Cloud
+2. Receives a secure token via localhost callback
+3. Stores the token in `~/.config/roo/credentials.json`
+
+Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when your token expires.
+
+**Authentication Flow:**
+
+```
+┌──────┐         ┌─────────┐         ┌───────────────┐
+│  CLI │         │ Browser │         │ Roo Code Cloud│
+└──┬───┘         └────┬────┘         └───────┬───────┘
+   │                  │                      │
+   │ Open auth URL    │                      │
+   │─────────────────>│                      │
+   │                  │                      │
+   │                  │ Authenticate         │
+   │                  │─────────────────────>│
+   │                  │                      │
+   │                  │<─────────────────────│
+   │                  │ Token via callback   │
+   │<─────────────────│                      │
+   │                  │                      │
+   │ Store token      │                      │
+   │                  │                      │
+```
+
 ## Options
 
 | Option                            | Description                                                                             | Default                       |
@@ -108,7 +152,6 @@ In non-interactive mode:
 | `[workspace]`                     | Workspace path to operate in (positional argument)                                      | Current directory             |
 | `-P, --prompt <prompt>`           | The prompt/task to execute (optional in TUI mode)                                       | None                          |
 | `-e, --extension <path>`          | Path to the extension bundle directory                                                  | Auto-detected                 |
-| `-v, --verbose`                   | Enable verbose output (show VSCode and extension logs)                                  | `false`                       |
 | `-d, --debug`                     | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                       |
 | `-x, --exit-on-complete`          | Exit the process when task completes (useful for testing)                               | `false`                       |
 | `-y, --yes`                       | Non-interactive mode: auto-approve all actions                                          | `false`                       |
@@ -120,7 +163,13 @@ In non-interactive mode:
 | `--ephemeral`                     | Run without persisting state (uses temporary storage)                                   | `false`                       |
 | `--no-tui`                        | Disable TUI, use plain text output                                                      | `false`                       |
 
-By default, the CLI runs in quiet mode (suppressing VSCode/extension logs) and only shows assistant output. Use `-v` to see all logs, or `-d` for detailed debug information.
+## Auth Commands
+
+| Command           | Description                        |
+| ----------------- | ---------------------------------- |
+| `roo auth login`  | Authenticate with Roo Code Cloud   |
+| `roo auth logout` | Clear stored authentication token  |
+| `roo auth status` | Show current authentication status |
 
 ## Environment Variables
 
@@ -133,6 +182,12 @@ The CLI will look for API keys in environment variables if not provided via `--a
 | openrouter    | `OPENROUTER_API_KEY` |
 | google/gemini | `GOOGLE_API_KEY`     |
 | ...           | ...                  |
+
+**Authentication Environment Variables:**
+
+| Variable          | Description                                                          |
+| ----------------- | -------------------------------------------------------------------- |
+| `ROO_WEB_APP_URL` | Override the Roo Code Cloud URL (default: `https://app.roocode.com`) |
 
 ## Architecture
 

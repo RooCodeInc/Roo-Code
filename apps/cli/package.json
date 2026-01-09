@@ -24,11 +24,13 @@
 		"@roo-code/core": "workspace:^",
 		"@roo-code/types": "workspace:^",
 		"@roo-code/vscode-shim": "workspace:^",
+		"@trpc/client": "^11.8.1",
 		"@vscode/ripgrep": "^1.15.9",
 		"commander": "^12.1.0",
 		"fuzzysort": "^3.1.0",
 		"ink": "^6.6.0",
 		"react": "^19.1.0",
+		"superjson": "^2.2.6",
 		"zustand": "^5.0.0"
 	},
 	"devDependencies": {

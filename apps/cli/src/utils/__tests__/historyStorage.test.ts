@@ -5,9 +5,17 @@ import { getHistoryFilePath, loadHistory, saveHistory, addToHistory, MAX_HISTORY
 
 vi.mock("fs/promises")
 
-vi.mock("os", () => ({
-	homedir: vi.fn(() => "/home/testuser"),
-}))
+vi.mock("os", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("os")>()
+	return {
+		...actual,
+		default: {
+			...actual,
+			homedir: vi.fn(() => "/home/testuser"),
+		},
+		homedir: vi.fn(() => "/home/testuser"),
+	}
+})
 
 describe("historyStorage", () => {
 	beforeEach(() => {

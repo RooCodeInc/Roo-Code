@@ -6,6 +6,8 @@ import type { ExtensionMessage, WebviewMessage } from "@roo-code/types"
 import { toolInspectorLog, clearToolInspectorLog } from "../../utils/toolInspectorLogger.js"
 import { useCLIStore } from "../store.js"
 
+import { ExtensionHostOptions } from "../../extension-host.js"
+
 interface ExtensionHostInterface {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	on(event: string, handler: (...args: any[]) => void): void
@@ -15,40 +17,11 @@ interface ExtensionHostInterface {
 	dispose(): Promise<void>
 }
 
-export interface ExtensionHostOptions {
-	mode: string
-	reasoningEffort?: string
-	apiProvider: string
-	apiKey: string
-	model: string
-	workspacePath: string
-	extensionPath: string
-	verbose: boolean
-	debug: boolean
-	nonInteractive: boolean
-	ephemeral?: boolean
-}
-
 export interface UseExtensionHostOptions extends ExtensionHostOptions {
 	initialPrompt?: string
 	exitOnComplete?: boolean
 	onExtensionMessage: (msg: ExtensionMessage) => void
-	createExtensionHost: (options: ExtensionHostFactoryOptions) => ExtensionHostInterface
-}
-
-interface ExtensionHostFactoryOptions {
-	mode: string
-	reasoningEffort?: string
-	apiProvider: string
-	apiKey: string
-	model: string
-	workspacePath: string
-	extensionPath: string
-	verbose: boolean
-	quiet: boolean
-	nonInteractive: boolean
-	disableOutput: boolean
-	ephemeral?: boolean
+	createExtensionHost: (options: ExtensionHostOptions) => ExtensionHostInterface
 }
 
 export interface UseExtensionHostReturn {
@@ -71,13 +44,12 @@ export function useExtensionHost({
 	initialPrompt,
 	mode,
 	reasoningEffort,
-	apiProvider,
+	user,
+	provider,
 	apiKey,
 	model,
 	workspacePath,
 	extensionPath,
-	verbose,
-	debug,
 	nonInteractive,
 	ephemeral,
 	exitOnComplete,
@@ -90,7 +62,6 @@ export function useExtensionHost({
 	const hostRef = useRef<ExtensionHostInterface | null>(null)
 	const isReadyRef = useRef(false)
 
-	// Cleanup function
 	const cleanup = useCallback(async () => {
 		if (hostRef.current) {
 			await hostRef.current.dispose()
@@ -99,10 +70,8 @@ export function useExtensionHost({
 		}
 	}, [])
 
-	// Initialize extension host
 	useEffect(() => {
 		const init = async () => {
-			// Clear tool inspector log for fresh session
 			clearToolInspectorLog()
 
 			toolInspectorLog("session:start", {
@@ -114,14 +83,13 @@ export function useExtensionHost({
 			try {
 				const host = createExtensionHost({
 					mode,
-					reasoningEffort: reasoningEffort === "unspecified" ? undefined : reasoningEffort,
-					apiProvider,
+					user,
+					reasoningEffort,
+					provider,
 					apiKey,
 					model,
 					workspacePath,
 					extensionPath,
-					verbose: debug,
-					quiet: !verbose && !debug,
 					nonInteractive,
 					disableOutput: true,
 					ephemeral,
@@ -135,6 +103,7 @@ export function useExtensionHost({
 				host.on("taskComplete", async () => {
 					setComplete(true)
 					setLoading(false)
+
 					if (exitOnComplete) {
 						await cleanup()
 						exit()
@@ -149,7 +118,8 @@ export function useExtensionHost({
 
 				await host.activate()
 
-				// Request initial state from extension (triggers postStateToWebview which includes taskHistory)
+				// Request initial state from extension (triggers
+				// postStateToWebview which includes taskHistory).
 				host.sendToExtension({ type: "webviewDidLaunch" })
 				host.sendToExtension({ type: "requestCommands" })
 				host.sendToExtension({ type: "requestModes" })
@@ -159,11 +129,7 @@ export function useExtensionHost({
 				if (initialPrompt) {
 					setHasStartedTask(true)
 					setLoading(true)
-					addMessage({
-						id: randomUUID(),
-						role: "user",
-						content: initialPrompt,
-					})
+					addMessage({ id: randomUUID(), role: "user", content: initialPrompt })
 					await host.runTask(initialPrompt)
 				}
 			} catch (err) {

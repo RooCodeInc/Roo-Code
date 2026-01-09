@@ -1,36 +1,26 @@
-/**
- * @roo-code/cli - Command Line Interface for Roo Code
- */
-
-import { Command } from "commander"
 import fs from "fs"
 import { createRequire } from "module"
 import path from "path"
 import { fileURLToPath } from "url"
+
+import { Command } from "commander"
 import { createElement } from "react"
 
-import {
-	type ProviderName,
-	type ReasoningEffortExtended,
-	isProviderName,
-	reasoningEffortsExtended,
-} from "@roo-code/types"
+import { isProviderName } from "@roo-code/types"
 import { setLogger } from "@roo-code/vscode-shim"
 
-import { ExtensionHost } from "./extension-host.js"
+import { loadToken } from "./storage/credentials.js"
+
+import { FlagOptions, isSupportedProvider, OnboardingProviderChoice, supportedProviders } from "./types.js"
+import { ASCII_ROO, DEFAULT_FLAG_OPTIONS, REASONING_EFFORTS, SDK_BASE_URL } from "./constants.js"
+import { ExtensionHost, ExtensionHostOptions } from "./extension-host.js"
+import { login, logout, status } from "./commands/index.js"
 import { getEnvVarName, getApiKeyFromEnv, getDefaultExtensionPath } from "./utils/extensionHostUtils.js"
-
-const DEFAULTS = {
-	mode: "code",
-	reasoningEffort: "medium" as const,
-	model: "anthropic/claude-sonnet-4.5",
-}
-
-const REASONING_EFFORTS = [...reasoningEffortsExtended, "unspecified", "disabled"]
+import { runOnboarding } from "./utils/onboarding.js"
+import { type User, createClient } from "./sdk/index.js"
+import { hasToken, loadSettings } from "./storage/index.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-// Read version from package.json
 const require = createRequire(import.meta.url)
 const packageJson = require("../package.json")
 
@@ -45,222 +35,237 @@ program
 	.argument("[workspace]", "Workspace path to operate in", process.cwd())
 	.option("-P, --prompt <prompt>", "The prompt/task to execute (optional in TUI mode)")
 	.option("-e, --extension <path>", "Path to the extension bundle directory")
-	.option("-v, --verbose", "Enable verbose output (show VSCode and extension logs)", false)
 	.option("-d, --debug", "Enable debug output (includes detailed debug information)", false)
-	.option("-x, --exit-on-complete", "Exit the process when the task completes (useful for testing)", false)
 	.option("-y, --yes", "Auto-approve all prompts (non-interactive mode)", false)
-	.option("-k, --api-key <key>", "API key for the LLM provider (defaults to ANTHROPIC_API_KEY env var)")
+	.option("-k, --api-key <key>", "API key for the LLM provider (defaults to OPENROUTER_API_KEY env var)")
 	.option("-p, --provider <provider>", "API provider (anthropic, openai, openrouter, etc.)", "openrouter")
-	.option("-m, --model <model>", "Model to use", DEFAULTS.model)
-	.option("-M, --mode <mode>", "Mode to start in (code, architect, ask, debug, etc.)", DEFAULTS.mode)
+	.option("-m, --model <model>", "Model to use", DEFAULT_FLAG_OPTIONS.model)
+	.option("-M, --mode <mode>", "Mode to start in (code, architect, ask, debug, etc.)", DEFAULT_FLAG_OPTIONS.mode)
 	.option(
 		"-r, --reasoning-effort <effort>",
 		"Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh)",
-		DEFAULTS.reasoningEffort,
+		DEFAULT_FLAG_OPTIONS.reasoningEffort,
+	)
+	.option("-x, --exit-on-complete", "Exit the process when the task completes (applies to TUI mode only)", false)
+	.option(
+		"-w, --wait-on-complete",
+		"Keep the process running when the task completes (applies to plain text mode only)",
+		false,
 	)
 	.option("--ephemeral", "Run without persisting state (uses temporary storage)", false)
 	.option("--no-tui", "Disable TUI, use plain text output")
-	.action(
-		async (
-			workspaceArg: string,
-			options: {
-				prompt?: string
-				extension?: string
-				verbose: boolean
-				debug: boolean
-				exitOnComplete: boolean
-				yes: boolean
-				apiKey?: string
-				provider: ProviderName
-				model?: string
-				mode?: string
-				reasoningEffort?: ReasoningEffortExtended | "unspecified" | "disabled"
-				ephemeral: boolean
-				tui: boolean
-			},
-		) => {
-			// Default is quiet mode - suppress VSCode shim logs unless verbose
-			// or debug is specified.
-			if (!options.verbose && !options.debug) {
-				setLogger({
-					info: () => {},
-					warn: () => {},
-					error: () => {},
-					debug: () => {},
-				})
+	.action(async (workspaceArg: string, options: FlagOptions) => {
+		setLogger({
+			info: () => {},
+			warn: () => {},
+			error: () => {},
+			debug: () => {},
+		})
+
+		const isTuiSupported = process.stdin.isTTY && process.stdout.isTTY
+		const extensionPath = options.extension || getDefaultExtensionPath(__dirname)
+		const workspacePath = path.resolve(workspaceArg)
+
+		if (!isSupportedProvider(options.provider)) {
+			console.error(
+				`[CLI] Error: Invalid provider: ${options.provider}; must be one of: ${supportedProviders.join(", ")}`,
+			)
+
+			process.exit(1)
+		}
+
+		let apiKey = options.apiKey || getApiKeyFromEnv(options.provider)
+		let provider = options.provider
+		let user: User | null = null
+		let useCloudProvider = false
+
+		if (isTuiSupported) {
+			let { onboardingProviderChoice } = await loadSettings()
+
+			if (!onboardingProviderChoice) {
+				const result = await runOnboarding()
+				onboardingProviderChoice = result.choice
 			}
 
-			const extensionPath = options.extension || getDefaultExtensionPath(__dirname)
-			const apiKey = options.apiKey || getApiKeyFromEnv(options.provider)
-			const workspacePath = path.resolve(workspaceArg)
+			if (onboardingProviderChoice === OnboardingProviderChoice.Roo) {
+				useCloudProvider = true
+				const authenticated = await hasToken()
 
-			if (!apiKey) {
+				if (authenticated) {
+					const token = await loadToken()
+
+					if (token) {
+						const client = createClient({ url: SDK_BASE_URL, authToken: token })
+						const me = await client.auth.me.query()
+						apiKey = token
+						provider = "roo"
+						user = me?.type === "user" ? me.user : null
+					}
+				}
+			}
+		}
+
+		if (!apiKey) {
+			if (useCloudProvider) {
+				console.error("[CLI] Error: Authentication with Roo Code Cloud failed or was cancelled.")
+				console.error("[CLI] Please run: roo auth login")
+				console.error("[CLI] Or use --api-key to provide your own API key.")
+			} else {
 				console.error(
 					`[CLI] Error: No API key provided. Use --api-key or set the appropriate environment variable.`,
 				)
-				console.error(`[CLI] For ${options.provider}, set ${getEnvVarName(options.provider)}`)
-				process.exit(1)
+				console.error(`[CLI] For ${provider}, set ${getEnvVarName(provider)}`)
 			}
+			process.exit(1)
+		}
 
-			if (!fs.existsSync(workspacePath)) {
-				console.error(`[CLI] Error: Workspace path does not exist: ${workspacePath}`)
-				process.exit(1)
-			}
+		if (!fs.existsSync(workspacePath)) {
+			console.error(`[CLI] Error: Workspace path does not exist: ${workspacePath}`)
+			process.exit(1)
+		}
 
-			if (!isProviderName(options.provider)) {
-				console.error(`[CLI] Error: Invalid provider: ${options.provider}`)
-				process.exit(1)
-			}
+		if (!isProviderName(options.provider)) {
+			console.error(`[CLI] Error: Invalid provider: ${options.provider}`)
+			process.exit(1)
+		}
 
-			if (options.reasoningEffort && !REASONING_EFFORTS.includes(options.reasoningEffort)) {
-				console.error(
-					`[CLI] Error: Invalid reasoning effort: ${options.reasoningEffort}, must be one of: ${REASONING_EFFORTS.join(", ")}`,
+		if (options.reasoningEffort && !REASONING_EFFORTS.includes(options.reasoningEffort)) {
+			console.error(
+				`[CLI] Error: Invalid reasoning effort: ${options.reasoningEffort}, must be one of: ${REASONING_EFFORTS.join(", ")}`,
+			)
+			process.exit(1)
+		}
+
+		const useTui = options.tui && isTuiSupported
+
+		if (options.tui && !isTuiSupported) {
+			console.log("[CLI] TUI disabled (no TTY support), falling back to plain text mode")
+		}
+
+		if (!useTui && !options.prompt) {
+			console.error("[CLI] Error: prompt is required in plain text mode")
+			console.error("[CLI] Usage: roo [workspace] -P <prompt> [options]")
+			console.error("[CLI] Use TUI mode (without --no-tui) for interactive input")
+			process.exit(1)
+		}
+
+		if (useTui) {
+			try {
+				const { render } = await import("ink")
+				const { App } = await import("./ui/App.js")
+
+				render(
+					createElement(App, {
+						initialPrompt: options.prompt || "",
+						workspacePath: workspacePath,
+						extensionPath: path.resolve(extensionPath),
+						user,
+						provider,
+						apiKey,
+						model: options.model || DEFAULT_FLAG_OPTIONS.model,
+						mode: options.mode || DEFAULT_FLAG_OPTIONS.mode,
+						nonInteractive: options.yes,
+						debug: options.debug,
+						exitOnComplete: options.exitOnComplete,
+						reasoningEffort: options.reasoningEffort,
+						ephemeral: options.ephemeral,
+						version: packageJson.version,
+						// Create extension host factory for dependency injection.
+						createExtensionHost: (opts: ExtensionHostOptions) => new ExtensionHost(opts),
+					}),
+					// Handle Ctrl+C in App component for double-press exit.
+					{ exitOnCtrlC: false },
 				)
+			} catch (error) {
+				console.error("[CLI] Failed to start TUI:", error instanceof Error ? error.message : String(error))
+
+				if (error instanceof Error) {
+					console.error(error.stack)
+				}
+
 				process.exit(1)
 			}
+		} else {
+			console.log(ASCII_ROO)
+			console.log()
+			console.log(
+				`[roo] Running ${options.model || "default"} (${options.reasoningEffort || "default"}) on ${provider} in ${options.mode || "default"} mode in ${workspacePath}`,
+			)
 
-			// TUI is enabled by default, disabled with --no-tui
-			// TUI requires raw mode support (proper TTY for stdin and stdout)
-			const canUseTui = process.stdin.isTTY && process.stdout.isTTY
-			const useTui = options.tui && canUseTui
+			const host = new ExtensionHost({
+				mode: options.mode || DEFAULT_FLAG_OPTIONS.mode,
+				reasoningEffort: options.reasoningEffort === "unspecified" ? undefined : options.reasoningEffort,
+				user,
+				provider,
+				apiKey,
+				model: options.model || DEFAULT_FLAG_OPTIONS.model,
+				workspacePath,
+				extensionPath: path.resolve(extensionPath),
+				nonInteractive: options.yes,
+				ephemeral: options.ephemeral,
+			})
 
-			if (options.tui && !canUseTui) {
-				console.log("[CLI] TUI disabled (no TTY support), falling back to plain text mode")
-			}
+			process.on("SIGINT", async () => {
+				console.log("\n[CLI] Received SIGINT, shutting down...")
+				await host.dispose()
+				process.exit(130)
+			})
 
-			// In plain text mode, prompt is required
-			if (!useTui && !options.prompt) {
-				console.error("[CLI] Error: prompt is required in plain text mode")
-				console.error("[CLI] Usage: roo [workspace] -P <prompt> [options]")
-				console.error("[CLI] Use TUI mode (without --no-tui) for interactive input")
+			process.on("SIGTERM", async () => {
+				console.log("\n[CLI] Received SIGTERM, shutting down...")
+				await host.dispose()
+				process.exit(143)
+			})
+
+			try {
+				await host.activate()
+				await host.runTask(options.prompt!)
+				await host.dispose()
+
+				if (!options.waitOnComplete) {
+					process.exit(0)
+				}
+			} catch (error) {
+				console.error("[CLI] Error:", error instanceof Error ? error.message : String(error))
+
+				if (error instanceof Error) {
+					console.error(error.stack)
+				}
+
+				await host.dispose()
 				process.exit(1)
 			}
+		}
+	})
 
-			if (useTui) {
-				// TUI Mode - render Ink application
-				try {
-					const { render } = await import("ink")
-					const { App } = await import("./ui/App.js")
+// Auth command group
+const authCommand = program.command("auth").description("Manage authentication for Roo Code Cloud")
 
-					// Create extension host factory for dependency injection
-					const createExtensionHost = (opts: {
-						mode: string
-						reasoningEffort?: string
-						apiProvider: string
-						apiKey: string
-						model: string
-						workspacePath: string
-						extensionPath: string
-						verbose: boolean
-						quiet: boolean
-						nonInteractive: boolean
-						disableOutput: boolean
-						ephemeral?: boolean
-					}) => {
-						return new ExtensionHost({
-							mode: opts.mode,
-							reasoningEffort:
-								opts.reasoningEffort === "unspecified"
-									? undefined
-									: (opts.reasoningEffort as ReasoningEffortExtended | "disabled" | undefined),
-							apiProvider: opts.apiProvider as ProviderName,
-							apiKey: opts.apiKey,
-							model: opts.model,
-							workspacePath: opts.workspacePath,
-							extensionPath: opts.extensionPath,
-							verbose: opts.verbose,
-							quiet: opts.quiet,
-							nonInteractive: opts.nonInteractive,
-							disableOutput: opts.disableOutput,
-							ephemeral: opts.ephemeral,
-						})
-					}
+authCommand
+	.command("login")
+	.description("Authenticate with Roo Code Cloud")
+	.option("-v, --verbose", "Enable verbose output", false)
+	.action(async (options: { verbose: boolean }) => {
+		const result = await login({ verbose: options.verbose })
+		process.exit(result.success ? 0 : 1)
+	})
 
-					render(
-						createElement(App, {
-							initialPrompt: options.prompt || "", // Empty string if no prompt - user will type in TUI
-							workspacePath: workspacePath,
-							extensionPath: path.resolve(extensionPath),
-							apiProvider: options.provider,
-							apiKey: apiKey,
-							model: options.model || DEFAULTS.model,
-							mode: options.mode || DEFAULTS.mode,
-							nonInteractive: options.yes,
-							verbose: options.verbose,
-							debug: options.debug,
-							exitOnComplete: options.exitOnComplete,
-							reasoningEffort: options.reasoningEffort,
-							ephemeral: options.ephemeral,
-							createExtensionHost: createExtensionHost,
-							version: packageJson.version,
-						}),
-						{
-							exitOnCtrlC: false, // Handle Ctrl+C in App component for double-press exit
-						},
-					)
-				} catch (error) {
-					console.error("[CLI] Failed to start TUI:", error instanceof Error ? error.message : String(error))
-					if (options.debug && error instanceof Error) {
-						console.error(error.stack)
-					}
-					process.exit(1)
-				}
-			} else {
-				// Plain text mode (existing behavior)
-				console.log(`[CLI] Mode: ${options.mode || "default"}`)
-				console.log(`[CLI] Reasoning Effort: ${options.reasoningEffort || "default"}`)
-				console.log(`[CLI] Provider: ${options.provider}`)
-				console.log(`[CLI] Model: ${options.model || "default"}`)
-				console.log(`[CLI] Workspace: ${workspacePath}`)
+authCommand
+	.command("logout")
+	.description("Log out from Roo Code Cloud")
+	.option("-v, --verbose", "Enable verbose output", false)
+	.action(async (options: { verbose: boolean }) => {
+		const result = await logout({ verbose: options.verbose })
+		process.exit(result.success ? 0 : 1)
+	})
 
-				const host = new ExtensionHost({
-					mode: options.mode || DEFAULTS.mode,
-					reasoningEffort: options.reasoningEffort === "unspecified" ? undefined : options.reasoningEffort,
-					apiProvider: options.provider,
-					apiKey,
-					model: options.model || DEFAULTS.model,
-					workspacePath,
-					extensionPath: path.resolve(extensionPath),
-					verbose: options.debug,
-					quiet: !options.verbose && !options.debug,
-					nonInteractive: options.yes,
-					ephemeral: options.ephemeral,
-				})
-
-				// Handle SIGINT (Ctrl+C)
-				process.on("SIGINT", async () => {
-					console.log("\n[CLI] Received SIGINT, shutting down...")
-					await host.dispose()
-					process.exit(130)
-				})
-
-				// Handle SIGTERM
-				process.on("SIGTERM", async () => {
-					console.log("\n[CLI] Received SIGTERM, shutting down...")
-					await host.dispose()
-					process.exit(143)
-				})
-
-				try {
-					await host.activate()
-					await host.runTask(options.prompt!) // prompt is guaranteed non-null in plain text mode
-					await host.dispose()
-
-					if (options.exitOnComplete) {
-						process.exit(0)
-					}
-				} catch (error) {
-					console.error("[CLI] Error:", error instanceof Error ? error.message : String(error))
-
-					if (options.debug && error instanceof Error) {
-						console.error(error.stack)
-					}
-
-					await host.dispose()
-					process.exit(1)
-				}
-			}
-		},
-	)
+authCommand
+	.command("status")
+	.description("Show authentication status")
+	.option("-v, --verbose", "Enable verbose output", false)
+	.action(async (options: { verbose: boolean }) => {
+		const result = await status({ verbose: options.verbose })
+		process.exit(result.authenticated ? 0 : 1)
+	})
 
 program.parse()

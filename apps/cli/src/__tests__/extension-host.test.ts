@@ -5,9 +5,10 @@ import fs from "fs"
 import os from "os"
 import path from "path"
 
-import type { ProviderName, WebviewMessage } from "@roo-code/types"
+import type { WebviewMessage } from "@roo-code/types"
 
-import { ExtensionHost, type ExtensionHostOptions } from "../extension-host.js"
+import type { SupportedProvider } from "../types.js"
+import { type ExtensionHostOptions, ExtensionHost } from "../extension-host.js"
 
 vi.mock("@roo-code/vscode-shim", () => ({
 	createVSCodeAPI: vi.fn(() => ({
@@ -21,13 +22,14 @@ vi.mock("@roo-code/vscode-shim", () => ({
  */
 function createTestHost({
 	mode = "code",
-	apiProvider = "openrouter",
+	provider = "openrouter",
 	model = "test-model",
 	...options
 }: Partial<ExtensionHostOptions> = {}): ExtensionHost {
 	return new ExtensionHost({
 		mode,
-		apiProvider,
+		user: null,
+		provider,
 		model,
 		workspacePath: "/test/workspace",
 		extensionPath: "/test/extension",
@@ -77,10 +79,9 @@ describe("ExtensionHost", () => {
 				mode: "code",
 				workspacePath: "/my/workspace",
 				extensionPath: "/my/extension",
-				verbose: true,
-				quiet: true,
+				user: null,
 				apiKey: "test-key",
-				apiProvider: "openrouter",
+				provider: "openrouter",
 				model: "test-model",
 			}
 
@@ -134,93 +135,7 @@ describe("ExtensionHost", () => {
 				"oai-model",
 				{ apiProvider: "openai-native", openAiNativeApiKey: "oai-key", apiModelId: "oai-model" },
 			],
-			[
-				"openai",
-				"oai-key",
-				"oai-model",
-				{ apiProvider: "openai", openAiApiKey: "oai-key", openAiModelId: "oai-model" },
-			],
-			[
-				"mistral",
-				"mis-key",
-				"mis-model",
-				{ apiProvider: "mistral", mistralApiKey: "mis-key", apiModelId: "mis-model" },
-			],
-			[
-				"deepseek",
-				"ds-key",
-				"ds-model",
-				{ apiProvider: "deepseek", deepSeekApiKey: "ds-key", apiModelId: "ds-model" },
-			],
-			["xai", "xai-key", "xai-model", { apiProvider: "xai", xaiApiKey: "xai-key", apiModelId: "xai-model" }],
-			[
-				"groq",
-				"groq-key",
-				"groq-model",
-				{ apiProvider: "groq", groqApiKey: "groq-key", apiModelId: "groq-model" },
-			],
-			[
-				"fireworks",
-				"fw-key",
-				"fw-model",
-				{ apiProvider: "fireworks", fireworksApiKey: "fw-key", apiModelId: "fw-model" },
-			],
-			[
-				"cerebras",
-				"cer-key",
-				"cer-model",
-				{ apiProvider: "cerebras", cerebrasApiKey: "cer-key", apiModelId: "cer-model" },
-			],
-			[
-				"sambanova",
-				"sn-key",
-				"sn-model",
-				{ apiProvider: "sambanova", sambaNovaApiKey: "sn-key", apiModelId: "sn-model" },
-			],
-			[
-				"ollama",
-				"oll-key",
-				"oll-model",
-				{ apiProvider: "ollama", ollamaApiKey: "oll-key", ollamaModelId: "oll-model" },
-			],
-			["lmstudio", undefined, "lm-model", { apiProvider: "lmstudio", lmStudioModelId: "lm-model" }],
-			[
-				"litellm",
-				"lite-key",
-				"lite-model",
-				{ apiProvider: "litellm", litellmApiKey: "lite-key", litellmModelId: "lite-model" },
-			],
-			[
-				"huggingface",
-				"hf-key",
-				"hf-model",
-				{ apiProvider: "huggingface", huggingFaceApiKey: "hf-key", huggingFaceModelId: "hf-model" },
-			],
-			["chutes", "ch-key", "ch-model", { apiProvider: "chutes", chutesApiKey: "ch-key", apiModelId: "ch-model" }],
-			[
-				"featherless",
-				"fl-key",
-				"fl-model",
-				{ apiProvider: "featherless", featherlessApiKey: "fl-key", apiModelId: "fl-model" },
-			],
-			[
-				"unbound",
-				"ub-key",
-				"ub-model",
-				{ apiProvider: "unbound", unboundApiKey: "ub-key", unboundModelId: "ub-model" },
-			],
-			[
-				"requesty",
-				"req-key",
-				"req-model",
-				{ apiProvider: "requesty", requestyApiKey: "req-key", requestyModelId: "req-model" },
-			],
-			[
-				"deepinfra",
-				"di-key",
-				"di-model",
-				{ apiProvider: "deepinfra", deepInfraApiKey: "di-key", deepInfraModelId: "di-model" },
-			],
+
 			[
 				"vercel-ai-gateway",
 				"vai-key",
@@ -231,35 +146,9 @@ describe("ExtensionHost", () => {
 					vercelAiGatewayModelId: "vai-model",
 				},
 			],
-			["zai", "zai-key", "zai-model", { apiProvider: "zai", zaiApiKey: "zai-key", apiModelId: "zai-model" }],
-			[
-				"baseten",
-				"bt-key",
-				"bt-model",
-				{ apiProvider: "baseten", basetenApiKey: "bt-key", apiModelId: "bt-model" },
-			],
-			["doubao", "db-key", "db-model", { apiProvider: "doubao", doubaoApiKey: "db-key", apiModelId: "db-model" }],
-			[
-				"moonshot",
-				"ms-key",
-				"ms-model",
-				{ apiProvider: "moonshot", moonshotApiKey: "ms-key", apiModelId: "ms-model" },
-			],
-			[
-				"minimax",
-				"mm-key",
-				"mm-model",
-				{ apiProvider: "minimax", minimaxApiKey: "mm-key", apiModelId: "mm-model" },
-			],
-			[
-				"io-intelligence",
-				"io-key",
-				"io-model",
-				{ apiProvider: "io-intelligence", ioIntelligenceApiKey: "io-key", ioIntelligenceModelId: "io-model" },
-			],
 		])("should configure %s provider correctly", (provider, apiKey, model, expected) => {
 			const host = createTestHost({
-				apiProvider: provider as ProviderName,
+				provider: provider as SupportedProvider,
 				apiKey,
 				model,
 			})
@@ -282,7 +171,7 @@ describe("ExtensionHost", () => {
 
 		it("should handle missing apiKey gracefully", () => {
 			const host = createTestHost({
-				apiProvider: "anthropic",
+				provider: "anthropic",
 				model: "test-model",
 			})
 
@@ -290,20 +179,6 @@ describe("ExtensionHost", () => {
 
 			expect(config.apiProvider).toBe("anthropic")
 			expect(config.apiKey).toBeUndefined()
-			expect(config.apiModelId).toBe("test-model")
-		})
-
-		it("should use default config for unknown providers", () => {
-			const host = createTestHost({
-				apiProvider: "unknown-provider" as ProviderName,
-				apiKey: "test-key",
-				model: "test-model",
-			})
-
-			const config = callPrivate<Record<string, unknown>>(host, "buildApiConfiguration")
-
-			expect(config.apiProvider).toBe("unknown-provider")
-			expect(config.apiKey).toBe("test-key")
 			expect(config.apiModelId).toBe("test-model")
 		})
 	})
@@ -946,17 +821,8 @@ describe("ExtensionHost", () => {
 
 	describe("quiet mode", () => {
 		describe("setupQuietMode", () => {
-			it("should not modify console when quiet mode disabled", () => {
-				const host = createTestHost({ quiet: false })
-				const originalLog = console.log
-
-				callPrivate(host, "setupQuietMode")
-
-				expect(console.log).toBe(originalLog)
-			})
-
 			it("should suppress console.log, warn, debug, info when enabled", () => {
-				const host = createTestHost({ quiet: true })
+				const host = createTestHost()
 				const originalLog = console.log
 
 				callPrivate(host, "setupQuietMode")
@@ -975,7 +841,7 @@ describe("ExtensionHost", () => {
 			})
 
 			it("should preserve console.error", () => {
-				const host = createTestHost({ quiet: true })
+				const host = createTestHost()
 				const originalError = console.error
 
 				callPrivate(host, "setupQuietMode")
@@ -986,7 +852,7 @@ describe("ExtensionHost", () => {
 			})
 
 			it("should store original console methods", () => {
-				const host = createTestHost({ quiet: true })
+				const host = createTestHost()
 				const originalLog = console.log
 
 				callPrivate(host, "setupQuietMode")
@@ -1000,7 +866,7 @@ describe("ExtensionHost", () => {
 
 		describe("restoreConsole", () => {
 			it("should restore original console methods", () => {
-				const host = createTestHost({ quiet: true })
+				const host = createTestHost()
 				const originalLog = console.log
 
 				callPrivate(host, "setupQuietMode")
@@ -1010,7 +876,7 @@ describe("ExtensionHost", () => {
 			})
 
 			it("should handle case where console was not suppressed", () => {
-				const host = createTestHost({ quiet: false })
+				const host = createTestHost()
 
 				expect(() => {
 					callPrivate(host, "restoreConsole")
@@ -1140,7 +1006,7 @@ describe("ExtensionHost", () => {
 		beforeEach(() => {
 			host = createTestHost({
 				mode: "code",
-				apiProvider: "anthropic",
+				provider: "anthropic",
 				apiKey: "test-key",
 				model: "test-model",
 			})
@@ -1210,7 +1076,7 @@ describe("ExtensionHost", () => {
 		it("should use currentMode when set (from user mode switches)", () => {
 			const host = createTestHost({
 				mode: "code", // Initial mode from CLI options
-				apiProvider: "anthropic",
+				provider: "anthropic",
 				apiKey: "test-key",
 				model: "test-model",
 			})
@@ -1229,7 +1095,7 @@ describe("ExtensionHost", () => {
 		it("should fall back to options.mode when currentMode is not set", () => {
 			const host = createTestHost({
 				mode: "code",
-				apiProvider: "anthropic",
+				provider: "anthropic",
 				apiKey: "test-key",
 				model: "test-model",
 			})
@@ -1247,7 +1113,7 @@ describe("ExtensionHost", () => {
 		it("should use currentMode even when it differs from initial options.mode", () => {
 			const host = createTestHost({
 				mode: "code",
-				apiProvider: "anthropic",
+				provider: "anthropic",
 				apiKey: "test-key",
 				model: "test-model",
 			})
@@ -1265,7 +1131,7 @@ describe("ExtensionHost", () => {
 		it("should not set mode if neither currentMode nor options.mode is set", () => {
 			const host = createTestHost({
 				// No mode specified - mode defaults to "code" in createTestHost
-				apiProvider: "anthropic",
+				provider: "anthropic",
 				apiKey: "test-key",
 				model: "test-model",
 			})
@@ -1290,7 +1156,7 @@ describe("ExtensionHost", () => {
 		beforeEach(() => {
 			host = createTestHost({
 				mode: "code",
-				apiProvider: "anthropic",
+				provider: "anthropic",
 				apiKey: "test-key",
 				model: "test-model",
 			})
