@@ -98,11 +98,10 @@ export function useGlobalInput({
 			const nextMode = availableModes[nextIndex]
 
 			if (nextMode && sendToExtension) {
-				// Send mode change to extension
-				sendToExtension({ type: "switchMode", mode: nextMode.slug })
-				// Show toast notification with the mode name
+				sendToExtension({ type: "mode", mode: nextMode.slug })
 				showInfo(`Switched to ${nextMode.name}`, 2000)
 			}
+
 			return
 		}
 

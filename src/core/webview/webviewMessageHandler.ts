@@ -2927,12 +2927,6 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
-		case "switchMode": {
-			if (message.mode) {
-				await provider.handleModeSwitch(message.mode as Mode)
-			}
-			break
-		}
 		case "openCommandFile": {
 			try {
 				if (message.text) {

@@ -68,33 +68,30 @@ export function usePickerHandlers({
 	const handlePickerSelect = useCallback(
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(item: any) => {
-			// Check if this is a mode selection
+			// Check if this is a mode selection.
 			if (pickerState.activeTrigger?.id === "mode" && item && typeof item === "object" && "slug" in item) {
 				const modeItem = item as ModeResult
 
-				// Send mode change message to extension
 				if (sendToExtension) {
-					sendToExtension({ type: "switchMode", mode: modeItem.slug })
+					sendToExtension({ type: "mode", mode: modeItem.slug })
 				}
 
-				// Close the picker
 				autocompleteRef.current?.closePicker()
 				followupAutocompleteRef.current?.closePicker()
 			}
-			// Check if this is a history item selection
+			// Check if this is a history item selection.
 			else if (pickerState.activeTrigger?.id === "history" && item && typeof item === "object" && "id" in item) {
 				const historyItem = item as HistoryResult
 
-				// Don't allow task switching while a task is in progress (loading)
+				// Don't allow task switching while a task is in progress (loading).
 				if (isLoading) {
 					showInfo("Cannot switch tasks while task is in progress", 2000)
-					// Close the picker
 					autocompleteRef.current?.closePicker()
 					followupAutocompleteRef.current?.closePicker()
 					return
 				}
 
-				// If selecting the same task that's already loaded, just close the picker
+				// If selecting the same task that's already loaded, just close the picker.
 				if (historyItem.id === currentTaskId) {
 					autocompleteRef.current?.closePicker()
 					followupAutocompleteRef.current?.closePicker()
