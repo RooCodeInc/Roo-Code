@@ -18,10 +18,13 @@
 		"clean": "rimraf dist .turbo"
 	},
 	"dependencies": {
+		"@roo-code/core": "workspace:^",
 		"@roo-code/types": "workspace:^",
 		"@roo-code/vscode-shim": "workspace:^",
 		"@vscode/ripgrep": "^1.15.9",
-		"commander": "^12.1.0"
+		"commander": "^12.1.0",
+		"execa": "^9.5.2",
+		"cross-spawn": "^7.0.6"
 	},
 	"devDependencies": {
 		"@roo-code/config-eslint": "workspace:^",

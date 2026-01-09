@@ -134,6 +134,12 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		if (!visibleProvider) return
 		visibleProvider.postMessageToWebview({ type: "action", action: "marketplaceButtonClicked" })
 	},
+	worktreesButtonClicked: () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+		if (!visibleProvider) return
+		TelemetryService.instance.captureTitleButtonClicked("worktrees")
+		visibleProvider.postMessageToWebview({ type: "action", action: "worktreesButtonClicked" })
+	},
 	newTask: handleNewTask,
 	setCustomStoragePath: async () => {
 		const { promptForCustomStoragePath } = await import("../utils/storage")

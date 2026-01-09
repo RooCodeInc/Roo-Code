@@ -24,6 +24,7 @@
 	"command.openInEditor.title": "Otwórz w Edytorze",
 	"command.cloud.title": "Cloud",
 	"command.settings.title": "Ustawienia",
+	"command.worktrees.title": "Worktrees",
 	"command.documentation.title": "Dokumentacja",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "Polecenia, które mogą być wykonywane automatycznie, gdy włączona jest opcja 'Zawsze zatwierdzaj operacje wykonania'",

@@ -197,6 +197,12 @@ export const globalSettingsSchema = z.object({
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
 	lastModeImportPath: z.string().optional(),
+
+	/**
+	 * Path to worktree to auto-open after switching workspaces.
+	 * Used by the worktree feature to open the Roo Code sidebar in a new window.
+	 */
+	worktreeAutoOpenPath: z.string().optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>

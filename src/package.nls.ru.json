@@ -11,6 +11,7 @@
 	"command.openInEditor.title": "Открыть в редакторе",
 	"command.cloud.title": "Cloud",
 	"command.settings.title": "Настройки",
+	"command.worktrees.title": "Worktrees",
 	"command.documentation.title": "Документация",
 	"command.openInNewTab.title": "Открыть в новой вкладке",
 	"command.explainCode.title": "Объяснить код",

@@ -11,6 +11,7 @@
 	"command.openInEditor.title": "Buka di Editor",
 	"command.cloud.title": "Cloud",
 	"command.settings.title": "Pengaturan",
+	"command.worktrees.title": "Worktrees",
 	"command.documentation.title": "Dokumentasi",
 	"command.openInNewTab.title": "Buka di Tab Baru",
 	"command.explainCode.title": "Jelaskan Kode",

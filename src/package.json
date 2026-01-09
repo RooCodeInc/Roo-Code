@@ -101,6 +101,11 @@
 				"icon": "$(settings-gear)"
 			},
 			{
+				"command": "roo-cline.worktreesButtonClicked",
+				"title": "%command.worktrees.title%",
+				"icon": "$(git-branch)"
+			},
+			{
 				"command": "roo-cline.openInNewTab",
 				"title": "%command.openInNewTab.title%",
 				"category": "%configuration.title%"
@@ -239,8 +244,13 @@
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
-					"command": "roo-cline.popoutButtonClicked",
+					"command": "roo-cline.worktreesButtonClicked",
 					"group": "overflow@2",
+					"when": "view == roo-cline.SidebarProvider"
+				},
+				{
+					"command": "roo-cline.popoutButtonClicked",
+					"group": "overflow@3",
 					"when": "view == roo-cline.SidebarProvider"
 				}
 			],
@@ -271,8 +281,13 @@
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
-					"command": "roo-cline.popoutButtonClicked",
+					"command": "roo-cline.worktreesButtonClicked",
 					"group": "overflow@2",
+					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
+				},
+				{
+					"command": "roo-cline.popoutButtonClicked",
+					"group": "overflow@3",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				}
 			]
