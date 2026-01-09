@@ -6,6 +6,12 @@ import Disassembler from "stream-json/Disassembler"
 import Stringer from "stream-json/Stringer"
 
 /**
+ * The stale timeout for locks in milliseconds (must match the value in safeWriteJson).
+ * Locks older than this are considered abandoned and can be safely removed.
+ */
+const LOCK_STALE_MS = 31000
+
+/**
  * Safely writes JSON data to a file.
  * - Creates parent directories if they don't exist
  * - Uses 'proper-lockfile' for inter-process advisory locking to prevent concurrent writes to the same path.
@@ -232,4 +238,78 @@ async function _streamDataToFile(targetPath: string, data: any): Promise<void> {
 	})
 }
 
-export { safeWriteJson }
+/**
+ * Cleans up stale lock files/directories from a directory.
+ *
+ * The `proper-lockfile` library creates `.lock` directories for advisory locking.
+ * On some filesystems (particularly btrfs with Copy-on-Write), these locks may not
+ * be properly detected as stale, causing hangs during extension activation after
+ * updates or crashes.
+ *
+ * This function scans a directory for `.lock` entries and removes any that are
+ * older than the stale timeout, ensuring clean startup.
+ *
+ * @param directoryPath - The directory to scan for stale locks
+ * @param options - Optional configuration
+ * @param options.recursive - If true, scan subdirectories as well (default: true)
+ * @param options.staleDurationMs - Custom stale duration in ms (default: LOCK_STALE_MS)
+ * @returns Promise<number> - Number of stale locks removed
+ */
+async function cleanupStaleLocks(
+	directoryPath: string,
+	options: { recursive?: boolean; staleDurationMs?: number } = {},
+): Promise<number> {
+	const { recursive = true, staleDurationMs = LOCK_STALE_MS } = options
+	let removedCount = 0
+
+	try {
+		// Check if directory exists
+		const dirStat = await fs.stat(directoryPath).catch(() => null)
+		if (!dirStat || !dirStat.isDirectory()) {
+			return 0
+		}
+
+		const entries = await fs.readdir(directoryPath, { withFileTypes: true })
+		const now = Date.now()
+
+		for (const entry of entries) {
+			const entryPath = path.join(directoryPath, entry.name)
+
+			// Check for .lock files/directories created by proper-lockfile
+			if (entry.name.endsWith(".lock")) {
+				try {
+					const stat = await fs.stat(entryPath)
+					const age = now - stat.mtimeMs
+
+					// Remove if older than stale duration
+					// Use a slightly larger threshold to account for filesystem timing quirks
+					if (age > staleDurationMs) {
+						if (stat.isDirectory()) {
+							await fs.rm(entryPath, { recursive: true, force: true })
+						} else {
+							await fs.unlink(entryPath)
+						}
+						removedCount++
+						console.log(
+							`[cleanupStaleLocks] Removed stale lock: ${entryPath} (age: ${Math.round(age / 1000)}s)`,
+						)
+					}
+				} catch (err) {
+					// Ignore errors for individual lock files - they may have been
+					// cleaned up by another process or the original operation completed
+					console.warn(`[cleanupStaleLocks] Could not process ${entryPath}:`, err)
+				}
+			} else if (recursive && entry.isDirectory()) {
+				// Recursively clean subdirectories (but not .lock directories themselves)
+				removedCount += await cleanupStaleLocks(entryPath, options)
+			}
+		}
+	} catch (err) {
+		// Log but don't throw - cleanup failures shouldn't block extension activation
+		console.error(`[cleanupStaleLocks] Error scanning ${directoryPath}:`, err)
+	}
+
+	return removedCount
+}
+
+export { safeWriteJson, cleanupStaleLocks, LOCK_STALE_MS }

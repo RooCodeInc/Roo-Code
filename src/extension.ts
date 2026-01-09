@@ -20,6 +20,7 @@ import { customToolRegistry } from "@roo-code/core"
 import "./utils/path" // Necessary to have access to String.prototype.toPosix.
 import { createOutputChannelLogger, createDualLogger } from "./utils/outputChannelLogger"
 import { initializeNetworkProxy } from "./utils/networkProxy"
+import { cleanupStaleLocks } from "./utils/safeWriteJson"
 
 import { Package } from "./shared/package"
 import { formatLanguage } from "./shared/language"
@@ -76,6 +77,22 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Set extension path for custom tool registry to find bundled esbuild
 	customToolRegistry.setExtensionPath(context.extensionPath)
+
+	// Clean up stale lock files early, before any file operations that use safeWriteJson.
+	// This prevents hangs on btrfs and other filesystems where lock detection may not
+	// work correctly after extension updates or crashes. See issue #10436.
+	try {
+		const globalStoragePath = context.globalStorageUri.fsPath
+		const removedCount = await cleanupStaleLocks(globalStoragePath)
+		if (removedCount > 0) {
+			outputChannel.appendLine(`Cleaned up ${removedCount} stale lock file(s) from previous session`)
+		}
+	} catch (error) {
+		// Don't block activation on cleanup failures
+		outputChannel.appendLine(
+			`Warning: Failed to cleanup stale locks: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
 
 	// Migrate old settings to new
 	await migrateSettings(context, outputChannel)
