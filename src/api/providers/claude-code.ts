@@ -219,16 +219,11 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 					case "thinking_complete":
 						// Capture the signature for persistence in api_conversation_history
 						// This enables tool use continuations where thinking blocks must be passed back
+						// NOTE: We do NOT emit the text here because it was already streamed via
+						// "reasoning" chunks. Re-emitting would duplicate the reasoning in the UI.
+						// The signature is retrieved via getThoughtSignature() after streaming completes.
 						if (chunk.signature) {
 							this.lastThinkingSignature = chunk.signature
-						}
-						// Emit a complete thinking block with signature
-						// This is critical for interleaved thinking with tool use
-						// The signature must be included when passing thinking blocks back to the API
-						yield {
-							type: "reasoning",
-							text: chunk.thinking,
-							signature: chunk.signature,
 						}
 						break
 
