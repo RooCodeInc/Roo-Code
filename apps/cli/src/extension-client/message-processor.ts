@@ -17,7 +17,7 @@
  * - "invoke": Command invocations
  */
 
-import { debugLog } from "@roo-code/core/debug-log"
+import { debugLog } from "@roo-code/core/cli"
 
 import type { ExtensionMessage, ClineMessage } from "./types.js"
 import type { StateStore } from "./state-store.js"

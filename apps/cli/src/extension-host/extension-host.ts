@@ -23,7 +23,7 @@ import os from "os"
 
 import { ReasoningEffortExtended, RooCodeSettings, WebviewMessage } from "@roo-code/types"
 import { createVSCodeAPI, setRuntimeConfigValues } from "@roo-code/vscode-shim"
-import { DebugLogger } from "@roo-code/core/debug-log"
+import { DebugLogger } from "@roo-code/core/cli"
 
 import { SupportedProvider } from "../types/types.js"
 import { User } from "../lib/sdk/types.js"
