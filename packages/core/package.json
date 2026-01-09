@@ -5,8 +5,8 @@
 	"type": "module",
 	"exports": {
 		".": "./src/index.ts",
-		"./message-utils": "./src/message-utils/index.ts",
-		"./debug-log": "./src/debug-log/index.ts"
+		"./cli": "./src/cli.ts",
+		"./browser": "./src/browser.ts"
 	},
 	"scripts": {
 		"lint": "eslint src --ext=ts --max-warnings=0",

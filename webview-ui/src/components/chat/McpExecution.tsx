@@ -3,13 +3,18 @@ import { Server, ChevronDown } from "lucide-react"
 import { useEvent } from "react-use"
 import { useTranslation } from "react-i18next"
 
-import { type ExtensionMessage, type McpExecutionStatus, mcpExecutionStatusSchema } from "@roo-code/types"
+import {
+	type ExtensionMessage,
+	type ClineAskUseMcpServer,
+	type McpExecutionStatus,
+	mcpExecutionStatusSchema,
+} from "@roo-code/types"
+
+import { safeJsonParse } from "@roo/core"
 
 import { cn } from "@src/lib/utils"
 import { Button } from "@src/components/ui"
 
-import { ClineAskUseMcpServer } from "../../../../src/shared/ExtensionMessage"
-import { safeJsonParse } from "../../../../src/shared/safeJsonParse"
 import CodeBlock from "../common/CodeBlock"
 import McpToolRow from "../mcp/McpToolRow"
 

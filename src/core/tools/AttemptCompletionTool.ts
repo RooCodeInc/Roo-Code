@@ -6,9 +6,10 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { Package } from "../../shared/package"
-import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
+
+import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface AttemptCompletionParams {
 	result: string

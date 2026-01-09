@@ -33,6 +33,8 @@ import {
 	type CreateTaskOptions,
 	type ModelInfo,
 	type ToolProtocol,
+	type ClineApiReqCancelReason,
+	type ClineApiReqInfo,
 	RooCodeEventName,
 	TelemetryEventName,
 	TaskStatus,
@@ -65,7 +67,6 @@ import { findLastIndex } from "../../shared/array"
 import { combineApiRequests } from "../../shared/combineApiRequests"
 import { combineCommandSequences } from "../../shared/combineCommandSequences"
 import { t } from "../../i18n"
-import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/ExtensionMessage"
 import { getApiMetrics, hasTokenUsageChanged, hasToolUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
