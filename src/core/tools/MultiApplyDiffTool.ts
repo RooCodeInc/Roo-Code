@@ -631,6 +631,10 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 						await cline.diffViewProvider.update(originalContent!, true)
 						cline.diffViewProvider.scrollToFirstDiff()
 					} else {
+						// Show progress indicator in UI while preparing the file
+						const partialMessage = JSON.stringify(sharedMessageProps)
+						await cline.ask("tool", partialMessage, true).catch(() => {})
+	
 						// For direct save, we still need to set originalContent
 						cline.diffViewProvider.originalContent = await fs.readFile(absolutePath, "utf-8")
 					}

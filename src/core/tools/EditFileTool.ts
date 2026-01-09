@@ -276,6 +276,12 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 				diffStats,
 			} satisfies ClineSayTool)
 
+			// Show progress indicator in UI while preparing the file when background editing is enabled
+			if (isPreventFocusDisruptionEnabled) {
+				const partialMessage = JSON.stringify(sharedMessageProps)
+				await task.ask("tool", partialMessage, true).catch(() => {})
+			}
+
 			// Show diff view if focus disruption prevention is disabled
 			if (!isPreventFocusDisruptionEnabled) {
 				await task.diffViewProvider.open(relPath)
