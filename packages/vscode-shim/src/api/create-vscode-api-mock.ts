@@ -68,6 +68,13 @@ export interface VSCodeAPIMockOptions {
 	 * Defaults to the directory containing this module.
 	 */
 	appRoot?: string
+
+	/**
+	 * Custom storage directory for persistent state.
+	 * Defaults to ~/.vscode-mock.
+	 * Set to a temp directory for ephemeral/no-persist mode.
+	 */
+	storageDir?: string
 }
 
 /**
@@ -82,6 +89,7 @@ export function createVSCodeAPIMock(
 	const context = new ExtensionContextImpl({
 		extensionPath: extensionRootPath,
 		workspacePath: workspacePath,
+		storageDir: options?.storageDir,
 	})
 	const workspace = new WorkspaceAPI(workspacePath, context)
 	const window = new WindowAPI()
