@@ -91,13 +91,6 @@
 		"command_already_exists": "命令 \"{{commandName}}\" 已存在",
 		"create_command_failed": "创建命令失败",
 		"command_template_content": "---\ndescription: \"此命令功能的简要描述\"\n---\n\n这是一个新的斜杠命令。编辑此文件以自定义命令行为。",
-		"claudeCode": {
-			"processExited": "Claude Code 进程退出，退出码：{{exitCode}}。",
-			"errorOutput": "错误输出：{{output}}",
-			"processExitedWithError": "Claude Code 进程退出，退出码：{{exitCode}}。错误输出：{{output}}",
-			"stoppedWithReason": "Claude Code 停止，原因：{{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "没有可删除消息的活跃任务",
 			"invalid_timestamp_for_deletion": "删除操作的消息时间戳无效",

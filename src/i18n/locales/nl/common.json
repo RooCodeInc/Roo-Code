@@ -86,13 +86,6 @@
 		"command_already_exists": "Opdracht \"{{commandName}}\" bestaat al",
 		"create_command_failed": "Kan opdracht niet aanmaken",
 		"command_template_content": "---\ndescription: \"Korte beschrijving van wat deze opdracht doet\"\n---\n\nDit is een nieuwe slash-opdracht. Bewerk dit bestand om het opdrachtgedrag aan te passen.",
-		"claudeCode": {
-			"processExited": "Claude Code proces beëindigd met code {{exitCode}}.",
-			"errorOutput": "Foutuitvoer: {{output}}",
-			"processExitedWithError": "Claude Code proces beëindigd met code {{exitCode}}. Foutuitvoer: {{output}}",
-			"stoppedWithReason": "Claude Code gestopt om reden: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "Geen actieve taak om berichten uit te verwijderen",
 			"invalid_timestamp_for_deletion": "Ongeldig bericht tijdstempel voor verwijdering",

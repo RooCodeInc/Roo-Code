@@ -86,13 +86,6 @@
 		"command_already_exists": "Perintah \"{{commandName}}\" sudah ada",
 		"create_command_failed": "Gagal membuat perintah",
 		"command_template_content": "---\ndescription: \"Deskripsi singkat tentang fungsi perintah ini\"\n---\n\nIni adalah perintah slash baru. Edit file ini untuk menyesuaikan perilaku perintah.",
-		"claudeCode": {
-			"processExited": "Proses Claude Code keluar dengan kode {{exitCode}}.",
-			"errorOutput": "Output error: {{output}}",
-			"processExitedWithError": "Proses Claude Code keluar dengan kode {{exitCode}}. Output error: {{output}}",
-			"stoppedWithReason": "Claude Code berhenti karena alasan: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "Tidak ada tugas aktif untuk menghapus pesan",
 			"invalid_timestamp_for_deletion": "Timestamp pesan tidak valid untuk penghapusan",

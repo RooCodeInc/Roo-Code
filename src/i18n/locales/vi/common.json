@@ -86,13 +86,6 @@
 		"command_already_exists": "Lệnh \"{{commandName}}\" đã tồn tại",
 		"create_command_failed": "Không thể tạo lệnh",
 		"command_template_content": "---\ndescription: \"Mô tả ngắn gọn về chức năng của lệnh này\"\n---\n\nĐây là một lệnh slash mới. Chỉnh sửa tệp này để tùy chỉnh hành vi của lệnh.",
-		"claudeCode": {
-			"processExited": "Tiến trình Claude Code thoát với mã {{exitCode}}.",
-			"errorOutput": "Đầu ra lỗi: {{output}}",
-			"processExitedWithError": "Tiến trình Claude Code thoát với mã {{exitCode}}. Đầu ra lỗi: {{output}}",
-			"stoppedWithReason": "Claude Code dừng lại vì lý do: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "Không có nhiệm vụ hoạt động để xóa tin nhắn",
 			"invalid_timestamp_for_deletion": "Dấu thời gian tin nhắn không hợp lệ để xóa",

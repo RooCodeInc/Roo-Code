@@ -86,13 +86,6 @@
 		"command_already_exists": "\"{{commandName}}\" komutu zaten mevcut",
 		"create_command_failed": "Komut oluşturulamadı",
 		"command_template_content": "---\ndescription: \"Bu komutun ne yaptığının kısa açıklaması\"\n---\n\nBu yeni bir slash komutudur. Komut davranışını özelleştirmek için bu dosyayı düzenleyin.",
-		"claudeCode": {
-			"processExited": "Claude Code işlemi {{exitCode}} koduyla çıktı.",
-			"errorOutput": "Hata çıktısı: {{output}}",
-			"processExitedWithError": "Claude Code işlemi {{exitCode}} koduyla çıktı. Hata çıktısı: {{output}}",
-			"stoppedWithReason": "Claude Code şu nedenle durdu: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "Mesaj silinecek aktif görev yok",
 			"invalid_timestamp_for_deletion": "Silme için geçersiz mesaj zaman damgası",
