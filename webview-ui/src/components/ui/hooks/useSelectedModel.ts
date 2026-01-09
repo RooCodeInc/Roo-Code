@@ -211,11 +211,12 @@ function getSelectedModel({
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const baseInfo = bedrockModels[id as keyof typeof bedrockModels]
 
-			// Special case for custom ARN.
+			// Special case for custom ARN - treat as advanced option where user knows what they're doing
+			// Enable prompt cache support since custom ARNs often point to newer Claude models
 			if (id === "custom-arn") {
 				return {
 					id,
-					info: { maxTokens: 5000, contextWindow: 128_000, supportsPromptCache: false, supportsImages: true },
+					info: { maxTokens: 5000, contextWindow: 128_000, supportsPromptCache: true, supportsImages: true },
 				}
 			}
 
