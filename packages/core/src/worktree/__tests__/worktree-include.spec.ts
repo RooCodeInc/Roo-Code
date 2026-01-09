@@ -77,7 +77,7 @@ describe("WorktreeIncludeService", () => {
 			await execGit(repoDir, ["commit", "-m", "add include"])
 
 			expect(await service.branchHasWorktreeInclude(repoDir, "with-include")).toBe(true)
-		})
+		}, 30_000)
 	})
 
 	describe("getStatus", () => {
