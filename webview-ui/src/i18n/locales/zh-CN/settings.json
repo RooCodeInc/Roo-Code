@@ -58,7 +58,7 @@
 		"manageSettings": "管理设置",
 		"debugMode": {
 			"label": "启用调试模式",
-			"description": "启用调试模式以显示额外按钮，用于在临时文件中查看 API 对话历史和 UI 消息的格式化 JSON。"
+			"description": "启用调试模式以在任务标题栏显示额外按钮，用于在临时文件中查看 API 对话历史和 UI 消息的格式化 JSON。"
 		}
 	},
 	"slashCommands": {

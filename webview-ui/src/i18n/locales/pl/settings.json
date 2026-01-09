@@ -58,7 +58,7 @@
 		"manageSettings": "Zarządzaj Ustawieniami",
 		"debugMode": {
 			"label": "Włącz tryb debugowania",
-			"description": "Włącz tryb debugowania, aby wyświetlić dodatkowe przyciski umożliwiające przeglądanie historii konwersacji API i komunikatów UI jako sformatowany JSON w plikach tymczasowych."
+			"description": "Włącz tryb debugowania, aby wyświetlić dodatkowe przyciski w nagłówku zadania umożliwiające przeglądanie historii konwersacji API i komunikatów UI jako sformatowany JSON w plikach tymczasowych."
 		}
 	},
 	"slashCommands": {

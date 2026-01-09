@@ -58,7 +58,7 @@
 		"manageSettings": "Manage Settings",
 		"debugMode": {
 			"label": "Enable debug mode",
-			"description": "Enable debug mode to show additional buttons for viewing API conversation history and UI messages as prettified JSON in temporary files."
+			"description": "Enable debug mode to show additional buttons in the task header for viewing API conversation history and UI messages as prettified JSON in temporary files."
 		}
 	},
 	"slashCommands": {

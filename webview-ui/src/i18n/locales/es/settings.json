@@ -58,7 +58,7 @@
 		"manageSettings": "Gestionar Configuración",
 		"debugMode": {
 			"label": "Activar modo de depuración",
-			"description": "Activa el modo de depuración para mostrar botones adicionales que permitan ver el historial de conversación de la API y los mensajes de la UI como JSON formateado en archivos temporales."
+			"description": "Activa el modo de depuración para mostrar botones adicionales en el encabezado de la tarea que permitan ver el historial de conversación de la API y los mensajes de la UI como JSON formateado en archivos temporales."
 		}
 	},
 	"slashCommands": {

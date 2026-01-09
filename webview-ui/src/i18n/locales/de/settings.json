@@ -58,7 +58,7 @@
 		"manageSettings": "Einstellungen verwalten",
 		"debugMode": {
 			"label": "Debug-Modus aktivieren",
-			"description": "Aktiviere den Debug-Modus, um zusätzliche Buttons zum Anzeigen der API-Konversationshistorie und UI-Nachrichten als formatiertes JSON in temporären Dateien zu erhalten."
+			"description": "Aktiviere den Debug-Modus, um zusätzliche Buttons im Task-Header zum Anzeigen der API-Konversationshistorie und UI-Nachrichten als formatiertes JSON in temporären Dateien zu erhalten."
 		}
 	},
 	"slashCommands": {

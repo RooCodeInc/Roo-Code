@@ -58,7 +58,7 @@
 		"manageSettings": "Kelola Pengaturan",
 		"debugMode": {
 			"label": "Aktifkan mode debug",
-			"description": "Aktifkan mode debug untuk menampilkan tombol tambahan yang memungkinkan melihat riwayat percakapan API dan pesan UI sebagai JSON yang diformat dalam file sementara."
+			"description": "Aktifkan mode debug untuk menampilkan tombol tambahan di header tugas yang memungkinkan melihat riwayat percakapan API dan pesan UI sebagai JSON yang diformat dalam file sementara."
 		}
 	},
 	"slashCommands": {

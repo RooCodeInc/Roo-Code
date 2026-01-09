@@ -58,7 +58,7 @@
 		"manageSettings": "Ayarları Yönet",
 		"debugMode": {
 			"label": "Debug modunu etkinleştir",
-			"description": "API konuşma geçmişini ve UI mesajlarını geçici dosyalarda biçimlendirilmiş JSON olarak görüntülemek için ek düğmeler göstermek üzere debug modunu etkinleştirin."
+			"description": "Görev başlığında API konuşma geçmişini ve UI mesajlarını geçici dosyalarda biçimlendirilmiş JSON olarak görüntülemek için ek düğmeler göstermek üzere debug modunu etkinleştirin."
 		}
 	},
 	"slashCommands": {
