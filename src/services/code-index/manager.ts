@@ -15,6 +15,7 @@ import path from "path"
 import { t } from "../../i18n"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
+import { loadRoogitincludePatterns } from "../glob/list-files"
 
 export class CodeIndexManager {
 	// --- Singleton Implementation ---
@@ -312,20 +313,31 @@ export class CodeIndexManager {
 			return
 		}
 
-		// Create .gitignore instance
-		const ignorePath = path.join(workspacePath, ".gitignore")
-		try {
-			const content = await fs.readFile(ignorePath, "utf8")
-			ignoreInstance.add(content)
-			ignoreInstance.add(".gitignore")
-		} catch (error) {
-			// Should never happen: reading file failed even though it exists
-			console.error("Unexpected error loading .gitignore:", error)
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "_recreateServices",
-			})
+		// Load .roogitinclude patterns
+		const roogitincludePatterns = await loadRoogitincludePatterns(workspacePath)
+
+		// Load settings-based include patterns
+		const settingsIncludePatterns = this._configManager!.getCodeIndexIncludePatterns()
+
+		// Combine both sources
+		const allIncludePatterns = [...roogitincludePatterns, ...settingsIncludePatterns]
+
+		// Check respectGitignore setting
+		const respectGitignore = this._configManager!.getCodeIndexRespectGitignore()
+
+		// Create .gitignore instance (if respecting gitignore)
+		let gitignoreInstance: ReturnType<typeof ignore> | undefined
+		if (respectGitignore) {
+			const ignorePath = path.join(workspacePath, ".gitignore")
+			try {
+				const content = await fs.readFile(ignorePath, "utf8")
+				ignoreInstance.add(content)
+				ignoreInstance.add(".gitignore")
+				gitignoreInstance = ignoreInstance
+			} catch (error) {
+				// .gitignore doesn't exist or can't be read - continue without it
+				console.warn("Could not load .gitignore:", error)
+			}
 		}
 
 		// Create RooIgnoreController instance
@@ -336,8 +348,9 @@ export class CodeIndexManager {
 		const { embedder, vectorStore, scanner, fileWatcher } = this._serviceFactory.createServices(
 			this.context,
 			this._cacheManager!,
-			ignoreInstance,
+			gitignoreInstance ?? ignore(), // Pass empty ignore instance if not respecting gitignore
 			rooIgnoreController,
+			allIncludePatterns,
 		)
 
 		// Validate embedder configuration before proceeding

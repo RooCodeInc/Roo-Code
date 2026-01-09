@@ -1,4 +1,4 @@
-import { listFiles } from "../../glob/list-files"
+import { listFiles, matchesIncludePatterns } from "../../glob/list-files"
 import { Ignore } from "ignore"
 import { RooIgnoreController } from "../../../core/ignore/RooIgnoreController"
 import { stat } from "fs/promises"
@@ -33,6 +33,7 @@ import { Package } from "../../../shared/package"
 
 export class DirectoryScanner implements IDirectoryScanner {
 	private readonly batchSegmentThreshold: number
+	private readonly includePatterns: string[]
 
 	constructor(
 		private readonly embedder: IEmbedder,
@@ -41,6 +42,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		private readonly cacheManager: CacheManager,
 		private readonly ignoreInstance: Ignore,
 		batchSegmentThreshold?: number,
+		includePatterns?: string[],
 	) {
 		// Get the configurable batch size from VSCode settings, fallback to default
 		// If not provided in constructor, try to get from VSCode settings
@@ -56,6 +58,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 				this.batchSegmentThreshold = BATCH_SEGMENT_THRESHOLD
 			}
 		}
+		this.includePatterns = includePatterns || []
 	}
 
 	/**
@@ -100,7 +103,12 @@ export class DirectoryScanner implements IDirectoryScanner {
 				return false
 			}
 
-			return scannerExtensions.includes(ext) && !this.ignoreInstance.ignores(relativeFilePath)
+			// Check if file matches include patterns (overrides gitignore)
+			const shouldInclude = matchesIncludePatterns(relativeFilePath, this.includePatterns)
+			const isGitIgnored = this.ignoreInstance.ignores(relativeFilePath)
+
+			// Include if: matches include patterns OR (not gitignored AND supported extension)
+			return scannerExtensions.includes(ext) && (shouldInclude || !isGitIgnored)
 		})
 
 		// Initialize tracking variables

@@ -407,6 +407,24 @@
 					"maximum": 200,
 					"description": "%settings.codeIndex.embeddingBatchSize.description%"
 				},
+				"roo-cline.codeIndex.respectGitignore": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "Whether code indexing should respect `.gitignore` files. When disabled, all files except those in `.rooignore` will be indexed."
+				},
+				"roo-cline.codeIndex.includePatterns": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"markdownDescription": "Glob patterns (e.g., `generated/**`, `dist/types/**`) to include in code indexing even if they match `.gitignore`. These patterns override `.gitignore` exclusions."
+				},
+				"roo-cline.mentions.respectGitignore": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "Whether `@filename` mentions should respect `.gitignore` files. When enabled, gitignored files won't appear in mention suggestions (unless overridden by `.roogitinclude` or `includePatterns`)."
+				},
 				"roo-cline.debug": {
 					"type": "boolean",
 					"default": false,

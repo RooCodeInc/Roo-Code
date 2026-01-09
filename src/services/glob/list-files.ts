@@ -382,6 +382,36 @@ async function findGitignoreFiles(startPath: string): Promise<string[]> {
 }
 
 /**
+ * Find and load .roogitinclude file from workspace
+ * Returns array of glob patterns to include even if gitignored
+ */
+export async function loadRoogitincludePatterns(workspacePath: string): Promise<string[]> {
+	const roogitincludePath = path.join(workspacePath, ".roogitinclude")
+
+	try {
+		const content = await fs.promises.readFile(roogitincludePath, "utf8")
+		// Parse patterns, filter out comments and empty lines
+		return content
+			.split("\n")
+			.map((line) => line.trim())
+			.filter((line) => line && !line.startsWith("#"))
+	} catch (error) {
+		// File doesn't exist or can't be read - return empty array
+		return []
+	}
+}
+
+/**
+ * Check if a file path matches any of the include patterns
+ */
+export function matchesIncludePatterns(filePath: string, includePatterns: string[]): boolean {
+	if (includePatterns.length === 0) return false
+
+	const ig = ignore().add(includePatterns)
+	return ig.ignores(filePath)
+}
+
+/**
  * List directories with appropriate filtering
  */
 async function listFilteredDirectories(
