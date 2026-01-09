@@ -68,6 +68,11 @@
 		"requireCtrlEnterToSend": {
 			"label": "Require {{primaryMod}}+Enter to send messages",
 			"description": "When enabled, you must press {{primaryMod}}+Enter to send messages instead of just Enter"
+		},
+		"chatFontSizeMultiplier": {
+			"label": "Chat Font Size Multiplier",
+			"description": "Adjust the font size in the chat view. Values range from 0.5 (smaller) to 2 (larger). Default is 1.",
+			"reset": "Reset"
 		}
 	},
 	"prompts": {

@@ -195,6 +195,40 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 			action: "toggleAutoApprove",
 		})
 	},
+	increaseChatFontSize: async () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+		if (!visibleProvider) {
+			return
+		}
+
+		const currentMultiplier = visibleProvider.contextProxy.getValue("chatFontSizeMultiplier") ?? 1
+		const newMultiplier = Math.min(2, currentMultiplier + 0.1)
+		await visibleProvider.contextProxy.setValue("chatFontSizeMultiplier", newMultiplier)
+		await visibleProvider.postStateToWebview()
+	},
+	decreaseChatFontSize: async () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+		if (!visibleProvider) {
+			return
+		}
+
+		const currentMultiplier = visibleProvider.contextProxy.getValue("chatFontSizeMultiplier") ?? 1
+		const newMultiplier = Math.max(0.5, currentMultiplier - 0.1)
+		await visibleProvider.contextProxy.setValue("chatFontSizeMultiplier", newMultiplier)
+		await visibleProvider.postStateToWebview()
+	},
+	resetChatFontSize: async () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+		if (!visibleProvider) {
+			return
+		}
+
+		await visibleProvider.contextProxy.setValue("chatFontSizeMultiplier", 1)
+		await visibleProvider.postStateToWebview()
+	},
 })
 
 export const openClineInNewTab = async ({ context, outputChannel }: Omit<RegisterCommandOptions, "provider">) => {

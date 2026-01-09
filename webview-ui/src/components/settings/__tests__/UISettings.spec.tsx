@@ -6,6 +6,7 @@ describe("UISettings", () => {
 	const defaultProps = {
 		reasoningBlockCollapsed: false,
 		enterBehavior: "send" as const,
+		chatFontSizeMultiplier: 1,
 		setCachedStateField: vi.fn(),
 	}
 

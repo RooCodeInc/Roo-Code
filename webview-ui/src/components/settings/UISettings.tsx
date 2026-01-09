@@ -1,7 +1,7 @@
-import { HTMLAttributes, useMemo } from "react"
+import { HTMLAttributes, useMemo, useState, useCallback, useEffect } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { Glasses } from "lucide-react"
+import { Glasses, RotateCcw } from "lucide-react"
 import { telemetryClient } from "@/utils/TelemetryClient"
 
 import { SetCachedStateField } from "./types"
@@ -12,16 +12,26 @@ import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
 	enterBehavior: "send" | "newline"
+	chatFontSizeMultiplier: number
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
 export const UISettings = ({
 	reasoningBlockCollapsed,
 	enterBehavior,
+	chatFontSizeMultiplier,
 	setCachedStateField,
 	...props
 }: UISettingsProps) => {
 	const { t } = useAppTranslation()
+
+	// Local state for the input value to allow typing freely
+	const [localMultiplier, setLocalMultiplier] = useState(chatFontSizeMultiplier.toString())
+
+	// Sync local state when prop changes (e.g., from commands)
+	useEffect(() => {
+		setLocalMultiplier(chatFontSizeMultiplier.toString())
+	}, [chatFontSizeMultiplier])
 
 	// Detect platform for dynamic modifier key display
 	const primaryMod = useMemo(() => {
@@ -47,6 +57,45 @@ export const UISettings = ({
 			behavior: newBehavior,
 		})
 	}
+
+	const handleFontSizeMultiplierChange = useCallback(
+		(value: string) => {
+			setLocalMultiplier(value)
+
+			// Parse and validate the value
+			const numValue = parseFloat(value)
+			if (!isNaN(numValue)) {
+				// Clamp the value between 0.5 and 2
+				const clampedValue = Math.max(0.5, Math.min(2, numValue))
+				setCachedStateField("chatFontSizeMultiplier", clampedValue)
+
+				// Track telemetry event
+				telemetryClient.capture("ui_settings_chat_font_size_changed", {
+					multiplier: clampedValue,
+				})
+			}
+		},
+		[setCachedStateField],
+	)
+
+	const handleFontSizeMultiplierBlur = useCallback(() => {
+		// On blur, ensure the display value matches the clamped value
+		const numValue = parseFloat(localMultiplier)
+		if (isNaN(numValue)) {
+			setLocalMultiplier(chatFontSizeMultiplier.toString())
+		} else {
+			const clampedValue = Math.max(0.5, Math.min(2, numValue))
+			setLocalMultiplier(clampedValue.toString())
+		}
+	}, [localMultiplier, chatFontSizeMultiplier])
+
+	const handleResetFontSize = useCallback(() => {
+		setCachedStateField("chatFontSizeMultiplier", 1)
+		setLocalMultiplier("1")
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_chat_font_size_reset", {})
+	}, [setCachedStateField])
 
 	return (
 		<div {...props}>
@@ -84,6 +133,38 @@ export const UISettings = ({
 						</VSCodeCheckbox>
 						<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 							{t("settings:ui.requireCtrlEnterToSend.description", { primaryMod })}
+						</div>
+					</div>
+
+					{/* Chat Font Size Multiplier Setting */}
+					<div className="flex flex-col gap-1">
+						<label className="font-medium" htmlFor="chat-font-size-input">
+							{t("settings:ui.chatFontSizeMultiplier.label")}
+						</label>
+						<div className="flex items-center gap-2">
+							<input
+								id="chat-font-size-input"
+								type="number"
+								min="0.5"
+								max="2"
+								step="0.1"
+								value={localMultiplier}
+								onChange={(e) => handleFontSizeMultiplierChange(e.target.value)}
+								onBlur={handleFontSizeMultiplierBlur}
+								className="w-20 px-2 py-1 bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded"
+								data-testid="chat-font-size-input"
+							/>
+							<button
+								onClick={handleResetFontSize}
+								className="flex items-center gap-1 px-2 py-1 text-sm bg-vscode-button-secondaryBackground text-vscode-button-secondaryForeground hover:bg-vscode-button-secondaryHoverBackground rounded"
+								title={t("settings:ui.chatFontSizeMultiplier.reset")}
+								data-testid="chat-font-size-reset-button">
+								<RotateCcw className="w-3 h-3" />
+								{t("settings:ui.chatFontSizeMultiplier.reset")}
+							</button>
+						</div>
+						<div className="text-vscode-descriptionForeground text-sm mt-1">
+							{t("settings:ui.chatFontSizeMultiplier.description")}
 						</div>
 					</div>
 				</div>

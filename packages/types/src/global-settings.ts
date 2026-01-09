@@ -193,6 +193,12 @@ export const globalSettingsSchema = z.object({
 	 * @default "send"
 	 */
 	enterBehavior: z.enum(["send", "newline"]).optional(),
+	/**
+	 * Multiplier for the chat view font size.
+	 * - Min: 0.5, Max: 2.0
+	 * @default 1.0
+	 */
+	chatFontSizeMultiplier: z.number().min(0.5).max(2).optional(),
 	profileThresholds: z.record(z.string(), z.number()).optional(),
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),

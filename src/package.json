@@ -169,6 +169,21 @@
 				"command": "roo-cline.toggleAutoApprove",
 				"title": "%command.toggleAutoApprove.title%",
 				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.increaseChatFontSize",
+				"title": "%command.increaseChatFontSize.title%",
+				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.decreaseChatFontSize",
+				"title": "%command.decreaseChatFontSize.title%",
+				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.resetChatFontSize",
+				"title": "%command.resetChatFontSize.title%",
+				"category": "%configuration.title%"
 			}
 		],
 		"menus": {
