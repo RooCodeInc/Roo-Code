@@ -15,6 +15,7 @@ import type {
 	ShareVisibility,
 	QueuedMessage,
 	SerializedCustomToolDefinition,
+	CodeSnippet,
 } from "@roo-code/types"
 
 import { GitCommit } from "../utils/git"
@@ -149,7 +150,13 @@ export interface ExtensionMessage {
 		| "focusInput"
 		| "switchTab"
 		| "toggleAutoApprove"
-	invoke?: "newChat" | "sendMessage" | "primaryButtonClick" | "secondaryButtonClick" | "setChatBoxMessage"
+	invoke?:
+		| "newChat"
+		| "sendMessage"
+		| "primaryButtonClick"
+		| "secondaryButtonClick"
+		| "setChatBoxMessage"
+		| "addCodeSnippet"
 	state?: ExtensionState
 	images?: string[]
 	filePaths?: string[]
@@ -218,6 +225,7 @@ export interface ExtensionMessage {
 	isBrowserSessionActive?: boolean // For browser session panel updates
 	stepIndex?: number // For browserSessionNavigate: the target step index to display
 	tools?: SerializedCustomToolDefinition[] // For customToolsResult
+	codeSnippet?: CodeSnippet // For addCodeSnippet: the code snippet to add
 }
 
 export type ExtensionState = Pick<

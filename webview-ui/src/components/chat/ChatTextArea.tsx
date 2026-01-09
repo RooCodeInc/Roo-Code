@@ -7,6 +7,7 @@ import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } 
 import { WebviewMessage } from "@roo/WebviewMessage"
 import { Mode, getAllModes } from "@roo/modes"
 import { ExtensionMessage } from "@roo/ExtensionMessage"
+import type { CodeSnippet } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -32,6 +33,7 @@ import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
 import { usePromptHistory } from "./hooks/usePromptHistory"
 import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
+import { CodeSnippetChips } from "./CodeSnippetChip"
 
 interface ChatTextAreaProps {
 	inputValue: string
@@ -41,6 +43,8 @@ interface ChatTextAreaProps {
 	placeholderText: string
 	selectedImages: string[]
 	setSelectedImages: React.Dispatch<React.SetStateAction<string[]>>
+	codeSnippets?: CodeSnippet[]
+	onRemoveCodeSnippet?: (id: string) => void
 	onSend: () => void
 	onSelectImages: () => void
 	shouldDisableImages: boolean
@@ -65,6 +69,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			placeholderText,
 			selectedImages,
 			setSelectedImages,
+			codeSnippets = [],
+			onRemoveCodeSnippet,
 			onSend,
 			onSelectImages,
 			shouldDisableImages,
@@ -253,10 +259,10 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 
 		const allModes = useMemo(() => getAllModes(customModes), [customModes])
 
-		// Memoized check for whether the input has content (text or images)
+		// Memoized check for whether the input has content (text, images, or code snippets)
 		const hasInputContent = useMemo(() => {
-			return inputValue.trim().length > 0 || selectedImages.length > 0
-		}, [inputValue, selectedImages])
+			return inputValue.trim().length > 0 || selectedImages.length > 0 || codeSnippets.length > 0
+		}, [inputValue, selectedImages, codeSnippets])
 
 		// Compute the key combination text for the send button tooltip based on enterBehavior
 		const sendKeyCombination = useMemo(() => {
@@ -1228,6 +1234,14 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						</div>
 					</div>
 				</div>
+
+				{codeSnippets.length > 0 && onRemoveCodeSnippet && (
+					<CodeSnippetChips
+						snippets={codeSnippets}
+						onRemove={onRemoveCodeSnippet}
+						className="bg-vscode-input-background border-b border-vscode-input-border"
+					/>
+				)}
 
 				{selectedImages.length > 0 && (
 					<Thumbnails

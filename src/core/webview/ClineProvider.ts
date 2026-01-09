@@ -34,6 +34,7 @@ import {
 	type CreateTaskOptions,
 	type TokenUsage,
 	type ToolUsage,
+	type CodeSnippet,
 	RooCodeEventName,
 	requestyDefaultModelId,
 	openRouterDefaultModelId,
@@ -43,6 +44,7 @@ import {
 	DEFAULT_MODES,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	getModelId,
+	createCodeSnippetId,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator, getRooCodeApiUrl } from "@roo-code/cloud"
@@ -682,10 +684,19 @@ export class ClineProvider
 		const prompt = supportPrompt.create(promptType, params, customSupportPrompts)
 
 		if (command === "addToContext") {
+			// Create a code snippet for collapsed display in the input
+			const codeSnippet: CodeSnippet = {
+				id: createCodeSnippetId(),
+				filePath: params.filePath as string,
+				startLine: Number(params.startLine),
+				endLine: Number(params.endLine),
+				content: params.selectedText as string,
+				timestamp: Date.now(),
+			}
 			await visibleProvider.postMessageToWebview({
 				type: "invoke",
-				invoke: "setChatBoxMessage",
-				text: `${prompt}\n\n`,
+				invoke: "addCodeSnippet",
+				codeSnippet,
 			})
 			await visibleProvider.postMessageToWebview({ type: "action", action: "focusInput" })
 			return
