@@ -1,6 +1,7 @@
 // npx vitest run integrations/terminal/__tests__/ExecaTerminalProcess.spec.ts
 
 const mockPid = 12345
+const mockShell = "/bin/bash"
 
 vitest.mock("execa", () => {
 	const mockKill = vitest.fn()
@@ -21,8 +22,13 @@ vitest.mock("ps-tree", () => ({
 	default: vitest.fn((_: number, cb: any) => cb(null, [])),
 }))
 
+vitest.mock("../../../utils/shell", () => ({
+	getShell: vitest.fn(() => mockShell),
+}))
+
 import { execa } from "execa"
 import { ExecaTerminalProcess } from "../ExecaTerminalProcess"
+import { getShell } from "../../../utils/shell"
 import type { RooTerminal } from "../types"
 
 describe("ExecaTerminalProcess", () => {
@@ -55,13 +61,26 @@ describe("ExecaTerminalProcess", () => {
 		vitest.clearAllMocks()
 	})
 
+	describe("shell configuration", () => {
+		it("should use shell from getShell() utility", async () => {
+			await terminalProcess.run("echo test")
+			const execaMock = vitest.mocked(execa)
+			expect(getShell).toHaveBeenCalled()
+			expect(execaMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					shell: mockShell,
+				}),
+			)
+		})
+	})
+
 	describe("UTF-8 encoding fix", () => {
 		it("should set LANG and LC_ALL to en_US.UTF-8", async () => {
 			await terminalProcess.run("echo test")
 			const execaMock = vitest.mocked(execa)
 			expect(execaMock).toHaveBeenCalledWith(
 				expect.objectContaining({
-					shell: true,
+					shell: mockShell,
 					cwd: "/test/cwd",
 					all: true,
 					env: expect.objectContaining({
