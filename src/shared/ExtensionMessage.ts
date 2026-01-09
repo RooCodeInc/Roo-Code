@@ -32,6 +32,15 @@ export interface Command {
 	argumentHint?: string
 }
 
+// Skill interface for frontend/backend communication
+export interface SkillForUI {
+	name: string
+	description: string
+	source: "global" | "project"
+	filePath: string
+	mode?: string
+}
+
 // Type for marketplace installed metadata
 export interface MarketplaceInstalledMetadata {
 	project: Record<string, { type: string }>
@@ -124,6 +133,7 @@ export interface ExtensionMessage {
 		| "showDeleteMessageDialog"
 		| "showEditMessageDialog"
 		| "commands"
+		| "skills"
 		| "insertTextIntoTextarea"
 		| "dismissedUpsells"
 		| "organizationSwitchResult"
@@ -211,6 +221,7 @@ export interface ExtensionMessage {
 	hasCheckpoint?: boolean
 	context?: string
 	commands?: Command[]
+	skills?: SkillForUI[]
 	queuedMessages?: QueuedMessage[]
 	list?: string[] // For dismissedUpsells
 	organizationId?: string | null // For organizationSwitchResult
@@ -361,6 +372,7 @@ export type ExtensionState = Pick<
 	featureRoomoteControlEnabled: boolean
 	claudeCodeIsAuthenticated?: boolean
 	debug?: boolean
+	skills?: SkillForUI[]
 }
 
 export interface ClineSayTool {

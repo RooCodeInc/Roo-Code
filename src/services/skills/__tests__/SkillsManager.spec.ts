@@ -1,16 +1,29 @@
 import * as path from "path"
 
 // Use vi.hoisted to ensure mocks are available during hoisting
-const { mockStat, mockReadFile, mockReaddir, mockHomedir, mockDirectoryExists, mockFileExists, mockRealpath } =
-	vi.hoisted(() => ({
-		mockStat: vi.fn(),
-		mockReadFile: vi.fn(),
-		mockReaddir: vi.fn(),
-		mockHomedir: vi.fn(),
-		mockDirectoryExists: vi.fn(),
-		mockFileExists: vi.fn(),
-		mockRealpath: vi.fn(),
-	}))
+const {
+	mockStat,
+	mockReadFile,
+	mockReaddir,
+	mockHomedir,
+	mockDirectoryExists,
+	mockFileExists,
+	mockRealpath,
+	mockMkdir,
+	mockWriteFile,
+	mockRm,
+} = vi.hoisted(() => ({
+	mockStat: vi.fn(),
+	mockReadFile: vi.fn(),
+	mockReaddir: vi.fn(),
+	mockHomedir: vi.fn(),
+	mockDirectoryExists: vi.fn(),
+	mockFileExists: vi.fn(),
+	mockRealpath: vi.fn(),
+	mockMkdir: vi.fn(),
+	mockWriteFile: vi.fn(),
+	mockRm: vi.fn(),
+}))
 
 // Platform-agnostic test paths
 // Use forward slashes for consistency, then normalize with path.normalize
@@ -28,11 +41,17 @@ vi.mock("fs/promises", () => ({
 		readFile: mockReadFile,
 		readdir: mockReaddir,
 		realpath: mockRealpath,
+		mkdir: mockMkdir,
+		writeFile: mockWriteFile,
+		rm: mockRm,
 	},
 	stat: mockStat,
 	readFile: mockReadFile,
 	readdir: mockReaddir,
 	realpath: mockRealpath,
+	mkdir: mockMkdir,
+	writeFile: mockWriteFile,
+	rm: mockRm,
 }))
 
 // Mock os module
@@ -825,6 +844,353 @@ description: A test skill
 
 			const skills = skillsManager.getAllSkills()
 			expect(skills).toHaveLength(0)
+		})
+	})
+
+	describe("createSkill", () => {
+		it("should create a global skill with valid name", async () => {
+			const skillName = "my-new-skill"
+			const expectedDir = p(GLOBAL_ROO_DIR, "skills", skillName)
+			const expectedMdPath = p(expectedDir, "SKILL.md")
+
+			mockMkdir.mockResolvedValue(undefined)
+			mockWriteFile.mockResolvedValue(undefined)
+			mockDirectoryExists.mockResolvedValue(false)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockResolvedValue([])
+
+			const filePath = await skillsManager.createSkill(skillName, "global")
+
+			expect(filePath).toBe(expectedMdPath)
+			expect(mockMkdir).toHaveBeenCalledWith(expectedDir, { recursive: true })
+			expect(mockWriteFile).toHaveBeenCalledWith(
+				expectedMdPath,
+				expect.stringContaining(`name: "${skillName}"`),
+				"utf-8",
+			)
+			expect(mockWriteFile).toHaveBeenCalledWith(
+				expectedMdPath,
+				expect.stringContaining("# My New Skill"),
+				"utf-8",
+			)
+		})
+
+		it("should create a project skill with valid name", async () => {
+			const skillName = "project-specific"
+			const expectedDir = p(PROJECT_DIR, ".roo", "skills", skillName)
+			const expectedMdPath = p(expectedDir, "SKILL.md")
+
+			mockMkdir.mockResolvedValue(undefined)
+			mockWriteFile.mockResolvedValue(undefined)
+			mockDirectoryExists.mockResolvedValue(false)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockResolvedValue([])
+
+			const filePath = await skillsManager.createSkill(skillName, "project")
+
+			expect(filePath).toBe(expectedMdPath)
+			expect(mockMkdir).toHaveBeenCalledWith(expectedDir, { recursive: true })
+			expect(mockWriteFile).toHaveBeenCalledWith(
+				expectedMdPath,
+				expect.stringContaining(`name: "${skillName}"`),
+				"utf-8",
+			)
+		})
+
+		it("should throw error for invalid skill name (too long)", async () => {
+			const longName = "a".repeat(65)
+
+			await expect(skillsManager.createSkill(longName, "global")).rejects.toThrow(
+				"Skill name must be 1-64 characters",
+			)
+		})
+
+		it("should throw error for invalid skill name (uppercase)", async () => {
+			await expect(skillsManager.createSkill("MySkill", "global")).rejects.toThrow(
+				"must contain only lowercase letters",
+			)
+		})
+
+		it("should throw error for invalid skill name (leading hyphen)", async () => {
+			await expect(skillsManager.createSkill("-my-skill", "global")).rejects.toThrow(
+				"must contain only lowercase letters",
+			)
+		})
+
+		it("should throw error for invalid skill name (trailing hyphen)", async () => {
+			await expect(skillsManager.createSkill("my-skill-", "global")).rejects.toThrow(
+				"must contain only lowercase letters",
+			)
+		})
+
+		it("should throw error for invalid skill name (consecutive hyphens)", async () => {
+			await expect(skillsManager.createSkill("my--skill", "global")).rejects.toThrow(
+				"must contain only lowercase letters",
+			)
+		})
+
+		it("should throw error if skill already exists", async () => {
+			const skillName = "existing-skill"
+			const existingDir = p(globalSkillsDir, skillName)
+			const existingMd = p(existingDir, "SKILL.md")
+
+			// Setup existing skill
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => (dir === globalSkillsDir ? [skillName] : []))
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === existingDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === existingMd)
+			mockReadFile.mockResolvedValue(`---
+name: ${skillName}
+description: Existing skill
+---
+Instructions`)
+
+			await skillsManager.discoverSkills()
+
+			await expect(skillsManager.createSkill(skillName, "global")).rejects.toThrow(
+				`Skill "${skillName}" already exists`,
+			)
+		})
+
+		it("should throw error when creating project skill without provider cwd", async () => {
+			// Create manager without cwd
+			const noCwdProvider = {
+				cwd: undefined,
+				customModesManager: {
+					getCustomModes: vi.fn().mockResolvedValue([]),
+				} as any,
+			}
+			const noCwdManager = new SkillsManager(noCwdProvider as any)
+
+			await expect(noCwdManager.createSkill("test-skill", "project")).rejects.toThrow(
+				"no project directory available",
+			)
+
+			await noCwdManager.dispose()
+		})
+	})
+
+	describe("deleteSkill", () => {
+		it("should delete an existing global skill", async () => {
+			const skillName = "skill-to-delete"
+			const skillDir = p(globalSkillsDir, skillName)
+			const skillMd = p(skillDir, "SKILL.md")
+
+			// Setup existing skill
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => (dir === globalSkillsDir ? [skillName] : []))
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === skillDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === skillMd)
+			mockReadFile.mockResolvedValue(`---
+name: ${skillName}
+description: Skill to delete
+---
+Instructions`)
+
+			await skillsManager.discoverSkills()
+
+			// Mock rm and subsequent discovery
+			mockRm.mockResolvedValue(undefined)
+			mockReaddir.mockImplementation(async (dir: string) => []) // Empty after deletion
+
+			await skillsManager.deleteSkill(skillName, "global")
+
+			expect(mockRm).toHaveBeenCalledWith(skillDir, { recursive: true, force: true })
+		})
+
+		it("should delete an existing project skill", async () => {
+			const skillName = "project-skill-delete"
+			const skillDir = p(projectSkillsDir, skillName)
+			const skillMd = p(skillDir, "SKILL.md")
+
+			// Setup existing skill
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === projectSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => (dir === projectSkillsDir ? [skillName] : []))
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === skillDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === skillMd)
+			mockReadFile.mockResolvedValue(`---
+name: ${skillName}
+description: Project skill to delete
+---
+Instructions`)
+
+			await skillsManager.discoverSkills()
+
+			mockRm.mockResolvedValue(undefined)
+			mockReaddir.mockImplementation(async (dir: string) => [])
+
+			await skillsManager.deleteSkill(skillName, "project")
+
+			expect(mockRm).toHaveBeenCalledWith(skillDir, { recursive: true, force: true })
+		})
+
+		it("should throw error if skill doesn't exist", async () => {
+			mockDirectoryExists.mockResolvedValue(false)
+			mockRealpath.mockImplementation(async (p: string) => p)
+			mockReaddir.mockResolvedValue([])
+
+			await skillsManager.discoverSkills()
+
+			await expect(skillsManager.deleteSkill("non-existent", "global")).rejects.toThrow(
+				'Skill "non-existent" not found',
+			)
+		})
+	})
+
+	describe("getSkillsForUI", () => {
+		it("should return empty array when no skills", async () => {
+			mockDirectoryExists.mockResolvedValue(false)
+			mockRealpath.mockImplementation(async (p: string) => p)
+			mockReaddir.mockResolvedValue([])
+
+			await skillsManager.discoverSkills()
+
+			const uiSkills = skillsManager.getSkillsForUI()
+
+			expect(uiSkills).toEqual([])
+		})
+
+		it("should return properly formatted skills array", async () => {
+			const globalSkillDir = p(globalSkillsDir, "global-skill")
+			const globalSkillMd = p(globalSkillDir, "SKILL.md")
+			const projectSkillDir = p(projectSkillsDir, "project-skill")
+			const projectSkillMd = p(projectSkillDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) =>
+				[globalSkillsDir, projectSkillsDir].includes(dir),
+			)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalSkillsDir) return ["global-skill"]
+				if (dir === projectSkillsDir) return ["project-skill"]
+				return []
+			})
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if ([globalSkillDir, projectSkillDir].includes(pathArg)) {
+					return { isDirectory: () => true }
+				}
+				throw new Error("Not found")
+			})
+			mockFileExists.mockResolvedValue(true)
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === globalSkillMd) {
+					return `---
+name: global-skill
+description: A global skill
+---
+Instructions`
+				}
+				if (file === projectSkillMd) {
+					return `---
+name: project-skill
+description: A project skill
+---
+Instructions`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			const uiSkills = skillsManager.getSkillsForUI()
+
+			expect(uiSkills).toHaveLength(2)
+			expect(uiSkills).toEqual(
+				expect.arrayContaining([
+					{
+						name: "global-skill",
+						description: "A global skill",
+						source: "global",
+						filePath: globalSkillMd,
+						mode: undefined,
+					},
+					{
+						name: "project-skill",
+						description: "A project skill",
+						source: "project",
+						filePath: projectSkillMd,
+						mode: undefined,
+					},
+				]),
+			)
+		})
+
+		it("should include mode field for mode-specific skills", async () => {
+			const codeSkillDir = p(globalSkillsCodeDir, "code-skill")
+			const codeSkillMd = p(codeSkillDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsCodeDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => (dir === globalSkillsCodeDir ? ["code-skill"] : []))
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === codeSkillDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockResolvedValue(true)
+			mockReadFile.mockResolvedValue(`---
+name: code-skill
+description: Code mode skill
+---
+Instructions`)
+
+			await skillsManager.discoverSkills()
+
+			const uiSkills = skillsManager.getSkillsForUI()
+
+			expect(uiSkills).toHaveLength(1)
+			expect(uiSkills[0].mode).toBe("code")
+		})
+	})
+
+	describe("getSkillFilePath", () => {
+		it("should return file path for existing skill", async () => {
+			const skillName = "test-skill"
+			const skillDir = p(globalSkillsDir, skillName)
+			const skillMd = p(skillDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => dir === globalSkillsDir)
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+			mockReaddir.mockImplementation(async (dir: string) => (dir === globalSkillsDir ? [skillName] : []))
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === skillDir) return { isDirectory: () => true }
+				throw new Error("Not found")
+			})
+			mockFileExists.mockImplementation(async (file: string) => file === skillMd)
+			mockReadFile.mockResolvedValue(`---
+name: ${skillName}
+description: Test skill
+---
+Instructions`)
+
+			await skillsManager.discoverSkills()
+
+			const filePath = skillsManager.getSkillFilePath(skillName, "global")
+
+			expect(filePath).toBe(skillMd)
+		})
+
+		it("should return undefined for non-existent skill", async () => {
+			mockDirectoryExists.mockResolvedValue(false)
+			mockRealpath.mockImplementation(async (p: string) => p)
+			mockReaddir.mockResolvedValue([])
+
+			await skillsManager.discoverSkills()
+
+			const filePath = skillsManager.getSkillFilePath("non-existent", "global")
+
+			expect(filePath).toBeUndefined()
 		})
 	})
 })

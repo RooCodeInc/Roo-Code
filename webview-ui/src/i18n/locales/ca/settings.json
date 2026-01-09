@@ -31,6 +31,7 @@
 		"contextManagement": "Context",
 		"terminal": "Terminal",
 		"slashCommands": "Comandes de barra",
+		"commandsAndSkills": "Comandes i Habilitats",
 		"prompts": "Indicacions",
 		"ui": "UI",
 		"experimental": "Experimental",
@@ -59,6 +60,26 @@
 	},
 	"slashCommands": {
 		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>"
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Comandes de barra",
+		"tabSkills": "Habilitats"
+	},
+	"skills": {
+		"global": "Habilitats globals",
+		"workspace": "Habilitats de l'espai de treball",
+		"empty": "No hi ha habilitats configurades",
+		"newGlobalPlaceholder": "Introdueix el nom de l'habilitat (p. ex., refactoritzar-codi)",
+		"newWorkspacePlaceholder": "Introdueix el nom de l'habilitat (p. ex., actualitzar-proves)",
+		"invalidName": "El nom ha de tenir entre 1 i 64 caràcters en minúscules, números i guions, començant per una lletra",
+		"edit": "Editar habilitat",
+		"delete": "Eliminar habilitat",
+		"deleteDialog": {
+			"title": "Eliminar habilitat",
+			"description": "Estàs segur que vols eliminar l'habilitat \"{{name}}\"? Aquesta acció no es pot desfer.",
+			"cancel": "Cancel·lar",
+			"confirm": "Eliminar"
+		}
 	},
 	"prompts": {
 		"description": "Configura les indicacions de suport utilitzades per a accions ràpides com millorar indicacions, explicar codi i solucionar problemes. Aquestes indicacions ajuden Roo a proporcionar millor assistència per a tasques comunes de desenvolupament."

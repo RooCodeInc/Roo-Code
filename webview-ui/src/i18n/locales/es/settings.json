@@ -31,6 +31,7 @@
 		"contextManagement": "Contexto",
 		"terminal": "Terminal",
 		"slashCommands": "Comandos de Barra",
+		"commandsAndSkills": "Comandos y Habilidades",
 		"prompts": "Indicaciones",
 		"ui": "UI",
 		"experimental": "Experimental",
@@ -59,6 +60,26 @@
 	},
 	"slashCommands": {
 		"description": "Gestiona tus comandos de barra para ejecutar rápidamente flujos de trabajo y acciones personalizadas. <DocsLink>Saber más</DocsLink>"
+	},
+	"commandsAndSkills": {
+		"tabCommands": "Comandos de barra",
+		"tabSkills": "Habilidades"
+	},
+	"skills": {
+		"global": "Habilidades globales",
+		"workspace": "Habilidades del espacio de trabajo",
+		"empty": "No hay habilidades configuradas",
+		"newGlobalPlaceholder": "Introduce el nombre de la habilidad (ej. refactorizar-codigo)",
+		"newWorkspacePlaceholder": "Introduce el nombre de la habilidad (ej. actualizar-pruebas)",
+		"invalidName": "El nombre debe tener entre 1 y 64 caracteres en minúsculas, números y guiones, comenzando con una letra",
+		"edit": "Editar habilidad",
+		"delete": "Eliminar habilidad",
+		"deleteDialog": {
+			"title": "Eliminar habilidad",
+			"description": "¿Estás seguro de que quieres eliminar la habilidad \"{{name}}\"? Esta acción no se puede deshacer.",
+			"cancel": "Cancelar",
+			"confirm": "Eliminar"
+		}
 	},
 	"prompts": {
 		"description": "Configura indicaciones de soporte que se utilizan para acciones rápidas como mejorar indicaciones, explicar código y solucionar problemas. Estas indicaciones ayudan a Roo a brindar mejor asistencia para tareas comunes de desarrollo."
