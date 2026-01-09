@@ -313,3 +313,60 @@ describe("OpenAICompatible Component - includeMaxTokens checkbox", () => {
 		})
 	})
 })
+
+describe("OpenAICompatible Component - Headers dirty state fix", () => {
+	const mockSetApiConfigurationField = vi.fn()
+	const mockOrganizationAllowList = {
+		allowAll: true,
+		providers: {},
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+		vi.useFakeTimers()
+	})
+
+	afterEach(() => {
+		vi.useRealTimers()
+	})
+
+	it("should not call setApiConfigurationField when headers have not changed", async () => {
+		const apiConfiguration: Partial<ProviderSettings> = {
+			openAiHeaders: { "X-Test": "value" },
+		}
+
+		render(
+			<OpenAICompatible
+				apiConfiguration={apiConfiguration as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// Wait for the debounced update
+		vi.advanceTimersByTime(350)
+
+		// setApiConfigurationField should NOT be called because the headers haven't changed
+		expect(mockSetApiConfigurationField).not.toHaveBeenCalledWith("openAiHeaders", expect.anything())
+	})
+
+	it("should not trigger dirty state on initial mount with empty headers", async () => {
+		const apiConfiguration: Partial<ProviderSettings> = {
+			openAiHeaders: {},
+		}
+
+		render(
+			<OpenAICompatible
+				apiConfiguration={apiConfiguration as ProviderSettings}
+				setApiConfigurationField={mockSetApiConfigurationField}
+				organizationAllowList={mockOrganizationAllowList}
+			/>,
+		)
+
+		// Wait for the debounced update
+		vi.advanceTimersByTime(350)
+
+		// setApiConfigurationField should NOT be called because the headers haven't changed
+		expect(mockSetApiConfigurationField).not.toHaveBeenCalledWith("openAiHeaders", expect.anything())
+	})
+})
