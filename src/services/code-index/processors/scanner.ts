@@ -96,7 +96,8 @@ export class DirectoryScanner implements IDirectoryScanner {
 			const relativeFilePath = generateRelativeFilePath(filePath, scanWorkspace)
 
 			// Check if file is in an ignored directory using the shared helper
-			if (isPathInIgnoredDirectory(filePath)) {
+			// Use relative path to avoid filtering out workspaces under hidden parent directories
+			if (isPathInIgnoredDirectory(relativeFilePath)) {
 				return false
 			}
 
