@@ -1,8 +1,11 @@
 import { render, screen, act } from "@/utils/test-utils"
 
-import { ProviderSettings, ExperimentId, DEFAULT_CHECKPOINT_TIMEOUT_SECONDS } from "@roo-code/types"
-
-import { ExtensionState } from "@roo/ExtensionMessage"
+import {
+	type ProviderSettings,
+	type ExperimentId,
+	type ExtensionState,
+	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+} from "@roo-code/types"
 
 import { ExtensionStateContextProvider, useExtensionState, mergeExtensionState } from "../ExtensionStateContext"
 

@@ -7,7 +7,7 @@ import { Trans } from "react-i18next"
 import { buildDocLink } from "@src/utils/docLinks"
 import { useEvent, useMount } from "react-use"
 
-import { ExtensionMessage } from "@roo/ExtensionMessage"
+import { type ExtensionMessage } from "@roo-code/types"
 
 import { cn } from "@/lib/utils"
 import { Slider } from "@/components/ui"

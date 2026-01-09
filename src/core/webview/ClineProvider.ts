@@ -34,6 +34,9 @@ import {
 	type CreateTaskOptions,
 	type TokenUsage,
 	type ToolUsage,
+	type ExtensionMessage,
+	type ExtensionState,
+	type MarketplaceInstalledMetadata,
 	RooCodeEventName,
 	requestyDefaultModelId,
 	openRouterDefaultModelId,
@@ -51,7 +54,6 @@ import { Package } from "../../shared/package"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
-import type { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata } from "../../shared/ExtensionMessage"
 import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
@@ -905,7 +907,18 @@ export class ClineProvider
 
 					if (profile?.name) {
 						try {
-							await this.activateProviderProfile({ name: profile.name })
+							// Check if the profile has actual API configuration (not just an id).
+							// In CLI mode, the ProviderSettingsManager may return empty default profiles
+							// that only contain 'id' and 'name' fields. Activating such a profile would
+							// overwrite the CLI's working API configuration with empty settings.
+							const fullProfile = await this.providerSettingsManager.getProfile({ name: profile.name })
+							const hasActualSettings = !!fullProfile.apiProvider
+
+							if (hasActualSettings) {
+								await this.activateProviderProfile({ name: profile.name })
+							} else {
+								// The task will continue with the current/default configuration.
+							}
 						} catch (error) {
 							// Log the error but continue with task restoration.
 							this.log(
@@ -1320,14 +1333,29 @@ export class ClineProvider
 			const profile = listApiConfig.find(({ id }) => id === savedConfigId)
 
 			if (profile?.name) {
-				await this.activateProviderProfile({ name: profile.name })
+				// Check if the profile has actual API configuration (not just an id).
+				// In CLI mode, the ProviderSettingsManager may return empty default profiles
+				// that only contain 'id' and 'name' fields. Activating such a profile would
+				// overwrite the CLI's working API configuration with empty settings.
+				// Skip activation if the profile has no apiProvider set - this indicates
+				// an unconfigured/empty profile.
+				const fullProfile = await this.providerSettingsManager.getProfile({ name: profile.name })
+				const hasActualSettings = !!fullProfile.apiProvider
+
+				if (hasActualSettings) {
+					await this.activateProviderProfile({ name: profile.name })
+				} else {
+					// The task will continue with the current/default configuration.
+				}
+			} else {
+				// The task will continue with the current/default configuration.
 			}
 		} else {
 			// If no saved config for this mode, save current config as default.
-			const currentApiConfigName = this.getGlobalState("currentApiConfigName")
+			const currentApiConfigNameAfter = this.getGlobalState("currentApiConfigName")
 
-			if (currentApiConfigName) {
-				const config = listApiConfig.find((c) => c.name === currentApiConfigName)
+			if (currentApiConfigNameAfter) {
+				const config = listApiConfig.find((c) => c.name === currentApiConfigNameAfter)
 
 				if (config?.id) {
 					await this.providerSettingsManager.setModeConfig(newMode, config.id)

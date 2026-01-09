@@ -3,18 +3,19 @@ import OpenAI from "openai"
 import { z } from "zod"
 
 import {
+	type ModelRecord,
+	ApiProviderError,
 	openRouterDefaultModelId,
 	openRouterDefaultModelInfo,
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
-	ApiProviderError,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 
-import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
+import type { ApiHandlerOptions } from "../../shared/api"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { normalizeMistralToolCallId } from "../transform/mistral-format"

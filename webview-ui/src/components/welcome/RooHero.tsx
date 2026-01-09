@@ -23,7 +23,7 @@ const RooHero = () => {
 					maskSize: "contain",
 					animation: isHovered ? "smooth-bounce 1s ease-in-out infinite" : "none",
 				}}
-					className="z-5 mr-auto translate-y-0 transition-transform duration-500">
+				className="z-5 mr-auto translate-y-0 transition-transform duration-500">
 				<img src={imagesBaseUri + "/roo-logo.svg"} alt="Roo logo" className="h-8 opacity-0" />
 			</div>
 			<div

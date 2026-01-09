@@ -10,10 +10,11 @@ vi.mock("../diagnosticsHandler", () => ({
 	generateErrorDiagnostics: vi.fn().mockResolvedValue({ success: true, filePath: "/tmp/diagnostics.json" }),
 }))
 
+import type { ModelRecord } from "@roo-code/types"
+
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
 import { getModels } from "../../../api/providers/fetchers/modelCache"
-import type { ModelRecord } from "../../../shared/api"
 
 const mockGetModels = getModels as Mock<typeof getModels>
 
