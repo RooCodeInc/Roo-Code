@@ -86,13 +86,6 @@
 		"command_already_exists": "コマンド \"{{commandName}}\" は既に存在します",
 		"create_command_failed": "コマンドの作成に失敗しました",
 		"command_template_content": "---\ndescription: \"このコマンドが何をするかの簡潔な説明\"\n---\n\nこれは新しいスラッシュコマンドです。このファイルを編集してコマンドの動作をカスタマイズしてください。",
-		"claudeCode": {
-			"processExited": "Claude Code プロセスがコード {{exitCode}} で終了しました。",
-			"errorOutput": "エラー出力：{{output}}",
-			"processExitedWithError": "Claude Code プロセスがコード {{exitCode}} で終了しました。エラー出力：{{output}}",
-			"stoppedWithReason": "Claude Code が理由により停止しました：{{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "メッセージを削除するアクティブなタスクがありません",
 			"invalid_timestamp_for_deletion": "削除用のメッセージタイムスタンプが無効です",

@@ -86,13 +86,6 @@
 		"command_already_exists": "कमांड \"{{commandName}}\" पहले से मौजूद है",
 		"create_command_failed": "कमांड बनाने में विफल",
 		"command_template_content": "---\ndescription: \"इस कमांड के कार्य का संक्षिप्त विवरण\"\n---\n\nयह एक नया स्लैश कमांड है। कमांड व्यवहार को कस्टमाइज़ करने के लिए इस फ़ाइल को संपादित करें।",
-		"claudeCode": {
-			"processExited": "Claude Code प्रक्रिया कोड {{exitCode}} के साथ समाप्त हुई।",
-			"errorOutput": "त्रुटि आउटपुट: {{output}}",
-			"processExitedWithError": "Claude Code प्रक्रिया कोड {{exitCode}} के साथ समाप्त हुई। त्रुटि आउटपुट: {{output}}",
-			"stoppedWithReason": "Claude Code इस कारण से रुका: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "संदेशों को हटाने के लिए कोई सक्रिय कार्य नहीं",
 			"invalid_timestamp_for_deletion": "हटाने के लिए अमान्य संदेश टाइमस्टैम्प",

@@ -516,14 +516,6 @@
 			"description": "Mengontrol seberapa detail respons model. Verbositas rendah menghasilkan jawaban singkat, sedangkan verbositas tinggi memberikan penjelasan menyeluruh."
 		},
 		"setReasoningLevel": "Aktifkan Upaya Reasoning",
-		"claudeCode": {
-			"pathLabel": "Jalur Kode Claude",
-			"description": "Jalur opsional ke Claude Code CLI Anda. Defaultnya adalah 'claude' jika tidak diatur.",
-			"placeholder": "Default: claude",
-			"maxTokensLabel": "Token Output Maks",
-			"maxTokensDescription": "Jumlah maksimum token output untuk respons Claude Code. Default adalah 8000."
-		}
-	},
 	"browser": {
 		"enable": {
 			"label": "Aktifkan tool browser",

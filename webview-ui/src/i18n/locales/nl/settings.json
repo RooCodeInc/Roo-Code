@@ -512,14 +512,6 @@
 			"description": "Bepaalt hoe gedetailleerd de reacties van het model zijn. Lage uitvoerbaarheid levert beknopte antwoorden op, terwijl hoge uitvoerbaarheid uitgebreide uitleg geeft."
 		},
 		"setReasoningLevel": "Redeneervermogen inschakelen",
-		"claudeCode": {
-			"pathLabel": "Claude Code Pad",
-			"description": "Optioneel pad naar uw Claude Code CLI. Standaard 'claude' als niet ingesteld.",
-			"placeholder": "Standaard: claude",
-			"maxTokensLabel": "Max Output Tokens",
-			"maxTokensDescription": "Maximaal aantal output-tokens voor Claude Code-reacties. Standaard is 8000."
-		}
-	},
 	"browser": {
 		"enable": {
 			"label": "Browserhulpmiddel inschakelen",

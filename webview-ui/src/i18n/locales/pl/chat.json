@@ -151,7 +151,6 @@
 			"500": "Błąd serwera dostawcy. Po stronie dostawcy coś się nie powiodło, w Twoim żądaniu nie ma nic złego.",
 			"unknown": "Nieznany błąd API. Skontaktuj się z pomocą techniczną Roo Code.",
 			"connection": "Błąd połączenia. Upewnij się, że masz działające połączenie internetowe.",
-			"claudeCodeNotAuthenticated": "Musisz się zalogować, aby korzystać z Claude Code. Przejdź do Ustawień i kliknij \"Zaloguj się do Claude Code\", aby się uwierzytelnić."
 		}
 	},
 	"checkpoint": {

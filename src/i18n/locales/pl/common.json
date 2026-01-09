@@ -86,13 +86,6 @@
 		"command_already_exists": "Polecenie \"{{commandName}}\" już istnieje",
 		"create_command_failed": "Nie udało się utworzyć polecenia",
 		"command_template_content": "---\ndescription: \"Krótki opis tego, co robi to polecenie\"\n---\n\nTo jest nowe polecenie slash. Edytuj ten plik, aby dostosować zachowanie polecenia.",
-		"claudeCode": {
-			"processExited": "Proces Claude Code zakończył się kodem {{exitCode}}.",
-			"errorOutput": "Wyjście błędu: {{output}}",
-			"processExitedWithError": "Proces Claude Code zakończył się kodem {{exitCode}}. Wyjście błędu: {{output}}",
-			"stoppedWithReason": "Claude Code zatrzymał się z powodu: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "Brak aktywnego zadania do usunięcia wiadomości",
 			"invalid_timestamp_for_deletion": "Nieprawidłowy znacznik czasu wiadomości do usunięcia",

@@ -512,14 +512,6 @@
 			"description": "Modelin yanıtlarının ne kadar ayrıntılı olduğunu kontrol eder. Düşük ayrıntı düzeyi kısa yanıtlar üretirken, yüksek ayrıntı düzeyi kapsamlı açıklamalar sunar."
 		},
 		"setReasoningLevel": "Akıl Yürütme Çabasını Etkinleştir",
-		"claudeCode": {
-			"pathLabel": "Claude Code Yolu",
-			"description": "Claude Code CLI'nize isteğe bağlı yol. Ayarlanmazsa varsayılan olarak 'claude' kullanılır.",
-			"placeholder": "Varsayılan: claude",
-			"maxTokensLabel": "Maksimum Çıktı Token sayısı",
-			"maxTokensDescription": "Claude Code yanıtları için maksimum çıktı token sayısı. Varsayılan 8000'dir."
-		}
-	},
 	"browser": {
 		"enable": {
 			"label": "Tarayıcı aracını etkinleştir",

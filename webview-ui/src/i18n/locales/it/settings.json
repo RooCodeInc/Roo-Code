@@ -512,14 +512,6 @@
 			"description": "Controlla il livello di dettaglio delle risposte del modello. Una verbosity bassa produce risposte concise, mentre una verbosity alta fornisce spiegazioni approfondite."
 		},
 		"setReasoningLevel": "Abilita sforzo di ragionamento",
-		"claudeCode": {
-			"pathLabel": "Percorso Claude Code",
-			"description": "Percorso facoltativo per la tua CLI Claude Code. Predefinito 'claude' se non impostato.",
-			"placeholder": "Predefinito: claude",
-			"maxTokensLabel": "Token di output massimi",
-			"maxTokensDescription": "Numero massimo di token di output per le risposte di Claude Code. Il valore predefinito è 8000."
-		}
-	},
 	"browser": {
 		"enable": {
 			"label": "Abilita strumento browser",

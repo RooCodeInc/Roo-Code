@@ -86,13 +86,6 @@
 		"command_already_exists": "명령 \"{{commandName}}\"이(가) 이미 존재합니다",
 		"create_command_failed": "명령 생성에 실패했습니다",
 		"command_template_content": "---\ndescription: \"이 명령이 수행하는 작업에 대한 간단한 설명\"\n---\n\n이것은 새로운 슬래시 명령입니다. 이 파일을 편집하여 명령 동작을 사용자 정의하세요.",
-		"claudeCode": {
-			"processExited": "Claude Code 프로세스가 코드 {{exitCode}}로 종료되었습니다.",
-			"errorOutput": "오류 출력: {{output}}",
-			"processExitedWithError": "Claude Code 프로세스가 코드 {{exitCode}}로 종료되었습니다. 오류 출력: {{output}}",
-			"stoppedWithReason": "Claude Code가 다음 이유로 중지되었습니다: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "메시지를 삭제할 활성 작업이 없습니다",
 			"invalid_timestamp_for_deletion": "삭제를 위한 메시지 타임스탬프가 유효하지 않습니다",

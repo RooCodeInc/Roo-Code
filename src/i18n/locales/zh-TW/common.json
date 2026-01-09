@@ -85,13 +85,6 @@
 		"command_already_exists": "指令 \"{{commandName}}\" 已存在",
 		"create_command_failed": "建立指令失敗",
 		"command_template_content": "---\ndescription: \"此指令功能的簡要描述\"\n---\n\n這是一個新的斜線指令。編輯此檔案以自訂指令行為。",
-		"claudeCode": {
-			"processExited": "Claude Code 程序退出，退出碼：{{exitCode}}。",
-			"errorOutput": "錯誤輸出：{{output}}",
-			"processExitedWithError": "Claude Code 程序退出，退出碼：{{exitCode}}。錯誤輸出：{{output}}",
-			"stoppedWithReason": "Claude Code 停止，原因：{{reason}}",
-			"apiKeyModelPlanMismatch": "API 金鑰和訂閱方案允許不同的模型。請確保所選模型包含在您的方案中。"
-		},
 		"message": {
 			"no_active_task_to_delete": "沒有可刪除訊息的活躍工作",
 			"invalid_timestamp_for_deletion": "刪除操作的訊息時間戳無效",

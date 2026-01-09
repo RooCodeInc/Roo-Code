@@ -512,14 +512,6 @@
 			"description": "Contrôle le niveau de détail des réponses du modèle. Une faible verbosité produit des réponses concises, tandis qu'une verbosité élevée fournit des explications approfondies."
 		},
 		"setReasoningLevel": "Activer l'effort de raisonnement",
-		"claudeCode": {
-			"pathLabel": "Chemin du code Claude",
-			"description": "Chemin facultatif vers votre CLI Claude Code. La valeur par défaut est 'claude' si non défini.",
-			"placeholder": "Défaut : claude",
-			"maxTokensLabel": "Jetons de sortie max",
-			"maxTokensDescription": "Nombre maximum de jetons de sortie pour les réponses de Claude Code. La valeur par défaut est 8000."
-		}
-	},
 	"browser": {
 		"enable": {
 			"label": "Activer l'outil de navigateur",

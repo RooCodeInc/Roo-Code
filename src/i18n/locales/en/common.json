@@ -86,13 +86,6 @@
 		"command_already_exists": "Command \"{{commandName}}\" already exists",
 		"create_command_failed": "Failed to create command",
 		"command_template_content": "---\ndescription: \"Brief description of what this command does\"\n---\n\nThis is a new slash command. Edit this file to customize the command behavior.",
-		"claudeCode": {
-			"processExited": "Claude Code process exited with code {{exitCode}}.",
-			"errorOutput": "Error output: {{output}}",
-			"processExitedWithError": "Claude Code process exited with code {{exitCode}}. Error output: {{output}}",
-			"stoppedWithReason": "Claude Code stopped with reason: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "No active task to delete messages from",
 			"invalid_timestamp_for_deletion": "Invalid message timestamp for deletion",

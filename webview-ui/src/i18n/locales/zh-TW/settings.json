@@ -512,14 +512,6 @@
 			"description": "控制模型回應的詳細程度。低詳細度產生簡潔的回答，而高詳細度提供詳盡的解釋。"
 		},
 		"setReasoningLevel": "啟用推理工作量",
-		"claudeCode": {
-			"pathLabel": "Claude Code 路徑",
-			"description": "可選的 Claude Code CLI 路徑。如果未設定，則預設為 'claude'。",
-			"placeholder": "預設：claude",
-			"maxTokensLabel": "最大輸出 Token",
-			"maxTokensDescription": "Claude Code 回應的最大輸出 Token 數量。預設為 8000。"
-		}
-	},
 	"browser": {
 		"enable": {
 			"label": "啟用瀏覽器工具",

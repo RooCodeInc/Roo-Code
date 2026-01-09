@@ -86,13 +86,6 @@
 		"command_already_exists": "Команда \"{{commandName}}\" уже существует",
 		"create_command_failed": "Не удалось создать команду",
 		"command_template_content": "---\ndescription: \"Краткое описание того, что делает эта команда\"\n---\n\nЭто новая slash-команда. Отредактируйте этот файл, чтобы настроить поведение команды.",
-		"claudeCode": {
-			"processExited": "Процесс Claude Code завершился с кодом {{exitCode}}.",
-			"errorOutput": "Вывод ошибки: {{output}}",
-			"processExitedWithError": "Процесс Claude Code завершился с кодом {{exitCode}}. Вывод ошибки: {{output}}",
-			"stoppedWithReason": "Claude Code остановился по причине: {{reason}}",
-			"apiKeyModelPlanMismatch": "API keys and subscription plans allow different models. Make sure the selected model is included in your plan."
-		},
 		"message": {
 			"no_active_task_to_delete": "Нет активной задачи для удаления сообщений",
 			"invalid_timestamp_for_deletion": "Недействительная временная метка сообщения для удаления",

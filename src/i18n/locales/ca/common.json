@@ -89,13 +89,6 @@
 		"command_already_exists": "L'ordre \"{{commandName}}\" ja existeix",
 		"create_command_failed": "Error en crear l'ordre",
 		"command_template_content": "---\ndescription: \"Breu descripció del que fa aquesta ordre\"\n---\n\nAquesta és una nova ordre slash. Edita aquest fitxer per personalitzar el comportament de l'ordre.",
-		"claudeCode": {
-			"processExited": "El procés Claude Code ha sortit amb codi {{exitCode}}.",
-			"errorOutput": "Sortida d'error: {{output}}",
-			"processExitedWithError": "El procés Claude Code ha sortit amb codi {{exitCode}}. Sortida d'error: {{output}}",
-			"stoppedWithReason": "Claude Code s'ha aturat per la raó: {{reason}}",
-			"apiKeyModelPlanMismatch": "Les claus API i els plans de subscripció permeten models diferents. Assegura't que el model seleccionat estigui inclòs al teu pla."
-		},
 		"message": {
 			"no_active_task_to_delete": "No hi ha cap tasca activa de la qual eliminar missatges",
 			"invalid_timestamp_for_deletion": "Marca de temps del missatge no vàlida per a l'eliminació",
