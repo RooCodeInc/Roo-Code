@@ -420,7 +420,7 @@ describe("CodeIndexServiceFactory", () => {
 			)
 		})
 
-		it("should prioritize getModelDimension over manual modelDimension for OpenAI Compatible provider", () => {
+		it("should prioritize user-configured modelDimension over model's built-in dimension", () => {
 			// Arrange
 			const testModelId = "custom-model"
 			const manualDimension = 1024
@@ -428,7 +428,7 @@ describe("CodeIndexServiceFactory", () => {
 			const testConfig = {
 				embedderProvider: "openai-compatible",
 				modelId: testModelId,
-				modelDimension: manualDimension, // This should be ignored when model has built-in dimension
+				modelDimension: manualDimension, // User-configured dimension takes priority
 				openAiCompatibleOptions: {
 					baseUrl: "https://api.example.com/v1",
 					apiKey: "test-api-key",
@@ -437,22 +437,21 @@ describe("CodeIndexServiceFactory", () => {
 				qdrantApiKey: "test-key",
 			}
 			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
-			mockGetModelDimension.mockReturnValue(modelDimension) // This should be used
+			mockGetModelDimension.mockReturnValue(modelDimension) // This should be ignored
 
 			// Act
 			factory.createVectorStore()
 
-			// Assert
-			expect(mockGetModelDimension).toHaveBeenCalledWith("openai-compatible", testModelId)
+			// Assert - user-configured dimension takes priority as single source of truth
 			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
 				"/test/workspace",
 				"http://localhost:6333",
-				modelDimension, // Should use model's built-in dimension, not manual
+				manualDimension, // Should use user-configured dimension
 				"test-key",
 			)
 		})
 
-		it("should use manual modelDimension only when model has no built-in dimension", () => {
+		it("should fall back to model's built-in dimension when no user-configured dimension", () => {
 			// Arrange
 			const testModelId = "unknown-model"
 			const manualDimension = 1024
@@ -473,12 +472,41 @@ describe("CodeIndexServiceFactory", () => {
 			// Act
 			factory.createVectorStore()
 
-			// Assert
+			// Assert - user-configured dimension is used
+			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
+				"/test/workspace",
+				"http://localhost:6333",
+				manualDimension,
+				"test-key",
+			)
+		})
+
+		it("should use model dimension when user has not configured a dimension", () => {
+			// Arrange
+			const testModelId = "text-embedding-3-small"
+			const testConfig = {
+				embedderProvider: "openai-compatible",
+				modelId: testModelId,
+				// No modelDimension configured by user
+				openAiCompatibleOptions: {
+					baseUrl: "https://api.example.com/v1",
+					apiKey: "test-api-key",
+				},
+				qdrantUrl: "http://localhost:6333",
+				qdrantApiKey: "test-key",
+			}
+			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
+			mockGetModelDimension.mockReturnValue(1536) // Model's built-in dimension
+
+			// Act
+			factory.createVectorStore()
+
+			// Assert - falls back to model's built-in dimension
 			expect(mockGetModelDimension).toHaveBeenCalledWith("openai-compatible", testModelId)
 			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
 				"/test/workspace",
 				"http://localhost:6333",
-				manualDimension, // Should use manual dimension as fallback
+				1536, // Should use model's built-in dimension as fallback
 				"test-key",
 			)
 		})
