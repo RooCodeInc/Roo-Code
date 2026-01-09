@@ -2343,7 +2343,9 @@ export const webviewMessageHandler = async (
 		case "claudeCodeSignIn": {
 			try {
 				const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
-				const authUrl = claudeCodeOAuthManager.startAuthorizationFlow()
+				// Pass vscode.env and vscode.Uri.parse to support remote environments (GitHub Codespaces, etc.)
+				// vscode.env.asExternalUri() will convert localhost URLs to forwarded URLs
+				const authUrl = await claudeCodeOAuthManager.startAuthorizationFlow(vscode.env, vscode.Uri.parse)
 
 				// Open the authorization URL in the browser
 				await vscode.env.openExternal(vscode.Uri.parse(authUrl))
