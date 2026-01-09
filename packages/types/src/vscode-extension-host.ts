@@ -507,6 +507,8 @@ export interface WebviewMessage {
 		| "requestClaudeCodeRateLimits"
 		| "refreshCustomTools"
 		| "requestModes"
+		| "switchMode"
+		| "debugSetting"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"

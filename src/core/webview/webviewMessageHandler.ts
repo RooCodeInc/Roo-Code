@@ -2299,6 +2299,12 @@ export const webviewMessageHandler = async (
 			await provider.postStateToWebview()
 			break
 		}
+		case "debugSetting": {
+			await vscode.workspace
+				.getConfiguration(Package.name)
+				.update("debug", message.bool ?? false, vscode.ConfigurationTarget.Global)
+			break
+		}
 		case "cloudButtonClicked": {
 			// Navigate to the cloud tab.
 			provider.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
