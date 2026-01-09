@@ -2303,7 +2303,6 @@ export const webviewMessageHandler = async (
 			await vscode.workspace
 				.getConfiguration(Package.name)
 				.update("debug", message.bool ?? false, vscode.ConfigurationTarget.Global)
-			await provider.postStateToWebview()
 			break
 		}
 		case "cloudButtonClicked": {
