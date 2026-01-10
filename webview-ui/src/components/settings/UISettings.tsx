@@ -60,7 +60,7 @@ export const UISettings = ({
 			<Section>
 				<div className="space-y-6">
 					{/* Collapse Thinking Messages Setting */}
-					<div className="flex flex-col gap-1">
+					<div className="flex flex-col gap-1" data-setting-id="ui.collapseThinking">
 						<VSCodeCheckbox
 							checked={reasoningBlockCollapsed}
 							onChange={(e: any) => handleReasoningBlockCollapsedChange(e.target.checked)}
@@ -73,7 +73,7 @@ export const UISettings = ({
 					</div>
 
 					{/* Enter Key Behavior Setting */}
-					<div className="flex flex-col gap-1">
+					<div className="flex flex-col gap-1" data-setting-id="ui.requireCtrlEnterToSend">
 						<VSCodeCheckbox
 							checked={enterBehavior === "newline"}
 							onChange={(e: any) => handleEnterBehaviorChange(e.target.checked)}

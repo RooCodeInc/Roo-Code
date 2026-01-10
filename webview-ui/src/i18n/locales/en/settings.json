@@ -1,4 +1,8 @@
 {
+	"search": {
+		"placeholder": "Search settings...",
+		"noResults": "No results found for \"{{query}}\""
+	},
 	"common": {
 		"save": "Save",
 		"done": "Done",

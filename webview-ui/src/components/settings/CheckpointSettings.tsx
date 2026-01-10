@@ -38,7 +38,7 @@ export const CheckpointSettings = ({
 			</SectionHeader>
 
 			<Section>
-				<div>
+				<div data-setting-id="checkpoints.enable">
 					<VSCodeCheckbox
 						checked={enableCheckpoints}
 						onChange={(e: any) => {
@@ -58,7 +58,7 @@ export const CheckpointSettings = ({
 				</div>
 
 				{enableCheckpoints && (
-					<div className="mt-4">
+					<div className="mt-4" data-setting-id="checkpoints.timeout">
 						<label className="block text-sm font-medium mb-2">
 							{t("settings:checkpoints.timeout.label")}
 						</label>

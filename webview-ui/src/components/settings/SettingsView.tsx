@@ -58,6 +58,7 @@ import {
 	TooltipTrigger,
 	StandardTooltip,
 } from "@src/components/ui"
+import { useSettingsSearch, SearchResult } from "@src/hooks/useSettingsSearch"
 
 import { Tab, TabContent, TabHeader, TabList, TabTrigger } from "../common/Tab"
 import { SetCachedStateField, SetExperimentEnabled } from "./types"
@@ -79,6 +80,8 @@ import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
 import ModesView from "../modes/ModesView"
 import McpView from "../mcp/McpView"
+import { SettingsSearchInput } from "./SettingsSearchInput"
+import { SettingsSearchResults } from "./SettingsSearchResults"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -130,6 +133,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			? (targetSection as SectionName)
 			: "providers",
 	)
+	const [searchQuery, setSearchQuery] = useState("")
+	const [isSearchFocused, setIsSearchFocused] = useState(false)
 
 	const scrollPositions = useRef<Record<SectionName, number>>(
 		Object.fromEntries(sectionNames.map((s) => [s, 0])) as Record<SectionName, number>,
@@ -215,6 +220,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
+
+	// Settings search
+	const searchResults = useSettingsSearch(searchQuery)
 
 	useEffect(() => {
 		// Update only when currentApiConfigName is changed.
@@ -565,13 +573,54 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		}
 	}, [scrollToActiveTab])
 
+	// Scroll to and highlight a setting element
+	const scrollToSetting = useCallback((settingId: string) => {
+		const element = document.querySelector(`[data-setting-id="${settingId}"]`)
+		if (element) {
+			element.scrollIntoView({ behavior: "smooth", block: "center" })
+			// Add temporary highlight class
+			element.classList.add("setting-highlight")
+			setTimeout(() => element.classList.remove("setting-highlight"), 2000)
+		}
+	}, [])
+
+	// Handle selection of a search result
+	const handleSelectResult = useCallback(
+		(result: SearchResult) => {
+			setSearchQuery("")
+			setIsSearchFocused(false)
+			handleTabChange(result.tab)
+			// Small delay to allow tab switch and render
+			setTimeout(() => scrollToSetting(result.id), 150)
+		},
+		[handleTabChange, scrollToSetting],
+	)
+
 	return (
 		<Tab>
 			<TabHeader className="flex justify-between items-center gap-2">
-				<div className="flex items-center gap-1">
-					<h3 className="text-vscode-foreground m-0">{t("settings:header.title")}</h3>
+				<div className="flex items-center gap-2">
+					<h3 className="text-vscode-foreground m-0 flex-shrink-0">{t("settings:header.title")}</h3>
+					<div className="relative flex-1 max-w-xs">
+						<SettingsSearchInput
+							value={searchQuery}
+							onChange={setSearchQuery}
+							onFocus={() => setIsSearchFocused(true)}
+							onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+						/>
+						{searchQuery && isSearchFocused && (
+							<div className="absolute top-full left-0 right-0 mt-1 bg-vscode-dropdown-background border border-vscode-dropdown-border rounded shadow-lg z-50">
+								<SettingsSearchResults
+									results={searchResults}
+									query={searchQuery}
+									onSelectResult={handleSelectResult}
+									sections={sections}
+								/>
+							</div>
+						)}
+					</div>
 				</div>
-				<div className="flex gap-2">
+				<div className="flex gap-2 flex-shrink-0">
 					<StandardTooltip
 						content={
 							!isSettingValid
