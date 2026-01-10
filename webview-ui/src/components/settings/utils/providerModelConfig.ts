@@ -143,7 +143,6 @@ export const PROVIDERS_WITH_CUSTOM_MODEL_UI: ProviderName[] = [
 	"lmstudio",
 	"vscode-lm",
 	"huggingface",
-	"human-relay",
 ]
 
 /**
