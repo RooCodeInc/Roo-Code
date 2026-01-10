@@ -1,5 +1,11 @@
 # Roo Code Changelog
 
+## 3.39.3
+
+### Patch Changes
+
+- ![3.39.3 Release - Roo Code Router](/releases/3.39.3-release.png)
+
 ## [3.39.2] - 2026-01-09
 
 - Fix: Ensure all tools have consistent strict mode values for Cerebras compatibility (#10334 by @brianboysen51, PR #10589 by @app/roomote)
