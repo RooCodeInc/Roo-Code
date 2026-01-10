@@ -38,6 +38,7 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 	})
 
 	const isTuiSupported = process.stdin.isTTY && process.stdout.isTTY
+	const isTuiEnabled = options.tui && isTuiSupported
 	const extensionPath = options.extension || getDefaultExtensionPath(__dirname)
 	const workspacePath = path.resolve(workspaceArg)
 
@@ -54,7 +55,7 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 	let user: User | null = null
 	let useCloudProvider = false
 
-	if (isTuiSupported) {
+	if (isTuiEnabled) {
 		let { onboardingProviderChoice } = await loadSettings()
 
 		if (!onboardingProviderChoice) {
@@ -116,20 +117,18 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 		process.exit(1)
 	}
 
-	const useTui = options.tui && isTuiSupported
-
 	if (options.tui && !isTuiSupported) {
 		console.log("[CLI] TUI disabled (no TTY support), falling back to plain text mode")
 	}
 
-	if (!useTui && !options.prompt) {
+	if (!isTuiEnabled && !options.prompt) {
 		console.error("[CLI] Error: prompt is required in plain text mode")
 		console.error("[CLI] Usage: roo [workspace] -P <prompt> [options]")
 		console.error("[CLI] Use TUI mode (without --no-tui) for interactive input")
 		process.exit(1)
 	}
 
-	if (useTui) {
+	if (isTuiEnabled) {
 		try {
 			const { render } = await import("ink")
 			const { App } = await import("../../ui/App.js")

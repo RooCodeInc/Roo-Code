@@ -4,8 +4,8 @@
  * These tests require:
  * 1. RUN_CLI_INTEGRATION_TESTS=true environment variable (opt-in)
  * 2. A valid OPENROUTER_API_KEY environment variable
- * 3. A built extension at src/dist
- * 4. ripgrep binary available (vscode-ripgrep or system ripgrep)
+ * 3. A built CLI at apps/cli/dist (will auto-build if missing)
+ * 4. A built extension at src/dist (will auto-build if missing)
  *
  * Run with: RUN_CLI_INTEGRATION_TESTS=true OPENROUTER_API_KEY=sk-or-v1-... pnpm test
  */
@@ -14,11 +14,8 @@
 
 import path from "path"
 import fs from "fs"
-import os from "os"
-import { execSync } from "child_process"
+import { execSync, spawn, type ChildProcess } from "child_process"
 import { fileURLToPath } from "url"
-
-import { ExtensionHost } from "@/agent/index.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -27,156 +24,103 @@ const RUN_INTEGRATION_TESTS = process.env.RUN_CLI_INTEGRATION_TESTS === "true"
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const hasApiKey = !!OPENROUTER_API_KEY
 
-// Find the extension path - we need a built extension for integration tests.
-function findExtensionPath(): string | null {
-	// From apps/cli/src/__tests__, go up to monorepo root then to src/dist.
-	const monorepoPath = path.resolve(__dirname, "../../../../src/dist")
-
-	if (fs.existsSync(path.join(monorepoPath, "extension.js"))) {
-		return monorepoPath
-	}
-
-	// Also try from the apps/cli level.
-	const altPath = path.resolve(__dirname, "../../../src/dist")
-
-	if (fs.existsSync(path.join(altPath, "extension.js"))) {
-		return altPath
-	}
-
-	return null
+function findCliRoot(): string {
+	// From apps/cli/src/__tests__, go up to apps/cli.
+	return path.resolve(__dirname, "../..")
 }
 
-// Check if ripgrep is available (required by the extension for file listing).
-function hasRipgrep(): boolean {
-	try {
-		// Try vscode-ripgrep first (installed as dependency).
-		const vscodeRipgrepPath = path.resolve(__dirname, "../../../../node_modules/@vscode/ripgrep/bin/rg")
+function findMonorepoRoot(): string {
+	// From apps/cli/src/__tests__, go up to monorepo root.
+	return path.resolve(__dirname, "../../../..")
+}
 
-		if (fs.existsSync(vscodeRipgrepPath)) {
-			return true
-		}
+function isCliBuilt(): boolean {
+	return fs.existsSync(path.join(findCliRoot(), "dist", "index.js"))
+}
 
-		// Try system ripgrep.
-		execSync("rg --version", { stdio: "ignore" })
-		return true
-	} catch {
-		return false
+function isExtensionBuilt(): boolean {
+	const monorepoRoot = findMonorepoRoot()
+	const extensionPath = path.join(monorepoRoot, "src/dist")
+	return fs.existsSync(path.join(extensionPath, "extension.js"))
+}
+
+function buildCliIfNeeded(): void {
+	if (!isCliBuilt()) {
+		execSync("pnpm build", { cwd: findCliRoot(), stdio: "inherit" })
+		console.log("CLI build complete.")
 	}
 }
 
-const extensionPath = findExtensionPath()
-const hasExtension = !!extensionPath
-const ripgrepAvailable = hasRipgrep()
-
-// Create a temporary workspace directory for tests.
-function createTempWorkspace(): string {
-	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "roo-cli-test-"))
-	return tempDir
-}
-
-// Clean up temporary workspace.
-function cleanupWorkspace(workspacePath: string): void {
-	try {
-		fs.rmSync(workspacePath, { recursive: true, force: true })
-	} catch {
-		// Ignore cleanup errors.
+function buildExtensionIfNeeded(): void {
+	if (!isExtensionBuilt()) {
+		execSync("pnpm --filter roo-cline bundle", { cwd: findMonorepoRoot(), stdio: "inherit" })
+		console.log("Extension build complete.")
 	}
 }
 
-describe.skipIf(!RUN_INTEGRATION_TESTS || !hasApiKey || !hasExtension || !ripgrepAvailable)(
-	"CLI Integration Tests (requires RUN_CLI_INTEGRATION_TESTS=true, OPENROUTER_API_KEY, built extension, and ripgrep)",
-	() => {
-		let workspacePath: string
+function runCli(
+	args: string[],
+	options: { timeout?: number } = {},
+): Promise<{ stdout: string; stderr: string; exitCode: number }> {
+	return new Promise((resolve) => {
+		const timeout = options.timeout ?? 60000
 
-		beforeAll(() => {
-			console.log("Integration tests running with:")
-			console.log(`  - API Key: ${OPENROUTER_API_KEY?.substring(0, 12)}...`)
-			console.log(`  - Extension Path: ${extensionPath}`)
+		let stdout = ""
+		let stderr = ""
+		let timedOut = false
+
+		const proc: ChildProcess = spawn("pnpm", ["start", ...args], {
+			cwd: findCliRoot(),
+			env: { ...process.env, OPENROUTER_API_KEY, NO_COLOR: "1", FORCE_COLOR: "0" },
+			stdio: ["pipe", "pipe", "pipe"],
 		})
 
-		beforeEach(() => {
-			workspacePath = createTempWorkspace()
+		const timeoutId = setTimeout(() => {
+			timedOut = true
+			proc.kill("SIGTERM")
+		}, timeout)
+
+		proc.stdout?.on("data", (data: Buffer) => {
+			stdout += data.toString()
 		})
 
-		afterEach(async () => {
-			cleanupWorkspace(workspacePath)
+		proc.stderr?.on("data", (data: Buffer) => {
+			stderr += data.toString()
 		})
 
-		/**
-		 * Main integration test - tests the complete end-to-end flow
-		 *
-		 * NOTE: Due to the extension using singletons (TelemetryService, etc.),
-		 * only one integration test can run per process. This single test covers
-		 * the main functionality: activation, task execution, completion, and disposal.
-		 */
-		it("should complete end-to-end task execution with proper lifecycle", async () => {
-			const host = new ExtensionHost({
-				mode: "code",
-				user: null,
-				provider: "openrouter",
-				apiKey: OPENROUTER_API_KEY!,
-				model: "anthropic/claude-haiku-4.5", // Use fast, cheap model for tests.
-				workspacePath,
-				extensionPath: extensionPath!,
-				integrationTest: true,
-			})
+		proc.on("close", (code: number | null) => {
+			clearTimeout(timeoutId)
+			resolve({ stdout, stderr, exitCode: timedOut ? -1 : (code ?? 1) })
+		})
 
-			// Track state messages.
-			const stateMessages: unknown[] = []
+		proc.on("error", (error: Error) => {
+			clearTimeout(timeoutId)
+			stderr += error.message
+			resolve({ stdout, stderr, exitCode: 1 })
+		})
+	})
+}
 
-			host.on("extensionWebviewMessage", (msg: Record<string, unknown>) => {
-				if (msg.type === "state") {
-					stateMessages.push(msg)
-				}
-			})
-
-			await host.activate()
-			await host.runTask("Say hello in exactly 5 words")
-			await host.dispose()
-
-			expect(host.isInInitialSetup()).toBe(false)
-			expect(stateMessages.length).toBeGreaterThan(0)
-			expect((global as Record<string, unknown>).vscode).toBeUndefined()
-			expect((global as Record<string, unknown>).__extensionHost).toBeUndefined()
-		}, 120_000)
-	},
-)
-
-// Additional test to verify skip behavior.
-describe("Integration test skip behavior", () => {
-	it("should require RUN_CLI_INTEGRATION_TESTS=true", () => {
-		if (RUN_INTEGRATION_TESTS) {
-			console.log("RUN_CLI_INTEGRATION_TESTS=true, integration tests are enabled")
-		} else {
-			console.log("RUN_CLI_INTEGRATION_TESTS is not set to 'true', integration tests will be skipped")
-		}
-		expect(true).toBe(true) // Always passes
+describe.skipIf(!RUN_INTEGRATION_TESTS || !hasApiKey)("CLI Integration Tests", () => {
+	beforeAll(() => {
+		buildExtensionIfNeeded()
+		buildCliIfNeeded()
 	})
 
-	it("should have OPENROUTER_API_KEY check", () => {
-		if (hasApiKey) {
-			console.log("OPENROUTER_API_KEY is set")
-		} else {
-			console.log("OPENROUTER_API_KEY is not set, integration tests will be skipped")
-		}
-		expect(true).toBe(true) // Always passes
-	})
+	it("should complete end-to-end task execution via CLI", async () => {
+		const result = await runCli(
+			["--no-tui", "-m", "anthropic/claude-sonnet-4.5", "-M", "ask", "-r", "disabled", "-P", "1+1=?"],
+			{ timeout: 30_000 },
+		)
 
-	it("should have extension check", () => {
-		if (hasExtension) {
-			console.log(`Extension found at: ${extensionPath}`)
-		} else {
-			console.log("Extension not found, integration tests will be skipped")
-		}
-		expect(true).toBe(true) // Always passes
-	})
+		console.log("CLI stdout:", result.stdout)
 
-	it("should have ripgrep check", () => {
-		if (ripgrepAvailable) {
-			console.log("ripgrep is available")
-		} else {
-			console.log("ripgrep not found, integration tests will be skipped")
+		if (result.stderr) {
+			console.log("CLI stderr:", result.stderr)
 		}
-		expect(true).toBe(true) // Always passes
-	})
+
+		expect(result.exitCode).toBe(0)
+		expect(result.stdout).toContain("2")
+		expect(result.stdout).toContain("[task complete]")
+	}, 30_000)
 })
