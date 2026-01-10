@@ -12,6 +12,13 @@ export const CODEBASE_INDEX_DEFAULTS = {
 	MAX_SEARCH_SCORE: 1,
 	DEFAULT_SEARCH_MIN_SCORE: 0.4,
 	SEARCH_SCORE_STEP: 0.05,
+	// File watcher performance settings for multi-worktree optimization
+	DEFAULT_FILE_WATCHER_DEBOUNCE_MS: 500,
+	MIN_FILE_WATCHER_DEBOUNCE_MS: 100,
+	MAX_FILE_WATCHER_DEBOUNCE_MS: 5000,
+	DEFAULT_FILE_WATCHER_CONCURRENCY: 10,
+	MIN_FILE_WATCHER_CONCURRENCY: 1,
+	MAX_FILE_WATCHER_CONCURRENCY: 20,
 } as const
 
 /**
@@ -50,6 +57,17 @@ export const codebaseIndexConfigSchema = z.object({
 	codebaseIndexBedrockProfile: z.string().optional(),
 	// OpenRouter specific fields
 	codebaseIndexOpenRouterSpecificProvider: z.string().optional(),
+	// File watcher performance settings for multi-worktree optimization
+	codebaseIndexFileWatcherDebounceMs: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_FILE_WATCHER_DEBOUNCE_MS)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_FILE_WATCHER_DEBOUNCE_MS)
+		.optional(),
+	codebaseIndexFileWatcherConcurrency: z
+		.number()
+		.min(CODEBASE_INDEX_DEFAULTS.MIN_FILE_WATCHER_CONCURRENCY)
+		.max(CODEBASE_INDEX_DEFAULTS.MAX_FILE_WATCHER_CONCURRENCY)
+		.optional(),
 })
 
 export type CodebaseIndexConfig = z.infer<typeof codebaseIndexConfigSchema>

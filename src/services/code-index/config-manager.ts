@@ -2,7 +2,12 @@ import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
 import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
-import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constants"
+import {
+	DEFAULT_SEARCH_MIN_SCORE,
+	DEFAULT_MAX_SEARCH_RESULTS,
+	DEFAULT_FILE_WATCHER_DEBOUNCE_MS,
+	DEFAULT_FILE_WATCHER_CONCURRENCY,
+} from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
 
 /**
@@ -26,6 +31,9 @@ export class CodeIndexConfigManager {
 	private qdrantApiKey?: string
 	private searchMinScore?: number
 	private searchMaxResults?: number
+	// File watcher performance settings for multi-worktree optimization
+	private fileWatcherDebounceMs?: number
+	private fileWatcherConcurrency?: number
 
 	constructor(private readonly contextProxy: ContextProxy) {
 		// Initialize with current configuration to avoid false restart triggers
@@ -86,6 +94,10 @@ export class CodeIndexConfigManager {
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
+
+		// File watcher performance settings
+		this.fileWatcherDebounceMs = codebaseIndexConfig.codebaseIndexFileWatcherDebounceMs
+		this.fileWatcherConcurrency = codebaseIndexConfig.codebaseIndexFileWatcherConcurrency
 
 		// Validate and set model dimension
 		const rawDimension = codebaseIndexConfig.codebaseIndexEmbedderModelDimension
@@ -460,6 +472,8 @@ export class CodeIndexConfigManager {
 			qdrantApiKey: this.qdrantApiKey,
 			searchMinScore: this.currentSearchMinScore,
 			searchMaxResults: this.currentSearchMaxResults,
+			fileWatcherDebounceMs: this.currentFileWatcherDebounceMs,
+			fileWatcherConcurrency: this.currentFileWatcherConcurrency,
 		}
 	}
 
@@ -540,5 +554,25 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+	}
+
+	/**
+	 * Gets the configured file watcher debounce delay in milliseconds.
+	 * Higher values reduce CPU usage by batching more file changes together.
+	 * Useful for multi-worktree scenarios where multiple watchers run simultaneously.
+	 * Returns user setting if configured, otherwise returns default (500ms).
+	 */
+	public get currentFileWatcherDebounceMs(): number {
+		return this.fileWatcherDebounceMs ?? DEFAULT_FILE_WATCHER_DEBOUNCE_MS
+	}
+
+	/**
+	 * Gets the configured file watcher concurrency limit.
+	 * Lower values reduce CPU usage by processing fewer files in parallel.
+	 * Useful for multi-worktree scenarios where multiple watchers run simultaneously.
+	 * Returns user setting if configured, otherwise returns default (10).
+	 */
+	public get currentFileWatcherConcurrency(): number {
+		return this.fileWatcherConcurrency ?? DEFAULT_FILE_WATCHER_CONCURRENCY
 	}
 }
