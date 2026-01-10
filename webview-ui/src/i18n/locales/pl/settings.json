@@ -1,4 +1,9 @@
 {
+	"back": "Wróć do widoku zadań",
+	"search": {
+		"placeholder": "Znajdź ustawienie...",
+		"noResults": "Brak wyników dla \"{{query}}\""
+	},
 	"common": {
 		"save": "Zapisz",
 		"done": "Gotowe",

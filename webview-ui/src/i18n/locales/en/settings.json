@@ -1,11 +1,11 @@
 {
+	"back": "Back to tasks view",
 	"search": {
 		"placeholder": "Find setting...",
 		"noResults": "No results found for \"{{query}}\""
 	},
 	"common": {
 		"save": "Save",
-		"done": "Done",
 		"cancel": "Cancel",
 		"reset": "Reset",
 		"select": "Select",
@@ -16,7 +16,7 @@
 		"title": "Settings",
 		"saveButtonTooltip": "Save changes",
 		"nothingChangedTooltip": "Nothing changed",
-		"doneButtonTooltip": "Discard unsaved changes and close settings panel"
+		"doneButtonTooltip": "Discard unsaved changes and go back to tasks view"
 	},
 	"unsavedChangesDialog": {
 		"title": "Unsaved Changes",

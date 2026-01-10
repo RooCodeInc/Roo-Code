@@ -38,17 +38,17 @@ export function SettingsSearchInput({
 				onKeyDown={onKeyDown}
 				placeholder={t("settings:search.placeholder")}
 				className={cn(
-					"pl-6 w-[0px] border-none focus:border-vscode-input-border focus:pl-8 focus:min-w-[110px] focus:w-full",
-					value && "pr-4 pl-8 min-w-[108px]",
+					"pl-6 focus:pl-8 w-[0px] border-none focus:border-vscode-input-border focus:min-w-[90px] focus:w-full",
+					value && "pl-8 pr-8 min-w-[50px] w-full",
 				)}
 			/>
 			{value && (
 				<button
 					type="button"
 					onClick={() => onChange("")}
-					className="absolute cursor-pointer right-2.5 top-1/2 -translate-y-1/2 size-4 text-vscode-descriptionForeground hover:text-vscode-foreground focus:outline-none"
+					className="absolute cursor-pointer right-2 top-1/2 -translate-y-1/2 size-4 text-vscode-descriptionForeground hover:text-vscode-foreground focus:outline-none"
 					aria-label="Clear search">
-					<X className="size-4" />
+					<X className="size-3" />
 				</button>
 			)}
 		</div>

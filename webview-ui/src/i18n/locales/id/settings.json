@@ -1,4 +1,9 @@
 {
+	"back": "Kembali ke tampilan tugas",
+	"search": {
+		"placeholder": "Cari pengaturan...",
+		"noResults": "Tidak ada hasil untuk \"{{query}}\""
+	},
 	"common": {
 		"save": "Simpan",
 		"done": "Selesai",

@@ -1,4 +1,9 @@
 {
+	"back": "Quay lại chế độ xem nhiệm vụ",
+	"search": {
+		"placeholder": "Tìm cài đặt...",
+		"noResults": "Không tìm thấy kết quả cho \"{{query}}\""
+	},
 	"common": {
 		"save": "Lưu",
 		"done": "Hoàn thành",

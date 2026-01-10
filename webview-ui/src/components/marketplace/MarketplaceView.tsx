@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useContext } from "react"
 import { Button } from "@/components/ui/button"
-import { StandardTooltip } from "@/components/ui"
 import { ArrowLeft } from "lucide-react"
 import { Tab, TabContent, TabHeader } from "../common/Tab"
 import { MarketplaceViewStateManager } from "./MarketplaceViewStateManager"
@@ -103,16 +102,14 @@ export function MarketplaceView({ stateManager, onDone, targetTab }: Marketplace
 				<TabHeader className="flex flex-col sticky top-0 z-10 px-3 py-2">
 					<div className="flex items-center justify-between gap-2 px-2">
 						<div className="flex items-center gap-2">
-							<StandardTooltip content={t("marketplace:done")}>
-								<Button
-									variant="ghost"
-									className="px-1.5 -ml-2"
-									onClick={() => onDone?.()}
-									aria-label={t("marketplace:done")}>
-									<ArrowLeft />
-									<span className="sr-only">{t("marketplace:done")}</span>
-								</Button>
-							</StandardTooltip>
+							<Button
+								variant="ghost"
+								className="px-1.5 -ml-2"
+								onClick={() => onDone?.()}
+								aria-label={t("settings:back")}>
+								<ArrowLeft />
+								<span className="sr-only">{t("marketplace:done")}</span>
+							</Button>
 							<h3 className="font-bold m-0">{t("marketplace:title")}</h3>
 						</div>
 					</div>

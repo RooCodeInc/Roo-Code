@@ -84,16 +84,13 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			<TabHeader className="flex flex-col gap-2">
 				<div className="flex items-center justify-between gap-2">
 					<div className="flex items-center gap-2">
-						<StandardTooltip content={t("history:done")}>
-							<Button
-								variant="ghost"
-								className="px-1.5 -ml-2"
-								onClick={onDone}
-								aria-label={t("history:done")}>
-								<ArrowLeft />
-								<span className="sr-only">{t("history:done")}</span>
-							</Button>
-						</StandardTooltip>
+						<Button
+							variant="ghost"
+							className="px-1.5 -ml-2"
+							onClick={onDone}
+							aria-label={t("settings:back")}>
+							<ArrowLeft />
+						</Button>
 						<h3 className="text-vscode-foreground m-0">{t("history:history")}</h3>
 					</div>
 					<StandardTooltip

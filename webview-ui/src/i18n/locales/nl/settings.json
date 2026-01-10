@@ -1,4 +1,9 @@
 {
+	"back": "Terug naar takenoverzicht",
+	"search": {
+		"placeholder": "Instelling zoeken...",
+		"noResults": "Geen resultaten voor \"{{query}}\""
+	},
 	"common": {
 		"save": "Opslaan",
 		"done": "Gereed",
