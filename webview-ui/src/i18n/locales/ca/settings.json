@@ -1,4 +1,9 @@
 {
+	"back": "Torna a la vista de tasques",
+	"search": {
+		"placeholder": "Troba un ajust...",
+		"noResults": "No s'han trobat resultats per \"{{query}}\""
+	},
 	"common": {
 		"save": "Desar",
 		"done": "Fet",

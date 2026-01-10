@@ -83,7 +83,7 @@ export const CustomToolsSettings = ({ enabled, onChange }: CustomToolsSettingsPr
 	)
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4" data-setting-id="experimental.CUSTOM_TOOLS">
 			<div>
 				<div className="flex items-center gap-2">
 					<VSCodeCheckbox checked={enabled} onChange={(e: any) => onChange(e.target.checked)}>

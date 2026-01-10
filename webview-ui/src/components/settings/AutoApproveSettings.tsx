@@ -1,5 +1,5 @@
 import { HTMLAttributes, useState } from "react"
-import { X, CheckCheck } from "lucide-react"
+import { X } from "lucide-react"
 import { Trans } from "react-i18next"
 import { Package } from "@roo/package"
 
@@ -107,12 +107,7 @@ export const AutoApproveSettings = ({
 
 	return (
 		<div {...props}>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<CheckCheck className="w-4 h-4" />
-					<div>{t("settings:sections.autoApprove")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.autoApprove")}</SectionHeader>
 
 			<Section>
 				<div className="space-y-4">
@@ -179,7 +174,7 @@ export const AutoApproveSettings = ({
 							<span className="codicon codicon-eye" />
 							<div>{t("settings:autoApprove.readOnly.label")}</div>
 						</div>
-						<div>
+						<div data-setting-id="autoApprove.readOnly.outsideWorkspace">
 							<VSCodeCheckbox
 								checked={alwaysAllowReadOnlyOutsideWorkspace}
 								onChange={(e: any) =>
@@ -203,7 +198,7 @@ export const AutoApproveSettings = ({
 							<span className="codicon codicon-edit" />
 							<div>{t("settings:autoApprove.write.label")}</div>
 						</div>
-						<div>
+						<div data-setting-id="autoApprove.write.outsideWorkspace">
 							<VSCodeCheckbox
 								checked={alwaysAllowWriteOutsideWorkspace}
 								onChange={(e: any) =>
@@ -218,7 +213,7 @@ export const AutoApproveSettings = ({
 								{t("settings:autoApprove.write.outsideWorkspace.description")}
 							</div>
 						</div>
-						<div>
+						<div data-setting-id="autoApprove.write.protected">
 							<VSCodeCheckbox
 								checked={alwaysAllowWriteProtected}
 								onChange={(e: any) =>
@@ -240,7 +235,7 @@ export const AutoApproveSettings = ({
 							<span className="codicon codicon-question" />
 							<div>{t("settings:autoApprove.followupQuestions.label")}</div>
 						</div>
-						<div>
+						<div data-setting-id="autoApprove.followupQuestions.timeout">
 							<div className="flex items-center gap-2">
 								<Slider
 									min={1000}
@@ -268,7 +263,7 @@ export const AutoApproveSettings = ({
 							<div>{t("settings:autoApprove.execute.label")}</div>
 						</div>
 
-						<div>
+						<div data-setting-id="autoApprove.execute.allowedCommands">
 							<label className="block font-medium mb-1" data-testid="allowed-commands-heading">
 								{t("settings:autoApprove.execute.allowedCommands")}
 							</label>
@@ -320,7 +315,7 @@ export const AutoApproveSettings = ({
 						</div>
 
 						{/* Denied Commands Section */}
-						<div className="mt-6">
+						<div className="mt-6" data-setting-id="autoApprove.execute.deniedCommands">
 							<label className="block font-medium mb-1" data-testid="denied-commands-heading">
 								{t("settings:autoApprove.execute.deniedCommands")}
 							</label>

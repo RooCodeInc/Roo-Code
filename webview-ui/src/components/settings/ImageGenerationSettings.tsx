@@ -91,7 +91,7 @@ export const ImageGenerationSettings = ({
 	const isConfigured = !requiresApiKey || (requiresApiKey && openRouterImageApiKey)
 
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4" data-setting-id="experimental.IMAGE_GENERATION">
 			<div>
 				<div className="flex items-center gap-2">
 					<VSCodeCheckbox checked={enabled} onChange={(e: any) => onChange(e.target.checked)}>

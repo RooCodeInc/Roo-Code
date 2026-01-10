@@ -1,7 +1,6 @@
 import { HTMLAttributes, useMemo } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { Glasses } from "lucide-react"
 import { telemetryClient } from "@/utils/TelemetryClient"
 
 import { SetCachedStateField } from "./types"
@@ -50,17 +49,12 @@ export const UISettings = ({
 
 	return (
 		<div {...props}>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<Glasses className="w-4" />
-					<div>{t("settings:sections.ui")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.ui")}</SectionHeader>
 
 			<Section>
 				<div className="space-y-6">
 					{/* Collapse Thinking Messages Setting */}
-					<div className="flex flex-col gap-1">
+					<div className="flex flex-col gap-1" data-setting-id="ui.collapseThinking">
 						<VSCodeCheckbox
 							checked={reasoningBlockCollapsed}
 							onChange={(e: any) => handleReasoningBlockCollapsedChange(e.target.checked)}
@@ -73,7 +67,7 @@ export const UISettings = ({
 					</div>
 
 					{/* Enter Key Behavior Setting */}
-					<div className="flex flex-col gap-1">
+					<div className="flex flex-col gap-1" data-setting-id="ui.requireCtrlEnterToSend">
 						<VSCodeCheckbox
 							checked={enterBehavior === "newline"}
 							onChange={(e: any) => handleEnterBehaviorChange(e.target.checked)}

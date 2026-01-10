@@ -1,4 +1,9 @@
 {
+	"back": "Torna alla vista attività",
+	"search": {
+		"placeholder": "Trova impostazione...",
+		"noResults": "Nessun risultato per \"{{query}}\""
+	},
 	"common": {
 		"save": "Salva",
 		"done": "Fatto",

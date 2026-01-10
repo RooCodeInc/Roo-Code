@@ -1,4 +1,9 @@
 {
+	"back": "Retour à la vue des tâches",
+	"search": {
+		"placeholder": "Trouver un réglage...",
+		"noResults": "Aucun résultat pour \"{{query}}\""
+	},
 	"common": {
 		"save": "Enregistrer",
 		"done": "Terminé",

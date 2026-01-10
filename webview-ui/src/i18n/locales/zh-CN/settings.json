@@ -1,4 +1,9 @@
 {
+	"back": "返回任务视图",
+	"search": {
+		"placeholder": "查找设置...",
+		"noResults": "未找到与 \"{{query}}\" 匹配的结果"
+	},
 	"common": {
 		"save": "保存",
 		"done": "完成",

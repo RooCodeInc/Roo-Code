@@ -1,5 +1,4 @@
 import { VSCodeCheckbox, VSCodeTextField, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { SquareMousePointer } from "lucide-react"
 import { HTMLAttributes, useEffect, useMemo, useState } from "react"
 import { Trans } from "react-i18next"
 
@@ -108,15 +107,10 @@ export const BrowserSettings = ({
 
 	return (
 		<div {...props}>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<SquareMousePointer className="w-4" />
-					<div>{t("settings:sections.browser")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.browser")}</SectionHeader>
 
 			<Section>
-				<div>
+				<div data-setting-id="browser.enable">
 					<VSCodeCheckbox
 						checked={browserToolEnabled}
 						onChange={(e: any) => setCachedStateField("browserToolEnabled", e.target.checked)}>
@@ -135,7 +129,7 @@ export const BrowserSettings = ({
 
 				{browserToolEnabled && (
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
-						<div>
+						<div data-setting-id="browser.viewport">
 							<label className="block font-medium mb-1">{t("settings:browser.viewport.label")}</label>
 							<Select
 								value={browserViewportSize}
@@ -158,7 +152,7 @@ export const BrowserSettings = ({
 							</div>
 						</div>
 
-						<div>
+						<div data-setting-id="browser.screenshotQuality">
 							<label className="block font-medium mb-1">
 								{t("settings:browser.screenshotQuality.label")}
 							</label>
@@ -177,7 +171,7 @@ export const BrowserSettings = ({
 							</div>
 						</div>
 
-						<div>
+						<div data-setting-id="browser.remote">
 							<VSCodeCheckbox
 								checked={remoteBrowserEnabled}
 								onChange={(e: any) => {

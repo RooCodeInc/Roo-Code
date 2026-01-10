@@ -569,3 +569,18 @@ input[cmdk-input]:focus {
 .animate-sun {
 	animation: sun 30s linear infinite;
 }
+
+/* Setting highlight animation for search navigation */
+.setting-highlight {
+	animation: highlight-pulse 2s ease-out;
+	border-radius: 4px;
+}
+
+@keyframes highlight-pulse {
+	0% {
+		background-color: var(--vscode-editor-findMatchHighlightBackground);
+	}
+	100% {
+		background-color: transparent;
+	}
+}

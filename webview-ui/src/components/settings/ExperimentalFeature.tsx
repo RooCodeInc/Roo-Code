@@ -16,7 +16,7 @@ export const ExperimentalFeature = ({ enabled, onChange, experimentKey }: Experi
 	const descriptionKey = experimentKey ? `settings:experimental.${experimentKey}.description` : ""
 
 	return (
-		<div>
+		<div data-setting-id={experimentKey ? `experimental.${experimentKey}` : undefined}>
 			<div className="flex items-center gap-2">
 				<VSCodeCheckbox checked={enabled} onChange={(e: any) => onChange(e.target.checked)}>
 					<span className="font-medium">{t(nameKey)}</span>

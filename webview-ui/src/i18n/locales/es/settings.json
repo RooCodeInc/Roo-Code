@@ -1,4 +1,9 @@
 {
+	"back": "Volver a la vista de tareas",
+	"search": {
+		"placeholder": "Buscar ajuste...",
+		"noResults": "No se encontraron resultados para \"{{query}}\""
+	},
 	"common": {
 		"save": "Guardar",
 		"done": "Hecho",

@@ -35,7 +35,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					hideAnnouncement()
 				}
 			}}>
-			<DialogContent className="max-w-96">
+			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{t("chat:announcement.title", { version: Package.version })}</DialogTitle>
 				</DialogHeader>

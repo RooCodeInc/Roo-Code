@@ -49,15 +49,15 @@ describe("HistoryView", () => {
 
 		// Check for main UI elements
 		expect(screen.getByText("history:history")).toBeInTheDocument()
-		expect(screen.getByText("history:done")).toBeInTheDocument()
+		expect(screen.getByRole("button", { name: "history:done" })).toBeInTheDocument()
 		expect(screen.getByPlaceholderText("history:searchPlaceholder")).toBeInTheDocument()
 	})
 
-	it("calls onDone when done button is clicked", () => {
+	it("calls onDone when back button is clicked", () => {
 		const onDone = vi.fn()
 		render(<HistoryView onDone={onDone} />)
 
-		const doneButton = screen.getByText("history:done")
+		const doneButton = screen.getByRole("button", { name: "history:done" })
 		fireEvent.click(doneButton)
 
 		expect(onDone).toHaveBeenCalled()

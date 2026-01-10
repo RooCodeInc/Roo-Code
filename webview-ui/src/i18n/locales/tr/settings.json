@@ -1,4 +1,9 @@
 {
+	"back": "Görev görünümüne dön",
+	"search": {
+		"placeholder": "Ayar bul...",
+		"noResults": "\"{{query}}\" için sonuç yok"
+	},
 	"common": {
 		"save": "Kaydet",
 		"done": "Tamamlandı",

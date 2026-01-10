@@ -1,4 +1,9 @@
 {
+	"back": "Voltar para a visualização de tarefas",
+	"search": {
+		"placeholder": "Encontrar configuração...",
+		"noResults": "Nenhum resultado para \"{{query}}\""
+	},
 	"common": {
 		"save": "Salvar",
 		"done": "Concluído",

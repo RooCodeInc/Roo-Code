@@ -1,7 +1,6 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { Bell } from "lucide-react"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -27,15 +26,10 @@ export const NotificationSettings = ({
 	const { t } = useAppTranslation()
 	return (
 		<div {...props}>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<Bell className="w-4" />
-					<div>{t("settings:sections.notifications")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.notifications")}</SectionHeader>
 
 			<Section>
-				<div>
+				<div data-setting-id="notifications.tts">
 					<VSCodeCheckbox
 						checked={ttsEnabled}
 						onChange={(e: any) => setCachedStateField("ttsEnabled", e.target.checked)}
@@ -49,7 +43,7 @@ export const NotificationSettings = ({
 
 				{ttsEnabled && (
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
-						<div>
+						<div data-setting-id="notifications.tts.speed">
 							<label className="block font-medium mb-1">
 								{t("settings:notifications.tts.speedLabel")}
 							</label>
@@ -68,7 +62,7 @@ export const NotificationSettings = ({
 					</div>
 				)}
 
-				<div>
+				<div data-setting-id="notifications.sound">
 					<VSCodeCheckbox
 						checked={soundEnabled}
 						onChange={(e: any) => setCachedStateField("soundEnabled", e.target.checked)}
@@ -82,7 +76,7 @@ export const NotificationSettings = ({
 
 				{soundEnabled && (
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
-						<div>
+						<div data-setting-id="notifications.sound.volume">
 							<label className="block font-medium mb-1">
 								{t("settings:notifications.sound.volumeLabel")}
 							</label>

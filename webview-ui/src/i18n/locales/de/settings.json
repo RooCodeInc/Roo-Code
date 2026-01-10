@@ -1,4 +1,9 @@
 {
+	"back": "Zur Aufgabenansicht zurück",
+	"search": {
+		"placeholder": "Einstellung finden...",
+		"noResults": "Keine Treffer für \"{{query}}\""
+	},
 	"common": {
 		"save": "Speichern",
 		"done": "Fertig",

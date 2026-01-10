@@ -1,7 +1,6 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { GitBranch } from "lucide-react"
 import { Trans } from "react-i18next"
 import { buildDocLink } from "@src/utils/docLinks"
 import { Slider } from "@/components/ui"
@@ -30,15 +29,10 @@ export const CheckpointSettings = ({
 	const { t } = useAppTranslation()
 	return (
 		<div {...props}>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<GitBranch className="w-4" />
-					<div>{t("settings:sections.checkpoints")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.checkpoints")}</SectionHeader>
 
 			<Section>
-				<div>
+				<div data-setting-id="checkpoints.enable">
 					<VSCodeCheckbox
 						checked={enableCheckpoints}
 						onChange={(e: any) => {
@@ -58,7 +52,7 @@ export const CheckpointSettings = ({
 				</div>
 
 				{enableCheckpoints && (
-					<div className="mt-4">
+					<div className="mt-4" data-setting-id="checkpoints.timeout">
 						<label className="block text-sm font-medium mb-2">
 							{t("settings:checkpoints.timeout.label")}
 						</label>

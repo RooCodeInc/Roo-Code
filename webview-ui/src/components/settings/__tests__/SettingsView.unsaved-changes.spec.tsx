@@ -47,6 +47,9 @@ vi.mock("@src/components/ui", () => ({
 	TooltipProvider: ({ children }: any) => <>{children}</>,
 	TooltipTrigger: ({ children }: any) => <>{children}</>,
 	StandardTooltip: ({ children, content }: any) => <div title={content}>{children}</div>,
+	Input: React.forwardRef<HTMLInputElement, any>(({ className, ...props }, ref) => (
+		<input ref={ref} className={className} {...props} />
+	)),
 }))
 
 // Mock Tab components

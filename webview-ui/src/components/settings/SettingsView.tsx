@@ -12,7 +12,6 @@ import React, {
 import {
 	CheckCheck,
 	SquareMousePointer,
-	Webhook,
 	GitBranch,
 	Bell,
 	Database,
@@ -28,6 +27,7 @@ import {
 	Plug,
 	Server,
 	Users2,
+	ArrowLeft,
 } from "lucide-react"
 
 import {
@@ -58,6 +58,7 @@ import {
 	TooltipTrigger,
 	StandardTooltip,
 } from "@src/components/ui"
+import { useSettingsSearch, SearchResult } from "@src/hooks/useSettingsSearch"
 
 import { Tab, TabContent, TabHeader, TabList, TabTrigger } from "../common/Tab"
 import { SetCachedStateField, SetExperimentEnabled } from "./types"
@@ -79,6 +80,8 @@ import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
 import ModesView from "../modes/ModesView"
 import McpView from "../mcp/McpView"
+import { SettingsSearchInput } from "./SettingsSearchInput"
+import { SettingsSearchResults } from "./SettingsSearchResults"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -130,6 +133,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			? (targetSection as SectionName)
 			: "providers",
 	)
+	const [searchQuery, setSearchQuery] = useState("")
+	const [isSearchFocused, setIsSearchFocused] = useState(false)
+	const searchInputRef = useRef<HTMLInputElement | null>(null)
+	const [highlightedResultId, setHighlightedResultId] = useState<string | undefined>(undefined)
 
 	const scrollPositions = useRef<Record<SectionName, number>>(
 		Object.fromEntries(sectionNames.map((s) => [s, 0])) as Record<SectionName, number>,
@@ -215,6 +222,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
+
+	// Settings search
+	const searchResults = useSettingsSearch(searchQuery)
 
 	useEffect(() => {
 		// Update only when currentApiConfigName is changed.
@@ -577,13 +587,132 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		}
 	}, [scrollToActiveTab])
 
+	// Scroll to and highlight a setting element
+	const scrollToSetting = useCallback((settingId: string) => {
+		const element = document.querySelector(`[data-setting-id="${settingId}"]`)
+		if (element) {
+			element.scrollIntoView({ behavior: "smooth", block: "center" })
+			// Add temporary highlight class
+			element.classList.add("setting-highlight")
+			setTimeout(() => element.classList.remove("setting-highlight"), 2000)
+		}
+	}, [])
+
+	// Handle selection of a search result
+	const handleSelectResult = useCallback(
+		(result: SearchResult) => {
+			setSearchQuery("")
+			setHighlightedResultId(undefined)
+			handleTabChange(result.tab)
+			// Keep focus in the input so dropdown remains open for follow-up search
+			setIsSearchFocused(true)
+			requestAnimationFrame(() => searchInputRef.current?.focus())
+			// Small delay to allow tab switch and render
+			setTimeout(() => scrollToSetting(result.id), 150)
+		},
+		[handleTabChange, scrollToSetting],
+	)
+
+	// Keyboard navigation inside search results
+	const moveHighlight = useCallback(
+		(direction: 1 | -1) => {
+			if (!searchResults.length) return
+			const flatIds = searchResults.map((r) => r.id)
+			const currentIndex = highlightedResultId ? flatIds.indexOf(highlightedResultId) : -1
+			const nextIndex = (currentIndex + direction + flatIds.length) % flatIds.length
+			setHighlightedResultId(flatIds[nextIndex])
+		},
+		[highlightedResultId, searchResults],
+	)
+
+	const handleSearchKeyDown = useCallback(
+		(event: React.KeyboardEvent<HTMLInputElement>) => {
+			if (!searchResults.length) return
+
+			if (event.key === "ArrowDown") {
+				event.preventDefault()
+				moveHighlight(1)
+				return
+			}
+
+			if (event.key === "ArrowUp") {
+				event.preventDefault()
+				moveHighlight(-1)
+				return
+			}
+
+			if (event.key === "Enter" && highlightedResultId) {
+				event.preventDefault()
+				const selected = searchResults.find((r) => r.id === highlightedResultId)
+				if (selected) {
+					handleSelectResult(selected)
+				}
+				return
+			}
+
+			if (event.key === "Escape") {
+				setIsSearchFocused(false)
+				setHighlightedResultId(undefined)
+				return
+			}
+		},
+		[handleSelectResult, highlightedResultId, moveHighlight, searchResults],
+	)
+
+	// Reset highlight based on focus and available results
+	useEffect(() => {
+		if (!isSearchFocused || !searchResults.length) {
+			setHighlightedResultId(undefined)
+			return
+		}
+
+		setHighlightedResultId((current) =>
+			current && searchResults.some((r) => r.id === current) ? current : searchResults[0]?.id,
+		)
+	}, [isSearchFocused, searchResults])
+
+	// Ensure highlighted search result stays visible within dropdown
+	useEffect(() => {
+		if (!highlightedResultId || !isSearchFocused) return
+
+		const element = document.getElementById(`settings-search-result-${highlightedResultId}`)
+		element?.scrollIntoView({ block: "nearest" })
+	}, [highlightedResultId, isSearchFocused])
+
 	return (
 		<Tab>
 			<TabHeader className="flex justify-between items-center gap-2">
-				<div className="flex items-center gap-1">
-					<h3 className="text-vscode-foreground m-0">{t("settings:header.title")}</h3>
+				<div className="flex items-center gap-2 grow">
+					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
+						<Button variant="ghost" className="px-1.5 -ml-2" onClick={() => checkUnsaveChanges(onDone)}>
+							<ArrowLeft />
+							<span className="sr-only">{t("settings:common.done")}</span>
+						</Button>
+					</StandardTooltip>
+					<h3 className="text-vscode-foreground m-0 flex-shrink-0">{t("settings:header.title")}</h3>
 				</div>
-				<div className="flex gap-2">
+				<div className="relative justify-end">
+					<SettingsSearchInput
+						value={searchQuery}
+						onChange={setSearchQuery}
+						onFocus={() => setIsSearchFocused(true)}
+						onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+						onKeyDown={handleSearchKeyDown}
+						inputRef={searchInputRef}
+					/>
+					{searchQuery && isSearchFocused && (
+						<div className="absolute top-full w-full min-w-50 right-0 mt-1 border border-vscode-dropdown-border bg-vscode-sideBar-background rounded-xl overflow-clip shadow-lg z-50">
+							<SettingsSearchResults
+								results={searchResults}
+								query={searchQuery}
+								onSelectResult={handleSelectResult}
+								sections={sections}
+								highlightedResultId={highlightedResultId}
+							/>
+						</div>
+					)}
+				</div>
+				<div className="flex gap-2 shrink-0">
 					<StandardTooltip
 						content={
 							!isSettingValid
@@ -599,11 +728,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							disabled={!isChangeDetected || !isSettingValid}
 							data-testid="save-button">
 							{t("settings:common.save")}
-						</Button>
-					</StandardTooltip>
-					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
-						<Button variant="secondary" onClick={() => checkUnsaveChanges(onDone)}>
-							{t("settings:common.done")}
 						</Button>
 					</StandardTooltip>
 				</div>
@@ -672,12 +796,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{/* Providers Section */}
 					{activeTab === "providers" && (
 						<div>
-							<SectionHeader>
-								<div className="flex items-center gap-2">
-									<Webhook className="w-4" />
-									<div>{t("settings:sections.providers")}</div>
-								</div>
-							</SectionHeader>
+							<SectionHeader>{t("settings:sections.providers")}</SectionHeader>
 
 							<Section>
 								<ApiConfigManager

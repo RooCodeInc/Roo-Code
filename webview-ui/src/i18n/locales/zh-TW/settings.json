@@ -1,4 +1,9 @@
 {
+	"back": "返回工作檢視",
+	"search": {
+		"placeholder": "搜尋設定...",
+		"noResults": "沒有找到與 \"{{query}}\" 相符的結果"
+	},
 	"common": {
 		"save": "儲存",
 		"done": "完成",

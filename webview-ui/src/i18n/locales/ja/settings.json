@@ -1,4 +1,9 @@
 {
+	"back": "タスクビューに戻る",
+	"search": {
+		"placeholder": "設定を検索...",
+		"noResults": "\"{{query}}\" の結果はありません"
+	},
 	"common": {
 		"save": "保存",
 		"done": "完了",

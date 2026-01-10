@@ -1,4 +1,9 @@
 {
+	"back": "작업 보기로 돌아가기",
+	"search": {
+		"placeholder": "설정 찾기...",
+		"noResults": "\"{{query}}\"에 대한 결과가 없습니다"
+	},
 	"common": {
 		"save": "저장",
 		"done": "완료",

@@ -2,7 +2,7 @@ import { HTMLAttributes } from "react"
 import React from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { Database, FoldVertical } from "lucide-react"
+import { FoldVertical } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Button } from "@/components/ui"
@@ -106,15 +106,13 @@ export const ContextManagementSettings = ({
 	}
 	return (
 		<div className={cn("flex flex-col gap-2", className)} {...props}>
-			<SectionHeader description={t("settings:contextManagement.description")}>
-				<div className="flex items-center gap-2">
-					<Database className="w-4" />
-					<div>{t("settings:sections.contextManagement")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.contextManagement")}</SectionHeader>
 
 			<Section>
-				<div>
+				<p className="text-sm text-vscode-descriptionForeground">
+					{t("settings:contextManagement.description")}
+				</p>
+				<div data-setting-id="contextManagement.openTabs">
 					<span className="block font-medium mb-1">{t("settings:contextManagement.openTabs.label")}</span>
 					<div className="flex items-center gap-2">
 						<Slider
@@ -132,7 +130,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.workspaceFiles">
 					<span className="block font-medium mb-1">
 						{t("settings:contextManagement.workspaceFiles.label")}
 					</span>
@@ -152,7 +150,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.maxGitStatusFiles">
 					<span className="block font-medium mb-1">
 						{t("settings:contextManagement.maxGitStatusFiles.label")}
 					</span>
@@ -172,7 +170,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.maxConcurrentFileReads">
 					<span className="block font-medium mb-1">
 						{t("settings:contextManagement.maxConcurrentFileReads.label")}
 					</span>
@@ -192,7 +190,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.rooignore">
 					<VSCodeCheckbox
 						checked={showRooIgnoredFiles}
 						onChange={(e: any) => setCachedStateField("showRooIgnoredFiles", e.target.checked)}
@@ -206,7 +204,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.enableSubfolderRules">
 					<VSCodeCheckbox
 						checked={enableSubfolderRules}
 						onChange={(e: any) => setCachedStateField("enableSubfolderRules", e.target.checked)}
@@ -220,7 +218,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.maxReadFile">
 					<div className="flex flex-col gap-2">
 						<span className="font-medium">{t("settings:contextManagement.maxReadFile.label")}</span>
 						<div className="flex items-center gap-4">
@@ -256,7 +254,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.maxImageFileSize">
 					<div className="flex flex-col gap-2">
 						<span className="font-medium">{t("settings:contextManagement.maxImageFileSize.label")}</span>
 						<div className="flex items-center gap-4">
@@ -284,7 +282,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.maxTotalImageSize">
 					<div className="flex flex-col gap-2">
 						<span className="font-medium">{t("settings:contextManagement.maxTotalImageSize.label")}</span>
 						<div className="flex items-center gap-4">
@@ -312,7 +310,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.diagnostics.includeMessages">
 					<VSCodeCheckbox
 						checked={includeDiagnosticMessages}
 						onChange={(e: any) => setCachedStateField("includeDiagnosticMessages", e.target.checked)}
@@ -326,7 +324,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.diagnostics.maxMessages">
 					<span className="block font-medium mb-1">
 						{t("settings:contextManagement.diagnostics.maxMessages.label")}
 					</span>
@@ -381,7 +379,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.diagnostics.delayAfterWrite">
 					<span className="block font-medium mb-1">
 						{t("settings:contextManagement.diagnostics.delayAfterWrite.label")}
 					</span>
@@ -401,7 +399,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.includeCurrentTime">
 					<VSCodeCheckbox
 						checked={includeCurrentTime}
 						onChange={(e: any) => setCachedStateField("includeCurrentTime", e.target.checked)}
@@ -415,7 +413,7 @@ export const ContextManagementSettings = ({
 					</div>
 				</div>
 
-				<div>
+				<div data-setting-id="contextManagement.includeCurrentCost">
 					<VSCodeCheckbox
 						checked={includeCurrentCost}
 						onChange={(e: any) => setCachedStateField("includeCurrentCost", e.target.checked)}
@@ -430,12 +428,14 @@ export const ContextManagementSettings = ({
 				</div>
 			</Section>
 			<Section className="pt-2">
-				<VSCodeCheckbox
-					checked={autoCondenseContext}
-					onChange={(e: any) => setCachedStateField("autoCondenseContext", e.target.checked)}
-					data-testid="auto-condense-context-checkbox">
-					<span className="font-medium">{t("settings:contextManagement.autoCondenseContext.name")}</span>
-				</VSCodeCheckbox>
+				<div data-setting-id="contextManagement.autoCondenseContext">
+					<VSCodeCheckbox
+						checked={autoCondenseContext}
+						onChange={(e: any) => setCachedStateField("autoCondenseContext", e.target.checked)}
+						data-testid="auto-condense-context-checkbox">
+						<span className="font-medium">{t("settings:contextManagement.autoCondenseContext.name")}</span>
+					</VSCodeCheckbox>
+				</div>
 				{autoCondenseContext && (
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
 						<div className="flex items-center gap-4 font-bold">
