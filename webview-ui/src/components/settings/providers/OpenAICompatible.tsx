@@ -162,10 +162,10 @@ export const OpenAICompatible = ({
 				<Checkbox
 					checked={apiConfiguration?.openAiStrictToolMessageOrdering ?? false}
 					onChange={handleInputChange("openAiStrictToolMessageOrdering", noTransform)}>
-					{t("settings:providers.openAiStrictToolMessageOrdering")}
+					{t("settings:providers.openAiStrictToolMessageOrdering.label")}
 				</Checkbox>
 				<div className="text-sm text-vscode-descriptionForeground ml-6">
-					{t("settings:providers.openAiStrictToolMessageOrderingDescription")}
+					{t("settings:providers.openAiStrictToolMessageOrdering.description")}
 				</div>
 			</div>
 			<div>
