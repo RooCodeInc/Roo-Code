@@ -55,6 +55,9 @@ interface ChatTextAreaProps {
 	// Browser session status
 	isBrowserSessionActive?: boolean
 	showBrowserDockToggle?: boolean
+	// Primary button action props - when action buttons are visible, Enter triggers approval
+	enablePrimaryButton?: boolean
+	onPrimaryButtonClick?: () => void
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -77,6 +80,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			onCancel,
 			isBrowserSessionActive = false,
 			showBrowserDockToggle = false,
+			enablePrimaryButton = false,
+			onPrimaryButtonClick,
 		},
 		ref,
 	) => {
@@ -488,19 +493,29 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				// Handle Enter key based on enterBehavior setting
 				if (event.key === "Enter" && !isComposing) {
 					if (enterBehavior === "newline") {
-						// New behavior: Enter = newline, Shift+Enter or Ctrl+Enter = send
+						// New behavior: Enter = newline, Shift+Enter or Ctrl+Enter = send/approve
 						if (event.shiftKey || event.ctrlKey || event.metaKey) {
 							event.preventDefault()
 							resetHistoryNavigation()
-							onSend()
+							// When primary button is enabled (action buttons visible), trigger approval
+							if (enablePrimaryButton && onPrimaryButtonClick) {
+								onPrimaryButtonClick()
+							} else {
+								onSend()
+							}
 						}
 						// Otherwise, let Enter create newline (don't preventDefault)
 					} else {
-						// Default behavior: Enter = send, Shift+Enter = newline
+						// Default behavior: Enter = send/approve, Shift+Enter = newline
 						if (!event.shiftKey) {
 							event.preventDefault()
 							resetHistoryNavigation()
-							onSend()
+							// When primary button is enabled (action buttons visible), trigger approval
+							if (enablePrimaryButton && onPrimaryButtonClick) {
+								onPrimaryButtonClick()
+							} else {
+								onSend()
+							}
 						}
 					}
 				}
@@ -567,6 +582,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				resetHistoryNavigation,
 				commands,
 				enterBehavior,
+				enablePrimaryButton,
+				onPrimaryButtonClick,
 			],
 		)
 
