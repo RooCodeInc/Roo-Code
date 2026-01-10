@@ -1,11 +1,12 @@
 import { useInput } from "ink"
 import { useState, useCallback, useEffect, useImperativeHandle, forwardRef, useRef, type Ref } from "react"
 
-import { MultilineTextInput } from "../MultilineTextInput.js"
 import { useInputHistory } from "../../hooks/useInputHistory.js"
-import { useAutocompletePicker } from "./useAutocompletePicker.js"
 import { useTerminalSize } from "../../hooks/TerminalSizeContext.js"
+import { MultilineTextInput } from "../MultilineTextInput.js"
+
 import type { AutocompleteItem, AutocompleteTrigger, AutocompletePickerState } from "./types.js"
+import { useAutocompletePicker } from "./useAutocompletePicker.js"
 
 export interface AutocompleteInputProps<T extends AutocompleteItem = AutocompleteItem> {
 	/** Placeholder text when input is empty */

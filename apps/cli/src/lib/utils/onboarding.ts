@@ -1,8 +1,8 @@
 import { createElement } from "react"
 
-import { type OnboardingResult, OnboardingProviderChoice } from "../../types/types.js"
-import { login } from "../../commands/index.js"
-import { saveSettings } from "../storage/settings.js"
+import { type OnboardingResult, OnboardingProviderChoice } from "@/types/index.js"
+import { login } from "@/commands/index.js"
+import { saveSettings } from "@/lib/storage/index.js"
 
 export async function runOnboarding(): Promise<OnboardingResult> {
 	const { render } = await import("ink")

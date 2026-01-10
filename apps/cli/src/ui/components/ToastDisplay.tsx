@@ -1,17 +1,13 @@
 import { memo } from "react"
 import { Text, Box } from "ink"
 
-import type { Toast, ToastType } from "../hooks/useToast.js"
 import * as theme from "../theme.js"
+import type { Toast, ToastType } from "../hooks/useToast.js"
 
 interface ToastDisplayProps {
-	/** The current toast to display (null if no toast) */
 	toast: Toast | null
 }
 
-/**
- * Get the color for a toast based on its type
- */
 function getToastColor(type: ToastType): string {
 	switch (type) {
 		case "success":
@@ -26,9 +22,6 @@ function getToastColor(type: ToastType): string {
 	}
 }
 
-/**
- * Get the icon/prefix for a toast based on its type
- */
 function getToastIcon(type: ToastType): string {
 	switch (type) {
 		case "success":
@@ -43,12 +36,6 @@ function getToastIcon(type: ToastType): string {
 	}
 }
 
-/**
- * ToastDisplay component for showing ephemeral messages in the status bar.
- *
- * Displays the current toast with appropriate styling based on type.
- * When no toast is present, renders nothing.
- */
 function ToastDisplay({ toast }: ToastDisplayProps) {
 	if (!toast) {
 		return null

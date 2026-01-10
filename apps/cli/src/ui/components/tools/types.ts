@@ -1,22 +1,10 @@
-/**
- * Types for tool renderer components
- */
-
 import type { ToolData } from "../../types.js"
 
-/**
- * Props passed to all tool renderer components
- */
 export interface ToolRendererProps {
-	/** Structured tool data */
 	toolData: ToolData
-	/** Raw content fallback (JSON string) */
 	rawContent?: string
 }
 
-/**
- * Tool category for grouping similar tools
- */
 export type ToolCategory =
 	| "file-read"
 	| "file-write"
@@ -27,9 +15,6 @@ export type ToolCategory =
 	| "completion"
 	| "other"
 
-/**
- * Get the category for a tool based on its name
- */
 export function getToolCategory(toolName: string): ToolCategory {
 	const fileReadTools = [
 		"readFile",
@@ -40,6 +25,7 @@ export function getToolCategory(toolName: string): ToolCategory {
 		"listFilesRecursive",
 		"list_files",
 	]
+
 	const fileWriteTools = [
 		"editedExistingFile",
 		"appliedDiff",
@@ -48,6 +34,7 @@ export function getToolCategory(toolName: string): ToolCategory {
 		"write_to_file",
 		"writeToFile",
 	]
+
 	const searchTools = ["searchFiles", "search_files", "codebaseSearch", "codebase_search"]
 	const commandTools = ["execute_command", "executeCommand"]
 	const browserTools = ["browser_action", "browserAction"]

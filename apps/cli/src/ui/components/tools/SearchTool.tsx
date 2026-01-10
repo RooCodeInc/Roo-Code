@@ -1,12 +1,8 @@
-/**
- * Renderer for search operations
- * Handles: searchFiles, codebaseSearch
- */
-
 import { Box, Text } from "ink"
 
 import * as theme from "../../theme.js"
 import { Icon } from "../Icon.js"
+
 import type { ToolRendererProps } from "./types.js"
 import { truncateText, sanitizeContent, getToolDisplayName, getToolIconName } from "./utils.js"
 
@@ -21,7 +17,7 @@ export function SearchTool({ toolData }: ToolRendererProps) {
 	const path = toolData.path || ""
 	const content = toolData.content ? sanitizeContent(toolData.content) : ""
 
-	// Parse search results if content looks like results
+	// Parse search results if content looks like results.
 	const resultLines = content.split("\n").filter((line) => line.trim())
 	const matchCount = resultLines.length
 

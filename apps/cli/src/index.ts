@@ -1,9 +1,8 @@
 import { Command } from "commander"
 
-import { DEFAULT_FLAGS } from "./types/constants.js"
-
-import { run, login, logout, status } from "./commands/index.js"
-import { VERSION } from "./lib/utils/version.js"
+import { DEFAULT_FLAGS } from "@/types/constants.js"
+import { VERSION } from "@/lib/utils/version.js"
+import { run, login, logout, status } from "@/commands/index.js"
 
 const program = new Command()
 

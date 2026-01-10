@@ -11,8 +11,6 @@
 
 import { ClineMessage, ClineAsk, isIdleAsk, isResumableAsk, isInteractiveAsk, isNonBlockingAsk } from "@roo-code/types"
 
-import type { ApiReqStartedText } from "./types.js"
-
 // =============================================================================
 // Agent Loop State Enum
 // =============================================================================
@@ -165,6 +163,18 @@ export interface AgentStateInfo {
 // =============================================================================
 
 /**
+ * Structure of the text field in api_req_started messages.
+ * Used to determine if the API request has completed (cost is defined).
+ */
+export interface ApiReqStartedText {
+	cost?: number // Undefined while streaming, defined when complete.
+	tokensIn?: number
+	tokensOut?: number
+	cacheWrites?: number
+	cacheReads?: number
+}
+
+/**
  * Check if an API request is still in progress (streaming).
  *
  * API requests are considered in-progress when:
@@ -174,22 +184,27 @@ export interface AgentStateInfo {
  * Once the request completes, the cost field will be populated.
  */
 function isApiRequestInProgress(messages: ClineMessage[]): boolean {
-	// Find the last api_req_started message
-	// Using reverse iteration for efficiency (most recent first)
+	// Find the last api_req_started message.
+	// Using reverse iteration for efficiency (most recent first).
 	for (let i = messages.length - 1; i >= 0; i--) {
 		const message = messages[i]
-		if (!message) continue
+
+		if (!message) {
+			continue
+		}
+
 		if (message.say === "api_req_started") {
 			if (!message.text) {
-				// No text yet means still in progress
+				// No text yet means still in progress.
 				return true
 			}
+
 			try {
 				const data: ApiReqStartedText = JSON.parse(message.text)
-				// cost is undefined while streaming, defined when complete
+				// cost is undefined while streaming, defined when complete.
 				return data.cost === undefined
 			} catch {
-				// Parse error - assume not in progress
+				// Parse error - assume not in progress.
 				return false
 			}
 		}

@@ -1,5 +1,4 @@
-import { ProviderName } from "@roo-code/types"
-import { ReasoningEffortExtended } from "@roo-code/types"
+import type { ProviderName, ReasoningEffortExtended } from "@roo-code/types"
 
 export const supportedProviders = [
 	"anthropic",

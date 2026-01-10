@@ -1,6 +1,6 @@
 import { RooCodeSettings } from "@roo-code/types"
 
-import type { SupportedProvider } from "../../types/index.js"
+import type { SupportedProvider } from "@/types/index.js"
 
 const envVarMap: Record<SupportedProvider, string> = {
 	anthropic: "ANTHROPIC_API_KEY",

@@ -1,7 +1,7 @@
 import fs from "fs/promises"
 import path from "path"
 
-import type { CliSettings } from "../../types/types.js"
+import type { CliSettings } from "@/types/index.js"
 
 import { getConfigDir } from "./index.js"
 

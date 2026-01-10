@@ -1,4 +1,4 @@
-// pnpm --filter @roo-code/cli test src/extension-host/__tests__/extension-host.test.ts
+// pnpm --filter @roo-code/cli test src/agent/__tests__/extension-host.test.ts
 
 import { EventEmitter } from "events"
 import fs from "fs"
@@ -17,7 +17,7 @@ vi.mock("@roo-code/vscode-shim", () => ({
 }))
 
 /**
- * Create a test ExtensionHost with default options
+ * Create a test ExtensionHost with default options.
  */
 function createTestHost({
 	mode = "code",

@@ -31,9 +31,9 @@ import type {
 import { createVSCodeAPI, setRuntimeConfigValues } from "@roo-code/vscode-shim"
 import { DebugLogger } from "@roo-code/core/cli"
 
-import { SupportedProvider } from "../types/types.js"
-import { User } from "../lib/sdk/types.js"
-import { getProviderSettings } from "../lib/utils/provider.js"
+import type { SupportedProvider } from "@/types/index.js"
+import type { User } from "@/lib/sdk/index.js"
+import { getProviderSettings } from "@/lib/utils/provider.js"
 
 import type { AgentStateChangeEvent, WaitingForInputEvent, TaskCompletedEvent } from "./events.js"
 import { type AgentStateInfo, AgentLoopState } from "./agent-state.js"

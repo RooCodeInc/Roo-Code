@@ -12,12 +12,13 @@
 
 // pnpm --filter @roo-code/cli test src/__tests__/index.test.ts
 
-import { ExtensionHost } from "../agent/extension-host.js"
 import path from "path"
 import fs from "fs"
 import os from "os"
 import { execSync } from "child_process"
 import { fileURLToPath } from "url"
+
+import { ExtensionHost } from "@/agent/index.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -26,30 +27,36 @@ const RUN_INTEGRATION_TESTS = process.env.RUN_CLI_INTEGRATION_TESTS === "true"
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY
 const hasApiKey = !!OPENROUTER_API_KEY
 
-// Find the extension path - we need a built extension for integration tests
+// Find the extension path - we need a built extension for integration tests.
 function findExtensionPath(): string | null {
-	// From apps/cli/src/__tests__, go up to monorepo root then to src/dist
+	// From apps/cli/src/__tests__, go up to monorepo root then to src/dist.
 	const monorepoPath = path.resolve(__dirname, "../../../../src/dist")
+
 	if (fs.existsSync(path.join(monorepoPath, "extension.js"))) {
 		return monorepoPath
 	}
-	// Also try from the apps/cli level
+
+	// Also try from the apps/cli level.
 	const altPath = path.resolve(__dirname, "../../../src/dist")
+
 	if (fs.existsSync(path.join(altPath, "extension.js"))) {
 		return altPath
 	}
+
 	return null
 }
 
-// Check if ripgrep is available (required by the extension for file listing)
+// Check if ripgrep is available (required by the extension for file listing).
 function hasRipgrep(): boolean {
 	try {
-		// Try vscode-ripgrep first (installed as dependency)
+		// Try vscode-ripgrep first (installed as dependency).
 		const vscodeRipgrepPath = path.resolve(__dirname, "../../../../node_modules/@vscode/ripgrep/bin/rg")
+
 		if (fs.existsSync(vscodeRipgrepPath)) {
 			return true
 		}
-		// Try system ripgrep
+
+		// Try system ripgrep.
 		execSync("rg --version", { stdio: "ignore" })
 		return true
 	} catch {
@@ -61,18 +68,18 @@ const extensionPath = findExtensionPath()
 const hasExtension = !!extensionPath
 const ripgrepAvailable = hasRipgrep()
 
-// Create a temporary workspace directory for tests
+// Create a temporary workspace directory for tests.
 function createTempWorkspace(): string {
 	const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "roo-cli-test-"))
 	return tempDir
 }
 
-// Clean up temporary workspace
+// Clean up temporary workspace.
 function cleanupWorkspace(workspacePath: string): void {
 	try {
 		fs.rmSync(workspacePath, { recursive: true, force: true })
 	} catch {
-		// Ignore cleanup errors
+		// Ignore cleanup errors.
 	}
 }
 

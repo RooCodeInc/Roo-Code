@@ -1,4 +1,4 @@
-import { clearToken, hasToken, getCredentialsPath } from "../../lib/storage/credentials.js"
+import { clearToken, hasToken, getCredentialsPath } from "@/lib/storage/index.js"
 
 export interface LogoutOptions {
 	verbose?: boolean

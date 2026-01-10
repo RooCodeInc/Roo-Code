@@ -1,12 +1,8 @@
-/**
- * Renderer for browser actions
- * Handles: browser_action
- */
-
 import { Box, Text } from "ink"
 
 import * as theme from "../../theme.js"
 import { Icon } from "../Icon.js"
+
 import type { ToolRendererProps } from "./types.js"
 import { getToolDisplayName, getToolIconName } from "./utils.js"
 
@@ -29,7 +25,7 @@ export function BrowserTool({ toolData }: ToolRendererProps) {
 	const action = toolData.action || ""
 	const url = toolData.url || ""
 	const coordinate = toolData.coordinate || ""
-	const content = toolData.content || "" // May contain text for type action
+	const content = toolData.content || "" // May contain text for type action.
 
 	const actionLabel = ACTION_LABELS[action] || action
 

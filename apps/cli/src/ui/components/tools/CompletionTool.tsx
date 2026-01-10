@@ -1,6 +1,7 @@
 import { Box, Text } from "ink"
 
 import * as theme from "../../theme.js"
+
 import type { ToolRendererProps } from "./types.js"
 import { truncateText, sanitizeContent } from "./utils.js"
 

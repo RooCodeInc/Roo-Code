@@ -4,7 +4,11 @@
 		"types": ["vitest/globals"],
 		"outDir": "dist",
 		"jsx": "react-jsx",
-		"jsxImportSource": "react"
+		"jsxImportSource": "react",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		}
 	},
 	"include": ["src", "*.config.ts"],
 	"exclude": ["node_modules"]

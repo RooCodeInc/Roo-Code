@@ -16,7 +16,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { Box, Text, useInput, type Key } from "ink"
 
-import { isGlobalInputSequence } from "../../lib/utils/input.js"
+import { isGlobalInputSequence } from "@/lib/utils/input.js"
 
 export interface MultilineTextInputProps {
 	/**

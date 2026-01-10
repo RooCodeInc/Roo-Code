@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react"
 import { useInput } from "ink"
 import type { WebviewMessage } from "@roo-code/types"
 
-import { matchesGlobalSequence } from "../../lib/utils/input.js"
+import { matchesGlobalSequence } from "@/lib/utils/input.js"
 
 import type { ModeResult } from "../components/autocomplete/index.js"
 import { useUIStateStore } from "../stores/uiStateStore.js"

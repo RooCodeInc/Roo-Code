@@ -2,6 +2,7 @@ import { Box, Text } from "ink"
 
 import * as theme from "../../theme.js"
 import { Icon } from "../Icon.js"
+
 import type { ToolRendererProps } from "./types.js"
 import { truncateText, sanitizeContent, getToolIconName } from "./utils.js"
 

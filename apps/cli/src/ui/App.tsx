@@ -3,15 +3,17 @@ import { Select } from "@inkjs/ui"
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import type { WebviewMessage } from "@roo-code/types"
 
-import { getGlobalCommandsForAutocomplete } from "../lib/utils/commands.js"
-import { arePathsEqual } from "../lib/utils/path.js"
-import { getContextWindow } from "../lib/utils/context-window.js"
-import * as theme from "./theme.js"
+import { ExtensionHostOptions } from "@/agent/index.js"
 
+import { getGlobalCommandsForAutocomplete } from "@/lib/utils/commands.js"
+import { arePathsEqual } from "@/lib/utils/path.js"
+import { getContextWindow } from "@/lib/utils/context-window.js"
+
+import * as theme from "./theme.js"
 import { useCLIStore } from "./store.js"
 import { useUIStateStore } from "./stores/uiStateStore.js"
 
-// Import extracted hooks
+// Import extracted hooks.
 import {
 	TerminalSizeProvider,
 	useTerminalSize,
@@ -25,10 +27,10 @@ import {
 	usePickerHandlers,
 } from "./hooks/index.js"
 
-// Import extracted utilities
+// Import extracted utilities.
 import { getView } from "./utils/index.js"
 
-// Import components
+// Import components.
 import Header from "./components/Header.js"
 import ChatHistoryItem from "./components/ChatHistoryItem.js"
 import LoadingText from "./components/LoadingText.js"
@@ -54,7 +56,6 @@ import {
 } from "./components/autocomplete/index.js"
 import { ScrollArea, useScrollToBottom } from "./components/ScrollArea.js"
 import ScrollIndicator from "./components/ScrollIndicator.js"
-import { ExtensionHostOptions } from "../agent/extension-host.js"
 
 const PICKER_HEIGHT = 10
 

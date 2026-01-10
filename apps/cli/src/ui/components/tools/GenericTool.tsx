@@ -1,12 +1,8 @@
-/**
- * Generic fallback renderer for unknown tools
- * Used when no specific renderer exists for a tool type
- */
-
 import { Box, Text } from "ink"
 
 import * as theme from "../../theme.js"
 import { Icon } from "../Icon.js"
+
 import type { ToolRendererProps } from "./types.js"
 import { truncateText, sanitizeContent, getToolDisplayName, getToolIconName } from "./utils.js"
 

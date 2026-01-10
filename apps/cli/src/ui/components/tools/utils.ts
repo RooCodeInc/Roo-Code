@@ -1,7 +1,3 @@
-/**
- * Utility functions for tool rendering
- */
-
 import type { IconName } from "../Icon.js"
 
 /**

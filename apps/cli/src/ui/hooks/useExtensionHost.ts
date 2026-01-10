@@ -3,9 +3,9 @@ import { useApp } from "ink"
 import { randomUUID } from "crypto"
 import type { ExtensionMessage, WebviewMessage } from "@roo-code/types"
 
-import { useCLIStore } from "../store.js"
+import { ExtensionHostOptions } from "@/agent/index.js"
 
-import { ExtensionHostOptions } from "../../agent/extension-host.js"
+import { useCLIStore } from "../store.js"
 
 interface ExtensionHostInterface {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

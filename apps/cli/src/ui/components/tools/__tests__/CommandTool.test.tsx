@@ -1,7 +1,7 @@
 import { render } from "ink-testing-library"
 
-import { CommandTool } from "../CommandTool.js"
 import type { ToolRendererProps } from "../types.js"
+import { CommandTool } from "../CommandTool.js"
 
 describe("CommandTool", () => {
 	describe("command display", () => {

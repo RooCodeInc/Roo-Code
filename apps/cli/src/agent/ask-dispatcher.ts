@@ -26,7 +26,7 @@ import {
 } from "@roo-code/types"
 import { debugLog } from "@roo-code/core/cli"
 
-import { FOLLOWUP_TIMEOUT_SECONDS } from "../types/constants.js"
+import { FOLLOWUP_TIMEOUT_SECONDS } from "@/types/index.js"
 
 import type { OutputManager } from "./output-manager.js"
 import type { PromptManager } from "./prompt-manager.js"

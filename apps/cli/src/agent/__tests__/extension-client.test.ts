@@ -1,6 +1,6 @@
 import {
-	ClineMessage,
-	ExtensionMessage,
+	type ClineMessage,
+	type ExtensionMessage,
 	isIdleAsk,
 	isResumableAsk,
 	isInteractiveAsk,

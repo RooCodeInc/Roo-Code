@@ -1,6 +1,6 @@
 import type { ProviderSettings } from "@roo-code/types"
 
-import type { RouterModels } from "../../ui/store.js"
+import type { RouterModels } from "@/ui/store.js"
 
 const DEFAULT_CONTEXT_WINDOW = 200_000
 

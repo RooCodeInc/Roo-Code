@@ -1,8 +1,7 @@
 import { Box, Text } from "ink"
 import { Select } from "@inkjs/ui"
 
-import { OnboardingProviderChoice } from "../../../types/types.js"
-import { ASCII_ROO } from "../../../types/constants.js"
+import { OnboardingProviderChoice, ASCII_ROO } from "@/types/index.js"
 
 export interface OnboardingScreenProps {
 	onSelect: (choice: OnboardingProviderChoice) => void
