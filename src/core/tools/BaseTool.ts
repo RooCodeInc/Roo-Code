@@ -135,21 +135,30 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * value between consecutive handlePartial() calls and returns true only when the
 	 * path has stopped changing (stabilized).
 	 *
-	 * Usage in handlePartial():
-	 * ```typescript
-	 * if (!this.hasPathStabilized(block.params.path)) {
-	 *     return // Path still changing, wait for it to stabilize
-	 * }
-	 * // Path is stable, proceed with UI updates
-	 * ```
+	 * A path is considered stable ONLY when the same non-empty value is seen twice
+	 * consecutively. This is critical for safety because tools like WriteToFileTool
+	 * perform file operations (createDirectoriesForFile, diffViewProvider.open) after
+	 * the path stabilizes. Accepting the first non-empty value after undefined would
+	 * cause file operations on truncated paths for incremental streaming providers.
+	 *
+	 * For Gemini-style providers that send complete args in one chunk, the path will
+	 * stabilize when it appears twice (e.g., in subsequent partial events). The UI
+	 * may briefly show nothing or empty state, but this is safer than file operations
+	 * on truncated paths. The getReadablePath() function returns empty string for
+	 * undefined/empty paths to prevent showing CWD basename during this brief period.
 	 *
 	 * @param path - The current path value from the partial block
 	 * @returns true if path has stabilized (same value seen twice) and is non-empty, false otherwise
 	 */
 	protected hasPathStabilized(path: string | undefined): boolean {
-		const pathHasStabilized = this.lastSeenPartialPath !== undefined && this.lastSeenPartialPath === path
+		const previousPath = this.lastSeenPartialPath
 		this.lastSeenPartialPath = path
-		return pathHasStabilized && !!path
+
+		// Path is stable only when the same non-empty value is seen twice consecutively.
+		// This prevents file operations on truncated paths from incremental streaming.
+		const pathHasStabilized = previousPath !== undefined && previousPath === path && !!path
+
+		return pathHasStabilized
 	}
 
 	/**

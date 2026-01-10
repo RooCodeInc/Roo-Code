@@ -153,8 +153,12 @@ describe("Path Utilities", () => {
 			expect(getReadablePath(desktop, filePath)).toBe(filePath.toPosix())
 		})
 
-		it("should handle undefined relative path", () => {
-			expect(getReadablePath(cwd)).toBe("project")
+		it("should return empty string for undefined relative path", () => {
+			expect(getReadablePath(cwd)).toBe("")
+		})
+
+		it("should return empty string for empty string relative path", () => {
+			expect(getReadablePath(cwd, "")).toBe("")
 		})
 
 		it("should handle parent directory traversal", () => {
