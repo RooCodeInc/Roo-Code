@@ -38,8 +38,8 @@ export function SettingsSearchInput({
 				onKeyDown={onKeyDown}
 				placeholder={t("settings:search.placeholder")}
 				className={cn(
-					"pl-6 w-[0px] border-none focus:border-vscode-input-border focus:pl-8 focus:min-w-[132px] focus:w-full",
-					value && "pr-4 min-w-[148px]",
+					"pl-6 w-[0px] border-none focus:border-vscode-input-border focus:pl-8 focus:min-w-[110px] focus:w-full",
+					value && "pr-4 pl-8 min-w-[108px]",
 				)}
 			/>
 			{value && (
