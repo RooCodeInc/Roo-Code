@@ -15,7 +15,6 @@ import {
 	openAiNativeDefaultModelId,
 	anthropicDefaultModelId,
 	doubaoDefaultModelId,
-	claudeCodeDefaultModelId,
 	qwenCodeDefaultModelId,
 	geminiDefaultModelId,
 	deepSeekDefaultModelId,
@@ -69,7 +68,6 @@ import {
 	Bedrock,
 	Cerebras,
 	Chutes,
-	ClaudeCode,
 	DeepSeek,
 	Doubao,
 	Gemini,
@@ -138,7 +136,7 @@ const ApiOptions = ({
 	setErrorMessage,
 }: ApiOptionsProps) => {
 	const { t } = useAppTranslation()
-	const { organizationAllowList, cloudIsAuthenticated, claudeCodeIsAuthenticated } = useExtensionState()
+	const { organizationAllowList, cloudIsAuthenticated } = useExtensionState()
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -341,7 +339,6 @@ const ApiOptions = ({
 				litellm: { field: "litellmModelId", default: litellmDefaultModelId },
 				anthropic: { field: "apiModelId", default: anthropicDefaultModelId },
 				cerebras: { field: "apiModelId", default: cerebrasDefaultModelId },
-				"claude-code": { field: "apiModelId", default: claudeCodeDefaultModelId },
 				"qwen-code": { field: "apiModelId", default: qwenCodeDefaultModelId },
 				"openai-native": { field: "apiModelId", default: openAiNativeDefaultModelId },
 				gemini: { field: "apiModelId", default: geminiDefaultModelId },
@@ -554,15 +551,6 @@ const ApiOptions = ({
 				/>
 			)}
 
-			{selectedProvider === "claude-code" && (
-				<ClaudeCode
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					simplifySettings={fromWelcomeView}
-					claudeCodeIsAuthenticated={claudeCodeIsAuthenticated}
-				/>
-			)}
-
 			{selectedProvider === "openai-native" && (
 				<OpenAI
 					apiConfiguration={apiConfiguration}
@@ -761,8 +749,7 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{/* Skip generic model picker for claude-code since it has its own in ClaudeCode.tsx */}
-			{selectedProviderModels.length > 0 && selectedProvider !== "claude-code" && (
+			{selectedProviderModels.length > 0 && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
