@@ -62,24 +62,6 @@ interface ThinkingBudgetProps {
 	modelInfo?: ModelInfo
 }
 
-// Helper function to determine if minimal option should be shown
-const shouldShowMinimalOption = (
-	provider: string | undefined,
-	modelId: string | undefined,
-	supportsEffort: boolean | undefined,
-): boolean => {
-	// Keep existing behavior for native OpenAI provider
-	const isGpt5Native = provider === "openai-native" && modelId?.startsWith("gpt-5")
-
-	// For ChatGPT Codex provider, only expose "minimal" for the regular gpt-5 model,
-	// not for the "gpt-5-codex" variant
-	const isGpt5CodexRegular = provider === "openai-native-codex" && modelId === "gpt-5"
-
-	const isOpenRouterWithEffort = provider === "openrouter" && supportsEffort === true
-
-	return !!(isGpt5Native || isGpt5CodexRegular || isOpenRouterWithEffort)
-}
-
 export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, modelInfo }: ThinkingBudgetProps) => {
 	const { t } = useAppTranslation()
 	const { id: selectedModelId } = useSelectedModel(apiConfiguration)

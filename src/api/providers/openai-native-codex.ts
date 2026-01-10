@@ -73,8 +73,8 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
-		if (this.options.enableGpt5ReasoningSummary === undefined) {
-			this.options.enableGpt5ReasoningSummary = true
+		if (this.options.enableResponsesReasoningSummary === undefined) {
+			this.options.enableResponsesReasoningSummary = true
 		}
 
 		// Credentials are resolved lazily via ensureAuthenticated() on first use.
@@ -100,13 +100,14 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		const cacheReadTokens =
 			usage.cache_read_input_tokens ?? usage.cache_read_tokens ?? usage.cached_tokens ?? cachedFromDetails ?? 0
 
-		const totalCost = calculateApiCostOpenAI(
+		const costResult = calculateApiCostOpenAI(
 			model.info,
 			totalInputTokens,
 			totalOutputTokens,
 			cacheWriteTokens,
 			cacheReadTokens,
 		)
+		const totalCost = costResult.totalCost
 
 		const reasoningTokens =
 			typeof usage.output_tokens_details?.reasoning_tokens === "number"
@@ -149,6 +150,10 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 				)
 			}
 		} catch (e: any) {
+			// Re-throw if already a localized error (e.g., oauthFileTooLarge)
+			if (e instanceof Error && e.message.includes("oauthFileTooLarge")) {
+				throw e
+			}
 			// Surface read failure with localized error (e.g., file missing or inaccessible)
 			const base = t("common:errors.openaiNativeCodex.oauthReadFailed", {
 				path: resolvedPath,
@@ -361,7 +366,7 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 			...(effectiveEffort && {
 				reasoning: {
 					effort: effectiveEffort,
-					...(this.options.enableGpt5ReasoningSummary ? { summary: "auto" as const } : {}),
+					...(this.options.enableResponsesReasoningSummary ? { summary: "auto" as const } : {}),
 				},
 			}),
 			// ChatGPT codex/responses does not support previous_response_id (stateless).
@@ -388,7 +393,8 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 		try {
 			const timeoutMs = getApiRequestTimeout()
 			const controller = new AbortController()
-			timeoutId = timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : undefined
+			timeoutId =
+				timeoutMs !== undefined && timeoutMs > 0 ? setTimeout(() => controller.abort(), timeoutMs) : undefined
 			const response = await fetch(url, {
 				method: "POST",
 				headers,
@@ -451,9 +457,6 @@ export class OpenAiNativeCodexHandler extends BaseProvider {
 								}
 								try {
 									const parsed = JSON.parse(data)
-									// Persist tier when available (parity with openai-native)
-									if (parsed.response?.service_tier) {
-									}
 									// Minimal content extraction similar to OpenAI Responses
 									if (parsed?.type === "response.text.delta" && parsed?.delta) {
 										hasContent = true
