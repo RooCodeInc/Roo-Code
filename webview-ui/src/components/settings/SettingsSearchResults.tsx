@@ -78,14 +78,14 @@ export function SettingsSearchResults({
 	// If no results, show a message
 	if (results.length === 0) {
 		return (
-			<div className="max-h-80 overflow-y-auto p-4 bg-vscode-sideBar-background text-vscode-descriptionForeground text-sm">
+			<div className="max-h-80 overflow-y-auto p-4 text-vscode-descriptionForeground text-sm">
 				{t("settings:search.noResults", { query })}
 			</div>
 		)
 	}
 
 	return (
-		<div className="max-h-80 overflow-y-auto bg-vscode-sideBar-background" role="listbox">
+		<div className="max-h-80 overflow-y-auto" role="listbox">
 			{Object.entries(groupedResults).map(([tab, tabResults]) => {
 				const Icon = sectionIconMap.get(tab as SectionName)
 

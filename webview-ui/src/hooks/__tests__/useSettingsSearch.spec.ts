@@ -30,6 +30,10 @@ vi.mock("@/i18n/locales/en/settings.json", () => ({
 				label: "Browser viewport",
 				description: "Configure the browser window size",
 			},
+			remote: {
+				label: "Use remote browser",
+				testButton: "Test Connection",
+			},
 		},
 		notifications: {
 			sound: {
@@ -40,6 +44,13 @@ vi.mock("@/i18n/locales/en/settings.json", () => ({
 		checkpoints: {
 			timeout: {
 				label: "Checkpoint timeout",
+			},
+		},
+		footer: {
+			settings: {
+				import: "Import settings",
+				export: "Export settings",
+				reset: "Reset settings",
 			},
 		},
 	},
@@ -57,9 +68,14 @@ describe("useSettingsSearch", () => {
 			"settings:browser.enable.description": "Allows Roo to use a browser",
 			"settings:browser.viewport.label": "Browser viewport",
 			"settings:browser.viewport.description": "Configure the browser window size",
+			"settings:browser.remote.label": "Use remote browser",
+			"settings:browser.remote.testButton": "Test Connection",
 			"settings:notifications.sound.label": "Sound effects",
 			"settings:notifications.sound.description": "Play sound when Roo needs attention",
 			"settings:checkpoints.timeout.label": "Checkpoint timeout",
+			"settings:footer.settings.import": "Import settings",
+			"settings:footer.settings.export": "Export settings",
+			"settings:footer.settings.reset": "Reset settings",
 		}
 
 		const mockT = (key: string) => mockTranslations[key] || key
@@ -206,6 +222,23 @@ describe("useSettingsSearch", () => {
 					expect(result.matchScore).toBe(15) // 10 for label + 5 for description
 				})
 			}
+		})
+
+		it("should calculate matchScore when matching extra text like buttons", () => {
+			const { result } = renderHook(() => useSettingsSearch("test connection"))
+
+			const buttonResult = result.current.find((r) => r.id === "browser.remote")
+			expect(buttonResult).toBeDefined()
+			expect(buttonResult?.matchScore).toBe(4) // extra match only
+		})
+
+		it("should return standalone footer strings with label match score", () => {
+			const { result } = renderHook(() => useSettingsSearch("export"))
+
+			const exportResult = result.current.find((r) => r.id === "footer.settings.export")
+			expect(exportResult).toBeDefined()
+			expect(exportResult?.tab).toBe("about")
+			expect(exportResult?.matchScore).toBe(10)
 		})
 
 		it("should have higher matchScore for label+description than description only", () => {

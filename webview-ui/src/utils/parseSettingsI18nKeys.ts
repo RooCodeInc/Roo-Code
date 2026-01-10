@@ -42,6 +42,8 @@ export interface ParsedSetting {
 	labelKey: string
 	/** i18n key for the description (optional), e.g., 'settings:browser.enable.description' */
 	descriptionKey?: string
+	/** Additional i18n keys within the same setting (e.g., button labels) to include in search */
+	extraTextKeys?: string[]
 }
 
 /**
@@ -117,6 +119,7 @@ const sectionToTabMapping: Record<string, SectionName | undefined> = {
 	// Additional mappings for nested sections that should map to specific tabs
 	advanced: "providers", // advanced settings are part of providers tab
 	codeIndex: "experimental", // codebase indexing is in experimental
+	footer: "about", // footer controls live in About tab
 }
 
 /**
@@ -136,6 +139,87 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
  */
 function isSettingObject(obj: Record<string, unknown>): boolean {
 	return typeof obj.label === "string"
+}
+
+/**
+ * Collects additional string keys within a setting that should be searchable (e.g., button labels).
+ * Skips nested setting objects (those with their own labels) so keys stay scoped to the current setting.
+ */
+function collectSearchableTextKeys(obj: Record<string, unknown>, path: string[], namespace: string): string[] {
+	const collected: string[] = []
+
+	const walk = (current: Record<string, unknown>, currentPath: string[]) => {
+		for (const [key, value] of Object.entries(current)) {
+			if (key === "label" || key === "description") {
+				continue
+			}
+
+			if (isPlainObject(value)) {
+				// If this nested object represents its own setting, don't collect from it here
+				if (isSettingObject(value)) {
+					continue
+				}
+				walk(value, [...currentPath, key])
+				continue
+			}
+
+			if (typeof value === "string") {
+				collected.push(`${namespace}:${[...currentPath, key].join(".")}`)
+			}
+		}
+	}
+
+	walk(obj, path)
+	return collected
+}
+
+/**
+ * Roots that should generate standalone searchable entries for string leaves, even when they are
+ * not full "settings" objects (i.e., they lack a label/description). This helps surface buttons
+ * like Import/Export/Reset in the About tab's footer controls.
+ */
+const standaloneStringRoots: Record<string, SectionName> = {
+	"footer.settings": "about",
+}
+
+function collectStandaloneStringEntries(
+	obj: unknown,
+	basePath: string[],
+	namespace: string,
+	tab: SectionName,
+	existingIds: Set<string>,
+	results: ParsedSetting[],
+): void {
+	const walk = (value: unknown, currentPath: string[]) => {
+		if (typeof value === "string") {
+			const id = currentPath.join(".")
+			if (!existingIds.has(id)) {
+				results.push({
+					id,
+					tab,
+					labelKey: `${namespace}:${id}`,
+					descriptionKey: undefined,
+				})
+				existingIds.add(id)
+			}
+			return
+		}
+
+		if (!isPlainObject(value)) {
+			return
+		}
+
+		// Don't recurse into nested setting objects to avoid duplicating their own entries
+		if (isSettingObject(value)) {
+			return
+		}
+
+		for (const [key, child] of Object.entries(value)) {
+			walk(child, [...currentPath, key])
+		}
+	}
+
+	walk(obj, basePath)
 }
 
 /**
@@ -193,6 +277,10 @@ function traverseTranslations(
 			tab,
 			labelKey,
 			descriptionKey,
+			...(() => {
+				const keys = collectSearchableTextKeys(obj, path, namespace)
+				return keys.length ? { extraTextKeys: keys } : {}
+			})(),
 		})
 	}
 
@@ -267,7 +355,25 @@ export function parseSettingsI18nKeys(
 		traverseTranslations(sectionValue, [sectionKey], namespace, results, sectionKey)
 	}
 
-	// Collect tabs that already have settings from parsing
+	// Add standalone string leaves for specific roots (e.g., footer.settings.import/export/reset)
+	const existingIds = new Set(results.map((r) => r.id))
+	for (const [rootPath, tab] of Object.entries(standaloneStringRoots)) {
+		const parts = rootPath.split(".")
+		let current: unknown = translations
+		for (const part of parts) {
+			if (!isPlainObject(current) || !(part in current)) {
+				current = undefined
+				break
+			}
+			current = (current as Record<string, unknown>)[part]
+		}
+
+		if (current !== undefined) {
+			collectStandaloneStringEntries(current, parts, namespace, tab, existingIds, results)
+		}
+	}
+
+	// Collect tabs that already have settings from parsing (including standalone entries)
 	const tabsWithSettings = new Set(results.map((r) => r.tab))
 
 	// Add special tab entries for tabs that don't have any parsed settings

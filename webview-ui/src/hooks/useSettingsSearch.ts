@@ -11,6 +11,8 @@ export interface SearchResult extends ParsedSetting {
 	translatedLabel: string
 	/** Translated description for the setting (if available) */
 	translatedDescription?: string
+	/** Translated extra texts (e.g., button labels) for the setting */
+	translatedExtraTexts?: string[]
 	/** Match score for sorting results (higher = better match) */
 	matchScore: number
 }
@@ -52,15 +54,19 @@ export function useSettingsSearch(query: string): SearchResult[] {
 				const translatedLabel = t(setting.labelKey)
 				// Get translated description if it exists
 				const translatedDescription = setting.descriptionKey ? t(setting.descriptionKey) : undefined
+				// Get translated extra texts (e.g., button labels) if they exist
+				const translatedExtraTexts = setting.extraTextKeys?.map((key) => t(key)).filter(Boolean)
 
 				// Check for matches (case-insensitive)
 				const labelMatch = translatedLabel.toLowerCase().includes(normalizedQuery)
 				const descriptionMatch = translatedDescription
 					? translatedDescription.toLowerCase().includes(normalizedQuery)
 					: false
+				const extraMatch =
+					translatedExtraTexts?.some((text) => text.toLowerCase().includes(normalizedQuery)) ?? false
 
 				// If no match, return null
-				if (!labelMatch && !descriptionMatch) {
+				if (!labelMatch && !descriptionMatch && !extraMatch) {
 					return null
 				}
 
@@ -72,11 +78,15 @@ export function useSettingsSearch(query: string): SearchResult[] {
 				if (descriptionMatch) {
 					matchScore += 5
 				}
+				if (extraMatch) {
+					matchScore += 4
+				}
 
 				return {
 					...setting,
 					translatedLabel,
 					translatedDescription,
+					translatedExtraTexts,
 					matchScore,
 				}
 			})

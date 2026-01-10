@@ -88,8 +88,10 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							variant="ghost"
 							className="px-1.5 -ml-2"
 							onClick={onDone}
-							aria-label={t("settings:back")}>
+							aria-label={t("history:done")}
+							data-testid="history-done-button">
 							<ArrowLeft />
+							<span className="sr-only">{t("history:done")}</span>
 						</Button>
 						<h3 className="text-vscode-foreground m-0">{t("history:history")}</h3>
 					</div>

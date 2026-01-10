@@ -91,6 +91,64 @@ describe("parseSettingsI18nKeys", () => {
 				descriptionKey: "settings:autoApprove.readOnly.outsideWorkspace.description",
 			})
 		})
+
+		it("should collect extra searchable text keys like button labels", () => {
+			const translations = {
+				browser: {
+					remote: {
+						label: "Use remote browser",
+						testButton: "Test Connection",
+					},
+				},
+			}
+
+			const results = parseSettingsI18nKeys(translations)
+
+			expect(results).toContainEqual({
+				id: "browser.remote",
+				tab: "browser",
+				labelKey: "settings:browser.remote.label",
+				descriptionKey: undefined,
+				extraTextKeys: ["settings:browser.remote.testButton"],
+			})
+		})
+
+		it("should create standalone entries for footer settings string leaves in about tab", () => {
+			const translations = {
+				footer: {
+					settings: {
+						import: "Import settings",
+						export: "Export settings",
+						reset: "Reset settings",
+					},
+				},
+			}
+
+			const results = parseSettingsI18nKeys(translations)
+
+			expect(results).toEqual(
+				expect.arrayContaining([
+					{
+						id: "footer.settings.import",
+						tab: "about",
+						labelKey: "settings:footer.settings.import",
+						descriptionKey: undefined,
+					},
+					{
+						id: "footer.settings.export",
+						tab: "about",
+						labelKey: "settings:footer.settings.export",
+						descriptionKey: undefined,
+					},
+					{
+						id: "footer.settings.reset",
+						tab: "about",
+						labelKey: "settings:footer.settings.reset",
+						descriptionKey: undefined,
+					},
+				]),
+			)
+		})
 	})
 
 	describe("special tab entries", () => {

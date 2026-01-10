@@ -109,8 +109,8 @@ describe("SettingsSearchResults", () => {
 				/>,
 			)
 
-			const buttons = screen.queryAllByRole("button")
-			expect(buttons).toHaveLength(0)
+			const options = screen.queryAllByRole("option")
+			expect(options).toHaveLength(0)
 		})
 	})
 
@@ -254,8 +254,8 @@ describe("SettingsSearchResults", () => {
 				/>,
 			)
 
-			// Label should be present - check that button exists
-			const checkpointButton = screen.getByRole("button")
+			// Label should be present - check that option exists
+			const checkpointButton = screen.getByRole("option")
 			expect(checkpointButton).toBeInTheDocument()
 			expect(checkpointButton.textContent).toContain("Checkpoint timeout")
 
@@ -264,7 +264,7 @@ describe("SettingsSearchResults", () => {
 			expect(descriptionElements).toHaveLength(0)
 		})
 
-		it("should render results as clickable buttons", () => {
+		it("should render results as clickable listbox options", () => {
 			const onSelectResult = vi.fn()
 			render(
 				<SettingsSearchResults
@@ -275,8 +275,8 @@ describe("SettingsSearchResults", () => {
 				/>,
 			)
 
-			const buttons = screen.getAllByRole("button")
-			expect(buttons.length).toBe(mockBrowserResults.length)
+			const options = screen.getAllByRole("option")
+			expect(options.length).toBe(mockBrowserResults.length)
 		})
 	})
 
@@ -292,9 +292,9 @@ describe("SettingsSearchResults", () => {
 				/>,
 			)
 
-			// Click the first button (the result item itself is a button)
-			const buttons = screen.getAllByRole("button")
-			fireEvent.click(buttons[0])
+			// Click the first option (the result item itself is a button with role option)
+			const options = screen.getAllByRole("option")
+			fireEvent.click(options[0])
 
 			expect(onSelectResult).toHaveBeenCalledTimes(1)
 			expect(onSelectResult).toHaveBeenCalledWith(mockBrowserResults[0])
@@ -311,14 +311,14 @@ describe("SettingsSearchResults", () => {
 				/>,
 			)
 
-			const buttons = screen.getAllByRole("button")
+			const options = screen.getAllByRole("option")
 
 			// Click first result
-			fireEvent.click(buttons[0])
+			fireEvent.click(options[0])
 			expect(onSelectResult).toHaveBeenLastCalledWith(mockBrowserResults[0])
 
 			// Click second result
-			fireEvent.click(buttons[1])
+			fireEvent.click(options[1])
 			expect(onSelectResult).toHaveBeenLastCalledWith(mockBrowserResults[1])
 
 			expect(onSelectResult).toHaveBeenCalledTimes(2)
@@ -429,8 +429,8 @@ describe("SettingsSearchResults", () => {
 			expect(screen.getByText("Checkpoint timeout")).toBeInTheDocument()
 
 			// Should have correct number of clickable results
-			const buttons = screen.getAllByRole("button")
-			expect(buttons).toHaveLength(allResults.length)
+			const options = screen.getAllByRole("option")
+			expect(options).toHaveLength(allResults.length)
 		})
 	})
 })

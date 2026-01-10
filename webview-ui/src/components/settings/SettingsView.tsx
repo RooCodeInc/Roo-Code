@@ -12,7 +12,6 @@ import React, {
 import {
 	CheckCheck,
 	SquareMousePointer,
-	Webhook,
 	GitBranch,
 	Bell,
 	Database,
@@ -675,6 +674,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
 						<Button variant="ghost" className="px-1.5 -ml-2" onClick={() => checkUnsaveChanges(onDone)}>
 							<ArrowLeft />
+							<span className="sr-only">{t("settings:common.done")}</span>
 						</Button>
 					</StandardTooltip>
 					<h3 className="text-vscode-foreground m-0 flex-shrink-0">{t("settings:header.title")}</h3>
@@ -689,7 +689,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						inputRef={searchInputRef}
 					/>
 					{searchQuery && isSearchFocused && (
-						<div className="absolute top-full w-full min-w-50 right-0 mt-1 bg-vscode-dropdown-background border border-vscode-dropdown-border rounded shadow-lg z-50">
+						<div className="absolute top-full w-full min-w-50 right-0 mt-1 border border-vscode-dropdown-border bg-vscode-sideBar-background rounded-xl overflow-clip shadow-lg z-50">
 							<SettingsSearchResults
 								results={searchResults}
 								query={searchQuery}
@@ -784,12 +784,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					{/* Providers Section */}
 					{activeTab === "providers" && (
 						<div>
-							<SectionHeader>
-								<div className="flex items-center gap-2">
-									<Webhook className="w-4" />
-									<div>{t("settings:sections.providers")}</div>
-								</div>
-							</SectionHeader>
+							<SectionHeader>{t("settings:sections.providers")}</SectionHeader>
 
 							<Section>
 								<ApiConfigManager

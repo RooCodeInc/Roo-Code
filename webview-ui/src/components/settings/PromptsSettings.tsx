@@ -1,6 +1,5 @@
 import { useState, useEffect, FormEvent } from "react"
 import { VSCodeTextArea, VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { MessageSquare } from "lucide-react"
 
 import { supportPrompt, SupportPromptType } from "@roo/support-prompt"
 
@@ -137,14 +136,10 @@ const PromptsSettings = ({
 
 	return (
 		<div>
-			<SectionHeader description={t("settings:prompts.description")}>
-				<div className="flex items-center gap-2">
-					<MessageSquare className="w-4" />
-					<div>{t("settings:sections.prompts")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.prompts")}</SectionHeader>
 
 			<Section>
+				<p className="text-sm text-vscode-descriptionForeground">{t("settings:prompts.description")}</p>
 				<div>
 					<Select
 						value={activeSupportOption}
