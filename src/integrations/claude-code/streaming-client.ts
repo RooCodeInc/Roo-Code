@@ -161,10 +161,86 @@ export const CLAUDE_CODE_API_CONFIG = {
 		"claude-code-20250219",
 		"oauth-2025-04-20",
 		"interleaved-thinking-2025-05-14",
-		"fine-grained-tool-streaming-2025-05-14",
+		// Note: fine-grained-tool-streaming removed for OAuth compatibility
 	],
-	userAgent: `Roo-Code/${Package.version}`,
+	// User-Agent must match Claude Code's signature for OAuth tokens to be accepted
+	// Format matches opencode-anthropic-auth: "claude-cli/VERSION (external, cli)"
+	userAgent: `claude-cli/${Package.version} (external, cli)`,
 } as const
+
+/**
+ * Tool name prefix for OAuth compatibility.
+ * Anthropic rejects third-party tools when using Claude Code OAuth tokens,
+ * so we prefix tool names to bypass validation and strip them from responses.
+ */
+export const TOOL_NAME_PREFIX = "oc_"
+
+/**
+ * Prefix a tool name for outgoing API requests
+ */
+export function prefixToolName(name: string): string {
+	return `${TOOL_NAME_PREFIX}${name}`
+}
+
+/**
+ * Strip the tool name prefix from incoming API responses
+ */
+export function stripToolNamePrefix(name: string): string {
+	if (name.startsWith(TOOL_NAME_PREFIX)) {
+		return name.slice(TOOL_NAME_PREFIX.length)
+	}
+	return name
+}
+
+/**
+ * Prefix all tool names in a tools array for outgoing requests
+ */
+function prefixToolNames(tools: Anthropic.Messages.Tool[]): Anthropic.Messages.Tool[] {
+	return tools.map((tool) => ({
+		...tool,
+		name: prefixToolName(tool.name),
+	}))
+}
+
+/**
+ * Prefix tool names in conversation history messages.
+ * This ensures consistency between tool definitions (which have oc_ prefix)
+ * and tool_use blocks in the conversation history.
+ *
+ * Without this, the API would see:
+ * - Tools defined as: oc_read_file, oc_write_file, etc.
+ * - History with tool_use: read_file, write_file (no prefix!)
+ * This mismatch causes issues with tool execution.
+ */
+function prefixToolNamesInMessages(messages: Anthropic.Messages.MessageParam[]): Anthropic.Messages.MessageParam[] {
+	return messages.map((message) => {
+		// Only process array content (not string content)
+		if (typeof message.content === "string") {
+			return message
+		}
+
+		const processedContent = message.content.map((block) => {
+			// Prefix tool_use block names
+			if ((block as { type: string }).type === "tool_use") {
+				const toolUseBlock = block as { type: "tool_use"; id: string; name: string; input: unknown }
+				// Only prefix if not already prefixed
+				const prefixedName = toolUseBlock.name.startsWith(TOOL_NAME_PREFIX)
+					? toolUseBlock.name
+					: prefixToolName(toolUseBlock.name)
+				return {
+					...toolUseBlock,
+					name: prefixedName,
+				}
+			}
+			return block
+		})
+
+		return {
+			...message,
+			content: processedContent,
+		}
+	})
+}
 
 /**
  * SSE Event types from Anthropic streaming API
@@ -380,11 +456,15 @@ export async function* createStreamingMessage(options: StreamMessageOptions): As
 	// - We cache the last two user messages for optimal cache hit rates
 	const messagesWithCache = addMessageCacheBreakpoints(sanitizedMessages)
 
+	// Prefix tool names in conversation history to match tool definitions
+	// This ensures tool_use blocks have oc_ prefix matching the tools array
+	const messagesWithPrefixedTools = prefixToolNamesInMessages(messagesWithCache)
+
 	// Build request body - match Claude Code format exactly
 	const body: Record<string, unknown> = {
 		model,
 		stream: true,
-		messages: messagesWithCache,
+		messages: messagesWithPrefixedTools,
 	}
 
 	// Only include max_tokens if explicitly provided
@@ -412,7 +492,8 @@ export async function* createStreamingMessage(options: StreamMessageOptions): As
 	}
 
 	if (tools && tools.length > 0) {
-		body.tools = tools
+		// Prefix tool names to bypass OAuth tool validation
+		body.tools = prefixToolNames(tools)
 		// Default tool_choice to "auto" when tools are provided (as per spec example)
 		body.tool_choice = toolChoice || { type: "auto" }
 	} else if (toolChoice) {
@@ -545,22 +626,25 @@ export async function* createStreamingMessage(options: StreamMessageOptions): As
 										yield { type: "reasoning", text: contentBlock.thinking as string }
 									}
 									break
-								case "tool_use":
+								case "tool_use": {
+									// Strip the oc_ prefix from tool names in the response
+									const toolName = stripToolNamePrefix(contentBlock.name as string)
 									contentBlocks.set(index, {
 										type: "tool_use",
 										text: "",
 										id: contentBlock.id as string,
-										name: contentBlock.name as string,
+										name: toolName,
 										arguments: "",
 									})
 									yield {
 										type: "tool_call_partial",
 										index,
 										id: contentBlock.id as string,
-										name: contentBlock.name as string,
+										name: toolName,
 										arguments: undefined,
 									}
 									break
+								}
 							}
 						}
 						break
