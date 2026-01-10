@@ -122,7 +122,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
+				// When openAiStrictToolMessageOrdering is enabled, merge text content after tool results
+				// into the last tool message. This fixes "user after tool" errors with NVIDIA NIM,
+				// OpenRouter, and other strict OpenAI-compatible APIs.
+				const mergeToolResultText = this.options.openAiStrictToolMessageOrdering ?? false
+				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText })]
 
 				if (modelInfo.supportsPromptCache) {
 					// Note: the following logic is copied from openrouter:
@@ -224,11 +228,15 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				yield this.processUsageMetrics(lastUsage, modelInfo)
 			}
 		} else {
+			// When openAiStrictToolMessageOrdering is enabled, merge text content after tool results
+			// into the last tool message. This fixes "user after tool" errors with NVIDIA NIM,
+			// OpenRouter, and other strict OpenAI-compatible APIs.
+			const mergeToolResultText = this.options.openAiStrictToolMessageOrdering ?? false
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
 				messages: deepseekReasoner
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-					: [systemMessage, ...convertToOpenAiMessages(messages)],
+					: [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText })],
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 				...(metadata?.toolProtocol === "native" && {
@@ -342,6 +350,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		if (this.options.openAiStreamingEnabled ?? true) {
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
 
+			// When openAiStrictToolMessageOrdering is enabled, merge text content after tool results
+			// into the last tool message. This fixes "user after tool" errors with NVIDIA NIM,
+			// OpenRouter, and other strict OpenAI-compatible APIs.
+			const mergeToolResultText = this.options.openAiStrictToolMessageOrdering ?? false
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 				model: modelId,
 				messages: [
@@ -349,7 +361,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages),
+					...convertToOpenAiMessages(messages, { mergeToolResultText }),
 				],
 				stream: true,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -379,6 +391,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			yield* this.handleStreamResponse(stream)
 		} else {
+			// When openAiStrictToolMessageOrdering is enabled, merge text content after tool results
+			// into the last tool message. This fixes "user after tool" errors with NVIDIA NIM,
+			// OpenRouter, and other strict OpenAI-compatible APIs.
+			const mergeToolResultText = this.options.openAiStrictToolMessageOrdering ?? false
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
 				messages: [
@@ -386,7 +402,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages),
+					...convertToOpenAiMessages(messages, { mergeToolResultText }),
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,

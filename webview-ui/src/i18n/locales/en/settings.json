@@ -531,7 +531,9 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximum number of output tokens for Claude Code responses. Default is 8000."
-		}
+		},
+		"openAiStrictToolMessageOrdering": "Strict tool message ordering",
+		"openAiStrictToolMessageOrderingDescription": "Enable this if your API returns errors like \"Unexpected role 'user' after role 'tool'\". This merges text content into tool messages to fix compatibility with NVIDIA NIM, OpenRouter, and other strict OpenAI-compatible APIs."
 	},
 	"browser": {
 		"enable": {
