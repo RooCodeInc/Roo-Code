@@ -111,7 +111,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			let convertedMessages
 
 			if (deepseekReasoner) {
-				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
+					mergeToolResultText: strictToolMessageOrdering,
+				})
 			} else {
 				if (modelInfo.supportsPromptCache) {
 					systemMessage = {
@@ -235,7 +237,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
 				messages: deepseekReasoner
-					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages], {
+							mergeToolResultText: strictToolMessageOrdering,
+						})
 					: [
 							systemMessage,
 							...convertToOpenAiMessages(messages, { mergeToolResultText: strictToolMessageOrdering }),
