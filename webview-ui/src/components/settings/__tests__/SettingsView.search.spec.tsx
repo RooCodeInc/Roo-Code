@@ -1,3 +1,4 @@
+import { forwardRef } from "react"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { vi, describe, it, beforeEach } from "vitest"
 
@@ -140,15 +141,18 @@ vi.mock("@/components/ui", () => ({
 		</button>
 	),
 	StandardTooltip: ({ children }: any) => <>{children}</>,
-	Input: ({ value, onChange, onFocus, onBlur, onKeyDown, "data-testid": dataTestId }: any) => (
-		<input
-			value={value}
-			onChange={onChange}
-			onFocus={onFocus}
-			onBlur={onBlur}
-			onKeyDown={onKeyDown}
-			data-testid={dataTestId}
-		/>
+	Input: forwardRef<HTMLInputElement, any>(
+		({ value, onChange, onFocus, onBlur, onKeyDown, "data-testid": dataTestId }, ref) => (
+			<input
+				ref={ref}
+				value={value}
+				onChange={onChange}
+				onFocus={onFocus}
+				onBlur={onBlur}
+				onKeyDown={onKeyDown}
+				data-testid={dataTestId}
+			/>
+		),
 	),
 	AlertDialog: ({ children }: any) => <div>{children}</div>,
 	AlertDialogContent: ({ children }: any) => <div>{children}</div>,
@@ -241,5 +245,23 @@ describe("SettingsView search interactions", () => {
 		fireEvent.keyDown(input, { key: "Enter" })
 		expect(screen.queryByRole("listbox")).not.toBeInTheDocument()
 		expect(input.value).toBe("")
+	})
+
+	it("keeps input focused after selecting a result to allow immediate follow-up search", async () => {
+		render(<SettingsView onDone={vi.fn()} />)
+
+		const input = screen.getByTestId("settings-search-input") as HTMLInputElement
+		fireEvent.focus(input)
+		fireEvent.change(input, { target: { value: "browser" } })
+
+		await screen.findByRole("listbox")
+		const options = screen.getAllByRole("option")
+		fireEvent.mouseDown(options[0])
+		fireEvent.click(options[0])
+
+		// Second search still produces results
+		fireEvent.change(input, { target: { value: "browser" } })
+		const secondListbox = await screen.findByRole("listbox")
+		expect(secondListbox).toBeInTheDocument()
 	})
 })

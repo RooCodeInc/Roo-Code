@@ -136,6 +136,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	)
 	const [searchQuery, setSearchQuery] = useState("")
 	const [isSearchFocused, setIsSearchFocused] = useState(false)
+	const searchInputRef = useRef<HTMLInputElement | null>(null)
 	const [highlightedResultId, setHighlightedResultId] = useState<string | undefined>(undefined)
 
 	const scrollPositions = useRef<Record<SectionName, number>>(
@@ -590,9 +591,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const handleSelectResult = useCallback(
 		(result: SearchResult) => {
 			setSearchQuery("")
-			setIsSearchFocused(false)
 			setHighlightedResultId(undefined)
 			handleTabChange(result.tab)
+			// Keep focus in the input so dropdown remains open for follow-up search
+			setIsSearchFocused(true)
+			requestAnimationFrame(() => searchInputRef.current?.focus())
 			// Small delay to allow tab switch and render
 			setTimeout(() => scrollToSetting(result.id), 150)
 		},
@@ -683,6 +686,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						onFocus={() => setIsSearchFocused(true)}
 						onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
 						onKeyDown={handleSearchKeyDown}
+						inputRef={searchInputRef}
 					/>
 					{searchQuery && isSearchFocused && (
 						<div className="absolute top-full w-full min-w-50 right-0 mt-1 bg-vscode-dropdown-background border border-vscode-dropdown-border rounded shadow-lg z-50">
