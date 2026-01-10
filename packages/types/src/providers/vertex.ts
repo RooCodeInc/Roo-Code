@@ -523,6 +523,15 @@ export const vertexModels = {
 		outputPrice: 1.0,
 		description: "Qwen3 235B A22B Instruct. Available in us-south1",
 	},
+	"moonshotai/kimi-k2-thinking-maas": {
+		maxTokens: 16_384,
+		contextWindow: 262_144,
+		supportsPromptCache: false,
+		supportsImages: false,
+		inputPrice: 0.6,
+		outputPrice: 2.5,
+		description: "Kimi K2 Thinking Model with 256K context window.",
+	},
 } as const satisfies Record<string, ModelInfo>
 
 // Vertex AI models that support 1M context window beta
