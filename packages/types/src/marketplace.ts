@@ -86,8 +86,3 @@ export const installMarketplaceItemOptionsSchema = z.object({
 })
 
 export type InstallMarketplaceItemOptions = z.infer<typeof installMarketplaceItemOptionsSchema>
-
-export interface MarketplaceInstalledMetadata {
-	project: Record<string, { type: string }>
-	global: Record<string, { type: string }>
-}

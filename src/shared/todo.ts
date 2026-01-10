@@ -1,5 +1,4 @@
 import { ClineMessage } from "@roo-code/types"
-
 export function getLatestTodo(clineMessages: ClineMessage[]) {
 	const todos = clineMessages
 		.filter(
@@ -16,7 +15,6 @@ export function getLatestTodo(clineMessages: ClineMessage[]) {
 		.filter((item) => item && item.tool === "updateTodoList" && Array.isArray(item.todos))
 		.map((item) => item.todos)
 		.pop()
-
 	if (todos) {
 		return todos
 	} else {

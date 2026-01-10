@@ -41,23 +41,20 @@ describe("getApiRequestTimeout", () => {
 		expect(timeout).toBe(1200000) // 1200 seconds in milliseconds
 	})
 
-	it("should return undefined for zero timeout (disables timeout)", () => {
+	it("should handle zero timeout (no timeout)", () => {
 		mockGetConfig.mockReturnValue(0)
 
 		const timeout = getApiRequestTimeout()
 
-		// Zero means "no timeout" - return undefined so SDK uses its default
-		// (OpenAI SDK interprets 0 as "abort immediately", so we avoid that)
-		expect(timeout).toBeUndefined()
+		expect(timeout).toBe(0) // No timeout
 	})
 
-	it("should return undefined for negative values (disables timeout)", () => {
+	it("should handle negative values by clamping to 0", () => {
 		mockGetConfig.mockReturnValue(-100)
 
 		const timeout = getApiRequestTimeout()
 
-		// Negative values also mean "no timeout" - return undefined
-		expect(timeout).toBeUndefined()
+		expect(timeout).toBe(0) // Negative values should be clamped to 0
 	})
 
 	it("should handle null by using default", () => {

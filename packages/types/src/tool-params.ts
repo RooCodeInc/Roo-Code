@@ -23,12 +23,11 @@ export interface Size {
 }
 
 export interface BrowserActionParams {
-	action: "launch" | "click" | "hover" | "type" | "scroll_down" | "scroll_up" | "resize" | "close" | "screenshot"
+	action: "launch" | "click" | "hover" | "type" | "scroll_down" | "scroll_up" | "resize" | "close"
 	url?: string
 	coordinate?: Coordinate
 	size?: Size
 	text?: string
-	path?: string
 }
 
 export interface GenerateImageParams {

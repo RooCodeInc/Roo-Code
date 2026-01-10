@@ -3,7 +3,12 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { type FeatherlessModelId, featherlessDefaultModelId, featherlessModels } from "@roo-code/types"
+import {
+	type FeatherlessModelId,
+	featherlessDefaultModelId,
+	featherlessModels,
+	DEEP_SEEK_DEFAULT_TEMPERATURE,
+} from "@roo-code/types"
 
 import { FeatherlessHandler } from "../featherless"
 
@@ -71,7 +76,7 @@ describe("FeatherlessHandler", () => {
 		expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ apiKey: featherlessApiKey }))
 	})
 
-	it("should handle reasoning format from models that use <think> tags", async () => {
+	it("should handle DeepSeek R1 reasoning format", async () => {
 		// Override the mock for this specific test
 		mockCreate.mockImplementationOnce(async () => ({
 			[Symbol.asyncIterator]: async function* () {
@@ -108,7 +113,7 @@ describe("FeatherlessHandler", () => {
 		const systemPrompt = "You are a helpful assistant."
 		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hi" }]
 		vi.spyOn(handler, "getModel").mockReturnValue({
-			id: "some-reasoning-model",
+			id: "deepseek-ai/DeepSeek-R1-0528",
 			info: { maxTokens: 1024, temperature: 0.7 },
 		} as any)
 
@@ -149,7 +154,7 @@ describe("FeatherlessHandler", () => {
 	})
 
 	it("should return specified model when valid model is provided", () => {
-		const testModelId: FeatherlessModelId = "moonshotai/Kimi-K2-Instruct"
+		const testModelId: FeatherlessModelId = "deepseek-ai/DeepSeek-R1-0528"
 		const handlerWithModel = new FeatherlessHandler({
 			apiModelId: testModelId,
 			featherlessApiKey: "test-featherless-api-key",
@@ -220,8 +225,8 @@ describe("FeatherlessHandler", () => {
 		expect(firstChunk.value).toMatchObject({ type: "usage", inputTokens: 10, outputTokens: 20 })
 	})
 
-	it("createMessage should pass correct parameters to Featherless client", async () => {
-		const modelId: FeatherlessModelId = "moonshotai/Kimi-K2-Instruct"
+	it("createMessage should pass correct parameters to Featherless client for DeepSeek R1", async () => {
+		const modelId: FeatherlessModelId = "deepseek-ai/DeepSeek-R1-0528"
 
 		// Clear previous mocks and set up new implementation
 		mockCreate.mockClear()
@@ -242,9 +247,27 @@ describe("FeatherlessHandler", () => {
 		const messageGenerator = handlerWithModel.createMessage(systemPrompt, messages)
 		await messageGenerator.next()
 
-		expect(mockCreate).toHaveBeenCalled()
-		const callArgs = mockCreate.mock.calls[0][0]
-		expect(callArgs.model).toBe(modelId)
+		expect(mockCreate).toHaveBeenCalledWith(
+			expect.objectContaining({
+				model: modelId,
+				messages: [
+					{
+						role: "user",
+						content: `${systemPrompt}\n${messages[0].content}`,
+					},
+				],
+			}),
+		)
+	})
+
+	it("should apply DeepSeek default temperature for R1 models", () => {
+		const testModelId: FeatherlessModelId = "deepseek-ai/DeepSeek-R1-0528"
+		const handlerWithModel = new FeatherlessHandler({
+			apiModelId: testModelId,
+			featherlessApiKey: "test-featherless-api-key",
+		})
+		const model = handlerWithModel.getModel()
+		expect(model.info.temperature).toBe(DEEP_SEEK_DEFAULT_TEMPERATURE)
 	})
 
 	it("should use default temperature for non-DeepSeek models", () => {

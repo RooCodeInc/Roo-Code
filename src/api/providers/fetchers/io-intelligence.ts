@@ -1,7 +1,9 @@
 import axios from "axios"
 import { z } from "zod"
 
-import { type ModelInfo, type ModelRecord, IO_INTELLIGENCE_CACHE_DURATION } from "@roo-code/types"
+import { type ModelInfo, IO_INTELLIGENCE_CACHE_DURATION } from "@roo-code/types"
+
+import type { ModelRecord } from "../../../shared/api"
 
 const ioIntelligenceModelSchema = z.object({
 	id: z.string(),

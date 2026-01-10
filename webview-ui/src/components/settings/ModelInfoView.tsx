@@ -14,7 +14,6 @@ type ModelInfoViewProps = {
 	modelInfo?: ModelInfo
 	isDescriptionExpanded: boolean
 	setIsDescriptionExpanded: (isExpanded: boolean) => void
-	hidePricing?: boolean
 }
 
 export const ModelInfoView = ({
@@ -23,7 +22,6 @@ export const ModelInfoView = ({
 	modelInfo,
 	isDescriptionExpanded,
 	setIsDescriptionExpanded,
-	hidePricing,
 }: ModelInfoViewProps) => {
 	const { t } = useAppTranslation()
 
@@ -97,8 +95,7 @@ export const ModelInfoView = ({
 		),
 	].filter(Boolean)
 
-	// Show pricing info unless hidePricing is set or tier pricing table is shown
-	const infoItems = shouldShowTierPricingTable || hidePricing ? baseInfoItems : [...baseInfoItems, ...priceInfoItems]
+	const infoItems = shouldShowTierPricingTable ? baseInfoItems : [...baseInfoItems, ...priceInfoItems]
 
 	return (
 		<>
@@ -116,7 +113,7 @@ export const ModelInfoView = ({
 				))}
 			</div>
 
-			{shouldShowTierPricingTable && !hidePricing && (
+			{shouldShowTierPricingTable && (
 				<div className="mt-2">
 					<div className="text-xs text-vscode-descriptionForeground mb-1">
 						{t("settings:serviceTier.pricingTableTitle")}

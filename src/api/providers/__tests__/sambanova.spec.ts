@@ -1,5 +1,8 @@
 // npx vitest run src/api/providers/__tests__/sambanova.spec.ts
 
+// Mock vscode first to avoid import errors
+vitest.mock("vscode", () => ({}))
+
 import OpenAI from "openai"
 import { Anthropic } from "@anthropic-ai/sdk"
 

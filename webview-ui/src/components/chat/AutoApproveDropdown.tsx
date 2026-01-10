@@ -31,6 +31,7 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 	const {
 		autoApprovalEnabled,
 		setAutoApprovalEnabled,
+		alwaysApproveResubmit,
 		setAlwaysAllowReadOnly,
 		setAlwaysAllowWrite,
 		setAlwaysAllowExecute,
@@ -38,10 +39,21 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 		setAlwaysAllowMcp,
 		setAlwaysAllowModeSwitch,
 		setAlwaysAllowSubtasks,
+		setAlwaysApproveResubmit,
 		setAlwaysAllowFollowupQuestions,
+		setAlwaysAllowUpdateTodoList,
 	} = useExtensionState()
 
-	const toggles = useAutoApprovalToggles()
+	const baseToggles = useAutoApprovalToggles()
+
+	// Include alwaysApproveResubmit in addition to the base toggles.
+	const toggles = React.useMemo(
+		() => ({
+			...baseToggles,
+			alwaysApproveResubmit: alwaysApproveResubmit,
+		}),
+		[baseToggles, alwaysApproveResubmit],
+	)
 
 	const onAutoApproveToggle = React.useCallback(
 		(key: AutoApproveSetting, value: boolean) => {
@@ -69,8 +81,14 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 				case "alwaysAllowSubtasks":
 					setAlwaysAllowSubtasks(value)
 					break
+				case "alwaysApproveResubmit":
+					setAlwaysApproveResubmit(value)
+					break
 				case "alwaysAllowFollowupQuestions":
 					setAlwaysAllowFollowupQuestions(value)
+					break
+				case "alwaysAllowUpdateTodoList":
+					setAlwaysAllowUpdateTodoList(value)
 					break
 			}
 
@@ -89,7 +107,9 @@ export const AutoApproveDropdown = ({ disabled = false, triggerClassName = "" }:
 			setAlwaysAllowMcp,
 			setAlwaysAllowModeSwitch,
 			setAlwaysAllowSubtasks,
+			setAlwaysApproveResubmit,
 			setAlwaysAllowFollowupQuestions,
+			setAlwaysAllowUpdateTodoList,
 			setAutoApprovalEnabled,
 		],
 	)

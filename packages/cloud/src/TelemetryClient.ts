@@ -69,8 +69,6 @@ abstract class BaseTelemetryClient implements TelemetryClient {
 
 	public abstract capture(event: TelemetryEvent): Promise<void>
 
-	public async captureException(_error: Error, _additionalProperties?: Record<string, unknown>): Promise<void> {}
-
 	public setProvider(provider: TelemetryPropertiesProvider): void {
 		this.providerRef = new WeakRef(provider)
 	}

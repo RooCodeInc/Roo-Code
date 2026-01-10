@@ -2,8 +2,6 @@ import {
 	type ProviderName,
 	type ProviderSettings,
 	type ModelInfo,
-	type ModelRecord,
-	type RouterModels,
 	anthropicModels,
 	bedrockModels,
 	cerebrasModels,
@@ -20,7 +18,6 @@ import {
 	vscodeLlmModels,
 	vscodeLlmDefaultModelId,
 	claudeCodeModels,
-	normalizeClaudeCodeModelId,
 	sambaNovaModels,
 	doubaoModels,
 	internationalZAiModels,
@@ -30,13 +27,12 @@ import {
 	ioIntelligenceModels,
 	basetenModels,
 	qwenCodeModels,
-	litellmDefaultModelInfo,
-	lMStudioDefaultModelInfo,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
-	NATIVE_TOOL_DEFAULTS,
 } from "@roo-code/types"
+
+import type { ModelRecord, RouterModels } from "@roo/api"
 
 import { useRouterModels } from "./useRouterModels"
 import { useOpenRouterModelProviders } from "./useOpenRouterModelProviders"
@@ -158,23 +154,22 @@ function getSelectedModel({
 		}
 		case "requesty": {
 			const id = getValidatedModelId(apiConfiguration.requestyModelId, routerModels.requesty, defaultModelId)
-			const routerInfo = routerModels.requesty?.[id]
-			// Merge native tool defaults for cached models that may lack these fields
-			const info = routerInfo ? { ...NATIVE_TOOL_DEFAULTS, ...routerInfo } : undefined
+			const info = routerModels.requesty?.[id]
+			return { id, info }
+		}
+		case "glama": {
+			const id = getValidatedModelId(apiConfiguration.glamaModelId, routerModels.glama, defaultModelId)
+			const info = routerModels.glama?.[id]
 			return { id, info }
 		}
 		case "unbound": {
 			const id = getValidatedModelId(apiConfiguration.unboundModelId, routerModels.unbound, defaultModelId)
-			const routerInfo = routerModels.unbound?.[id]
-			// Merge native tool defaults for cached models that may lack these fields
-			const info = routerInfo ? { ...NATIVE_TOOL_DEFAULTS, ...routerInfo } : undefined
+			const info = routerModels.unbound?.[id]
 			return { id, info }
 		}
 		case "litellm": {
 			const id = getValidatedModelId(apiConfiguration.litellmModelId, routerModels.litellm, defaultModelId)
-			const routerInfo = routerModels.litellm?.[id]
-			// Merge native tool defaults for cached models that may lack these fields
-			const info = routerInfo ? { ...NATIVE_TOOL_DEFAULTS, ...routerInfo } : litellmDefaultModelInfo
+			const info = routerModels.litellm?.[id]
 			return { id, info }
 		}
 		case "xai": {
@@ -281,13 +276,7 @@ function getSelectedModel({
 		}
 		case "openai": {
 			const id = apiConfiguration.openAiModelId ?? ""
-			const customInfo = apiConfiguration?.openAiCustomModelInfo
-			// Only merge native tool call defaults, not prices or other model-specific info
-			const nativeToolDefaults = {
-				supportsNativeTools: openAiModelInfoSaneDefaults.supportsNativeTools,
-				defaultToolProtocol: openAiModelInfoSaneDefaults.defaultToolProtocol,
-			}
-			const info = customInfo ? { ...nativeToolDefaults, ...customInfo } : openAiModelInfoSaneDefaults
+			const info = apiConfiguration?.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
 			return { id, info }
 		}
 		case "ollama": {
@@ -308,16 +297,10 @@ function getSelectedModel({
 		}
 		case "lmstudio": {
 			const id = apiConfiguration.lmStudioModelId ?? ""
-			const modelInfo = lmStudioModels && lmStudioModels[apiConfiguration.lmStudioModelId!]
-			// Only merge native tool call defaults, not prices or other model-specific info
-			const nativeToolDefaults = {
-				supportsNativeTools: lMStudioDefaultModelInfo.supportsNativeTools,
-				defaultToolProtocol: lMStudioDefaultModelInfo.defaultToolProtocol,
-			}
-			const info = modelInfo ? { ...nativeToolDefaults, ...modelInfo } : undefined
+			const info = lmStudioModels && lmStudioModels[apiConfiguration.lmStudioModelId!]
 			return {
 				id,
-				info,
+				info: info || undefined,
 			}
 		}
 		case "deepinfra": {
@@ -335,11 +318,9 @@ function getSelectedModel({
 		}
 		case "claude-code": {
 			// Claude Code models extend anthropic models but with images and prompt caching disabled
-			// Normalize legacy model IDs to current canonical model IDs for backward compatibility
-			const rawId = apiConfiguration.apiModelId ?? defaultModelId
-			const normalizedId = normalizeClaudeCodeModelId(rawId)
-			const info = claudeCodeModels[normalizedId]
-			return { id: normalizedId, info: { ...openAiModelInfoSaneDefaults, ...info } }
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = claudeCodeModels[id as keyof typeof claudeCodeModels]
+			return { id, info: { ...openAiModelInfoSaneDefaults, ...info } }
 		}
 		case "cerebras": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
@@ -391,9 +372,10 @@ function getSelectedModel({
 			return { id, info }
 		}
 		// case "anthropic":
+		// case "human-relay":
 		// case "fake-ai":
 		default: {
-			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "fake-ai"
+			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
 

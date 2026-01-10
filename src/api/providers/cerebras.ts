@@ -16,9 +16,6 @@ import { t } from "../../i18n"
 const CEREBRAS_BASE_URL = "https://api.cerebras.ai/v1"
 const CEREBRAS_DEFAULT_TEMPERATURE = 0
 
-const CEREBRAS_INTEGRATION_HEADER = "X-Cerebras-3rd-Party-Integration"
-const CEREBRAS_INTEGRATION_NAME = "roocode"
-
 export class CerebrasHandler extends BaseProvider implements SingleCompletionHandler {
 	private apiKey: string
 	private providerModels: typeof cerebrasModels
@@ -39,12 +36,11 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 	}
 
 	getModel(): { id: CerebrasModelId; info: (typeof cerebrasModels)[CerebrasModelId] } {
-		const modelId = this.options.apiModelId as CerebrasModelId
-		const validModelId = modelId && this.providerModels[modelId] ? modelId : this.defaultProviderModelId
+		const modelId = (this.options.apiModelId as CerebrasModelId) || this.defaultProviderModelId
 
 		return {
-			id: validModelId,
-			info: this.providerModels[validModelId],
+			id: modelId,
+			info: this.providerModels[modelId],
 		}
 	}
 
@@ -91,33 +87,6 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		return result
 	}
 
-	/**
-	 * Override convertToolsForOpenAI to ensure all tools have consistent strict values.
-	 * Cerebras API requires all tools to have the same strict mode setting.
-	 * We use strict: false for all tools since MCP tools cannot use strict mode
-	 * (they have optional parameters from the MCP server schema).
-	 */
-	protected override convertToolsForOpenAI(tools: any[] | undefined): any[] | undefined {
-		if (!tools) {
-			return undefined
-		}
-
-		return tools.map((tool) => {
-			if (tool.type !== "function") {
-				return tool
-			}
-
-			return {
-				...tool,
-				function: {
-					...tool.function,
-					strict: false,
-					parameters: this.convertToolSchemaForOpenAI(tool.function.parameters),
-				},
-			}
-		})
-	}
-
 	async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -161,7 +130,6 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 					...DEFAULT_HEADERS,
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${this.apiKey}`,
-					[CEREBRAS_INTEGRATION_HEADER]: CEREBRAS_INTEGRATION_NAME,
 				},
 				body: JSON.stringify(requestBody),
 			})
@@ -323,7 +291,6 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 					...DEFAULT_HEADERS,
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${this.apiKey}`,
-					[CEREBRAS_INTEGRATION_HEADER]: CEREBRAS_INTEGRATION_NAME,
 				},
 				body: JSON.stringify(requestBody),
 			})

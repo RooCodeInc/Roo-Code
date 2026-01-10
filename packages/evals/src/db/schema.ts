@@ -6,12 +6,6 @@ import type { RooCodeSettings, ToolName, ToolUsage } from "@roo-code/types"
 import type { ExerciseLanguage } from "../exercises/index.js"
 
 /**
- * ExecutionMethod
- */
-
-export type ExecutionMethod = "vscode" | "cli"
-
-/**
  * runs
  */
 
@@ -30,7 +24,6 @@ export const runs = pgTable("runs", {
 	jobToken: text(),
 	pid: integer(),
 	socketPath: text("socket_path").notNull(),
-	executionMethod: text("execution_method").default("vscode").notNull().$type<ExecutionMethod>(),
 	concurrency: integer().default(2).notNull(),
 	timeout: integer().default(5).notNull(),
 	passed: integer().default(0).notNull(),
@@ -57,9 +50,9 @@ export const tasks = pgTable(
 	{
 		id: integer().primaryKey().generatedAlwaysAsIdentity(),
 		runId: integer("run_id")
-			.references(() => runs.id, { onDelete: "cascade" })
+			.references(() => runs.id)
 			.notNull(),
-		taskMetricsId: integer("task_metrics_id").references(() => taskMetrics.id, { onDelete: "set null" }),
+		taskMetricsId: integer("task_metrics_id").references(() => taskMetrics.id),
 		language: text().notNull().$type<ExerciseLanguage>(),
 		exercise: text().notNull(),
 		iteration: integer().default(1).notNull(),
@@ -118,8 +111,8 @@ export type UpdateTaskMetrics = Partial<Omit<TaskMetrics, "id" | "createdAt">>
 
 export const toolErrors = pgTable("toolErrors", {
 	id: integer().primaryKey().generatedAlwaysAsIdentity(),
-	runId: integer("run_id").references(() => runs.id, { onDelete: "cascade" }),
-	taskId: integer("task_id").references(() => tasks.id, { onDelete: "cascade" }),
+	runId: integer("run_id").references(() => runs.id),
+	taskId: integer("task_id").references(() => tasks.id),
 	toolName: text("tool_name").notNull().$type<ToolName>(),
 	error: text().notNull(),
 	createdAt: timestamp("created_at").notNull(),

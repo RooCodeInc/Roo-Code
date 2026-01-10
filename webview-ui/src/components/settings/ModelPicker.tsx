@@ -28,6 +28,7 @@ import { ApiErrorMessage } from "./ApiErrorMessage"
 
 type ModelIdKey = keyof Pick<
 	ProviderSettings,
+	| "glamaModelId"
 	| "openRouterModelId"
 	| "unboundModelId"
 	| "requestyModelId"
@@ -51,10 +52,9 @@ interface ModelPickerProps {
 		value: ProviderSettings[K],
 		isUserAction?: boolean,
 	) => void
-	organizationAllowList?: OrganizationAllowList
+	organizationAllowList: OrganizationAllowList
 	errorMessage?: string
 	simplifySettings?: boolean
-	hidePricing?: boolean
 }
 
 export const ModelPicker = ({
@@ -68,7 +68,6 @@ export const ModelPicker = ({
 	organizationAllowList,
 	errorMessage,
 	simplifySettings,
-	hidePricing,
 }: ModelPickerProps) => {
 	const { t } = useAppTranslation()
 
@@ -264,23 +263,20 @@ export const ModelPicker = ({
 							modelInfo={selectedModelInfo}
 							isDescriptionExpanded={isDescriptionExpanded}
 							setIsDescriptionExpanded={setIsDescriptionExpanded}
-							hidePricing={hidePricing}
 						/>
 					)}
-					{!hidePricing && (
-						<div className="text-sm text-vscode-descriptionForeground">
-							<Trans
-								i18nKey="settings:modelPicker.automaticFetch"
-								components={{
-									serviceLink: <VSCodeLink href={serviceUrl} className="text-sm" />,
-									defaultModelLink: (
-										<VSCodeLink onClick={() => onSelect(defaultModelId)} className="text-sm" />
-									),
-								}}
-								values={{ serviceName, defaultModelId }}
-							/>
-						</div>
-					)}
+					<div className="text-sm text-vscode-descriptionForeground">
+						<Trans
+							i18nKey="settings:modelPicker.automaticFetch"
+							components={{
+								serviceLink: <VSCodeLink href={serviceUrl} className="text-sm" />,
+								defaultModelLink: (
+									<VSCodeLink onClick={() => onSelect(defaultModelId)} className="text-sm" />
+								),
+							}}
+							values={{ serviceName, defaultModelId }}
+						/>
+					</div>
 				</div>
 			)}
 		</>

@@ -1,9 +1,7 @@
-import type { ClineAskUseMcpServer } from "@roo-code/types"
-
+import { ClineAskUseMcpServer } from "../../shared/ExtensionMessage"
 import type { ToolUse } from "../../shared/tools"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
-
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface AccessMcpResourceParams {

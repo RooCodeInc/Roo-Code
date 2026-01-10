@@ -13,7 +13,7 @@ export const useCloudUpsell = (options: UseCloudUpsellOptions = {}) => {
 	const { onAuthSuccess, autoOpenOnAuth = false } = options
 	const [isOpen, setIsOpen] = useState(false)
 	const [shouldOpenOnAuth, setShouldOpenOnAuth] = useState(false)
-	const { cloudIsAuthenticated, sharingEnabled, publicSharingEnabled } = useExtensionState()
+	const { cloudIsAuthenticated, sharingEnabled } = useExtensionState()
 	const wasUnauthenticatedRef = useRef(false)
 	const initiatedAuthRef = useRef(false)
 
@@ -67,6 +67,5 @@ export const useCloudUpsell = (options: UseCloudUpsellOptions = {}) => {
 		handleConnect,
 		isAuthenticated: cloudIsAuthenticated,
 		sharingEnabled,
-		publicSharingEnabled,
 	}
 }

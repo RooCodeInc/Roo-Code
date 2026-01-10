@@ -1,12 +1,6 @@
-import {
-	type ClineAsk,
-	type ClineSayTool,
-	type McpServerUse,
-	type FollowUpData,
-	type ExtensionState,
-	isNonBlockingAsk,
-} from "@roo-code/types"
+import { type ClineAsk, type McpServerUse, type FollowUpData, isNonBlockingAsk } from "@roo-code/types"
 
+import type { ClineSayTool, ExtensionState } from "../../shared/ExtensionMessage"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 
 import { isWriteToolAction, isReadOnlyToolAction } from "./tools"
@@ -18,11 +12,13 @@ export type AutoApprovalState =
 	| "alwaysAllowReadOnly"
 	| "alwaysAllowWrite"
 	| "alwaysAllowBrowser"
+	| "alwaysApproveResubmit"
 	| "alwaysAllowMcp"
 	| "alwaysAllowModeSwitch"
 	| "alwaysAllowSubtasks"
 	| "alwaysAllowExecute"
 	| "alwaysAllowFollowupQuestions"
+	| "alwaysAllowUpdateTodoList"
 
 // Some of these actions have additional settings associated with them.
 export type AutoApprovalStateOptions =
@@ -148,7 +144,7 @@ export async function checkAutoApproval({
 		}
 
 		if (tool.tool === "updateTodoList") {
-			return { decision: "approve" }
+			return state.alwaysAllowUpdateTodoList === true ? { decision: "approve" } : { decision: "ask" }
 		}
 
 		if (tool?.tool === "fetchInstructions") {

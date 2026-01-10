@@ -1,4 +1,4 @@
-import type { McpResource, McpResourceTemplate } from "@roo-code/types"
+import { McpResource, McpResourceTemplate } from "@roo/mcp"
 
 /**
  * Matches a URI against an array of URI templates and returns the matching template

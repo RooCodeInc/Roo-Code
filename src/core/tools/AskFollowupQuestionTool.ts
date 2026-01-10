@@ -1,9 +1,8 @@
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { parseXml } from "../../utils/xml"
-import type { ToolUse } from "../../shared/tools"
-
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import type { ToolUse } from "../../shared/tools"
 
 interface Suggestion {
 	text: string

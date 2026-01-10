@@ -1,7 +1,6 @@
 ---
 description: "Create a new release of the Roo Code extension"
 argument-hint: patch | minor | major
-mode: code
 ---
 
 1. Identify the SHA corresponding to the most recent release using GitHub CLI: `gh release view --json tagName,targetCommitish,publishedAt`

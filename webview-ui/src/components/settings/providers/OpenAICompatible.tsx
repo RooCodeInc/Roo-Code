@@ -8,10 +8,11 @@ import {
 	type ModelInfo,
 	type ReasoningEffort,
 	type OrganizationAllowList,
-	type ExtensionMessage,
 	azureOpenAiDefaultApiVersion,
 	openAiModelInfoSaneDefaults,
 } from "@roo-code/types"
+
+import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Button, StandardTooltip } from "@src/components/ui"
@@ -40,6 +41,7 @@ export const OpenAICompatible = ({
 	const { t } = useAppTranslation()
 
 	const [azureApiVersionSelected, setAzureApiVersionSelected] = useState(!!apiConfiguration?.azureApiVersion)
+	const [openAiLegacyFormatSelected, setOpenAiLegacyFormatSelected] = useState(!!apiConfiguration?.openAiLegacyFormat)
 
 	const [openAiModels, setOpenAiModels] = useState<Record<string, ModelInfo> | null>(null)
 
@@ -153,6 +155,16 @@ export const OpenAICompatible = ({
 				onChange={handleInputChange("openAiR1FormatEnabled", noTransform)}
 				openAiR1FormatEnabled={apiConfiguration?.openAiR1FormatEnabled ?? false}
 			/>
+			<div>
+				<Checkbox
+					checked={openAiLegacyFormatSelected}
+					onChange={(checked: boolean) => {
+						setOpenAiLegacyFormatSelected(checked)
+						setApiConfigurationField("openAiLegacyFormat", checked)
+					}}>
+					{t("settings:providers.useLegacyFormat")}
+				</Checkbox>
+			</div>
 			<Checkbox
 				checked={apiConfiguration?.openAiStreamingEnabled ?? true}
 				onChange={handleInputChange("openAiStreamingEnabled", noTransform)}>
@@ -268,7 +280,7 @@ export const OpenAICompatible = ({
 						}}
 						modelInfo={{
 							...(apiConfiguration.openAiCustomModelInfo || openAiModelInfoSaneDefaults),
-							supportsReasoningEffort: ["low", "medium", "high", "xhigh"],
+							supportsReasoningEffort: true,
 						}}
 					/>
 				)}

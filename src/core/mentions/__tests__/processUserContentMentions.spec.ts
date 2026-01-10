@@ -22,11 +22,8 @@ describe("processUserContentMentions", () => {
 		mockFileContextTracker = {} as FileContextTracker
 		mockRooIgnoreController = {}
 
-		// Default mock implementation - returns ParseMentionsResult object
-		vi.mocked(parseMentions).mockImplementation(async (text) => ({
-			text: `parsed: ${text}`,
-			mode: undefined,
-		}))
+		// Default mock implementation
+		vi.mocked(parseMentions).mockImplementation(async (text) => `parsed: ${text}`)
 	})
 
 	describe("maxReadFileLine parameter", () => {
@@ -137,11 +134,10 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).toHaveBeenCalled()
-			expect(result.content[0]).toEqual({
+			expect(result[0]).toEqual({
 				type: "text",
 				text: "parsed: <user_message>Do something</user_message>",
 			})
-			expect(result.mode).toBeUndefined()
 		})
 
 		it("should not process text blocks without user_message tags", async () => {
@@ -160,8 +156,7 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).not.toHaveBeenCalled()
-			expect(result.content[0]).toEqual(userContent[0])
-			expect(result.mode).toBeUndefined()
+			expect(result[0]).toEqual(userContent[0])
 		})
 
 		it("should process tool_result blocks with string content", async () => {
@@ -181,12 +176,11 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).toHaveBeenCalled()
-			expect(result.content[0]).toEqual({
+			expect(result[0]).toEqual({
 				type: "tool_result",
 				tool_use_id: "123",
 				content: "parsed: <user_message>Tool feedback</user_message>",
 			})
-			expect(result.mode).toBeUndefined()
 		})
 
 		it("should process tool_result blocks with array content", async () => {
@@ -215,7 +209,7 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).toHaveBeenCalledTimes(1)
-			expect(result.content[0]).toEqual({
+			expect(result[0]).toEqual({
 				type: "tool_result",
 				tool_use_id: "123",
 				content: [
@@ -229,7 +223,6 @@ describe("processUserContentMentions", () => {
 					},
 				],
 			})
-			expect(result.mode).toBeUndefined()
 		})
 
 		it("should handle mixed content types", async () => {
@@ -262,18 +255,17 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).toHaveBeenCalledTimes(2)
-			expect(result.content).toHaveLength(3)
-			expect(result.content[0]).toEqual({
+			expect(result).toHaveLength(3)
+			expect(result[0]).toEqual({
 				type: "text",
 				text: "parsed: <user_message>First task</user_message>",
 			})
-			expect(result.content[1]).toEqual(userContent[1]) // Image block unchanged
-			expect(result.content[2]).toEqual({
+			expect(result[1]).toEqual(userContent[1]) // Image block unchanged
+			expect(result[2]).toEqual({
 				type: "tool_result",
 				tool_use_id: "456",
 				content: "parsed: <user_message>Feedback</user_message>",
 			})
-			expect(result.mode).toBeUndefined()
 		})
 	})
 

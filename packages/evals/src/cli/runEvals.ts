@@ -5,7 +5,7 @@ import { EVALS_REPO_PATH } from "../exercises/index.js"
 
 import { Logger, getTag, isDockerContainer, resetEvalsRepo, commitEvalsRepoChanges } from "./utils.js"
 import { startHeartbeat, stopHeartbeat } from "./redis.js"
-import { processTask, processTaskInContainer } from "./processTask.js"
+import { processTask, processTaskInContainer } from "./runTask.js"
 
 export const runEvals = async (runId: number) => {
 	const run = await findRun(runId)
@@ -53,18 +53,13 @@ export const runEvals = async (runId: number) => {
 	}
 
 	try {
-		// Add tasks with staggered start times when concurrency > 1.
+		// Add tasks with staggered start times when concurrency > 1
 		for (let i = 0; i < filteredTasks.length; i++) {
 			const task = filteredTasks[i]
-
-			if (!task) {
-				continue
-			}
-
+			if (!task) continue
 			if (run.concurrency > 1 && i > 0) {
 				await new Promise((resolve) => setTimeout(resolve, STAGGER_DELAY_MS))
 			}
-
 			queue.add(createTaskRunner(task))
 		}
 

@@ -4,7 +4,6 @@ import { getCommand, getCommandNames } from "../../services/command/commands"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
-import { getModeBySlug } from "../../shared/modes"
 
 interface RunSlashCommandParams {
 	command: string
@@ -75,22 +74,12 @@ export class RunSlashCommandTool extends BaseTool<"run_slash_command"> {
 				args: args,
 				source: command.source,
 				description: command.description,
-				mode: command.mode,
 			})
 
 			const didApprove = await askApproval("tool", toolMessage)
 
 			if (!didApprove) {
 				return
-			}
-
-			// Switch mode if specified in the command frontmatter
-			if (command.mode) {
-				const provider = task.providerRef.deref()
-				const targetMode = getModeBySlug(command.mode, (await provider?.getState())?.customModes)
-				if (targetMode) {
-					await provider?.handleModeSwitch(command.mode)
-				}
 			}
 
 			// Build the result message
@@ -102,10 +91,6 @@ export class RunSlashCommandTool extends BaseTool<"run_slash_command"> {
 
 			if (command.argumentHint) {
 				result += `\nArgument hint: ${command.argumentHint}`
-			}
-
-			if (command.mode) {
-				result += `\nMode: ${command.mode}`
 			}
 
 			if (args) {

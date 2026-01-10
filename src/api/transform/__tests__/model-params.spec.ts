@@ -275,6 +275,7 @@ describe("getModelParams", () => {
 
 			expect(result.reasoningBudget).toBeUndefined()
 			expect(result.temperature).toBe(0)
+			expect(result.reasoning).toBeUndefined()
 		})
 
 		it("should honor customMaxTokens for reasoning budget models", () => {
@@ -556,6 +557,7 @@ describe("getModelParams", () => {
 			})
 
 			expect(result.reasoningEffort).toBeUndefined()
+			expect(result.reasoning).toBeUndefined()
 		})
 
 		it("should handle reasoning effort for openrouter format", () => {
@@ -622,6 +624,7 @@ describe("getModelParams", () => {
 			})
 
 			expect(result.reasoningEffort).toBeUndefined()
+			expect(result.reasoning).toBeUndefined()
 		})
 
 		it("should include 'minimal' and 'none' for openrouter format", () => {
@@ -667,7 +670,7 @@ describe("getModelParams", () => {
 		it("should use reasoningEffort if supportsReasoningEffort is false but reasoningEffort is set", () => {
 			const model: ModelInfo = {
 				...baseModel,
-				maxTokens: 3000, // 3000 is 18.75% of 16000, within 20% threshold
+				maxTokens: 3000, // Changed to 3000 (18.75% of 16000), which is within 20% threshold
 				supportsReasoningEffort: false,
 				reasoningEffort: "medium",
 			}
@@ -678,8 +681,7 @@ describe("getModelParams", () => {
 				model,
 			})
 
-			expect(result.maxTokens).toBe(3000)
-			// Now uses model.maxTokens since it's within 20% threshold
+			expect(result.maxTokens).toBe(3000) // Now uses model.maxTokens since it's within 20% threshold
 			expect(result.reasoningEffort).toBe("medium")
 		})
 	})
@@ -733,7 +735,7 @@ describe("getModelParams", () => {
 			})
 
 			expect(result.reasoningBudget).toBe(3200) // 80% of 4000
-			expect(result.reasoningEffort).toBeUndefined() // Budget takes precedence
+			expect(result.reasoningEffort).toBeUndefined()
 			expect(result.temperature).toBe(1.0)
 		})
 
@@ -887,6 +889,8 @@ describe("getModelParams", () => {
 				settings: {},
 				model,
 			})
+
+			expect(result.reasoning).toBeUndefined()
 		})
 	})
 

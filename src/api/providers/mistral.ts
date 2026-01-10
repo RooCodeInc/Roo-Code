@@ -2,20 +2,12 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { Mistral } from "@mistralai/mistralai"
 import OpenAI from "openai"
 
-import {
-	type MistralModelId,
-	mistralDefaultModelId,
-	mistralModels,
-	MISTRAL_DEFAULT_TEMPERATURE,
-	ApiProviderError,
-} from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+import { type MistralModelId, mistralDefaultModelId, mistralModels, MISTRAL_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
 import { ApiHandlerOptions } from "../../shared/api"
 
 import { convertToMistralMessages } from "../transform/mistral-format"
 import { ApiStream } from "../transform/stream"
-import { handleProviderError } from "./utils/error-handler"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -51,7 +43,6 @@ type MistralTool = {
 export class MistralHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: Mistral
-	private readonly providerName = "Mistral"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -105,15 +96,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		// Temporary debug log for QA
 		// console.log("[MISTRAL DEBUG] Raw API request body:", requestOptions)
 
-		let response
-		try {
-			response = await this.client.chat.stream(requestOptions)
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, model, "createMessage")
-			TelemetryService.instance.captureException(apiError)
-			throw new Error(`Mistral completion error: ${errorMessage}`)
-		}
+		const response = await this.client.chat.stream(requestOptions)
 
 		for await (const event of response) {
 			const delta = event.data.choices[0]?.delta
@@ -198,9 +181,9 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: model, temperature } = this.getModel()
-
 		try {
+			const { id: model, temperature } = this.getModel()
+
 			const response = await this.client.chat.complete({
 				model,
 				messages: [{ role: "user", content: prompt }],
@@ -219,10 +202,11 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 
 			return content || ""
 		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			const apiError = new ApiProviderError(errorMessage, this.providerName, model, "completePrompt")
-			TelemetryService.instance.captureException(apiError)
-			throw new Error(`Mistral completion error: ${errorMessage}`)
+			if (error instanceof Error) {
+				throw new Error(`Mistral completion error: ${error.message}`)
+			}
+
+			throw error
 		}
 	}
 }

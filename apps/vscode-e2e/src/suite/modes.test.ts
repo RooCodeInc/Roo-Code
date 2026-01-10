@@ -15,13 +15,15 @@ suite("Roo Code Modes", function () {
 
 		const switchModesTaskId = await globalThis.api.startNewTask({
 			configuration: { mode: "code", alwaysAllowModeSwitch: true, autoApprovalEnabled: true },
-			text: "Use the `switch_mode` tool to switch to ask mode.",
+			text: "For each of `architect`, `ask`, and `debug` use the `switch_mode` tool to switch to that mode.",
 		})
 
 		await waitUntilCompleted({ api: globalThis.api, taskId: switchModesTaskId })
 		await globalThis.api.cancelCurrentTask()
 
+		assert.ok(modes.includes("architect"))
 		assert.ok(modes.includes("ask"))
-		assert.ok(modes.length === 1)
+		assert.ok(modes.includes("debug"))
+		assert.ok(modes.length === 3)
 	})
 })
