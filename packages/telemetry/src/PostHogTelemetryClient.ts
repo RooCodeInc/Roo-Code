@@ -1,7 +1,18 @@
 import { PostHog } from "posthog-node"
 import * as vscode from "vscode"
 
-import { TelemetryEventName, type TelemetryEvent } from "@roo-code/types"
+import {
+	type TelemetryProperties,
+	type TelemetryEvent,
+	TelemetryEventName,
+	getErrorStatusCode,
+	getErrorMessage,
+	shouldReportApiErrorToTelemetry,
+	isApiProviderError,
+	extractApiProviderErrorProperties,
+	isConsecutiveMistakeError,
+	extractConsecutiveMistakeErrorProperties,
+} from "@roo-code/types"
 
 import { BaseTelemetryClient } from "./BaseTelemetryClient"
 
@@ -54,11 +65,77 @@ export class PostHogTelemetryClient extends BaseTelemetryClient {
 			console.info(`[PostHogTelemetryClient#capture] ${event.event}`)
 		}
 
+		const properties = await this.getEventProperties(event)
+
 		this.client.capture({
 			distinctId: this.distinctId,
 			event: event.event,
-			properties: await this.getEventProperties(event),
+			properties,
 		})
+	}
+
+	public override async captureException(
+		error: Error,
+		additionalProperties?: Record<string, unknown>,
+	): Promise<void> {
+		if (!this.isTelemetryEnabled()) {
+			if (this.debug) {
+				console.info(`[PostHogTelemetryClient#captureException] Skipping exception: ${error.message}`)
+			}
+
+			return
+		}
+
+		// Extract error status code and message for filtering.
+		const errorCode = getErrorStatusCode(error)
+		const errorMessage = getErrorMessage(error) ?? error.message
+
+		// Filter out expected errors (e.g., 402 billing, 429 rate limits)
+		if (!shouldReportApiErrorToTelemetry(errorCode, errorMessage)) {
+			if (this.debug) {
+				console.info(
+					`[PostHogTelemetryClient#captureException] Filtering out expected error: ${errorCode} - ${errorMessage}`,
+				)
+			}
+			return
+		}
+
+		if (this.debug) {
+			console.info(`[PostHogTelemetryClient#captureException] ${error.message}`)
+		}
+
+		// Auto-extract properties from known error types and merge with additionalProperties.
+		// Explicit additionalProperties take precedence over auto-extracted properties.
+		let mergedProperties = additionalProperties
+
+		if (isApiProviderError(error)) {
+			const extractedProperties = extractApiProviderErrorProperties(error)
+			mergedProperties = { ...extractedProperties, ...additionalProperties }
+		} else if (isConsecutiveMistakeError(error)) {
+			const extractedProperties = extractConsecutiveMistakeErrorProperties(error)
+			mergedProperties = { ...extractedProperties, ...additionalProperties }
+		}
+
+		// Override the error message with the extracted error message.
+		error.message = errorMessage
+
+		const provider = this.providerRef?.deref()
+		let telemetryProperties: TelemetryProperties | undefined = undefined
+
+		if (provider) {
+			try {
+				telemetryProperties = await provider.getTelemetryProperties()
+			} catch (_error) {
+				// Ignore.
+			}
+		}
+
+		const exceptionProperties = {
+			...mergedProperties,
+			$app_version: telemetryProperties?.appVersion,
+		}
+
+		this.client.captureException(error, this.distinctId, exceptionProperties)
 	}
 
 	/**

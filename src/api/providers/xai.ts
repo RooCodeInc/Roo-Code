@@ -1,8 +1,10 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { type XAIModelId, xaiDefaultModelId, xaiModels } from "@roo-code/types"
+import { type XAIModelId, xaiDefaultModelId, xaiModels, ApiProviderError } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
+import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream } from "../transform/stream"
@@ -58,26 +60,35 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
 
 		// Use the OpenAI-compatible API.
+		const requestOptions = {
+			model: modelId,
+			max_tokens: modelInfo.maxTokens,
+			temperature: this.options.modelTemperature ?? XAI_DEFAULT_TEMPERATURE,
+			messages: [
+				{ role: "system", content: systemPrompt },
+				...convertToOpenAiMessages(messages),
+			] as OpenAI.Chat.ChatCompletionMessageParam[],
+			stream: true as const,
+			stream_options: { include_usage: true },
+			...(reasoning && reasoning),
+			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
+			...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
+		}
+
 		let stream
 		try {
-			stream = await this.client.chat.completions.create({
-				model: modelId,
-				max_tokens: modelInfo.maxTokens,
-				temperature: this.options.modelTemperature ?? XAI_DEFAULT_TEMPERATURE,
-				messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
-				stream: true,
-				stream_options: { include_usage: true },
-				...(reasoning && reasoning),
-				...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
-			})
+			stream = await this.client.chat.completions.create(requestOptions)
 		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
+			TelemetryService.instance.captureException(apiError)
 			throw handleOpenAIError(error, this.providerName)
 		}
 
 		for await (const chunk of stream) {
 			const delta = chunk.choices[0]?.delta
+			const finishReason = chunk.choices[0]?.finish_reason
 
 			if (delta?.content) {
 				yield {
@@ -103,6 +114,15 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 						name: toolCall.function?.name,
 						arguments: toolCall.function?.arguments,
 					}
+				}
+			}
+
+			// Process finish_reason to emit tool_call_end events
+			// This ensures tool calls are finalized even if the stream doesn't properly close
+			if (finishReason) {
+				const endEvents = NativeToolCallParser.processFinishReason(finishReason)
+				for (const event of endEvents) {
+					yield event
 				}
 			}
 
@@ -142,6 +162,9 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 
 			return response.choices[0]?.message.content || ""
 		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
+			TelemetryService.instance.captureException(apiError)
 			throw handleOpenAIError(error, this.providerName)
 		}
 	}

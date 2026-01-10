@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import { saveTaskMessages } from "../../task-persistence"
 import { handleCheckpointRestoreOperation } from "../checkpointRestoreHandler"
+import { MessageManager } from "../../message-manager"
 
 // Mock dependencies
 vi.mock("../../task-persistence")
@@ -40,6 +41,7 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 			overwriteClineMessages: vi.fn(),
 			overwriteApiConversationHistory: vi.fn(),
 		}
+		mockCline.messageManager = new MessageManager(mockCline)
 
 		// Setup mock provider
 		mockProvider = {
@@ -53,6 +55,10 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 			contextProxy: {
 				globalStorageUri: { fsPath: "/test/storage" },
 			},
+			getState: vi.fn().mockResolvedValue({
+				maxImageFileSize: 5,
+				maxTotalImageSize: 20,
+			}),
 		}
 	})
 
@@ -122,7 +128,7 @@ describe("webviewMessageHandler - checkpoint operations", () => {
 				operation: "edit",
 				editData: {
 					editedContent: "Edited checkpoint message",
-					images: undefined,
+					images: [],
 					apiConversationHistoryIndex: 0,
 				},
 			})

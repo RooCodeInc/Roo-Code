@@ -1,9 +1,9 @@
 import React, { memo, useEffect, useMemo, useRef, useState } from "react"
 import deepEqual from "fast-deep-equal"
 import { useTranslation } from "react-i18next"
-import type { ClineMessage } from "@roo-code/types"
+import type { TFunction } from "i18next"
 
-import { BrowserAction, BrowserActionResult, ClineSayBrowserAction } from "@roo/ExtensionMessage"
+import type { ClineMessage, BrowserAction, BrowserActionResult, ClineSayBrowserAction } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -30,9 +30,11 @@ import {
 	ChevronsRight,
 	ExternalLink,
 	Copy,
+	Camera,
 } from "lucide-react"
 
 const getBrowserActionText = (
+	t: TFunction,
 	action: BrowserAction,
 	executedCoordinate?: string,
 	coordinate?: string,
@@ -48,23 +50,29 @@ const getBrowserActionText = (
 
 	switch (action) {
 		case "launch":
-			return `Launched browser`
+			return t("chat:browser.actions.launched")
 		case "click":
-			return `Clicked at: ${executedCoordinate || getViewportCoordinate(coordinate)}`
+			return t("chat:browser.actions.clicked", {
+				coordinate: executedCoordinate || getViewportCoordinate(coordinate),
+			})
 		case "type":
-			return `Typed: ${text}`
+			return t("chat:browser.actions.typed", { text })
 		case "press":
-			return `Pressed key: ${prettyKey(text)}`
+			return t("chat:browser.actions.pressed", { key: prettyKey(text) })
 		case "scroll_down":
-			return "Scrolled down"
+			return t("chat:browser.actions.scrolledDown")
 		case "scroll_up":
-			return "Scrolled up"
+			return t("chat:browser.actions.scrolledUp")
 		case "hover":
-			return `Hovered at: ${executedCoordinate || getViewportCoordinate(coordinate)}`
+			return t("chat:browser.actions.hovered", {
+				coordinate: executedCoordinate || getViewportCoordinate(coordinate),
+			})
 		case "resize":
-			return `Resized to: ${size?.split(/[x,]/).join(" x ")}`
+			return t("chat:browser.actions.resized", { size: size?.split(/[x,]/).join(" x ") })
+		case "screenshot":
+			return t("chat:browser.actions.screenshotSaved")
 		case "close":
-			return "Closed browser"
+			return t("chat:browser.actions.closed")
 		default:
 			return action
 	}
@@ -87,6 +95,8 @@ const getActionIcon = (action: BrowserAction) => {
 			return <Check className="w-4 h-4 opacity-80" />
 		case "resize":
 			return <Maximize2 className="w-4 h-4 opacity-80" />
+		case "screenshot":
+			return <Camera className="w-4 h-4 opacity-80" />
 		case "hover":
 		default:
 			return <Pointer className="w-4 h-4 opacity-80" />
@@ -557,6 +567,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 									{getActionIcon(action.action)}
 									<span>
 										{getBrowserActionText(
+											t,
 											action.action,
 											action.executedCoordinate,
 											action.coordinate,
@@ -572,7 +583,7 @@ const BrowserSessionRow = memo((props: BrowserSessionRowProps) => {
 							return (
 								<>
 									{getActionIcon("launch" as any)}
-									<span>{getBrowserActionText("launch", undefined, initialUrl, undefined)}</span>
+									<span>{getBrowserActionText(t, "launch", undefined, initialUrl, undefined)}</span>
 								</>
 							)
 						}

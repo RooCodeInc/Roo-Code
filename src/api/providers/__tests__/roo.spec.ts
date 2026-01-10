@@ -101,6 +101,7 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					supportsPromptCache: true,
 					inputPrice: 0,
 					outputPrice: 0,
+					defaultToolProtocol: "native",
 				},
 				"minimax/minimax-m2:free": {
 					maxTokens: 32_768,
@@ -110,6 +111,7 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					supportsNativeTools: true,
 					inputPrice: 0.15,
 					outputPrice: 0.6,
+					defaultToolProtocol: "native",
 				},
 				"anthropic/claude-haiku-4.5": {
 					maxTokens: 8_192,
@@ -119,6 +121,7 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					supportsNativeTools: true,
 					inputPrice: 0.8,
 					outputPrice: 4,
+					defaultToolProtocol: "native",
 				},
 			}
 		}
@@ -425,36 +428,23 @@ describe("RooHandler", () => {
 			}
 		})
 
-		it("should apply defaultToolProtocol: native for minimax/minimax-m2:free", () => {
+		it("should have defaultToolProtocol: native for all roo provider models", () => {
+			// Test that all models have defaultToolProtocol: native
+			const testModels = ["minimax/minimax-m2:free", "anthropic/claude-haiku-4.5", "xai/grok-code-fast-1"]
+			for (const modelId of testModels) {
+				const handlerWithModel = new RooHandler({ apiModelId: modelId })
+				const modelInfo = handlerWithModel.getModel()
+				expect(modelInfo.id).toBe(modelId)
+				expect((modelInfo.info as any).defaultToolProtocol).toBe("native")
+			}
+		})
+
+		it("should return cached model info with settings applied from API", () => {
 			const handlerWithMinimax = new RooHandler({
 				apiModelId: "minimax/minimax-m2:free",
 			})
 			const modelInfo = handlerWithMinimax.getModel()
-			expect(modelInfo.id).toBe("minimax/minimax-m2:free")
-			expect((modelInfo.info as any).defaultToolProtocol).toBe("native")
-			// Verify cached model info is preserved
-			expect(modelInfo.info.maxTokens).toBe(32_768)
-			expect(modelInfo.info.contextWindow).toBe(1_000_000)
-		})
-
-		it("should apply defaultToolProtocol: native for anthropic/claude-haiku-4.5", () => {
-			const handlerWithHaiku = new RooHandler({
-				apiModelId: "anthropic/claude-haiku-4.5",
-			})
-			const modelInfo = handlerWithHaiku.getModel()
-			expect(modelInfo.id).toBe("anthropic/claude-haiku-4.5")
-			expect((modelInfo.info as any).defaultToolProtocol).toBe("native")
-			// Verify cached model info is preserved
-			expect(modelInfo.info.maxTokens).toBe(8_192)
-			expect(modelInfo.info.contextWindow).toBe(200_000)
-		})
-
-		it("should not override existing properties when applying MODEL_DEFAULTS", () => {
-			const handlerWithMinimax = new RooHandler({
-				apiModelId: "minimax/minimax-m2:free",
-			})
-			const modelInfo = handlerWithMinimax.getModel()
-			// The defaults should be merged, but not overwrite existing cached values
+			// The settings from API should already be applied in the cached model info
 			expect(modelInfo.info.supportsNativeTools).toBe(true)
 			expect(modelInfo.info.inputPrice).toBe(0.15)
 			expect(modelInfo.info.outputPrice).toBe(0.6)
@@ -462,7 +452,7 @@ describe("RooHandler", () => {
 	})
 
 	describe("temperature and model configuration", () => {
-		it("should use default temperature of 0.7", async () => {
+		it("should use default temperature of 0", async () => {
 			handler = new RooHandler(mockOptions)
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
@@ -471,7 +461,7 @@ describe("RooHandler", () => {
 
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					temperature: 0.7,
+					temperature: 0,
 				}),
 				expect.objectContaining({
 					headers: expect.objectContaining({
@@ -1011,6 +1001,69 @@ describe("RooHandler", () => {
 
 			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 			expect(rawChunks).toHaveLength(0)
+		})
+
+		it("should yield tool_call_end events when finish_reason is tool_calls", async () => {
+			// Import NativeToolCallParser to set up state
+			const { NativeToolCallParser } = await import("../../../core/assistant-message/NativeToolCallParser")
+
+			// Clear any previous state
+			NativeToolCallParser.clearRawChunkState()
+
+			mockCreate.mockResolvedValueOnce({
+				[Symbol.asyncIterator]: async function* () {
+					yield {
+						choices: [
+							{
+								delta: {
+									tool_calls: [
+										{
+											index: 0,
+											id: "call_finish_test",
+											function: { name: "read_file", arguments: '{"path":"test.ts"}' },
+										},
+									],
+								},
+								index: 0,
+							},
+						],
+					}
+					yield {
+						choices: [
+							{
+								delta: {},
+								finish_reason: "tool_calls",
+								index: 0,
+							},
+						],
+						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+					}
+				},
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				// Simulate what Task.ts does: when we receive tool_call_partial,
+				// process it through NativeToolCallParser to populate rawChunkTracker
+				if (chunk.type === "tool_call_partial") {
+					NativeToolCallParser.processRawChunk({
+						index: chunk.index,
+						id: chunk.id,
+						name: chunk.name,
+						arguments: chunk.arguments,
+					})
+				}
+				chunks.push(chunk)
+			}
+
+			// Should have tool_call_partial and tool_call_end
+			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+
+			expect(partialChunks).toHaveLength(1)
+			expect(endChunks).toHaveLength(1)
+			expect(endChunks[0].id).toBe("call_finish_test")
 		})
 	})
 })

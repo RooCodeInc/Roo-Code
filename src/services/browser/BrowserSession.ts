@@ -6,8 +6,11 @@ import { Browser, Page, ScreenshotOptions, TimeoutError, launch, connect, KeyInp
 import PCR from "puppeteer-chromium-resolver"
 import pWaitFor from "p-wait-for"
 import delay from "delay"
+
+import { type BrowserActionResult } from "@roo-code/types"
+
 import { fileExistsAtPath } from "../../utils/fs"
-import { BrowserActionResult } from "../../shared/ExtensionMessage"
+
 import { discoverChromeHostUrl, tryChromeHostUrl } from "./browserDiscovery"
 
 // Timeout constants
@@ -752,6 +755,55 @@ export class BrowserSession {
 			await session.send("Browser.setWindowBounds", {
 				bounds: { width, height },
 				windowId,
+			})
+		})
+	}
+
+	/**
+	 * Determines image type from file extension
+	 */
+	private getImageTypeFromPath(filePath: string): "png" | "jpeg" | "webp" {
+		const ext = path.extname(filePath).toLowerCase()
+		if (ext === ".jpg" || ext === ".jpeg") return "jpeg"
+		if (ext === ".webp") return "webp"
+		return "png"
+	}
+
+	/**
+	 * Takes a screenshot and saves it to the specified file path.
+	 * @param filePath - The destination file path (relative to workspace)
+	 * @param cwd - Current working directory for resolving relative paths
+	 * @returns BrowserActionResult with screenshot data and saved file path
+	 * @throws Error if the resolved path escapes the workspace directory
+	 */
+	async saveScreenshot(filePath: string, cwd: string): Promise<BrowserActionResult> {
+		// Always resolve the path against the workspace root
+		const normalizedCwd = path.resolve(cwd)
+		const fullPath = path.resolve(cwd, filePath)
+
+		// Validate that the resolved path stays within the workspace (before calling doAction)
+		if (!fullPath.startsWith(normalizedCwd + path.sep) && fullPath !== normalizedCwd) {
+			throw new Error(
+				`Screenshot path "${filePath}" resolves to "${fullPath}" which is outside the workspace "${normalizedCwd}". ` +
+					`Paths must be relative to the workspace and cannot escape it.`,
+			)
+		}
+
+		return this.doAction(async (page) => {
+			// Ensure directory exists
+			await fs.mkdir(path.dirname(fullPath), { recursive: true })
+
+			// Determine image type from extension
+			const imageType = this.getImageTypeFromPath(filePath)
+
+			// Take screenshot directly to file (more efficient than base64 for file saving)
+			await page.screenshot({
+				path: fullPath,
+				type: imageType,
+				quality:
+					imageType === "png"
+						? undefined
+						: ((this.context.globalState.get("screenshotQuality") as number | undefined) ?? 75),
 			})
 		})
 	}

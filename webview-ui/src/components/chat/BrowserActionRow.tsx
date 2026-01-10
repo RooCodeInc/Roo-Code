@@ -1,8 +1,5 @@
 import { memo, useMemo, useEffect, useRef } from "react"
-import { ClineMessage } from "@roo-code/types"
-import { ClineSayBrowserAction } from "@roo/ExtensionMessage"
-import { vscode } from "@src/utils/vscode"
-import { getViewportCoordinate as getViewportCoordinateShared, prettyKey } from "@roo/browserUtils"
+import { useTranslation } from "react-i18next"
 import {
 	MousePointer as MousePointerIcon,
 	Keyboard,
@@ -12,9 +9,15 @@ import {
 	Play,
 	Check,
 	Maximize2,
+	Camera,
 } from "lucide-react"
+
+import type { ClineMessage, ClineSayBrowserAction } from "@roo-code/types"
+
+import { getViewportCoordinate as getViewportCoordinateShared, prettyKey } from "@roo/browserUtils"
+
+import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
-import { useTranslation } from "react-i18next"
 
 interface BrowserActionRowProps {
 	message: ClineMessage
@@ -41,6 +44,8 @@ const getActionIcon = (action: string) => {
 			return <Check className="w-3.5 h-3.5 opacity-70" />
 		case "resize":
 			return <Maximize2 className="w-3.5 h-3.5 opacity-70" />
+		case "screenshot":
+			return <Camera className="w-3.5 h-3.5 opacity-70" />
 		case "hover":
 		default:
 			return <Pointer className="w-3.5 h-3.5 opacity-70" />
@@ -77,7 +82,7 @@ const BrowserActionRow = memo(({ message, nextMessage, actionIndex, totalActions
 
 	// Format action display text
 	const actionText = useMemo(() => {
-		if (!browserAction) return "Browser action"
+		if (!browserAction) return t("chat:browser.actions.title")
 
 		// Helper to scale coordinates from screenshot dimensions to viewport dimensions
 		// Matches the backend's scaleCoordinate function logic
@@ -86,27 +91,33 @@ const BrowserActionRow = memo(({ message, nextMessage, actionIndex, totalActions
 
 		switch (browserAction.action) {
 			case "launch":
-				return `Launched browser`
+				return t("chat:browser.actions.launched")
 			case "click":
-				return `Clicked at: ${browserAction.executedCoordinate || getViewportCoordinate(browserAction.coordinate)}`
+				return t("chat:browser.actions.clicked", {
+					coordinate: browserAction.executedCoordinate || getViewportCoordinate(browserAction.coordinate),
+				})
 			case "type":
-				return `Typed: ${browserAction.text}`
+				return t("chat:browser.actions.typed", { text: browserAction.text })
 			case "press":
-				return `Pressed key: ${prettyKey(browserAction.text)}`
+				return t("chat:browser.actions.pressed", { key: prettyKey(browserAction.text) })
 			case "hover":
-				return `Hovered at: ${browserAction.executedCoordinate || getViewportCoordinate(browserAction.coordinate)}`
+				return t("chat:browser.actions.hovered", {
+					coordinate: browserAction.executedCoordinate || getViewportCoordinate(browserAction.coordinate),
+				})
 			case "scroll_down":
-				return "Scrolled down"
+				return t("chat:browser.actions.scrolledDown")
 			case "scroll_up":
-				return "Scrolled up"
+				return t("chat:browser.actions.scrolledUp")
 			case "resize":
-				return `Resized to: ${browserAction.size?.split(/[x,]/).join(" x ")}`
+				return t("chat:browser.actions.resized", { size: browserAction.size?.split(/[x,]/).join(" x ") })
+			case "screenshot":
+				return t("chat:browser.actions.screenshotSaved")
 			case "close":
-				return "Closed browser"
+				return t("chat:browser.actions.closed")
 			default:
 				return browserAction.action
 		}
-	}, [browserAction, viewportDimensions])
+	}, [browserAction, viewportDimensions, t])
 
 	// Auto-open Browser Session panel when:
 	// 1. This is a "launch" action (new browser session) - always opens and navigates to launch

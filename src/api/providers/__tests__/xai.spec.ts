@@ -1,5 +1,15 @@
 // npx vitest api/providers/__tests__/xai.spec.ts
 
+// Mock TelemetryService - must come before other imports
+const mockCaptureException = vitest.hoisted(() => vitest.fn())
+vitest.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: {
+			captureException: mockCaptureException,
+		},
+	},
+}))
+
 const mockCreate = vitest.fn()
 
 vitest.mock("openai", () => {
@@ -25,6 +35,7 @@ describe("XAIHandler", () => {
 		// Reset all mocks
 		vi.clearAllMocks()
 		mockCreate.mockClear()
+		mockCaptureException.mockClear()
 
 		// Create handler with mock
 		handler = new XAIHandler({})
@@ -299,7 +310,7 @@ describe("XAIHandler", () => {
 			},
 		]
 
-		it("should include tools in request when model supports native tools and tools are provided", async () => {
+		it("should include tools in request when model supports native tools and tools are provided (native is default)", async () => {
 			const handlerWithTools = new XAIHandler({ apiModelId: "grok-3" })
 
 			mockCreate.mockImplementationOnce(() => {
@@ -315,7 +326,6 @@ describe("XAIHandler", () => {
 			const messageGenerator = handlerWithTools.createMessage("test prompt", [], {
 				taskId: "test-task-id",
 				tools: testTools,
-				toolProtocol: "native",
 			})
 			await messageGenerator.next()
 
@@ -350,7 +360,6 @@ describe("XAIHandler", () => {
 			const messageGenerator = handlerWithTools.createMessage("test prompt", [], {
 				taskId: "test-task-id",
 				tools: testTools,
-				toolProtocol: "native",
 				tool_choice: "auto",
 			})
 			await messageGenerator.next()
@@ -443,7 +452,6 @@ describe("XAIHandler", () => {
 			const stream = handlerWithTools.createMessage("test prompt", [], {
 				taskId: "test-task-id",
 				tools: testTools,
-				toolProtocol: "native",
 			})
 
 			const chunks = []
@@ -484,7 +492,6 @@ describe("XAIHandler", () => {
 			const messageGenerator = handlerWithTools.createMessage("test prompt", [], {
 				taskId: "test-task-id",
 				tools: testTools,
-				toolProtocol: "native",
 				parallelToolCalls: true,
 			})
 			await messageGenerator.next()
@@ -494,6 +501,87 @@ describe("XAIHandler", () => {
 					parallel_tool_calls: true,
 				}),
 			)
+		})
+
+		it("should yield tool_call_end events when finish_reason is tool_calls", async () => {
+			// Import NativeToolCallParser to set up state
+			const { NativeToolCallParser } = await import("../../../core/assistant-message/NativeToolCallParser")
+
+			// Clear any previous state
+			NativeToolCallParser.clearRawChunkState()
+
+			const handlerWithTools = new XAIHandler({ apiModelId: "grok-3" })
+
+			mockCreate.mockImplementationOnce(() => {
+				return {
+					[Symbol.asyncIterator]: () => ({
+						next: vi
+							.fn()
+							.mockResolvedValueOnce({
+								done: false,
+								value: {
+									choices: [
+										{
+											delta: {
+												tool_calls: [
+													{
+														index: 0,
+														id: "call_xai_test",
+														function: {
+															name: "test_tool",
+															arguments: '{"arg1":"value"}',
+														},
+													},
+												],
+											},
+										},
+									],
+								},
+							})
+							.mockResolvedValueOnce({
+								done: false,
+								value: {
+									choices: [
+										{
+											delta: {},
+											finish_reason: "tool_calls",
+										},
+									],
+									usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+								},
+							})
+							.mockResolvedValueOnce({ done: true }),
+					}),
+				}
+			})
+
+			const stream = handlerWithTools.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+				tools: testTools,
+			})
+
+			const chunks = []
+			for await (const chunk of stream) {
+				// Simulate what Task.ts does: when we receive tool_call_partial,
+				// process it through NativeToolCallParser to populate rawChunkTracker
+				if (chunk.type === "tool_call_partial") {
+					NativeToolCallParser.processRawChunk({
+						index: chunk.index,
+						id: chunk.id,
+						name: chunk.name,
+						arguments: chunk.arguments,
+					})
+				}
+				chunks.push(chunk)
+			}
+
+			// Should have tool_call_partial and tool_call_end
+			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+
+			expect(partialChunks).toHaveLength(1)
+			expect(endChunks).toHaveLength(1)
+			expect(endChunks[0].id).toBe("call_xai_test")
 		})
 	})
 })

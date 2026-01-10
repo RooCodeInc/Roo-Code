@@ -29,6 +29,7 @@ vi.mock("../../task-persistence", () => ({
 vi.mock("../../../api/providers/fetchers/modelCache", () => ({
 	getModels: vi.fn(),
 	flushModels: vi.fn(),
+	getModelsFromCache: vi.fn().mockReturnValue(undefined),
 }))
 
 vi.mock("../checkpointRestoreHandler", () => ({
@@ -40,6 +41,7 @@ import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
 import type { ClineMessage } from "@roo-code/types"
 import type { ApiMessage } from "../../task-persistence/apiMessages"
+import { MessageManager } from "../../message-manager"
 
 describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 	let mockClineProvider: ClineProvider
@@ -57,6 +59,7 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 			overwriteApiConversationHistory: vi.fn(),
 			handleWebviewAskResponse: vi.fn(),
 		}
+		mockCurrentTask.messageManager = new MessageManager(mockCurrentTask)
 
 		// Create mock provider
 		mockClineProvider = {
@@ -68,6 +71,10 @@ describe("webviewMessageHandler - Edit Message with Timestamp Fallback", () => {
 				globalStorageUri: { fsPath: "/mock/storage" },
 			},
 			log: vi.fn(),
+			getState: vi.fn().mockResolvedValue({
+				maxImageFileSize: 5,
+				maxTotalImageSize: 20,
+			}),
 		} as unknown as ClineProvider
 	})
 

@@ -1,17 +1,12 @@
 import { ToolProtocol, TOOL_PROTOCOL } from "@roo-code/types"
-import { CodeIndexManager } from "../../../services/code-index/manager"
 import { isNativeProtocol } from "@roo-code/types"
 
-export function getToolUseGuidelinesSection(
-	codeIndexManager?: CodeIndexManager,
-	protocol: ToolProtocol = TOOL_PROTOCOL.XML,
-): string {
-	const isCodebaseSearchAvailable =
-		codeIndexManager &&
-		codeIndexManager.isFeatureEnabled &&
-		codeIndexManager.isFeatureConfigured &&
-		codeIndexManager.isInitialized
+import { experiments, EXPERIMENT_IDS } from "../../../shared/experiments"
 
+export function getToolUseGuidelinesSection(
+	protocol: ToolProtocol = TOOL_PROTOCOL.XML,
+	experimentFlags?: Record<string, boolean>,
+): string {
 	// Build guidelines array with automatic numbering
 	let itemNumber = 1
 	const guidelinesList: string[] = []
@@ -21,25 +16,27 @@ export function getToolUseGuidelinesSection(
 		`${itemNumber++}. Assess what information you already have and what information you need to proceed with the task.`,
 	)
 
-	// Conditional codebase search guideline
-	if (isCodebaseSearchAvailable) {
-		guidelinesList.push(
-			`${itemNumber++}. **CRITICAL: For ANY exploration of code you haven't examined yet in this conversation, you MUST use the \`codebase_search\` tool FIRST before any other search or file exploration tools.** This applies throughout the entire conversation, not just at the beginning. The codebase_search tool uses semantic search to find relevant code based on meaning rather than just keywords, making it far more effective than regex-based search_files for understanding implementations. Even if you've already explored some code, any new area of exploration requires codebase_search first.`,
-		)
-		guidelinesList.push(
-			`${itemNumber++}. Choose the most appropriate tool based on the task and the tool descriptions provided. After using codebase_search for initial exploration of any new code area, you may then use more specific tools like search_files (for regex patterns), list_files, or read_file for detailed examination. For example, using the list_files tool is more effective than running a command like \`ls\` in the terminal. It's critical that you think about each available tool and use the one that best fits the current step in the task.`,
-		)
-	} else {
-		guidelinesList.push(
-			`${itemNumber++}. Choose the most appropriate tool based on the task and the tool descriptions provided. Assess if you need additional information to proceed, and which of the available tools would be most effective for gathering this information. For example using the list_files tool is more effective than running a command like \`ls\` in the terminal. It's critical that you think about each available tool and use the one that best fits the current step in the task.`,
-		)
-	}
+	guidelinesList.push(
+		`${itemNumber++}. Choose the most appropriate tool based on the task and the tool descriptions provided. Assess if you need additional information to proceed, and which of the available tools would be most effective for gathering this information. For example using the list_files tool is more effective than running a command like \`ls\` in the terminal. It's critical that you think about each available tool and use the one that best fits the current step in the task.`,
+	)
 
 	// Remaining guidelines - different for native vs XML protocol
 	if (isNativeProtocol(protocol)) {
-		guidelinesList.push(
-			`${itemNumber++}. If multiple actions are needed, you may use multiple tools in a single message when appropriate, or use tools iteratively across messages. Each tool use should be informed by the results of previous tool uses. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.`,
+		// Check if multiple native tool calls is enabled via experiment
+		const isMultipleNativeToolCallsEnabled = experiments.isEnabled(
+			experimentFlags ?? {},
+			EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS,
 		)
+
+		if (isMultipleNativeToolCallsEnabled) {
+			guidelinesList.push(
+				`${itemNumber++}. If multiple actions are needed, you may use multiple tools in a single message when appropriate, or use tools iteratively across messages. Each tool use should be informed by the results of previous tool uses. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.`,
+			)
+		} else {
+			guidelinesList.push(
+				`${itemNumber++}. If multiple actions are needed, use one tool at a time per message to accomplish the task iteratively, with each tool use being informed by the result of the previous tool use. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.`,
+			)
+		}
 	} else {
 		guidelinesList.push(
 			`${itemNumber++}. If multiple actions are needed, use one tool at a time per message to accomplish the task iteratively, with each tool use being informed by the result of the previous tool use. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.`,

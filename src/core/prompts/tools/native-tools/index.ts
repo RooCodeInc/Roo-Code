@@ -9,12 +9,13 @@ import codebaseSearch from "./codebase_search"
 import executeCommand from "./execute_command"
 import fetchInstructions from "./fetch_instructions"
 import generateImage from "./generate_image"
-import listCodeDefinitionNames from "./list_code_definition_names"
 import listFiles from "./list_files"
 import newTask from "./new_task"
-import { createReadFileTool } from "./read_file"
+import { createReadFileTool, type ReadFileToolOptions } from "./read_file"
 import runSlashCommand from "./run_slash_command"
 import searchAndReplace from "./search_and_replace"
+import searchReplace from "./search_replace"
+import edit_file from "./edit_file"
 import searchFiles from "./search_files"
 import switchMode from "./switch_mode"
 import updateTodoList from "./update_todo_list"
@@ -22,14 +23,35 @@ import writeToFile from "./write_to_file"
 
 export { getMcpServerTools } from "./mcp_server"
 export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./converters"
+export type { ReadFileToolOptions } from "./read_file"
+
+/**
+ * Options for customizing the native tools array.
+ */
+export interface NativeToolsOptions {
+	/** Whether to include line_ranges support in read_file tool (default: true) */
+	partialReadsEnabled?: boolean
+	/** Maximum number of files that can be read in a single read_file request (default: 5) */
+	maxConcurrentFileReads?: number
+	/** Whether the model supports image processing (default: false) */
+	supportsImages?: boolean
+}
 
 /**
  * Get native tools array, optionally customizing based on settings.
  *
- * @param partialReadsEnabled - Whether to include line_ranges support in read_file tool (default: true)
+ * @param options - Configuration options for the tools
  * @returns Array of native tool definitions
  */
-export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat.ChatCompletionTool[] {
+export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.ChatCompletionTool[] {
+	const { partialReadsEnabled = true, maxConcurrentFileReads = 5, supportsImages = false } = options
+
+	const readFileOptions: ReadFileToolOptions = {
+		partialReadsEnabled,
+		maxConcurrentFileReads,
+		supportsImages,
+	}
+
 	return [
 		accessMcpResource,
 		apply_diff,
@@ -41,12 +63,13 @@ export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat
 		executeCommand,
 		fetchInstructions,
 		generateImage,
-		listCodeDefinitionNames,
 		listFiles,
 		newTask,
-		createReadFileTool(partialReadsEnabled),
+		createReadFileTool(readFileOptions),
 		runSlashCommand,
 		searchAndReplace,
+		searchReplace,
+		edit_file,
 		searchFiles,
 		switchMode,
 		updateTodoList,
@@ -55,4 +78,4 @@ export function getNativeTools(partialReadsEnabled: boolean = true): OpenAI.Chat
 }
 
 // Backward compatibility: export default tools with line ranges enabled
-export const nativeTools = getNativeTools(true)
+export const nativeTools = getNativeTools()

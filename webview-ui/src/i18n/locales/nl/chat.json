@@ -114,6 +114,7 @@
 	},
 	"addImages": "Afbeeldingen toevoegen aan bericht",
 	"sendMessage": "Bericht verzenden",
+	"pressToSend": "Druk op {{keyCombination}} om te verzenden",
 	"stopTts": "Stop tekst-naar-spraak",
 	"typeMessage": "Typ een bericht...",
 	"typeTask": "Typ hier je taak...",
@@ -131,7 +132,22 @@
 		"failed": "API-verzoek mislukt",
 		"streaming": "API-verzoek...",
 		"cancelled": "API-verzoek geannuleerd",
-		"streamingFailed": "API-streaming mislukt"
+		"streamingFailed": "API-streaming mislukt",
+		"rateLimitWait": "Snelheidsbeperking",
+		"errorTitle": "Fout van provider {{code}}",
+		"errorMessage": {
+			"docs": "Documentatie",
+			"goToSettings": "Instellingen",
+			"400": "De provider kon het verzoek niet verwerken zoals ingediend. Stop de taak en probeer een ander benadering.",
+			"401": "Kon niet authenticeren met provider. Controleer je API-sleutelconfiguratie.",
+			"402": "Het lijkt erop dat je funds/credits op je account op zijn. Ga naar je provider en voeg meer toe om door te gaan.",
+			"403": "Niet geautoriseerd. Je API-sleutel is geldig, maar de provider weigerde dit verzoek in te willigen.",
+			"429": "Te veel verzoeken. Je bent rate-gelimiteerd door de provider. Wacht alsjeblieft even voor je volgende API-aanroep.",
+			"500": "Provider-serverfout. Er is iets mis aan de kant van de provider, er is niets mis met je verzoek.",
+			"unknown": "Onbekende API-fout. Neem alsjeblieft contact op met Roo Code-ondersteuning.",
+			"connection": "Verbindingsfout. Zorg ervoor dat je een werkende internetverbinding hebt.",
+			"claudeCodeNotAuthenticated": "Je moet inloggen om Claude Code te gebruiken. Ga naar Instellingen en klik op \"Inloggen bij Claude Code\" om te authenticeren."
+		}
 	},
 	"checkpoint": {
 		"regular": "Checkpoint",
@@ -181,8 +197,6 @@
 		"didViewTopLevel": "Roo heeft de bovenliggende bestanden in deze map bekeken",
 		"wantsToViewRecursive": "Roo wil alle bestanden in deze map recursief bekijken",
 		"didViewRecursive": "Roo heeft alle bestanden in deze map recursief bekeken",
-		"wantsToViewDefinitions": "Roo wil broncode-definitienamen bekijken die in deze map worden gebruikt",
-		"didViewDefinitions": "Roo heeft broncode-definitienamen bekeken die in deze map worden gebruikt",
 		"wantsToSearch": "Roo wil deze map doorzoeken op <code>{{regex}}</code>",
 		"didSearch": "Roo heeft deze map doorzocht op <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo wil deze map (buiten werkruimte) doorzoeken op <code>{{regex}}</code>",
@@ -190,9 +204,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo wil de bovenliggende bestanden in deze map (buiten werkruimte) bekijken",
 		"didViewTopLevelOutsideWorkspace": "Roo heeft de bovenliggende bestanden in deze map (buiten werkruimte) bekeken",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo wil alle bestanden in deze map (buiten werkruimte) recursief bekijken",
-		"didViewRecursiveOutsideWorkspace": "Roo heeft alle bestanden in deze map (buiten werkruimte) recursief bekeken",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo wil broncode-definitienamen bekijken die in deze map (buiten werkruimte) worden gebruikt",
-		"didViewDefinitionsOutsideWorkspace": "Roo heeft broncode-definitienamen bekeken die in deze map (buiten werkruimte) worden gebruikt"
+		"didViewRecursiveOutsideWorkspace": "Roo heeft alle bestanden in deze map (buiten werkruimte) recursief bekeken"
 	},
 	"commandOutput": "Commando-uitvoer",
 	"commandExecution": {
@@ -243,10 +255,24 @@
 	},
 	"taskCompleted": "Taak voltooid",
 	"error": "Fout",
+	"modelResponseIncomplete": "Modelrespons onvolledig",
+	"modelResponseErrors": {
+		"noToolsUsed": "Het model heeft geen tools gebruikt in zijn reactie. Dit gebeurt meestal wanneer het model alleen tekst/redenering levert zonder de vereiste tools aan te roepen om de taak te voltooien.",
+		"noToolsUsedDetails": "Het model heeft tekst/redenering geleverd maar heeft geen van de vereiste tools aangeroepen. Dit geeft meestal aan dat het model de taak verkeerd heeft begrepen of moeite heeft om te bepalen welke tool te gebruiken. Het model is automatisch gevraagd om opnieuw te proberen met correct gebruik van tools.",
+		"noAssistantMessages": "Het model heeft geen reactie-inhoud geleverd. Dit kan wijzen op een probleem met de API of de output van het model.",
+		"noAssistantMessagesDetails": "Het taalmodel heeft een lege reactie geretourneerd zonder tekst of tool-aanroepen. Dit kan gebeuren door API-problemen, snelheidslimieten of modelspecifieke problemen. Het model is automatisch gevraagd om opnieuw te proberen."
+	},
 	"diffError": {
 		"title": "Bewerking mislukt"
 	},
 	"troubleMessage": "Roo ondervindt problemen...",
+	"errorDetails": {
+		"link": "Details",
+		"title": "Foutdetails",
+		"copyToClipboard": "Naar klembord kopiëren",
+		"copied": "Gekopieerd!",
+		"diagnostics": "Gedetailleerde foutinformatie ophalen"
+	},
 	"powershell": {
 		"issues": "Het lijkt erop dat je problemen hebt met Windows PowerShell, zie deze"
 	},
@@ -266,10 +292,11 @@
 		"triggerLabel_zero": "0 automatisch goedgekeurd",
 		"triggerLabel_one": "1 automatisch goedgekeurd",
 		"triggerLabel_other": "{{count}} automatisch goedgekeurd",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} uitgebracht",
+		"title": "Roo Code {{version}} uitgebracht",
+		"support": "Steun Roo Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
 			"note": "(Opmerking: prompts en aanvullingen worden gelogd door de modelmaker en gebruikt om het model te verbeteren)",
@@ -278,9 +305,10 @@
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
 		"release": {
-			"heading": "Nieuw:",
-			"subtasks": "Verbeterde subtaak-orchestratie met automatisch hervatten van bovenliggende taak en veiligheid bij eenmalig openen voor betere multi-task workflows",
-			"nativeTools": "Native tool-aanroepen worden nu ondersteund door 13+ providers, waaronder Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini en meer"
+			"heading": "Wat is er nieuw:",
+			"stickyProfiles": "Sticky Provider Profielen - Taken onthouden nu hun API-configuratie, dus het wisselen van profiel in het midden van een sessie beïnvloedt niet de lopende taken.",
+			"imageMentions": "Bestand @mentions afbeelding - Referentie afbeeldingen rechtstreeks in de chat met behulp van @ mentions om ze in uw context op te nemen.",
+			"brrrMode": "YOLO is nu BRRR - Alles automatisch goedkeuren is hernoemd van \"YOLO\" naar \"BRRR\". Uiteraard."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
@@ -288,23 +316,30 @@
 			"description": "De agents werken samen in de cloud en kunnen worden geactiveerd vanaf het web of via Slack.",
 			"tryButton": "Probeer Cloud-agents"
 		},
-		"careers": "Ook, <careersLink>we nemen aan!</careersLink>",
-		"socialLinks": "Sluit je bij ons aan op <xLink>X</xLink>, <discordLink>Discord</discordLink>, of <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Ook, <careersLink>we nemen aan!</careersLink>"
 	},
 	"reasoning": {
 		"thinking": "Denkt na",
 		"seconds": "{{count}}s"
 	},
-	"contextCondense": {
-		"title": "Context samengevat",
-		"condensing": "Context aan het samenvatten...",
-		"errorHeader": "Context samenvatten mislukt",
-		"tokens": "tokens"
+	"contextManagement": {
+		"tokens": "tokens",
+		"condensation": {
+			"title": "Context samengevat",
+			"inProgress": "Context aan het samenvatten...",
+			"errorHeader": "Context samenvatten mislukt"
+		},
+		"truncation": {
+			"title": "Context ingekort",
+			"inProgress": "Context aan het inkorten...",
+			"messagesRemoved": "{{count}} bericht verwijderd",
+			"messagesRemoved_other": "{{count}} berichten verwijderd",
+			"description": "Oudere berichten zijn uit het gesprek verwijderd om binnen de limiet van het contextvenster te blijven. Dit is een snelle maar minder contextbehoudende aanpak in vergelijking met samenvoeging."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "Kopiëren naar invoer (zelfde als shift + klik)",
-		"autoSelectCountdown": "Automatische selectie in {{count}}s",
-		"countdownDisplay": "{{count}}s"
+		"timerPrefix": "Automatisch goedkeuren ingeschakeld. Selecteren in {{seconds}}s…"
 	},
 	"browser": {
 		"session": "Browsersessie",
@@ -321,13 +356,25 @@
 		"sessionStarted": "Browsersessie gestart",
 		"actions": {
 			"title": "Browseractie: ",
+			"launched": "Browser gestart",
 			"launch": "Browser starten op {{url}}",
+			"clicked": "Geklikt ({{coordinate}})",
 			"click": "Klik ({{coordinate}})",
+			"typed": "Getypt: {{text}}",
 			"type": "Typ \"{{text}}\"",
+			"pressed": "Ingedrukt: {{key}}",
 			"press": "Druk op {{key}}",
+			"scrolledDown": "Naar beneden gescrolld",
 			"scrollDown": "Scroll naar beneden",
+			"scrolledUp": "Naar boven gescrolld",
 			"scrollUp": "Scroll naar boven",
+			"hovered": "Zweefde ({{coordinate}})",
 			"hover": "Zweven ({{coordinate}})",
+			"resized": "Grootte gewijzigd naar: {{size}}",
+			"resize": "Grootte wijzigen naar {{size}}",
+			"screenshotSaved": "Schermopname opgeslagen",
+			"screenshot": "Schermopname opslaan naar {{path}}",
+			"closed": "Browser gesloten",
 			"close": "Browser sluiten"
 		}
 	},

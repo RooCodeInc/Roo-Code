@@ -9,7 +9,13 @@ import { BaseProvider } from "../../../api/providers/base-provider"
 import { ApiMessage } from "../../task-persistence/apiMessages"
 import * as condenseModule from "../../condense"
 
-import { TOKEN_BUFFER_PERCENTAGE, estimateTokenCount, truncateConversation, manageContext } from "../index"
+import {
+	TOKEN_BUFFER_PERCENTAGE,
+	estimateTokenCount,
+	truncateConversation,
+	manageContext,
+	willManageContext,
+} from "../index"
 
 // Create a mock ApiHandler for testing
 class MockApiHandler extends BaseProvider {
@@ -65,14 +71,12 @@ describe("Context Management", () => {
 
 			// With 2 messages after the first, 0.5 fraction means remove 1 message
 			// But 1 is odd, so it rounds down to 0 (to make it even)
-			// Result should have messages + truncation marker
-			expect(result.messages.length).toBe(4) // First message + truncation marker + 2 remaining messages
+			// No truncation happens, so no marker is inserted
+			expect(result.messages.length).toBe(3) // Original messages unchanged
+			expect(result.messagesRemoved).toBe(0)
 			expect(result.messages[0]).toEqual(messages[0])
-			// messages[1] is the truncation marker
-			expect(result.messages[1].isTruncationMarker).toBe(true)
-			// Original messages[1] and messages[2] are at indices 2 and 3 now
-			expect(result.messages[2].content).toEqual(messages[1].content)
-			expect(result.messages[3].content).toEqual(messages[2].content)
+			expect(result.messages[1]).toEqual(messages[1])
+			expect(result.messages[2]).toEqual(messages[2])
 		})
 
 		it("should remove the specified fraction of messages (rounded to even number)", () => {
@@ -92,11 +96,16 @@ describe("Context Management", () => {
 			expect(result.messages.length).toBe(6) // 5 original + 1 marker
 			expect(result.messagesRemoved).toBe(2)
 			expect(result.messages[0]).toEqual(messages[0])
-			expect(result.messages[1].isTruncationMarker).toBe(true)
-			// Messages 2 and 3 (indices 1 and 2 from original) should be tagged
+
+			// Messages at indices 1 and 2 from original should be tagged
+			expect(result.messages[1].truncationParent).toBe(result.truncationId)
 			expect(result.messages[2].truncationParent).toBe(result.truncationId)
-			expect(result.messages[3].truncationParent).toBe(result.truncationId)
-			// Messages 4 and 5 (indices 3 and 4 from original) should NOT be tagged
+
+			// Marker should be at index 3 (at the boundary, after truncated messages)
+			expect(result.messages[3].isTruncationMarker).toBe(true)
+			expect(result.messages[3].role).toBe("user")
+
+			// Messages at indices 3 and 4 from original should NOT be tagged (now at indices 4 and 5)
 			expect(result.messages[4].truncationParent).toBeUndefined()
 			expect(result.messages[5].truncationParent).toBeUndefined()
 		})
@@ -117,9 +126,8 @@ describe("Context Management", () => {
 			const result = truncateConversation(messages, 0.3, taskId)
 
 			expect(result.messagesRemoved).toBe(0) // No messages removed
-			// Should still have truncation marker inserted
-			expect(result.messages.length).toBe(8) // 7 original + 1 marker
-			expect(result.messages[1].isTruncationMarker).toBe(true)
+			// When nothing is truncated, no marker is inserted
+			expect(result.messages.length).toBe(7) // Original messages unchanged
 		})
 
 		it("should handle edge case with fracToRemove = 0", () => {
@@ -132,9 +140,8 @@ describe("Context Management", () => {
 			const result = truncateConversation(messages, 0, taskId)
 
 			expect(result.messagesRemoved).toBe(0)
-			// Should have original messages + truncation marker
-			expect(result.messages.length).toBe(4)
-			expect(result.messages[1].isTruncationMarker).toBe(true)
+			// When nothing is truncated, no marker is inserted
+			expect(result.messages.length).toBe(3) // Original messages unchanged
 		})
 
 		it("should handle edge case with fracToRemove = 1", () => {
@@ -153,11 +160,16 @@ describe("Context Management", () => {
 			// Should have all original messages + truncation marker
 			expect(result.messages.length).toBe(5) // 4 original + 1 marker
 			expect(result.messages[0]).toEqual(messages[0])
-			expect(result.messages[1].isTruncationMarker).toBe(true)
-			// Messages at indices 2 and 3 should be tagged (original indices 1 and 2)
+
+			// Messages at indices 1 and 2 should be tagged
+			expect(result.messages[1].truncationParent).toBe(result.truncationId)
 			expect(result.messages[2].truncationParent).toBe(result.truncationId)
-			expect(result.messages[3].truncationParent).toBe(result.truncationId)
-			// Last message should NOT be tagged
+
+			// Marker should be at index 3 (at the boundary)
+			expect(result.messages[3].isTruncationMarker).toBe(true)
+			expect(result.messages[3].role).toBe("user")
+
+			// Last message should NOT be tagged (now at index 4)
 			expect(result.messages[4].truncationParent).toBeUndefined()
 		})
 	})
@@ -1272,6 +1284,220 @@ describe("Context Management", () => {
 			// Should have all original messages + truncation marker (non-destructive)
 			expect(result2.messages.length).toBe(6) // 5 original + 1 marker
 			expect(result2.truncationId).toBeDefined()
+		})
+	})
+
+	/**
+	 * Tests for the willManageContext helper function
+	 */
+	describe("willManageContext", () => {
+		it("should return true when context percent exceeds threshold", () => {
+			const result = willManageContext({
+				totalTokens: 60000,
+				contextWindow: 100000, // 60% of context window
+				maxTokens: 30000,
+				autoCondenseContext: true,
+				autoCondenseContextPercent: 50, // 50% threshold
+				profileThresholds: {},
+				currentProfileId: "default",
+				lastMessageTokens: 0,
+			})
+			expect(result).toBe(true)
+		})
+
+		it("should return false when context percent is below threshold", () => {
+			const result = willManageContext({
+				totalTokens: 40000,
+				contextWindow: 100000, // 40% of context window
+				maxTokens: 30000,
+				autoCondenseContext: true,
+				autoCondenseContextPercent: 50, // 50% threshold
+				profileThresholds: {},
+				currentProfileId: "default",
+				lastMessageTokens: 0,
+			})
+			expect(result).toBe(false)
+		})
+
+		it("should return true when tokens exceed allowedTokens even if autoCondenseContext is false", () => {
+			// allowedTokens = contextWindow * (1 - 0.1) - reservedTokens = 100000 * 0.9 - 30000 = 60000
+			const result = willManageContext({
+				totalTokens: 60001, // Exceeds allowedTokens
+				contextWindow: 100000,
+				maxTokens: 30000,
+				autoCondenseContext: false, // Even with auto-condense disabled
+				autoCondenseContextPercent: 50,
+				profileThresholds: {},
+				currentProfileId: "default",
+				lastMessageTokens: 0,
+			})
+			expect(result).toBe(true)
+		})
+
+		it("should return false when autoCondenseContext is false and tokens are below allowedTokens", () => {
+			// allowedTokens = contextWindow * (1 - 0.1) - reservedTokens = 100000 * 0.9 - 30000 = 60000
+			const result = willManageContext({
+				totalTokens: 59999, // Below allowedTokens
+				contextWindow: 100000,
+				maxTokens: 30000,
+				autoCondenseContext: false,
+				autoCondenseContextPercent: 50, // This shouldn't matter since autoCondenseContext is false
+				profileThresholds: {},
+				currentProfileId: "default",
+				lastMessageTokens: 0,
+			})
+			expect(result).toBe(false)
+		})
+
+		it("should use profile-specific threshold when available", () => {
+			const result = willManageContext({
+				totalTokens: 55000,
+				contextWindow: 100000, // 55% of context window
+				maxTokens: 30000,
+				autoCondenseContext: true,
+				autoCondenseContextPercent: 80, // Global threshold 80%
+				profileThresholds: { "test-profile": 50 }, // Profile threshold 50%
+				currentProfileId: "test-profile",
+				lastMessageTokens: 0,
+			})
+			// Should trigger because 55% > 50% (profile threshold)
+			expect(result).toBe(true)
+		})
+
+		it("should fall back to global threshold when profile threshold is -1", () => {
+			const result = willManageContext({
+				totalTokens: 55000,
+				contextWindow: 100000, // 55% of context window
+				maxTokens: 30000,
+				autoCondenseContext: true,
+				autoCondenseContextPercent: 80, // Global threshold 80%
+				profileThresholds: { "test-profile": -1 }, // Profile uses global
+				currentProfileId: "test-profile",
+				lastMessageTokens: 0,
+			})
+			// Should NOT trigger because 55% < 80% (global threshold)
+			expect(result).toBe(false)
+		})
+
+		it("should include lastMessageTokens in the calculation", () => {
+			// Without lastMessageTokens: 49000 tokens = 49%
+			// With lastMessageTokens: 49000 + 2000 = 51000 tokens = 51%
+			const resultWithoutLastMessage = willManageContext({
+				totalTokens: 49000,
+				contextWindow: 100000,
+				maxTokens: 30000,
+				autoCondenseContext: true,
+				autoCondenseContextPercent: 50, // 50% threshold
+				profileThresholds: {},
+				currentProfileId: "default",
+				lastMessageTokens: 0,
+			})
+			expect(resultWithoutLastMessage).toBe(false)
+
+			const resultWithLastMessage = willManageContext({
+				totalTokens: 49000,
+				contextWindow: 100000,
+				maxTokens: 30000,
+				autoCondenseContext: true,
+				autoCondenseContextPercent: 50, // 50% threshold
+				profileThresholds: {},
+				currentProfileId: "default",
+				lastMessageTokens: 2000, // Pushes total to 51%
+			})
+			expect(resultWithLastMessage).toBe(true)
+		})
+	})
+
+	/**
+	 * Tests for newContextTokensAfterTruncation including system prompt
+	 */
+	describe("newContextTokensAfterTruncation", () => {
+		const createModelInfo = (contextWindow: number, maxTokens?: number): ModelInfo => ({
+			contextWindow,
+			supportsPromptCache: true,
+			maxTokens,
+		})
+
+		it("should include system prompt tokens in newContextTokensAfterTruncation", async () => {
+			const modelInfo = createModelInfo(100000, 30000)
+			const totalTokens = 70001 // Above threshold to trigger truncation
+
+			const messages: ApiMessage[] = [
+				{ role: "user", content: "First message" },
+				{ role: "assistant", content: "Second message" },
+				{ role: "user", content: "Third message" },
+				{ role: "assistant", content: "Fourth message" },
+				{ role: "user", content: "" }, // Small content in last message
+			]
+
+			const systemPrompt = "You are a helpful assistant. Follow these rules carefully."
+
+			const result = await manageContext({
+				messages,
+				totalTokens,
+				contextWindow: modelInfo.contextWindow,
+				maxTokens: modelInfo.maxTokens,
+				apiHandler: mockApiHandler,
+				autoCondenseContext: false,
+				autoCondenseContextPercent: 100,
+				systemPrompt,
+				taskId,
+				profileThresholds: {},
+				currentProfileId: "default",
+			})
+
+			// Should have truncation
+			expect(result.truncationId).toBeDefined()
+			expect(result.newContextTokensAfterTruncation).toBeDefined()
+
+			// The newContextTokensAfterTruncation should include system prompt tokens
+			// Count system prompt tokens to verify
+			const systemPromptTokens = await estimateTokenCount([{ type: "text", text: systemPrompt }], mockApiHandler)
+			expect(systemPromptTokens).toBeGreaterThan(0)
+
+			// newContextTokensAfterTruncation should be >= system prompt tokens
+			// (since it includes system prompt + remaining message tokens)
+			expect(result.newContextTokensAfterTruncation).toBeGreaterThanOrEqual(systemPromptTokens)
+		})
+
+		it("should produce consistent prev vs new token comparison (both including system prompt)", async () => {
+			const modelInfo = createModelInfo(100000, 30000)
+			const totalTokens = 70001 // Above threshold to trigger truncation
+
+			const messages: ApiMessage[] = [
+				{ role: "user", content: "First message" },
+				{ role: "assistant", content: "Second message" },
+				{ role: "user", content: "Third message" },
+				{ role: "assistant", content: "Fourth message" },
+				{ role: "user", content: "" }, // Small content in last message
+			]
+
+			const systemPrompt = "System prompt for testing"
+
+			const result = await manageContext({
+				messages,
+				totalTokens,
+				contextWindow: modelInfo.contextWindow,
+				maxTokens: modelInfo.maxTokens,
+				apiHandler: mockApiHandler,
+				autoCondenseContext: false,
+				autoCondenseContextPercent: 100,
+				systemPrompt,
+				taskId,
+				profileThresholds: {},
+				currentProfileId: "default",
+			})
+
+			// After truncation, newContextTokensAfterTruncation should be less than prevContextTokens
+			// because we removed some messages
+			expect(result.newContextTokensAfterTruncation).toBeDefined()
+			expect(result.newContextTokensAfterTruncation).toBeLessThan(result.prevContextTokens)
+
+			// But newContextTokensAfterTruncation should still be a reasonable value
+			// (not near-zero like the bug showed) - it should be at least
+			// a significant fraction of prevContextTokens after 50% truncation
+			// With system prompt included, we expect roughly 50% of the messages remaining
+			expect(result.newContextTokensAfterTruncation).toBeGreaterThan(0)
 		})
 	})
 })

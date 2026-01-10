@@ -105,6 +105,7 @@
 	"enhancePrompt": "Mejorar el mensaje con contexto adicional",
 	"addImages": "Agregar imágenes al mensaje",
 	"sendMessage": "Enviar mensaje",
+	"pressToSend": "Presiona {{keyCombination}} para enviar",
 	"stopTts": "Detener texto a voz",
 	"typeMessage": "Escribe un mensaje...",
 	"typeTask": "Escribe tu tarea aquí...",
@@ -136,7 +137,22 @@
 		"failed": "Solicitud API falló",
 		"streaming": "Solicitud API...",
 		"cancelled": "Solicitud API cancelada",
-		"streamingFailed": "Transmisión API falló"
+		"streamingFailed": "Transmisión API falló",
+		"rateLimitWait": "Limitación de tasa",
+		"errorTitle": "Error del proveedor {{code}}",
+		"errorMessage": {
+			"docs": "Documentación",
+			"goToSettings": "Configuración",
+			"400": "El proveedor no pudo procesar la solicitud tal como se hizo. Detén la tarea e intenta un enfoque diferente.",
+			"401": "No se pudo autenticar con el proveedor. Por favor verifica tu configuración de clave API.",
+			"402": "Parece que se te han acabado los fondos/créditos en tu cuenta. Ve a tu proveedor y agrega más para continuar.",
+			"403": "No autorizado. Tu clave API es válida, pero el proveedor se negó a completar esta solicitud.",
+			"429": "Demasiadas solicitudes. Te estás viendo limitado por el proveedor. Por favor espera un poco antes de tu próxima llamada API.",
+			"500": "Error del servidor del proveedor. Algo está mal en el lado del proveedor, no hay nada mal con tu solicitud.",
+			"unknown": "Error API desconocido. Por favor contacta al soporte de Roo Code.",
+			"connection": "Error de conexión. Asegúrate de tener una conexión a Internet funcional.",
+			"claudeCodeNotAuthenticated": "Debes iniciar sesión para usar Claude Code. Ve a Configuración y haz clic en \"Iniciar sesión en Claude Code\" para autenticarte."
+		}
 	},
 	"checkpoint": {
 		"regular": "Punto de control",
@@ -186,8 +202,6 @@
 		"didViewTopLevel": "Roo vio los archivos de nivel superior en este directorio",
 		"wantsToViewRecursive": "Roo quiere ver recursivamente todos los archivos en este directorio",
 		"didViewRecursive": "Roo vio recursivamente todos los archivos en este directorio",
-		"wantsToViewDefinitions": "Roo quiere ver nombres de definiciones de código fuente utilizados en este directorio",
-		"didViewDefinitions": "Roo vio nombres de definiciones de código fuente utilizados en este directorio",
 		"wantsToSearch": "Roo quiere buscar en este directorio <code>{{regex}}</code>",
 		"didSearch": "Roo buscó en este directorio <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo quiere buscar en este directorio (fuera del espacio de trabajo) <code>{{regex}}</code>",
@@ -195,9 +209,7 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo quiere ver los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
 		"didViewTopLevelOutsideWorkspace": "Roo vio los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo quiere ver recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
-		"didViewRecursiveOutsideWorkspace": "Roo vio recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
-		"wantsToViewDefinitionsOutsideWorkspace": "Roo quiere ver nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo)",
-		"didViewDefinitionsOutsideWorkspace": "Roo vio nombres de definiciones de código fuente utilizados en este directorio (fuera del espacio de trabajo)"
+		"didViewRecursiveOutsideWorkspace": "Roo vio recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)"
 	},
 	"commandOutput": "Salida del comando",
 	"commandExecution": {
@@ -247,6 +259,20 @@
 		"hasQuestion": "Roo tiene una pregunta"
 	},
 	"taskCompleted": "Tarea completada",
+	"modelResponseIncomplete": "Respuesta del modelo incompleta",
+	"modelResponseErrors": {
+		"noToolsUsed": "El modelo no utilizó ninguna herramienta en su respuesta. Esto suele ocurrir cuando el modelo solo proporciona texto/razonamiento sin llamar a las herramientas necesarias para completar la tarea.",
+		"noToolsUsedDetails": "El modelo proporcionó texto/razonamiento pero no llamó a ninguna de las herramientas necesarias. Esto generalmente indica que el modelo malinterpretó la tarea o tiene dificultades para determinar qué herramienta usar. El modelo ha sido solicitado automáticamente para reintentar con el uso adecuado de herramientas.",
+		"noAssistantMessages": "El modelo no proporcionó ningún contenido de respuesta. Esto puede indicar un problema con la API o la salida del modelo.",
+		"noAssistantMessagesDetails": "El modelo de lenguaje devolvió una respuesta vacía sin texto ni llamadas a herramientas. Esto puede ocurrir debido a problemas de API, limitación de velocidad o problemas específicos del modelo. El modelo ha sido solicitado automáticamente para reintentar."
+	},
+	"errorDetails": {
+		"link": "Detalles",
+		"title": "Detalles del error",
+		"copyToClipboard": "Copiar al portapapeles",
+		"copied": "¡Copiado!",
+		"diagnostics": "Obtener información de error detallada"
+	},
 	"powershell": {
 		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta"
 	},
@@ -266,25 +292,34 @@
 		"triggerLabel_zero": "0 aprobaciones automáticas",
 		"triggerLabel_one": "1 aprobación automática",
 		"triggerLabel_other": "{{count}} aprobaciones automáticas",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Pensando",
 		"seconds": "{{count}}s"
 	},
-	"contextCondense": {
-		"title": "Contexto condensado",
-		"condensing": "Condensando contexto...",
-		"errorHeader": "Error al condensar el contexto",
-		"tokens": "tokens"
+	"contextManagement": {
+		"tokens": "tokens",
+		"condensation": {
+			"title": "Contexto condensado",
+			"inProgress": "Condensando contexto...",
+			"errorHeader": "Error al condensar el contexto"
+		},
+		"truncation": {
+			"title": "Contexto truncado",
+			"inProgress": "Truncando contexto...",
+			"messagesRemoved": "{{count}} mensaje eliminado",
+			"messagesRemoved_other": "{{count}} mensajes eliminados",
+			"description": "Se eliminaron mensajes más antiguos de la conversación para mantenerse dentro del límite de la ventana de contexto. Este es un enfoque rápido pero menos conservador del contexto en comparación con la condensación."
+		}
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar a la entrada (o Shift + clic)",
-		"autoSelectCountdown": "Selección automática en {{count}}s",
-		"countdownDisplay": "{{count}}s"
+		"timerPrefix": "Aprobación automática habilitada. Seleccionando en {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "🎉 Roo Code {{version}} publicado",
+		"title": "Roo Code {{version}} publicado",
+		"support": "Por favor, apoya a Roo Code dándonos una estrella en <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
 			"feature": "<bold>Modelo stealth GRATUITO por tiempo limitado</bold> - Code Supernova: ¡Ahora actualizado con una <bold>ventana de contexto de 1M tokens</bold>! Un modelo de codificación agéntica versátil que soporta entradas de imágenes, accesible a través de Roo Code Cloud.",
 			"note": "(Nota: los prompts y completaciones son registrados por el creador del modelo y utilizados para mejorarlo)",
@@ -293,9 +328,10 @@
 			"goToSettingsButton": "Ir a Configuración"
 		},
 		"release": {
-			"heading": "Novedades en esta versión:",
-			"subtasks": "Orquestación mejorada de subtareas con reanudación automática de padres y seguridad de apertura única para mejores flujos de trabajo multitarea",
-			"nativeTools": "Ahora se admite la llamada de herramientas nativas en más de 13 proveedores, incluidos Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini y más"
+			"heading": "Qué hay de nuevo:",
+			"stickyProfiles": "Perfiles de proveedor persistentes - Las tareas ahora recuerdan su configuración de API, por lo que cambiar de perfil a mitad de sesión no afecta las tareas en ejecución.",
+			"imageMentions": "Menciones de archivos de imagen - Haz referencia a imágenes directamente en el chat usando menciones @ para incluirlas en tu contexto.",
+			"brrrMode": "YOLO ahora es BRRR - Aprobar todo automáticamente ha sido renombrado de \"YOLO\" a \"BRRR\". Obviamente."
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",
@@ -303,8 +339,7 @@
 			"description": "Los agentes trabajan juntos en la nube y se pueden activar desde la web o mediante Slack.",
 			"tryButton": "Prueba los Agentes en la Nube"
 		},
-		"careers": "Además, <careersLink>¡estamos contratando!</careersLink>",
-		"socialLinks": "Únete a nosotros en <xLink>X</xLink>, <discordLink>Discord</discordLink>, o <redditLink>r/RooCode</redditLink> 🚀"
+		"careers": "Además, <careersLink>¡estamos contratando!</careersLink>"
 	},
 	"browser": {
 		"session": "Sesión del navegador",
@@ -321,13 +356,25 @@
 		"sessionStarted": "Sesión de navegador iniciada",
 		"actions": {
 			"title": "Acción del navegador: ",
+			"launched": "Navegador iniciado",
 			"launch": "Iniciar navegador en {{url}}",
+			"clicked": "Clic en: {{coordinate}}",
 			"click": "Clic ({{coordinate}})",
+			"typed": "Escrito: {{text}}",
 			"type": "Escribir \"{{text}}\"",
+			"pressed": "Pulsado: {{key}}",
 			"press": "Pulsar {{key}}",
+			"scrolledDown": "Desplazado hacia abajo",
 			"scrollDown": "Desplazar hacia abajo",
+			"scrolledUp": "Desplazado hacia arriba",
 			"scrollUp": "Desplazar hacia arriba",
+			"hovered": "Flotado en: {{coordinate}}",
 			"hover": "Flotar ({{coordinate}})",
+			"resized": "Tamaño cambiado a: {{size}}",
+			"resize": "Cambiar tamaño a {{size}}",
+			"screenshotSaved": "Captura de pantalla guardada",
+			"screenshot": "Guardar captura de pantalla en {{path}}",
+			"closed": "Navegador cerrado",
 			"close": "Cerrar navegador"
 		}
 	},
