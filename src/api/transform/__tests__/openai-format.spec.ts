@@ -482,6 +482,122 @@ describe("convertToOpenAiMessages", () => {
 			expect(openAiMessages).toHaveLength(1)
 			expect(openAiMessages[0].role).toBe("user")
 		})
+
+		it("should merge text into tool messages for multiple tool calls across conversation turns", () => {
+			// This test simulates a full conversation with multiple tool_result + environment_details messages
+			// to ensure mergeToolResultText works correctly for ALL tool_result messages, not just the first one
+			// Regression test for: "The fix works for the first message but after the first response the text content is NOT merged"
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+				// Initial user message (no tool_results)
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "Create a file for me" },
+						{ type: "text", text: "<environment_details>Context 1</environment_details>" },
+					],
+				},
+				// Assistant uses first tool
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "I'll create the file for you." },
+						{
+							type: "tool_use",
+							id: "call_1",
+							name: "write_file",
+							input: { path: "test.txt", content: "hello" },
+						},
+					],
+				},
+				// First tool result + environment_details
+				{
+					role: "user",
+					content: [
+						{ type: "tool_result", tool_use_id: "call_1", content: "File created successfully" },
+						{ type: "text", text: "<environment_details>Context 2</environment_details>" },
+					],
+				},
+				// Assistant uses second tool
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "Now I'll read the file to verify." },
+						{ type: "tool_use", id: "call_2", name: "read_file", input: { path: "test.txt" } },
+					],
+				},
+				// Second tool result + environment_details (this is where the bug was reported)
+				{
+					role: "user",
+					content: [
+						{ type: "tool_result", tool_use_id: "call_2", content: "File content: hello" },
+						{ type: "text", text: "<environment_details>Context 3</environment_details>" },
+					],
+				},
+			]
+
+			const openAiMessages = convertToOpenAiMessages(anthropicMessages, { mergeToolResultText: true })
+
+			// Expected structure:
+			// 1. User message (initial, no tool_results - text should remain as user message)
+			// 2. Assistant message with tool_calls
+			// 3. Tool message with merged text (first tool_result)
+			// 4. Assistant message with tool_calls
+			// 5. Tool message with merged text (second tool_result)
+			expect(openAiMessages).toHaveLength(5)
+
+			// First message should be a user message (no tool_results to merge into)
+			expect(openAiMessages[0].role).toBe("user")
+
+			// Second message should be assistant with tool_calls
+			expect(openAiMessages[1].role).toBe("assistant")
+			expect((openAiMessages[1] as OpenAI.Chat.ChatCompletionAssistantMessageParam).tool_calls).toHaveLength(1)
+
+			// Third message should be tool message with merged environment_details
+			const firstToolMsg = openAiMessages[2] as OpenAI.Chat.ChatCompletionToolMessageParam
+			expect(firstToolMsg.role).toBe("tool")
+			expect(firstToolMsg.tool_call_id).toBe("call_1")
+			expect(firstToolMsg.content).toContain("File created successfully")
+			expect(firstToolMsg.content).toContain("<environment_details>Context 2</environment_details>")
+
+			// Fourth message should be assistant with tool_calls
+			expect(openAiMessages[3].role).toBe("assistant")
+			expect((openAiMessages[3] as OpenAI.Chat.ChatCompletionAssistantMessageParam).tool_calls).toHaveLength(1)
+
+			// Fifth message should be tool message with merged environment_details (THE BUG FIX)
+			const secondToolMsg = openAiMessages[4] as OpenAI.Chat.ChatCompletionToolMessageParam
+			expect(secondToolMsg.role).toBe("tool")
+			expect(secondToolMsg.tool_call_id).toBe("call_2")
+			expect(secondToolMsg.content).toContain("File content: hello")
+			expect(secondToolMsg.content).toContain("<environment_details>Context 3</environment_details>")
+		})
+
+		it("should NOT create user messages after tool messages when mergeToolResultText is true", () => {
+			// This test specifically verifies that the "user after tool" error is avoided
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [{ type: "tool_use", id: "tool_1", name: "read_file", input: { path: "test.ts" } }],
+				},
+				{
+					role: "user",
+					content: [
+						{ type: "tool_result", tool_use_id: "tool_1", content: "File contents" },
+						{ type: "text", text: "<environment_details>Some context</environment_details>" },
+					],
+				},
+			]
+
+			const openAiMessages = convertToOpenAiMessages(anthropicMessages, { mergeToolResultText: true })
+
+			// Should produce assistant + tool (no user message)
+			expect(openAiMessages).toHaveLength(2)
+			expect(openAiMessages[0].role).toBe("assistant")
+			expect(openAiMessages[1].role).toBe("tool")
+			// The text should be merged into the tool message, NOT as a separate user message
+			expect((openAiMessages[1] as OpenAI.Chat.ChatCompletionToolMessageParam).content).toContain(
+				"<environment_details>Some context</environment_details>",
+			)
+		})
 	})
 
 	describe("reasoning_details transformation", () => {
