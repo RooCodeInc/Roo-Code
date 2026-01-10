@@ -285,7 +285,11 @@ describe("writeToFileTool", () => {
 				await executeWriteFileTool({ path: undefined }, { fileExists: false, isPartial: true })
 				expect(mockedCreateDirectoriesForFile).not.toHaveBeenCalled()
 
-				// Second call with valid path - path is now considered stable (first valid after undefined)
+				// Second call with valid path - not yet stable (need same path twice)
+				await executeWriteFileTool({}, { fileExists: false, isPartial: true })
+				expect(mockedCreateDirectoriesForFile).not.toHaveBeenCalled()
+
+				// Third call with same valid path - NOW path is stable
 				await executeWriteFileTool({}, { fileExists: false, isPartial: true })
 				expect(mockedCreateDirectoriesForFile).toHaveBeenCalledWith(absoluteFilePath)
 			},
@@ -405,7 +409,12 @@ describe("writeToFileTool", () => {
 			expect(mockCline.ask).not.toHaveBeenCalled()
 			expect(mockCline.diffViewProvider.open).not.toHaveBeenCalled()
 
-			// Second call with valid path - path is considered stable (first valid after undefined)
+			// Second call with valid path - not yet stable (need same path twice)
+			await executeWriteFileTool({}, { isPartial: true })
+			expect(mockCline.ask).not.toHaveBeenCalled()
+			expect(mockCline.diffViewProvider.open).not.toHaveBeenCalled()
+
+			// Third call with same valid path - NOW path is stable, file operations proceed
 			await executeWriteFileTool({}, { isPartial: true })
 			expect(mockCline.ask).toHaveBeenCalled()
 			expect(mockCline.diffViewProvider.open).toHaveBeenCalledWith(testFilePath)
@@ -459,7 +468,11 @@ describe("writeToFileTool", () => {
 			await executeWriteFileTool({ path: undefined }, { isPartial: true })
 			expect(mockHandleError).not.toHaveBeenCalled()
 
-			// Second call with valid path - path is considered stable, error occurs during file operations
+			// Second call with valid path - not yet stable (no file operations attempted)
+			await executeWriteFileTool({}, { isPartial: true })
+			expect(mockHandleError).not.toHaveBeenCalled()
+
+			// Third call with same valid path - NOW path is stable, error occurs during file operations
 			await executeWriteFileTool({}, { isPartial: true })
 			expect(mockHandleError).toHaveBeenCalledWith("handling partial write_to_file", expect.any(Error))
 		})

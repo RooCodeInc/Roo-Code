@@ -132,47 +132,33 @@ export abstract class BaseTool<TName extends ToolName> {
 	 *
 	 * During native tool call streaming, the partial-json library may return truncated
 	 * string values when chunk boundaries fall mid-value. This method tracks the path
-	 * value between consecutive handlePartial() calls and returns true when the path
-	 * is ready to display.
+	 * value between consecutive handlePartial() calls and returns true only when the
+	 * path has stopped changing (stabilized).
 	 *
-	 * A path is considered stable when:
-	 * 1. The same non-empty value is seen twice consecutively (handles incremental streaming
-	 *    where paths grow char-by-char until stabilizing)
-	 * 2. A non-empty value appears after undefined (handles providers like Gemini that
-	 *    send complete args in one chunk - the first valid path is the complete path)
+	 * A path is considered stable ONLY when the same non-empty value is seen twice
+	 * consecutively. This is critical for safety because tools like WriteToFileTool
+	 * perform file operations (createDirectoriesForFile, diffViewProvider.open) after
+	 * the path stabilizes. Accepting the first non-empty value after undefined would
+	 * cause file operations on truncated paths for incremental streaming providers.
 	 *
-	 * For incremental streaming providers, option 2 may briefly show truncated paths,
-	 * but these quickly update as more chunks arrive. This is preferable to showing
-	 * nothing or showing incorrect paths (like CWD basename).
-	 *
-	 * Usage in handlePartial():
-	 * ```typescript
-	 * if (!this.hasPathStabilized(block.params.path)) {
-	 *     return // Path still changing, wait for it to stabilize
-	 * }
-	 * // Path is stable, proceed with UI updates
-	 * ```
+	 * For Gemini-style providers that send complete args in one chunk, the path will
+	 * stabilize when it appears twice (e.g., in subsequent partial events). The UI
+	 * may briefly show nothing or empty state, but this is safer than file operations
+	 * on truncated paths. The getReadablePath() function returns empty string for
+	 * undefined/empty paths to prevent showing CWD basename during this brief period.
 	 *
 	 * @param path - The current path value from the partial block
-	 * @returns true if path has stabilized and is non-empty, false otherwise
+	 * @returns true if path has stabilized (same value seen twice) and is non-empty, false otherwise
 	 */
 	protected hasPathStabilized(path: string | undefined): boolean {
 		const previousPath = this.lastSeenPartialPath
 		this.lastSeenPartialPath = path
 
-		// Must have a valid path to consider it stable
-		if (!path) {
-			return false
-		}
+		// Path is stable only when the same non-empty value is seen twice consecutively.
+		// This prevents file operations on truncated paths from incremental streaming.
+		const pathHasStabilized = previousPath !== undefined && previousPath === path && !!path
 
-		// Case 1: Same non-empty value seen twice (incremental streaming stabilized)
-		const sameValueTwice = previousPath !== undefined && previousPath === path
-
-		// Case 2: First valid value after undefined (Gemini-style complete args)
-		// This handles providers that send undefined first (name only), then complete args
-		const firstValidAfterUndefined = previousPath === undefined
-
-		return sameValueTwice || firstValidAfterUndefined
+		return pathHasStabilized
 	}
 
 	/**

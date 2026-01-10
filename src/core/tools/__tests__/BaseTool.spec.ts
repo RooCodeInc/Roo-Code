@@ -40,16 +40,24 @@ describe("BaseTool", () => {
 			tool = new TestTool()
 		})
 
-		describe("with Gemini-style providers (complete args in one chunk)", () => {
-			it("should return true when transitioning from undefined to a valid path", () => {
-				// Gemini sends name first (no args), then all args at once
-				// Simulate: First partial has undefined path
+		describe("path stabilization requires same value twice (safe for file operations)", () => {
+			it("should return false on first valid path (not yet stable)", () => {
+				// First call with undefined
 				const result1 = tool.testHasPathStabilized(undefined)
 				expect(result1).toBe(false) // No path yet
 
-				// Second partial has the complete path
+				// Second call with valid path - NOT stable yet (need same value twice)
 				const result2 = tool.testHasPathStabilized("src/file.ts")
-				expect(result2).toBe(true) // First valid path after undefined = stable
+				expect(result2).toBe(false) // First time seeing this path
+			})
+
+			it("should return true when same path is seen twice consecutively", () => {
+				tool.testHasPathStabilized(undefined)
+				tool.testHasPathStabilized("src/file.ts") // First time - not stable
+
+				// Same path seen again - NOW stable
+				const result = tool.testHasPathStabilized("src/file.ts")
+				expect(result).toBe(true) // Same value twice = stable
 			})
 
 			it("should handle empty string as falsy (not a valid path)", () => {
@@ -59,38 +67,65 @@ describe("BaseTool", () => {
 				const result2 = tool.testHasPathStabilized("")
 				expect(result2).toBe(false) // Empty string is not a valid path
 			})
+
+			it("should return false when path changes (not stable)", () => {
+				tool.testHasPathStabilized("src/file.ts")
+				tool.testHasPathStabilized("src/file.ts") // Stable
+
+				// Path changes
+				const result = tool.testHasPathStabilized("src/other.ts")
+				expect(result).toBe(false) // Different path = not stable
+			})
 		})
 
 		describe("with incremental streaming providers (char-by-char)", () => {
-			it("should return true when the same path is seen twice", () => {
+			it("should only return true when path stops changing", () => {
 				// Simulate incremental streaming where path grows
 				tool.testHasPathStabilized(undefined) // Initial state
-				tool.testHasPathStabilized("s") // First char
-				tool.testHasPathStabilized("sr") // Growing
-				tool.testHasPathStabilized("src") // Growing
-				tool.testHasPathStabilized("src/") // Growing
-				tool.testHasPathStabilized("src/file") // Growing
-				tool.testHasPathStabilized("src/file.ts") // Complete
+				expect(tool.testHasPathStabilized("s")).toBe(false) // First char - not stable
+				expect(tool.testHasPathStabilized("sr")).toBe(false) // Growing - not stable
+				expect(tool.testHasPathStabilized("src")).toBe(false) // Growing - not stable
+				expect(tool.testHasPathStabilized("src/")).toBe(false) // Growing - not stable
+				expect(tool.testHasPathStabilized("src/file")).toBe(false) // Growing - not stable
+				expect(tool.testHasPathStabilized("src/file.ts")).toBe(false) // Complete but first time
 
 				// Path repeats when streaming moves past the path field
 				const result = tool.testHasPathStabilized("src/file.ts")
 				expect(result).toBe(true) // Same value twice = stable
 			})
 
-			it("should return true on first valid path after undefined (may show truncated)", () => {
-				// This is acceptable behavior - briefly showing truncated paths
-				// is better than showing nothing or wrong paths
+			it("should NOT return true on first valid path after undefined (prevents truncated paths)", () => {
+				// This is the critical safety behavior - we do NOT accept first valid after undefined
+				// because it could be a truncated path for incremental streaming providers
 				tool.testHasPathStabilized(undefined)
 
 				const result = tool.testHasPathStabilized("s")
-				expect(result).toBe(true) // First valid after undefined
+				expect(result).toBe(false) // First valid after undefined - NOT stable (could be truncated)
 
-				// Subsequent different values won't trigger until stable
-				const result2 = tool.testHasPathStabilized("sr")
-				expect(result2).toBe(false) // Different from previous
+				// Still not stable as path keeps changing
+				expect(tool.testHasPathStabilized("sr")).toBe(false)
+				expect(tool.testHasPathStabilized("src")).toBe(false)
 
-				const result3 = tool.testHasPathStabilized("src")
-				expect(result3).toBe(false) // Different from previous
+				// Eventually stabilizes when same value seen twice
+				expect(tool.testHasPathStabilized("src/file.ts")).toBe(false)
+				expect(tool.testHasPathStabilized("src/file.ts")).toBe(true) // Now stable
+			})
+		})
+
+		describe("with Gemini-style providers (complete args in one chunk)", () => {
+			it("should stabilize when path appears twice", () => {
+				// Gemini sends name first (no args), then all args at once
+				// First partial has undefined path
+				const result1 = tool.testHasPathStabilized(undefined)
+				expect(result1).toBe(false) // No path yet
+
+				// Second partial has the complete path - but need to see it twice
+				const result2 = tool.testHasPathStabilized("src/file.ts")
+				expect(result2).toBe(false) // First time seeing path
+
+				// Third call with same path - NOW stable
+				const result3 = tool.testHasPathStabilized("src/file.ts")
+				expect(result3).toBe(true) // Same value twice = stable
 			})
 		})
 
@@ -103,32 +138,38 @@ describe("BaseTool", () => {
 				// Reset
 				tool.testResetPartialState()
 
-				// After reset, transitioning to a path should work
+				// After reset, need to see path twice again
 				const result1 = tool.testHasPathStabilized(undefined)
 				expect(result1).toBe(false)
 
 				const result2 = tool.testHasPathStabilized("new/path.ts")
-				expect(result2).toBe(true) // First valid after undefined
+				expect(result2).toBe(false) // First time after reset
+
+				const result3 = tool.testHasPathStabilized("new/path.ts")
+				expect(result3).toBe(true) // Same value twice
 			})
 
-			it("should handle state bleeding between tool calls (stale state cleared by undefined)", () => {
+			it("should handle state bleeding between tool calls (requires same value twice)", () => {
 				// Simulate: Tool A completes with a path
 				tool.testHasPathStabilized("old/path.ts")
-				tool.testHasPathStabilized("old/path.ts")
+				tool.testHasPathStabilized("old/path.ts") // Stable
 
 				// Simulate: Tool A is rejected, resetPartialState never called
 				// State is now "old/path.ts"
 
-				// Simulate: Tool B starts (Gemini-style - undefined first)
+				// Simulate: Tool B starts (undefined first)
 				const result1 = tool.testHasPathStabilized(undefined)
 				expect(result1).toBe(false) // Clears stale state
 
-				// Tool B's actual path
+				// Tool B's actual path - need to see twice
 				const result2 = tool.testHasPathStabilized("new/path.ts")
-				expect(result2).toBe(true) // Works because previous was undefined
+				expect(result2).toBe(false) // First time
+
+				const result3 = tool.testHasPathStabilized("new/path.ts")
+				expect(result3).toBe(true) // Same value twice
 			})
 
-			it("should handle state bleeding with non-Gemini providers", () => {
+			it("should handle incremental streaming after stale state", () => {
 				// Simulate: Tool A completes with a path
 				tool.testHasPathStabilized("old/path.ts")
 				tool.testHasPathStabilized("old/path.ts")
@@ -138,21 +179,17 @@ describe("BaseTool", () => {
 				// Simulate: Tool B starts (incremental - undefined first)
 				tool.testHasPathStabilized(undefined) // Clears stale state
 
-				// Tool B's path grows incrementally
-				const result1 = tool.testHasPathStabilized("n")
-				expect(result1).toBe(true) // First valid after undefined
-
-				// Grows but different from previous
-				const result2 = tool.testHasPathStabilized("ne")
-				expect(result2).toBe(false)
+				// Tool B's path grows incrementally - none should be stable until same twice
+				expect(tool.testHasPathStabilized("n")).toBe(false)
+				expect(tool.testHasPathStabilized("ne")).toBe(false)
+				expect(tool.testHasPathStabilized("new")).toBe(false)
+				expect(tool.testHasPathStabilized("new/")).toBe(false)
+				expect(tool.testHasPathStabilized("new/path")).toBe(false)
+				expect(tool.testHasPathStabilized("new/path.ts")).toBe(false)
 
 				// Eventually stabilizes
-				tool.testHasPathStabilized("new")
-				tool.testHasPathStabilized("new/")
-				tool.testHasPathStabilized("new/path")
-				tool.testHasPathStabilized("new/path.ts")
-				const result3 = tool.testHasPathStabilized("new/path.ts")
-				expect(result3).toBe(true) // Same value twice
+				const result = tool.testHasPathStabilized("new/path.ts")
+				expect(result).toBe(true) // Same value twice
 			})
 		})
 
@@ -166,11 +203,19 @@ describe("BaseTool", () => {
 				expect(tool.testHasPathStabilized("")).toBe(false)
 			})
 
-			it("should return true when same valid path is provided on first call (fresh state)", () => {
+			it("should return false on first call with valid path (fresh state)", () => {
 				// Fresh tool state means lastSeenPartialPath is undefined
-				// First valid path = first valid after undefined
+				// First valid path should NOT be stable (need same value twice)
 				const result = tool.testHasPathStabilized("src/file.ts")
-				expect(result).toBe(true)
+				expect(result).toBe(false) // Not stable - need same value twice
+			})
+
+			it("should return true when same valid path is provided twice starting from fresh state", () => {
+				// First call
+				tool.testHasPathStabilized("src/file.ts")
+				// Second call with same path
+				const result = tool.testHasPathStabilized("src/file.ts")
+				expect(result).toBe(true) // Same value twice = stable
 			})
 
 			it("should handle multiple sequential undefined values", () => {
@@ -178,9 +223,9 @@ describe("BaseTool", () => {
 				expect(tool.testHasPathStabilized(undefined)).toBe(false)
 				expect(tool.testHasPathStabilized(undefined)).toBe(false)
 
-				// Then valid path
-				const result = tool.testHasPathStabilized("path.ts")
-				expect(result).toBe(true)
+				// Then valid path - still need twice
+				expect(tool.testHasPathStabilized("path.ts")).toBe(false)
+				expect(tool.testHasPathStabilized("path.ts")).toBe(true)
 			})
 		})
 	})
