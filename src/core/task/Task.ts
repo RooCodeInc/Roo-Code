@@ -955,6 +955,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const reasoningSummary = handler.getSummary?.()
 			const reasoningDetails = handler.getReasoningDetails?.()
 
+			// Only Anthropic's API expects/validates the special `thinking` content block signature.
+			// Other providers (notably Gemini 3) use different signature semantics (e.g. `thoughtSignature`)
+			// and require round-tripping the signature in their own format.
+			const modelId = getModelId(this.apiConfiguration)
+			const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
+			const isAnthropicProtocol = apiProtocol === "anthropic"
+
 			// Start from the original assistant message
 			const messageWithTs: any = {
 				...message,
@@ -969,7 +976,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Store reasoning: Anthropic thinking (with signature), plain text (most providers), or encrypted (OpenAI Native)
 			// Skip if reasoning_details already contains the reasoning (to avoid duplication)
-			if (reasoning && thoughtSignature && !reasoningDetails) {
+			if (isAnthropicProtocol && reasoning && thoughtSignature && !reasoningDetails) {
 				// Anthropic provider with extended thinking: Store as proper `thinking` block
 				// This format passes through anthropic-filter.ts and is properly round-tripped
 				// for interleaved thinking with tool use (required by Anthropic API)
@@ -1028,10 +1035,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 			}
 
-			// If we have a thought signature WITHOUT reasoning text (edge case),
-			// append it as a dedicated content block for non-Anthropic providers (e.g., Gemini).
-			// Note: For Anthropic, the signature is already included in the thinking block above.
-			if (thoughtSignature && !reasoning) {
+			// For non-Anthropic providers (e.g., Gemini 3), persist the thought signature as its own
+			// content block so converters can attach it back to the correct provider-specific fields.
+			// Note: For Anthropic extended thinking, the signature is already included in the thinking block above.
+			if (thoughtSignature && !isAnthropicProtocol) {
 				const thoughtSignatureBlock = {
 					type: "thoughtSignature",
 					thoughtSignature,
