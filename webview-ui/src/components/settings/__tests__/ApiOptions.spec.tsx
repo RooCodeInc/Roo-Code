@@ -643,7 +643,7 @@ describe("ApiOptions", () => {
 			useExtensionStateMock.mockRestore()
 		})
 
-		it("filters out roo provider on welcome screen", () => {
+		it("does not pin roo provider to the top on welcome screen", () => {
 			// Mock useExtensionState to ensure no filtering
 			const useExtensionStateMock = vi.spyOn(ExtensionStateContext, "useExtensionState")
 			useExtensionStateMock.mockReturnValue({
@@ -663,9 +663,13 @@ describe("ApiOptions", () => {
 			// Filter out the placeholder option (empty value)
 			const providerOptions = options.filter((opt) => opt.value !== "")
 
-			// Check that roo is NOT in the list when on welcome screen
+			// Check that roo is in the list
 			const rooOption = providerOptions.find((opt) => opt.value === "roo")
-			expect(rooOption).toBeUndefined()
+
+			if (rooOption) {
+				// If roo exists, verify it's NOT at the top (should be in alphabetical order)
+				expect(providerOptions[0].value).not.toBe("roo")
+			}
 
 			useExtensionStateMock.mockRestore()
 		})

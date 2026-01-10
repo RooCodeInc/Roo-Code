@@ -51,7 +51,6 @@ vitest.mock("../fetchers/modelCache", () => ({
 			},
 		})
 	}),
-	getModelsFromCache: vitest.fn().mockReturnValue(undefined),
 }))
 
 vitest.mock("../../transform/caching/vercel-ai-gateway", () => ({

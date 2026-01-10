@@ -1,12 +1,10 @@
 import { useState, useEffect } from "react"
 import { Building2, User, Plus } from "lucide-react"
-
-import { type CloudUserInfo, type CloudOrganizationMembership, type ExtensionMessage } from "@roo-code/types"
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select"
+import { type CloudUserInfo, type CloudOrganizationMembership } from "@roo-code/types"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"
-
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectSeparator } from "@/components/ui/select"
+import { type ExtensionMessage } from "@roo/ExtensionMessage"
 
 type OrganizationSwitcherProps = {
 	userInfo: CloudUserInfo

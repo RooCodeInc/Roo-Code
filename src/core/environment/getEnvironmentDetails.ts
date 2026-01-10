@@ -11,7 +11,7 @@ import { DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT } from "@roo-code/types"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { EXPERIMENT_IDS, experiments as Experiments } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
-import { defaultModeSlug, getFullModeDetails } from "../../shared/modes"
+import { defaultModeSlug, getFullModeDetails, getModeBySlug, isToolAllowedForMode } from "../../shared/modes"
 import { getApiMetrics } from "../../shared/getApiMetrics"
 import { listFiles } from "../../services/glob/list-files"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
@@ -236,12 +236,9 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		language: language ?? formatLanguage(vscode.env.language),
 	})
 
-	// Use the task's locked tool protocol for consistent environment details.
-	// This ensures the model sees the same tool format it was started with,
-	// even if user settings have changed. Fall back to resolving fresh if
-	// the task hasn't been fully initialized yet (shouldn't happen in practice).
+	// Resolve and add tool protocol information
 	const modelInfo = cline.api.getModel().info
-	const toolProtocol = resolveToolProtocol(state?.apiConfiguration ?? {}, modelInfo, cline.taskToolProtocol)
+	const toolProtocol = resolveToolProtocol(state?.apiConfiguration ?? {}, modelInfo)
 
 	details += `\n\n# Current Mode\n`
 	details += `<slug>${currentMode}</slug>\n`

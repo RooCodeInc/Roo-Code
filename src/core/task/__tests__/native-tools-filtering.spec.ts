@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import type { ModeConfig } from "@roo-code/types"
 
 describe("Native Tools Filtering by Mode", () => {
@@ -22,7 +23,7 @@ describe("Native Tools Filtering by Mode", () => {
 			}
 
 			// Import the functions we need to test
-			const { isToolAllowedForMode } = await import("../../tools/validateToolUse")
+			const { isToolAllowedForMode } = await import("../../../shared/modes")
 			const { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } = await import("../../../shared/tools")
 
 			// Test architect mode - should NOT have edit tools
@@ -94,7 +95,7 @@ describe("Native Tools Filtering by Mode", () => {
 				groups: ["read"] as const,
 			}
 
-			const { isToolAllowedForMode } = await import("../../tools/validateToolUse")
+			const { isToolAllowedForMode } = await import("../../../shared/modes")
 
 			// Mode with MCP group should allow use_mcp_tool
 			expect(isToolAllowedForMode("use_mcp_tool", "test-mode-with-mcp", [modeWithMcp])).toBe(true)
@@ -111,7 +112,7 @@ describe("Native Tools Filtering by Mode", () => {
 				groups: [] as const, // No groups at all
 			}
 
-			const { isToolAllowedForMode } = await import("../../tools/validateToolUse")
+			const { isToolAllowedForMode } = await import("../../../shared/modes")
 			const { ALWAYS_AVAILABLE_TOOLS } = await import("../../../shared/tools")
 
 			// Always-available tools should work even with no groups

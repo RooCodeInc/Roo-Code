@@ -143,11 +143,9 @@ describe("convertToVsCodeLmMessages", () => {
 		expect(result).toHaveLength(1)
 		expect(result[0].role).toBe("assistant")
 		expect(result[0].content).toHaveLength(2)
-		// Text must come before tool calls so that tool calls are at the end,
-		// properly followed by user message with tool results
-		const [textContent, toolCall] = result[0].content as [MockLanguageModelTextPart, MockLanguageModelToolCallPart]
-		expect(textContent.type).toBe("text")
+		const [toolCall, textContent] = result[0].content as [MockLanguageModelToolCallPart, MockLanguageModelTextPart]
 		expect(toolCall.type).toBe("tool_call")
+		expect(textContent.type).toBe("text")
 	})
 
 	it("should handle image blocks with appropriate placeholders", () => {

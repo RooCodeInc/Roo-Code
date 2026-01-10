@@ -125,7 +125,6 @@
 	"enhancePromptDescription": "The 'Enhance Prompt' button helps improve your prompt by providing additional context, clarification, or rephrasing. Try typing a prompt in here and clicking the button again to see how it works.",
 	"addImages": "Add images to message",
 	"sendMessage": "Send message",
-	"pressToSend": "Press {{keyCombination}} to send",
 	"stopTts": "Stop text-to-speech",
 	"typeMessage": "Type a message...",
 	"typeTask": "Type your task here...",
@@ -143,22 +142,7 @@
 		"failed": "API Request Failed",
 		"streaming": "API Request...",
 		"cancelled": "API Request Cancelled",
-		"streamingFailed": "API Streaming Failed",
-		"rateLimitWait": "Rate limiting",
-		"errorTitle": "Provider Error {{code}}",
-		"errorMessage": {
-			"docs": "Docs",
-			"goToSettings": "Settings",
-			"400": "The provider couldn't process the request as made. Stop the task and try a different approach.",
-			"401": "Couldn't authenticate with provider. Please check your API key configuration.",
-			"402": "You seem to have run out of funds/credits in your account. Go to your provider and add more to continue.",
-			"403": "Unauthorized. Your API key is valid, but the provider refused to complete this request.",
-			"429": "Too many requests. You're being rate-limited by the provider. Please wait a bit before your next API call.",
-			"500": "Provider server error. Something is wrong on the provider side, there's nothing wrong with your request.",
-			"connection": "Connection error. Make sure you have a working internet connection.",
-			"unknown": "Unknown API error. Please contact Roo Code support.",
-			"claudeCodeNotAuthenticated": "You need to sign in to use Claude Code. Go to Settings and click \"Sign in to Claude Code\" to authenticate."
-		}
+		"streamingFailed": "API Streaming Failed"
 	},
 	"checkpoint": {
 		"regular": "Checkpoint",
@@ -179,20 +163,11 @@
 		},
 		"current": "Current"
 	},
-	"contextManagement": {
-		"tokens": "tokens",
-		"condensation": {
-			"title": "Context Condensed",
-			"inProgress": "Condensing context...",
-			"errorHeader": "Failed to condense context"
-		},
-		"truncation": {
-			"title": "Context Truncated",
-			"inProgress": "Truncating context...",
-			"messagesRemoved": "{{count}} message removed",
-			"messagesRemoved_other": "{{count}} messages removed",
-			"description": "Older messages were removed from the conversation to stay within the context window limit. This is a fast but less context-preserving approach compared to condensation."
-		}
+	"contextCondense": {
+		"title": "Context Condensed",
+		"condensing": "Condensing context...",
+		"errorHeader": "Failed to condense context",
+		"tokens": "tokens"
 	},
 	"instructions": {
 		"wantsToFetch": "Roo wants to fetch detailed instructions to assist with the current task"
@@ -225,6 +200,10 @@
 		"didViewRecursive": "Roo recursively viewed all files in this directory",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo wants to recursively view all files in this directory (outside workspace)",
 		"didViewRecursiveOutsideWorkspace": "Roo recursively viewed all files in this directory (outside workspace)",
+		"wantsToViewDefinitions": "Roo wants to view source code definition names used in this directory",
+		"didViewDefinitions": "Roo viewed source code definition names used in this directory",
+		"wantsToViewDefinitionsOutsideWorkspace": "Roo wants to view source code definition names used in this directory (outside workspace)",
+		"didViewDefinitionsOutsideWorkspace": "Roo viewed source code definition names used in this directory (outside workspace)",
 		"wantsToSearch": "Roo wants to search this directory for <code>{{regex}}</code>",
 		"didSearch": "Roo searched this directory for <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo wants to search this directory (outside workspace) for <code>{{regex}}</code>",
@@ -286,20 +265,6 @@
 	},
 	"taskCompleted": "Task Completed",
 	"error": "Error",
-	"modelResponseIncomplete": "Model Response Incomplete",
-	"modelResponseErrors": {
-		"noToolsUsed": "The model failed to use any tools in its response. This typically happens when the model provides only text/reasoning without calling the required tools to complete the task.",
-		"noToolsUsedDetails": "The model provided text/reasoning but did not call any of the required tools. This usually indicates the model misunderstood the task or is having difficulty determining which tool to use. The model has been automatically prompted to retry with proper tool usage.",
-		"noAssistantMessages": "The model did not provide any response content. This may indicate an issue with the API or the model's output.",
-		"noAssistantMessagesDetails": "The language model returned an empty response without any text or tool calls. This can happen due to API issues, rate limiting, or model-specific problems. The model has been automatically prompted to retry."
-	},
-	"errorDetails": {
-		"link": "Details",
-		"title": "Error Details",
-		"copyToClipboard": "Copy basic error info",
-		"copied": "Copied!",
-		"diagnostics": "Get detailed error info"
-	},
 	"diffError": {
 		"title": "Edit Unsuccessful"
 	},
@@ -322,11 +287,10 @@
 		"triggerLabel_zero": "0 auto-approve",
 		"triggerLabel_one": "1 auto-approved",
 		"triggerLabel_other": "{{count}} auto-approved",
-		"triggerLabelAll": "BRRR"
+		"triggerLabelAll": "YOLO"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Released",
-		"support": "Please support Roo Code by starring us on <githubLink>GitHub</githubLink>.",
+		"title": "🎉 Roo Code {{version}} Released",
 		"stealthModel": {
 			"feature": "<bold>Limited-time FREE stealth model</bold> - Code Supernova: Now upgraded with a <bold>1M token context window</bold>! A versatile agentic coding model that supports image inputs, accessible through Roo Code Cloud.",
 			"note": "(Note: prompts and completions are logged by the model creator and used to improve the model)",
@@ -336,9 +300,8 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"stickyProfiles": "Sticky provider profiles - Tasks now remember their API configuration, so switching profiles mid-session doesn't affect running tasks.",
-			"imageMentions": "Image file @mentions - Reference images directly in chat using @ mentions to include them in your context.",
-			"brrrMode": "YOLO is now BRRR - Auto-approving everything has been renamed from \"YOLO\" to \"BRRR\". Obviously."
+			"subtasks": "Improved subtask orchestration with automatic parent resume and single-open safety for better multi-task workflows",
+			"nativeTools": "Native tool calling now supported across 13+ providers including Bedrock, Ollama, Groq, DeepSeek, Vertex Gemini, and more"
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",
@@ -346,7 +309,8 @@
 			"description": "The agents work together in the cloud and can be triggered from the web or through Slack.",
 			"tryButton": "Try Cloud Agents"
 		},
-		"careers": "Also, <careersLink>we're hiring!</careersLink>"
+		"careers": "Also, <careersLink>we're hiring!</careersLink>",
+		"socialLinks": "Join us on <xLink>X</xLink>, <discordLink>Discord</discordLink>, or <redditLink>r/RooCode</redditLink> 🚀"
 	},
 	"reasoning": {
 		"thinking": "Thinking",
@@ -354,7 +318,8 @@
 	},
 	"followUpSuggest": {
 		"copyToInput": "Copy to input (same as shift + click)",
-		"timerPrefix": "Auto-approve enabled. Selecting in {{seconds}}s…"
+		"autoSelectCountdown": "Auto-selecting in {{count}}s",
+		"countdownDisplay": "{{count}}s"
 	},
 	"browser": {
 		"session": "Browser Session",
@@ -371,25 +336,13 @@
 		"sessionStarted": "Browser Session Started",
 		"actions": {
 			"title": "Browser Action: ",
-			"launched": "Launched browser",
 			"launch": "Launch browser at {{url}}",
-			"clicked": "Clicked at: {{coordinate}}",
 			"click": "Click ({{coordinate}})",
-			"typed": "Typed: {{text}}",
 			"type": "Type \"{{text}}\"",
-			"pressed": "Pressed key: {{key}}",
 			"press": "Press {{key}}",
-			"scrolledDown": "Scrolled down",
 			"scrollDown": "Scroll down",
-			"scrolledUp": "Scrolled up",
 			"scrollUp": "Scroll up",
-			"hovered": "Hovered at: {{coordinate}}",
 			"hover": "Hover ({{coordinate}})",
-			"resized": "Resized to: {{size}}",
-			"resize": "Resize to {{size}}",
-			"screenshotSaved": "Screenshot saved",
-			"screenshot": "Save screenshot to {{path}}",
-			"closed": "Closed browser",
 			"close": "Close browser"
 		}
 	},

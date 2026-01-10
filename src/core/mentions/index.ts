@@ -71,11 +71,6 @@ export async function openMention(cwd: string, mention?: string): Promise<void> 
 	}
 }
 
-export interface ParseMentionsResult {
-	text: string
-	mode?: string // Mode from the first slash command that has one
-}
-
 export async function parseMentions(
 	text: string,
 	cwd: string,
@@ -86,10 +81,9 @@ export async function parseMentions(
 	includeDiagnosticMessages: boolean = true,
 	maxDiagnosticMessages: number = 50,
 	maxReadFileLine?: number,
-): Promise<ParseMentionsResult> {
+): Promise<string> {
 	const mentions: Set<string> = new Set()
 	const validCommands: Map<string, Command> = new Map()
-	let commandMode: string | undefined // Track mode from the first slash command that has one
 
 	// First pass: check which command mentions exist and cache the results
 	const commandMatches = Array.from(text.matchAll(commandRegexGlobal))
@@ -107,14 +101,10 @@ export async function parseMentions(
 		}),
 	)
 
-	// Store valid commands for later use and capture the first mode found
+	// Store valid commands for later use
 	for (const { commandName, command } of commandExistenceChecks) {
 		if (command) {
 			validCommands.set(commandName, command)
-			// Capture the mode from the first command that has one
-			if (!commandMode && command.mode) {
-				commandMode = command.mode
-			}
 		}
 	}
 
@@ -267,7 +257,7 @@ export async function parseMentions(
 		}
 	}
 
-	return { text: parsedText, mode: commandMode }
+	return parsedText
 }
 
 async function getFileOrFolderContent(
@@ -284,13 +274,7 @@ async function getFileOrFolderContent(
 		const stats = await fs.stat(absPath)
 
 		if (stats.isFile()) {
-			// Avoid trying to include image binary content as text context.
-			// Image mentions are handled separately via image attachment flow.
-			const isBinary = await isBinaryFile(absPath).catch(() => false)
-			if (isBinary) {
-				return `(Binary file ${mentionPath} omitted)`
-			}
-			if (rooIgnoreController && !rooIgnoreController.validateAccess(unescapedPath)) {
+			if (rooIgnoreController && !rooIgnoreController.validateAccess(absPath)) {
 				return `(File ${mentionPath} is ignored by .rooignore)`
 			}
 			try {
@@ -426,4 +410,3 @@ export async function getLatestTerminalOutput(): Promise<string> {
 
 // Export processUserContentMentions from its own file
 export { processUserContentMentions } from "./processUserContentMentions"
-export type { ProcessUserContentMentionsResult } from "./processUserContentMentions"

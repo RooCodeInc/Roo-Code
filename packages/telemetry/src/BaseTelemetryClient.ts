@@ -59,8 +59,6 @@ export abstract class BaseTelemetryClient implements TelemetryClient {
 
 	public abstract capture(event: TelemetryEvent): Promise<void>
 
-	public abstract captureException(error: Error, additionalProperties?: Record<string, unknown>): Promise<void>
-
 	public setProvider(provider: TelemetryPropertiesProvider): void {
 		this.providerRef = new WeakRef(provider)
 	}

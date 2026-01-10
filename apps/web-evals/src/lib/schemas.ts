@@ -3,13 +3,6 @@ import { z } from "zod"
 import { rooCodeSettingsSchema } from "@roo-code/types"
 
 /**
- * ExecutionMethod
- */
-
-export const executionMethodSchema = z.enum(["vscode", "cli"])
-export type ExecutionMethod = z.infer<typeof executionMethodSchema>
-
-/**
  * CreateRun
  */
 
@@ -36,7 +29,6 @@ export const createRunSchema = z
 		timeout: z.number().int().min(TIMEOUT_MIN).max(TIMEOUT_MAX),
 		iterations: z.number().int().min(ITERATIONS_MIN).max(ITERATIONS_MAX),
 		jobToken: z.string().optional(),
-		executionMethod: executionMethodSchema,
 	})
 	.refine((data) => data.suite === "full" || (data.exercises || []).length > 0, {
 		message: "Exercises are required when running a partial suite.",

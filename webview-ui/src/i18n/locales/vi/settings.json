@@ -55,11 +55,7 @@
 		},
 		"community": "Muốn nhận mẹo hoặc chỉ muốn giao lưu với những người dùng Roo Code khác? Tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Liên Hệ & Cộng Đồng",
-		"manageSettings": "Quản Lý Cài Đặt",
-		"debugMode": {
-			"label": "Bật chế độ debug",
-			"description": "Bật chế độ debug để hiển thị các nút bổ sung trong tiêu đề nhiệm vụ cho phép xem lịch sử hội thoại API và tin nhắn UI dưới dạng JSON được định dạng trong các tệp tạm thời."
-		}
+		"manageSettings": "Quản Lý Cài Đặt"
 	},
 	"slashCommands": {
 		"description": "Quản lý các lệnh slash của bạn để thực thi nhanh các quy trình công việc và hành động tùy chỉnh. <DocsLink>Tìm hiểu thêm</DocsLink>"
@@ -206,6 +202,11 @@
 			"label": "Trình duyệt",
 			"description": "Tự động thực hiện các hành động trình duyệt mà không cần phê duyệt. Lưu ý: Chỉ áp dụng khi mô hình hỗ trợ sử dụng máy tính"
 		},
+		"retry": {
+			"label": "Thử lại",
+			"description": "Tự động thử lại các yêu cầu API thất bại khi máy chủ trả về phản hồi lỗi",
+			"delayLabel": "Trì hoãn trước khi thử lại yêu cầu"
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Bật tự động phê duyệt các công cụ MCP riêng lẻ trong chế độ xem Máy chủ MCP (yêu cầu cả cài đặt này và hộp kiểm \"Luôn cho phép\" của công cụ)"
@@ -235,6 +236,10 @@
 			"addButton": "Thêm",
 			"autoDenied": "Các lệnh có tiền tố `{{prefix}}` đã bị người dùng cấm. Đừng vượt qua hạn chế này bằng cách chạy lệnh khác."
 		},
+		"updateTodoList": {
+			"label": "Todo",
+			"description": "Danh sách việc cần làm được cập nhật tự động mà không cần phê duyệt"
+		},
 		"apiRequestLimit": {
 			"title": "Số lượng yêu cầu tối đa",
 			"description": "Tự động thực hiện số lượng API request này trước khi yêu cầu phê duyệt để tiếp tục với nhiệm vụ.",
@@ -254,7 +259,6 @@
 		"configProfile": "Hồ sơ cấu hình",
 		"description": "Lưu các cấu hình API khác nhau để nhanh chóng chuyển đổi giữa các nhà cung cấp và cài đặt.",
 		"apiProvider": "Nhà cung cấp API",
-		"apiProviderDocs": "Tài liệu Nhà cung cấp",
 		"model": "Mẫu",
 		"nameEmpty": "Tên không được để trống",
 		"nameExists": "Đã tồn tại một hồ sơ với tên này",
@@ -279,9 +283,12 @@
 		"vercelAiGatewayApiKey": "Khóa API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Lấy khóa API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Khóa API được lưu trữ an toàn trong Bộ lưu trữ bí mật của VSCode",
+		"glamaApiKey": "Khóa API Glama",
+		"getGlamaApiKey": "Lấy khóa API Glama",
 		"useCustomBaseUrl": "Sử dụng URL cơ sở tùy chỉnh",
 		"useReasoning": "Bật lý luận",
 		"useHostHeader": "Sử dụng tiêu đề Host tùy chỉnh",
+		"useLegacyFormat": "Sử dụng định dạng API OpenAI cũ",
 		"customHeaders": "Tiêu đề tùy chỉnh",
 		"headerName": "Tên tiêu đề",
 		"headerValue": "Giá trị tiêu đề",
@@ -297,6 +304,7 @@
 		"getRequestyApiKey": "Lấy khóa API Requesty",
 		"getRequestyBaseUrl": "URL cơ sở",
 		"requestyUseCustomBaseUrl": "Sử dụng URL cơ sở tùy chỉnh",
+		"openRouterTransformsText": "Nén lời nhắc và chuỗi tin nhắn theo kích thước ngữ cảnh (<a>OpenRouter Transforms</a>)",
 		"anthropicApiKey": "Khóa API Anthropic",
 		"getAnthropicApiKey": "Lấy khóa API Anthropic",
 		"anthropicUseAuthToken": "Truyền khóa API Anthropic dưới dạng tiêu đề Authorization thay vì X-Api-Key",
@@ -304,8 +312,6 @@
 		"anthropic1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
-		"vertex1MContextBetaLabel": "Bật cửa sổ ngữ cảnh 1M (Beta)",
-		"vertex1MContextBetaDescription": "Mở rộng cửa sổ ngữ cảnh lên 1 triệu token cho Claude Sonnet 4",
 		"basetenApiKey": "Khóa API Baseten",
 		"getBasetenApiKey": "Lấy khóa API Baseten",
 		"cerebrasApiKey": "Khóa API Cerebras",
@@ -374,14 +380,6 @@
 		"awsRegion": "Vùng AWS",
 		"awsCrossRegion": "Sử dụng suy luận liên vùng",
 		"awsGlobalInference": "Sử dụng suy luận toàn cầu (tự động chọn Khu vực AWS tối ưu)",
-		"awsServiceTier": "Cấp độ dịch vụ",
-		"awsServiceTierStandard": "Tiêu chuẩn",
-		"awsServiceTierStandardDesc": "Hiệu suất và chi phí cân bằng",
-		"awsServiceTierFlex": "Linh hoạt (giảm giá 50%)",
-		"awsServiceTierFlexDesc": "Chi phí thấp hơn, độ trễ cao hơn cho các tác vụ không quan trọng",
-		"awsServiceTierPriority": "Ưu tiên (Phí thêm 75%)",
-		"awsServiceTierPriorityDesc": "Hiệu suất nhanh nhất cho các ứng dụng quan trọng",
-		"awsServiceTierNote": "Các cấp độ dịch vụ ảnh hưởng đến giá và hiệu suất. Linh hoạt cung cấp giảm giá 50% với độ trễ cao hơn, Ưu tiên cung cấp hiệu suất tốt hơn 25% với phí thêm 75%.",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Sử dụng điểm cuối VPC tùy chỉnh",
 			"vpcEndpointUrlPlaceholder": "Nhập URL điểm cuối VPC (tùy chọn)",
@@ -436,6 +434,10 @@
 		"getUnboundApiKey": "Lấy khóa API Unbound",
 		"unboundRefreshModelsSuccess": "Đã cập nhật danh sách mô hình! Bây giờ bạn có thể chọn từ các mô hình mới nhất.",
 		"unboundInvalidApiKey": "Khóa API không hợp lệ. Vui lòng kiểm tra khóa API của bạn và thử lại.",
+		"humanRelay": {
+			"description": "Không cần khóa API, nhưng người dùng cần giúp sao chép và dán thông tin vào AI trò chuyện web.",
+			"instructions": "Trong quá trình sử dụng, một hộp thoại sẽ xuất hiện và tin nhắn hiện tại sẽ được tự động sao chép vào clipboard. Bạn cần dán chúng vào các phiên bản web của AI (như ChatGPT hoặc Claude), sau đó sao chép phản hồi của AI trở lại hộp thoại và nhấp vào nút xác nhận."
+		},
 		"roo": {
 			"authenticatedMessage": "Đã xác thực an toàn thông qua tài khoản Roo Code Cloud của bạn.",
 			"connectButton": "Kết nối với Roo Code Cloud"
@@ -504,7 +506,6 @@
 			"none": "Không",
 			"minimal": "Tối thiểu (nhanh nhất)",
 			"high": "Cao",
-			"xhigh": "Rất cao",
 			"medium": "Trung bình",
 			"low": "Thấp"
 		},
@@ -665,10 +666,6 @@
 		"maxGitStatusFiles": {
 			"label": "Git status tệp tối đa",
 			"description": "Số lượng mục tệp tối đa để bao gồm trong ngữ cảnh trạng thái git. Đặt thành 0 để tắt. Thông tin nhánh và các commit luôn được hiển thị khi > 0."
-		},
-		"enableSubfolderRules": {
-			"label": "Bật quy tắc thư mục con",
-			"description": "Khám phá và tải đệ quy các tệp .roo/rules và AGENTS.md từ các thư mục con. Hữu ích cho monorepo có quy tắc theo gói."
 		}
 	},
 	"terminal": {
@@ -828,17 +825,6 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Lệnh gọi công cụ song song",
 			"description": "Khi được bật, giao thức native có thể thực thi nhiều công cụ trong một lượt tin nhắn của trợ lý."
-		},
-		"CUSTOM_TOOLS": {
-			"name": "Bật công cụ tùy chỉnh",
-			"description": "Khi được bật, Roo có thể tải và sử dụng các công cụ TypeScript/JavaScript tùy chỉnh từ thư mục .roo/tools của dự án hoặc ~/.roo/tools cho các công cụ toàn cục. Lưu ý: các công cụ này sẽ được tự động phê duyệt.",
-			"toolsHeader": "Công cụ tùy chỉnh có sẵn",
-			"noTools": "Không có công cụ tùy chỉnh nào được tải. Thêm tệp .ts hoặc .js vào thư mục .roo/tools của dự án hoặc ~/.roo/tools cho các công cụ toàn cục.",
-			"refreshButton": "Làm mới",
-			"refreshing": "Đang làm mới...",
-			"refreshSuccess": "Làm mới công cụ thành công",
-			"refreshError": "Không thể làm mới công cụ",
-			"toolParameters": "Thông số"
 		}
 	},
 	"promptCaching": {
@@ -970,10 +956,6 @@
 		"collapseThinking": {
 			"label": "Thu gọn tin nhắn Suy nghĩ theo mặc định",
 			"description": "Khi được bật, các khối suy nghĩ sẽ được thu gọn theo mặc định cho đến khi bạn tương tác với chúng"
-		},
-		"requireCtrlEnterToSend": {
-			"label": "Yêu cầu {{primaryMod}}+Enter để gửi tin nhắn",
-			"description": "Khi được bật, bạn phải nhấn {{primaryMod}}+Enter để gửi tin nhắn thay vì chỉ nhấn Enter"
 		}
 	}
 }

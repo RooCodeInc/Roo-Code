@@ -6,7 +6,6 @@ import { type ModelInfo, openAiModelInfoSaneDefaults, LMSTUDIO_DEFAULT_TEMPERATU
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 import { XmlMatcher } from "../../utils/xml-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
@@ -14,7 +13,7 @@ import { ApiStream } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import { getModelsFromCache } from "./fetchers/modelCache"
+import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 
@@ -46,9 +45,6 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			{ role: "system", content: systemPrompt },
 			...convertToOpenAiMessages(messages),
 		]
-
-		// LM Studio always supports native tools (https://lmstudio.ai/docs/developer/core/tools)
-		const useNativeTools = metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
 
 		// -------------------------
 		// Track token usage
@@ -91,9 +87,6 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 				messages: openAiMessages,
 				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 				stream: true,
-				...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
 			}
 
 			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
@@ -118,33 +111,11 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 
 			for await (const chunk of results) {
 				const delta = chunk.choices[0]?.delta
-				const finishReason = chunk.choices[0]?.finish_reason
 
 				if (delta?.content) {
 					assistantText += delta.content
 					for (const processedChunk of matcher.update(delta.content)) {
 						yield processedChunk
-					}
-				}
-
-				// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
-				if (delta?.tool_calls) {
-					for (const toolCall of delta.tool_calls) {
-						yield {
-							type: "tool_call_partial",
-							index: toolCall.index,
-							id: toolCall.id,
-							name: toolCall.function?.name,
-							arguments: toolCall.function?.arguments,
-						}
-					}
-				}
-
-				// Process finish_reason to emit tool_call_end events
-				if (finishReason) {
-					const endEvents = NativeToolCallParser.processFinishReason(finishReason)
-					for (const event of endEvents) {
-						yield event
 					}
 				}
 			}

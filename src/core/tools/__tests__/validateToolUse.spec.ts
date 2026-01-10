@@ -2,10 +2,10 @@
 
 import type { ModeConfig } from "@roo-code/types"
 
-import { modes } from "../../../shared/modes"
+import { isToolAllowedForMode, modes } from "../../../shared/modes"
 import { TOOL_GROUPS } from "../../../shared/tools"
 
-import { validateToolUse, isToolAllowedForMode } from "../validateToolUse"
+import { validateToolUse } from "../validateToolUse"
 
 const codeMode = modes.find((m) => m.slug === "code")?.slug || "code"
 const architectMode = modes.find((m) => m.slug === "architect")?.slug || "architect"
@@ -167,17 +167,9 @@ describe("mode-validator", () => {
 	})
 
 	describe("validateToolUse", () => {
-		it("throws error for unknown/invalid tools", () => {
-			// Unknown tools should throw with a specific "Unknown tool" error
-			expect(() => validateToolUse("unknown_tool" as any, "architect", [])).toThrow(
-				'Unknown tool "unknown_tool". This tool does not exist.',
-			)
-		})
-
 		it("throws error for disallowed tools in architect mode", () => {
-			// execute_command is a valid tool but not allowed in architect mode
-			expect(() => validateToolUse("execute_command", "architect", [])).toThrow(
-				'Tool "execute_command" is not allowed in architect mode.',
+			expect(() => validateToolUse("unknown_tool" as any, "architect", [])).toThrow(
+				'Tool "unknown_tool" is not allowed in architect mode.',
 			)
 		})
 

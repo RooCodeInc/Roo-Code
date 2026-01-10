@@ -20,7 +20,6 @@ vi.mock("@/context/ExtensionStateContext", () => ({
 	ExtensionStateContextProvider: ({ children }: { children: React.ReactNode }) => children,
 	useExtensionState: () => ({
 		sharingEnabled: true,
-		publicSharingEnabled: true,
 		cloudIsAuthenticated: true,
 		cloudUserInfo: {
 			id: "test-user",

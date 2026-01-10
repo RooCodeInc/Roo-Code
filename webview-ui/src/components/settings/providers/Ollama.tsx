@@ -2,13 +2,16 @@ import { useState, useCallback, useMemo, useEffect } from "react"
 import { useEvent } from "react-use"
 import { VSCodeTextField, VSCodeRadioGroup, VSCodeRadio } from "@vscode/webview-ui-toolkit/react"
 
-import type { ProviderSettings, ExtensionMessage, ModelRecord } from "@roo-code/types"
+import type { ProviderSettings } from "@roo-code/types"
+
+import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useRouterModels } from "@src/components/ui/hooks/useRouterModels"
 import { vscode } from "@src/utils/vscode"
 
 import { inputEventTransform } from "../transforms"
+import { ModelRecord } from "@roo/api"
 
 type OllamaProps = {
 	apiConfiguration: ProviderSettings

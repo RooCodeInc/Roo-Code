@@ -49,7 +49,6 @@ npm run build
 				filePath: path.join("/test/cwd", ".roo", "commands", "setup.md"),
 				description: "Sets up the development environment",
 				argumentHint: undefined,
-				mode: undefined,
 			})
 		})
 
@@ -74,7 +73,6 @@ npm run build
 				filePath: path.join("/test/cwd", ".roo", "commands", "setup.md"),
 				description: undefined,
 				argumentHint: undefined,
-				mode: undefined,
 			})
 		})
 
@@ -118,7 +116,6 @@ Command content here.`
 				filePath: path.join("/test/cwd", ".roo", "commands", "setup.md"),
 				description: undefined,
 				argumentHint: undefined,
-				mode: undefined,
 			})
 		})
 
@@ -154,7 +151,6 @@ Global setup instructions.`
 				filePath: path.join("/test/cwd", ".roo", "commands", "setup.md"),
 				description: "Project-specific setup",
 				argumentHint: undefined,
-				mode: undefined,
 			})
 		})
 
@@ -182,7 +178,6 @@ Global setup instructions.`
 				filePath: expect.stringContaining(path.join(".roo", "commands", "setup.md")),
 				description: "Global setup command",
 				argumentHint: undefined,
-				mode: undefined,
 			})
 		})
 	})
@@ -210,7 +205,6 @@ Create a new release.`
 				filePath: path.join("/test/cwd", ".roo", "commands", "release.md"),
 				description: "Create a new release of the Roo Code extension",
 				argumentHint: "patch | minor | major",
-				mode: undefined,
 			})
 		})
 
@@ -237,7 +231,6 @@ Deploy the application.`
 				filePath: path.join("/test/cwd", ".roo", "commands", "deploy.md"),
 				description: "Deploy application to environment",
 				argumentHint: "staging | production",
-				mode: undefined,
 			})
 		})
 
@@ -293,77 +286,6 @@ Test content.`
 			const result = await getCommand("/test/cwd", "test")
 
 			expect(result?.argumentHint).toBeUndefined()
-		})
-
-		it("should load command with mode from frontmatter", async () => {
-			const commandContent = `---
-description: Debug the application
-mode: debug
----
-
-# Debug Command
-
-Start debugging.`
-
-			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
-			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
-
-			const result = await getCommand("/test/cwd", "debug-app")
-
-			expect(result).toEqual({
-				name: "debug-app",
-				content: "# Debug Command\n\nStart debugging.",
-				source: "project",
-				filePath: path.join("/test/cwd", ".roo", "commands", "debug-app.md"),
-				description: "Debug the application",
-				argumentHint: undefined,
-				mode: "debug",
-			})
-		})
-
-		it("should handle empty mode in frontmatter", async () => {
-			const commandContent = `---
-description: Test command
-mode: ""
----
-
-# Test Command
-
-Test content.`
-
-			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
-			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
-
-			const result = await getCommand("/test/cwd", "test")
-
-			expect(result?.mode).toBeUndefined()
-		})
-
-		it("should handle command with description, argument-hint, and mode", async () => {
-			const commandContent = `---
-description: Deploy to environment
-argument-hint: staging | production
-mode: code
----
-
-# Deploy Command
-
-Deploy the application.`
-
-			mockFs.stat = vi.fn().mockResolvedValue({ isDirectory: () => true })
-			mockFs.readFile = vi.fn().mockResolvedValue(commandContent)
-
-			const result = await getCommand("/test/cwd", "deploy")
-
-			expect(result).toEqual({
-				name: "deploy",
-				content: "# Deploy Command\n\nDeploy the application.",
-				source: "project",
-				filePath: path.join("/test/cwd", ".roo", "commands", "deploy.md"),
-				description: "Deploy to environment",
-				argumentHint: "staging | production",
-				mode: "code",
-			})
 		})
 	})
 

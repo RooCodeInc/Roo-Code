@@ -14,6 +14,10 @@ export class ProfileValidator {
 			return false
 		}
 
+		if (profile.apiProvider === "human-relay") {
+			return true
+		}
+
 		const modelId = this.getModelIdFromProfile(profile)
 
 		if (!modelId) {
@@ -78,6 +82,8 @@ export class ProfileValidator {
 				return profile.vsCodeLmModelSelector?.id
 			case "openrouter":
 				return profile.openRouterModelId
+			case "glama":
+				return profile.glamaModelId
 			case "ollama":
 				return profile.ollamaModelId
 			case "requesty":
@@ -86,6 +92,7 @@ export class ProfileValidator {
 				return profile.ioIntelligenceModelId
 			case "deepinfra":
 				return profile.deepInfraModelId
+			case "human-relay":
 			case "fake-ai":
 			default:
 				return undefined

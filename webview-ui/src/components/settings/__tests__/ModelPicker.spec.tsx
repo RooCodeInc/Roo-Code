@@ -36,7 +36,7 @@ describe("ModelPicker", () => {
 	const defaultProps = {
 		apiConfiguration: {},
 		defaultModelId: "model1",
-		modelIdKey: "openRouterModelId" as const,
+		modelIdKey: "glamaModelId" as const,
 		serviceName: "Test Service",
 		serviceUrl: "https://test.service",
 		recommendedModel: "recommended-model",

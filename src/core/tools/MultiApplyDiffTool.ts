@@ -1,9 +1,10 @@
 import path from "path"
 import fs from "fs/promises"
 
-import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS, isNativeProtocol } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
+import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 
+import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { getReadablePath } from "../../utils/path"
 import { Task } from "../task/Task"
 import { ToolUse, RemoveClosingTag, AskApproval, HandleError, PushToolResult } from "../../shared/tools"
@@ -15,6 +16,7 @@ import { parseXmlForDiff } from "../../utils/xml"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { applyDiffTool as applyDiffToolClass } from "./ApplyDiffTool"
 import { computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
+import { isNativeProtocol } from "@roo-code/types"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 interface DiffOperation {
@@ -60,8 +62,7 @@ export async function applyDiffTool(
 	removeClosingTag: RemoveClosingTag,
 ) {
 	// Check if native protocol is enabled - if so, always use single-file class-based tool
-	// Use the task's locked protocol for consistency throughout the task lifetime
-	const toolProtocol = resolveToolProtocol(cline.apiConfiguration, cline.api.getModel().info, cline.taskToolProtocol)
+	const toolProtocol = resolveToolProtocol(cline.apiConfiguration, cline.api.getModel().info)
 	if (isNativeProtocol(toolProtocol)) {
 		return applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
 			askApproval,
@@ -735,15 +736,11 @@ ${errorDetails ? `\nTechnical details:\n${errorDetails}\n` : ""}
 			}
 		}
 
-		// Check protocol for notice formatting - reuse the task's locked protocol
-		const noticeProtocol = resolveToolProtocol(
-			cline.apiConfiguration,
-			cline.api.getModel().info,
-			cline.taskToolProtocol,
-		)
+		// Check protocol for notice formatting
+		const toolProtocol = resolveToolProtocol(cline.apiConfiguration, cline.api.getModel().info)
 		const singleBlockNotice =
 			totalSearchBlocks === 1
-				? isNativeProtocol(noticeProtocol)
+				? isNativeProtocol(toolProtocol)
 					? "\n" +
 						JSON.stringify({
 							notice: "Making multiple related changes in a single apply_diff is more efficient. If other changes are needed in this file, please include them as additional SEARCH/REPLACE blocks.",

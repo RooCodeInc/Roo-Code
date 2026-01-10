@@ -41,7 +41,7 @@ export const workspace = {
 	getWorkspaceFolder: () => null,
 	onDidChangeWorkspaceFolders: () => mockDisposable,
 	getConfiguration: () => ({
-		get: (key, defaultValue) => defaultValue,
+		get: () => null,
 	}),
 	createFileSystemWatcher: () => ({
 		onDidCreate: () => mockDisposable,

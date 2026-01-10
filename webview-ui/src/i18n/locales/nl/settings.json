@@ -55,11 +55,7 @@
 		},
 		"community": "Wil je tips of gewoon even hangen met andere Roo Code-gebruikers? Sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contact & Gemeenschap",
-		"manageSettings": "Instellingen Beheren",
-		"debugMode": {
-			"label": "Debugmodus inschakelen",
-			"description": "Schakel de debugmodus in om extra knoppen in de taakkoptekst te tonen voor het bekijken van API-gesprekgeschiedenis en UI-berichten als opgemaakte JSON in tijdelijke bestanden."
-		}
+		"manageSettings": "Instellingen Beheren"
 	},
 	"slashCommands": {
 		"description": "Beheer je slash-commando's om snel aangepaste workflows en acties uit te voeren. <DocsLink>Meer informatie</DocsLink>"
@@ -206,6 +202,11 @@
 			"label": "Browser",
 			"description": "Automatisch browseracties uitvoeren zonder goedkeuring. Let op: geldt alleen als het model computergebruik ondersteunt."
 		},
+		"retry": {
+			"label": "Opnieuw proberen",
+			"description": "Automatisch mislukte API-verzoeken opnieuw proberen wanneer de server een foutmelding geeft",
+			"delayLabel": "Vertraging voordat het verzoek opnieuw wordt geprobeerd"
+		},
 		"mcp": {
 			"label": "MCP",
 			"description": "Automatische goedkeuring van individuele MCP-tools in het MCP-serversoverzicht inschakelen (vereist zowel deze instelling als het selectievakje 'Altijd toestaan' bij de tool)"
@@ -235,6 +236,10 @@
 			"addButton": "Toevoegen",
 			"autoDenied": "Commando's met het prefix `{{prefix}}` zijn verboden door de gebruiker. Omzeil deze beperking niet door een ander commando uit te voeren."
 		},
+		"updateTodoList": {
+			"label": "Todo",
+			"description": "De takenlijst wordt automatisch bijgewerkt zonder goedkeuring"
+		},
 		"apiRequestLimit": {
 			"title": "Maximale verzoeken",
 			"description": "Voer automatisch dit aantal API-verzoeken uit voordat om goedkeuring wordt gevraagd om door te gaan met de taak.",
@@ -254,7 +259,6 @@
 		"configProfile": "Configuratieprofiel",
 		"description": "Sla verschillende API-configuraties op om snel te wisselen tussen providers en instellingen.",
 		"apiProvider": "API-provider",
-		"apiProviderDocs": "Providerdocumentatie",
 		"model": "Model",
 		"nameEmpty": "Naam mag niet leeg zijn",
 		"nameExists": "Er bestaat al een profiel met deze naam",
@@ -279,9 +283,12 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API-sleutel",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API-sleutel ophalen",
 		"apiKeyStorageNotice": "API-sleutels worden veilig opgeslagen in de geheime opslag van VSCode",
+		"glamaApiKey": "Glama API-sleutel",
+		"getGlamaApiKey": "Glama API-sleutel ophalen",
 		"useCustomBaseUrl": "Aangepaste basis-URL gebruiken",
 		"useReasoning": "Redenering inschakelen",
 		"useHostHeader": "Aangepaste Host-header gebruiken",
+		"useLegacyFormat": "Verouderd OpenAI API-formaat gebruiken",
 		"customHeaders": "Aangepaste headers",
 		"headerName": "Headernaam",
 		"headerValue": "Headerwaarde",
@@ -297,6 +304,7 @@
 		"getRequestyApiKey": "Requesty API-sleutel ophalen",
 		"getRequestyBaseUrl": "Basis-URL",
 		"requestyUseCustomBaseUrl": "Gebruik aangepaste basis-URL",
+		"openRouterTransformsText": "Comprimeer prompts en berichtreeksen tot de contextgrootte (<a>OpenRouter Transforms</a>)",
 		"anthropicApiKey": "Anthropic API-sleutel",
 		"getAnthropicApiKey": "Anthropic API-sleutel ophalen",
 		"anthropicUseAuthToken": "Anthropic API-sleutel als Authorization-header doorgeven in plaats van X-Api-Key",
@@ -304,8 +312,6 @@
 		"anthropic1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
 		"awsBedrock1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4",
-		"vertex1MContextBetaLabel": "1M contextvenster inschakelen (bèta)",
-		"vertex1MContextBetaDescription": "Breidt het contextvenster uit tot 1 miljoen tokens voor Claude Sonnet 4",
 		"basetenApiKey": "Baseten API-sleutel",
 		"getBasetenApiKey": "Baseten API-sleutel verkrijgen",
 		"cerebrasApiKey": "Cerebras API-sleutel",
@@ -374,14 +380,6 @@
 		"awsRegion": "AWS-regio",
 		"awsCrossRegion": "Gebruik cross-region inference",
 		"awsGlobalInference": "Gebruik wereldwijde inferentie (automatische selectie van optimale AWS-regio)",
-		"awsServiceTier": "Servicelaag",
-		"awsServiceTierStandard": "Standard",
-		"awsServiceTierStandardDesc": "Gebalanceerde prestaties en kosten",
-		"awsServiceTierFlex": "Flex (50% korting)",
-		"awsServiceTierFlexDesc": "Lagere kosten, hogere latency voor niet-kritieke taken",
-		"awsServiceTierPriority": "Priority (75% premie)",
-		"awsServiceTierPriorityDesc": "Snelste prestaties voor kritieke toepassingen",
-		"awsServiceTierNote": "Servicelagen beïnvloeden prijzen en prestaties. Flex biedt 50% korting met hogere latency, Priority biedt 25% betere prestaties met 75% premie.",
 		"awsBedrockVpc": {
 			"useCustomVpcEndpoint": "Aangepast VPC-eindpunt gebruiken",
 			"vpcEndpointUrlPlaceholder": "Voer VPC-eindpunt URL in (optioneel)",
@@ -436,6 +434,10 @@
 		"getUnboundApiKey": "Unbound API-sleutel ophalen",
 		"unboundRefreshModelsSuccess": "Modellenlijst bijgewerkt! U kunt nu kiezen uit de nieuwste modellen.",
 		"unboundInvalidApiKey": "Ongeldige API-sleutel. Controleer uw API-sleutel en probeer het opnieuw.",
+		"humanRelay": {
+			"description": "Geen API-sleutel vereist, maar de gebruiker moet helpen met kopiëren en plakken naar de webchat-AI.",
+			"instructions": "Tijdens gebruik verschijnt een dialoogvenster en wordt het huidige bericht automatisch naar het klembord gekopieerd. Je moet deze plakken in webversies van AI (zoals ChatGPT of Claude), vervolgens het antwoord van de AI terugkopiëren naar het dialoogvenster en op bevestigen klikken."
+		},
 		"roo": {
 			"authenticatedMessage": "Veilig geauthenticeerd via je Roo Code Cloud-account.",
 			"connectButton": "Verbinden met Roo Code Cloud"
@@ -504,7 +506,6 @@
 			"none": "Geen",
 			"minimal": "Minimaal (Snelst)",
 			"high": "Hoog",
-			"xhigh": "Zeer hoog",
 			"medium": "Middel",
 			"low": "Laag"
 		},
@@ -665,10 +666,6 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max bestanden",
 			"description": "Maximum aantal bestandsvermeldingen dat in de git-statuscontext moet worden opgenomen. Stel in op 0 om uit te schakelen. Branch-info en commits worden altijd getoond wanneer > 0."
-		},
-		"enableSubfolderRules": {
-			"label": "Submap-regels inschakelen",
-			"description": "Recursief .roo/rules en AGENTS.md-bestanden uit submappen ontdekken en laden. Handig voor monorepo's met regels per pakket."
 		}
 	},
 	"terminal": {
@@ -828,17 +825,6 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Parallelle tool-aanroepen",
 			"description": "Wanneer ingeschakeld, kan het native protocol meerdere tools uitvoeren in één enkele assistent-berichtbeurt."
-		},
-		"CUSTOM_TOOLS": {
-			"name": "Aangepaste tools inschakelen",
-			"description": "Indien ingeschakeld kan Roo aangepaste TypeScript/JavaScript-tools laden en gebruiken uit de map .roo/tools van je project of ~/.roo/tools voor globale tools. Opmerking: deze tools worden automatisch goedgekeurd.",
-			"toolsHeader": "Beschikbare aangepaste tools",
-			"noTools": "Geen aangepaste tools geladen. Voeg .ts- of .js-bestanden toe aan de map .roo/tools van je project of ~/.roo/tools voor globale tools.",
-			"refreshButton": "Vernieuwen",
-			"refreshing": "Vernieuwen...",
-			"refreshSuccess": "Tools succesvol vernieuwd",
-			"refreshError": "Fout bij vernieuwen van tools",
-			"toolParameters": "Parameters"
 		}
 	},
 	"promptCaching": {
@@ -970,10 +956,6 @@
 		"collapseThinking": {
 			"label": "Denkberichten standaard samenvouwen",
 			"description": "Indien ingeschakeld, worden denkblokken standaard samengevouwen totdat je ermee interageert"
-		},
-		"requireCtrlEnterToSend": {
-			"label": "Vereist {{primaryMod}}+Enter om berichten te versturen",
-			"description": "Wanneer ingeschakeld, moet je {{primaryMod}}+Enter indrukken om berichten te versturen in plaats van alleen Enter"
 		}
 	}
 }

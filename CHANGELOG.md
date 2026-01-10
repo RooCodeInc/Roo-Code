@@ -1,374 +1,5 @@
 # Roo Code Changelog
 
-## [3.39.3] - 2026-01-10
-
-![3.39.3 Release - Roo Code Router](/releases/3.39.3-release.png)
-
-- Rename Roo Code Cloud Provider to Roo Code Router for clearer branding (PR #10560 by @roomote)
-- Update Roo Code Router service name throughout the codebase (PR #10607 by @mrubens)
-- Update router name in types for consistency (PR #10605 by @mrubens)
-- Improve ExtensionHost code organization and cleanup (PR #10600 by @cte)
-- Add local installation option to CLI release script for testing (PR #10597 by @cte)
-- Reorganize CLI file structure for better maintainability (PR #10599 by @cte)
-- Add TUI to CLI (PR #10480 by @cte)
-
-## [3.39.2] - 2026-01-09
-
-- Fix: Ensure all tools have consistent strict mode values for Cerebras compatibility (#10334 by @brianboysen51, PR #10589 by @app/roomote)
-- Fix: Remove convertToSimpleMessages to restore tool calling for OpenAI-compatible providers (PR #10575 by @daniel-lxs)
-- Fix: Make edit_file matching more resilient to prevent false negatives (PR #10585 by @hannesrudolph)
-- Fix: Order text parts before tool calls in assistant messages for vscode-lm (PR #10573 by @daniel-lxs)
-- Fix: Ensure assistant message content is never undefined for Gemini compatibility (PR #10559 by @daniel-lxs)
-- Fix: Merge approval feedback into tool result instead of pushing duplicate messages (PR #10519 by @daniel-lxs)
-- Fix: Round-trip Gemini thought signatures for tool calls (PR #10590 by @hannesrudolph)
-- Feature: Improve error messaging for stream termination errors from provider (PR #10548 by @daniel-lxs)
-- Feature: Add debug setting to settings page for easier troubleshooting (PR #10580 by @hannesrudolph)
-- Chore: Disable edit_file tool for Gemini/Vertex providers (PR #10594 by @hannesrudolph)
-- Chore: Stop overriding tool allow/deny lists for Gemini (PR #10592 by @hannesrudolph)
-- Chore: Change default CLI model to anthropic/claude-opus-4.5 (PR #10544 by @mrubens)
-- Chore: Update Terms of Service effective January 9, 2026 (PR #10568 by @mrubens)
-- Chore: Move more types to @roo-code/types for CLI support (PR #10583 by @cte)
-- Chore: Add functionality to @roo-code/core for CLI support (PR #10584 by @cte)
-- Chore: Add slash commands useful for CLI development (PR #10586 by @cte)
-
-## [3.39.1] - 2026-01-08
-
-- Fix: Stabilize file paths during native tool call streaming to prevent path corruption (PR #10555 by @daniel-lxs)
-- Fix: Disable Gemini thought signature persistence to prevent corrupted signature errors (PR #10554 by @daniel-lxs)
-- Fix: Change minItems from 2 to 1 for Anthropic API compatibility (PR #10551 by @daniel-lxs)
-
-## [3.39.0] - 2026-01-08
-
-![3.39.0 Release - Kangaroo go BRRR](/releases/3.39.0-release.png)
-
-- Implement sticky provider profile for task-level API config persistence (#8010 by @hannesrudolph, PR #10018 by @hannesrudolph)
-- Add support for image file @mentions (PR #10189 by @hannesrudolph)
-- Rename YOLO to BRRR (#8574 by @mojomast, PR #10507 by @roomote)
-- Add debug-mode proxy routing for debugging API calls (#7042 by @SleeperSmith, PR #10467 by @hannesrudolph)
-- Add Kimi K2 thinking model to Fireworks AI provider (#9201 by @kavehsfv, PR #9202 by @roomote)
-- Add xhigh reasoning effort to OpenAI compatible endpoints (#10060 by @Soorma718, PR #10061 by @roomote)
-- Filter @ mention file search results using .rooignore (#10169 by @jerrill-johnson-bitwerx, PR #10174 by @roomote)
-- Add image support documentation to read_file native tool description (#10440 by @nabilfreeman, PR #10442 by @roomote)
-- Add zai-glm-4.7 to Cerebras models (PR #10500 by @sebastiand-cerebras)
-- VSCode shim and basic CLI for running Roo Code headlessly (PR #10452 by @cte)
-- Add CLI installer for headless Roo Code (PR #10474 by @cte)
-- Add option to use CLI for evals (PR #10456 by @cte)
-- Remember last Roo model selection in web-evals and add evals skill (PR #10470 by @hannesrudolph)
-- Tweak the style of follow up suggestion modes (PR #9260 by @mrubens)
-- Fix: Handle PowerShell ENOENT error in os-name on Windows (#9859 by @Yang-strive, PR #9897 by @roomote)
-- Fix: Make command chaining examples shell-aware for Windows compatibility (#10352 by @AlexNek, PR #10434 by @roomote)
-- Fix: Preserve tool_use blocks for all tool_results in kept messages during condensation (PR #10471 by @daniel-lxs)
-- Fix: Add additionalProperties: false to MCP tool schemas for OpenAI Responses API (PR #10472 by @daniel-lxs)
-- Fix: Prevent duplicate tool_result blocks causing API errors (PR #10497 by @daniel-lxs)
-- Fix: Add explicit deduplication for duplicate tool_result blocks (#10465 by @nabilfreeman, PR #10466 by @roomote)
-- Fix: Use task stored API config as fallback for rate limit (PR #10266 by @roomote)
-- Fix: Remove legacy Claude 2 series models from Bedrock provider (#9220 by @KevinZhao, PR #10501 by @roomote)
-- Fix: Add missing description fields for debugProxy configuration (PR #10505 by @roomote)
-- Fix: Glitchy kangaroo bounce animation on welcome screen (PR #10035 by @objectiveSee)
-
-## [3.38.3] - 2026-01-03
-
-- Feat: Add option in Context settings to recursively load `.roo/rules` and `AGENTS.md` from subdirectories (PR #10446 by @mrubens)
-- Fix: Stop frequent Claude Code sign-ins by hardening OAuth refresh token handling (PR #10410 by @hannesrudolph)
-- Fix: Add `maxConcurrentFileReads` limit to native `read_file` tool schema (PR #10449 by @app/roomote)
-- Fix: Add type check for `lastMessage.text` in TTS useEffect to prevent runtime errors (PR #10431 by @app/roomote)
-
-## [3.38.2] - 2025-12-31
-
-![3.38.2 Release - Skill Alignment](/releases/3.38.2-release.png)
-
-- Align skills system with Agent Skills specification (PR #10409 by @hannesrudolph)
-- Prevent write_to_file from creating files at truncated paths (PR #10415 by @mrubens and @daniel-lxs)
-- Update Cerebras maxTokens to 16384 (PR #10387 by @sebastiand-cerebras)
-- Fix rate limit wait display (PR #10389 by @hannesrudolph)
-- Remove human-relay provider (PR #10388 by @hannesrudolph)
-- Replace Todo Lists video with Context Management video in documentation (PR #10375 by @SannidhyaSah)
-
-## [3.38.1] - 2025-12-29
-
-![3.38.1 Release - Bug Fixes and Stability](/releases/3.38.1-release.png)
-
-- Fix: Flush pending tool results before condensing context (PR #10379 by @daniel-lxs)
-- Fix: Revert mergeToolResultText for OpenAI-compatible providers (PR #10381 by @hannesrudolph)
-- Fix: Enforce maxConcurrentFileReads limit in read_file tool (PR #10363 by @roomote)
-- Fix: Improve feedback message when read_file is used on a directory (PR #10371 by @roomote)
-- Fix: Handle custom tool use similarly to MCP tools for IPC schema purposes (PR #10364 by @jr)
-- Fix: Correct GitHub repository URL in marketing page (#10376 by @jishnuteegala, PR #10377 by @roomote)
-- Docs: Clarify path to Security Settings in privacy policy (PR #10367 by @roomote)
-
-## [3.38.0] - 2025-12-27
-
-![3.38.0 Release - Skills](/releases/3.38.0-release.png)
-
-- Add support for [Agent Skills](https://agentskills.io/), enabling reusable packages of prompts, tools, and resources to extend Roo's capabilities (PR #10335 by @mrubens)
-- Add optional mode field to slash command front matter, allowing commands to automatically switch to a specific mode when triggered (PR #10344 by @app/roomote)
-- Add support for npm packages and .env files to custom tools, allowing custom tools to import dependencies and access environment variables (PR #10336 by @cte)
-- Remove simpleReadFileTool feature, streamlining the file reading experience (PR #10254 by @app/roomote)
-- Remove OpenRouter Transforms feature (PR #10341 by @app/roomote)
-- Fix mergeToolResultText handling in Roo provider (PR #10359 by @mrubens)
-
-## [3.37.1] - 2025-12-23
-
-![3.37.1 Release - Tool Fixes and Provider Improvements](/releases/3.37.1-release.png)
-
-- Fix: Send native tool definitions by default for OpenAI to ensure proper tool usage (PR #10314 by @hannesrudolph)
-- Fix: Preserve reasoning_details shape to prevent malformed responses when processing model output (PR #10313 by @hannesrudolph)
-- Fix: Drain queued messages while waiting for ask to prevent message loss (PR #10315 by @hannesrudolph)
-- Feat: Add grace retry for empty assistant messages to improve reliability (PR #10297 by @hannesrudolph)
-- Feat: Enable mergeToolResultText for all OpenAI-compatible providers for better tool result handling (PR #10299 by @hannesrudolph)
-- Feat: Enable mergeToolResultText for Roo Code Router (PR #10301 by @hannesrudolph)
-- Feat: Strengthen native tool-use guidance in prompts for improved model behavior (PR #10311 by @hannesrudolph)
-- UX: Account-centric signup flow for improved onboarding experience (PR #10306 by @brunobergher)
-
-## [3.37.0] - 2025-12-22
-
-![3.37.0 Release - Custom Tool Calling](/releases/3.37.0-release.png)
-
-- Add MiniMax M2.1 and improve environment_details handling for Minimax thinking models (PR #10284 by @hannesrudolph)
-- Add GLM-4.7 model with thinking mode support for Zai provider (PR #10282 by @hannesrudolph)
-- Add experimental custom tool calling - define custom tools that integrate seamlessly with your AI workflow (PR #10083 by @cte)
-- Deprecate XML tool protocol selection and force native tool format for new tasks (PR #10281 by @daniel-lxs)
-- Fix: Emit tool_call_end events in OpenAI handler when streaming ends (#10275 by @torxeon, PR #10280 by @daniel-lxs)
-- Fix: Emit tool_call_end events in BaseOpenAiCompatibleProvider (PR #10293 by @hannesrudolph)
-- Fix: Disable strict mode for MCP tools to preserve optional parameters (PR #10220 by @daniel-lxs)
-- Fix: Move array-specific properties into anyOf variant in normalizeToolSchema (PR #10276 by @daniel-lxs)
-- Fix: Add CRLF line ending normalization to search_replace and search_and_replace tools (PR #10288 by @hannesrudolph)
-- Fix: Add graceful fallback for model parsing in Chutes provider (PR #10279 by @hannesrudolph)
-- Fix: Enable Requesty refresh models with credentials (PR #10273 by @daniel-lxs)
-- Fix: Improve reasoning_details accumulation and serialization (PR #10285 by @hannesrudolph)
-- Fix: Preserve reasoning_content in condense summary for DeepSeek-reasoner (PR #10292 by @hannesrudolph)
-- Refactor Zai provider to merge environment_details into tool result instead of system message (PR #10289 by @hannesrudolph)
-- Remove parallel_tool_calls parameter from litellm provider (PR #10274 by @roomote)
-- Add Cloud Team page with comprehensive team management features (PR #10267 by @roomote)
-- Add message log deduper utility for evals (PR #10286 by @hannesrudolph)
-
-## [3.36.16] - 2025-12-19
-
-- Fix: Normalize tool schemas for VS Code LM API to resolve error 400 when using VS Code Language Model API providers (PR #10221 by @hannesrudolph)
-
-## [3.36.15] - 2025-12-19
-
-![3.36.15 Release - 1M Context Window Support](/releases/3.36.15-release.png)
-
-- Add 1M context window beta support for Claude Sonnet 4 on Vertex AI, enabling significantly larger context for complex tasks (PR #10209 by @hannesrudolph)
-- Add native tool calling support for LM Studio and Qwen-Code providers, improving compatibility with local models (PR #10208 by @hannesrudolph)
-- Add native tool call defaults for OpenAI-compatible providers, expanding native function calling across more configurations (PR #10213 by @hannesrudolph)
-- Enable native tool calls for Requesty provider (PR #10211 by @daniel-lxs)
-- Improve API error handling and visibility with clearer error messages and better user feedback (PR #10204 by @brunobergher)
-- Add downloadable error diagnostics from chat errors, making it easier to troubleshoot and report issues (PR #10188 by @brunobergher)
-- Fix refresh models button not properly flushing the cache, ensuring model lists update correctly (#9682 by @tl-hbk, PR #9870 by @pdecat)
-- Fix additionalProperties handling for strict mode compatibility, resolving schema validation issues with certain providers (PR #10210 by @daniel-lxs)
-
-## [3.36.14] - 2025-12-18
-
-![3.36.14 Release - Native Tool Calling for Claude on Vertex AI](/releases/3.36.14-release.png)
-
-- Add native tool calling support for Claude models on Vertex AI, enabling more efficient and reliable tool interactions (PR #10197 by @hannesrudolph)
-- Fix JSON Schema format value stripping for OpenAI compatibility, resolving issues with unsupported format values (PR #10198 by @daniel-lxs)
-- Improve "no tools used" error handling with graceful retry mechanism for better reliability when tools fail to execute (PR #10196 by @hannesrudolph)
-
-## [3.36.13] - 2025-12-18
-
-![3.36.13 Release - Native Tool Protocol](/releases/3.36.13-release.png)
-
-- Change default tool protocol from XML to native for improved reliability and performance (PR #10186 by @mrubens)
-- Add native tool support for VS Code Language Model API providers (PR #10191 by @daniel-lxs)
-- Lock task tool protocol for consistent task resumption, ensuring tasks resume with the same protocol they started with (PR #10192 by @daniel-lxs)
-- Replace edit_file tool alias with actual edit_file tool for improved diff editing capabilities (PR #9983 by @hannesrudolph)
-- Fix LiteLLM router models by merging default model info for native tool calling support (PR #10187 by @daniel-lxs)
-- Add PostHog exception tracking for consecutive mistake errors to improve error monitoring (PR #10193 by @daniel-lxs)
-
-## [3.36.12] - 2025-12-18
-
-![3.36.12 Release - Better telemetry and Bedrock fixes](/releases/3.36.12-release.png)
-
-- Fix: Add userAgentAppId to Bedrock embedder for code indexing (#10165 by @jackrein, PR #10166 by @roomote)
-- Update OpenAI and Gemini tool preferences for improved model behavior (PR #10170 by @hannesrudolph)
-- Extract error messages from JSON payloads for better PostHog error grouping (PR #10163 by @daniel-lxs)
-
-## [3.36.11] - 2025-12-17
-
-![3.36.11 Release - Native Tool Calling Enhancements](/releases/3.36.11-release.png)
-
-- Add support for Claude Code Provider native tool calling, improving tool execution performance and reliability (PR #10077 by @hannesrudolph)
-- Enable native tool calling by default for Z.ai models for better model compatibility (PR #10158 by @app/roomote)
-- Enable native tools by default for OpenAI compatible provider to improve tool calling support (PR #10159 by @daniel-lxs)
-- Fix: Normalize MCP tool schemas for Bedrock and OpenAI strict mode to ensure proper tool compatibility (PR #10148 by @daniel-lxs)
-- Fix: Remove dots and colons from MCP tool names for Bedrock compatibility (PR #10152 by @daniel-lxs)
-- Fix: Convert tool_result to XML text when native tools disabled for Bedrock (PR #10155 by @daniel-lxs)
-- Fix: Refresh Roo models cache with session token on auth state change to resolve model list refresh issues (PR #10156 by @daniel-lxs)
-- Fix: Support AWS GovCloud and China region ARNs in Bedrock provider for expanded regional support (PR #10157 by @app/roomote)
-
-## [3.36.10] - 2025-12-17
-
-![3.36.10 Release - Gemini 3 Flash Preview](/releases/3.36.10-release.png)
-
-- Add support for Gemini 3 Flash Preview model in the Gemini provider (PR #10151 by @hannesrudolph)
-- Implement interleaved thinking mode for DeepSeek Reasoner, enabling streaming reasoning output (PR #9969 by @hannesrudolph)
-- Fix: Preserve reasoning_content during tool call sequences in DeepSeek (PR #10141 by @hannesrudolph)
-- Fix: Correct token counting for context truncation display (PR #9961 by @hannesrudolph)
-- Update Next.js dependency to ~15.2.8 (PR #10140 by @jr)
-
-## [3.36.9] - 2025-12-15
-
-![3.36.9 Release - Cross-Provider Compatibility](/releases/3.36.9-release.png)
-
-- Fix: Normalize tool call IDs for cross-provider compatibility via OpenRouter, ensuring consistent handling across different AI providers (PR #10102 by @daniel-lxs)
-- Fix: Add additionalProperties: false to nested MCP tool schemas, improving schema validation and preventing unexpected properties (PR #10109 by @daniel-lxs)
-- Fix: Validate tool_result IDs in delegation resume flow, preventing errors when resuming delegated tasks (PR #10135 by @daniel-lxs)
-- Feat: Add full error details to streaming failure dialog, providing more comprehensive information for debugging streaming issues (PR #10131 by @roomote)
-- Feat: Improve evals UI with tool groups and duration fix, enhancing the evaluation interface organization and timing accuracy (PR #10133 by @hannesrudolph)
-
-## [3.36.8] - 2025-12-16
-
-![3.36.8 Release - Native Tools Enabled by Default](/releases/3.36.8-release.png)
-
-- Implement incremental token-budgeted file reading for smarter, more efficient file content retrieval (PR #10052 by @jr)
-- Enable native tools by default for multiple providers including OpenAI, Azure, Google, Vertex, and more (PR #10059 by @daniel-lxs)
-- Enable native tools by default for Anthropic and add telemetry tracking for tool format usage (PR #10021 by @daniel-lxs)
-- Fix: Prevent race condition from deleting wrong API messages during streaming (PR #10113 by @hannesrudolph)
-- Fix: Prevent duplicate MCP tools error by deduplicating servers at source (PR #10096 by @daniel-lxs)
-- Remove strict ARN validation for Bedrock custom ARN users allowing more flexibility (#10108 by @wisestmumbler, PR #10110 by @roomote)
-- Add metadata to error details dialog for improved debugging (PR #10050 by @roomote)
-- Add configuration to control public sharing feature (PR #10105 by @mrubens)
-- Remove description from Bedrock service tiers for cleaner UI (PR #10118 by @mrubens)
-- Fix: Correct link to provider pricing page on web (PR #10107 by @brunobergher)
-
-## [3.36.7] - 2025-12-15
-
-- Improve tool configuration for OpenAI models in OpenRouter (PR #10082 by @hannesrudolph)
-- Capture more detailed provider-specific error information from OpenRouter for better debugging (PR #10073 by @jr)
-- Add Amazon Nova 2 Lite model to Bedrock provider (#9802 by @Smartsheet-JB-Brown, PR #9830 by @roomote)
-- Add AWS Bedrock service tier support (#9874 by @Smartsheet-JB-Brown, PR #9955 by @roomote)
-- Remove auto-approve toggles for to-do and retry actions to simplify the approval workflow (PR #10062 by @hannesrudolph)
-- Move isToolAllowedForMode out of shared directory for better code organization (PR #10089 by @cte)
-- Improve run logs and formatters in web-evals for better evaluation tracking (PR #10081 by @hannesrudolph)
-
-## [3.36.6] - 2025-12-12
-
-![3.36.6 Release - Tool Alias Support](/releases/3.36.6-release.png)
-
-- Add tool alias support for model-specific tool customization, allowing users to configure how tools are presented to different AI models (PR #9989 by @daniel-lxs)
-- Sanitize MCP server and tool names for API compatibility, ensuring special characters don't cause issues with API calls (PR #10054 by @daniel-lxs)
-- Improve auto-approve timer visibility in follow-up suggestions for better user awareness of pending actions (PR #10048 by @brunobergher)
-- Fix: Cancel auto-approval timeout when user starts typing, preventing accidental auto-approvals during user interaction (PR #9937 by @roomote)
-- Add WorkspaceTaskVisibility type for organization cloud settings to support team visibility controls (PR #10020 by @roomote)
-- Fix: Extract raw error message from OpenRouter metadata for clearer error reporting (PR #10039 by @daniel-lxs)
-- Fix: Show tool protocol dropdown for LiteLLM provider, restoring missing configuration option (PR #10053 by @daniel-lxs)
-
-## [3.36.5] - 2025-12-11
-
-![3.36.5 Release - GPT-5.2](/releases/3.36.5-release.png)
-
-- Add: GPT-5.2 model to openai-native provider (PR #10024 by @hannesrudolph)
-- Add: Toggle for Enter key behavior in chat input allowing users to configure whether Enter sends or creates new line (#8555 by @lmtr0, PR #10002 by @hannesrudolph)
-- Add: App version to telemetry exception captures and filter 402 errors (PR #9996 by @daniel-lxs)
-- Fix: Handle empty Gemini responses and reasoning loops to prevent infinite retries (PR #10007 by @hannesrudolph)
-- Fix: Add missing tool_result blocks to prevent API errors when tool results are expected (PR #10015 by @daniel-lxs)
-- Fix: Filter orphaned tool_results when more results than tool_uses to prevent message validation errors (PR #10027 by @daniel-lxs)
-- Fix: Add general API endpoints for Z.ai provider (#9879 by @richtong, PR #9894 by @roomote)
-- Fix: Apply versioned settings on nightly builds (PR #9997 by @hannesrudolph)
-- Remove: Glama provider (PR #9801 by @hannesrudolph)
-- Remove: Deprecated list_code_definition_names tool (PR #10005 by @hannesrudolph)
-
-## [3.36.4] - 2025-12-10
-
-![3.36.4 Release - Error Details Modal](/releases/3.36.4-release.png)
-
-- Add error details modal with on-demand display for improved error visibility when debugging issues (PR #9985 by @roomote)
-- Fix: Prevent premature rawChunkTracker clearing for MCP tools, improving reliability of MCP tool streaming (PR #9993 by @daniel-lxs)
-- Fix: Filter out 429 rate limit errors from API error telemetry for cleaner metrics (PR #9987 by @daniel-lxs)
-- Fix: Correct TODO list display order in chat view to show items in proper sequence (PR #9991 by @roomote)
-
-## [3.36.3] - 2025-12-09
-
-![3.36.3 Release](/releases/3.36.3-release.png)
-
-- Refactor: Unified context-management architecture with improved UX for better context control (PR #9795 by @hannesrudolph)
-- Add new `search_replace` native tool for single-replacement operations with improved editing precision (PR #9918 by @hannesrudolph)
-- Streaming tool stats and token usage throttling for better real-time feedback during generation (PR #9926 by @hannesrudolph)
-- Add versioned settings support with minPluginVersion gating for Roo provider (PR #9934 by @hannesrudolph)
-- Make Architect mode save plans to `/plans` directory and gitignore it (PR #9944 by @brunobergher)
-- Add announcement support CTA and social icons to UI (PR #9945 by @hannesrudolph)
-- Add ability to save screenshots from the browser tool (PR #9963 by @mrubens)
-- Refactor: Decouple tools from system prompt for cleaner architecture (PR #9784 by @daniel-lxs)
-- Update DeepSeek models to V3.2 with new pricing (PR #9962 by @hannesrudolph)
-- Add minimal and medium reasoning effort levels for Gemini models (PR #9973 by @hannesrudolph)
-- Update xAI models catalog with latest model options (PR #9872 by @hannesrudolph)
-- Add DeepSeek V3-2 support for Baseten provider (PR #9861 by @AlexKer)
-- Tweaks to Baseten model definitions for better defaults (PR #9866 by @mrubens)
-- Fix: Add xhigh reasoning effort support for gpt-5.1-codex-max (#9891 by @andrewginns, PR #9900 by @andrewginns)
-- Fix: Add Kimi, MiniMax, and Qwen model configurations for Bedrock (#9902 by @jbearak, PR #9905 by @app/roomote)
-- Configure tool preferences for xAI models (PR #9923 by @hannesrudolph)
-- Default to using native tools when supported on OpenRouter (PR #9878 by @mrubens)
-- Fix: Exclude apply_diff from native tools when diffEnabled is false (#9919 by @denis-kudelin, PR #9920 by @app/roomote)
-- Fix: Always show tool protocol selector for openai-compatible provider (#9965 by @bozoweed, PR #9966 by @hannesrudolph)
-- Fix: Respect explicit supportsReasoningEffort array values for proper model configuration (PR #9970 by @hannesrudolph)
-- Add timeout configuration to OpenAI Compatible Provider Client (PR #9898 by @dcbartlett)
-- Revert default tool protocol change from xml to native for stability (PR #9956 by @mrubens)
-- Remove defaultTemperature from Roo provider configuration (PR #9932 by @mrubens)
-- Improve OpenAI error messages to be more useful for debugging (PR #9639 by @mrubens)
-- Better error logs for parseToolCall exceptions (PR #9857 by @cte)
-- Improve cloud job error logging for RCC provider errors (PR #9924 by @cte)
-- Fix: Display actual API error message instead of generic text on retry (PR #9954 by @hannesrudolph)
-- Add API error telemetry to OpenRouter provider for better diagnostics (PR #9953 by @daniel-lxs)
-- Fix: Sanitize removed/invalid API providers to prevent infinite loop (PR #9869 by @hannesrudolph)
-- Fix: Use foreground color for context-management icons (PR #9912 by @hannesrudolph)
-- Fix: Suppress 'ask promise was ignored' error in handleError (PR #9914 by @daniel-lxs)
-- Fix: Process finish_reason to emit tool_call_end events properly (PR #9927 by @daniel-lxs)
-- Fix: Add finish_reason processing to xai.ts provider (PR #9929 by @daniel-lxs)
-- Fix: Validate and fix tool_result IDs before API requests (PR #9952 by @daniel-lxs)
-- Fix: Return undefined instead of 0 for disabled API timeout (PR #9960 by @hannesrudolph)
-- Stop making unnecessary count_tokens requests for better performance (PR #9884 by @mrubens)
-- Refactor: Consolidate ThinkingBudget components and fix disable handling (PR #9930 by @hannesrudolph)
-- Forbid time estimates in architect mode for more focused planning (PR #9931 by @app/roomote)
-- Web: Add product pages (PR #9865 by @brunobergher)
-- Make eval runs deleteable in the web UI (PR #9909 by @mrubens)
-- Feat: Change defaultToolProtocol default from xml to native (later reverted) (PR #9892 by @app/roomote)
-
-## [3.36.2] - 2025-12-04
-
-![3.36.2 Release - Dynamic API Settings](/releases/3.36.2-release.png)
-
-- Restrict GPT-5 tool set to apply_patch for improved compatibility (PR #9853 by @hannesrudolph)
-- Add dynamic settings support for Roo models from API, allowing model-specific configurations to be fetched dynamically (PR #9852 by @hannesrudolph)
-- Fix: Resolve Chutes provider model fetching issue (PR #9854 by @cte)
-
-## [3.36.1] - 2025-12-04
-
-![3.36.1 Release - Message Management & Stability Improvements](/releases/3.36.1-release.png)
-
-- Add MessageManager layer for centralized history coordination, fixing message synchronization issues (PR #9842 by @hannesrudolph)
-- Fix: Prevent cascading truncation loop by only truncating visible messages (PR #9844 by @hannesrudolph)
-- Fix: Handle unknown/invalid native tool calls to prevent extension freeze (PR #9834 by @daniel-lxs)
-- Always enable reasoning for models that require it (PR #9836 by @cte)
-- ChatView: Smoother stick-to-bottom behavior during streaming (PR #8999 by @hannesrudolph)
-- UX: Improved error messages and documentation links (PR #9777 by @brunobergher)
-- Fix: Overly round follow-up question suggestions styling (PR #9829 by @brunobergher)
-- Add symlink support for slash commands in .roo/commands folder (PR #9838 by @mrubens)
-- Ignore input to the execa terminal process for safer command execution (PR #9827 by @mrubens)
-- Be safer about large file reads (PR #9843 by @jr)
-- Add gpt-5.1-codex-max model to OpenAI provider (PR #9848 by @hannesrudolph)
-- Evals UI: Add filtering, bulk delete, tool consolidation, and run notes (PR #9837 by @hannesrudolph)
-- Evals UI: Add multi-model launch and UI improvements (PR #9845 by @hannesrudolph)
-- Web: New pricing page (PR #9821 by @brunobergher)
-
-## [3.36.0] - 2025-12-04
-
-![3.36.0 Release - Rewind Kangaroo](/releases/3.36.0-release.png)
-
-- Fix: Restore context when rewinding after condense (#8295 by @hannesrudolph, PR #9665 by @hannesrudolph)
-- Add reasoning_details support to Roo provider for enhanced model reasoning visibility (PR #9796 by @app/roomote)
-- Default to native tools for all models in the Roo provider for improved performance (PR #9811 by @mrubens)
-- Enable search_and_replace for Minimax models (PR #9780 by @mrubens)
-- Fix: Resolve Vercel AI Gateway model fetching issues (PR #9791 by @cte)
-- Fix: Apply conservative max tokens for Cerebras provider (PR #9804 by @sebastiand-cerebras)
-- Fix: Remove omission detection logic to eliminate false positives (#9785 by @Michaelzag, PR #9787 by @app/roomote)
-- Refactor: Remove deprecated insert_content tool (PR #9751 by @daniel-lxs)
-- Chore: Hide parallel tool calls experiment and disable feature (PR #9798 by @hannesrudolph)
-- Update next.js documentation site dependencies (PR #9799 by @jr)
-- Fix: Correct download count display on homepage (PR #9807 by @mrubens)
-
 ## [3.35.5] - 2025-12-03
 
 - Feat: Add provider routing selection for OpenRouter embeddings (#9144 by @SannidhyaSah, PR #9693 by @SannidhyaSah)
@@ -410,7 +41,7 @@
 - Native tool calling support expanded across many providers: Bedrock (PR #9698 by @mrubens), Cerebras (PR #9692 by @mrubens), Chutes with auto-detection from API (PR #9715 by @daniel-lxs), DeepInfra (PR #9691 by @mrubens), DeepSeek and Doubao (PR #9671 by @daniel-lxs), Groq (PR #9673 by @daniel-lxs), LiteLLM (PR #9719 by @daniel-lxs), Ollama (PR #9696 by @mrubens), OpenAI-compatible providers (PR #9676 by @daniel-lxs), Requesty (PR #9672 by @daniel-lxs), Unbound (PR #9699 by @mrubens), Vercel AI Gateway (PR #9697 by @mrubens), Vertex Gemini (PR #9678 by @daniel-lxs), and xAI with new Grok 4 Fast and Grok 4.1 Fast models (PR #9690 by @mrubens)
 - Fix: Preserve tool_use blocks in summary for parallel tool calls (#9700 by @SilentFlower, PR #9714 by @SilentFlower)
 - Default Grok Code Fast to native tools for better performance (PR #9717 by @mrubens)
-- UX improvements to the Roo Code Router-centric onboarding flow (PR #9709 by @brunobergher)
+- UX improvements to the Roo Code Cloud provider-centric onboarding flow (PR #9709 by @brunobergher)
 - UX toolbar cleanup and settings consolidation for a cleaner interface (PR #9710 by @brunobergher)
 - Add model-specific tool customization via `excludedTools` and `includedTools` configuration (PR #9641 by @daniel-lxs)
 - Add new `apply_patch` native tool for more efficient file editing operations (PR #9663 by @hannesrudolph)
@@ -509,7 +140,7 @@
 - Show the prompt for image generation in the UI (PR #9505 by @mrubens)
 - Fix double todo list display issue (PR #9517 by @mrubens)
 - Add tracking for cloud synced messages (PR #9518 by @mrubens)
-- Enable the Roo Code Router in evals (PR #9492 by @cte)
+- Enable the Roo Code Cloud provider in evals (PR #9492 by @cte)
 
 ## [3.34.0] - 2025-11-21
 
@@ -569,7 +200,7 @@
 
 ## [3.33.0] - 2025-11-18
 
-![3.33.0 Release - Twin Kangaroos and the Gemini Constellation](/releases/3.33.0-release.png)
+![v3.33.0 Release - Twin Kangaroos and the Gemini Constellation](/releases/v3.33.0-release.png)
 
 - Add Gemini 3 Pro Preview model (PR #9357 by @hannesrudolph)
 - Improve Google Gemini defaults with better temperature and cost reporting (PR #9327 by @hannesrudolph)
@@ -589,7 +220,7 @@
 - Use VSCode theme color for outline button borders (PR #9336 by @app/roomote)
 - Replace broken badgen.net badges with shields.io (PR #9318 by @app/roomote)
 - Add max git status files setting to evals (PR #9322 by @mrubens)
-- Roo Code Router pricing page and changes elsewhere (PR #9195 by @brunobergher)
+- Roo Code Cloud Provider pricing page and changes elsewhere (PR #9195 by @brunobergher)
 
 ## [3.32.1] - 2025-11-14
 
@@ -615,7 +246,7 @@
 ![3.31.3 Release - Kangaroo Decrypting a Message](/releases/3.31.3-release.png)
 
 - Fix: OpenAI Native encrypted_content handling and remove gpt-5-chat-latest verbosity flag (#9225 by @politsin, PR by @hannesrudolph)
-- Fix: Roo Code Router Anthropic input token normalization to avoid double-counting (thanks @hannesrudolph!)
+- Fix: Roo Code Cloud provider Anthropic input token normalization to avoid double-counting (thanks @hannesrudolph!)
 - Refactor: Rename sliding-window to context-management and truncateConversationIfNeeded to manageContext (thanks @hannesrudolph!)
 
 ## [3.31.2] - 2025-11-12
@@ -755,7 +386,7 @@
 
 - Add token-budget based file reading with intelligent preview to avoid context overruns (thanks @daniel-lxs!)
 - Enable browser-use tool for all image-capable models (#8116 by @hannesrudolph, PR by @app/roomote!)
-- Add dynamic model loading for Roo Code Router (thanks @app/roomote!)
+- Add dynamic model loading for Roo Code Cloud provider (thanks @app/roomote!)
 - Fix: Respect nested .gitignore files in search_files (#7921 by @hannesrudolph, PR by @daniel-lxs)
 - Fix: Preserve trailing newlines in stripLineNumbers for apply_diff (#8020 by @liyi3c, PR by @app/roomote)
 - Fix: Exclude max tokens field for models that don't support it in export (#7944 by @hannesrudolph, PR by @elianiva)
@@ -913,7 +544,7 @@
 - UX: Responsive Auto-Approve (thanks @brunobergher!)
 - Add telemetry retry queue for network resilience (thanks @daniel-lxs!)
 - Fix: Transform keybindings in nightly build to fix command+y shortcut (thanks @app/roomote!)
-- New code-supernova stealth model in the Roo Code Router (thanks @mrubens!)
+- New code-supernova stealth model in the Roo Code Cloud provider (thanks @mrubens!)
 
 ## [3.28.3] - 2025-09-16
 
@@ -1124,11 +755,11 @@
 
 ## [3.25.19] - 2025-08-19
 
-- Fix issue where new users couldn't select the Roo Code Router (thanks @daniel-lxs!)
+- Fix issue where new users couldn't select the Roo Code Cloud provider (thanks @daniel-lxs!)
 
 ## [3.25.18] - 2025-08-19
 
-- Add new stealth Sonic model through the Roo Code Router
+- Add new stealth Sonic model through the Roo Code Cloud provider
 - Fix: respect enableReasoningEffort setting when determining reasoning usage (#7048 by @ikbencasdoei, PR by @app/roomote)
 - Fix: prevent duplicate LM Studio models with case-insensitive deduplication (#6954 by @fbuechler, PR by @daniel-lxs)
 - Feat: simplify ask_followup_question prompt documentation (thanks @daniel-lxs!)

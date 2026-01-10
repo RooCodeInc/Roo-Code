@@ -331,15 +331,10 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 
 			await this.storeCredentials(credentials)
 
-			// Store the provider model if provided, or flag that no model was selected
+			// Store the provider model if provided
 			if (providerModel) {
 				await this.context.globalState.update("roo-provider-model", providerModel)
-				await this.context.globalState.update("roo-auth-skip-model", undefined)
 				this.log(`[auth] Stored provider model: ${providerModel}`)
-			} else {
-				// No model was selected during signup - flag this for the webview
-				await this.context.globalState.update("roo-auth-skip-model", true)
-				this.log(`[auth] No provider model selected during signup`)
 			}
 
 			const vscode = await importVscode()

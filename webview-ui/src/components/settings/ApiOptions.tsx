@@ -10,6 +10,7 @@ import {
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	openRouterDefaultModelId,
 	requestyDefaultModelId,
+	glamaDefaultModelId,
 	unboundDefaultModelId,
 	litellmDefaultModelId,
 	openAiNativeDefaultModelId,
@@ -38,6 +39,8 @@ import {
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
 	minimaxDefaultModelId,
+	type ToolProtocol,
+	TOOL_PROTOCOL,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -73,6 +76,7 @@ import {
 	DeepSeek,
 	Doubao,
 	Gemini,
+	Glama,
 	Groq,
 	HuggingFace,
 	IOIntelligence,
@@ -105,6 +109,7 @@ import { inputEventTransform, noTransform } from "./transforms"
 import { ModelInfoView } from "./ModelInfoView"
 import { ApiErrorMessage } from "./ApiErrorMessage"
 import { ThinkingBudget } from "./ThinkingBudget"
+import { SimpleThinkingBudget } from "./SimpleThinkingBudget"
 import { Verbosity } from "./Verbosity"
 import { DiffSettingsControl } from "./DiffSettingsControl"
 import { TodoListSettingsControl } from "./TodoListSettingsControl"
@@ -138,7 +143,7 @@ const ApiOptions = ({
 	setErrorMessage,
 }: ApiOptionsProps) => {
 	const { t } = useAppTranslation()
-	const { organizationAllowList, cloudIsAuthenticated, claudeCodeIsAuthenticated } = useExtensionState()
+	const { organizationAllowList, cloudIsAuthenticated } = useExtensionState()
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -302,7 +307,7 @@ const ApiOptions = ({
 
 			// It would be much easier to have a single attribute that stores
 			// the modelId, but we have a separate attribute for each of
-			// OpenRouter, Unbound, and Requesty.
+			// OpenRouter, Glama, Unbound, and Requesty.
 			// If you switch to one of these providers and the corresponding
 			// modelId is not set then you immediately end up in an error state.
 			// To address that we set the modelId to the default value for th
@@ -336,6 +341,7 @@ const ApiOptions = ({
 			> = {
 				deepinfra: { field: "deepInfraModelId", default: deepInfraDefaultModelId },
 				openrouter: { field: "openRouterModelId", default: openRouterDefaultModelId },
+				glama: { field: "glamaModelId", default: glamaDefaultModelId },
 				unbound: { field: "unboundModelId", default: unboundDefaultModelId },
 				requesty: { field: "requestyModelId", default: requestyDefaultModelId },
 				litellm: { field: "litellmModelId", default: litellmDefaultModelId },
@@ -411,6 +417,16 @@ const ApiOptions = ({
 		}
 	}, [selectedProvider])
 
+	// Calculate the default protocol that would be used if toolProtocol is not set
+	// Mirrors the simplified logic in resolveToolProtocol.ts:
+	// 1. User preference (toolProtocol) - handled by the select value binding
+	// 2. Model default - use if available
+	// 3. XML fallback
+	const defaultProtocol = selectedModelInfo?.defaultToolProtocol || TOOL_PROTOCOL.XML
+
+	// Show the tool protocol selector when model supports native tools
+	const showToolProtocolSelector = selectedModelInfo?.supportsNativeTools === true
+
 	// Convert providers to SearchableSelect options
 	const providerOptions = useMemo(() => {
 		// First filter by organization allow list
@@ -452,11 +468,6 @@ const ApiOptions = ({
 				options.unshift(rooOption)
 			}
 		} else {
-			// Filter out roo from the welcome view
-			const filteredOptions = options.filter((opt) => opt.value !== "roo")
-			options.length = 0
-			options.push(...filteredOptions)
-
 			const openRouterIndex = options.findIndex((opt) => opt.value === "openrouter")
 			if (openRouterIndex > 0) {
 				const [openRouterOption] = options.splice(openRouterIndex, 1)
@@ -477,7 +488,7 @@ const ApiOptions = ({
 					) : (
 						docs && (
 							<VSCodeLink href={docs.url} target="_blank" className="flex gap-2">
-								{t("settings:providers.apiProviderDocs")}
+								{docs.name}
 								<BookOpenText className="size-4 inline ml-2" />
 							</VSCodeLink>
 						)
@@ -523,6 +534,18 @@ const ApiOptions = ({
 				/>
 			)}
 
+			{selectedProvider === "glama" && (
+				<Glama
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					uriScheme={uriScheme}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
 			{selectedProvider === "unbound" && (
 				<Unbound
 					apiConfiguration={apiConfiguration}
@@ -559,7 +582,6 @@ const ApiOptions = ({
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					simplifySettings={fromWelcomeView}
-					claudeCodeIsAuthenticated={claudeCodeIsAuthenticated}
 				/>
 			)}
 
@@ -741,6 +763,17 @@ const ApiOptions = ({
 				/>
 			)}
 
+			{selectedProvider === "human-relay" && (
+				<>
+					<div className="text-sm text-vscode-descriptionForeground">
+						{t("settings:providers.humanRelay.description")}
+					</div>
+					<div className="text-sm text-vscode-descriptionForeground">
+						{t("settings:providers.humanRelay.instructions")}
+					</div>
+				</>
+			)}
+
 			{selectedProvider === "fireworks" && (
 				<Fireworks apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
@@ -761,8 +794,7 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{/* Skip generic model picker for claude-code since it has its own in ClaudeCode.tsx */}
-			{selectedProviderModels.length > 0 && selectedProvider !== "claude-code" && (
+			{selectedProviderModels.length > 0 && (
 				<>
 					<div>
 						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
@@ -823,14 +855,22 @@ const ApiOptions = ({
 				</>
 			)}
 
-			{!fromWelcomeView && (
-				<ThinkingBudget
-					key={`${selectedProvider}-${selectedModelId}`}
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					modelInfo={selectedModelInfo}
-				/>
-			)}
+			{!fromWelcomeView &&
+				(selectedProvider === "roo" ? (
+					<SimpleThinkingBudget
+						key={`${selectedProvider}-${selectedModelId}`}
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+						modelInfo={selectedModelInfo}
+					/>
+				) : (
+					<ThinkingBudget
+						key={`${selectedProvider}-${selectedModelId}`}
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+						modelInfo={selectedModelInfo}
+					/>
+				))}
 
 			{/* Gate Verbosity UI by capability flag */}
 			{!fromWelcomeView && selectedModelInfo?.supportsVerbosity && (
@@ -919,6 +959,39 @@ const ApiOptions = ({
 									</div>
 								</div>
 							)}
+						{showToolProtocolSelector && (
+							<div>
+								<label className="block font-medium mb-1">{t("settings:toolProtocol.label")}</label>
+								<Select
+									value={apiConfiguration.toolProtocol || "default"}
+									onValueChange={(value) => {
+										const newValue = value === "default" ? undefined : (value as ToolProtocol)
+										setApiConfigurationField("toolProtocol", newValue)
+									}}>
+									<SelectTrigger className="w-full">
+										<SelectValue placeholder={t("settings:common.select")} />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="default">
+											{t("settings:toolProtocol.default")} (
+											{defaultProtocol === TOOL_PROTOCOL.NATIVE
+												? t("settings:toolProtocol.native")
+												: t("settings:toolProtocol.xml")}
+											)
+										</SelectItem>
+										<SelectItem value={TOOL_PROTOCOL.XML}>
+											{t("settings:toolProtocol.xml")}
+										</SelectItem>
+										<SelectItem value={TOOL_PROTOCOL.NATIVE}>
+											{t("settings:toolProtocol.native")}
+										</SelectItem>
+									</SelectContent>
+								</Select>
+								<div className="text-sm text-vscode-descriptionForeground mt-1">
+									{t("settings:toolProtocol.description")}
+								</div>
+							</div>
+						)}
 					</CollapsibleContent>
 				</Collapsible>
 			)}

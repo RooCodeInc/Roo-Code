@@ -9,6 +9,7 @@ export * from "./doubao.js"
 export * from "./featherless.js"
 export * from "./fireworks.js"
 export * from "./gemini.js"
+export * from "./glama.js"
 export * from "./groq.js"
 export * from "./huggingface.js"
 export * from "./io-intelligence.js"
@@ -43,6 +44,7 @@ import { doubaoDefaultModelId } from "./doubao.js"
 import { featherlessDefaultModelId } from "./featherless.js"
 import { fireworksDefaultModelId } from "./fireworks.js"
 import { geminiDefaultModelId } from "./gemini.js"
+import { glamaDefaultModelId } from "./glama.js"
 import { groqDefaultModelId } from "./groq.js"
 import { ioIntelligenceDefaultModelId } from "./io-intelligence.js"
 import { litellmDefaultModelId } from "./lite-llm.js"
@@ -79,6 +81,8 @@ export function getProviderDefaultModelId(
 			return openRouterDefaultModelId
 		case "requesty":
 			return requestyDefaultModelId
+		case "glama":
+			return glamaDefaultModelId
 		case "unbound":
 			return unboundDefaultModelId
 		case "litellm":
@@ -143,6 +147,7 @@ export function getProviderDefaultModelId(
 			return vercelAiGatewayDefaultModelId
 		case "anthropic":
 		case "gemini-cli":
+		case "human-relay":
 		case "fake-ai":
 		default:
 			return anthropicDefaultModelId

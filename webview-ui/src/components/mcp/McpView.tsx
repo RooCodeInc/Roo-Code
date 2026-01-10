@@ -9,7 +9,7 @@ import {
 } from "@vscode/webview-ui-toolkit/react"
 import { Webhook } from "lucide-react"
 
-import type { McpServer } from "@roo-code/types"
+import { McpServer } from "@roo/mcp"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"

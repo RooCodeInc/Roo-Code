@@ -1,16 +1,9 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import {
-	type ModelInfo,
-	type ModelRecord,
-	requestyDefaultModelId,
-	requestyDefaultModelInfo,
-	TOOL_PROTOCOL,
-	NATIVE_TOOL_DEFAULTS,
-} from "@roo-code/types"
+import { type ModelInfo, requestyDefaultModelId, requestyDefaultModelInfo, TOOL_PROTOCOL } from "@roo-code/types"
 
-import type { ApiHandlerOptions } from "../../shared/api"
+import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
@@ -25,7 +18,6 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { toRequestyServiceUrl } from "../../shared/utils/requesty"
 import { handleOpenAIError } from "./utils/openai-error-handler"
-import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
 
 // Requesty usage includes an extra field for Anthropic use cases.
 // Safely cast the prompt token details section to the appropriate structure.
@@ -86,14 +78,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 	override getModel() {
 		const id = this.options.requestyModelId ?? requestyDefaultModelId
-		const cachedInfo = this.models[id] ?? requestyDefaultModelInfo
-
-		// Merge native tool defaults for cached models that may lack these fields
-		// The order ensures that cached values (if present) override the defaults
-		let info: ModelInfo = { ...NATIVE_TOOL_DEFAULTS, ...cachedInfo }
-
-		// Apply tool preferences for models accessed through routers (OpenAI, Gemini)
-		info = applyRouterToolPreferences(id, info)
+		const info = this.models[id] ?? requestyDefaultModelInfo
 
 		const params = getModelParams({
 			format: "anthropic",
@@ -150,8 +135,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			: undefined
 
 		// Check if native tool protocol is enabled
-		// IMPORTANT: Use metadata.toolProtocol if provided (task's locked protocol) for consistency
-		const toolProtocol = resolveToolProtocol(this.options, info, metadata?.toolProtocol)
+		const toolProtocol = resolveToolProtocol(this.options, info)
 		const useNativeTools = toolProtocol === TOOL_PROTOCOL.NATIVE
 
 		const completionParams: RequestyChatCompletionParamsStreaming = {
