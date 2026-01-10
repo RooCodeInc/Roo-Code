@@ -137,6 +137,31 @@ describe("Claude Code OAuth", () => {
 			expect(params.get("response_type")).toBe("code")
 			expect(params.get("state")).toBe(state)
 		})
+
+		test("should use custom redirect URI when provided (for remote environments)", () => {
+			const codeChallenge = "test-code-challenge"
+			const state = "test-state"
+			const customRedirectUri = "https://codespace-name-54545.app.github.dev/callback"
+			const url = buildAuthorizationUrl(codeChallenge, state, customRedirectUri)
+
+			const parsedUrl = new URL(url)
+			const params = parsedUrl.searchParams
+			expect(params.get("redirect_uri")).toBe(customRedirectUri)
+			// Other parameters should still be correct
+			expect(params.get("client_id")).toBe(CLAUDE_CODE_OAUTH_CONFIG.clientId)
+			expect(params.get("code_challenge")).toBe(codeChallenge)
+			expect(params.get("state")).toBe(state)
+		})
+
+		test("should fall back to default redirect URI when custom is undefined", () => {
+			const codeChallenge = "test-code-challenge"
+			const state = "test-state"
+			const url = buildAuthorizationUrl(codeChallenge, state, undefined)
+
+			const parsedUrl = new URL(url)
+			const params = parsedUrl.searchParams
+			expect(params.get("redirect_uri")).toBe(CLAUDE_CODE_OAUTH_CONFIG.redirectUri)
+		})
 	})
 
 	describe("isTokenExpired", () => {

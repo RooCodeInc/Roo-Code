@@ -1,7 +1,7 @@
 import * as crypto from "crypto"
 import * as http from "http"
 import { URL } from "url"
-import type { ExtensionContext } from "vscode"
+import type { ExtensionContext, Uri } from "vscode"
 import { z } from "zod"
 
 // OAuth Configuration
@@ -147,11 +147,14 @@ export function generateUserId(email?: string): string {
 
 /**
  * Builds the authorization URL for OAuth flow
+ * @param codeChallenge PKCE code challenge
+ * @param state CSRF protection state
+ * @param redirectUri The redirect URI to use (may be externally mapped for remote environments)
  */
-export function buildAuthorizationUrl(codeChallenge: string, state: string): string {
+export function buildAuthorizationUrl(codeChallenge: string, state: string, redirectUri?: string): string {
 	const params = new URLSearchParams({
 		client_id: CLAUDE_CODE_OAUTH_CONFIG.clientId,
-		redirect_uri: CLAUDE_CODE_OAUTH_CONFIG.redirectUri,
+		redirect_uri: redirectUri ?? CLAUDE_CODE_OAUTH_CONFIG.redirectUri,
 		scope: CLAUDE_CODE_OAUTH_CONFIG.scopes,
 		code_challenge: codeChallenge,
 		code_challenge_method: "S256",
@@ -164,18 +167,23 @@ export function buildAuthorizationUrl(codeChallenge: string, state: string): str
 
 /**
  * Exchanges the authorization code for tokens
+ * @param code The authorization code
+ * @param codeVerifier The PKCE code verifier
+ * @param state The CSRF state
+ * @param redirectUri The redirect URI used in the authorization request (must match)
  */
 export async function exchangeCodeForTokens(
 	code: string,
 	codeVerifier: string,
 	state: string,
+	redirectUri?: string,
 ): Promise<ClaudeCodeCredentials> {
 	const body = {
 		code,
 		state,
 		grant_type: "authorization_code",
 		client_id: CLAUDE_CODE_OAUTH_CONFIG.clientId,
-		redirect_uri: CLAUDE_CODE_OAUTH_CONFIG.redirectUri,
+		redirect_uri: redirectUri ?? CLAUDE_CODE_OAUTH_CONFIG.redirectUri,
 		code_verifier: codeVerifier,
 	}
 
@@ -277,6 +285,7 @@ export class ClaudeCodeOAuthManager {
 	private pendingAuth: {
 		codeVerifier: string
 		state: string
+		redirectUri: string
 		server?: http.Server
 	} | null = null
 
@@ -468,9 +477,17 @@ export class ClaudeCodeOAuthManager {
 
 	/**
 	 * Start the OAuth authorization flow
-	 * Returns the authorization URL to open in browser
+	 * Uses vscode.env.asExternalUri() to support remote environments (GitHub Codespaces, etc.)
+	 * @param vscodeEnv The vscode.env object for URI transformation
+	 * @param parseUri Function to parse a string into a Uri (e.g., vscode.Uri.parse)
+	 * @returns The authorization URL to open in browser
 	 */
-	startAuthorizationFlow(): string {
+	async startAuthorizationFlow(
+		vscodeEnv?: {
+			asExternalUri: (uri: Uri) => Thenable<Uri>
+		},
+		parseUri?: (value: string) => Uri,
+	): Promise<string> {
 		// Cancel any existing authorization flow before starting a new one
 		this.cancelAuthorizationFlow()
 
@@ -478,12 +495,30 @@ export class ClaudeCodeOAuthManager {
 		const codeChallenge = generateCodeChallenge(codeVerifier)
 		const state = generateState()
 
+		// Determine the redirect URI
+		// In remote environments (Codespaces, etc.), use asExternalUri to get the forwarded URL
+		let resolvedRedirectUri: string = CLAUDE_CODE_OAUTH_CONFIG.redirectUri
+
+		if (vscodeEnv && parseUri) {
+			try {
+				// Parse the localhost URI and transform it using asExternalUri
+				const localUri = parseUri(CLAUDE_CODE_OAUTH_CONFIG.redirectUri)
+				const externalUri = await vscodeEnv.asExternalUri(localUri)
+				resolvedRedirectUri = externalUri.toString()
+				this.log(`[claude-code-oauth] Resolved redirect URI: ${resolvedRedirectUri}`)
+			} catch (error) {
+				// Fall back to localhost if asExternalUri fails
+				this.logError("[claude-code-oauth] Failed to resolve external URI, using localhost:", error)
+			}
+		}
+
 		this.pendingAuth = {
 			codeVerifier,
 			state,
+			redirectUri: resolvedRedirectUri,
 		}
 
-		return buildAuthorizationUrl(codeChallenge, state)
+		return buildAuthorizationUrl(codeChallenge, state, resolvedRedirectUri)
 	}
 
 	/**
@@ -545,7 +580,13 @@ export class ClaudeCodeOAuthManager {
 					}
 
 					try {
-						const credentials = await exchangeCodeForTokens(code, this.pendingAuth.codeVerifier, state)
+						// Use the same redirect URI that was used in the authorization request
+						const credentials = await exchangeCodeForTokens(
+							code,
+							this.pendingAuth.codeVerifier,
+							state,
+							this.pendingAuth.redirectUri,
+						)
 
 						await this.saveCredentials(credentials)
 
