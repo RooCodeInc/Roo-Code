@@ -54,9 +54,12 @@ export const OpenAI = ({ apiConfiguration, setApiConfigurationField, selectedMod
 						value={apiConfiguration?.openAiNativeBaseUrl || ""}
 						type="url"
 						onInput={handleInputChange("openAiNativeBaseUrl")}
-						placeholder="https://api.openai.com/v1"
+						placeholder="https://api.openai.com"
 						className="w-full mt-1"
 					/>
+					<div className="text-sm text-vscode-descriptionForeground -mt-1">
+						{t("settings:providers.openAiBaseUrlHint")}
+					</div>
 				</>
 			)}
 			<VSCodeTextField

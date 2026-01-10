@@ -25,6 +25,7 @@ import { getModelParams } from "../transform/model-params"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { isMcpTool } from "../../utils/mcp-name"
+import { normalizeOpenAiBaseUrl } from "../../utils/normalizeOpenAiBaseUrl"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
@@ -68,7 +69,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			this.options.enableResponsesReasoningSummary = true
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+		// Normalize the base URL to handle both formats (with and without /v1 suffix).
+		// The OpenAI SDK expects a base URL that may or may not include /v1.
+		// We normalize to ensure consistent behavior regardless of user input format.
+		const normalizedBaseUrl = this.options.openAiNativeBaseUrl
+			? normalizeOpenAiBaseUrl(this.options.openAiNativeBaseUrl, "https://api.openai.com") + "/v1"
+			: undefined
+		this.client = new OpenAI({ baseURL: normalizedBaseUrl, apiKey })
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {
@@ -509,7 +516,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		messages?: Anthropic.Messages.MessageParam[],
 	): ApiStream {
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		const baseUrl = this.options.openAiNativeBaseUrl || "https://api.openai.com"
+		// Normalize the base URL to handle both formats (with and without /v1 suffix).
+		// This ensures consistent URL construction regardless of whether the user provides
+		// "https://my-host.example" or "https://my-host.example/v1"
+		const baseUrl = normalizeOpenAiBaseUrl(this.options.openAiNativeBaseUrl, "https://api.openai.com")
 		const url = `${baseUrl}/v1/responses`
 
 		// Create AbortController for cancellation
