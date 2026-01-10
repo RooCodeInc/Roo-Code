@@ -76,6 +76,11 @@ export interface ExtensionHostOptions {
 	 * When true, uses a temporary storage directory that is cleaned up on exit.
 	 */
 	ephemeral?: boolean
+	/**
+	 * When true, don't suppress node warnings and console output since we're
+	 * running in an integration test and we want to see the output.
+	 */
+	integrationTest?: boolean
 }
 
 interface ExtensionModule {
@@ -152,36 +157,37 @@ export class ExtensionHost extends EventEmitter {
 
 	constructor(options: ExtensionHostOptions) {
 		super()
+
 		this.options = options
 		this.currentMode = options.mode || null
 
-		// Initialize client - single source of truth for agent state
+		// Initialize client - single source of truth for agent state.
 		this.client = new ExtensionClient({
 			sendMessage: (msg) => this.sendToExtension(msg),
-			debug: options.debug, // Enable debug logging in the client
+			debug: options.debug, // Enable debug logging in the client.
 		})
 
-		// Initialize output manager
+		// Initialize output manager.
 		this.outputManager = new OutputManager({
 			disabled: options.disableOutput,
 		})
 
-		// Initialize prompt manager with console mode callbacks
+		// Initialize prompt manager with console mode callbacks.
 		this.promptManager = new PromptManager({
 			onBeforePrompt: () => this.restoreConsole(),
 			onAfterPrompt: () => this.setupQuietMode(),
 		})
 
-		// Initialize ask dispatcher
+		// Initialize ask dispatcher.
 		this.askDispatcher = new AskDispatcher({
 			outputManager: this.outputManager,
 			promptManager: this.promptManager,
 			sendMessage: (msg) => this.sendToExtension(msg),
 			nonInteractive: options.nonInteractive,
-			disabled: options.disableOutput, // TUI mode handles asks directly
+			disabled: options.disableOutput, // TUI mode handles asks directly.
 		})
 
-		// Wire up client events
+		// Wire up client events.
 		this.setupClientEventHandlers()
 	}
 
@@ -194,30 +200,30 @@ export class ExtensionHost extends EventEmitter {
 	 * The client emits events, managers handle them.
 	 */
 	private setupClientEventHandlers(): void {
-		// Forward state changes for external consumers
+		// Forward state changes for external consumers.
 		this.client.on("stateChange", (event: AgentStateChangeEvent) => {
 			this.emit("agentStateChange", event)
 		})
 
-		// Handle new messages - delegate to OutputManager
+		// Handle new messages - delegate to OutputManager.
 		this.client.on("message", (msg: ClineMessage) => {
 			this.logMessageDebug(msg, "new")
 			this.outputManager.outputMessage(msg)
 		})
 
-		// Handle message updates - delegate to OutputManager
+		// Handle message updates - delegate to OutputManager.
 		this.client.on("messageUpdated", (msg: ClineMessage) => {
 			this.logMessageDebug(msg, "updated")
 			this.outputManager.outputMessage(msg)
 		})
 
-		// Handle waiting for input - delegate to AskDispatcher
+		// Handle waiting for input - delegate to AskDispatcher.
 		this.client.on("waitingForInput", (event: WaitingForInputEvent) => {
 			this.emit("agentWaitingForInput", event)
-			this.handleWaitingForInput(event)
+			this.askDispatcher.handleAsk(event.message)
 		})
 
-		// Handle task completion
+		// Handle task completion.
 		this.client.on("taskCompleted", (event: TaskCompletedEvent) => {
 			this.emit("agentTaskCompleted", event)
 			this.handleTaskCompleted(event)
@@ -240,24 +246,16 @@ export class ExtensionHost extends EventEmitter {
 	}
 
 	/**
-	 * Handle waiting for input - delegate to AskDispatcher.
-	 */
-	private handleWaitingForInput(event: WaitingForInputEvent): void {
-		// AskDispatcher handles all ask logic
-		this.askDispatcher.handleAsk(event.message)
-	}
-
-	/**
 	 * Handle task completion.
 	 */
 	private handleTaskCompleted(event: TaskCompletedEvent): void {
-		// Output completion message via OutputManager
-		// Note: completion_result is an "ask" type, not a "say" type
+		// Output completion message via OutputManager.
+		// Note: completion_result is an "ask" type, not a "say" type.
 		if (event.message && event.message.type === "ask" && event.message.ask === "completion_result") {
 			this.outputManager.outputCompletionResult(event.message.ts, event.message.text || "")
 		}
 
-		// Emit taskComplete for waitForCompletion
+		// Emit taskComplete for waitForCompletion.
 		this.emit("taskComplete")
 	}
 
@@ -272,6 +270,10 @@ export class ExtensionHost extends EventEmitter {
 	}
 
 	private setupQuietMode(): void {
+		if (this.options.integrationTest) {
+			return
+		}
+
 		this.originalConsole = {
 			log: console.log,
 			warn: console.warn,
@@ -279,6 +281,7 @@ export class ExtensionHost extends EventEmitter {
 			debug: console.debug,
 			info: console.info,
 		}
+
 		console.log = () => {}
 		console.warn = () => {}
 		console.debug = () => {}
@@ -286,6 +289,10 @@ export class ExtensionHost extends EventEmitter {
 	}
 
 	private restoreConsole(): void {
+		if (this.options.integrationTest) {
+			return
+		}
+
 		if (this.originalConsole) {
 			console.log = this.originalConsole.log
 			console.warn = this.originalConsole.warn
@@ -317,18 +324,20 @@ export class ExtensionHost extends EventEmitter {
 		this.setupQuietMode()
 
 		const bundlePath = path.join(this.options.extensionPath, "extension.js")
+
 		if (!fs.existsSync(bundlePath)) {
 			this.restoreConsole()
 			throw new Error(`Extension bundle not found at: ${bundlePath}`)
 		}
 
 		let storageDir: string | undefined
+
 		if (this.options.ephemeral) {
 			storageDir = await this.createEphemeralStorageDir()
 			this.ephemeralStorageDir = storageDir
 		}
 
-		// Create VSCode API mock
+		// Create VSCode API mock.
 		this.vscode = createVSCodeAPI(this.options.extensionPath, this.options.workspacePath, undefined, {
 			appRoot: CLI_PACKAGE_ROOT,
 			storageDir,
@@ -336,7 +345,7 @@ export class ExtensionHost extends EventEmitter {
 		;(global as Record<string, unknown>).vscode = this.vscode
 		;(global as Record<string, unknown>).__extensionHost = this
 
-		// Set up module resolution
+		// Set up module resolution.
 		const require = createRequire(import.meta.url)
 		const Module = require("module")
 		const originalResolve = Module._resolveFilename
@@ -609,20 +618,20 @@ export class ExtensionHost extends EventEmitter {
 	// ==========================================================================
 
 	async dispose(): Promise<void> {
-		// Clear managers
+		// Clear managers.
 		this.outputManager.clear()
 		this.askDispatcher.clear()
 
-		// Remove message listener
+		// Remove message listener.
 		if (this.messageListener) {
 			this.off("extensionWebviewMessage", this.messageListener)
 			this.messageListener = null
 		}
 
-		// Reset client
+		// Reset client.
 		this.client.reset()
 
-		// Deactivate extension
+		// Deactivate extension.
 		if (this.extensionModule?.deactivate) {
 			try {
 				await this.extensionModule.deactivate()
@@ -631,20 +640,20 @@ export class ExtensionHost extends EventEmitter {
 			}
 		}
 
-		// Clear references
+		// Clear references.
 		this.vscode = null
 		this.extensionModule = null
 		this.extensionAPI = null
 		this.webviewProviders.clear()
 
-		// Clear globals
+		// Clear globals.
 		delete (global as Record<string, unknown>).vscode
 		delete (global as Record<string, unknown>).__extensionHost
 
-		// Restore console
+		// Restore console.
 		this.restoreConsole()
 
-		// Clean up ephemeral storage
+		// Clean up ephemeral storage.
 		if (this.ephemeralStorageDir) {
 			try {
 				await fs.promises.rm(this.ephemeralStorageDir, { recursive: true, force: true })

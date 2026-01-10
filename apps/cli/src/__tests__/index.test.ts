@@ -87,7 +87,6 @@ describe.skipIf(!RUN_INTEGRATION_TESTS || !hasApiKey || !hasExtension || !ripgre
 	"CLI Integration Tests (requires RUN_CLI_INTEGRATION_TESTS=true, OPENROUTER_API_KEY, built extension, and ripgrep)",
 	() => {
 		let workspacePath: string
-		let host: ExtensionHost
 
 		beforeAll(() => {
 			console.log("Integration tests running with:")
@@ -100,9 +99,6 @@ describe.skipIf(!RUN_INTEGRATION_TESTS || !hasApiKey || !hasExtension || !ripgre
 		})
 
 		afterEach(async () => {
-			if (host) {
-				await host.dispose()
-			}
 			cleanupWorkspace(workspacePath)
 		})
 
@@ -114,7 +110,7 @@ describe.skipIf(!RUN_INTEGRATION_TESTS || !hasApiKey || !hasExtension || !ripgre
 		 * the main functionality: activation, task execution, completion, and disposal.
 		 */
 		it("should complete end-to-end task execution with proper lifecycle", async () => {
-			host = new ExtensionHost({
+			const host = new ExtensionHost({
 				mode: "code",
 				user: null,
 				provider: "openrouter",
@@ -122,38 +118,31 @@ describe.skipIf(!RUN_INTEGRATION_TESTS || !hasApiKey || !hasExtension || !ripgre
 				model: "anthropic/claude-haiku-4.5", // Use fast, cheap model for tests.
 				workspacePath,
 				extensionPath: extensionPath!,
+				integrationTest: true,
 			})
 
-			// Test activation
-			await host.activate()
-
-			// Track state messages
+			// Track state messages.
 			const stateMessages: unknown[] = []
+
 			host.on("extensionWebviewMessage", (msg: Record<string, unknown>) => {
 				if (msg.type === "state") {
 					stateMessages.push(msg)
 				}
 			})
 
-			// Test task execution with completion
-			// Note: runTask internally waits for webview to be ready before sending messages
-			await expect(host.runTask("Say hello in exactly 5 words")).resolves.toBeUndefined()
-
-			// After task completes, webview should have been ready
-			expect(host.isInInitialSetup()).toBe(false)
-
-			// Verify we received state updates
-			expect(stateMessages.length).toBeGreaterThan(0)
-
-			// Test disposal
+			await host.activate()
+			await host.runTask("Say hello in exactly 5 words")
 			await host.dispose()
+
+			expect(host.isInInitialSetup()).toBe(false)
+			expect(stateMessages.length).toBeGreaterThan(0)
 			expect((global as Record<string, unknown>).vscode).toBeUndefined()
 			expect((global as Record<string, unknown>).__extensionHost).toBeUndefined()
-		}, 120000) // 2 minute timeout
+		}, 120_000)
 	},
 )
 
-// Additional test to verify skip behavior
+// Additional test to verify skip behavior.
 describe("Integration test skip behavior", () => {
 	it("should require RUN_CLI_INTEGRATION_TESTS=true", () => {
 		if (RUN_INTEGRATION_TESTS) {
