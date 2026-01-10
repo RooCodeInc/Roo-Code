@@ -138,24 +138,40 @@ export function convertToOpenAiMessages(
 
 				// Process non-tool messages
 				if (nonToolMessages.length > 0) {
-					// Check if we should merge text into the last tool message
-					// This is critical for reasoning/thinking models where a user message
-					// after tool results causes the model to drop all previous reasoning_content
-					const hasOnlyTextContent = nonToolMessages.every((part) => part.type === "text")
 					const hasToolMessages = toolMessages.length > 0
-					const shouldMergeIntoToolMessage =
-						options?.mergeToolResultText && hasToolMessages && hasOnlyTextContent
 
-					if (shouldMergeIntoToolMessage) {
+					if (options?.mergeToolResultText && hasToolMessages) {
+						// When mergeToolResultText is enabled, separate text and images
+						// Merge text into the last tool message, and send images separately
+						// This is critical for providers like NVIDIA NIM that don't allow user messages after tool messages
+						const textMessages = nonToolMessages.filter(
+							(part) => part.type === "text",
+						) as Anthropic.TextBlockParam[]
+						const imageMessages = nonToolMessages.filter(
+							(part) => part.type === "image",
+						) as Anthropic.ImageBlockParam[]
+
 						// Merge text content into the last tool message
-						const lastToolMessage = openAiMessages[
-							openAiMessages.length - 1
-						] as OpenAI.Chat.ChatCompletionToolMessageParam
-						if (lastToolMessage?.role === "tool") {
-							const additionalText = nonToolMessages
-								.map((part) => (part as Anthropic.TextBlockParam).text)
-								.join("\n")
-							lastToolMessage.content = `${lastToolMessage.content}\n\n${additionalText}`
+						if (textMessages.length > 0) {
+							const lastToolMessage = openAiMessages[
+								openAiMessages.length - 1
+							] as OpenAI.Chat.ChatCompletionToolMessageParam
+							if (lastToolMessage?.role === "tool") {
+								const additionalText = textMessages.map((part) => part.text).join("\n")
+								lastToolMessage.content = `${lastToolMessage.content}\n\n${additionalText}`
+							}
+						}
+
+						// Send images as a separate user message if any
+						// Note: Images must still be sent as user messages since tool messages don't support images
+						if (imageMessages.length > 0) {
+							openAiMessages.push({
+								role: "user",
+								content: imageMessages.map((part) => ({
+									type: "image_url",
+									image_url: { url: `data:${part.source.media_type};base64,${part.source.data}` },
+								})),
+							})
 						}
 					} else {
 						// Standard behavior: add user message with text/image content

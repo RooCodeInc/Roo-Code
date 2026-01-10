@@ -498,6 +498,10 @@
 			},
 			"resetDefaults": "Reset to Defaults"
 		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "Strict tool message ordering",
+			"description": "Enable for providers like NVIDIA NIM and Devstral that require strict message ordering. When enabled, text content after tool results is merged into the last tool message instead of creating a separate user message."
+		},
 		"rateLimitSeconds": {
 			"label": "Rate limit",
 			"description": "Minimum time between API requests."

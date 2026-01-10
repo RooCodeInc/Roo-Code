@@ -160,6 +160,16 @@ export const OpenAICompatible = ({
 			</Checkbox>
 			<div>
 				<Checkbox
+					checked={apiConfiguration?.openAiStrictToolMessageOrdering ?? false}
+					onChange={handleInputChange("openAiStrictToolMessageOrdering", noTransform)}>
+					{t("settings:providers.openAiStrictToolMessageOrdering.label")}
+				</Checkbox>
+				<div className="text-sm text-vscode-descriptionForeground ml-6">
+					{t("settings:providers.openAiStrictToolMessageOrdering.description")}
+				</div>
+			</div>
+			<div>
+				<Checkbox
 					checked={apiConfiguration?.includeMaxTokens ?? true}
 					onChange={handleInputChange("includeMaxTokens", noTransform)}>
 					{t("settings:includeMaxOutputTokens")}
