@@ -440,6 +440,13 @@
 			"authenticatedMessage": "Безопасно аутентифицирован через твой аккаунт Roo Code Cloud.",
 			"connectButton": "Подключиться к Roo Code Cloud"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "Путь к учетным данным OAuth",
+			"oauthPathDescription": "Путь к вашим учетным данным auth.json ChatGPT Codex. По умолчанию {{defaultPath}}, если оставлено пустым (Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json).",
+			"oauthCliDescription": "ChatGPT Codex использует ваши веб-учетные данные ChatGPT через официальный CLI Codex. Аутентифицируйтесь с помощью CLI Codex, чтобы создать auth.json. Если вы используете пользовательское расположение, установите здесь полный путь к файлу.",
+			"oauthConnectDescription": "После аутентификации Roo прочитает токен доступа из auth.json и подключится к ChatGPT Responses (Codex).",
+			"learnMoreLinkText": "Узнать больше о ChatGPT"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "Маршрутизация провайдера OpenRouter",
@@ -912,7 +919,8 @@
 		"providerNotAllowed": "Провайдер '{{provider}}' не разрешен вашей организацией",
 		"modelNotAllowed": "Модель '{{model}}' не разрешена для провайдера '{{provider}}' вашей организацией",
 		"profileInvalid": "Этот профиль содержит провайдера или модель, которые не разрешены вашей организацией",
-		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth"
+		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth",
+		"openAiNativeCodexOauthPath": "Необязательно: Путь к auth.json ChatGPT Codex. Когда пусто, по умолчанию ~/.codex/auth.json."
 	},
 	"placeholders": {
 		"apiKey": "Введите API-ключ...",

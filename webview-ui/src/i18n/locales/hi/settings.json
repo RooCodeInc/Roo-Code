@@ -440,6 +440,13 @@
 			"authenticatedMessage": "आपके Roo Code Cloud खाते के माध्यम से सुरक्षित रूप से प्रमाणित।",
 			"connectButton": "Roo Code Cloud से कनेक्ट करें"
 		},
+		"openAiNativeCodex": {
+			"oauthPathLabel": "OAuth क्रेडेंशियल पथ",
+			"oauthPathDescription": "आपके ChatGPT Codex auth.json क्रेडेंशियल का पथ। यदि खाली छोड़ा जाए तो डिफ़ॉल्ट {{defaultPath}} (Windows: C:\\\\Users\\\\USERNAME\\\\.codex\\\\auth.json)।",
+			"oauthCliDescription": "ChatGPT Codex आधिकारिक Codex CLI के माध्यम से आपके ChatGPT वेब क्रेडेंशियल का उपयोग करता है। Codex CLI के साथ प्रमाणित करें ताकि auth.json बनाया जा सके। यदि आप कस्टम स्थान का उपयोग करते हैं, तो यहाँ पूरा फ़ाइल पथ सेट करें।",
+			"oauthConnectDescription": "प्रमाणीकरण के बाद, Roo auth.json से एक्सेस टोकन पढ़ेगा और ChatGPT Responses (Codex) से कनेक्ट होगा।",
+			"learnMoreLinkText": "ChatGPT के बारे में और जानें"
+		},
 		"openRouter": {
 			"providerRouting": {
 				"title": "OpenRouter प्रदाता रूटिंग",
@@ -912,7 +919,8 @@
 		"providerNotAllowed": "प्रदाता '{{provider}}' आपके संगठन द्वारा अनुमत नहीं है",
 		"modelNotAllowed": "मॉडल '{{model}}' प्रदाता '{{provider}}' के लिए आपके संगठन द्वारा अनुमत नहीं है",
 		"profileInvalid": "इस प्रोफ़ाइल में एक प्रदाता या मॉडल शामिल है जो आपके संगठन द्वारा अनुमत नहीं है",
-		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा"
+		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा",
+		"openAiNativeCodexOauthPath": "वैकल्पिक: ChatGPT Codex auth.json का पथ। जब खाली हो, तो डिफ़ॉल्ट ~/.codex/auth.json है।"
 	},
 	"placeholders": {
 		"apiKey": "API कुंजी दर्ज करें...",

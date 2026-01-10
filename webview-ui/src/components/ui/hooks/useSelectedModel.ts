@@ -14,6 +14,8 @@ import {
 	mistralModels,
 	openAiModelInfoSaneDefaults,
 	openAiNativeModels,
+	openAiNativeCodexDefaultModelId,
+	openAiNativeCodexModels,
 	vertexModels,
 	xaiModels,
 	groqModels,
@@ -272,6 +274,11 @@ function getSelectedModel({
 		case "openai-native": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = openAiNativeModels[id as keyof typeof openAiNativeModels]
+			return { id, info }
+		}
+		case "openai-native-codex": {
+			const id = apiConfiguration.apiModelId ?? openAiNativeCodexDefaultModelId
+			const info = openAiNativeCodexModels[id as keyof typeof openAiNativeCodexModels]
 			return { id, info }
 		}
 		case "mistral": {

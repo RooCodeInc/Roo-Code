@@ -13,6 +13,7 @@ import {
 	unboundDefaultModelId,
 	litellmDefaultModelId,
 	openAiNativeDefaultModelId,
+	openAiNativeCodexDefaultModelId,
 	anthropicDefaultModelId,
 	doubaoDefaultModelId,
 	claudeCodeDefaultModelId,
@@ -85,6 +86,7 @@ import {
 	OpenAICompatible,
 	OpenRouter,
 	QwenCode,
+	OpenAiNativeCodex,
 	Requesty,
 	Roo,
 	SambaNova,
@@ -344,6 +346,7 @@ const ApiOptions = ({
 				"claude-code": { field: "apiModelId", default: claudeCodeDefaultModelId },
 				"qwen-code": { field: "apiModelId", default: qwenCodeDefaultModelId },
 				"openai-native": { field: "apiModelId", default: openAiNativeDefaultModelId },
+				"openai-native-codex": { field: "apiModelId", default: openAiNativeCodexDefaultModelId },
 				gemini: { field: "apiModelId", default: geminiDefaultModelId },
 				deepseek: { field: "apiModelId", default: deepSeekDefaultModelId },
 				doubao: { field: "apiModelId", default: doubaoDefaultModelId },
@@ -401,6 +404,7 @@ const ApiOptions = ({
 		// Get the URL slug - use custom mapping if available, otherwise use the provider key.
 		const slugs: Record<string, string> = {
 			"openai-native": "openai",
+			"openai-native-codex": "openai-codex",
 			openai: "openai-compatible",
 		}
 
@@ -569,6 +573,13 @@ const ApiOptions = ({
 					setApiConfigurationField={setApiConfigurationField}
 					selectedModelInfo={selectedModelInfo}
 					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
+			{selectedProvider === "openai-native-codex" && (
+				<OpenAiNativeCodex
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
 				/>
 			)}
 
@@ -777,8 +788,11 @@ const ApiOptions = ({
 								}
 
 								// Clear reasoning effort when switching models to allow the new model's default to take effect
-								// This is especially important for GPT-5 models which default to "medium"
-								if (selectedProvider === "openai-native") {
+								// Applies to both OpenAI Native and ChatGPT Codex providers
+								if (
+									selectedProvider === "openai-native" ||
+									selectedProvider === "openai-native-codex"
+								) {
 									setApiConfigurationField("reasoningEffort", undefined)
 								}
 							}}>
