@@ -319,7 +319,55 @@ describe("convertToOpenAiMessages", () => {
 			)
 		})
 
-		it("should NOT merge text when images are present (fall back to user message)", () => {
+		it("should merge text and send images separately when mergeToolResultText is true", () => {
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "tool-123",
+							content: "Tool result content",
+						},
+						{
+							type: "text",
+							text: "<environment_details>Context info</environment_details>",
+						},
+						{
+							type: "image",
+							source: {
+								type: "base64",
+								media_type: "image/png",
+								data: "base64data",
+							},
+						},
+					],
+				},
+			]
+
+			const openAiMessages = convertToOpenAiMessages(anthropicMessages, { mergeToolResultText: true })
+
+			// Should produce a tool message with merged text AND a user message for the image
+			expect(openAiMessages).toHaveLength(2)
+
+			// First message: tool message with merged text
+			const toolMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionToolMessageParam
+			expect(toolMessage.role).toBe("tool")
+			expect(toolMessage.tool_call_id).toBe("tool-123")
+			expect(toolMessage.content).toBe(
+				"Tool result content\n\n<environment_details>Context info</environment_details>",
+			)
+
+			// Second message: user message with only the image
+			expect(openAiMessages[1].role).toBe("user")
+			const userContent = openAiMessages[1].content as Array<{ type: string; image_url?: { url: string } }>
+			expect(Array.isArray(userContent)).toBe(true)
+			expect(userContent).toHaveLength(1)
+			expect(userContent[0].type).toBe("image_url")
+			expect(userContent[0].image_url?.url).toBe("data:image/png;base64,base64data")
+		})
+
+		it("should send only images as user message when no text content exists with mergeToolResultText", () => {
 			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "user",
@@ -343,9 +391,13 @@ describe("convertToOpenAiMessages", () => {
 
 			const openAiMessages = convertToOpenAiMessages(anthropicMessages, { mergeToolResultText: true })
 
-			// Should produce a tool message AND a user message (because image is present)
+			// Should produce a tool message AND a user message (only image, no text to merge)
 			expect(openAiMessages).toHaveLength(2)
 			expect((openAiMessages[0] as OpenAI.Chat.ChatCompletionToolMessageParam).role).toBe("tool")
+			// Tool message content should NOT be modified since there's no text to merge
+			expect((openAiMessages[0] as OpenAI.Chat.ChatCompletionToolMessageParam).content).toBe(
+				"Tool result content",
+			)
 			expect(openAiMessages[1].role).toBe("user")
 		})
 
