@@ -150,83 +150,88 @@ export class CodeParser implements ICodeParser {
 		}
 
 		const tree = language.parser.parse(content)
+		try {
+			// We don't need to get the query string from languageQueries since it's already loaded
+			// in the language object
+			const captures = tree ? language.query.captures(tree.rootNode) : []
 
-		// We don't need to get the query string from languageQueries since it's already loaded
-		// in the language object
-		const captures = tree ? language.query.captures(tree.rootNode) : []
-
-		// Check if captures are empty
-		if (captures.length === 0) {
-			if (content.length >= MIN_BLOCK_CHARS) {
-				// Perform fallback chunking if content is large enough
-				const blocks = this._performFallbackChunking(filePath, content, fileHash, seenSegmentHashes)
-				return blocks
-			} else {
-				// Return empty if content is too small for fallback
-				return []
-			}
-		}
-
-		const results: CodeBlock[] = []
-
-		// Process captures if not empty
-		const queue: Node[] = Array.from(captures).map((capture) => capture.node)
-
-		while (queue.length > 0) {
-			const currentNode = queue.shift()!
-			// const lineSpan = currentNode.endPosition.row - currentNode.startPosition.row + 1 // Removed as per lint error
-
-			// Check if the node meets the minimum character requirement
-			if (currentNode.text.length >= MIN_BLOCK_CHARS) {
-				// If it also exceeds the maximum character limit, try to break it down
-				if (currentNode.text.length > MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR) {
-					if (currentNode.children.filter((child) => child !== null).length > 0) {
-						// If it has children, process them instead
-						queue.push(...currentNode.children.filter((child) => child !== null))
-					} else {
-						// If it's a leaf node, chunk it
-						const chunkedBlocks = this._chunkLeafNodeByLines(
-							currentNode,
-							filePath,
-							fileHash,
-							seenSegmentHashes,
-						)
-						results.push(...chunkedBlocks)
-					}
+			// Check if captures are empty
+			if (captures.length === 0) {
+				if (content.length >= MIN_BLOCK_CHARS) {
+					// Perform fallback chunking if content is large enough
+					const blocks = this._performFallbackChunking(filePath, content, fileHash, seenSegmentHashes)
+					return blocks
 				} else {
-					// Node meets min chars and is within max chars, create a block
-					const identifier =
-						currentNode.childForFieldName("name")?.text ||
-						currentNode.children.find((c) => c?.type === "identifier")?.text ||
-						null
-					const type = currentNode.type
-					const start_line = currentNode.startPosition.row + 1
-					const end_line = currentNode.endPosition.row + 1
-					const content = currentNode.text
-					const contentPreview = content.slice(0, 100)
-					const segmentHash = createHash("sha256")
-						.update(`${filePath}-${start_line}-${end_line}-${content.length}-${contentPreview}`)
-						.digest("hex")
-
-					if (!seenSegmentHashes.has(segmentHash)) {
-						seenSegmentHashes.add(segmentHash)
-						results.push({
-							file_path: filePath,
-							identifier,
-							type,
-							start_line,
-							end_line,
-							content,
-							segmentHash,
-							fileHash,
-						})
-					}
+					// Return empty if content is too small for fallback
+					return []
 				}
 			}
-			// Nodes smaller than minBlockChars are ignored
-		}
 
-		return results
+			const results: CodeBlock[] = []
+
+			// Process captures if not empty
+			const queue: Node[] = Array.from(captures).map((capture) => capture.node)
+
+			while (queue.length > 0) {
+				const currentNode = queue.shift()!
+				// const lineSpan = currentNode.endPosition.row - currentNode.startPosition.row + 1 // Removed as per lint error
+
+				// Check if the node meets the minimum character requirement
+				if (currentNode.text.length >= MIN_BLOCK_CHARS) {
+					// If it also exceeds the maximum character limit, try to break it down
+					if (currentNode.text.length > MAX_BLOCK_CHARS * MAX_CHARS_TOLERANCE_FACTOR) {
+						if (currentNode.children.filter((child) => child !== null).length > 0) {
+							// If it has children, process them instead
+							queue.push(...currentNode.children.filter((child) => child !== null))
+						} else {
+							// If it's a leaf node, chunk it
+							const chunkedBlocks = this._chunkLeafNodeByLines(
+								currentNode,
+								filePath,
+								fileHash,
+								seenSegmentHashes,
+							)
+							results.push(...chunkedBlocks)
+						}
+					} else {
+						// Node meets min chars and is within max chars, create a block
+						const identifier =
+							currentNode.childForFieldName("name")?.text ||
+							currentNode.children.find((c) => c?.type === "identifier")?.text ||
+							null
+						const type = currentNode.type
+						const start_line = currentNode.startPosition.row + 1
+						const end_line = currentNode.endPosition.row + 1
+						const content = currentNode.text
+						const contentPreview = content.slice(0, 100)
+						const segmentHash = createHash("sha256")
+							.update(`${filePath}-${start_line}-${end_line}-${content.length}-${contentPreview}`)
+							.digest("hex")
+
+						if (!seenSegmentHashes.has(segmentHash)) {
+							seenSegmentHashes.add(segmentHash)
+							results.push({
+								file_path: filePath,
+								identifier,
+								type,
+								start_line,
+								end_line,
+								content,
+								segmentHash,
+								fileHash,
+							})
+						}
+					}
+				}
+				// Nodes smaller than minBlockChars are ignored
+			}
+
+			return results
+		} finally {
+			// web-tree-sitter parse trees hold onto WASM memory; ensure we free it.
+			// (In tests, parse() may return a plain object without delete().)
+			;(tree as unknown as { delete?: () => void })?.delete?.()
+		}
 	}
 
 	/**

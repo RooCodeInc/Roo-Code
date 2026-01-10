@@ -7,6 +7,16 @@ import * as vscode from "vscode"
 
 export const LOCK_TEXT_SYMBOL = "\u{1F512}"
 
+export type RooIgnoreControllerOptions = {
+	/**
+	 * When true (default), watches `.rooignore` for changes and reloads patterns.
+	 *
+	 * Set to false for short-lived usages (e.g., one-off scans) to avoid
+	 * creating long-lived VS Code file watchers.
+	 */
+	watch?: boolean
+}
+
 /**
  * Controls LLM access to files by enforcing ignore patterns.
  * Designed to be instantiated once in Cline.ts and passed to file manipulation services.
@@ -18,12 +28,14 @@ export class RooIgnoreController {
 	private disposables: vscode.Disposable[] = []
 	rooIgnoreContent: string | undefined
 
-	constructor(cwd: string) {
+	constructor(cwd: string, options?: RooIgnoreControllerOptions) {
 		this.cwd = cwd
 		this.ignoreInstance = ignore()
 		this.rooIgnoreContent = undefined
-		// Set up file watcher for .rooignore
-		this.setupFileWatcher()
+		// Set up file watcher for .rooignore (optional)
+		if (options?.watch !== false) {
+			this.setupFileWatcher()
+		}
 	}
 
 	/**

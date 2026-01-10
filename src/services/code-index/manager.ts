@@ -27,6 +27,7 @@ export class CodeIndexManager {
 	private _orchestrator: CodeIndexOrchestrator | undefined
 	private _searchService: CodeIndexSearchService | undefined
 	private _cacheManager: CacheManager | undefined
+	private _rooIgnoreController: RooIgnoreController | undefined
 
 	// Flag to prevent race conditions during error recovery
 	private _isRecoveringFromError = false
@@ -128,6 +129,8 @@ export class CodeIndexManager {
 			if (this._orchestrator) {
 				this._orchestrator.stopWatcher()
 			}
+			this._rooIgnoreController?.dispose()
+			this._rooIgnoreController = undefined
 			return { requiresRestart }
 		}
 
@@ -195,9 +198,6 @@ export class CodeIndexManager {
 	 * Stops the file watcher and potentially cleans up resources.
 	 */
 	public stopWatcher(): void {
-		if (!this.isFeatureEnabled) {
-			return
-		}
 		if (this._orchestrator) {
 			this._orchestrator.stopWatcher()
 		}
@@ -231,6 +231,8 @@ export class CodeIndexManager {
 			// Log error but continue with recovery - clearing service instances is more important
 			console.error("Failed to clear error state during recovery:", error)
 		} finally {
+			this._rooIgnoreController?.dispose()
+			this._rooIgnoreController = undefined
 			// Force re-initialization by clearing service instances
 			// This ensures a clean slate even if state update failed
 			this._configManager = undefined
@@ -250,6 +252,8 @@ export class CodeIndexManager {
 		if (this._orchestrator) {
 			this.stopWatcher()
 		}
+		this._rooIgnoreController?.dispose()
+		this._rooIgnoreController = undefined
 		this._stateManager.dispose()
 	}
 
@@ -293,6 +297,8 @@ export class CodeIndexManager {
 		if (this._orchestrator) {
 			this.stopWatcher()
 		}
+		this._rooIgnoreController?.dispose()
+		this._rooIgnoreController = undefined
 		// Clear existing services to ensure clean state
 		this._orchestrator = undefined
 		this._searchService = undefined
@@ -328,16 +334,22 @@ export class CodeIndexManager {
 			})
 		}
 
-		// Create RooIgnoreController instance
+		// Create RooIgnoreController instance (long-lived while indexing is enabled)
 		const rooIgnoreController = new RooIgnoreController(workspacePath)
-		await rooIgnoreController.initialize()
+		try {
+			await rooIgnoreController.initialize()
+			this._rooIgnoreController = rooIgnoreController
+		} catch (error) {
+			rooIgnoreController.dispose()
+			throw error
+		}
 
 		// (Re)Create shared service instances
 		const { embedder, vectorStore, scanner, fileWatcher } = this._serviceFactory.createServices(
 			this.context,
 			this._cacheManager!,
 			ignoreInstance,
-			rooIgnoreController,
+			this._rooIgnoreController,
 		)
 
 		// Validate embedder configuration before proceeding
@@ -390,6 +402,8 @@ export class CodeIndexManager {
 				if (this._orchestrator) {
 					this._orchestrator.stopWatcher()
 				}
+				this._rooIgnoreController?.dispose()
+				this._rooIgnoreController = undefined
 				// Set state to indicate service is disabled
 				this._stateManager.setSystemState("Standby", "Code indexing is disabled")
 				return
