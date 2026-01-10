@@ -21,31 +21,28 @@ import { fileURLToPath } from "url"
 import fs from "fs"
 import os from "os"
 
-import { ReasoningEffortExtended, RooCodeSettings, WebviewMessage } from "@roo-code/types"
+import type {
+	ClineMessage,
+	ExtensionMessage,
+	ReasoningEffortExtended,
+	RooCodeSettings,
+	WebviewMessage,
+} from "@roo-code/types"
 import { createVSCodeAPI, setRuntimeConfigValues } from "@roo-code/vscode-shim"
 import { DebugLogger } from "@roo-code/core/cli"
 
 import { SupportedProvider } from "../types/types.js"
 import { User } from "../lib/sdk/types.js"
+import { getProviderSettings } from "../lib/utils/provider.js"
 
-// Client module - single source of truth for agent state
-import {
-	type AgentStateInfo,
-	type AgentStateChangeEvent,
-	type WaitingForInputEvent,
-	type TaskCompletedEvent,
-	type ClineMessage,
-	type ExtensionMessage,
-	ExtensionClient,
-	AgentLoopState,
-} from "../extension-client/index.js"
-
-// Managers for output, prompting, and ask handling
+import type { AgentStateChangeEvent, WaitingForInputEvent, TaskCompletedEvent } from "./events.js"
+import { type AgentStateInfo, AgentLoopState } from "./agent-state.js"
+import { ExtensionClient } from "./extension-client.js"
 import { OutputManager } from "./output-manager.js"
 import { PromptManager } from "./prompt-manager.js"
 import { AskDispatcher } from "./ask-dispatcher.js"
 
-// Pre-configured logger for CLI message activity debugging
+// Pre-configured logger for CLI message activity debugging.
 const cliLogger = new DebugLogger("CLI")
 
 // Get the CLI package root directory (for finding node_modules/@vscode/ripgrep)
@@ -468,64 +465,6 @@ export class ExtensionHost extends EventEmitter {
 		setRuntimeConfigValues("roo-cline", settings as Record<string, unknown>)
 	}
 
-	private getApiKeyFromEnv(provider: string): string | undefined {
-		const envVarMap: Record<string, string> = {
-			anthropic: "ANTHROPIC_API_KEY",
-			openai: "OPENAI_API_KEY",
-			"openai-native": "OPENAI_API_KEY",
-			openrouter: "OPENROUTER_API_KEY",
-			google: "GOOGLE_API_KEY",
-			gemini: "GOOGLE_API_KEY",
-			bedrock: "AWS_ACCESS_KEY_ID",
-			ollama: "OLLAMA_API_KEY",
-			mistral: "MISTRAL_API_KEY",
-			deepseek: "DEEPSEEK_API_KEY",
-			xai: "XAI_API_KEY",
-			groq: "GROQ_API_KEY",
-		}
-		const envVar = envVarMap[provider.toLowerCase()] || `${provider.toUpperCase().replace(/-/g, "_")}_API_KEY`
-		return process.env[envVar]
-	}
-
-	private buildApiConfiguration(): RooCodeSettings {
-		const provider = this.options.provider
-		const apiKey = this.options.apiKey || this.getApiKeyFromEnv(provider)
-		const model = this.options.model
-		const config: RooCodeSettings = { apiProvider: provider }
-
-		switch (provider) {
-			case "anthropic":
-				if (apiKey) config.apiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-			case "openai-native":
-				if (apiKey) config.openAiNativeApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-			case "gemini":
-				if (apiKey) config.geminiApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-			case "openrouter":
-				if (apiKey) config.openRouterApiKey = apiKey
-				if (model) config.openRouterModelId = model
-				break
-			case "vercel-ai-gateway":
-				if (apiKey) config.vercelAiGatewayApiKey = apiKey
-				if (model) config.vercelAiGatewayModelId = model
-				break
-			case "roo":
-				if (apiKey) config.rooApiKey = apiKey
-				if (model) config.apiModelId = model
-				break
-			default:
-				if (apiKey) config.apiKey = apiKey
-				if (model) config.apiModelId = model
-		}
-
-		return config
-	}
-
 	async runTask(prompt: string): Promise<void> {
 		if (!this.isWebviewReady) {
 			await new Promise<void>((resolve) => this.once("webviewReady", resolve))
@@ -539,7 +478,7 @@ export class ExtensionHost extends EventEmitter {
 			commandExecutionTimeout: 30,
 			browserToolEnabled: false,
 			enableCheckpoints: false,
-			...this.buildApiConfiguration(),
+			...getProviderSettings(this.options.provider, this.options.apiKey, this.options.model),
 		}
 
 		const settings: RooCodeSettings = this.options.nonInteractive

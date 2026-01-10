@@ -12,7 +12,7 @@
 
 // pnpm --filter @roo-code/cli test src/__tests__/index.test.ts
 
-import { ExtensionHost } from "../extension-host/extension-host.js"
+import { ExtensionHost } from "../agent/extension-host.js"
 import path from "path"
 import fs from "fs"
 import os from "os"

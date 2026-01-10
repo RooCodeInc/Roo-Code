@@ -1,28 +1,6 @@
 import path from "path"
 import fs from "fs"
 
-import type { SupportedProvider } from "../types/types.js"
-
-const envVarMap: Record<SupportedProvider, string> = {
-	// Frontier Labs
-	anthropic: "ANTHROPIC_API_KEY",
-	"openai-native": "OPENAI_API_KEY",
-	gemini: "GOOGLE_API_KEY",
-	// Routers
-	openrouter: "OPENROUTER_API_KEY",
-	"vercel-ai-gateway": "VERCEL_AI_GATEWAY_API_KEY",
-	roo: "ROO_API_KEY",
-}
-
-export function getEnvVarName(provider: SupportedProvider): string {
-	return envVarMap[provider]
-}
-
-export function getApiKeyFromEnv(provider: SupportedProvider): string | undefined {
-	const envVar = getEnvVarName(provider)
-	return process.env[envVar]
-}
-
 /**
  * Get the default path to the extension bundle.
  * This assumes the CLI is installed alongside the built extension.

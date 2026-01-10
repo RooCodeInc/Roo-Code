@@ -7,7 +7,6 @@ import path from "path"
 
 import type { WebviewMessage } from "@roo-code/types"
 
-import type { SupportedProvider } from "../../types/index.js"
 import { type ExtensionHostOptions, ExtensionHost } from "../extension-host.js"
 
 vi.mock("@roo-code/vscode-shim", () => ({
@@ -112,84 +111,6 @@ describe("ExtensionHost", () => {
 			expect(getPrivate(host, "outputManager")).toBeDefined()
 			expect(getPrivate(host, "promptManager")).toBeDefined()
 			expect(getPrivate(host, "askDispatcher")).toBeDefined()
-		})
-	})
-
-	describe("buildApiConfiguration", () => {
-		it.each([
-			[
-				"anthropic",
-				"test-key",
-				"test-model",
-				{ apiProvider: "anthropic", apiKey: "test-key", apiModelId: "test-model" },
-			],
-			[
-				"openrouter",
-				"or-key",
-				"or-model",
-				{
-					apiProvider: "openrouter",
-					openRouterApiKey: "or-key",
-					openRouterModelId: "or-model",
-				},
-			],
-			[
-				"gemini",
-				"gem-key",
-				"gem-model",
-				{ apiProvider: "gemini", geminiApiKey: "gem-key", apiModelId: "gem-model" },
-			],
-			[
-				"openai-native",
-				"oai-key",
-				"oai-model",
-				{ apiProvider: "openai-native", openAiNativeApiKey: "oai-key", apiModelId: "oai-model" },
-			],
-
-			[
-				"vercel-ai-gateway",
-				"vai-key",
-				"vai-model",
-				{
-					apiProvider: "vercel-ai-gateway",
-					vercelAiGatewayApiKey: "vai-key",
-					vercelAiGatewayModelId: "vai-model",
-				},
-			],
-		])("should configure %s provider correctly", (provider, apiKey, model, expected) => {
-			const host = createTestHost({
-				provider: provider as SupportedProvider,
-				apiKey,
-				model,
-			})
-
-			const config = callPrivate<Record<string, unknown>>(host, "buildApiConfiguration")
-
-			expect(config).toEqual(expected)
-		})
-
-		it("should use default provider when not specified", () => {
-			const host = createTestHost({
-				apiKey: "test-key",
-				model: "test-model",
-			})
-
-			const config = callPrivate<Record<string, unknown>>(host, "buildApiConfiguration")
-
-			expect(config.apiProvider).toBe("openrouter")
-		})
-
-		it("should handle missing apiKey gracefully", () => {
-			const host = createTestHost({
-				provider: "anthropic",
-				model: "test-model",
-			})
-
-			const config = callPrivate<Record<string, unknown>>(host, "buildApiConfiguration")
-
-			expect(config.apiProvider).toBe("anthropic")
-			expect(config.apiKey).toBeUndefined()
-			expect(config.apiModelId).toBe("test-model")
 		})
 	})
 

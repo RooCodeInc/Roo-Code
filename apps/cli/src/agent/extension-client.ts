@@ -27,8 +27,10 @@
  * ```
  */
 
+import type { ExtensionMessage, WebviewMessage, ClineAskResponse, ClineMessage, ClineAsk } from "@roo-code/types"
+
 import { StateStore } from "./state-store.js"
-import { MessageProcessor, MessageProcessorOptions, parseExtensionMessage } from "./message-processor.js"
+import { MessageProcessor, parseExtensionMessage } from "./message-processor.js"
 import {
 	TypedEventEmitter,
 	type ClientEventMap,
@@ -36,10 +38,9 @@ import {
 	type WaitingForInputEvent,
 } from "./events.js"
 import { AgentLoopState, type AgentStateInfo } from "./agent-state.js"
-import type { ExtensionMessage, WebviewMessage, ClineAskResponse, ClineMessage, ClineAsk } from "./types.js"
 
 // =============================================================================
-// Client Configuration
+// Extension Client Configuration
 // =============================================================================
 
 /**
@@ -126,19 +127,13 @@ export class ExtensionClient {
 	constructor(config: ExtensionClientConfig) {
 		this.sendMessage = config.sendMessage
 		this.debug = config.debug ?? false
-
-		// Initialize components
-		this.store = new StateStore({
-			maxHistorySize: config.maxHistorySize ?? 0,
-		})
-
+		this.store = new StateStore({ maxHistorySize: config.maxHistorySize ?? 0 })
 		this.emitter = new TypedEventEmitter()
 
-		const processorOptions: MessageProcessorOptions = {
+		this.processor = new MessageProcessor(this.store, this.emitter, {
 			emitAllStateChanges: config.emitAllStateChanges ?? true,
 			debug: config.debug ?? false,
-		}
-		this.processor = new MessageProcessor(this.store, this.emitter, processorOptions)
+		})
 	}
 
 	// ===========================================================================

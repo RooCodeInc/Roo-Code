@@ -1,49 +1,22 @@
-/**
- * Tests for the Roo Code Client
- *
- * These tests verify:
- * - State detection logic
- * - Event emission
- * - Response sending
- * - State transitions
- */
-
 import {
-	type ClineMessage,
-	type ExtensionMessage,
-	createMockClient,
-	AgentLoopState,
-	detectAgentState,
+	ClineMessage,
+	ExtensionMessage,
 	isIdleAsk,
 	isResumableAsk,
 	isInteractiveAsk,
 	isNonBlockingAsk,
-} from "./index.js"
+} from "@roo-code/types"
 
-// =============================================================================
-// Test Helpers
-// =============================================================================
+import { AgentLoopState, detectAgentState } from "../agent-state.js"
+import { createMockClient } from "../extension-client.js"
 
 function createMessage(overrides: Partial<ClineMessage>): ClineMessage {
-	return {
-		ts: Date.now() + Math.random() * 1000, // Unique timestamp
-		type: "say",
-		...overrides,
-	}
+	return { ts: Date.now() + Math.random() * 1000, type: "say", ...overrides }
 }
 
 function createStateMessage(messages: ClineMessage[]): ExtensionMessage {
-	return {
-		type: "state",
-		state: {
-			clineMessages: messages,
-		},
-	}
+	return { type: "state", state: { clineMessages: messages } } as ExtensionMessage
 }
-
-// =============================================================================
-// State Detection Tests
-// =============================================================================
 
 describe("detectAgentState", () => {
 	describe("NO_TASK state", () => {
@@ -73,7 +46,7 @@ describe("detectAgentState", () => {
 			const messages = [
 				createMessage({
 					say: "api_req_started",
-					text: JSON.stringify({ tokensIn: 100 }), // No cost field
+					text: JSON.stringify({ tokensIn: 100 }), // No cost field.
 				}),
 			]
 			const state = detectAgentState(messages)
@@ -207,10 +180,6 @@ describe("detectAgentState", () => {
 	})
 })
 
-// =============================================================================
-// Type Guard Tests
-// =============================================================================
-
 describe("Type Guards", () => {
 	describe("isIdleAsk", () => {
 		it("should return true for idle asks", () => {
@@ -265,10 +234,6 @@ describe("Type Guards", () => {
 		})
 	})
 })
-
-// =============================================================================
-// ExtensionClient Tests
-// =============================================================================
 
 describe("ExtensionClient", () => {
 	describe("State queries", () => {
@@ -333,7 +298,7 @@ describe("ExtensionClient", () => {
 			unsubscribe()
 
 			client.handleMessage(createStateMessage([createMessage({ say: "text", ts: Date.now() + 1 })]))
-			expect(callCount).toBe(1) // Should not increase
+			expect(callCount).toBe(1) // Should not increase.
 		})
 	})
 
@@ -461,14 +426,14 @@ describe("ExtensionClient", () => {
 		it("should handle messageUpdated messages", () => {
 			const { client } = createMockClient()
 
-			// First, set initial state
+			// First, set initial state.
 			client.handleMessage(
 				createStateMessage([createMessage({ ts: 123, type: "ask", ask: "tool", partial: true })]),
 			)
 
 			expect(client.isStreaming()).toBe(true)
 
-			// Now update the message
+			// Now update the message.
 			client.handleMessage({
 				type: "messageUpdated",
 				clineMessage: createMessage({ ts: 123, type: "ask", ask: "tool", partial: false }),
@@ -496,10 +461,6 @@ describe("ExtensionClient", () => {
 	})
 })
 
-// =============================================================================
-// Integration Tests
-// =============================================================================
-
 describe("Integration", () => {
 	it("should handle a complete task flow", () => {
 		const { client } = createMockClient()
@@ -509,18 +470,18 @@ describe("Integration", () => {
 			states.push(event.currentState.state)
 		})
 
-		// 1. Task starts, API request begins
+		// 1. Task starts, API request begins.
 		client.handleMessage(
 			createStateMessage([
 				createMessage({
 					say: "api_req_started",
-					text: JSON.stringify({}), // No cost = streaming
+					text: JSON.stringify({}), // No cost = streaming.
 				}),
 			]),
 		)
 		expect(client.isStreaming()).toBe(true)
 
-		// 2. API request completes
+		// 2. API request completes.
 		client.handleMessage(
 			createStateMessage([
 				createMessage({
@@ -533,7 +494,7 @@ describe("Integration", () => {
 		expect(client.isStreaming()).toBe(false)
 		expect(client.isRunning()).toBe(true)
 
-		// 3. Tool ask (partial)
+		// 3. Tool ask (partial).
 		client.handleMessage(
 			createStateMessage([
 				createMessage({
@@ -546,7 +507,7 @@ describe("Integration", () => {
 		)
 		expect(client.isStreaming()).toBe(true)
 
-		// 4. Tool ask (complete)
+		// 4. Tool ask (complete).
 		client.handleMessage(
 			createStateMessage([
 				createMessage({
@@ -560,7 +521,7 @@ describe("Integration", () => {
 		expect(client.isWaitingForInput()).toBe(true)
 		expect(client.getCurrentAsk()).toBe("tool")
 
-		// 5. User approves, task completes
+		// 5. User approves, task completes.
 		client.handleMessage(
 			createStateMessage([
 				createMessage({
@@ -576,7 +537,7 @@ describe("Integration", () => {
 		expect(client.getCurrentState()).toBe(AgentLoopState.IDLE)
 		expect(client.getCurrentAsk()).toBe("completion_result")
 
-		// Verify we saw the expected state transitions
+		// Verify we saw the expected state transitions.
 		expect(states).toContain(AgentLoopState.STREAMING)
 		expect(states).toContain(AgentLoopState.RUNNING)
 		expect(states).toContain(AgentLoopState.WAITING_FOR_INPUT)
@@ -584,15 +545,11 @@ describe("Integration", () => {
 	})
 })
 
-// =============================================================================
-// Edge Case Tests
-// =============================================================================
-
 describe("Edge Cases", () => {
 	describe("Messages with missing or empty text field", () => {
 		it("should handle ask message with missing text field", () => {
 			const messages = [createMessage({ type: "ask", ask: "tool", partial: false })]
-			// text is undefined by default
+			// Text is undefined by default.
 			const state = detectAgentState(messages)
 			expect(state.state).toBe(AgentLoopState.WAITING_FOR_INPUT)
 			expect(state.currentAsk).toBe("tool")
@@ -616,8 +573,8 @@ describe("Edge Cases", () => {
 		it("should handle api_req_started with empty text field as streaming", () => {
 			const messages = [createMessage({ say: "api_req_started", text: "" })]
 			const state = detectAgentState(messages)
-			// Empty text is treated as "no text yet" = still in progress (streaming)
-			// This matches the behavior: !message.text is true for "" (falsy)
+			// Empty text is treated as "no text yet" = still in progress (streaming).
+			// This matches the behavior: !message.text is true for "" (falsy).
 			expect(state.state).toBe(AgentLoopState.STREAMING)
 			expect(state.isStreaming).toBe(true)
 		})
@@ -625,7 +582,7 @@ describe("Edge Cases", () => {
 		it("should handle api_req_started with invalid JSON", () => {
 			const messages = [createMessage({ say: "api_req_started", text: "not valid json" })]
 			const state = detectAgentState(messages)
-			// Invalid JSON should not crash, should return not streaming
+			// Invalid JSON should not crash, should return not streaming.
 			expect(state.state).toBe(AgentLoopState.RUNNING)
 			expect(state.isStreaming).toBe(false)
 		})
@@ -633,7 +590,7 @@ describe("Edge Cases", () => {
 		it("should handle api_req_started with null text", () => {
 			const messages = [createMessage({ say: "api_req_started", text: undefined })]
 			const state = detectAgentState(messages)
-			// No text means still in progress (streaming)
+			// No text means still in progress (streaming).
 			expect(state.state).toBe(AgentLoopState.STREAMING)
 			expect(state.isStreaming).toBe(true)
 		})
@@ -641,7 +598,7 @@ describe("Edge Cases", () => {
 		it("should handle api_req_started with cost of 0", () => {
 			const messages = [createMessage({ say: "api_req_started", text: JSON.stringify({ cost: 0 }) })]
 			const state = detectAgentState(messages)
-			// cost: 0 is defined (not undefined), so NOT streaming
+			// cost: 0 is defined (not undefined), so NOT streaming.
 			expect(state.state).toBe(AgentLoopState.RUNNING)
 			expect(state.isStreaming).toBe(false)
 		})
@@ -649,7 +606,7 @@ describe("Edge Cases", () => {
 		it("should handle api_req_started with cost of null", () => {
 			const messages = [createMessage({ say: "api_req_started", text: JSON.stringify({ cost: null }) })]
 			const state = detectAgentState(messages)
-			// cost: null is defined (not undefined), so NOT streaming
+			// cost: null is defined (not undefined), so NOT streaming.
 			expect(state.state).toBe(AgentLoopState.RUNNING)
 			expect(state.isStreaming).toBe(false)
 		})
@@ -660,7 +617,7 @@ describe("Edge Cases", () => {
 				createMessage({ say: "text", text: "Some text" }),
 			]
 			const state = detectAgentState(messages)
-			// Last message is say:text, but api_req_started has no cost
+			// Last message is say:text, but api_req_started has no cost.
 			expect(state.state).toBe(AgentLoopState.STREAMING)
 			expect(state.isStreaming).toBe(true)
 		})
@@ -675,7 +632,7 @@ describe("Edge Cases", () => {
 				states.push(event.currentState.state)
 			})
 
-			// Rapid updates
+			// Rapid updates.
 			client.handleMessage(createStateMessage([createMessage({ say: "text" })]))
 			client.handleMessage(createStateMessage([createMessage({ type: "ask", ask: "tool", partial: true })]))
 			client.handleMessage(createStateMessage([createMessage({ type: "ask", ask: "tool", partial: false })]))
@@ -683,7 +640,7 @@ describe("Edge Cases", () => {
 				createStateMessage([createMessage({ type: "ask", ask: "completion_result", partial: false })]),
 			)
 
-			// Should have tracked all transitions
+			// Should have tracked all transitions.
 			expect(states.length).toBeGreaterThanOrEqual(3)
 			expect(states).toContain(AgentLoopState.STREAMING)
 			expect(states).toContain(AgentLoopState.WAITING_FOR_INPUT)
@@ -701,24 +658,26 @@ describe("Edge Cases", () => {
 		})
 
 		it("should use last message for state detection", () => {
-			// Multiple messages, last one determines state
+			// Multiple messages, last one determines state.
 			const messages = [
 				createMessage({ type: "ask", ask: "tool", partial: false }),
 				createMessage({ say: "text", text: "Tool executed" }),
 				createMessage({ type: "ask", ask: "completion_result", partial: false }),
 			]
 			const state = detectAgentState(messages)
-			// Last message is completion_result, so IDLE
+			// Last message is completion_result, so IDLE.
 			expect(state.state).toBe(AgentLoopState.IDLE)
 			expect(state.currentAsk).toBe("completion_result")
 		})
 
 		it("should handle very long message arrays", () => {
-			// Create many messages
+			// Create many messages.
 			const messages: ClineMessage[] = []
+
 			for (let i = 0; i < 100; i++) {
 				messages.push(createMessage({ say: "text", text: `Message ${i}` }))
 			}
+
 			messages.push(createMessage({ type: "ask", ask: "followup", partial: false }))
 
 			const state = detectAgentState(messages)
@@ -730,14 +689,7 @@ describe("Edge Cases", () => {
 	describe("State message edge cases", () => {
 		it("should handle state message with empty clineMessages", () => {
 			const { client } = createMockClient()
-
-			client.handleMessage({
-				type: "state",
-				state: {
-					clineMessages: [],
-				},
-			})
-
+			client.handleMessage({ type: "state", state: { clineMessages: [] } } as unknown as ExtensionMessage)
 			expect(client.getCurrentState()).toBe(AgentLoopState.NO_TASK)
 			expect(client.isInitialized()).toBe(true)
 		})
@@ -751,7 +703,7 @@ describe("Edge Cases", () => {
 				state: {} as any,
 			})
 
-			// Should not crash, state should remain unchanged
+			// Should not crash, state should remain unchanged.
 			expect(client.getCurrentState()).toBe(AgentLoopState.NO_TASK)
 		})
 
@@ -795,7 +747,7 @@ describe("Edge Cases", () => {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			const messages = [createMessage({ type: "ask", ask: "unknown_type" as any, partial: false })]
 			const state = detectAgentState(messages)
-			// Unknown ask type should default to RUNNING
+			// Unknown ask type should default to RUNNING.
 			expect(state.state).toBe(AgentLoopState.RUNNING)
 		})
 

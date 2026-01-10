@@ -10,12 +10,13 @@ import { setLogger } from "@roo-code/vscode-shim"
 import { FlagOptions, isSupportedProvider, OnboardingProviderChoice, supportedProviders } from "../../types/types.js"
 import { ASCII_ROO, DEFAULT_FLAGS, REASONING_EFFORTS, SDK_BASE_URL } from "../../types/constants.js"
 
-import { ExtensionHost, ExtensionHostOptions } from "../../extension-host/index.js"
+import { ExtensionHost, ExtensionHostOptions } from "../../agent/index.js"
 
 import { type User, createClient } from "../../lib/sdk/index.js"
 import { loadToken, hasToken, loadSettings } from "../../lib/storage/index.js"
-import { getEnvVarName, getApiKeyFromEnv, getDefaultExtensionPath } from "../../extension-host/utils.js"
+import { getEnvVarName, getApiKeyFromEnv } from "../../lib/utils/provider.js"
 import { runOnboarding } from "../../lib/utils/onboarding.js"
+import { getDefaultExtensionPath } from "../../lib/utils/extension.js"
 import { VERSION } from "../../lib/utils/version.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -86,6 +87,7 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 			)
 			console.error(`[CLI] For ${provider}, set ${getEnvVarName(provider)}`)
 		}
+
 		process.exit(1)
 	}
 

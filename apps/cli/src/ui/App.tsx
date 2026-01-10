@@ -54,7 +54,7 @@ import {
 } from "./components/autocomplete/index.js"
 import { ScrollArea, useScrollToBottom } from "./components/ScrollArea.js"
 import ScrollIndicator from "./components/ScrollIndicator.js"
-import { ExtensionHostOptions } from "../extension-host/extension-host.js"
+import { ExtensionHostOptions } from "../agent/extension-host.js"
 
 const PICKER_HEIGHT = 10
 

@@ -7,8 +7,10 @@
  */
 
 import { EventEmitter } from "events"
+
+import { ClineMessage, ClineAsk } from "@roo-code/types"
+
 import type { AgentStateInfo } from "./agent-state.js"
-import type { ClineMessage, ClineAsk } from "./types.js"
 
 // =============================================================================
 // Event Types

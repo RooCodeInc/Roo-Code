@@ -5,7 +5,7 @@ import type { ExtensionMessage, WebviewMessage } from "@roo-code/types"
 
 import { useCLIStore } from "../store.js"
 
-import { ExtensionHostOptions } from "../../extension-host/extension-host.js"
+import { ExtensionHostOptions } from "../../agent/extension-host.js"
 
 interface ExtensionHostInterface {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

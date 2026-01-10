@@ -14,13 +14,22 @@
  * - Sends responses back through a provided callback
  */
 
+import {
+	type WebviewMessage,
+	type ClineMessage,
+	type ClineAsk,
+	type ClineAskResponse,
+	isIdleAsk,
+	isInteractiveAsk,
+	isResumableAsk,
+	isNonBlockingAsk,
+} from "@roo-code/types"
 import { debugLog } from "@roo-code/core/cli"
 
-import type { WebviewMessage, ClineMessage, ClineAsk, ClineAskResponse } from "../extension-client/types.js"
-import { isIdleAsk, isInteractiveAsk, isResumableAsk, isNonBlockingAsk } from "../extension-client/index.js"
+import { FOLLOWUP_TIMEOUT_SECONDS } from "../types/constants.js"
+
 import type { OutputManager } from "./output-manager.js"
 import type { PromptManager } from "./prompt-manager.js"
-import { FOLLOWUP_TIMEOUT_SECONDS } from "../types/constants.js"
 
 // =============================================================================
 // Types

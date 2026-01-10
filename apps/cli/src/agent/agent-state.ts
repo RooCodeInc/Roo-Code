@@ -9,11 +9,9 @@
  * and the specific `ask` value determines what kind of response the agent is waiting for.
  */
 
-import type { ClineMessage, ClineAsk, ApiReqStartedText } from "./types.js"
-import { isIdleAsk, isResumableAsk, isInteractiveAsk, isNonBlockingAsk } from "./types.js"
+import { ClineMessage, ClineAsk, isIdleAsk, isResumableAsk, isInteractiveAsk, isNonBlockingAsk } from "@roo-code/types"
 
-// Re-export the type guards for convenience
-export { isIdleAsk, isResumableAsk, isInteractiveAsk, isNonBlockingAsk }
+import type { ApiReqStartedText } from "./types.js"
 
 // =============================================================================
 // Agent Loop State Enum
@@ -30,9 +28,9 @@ export { isIdleAsk, isResumableAsk, isInteractiveAsk, isNonBlockingAsk }
  *                             │ newTask
  *                             ▼
  *              ┌─────────────────────────────┐
- *         ┌───▶│         RUNNING             │◀────┐
- *         │    └──────────┬──────────────────┘     │
- *         │               │                        │
+ *         ┌───▶│         RUNNING             │◀───┐
+ *         │    └──────────┬──────────────────┘    │
+ *         │               │                       │
  *         │    ┌──────────┼──────────────┐        │
  *         │    │          │              │        │
  *         │    ▼          ▼              ▼        │
