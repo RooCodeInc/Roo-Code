@@ -9,9 +9,10 @@ export interface SettingsSearchInputProps {
 	onChange: (value: string) => void
 	onFocus?: () => void
 	onBlur?: () => void
+	onKeyDown?: React.KeyboardEventHandler<HTMLInputElement>
 }
 
-export function SettingsSearchInput({ value, onChange, onFocus, onBlur }: SettingsSearchInputProps) {
+export function SettingsSearchInput({ value, onChange, onFocus, onBlur, onKeyDown }: SettingsSearchInputProps) {
 	const { t } = useAppTranslation()
 
 	return (
@@ -24,10 +25,11 @@ export function SettingsSearchInput({ value, onChange, onFocus, onBlur }: Settin
 				onChange={(e) => onChange(e.target.value)}
 				onFocus={onFocus}
 				onBlur={onBlur}
+				onKeyDown={onKeyDown}
 				placeholder={t("settings:search.placeholder")}
 				className={cn(
-					"pl-6 w-[0px] focus:pl-8 focus:min-w-[130px] focus:w-full active:w-full",
-					value && "pr-8",
+					"pl-6 w-[0px] border-none focus:border-vscode-input-border focus:pl-8 focus:min-w-[130px] focus:w-full",
+					value && "pr-4 min-w-[150px]",
 				)}
 			/>
 			{value && (

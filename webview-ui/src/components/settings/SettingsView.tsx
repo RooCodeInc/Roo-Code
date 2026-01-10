@@ -136,6 +136,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	)
 	const [searchQuery, setSearchQuery] = useState("")
 	const [isSearchFocused, setIsSearchFocused] = useState(false)
+	const [highlightedResultId, setHighlightedResultId] = useState<string | undefined>(undefined)
 
 	const scrollPositions = useRef<Record<SectionName, number>>(
 		Object.fromEntries(sectionNames.map((s) => [s, 0])) as Record<SectionName, number>,
@@ -590,6 +591,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		(result: SearchResult) => {
 			setSearchQuery("")
 			setIsSearchFocused(false)
+			setHighlightedResultId(undefined)
 			handleTabChange(result.tab)
 			// Small delay to allow tab switch and render
 			setTimeout(() => scrollToSetting(result.id), 150)
@@ -597,10 +599,76 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		[handleTabChange, scrollToSetting],
 	)
 
+	// Keyboard navigation inside search results
+	const moveHighlight = useCallback(
+		(direction: 1 | -1) => {
+			if (!searchResults.length) return
+			const flatIds = searchResults.map((r) => r.id)
+			const currentIndex = highlightedResultId ? flatIds.indexOf(highlightedResultId) : -1
+			const nextIndex = (currentIndex + direction + flatIds.length) % flatIds.length
+			setHighlightedResultId(flatIds[nextIndex])
+		},
+		[highlightedResultId, searchResults],
+	)
+
+	const handleSearchKeyDown = useCallback(
+		(event: React.KeyboardEvent<HTMLInputElement>) => {
+			if (!searchResults.length) return
+
+			if (event.key === "ArrowDown") {
+				event.preventDefault()
+				moveHighlight(1)
+				return
+			}
+
+			if (event.key === "ArrowUp") {
+				event.preventDefault()
+				moveHighlight(-1)
+				return
+			}
+
+			if (event.key === "Enter" && highlightedResultId) {
+				event.preventDefault()
+				const selected = searchResults.find((r) => r.id === highlightedResultId)
+				if (selected) {
+					handleSelectResult(selected)
+				}
+				return
+			}
+
+			if (event.key === "Escape") {
+				setIsSearchFocused(false)
+				setHighlightedResultId(undefined)
+				return
+			}
+		},
+		[handleSelectResult, highlightedResultId, moveHighlight, searchResults],
+	)
+
+	// Reset highlight based on focus and available results
+	useEffect(() => {
+		if (!isSearchFocused || !searchResults.length) {
+			setHighlightedResultId(undefined)
+			return
+		}
+
+		setHighlightedResultId((current) =>
+			current && searchResults.some((r) => r.id === current) ? current : searchResults[0]?.id,
+		)
+	}, [isSearchFocused, searchResults])
+
+	// Ensure highlighted search result stays visible within dropdown
+	useEffect(() => {
+		if (!highlightedResultId || !isSearchFocused) return
+
+		const element = document.getElementById(`settings-search-result-${highlightedResultId}`)
+		element?.scrollIntoView({ block: "nearest" })
+	}, [highlightedResultId, isSearchFocused])
+
 	return (
 		<Tab>
 			<TabHeader className="flex justify-between items-center gap-2">
-				<div className="flex items-center gap-2 grow">
+				<div className="flex items-center gap-2 grow truncate">
 					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
 						<Button variant="ghost" className="px-1.5 -ml-2" onClick={() => checkUnsaveChanges(onDone)}>
 							<ArrowLeft />
@@ -614,19 +682,21 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						onChange={setSearchQuery}
 						onFocus={() => setIsSearchFocused(true)}
 						onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+						onKeyDown={handleSearchKeyDown}
 					/>
 					{searchQuery && isSearchFocused && (
-						<div className="absolute top-full left-0 right-0 mt-1 bg-vscode-dropdown-background border border-vscode-dropdown-border rounded shadow-lg z-50">
+						<div className="absolute top-full w-full min-w-50 right-0 mt-1 bg-vscode-dropdown-background border border-vscode-dropdown-border rounded shadow-lg z-50">
 							<SettingsSearchResults
 								results={searchResults}
 								query={searchQuery}
 								onSelectResult={handleSelectResult}
 								sections={sections}
+								highlightedResultId={highlightedResultId}
 							/>
 						</div>
 					)}
 				</div>
-				<div className="flex gap-2 flex-shrink-0">
+				<div className="flex gap-2 shrink-0">
 					<StandardTooltip
 						content={
 							!isSettingValid
