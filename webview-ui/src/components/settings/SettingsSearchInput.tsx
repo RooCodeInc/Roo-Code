@@ -15,8 +15,8 @@ export function SettingsSearchInput({ value, onChange, onFocus, onBlur }: Settin
 	const { t } = useAppTranslation()
 
 	return (
-		<div className="relative flex-1 max-w-xs">
-			<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-vscode-descriptionForeground pointer-events-none" />
+		<div className="relative flex justify-end ml-2">
+			<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-vscode-descriptionForeground pointer-events-none" />
 			<Input
 				data-testid="settings-search-input"
 				type="text"
@@ -25,15 +25,18 @@ export function SettingsSearchInput({ value, onChange, onFocus, onBlur }: Settin
 				onFocus={onFocus}
 				onBlur={onBlur}
 				placeholder={t("settings:search.placeholder")}
-				className={cn("pl-8", value && "pr-8")}
+				className={cn(
+					"pl-6 w-[0px] focus:pl-8 focus:min-w-[130px] focus:w-full active:w-full",
+					value && "pr-8",
+				)}
 			/>
 			{value && (
 				<button
 					type="button"
 					onClick={() => onChange("")}
-					className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-vscode-descriptionForeground hover:text-vscode-foreground focus:outline-none"
+					className="absolute cursor-pointer right-2.5 top-1/2 -translate-y-1/2 size-4 text-vscode-descriptionForeground hover:text-vscode-foreground focus:outline-none"
 					aria-label="Clear search">
-					<X className="h-4 w-4" />
+					<X className="size-4" />
 				</button>
 			)}
 		</div>

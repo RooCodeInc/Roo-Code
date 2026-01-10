@@ -33,7 +33,7 @@ function HighlightMatch({ text, query }: HighlightMatchProps) {
 		<>
 			{parts.map((part, index) =>
 				regex.test(part) ? (
-					<mark key={index} className="bg-vscode-editor-findMatchHighlightBackground text-inherit">
+					<mark key={index} className="bg-vscode-input-foreground/20 rounded-xs text-inherit">
 						{part}
 					</mark>
 				) : (

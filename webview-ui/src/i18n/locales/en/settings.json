@@ -1,6 +1,6 @@
 {
 	"search": {
-		"placeholder": "Search settings...",
+		"placeholder": "Find setting...",
 		"noResults": "No results found for \"{{query}}\""
 	},
 	"common": {
