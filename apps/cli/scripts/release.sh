@@ -6,20 +6,26 @@
 #
 # Options:
 #   --dry-run    Run all steps except creating the GitHub release
+#   --local      Build for local testing only (no GitHub checks, no changelog prompts)
+#   --install    Install locally after building (only with --local)
+#   --skip-verify Skip end-to-end verification tests (faster local builds)
 #
 # Examples:
 #   ./apps/cli/scripts/release.sh           # Use version from package.json
 #   ./apps/cli/scripts/release.sh 0.1.0     # Specify version
 #   ./apps/cli/scripts/release.sh --dry-run # Test the release flow without pushing
 #   ./apps/cli/scripts/release.sh --dry-run 0.1.0  # Dry run with specific version
+#   ./apps/cli/scripts/release.sh --local   # Build for local testing
+#   ./apps/cli/scripts/release.sh --local --install  # Build and install locally
+#   ./apps/cli/scripts/release.sh --local --skip-verify  # Fast local build
 #
 # This script:
 # 1. Builds the extension and CLI
 # 2. Creates a tarball for the current platform
-# 3. Creates a GitHub release and uploads the tarball (unless --dry-run)
+# 3. Creates a GitHub release and uploads the tarball (unless --dry-run or --local)
 #
 # Prerequisites:
-#   - GitHub CLI (gh) installed and authenticated
+#   - GitHub CLI (gh) installed and authenticated (not needed for --local)
 #   - pnpm installed
 #   - Run from the monorepo root directory
 
@@ -27,12 +33,27 @@ set -e
 
 # Parse arguments
 DRY_RUN=false
+LOCAL_BUILD=false
+LOCAL_INSTALL=false
+SKIP_VERIFY=false
 VERSION_ARG=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --dry-run)
             DRY_RUN=true
+            shift
+            ;;
+        --local)
+            LOCAL_BUILD=true
+            shift
+            ;;
+        --install)
+            LOCAL_INSTALL=true
+            shift
+            ;;
+        --skip-verify)
+            SKIP_VERIFY=true
             shift
             ;;
         -*)
@@ -45,6 +66,12 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Validate option combinations
+if [ "$LOCAL_INSTALL" = true ] && [ "$LOCAL_BUILD" = false ]; then
+    echo "Error: --install can only be used with --local" >&2
+    exit 1
+fi
 
 # Colors
 RED='\033[0;31m'
@@ -88,12 +115,15 @@ detect_platform() {
 check_prerequisites() {
     step "1/8" "Checking prerequisites..."
     
-    if ! command -v gh &> /dev/null; then
-        error "GitHub CLI (gh) is not installed. Install it with: brew install gh"
-    fi
-    
-    if ! gh auth status &> /dev/null; then
-        error "GitHub CLI is not authenticated. Run: gh auth login"
+    # Skip GitHub CLI checks for local builds
+    if [ "$LOCAL_BUILD" = false ]; then
+        if ! command -v gh &> /dev/null; then
+            error "GitHub CLI (gh) is not installed. Install it with: brew install gh"
+        fi
+        
+        if ! gh auth status &> /dev/null; then
+            error "GitHub CLI is not authenticated. Run: gh auth login"
+        fi
     fi
     
     if ! command -v pnpm &> /dev/null; then
@@ -115,7 +145,17 @@ get_version() {
         VERSION=$(node -p "require('$CLI_DIR/package.json').version")
     fi
     
-    # Validate semver format
+    # For local builds, append a local suffix with git short hash
+    # This creates versions like: 0.1.0-local.abc1234
+    if [ "$LOCAL_BUILD" = true ]; then
+        GIT_SHORT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+        # Only append suffix if not already a local version
+        if ! echo "$VERSION" | grep -qE '\-local\.'; then
+            VERSION="${VERSION}-local.${GIT_SHORT_HASH}"
+        fi
+    fi
+    
+    # Validate semver format (allow -local.hash suffix)
     if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$'; then
         error "Invalid version format: $VERSION (expected semver like 0.1.0)"
     fi
@@ -142,6 +182,12 @@ get_changelog_content() {
     # Check if the version exists in the changelog
     if ! grep -qE "$VERSION_PATTERN" "$CHANGELOG_FILE"; then
         warn "No changelog entry found for version $VERSION"
+        # Skip prompts for local builds
+        if [ "$LOCAL_BUILD" = true ]; then
+            info "Skipping changelog prompt for local build"
+            CHANGELOG_CONTENT=""
+            return
+        fi
         warn "Please add an entry to $CHANGELOG_FILE before releasing"
         echo ""
         echo "Expected format:"
@@ -220,7 +266,7 @@ create_tarball() {
       const pkg = require('$CLI_DIR/package.json');
       const newPkg = {
         name: '@roo-code/cli',
-        version: pkg.version,
+        version: '$VERSION',
         type: 'module',
         dependencies: {
           '@inkjs/ui': pkg.dependencies['@inkjs/ui'],
@@ -287,8 +333,8 @@ WRAPPER_EOF
 
     chmod +x "$RELEASE_DIR/bin/roo"
     
-    # Create version file
-    echo "$VERSION" > "$RELEASE_DIR/VERSION"
+    # Create empty .env file to suppress dotenvx warnings
+    touch "$RELEASE_DIR/.env"
     
     # Create empty .env file to suppress dotenvx warnings
     touch "$RELEASE_DIR/.env"
@@ -309,6 +355,11 @@ WRAPPER_EOF
 
 # Verify local installation
 verify_local_install() {
+    if [ "$SKIP_VERIFY" = true ]; then
+        step "5/8" "Skipping verification (--skip-verify)"
+        return
+    fi
+    
     step "5/8" "Verifying local installation..."
     
     VERIFY_DIR="$REPO_ROOT/.verify-release"
@@ -566,6 +617,54 @@ print_dry_run_summary() {
     echo ""
 }
 
+# Print local build summary
+print_local_summary() {
+    echo ""
+    printf "${GREEN}${BOLD}✓ Local build complete for v$VERSION${NC}\n"
+    echo ""
+    echo "  Tarball: $REPO_ROOT/$TARBALL"
+    if [ -f "${TARBALL}.sha256" ]; then
+        echo "  Checksum: $REPO_ROOT/${TARBALL}.sha256"
+    fi
+    echo ""
+    echo "  To install manually:"
+    echo "    ROO_LOCAL_TARBALL=$REPO_ROOT/$TARBALL ./apps/cli/install.sh"
+    echo ""
+    echo "  Or re-run with --install to install automatically:"
+    echo "    ./apps/cli/scripts/release.sh --local --install"
+    echo ""
+}
+
+# Install locally using the install script
+install_local() {
+    step "7/8" "Installing locally..."
+    
+    TARBALL_PATH="$REPO_ROOT/$TARBALL"
+    
+    ROO_LOCAL_TARBALL="$TARBALL_PATH" \
+    ROO_VERSION="$VERSION" \
+    "$CLI_DIR/install.sh" || {
+        error "Local installation failed!"
+    }
+    
+    info "Local installation complete!"
+}
+
+# Print local install summary
+print_local_install_summary() {
+    echo ""
+    printf "${GREEN}${BOLD}✓ Local build installed for v$VERSION${NC}\n"
+    echo ""
+    echo "  Tarball: $REPO_ROOT/$TARBALL"
+    echo "  Installed to: ~/.roo/cli"
+    echo "  Binary: ~/.local/bin/roo"
+    echo ""
+    echo "  Test it out:"
+    echo "    roo --version"
+    echo "    roo --help"
+    echo ""
+}
+
 # Main
 main() {
     echo ""
@@ -576,7 +675,9 @@ main() {
     printf "${NC}"
     
     if [ "$DRY_RUN" = true ]; then
-        printf "${YELLOW}  │           (DRY RUN MODE)        │${NC}\n"
+        printf "${YELLOW}         (DRY RUN MODE)${NC}\n"
+    elif [ "$LOCAL_BUILD" = true ]; then
+        printf "${YELLOW}         (LOCAL BUILD MODE)${NC}\n"
     fi
     echo ""
     
@@ -589,7 +690,16 @@ main() {
     verify_local_install
     create_checksum
     
-    if [ "$DRY_RUN" = true ]; then
+    if [ "$LOCAL_BUILD" = true ]; then
+        step "7/8" "Skipping GitHub checks (local build)"
+        if [ "$LOCAL_INSTALL" = true ]; then
+            install_local
+            print_local_install_summary
+        else
+            step "8/8" "Skipping installation (use --install to auto-install)"
+            print_local_summary
+        fi
+    elif [ "$DRY_RUN" = true ]; then
         step "7/8" "Skipping existing release check (dry run)"
         step "8/8" "Skipping GitHub release creation (dry run)"
         print_dry_run_summary
