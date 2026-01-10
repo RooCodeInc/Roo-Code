@@ -15,7 +15,7 @@ suite("Roo Code Modes", function () {
 
 		const switchModesTaskId = await globalThis.api.startNewTask({
 			configuration: { mode: "code", alwaysAllowModeSwitch: true, autoApprovalEnabled: true },
-			text: "For each of `architect`, `ask`, and `debug` use the `switch_mode` tool to switch to that mode.",
+			text: "For each of `architect`, `ask`, and `debug` use the `switch_mode` tool to switch to that mode. After switching all three, call the `attempt_completion` tool with the result: 'Mode switches completed.'",
 		})
 
 		await waitUntilCompleted({ api: globalThis.api, taskId: switchModesTaskId })
