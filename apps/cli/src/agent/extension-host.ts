@@ -338,6 +338,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 
 		if (this.options.ephemeral) {
 			this.ephemeralStorageDir = await createEphemeralStorageDir()
+			storageDir = this.ephemeralStorageDir
 		}
 
 		// Create VSCode API mock.
