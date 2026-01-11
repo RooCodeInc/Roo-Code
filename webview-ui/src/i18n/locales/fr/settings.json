@@ -8,6 +8,10 @@
 		"add": "Ajouter un en-tête",
 		"remove": "Supprimer"
 	},
+	"search": {
+		"placeholder": "Rechercher les paramètres...",
+		"noResults": "Aucun paramètre trouvé"
+	},
 	"header": {
 		"title": "Paramètres",
 		"saveButtonTooltip": "Enregistrer les modifications",

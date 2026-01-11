@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
+import { SearchableSetting } from "./SearchableSetting"
 
 type LanguageSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	language: string
@@ -31,21 +32,28 @@ export const LanguageSettings = ({ language, setCachedStateField, className, ...
 			</SectionHeader>
 
 			<Section>
-				<Select value={language} onValueChange={(value) => setCachedStateField("language", value as Language)}>
-					<SelectTrigger className="w-full">
-						<SelectValue placeholder={t("settings:common.select")} />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectGroup>
-							{Object.entries(LANGUAGES).map(([code, name]) => (
-								<SelectItem key={code} value={code}>
-									{name}
-									<span className="text-muted-foreground">({code})</span>
-								</SelectItem>
-							))}
-						</SelectGroup>
-					</SelectContent>
-				</Select>
+				<SearchableSetting
+					settingId="language-select"
+					section="language"
+					label={t("settings:sections.language")}>
+					<Select
+						value={language}
+						onValueChange={(value) => setCachedStateField("language", value as Language)}>
+						<SelectTrigger className="w-full">
+							<SelectValue placeholder={t("settings:common.select")} />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectGroup>
+								{Object.entries(LANGUAGES).map(([code, name]) => (
+									<SelectItem key={code} value={code}>
+										{name}
+										<span className="text-muted-foreground">({code})</span>
+									</SelectItem>
+								))}
+							</SelectGroup>
+						</SelectContent>
+					</Select>
+				</SearchableSetting>
 			</Section>
 		</div>
 	)

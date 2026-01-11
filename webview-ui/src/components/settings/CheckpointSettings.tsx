@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui"
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
+import { SearchableSetting } from "./SearchableSetting"
 import {
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
@@ -38,7 +39,10 @@ export const CheckpointSettings = ({
 			</SectionHeader>
 
 			<Section>
-				<div>
+				<SearchableSetting
+					settingId="checkpoints-enable"
+					section="checkpoints"
+					label={t("settings:checkpoints.enable.label")}>
 					<VSCodeCheckbox
 						checked={enableCheckpoints}
 						onChange={(e: any) => {
@@ -55,10 +59,14 @@ export const CheckpointSettings = ({
 							</VSCodeLink>
 						</Trans>
 					</div>
-				</div>
+				</SearchableSetting>
 
 				{enableCheckpoints && (
-					<div className="mt-4">
+					<SearchableSetting
+						settingId="checkpoints-timeout"
+						section="checkpoints"
+						label={t("settings:checkpoints.timeout.label")}
+						className="mt-4">
 						<label className="block text-sm font-medium mb-2">
 							{t("settings:checkpoints.timeout.label")}
 						</label>
@@ -81,7 +89,7 @@ export const CheckpointSettings = ({
 						<div className="text-vscode-descriptionForeground text-sm mt-1">
 							{t("settings:checkpoints.timeout.description")}
 						</div>
-					</div>
+					</SearchableSetting>
 				)}
 			</Section>
 		</div>

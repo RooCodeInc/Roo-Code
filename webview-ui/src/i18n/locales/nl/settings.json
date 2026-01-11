@@ -8,6 +8,10 @@
 		"add": "Header toevoegen",
 		"remove": "Verwijderen"
 	},
+	"search": {
+		"placeholder": "Instellingen zoeken...",
+		"noResults": "Geen instellingen gevonden"
+	},
 	"header": {
 		"title": "Instellingen",
 		"saveButtonTooltip": "Wijzigingen opslaan",

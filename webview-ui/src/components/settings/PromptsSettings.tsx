@@ -19,6 +19,7 @@ import {
 
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
+import { SearchableSetting } from "./SearchableSetting"
 
 interface PromptsSettingsProps {
 	customSupportPrompts: Record<string, string | undefined>
@@ -145,7 +146,10 @@ const PromptsSettings = ({
 			</SectionHeader>
 
 			<Section>
-				<div>
+				<SearchableSetting
+					settingId="prompts-support-prompt-select"
+					section="prompts"
+					label={t("settings:sections.prompts")}>
 					<Select
 						value={activeSupportOption}
 						onValueChange={(type) => setActiveSupportOption(type as SupportPromptType)}>
@@ -163,7 +167,7 @@ const PromptsSettings = ({
 					<div className="text-sm text-vscode-descriptionForeground mt-1">
 						{t(`prompts:supportPrompts.types.${activeSupportOption}.description`)}
 					</div>
-				</div>
+				</SearchableSetting>
 
 				<div key={activeSupportOption} className="mt-4">
 					<div className="flex justify-between items-center mb-1">

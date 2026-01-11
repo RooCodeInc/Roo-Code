@@ -569,3 +569,20 @@ input[cmdk-input]:focus {
 .animate-sun {
 	animation: sun 30s linear infinite;
 }
+
+/* Settings search highlight animation */
+@keyframes settings-highlight-fade {
+	0% {
+		background-color: color-mix(in srgb, var(--vscode-focusBorder) 40%, transparent);
+	}
+	100% {
+		background-color: transparent;
+	}
+}
+
+.settings-highlight {
+	animation: settings-highlight-fade 1.5s ease-out forwards;
+	border-radius: 4px;
+	padding: 8px;
+	margin: -8px;
+}

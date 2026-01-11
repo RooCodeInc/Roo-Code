@@ -8,6 +8,10 @@
 		"add": "Başlık Ekle",
 		"remove": "Kaldır"
 	},
+	"search": {
+		"placeholder": "Ayarları ara...",
+		"noResults": "Ayar bulunamadı"
+	},
 	"header": {
 		"title": "Ayarlar",
 		"saveButtonTooltip": "Değişiklikleri kaydet",

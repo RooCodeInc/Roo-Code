@@ -8,6 +8,10 @@
 		"add": "हेडर जोड़ें",
 		"remove": "हटाएं"
 	},
+	"search": {
+		"placeholder": "सेटिंग्स खोजें...",
+		"noResults": "कोई सेटिंग नहीं मिली"
+	},
 	"header": {
 		"title": "सेटिंग्स",
 		"saveButtonTooltip": "परिवर्तन सहेजें",

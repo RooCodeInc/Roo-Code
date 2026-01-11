@@ -8,6 +8,10 @@
 		"add": "헤더 추가",
 		"remove": "삭제"
 	},
+	"search": {
+		"placeholder": "설정 검색...",
+		"noResults": "설정을 찾을 수 없습니다"
+	},
 	"header": {
 		"title": "설정",
 		"saveButtonTooltip": "변경 사항 저장",

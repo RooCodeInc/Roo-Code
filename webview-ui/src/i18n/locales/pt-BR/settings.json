@@ -8,6 +8,10 @@
 		"add": "Adicionar cabeçalho",
 		"remove": "Remover"
 	},
+	"search": {
+		"placeholder": "Pesquisar configurações...",
+		"noResults": "Nenhuma configuração encontrada"
+	},
 	"header": {
 		"title": "Configurações",
 		"saveButtonTooltip": "Salvar alterações",

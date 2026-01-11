@@ -8,6 +8,10 @@
 		"add": "添加标头",
 		"remove": "移除"
 	},
+	"search": {
+		"placeholder": "搜索设置...",
+		"noResults": "未找到设置"
+	},
 	"header": {
 		"title": "设置",
 		"saveButtonTooltip": "保存更改",

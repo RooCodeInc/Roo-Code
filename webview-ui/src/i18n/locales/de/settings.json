@@ -8,6 +8,10 @@
 		"add": "Header hinzufügen",
 		"remove": "Entfernen"
 	},
+	"search": {
+		"placeholder": "Einstellungen durchsuchen...",
+		"noResults": "Keine Einstellungen gefunden"
+	},
 	"header": {
 		"title": "Einstellungen",
 		"saveButtonTooltip": "Änderungen speichern",

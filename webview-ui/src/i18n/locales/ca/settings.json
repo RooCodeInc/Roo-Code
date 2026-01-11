@@ -8,6 +8,10 @@
 		"add": "Afegir capçalera",
 		"remove": "Eliminar"
 	},
+	"search": {
+		"placeholder": "Cercar configuració...",
+		"noResults": "No s'ha trobat cap configuració"
+	},
 	"header": {
 		"title": "Configuració",
 		"saveButtonTooltip": "Desar canvis",

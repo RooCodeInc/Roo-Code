@@ -8,6 +8,10 @@
 		"add": "Tambah Header",
 		"remove": "Hapus"
 	},
+	"search": {
+		"placeholder": "Cari pengaturan...",
+		"noResults": "Tidak ada pengaturan yang ditemukan"
+	},
 	"header": {
 		"title": "Pengaturan",
 		"saveButtonTooltip": "Simpan perubahan",

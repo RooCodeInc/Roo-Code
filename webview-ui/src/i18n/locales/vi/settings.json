@@ -8,6 +8,10 @@
 		"add": "Thêm tiêu đề",
 		"remove": "Xóa"
 	},
+	"search": {
+		"placeholder": "Tìm kiếm cài đặt...",
+		"noResults": "Không tìm thấy cài đặt"
+	},
 	"header": {
 		"title": "Cài đặt",
 		"saveButtonTooltip": "Lưu thay đổi",

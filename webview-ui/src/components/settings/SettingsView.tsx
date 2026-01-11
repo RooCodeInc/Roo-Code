@@ -79,6 +79,8 @@ import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
 import ModesView from "../modes/ModesView"
 import McpView from "../mcp/McpView"
+import { SettingsSearch } from "./SettingsSearch"
+import { scanDOMForSearchableSettings, SearchableSettingData } from "./useSettingsSearch"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -91,7 +93,7 @@ export interface SettingsViewRef {
 	checkUnsaveChanges: (then: () => void) => void
 }
 
-const sectionNames = [
+export const sectionNames = [
 	"providers",
 	"autoApprove",
 	"slashCommands",
@@ -109,7 +111,7 @@ const sectionNames = [
 	"about",
 ] as const
 
-type SectionName = (typeof sectionNames)[number]
+export type SectionName = (typeof sectionNames)[number]
 
 type SettingsViewProps = {
 	onDone: () => void
@@ -577,11 +579,60 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		}
 	}, [scrollToActiveTab])
 
+	// Search index state - built once on mount
+	const [searchIndex, setSearchIndex] = useState<SearchableSettingData[]>([])
+	const indexingContainerRef = useRef<HTMLDivElement>(null)
+	const [isIndexing, setIsIndexing] = useState(true)
+
+	// Build the search index by scanning a hidden container that renders all sections
+	useEffect(() => {
+		if (!isIndexing || !indexingContainerRef.current) return
+
+		// Wait for the hidden content to render
+		requestAnimationFrame(() => {
+			setTimeout(() => {
+				if (indexingContainerRef.current) {
+					const index = scanDOMForSearchableSettings(indexingContainerRef.current, (section) =>
+						t(`settings:sections.${section}`),
+					)
+					setSearchIndex(index)
+					setIsIndexing(false)
+				}
+			}, 100)
+		})
+	}, [isIndexing, t])
+
+	// Handle search navigation - switch to the correct tab and scroll to the element
+	const handleSearchNavigate = useCallback(
+		(section: SectionName, settingId: string) => {
+			// Switch to the correct tab
+			handleTabChange(section)
+
+			// Wait for the tab to render, then find element by settingId and scroll to it
+			requestAnimationFrame(() => {
+				setTimeout(() => {
+					const element = document.querySelector(`[data-setting-id="${settingId}"]`)
+					if (element) {
+						element.scrollIntoView({ behavior: "smooth", block: "center" })
+
+						// Add highlight animation
+						element.classList.add("settings-highlight")
+						setTimeout(() => {
+							element.classList.remove("settings-highlight")
+						}, 1500)
+					}
+				}, 100) // Small delay to ensure tab content is rendered
+			})
+		},
+		[handleTabChange],
+	)
+
 	return (
 		<Tab>
 			<TabHeader className="flex justify-between items-center gap-2">
-				<div className="flex items-center gap-1">
+				<div className="flex items-center gap-2">
 					<h3 className="text-vscode-foreground m-0">{t("settings:header.title")}</h3>
+					{!isIndexing && <SettingsSearch index={searchIndex} onNavigate={handleSearchNavigate} />}
 				</div>
 				<div className="flex gap-2">
 					<StandardTooltip
@@ -880,6 +931,122 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					)}
 				</TabContent>
 			</div>
+
+			{/* Hidden container for indexing searchable settings - rendered once on mount */}
+			{isIndexing && (
+				<div ref={indexingContainerRef} className="absolute left-[-9999px] top-0 opacity-0 pointer-events-none">
+					{/* Render all settings sections for indexing */}
+					<AutoApproveSettings
+						alwaysAllowReadOnly={alwaysAllowReadOnly}
+						alwaysAllowReadOnlyOutsideWorkspace={alwaysAllowReadOnlyOutsideWorkspace}
+						alwaysAllowWrite={alwaysAllowWrite}
+						alwaysAllowWriteOutsideWorkspace={alwaysAllowWriteOutsideWorkspace}
+						alwaysAllowWriteProtected={alwaysAllowWriteProtected}
+						alwaysAllowBrowser={alwaysAllowBrowser}
+						alwaysAllowMcp={alwaysAllowMcp}
+						alwaysAllowModeSwitch={alwaysAllowModeSwitch}
+						alwaysAllowSubtasks={alwaysAllowSubtasks}
+						alwaysAllowExecute={alwaysAllowExecute}
+						alwaysAllowFollowupQuestions={alwaysAllowFollowupQuestions}
+						followupAutoApproveTimeoutMs={followupAutoApproveTimeoutMs}
+						allowedCommands={allowedCommands}
+						allowedMaxRequests={allowedMaxRequests ?? undefined}
+						allowedMaxCost={allowedMaxCost ?? undefined}
+						deniedCommands={deniedCommands}
+						setCachedStateField={setCachedStateField}
+					/>
+					<SlashCommandsSettings />
+					<BrowserSettings
+						browserToolEnabled={browserToolEnabled}
+						browserViewportSize={browserViewportSize}
+						screenshotQuality={screenshotQuality}
+						remoteBrowserHost={remoteBrowserHost}
+						remoteBrowserEnabled={remoteBrowserEnabled}
+						setCachedStateField={setCachedStateField}
+					/>
+					<CheckpointSettings
+						enableCheckpoints={enableCheckpoints}
+						checkpointTimeout={checkpointTimeout}
+						setCachedStateField={setCachedStateField}
+					/>
+					<NotificationSettings
+						ttsEnabled={ttsEnabled}
+						ttsSpeed={ttsSpeed}
+						soundEnabled={soundEnabled}
+						soundVolume={soundVolume}
+						setCachedStateField={setCachedStateField}
+					/>
+					<ContextManagementSettings
+						autoCondenseContext={autoCondenseContext}
+						autoCondenseContextPercent={autoCondenseContextPercent}
+						listApiConfigMeta={listApiConfigMeta ?? []}
+						maxOpenTabsContext={maxOpenTabsContext}
+						maxWorkspaceFiles={maxWorkspaceFiles ?? 200}
+						showRooIgnoredFiles={showRooIgnoredFiles}
+						enableSubfolderRules={enableSubfolderRules}
+						maxReadFileLine={maxReadFileLine}
+						maxImageFileSize={maxImageFileSize}
+						maxTotalImageSize={maxTotalImageSize}
+						maxConcurrentFileReads={maxConcurrentFileReads}
+						profileThresholds={profileThresholds}
+						includeDiagnosticMessages={includeDiagnosticMessages}
+						maxDiagnosticMessages={maxDiagnosticMessages}
+						writeDelayMs={writeDelayMs}
+						includeCurrentTime={includeCurrentTime}
+						includeCurrentCost={includeCurrentCost}
+						maxGitStatusFiles={maxGitStatusFiles}
+						setCachedStateField={setCachedStateField}
+					/>
+					<TerminalSettings
+						terminalOutputLineLimit={terminalOutputLineLimit}
+						terminalOutputCharacterLimit={terminalOutputCharacterLimit}
+						terminalShellIntegrationTimeout={terminalShellIntegrationTimeout}
+						terminalShellIntegrationDisabled={terminalShellIntegrationDisabled}
+						terminalCommandDelay={terminalCommandDelay}
+						terminalPowershellCounter={terminalPowershellCounter}
+						terminalZshClearEolMark={terminalZshClearEolMark}
+						terminalZshOhMy={terminalZshOhMy}
+						terminalZshP10k={terminalZshP10k}
+						terminalZdotdir={terminalZdotdir}
+						terminalCompressProgressBar={terminalCompressProgressBar}
+						setCachedStateField={setCachedStateField}
+					/>
+					<PromptsSettings
+						customSupportPrompts={customSupportPrompts || {}}
+						setCustomSupportPrompts={setCustomSupportPromptsField}
+						includeTaskHistoryInEnhance={includeTaskHistoryInEnhance}
+						setIncludeTaskHistoryInEnhance={(value) =>
+							setCachedStateField("includeTaskHistoryInEnhance", value)
+						}
+					/>
+					<UISettings
+						reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
+						enterBehavior={enterBehavior ?? "send"}
+						setCachedStateField={setCachedStateField}
+					/>
+					<ExperimentalSettings
+						setExperimentEnabled={setExperimentEnabled}
+						experiments={experiments}
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+						imageGenerationProvider={imageGenerationProvider}
+						openRouterImageApiKey={openRouterImageApiKey as string | undefined}
+						openRouterImageGenerationSelectedModel={
+							openRouterImageGenerationSelectedModel as string | undefined
+						}
+						setImageGenerationProvider={setImageGenerationProvider}
+						setOpenRouterImageApiKey={setOpenRouterImageApiKey}
+						setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+					/>
+					<LanguageSettings language={language || "en"} setCachedStateField={setCachedStateField} />
+					<About
+						telemetrySetting={telemetrySetting}
+						setTelemetrySetting={setTelemetrySetting}
+						debug={cachedState.debug}
+						setDebug={setDebug}
+					/>
+				</div>
+			)}
 
 			<AlertDialog open={isDiscardDialogShow} onOpenChange={setDiscardDialogShow}>
 				<AlertDialogContent>

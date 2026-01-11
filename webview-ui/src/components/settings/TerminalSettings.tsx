@@ -15,6 +15,7 @@ import { Slider } from "@/components/ui"
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
+import { SearchableSetting } from "./SearchableSetting"
 
 type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalOutputLineLimit?: number
@@ -104,7 +105,10 @@ export const TerminalSettings = ({
 						</div>
 					</div>
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
-						<div>
+						<SearchableSetting
+							settingId="terminal-output-line-limit"
+							section="terminal"
+							label={t("settings:terminal.outputLineLimit.label")}>
 							<label className="block font-medium mb-1">
 								{t("settings:terminal.outputLineLimit.label")}
 							</label>
@@ -131,8 +135,11 @@ export const TerminalSettings = ({
 									</VSCodeLink>
 								</Trans>
 							</div>
-						</div>
-						<div>
+						</SearchableSetting>
+						<SearchableSetting
+							settingId="terminal-output-character-limit"
+							section="terminal"
+							label={t("settings:terminal.outputCharacterLimit.label")}>
 							<label className="block font-medium mb-1">
 								{t("settings:terminal.outputCharacterLimit.label")}
 							</label>
@@ -161,8 +168,11 @@ export const TerminalSettings = ({
 									</VSCodeLink>
 								</Trans>
 							</div>
-						</div>
-						<div>
+						</SearchableSetting>
+						<SearchableSetting
+							settingId="terminal-compress-progress-bar"
+							section="terminal"
+							label={t("settings:terminal.compressProgressBar.label")}>
 							<VSCodeCheckbox
 								checked={terminalCompressProgressBar ?? true}
 								onChange={(e: any) =>
@@ -183,7 +193,7 @@ export const TerminalSettings = ({
 									</VSCodeLink>
 								</Trans>
 							</div>
-						</div>
+						</SearchableSetting>
 					</div>
 				</div>
 
@@ -199,7 +209,10 @@ export const TerminalSettings = ({
 						</div>
 					</div>
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
-						<div>
+						<SearchableSetting
+							settingId="terminal-shell-integration-disabled"
+							section="terminal"
+							label={t("settings:terminal.shellIntegrationDisabled.label")}>
 							<VSCodeCheckbox
 								checked={terminalShellIntegrationDisabled ?? true}
 								onChange={(e: any) =>
@@ -221,11 +234,14 @@ export const TerminalSettings = ({
 									</VSCodeLink>
 								</Trans>
 							</div>
-						</div>
+						</SearchableSetting>
 
 						{!terminalShellIntegrationDisabled && (
 							<>
-								<div>
+								<SearchableSetting
+									settingId="terminal-inherit-env"
+									section="terminal"
+									label={t("settings:terminal.inheritEnv.label")}>
 									<VSCodeCheckbox
 										checked={inheritEnv}
 										onChange={(e: any) => {
@@ -251,9 +267,12 @@ export const TerminalSettings = ({
 											</VSCodeLink>
 										</Trans>
 									</div>
-								</div>
+								</SearchableSetting>
 
-								<div>
+								<SearchableSetting
+									settingId="terminal-shell-integration-timeout"
+									section="terminal"
+									label={t("settings:terminal.shellIntegrationTimeout.label")}>
 									<label className="block font-medium mb-1">
 										{t("settings:terminal.shellIntegrationTimeout.label")}
 									</label>
@@ -286,9 +305,12 @@ export const TerminalSettings = ({
 											</VSCodeLink>
 										</Trans>
 									</div>
-								</div>
+								</SearchableSetting>
 
-								<div>
+								<SearchableSetting
+									settingId="terminal-command-delay"
+									section="terminal"
+									label={t("settings:terminal.commandDelay.label")}>
 									<label className="block font-medium mb-1">
 										{t("settings:terminal.commandDelay.label")}
 									</label>
@@ -319,9 +341,12 @@ export const TerminalSettings = ({
 											</VSCodeLink>
 										</Trans>
 									</div>
-								</div>
+								</SearchableSetting>
 
-								<div>
+								<SearchableSetting
+									settingId="terminal-powershell-counter"
+									section="terminal"
+									label={t("settings:terminal.powershellCounter.label")}>
 									<VSCodeCheckbox
 										checked={terminalPowershellCounter ?? false}
 										onChange={(e: any) =>
@@ -344,9 +369,12 @@ export const TerminalSettings = ({
 											</VSCodeLink>
 										</Trans>
 									</div>
-								</div>
+								</SearchableSetting>
 
-								<div>
+								<SearchableSetting
+									settingId="terminal-zsh-clear-eol-mark"
+									section="terminal"
+									label={t("settings:terminal.zshClearEolMark.label")}>
 									<VSCodeCheckbox
 										checked={terminalZshClearEolMark ?? true}
 										onChange={(e: any) =>
@@ -369,9 +397,12 @@ export const TerminalSettings = ({
 											</VSCodeLink>
 										</Trans>
 									</div>
-								</div>
+								</SearchableSetting>
 
-								<div>
+								<SearchableSetting
+									settingId="terminal-zsh-oh-my"
+									section="terminal"
+									label={t("settings:terminal.zshOhMy.label")}>
 									<VSCodeCheckbox
 										checked={terminalZshOhMy ?? false}
 										onChange={(e: any) => setCachedStateField("terminalZshOhMy", e.target.checked)}
@@ -390,9 +421,12 @@ export const TerminalSettings = ({
 											</VSCodeLink>
 										</Trans>
 									</div>
-								</div>
+								</SearchableSetting>
 
-								<div>
+								<SearchableSetting
+									settingId="terminal-zsh-p10k"
+									section="terminal"
+									label={t("settings:terminal.zshP10k.label")}>
 									<VSCodeCheckbox
 										checked={terminalZshP10k ?? false}
 										onChange={(e: any) => setCachedStateField("terminalZshP10k", e.target.checked)}
@@ -411,9 +445,12 @@ export const TerminalSettings = ({
 											</VSCodeLink>
 										</Trans>
 									</div>
-								</div>
+								</SearchableSetting>
 
-								<div>
+								<SearchableSetting
+									settingId="terminal-zdotdir"
+									section="terminal"
+									label={t("settings:terminal.zdotdir.label")}>
 									<VSCodeCheckbox
 										checked={terminalZdotdir ?? false}
 										onChange={(e: any) => setCachedStateField("terminalZdotdir", e.target.checked)}
@@ -432,7 +469,7 @@ export const TerminalSettings = ({
 											</VSCodeLink>
 										</Trans>
 									</div>
-								</div>
+								</SearchableSetting>
 							</>
 						)}
 					</div>

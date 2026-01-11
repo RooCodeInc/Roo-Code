@@ -8,6 +8,10 @@
 		"add": "Aggiungi intestazione",
 		"remove": "Rimuovi"
 	},
+	"search": {
+		"placeholder": "Cerca impostazioni...",
+		"noResults": "Nessuna impostazione trovata"
+	},
 	"header": {
 		"title": "Impostazioni",
 		"saveButtonTooltip": "Salva modifiche",

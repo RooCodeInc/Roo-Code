@@ -8,6 +8,10 @@
 		"add": "ヘッダーを追加",
 		"remove": "削除"
 	},
+	"search": {
+		"placeholder": "設定を検索...",
+		"noResults": "設定が見つかりません"
+	},
 	"header": {
 		"title": "設定",
 		"saveButtonTooltip": "変更を保存",

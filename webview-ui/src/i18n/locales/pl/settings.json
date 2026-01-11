@@ -8,6 +8,10 @@
 		"add": "Dodaj nagłówek",
 		"remove": "Usuń"
 	},
+	"search": {
+		"placeholder": "Szukaj ustawień...",
+		"noResults": "Nie znaleziono ustawień"
+	},
 	"header": {
 		"title": "Ustawienia",
 		"saveButtonTooltip": "Zapisz zmiany",

@@ -8,6 +8,10 @@
 		"add": "新增標頭",
 		"remove": "移除"
 	},
+	"search": {
+		"placeholder": "搜尋設定...",
+		"noResults": "找不到設定"
+	},
 	"header": {
 		"title": "設定",
 		"saveButtonTooltip": "儲存變更",
