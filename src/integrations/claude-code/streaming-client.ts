@@ -86,6 +86,28 @@ function prefixToolNamesInMessages(messages: Anthropic.Messages.MessageParam[]):
 }
 
 /**
+ * Prefixes tool name in tool_choice when type is "tool".
+ * This ensures consistency with the prefixed tool names in the tools array.
+ */
+function prefixToolChoice(
+	toolChoice: Anthropic.Messages.ToolChoice | undefined,
+): Anthropic.Messages.ToolChoice | undefined {
+	if (!toolChoice) {
+		return toolChoice
+	}
+
+	// Only prefix when tool_choice specifies a specific tool by name
+	if (toolChoice.type === "tool" && "name" in toolChoice) {
+		return {
+			...toolChoice,
+			name: prefixToolName(toolChoice.name),
+		}
+	}
+
+	return toolChoice
+}
+
+/**
  * Filters out non-Anthropic content blocks from messages before sending to the API.
  *
  * NOTE: This function performs FILTERING ONLY - no type conversion is performed.
@@ -487,9 +509,10 @@ export async function* createStreamingMessage(options: StreamMessageOptions): As
 		// when using Claude Code OAuth tokens
 		body.tools = prefixToolNames(tools)
 		// Default tool_choice to "auto" when tools are provided (as per spec example)
-		body.tool_choice = toolChoice || { type: "auto" }
+		// Prefix tool name in tool_choice if it specifies a specific tool
+		body.tool_choice = prefixToolChoice(toolChoice) || { type: "auto" }
 	} else if (toolChoice) {
-		body.tool_choice = toolChoice
+		body.tool_choice = prefixToolChoice(toolChoice)
 	}
 
 	// Build minimal headers

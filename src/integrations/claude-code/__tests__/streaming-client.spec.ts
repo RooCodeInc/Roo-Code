@@ -719,6 +719,92 @@ describe("Claude Code Streaming Client", () => {
 			expect(userMessage.content[0].tool_use_id).toBe("tool_123")
 		})
 
+		test("should prefix tool name in tool_choice when type is tool", async () => {
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				body: {
+					getReader: () => ({
+						read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+						releaseLock: vi.fn(),
+					}),
+				},
+			})
+			global.fetch = mockFetch
+
+			const { createStreamingMessage } = await import("../streaming-client")
+
+			const tools = [
+				{
+					name: "read_file",
+					description: "Read a file",
+					input_schema: { type: "object" as const, properties: {} },
+				},
+			]
+
+			const stream = createStreamingMessage({
+				accessToken: "test-token",
+				model: "claude-3-5-sonnet-20241022",
+				systemPrompt: "You are helpful",
+				messages: [{ role: "user", content: "Read a file" }],
+				tools,
+				toolChoice: { type: "tool", name: "read_file" },
+			})
+
+			// Consume the stream
+			for await (const _ of stream) {
+				// Just consume
+			}
+
+			const call = mockFetch.mock.calls[0]
+			const body = JSON.parse(call[1].body)
+
+			// tool_choice.name should be prefixed to match the prefixed tool names
+			expect(body.tool_choice).toEqual({ type: "tool", name: "oc_read_file" })
+		})
+
+		test("should not modify tool_choice when type is auto or any", async () => {
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				body: {
+					getReader: () => ({
+						read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+						releaseLock: vi.fn(),
+					}),
+				},
+			})
+			global.fetch = mockFetch
+
+			const { createStreamingMessage } = await import("../streaming-client")
+
+			const tools = [
+				{
+					name: "read_file",
+					description: "Read a file",
+					input_schema: { type: "object" as const, properties: {} },
+				},
+			]
+
+			const stream = createStreamingMessage({
+				accessToken: "test-token",
+				model: "claude-3-5-sonnet-20241022",
+				systemPrompt: "You are helpful",
+				messages: [{ role: "user", content: "Hello" }],
+				tools,
+				toolChoice: { type: "any" },
+			})
+
+			// Consume the stream
+			for await (const _ of stream) {
+				// Just consume
+			}
+
+			const call = mockFetch.mock.calls[0]
+			const body = JSON.parse(call[1].body)
+
+			// tool_choice with type "any" should be unchanged
+			expect(body.tool_choice).toEqual({ type: "any" })
+		})
+
 		test("should strip prefix from tool names in streaming responses", async () => {
 			// Simulate a tool_use response from the API with prefixed name
 			const sseData = [
