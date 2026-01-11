@@ -893,6 +893,8 @@
 		"enableStreaming": "Aktifkan streaming",
 		"enableR1Format": "Aktifkan parameter model R1",
 		"enableR1FormatTips": "Harus diaktifkan saat menggunakan model R1 seperti QWQ untuk mencegah error 400",
+		"enableThinkingMode": "Aktifkan mode berpikir",
+		"enableThinkingModeTips": "Aktifkan untuk model berpikir seperti Kimi K2, DeepSeek Reasoner, GLM-4 untuk mengembalikan konten penalaran",
 		"useAzure": "Gunakan Azure",
 		"azureApiVersion": "Atur versi API Azure",
 		"gemini": {

@@ -864,6 +864,8 @@
 		"enableStreaming": "Streaming inschakelen",
 		"enableR1Format": "R1-modelparameters inschakelen",
 		"enableR1FormatTips": "Moet ingeschakeld zijn bij gebruik van R1-modellen zoals QWQ om 400-fouten te voorkomen",
+		"enableThinkingMode": "Denkmodus inschakelen",
+		"enableThinkingModeTips": "Inschakelen voor denkmodellen zoals Kimi K2, DeepSeek Reasoner, GLM-4 om redeneerinhoud te retourneren",
 		"useAzure": "Azure gebruiken",
 		"azureApiVersion": "Azure API-versie instellen",
 		"gemini": {

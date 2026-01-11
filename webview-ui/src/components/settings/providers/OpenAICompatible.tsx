@@ -20,6 +20,7 @@ import { convertHeadersToObject } from "../utils/headers"
 import { inputEventTransform, noTransform } from "../transforms"
 import { ModelPicker } from "../ModelPicker"
 import { R1FormatSetting } from "../R1FormatSetting"
+import { ThinkingModeSetting } from "../ThinkingModeSetting"
 import { ThinkingBudget } from "../ThinkingBudget"
 
 type OpenAICompatibleProps = {
@@ -152,6 +153,10 @@ export const OpenAICompatible = ({
 			<R1FormatSetting
 				onChange={handleInputChange("openAiR1FormatEnabled", noTransform)}
 				openAiR1FormatEnabled={apiConfiguration?.openAiR1FormatEnabled ?? false}
+			/>
+			<ThinkingModeSetting
+				onChange={handleInputChange("openAiThinkingModeEnabled", noTransform)}
+				openAiThinkingModeEnabled={apiConfiguration?.openAiThinkingModeEnabled ?? false}
 			/>
 			<Checkbox
 				checked={apiConfiguration?.openAiStreamingEnabled ?? true}

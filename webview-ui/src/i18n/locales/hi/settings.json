@@ -864,6 +864,8 @@
 		"enableStreaming": "स्ट्रीमिंग सक्षम करें",
 		"enableR1Format": "R1 मॉडल पैरामीटर सक्षम करें",
 		"enableR1FormatTips": "QWQ जैसी R1 मॉडलों का उपयोग करते समय इसे सक्षम करना आवश्यक है, ताकि 400 त्रुटि से बचा जा सके",
+		"enableThinkingMode": "थिंकिंग मोड सक्षम करें",
+		"enableThinkingModeTips": "Kimi K2, DeepSeek Reasoner, GLM-4 जैसे थिंकिंग मॉडल के लिए सक्षम करें ताकि तर्क सामग्री वापस आ सके",
 		"useAzure": "Azure का उपयोग करें",
 		"azureApiVersion": "Azure API संस्करण सेट करें",
 		"gemini": {

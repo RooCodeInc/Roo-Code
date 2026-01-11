@@ -864,6 +864,8 @@
 		"enableStreaming": "启用流式传输",
 		"enableR1Format": "启用 R1 模型参数",
 		"enableR1FormatTips": "使用 QWQ 等 R1 系列模型时必须启用，避免出现 400 错误",
+		"enableThinkingMode": "启用思考模式",
+		"enableThinkingModeTips": "为 Kimi K2、DeepSeek Reasoner、GLM-4 等思考模型启用，以返回推理内容",
 		"useAzure": "使用 Azure 服务",
 		"azureApiVersion": "设置 Azure API 版本",
 		"gemini": {

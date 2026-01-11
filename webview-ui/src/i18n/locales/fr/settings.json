@@ -863,6 +863,8 @@
 		"enableStreaming": "Activer le streaming",
 		"enableR1Format": "Activer les paramètres du modèle R1",
 		"enableR1FormatTips": "Doit être activé lors de l'utilisation de modèles R1 tels que QWQ, pour éviter l'erreur 400",
+		"enableThinkingMode": "Activer le mode réflexion",
+		"enableThinkingModeTips": "Activer pour les modèles de réflexion comme Kimi K2, DeepSeek Reasoner, GLM-4 pour retourner le contenu de raisonnement",
 		"useAzure": "Utiliser Azure",
 		"azureApiVersion": "Définir la version de l'API Azure",
 		"gemini": {

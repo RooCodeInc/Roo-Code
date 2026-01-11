@@ -243,6 +243,7 @@ const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiBaseUrl: z.string().optional(),
 	openAiApiKey: z.string().optional(),
 	openAiR1FormatEnabled: z.boolean().optional(),
+	openAiThinkingModeEnabled: z.boolean().optional(),
 	openAiModelId: z.string().optional(),
 	openAiCustomModelInfo: modelInfoSchema.nullish(),
 	openAiUseAzure: z.boolean().optional(),
