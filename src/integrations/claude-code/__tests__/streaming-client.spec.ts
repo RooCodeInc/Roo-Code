@@ -14,11 +14,12 @@ describe("Claude Code Streaming Client", () => {
 			expect(CLAUDE_CODE_API_CONFIG.defaultBetas).toContain("claude-code-20250219")
 			expect(CLAUDE_CODE_API_CONFIG.defaultBetas).toContain("oauth-2025-04-20")
 			expect(CLAUDE_CODE_API_CONFIG.defaultBetas).toContain("interleaved-thinking-2025-05-14")
-			expect(CLAUDE_CODE_API_CONFIG.defaultBetas).toContain("fine-grained-tool-streaming-2025-05-14")
+			// Note: fine-grained-tool-streaming removed for OAuth compatibility
 		})
 
 		test("should have correct user agent", () => {
-			expect(CLAUDE_CODE_API_CONFIG.userAgent).toMatch(/^Roo-Code\/\d+\.\d+\.\d+$/)
+			// User-Agent must match Claude CLI format for OAuth tokens to be accepted
+			expect(CLAUDE_CODE_API_CONFIG.userAgent).toMatch(/^claude-cli\/\d+\.\d+\.\d+ \(external, cli\)$/)
 		})
 	})
 
