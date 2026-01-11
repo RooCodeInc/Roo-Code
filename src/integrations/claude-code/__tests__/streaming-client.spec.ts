@@ -1,6 +1,34 @@
-import { CLAUDE_CODE_API_CONFIG } from "../streaming-client"
+import { CLAUDE_CODE_API_CONFIG, prefixToolName, stripToolNamePrefix } from "../streaming-client"
 
 describe("Claude Code Streaming Client", () => {
+	describe("Tool name prefix utilities", () => {
+		test("prefixToolName should add oc_ prefix to tool names", () => {
+			expect(prefixToolName("read_file")).toBe("oc_read_file")
+			expect(prefixToolName("write_to_file")).toBe("oc_write_to_file")
+			expect(prefixToolName("execute_command")).toBe("oc_execute_command")
+		})
+
+		test("stripToolNamePrefix should remove oc_ prefix from tool names", () => {
+			expect(stripToolNamePrefix("oc_read_file")).toBe("read_file")
+			expect(stripToolNamePrefix("oc_write_to_file")).toBe("write_to_file")
+			expect(stripToolNamePrefix("oc_execute_command")).toBe("execute_command")
+		})
+
+		test("stripToolNamePrefix should return unchanged name if no prefix", () => {
+			expect(stripToolNamePrefix("read_file")).toBe("read_file")
+			expect(stripToolNamePrefix("some_other_tool")).toBe("some_other_tool")
+		})
+
+		test("stripToolNamePrefix should handle edge cases", () => {
+			expect(stripToolNamePrefix("oc_")).toBe("")
+			expect(stripToolNamePrefix("")).toBe("")
+			// "occ_tool" does NOT start with "oc_" exactly, so it's unchanged
+			expect(stripToolNamePrefix("occ_tool")).toBe("occ_tool")
+			// But "oc_oc_tool" would strip one prefix
+			expect(stripToolNamePrefix("oc_oc_tool")).toBe("oc_tool")
+		})
+	})
+
 	describe("CLAUDE_CODE_API_CONFIG", () => {
 		test("should have correct API endpoint", () => {
 			expect(CLAUDE_CODE_API_CONFIG.endpoint).toBe("https://api.anthropic.com/v1/messages")
@@ -580,6 +608,166 @@ describe("Claude Code Streaming Client", () => {
 				outputTokens: 20,
 				cacheReadTokens: 5,
 			})
+		})
+
+		test("should prefix tool names when sending to API", async () => {
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				body: {
+					getReader: () => ({
+						read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+						releaseLock: vi.fn(),
+					}),
+				},
+			})
+			global.fetch = mockFetch
+
+			const { createStreamingMessage } = await import("../streaming-client")
+
+			const tools = [
+				{
+					name: "read_file",
+					description: "Read a file",
+					input_schema: { type: "object" as const, properties: {} },
+				},
+				{
+					name: "write_to_file",
+					description: "Write to a file",
+					input_schema: { type: "object" as const, properties: {} },
+				},
+			]
+
+			const stream = createStreamingMessage({
+				accessToken: "test-token",
+				model: "claude-3-5-sonnet-20241022",
+				systemPrompt: "You are helpful",
+				messages: [{ role: "user", content: "Hello" }],
+				tools,
+			})
+
+			// Consume the stream
+			for await (const _ of stream) {
+				// Just consume
+			}
+
+			const call = mockFetch.mock.calls[0]
+			const body = JSON.parse(call[1].body)
+
+			// Tool names should be prefixed with oc_
+			expect(body.tools).toHaveLength(2)
+			expect(body.tools[0].name).toBe("oc_read_file")
+			expect(body.tools[1].name).toBe("oc_write_to_file")
+			// Other properties should be preserved
+			expect(body.tools[0].description).toBe("Read a file")
+			expect(body.tools[1].description).toBe("Write to a file")
+		})
+
+		test("should prefix tool names in tool_use blocks within messages", async () => {
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				body: {
+					getReader: () => ({
+						read: vi.fn().mockResolvedValue({ done: true, value: undefined }),
+						releaseLock: vi.fn(),
+					}),
+				},
+			})
+			global.fetch = mockFetch
+
+			const { createStreamingMessage } = await import("../streaming-client")
+
+			const stream = createStreamingMessage({
+				accessToken: "test-token",
+				model: "claude-3-5-sonnet-20241022",
+				systemPrompt: "You are helpful",
+				messages: [
+					{ role: "user", content: "Read a file" },
+					{
+						role: "assistant",
+						content: [
+							{
+								type: "tool_use",
+								id: "tool_123",
+								name: "read_file",
+								input: { path: "/test.txt" },
+							},
+						],
+					},
+					{
+						role: "user",
+						content: [{ type: "tool_result", tool_use_id: "tool_123", content: "file contents" }],
+					},
+				] as any,
+			})
+
+			// Consume the stream
+			for await (const _ of stream) {
+				// Just consume
+			}
+
+			const call = mockFetch.mock.calls[0]
+			const body = JSON.parse(call[1].body)
+
+			// Tool use block name should be prefixed
+			const assistantMessage = body.messages[1]
+			expect(assistantMessage.content[0].type).toBe("tool_use")
+			expect(assistantMessage.content[0].name).toBe("oc_read_file")
+			expect(assistantMessage.content[0].id).toBe("tool_123")
+			// Tool result should be unchanged (references tool_use_id, not name)
+			const userMessage = body.messages[2]
+			expect(userMessage.content[0].type).toBe("tool_result")
+			expect(userMessage.content[0].tool_use_id).toBe("tool_123")
+		})
+
+		test("should strip prefix from tool names in streaming responses", async () => {
+			// Simulate a tool_use response from the API with prefixed name
+			const sseData = [
+				'event: content_block_start\ndata: {"index":0,"content_block":{"type":"tool_use","id":"tool_456","name":"oc_execute_command"}}\n\n',
+				'event: content_block_delta\ndata: {"index":0,"delta":{"type":"input_json_delta","partial_json":"{\\"command\\":"}}\n\n',
+				'event: content_block_delta\ndata: {"index":0,"delta":{"type":"input_json_delta","partial_json":"\\"ls\\"}"}}\n\n',
+				"event: message_stop\ndata: {}\n\n",
+			]
+
+			let readIndex = 0
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				body: {
+					getReader: () => ({
+						read: vi.fn().mockImplementation(() => {
+							if (readIndex < sseData.length) {
+								const value = new TextEncoder().encode(sseData[readIndex++])
+								return Promise.resolve({ done: false, value })
+							}
+							return Promise.resolve({ done: true, value: undefined })
+						}),
+						releaseLock: vi.fn(),
+					}),
+				},
+			})
+			global.fetch = mockFetch
+
+			const { createStreamingMessage } = await import("../streaming-client")
+
+			const stream = createStreamingMessage({
+				accessToken: "test-token",
+				model: "claude-3-5-sonnet-20241022",
+				systemPrompt: "You are helpful",
+				messages: [{ role: "user", content: "List files" }],
+			})
+
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Find the tool_call_partial chunk with the name
+			const toolCallChunks = chunks.filter((c) => c.type === "tool_call_partial")
+			expect(toolCallChunks.length).toBeGreaterThan(0)
+
+			// The first tool_call_partial should have the stripped name
+			const firstToolCall = toolCallChunks[0] as { type: "tool_call_partial"; name?: string; id?: string }
+			expect(firstToolCall.name).toBe("execute_command") // Prefix stripped
+			expect(firstToolCall.id).toBe("tool_456")
 		})
 	})
 })

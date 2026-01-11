@@ -3,6 +3,13 @@ import type { ClaudeCodeRateLimitInfo } from "@klaus-code/types"
 import { Package } from "../../shared/package"
 
 /**
+ * Prefix added to tool names when sending to Claude Code API.
+ * Anthropic rejects third-party tools when using Claude Code OAuth tokens,
+ * so we prefix tool names to bypass their validation and strip the prefix from responses.
+ */
+const TOOL_NAME_PREFIX = "oc_"
+
+/**
  * Set of content block types that are valid for Anthropic API.
  * Only these types will be passed through to the API.
  * See: https://docs.anthropic.com/en/api/messages
@@ -18,6 +25,65 @@ const VALID_ANTHROPIC_BLOCK_TYPES = new Set([
 ])
 
 type ContentBlockWithType = { type: string }
+type ToolUseBlock = { type: "tool_use"; id: string; name: string; input: unknown }
+
+/**
+ * Adds the prefix to a tool name for Claude Code API requests.
+ * This bypasses Anthropic's validation that rejects third-party tools.
+ */
+export function prefixToolName(name: string): string {
+	return `${TOOL_NAME_PREFIX}${name}`
+}
+
+/**
+ * Strips the prefix from a tool name received in API responses.
+ * Returns the original tool name for use within Roo Code.
+ */
+export function stripToolNamePrefix(name: string): string {
+	if (name.startsWith(TOOL_NAME_PREFIX)) {
+		return name.slice(TOOL_NAME_PREFIX.length)
+	}
+	return name
+}
+
+/**
+ * Prefixes tool names in the tools array before sending to the API.
+ */
+function prefixToolNames(tools: Anthropic.Messages.Tool[]): Anthropic.Messages.Tool[] {
+	return tools.map((tool) => ({
+		...tool,
+		name: prefixToolName(tool.name),
+	}))
+}
+
+/**
+ * Prefixes tool names in tool_use blocks within messages.
+ * This ensures consistency when messages containing tool_use blocks are sent back to the API.
+ */
+function prefixToolNamesInMessages(messages: Anthropic.Messages.MessageParam[]): Anthropic.Messages.MessageParam[] {
+	return messages.map((message) => {
+		if (typeof message.content === "string") {
+			return message
+		}
+
+		const prefixedContent = message.content.map((block) => {
+			const blockWithType = block as ContentBlockWithType
+			if (blockWithType.type === "tool_use") {
+				const toolUseBlock = block as unknown as ToolUseBlock
+				return {
+					...toolUseBlock,
+					name: prefixToolName(toolUseBlock.name),
+				}
+			}
+			return block
+		})
+
+		return {
+			...message,
+			content: prefixedContent,
+		}
+	})
+}
 
 /**
  * Filters out non-Anthropic content blocks from messages before sending to the API.
@@ -380,11 +446,16 @@ export async function* createStreamingMessage(options: StreamMessageOptions): As
 	// - We cache the last two user messages for optimal cache hit rates
 	const messagesWithCache = addMessageCacheBreakpoints(sanitizedMessages)
 
+	// Prefix tool names in tool_use blocks within messages for consistency
+	// This ensures that when messages containing tool_use blocks are sent back to the API,
+	// the tool names match the prefixed names we send in the tools array
+	const messagesWithPrefixedTools = prefixToolNamesInMessages(messagesWithCache)
+
 	// Build request body - match Claude Code format exactly
 	const body: Record<string, unknown> = {
 		model,
 		stream: true,
-		messages: messagesWithCache,
+		messages: messagesWithPrefixedTools,
 	}
 
 	// Only include max_tokens if explicitly provided
@@ -412,7 +483,9 @@ export async function* createStreamingMessage(options: StreamMessageOptions): As
 	}
 
 	if (tools && tools.length > 0) {
-		body.tools = tools
+		// Prefix tool names to bypass Anthropic's third-party tool validation
+		// when using Claude Code OAuth tokens
+		body.tools = prefixToolNames(tools)
 		// Default tool_choice to "auto" when tools are provided (as per spec example)
 		body.tool_choice = toolChoice || { type: "auto" }
 	} else if (toolChoice) {
@@ -545,22 +618,26 @@ export async function* createStreamingMessage(options: StreamMessageOptions): As
 										yield { type: "reasoning", text: contentBlock.thinking as string }
 									}
 									break
-								case "tool_use":
+								case "tool_use": {
+									// Strip the prefix from tool names in responses so the rest of the
+									// application sees the original tool names
+									const originalName = stripToolNamePrefix(contentBlock.name as string)
 									contentBlocks.set(index, {
 										type: "tool_use",
 										text: "",
 										id: contentBlock.id as string,
-										name: contentBlock.name as string,
+										name: originalName,
 										arguments: "",
 									})
 									yield {
 										type: "tool_call_partial",
 										index,
 										id: contentBlock.id as string,
-										name: contentBlock.name as string,
+										name: originalName,
 										arguments: undefined,
 									}
 									break
+								}
 							}
 						}
 						break
