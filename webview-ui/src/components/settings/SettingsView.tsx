@@ -630,9 +630,11 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	return (
 		<Tab>
 			<TabHeader className="flex justify-between items-center gap-2">
-				<div className="flex items-center gap-2">
-					<h3 className="text-vscode-foreground m-0">{t("settings:header.title")}</h3>
-					{!isIndexing && <SettingsSearch index={searchIndex} onNavigate={handleSearchNavigate} />}
+				<div className="flex items-center gap-2 grow">
+					<h3 className="text-vscode-foreground m-0 flex-shrink-0">{t("settings:header.title")}</h3>
+					{!isIndexing && (
+						<SettingsSearch index={searchIndex} onNavigate={handleSearchNavigate} sections={sections} />
+					)}
 				</div>
 				<div className="flex gap-2">
 					<StandardTooltip

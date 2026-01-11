@@ -15,6 +15,8 @@ export interface SearchResult {
 	section: SectionName
 	label: string
 	sectionLabel: string
+	/** Character positions that matched the search query (for highlighting) */
+	positions: Set<number>
 }
 
 /**
@@ -78,6 +80,7 @@ export function useSettingsSearch({ index }: UseSettingsSearchOptions) {
 			section: result.item.section,
 			label: result.item.label,
 			sectionLabel: result.item.sectionLabel,
+			positions: result.positions,
 		}))
 	}, [fzf, searchQuery])
 
