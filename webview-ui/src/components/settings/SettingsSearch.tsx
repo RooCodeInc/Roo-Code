@@ -44,6 +44,13 @@ export function SettingsSearch({ index, onNavigate, sections }: SettingsSearchPr
 
 	const handleSearchKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLInputElement>) => {
+			if (event.key === "Escape") {
+				setIsOpen(false)
+				setHighlightedResultId(undefined)
+				inputRef.current?.blur()
+				return
+			}
+
 			if (!results.length) return
 
 			if (event.key === "ArrowDown") {
