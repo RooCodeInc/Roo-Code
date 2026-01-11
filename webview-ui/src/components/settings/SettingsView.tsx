@@ -80,7 +80,7 @@ import { UISettings } from "./UISettings"
 import ModesView from "../modes/ModesView"
 import McpView from "../mcp/McpView"
 import { SettingsSearch } from "./SettingsSearch"
-import { scanDOMForSearchableSettings, SearchableSettingData } from "./useSettingsSearch"
+import { useSearchIndexRegistry, SearchIndexProvider } from "./useSettingsSearch"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -579,28 +579,30 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		}
 	}, [scrollToActiveTab])
 
-	// Search index state - built once on mount
-	const [searchIndex, setSearchIndex] = useState<SearchableSettingData[]>([])
-	const indexingContainerRef = useRef<HTMLDivElement>(null)
-	const [isIndexing, setIsIndexing] = useState(true)
+	// Search index registry - settings register themselves on mount
+	const getSectionLabel = useCallback((section: SectionName) => t(`settings:sections.${section}`), [t])
+	const { contextValue: searchContextValue, index: searchIndex } = useSearchIndexRegistry(getSectionLabel)
 
-	// Build the search index by scanning a hidden container that renders all sections
-	useEffect(() => {
-		if (!isIndexing || !indexingContainerRef.current) return
+	// Track which tabs have been indexed (visited at least once)
+	const [indexingTabIndex, setIndexingTabIndex] = useState(0)
+	const initialTab = useRef<SectionName>(activeTab)
+	const isIndexing = indexingTabIndex < sectionNames.length
+	const isIndexingComplete = !isIndexing
 
-		// Wait for the hidden content to render
-		requestAnimationFrame(() => {
-			setTimeout(() => {
-				if (indexingContainerRef.current) {
-					const index = scanDOMForSearchableSettings(indexingContainerRef.current, (section) =>
-						t(`settings:sections.${section}`),
-					)
-					setSearchIndex(index)
-					setIsIndexing(false)
-				}
-			}, 100)
-		})
-	}, [isIndexing, t])
+	// Index all tabs by cycling through them on mount
+	useLayoutEffect(() => {
+		if (indexingTabIndex >= sectionNames.length) {
+			// All tabs indexed, return to initial tab
+			setActiveTab(initialTab.current)
+			return
+		}
+
+		// Move to the next tab on next render
+		setIndexingTabIndex((prev) => prev + 1)
+	}, [indexingTabIndex])
+
+	// Determine which tab content to render (for indexing or active display)
+	const renderTab = isIndexing ? sectionNames[indexingTabIndex] : activeTab
 
 	// Handle search navigation - switch to the correct tab and scroll to the element
 	const handleSearchNavigate = useCallback(
@@ -632,7 +634,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			<TabHeader className="flex justify-between items-center gap-2">
 				<h3 className="text-vscode-foreground m-0 flex-shrink-0">{t("settings:header.title")}</h3>
 				<div className="flex items-center gap-2">
-					{!isIndexing && (
+					{isIndexingComplete && (
 						<SettingsSearch index={searchIndex} onNavigate={handleSearchNavigate} sections={sections} />
 					)}
 					<StandardTooltip
@@ -718,335 +720,224 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					})}
 				</TabList>
 
-				{/* Content area */}
-				<TabContent ref={contentRef} className="p-0 flex-1 overflow-auto" data-testid="settings-content">
-					{/* Providers Section */}
-					{activeTab === "providers" && (
-						<div>
-							<SectionHeader>
-								<div className="flex items-center gap-2">
-									<Webhook className="w-4" />
-									<div>{t("settings:sections.providers")}</div>
-								</div>
-							</SectionHeader>
+				{/* Content area - renders only the active tab (or indexing tab during initial indexing) */}
+				<TabContent
+					ref={contentRef}
+					className={cn("p-0 flex-1 overflow-auto", isIndexing && "opacity-0")}
+					data-testid="settings-content">
+					<SearchIndexProvider value={searchContextValue}>
+						{/* Providers Section */}
+						{renderTab === "providers" && (
+							<div>
+								<SectionHeader>
+									<div className="flex items-center gap-2">
+										<Webhook className="w-4" />
+										<div>{t("settings:sections.providers")}</div>
+									</div>
+								</SectionHeader>
 
-							<Section>
-								<ApiConfigManager
-									currentApiConfigName={currentApiConfigName}
-									listApiConfigMeta={listApiConfigMeta}
-									onSelectConfig={(configName: string) =>
-										checkUnsaveChanges(() =>
-											vscode.postMessage({ type: "loadApiConfiguration", text: configName }),
-										)
-									}
-									onDeleteConfig={(configName: string) =>
-										vscode.postMessage({ type: "deleteApiConfiguration", text: configName })
-									}
-									onRenameConfig={(oldName: string, newName: string) => {
-										vscode.postMessage({
-											type: "renameApiConfiguration",
-											values: { oldName, newName },
-											apiConfiguration,
-										})
-										prevApiConfigName.current = newName
-									}}
-									onUpsertConfig={(configName: string) =>
-										vscode.postMessage({
-											type: "upsertApiConfiguration",
-											text: configName,
-											apiConfiguration,
-										})
-									}
-								/>
-								<ApiOptions
-									uriScheme={uriScheme}
-									apiConfiguration={apiConfiguration}
-									setApiConfigurationField={setApiConfigurationField}
-									errorMessage={errorMessage}
-									setErrorMessage={setErrorMessage}
-								/>
-							</Section>
-						</div>
-					)}
+								<Section>
+									<ApiConfigManager
+										currentApiConfigName={currentApiConfigName}
+										listApiConfigMeta={listApiConfigMeta}
+										onSelectConfig={(configName: string) =>
+											checkUnsaveChanges(() =>
+												vscode.postMessage({ type: "loadApiConfiguration", text: configName }),
+											)
+										}
+										onDeleteConfig={(configName: string) =>
+											vscode.postMessage({ type: "deleteApiConfiguration", text: configName })
+										}
+										onRenameConfig={(oldName: string, newName: string) => {
+											vscode.postMessage({
+												type: "renameApiConfiguration",
+												values: { oldName, newName },
+												apiConfiguration,
+											})
+											prevApiConfigName.current = newName
+										}}
+										onUpsertConfig={(configName: string) =>
+											vscode.postMessage({
+												type: "upsertApiConfiguration",
+												text: configName,
+												apiConfiguration,
+											})
+										}
+									/>
+									<ApiOptions
+										uriScheme={uriScheme}
+										apiConfiguration={apiConfiguration}
+										setApiConfigurationField={setApiConfigurationField}
+										errorMessage={errorMessage}
+										setErrorMessage={setErrorMessage}
+									/>
+								</Section>
+							</div>
+						)}
 
-					{/* Auto-Approve Section */}
-					{activeTab === "autoApprove" && (
-						<AutoApproveSettings
-							alwaysAllowReadOnly={alwaysAllowReadOnly}
-							alwaysAllowReadOnlyOutsideWorkspace={alwaysAllowReadOnlyOutsideWorkspace}
-							alwaysAllowWrite={alwaysAllowWrite}
-							alwaysAllowWriteOutsideWorkspace={alwaysAllowWriteOutsideWorkspace}
-							alwaysAllowWriteProtected={alwaysAllowWriteProtected}
-							alwaysAllowBrowser={alwaysAllowBrowser}
-							alwaysAllowMcp={alwaysAllowMcp}
-							alwaysAllowModeSwitch={alwaysAllowModeSwitch}
-							alwaysAllowSubtasks={alwaysAllowSubtasks}
-							alwaysAllowExecute={alwaysAllowExecute}
-							alwaysAllowFollowupQuestions={alwaysAllowFollowupQuestions}
-							followupAutoApproveTimeoutMs={followupAutoApproveTimeoutMs}
-							allowedCommands={allowedCommands}
-							allowedMaxRequests={allowedMaxRequests ?? undefined}
-							allowedMaxCost={allowedMaxCost ?? undefined}
-							deniedCommands={deniedCommands}
-							setCachedStateField={setCachedStateField}
-						/>
-					)}
+						{/* Auto-Approve Section */}
+						{renderTab === "autoApprove" && (
+							<AutoApproveSettings
+								alwaysAllowReadOnly={alwaysAllowReadOnly}
+								alwaysAllowReadOnlyOutsideWorkspace={alwaysAllowReadOnlyOutsideWorkspace}
+								alwaysAllowWrite={alwaysAllowWrite}
+								alwaysAllowWriteOutsideWorkspace={alwaysAllowWriteOutsideWorkspace}
+								alwaysAllowWriteProtected={alwaysAllowWriteProtected}
+								alwaysAllowBrowser={alwaysAllowBrowser}
+								alwaysAllowMcp={alwaysAllowMcp}
+								alwaysAllowModeSwitch={alwaysAllowModeSwitch}
+								alwaysAllowSubtasks={alwaysAllowSubtasks}
+								alwaysAllowExecute={alwaysAllowExecute}
+								alwaysAllowFollowupQuestions={alwaysAllowFollowupQuestions}
+								followupAutoApproveTimeoutMs={followupAutoApproveTimeoutMs}
+								allowedCommands={allowedCommands}
+								allowedMaxRequests={allowedMaxRequests ?? undefined}
+								allowedMaxCost={allowedMaxCost ?? undefined}
+								deniedCommands={deniedCommands}
+								setCachedStateField={setCachedStateField}
+							/>
+						)}
 
-					{/* Slash Commands Section */}
-					{activeTab === "slashCommands" && <SlashCommandsSettings />}
+						{/* Slash Commands Section */}
+						{renderTab === "slashCommands" && <SlashCommandsSettings />}
 
-					{/* Browser Section */}
-					{activeTab === "browser" && (
-						<BrowserSettings
-							browserToolEnabled={browserToolEnabled}
-							browserViewportSize={browserViewportSize}
-							screenshotQuality={screenshotQuality}
-							remoteBrowserHost={remoteBrowserHost}
-							remoteBrowserEnabled={remoteBrowserEnabled}
-							setCachedStateField={setCachedStateField}
-						/>
-					)}
+						{/* Browser Section */}
+						{renderTab === "browser" && (
+							<BrowserSettings
+								browserToolEnabled={browserToolEnabled}
+								browserViewportSize={browserViewportSize}
+								screenshotQuality={screenshotQuality}
+								remoteBrowserHost={remoteBrowserHost}
+								remoteBrowserEnabled={remoteBrowserEnabled}
+								setCachedStateField={setCachedStateField}
+							/>
+						)}
 
-					{/* Checkpoints Section */}
-					{activeTab === "checkpoints" && (
-						<CheckpointSettings
-							enableCheckpoints={enableCheckpoints}
-							checkpointTimeout={checkpointTimeout}
-							setCachedStateField={setCachedStateField}
-						/>
-					)}
+						{/* Checkpoints Section */}
+						{renderTab === "checkpoints" && (
+							<CheckpointSettings
+								enableCheckpoints={enableCheckpoints}
+								checkpointTimeout={checkpointTimeout}
+								setCachedStateField={setCachedStateField}
+							/>
+						)}
 
-					{/* Notifications Section */}
-					{activeTab === "notifications" && (
-						<NotificationSettings
-							ttsEnabled={ttsEnabled}
-							ttsSpeed={ttsSpeed}
-							soundEnabled={soundEnabled}
-							soundVolume={soundVolume}
-							setCachedStateField={setCachedStateField}
-						/>
-					)}
+						{/* Notifications Section */}
+						{renderTab === "notifications" && (
+							<NotificationSettings
+								ttsEnabled={ttsEnabled}
+								ttsSpeed={ttsSpeed}
+								soundEnabled={soundEnabled}
+								soundVolume={soundVolume}
+								setCachedStateField={setCachedStateField}
+							/>
+						)}
 
-					{/* Context Management Section */}
-					{activeTab === "contextManagement" && (
-						<ContextManagementSettings
-							autoCondenseContext={autoCondenseContext}
-							autoCondenseContextPercent={autoCondenseContextPercent}
-							listApiConfigMeta={listApiConfigMeta ?? []}
-							maxOpenTabsContext={maxOpenTabsContext}
-							maxWorkspaceFiles={maxWorkspaceFiles ?? 200}
-							showRooIgnoredFiles={showRooIgnoredFiles}
-							enableSubfolderRules={enableSubfolderRules}
-							maxReadFileLine={maxReadFileLine}
-							maxImageFileSize={maxImageFileSize}
-							maxTotalImageSize={maxTotalImageSize}
-							maxConcurrentFileReads={maxConcurrentFileReads}
-							profileThresholds={profileThresholds}
-							includeDiagnosticMessages={includeDiagnosticMessages}
-							maxDiagnosticMessages={maxDiagnosticMessages}
-							writeDelayMs={writeDelayMs}
-							includeCurrentTime={includeCurrentTime}
-							includeCurrentCost={includeCurrentCost}
-							maxGitStatusFiles={maxGitStatusFiles}
-							setCachedStateField={setCachedStateField}
-						/>
-					)}
+						{/* Context Management Section */}
+						{renderTab === "contextManagement" && (
+							<ContextManagementSettings
+								autoCondenseContext={autoCondenseContext}
+								autoCondenseContextPercent={autoCondenseContextPercent}
+								listApiConfigMeta={listApiConfigMeta ?? []}
+								maxOpenTabsContext={maxOpenTabsContext}
+								maxWorkspaceFiles={maxWorkspaceFiles ?? 200}
+								showRooIgnoredFiles={showRooIgnoredFiles}
+								enableSubfolderRules={enableSubfolderRules}
+								maxReadFileLine={maxReadFileLine}
+								maxImageFileSize={maxImageFileSize}
+								maxTotalImageSize={maxTotalImageSize}
+								maxConcurrentFileReads={maxConcurrentFileReads}
+								profileThresholds={profileThresholds}
+								includeDiagnosticMessages={includeDiagnosticMessages}
+								maxDiagnosticMessages={maxDiagnosticMessages}
+								writeDelayMs={writeDelayMs}
+								includeCurrentTime={includeCurrentTime}
+								includeCurrentCost={includeCurrentCost}
+								maxGitStatusFiles={maxGitStatusFiles}
+								setCachedStateField={setCachedStateField}
+							/>
+						)}
 
-					{/* Terminal Section */}
-					{activeTab === "terminal" && (
-						<TerminalSettings
-							terminalOutputLineLimit={terminalOutputLineLimit}
-							terminalOutputCharacterLimit={terminalOutputCharacterLimit}
-							terminalShellIntegrationTimeout={terminalShellIntegrationTimeout}
-							terminalShellIntegrationDisabled={terminalShellIntegrationDisabled}
-							terminalCommandDelay={terminalCommandDelay}
-							terminalPowershellCounter={terminalPowershellCounter}
-							terminalZshClearEolMark={terminalZshClearEolMark}
-							terminalZshOhMy={terminalZshOhMy}
-							terminalZshP10k={terminalZshP10k}
-							terminalZdotdir={terminalZdotdir}
-							terminalCompressProgressBar={terminalCompressProgressBar}
-							setCachedStateField={setCachedStateField}
-						/>
-					)}
+						{/* Terminal Section */}
+						{renderTab === "terminal" && (
+							<TerminalSettings
+								terminalOutputLineLimit={terminalOutputLineLimit}
+								terminalOutputCharacterLimit={terminalOutputCharacterLimit}
+								terminalShellIntegrationTimeout={terminalShellIntegrationTimeout}
+								terminalShellIntegrationDisabled={terminalShellIntegrationDisabled}
+								terminalCommandDelay={terminalCommandDelay}
+								terminalPowershellCounter={terminalPowershellCounter}
+								terminalZshClearEolMark={terminalZshClearEolMark}
+								terminalZshOhMy={terminalZshOhMy}
+								terminalZshP10k={terminalZshP10k}
+								terminalZdotdir={terminalZdotdir}
+								terminalCompressProgressBar={terminalCompressProgressBar}
+								setCachedStateField={setCachedStateField}
+							/>
+						)}
 
-					{/* Modes Section */}
-					{activeTab === "modes" && <ModesView />}
+						{/* Modes Section */}
+						{renderTab === "modes" && <ModesView />}
 
-					{/* MCP Section */}
-					{activeTab === "mcp" && <McpView />}
+						{/* MCP Section */}
+						{renderTab === "mcp" && <McpView />}
 
-					{/* Prompts Section */}
-					{activeTab === "prompts" && (
-						<PromptsSettings
-							customSupportPrompts={customSupportPrompts || {}}
-							setCustomSupportPrompts={setCustomSupportPromptsField}
-							includeTaskHistoryInEnhance={includeTaskHistoryInEnhance}
-							setIncludeTaskHistoryInEnhance={(value) =>
-								setCachedStateField("includeTaskHistoryInEnhance", value)
-							}
-						/>
-					)}
+						{/* Prompts Section */}
+						{renderTab === "prompts" && (
+							<PromptsSettings
+								customSupportPrompts={customSupportPrompts || {}}
+								setCustomSupportPrompts={setCustomSupportPromptsField}
+								includeTaskHistoryInEnhance={includeTaskHistoryInEnhance}
+								setIncludeTaskHistoryInEnhance={(value) =>
+									setCachedStateField("includeTaskHistoryInEnhance", value)
+								}
+							/>
+						)}
 
-					{/* UI Section */}
-					{activeTab === "ui" && (
-						<UISettings
-							reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
-							enterBehavior={enterBehavior ?? "send"}
-							setCachedStateField={setCachedStateField}
-						/>
-					)}
+						{/* UI Section */}
+						{renderTab === "ui" && (
+							<UISettings
+								reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
+								enterBehavior={enterBehavior ?? "send"}
+								setCachedStateField={setCachedStateField}
+							/>
+						)}
 
-					{/* Experimental Section */}
-					{activeTab === "experimental" && (
-						<ExperimentalSettings
-							setExperimentEnabled={setExperimentEnabled}
-							experiments={experiments}
-							apiConfiguration={apiConfiguration}
-							setApiConfigurationField={setApiConfigurationField}
-							imageGenerationProvider={imageGenerationProvider}
-							openRouterImageApiKey={openRouterImageApiKey as string | undefined}
-							openRouterImageGenerationSelectedModel={
-								openRouterImageGenerationSelectedModel as string | undefined
-							}
-							setImageGenerationProvider={setImageGenerationProvider}
-							setOpenRouterImageApiKey={setOpenRouterImageApiKey}
-							setImageGenerationSelectedModel={setImageGenerationSelectedModel}
-						/>
-					)}
+						{/* Experimental Section */}
+						{renderTab === "experimental" && (
+							<ExperimentalSettings
+								setExperimentEnabled={setExperimentEnabled}
+								experiments={experiments}
+								apiConfiguration={apiConfiguration}
+								setApiConfigurationField={setApiConfigurationField}
+								imageGenerationProvider={imageGenerationProvider}
+								openRouterImageApiKey={openRouterImageApiKey as string | undefined}
+								openRouterImageGenerationSelectedModel={
+									openRouterImageGenerationSelectedModel as string | undefined
+								}
+								setImageGenerationProvider={setImageGenerationProvider}
+								setOpenRouterImageApiKey={setOpenRouterImageApiKey}
+								setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+							/>
+						)}
 
-					{/* Language Section */}
-					{activeTab === "language" && (
-						<LanguageSettings language={language || "en"} setCachedStateField={setCachedStateField} />
-					)}
+						{/* Language Section */}
+						{renderTab === "language" && (
+							<LanguageSettings language={language || "en"} setCachedStateField={setCachedStateField} />
+						)}
 
-					{/* About Section */}
-					{activeTab === "about" && (
-						<About
-							telemetrySetting={telemetrySetting}
-							setTelemetrySetting={setTelemetrySetting}
-							debug={cachedState.debug}
-							setDebug={setDebug}
-						/>
-					)}
+						{/* About Section */}
+						{renderTab === "about" && (
+							<About
+								telemetrySetting={telemetrySetting}
+								setTelemetrySetting={setTelemetrySetting}
+								debug={cachedState.debug}
+								setDebug={setDebug}
+							/>
+						)}
+					</SearchIndexProvider>
 				</TabContent>
 			</div>
-
-			{/* Hidden container for indexing searchable settings - rendered once on mount */}
-			{isIndexing && (
-				<div ref={indexingContainerRef} className="absolute left-[-9999px] top-0 opacity-0 pointer-events-none">
-					{/* Render all settings sections for indexing */}
-					<AutoApproveSettings
-						alwaysAllowReadOnly={alwaysAllowReadOnly}
-						alwaysAllowReadOnlyOutsideWorkspace={alwaysAllowReadOnlyOutsideWorkspace}
-						alwaysAllowWrite={alwaysAllowWrite}
-						alwaysAllowWriteOutsideWorkspace={alwaysAllowWriteOutsideWorkspace}
-						alwaysAllowWriteProtected={alwaysAllowWriteProtected}
-						alwaysAllowBrowser={alwaysAllowBrowser}
-						alwaysAllowMcp={alwaysAllowMcp}
-						alwaysAllowModeSwitch={alwaysAllowModeSwitch}
-						alwaysAllowSubtasks={alwaysAllowSubtasks}
-						alwaysAllowExecute={alwaysAllowExecute}
-						alwaysAllowFollowupQuestions={alwaysAllowFollowupQuestions}
-						followupAutoApproveTimeoutMs={followupAutoApproveTimeoutMs}
-						allowedCommands={allowedCommands}
-						allowedMaxRequests={allowedMaxRequests ?? undefined}
-						allowedMaxCost={allowedMaxCost ?? undefined}
-						deniedCommands={deniedCommands}
-						setCachedStateField={setCachedStateField}
-					/>
-					<SlashCommandsSettings />
-					<BrowserSettings
-						browserToolEnabled={browserToolEnabled}
-						browserViewportSize={browserViewportSize}
-						screenshotQuality={screenshotQuality}
-						remoteBrowserHost={remoteBrowserHost}
-						remoteBrowserEnabled={remoteBrowserEnabled}
-						setCachedStateField={setCachedStateField}
-					/>
-					<CheckpointSettings
-						enableCheckpoints={enableCheckpoints}
-						checkpointTimeout={checkpointTimeout}
-						setCachedStateField={setCachedStateField}
-					/>
-					<NotificationSettings
-						ttsEnabled={ttsEnabled}
-						ttsSpeed={ttsSpeed}
-						soundEnabled={soundEnabled}
-						soundVolume={soundVolume}
-						setCachedStateField={setCachedStateField}
-					/>
-					<ContextManagementSettings
-						autoCondenseContext={autoCondenseContext}
-						autoCondenseContextPercent={autoCondenseContextPercent}
-						listApiConfigMeta={listApiConfigMeta ?? []}
-						maxOpenTabsContext={maxOpenTabsContext}
-						maxWorkspaceFiles={maxWorkspaceFiles ?? 200}
-						showRooIgnoredFiles={showRooIgnoredFiles}
-						enableSubfolderRules={enableSubfolderRules}
-						maxReadFileLine={maxReadFileLine}
-						maxImageFileSize={maxImageFileSize}
-						maxTotalImageSize={maxTotalImageSize}
-						maxConcurrentFileReads={maxConcurrentFileReads}
-						profileThresholds={profileThresholds}
-						includeDiagnosticMessages={includeDiagnosticMessages}
-						maxDiagnosticMessages={maxDiagnosticMessages}
-						writeDelayMs={writeDelayMs}
-						includeCurrentTime={includeCurrentTime}
-						includeCurrentCost={includeCurrentCost}
-						maxGitStatusFiles={maxGitStatusFiles}
-						setCachedStateField={setCachedStateField}
-					/>
-					<TerminalSettings
-						terminalOutputLineLimit={terminalOutputLineLimit}
-						terminalOutputCharacterLimit={terminalOutputCharacterLimit}
-						terminalShellIntegrationTimeout={terminalShellIntegrationTimeout}
-						terminalShellIntegrationDisabled={terminalShellIntegrationDisabled}
-						terminalCommandDelay={terminalCommandDelay}
-						terminalPowershellCounter={terminalPowershellCounter}
-						terminalZshClearEolMark={terminalZshClearEolMark}
-						terminalZshOhMy={terminalZshOhMy}
-						terminalZshP10k={terminalZshP10k}
-						terminalZdotdir={terminalZdotdir}
-						terminalCompressProgressBar={terminalCompressProgressBar}
-						setCachedStateField={setCachedStateField}
-					/>
-					<PromptsSettings
-						customSupportPrompts={customSupportPrompts || {}}
-						setCustomSupportPrompts={setCustomSupportPromptsField}
-						includeTaskHistoryInEnhance={includeTaskHistoryInEnhance}
-						setIncludeTaskHistoryInEnhance={(value) =>
-							setCachedStateField("includeTaskHistoryInEnhance", value)
-						}
-					/>
-					<UISettings
-						reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
-						enterBehavior={enterBehavior ?? "send"}
-						setCachedStateField={setCachedStateField}
-					/>
-					<ExperimentalSettings
-						setExperimentEnabled={setExperimentEnabled}
-						experiments={experiments}
-						apiConfiguration={apiConfiguration}
-						setApiConfigurationField={setApiConfigurationField}
-						imageGenerationProvider={imageGenerationProvider}
-						openRouterImageApiKey={openRouterImageApiKey as string | undefined}
-						openRouterImageGenerationSelectedModel={
-							openRouterImageGenerationSelectedModel as string | undefined
-						}
-						setImageGenerationProvider={setImageGenerationProvider}
-						setOpenRouterImageApiKey={setOpenRouterImageApiKey}
-						setImageGenerationSelectedModel={setImageGenerationSelectedModel}
-					/>
-					<LanguageSettings language={language || "en"} setCachedStateField={setCachedStateField} />
-					<About
-						telemetrySetting={telemetrySetting}
-						setTelemetrySetting={setTelemetrySetting}
-						debug={cachedState.debug}
-						setDebug={setDebug}
-					/>
-				</div>
-			)}
 
 			<AlertDialog open={isDiscardDialogShow} onOpenChange={setDiscardDialogShow}>
 				<AlertDialogContent>

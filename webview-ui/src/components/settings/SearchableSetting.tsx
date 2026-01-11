@@ -1,8 +1,9 @@
-import { HTMLAttributes } from "react"
+import { HTMLAttributes, useEffect } from "react"
 
 import { cn } from "@/lib/utils"
 
 import { SectionName } from "./SettingsView"
+import { useSearchIndexContext } from "./useSettingsSearch"
 
 interface SearchableSettingProps extends HTMLAttributes<HTMLDivElement> {
 	/**
@@ -26,8 +27,8 @@ interface SearchableSettingProps extends HTMLAttributes<HTMLDivElement> {
 /**
  * Wrapper component that marks a setting as searchable.
  *
- * The search system scans the DOM for elements with `data-searchable` attribute
- * and reads the metadata from data attributes to build the search index.
+ * The component registers itself with the search index context on mount,
+ * allowing the search system to index settings as they are rendered.
  *
  * @example
  * ```tsx
@@ -53,6 +54,17 @@ export function SearchableSetting({
 	className,
 	...props
 }: SearchableSettingProps) {
+	const searchContext = useSearchIndexContext()
+
+	// Register this setting with the search index on mount
+	// Note: We don't unregister on unmount because settings are indexed once
+	// during the initial tab cycling phase and remain in the index
+	useEffect(() => {
+		if (searchContext) {
+			searchContext.registerSetting({ settingId, section, label })
+		}
+	}, [searchContext, settingId, section, label])
+
 	return (
 		<div
 			data-searchable
