@@ -73,13 +73,6 @@ export function SettingsSearch({ index, onNavigate, sections }: SettingsSearchPr
 				}
 				return
 			}
-
-			if (event.key === "Escape") {
-				setIsOpen(false)
-				setHighlightedResultId(undefined)
-				inputRef.current?.blur()
-				return
-			}
 		},
 		[handleSelectResult, highlightedResultId, moveHighlight, results, setIsOpen],
 	)
