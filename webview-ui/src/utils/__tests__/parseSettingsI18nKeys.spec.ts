@@ -1,6 +1,35 @@
 import { parseSettingsI18nKeys, type SectionName, sectionNames } from "../parseSettingsI18nKeys"
 
 describe("parseSettingsI18nKeys", () => {
+	it("should exclude display-only and helper entries", () => {
+		const translations = {
+			modelInfo: {
+				inputPrice: "Input price",
+			},
+			validation: {
+				apiKey: "You must provide an API key",
+			},
+			placeholders: {
+				apiKey: "Enter API Key",
+			},
+			browser: {
+				enable: {
+					label: "Enable browser tool",
+				},
+			},
+		}
+
+		const results = parseSettingsI18nKeys(translations)
+
+		// Excluded categories
+		expect(results.find((r) => r.id.startsWith("modelInfo."))).toBeUndefined()
+		expect(results.find((r) => r.id.startsWith("validation."))).toBeUndefined()
+		expect(results.find((r) => r.id.startsWith("placeholders."))).toBeUndefined()
+
+		// Included actionable setting
+		expect(results.find((r) => r.id === "browser.enable")).toBeDefined()
+	})
+
 	describe("basic parsing functionality", () => {
 		it("should parse settings with label property", () => {
 			const translations = {

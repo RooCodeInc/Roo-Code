@@ -1,3 +1,5 @@
+import { shouldExcludeFromSearch } from "./settingsSearchExclusions"
+
 /**
  * Utility for parsing i18n translation structure to extract searchable settings information.
  *
@@ -384,5 +386,7 @@ export function parseSettingsI18nKeys(
 		}
 	}
 
-	return results
+	const filteredResults = results.filter((setting) => !shouldExcludeFromSearch(setting.id))
+
+	return filteredResults
 }
