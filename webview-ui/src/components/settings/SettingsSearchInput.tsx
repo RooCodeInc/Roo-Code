@@ -1,4 +1,4 @@
-import { type RefObject } from "react"
+import { useState, type RefObject } from "react"
 import { Search, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -23,9 +23,25 @@ export function SettingsSearchInput({
 	inputRef,
 }: SettingsSearchInputProps) {
 	const { t } = useAppTranslation()
+	const [isExpanded, setIsExpanded] = useState(false)
+
+	const handleFocus = () => {
+		setIsExpanded(true)
+		onFocus?.()
+	}
+
+	const handleBlur = () => {
+		// Only collapse if there's no value
+		if (!value) {
+			setIsExpanded(false)
+		}
+		onBlur?.()
+	}
+
+	const isWide = isExpanded || !!value
 
 	return (
-		<div className="relative flex items-center ml-2">
+		<div className="relative flex items-center justify-end">
 			<Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-vscode-descriptionForeground pointer-events-none z-10" />
 			<Input
 				ref={inputRef}
@@ -33,12 +49,13 @@ export function SettingsSearchInput({
 				type="text"
 				value={value}
 				onChange={(e) => onChange(e.target.value)}
-				onFocus={onFocus}
-				onBlur={onBlur}
+				onFocus={handleFocus}
+				onBlur={handleBlur}
 				onKeyDown={onKeyDown}
-				placeholder={t("settings:search.placeholder")}
+				placeholder={isWide ? t("settings:search.placeholder") : ""}
 				className={cn(
-					"pl-8 pr-2.5 h-7 text-sm rounded-full border border-vscode-input-border bg-vscode-input-background focus:border-vscode-focusBorder",
+					"pl-8 h-7 text-sm rounded-full border border-vscode-input-border bg-vscode-input-background focus:border-vscode-focusBorder transition-all duration-200 ease-in-out",
+					isWide ? "w-40 pr-2.5" : "w-8 pr-0 cursor-pointer",
 					value && "pr-7",
 				)}
 			/>
