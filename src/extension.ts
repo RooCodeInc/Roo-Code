@@ -30,6 +30,7 @@ import { TerminalRegistry } from "./integrations/terminal/TerminalRegistry"
 import { claudeCodeOAuthManager } from "./integrations/claude-code/oauth"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
+import { CodeIndexConfigManager } from "./services/code-index/config-manager"
 import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
@@ -114,26 +115,89 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const contextProxy = await ContextProxy.getInstance(context)
 
-	// Initialize code index managers for all workspace folders.
+	// Initialize code index managers for all workspace folders with concurrency control.
+	// This prevents overwhelming local embedding providers (like Ollama) on multi-root workspaces.
 	const codeIndexManagers: CodeIndexManager[] = []
 
 	if (vscode.workspace.workspaceFolders) {
+		// Create all managers first (without initializing them)
 		for (const folder of vscode.workspace.workspaceFolders) {
 			const manager = CodeIndexManager.getInstance(context, folder.uri.fsPath)
-
 			if (manager) {
 				codeIndexManagers.push(manager)
-
-				// Initialize in background; do not block extension activation
-				void manager.initialize(contextProxy).catch((error) => {
-					const message = error instanceof Error ? error.message : String(error)
-					outputChannel.appendLine(
-						`[CodeIndexManager] Error during background CodeIndexManager configuration/indexing for ${folder.uri.fsPath}: ${message}`,
-					)
-				})
-
 				context.subscriptions.push(manager)
 			}
+		}
+
+		// Get configuration to check auto-start and max concurrent settings
+		// We use a temporary config manager just to read the settings
+		const tempConfigManager = new CodeIndexConfigManager(contextProxy)
+		const shouldAutoStart = tempConfigManager.shouldAutoStart
+		const maxConcurrent = tempConfigManager.currentMaxConcurrent
+
+		if (shouldAutoStart && codeIndexManagers.length > 0) {
+			// Initialize managers with concurrency control
+			outputChannel.appendLine(
+				`[CodeIndexManager] Starting sequential indexing for ${codeIndexManagers.length} workspace folder(s) with max ${maxConcurrent} concurrent`,
+			)
+
+			// Create a queue to manage initialization with concurrency control
+			const initializeWithConcurrencyControl = async () => {
+				const pendingManagers = [...codeIndexManagers]
+				const activePromises: Promise<void>[] = []
+
+				const startNext = async () => {
+					while (pendingManagers.length > 0 && activePromises.length < maxConcurrent) {
+						const manager = pendingManagers.shift()
+						if (!manager) break
+
+						const workspacePath = (manager as any).workspacePath || "unknown"
+						outputChannel.appendLine(`[CodeIndexManager] Starting initialization for: ${workspacePath}`)
+
+						const initPromise = manager
+							.initialize(contextProxy)
+							.then(() => {
+								outputChannel.appendLine(
+									`[CodeIndexManager] Completed initialization for: ${workspacePath}`,
+								)
+							})
+							.catch((error) => {
+								const message = error instanceof Error ? error.message : String(error)
+								outputChannel.appendLine(
+									`[CodeIndexManager] Error during initialization for ${workspacePath}: ${message}`,
+								)
+							})
+							.finally(() => {
+								// Remove this promise from active list
+								const index = activePromises.indexOf(initPromise)
+								if (index > -1) {
+									activePromises.splice(index, 1)
+								}
+								// Start next manager if there are more pending
+								if (pendingManagers.length > 0) {
+									startNext()
+								}
+							})
+
+						activePromises.push(initPromise)
+					}
+				}
+
+				// Start initial batch up to maxConcurrent
+				await startNext()
+
+				// Wait for all to complete
+				while (activePromises.length > 0) {
+					await Promise.race(activePromises)
+				}
+			}
+
+			// Run initialization in background; do not block extension activation
+			void initializeWithConcurrencyControl()
+		} else if (!shouldAutoStart) {
+			outputChannel.appendLine(
+				`[CodeIndexManager] Auto-start disabled. Skipping automatic indexing for ${codeIndexManagers.length} workspace folder(s).`,
+			)
 		}
 	}
 

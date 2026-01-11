@@ -182,9 +182,17 @@
 			"ollamaBaseUrlRequired": "Ollama base URL is required",
 			"baseUrlRequired": "Base URL is required",
 			"modelDimensionMinValue": "Model dimension must be greater than 0"
+			},
+			"optional": "optional",
+			"autoStart": {
+				"label": "Auto-start indexing on workspace open",
+				"description": "When enabled, codebase indexing will automatically start when you open a workspace. Disable this to manually control when indexing begins, which is useful for multi-root workspaces or when using local embedding providers with limited resources."
+			},
+			"maxConcurrent": {
+				"label": "Maximum concurrent indexing",
+				"description": "Limits how many workspace folders can be indexed simultaneously. Lower values reduce resource usage but take longer to complete. Useful for local embedding providers like Ollama that may timeout under heavy load."
+			}
 		},
-		"optional": "optional"
-	},
 	"autoApprove": {
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust and if you understand the security risks.",
 		"toggleShortcut": "You can configure a keyboard shortcut for this setting <SettingsLink>in your IDE preferences</SettingsLink>.",

@@ -1928,4 +1928,146 @@ describe("CodeIndexConfigManager", () => {
 			})
 		})
 	})
+
+	describe("auto-start and concurrency settings", () => {
+		describe("shouldAutoStart", () => {
+			it("should return true by default when codebaseIndexAutoStart is not set", async () => {
+				mockContextProxy.getGlobalState.mockReturnValue({
+					codebaseIndexEnabled: true,
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					// codebaseIndexAutoStart not set
+				})
+				mockContextProxy.getSecret.mockImplementation((key: string) => {
+					if (key === "codeIndexOpenAiKey") return "test-key"
+					return undefined
+				})
+
+				configManager = new CodeIndexConfigManager(mockContextProxy)
+				await configManager.loadConfiguration()
+				expect(configManager.shouldAutoStart).toBe(true)
+			})
+
+			it("should return true when codebaseIndexAutoStart is explicitly true", async () => {
+				mockContextProxy.getGlobalState.mockReturnValue({
+					codebaseIndexEnabled: true,
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					codebaseIndexAutoStart: true,
+				})
+				mockContextProxy.getSecret.mockImplementation((key: string) => {
+					if (key === "codeIndexOpenAiKey") return "test-key"
+					return undefined
+				})
+
+				configManager = new CodeIndexConfigManager(mockContextProxy)
+				await configManager.loadConfiguration()
+				expect(configManager.shouldAutoStart).toBe(true)
+			})
+
+			it("should return false when codebaseIndexAutoStart is false", async () => {
+				mockContextProxy.getGlobalState.mockReturnValue({
+					codebaseIndexEnabled: true,
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					codebaseIndexAutoStart: false,
+				})
+				mockContextProxy.getSecret.mockImplementation((key: string) => {
+					if (key === "codeIndexOpenAiKey") return "test-key"
+					return undefined
+				})
+
+				configManager = new CodeIndexConfigManager(mockContextProxy)
+				await configManager.loadConfiguration()
+				expect(configManager.shouldAutoStart).toBe(false)
+			})
+		})
+
+		describe("currentMaxConcurrent", () => {
+			it("should return 1 by default when codebaseIndexMaxConcurrent is not set", async () => {
+				mockContextProxy.getGlobalState.mockReturnValue({
+					codebaseIndexEnabled: true,
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					// codebaseIndexMaxConcurrent not set
+				})
+				mockContextProxy.getSecret.mockImplementation((key: string) => {
+					if (key === "codeIndexOpenAiKey") return "test-key"
+					return undefined
+				})
+
+				configManager = new CodeIndexConfigManager(mockContextProxy)
+				await configManager.loadConfiguration()
+				expect(configManager.currentMaxConcurrent).toBe(1)
+			})
+
+			it("should return the configured value when codebaseIndexMaxConcurrent is set", async () => {
+				mockContextProxy.getGlobalState.mockReturnValue({
+					codebaseIndexEnabled: true,
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					codebaseIndexMaxConcurrent: 3,
+				})
+				mockContextProxy.getSecret.mockImplementation((key: string) => {
+					if (key === "codeIndexOpenAiKey") return "test-key"
+					return undefined
+				})
+
+				configManager = new CodeIndexConfigManager(mockContextProxy)
+				await configManager.loadConfiguration()
+				expect(configManager.currentMaxConcurrent).toBe(3)
+			})
+
+			it("should handle boundary values correctly", async () => {
+				// Test minimum value (1)
+				mockContextProxy.getGlobalState.mockReturnValue({
+					codebaseIndexEnabled: true,
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					codebaseIndexMaxConcurrent: 1,
+				})
+				mockContextProxy.getSecret.mockImplementation((key: string) => {
+					if (key === "codeIndexOpenAiKey") return "test-key"
+					return undefined
+				})
+
+				configManager = new CodeIndexConfigManager(mockContextProxy)
+				await configManager.loadConfiguration()
+				expect(configManager.currentMaxConcurrent).toBe(1)
+
+				// Test maximum value (10)
+				mockContextProxy.getGlobalState.mockReturnValue({
+					codebaseIndexEnabled: true,
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					codebaseIndexMaxConcurrent: 10,
+				})
+
+				const maxManager = new CodeIndexConfigManager(mockContextProxy)
+				await maxManager.loadConfiguration()
+				expect(maxManager.currentMaxConcurrent).toBe(10)
+			})
+		})
+
+		describe("combined auto-start and concurrency behavior", () => {
+			it("should respect both settings when both are configured", async () => {
+				mockContextProxy.getGlobalState.mockReturnValue({
+					codebaseIndexEnabled: true,
+					codebaseIndexEmbedderProvider: "openai",
+					codebaseIndexQdrantUrl: "http://localhost:6333",
+					codebaseIndexAutoStart: false,
+					codebaseIndexMaxConcurrent: 2,
+				})
+				mockContextProxy.getSecret.mockImplementation((key: string) => {
+					if (key === "codeIndexOpenAiKey") return "test-key"
+					return undefined
+				})
+
+				configManager = new CodeIndexConfigManager(mockContextProxy)
+				await configManager.loadConfiguration()
+				expect(configManager.shouldAutoStart).toBe(false)
+				expect(configManager.currentMaxConcurrent).toBe(2)
+			})
+		})
+	})
 })
