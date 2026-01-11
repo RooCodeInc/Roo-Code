@@ -719,7 +719,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 				</TabList>
 
 				{/* Content area */}
-				<TabContent ref={contentRef} className="p-0 flex-1 overflow-auto">
+				<TabContent ref={contentRef} className="p-0 flex-1 overflow-auto" data-testid="settings-content">
 					{/* Providers Section */}
 					{activeTab === "providers" && (
 						<div>
