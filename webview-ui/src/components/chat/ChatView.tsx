@@ -47,6 +47,8 @@ import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
+import { ResizablePanels } from "./ResizablePanels"
+import { TodoListDisplay } from "./TodoListDisplay"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -1406,32 +1408,166 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				/>
 			)}
 			{task ? (
-				<>
-					<TaskHeader
-						task={task}
-						tokensIn={apiMetrics.totalTokensIn}
-						tokensOut={apiMetrics.totalTokensOut}
-						cacheWrites={apiMetrics.totalCacheWrites}
-						cacheReads={apiMetrics.totalCacheReads}
-						totalCost={apiMetrics.totalCost}
-						contextTokens={apiMetrics.contextTokens}
-						buttonsDisabled={sendingDisabled}
-						handleCondenseContext={handleCondenseContext}
-						todos={latestTodos}
-					/>
+				<ResizablePanels
+					storageKey="task-view-sidebar-width"
+					minLeftWidth={20}
+					minRightWidth={35}
+					leftPanel={
+						<div className="flex flex-col h-full overflow-y-auto">
+							<TaskHeader
+								task={task}
+								tokensIn={apiMetrics.totalTokensIn}
+								tokensOut={apiMetrics.totalTokensOut}
+								cacheWrites={apiMetrics.totalCacheWrites}
+								cacheReads={apiMetrics.totalCacheReads}
+								totalCost={apiMetrics.totalCost}
+								contextTokens={apiMetrics.contextTokens}
+								buttonsDisabled={sendingDisabled}
+								handleCondenseContext={handleCondenseContext}
+								todos={latestTodos}
+							/>
 
-					{hasSystemPromptOverride && (
-						<div className="px-3">
-							<SystemPromptWarning />
-						</div>
-					)}
+							{hasSystemPromptOverride && (
+								<div className="px-3">
+									<SystemPromptWarning />
+								</div>
+							)}
 
-					{checkpointWarning && (
-						<div className="px-3">
-							<CheckpointWarning warning={checkpointWarning} />
+							{checkpointWarning && (
+								<div className="px-3">
+									<CheckpointWarning warning={checkpointWarning} />
+								</div>
+							)}
+
+							{/* Add todo list to sidebar if available */}
+							{latestTodos && latestTodos.length > 0 && (
+								<div className="px-3 mt-3">
+									<TodoListDisplay todos={latestTodos} />
+								</div>
+							)}
 						</div>
-					)}
-				</>
+					}
+					rightPanel={
+						<>
+							<div className="grow flex" ref={scrollContainerRef}>
+								<Virtuoso
+									ref={virtuosoRef}
+									key={task.ts}
+									className="scrollable grow overflow-y-scroll mb-1"
+									increaseViewportBy={{ top: 3_000, bottom: 1000 }}
+									data={groupedMessages}
+									itemContent={itemContent}
+									followOutput={(isAtBottom: boolean) => isAtBottom || stickyFollowRef.current}
+									atBottomStateChange={(isAtBottom: boolean) => {
+										setIsAtBottom(isAtBottom)
+										// Only show the scroll-to-bottom button if not at bottom
+										setShowScrollToBottom(!isAtBottom)
+									}}
+									atBottomThreshold={10}
+									initialTopMostItemIndex={groupedMessages.length - 1}
+								/>
+							</div>
+							{areButtonsVisible && (
+								<div
+									className={`flex h-9 items-center mb-1 px-[15px] ${
+										showScrollToBottom
+											? "opacity-100"
+											: enableButtons || (isStreaming && !didClickCancel)
+												? "opacity-100"
+												: "opacity-50"
+									}`}>
+									{showScrollToBottom ? (
+										<StandardTooltip content={t("chat:scrollToBottom")}>
+											<Button
+												variant="secondary"
+												className="flex-[2]"
+												onClick={() => {
+													// Engage sticky follow until user scrolls up
+													stickyFollowRef.current = true
+													// Pin immediately to avoid lag during fast streaming
+													scrollToBottomAuto()
+													// Hide button immediately to prevent flash
+													setShowScrollToBottom(false)
+												}}>
+												<span className="codicon codicon-chevron-down"></span>
+											</Button>
+										</StandardTooltip>
+									) : (
+										<>
+											{primaryButtonText && !isStreaming && (
+												<StandardTooltip
+													content={
+														primaryButtonText === t("chat:retry.title")
+															? t("chat:retry.tooltip")
+															: primaryButtonText === t("chat:save.title")
+																? t("chat:save.tooltip")
+																: primaryButtonText === t("chat:approve.title")
+																	? t("chat:approve.tooltip")
+																	: primaryButtonText === t("chat:runCommand.title")
+																		? t("chat:runCommand.tooltip")
+																		: primaryButtonText ===
+																			  t("chat:startNewTask.title")
+																			? t("chat:startNewTask.tooltip")
+																			: primaryButtonText ===
+																				  t("chat:resumeTask.title")
+																				? t("chat:resumeTask.tooltip")
+																				: primaryButtonText ===
+																					  t("chat:proceedAnyways.title")
+																					? t("chat:proceedAnyways.tooltip")
+																					: primaryButtonText ===
+																						  t(
+																								"chat:proceedWhileRunning.title",
+																						  )
+																						? t(
+																								"chat:proceedWhileRunning.tooltip",
+																							)
+																						: undefined
+													}>
+													<Button
+														variant="primary"
+														disabled={!enableButtons}
+														className={
+															secondaryButtonText ? "flex-1 mr-[6px]" : "flex-[2] mr-0"
+														}
+														onClick={() =>
+															handlePrimaryButtonClick(inputValue, selectedImages)
+														}>
+														{primaryButtonText}
+													</Button>
+												</StandardTooltip>
+											)}
+											{(secondaryButtonText || isStreaming) && (
+												<StandardTooltip
+													content={
+														isStreaming
+															? t("chat:cancel.tooltip")
+															: secondaryButtonText === t("chat:startNewTask.title")
+																? t("chat:startNewTask.tooltip")
+																: secondaryButtonText === t("chat:reject.title")
+																	? t("chat:reject.tooltip")
+																	: secondaryButtonText === t("chat:terminate.title")
+																		? t("chat:terminate.tooltip")
+																		: undefined
+													}>
+													<Button
+														variant="secondary"
+														disabled={!enableButtons && !(isStreaming && !didClickCancel)}
+														className={isStreaming ? "flex-[2] ml-0" : "flex-1 ml-[6px]"}
+														onClick={() =>
+															handleSecondaryButtonClick(inputValue, selectedImages)
+														}>
+														{isStreaming ? t("chat:cancel.title") : secondaryButtonText}
+													</Button>
+												</StandardTooltip>
+											)}
+										</>
+									)}
+								</div>
+							)}
+						</>
+					}
+					className="grow"
+				/>
 			) : (
 				<div className="flex flex-col h-full justify-center p-6 min-h-0 overflow-y-auto gap-4 relative">
 					<div className="flex flex-col items-start gap-2 justify-center h-full min-[400px]:px-6">
@@ -1464,114 +1600,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						)}
 					</div>
 				</div>
-			)}
-
-			{task && (
-				<>
-					<div className="grow flex" ref={scrollContainerRef}>
-						<Virtuoso
-							ref={virtuosoRef}
-							key={task.ts}
-							className="scrollable grow overflow-y-scroll mb-1"
-							increaseViewportBy={{ top: 3_000, bottom: 1000 }}
-							data={groupedMessages}
-							itemContent={itemContent}
-							followOutput={(isAtBottom: boolean) => isAtBottom || stickyFollowRef.current}
-							atBottomStateChange={(isAtBottom: boolean) => {
-								setIsAtBottom(isAtBottom)
-								// Only show the scroll-to-bottom button if not at bottom
-								setShowScrollToBottom(!isAtBottom)
-							}}
-							atBottomThreshold={10}
-							initialTopMostItemIndex={groupedMessages.length - 1}
-						/>
-					</div>
-					{areButtonsVisible && (
-						<div
-							className={`flex h-9 items-center mb-1 px-[15px] ${
-								showScrollToBottom
-									? "opacity-100"
-									: enableButtons || (isStreaming && !didClickCancel)
-										? "opacity-100"
-										: "opacity-50"
-							}`}>
-							{showScrollToBottom ? (
-								<StandardTooltip content={t("chat:scrollToBottom")}>
-									<Button
-										variant="secondary"
-										className="flex-[2]"
-										onClick={() => {
-											// Engage sticky follow until user scrolls up
-											stickyFollowRef.current = true
-											// Pin immediately to avoid lag during fast streaming
-											scrollToBottomAuto()
-											// Hide button immediately to prevent flash
-											setShowScrollToBottom(false)
-										}}>
-										<span className="codicon codicon-chevron-down"></span>
-									</Button>
-								</StandardTooltip>
-							) : (
-								<>
-									{primaryButtonText && !isStreaming && (
-										<StandardTooltip
-											content={
-												primaryButtonText === t("chat:retry.title")
-													? t("chat:retry.tooltip")
-													: primaryButtonText === t("chat:save.title")
-														? t("chat:save.tooltip")
-														: primaryButtonText === t("chat:approve.title")
-															? t("chat:approve.tooltip")
-															: primaryButtonText === t("chat:runCommand.title")
-																? t("chat:runCommand.tooltip")
-																: primaryButtonText === t("chat:startNewTask.title")
-																	? t("chat:startNewTask.tooltip")
-																	: primaryButtonText === t("chat:resumeTask.title")
-																		? t("chat:resumeTask.tooltip")
-																		: primaryButtonText ===
-																			  t("chat:proceedAnyways.title")
-																			? t("chat:proceedAnyways.tooltip")
-																			: primaryButtonText ===
-																				  t("chat:proceedWhileRunning.title")
-																				? t("chat:proceedWhileRunning.tooltip")
-																				: undefined
-											}>
-											<Button
-												variant="primary"
-												disabled={!enableButtons}
-												className={secondaryButtonText ? "flex-1 mr-[6px]" : "flex-[2] mr-0"}
-												onClick={() => handlePrimaryButtonClick(inputValue, selectedImages)}>
-												{primaryButtonText}
-											</Button>
-										</StandardTooltip>
-									)}
-									{(secondaryButtonText || isStreaming) && (
-										<StandardTooltip
-											content={
-												isStreaming
-													? t("chat:cancel.tooltip")
-													: secondaryButtonText === t("chat:startNewTask.title")
-														? t("chat:startNewTask.tooltip")
-														: secondaryButtonText === t("chat:reject.title")
-															? t("chat:reject.tooltip")
-															: secondaryButtonText === t("chat:terminate.title")
-																? t("chat:terminate.tooltip")
-																: undefined
-											}>
-											<Button
-												variant="secondary"
-												disabled={!enableButtons && !(isStreaming && !didClickCancel)}
-												className={isStreaming ? "flex-[2] ml-0" : "flex-1 ml-[6px]"}
-												onClick={() => handleSecondaryButtonClick(inputValue, selectedImages)}>
-												{isStreaming ? t("chat:cancel.title") : secondaryButtonText}
-											</Button>
-										</StandardTooltip>
-									)}
-								</>
-							)}
-						</div>
-					)}
-				</>
 			)}
 
 			<QueuedMessages
