@@ -4,6 +4,7 @@ import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
 import type { ToolUse } from "../../shared/tools"
+import { findMatchingServerName, findMatchingToolName } from "../../utils/mcp-name"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -53,14 +54,18 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				return
 			}
 
+			// Use resolved names (handles model-mangled names like underscores instead of hyphens)
+			const resolvedServerName = toolValidation.resolvedServerName ?? serverName
+			const resolvedToolName = toolValidation.resolvedToolName ?? toolName
+
 			// Reset mistake count on successful validation
 			task.consecutiveMistakeCount = 0
 
-			// Get user approval
+			// Get user approval (show resolved names to user)
 			const completeMessage = JSON.stringify({
 				type: "use_mcp_tool",
-				serverName,
-				toolName,
+				serverName: resolvedServerName,
+				toolName: resolvedToolName,
 				arguments: params.arguments ? JSON.stringify(params.arguments) : undefined,
 			} satisfies ClineAskUseMcpServer)
 
@@ -71,11 +76,11 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				return
 			}
 
-			// Execute the tool and process results
+			// Execute the tool with resolved names
 			await this.executeToolAndProcessResult(
 				task,
-				serverName,
-				toolName,
+				resolvedServerName,
+				resolvedToolName,
 				parsedArguments,
 				executionId,
 				pushToolResult,
@@ -156,7 +161,12 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		serverName: string,
 		toolName: string,
 		pushToolResult: (content: string) => void,
-	): Promise<{ isValid: boolean; availableTools?: string[] }> {
+	): Promise<{
+		isValid: boolean
+		availableTools?: string[]
+		resolvedServerName?: string
+		resolvedToolName?: string
+	}> {
 		try {
 			// Get the MCP hub to access server information
 			const provider = task.providerRef.deref()
@@ -168,12 +178,16 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			}
 
 			// Get all servers to find the specific one
+			// Use fuzzy matching to handle model-mangled names (hyphens converted to underscores)
 			const servers = mcpHub.getAllServers()
-			const server = servers.find((s) => s.name === serverName)
+			const availableServersArray = servers.map((s) => s.name)
 
-			if (!server) {
+			// Try fuzzy matching for server name
+			const matchedServerName = findMatchingServerName(serverName, availableServersArray)
+			const server = matchedServerName ? servers.find((s) => s.name === matchedServerName) : null
+
+			if (!server || !matchedServerName) {
 				// Fail fast when server is unknown
-				const availableServersArray = servers.map((s) => s.name)
 				const availableServers =
 					availableServersArray.length > 0 ? availableServersArray.join(", ") : "No servers available"
 
@@ -186,6 +200,9 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				return { isValid: false, availableTools: [] }
 			}
 
+			// At this point, matchedServerName is guaranteed to be non-null
+			const resolvedServerName = matchedServerName
+
 			// Check if the server has tools defined
 			if (!server.tools || server.tools.length === 0) {
 				// No tools available on this server
@@ -195,38 +212,41 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 					"error",
 					t("mcp:errors.toolNotFound", {
 						toolName,
-						serverName,
+						serverName: resolvedServerName,
 						availableTools: "No tools available",
 					}),
 				)
 				task.didToolFailInCurrentTurn = true
 
-				pushToolResult(formatResponse.unknownMcpToolError(serverName, toolName, []))
+				pushToolResult(formatResponse.unknownMcpToolError(resolvedServerName, toolName, []))
 				return { isValid: false, availableTools: [] }
 			}
 
-			// Check if the requested tool exists
-			const tool = server.tools.find((tool) => tool.name === toolName)
+			// Check if the requested tool exists using fuzzy matching
+			const availableToolNames = server.tools.map((tool) => tool.name)
+			const matchedToolName = findMatchingToolName(toolName, availableToolNames)
+			const tool = matchedToolName ? server.tools.find((t) => t.name === matchedToolName) : null
 
-			if (!tool) {
+			if (!tool || !matchedToolName) {
 				// Tool not found - provide list of available tools
-				const availableToolNames = server.tools.map((tool) => tool.name)
-
 				task.consecutiveMistakeCount++
 				task.recordToolError("use_mcp_tool")
 				await task.say(
 					"error",
 					t("mcp:errors.toolNotFound", {
 						toolName,
-						serverName,
+						serverName: resolvedServerName,
 						availableTools: availableToolNames.join(", "),
 					}),
 				)
 				task.didToolFailInCurrentTurn = true
 
-				pushToolResult(formatResponse.unknownMcpToolError(serverName, toolName, availableToolNames))
+				pushToolResult(formatResponse.unknownMcpToolError(resolvedServerName, toolName, availableToolNames))
 				return { isValid: false, availableTools: availableToolNames }
 			}
+
+			// At this point, matchedToolName is guaranteed to be non-null
+			const resolvedToolName = matchedToolName
 
 			// Check if the tool is disabled (enabledForPrompt is false)
 			if (tool.enabledForPrompt === false) {
@@ -239,20 +259,27 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				await task.say(
 					"error",
 					t("mcp:errors.toolDisabled", {
-						toolName,
-						serverName,
+						toolName: resolvedToolName,
+						serverName: resolvedServerName,
 						availableTools:
 							enabledToolNames.length > 0 ? enabledToolNames.join(", ") : "No enabled tools available",
 					}),
 				)
 				task.didToolFailInCurrentTurn = true
 
-				pushToolResult(formatResponse.unknownMcpToolError(serverName, toolName, enabledToolNames))
+				pushToolResult(
+					formatResponse.unknownMcpToolError(resolvedServerName, resolvedToolName, enabledToolNames),
+				)
 				return { isValid: false, availableTools: enabledToolNames }
 			}
 
-			// Tool exists and is enabled
-			return { isValid: true, availableTools: server.tools.map((tool) => tool.name) }
+			// Tool exists and is enabled - return resolved names for execution
+			return {
+				isValid: true,
+				availableTools: server.tools.map((tool) => tool.name),
+				resolvedServerName,
+				resolvedToolName,
+			}
 		} catch (error) {
 			// If there's an error during validation, log it but don't block the tool execution
 			// The actual tool call might still fail with a proper error

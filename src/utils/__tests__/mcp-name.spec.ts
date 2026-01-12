@@ -4,13 +4,18 @@ import {
 	parseMcpToolName,
 	isMcpTool,
 	MCP_TOOL_SEPARATOR,
+	MCP_TOOL_SEPARATOR_MANGLED,
 	MCP_TOOL_PREFIX,
+	generatePossibleOriginalNames,
+	findMatchingServerName,
+	findMatchingToolName,
 } from "../mcp-name"
 
 describe("mcp-name utilities", () => {
 	describe("constants", () => {
 		it("should have correct separator and prefix", () => {
 			expect(MCP_TOOL_SEPARATOR).toBe("--")
+			expect(MCP_TOOL_SEPARATOR_MANGLED).toBe("__")
 			expect(MCP_TOOL_PREFIX).toBe("mcp")
 		})
 	})
@@ -21,6 +26,12 @@ describe("mcp-name utilities", () => {
 			expect(isMcpTool("mcp--my_server--get_forecast")).toBe(true)
 		})
 
+		it("should return true for mangled MCP tool names (models convert -- to __)", () => {
+			expect(isMcpTool("mcp__server__tool")).toBe(true)
+			expect(isMcpTool("mcp__my_server__get_forecast")).toBe(true)
+			expect(isMcpTool("mcp__atlassian_jira__search")).toBe(true)
+		})
+
 		it("should return false for non-MCP tool names", () => {
 			expect(isMcpTool("server--tool")).toBe(false)
 			expect(isMcpTool("tool")).toBe(false)
@@ -28,7 +39,7 @@ describe("mcp-name utilities", () => {
 			expect(isMcpTool("")).toBe(false)
 		})
 
-		it("should return false for old underscore format", () => {
+		it("should return false for old single underscore format", () => {
 			expect(isMcpTool("mcp_server_tool")).toBe(false)
 		})
 
@@ -128,10 +139,25 @@ describe("mcp-name utilities", () => {
 	})
 
 	describe("parseMcpToolName", () => {
-		it("should parse valid mcp tool names", () => {
+		it("should parse valid mcp tool names with wasMangled=false", () => {
 			expect(parseMcpToolName("mcp--server--tool")).toEqual({
 				serverName: "server",
 				toolName: "tool",
+				wasMangled: false,
+			})
+		})
+
+		it("should parse mangled mcp tool names (__ separator) with wasMangled=true", () => {
+			expect(parseMcpToolName("mcp__server__tool")).toEqual({
+				serverName: "server",
+				toolName: "tool",
+				wasMangled: true,
+			})
+			// This is the key case from issue #10642 - atlassian-jira gets mangled to atlassian_jira
+			expect(parseMcpToolName("mcp__atlassian_jira__search")).toEqual({
+				serverName: "atlassian_jira",
+				toolName: "search",
+				wasMangled: true,
 			})
 		})
 
@@ -140,7 +166,7 @@ describe("mcp-name utilities", () => {
 			expect(parseMcpToolName("tool")).toBeNull()
 		})
 
-		it("should return null for old underscore format", () => {
+		it("should return null for old single underscore format", () => {
 			expect(parseMcpToolName("mcp_server_tool")).toBeNull()
 		})
 
@@ -148,6 +174,7 @@ describe("mcp-name utilities", () => {
 			expect(parseMcpToolName("mcp--server--tool_name")).toEqual({
 				serverName: "server",
 				toolName: "tool_name",
+				wasMangled: false,
 			})
 		})
 
@@ -156,6 +183,7 @@ describe("mcp-name utilities", () => {
 			expect(parseMcpToolName("mcp--my_server--tool")).toEqual({
 				serverName: "my_server",
 				toolName: "tool",
+				wasMangled: false,
 			})
 		})
 
@@ -163,12 +191,15 @@ describe("mcp-name utilities", () => {
 			expect(parseMcpToolName("mcp--my_server--get_forecast")).toEqual({
 				serverName: "my_server",
 				toolName: "get_forecast",
+				wasMangled: false,
 			})
 		})
 
 		it("should return null for malformed names", () => {
 			expect(parseMcpToolName("mcp--")).toBeNull()
 			expect(parseMcpToolName("mcp--server")).toBeNull()
+			expect(parseMcpToolName("mcp__")).toBeNull()
+			expect(parseMcpToolName("mcp__server")).toBeNull()
 		})
 	})
 
@@ -179,6 +210,7 @@ describe("mcp-name utilities", () => {
 			expect(parsed).toEqual({
 				serverName: "server",
 				toolName: "tool",
+				wasMangled: false,
 			})
 		})
 
@@ -189,6 +221,7 @@ describe("mcp-name utilities", () => {
 			expect(parsed).toEqual({
 				serverName: "my_server",
 				toolName: "my_tool",
+				wasMangled: false,
 			})
 		})
 
@@ -199,6 +232,7 @@ describe("mcp-name utilities", () => {
 			expect(parsed).toEqual({
 				serverName: "my_server",
 				toolName: "get_tool",
+				wasMangled: false,
 			})
 		})
 
@@ -208,7 +242,205 @@ describe("mcp-name utilities", () => {
 			expect(parsed).toEqual({
 				serverName: "Weather_API",
 				toolName: "get_current_forecast",
+				wasMangled: false,
 			})
+		})
+	})
+
+	describe("generatePossibleOriginalNames", () => {
+		it("should include the original name in results", () => {
+			const results = generatePossibleOriginalNames("server")
+			expect(results).toContain("server")
+		})
+
+		it("should generate combinations with hyphens replacing underscores", () => {
+			const results = generatePossibleOriginalNames("my_server")
+			expect(results).toContain("my_server")
+			expect(results).toContain("my-server")
+		})
+
+		it("should generate all combinations for multiple underscores", () => {
+			// "a_b_c" has 2 underscores -> 2^2 = 4 combinations
+			const results = generatePossibleOriginalNames("a_b_c")
+			expect(results.length).toBe(4)
+			expect(results).toContain("a_b_c")
+			expect(results).toContain("a-b_c")
+			expect(results).toContain("a_b-c")
+			expect(results).toContain("a-b-c")
+		})
+
+		it("should generate 8 combinations for 3 underscores", () => {
+			// "a_b_c_d" has 3 underscores -> 2^3 = 8 combinations
+			const results = generatePossibleOriginalNames("a_b_c_d")
+			expect(results.length).toBe(8)
+			expect(results).toContain("a_b_c_d")
+			expect(results).toContain("a-b_c_d")
+			expect(results).toContain("a_b-c_d")
+			expect(results).toContain("a_b_c-d")
+			expect(results).toContain("a-b-c_d")
+			expect(results).toContain("a-b_c-d")
+			expect(results).toContain("a_b-c-d")
+			expect(results).toContain("a-b-c-d")
+		})
+
+		it("should handle the key issue #10642 case - atlassian_jira", () => {
+			const results = generatePossibleOriginalNames("atlassian_jira")
+			expect(results).toContain("atlassian_jira")
+			expect(results).toContain("atlassian-jira") // The original name
+		})
+
+		it("should handle names with no underscores", () => {
+			const results = generatePossibleOriginalNames("server")
+			expect(results).toEqual(["server"])
+		})
+
+		it("should limit combinations for too many underscores (> 8)", () => {
+			const manyUnderscores = "a_b_c_d_e_f_g_h_i_j" // 9 underscores
+			const results = generatePossibleOriginalNames(manyUnderscores)
+			// Should only have 2 results: original and all-hyphens version
+			expect(results.length).toBe(2)
+			expect(results).toContain(manyUnderscores)
+			expect(results).toContain("a-b-c-d-e-f-g-h-i-j")
+		})
+
+		it("should handle exactly 8 underscores (256 combinations)", () => {
+			const eightUnderscores = "a_b_c_d_e_f_g_h_i" // 8 underscores
+			const results = generatePossibleOriginalNames(eightUnderscores)
+			// 2^8 = 256 combinations
+			expect(results.length).toBe(256)
+		})
+	})
+
+	describe("findMatchingServerName", () => {
+		it("should return exact match first", () => {
+			const servers = ["my-server", "other-server"]
+			const result = findMatchingServerName("my-server", servers)
+			expect(result).toBe("my-server")
+		})
+
+		it("should find original hyphenated name from mangled name", () => {
+			const servers = ["atlassian-jira", "linear", "github"]
+			const result = findMatchingServerName("atlassian_jira", servers)
+			expect(result).toBe("atlassian-jira")
+		})
+
+		it("should return null if no match found", () => {
+			const servers = ["server1", "server2"]
+			const result = findMatchingServerName("unknown_server", servers)
+			expect(result).toBeNull()
+		})
+
+		it("should handle server names with multiple hyphens", () => {
+			const servers = ["my-cool-server", "another-server"]
+			const result = findMatchingServerName("my_cool_server", servers)
+			expect(result).toBe("my-cool-server")
+		})
+
+		it("should work with empty server list", () => {
+			const result = findMatchingServerName("server", [])
+			expect(result).toBeNull()
+		})
+
+		it("should match when original has underscores (not hyphens)", () => {
+			const servers = ["my_real_server", "other"]
+			const result = findMatchingServerName("my_real_server", servers)
+			expect(result).toBe("my_real_server")
+		})
+	})
+
+	describe("findMatchingToolName", () => {
+		it("should return exact match first", () => {
+			const tools = ["get-data", "set-data"]
+			const result = findMatchingToolName("get-data", tools)
+			expect(result).toBe("get-data")
+		})
+
+		it("should find original hyphenated name from mangled name", () => {
+			const tools = ["get-user-info", "create-ticket", "search"]
+			const result = findMatchingToolName("get_user_info", tools)
+			expect(result).toBe("get-user-info")
+		})
+
+		it("should return null if no match found", () => {
+			const tools = ["tool1", "tool2"]
+			const result = findMatchingToolName("unknown_tool", tools)
+			expect(result).toBeNull()
+		})
+
+		it("should handle tool names with multiple hyphens", () => {
+			const tools = ["get-all-user-data", "search"]
+			const result = findMatchingToolName("get_all_user_data", tools)
+			expect(result).toBe("get-all-user-data")
+		})
+
+		it("should work with empty tool list", () => {
+			const result = findMatchingToolName("tool", [])
+			expect(result).toBeNull()
+		})
+
+		it("should match when original has underscores (not hyphens)", () => {
+			const tools = ["get_user", "search"]
+			const result = findMatchingToolName("get_user", tools)
+			expect(result).toBe("get_user")
+		})
+	})
+
+	describe("issue #10642 - MCP tool names with hyphens fail", () => {
+		// End-to-end test for the specific bug reported in the issue
+		it("should correctly handle atlassian-jira being mangled to atlassian_jira", () => {
+			// The original MCP tool name as built by the system
+			const originalToolName = buildMcpToolName("atlassian-jira", "search")
+			expect(originalToolName).toBe("mcp--atlassian-jira--search")
+
+			// What the model returns (hyphens converted to underscores)
+			const mangledToolName = "mcp__atlassian_jira__search"
+
+			// isMcpTool should recognize both
+			expect(isMcpTool(originalToolName)).toBe(true)
+			expect(isMcpTool(mangledToolName)).toBe(true)
+
+			// parseMcpToolName should parse both
+			const originalParsed = parseMcpToolName(originalToolName)
+			expect(originalParsed).toEqual({
+				serverName: "atlassian-jira",
+				toolName: "search",
+				wasMangled: false,
+			})
+
+			const mangledParsed = parseMcpToolName(mangledToolName)
+			expect(mangledParsed).toEqual({
+				serverName: "atlassian_jira", // Mangled name
+				toolName: "search",
+				wasMangled: true,
+			})
+
+			// findMatchingServerName should resolve mangled name back to original
+			const availableServers = ["atlassian-jira", "linear", "github"]
+			const resolvedServer = findMatchingServerName(mangledParsed!.serverName, availableServers)
+			expect(resolvedServer).toBe("atlassian-jira")
+		})
+
+		it("should handle litellm server with atlassian-jira tool", () => {
+			// From issue: mcp--litellm--atlassian-jira_search
+			const originalToolName = buildMcpToolName("litellm", "atlassian-jira_search")
+			expect(originalToolName).toBe("mcp--litellm--atlassian-jira_search")
+
+			// Model might mangle it to: mcp__litellm__atlassian_jira_search
+			const mangledToolName = "mcp__litellm__atlassian_jira_search"
+
+			expect(isMcpTool(mangledToolName)).toBe(true)
+
+			const parsed = parseMcpToolName(mangledToolName)
+			expect(parsed).toEqual({
+				serverName: "litellm",
+				toolName: "atlassian_jira_search",
+				wasMangled: true,
+			})
+
+			// Find matching tool
+			const availableTools = ["atlassian-jira_search", "other_tool"]
+			const resolvedTool = findMatchingToolName(parsed!.toolName, availableTools)
+			expect(resolvedTool).toBe("atlassian-jira_search")
 		})
 	})
 })

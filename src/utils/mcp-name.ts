@@ -13,18 +13,29 @@
 export const MCP_TOOL_SEPARATOR = "--"
 
 /**
+ * Alternative separator that models may output.
+ * Some models (like Claude) convert hyphens to underscores in tool names,
+ * so "--" becomes "__". We need to recognize and handle this.
+ */
+export const MCP_TOOL_SEPARATOR_MANGLED = "__"
+
+/**
  * Prefix for all MCP tool function names.
  */
 export const MCP_TOOL_PREFIX = "mcp"
 
 /**
  * Check if a tool name is an MCP tool (starts with the MCP prefix and separator).
+ * Also recognizes mangled versions where models converted "--" to "__".
  *
  * @param toolName - The tool name to check
- * @returns true if the tool name starts with "mcp--", false otherwise
+ * @returns true if the tool name starts with "mcp--" or "mcp__", false otherwise
  */
 export function isMcpTool(toolName: string): boolean {
-	return toolName.startsWith(`${MCP_TOOL_PREFIX}${MCP_TOOL_SEPARATOR}`)
+	return (
+		toolName.startsWith(`${MCP_TOOL_PREFIX}${MCP_TOOL_SEPARATOR}`) ||
+		toolName.startsWith(`${MCP_TOOL_PREFIX}${MCP_TOOL_SEPARATOR_MANGLED}`)
+	)
 }
 
 /**
@@ -92,34 +103,143 @@ export function buildMcpToolName(serverName: string, toolName: string): string {
 /**
  * Parse an MCP tool function name back into server and tool names.
  * This handles sanitized names by splitting on the "--" separator.
+ * Also handles mangled names where models converted "--" to "__".
  *
  * Note: This returns the sanitized names, not the original names.
  * The original names cannot be recovered from the sanitized version.
  *
- * @param mcpToolName - The full MCP tool name (e.g., "mcp--weather--get_forecast")
- * @returns An object with serverName and toolName, or null if parsing fails
+ * @param mcpToolName - The full MCP tool name (e.g., "mcp--weather--get_forecast" or "mcp__weather__get_forecast")
+ * @returns An object with serverName, toolName, and wasMangled flag, or null if parsing fails
  */
-export function parseMcpToolName(mcpToolName: string): { serverName: string; toolName: string } | null {
-	const prefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
-	if (!mcpToolName.startsWith(prefix)) {
-		return null
+export function parseMcpToolName(
+	mcpToolName: string,
+): { serverName: string; toolName: string; wasMangled: boolean } | null {
+	// Try canonical format first: mcp--server--tool
+	const canonicalPrefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
+	if (mcpToolName.startsWith(canonicalPrefix)) {
+		const remainder = mcpToolName.slice(canonicalPrefix.length)
+		const separatorIndex = remainder.indexOf(MCP_TOOL_SEPARATOR)
+		if (separatorIndex !== -1) {
+			const serverName = remainder.slice(0, separatorIndex)
+			const toolName = remainder.slice(separatorIndex + MCP_TOOL_SEPARATOR.length)
+			if (serverName && toolName) {
+				return { serverName, toolName, wasMangled: false }
+			}
+		}
 	}
 
-	// Remove the "mcp--" prefix
-	const remainder = mcpToolName.slice(prefix.length)
-
-	// Split on the separator to get server and tool names
-	const separatorIndex = remainder.indexOf(MCP_TOOL_SEPARATOR)
-	if (separatorIndex === -1) {
-		return null
+	// Try mangled format: mcp__server__tool (models may convert -- to __)
+	const mangledPrefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR_MANGLED
+	if (mcpToolName.startsWith(mangledPrefix)) {
+		const remainder = mcpToolName.slice(mangledPrefix.length)
+		const separatorIndex = remainder.indexOf(MCP_TOOL_SEPARATOR_MANGLED)
+		if (separatorIndex !== -1) {
+			const serverName = remainder.slice(0, separatorIndex)
+			const toolName = remainder.slice(separatorIndex + MCP_TOOL_SEPARATOR_MANGLED.length)
+			if (serverName && toolName) {
+				return { serverName, toolName, wasMangled: true }
+			}
+		}
 	}
 
-	const serverName = remainder.slice(0, separatorIndex)
-	const toolName = remainder.slice(separatorIndex + MCP_TOOL_SEPARATOR.length)
+	return null
+}
 
-	if (!serverName || !toolName) {
-		return null
+/**
+ * Generate possible original names from a potentially mangled name.
+ * When models convert hyphens to underscores, we need to try matching
+ * the mangled name against servers/tools that may have had hyphens.
+ *
+ * Since we can't know which underscores were originally hyphens, we generate
+ * all possible combinations for fuzzy matching.
+ *
+ * For efficiency, we limit this to names with a reasonable number of underscores.
+ *
+ * @param mangledName - A name that may have had hyphens converted to underscores
+ * @returns An array of possible original names, including the input unchanged
+ */
+export function generatePossibleOriginalNames(mangledName: string): string[] {
+	const results: string[] = [mangledName]
+
+	// Find positions of all underscores
+	const underscorePositions: number[] = []
+	for (let i = 0; i < mangledName.length; i++) {
+		if (mangledName[i] === "_") {
+			underscorePositions.push(i)
+		}
 	}
 
-	return { serverName, toolName }
+	// Limit to prevent exponential explosion (2^n combinations)
+	// 8 underscores = 256 combinations, which is reasonable
+	if (underscorePositions.length > 8) {
+		// For too many underscores, just try the most common pattern:
+		// replace all underscores with hyphens
+		results.push(mangledName.replace(/_/g, "-"))
+		return results
+	}
+
+	// Generate all combinations of replacing underscores with hyphens
+	const numCombinations = 1 << underscorePositions.length // 2^n
+	for (let mask = 1; mask < numCombinations; mask++) {
+		let variant = mangledName
+		for (let i = underscorePositions.length - 1; i >= 0; i--) {
+			if (mask & (1 << i)) {
+				const pos = underscorePositions[i]
+				variant = variant.slice(0, pos) + "-" + variant.slice(pos + 1)
+			}
+		}
+		results.push(variant)
+	}
+
+	return results
+}
+
+/**
+ * Find a matching server name from a potentially mangled server name.
+ * Tries exact match first, then tries variations with underscores replaced by hyphens.
+ *
+ * @param mangledServerName - The server name from parsed MCP tool (may be mangled)
+ * @param availableServers - List of actual server names to match against
+ * @returns The matching server name, or null if no match found
+ */
+export function findMatchingServerName(mangledServerName: string, availableServers: string[]): string | null {
+	// Try exact match first
+	if (availableServers.includes(mangledServerName)) {
+		return mangledServerName
+	}
+
+	// Generate possible original names and try to find a match
+	const possibleNames = generatePossibleOriginalNames(mangledServerName)
+	for (const possibleName of possibleNames) {
+		if (availableServers.includes(possibleName)) {
+			return possibleName
+		}
+	}
+
+	return null
+}
+
+/**
+ * Find a matching tool name from a potentially mangled tool name.
+ * Tries exact match first, then tries variations with underscores replaced by hyphens.
+ *
+ * @param mangledToolName - The tool name from parsed MCP tool (may be mangled)
+ * @param availableTools - List of actual tool names to match against
+ * @returns The matching tool name, or null if no match found
+ */
+export function findMatchingToolName(mangledToolName: string, availableTools: string[]): string | null {
+	// Try exact match first
+	if (availableTools.includes(mangledToolName)) {
+		return mangledToolName
+	}
+
+	// Generate possible original names and try to find a match
+	const possibleNames = generatePossibleOriginalNames(mangledToolName)
+	for (const possibleName of possibleNames) {
+		if (availableTools.includes(possibleName)) {
+			return possibleName
+		}
+	}
+
+	return null
 }

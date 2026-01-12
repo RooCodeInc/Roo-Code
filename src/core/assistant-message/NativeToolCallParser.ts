@@ -16,7 +16,7 @@ import type {
 	ApiStreamToolCallDeltaChunk,
 	ApiStreamToolCallEndChunk,
 } from "../../api/transform/stream"
-import { MCP_TOOL_PREFIX, MCP_TOOL_SEPARATOR, parseMcpToolName } from "../../utils/mcp-name"
+import { isMcpTool, parseMcpToolName } from "../../utils/mcp-name"
 
 /**
  * Helper type to extract properly typed native arguments for a given tool.
@@ -242,8 +242,7 @@ export class NativeToolCallParser {
 		toolCall.argumentsAccumulator += chunk
 
 		// For dynamic MCP tools, we don't return partial updates - wait for final
-		const mcpPrefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
-		if (toolCall.name.startsWith(mcpPrefix)) {
+		if (isMcpTool(toolCall.name)) {
 			return null
 		}
 
@@ -574,10 +573,8 @@ export class NativeToolCallParser {
 		name: TName
 		arguments: string
 	}): ToolUse<TName> | McpToolUse | null {
-		// Check if this is a dynamic MCP tool (mcp--serverName--toolName)
-		const mcpPrefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
-
-		if (typeof toolCall.name === "string" && toolCall.name.startsWith(mcpPrefix)) {
+		// Check if this is a dynamic MCP tool (mcp--serverName--toolName or mcp__serverName__toolName)
+		if (typeof toolCall.name === "string" && isMcpTool(toolCall.name)) {
 			return this.parseDynamicMcpTool(toolCall)
 		}
 
