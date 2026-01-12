@@ -2,7 +2,7 @@ import { HTMLAttributes } from "react"
 import React from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { Database, FoldVertical } from "lucide-react"
+import { FoldVertical } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Button } from "@/components/ui"
@@ -108,10 +108,7 @@ export const ContextManagementSettings = ({
 	return (
 		<div className={cn("flex flex-col gap-2", className)} {...props}>
 			<SectionHeader description={t("settings:contextManagement.description")}>
-				<div className="flex items-center gap-2">
-					<Database className="w-4" />
-					<div>{t("settings:sections.contextManagement")}</div>
-				</div>
+				{t("settings:sections.contextManagement")}
 			</SectionHeader>
 
 			<Section>

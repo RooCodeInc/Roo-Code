@@ -1,17 +1,7 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Trans } from "react-i18next"
-import {
-	Info,
-	Download,
-	Upload,
-	TriangleAlert,
-	Bug,
-	Lightbulb,
-	Shield,
-	MessageCircle,
-	MessagesSquare,
-} from "lucide-react"
+import { Download, Upload, TriangleAlert, Bug, Lightbulb, Shield, MessageCircle, MessagesSquare } from "lucide-react"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
 import type { TelemetrySetting } from "@roo-code/types"
@@ -38,19 +28,14 @@ export const About = ({ telemetrySetting, setTelemetrySetting, debug, setDebug, 
 
 	return (
 		<div className={cn("flex flex-col gap-2", className)} {...props}>
-			<SectionHeader
-				description={
-					Package.sha
-						? `Version: ${Package.version} (${Package.sha.slice(0, 8)})`
-						: `Version: ${Package.version}`
-				}>
-				<div className="flex items-center gap-2">
-					<Info className="w-4" />
-					<div>{t("settings:sections.about")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.about")}</SectionHeader>
 
 			<Section>
+				<p>
+					{Package.sha
+						? `Version: ${Package.version} (${Package.sha.slice(0, 8)})`
+						: `Version: ${Package.version}`}
+				</p>
 				<SearchableSetting
 					settingId="about-telemetry"
 					section="about"

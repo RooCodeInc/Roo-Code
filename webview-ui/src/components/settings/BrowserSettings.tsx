@@ -1,5 +1,4 @@
 import { VSCodeCheckbox, VSCodeTextField, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { SquareMousePointer } from "lucide-react"
 import { HTMLAttributes, useEffect, useMemo, useState } from "react"
 import { Trans } from "react-i18next"
 
@@ -109,12 +108,7 @@ export const BrowserSettings = ({
 
 	return (
 		<div {...props}>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<SquareMousePointer className="w-4" />
-					<div>{t("settings:sections.browser")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.browser")}</SectionHeader>
 
 			<Section>
 				<SearchableSetting

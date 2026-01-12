@@ -1,7 +1,6 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
-import { Bell } from "lucide-react"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -28,12 +27,7 @@ export const NotificationSettings = ({
 	const { t } = useAppTranslation()
 	return (
 		<div {...props}>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<Bell className="w-4" />
-					<div>{t("settings:sections.notifications")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.notifications")}</SectionHeader>
 
 			<Section>
 				<SearchableSetting

@@ -1,7 +1,6 @@
 import { HTMLAttributes, useState, useCallback } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
-import { SquareTerminal } from "lucide-react"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 import { Trans } from "react-i18next"
 import { buildDocLink } from "@src/utils/docLinks"
@@ -88,12 +87,7 @@ export const TerminalSettings = ({
 
 	return (
 		<div className={cn("flex flex-col", className)} {...props}>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<SquareTerminal className="w-4" />
-					<div>{t("settings:sections.terminal")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.terminal")}</SectionHeader>
 
 			<Section>
 				{/* Basic Settings */}

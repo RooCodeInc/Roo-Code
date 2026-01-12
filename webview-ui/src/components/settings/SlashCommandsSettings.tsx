@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"
-import { Plus, Globe, Folder, Settings, SquareSlash } from "lucide-react"
+import { Plus, Globe, Folder, Settings } from "lucide-react"
 import { Trans } from "react-i18next"
 
 import type { Command } from "@roo-code/types"
@@ -103,12 +103,7 @@ export const SlashCommandsSettings: React.FC = () => {
 
 	return (
 		<div>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<SquareSlash className="w-4" />
-					<div>{t("settings:sections.slashCommands")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.slashCommands")}</SectionHeader>
 
 			<Section>
 				{/* Description section */}

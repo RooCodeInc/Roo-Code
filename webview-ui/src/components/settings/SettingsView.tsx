@@ -12,7 +12,6 @@ import React, {
 import {
 	CheckCheck,
 	SquareMousePointer,
-	Webhook,
 	GitBranch,
 	Bell,
 	Database,
@@ -28,6 +27,7 @@ import {
 	Plug,
 	Server,
 	Users2,
+	ArrowLeft,
 } from "lucide-react"
 
 import {
@@ -632,8 +632,16 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	return (
 		<Tab>
 			<TabHeader className="flex justify-between items-center gap-2">
-				<h3 className="text-vscode-foreground m-0 flex-shrink-0">{t("settings:header.title")}</h3>
-				<div className="flex items-center gap-2">
+				<div className="flex items-center gap-2 grow">
+					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
+						<Button variant="ghost" className="px-1.5 -ml-2" onClick={() => checkUnsaveChanges(onDone)}>
+							<ArrowLeft />
+							<span className="sr-only">{t("settings:common.done")}</span>
+						</Button>
+					</StandardTooltip>
+					<h3 className="text-vscode-foreground m-0 flex-shrink-0">{t("settings:header.title")}</h3>
+				</div>
+				<div className="flex items-center gap-2 shrink-0">
 					{isIndexingComplete && (
 						<SettingsSearch index={searchIndex} onNavigate={handleSearchNavigate} sections={sections} />
 					)}
@@ -652,11 +660,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							disabled={!isChangeDetected || !isSettingValid}
 							data-testid="save-button">
 							{t("settings:common.save")}
-						</Button>
-					</StandardTooltip>
-					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
-						<Button variant="secondary" onClick={() => checkUnsaveChanges(onDone)}>
-							{t("settings:common.done")}
 						</Button>
 					</StandardTooltip>
 				</div>
@@ -729,12 +732,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						{/* Providers Section */}
 						{renderTab === "providers" && (
 							<div>
-								<SectionHeader>
-									<div className="flex items-center gap-2">
-										<Webhook className="w-4" />
-										<div>{t("settings:sections.providers")}</div>
-									</div>
-								</SectionHeader>
+								<SectionHeader>{t("settings:sections.providers")}</SectionHeader>
 
 								<Section>
 									<ApiConfigManager

@@ -1,5 +1,5 @@
 import { HTMLAttributes, useState } from "react"
-import { X, CheckCheck } from "lucide-react"
+import { X } from "lucide-react"
 import { Trans } from "react-i18next"
 import { Package } from "@roo/package"
 
@@ -108,12 +108,7 @@ export const AutoApproveSettings = ({
 
 	return (
 		<div {...props}>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<CheckCheck className="w-4 h-4" />
-					<div>{t("settings:sections.autoApprove")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.autoApprove")}</SectionHeader>
 
 			<Section>
 				<div className="space-y-4">
