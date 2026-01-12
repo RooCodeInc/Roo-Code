@@ -1,7 +1,7 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX, ListEnd, Square } from "lucide-react"
 
 import type { ExtensionMessage } from "@roo-code/types"
 
@@ -55,6 +55,10 @@ interface ChatTextAreaProps {
 	// Browser session status
 	isBrowserSessionActive?: boolean
 	showBrowserDockToggle?: boolean
+	// Stop/Queue functionality
+	isStreaming?: boolean
+	onStop?: () => void
+	onEnqueueMessage?: () => void
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -77,6 +81,9 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			onCancel,
 			isBrowserSessionActive = false,
 			showBrowserDockToggle = false,
+			isStreaming = false,
+			onStop,
+			onEnqueueMessage,
 		},
 		ref,
 	) => {
@@ -1185,30 +1192,68 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										</button>
 									</StandardTooltip>
 								)}
-								<StandardTooltip
-									content={t("chat:pressToSend", { keyCombination: sendKeyCombination })}>
-									<button
-										aria-label={t("chat:pressToSend", { keyCombination: sendKeyCombination })}
-										disabled={false}
-										onClick={onSend}
-										className={cn(
-											"relative inline-flex items-center justify-center",
-											"bg-transparent border-none p-1.5",
-											"rounded-md min-w-[28px] min-h-[28px]",
-											"text-vscode-descriptionForeground hover:text-vscode-foreground",
-											"transition-all duration-200",
-											hasInputContent
-												? "opacity-100 hover:opacity-100 pointer-events-auto"
-												: "opacity-0 pointer-events-none",
-											hasInputContent &&
+								{/* Queue button - shown when streaming and user has typed content */}
+								{!isEditMode && isStreaming && hasInputContent && onEnqueueMessage && (
+									<StandardTooltip content={t("chat:enqueueMessage")}>
+										<button
+											aria-label={t("chat:enqueueMessage")}
+											disabled={false}
+											onClick={onEnqueueMessage}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-md min-w-[28px] min-h-[28px]",
+												"text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-200",
+												"opacity-100 hover:opacity-100 pointer-events-auto",
 												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
-											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-											hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
-											hasInputContent && "cursor-pointer",
-										)}>
-										<SendHorizontal className="w-4 h-4" />
-									</button>
-								</StandardTooltip>
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												"active:bg-[rgba(255,255,255,0.1)]",
+												"cursor-pointer",
+											)}>
+											<ListEnd className="w-4 h-4" />
+										</button>
+									</StandardTooltip>
+								)}
+								{/* Send/Stop button - morphs based on streaming state */}
+								{!isEditMode && (
+									<StandardTooltip
+										content={
+											isStreaming
+												? t("chat:stop.title")
+												: t("chat:pressToSend", { keyCombination: sendKeyCombination })
+										}>
+										<button
+											aria-label={
+												isStreaming
+													? t("chat:stop.title")
+													: t("chat:pressToSend", { keyCombination: sendKeyCombination })
+											}
+											disabled={false}
+											onClick={isStreaming ? onStop : onSend}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-md min-w-[28px] min-h-[28px]",
+												"text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-200",
+												isStreaming || hasInputContent
+													? "opacity-100 hover:opacity-100 pointer-events-auto"
+													: "opacity-0 pointer-events-none",
+												(isStreaming || hasInputContent) &&
+													"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												(isStreaming || hasInputContent) && "active:bg-[rgba(255,255,255,0.1)]",
+												(isStreaming || hasInputContent) && "cursor-pointer",
+											)}>
+											{isStreaming ? (
+												<Square className="size-4 fill-vscode-descriptionForeground" />
+											) : (
+												<SendHorizontal className="size-4" />
+											)}
+										</button>
+									</StandardTooltip>
+								)}
 							</div>
 
 							{!inputValue && (
