@@ -220,7 +220,10 @@ export class ClineProvider
 			this.emit(RooCodeEventName.TaskCreated, instance)
 
 			// Create named listener functions so we can remove them later.
-			const onTaskStarted = () => this.emit(RooCodeEventName.TaskStarted, instance.taskId)
+			const onTaskStarted = () => {
+				this.activityIndicator.show()
+				this.emit(RooCodeEventName.TaskStarted, instance.taskId)
+			}
 			const onTaskCompleted = (taskId: string, tokenUsage: TokenUsage, toolUsage: ToolUsage) => {
 				this.activityIndicator.hide()
 				this.emit(RooCodeEventName.TaskCompleted, taskId, tokenUsage, toolUsage)
