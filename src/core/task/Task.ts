@@ -90,6 +90,7 @@ import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 // utils
 import { calculateApiCostAnthropic, calculateApiCostOpenAI } from "../../shared/cost"
 import { getWorkspacePath } from "../../utils/path"
+import { sanitizeToolUseId } from "../../utils/tool-id"
 
 // prompts
 import { formatResponse } from "../prompts/responses"
@@ -3435,7 +3436,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							if (mcpBlock.id) {
 								assistantContent.push({
 									type: "tool_use" as const,
-									id: mcpBlock.id,
+									id: sanitizeToolUseId(mcpBlock.id),
 									name: mcpBlock.name, // Original dynamic name
 									input: mcpBlock.arguments, // Direct tool arguments
 								})
@@ -3456,7 +3457,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								assistantContent.push({
 									type: "tool_use" as const,
-									id: toolCallId,
+									id: sanitizeToolUseId(toolCallId),
 									name: toolNameForHistory,
 									input,
 								})
