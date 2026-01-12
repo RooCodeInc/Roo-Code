@@ -105,41 +105,54 @@ export function getKeepMessagesWithToolBlocks(messages: ApiMessage[], keepCount:
 	const reasoningBlocksToPreserve: Anthropic.Messages.ContentBlockParam[] = []
 	const preservedToolUseIds = new Set<string>()
 
-	// Check ALL kept messages for tool_result blocks
+	// First, collect all tool_use_ids we need to find from kept messages
+	const toolUseIdsToFind = new Set<string>()
 	for (const keepMsg of keepMessages) {
 		if (!hasToolResultBlocks(keepMsg)) {
 			continue
 		}
+		for (const toolResult of getToolResultBlocks(keepMsg)) {
+			toolUseIdsToFind.add(toolResult.tool_use_id)
+		}
+	}
 
-		const toolResults = getToolResultBlocks(keepMsg)
+	// Early exit if no tool_results in kept messages
+	if (toolUseIdsToFind.size === 0) {
+		return { keepMessages, toolUseBlocksToPreserve: [], reasoningBlocksToPreserve: [] }
+	}
 
-		for (const toolResult of toolResults) {
-			const toolUseId = toolResult.tool_use_id
-
-			// Skip if we've already found this tool_use
-			if (preservedToolUseIds.has(toolUseId)) {
-				continue
+	// Build an index of tool_use ID -> message for the condensed region
+	// This avoids repeated linear searches through the entire history
+	// Only index assistant messages (which contain tool_use blocks)
+	const toolUseIndex = new Map<string, ApiMessage>()
+	for (let i = 0; i < startIndex; i++) {
+		const msg = messages[i]
+		if (msg.role !== "assistant") {
+			continue
+		}
+		for (const toolUse of getToolUseBlocks(msg)) {
+			// Only index IDs we're looking for
+			if (toolUseIdsToFind.has(toolUse.id)) {
+				toolUseIndex.set(toolUse.id, msg)
 			}
+		}
+	}
 
-			// Search backwards through the condensed region (bounded)
-			const searchStart = startIndex - 1
-			const searchEnd = Math.max(0, startIndex - N_MESSAGES_TO_KEEP)
-			const messagesToSearch = messages.slice(searchEnd, searchStart + 1)
+	// Now look up each tool_use we need
+	for (const toolUseId of toolUseIdsToFind) {
+		if (preservedToolUseIds.has(toolUseId)) {
+			continue
+		}
 
-			// Find the message containing this tool_use
-			const messageWithToolUse = findLast(messagesToSearch, (msg) => {
-				return findToolUseBlockById(msg, toolUseId) !== undefined
-			})
+		const messageWithToolUse = toolUseIndex.get(toolUseId)
+		if (messageWithToolUse) {
+			const toolUse = findToolUseBlockById(messageWithToolUse, toolUseId)!
+			toolUseBlocksToPreserve.push(toolUse)
+			preservedToolUseIds.add(toolUseId)
 
-			if (messageWithToolUse) {
-				const toolUse = findToolUseBlockById(messageWithToolUse, toolUseId)!
-				toolUseBlocksToPreserve.push(toolUse)
-				preservedToolUseIds.add(toolUseId)
-
-				// Also preserve reasoning blocks from that message
-				const reasoning = getReasoningBlocks(messageWithToolUse)
-				reasoningBlocksToPreserve.push(...reasoning)
-			}
+			// Also preserve reasoning blocks from that message
+			const reasoning = getReasoningBlocks(messageWithToolUse)
+			reasoningBlocksToPreserve.push(...reasoning)
 		}
 	}
 

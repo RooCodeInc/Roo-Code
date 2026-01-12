@@ -482,17 +482,17 @@ describe("getKeepMessagesWithToolBlocks", () => {
 		expect(result.toolUseBlocksToPreserve).toContainEqual(toolUseBlock2)
 	})
 
-	it("should not crash when tool_result references tool_use beyond search boundary", () => {
+	it("should preserve tool_use even when it is far back in the conversation history", () => {
 		const toolResultBlock = {
 			type: "tool_result" as const,
-			tool_use_id: "toolu_beyond_boundary",
+			tool_use_id: "toolu_far_back",
 			content: "result",
 		}
 
-		// Tool_use is at ts:1, but with N_MESSAGES_TO_KEEP=3, we only search back 3 messages
-		// from startIndex-1. StartIndex is 7 (messages.length=10, keepCount=3, startIndex=7).
-		// So we search from index 6 down to index 4 (7-1 down to 7-3).
-		// The tool_use at index 0 (ts:1) is beyond the search boundary.
+		// Tool_use is at ts:1, far back in the conversation.
+		// The search now covers the entire condensed region (from index 0 to startIndex-1),
+		// so the tool_use WILL be found and preserved. This prevents the API error:
+		// "tool_use ids were found without tool_result blocks immediately after"
 		const messages: ApiMessage[] = [
 			{
 				role: "assistant",
@@ -500,7 +500,7 @@ describe("getKeepMessagesWithToolBlocks", () => {
 					{ type: "text" as const, text: "Way back..." },
 					{
 						type: "tool_use" as const,
-						id: "toolu_beyond_boundary",
+						id: "toolu_far_back",
 						name: "old_tool",
 						input: {},
 					},
@@ -522,7 +522,6 @@ describe("getKeepMessagesWithToolBlocks", () => {
 			{ role: "user", content: "Message 10", ts: 10 },
 		]
 
-		// Should not crash
 		const result = getKeepMessagesWithToolBlocks(messages, 3)
 
 		// keepMessages should be the last 3 messages
@@ -531,8 +530,10 @@ describe("getKeepMessagesWithToolBlocks", () => {
 		expect(result.keepMessages[1].ts).toBe(9)
 		expect(result.keepMessages[2].ts).toBe(10)
 
-		// Should not preserve the tool_use since it's beyond the search boundary
-		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
+		// Should NOW preserve the tool_use - this is the fix for the API error
+		// where tool_result blocks were orphaned because their tool_use wasn't found
+		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
+		expect(result.toolUseBlocksToPreserve[0].id).toBe("toolu_far_back")
 	})
 
 	it("should not duplicate tool_use blocks when same tool_result ID appears multiple times", () => {
