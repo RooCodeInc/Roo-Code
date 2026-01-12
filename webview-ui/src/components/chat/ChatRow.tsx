@@ -1310,27 +1310,47 @@ export const ChatRowContent = ({
 					)
 				case "error":
 					// Check if this is a model response error based on marker strings from backend
-					const isNoToolsUsedError = message.text === "MODEL_NO_TOOLS_USED"
-					const isNoAssistantMessagesError = message.text === "MODEL_NO_ASSISTANT_MESSAGES"
+					// The format is "MARKER\nDiagnostic Info" where diagnostic info is optional
+					const messageText = message.text || ""
+					const isNoToolsUsedError = messageText.startsWith("MODEL_NO_TOOLS_USED")
+					const isNoAssistantMessagesError = messageText.startsWith("MODEL_NO_ASSISTANT_MESSAGES")
 
 					if (isNoToolsUsedError) {
+						// Extract diagnostic info if present (after the marker and newline)
+						const parts = messageText.split("\n")
+						const diagnosticInfo = parts.length > 1 ? parts.slice(1).join("\n") : undefined
+
+						// Combine i18n detailed explanation with diagnostic info
+						const fullDetails = diagnosticInfo
+							? `${t("chat:modelResponseErrors.noToolsUsedDetails")}\n\n${diagnosticInfo}`
+							: t("chat:modelResponseErrors.noToolsUsedDetails")
+
 						return (
 							<ErrorRow
 								type="error"
 								title={t("chat:modelResponseIncomplete")}
 								message={t("chat:modelResponseErrors.noToolsUsed")}
-								errorDetails={t("chat:modelResponseErrors.noToolsUsedDetails")}
+								errorDetails={fullDetails}
 							/>
 						)
 					}
 
 					if (isNoAssistantMessagesError) {
+						// Extract diagnostic info if present (after the marker and newline)
+						const parts = messageText.split("\n")
+						const diagnosticInfo = parts.length > 1 ? parts.slice(1).join("\n") : undefined
+
+						// Combine i18n detailed explanation with diagnostic info
+						const fullDetails = diagnosticInfo
+							? `${t("chat:modelResponseErrors.noAssistantMessagesDetails")}\n\n${diagnosticInfo}`
+							: t("chat:modelResponseErrors.noAssistantMessagesDetails")
+
 						return (
 							<ErrorRow
 								type="error"
 								title={t("chat:modelResponseIncomplete")}
 								message={t("chat:modelResponseErrors.noAssistantMessages")}
-								errorDetails={t("chat:modelResponseErrors.noAssistantMessagesDetails")}
+								errorDetails={fullDetails}
 							/>
 						)
 					}

@@ -3501,7 +3501,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 						// Only show error and count toward mistake limit after 2 consecutive failures
 						if (this.consecutiveNoToolUseCount >= 2) {
-							await this.say("error", "MODEL_NO_TOOLS_USED")
+							// Create diagnostic information for the details popup
+							const diagnosticInfo = [
+								"Diagnostic Information:",
+								"",
+								`Tool Protocol: ${this._taskToolProtocol ?? "unknown"}`,
+								`Consecutive No-Tool-Use Count: ${this.consecutiveNoToolUseCount}`,
+								`Assistant Message Length: ${assistantMessage.length} characters`,
+								"",
+								"Assistant Message Content Blocks:",
+								this.assistantMessageContent.length > 0
+									? this.assistantMessageContent
+											.map(
+												(block, i) =>
+													`  ${i + 1}. Type: ${block.type}${block.type === "text" ? `, Length: ${(block as any).content?.length ?? 0} chars` : ""}`,
+											)
+											.join("\n")
+									: "  (none)",
+								"",
+								"Raw Assistant Message:",
+								assistantMessage || "(empty)",
+							].join("\n")
+
+							await this.say("error", `MODEL_NO_TOOLS_USED\n${diagnosticInfo}`)
 							// Only count toward mistake limit after second consecutive failure
 							this.consecutiveMistakeCount++
 						}
