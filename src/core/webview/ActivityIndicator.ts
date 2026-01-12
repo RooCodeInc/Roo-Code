@@ -32,6 +32,7 @@ export class ActivityIndicator {
 		vscode.window.withProgress(
 			{
 				location: { viewId: ActivityIndicator.VIEW_ID },
+				title: "Roo is working...",
 			},
 			() => {
 				return new Promise<void>((resolve) => {
