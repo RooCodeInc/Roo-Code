@@ -274,6 +274,19 @@ describe("GeminiHandler", () => {
 					modelId: GEMINI_MODEL_NAME,
 					operation: "createMessage",
 				}),
+				// Verify diagnostic properties are included
+				expect.objectContaining({
+					messageCount: expect.any(Number),
+					geminiContentsCount: expect.any(Number),
+					hasToolUseBlocks: expect.any(Boolean),
+					hasToolResultBlocks: expect.any(Boolean),
+					hasImageBlocks: expect.any(Boolean),
+					emptyPartsCount: expect.any(Number),
+					toolIdToNameSize: expect.any(Number),
+					hasThinkingConfig: expect.any(Boolean),
+					usingNativeTools: expect.any(Boolean),
+					includeThoughtSignatures: expect.any(Boolean),
+				}),
 			)
 
 			// Verify it's an ApiProviderError
