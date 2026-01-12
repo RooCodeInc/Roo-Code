@@ -489,6 +489,10 @@
 			},
 			"resetDefaults": "Auf Standardwerte zurücksetzen"
 		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "Strikte Tool-Nachrichtenreihenfolge",
+			"description": "Aktivieren für Anbieter wie NVIDIA NIM und Devstral, die eine strikte Nachrichtenreihenfolge erfordern. Wenn aktiviert, wird Textinhalt nach Tool-Ergebnissen in die letzte Tool-Nachricht integriert, anstatt eine separate Benutzernachricht zu erstellen."
+		},
 		"rateLimitSeconds": {
 			"label": "Ratenbegrenzung",
 			"description": "Minimale Zeit zwischen API-Anfragen."

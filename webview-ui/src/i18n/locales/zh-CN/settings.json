@@ -522,6 +522,10 @@
 			"placeholder": "默认：claude",
 			"maxTokensLabel": "最大输出 Token",
 			"maxTokensDescription": "Claude Code 响应的最大输出 Token 数量。默认为 8000。"
+		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "严格的工具消息顺序",
+			"description": "为NVIDIA NIM和Devstral等需要严格消息顺序的提供商启用。启用后，工具结果后的文本内容会合并到最后一个工具消息中，而不是创建单独的用户消息。"
 		}
 	},
 	"browser": {

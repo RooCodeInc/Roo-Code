@@ -522,6 +522,10 @@
 			"placeholder": "Varsayılan: claude",
 			"maxTokensLabel": "Maksimum Çıktı Token sayısı",
 			"maxTokensDescription": "Claude Code yanıtları için maksimum çıktı token sayısı. Varsayılan 8000'dir."
+		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "Sıkı araç mesajı sıralaması",
+			"description": "NVIDIA NIM ve Devstral gibi sıkı mesaj sıralaması gerektiren sağlayıcılar için etkinleştirin. Etkinleştirildiğinde, araç sonuçlarından sonraki metin içeriği ayrı bir kullanıcı mesajı oluşturmak yerine son araç mesajıyla birleştirilir."
 		}
 	},
 	"browser": {

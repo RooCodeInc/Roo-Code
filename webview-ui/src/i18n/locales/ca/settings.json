@@ -522,6 +522,10 @@
 			"placeholder": "Per defecte: claude",
 			"maxTokensLabel": "Tokens màxims de sortida",
 			"maxTokensDescription": "Nombre màxim de tokens de sortida per a les respostes de Claude Code. El valor per defecte és 8000."
+		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "Ordre estricte de missatges d'eines",
+			"description": "Activa per a proveïdors com NVIDIA NIM i Devstral que requereixen un ordre estricte de missatges. Quan està activat, el contingut de text després dels resultats d'eines es fusiona en l'últim missatge d'eina en lloc de crear un missatge d'usuari separat."
 		}
 	},
 	"browser": {

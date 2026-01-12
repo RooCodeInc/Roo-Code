@@ -522,6 +522,10 @@
 			"placeholder": "기본값: claude",
 			"maxTokensLabel": "최대 출력 토큰",
 			"maxTokensDescription": "Claude Code 응답의 최대 출력 토큰 수. 기본값은 8000입니다."
+		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "엄격한 도구 메시지 순서",
+			"description": "NVIDIA NIM 및 Devstral과 같이 엄격한 메시지 순서가 필요한 공급자에 대해 활성화하세요. 활성화하면 도구 결과 이후의 텍스트 콘텐츠가 별도의 사용자 메시지를 생성하는 대신 마지막 도구 메시지에 병합됩니다."
 		}
 	},
 	"browser": {

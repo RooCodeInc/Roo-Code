@@ -489,6 +489,10 @@
 			},
 			"resetDefaults": "Restablecer valores predeterminados"
 		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "Orden estricto de mensajes de herramientas",
+			"description": "Habilitar para proveedores como NVIDIA NIM y Devstral que requieren un orden estricto de mensajes. Cuando está habilitado, el contenido de texto después de los resultados de herramientas se fusiona en el último mensaje de herramienta en lugar de crear un mensaje de usuario separado."
+		},
 		"rateLimitSeconds": {
 			"label": "Límite de tasa",
 			"description": "Tiempo mínimo entre solicitudes de API."
