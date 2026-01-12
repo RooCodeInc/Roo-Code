@@ -26,6 +26,12 @@ interface WriteToFileParams {
 export class WriteToFileTool extends BaseTool<"write_to_file"> {
 	readonly name = "write_to_file" as const
 
+	/**
+	 * Track whether we've sent the initial "tool starting" notification.
+	 * This allows us to send an immediate notification before path stabilizes.
+	 */
+	private hasNotifiedToolStart = false
+
 	parseLegacy(params: Partial<Record<string, string>>): WriteToFileParams {
 		return {
 			path: params.path || "",
@@ -124,6 +130,10 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 					task.diffViewProvider.originalContent = ""
 				}
 
+				// Send partial message immediately to indicate tool is starting (before file write)
+				const partialMessage = JSON.stringify(sharedMessageProps)
+				await task.ask("tool", partialMessage, true).catch(() => {})
+
 				let unified = fileExists
 					? formatResponse.createPrettyPatch(relPath, task.diffViewProvider.originalContent, newContent)
 					: convertNewFileToUnifiedDiff(newContent, relPath)
@@ -200,11 +210,33 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		}
 	}
 
+	/**
+	 * Reset partial state tracking, including the tool start notification flag.
+	 */
+	override resetPartialState(): void {
+		super.resetPartialState()
+		this.hasNotifiedToolStart = false
+	}
+
 	override async handlePartial(task: Task, block: ToolUse<"write_to_file">): Promise<void> {
 		const relPath: string | undefined = block.params.path
 		let newContent: string | undefined = block.params.content
 
-		// Wait for path to stabilize before showing UI (prevents truncated paths)
+		// Send an immediate "tool starting" notification on first partial call
+		// This ensures CLI sees the tool start immediately, before path stabilizes
+		if (!this.hasNotifiedToolStart && relPath) {
+			this.hasNotifiedToolStart = true
+			const startMessage: ClineSayTool = {
+				tool: "newFileCreated", // Will be updated when we know if file exists
+				path: relPath,
+				content: "",
+				isOutsideWorkspace: false,
+				isProtected: false,
+			}
+			await task.ask("tool", JSON.stringify(startMessage), true).catch(() => {})
+		}
+
+		// Wait for path to stabilize before showing full UI (prevents truncated paths)
 		if (!this.hasPathStabilized(relPath) || newContent === undefined) {
 			return
 		}
@@ -215,10 +247,6 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			state?.experiments ?? {},
 			EXPERIMENT_IDS.PREVENT_FOCUS_DISRUPTION,
 		)
-
-		if (isPreventFocusDisruptionEnabled) {
-			return
-		}
 
 		// relPath is guaranteed non-null after hasPathStabilized
 		let fileExists: boolean
@@ -248,8 +276,14 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			isProtected: isWriteProtected,
 		}
 
+		// Always send partial messages to keep CLI informed during streaming
 		const partialMessage = JSON.stringify(sharedMessageProps)
 		await task.ask("tool", partialMessage, block.partial).catch(() => {})
+
+		// Skip diff view operations when experiment is enabled (prevents focus disruption in VSCode)
+		if (isPreventFocusDisruptionEnabled) {
+			return
+		}
 
 		if (newContent) {
 			if (!task.diffViewProvider.isEditing) {
