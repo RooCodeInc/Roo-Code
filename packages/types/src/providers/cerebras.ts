@@ -21,7 +21,7 @@ export const cerebrasModels = {
 		maxTokens: 16384, // Conservative default to avoid premature rate limiting (Cerebras reserves quota upfront)
 		contextWindow: 131072,
 		supportsImages: false,
-		supportsPromptCache: false,
+		supportsPromptCache: true,
 		supportsNativeTools: true,
 		defaultToolProtocol: "native",
 		inputPrice: 0,
