@@ -118,11 +118,15 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 			}
 
 			// Provider is guaranteed to be defined here due to earlier check.
-
+	
+			// Create a checkpoint before delegating to subtask.
+			// This allows users to restore to the state before the subtask was created.
+			// We await this to ensure the checkpoint message appears in the history
+			// before the delegation happens.
 			if (task.enableCheckpoints) {
-				task.checkpointSave(true)
+				await task.checkpointSave(true)
 			}
-
+	
 			// Delegate parent and open child as sole active task
 			const child = await (provider as any).delegateParentAndOpenChild({
 				parentTaskId: task.taskId,
