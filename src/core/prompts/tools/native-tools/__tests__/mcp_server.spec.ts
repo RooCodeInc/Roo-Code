@@ -89,7 +89,7 @@ describe("getMcpServerTools", () => {
 
 		// Should only have one tool (from project server)
 		expect(result).toHaveLength(1)
-		expect(getFunction(result[0]).name).toBe("mcp--context7--resolve-library-id")
+		expect(getFunction(result[0]).name).toBe("mcp--context7--resolve___library___id")
 		// Project server takes priority
 		expect(getFunction(result[0]).description).toBe("Project description")
 	})
