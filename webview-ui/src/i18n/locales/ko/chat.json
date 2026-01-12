@@ -82,10 +82,15 @@
 		"title": "종료",
 		"tooltip": "현재 작업 종료"
 	},
+	"stop": {
+		"title": "정지",
+		"tooltip": "현재 작업 정지"
+	},
 	"cancel": {
 		"title": "취소",
 		"tooltip": "현재 작업 취소"
 	},
+	"enqueueMessage": "메시지를 대기열에 추가 (현재 작업 완료 후 전송)",
 	"scrollToBottom": "채팅 하단으로 스크롤",
 	"about": "Roo Code는 편집기 안에 있는 전체 AI 개발팀입니다.",
 	"docs": "더 알아보려면 <DocsLink>문서</DocsLink>를 확인하세요.",

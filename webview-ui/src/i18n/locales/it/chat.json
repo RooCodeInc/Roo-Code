@@ -82,10 +82,15 @@
 		"title": "Termina",
 		"tooltip": "Termina l'attività corrente"
 	},
+	"stop": {
+		"title": "Ferma",
+		"tooltip": "Ferma l'attività corrente"
+	},
 	"cancel": {
 		"title": "Annulla",
 		"tooltip": "Annulla l'operazione corrente"
 	},
+	"enqueueMessage": "Aggiungi il messaggio alla coda (sarà inviato dopo che l'attività corrente sarà terminata)",
 	"scrollToBottom": "Scorri fino alla fine della chat",
 	"about": "Roo Code è un intero team di sviluppo AI nel tuo editor.",
 	"docs": "Consulta la nostra <DocsLink>documentazione</DocsLink> per saperne di più.",

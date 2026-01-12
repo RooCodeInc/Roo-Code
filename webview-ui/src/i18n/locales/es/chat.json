@@ -82,10 +82,15 @@
 		"title": "Terminar",
 		"tooltip": "Terminar la tarea actual"
 	},
+	"stop": {
+		"title": "Detener",
+		"tooltip": "Detener la tarea actual"
+	},
 	"cancel": {
 		"title": "Cancelar",
 		"tooltip": "Cancelar la operación actual"
 	},
+	"enqueueMessage": "Agregar mensaje a la cola (se enviará después de que termine la tarea actual)",
 	"scrollToBottom": "Desplazarse al final del chat",
 	"about": "Roo Code es todo un equipo de desarrollo de IA en tu editor.",
 	"docs": "Consulta nuestra <DocsLink>documentación</DocsLink> para saber más.",

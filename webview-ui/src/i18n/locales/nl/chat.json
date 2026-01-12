@@ -82,10 +82,15 @@
 		"title": "Beëindigen",
 		"tooltip": "Beëindig de huidige taak"
 	},
+	"stop": {
+		"title": "Stoppen",
+		"tooltip": "Stop de huidige taak"
+	},
 	"cancel": {
 		"title": "Annuleren",
 		"tooltip": "Annuleer de huidige bewerking"
 	},
+	"enqueueMessage": "Bericht aan de wachtrij toevoegen (wordt verzonden nadat de huidige taak is voltooid)",
 	"scrollToBottom": "Scroll naar onderaan de chat",
 	"about": "Roo Code is een heel AI-ontwikkelteam in je editor.",
 	"docs": "Bekijk onze <DocsLink>documentatie</DocsLink> voor meer informatie.",

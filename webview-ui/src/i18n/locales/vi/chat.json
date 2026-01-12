@@ -82,10 +82,15 @@
 		"title": "Kết thúc",
 		"tooltip": "Kết thúc nhiệm vụ hiện tại"
 	},
+	"stop": {
+		"title": "Dừng",
+		"tooltip": "Dừng nhiệm vụ hiện tại"
+	},
 	"cancel": {
 		"title": "Hủy",
 		"tooltip": "Hủy thao tác hiện tại"
 	},
+	"enqueueMessage": "Thêm tin nhắn vào hàng đợi (sẽ gửi sau khi nhiệm vụ hiện tại hoàn tất)",
 	"scrollToBottom": "Cuộn xuống cuối cuộc trò chuyện",
 	"about": "Roo Code là một đội ngũ phát triển AI đầy đủ trong trình chỉnh sửa của bạn.",
 	"docs": "Kiểm tra <DocsLink>tài liệu</DocsLink> của chúng tôi để tìm hiểu thêm.",
