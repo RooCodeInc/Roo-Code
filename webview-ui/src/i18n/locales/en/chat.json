@@ -75,7 +75,7 @@
 		"tooltip": "Execute this command"
 	},
 	"proceedWhileRunning": {
-		"title": "Contninue While Running",
+		"title": "Continue While Running",
 		"tooltip": "Keep going despite warnings"
 	},
 	"killCommand": {
