@@ -86,6 +86,11 @@
 		"title": "取消",
 		"tooltip": "取消当前操作"
 	},
+	"stop": {
+		"title": "停止",
+		"tooltip": "停止当前任务"
+	},
+	"enqueueMessage": "将消息加入队列（当前任务完成后发送）",
 	"scrollToBottom": "滚动到聊天底部",
 	"about": "Roo Code 是您编辑器中的整个 AI 开发团队。",
 	"docs": "查看我们的 <DocsLink>文档</DocsLink> 了解更多信息。",

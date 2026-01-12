@@ -94,6 +94,11 @@
 		"title": "取消",
 		"tooltip": "取消目前操作"
 	},
+	"stop": {
+		"title": "停止",
+		"tooltip": "停止目前的工作"
+	},
+	"enqueueMessage": "將訊息加入佇列（會在目前工作完成後傳送）",
 	"editMessage": {
 		"placeholder": "編輯您的訊息..."
 	},
