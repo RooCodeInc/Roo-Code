@@ -66,6 +66,14 @@ export async function openMention(cwd: string, mention?: string): Promise<void> 
 		vscode.commands.executeCommand("workbench.actions.view.problems")
 	} else if (mention === "terminal") {
 		vscode.commands.executeCommand("workbench.action.terminal.focus")
+	} else if (mention.startsWith("terminal:")) {
+		const terminalName = mention.slice(9)
+		const targetTerminal = vscode.window.terminals.find((t) => t.name === terminalName)
+		if (targetTerminal) {
+			targetTerminal.show()
+		} else {
+			vscode.commands.executeCommand("workbench.action.terminal.focus")
+		}
 	} else if (mention.startsWith("http")) {
 		vscode.env.openExternal(vscode.Uri.parse(mention))
 	}
@@ -144,6 +152,9 @@ export async function parseMentions(
 			return `Git commit '${mention}' (see below for commit info)`
 		} else if (mention === "terminal") {
 			return `Terminal Output (see below for output)`
+		} else if (mention.startsWith("terminal:")) {
+			const terminalName = mention.slice(9)
+			return `Terminal Output from '${terminalName}' (see below for output)`
 		}
 		return match
 	})
@@ -241,6 +252,14 @@ export async function parseMentions(
 				parsedText += `\n\n<terminal_output>\n${terminalOutput}\n</terminal_output>`
 			} catch (error) {
 				parsedText += `\n\n<terminal_output>\nError fetching terminal output: ${error.message}\n</terminal_output>`
+			}
+		} else if (mention.startsWith("terminal:")) {
+			const terminalName = mention.slice(9)
+			try {
+				const terminalOutput = await getLatestTerminalOutput(terminalName)
+				parsedText += `\n\n<terminal_output name="${terminalName}">\n${terminalOutput}\n</terminal_output>`
+			} catch (error) {
+				parsedText += `\n\n<terminal_output name="${terminalName}">\nError fetching terminal output: ${error.message}\n</terminal_output>`
 			}
 		}
 	}
@@ -378,14 +397,27 @@ async function getWorkspaceProblems(
 }
 
 /**
- * Gets the contents of the active terminal
+ * Gets the contents of a terminal
+ * @param terminalName Optional name of the terminal to get output from. If not provided, gets output from the active terminal.
  * @returns The terminal contents as a string
  */
-export async function getLatestTerminalOutput(): Promise<string> {
+export async function getLatestTerminalOutput(terminalName?: string): Promise<string> {
 	// Store original clipboard content to restore later
 	const originalClipboard = await vscode.env.clipboard.readText()
 
 	try {
+		// If a specific terminal name is provided, find and focus it first
+		if (terminalName) {
+			const targetTerminal = vscode.window.terminals.find((t) => t.name === terminalName)
+			if (!targetTerminal) {
+				return `Terminal '${terminalName}' not found`
+			}
+			// Show the terminal to make it active
+			targetTerminal.show()
+			// Small delay to ensure terminal is focused
+			await new Promise((resolve) => setTimeout(resolve, 100))
+		}
+
 		// Select terminal content
 		await vscode.commands.executeCommand("workbench.action.terminal.selectAll")
 

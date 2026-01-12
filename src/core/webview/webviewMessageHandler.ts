@@ -1714,6 +1714,26 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "searchTerminals": {
+			try {
+				// Get all VS Code terminal instances
+				const vsCodeTerminals = vscode.window.terminals
+				const terminals = vsCodeTerminals.map((terminal, index) => ({
+					id: index,
+					name: terminal.name,
+					isActive: vscode.window.activeTerminal === terminal,
+				}))
+				await provider.postMessageToWebview({
+					type: "terminalSearchResults",
+					terminals,
+				})
+			} catch (error) {
+				provider.log(
+					`Error searching terminals: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`,
+				)
+			}
+			break
+		}
 		case "searchFiles": {
 			const workspacePath = getCurrentCwd()
 

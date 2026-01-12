@@ -108,6 +108,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		}, [listApiConfigMeta, currentApiConfigName])
 
 		const [gitCommits, setGitCommits] = useState<any[]>([])
+		const [terminalInstances, setTerminalInstances] = useState<any[]>([])
 		const [showDropdown, setShowDropdown] = useState(false)
 		const [fileSearchResults, setFileSearchResults] = useState<SearchResult[]>([])
 		const [searchLoading, setSearchLoading] = useState(false)
@@ -198,6 +199,16 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					if (message.requestId === searchRequestId) {
 						setFileSearchResults(message.results || [])
 					}
+				} else if (message.type === "terminalSearchResults") {
+					const terminals =
+						message.terminals?.map((terminal: { id: number; name: string; isActive: boolean }) => ({
+							type: ContextMenuOptionType.Terminal,
+							value: `terminal:${terminal.name}`,
+							label: terminal.name,
+							description: terminal.isActive ? "Active terminal" : "Terminal instance",
+							icon: "$(terminal)",
+						})) || []
+					setTerminalInstances(terminals)
 				}
 			}
 
@@ -241,6 +252,16 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			}
 		}, [selectedType, searchQuery])
 
+		// Fetch terminal instances when Terminal is selected.
+		useEffect(() => {
+			if (selectedType === ContextMenuOptionType.Terminal) {
+				const message: WebviewMessage = {
+					type: "searchTerminals",
+				} as const
+				vscode.postMessage(message)
+			}
+		}, [selectedType])
+
 		const handleEnhancePrompt = useCallback(() => {
 			const trimmedInput = inputValue.trim()
 
@@ -275,6 +296,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				{ type: ContextMenuOptionType.Problems, value: "problems" },
 				{ type: ContextMenuOptionType.Terminal, value: "terminal" },
 				...gitCommits,
+				...terminalInstances,
 				...openedTabs
 					.filter((tab) => tab.path)
 					.map((tab) => ({
@@ -289,7 +311,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						value: path,
 					})),
 			]
-		}, [filePaths, gitCommits, openedTabs])
+		}, [filePaths, gitCommits, terminalInstances, openedTabs])
 
 		useEffect(() => {
 			const handleClickOutside = (event: MouseEvent) => {
@@ -349,7 +371,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				if (
 					type === ContextMenuOptionType.File ||
 					type === ContextMenuOptionType.Folder ||
-					type === ContextMenuOptionType.Git
+					type === ContextMenuOptionType.Git ||
+					type === ContextMenuOptionType.Terminal
 				) {
 					if (!value) {
 						setSelectedType(type)

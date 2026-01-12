@@ -248,6 +248,19 @@ export function getContextMenuOptions(
 			return commits.length > 0 ? [workingChanges, ...commits] : [workingChanges]
 		}
 
+		if (selectedType === ContextMenuOptionType.Terminal) {
+			const terminals = queryItems.filter((item) => item.type === ContextMenuOptionType.Terminal)
+			// Always include "All Terminals" option first, then specific terminals
+			const allTerminalsOption: ContextMenuQueryItem = {
+				type: ContextMenuOptionType.Terminal,
+				value: "terminal",
+				label: "All Terminals",
+				description: "Output from all terminal instances",
+				icon: "$(terminal)",
+			}
+			return terminals.length > 0 ? [allTerminalsOption, ...terminals] : [allTerminalsOption]
+		}
+
 		return [
 			{ type: ContextMenuOptionType.Problems },
 			{ type: ContextMenuOptionType.Terminal },
