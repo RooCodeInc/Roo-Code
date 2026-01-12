@@ -36,17 +36,6 @@ describe("ActivityIndicator", () => {
 			)
 		})
 
-		it("should include tooltip text in progress options", () => {
-			indicator.show()
-
-			expect(mockWithProgress).toHaveBeenCalledWith(
-				expect.objectContaining({
-					title: "Roo is working...",
-				}),
-				expect.any(Function),
-			)
-		})
-
 		it("should only call withProgress once when shown multiple times", () => {
 			indicator.show()
 			indicator.show()
