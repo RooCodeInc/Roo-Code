@@ -17,7 +17,11 @@ import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCal
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { convertToOpenAiMessages } from "../transform/openai-format"
+import {
+	convertToOpenAiMessages,
+	sanitizeGeminiMessages,
+	consolidateReasoningDetails,
+} from "../transform/openai-format"
 import { normalizeMistralToolCallId } from "../transform/mistral-format"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { TOOL_PROTOCOL } from "@roo-code/types"
@@ -251,6 +255,14 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
 		const isGemini = modelId.startsWith("google/gemini")
 
+		// For Gemini models: sanitize messages to handle thought signature validation issues.
+		// This must happen BEFORE fake encrypted block injection to avoid injecting for
+		// tool calls that will be dropped due to missing/mismatched reasoning_details.
+		// See: https://github.com/cline/cline/issues/8214
+		if (isNativeProtocol && isGemini) {
+			openAiMessages = sanitizeGeminiMessages(openAiMessages, modelId)
+		}
+
 		// For Gemini with native protocol: inject fake reasoning.encrypted block for tool calls
 		// This is required when switching from other models to Gemini to satisfy API validation.
 		// Per OpenRouter documentation (conversation with Toven, Nov 2025):
@@ -258,6 +270,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		// - Set `id` to the FIRST tool call's ID from the tool_calls array
 		// - Set `data` to "skip_thought_signature_validator" to bypass signature validation
 		// - Set `index` to 0
+		// NOTE: This only runs for tool calls that survived sanitization above.
 		if (isNativeProtocol && isGemini) {
 			openAiMessages = openAiMessages.map((msg) => {
 				if (msg.role === "assistant") {
@@ -506,9 +519,11 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		// After streaming completes, store ONLY the reasoning_details we received from the API.
+		// After streaming completes, consolidate and store reasoning_details from the API.
+		// This filters out corrupted encrypted blocks (missing `data`) and consolidates by index.
 		if (reasoningDetailsAccumulator.size > 0) {
-			this.currentReasoningDetails = Array.from(reasoningDetailsAccumulator.values())
+			const rawDetails = Array.from(reasoningDetailsAccumulator.values())
+			this.currentReasoningDetails = consolidateReasoningDetails(rawDetails)
 		}
 
 		if (lastUsage) {

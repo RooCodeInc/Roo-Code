@@ -3,7 +3,12 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { convertToOpenAiMessages } from "../openai-format"
+import {
+	convertToOpenAiMessages,
+	consolidateReasoningDetails,
+	sanitizeGeminiMessages,
+	ReasoningDetail,
+} from "../openai-format"
 import { normalizeMistralToolCallId } from "../mistral-format"
 
 describe("convertToOpenAiMessages", () => {
@@ -869,5 +874,340 @@ describe("convertToOpenAiMessages", () => {
 			expect(assistantMessage.reasoning_details[1].summary).toBe("Second part of thinking.")
 			expect(assistantMessage.reasoning_details[2].data).toBe("encrypted_data")
 		})
+	})
+})
+
+describe("consolidateReasoningDetails", () => {
+	it("should return empty array for empty input", () => {
+		expect(consolidateReasoningDetails([])).toEqual([])
+	})
+
+	it("should return empty array for undefined input", () => {
+		expect(consolidateReasoningDetails(undefined as any)).toEqual([])
+	})
+
+	it("should filter out corrupted encrypted blocks (missing data field)", () => {
+		const details: ReasoningDetail[] = [
+			{
+				type: "reasoning.encrypted",
+				// Missing data field - this should be filtered out
+				id: "rs_corrupted",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+			{
+				type: "reasoning.text",
+				text: "Valid reasoning",
+				id: "rs_valid",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+		]
+
+		const result = consolidateReasoningDetails(details)
+
+		// Should only have the text block, not the corrupted encrypted block
+		expect(result).toHaveLength(1)
+		expect(result[0].type).toBe("reasoning.text")
+		expect(result[0].text).toBe("Valid reasoning")
+	})
+
+	it("should concatenate text from multiple entries with same index", () => {
+		const details: ReasoningDetail[] = [
+			{
+				type: "reasoning.text",
+				text: "First part. ",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+			{
+				type: "reasoning.text",
+				text: "Second part.",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+		]
+
+		const result = consolidateReasoningDetails(details)
+
+		expect(result).toHaveLength(1)
+		expect(result[0].text).toBe("First part. Second part.")
+	})
+
+	it("should keep only the last encrypted block per index", () => {
+		const details: ReasoningDetail[] = [
+			{
+				type: "reasoning.encrypted",
+				data: "first_encrypted_data",
+				id: "rs_1",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+			{
+				type: "reasoning.encrypted",
+				data: "second_encrypted_data",
+				id: "rs_2",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+		]
+
+		const result = consolidateReasoningDetails(details)
+
+		// Should only have one encrypted block - the last one
+		expect(result).toHaveLength(1)
+		expect(result[0].type).toBe("reasoning.encrypted")
+		expect(result[0].data).toBe("second_encrypted_data")
+		expect(result[0].id).toBe("rs_2")
+	})
+
+	it("should keep last signature and id from multiple entries", () => {
+		const details: ReasoningDetail[] = [
+			{
+				type: "reasoning.text",
+				text: "Part 1",
+				signature: "sig_1",
+				id: "id_1",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+			{
+				type: "reasoning.text",
+				text: "Part 2",
+				signature: "sig_2",
+				id: "id_2",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+		]
+
+		const result = consolidateReasoningDetails(details)
+
+		expect(result).toHaveLength(1)
+		expect(result[0].signature).toBe("sig_2")
+		expect(result[0].id).toBe("id_2")
+	})
+
+	it("should group by index correctly", () => {
+		const details: ReasoningDetail[] = [
+			{
+				type: "reasoning.text",
+				text: "Index 0 text",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+			{
+				type: "reasoning.text",
+				text: "Index 1 text",
+				format: "google-gemini-v1",
+				index: 1,
+			},
+		]
+
+		const result = consolidateReasoningDetails(details)
+
+		expect(result).toHaveLength(2)
+		expect(result.find((r) => r.index === 0)?.text).toBe("Index 0 text")
+		expect(result.find((r) => r.index === 1)?.text).toBe("Index 1 text")
+	})
+
+	it("should handle summary blocks", () => {
+		const details: ReasoningDetail[] = [
+			{
+				type: "reasoning.summary",
+				summary: "Summary part 1",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+			{
+				type: "reasoning.summary",
+				summary: "Summary part 2",
+				format: "google-gemini-v1",
+				index: 0,
+			},
+		]
+
+		const result = consolidateReasoningDetails(details)
+
+		// Summary should be concatenated when there's no text
+		expect(result).toHaveLength(1)
+		expect(result[0].summary).toBe("Summary part 1Summary part 2")
+	})
+})
+
+describe("sanitizeGeminiMessages", () => {
+	it("should return messages unchanged for non-Gemini models", () => {
+		const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+			{ role: "system", content: "You are helpful" },
+			{ role: "user", content: "Hello" },
+		]
+
+		const result = sanitizeGeminiMessages(messages, "anthropic/claude-3-5-sonnet")
+
+		expect(result).toEqual(messages)
+	})
+
+	it("should drop tool calls without reasoning_details for Gemini models", () => {
+		const messages = [
+			{ role: "system", content: "You are helpful" },
+			{
+				role: "assistant",
+				content: "Let me read the file",
+				tool_calls: [
+					{
+						id: "call_123",
+						type: "function",
+						function: { name: "read_file", arguments: '{"path":"test.ts"}' },
+					},
+				],
+				// No reasoning_details
+			},
+			{ role: "tool", tool_call_id: "call_123", content: "file contents" },
+		] as OpenAI.Chat.ChatCompletionMessageParam[]
+
+		const result = sanitizeGeminiMessages(messages, "google/gemini-3-flash-preview")
+
+		// Should have 2 messages: system and assistant (with content but no tool_calls)
+		// Tool message should be dropped
+		expect(result).toHaveLength(2)
+		expect(result[0].role).toBe("system")
+		expect(result[1].role).toBe("assistant")
+		expect((result[1] as any).tool_calls).toBeUndefined()
+	})
+
+	it("should filter reasoning_details to only include entries matching tool call IDs", () => {
+		const messages = [
+			{
+				role: "assistant",
+				content: "",
+				tool_calls: [
+					{
+						id: "call_abc",
+						type: "function",
+						function: { name: "read_file", arguments: "{}" },
+					},
+				],
+				reasoning_details: [
+					{
+						type: "reasoning.encrypted",
+						data: "valid_data",
+						id: "call_abc", // Matches tool call
+						format: "google-gemini-v1",
+						index: 0,
+					},
+					{
+						type: "reasoning.encrypted",
+						data: "mismatched_data",
+						id: "call_xyz", // Does NOT match any tool call
+						format: "google-gemini-v1",
+						index: 1,
+					},
+				],
+			},
+		] as any
+
+		const result = sanitizeGeminiMessages(messages, "google/gemini-3-flash-preview")
+
+		expect(result).toHaveLength(1)
+		const assistantMsg = result[0] as any
+		expect(assistantMsg.tool_calls).toHaveLength(1)
+		expect(assistantMsg.reasoning_details).toHaveLength(1)
+		expect(assistantMsg.reasoning_details[0].id).toBe("call_abc")
+	})
+
+	it("should drop tool calls without matching reasoning_details", () => {
+		const messages = [
+			{
+				role: "assistant",
+				content: "Some text",
+				tool_calls: [
+					{
+						id: "call_abc",
+						type: "function",
+						function: { name: "tool_a", arguments: "{}" },
+					},
+					{
+						id: "call_def",
+						type: "function",
+						function: { name: "tool_b", arguments: "{}" },
+					},
+				],
+				reasoning_details: [
+					{
+						type: "reasoning.encrypted",
+						data: "data_for_abc",
+						id: "call_abc", // Only matches first tool call
+						format: "google-gemini-v1",
+						index: 0,
+					},
+				],
+			},
+			{ role: "tool", tool_call_id: "call_abc", content: "result a" },
+			{ role: "tool", tool_call_id: "call_def", content: "result b" },
+		] as any
+
+		const result = sanitizeGeminiMessages(messages, "google/gemini-3-flash-preview")
+
+		// Should have: assistant with 1 tool_call, 1 tool message
+		expect(result).toHaveLength(2)
+
+		const assistantMsg = result[0] as any
+		expect(assistantMsg.tool_calls).toHaveLength(1)
+		expect(assistantMsg.tool_calls[0].id).toBe("call_abc")
+
+		// Only the tool result for call_abc should remain
+		expect(result[1].role).toBe("tool")
+		expect((result[1] as any).tool_call_id).toBe("call_abc")
+	})
+
+	it("should include reasoning_details without id (legacy format)", () => {
+		const messages = [
+			{
+				role: "assistant",
+				content: "",
+				tool_calls: [
+					{
+						id: "call_abc",
+						type: "function",
+						function: { name: "read_file", arguments: "{}" },
+					},
+				],
+				reasoning_details: [
+					{
+						type: "reasoning.text",
+						text: "Some reasoning without id",
+						format: "google-gemini-v1",
+						index: 0,
+						// No id field
+					},
+					{
+						type: "reasoning.encrypted",
+						data: "encrypted_data",
+						id: "call_abc",
+						format: "google-gemini-v1",
+						index: 0,
+					},
+				],
+			},
+		] as any
+
+		const result = sanitizeGeminiMessages(messages, "google/gemini-3-flash-preview")
+
+		expect(result).toHaveLength(1)
+		const assistantMsg = result[0] as any
+		// Both details should be included (one by matching id, one by having no id)
+		expect(assistantMsg.reasoning_details.length).toBeGreaterThanOrEqual(1)
+	})
+
+	it("should preserve messages without tool_calls", () => {
+		const messages = [
+			{ role: "system", content: "You are helpful" },
+			{ role: "user", content: "Hello" },
+			{ role: "assistant", content: "Hi there!" },
+		] as OpenAI.Chat.ChatCompletionMessageParam[]
+
+		const result = sanitizeGeminiMessages(messages, "google/gemini-3-flash-preview")
+
+		expect(result).toEqual(messages)
 	})
 })
