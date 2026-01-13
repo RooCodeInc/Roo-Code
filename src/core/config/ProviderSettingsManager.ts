@@ -47,7 +47,6 @@ export const providerProfilesSchema = z.object({
 			openAiHeadersMigrated: z.boolean().optional(),
 			consecutiveMistakeLimitMigrated: z.boolean().optional(),
 			todoListEnabledMigrated: z.boolean().optional(),
-			claudeCodeLegacySettingsMigrated: z.boolean().optional(),
 		})
 		.optional(),
 })
@@ -72,7 +71,6 @@ export class ProviderSettingsManager {
 			openAiHeadersMigrated: true, // Mark as migrated on fresh installs
 			consecutiveMistakeLimitMigrated: true, // Mark as migrated on fresh installs
 			todoListEnabledMigrated: true, // Mark as migrated on fresh installs
-			claudeCodeLegacySettingsMigrated: true, // Mark as migrated on fresh installs
 		},
 	}
 
@@ -145,7 +143,6 @@ export class ProviderSettingsManager {
 						openAiHeadersMigrated: false,
 						consecutiveMistakeLimitMigrated: false,
 						todoListEnabledMigrated: false,
-						claudeCodeLegacySettingsMigrated: false,
 					} // Initialize with default values
 					isDirty = true
 				}
@@ -177,26 +174,6 @@ export class ProviderSettingsManager {
 				if (!providerProfiles.migrations.todoListEnabledMigrated) {
 					await this.migrateTodoListEnabled(providerProfiles)
 					providerProfiles.migrations.todoListEnabledMigrated = true
-					isDirty = true
-				}
-
-				if (!providerProfiles.migrations.claudeCodeLegacySettingsMigrated) {
-					// These keys were used by the removed local Claude Code CLI wrapper.
-					for (const apiConfig of Object.values(providerProfiles.apiConfigs)) {
-						if (apiConfig.apiProvider !== "claude-code") continue
-
-						const config = apiConfig as unknown as Record<string, unknown>
-						if ("claudeCodePath" in config) {
-							delete config.claudeCodePath
-							isDirty = true
-						}
-						if ("claudeCodeMaxOutputTokens" in config) {
-							delete config.claudeCodeMaxOutputTokens
-							isDirty = true
-						}
-					}
-
-					providerProfiles.migrations.claudeCodeLegacySettingsMigrated = true
 					isDirty = true
 				}
 
