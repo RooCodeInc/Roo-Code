@@ -432,6 +432,7 @@ export class ExtensionClient {
 		const message: WebviewMessage = {
 			type: "cancelTask",
 		}
+
 		this.sendMessage(message)
 	}
 
@@ -467,6 +468,7 @@ export class ExtensionClient {
 			type: "terminalOperation",
 			terminalOperation: "continue",
 		}
+
 		this.sendMessage(message)
 	}
 
@@ -480,6 +482,7 @@ export class ExtensionClient {
 			type: "terminalOperation",
 			terminalOperation: "abort",
 		}
+
 		this.sendMessage(message)
 	}
 

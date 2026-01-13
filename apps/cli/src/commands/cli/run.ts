@@ -168,7 +168,7 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 		console.log(ASCII_ROO)
 		console.log()
 		console.log(
-			`[roo] Running ${options.model || "default"} (${options.reasoningEffort || "default"}) on ${provider} in ${options.mode || "default"} mode in ${workspacePath}`,
+			`[roo] Running ${options.model || DEFAULT_FLAGS.model} (${options.reasoningEffort || "default"}) on ${provider} in ${options.mode || "default"} mode in ${workspacePath}`,
 		)
 
 		const host = new ExtensionHost({

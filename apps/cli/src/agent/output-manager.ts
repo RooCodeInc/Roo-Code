@@ -13,7 +13,16 @@
  * - Can be disabled for TUI mode where Ink controls the terminal
  */
 
+import fs from "fs"
 import { ClineMessage, ClineSay } from "@roo-code/types"
+
+// Debug logging to file (for CLI debugging without breaking TUI)
+const DEBUG_LOG = "/tmp/roo-cli-debug.log"
+function debugLog(message: string, data?: unknown) {
+	const timestamp = new Date().toISOString()
+	const entry = data ? `[${timestamp}] ${message}: ${JSON.stringify(data, null, 2)}\n` : `[${timestamp}] ${message}\n`
+	fs.appendFileSync(DEBUG_LOG, entry)
+}
 
 import { Observable } from "./events.js"
 
@@ -58,6 +67,12 @@ export interface OutputManagerOptions {
 	 * Stream for error output (default: process.stderr).
 	 */
 	stderr?: NodeJS.WriteStream
+
+	/**
+	 * When true, outputs verbose debug info for tool requests.
+	 * Enabled by -d flag in CLI.
+	 */
+	debug?: boolean
 }
 
 // =============================================================================
@@ -68,6 +83,7 @@ export class OutputManager {
 	private disabled: boolean
 	private stdout: NodeJS.WriteStream
 	private stderr: NodeJS.WriteStream
+	private debug: boolean
 
 	/**
 	 * Track displayed messages by ts to avoid duplicate output.
@@ -113,6 +129,7 @@ export class OutputManager {
 		this.disabled = options.disabled ?? false
 		this.stdout = options.stdout ?? process.stdout
 		this.stderr = options.stderr ?? process.stderr
+		this.debug = options.debug ?? false
 	}
 
 	// ===========================================================================
@@ -159,11 +176,25 @@ export class OutputManager {
 	}
 
 	/**
+	 * Get a timestamp for debug output.
+	 */
+	private getTimestamp(): string {
+		const now = new Date()
+		return `[${now.toISOString().slice(11, 23)}]`
+	}
+
+	/**
+	 * Whether to include timestamps in output (for debugging).
+	 */
+	private showTimestamps = !!process.env.DEBUG_TIMESTAMPS
+
+	/**
 	 * Output a simple text line with a label.
 	 */
 	output(label: string, text?: string): void {
 		if (this.disabled) return
-		const message = text ? `${label} ${text}\n` : `${label}\n`
+		const ts = this.showTimestamps ? `${this.getTimestamp()} ` : ""
+		const message = text ? `${ts}${label} ${text}\n` : `${ts}${label}\n`
 		this.stdout.write(message)
 	}
 
@@ -172,7 +203,8 @@ export class OutputManager {
 	 */
 	outputError(label: string, text?: string): void {
 		if (this.disabled) return
-		const message = text ? `${label} ${text}\n` : `${label}\n`
+		const ts = this.showTimestamps ? `${this.getTimestamp()} ` : ""
+		const message = text ? `${ts}${label} ${text}\n` : `${ts}${label}\n`
 		this.stderr.write(message)
 	}
 
@@ -181,7 +213,8 @@ export class OutputManager {
 	 */
 	writeRaw(text: string): void {
 		if (this.disabled) return
-		this.stdout.write(text)
+		const ts = this.showTimestamps ? `${this.getTimestamp()} ` : ""
+		this.stdout.write(ts + text)
 	}
 
 	/**
@@ -233,6 +266,7 @@ export class OutputManager {
 		this.hasStreamedTerminalOutput = false
 		this.toolContentStreamed.clear()
 		this.toolContentTruncated.clear()
+		this.toolLastDisplayedCharCount.clear()
 		this.streamingState.next({ ts: null, isStreaming: false })
 	}
 
@@ -421,9 +455,23 @@ export class OutputManager {
 	private toolContentTruncated = new Set<number>()
 
 	/**
+	 * Track the last displayed character count for streaming updates.
+	 */
+	private toolLastDisplayedCharCount = new Map<number, number>()
+
+	/**
 	 * Maximum lines to show when streaming file content.
 	 */
 	private static readonly MAX_PREVIEW_LINES = 5
+
+	/**
+	 * Helper to write debug output to stderr with timestamp.
+	 */
+	private debugOutput(message: string): void {
+		if (!this.debug) return
+		const ts = this.getTimestamp()
+		this.stderr.write(`${ts} [DEBUG] ${message}\n`)
+	}
 
 	/**
 	 * Output tool request (file create/edit/delete) with streaming content preview.
@@ -448,17 +496,56 @@ export class OutputManager {
 			// Use default if not JSON
 		}
 
+		// Debug output: show every tool request message
+		this.debugOutput(
+			`outputToolRequest: ts=${ts} partial=${isPartial} tool=${toolName} path="${toolPath}" contentLen=${content.length}`,
+		)
+
+		debugLog("[outputToolRequest] called", {
+			ts,
+			isPartial,
+			toolName,
+			toolPath,
+			contentLen: content.length,
+		})
+
 		if (isPartial && text) {
 			const previousContent = this.toolContentStreamed.get(ts) || ""
 			const previous = this.streamedContent.get(ts)
+			const currentLineCount = content === "" ? 0 : content.split("\n").length
 
-			if (!previous) {
-				// First partial - show header with path (if has valid extension)
-				// Check for valid extension: must have a dot followed by 1+ characters
-				const hasValidExtension = /\.[a-zA-Z0-9]+$/.test(toolPath)
-				const pathInfo = hasValidExtension ? ` ${toolPath}` : ""
-				this.writeRaw(`\n[${toolName}]${pathInfo}\n`)
+			// Check for valid extension: must have a dot followed by 1+ characters
+			const hasValidExtension = /\.[a-zA-Z0-9]+$/.test(toolPath)
+
+			// Don't show header until we have BOTH a valid path AND some content.
+			// This prevents showing "[newFileCreated] (0 chars)" followed by a long
+			// pause while the LLM generates the content.
+			const shouldShowHeader = hasValidExtension && content.length > 0
+
+			if (!previous && shouldShowHeader) {
+				// First partial with valid path and content - show header
+				const pathInfo = ` ${toolPath}`
+				debugLog("[outputToolRequest] FIRST PARTIAL - header", {
+					toolName,
+					toolPath,
+					contentLen: content.length,
+				})
+				this.writeRaw(`\n[${toolName}]${pathInfo} (${content.length} chars)\n`)
 				this.streamedContent.set(ts, { ts, text, headerShown: true })
+				this.toolLastDisplayedCharCount.set(ts, content.length)
+				this.currentlyStreamingTs = ts
+				this.streamingState.next({ ts, isStreaming: true })
+			} else if (!previous && !shouldShowHeader) {
+				// Early partial without valid path/content - track but don't show yet
+				// Just set headerShown: false to track we've seen this ts
+				this.streamedContent.set(ts, { ts, text, headerShown: false })
+			} else if (previous && !previous.headerShown && shouldShowHeader) {
+				// Path and content now valid - show the header now
+				const pathInfo = ` ${toolPath}`
+				debugLog("[outputToolRequest] DEFERRED HEADER", { toolName, toolPath, contentLen: content.length })
+				this.writeRaw(`\n[${toolName}]${pathInfo} (${content.length} chars)\n`)
+				this.streamedContent.set(ts, { ts, text, headerShown: true })
+				this.toolLastDisplayedCharCount.set(ts, content.length)
 				this.currentlyStreamingTs = ts
 				this.streamingState.next({ ts, isStreaming: true })
 			}
@@ -468,7 +555,6 @@ export class OutputManager {
 				const delta = content.slice(previousContent.length)
 				// Check if we're still within the preview limit
 				const previousLineCount = previousContent === "" ? 0 : previousContent.split("\n").length
-				const currentLineCount = content === "" ? 0 : content.split("\n").length
 				const previouslyTruncated = this.toolContentTruncated.has(ts)
 
 				if (!previouslyTruncated) {
@@ -477,7 +563,6 @@ export class OutputManager {
 						this.writeRaw(delta)
 					} else if (previousLineCount < OutputManager.MAX_PREVIEW_LINES) {
 						// Just crossed the limit - output remaining lines up to limit, mark as truncated
-						// (truncation message will be shown at completion with final count)
 						const linesToShow = OutputManager.MAX_PREVIEW_LINES - previousLineCount
 						const deltaLines = delta.split("\n")
 						const truncatedDelta = deltaLines.slice(0, linesToShow).join("\n")
@@ -485,24 +570,34 @@ export class OutputManager {
 							this.writeRaw(truncatedDelta)
 						}
 						this.toolContentTruncated.add(ts)
+						// Show streaming indicator with char count
+						this.writeRaw(`\n... streaming (${content.length} chars)`)
+						this.toolLastDisplayedCharCount.set(ts, content.length)
 					} else {
 						// Already at/past limit but not yet marked - just mark as truncated
 						this.toolContentTruncated.add(ts)
 					}
+				} else {
+					// Already truncated - update streaming char count on each update
+					// Output on new lines so updates are visible in captured output
+					const lastDisplayed = this.toolLastDisplayedCharCount.get(ts) || 0
+					if (content.length !== lastDisplayed) {
+						this.writeRaw(`\n... streaming (${content.length} chars)`)
+						this.toolLastDisplayedCharCount.set(ts, content.length)
+					}
 				}
-				// If already truncated, don't output more content
 				this.toolContentStreamed.set(ts, content)
 			}
 
 			this.displayedMessages.set(ts, { ts, text, partial: true })
 		} else if (!isPartial && !alreadyDisplayedComplete) {
-			// Tool request complete - check if we need to show truncation message
+			// Tool request complete
 			const previousContent = this.toolContentStreamed.get(ts) || ""
 			const currentLineCount = content === "" ? 0 : content.split("\n").length
+			const wasTruncated = this.toolContentTruncated.has(ts)
 
-			// Show truncation message if content exceeds preview limit
-			// (We only mark as truncated during partials, the actual message is shown here with final count)
-			if (currentLineCount > OutputManager.MAX_PREVIEW_LINES && previousContent) {
+			// Show final truncation message
+			if (wasTruncated && previousContent) {
 				const remainingLines = currentLineCount - OutputManager.MAX_PREVIEW_LINES
 				this.writeRaw(`\n... (${remainingLines} more lines)\n`)
 			}
@@ -517,6 +612,7 @@ export class OutputManager {
 			// Clean up tool content tracking
 			this.toolContentStreamed.delete(ts)
 			this.toolContentTruncated.delete(ts)
+			this.toolLastDisplayedCharCount.delete(ts)
 		}
 	}
 

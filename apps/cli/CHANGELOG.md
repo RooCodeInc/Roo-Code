@@ -5,6 +5,34 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.46] - 2026-01-12
+
+### Added
+
+- **Text User Interface (TUI)**: Major new interactive terminal UI with React/Ink for enhanced user experience ([#10480](https://github.com/RooCodeInc/Roo-Code/pull/10480))
+    - Interactive mode and model pickers for easy selection
+    - Improved task management and navigation
+- CLI release script now supports local installation for testing ([#10597](https://github.com/RooCodeInc/Roo-Code/pull/10597))
+
+### Changed
+
+- Default model changed to `anthropic/claude-opus-4.5` ([#10544](https://github.com/RooCodeInc/Roo-Code/pull/10544))
+- File organization improvements for better maintainability ([#10599](https://github.com/RooCodeInc/Roo-Code/pull/10599))
+- Cleanup in ExtensionHost for better code organization ([#10600](https://github.com/RooCodeInc/Roo-Code/pull/10600))
+- Updated README documentation
+- Logging cleanup and improvements
+
+### Fixed
+
+- Model switching issues (model ID mismatch)
+- ACP task cancellation handling
+- Command output streaming
+- Use `DEFAULT_FLAGS.model` as single source of truth for default model ID
+
+### Tests
+
+- Updated tests for model changes
+
 ## [0.0.45] - 2026-01-08
 
 ### Changed

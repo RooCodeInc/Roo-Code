@@ -157,7 +157,7 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 | `-y, --yes`                       | Non-interactive mode: auto-approve all actions                                          | `false`                       |
 | `-k, --api-key <key>`             | API key for the LLM provider                                                            | From env var                  |
 | `-p, --provider <provider>`       | API provider (anthropic, openai, openrouter, etc.)                                      | `openrouter`                  |
-| `-m, --model <model>`             | Model to use                                                                            | `anthropic/claude-sonnet-4.5` |
+| `-m, --model <model>`             | Model to use                                                                            | `anthropic/claude-opus-4.5`   |
 | `-M, --mode <mode>`               | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                        |
 | `-r, --reasoning-effort <effort>` | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                      |
 | `--ephemeral`                     | Run without persisting state (uses temporary storage)                                   | `false`                       |
@@ -170,6 +170,56 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 | `roo auth login`  | Authenticate with Roo Code Cloud   |
 | `roo auth logout` | Clear stored authentication token  |
 | `roo auth status` | Show current authentication status |
+
+## ACP (Agent Client Protocol) Integration
+
+The CLI supports the [Agent Client Protocol (ACP)](https://agentclientprotocol.com), allowing ACP-compatible editors like [Zed](https://zed.dev) to use Roo Code as their AI coding assistant.
+
+### Running ACP Server Mode
+
+Start the CLI in ACP server mode:
+
+```bash
+roo acp [options]
+```
+
+**ACP Options:**
+
+| Option                      | Description                                  | Default                       |
+| --------------------------- | -------------------------------------------- | ----------------------------- |
+| `-e, --extension <path>`    | Path to the extension bundle directory       | Auto-detected                 |
+| `-p, --provider <provider>` | API provider (anthropic, openai, openrouter) | `openrouter`                  |
+| `-m, --model <model>`       | Model to use                                 | `anthropic/claude-opus-4.5`   |
+| `-M, --mode <mode>`         | Initial mode (code, architect, ask, debug)   | `code`                        |
+| `-k, --api-key <key>`       | API key for the LLM provider                 | From env var                  |
+
+### Configuring Zed
+
+Add the following to your Zed settings (`settings.json`):
+
+```json
+{
+	"agent_servers": {
+		"Roo Code": {
+			"command": "roo",
+			"args": ["acp"]
+		}
+	}
+}
+```
+
+If you need to specify options:
+
+```json
+{
+	"agent_servers": {
+		"Roo Code": {
+			"command": "roo",
+			"args": ["acp", "-e", "/path/to/extension", "-m", "anthropic/claude-sonnet-4.5"]
+		}
+	}
+}
+```
 
 ## Environment Variables
 

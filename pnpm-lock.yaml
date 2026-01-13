@@ -82,6 +82,9 @@ importers:
 
   apps/cli:
     dependencies:
+      '@agentclientprotocol/sdk':
+        specifier: ^0.12.0
+        version: 0.12.0(zod@4.3.5)
       '@inkjs/ui':
         specifier: ^2.0.0
         version: 2.0.0(ink@6.6.0(@types/react@18.3.23)(react@19.2.3))
@@ -118,6 +121,9 @@ importers:
       superjson:
         specifier: ^2.2.6
         version: 2.2.6
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
       zustand:
         specifier: ^5.0.0
         version: 5.0.9(@types/react@18.3.23)(react@19.2.3)
@@ -1355,6 +1361,11 @@ packages:
 
   '@adobe/css-tools@4.4.2':
     resolution: {integrity: sha512-baYZExFpsdkBNuvGKTKWCwKH57HRZLVtycZS05WTQNVOiXVSeAki3nU35zlRbToeMW8aHlJfyS+1C4BOv27q0A==}
+
+  '@agentclientprotocol/sdk@0.12.0':
+    resolution: {integrity: sha512-V8uH/KK1t7utqyJmTA7y7DzKu6+jKFIXM+ZVouz8E55j8Ej2RV42rEvPKn3/PpBJlliI5crcGk1qQhZ7VwaepA==}
+    peerDependencies:
+      zod: ^3.25.0 || ^4.0.0
 
   '@alcalzone/ansi-tokenize@0.2.3':
     resolution: {integrity: sha512-jsElTJ0sQ4wHRz+C45tfect76BwbTbgkgKByOzpCN9xG61N5V6u/glvg1CsNJhq2xJIFpKHSwG3D2wPPuEYOrQ==}
@@ -10659,6 +10670,9 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
+  zod@4.3.5:
+    resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
+
   zustand@5.0.9:
     resolution: {integrity: sha512-ALBtUj0AfjJt3uNRQoL1tL2tMvj6Gp/6e39dnfT6uzpelGru8v1tPOGBzayOWbPJvujM8JojDk3E1LxeFisBNg==}
     engines: {node: '>=12.20.0'}
@@ -10683,6 +10697,10 @@ packages:
 snapshots:
 
   '@adobe/css-tools@4.4.2': {}
+
+  '@agentclientprotocol/sdk@0.12.0(zod@4.3.5)':
+    dependencies:
+      zod: 4.3.5
 
   '@alcalzone/ansi-tokenize@0.2.3':
     dependencies:
@@ -21714,6 +21732,8 @@ snapshots:
   zod@3.25.61: {}
 
   zod@3.25.76: {}
+
+  zod@4.3.5: {}
 
   zustand@5.0.9(@types/react@18.3.23)(react@19.2.3):
     optionalDependencies:

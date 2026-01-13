@@ -2,7 +2,7 @@ import { RooCodeSettings } from "@roo-code/types"
 
 import type { SupportedProvider } from "@/types/index.js"
 
-const envVarMap: Record<SupportedProvider, string> = {
+export const envVarMap: Record<SupportedProvider, string> = {
 	anthropic: "ANTHROPIC_API_KEY",
 	"openai-native": "OPENAI_API_KEY",
 	gemini: "GOOGLE_API_KEY",

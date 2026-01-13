@@ -37,6 +37,7 @@ import { ExtensionClient } from "./extension-client.js"
 import { OutputManager } from "./output-manager.js"
 import { PromptManager } from "./prompt-manager.js"
 import { AskDispatcher } from "./ask-dispatcher.js"
+import { testLog } from "./test-logger.js"
 
 // Pre-configured logger for CLI message activity debugging.
 const cliLogger = new DebugLogger("CLI")
@@ -163,6 +164,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		// Initialize output manager.
 		this.outputManager = new OutputManager({
 			disabled: options.disableOutput,
+			debug: options.debug,
 		})
 
 		// Initialize prompt manager with console mode callbacks.
@@ -246,9 +248,30 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 	 * The client emits events, managers handle them.
 	 */
 	private setupClientEventHandlers(): void {
+		// === TEST LOGGING: State changes (matches ACP session.ts logging) ===
+		this.client.on("stateChange", (event) => {
+			const prev = event.previousState
+			const curr = event.currentState
+
+			// Only log if something actually changed
+			const stateChanged =
+				prev.state !== curr.state ||
+				prev.isRunning !== curr.isRunning ||
+				prev.isStreaming !== curr.isStreaming ||
+				prev.currentAsk !== curr.currentAsk
+
+			if (stateChanged) {
+				testLog.info(
+					"ExtensionClient",
+					`STATE: ${prev.state} → ${curr.state} (running=${curr.isRunning}, streaming=${curr.isStreaming}, ask=${curr.currentAsk || "none"})`,
+				)
+			}
+		})
+
 		// Handle new messages - delegate to OutputManager.
 		this.client.on("message", (msg: ClineMessage) => {
 			this.logMessageDebug(msg, "new")
+
 			// DEBUG: Log all incoming messages with timestamp (only when -d flag is set)
 			if (this.options.debug) {
 				const ts = new Date().toISOString()
@@ -256,12 +279,14 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 				const partial = msg.partial ? "PARTIAL" : "COMPLETE"
 				process.stdout.write(`\n[DEBUG ${ts}] NEW ${msgType} ${partial} ts=${msg.ts}\n`)
 			}
+
 			this.outputManager.outputMessage(msg)
 		})
 
 		// Handle message updates - delegate to OutputManager.
 		this.client.on("messageUpdated", (msg: ClineMessage) => {
 			this.logMessageDebug(msg, "updated")
+
 			// DEBUG: Log all message updates with timestamp (only when -d flag is set)
 			if (this.options.debug) {
 				const ts = new Date().toISOString()
@@ -269,6 +294,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 				const partial = msg.partial ? "PARTIAL" : "COMPLETE"
 				process.stdout.write(`\n[DEBUG ${ts}] UPDATED ${msgType} ${partial} ts=${msg.ts}\n`)
 			}
+
 			this.outputManager.outputMessage(msg)
 		})
 

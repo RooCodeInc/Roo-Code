@@ -200,9 +200,15 @@ export function useClientEvents({ client, nonInteractive }: UseClientEventsOptio
 					toolDisplayName = toolInfo.tool as string
 					toolDisplayOutput = formatToolOutput(toolInfo)
 					toolData = extractToolData(toolInfo)
-				} catch {
+				} catch (err) {
 					// Use raw text if not valid JSON - may happen during early streaming
 					parseError = true
+					tuiLogger.debug("ask:partial-tool:parse-error", {
+						id: messageId,
+						textLen: text.length,
+						textPreview: text.substring(0, 100),
+						error: String(err),
+					})
 				}
 
 				tuiLogger.debug("ask:partial-tool", {
@@ -210,6 +216,8 @@ export function useClientEvents({ client, nonInteractive }: UseClientEventsOptio
 					textLen: text.length,
 					toolName: toolName || "none",
 					hasToolData: !!toolData,
+					toolDataPath: toolData?.path,
+					toolDataContentLen: toolData?.content?.length || 0,
 					parseError,
 				})
 

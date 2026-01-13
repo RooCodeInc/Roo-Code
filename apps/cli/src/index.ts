@@ -2,7 +2,7 @@ import { Command } from "commander"
 
 import { DEFAULT_FLAGS } from "@/types/constants.js"
 import { VERSION } from "@/lib/utils/version.js"
-import { run, login, logout, status } from "@/commands/index.js"
+import { run, login, logout, status, acp } from "@/commands/index.js"
 
 const program = new Command()
 
@@ -61,5 +61,15 @@ authCommand
 		const result = await status({ verbose: options.verbose })
 		process.exit(result.authenticated ? 0 : 1)
 	})
+
+program
+	.command("acp")
+	.description("Start ACP server mode for integration with editors like Zed")
+	.option("-e, --extension <path>", "Path to the extension bundle directory")
+	.option("-p, --provider <provider>", "API provider (anthropic, openai, openrouter, etc.)", DEFAULT_FLAGS.provider)
+	.option("-m, --model <model>", "Model to use", DEFAULT_FLAGS.model)
+	.option("-M, --mode <mode>", "Initial mode (code, architect, ask, debug)", DEFAULT_FLAGS.mode)
+	.option("-k, --api-key <key>", "API key for the LLM provider")
+	.action(acp)
 
 program.parse()

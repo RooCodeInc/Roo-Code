@@ -11,8 +11,18 @@ export default defineConfig({
 	banner: {
 		js: "#!/usr/bin/env node",
 	},
-	// Bundle workspace packages that export TypeScript
-	noExternal: ["@roo-code/core", "@roo-code/core/cli", "@roo-code/types", "@roo-code/vscode-shim"],
+	// Bundle workspace packages and ESM-only npm dependencies to create a self-contained CLI
+	noExternal: [
+		// Workspace packages
+		"@roo-code/core",
+		"@roo-code/core/cli",
+		"@roo-code/types",
+		"@roo-code/vscode-shim",
+		// ESM-only npm dependencies that need to be bundled
+		"@agentclientprotocol/sdk",
+		"p-wait-for",
+		"zod",
+	],
 	external: [
 		// Keep native modules external
 		"@anthropic-ai/sdk",
