@@ -46,7 +46,6 @@
 		"roocode"
 	],
 	"activationEvents": [
-		"onLanguage",
 		"onStartupFinished"
 	],
 	"main": "./dist/extension.js",
