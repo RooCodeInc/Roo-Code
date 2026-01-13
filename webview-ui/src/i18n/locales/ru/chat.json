@@ -481,5 +481,9 @@
 		"updated": "Список задач обновлен",
 		"completed": "Завершено",
 		"started": "Начато"
+	},
+	"webSearch": {
+		"wantsToSearch": "Roo wants to search the web for <code>{{query}}</code>",
+		"didSearch": "Roo searched the web for <code>{{query}}</code>"
 	}
 }

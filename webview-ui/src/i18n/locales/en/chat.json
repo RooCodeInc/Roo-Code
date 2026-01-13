@@ -472,5 +472,9 @@
 		"updated": "Updated the to-do list",
 		"completed": "Completed",
 		"started": "Started"
+	},
+	"webSearch": {
+		"wantsToSearch": "Roo wants to search the web for <code>{{query}}</code>",
+		"didSearch": "Roo searched the web for <code>{{query}}</code>"
 	}
 }

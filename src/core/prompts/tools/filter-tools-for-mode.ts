@@ -294,6 +294,7 @@ export function filterNativeToolsForMode(
 	// Conditionally exclude browser_action if disabled in settings
 	if (settings?.browserToolEnabled === false) {
 		allowedToolNames.delete("browser_action")
+		allowedToolNames.delete("web_search")
 	}
 
 	// Conditionally exclude apply_diff if diffs are disabled
@@ -383,7 +384,7 @@ export function isToolAllowedInMode(
 	}
 
 	// Check for browser_action being disabled by user settings
-	if (toolName === "browser_action" && settings?.browserToolEnabled === false) {
+	if ((toolName === "browser_action" || toolName === "web_search") && settings?.browserToolEnabled === false) {
 		return false
 	}
 

@@ -40,6 +40,7 @@ import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
+import { webSearchTool } from "../tools/WebSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 
@@ -1009,6 +1010,15 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "search_files":
 					await searchFilesTool.handle(cline, block as ToolUse<"search_files">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+						removeClosingTag,
+						toolProtocol,
+					})
+					break
+				case "web_search":
+					await webSearchTool.handle(cline, block as ToolUse<"web_search">, {
 						askApproval,
 						handleError,
 						pushToolResult,

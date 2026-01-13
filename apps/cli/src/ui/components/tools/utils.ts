@@ -69,6 +69,8 @@ export function getToolDisplayName(toolName: string): string {
 		search_files: "Search Files",
 		codebaseSearch: "Codebase Search",
 		codebase_search: "Codebase Search",
+		webSearch: "Web Search",
+		web_search: "Web Search",
 
 		// Command operations
 		execute_command: "Execute Command",
@@ -126,6 +128,8 @@ export function getToolIconName(toolName: string): IconName {
 		search_files: "search",
 		codebaseSearch: "search",
 		codebase_search: "search",
+		webSearch: "search",
+		web_search: "search",
 
 		// Command operations
 		execute_command: "terminal",

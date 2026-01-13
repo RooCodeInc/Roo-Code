@@ -769,6 +769,37 @@ export const ChatRowContent = ({
 						</div>
 					</>
 				)
+			case "webSearch":
+				return (
+					<>
+						<div style={headerStyle}>
+							{toolIcon("search")}
+							<span style={{ fontWeight: "bold" }}>
+								{message.type === "ask" ? (
+									<Trans
+										i18nKey="chat:webSearch.wantsToSearch"
+										components={{ code: <code className="font-medium">{tool.query}</code> }}
+										values={{ query: tool.query }}
+									/>
+								) : (
+									<Trans
+										i18nKey="chat:webSearch.didSearch"
+										components={{ code: <code className="font-medium">{tool.query}</code> }}
+										values={{ query: tool.query }}
+									/>
+								)}
+							</span>
+						</div>
+						<div className="pl-6">
+							<CodeAccordian
+								code={tool.content || ""}
+								language="markdown"
+								isExpanded={isExpanded}
+								onToggleExpand={handleToggleExpand}
+							/>
+						</div>
+					</>
+				)
 			case "switchMode":
 				return (
 					<>

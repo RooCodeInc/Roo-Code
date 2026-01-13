@@ -23,6 +23,7 @@ import { getAccessMcpResourceDescription } from "./access-mcp-resource"
 import { getSwitchModeDescription } from "./switch-mode"
 import { getNewTaskDescription } from "./new-task"
 import { getCodebaseSearchDescription } from "./codebase-search"
+import { getWebSearchDescription } from "./web-search"
 import { getUpdateTodoListDescription } from "./update-todo-list"
 import { getRunSlashCommandDescription } from "./run-slash-command"
 import { getGenerateImageDescription } from "./generate-image"
@@ -36,6 +37,7 @@ const toolDescriptionMap: Record<string, (args: ToolArgs) => string | undefined>
 	search_files: (args) => getSearchFilesDescription(args),
 	list_files: (args) => getListFilesDescription(args),
 	browser_action: (args) => getBrowserActionDescription(args),
+	web_search: () => getWebSearchDescription(),
 	ask_followup_question: () => getAskFollowupQuestionDescription(),
 	attempt_completion: (args) => getAttemptCompletionDescription(args),
 	use_mcp_tool: (args) => getUseMcpToolDescription(args),
@@ -131,6 +133,11 @@ export function getToolDescriptionsForMode(
 		tools.delete("run_slash_command")
 	}
 
+	// Conditionally exclude web_search if browser tools are disabled in settings
+	if (settings?.browserToolEnabled === false) {
+		tools.delete("web_search")
+	}
+
 	// Map tool descriptions for allowed tools
 	const descriptions = Array.from(tools).map((toolName) => {
 		const descriptionFn = toolDescriptionMap[toolName]
@@ -164,6 +171,7 @@ export {
 	getAccessMcpResourceDescription,
 	getSwitchModeDescription,
 	getCodebaseSearchDescription,
+	getWebSearchDescription,
 	getRunSlashCommandDescription,
 	getGenerateImageDescription,
 }

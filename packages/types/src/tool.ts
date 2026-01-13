@@ -26,6 +26,7 @@ export const toolNames = [
 	"search_files",
 	"list_files",
 	"browser_action",
+	"web_search",
 	"use_mcp_tool",
 	"access_mcp_resource",
 	"ask_followup_question",

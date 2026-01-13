@@ -63,6 +63,7 @@ export const toolParamNames = [
 	"task",
 	"size",
 	"query",
+	"max_results",
 	"args",
 	"start_line",
 	"end_line",
@@ -102,6 +103,7 @@ export type NativeToolArgs = {
 	}
 	browser_action: BrowserActionParams
 	codebase_search: { query: string; path?: string }
+	web_search: { query: string; max_results?: number }
 	fetch_instructions: { task: string }
 	generate_image: GenerateImageParams
 	run_slash_command: { command: string; args?: string }
@@ -196,6 +198,11 @@ export interface BrowserActionToolUse extends ToolUse<"browser_action"> {
 	params: Partial<Pick<Record<ToolParamName, string>, "action" | "url" | "coordinate" | "text" | "size" | "path">>
 }
 
+export interface WebSearchToolUse extends ToolUse<"web_search"> {
+	name: "web_search"
+	params: Partial<Pick<Record<ToolParamName, string>, "query" | "max_results">>
+}
+
 export interface UseMcpToolToolUse extends ToolUse<"use_mcp_tool"> {
 	name: "use_mcp_tool"
 	params: Partial<Pick<Record<ToolParamName, string>, "server_name" | "tool_name" | "arguments">>
@@ -256,6 +263,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	search_files: "search files",
 	list_files: "list files",
 	browser_action: "use a browser",
+	web_search: "search the web",
 	use_mcp_tool: "use mcp tools",
 	access_mcp_resource: "access mcp resources",
 	ask_followup_question: "ask questions",
@@ -279,7 +287,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		customTools: ["search_and_replace", "search_replace", "edit_file", "apply_patch"],
 	},
 	browser: {
-		tools: ["browser_action"],
+		tools: ["browser_action", "web_search"],
 	},
 	command: {
 		tools: ["execute_command"],

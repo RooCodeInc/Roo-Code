@@ -480,5 +480,9 @@
 		"updated": "To-Doリストを更新しました",
 		"completed": "完了",
 		"started": "開始"
+	},
+	"webSearch": {
+		"wantsToSearch": "Roo wants to search the web for <code>{{query}}</code>",
+		"didSearch": "Roo searched the web for <code>{{query}}</code>"
 	}
 }

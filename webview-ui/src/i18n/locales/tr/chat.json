@@ -481,5 +481,9 @@
 		"updated": "Yapılacaklar listesi güncellendi",
 		"completed": "Tamamlandı",
 		"started": "Başladı"
+	},
+	"webSearch": {
+		"wantsToSearch": "Roo wants to search the web for <code>{{query}}</code>",
+		"didSearch": "Roo searched the web for <code>{{query}}</code>"
 	}
 }

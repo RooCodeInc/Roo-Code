@@ -480,5 +480,9 @@
 		"updated": "할 일 목록을 업데이트했습니다",
 		"completed": "완료됨",
 		"started": "시작됨"
+	},
+	"webSearch": {
+		"wantsToSearch": "Roo wants to search the web for <code>{{query}}</code>",
+		"didSearch": "Roo searched the web for <code>{{query}}</code>"
 	}
 }
