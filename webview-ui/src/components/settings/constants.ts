@@ -71,7 +71,7 @@ export const PROVIDERS = [
 	{ value: "groq", label: "Groq", proxy: false },
 	{ value: "huggingface", label: "Hugging Face", proxy: false },
 	{ value: "chutes", label: "Chutes AI", proxy: false },
-	{ value: "litellm", label: "LiteLLM", proxy: false },
+	{ value: "litellm", label: "LiteLLM", proxy: true },
 	{ value: "sambanova", label: "SambaNova", proxy: false },
 	{ value: "zai", label: "Z.ai", proxy: false },
 	{ value: "fireworks", label: "Fireworks AI", proxy: false },
