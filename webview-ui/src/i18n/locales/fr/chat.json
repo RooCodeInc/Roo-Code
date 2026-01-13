@@ -329,9 +329,9 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"stickyProfiles": "Profils de fournisseur persistants - Les tâches se souviennent maintenant de leur configuration API, donc changer de profil en cours de session n'affecte pas les tâches en cours d'exécution.",
-			"imageMentions": "Mentions de fichiers d'image - Référencez les images directement dans le chat en utilisant les mentions @ pour les inclure dans votre contexte.",
-			"brrrMode": "YOLO est maintenant BRRR - L'approbation automatique de tout a été renommée de \"YOLO\" en \"BRRR\". Évidemment."
+			"settingsSearch": "Trouvez et naviguez rapidement vers des paramètres spécifiques avec la nouvelle recherche de paramètres.",
+			"stopButtonUX": "Remplacement du gros bouton d'annulation intrusif par un bouton d'arrêt plus élégant.",
+			"apiCompatibility": "Résolution des problèmes d'API avec Gemini, les noms d'outils MCP et les appels d'outils en parallèle."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",

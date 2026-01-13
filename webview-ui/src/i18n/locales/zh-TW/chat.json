@@ -340,9 +340,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"stickyProfiles": "固定式提供商設定檔 - 工作現在會記住其 API 設定，因此在會話中途切換設定檔不會影響正在執行的工作。",
-			"imageMentions": "圖像檔案 @mentions - 在聊天中直接使用 @mentions 引用圖像，將其包含在您的上下文中。",
-			"brrrMode": "YOLO 現在是 BRRR - 自動批准一切已從 \"YOLO\" 更名為 \"BRRR\"。顯然。"
+			"settingsSearch": "透過新的設定搜尋功能快速尋找和瀏覽特定設定。",
+			"stopButtonUX": "將大型侵入式取消按鈕替換為更優雅的停止按鈕。",
+			"apiCompatibility": "解決了 Gemini、MCP 工具名稱和並行工具呼叫的 API 問題。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",

@@ -330,9 +330,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"stickyProfiles": "Yapışkan Sağlayıcı Profilleri - Görevler artık API yapılandırmalarını hatırlıyor, bu nedenle oturum ortasında profil değiştirmek çalışan görevleri etkilemez.",
-			"imageMentions": "Görüntü Dosyası @Mentions - Bağlamınıza dahil etmek için @mentions kullanarak sohbette doğrudan görüntülere başvurun.",
-			"brrrMode": "YOLO artık BRRR - Her şeyi otomatik onaylama \"YOLO\"dan \"BRRR\" olarak yeniden adlandırıldı. Tabii ki."
+			"settingsSearch": "Yeni ayar aramasıyla belirli ayarları hızlıca bulun ve erişin.",
+			"stopButtonUX": "Büyük rahatsız edici iptal düğmesinden daha zarif bir durdur düğmesine geçtik.",
+			"apiCompatibility": "Gemini, MCP araç adları ve paralel araç çağrılarıyla ilgili API sorunları çözüldü."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

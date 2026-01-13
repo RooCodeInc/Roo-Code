@@ -329,9 +329,9 @@
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"stickyProfiles": "Sticky Provider-Profile - Aufgaben merken sich jetzt ihre API-Konfiguration, daher wirkt sich ein Profilwechsel während einer Sitzung nicht auf laufende Aufgaben aus.",
-			"imageMentions": "Bilddatei @-Mentions - Referenziere Bilder direkt im Chat mit @ Mentions, um sie in deinen Kontext einzubeziehen.",
-			"brrrMode": "YOLO ist jetzt BRRR - Die automatische Genehmigung von allem wurde von \"YOLO\" in \"BRRR\" umbenannt. Natürlich."
+			"settingsSearch": "Finde und navigiere schnell zu bestimmten Einstellungen mit der neuen Einstellungssuche.",
+			"stopButtonUX": "Vom großen aufdringlichen Abbrechen-Button zu einem geschmackvolleren Stopp-Button gewechselt.",
+			"apiCompatibility": "API-Probleme mit Gemini, MCP-Tool-Namen und parallelen Tool-Aufrufen behoben."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",

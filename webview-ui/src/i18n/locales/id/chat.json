@@ -342,9 +342,9 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"stickyProfiles": "Profil Penyedia Lengket - Tugas sekarang mengingat konfigurasi API mereka, jadi beralih profil di tengah sesi tidak mempengaruhi tugas yang sedang berjalan.",
-			"imageMentions": "Mention File Gambar - Referensikan gambar secara langsung dalam obrolan menggunakan mention @ untuk memasukkannya dalam konteks Anda.",
-			"brrrMode": "YOLO sekarang BRRR - Persetujuan otomatis untuk semuanya telah diubah namanya dari \"YOLO\" menjadi \"BRRR\". Jelas."
+			"settingsSearch": "Temukan dan navigasi dengan cepat ke pengaturan tertentu dengan pencarian pengaturan baru.",
+			"stopButtonUX": "Beralih dari tombol batal besar yang mengganggu ke tombol stop yang lebih elegan.",
+			"apiCompatibility": "Menyelesaikan masalah API dengan Gemini, nama alat MCP, dan panggilan alat paralel."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

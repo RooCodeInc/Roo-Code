@@ -306,9 +306,9 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"stickyProfiles": "Sticky Provider Profielen - Taken onthouden nu hun API-configuratie, dus het wisselen van profiel in het midden van een sessie beïnvloedt niet de lopende taken.",
-			"imageMentions": "Bestand @mentions afbeelding - Referentie afbeeldingen rechtstreeks in de chat met behulp van @ mentions om ze in uw context op te nemen.",
-			"brrrMode": "YOLO is nu BRRR - Alles automatisch goedkeuren is hernoemd van \"YOLO\" naar \"BRRR\". Uiteraard."
+			"settingsSearch": "Vind en navigeer snel naar specifieke instellingen met de nieuwe instellingen-zoekfunctie.",
+			"stopButtonUX": "Overgeschakeld van een grote storende annuleerknop naar een meer smaakvolle stopknop.",
+			"apiCompatibility": "API-problemen met Gemini, MCP-toolnamen en parallelle tool-aanroepen opgelost."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

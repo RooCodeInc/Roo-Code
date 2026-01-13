@@ -329,9 +329,9 @@
 		},
 		"release": {
 			"heading": "Co nowego:",
-			"stickyProfiles": "Lepkie profile dostawcy - Zadania teraz pamiętają ich konfigurację API, więc przełączanie profili w trakcie sesji nie wpływa na uruchomione zadania.",
-			"imageMentions": "Wzmianki o plikach obrazu @mentions - Odnieś się bezpośrednio do obrazów w czacie, korzystając z @mentions, aby uwzględnić je w swoim kontekście.",
-			"brrrMode": "YOLO to teraz BRRR - Automatyczne zatwierdzanie wszystkiego zostało przemianowane z \"YOLO\" na \"BRRR\". Oczywiście."
+			"settingsSearch": "Szybko znajdź i przejdź do określonych ustawień dzięki nowemu wyszukiwaniu ustawień.",
+			"stopButtonUX": "Przeszliśmy z dużego, nachalnego przycisku anulowania na bardziej elegancki przycisk zatrzymania.",
+			"apiCompatibility": "Rozwiązano problemy z API dotyczące Gemini, nazw narzędzi MCP i równoległych wywołań narzędzi."
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",

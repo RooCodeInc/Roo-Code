@@ -336,9 +336,9 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"stickyProfiles": "Sticky provider profiles - Tasks now remember their API configuration, so switching profiles mid-session doesn't affect running tasks.",
-			"imageMentions": "Image file @mentions - Reference images directly in chat using @ mentions to include them in your context.",
-			"brrrMode": "YOLO is now BRRR - Auto-approving everything has been renamed from \"YOLO\" to \"BRRR\". Obviously."
+			"settingsSearch": "Quickly find and navigate to specific settings with the new settings search.",
+			"stopButtonUX": "Switched from a big obtrusive cancel button to a more tasteful stop button.",
+			"apiCompatibility": "Resolved API issues with Gemini, MCP tool names, and parallel tool calls."
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",
