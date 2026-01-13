@@ -1240,7 +1240,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										className={cn(
 											"relative inline-flex items-center justify-center",
 											"bg-transparent border-none p-1.5",
-											"rounded-md min-w-[28px] min-h-[28px]",
+											"rounded-full min-w-[28px] min-h-[28px]",
 											"text-vscode-descriptionForeground hover:text-vscode-foreground",
 											"transition-all duration-200",
 											isEditMode || isStreaming || hasInputContent
@@ -1252,9 +1252,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 											(isEditMode || isStreaming || hasInputContent) &&
 												"active:bg-[rgba(255,255,255,0.1)]",
 											(isEditMode || isStreaming || hasInputContent) && "cursor-pointer",
+											isStreaming &&
+												"bg-vscode-button-background hover:bg-vscode-button-background",
 										)}>
 										{isStreaming ? (
-											<Square className="size-4 fill-vscode-descriptionForeground" />
+											<Square className="size-4 stroke-none fill-vscode-button-foreground" />
 										) : (
 											<SendHorizontal className="size-4" />
 										)}
