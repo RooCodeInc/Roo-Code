@@ -46,6 +46,7 @@ import {
 	getDefaultModelIdForProvider,
 	getStaticModelsForProvider,
 	shouldUseGenericModelPicker,
+	handleModelChangeSideEffects,
 } from "./utils/providerModelConfig"
 
 import { vscode } from "@src/utils/vscode"
@@ -764,16 +765,9 @@ const ApiOptions = ({
 						organizationAllowList={organizationAllowList}
 						errorMessage={modelValidationError}
 						simplifySettings={fromWelcomeView}
-						onModelChange={(modelId) => {
-							// Clear custom ARN if not using custom ARN option (Bedrock)
-							if (modelId !== "custom-arn" && selectedProvider === "bedrock") {
-								setApiConfigurationField("awsCustomArn", "")
-							}
-
-							// Clear reasoning effort when switching models to allow the new model's default to take effect
-							// Different models within the same provider can have different reasoning effort defaults/options
-							setApiConfigurationField("reasoningEffort", undefined)
-						}}
+						onModelChange={(modelId) =>
+							handleModelChangeSideEffects(selectedProvider, modelId, setApiConfigurationField)
+						}
 					/>
 
 					{selectedProvider === "bedrock" && selectedModelId === "custom-arn" && (
