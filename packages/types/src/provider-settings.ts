@@ -250,6 +250,7 @@ const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiStreamingEnabled: z.boolean().optional(),
 	openAiHostHeader: z.string().optional(), // Keep temporarily for backward compatibility during migration.
 	openAiHeaders: z.record(z.string(), z.string()).optional(),
+	openAiOmitToolChoice: z.boolean().optional(), // Omit tool_choice param for Azure/LiteLLM compatibility.
 })
 
 const ollamaSchema = baseProviderSettingsSchema.extend({
