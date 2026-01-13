@@ -71,10 +71,13 @@ describe("OpenAiHandler native tools", () => {
 						function: expect.objectContaining({ name: "test_tool" }),
 					}),
 				]),
-				parallel_tool_calls: false,
 			}),
 			expect.anything(),
 		)
+		// Verify parallel_tool_calls is NOT included when parallelToolCalls is not explicitly true
+		// This is required for LiteLLM/Bedrock compatibility (see COM-406)
+		const callArgs = mockCreate.mock.calls[0][0]
+		expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 	})
 })
 

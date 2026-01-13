@@ -162,9 +162,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(reasoning && reasoning),
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" && {
-					parallel_tool_calls: metadata.parallelToolCalls ?? false,
-				}),
+				...(metadata?.toolProtocol === "native" &&
+					metadata.parallelToolCalls === true && {
+						parallel_tool_calls: true,
+					}),
 			}
 
 			// Add max_tokens if needed
@@ -231,9 +232,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" && {
-					parallel_tool_calls: metadata.parallelToolCalls ?? false,
-				}),
+				...(metadata?.toolProtocol === "native" &&
+					metadata.parallelToolCalls === true && {
+						parallel_tool_calls: true,
+					}),
 			}
 
 			// Add max_tokens if needed
@@ -357,9 +359,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				temperature: undefined,
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" && {
-					parallel_tool_calls: metadata.parallelToolCalls ?? false,
-				}),
+				...(metadata?.toolProtocol === "native" &&
+					metadata.parallelToolCalls === true && {
+						parallel_tool_calls: true,
+					}),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
@@ -392,9 +395,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				temperature: undefined,
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" && {
-					parallel_tool_calls: metadata.parallelToolCalls ?? false,
-				}),
+				...(metadata?.toolProtocol === "native" &&
+					metadata.parallelToolCalls === true && {
+						parallel_tool_calls: true,
+					}),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
