@@ -213,10 +213,13 @@ function getSelectedModel({
 			const baseInfo = bedrockModels[id as keyof typeof bedrockModels]
 
 			// Special case for custom ARN.
+			// Custom ARN is treated as an advanced option where users know what they are doing.
+			// Since custom ARNs often point to newer Claude models that support prompt caching,
+			// we enable the prompt cache toggle to let users decide.
 			if (id === "custom-arn") {
 				return {
 					id,
-					info: { maxTokens: 5000, contextWindow: 128_000, supportsPromptCache: false, supportsImages: true },
+					info: { maxTokens: 5000, contextWindow: 128_000, supportsPromptCache: true, supportsImages: true },
 				}
 			}
 
