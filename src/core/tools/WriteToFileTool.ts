@@ -1,10 +1,10 @@
 import path from "path"
 import delay from "delay"
-import * as vscode from "vscode"
 import fs from "fs/promises"
 
+import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
+
 import { Task } from "../task/Task"
-import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { fileExistsAtPath, createDirectoriesForFile } from "../../utils/fs"
@@ -12,11 +12,11 @@ import { stripLineNumbers, everyLineHasLineNumbers } from "../../integrations/mi
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
-import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
-import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+
+import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface WriteToFileParams {
 	path: string
@@ -187,6 +187,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			pushToolResult(message)
 
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 
 			task.processQueuedMessages()
 
@@ -194,6 +195,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		} catch (error) {
 			await handleError("writing file", error as Error)
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 			return
 		}
 	}
@@ -202,7 +204,8 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const relPath: string | undefined = block.params.path
 		let newContent: string | undefined = block.params.content
 
-		if (!relPath || newContent === undefined) {
+		// Wait for path to stabilize before showing UI (prevents truncated paths)
+		if (!this.hasPathStabilized(relPath) || newContent === undefined) {
 			return
 		}
 
@@ -217,8 +220,9 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			return
 		}
 
+		// relPath is guaranteed non-null after hasPathStabilized
 		let fileExists: boolean
-		const absolutePath = path.resolve(task.cwd, relPath)
+		const absolutePath = path.resolve(task.cwd, relPath!)
 
 		if (task.diffViewProvider.editType !== undefined) {
 			fileExists = task.diffViewProvider.editType === "modify"
@@ -233,13 +237,12 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			await createDirectoriesForFile(absolutePath)
 		}
 
-		const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath) || false
-		const fullPath = absolutePath
-		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
+		const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath!) || false
+		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: fileExists ? "editedExistingFile" : "newFileCreated",
-			path: getReadablePath(task.cwd, relPath),
+			path: getReadablePath(task.cwd, relPath!),
 			content: newContent || "",
 			isOutsideWorkspace,
 			isProtected: isWriteProtected,
@@ -250,7 +253,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		if (newContent) {
 			if (!task.diffViewProvider.isEditing) {
-				await task.diffViewProvider.open(relPath)
+				await task.diffViewProvider.open(relPath!)
 			}
 
 			await task.diffViewProvider.update(

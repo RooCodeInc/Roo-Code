@@ -6,12 +6,12 @@ import {
 	REGION_TO_URL,
 	type OrganizationAllowList,
 	type ProviderSettings,
+	type ExtensionMessage,
 } from "@roo-code/types"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 
 import { vscode } from "@src/utils/vscode"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@src/components/ui"
-import { ExtensionMessage } from "@roo/ExtensionMessage"
 import { inputEventTransform } from "../transforms"
 import { ModelPicker } from "../ModelPicker"
 

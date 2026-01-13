@@ -3,18 +3,19 @@ import OpenAI from "openai"
 import { z } from "zod"
 
 import {
+	type ModelRecord,
+	ApiProviderError,
 	openRouterDefaultModelId,
 	openRouterDefaultModelInfo,
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 	OPEN_ROUTER_PROMPT_CACHING_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
-	ApiProviderError,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 
-import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
+import type { ApiHandlerOptions } from "../../shared/api"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { normalizeMistralToolCallId } from "../transform/mistral-format"
@@ -35,6 +36,7 @@ import { BaseProvider } from "./base-provider"
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-generation"
+import { applyRouterToolPreferences } from "./utils/router-tool-preferences"
 
 // Add custom interface for OpenRouter params.
 type OpenRouterChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParams & {
@@ -218,7 +220,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		// even if you don't request them. This is not the default for
 		// other providers (including Gemini), so we need to explicitly disable
 		// them unless the user has explicitly configured reasoning.
-		// Note: Gemini 3 models use reasoning_details format and should not be excluded.
+		// Note: Gemini 3 models use reasoning_details format with thought signatures,
+		// but we handle this via skip_thought_signature_validator injection below.
 		if (
 			(modelId === "google/gemini-2.5-pro-preview" || modelId === "google/gemini-2.5-pro") &&
 			typeof reasoning === "undefined"
@@ -243,12 +246,18 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		// Process reasoning_details when switching models to Gemini for native tool call compatibility
-		const toolProtocol = resolveToolProtocol(this.options, model.info)
+		// IMPORTANT: Use metadata.toolProtocol if provided (task's locked protocol) for consistency
+		const toolProtocol = resolveToolProtocol(this.options, model.info, metadata?.toolProtocol)
 		const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
 		const isGemini = modelId.startsWith("google/gemini")
 
-		// For Gemini with native protocol: inject fake reasoning.encrypted blocks for tool calls
-		// This is required when switching from other models to Gemini to satisfy API validation
+		// For Gemini with native protocol: inject fake reasoning.encrypted block for tool calls
+		// This is required when switching from other models to Gemini to satisfy API validation.
+		// Per OpenRouter documentation (conversation with Toven, Nov 2025):
+		// - Create ONE reasoning_details entry per assistant message with tool calls
+		// - Set `id` to the FIRST tool call's ID from the tool_calls array
+		// - Set `data` to "skip_thought_signature_validator" to bypass signature validation
+		// - Set `index` to 0
 		if (isNativeProtocol && isGemini) {
 			openAiMessages = openAiMessages.map((msg) => {
 				if (msg.role === "assistant") {
@@ -260,17 +269,19 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 						const hasEncrypted = existingDetails?.some((d) => d.type === "reasoning.encrypted") ?? false
 
 						if (!hasEncrypted) {
-							const fakeEncrypted = toolCalls.map((tc, idx) => ({
-								id: tc.id,
+							// Create ONE fake encrypted block with the FIRST tool call's ID
+							// This is the documented format from OpenRouter for skipping thought signature validation
+							const fakeEncrypted = {
 								type: "reasoning.encrypted",
 								data: "skip_thought_signature_validator",
+								id: toolCalls[0].id,
 								format: "google-gemini-v1",
-								index: (existingDetails?.length ?? 0) + idx,
-							}))
+								index: 0,
+							}
 
 							return {
 								...msg,
-								reasoning_details: [...(existingDetails ?? []), ...fakeEncrypted],
+								reasoning_details: [...(existingDetails ?? []), fakeEncrypted],
 							}
 						}
 					}
@@ -288,8 +299,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				addAnthropicCacheBreakpoints(systemPrompt, openAiMessages)
 			}
 		}
-
-		const transforms = (this.options.openRouterUseMiddleOutTransform ?? true) ? ["middle-out"] : undefined
 
 		// https://openrouter.ai/docs/transforms
 		const completionParams: OpenRouterChatCompletionParams = {
@@ -309,7 +318,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 						allow_fallbacks: false,
 					},
 				}),
-			...(transforms && { transforms }),
 			...(reasoning && { reasoning }),
 			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
@@ -359,7 +367,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		let lastUsage: CompletionUsage | undefined = undefined
-		// Accumulator for reasoning_details: accumulate text by type-index key
+		// Accumulator for reasoning_details FROM the API.
+		// We preserve the original shape of reasoning_details to prevent malformed responses.
 		const reasoningDetailsAccumulator = new Map<
 			string,
 			{
@@ -373,6 +382,11 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				index: number
 			}
 		>()
+
+		// Track whether we've yielded displayable text from reasoning_details.
+		// When reasoning_details has displayable content (reasoning.text or reasoning.summary),
+		// we skip yielding the top-level reasoning field to avoid duplicate display.
+		let hasYieldedReasoningFromDetails = false
 
 		for await (const chunk of stream) {
 			// OpenRouter returns an error object instead of the OpenAI SDK throwing an error.
@@ -436,22 +450,28 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 						}
 
 						// Yield text for display (still fragmented for live streaming)
+						// Only reasoning.text and reasoning.summary have displayable content
+						// reasoning.encrypted is intentionally skipped as it contains redacted content
 						let reasoningText: string | undefined
 						if (detail.type === "reasoning.text" && typeof detail.text === "string") {
 							reasoningText = detail.text
 						} else if (detail.type === "reasoning.summary" && typeof detail.summary === "string") {
 							reasoningText = detail.summary
 						}
-						// Note: reasoning.encrypted types are intentionally skipped as they contain redacted content
 
 						if (reasoningText) {
+							hasYieldedReasoningFromDetails = true
 							yield { type: "reasoning", text: reasoningText }
 						}
 					}
-				} else if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
-					// Handle legacy reasoning format - only if reasoning_details is not present
-					// See: https://openrouter.ai/docs/use-cases/reasoning-tokens
-					yield { type: "reasoning", text: delta.reasoning }
+				}
+
+				// Handle top-level reasoning field for UI display.
+				// Skip if we've already yielded from reasoning_details to avoid duplicate display.
+				if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
+					if (!hasYieldedReasoningFromDetails) {
+						yield { type: "reasoning", text: delta.reasoning }
+					}
 				}
 
 				// Emit raw tool call chunks - NativeToolCallParser handles state management
@@ -486,7 +506,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		// After streaming completes, store the accumulated reasoning_details
+		// After streaming completes, store ONLY the reasoning_details we received from the API.
 		if (reasoningDetailsAccumulator.size > 0) {
 			this.currentReasoningDetails = Array.from(reasoningDetailsAccumulator.values())
 		}
@@ -528,15 +548,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			info = this.endpoints[this.options.openRouterSpecificProvider]
 		}
 
-		// For OpenAI models via OpenRouter, exclude write_to_file and apply_diff, and include apply_patch
-		// This matches the behavior of the native OpenAI provider
-		if (id.startsWith("openai/")) {
-			info = {
-				...info,
-				excludedTools: [...new Set([...(info.excludedTools || []), "apply_diff", "write_to_file"])],
-				includedTools: [...new Set([...(info.includedTools || []), "apply_patch"])],
-			}
-		}
+		// Apply tool preferences for models accessed through routers (OpenAI, Gemini)
+		info = applyRouterToolPreferences(id, info)
 
 		const isDeepSeekR1 = id.startsWith("deepseek/deepseek-r1") || id === "perplexity/sonar-reasoning"
 

@@ -1,18 +1,19 @@
 import fs from "fs/promises"
 import path from "path"
 
+import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
+
 import { getReadablePath } from "../../utils/path"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
-import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { fileExistsAtPath } from "../../utils/fs"
-import { DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { sanitizeUnifiedDiff, computeDiffStats } from "../diff/stats"
-import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+
+import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface SearchReplaceOperation {
 	search: string
@@ -111,6 +112,8 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 			let fileContent: string
 			try {
 				fileContent = await fs.readFile(absolutePath, "utf8")
+				// Normalize line endings to LF for consistent matching
+				fileContent = fileContent.replace(/\r\n/g, "\n")
 			} catch (error) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("search_and_replace")
@@ -125,7 +128,9 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 			const errors: string[] = []
 
 			for (let i = 0; i < operations.length; i++) {
-				const { search, replace } = operations[i]
+				// Normalize line endings in search/replace strings to match file content
+				const search = operations[i].search.replace(/\r\n/g, "\n")
+				const replace = operations[i].replace.replace(/\r\n/g, "\n")
 				const searchPattern = new RegExp(escapeRegExp(search), "g")
 
 				const matchCount = newContent.match(searchPattern)?.length ?? 0
@@ -255,17 +260,25 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 			// Record successful tool usage and cleanup
 			task.recordToolUsage("search_and_replace")
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
 		} catch (error) {
 			await handleError("search and replace", error as Error)
 			await task.diffViewProvider.reset()
+			this.resetPartialState()
 		}
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"search_and_replace">): Promise<void> {
 		const relPath: string | undefined = block.params.path
+
+		// Wait for path to stabilize before showing UI (prevents truncated paths)
+		if (!this.hasPathStabilized(relPath)) {
+			return
+		}
+
 		const operationsStr: string | undefined = block.params.operations
 
 		let operationsPreview: string | undefined
@@ -280,12 +293,13 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 			}
 		}
 
-		const absolutePath = relPath ? path.resolve(task.cwd, relPath) : ""
-		const isOutsideWorkspace = absolutePath ? isPathOutsideWorkspace(absolutePath) : false
+		// relPath is guaranteed non-null after hasPathStabilized
+		const absolutePath = path.resolve(task.cwd, relPath!)
+		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",
-			path: getReadablePath(task.cwd, relPath || ""),
+			path: getReadablePath(task.cwd, relPath!),
 			diff: operationsPreview,
 			isOutsideWorkspace,
 		}

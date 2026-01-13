@@ -138,7 +138,8 @@
 		"streaming": "Zapytanie API...",
 		"cancelled": "Zapytanie API anulowane",
 		"streamingFailed": "Strumieniowanie API nie powiodło się",
-		"errorTitle": "Błąd API {{code}}",
+		"rateLimitWait": "Ograniczenie szybkości",
+		"errorTitle": "Błąd dostawcy {{code}}",
 		"errorMessage": {
 			"docs": "Dokumentacja",
 			"goToSettings": "Ustawienia",
@@ -258,10 +259,19 @@
 		"hasQuestion": "Roo ma pytanie"
 	},
 	"taskCompleted": "Zadanie zakończone",
+	"modelResponseIncomplete": "Odpowiedź modelu niekompletna",
+	"modelResponseErrors": {
+		"noToolsUsed": "Model nie użył żadnych narzędzi w swojej odpowiedzi. Zwykle dzieje się tak, gdy model dostarcza tylko tekst/rozumowanie bez wywołania wymaganych narzędzi do wykonania zadania.",
+		"noToolsUsedDetails": "Model dostarczył tekst/rozumowanie, ale nie wywołał żadnego z wymaganych narzędzi. Zazwyczaj oznacza to, że model źle zrozumiał zadanie lub ma trudności z określeniem, którego narzędzia użyć. Model został automatycznie poproszony o ponowną próbę z odpowiednim użyciem narzędzi.",
+		"noAssistantMessages": "Model nie dostarczył żadnej odpowiedzi. Może to wskazywać na problem z API lub wyjściem modelu.",
+		"noAssistantMessagesDetails": "Model językowy zwrócił pustą odpowiedź bez żadnego tekstu ani wywołań narzędzi. Może się to zdarzyć z powodu problemów z API, limitów szybkości lub problemów specyficznych dla modelu. Model został automatycznie poproszony o ponowną próbę."
+	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Szczegóły błędu",
 		"copyToClipboard": "Kopiuj do schowka",
-		"copied": "Skopiowano!"
+		"copied": "Skopiowano!",
+		"diagnostics": "Uzyskaj szczegółowe informacje o błędzie"
 	},
 	"powershell": {
 		"issues": "Wygląda na to, że masz problemy z Windows PowerShell, proszę zapoznaj się z tym"
@@ -282,7 +292,7 @@
 		"triggerLabel_zero": "0 automatycznie zatwierdzone",
 		"triggerLabel_one": "1 automatycznie zatwierdzony",
 		"triggerLabel_other": "{{count}} automatycznie zatwierdzonych",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Myślenie",
@@ -318,9 +328,10 @@
 			"goToSettingsButton": "Przejdź do Ustawień"
 		},
 		"release": {
-			"heading": "Nowości:",
-			"contextRewind": "Ulepszona kondensacja kontekstu pozwala teraz przywrócić pełny poprzedni kontekst przy przewijaniu do punktu kontrolnego",
-			"rooProvider": "Dostawca Roo Code Cloud teraz zachowuje zawartość rozumowania i domyślnie używa narzędzi natywnych dla lepszej wydajności"
+			"heading": "Co nowego:",
+			"stickyProfiles": "Lepkie profile dostawcy - Zadania teraz pamiętają ich konfigurację API, więc przełączanie profili w trakcie sesji nie wpływa na uruchomione zadania.",
+			"imageMentions": "Wzmianki o plikach obrazu @mentions - Odnieś się bezpośrednio do obrazów w czacie, korzystając z @mentions, aby uwzględnić je w swoim kontekście.",
+			"brrrMode": "YOLO to teraz BRRR - Automatyczne zatwierdzanie wszystkiego zostało przemianowane z \"YOLO\" na \"BRRR\". Oczywiście."
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",

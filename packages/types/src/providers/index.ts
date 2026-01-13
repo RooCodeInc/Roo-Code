@@ -147,7 +147,6 @@ export function getProviderDefaultModelId(
 			return watsonxDefaultModelId
 		case "anthropic":
 		case "gemini-cli":
-		case "human-relay":
 		case "fake-ai":
 		default:
 			return anthropicDefaultModelId

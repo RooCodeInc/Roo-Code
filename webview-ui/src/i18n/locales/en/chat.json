@@ -144,7 +144,8 @@
 		"streaming": "API Request...",
 		"cancelled": "API Request Cancelled",
 		"streamingFailed": "API Streaming Failed",
-		"errorTitle": "API Error {{code}}",
+		"rateLimitWait": "Rate limiting",
+		"errorTitle": "Provider Error {{code}}",
 		"errorMessage": {
 			"docs": "Docs",
 			"goToSettings": "Settings",
@@ -285,10 +286,19 @@
 	},
 	"taskCompleted": "Task Completed",
 	"error": "Error",
+	"modelResponseIncomplete": "Model Response Incomplete",
+	"modelResponseErrors": {
+		"noToolsUsed": "The model failed to use any tools in its response. This typically happens when the model provides only text/reasoning without calling the required tools to complete the task.",
+		"noToolsUsedDetails": "The model provided text/reasoning but did not call any of the required tools. This usually indicates the model misunderstood the task or is having difficulty determining which tool to use. The model has been automatically prompted to retry with proper tool usage.",
+		"noAssistantMessages": "The model did not provide any response content. This may indicate an issue with the API or the model's output.",
+		"noAssistantMessagesDetails": "The language model returned an empty response without any text or tool calls. This can happen due to API issues, rate limiting, or model-specific problems. The model has been automatically prompted to retry."
+	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Error Details",
-		"copyToClipboard": "Copy to Clipboard",
-		"copied": "Copied!"
+		"copyToClipboard": "Copy basic error info",
+		"copied": "Copied!",
+		"diagnostics": "Get detailed error info"
 	},
 	"diffError": {
 		"title": "Edit Unsuccessful"
@@ -312,7 +322,7 @@
 		"triggerLabel_zero": "0 auto-approve",
 		"triggerLabel_one": "1 auto-approved",
 		"triggerLabel_other": "{{count}} auto-approved",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} Released",
@@ -326,8 +336,9 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"contextRewind": "Improved context condensing now lets you restore the full previous context when rewinding to a checkpoint",
-			"rooProvider": "Roo Code Cloud provider now preserves reasoning content and defaults to native tools for better performance"
+			"stickyProfiles": "Sticky provider profiles - Tasks now remember their API configuration, so switching profiles mid-session doesn't affect running tasks.",
+			"imageMentions": "Image file @mentions - Reference images directly in chat using @ mentions to include them in your context.",
+			"brrrMode": "YOLO is now BRRR - Auto-approving everything has been renamed from \"YOLO\" to \"BRRR\". Obviously."
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",

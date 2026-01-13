@@ -22,7 +22,6 @@ import {
 	VsCodeLmHandler,
 	UnboundHandler,
 	RequestyHandler,
-	HumanRelayHandler,
 	FakeAIHandler,
 	XAIHandler,
 	GroqHandler,
@@ -160,8 +159,6 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new UnboundHandler(options)
 		case "requesty":
 			return new RequestyHandler(options)
-		case "human-relay":
-			return new HumanRelayHandler()
 		case "fake-ai":
 			return new FakeAIHandler(options)
 		case "xai":
@@ -201,7 +198,6 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 		case "ibm-watsonx":
 			return new WatsonxAIHandler(options)
 		default:
-			apiProvider satisfies "gemini-cli" | undefined
 			return new AnthropicHandler(options)
 	}
 }

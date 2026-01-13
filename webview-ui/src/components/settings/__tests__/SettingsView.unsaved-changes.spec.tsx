@@ -47,6 +47,18 @@ vi.mock("@src/components/ui", () => ({
 	TooltipProvider: ({ children }: any) => <>{children}</>,
 	TooltipTrigger: ({ children }: any) => <>{children}</>,
 	StandardTooltip: ({ children, content }: any) => <div title={content}>{children}</div>,
+	Popover: ({ children }: any) => <>{children}</>,
+	PopoverTrigger: ({ children }: any) => <>{children}</>,
+	PopoverContent: ({ children }: any) => <div>{children}</div>,
+}))
+
+// Mock ModesView and McpView since they're rendered during indexing
+vi.mock("@src/components/modes/ModesView", () => ({
+	default: () => null,
+}))
+
+vi.mock("@src/components/mcp/McpView", () => ({
+	default: () => null,
 }))
 
 // Mock Tab components
@@ -114,6 +126,9 @@ vi.mock("../SectionHeader", () => ({
 }))
 vi.mock("../Section", () => ({
 	Section: ({ children }: any) => <div>{children}</div>,
+}))
+vi.mock("../SettingsSearch", () => ({
+	SettingsSearch: () => null,
 }))
 
 import { useExtensionState } from "@src/context/ExtensionStateContext"

@@ -7,12 +7,13 @@ import axios from "axios"
 import {
 	type ProviderSettingsEntry,
 	type ClineMessage,
+	type ExtensionMessage,
+	type ExtensionState,
 	ORGANIZATION_ALLOW_ALL,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
-import { ExtensionMessage, ExtensionState } from "../../../shared/ExtensionMessage"
 import { defaultModeSlug } from "../../../shared/modes"
 import { experimentDefault } from "../../../shared/experiments"
 import { setTtsEnabled } from "../../../utils/tts"
@@ -237,6 +238,7 @@ vi.mock("../../../integrations/misc/extract-text", () => ({
 vi.mock("../../../api/providers/fetchers/modelCache", () => ({
 	getModels: vi.fn().mockResolvedValue({}),
 	flushModels: vi.fn(),
+	getModelsFromCache: vi.fn().mockReturnValue(undefined),
 }))
 
 vi.mock("../../../shared/modes", () => ({
@@ -308,6 +310,7 @@ vi.mock("../../../integrations/misc/extract-text", () => ({
 vi.mock("../../../api/providers/fetchers/modelCache", () => ({
 	getModels: vi.fn().mockResolvedValue({}),
 	flushModels: vi.fn(),
+	getModelsFromCache: vi.fn().mockReturnValue(undefined),
 }))
 
 vi.mock("../diff/strategies/multi-search-replace", () => ({
@@ -566,6 +569,7 @@ describe("ClineProvider", () => {
 			browserToolEnabled: true,
 			telemetrySetting: "unset",
 			showRooIgnoredFiles: false,
+			enableSubfolderRules: false,
 			renderContext: "sidebar",
 			maxReadFileLine: 500,
 			maxImageFileSize: 5,
@@ -885,6 +889,7 @@ describe("ClineProvider", () => {
 			listConfig: vi.fn().mockResolvedValue([profile]),
 			activateProfile: vi.fn().mockResolvedValue(profile),
 			setModeConfig: vi.fn(),
+			getProfile: vi.fn().mockResolvedValue(profile),
 		} as any
 
 		// Switch to architect mode
@@ -1606,6 +1611,7 @@ describe("ClineProvider", () => {
 				listConfig: vi.fn().mockResolvedValue([profile]),
 				activateProfile: vi.fn().mockResolvedValue(profile),
 				setModeConfig: vi.fn(),
+				getProfile: vi.fn().mockResolvedValue(profile),
 			} as any
 
 			// Switch to architect mode
@@ -3052,7 +3058,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			expect(mockCline.overwriteClineMessages).toHaveBeenCalledWith([mockMessages[0]])
 			expect(mockCline.overwriteApiConversationHistory).toHaveBeenCalledWith([{ ts: 1000 }])
 			// Verify submitUserMessage was called with the edited content
-			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with preserved images", undefined)
+			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with preserved images", [])
 		})
 
 		test("handles editing messages with file attachments", async () => {
@@ -3105,7 +3111,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 			})
 
 			expect(mockCline.overwriteClineMessages).toHaveBeenCalled()
-			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with file attachment", undefined)
+			expect(mockCline.submitUserMessage).toHaveBeenCalledWith("Edited message with file attachment", [])
 		})
 	})
 
@@ -3636,7 +3642,7 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				await messageHandler({ type: "editMessageConfirm", messageTs: 2000, text: largeEditedContent })
 
 				expect(mockCline.overwriteClineMessages).toHaveBeenCalled()
-				expect(mockCline.submitUserMessage).toHaveBeenCalledWith(largeEditedContent, undefined)
+				expect(mockCline.submitUserMessage).toHaveBeenCalledWith(largeEditedContent, [])
 			})
 
 			test("handles deleting messages with large payloads", async () => {

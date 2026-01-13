@@ -1,4 +1,5 @@
 {
+	"back": "返回任务视图",
 	"common": {
 		"save": "保存",
 		"done": "完成",
@@ -7,6 +8,10 @@
 		"select": "选择",
 		"add": "添加标头",
 		"remove": "移除"
+	},
+	"search": {
+		"placeholder": "搜索设置...",
+		"noResults": "未找到设置"
 	},
 	"header": {
 		"title": "设置",
@@ -55,7 +60,11 @@
 		},
 		"community": "想要获取使用技巧或与其他 Roo Code 用户交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "联系与社区",
-		"manageSettings": "管理设置"
+		"manageSettings": "管理设置",
+		"debugMode": {
+			"label": "启用调试模式",
+			"description": "启用调试模式以在任务标题栏显示额外按钮，用于在临时文件中查看 API 对话历史和 UI 消息的格式化 JSON。"
+		}
 	},
 	"slashCommands": {
 		"description": "管理您的斜杠命令，以快速执行自定义工作流和操作。 <DocsLink>了解更多</DocsLink>"
@@ -250,6 +259,7 @@
 		"configProfile": "配置文件",
 		"description": "保存多组API配置便于快速切换",
 		"apiProvider": "API提供商",
+		"apiProviderDocs": "提供商文档",
 		"model": "模型",
 		"nameEmpty": "名称不能为空",
 		"nameExists": "已存在同名的配置文件",
@@ -278,7 +288,6 @@
 		"useCustomBaseUrl": "使用自定义基础 URL",
 		"useReasoning": "启用推理",
 		"useHostHeader": "使用自定义 Host 标头",
-		"useLegacyFormat": "使用传统 OpenAI API 格式",
 		"customHeaders": "自定义标头",
 		"headerName": "标头名称",
 		"headerValue": "标头值",
@@ -294,7 +303,6 @@
 		"getRequestyApiKey": "获取 Requesty API 密钥",
 		"getRequestyBaseUrl": "基础 URL",
 		"requestyUseCustomBaseUrl": "使用自定义基础 URL",
-		"openRouterTransformsText": "自动压缩提示词和消息链到上下文长度限制内 (<a>OpenRouter转换</a>)",
 		"anthropicApiKey": "Anthropic API 密钥",
 		"getAnthropicApiKey": "获取 Anthropic API 密钥",
 		"anthropicUseAuthToken": "将 Anthropic API 密钥作为 Authorization 标头传递，而不是 X-Api-Key",
@@ -302,6 +310,8 @@
 		"anthropic1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
 		"awsBedrock1MContextBetaLabel": "启用 1M 上下文窗口 (Beta)",
 		"awsBedrock1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
+		"vertex1MContextBetaLabel": "启用 1M 上下文窗口 (Beta)",
+		"vertex1MContextBetaDescription": "为 Claude Sonnet 4 将上下文窗口扩展至 100 万个 token",
 		"basetenApiKey": "Baseten API 密钥",
 		"getBasetenApiKey": "获取 Baseten API 密钥",
 		"cerebrasApiKey": "Cerebras API 密钥",
@@ -432,10 +442,6 @@
 		"getUnboundApiKey": "获取 Unbound API 密钥",
 		"unboundRefreshModelsSuccess": "模型列表已更新！您现在可以从最新模型中选择。",
 		"unboundInvalidApiKey": "无效的API密钥。请检查您的API密钥并重试。",
-		"humanRelay": {
-			"description": "不需要 API 密钥，但用户需要帮助将信息复制并粘贴到网页聊天 AI。",
-			"instructions": "使用期间，将弹出对话框并自动将当前消息复制到剪贴板。您需要将这些内容粘贴到 AI 的网页版本（如 ChatGPT 或 Claude），然后将 AI 的回复复制回对话框并点击确认按钮。"
-		},
 		"roo": {
 			"authenticatedMessage": "已通过 Roo Code Cloud 账户安全认证。",
 			"connectButton": "连接到 Roo Code Cloud"
@@ -679,6 +685,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git 状态最大文件数",
 			"description": "git状态上下文中包含的最大文件条目数。设为0禁用。分支信息和提交在>0时始终显示。"
+		},
+		"enableSubfolderRules": {
+			"label": "启用子文件夹规则",
+			"description": "递归发现并加载子目录中的 .roo/rules 和 AGENTS.md 文件。适用于具有每包规则的 monorepo。"
 		}
 	},
 	"terminal": {
@@ -838,6 +848,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "并行工具调用",
 			"description": "启用后，原生协议可在单个助手消息轮次中执行多个工具。"
+		},
+		"CUSTOM_TOOLS": {
+			"name": "启用自定义工具",
+			"description": "启用后 Roo 可从项目中的 .roo/tools 目录或全局工具目录 ~/.roo/tools 加载并使用自定义 TypeScript/JavaScript 工具。注意：这些工具将自动获批。",
+			"toolsHeader": "可用自定义工具",
+			"noTools": "未加载自定义工具。请向项目的 .roo/tools 目录或全局工具目录 ~/.roo/tools 添加 .ts 或 .js 文件。",
+			"refreshButton": "刷新",
+			"refreshing": "正在刷新...",
+			"refreshSuccess": "工具刷新成功",
+			"refreshError": "工具刷新失败",
+			"toolParameters": "参数"
 		}
 	},
 	"promptCaching": {

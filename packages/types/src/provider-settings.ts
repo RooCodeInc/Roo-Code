@@ -103,7 +103,7 @@ export const isCustomProvider = (key: string): key is CustomProvider => customPr
  * model lists.
  */
 
-export const fauxProviders = ["fake-ai", "human-relay"] as const
+export const fauxProviders = ["fake-ai"] as const
 
 export type FauxProvider = (typeof fauxProviders)[number]
 
@@ -208,7 +208,6 @@ const openRouterSchema = baseProviderSettingsSchema.extend({
 	openRouterModelId: z.string().optional(),
 	openRouterBaseUrl: z.string().optional(),
 	openRouterSpecificProvider: z.string().optional(),
-	openRouterUseMiddleOutTransform: z.boolean().optional(),
 })
 
 const bedrockSchema = apiModelIdProviderModelSchema.extend({
@@ -238,12 +237,12 @@ const vertexSchema = apiModelIdProviderModelSchema.extend({
 	vertexRegion: z.string().optional(),
 	enableUrlContext: z.boolean().optional(),
 	enableGrounding: z.boolean().optional(),
+	vertex1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
 })
 
 const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiBaseUrl: z.string().optional(),
 	openAiApiKey: z.string().optional(),
-	openAiLegacyFormat: z.boolean().optional(),
 	openAiR1FormatEnabled: z.boolean().optional(),
 	openAiModelId: z.string().optional(),
 	openAiCustomModelInfo: modelInfoSchema.nullish(),
@@ -345,8 +344,6 @@ const requestySchema = baseProviderSettingsSchema.extend({
 	requestyModelId: z.string().optional(),
 })
 
-const humanRelaySchema = baseProviderSettingsSchema
-
 const fakeAiSchema = baseProviderSettingsSchema.extend({
 	fakeAi: z.unknown().optional(),
 })
@@ -411,7 +408,8 @@ const qwenCodeSchema = apiModelIdProviderModelSchema.extend({
 })
 
 const rooSchema = apiModelIdProviderModelSchema.extend({
-	// No additional fields needed - uses cloud authentication.
+	// Can use cloud authentication or provide an API key (cli).
+	rooApiKey: z.string().optional(),
 })
 
 const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
@@ -460,7 +458,6 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	minimaxSchema.merge(z.object({ apiProvider: z.literal("minimax") })),
 	unboundSchema.merge(z.object({ apiProvider: z.literal("unbound") })),
 	requestySchema.merge(z.object({ apiProvider: z.literal("requesty") })),
-	humanRelaySchema.merge(z.object({ apiProvider: z.literal("human-relay") })),
 	fakeAiSchema.merge(z.object({ apiProvider: z.literal("fake-ai") })),
 	xaiSchema.merge(z.object({ apiProvider: z.literal("xai") })),
 	groqSchema.merge(z.object({ apiProvider: z.literal("groq") })),
@@ -503,7 +500,6 @@ export const providerSettingsSchema = z.object({
 	...minimaxSchema.shape,
 	...unboundSchema.shape,
 	...requestySchema.shape,
-	...humanRelaySchema.shape,
 	...fakeAiSchema.shape,
 	...xaiSchema.shape,
 	...groqSchema.shape,
@@ -644,7 +640,7 @@ export const getApiProtocol = (provider: ProviderName | undefined, modelId?: str
  */
 
 export const MODELS_BY_PROVIDER: Record<
-	Exclude<ProviderName, "fake-ai" | "human-relay" | "gemini-cli" | "openai">,
+	Exclude<ProviderName, "fake-ai" | "gemini-cli" | "openai">,
 	{ id: ProviderName; label: string; models: string[] }
 > = {
 	anthropic: {
@@ -711,7 +707,7 @@ export const MODELS_BY_PROVIDER: Record<
 		models: Object.keys(openAiNativeModels),
 	},
 	"qwen-code": { id: "qwen-code", label: "Qwen Code", models: Object.keys(qwenCodeModels) },
-	roo: { id: "roo", label: "Roo Code Cloud", models: [] },
+	roo: { id: "roo", label: "Roo Code Router", models: [] },
 	sambanova: {
 		id: "sambanova",
 		label: "SambaNova",

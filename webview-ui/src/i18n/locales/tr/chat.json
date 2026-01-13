@@ -138,7 +138,8 @@
 		"streaming": "API İsteği...",
 		"cancelled": "API İsteği İptal Edildi",
 		"streamingFailed": "API Akışı Başarısız",
-		"errorTitle": "API Hatası {{code}}",
+		"rateLimitWait": "Hız sınırlaması",
+		"errorTitle": "Sağlayıcı Hatası {{code}}",
 		"errorMessage": {
 			"docs": "Belgeler",
 			"goToSettings": "Ayarlar",
@@ -259,10 +260,19 @@
 		"hasQuestion": "Roo'nun bir sorusu var"
 	},
 	"taskCompleted": "Görev Tamamlandı",
+	"modelResponseIncomplete": "Model yanıtı eksik",
+	"modelResponseErrors": {
+		"noToolsUsed": "Model yanıtında herhangi bir araç kullanamadı. Bu genellikle model, görevi tamamlamak için gerekli araçları çağırmadan yalnızca metin/akıl yürütme sağladığında olur.",
+		"noToolsUsedDetails": "Model metin/akıl yürütme sağladı ancak gerekli araçlardan hiçbirini çağırmadı. Bu genellikle modelin görevi yanlış anladığını veya hangi aracı kullanacağını belirlemekte zorlandığını gösterir. Model, uygun araç kullanımıyla yeniden denemesi için otomatik olarak istenmiştir.",
+		"noAssistantMessages": "Model herhangi bir yanıt içeriği sağlamadı. Bu, API veya modelin çıktısıyla ilgili bir sorunu gösterebilir.",
+		"noAssistantMessagesDetails": "Dil modeli herhangi bir metin veya araç çağrısı olmadan boş bir yanıt döndürdü. Bu, API sorunları, hız sınırlaması veya modele özgü sorunlar nedeniyle olabilir. Model otomatik olarak yeniden denemeye yönlendirildi."
+	},
 	"errorDetails": {
+		"link": "Details",
 		"title": "Hata Detayları",
 		"copyToClipboard": "Panoya Kopyala",
-		"copied": "Kopyalandı!"
+		"copied": "Kopyalandı!",
+		"diagnostics": "Ayrıntılı hata bilgisi al"
 	},
 	"powershell": {
 		"issues": "Windows PowerShell ile ilgili sorunlar yaşıyor gibi görünüyorsunuz, lütfen şu konuya bakın"
@@ -283,7 +293,7 @@
 		"triggerLabel_zero": "0 otomatik onaylandı",
 		"triggerLabel_one": "1 otomatik onaylandı",
 		"triggerLabel_other": "{{count}} otomatik onaylandı",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Düşünüyor",
@@ -319,9 +329,10 @@
 			"goToSettingsButton": "Ayarlar'a Git"
 		},
 		"release": {
-			"heading": "Bu sürümdeki yenilikler:",
-			"contextRewind": "İyileştirilmiş bağlam sıkıştırması, artık bir kontrol noktasına geri sarma sırasında tam önceki bağlamı geri yüklemenizi sağlıyor",
-			"rooProvider": "Roo Code Cloud sağlayıcısı artık akıl yürütme içeriğini korur ve daha iyi performans için varsayılan olarak yerel araçları kullanır"
+			"heading": "Yenilikler:",
+			"stickyProfiles": "Yapışkan Sağlayıcı Profilleri - Görevler artık API yapılandırmalarını hatırlıyor, bu nedenle oturum ortasında profil değiştirmek çalışan görevleri etkilemez.",
+			"imageMentions": "Görüntü Dosyası @Mentions - Bağlamınıza dahil etmek için @mentions kullanarak sohbette doğrudan görüntülere başvurun.",
+			"brrrMode": "YOLO artık BRRR - Her şeyi otomatik onaylama \"YOLO\"dan \"BRRR\" olarak yeniden adlandırıldı. Tabii ki."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

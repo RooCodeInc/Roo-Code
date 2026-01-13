@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.36.11",
+	"version": "3.39.3",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -411,6 +411,24 @@
 					"type": "boolean",
 					"default": false,
 					"description": "%settings.debug.description%"
+				},
+				"roo-cline.debugProxy.enabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.debugProxy.enabled.description%",
+					"markdownDescription": "%settings.debugProxy.enabled.description%"
+				},
+				"roo-cline.debugProxy.serverUrl": {
+					"type": "string",
+					"default": "http://127.0.0.1:8888",
+					"description": "%settings.debugProxy.serverUrl.description%",
+					"markdownDescription": "%settings.debugProxy.serverUrl.description%"
+				},
+				"roo-cline.debugProxy.tlsInsecure": {
+					"type": "boolean",
+					"default": false,
+					"description": "%settings.debugProxy.tlsInsecure.description%",
+					"markdownDescription": "%settings.debugProxy.tlsInsecure.description%"
 				}
 			}
 		}
@@ -442,6 +460,7 @@
 		"@modelcontextprotocol/sdk": "1.12.0",
 		"@qdrant/js-client-rest": "^1.14.0",
 		"@roo-code/cloud": "workspace:^",
+		"@roo-code/core": "workspace:^",
 		"@roo-code/ipc": "workspace:^",
 		"@roo-code/telemetry": "workspace:^",
 		"@roo-code/types": "workspace:^",
@@ -461,6 +480,7 @@
 		"fastest-levenshtein": "^1.0.16",
 		"fzf": "^0.5.2",
 		"get-folder-size": "^5.0.0",
+		"global-agent": "^3.0.0",
 		"google-auth-library": "^9.15.1",
 		"gray-matter": "^4.0.3",
 		"i18next": "^25.0.0",
@@ -504,6 +524,7 @@
 		"tmp": "^0.2.3",
 		"tree-sitter-wasms": "^0.1.12",
 		"turndown": "^7.2.0",
+		"undici": "^6.21.3",
 		"uuid": "^11.1.0",
 		"vscode-material-icons": "^0.1.1",
 		"web-tree-sitter": "^0.25.6",
@@ -536,7 +557,7 @@
 		"@types/vscode": "^1.84.0",
 		"@vscode/test-electron": "^2.5.2",
 		"@vscode/vsce": "3.3.2",
-		"esbuild": "^0.25.0",
+		"esbuild-wasm": "^0.25.0",
 		"execa": "^9.5.2",
 		"glob": "^11.1.0",
 		"mkdirp": "^3.0.1",
@@ -546,7 +567,6 @@
 		"rimraf": "^6.0.1",
 		"tsup": "^8.4.0",
 		"tsx": "^4.19.3",
-		"typescript": "5.8.3",
 		"vitest": "^3.2.3",
 		"zod-to-ts": "^1.2.0"
 	}

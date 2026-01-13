@@ -1,4 +1,5 @@
 {
+	"back": "Torna alla vista attività",
 	"common": {
 		"save": "Salva",
 		"done": "Fatto",
@@ -7,6 +8,10 @@
 		"select": "Seleziona",
 		"add": "Aggiungi intestazione",
 		"remove": "Rimuovi"
+	},
+	"search": {
+		"placeholder": "Cerca impostazioni...",
+		"noResults": "Nessuna impostazione trovata"
 	},
 	"header": {
 		"title": "Impostazioni",
@@ -55,7 +60,11 @@
 		},
 		"community": "Vuoi consigli o semplicemente uscire con altri utenti di Roo Code? Unisciti a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contatti e Comunità",
-		"manageSettings": "Gestisci Impostazioni"
+		"manageSettings": "Gestisci Impostazioni",
+		"debugMode": {
+			"label": "Abilita modalità debug",
+			"description": "Abilita la modalità debug per mostrare pulsanti aggiuntivi nell'intestazione dell'attività che consentano di visualizzare la cronologia delle conversazioni API e i messaggi dell'interfaccia utente come JSON formattato in file temporanei."
+		}
 	},
 	"slashCommands": {
 		"description": "Gestisci i tuoi comandi slash per eseguire rapidamente flussi di lavoro e azioni personalizzate. <DocsLink>Scopri di più</DocsLink>"
@@ -250,6 +259,7 @@
 		"configProfile": "Profilo di configurazione",
 		"description": "Salva diverse configurazioni API per passare rapidamente tra fornitori e impostazioni.",
 		"apiProvider": "Fornitore API",
+		"apiProviderDocs": "Documentazione del Provider",
 		"model": "Modello",
 		"nameEmpty": "Il nome non può essere vuoto",
 		"nameExists": "Esiste già un profilo con questo nome",
@@ -278,7 +288,6 @@
 		"useCustomBaseUrl": "Usa URL base personalizzato",
 		"useReasoning": "Abilita ragionamento",
 		"useHostHeader": "Usa intestazione Host personalizzata",
-		"useLegacyFormat": "Usa formato API OpenAI legacy",
 		"customHeaders": "Intestazioni personalizzate",
 		"headerName": "Nome intestazione",
 		"headerValue": "Valore intestazione",
@@ -294,7 +303,6 @@
 		"getRequestyApiKey": "Ottieni chiave API Requesty",
 		"getRequestyBaseUrl": "URL base",
 		"requestyUseCustomBaseUrl": "Utilizza URL di base personalizzato",
-		"openRouterTransformsText": "Comprimi prompt e catene di messaggi alla dimensione del contesto (<a>Trasformazioni OpenRouter</a>)",
 		"anthropicApiKey": "Chiave API Anthropic",
 		"getAnthropicApiKey": "Ottieni chiave API Anthropic",
 		"anthropicUseAuthToken": "Passa la chiave API Anthropic come header di autorizzazione invece di X-Api-Key",
@@ -302,6 +310,8 @@
 		"anthropic1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Abilita finestra di contesto da 1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "Abilita finestra di contesto da 1M (Beta)",
+		"vertex1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
 		"basetenApiKey": "Chiave API Baseten",
 		"getBasetenApiKey": "Ottieni chiave API Baseten",
 		"cerebrasApiKey": "Chiave API Cerebras",
@@ -432,10 +442,6 @@
 		"getUnboundApiKey": "Ottieni chiave API Unbound",
 		"unboundRefreshModelsSuccess": "Lista dei modelli aggiornata! Ora puoi selezionare tra gli ultimi modelli.",
 		"unboundInvalidApiKey": "Chiave API non valida. Controlla la tua chiave API e riprova.",
-		"humanRelay": {
-			"description": "Non è richiesta alcuna chiave API, ma l'utente dovrà aiutare a copiare e incollare le informazioni nella chat web AI.",
-			"instructions": "Durante l'uso, apparirà una finestra di dialogo e il messaggio corrente verrà automaticamente copiato negli appunti. Dovrai incollarlo nelle versioni web dell'AI (come ChatGPT o Claude), quindi copiare la risposta dell'AI nella finestra di dialogo e fare clic sul pulsante di conferma."
-		},
 		"roo": {
 			"authenticatedMessage": "Autenticato in modo sicuro tramite il tuo account Roo Code Cloud.",
 			"connectButton": "Connetti a Roo Code Cloud"
@@ -679,6 +685,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max file",
 			"description": "Numero massimo di voci di file da includere nel contesto dello stato di git. Imposta a 0 per disabilitare. Le informazioni sul ramo e sui commit vengono sempre mostrate quando > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Abilita regole sottocartelle",
+			"description": "Scopri e carica ricorsivamente i file .roo/rules e AGENTS.md dalle sottodirectory. Utile per i monorepo con regole per pacchetto."
 		}
 	},
 	"terminal": {
@@ -838,6 +848,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Chiamate parallele agli strumenti",
 			"description": "Quando abilitato, il protocollo nativo può eseguire più strumenti in un singolo turno di messaggio dell'assistente."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Abilita strumenti personalizzati",
+			"description": "Quando abilitato, Roo può caricare e utilizzare strumenti TypeScript/JavaScript personalizzati dalla directory .roo/tools del tuo progetto o ~/.roo/tools per strumenti globali. Nota: questi strumenti saranno automaticamente approvati.",
+			"toolsHeader": "Strumenti personalizzati disponibili",
+			"noTools": "Nessuno strumento personalizzato caricato. Aggiungi file .ts o .js alla directory .roo/tools del tuo progetto o ~/.roo/tools per strumenti globali.",
+			"refreshButton": "Aggiorna",
+			"refreshing": "Aggiornamento...",
+			"refreshSuccess": "Strumenti aggiornati con successo",
+			"refreshError": "Impossibile aggiornare gli strumenti",
+			"toolParameters": "Parametri"
 		}
 	},
 	"promptCaching": {

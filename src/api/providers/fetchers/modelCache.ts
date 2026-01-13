@@ -5,7 +5,7 @@ import * as fsSync from "fs"
 import NodeCache from "node-cache"
 import { z } from "zod"
 
-import type { ProviderName } from "@roo-code/types"
+import type { ProviderName, ModelRecord } from "@roo-code/types"
 import { modelInfoSchema, TelemetryEventName } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
@@ -13,7 +13,7 @@ import { safeWriteJson } from "../../../utils/safeWriteJson"
 
 import { ContextProxy } from "../../../core/config/ContextProxy"
 import { getCacheDirectoryPath } from "../../../utils/storage"
-import type { RouterName, ModelRecord } from "../../../shared/api"
+import type { RouterName } from "../../../shared/api"
 import { fileExistsAtPath } from "../../../utils/fs"
 
 import { getOpenRouterModels } from "./openrouter"
@@ -279,20 +279,20 @@ export async function initializeModelCacheRefresh(): Promise<void> {
 /**
  * Flush models memory cache for a specific router.
  *
- * @param router - The router to flush models for.
+ * @param options - The options for fetching models, including provider, apiKey, and baseUrl
  * @param refresh - If true, immediately fetch fresh data from API
  */
-export const flushModels = async (router: RouterName, refresh: boolean = false): Promise<void> => {
+export const flushModels = async (options: GetModelsOptions, refresh: boolean = false): Promise<void> => {
+	const { provider } = options
 	if (refresh) {
 		// Don't delete memory cache - let refreshModels atomically replace it
 		// This prevents a race condition where getModels() might be called
 		// before refresh completes, avoiding a gap in cache availability
-		refreshModels({ provider: router } as GetModelsOptions).catch((error) => {
-			console.error(`[flushModels] Refresh failed for ${router}:`, error)
-		})
+		// Await the refresh to ensure the cache is updated before returning
+		await refreshModels(options)
 	} else {
 		// Only delete memory cache when not refreshing
-		memoryCache.del(router)
+		memoryCache.del(provider)
 	}
 }
 

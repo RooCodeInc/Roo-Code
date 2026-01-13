@@ -1,4 +1,5 @@
 {
+	"back": "Назад к списку задач",
 	"common": {
 		"save": "Сохранить",
 		"done": "Готово",
@@ -7,6 +8,10 @@
 		"select": "Выбрать",
 		"add": "Добавить заголовок",
 		"remove": "Удалить"
+	},
+	"search": {
+		"placeholder": "Поиск параметров...",
+		"noResults": "Параметры не найдены"
 	},
 	"header": {
 		"title": "Настройки",
@@ -55,7 +60,11 @@
 		},
 		"community": "Хотите получить советы или просто пообщаться с другими пользователями Roo Code? Присоединяйтесь к <redditLink>reddit.com/r/RooCode</redditLink> или <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Контакты и Сообщество",
-		"manageSettings": "Управление Настройками"
+		"manageSettings": "Управление Настройками",
+		"debugMode": {
+			"label": "Включить режим отладки",
+			"description": "Включите режим отладки для отображения дополнительных кнопок в заголовке задачи для просмотра истории разговоров API и сообщений UI в виде форматированного JSON во временных файлах."
+		}
 	},
 	"slashCommands": {
 		"description": "Управляйте своими слэш-командами для быстрого выполнения пользовательских рабочих процессов и действий. <DocsLink>Узнать больше</DocsLink>"
@@ -250,6 +259,7 @@
 		"configProfile": "Профиль конфигурации",
 		"description": "Сохраняйте различные конфигурации API для быстрого переключения между провайдерами и настройками.",
 		"apiProvider": "Провайдер API",
+		"apiProviderDocs": "Документация провайдера",
 		"model": "Модель",
 		"nameEmpty": "Имя не может быть пустым",
 		"nameExists": "Профиль с таким именем уже существует",
@@ -278,7 +288,6 @@
 		"useCustomBaseUrl": "Использовать пользовательский базовый URL",
 		"useReasoning": "Включить рассуждения",
 		"useHostHeader": "Использовать пользовательский Host-заголовок",
-		"useLegacyFormat": "Использовать устаревший формат OpenAI API",
 		"customHeaders": "Пользовательские заголовки",
 		"headerName": "Имя заголовка",
 		"headerValue": "Значение заголовка",
@@ -294,7 +303,6 @@
 		"getRequestyApiKey": "Получить Requesty API-ключ",
 		"getRequestyBaseUrl": "Базовый URL",
 		"requestyUseCustomBaseUrl": "Использовать пользовательский базовый URL",
-		"openRouterTransformsText": "Сжимать подсказки и цепочки сообщений до размера контекста (<a>OpenRouter Transforms</a>)",
 		"anthropicApiKey": "Anthropic API-ключ",
 		"getAnthropicApiKey": "Получить Anthropic API-ключ",
 		"anthropicUseAuthToken": "Передавать Anthropic API-ключ как Authorization-заголовок вместо X-Api-Key",
@@ -302,6 +310,8 @@
 		"anthropic1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
 		"awsBedrock1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "Включить контекстное окно 1M (бета)",
+		"vertex1MContextBetaDescription": "Расширяет контекстное окно до 1 миллиона токенов для Claude Sonnet 4",
 		"basetenApiKey": "Baseten API-ключ",
 		"getBasetenApiKey": "Получить Baseten API-ключ",
 		"cerebrasApiKey": "Cerebras API-ключ",
@@ -432,10 +442,6 @@
 		"getUnboundApiKey": "Получить Unbound API-ключ",
 		"unboundRefreshModelsSuccess": "Список моделей обновлен! Теперь вы можете выбрать из последних моделей.",
 		"unboundInvalidApiKey": "Недействительный API-ключ. Пожалуйста, проверьте ваш API-ключ и попробуйте снова.",
-		"humanRelay": {
-			"description": "API-ключ не требуется, но пользователю нужно вручную копировать и вставлять информацию в веб-чат ИИ.",
-			"instructions": "Во время использования появится диалоговое окно, и текущее сообщение будет скопировано в буфер обмена автоматически. Вам нужно вставить его в веб-версию ИИ (например, ChatGPT или Claude), затем скопировать ответ ИИ обратно в диалоговое окно и нажать кнопку подтверждения."
-		},
 		"roo": {
 			"authenticatedMessage": "Безопасно аутентифицирован через твой аккаунт Roo Code Cloud.",
 			"connectButton": "Подключиться к Roo Code Cloud"
@@ -679,6 +685,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git статус макс. файлов",
 			"description": "Максимальное количество записей файлов для включения в контекст статуса git. Установите значение 0, чтобы отключить. Информация о ветке и коммитах всегда отображается, если значение > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Включить правила подпапок",
+			"description": "Рекурсивно обнаруживать и загружать файлы .roo/rules и AGENTS.md из подкаталогов. Полезно для монорепозиториев с правилами для каждого пакета."
 		}
 	},
 	"terminal": {
@@ -838,6 +848,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Параллельные вызовы инструментов",
 			"description": "При включении нативный протокол может выполнять несколько инструментов в одном ходе сообщения ассистента."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Включить пользовательские инструменты",
+			"description": "Если включено, Roo сможет загружать и использовать пользовательские инструменты TypeScript/JavaScript из каталога .roo/tools вашего проекта или ~/.roo/tools для глобальных инструментов. Примечание: эти инструменты будут одобрены автоматически.",
+			"toolsHeader": "Доступные пользовательские инструменты",
+			"noTools": "Пользовательские инструменты не загружены. Добавьте файлы .ts или .js в каталог .roo/tools вашего проекта или ~/.roo/tools для глобальных инструментов.",
+			"refreshButton": "Обновить",
+			"refreshing": "Обновление...",
+			"refreshSuccess": "Инструменты успешно обновлены",
+			"refreshError": "Не удалось обновить инструменты",
+			"toolParameters": "Параметры"
 		}
 	},
 	"promptCaching": {

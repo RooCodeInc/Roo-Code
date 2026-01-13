@@ -124,7 +124,7 @@ export type OrganizationDefaultSettings = z.infer<typeof organizationDefaultSett
  * WorkspaceTaskVisibility
  */
 
-const workspaceTaskVisibilitySchema = z.enum(["all", "list-only", "full-lockdown"])
+const workspaceTaskVisibilitySchema = z.enum(["all", "list-only", "admins-and-creator", "creator", "full-lockdown"])
 
 export type WorkspaceTaskVisibility = z.infer<typeof workspaceTaskVisibilitySchema>
 

@@ -84,7 +84,6 @@ body:
         - Google Gemini
         - Google Vertex AI
         - Groq
-        - Human Relay Provider
         - LiteLLM
         - LM Studio
         - Mistral AI

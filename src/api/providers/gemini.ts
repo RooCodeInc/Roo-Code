@@ -16,10 +16,10 @@ import {
 	geminiModels,
 	ApiProviderError,
 } from "@roo-code/types"
+import { safeJsonParse } from "@roo-code/core"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import type { ApiHandlerOptions } from "../../shared/api"
-import { safeJsonParse } from "../../shared/safeJsonParse"
 
 import { convertAnthropicMessageToGemini } from "../transform/gemini-format"
 import { t } from "i18next"
@@ -90,10 +90,11 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			? (this.options.modelMaxTokens ?? maxTokens ?? undefined)
 			: (maxTokens ?? undefined)
 
-		// Only forward encrypted reasoning continuations (thoughtSignature) when we are
-		// using reasoning (thinkingConfig is present). Both effort-based (thinkingLevel)
-		// and budget-based (thinkingBudget) models require this for active loops.
-		const includeThoughtSignatures = Boolean(thinkingConfig)
+		// Gemini 3 validates thought signatures for tool/function calling steps.
+		// We must round-trip the signature when tools are in use, even if the user chose
+		// a minimal thinking level (or thinkingConfig is otherwise absent).
+		const usingNativeTools = Boolean(metadata?.tools && metadata.tools.length > 0)
+		const includeThoughtSignatures = Boolean(thinkingConfig) || usingNativeTools
 
 		// The message list can include provider-specific meta entries such as
 		// `{ type: "reasoning", ... }` that are intended only for providers like
@@ -236,9 +237,10 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 						}>) {
 							// Capture thought signatures so they can be persisted into API history.
 							const thoughtSignature = part.thoughtSignature
-							// Persist encrypted reasoning when using reasoning. Both effort-based
-							// and budget-based models require this for active loops.
-							if (thinkingConfig && thoughtSignature) {
+							// Persist thought signatures so they can be round-tripped in the next step.
+							// Gemini 3 requires this during tool calling; other Gemini thinking models
+							// benefit from it for continuity.
+							if (includeThoughtSignatures && thoughtSignature) {
 								this.lastThoughtSignature = thoughtSignature
 							}
 
@@ -294,21 +296,6 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				if (chunk.usageMetadata) {
 					lastUsageMetadata = chunk.usageMetadata
 				}
-			}
-
-			// If we had reasoning but no content, emit a placeholder text to prevent "Empty assistant response" errors.
-			// This typically happens when the model hits max output tokens while reasoning.
-			if (hasReasoning && !hasContent) {
-				let message = t("common:errors.gemini.thinking_complete_no_output")
-				if (finishReason === "MAX_TOKENS") {
-					message = t("common:errors.gemini.thinking_complete_truncated")
-				} else if (finishReason === "SAFETY") {
-					message = t("common:errors.gemini.thinking_complete_safety")
-				} else if (finishReason === "RECITATION") {
-					message = t("common:errors.gemini.thinking_complete_recitation")
-				}
-
-				yield { type: "text", text: message }
 			}
 
 			if (finalResponse?.responseId) {

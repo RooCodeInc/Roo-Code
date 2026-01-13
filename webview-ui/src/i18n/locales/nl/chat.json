@@ -133,7 +133,8 @@
 		"streaming": "API-verzoek...",
 		"cancelled": "API-verzoek geannuleerd",
 		"streamingFailed": "API-streaming mislukt",
-		"errorTitle": "API-fout {{code}}",
+		"rateLimitWait": "Snelheidsbeperking",
+		"errorTitle": "Fout van provider {{code}}",
 		"errorMessage": {
 			"docs": "Documentatie",
 			"goToSettings": "Instellingen",
@@ -254,14 +255,23 @@
 	},
 	"taskCompleted": "Taak voltooid",
 	"error": "Fout",
+	"modelResponseIncomplete": "Modelrespons onvolledig",
+	"modelResponseErrors": {
+		"noToolsUsed": "Het model heeft geen tools gebruikt in zijn reactie. Dit gebeurt meestal wanneer het model alleen tekst/redenering levert zonder de vereiste tools aan te roepen om de taak te voltooien.",
+		"noToolsUsedDetails": "Het model heeft tekst/redenering geleverd maar heeft geen van de vereiste tools aangeroepen. Dit geeft meestal aan dat het model de taak verkeerd heeft begrepen of moeite heeft om te bepalen welke tool te gebruiken. Het model is automatisch gevraagd om opnieuw te proberen met correct gebruik van tools.",
+		"noAssistantMessages": "Het model heeft geen reactie-inhoud geleverd. Dit kan wijzen op een probleem met de API of de output van het model.",
+		"noAssistantMessagesDetails": "Het taalmodel heeft een lege reactie geretourneerd zonder tekst of tool-aanroepen. Dit kan gebeuren door API-problemen, snelheidslimieten of modelspecifieke problemen. Het model is automatisch gevraagd om opnieuw te proberen."
+	},
 	"diffError": {
 		"title": "Bewerking mislukt"
 	},
 	"troubleMessage": "Roo ondervindt problemen...",
 	"errorDetails": {
+		"link": "Details",
 		"title": "Foutdetails",
 		"copyToClipboard": "Naar klembord kopiëren",
-		"copied": "Gekopieerd!"
+		"copied": "Gekopieerd!",
+		"diagnostics": "Gedetailleerde foutinformatie ophalen"
 	},
 	"powershell": {
 		"issues": "Het lijkt erop dat je problemen hebt met Windows PowerShell, zie deze"
@@ -282,7 +292,7 @@
 		"triggerLabel_zero": "0 automatisch goedgekeurd",
 		"triggerLabel_one": "1 automatisch goedgekeurd",
 		"triggerLabel_other": "{{count}} automatisch goedgekeurd",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} uitgebracht",
@@ -295,9 +305,10 @@
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
 		"release": {
-			"heading": "Nieuw:",
-			"contextRewind": "Verbeterde context-samenvatting stelt je nu in staat om de volledige vorige context te herstellen bij het terugspoelen naar een checkpoint",
-			"rooProvider": "De Roo Code Cloud-provider behoudt nu reasoninginhoud en gebruikt standaard native tools voor betere prestaties"
+			"heading": "Wat is er nieuw:",
+			"stickyProfiles": "Sticky Provider Profielen - Taken onthouden nu hun API-configuratie, dus het wisselen van profiel in het midden van een sessie beïnvloedt niet de lopende taken.",
+			"imageMentions": "Bestand @mentions afbeelding - Referentie afbeeldingen rechtstreeks in de chat met behulp van @ mentions om ze in uw context op te nemen.",
+			"brrrMode": "YOLO is nu BRRR - Alles automatisch goedkeuren is hernoemd van \"YOLO\" naar \"BRRR\". Uiteraard."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

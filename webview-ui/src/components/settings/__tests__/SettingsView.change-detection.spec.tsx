@@ -42,6 +42,22 @@ vi.mock("@src/components/ui", () => ({
 		</button>
 	),
 	StandardTooltip: ({ children }: any) => <>{children}</>,
+	Popover: ({ children }: any) => <>{children}</>,
+	PopoverTrigger: ({ children }: any) => <>{children}</>,
+	PopoverContent: ({ children }: any) => <div>{children}</div>,
+	Tooltip: ({ children }: any) => <>{children}</>,
+	TooltipProvider: ({ children }: any) => <>{children}</>,
+	TooltipTrigger: ({ children }: any) => <>{children}</>,
+	TooltipContent: ({ children }: any) => <div>{children}</div>,
+}))
+
+// Mock ModesView and McpView since they're rendered during indexing
+vi.mock("@src/components/modes/ModesView", () => ({
+	default: () => null,
+}))
+
+vi.mock("@src/components/mcp/McpView", () => ({
+	default: () => null,
 }))
 
 // Mock Tab components
@@ -107,6 +123,10 @@ vi.mock("../SlashCommandsSettings", () => ({
 }))
 vi.mock("../UISettings", () => ({
 	UISettings: () => null,
+}))
+
+vi.mock("../SettingsSearch", () => ({
+	SettingsSearch: () => null,
 }))
 
 describe("SettingsView - Change Detection Fix", () => {

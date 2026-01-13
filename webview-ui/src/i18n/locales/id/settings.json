@@ -1,4 +1,5 @@
 {
+	"back": "Kembali ke tampilan tugas",
 	"common": {
 		"save": "Simpan",
 		"done": "Selesai",
@@ -7,6 +8,10 @@
 		"select": "Pilih",
 		"add": "Tambah Header",
 		"remove": "Hapus"
+	},
+	"search": {
+		"placeholder": "Cari pengaturan...",
+		"noResults": "Tidak ada pengaturan yang ditemukan"
 	},
 	"header": {
 		"title": "Pengaturan",
@@ -55,7 +60,11 @@
 		},
 		"community": "Ingin tips atau hanya nongkrong dengan pengguna Roo Code lainnya? Bergabunglah dengan <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Kontak & Komunitas",
-		"manageSettings": "Kelola Pengaturan"
+		"manageSettings": "Kelola Pengaturan",
+		"debugMode": {
+			"label": "Aktifkan mode debug",
+			"description": "Aktifkan mode debug untuk menampilkan tombol tambahan di header tugas yang memungkinkan melihat riwayat percakapan API dan pesan UI sebagai JSON yang diformat dalam file sementara."
+		}
 	},
 	"slashCommands": {
 		"description": "Kelola perintah slash kamu untuk mengeksekusi alur kerja dan tindakan kustom dengan cepat. <DocsLink>Pelajari lebih lanjut</DocsLink>"
@@ -254,6 +263,7 @@
 		"configProfile": "Profil Konfigurasi",
 		"description": "Simpan konfigurasi API yang berbeda untuk beralih dengan cepat antara provider dan pengaturan.",
 		"apiProvider": "Provider API",
+		"apiProviderDocs": "Dokumentasi Penyedia",
 		"model": "Model",
 		"nameEmpty": "Nama tidak boleh kosong",
 		"nameExists": "Profil dengan nama ini sudah ada",
@@ -282,7 +292,6 @@
 		"useCustomBaseUrl": "Gunakan base URL kustom",
 		"useReasoning": "Aktifkan reasoning",
 		"useHostHeader": "Gunakan Host header kustom",
-		"useLegacyFormat": "Gunakan format API OpenAI legacy",
 		"customHeaders": "Header Kustom",
 		"headerName": "Nama header",
 		"headerValue": "Nilai header",
@@ -298,7 +307,6 @@
 		"getRequestyApiKey": "Dapatkan Requesty API Key",
 		"getRequestyBaseUrl": "Base URL",
 		"requestyUseCustomBaseUrl": "Gunakan URL dasar khusus",
-		"openRouterTransformsText": "Kompres prompt dan rantai pesan ke ukuran konteks (<a>OpenRouter Transforms</a>)",
 		"anthropicApiKey": "Anthropic API Key",
 		"getAnthropicApiKey": "Dapatkan Anthropic API Key",
 		"anthropicUseAuthToken": "Kirim Anthropic API Key sebagai Authorization header alih-alih X-Api-Key",
@@ -306,6 +314,8 @@
 		"anthropic1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Aktifkan jendela konteks 1M (Beta)",
 		"awsBedrock1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4",
+		"vertex1MContextBetaLabel": "Aktifkan jendela konteks 1M (Beta)",
+		"vertex1MContextBetaDescription": "Memperluas jendela konteks menjadi 1 juta token untuk Claude Sonnet 4",
 		"basetenApiKey": "Baseten API Key",
 		"getBasetenApiKey": "Dapatkan Baseten API Key",
 		"cerebrasApiKey": "Cerebras API Key",
@@ -436,10 +446,6 @@
 		"getUnboundApiKey": "Dapatkan Unbound API Key",
 		"unboundRefreshModelsSuccess": "Daftar model diperbarui! Kamu sekarang dapat memilih dari model terbaru.",
 		"unboundInvalidApiKey": "API key tidak valid. Silakan periksa API key kamu dan coba lagi.",
-		"humanRelay": {
-			"description": "Tidak diperlukan API key, tetapi pengguna perlu membantu menyalin dan menempel informasi ke web chat AI.",
-			"instructions": "Selama penggunaan, kotak dialog akan muncul dan pesan saat ini akan disalin ke clipboard secara otomatis. Kamu perlu menempel ini ke versi web AI (seperti ChatGPT atau Claude), lalu salin balasan AI kembali ke kotak dialog dan klik tombol konfirmasi."
-		},
 		"roo": {
 			"authenticatedMessage": "Terautentikasi dengan aman melalui akun Roo Code Cloud Anda.",
 			"connectButton": "Hubungkan ke Roo Code Cloud"
@@ -683,6 +689,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status maks file",
 			"description": "Jumlah maksimum entri file untuk disertakan dalam konteks status git. Atur ke 0 untuk menonaktifkan. Info cabang dan commit selalu ditampilkan saat > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Aktifkan aturan subfolder",
+			"description": "Temukan dan muat file .roo/rules dan AGENTS.md secara rekursif dari subdirektori. Berguna untuk monorepo dengan aturan per-paket."
 		}
 	},
 	"terminal": {
@@ -867,6 +877,17 @@
 		"MULTIPLE_NATIVE_TOOL_CALLS": {
 			"name": "Panggilan tool paralel",
 			"description": "Ketika diaktifkan, protokol native dapat mengeksekusi beberapa tool dalam satu giliran pesan asisten."
+		},
+		"CUSTOM_TOOLS": {
+			"name": "Aktifkan tool kustom",
+			"description": "Ketika diaktifkan, Roo dapat memuat dan menggunakan tool TypeScript/JavaScript kustom dari direktori .roo/tools proyek Anda atau ~/.roo/tools untuk tool global. Catatan: tool ini akan disetujui otomatis.",
+			"toolsHeader": "Tool Kustom yang Tersedia",
+			"noTools": "Tidak ada tool kustom yang dimuat. Tambahkan file .ts atau .js ke direktori .roo/tools proyek Anda atau ~/.roo/tools untuk tool global.",
+			"refreshButton": "Refresh",
+			"refreshing": "Merefresh...",
+			"refreshSuccess": "Tool berhasil direfresh",
+			"refreshError": "Gagal merefresh tool",
+			"toolParameters": "Parameter"
 		}
 	},
 	"promptCaching": {

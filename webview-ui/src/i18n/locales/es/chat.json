@@ -138,7 +138,8 @@
 		"streaming": "Solicitud API...",
 		"cancelled": "Solicitud API cancelada",
 		"streamingFailed": "Transmisión API falló",
-		"errorTitle": "Error API {{code}}",
+		"rateLimitWait": "Limitación de tasa",
+		"errorTitle": "Error del proveedor {{code}}",
 		"errorMessage": {
 			"docs": "Documentación",
 			"goToSettings": "Configuración",
@@ -258,10 +259,19 @@
 		"hasQuestion": "Roo tiene una pregunta"
 	},
 	"taskCompleted": "Tarea completada",
+	"modelResponseIncomplete": "Respuesta del modelo incompleta",
+	"modelResponseErrors": {
+		"noToolsUsed": "El modelo no utilizó ninguna herramienta en su respuesta. Esto suele ocurrir cuando el modelo solo proporciona texto/razonamiento sin llamar a las herramientas necesarias para completar la tarea.",
+		"noToolsUsedDetails": "El modelo proporcionó texto/razonamiento pero no llamó a ninguna de las herramientas necesarias. Esto generalmente indica que el modelo malinterpretó la tarea o tiene dificultades para determinar qué herramienta usar. El modelo ha sido solicitado automáticamente para reintentar con el uso adecuado de herramientas.",
+		"noAssistantMessages": "El modelo no proporcionó ningún contenido de respuesta. Esto puede indicar un problema con la API o la salida del modelo.",
+		"noAssistantMessagesDetails": "El modelo de lenguaje devolvió una respuesta vacía sin texto ni llamadas a herramientas. Esto puede ocurrir debido a problemas de API, limitación de velocidad o problemas específicos del modelo. El modelo ha sido solicitado automáticamente para reintentar."
+	},
 	"errorDetails": {
+		"link": "Detalles",
 		"title": "Detalles del error",
 		"copyToClipboard": "Copiar al portapapeles",
-		"copied": "¡Copiado!"
+		"copied": "¡Copiado!",
+		"diagnostics": "Obtener información de error detallada"
 	},
 	"powershell": {
 		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta"
@@ -282,7 +292,7 @@
 		"triggerLabel_zero": "0 aprobaciones automáticas",
 		"triggerLabel_one": "1 aprobación automática",
 		"triggerLabel_other": "{{count}} aprobaciones automáticas",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Pensando",
@@ -318,9 +328,10 @@
 			"goToSettingsButton": "Ir a Configuración"
 		},
 		"release": {
-			"heading": "Novedades en esta versión:",
-			"contextRewind": "La condensación mejorada del contexto ahora te permite restaurar el contexto anterior completo cuando retrocedes a un punto de control",
-			"rooProvider": "El proveedor de Roo Code Cloud ahora preserva el contenido del razonamiento y usa herramientas nativas de forma predeterminada para mejor rendimiento"
+			"heading": "Qué hay de nuevo:",
+			"stickyProfiles": "Perfiles de proveedor persistentes - Las tareas ahora recuerdan su configuración de API, por lo que cambiar de perfil a mitad de sesión no afecta las tareas en ejecución.",
+			"imageMentions": "Menciones de archivos de imagen - Haz referencia a imágenes directamente en el chat usando menciones @ para incluirlas en tu contexto.",
+			"brrrMode": "YOLO ahora es BRRR - Aprobar todo automáticamente ha sido renombrado de \"YOLO\" a \"BRRR\". Obviamente."
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",
