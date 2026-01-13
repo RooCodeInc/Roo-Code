@@ -617,11 +617,7 @@ const ApiOptions = ({
 			)}
 
 			{selectedProvider === "lmstudio" && (
-				<LMStudio
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					simplifySettings={fromWelcomeView}
-				/>
+				<LMStudio apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
 			{selectedProvider === "deepseek" && (

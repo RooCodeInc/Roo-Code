@@ -16,7 +16,6 @@ import { ModelPicker } from "../ModelPicker"
 type LMStudioProps = {
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
-	simplifySettings?: boolean
 }
 
 export const LMStudio = ({ apiConfiguration, setApiConfigurationField }: LMStudioProps) => {
