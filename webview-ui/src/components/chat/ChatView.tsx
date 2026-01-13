@@ -402,12 +402,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(true)
 							break
 						case "api_req_started":
-							if (secondLastMessage?.ask === "command_output") {
-								setSendingDisabled(true)
-								setSelectedImages([])
-								setClineAsk(undefined)
-								setEnableButtons(false)
-							}
+							// Clear button state when a new API request starts
+							// This fixes buttons persisting when the task continues
+							setSendingDisabled(true)
+							setSelectedImages([])
+							setClineAsk(undefined)
+							setEnableButtons(false)
+							setPrimaryButtonText(undefined)
+							setSecondaryButtonText(undefined)
 							break
 						case "api_req_finished":
 						case "error":
