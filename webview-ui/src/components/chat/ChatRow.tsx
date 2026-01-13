@@ -1336,7 +1336,9 @@ export const ChatRowContent = ({
 					}
 
 					// Fallback for generic errors
-					return <ErrorRow type="error" message={message.text || t("chat:error")} />
+					return (
+						<ErrorRow type="error" message={message.text || t("chat:error")} errorDetails={message.text} />
+					)
 				case "completion_result":
 					return (
 						<>
@@ -1526,7 +1528,7 @@ export const ChatRowContent = ({
 		case "ask":
 			switch (message.ask) {
 				case "mistake_limit_reached":
-					return <ErrorRow type="mistake_limit" message={message.text || ""} />
+					return <ErrorRow type="mistake_limit" message={message.text || ""} errorDetails={message.text} />
 				case "command":
 					return (
 						<CommandExecution

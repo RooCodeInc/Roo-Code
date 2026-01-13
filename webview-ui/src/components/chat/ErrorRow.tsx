@@ -15,7 +15,7 @@ import { useSelectedModel } from "@src/components/ui/hooks/useSelectedModel"
  * Unified error display component for all error types in the chat.
  * Provides consistent styling, icons, and optional documentation links across all errors.
  *
- * @param type - Error type determines icon and default title
+ * @param type - Error type determines default title
  * @param title - Optional custom title (overrides default for error type)
  * @param message - Error message text (required)
  * @param docsURL - Optional documentation link URL (shown as "Learn more" with book icon)
