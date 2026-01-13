@@ -1132,14 +1132,16 @@ export const ChatRowContent = ({
 									// }
 								} else {
 									body = t("chat:apiRequest.errorMessage.unknown")
-									docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
+									docsURL =
+										"mailto:support@roocode.com?subject=Unknown API Error&body=[Please include full error details]"
 								}
 							} else if (message.text.indexOf("Connection error") === 0) {
 								body = t("chat:apiRequest.errorMessage.connection")
 							} else {
 								// Non-HTTP-status-code error message - store full text as errorDetails
 								body = t("chat:apiRequest.errorMessage.unknown")
-								docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
+								docsURL =
+									"mailto:support@roocode.com?subject=Unknown API Error&body=[Please include full error details]"
 							}
 						}
 

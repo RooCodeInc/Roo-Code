@@ -277,7 +277,8 @@
 		"title": "Hata Detayları",
 		"copyToClipboard": "Panoya Kopyala",
 		"copied": "Kopyalandı!",
-		"diagnostics": "Ayrıntılı hata bilgisi al"
+		"diagnostics": "Ayrıntılı hata bilgisi al",
+		"proxyProvider": "Proxy tabanlı bir sağlayıcı kullanıyor gibi görünüyorsun. Günlüklerini kontrol ettiğinden ve Roo'nun isteklerini yeniden yazmadığından emin ol."
 	},
 	"powershell": {
 		"issues": "Windows PowerShell ile ilgili sorunlar yaşıyor gibi görünüyorsunuz, lütfen şu konuya bakın"

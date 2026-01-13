@@ -276,7 +276,8 @@
 		"title": "エラー詳細",
 		"copyToClipboard": "クリップボードにコピー",
 		"copied": "コピーしました！",
-		"diagnostics": "詳細なエラー情報を取得"
+		"diagnostics": "詳細なエラー情報を取得",
+		"proxyProvider": "プロキシベースのプロバイダーを使用しているようです。ログを確認し、Rooのリクエストを書き換えていないことを確認してください。"
 	},
 	"powershell": {
 		"issues": "Windows PowerShellに問題があるようです。こちらを参照してください"

@@ -276,7 +276,8 @@
 		"title": "Fehlerdetails",
 		"copyToClipboard": "In Zwischenablage kopieren",
 		"copied": "Kopiert!",
-		"diagnostics": "Detaillierte Fehlerinformationen abrufen"
+		"diagnostics": "Detaillierte Fehlerinformationen abrufen",
+		"proxyProvider": "Du scheinst einen Proxy-basierten Anbieter zu verwenden. Überprüfe unbedingt seine Protokolle und stelle sicher, dass er Roos Anfragen nicht umschreibt."
 	},
 	"powershell": {
 		"issues": "Es scheint, dass du Probleme mit Windows PowerShell hast, bitte sieh dir dies an"

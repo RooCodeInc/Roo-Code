@@ -277,7 +277,8 @@
 		"title": "错误详情",
 		"copyToClipboard": "复制到剪贴板",
 		"copied": "已复制!",
-		"diagnostics": "获取详细错误信息"
+		"diagnostics": "获取详细错误信息",
+		"proxyProvider": "看起来你在使用基于代理的提供商。请检查日志并确保它不会重写 Roo 的请求。"
 	},
 	"powershell": {
 		"issues": "看起来您遇到了Windows PowerShell问题，请参阅此"

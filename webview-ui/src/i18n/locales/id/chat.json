@@ -312,7 +312,8 @@
 		"title": "Detail Kesalahan",
 		"copyToClipboard": "Salin ke Clipboard",
 		"copied": "Disalin!",
-		"diagnostics": "Dapatkan informasi kesalahan terperinci"
+		"diagnostics": "Dapatkan informasi kesalahan terperinci",
+		"proxyProvider": "Tampaknya kamu menggunakan penyedia berbasis proxy. Pastikan untuk memeriksa log-nya dan memastikan tidak menulis ulang permintaan Roo."
 	},
 	"powershell": {
 		"issues": "Sepertinya kamu mengalami masalah Windows PowerShell, silakan lihat ini"

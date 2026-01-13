@@ -276,7 +276,8 @@
 		"title": "Dettagli errore",
 		"copyToClipboard": "Copia negli appunti",
 		"copied": "Copiato!",
-		"diagnostics": "Ottieni informazioni errore dettagliate"
+		"diagnostics": "Ottieni informazioni errore dettagliate",
+		"proxyProvider": "Sembra che tu stia utilizzando un provider basato su proxy. Assicurati di controllarne i log e di verificare che non stia riscrivendo le richieste di Roo."
 	},
 	"powershell": {
 		"issues": "Sembra che tu stia avendo problemi con Windows PowerShell, consulta questa"

@@ -276,7 +276,8 @@
 		"title": "Detalhes do erro",
 		"copyToClipboard": "Copiar para área de transferência",
 		"copied": "Copiado!",
-		"diagnostics": "Obter informações detalhadas do erro"
+		"diagnostics": "Obter informações detalhadas do erro",
+		"proxyProvider": "Parece que você está usando um provedor baseado em proxy. Certifique-se de verificar seus registros e garantir que não está reescrevendo as solicitações do Roo."
 	},
 	"powershell": {
 		"issues": "Parece que você está tendo problemas com o Windows PowerShell, por favor veja este"

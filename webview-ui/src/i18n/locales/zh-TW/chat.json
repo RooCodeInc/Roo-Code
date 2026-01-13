@@ -310,7 +310,8 @@
 		"title": "錯誤詳細資訊",
 		"copyToClipboard": "複製到剪貼簿",
 		"copied": "已複製！",
-		"diagnostics": "取得詳細錯誤資訊"
+		"diagnostics": "取得詳細錯誤資訊",
+		"proxyProvider": "看起來你在使用基於代理的提供商。請檢查日誌並確保它不會重寫 Roo 的請求。"
 	},
 	"powershell": {
 		"issues": "您似乎遇到了 Windows PowerShell 的問題，請參閱此說明文件"

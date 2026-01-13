@@ -303,7 +303,8 @@
 		"title": "Error Details",
 		"copyToClipboard": "Copy basic error info",
 		"copied": "Copied!",
-		"diagnostics": "Get detailed error info"
+		"diagnostics": "Get detailed error info",
+		"proxyProvider": "You seem to be using a proxy-based provider. Make sure to check its logs and to ensure it's not rewriting Roo's requests."
 	},
 	"diffError": {
 		"title": "Edit Unsuccessful"

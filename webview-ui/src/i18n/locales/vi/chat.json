@@ -277,7 +277,8 @@
 		"title": "Chi tiết lỗi",
 		"copyToClipboard": "Sao chép vào clipboard",
 		"copied": "Đã sao chép!",
-		"diagnostics": "Nhận thông tin lỗi chi tiết"
+		"diagnostics": "Nhận thông tin lỗi chi tiết",
+		"proxyProvider": "Có vẻ bạn đang sử dụng nhà cung cấp dựa trên proxy. Hãy chắc chắn kiểm tra các nhật ký của nó và đảm bảo nó không viết lại các yêu cầu của Roo."
 	},
 	"powershell": {
 		"issues": "Có vẻ như bạn đang gặp vấn đề với Windows PowerShell, vui lòng xem"

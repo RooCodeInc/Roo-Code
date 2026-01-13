@@ -276,7 +276,8 @@
 		"title": "Foutdetails",
 		"copyToClipboard": "Naar klembord kopiëren",
 		"copied": "Gekopieerd!",
-		"diagnostics": "Gedetailleerde foutinformatie ophalen"
+		"diagnostics": "Gedetailleerde foutinformatie ophalen",
+		"proxyProvider": "Je lijkt een proxy-gebaseerde provider te gebruiken. Zorg ervoor dat je de logs controleert en dat het geen Roo-verzoeken herschrijft."
 	},
 	"powershell": {
 		"issues": "Het lijkt erop dat je problemen hebt met Windows PowerShell, zie deze"

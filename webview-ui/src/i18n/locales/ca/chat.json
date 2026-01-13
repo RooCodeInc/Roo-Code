@@ -276,7 +276,8 @@
 		"title": "Detalls de l'error",
 		"copyToClipboard": "Copiar al porta-retalls",
 		"copied": "Copiat!",
-		"diagnostics": "Obtenir informació d'error detallada"
+		"diagnostics": "Obtenir informació d'error detallada",
+		"proxyProvider": "Sembla que estàs utilitzant un proveïdor basat en proxy. Assegura't de comprovar els seus registres i de garantir que no estàs reescrivint les sol·licituds de Roo."
 	},
 	"powershell": {
 		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació."

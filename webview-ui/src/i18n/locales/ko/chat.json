@@ -276,7 +276,8 @@
 		"title": "오류 세부 정보",
 		"copyToClipboard": "클립보드에 복사",
 		"copied": "복사됨!",
-		"diagnostics": "상세한 오류 정보 가져오기"
+		"diagnostics": "상세한 오류 정보 가져오기",
+		"proxyProvider": "프록시 기반 제공자를 사용하는 것 같습니다. 로그를 확인하고 Roo의 요청을 다시 작성하지 않는지 확인하세요."
 	},
 	"powershell": {
 		"issues": "Windows PowerShell에 문제가 있는 것 같습니다. 다음을 참조하세요"

@@ -276,7 +276,8 @@
 		"title": "Szczegóły błędu",
 		"copyToClipboard": "Kopiuj do schowka",
 		"copied": "Skopiowano!",
-		"diagnostics": "Uzyskaj szczegółowe informacje o błędzie"
+		"diagnostics": "Uzyskaj szczegółowe informacje o błędzie",
+		"proxyProvider": "Wygląda na to, że używasz dostawcy opartego na proxy. Pamiętaj, aby sprawdzić jego dzienniki i upewnić się, że nie przepisuje żądań Roo."
 	},
 	"powershell": {
 		"issues": "Wygląda na to, że masz problemy z Windows PowerShell, proszę zapoznaj się z tym"
