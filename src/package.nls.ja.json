@@ -13,6 +13,7 @@
 	"command.settings.title": "設定",
 	"command.documentation.title": "ドキュメント",
 	"command.openInNewTab.title": "新しいタブで開く",
+	"command.openInCurrentTab.title": "現在のタブで開く",
 	"command.explainCode.title": "コードの説明",
 	"command.fixCode.title": "コードの修正",
 	"command.improveCode.title": "コードの改善",

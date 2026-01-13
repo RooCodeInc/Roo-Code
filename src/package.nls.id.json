@@ -13,6 +13,7 @@
 	"command.settings.title": "Pengaturan",
 	"command.documentation.title": "Dokumentasi",
 	"command.openInNewTab.title": "Buka di Tab Baru",
+	"command.openInCurrentTab.title": "Buka di Tab Saat Ini",
 	"command.explainCode.title": "Jelaskan Kode",
 	"command.fixCode.title": "Perbaiki Kode",
 	"command.improveCode.title": "Tingkatkan Kode",
