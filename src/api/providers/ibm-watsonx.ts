@@ -111,20 +111,76 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 	 * @param projectId - The IBM watsonx project ID
 	 * @param modelId - The model ID to use
 	 * @param messages - The messages to send
+	 * @param metadata - Optional metadata for tool support
 	 * @returns The parameters object for the API call
 	 */
-	private createTextChatParams(projectId: string, modelId: string, messages: any[]) {
+	private createTextChatParams(
+		projectId: string,
+		modelId: string,
+		messages: any[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): {
+		projectId: string
+		modelId: string
+		messages: any[]
+		maxTokens: number
+		temperature: number
+		maxCompletionTokens: number
+		tools?: any[]
+		toolChoice?: any
+	} {
 		const maxTokens = this.options.modelMaxTokens || 2048
 		const temperature = this.options.modelTemperature || 0.7
 		// Set to 0 for the model's configured max generated tokens
 		const maxCompletionTokens = 0
-		return {
+
+		const params = {
 			projectId,
 			modelId,
 			messages,
 			maxTokens,
 			temperature,
 			maxCompletionTokens,
+		}
+
+		// Add native tool support
+		if (metadata?.tools && metadata.tools.length > 0) {
+			return {
+				...params,
+				tools: this.convertToolsForOpenAI(metadata.tools),
+				...(metadata.tool_choice && { toolChoice: metadata.tool_choice }),
+			}
+		}
+
+		return params
+	}
+
+	/**
+	 * Processes watsonx response message and yields appropriate chunks
+	 *
+	 * @param message - The message from watsonx response
+	 */
+	private *processResponseMessage(message: any): Generator<any> {
+		// Handle text content
+		if (message.content) {
+			yield {
+				type: "text",
+				text: message.content,
+			}
+		}
+
+		// Handle tool calls
+		if (message.tool_calls && message.tool_calls.length > 0) {
+			for (const toolCall of message.tool_calls) {
+				if (toolCall.type === "function") {
+					yield {
+						type: "tool_call",
+						id: toolCall.id,
+						name: toolCall.function.name,
+						arguments: toolCall.function.arguments,
+					}
+				}
+			}
 		}
 	}
 
@@ -147,19 +203,18 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 			// Convert messages to WatsonX format with system prompt
 			const watsonxMessages = [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)]
 
-			const params = this.createTextChatParams(this.projectId!, modelId, watsonxMessages)
+			const params = this.createTextChatParams(this.projectId!, modelId, watsonxMessages, metadata)
+
 			const response = await this.service.textChat(params)
 
-			if (!response?.result?.choices?.[0]?.message?.content) {
+			if (!response?.result?.choices?.[0]?.message) {
 				throw new Error("Invalid or empty response from IBM watsonx API")
 			}
 
-			const responseText = response.result.choices[0].message.content
+			const message = response.result.choices[0].message
 
-			yield {
-				type: "text",
-				text: responseText,
-			}
+			// Process response message (text and tool calls)
+			yield* this.processResponseMessage(message)
 
 			const usageInfo = response.result.usage || {}
 			const inputTokens = usageInfo.prompt_tokens || 0
