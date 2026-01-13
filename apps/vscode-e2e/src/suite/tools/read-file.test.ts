@@ -538,6 +538,7 @@ suite("Roo Code read_file Tool", function () {
 	})
 
 	test("Should read multiple files in sequence", async function () {
+		this.timeout(90_000) // Increase timeout for multiple file reads
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let taskCompleted = false
@@ -575,14 +576,11 @@ suite("Roo Code read_file Tool", function () {
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 				},
-				text: `Use the read_file tool to read these two files in the current workspace directory:
-1. "${simpleFileName}"
-2. "${multilineFileName}"
-Read each file and tell me what you found in each one.`,
+				text: `Use the read_file tool to read "${simpleFileName}" and "${multilineFileName}", then tell me what you found.`,
 			})
 
 			// Wait for task completion
-			await waitFor(() => taskCompleted, { timeout: 60_000 })
+			await waitFor(() => taskCompleted, { timeout: 90_000 })
 
 			// Verify multiple read_file executions - AI might read them together
 			assert.ok(

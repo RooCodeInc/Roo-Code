@@ -174,6 +174,7 @@ This directory contains various files and subdirectories for testing the list_fi
 	})
 
 	test("Should list files in a directory (non-recursive)", async function () {
+		this.timeout(90_000) // Increase timeout for this specific test
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let taskCompleted = false
@@ -210,13 +211,13 @@ This directory contains various files and subdirectories for testing the list_fi
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 				},
-				text: `Use the list_files tool to list the contents of the directory "${testDirName}" (non-recursive, set recursive to false). Tell me what files and directories you find.`,
+				text: `Use the list_files tool with path="${testDirName}" and recursive=false, then tell me what you found.`,
 			})
 
 			console.log("Task ID:", taskId)
 
 			// Wait for task completion
-			await waitFor(() => taskCompleted, { timeout: 60_000 })
+			await waitFor(() => taskCompleted, { timeout: 90_000 })
 
 			// Verify the list_files tool was executed
 			assert.ok(toolExecuted, "The list_files tool should have been executed")

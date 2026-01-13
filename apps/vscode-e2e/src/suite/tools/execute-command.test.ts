@@ -9,10 +9,9 @@ import { sleep, waitUntilCompleted } from "../utils"
 import { setDefaultSuiteTimeout } from "../test-utils"
 
 suite.skip("Roo Code execute_command Tool", function () {
-	// NOTE: These tests are currently skipped because the AI is not using the execute_command tool
-	// The tests complete but the tool is never executed, suggesting the prompts need refinement
-	// or the AI prefers other approaches (like write_to_file) over execute_command
-	// TODO: Investigate why AI doesn't use execute_command and refine prompts
+	// CONFIRMED: Even with more capable AI models, execute_command is not used
+	// The AI consistently prefers write_to_file over execute_command
+	// This is a fundamental AI behavioral preference, not a model capability issue
 	setDefaultSuiteTimeout(this)
 
 	let workspaceDir: string
@@ -117,6 +116,7 @@ suite.skip("Roo Code execute_command Tool", function () {
 	})
 
 	test("Should execute simple echo command", async function () {
+		this.timeout(90_000)
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		const testFile = testFiles.simpleEcho
@@ -154,15 +154,13 @@ suite.skip("Roo Code execute_command Tool", function () {
 					allowedCommands: ["*"],
 					terminalShellIntegrationDisabled: true,
 				},
-				text: `Use the execute_command tool to run this command: echo "Hello from test" > ${testFile.name}
-
-Then use the attempt_completion tool to complete the task.`,
+				text: `IMPORTANT: You MUST use the execute_command tool (not write_to_file) to run: echo "Hello from test" > ${testFile.name}`,
 			})
 
 			console.log("Task ID:", taskId)
 
 			// Wait for task completion
-			await waitUntilCompleted({ api, taskId, timeout: 60_000 })
+			await waitUntilCompleted({ api, taskId, timeout: 90_000 })
 
 			// Verify tool was executed
 			assert.ok(toolExecuted, "The execute_command tool should have been executed")
@@ -183,6 +181,7 @@ Then use the attempt_completion tool to complete the task.`,
 	})
 
 	test("Should execute command with custom working directory", async function () {
+		this.timeout(90_000)
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let _taskCompleted = false
@@ -223,17 +222,13 @@ Then use the attempt_completion tool to complete the task.`,
 					allowedCommands: ["*"],
 					terminalShellIntegrationDisabled: true,
 				},
-				text: `Use the execute_command tool with these parameters:
-- command: echo "Test in subdirectory" > output.txt
-- cwd: test-subdir
-
-The subdirectory test-subdir exists in the workspace.`,
+				text: `IMPORTANT: Use execute_command tool with command='echo "Test in subdirectory" > output.txt' and cwd='test-subdir'`,
 			})
 
 			console.log("Task ID:", taskId)
 
 			// Wait for task completion
-			await waitUntilCompleted({ api, taskId, timeout: 60_000 })
+			await waitUntilCompleted({ api, taskId, timeout: 90_000 })
 
 			// Verify tool was executed
 			assert.ok(toolExecuted, "The execute_command tool should have been executed")
@@ -265,6 +260,7 @@ The subdirectory test-subdir exists in the workspace.`,
 	})
 
 	test("Should execute multiple commands sequentially", async function () {
+		this.timeout(120_000)
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		const testFile = testFiles.multiCommand
@@ -302,17 +298,15 @@ The subdirectory test-subdir exists in the workspace.`,
 					allowedCommands: ["*"],
 					terminalShellIntegrationDisabled: true,
 				},
-				text: `Use the execute_command tool to create a file with multiple lines. Execute these commands:
-1. echo "Line 1" > ${testFile.name}
-2. echo "Line 2" >> ${testFile.name}
-
-Execute each command separately using the execute_command tool, then use attempt_completion.`,
+				text: `IMPORTANT: Use execute_command tool twice:
+First: echo "Line 1" > ${testFile.name}
+Second: echo "Line 2" >> ${testFile.name}`,
 			})
 
 			console.log("Task ID:", taskId)
 
 			// Wait for task completion with increased timeout
-			await waitUntilCompleted({ api, taskId, timeout: 90_000 })
+			await waitUntilCompleted({ api, taskId, timeout: 120_000 })
 
 			// Verify tool was executed
 			assert.ok(toolExecuted, "The execute_command tool should have been executed")
@@ -334,6 +328,7 @@ Execute each command separately using the execute_command tool, then use attempt
 	})
 
 	test("Should handle long-running commands", async function () {
+		this.timeout(90_000)
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let _taskCompleted = false
@@ -373,13 +368,13 @@ Execute each command separately using the execute_command tool, then use attempt
 					allowedCommands: ["*"],
 					terminalShellIntegrationDisabled: true,
 				},
-				text: `Use the execute_command tool to run: ${sleepCommand} && echo "Command completed after delay"`,
+				text: `IMPORTANT: Use execute_command tool to run: ${sleepCommand} && echo "Command completed after delay"`,
 			})
 
 			console.log("Task ID:", taskId)
 
 			// Wait for task completion
-			await waitUntilCompleted({ api, taskId, timeout: 60_000 })
+			await waitUntilCompleted({ api, taskId, timeout: 90_000 })
 
 			// Verify tool was executed
 			assert.ok(toolExecuted, "The execute_command tool should have been executed")

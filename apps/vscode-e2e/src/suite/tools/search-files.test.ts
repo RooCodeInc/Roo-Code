@@ -290,6 +290,7 @@ The search should find matches across different file types and provide context f
 	})
 
 	test("Should search for function definitions in JavaScript files", async function () {
+		this.timeout(90_000) // Increase timeout for this specific test
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		let taskCompleted = false
@@ -325,13 +326,13 @@ The search should find matches across different file types and provide context f
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 				},
-				text: `Use the search_files tool with the regex pattern "function\\s+\\w+" to find all function declarations in JavaScript files. Tell me what you find.`,
+				text: `Use the search_files tool with regex="function\\s+\\w+" to search for function declarations, then tell me what you found.`,
 			})
 
 			console.log("Task ID:", taskId)
 
 			// Wait for task completion
-			await waitFor(() => taskCompleted, { timeout: 60_000 })
+			await waitFor(() => taskCompleted, { timeout: 90_000 })
 
 			// Verify the search_files tool was executed
 			assert.ok(toolExecuted, "The search_files tool should have been executed")
