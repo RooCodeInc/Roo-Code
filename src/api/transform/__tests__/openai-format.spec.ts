@@ -255,6 +255,78 @@ describe("convertToOpenAiMessages", () => {
 		expect(assistantMessage.tool_calls![0].id).toBe("tool-123")
 	})
 
+	it('should use "(empty)" placeholder for tool result with empty content (Gemini compatibility)', () => {
+		// This test ensures that tool messages with empty content get a placeholder instead
+		// of an empty string. Gemini (via OpenRouter) requires function responses to have
+		// non-empty content in the "parts" field, and an empty string causes validation failure
+		// with error: "Unable to submit request because it must include at least one parts field"
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tool-123",
+						content: "", // Empty string content
+					},
+				],
+			},
+		]
+
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+		expect(openAiMessages).toHaveLength(1)
+
+		const toolMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionToolMessageParam
+		expect(toolMessage.role).toBe("tool")
+		expect(toolMessage.tool_call_id).toBe("tool-123")
+		// Content should be "(empty)" placeholder, NOT empty string
+		expect(toolMessage.content).toBe("(empty)")
+	})
+
+	it('should use "(empty)" placeholder for tool result with undefined content (Gemini compatibility)', () => {
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tool-456",
+						// content is undefined/not provided
+					} as Anthropic.ToolResultBlockParam,
+				],
+			},
+		]
+
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+		expect(openAiMessages).toHaveLength(1)
+
+		const toolMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionToolMessageParam
+		expect(toolMessage.role).toBe("tool")
+		expect(toolMessage.content).toBe("(empty)")
+	})
+
+	it('should use "(empty)" placeholder for tool result with empty array content (Gemini compatibility)', () => {
+		const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "tool-789",
+						content: [], // Empty array
+					} as Anthropic.ToolResultBlockParam,
+				],
+			},
+		]
+
+		const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+		expect(openAiMessages).toHaveLength(1)
+
+		const toolMessage = openAiMessages[0] as OpenAI.Chat.ChatCompletionToolMessageParam
+		expect(toolMessage.role).toBe("tool")
+		expect(toolMessage.content).toBe("(empty)")
+	})
+
 	describe("mergeToolResultText option", () => {
 		it("should merge text content into last tool message when mergeToolResultText is true", () => {
 			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
