@@ -5,6 +5,23 @@ import { t } from "../../i18n"
 
 export interface WebSearchParams {
 	query: string
+	allowed_domains?: string[]
+	blocked_domains?: string[]
+}
+
+/**
+ * Parse JSON array string safely, returning empty array on parse errors
+ */
+function parseDomainsArray(domainsStr: string | undefined): string[] {
+	if (!domainsStr || domainsStr.trim() === "") {
+		return []
+	}
+	try {
+		const parsed = JSON.parse(domainsStr)
+		return Array.isArray(parsed) ? parsed.filter((d) => typeof d === "string") : []
+	} catch {
+		return []
+	}
 }
 
 // Mock search results for demonstration
@@ -39,19 +56,37 @@ export class WebSearchTool extends BaseTool<"web_search"> {
 	readonly name = "web_search" as const
 
 	parseLegacy(params: Partial<Record<string, string>>): WebSearchParams {
+		const query = params.query || ""
+		const allowed_domains = parseDomainsArray(params.allowed_domains)
+		const blocked_domains = parseDomainsArray(params.blocked_domains)
+
 		return {
-			query: params.query || "",
+			query,
+			...(allowed_domains.length > 0 ? { allowed_domains } : {}),
+			...(blocked_domains.length > 0 ? { blocked_domains } : {}),
 		}
 	}
 
 	async execute(params: WebSearchParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { query } = params
+		const { query, allowed_domains, blocked_domains } = params
 		const { handleError, pushToolResult, askApproval, removeClosingTag } = callbacks
 
-		if (!query) {
+		if (!query || query.trim().length < 2) {
 			task.consecutiveMistakeCount++
 			task.recordToolError("web_search")
-			pushToolResult(await task.sayAndCreateMissingParamError("web_search", "query"))
+			pushToolResult(
+				await task.sayAndCreateMissingParamError("web_search", "query", "Query must be at least 2 characters"),
+			)
+			return
+		}
+
+		// Validate mutual exclusivity of domain filters
+		if (allowed_domains && allowed_domains.length > 0 && blocked_domains && blocked_domains.length > 0) {
+			task.consecutiveMistakeCount++
+			task.didToolFailInCurrentTurn = true
+			pushToolResult(
+				formatResponse.toolError("Cannot specify both allowed_domains and blocked_domains at the same time"),
+			)
 			return
 		}
 
@@ -62,12 +97,23 @@ export class WebSearchTool extends BaseTool<"web_search"> {
 			const approvalMessage = JSON.stringify({
 				tool: "webSearch",
 				query: removeClosingTag("query", query),
+				...(allowed_domains && allowed_domains.length > 0 ? { allowed_domains } : {}),
+				...(blocked_domains && blocked_domains.length > 0 ? { blocked_domains } : {}),
+				isOutsideWorkspace: true,
 			})
 
 			const didApprove = await askApproval("tool", approvalMessage)
 
 			if (!didApprove) {
 				return
+			}
+
+			// Construct domain filter description for response
+			let domainInfo = ""
+			if (allowed_domains && allowed_domains.length > 0) {
+				domainInfo = `\nDomain filter: Only results from ${allowed_domains.join(", ")}`
+			} else if (blocked_domains && blocked_domains.length > 0) {
+				domainInfo = `\nExcluding results from: ${blocked_domains.join(", ")}`
 			}
 
 			// Log the search query
@@ -81,7 +127,11 @@ export class WebSearchTool extends BaseTool<"web_search"> {
 			await new Promise((resolve) => setTimeout(resolve, 500))
 
 			// Format the search results
-			let resultText = t("tools:webSearch.results", { query }) + "\n\n"
+			let resultText = t("tools:webSearch.results", { query })
+			if (domainInfo) {
+				resultText += domainInfo
+			}
+			resultText += "\n\n"
 
 			mockSearchResults.forEach((result, index) => {
 				resultText += `${index + 1}. **${result.title}**\n`
@@ -104,7 +154,19 @@ export class WebSearchTool extends BaseTool<"web_search"> {
 	}
 
 	override async handlePartial(task: Task, block: any): Promise<void> {
-		return
+		const query: string | undefined = block.params.query
+		const allowed_domains = parseDomainsArray(block.params.allowed_domains)
+		const blocked_domains = parseDomainsArray(block.params.blocked_domains)
+
+		const sharedMessageProps = {
+			tool: "webSearch",
+			query: query,
+			...(allowed_domains.length > 0 ? { allowed_domains } : {}),
+			...(blocked_domains.length > 0 ? { blocked_domains } : {}),
+			isOutsideWorkspace: true,
+		}
+
+		await task.ask("tool", JSON.stringify(sharedMessageProps), block.partial).catch(() => {})
 	}
 }
 

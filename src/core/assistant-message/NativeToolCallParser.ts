@@ -424,6 +424,20 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "web_search":
+				if (partialArgs.query !== undefined) {
+					nativeArgs = {
+						query: partialArgs.query,
+						allowed_domains: Array.isArray(partialArgs.allowed_domains)
+							? partialArgs.allowed_domains
+							: undefined,
+						blocked_domains: Array.isArray(partialArgs.blocked_domains)
+							? partialArgs.blocked_domains
+							: undefined,
+					}
+				}
+				break
+
 			case "codebase_search":
 				if (partialArgs.query !== undefined) {
 					nativeArgs = {
@@ -694,6 +708,16 @@ export class NativeToolCallParser {
 							text: args.text,
 							path: args.path,
 						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "web_search":
+					if (args.query !== undefined) {
+						nativeArgs = {
+							query: args.query,
+							allowed_domains: Array.isArray(args.allowed_domains) ? args.allowed_domains : undefined,
+							blocked_domains: Array.isArray(args.blocked_domains) ? args.blocked_domains : undefined,
+						} as any as NativeArgsFor<TName>
 					}
 					break
 
