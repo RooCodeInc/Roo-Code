@@ -141,7 +141,7 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { id: modelId } = this.getModel()
+		const { id: modelId, info: modelInfo } = this.getModel()
 
 		try {
 			// Convert messages to WatsonX format with system prompt
@@ -164,7 +164,6 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 			const usageInfo = response.result.usage || {}
 			const inputTokens = usageInfo.prompt_tokens || 0
 			const outputTokens = usageInfo.completion_tokens || 0
-			const modelInfo = this.getModel().info
 			const totalCost = calculateApiCostOpenAI(modelInfo, inputTokens, outputTokens)
 
 			yield {
