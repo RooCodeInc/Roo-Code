@@ -109,6 +109,8 @@ export async function getWatsonxModels(
 							maxTokens,
 							supportsPromptCache: false,
 							supportsImages: false,
+							supportsNativeTools: true,
+							defaultToolProtocol: "native",
 							description,
 						}
 					}

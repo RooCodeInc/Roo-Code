@@ -29,6 +29,8 @@ export const baseModelInfo: ModelInfo = {
 	contextWindow: 128000,
 	supportsImages: false,
 	supportsPromptCache: false,
+	supportsNativeTools: true,
+	defaultToolProtocol: "native",
 }
 
 export const watsonxModels = {

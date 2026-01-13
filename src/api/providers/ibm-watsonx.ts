@@ -294,6 +294,8 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 				contextWindow: 131072,
 				supportsImages: false,
 				supportsPromptCache: false,
+				supportsNativeTools: true,
+				defaultToolProtocol: "native",
 			},
 		}
 	}
