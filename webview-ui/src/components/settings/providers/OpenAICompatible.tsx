@@ -175,6 +175,16 @@ export const OpenAICompatible = ({
 			</Checkbox>
 			<div>
 				<Checkbox
+					checked={apiConfiguration?.openAiOmitToolChoice ?? false}
+					onChange={handleInputChange("openAiOmitToolChoice", noTransform)}>
+					{t("settings:modelInfo.omitToolChoice")}
+				</Checkbox>
+				<div className="text-sm text-vscode-descriptionForeground ml-6">
+					{t("settings:modelInfo.omitToolChoiceDescription")}
+				</div>
+			</div>
+			<div>
+				<Checkbox
 					checked={azureApiVersionSelected}
 					onChange={(checked: boolean) => {
 						setAzureApiVersionSelected(checked)

@@ -879,6 +879,8 @@
 		"enableR1FormatTips": "Must be enabled when using R1 models such as QWQ to prevent 400 errors",
 		"useAzure": "Use Azure",
 		"azureApiVersion": "Set Azure API version",
+		"omitToolChoice": "Omit tool_choice parameter",
+		"omitToolChoiceDescription": "Enable this if your Azure or LiteLLM proxy does not support the tool_choice parameter.",
 		"gemini": {
 			"freeRequests": "* Free up to {{count}} requests per minute. After that, billing depends on prompt size.",
 			"pricingDetails": "For more info, see pricing details.",
