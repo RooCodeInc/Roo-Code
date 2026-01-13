@@ -63,27 +63,28 @@ describe("useTaskSearch", () => {
 	it("returns all tasks by default", () => {
 		const { result } = renderHook(() => useTaskSearch())
 
-		expect(result.current.tasks).toHaveLength(2) // Only tasks from current workspace
+		expect(result.current.tasks).toHaveLength(3) // All tasks from all workspaces
 		expect(result.current.tasks[0].id).toBe("task-2") // Newest first
 		expect(result.current.tasks[1].id).toBe("task-1")
+		expect(result.current.tasks[2].id).toBe("task-3")
 	})
 
-	it("filters tasks by current workspace by default", () => {
+	it("shows all workspaces by default", () => {
 		const { result } = renderHook(() => useTaskSearch())
-
-		expect(result.current.tasks).toHaveLength(2)
-		expect(result.current.tasks.every((task) => task.workspace === "/workspace/project1")).toBe(true)
-	})
-
-	it("shows all workspaces when showAllWorkspaces is true", () => {
-		const { result } = renderHook(() => useTaskSearch())
-
-		act(() => {
-			result.current.setShowAllWorkspaces(true)
-		})
 
 		expect(result.current.tasks).toHaveLength(3)
 		expect(result.current.showAllWorkspaces).toBe(true)
+	})
+
+	it("filters tasks by current workspace when showAllWorkspaces is false", () => {
+		const { result } = renderHook(() => useTaskSearch())
+
+		act(() => {
+			result.current.setShowAllWorkspaces(false)
+		})
+
+		expect(result.current.tasks).toHaveLength(2)
+		expect(result.current.tasks.every((task) => task.workspace === "/workspace/project1")).toBe(true)
 	})
 
 	it("sorts by newest by default", () => {
