@@ -222,10 +222,16 @@ const App = () => {
 
 	// Do not conditionally load ChatView, it's expensive and there's state we
 	// don't want to lose (user input, disableInput, askResponse promise, etc.)
+
+	// Container for max-width constraint on large screens (editor/tab mode only)
+	const containerClassName = renderContext === "editor" ? "h-full w-full mx-auto max-w-[896px]" : "h-full w-full"
+
 	return showWelcome ? (
-		<WelcomeView />
+		<div className={containerClassName}>
+			<WelcomeView />
+		</div>
 	) : (
-		<>
+		<div className={containerClassName}>
 			{tab === "history" && <HistoryView onDone={() => switchTab("chat")} />}
 			{tab === "settings" && (
 				<SettingsView ref={settingsRef} onDone={() => setTab("chat")} targetSection={currentSection} />
@@ -310,7 +316,7 @@ const App = () => {
 					}}
 				/>
 			)}
-		</>
+		</div>
 	)
 }
 
