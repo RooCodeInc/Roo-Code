@@ -20,22 +20,20 @@ export const formatResponse = {
 		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
 			return JSON.stringify({
 				status: "denied",
-				message: "The user denied this operation and provided the following feedback",
 				feedback: feedback,
 			})
 		}
-		return `The user denied this operation and provided the following feedback:\n<feedback>\n${feedback}\n</feedback>`
+		return `The user denied this operation and responded with the message:\n<user_message>\n${feedback}\n</user_message>`
 	},
 
 	toolApprovedWithFeedback: (feedback?: string, protocol?: ToolProtocol) => {
 		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
 			return JSON.stringify({
 				status: "approved",
-				message: "The user approved this operation and provided the following context",
 				feedback: feedback,
 			})
 		}
-		return `The user approved this operation and provided the following context:\n<feedback>\n${feedback}\n</feedback>`
+		return `The user approved this operation and responded with the message:\n<user_message>\n${feedback}\n</user_message>`
 	},
 
 	toolError: (error?: string, protocol?: ToolProtocol) => {
@@ -81,11 +79,10 @@ Otherwise, if you have not completed the task and do not need additional informa
 		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
 			return JSON.stringify({
 				status: "guidance",
-				message: "You seem to be having trouble proceeding",
 				feedback: feedback,
 			})
 		}
-		return `You seem to be having trouble proceeding. The user has provided the following feedback to help guide you:\n<feedback>\n${feedback}\n</feedback>`
+		return `You seem to be having trouble proceeding. The user has provided the following feedback to help guide you:\n<user_message>\n${feedback}\n</user_message>`
 	},
 
 	missingToolParameterError: (paramName: string, protocol?: ToolProtocol) => {

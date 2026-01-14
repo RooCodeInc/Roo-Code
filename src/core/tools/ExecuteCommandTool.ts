@@ -340,8 +340,7 @@ export async function executeCommandInTerminal(
 				[
 					`Command is still running in terminal from '${terminal.getCurrentWorkingDirectory().toPosix()}'.`,
 					result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
-					`The user provided the following feedback:`,
-					`<feedback>\n${text}\n</feedback>`,
+					`<user_message>\n${text}\n</user_message>`,
 				].join("\n"),
 				images,
 			),

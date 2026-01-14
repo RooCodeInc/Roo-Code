@@ -150,7 +150,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			// User provided feedback - push tool result to continue the conversation
 			await task.say("user_feedback", text ?? "", images)
 
-			const feedbackText = `The user has provided feedback on the results. Consider their input to continue the task, and then attempt completion again.\n<feedback>\n${text}\n</feedback>`
+			const feedbackText = `<user_message>\n${text}\n</user_message>`
 			pushToolResult(formatResponse.toolResult(feedbackText, images))
 		} catch (error) {
 			await handleError("inspecting site", error as Error)
