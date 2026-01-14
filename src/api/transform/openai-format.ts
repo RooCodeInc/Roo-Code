@@ -138,11 +138,17 @@ export function convertToOpenAiMessages(
 				// }
 
 				// Process non-tool messages
-				if (nonToolMessages.length > 0) {
+				// Filter out empty text blocks to prevent "must include at least one parts field" error
+				// from Gemini (via OpenRouter). Images always have content (base64 data).
+				const filteredNonToolMessages = nonToolMessages.filter(
+					(part) => part.type === "image" || (part.type === "text" && part.text),
+				)
+
+				if (filteredNonToolMessages.length > 0) {
 					// Check if we should merge text into the last tool message
 					// This is critical for reasoning/thinking models where a user message
 					// after tool results causes the model to drop all previous reasoning_content
-					const hasOnlyTextContent = nonToolMessages.every((part) => part.type === "text")
+					const hasOnlyTextContent = filteredNonToolMessages.every((part) => part.type === "text")
 					const hasToolMessages = toolMessages.length > 0
 					const shouldMergeIntoToolMessage =
 						options?.mergeToolResultText && hasToolMessages && hasOnlyTextContent
@@ -153,7 +159,7 @@ export function convertToOpenAiMessages(
 							openAiMessages.length - 1
 						] as OpenAI.Chat.ChatCompletionToolMessageParam
 						if (lastToolMessage?.role === "tool") {
-							const additionalText = nonToolMessages
+							const additionalText = filteredNonToolMessages
 								.map((part) => (part as Anthropic.TextBlockParam).text)
 								.join("\n")
 							lastToolMessage.content = `${lastToolMessage.content}\n\n${additionalText}`
@@ -162,7 +168,7 @@ export function convertToOpenAiMessages(
 						// Standard behavior: add user message with text/image content
 						openAiMessages.push({
 							role: "user",
-							content: nonToolMessages.map((part) => {
+							content: filteredNonToolMessages.map((part) => {
 								if (part.type === "image") {
 									return {
 										type: "image_url",

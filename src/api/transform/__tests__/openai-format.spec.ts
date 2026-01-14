@@ -327,6 +327,98 @@ describe("convertToOpenAiMessages", () => {
 		expect(toolMessage.content).toBe("(empty)")
 	})
 
+	describe("empty text block filtering", () => {
+		it("should filter out empty text blocks from user messages (Gemini compatibility)", () => {
+			// This test ensures that user messages with empty text blocks are filtered out
+			// to prevent "must include at least one parts field" error from Gemini (via OpenRouter).
+			// Empty text blocks can occur in edge cases during message construction.
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "text",
+							text: "", // Empty text block should be filtered out
+						},
+						{
+							type: "text",
+							text: "Hello, how are you?",
+						},
+					],
+				},
+			]
+
+			const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+			expect(openAiMessages).toHaveLength(1)
+			expect(openAiMessages[0].role).toBe("user")
+
+			const content = openAiMessages[0].content as Array<{ type: string; text?: string }>
+			// Should only have the non-empty text block
+			expect(content).toHaveLength(1)
+			expect(content[0]).toEqual({ type: "text", text: "Hello, how are you?" })
+		})
+
+		it("should not create user message when all text blocks are empty (Gemini compatibility)", () => {
+			// If all text blocks are empty, no user message should be created
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "text",
+							text: "", // Empty
+						},
+						{
+							type: "text",
+							text: "", // Also empty
+						},
+					],
+				},
+			]
+
+			const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+			// No messages should be created since all content is empty
+			expect(openAiMessages).toHaveLength(0)
+		})
+
+		it("should preserve image blocks when filtering empty text blocks", () => {
+			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "text",
+							text: "", // Empty text block should be filtered out
+						},
+						{
+							type: "image",
+							source: {
+								type: "base64",
+								media_type: "image/png",
+								data: "base64data",
+							},
+						},
+					],
+				},
+			]
+
+			const openAiMessages = convertToOpenAiMessages(anthropicMessages)
+			expect(openAiMessages).toHaveLength(1)
+			expect(openAiMessages[0].role).toBe("user")
+
+			const content = openAiMessages[0].content as Array<{
+				type: string
+				image_url?: { url: string }
+			}>
+			// Should only have the image block
+			expect(content).toHaveLength(1)
+			expect(content[0]).toEqual({
+				type: "image_url",
+				image_url: { url: "data:image/png;base64,base64data" },
+			})
+		})
+	})
+
 	describe("mergeToolResultText option", () => {
 		it("should merge text content into last tool message when mergeToolResultText is true", () => {
 			const anthropicMessages: Anthropic.Messages.MessageParam[] = [
