@@ -27,6 +27,8 @@ export interface FileEntry {
 	path: string
 	/** 1-indexed line number to start reading from (default: 1) */
 	offset?: number
+	/** Maximum lines to return (default: value of maxReadFileLine setting) */
+	limit?: number
 	/** Reading mode: "slice" for simple reading, "indentation" for smart block extraction */
 	mode?: ReadMode
 	/** Configuration for indentation mode */

@@ -452,7 +452,7 @@ export async function readIndentationBlock(
 				hasMoreAfter: r.number < records.length,
 				linesBeforeStart: r.number - 1,
 				linesAfterEnd: records.length - r.number,
-				truncatedByLimit: true,
+				truncatedByLimit: records.length > finalLimit,
 				lineLengthTruncations,
 			},
 		}
