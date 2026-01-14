@@ -173,11 +173,28 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 		if (message.tool_calls && message.tool_calls.length > 0) {
 			for (const toolCall of message.tool_calls) {
 				if (toolCall.type === "function") {
+					let args = toolCall.function.arguments
+
+					// Fix double-encoded JSON from certain models (e.g., granite-4-h-small)
+					// They return arguments as: "\"{\\n  \\\"path\\\": \\\"value\\\"\\n}\""
+					// instead of: "{\"path\": \"value\"}"
+					try {
+						// Try to parse once - if it's a string, it might be double-encoded
+						const parsed = JSON.parse(args)
+						if (typeof parsed === "string") {
+							// It's double-encoded, use the parsed string (which is the correct JSON string)
+							args = parsed
+							console.log("[IBM watsonx] Fixed double-encoded tool arguments")
+						}
+					} catch (e) {
+						// Not valid JSON or already correct format, keep original
+					}
+
 					yield {
 						type: "tool_call",
 						id: toolCall.id,
 						name: toolCall.function.name,
-						arguments: toolCall.function.arguments,
+						arguments: args,
 					}
 				}
 			}
