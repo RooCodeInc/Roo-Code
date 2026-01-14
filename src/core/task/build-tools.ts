@@ -9,7 +9,11 @@ import type { ClineProvider } from "../webview/ClineProvider"
 import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
 
 import { getNativeTools, getMcpServerTools } from "../prompts/tools/native-tools"
-import { filterNativeToolsForMode, filterMcpToolsForMode } from "../prompts/tools/filter-tools-for-mode"
+import {
+	filterNativeToolsForMode,
+	filterMcpToolsForMode,
+	resolveToolAlias,
+} from "../prompts/tools/filter-tools-for-mode"
 
 interface BuildToolsOptions {
 	provider: ClineProvider
@@ -158,8 +162,11 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 		// Combine ALL tools (unfiltered native + all MCP + custom)
 		const allTools = [...nativeTools, ...mcpTools, ...nativeCustomTools]
 
-		// Extract names of tools that are allowed based on mode filtering
-		const allowedFunctionNames = filteredTools.map(getToolName)
+		// Extract names of tools that are allowed based on mode filtering.
+		// Resolve any alias names to canonical names to ensure consistency with allTools
+		// (which uses canonical names). This prevents Gemini errors when tools are renamed
+		// to aliases in filteredTools but allTools contains the original canonical names.
+		const allowedFunctionNames = filteredTools.map((tool) => resolveToolAlias(getToolName(tool)))
 
 		return {
 			tools: allTools,
