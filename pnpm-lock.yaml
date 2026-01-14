@@ -752,7 +752,7 @@ importers:
         specifier: ^1.29.1
         version: 1.29.1(@modelcontextprotocol/sdk@1.12.0)
       '@ibm-cloud/watsonx-ai':
-        specifier: ^1.7.5
+        specifier: ^1.7.6
         version: 1.7.6
       '@lmstudio/sdk':
         specifier: ^1.1.1
