@@ -40,6 +40,10 @@
 		"title": "Start New Task",
 		"tooltip": "Begin a new task"
 	},
+	"seeAllChanges": {
+		"title": "See All Changes",
+		"tooltip": "View a diff of all changes made during this task"
+	},
 	"proceedAnyways": {
 		"title": "Proceed Anyways",
 		"tooltip": "Continue while command executes"
