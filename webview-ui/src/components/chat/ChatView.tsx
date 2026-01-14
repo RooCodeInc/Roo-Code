@@ -133,6 +133,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const textAreaRef = useRef<HTMLTextAreaElement>(null)
 	const [sendingDisabled, setSendingDisabled] = useState(false)
 	const [selectedImages, setSelectedImages] = useState<string[]>([])
+	const selectedImagesRef = useRef(selectedImages)
 
 	// We need to hold on to the ask because useEffect > lastMessage will always
 	// let us know when an ask comes in and handle it, but by the time
@@ -185,6 +186,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useEffect(() => {
 		inputValueRef.current = inputValue
 	}, [inputValue])
+
+	// Keep selectedImagesRef in sync with selectedImages state
+	useEffect(() => {
+		selectedImagesRef.current = selectedImages
+	}, [selectedImages])
 
 	// Compute whether auto-approval is paused (user is typing in a followup)
 	const isFollowUpAutoApprovalPaused = useMemo(() => {
@@ -1247,12 +1253,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					return currentValue !== "" ? `${currentValue} \n${suggestion.answer}` : suggestion.answer
 				})
 			} else {
-				// Don't clear the input value when sending a follow-up choice
-				// The message should be sent but the text area should preserve what the user typed
+				// Don't clear the input value or selected images when sending a follow-up choice
+				// The message should be sent but the text area should preserve what the user typed/attached
 				const preservedInput = inputValueRef.current
+				const preservedImages = selectedImagesRef.current
 				handleSendMessage(suggestion.answer, [])
-				// Restore the input value after sending
+				// Restore the input value and images after sending
 				setInputValue(preservedInput)
+				setSelectedImages(preservedImages)
 			}
 		},
 		[handleSendMessage, setInputValue, switchToMode, alwaysAllowModeSwitch, clineAsk, markFollowUpAsAnswered],
