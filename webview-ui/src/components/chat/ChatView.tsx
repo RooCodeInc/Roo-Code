@@ -62,6 +62,16 @@ export const MAX_IMAGES_PER_MESSAGE = 20 // This is the Anthropic limit.
 
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
+// Ask types that display approval buttons where typed messages should be queued
+// rather than sent directly as askResponse (which would be lost/ignored).
+const BUTTON_APPROVAL_ASK_TYPES: ClineAsk[] = [
+	"tool", // File edits: Save/Reject
+	"command", // Command execution: Run Command/Reject
+	"browser_action_launch", // Browser actions: Approve/Reject
+	"use_mcp_server", // MCP server usage: Approve/Reject
+	"command_output", // Command running: Proceed While Running/Kill Command
+]
+
 const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewProps> = (
 	{ isHidden, showAnnouncement, hideAnnouncement },
 	ref,
@@ -587,7 +597,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				// - Task is busy (sendingDisabled)
 				// - API request in progress (isStreaming)
 				// - Queue has items (preserve message order during drain)
-				if (sendingDisabled || isStreaming || messageQueue.length > 0) {
+				// - Waiting for button approval (tool/command/browser/mcp/command_output)
+				const isWaitingForButtonApproval =
+					clineAskRef.current !== undefined &&
+					BUTTON_APPROVAL_ASK_TYPES.includes(clineAskRef.current) &&
+					enableButtons
+
+				if (sendingDisabled || isStreaming || messageQueue.length > 0 || isWaitingForButtonApproval) {
 					try {
 						console.log("queueMessage", text, images)
 						vscode.postMessage({ type: "queueMessage", text, images })
@@ -643,7 +659,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				handleChatReset()
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, isStreaming, messageQueue.length], // messagesRef and clineAskRef are stable
+		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, isStreaming, messageQueue.length, enableButtons], // messagesRef and clineAskRef are stable
 	)
 
 	const handleSetChatBoxMessage = useCallback(
