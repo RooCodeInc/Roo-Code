@@ -8,7 +8,7 @@ import { createReadStream } from "fs"
 // Configuration constants
 const MAX_LINE_LENGTH = 500 // Truncate lines longer than this
 const TAB_WIDTH = 4 // Treat tabs as 4 spaces for indentation
-const FALLBACK_LIMIT = 500 // Fallback when no limit is specified and maxReadFileLine is not set
+const FALLBACK_LIMIT = 2000 // Fallback when no limit is specified and maxReadFileLine is not set
 
 // Comment prefixes for header detection
 const COMMENT_PREFIXES = ["#", "//", "--", "/*", "*", "'''", '"""', "<!--"]
