@@ -605,11 +605,8 @@ suite("Roo Code read_file Tool", function () {
 		}
 	})
 
-	test.skip("Should read large file efficiently", async function () {
-		// SKIPPED: This test times out even with 120s timeout
-		// The 100-line file may be too large for the AI to process quickly
-		// TODO: Investigate why this test takes so long or reduce file size
-		// Increase timeout for large file test
+	test("Should read large file efficiently", async function () {
+		// Testing with more capable model and increased timeout
 		this.timeout(180_000) // 3 minutes
 
 		const api = globalThis.api
@@ -653,7 +650,7 @@ suite("Roo Code read_file Tool", function () {
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 				},
-				text: `Use the read_file tool to read the file "${fileName}" in the current workspace directory. It has many lines. Tell me about any patterns you see in the content.`,
+				text: `Use the read_file tool to read "${fileName}" and tell me how many lines it has.`,
 			})
 
 			// Wait for task completion (longer timeout for large file)

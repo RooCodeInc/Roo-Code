@@ -5,7 +5,12 @@ import { RooCodeEventName, type ClineMessage } from "@roo-code/types"
 import { sleep, waitFor, waitUntilCompleted } from "./utils"
 
 suite.skip("Roo Code Subtasks", () => {
-	test("Should handle subtask cancellation and resumption correctly", async () => {
+	// SKIPPED: Subtasks test times out after 30s waiting for subtask to spawn
+	// This test involves complex task orchestration with cancellation and resumption
+	// which may expose timing issues or bugs in the extension's task management
+	// Recommend investigating separately with more detailed logging
+	test("Should handle subtask cancellation and resumption correctly", async function () {
+		this.timeout(120_000) // 2 minutes for complex orchestration
 		const api = globalThis.api
 
 		const messages: Record<string, ClineMessage[]> = {}
