@@ -32,6 +32,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	protected options: ApiHandlerOptions
 	private client: OpenAI
 	private readonly providerName = "OpenAI Native"
+	/**
+	 * Some Responses streams emit tool-call argument deltas without stable call id/name.
+	 * Track the last observed tool identity from output_item events so we can still
+	 * emit `tool_call_partial` chunks (tool-call-only streams).
+	 */
+	private pendingToolCallId: string | undefined
+	private pendingToolCallName: string | undefined
 	// Resolved service tier from Responses API (actual tier used by OpenAI)
 	private lastServiceTier: ServiceTier | undefined
 	// Complete response output array (includes reasoning items with encrypted_content)
@@ -51,6 +58,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		"response.reasoning_summary_text.delta",
 		"response.refusal.delta",
 		"response.output_item.added",
+		"response.output_item.done",
 		"response.done",
 		"response.completed",
 		"response.tool_call_arguments.delta",
@@ -155,6 +163,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.lastResponseOutput = undefined
 		// Reset last response id for this request
 		this.lastResponseId = undefined
+		// Reset pending tool identity for this request
+		this.pendingToolCallId = undefined
+		this.pendingToolCallName = undefined
 
 		// Use Responses API for ALL models
 		const { verbosity, reasoning } = this.getModel()
@@ -1136,17 +1147,22 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			event?.type === "response.tool_call_arguments.delta" ||
 			event?.type === "response.function_call_arguments.delta"
 		) {
-			// Emit partial chunks directly - NativeToolCallParser handles state management
-			const callId = event.call_id || event.tool_call_id || event.id
-			const name = event.name || event.function_name
+			// Some streams omit stable identity on delta events; fall back to the
+			// most recently observed tool identity from output_item events.
+			const callId = event.call_id || event.tool_call_id || event.id || this.pendingToolCallId || undefined
+			const name = event.name || event.function_name || this.pendingToolCallName || undefined
 			const args = event.delta || event.arguments
 
-			yield {
-				type: "tool_call_partial",
-				index: event.index ?? 0,
-				id: callId,
-				name,
-				arguments: args,
+			// Avoid emitting incomplete tool_call_partial chunks; the downstream
+			// NativeToolCallParser needs a name to start a call.
+			if (typeof name === "string" && name.length > 0 && typeof callId === "string" && callId.length > 0) {
+				yield {
+					type: "tool_call_partial",
+					index: event.index ?? 0,
+					id: callId,
+					name,
+					arguments: args,
+				}
 			}
 			return
 		}
@@ -1164,6 +1180,16 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		if (event?.type === "response.output_item.added" || event?.type === "response.output_item.done") {
 			const item = event?.item
 			if (item) {
+				// Capture tool identity so subsequent argument deltas can be attributed.
+				if (item.type === "function_call" || item.type === "tool_call") {
+					const callId = item.call_id || item.tool_call_id || item.id
+					const name = item.name || item.function?.name || item.function_name
+					if (typeof callId === "string" && callId.length > 0) {
+						this.pendingToolCallId = callId
+						this.pendingToolCallName = typeof name === "string" ? name : undefined
+					}
+				}
+
 				if (item.type === "text" && item.text) {
 					yield { type: "text", text: item.text }
 				} else if (item.type === "reasoning" && item.text) {

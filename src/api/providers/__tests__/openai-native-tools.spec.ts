@@ -296,4 +296,83 @@ describe("OpenAiNativeHandler MCP tool schema handling", () => {
 		expect(tool.parameters.properties.metadata.additionalProperties).toBe(false) // Nested object
 		expect(tool.parameters.properties.metadata.properties.labels.items.additionalProperties).toBe(false) // Array items
 	})
+
+	it("should handle missing call_id and name in tool_call_arguments.delta by using pending tool identity", async () => {
+		const handler = new OpenAiNativeHandler({
+			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-4o",
+		} as ApiHandlerOptions)
+
+		const mockClient = {
+			responses: {
+				create: vi.fn().mockImplementation(() => {
+					return {
+						[Symbol.asyncIterator]: async function* () {
+							// 1. Emit output_item.added with tool identity
+							yield {
+								type: "response.output_item.added",
+								item: {
+									type: "function_call",
+									call_id: "call_123",
+									name: "read_file",
+									arguments: "",
+								},
+							}
+
+							// 2. Emit tool_call_arguments.delta WITHOUT identity (just args)
+							yield {
+								type: "response.function_call_arguments.delta",
+								delta: '{"path":',
+							}
+
+							// 3. Emit another delta
+							yield {
+								type: "response.function_call_arguments.delta",
+								delta: '"/tmp/test.txt"}',
+							}
+
+							// 4. Emit output_item.done
+							yield {
+								type: "response.output_item.done",
+								item: {
+									type: "function_call",
+									call_id: "call_123",
+									name: "read_file",
+									arguments: '{"path":"/tmp/test.txt"}',
+								},
+							}
+						},
+					}
+				}),
+			},
+		}
+		;(handler as any).client = mockClient
+
+		const stream = handler.createMessage("system prompt", [], {
+			taskId: "test-task-id",
+		})
+
+		const chunks: any[] = []
+		for await (const chunk of stream) {
+			if (chunk.type === "tool_call_partial") {
+				chunks.push(chunk)
+			}
+		}
+
+		expect(chunks.length).toBe(2)
+		expect(chunks[0]).toEqual({
+			type: "tool_call_partial",
+			index: 0,
+			id: "call_123", // Should be filled from pendingToolCallId
+			name: "read_file", // Should be filled from pendingToolCallName
+			arguments: '{"path":',
+		})
+		expect(chunks[1]).toEqual({
+			type: "tool_call_partial",
+			index: 0,
+			id: "call_123",
+			name: "read_file",
+			arguments: '"/tmp/test.txt"}',
+		})
+	})
 })
