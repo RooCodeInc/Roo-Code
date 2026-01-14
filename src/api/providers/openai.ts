@@ -92,6 +92,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 
+		// Check if model is Mistral/Devstral family to apply strict message ordering fix
+		// Mistral models reject "user" role immediately after "tool" role
+		const modelIdLower = modelId.toLowerCase()
+		const isMistralFamily = modelIdLower.includes("mistral") || modelIdLower.includes("devstral")
+
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
 			return
@@ -122,7 +127,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
+				convertedMessages = [
+					systemMessage,
+					...convertToOpenAiMessages(messages, isMistralFamily ? { mergeToolResultText: true } : undefined),
+				]
 
 				if (modelInfo.supportsPromptCache) {
 					// Note: the following logic is copied from openrouter:
@@ -229,7 +237,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				model: modelId,
 				messages: deepseekReasoner
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-					: [systemMessage, ...convertToOpenAiMessages(messages)],
+					: [
+							systemMessage,
+							...convertToOpenAiMessages(
+								messages,
+								isMistralFamily ? { mergeToolResultText: true } : undefined,
+							),
+						],
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 				...(metadata?.toolProtocol === "native" &&
@@ -341,6 +355,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelInfo = this.getModel().info
 		const methodIsAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 
+		// Check if model is Mistral/Devstral family for strict message ordering fix
+		const modelIdLower = modelId.toLowerCase()
+		const isMistralFamily = modelIdLower.includes("mistral") || modelIdLower.includes("devstral")
+
 		if (this.options.openAiStreamingEnabled ?? true) {
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
 
@@ -351,7 +369,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages),
+					...convertToOpenAiMessages(messages, isMistralFamily ? { mergeToolResultText: true } : undefined),
 				],
 				stream: true,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -389,7 +407,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages),
+					...convertToOpenAiMessages(messages, isMistralFamily ? { mergeToolResultText: true } : undefined),
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
