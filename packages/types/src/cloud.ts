@@ -139,6 +139,7 @@ export const organizationCloudSettingsSchema = z.object({
 	taskShareExpirationDays: z.number().int().positive().optional(),
 	allowMembersViewAllTasks: z.boolean().optional(),
 	workspaceTaskVisibility: workspaceTaskVisibilitySchema.optional(),
+	llmEnhancedFeaturesEnabled: z.boolean().optional(),
 })
 
 export type OrganizationCloudSettings = z.infer<typeof organizationCloudSettingsSchema>
@@ -213,6 +214,7 @@ export const ORGANIZATION_DEFAULT: OrganizationSettings = {
 		allowPublicTaskSharing: true,
 		taskShareExpirationDays: 30,
 		allowMembersViewAllTasks: true,
+		llmEnhancedFeaturesEnabled: false,
 	},
 	defaultSettings: {},
 	allowList: ORGANIZATION_ALLOW_ALL,
