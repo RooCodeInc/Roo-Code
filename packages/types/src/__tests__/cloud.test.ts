@@ -331,3 +331,79 @@ describe("organizationCloudSettingsSchema with workspaceTaskVisibility", () => {
 		expect(result.data?.cloudSettings?.workspaceTaskVisibility).toBe("list-only")
 	})
 })
+
+describe("organizationCloudSettingsSchema with llmEnhancedFeaturesEnabled", () => {
+	it("should validate without llmEnhancedFeaturesEnabled property", () => {
+		const input = {
+			recordTaskMessages: true,
+			enableTaskSharing: true,
+		}
+		const result = organizationCloudSettingsSchema.safeParse(input)
+		expect(result.success).toBe(true)
+		expect(result.data?.llmEnhancedFeaturesEnabled).toBeUndefined()
+	})
+
+	it("should validate with llmEnhancedFeaturesEnabled as true", () => {
+		const input = {
+			recordTaskMessages: true,
+			enableTaskSharing: true,
+			llmEnhancedFeaturesEnabled: true,
+		}
+		const result = organizationCloudSettingsSchema.safeParse(input)
+		expect(result.success).toBe(true)
+		expect(result.data?.llmEnhancedFeaturesEnabled).toBe(true)
+	})
+
+	it("should validate with llmEnhancedFeaturesEnabled as false", () => {
+		const input = {
+			recordTaskMessages: true,
+			enableTaskSharing: true,
+			llmEnhancedFeaturesEnabled: false,
+		}
+		const result = organizationCloudSettingsSchema.safeParse(input)
+		expect(result.success).toBe(true)
+		expect(result.data?.llmEnhancedFeaturesEnabled).toBe(false)
+	})
+
+	it("should reject non-boolean llmEnhancedFeaturesEnabled", () => {
+		const input = {
+			llmEnhancedFeaturesEnabled: "true",
+		}
+		const result = organizationCloudSettingsSchema.safeParse(input)
+		expect(result.success).toBe(false)
+	})
+
+	it("should have correct TypeScript type", () => {
+		// Type-only test to ensure TypeScript compilation
+		const settings: OrganizationCloudSettings = {
+			recordTaskMessages: true,
+			enableTaskSharing: true,
+			llmEnhancedFeaturesEnabled: true,
+		}
+		expect(settings.llmEnhancedFeaturesEnabled).toBe(true)
+
+		const settingsWithoutLlmFeatures: OrganizationCloudSettings = {
+			recordTaskMessages: false,
+		}
+		expect(settingsWithoutLlmFeatures.llmEnhancedFeaturesEnabled).toBeUndefined()
+	})
+
+	it("should validate in organizationSettingsSchema with llmEnhancedFeaturesEnabled", () => {
+		const input = {
+			version: 1,
+			cloudSettings: {
+				recordTaskMessages: true,
+				enableTaskSharing: true,
+				llmEnhancedFeaturesEnabled: false,
+			},
+			defaultSettings: {},
+			allowList: {
+				allowAll: true,
+				providers: {},
+			},
+		}
+		const result = organizationSettingsSchema.safeParse(input)
+		expect(result.success).toBe(true)
+		expect(result.data?.cloudSettings?.llmEnhancedFeaturesEnabled).toBe(false)
+	})
+})

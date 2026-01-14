@@ -62,7 +62,7 @@ This command:
 4. Downloads VSCode test runtime (if needed)
 5. Runs all tests
 
-**Expected output**: ~7 passing tests, ~37 skipped tests, ~32 seconds
+**Expected output**: ~39 passing tests, ~0 skipped tests, ~6-8 minutes
 
 ### Run Specific Test File
 
@@ -231,10 +231,10 @@ echo "OPENROUTER_API_KEY=sk-or-v1-your-key-here" > .env.local
 
 As of the last run:
 
-- ✅ **7 tests passing** (100% of active tests)
-- ⏭️ **37 tests skipped** (intentionally disabled)
+- ✅ **39 tests passing** (100% coverage)
+- ⏭️ **0 tests skipped**
 - ❌ **0 tests failing**
-- ⏱️ **~32 seconds** total runtime
+- ⏱️ **~6-8 minutes** total runtime
 
 ### Passing Tests
 

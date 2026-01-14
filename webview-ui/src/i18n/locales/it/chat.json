@@ -276,7 +276,8 @@
 		"title": "Dettagli errore",
 		"copyToClipboard": "Copia negli appunti",
 		"copied": "Copiato!",
-		"diagnostics": "Ottieni informazioni errore dettagliate"
+		"diagnostics": "Ottieni informazioni errore dettagliate",
+		"proxyProvider": "Sembra che tu stia utilizzando un provider basato su proxy. Assicurati di controllarne i log e di verificare che non stia riscrivendo le richieste di Roo."
 	},
 	"powershell": {
 		"issues": "Sembra che tu stia avendo problemi con Windows PowerShell, consulta questa"
@@ -334,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Novità:",
-			"stickyProfiles": "Profili provider persistenti - Le attività ora ricordano la loro configurazione API, quindi cambiare profilo a metà sessione non influisce sulle attività in esecuzione.",
-			"imageMentions": "Menzioni di file immagine - Fai riferimento alle immagini direttamente nella chat usando le menzioni @ per includerle nel tuo contesto.",
-			"brrrMode": "YOLO ora è BRRR - L'approvazione automatica di tutto è stata rinominata da \"YOLO\" a \"BRRR\". Ovviamente."
+			"settingsSearch": "Trova e naviga rapidamente verso impostazioni specifiche con la nuova ricerca impostazioni.",
+			"stopButtonUX": "Passaggio dal grande pulsante di annullamento invadente a un pulsante di arresto più elegante.",
+			"apiCompatibility": "Risolti problemi API con Gemini, nomi strumenti MCP e chiamate strumenti parallele."
 		},
 		"cloudAgents": {
 			"heading": "Novità nel Cloud:",

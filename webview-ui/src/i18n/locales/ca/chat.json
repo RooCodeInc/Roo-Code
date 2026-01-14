@@ -276,7 +276,8 @@
 		"title": "Detalls de l'error",
 		"copyToClipboard": "Copiar al porta-retalls",
 		"copied": "Copiat!",
-		"diagnostics": "Obtenir informació d'error detallada"
+		"diagnostics": "Obtenir informació d'error detallada",
+		"proxyProvider": "Sembla que estàs utilitzant un proveïdor basat en proxy. Assegura't de comprovar els seus registres i de garantir que no estàs reescrivint les sol·licituds de Roo."
 	},
 	"powershell": {
 		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació."
@@ -334,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"stickyProfiles": "Perfils de proveïdor persistents - Les tasques ara recorden la seva configuració API, per tant, canviar de perfil a mitja sessió no afecta les tasques en execució.",
-			"imageMentions": "Mencions de fitxers d'imatge - Fes referència a imatges directament al xat usant mencions @ per incloure-les al teu context.",
-			"brrrMode": "YOLO ara és BRRR - Aprovar-ho tot automàticament s'ha reanomenat de \"YOLO\" a \"BRRR\". Òbviament."
+			"settingsSearch": "Troba i navega ràpidament a configuracions específiques amb la nova cerca de configuració.",
+			"stopButtonUX": "S'ha canviat d'un gran botó de cancel·lació intrusiu a un botó d'aturada més elegant.",
+			"apiCompatibility": "S'han resolt problemes d'API amb Gemini, noms d'eines MCP i crides d'eines en paral·lel."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",

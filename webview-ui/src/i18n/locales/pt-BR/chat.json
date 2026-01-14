@@ -276,7 +276,8 @@
 		"title": "Detalhes do erro",
 		"copyToClipboard": "Copiar para área de transferência",
 		"copied": "Copiado!",
-		"diagnostics": "Obter informações detalhadas do erro"
+		"diagnostics": "Obter informações detalhadas do erro",
+		"proxyProvider": "Parece que você está usando um provedor baseado em proxy. Certifique-se de verificar seus registros e garantir que não está reescrevendo as solicitações do Roo."
 	},
 	"powershell": {
 		"issues": "Parece que você está tendo problemas com o Windows PowerShell, por favor veja este"
@@ -334,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Novidades:",
-			"stickyProfiles": "Perfis de Provedor Adesivos - As tarefas agora se lembram de sua configuração de API, portanto, trocar perfis no meio da sessão não afeta as tarefas em execução.",
-			"imageMentions": "Menções de arquivos de imagem @ - Faça referência a imagens diretamente no chat usando @mentions para incluí-las no seu contexto.",
-			"brrrMode": "YOLO agora é BRRR - A aprovação automática de tudo foi renomeada de \"YOLO\" para \"BRRR\". Obviamente."
+			"settingsSearch": "Encontre e navegue rapidamente para configurações específicas com a nova busca de configurações.",
+			"stopButtonUX": "Trocamos o grande e intrusivo botão de cancelar por um botão de parar mais elegante.",
+			"apiCompatibility": "Resolvemos problemas de API com Gemini, nomes de ferramentas MCP e chamadas de ferramentas paralelas."
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",

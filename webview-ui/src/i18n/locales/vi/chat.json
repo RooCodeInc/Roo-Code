@@ -277,7 +277,8 @@
 		"title": "Chi tiết lỗi",
 		"copyToClipboard": "Sao chép vào clipboard",
 		"copied": "Đã sao chép!",
-		"diagnostics": "Nhận thông tin lỗi chi tiết"
+		"diagnostics": "Nhận thông tin lỗi chi tiết",
+		"proxyProvider": "Có vẻ bạn đang sử dụng nhà cung cấp dựa trên proxy. Hãy chắc chắn kiểm tra các nhật ký của nó và đảm bảo nó không viết lại các yêu cầu của Roo."
 	},
 	"powershell": {
 		"issues": "Có vẻ như bạn đang gặp vấn đề với Windows PowerShell, vui lòng xem"
@@ -335,9 +336,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"stickyProfiles": "Hồ sơ nhà cung cấp dính - Các tác vụ hiện nhớ cấu hình API của chúng, vì vậy việc chuyển đổi hồ sơ giữa phiên không ảnh hưởng đến các tác vụ đang chạy.",
-			"imageMentions": "Đề cập @image files - Tham chiếu hình ảnh trực tiếp trong trò chuyện bằng cách sử dụng @mentions để đưa chúng vào ngữ cảnh của bạn.",
-			"brrrMode": "YOLO giờ là BRRR - Phê duyệt tự động mọi thứ đã được đổi tên từ \"YOLO\" thành \"BRRR\". Rõ ràng rồi."
+			"settingsSearch": "Nhanh chóng tìm và điều hướng đến các cài đặt cụ thể với tính năng tìm kiếm cài đặt mới.",
+			"stopButtonUX": "Chuyển từ nút hủy lớn gây phiền nhiễu sang nút dừng tinh tế hơn.",
+			"apiCompatibility": "Đã giải quyết các vấn đề API với Gemini, tên công cụ MCP và các cuộc gọi công cụ song song."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

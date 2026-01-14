@@ -172,7 +172,19 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			...(tools.length > 0 ? { tools } : {}),
 		}
 
-		if (metadata?.tool_choice) {
+		// Handle allowedFunctionNames for mode-restricted tool access.
+		// When provided, all tool definitions are passed to the model (so it can reference
+		// historical tool calls in conversation), but only the specified tools can be invoked.
+		// This takes precedence over tool_choice to ensure mode restrictions are honored.
+		if (metadata?.allowedFunctionNames && metadata.allowedFunctionNames.length > 0) {
+			config.toolConfig = {
+				functionCallingConfig: {
+					// Use ANY mode to allow calling any of the allowed functions
+					mode: FunctionCallingConfigMode.ANY,
+					allowedFunctionNames: metadata.allowedFunctionNames,
+				},
+			}
+		} else if (metadata?.tool_choice) {
 			const choice = metadata.tool_choice
 			let mode: FunctionCallingConfigMode
 			let allowedFunctionNames: string[] | undefined

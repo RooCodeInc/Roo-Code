@@ -157,7 +157,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "jan-2026-v3.39.0-sticky-profiles-image-mentions-brrr" // v3.39.0 Sticky Profiles, Image @Mentions, BRRR Mode
+	public readonly latestAnnouncementId = "jan-2026-v3.40.0-settings-search-stop-button-api-fixes" // v3.40.0 Settings Search, Stop Button UX, API Fixes
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 

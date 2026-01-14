@@ -277,7 +277,8 @@
 		"title": "错误详情",
 		"copyToClipboard": "复制到剪贴板",
 		"copied": "已复制!",
-		"diagnostics": "获取详细错误信息"
+		"diagnostics": "获取详细错误信息",
+		"proxyProvider": "看起来你在使用基于代理的提供商。请检查日志并确保它不会重写 Roo 的请求。"
 	},
 	"powershell": {
 		"issues": "看起来您遇到了Windows PowerShell问题，请参阅此"
@@ -335,9 +336,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"stickyProfiles": "粘性提供商配置文件 - 任务现在会记住其 API 配置，因此在会话中途切换配置文件不会影响正在运行的任务。",
-			"imageMentions": "图像文件 @mentions - 在聊天中直接使用 @mentions 引用图像，将其包含在您的上下文中。",
-			"brrrMode": "YOLO 现在是 BRRR - 自动批准一切已从 \"YOLO\" 更名为 \"BRRR\"。显然。"
+			"settingsSearch": "通过新的设置搜索功能快速查找和导航到特定设置。",
+			"stopButtonUX": "将大型侵入式取消按钮替换为更优雅的停止按钮。",
+			"apiCompatibility": "解决了 Gemini、MCP 工具名称和并行工具调用的 API 问题。"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
