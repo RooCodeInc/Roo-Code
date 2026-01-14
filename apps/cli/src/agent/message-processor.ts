@@ -21,7 +21,13 @@ import { ExtensionMessage, ClineMessage } from "@roo-code/types"
 import { debugLog } from "@roo-code/core/cli"
 
 import type { StateStore } from "./state-store.js"
-import type { TypedEventEmitter, AgentStateChangeEvent, WaitingForInputEvent, TaskCompletedEvent } from "./events.js"
+import type {
+	TypedEventEmitter,
+	AgentStateChangeEvent,
+	WaitingForInputEvent,
+	TaskCompletedEvent,
+	CommandExecutionOutputEvent,
+} from "./events.js"
 import {
 	isSignificantStateChange,
 	transitionedToWaiting,
@@ -119,6 +125,10 @@ export class MessageProcessor {
 
 				case "invoke":
 					this.handleInvoke(message)
+					break
+
+				case "commandExecutionStatus":
+					this.handleCommandExecutionStatus(message)
 					break
 
 				default:
@@ -237,6 +247,7 @@ export class MessageProcessor {
 		}
 
 		const clineMessage = message.clineMessage
+
 		const previousState = this.store.getAgentState()
 
 		// Update the message in the store
@@ -275,6 +286,45 @@ export class MessageProcessor {
 		}
 		// Invokes don't directly affect state detection
 		// But they might trigger state changes through subsequent messages
+	}
+
+	/**
+	 * Handle a "commandExecutionStatus" message - streaming terminal output.
+	 *
+	 * This message is sent during command execution to provide live terminal
+	 * output before the final command_output message is created.
+	 */
+	private handleCommandExecutionStatus(message: ExtensionMessage): void {
+		if (!message.text) {
+			return
+		}
+
+		try {
+			const status = JSON.parse(message.text) as { status: string; executionId?: string; output?: string }
+
+			// Only emit for "output" status which contains terminal output
+			if (status.status === "output" && status.executionId && status.output !== undefined) {
+				if (this.options.debug) {
+					debugLog("[MessageProcessor] Command execution output", {
+						executionId: status.executionId,
+						outputLength: status.output.length,
+					})
+				}
+
+				const event: CommandExecutionOutputEvent = {
+					executionId: status.executionId,
+					output: status.output,
+				}
+				this.emitter.emit("commandExecutionOutput", event)
+			}
+		} catch {
+			// Ignore parse errors
+			if (this.options.debug) {
+				debugLog("[MessageProcessor] Failed to parse commandExecutionStatus", {
+					text: message.text?.substring(0, 100),
+				})
+			}
+		}
 	}
 
 	// ===========================================================================
@@ -372,6 +422,15 @@ export class MessageProcessor {
 		// A more sophisticated implementation would track seen message timestamps
 		const lastMessage = messages[messages.length - 1]
 		if (lastMessage) {
+			// DEBUG: Log all emitted ask messages to trace partial handling
+			if (this.options.debug && lastMessage.type === "ask") {
+				debugLog("[MessageProcessor] EMIT message", {
+					ask: lastMessage.ask,
+					partial: lastMessage.partial,
+					textLen: lastMessage.text?.length || 0,
+					ts: lastMessage.ts,
+				})
+			}
 			this.emitter.emit("message", lastMessage)
 		}
 	}

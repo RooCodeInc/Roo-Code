@@ -1,21 +1,27 @@
-import { useEffect, useRef, useCallback, useMemo } from "react"
+import { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import { useApp } from "ink"
 import { randomUUID } from "crypto"
 import type { ExtensionMessage, WebviewMessage } from "@roo-code/types"
 
-import { ExtensionHostInterface, ExtensionHostOptions } from "@/agent/index.js"
+import { ExtensionClient, ExtensionHostInterface, ExtensionHostOptions } from "@/agent/index.js"
 
 import { useCLIStore } from "../store.js"
 
 export interface UseExtensionHostOptions extends ExtensionHostOptions {
 	initialPrompt?: string
 	exitOnComplete?: boolean
-	onExtensionMessage: (msg: ExtensionMessage) => void
+	/**
+	 * Handle non-message extension state (modes, file search, commands, etc.)
+	 * ClineMessage processing should use useClientEvents instead.
+	 */
+	onExtensionState?: (msg: ExtensionMessage) => void
 	createExtensionHost: (options: ExtensionHostOptions) => ExtensionHostInterface
 }
 
 export interface UseExtensionHostReturn {
 	isReady: boolean
+	/** ExtensionClient for subscribing to message events */
+	client: ExtensionClient | null
 	sendToExtension: ((msg: WebviewMessage) => void) | null
 	runTask: ((prompt: string) => Promise<void>) | null
 	cleanup: () => Promise<void>
@@ -43,19 +49,23 @@ export function useExtensionHost({
 	nonInteractive,
 	ephemeral,
 	exitOnComplete,
-	onExtensionMessage,
+	onExtensionState,
 	createExtensionHost,
 }: UseExtensionHostOptions): UseExtensionHostReturn {
 	const { exit } = useApp()
 	const { addMessage, setComplete, setLoading, setHasStartedTask, setError } = useCLIStore()
 
 	const hostRef = useRef<ExtensionHostInterface | null>(null)
+	// Use state for client so that consumers re-render when it becomes available.
+	// This is critical for useClientEvents which needs the client to subscribe to events.
+	const [client, setClient] = useState<ExtensionClient | null>(null)
 	const isReadyRef = useRef(false)
 
 	const cleanup = useCallback(async () => {
 		if (hostRef.current) {
 			await hostRef.current.dispose()
 			hostRef.current = null
+			setClient(null)
 			isReadyRef.current = false
 		}
 	}, [])
@@ -78,9 +88,15 @@ export function useExtensionHost({
 				})
 
 				hostRef.current = host
+				// Setting client via state triggers re-render so useClientEvents
+				// receives the valid client and can subscribe to events.
+				setClient(host.client)
 				isReadyRef.current = true
 
-				host.on("extensionWebviewMessage", (msg) => onExtensionMessage(msg as ExtensionMessage))
+				// Handle non-message state updates (modes, file search, commands, task history)
+				if (onExtensionState) {
+					host.on("extensionWebviewMessage", (msg) => onExtensionState(msg as ExtensionMessage))
+				}
 
 				host.client.on("taskCompleted", async () => {
 					setComplete(true)
@@ -142,9 +158,9 @@ export function useExtensionHost({
 		return hostRef.current.runTask(prompt)
 	}, [])
 
-	// Memoized return object to prevent unnecessary re-renders in consumers.
+	// Return object includes client state directly so consumers re-render when client changes.
 	return useMemo(
-		() => ({ isReady: isReadyRef.current, sendToExtension, runTask, cleanup }),
-		[sendToExtension, runTask, cleanup],
+		() => ({ isReady: isReadyRef.current, client, sendToExtension, runTask, cleanup }),
+		[client, sendToExtension, runTask, cleanup],
 	)
 }

@@ -210,13 +210,6 @@ describe("HistoryTrigger", () => {
 			expect(trigger.debounceMs).toBe(100)
 		})
 
-		it("should not have consumeTrigger set (# character appears in input)", () => {
-			const trigger = createHistoryTrigger({ getHistory: () => mockHistoryItems })
-
-			// The # character should remain in the input like other triggers
-			expect(trigger.consumeTrigger).toBeUndefined()
-		})
-
 		it("should call getHistory when searching", () => {
 			const getHistoryMock = vi.fn(() => mockHistoryItems)
 			const trigger = createHistoryTrigger({ getHistory: getHistoryMock })

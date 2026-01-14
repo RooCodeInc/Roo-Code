@@ -98,12 +98,11 @@ describe("ExtensionHost", () => {
 
 			const host = new ExtensionHost(options)
 
-			// Options are stored but integrationTest is set to true
+			// Options are stored as provided
 			const storedOptions = getPrivate<ExtensionHostOptions>(host, "options")
 			expect(storedOptions.mode).toBe(options.mode)
 			expect(storedOptions.workspacePath).toBe(options.workspacePath)
 			expect(storedOptions.extensionPath).toBe(options.extensionPath)
-			expect(storedOptions.integrationTest).toBe(true) // Always set to true in constructor
 		})
 
 		it("should be an EventEmitter instance", () => {
@@ -281,8 +280,8 @@ describe("ExtensionHost", () => {
 	describe("quiet mode", () => {
 		describe("setupQuietMode", () => {
 			it("should not modify console when integrationTest is true", () => {
-				// By default, constructor sets integrationTest = true
-				const host = createTestHost()
+				// Explicitly set integrationTest = true
+				const host = createTestHost({ integrationTest: true })
 				const originalLog = console.log
 
 				callPrivate(host, "setupQuietMode")

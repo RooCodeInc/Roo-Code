@@ -4,11 +4,11 @@ import * as theme from "../../theme.js"
 import { Icon } from "../Icon.js"
 
 import type { ToolRendererProps } from "./types.js"
-import { truncateText, sanitizeContent, getToolDisplayName, getToolIconName, parseDiff } from "./utils.js"
+import { sanitizeContent, getToolDisplayName, getToolIconName, parseDiff } from "./utils.js"
 
-const MAX_DIFF_LINES = 15
+const MAX_PREVIEW_LINES = 5
 
-export function FileWriteTool({ toolData }: ToolRendererProps) {
+export function FileWriteTool({ toolData, rawContent }: ToolRendererProps) {
 	const iconName = getToolIconName(toolData.tool)
 	const displayName = getToolDisplayName(toolData.tool)
 	const path = toolData.path || ""
@@ -17,6 +17,20 @@ export function FileWriteTool({ toolData }: ToolRendererProps) {
 	const isProtected = toolData.isProtected
 	const isOutsideWorkspace = toolData.isOutsideWorkspace
 	const isNewFile = toolData.tool === "newFileCreated" || toolData.tool === "write_to_file"
+
+	// For streaming: rawContent is updated with each message, so parse it for live content
+	// toolData.content may be stale during streaming due to debounce optimization
+	let liveContent = toolData.content || ""
+	if (rawContent && isNewFile) {
+		try {
+			const parsed = JSON.parse(rawContent) as Record<string, unknown>
+			if (parsed.content && typeof parsed.content === "string") {
+				liveContent = parsed.content
+			}
+		} catch {
+			// Use toolData.content if rawContent isn't valid JSON
+		}
+	}
 
 	// Handle batch diff operations
 	if (toolData.batchDiffs && toolData.batchDiffs.length > 0) {
@@ -57,8 +71,19 @@ export function FileWriteTool({ toolData }: ToolRendererProps) {
 	}
 
 	// Single file write
-	const { text: previewDiff, truncated, hiddenLines } = truncateText(diff, MAX_DIFF_LINES)
+	// For new files, display streaming content; for edits, show diff
 	const diffHunks = diff ? parseDiff(diff) : []
+
+	// Process content for display - split into lines and truncate
+	const sanitizedContent = isNewFile && liveContent ? sanitizeContent(liveContent) : ""
+	const contentLines = sanitizedContent ? sanitizedContent.split("\n") : []
+	const displayLines = contentLines.slice(0, MAX_PREVIEW_LINES)
+	const truncatedLineCount = contentLines.length - MAX_PREVIEW_LINES
+	const isContentTruncated = truncatedLineCount > 0
+
+	// Stats for the header
+	const totalLines = contentLines.length
+	const totalChars = liveContent.length
 
 	return (
 		<Box flexDirection="column" paddingX={1} marginBottom={1}>
@@ -76,15 +101,15 @@ export function FileWriteTool({ toolData }: ToolRendererProps) {
 						</Text>
 					</>
 				)}
-				{isNewFile && (
+				{isNewFile && !diffStats && (
 					<Text color={theme.successColor} bold>
 						{" "}
 						NEW
 					</Text>
 				)}
 
-				{/* Diff stats badge */}
-				{diffStats && (
+				{/* Stats - show line/char count for streaming, or diff stats when complete */}
+				{diffStats ? (
 					<>
 						<Text color={theme.dimText}> </Text>
 						<Text color={theme.successColor} bold>
@@ -95,6 +120,14 @@ export function FileWriteTool({ toolData }: ToolRendererProps) {
 							-{diffStats.removed}
 						</Text>
 					</>
+				) : (
+					isNewFile &&
+					totalChars > 0 && (
+						<Text color={theme.dimText}>
+							{" "}
+							({totalLines} lines, {totalChars} chars)
+						</Text>
+					)
 				)}
 
 				{/* Warning badges */}
@@ -107,7 +140,23 @@ export function FileWriteTool({ toolData }: ToolRendererProps) {
 				)}
 			</Box>
 
-			{/* Diff preview */}
+			{/* Streaming content preview for new files (before diff is available) */}
+			{isNewFile && !diff && displayLines.length > 0 && (
+				<Box flexDirection="column" marginLeft={2} marginTop={1}>
+					{displayLines.map((line, index) => (
+						<Text key={index} color={theme.toolText}>
+							{line}
+						</Text>
+					))}
+					{isContentTruncated && (
+						<Text color={theme.dimText} dimColor>
+							... ({truncatedLineCount} more lines)
+						</Text>
+					)}
+				</Box>
+			)}
+
+			{/* Diff preview for edits */}
 			{diffHunks.length > 0 && (
 				<Box flexDirection="column" marginLeft={2} marginTop={1}>
 					{diffHunks.slice(0, 2).map((hunk, hunkIndex) => (
@@ -149,13 +198,20 @@ export function FileWriteTool({ toolData }: ToolRendererProps) {
 				</Box>
 			)}
 
-			{/* Fallback to raw diff if no hunks parsed */}
-			{diffHunks.length === 0 && previewDiff && (
+			{/* Fallback: show raw diff content if no hunks parsed and not streaming new file */}
+			{!isNewFile && diffHunks.length === 0 && diff && (
 				<Box flexDirection="column" marginLeft={2} marginTop={1}>
-					<Text color={theme.toolText}>{previewDiff}</Text>
-					{truncated && (
+					{diff
+						.split("\n")
+						.slice(0, MAX_PREVIEW_LINES)
+						.map((line, index) => (
+							<Text key={index} color={theme.toolText}>
+								{line}
+							</Text>
+						))}
+					{diff.split("\n").length > MAX_PREVIEW_LINES && (
 						<Text color={theme.dimText} dimColor>
-							... ({hiddenLines} more lines)
+							... ({diff.split("\n").length - MAX_PREVIEW_LINES} more lines)
 						</Text>
 					)}
 				</Box>

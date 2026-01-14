@@ -91,6 +91,16 @@ export class OutputManager {
 	private loggedFirstPartial = new Set<number>()
 
 	/**
+	 * Track streaming terminal output by execution ID.
+	 */
+	private terminalOutputByExecutionId = new Map<string, string>()
+
+	/**
+	 * Flag to track if we've streamed any terminal output (to skip command_output).
+	 */
+	private hasStreamedTerminalOutput = false
+
+	/**
 	 * Observable for streaming state changes.
 	 * External systems can subscribe to know when streaming starts/ends.
 	 */
@@ -126,10 +136,24 @@ export class OutputManager {
 		if (msg.type === "say" && msg.say) {
 			this.outputSayMessage(ts, msg.say, text, isPartial, alreadyDisplayedComplete, skipFirstUserMessage)
 		} else if (msg.type === "ask" && msg.ask) {
-			// For ask messages, we only output command_output here
-			// Other asks are handled by AskDispatcher
-			if (msg.ask === "command_output") {
-				this.outputCommandOutput(ts, text, isPartial, alreadyDisplayedComplete)
+			// Handle streaming output for different ask types
+			switch (msg.ask) {
+				case "command_output":
+					this.outputCommandOutput(ts, text, isPartial, alreadyDisplayedComplete)
+					break
+
+				case "tool":
+					// Stream tool requests (file create/edit/delete) as they come in
+					this.outputToolRequest(ts, text, isPartial, alreadyDisplayedComplete)
+					break
+
+				case "command":
+					// Stream command requests as they come in
+					this.outputCommandRequest(ts, text, isPartial, alreadyDisplayedComplete)
+					break
+
+				// Other ask types (followup, completion_result, etc.) are handled by AskDispatcher
+				// when complete (partial: false)
 			}
 		}
 	}
@@ -161,9 +185,16 @@ export class OutputManager {
 	}
 
 	/**
-	 * Check if a message has already been fully displayed.
+	 * Check if a message has already been displayed (streamed or complete).
+	 * Returns true if we've streamed content for this ts OR if we've fully displayed it.
 	 */
 	isAlreadyDisplayed(ts: number): boolean {
+		// Check if we've streamed any content for this message
+		// (streamedContent is set during streaming, before displayedMessages is finalized)
+		if (this.streamedContent.has(ts)) {
+			return true
+		}
+		// Check if we've fully displayed this message
 		const displayed = this.displayedMessages.get(ts)
 		return displayed !== undefined && !displayed.partial
 	}
@@ -198,6 +229,10 @@ export class OutputManager {
 		this.streamedContent.clear()
 		this.currentlyStreamingTs = null
 		this.loggedFirstPartial.clear()
+		this.terminalOutputByExecutionId.clear()
+		this.hasStreamedTerminalOutput = false
+		this.toolContentStreamed.clear()
+		this.toolContentTruncated.clear()
 		this.streamingState.next({ ts: null, isStreaming: false })
 	}
 
@@ -335,6 +370,7 @@ export class OutputManager {
 
 	/**
 	 * Output command_output (shared between say and ask types).
+	 * Skips output if we've already streamed terminal output via commandExecutionStatus.
 	 */
 	outputCommandOutput(
 		ts: number,
@@ -342,6 +378,15 @@ export class OutputManager {
 		isPartial: boolean,
 		alreadyDisplayedComplete: boolean | undefined,
 	): void {
+		// Skip if we've already streamed terminal output - avoid duplicate display
+		if (this.hasStreamedTerminalOutput) {
+			// Mark as displayed but don't output - we already showed it via [terminal]
+			if (!isPartial) {
+				this.displayedMessages.set(ts, { ts, text, partial: false })
+			}
+			return
+		}
+
 		if (isPartial && text) {
 			this.streamContent(ts, text, "[command output]")
 			this.displayedMessages.set(ts, { ts, text, partial: true })
@@ -362,6 +407,147 @@ export class OutputManager {
 
 			this.displayedMessages.set(ts, { ts, text, partial: false })
 			this.streamedContent.set(ts, { ts, text, headerShown: true })
+		}
+	}
+
+	/**
+	 * Track streamed tool content separately (content grows, not the full JSON text).
+	 */
+	private toolContentStreamed = new Map<number, string>()
+
+	/**
+	 * Track which tool messages have already shown truncation marker.
+	 */
+	private toolContentTruncated = new Set<number>()
+
+	/**
+	 * Maximum lines to show when streaming file content.
+	 */
+	private static readonly MAX_PREVIEW_LINES = 5
+
+	/**
+	 * Output tool request (file create/edit/delete) with streaming content preview.
+	 * Shows the file content being written (up to 20 lines), then final state when complete.
+	 */
+	private outputToolRequest(
+		ts: number,
+		text: string,
+		isPartial: boolean,
+		alreadyDisplayedComplete: boolean | undefined,
+	): void {
+		// Parse tool info to get the tool name, path, and content for display
+		let toolName = "tool"
+		let toolPath = ""
+		let content = ""
+		try {
+			const toolInfo = JSON.parse(text) as Record<string, unknown>
+			toolName = (toolInfo.tool as string) || "tool"
+			toolPath = (toolInfo.path as string) || ""
+			content = (toolInfo.content as string) || ""
+		} catch {
+			// Use default if not JSON
+		}
+
+		if (isPartial && text) {
+			const previousContent = this.toolContentStreamed.get(ts) || ""
+			const previous = this.streamedContent.get(ts)
+
+			if (!previous) {
+				// First partial - show header with path (if has valid extension)
+				// Check for valid extension: must have a dot followed by 1+ characters
+				const hasValidExtension = /\.[a-zA-Z0-9]+$/.test(toolPath)
+				const pathInfo = hasValidExtension ? ` ${toolPath}` : ""
+				this.writeRaw(`\n[${toolName}]${pathInfo}\n`)
+				this.streamedContent.set(ts, { ts, text, headerShown: true })
+				this.currentlyStreamingTs = ts
+				this.streamingState.next({ ts, isStreaming: true })
+			}
+
+			// Stream content delta (new content since last update)
+			if (content.length > previousContent.length && content.startsWith(previousContent)) {
+				const delta = content.slice(previousContent.length)
+				// Check if we're still within the preview limit
+				const previousLineCount = previousContent === "" ? 0 : previousContent.split("\n").length
+				const currentLineCount = content === "" ? 0 : content.split("\n").length
+				const previouslyTruncated = this.toolContentTruncated.has(ts)
+
+				if (!previouslyTruncated) {
+					if (currentLineCount <= OutputManager.MAX_PREVIEW_LINES) {
+						// Still under limit - output the delta
+						this.writeRaw(delta)
+					} else if (previousLineCount < OutputManager.MAX_PREVIEW_LINES) {
+						// Just crossed the limit - output remaining lines up to limit, mark as truncated
+						// (truncation message will be shown at completion with final count)
+						const linesToShow = OutputManager.MAX_PREVIEW_LINES - previousLineCount
+						const deltaLines = delta.split("\n")
+						const truncatedDelta = deltaLines.slice(0, linesToShow).join("\n")
+						if (truncatedDelta) {
+							this.writeRaw(truncatedDelta)
+						}
+						this.toolContentTruncated.add(ts)
+					} else {
+						// Already at/past limit but not yet marked - just mark as truncated
+						this.toolContentTruncated.add(ts)
+					}
+				}
+				// If already truncated, don't output more content
+				this.toolContentStreamed.set(ts, content)
+			}
+
+			this.displayedMessages.set(ts, { ts, text, partial: true })
+		} else if (!isPartial && !alreadyDisplayedComplete) {
+			// Tool request complete - check if we need to show truncation message
+			const previousContent = this.toolContentStreamed.get(ts) || ""
+			const currentLineCount = content === "" ? 0 : content.split("\n").length
+
+			// Show truncation message if content exceeds preview limit
+			// (We only mark as truncated during partials, the actual message is shown here with final count)
+			if (currentLineCount > OutputManager.MAX_PREVIEW_LINES && previousContent) {
+				const remainingLines = currentLineCount - OutputManager.MAX_PREVIEW_LINES
+				this.writeRaw(`\n... (${remainingLines} more lines)\n`)
+			}
+
+			// Show final stats
+			const pathInfo = toolPath ? ` ${toolPath}` : ""
+			const charCount = content.length
+			this.writeRaw(`[${toolName}]${pathInfo} complete (${currentLineCount} lines, ${charCount} chars)\n`)
+			this.currentlyStreamingTs = null
+			this.streamingState.next({ ts: null, isStreaming: false })
+			this.displayedMessages.set(ts, { ts, text, partial: false })
+			// Clean up tool content tracking
+			this.toolContentStreamed.delete(ts)
+			this.toolContentTruncated.delete(ts)
+		}
+	}
+
+	/**
+	 * Output command request with streaming support.
+	 * Streams partial content as it arrives from the LLM.
+	 */
+	private outputCommandRequest(
+		ts: number,
+		text: string,
+		isPartial: boolean,
+		alreadyDisplayedComplete: boolean | undefined,
+	): void {
+		if (isPartial && text) {
+			this.streamContent(ts, text, "[command]")
+			this.displayedMessages.set(ts, { ts, text, partial: true })
+		} else if (!isPartial && !alreadyDisplayedComplete) {
+			// Command request complete - finish the stream
+			// Note: AskDispatcher will handle the actual prompt/approval
+			const streamed = this.streamedContent.get(ts)
+
+			if (streamed) {
+				if (text.length > streamed.text.length && text.startsWith(streamed.text)) {
+					const delta = text.slice(streamed.text.length)
+					this.writeRaw(delta)
+				}
+				this.finishStream(ts)
+			}
+			// Don't output non-streamed content here - AskDispatcher handles complete command requests
+
+			this.displayedMessages.set(ts, { ts, text, partial: false })
 		}
 	}
 
@@ -410,5 +596,39 @@ export class OutputManager {
 			this.output("\n[task complete]", text || "")
 			this.displayedMessages.set(ts, { ts, text: text || "", partial: false })
 		}
+	}
+
+	// ===========================================================================
+	// Terminal Output Streaming (commandExecutionStatus)
+	// ===========================================================================
+
+	/**
+	 * Output streaming terminal output from commandExecutionStatus messages.
+	 * This provides live terminal output during command execution, before
+	 * the final command_output message is created.
+	 *
+	 * @param executionId - Unique execution ID for this command
+	 * @param output - The accumulated terminal output so far
+	 */
+	outputStreamingTerminalOutput(executionId: string, output: string): void {
+		if (this.disabled) return
+
+		// Mark that we've streamed terminal output (to skip command_output later)
+		this.hasStreamedTerminalOutput = true
+
+		const previousOutput = this.terminalOutputByExecutionId.get(executionId)
+
+		if (!previousOutput) {
+			// First time seeing this execution - output header and initial content
+			this.writeRaw("\n[terminal] ")
+			this.writeRaw(output)
+			this.terminalOutputByExecutionId.set(executionId, output)
+		} else if (output.length > previousOutput.length && output.startsWith(previousOutput)) {
+			// Output has grown - write only the delta
+			const delta = output.slice(previousOutput.length)
+			this.writeRaw(delta)
+			this.terminalOutputByExecutionId.set(executionId, output)
+		}
+		// If output hasn't grown or doesn't start with previous, ignore (likely reset)
 	}
 }

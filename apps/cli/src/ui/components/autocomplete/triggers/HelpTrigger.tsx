@@ -41,7 +41,6 @@ export function createHelpTrigger(): AutocompleteTrigger<HelpShortcutResult> {
 		id: "help",
 		triggerChar: "?",
 		position: "line-start",
-		consumeTrigger: true,
 
 		detectTrigger: (lineText: string): TriggerDetectionResult | null => {
 			// Check if line starts with ? (after optional whitespace)

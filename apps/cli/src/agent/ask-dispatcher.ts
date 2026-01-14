@@ -135,6 +135,7 @@ export class AskDispatcher {
 		}
 
 		// Skip partial messages (wait for complete)
+		// Note: Streaming output for partial tool/command messages is handled by OutputManager
 		if (message.partial) {
 			return { handled: false }
 		}
@@ -356,9 +357,12 @@ export class AskDispatcher {
 	 * Handle command execution approval.
 	 */
 	private async handleCommandApproval(ts: number, text: string): Promise<AskHandleResult> {
-		this.outputManager.output("\n[command request]")
-		this.outputManager.output(`  Command: ${text || "(no command specified)"}`)
-		this.outputManager.markDisplayed(ts, text || "", false)
+		// Skip output if we already streamed this command via partial messages
+		if (!this.outputManager.isAlreadyDisplayed(ts)) {
+			this.outputManager.output("\n[command request]")
+			this.outputManager.output(`  Command: ${text || "(no command specified)"}`)
+			this.outputManager.markDisplayed(ts, text || "", false)
+		}
 
 		if (this.nonInteractive) {
 			// Auto-approved by extension settings
@@ -380,46 +384,49 @@ export class AskDispatcher {
 	 * Handle tool execution approval.
 	 */
 	private async handleToolApproval(ts: number, text: string): Promise<AskHandleResult> {
-		let toolName = "unknown"
-		let toolInfo: Record<string, unknown> = {}
+		// Skip output if we already streamed this tool request via partial messages
+		if (!this.outputManager.isAlreadyDisplayed(ts)) {
+			let toolName = "unknown"
+			let toolInfo: Record<string, unknown> = {}
 
-		try {
-			toolInfo = JSON.parse(text) as Record<string, unknown>
-			toolName = (toolInfo.tool as string) || "unknown"
-		} catch {
-			// Use raw text if not JSON
-		}
-
-		const isProtected = toolInfo.isProtected === true
-
-		if (isProtected) {
-			this.outputManager.output(`\n[Tool Request] ${toolName} [PROTECTED CONFIGURATION FILE]`)
-			this.outputManager.output(`⚠️  WARNING: This tool wants to modify a protected configuration file.`)
-			this.outputManager.output(
-				`    Protected files include .rooignore, .roo/*, and other sensitive config files.`,
-			)
-		} else {
-			this.outputManager.output(`\n[Tool Request] ${toolName}`)
-		}
-
-		// Display tool details
-		for (const [key, value] of Object.entries(toolInfo)) {
-			if (key === "tool" || key === "isProtected") continue
-
-			let displayValue: string
-			if (typeof value === "string") {
-				displayValue = value.length > 200 ? value.substring(0, 200) + "..." : value
-			} else if (typeof value === "object" && value !== null) {
-				const json = JSON.stringify(value)
-				displayValue = json.length > 200 ? json.substring(0, 200) + "..." : json
-			} else {
-				displayValue = String(value)
+			try {
+				toolInfo = JSON.parse(text) as Record<string, unknown>
+				toolName = (toolInfo.tool as string) || "unknown"
+			} catch {
+				// Use raw text if not JSON
 			}
 
-			this.outputManager.output(`  ${key}: ${displayValue}`)
-		}
+			const isProtected = toolInfo.isProtected === true
 
-		this.outputManager.markDisplayed(ts, text || "", false)
+			if (isProtected) {
+				this.outputManager.output(`\n[Tool Request] ${toolName} [PROTECTED CONFIGURATION FILE]`)
+				this.outputManager.output(`⚠️  WARNING: This tool wants to modify a protected configuration file.`)
+				this.outputManager.output(
+					`    Protected files include .rooignore, .roo/*, and other sensitive config files.`,
+				)
+			} else {
+				this.outputManager.output(`\n[Tool Request] ${toolName}`)
+			}
+
+			// Display tool details
+			for (const [key, value] of Object.entries(toolInfo)) {
+				if (key === "tool" || key === "isProtected") continue
+
+				let displayValue: string
+				if (typeof value === "string") {
+					displayValue = value.length > 200 ? value.substring(0, 200) + "..." : value
+				} else if (typeof value === "object" && value !== null) {
+					const json = JSON.stringify(value)
+					displayValue = json.length > 200 ? json.substring(0, 200) + "..." : json
+				} else {
+					displayValue = String(value)
+				}
+
+				this.outputManager.output(`  ${key}: ${displayValue}`)
+			}
+
+			this.outputManager.markDisplayed(ts, text || "", false)
+		}
 
 		if (this.nonInteractive) {
 			// Auto-approved by extension settings (unless protected)

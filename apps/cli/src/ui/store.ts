@@ -1,9 +1,12 @@
 import { create } from "zustand"
 
 import type { TokenUsage, ProviderSettings, TodoItem } from "@roo-code/types"
+import { DebugLogger } from "@roo-code/core/cli"
 
 import type { TUIMessage, PendingAsk, TaskHistoryItem } from "./types.js"
 import type { FileResult, SlashCommandResult, ModeResult } from "./components/autocomplete/index.js"
+
+const storeLogger = new DebugLogger("STORE")
 
 /**
  * Shallow array equality check - compares array length and element references.
@@ -162,9 +165,23 @@ export const useCLIStore = create<CLIState & CLIActions>((set, get) => ({
 
 		// For NEW messages (not updates) - always apply immediately
 		if (existingIndex === -1) {
+			storeLogger.debug("addMessage:new", {
+				id: msg.id,
+				role: msg.role,
+				toolName: msg.toolName || "none",
+				partial: msg.partial,
+				hasToolData: !!msg.toolData,
+				msgCount: state.messages.length + 1,
+			})
 			set({ messages: [...state.messages, msg] })
 			return
 		}
+
+		storeLogger.debug("addMessage:update", {
+			id: msg.id,
+			partial: msg.partial,
+			existingIndex,
+		})
 
 		// For UPDATES to existing messages:
 		// If partial (streaming) and message exists, debounce the update

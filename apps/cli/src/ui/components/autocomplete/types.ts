@@ -97,14 +97,6 @@ export interface AutocompleteTrigger<T extends AutocompleteItem = AutocompleteIt
 	 * @default 150
 	 */
 	debounceMs?: number
-
-	/**
-	 * Whether the trigger character should be consumed (not shown in input).
-	 * When true, the trigger character is treated as a control character
-	 * that activates the picker but doesn't appear in the text input.
-	 * @default false
-	 */
-	consumeTrigger?: boolean
 }
 
 /**

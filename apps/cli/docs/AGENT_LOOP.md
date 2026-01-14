@@ -37,11 +37,57 @@ interface ClineMessage {
 | **say** | Informational - agent is telling you something | No            |
 | **ask** | Interactive - agent needs something from you   | Usually yes   |
 
-## The Key Insight
+## The Key Insight: How the CLI Knows When to Prompt
 
-> **The agent loop stops whenever the last message is an `ask` type (with `partial: false`).**
+The CLI doesn't receive any special "waiting" signal from the extension. Instead, it simply **looks at the last message** and asks three questions:
 
-The specific `ask` value tells you exactly what the agent needs.
+### Is the agent waiting for user input?
+
+```
+isWaitingForInput = true when ALL of these are true:
+
+  1. Last message type is "ask" (not "say")
+  2. Last message is NOT partial: true (streaming is complete)
+  3. The ask type is "blocking" (not "command_output")
+```
+
+That's it. No timing. No special signals. Just look at what the last message is.
+
+### Why this works
+
+When the extension needs user input:
+
+- It sends an `ask` message and **blocks** (waits for response)
+- The ask stays as the last message until the CLI responds
+- CLI sees the ask → prompts user → sends response → extension continues
+
+When auto-approval is enabled:
+
+- Extension sends an `ask` message
+- Extension **immediately auto-responds** to its own ask (doesn't wait)
+- New messages quickly follow the ask
+- CLI sees the ask but it's quickly superseded by newer messages
+- State never "settles" at waiting because the extension kept going
+
+### The Simple Logic
+
+```typescript
+function isWaitingForInput(messages) {
+	const lastMessage = messages.at(-1)
+
+	// Still streaming? Not waiting.
+	if (lastMessage?.partial === true) return false
+
+	// Not an ask? Not waiting.
+	if (lastMessage?.type !== "ask") return false
+
+	// Non-blocking ask? Not waiting.
+	if (lastMessage?.ask === "command_output") return false
+
+	// It's a blocking ask that's done streaming → waiting!
+	return true
+}
+```
 
 ## Ask Categories
 
@@ -348,8 +394,8 @@ Example output:
 ## Summary
 
 1. **Agent communicates via `ClineMessage` stream**
-2. **Last message determines state**
-3. **`ask` messages (non-partial) block the agent**
-4. **Ask category determines required action**
+2. **State detection is simple: look at the last message**
+3. **Waiting = last message is a non-partial, blocking `ask`**
+4. **Auto-approval works by the extension auto-responding to its own asks**
 5. **`partial: true` or `api_req_started` without cost = streaming**
 6. **`ExtensionClient` is the single source of truth**

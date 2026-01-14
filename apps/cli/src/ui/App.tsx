@@ -18,12 +18,13 @@ import {
 	useTerminalSize,
 	useToast,
 	useExtensionHost,
-	useMessageHandlers,
 	useTaskSubmit,
 	useGlobalInput,
 	useFollowupCountdown,
 	useFocusManagement,
 	usePickerHandlers,
+	useClientEvents,
+	useExtensionState,
 } from "./hooks/index.js"
 
 // Import extracted utilities.
@@ -159,16 +160,14 @@ function AppInner({
 	// Toast notifications for ephemeral messages (e.g., mode changes).
 	const { currentToast, showInfo } = useToast()
 
-	const {
-		handleExtensionMessage,
-		seenMessageIds,
-		pendingCommandRef: _pendingCommandRef,
-		firstTextMessageSkipped,
-	} = useMessageHandlers({
-		nonInteractive,
-	})
+	// Handle non-message extension state (modes, file search, commands, task history)
+	const { handleExtensionState } = useExtensionState()
 
-	const { sendToExtension, runTask, cleanup } = useExtensionHost({
+	// Track seen message IDs and first text message skip for task submission
+	const seenMessageIds = useRef<Set<string>>(new Set())
+	const firstTextMessageSkipped = useRef(false)
+
+	const { client, sendToExtension, runTask, cleanup } = useExtensionHost({
 		initialPrompt,
 		mode,
 		reasoningEffort,
@@ -182,9 +181,26 @@ function AppInner({
 		nonInteractive,
 		ephemeral,
 		exitOnComplete,
-		onExtensionMessage: handleExtensionMessage,
+		onExtensionState: handleExtensionState,
 		createExtensionHost,
 	})
+
+	// Subscribe to ExtensionClient events for unified message handling
+	const { reset: resetClientEvents } = useClientEvents({
+		client,
+		nonInteractive,
+	})
+
+	// Reset tracking state when task is cleared
+	useEffect(() => {
+		if (!client) return
+		const unsubscribe = client.on("taskCleared" as "stateChange", () => {
+			seenMessageIds.current.clear()
+			firstTextMessageSkipped.current = false
+			resetClientEvents()
+		})
+		return unsubscribe
+	}, [client, resetClientEvents])
 
 	// Initialize task submit hook
 	const { handleSubmit, handleApprove, handleReject } = useTaskSubmit({

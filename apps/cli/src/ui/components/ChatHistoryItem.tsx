@@ -1,11 +1,14 @@
-import { memo } from "react"
+// memo temporarily removed for debugging
 import { Box, Newline, Text } from "ink"
+import { DebugLogger } from "@roo-code/core/cli"
 
 import type { TUIMessage } from "../types.js"
 import * as theme from "../theme.js"
 
 import TodoDisplay from "./TodoDisplay.js"
 import { getToolRenderer } from "./tools/index.js"
+
+const renderLogger = new DebugLogger("RENDER")
 
 /**
  * Tool categories for styling
@@ -215,6 +218,27 @@ function ChatHistoryItem({ message }: ChatHistoryItemProps) {
 				</Box>
 			)
 		case "tool": {
+			// Parse rawContent to get content for logging
+			let parsedContent = ""
+			try {
+				const parsed = JSON.parse(content) as Record<string, unknown>
+				parsedContent = ((parsed.content as string) || "").substring(0, 50)
+			} catch {
+				// Not JSON
+			}
+
+			renderLogger.debug("ChatHistoryItem:tool", {
+				id: message.id,
+				toolName: message.toolName,
+				hasToolData: !!message.toolData,
+				toolDataTool: message.toolData?.tool,
+				toolDataPath: message.toolData?.path,
+				toolDataContent: message.toolData?.content?.substring(0, 50),
+				rawContentLen: content.length,
+				parsedContent,
+				partial: message.partial,
+			})
+
 			// Special rendering for update_todo_list tool - show full TODO list
 			if (
 				(message.toolName === "update_todo_list" || message.toolName === "updateTodoList") &&
@@ -249,4 +273,5 @@ function ChatHistoryItem({ message }: ChatHistoryItemProps) {
 	}
 }
 
-export default memo(ChatHistoryItem)
+// Temporarily disable memo to debug streaming rendering issues
+export default ChatHistoryItem

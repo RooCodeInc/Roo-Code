@@ -157,13 +157,5 @@ describe("HelpTrigger", () => {
 			expect(trigger.emptyMessage).toBe("No matching shortcuts")
 			expect(trigger.debounceMs).toBe(0)
 		})
-
-		it("should have consumeTrigger set to true", () => {
-			const trigger = createHelpTrigger()
-
-			// The ? character should be consumed (not inserted into input)
-			// when the help menu is triggered
-			expect(trigger.consumeTrigger).toBe(true)
-		})
 	})
 })

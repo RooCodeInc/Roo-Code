@@ -31,7 +31,7 @@ import type { User } from "@/lib/sdk/index.js"
 import { getProviderSettings } from "@/lib/utils/provider.js"
 import { createEphemeralStorageDir } from "@/lib/storage/index.js"
 
-import type { WaitingForInputEvent, TaskCompletedEvent } from "./events.js"
+import type { WaitingForInputEvent, TaskCompletedEvent, CommandExecutionOutputEvent } from "./events.js"
 import type { AgentStateInfo } from "./agent-state.js"
 import { ExtensionClient } from "./extension-client.js"
 import { OutputManager } from "./output-manager.js"
@@ -152,7 +152,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		super()
 
 		this.options = options
-		this.options.integrationTest = true
+		// this.options.integrationTest = true
 
 		// Initialize client - single source of truth for agent state (including mode).
 		this.client = new ExtensionClient({
@@ -189,6 +189,18 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			commandExecutionTimeout: 30,
 			browserToolEnabled: false,
 			enableCheckpoints: false,
+			// Disable preventFocusDisruption experiment for CLI - it's only
+			// relevant for VSCode diff views and preventing it causes tool
+			// messages to not stream during LLM generation.
+			experiments: {
+				multiFileApplyDiff: false,
+				powerSteering: false,
+				preventFocusDisruption: false,
+				imageGeneration: false,
+				runSlashCommand: false,
+				multipleNativeToolCalls: false,
+				customTools: false,
+			},
 			...getProviderSettings(this.options.provider, this.options.apiKey, this.options.model),
 		}
 
@@ -237,12 +249,26 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		// Handle new messages - delegate to OutputManager.
 		this.client.on("message", (msg: ClineMessage) => {
 			this.logMessageDebug(msg, "new")
+			// DEBUG: Log all incoming messages with timestamp (only when -d flag is set)
+			if (this.options.debug) {
+				const ts = new Date().toISOString()
+				const msgType = msg.type === "say" ? `say:${msg.say}` : `ask:${msg.ask}`
+				const partial = msg.partial ? "PARTIAL" : "COMPLETE"
+				process.stdout.write(`\n[DEBUG ${ts}] NEW ${msgType} ${partial} ts=${msg.ts}\n`)
+			}
 			this.outputManager.outputMessage(msg)
 		})
 
 		// Handle message updates - delegate to OutputManager.
 		this.client.on("messageUpdated", (msg: ClineMessage) => {
 			this.logMessageDebug(msg, "updated")
+			// DEBUG: Log all message updates with timestamp (only when -d flag is set)
+			if (this.options.debug) {
+				const ts = new Date().toISOString()
+				const msgType = msg.type === "say" ? `say:${msg.say}` : `ask:${msg.ask}`
+				const partial = msg.partial ? "PARTIAL" : "COMPLETE"
+				process.stdout.write(`\n[DEBUG ${ts}] UPDATED ${msgType} ${partial} ts=${msg.ts}\n`)
+			}
 			this.outputManager.outputMessage(msg)
 		})
 
@@ -258,6 +284,11 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			if (event.message && event.message.type === "ask" && event.message.ask === "completion_result") {
 				this.outputManager.outputCompletionResult(event.message.ts, event.message.text || "")
 			}
+		})
+
+		// Handle streaming terminal output from commandExecutionStatus messages.
+		this.client.on("commandExecutionOutput", (event: CommandExecutionOutputEvent) => {
+			this.outputManager.outputStreamingTerminalOutput(event.executionId, event.output)
 		})
 	}
 
@@ -436,9 +467,6 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		this.sendToExtension({ type: "newTask", text: prompt })
 
 		return new Promise((resolve, reject) => {
-			let timeoutId: NodeJS.Timeout | null = null
-			const timeoutMs: number = 110_000
-
 			const completeHandler = () => {
 				cleanup()
 				resolve()
@@ -450,22 +478,9 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			}
 
 			const cleanup = () => {
-				if (timeoutId) {
-					clearTimeout(timeoutId)
-					timeoutId = null
-				}
-
 				this.client.off("taskCompleted", completeHandler)
 				this.client.off("error", errorHandler)
 			}
-
-			// Set timeout to prevent indefinite hanging.
-			timeoutId = setTimeout(() => {
-				cleanup()
-				reject(
-					new Error(`Task completion timeout after ${timeoutMs}ms - no completion or error event received`),
-				)
-			}, timeoutMs)
 
 			this.client.once("taskCompleted", completeHandler)
 			this.client.once("error", errorHandler)

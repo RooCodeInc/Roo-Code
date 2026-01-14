@@ -77,6 +77,11 @@ export interface ClientEventMap {
 	modeChanged: ModeChangedEvent
 
 	/**
+	 * Emitted when command execution output is received (streaming terminal output).
+	 */
+	commandExecutionOutput: CommandExecutionOutputEvent
+
+	/**
 	 * Emitted on any error during message processing.
 	 */
 	error: Error
@@ -126,6 +131,16 @@ export interface ModeChangedEvent {
 	previousMode: string | undefined
 	/** The new/current mode */
 	currentMode: string
+}
+
+/**
+ * Event payload for command execution output (streaming terminal output).
+ */
+export interface CommandExecutionOutputEvent {
+	/** Unique execution ID */
+	executionId: string
+	/** The terminal output received so far */
+	output: string
 }
 
 // =============================================================================
