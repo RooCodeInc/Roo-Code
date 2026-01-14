@@ -2,6 +2,30 @@ import { parse } from "shell-quote"
 
 export type ShellToken = string | { op: string } | { command: string }
 
+type HeredocStart = {
+	delimiter: string
+	stripLeadingTabs: boolean
+}
+
+function parseHeredocStart(line: string): HeredocStart | null {
+	// Matches:
+	// - <<EOF
+	// - <<'EOF'
+	// - <<"EOF"
+	// - <<-EOF  (strip leading tabs in terminator line)
+	//
+	// Notes:
+	// - Intentionally minimal: supports common heredoc forms used in Roo tool commands.
+	// - Delimiter is restricted to [A-Za-z0-9_] to avoid overly broad matches.
+	const match = line.match(/<<(-)?\s*(?:'([A-Za-z0-9_]+)'|"([A-Za-z0-9_]+)"|([A-Za-z0-9_]+))/)
+	if (!match) return null
+
+	return {
+		stripLeadingTabs: match[1] === "-",
+		delimiter: match[2] ?? match[3] ?? match[4] ?? "",
+	}
+}
+
 /**
  * Split a command string into individual sub-commands by
  * chaining operators (&&, ||, ;, |, or &) and newlines.
@@ -23,13 +47,35 @@ export function parseCommand(command: string): string[] {
 	const lines = command.split(/\r\n|\r|\n/)
 	const allCommands: string[] = []
 
-	for (const line of lines) {
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i]
 		// Skip empty lines
 		if (!line.trim()) {
 			continue
 		}
 
-		// Process each line through the existing parsing logic
+		// If this line starts a heredoc, treat the entire heredoc block as a single command.
+		// The heredoc body lines are not shell commands and should not affect command approval.
+		const heredocStart = parseHeredocStart(line)
+		if (heredocStart) {
+			const blockLines: string[] = [line]
+			const { delimiter, stripLeadingTabs } = heredocStart
+
+			for (i = i + 1; i < lines.length; i++) {
+				const bodyLine = lines[i]
+				blockLines.push(bodyLine)
+
+				const compareLine = stripLeadingTabs ? bodyLine.replace(/^\t+/, "") : bodyLine
+				if (compareLine.trimEnd() === delimiter) {
+					break
+				}
+			}
+
+			allCommands.push(blockLines.join("\n"))
+			continue
+		}
+
+		// Process each non-heredoc line through the existing parsing logic
 		const lineCommands = parseCommandLine(line)
 		allCommands.push(...lineCommands)
 	}
