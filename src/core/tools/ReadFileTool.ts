@@ -19,6 +19,7 @@ import { parseSourceCodeDefinitionsForFile } from "../../services/tree-sitter"
 import { parseXml } from "../../utils/xml"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import type { ToolUse } from "../../shared/tools"
+import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 
 import {
 	DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
@@ -343,7 +344,9 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				maxReadFileLine = -1,
 				maxImageFileSize = DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
 				maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
+				experiments: stateExperiments,
 			} = state ?? {}
+			const useUnifiedTag = experiments.isEnabled(stateExperiments ?? {}, EXPERIMENT_IDS.UNIFIED_USER_MESSAGE_TAG)
 
 			for (const fileResult of fileResults) {
 				if (fileResult.status !== "approved") continue
@@ -649,17 +652,17 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			const deniedWithFeedback = fileResults.find((result) => result.status === "denied" && result.feedbackText)
 
 			if (deniedWithFeedback && deniedWithFeedback.feedbackText) {
-				statusMessage = formatResponse.toolDeniedWithFeedback(deniedWithFeedback.feedbackText)
+				statusMessage = formatResponse.toolDeniedWithFeedback(deniedWithFeedback.feedbackText, toolProtocol, useUnifiedTag)
 				feedbackImages = deniedWithFeedback.feedbackImages || []
 			} else if (task.didRejectTool) {
-				statusMessage = formatResponse.toolDenied()
+				statusMessage = formatResponse.toolDenied(toolProtocol)
 			} else {
 				const approvedWithFeedback = fileResults.find(
 					(result) => result.status === "approved" && result.feedbackText,
 				)
 
 				if (approvedWithFeedback && approvedWithFeedback.feedbackText) {
-					statusMessage = formatResponse.toolApprovedWithFeedback(approvedWithFeedback.feedbackText)
+					statusMessage = formatResponse.toolApprovedWithFeedback(approvedWithFeedback.feedbackText, toolProtocol, useUnifiedTag)
 					feedbackImages = approvedWithFeedback.feedbackImages || []
 				}
 			}

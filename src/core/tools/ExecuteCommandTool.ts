@@ -18,6 +18,8 @@ import { Terminal } from "../../integrations/terminal/Terminal"
 import { Package } from "../../shared/package"
 import { t } from "../../i18n"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
+import { wrapUserContent } from "../../utils/userContentTags"
+import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 
 class ShellIntegrationError extends Error {}
 
@@ -334,14 +336,18 @@ export async function executeCommandInTerminal(
 		const { text, images } = message
 		await task.say("user_feedback", text, images)
 
+		// Get experiment setting for unified tags
+		const state = await task.providerRef.deref()?.getState()
+		const useUnifiedTag = experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.UNIFIED_USER_MESSAGE_TAG)
+		const wrappedFeedback = wrapUserContent(text ?? "", "feedback", useUnifiedTag)
+
 		return [
 			true,
 			formatResponse.toolResult(
 				[
 					`Command is still running in terminal from '${terminal.getCurrentWorkingDirectory().toPosix()}'.`,
 					result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
-					`The user provided the following feedback:`,
-					`<feedback>\n${text}\n</feedback>`,
+					wrappedFeedback,
 				].join("\n"),
 				images,
 			),

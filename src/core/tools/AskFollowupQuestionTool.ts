@@ -2,6 +2,8 @@ import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { parseXml } from "../../utils/xml"
 import type { ToolUse } from "../../shared/tools"
+import { wrapUserContent } from "../../utils/userContentTags"
+import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -86,7 +88,13 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 			task.consecutiveMistakeCount = 0
 			const { text, images } = await task.ask("followup", JSON.stringify(follow_up_json), false)
 			await task.say("user_feedback", text ?? "", images)
-			pushToolResult(formatResponse.toolResult(`<answer>\n${text}\n</answer>`, images))
+
+			// Get experiment setting for unified tags
+			const state = await task.providerRef.deref()?.getState()
+			const useUnifiedTag = experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.UNIFIED_USER_MESSAGE_TAG)
+			const wrappedAnswer = wrapUserContent(text ?? "", "answer", useUnifiedTag)
+
+			pushToolResult(formatResponse.toolResult(wrappedAnswer, images))
 		} catch (error) {
 			await handleError("asking question", error as Error)
 		}

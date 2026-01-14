@@ -8,6 +8,7 @@ export const EXPERIMENT_IDS = {
 	RUN_SLASH_COMMAND: "runSlashCommand",
 	MULTIPLE_NATIVE_TOOL_CALLS: "multipleNativeToolCalls",
 	CUSTOM_TOOLS: "customTools",
+	UNIFIED_USER_MESSAGE_TAG: "unifiedUserMessageTag",
 } as const satisfies Record<string, ExperimentId>
 
 type _AssertExperimentIds = AssertEqual<Equals<ExperimentId, Values<typeof EXPERIMENT_IDS>>>
@@ -26,6 +27,7 @@ export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
 	RUN_SLASH_COMMAND: { enabled: false },
 	MULTIPLE_NATIVE_TOOL_CALLS: { enabled: false },
 	CUSTOM_TOOLS: { enabled: false },
+	UNIFIED_USER_MESSAGE_TAG: { enabled: false },
 }
 
 export const experimentDefault = Object.fromEntries(

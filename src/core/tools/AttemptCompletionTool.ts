@@ -8,6 +8,8 @@ import { formatResponse } from "../prompts/responses"
 import { Package } from "../../shared/package"
 import type { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
+import { wrapUserContent } from "../../utils/userContentTags"
+import { experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -150,8 +152,12 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			// User provided feedback - push tool result to continue the conversation
 			await task.say("user_feedback", text ?? "", images)
 
-			const feedbackText = `The user has provided feedback on the results. Consider their input to continue the task, and then attempt completion again.\n<feedback>\n${text}\n</feedback>`
-			pushToolResult(formatResponse.toolResult(feedbackText, images))
+			// Get experiment setting for unified tags
+			const state = await task.providerRef.deref()?.getState()
+			const useUnifiedTag = experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.UNIFIED_USER_MESSAGE_TAG)
+			const wrappedFeedback = wrapUserContent(text ?? "", "feedback", useUnifiedTag)
+
+			pushToolResult(formatResponse.toolResult(wrappedFeedback, images))
 		} catch (error) {
 			await handleError("inspecting site", error as Error)
 		}

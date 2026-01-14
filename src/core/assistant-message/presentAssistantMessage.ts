@@ -73,6 +73,10 @@ export async function presentAssistantMessage(cline: Task) {
 	cline.presentAssistantMessageLocked = true
 	cline.presentAssistantMessageHasPendingUpdates = false
 
+	// Get experiment setting for unified tags once for this presentation
+	const state = await cline.providerRef.deref()?.getState()
+	const useUnifiedTag = experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.UNIFIED_USER_MESSAGE_TAG)
+
 	if (cline.currentStreamingContentIndex >= cline.assistantMessageContent.length) {
 		// This may happen if the last content block was completed before
 		// streaming could finish. If streaming is finished, and we're out of
@@ -174,7 +178,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 				// Merge approval feedback into tool result (GitHub #10465)
 				if (approvalFeedback) {
-					const feedbackText = formatResponse.toolApprovedWithFeedback(approvalFeedback.text, toolProtocol)
+					const feedbackText = formatResponse.toolApprovedWithFeedback(approvalFeedback.text, toolProtocol, useUnifiedTag)
 					resultContent = `${feedbackText}\n\n${resultContent}`
 
 					// Add feedback images to the image blocks
@@ -221,7 +225,7 @@ export async function presentAssistantMessage(cline: Task) {
 						await cline.say("user_feedback", text, images)
 						pushToolResult(
 							formatResponse.toolResult(
-								formatResponse.toolDeniedWithFeedback(text, toolProtocol),
+								formatResponse.toolDeniedWithFeedback(text, toolProtocol, useUnifiedTag),
 								images,
 							),
 						)
@@ -372,8 +376,7 @@ export async function presentAssistantMessage(cline: Task) {
 			break
 		}
 		case "tool_use": {
-			// Fetch state early so it's available for toolDescription and validation
-			const state = await cline.providerRef.deref()?.getState()
+			// Use already-fetched state for toolDescription and validation
 			const { mode, customModes, experiments: stateExperiments } = state ?? {}
 
 			const toolDescription = (): string => {
@@ -556,6 +559,7 @@ export async function presentAssistantMessage(cline: Task) {
 						const feedbackText = formatResponse.toolApprovedWithFeedback(
 							approvalFeedback.text,
 							toolProtocol,
+							useUnifiedTag,
 						)
 						resultContent = `${feedbackText}\n\n${resultContent}`
 
@@ -597,6 +601,7 @@ export async function presentAssistantMessage(cline: Task) {
 						const feedbackText = formatResponse.toolApprovedWithFeedback(
 							approvalFeedback.text,
 							toolProtocol,
+							useUnifiedTag,
 						)
 						resultContent = `${feedbackText}\n\n${resultContent}`
 					}
@@ -658,7 +663,7 @@ export async function presentAssistantMessage(cline: Task) {
 						await cline.say("user_feedback", text, images)
 						pushToolResult(
 							formatResponse.toolResult(
-								formatResponse.toolDeniedWithFeedback(text, toolProtocol),
+								formatResponse.toolDeniedWithFeedback(text, toolProtocol, useUnifiedTag),
 								images,
 							),
 						)

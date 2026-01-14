@@ -73,6 +73,7 @@ import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes
 import { DiffStrategy, type ToolUse, type ToolParamName, toolParamNames } from "../../shared/tools"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { getModelMaxOutputTokens } from "../../shared/api"
+import { wrapUserContent } from "../../utils/userContentTags"
 
 // services
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
@@ -2508,9 +2509,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				)
 
 				if (response === "messageResponse") {
+					// Get experiment setting for unified tags
+					const mistakeState = await this.providerRef.deref()?.getState()
+					const useUnifiedTagForMistakes = experiments.isEnabled(mistakeState?.experiments ?? {}, EXPERIMENT_IDS.UNIFIED_USER_MESSAGE_TAG)
+
 					currentUserContent.push(
 						...[
-							{ type: "text" as const, text: formatResponse.tooManyMistakes(text) },
+							{ type: "text" as const, text: formatResponse.tooManyMistakes(text, this._taskToolProtocol, useUnifiedTagForMistakes) },
 							...formatResponse.imageBlocks(images),
 						],
 					)
@@ -2553,7 +2558,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				includeDiagnosticMessages = true,
 				maxDiagnosticMessages = 50,
 				maxReadFileLine = -1,
+				experiments: experimentsConfig,
 			} = (await this.providerRef.deref()?.getState()) ?? {}
+
+			const useUnifiedTag = experiments.isEnabled(experimentsConfig ?? {}, EXPERIMENT_IDS.UNIFIED_USER_MESSAGE_TAG)
 
 			const { content: parsedUserContent, mode: slashCommandMode } = await processUserContentMentions({
 				userContent: currentUserContent,
@@ -2565,6 +2573,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				includeDiagnosticMessages,
 				maxDiagnosticMessages,
 				maxReadFileLine,
+				useUnifiedTag,
 			})
 
 			// Switch mode if specified in a slash command's frontmatter

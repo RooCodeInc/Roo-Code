@@ -2,6 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { parseMentions, ParseMentionsResult } from "./index"
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
+import { hasUserContentTags } from "../../utils/userContentTags"
 
 export interface ProcessUserContentMentionsResult {
 	content: Anthropic.Messages.ContentBlockParam[]
@@ -9,7 +10,7 @@ export interface ProcessUserContentMentionsResult {
 }
 
 /**
- * Process mentions in user content, specifically within task and feedback tags
+ * Process mentions in user content, specifically within user message tags
  */
 export async function processUserContentMentions({
 	userContent,
@@ -21,6 +22,7 @@ export async function processUserContentMentions({
 	includeDiagnosticMessages = true,
 	maxDiagnosticMessages = 50,
 	maxReadFileLine,
+	useUnifiedTag = false,
 }: {
 	userContent: Anthropic.Messages.ContentBlockParam[]
 	cwd: string
@@ -31,6 +33,7 @@ export async function processUserContentMentions({
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
 	maxReadFileLine?: number
+	useUnifiedTag?: boolean
 }): Promise<ProcessUserContentMentionsResult> {
 	// Track the first mode found from slash commands
 	let commandMode: string | undefined
@@ -38,20 +41,13 @@ export async function processUserContentMentions({
 	// Process userContent array, which contains various block types:
 	// TextBlockParam, ImageBlockParam, ToolUseBlockParam, and ToolResultBlockParam.
 	// We need to apply parseMentions() to:
-	// 1. All TextBlockParam's text (first user message with task)
-	// 2. ToolResultBlockParam's content/context text arrays if it contains
-	// "<feedback>" (see formatToolDeniedFeedback, attemptCompletion,
-	// executeCommand, and consecutiveMistakeCount >= 3) or "<answer>"
-	// (see askFollowupQuestion), we place all user generated content in
-	// these tags so they can effectively be used as markers for when we
-	// should parse mentions).
+	// 1. All TextBlockParam's text (first user message)
+	// 2. ToolResultBlockParam's content/context text arrays if it contains user content tags
+	// We place all user generated content in these tags so they can effectively be used as
+	// markers for when we should parse mentions.
 	const content = await Promise.all(
 		userContent.map(async (block) => {
-			const shouldProcessMentions = (text: string) =>
-				text.includes("<task>") ||
-				text.includes("<feedback>") ||
-				text.includes("<answer>") ||
-				text.includes("<user_message>")
+			const shouldProcessMentions = (text: string) => hasUserContentTags(text, useUnifiedTag)
 
 			if (block.type === "text") {
 				if (shouldProcessMentions(block.text)) {
