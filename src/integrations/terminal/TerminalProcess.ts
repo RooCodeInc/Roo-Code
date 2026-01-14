@@ -247,11 +247,6 @@ export class TerminalProcess extends BaseTerminalProcess {
 		this.stopHotTimer()
 		this.emit("completed", this.removeEscapeSequences(this.fullOutput))
 		this.emit("continue")
-		// Trim the output buffer if all content has been retrieved via getUnretrievedOutput().
-		// We do NOT set lastRetrievedIndex here because getEnvironmentDetails() may not have
-		// had a chance to call getUnretrievedOutput() yet. The trimRetrievedOutput() method
-		// will only clear the buffer when lastRetrievedIndex >= fullOutput.length.
-		this.trimRetrievedOutput()
 	}
 
 	public override continue() {

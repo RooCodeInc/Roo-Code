@@ -147,7 +147,7 @@ export abstract class BaseTerminalProcess extends EventEmitter<RooTerminalProces
 	 * Called after command completion when `lastRetrievedIndex` has been
 	 * set to `fullOutput.length` to indicate all output has been processed.
 	 */
-	protected trimRetrievedOutput(): void {
+	public trimRetrievedOutput(): void {
 		if (this.lastRetrievedIndex >= this.fullOutput.length && this.fullOutput.length > 0) {
 			this.fullOutput = ""
 			this.lastRetrievedIndex = 0
