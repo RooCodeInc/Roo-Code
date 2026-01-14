@@ -72,6 +72,14 @@
 		"showTimestamps": {
 			"label": "Show timestamps on messages",
 			"description": "When enabled, timestamps will be displayed on the right side of message headers"
+		},
+		"timestampFormat": {
+			"label": "Time format",
+			"description": "Choose how timestamps are displayed",
+			"options": {
+				"12hour": "12-hour (2:34 PM)",
+				"24hour": "24-hour (14:34)"
+			}
 		}
 	},
 	"prompts": {

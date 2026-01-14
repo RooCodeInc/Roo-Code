@@ -287,6 +287,7 @@ export type ExtensionState = Pick<
 	| "reasoningBlockCollapsed"
 	| "enterBehavior"
 	| "showTimestamps"
+	| "timestampFormat"
 	| "includeCurrentTime"
 	| "includeCurrentCost"
 	| "maxGitStatusFiles"

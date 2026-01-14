@@ -1,6 +1,6 @@
 import { HTMLAttributes, useMemo } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeCheckbox, VSCodeDropdown, VSCodeOption } from "@vscode/webview-ui-toolkit/react"
 import { Glasses } from "lucide-react"
 import { telemetryClient } from "@/utils/TelemetryClient"
 
@@ -13,6 +13,7 @@ interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
 	enterBehavior: "send" | "newline"
 	showTimestamps: boolean
+	timestampFormat: "12hour" | "24hour"
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
@@ -20,6 +21,7 @@ export const UISettings = ({
 	reasoningBlockCollapsed,
 	enterBehavior,
 	showTimestamps,
+	timestampFormat,
 	setCachedStateField,
 	...props
 }: UISettingsProps) => {
@@ -56,6 +58,15 @@ export const UISettings = ({
 		// Track telemetry event
 		telemetryClient.capture("ui_settings_show_timestamps_changed", {
 			enabled: value,
+		})
+	}
+
+	const handleTimestampFormatChange = (format: "12hour" | "24hour") => {
+		setCachedStateField("timestampFormat", format)
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_timestamp_format_changed", {
+			format,
 		})
 	}
 
@@ -110,6 +121,31 @@ export const UISettings = ({
 							{t("settings:ui.showTimestamps.description")}
 						</div>
 					</div>
+
+					{/* Timestamp Format Setting - only visible when timestamps are enabled */}
+					{showTimestamps && (
+						<div className="flex flex-col gap-1 ml-5">
+							<div className="flex items-center gap-2">
+								<span className="font-medium">{t("settings:ui.timestampFormat.label")}</span>
+								<VSCodeDropdown
+									value={timestampFormat}
+									onChange={(e: any) =>
+										handleTimestampFormatChange(e.target.value as "12hour" | "24hour")
+									}
+									data-testid="timestamp-format-dropdown">
+									<VSCodeOption value="24hour">
+										{t("settings:ui.timestampFormat.options.24hour")}
+									</VSCodeOption>
+									<VSCodeOption value="12hour">
+										{t("settings:ui.timestampFormat.options.12hour")}
+									</VSCodeOption>
+								</VSCodeDropdown>
+							</div>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								{t("settings:ui.timestampFormat.description")}
+							</div>
+						</div>
+					)}
 				</div>
 			</Section>
 		</div>

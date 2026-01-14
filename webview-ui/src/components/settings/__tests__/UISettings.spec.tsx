@@ -7,6 +7,7 @@ describe("UISettings", () => {
 		reasoningBlockCollapsed: false,
 		enterBehavior: "send" as const,
 		showTimestamps: false,
+		timestampFormat: "24hour" as const,
 		setCachedStateField: vi.fn(),
 	}
 

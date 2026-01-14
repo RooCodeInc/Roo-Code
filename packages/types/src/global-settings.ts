@@ -198,6 +198,11 @@ export const globalSettingsSchema = z.object({
 	 * @default false
 	 */
 	showTimestamps: z.boolean().optional(),
+	/**
+	 * Format for displaying timestamps on chat messages
+	 * @default "24hour"
+	 */
+	timestampFormat: z.enum(["12hour", "24hour"]).optional(),
 	profileThresholds: z.record(z.string(), z.number()).optional(),
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),

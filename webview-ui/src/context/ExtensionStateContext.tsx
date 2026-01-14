@@ -165,6 +165,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setIncludeCurrentCost: (value: boolean) => void
 	showTimestamps?: boolean
 	setShowTimestamps: (value: boolean) => void
+	timestampFormat?: "12hour" | "24hour"
+	setTimestampFormat: (value: "12hour" | "24hour") => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -300,6 +302,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [includeCurrentTime, setIncludeCurrentTime] = useState(true)
 	const [includeCurrentCost, setIncludeCurrentCost] = useState(true)
 	const [showTimestamps, setShowTimestamps] = useState(false) // Default to false (timestamps hidden)
+	const [timestampFormat, setTimestampFormat] = useState<"12hour" | "24hour">("24hour") // Default to 24-hour format
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -348,6 +351,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					// Update showTimestamps if present in state message
 					if ((newState as any).showTimestamps !== undefined) {
 						setShowTimestamps((newState as any).showTimestamps)
+					}
+					// Update timestampFormat if present in state message
+					if ((newState as any).timestampFormat !== undefined) {
+						setTimestampFormat((newState as any).timestampFormat)
 					}
 					// Handle marketplace data if present in state message
 					if (newState.marketplaceItems !== undefined) {
@@ -601,6 +608,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setIncludeCurrentCost,
 		showTimestamps,
 		setShowTimestamps,
+		timestampFormat,
+		setTimestampFormat,
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>

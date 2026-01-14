@@ -210,6 +210,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		reasoningBlockCollapsed,
 		enterBehavior,
 		showTimestamps,
+		timestampFormat,
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
@@ -412,6 +413,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
 					enterBehavior: enterBehavior ?? "send",
+					showTimestamps: showTimestamps ?? false,
+					timestampFormat: timestampFormat ?? "24hour",
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
 					maxGitStatusFiles: maxGitStatusFiles ?? 0,
@@ -832,6 +835,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
 							enterBehavior={enterBehavior ?? "send"}
 							showTimestamps={showTimestamps ?? false}
+							timestampFormat={timestampFormat ?? "24hour"}
 							setCachedStateField={setCachedStateField}
 						/>
 					)}
