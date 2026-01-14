@@ -388,4 +388,245 @@ describe("LiteLLMHandler", () => {
 			expect(createCall.max_completion_tokens).toBeUndefined()
 		})
 	})
+
+	describe("thinking/reasoning data handling", () => {
+		beforeEach(() => {
+			// Ensure handler is properly initialized for each test
+			vi.clearAllMocks()
+			handler = new LiteLLMHandler(mockOptions)
+		})
+
+		it("should handle reasoning field in delta", async () => {
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Solve this problem" }]
+
+			// Mock the stream response with reasoning content
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { reasoning: "Let me think about this..." } }],
+					}
+					yield {
+						choices: [{ delta: { content: "The answer is 42" } }],
+					}
+					yield {
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 5,
+						},
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			const results = []
+			for await (const chunk of generator) {
+				results.push(chunk)
+			}
+
+			// Verify reasoning chunk was yielded
+			expect(results[0]).toEqual({
+				type: "reasoning",
+				text: "Let me think about this...",
+			})
+			expect(results[1]).toEqual({
+				type: "text",
+				text: "The answer is 42",
+			})
+		})
+
+		it("should handle thinking field in delta", async () => {
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Solve this problem" }]
+
+			// Mock the stream response with thinking content
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { thinking: "Processing the request..." } }],
+					}
+					yield {
+						choices: [{ delta: { content: "Here's the solution" } }],
+					}
+					yield {
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 5,
+						},
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			const results = []
+			for await (const chunk of generator) {
+				results.push(chunk)
+			}
+
+			// Verify thinking chunk was yielded as reasoning
+			expect(results[0]).toEqual({
+				type: "reasoning",
+				text: "Processing the request...",
+			})
+			expect(results[1]).toEqual({
+				type: "text",
+				text: "Here's the solution",
+			})
+		})
+
+		it("should handle reasoning_content field in delta", async () => {
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Solve this problem" }]
+
+			// Mock the stream response with reasoning_content
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { reasoning_content: "Analyzing the problem..." } }],
+					}
+					yield {
+						choices: [{ delta: { content: "Solution found" } }],
+					}
+					yield {
+						usage: {
+							prompt_tokens: 10,
+							completion_tokens: 5,
+						},
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			const results = []
+			for await (const chunk of generator) {
+				results.push(chunk)
+			}
+
+			// Verify reasoning_content chunk was yielded as reasoning
+			expect(results[0]).toEqual({
+				type: "reasoning",
+				text: "Analyzing the problem...",
+			})
+			expect(results[1]).toEqual({
+				type: "text",
+				text: "Solution found",
+			})
+		})
+
+		it("should handle mixed reasoning and text content", async () => {
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Complex question" }]
+
+			// Mock the stream response with mixed content
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { reasoning: "First, let me understand..." } }],
+					}
+					yield {
+						choices: [{ delta: { content: "Based on my analysis" } }],
+					}
+					yield {
+						choices: [{ delta: { thinking: "Considering alternatives..." } }],
+					}
+					yield {
+						choices: [{ delta: { content: ", the answer is clear." } }],
+					}
+					yield {
+						usage: {
+							prompt_tokens: 15,
+							completion_tokens: 10,
+						},
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			const results = []
+			for await (const chunk of generator) {
+				results.push(chunk)
+			}
+
+			// Verify all chunks were yielded in correct order
+			expect(results[0]).toEqual({
+				type: "reasoning",
+				text: "First, let me understand...",
+			})
+			expect(results[1]).toEqual({
+				type: "text",
+				text: "Based on my analysis",
+			})
+			expect(results[2]).toEqual({
+				type: "reasoning",
+				text: "Considering alternatives...",
+			})
+			expect(results[3]).toEqual({
+				type: "text",
+				text: ", the answer is clear.",
+			})
+		})
+
+		it("should ignore non-string reasoning fields", async () => {
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Test" }]
+
+			// Mock the stream response with invalid reasoning types
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { reasoning: null } }],
+					}
+					yield {
+						choices: [{ delta: { thinking: 123 } }],
+					}
+					yield {
+						choices: [{ delta: { reasoning_content: { nested: "object" } } }],
+					}
+					yield {
+						choices: [{ delta: { content: "Valid response" } }],
+					}
+					yield {
+						usage: {
+							prompt_tokens: 5,
+							completion_tokens: 3,
+						},
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			const results = []
+			for await (const chunk of generator) {
+				results.push(chunk)
+			}
+
+			// Should only have the valid text content
+			const contentChunks = results.filter((r) => r.type === "text" || r.type === "reasoning")
+			expect(contentChunks).toHaveLength(1)
+			expect(contentChunks[0]).toEqual({
+				type: "text",
+				text: "Valid response",
+			})
+		})
+	})
 })
