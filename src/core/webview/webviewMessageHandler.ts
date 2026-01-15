@@ -447,6 +447,10 @@ export const webviewMessageHandler = async (
 	}
 
 	switch (message.type) {
+		case "pong":
+			// Heartbeat response from webview - delegate to provider
+			provider.handlePong()
+			break
 		case "webviewDidLaunch":
 			// Load custom modes first
 			const customModes = await provider.customModesManager.getCustomModes()

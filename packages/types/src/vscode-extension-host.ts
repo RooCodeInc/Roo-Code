@@ -94,6 +94,7 @@ export interface ExtensionMessage {
 		| "claudeCodeRateLimits"
 		| "customToolsResult"
 		| "modes"
+		| "ping"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
@@ -509,6 +510,7 @@ export interface WebviewMessage {
 		| "requestModes"
 		| "switchMode"
 		| "debugSetting"
+		| "pong"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
