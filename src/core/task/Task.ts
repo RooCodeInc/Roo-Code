@@ -2,6 +2,7 @@ import * as path from "path"
 import * as vscode from "vscode"
 import os from "os"
 import crypto from "crypto"
+import { v7 as uuidv7 } from "uuid"
 import EventEmitter from "events"
 
 import { AskIgnoredError } from "./AskIgnoredError"
@@ -494,7 +495,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			)
 		}
 
-		this.taskId = historyItem ? historyItem.id : crypto.randomUUID()
+		this.taskId = historyItem ? historyItem.id : uuidv7()
 		// Use taskId as the stable Codex session_id so it persists across profile switches and restarts.
 		this.openAiCodexSessionId = this.taskId
 		this.rootTaskId = historyItem ? historyItem.rootTaskId : rootTask?.taskId
