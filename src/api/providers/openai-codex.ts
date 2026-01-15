@@ -1,5 +1,5 @@
-import * as crypto from "crypto"
 import * as os from "os"
+import { v7 as uuidv7 } from "uuid"
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
@@ -88,9 +88,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
-		// Generate a unique session ID for this handler instance
-		// Format: ses_<random hex>
-		this.sessionId = `ses_${crypto.randomBytes(16).toString("hex")}`
+		// Generate a unique session ID for this handler instance using UUIDv7
+		this.sessionId = uuidv7()
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiCodexModel): ApiStreamUsageChunk | undefined {
