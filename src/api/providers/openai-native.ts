@@ -677,7 +677,13 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							if (parsed?.type && this.coreHandledEventTypes.has(parsed.type)) {
 								for await (const outChunk of this.processEvent(parsed, model)) {
 									// Track whether we've emitted any content so fallback handling can decide appropriately
-									if (outChunk.type === "text" || outChunk.type === "reasoning") {
+									// Include tool calls so tool-call-only responses aren't treated as empty
+									if (
+										outChunk.type === "text" ||
+										outChunk.type === "reasoning" ||
+										outChunk.type === "tool_call" ||
+										outChunk.type === "tool_call_partial"
+									) {
 										hasContent = true
 									}
 									yield outChunk
