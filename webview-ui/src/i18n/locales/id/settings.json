@@ -531,6 +531,10 @@
 			"placeholder": "Default: claude",
 			"maxTokensLabel": "Token Output Maks",
 			"maxTokensDescription": "Jumlah maksimum token output untuk respons Claude Code. Default adalah 8000."
+		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "Urutan pesan alat yang ketat",
+			"description": "Aktifkan untuk penyedia seperti NVIDIA NIM dan Devstral yang memerlukan urutan pesan yang ketat. Ketika diaktifkan, konten teks setelah hasil alat digabungkan ke dalam pesan alat terakhir alih-alih membuat pesan pengguna terpisah."
 		}
 	},
 	"browser": {

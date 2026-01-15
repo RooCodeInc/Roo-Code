@@ -527,6 +527,10 @@
 			"placeholder": "デフォルト：claude",
 			"maxTokensLabel": "最大出力トークン",
 			"maxTokensDescription": "Claude Codeレスポンスの最大出力トークン数。デフォルトは8000です。"
+		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "厳格なツールメッセージの順序",
+			"description": "NVIDIA NIMやDevstralなど、厳格なメッセージ順序を必要とするプロバイダーで有効にします。有効にすると、ツール結果の後のテキストコンテンツは、別のユーザーメッセージを作成する代わりに、最後のツールメッセージにマージされます。"
 		}
 	},
 	"browser": {

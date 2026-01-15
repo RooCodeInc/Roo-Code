@@ -252,6 +252,7 @@ const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiStreamingEnabled: z.boolean().optional(),
 	openAiHostHeader: z.string().optional(), // Keep temporarily for backward compatibility during migration.
 	openAiHeaders: z.record(z.string(), z.string()).optional(),
+	openAiStrictToolMessageOrdering: z.boolean().optional(), // For providers that don't allow user messages after tool messages.
 })
 
 const ollamaSchema = baseProviderSettingsSchema.extend({

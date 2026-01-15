@@ -527,6 +527,10 @@
 			"placeholder": "Mặc định: claude",
 			"maxTokensLabel": "Số token đầu ra tối đa",
 			"maxTokensDescription": "Số lượng token đầu ra tối đa cho các phản hồi của Claude Code. Mặc định là 8000."
+		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "Thứ tự thông báo công cụ nghiêm ngặt",
+			"description": "Bật cho các nhà cung cấp như NVIDIA NIM và Devstral yêu cầu thứ tự thông báo nghiêm ngặt. Khi được bật, nội dung văn bản sau kết quả công cụ được hợp nhất vào thông báo công cụ cuối cùng thay vì tạo thông báo người dùng riêng biệt."
 		}
 	},
 	"browser": {

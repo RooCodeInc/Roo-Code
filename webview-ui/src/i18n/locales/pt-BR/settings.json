@@ -527,6 +527,10 @@
 			"placeholder": "Padrão: claude",
 			"maxTokensLabel": "Tokens de saída máximos",
 			"maxTokensDescription": "Número máximo de tokens de saída para respostas do Claude Code. O padrão é 8000."
+		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "Ordenação estrita de mensagens de ferramentas",
+			"description": "Ativar para provedores como NVIDIA NIM e Devstral que requerem ordenação estrita de mensagens. Quando ativado, o conteúdo de texto após os resultados das ferramentas é mesclado na última mensagem da ferramenta em vez de criar uma mensagem de usuário separada."
 		}
 	},
 	"browser": {

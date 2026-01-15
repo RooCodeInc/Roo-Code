@@ -527,6 +527,10 @@
 			"placeholder": "Predefinito: claude",
 			"maxTokensLabel": "Token di output massimi",
 			"maxTokensDescription": "Numero massimo di token di output per le risposte di Claude Code. Il valore predefinito è 8000."
+		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "Ordinamento rigoroso dei messaggi degli strumenti",
+			"description": "Abilita per provider come NVIDIA NIM e Devstral che richiedono un ordinamento rigoroso dei messaggi. Quando abilitato, il contenuto testuale dopo i risultati degli strumenti viene unito nell'ultimo messaggio dello strumento invece di creare un messaggio utente separato."
 		}
 	},
 	"browser": {

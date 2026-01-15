@@ -527,6 +527,10 @@
 			"placeholder": "Standaard: claude",
 			"maxTokensLabel": "Max Output Tokens",
 			"maxTokensDescription": "Maximaal aantal output-tokens voor Claude Code-reacties. Standaard is 8000."
+		},
+		"openAiStrictToolMessageOrdering": {
+			"label": "Strikte volgorde van toolberichten",
+			"description": "Schakel in voor providers zoals NVIDIA NIM en Devstral die een strikte berichtvolgorde vereisen. Indien ingeschakeld, wordt tekstinhoud na toolresultaten samengevoegd in het laatste toolbericht in plaats van een apart gebruikersbericht te maken."
 		}
 	},
 	"browser": {
