@@ -9,8 +9,23 @@ import { waitFor } from "./utils"
 
 /**
  * Models to test against - high-performing models from different providers
+ * Can be overridden with TEST_MODEL env var for CI matrix runs
  */
-const MODELS_TO_TEST = ["openai/gpt-5.2", "anthropic/claude-sonnet-4.5", "google/gemini-3-pro-preview"]
+const ALL_MODELS = ["openai/gpt-5.2", "anthropic/claude-sonnet-4.5", "google/gemini-3-pro-preview"]
+
+/**
+ * Get models to test - either a single model from TEST_MODEL env var (CI matrix)
+ * or all models (local development sequential runs)
+ */
+function getModelsToTest(): string[] {
+	const testModel = process.env.TEST_MODEL
+	if (testModel) {
+		console.log(`[Matrix Mode] Testing single model from TEST_MODEL: ${testModel}`)
+		return [testModel]
+	}
+	console.log(`[Sequential Mode] Testing all ${ALL_MODELS.length} models`)
+	return ALL_MODELS
+}
 
 interface ModelTestResult {
 	model: string
@@ -28,11 +43,14 @@ export async function run() {
 
 	const api = extension.isActive ? extension.exports : await extension.activate()
 
+	// Get models to test (single model for CI matrix, all models for local dev)
+	const modelsToTest = getModelsToTest()
+
 	// Initial configuration with first model (will be reconfigured per model)
 	await api.setConfiguration({
 		apiProvider: "openrouter" as const,
 		openRouterApiKey: process.env.OPENROUTER_API_KEY!,
-		openRouterModelId: MODELS_TO_TEST[0],
+		openRouterModelId: modelsToTest[0],
 	})
 
 	await vscode.commands.executeCommand("roo-cline.SidebarProvider.focus")
@@ -62,8 +80,8 @@ export async function run() {
 	const results: ModelTestResult[] = []
 	let totalFailures = 0
 
-	// Run tests for each model sequentially
-	for (const model of MODELS_TO_TEST) {
+	// Run tests for each model (single model in CI matrix, all models locally)
+	for (const model of modelsToTest) {
 		console.log(`\n${"=".repeat(60)}`)
 		console.log(`  TESTING WITH MODEL: ${model}`)
 		console.log(`${"=".repeat(60)}\n`)
