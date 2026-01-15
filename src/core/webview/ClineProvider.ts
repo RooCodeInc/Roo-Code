@@ -47,7 +47,7 @@ import {
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	getModelId,
 } from "@roo-code/types"
-import { aggregateTaskCostsRecursive, type AggregatedCosts } from "@roo-code/core/message-utils/aggregateTaskCosts"
+import { aggregateTaskCostsRecursive, type AggregatedCosts } from "./aggregateTaskCosts"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator, getRooCodeApiUrl } from "@roo-code/cloud"
 
