@@ -161,15 +161,7 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 	 * @param message - The message from watsonx response
 	 */
 	private *processResponseMessage(message: any): Generator<any> {
-		// Handle text content
-		if (message.content) {
-			yield {
-				type: "text",
-				text: message.content,
-			}
-		}
-
-		// Handle tool calls
+		// Handle tool calls first
 		if (message.tool_calls && message.tool_calls.length > 0) {
 			for (const toolCall of message.tool_calls) {
 				if (toolCall.type === "function") {
@@ -197,6 +189,13 @@ export class WatsonxAIHandler extends BaseProvider implements SingleCompletionHa
 						arguments: args,
 					}
 				}
+			}
+		}
+		// Handle text content only if there are no tool_calls, or if content is non-empty
+		else if (message.content) {
+			yield {
+				type: "text",
+				text: message.content,
 			}
 		}
 	}
