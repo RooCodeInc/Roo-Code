@@ -321,6 +321,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		(event: MessageEvent) => {
 			const message: ExtensionMessage = event.data
 			switch (message.type) {
+				case "ping":
+					// Respond to heartbeat ping immediately
+					vscode.postMessage({ type: "pong" })
+					break
 				case "state": {
 					const newState = message.state!
 					setState((prevState) => mergeExtensionState(prevState, newState))
