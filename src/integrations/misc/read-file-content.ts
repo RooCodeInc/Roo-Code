@@ -6,9 +6,43 @@
 import { createReadStream } from "fs"
 
 // Configuration constants
-const MAX_LINE_LENGTH = 500 // Truncate lines longer than this
+const MAX_LINE_BYTES = 500 // Max bytes per line (UTF-8) - truncated at safe boundary per plan spec
 const TAB_WIDTH = 4 // Treat tabs as 4 spaces for indentation
-const FALLBACK_LIMIT = 2000 // Fallback when no limit is specified and maxReadFileLine is not set
+const DEFAULT_LINE_LIMIT = 2000 // Default max lines when no limit is specified and maxReadFileLine is not set
+
+/**
+ * Truncate a string at a UTF-8 boundary so that its byte length does not exceed maxBytes.
+ * Returns a prefix of `text` whose UTF-8 byte length is <= maxBytes and which does not
+ * split a multi-byte codepoint.
+ */
+function safeUtf8Truncate(text: string, maxBytes: number): string {
+	// Fast path: if the string's byte length is within limit, return as-is
+	const encoder = new TextEncoder()
+	const encoded = encoder.encode(text)
+	if (encoded.length <= maxBytes) {
+		return text
+	}
+
+	// Binary search for the maximum character index that fits within maxBytes
+	let low = 0
+	let high = text.length
+	let result = ""
+
+	while (low <= high) {
+		const mid = Math.floor((low + high) / 2)
+		const substring = text.substring(0, mid)
+		const byteLength = encoder.encode(substring).length
+
+		if (byteLength <= maxBytes) {
+			result = substring
+			low = mid + 1
+		} else {
+			high = mid - 1
+		}
+	}
+
+	return result
+}
 
 // Comment prefixes for header detection
 const COMMENT_PREFIXES = ["#", "//", "--", "/*", "*", "'''", '"""', "<!--"]
@@ -75,7 +109,7 @@ export interface ReadFileMetadata {
 	linesAfterEnd: number
 	/** True if reading stopped due to limit parameter */
 	truncatedByLimit: boolean
-	/** Line numbers where content was truncated due to MAX_LINE_LENGTH */
+	/** Line numbers where content was truncated due to MAX_LINE_BYTES */
 	lineLengthTruncations: number[]
 }
 
@@ -142,11 +176,19 @@ function computeEffectiveIndents(records: LineRecord[]): number[] {
 }
 
 /**
+ * Check if a string's UTF-8 byte length exceeds the given limit
+ */
+function exceedsByteLength(text: string, maxBytes: number): boolean {
+	const encoder = new TextEncoder()
+	return encoder.encode(text).length > maxBytes
+}
+
+/**
  * Create a LineRecord from a line of text
  */
 function createLineRecord(lineNumber: number, raw: string): LineRecord {
 	const indent = measureIndent(raw)
-	const display = raw.length > MAX_LINE_LENGTH ? raw.substring(0, MAX_LINE_LENGTH) : raw
+	const display = exceedsByteLength(raw, MAX_LINE_BYTES) ? safeUtf8Truncate(raw, MAX_LINE_BYTES) : raw
 
 	return {
 		number: lineNumber,
@@ -210,7 +252,7 @@ async function collectFileLines(filePath: string): Promise<LineRecord[]> {
 export async function readSlice(
 	filePath: string,
 	offset: number = 1,
-	limit: number = FALLBACK_LIMIT,
+	limit: number = DEFAULT_LINE_LIMIT,
 ): Promise<ReadFileContentResult> {
 	if (offset === 0) {
 		throw new RangeError("offset must be a 1-indexed line number")
@@ -255,10 +297,10 @@ export async function readSlice(
 					}
 					endLine = lineNumber
 
-					// Truncate long lines and track truncation
+					// Truncate long lines (byte-based) and track truncation
 					let display = line
-					if (line.length > MAX_LINE_LENGTH) {
-						display = line.substring(0, MAX_LINE_LENGTH)
+					if (exceedsByteLength(line, MAX_LINE_BYTES)) {
+						display = safeUtf8Truncate(line, MAX_LINE_BYTES)
 						lineLengthTruncations.push(lineNumber)
 					}
 					collected.push(`${lineNumber} | ${display}`)
@@ -288,8 +330,8 @@ export async function readSlice(
 					endLine = lineNumber
 
 					let display = buffer
-					if (buffer.length > MAX_LINE_LENGTH) {
-						display = buffer.substring(0, MAX_LINE_LENGTH)
+					if (exceedsByteLength(buffer, MAX_LINE_BYTES)) {
+						display = safeUtf8Truncate(buffer, MAX_LINE_BYTES)
 						lineLengthTruncations.push(lineNumber)
 					}
 					collected.push(`${lineNumber} | ${display}`)
@@ -353,7 +395,7 @@ export async function readSlice(
 export async function readIndentationBlock(
 	filePath: string,
 	offset: number = 1,
-	limit: number = FALLBACK_LIMIT,
+	limit: number = DEFAULT_LINE_LIMIT,
 	config: IndentationConfig = {},
 ): Promise<ReadFileContentResult> {
 	const hasExplicitAnchorLine = typeof config.anchorLine === "number"
@@ -437,7 +479,7 @@ export async function readIndentationBlock(
 	// Special case: single line
 	if (finalLimit === 1) {
 		const r = records[anchorIndex]
-		const lineLengthTruncations: number[] = r.raw.length > MAX_LINE_LENGTH ? [r.number] : []
+		const lineLengthTruncations: number[] = exceedsByteLength(r.raw, MAX_LINE_BYTES) ? [r.number] : []
 		return {
 			content: `${r.number} | ${r.display}`,
 			lineCount: 1,
@@ -537,8 +579,10 @@ export async function readIndentationBlock(
 		out.pop()
 	}
 
-	// Track line length truncations
-	const lineLengthTruncations: number[] = out.filter((r) => r.raw.length > MAX_LINE_LENGTH).map((r) => r.number)
+	// Track line length truncations (byte-based)
+	const lineLengthTruncations: number[] = out
+		.filter((r) => exceedsByteLength(r.raw, MAX_LINE_BYTES))
+		.map((r) => r.number)
 
 	// Format output
 	const content = out.map((r) => `${r.number} | ${r.display}`).join("\n")
@@ -579,8 +623,8 @@ export async function readIndentationBlock(
 export async function readFileContent(options: ReadFileContentOptions): Promise<ReadFileContentResult> {
 	const { filePath, offset = 1, limit, mode = "slice", indentation, defaultLimit } = options
 
-	// Use provided limit, or defaultLimit (from maxReadFileLine setting), or fallback
-	const effectiveLimit = limit ?? defaultLimit ?? FALLBACK_LIMIT
+	// Use provided limit, or defaultLimit (from maxReadFileLine setting), or default
+	const effectiveLimit = limit ?? defaultLimit ?? DEFAULT_LINE_LIMIT
 
 	if (mode === "indentation") {
 		return readIndentationBlock(filePath, offset, effectiveLimit, indentation)

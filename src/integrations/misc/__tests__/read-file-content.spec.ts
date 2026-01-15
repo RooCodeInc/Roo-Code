@@ -93,11 +93,30 @@ describe("read-file-content", () => {
 		})
 
 		it("should truncate long lines", async () => {
-			const longLine = "x".repeat(600) // Longer than MAX_LINE_LENGTH (500)
+			const longLine = "x".repeat(600) // Longer than MAX_LINE_BYTES (500)
 			await withTempFile("slice-long-line-test.txt", longLine, async (filepath) => {
 				const result = await readSlice(filepath, 1, 1)
 				// Line should be truncated to 500 characters + line number prefix
 				expect(result.content.length).toBeLessThan(600)
+			})
+		})
+
+		it("should truncate at UTF-8 byte boundary for multi-byte characters", async () => {
+			// Each emoji is 4 bytes in UTF-8, so 150 emojis = 600 bytes
+			// With MAX_LINE_BYTES = 500 bytes, we should get ~125 emojis max
+			const longEmojiLine = "😀".repeat(150) // 600 bytes total
+			await withTempFile("slice-utf8-truncate-test.txt", longEmojiLine, async (filepath) => {
+				const result = await readSlice(filepath, 1, 1)
+				// Extract just the content (after "1 | ")
+				const content = result.content.replace(/^\d+ \| /, "")
+				// Verify byte length is <= 500 bytes
+				const encoder = new TextEncoder()
+				const byteLength = encoder.encode(content).length
+				expect(byteLength).toBeLessThanOrEqual(500)
+				// Also verify we didn't split a multi-byte character (no replacement chars)
+				expect(content).not.toContain("�")
+				// Track truncation in metadata
+				expect(result.metadata.lineLengthTruncations).toContain(1)
 			})
 		})
 

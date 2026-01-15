@@ -34,12 +34,7 @@ export interface CreateReadFileToolOptions {
  * @returns Native tool definition for read_file
  */
 export function createReadFileTool(options: CreateReadFileToolOptions = {}): OpenAI.Chat.ChatCompletionTool {
-	const {
-		partialReadsEnabled = true,
-		maxReadFileLine,
-		maxConcurrentFileReads = 5,
-		supportsImages = false,
-	} = options
+	const { partialReadsEnabled = true, maxReadFileLine, maxConcurrentFileReads = 5, supportsImages = false } = options
 	const isMultipleReadsEnabled = maxConcurrentFileReads > 1
 
 	// Build limit info for descriptions
@@ -76,8 +71,7 @@ export function createReadFileTool(options: CreateReadFileToolOptions = {}): Ope
 				? `Example multiple files (within ${maxConcurrentFileReads}-file limit): { files: [{ path: 'file1.ts' }, { path: 'file2.ts' }] }`
 				: "")
 
-	const description =
-		baseDescription + modeDescription + getReadFileSupportsNote(supportsImages) + " " + examples
+	const description = baseDescription + modeDescription + getReadFileSupportsNote(supportsImages) + " " + examples
 
 	// Build the file properties object conditionally
 	const fileProperties: Record<string, unknown> = {
@@ -134,6 +128,11 @@ export function createReadFileTool(options: CreateReadFileToolOptions = {}): Ope
 					type: ["boolean", "null"],
 					description: "Whether to include comment headers above the anchor block. Defaults to true.",
 					default: true,
+				},
+				maxLines: {
+					type: ["integer", "null"],
+					description: "Hard cap on returned lines for indentation mode. Defaults to the limit parameter.",
+					minimum: 1,
 				},
 			},
 			additionalProperties: false,
