@@ -2833,6 +2833,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								for (const event of events) {
 									if (event.type === "tool_call_start") {
+										// Guard against duplicate tool_call_start events for the same tool ID.
+										// This can occur due to stream retry, reconnection, or API quirks.
+										// Without this check, duplicate tool_use blocks with the same ID would
+										// be added to assistantMessageContent, causing API 400 errors:
+										// "tool_use ids must be unique"
+										if (this.streamingToolCallIndices.has(event.id)) {
+											console.warn(
+												`[Task#${this.taskId}] Ignoring duplicate tool_call_start for ID: ${event.id} (tool: ${event.name})`,
+											)
+											continue
+										}
+
 										// Initialize streaming in NativeToolCallParser
 										NativeToolCallParser.startStreamingToolCall(event.id, event.name as ToolName)
 
@@ -3426,6 +3438,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Add tool_use blocks with their IDs for native protocol
 					// This handles both regular ToolUse and McpToolUse types
+					// IMPORTANT: Track seen IDs to prevent duplicates in the API request.
+					// Duplicate tool_use IDs cause Anthropic API 400 errors:
+					// "tool_use ids must be unique"
+					const seenToolUseIds = new Set<string>()
 					const toolUseBlocks = this.assistantMessageContent.filter(
 						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 					)
@@ -3435,9 +3451,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							// The arguments are the raw tool arguments (matching the simplified schema)
 							const mcpBlock = block as import("../../shared/tools").McpToolUse
 							if (mcpBlock.id) {
+								const sanitizedId = sanitizeToolUseId(mcpBlock.id)
+								// Pre-flight deduplication: Skip if we've already added this ID
+								if (seenToolUseIds.has(sanitizedId)) {
+									console.warn(
+										`[Task#${this.taskId}] Pre-flight deduplication: Skipping duplicate MCP tool_use ID: ${sanitizedId} (tool: ${mcpBlock.name})`,
+									)
+									continue
+								}
+								seenToolUseIds.add(sanitizedId)
 								assistantContent.push({
 									type: "tool_use" as const,
-									id: sanitizeToolUseId(mcpBlock.id),
+									id: sanitizedId,
 									name: mcpBlock.name, // Original dynamic name
 									input: mcpBlock.arguments, // Direct tool arguments
 								})
@@ -3447,6 +3472,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							const toolUse = block as import("../../shared/tools").ToolUse
 							const toolCallId = toolUse.id
 							if (toolCallId) {
+								const sanitizedId = sanitizeToolUseId(toolCallId)
+								// Pre-flight deduplication: Skip if we've already added this ID
+								if (seenToolUseIds.has(sanitizedId)) {
+									console.warn(
+										`[Task#${this.taskId}] Pre-flight deduplication: Skipping duplicate tool_use ID: ${sanitizedId} (tool: ${toolUse.name})`,
+									)
+									continue
+								}
+								seenToolUseIds.add(sanitizedId)
 								// nativeArgs is already in the correct API format for all tools
 								const input = toolUse.nativeArgs || toolUse.params
 
@@ -3458,7 +3492,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								assistantContent.push({
 									type: "tool_use" as const,
-									id: sanitizeToolUseId(toolCallId),
+									id: sanitizedId,
 									name: toolNameForHistory,
 									input,
 								})
