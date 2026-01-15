@@ -124,7 +124,8 @@
 			"authenticationRequired": "Roo provider vereist cloud authenticatie. Log in bij Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API-sleutel bevat ongeldige karakters."
+			"invalidKeyInvalidChars": "API-sleutel bevat ongeldige karakters.",
+			"apiRequestFailed": "API-verzoek mislukt ({{status}})"
 		},
 		"manual_url_empty": "Voer een geldige callback-URL in",
 		"manual_url_no_query": "Ongeldige callback-URL: query-parameters ontbreken",

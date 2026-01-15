@@ -123,7 +123,8 @@
 			"authenticationRequired": "Roo 提供者需要雲端認證。請登入 Roo Code Cloud。"
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API 金鑰包含無效字元。"
+			"invalidKeyInvalidChars": "API 金鑰包含無效字元。",
+			"apiRequestFailed": "API 請求失敗 ({{status}})"
 		},
 		"manual_url_empty": "請輸入有效的回呼 URL",
 		"manual_url_no_query": "無效的回呼 URL：缺少查詢參數",

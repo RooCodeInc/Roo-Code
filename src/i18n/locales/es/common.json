@@ -124,7 +124,8 @@
 			"authenticationRequired": "El proveedor Roo requiere autenticación en la nube. Por favor, inicia sesión en Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "La clave API contiene caracteres inválidos."
+			"invalidKeyInvalidChars": "La clave API contiene caracteres inválidos.",
+			"apiRequestFailed": "La solicitud API falló ({{status}})"
 		},
 		"manual_url_empty": "Por favor, introduce una URL de callback válida",
 		"manual_url_no_query": "URL de callback inválida: faltan parámetros de consulta",

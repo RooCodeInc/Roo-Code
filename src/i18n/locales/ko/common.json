@@ -124,7 +124,8 @@
 			"authenticationRequired": "Roo 제공업체는 클라우드 인증이 필요합니다. Roo Code Cloud에 로그인하세요."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API 키에 유효하지 않은 문자가 포함되어 있습니다."
+			"invalidKeyInvalidChars": "API 키에 유효하지 않은 문자가 포함되어 있습니다.",
+			"apiRequestFailed": "API 요청 실패 ({{status}})"
 		},
 		"manual_url_empty": "유효한 콜백 URL을 입력하세요",
 		"manual_url_no_query": "유효하지 않은 콜백 URL: 쿼리 매개변수 누락",

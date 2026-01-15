@@ -124,7 +124,8 @@
 			"authenticationRequired": "Провайдер Roo требует облачной аутентификации. Войдите в Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API-ключ содержит недопустимые символы."
+			"invalidKeyInvalidChars": "API-ключ содержит недопустимые символы.",
+			"apiRequestFailed": "Запрос API не удался ({{status}})"
 		},
 		"manual_url_empty": "Введи действительный URL обратного вызова",
 		"manual_url_no_query": "Недействительный URL обратного вызова: отсутствуют параметры запроса",

@@ -124,7 +124,8 @@
 			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
 		},
 		"api": {
-			"invalidKeyInvalidChars": "APIキーに無効な文字が含まれています。"
+			"invalidKeyInvalidChars": "APIキーに無効な文字が含まれています。",
+			"apiRequestFailed": "APIリクエストが失敗しました ({{status}})"
 		},
 		"manual_url_empty": "有効なコールバック URL を入力してください",
 		"manual_url_no_query": "無効なコールバック URL：クエリパラメータがありません",

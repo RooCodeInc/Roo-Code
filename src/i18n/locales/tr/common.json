@@ -124,7 +124,8 @@
 			"authenticationRequired": "Roo sağlayıcısı bulut kimlik doğrulaması gerektirir. Lütfen Roo Code Cloud'a giriş yapın."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API anahtarı geçersiz karakterler içeriyor."
+			"invalidKeyInvalidChars": "API anahtarı geçersiz karakterler içeriyor.",
+			"apiRequestFailed": "API isteği başarısız oldu ({{status}})"
 		},
 		"manual_url_empty": "Lütfen geçerli bir callback URL'si girin",
 		"manual_url_no_query": "Geçersiz callback URL'si: sorgu parametreleri eksik",

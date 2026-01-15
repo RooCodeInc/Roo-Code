@@ -124,7 +124,8 @@
 			"authenticationRequired": "Roo-Anbieter erfordert Cloud-Authentifizierung. Bitte melde dich bei Roo Code Cloud an."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API-Schlüssel enthält ungültige Zeichen."
+			"invalidKeyInvalidChars": "API-Schlüssel enthält ungültige Zeichen.",
+			"apiRequestFailed": "API-Anfrage fehlgeschlagen ({{status}})"
 		},
 		"manual_url_empty": "Bitte gib eine gültige Callback-URL ein",
 		"manual_url_no_query": "Ungültige Callback-URL: Query-Parameter fehlen",

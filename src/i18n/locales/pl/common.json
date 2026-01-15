@@ -124,7 +124,8 @@
 			"authenticationRequired": "Dostawca Roo wymaga uwierzytelnienia w chmurze. Zaloguj się do Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "Klucz API zawiera nieprawidłowe znaki."
+			"invalidKeyInvalidChars": "Klucz API zawiera nieprawidłowe znaki.",
+			"apiRequestFailed": "Żądanie API nie powiodło się ({{status}})"
 		},
 		"manual_url_empty": "Wprowadź prawidłowy URL callback",
 		"manual_url_no_query": "Nieprawidłowy URL callback: brak parametrów zapytania",
