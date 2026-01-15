@@ -347,8 +347,14 @@
 		},
 		"careers": "साथ ही, <careersLink>हम भर्ती कर रहे हैं!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "कुल लागत (उप-कार्यों सहित): ${{cost}}",
+		"total": "कुल लागत: ${{cost}}",
+		"includesSubtasks": "उप-कार्यों की लागत शामिल है"
+	},
 	"browser": {
 		"session": "ब्राउज़र सत्र",
+		"active": "सक्रिय",
 		"rooWantsToUse": "Roo ब्राउज़र का उपयोग करना चाहता है",
 		"consoleLogs": "कंसोल लॉग",
 		"noNewLogs": "(कोई नया लॉग नहीं)",

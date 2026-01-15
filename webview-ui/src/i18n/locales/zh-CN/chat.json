@@ -348,8 +348,14 @@
 		},
 		"careers": "此外，<careersLink>我们正在招聘！</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "总成本（包括子任务）: ${{cost}}",
+		"total": "总成本: ${{cost}}",
+		"includesSubtasks": "包括子任务成本"
+	},
 	"browser": {
 		"session": "浏览器会话",
+		"active": "活动中",
 		"rooWantsToUse": "Roo想使用浏览器",
 		"consoleLogs": "控制台日志",
 		"noNewLogs": "(没有新日志)",

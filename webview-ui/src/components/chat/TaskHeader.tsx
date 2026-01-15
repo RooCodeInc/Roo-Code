@@ -70,8 +70,6 @@ const TaskHeader = ({
 	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive } = useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
-
-	// (intentionally no debug logging)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
 	const { isOpen, openUpsell, closeUpsell, handleConnect } = useCloudUpsell({
 		autoOpenOnAuth: false,
@@ -262,13 +260,14 @@ const TaskHeader = ({
 										hasSubtasks ? (
 											<div>
 												<div>
-													Total Cost (including subtasks): $
-													{(aggregatedCost ?? totalCost).toFixed(2)}
+													{t("chat:costs.totalWithSubtasks", {
+														cost: (aggregatedCost ?? totalCost).toFixed(2),
+													})}
 												</div>
 												{costBreakdown && <div className="text-xs mt-1">{costBreakdown}</div>}
 											</div>
 										) : (
-											<div>Total Cost: ${totalCost.toFixed(2)}</div>
+											<div>{t("chat:costs.total", { cost: totalCost.toFixed(2) })}</div>
 										)
 									}
 									side="top"
@@ -276,7 +275,7 @@ const TaskHeader = ({
 									<span>
 										${(aggregatedCost ?? totalCost).toFixed(2)}
 										{hasSubtasks && (
-											<span className="text-xs ml-1" title="Includes subtask costs">
+											<span className="text-xs ml-1" title={t("chat:costs.includesSubtasks")}>
 												*
 											</span>
 										)}
@@ -312,7 +311,7 @@ const TaskHeader = ({
 									<span
 										className="text-sm font-medium"
 										style={{ color: "var(--vscode-testing-iconPassed)" }}>
-										Active
+										{t("chat:browser.active")}
 									</span>
 								)}
 							</div>
@@ -425,15 +424,18 @@ const TaskHeader = ({
 														hasSubtasks ? (
 															<div>
 																<div>
-																	Total Cost (including subtasks): $
-																	{(aggregatedCost ?? totalCost).toFixed(2)}
+																	{t("chat:costs.totalWithSubtasks", {
+																		cost: (aggregatedCost ?? totalCost).toFixed(2),
+																	})}
 																</div>
 																{costBreakdown && (
 																	<div className="text-xs mt-1">{costBreakdown}</div>
 																)}
 															</div>
 														) : (
-															<div>Total Cost: ${totalCost.toFixed(2)}</div>
+															<div>
+																{t("chat:costs.total", { cost: totalCost.toFixed(2) })}
+															</div>
 														)
 													}
 													side="top"
@@ -443,7 +445,7 @@ const TaskHeader = ({
 														{hasSubtasks && (
 															<span
 																className="text-xs ml-1"
-																title="Includes subtask costs">
+																title={t("chat:costs.includesSubtasks")}>
 																*
 															</span>
 														)}

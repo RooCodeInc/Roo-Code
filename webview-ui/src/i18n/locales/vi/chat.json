@@ -348,8 +348,14 @@
 		},
 		"careers": "Ngoài ra, <careersLink>chúng tôi đang tuyển dụng!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Tổng chi phí (bao gồm các tác vụ phụ): ${{cost}}",
+		"total": "Tổng chi phí: ${{cost}}",
+		"includesSubtasks": "Bao gồm chi phí của các tác vụ phụ"
+	},
 	"browser": {
 		"session": "Phiên trình duyệt",
+		"active": "Đang hoạt động",
 		"rooWantsToUse": "Roo muốn sử dụng trình duyệt",
 		"consoleLogs": "Nhật ký bảng điều khiển",
 		"noNewLogs": "(Không có nhật ký mới)",

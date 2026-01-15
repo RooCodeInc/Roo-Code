@@ -347,8 +347,14 @@
 		},
 		"careers": "A més, <careersLink>estem contractant!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Cost total (subtasques incloses): ${{cost}}",
+		"total": "Cost total: ${{cost}}",
+		"includesSubtasks": "Inclou els costos de les subtasques"
+	},
 	"browser": {
 		"session": "Sessió del navegador",
+		"active": "Actiu",
 		"rooWantsToUse": "Roo vol utilitzar el navegador",
 		"consoleLogs": "Registres de consola",
 		"noNewLogs": "(Cap registre nou)",

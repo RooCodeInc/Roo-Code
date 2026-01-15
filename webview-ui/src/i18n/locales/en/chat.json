@@ -362,8 +362,14 @@
 		"copyToInput": "Copy to input (same as shift + click)",
 		"timerPrefix": "Auto-approve enabled. Selecting in {{seconds}}s…"
 	},
+	"costs": {
+		"totalWithSubtasks": "Total Cost (including subtasks): ${{cost}}",
+		"total": "Total Cost: ${{cost}}",
+		"includesSubtasks": "Includes subtask costs"
+	},
 	"browser": {
 		"session": "Browser Session",
+		"active": "Active",
 		"rooWantsToUse": "Roo wants to use the browser",
 		"consoleLogs": "Console Logs",
 		"noNewLogs": "(No new logs)",

@@ -347,8 +347,14 @@
 		"copyToInput": "Kopiëren naar invoer (zelfde als shift + klik)",
 		"timerPrefix": "Automatisch goedkeuren ingeschakeld. Selecteren in {{seconds}}s…"
 	},
+	"costs": {
+		"totalWithSubtasks": "Totale kosten (inclusief subtaken): ${{cost}}",
+		"total": "Totale kosten: ${{cost}}",
+		"includesSubtasks": "Inclusief kosten van subtaken"
+	},
 	"browser": {
 		"session": "Browsersessie",
+		"active": "Actief",
 		"rooWantsToUse": "Roo wil de browser gebruiken",
 		"consoleLogs": "Console-logboeken",
 		"noNewLogs": "(Geen nieuwe logboeken)",

@@ -348,8 +348,14 @@
 		"copyToInput": "Скопировать во ввод (то же, что shift + клик)",
 		"timerPrefix": "Автоматическое одобрение включено. Выбор через {{seconds}}s…"
 	},
+	"costs": {
+		"totalWithSubtasks": "Общая стоимость (включая подзадачи): ${{cost}}",
+		"total": "Общая стоимость: ${{cost}}",
+		"includesSubtasks": "Включает стоимость подзадач"
+	},
 	"browser": {
 		"session": "Сеанс браузера",
+		"active": "Активен",
 		"rooWantsToUse": "Roo хочет использовать браузер",
 		"consoleLogs": "Логи консоли",
 		"noNewLogs": "(Новых логов нет)",

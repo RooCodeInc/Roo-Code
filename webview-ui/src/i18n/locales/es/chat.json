@@ -347,8 +347,14 @@
 		},
 		"careers": "Además, <careersLink>¡estamos contratando!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Costo total (incluyendo subtareas): ${{cost}}",
+		"total": "Costo total: ${{cost}}",
+		"includesSubtasks": "Incluye costos de subtareas"
+	},
 	"browser": {
 		"session": "Sesión del navegador",
+		"active": "Activo",
 		"rooWantsToUse": "Roo quiere usar el navegador",
 		"consoleLogs": "Registros de la consola",
 		"noNewLogs": "(No hay nuevos registros)",

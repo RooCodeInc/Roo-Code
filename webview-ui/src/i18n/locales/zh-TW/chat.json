@@ -366,8 +366,14 @@
 		"copyToInput": "複製到輸入框 (或按住 Shift 並點選)",
 		"timerPrefix": "自動批准已啟用。{{seconds}}秒後選擇中…"
 	},
+	"costs": {
+		"totalWithSubtasks": "總成本（包括子任務）: ${{cost}}",
+		"total": "總成本: ${{cost}}",
+		"includesSubtasks": "包括子任務成本"
+	},
 	"browser": {
 		"session": "瀏覽器會話",
+		"active": "活動中",
 		"rooWantsToUse": "Roo 想要使用瀏覽器",
 		"consoleLogs": "主控台記錄",
 		"noNewLogs": "（沒有新記錄）",

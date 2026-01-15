@@ -347,8 +347,14 @@
 		},
 		"careers": "また、<careersLink>採用中です！</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "合計コスト（サブタスク含む）: ${{cost}}",
+		"total": "合計コスト: ${{cost}}",
+		"includesSubtasks": "サブタスクのコストを含む"
+	},
 	"browser": {
 		"session": "ブラウザセッション",
+		"active": "アクティブ",
 		"rooWantsToUse": "Rooはブラウザを使用したい",
 		"consoleLogs": "コンソールログ",
 		"noNewLogs": "(新しいログはありません)",

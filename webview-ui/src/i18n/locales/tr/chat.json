@@ -348,8 +348,14 @@
 		},
 		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Toplam Maliyet (alt görevler dahil): ${{cost}}",
+		"total": "Toplam Maliyet: ${{cost}}",
+		"includesSubtasks": "Alt görev maliyetlerini içerir"
+	},
 	"browser": {
 		"session": "Tarayıcı Oturumu",
+		"active": "Aktif",
 		"rooWantsToUse": "Roo tarayıcıyı kullanmak istiyor",
 		"consoleLogs": "Konsol Kayıtları",
 		"noNewLogs": "(Yeni kayıt yok)",
