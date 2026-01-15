@@ -177,7 +177,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		// Make the request with retry on auth failure
 		for (let attempt = 0; attempt < 2; attempt++) {
 			try {
-				yield* this.executeRequest(requestBody, model, accessToken)
+				yield* this.executeRequest(requestBody, model, accessToken, metadata?.taskId)
 				return
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error)
@@ -335,7 +335,12 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		return body
 	}
 
-	private async *executeRequest(requestBody: any, model: OpenAiCodexModel, accessToken: string): ApiStream {
+	private async *executeRequest(
+		requestBody: any,
+		model: OpenAiCodexModel,
+		accessToken: string,
+		taskId?: string,
+	): ApiStream {
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
 
@@ -349,7 +354,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				// Build Codex-specific headers. Authorization is provided by the SDK apiKey.
 				const codexHeaders: Record<string, string> = {
 					originator: "roo-code",
-					session_id: this.sessionId,
+					session_id: taskId || this.sessionId,
 					"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 					...(accountId ? { "ChatGPT-Account-Id": accountId } : {}),
 				}
@@ -386,7 +391,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				}
 			} catch (_sdkErr) {
 				// Fallback to manual SSE via fetch (Codex backend).
-				yield* this.makeCodexRequest(requestBody, model, accessToken)
+				yield* this.makeCodexRequest(requestBody, model, accessToken, taskId)
 			}
 		} finally {
 			this.abortController = undefined
@@ -472,7 +477,12 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		return formattedInput
 	}
 
-	private async *makeCodexRequest(requestBody: any, model: OpenAiCodexModel, accessToken: string): ApiStream {
+	private async *makeCodexRequest(
+		requestBody: any,
+		model: OpenAiCodexModel,
+		accessToken: string,
+		taskId?: string,
+	): ApiStream {
 		// Per the implementation guide: route to Codex backend with Bearer token
 		const url = `${CODEX_API_BASE_URL}/responses`
 
@@ -484,7 +494,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${accessToken}`,
 			originator: "roo-code",
-			session_id: this.sessionId,
+			session_id: taskId || this.sessionId,
 			"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 		}
 

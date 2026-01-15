@@ -315,19 +315,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	api: ApiHandler
 	private static lastGlobalApiRequestTime?: number
 	private autoApprovalHandler: AutoApprovalHandler
-	// Stable session ID for OpenAI Codex provider (persists for the lifetime of this task)
-	private readonly openAiCodexSessionId: string
-
-	private withOpenAiCodexSessionId(config: ProviderSettings): ProviderSettings {
-		if (config.apiProvider !== "openai-codex") {
-			return config
-		}
-
-		return {
-			...config,
-			openAiCodexSessionId: this.openAiCodexSessionId,
-		}
-	}
 
 	/**
 	 * Reset the global API request timestamp. This should only be used for testing.
@@ -496,8 +483,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		this.taskId = historyItem ? historyItem.id : uuidv7()
-		// Use taskId as the stable Codex session_id so it persists across profile switches and restarts.
-		this.openAiCodexSessionId = this.taskId
 		this.rootTaskId = historyItem ? historyItem.rootTaskId : rootTask?.taskId
 		this.parentTaskId = historyItem ? historyItem.parentTaskId : parentTask?.taskId
 		this.childTaskId = undefined
@@ -523,7 +508,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.error("Failed to initialize RooIgnoreController:", error)
 		})
 
-		this.apiConfiguration = this.withOpenAiCodexSessionId(apiConfiguration)
+		this.apiConfiguration = apiConfiguration
 		this.api = buildApiHandler(this.apiConfiguration)
 		this.autoApprovalHandler = new AutoApprovalHandler()
 
@@ -1562,7 +1547,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 */
 	public updateApiConfiguration(newApiConfiguration: ProviderSettings): void {
 		// Update the configuration and rebuild the API handler
-		this.apiConfiguration = this.withOpenAiCodexSessionId(newApiConfiguration)
+		this.apiConfiguration = newApiConfiguration
 		this.api = buildApiHandler(this.apiConfiguration)
 
 		// IMPORTANT: Do NOT change the parser based on the new configuration!
