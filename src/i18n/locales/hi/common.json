@@ -263,9 +263,5 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
-	},
-	"costs": {
-		"own": "स्वयं",
-		"subtasks": "उपकार्य"
 	}
 }
