@@ -147,8 +147,9 @@ export async function run() {
 	}
 
 	// Print summary
+	const summaryTitle = modelsToTest.length === 1 ? "SINGLE-MODEL TEST SUMMARY" : "MULTI-MODEL TEST SUMMARY"
 	console.log(`\n${"=".repeat(60)}`)
-	console.log(`  MULTI-MODEL TEST SUMMARY`)
+	console.log(`  ${summaryTitle}`)
 	console.log(`${"=".repeat(60)}`)
 
 	for (const result of results) {
@@ -162,6 +163,7 @@ export async function run() {
 	console.log(`${"=".repeat(60)}\n`)
 
 	if (totalFailures > 0) {
-		throw new Error(`${totalFailures} total test failures across all models.`)
+		const modelContext = modelsToTest.length === 1 ? `model ${modelsToTest[0]}` : "all models"
+		throw new Error(`${totalFailures} total test failures for ${modelContext}.`)
 	}
 }
