@@ -66,10 +66,10 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 	 * Per LiteLLM documentation:
 	 * - Thought signatures are stored in provider_specific_fields.thought_signature of tool calls
 	 * - The dummy signature base64("skip_thought_signature_validator") bypasses validation
-	 * - Only the first tool call in parallel calls needs the signature
 	 *
-	 * Note: LiteLLM claims to automatically handle missing signatures, but this explicit
-	 * injection ensures compatibility when LiteLLM doesn't detect the model switch.
+	 * We inject the dummy signature on EVERY tool call unconditionally to ensure Gemini
+	 * doesn't complain about missing/corrupted signatures when conversation history
+	 * contains tool calls from other models (like Claude).
 	 */
 	private injectThoughtSignatureForGemini(
 		openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[],
@@ -83,30 +83,19 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 
 				// Only process if there are tool calls
 				if (toolCalls && toolCalls.length > 0) {
-					// Check if first tool call already has a thought_signature
-					const firstToolCall = toolCalls[0]
-					const hasExistingSignature = firstToolCall?.provider_specific_fields?.thought_signature
+					// Inject dummy signature into ALL tool calls' provider_specific_fields
+					// This ensures Gemini doesn't reject tool calls from other models
+					const updatedToolCalls = toolCalls.map((tc) => ({
+						...tc,
+						provider_specific_fields: {
+							...(tc.provider_specific_fields || {}),
+							thought_signature: dummySignature,
+						},
+					}))
 
-					if (!hasExistingSignature) {
-						// Inject dummy signature into the first tool call's provider_specific_fields
-						const updatedToolCalls = toolCalls.map((tc, index) => {
-							if (index === 0) {
-								// Only first tool call needs the signature for parallel calls
-								return {
-									...tc,
-									provider_specific_fields: {
-										...(tc.provider_specific_fields || {}),
-										thought_signature: dummySignature,
-									},
-								}
-							}
-							return tc
-						})
-
-						return {
-							...msg,
-							tool_calls: updatedToolCalls,
-						}
+					return {
+						...msg,
+						tool_calls: updatedToolCalls,
 					}
 				}
 			}

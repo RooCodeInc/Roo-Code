@@ -476,7 +476,7 @@ describe("LiteLLMHandler", () => {
 				expect(result[1].tool_calls).toBeUndefined()
 			})
 
-			it("should not inject if thought_signature already exists", () => {
+			it("should always overwrite existing thought_signature", () => {
 				const handler = new LiteLLMHandler(mockOptions)
 				const injectThoughtSignature = (handler as any).injectThoughtSignatureForGemini.bind(handler)
 
@@ -500,11 +500,11 @@ describe("LiteLLMHandler", () => {
 
 				const result = injectThoughtSignature(messages)
 
-				// Should keep existing thought_signature unchanged
-				expect(result[1].tool_calls[0].provider_specific_fields.thought_signature).toBe(existingSignature)
+				// Should overwrite with dummy signature (always inject to ensure compatibility)
+				expect(result[1].tool_calls[0].provider_specific_fields.thought_signature).toBe(dummySignature)
 			})
 
-			it("should only inject signature into first tool call for parallel calls", () => {
+			it("should inject signature into ALL tool calls for parallel calls", () => {
 				const handler = new LiteLLMHandler(mockOptions)
 				const injectThoughtSignature = (handler as any).injectThoughtSignatureForGemini.bind(handler)
 
@@ -516,16 +516,17 @@ describe("LiteLLMHandler", () => {
 						tool_calls: [
 							{ id: "call_first", type: "function", function: { name: "tool1", arguments: "{}" } },
 							{ id: "call_second", type: "function", function: { name: "tool2", arguments: "{}" } },
+							{ id: "call_third", type: "function", function: { name: "tool3", arguments: "{}" } },
 						],
 					},
 				]
 
 				const result = injectThoughtSignature(messages)
 
-				// Only first tool call should have the signature
+				// ALL tool calls should have the signature
 				expect(result[1].tool_calls[0].provider_specific_fields.thought_signature).toBe(dummySignature)
-				// Second tool call should not have provider_specific_fields added
-				expect(result[1].tool_calls[1].provider_specific_fields).toBeUndefined()
+				expect(result[1].tool_calls[1].provider_specific_fields.thought_signature).toBe(dummySignature)
+				expect(result[1].tool_calls[2].provider_specific_fields.thought_signature).toBe(dummySignature)
 			})
 
 			it("should preserve existing provider_specific_fields when adding thought_signature", () => {
