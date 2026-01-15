@@ -124,7 +124,8 @@
 			"authenticationRequired": "Roo provider requires cloud authentication. Please sign in to Roo Code Cloud."
 		},
 		"api": {
-			"invalidKeyInvalidChars": "API key contains invalid characters."
+			"invalidKeyInvalidChars": "API key contains invalid characters.",
+			"apiRequestFailed": "API request failed ({{status}})"
 		},
 		"manual_url_empty": "Please enter a valid callback URL",
 		"manual_url_no_query": "Invalid callback URL: missing query parameters",
