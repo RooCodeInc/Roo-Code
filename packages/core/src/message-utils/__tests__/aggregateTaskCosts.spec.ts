@@ -69,7 +69,9 @@ describe("aggregateTaskCostsRecursive", () => {
 		expect(result.childrenCost).toBe(0.5)
 		expect(result.totalCost).toBe(1.5)
 		expect(result.childBreakdown).toHaveProperty("child-1")
-		expect(result.childBreakdown?.["child-1"].totalCost).toBe(0.5)
+		const child1 = result.childBreakdown?.["child-1"]
+		expect(child1).toBeDefined()
+		expect(child1!.totalCost).toBe(0.5)
 	})
 
 	it("should aggregate parent with multiple children", async () => {
@@ -134,14 +136,18 @@ describe("aggregateTaskCostsRecursive", () => {
 		expect(result.totalCost).toBe(1.75)
 
 		// Verify child breakdown
-		expect(result.childBreakdown?.child.ownCost).toBe(0.5)
-		expect(result.childBreakdown?.child.childrenCost).toBe(0.25)
-		expect(result.childBreakdown?.child.totalCost).toBe(0.75)
+		const child = result.childBreakdown?.["child"]
+		expect(child).toBeDefined()
+		expect(child!.ownCost).toBe(0.5)
+		expect(child!.childrenCost).toBe(0.25)
+		expect(child!.totalCost).toBe(0.75)
 
 		// Verify grandchild breakdown
-		expect(result.childBreakdown?.child.childBreakdown?.grandchild.ownCost).toBe(0.25)
-		expect(result.childBreakdown?.child.childBreakdown?.grandchild.childrenCost).toBe(0)
-		expect(result.childBreakdown?.child.childBreakdown?.grandchild.totalCost).toBe(0.25)
+		const grandchild = child!.childBreakdown?.["grandchild"]
+		expect(grandchild).toBeDefined()
+		expect(grandchild!.ownCost).toBe(0.25)
+		expect(grandchild!.childrenCost).toBe(0)
+		expect(grandchild!.totalCost).toBe(0.25)
 	})
 
 	it("should detect and prevent circular references", async () => {
