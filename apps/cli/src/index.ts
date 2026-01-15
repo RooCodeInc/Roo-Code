@@ -2,7 +2,7 @@ import { Command } from "commander"
 
 import { DEFAULT_FLAGS } from "@/types/constants.js"
 import { VERSION } from "@/lib/utils/version.js"
-import { run, login, logout, status } from "@/commands/index.js"
+import { run, login, logout, status, openaiCodexLogin, openaiCodexLogout, openaiCodexStatus } from "@/commands/index.js"
 
 const program = new Command()
 
@@ -60,6 +60,31 @@ authCommand
 	.action(async (options: { verbose: boolean }) => {
 		const result = await status({ verbose: options.verbose })
 		process.exit(result.authenticated ? 0 : 1)
+	})
+
+authCommand
+	.command("openai-codex:login")
+	.description("Authenticate with OpenAI Codex (ChatGPT Plus/Pro)")
+	.option("-v, --verbose", "Enable verbose output", false)
+	.action(async (options: { verbose: boolean }) => {
+		const result = await openaiCodexLogin({ verbose: options.verbose })
+		process.exit(result.success ? 0 : 1)
+	})
+
+authCommand
+	.command("openai-codex:logout")
+	.description("Log out from OpenAI Codex")
+	.action(async () => {
+		await openaiCodexLogout()
+		process.exit(0)
+	})
+
+authCommand
+	.command("openai-codex:status")
+	.description("Show OpenAI Codex authentication status")
+	.action(async () => {
+		await openaiCodexStatus()
+		process.exit(0)
 	})
 
 program.parse()

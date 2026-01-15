@@ -2,22 +2,23 @@ import { RooCodeSettings } from "@roo-code/types"
 
 import type { SupportedProvider } from "@/types/index.js"
 
-const envVarMap: Record<SupportedProvider, string> = {
+const envVarMap: Record<SupportedProvider, string | null> = {
 	anthropic: "ANTHROPIC_API_KEY",
 	"openai-native": "OPENAI_API_KEY",
+	"openai-codex": null, // Uses OAuth, not API key
 	gemini: "GOOGLE_API_KEY",
 	openrouter: "OPENROUTER_API_KEY",
 	"vercel-ai-gateway": "VERCEL_AI_GATEWAY_API_KEY",
 	roo: "ROO_API_KEY",
 }
 
-export function getEnvVarName(provider: SupportedProvider): string {
+export function getEnvVarName(provider: SupportedProvider): string | null {
 	return envVarMap[provider]
 }
 
 export function getApiKeyFromEnv(provider: SupportedProvider): string | undefined {
 	const envVar = getEnvVarName(provider)
-	return process.env[envVar]
+	return envVar ? process.env[envVar] : undefined
 }
 
 export function getProviderSettings(
@@ -34,6 +35,10 @@ export function getProviderSettings(
 			break
 		case "openai-native":
 			if (apiKey) config.openAiNativeApiKey = apiKey
+			if (model) config.apiModelId = model
+			break
+		case "openai-codex":
+			// OpenAI Codex uses OAuth, credentials are handled separately
 			if (model) config.apiModelId = model
 			break
 		case "gemini":

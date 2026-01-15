@@ -3,6 +3,7 @@ import type { ProviderName, ReasoningEffortExtended } from "@roo-code/types"
 export const supportedProviders = [
 	"anthropic",
 	"openai-native",
+	"openai-codex",
 	"gemini",
 	"openrouter",
 	"vercel-ai-gateway",
