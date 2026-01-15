@@ -195,6 +195,77 @@ describe("TelemetryClient", () => {
 
 			expect(result).toEqual({ customProp: "value" })
 		})
+
+		it("should use cached static properties when provider is no longer available", async () => {
+			const client = new TelemetryClient(mockAuthService, mockSettingsService)
+
+			const staticProperties = {
+				appName: "roo-code",
+				appVersion: "1.0.0",
+				vscodeVersion: "1.60.0",
+				platform: "darwin",
+				editorName: "vscode",
+			}
+
+			// Create a mock provider with appProperties
+			const mockProvider: TelemetryPropertiesProvider & { appProperties: any } = {
+				appProperties: staticProperties,
+				getTelemetryProperties: vi.fn().mockResolvedValue({
+					...staticProperties,
+					language: "en",
+					mode: "code",
+				}),
+			}
+
+			// Set the provider (this should cache the static properties)
+			client.setProvider(mockProvider)
+
+			// Verify cached properties were set
+			const cachedProps = getPrivateProperty<any>(client, "cachedStaticProperties")
+			expect(cachedProps).toEqual(staticProperties)
+
+			// Now simulate the provider being garbage collected by setting providerRef to return undefined
+			// We do this by clearing the providerRef directly
+			;(client as any).providerRef = new WeakRef({} as any) // WeakRef to an empty object that will be different
+			// Force the WeakRef to return undefined by overriding deref
+			;(client as any).providerRef = { deref: () => undefined }
+
+			const getEventProperties = getPrivateProperty<
+				(event: { event: TelemetryEventName; properties?: Record<string, any> }) => Promise<Record<string, any>>
+			>(client, "getEventProperties").bind(client)
+
+			const result = await getEventProperties({
+				event: TelemetryEventName.TASK_CREATED,
+				properties: { customProp: "value" },
+			})
+
+			// Should include cached static properties when provider is unavailable
+			expect(result).toEqual({
+				...staticProperties,
+				customProp: "value",
+			})
+		})
+
+		it("should not cache properties when provider does not have appProperties", async () => {
+			const client = new TelemetryClient(mockAuthService, mockSettingsService)
+
+			// Create a mock provider WITHOUT appProperties
+			const mockProvider: TelemetryPropertiesProvider = {
+				getTelemetryProperties: vi.fn().mockResolvedValue({
+					appName: "roo-code",
+					appVersion: "1.0.0",
+					language: "en",
+					mode: "code",
+				}),
+			}
+
+			// Set the provider
+			client.setProvider(mockProvider)
+
+			// Verify cached properties were NOT set (provider doesn't have appProperties)
+			const cachedProps = getPrivateProperty<any>(client, "cachedStaticProperties")
+			expect(cachedProps).toBeNull()
+		})
 	})
 
 	describe("capture", () => {
