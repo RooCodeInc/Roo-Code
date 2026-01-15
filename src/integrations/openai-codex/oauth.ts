@@ -7,7 +7,7 @@ import { z } from "zod"
 /**
  * OpenAI Codex OAuth Configuration
  *
- * Based on the OpenCode implementation guide (PR #7537):
+ * Based on the OpenAI Codex OAuth implementation guide:
  * - ISSUER: https://auth.openai.com
  * - Authorization endpoint: https://auth.openai.com/oauth/authorize
  * - Token endpoint: https://auth.openai.com/oauth/token
@@ -31,7 +31,7 @@ const openAiCodexCredentialsSchema = z.object({
 	type: z.literal("openai-codex"),
 	access_token: z.string().min(1),
 	refresh_token: z.string().min(1),
-	// expires is in milliseconds since epoch (per OpenCode refactor)
+	// expires is in milliseconds since epoch
 	expires: z.number(),
 	email: z.string().optional(),
 	// ChatGPT account ID extracted from JWT claims (for ChatGPT-Account-Id header)
@@ -52,7 +52,6 @@ const tokenResponseSchema = z.object({
 
 /**
  * JWT claims structure for extracting ChatGPT account ID
- * Based on OpenCode implementation
  */
 interface IdTokenClaims {
 	chatgpt_account_id?: string
@@ -81,7 +80,7 @@ function parseJwtClaims(token: string): IdTokenClaims | undefined {
 
 /**
  * Extract ChatGPT account ID from JWT claims
- * Checks multiple locations per OpenCode implementation:
+ * Checks multiple locations:
  * 1. Root-level chatgpt_account_id
  * 2. Nested under https://api.openai.com/auth
  * 3. First organization ID
@@ -210,9 +209,9 @@ export function buildAuthorizationUrl(codeChallenge: string, state: string): str
 		code_challenge_method: "S256",
 		response_type: "code",
 		state,
-		// Codex-specific parameters (per OpenCode implementation guide)
+		// Codex-specific parameters
 		codex_cli_simplified_flow: "true",
-		originator: "roocode",
+		originator: "roo-code",
 	})
 
 	return `${OPENAI_CODEX_OAUTH_CONFIG.authorizationEndpoint}?${params.toString()}`
@@ -258,7 +257,7 @@ export async function exchangeCodeForTokens(code: string, codeVerifier: string):
 	// Per the implementation guide: expires is in milliseconds since epoch
 	const expiresAt = Date.now() + tokenResponse.expires_in * 1000
 
-	// Extract ChatGPT account ID from JWT claims (per OpenCode implementation)
+	// Extract ChatGPT account ID from JWT claims
 	const accountId = extractAccountId({
 		id_token: tokenResponse.id_token,
 		access_token: tokenResponse.access_token,

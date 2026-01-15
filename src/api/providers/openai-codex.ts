@@ -88,8 +88,9 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
-		// Generate a unique session ID for this handler instance using UUIDv7
-		this.sessionId = uuidv7()
+		// Use session ID from options if provided (stable across handler rebuilds within a Task),
+		// otherwise generate a new one (for standalone handler usage)
+		this.sessionId = options.openAiCodexSessionId ?? uuidv7()
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiCodexModel): ApiStreamUsageChunk | undefined {
@@ -342,7 +343,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			// Prefer OpenAI SDK streaming (same approach as openai-native) so event handling
 			// is consistent across providers.
 			try {
-				// Get ChatGPT account ID for organization subscriptions (per OpenCode implementation)
+				// Get ChatGPT account ID for organization subscriptions
 				const accountId = await openAiCodexOAuthManager.getAccountId()
 
 				// Build Codex-specific headers. Authorization is provided by the SDK apiKey.
@@ -475,7 +476,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		// Per the implementation guide: route to Codex backend with Bearer token
 		const url = `${CODEX_API_BASE_URL}/responses`
 
-		// Get ChatGPT account ID for organization subscriptions (per OpenCode implementation)
+		// Get ChatGPT account ID for organization subscriptions
 		const accountId = await openAiCodexOAuthManager.getAccountId()
 
 		// Build headers with required Codex-specific fields
