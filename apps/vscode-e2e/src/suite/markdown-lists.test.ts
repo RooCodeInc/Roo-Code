@@ -35,16 +35,25 @@ suite("Markdown List Rendering", function () {
 		assert.ok(allText.includes("Banana"), "Response should mention Banana")
 		assert.ok(allText.includes("Orange"), "Response should mention Orange")
 
-		// OPTIONAL: Check for list formatting (log but don't fail)
+		// SOFT ASSERTION: Validate at least one common list format is present
+		// Flexible about which format (dash, asterisk, or bullet) but requires some list formatting
 		const hasListFormat =
 			allText.includes("- ") || allText.includes("* ") || allText.includes("• ") || allText.match(/^\s*[-*•]/m)
 
+		// Log which format was detected for debugging
 		if (hasListFormat) {
 			console.log("✓ AI used list formatting")
 		} else {
 			console.log("⚠ AI did not use traditional list formatting")
 			console.log("Response format:", allText.substring(0, 200))
 		}
+
+		// Assert that at least one list format is present (soft assertion - flexible about which format)
+		assert.ok(
+			hasListFormat,
+			"Response should contain at least one list format (dash, asterisk, or bullet). " +
+				"The test is flexible about which format is used, but requires some list formatting.",
+		)
 	})
 
 	test("Should render ordered lists with numbers in chat", async () => {
