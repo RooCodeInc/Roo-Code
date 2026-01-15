@@ -1,7 +1,7 @@
 import React, { useState, useCallback, memo, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { VSCodeButton } from "@vscode/webview-ui-toolkit/react"
-import { BookOpenText, MessageCircleWarning, Copy, Check, Microscope, Info } from "lucide-react"
+import { BookOpenText, MessageCircleWarning, Copy, Check, Microscope, Info, Send } from "lucide-react"
 
 import { useCopyToClipboard } from "@src/utils/clipboard"
 import { vscode } from "@src/utils/vscode"
@@ -94,8 +94,9 @@ export const ErrorRow = memo(
 		const [showCopySuccess, setShowCopySuccess] = useState(false)
 		const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false)
 		const [showDetailsCopySuccess, setShowDetailsCopySuccess] = useState(false)
+		const [showSendSuccess, setShowSendSuccess] = useState(false)
 		const { copyWithFeedback } = useCopyToClipboard()
-		const { version, apiConfiguration } = useExtensionState()
+		const { version, apiConfiguration, cloudIsAuthenticated, cloudApiUrl } = useExtensionState()
 		const { provider, id: modelId } = useSelectedModel(apiConfiguration)
 
 		const usesProxy = PROVIDERS.find((p) => p.value === provider)?.proxy ?? false
@@ -131,6 +132,28 @@ export const ErrorRow = memo(
 				})
 			},
 			[version, provider, modelId, errorDetails],
+		)
+
+		const handleSendToSupport = useCallback(
+			(e: React.MouseEvent) => {
+				e.stopPropagation()
+				vscode.postMessage({
+					type: "sendErrorToSupport",
+					values: {
+						timestamp: new Date().toISOString(),
+						version,
+						provider,
+						model: modelId,
+						details: errorDetails || "",
+						cloudApiUrl,
+					},
+				})
+				setShowSendSuccess(true)
+				setTimeout(() => {
+					setShowSendSuccess(false)
+				}, 2000)
+			},
+			[version, provider, modelId, errorDetails, cloudApiUrl],
 		)
 
 		// Default titles for different error types
@@ -307,6 +330,21 @@ export const ErrorRow = memo(
 								)}
 							</div>
 							<DialogFooter>
+								{cloudIsAuthenticated && (
+									<Button variant="secondary" className="w-full" onClick={handleSendToSupport}>
+										{showSendSuccess ? (
+											<>
+												<Check className="size-3" />
+												{t("chat:errorDetails.sent")}
+											</>
+										) : (
+											<>
+												<Send className="size-3" />
+												{t("chat:errorDetails.sendToSupport")}
+											</>
+										)}
+									</Button>
+								)}
 								<Button variant="secondary" className="w-full" onClick={handleCopyDetails}>
 									{showDetailsCopySuccess ? (
 										<>

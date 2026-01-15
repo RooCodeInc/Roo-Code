@@ -507,6 +507,7 @@ export interface WebviewMessage {
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
 		| "downloadErrorDiagnostics"
+		| "sendErrorToSupport"
 		| "requestClaudeCodeRateLimits"
 		| "refreshCustomTools"
 		| "requestModes"

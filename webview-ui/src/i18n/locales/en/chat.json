@@ -304,6 +304,8 @@
 		"copyToClipboard": "Copy basic error info",
 		"copied": "Copied!",
 		"diagnostics": "Get detailed error info",
+		"sendToSupport": "Send details to Roo Code support",
+		"sent": "Sent!",
 		"proxyProvider": "You seem to be using a proxy-based provider. Make sure to check its logs and to ensure it's not rewriting Roo's requests."
 	},
 	"diffError": {

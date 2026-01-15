@@ -13,11 +13,15 @@ vi.mock("@/utils/vscode", () => ({
 }))
 
 // Mock ExtensionState context
+const mockExtensionState = {
+	version: "1.0.0",
+	apiConfiguration: {},
+	cloudIsAuthenticated: false,
+	cloudApiUrl: "https://app.roocode.com",
+}
+
 vi.mock("@/context/ExtensionStateContext", () => ({
-	useExtensionState: () => ({
-		version: "1.0.0",
-		apiConfiguration: {},
-	}),
+	useExtensionState: () => mockExtensionState,
 }))
 
 // Mock selected model hook
@@ -38,6 +42,8 @@ vi.mock("react-i18next", () => ({
 				"chat:errorDetails.copyToClipboard": "Copy to Clipboard",
 				"chat:errorDetails.copied": "Copied!",
 				"chat:errorDetails.diagnostics": "Get detailed error info",
+				"chat:errorDetails.sendToSupport": "Send details to Roo Code support",
+				"chat:errorDetails.sent": "Sent!",
 			}
 			return map[key] ?? key
 		},
@@ -75,6 +81,67 @@ describe("ErrorRow diagnostics download", () => {
 			version: "1.0.0",
 			provider: "test-provider",
 			model: "test-model",
+		})
+		// Timestamp is generated at runtime, but should be a string
+		expect(typeof payload.values.timestamp).toBe("string")
+	})
+
+	it("does not show send to support button when user is not authenticated", () => {
+		mockExtensionState.cloudIsAuthenticated = false
+
+		render(<ErrorRow type="error" message="Something went wrong" errorDetails="Detailed error body" />)
+
+		// Open the Error Details dialog via the info button
+		const infoButton = screen.getByRole("button", { name: "Error Details" })
+		fireEvent.click(infoButton)
+
+		// The send to support button should not be present
+		const sendButton = screen.queryByRole("button", { name: "Send details to Roo Code support" })
+		expect(sendButton).not.toBeInTheDocument()
+	})
+
+	it("shows send to support button when user is authenticated", () => {
+		mockExtensionState.cloudIsAuthenticated = true
+
+		render(<ErrorRow type="error" message="Something went wrong" errorDetails="Detailed error body" />)
+
+		// Open the Error Details dialog via the info button
+		const infoButton = screen.getByRole("button", { name: "Error Details" })
+		fireEvent.click(infoButton)
+
+		// The send to support button should be present
+		const sendButton = screen.getByRole("button", { name: "Send details to Roo Code support" })
+		expect(sendButton).toBeInTheDocument()
+	})
+
+	it("sends sendErrorToSupport message when authenticated user clicks send to support button", () => {
+		mockExtensionState.cloudIsAuthenticated = true
+		const mockPostMessage = vi.mocked(vscode.postMessage)
+
+		render(<ErrorRow type="error" message="Something went wrong" errorDetails="Detailed error body" />)
+
+		// Open the Error Details dialog via the info button
+		const infoButton = screen.getByRole("button", { name: "Error Details" })
+		fireEvent.click(infoButton)
+
+		// Click the send to support button
+		const sendButton = screen.getByRole("button", { name: "Send details to Roo Code support" })
+		fireEvent.click(sendButton)
+
+		expect(mockPostMessage).toHaveBeenCalled()
+		const call = mockPostMessage.mock.calls.find(([arg]) => arg.type === "sendErrorToSupport")
+		expect(call).toBeTruthy()
+		if (!call) return
+
+		const payload = call[0] as { type: string; values?: any }
+		expect(payload.values).toBeTruthy()
+		if (!payload.values) return
+
+		expect(payload.values).toMatchObject({
+			version: "1.0.0",
+			provider: "test-provider",
+			model: "test-model",
+			cloudApiUrl: "https://app.roocode.com",
 		})
 		// Timestamp is generated at runtime, but should be a string
 		expect(typeof payload.values.timestamp).toBe("string")

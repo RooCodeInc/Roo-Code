@@ -3310,6 +3310,78 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "sendErrorToSupport": {
+			const currentTask = provider.getCurrentTask()
+			if (!currentTask) {
+				vscode.window.showErrorMessage("No active task to send error details")
+				break
+			}
+
+			try {
+				// Get the cloud API URL from the message values
+				const cloudApiUrl =
+					message.values?.cloudApiUrl || process.env.ROO_CODE_CLOUD_URL || "https://app.roocode.com"
+				const contactEndpoint = `${cloudApiUrl}/api/contact/issue`
+
+				// Prepare the error details JSON
+				const errorData = {
+					timestamp: message.values?.timestamp || new Date().toISOString(),
+					version: message.values?.version || "",
+					provider: message.values?.provider || "",
+					model: message.values?.model || "",
+					details: message.values?.details || "",
+					taskId: currentTask.taskId,
+				}
+
+				// Create a FormData-like structure
+				const errorJson = JSON.stringify(errorData, null, 2)
+				const boundary = `----RooCodeBoundary${Date.now()}`
+
+				const body = [
+					`--${boundary}`,
+					'Content-Disposition: form-data; name="file"; filename="error-details.json"',
+					"Content-Type: application/json",
+					"",
+					errorJson,
+					`--${boundary}--`,
+				].join("\r\n")
+
+				// Get the session token from CloudService
+				const sessionToken = CloudService.hasInstance()
+					? CloudService.instance.authService?.getSessionToken()
+					: undefined
+
+				if (!sessionToken) {
+					vscode.window.showErrorMessage("You must be logged in to send error details to support")
+					break
+				}
+
+				// Make the authenticated POST request
+				const response = await fetch(contactEndpoint, {
+					method: "POST",
+					headers: {
+						Authorization: `Bearer ${sessionToken}`,
+						"Content-Type": `multipart/form-data; boundary=${boundary}`,
+					},
+					body: body,
+				})
+
+				if (response.ok) {
+					vscode.window.showInformationMessage("Error details sent to Roo Code support successfully")
+				} else {
+					const errorText = await response.text()
+					provider.log(`Failed to send error details to support: ${response.status} ${errorText}`)
+					vscode.window.showErrorMessage("Failed to send error details to support. Please try again later.")
+				}
+			} catch (error) {
+				provider.log(
+					`Error sending error details to support: ${error instanceof Error ? error.message : String(error)}`,
+				)
+				vscode.window.showErrorMessage("Failed to send error details to support. Please try again later.")
+			}
+			break
+		}
+
 		default: {
 			// console.log(`Unhandled message type: ${message.type}`)
 			//
