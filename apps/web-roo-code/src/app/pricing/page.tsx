@@ -97,7 +97,7 @@ const pricingTiers: PricingTier[] = [
 		description: "For AI-forward engineers",
 		featuresIntro: "Go beyond the extension with",
 		features: [
-			"Access to Cloud Agents: fully autonomous development you can call from Slack, Github and the web",
+			"Access to Cloud Agents: fully autonomous development you can kick off from Github and the web",
 			"Access to the Roo Code Router",
 			"Follow your tasks from anywhere",
 			"Share tasks with friends and co-workers",
@@ -119,7 +119,12 @@ const pricingTiers: PricingTier[] = [
 		trial: "Free for 14 days, then",
 		description: "For AI-forward teams",
 		featuresIntro: "Everything in Free +",
-		features: ["Unlimited users (no per-seat cost)", "Shared configuration & policies", "Centralized billing"],
+		features: [
+			"Unlimited users (no per-seat cost)",
+			"Shared configuration & policies",
+			"Centralized billing",
+			"Slack and Linear integrations",
+		],
 		cta: {
 			text: "Sign up",
 			href: EXTERNAL_LINKS.CLOUD_APP_SIGNUP + "?redirect_url=/billing",

@@ -1,5 +1,38 @@
 # Roo Code Changelog
 
+## [3.41.0] - 2026-01-15
+
+![3.41.0 Release - OpenAI - ChatGPT Plus/Pro Provider](/releases/3.41.0-release.png)
+
+- Add OpenAI - ChatGPT Plus/Pro Provider that gives subscription-based access to Codex models without per-token costs (PR #10736 by @hannesrudolph)
+- Add gpt-5.2-codex model to openai-native provider, providing access to the latest GPT model with enhanced coding capabilities (PR #10731 by @hannesrudolph)
+- Fix: Clear terminal output buffers to prevent memory leaks that could cause gray screens and performance degradation (#10666, PR #7666 by @hannesrudolph)
+- Fix: Inject dummy thought signatures on ALL tool calls for Gemini models, resolving issues with Gemini tool call handling through LiteLLM (PR #10743 by @daniel-lxs)
+- Enable E2E tests with 39 passing tests, improving test coverage and reliability (PR #10720 by @ArchimedesCrypto)
+- Add alwaysAllow config for MCP time server tools in E2E tests (PR #10733 by @ArchimedesCrypto)
+
+## [3.40.1] - 2026-01-13
+
+- Fix: Add allowedFunctionNames support for Gemini to prevent mode switch errors (#10711 by @hannesrudolph, PR #10708 by @hannesrudolph)
+
+## [3.40.0] - 2026-01-13
+
+![3.40.0 Release - Settings Search](/releases/3.40.0-release.png)
+
+- Add settings search functionality to quickly find and navigate to specific settings (PR #10619 by @mrubens)
+- Improve settings search UI with better styling and usability (PR #10633 by @brunobergher)
+- Add standardized stop button for improved task cancellation visibility (PR #10639 by @brunobergher)
+- Display edit_file errors in UI after consecutive failures for better debugging feedback (PR #10581 by @daniel-lxs)
+- Improve error display styling and visibility in chat messages (PR #10692 by @brunobergher)
+- Improve stop button visibility and streamline error handling (PR #10696 by @brunobergher)
+- Fix: Omit parallel_tool_calls when not explicitly enabled to prevent API errors (#10553 by @Idlebrand, PR #10671 by @daniel-lxs)
+- Fix: Encode hyphens in MCP tool names before sanitization (#10642 by @pdecat, PR #10644 by @pdecat)
+- Fix: Correct Gemini 3 thought signature injection format via OpenRouter (PR #10640 by @daniel-lxs)
+- Fix: Sanitize tool_use IDs to match API validation pattern (PR #10649 by @daniel-lxs)
+- Fix: Use placeholder for empty tool result content to fix Gemini API validation (PR #10672 by @daniel-lxs)
+- Fix: Return empty string from getReadablePath when path is empty (PR #10638 by @daniel-lxs)
+- Optimize message block cloning in presentAssistantMessage for better performance (PR #10616 by @ArchimedesCrypto)
+
 ## [3.39.3] - 2026-01-10
 
 ![3.39.3 Release - Roo Code Router](/releases/3.39.3-release.png)

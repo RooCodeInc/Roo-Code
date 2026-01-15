@@ -77,7 +77,7 @@ const howItWorks = [
 	{
 		title: "3. Start giving them tasks",
 		description:
-			"Describe what you want them to do from the web UI, get the Reviewer automatically reviewing PRs, get the Coder building features from Slack threads and much more. They're now part of your team.",
+			"Describe what you want them to do from the web UI, get the Reviewer automatically reviewing PRs, and much more. They're now part of your team.",
 		icon: Pencil,
 	},
 ]
@@ -114,8 +114,7 @@ const features: Feature[] = [
 	{
 		icon: Router,
 		title: "Roomote Control",
-		description:
-			"Connect to your local VS Code instance and control the extension remotely from the browser or Slack.",
+		description: "Connect to your local VS Code instance and control the extension remotely from the browser.",
 	},
 	{
 		icon: Users,
@@ -153,7 +152,7 @@ export default function CloudPage() {
 						</h1>
 						<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
 							Create your agent team in the Cloud, give them access to GitHub, and start delegating tasks
-							from Web and Slack.
+							from the web, Slack, Linear, and more.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
 							<Button

@@ -82,10 +82,15 @@
 		"title": "Sonlandır",
 		"tooltip": "Mevcut görevi sonlandır"
 	},
+	"stop": {
+		"title": "Durdur",
+		"tooltip": "Mevcut görevi durdur"
+	},
 	"cancel": {
 		"title": "İptal",
 		"tooltip": "Mevcut işlemi iptal et"
 	},
+	"enqueueMessage": "Mesajı kuyruğa ekle (mevcut görev tamamlandıktan sonra gönderilecek)",
 	"scrollToBottom": "Sohbetin altına kaydır",
 	"about": "Roo Code, düzenleyicinizdeki bütün bir yapay zeka geliştirme ekibidir.",
 	"docs": "Daha fazla bilgi için <DocsLink>belgelerimize</DocsLink> göz atın.",
@@ -272,7 +277,8 @@
 		"title": "Hata Detayları",
 		"copyToClipboard": "Panoya Kopyala",
 		"copied": "Kopyalandı!",
-		"diagnostics": "Ayrıntılı hata bilgisi al"
+		"diagnostics": "Ayrıntılı hata bilgisi al",
+		"proxyProvider": "Proxy tabanlı bir sağlayıcı kullanıyor gibi görünüyorsun. Günlüklerini kontrol ettiğinden ve Roo'nun isteklerini yeniden yazmadığından emin ol."
 	},
 	"powershell": {
 		"issues": "Windows PowerShell ile ilgili sorunlar yaşıyor gibi görünüyorsunuz, lütfen şu konuya bakın"
@@ -330,9 +336,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"stickyProfiles": "Yapışkan Sağlayıcı Profilleri - Görevler artık API yapılandırmalarını hatırlıyor, bu nedenle oturum ortasında profil değiştirmek çalışan görevleri etkilemez.",
-			"imageMentions": "Görüntü Dosyası @Mentions - Bağlamınıza dahil etmek için @mentions kullanarak sohbette doğrudan görüntülere başvurun.",
-			"brrrMode": "YOLO artık BRRR - Her şeyi otomatik onaylama \"YOLO\"dan \"BRRR\" olarak yeniden adlandırıldı. Tabii ki."
+			"openaiCodexProvider": "Codex modellerine abonelik tabanlı erişim sağlayan OpenAI - ChatGPT Plus/Pro Sağlayıcısı eklendi, token başına maliyet yok.",
+			"gpt52codexModel": "Yeni gpt-5.2-codex modeli Roo Code Router, standart OpenAI sağlayıcısı ve diğerlerine eklendi.",
+			"bugFixes": "Gri ekranlara neden olan bellek sızıntıları, Gemini düşünce imzası sorunları ve diğer stabilite iyileştirmeleri düzeltildi."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

@@ -82,10 +82,15 @@
 		"title": "Beenden",
 		"tooltip": "Aktuelle Aufgabe beenden"
 	},
+	"stop": {
+		"title": "Stoppen",
+		"tooltip": "Aktuelle Aufgabe stoppen"
+	},
 	"cancel": {
 		"title": "Abbrechen",
 		"tooltip": "Aktuelle Operation abbrechen"
 	},
+	"enqueueMessage": "Nachricht zur Warteschlange hinzufügen (wird nach Abschluss der aktuellen Aufgabe gesendet)",
 	"scrollToBottom": "Zum Chat-Ende scrollen",
 	"about": "Roo Code ist ein ganzes KI-Entwicklerteam in deinem Editor.",
 	"docs": "Schau in unsere <DocsLink>Dokumentation</DocsLink>, um mehr zu erfahren.",
@@ -271,7 +276,8 @@
 		"title": "Fehlerdetails",
 		"copyToClipboard": "In Zwischenablage kopieren",
 		"copied": "Kopiert!",
-		"diagnostics": "Detaillierte Fehlerinformationen abrufen"
+		"diagnostics": "Detaillierte Fehlerinformationen abrufen",
+		"proxyProvider": "Du scheinst einen Proxy-basierten Anbieter zu verwenden. Überprüfe unbedingt seine Protokolle und stelle sicher, dass er Roos Anfragen nicht umschreibt."
 	},
 	"powershell": {
 		"issues": "Es scheint, dass du Probleme mit Windows PowerShell hast, bitte sieh dir dies an"
@@ -329,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"stickyProfiles": "Sticky Provider-Profile - Aufgaben merken sich jetzt ihre API-Konfiguration, daher wirkt sich ein Profilwechsel während einer Sitzung nicht auf laufende Aufgaben aus.",
-			"imageMentions": "Bilddatei @-Mentions - Referenziere Bilder direkt im Chat mit @ Mentions, um sie in deinen Kontext einzubeziehen.",
-			"brrrMode": "YOLO ist jetzt BRRR - Die automatische Genehmigung von allem wurde von \"YOLO\" in \"BRRR\" umbenannt. Natürlich."
+			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider hinzugefügt, der abonnementbasierten Zugriff auf Codex Modelle ohne Pro-Token-Kosten bietet.",
+			"gpt52codexModel": "Das neue gpt-5.2-codex Modell wurde dem Roo Code Router, dem Standard OpenAI Provider und mehr hinzugefügt.",
+			"bugFixes": "Speicherlecks, die graue Bildschirme verursachten, Gemini-Gedanken-Signatur-Probleme und weitere Stabilitätsverbesserungen behoben."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",

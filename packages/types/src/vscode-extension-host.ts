@@ -327,6 +327,7 @@ export type ExtensionState = Pick<
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
 	claudeCodeIsAuthenticated?: boolean
+	openAiCodexIsAuthenticated?: boolean
 	debug?: boolean
 }
 
@@ -457,6 +458,8 @@ export interface WebviewMessage {
 		| "rooCloudManualUrl"
 		| "claudeCodeSignIn"
 		| "claudeCodeSignOut"
+		| "openAiCodexSignIn"
+		| "openAiCodexSignOut"
 		| "switchOrganization"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"

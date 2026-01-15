@@ -82,10 +82,15 @@
 		"title": "Zakończ",
 		"tooltip": "Zakończ bieżące zadanie"
 	},
+	"stop": {
+		"title": "Zatrzymaj",
+		"tooltip": "Zatrzymaj bieżące zadanie"
+	},
 	"cancel": {
 		"title": "Anuluj",
 		"tooltip": "Anuluj bieżącą operację"
 	},
+	"enqueueMessage": "Dodaj wiadomość do kolejki (zostanie wysłana po zakończeniu bieżącego zadania)",
 	"scrollToBottom": "Przewiń do dołu czatu",
 	"about": "Roo Code to cały zespół deweloperów AI w Twoim edytorze.",
 	"docs": "Sprawdź naszą <DocsLink>dokumentację</DocsLink>, aby dowiedzieć się więcej.",
@@ -271,7 +276,8 @@
 		"title": "Szczegóły błędu",
 		"copyToClipboard": "Kopiuj do schowka",
 		"copied": "Skopiowano!",
-		"diagnostics": "Uzyskaj szczegółowe informacje o błędzie"
+		"diagnostics": "Uzyskaj szczegółowe informacje o błędzie",
+		"proxyProvider": "Wygląda na to, że używasz dostawcy opartego na proxy. Pamiętaj, aby sprawdzić jego dzienniki i upewnić się, że nie przepisuje żądań Roo."
 	},
 	"powershell": {
 		"issues": "Wygląda na to, że masz problemy z Windows PowerShell, proszę zapoznaj się z tym"
@@ -329,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Co nowego:",
-			"stickyProfiles": "Lepkie profile dostawcy - Zadania teraz pamiętają ich konfigurację API, więc przełączanie profili w trakcie sesji nie wpływa na uruchomione zadania.",
-			"imageMentions": "Wzmianki o plikach obrazu @mentions - Odnieś się bezpośrednio do obrazów w czacie, korzystając z @mentions, aby uwzględnić je w swoim kontekście.",
-			"brrrMode": "YOLO to teraz BRRR - Automatyczne zatwierdzanie wszystkiego zostało przemianowane z \"YOLO\" na \"BRRR\". Oczywiście."
+			"openaiCodexProvider": "Dodano dostawcę OpenAI - ChatGPT Plus/Pro, który zapewnia dostęp oparty na subskrypcji do modeli Codex bez kosztów per-token.",
+			"gpt52codexModel": "Nowy model gpt-5.2-codex został dodany do Roo Code Router, standardowego dostawcy OpenAI i więcej.",
+			"bugFixes": "Naprawiono wycieki pamięci powodujące szare ekrany, problemy z podpisami myśli Gemini i inne ulepszenia stabilności."
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",

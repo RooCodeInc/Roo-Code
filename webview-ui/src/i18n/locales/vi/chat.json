@@ -82,10 +82,15 @@
 		"title": "Kết thúc",
 		"tooltip": "Kết thúc nhiệm vụ hiện tại"
 	},
+	"stop": {
+		"title": "Dừng",
+		"tooltip": "Dừng nhiệm vụ hiện tại"
+	},
 	"cancel": {
 		"title": "Hủy",
 		"tooltip": "Hủy thao tác hiện tại"
 	},
+	"enqueueMessage": "Thêm tin nhắn vào hàng đợi (sẽ gửi sau khi nhiệm vụ hiện tại hoàn tất)",
 	"scrollToBottom": "Cuộn xuống cuối cuộc trò chuyện",
 	"about": "Roo Code là một đội ngũ phát triển AI đầy đủ trong trình chỉnh sửa của bạn.",
 	"docs": "Kiểm tra <DocsLink>tài liệu</DocsLink> của chúng tôi để tìm hiểu thêm.",
@@ -272,7 +277,8 @@
 		"title": "Chi tiết lỗi",
 		"copyToClipboard": "Sao chép vào clipboard",
 		"copied": "Đã sao chép!",
-		"diagnostics": "Nhận thông tin lỗi chi tiết"
+		"diagnostics": "Nhận thông tin lỗi chi tiết",
+		"proxyProvider": "Có vẻ bạn đang sử dụng nhà cung cấp dựa trên proxy. Hãy chắc chắn kiểm tra các nhật ký của nó và đảm bảo nó không viết lại các yêu cầu của Roo."
 	},
 	"powershell": {
 		"issues": "Có vẻ như bạn đang gặp vấn đề với Windows PowerShell, vui lòng xem"
@@ -330,9 +336,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"stickyProfiles": "Hồ sơ nhà cung cấp dính - Các tác vụ hiện nhớ cấu hình API của chúng, vì vậy việc chuyển đổi hồ sơ giữa phiên không ảnh hưởng đến các tác vụ đang chạy.",
-			"imageMentions": "Đề cập @image files - Tham chiếu hình ảnh trực tiếp trong trò chuyện bằng cách sử dụng @mentions để đưa chúng vào ngữ cảnh của bạn.",
-			"brrrMode": "YOLO giờ là BRRR - Phê duyệt tự động mọi thứ đã được đổi tên từ \"YOLO\" thành \"BRRR\". Rõ ràng rồi."
+			"openaiCodexProvider": "Đã thêm nhà cung cấp OpenAI - ChatGPT Plus/Pro cung cấp quyền truy cập dựa trên đăng ký vào các mô hình Codex mà không có chi phí trên mỗi token.",
+			"gpt52codexModel": "Mô hình gpt-5.2-codex mới được thêm vào Roo Code Router, nhà cung cấp OpenAI tiêu chuẩn và nhiều hơn nữa.",
+			"bugFixes": "Đã sửa các rò rỉ bộ nhớ gây ra màn hình xám, các vấn đề về chữ ký suy nghĩ Gemini và các cải thiện ổn định khác."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

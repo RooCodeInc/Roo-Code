@@ -82,10 +82,15 @@
 		"title": "Termina",
 		"tooltip": "Termina l'attività corrente"
 	},
+	"stop": {
+		"title": "Ferma",
+		"tooltip": "Ferma l'attività corrente"
+	},
 	"cancel": {
 		"title": "Annulla",
 		"tooltip": "Annulla l'operazione corrente"
 	},
+	"enqueueMessage": "Aggiungi il messaggio alla coda (sarà inviato dopo che l'attività corrente sarà terminata)",
 	"scrollToBottom": "Scorri fino alla fine della chat",
 	"about": "Roo Code è un intero team di sviluppo AI nel tuo editor.",
 	"docs": "Consulta la nostra <DocsLink>documentazione</DocsLink> per saperne di più.",
@@ -271,7 +276,8 @@
 		"title": "Dettagli errore",
 		"copyToClipboard": "Copia negli appunti",
 		"copied": "Copiato!",
-		"diagnostics": "Ottieni informazioni errore dettagliate"
+		"diagnostics": "Ottieni informazioni errore dettagliate",
+		"proxyProvider": "Sembra che tu stia utilizzando un provider basato su proxy. Assicurati di controllarne i log e di verificare che non stia riscrivendo le richieste di Roo."
 	},
 	"powershell": {
 		"issues": "Sembra che tu stia avendo problemi con Windows PowerShell, consulta questa"
@@ -329,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Novità:",
-			"stickyProfiles": "Profili provider persistenti - Le attività ora ricordano la loro configurazione API, quindi cambiare profilo a metà sessione non influisce sulle attività in esecuzione.",
-			"imageMentions": "Menzioni di file immagine - Fai riferimento alle immagini direttamente nella chat usando le menzioni @ per includerle nel tuo contesto.",
-			"brrrMode": "YOLO ora è BRRR - L'approvazione automatica di tutto è stata rinominata da \"YOLO\" a \"BRRR\". Ovviamente."
+			"openaiCodexProvider": "Aggiunto il Provider OpenAI - ChatGPT Plus/Pro che offre accesso basato su abbonamento ai modelli Codex senza costi per token.",
+			"gpt52codexModel": "Aggiunto il nuovo modello gpt-5.2-codex a Roo Code Router, al provider OpenAI standard e altro.",
+			"bugFixes": "Corretti memory leak che causavano schermi grigi, problemi di firma del pensiero Gemini e altri miglioramenti di stabilità."
 		},
 		"cloudAgents": {
 			"heading": "Novità nel Cloud:",

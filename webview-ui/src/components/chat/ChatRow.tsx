@@ -1132,14 +1132,16 @@ export const ChatRowContent = ({
 									// }
 								} else {
 									body = t("chat:apiRequest.errorMessage.unknown")
-									docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
+									docsURL =
+										"mailto:support@roocode.com?subject=Unknown API Error&body=[Please include full error details]"
 								}
 							} else if (message.text.indexOf("Connection error") === 0) {
 								body = t("chat:apiRequest.errorMessage.connection")
 							} else {
 								// Non-HTTP-status-code error message - store full text as errorDetails
 								body = t("chat:apiRequest.errorMessage.unknown")
-								docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
+								docsURL =
+									"mailto:support@roocode.com?subject=Unknown API Error&body=[Please include full error details]"
 							}
 						}
 
@@ -1336,7 +1338,9 @@ export const ChatRowContent = ({
 					}
 
 					// Fallback for generic errors
-					return <ErrorRow type="error" message={message.text || t("chat:error")} />
+					return (
+						<ErrorRow type="error" message={message.text || t("chat:error")} errorDetails={message.text} />
+					)
 				case "completion_result":
 					return (
 						<>
@@ -1526,7 +1530,7 @@ export const ChatRowContent = ({
 		case "ask":
 			switch (message.ask) {
 				case "mistake_limit_reached":
-					return <ErrorRow type="mistake_limit" message={message.text || ""} />
+					return <ErrorRow type="mistake_limit" message={message.text || ""} errorDetails={message.text} />
 				case "command":
 					return (
 						<CommandExecution

@@ -82,10 +82,15 @@
 		"title": "Terminer",
 		"tooltip": "Terminer la tâche actuelle"
 	},
+	"stop": {
+		"title": "Arrêter",
+		"tooltip": "Arrêter la tâche en cours"
+	},
 	"cancel": {
 		"title": "Annuler",
 		"tooltip": "Annuler l'opération actuelle"
 	},
+	"enqueueMessage": "Ajouter le message à la file d'attente (sera envoyé après la fin de la tâche en cours)",
 	"scrollToBottom": "Défiler jusqu'au bas du chat",
 	"about": "Roo Code est une équipe complète de développeurs IA dans votre éditeur.",
 	"docs": "Consultez notre <DocsLink>documentation</DocsLink> pour en savoir plus.",
@@ -271,7 +276,8 @@
 		"title": "Détails de l'erreur",
 		"copyToClipboard": "Copier dans le presse-papiers",
 		"copied": "Copié !",
-		"diagnostics": "Obtenir les détails de l'erreur"
+		"diagnostics": "Obtenir les détails de l'erreur",
+		"proxyProvider": "Il semble que tu utilises un fournisseur basé sur un proxy. Assure-toi de vérifier ses journaux et de t'assurer qu'il ne réécrit pas les demandes de Roo."
 	},
 	"powershell": {
 		"issues": "Il semble que vous rencontriez des problèmes avec Windows PowerShell, veuillez consulter ce"
@@ -329,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"stickyProfiles": "Profils de fournisseur persistants - Les tâches se souviennent maintenant de leur configuration API, donc changer de profil en cours de session n'affecte pas les tâches en cours d'exécution.",
-			"imageMentions": "Mentions de fichiers d'image - Référencez les images directement dans le chat en utilisant les mentions @ pour les inclure dans votre contexte.",
-			"brrrMode": "YOLO est maintenant BRRR - L'approbation automatique de tout a été renommée de \"YOLO\" en \"BRRR\". Évidemment."
+			"openaiCodexProvider": "Ajout du Fournisseur OpenAI - ChatGPT Plus/Pro qui offre un accès basé sur abonnement aux modèles Codex sans frais par token.",
+			"gpt52codexModel": "Ajout du nouveau modèle gpt-5.2-codex au Roo Code Router, au fournisseur OpenAI standard et bien d'autres.",
+			"bugFixes": "Correction des fuites mémoire causant des écrans gris, problèmes de signature de pensée Gemini et autres améliorations de stabilité."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",

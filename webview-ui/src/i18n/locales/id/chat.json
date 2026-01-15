@@ -96,10 +96,15 @@
 		"title": "Hentikan",
 		"tooltip": "Akhiri tugas saat ini"
 	},
+	"stop": {
+		"title": "Stop",
+		"tooltip": "Hentikan tugas saat ini"
+	},
 	"cancel": {
 		"title": "Batal",
 		"tooltip": "Batalkan operasi saat ini"
 	},
+	"enqueueMessage": "Tambahkan pesan ke antrean (akan dikirim setelah tugas saat ini selesai)",
 	"scrollToBottom": "Gulir ke bawah chat",
 	"about": "Roo Code adalah seluruh tim pengembang AI di editor Anda.",
 	"docs": "Lihat <DocsLink>dokumentasi</DocsLink> kami untuk mempelajari lebih lanjut.",
@@ -307,7 +312,8 @@
 		"title": "Detail Kesalahan",
 		"copyToClipboard": "Salin ke Clipboard",
 		"copied": "Disalin!",
-		"diagnostics": "Dapatkan informasi kesalahan terperinci"
+		"diagnostics": "Dapatkan informasi kesalahan terperinci",
+		"proxyProvider": "Tampaknya kamu menggunakan penyedia berbasis proxy. Pastikan untuk memeriksa log-nya dan memastikan tidak menulis ulang permintaan Roo."
 	},
 	"powershell": {
 		"issues": "Sepertinya kamu mengalami masalah Windows PowerShell, silakan lihat ini"
@@ -342,9 +348,9 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"stickyProfiles": "Profil Penyedia Lengket - Tugas sekarang mengingat konfigurasi API mereka, jadi beralih profil di tengah sesi tidak mempengaruhi tugas yang sedang berjalan.",
-			"imageMentions": "Mention File Gambar - Referensikan gambar secara langsung dalam obrolan menggunakan mention @ untuk memasukkannya dalam konteks Anda.",
-			"brrrMode": "YOLO sekarang BRRR - Persetujuan otomatis untuk semuanya telah diubah namanya dari \"YOLO\" menjadi \"BRRR\". Jelas."
+			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider ditambahkan yang memberikan akses berbasis langganan ke model Codex tanpa biaya per-token.",
+			"gpt52codexModel": "Model gpt-5.2-codex baru ditambahkan ke Roo Code Router, provider OpenAI standar, dan lebih banyak lagi.",
+			"bugFixes": "Memperbaiki kebocoran memori yang menyebabkan layar abu-abu, masalah tanda tangan pemikiran Gemini, dan peningkatan stabilitas lainnya."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

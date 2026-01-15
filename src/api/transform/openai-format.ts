@@ -116,7 +116,8 @@ export function convertToOpenAiMessages(
 					openAiMessages.push({
 						role: "tool",
 						tool_call_id: normalizeId(toolMessage.tool_use_id),
-						content: content,
+						// Use "(empty)" placeholder for empty content to satisfy providers like Gemini (via OpenRouter)
+						content: content || "(empty)",
 					})
 				})
 

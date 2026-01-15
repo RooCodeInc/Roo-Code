@@ -82,10 +82,15 @@
 		"title": "終了",
 		"tooltip": "現在のタスクを終了"
 	},
+	"stop": {
+		"title": "停止",
+		"tooltip": "現在のタスクを停止"
+	},
 	"cancel": {
 		"title": "キャンセル",
 		"tooltip": "現在の操作をキャンセル"
 	},
+	"enqueueMessage": "メッセージをキューに追加（現在のタスク完了後に送信されます）",
 	"scrollToBottom": "チャットの最下部にスクロール",
 	"about": "Roo Codeは、エディタに常駐するAI開発チームです。",
 	"docs": "詳細については、<DocsLink>ドキュメント</DocsLink>をご確認ください。",
@@ -271,7 +276,8 @@
 		"title": "エラー詳細",
 		"copyToClipboard": "クリップボードにコピー",
 		"copied": "コピーしました！",
-		"diagnostics": "詳細なエラー情報を取得"
+		"diagnostics": "詳細なエラー情報を取得",
+		"proxyProvider": "プロキシベースのプロバイダーを使用しているようです。ログを確認し、Rooのリクエストを書き換えていないことを確認してください。"
 	},
 	"powershell": {
 		"issues": "Windows PowerShellに問題があるようです。こちらを参照してください"
@@ -329,9 +335,9 @@
 		},
 		"release": {
 			"heading": "新機能:",
-			"stickyProfiles": "スティッキープロバイダープロファイル - タスクはAPI設定を記憶するようになったため、セッション途中にプロファイルを切り替えても実行中のタスクに影響しません。",
-			"imageMentions": "画像ファイル@メンション - @メンションを使用してチャット内で画像を直接参照し、コンテキストに含めることができます。",
-			"brrrMode": "YOLOがBRRRに - すべてを自動承認する機能が「YOLO」から「BRRR」に名前変更されました。当然です。"
+			"openaiCodexProvider": "OpenAI - ChatGPT Plus/ProプロバイダーがCodexモデルへのサブスクリプションベースのアクセスを提供します（トークン単価なし）。",
+			"gpt52codexModel": "新しいgpt-5.2-codexモデルがRoo Code Router、標準OpenAIプロバイダーなどに追加されました。",
+			"bugFixes": "灰色画面を引き起こすメモリリーク、Gemini思考署名の問題、および多くの安定性改善を修正しました。"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",

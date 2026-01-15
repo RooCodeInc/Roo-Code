@@ -82,10 +82,15 @@
 		"title": "Terminar",
 		"tooltip": "Terminar la tarea actual"
 	},
+	"stop": {
+		"title": "Detener",
+		"tooltip": "Detener la tarea actual"
+	},
 	"cancel": {
 		"title": "Cancelar",
 		"tooltip": "Cancelar la operación actual"
 	},
+	"enqueueMessage": "Agregar mensaje a la cola (se enviará después de que termine la tarea actual)",
 	"scrollToBottom": "Desplazarse al final del chat",
 	"about": "Roo Code es todo un equipo de desarrollo de IA en tu editor.",
 	"docs": "Consulta nuestra <DocsLink>documentación</DocsLink> para saber más.",
@@ -271,7 +276,8 @@
 		"title": "Detalles del error",
 		"copyToClipboard": "Copiar al portapapeles",
 		"copied": "¡Copiado!",
-		"diagnostics": "Obtener información de error detallada"
+		"diagnostics": "Obtener información de error detallada",
+		"proxyProvider": "Parece que estás usando un proveedor basado en proxy. Asegúrate de revisar sus registros y de que no está reescribiendo las solicitudes de Roo."
 	},
 	"powershell": {
 		"issues": "Parece que estás teniendo problemas con Windows PowerShell, por favor consulta esta"
@@ -329,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Qué hay de nuevo:",
-			"stickyProfiles": "Perfiles de proveedor persistentes - Las tareas ahora recuerdan su configuración de API, por lo que cambiar de perfil a mitad de sesión no afecta las tareas en ejecución.",
-			"imageMentions": "Menciones de archivos de imagen - Haz referencia a imágenes directamente en el chat usando menciones @ para incluirlas en tu contexto.",
-			"brrrMode": "YOLO ahora es BRRR - Aprobar todo automáticamente ha sido renombrado de \"YOLO\" a \"BRRR\". Obviamente."
+			"openaiCodexProvider": "Se añadió el Proveedor OpenAI - ChatGPT Plus/Pro que ofrece acceso basado en suscripción a modelos Codex sin costos por token.",
+			"gpt52codexModel": "Se añadió el nuevo modelo gpt-5.2-codex al Roo Code Router, al proveedor estándar OpenAI y más.",
+			"bugFixes": "Se corrigieron fugas de memoria que causaban pantallas grises, problemas de firma de pensamiento de Gemini y más mejoras de estabilidad."
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",
