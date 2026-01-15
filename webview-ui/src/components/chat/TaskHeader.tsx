@@ -71,15 +71,7 @@ const TaskHeader = ({
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 
-	useEffect(() => {
-		console.log("[Aggregated Costs][UI][TaskHeader] props", {
-			taskId: currentTaskItem?.id,
-			totalCost,
-			aggregatedCost,
-			hasSubtasks,
-			costBreakdown,
-		})
-	}, [currentTaskItem?.id, totalCost, aggregatedCost, hasSubtasks, costBreakdown])
+	// (intentionally no debug logging)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
 	const { isOpen, openUpsell, closeUpsell, handleConnect } = useCloudUpsell({
 		autoOpenOnAuth: false,

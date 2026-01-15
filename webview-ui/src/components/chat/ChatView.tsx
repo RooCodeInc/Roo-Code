@@ -217,14 +217,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [])
 
-	// Debug: trace when aggregatedCostsMap updates
-	useEffect(() => {
-		const entries = Array.from(aggregatedCostsMap.entries()).map(([taskId, costs]) => ({ taskId, costs }))
-		console.log("[Aggregated Costs][UI] aggregatedCostsMap updated", {
-			size: aggregatedCostsMap.size,
-			entries,
-		})
-	}, [aggregatedCostsMap])
+	// (intentionally no debug logging)
 
 	const isProfileDisabled = useMemo(
 		() => !!apiConfiguration && !ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList),
@@ -491,11 +484,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	// Request aggregated costs when task changes and has childIds
 	useEffect(() => {
 		if (taskTs && currentTaskItem?.childIds && currentTaskItem.childIds.length > 0) {
-			console.log("[Aggregated Costs][UI] Requesting getTaskWithAggregatedCosts", {
-				taskId: currentTaskItem?.id,
-				childIds: currentTaskItem?.childIds,
-				taskTs,
-			})
 			vscode.postMessage({
 				type: "getTaskWithAggregatedCosts",
 				text: currentTaskItem.id,
@@ -926,20 +914,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					playSound("notification")
 					break
 				case "taskWithAggregatedCosts":
-					console.log("[Aggregated Costs][UI] Received taskWithAggregatedCosts", {
-						taskId: message.text,
-						aggregatedCosts: message.aggregatedCosts,
-						error: (message as any).error,
-					})
 					if (message.text && message.aggregatedCosts) {
 						setAggregatedCostsMap((prev) => {
 							const newMap = new Map(prev)
 							newMap.set(message.text!, message.aggregatedCosts!)
-							console.log("[Aggregated Costs][UI] aggregatedCostsMap set", {
-								taskId: message.text,
-								costs: message.aggregatedCosts,
-								newSize: newMap.size,
-							})
 							return newMap
 						})
 					}

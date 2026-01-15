@@ -23,15 +23,9 @@ export async function aggregateTaskCostsRecursive(
 	getTaskHistory: (id: string) => Promise<HistoryItem | undefined>,
 	visited: Set<string> = new Set(),
 ): Promise<AggregatedCosts> {
-	console.log("[Aggregated Costs][CORE] aggregateTaskCostsRecursive enter", {
-		taskId,
-		visitedSize: visited.size,
-		visited: Array.from(visited),
-	})
 	// Prevent infinite loops
 	if (visited.has(taskId)) {
 		console.warn(`[aggregateTaskCostsRecursive] Circular reference detected: ${taskId}`)
-		console.log("[Aggregated Costs][CORE] aggregateTaskCostsRecursive circular", { taskId })
 		return { ownCost: 0, childrenCost: 0, totalCost: 0 }
 	}
 	visited.add(taskId)
@@ -40,36 +34,21 @@ export async function aggregateTaskCostsRecursive(
 	const history = await getTaskHistory(taskId)
 	if (!history) {
 		console.warn(`[aggregateTaskCostsRecursive] Task ${taskId} not found`)
-		console.log("[Aggregated Costs][CORE] aggregateTaskCostsRecursive missing history", { taskId })
 		return { ownCost: 0, childrenCost: 0, totalCost: 0 }
 	}
 
 	const ownCost = history.totalCost || 0
 	let childrenCost = 0
 	const childBreakdown: { [childId: string]: AggregatedCosts } = {}
-	console.log("[Aggregated Costs][CORE] aggregateTaskCostsRecursive loaded history", {
-		taskId,
-		ownCost,
-		childIds: history.childIds,
-	})
 
 	// Recursively aggregate child costs
 	if (history.childIds && history.childIds.length > 0) {
 		for (const childId of history.childIds) {
-			console.log("[Aggregated Costs][CORE] aggregateTaskCostsRecursive recurse child", {
-				parentTaskId: taskId,
-				childId,
-			})
 			const childAggregated = await aggregateTaskCostsRecursive(
 				childId,
 				getTaskHistory,
 				new Set(visited), // Create new Set to allow sibling traversal
 			)
-			console.log("[Aggregated Costs][CORE] aggregateTaskCostsRecursive child result", {
-				parentTaskId: taskId,
-				childId,
-				childAggregated,
-			})
 			childrenCost += childAggregated.totalCost
 			childBreakdown[childId] = childAggregated
 		}
@@ -82,16 +61,7 @@ export async function aggregateTaskCostsRecursive(
 		childBreakdown,
 	}
 
-	console.log("[Aggregated Costs][CORE] aggregateTaskCostsRecursive exit", {
-		taskId,
-		ownCost: result.ownCost,
-		childrenCost: result.childrenCost,
-		totalCost: result.totalCost,
-	})
-
-	return {
-		...result,
-	}
+	return result
 }
 
 /**
