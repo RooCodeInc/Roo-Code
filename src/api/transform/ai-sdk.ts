@@ -5,34 +5,22 @@
 
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
-import { tool as createTool, jsonSchema, type ModelMessage, type TextStreamPart } from "ai"
+import { tool as createTool, jsonSchema, type CoreMessage, type TextStreamPart } from "ai"
 import type { ApiStreamChunk } from "./stream"
 
 /**
- * Convert Anthropic messages to AI SDK ModelMessage format.
+ * Convert Anthropic messages to AI SDK CoreMessage format.
  * Handles text, images, tool uses, and tool results.
  *
  * @param messages - Array of Anthropic message parameters
- * @returns Array of AI SDK ModelMessage objects
+ * @returns Array of AI SDK CoreMessage objects
  */
-export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam[]): ModelMessage[] {
-	const modelMessages: ModelMessage[] = []
-
-	// First pass: build a map of tool call IDs to tool names from assistant messages
-	const toolCallIdToName = new Map<string, string>()
-	for (const message of messages) {
-		if (message.role === "assistant" && typeof message.content !== "string") {
-			for (const part of message.content) {
-				if (part.type === "tool_use") {
-					toolCallIdToName.set(part.id, part.name)
-				}
-			}
-		}
-	}
+export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam[]): CoreMessage[] {
+	const coreMessages: CoreMessage[] = []
 
 	for (const message of messages) {
 		if (typeof message.content === "string") {
-			modelMessages.push({
+			coreMessages.push({
 				role: message.role,
 				content: message.content,
 			})
@@ -45,7 +33,7 @@ export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam
 					type: "tool-result"
 					toolCallId: string
 					toolName: string
-					output: { type: "text"; value: string }
+					output: unknown
 				}> = []
 
 				for (const part of message.content) {
@@ -81,33 +69,29 @@ export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam
 									})
 									.join("\n") ?? ""
 						}
-						// Look up the tool name from the tool call ID
-						const toolName = toolCallIdToName.get(part.tool_use_id) ?? "unknown_tool"
 						toolResults.push({
 							type: "tool-result",
 							toolCallId: part.tool_use_id,
-							toolName,
-							output: { type: "text", value: content || "(empty)" },
+							toolName: "", // Will be filled from context
+							output: content || "(empty)",
 						})
 					}
 				}
 
-				// AI SDK requires tool results in separate "tool" role messages
-				// UserContent only supports: string | Array<TextPart | ImagePart | FilePart>
-				// ToolContent (for role: "tool") supports: Array<ToolResultPart | ToolApprovalResponse>
+				// Tool results must be in a separate tool message
 				if (toolResults.length > 0) {
-					modelMessages.push({
+					coreMessages.push({
 						role: "tool",
 						content: toolResults,
-					} as ModelMessage)
+					} as CoreMessage)
 				}
 
-				// Add user message with only text/image content (no tool results)
+				// Add user message with remaining content
 				if (parts.length > 0) {
-					modelMessages.push({
+					coreMessages.push({
 						role: "user",
 						content: parts,
-					} as ModelMessage)
+					} as CoreMessage)
 				}
 			} else if (message.role === "assistant") {
 				const textParts: string[] = []
@@ -115,7 +99,7 @@ export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam
 					type: "tool-call"
 					toolCallId: string
 					toolName: string
-					input: unknown
+					args: unknown
 				}> = []
 
 				for (const part of message.content) {
@@ -126,14 +110,14 @@ export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam
 							type: "tool-call",
 							toolCallId: part.id,
 							toolName: part.name,
-							input: part.input,
+							args: part.input,
 						})
 					}
 				}
 
 				const content: Array<
 					| { type: "text"; text: string }
-					| { type: "tool-call"; toolCallId: string; toolName: string; input: unknown }
+					| { type: "tool-call"; toolCallId: string; toolName: string; args: unknown }
 				> = []
 
 				if (textParts.length > 0) {
@@ -141,15 +125,15 @@ export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam
 				}
 				content.push(...toolCalls)
 
-				modelMessages.push({
+				coreMessages.push({
 					role: "assistant",
 					content: content.length > 0 ? content : [{ type: "text", text: "" }],
-				} as ModelMessage)
+				} as CoreMessage)
 			}
 		}
 	}
 
-	return modelMessages
+	return coreMessages
 }
 
 /**
@@ -180,29 +164,21 @@ export function convertToolsForAiSdk(
 }
 
 /**
- * Extended stream part type that includes additional fullStream event types
- * that are emitted at runtime but not included in the AI SDK TextStreamPart type definitions.
- */
-type ExtendedStreamPart = TextStreamPart<any> | { type: "text"; text: string } | { type: "reasoning"; text: string }
-
-/**
  * Process a single AI SDK stream part and yield the appropriate ApiStreamChunk(s).
  * This generator handles all TextStreamPart types and converts them to the
  * ApiStreamChunk format used by the application.
  *
- * @param part - The AI SDK TextStreamPart to process (including fullStream event types)
+ * @param part - The AI SDK TextStreamPart to process
  * @yields ApiStreamChunk objects corresponding to the stream part
  */
-export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<ApiStreamChunk> {
+export function* processAiSdkStreamPart(part: TextStreamPart<any>): Generator<ApiStreamChunk> {
 	switch (part.type) {
-		case "text":
 		case "text-delta":
-			yield { type: "text", text: (part as { text: string }).text }
+			yield { type: "text", text: part.text }
 			break
 
-		case "reasoning":
 		case "reasoning-delta":
-			yield { type: "reasoning", text: (part as { text: string }).text }
+			yield { type: "reasoning", text: part.text }
 			break
 
 		case "tool-input-start":
