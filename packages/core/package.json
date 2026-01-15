@@ -6,7 +6,8 @@
 	"exports": {
 		".": "./src/index.ts",
 		"./cli": "./src/cli.ts",
-		"./browser": "./src/browser.ts"
+		"./browser": "./src/browser.ts",
+		"./message-utils/aggregateTaskCosts": "./src/message-utils/aggregateTaskCosts.ts"
 	},
 	"scripts": {
 		"lint": "eslint src --ext=ts --max-warnings=0",

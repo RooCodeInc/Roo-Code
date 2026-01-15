@@ -784,6 +784,44 @@ export const webviewMessageHandler = async (
 		case "exportTaskWithId":
 			provider.exportTaskWithId(message.text!)
 			break
+		case "getTaskWithAggregatedCosts": {
+			try {
+				const taskId = message.text
+				console.log("[Aggregated Costs][EXT] getTaskWithAggregatedCosts received", {
+					taskId,
+					messageType: message.type,
+				})
+				if (!taskId) {
+					throw new Error("Task ID is required")
+				}
+				const result = await provider.getTaskWithAggregatedCosts(taskId)
+				console.log("[Aggregated Costs][EXT] getTaskWithAggregatedCosts computed", {
+					taskId,
+					historyChildIds: result.historyItem?.childIds,
+					aggregatedCosts: result.aggregatedCosts,
+				})
+				await provider.postMessageToWebview({
+					type: "taskWithAggregatedCosts",
+					// IMPORTANT: ChatView stores aggregatedCostsMap keyed by message.text (taskId)
+					// so we must include it here.
+					text: taskId,
+					historyItem: result.historyItem,
+					aggregatedCosts: result.aggregatedCosts,
+				})
+				console.log("[Aggregated Costs][EXT] taskWithAggregatedCosts posted to webview", {
+					taskId,
+				})
+			} catch (error) {
+				console.error("Error getting task with aggregated costs:", error)
+				await provider.postMessageToWebview({
+					type: "taskWithAggregatedCosts",
+					// Include taskId when available for correlation in UI logs.
+					text: message.text,
+					error: error instanceof Error ? error.message : String(error),
+				})
+			}
+			break
+		}
 		case "importSettings": {
 			await importSettingsWithFeedback({
 				providerSettingsManager: provider.providerSettingsManager,

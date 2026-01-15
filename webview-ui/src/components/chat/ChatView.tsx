@@ -166,6 +166,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const autoApproveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 	const userRespondedRef = useRef<boolean>(false)
 	const [currentFollowUpTs, setCurrentFollowUpTs] = useState<number | null>(null)
+	const [aggregatedCostsMap, setAggregatedCostsMap] = useState<
+		Map<
+			string,
+			{
+				totalCost: number
+				ownCost: number
+				childrenCost: number
+			}
+		>
+	>(new Map())
 
 	const clineAskRef = useRef(clineAsk)
 	useEffect(() => {
@@ -206,6 +216,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			isMountedRef.current = false
 		}
 	}, [])
+
+	// Debug: trace when aggregatedCostsMap updates
+	useEffect(() => {
+		const entries = Array.from(aggregatedCostsMap.entries()).map(([taskId, costs]) => ({ taskId, costs }))
+		console.log("[Aggregated Costs][UI] aggregatedCostsMap updated", {
+			size: aggregatedCostsMap.size,
+			entries,
+		})
+	}, [aggregatedCostsMap])
 
 	const isProfileDisabled = useMemo(
 		() => !!apiConfiguration && !ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList),
@@ -466,6 +485,23 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		// Reset user response flag for new task
 		userRespondedRef.current = false
 	}, [task?.ts])
+
+	const taskTs = task?.ts
+
+	// Request aggregated costs when task changes and has childIds
+	useEffect(() => {
+		if (taskTs && currentTaskItem?.childIds && currentTaskItem.childIds.length > 0) {
+			console.log("[Aggregated Costs][UI] Requesting getTaskWithAggregatedCosts", {
+				taskId: currentTaskItem?.id,
+				childIds: currentTaskItem?.childIds,
+				taskTs,
+			})
+			vscode.postMessage({
+				type: "getTaskWithAggregatedCosts",
+				text: currentTaskItem.id,
+			})
+		}
+	}, [taskTs, currentTaskItem?.id, currentTaskItem?.childIds])
 
 	useEffect(() => {
 		if (isHidden) {
@@ -888,6 +924,25 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					break
 				case "interactionRequired":
 					playSound("notification")
+					break
+				case "taskWithAggregatedCosts":
+					console.log("[Aggregated Costs][UI] Received taskWithAggregatedCosts", {
+						taskId: message.text,
+						aggregatedCosts: message.aggregatedCosts,
+						error: (message as any).error,
+					})
+					if (message.text && message.aggregatedCosts) {
+						setAggregatedCostsMap((prev) => {
+							const newMap = new Map(prev)
+							newMap.set(message.text!, message.aggregatedCosts!)
+							console.log("[Aggregated Costs][UI] aggregatedCostsMap set", {
+								taskId: message.text,
+								costs: message.aggregatedCosts,
+								newSize: newMap.size,
+							})
+							return newMap
+						})
+					}
 					break
 			}
 			// textAreaRef.current is not explicitly required here since React
@@ -1438,6 +1493,28 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						cacheWrites={apiMetrics.totalCacheWrites}
 						cacheReads={apiMetrics.totalCacheReads}
 						totalCost={apiMetrics.totalCost}
+						aggregatedCost={
+							currentTaskItem?.id && aggregatedCostsMap.has(currentTaskItem.id)
+								? aggregatedCostsMap.get(currentTaskItem.id)!.totalCost
+								: undefined
+						}
+						hasSubtasks={
+							!!(
+								currentTaskItem?.id &&
+								aggregatedCostsMap.has(currentTaskItem.id) &&
+								aggregatedCostsMap.get(currentTaskItem.id)!.childrenCost > 0
+							)
+						}
+						costBreakdown={
+							currentTaskItem?.id && aggregatedCostsMap.has(currentTaskItem.id)
+								? (() => {
+										const costs = aggregatedCostsMap.get(currentTaskItem.id)!
+										return costs.childrenCost > 0
+											? `Own: $${costs.ownCost.toFixed(2)} + Subtasks: $${costs.childrenCost.toFixed(2)}`
+											: undefined
+									})()
+								: undefined
+						}
 						contextTokens={apiMetrics.contextTokens}
 						buttonsDisabled={sendingDisabled}
 						handleCondenseContext={handleCondenseContext}
