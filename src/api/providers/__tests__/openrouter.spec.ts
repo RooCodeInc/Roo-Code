@@ -83,6 +83,16 @@ vitest.mock("../fetchers/modelCache", () => ({
 				excludedTools: ["existing_excluded"],
 				includedTools: ["existing_included"],
 			},
+			"google/gemini-3-flash-preview": {
+				maxTokens: 8192,
+				contextWindow: 128000,
+				supportsImages: true,
+				supportsPromptCache: true,
+				supportsNativeTools: true,
+				inputPrice: 0.5,
+				outputPrice: 1.5,
+				description: "Gemini 3 Flash Preview",
+			},
 		})
 	}),
 }))
@@ -700,6 +710,299 @@ describe("OpenRouterHandler", () => {
 					status: 429,
 				}),
 			)
+		})
+	})
+
+	describe("Gemini thought signature injection", () => {
+		const geminiOptions: ApiHandlerOptions = {
+			openRouterApiKey: "test-key",
+			openRouterModelId: "google/gemini-3-flash-preview",
+		}
+
+		it("injects skip_thought_signature_validator for Gemini with native tools and tool_calls history", async () => {
+			const handler = new OpenRouterHandler(geminiOptions)
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "response" } }],
+					}
+					yield {
+						id: "test-id",
+						choices: [{ delta: {} }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			// Simulate history with a previous tool call from another model
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "I'll read that file." },
+						{ type: "tool_use", id: "toolu_123", name: "read_file", input: { path: "test.txt" } },
+					],
+				},
+				{
+					role: "user",
+					content: [{ type: "tool_result", tool_use_id: "toolu_123", content: "file contents" }],
+				},
+			]
+
+			const metadata = {
+				tools: [
+					{ type: "function", function: { name: "read_file", description: "Read a file", parameters: {} } },
+				],
+				toolProtocol: "native",
+			}
+
+			const generator = handler.createMessage("test system", messages, metadata as any)
+			for await (const _chunk of generator) {
+				// consume
+			}
+
+			// Verify that reasoning_details with skip_thought_signature_validator was injected
+			const createCall = mockCreate.mock.calls[0][0]
+			const assistantMessage = createCall.messages.find(
+				(msg: any) => msg.role === "assistant" && msg.tool_calls && msg.tool_calls.length > 0,
+			)
+
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.reasoning_details).toBeDefined()
+			expect(assistantMessage.reasoning_details).toHaveLength(1)
+			expect(assistantMessage.reasoning_details[0]).toMatchObject({
+				type: "reasoning.encrypted",
+				data: "skip_thought_signature_validator",
+				id: assistantMessage.tool_calls[0].id,
+				format: "google-gemini-v1",
+				index: 0,
+			})
+		})
+
+		it("replaces existing reasoning.encrypted with skip_thought_signature_validator for Gemini", async () => {
+			const handler = new OpenRouterHandler(geminiOptions)
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "response" } }],
+					}
+					yield {
+						id: "test-id",
+						choices: [{ delta: {} }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			// Simulate history with an existing (invalid) reasoning.encrypted signature
+			const messagesWithExistingSignature: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "I'll read that file." },
+						{ type: "tool_use", id: "toolu_456", name: "read_file", input: { path: "test.txt" } },
+					],
+					// Simulating existing reasoning_details from a previous Gemini session
+					reasoning_details: [
+						{
+							type: "reasoning.encrypted",
+							data: "old_invalid_signature_from_previous_session",
+							id: "toolu_456",
+							format: "google-gemini-v1",
+							index: 0,
+						},
+					],
+				} as any,
+				{
+					role: "user",
+					content: [{ type: "tool_result", tool_use_id: "toolu_456", content: "file contents" }],
+				},
+			]
+
+			const metadata = {
+				tools: [
+					{ type: "function", function: { name: "read_file", description: "Read a file", parameters: {} } },
+				],
+				toolProtocol: "native",
+			}
+
+			const generator = handler.createMessage("test system", messagesWithExistingSignature, metadata as any)
+			for await (const _chunk of generator) {
+				// consume
+			}
+
+			// Verify that the old signature was replaced with skip_thought_signature_validator
+			const createCall = mockCreate.mock.calls[0][0]
+			const assistantMessage = createCall.messages.find(
+				(msg: any) => msg.role === "assistant" && msg.tool_calls && msg.tool_calls.length > 0,
+			)
+
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.reasoning_details).toBeDefined()
+			expect(assistantMessage.reasoning_details).toHaveLength(1)
+			// The old signature should be REPLACED, not kept
+			expect(assistantMessage.reasoning_details[0].data).toBe("skip_thought_signature_validator")
+			expect(assistantMessage.reasoning_details[0].data).not.toBe("old_invalid_signature_from_previous_session")
+		})
+
+		it("preserves non-encrypted reasoning_details while replacing reasoning.encrypted", async () => {
+			const handler = new OpenRouterHandler(geminiOptions)
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "response" } }],
+					}
+					yield {
+						id: "test-id",
+						choices: [{ delta: {} }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			// Simulate history with both reasoning.text and reasoning.encrypted
+			const messagesWithMixedReasoning: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "I'll read that file." },
+						{ type: "tool_use", id: "toolu_789", name: "read_file", input: { path: "test.txt" } },
+					],
+					reasoning_details: [
+						{
+							type: "reasoning.text",
+							text: "This is visible reasoning that should be preserved",
+							index: 0,
+						},
+						{
+							type: "reasoning.encrypted",
+							data: "old_invalid_signature",
+							id: "toolu_789",
+							format: "google-gemini-v1",
+							index: 1,
+						},
+					],
+				} as any,
+				{
+					role: "user",
+					content: [{ type: "tool_result", tool_use_id: "toolu_789", content: "file contents" }],
+				},
+			]
+
+			const metadata = {
+				tools: [
+					{ type: "function", function: { name: "read_file", description: "Read a file", parameters: {} } },
+				],
+				toolProtocol: "native",
+			}
+
+			const generator = handler.createMessage("test system", messagesWithMixedReasoning, metadata as any)
+			for await (const _chunk of generator) {
+				// consume
+			}
+
+			// Verify that reasoning.text is preserved and reasoning.encrypted is replaced
+			const createCall = mockCreate.mock.calls[0][0]
+			const assistantMessage = createCall.messages.find(
+				(msg: any) => msg.role === "assistant" && msg.tool_calls && msg.tool_calls.length > 0,
+			)
+
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.reasoning_details).toBeDefined()
+			expect(assistantMessage.reasoning_details).toHaveLength(2)
+
+			// Find the reasoning.text entry - should be preserved
+			const textEntry = assistantMessage.reasoning_details.find((d: any) => d.type === "reasoning.text")
+			expect(textEntry).toBeDefined()
+			expect(textEntry.text).toBe("This is visible reasoning that should be preserved")
+
+			// Find the reasoning.encrypted entry - should be replaced with skip validator
+			const encryptedEntry = assistantMessage.reasoning_details.find((d: any) => d.type === "reasoning.encrypted")
+			expect(encryptedEntry).toBeDefined()
+			expect(encryptedEntry.data).toBe("skip_thought_signature_validator")
+		})
+
+		it("does not inject reasoning_details for non-Gemini models", async () => {
+			const handler = new OpenRouterHandler(mockOptions) // anthropic/claude-sonnet-4
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						id: "test-id",
+						choices: [{ delta: { content: "response" } }],
+					}
+					yield {
+						id: "test-id",
+						choices: [{ delta: {} }],
+						usage: { prompt_tokens: 10, completion_tokens: 5 },
+					}
+				},
+			}
+
+			const mockCreate = vitest.fn().mockResolvedValue(mockStream)
+			;(OpenAI as any).prototype.chat = {
+				completions: { create: mockCreate },
+			} as any
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "I'll read that file." },
+						{ type: "tool_use", id: "toolu_abc", name: "read_file", input: { path: "test.txt" } },
+					],
+				},
+				{
+					role: "user",
+					content: [{ type: "tool_result", tool_use_id: "toolu_abc", content: "file contents" }],
+				},
+			]
+
+			const metadata = {
+				tools: [
+					{ type: "function", function: { name: "read_file", description: "Read a file", parameters: {} } },
+				],
+				toolProtocol: "native",
+			}
+
+			const generator = handler.createMessage("test system", messages, metadata as any)
+			for await (const _chunk of generator) {
+				// consume
+			}
+
+			// Verify that reasoning_details was NOT added for non-Gemini model
+			const createCall = mockCreate.mock.calls[0][0]
+			const assistantMessage = createCall.messages.find(
+				(msg: any) => msg.role === "assistant" && msg.tool_calls && msg.tool_calls.length > 0,
+			)
+
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.reasoning_details).toBeUndefined()
 		})
 	})
 })

@@ -264,25 +264,27 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					const toolCalls = (msg as any).tool_calls as any[] | undefined
 					const existingDetails = (msg as any).reasoning_details as any[] | undefined
 
-					// Only inject if there are tool calls and no existing encrypted reasoning
+					// Inject skip_thought_signature_validator for all assistant messages with tool calls.
+					// IMPORTANT: We must ALWAYS inject (and replace any existing reasoning.encrypted),
+					// because signatures from previous API sessions are invalid. Gemini rejects them with
+					// "Thought signature is not valid" if we try to reuse old signatures.
 					if (toolCalls && toolCalls.length > 0) {
-						const hasEncrypted = existingDetails?.some((d) => d.type === "reasoning.encrypted") ?? false
+						// Filter out any existing reasoning.encrypted blocks - they have invalid signatures
+						const filteredDetails = existingDetails?.filter((d) => d.type !== "reasoning.encrypted") ?? []
 
-						if (!hasEncrypted) {
-							// Create ONE fake encrypted block with the FIRST tool call's ID
-							// This is the documented format from OpenRouter for skipping thought signature validation
-							const fakeEncrypted = {
-								type: "reasoning.encrypted",
-								data: "skip_thought_signature_validator",
-								id: toolCalls[0].id,
-								format: "google-gemini-v1",
-								index: 0,
-							}
+						// Create ONE fake encrypted block with the FIRST tool call's ID
+						// This is the documented format from OpenRouter for skipping thought signature validation
+						const fakeEncrypted = {
+							type: "reasoning.encrypted",
+							data: "skip_thought_signature_validator",
+							id: toolCalls[0].id,
+							format: "google-gemini-v1",
+							index: 0,
+						}
 
-							return {
-								...msg,
-								reasoning_details: [...(existingDetails ?? []), fakeEncrypted],
-							}
+						return {
+							...msg,
+							reasoning_details: [...filteredDetails, fakeEncrypted],
 						}
 					}
 				}
