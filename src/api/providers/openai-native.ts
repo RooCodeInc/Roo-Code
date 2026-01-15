@@ -1,3 +1,5 @@
+import * as os from "os"
+import { v7 as uuidv7 } from "uuid"
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
@@ -32,6 +34,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	protected options: ApiHandlerOptions
 	private client: OpenAI
 	private readonly providerName = "OpenAI Native"
+	// Session ID for request tracking (persists for the lifetime of the handler)
+	private readonly sessionId: string
 	/**
 	 * Some Responses streams emit tool-call argument deltas without stable call id/name.
 	 * Track the last observed tool identity from output_item events so we can still
@@ -70,13 +74,23 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
+		// Generate a session ID for request tracking
+		this.sessionId = uuidv7()
 		// Default to including reasoning.summary: "auto" for models that support Responses API
 		// reasoning summaries unless explicitly disabled.
 		if (this.options.enableResponsesReasoningSummary === undefined) {
 			this.options.enableResponsesReasoningSummary = true
 		}
 		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		this.client = new OpenAI({ baseURL: this.options.openAiNativeBaseUrl, apiKey })
+		// Include originator, session_id, and User-Agent headers for API tracking and debugging
+		this.client = new OpenAI({
+			baseURL: this.options.openAiNativeBaseUrl,
+			apiKey,
+			defaultHeaders: {
+				originator: "roo-code",
+				session_id: this.sessionId,
+			},
+		})
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiNativeModel): ApiStreamUsageChunk | undefined {
@@ -390,10 +404,18 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
 
+		// Build per-request headers using taskId when available, falling back to sessionId
+		const taskId = metadata?.taskId
+		const requestHeaders: Record<string, string> = {
+			originator: "roo-code",
+			session_id: taskId || this.sessionId,
+		}
+
 		try {
-			// Use the official SDK
+			// Use the official SDK with per-request headers
 			const stream = (await (this.client as any).responses.create(requestBody, {
 				signal: this.abortController.signal,
+				headers: requestHeaders,
 			})) as AsyncIterable<any>
 
 			if (typeof (stream as any)[Symbol.asyncIterator] !== "function") {
@@ -526,6 +548,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Create AbortController for cancellation
 		this.abortController = new AbortController()
 
+		// Build per-request headers using taskId when available, falling back to sessionId
+		const taskId = metadata?.taskId
+
 		try {
 			const response = await fetch(url, {
 				method: "POST",
@@ -533,6 +558,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${apiKey}`,
 					Accept: "text/event-stream",
+					originator: "roo-code",
+					session_id: taskId || this.sessionId,
 				},
 				body: JSON.stringify(requestBody),
 				signal: this.abortController.signal,
