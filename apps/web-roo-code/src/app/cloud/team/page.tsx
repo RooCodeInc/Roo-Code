@@ -126,7 +126,7 @@ const features: Feature[] = [
 		icon: Puzzle,
 		title: "Centralized Integration",
 		description:
-			"Centralized GitHub, Slack, and Linear connection for the entire team. Agents can review PRs, collaborate on your repositories, respond on your team channels, and create issues in Linear.",
+			"Centralized GitHub, Slack, and Linear connection for the entire team. Agents can review PRs, collaborate on your repositories, respond on your team Slack channels, and work on issues in Linear.",
 	},
 	{
 		icon: RefreshCcw,

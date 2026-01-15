@@ -110,7 +110,7 @@ const features: Feature[] = [
 	{
 		icon: Slack,
 		title: "Slack Integration",
-		description: "Start tasks, get updates, and collaborate with agents directly from your team's Slack channels. (Cloud Team plan)",
+		description: "Start tasks, get updates, and collaborate with agents directly from your team's Slack channels.",
 	},
 	{
 		icon: Router,
@@ -154,7 +154,7 @@ export default function CloudPage() {
 						</h1>
 						<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
 						Create your agent team in the Cloud, give them access to GitHub, and start delegating tasks
-							from the web.
+							from the web, Slack, Linear, and more.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
 							<Button
