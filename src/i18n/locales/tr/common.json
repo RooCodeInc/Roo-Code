@@ -263,5 +263,9 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"costs": {
+		"own": "Kendi",
+		"subtasks": "Alt görevler"
 	}
 }

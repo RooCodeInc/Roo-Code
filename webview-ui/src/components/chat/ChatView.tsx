@@ -10,6 +10,7 @@ import { Trans } from "react-i18next"
 
 import { useDebounceEffect } from "@src/utils/useDebounceEffect"
 import { appendImages } from "@src/utils/imageUtils"
+import { getCostBreakdownIfNeeded } from "@src/utils/costFormatting"
 
 import type { ClineAsk, ClineSayTool, ClineMessage, ExtensionMessage, AudioType } from "@roo-code/types"
 
@@ -216,8 +217,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			isMountedRef.current = false
 		}
 	}, [])
-
-	// (intentionally no debug logging)
 
 	const isProfileDisabled = useMemo(
 		() => !!apiConfiguration && !ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList),
@@ -1485,12 +1484,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						}
 						costBreakdown={
 							currentTaskItem?.id && aggregatedCostsMap.has(currentTaskItem.id)
-								? (() => {
-										const costs = aggregatedCostsMap.get(currentTaskItem.id)!
-										return costs.childrenCost > 0
-											? `Own: $${costs.ownCost.toFixed(2)} + Subtasks: $${costs.childrenCost.toFixed(2)}`
-											: undefined
-									})()
+								? getCostBreakdownIfNeeded(aggregatedCostsMap.get(currentTaskItem.id)!, {
+										own: t("common:costs.own"),
+										subtasks: t("common:costs.subtasks"),
+									})
 								: undefined
 						}
 						contextTokens={apiMetrics.contextTokens}

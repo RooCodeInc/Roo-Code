@@ -258,5 +258,9 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"costs": {
+		"own": "Eigen",
+		"subtasks": "Unteraufgaben"
 	}
 }

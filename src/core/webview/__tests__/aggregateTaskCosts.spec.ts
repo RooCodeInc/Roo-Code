@@ -1,6 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { aggregateTaskCostsRecursive, getDisplayCosts } from "../aggregateTaskCosts.js"
+import { aggregateTaskCostsRecursive, getDisplayCosts, formatCostBreakdown } from "../aggregateTaskCosts.js"
 import type { HistoryItem } from "@roo-code/types"
+
+// Mock the i18n module
+vi.mock("../../../i18n", () => ({
+	t: (key: string) => {
+		const translations: Record<string, string> = {
+			"common:costs.own": "Own",
+			"common:costs.subtasks": "Subtasks",
+		}
+		return translations[key] || key
+	},
+}))
 
 describe("aggregateTaskCostsRecursive", () => {
 	let consoleWarnSpy: ReturnType<typeof vi.spyOn>
@@ -340,7 +351,6 @@ describe("getDisplayCosts", () => {
 		const result = await getDisplayCosts("task-1", getTaskHistory)
 
 		expect(result.displayCost).toBe(1.5)
-		expect(result.showAggregated).toBe(false)
 		expect(result.breakdown).toBeUndefined()
 	})
 
@@ -357,7 +367,6 @@ describe("getDisplayCosts", () => {
 		const result = await getDisplayCosts("task-1", getTaskHistory)
 
 		expect(result.displayCost).toBe(2.0)
-		expect(result.showAggregated).toBe(false)
 		expect(result.breakdown).toBeUndefined()
 	})
 
@@ -385,7 +394,7 @@ describe("getDisplayCosts", () => {
 		const result = await getDisplayCosts("parent", getTaskHistory)
 
 		expect(result.displayCost).toBe(2.25) // 1.0 + 0.5 + 0.75
-		expect(result.showAggregated).toBe(true)
+		expect(result.breakdown).toBeDefined()
 		expect(result.breakdown).toBe("Own: $1.00 + Subtasks: $1.25")
 	})
 
@@ -408,7 +417,7 @@ describe("getDisplayCosts", () => {
 		const result = await getDisplayCosts("parent", getTaskHistory)
 
 		expect(result.displayCost).toBeCloseTo(1.801, 3)
-		expect(result.showAggregated).toBe(true)
+		expect(result.breakdown).toBeDefined()
 		expect(result.breakdown).toBe("Own: $1.23 + Subtasks: $0.57")
 	})
 
@@ -436,7 +445,7 @@ describe("getDisplayCosts", () => {
 		const result = await getDisplayCosts("root", getTaskHistory)
 
 		expect(result.displayCost).toBe(3.5) // 2.0 + 1.0 + 0.5
-		expect(result.showAggregated).toBe(true)
+		expect(result.breakdown).toBeDefined()
 		expect(result.breakdown).toBe("Own: $2.00 + Subtasks: $1.50")
 	})
 
@@ -459,11 +468,11 @@ describe("getDisplayCosts", () => {
 		const result = await getDisplayCosts("parent", getTaskHistory)
 
 		expect(result.displayCost).toBe(0)
-		expect(result.showAggregated).toBe(false) // childrenCost is 0, so no aggregation shown
+		// childrenCost is 0, so breakdown should be undefined
 		expect(result.breakdown).toBeUndefined()
 	})
 
-	it("should show aggregated even if own cost is zero", async () => {
+	it("should show breakdown even if own cost is zero", async () => {
 		const mockHistory: Record<string, HistoryItem> = {
 			parent: {
 				id: "parent",
@@ -482,7 +491,7 @@ describe("getDisplayCosts", () => {
 		const result = await getDisplayCosts("parent", getTaskHistory)
 
 		expect(result.displayCost).toBe(1.5)
-		expect(result.showAggregated).toBe(true)
+		expect(result.breakdown).toBeDefined()
 		expect(result.breakdown).toBe("Own: $0.00 + Subtasks: $1.50")
 	})
 
@@ -494,7 +503,28 @@ describe("getDisplayCosts", () => {
 		const result = await getDisplayCosts("nonexistent", getTaskHistory)
 
 		expect(result.displayCost).toBe(0)
-		expect(result.showAggregated).toBe(false)
 		expect(result.breakdown).toBeUndefined()
+	})
+})
+
+describe("formatCostBreakdown", () => {
+	it("should format breakdown with default labels", () => {
+		const result = formatCostBreakdown(1.0, 0.5)
+		expect(result).toBe("Own: $1.00 + Subtasks: $0.50")
+	})
+
+	it("should format breakdown with custom labels", () => {
+		const result = formatCostBreakdown(1.0, 0.5, { own: "Self", subtasks: "Children" })
+		expect(result).toBe("Self: $1.00 + Children: $0.50")
+	})
+
+	it("should handle zero costs", () => {
+		const result = formatCostBreakdown(0, 0)
+		expect(result).toBe("Own: $0.00 + Subtasks: $0.00")
+	})
+
+	it("should format with correct decimal places", () => {
+		const result = formatCostBreakdown(1.234, 5.678)
+		expect(result).toBe("Own: $1.23 + Subtasks: $5.68")
 	})
 })

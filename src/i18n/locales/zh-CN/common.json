@@ -268,5 +268,9 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"costs": {
+		"own": "自身",
+		"subtasks": "子任务"
 	}
 }

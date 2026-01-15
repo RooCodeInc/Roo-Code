@@ -270,5 +270,9 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"costs": {
+		"own": "Riêng",
+		"subtasks": "Nhiệm vụ con"
 	}
 }
