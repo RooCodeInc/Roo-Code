@@ -563,7 +563,6 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				headers: {
 					"Content-Type": "application/json",
 					Authorization: `Bearer ${apiKey}`,
-					Accept: "text/event-stream",
 					originator: "roo-code",
 					session_id: taskId || this.sessionId,
 					"User-Agent": userAgent,

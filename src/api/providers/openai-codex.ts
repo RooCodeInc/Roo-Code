@@ -14,6 +14,7 @@ import {
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
+import { Package } from "../../shared/package"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
@@ -24,9 +25,6 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { isMcpTool } from "../../utils/mcp-name"
 import { openAiCodexOAuthManager } from "../../integrations/openai-codex/oauth"
 import { t } from "../../i18n"
-
-// Get extension version for User-Agent header
-const extensionVersion: string = require("../../package.json").version ?? "unknown"
 
 export type OpenAiCodexModel = ReturnType<OpenAiCodexHandler["getModel"]>
 
@@ -354,7 +352,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				const codexHeaders: Record<string, string> = {
 					originator: "roo-code",
 					session_id: taskId || this.sessionId,
-					"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
+					"User-Agent": `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 					...(accountId ? { "ChatGPT-Account-Id": accountId } : {}),
 				}
 
@@ -494,7 +492,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			Authorization: `Bearer ${accessToken}`,
 			originator: "roo-code",
 			session_id: taskId || this.sessionId,
-			"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
+			"User-Agent": `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 		}
 
 		// Add ChatGPT-Account-Id if available (required for organization subscriptions)
@@ -1058,7 +1056,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				Authorization: `Bearer ${accessToken}`,
 				originator: "roo-code",
 				session_id: this.sessionId,
-				"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
+				"User-Agent": `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 			}
 
 			// Add ChatGPT-Account-Id if available
