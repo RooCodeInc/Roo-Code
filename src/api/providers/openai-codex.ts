@@ -513,7 +513,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			if (!response.ok) {
 				const errorText = await response.text()
 
-				let errorMessage = t("common:api.apiRequestFailed", { status: response.status })
+				let errorMessage = t("common:errors.api.apiRequestFailed", { status: response.status })
 				let errorDetails = ""
 
 				try {
