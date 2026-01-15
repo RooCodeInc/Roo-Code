@@ -88,9 +88,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
-		// Use session ID from options if provided (stable across handler rebuilds within a Task),
-		// otherwise generate a new one (for standalone handler usage)
-		this.sessionId = options.openAiCodexSessionId ?? uuidv7()
+		// Generate a new session ID for standalone handler usage (fallback)
+		this.sessionId = uuidv7()
 	}
 
 	private normalizeUsage(usage: any, model: OpenAiCodexModel): ApiStreamUsageChunk | undefined {
