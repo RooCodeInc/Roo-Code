@@ -1,4 +1,4 @@
-import { ModelInfo, REGION_TO_URL, WATSONX_NON_INFERENCE_MODELS } from "@roo-code/types"
+import { ModelInfo, REGION_TO_URL, WATSONX_NON_INFERENCE_MODELS, WATSONX_NON_TOOL_CALLS_MODELS } from "@roo-code/types"
 import { IamAuthenticator, CloudPakForDataAuthenticator, UserOptions } from "ibm-cloud-sdk-core"
 import { WatsonXAI } from "@ibm-cloud/watsonx-ai"
 import WatsonxAiMlVml_v1 from "@ibm-cloud/watsonx-ai/dist/watsonx-ai-ml/vml_v1.js"
@@ -96,6 +96,10 @@ export async function getWatsonxModels(
 						const modelId = model.model_id
 
 						if (WATSONX_NON_INFERENCE_MODELS.includes(modelId as any)) {
+							continue
+						}
+
+						if (WATSONX_NON_TOOL_CALLS_MODELS.includes(modelId as any)) {
 							continue
 						}
 
