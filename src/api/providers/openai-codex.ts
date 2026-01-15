@@ -26,7 +26,7 @@ import { openAiCodexOAuthManager } from "../../integrations/openai-codex/oauth"
 import { t } from "../../i18n"
 
 // Get extension version for User-Agent header
-const extensionVersion = require("../../../package.json").version ?? "unknown"
+const extensionVersion: string = require("../../package.json").version ?? "unknown"
 
 export type OpenAiCodexModel = ReturnType<OpenAiCodexHandler["getModel"]>
 
@@ -348,7 +348,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 
 				// Build Codex-specific headers. Authorization is provided by the SDK apiKey.
 				const codexHeaders: Record<string, string> = {
-					originator: "roocode",
+					originator: "roo-code",
 					session_id: this.sessionId,
 					"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 					...(accountId ? { "ChatGPT-Account-Id": accountId } : {}),
@@ -483,7 +483,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		const headers: Record<string, string> = {
 			"Content-Type": "application/json",
 			Authorization: `Bearer ${accessToken}`,
-			originator: "roocode",
+			originator: "roo-code",
 			session_id: this.sessionId,
 			"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 		}
@@ -1043,7 +1043,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			const headers: Record<string, string> = {
 				"Content-Type": "application/json",
 				Authorization: `Bearer ${accessToken}`,
-				originator: "roocode",
+				originator: "roo-code",
 				session_id: this.sessionId,
 				"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 			}
