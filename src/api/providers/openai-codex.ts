@@ -533,27 +533,27 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 
 				switch (response.status) {
 					case 400:
-						errorMessage = "Invalid request to Codex API. Please check your input parameters."
+						errorMessage = t("common:errors.openAiCodex.invalidRequest")
 						break
 					case 401:
-						errorMessage = "Authentication failed. Please re-authenticate with OpenAI Codex."
+						errorMessage = t("common:errors.openAiCodex.authenticationFailed")
 						break
 					case 403:
-						errorMessage = "Access denied. Your ChatGPT subscription may not include Codex access."
+						errorMessage = t("common:errors.openAiCodex.accessDenied")
 						break
 					case 404:
-						errorMessage = "Codex API endpoint not found."
+						errorMessage = t("common:errors.openAiCodex.endpointNotFound")
 						break
 					case 429:
-						errorMessage = "Rate limit exceeded. Please try again later."
+						errorMessage = t("common:errors.openAiCodex.rateLimitExceeded")
 						break
 					case 500:
 					case 502:
 					case 503:
-						errorMessage = "OpenAI Codex service error. Please try again later."
+						errorMessage = t("common:errors.openAiCodex.serviceError")
 						break
 					default:
-						errorMessage = `Codex API error (${response.status})`
+						errorMessage = t("common:errors.openAiCodex.genericError", { status: response.status })
 				}
 
 				if (errorDetails) {
@@ -564,7 +564,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			}
 
 			if (!response.body) {
-				throw new Error("Codex API error: No response body")
+				throw new Error(t("common:errors.openAiCodex.noResponseBody"))
 			}
 
 			yield* this.handleStreamResponse(response.body, model)
@@ -577,9 +577,9 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				if (error.message.includes("Codex API")) {
 					throw error
 				}
-				throw new Error(`Failed to connect to Codex API: ${error.message}`)
+				throw new Error(t("common:errors.openAiCodex.connectionFailed", { message: error.message }))
 			}
-			throw new Error(`Unexpected error connecting to Codex API`)
+			throw new Error(t("common:errors.openAiCodex.unexpectedConnectionError"))
 		}
 	}
 
@@ -733,13 +733,17 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 							} else if (parsed.type === "response.error" || parsed.type === "error") {
 								if (parsed.error || parsed.message) {
 									throw new Error(
-										`Codex API error: ${parsed.error?.message || parsed.message || "Unknown error"}`,
+										t("common:errors.openAiCodex.apiError", {
+											message: parsed.error?.message || parsed.message || "Unknown error",
+										}),
 									)
 								}
 							} else if (parsed.type === "response.failed") {
 								if (parsed.error || parsed.message) {
 									throw new Error(
-										`Response failed: ${parsed.error?.message || parsed.message || "Unknown failure"}`,
+										t("common:errors.openAiCodex.responseFailed", {
+											message: parsed.error?.message || parsed.message || "Unknown failure",
+										}),
 									)
 								}
 							} else if (parsed.type === "response.completed" || parsed.type === "response.done") {
@@ -818,9 +822,9 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			TelemetryService.instance.captureException(apiError)
 
 			if (error instanceof Error) {
-				throw new Error(`Error processing response stream: ${error.message}`)
+				throw new Error(t("common:errors.openAiCodex.streamProcessingError", { message: error.message }))
 			}
-			throw new Error("Unexpected error processing response stream")
+			throw new Error(t("common:errors.openAiCodex.unexpectedStreamError"))
 		} finally {
 			reader.releaseLock()
 		}
@@ -1071,7 +1075,10 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 
 			if (!response.ok) {
 				const errorText = await response.text()
-				throw new Error(`Codex API error (${response.status}): ${errorText}`)
+				throw new Error(
+					t("common:errors.openAiCodex.genericError", { status: response.status }) +
+						(errorText ? `: ${errorText}` : ""),
+				)
 			}
 
 			const responseData = await response.json()
@@ -1100,7 +1107,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			TelemetryService.instance.captureException(apiError)
 
 			if (error instanceof Error) {
-				throw new Error(`OpenAI Codex completion error: ${error.message}`)
+				throw new Error(t("common:errors.openAiCodex.completionError", { message: error.message }))
 			}
 			throw error
 		} finally {
