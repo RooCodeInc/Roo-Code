@@ -241,6 +241,11 @@ async function collectFileLines(filePath: string): Promise<LineRecord[]> {
 				lineNumber++
 				records.push(createLineRecord(lineNumber, buffer))
 			}
+			console.log(
+				"collectFileLines records:",
+				records.length,
+				records.map((r) => r.raw),
+			)
 			resolve(records)
 		})
 	})
@@ -506,8 +511,9 @@ export async function readIndentationBlock(
 	let j = anchorIndex + 1 // downward cursor
 	let iMinIndentCount = 0
 	let jMinIndentCount = 0
+	let truncatedByLimit = false
 
-	while (out.length < finalLimit) {
+	while (out.length <= finalLimit) {
 		let progressed = 0
 
 		// Expand upward
@@ -530,12 +536,15 @@ export async function readIndentationBlock(
 					}
 				}
 
-				if (i >= 0) {
-					i--
+				// Check if we've exceeded the limit
+				if (out.length > finalLimit) {
+					truncatedByLimit = true
+					out.shift()
+					break
 				}
 
-				if (out.length >= finalLimit) {
-					break
+				if (i >= 0) {
+					i--
 				}
 			} else {
 				i = -1 // Stop upward expansion
@@ -556,6 +565,13 @@ export async function readIndentationBlock(
 						j = records.length // Stop downward expansion
 					}
 					jMinIndentCount++
+				}
+
+				// Check if we've exceeded the limit
+				if (out.length > finalLimit) {
+					truncatedByLimit = true
+					out.pop()
+					break
 				}
 
 				if (j < records.length) {
@@ -593,9 +609,6 @@ export async function readIndentationBlock(
 	const endLine = out.length > 0 ? out[out.length - 1].number : anchorLine
 	const totalLines = records.length
 	const linesAfterEnd = totalLines - endLine
-
-	// Determine if truncated by limit (expansion stopped due to limit, not natural boundaries)
-	const truncatedByLimit = out.length >= finalLimit
 
 	return {
 		content,
