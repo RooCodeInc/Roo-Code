@@ -80,9 +80,14 @@ export type KeepMessagesResult = {
 
 /**
  * Extracts tool_use blocks that need to be preserved to match tool_result blocks in keepMessages.
- * Checks ALL kept messages for tool_result blocks and searches backwards through the condensed
- * region (bounded by N_MESSAGES_TO_KEEP) to find the matching tool_use blocks by ID.
+ * Checks ALL kept messages for tool_result blocks and searches backwards through the ENTIRE
+ * condensed region to find the matching tool_use blocks by ID.
  * These tool_use blocks will be appended to the summary message to maintain proper pairing.
+ *
+ * IMPORTANT: The search must cover the entire condensed region (from index 0 to startIndex-1),
+ * not just a bounded window. After multiple condensations, tool_use blocks can be preserved in
+ * earlier summary messages that are outside a bounded search window.
+ * See: https://linear.app/roocode/issue/ROO-520
  *
  * Also extracts reasoning blocks from messages containing preserved tool_uses, which are required
  * by DeepSeek and Z.ai for interleaved thinking mode. Without these, the API returns a 400 error
@@ -121,10 +126,10 @@ export function getKeepMessagesWithToolBlocks(messages: ApiMessage[], keepCount:
 				continue
 			}
 
-			// Search backwards through the condensed region (bounded)
-			const searchStart = startIndex - 1
-			const searchEnd = Math.max(0, startIndex - N_MESSAGES_TO_KEEP)
-			const messagesToSearch = messages.slice(searchEnd, searchStart + 1)
+			// Search backwards through the ENTIRE condensed region (from index 0 to startIndex-1)
+			// This is critical because after multiple condensations, tool_use blocks may be
+			// preserved in earlier summary messages that are outside a bounded search window.
+			const messagesToSearch = messages.slice(0, startIndex)
 
 			// Find the message containing this tool_use
 			const messageWithToolUse = findLast(messagesToSearch, (msg) => {

@@ -482,27 +482,29 @@ describe("getKeepMessagesWithToolBlocks", () => {
 		expect(result.toolUseBlocksToPreserve).toContainEqual(toolUseBlock2)
 	})
 
-	it("should not crash when tool_result references tool_use beyond search boundary", () => {
+	it("should find tool_use even when it is far back in the message history (ROO-520 fix)", () => {
+		// This test verifies the fix for https://linear.app/roocode/issue/ROO-520
+		// The bug occurred when tool_use was preserved in an earlier summary message
+		// after multiple condensations. The bounded search window was too small to find it,
+		// resulting in orphaned tool_result blocks that caused 400 errors from the API.
 		const toolResultBlock = {
 			type: "tool_result" as const,
-			tool_use_id: "toolu_beyond_boundary",
+			tool_use_id: "toolu_early_in_history",
 			content: "result",
 		}
 
-		// Tool_use is at ts:1, but with N_MESSAGES_TO_KEEP=3, we only search back 3 messages
-		// from startIndex-1. StartIndex is 7 (messages.length=10, keepCount=3, startIndex=7).
-		// So we search from index 6 down to index 4 (7-1 down to 7-3).
-		// The tool_use at index 0 (ts:1) is beyond the search boundary.
+		// Tool_use is at index 0, tool_result is in the last 3 messages.
+		// The search must cover the ENTIRE condensed region to find the tool_use.
 		const messages: ApiMessage[] = [
 			{
 				role: "assistant",
 				content: [
-					{ type: "text" as const, text: "Way back..." },
+					{ type: "text" as const, text: "Early tool call..." },
 					{
 						type: "tool_use" as const,
-						id: "toolu_beyond_boundary",
-						name: "old_tool",
-						input: {},
+						id: "toolu_early_in_history",
+						name: "read_file",
+						input: { path: "test.txt" },
 					},
 				],
 				ts: 1,
@@ -522,7 +524,6 @@ describe("getKeepMessagesWithToolBlocks", () => {
 			{ role: "user", content: "Message 10", ts: 10 },
 		]
 
-		// Should not crash
 		const result = getKeepMessagesWithToolBlocks(messages, 3)
 
 		// keepMessages should be the last 3 messages
@@ -531,8 +532,78 @@ describe("getKeepMessagesWithToolBlocks", () => {
 		expect(result.keepMessages[1].ts).toBe(9)
 		expect(result.keepMessages[2].ts).toBe(10)
 
-		// Should not preserve the tool_use since it's beyond the search boundary
-		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
+		// With the fix, tool_use should be found even though it's far back in history
+		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
+		expect(result.toolUseBlocksToPreserve[0].id).toBe("toolu_early_in_history")
+	})
+
+	it("should find tool_use in previous summary message after multiple condensations (ROO-520)", () => {
+		// This test simulates the exact scenario from ROO-520:
+		// After first condensation, tool_use was preserved in summary1.
+		// After second condensation, the bounded search couldn't find tool_use in summary1
+		// because it was outside the N_MESSAGES_TO_KEEP search window.
+		const toolUseBlock = {
+			type: "tool_use" as const,
+			id: "toolu_in_summary",
+			name: "read_file",
+			input: { path: "test.txt" },
+		}
+		const toolResultBlock = {
+			type: "tool_result" as const,
+			tool_use_id: "toolu_in_summary",
+			content: "file contents",
+		}
+
+		// Simulate state after first condensation:
+		// summary1 contains a preserved tool_use block from the first condense
+		const summaryMessage: ApiMessage = {
+			role: "assistant",
+			content: [{ type: "text" as const, text: "Summary of first conversation chunk" }, toolUseBlock],
+			ts: 5,
+			isSummary: true,
+			condenseId: "summary-1",
+		}
+
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First message", ts: 1 },
+			// Messages 2-4 are tagged with condenseParent from first condensation
+			{ role: "assistant", content: "Message 2", ts: 2, condenseParent: "summary-1" },
+			{ role: "user", content: "Message 3", ts: 3, condenseParent: "summary-1" },
+			{ role: "assistant", content: "Message 4", ts: 4, condenseParent: "summary-1" },
+			// summary1 with preserved tool_use
+			summaryMessage,
+			// Messages after first condensation
+			{ role: "user", content: "Message 6", ts: 6 },
+			{ role: "assistant", content: "Message 7", ts: 7 },
+			{ role: "user", content: "Message 8", ts: 8 },
+			{ role: "assistant", content: "Message 9", ts: 9 },
+			{ role: "user", content: "Message 10", ts: 10 },
+			{ role: "assistant", content: "Message 11", ts: 11 },
+			// This user message has tool_result referencing the tool_use in summary1
+			{
+				role: "user",
+				content: [toolResultBlock, { type: "text" as const, text: "Continue" }],
+				ts: 12,
+			},
+			{ role: "assistant", content: "Message 13", ts: 13 },
+			{ role: "user", content: "Message 14", ts: 14 },
+		]
+
+		// Second condensation: keepCount=3 means we keep messages 12, 13, 14
+		// startIndex = 14 - 3 = 11
+		// Old bounded search would only look at messages[8:11] = [msg9, msg10, msg11]
+		// The tool_use in summary1 at index 4 would NOT be found!
+		const result = getKeepMessagesWithToolBlocks(messages, 3)
+
+		expect(result.keepMessages).toHaveLength(3)
+		expect(result.keepMessages[0].ts).toBe(12) // Has tool_result
+		expect(result.keepMessages[1].ts).toBe(13)
+		expect(result.keepMessages[2].ts).toBe(14)
+
+		// With the fix, we search the ENTIRE condensed region (messages[0:11])
+		// and find the tool_use in summary1
+		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
+		expect(result.toolUseBlocksToPreserve[0].id).toBe("toolu_in_summary")
 	})
 
 	it("should not duplicate tool_use blocks when same tool_result ID appears multiple times", () => {
