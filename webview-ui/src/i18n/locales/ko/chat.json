@@ -335,9 +335,9 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"settingsSearch": "새로운 설정 검색으로 특정 설정을 빠르게 찾고 탐색할 수 있습니다.",
-			"stopButtonUX": "크고 거슬리는 취소 버튼에서 더 세련된 중지 버튼으로 변경했습니다.",
-			"apiCompatibility": "Gemini, MCP 도구 이름 및 병렬 도구 호출과 관련된 API 문제를 해결했습니다."
+			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro 공급자가 추가되었으며, 토큰당 비용 없이 Codex 모델에 대한 구독 기반 액세스를 제공합니다.",
+			"gpt52codexModel": "새로운 gpt-5.2-codex 모델이 Roo Code Router, 표준 OpenAI 공급자 등에 추가되었습니다.",
+			"bugFixes": "회색 화면을 유발하는 메모리 누수, Gemini 생각 서명 문제 및 추가 안정성 개선 사항을 수정했습니다."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

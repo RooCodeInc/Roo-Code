@@ -346,9 +346,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"settingsSearch": "透過新的設定搜尋功能快速尋找和瀏覽特定設定。",
-			"stopButtonUX": "將大型侵入式取消按鈕替換為更優雅的停止按鈕。",
-			"apiCompatibility": "解決了 Gemini、MCP 工具名稱和並行工具呼叫的 API 問題。"
+			"openaiCodexProvider": "新增 OpenAI - ChatGPT Plus/Pro 提供商，提供基於訂閱的 Codex 模型存取，無須按 Token 計費。",
+			"gpt52codexModel": "新的 gpt-5.2-codex 模型已新增至 Roo Code Router、標準 OpenAI 提供商等。",
+			"bugFixes": "修復導致灰屏的記憶體洩漏、Gemini 思考簽名問題以及其他穩定性改進。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",

@@ -348,9 +348,9 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"settingsSearch": "Temukan dan navigasi dengan cepat ke pengaturan tertentu dengan pencarian pengaturan baru.",
-			"stopButtonUX": "Beralih dari tombol batal besar yang mengganggu ke tombol stop yang lebih elegan.",
-			"apiCompatibility": "Menyelesaikan masalah API dengan Gemini, nama alat MCP, dan panggilan alat paralel."
+			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider ditambahkan yang memberikan akses berbasis langganan ke model Codex tanpa biaya per-token.",
+			"gpt52codexModel": "Model gpt-5.2-codex baru ditambahkan ke Roo Code Router, provider OpenAI standar, dan lebih banyak lagi.",
+			"bugFixes": "Memperbaiki kebocoran memori yang menyebabkan layar abu-abu, masalah tanda tangan pemikiran Gemini, dan peningkatan stabilitas lainnya."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

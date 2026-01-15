@@ -336,9 +336,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"settingsSearch": "Nhanh chóng tìm và điều hướng đến các cài đặt cụ thể với tính năng tìm kiếm cài đặt mới.",
-			"stopButtonUX": "Chuyển từ nút hủy lớn gây phiền nhiễu sang nút dừng tinh tế hơn.",
-			"apiCompatibility": "Đã giải quyết các vấn đề API với Gemini, tên công cụ MCP và các cuộc gọi công cụ song song."
+			"openaiCodexProvider": "Đã thêm nhà cung cấp OpenAI - ChatGPT Plus/Pro cung cấp quyền truy cập dựa trên đăng ký vào các mô hình Codex mà không có chi phí trên mỗi token.",
+			"gpt52codexModel": "Mô hình gpt-5.2-codex mới được thêm vào Roo Code Router, nhà cung cấp OpenAI tiêu chuẩn và nhiều hơn nữa.",
+			"bugFixes": "Đã sửa các rò rỉ bộ nhớ gây ra màn hình xám, các vấn đề về chữ ký suy nghĩ Gemini và các cải thiện ổn định khác."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

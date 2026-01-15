@@ -335,9 +335,9 @@
 		},
 		"release": {
 			"heading": "नया क्या है:",
-			"settingsSearch": "नई सेटिंग्स खोज के साथ विशिष्ट सेटिंग्स को जल्दी से खोजें और नेविगेट करें।",
-			"stopButtonUX": "बड़े अनावश्यक कैंसल बटन से एक अधिक सुरुचिपूर्ण स्टॉप बटन में बदल गया।",
-			"apiCompatibility": "Gemini, MCP टूल नामों और समानांतर टूल कॉल के साथ API समस्याओं को हल किया गया।"
+			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider जोड़ा गया जो token लागत के बिना Codex मॉडल तक subscription-आधारित पहुंच देता है।",
+			"gpt52codexModel": "नया gpt-5.2-codex मॉडल Roo Code Router, मानक OpenAI provider और अन्य में जोड़ा गया।",
+			"bugFixes": "ग्रे स्क्रीन का कारण बनने वाली मेमोरी लीक, Gemini thought signature समस्याओं और अन्य स्थिरता सुधार ठीक किए गए।"
 		},
 		"cloudAgents": {
 			"heading": "क्लाउड में नया:",

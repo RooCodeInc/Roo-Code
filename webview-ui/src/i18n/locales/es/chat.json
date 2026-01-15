@@ -335,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Qué hay de nuevo:",
-			"settingsSearch": "Encuentra y navega rápidamente a configuraciones específicas con la nueva búsqueda de configuración.",
-			"stopButtonUX": "Se cambió de un gran botón de cancelación intrusivo a un botón de detener más elegante.",
-			"apiCompatibility": "Se resolvieron problemas de API con Gemini, nombres de herramientas MCP y llamadas de herramientas en paralelo."
+			"openaiCodexProvider": "Se añadió el Proveedor OpenAI - ChatGPT Plus/Pro que ofrece acceso basado en suscripción a modelos Codex sin costos por token.",
+			"gpt52codexModel": "Se añadió el nuevo modelo gpt-5.2-codex al Roo Code Router, al proveedor estándar OpenAI y más.",
+			"bugFixes": "Se corrigieron fugas de memoria que causaban pantallas grises, problemas de firma de pensamiento de Gemini y más mejoras de estabilidad."
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",

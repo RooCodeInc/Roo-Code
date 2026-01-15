@@ -336,9 +336,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"settingsSearch": "Yeni ayar aramasıyla belirli ayarları hızlıca bulun ve erişin.",
-			"stopButtonUX": "Büyük rahatsız edici iptal düğmesinden daha zarif bir durdur düğmesine geçtik.",
-			"apiCompatibility": "Gemini, MCP araç adları ve paralel araç çağrılarıyla ilgili API sorunları çözüldü."
+			"openaiCodexProvider": "Codex modellerine abonelik tabanlı erişim sağlayan OpenAI - ChatGPT Plus/Pro Sağlayıcısı eklendi, token başına maliyet yok.",
+			"gpt52codexModel": "Yeni gpt-5.2-codex modeli Roo Code Router, standart OpenAI sağlayıcısı ve diğerlerine eklendi.",
+			"bugFixes": "Gri ekranlara neden olan bellek sızıntıları, Gemini düşünce imzası sorunları ve diğer stabilite iyileştirmeleri düzeltildi."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
