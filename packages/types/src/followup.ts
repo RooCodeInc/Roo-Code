@@ -8,6 +8,8 @@ import { z } from "zod"
 export interface FollowUpData {
 	/** The question being asked by the LLM */
 	question?: string
+	/** Array of questions being asked by the LLM */
+	questions?: string[]
 	/** Array of suggested answers that the user can select */
 	suggest?: Array<SuggestionItem>
 }
@@ -35,6 +37,7 @@ export const suggestionItemSchema = z.object({
  */
 export const followUpDataSchema = z.object({
 	question: z.string().optional(),
+	questions: z.array(z.string()).optional(),
 	suggest: z.array(suggestionItemSchema).optional(),
 })
 

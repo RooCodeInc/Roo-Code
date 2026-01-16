@@ -38,6 +38,7 @@ import McpResourceRow from "../mcp/McpResourceRow"
 import { Mention } from "./Mention"
 import { CheckpointSaved } from "./checkpoints/CheckpointSaved"
 import { FollowUpSuggest } from "./FollowUpSuggest"
+import { MultiQuestionHandler } from "./MultiQuestionHandler"
 import { BatchFilePermission } from "./BatchFilePermission"
 import { BatchDiffApproval } from "./BatchDiffApproval"
 import { ProgressIndicator } from "./ProgressIndicator"
@@ -1632,17 +1633,28 @@ export const ChatRowContent = ({
 								</div>
 							)}
 							<div className="flex flex-col gap-2 ml-6">
-								<Markdown
-									markdown={message.partial === true ? message?.text : followUpData?.question}
-								/>
-								<FollowUpSuggest
-									suggestions={followUpData?.suggest}
-									onSuggestionClick={onSuggestionClick}
-									ts={message?.ts}
-									onCancelAutoApproval={onFollowUpUnmount}
-									isAnswered={isFollowUpAnswered}
-									isFollowUpAutoApprovalPaused={isFollowUpAutoApprovalPaused}
-								/>
+								{followUpData?.questions && followUpData.questions.length > 0 ? (
+									<MultiQuestionHandler
+										questions={followUpData.questions}
+										onSendResponse={(response) => {
+											onSuggestionClick?.({ answer: response })
+										}}
+									/>
+								) : (
+									<>
+										<Markdown
+											markdown={message.partial === true ? message?.text : followUpData?.question}
+										/>
+										<FollowUpSuggest
+											suggestions={followUpData?.suggest}
+											onSuggestionClick={onSuggestionClick}
+											ts={message?.ts}
+											onCancelAutoApproval={onFollowUpUnmount}
+											isAnswered={isFollowUpAnswered}
+											isFollowUpAutoApprovalPaused={isFollowUpAutoApprovalPaused}
+										/>
+									</>
+								)}
 							</div>
 						</>
 					)

@@ -103,6 +103,32 @@ describe("askFollowupQuestionTool", () => {
 		)
 	})
 
+	it("should parse multiple questions from XML", async () => {
+		const block: ToolUse = {
+			type: "tool_use",
+			name: "ask_followup_question",
+			params: {
+				questions: "<question>Question 1</question><question>Question 2</question>",
+				follow_up: "",
+			},
+			partial: false,
+		}
+
+		await askFollowupQuestionTool.handle(mockCline, block as ToolUse<"ask_followup_question">, {
+			askApproval: vi.fn(),
+			handleError: vi.fn(),
+			pushToolResult: mockPushToolResult,
+			removeClosingTag: vi.fn((tag, content) => content),
+			toolProtocol: "xml",
+		})
+
+		expect(mockCline.ask).toHaveBeenCalledWith(
+			"followup",
+			expect.stringContaining('"questions":["Question 1","Question 2"]'),
+			false,
+		)
+	})
+
 	describe("handlePartial with native protocol", () => {
 		it("should only send question during partial streaming to avoid raw JSON display", async () => {
 			const block: ToolUse<"ask_followup_question"> = {

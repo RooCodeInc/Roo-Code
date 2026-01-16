@@ -1,10 +1,11 @@
 export function getAskFollowupQuestionDescription(): string {
 	return `## ask_followup_question
-Description: Ask the user a question to gather additional information needed to complete the task. Use when you need clarification or more details to proceed effectively.
+Description: Ask the user a question to gather additional information needed to complete the task. Use when you need clarification or more details to proceed effectively. You may ask multiple questions at once.
 
 Parameters:
-- question: (required) A clear, specific question addressing the information needed
-- follow_up: (required) A list of 2-4 suggested answers, each in its own <suggest> tag. Suggestions must be complete, actionable answers without placeholders. Optionally include mode attribute to switch modes (code/architect/etc.)
+- question: (required) A clear, specific question addressing the information needed.
+- questions: (optional) A container for asking multiple questions. Use <question> tags inside.
+- follow_up: (optional) A list of suggested answers, each in its own <suggest> tag.
 
 Usage:
 <ask_followup_question>
@@ -13,6 +14,14 @@ Usage:
 <suggest>First suggestion</suggest>
 <suggest mode="code">Action with mode switch</suggest>
 </follow_up>
+</ask_followup_question>
+
+Usage with multiple questions:
+<ask_followup_question>
+<questions>
+<question>Question 1?</question>
+<question>Question 2?</question>
+</questions>
 </ask_followup_question>
 
 Example:

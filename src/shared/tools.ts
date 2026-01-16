@@ -76,6 +76,7 @@ export const toolParamNames = [
 	"old_string", // search_replace and edit_file parameter
 	"new_string", // search_replace and edit_file parameter
 	"expected_replacements", // edit_file parameter for multiple occurrences
+	"questions", // ask_followup_question parameter for multiple questions
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
