@@ -75,6 +75,7 @@ import { CodeIndexManager } from "../../services/code-index/manager"
 import type { IndexProgressUpdate } from "../../services/code-index/interfaces/manager"
 import { MdmService } from "../../services/mdm/MdmService"
 import { SkillsManager } from "../../services/skills/SkillsManager"
+import { HookManager, createHookManager, type IHookManager } from "../../services/hooks"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
@@ -142,6 +143,7 @@ export class ClineProvider
 	private _workspaceTracker?: WorkspaceTracker // workSpaceTracker read-only for access outside this class
 	protected mcpHub?: McpHub // Change from private to protected
 	protected skillsManager?: SkillsManager
+	protected hookManager?: IHookManager
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
 	private taskCreationCallback: (task: Task) => void
@@ -206,6 +208,11 @@ export class ClineProvider
 		this.skillsManager = new SkillsManager(this)
 		this.skillsManager.initialize().catch((error) => {
 			this.log(`Failed to initialize Skills Manager: ${error}`)
+		})
+
+		// Initialize Hook Manager for lifecycle hooks
+		this.initializeHookManager().catch((error) => {
+			this.log(`Failed to initialize Hook Manager: ${error}`)
 		})
 
 		this.marketplaceManager = new MarketplaceManager(this.context, this.customModesManager)
@@ -2217,6 +2224,58 @@ export class ClineProvider
 				}
 			})(),
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
+
+			// Hooks state for settings tab
+			hooks: this.getHooksStateForWebview(),
+		}
+	}
+
+	/**
+	 * Build hooks state for webview from HookManager.
+	 * Converts internal types to serializable HooksState.
+	 */
+	private getHooksStateForWebview(): ExtensionState["hooks"] {
+		if (!this.hookManager) {
+			return undefined
+		}
+
+		const snapshot = this.hookManager.getConfigSnapshot()
+		const enabledHooks = this.hookManager.getEnabledHooks()
+		const executionHistory = this.hookManager.getHookExecutionHistory()
+
+		// Convert ResolvedHook[] to HookInfo[]
+		const hookInfos = enabledHooks.map((hook) => ({
+			id: hook.id,
+			event: hook.event,
+			matcher: hook.matcher,
+			commandPreview: hook.command.length > 100 ? hook.command.substring(0, 97) + "..." : hook.command,
+			enabled: hook.enabled ?? true,
+			source: hook.source,
+			timeout: hook.timeout ?? 60,
+			shell: hook.shell,
+			description: hook.description,
+		}))
+
+		// Convert HookExecution[] to HookExecutionRecord[]
+		// Limit to last 50 records for UI
+		const executionRecords = executionHistory.slice(-50).map((exec) => ({
+			timestamp: exec.timestamp.toISOString(),
+			hookId: exec.hook.id,
+			event: exec.event,
+			toolName: exec.result.hook.matcher ? undefined : undefined, // Tool name is in context, not easily accessible here
+			exitCode: exec.result.exitCode,
+			duration: exec.result.duration,
+			timedOut: exec.result.timedOut,
+			blocked: exec.result.exitCode === 2,
+			error: exec.result.error?.message,
+			blockMessage: exec.result.exitCode === 2 ? exec.result.stderr : undefined,
+		}))
+
+		return {
+			enabledHooks: hookInfos,
+			executionHistory: executionRecords,
+			hasProjectHooks: snapshot?.hasProjectHooks ?? false,
+			snapshotTimestamp: snapshot?.loadedAt?.toISOString(),
 		}
 	}
 
@@ -2580,6 +2639,85 @@ export class ClineProvider
 
 	public getMcpHub(): McpHub | undefined {
 		return this.mcpHub
+	}
+
+	/**
+	 * Initialize the Hook Manager for lifecycle hooks.
+	 * This loads hooks configuration from project/.roo/hooks/ files.
+	 */
+	private async initializeHookManager(): Promise<void> {
+		const cwd = this.currentWorkspacePath || getWorkspacePath()
+		if (!cwd) {
+			this.log("[HookManager] No workspace path available, hooks disabled")
+			return
+		}
+
+		try {
+			const state = await this.getState()
+			this.hookManager = createHookManager({
+				cwd,
+				mode: state?.mode,
+				logger: {
+					debug: (msg: string) => this.log(`[Hooks/debug] ${msg}`),
+					info: (msg: string) => this.log(`[Hooks/info] ${msg}`),
+					warn: (msg: string) => this.log(`[Hooks/warn] ${msg}`),
+					error: (msg: string) => this.log(`[Hooks/error] ${msg}`),
+				},
+			})
+
+			// Load hooks configuration
+			await this.hookManager.loadHooksConfig()
+			this.log("[HookManager] Hooks loaded successfully")
+		} catch (error) {
+			this.log(
+				`[HookManager] Failed to initialize hooks: ${error instanceof Error ? error.message : String(error)}`,
+			)
+			// Don't throw - hooks are optional
+			this.hookManager = undefined
+		}
+	}
+
+	/**
+	 * Get the Hook Manager instance.
+	 */
+	public getHookManager(): IHookManager | undefined {
+		return this.hookManager
+	}
+
+	/**
+	 * Reload the Hook Manager configuration.
+	 * Call this when hooks configuration files may have changed.
+	 */
+	public async reloadHooksConfig(): Promise<void> {
+		if (this.hookManager) {
+			try {
+				await this.hookManager.reloadHooksConfig()
+				this.log("[HookManager] Hooks reloaded successfully")
+			} catch (error) {
+				this.log(
+					`[HookManager] Failed to reload hooks: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+		}
+	}
+
+	/**
+	 * Post hook execution status to webview.
+	 */
+	public postHookStatusToWebview(status: {
+		status: "running" | "completed" | "failed" | "blocked"
+		event: string
+		toolName?: string
+		hookId?: string
+		duration?: number
+		error?: string
+		blockMessage?: string
+		modified?: boolean
+	}): void {
+		this.postMessageToWebview({
+			type: "hookExecutionStatus",
+			hookExecutionStatus: status,
+		})
 	}
 
 	public getSkillsManager(): SkillsManager | undefined {

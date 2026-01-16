@@ -3336,6 +3336,74 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		// =====================================================================
+		// Hooks Management Commands
+		// =====================================================================
+
+		case "hooksReloadConfig": {
+			// Reload hooks configuration from all sources
+			const hookManager = provider.getHookManager()
+			if (hookManager) {
+				try {
+					await hookManager.reloadHooksConfig()
+					await provider.postStateToWebview()
+				} catch (error) {
+					provider.log(
+						`Failed to reload hooks config: ${error instanceof Error ? error.message : String(error)}`,
+					)
+					vscode.window.showErrorMessage("Failed to reload hooks configuration")
+				}
+			}
+			break
+		}
+
+		case "hooksSetEnabled": {
+			// Enable or disable a specific hook
+			const hookManager = provider.getHookManager()
+			if (hookManager && message.hookId && typeof message.hookEnabled === "boolean") {
+				try {
+					await hookManager.setHookEnabled(message.hookId, message.hookEnabled)
+					await provider.postStateToWebview()
+				} catch (error) {
+					provider.log(
+						`Failed to set hook enabled: ${error instanceof Error ? error.message : String(error)}`,
+					)
+					vscode.window.showErrorMessage(`Failed to ${message.hookEnabled ? "enable" : "disable"} hook`)
+				}
+			}
+			break
+		}
+
+		case "hooksOpenConfigFolder": {
+			// Open the hooks configuration folder in VS Code
+			const source = message.hooksSource ?? "project"
+			try {
+				let hooksPath: string
+				if (source === "global") {
+					// Global hooks: ~/.roo/hooks
+					hooksPath = path.join(os.homedir(), ".roo", "hooks")
+				} else {
+					// Project hooks: .roo/hooks in workspace
+					const cwd = provider.cwd
+					hooksPath = path.join(cwd, ".roo", "hooks")
+				}
+
+				// Check if directory exists, create if not
+				const exists = await fileExistsAtPath(hooksPath)
+				if (!exists) {
+					await fs.mkdir(hooksPath, { recursive: true })
+				}
+
+				// Open the folder in VS Code
+				const uri = vscode.Uri.file(hooksPath)
+				await vscode.commands.executeCommand("revealFileInOS", uri)
+			} catch (error) {
+				provider.log(`Failed to open hooks folder: ${error instanceof Error ? error.message : String(error)}`)
+				vscode.window.showErrorMessage("Failed to open hooks configuration folder")
+			}
+			break
+		}
+
 		default: {
 			// console.log(`Unhandled message type: ${message.type}`)
 			//

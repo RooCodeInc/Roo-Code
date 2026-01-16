@@ -36,11 +36,38 @@
 		"contextManagement": "Context",
 		"terminal": "Terminal",
 		"slashCommands": "Slash Commands",
+		"hooks": "Hooks",
 		"prompts": "Prompts",
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Language",
 		"about": "About Roo Code"
+	},
+	"hooks": {
+		"configuredHooks": "Configured Hooks",
+		"lastLoadedTooltip": "Last loaded at {{time}}",
+		"reloadTooltip": "Reload hooks configuration from disk",
+		"reload": "Reload",
+		"openProjectFolderTooltip": "Open project hooks configuration folder",
+		"openGlobalFolderTooltip": "Open global hooks configuration folder",
+		"openProjectFolder": "Open Project Folder",
+		"openGlobalFolder": "Open Global Folder",
+		"projectHooksWarningTitle": "Project-level hooks detected",
+		"projectHooksWarningMessage": "This project includes hook configurations that will execute shell commands. Only enable hooks from sources you trust.",
+		"reloadNote": "Changes to hook configuration files require clicking Reload to take effect.",
+		"noHooksConfigured": "No hooks configured",
+		"noHooksHint": "Create hook configuration files to automate actions on tool execution events.",
+		"enabled": "Enabled",
+		"shell": "Shell",
+		"timeout": "Timeout",
+		"activityLog": "Hook Activity",
+		"status": {
+			"running": "Running",
+			"completed": "Completed",
+			"failed": "Failed",
+			"blocked": "Blocked",
+			"timeout": "Timeout"
+		}
 	},
 	"about": {
 		"bugReport": {

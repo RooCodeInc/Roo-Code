@@ -81,6 +81,7 @@ import { BrowserSession } from "../../services/browser/BrowserSession"
 import { McpHub } from "../../services/mcp/McpHub"
 import { McpServerManager } from "../../services/mcp/McpServerManager"
 import { RepoPerTaskCheckpointService } from "../../services/checkpoints"
+import { ToolExecutionHooks, createToolExecutionHooks } from "../../services/hooks"
 
 // integrations
 import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider"
@@ -334,6 +335,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Computer User
 	browserSession: BrowserSession
 
+	// Hooks
+	toolExecutionHooks: ToolExecutionHooks
+
 	// Editing
 	diffViewProvider: DiffViewProvider
 	diffStrategy?: DiffStrategy
@@ -535,6 +539,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 			}
 		})
+
+		// Initialize tool execution hooks
+		this.toolExecutionHooks = createToolExecutionHooks(provider.getHookManager() ?? null, (status) =>
+			provider.postHookStatusToWebview(status),
+		)
+
 		this.diffEnabled = enableDiff
 		this.fuzzyMatchThreshold = fuzzyMatchThreshold
 		this.consecutiveMistakeLimit = consecutiveMistakeLimit ?? DEFAULT_CONSECUTIVE_MISTAKE_LIMIT

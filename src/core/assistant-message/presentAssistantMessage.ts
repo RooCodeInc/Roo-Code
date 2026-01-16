@@ -376,6 +376,25 @@ export async function presentAssistantMessage(cline: Task) {
 			const state = await cline.providerRef.deref()?.getState()
 			const { mode, customModes, experiments: stateExperiments } = state ?? {}
 
+			const buildToolExecutionHookContext = (toolName: string, toolInput: Record<string, unknown>) => {
+				const projectDirectory = cline.cwd
+				const projectName = projectDirectory.split(/[/\\]/).filter(Boolean).pop() ?? projectDirectory
+
+				return {
+					toolName,
+					toolInput,
+					session: {
+						taskId: cline.taskId,
+						sessionId: cline.instanceId,
+						mode: mode ?? defaultModeSlug,
+					},
+					project: {
+						directory: projectDirectory,
+						name: projectName,
+					},
+				}
+			}
+
 			const toolDescription = (): string => {
 				switch (block.name) {
 					case "execute_command":
@@ -509,6 +528,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 			// Track if we've already pushed a tool result for this tool call (native protocol only)
 			let hasToolResult = false
+			let toolOutputForHooks: ToolResponse | undefined
 
 			// Determine protocol by checking if this tool call has an ID.
 			// Native protocol tool calls ALWAYS have an ID (set when parsed from tool_call chunks).
@@ -524,6 +544,13 @@ export async function presentAssistantMessage(cline: Task) {
 			let approvalFeedback: { text: string; images?: string[] } | undefined
 
 			const pushToolResult = (content: ToolResponse) => {
+				// Capture the final tool output for PostToolUse hooks.
+				// Note: This captures the first tool_result emitted by the tool.
+				// Tools generally emit a single tool result; if a tool emits multiple, we only retain the first.
+				if (toolOutputForHooks === undefined) {
+					toolOutputForHooks = content
+				}
+
 				if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
 					// For native protocol, only allow ONE tool_result per tool call
 					if (hasToolResult) {
@@ -638,12 +665,41 @@ export async function presentAssistantMessage(cline: Task) {
 				// allow multiple tool calls in sequence (don't set didAlreadyUseTool)
 			}
 
+			let toolDeniedByHook = false
+			let toolDeniedByUser = false
+			let toolExecutionHadFailure = false
+			let toolFailureAction: string | undefined
+			let toolFailureMessage: string | undefined
+			let toolInputForHooks = (block.nativeArgs ?? block.params ?? {}) as Record<string, unknown>
+			let blockToExecute: any = block
+
 			const askApproval = async (
 				type: ClineAsk,
 				partialMessage?: string,
 				progressStatus?: ToolProgressStatus,
 				isProtected?: boolean,
 			) => {
+				// Hooks: PermissionRequest (blocking)
+				// This hook is invoked immediately before the user approval prompt is shown.
+				// It must NOT bypass existing approval rules (it can only deny).
+				if (!block.partial && !toolDeniedByHook) {
+					const permissionRequest = await cline.toolExecutionHooks.executePermissionRequest(
+						buildToolExecutionHookContext(blockToExecute.name, toolInputForHooks),
+					)
+
+					if (!permissionRequest.proceed) {
+						toolDeniedByHook = true
+						pushToolResult(
+							formatResponse.toolDeniedWithFeedback(
+								permissionRequest.blockReason ?? "Blocked by PermissionRequest hook",
+								toolProtocol,
+							),
+						)
+						cline.didRejectTool = true
+						return false
+					}
+				}
+
 				const { response, text, images } = await cline.ask(
 					type,
 					partialMessage,
@@ -654,6 +710,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 				if (response !== "yesButtonClicked") {
 					// Handle both messageResponse and noButtonClicked with text.
+					toolDeniedByUser = true
 					if (text) {
 						await cline.say("user_feedback", text, images)
 						pushToolResult(
@@ -696,6 +753,9 @@ export async function presentAssistantMessage(cline: Task) {
 					return
 				}
 				const errorString = `Error ${action}: ${JSON.stringify(serializeError(error))}`
+				toolExecutionHadFailure = true
+				toolFailureAction = action
+				toolFailureMessage = error.message ?? errorString
 
 				await cline.say(
 					"error",
@@ -869,10 +929,39 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 			}
 
-			switch (block.name) {
+			// Hooks: PreToolUse (blocking / may modify tool input)
+			if (!block.partial) {
+				const pre = await cline.toolExecutionHooks.executePreToolUse(
+					buildToolExecutionHookContext(blockToExecute.name, toolInputForHooks),
+				)
+
+				if (!pre.proceed) {
+					pushToolResult(
+						formatResponse.toolDeniedWithFeedback(
+							pre.blockReason ?? "Blocked by PreToolUse hook",
+							toolProtocol,
+						),
+					)
+					cline.didRejectTool = true
+					break
+				}
+
+				if (pre.modifiedInput) {
+					toolInputForHooks = pre.modifiedInput
+					blockToExecute = {
+						...block,
+						params: pre.modifiedInput,
+						nativeArgs: block.nativeArgs ? pre.modifiedInput : undefined,
+					}
+				}
+			}
+
+			const toolExecutionStart = Date.now()
+
+			switch (blockToExecute.name) {
 				case "write_to_file":
 					await checkpointSaveAndMark(cline)
-					await writeToFileTool.handle(cline, block as ToolUse<"write_to_file">, {
+					await writeToFileTool.handle(cline, blockToExecute as ToolUse<"write_to_file">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -881,7 +970,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "update_todo_list":
-					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
+					await updateTodoListTool.handle(cline, blockToExecute as ToolUse<"update_todo_list">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -895,7 +984,7 @@ export async function presentAssistantMessage(cline: Task) {
 					// Check if this tool call came from native protocol by checking for ID
 					// Native calls always have IDs, XML calls never do
 					if (toolProtocol === TOOL_PROTOCOL.NATIVE) {
-						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+						await applyDiffToolClass.handle(cline, blockToExecute as ToolUse<"apply_diff">, {
 							askApproval,
 							handleError,
 							pushToolResult,
@@ -918,9 +1007,16 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 
 					if (isMultiFileApplyDiffEnabled) {
-						await applyDiffTool(cline, block, askApproval, handleError, pushToolResult, removeClosingTag)
+						await applyDiffTool(
+							cline,
+							blockToExecute,
+							askApproval,
+							handleError,
+							pushToolResult,
+							removeClosingTag,
+						)
 					} else {
-						await applyDiffToolClass.handle(cline, block as ToolUse<"apply_diff">, {
+						await applyDiffToolClass.handle(cline, blockToExecute as ToolUse<"apply_diff">, {
 							askApproval,
 							handleError,
 							pushToolResult,
@@ -932,7 +1028,7 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 				case "search_and_replace":
 					await checkpointSaveAndMark(cline)
-					await searchAndReplaceTool.handle(cline, block as ToolUse<"search_and_replace">, {
+					await searchAndReplaceTool.handle(cline, blockToExecute as ToolUse<"search_and_replace">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -942,7 +1038,7 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "search_replace":
 					await checkpointSaveAndMark(cline)
-					await searchReplaceTool.handle(cline, block as ToolUse<"search_replace">, {
+					await searchReplaceTool.handle(cline, blockToExecute as ToolUse<"search_replace">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -952,7 +1048,7 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "edit_file":
 					await checkpointSaveAndMark(cline)
-					await editFileTool.handle(cline, block as ToolUse<"edit_file">, {
+					await editFileTool.handle(cline, blockToExecute as ToolUse<"edit_file">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -962,7 +1058,7 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "apply_patch":
 					await checkpointSaveAndMark(cline)
-					await applyPatchTool.handle(cline, block as ToolUse<"apply_patch">, {
+					await applyPatchTool.handle(cline, blockToExecute as ToolUse<"apply_patch">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -972,7 +1068,7 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "read_file":
 					// Type assertion is safe here because we're in the "read_file" case
-					await readFileTool.handle(cline, block as ToolUse<"read_file">, {
+					await readFileTool.handle(cline, blockToExecute as ToolUse<"read_file">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -981,7 +1077,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "fetch_instructions":
-					await fetchInstructionsTool.handle(cline, block as ToolUse<"fetch_instructions">, {
+					await fetchInstructionsTool.handle(cline, blockToExecute as ToolUse<"fetch_instructions">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -990,7 +1086,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "list_files":
-					await listFilesTool.handle(cline, block as ToolUse<"list_files">, {
+					await listFilesTool.handle(cline, blockToExecute as ToolUse<"list_files">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -999,7 +1095,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "codebase_search":
-					await codebaseSearchTool.handle(cline, block as ToolUse<"codebase_search">, {
+					await codebaseSearchTool.handle(cline, blockToExecute as ToolUse<"codebase_search">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1008,7 +1104,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "search_files":
-					await searchFilesTool.handle(cline, block as ToolUse<"search_files">, {
+					await searchFilesTool.handle(cline, blockToExecute as ToolUse<"search_files">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1019,7 +1115,7 @@ export async function presentAssistantMessage(cline: Task) {
 				case "browser_action":
 					await browserActionTool(
 						cline,
-						block as ToolUse<"browser_action">,
+						blockToExecute as ToolUse<"browser_action">,
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1027,7 +1123,7 @@ export async function presentAssistantMessage(cline: Task) {
 					)
 					break
 				case "execute_command":
-					await executeCommandTool.handle(cline, block as ToolUse<"execute_command">, {
+					await executeCommandTool.handle(cline, blockToExecute as ToolUse<"execute_command">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1036,7 +1132,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "use_mcp_tool":
-					await useMcpToolTool.handle(cline, block as ToolUse<"use_mcp_tool">, {
+					await useMcpToolTool.handle(cline, blockToExecute as ToolUse<"use_mcp_tool">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1045,7 +1141,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "access_mcp_resource":
-					await accessMcpResourceTool.handle(cline, block as ToolUse<"access_mcp_resource">, {
+					await accessMcpResourceTool.handle(cline, blockToExecute as ToolUse<"access_mcp_resource">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1054,7 +1150,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "ask_followup_question":
-					await askFollowupQuestionTool.handle(cline, block as ToolUse<"ask_followup_question">, {
+					await askFollowupQuestionTool.handle(cline, blockToExecute as ToolUse<"ask_followup_question">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1063,7 +1159,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "switch_mode":
-					await switchModeTool.handle(cline, block as ToolUse<"switch_mode">, {
+					await switchModeTool.handle(cline, blockToExecute as ToolUse<"switch_mode">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1072,13 +1168,13 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "new_task":
-					await newTaskTool.handle(cline, block as ToolUse<"new_task">, {
+					await newTaskTool.handle(cline, blockToExecute as ToolUse<"new_task">, {
 						askApproval,
 						handleError,
 						pushToolResult,
 						removeClosingTag,
 						toolProtocol,
-						toolCallId: block.id,
+						toolCallId: blockToExecute.id,
 					})
 					break
 				case "attempt_completion": {
@@ -1093,13 +1189,13 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 					await attemptCompletionTool.handle(
 						cline,
-						block as ToolUse<"attempt_completion">,
+						blockToExecute as ToolUse<"attempt_completion">,
 						completionCallbacks,
 					)
 					break
 				}
 				case "run_slash_command":
-					await runSlashCommandTool.handle(cline, block as ToolUse<"run_slash_command">, {
+					await runSlashCommandTool.handle(cline, blockToExecute as ToolUse<"run_slash_command">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1109,7 +1205,7 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "generate_image":
 					await checkpointSaveAndMark(cline)
-					await generateImageTool.handle(cline, block as ToolUse<"generate_image">, {
+					await generateImageTool.handle(cline, blockToExecute as ToolUse<"generate_image">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1128,7 +1224,9 @@ export async function presentAssistantMessage(cline: Task) {
 						break
 					}
 
-					const customTool = stateExperiments?.customTools ? customToolRegistry.get(block.name) : undefined
+					const customTool = stateExperiments?.customTools
+						? customToolRegistry.get(blockToExecute.name)
+						: undefined
 
 					if (customTool) {
 						try {
@@ -1138,7 +1236,7 @@ export async function presentAssistantMessage(cline: Task) {
 								try {
 									customToolArgs = customTool.parameters.parse(block.nativeArgs || block.params || {})
 								} catch (parseParamsError) {
-									const message = `Custom tool "${block.name}" argument validation failed: ${parseParamsError.message}`
+									const message = `Custom tool "${blockToExecute.name}" argument validation failed: ${parseParamsError.message}`
 									console.error(message)
 									cline.consecutiveMistakeCount++
 									await cline.say("error", message)
@@ -1162,17 +1260,17 @@ export async function presentAssistantMessage(cline: Task) {
 							cline.consecutiveMistakeCount++
 							// Record custom tool error with static name
 							cline.recordToolError("custom_tool", executionError.message)
-							await handleError(`executing custom tool "${block.name}"`, executionError)
+							await handleError(`executing custom tool "${blockToExecute.name}"`, executionError)
 						}
 
 						break
 					}
 
 					// Not a custom tool - handle as unknown tool error
-					const errorMessage = `Unknown tool "${block.name}". This tool does not exist. Please use one of the available tools.`
+					const errorMessage = `Unknown tool "${blockToExecute.name}". This tool does not exist. Please use one of the available tools.`
 					cline.consecutiveMistakeCount++
-					cline.recordToolError(block.name as ToolName, errorMessage)
-					await cline.say("error", t("tools:unknownToolError", { toolName: block.name }))
+					cline.recordToolError(blockToExecute.name as ToolName, errorMessage)
+					await cline.say("error", t("tools:unknownToolError", { toolName: blockToExecute.name }))
 					// Push tool_result directly for native protocol WITHOUT setting didAlreadyUseTool
 					// This prevents the stream from being interrupted with "Response interrupted by tool use result"
 					if (toolProtocol === TOOL_PROTOCOL.NATIVE && toolCallId) {
@@ -1186,6 +1284,30 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult(formatResponse.toolError(errorMessage, toolProtocol))
 					}
 					break
+				}
+			}
+
+			// Hooks: PostToolUse / PostToolUseFailure (non-blocking)
+			if (!block.partial && !toolDeniedByHook && !toolDeniedByUser) {
+				const duration = Date.now() - toolExecutionStart
+				const finalToolInput = (blockToExecute.nativeArgs ?? blockToExecute.params ?? {}) as Record<
+					string,
+					unknown
+				>
+				const hookContext = buildToolExecutionHookContext(blockToExecute.name, finalToolInput)
+
+				if (toolExecutionHadFailure) {
+					void cline.toolExecutionHooks
+						.executePostToolUseFailure(
+							hookContext,
+							toolFailureAction ?? "tool_error",
+							toolFailureMessage ?? "Tool execution failed",
+						)
+						.catch(() => {})
+				} else {
+					void cline.toolExecutionHooks
+						.executePostToolUse(hookContext, toolOutputForHooks, duration)
+						.catch(() => {})
 				}
 			}
 

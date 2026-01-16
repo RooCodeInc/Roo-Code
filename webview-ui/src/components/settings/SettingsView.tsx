@@ -28,6 +28,7 @@ import {
 	Server,
 	Users2,
 	ArrowLeft,
+	Zap,
 } from "lucide-react"
 
 import {
@@ -79,6 +80,7 @@ import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
 import ModesView from "../modes/ModesView"
 import McpView from "../mcp/McpView"
+import { HooksSettings } from "./HooksSettings"
 import { SettingsSearch } from "./SettingsSearch"
 import { useSearchIndexRegistry, SearchIndexProvider } from "./useSettingsSearch"
 
@@ -104,6 +106,7 @@ export const sectionNames = [
 	"terminal",
 	"modes",
 	"mcp",
+	"hooks",
 	"prompts",
 	"ui",
 	"experimental",
@@ -530,6 +533,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "notifications", icon: Bell },
 			{ id: "contextManagement", icon: Database },
 			{ id: "terminal", icon: SquareTerminal },
+			{ id: "hooks", icon: Zap },
 			{ id: "prompts", icon: MessageSquare },
 			{ id: "ui", icon: Glasses },
 			{ id: "experimental", icon: FlaskConical },
@@ -879,6 +883,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 						{/* MCP Section */}
 						{renderTab === "mcp" && <McpView />}
+
+						{/* Hooks Section */}
+						{renderTab === "hooks" && <HooksSettings />}
 
 						{/* Prompts Section */}
 						{renderTab === "prompts" && (
