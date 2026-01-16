@@ -9,6 +9,18 @@ import type { SubtaskDetail } from "./SubtaskCostList"
 
 type TodoStatus = "completed" | "in_progress" | "pending"
 
+interface TodoItem {
+	// Legacy fields
+	id?: string
+	content: string
+	status?: TodoStatus | string | null
+
+	// Direct-linking/cost fields (optional for backward compatibility)
+	subtaskId?: string
+	tokens?: number
+	cost?: number
+}
+
 function getTodoIcon(status: TodoStatus | null) {
 	switch (status) {
 		case "completed":
@@ -20,53 +32,8 @@ function getTodoIcon(status: TodoStatus | null) {
 	}
 }
 
-/**
- * Normalizes a string for comparison by:
- * - Converting to lowercase
- * - Removing extra whitespace
- * - Trimming quotes
- * - Stripping common task prefixes (Subtask N:, ## Task:, Task N:)
- * - Removing trailing ellipsis from truncated strings
- */
-function normalizeForComparison(str: string): string {
-	return (
-		str
-			.toLowerCase()
-			.replace(/\s+/g, " ")
-			.trim()
-			.replace(/^["']|["']$/g, "")
-			// Strip common task prefixes: "Subtask N:", "## Task:", "Task N:", etc.
-			.replace(/^(subtask\s*\d*\s*:|##\s*task\s*:|task\s*\d*\s*:)\s*/i, "")
-			// Remove trailing ellipsis from truncated strings
-			.replace(/\.{3}$/, "")
-			.trim()
-	)
-}
-
-/**
- * Match a todo content string to a subtask detail using fuzzy matching.
- * Returns the matching SubtaskDetail if found, undefined otherwise.
- */
-function findMatchingSubtask(todoContent: string, subtaskDetails: SubtaskDetail[]): SubtaskDetail | undefined {
-	const normalizedTodo = normalizeForComparison(todoContent)
-
-	// Try exact match first
-	const exactMatch = subtaskDetails.find((s) => normalizeForComparison(s.name) === normalizedTodo)
-	if (exactMatch) {
-		return exactMatch
-	}
-
-	// Try partial match - check if one contains the other
-	const partialMatch = subtaskDetails.find((s) => {
-		const normalizedSubtask = normalizeForComparison(s.name)
-		return normalizedTodo.includes(normalizedSubtask) || normalizedSubtask.includes(normalizedTodo)
-	})
-
-	return partialMatch
-}
-
 export interface TodoListDisplayProps {
-	todos: any[]
+	todos: TodoItem[]
 	subtaskDetails?: SubtaskDetail[]
 	onSubtaskClick?: (subtaskId: string) => void
 }
@@ -76,16 +43,16 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 	const ulRef = useRef<HTMLUListElement>(null)
 	const itemRefs = useRef<(HTMLLIElement | null)[]>([])
 	const scrollIndex = useMemo(() => {
-		const inProgressIdx = todos.findIndex((todo: any) => todo.status === "in_progress")
+		const inProgressIdx = todos.findIndex((todo) => todo.status === "in_progress")
 		if (inProgressIdx !== -1) return inProgressIdx
-		return todos.findIndex((todo: any) => todo.status !== "completed")
+		return todos.findIndex((todo) => todo.status !== "completed")
 	}, [todos])
 
 	// Find the most important todo to display when collapsed
 	const mostImportantTodo = useMemo(() => {
-		const inProgress = todos.find((todo: any) => todo.status === "in_progress")
+		const inProgress = todos.find((todo) => todo.status === "in_progress")
 		if (inProgress) return inProgress
-		return todos.find((todo: any) => todo.status !== "completed")
+		return todos.find((todo) => todo.status !== "completed")
 	}, [todos])
 	useEffect(() => {
 		if (isCollapsed) return
@@ -104,7 +71,7 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 	if (!Array.isArray(todos) || todos.length === 0) return null
 
 	const totalCount = todos.length
-	const completedCount = todos.filter((todo: any) => todo.status === "completed").length
+	const completedCount = todos.filter((todo) => todo.status === "completed").length
 
 	const allCompleted = completedCount === totalCount && totalCount > 0
 
@@ -135,12 +102,16 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 			{/* Inline expanded list */}
 			{!isCollapsed && (
 				<ul ref={ulRef} className="list-none max-h-[300px] overflow-y-auto mt-2 -mb-1 pb-0 px-2 cursor-default">
-					{todos.map((todo: any, idx: number) => {
+					{todos.map((todo, idx: number) => {
 						const icon = getTodoIcon(todo.status as TodoStatus)
-						const matchingSubtask = subtaskDetails
-							? findMatchingSubtask(todo.content, subtaskDetails)
-							: undefined
-						const isClickable = matchingSubtask && onSubtaskClick
+						const isClickable = Boolean(todo.subtaskId && onSubtaskClick)
+						const subtaskById =
+							subtaskDetails && todo.subtaskId
+								? subtaskDetails.find((s) => s.id === todo.subtaskId)
+								: undefined
+						const displayTokens = todo.tokens ?? subtaskById?.tokens
+						const displayCost = todo.cost ?? subtaskById?.cost
+						const shouldShowCost = typeof displayTokens === "number" && typeof displayCost === "number"
 
 						return (
 							<li
@@ -154,17 +125,19 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 								{icon}
 								<span
 									className={cn("flex-1", isClickable && "cursor-pointer hover:underline")}
-									onClick={isClickable ? () => onSubtaskClick(matchingSubtask.id) : undefined}>
+									onClick={
+										isClickable ? () => onSubtaskClick?.(todo.subtaskId as string) : undefined
+									}>
 									{todo.content}
 								</span>
 								{/* Token count and cost display */}
-								{matchingSubtask && (
+								{shouldShowCost && (
 									<span className="flex items-center gap-2 text-xs text-vscode-descriptionForeground shrink-0">
 										<span className="tabular-nums opacity-70">
-											{formatLargeNumber(matchingSubtask.tokens)}
+											{formatLargeNumber(displayTokens)}
 										</span>
 										<span className="tabular-nums min-w-[45px] text-right">
-											${matchingSubtask.cost.toFixed(2)}
+											${displayCost.toFixed(2)}
 										</span>
 									</span>
 								)}

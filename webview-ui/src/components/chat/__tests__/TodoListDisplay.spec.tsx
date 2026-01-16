@@ -23,8 +23,8 @@ vi.mock("@src/utils/format", () => ({
 
 describe("TodoListDisplay", () => {
 	const baseTodos = [
-		{ id: "1", content: "Task 1: Change background colour", status: "completed" },
-		{ id: "2", content: "Task 2: Add timestamp to bottom", status: "completed" },
+		{ id: "1", content: "Task 1: Change background colour", status: "completed", subtaskId: "subtask-1" },
+		{ id: "2", content: "Task 2: Add timestamp to bottom", status: "completed", subtaskId: "subtask-2" },
 		{ id: "3", content: "Task 3: Pending task", status: "pending" },
 	]
 
@@ -81,7 +81,7 @@ describe("TodoListDisplay", () => {
 	})
 
 	describe("subtask cost display", () => {
-		it("should display tokens and cost when subtaskDetails are provided and match", () => {
+		it("should display tokens and cost when subtaskDetails are provided and todo.subtaskId matches", () => {
 			render(<TodoListDisplay todos={baseTodos} subtaskDetails={subtaskDetails} />)
 
 			// Expand to see the items
@@ -97,14 +97,14 @@ describe("TodoListDisplay", () => {
 			expect(screen.getByText("$0.24")).toBeInTheDocument()
 		})
 
-		it("should not display tokens/cost for unmatched todos", () => {
+		it("should not display tokens/cost for todos without subtaskId", () => {
 			render(<TodoListDisplay todos={baseTodos} subtaskDetails={subtaskDetails} />)
 
 			// Expand to see the items
 			const header = screen.getByText("Task 3: Pending task")
 			fireEvent.click(header)
 
-			// The pending task has no matching subtask, should not show cost
+			// The pending task has no subtaskId, should not show cost
 			const listItems = screen.getAllByRole("listitem")
 			const pendingItem = listItems.find((item) => item.textContent?.includes("Task 3: Pending task"))
 			expect(pendingItem).toBeDefined()
@@ -135,131 +135,50 @@ describe("TodoListDisplay", () => {
 		})
 	})
 
-	describe("fuzzy matching", () => {
-		it("should match todos with slightly different names (partial match)", () => {
-			const todosWithSlightlyDifferentNames = [
-				{ id: "1", content: "Change background colour", status: "completed" }, // Missing "Task 1:" prefix
-			]
-			const subtaskWithFullName: SubtaskDetail[] = [
+	describe("direct subtask linking", () => {
+		it("should use todo.tokens and todo.cost when provided (no subtaskDetails required)", () => {
+			const todosWithDirectCost = [
 				{
-					id: "subtask-1",
-					name: "Change background colour", // Exact partial match
-					tokens: 50000,
-					cost: 0.15,
+					id: "1",
+					content: "Task 1: Change background colour",
 					status: "completed",
-					hasNestedChildren: false,
-				},
-			]
-
-			render(<TodoListDisplay todos={todosWithSlightlyDifferentNames} subtaskDetails={subtaskWithFullName} />)
-
-			// Expand
-			const header = screen.getByText("1 to-dos done")
-			fireEvent.click(header)
-
-			// Should find the match
-			expect(screen.getByText("$0.15")).toBeInTheDocument()
-		})
-
-		it("should handle case-insensitive matching", () => {
-			const todosLowercase = [{ id: "1", content: "change background colour", status: "completed" }]
-			const subtaskUppercase: SubtaskDetail[] = [
-				{
-					id: "subtask-1",
-					name: "Change Background Colour",
-					tokens: 50000,
-					cost: 0.15,
-					status: "completed",
-					hasNestedChildren: false,
-				},
-			]
-
-			render(<TodoListDisplay todos={todosLowercase} subtaskDetails={subtaskUppercase} />)
-
-			// Expand
-			const header = screen.getByText("1 to-dos done")
-			fireEvent.click(header)
-
-			// Should find the match despite case difference
-			expect(screen.getByText("$0.15")).toBeInTheDocument()
-		})
-
-		it("should match when todo has 'Subtask N:' prefix and subtask has '## Task:' prefix", () => {
-			const todosWithSubtaskPrefix = [
-				{ id: "1", content: "Subtask 1: Change background colour to light purple", status: "completed" },
-			]
-			const subtaskWithMarkdownPrefix: SubtaskDetail[] = [
-				{
-					id: "subtask-1",
-					name: "## Task: Change Background Colour to Light Purp...",
+					subtaskId: "subtask-1",
 					tokens: 95400,
 					cost: 0.22,
-					status: "completed",
-					hasNestedChildren: false,
 				},
 			]
-
-			render(<TodoListDisplay todos={todosWithSubtaskPrefix} subtaskDetails={subtaskWithMarkdownPrefix} />)
+			render(<TodoListDisplay todos={todosWithDirectCost} />)
 
 			// Expand
 			const header = screen.getByText("1 to-dos done")
 			fireEvent.click(header)
 
-			// Should find the match despite different prefixes
+			expect(screen.getByText("95.4k")).toBeInTheDocument()
 			expect(screen.getByText("$0.22")).toBeInTheDocument()
 		})
 
-		it("should match when subtask name is truncated with ellipsis", () => {
-			const todos = [{ id: "1", content: "Task 1: Add timestamp to the bottom of the page", status: "completed" }]
-			const subtaskWithTruncation: SubtaskDetail[] = [
+		it("should fall back to subtaskDetails by ID when todo.tokens/cost are missing", () => {
+			const todosMissingCostFields = [
 				{
-					id: "subtask-1",
-					name: "## Task: Add Timestamp to the Bottom of the Pag...",
-					tokens: 95000,
-					cost: 0.24,
+					id: "1",
+					content: "Task 1: Change background colour",
 					status: "completed",
-					hasNestedChildren: false,
+					subtaskId: "subtask-1",
 				},
 			]
-
-			render(<TodoListDisplay todos={todos} subtaskDetails={subtaskWithTruncation} />)
+			render(<TodoListDisplay todos={todosMissingCostFields} subtaskDetails={subtaskDetails} />)
 
 			// Expand
 			const header = screen.getByText("1 to-dos done")
 			fireEvent.click(header)
 
-			// Should find the match despite truncation
-			expect(screen.getByText("$0.24")).toBeInTheDocument()
-		})
-
-		it("should strip 'Subtask N:' prefix from todo content", () => {
-			const todosWithNumberedPrefix = [
-				{ id: "1", content: "Subtask 2: Do something important", status: "completed" },
-			]
-			const subtaskWithoutPrefix: SubtaskDetail[] = [
-				{
-					id: "subtask-1",
-					name: "Do something important",
-					tokens: 50000,
-					cost: 0.15,
-					status: "completed",
-					hasNestedChildren: false,
-				},
-			]
-
-			render(<TodoListDisplay todos={todosWithNumberedPrefix} subtaskDetails={subtaskWithoutPrefix} />)
-
-			// Expand
-			const header = screen.getByText("1 to-dos done")
-			fireEvent.click(header)
-
-			// Should find the match after stripping prefix
-			expect(screen.getByText("$0.15")).toBeInTheDocument()
+			expect(screen.getByText("95.4k")).toBeInTheDocument()
+			expect(screen.getByText("$0.22")).toBeInTheDocument()
 		})
 	})
 
 	describe("click handler", () => {
-		it("should call onSubtaskClick when a matched todo is clicked", () => {
+		it("should call onSubtaskClick when a todo with subtaskId is clicked", () => {
 			const onSubtaskClick = vi.fn()
 			render(
 				<TodoListDisplay todos={baseTodos} subtaskDetails={subtaskDetails} onSubtaskClick={onSubtaskClick} />,
@@ -276,7 +195,7 @@ describe("TodoListDisplay", () => {
 			expect(onSubtaskClick).toHaveBeenCalledWith("subtask-1")
 		})
 
-		it("should not call onSubtaskClick when an unmatched todo is clicked", () => {
+		it("should not call onSubtaskClick when a todo does not have subtaskId", () => {
 			const onSubtaskClick = vi.fn()
 			render(
 				<TodoListDisplay todos={baseTodos} subtaskDetails={subtaskDetails} onSubtaskClick={onSubtaskClick} />,

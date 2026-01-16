@@ -104,6 +104,7 @@ import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
 import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
+import { getLatestTodo } from "../../shared/todo"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
 import { REQUESTY_BASE_URL } from "../../shared/utils/requesty"
@@ -3199,6 +3200,69 @@ export class ClineProvider
 			initialStatus: "active",
 		})
 
+		// 4.5) Direct todo-subtask linking: set todo.subtaskId = childTaskId at delegation-time
+		// Persist by appending an updateTodoList message to the parent's message history.
+		try {
+			const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+			const parentMessages = await readTaskMessages({ taskId: parentTaskId, globalStoragePath })
+			const todos = getLatestTodo(parentMessages) as unknown as TodoItem[]
+
+			const inProgress = todos.filter((t) => t?.status === "in_progress")
+			const pending = todos.filter((t) => t?.status === "pending")
+
+			// Deterministic selection rule (in_progress > pending): pick the first matching item
+			// in the list order, even if multiple candidates exist.
+			const chosen: TodoItem | undefined = inProgress[0] ?? pending[0]
+			if (!chosen) {
+				this.log(
+					`[delegateParentAndOpenChild] Not linking subtask ${child.taskId}: no in_progress or pending todos found`,
+				)
+			} else {
+				// Log ambiguity (but still link deterministically).
+				if (inProgress.length > 1) {
+					this.log(
+						`[delegateParentAndOpenChild] Multiple in_progress todos (${inProgress.length}); linking first to subtask ${child.taskId}`,
+					)
+				} else if (pending.length > 1 && inProgress.length === 0) {
+					this.log(
+						`[delegateParentAndOpenChild] Multiple pending todos (${pending.length}); linking first to subtask ${child.taskId}`,
+					)
+				}
+			}
+
+			if (chosen) {
+				if (chosen.subtaskId && chosen.subtaskId !== child.taskId) {
+					this.log(
+						`[delegateParentAndOpenChild] Overwriting existing todo.subtaskId '${chosen.subtaskId}' -> '${child.taskId}'`,
+					)
+				}
+				chosen.subtaskId = child.taskId
+
+				await saveTaskMessages({
+					messages: [
+						...parentMessages,
+						{
+							ts: Date.now(),
+							type: "say",
+							say: "user_edit_todos",
+							text: JSON.stringify({
+								tool: "updateTodoList",
+								todos,
+							}),
+						},
+					],
+					taskId: parentTaskId,
+					globalStoragePath,
+				})
+			}
+		} catch (error) {
+			this.log(
+				`[delegateParentAndOpenChild] Failed to persist delegation-time todo link (non-fatal): ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+		}
+
 		// 5) Persist parent delegation metadata
 		try {
 			const { historyItem } = await this.getTaskWithId(parentTaskId)
@@ -3240,6 +3304,19 @@ export class ClineProvider
 		const { parentTaskId, childTaskId, completionResultSummary } = params
 		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
 
+		// 0) Load child task history to capture tokens/cost for write-back.
+		let childHistoryItem: HistoryItem | undefined
+		try {
+			const { historyItem } = await this.getTaskWithId(childTaskId)
+			childHistoryItem = historyItem
+		} catch (error) {
+			this.log(
+				`[reopenParentFromDelegation] Failed to load child history for ${childTaskId} (non-fatal): ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+		}
+
 		// 1) Load parent from history and current persisted messages
 		const { historyItem } = await this.getTaskWithId(parentTaskId)
 
@@ -3277,6 +3354,40 @@ export class ClineProvider
 			ts,
 		}
 		parentClineMessages.push(subtaskUiMessage)
+
+		// 2.5) Persist provider completion write-back: update parent's todo item with tokens/cost.
+		try {
+			const todos = getLatestTodo(parentClineMessages) as unknown as TodoItem[]
+			if (Array.isArray(todos) && todos.length > 0) {
+				const linkedTodo = todos.find((t) => t?.subtaskId === childTaskId)
+				if (!linkedTodo) {
+					this.log(
+						`[reopenParentFromDelegation] No todo found with subtaskId === ${childTaskId}; skipping cost write-back`,
+					)
+				} else {
+					linkedTodo.tokens = (childHistoryItem?.tokensIn || 0) + (childHistoryItem?.tokensOut || 0)
+					linkedTodo.cost = childHistoryItem?.totalCost || 0
+
+					parentClineMessages.push({
+						ts: Date.now(),
+						type: "say",
+						say: "user_edit_todos",
+						text: JSON.stringify({
+							tool: "updateTodoList",
+							todos,
+						}),
+					})
+				}
+			}
+		} catch (error) {
+			this.log(
+				`[reopenParentFromDelegation] Failed to write back todo cost/tokens (non-fatal): ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+		}
+
+		// Persist injected UI records (subtask_result + optional todo write-back)
 		await saveTaskMessages({ messages: parentClineMessages, taskId: parentTaskId, globalStoragePath })
 
 		// Find the tool_use_id from the last assistant message's new_task tool_use
@@ -3355,7 +3466,7 @@ export class ClineProvider
 
 		// 3) Update child metadata to "completed" status
 		try {
-			const { historyItem: childHistory } = await this.getTaskWithId(childTaskId)
+			const childHistory = childHistoryItem ?? (await this.getTaskWithId(childTaskId)).historyItem
 			await this.updateTaskHistory({
 				...childHistory,
 				status: "completed",

@@ -26,6 +26,12 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 		const { pushToolResult, handleError, askApproval, toolProtocol } = callbacks
 
 		try {
+			// Pull the previous todo list so we can preserve metadata fields across update_todo_list calls.
+			// Prefer the in-memory task.todoList when available; otherwise fall back to the latest todo list
+			// stored in the conversation history.
+			const previousTodos =
+				getTodoListForTask(task) ?? (getLatestTodo(task.clineMessages) as unknown as TodoItem[])
+
 			const todosRaw = params.todos
 
 			let todos: TodoItem[]
@@ -39,6 +45,10 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 				return
 			}
 
+			// Preserve metadata (subtaskId/tokens/cost) for todos whose content matches an existing todo.
+			// Matching is by exact content string; duplicates are matched in order.
+			const todosWithPreservedMetadata = preserveTodoMetadata(todos, previousTodos)
+
 			const { valid, error } = validateTodos(todos)
 			if (!valid) {
 				task.consecutiveMistakeCount++
@@ -48,10 +58,13 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 				return
 			}
 
-			let normalizedTodos: TodoItem[] = todos.map((t) => ({
+			let normalizedTodos: TodoItem[] = todosWithPreservedMetadata.map((t) => ({
 				id: t.id,
 				content: t.content,
 				status: normalizeStatus(t.status),
+				subtaskId: t.subtaskId,
+				tokens: t.tokens,
+				cost: t.cost,
 			}))
 
 			const approvalMsg = JSON.stringify({
@@ -70,6 +83,11 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 				approvedTodoList !== undefined && JSON.stringify(normalizedTodos) !== JSON.stringify(approvedTodoList)
 			if (isTodoListChanged) {
 				normalizedTodos = approvedTodoList ?? []
+
+				// If the user-edited todo list dropped metadata fields, re-apply metadata preservation against
+				// the previous list (and keep any explicitly provided metadata in the edited list).
+				normalizedTodos = preserveTodoMetadata(normalizedTodos, previousTodos)
+
 				task.say(
 					"user_edit_todos",
 					JSON.stringify({
@@ -94,6 +112,7 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 
 	override async handlePartial(task: Task, block: ToolUse<"update_todo_list">): Promise<void> {
 		const todosRaw = block.params.todos
+		const previousTodos = getTodoListForTask(task) ?? (getLatestTodo(task.clineMessages) as unknown as TodoItem[])
 
 		// Parse the markdown checklist to maintain consistent format with execute()
 		let todos: TodoItem[]
@@ -103,6 +122,8 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 			// If parsing fails during partial, send empty array
 			todos = []
 		}
+
+		todos = preserveTodoMetadata(todos, previousTodos)
 
 		const approvalMsg = JSON.stringify({
 			tool: "updateTodoList",
@@ -179,6 +200,30 @@ function normalizeStatus(status: string | undefined): TodoStatus {
 	if (status === "completed") return "completed"
 	if (status === "in_progress") return "in_progress"
 	return "pending"
+}
+
+function preserveTodoMetadata(nextTodos: TodoItem[], previousTodos: TodoItem[]): TodoItem[] {
+	// Build content -> queue mapping so duplicates are matched in order.
+	const previousByContent = new Map<string, TodoItem[]>()
+	for (const prev of previousTodos ?? []) {
+		if (!prev || typeof prev.content !== "string") continue
+		const list = previousByContent.get(prev.content)
+		if (list) list.push(prev)
+		else previousByContent.set(prev.content, [prev])
+	}
+
+	return (nextTodos ?? []).map((next) => {
+		const candidates = previousByContent.get(next.content)
+		const matchedPrev = candidates?.shift()
+		if (!matchedPrev) return next
+
+		return {
+			...next,
+			subtaskId: next.subtaskId ?? matchedPrev.subtaskId,
+			tokens: next.tokens ?? matchedPrev.tokens,
+			cost: next.cost ?? matchedPrev.cost,
+		}
+	})
 }
 
 export function parseMarkdownChecklist(md: string): TodoItem[] {
