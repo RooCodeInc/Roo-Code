@@ -6,41 +6,5 @@ commands:
       run: pnpm install
       timeout: 60
 
-    - name: Build & watch (Terminal 1)
-      run: |
-        # Build all workspace packages first (handles @roo-code/build and other deps)
-        pnpm build || exit $?
-
-        # Enable polling for file watchers (helps with symlinks and macOS issues)
-        export CHOKIDAR_USEPOLLING=true
-        export WATCHPACK_POLLING=true
-
-        # Start watchers (same as .vscode/tasks.json "watch" task, using direct pnpm filters)
-        pnpm --filter @roo-code/vscode-webview dev &
-        pnpm --filter roo-cline watch:bundle &
-        pnpm --filter roo-cline watch:tsc &
-
-        # Wait for all background jobs
-        wait
-      timeout: 0
-
-    - name: Start code-server (Terminal 2)
-      run: |
-        PORT=${PORT:-8443}
-
-        # Install code-server if missing
-        if ! command -v code-server &> /dev/null; then
-          curl -fsSL https://code-server.dev/install.sh | sh
-        fi
-
-        # Symlink extension for live development
-        EXT_DIR="$HOME/.local/share/code-server/extensions"
-        mkdir -p "$EXT_DIR"
-        ln -sfn "$(pwd)/src" "$EXT_DIR/roo-cline"
-
-        # Disable atomic writes so file watchers detect changes properly
-        export DISABLE_ATOMICWRITES=true
-
-        # Launch code-server
-        code-server --auth none --bind-addr 0.0.0.0:${PORT} .
-      timeout: 0
+    - name: Serve
+      run: pnpm serve

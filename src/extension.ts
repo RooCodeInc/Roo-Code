@@ -347,6 +347,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Watch the core files and automatically reload the extension host.
 	if (process.env.NODE_ENV === "development") {
 		const watchPaths = [
+			// Watch compiled output - triggers reload when esbuild finishes a rebuild
+			{ path: path.join(context.extensionPath, "dist"), pattern: "extension.js" },
+			// Also watch webview build output
+			{ path: path.join(context.extensionPath, "webview-ui/build"), pattern: "**/*" },
+			// Watch source files for changes that might not trigger a rebuild
 			{ path: context.extensionPath, pattern: "**/*.ts" },
 			{ path: path.join(context.extensionPath, "../packages/types"), pattern: "**/*.ts" },
 			{ path: path.join(context.extensionPath, "../packages/telemetry"), pattern: "**/*.ts" },

@@ -9,6 +9,7 @@
 		"test": "vitest run",
 		"format": "prettier --write src",
 		"dev": "vite",
+		"dev:watch": "node watch.mjs",
 		"build": "tsc -b && vite build",
 		"build:nightly": "tsc -b && vite build --mode nightly",
 		"preview": "vite preview",
@@ -86,6 +87,7 @@
 	"devDependencies": {
 		"@roo-code/config-eslint": "workspace:^",
 		"@roo-code/config-typescript": "workspace:^",
+		"chokidar": "^4.0.1",
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/react": "^16.2.0",
 		"@testing-library/user-event": "^14.6.1",
