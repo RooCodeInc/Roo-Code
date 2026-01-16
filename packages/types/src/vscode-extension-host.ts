@@ -504,6 +504,7 @@ export interface WebviewMessage {
 		| "editQueuedMessage"
 		| "dismissUpsell"
 		| "getDismissedUpsells"
+		| "openMarkdownPreview"
 		| "updateSettings"
 		| "allowedCommands"
 		| "getTaskWithAggregatedCosts"
