@@ -414,6 +414,18 @@ describe("LiteLLMHandler", () => {
 				expect(isGeminiModel("gemini-2.5-flash")).toBe(true)
 			})
 
+			it("should detect Gemini models with spaces (LiteLLM model groups)", () => {
+				const handler = new LiteLLMHandler(mockOptions)
+				const isGeminiModel = (handler as any).isGeminiModel.bind(handler)
+
+				// LiteLLM model groups often use space-separated names with title case
+				expect(isGeminiModel("Gemini 3 Pro")).toBe(true)
+				expect(isGeminiModel("Gemini 3 Flash")).toBe(true)
+				expect(isGeminiModel("gemini 3 pro")).toBe(true)
+				expect(isGeminiModel("Gemini 2.5 Pro")).toBe(true)
+				expect(isGeminiModel("gemini 2.5 flash")).toBe(true)
+			})
+
 			it("should detect provider-prefixed Gemini models", () => {
 				const handler = new LiteLLMHandler(mockOptions)
 				const isGeminiModel = (handler as any).isGeminiModel.bind(handler)
@@ -421,6 +433,9 @@ describe("LiteLLMHandler", () => {
 				expect(isGeminiModel("google/gemini-3-pro")).toBe(true)
 				expect(isGeminiModel("vertex_ai/gemini-3-pro")).toBe(true)
 				expect(isGeminiModel("vertex/gemini-2.5-pro")).toBe(true)
+				// Space-separated variants with provider prefix
+				expect(isGeminiModel("google/gemini 3 pro")).toBe(true)
+				expect(isGeminiModel("vertex_ai/gemini 2.5 pro")).toBe(true)
 			})
 
 			it("should not detect non-Gemini models", () => {

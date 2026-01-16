@@ -46,15 +46,21 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 	private isGeminiModel(modelId: string): boolean {
 		// Match various Gemini model patterns:
 		// - gemini-3-pro, gemini-3-flash, gemini-3-*
+		// - gemini 3 pro, Gemini 3 Pro (space-separated, case-insensitive)
 		// - gemini/gemini-3-*, google/gemini-3-*
 		// - vertex_ai/gemini-3-*, vertex/gemini-3-*
 		// Also match Gemini 2.5+ models which use similar validation
 		const lowerModelId = modelId.toLowerCase()
 		return (
+			// Match hyphenated versions: gemini-3, gemini-2.5
 			lowerModelId.includes("gemini-3") ||
 			lowerModelId.includes("gemini-2.5") ||
+			// Match space-separated versions: "gemini 3", "gemini 2.5"
+			// This handles model names like "Gemini 3 Pro" from LiteLLM model groups
+			lowerModelId.includes("gemini 3") ||
+			lowerModelId.includes("gemini 2.5") ||
 			// Also match provider-prefixed versions
-			/\b(gemini|google|vertex_ai|vertex)\/gemini-(3|2\.5)/i.test(modelId)
+			/\b(gemini|google|vertex_ai|vertex)\/gemini[-\s](3|2\.5)/i.test(modelId)
 		)
 	}
 
