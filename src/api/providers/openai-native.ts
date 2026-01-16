@@ -28,6 +28,7 @@ import { getModelParams } from "../transform/model-params"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { isMcpTool } from "../../utils/mcp-name"
+import { sanitizeOpenAiCallId } from "../../utils/tool-id"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
 
@@ -486,7 +487,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 									: block.content?.map((c) => (c.type === "text" ? c.text : "")).join("") || ""
 							toolResults.push({
 								type: "function_call_output",
-								call_id: block.tool_use_id,
+								// Sanitize and truncate call_id to fit OpenAI's 64-char limit
+								call_id: sanitizeOpenAiCallId(block.tool_use_id),
 								output: result,
 							})
 						}
@@ -516,7 +518,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 							// Map Anthropic tool_use to Responses API function_call item
 							toolCalls.push({
 								type: "function_call",
-								call_id: block.id,
+								// Sanitize and truncate call_id to fit OpenAI's 64-char limit
+								call_id: sanitizeOpenAiCallId(block.id),
 								name: block.name,
 								arguments: JSON.stringify(block.input),
 							})
