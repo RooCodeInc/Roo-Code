@@ -492,5 +492,13 @@
 		"updated": "S'ha actualitzat la llista de tasques pendents",
 		"completed": "Completat",
 		"started": "Iniciat"
+	},
+	"tooManyTools": {
+		"title": "Massa eines habilitades",
+		"toolsPart_one": "{{count}} eina",
+		"toolsPart_other": "{{count}} eines",
+		"serversPart_one": "{{count}} servidor MCP",
+		"serversPart_other": "{{count}} servidors MCP",
+		"messageTemplate": "Tens {{tools}} habilitades via {{servers}}. Un nombre tant alt pot confondre el model i portar a errors. Intenta mantenir-lo per sota de {{threshold}}."
 	}
 }

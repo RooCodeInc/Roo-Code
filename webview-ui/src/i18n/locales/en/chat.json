@@ -487,8 +487,10 @@
 	},
 	"tooManyTools": {
 		"title": "Too many tools enabled",
-		"message_one": "You have {{toolCount}} tool enabled via {{serverCount}} MCP server. Such a high number can confuse the model and lead to errors. Try to keep it below {{threshold}}.",
-		"message_other": "You have {{toolCount}} tools enabled via {{serverCount}} MCP servers. Such a high number can confuse the model and lead to errors. Try to keep it below {{threshold}}.",
-		"message": "You have {{toolCount}} tools enabled via {{serverCount}} MCP servers. Such a high number can confuse the model and lead to errors. Try to keep it below {{threshold}}."
+		"toolsPart_one": "{{count}} tool",
+		"toolsPart_other": "{{count}} tools",
+		"serversPart_one": "{{count}} MCP server",
+		"serversPart_other": "{{count}} MCP servers",
+		"messageTemplate": "You have {{tools}} enabled via {{servers}}. Such a high number can confuse the model and lead to errors. Try to keep it below {{threshold}}."
 	}
 }

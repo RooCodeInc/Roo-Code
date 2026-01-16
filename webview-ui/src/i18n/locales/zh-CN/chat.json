@@ -493,5 +493,13 @@
 		"updated": "已更新待办事项列表",
 		"completed": "已完成",
 		"started": "已开始"
+	},
+	"tooManyTools": {
+		"title": "启用的工具过多",
+		"toolsPart_one": "{{count}} 个工具",
+		"toolsPart_other": "{{count}} 个工具",
+		"serversPart_one": "{{count}} 个 MCP 服务",
+		"serversPart_other": "{{count}} 个 MCP 服务",
+		"messageTemplate": "你通过 {{servers}} 启用了 {{tools}}。这么多数量会混淆模型并导致错误。建议将其保持在 {{threshold}} 以下。"
 	}
 }

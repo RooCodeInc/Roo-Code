@@ -492,5 +492,13 @@
 		"updated": "Die To-Do-Liste wurde aktualisiert",
 		"completed": "Abgeschlossen",
 		"started": "Gestartet"
+	},
+	"tooManyTools": {
+		"title": "Zu viele Tools aktiviert",
+		"toolsPart_one": "{{count}} Tool",
+		"toolsPart_other": "{{count}} Tools",
+		"serversPart_one": "{{count}} MCP-Server",
+		"serversPart_other": "{{count}} MCP-Server",
+		"messageTemplate": "Du hast {{tools}} über {{servers}} aktiviert. Eine so hohe Anzahl kann das Modell verwirren und zu Fehlern führen. Versuche, es unter {{threshold}} zu halten."
 	}
 }

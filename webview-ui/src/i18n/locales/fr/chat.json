@@ -492,5 +492,13 @@
 		"updated": "La liste des tâches a été mise à jour",
 		"completed": "Terminé",
 		"started": "Commencé"
+	},
+	"tooManyTools": {
+		"title": "Trop d'outils activés",
+		"toolsPart_one": "{{count}} outil",
+		"toolsPart_other": "{{count}} outils",
+		"serversPart_one": "{{count}} serveur MCP",
+		"serversPart_other": "{{count}} serveurs MCP",
+		"messageTemplate": "Tu as {{tools}} activés via {{servers}}. Un nombre aussi élevé peut confondre le modèle et entraîner des erreurs. Essaie de le maintenir en dessous de {{threshold}}."
 	}
 }

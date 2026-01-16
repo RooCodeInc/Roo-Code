@@ -1520,12 +1520,14 @@ export const ChatRowContent = ({
 						threshold: number
 					}>(message.text || "{}")
 					if (!warningData) return null
+					const toolsPart = t("chat:tooManyTools.toolsPart", { count: warningData.toolCount })
+					const serversPart = t("chat:tooManyTools.serversPart", { count: warningData.serverCount })
 					return (
 						<WarningRow
 							title={t("chat:tooManyTools.title")}
-							message={t("chat:tooManyTools.message", {
-								toolCount: warningData.toolCount,
-								serverCount: warningData.serverCount,
+							message={t("chat:tooManyTools.messageTemplate", {
+								tools: toolsPart,
+								servers: serversPart,
 								threshold: warningData.threshold,
 							})}
 						/>

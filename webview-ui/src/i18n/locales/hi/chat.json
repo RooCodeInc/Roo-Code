@@ -492,5 +492,13 @@
 		"updated": "टू-डू सूची अपडेट की गई",
 		"completed": "पूरा हुआ",
 		"started": "शुरू हुआ"
+	},
+	"tooManyTools": {
+		"title": "बहुत सारे उपकरण सक्षम हैं",
+		"toolsPart_one": "{{count}} उपकरण",
+		"toolsPart_other": "{{count}} उपकरण",
+		"serversPart_one": "{{count}} MCP सर्वर",
+		"serversPart_other": "{{count}} MCP सर्वर",
+		"messageTemplate": "आपके पास {{servers}} के माध्यम से {{tools}} सक्षम हैं। इतनी अधिक संख्या मॉडल को भ्रमित कर सकती है और त्रुटियों का कारण बन सकती है। इसे {{threshold}} से नीचे रखने का प्रयास करें।"
 	}
 }

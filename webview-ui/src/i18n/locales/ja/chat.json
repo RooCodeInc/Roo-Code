@@ -492,5 +492,13 @@
 		"updated": "To-Doリストを更新しました",
 		"completed": "完了",
 		"started": "開始"
+	},
+	"tooManyTools": {
+		"title": "有効になっているツールが多すぎます",
+		"toolsPart_one": "{{count}} ツール",
+		"toolsPart_other": "{{count}} ツール",
+		"serversPart_one": "{{count}} MCP サーバー",
+		"serversPart_other": "{{count}} MCP サーバー",
+		"messageTemplate": "{{servers}}経由で{{tools}}が有効になっています。このような高い数は、モデルを混乱させてエラーを引き起こす可能性があります。{{threshold}}以下に保つようにしてください。"
 	}
 }

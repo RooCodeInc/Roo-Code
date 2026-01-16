@@ -498,5 +498,13 @@
 		"updated": "Memperbarui daftar to-do",
 		"completed": "Selesai",
 		"started": "Dimulai"
+	},
+	"tooManyTools": {
+		"title": "Terlalu banyak alat diaktifkan",
+		"toolsPart_one": "{{count}} alat",
+		"toolsPart_other": "{{count}} alat",
+		"serversPart_one": "{{count}} server MCP",
+		"serversPart_other": "{{count}} server MCP",
+		"messageTemplate": "Anda memiliki {{tools}} diaktifkan melalui {{servers}}. Jumlah yang begitu besar dapat membingungkan model dan menyebabkan kesalahan. Cobalah untuk menjaganya di bawah {{threshold}}."
 	}
 }

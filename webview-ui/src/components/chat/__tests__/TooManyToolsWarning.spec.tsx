@@ -25,8 +25,16 @@ vi.mock("@/i18n/TranslationContext", () => ({
 			if (key === "chat:tooManyTools.title") {
 				return "Too many tools enabled"
 			}
-			if (key === "chat:tooManyTools.message") {
-				return `You have ${params?.toolCount} tools enabled via ${params?.serverCount} MCP servers. Such a high number can confuse the model and lead to errors. Try to keep it below ${params?.threshold}.`
+			if (key === "chat:tooManyTools.toolsPart") {
+				const count = params?.count ?? 0
+				return count === 1 ? `${count} tool` : `${count} tools`
+			}
+			if (key === "chat:tooManyTools.serversPart") {
+				const count = params?.count ?? 0
+				return count === 1 ? `${count} MCP server` : `${count} MCP servers`
+			}
+			if (key === "chat:tooManyTools.messageTemplate") {
+				return `You have ${params?.tools} enabled via ${params?.servers}. Such a high number can confuse the model and lead to errors. Try to keep it below ${params?.threshold}.`
 			}
 			if (key === "chat:apiRequest.errorMessage.docs") {
 				return "Docs"
@@ -110,7 +118,7 @@ describe("TooManyToolsWarning", () => {
 		expect(screen.getByText("Too many tools enabled")).toBeInTheDocument()
 		expect(
 			screen.getByText(
-				`You have ${MAX_MCP_TOOLS_THRESHOLD + 10} tools enabled via 1 MCP servers. Such a high number can confuse the model and lead to errors. Try to keep it below ${MAX_MCP_TOOLS_THRESHOLD}.`,
+				`You have ${MAX_MCP_TOOLS_THRESHOLD + 10} tools enabled via 1 MCP server. Such a high number can confuse the model and lead to errors. Try to keep it below ${MAX_MCP_TOOLS_THRESHOLD}.`,
 			),
 		).toBeInTheDocument()
 	})

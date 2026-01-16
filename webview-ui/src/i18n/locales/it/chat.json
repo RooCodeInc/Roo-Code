@@ -492,5 +492,13 @@
 		"updated": "Aggiornata la lista delle cose da fare",
 		"completed": "Completato",
 		"started": "Iniziato"
+	},
+	"tooManyTools": {
+		"title": "Troppi strumenti abilitati",
+		"toolsPart_one": "{{count}} strumento",
+		"toolsPart_other": "{{count}} strumenti",
+		"serversPart_one": "{{count}} server MCP",
+		"serversPart_other": "{{count}} server MCP",
+		"messageTemplate": "Hai {{tools}} abilitate via {{servers}}. Un numero così alto può confondere il modello e portare a errori. Prova a mantenerlo sotto {{threshold}}."
 	}
 }

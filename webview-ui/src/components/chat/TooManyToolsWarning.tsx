@@ -53,9 +53,11 @@ export const TooManyToolsWarning: React.FC = () => {
 		return null
 	}
 
-	const message = t("chat:tooManyTools.message", {
-		toolCount: enabledToolCount,
-		serverCount: enabledServerCount,
+	const toolsPart = t("chat:tooManyTools.toolsPart", { count: enabledToolCount })
+	const serversPart = t("chat:tooManyTools.serversPart", { count: enabledServerCount })
+	const message = t("chat:tooManyTools.messageTemplate", {
+		tools: toolsPart,
+		servers: serversPart,
 		threshold: MAX_MCP_TOOLS_THRESHOLD,
 	})
 
