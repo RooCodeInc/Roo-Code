@@ -549,7 +549,9 @@ describe("OpenAiHandler", () => {
 					model: mockOptions.openAiModelId,
 					messages: [{ role: "user", content: "Test prompt" }],
 				},
-				{},
+				expect.objectContaining({
+					signal: expect.any(AbortSignal),
+				}),
 			)
 		})
 
@@ -634,7 +636,10 @@ describe("OpenAiHandler", () => {
 					stream_options: { include_usage: true },
 					temperature: 0,
 				},
-				{ path: "/models/chat/completions" },
+				expect.objectContaining({
+					path: "/models/chat/completions",
+					signal: expect.any(AbortSignal),
+				}),
 			)
 
 			// Verify max_tokens is NOT included when includeMaxTokens is not set
@@ -680,7 +685,10 @@ describe("OpenAiHandler", () => {
 						{ role: "user", content: "Hello!" },
 					],
 				},
-				{ path: "/models/chat/completions" },
+				expect.objectContaining({
+					path: "/models/chat/completions",
+					signal: expect.any(AbortSignal),
+				}),
 			)
 
 			// Verify max_tokens is NOT included when includeMaxTokens is not set
@@ -697,7 +705,10 @@ describe("OpenAiHandler", () => {
 					model: azureOptions.openAiModelId,
 					messages: [{ role: "user", content: "Test prompt" }],
 				},
-				{ path: "/models/chat/completions" },
+				expect.objectContaining({
+					path: "/models/chat/completions",
+					signal: expect.any(AbortSignal),
+				}),
 			)
 
 			// Verify max_tokens is NOT included when includeMaxTokens is not set
@@ -737,7 +748,9 @@ describe("OpenAiHandler", () => {
 					model: grokOptions.openAiModelId,
 					stream: true,
 				}),
-				{},
+				expect.objectContaining({
+					signal: expect.any(AbortSignal),
+				}),
 			)
 
 			const mockCalls = mockCreate.mock.calls
@@ -796,7 +809,9 @@ describe("OpenAiHandler", () => {
 					// O3 models do not support deprecated max_tokens but do support max_completion_tokens
 					max_completion_tokens: 32000,
 				}),
-				{},
+				expect.objectContaining({
+					signal: expect.any(AbortSignal),
+				}),
 			)
 		})
 
@@ -953,7 +968,9 @@ describe("OpenAiHandler", () => {
 					reasoning_effort: "medium",
 					temperature: undefined,
 				}),
-				{},
+				expect.objectContaining({
+					signal: expect.any(AbortSignal),
+				}),
 			)
 
 			// Verify max_tokens is NOT included
@@ -997,7 +1014,9 @@ describe("OpenAiHandler", () => {
 					// O3 models do not support deprecated max_tokens but do support max_completion_tokens
 					max_completion_tokens: 65536, // Using default maxTokens from o3Options
 				}),
-				{},
+				expect.objectContaining({
+					signal: expect.any(AbortSignal),
+				}),
 			)
 
 			// Verify stream is not set
@@ -1074,7 +1093,9 @@ describe("OpenAiHandler", () => {
 				expect.objectContaining({
 					temperature: undefined, // Temperature is not supported for O3 models
 				}),
-				{},
+				expect.objectContaining({
+					signal: expect.any(AbortSignal),
+				}),
 			)
 		})
 
@@ -1099,7 +1120,10 @@ describe("OpenAiHandler", () => {
 				expect.objectContaining({
 					model: "o3-mini",
 				}),
-				{ path: "/models/chat/completions" },
+				expect.objectContaining({
+					path: "/models/chat/completions",
+					signal: expect.any(AbortSignal),
+				}),
 			)
 
 			// Verify max_tokens is NOT included when includeMaxTokens is false
@@ -1129,7 +1153,10 @@ describe("OpenAiHandler", () => {
 					model: "o3-mini",
 					// O3 models do not support max_tokens
 				}),
-				{ path: "/models/chat/completions" },
+				expect.objectContaining({
+					path: "/models/chat/completions",
+					signal: expect.any(AbortSignal),
+				}),
 			)
 		})
 	})
