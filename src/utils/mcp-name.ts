@@ -33,9 +33,10 @@ export const MCP_TOOL_PREFIX = "mcp"
 export const HYPHEN_ENCODING = "___"
 
 /**
- * Maximum length for tool names (Gemini's limit).
+ * Maximum length for tool names (MCP spec limit).
+ * See: https://modelcontextprotocol.io/specification/2025-11-25/server/tools#tool-names
  */
-export const MAX_TOOL_NAME_LENGTH = 64
+export const MAX_TOOL_NAME_LENGTH = 128
 
 /**
  * Length of hash suffix used when truncation is needed.
@@ -164,7 +165,7 @@ export function sanitizeMcpName(name: string): string {
  * Build a full MCP tool function name from server and tool names.
  * The format is: mcp--{sanitized_server_name}--{sanitized_tool_name}
  *
- * The total length is capped at 64 characters to conform to API limits.
+ * The total length is capped at 128 characters per MCP spec.
  * When truncation is needed, a hash suffix is appended to preserve uniqueness
  * and the mapping is stored in the registry for later lookup.
  *
@@ -188,7 +189,7 @@ export function buildMcpToolName(serverName: string, toolName: string): string {
 	// Format: truncated_name_HASHSUFFIX (underscore + 8 hex chars = 9 chars for suffix)
 	const hashSuffix = computeHashSuffix(serverName, toolName)
 	const suffixWithSeparator = `_${hashSuffix}` // "_" + 8 chars = 9 chars
-	const maxTruncatedLength = MAX_TOOL_NAME_LENGTH - suffixWithSeparator.length // 64 - 9 = 55
+	const maxTruncatedLength = MAX_TOOL_NAME_LENGTH - suffixWithSeparator.length // 128 - 9 = 119
 
 	// Truncate the full name and append hash suffix
 	const truncatedBase = fullName.slice(0, maxTruncatedLength)
