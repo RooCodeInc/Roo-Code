@@ -3,6 +3,8 @@
  * API function name requirements across all providers.
  */
 
+import * as crypto from "crypto"
+
 /**
  * Separator used between MCP prefix, server name, and tool name.
  * We use "--" (double hyphen) because:
@@ -29,6 +31,50 @@ export const MCP_TOOL_PREFIX = "mcp"
  * we can decode them back to hyphens when parsing the tool name.
  */
 export const HYPHEN_ENCODING = "___"
+
+/**
+ * Maximum length for tool names (Gemini's limit).
+ */
+export const MAX_TOOL_NAME_LENGTH = 64
+
+/**
+ * Length of hash suffix used when truncation is needed.
+ * Using 8 characters from base36 gives us ~2.8 trillion combinations,
+ * which is more than enough to avoid collisions.
+ */
+export const HASH_SUFFIX_LENGTH = 8
+
+/**
+ * Registry mapping shortened tool names (with hash suffix) to their original
+ * server and tool names. This is used to look up the original names when
+ * the model returns a shortened tool name.
+ *
+ * Key: shortened MCP tool name (e.g., "mcp--server--tool_a1b2c3d4")
+ * Value: { serverName, toolName } with original (decoded) names
+ */
+export const mcpToolNameRegistry = new Map<string, { serverName: string; toolName: string }>()
+
+/**
+ * Clear the MCP tool name registry.
+ * Should be called when MCP servers are refreshed or disconnected.
+ */
+export function clearMcpToolNameRegistry(): void {
+	mcpToolNameRegistry.clear()
+}
+
+/**
+ * Compute a deterministic hash suffix for a given server and tool name combination.
+ * Uses the original (not encoded) names to ensure consistency.
+ *
+ * @param serverName - The original server name (before sanitization)
+ * @param toolName - The original tool name (before sanitization)
+ * @returns An 8-character alphanumeric hash suffix
+ */
+export function computeHashSuffix(serverName: string, toolName: string): string {
+	const hash = crypto.createHash("sha256").update(`${serverName}:${toolName}`).digest("hex")
+	// Use first 8 hex characters for the suffix
+	return hash.slice(0, HASH_SUFFIX_LENGTH)
+}
 
 /**
  * Normalize an MCP tool name by converting underscore separators back to hyphens.
@@ -119,6 +165,8 @@ export function sanitizeMcpName(name: string): string {
  * The format is: mcp--{sanitized_server_name}--{sanitized_tool_name}
  *
  * The total length is capped at 64 characters to conform to API limits.
+ * When truncation is needed, a hash suffix is appended to preserve uniqueness
+ * and the mapping is stored in the registry for later lookup.
  *
  * @param serverName - The MCP server name
  * @param toolName - The tool name
@@ -131,12 +179,26 @@ export function buildMcpToolName(serverName: string, toolName: string): string {
 	// Build the full name: mcp--{server}--{tool}
 	const fullName = `${MCP_TOOL_PREFIX}${MCP_TOOL_SEPARATOR}${sanitizedServer}${MCP_TOOL_SEPARATOR}${sanitizedTool}`
 
-	// Truncate if necessary (max 64 chars for Gemini)
-	if (fullName.length > 64) {
-		return fullName.slice(0, 64)
+	// If within limit, return as-is
+	if (fullName.length <= MAX_TOOL_NAME_LENGTH) {
+		return fullName
 	}
 
-	return fullName
+	// Need to truncate: use hash suffix to preserve uniqueness
+	// Format: truncated_name_HASHSUFFIX (underscore + 8 hex chars = 9 chars for suffix)
+	const hashSuffix = computeHashSuffix(serverName, toolName)
+	const suffixWithSeparator = `_${hashSuffix}` // "_" + 8 chars = 9 chars
+	const maxTruncatedLength = MAX_TOOL_NAME_LENGTH - suffixWithSeparator.length // 64 - 9 = 55
+
+	// Truncate the full name and append hash suffix
+	const truncatedBase = fullName.slice(0, maxTruncatedLength)
+	const shortenedName = `${truncatedBase}${suffixWithSeparator}`
+
+	// Register the mapping from shortened name to original names
+	// Store the original (decoded) names so parseMcpToolName can return them directly
+	mcpToolNameRegistry.set(shortenedName, { serverName, toolName })
+
+	return shortenedName
 }
 
 /**
@@ -155,6 +217,9 @@ export function decodeMcpName(sanitizedName: string): string {
  * This handles sanitized names by splitting on the "--" separator
  * and decoding triple underscores back to hyphens.
  *
+ * For shortened names (those with hash suffixes), this first checks
+ * the registry for the original names.
+ *
  * @param mcpToolName - The full MCP tool name (e.g., "mcp--weather--get_forecast")
  * @returns An object with serverName and toolName, or null if parsing fails
  */
@@ -162,6 +227,13 @@ export function parseMcpToolName(mcpToolName: string): { serverName: string; too
 	const prefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
 	if (!mcpToolName.startsWith(prefix)) {
 		return null
+	}
+
+	// First, check if this is a shortened name in the registry
+	// This handles names that were truncated with hash suffixes
+	const registeredName = mcpToolNameRegistry.get(mcpToolName)
+	if (registeredName) {
+		return registeredName
 	}
 
 	// Remove the "mcp--" prefix

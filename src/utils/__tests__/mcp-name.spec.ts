@@ -8,9 +8,19 @@ import {
 	MCP_TOOL_SEPARATOR,
 	MCP_TOOL_PREFIX,
 	HYPHEN_ENCODING,
+	MAX_TOOL_NAME_LENGTH,
+	HASH_SUFFIX_LENGTH,
+	mcpToolNameRegistry,
+	clearMcpToolNameRegistry,
+	computeHashSuffix,
 } from "../mcp-name"
 
 describe("mcp-name utilities", () => {
+	// Clear the registry before each test to ensure isolation
+	beforeEach(() => {
+		clearMcpToolNameRegistry()
+	})
+
 	describe("constants", () => {
 		it("should have correct separator and prefix", () => {
 			expect(MCP_TOOL_SEPARATOR).toBe("--")
@@ -19,6 +29,14 @@ describe("mcp-name utilities", () => {
 
 		it("should have correct hyphen encoding", () => {
 			expect(HYPHEN_ENCODING).toBe("___")
+		})
+
+		it("should have correct max tool name length", () => {
+			expect(MAX_TOOL_NAME_LENGTH).toBe(64)
+		})
+
+		it("should have correct hash suffix length", () => {
+			expect(HASH_SUFFIX_LENGTH).toBe(8)
 		})
 	})
 
@@ -146,12 +164,52 @@ describe("mcp-name utilities", () => {
 			expect(buildMcpToolName("server@name", "tool!name")).toBe("mcp--servername--toolname")
 		})
 
-		it("should truncate long names to 64 characters", () => {
+		it("should truncate long names to 64 characters with hash suffix", () => {
 			const longServer = "a".repeat(50)
 			const longTool = "b".repeat(50)
 			const result = buildMcpToolName(longServer, longTool)
 			expect(result.length).toBeLessThanOrEqual(64)
+			expect(result.length).toBe(64)
 			expect(result.startsWith("mcp--")).toBe(true)
+			// Should end with underscore + 8 char hash suffix
+			expect(result).toMatch(/_[a-f0-9]{8}$/)
+		})
+
+		it("should use hash suffix for long names and register them", () => {
+			const longServer = "a".repeat(50)
+			const longTool = "b".repeat(50)
+			const result = buildMcpToolName(longServer, longTool)
+
+			// The shortened name should be registered
+			expect(mcpToolNameRegistry.has(result)).toBe(true)
+			const registered = mcpToolNameRegistry.get(result)
+			expect(registered).toEqual({
+				serverName: longServer,
+				toolName: longTool,
+			})
+		})
+
+		it("should produce deterministic hash suffixes", () => {
+			const longServer = "a".repeat(50)
+			const longTool = "b".repeat(50)
+			// Build the same name twice
+			clearMcpToolNameRegistry()
+			const result1 = buildMcpToolName(longServer, longTool)
+			clearMcpToolNameRegistry()
+			const result2 = buildMcpToolName(longServer, longTool)
+			// Should produce identical results
+			expect(result1).toBe(result2)
+		})
+
+		it("should produce unique hash suffixes for different tools", () => {
+			const longServer = "a".repeat(50)
+			const result1 = buildMcpToolName(longServer, "tool1_" + "x".repeat(40))
+			const result2 = buildMcpToolName(longServer, "tool2_" + "y".repeat(40))
+			// Both should be truncated
+			expect(result1.length).toBe(64)
+			expect(result2.length).toBe(64)
+			// Should have different hash suffixes
+			expect(result1).not.toBe(result2)
 		})
 
 		it("should handle names starting with numbers", () => {
@@ -345,6 +403,121 @@ describe("mcp-name utilities", () => {
 				serverName: "server",
 				toolName: "get-user-profile",
 			})
+		})
+	})
+
+	describe("computeHashSuffix", () => {
+		it("should compute deterministic hash for the same inputs", () => {
+			const hash1 = computeHashSuffix("server", "tool")
+			const hash2 = computeHashSuffix("server", "tool")
+			expect(hash1).toBe(hash2)
+		})
+
+		it("should return 8-character hex string", () => {
+			const hash = computeHashSuffix("server", "tool")
+			expect(hash).toHaveLength(8)
+			expect(hash).toMatch(/^[a-f0-9]{8}$/)
+		})
+
+		it("should produce different hashes for different inputs", () => {
+			const hash1 = computeHashSuffix("server1", "tool")
+			const hash2 = computeHashSuffix("server2", "tool")
+			expect(hash1).not.toBe(hash2)
+		})
+	})
+
+	describe("hash suffix roundtrip - fixes issue #10766", () => {
+		it("should preserve original names through roundtrip with long hyphenated tool names", () => {
+			// This is the exact scenario from issue #10766
+			// Tool name with many hyphens that exceeds 64 chars when encoded
+			const serverName = "abcdefghij-kl-mnop-qrs-tuv"
+			const toolName = "wxyz-abcd-efghijk-lmno"
+
+			// Build the tool name
+			const builtName = buildMcpToolName(serverName, toolName)
+
+			// Should be truncated to 64 chars with hash suffix
+			expect(builtName.length).toBe(64)
+			expect(builtName).toMatch(/_[a-f0-9]{8}$/)
+
+			// The critical fix: parsing should return the ORIGINAL names
+			const parsed = parseMcpToolName(builtName)
+			expect(parsed).toEqual({
+				serverName: serverName, // Original with hyphens!
+				toolName: toolName, // Original with hyphens!
+			})
+		})
+
+		it("should not corrupt hyphen encoding when truncation is needed", () => {
+			// Long server and tool names that would cause truncation mid-encoding
+			const serverName = "very-long-server-name-with-many-hyphens"
+			const toolName = "another-long-tool-name-with-hyphens"
+
+			// Build the tool name
+			const builtName = buildMcpToolName(serverName, toolName)
+
+			// Should be truncated to 64 chars
+			expect(builtName.length).toBe(64)
+
+			// Parse should return original names (via registry lookup)
+			const parsed = parseMcpToolName(builtName)
+			expect(parsed).toEqual({
+				serverName: serverName,
+				toolName: toolName,
+			})
+		})
+
+		it("should work correctly when names do not need truncation", () => {
+			// Short names that don't need truncation
+			const serverName = "server"
+			const toolName = "get-data"
+
+			const builtName = buildMcpToolName(serverName, toolName)
+
+			// Should NOT have hash suffix
+			expect(builtName).toBe("mcp--server--get___data")
+			expect(builtName.length).toBeLessThan(64)
+
+			// Normal decode path should work
+			const parsed = parseMcpToolName(builtName)
+			expect(parsed).toEqual({
+				serverName: "server",
+				toolName: "get-data", // Hyphen decoded from ___
+			})
+		})
+
+		it("should handle the registry lookup for shortened names", () => {
+			const serverName = "a".repeat(30)
+			const toolName = "b".repeat(30) + "-hyphen"
+
+			// Build registers the shortened name
+			const builtName = buildMcpToolName(serverName, toolName)
+
+			// Verify it's in the registry
+			expect(mcpToolNameRegistry.has(builtName)).toBe(true)
+
+			// Parse uses the registry to get original names
+			const parsed = parseMcpToolName(builtName)
+			expect(parsed).toEqual({
+				serverName: serverName,
+				toolName: toolName,
+			})
+		})
+	})
+
+	describe("clearMcpToolNameRegistry", () => {
+		it("should clear all registered tool names", () => {
+			// Register some tool names via buildMcpToolName
+			const longServer = "a".repeat(50)
+			const longTool = "b".repeat(50)
+			buildMcpToolName(longServer, longTool)
+
+			expect(mcpToolNameRegistry.size).toBeGreaterThan(0)
+
+			// Clear the registry
+			clearMcpToolNameRegistry()
+
+			expect(mcpToolNameRegistry.size).toBe(0)
 		})
 	})
 })
