@@ -28,7 +28,7 @@ export const WarningRow: React.FC<WarningRowProps> = ({ title, message, docsURL 
 	const { t } = useAppTranslation()
 
 	return (
-		<div className="group pr-2">
+		<div className="group pr-2 py-2">
 			<div className="flex items-center justify-between gap-2 break-words">
 				<TriangleAlert className="w-4 text-vscode-editorWarning-foreground shrink-0" />
 				<span className="font-bold text-vscode-editorWarning-foreground grow cursor-default">{title}</span>
@@ -45,7 +45,7 @@ export const WarningRow: React.FC<WarningRowProps> = ({ title, message, docsURL 
 					</a>
 				)}
 			</div>
-			<div className="ml-2 pl-4 mt-1 pt-1 border-l border-vscode-editorWarning-foreground/50">
+			<div className="ml-2 pl-4 mt-1 pt-0.5 border-l border-vscode-editorWarning-foreground/50">
 				<p className="my-0 font-light whitespace-pre-wrap break-words text-vscode-descriptionForeground">
 					{message}
 				</p>

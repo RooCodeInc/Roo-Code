@@ -1,13 +1,11 @@
 import React, { useMemo } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
+import { MAX_MCP_TOOLS_THRESHOLD } from "@roo-code/types"
 import WarningRow from "./WarningRow"
 
-/**
- * The maximum number of MCP tools recommended before warning the user.
- * Having too many tools can confuse LLMs and lead to errors.
- */
-export const MAX_MCP_TOOLS_THRESHOLD = 40
+// Re-export for backward compatibility
+export { MAX_MCP_TOOLS_THRESHOLD }
 
 /**
  * Displays a warning when the user has too many MCP tools enabled.

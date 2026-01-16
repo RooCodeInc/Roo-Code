@@ -266,7 +266,7 @@ export const ErrorRow = memo(
 							</div>
 						</div>
 					)}
-					<div className="ml-2 pl-4 mt-1 pt-1 border-l border-vscode-errorForeground/50">
+					<div className="ml-2 pl-4 mt-1 pt-0.5 border-l border-vscode-errorForeground/50">
 						<p
 							className={
 								messageClassName ||
