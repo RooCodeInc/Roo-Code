@@ -45,6 +45,18 @@ export function convertToAiSdkMessages(
 		}
 	}
 
+	// First pass: build a map of tool call IDs to tool names from assistant messages
+	const toolCallIdToName = new Map<string, string>()
+	for (const message of messages) {
+		if (message.role === "assistant" && typeof message.content !== "string") {
+			for (const part of message.content) {
+				if (part.type === "tool_use") {
+					toolCallIdToName.set(part.id, part.name)
+				}
+			}
+		}
+	}
+
 	for (const message of messages) {
 		if (typeof message.content === "string") {
 			modelMessages.push({
