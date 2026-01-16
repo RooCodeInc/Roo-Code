@@ -73,8 +73,19 @@ describe("AI SDK conversion utilities", () => {
 			})
 		})
 
-		it("converts tool results into separate tool messages", () => {
+		it("converts tool results into separate tool messages with resolved tool names", () => {
 			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "call_123",
+							name: "read_file",
+							input: { path: "test.ts" },
+						},
+					],
+				},
 				{
 					role: "user",
 					content: [
@@ -89,15 +100,56 @@ describe("AI SDK conversion utilities", () => {
 
 			const result = convertToAiSdkMessages(messages)
 
+			expect(result).toHaveLength(2)
+			expect(result[0]).toEqual({
+				role: "assistant",
+				content: [
+					{
+						type: "tool-call",
+						toolCallId: "call_123",
+						toolName: "read_file",
+						args: { path: "test.ts" },
+					},
+				],
+			})
+			expect(result[1]).toEqual({
+				role: "tool",
+				content: [
+					{
+						type: "tool-result",
+						toolCallId: "call_123",
+						toolName: "read_file",
+						output: { type: "text", value: "Tool result content" },
+					},
+				],
+			})
+		})
+
+		it("uses unknown_tool for tool results without matching tool call", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_orphan",
+							content: "Orphan result",
+						},
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
 			expect(result).toHaveLength(1)
 			expect(result[0]).toEqual({
 				role: "tool",
 				content: [
 					{
 						type: "tool-result",
-						toolCallId: "call_123",
-						toolName: "",
-						output: "Tool result content",
+						toolCallId: "call_orphan",
+						toolName: "unknown_tool",
+						output: { type: "text", value: "Orphan result" },
 					},
 				],
 			})

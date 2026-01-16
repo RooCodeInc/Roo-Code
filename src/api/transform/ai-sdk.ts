@@ -18,6 +18,18 @@ import type { ApiStreamChunk } from "./stream"
 export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam[]): CoreMessage[] {
 	const coreMessages: CoreMessage[] = []
 
+	// First pass: build a map of tool call IDs to tool names from assistant messages
+	const toolCallIdToName = new Map<string, string>()
+	for (const message of messages) {
+		if (message.role === "assistant" && typeof message.content !== "string") {
+			for (const part of message.content) {
+				if (part.type === "tool_use") {
+					toolCallIdToName.set(part.id, part.name)
+				}
+			}
+		}
+	}
+
 	for (const message of messages) {
 		if (typeof message.content === "string") {
 			coreMessages.push({
@@ -33,7 +45,7 @@ export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam
 					type: "tool-result"
 					toolCallId: string
 					toolName: string
-					output: unknown
+					output: { type: "text"; value: string }
 				}> = []
 
 				for (const part of message.content) {
@@ -69,11 +81,13 @@ export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam
 									})
 									.join("\n") ?? ""
 						}
+						// Look up the tool name from the tool call ID
+						const toolName = toolCallIdToName.get(part.tool_use_id) ?? "unknown_tool"
 						toolResults.push({
 							type: "tool-result",
 							toolCallId: part.tool_use_id,
-							toolName: "", // Will be filled from context
-							output: content || "(empty)",
+							toolName,
+							output: { type: "text", value: content || "(empty)" },
 						})
 					}
 				}

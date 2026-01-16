@@ -6,7 +6,6 @@ import {
 	type ModelRecord,
 	openRouterDefaultModelId,
 	openRouterDefaultModelInfo,
-	NATIVE_TOOL_DEFAULTS,
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 } from "@roo-code/types"
@@ -183,7 +182,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		// Apply tool preferences for models accessed through routers
-		info = applyRouterToolPreferences(id, { ...NATIVE_TOOL_DEFAULTS, ...info })
+		info = applyRouterToolPreferences(id, info)
 
 		const isDeepSeekR1 = id.startsWith("deepseek/deepseek-r1") || id === "perplexity/sonar-reasoning"
 
