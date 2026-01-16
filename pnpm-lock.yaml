@@ -14,6 +14,7 @@ overrides:
   glob: '>=11.1.0'
   '@types/react': ^18.3.23
   '@types/react-dom': ^18.3.5
+  zod: 3.25.76
 
 importers:
 
@@ -303,8 +304,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@18.3.7(@types/react@18.3.23))(@types/react@18.3.23)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       zod:
-        specifier: ^3.25.61
-        version: 3.25.61
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
       '@roo-code/config-eslint':
         specifier: workspace:^
@@ -418,8 +419,8 @@ importers:
         specifier: ^6.1.86
         version: 6.1.86
       zod:
-        specifier: ^3.25.61
-        version: 3.25.61
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
       '@roo-code/config-eslint':
         specifier: workspace:^
@@ -455,8 +456,8 @@ importers:
   packages/build:
     dependencies:
       zod:
-        specifier: ^3.25.61
-        version: 3.25.61
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
       '@roo-code/config-eslint':
         specifier: workspace:^
@@ -489,7 +490,7 @@ importers:
         specifier: ^4.8.1
         version: 4.8.1
       zod:
-        specifier: ^3.25.76
+        specifier: 3.25.76
         version: 3.25.76
     devDependencies:
       '@roo-code/config-eslint':
@@ -564,7 +565,7 @@ importers:
         specifier: ^5.12.2
         version: 5.12.2(ws@8.18.3)(zod@3.25.76)
       zod:
-        specifier: ^3.25.61
+        specifier: 3.25.76
         version: 3.25.76
     devDependencies:
       '@roo-code/config-eslint':
@@ -619,8 +620,8 @@ importers:
         specifier: ^5.5.5
         version: 5.5.5
       zod:
-        specifier: ^3.25.61
-        version: 3.25.61
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
       '@roo-code/config-eslint':
         specifier: workspace:^
@@ -681,8 +682,8 @@ importers:
         specifier: ^5.0.0
         version: 5.1.1
       zod:
-        specifier: ^3.25.61
-        version: 3.25.61
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
       '@roo-code/config-eslint':
         specifier: workspace:^
@@ -703,8 +704,8 @@ importers:
   packages/types:
     dependencies:
       zod:
-        specifier: ^3.25.61
-        version: 3.25.61
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
       '@roo-code/config-eslint':
         specifier: workspace:^
@@ -1308,8 +1309,8 @@ importers:
         specifier: ^0.2.2
         version: 0.2.2(@types/react@18.3.23)(react@18.3.1)
       zod:
-        specifier: ^3.25.61
-        version: 3.25.61
+        specifier: 3.25.76
+        version: 3.25.76
     devDependencies:
       '@roo-code/config-eslint':
         specifier: workspace:^
@@ -1381,13 +1382,13 @@ packages:
     resolution: {integrity: sha512-8hbezMsGa0crSt7/DKjkYL1UbbJJW/UFxTfhmf5qcIeYeeWG4dTNmm+DWbUdIsTaWvp59KC4eeC9gYXBbTHd7w==}
     engines: {node: '>=18'}
     peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
+      zod: 3.25.76
 
   '@ai-sdk/provider-utils@3.0.20':
     resolution: {integrity: sha512-iXHVe0apM2zUEzauqJwqmpC37A5rihrStAih5Ks+JE32iTe4LZ58y17UGBjpQQTCRw9YxMeo2UFLxLpBluyvLQ==}
     engines: {node: '>=18'}
     peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
+      zod: 3.25.76
 
   '@ai-sdk/provider@2.0.1':
     resolution: {integrity: sha512-KCUwswvsC5VsW2PWFqF8eJgSCu5Ysj7m1TxiHTVA6g7k360bk0RNQENT8KTMAYEs+8fWPD3Uu4dEmzGHc+jGng==}
@@ -2411,7 +2412,7 @@ packages:
   '@mistralai/mistralai@1.9.18':
     resolution: {integrity: sha512-D/vNAGEvWMsg95tzgLTg7pPnW9leOPyH+nh1Os05NwxVPbUykoYgMAwOEX7J46msahWdvZ4NQQuxUXIUV2P6dg==}
     peerDependencies:
-      zod: '>= 3'
+      zod: 3.25.76
 
   '@mixmark-io/domino@2.2.0':
     resolution: {integrity: sha512-Y28PR25bHXUg88kCV7nivXrP2Nj2RueZ3/l/jdx6J9f8J4nsEGcgX0Qe6lt7Pa+J79+kPiJU3LguR6O/6zrLOw==}
@@ -2615,7 +2616,7 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       ai: ^5.0.0
-      zod: ^3.24.1 || ^v4
+      zod: 3.25.76
 
   '@openrouter/sdk@0.1.27':
     resolution: {integrity: sha512-RH//L10bSmc81q25zAZudiI4kNkLgxF2E+WU42vghp3N6TEvZ6F0jK7uT3tOxkEn91gzmMw9YVmDENy7SJsajQ==}
@@ -4661,7 +4662,7 @@ packages:
     resolution: {integrity: sha512-3iYPdARKGLryC/7OA9RgBUaym1gynvWS7UPy8NwoRNCKP52lshldtHB5xcEfVviw7liWH2zJlW9yEzsDglcIEQ==}
     engines: {node: '>=18'}
     peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
+      zod: 3.25.76
 
   ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
@@ -8366,7 +8367,7 @@ packages:
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
-      zod: ^3.23.8
+      zod: 3.25.76
     peerDependenciesMeta:
       ws:
         optional: true
@@ -10737,25 +10738,19 @@ packages:
   zod-to-json-schema@3.24.5:
     resolution: {integrity: sha512-/AuWwMP+YqiPbsJx5D6TfgRTc4kTLjsh5SOcd4bLsfUg2RcEXrFMJl1DGgdHy2aCfsIA/cr/1JM0xcB2GZji8g==}
     peerDependencies:
-      zod: ^3.24.1
+      zod: 3.25.76
 
   zod-to-ts@1.2.0:
     resolution: {integrity: sha512-x30XE43V+InwGpvTySRNz9kB7qFU8DlyEy7BsSTCHPH1R0QasMmHWZDCzYm6bVXtj/9NNJAZF3jW8rzFvH5OFA==}
     peerDependencies:
       typescript: ^4.9.4 || ^5.0.2
-      zod: ^3
+      zod: 3.25.76
 
   zod-validation-error@3.4.1:
     resolution: {integrity: sha512-1KP64yqDPQ3rupxNv7oXhf7KdhHHgaqbKuspVoiN93TT0xrBjql+Svjkdjq/Qh/7GSMmgQs3AfvBT0heE35thw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      zod: ^3.24.4
-
-  zod@3.23.8:
-    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
-
-  zod@3.25.61:
-    resolution: {integrity: sha512-fzfJgUw78LTNnHujj9re1Ov/JJQkRZZGDMcYqSx7Hp4rPOkKywaFHq0S6GoHeXs0wGNE/sIOutkXgnwzrVOGCQ==}
+      zod: 3.25.76
 
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
@@ -14634,7 +14629,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.17.50)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -15319,7 +15314,7 @@ snapshots:
     dependencies:
       devtools-protocol: 0.0.1367902
       mitt: 3.0.1
-      zod: 3.23.8
+      zod: 3.25.76
 
   chromium-bidi@5.1.0(devtools-protocol@0.0.1452169):
     dependencies:
@@ -21885,10 +21880,6 @@ snapshots:
   zod-validation-error@3.4.1(zod@3.25.76):
     dependencies:
       zod: 3.25.76
-
-  zod@3.23.8: {}
-
-  zod@3.25.61: {}
 
   zod@3.25.76: {}
 
