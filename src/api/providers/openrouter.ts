@@ -255,23 +255,23 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
 		const isGemini = modelId.startsWith("google/gemini")
 
-		// For Gemini models: sanitize messages to handle thought signature validation issues.
-		// This must happen BEFORE fake encrypted block injection to avoid injecting for
-		// tool calls that will be dropped due to missing/mismatched reasoning_details.
+		// For Gemini models with native protocol:
+		// 1. Sanitize messages to handle thought signature validation issues.
+		//    This must happen BEFORE fake encrypted block injection to avoid injecting for
+		//    tool calls that will be dropped due to missing/mismatched reasoning_details.
+		// 2. Inject fake reasoning.encrypted block for tool calls without existing encrypted reasoning.
+		//    This is required when switching from other models to Gemini to satisfy API validation.
+		//    Per OpenRouter documentation (conversation with Toven, Nov 2025):
+		//    - Create ONE reasoning_details entry per assistant message with tool calls
+		//    - Set `id` to the FIRST tool call's ID from the tool_calls array
+		//    - Set `data` to "skip_thought_signature_validator" to bypass signature validation
+		//    - Set `index` to 0
 		// See: https://github.com/cline/cline/issues/8214
 		if (isNativeProtocol && isGemini) {
+			// Step 1: Sanitize messages - filter out tool calls with missing/mismatched reasoning_details
 			openAiMessages = sanitizeGeminiMessages(openAiMessages, modelId)
-		}
 
-		// For Gemini with native protocol: inject fake reasoning.encrypted block for tool calls
-		// This is required when switching from other models to Gemini to satisfy API validation.
-		// Per OpenRouter documentation (conversation with Toven, Nov 2025):
-		// - Create ONE reasoning_details entry per assistant message with tool calls
-		// - Set `id` to the FIRST tool call's ID from the tool_calls array
-		// - Set `data` to "skip_thought_signature_validator" to bypass signature validation
-		// - Set `index` to 0
-		// NOTE: This only runs for tool calls that survived sanitization above.
-		if (isNativeProtocol && isGemini) {
+			// Step 2: Inject fake reasoning.encrypted block for tool calls that survived sanitization
 			openAiMessages = openAiMessages.map((msg) => {
 				if (msg.role === "assistant") {
 					const toolCalls = (msg as any).tool_calls as any[] | undefined
