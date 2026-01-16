@@ -189,6 +189,14 @@ describe("HookMatcher", () => {
 			const matching = filterMatchingHooks(hooks, "Write")
 			expect(matching).toHaveLength(0)
 		})
+
+		it("should NOT treat Claude Code-style tool labels as Roo Code internal tool ids", () => {
+			// Roo Code hook matching is against tool ids like write_to_file/apply_diff.
+			// A Claude Code-style matcher like Write|Edit should not match apply_diff.
+			const hooks = [createMockHook("hook1", "Write|Edit")]
+			const matching = filterMatchingHooks(hooks, "apply_diff")
+			expect(matching).toHaveLength(0)
+		})
 	})
 
 	describe("hookMatchesTool", () => {

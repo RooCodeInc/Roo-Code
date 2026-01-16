@@ -127,7 +127,21 @@ export const HooksSettings: React.FC = () => {
 				)}
 
 				{/* Note about edits requiring reload */}
-				<div className="text-sm text-vscode-descriptionForeground mb-4">{t("settings:hooks.reloadNote")}</div>
+				<div className="text-sm text-vscode-descriptionForeground mb-4">
+					{t("settings:hooks.reloadNote")}
+					<br />
+					{t("settings:hooks.matcherNote")}
+					<br />
+					<span className="font-medium">{t("settings:hooks.matcherExamplesLabel")}</span>
+					<ul className="list-disc list-inside mt-1">
+						<li>
+							<code className="font-mono">{t("settings:hooks.matcherExamples.writeOrEdit")}</code>
+						</li>
+						<li>
+							<code className="font-mono">{t("settings:hooks.matcherExamples.readOnly")}</code>
+						</li>
+					</ul>
+				</div>
 
 				{/* Hooks list */}
 				{enabledHooks.length === 0 ? (
