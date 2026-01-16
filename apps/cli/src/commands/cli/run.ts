@@ -4,7 +4,6 @@ import { fileURLToPath } from "url"
 
 import { createElement } from "react"
 
-import { isProviderName } from "@roo-code/types"
 import { setLogger } from "@roo-code/vscode-shim"
 
 import {
@@ -18,8 +17,8 @@ import {
 	SDK_BASE_URL,
 } from "@/types/index.js"
 
-import { type User, createClient } from "@/lib/sdk/index.js"
-import { loadToken, hasToken, loadSettings } from "@/lib/storage/index.js"
+import { createClient } from "@/lib/sdk/index.js"
+import { loadToken, loadSettings } from "@/lib/storage/index.js"
 import { getEnvVarName, getApiKeyFromEnv } from "@/lib/utils/provider.js"
 import { runOnboarding } from "@/lib/utils/onboarding.js"
 import { getDefaultExtensionPath } from "@/lib/utils/extension.js"
@@ -29,7 +28,7 @@ import { ExtensionHost, ExtensionHostOptions } from "@/agent/index.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-export async function run(workspaceArg: string, options: FlagOptions) {
+export async function run(workspaceArg: string, flagOptions: FlagOptions) {
 	setLogger({
 		info: () => {},
 		warn: () => {},
@@ -37,23 +36,27 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 		debug: () => {},
 	})
 
+	// Options
+
 	const isTuiSupported = process.stdin.isTTY && process.stdout.isTTY
-	const isTuiEnabled = options.tui && isTuiSupported
-	const extensionPath = options.extension || getDefaultExtensionPath(__dirname)
-	const workspacePath = path.resolve(workspaceArg)
+	const isTuiEnabled = flagOptions.tui && isTuiSupported
+	const rooToken = await loadToken()
 
-	if (!isSupportedProvider(options.provider)) {
-		console.error(
-			`[CLI] Error: Invalid provider: ${options.provider}; must be one of: ${supportedProviders.join(", ")}`,
-		)
-
-		process.exit(1)
+	const extensionHostOptions: ExtensionHostOptions = {
+		mode: flagOptions.mode || DEFAULT_FLAGS.mode,
+		reasoningEffort: flagOptions.reasoningEffort === "unspecified" ? undefined : flagOptions.reasoningEffort,
+		user: null,
+		provider: flagOptions.provider ?? (rooToken ? "roo" : "openrouter"),
+		model: flagOptions.model || DEFAULT_FLAGS.model,
+		workspacePath: path.resolve(workspaceArg),
+		extensionPath: path.resolve(flagOptions.extension || getDefaultExtensionPath(__dirname)),
+		nonInteractive: flagOptions.yes,
+		ephemeral: flagOptions.ephemeral,
+		debug: flagOptions.debug,
+		exitOnComplete: flagOptions.exitOnComplete,
 	}
 
-	let apiKey = options.apiKey || getApiKeyFromEnv(options.provider)
-	let provider = options.provider
-	let user: User | null = null
-	let useCloudProvider = false
+	// Roo Code Cloud Authentication
 
 	if (isTuiEnabled) {
 		let { onboardingProviderChoice } = await loadSettings()
@@ -64,29 +67,50 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 		}
 
 		if (onboardingProviderChoice === OnboardingProviderChoice.Roo) {
-			useCloudProvider = true
-			const authenticated = await hasToken()
-
-			if (authenticated) {
-				const token = await loadToken()
-
-				if (token) {
-					try {
-						const client = createClient({ url: SDK_BASE_URL, authToken: token })
-						const me = await client.auth.me.query()
-						provider = "roo"
-						apiKey = token
-						user = me?.type === "user" ? me.user : null
-					} catch {
-						// Token may be expired or invalid - user will need to re-authenticate.
-					}
-				}
-			}
+			extensionHostOptions.provider = "roo"
 		}
 	}
 
-	if (!apiKey) {
-		if (useCloudProvider) {
+	if (extensionHostOptions.provider === "roo") {
+		if (rooToken) {
+			try {
+				const client = createClient({ url: SDK_BASE_URL, authToken: rooToken })
+				const me = await client.auth.me.query()
+
+				if (me?.type !== "user") {
+					throw new Error("Invalid token")
+				}
+
+				extensionHostOptions.apiKey = rooToken
+				extensionHostOptions.user = me.user
+			} catch {
+				console.error("[CLI] Your Roo Code Router token is not valid.")
+				console.error("[CLI] Please run: roo auth login")
+				process.exit(1)
+			}
+		} else {
+			console.error("[CLI] Your Roo Code Router token is not missing.")
+			console.error("[CLI] Please run: roo auth login")
+			process.exit(1)
+		}
+	}
+
+	// Validations
+	// TODO: Validate the API key for the chosen provider.
+	// TODO: Validate the model for the chosen provider.
+
+	if (!isSupportedProvider(extensionHostOptions.provider)) {
+		console.error(
+			`[CLI] Error: Invalid provider: ${extensionHostOptions.provider}; must be one of: ${supportedProviders.join(", ")}`,
+		)
+		process.exit(1)
+	}
+
+	extensionHostOptions.apiKey =
+		extensionHostOptions.apiKey || flagOptions.apiKey || getApiKeyFromEnv(extensionHostOptions.provider)
+
+	if (!extensionHostOptions.apiKey) {
+		if (extensionHostOptions.provider === "roo") {
 			console.error("[CLI] Error: Authentication with Roo Code Cloud failed or was cancelled.")
 			console.error("[CLI] Please run: roo auth login")
 			console.error("[CLI] Or use --api-key to provide your own API key.")
@@ -94,39 +118,40 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 			console.error(
 				`[CLI] Error: No API key provided. Use --api-key or set the appropriate environment variable.`,
 			)
-			console.error(`[CLI] For ${provider}, set ${getEnvVarName(provider)}`)
+			console.error(
+				`[CLI] For ${extensionHostOptions.provider}, set ${getEnvVarName(extensionHostOptions.provider)}`,
+			)
 		}
 
 		process.exit(1)
 	}
 
-	if (!fs.existsSync(workspacePath)) {
-		console.error(`[CLI] Error: Workspace path does not exist: ${workspacePath}`)
+	if (!fs.existsSync(extensionHostOptions.workspacePath)) {
+		console.error(`[CLI] Error: Workspace path does not exist: ${extensionHostOptions.workspacePath}`)
 		process.exit(1)
 	}
 
-	if (!isProviderName(options.provider)) {
-		console.error(`[CLI] Error: Invalid provider: ${options.provider}`)
-		process.exit(1)
-	}
-
-	if (options.reasoningEffort && !REASONING_EFFORTS.includes(options.reasoningEffort)) {
+	if (extensionHostOptions.reasoningEffort && !REASONING_EFFORTS.includes(extensionHostOptions.reasoningEffort)) {
 		console.error(
-			`[CLI] Error: Invalid reasoning effort: ${options.reasoningEffort}, must be one of: ${REASONING_EFFORTS.join(", ")}`,
+			`[CLI] Error: Invalid reasoning effort: ${extensionHostOptions.reasoningEffort}, must be one of: ${REASONING_EFFORTS.join(", ")}`,
 		)
 		process.exit(1)
 	}
 
-	if (options.tui && !isTuiSupported) {
-		console.log("[CLI] TUI disabled (no TTY support), falling back to plain text mode")
+	if (!isTuiEnabled) {
+		if (!flagOptions.prompt) {
+			console.error("[CLI] Error: prompt is required in plain text mode")
+			console.error("[CLI] Usage: roo [workspace] -P <prompt> [options]")
+			console.error("[CLI] Use TUI mode (without --no-tui) for interactive input")
+			process.exit(1)
+		}
+
+		if (flagOptions.tui) {
+			console.warn("[CLI] TUI disabled (no TTY support), falling back to plain text mode")
+		}
 	}
 
-	if (!isTuiEnabled && !options.prompt) {
-		console.error("[CLI] Error: prompt is required in plain text mode")
-		console.error("[CLI] Usage: roo [workspace] -P <prompt> [options]")
-		console.error("[CLI] Use TUI mode (without --no-tui) for interactive input")
-		process.exit(1)
-	}
+	// Run!
 
 	if (isTuiEnabled) {
 		try {
@@ -135,21 +160,9 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 
 			render(
 				createElement(App, {
-					initialPrompt: options.prompt || "",
-					workspacePath: workspacePath,
-					extensionPath: path.resolve(extensionPath),
-					user,
-					provider,
-					apiKey,
-					model: options.model || DEFAULT_FLAGS.model,
-					mode: options.mode || DEFAULT_FLAGS.mode,
-					nonInteractive: options.yes,
-					debug: options.debug,
-					exitOnComplete: options.exitOnComplete,
-					reasoningEffort: options.reasoningEffort,
-					ephemeral: options.ephemeral,
+					...extensionHostOptions,
+					initialPrompt: flagOptions.prompt,
 					version: VERSION,
-					// Create extension host factory for dependency injection.
 					createExtensionHost: (opts: ExtensionHostOptions) => new ExtensionHost(opts),
 				}),
 				// Handle Ctrl+C in App component for double-press exit.
@@ -168,22 +181,10 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 		console.log(ASCII_ROO)
 		console.log()
 		console.log(
-			`[roo] Running ${options.model || "default"} (${options.reasoningEffort || "default"}) on ${provider} in ${options.mode || "default"} mode in ${workspacePath}`,
+			`[roo] Running ${extensionHostOptions.model || "default"} (${extensionHostOptions.reasoningEffort || "default"}) on ${extensionHostOptions.provider} in ${extensionHostOptions.mode || "default"} mode in ${extensionHostOptions.workspacePath} [debug = ${extensionHostOptions.debug}]`,
 		)
 
-		const host = new ExtensionHost({
-			mode: options.mode || DEFAULT_FLAGS.mode,
-			reasoningEffort: options.reasoningEffort === "unspecified" ? undefined : options.reasoningEffort,
-			user,
-			provider,
-			apiKey,
-			model: options.model || DEFAULT_FLAGS.model,
-			workspacePath,
-			extensionPath: path.resolve(extensionPath),
-			nonInteractive: options.yes,
-			ephemeral: options.ephemeral,
-			debug: options.debug,
-		})
+		const host = new ExtensionHost(extensionHostOptions)
 
 		process.on("SIGINT", async () => {
 			console.log("\n[CLI] Received SIGINT, shutting down...")
@@ -199,10 +200,10 @@ export async function run(workspaceArg: string, options: FlagOptions) {
 
 		try {
 			await host.activate()
-			await host.runTask(options.prompt!)
+			await host.runTask(flagOptions.prompt!)
 			await host.dispose()
 
-			if (!options.waitOnComplete) {
+			if (!flagOptions.waitOnComplete) {
 				process.exit(0)
 			}
 		} catch (error) {

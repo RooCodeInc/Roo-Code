@@ -36,6 +36,9 @@ function createTestHost({
 		model,
 		workspacePath: "/test/workspace",
 		extensionPath: "/test/extension",
+		ephemeral: false,
+		debug: false,
+		exitOnComplete: false,
 		...options,
 	})
 }
@@ -94,6 +97,9 @@ describe("ExtensionHost", () => {
 				apiKey: "test-key",
 				provider: "openrouter",
 				model: "test-model",
+				ephemeral: false,
+				debug: false,
+				exitOnComplete: false,
 			}
 
 			const host = new ExtensionHost(options)

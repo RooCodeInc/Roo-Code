@@ -58,16 +58,17 @@ export interface ExtensionHostOptions {
 	workspacePath: string
 	extensionPath: string
 	nonInteractive?: boolean
-	debug?: boolean
+	/**
+	 * When true, uses a temporary storage directory that is cleaned up on exit.
+	 */
+	ephemeral: boolean
+	debug: boolean
+	exitOnComplete: boolean
 	/**
 	 * When true, completely disables all direct stdout/stderr output.
 	 * Use this when running in TUI mode where Ink controls the terminal.
 	 */
 	disableOutput?: boolean
-	/**
-	 * When true, uses a temporary storage directory that is cleaned up on exit.
-	 */
-	ephemeral?: boolean
 	/**
 	 * When true, don't suppress node warnings and console output since we're
 	 * running in an integration test and we want to see the output.

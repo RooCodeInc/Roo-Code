@@ -14,6 +14,8 @@
 		"check-types": "tsc --noEmit",
 		"test": "vitest run",
 		"build": "tsup",
+		"build:extension": "pnpm --filter roo-cline bundle",
+		"build:all": "pnpm --filter roo-cline bundle && tsup",
 		"dev": "tsup --watch",
 		"start": "ROO_SDK_BASE_URL=http://localhost:3001 ROO_AUTH_BASE_URL=http://localhost:3000 node dist/index.js",
 		"start:production": "node dist/index.js",

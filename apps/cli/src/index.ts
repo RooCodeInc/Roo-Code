@@ -14,8 +14,8 @@ program
 	.option("-e, --extension <path>", "Path to the extension bundle directory")
 	.option("-d, --debug", "Enable debug output (includes detailed debug information)", false)
 	.option("-y, --yes", "Auto-approve all prompts (non-interactive mode)", false)
-	.option("-k, --api-key <key>", "API key for the LLM provider (defaults to OPENROUTER_API_KEY env var)")
-	.option("-p, --provider <provider>", "API provider (anthropic, openai, openrouter, etc.)", "openrouter")
+	.option("-k, --api-key <key>", "API key for the LLM provider")
+	.option("-p, --provider <provider>", "API provider (roo, anthropic, openai, openrouter, etc.)")
 	.option("-m, --model <model>", "Model to use", DEFAULT_FLAGS.model)
 	.option("-M, --mode <mode>", "Mode to start in (code, architect, ask, debug, etc.)", DEFAULT_FLAGS.mode)
 	.option(

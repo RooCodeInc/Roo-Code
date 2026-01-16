@@ -23,7 +23,7 @@ export type FlagOptions = {
 	debug: boolean
 	yes: boolean
 	apiKey?: string
-	provider: SupportedProvider
+	provider?: SupportedProvider
 	model?: string
 	mode?: string
 	reasoningEffort?: ReasoningEffortFlagOptions

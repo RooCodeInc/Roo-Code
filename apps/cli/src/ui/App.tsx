@@ -59,10 +59,9 @@ import ScrollIndicator from "./components/ScrollIndicator.js"
 const PICKER_HEIGHT = 10
 
 export interface TUIAppProps extends ExtensionHostOptions {
-	initialPrompt: string
-	debug: boolean
-	exitOnComplete: boolean
+	initialPrompt?: string
 	version: string
+	// Create extension host factory for dependency injection.
 	createExtensionHost: (options: ExtensionHostOptions) => ExtensionHostInterface
 }
 
