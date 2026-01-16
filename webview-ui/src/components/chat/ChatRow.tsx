@@ -32,6 +32,7 @@ import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
 import ImageBlock from "../common/ImageBlock"
 import ErrorRow from "./ErrorRow"
+import WarningRow from "./WarningRow"
 
 import McpResourceRow from "../mcp/McpResourceRow"
 
@@ -1512,6 +1513,24 @@ export const ChatRowContent = ({
 				case "browser_action_result":
 					// Handled by BrowserSessionRow; prevent raw JSON (action/result) from rendering here
 					return null
+				case "too_many_tools_warning": {
+					const warningData = safeJsonParse<{
+						toolCount: number
+						serverCount: number
+						threshold: number
+					}>(message.text || "{}")
+					if (!warningData) return null
+					return (
+						<WarningRow
+							title={t("chat:tooManyTools.title")}
+							message={t("chat:tooManyTools.message", {
+								toolCount: warningData.toolCount,
+								serverCount: warningData.serverCount,
+								threshold: warningData.threshold,
+							})}
+						/>
+					)
+				}
 				default:
 					return (
 						<>

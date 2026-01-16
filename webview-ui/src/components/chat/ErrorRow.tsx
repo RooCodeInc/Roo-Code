@@ -270,7 +270,7 @@ export const ErrorRow = memo(
 						<p
 							className={
 								messageClassName ||
-								"my-0 font-light whitespace-pre-wrap break-words text-vscode-descriptionForeground"
+								"cursor-default my-0 font-light whitespace-pre-wrap break-words text-vscode-descriptionForeground"
 							}>
 							{message}
 							{formattedErrorDetails && (
