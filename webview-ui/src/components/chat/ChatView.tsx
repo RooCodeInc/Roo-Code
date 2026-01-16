@@ -44,6 +44,7 @@ import TaskHeader from "./TaskHeader"
 import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
+import TooManyToolsWarning from "./TooManyToolsWarning"
 import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
@@ -1507,6 +1508,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							<CheckpointWarning warning={checkpointWarning} />
 						</div>
 					)}
+
+					<div className="px-3">
+						<TooManyToolsWarning />
+					</div>
 				</>
 			) : (
 				<div className="flex flex-col h-full justify-center p-6 min-h-0 overflow-y-auto gap-4 relative">
