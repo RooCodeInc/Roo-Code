@@ -311,6 +311,7 @@ const ApiOptions = ({
 			// To address that we set the modelId to the default value for th
 			// provider if it's not already set.
 			const validateAndResetModel = (
+				provider: ProviderName,
 				modelId: string | undefined,
 				field: keyof ProviderSettings,
 				defaultValue?: string,
@@ -318,11 +319,32 @@ const ApiOptions = ({
 				// in case we haven't set a default value for a provider
 				if (!defaultValue) return
 
-				// only set default if no model is set, but don't reset invalid models
-				// let users see and decide what to do with invalid model selections
-				const shouldSetDefault = !modelId
+				// 1) If nothing is set, initialize to the provider default.
+				if (!modelId) {
+					setApiConfigurationField(field, defaultValue, false)
+					return
+				}
 
-				if (shouldSetDefault) {
+				// 2) If something *is* set, ensure it's valid for the newly selected provider.
+				//
+				// Without this, switching providers can leave the UI showing a model from the
+				// previously selected provider (including model IDs that don't exist for the
+				// newly selected provider).
+				//
+				// Note: We only validate providers with static model lists.
+				const staticModels = MODELS_BY_PROVIDER[provider]
+				if (!staticModels) {
+					return
+				}
+
+				// Bedrock has a special “custom-arn” pseudo-model that isn't part of MODELS_BY_PROVIDER.
+				if (provider === "bedrock" && modelId === "custom-arn") {
+					return
+				}
+
+				const filteredModels = filterModels(staticModels, provider, organizationAllowList)
+				const isValidModel = !!filteredModels && Object.prototype.hasOwnProperty.call(filteredModels, modelId)
+				if (!isValidModel) {
 					setApiConfigurationField(field, defaultValue, false)
 				}
 			}
@@ -381,13 +403,14 @@ const ApiOptions = ({
 			const config = PROVIDER_MODEL_CONFIG[value]
 			if (config) {
 				validateAndResetModel(
+					value,
 					apiConfiguration[config.field] as string | undefined,
 					config.field,
 					config.default,
 				)
 			}
 		},
-		[setApiConfigurationField, apiConfiguration],
+		[setApiConfigurationField, apiConfiguration, organizationAllowList],
 	)
 
 	const modelValidationError = useMemo(() => {
