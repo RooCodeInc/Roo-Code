@@ -307,6 +307,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	didFinishAbortingStream = false
 	abandoned = false
 	abortReason?: ClineApiReqCancelReason
+
+	/**
+	 * Controls whether the task should unsubscribe from its Socket.IO room when disposed.
+	 * This flag is captured synchronously at the start of abortTask() to prevent race conditions
+	 * where external code might modify state between abortTask() initiation and dispose() execution.
+	 *
+	 * - undefined: Default behavior - unsubscribe (backward compatibility)
+	 * - true: Unsubscribe when disposed (user switched tasks)
+	 * - false: Keep subscription when disposed (Roomote Stop, user wants to continue later)
+	 *
+	 * @see {@link abortTask} - Sets this flag based on isAbandoned parameter
+	 * @see {@link dispose} - Uses this flag to decide whether to unsubscribe
+	 */
+	private _shouldUnsubscribeOnDispose?: boolean
 	isInitialized = false
 	isPaused: boolean = false
 
@@ -2195,6 +2209,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public async abortTask(isAbandoned = false) {
 		// Aborting task
 
+		// CRITICAL: Capture intent BEFORE any async operations
+		// This prevents race conditions where external code sets 'abandoned'
+		// between now and dispose()
+		this._shouldUnsubscribeOnDispose = isAbandoned
+
 		// Will stop any autonomously running promises.
 		if (isAbandoned) {
 			this.abandoned = true
@@ -2269,13 +2288,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		if (this.enableBridge) {
-			BridgeOrchestrator.getInstance()
-				?.unsubscribeFromTask(this.taskId)
-				.catch((error) =>
-					console.error(
-						`[Task#dispose] BridgeOrchestrator#unsubscribeFromTask() failed: ${error instanceof Error ? error.message : String(error)}`,
-					),
+			// Only unsubscribe if:
+			// 1. abortTask(true) was called (user switched tasks), OR
+			// 2. dispose() was called directly (backward compatibility)
+			// Keep subscription for abortTask(false) (Roomote Stop, user wants to continue later)
+			const shouldUnsubscribe = this._shouldUnsubscribeOnDispose ?? true
+
+			if (shouldUnsubscribe) {
+				console.log(`[Task#dispose] Unsubscribing from task room ${this.taskId}`)
+				BridgeOrchestrator.getInstance()
+					?.unsubscribeFromTask(this.taskId)
+					.catch((error) =>
+						console.error(
+							`[Task#dispose] BridgeOrchestrator#unsubscribeFromTask() failed: ` +
+								`${error instanceof Error ? error.message : String(error)}`,
+						),
+					)
+			} else {
+				console.log(
+					`[Task#dispose] Keeping task room subscription for ${this.taskId} ` +
+						`(awaiting remote Continue/Message)`,
 				)
+			}
 		}
 
 		// Release any terminals associated with this task.
