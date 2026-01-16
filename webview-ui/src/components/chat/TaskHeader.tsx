@@ -21,6 +21,7 @@ import { getModelMaxOutputTokens } from "@roo/api"
 import { findLastIndex } from "@roo/array"
 
 import { formatLargeNumber } from "@src/utils/format"
+import { getTaskHeaderCostTooltipData } from "@src/utils/taskCostBreakdown"
 import { cn } from "@src/lib/utils"
 import { StandardTooltip, Button } from "@src/components/ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -128,6 +129,37 @@ const TaskHeader = ({
 	)
 
 	const hasTodos = todos && Array.isArray(todos) && todos.length > 0
+
+	const subtaskCosts = useMemo(() => {
+		if (!subtaskDetails || subtaskDetails.length === 0) {
+			return []
+		}
+
+		return subtaskDetails
+			.map((subtask) => subtask.cost)
+			.filter((cost): cost is number => typeof cost === "number" && Number.isFinite(cost))
+	}, [subtaskDetails])
+
+	const tooltipCostData = useMemo(
+		() =>
+			getTaskHeaderCostTooltipData({
+				ownCost: totalCost,
+				aggregatedCost,
+				hasSubtasksProp: hasSubtasks,
+				costBreakdownProp: costBreakdown,
+				subtaskCosts,
+				labels: {
+					own: t("common:costs.own"),
+					subtasks: t("common:costs.subtasks"),
+				},
+			}),
+		[totalCost, aggregatedCost, hasSubtasks, costBreakdown, subtaskCosts, t],
+	)
+
+	const displayTotalCost = tooltipCostData.displayTotalCost
+	const displayCostBreakdown = tooltipCostData.displayCostBreakdown
+	const shouldTreatAsHasSubtasks = tooltipCostData.hasSubtasks
+	const hasAnyCost = tooltipCostData.hasAnyCost
 
 	return (
 		<div className="group pt-2 pb-0 px-3">
@@ -257,17 +289,19 @@ const TaskHeader = ({
 									{formatLargeNumber(contextTokens || 0)} / {formatLargeNumber(contextWindow)}
 								</span>
 							</StandardTooltip>
-							{!!totalCost && (
+							{hasAnyCost && (
 								<StandardTooltip
 									content={
-										hasSubtasks ? (
+										shouldTreatAsHasSubtasks ? (
 											<div>
 												<div>
 													{t("chat:costs.totalWithSubtasks", {
-														cost: (aggregatedCost ?? totalCost).toFixed(2),
+														cost: displayTotalCost.toFixed(2),
 													})}
 												</div>
-												{costBreakdown && <div className="text-xs mt-1">{costBreakdown}</div>}
+												{displayCostBreakdown && (
+													<div className="text-xs mt-1">{displayCostBreakdown}</div>
+												)}
 											</div>
 										) : (
 											<div>{t("chat:costs.total", { cost: totalCost.toFixed(2) })}</div>
@@ -276,8 +310,8 @@ const TaskHeader = ({
 									side="top"
 									sideOffset={8}>
 									<span>
-										${(aggregatedCost ?? totalCost).toFixed(2)}
-										{hasSubtasks && (
+										${displayTotalCost.toFixed(2)}
+										{shouldTreatAsHasSubtasks && (
 											<span className="text-xs ml-1" title={t("chat:costs.includesSubtasks")}>
 												*
 											</span>
@@ -416,7 +450,7 @@ const TaskHeader = ({
 										</tr>
 									)}
 
-									{!!totalCost && (
+									{hasAnyCost && (
 										<tr>
 											<th className="font-medium text-left align-top w-1 whitespace-nowrap pr-3 h-[24px]">
 												{t("chat:task.apiCost")}
@@ -424,15 +458,17 @@ const TaskHeader = ({
 											<td className="font-light align-top">
 												<StandardTooltip
 													content={
-														hasSubtasks ? (
+														shouldTreatAsHasSubtasks ? (
 															<div>
 																<div>
 																	{t("chat:costs.totalWithSubtasks", {
-																		cost: (aggregatedCost ?? totalCost).toFixed(2),
+																		cost: displayTotalCost.toFixed(2),
 																	})}
 																</div>
-																{costBreakdown && (
-																	<div className="text-xs mt-1">{costBreakdown}</div>
+																{displayCostBreakdown && (
+																	<div className="text-xs mt-1">
+																		{displayCostBreakdown}
+																	</div>
 																)}
 															</div>
 														) : (
@@ -444,8 +480,8 @@ const TaskHeader = ({
 													side="top"
 													sideOffset={8}>
 													<span>
-														${(aggregatedCost ?? totalCost).toFixed(2)}
-														{hasSubtasks && (
+														${displayTotalCost.toFixed(2)}
+														{shouldTreatAsHasSubtasks && (
 															<span
 																className="text-xs ml-1"
 																title={t("chat:costs.includesSubtasks")}>
