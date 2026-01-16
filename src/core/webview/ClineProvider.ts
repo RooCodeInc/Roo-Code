@@ -2240,16 +2240,21 @@ export class ClineProvider
 		}
 
 		const snapshot = this.hookManager.getConfigSnapshot()
-		const enabledHooks = this.hookManager.getEnabledHooks()
 		const executionHistory = this.hookManager.getHookExecutionHistory()
 
+		// Build a list of *all* known hooks (including currently disabled ones)
+		// so the webview can show per-hook toggles and a global "Enable Hooks" toggle.
+		const allHooks = snapshot
+			? Array.from(snapshot.hooksByEvent.values()).reduce((acc, hooks) => acc.concat(hooks), [] as any[])
+			: []
+
 		// Convert ResolvedHook[] to HookInfo[]
-		const hookInfos = enabledHooks.map((hook) => ({
+		const hookInfos = allHooks.map((hook) => ({
 			id: hook.id,
 			event: hook.event,
 			matcher: hook.matcher,
 			commandPreview: hook.command.length > 100 ? hook.command.substring(0, 97) + "..." : hook.command,
-			enabled: hook.enabled ?? true,
+			enabled: (hook.enabled ?? true) && !(snapshot?.disabledHookIds?.has(hook.id) ?? false),
 			source: hook.source,
 			timeout: hook.timeout ?? 60,
 			shell: hook.shell,

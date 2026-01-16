@@ -617,6 +617,7 @@ export interface WebviewMessage {
 		| "debugSetting"
 		| "hooksReloadConfig"
 		| "hooksSetEnabled"
+		| "hooksSetAllEnabled"
 		| "hooksOpenConfigFolder"
 	text?: string
 	editedMessageContent?: string
@@ -675,6 +676,7 @@ export interface WebviewMessage {
 	useProviderSignup?: boolean // For rooCloudSignIn to use provider signup flow
 	hookId?: string // For hooksSetEnabled
 	hookEnabled?: boolean // For hooksSetEnabled
+	hooksEnabled?: boolean // For hooksSetAllEnabled
 	hooksSource?: "global" | "project" // For hooksOpenConfigFolder
 	codeIndexSettings?: {
 		// Global state settings

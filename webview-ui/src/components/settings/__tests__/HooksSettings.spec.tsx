@@ -104,9 +104,173 @@ describe("HooksSettings", () => {
 
 		render(<HooksSettings />)
 
+		// Hook ID should be visible in collapsed state
+		expect(screen.getByText(mockHook.id)).toBeInTheDocument()
+		expect(screen.getByText(mockHook.source)).toBeInTheDocument()
+	})
+
+	it("expands and collapses hook accordion on click", () => {
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			matcher: "git*",
+			commandPreview: "echo 'Before git command'",
+			enabled: true,
+			source: "project",
+			timeout: 30,
+			description: "Test hook",
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		// Hook details should not be visible initially
+		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
+		expect(screen.queryByText(mockHook.matcher!)).not.toBeInTheDocument()
+
+		// Click to expand
+		const hookHeader = screen.getByText(mockHook.id).closest("div")
+		fireEvent.click(hookHeader!)
+
+		// Hook details should now be visible
 		expect(screen.getByText(mockHook.event)).toBeInTheDocument()
 		expect(screen.getByText(mockHook.matcher!)).toBeInTheDocument()
 		expect(screen.getByText(mockHook.commandPreview)).toBeInTheDocument()
+
+		// Click to collapse
+		fireEvent.click(hookHeader!)
+
+		// Hook details should be hidden again
+		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
+	})
+
+	it("shows per-hook logs in expanded view", () => {
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "global",
+			timeout: 30,
+		}
+
+		const mockRecord: HookExecutionRecord = {
+			timestamp: new Date().toISOString(),
+			hookId: "hook-1",
+			event: "before_execute_command",
+			toolName: "write_to_file",
+			exitCode: 0,
+			duration: 150,
+			timedOut: false,
+			blocked: false,
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [mockRecord],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		// Expand hook
+		const hookHeader = screen.getByText(mockHook.id).closest("div")
+		fireEvent.click(hookHeader!)
+
+		// Logs section should be visible
+		expect(screen.getByText("settings:hooks.logs")).toBeInTheDocument()
+		expect(screen.getByText(mockRecord.toolName!)).toBeInTheDocument()
+		expect(screen.getByText("settings:hooks.status.completed")).toBeInTheDocument()
+	})
+
+	it("filters logs per hook correctly", () => {
+		const mockHook1: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "global",
+			timeout: 30,
+		}
+
+		const mockHook2: HookInfo = {
+			id: "hook-2",
+			event: "after_execute_command",
+			commandPreview: "echo after",
+			enabled: true,
+			source: "global",
+			timeout: 30,
+		}
+
+		const record1: HookExecutionRecord = {
+			timestamp: new Date().toISOString(),
+			hookId: "hook-1",
+			event: "before_execute_command",
+			toolName: "write_to_file",
+			exitCode: 0,
+			duration: 100,
+			timedOut: false,
+			blocked: false,
+		}
+
+		const record2: HookExecutionRecord = {
+			timestamp: new Date().toISOString(),
+			hookId: "hook-2",
+			event: "after_execute_command",
+			toolName: "read_file",
+			exitCode: 0,
+			duration: 50,
+			timedOut: false,
+			blocked: false,
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook1, mockHook2],
+			executionHistory: [record1, record2],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		// Expand first hook
+		const hook1Headers = screen.getAllByText("hook-1")
+		const hook1Header = hook1Headers[0].closest("div")
+		fireEvent.click(hook1Header!)
+
+		// Should show only hook-1's log
+		expect(screen.getByText("write_to_file")).toBeInTheDocument()
+		expect(screen.queryByText("read_file")).not.toBeInTheDocument()
+	})
+
+	it("shows 'no logs' message when hook has no execution history", () => {
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "global",
+			timeout: 30,
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		// Expand hook
+		const hookHeader = screen.getByText(mockHook.id).closest("div")
+		fireEvent.click(hookHeader!)
+
+		// Should show no logs message
+		expect(screen.getByText("settings:hooks.noLogsForHook")).toBeInTheDocument()
 	})
 
 	it("shows project hooks warning when hasProjectHooks is true", () => {
@@ -121,32 +285,58 @@ describe("HooksSettings", () => {
 		expect(screen.getByText("settings:hooks.projectHooksWarningMessage")).toBeInTheDocument()
 	})
 
-	it("sends hooksReloadConfig message when Reload button is clicked", async () => {
+	it("sends hooksReloadConfig message when Reload button is clicked (bottom action)", async () => {
 		const { vscode } = await import("@src/utils/vscode")
 		render(<HooksSettings />)
 
+		// Reload button is now in bottom action area (mirroring MCP settings)
 		const reloadButton = screen.getByText("settings:hooks.reload")
 		fireEvent.click(reloadButton)
 
 		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "hooksReloadConfig" })
 	})
 
-	it("sends hooksOpenConfigFolder message when Open Folder button is clicked", async () => {
+	it("sends hooksOpenConfigFolder message with 'global' when Global Folder button is clicked (bottom action)", async () => {
 		const { vscode } = await import("@src/utils/vscode")
-		currentHooksState = {
-			...mockHooksState,
-			hasProjectHooks: true,
-		}
 
 		render(<HooksSettings />)
 
-		const openFolderButton = screen.getByText("settings:hooks.openProjectFolder")
-		fireEvent.click(openFolderButton)
+		// Button is now in bottom action area (like MCP settings)
+		const globalFolderButton = screen.getByText("settings:hooks.openGlobalFolder")
+		fireEvent.click(globalFolderButton)
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "hooksOpenConfigFolder",
+			hooksSource: "global",
+		})
+	})
+
+	it("sends hooksOpenConfigFolder message with 'project' when Project Folder button is clicked (bottom action)", async () => {
+		const { vscode } = await import("@src/utils/vscode")
+
+		render(<HooksSettings />)
+
+		// Button is now in bottom action area (like MCP settings)
+		const projectFolderButton = screen.getByText("settings:hooks.openProjectFolder")
+		fireEvent.click(projectFolderButton)
 
 		expect(vscode.postMessage).toHaveBeenCalledWith({
 			type: "hooksOpenConfigFolder",
 			hooksSource: "project",
 		})
+	})
+
+	it("renders both Global and Project folder buttons in bottom action area regardless of hasProjectHooks state", () => {
+		currentHooksState = {
+			...mockHooksState,
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		// Both buttons should be present
+		expect(screen.getByText("settings:hooks.openGlobalFolder")).toBeInTheDocument()
+		expect(screen.getByText("settings:hooks.openProjectFolder")).toBeInTheDocument()
 	})
 
 	it("sends hooksSetEnabled message when hook toggle is changed", async () => {
@@ -168,13 +358,88 @@ describe("HooksSettings", () => {
 
 		render(<HooksSettings />)
 
-		const checkbox = screen.getByRole("checkbox")
-		fireEvent.click(checkbox)
+		// First checkbox is the top-level "Enable Hooks" toggle; the second is the per-hook toggle in collapsed header
+		const checkboxes = screen.getAllByRole("checkbox")
+		fireEvent.click(checkboxes[1])
 
 		expect(vscode.postMessage).toHaveBeenCalledWith({
 			type: "hooksSetEnabled",
 			hookId: "hook-1",
 			hookEnabled: false,
+		})
+	})
+
+	it("toggles hook enabled state in collapsed view without expanding accordion", async () => {
+		const { vscode } = await import("@src/utils/vscode")
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "global",
+			timeout: 30,
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		// Hook should be collapsed initially
+		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
+
+		// Click the checkbox (second checkbox, first is "Enable Hooks")
+		const checkboxes = screen.getAllByRole("checkbox")
+		fireEvent.click(checkboxes[1])
+
+		// Hook should still be collapsed after toggling
+		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
+
+		// Toggle message should have been sent
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "hooksSetEnabled",
+			hookId: "hook-1",
+			hookEnabled: false,
+		})
+	})
+
+	it("sends hooksSetAllEnabled message when top-level Enable Hooks toggle is changed", async () => {
+		const { vscode } = await import("@src/utils/vscode")
+
+		currentHooksState = {
+			enabledHooks: [
+				{
+					id: "hook-1",
+					event: "event1",
+					commandPreview: "cmd1",
+					enabled: true,
+					source: "global",
+					timeout: 30,
+				},
+				{
+					id: "hook-2",
+					event: "event2",
+					commandPreview: "cmd2",
+					enabled: true,
+					source: "project",
+					timeout: 30,
+				},
+			],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		const checkboxes = screen.getAllByRole("checkbox")
+		fireEvent.click(checkboxes[0])
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "hooksSetAllEnabled",
+			hooksEnabled: false,
 		})
 	})
 

@@ -3374,6 +3374,30 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "hooksSetAllEnabled": {
+			// Enable or disable ALL currently known hooks.
+			// This mirrors MCP's "Enable MCP Servers" top-level toggle.
+			const hookManager = provider.getHookManager()
+			if (hookManager && typeof message.hooksEnabled === "boolean") {
+				try {
+					const snapshot = hookManager.getConfigSnapshot()
+					const allHookIds = snapshot ? Array.from(snapshot.hooksById.keys()) : []
+
+					for (const hookId of allHookIds) {
+						await hookManager.setHookEnabled(hookId, message.hooksEnabled)
+					}
+
+					await provider.postStateToWebview()
+				} catch (error) {
+					provider.log(
+						`Failed to set all hooks enabled: ${error instanceof Error ? error.message : String(error)}`,
+					)
+					vscode.window.showErrorMessage(`Failed to ${message.hooksEnabled ? "enable" : "disable"} all hooks`)
+				}
+			}
+			break
+		}
+
 		case "hooksOpenConfigFolder": {
 			// Open the hooks configuration folder in VS Code
 			const source = message.hooksSource ?? "project"
