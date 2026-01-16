@@ -33,7 +33,7 @@ describe("mcp-name utilities", () => {
 		})
 
 		it("should have correct max tool name length", () => {
-			expect(MAX_TOOL_NAME_LENGTH).toBe(128)
+			expect(MAX_TOOL_NAME_LENGTH).toBe(64)
 		})
 
 		it("should have correct hash suffix length", () => {
@@ -165,24 +165,24 @@ describe("mcp-name utilities", () => {
 			expect(buildMcpToolName("server@name", "tool!name")).toBe("mcp--servername--toolname")
 		})
 
-		it("should truncate long names to 128 characters with hash suffix", () => {
-			const longServer = "a".repeat(80)
-			const longTool = "b".repeat(80)
+		it("should truncate long names to 64 characters with hash suffix", () => {
+			const longServer = "a".repeat(50)
+			const longTool = "b".repeat(50)
 			const result = buildMcpToolName(longServer, longTool)
-			expect(result.length).toBeLessThanOrEqual(128)
-			expect(result.length).toBe(128)
+			expect(result.length).toBeLessThanOrEqual(64)
+			expect(result.length).toBe(64)
 			expect(result.startsWith("mcp--")).toBe(true)
 			// Should end with underscore + 8 char hash suffix
 			expect(result).toMatch(/_[a-f0-9]{8}$/)
 		})
 
 		it("should use hash suffix for long names and cache them", () => {
-			const longServer = "a".repeat(80)
-			const longTool = "b".repeat(80)
+			const longServer = "a".repeat(50)
+			const longTool = "b".repeat(50)
 			const result = buildMcpToolName(longServer, longTool)
 
 			// The shortened name should be deterministic
-			expect(result.length).toBe(128)
+			expect(result.length).toBe(64)
 			expect(result).toMatch(/_[a-f0-9]{8}$/)
 
 			// Building again should return the same result (from cache)
@@ -191,8 +191,8 @@ describe("mcp-name utilities", () => {
 		})
 
 		it("should produce deterministic hash suffixes", () => {
-			const longServer = "a".repeat(80)
-			const longTool = "b".repeat(80)
+			const longServer = "a".repeat(50)
+			const longTool = "b".repeat(50)
 			// Build the same name twice with cache cleared between
 			clearEncodedNameCache()
 			const result1 = buildMcpToolName(longServer, longTool)
@@ -203,12 +203,12 @@ describe("mcp-name utilities", () => {
 		})
 
 		it("should produce unique hash suffixes for different tools", () => {
-			const longServer = "a".repeat(80)
-			const result1 = buildMcpToolName(longServer, "tool1_" + "x".repeat(70))
-			const result2 = buildMcpToolName(longServer, "tool2_" + "y".repeat(70))
+			const longServer = "a".repeat(50)
+			const result1 = buildMcpToolName(longServer, "tool1_" + "x".repeat(40))
+			const result2 = buildMcpToolName(longServer, "tool2_" + "y".repeat(40))
 			// Both should be truncated
-			expect(result1.length).toBe(128)
-			expect(result2.length).toBe(128)
+			expect(result1.length).toBe(64)
+			expect(result2.length).toBe(64)
 			// Should have different hash suffixes
 			expect(result1).not.toBe(result2)
 		})
@@ -437,7 +437,7 @@ describe("mcp-name utilities", () => {
 
 			// Should NOT have hash suffix
 			expect(builtName).toBe("mcp--server--get___data")
-			expect(builtName.length).toBeLessThan(128)
+			expect(builtName.length).toBeLessThan(64)
 
 			// Normal decode path should work
 			const parsed = parseMcpToolName(builtName)
@@ -456,7 +456,7 @@ describe("mcp-name utilities", () => {
 			const encodedName = buildMcpToolName(serverName, toolName)
 
 			// Should be truncated to 128 chars with hash suffix
-			expect(encodedName.length).toBe(128)
+			expect(encodedName.length).toBe(64)
 			expect(encodedName).toMatch(/_[a-f0-9]{8}$/)
 
 			// The new approach: use findToolByEncodedMcpName to find the matching tool
@@ -487,8 +487,8 @@ describe("mcp-name utilities", () => {
 		})
 
 		it("should find tool for shortened names with hash suffix", () => {
-			const serverName = "a".repeat(80)
-			const toolName = "b".repeat(80) + "-hyphen"
+			const serverName = "a".repeat(50)
+			const toolName = "b".repeat(50) + "-hyphen"
 			const encodedName = buildMcpToolName(serverName, toolName)
 
 			// The encoded name should have a hash suffix
@@ -541,8 +541,8 @@ describe("mcp-name utilities", () => {
 	describe("clearEncodedNameCache", () => {
 		it("should clear the encoded name cache", () => {
 			// Build some names to populate cache
-			const longServer = "a".repeat(80)
-			const longTool = "b".repeat(80)
+			const longServer = "a".repeat(50)
+			const longTool = "b".repeat(50)
 			buildMcpToolName(longServer, longTool)
 			buildMcpToolName("server", "tool")
 
@@ -552,7 +552,7 @@ describe("mcp-name utilities", () => {
 			// Verify cache is cleared by checking that rebuilding takes the same path
 			// (we can't directly access the cache, but the function should work)
 			const result = buildMcpToolName(longServer, longTool)
-			expect(result.length).toBe(128)
+			expect(result.length).toBe(64)
 			expect(result).toMatch(/_[a-f0-9]{8}$/)
 		})
 	})
