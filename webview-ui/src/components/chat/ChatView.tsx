@@ -49,6 +49,19 @@ import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
 
+/**
+ * Detailed information about a subtask for UI display.
+ * Matches the SubtaskDetail interface from backend aggregateTaskCosts.ts
+ */
+interface SubtaskDetail {
+	id: string // Task ID
+	name: string // First 50 chars of task description
+	tokens: number // tokensIn + tokensOut
+	cost: number // Aggregated total cost
+	status: "active" | "completed" | "delegated"
+	hasNestedChildren: boolean // Has its own subtasks
+}
+
 export interface ChatViewProps {
 	isHidden: boolean
 	showAnnouncement: boolean
@@ -174,6 +187,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				totalCost: number
 				ownCost: number
 				childrenCost: number
+				childDetails?: SubtaskDetail[]
 			}
 		>
 	>(new Map())
@@ -1488,6 +1502,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 										own: t("common:costs.own"),
 										subtasks: t("common:costs.subtasks"),
 									})
+								: undefined
+						}
+						subtaskDetails={
+							currentTaskItem?.id && aggregatedCostsMap.has(currentTaskItem.id)
+								? aggregatedCostsMap.get(currentTaskItem.id)!.childDetails
 								: undefined
 						}
 						contextTokens={apiMetrics.contextTokens}

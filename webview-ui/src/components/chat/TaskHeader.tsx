@@ -34,6 +34,7 @@ import { ContextWindowProgress } from "./ContextWindowProgress"
 import { Mention } from "./Mention"
 import { TodoListDisplay } from "./TodoListDisplay"
 import { LucideIconButton } from "./LucideIconButton"
+import type { SubtaskDetail } from "./SubtaskCostList"
 
 export interface TaskHeaderProps {
 	task: ClineMessage
@@ -45,6 +46,7 @@ export interface TaskHeaderProps {
 	aggregatedCost?: number
 	hasSubtasks?: boolean
 	costBreakdown?: string
+	subtaskDetails?: SubtaskDetail[]
 	contextTokens: number
 	buttonsDisabled: boolean
 	handleCondenseContext: (taskId: string) => void
@@ -61,6 +63,7 @@ const TaskHeader = ({
 	aggregatedCost,
 	hasSubtasks,
 	costBreakdown,
+	subtaskDetails,
 	contextTokens,
 	buttonsDisabled,
 	handleCondenseContext,
@@ -472,7 +475,15 @@ const TaskHeader = ({
 					</>
 				)}
 				{/* Todo list - always shown at bottom when todos exist */}
-				{hasTodos && <TodoListDisplay todos={todos ?? (task as any)?.tool?.todos ?? []} />}
+				{hasTodos && (
+					<TodoListDisplay
+						todos={todos ?? (task as any)?.tool?.todos ?? []}
+						subtaskDetails={subtaskDetails}
+						onSubtaskClick={(subtaskId) => {
+							vscode.postMessage({ type: "showTaskWithId", text: subtaskId })
+						}}
+					/>
+				)}
 			</div>
 			<CloudUpsellDialog open={isOpen} onOpenChange={closeUpsell} onConnect={handleConnect} />
 		</div>

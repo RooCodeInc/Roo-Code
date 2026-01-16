@@ -3,6 +3,10 @@ import { t } from "i18next"
 import { ArrowRight, Check, ListChecks, SquareDashed } from "lucide-react"
 import { useState, useRef, useMemo, useEffect } from "react"
 
+import { formatLargeNumber } from "@src/utils/format"
+
+import type { SubtaskDetail } from "./SubtaskCostList"
+
 type TodoStatus = "completed" | "in_progress" | "pending"
 
 function getTodoIcon(status: TodoStatus | null) {
@@ -16,7 +20,58 @@ function getTodoIcon(status: TodoStatus | null) {
 	}
 }
 
-export function TodoListDisplay({ todos }: { todos: any[] }) {
+/**
+ * Normalizes a string for comparison by:
+ * - Converting to lowercase
+ * - Removing extra whitespace
+ * - Trimming quotes
+ * - Stripping common task prefixes (Subtask N:, ## Task:, Task N:)
+ * - Removing trailing ellipsis from truncated strings
+ */
+function normalizeForComparison(str: string): string {
+	return (
+		str
+			.toLowerCase()
+			.replace(/\s+/g, " ")
+			.trim()
+			.replace(/^["']|["']$/g, "")
+			// Strip common task prefixes: "Subtask N:", "## Task:", "Task N:", etc.
+			.replace(/^(subtask\s*\d*\s*:|##\s*task\s*:|task\s*\d*\s*:)\s*/i, "")
+			// Remove trailing ellipsis from truncated strings
+			.replace(/\.{3}$/, "")
+			.trim()
+	)
+}
+
+/**
+ * Match a todo content string to a subtask detail using fuzzy matching.
+ * Returns the matching SubtaskDetail if found, undefined otherwise.
+ */
+function findMatchingSubtask(todoContent: string, subtaskDetails: SubtaskDetail[]): SubtaskDetail | undefined {
+	const normalizedTodo = normalizeForComparison(todoContent)
+
+	// Try exact match first
+	const exactMatch = subtaskDetails.find((s) => normalizeForComparison(s.name) === normalizedTodo)
+	if (exactMatch) {
+		return exactMatch
+	}
+
+	// Try partial match - check if one contains the other
+	const partialMatch = subtaskDetails.find((s) => {
+		const normalizedSubtask = normalizeForComparison(s.name)
+		return normalizedTodo.includes(normalizedSubtask) || normalizedSubtask.includes(normalizedTodo)
+	})
+
+	return partialMatch
+}
+
+export interface TodoListDisplayProps {
+	todos: any[]
+	subtaskDetails?: SubtaskDetail[]
+	onSubtaskClick?: (subtaskId: string) => void
+}
+
+export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoListDisplayProps) {
 	const [isCollapsed, setIsCollapsed] = useState(true)
 	const ulRef = useRef<HTMLUListElement>(null)
 	const itemRefs = useRef<(HTMLLIElement | null)[]>([])
@@ -82,6 +137,11 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 				<ul ref={ulRef} className="list-none max-h-[300px] overflow-y-auto mt-2 -mb-1 pb-0 px-2 cursor-default">
 					{todos.map((todo: any, idx: number) => {
 						const icon = getTodoIcon(todo.status as TodoStatus)
+						const matchingSubtask = subtaskDetails
+							? findMatchingSubtask(todo.content, subtaskDetails)
+							: undefined
+						const isClickable = matchingSubtask && onSubtaskClick
+
 						return (
 							<li
 								key={todo.id || todo.content}
@@ -92,7 +152,22 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 									todo.status !== "in_progress" && todo.status !== "completed" && "opacity-60",
 								)}>
 								{icon}
-								<span>{todo.content}</span>
+								<span
+									className={cn("flex-1", isClickable && "cursor-pointer hover:underline")}
+									onClick={isClickable ? () => onSubtaskClick(matchingSubtask.id) : undefined}>
+									{todo.content}
+								</span>
+								{/* Token count and cost display */}
+								{matchingSubtask && (
+									<span className="flex items-center gap-2 text-xs text-vscode-descriptionForeground shrink-0">
+										<span className="tabular-nums opacity-70">
+											{formatLargeNumber(matchingSubtask.tokens)}
+										</span>
+										<span className="tabular-nums min-w-[45px] text-right">
+											${matchingSubtask.cost.toFixed(2)}
+										</span>
+									</span>
+								)}
 							</li>
 						)
 					})}

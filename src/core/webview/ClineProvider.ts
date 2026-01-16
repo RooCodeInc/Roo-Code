@@ -47,7 +47,12 @@ import {
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	getModelId,
 } from "@roo-code/types"
-import { aggregateTaskCostsRecursive, type AggregatedCosts } from "./aggregateTaskCosts"
+import {
+	aggregateTaskCostsRecursive,
+	buildSubtaskDetails,
+	type AggregatedCosts,
+	type SubtaskDetail,
+} from "./aggregateTaskCosts"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator, getRooCodeApiUrl } from "@roo-code/cloud"
 
@@ -1717,7 +1722,24 @@ export class ClineProvider
 			return result.historyItem
 		})
 
-		return { historyItem, aggregatedCosts }
+		// Build subtask details if there are children
+		let childDetails: SubtaskDetail[] | undefined
+		if (aggregatedCosts.childBreakdown && Object.keys(aggregatedCosts.childBreakdown).length > 0) {
+			childDetails = await buildSubtaskDetails(aggregatedCosts.childBreakdown, async (id: string) => {
+				const result = await this.getTaskWithId(id)
+				return result.historyItem
+			})
+		}
+
+		return {
+			historyItem,
+			aggregatedCosts: {
+				totalCost: aggregatedCosts.totalCost,
+				ownCost: aggregatedCosts.ownCost,
+				childrenCost: aggregatedCosts.childrenCost,
+				childDetails,
+			},
+		}
 	}
 
 	async showTaskWithId(id: string) {
