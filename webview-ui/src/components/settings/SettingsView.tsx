@@ -606,9 +606,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					})
 				})
 				tabTitlesRegistered.current = true
+				// Return to initial tab
+				setActiveTab(initialTab.current)
 			}
-			// Return to initial tab
-			setActiveTab(initialTab.current)
 			return
 		}
 
