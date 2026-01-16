@@ -319,19 +319,45 @@ export async function summarizeConversation(
 		}
 	}
 
-	const stream = handlerToUse.createMessage(promptToUse, requestMessages)
-
 	let summary = ""
 	let cost = 0
 	let outputTokens = 0
 
-	for await (const chunk of stream) {
-		if (chunk.type === "text") {
-			summary += chunk.text
-		} else if (chunk.type === "usage") {
-			// Record final usage chunk only
-			cost = chunk.totalCost ?? 0
-			outputTokens = chunk.outputTokens ?? 0
+	try {
+		const stream = handlerToUse.createMessage(promptToUse, requestMessages)
+
+		for await (const chunk of stream) {
+			if (chunk.type === "text") {
+				summary += chunk.text
+			} else if (chunk.type === "usage") {
+				// Record final usage chunk only
+				cost = chunk.totalCost ?? 0
+				outputTokens = chunk.outputTokens ?? 0
+			}
+		}
+	} catch (error) {
+		const errorMessage = error instanceof Error ? error.message : String(error)
+
+		// Check for context window exceeded error
+		if (
+			errorMessage.includes("context_length_exceeded") ||
+			errorMessage.includes("context length") ||
+			errorMessage.includes("maximum context") ||
+			errorMessage.includes("too long") ||
+			errorMessage.includes("too many tokens")
+		) {
+			return {
+				...response,
+				cost,
+				error: t("common:errors.condense_context_window_exceeded"),
+			}
+		}
+
+		// Return generic error for other failures
+		return {
+			...response,
+			cost,
+			error: `${t("common:errors.condense_failed")}: ${errorMessage}`,
 		}
 	}
 

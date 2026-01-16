@@ -1484,6 +1484,122 @@ describe("summarizeConversation", () => {
 
 		expect(result.error).toBeUndefined()
 	})
+
+	it("should return context window exceeded error when API throws context length error", async () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{ role: "assistant", content: "Hi there", ts: 2 },
+			{ role: "user", content: "How are you?", ts: 3 },
+			{ role: "assistant", content: "I'm good", ts: 4 },
+			{ role: "user", content: "What's new?", ts: 5 },
+			{ role: "assistant", content: "Not much", ts: 6 },
+			{ role: "user", content: "Tell me more", ts: 7 },
+		]
+
+		// Create a stream that throws a context length exceeded error
+		// eslint-disable-next-line require-yield
+		const errorStream = (async function* () {
+			throw new Error(
+				"400 This endpoint's maximum context length is 131072 tokens. However, you requested about 145406 tokens.",
+			)
+		})()
+
+		mockApiHandler.createMessage = vi.fn().mockReturnValue(errorStream) as any
+
+		const result = await summarizeConversation(
+			messages,
+			mockApiHandler,
+			defaultSystemPrompt,
+			taskId,
+			DEFAULT_PREV_CONTEXT_TOKENS,
+		)
+
+		// Should return original messages with error
+		expect(result.messages).toEqual(messages)
+		expect(result.summary).toBe("")
+		expect(result.error).toBeTruthy()
+		// The error message comes from the translation key
+		expect(result.error).toContain("condense_context_window_exceeded")
+		expect(result.newContextTokens).toBeUndefined()
+	})
+
+	it("should return context window exceeded error for various context length error messages", async () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{ role: "assistant", content: "Hi there", ts: 2 },
+			{ role: "user", content: "How are you?", ts: 3 },
+			{ role: "assistant", content: "I'm good", ts: 4 },
+			{ role: "user", content: "What's new?", ts: 5 },
+			{ role: "assistant", content: "Not much", ts: 6 },
+			{ role: "user", content: "Tell me more", ts: 7 },
+		]
+
+		// Test various error message patterns
+		const errorPatterns = [
+			"context_length_exceeded",
+			"maximum context length exceeded",
+			"prompt is too long",
+			"too many tokens in your request",
+		]
+
+		for (const errorPattern of errorPatterns) {
+			vi.clearAllMocks()
+
+			// eslint-disable-next-line require-yield
+			const errorStream = (async function* () {
+				throw new Error(errorPattern)
+			})()
+
+			mockApiHandler.createMessage = vi.fn().mockReturnValue(errorStream) as any
+
+			const result = await summarizeConversation(
+				messages,
+				mockApiHandler,
+				defaultSystemPrompt,
+				taskId,
+				DEFAULT_PREV_CONTEXT_TOKENS,
+			)
+
+			expect(result.error).toBeTruthy()
+			// The error message comes from the translation key
+			expect(result.error).toContain("condense_context_window_exceeded")
+		}
+	})
+
+	it("should return generic error for non-context-window API errors", async () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{ role: "assistant", content: "Hi there", ts: 2 },
+			{ role: "user", content: "How are you?", ts: 3 },
+			{ role: "assistant", content: "I'm good", ts: 4 },
+			{ role: "user", content: "What's new?", ts: 5 },
+			{ role: "assistant", content: "Not much", ts: 6 },
+			{ role: "user", content: "Tell me more", ts: 7 },
+		]
+
+		// Create a stream that throws a generic API error
+		// eslint-disable-next-line require-yield
+		const errorStream = (async function* () {
+			throw new Error("Internal server error")
+		})()
+
+		mockApiHandler.createMessage = vi.fn().mockReturnValue(errorStream) as any
+
+		const result = await summarizeConversation(
+			messages,
+			mockApiHandler,
+			defaultSystemPrompt,
+			taskId,
+			DEFAULT_PREV_CONTEXT_TOKENS,
+		)
+
+		// Should return original messages with error
+		expect(result.messages).toEqual(messages)
+		expect(result.summary).toBe("")
+		expect(result.error).toBeTruthy()
+		expect(result.error).toContain("Internal server error")
+		expect(result.newContextTokens).toBeUndefined()
+	})
 })
 
 describe("summarizeConversation with custom settings", () => {
