@@ -338,6 +338,24 @@ See [`.github/workflows/code-qa.yml`](../../.github/workflows/code-qa.yml) for t
 - Tests run on Ubuntu with xvfb for headless display
 - VSCode 1.101.2 is downloaded and cached
 
+### Fork Pull Requests
+
+**Important**: Integration tests are **automatically skipped** for pull requests from forked repositories.
+
+This is a security requirement - GitHub does not expose repository secrets to fork PRs to prevent unauthorized access to API keys and other sensitive credentials. Since these tests require the `OPENROUTER_API_KEY` secret, they cannot run on fork PRs.
+
+**For fork contributors**: See [`.github/FORK_CONTRIBUTORS.md`](../../.github/FORK_CONTRIBUTORS.md) for:
+
+- Why tests are skipped on fork PRs
+- How to run tests locally with your own API key
+- What maintainers will do to test your PR
+
+**For maintainers**: After reviewing a fork PR's code, you can:
+
+- Manually trigger the workflow with repository secrets
+- Merge the PR to a branch in the main repo where tests will run automatically
+- Run tests locally before merging
+
 ## Troubleshooting
 
 ### Enable Debug Logging
