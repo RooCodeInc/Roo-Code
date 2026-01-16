@@ -276,6 +276,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 			// Execute the MCP tool using the same handler as use_mcp_tool
 			// Create a synthetic ToolUse block that the useMcpToolTool can handle
+			// Include the original encoded MCP name for lookup via encoded name comparison
 			const syntheticToolUse: ToolUse<"use_mcp_tool"> = {
 				type: "tool_use",
 				id: mcpBlock.id,
@@ -290,6 +291,7 @@ export async function presentAssistantMessage(cline: Task) {
 					server_name: resolvedServerName,
 					tool_name: mcpBlock.toolName,
 					arguments: mcpBlock.arguments,
+					_encodedMcpName: mcpBlock.name, // Original encoded name for lookup via comparison
 				},
 			}
 

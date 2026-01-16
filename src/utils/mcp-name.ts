@@ -46,21 +46,48 @@ export const MAX_TOOL_NAME_LENGTH = 128
 export const HASH_SUFFIX_LENGTH = 8
 
 /**
- * Registry mapping shortened tool names (with hash suffix) to their original
- * server and tool names. This is used to look up the original names when
- * the model returns a shortened tool name.
- *
- * Key: shortened MCP tool name (e.g., "mcp--server--tool_a1b2c3d4")
- * Value: { serverName, toolName } with original (decoded) names
+ * LRU cache for encoded tool names.
+ * Maps "serverName:toolName" to the encoded MCP tool name.
+ * This avoids recomputing hash suffixes for frequently used tools.
  */
-export const mcpToolNameRegistry = new Map<string, { serverName: string; toolName: string }>()
+const ENCODED_NAME_CACHE_SIZE = 100
+const encodedNameCache = new Map<string, string>()
 
 /**
- * Clear the MCP tool name registry.
- * Should be called when MCP servers are refreshed or disconnected.
+ * Get an encoded name from the LRU cache, updating recency.
  */
-export function clearMcpToolNameRegistry(): void {
-	mcpToolNameRegistry.clear()
+function getCachedEncodedName(key: string): string | undefined {
+	const value = encodedNameCache.get(key)
+	if (value !== undefined) {
+		// Move to end (most recently used) by deleting and re-adding
+		encodedNameCache.delete(key)
+		encodedNameCache.set(key, value)
+	}
+	return value
+}
+
+/**
+ * Set an encoded name in the LRU cache, evicting oldest if needed.
+ */
+function setCachedEncodedName(key: string, value: string): void {
+	if (encodedNameCache.has(key)) {
+		encodedNameCache.delete(key)
+	} else if (encodedNameCache.size >= ENCODED_NAME_CACHE_SIZE) {
+		// Evict the oldest entry (first in iteration order)
+		const oldestKey = encodedNameCache.keys().next().value
+		if (oldestKey) {
+			encodedNameCache.delete(oldestKey)
+		}
+	}
+	encodedNameCache.set(key, value)
+}
+
+/**
+ * Clear the encoded name cache.
+ * Exported for testing purposes.
+ */
+export function clearEncodedNameCache(): void {
+	encodedNameCache.clear()
 }
 
 /**
@@ -166,22 +193,30 @@ export function sanitizeMcpName(name: string): string {
  * The format is: mcp--{sanitized_server_name}--{sanitized_tool_name}
  *
  * The total length is capped at 128 characters per MCP spec.
- * When truncation is needed, a hash suffix is appended to preserve uniqueness
- * and the mapping is stored in the registry for later lookup.
+ * When truncation is needed, a hash suffix is appended to preserve uniqueness.
+ * The result is cached for efficient repeated lookups.
  *
  * @param serverName - The MCP server name
  * @param toolName - The tool name
  * @returns A sanitized function name in the format mcp--serverName--toolName
  */
 export function buildMcpToolName(serverName: string, toolName: string): string {
+	// Check cache first
+	const cacheKey = `${serverName}:${toolName}`
+	const cached = getCachedEncodedName(cacheKey)
+	if (cached !== undefined) {
+		return cached
+	}
+
 	const sanitizedServer = sanitizeMcpName(serverName)
 	const sanitizedTool = sanitizeMcpName(toolName)
 
 	// Build the full name: mcp--{server}--{tool}
 	const fullName = `${MCP_TOOL_PREFIX}${MCP_TOOL_SEPARATOR}${sanitizedServer}${MCP_TOOL_SEPARATOR}${sanitizedTool}`
 
-	// If within limit, return as-is
+	// If within limit, cache and return
 	if (fullName.length <= MAX_TOOL_NAME_LENGTH) {
+		setCachedEncodedName(cacheKey, fullName)
 		return fullName
 	}
 
@@ -195,9 +230,8 @@ export function buildMcpToolName(serverName: string, toolName: string): string {
 	const truncatedBase = fullName.slice(0, maxTruncatedLength)
 	const shortenedName = `${truncatedBase}${suffixWithSeparator}`
 
-	// Register the mapping from shortened name to original names
-	// Store the original (decoded) names so parseMcpToolName can return them directly
-	mcpToolNameRegistry.set(shortenedName, { serverName, toolName })
+	// Cache the result
+	setCachedEncodedName(cacheKey, shortenedName)
 
 	return shortenedName
 }
@@ -218,8 +252,9 @@ export function decodeMcpName(sanitizedName: string): string {
  * This handles sanitized names by splitting on the "--" separator
  * and decoding triple underscores back to hyphens.
  *
- * For shortened names (those with hash suffixes), this first checks
- * the registry for the original names.
+ * Note: For shortened names (those with hash suffixes), this function
+ * returns the parsed names which may be truncated. Use findToolByEncodedMcpName()
+ * to find the correct original tool name by comparing encoded names.
  *
  * @param mcpToolName - The full MCP tool name (e.g., "mcp--weather--get_forecast")
  * @returns An object with serverName and toolName, or null if parsing fails
@@ -228,13 +263,6 @@ export function parseMcpToolName(mcpToolName: string): { serverName: string; too
 	const prefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
 	if (!mcpToolName.startsWith(prefix)) {
 		return null
-	}
-
-	// First, check if this is a shortened name in the registry
-	// This handles names that were truncated with hash suffixes
-	const registeredName = mcpToolNameRegistry.get(mcpToolName)
-	if (registeredName) {
-		return registeredName
 	}
 
 	// Remove the "mcp--" prefix
@@ -258,4 +286,41 @@ export function parseMcpToolName(mcpToolName: string): { serverName: string; too
 		serverName: decodeMcpName(serverName),
 		toolName: decodeMcpName(toolName),
 	}
+}
+
+/**
+ * Find a tool by comparing encoded MCP names.
+ * This is used when the model returns a shortened name with a hash suffix.
+ * Instead of using a registry, we compare by encoding each available tool name
+ * and checking if it matches the encoded name from the model.
+ *
+ * @param serverName - The original server name (decoded)
+ * @param encodedMcpName - The full encoded MCP tool name returned by the model
+ * @param availableToolNames - List of available tool names on the server
+ * @returns The matching original tool name, or null if not found
+ */
+export function findToolByEncodedMcpName(
+	serverName: string,
+	encodedMcpName: string,
+	availableToolNames: string[],
+): string | null {
+	for (const toolName of availableToolNames) {
+		const encoded = buildMcpToolName(serverName, toolName)
+		if (encoded === encodedMcpName) {
+			return toolName
+		}
+	}
+	return null
+}
+
+/**
+ * Check if an MCP tool name appears to be a shortened name with a hash suffix.
+ * Shortened names have the pattern: ...._XXXXXXXX where X is a hex character.
+ *
+ * @param mcpToolName - The MCP tool name to check
+ * @returns true if the name appears to have a hash suffix
+ */
+export function hasHashSuffix(mcpToolName: string): boolean {
+	// Check for pattern: ends with underscore + 8 hex characters
+	return /_.{8}$/.test(mcpToolName) && /[a-f0-9]{8}$/.test(mcpToolName)
 }

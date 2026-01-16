@@ -10,15 +10,16 @@ import {
 	HYPHEN_ENCODING,
 	MAX_TOOL_NAME_LENGTH,
 	HASH_SUFFIX_LENGTH,
-	mcpToolNameRegistry,
-	clearMcpToolNameRegistry,
+	clearEncodedNameCache,
 	computeHashSuffix,
+	findToolByEncodedMcpName,
+	hasHashSuffix,
 } from "../mcp-name"
 
 describe("mcp-name utilities", () => {
-	// Clear the registry before each test to ensure isolation
+	// Clear the cache before each test to ensure isolation
 	beforeEach(() => {
-		clearMcpToolNameRegistry()
+		clearEncodedNameCache()
 	})
 
 	describe("constants", () => {
@@ -175,27 +176,27 @@ describe("mcp-name utilities", () => {
 			expect(result).toMatch(/_[a-f0-9]{8}$/)
 		})
 
-		it("should use hash suffix for long names and register them", () => {
+		it("should use hash suffix for long names and cache them", () => {
 			const longServer = "a".repeat(80)
 			const longTool = "b".repeat(80)
 			const result = buildMcpToolName(longServer, longTool)
 
-			// The shortened name should be registered
-			expect(mcpToolNameRegistry.has(result)).toBe(true)
-			const registered = mcpToolNameRegistry.get(result)
-			expect(registered).toEqual({
-				serverName: longServer,
-				toolName: longTool,
-			})
+			// The shortened name should be deterministic
+			expect(result.length).toBe(128)
+			expect(result).toMatch(/_[a-f0-9]{8}$/)
+
+			// Building again should return the same result (from cache)
+			const result2 = buildMcpToolName(longServer, longTool)
+			expect(result2).toBe(result)
 		})
 
 		it("should produce deterministic hash suffixes", () => {
 			const longServer = "a".repeat(80)
 			const longTool = "b".repeat(80)
-			// Build the same name twice
-			clearMcpToolNameRegistry()
+			// Build the same name twice with cache cleared between
+			clearEncodedNameCache()
 			const result1 = buildMcpToolName(longServer, longTool)
-			clearMcpToolNameRegistry()
+			clearEncodedNameCache()
 			const result2 = buildMcpToolName(longServer, longTool)
 			// Should produce identical results
 			expect(result1).toBe(result2)
@@ -427,46 +428,6 @@ describe("mcp-name utilities", () => {
 	})
 
 	describe("hash suffix roundtrip - fixes issue #10766", () => {
-		it("should preserve original names through roundtrip with long hyphenated tool names", () => {
-			// This is the exact scenario from issue #10766
-			// Tool name with many hyphens that exceeds 128 chars when encoded
-			const serverName = "abcdefghij-kl-mnop-qrs-tuv-with-extra-long-suffix-to-exceed-limit"
-			const toolName = "wxyz-abcd-efghijk-lmno-plus-additional-long-suffix-here"
-
-			// Build the tool name
-			const builtName = buildMcpToolName(serverName, toolName)
-
-			// Should be truncated to 128 chars with hash suffix
-			expect(builtName.length).toBe(128)
-			expect(builtName).toMatch(/_[a-f0-9]{8}$/)
-
-			// The critical fix: parsing should return the ORIGINAL names
-			const parsed = parseMcpToolName(builtName)
-			expect(parsed).toEqual({
-				serverName: serverName, // Original with hyphens!
-				toolName: toolName, // Original with hyphens!
-			})
-		})
-
-		it("should not corrupt hyphen encoding when truncation is needed", () => {
-			// Long server and tool names that would cause truncation mid-encoding
-			const serverName = "very-long-server-name-with-many-hyphens-and-extra-content-to-exceed"
-			const toolName = "another-long-tool-name-with-hyphens-and-extra-content-to-exceed"
-
-			// Build the tool name
-			const builtName = buildMcpToolName(serverName, toolName)
-
-			// Should be truncated to 128 chars
-			expect(builtName.length).toBe(128)
-
-			// Parse should return original names (via registry lookup)
-			const parsed = parseMcpToolName(builtName)
-			expect(parsed).toEqual({
-				serverName: serverName,
-				toolName: toolName,
-			})
-		})
-
 		it("should work correctly when names do not need truncation", () => {
 			// Short names that don't need truncation
 			const serverName = "server"
@@ -486,38 +447,113 @@ describe("mcp-name utilities", () => {
 			})
 		})
 
-		it("should handle the registry lookup for shortened names", () => {
-			const serverName = "a".repeat(80)
-			const toolName = "b".repeat(80) + "-hyphen"
+		it("should find tool by encoded name comparison for shortened names", () => {
+			// This is the new approach: instead of registry, compare encoded names
+			const serverName = "abcdefghij-kl-mnop-qrs-tuv-with-extra-long-suffix-to-exceed-limit"
+			const toolName = "wxyz-abcd-efghijk-lmno-plus-additional-long-suffix-here"
 
-			// Build registers the shortened name
-			const builtName = buildMcpToolName(serverName, toolName)
+			// Build the encoded tool name
+			const encodedName = buildMcpToolName(serverName, toolName)
 
-			// Verify it's in the registry
-			expect(mcpToolNameRegistry.has(builtName)).toBe(true)
+			// Should be truncated to 128 chars with hash suffix
+			expect(encodedName.length).toBe(128)
+			expect(encodedName).toMatch(/_[a-f0-9]{8}$/)
 
-			// Parse uses the registry to get original names
-			const parsed = parseMcpToolName(builtName)
-			expect(parsed).toEqual({
-				serverName: serverName,
-				toolName: toolName,
-			})
+			// The new approach: use findToolByEncodedMcpName to find the matching tool
+			const availableTools = [toolName, "other-tool", "another-tool"]
+			const foundTool = findToolByEncodedMcpName(serverName, encodedName, availableTools)
+			expect(foundTool).toBe(toolName)
+		})
+
+		it("should not find tool when none matches the encoded name", () => {
+			const serverName = "server"
+			const encodedName = "mcp--server--nonexistent_tool_a1b2c3d4"
+
+			const availableTools = ["tool1", "tool2", "tool3"]
+			const foundTool = findToolByEncodedMcpName(serverName, encodedName, availableTools)
+			expect(foundTool).toBeNull()
 		})
 	})
 
-	describe("clearMcpToolNameRegistry", () => {
-		it("should clear all registered tool names", () => {
-			// Register some tool names via buildMcpToolName
+	describe("findToolByEncodedMcpName", () => {
+		it("should find tool by exact encoded name match", () => {
+			const serverName = "myserver"
+			const toolName = "get-data"
+			const encodedName = buildMcpToolName(serverName, toolName)
+
+			const availableTools = ["other-tool", "get-data", "another-tool"]
+			const foundTool = findToolByEncodedMcpName(serverName, encodedName, availableTools)
+			expect(foundTool).toBe("get-data")
+		})
+
+		it("should find tool for shortened names with hash suffix", () => {
+			const serverName = "a".repeat(80)
+			const toolName = "b".repeat(80) + "-hyphen"
+			const encodedName = buildMcpToolName(serverName, toolName)
+
+			// The encoded name should have a hash suffix
+			expect(hasHashSuffix(encodedName)).toBe(true)
+
+			const availableTools = ["other-tool", toolName, "another-tool"]
+			const foundTool = findToolByEncodedMcpName(serverName, encodedName, availableTools)
+			expect(foundTool).toBe(toolName)
+		})
+
+		it("should return null when no tool matches", () => {
+			const serverName = "server"
+			const encodedName = buildMcpToolName(serverName, "nonexistent")
+
+			const availableTools = ["tool1", "tool2"]
+			const foundTool = findToolByEncodedMcpName(serverName, encodedName, availableTools)
+			expect(foundTool).toBeNull()
+		})
+
+		it("should handle empty available tools list", () => {
+			const serverName = "server"
+			const encodedName = buildMcpToolName(serverName, "tool")
+
+			const foundTool = findToolByEncodedMcpName(serverName, encodedName, [])
+			expect(foundTool).toBeNull()
+		})
+	})
+
+	describe("hasHashSuffix", () => {
+		it("should return true for names with hash suffix", () => {
+			expect(hasHashSuffix("mcp--server--tool_a1b2c3d4")).toBe(true)
+			expect(hasHashSuffix("mcp--server--tool_12345678")).toBe(true)
+			expect(hasHashSuffix("mcp--server--tool_abcdef00")).toBe(true)
+		})
+
+		it("should return false for names without hash suffix", () => {
+			expect(hasHashSuffix("mcp--server--tool")).toBe(false)
+			expect(hasHashSuffix("mcp--server--tool_name")).toBe(false)
+			expect(hasHashSuffix("mcp--server--tool___name")).toBe(false)
+		})
+
+		it("should return false for names with partial hash patterns", () => {
+			// Not enough hex chars
+			expect(hasHashSuffix("mcp--server--tool_abc")).toBe(false)
+			// No underscore before hash
+			expect(hasHashSuffix("mcp--server--toola1b2c3d4")).toBe(false)
+		})
+	})
+
+	describe("clearEncodedNameCache", () => {
+		it("should clear the encoded name cache", () => {
+			// Build some names to populate cache
 			const longServer = "a".repeat(80)
 			const longTool = "b".repeat(80)
 			buildMcpToolName(longServer, longTool)
+			buildMcpToolName("server", "tool")
 
-			expect(mcpToolNameRegistry.size).toBeGreaterThan(0)
+			// Clear the cache
+			clearEncodedNameCache()
 
-			// Clear the registry
-			clearMcpToolNameRegistry()
-
-			expect(mcpToolNameRegistry.size).toBe(0)
+			// Verify cache is cleared by checking that rebuilding takes the same path
+			// (we can't directly access the cache, but the function should work)
+			const result = buildMcpToolName(longServer, longTool)
+			expect(result.length).toBe(128)
+			expect(result).toMatch(/_[a-f0-9]{8}$/)
 		})
 	})
 })

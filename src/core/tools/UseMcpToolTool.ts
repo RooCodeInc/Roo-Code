@@ -4,6 +4,7 @@ import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
 import type { ToolUse } from "../../shared/tools"
+import { findToolByEncodedMcpName, hasHashSuffix } from "../../utils/mcp-name"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -35,7 +36,11 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		}
 	}
 
-	async execute(params: UseMcpToolParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+	async execute(
+		params: UseMcpToolParams & { _encodedMcpName?: string },
+		task: Task,
+		callbacks: ToolCallbacks,
+	): Promise<void> {
 		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
 
 		try {
@@ -48,10 +53,21 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			const { serverName, toolName, parsedArguments } = validation
 
 			// Validate that the tool exists on the server
-			const toolValidation = await this.validateToolExists(task, serverName, toolName, pushToolResult)
+			// Pass the original encoded MCP name for lookup via comparison when direct lookup fails
+			const encodedMcpName = params._encodedMcpName
+			const toolValidation = await this.validateToolExists(
+				task,
+				serverName,
+				toolName,
+				pushToolResult,
+				encodedMcpName,
+			)
 			if (!toolValidation.isValid) {
 				return
 			}
+
+			// Use the resolved tool name (may differ from parsed name for shortened names)
+			const resolvedToolName = toolValidation.resolvedToolName || toolName
 
 			// Reset mistake count on successful validation
 			task.consecutiveMistakeCount = 0
@@ -60,7 +76,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			const completeMessage = JSON.stringify({
 				type: "use_mcp_tool",
 				serverName,
-				toolName,
+				toolName: resolvedToolName,
 				arguments: params.arguments ? JSON.stringify(params.arguments) : undefined,
 			} satisfies ClineAskUseMcpServer)
 
@@ -75,7 +91,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			await this.executeToolAndProcessResult(
 				task,
 				serverName,
-				toolName,
+				resolvedToolName,
 				parsedArguments,
 				executionId,
 				pushToolResult,
@@ -156,7 +172,8 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		serverName: string,
 		toolName: string,
 		pushToolResult: (content: string) => void,
-	): Promise<{ isValid: boolean; availableTools?: string[] }> {
+		encodedMcpName?: string,
+	): Promise<{ isValid: boolean; availableTools?: string[]; resolvedToolName?: string }> {
 		try {
 			// Get the MCP hub to access server information
 			const provider = task.providerRef.deref()
@@ -205,8 +222,20 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				return { isValid: false, availableTools: [] }
 			}
 
-			// Check if the requested tool exists
-			const tool = server.tools.find((tool) => tool.name === toolName)
+			// Check if the requested tool exists by direct name match
+			let tool = server.tools.find((tool) => tool.name === toolName)
+			let resolvedToolName = toolName
+
+			// If direct lookup fails and we have an encoded MCP name with hash suffix,
+			// try to find the tool by comparing encoded names
+			if (!tool && encodedMcpName && hasHashSuffix(encodedMcpName)) {
+				const availableToolNames = server.tools.map((t) => t.name)
+				const matchedToolName = findToolByEncodedMcpName(serverName, encodedMcpName, availableToolNames)
+				if (matchedToolName) {
+					tool = server.tools.find((t) => t.name === matchedToolName)
+					resolvedToolName = matchedToolName
+				}
+			}
 
 			if (!tool) {
 				// Tool not found - provide list of available tools
@@ -252,7 +281,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			}
 
 			// Tool exists and is enabled
-			return { isValid: true, availableTools: server.tools.map((tool) => tool.name) }
+			return { isValid: true, availableTools: server.tools.map((tool) => tool.name), resolvedToolName }
 		} catch (error) {
 			// If there's an error during validation, log it but don't block the tool execution
 			// The actual tool call might still fail with a proper error

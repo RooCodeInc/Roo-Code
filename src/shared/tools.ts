@@ -108,7 +108,12 @@ export type NativeToolArgs = {
 	search_files: { path: string; regex: string; file_pattern?: string | null }
 	switch_mode: { mode_slug: string; reason: string }
 	update_todo_list: { todos: string }
-	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
+	use_mcp_tool: {
+		server_name: string
+		tool_name: string
+		arguments?: Record<string, unknown>
+		_encodedMcpName?: string
+	}
 	write_to_file: { path: string; content: string }
 	// Add more tools as they are migrated to native protocol
 }
