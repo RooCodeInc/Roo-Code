@@ -14,6 +14,8 @@ export const fileMetadataEntrySchema = z.object({
 	roo_read_date: z.number().nullable(),
 	roo_edit_date: z.number().nullable(),
 	user_edit_date: z.number().nullable().optional(),
+	// Hash of file content when last read (for detecting unchanged files)
+	content_hash: z.string().nullable().optional(),
 })
 
 // TypeScript type derived from the Zod schema

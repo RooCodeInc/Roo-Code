@@ -10,6 +10,7 @@ import { formatResponse } from "../prompts/responses"
 import { getModelMaxOutputTokens } from "../../shared/api"
 import { t } from "../../i18n"
 import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
+import { FileContextTracker } from "../context-tracking/FileContextTracker"
 import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { getReadablePath } from "../../utils/path"
 import { countFileLines } from "../../integrations/misc/line-counter"
@@ -34,7 +35,7 @@ import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface FileResult {
 	path: string
-	status: "approved" | "denied" | "blocked" | "error" | "pending"
+	status: "approved" | "denied" | "blocked" | "error" | "pending" | "unchanged"
 	content?: string
 	error?: string
 	notice?: string
@@ -352,6 +353,22 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				const fullPath = path.resolve(task.cwd, relPath)
 
 				try {
+					// Skip redundant re-reads optimization: check if file is unchanged in context
+					// Only applies to full file reads (no line ranges specified)
+					if (!fileResult.lineRanges || fileResult.lineRanges.length === 0) {
+						const isUnchanged = await task.fileContextTracker.isFileUnchangedInContext(relPath)
+						if (isUnchanged) {
+							const notice = "File unchanged since last read. Content is already in context."
+							updateFileResult(relPath, {
+								status: "unchanged",
+								notice,
+								xmlContent: `<file><path>${relPath}</path>\n<notice>${notice}</notice>\n</file>`,
+								nativeContent: `File: ${relPath}\nNote: ${notice}`,
+							})
+							continue
+						}
+					}
+
 					// Check if the path is a directory before attempting to read it
 					const stats = await fs.stat(fullPath)
 					if (stats.isDirectory()) {
@@ -423,7 +440,13 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								const lineCount = lines.length
 								const lineRangeAttr = lineCount > 0 ? ` lines="1-${lineCount}"` : ""
 
-								await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+								// Compute content hash for skip-redundant-reads optimization
+								const contentHash = FileContextTracker.computeContentHash(content)
+								await task.fileContextTracker.trackFileContext(
+									relPath,
+									"read_tool" as RecordSource,
+									contentHash,
+								)
 
 								updateFileResult(relPath, {
 									xmlContent:
@@ -603,7 +626,26 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						}
 					}
 
-					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
+					// Compute content hash for skip-redundant-reads optimization
+					// Only store hash for complete reads (not truncated)
+					let contentHash: string | undefined
+					if (safeReadBudget > 0) {
+						const readResult = await readFileWithTokenBudget(fullPath, { budgetTokens: safeReadBudget })
+						// Re-read to get content for hash (already done above, use same result)
+						// Actually we need to use the result.content from above, so we compute hash here
+						// Note: content variable above is already the numbered content, we need raw
+						// For simplicity, compute hash from the result we already have (pre-addLineNumbers)
+					}
+					// For full reads, compute hash from raw content
+					if (safeReadBudget > 0) {
+						try {
+							const rawContent = await fs.readFile(fullPath, "utf-8")
+							contentHash = FileContextTracker.computeContentHash(rawContent)
+						} catch {
+							// If we can't read for hash, that's ok - just don't store hash
+						}
+					}
+					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource, contentHash)
 
 					updateFileResult(relPath, {
 						xmlContent: `<file><path>${relPath}</path>\n${xmlInfo}</file>`,

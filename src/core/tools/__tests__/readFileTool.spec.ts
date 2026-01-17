@@ -225,6 +225,7 @@ function createMockCline(): any {
 		removeClosingTag: vi.fn((tag, content) => content),
 		fileContextTracker: {
 			trackFileContext: vi.fn().mockResolvedValue(undefined),
+			isFileUnchangedInContext: vi.fn().mockResolvedValue(false),
 		},
 		recordToolUsage: vi.fn().mockReturnValue(undefined),
 		recordToolError: vi.fn().mockReturnValue(undefined),
@@ -848,6 +849,7 @@ describe("read_file tool output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					isFileUnchangedInContext: vi.fn().mockResolvedValue(false),
 				}
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
@@ -921,6 +923,7 @@ describe("read_file tool output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					isFileUnchangedInContext: vi.fn().mockResolvedValue(false),
 				}
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
@@ -1007,6 +1010,7 @@ describe("read_file tool output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					isFileUnchangedInContext: vi.fn().mockResolvedValue(false),
 				}
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
@@ -1080,6 +1084,7 @@ describe("read_file tool output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					isFileUnchangedInContext: vi.fn().mockResolvedValue(false),
 				}
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
@@ -1205,6 +1210,7 @@ describe("read_file tool output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					isFileUnchangedInContext: vi.fn().mockResolvedValue(false),
 				}
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
@@ -1252,6 +1258,7 @@ describe("read_file tool output structure", () => {
 				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
+					isFileUnchangedInContext: vi.fn().mockResolvedValue(false),
 				}
 				mockCline.recordToolUsage = vi.fn().mockReturnValue(undefined)
 				mockCline.recordToolError = vi.fn().mockReturnValue(undefined)
