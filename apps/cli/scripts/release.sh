@@ -536,11 +536,8 @@ ROO_VERSION=$VERSION curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo
 ## Usage
 
 \`\`\`bash
-# Set your API key
-export OPENROUTER_API_KEY=sk-or-v1-...
-
 # Run a task
-roo "What is this project?" ~/my-project
+roo "What is this project?"
 
 # See all options
 roo --help
