@@ -623,6 +623,7 @@ export interface WebviewMessage {
 		| "hooksOpenConfigFolder"
 		| "hooksDeleteHook"
 		| "hooksOpenHookFile"
+		| "hooksCreateNew"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"

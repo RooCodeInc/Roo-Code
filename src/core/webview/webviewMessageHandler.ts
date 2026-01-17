@@ -3601,6 +3601,62 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "hooksCreateNew": {
+			// Check if hooks experiment is enabled
+			const hooksExperimentsState = getGlobalState("experiments") ?? experimentDefault
+			if (!experiments.isEnabled(hooksExperimentsState, EXPERIMENT_IDS.HOOKS)) {
+				break
+			}
+
+			try {
+				const cwd = provider.cwd
+				const hooksPath = path.join(cwd, ".roo", "hooks")
+
+				// Create directory if it doesn't exist
+				await fs.mkdir(hooksPath, { recursive: true })
+
+				const exampleFilePath = path.join(hooksPath, "example.yaml")
+
+				// Check if file already exists
+				const exists = await fileExistsAtPath(exampleFilePath)
+				if (exists) {
+					// Open existing file instead of overwriting
+					const uri = vscode.Uri.file(exampleFilePath)
+					const doc = await vscode.workspace.openTextDocument(uri)
+					await vscode.window.showTextDocument(doc)
+					break
+				}
+
+				// Create the example hook file
+				const exampleContent = `version: "1"
+hooks:
+  PreToolUse:
+    - id: example-hook
+      matcher: "write_to_file|edit_file|apply_diff|apply_patch"
+      enabled: true
+      command: 'echo "Verification hook triggered"'
+      timeout: 5
+`
+				await safeWriteText(exampleFilePath, exampleContent)
+
+				// Open the file in the editor
+				const uri = vscode.Uri.file(exampleFilePath)
+				const doc = await vscode.workspace.openTextDocument(uri)
+				await vscode.window.showTextDocument(doc)
+
+				// Reload hooks config to pick up the new file
+				const hookManager = provider.getHookManager()
+				if (hookManager) {
+					await hookManager.reloadHooksConfig()
+					await provider.postStateToWebview()
+				}
+			} catch (error) {
+				provider.log(`Failed to create hook file: ${error instanceof Error ? error.message : String(error)}`)
+				vscode.window.showErrorMessage("Failed to create hook configuration file")
+			}
+			break
+		}
+
 		default: {
 			// console.log(`Unhandled message type: ${message.type}`)
 			//

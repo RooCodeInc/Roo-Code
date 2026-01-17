@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { RefreshCw, FolderOpen, AlertTriangle, Clock, Zap, X } from "lucide-react"
+import { RefreshCw, FolderOpen, AlertTriangle, Clock, Zap, X, Plus } from "lucide-react"
 import { VSCodePanels, VSCodePanelTab, VSCodePanelView } from "@vscode/webview-ui-toolkit/react"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -71,6 +71,10 @@ export const HooksSettings: React.FC = () => {
 		// Optimistically clear the "updating" flag after a short delay.
 		// The extension will send updated state via postStateToWebview().
 		setTimeout(() => setIsUpdatingAllEnabled(false), 500)
+	}, [])
+
+	const handleCreateNewHook = useCallback(() => {
+		vscode.postMessage({ type: "hooksCreateNew" })
 	}, [])
 
 	const enabledHooks = hooks?.enabledHooks || []
@@ -179,7 +183,7 @@ export const HooksSettings: React.FC = () => {
 				{/* Hook Activity Log */}
 				<HookActivityLog executionHistory={executionHistory} />
 
-				{/* Bottom Action Buttons - mirroring MCP settings order: global, project, refresh */}
+				{/* Bottom Action Buttons - mirroring MCP settings order: create, global, project, refresh */}
 				<div
 					style={{
 						marginTop: "10px",
@@ -188,6 +192,10 @@ export const HooksSettings: React.FC = () => {
 						gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
 						gap: "10px",
 					}}>
+					<Button variant="secondary" style={{ width: "100%" }} onClick={handleCreateNewHook}>
+						<Plus className="w-4 h-4" />
+						<span className="ml-2">{t("settings:hooks.createNewHook")}</span>
+					</Button>
 					<Button
 						variant="secondary"
 						style={{ width: "100%" }}
@@ -290,7 +298,7 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 	}
 
 	return (
-		<div className="rounded border border-vscode-input-border bg-vscode-input-background">
+		<div className="rounded bg-vscode-input-background">
 			{/* Collapsed Header */}
 			<div
 				className="flex items-center gap-3 p-3 cursor-pointer hover:bg-vscode-list-hoverBackground"
@@ -362,7 +370,7 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 
 			{/* Expanded Content */}
 			{isExpanded && (
-				<div className="border-t border-vscode-input-border p-3">
+				<div className="p-3">
 					<VSCodePanels>
 						<VSCodePanelTab id="config">{t("settings:hooks.tabs.config")}</VSCodePanelTab>
 						<VSCodePanelTab id="command">{t("settings:hooks.tabs.command")}</VSCodePanelTab>
