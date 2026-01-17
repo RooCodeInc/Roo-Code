@@ -523,7 +523,6 @@ export class ClineProvider
 		// Create timeout for automatic cleanup
 		const timeoutId = setTimeout(() => {
 			this.clearPendingEditOperation(operationId)
-			this.log(`[setPendingEditOperation] Automatically cleared stale pending operation: ${operationId}`)
 		}, ClineProvider.PENDING_OPERATION_TIMEOUT_MS)
 
 		// Store the operation
@@ -532,8 +531,6 @@ export class ClineProvider
 			timeoutId,
 			createdAt: Date.now(),
 		})
-
-		this.log(`[setPendingEditOperation] Set pending operation: ${operationId}`)
 	}
 
 	/**
@@ -551,7 +548,6 @@ export class ClineProvider
 		if (operation) {
 			clearTimeout(operation.timeoutId)
 			this.pendingOperations.delete(operationId)
-			this.log(`[clearPendingEditOperation] Cleared pending operation: ${operationId}`)
 			return true
 		}
 		return false
@@ -565,7 +561,6 @@ export class ClineProvider
 			clearTimeout(operation.timeoutId)
 		}
 		this.pendingOperations.clear()
-		this.log(`[clearAllPendingEditOperations] Cleared all pending operations`)
 	}
 
 	/*
@@ -583,22 +578,16 @@ export class ClineProvider
 	}
 
 	async dispose() {
-		this.log("Disposing ClineProvider...")
-
 		// Clear all tasks from the stack.
 		while (this.clineStack.length > 0) {
 			await this.removeClineFromStack()
 		}
 
-		this.log("Cleared all tasks")
-
 		// Clear all pending edit operations to prevent memory leaks
 		this.clearAllPendingEditOperations()
-		this.log("Cleared pending operations")
 
 		if (this.view && "dispose" in this.view) {
 			this.view.dispose()
-			this.log("Disposed webview")
 		}
 
 		this.clearWebviewResources()
@@ -624,7 +613,6 @@ export class ClineProvider
 		this.skillsManager = undefined
 		this.marketplaceManager?.cleanup()
 		this.customModesManager?.dispose()
-		this.log("Disposed all disposables")
 		ClineProvider.activeInstances.delete(this)
 
 		// Clean up any event listeners attached to this provider
@@ -844,10 +832,8 @@ export class ClineProvider
 		webviewView.onDidDispose(
 			async () => {
 				if (inTabMode) {
-					this.log("Disposing ClineProvider instance for tab view")
 					await this.dispose()
 				} else {
-					this.log("Clearing webview resources for sidebar view")
 					this.clearWebviewResources()
 					// Reset current workspace manager reference when view is disposed
 					this.codeIndexManager = undefined
@@ -1032,16 +1018,8 @@ export class ClineProvider
 
 			// Perform preparation tasks and set up event listeners
 			await this.performPreparationTasks(task)
-
-			this.log(
-				`[createTaskWithHistoryItem] rehydrated task ${task.taskId}.${task.instanceId} in-place (flicker-free)`,
-			)
 		} else {
 			await this.addClineToStack(task)
-
-			this.log(
-				`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
-			)
 		}
 
 		// Check if there's a pending edit after checkpoint restoration
@@ -1049,8 +1027,6 @@ export class ClineProvider
 		const pendingEdit = this.getPendingEditOperation(operationId)
 		if (pendingEdit) {
 			this.clearPendingEditOperation(operationId) // Clear the pending edit
-
-			this.log(`[createTaskWithHistoryItem] Processing pending edit after checkpoint restoration`)
 
 			// Process the pending edit after a short delay to ensure the task is fully initialized
 			setTimeout(async () => {
@@ -2887,10 +2863,6 @@ export class ClineProvider
 
 		await this.addClineToStack(task)
 
-		this.log(
-			`[createTask] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
-		)
-
 		return task
 	}
 
@@ -2900,8 +2872,6 @@ export class ClineProvider
 		if (!task) {
 			return
 		}
-
-		console.log(`[cancelTask] cancelling task ${task.taskId}.${task.instanceId}`)
 
 		const { historyItem, uiMessagesFilePath } = await this.getTaskWithId(task.taskId)
 
@@ -2969,8 +2939,6 @@ export class ClineProvider
 	// This is used when the user cancels a task that is not a subtask.
 	public async clearTask(): Promise<void> {
 		if (this.clineStack.length > 0) {
-			const task = this.clineStack[this.clineStack.length - 1]
-			console.log(`[clearTask] clearing task ${task.taskId}.${task.instanceId}`)
 			await this.removeClineFromStack()
 		}
 	}
@@ -3202,59 +3170,69 @@ export class ClineProvider
 
 		// 4.5) Direct todo-subtask linking: set todo.subtaskId = childTaskId at delegation-time
 		// Persist by appending an updateTodoList message to the parent's message history.
+		// Uses deterministic anchor selection: in_progress > pending > last completed > synthetic anchor.
 		try {
 			const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
 			const parentMessages = await readTaskMessages({ taskId: parentTaskId, globalStoragePath })
-			const todos = getLatestTodo(parentMessages) as unknown as TodoItem[]
+			let todos = (getLatestTodo(parentMessages) as unknown as TodoItem[]) ?? []
+
+			// Ensure todos is a valid array
+			if (!Array.isArray(todos)) {
+				todos = []
+			}
+
+			// Deterministic selection algorithm:
+			// 1. First in_progress todo
+			// 2. Else first pending todo
+			// 3. Else last completed todo (closest to delegation moment)
+			// 4. Else create a synthetic anchor todo
+			let chosen: TodoItem | undefined = undefined
 
 			const inProgress = todos.filter((t) => t?.status === "in_progress")
 			const pending = todos.filter((t) => t?.status === "pending")
+			const completed = todos.filter((t) => t?.status === "completed")
 
-			// Deterministic selection rule (in_progress > pending): pick the first matching item
-			// in the list order, even if multiple candidates exist.
-			const chosen: TodoItem | undefined = inProgress[0] ?? pending[0]
-			if (!chosen) {
-				this.log(
-					`[delegateParentAndOpenChild] Not linking subtask ${child.taskId}: no in_progress or pending todos found`,
-				)
+			if (inProgress.length > 0) {
+				chosen = inProgress[0]
+			} else if (pending.length > 0) {
+				chosen = pending[0]
+			} else if (completed.length > 0) {
+				// Pick the LAST completed todo (closest stable anchor to delegation moment)
+				chosen = completed[completed.length - 1]
 			} else {
-				// Log ambiguity (but still link deterministically).
-				if (inProgress.length > 1) {
-					this.log(
-						`[delegateParentAndOpenChild] Multiple in_progress todos (${inProgress.length}); linking first to subtask ${child.taskId}`,
-					)
-				} else if (pending.length > 1 && inProgress.length === 0) {
-					this.log(
-						`[delegateParentAndOpenChild] Multiple pending todos (${pending.length}); linking first to subtask ${child.taskId}`,
-					)
+				// No todos exist: append a synthetic anchor todo
+				const syntheticTodo: TodoItem = {
+					id: `synthetic-${child.taskId}`,
+					content: "Delegated to subtask",
+					status: "completed",
+					subtaskId: child.taskId,
 				}
+				todos.push(syntheticTodo)
+				chosen = syntheticTodo
 			}
 
-			if (chosen) {
-				if (chosen.subtaskId && chosen.subtaskId !== child.taskId) {
-					this.log(
-						`[delegateParentAndOpenChild] Overwriting existing todo.subtaskId '${chosen.subtaskId}' -> '${child.taskId}'`,
-					)
-				}
+			// Set the subtaskId on the chosen todo (unless it's the synthetic one we just created)
+			if (chosen && !chosen.subtaskId) {
 				chosen.subtaskId = child.taskId
-
-				await saveTaskMessages({
-					messages: [
-						...parentMessages,
-						{
-							ts: Date.now(),
-							type: "say",
-							say: "user_edit_todos",
-							text: JSON.stringify({
-								tool: "updateTodoList",
-								todos,
-							}),
-						},
-					],
-					taskId: parentTaskId,
-					globalStoragePath,
-				})
 			}
+
+			// Always persist the updated todo list
+			await saveTaskMessages({
+				messages: [
+					...parentMessages,
+					{
+						ts: Date.now(),
+						type: "say",
+						say: "user_edit_todos",
+						text: JSON.stringify({
+							tool: "updateTodoList",
+							todos,
+						}),
+					},
+				],
+				taskId: parentTaskId,
+				globalStoragePath,
+			})
 		} catch (error) {
 			this.log(
 				`[delegateParentAndOpenChild] Failed to persist delegation-time todo link (non-fatal): ${
@@ -3356,15 +3334,42 @@ export class ClineProvider
 		parentClineMessages.push(subtaskUiMessage)
 
 		// 2.5) Persist provider completion write-back: update parent's todo item with tokens/cost.
+		// Primary: find todo where t.subtaskId === childTaskId.
+		// Fallback: if not found BUT this parent/child relationship is valid (from historyItem),
+		// pick the same deterministic anchor todo and set its subtaskId = childTaskId before writing tokens/cost.
 		try {
-			const todos = getLatestTodo(parentClineMessages) as unknown as TodoItem[]
-			if (Array.isArray(todos) && todos.length > 0) {
-				const linkedTodo = todos.find((t) => t?.subtaskId === childTaskId)
-				if (!linkedTodo) {
-					this.log(
-						`[reopenParentFromDelegation] No todo found with subtaskId === ${childTaskId}; skipping cost write-back`,
-					)
-				} else {
+			let todos = (getLatestTodo(parentClineMessages) as unknown as TodoItem[]) ?? []
+			if (!Array.isArray(todos)) {
+				todos = []
+			}
+
+			if (todos.length > 0) {
+				// Primary lookup by subtaskId
+				let linkedTodo = todos.find((t) => t?.subtaskId === childTaskId)
+
+				// Fallback: if subtaskId link wasn't found but parent history confirms this child belongs to it,
+				// use the deterministic anchor selection to establish the link now.
+				if (!linkedTodo && historyItem.childIds?.includes(childTaskId)) {
+					const inProgress = todos.filter((t) => t?.status === "in_progress")
+					const pending = todos.filter((t) => t?.status === "pending")
+					const completed = todos.filter((t) => t?.status === "completed")
+
+					if (inProgress.length > 0) {
+						linkedTodo = inProgress[0]
+					} else if (pending.length > 0) {
+						linkedTodo = pending[0]
+					} else if (completed.length > 0) {
+						// Pick the LAST completed todo (same as delegation-time logic)
+						linkedTodo = completed[completed.length - 1]
+					}
+
+					// Set the subtaskId on the fallback anchor if found
+					if (linkedTodo) {
+						linkedTodo.subtaskId = childTaskId
+					}
+				}
+
+				if (linkedTodo) {
 					linkedTodo.tokens = (childHistoryItem?.tokensIn || 0) + (childHistoryItem?.tokensOut || 0)
 					linkedTodo.cost = childHistoryItem?.totalCost || 0
 

@@ -202,27 +202,94 @@ function normalizeStatus(status: string | undefined): TodoStatus {
 	return "pending"
 }
 
+/**
+ * Preserve metadata (subtaskId, tokens, cost) from previous todos onto next todos.
+ *
+ * Matching strategy (in priority order):
+ * 1. **ID match**: If both todos have an `id` field and they match exactly, preserve metadata.
+ *    This handles the common case where ID is stable across updates.
+ * 2. **Content match with position awareness**: For todos without matching IDs, fall back to
+ *    content-based matching. Duplicates are matched in order (first unmatched previous with
+ *    same content gets matched to first unmatched next with same content).
+ *
+ * This approach ensures metadata survives status changes (which can alter the derived ID)
+ * and handles duplicates deterministically.
+ */
 function preserveTodoMetadata(nextTodos: TodoItem[], previousTodos: TodoItem[]): TodoItem[] {
-	// Build content -> queue mapping so duplicates are matched in order.
-	const previousByContent = new Map<string, TodoItem[]>()
-	for (const prev of previousTodos ?? []) {
-		if (!prev || typeof prev.content !== "string") continue
-		const list = previousByContent.get(prev.content)
-		if (list) list.push(prev)
-		else previousByContent.set(prev.content, [prev])
+	const safePrevious = previousTodos ?? []
+	const safeNext = nextTodos ?? []
+
+	// Build ID -> todo mapping for O(1) lookup
+	const previousById = new Map<string, TodoItem>()
+	for (const prev of safePrevious) {
+		if (prev?.id && typeof prev.id === "string") {
+			// Only store the first occurrence for each ID (handle duplicates deterministically)
+			if (!previousById.has(prev.id)) {
+				previousById.set(prev.id, prev)
+			}
+		}
 	}
 
-	return (nextTodos ?? []).map((next) => {
-		const candidates = previousByContent.get(next.content)
-		const matchedPrev = candidates?.shift()
-		if (!matchedPrev) return next
+	// Track which previous todos have been used (by their index) to avoid double-matching
+	const usedPreviousIndices = new Set<number>()
 
-		return {
-			...next,
-			subtaskId: next.subtaskId ?? matchedPrev.subtaskId,
-			tokens: next.tokens ?? matchedPrev.tokens,
-			cost: next.cost ?? matchedPrev.cost,
+	// Build content -> queue mapping for fallback (content-based matching)
+	// Each queue entry includes the original index for tracking
+	const previousByContent = new Map<string, Array<{ todo: TodoItem; index: number }>>()
+	for (let i = 0; i < safePrevious.length; i++) {
+		const prev = safePrevious[i]
+		if (!prev || typeof prev.content !== "string") continue
+		const list = previousByContent.get(prev.content)
+		if (list) list.push({ todo: prev, index: i })
+		else previousByContent.set(prev.content, [{ todo: prev, index: i }])
+	}
+
+	return safeNext.map((next) => {
+		if (!next) return next
+
+		let matchedPrev: TodoItem | undefined = undefined
+		let matchedIndex: number | undefined = undefined
+
+		// Strategy 1: Try ID-based matching first (most reliable)
+		if (next.id && typeof next.id === "string") {
+			const byId = previousById.get(next.id)
+			if (byId) {
+				// Find the index of this todo in the original array
+				const idx = safePrevious.findIndex((p) => p === byId)
+				if (idx !== -1 && !usedPreviousIndices.has(idx)) {
+					matchedPrev = byId
+					matchedIndex = idx
+				}
+			}
 		}
+
+		// Strategy 2: Fall back to content-based matching if ID didn't match
+		if (!matchedPrev && typeof next.content === "string") {
+			const candidates = previousByContent.get(next.content)
+			if (candidates) {
+				// Find first unused candidate
+				for (const candidate of candidates) {
+					if (!usedPreviousIndices.has(candidate.index)) {
+						matchedPrev = candidate.todo
+						matchedIndex = candidate.index
+						break
+					}
+				}
+			}
+		}
+
+		// Mark as used and apply metadata
+		if (matchedPrev && matchedIndex !== undefined) {
+			usedPreviousIndices.add(matchedIndex)
+			return {
+				...next,
+				subtaskId: next.subtaskId ?? matchedPrev.subtaskId,
+				tokens: next.tokens ?? matchedPrev.tokens,
+				cost: next.cost ?? matchedPrev.cost,
+			}
+		}
+
+		return next
 	})
 }
 
