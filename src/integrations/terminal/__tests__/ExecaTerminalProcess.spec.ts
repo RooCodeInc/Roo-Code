@@ -72,6 +72,22 @@ describe("ExecaTerminalProcess", () => {
 			)
 		})
 
+		it("should set Windows-specific UTF-8 environment variables", async () => {
+			await terminalProcess.run("echo test")
+			const execaMock = vitest.mocked(execa)
+			expect(execaMock).toHaveBeenCalledWith(
+				expect.objectContaining({
+					env: expect.objectContaining({
+						// Python UTF-8 encoding
+						PYTHONIOENCODING: "utf-8",
+						PYTHONUTF8: "1",
+						// Ruby UTF-8 encoding
+						RUBYOPT: "-EUTF-8",
+					}),
+				}),
+			)
+		})
+
 		it("should preserve existing environment variables", async () => {
 			process.env.EXISTING_VAR = "existing"
 			terminalProcess = new ExecaTerminalProcess(mockTerminal)
@@ -90,6 +106,19 @@ describe("ExecaTerminalProcess", () => {
 			const calledOptions = execaMock.mock.calls[0][0] as any
 			expect(calledOptions.env.LANG).toBe("en_US.UTF-8")
 			expect(calledOptions.env.LC_ALL).toBe("en_US.UTF-8")
+		})
+
+		it("should override existing Python and Ruby encoding environment variables", async () => {
+			process.env.PYTHONIOENCODING = "latin-1"
+			process.env.PYTHONUTF8 = "0"
+			process.env.RUBYOPT = "-ELATIN-1"
+			terminalProcess = new ExecaTerminalProcess(mockTerminal)
+			await terminalProcess.run("echo test")
+			const execaMock = vitest.mocked(execa)
+			const calledOptions = execaMock.mock.calls[0][0] as any
+			expect(calledOptions.env.PYTHONIOENCODING).toBe("utf-8")
+			expect(calledOptions.env.PYTHONUTF8).toBe("1")
+			expect(calledOptions.env.RUBYOPT).toBe("-EUTF-8")
 		})
 	})
 

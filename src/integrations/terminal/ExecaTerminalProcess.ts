@@ -49,6 +49,15 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 					// Ensure UTF-8 encoding for Ruby, CocoaPods, etc.
 					LANG: "en_US.UTF-8",
 					LC_ALL: "en_US.UTF-8",
+					// Windows-specific UTF-8 environment variables to prevent character corruption
+					// when the system uses non-UTF-8 encodings like GBK (code page 936)
+					// See: https://github.com/RooCodeInc/Roo-Code/issues/10709
+					// Python: Force UTF-8 encoding for stdin/stdout/stderr
+					PYTHONIOENCODING: "utf-8",
+					// Python 3.7+: Enable UTF-8 mode
+					PYTHONUTF8: "1",
+					// Ruby: Force UTF-8 encoding
+					RUBYOPT: "-EUTF-8",
 				},
 			})`${command}`
 
