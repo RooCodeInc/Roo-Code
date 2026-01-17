@@ -218,6 +218,83 @@ describe("OpenAiNativeHandler MCP tool schema handling", () => {
 		expect(tool.parameters.required).toEqual(["path", "encoding"]) // Should have all properties as required
 	})
 
+	it("should inject required for nullable object schemas (read_file indentation.anchorLine regression)", async () => {
+		let capturedRequestBody: any
+
+		const handler = new OpenAiNativeHandler({
+			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-4o",
+		} as ApiHandlerOptions)
+
+		// Mock the responses API call
+		const mockClient = {
+			responses: {
+				create: vi.fn().mockImplementation((body: any) => {
+					capturedRequestBody = body
+					return {
+						[Symbol.asyncIterator]: async function* () {
+							yield {
+								type: "response.done",
+								response: {
+									output: [{ type: "message", content: [{ type: "output_text", text: "test" }] }],
+									usage: { input_tokens: 10, output_tokens: 5 },
+								},
+							}
+						},
+					}
+				}),
+			},
+		}
+		;(handler as any).client = mockClient
+
+		const tools: OpenAI.Chat.ChatCompletionTool[] = [
+			{
+				type: "function",
+				function: {
+					name: "read_file",
+					description: "Read files",
+					parameters: {
+						type: "object",
+						properties: {
+							files: {
+								type: "array",
+								items: {
+									type: "object",
+									properties: {
+										path: { type: "string" },
+										indentation: {
+											type: ["object", "null"],
+											properties: {
+												anchorLine: { type: ["integer", "null"] },
+												maxLevels: { type: ["integer", "null"] },
+											},
+											additionalProperties: false,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		]
+
+		const stream = handler.createMessage("system prompt", [], {
+			taskId: "test-task-id",
+			tools,
+			toolProtocol: "native" as const,
+		})
+
+		for await (const _ of stream) {
+			// consume
+		}
+
+		const tool = capturedRequestBody.tools[0]
+		expect(tool.strict).toBe(true)
+		const indentation = tool.parameters.properties.files.items.properties.indentation
+		expect(indentation.required).toEqual(["anchorLine", "maxLevels"])
+	})
+
 	it("should recursively add additionalProperties: false to nested objects in MCP tools", async () => {
 		let capturedRequestBody: any
 

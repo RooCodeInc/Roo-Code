@@ -61,7 +61,17 @@ export abstract class BaseProvider implements ApiHandler {
 	 * This matches the behavior of ensureAllRequired in openai-native.ts
 	 */
 	protected convertToolSchemaForOpenAI(schema: any): any {
-		if (!schema || typeof schema !== "object" || schema.type !== "object") {
+		const isObjectLikeSchema = (candidate: any): boolean => {
+			if (!candidate || typeof candidate !== "object") return false
+			const type = candidate.type
+			return (
+				type === "object" ||
+				(Array.isArray(type) && type.includes("object")) ||
+				candidate.properties !== undefined
+			)
+		}
+
+		if (!isObjectLikeSchema(schema)) {
 			return schema
 		}
 
@@ -89,17 +99,37 @@ export abstract class BaseProvider implements ApiHandler {
 					prop.type = nonNullTypes.length === 1 ? nonNullTypes[0] : nonNullTypes
 				}
 
-				// Recursively process nested objects
-				if (prop && prop.type === "object") {
+				// Recursively process nested objects (including nullable objects)
+				if (isObjectLikeSchema(prop)) {
 					newProps[key] = this.convertToolSchemaForOpenAI(prop)
-				} else if (prop && prop.type === "array" && prop.items?.type === "object") {
+				} else if (prop && prop.type === "array" && prop.items && isObjectLikeSchema(prop.items)) {
 					newProps[key] = {
 						...prop,
-						items: this.convertToolSchemaForOpenAI(prop.items),
+						items: Array.isArray(prop.items)
+							? prop.items.map((i: any) => this.convertToolSchemaForOpenAI(i))
+							: this.convertToolSchemaForOpenAI(prop.items),
 					}
 				}
 			}
 			result.properties = newProps
+		}
+
+		// Also recurse through unions if present
+		if (Array.isArray((result as any).anyOf)) {
+			;(result as any).anyOf = (result as any).anyOf.map((s: any) => this.convertToolSchemaForOpenAI(s))
+		}
+		if (Array.isArray((result as any).oneOf)) {
+			;(result as any).oneOf = (result as any).oneOf.map((s: any) => this.convertToolSchemaForOpenAI(s))
+		}
+		if (Array.isArray((result as any).allOf)) {
+			;(result as any).allOf = (result as any).allOf.map((s: any) => this.convertToolSchemaForOpenAI(s))
+		}
+
+		if ((result as any).type === "array" && (result as any).items) {
+			const items = (result as any).items
+			;(result as any).items = Array.isArray(items)
+				? items.map((i: any) => this.convertToolSchemaForOpenAI(i))
+				: this.convertToolSchemaForOpenAI(items)
 		}
 
 		return result

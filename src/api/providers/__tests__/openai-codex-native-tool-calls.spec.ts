@@ -98,4 +98,75 @@ describe("OpenAiCodexHandler native tool calls", () => {
 			name: "attempt_completion",
 		})
 	})
+
+	it("normalizes nullable object schemas for strict tools (read_file indentation.anchorLine regression)", async () => {
+		vi.spyOn(openAiCodexOAuthManager, "getAccessToken").mockResolvedValue("test-token")
+		vi.spyOn(openAiCodexOAuthManager, "getAccountId").mockResolvedValue("acct_test")
+
+		let capturedBody: any
+		;(handler as any).client = {
+			responses: {
+				create: vi.fn().mockImplementation(async (body: any) => {
+					capturedBody = body
+					return {
+						async *[Symbol.asyncIterator]() {
+							yield {
+								type: "response.done",
+								response: {
+									output: [{ type: "message", content: [{ type: "output_text", text: "ok" }] }],
+									usage: { input_tokens: 1, output_tokens: 1 },
+								},
+							}
+						},
+					}
+				}),
+			},
+		}
+
+		const readFileLikeTool = {
+			type: "function" as const,
+			function: {
+				name: "read_file",
+				description: "Read files",
+				parameters: {
+					type: "object",
+					properties: {
+						files: {
+							type: "array",
+							items: {
+								type: "object",
+								properties: {
+									path: { type: "string" },
+									indentation: {
+										type: ["object", "null"],
+										properties: {
+											anchorLine: { type: ["integer", "null"] },
+											maxLevels: { type: ["integer", "null"] },
+										},
+										additionalProperties: false,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+
+		const stream = handler.createMessage("system", [{ role: "user", content: "hello" } as any], {
+			taskId: "t",
+			toolProtocol: "native",
+			tools: [readFileLikeTool as any],
+		})
+		for await (const _ of stream) {
+			// consume
+		}
+
+		const tool = capturedBody.tools?.[0]
+		expect(tool).toBeDefined()
+		expect(tool.strict).toBe(true)
+		const indentation = tool.parameters.properties.files.items.properties.indentation
+		// Critical: nullable-object schemas must still have required containing every key in properties.
+		expect(indentation.required).toEqual(["anchorLine", "maxLevels"])
+	})
 })

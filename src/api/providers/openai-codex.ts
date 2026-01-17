@@ -207,8 +207,31 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		reasoningEffort: ReasoningEffortExtended | undefined,
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): any {
+		const isObjectLikeSchema = (schema: any): boolean => {
+			if (!schema || typeof schema !== "object") return false
+			const type = schema.type
+			return (
+				type === "object" || (Array.isArray(type) && type.includes("object")) || schema.properties !== undefined
+			)
+		}
+
 		const ensureAllRequired = (schema: any): any => {
-			if (!schema || typeof schema !== "object" || schema.type !== "object") {
+			// Only object-like schemas need "required" injection for OpenAI strict schemas.
+			if (!isObjectLikeSchema(schema)) {
+				// Still recurse into anyOf/oneOf/allOf arrays if present.
+				if (schema && typeof schema === "object") {
+					const out = { ...schema }
+					if (Array.isArray(out.anyOf)) out.anyOf = out.anyOf.map(ensureAllRequired)
+					if (Array.isArray(out.oneOf)) out.oneOf = out.oneOf.map(ensureAllRequired)
+					if (Array.isArray(out.allOf)) out.allOf = out.allOf.map(ensureAllRequired)
+					// Recurse into array item schemas too.
+					if (out.type === "array" && out.items) {
+						out.items = Array.isArray(out.items)
+							? out.items.map(ensureAllRequired)
+							: ensureAllRequired(out.items)
+					}
+					return out
+				}
 				return schema
 			}
 
@@ -224,28 +247,34 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				const newProps = { ...result.properties }
 				for (const key of allKeys) {
 					const prop = newProps[key]
-					if (prop.type === "object") {
+					if (prop && typeof prop === "object") {
+						// Recurse for nested object schemas, nullable object schemas (type: ["object","null"]),
+						// union schemas (anyOf), and arrays-of-objects.
 						newProps[key] = ensureAllRequired(prop)
-					} else if (prop.type === "array" && prop.items?.type === "object") {
-						newProps[key] = {
-							...prop,
-							items: ensureAllRequired(prop.items),
-						}
 					}
 				}
 				result.properties = newProps
+			}
+
+			if (Array.isArray(result.anyOf)) result.anyOf = result.anyOf.map(ensureAllRequired)
+			if (Array.isArray(result.oneOf)) result.oneOf = result.oneOf.map(ensureAllRequired)
+			if (Array.isArray(result.allOf)) result.allOf = result.allOf.map(ensureAllRequired)
+			if (result.type === "array" && result.items) {
+				result.items = Array.isArray(result.items)
+					? result.items.map(ensureAllRequired)
+					: ensureAllRequired(result.items)
 			}
 
 			return result
 		}
 
 		const ensureAdditionalPropertiesFalse = (schema: any): any => {
-			if (!schema || typeof schema !== "object" || schema.type !== "object") {
+			if (!schema || typeof schema !== "object") {
 				return schema
 			}
 
 			const result = { ...schema }
-			if (result.additionalProperties !== false) {
+			if (isObjectLikeSchema(result) && result.additionalProperties !== false) {
 				result.additionalProperties = false
 			}
 
@@ -253,16 +282,21 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				const newProps = { ...result.properties }
 				for (const key of Object.keys(result.properties)) {
 					const prop = newProps[key]
-					if (prop && prop.type === "object") {
+					if (prop && typeof prop === "object") {
 						newProps[key] = ensureAdditionalPropertiesFalse(prop)
-					} else if (prop && prop.type === "array" && prop.items?.type === "object") {
-						newProps[key] = {
-							...prop,
-							items: ensureAdditionalPropertiesFalse(prop.items),
-						}
 					}
 				}
 				result.properties = newProps
+			}
+
+			if (Array.isArray(result.anyOf)) result.anyOf = result.anyOf.map(ensureAdditionalPropertiesFalse)
+			if (Array.isArray(result.oneOf)) result.oneOf = result.oneOf.map(ensureAdditionalPropertiesFalse)
+			if (Array.isArray(result.allOf)) result.allOf = result.allOf.map(ensureAdditionalPropertiesFalse)
+
+			if (result.type === "array" && result.items) {
+				result.items = Array.isArray(result.items)
+					? result.items.map(ensureAdditionalPropertiesFalse)
+					: ensureAdditionalPropertiesFalse(result.items)
 			}
 
 			return result

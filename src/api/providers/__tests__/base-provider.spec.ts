@@ -176,6 +176,25 @@ describe("BaseProvider", () => {
 			expect(result.additionalProperties).toBe(false)
 			expect(result.required).toEqual([])
 		})
+
+		it("should inject required for nullable object schemas (type: ['object','null'])", () => {
+			const schema = {
+				type: "object",
+				properties: {
+					indentation: {
+						type: ["object", "null"],
+						properties: {
+							anchorLine: { type: ["integer", "null"] },
+							maxLevels: { type: ["integer", "null"] },
+						},
+						additionalProperties: false,
+					},
+				},
+			}
+
+			const result = provider.testConvertToolSchemaForOpenAI(schema)
+			expect(result.properties.indentation.required).toEqual(["anchorLine", "maxLevels"])
+		})
 	})
 
 	describe("convertToolsForOpenAI", () => {

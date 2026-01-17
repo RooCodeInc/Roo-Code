@@ -216,17 +216,37 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		reasoningEffort: ReasoningEffortExtended | undefined,
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): any {
-		// Ensure all properties are in the required array for OpenAI's strict mode
-		// This recursively processes nested objects and array items
+		const isObjectLikeSchema = (schema: any): boolean => {
+			if (!schema || typeof schema !== "object") return false
+			const type = schema.type
+			return (
+				type === "object" || (Array.isArray(type) && type.includes("object")) || schema.properties !== undefined
+			)
+		}
+
+		// Ensure all properties are in the required array for OpenAI's strict mode.
+		// This recursively processes nested objects and array items.
+		// IMPORTANT: must handle nullable objects (type: ["object","null"]).
 		const ensureAllRequired = (schema: any): any => {
-			if (!schema || typeof schema !== "object" || schema.type !== "object") {
+			if (!isObjectLikeSchema(schema)) {
+				if (schema && typeof schema === "object") {
+					const out = { ...schema }
+					if (Array.isArray(out.anyOf)) out.anyOf = out.anyOf.map(ensureAllRequired)
+					if (Array.isArray(out.oneOf)) out.oneOf = out.oneOf.map(ensureAllRequired)
+					if (Array.isArray(out.allOf)) out.allOf = out.allOf.map(ensureAllRequired)
+					if (out.type === "array" && out.items) {
+						out.items = Array.isArray(out.items)
+							? out.items.map(ensureAllRequired)
+							: ensureAllRequired(out.items)
+					}
+					return out
+				}
 				return schema
 			}
 
 			const result = { ...schema }
 
-			// OpenAI Responses API requires additionalProperties: false on all object schemas
-			// Only add if not already set to false (to avoid unnecessary mutations)
+			// OpenAI Responses API requires additionalProperties: false on all object schemas.
 			if (result.additionalProperties !== false) {
 				result.additionalProperties = false
 			}
@@ -235,56 +255,59 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				const allKeys = Object.keys(result.properties)
 				result.required = allKeys
 
-				// Recursively process nested objects
 				const newProps = { ...result.properties }
 				for (const key of allKeys) {
 					const prop = newProps[key]
-					if (prop.type === "object") {
+					if (prop && typeof prop === "object") {
 						newProps[key] = ensureAllRequired(prop)
-					} else if (prop.type === "array" && prop.items?.type === "object") {
-						newProps[key] = {
-							...prop,
-							items: ensureAllRequired(prop.items),
-						}
 					}
 				}
 				result.properties = newProps
+			}
+
+			if (Array.isArray(result.anyOf)) result.anyOf = result.anyOf.map(ensureAllRequired)
+			if (Array.isArray(result.oneOf)) result.oneOf = result.oneOf.map(ensureAllRequired)
+			if (Array.isArray(result.allOf)) result.allOf = result.allOf.map(ensureAllRequired)
+			if (result.type === "array" && result.items) {
+				result.items = Array.isArray(result.items)
+					? result.items.map(ensureAllRequired)
+					: ensureAllRequired(result.items)
 			}
 
 			return result
 		}
 
-		// Adds additionalProperties: false to all object schemas recursively
-		// without modifying required array. Used for MCP tools with strict: false
-		// to comply with OpenAI Responses API requirements.
+		// Adds additionalProperties: false to all object-like schemas recursively without modifying required.
+		// Used for MCP tools with strict: false to comply with OpenAI Responses API requirements.
 		const ensureAdditionalPropertiesFalse = (schema: any): any => {
-			if (!schema || typeof schema !== "object" || schema.type !== "object") {
+			if (!schema || typeof schema !== "object") {
 				return schema
 			}
 
 			const result = { ...schema }
-
-			// OpenAI Responses API requires additionalProperties: false on all object schemas
-			// Only add if not already set to false (to avoid unnecessary mutations)
-			if (result.additionalProperties !== false) {
+			if (isObjectLikeSchema(result) && result.additionalProperties !== false) {
 				result.additionalProperties = false
 			}
 
 			if (result.properties) {
-				// Recursively process nested objects
 				const newProps = { ...result.properties }
 				for (const key of Object.keys(result.properties)) {
 					const prop = newProps[key]
-					if (prop && prop.type === "object") {
+					if (prop && typeof prop === "object") {
 						newProps[key] = ensureAdditionalPropertiesFalse(prop)
-					} else if (prop && prop.type === "array" && prop.items?.type === "object") {
-						newProps[key] = {
-							...prop,
-							items: ensureAdditionalPropertiesFalse(prop.items),
-						}
 					}
 				}
 				result.properties = newProps
+			}
+
+			if (Array.isArray(result.anyOf)) result.anyOf = result.anyOf.map(ensureAdditionalPropertiesFalse)
+			if (Array.isArray(result.oneOf)) result.oneOf = result.oneOf.map(ensureAdditionalPropertiesFalse)
+			if (Array.isArray(result.allOf)) result.allOf = result.allOf.map(ensureAdditionalPropertiesFalse)
+
+			if (result.type === "array" && result.items) {
+				result.items = Array.isArray(result.items)
+					? result.items.map(ensureAdditionalPropertiesFalse)
+					: ensureAdditionalPropertiesFalse(result.items)
 			}
 
 			return result
