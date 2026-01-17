@@ -737,6 +737,9 @@ export const webviewMessageHandler = async (
 		case "deleteTaskWithId":
 			provider.deleteTaskWithId(message.text!)
 			break
+		case "deleteTaskCheckpointsWithId":
+			provider.deleteTaskCheckpointsWithId(message.text!)
+			break
 		case "deleteMultipleTasksWithIds": {
 			const ids = message.ids
 

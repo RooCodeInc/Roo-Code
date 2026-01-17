@@ -1798,6 +1798,50 @@ export class ClineProvider
 		}
 	}
 
+	// This function deletes only the checkpoints for a task, preserving the task history and conversation
+	async deleteTaskCheckpointsWithId(id: string) {
+		try {
+			// Get the task directory full path
+			const { taskDirPath } = await this.getTaskWithId(id)
+
+			// Path to the checkpoints directory
+			const checkpointsPath = path.join(taskDirPath, "checkpoints")
+
+			// Delete associated shadow repository or branch
+			const globalStorageDir = this.contextProxy.globalStorageUri.fsPath
+			const workspaceDir = this.cwd
+
+			try {
+				await ShadowCheckpointService.deleteTask({ taskId: id, globalStorageDir, workspaceDir })
+				console.log(`[deleteTaskCheckpointsWithId:${id}] deleted associated shadow repository or branch`)
+			} catch (error) {
+				console.error(
+					`[deleteTaskCheckpointsWithId:${id}] failed to delete associated shadow repository or branch: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+
+			// Delete the checkpoints directory only
+			try {
+				await fs.rm(checkpointsPath, { recursive: true, force: true })
+				console.log(`[deleteTaskCheckpointsWithId:${id}] removed checkpoints directory`)
+			} catch (error) {
+				console.error(
+					`[deleteTaskCheckpointsWithId:${id}] failed to remove checkpoints directory: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+
+			// Notify the webview to refresh the state
+			await this.postStateToWebview()
+		} catch (error) {
+			// If task is not found, log the error
+			if (error instanceof Error && error.message === "Task not found") {
+				console.error(`[deleteTaskCheckpointsWithId:${id}] task not found`)
+				return
+			}
+			throw error
+		}
+	}
+
 	async deleteTaskFromState(id: string) {
 		const taskHistory = this.getGlobalState("taskHistory") ?? []
 		const updatedTaskHistory = taskHistory.filter((task) => task.id !== id)
