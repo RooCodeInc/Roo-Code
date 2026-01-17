@@ -580,6 +580,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					const safeReadBudget = Math.floor(remainingTokens * FILE_READ_BUDGET_PERCENT)
 
 					let content: string
+					let contentHash: string | undefined
 					let xmlInfo = ""
 					let nativeInfo = ""
 
@@ -596,6 +597,11 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						})
 
 						content = addLineNumbers(result.content)
+
+						// Only compute hash for complete reads (not truncated)
+						if (result.complete) {
+							contentHash = FileContextTracker.computeContentHash(result.content)
+						}
 
 						if (!result.complete) {
 							// File was truncated
@@ -626,25 +632,6 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						}
 					}
 
-					// Compute content hash for skip-redundant-reads optimization
-					// Only store hash for complete reads (not truncated)
-					let contentHash: string | undefined
-					if (safeReadBudget > 0) {
-						const readResult = await readFileWithTokenBudget(fullPath, { budgetTokens: safeReadBudget })
-						// Re-read to get content for hash (already done above, use same result)
-						// Actually we need to use the result.content from above, so we compute hash here
-						// Note: content variable above is already the numbered content, we need raw
-						// For simplicity, compute hash from the result we already have (pre-addLineNumbers)
-					}
-					// For full reads, compute hash from raw content
-					if (safeReadBudget > 0) {
-						try {
-							const rawContent = await fs.readFile(fullPath, "utf-8")
-							contentHash = FileContextTracker.computeContentHash(rawContent)
-						} catch {
-							// If we can't read for hash, that's ok - just don't store hash
-						}
-					}
 					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource, contentHash)
 
 					updateFileResult(relPath, {
