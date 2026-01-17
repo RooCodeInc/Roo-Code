@@ -32,58 +32,43 @@ export async function login({ timeout = 5 * 60 * 1000, verbose = false }: LoginO
 		console.log(`[Auth] Starting local callback server on port ${port}`)
 	}
 
-	const corsHeaders = {
-		"Access-Control-Allow-Origin": AUTH_BASE_URL,
-		"Access-Control-Allow-Methods": "POST, OPTIONS",
-		"Access-Control-Allow-Headers": "Content-Type",
-	}
-
 	// Create promise that will be resolved when we receive the callback.
 	const tokenPromise = new Promise<{ token: string; state: string }>((resolve, reject) => {
 		const server = http.createServer((req, res) => {
 			const url = new URL(req.url!, host)
 
-			// Handle CORS preflight request.
-			if (req.method === "OPTIONS") {
-				res.writeHead(204, corsHeaders)
-				res.end()
-				return
-			}
-
-			if (url.pathname === "/callback" && req.method === "POST") {
+			if (url.pathname === "/callback") {
 				const receivedState = url.searchParams.get("state")
 				const token = url.searchParams.get("token")
 				const error = url.searchParams.get("error")
 
-				const sendJsonResponse = (status: number, body: object) => {
-					res.writeHead(status, {
-						...corsHeaders,
-						"Content-Type": "application/json",
-					})
-					res.end(JSON.stringify(body))
-				}
-
 				if (error) {
-					sendJsonResponse(400, { success: false, error })
-					res.on("close", () => {
+					const errorUrl = new URL(`${AUTH_BASE_URL}/cli/sign-in?error=error-in-callback`)
+					errorUrl.searchParams.set("message", error)
+					res.writeHead(302, { Location: errorUrl.toString() })
+					res.end(() => {
 						server.close()
 						reject(new Error(error))
 					})
 				} else if (!token) {
-					sendJsonResponse(400, { success: false, error: "Missing token in callback" })
-					res.on("close", () => {
+					const errorUrl = new URL(`${AUTH_BASE_URL}/cli/sign-in?error=missing-token`)
+					errorUrl.searchParams.set("message", "Missing token in callback")
+					res.writeHead(302, { Location: errorUrl.toString() })
+					res.end(() => {
 						server.close()
 						reject(new Error("Missing token in callback"))
 					})
 				} else if (receivedState !== state) {
-					sendJsonResponse(400, { success: false, error: "Invalid state parameter" })
-					res.on("close", () => {
+					const errorUrl = new URL(`${AUTH_BASE_URL}/cli/sign-in?error=invalid-state-parameter`)
+					errorUrl.searchParams.set("message", "Invalid state parameter")
+					res.writeHead(302, { Location: errorUrl.toString() })
+					res.end(() => {
 						server.close()
 						reject(new Error("Invalid state parameter"))
 					})
 				} else {
-					sendJsonResponse(200, { success: true })
-					res.on("close", () => {
+					res.writeHead(302, { Location: `${AUTH_BASE_URL}/cli/sign-in?success=true` })
+					res.end(() => {
 						server.close()
 						resolve({ token, state: receivedState })
 					})
