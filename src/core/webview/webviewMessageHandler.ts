@@ -1,4 +1,5 @@
 import { safeWriteJson } from "../../utils/safeWriteJson"
+import { safeWriteText } from "../../utils/safeWriteText"
 import * as path from "path"
 import * as os from "os"
 import * as fs from "fs/promises"
@@ -3424,6 +3425,112 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				provider.log(`Failed to open hooks folder: ${error instanceof Error ? error.message : String(error)}`)
 				vscode.window.showErrorMessage("Failed to open hooks configuration folder")
+			}
+			break
+		}
+
+		case "hooksDeleteHook": {
+			const hookManager = provider.getHookManager()
+			if (!hookManager || !message.hookId) {
+				break
+			}
+
+			try {
+				const hookId = message.hookId
+				const snapshot = hookManager.getConfigSnapshot()
+				const targetHook = snapshot?.hooksById.get(hookId)
+				// Prefer resolved snapshot filePath (ResolvedHook.filePath)
+				const targetFilePath = targetHook?.filePath
+
+				const removeHookFromFile = async (filePath: string): Promise<boolean> => {
+					const lower = filePath.toLowerCase()
+					const content = await fs.readFile(filePath, "utf-8")
+					const parsed = lower.endsWith(".json")
+						? JSON.parse(content)
+						: (await import("yaml")).default.parse(content)
+
+					if (!parsed || typeof parsed !== "object") {
+						throw new Error(`Invalid hooks config format in ${filePath}`)
+					}
+
+					const hooks = (parsed as any).hooks
+					if (!hooks || typeof hooks !== "object") {
+						return false
+					}
+
+					let removed = false
+					for (const [event, defs] of Object.entries(hooks)) {
+						if (!Array.isArray(defs)) continue
+						const before = defs.length
+						const after = defs.filter((d: any) => d?.id !== hookId)
+						if (after.length !== before) {
+							removed = true
+							;(hooks as any)[event] = after
+						}
+					}
+
+					if (!removed) return false
+
+					if (lower.endsWith(".json")) {
+						await safeWriteJson(filePath, parsed)
+					} else {
+						const YAML = (await import("yaml")).default
+						const newYaml = YAML.stringify(parsed, { lineWidth: 0 })
+						await safeWriteText(filePath, newYaml)
+					}
+
+					return true
+				}
+
+				let deleted = false
+				if (typeof targetFilePath === "string" && targetFilePath.length > 0) {
+					deleted = await removeHookFromFile(targetFilePath)
+				} else {
+					// Fallback: scan all loaded roo directories for hook configs and remove matching id.
+					const cwd = provider.cwd
+					const rooDirs = getRooDirectoriesForCwd(cwd)
+					const candidateDirs: string[] = []
+					candidateDirs.push(path.join(rooDirs[0], "hooks"))
+					if (message.hooksSource === "mode") {
+						const mode = (await provider.getState()).mode
+						candidateDirs.push(path.join(rooDirs[1], `hooks-${mode}`))
+					}
+					candidateDirs.push(path.join(rooDirs[1], "hooks"))
+
+					for (const dir of candidateDirs) {
+						let entries: any[] = []
+						try {
+							entries = await fs.readdir(dir, { withFileTypes: true })
+						} catch {
+							continue
+						}
+						const files = entries
+							.filter((e) => e.isFile())
+							.map((e) => path.join(dir, e.name))
+							.filter((p) => {
+								const l = p.toLowerCase()
+								return l.endsWith(".json") || l.endsWith(".yaml") || l.endsWith(".yml")
+							})
+							.sort()
+						for (const filePath of files) {
+							if (await removeHookFromFile(filePath)) {
+								deleted = true
+								break
+							}
+						}
+						if (deleted) break
+					}
+				}
+
+				if (!deleted) {
+					throw new Error("Hook not found in any loaded config file")
+				}
+
+				await hookManager.reloadHooksConfig()
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(`Failed to delete hook: ${error instanceof Error ? error.message : String(error)}`)
+				vscode.window.showErrorMessage("Failed to delete hook")
 			}
 			break
 		}

@@ -48,6 +48,9 @@ vi.mock("@src/components/ui", () => ({
 			{children}
 		</button>
 	),
+	ToggleSwitch: ({ checked, onChange, ...props }: any) => (
+		<div role="switch" aria-checked={checked} onClick={onChange} data-testid={props["data-testid"]} />
+	),
 	StandardTooltip: ({ children, content }: any) => <div title={content}>{children}</div>,
 }))
 
@@ -79,8 +82,15 @@ describe("HooksSettings", () => {
 		render(<HooksSettings />)
 
 		expect(screen.getByText("settings:sections.hooks")).toBeInTheDocument()
+		expect(screen.getByText("settings:hooks.description")).toBeInTheDocument()
 		expect(screen.getByText("settings:hooks.noHooksConfigured")).toBeInTheDocument()
 		expect(screen.getByText("settings:hooks.noHooksHint")).toBeInTheDocument()
+	})
+
+	it("renders description paragraph at the top", () => {
+		render(<HooksSettings />)
+
+		expect(screen.getByText("settings:hooks.description")).toBeInTheDocument()
 	})
 
 	it("renders hooks list when hooks are configured", () => {
@@ -358,9 +368,7 @@ describe("HooksSettings", () => {
 
 		render(<HooksSettings />)
 
-		// First checkbox is the top-level "Enable Hooks" toggle; the second is the per-hook toggle in collapsed header
-		const checkboxes = screen.getAllByRole("checkbox")
-		fireEvent.click(checkboxes[1])
+		fireEvent.click(screen.getByTestId("hook-enabled-toggle-hook-1"))
 
 		expect(vscode.postMessage).toHaveBeenCalledWith({
 			type: "hooksSetEnabled",
@@ -391,9 +399,7 @@ describe("HooksSettings", () => {
 		// Hook should be collapsed initially
 		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
 
-		// Click the checkbox (second checkbox, first is "Enable Hooks")
-		const checkboxes = screen.getAllByRole("checkbox")
-		fireEvent.click(checkboxes[1])
+		fireEvent.click(screen.getByTestId("hook-enabled-toggle-hook-1"))
 
 		// Hook should still be collapsed after toggling
 		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
@@ -403,6 +409,57 @@ describe("HooksSettings", () => {
 			type: "hooksSetEnabled",
 			hookId: "hook-1",
 			hookEnabled: false,
+		})
+	})
+
+	it("renders green status dot in collapsed row", () => {
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "global",
+			timeout: 30,
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		const dot = screen.getByTestId("hook-status-dot-hook-1")
+		expect(dot).toBeInTheDocument()
+		expect(dot).toHaveStyle({ background: "var(--vscode-testing-iconPassed)" })
+	})
+
+	it("sends hooksDeleteHook message when trash button is clicked", async () => {
+		const { vscode } = await import("@src/utils/vscode")
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "project",
+			timeout: 30,
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		fireEvent.click(screen.getByTestId("hook-delete-hook-1"))
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "hooksDeleteHook",
+			hookId: "hook-1",
+			hooksSource: "project",
 		})
 	})
 

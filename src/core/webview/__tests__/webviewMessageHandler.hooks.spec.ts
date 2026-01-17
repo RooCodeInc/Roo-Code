@@ -27,12 +27,30 @@ vi.mock("vscode", () => {
 
 vi.mock("fs/promises", () => {
 	const mockMkdir = vi.fn().mockResolvedValue(undefined)
+	const mockReadFile = vi.fn().mockResolvedValue("")
+	const mockWriteFile = vi.fn().mockResolvedValue(undefined)
+	const mockAccess = vi.fn().mockResolvedValue(undefined)
+	const mockRename = vi.fn().mockResolvedValue(undefined)
+	const mockUnlink = vi.fn().mockResolvedValue(undefined)
+	const mockReaddir = vi.fn().mockResolvedValue([])
 
 	return {
 		default: {
 			mkdir: mockMkdir,
+			readFile: mockReadFile,
+			writeFile: mockWriteFile,
+			access: mockAccess,
+			rename: mockRename,
+			unlink: mockUnlink,
+			readdir: mockReaddir,
 		},
 		mkdir: mockMkdir,
+		readFile: mockReadFile,
+		writeFile: mockWriteFile,
+		access: mockAccess,
+		rename: mockRename,
+		unlink: mockUnlink,
+		readdir: mockReaddir,
 	}
 })
 
@@ -40,11 +58,20 @@ vi.mock("../../../utils/fs", () => ({
 	fileExistsAtPath: vi.fn().mockResolvedValue(true),
 }))
 
+vi.mock("../../../utils/safeWriteJson", () => ({
+	safeWriteJson: vi.fn().mockResolvedValue(undefined),
+}))
+
+vi.mock("../../../utils/safeWriteText", () => ({
+	safeWriteText: vi.fn().mockResolvedValue(undefined),
+}))
+
 vi.mock("../../../api/providers/fetchers/modelCache")
 
 import * as vscode from "vscode"
 import * as fs from "fs/promises"
 import * as fsUtils from "../../../utils/fs"
+import { safeWriteJson } from "../../../utils/safeWriteJson"
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
 
@@ -374,6 +401,108 @@ describe("webviewMessageHandler - hooks commands", () => {
 
 			expect(mockClineProvider.log).toHaveBeenCalledWith("Failed to open hooks folder: Failed to open folder")
 			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Failed to open hooks configuration folder")
+		})
+	})
+
+	describe("hooksDeleteHook", () => {
+		it("should delete hook from JSON config file and then reload + post state", async () => {
+			const hookId = "hook-to-delete"
+			const hookFilePath = "/mock/workspace/.roo/hooks/hooks.json"
+
+			const hooksById = new Map<string, ResolvedHook>()
+			hooksById.set(hookId, {
+				id: hookId,
+				event: "PreToolUse" as any,
+				matcher: ".*",
+				command: "echo hi",
+				enabled: true,
+				source: "project" as any,
+				timeout: 30,
+				filePath: hookFilePath,
+				includeConversationHistory: false,
+			} as any)
+
+			vi.mocked(mockHookManager.getConfigSnapshot).mockReturnValue({
+				hooksByEvent: new Map(),
+				hooksById,
+				loadedAt: new Date(),
+				disabledHookIds: new Set(),
+				hasProjectHooks: true,
+			} as HooksConfigSnapshot)
+
+			vi.mocked(fs.readFile).mockResolvedValueOnce(
+				JSON.stringify({
+					version: "1",
+					hooks: {
+						PreToolUse: [
+							{ id: hookId, command: "echo hi" },
+							{ id: "keep", command: "echo keep" },
+						],
+					},
+				}),
+			)
+
+			await webviewMessageHandler(mockClineProvider, {
+				type: "hooksDeleteHook",
+				hookId,
+			} as any)
+
+			expect(safeWriteJson).toHaveBeenCalledWith(
+				hookFilePath,
+				expect.objectContaining({
+					version: "1",
+					hooks: {
+						PreToolUse: [{ id: "keep", command: "echo keep" }],
+					},
+				}),
+			)
+			expect(mockHookManager.reloadHooksConfig).toHaveBeenCalledTimes(1)
+			expect(mockClineProvider.postStateToWebview).toHaveBeenCalledTimes(1)
+		})
+
+		it("should show error and not reload when hook is not found in config file", async () => {
+			const hookId = "missing-hook"
+			const hookFilePath = "/mock/workspace/.roo/hooks/hooks.json"
+
+			const hooksById = new Map<string, ResolvedHook>()
+			hooksById.set(hookId, {
+				id: hookId,
+				event: "PreToolUse" as any,
+				matcher: ".*",
+				command: "echo hi",
+				enabled: true,
+				source: "project" as any,
+				timeout: 30,
+				filePath: hookFilePath,
+				includeConversationHistory: false,
+			} as any)
+
+			vi.mocked(mockHookManager.getConfigSnapshot).mockReturnValue({
+				hooksByEvent: new Map(),
+				hooksById,
+				loadedAt: new Date(),
+				disabledHookIds: new Set(),
+				hasProjectHooks: true,
+			} as HooksConfigSnapshot)
+
+			vi.mocked(fs.readFile).mockResolvedValueOnce(
+				JSON.stringify({
+					version: "1",
+					hooks: {
+						PreToolUse: [{ id: "keep", command: "echo keep" }],
+					},
+				}),
+			)
+
+			await webviewMessageHandler(mockClineProvider, {
+				type: "hooksDeleteHook",
+				hookId,
+			} as any)
+
+			expect(safeWriteJson).not.toHaveBeenCalled()
+			expect(mockHookManager.reloadHooksConfig).not.toHaveBeenCalled()
+			expect(mockClineProvider.postStateToWebview).not.toHaveBeenCalled()
+			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Failed to delete hook")
 		})
 	})
 })

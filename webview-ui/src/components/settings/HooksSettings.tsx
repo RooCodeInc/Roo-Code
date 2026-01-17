@@ -3,7 +3,7 @@ import { RefreshCw, FolderOpen, AlertTriangle, Clock, Zap, X } from "lucide-reac
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
-import { Button, StandardTooltip } from "@src/components/ui"
+import { Button, StandardTooltip, ToggleSwitch } from "@src/components/ui"
 import type { HookInfo, HookExecutionRecord, HookExecutionStatusPayload } from "@roo-code/types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
@@ -82,16 +82,21 @@ export const HooksSettings: React.FC = () => {
 			<SectionHeader>{t("settings:sections.hooks")}</SectionHeader>
 
 			<Section>
-				{/* Enable all hooks */}
+				{/* Description paragraph */}
+				<div
+					style={{
+						color: "var(--vscode-foreground)",
+						fontSize: "13px",
+						marginBottom: "10px",
+						marginTop: "5px",
+					}}>
+					{t("settings:hooks.description")}
+				</div>
+
+				{/* Enable all hooks - matching MCP checkbox styling */}
 				{enabledHooks.length > 0 && (
-					<div className="flex items-center justify-between gap-3 mb-4 p-3 rounded border border-vscode-input-border bg-vscode-input-background">
-						<div className="flex flex-col">
-							<span className="text-sm font-medium">{t("settings:hooks.enableHooks")}</span>
-							<span className="text-xs text-vscode-descriptionForeground">
-								{t("settings:hooks.enableHooksDescription")}
-							</span>
-						</div>
-						<label className="flex items-center gap-2 cursor-pointer flex-shrink-0">
+					<div style={{ marginBottom: "20px" }}>
+						<label className="flex items-center gap-2 cursor-pointer">
 							<input
 								type="checkbox"
 								checked={allHooksEnabled}
@@ -99,8 +104,16 @@ export const HooksSettings: React.FC = () => {
 								onChange={(e) => handleToggleAllHooks(e.target.checked)}
 								className="w-4 h-4 cursor-pointer"
 							/>
-							<span className="text-sm">{t("settings:hooks.enabled")}</span>
+							<span style={{ fontWeight: "500" }}>{t("settings:hooks.enableHooks")}</span>
 						</label>
+						<p
+							style={{
+								fontSize: "12px",
+								marginTop: "5px",
+								color: "var(--vscode-descriptionForeground)",
+							}}>
+							{t("settings:hooks.enableHooksDescription")}
+						</p>
 					</div>
 				)}
 
@@ -251,9 +264,20 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 		return () => window.removeEventListener("message", handleMessage)
 	}, [hook.id])
 
-	const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
-		e.stopPropagation()
-		onToggle(hook.id, e.target.checked)
+	const handleToggleEnabled = () => {
+		onToggle(hook.id, !hook.enabled)
+	}
+
+	const handleDeleteHook = () => {
+		vscode.postMessage({
+			type: "hooksDeleteHook",
+			hookId: hook.id,
+			hooksSource: hook.source,
+		})
+	}
+
+	const getEnabledDotColor = () => {
+		return hook.enabled ? "var(--vscode-testing-iconPassed)" : "var(--vscode-descriptionForeground)"
 	}
 
 	return (
@@ -281,17 +305,34 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 						{hook.source}
 					</span>
 				</div>
-				<label
-					className="flex items-center gap-2 cursor-pointer flex-shrink-0"
-					onClick={(e) => e.stopPropagation()}>
-					<input
-						type="checkbox"
-						checked={hook.enabled}
-						onChange={handleToggle}
-						className="w-4 h-4 cursor-pointer"
+				<div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+					<Button
+						variant="ghost"
+						size="icon"
+						onClick={handleDeleteHook}
+						data-testid={`hook-delete-${hook.id}`}
+						aria-label={t("settings:hooks.deleteHook")}
+						style={{ marginRight: "6px" }}>
+						<span className="codicon codicon-trash" style={{ fontSize: "14px" }}></span>
+					</Button>
+					<div
+						data-testid={`hook-status-dot-${hook.id}`}
+						style={{
+							width: "8px",
+							height: "8px",
+							borderRadius: "50%",
+							background: getEnabledDotColor(),
+							marginLeft: "2px",
+						}}
 					/>
-					<span className="text-sm">{t("settings:hooks.enabled")}</span>
-				</label>
+					<ToggleSwitch
+						checked={hook.enabled}
+						onChange={handleToggleEnabled}
+						size="medium"
+						aria-label={t("settings:hooks.enabled")}
+						data-testid={`hook-enabled-toggle-${hook.id}`}
+					/>
+				</div>
 			</div>
 
 			{/* Expanded Content */}

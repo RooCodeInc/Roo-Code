@@ -2251,6 +2251,7 @@ export class ClineProvider
 		// Convert ResolvedHook[] to HookInfo[]
 		const hookInfos = allHooks.map((hook) => ({
 			id: hook.id,
+			filePath: hook.filePath,
 			event: hook.event,
 			matcher: hook.matcher,
 			commandPreview: hook.command.length > 100 ? hook.command.substring(0, 97) + "..." : hook.command,

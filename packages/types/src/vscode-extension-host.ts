@@ -224,6 +224,8 @@ export interface HookExecutionStatusPayload {
 export interface HookInfo {
 	/** Unique identifier for this hook */
 	id: string
+	/** File path where this hook was defined (if known) */
+	filePath?: string
 	/** The event type this hook is registered for */
 	event: string
 	/** Tool name filter (regex/glob pattern) */
@@ -619,6 +621,7 @@ export interface WebviewMessage {
 		| "hooksSetEnabled"
 		| "hooksSetAllEnabled"
 		| "hooksOpenConfigFolder"
+		| "hooksDeleteHook"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -674,10 +677,10 @@ export interface WebviewMessage {
 	list?: string[] // For dismissedUpsells response
 	organizationId?: string | null // For organization switching
 	useProviderSignup?: boolean // For rooCloudSignIn to use provider signup flow
-	hookId?: string // For hooksSetEnabled
+	hookId?: string // For hooksSetEnabled, hooksDeleteHook
 	hookEnabled?: boolean // For hooksSetEnabled
 	hooksEnabled?: boolean // For hooksSetAllEnabled
-	hooksSource?: "global" | "project" // For hooksOpenConfigFolder
+	hooksSource?: "global" | "project" | "mode" // For hooksOpenConfigFolder, hooksDeleteHook
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

@@ -44,6 +44,7 @@
 		"about": "About Roo Code"
 	},
 	"hooks": {
+		"description": "Hooks execute custom shell commands automatically when Roo uses specific tools. Use them to integrate with external systems, enforce workflows, or automate repetitive tasks.",
 		"configuredHooks": "Configured Hooks",
 		"lastLoadedTooltip": "Last loaded at {{time}}",
 		"reloadTooltip": "Reload hooks configuration from disk",
@@ -68,7 +69,6 @@
 		"enabled": "Enabled",
 		"event": "Event",
 		"matcher": "Matcher",
-		"description": "Description",
 		"command": "Command",
 		"shell": "Shell",
 		"timeout": "Timeout",
