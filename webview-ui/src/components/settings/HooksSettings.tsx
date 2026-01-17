@@ -276,6 +276,14 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 		})
 	}
 
+	const handleOpenHookFile = () => {
+		if (!hook.filePath) return
+		vscode.postMessage({
+			type: "hooksOpenHookFile",
+			filePath: hook.filePath,
+		})
+	}
+
 	const getEnabledDotColor = () => {
 		return hook.enabled ? "var(--vscode-testing-iconPassed)" : "var(--vscode-descriptionForeground)"
 	}
@@ -311,10 +319,26 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 						size="icon"
 						onClick={handleDeleteHook}
 						data-testid={`hook-delete-${hook.id}`}
-						aria-label={t("settings:hooks.deleteHook")}
-						style={{ marginRight: "6px" }}>
+						aria-label={t("settings:hooks.deleteHook")}>
 						<span className="codicon codicon-trash" style={{ fontSize: "14px" }}></span>
 					</Button>
+					<StandardTooltip
+						content={
+							hook.filePath
+								? t("settings:hooks.openHookFileTooltip")
+								: t("settings:hooks.openHookFileUnavailableTooltip")
+						}>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={handleOpenHookFile}
+							disabled={!hook.filePath}
+							data-testid={`hook-open-file-${hook.id}`}
+							aria-label={t("settings:hooks.openHookFile")}
+							style={{ marginRight: "6px" }}>
+							<span className="codicon codicon-link-external" style={{ fontSize: "14px" }}></span>
+						</Button>
+					</StandardTooltip>
 					<div
 						data-testid={`hook-status-dot-${hook.id}`}
 						style={{

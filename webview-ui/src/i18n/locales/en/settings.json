@@ -56,6 +56,8 @@
 		"projectHooksWarningTitle": "Project-level hooks detected",
 		"projectHooksWarningMessage": "This project includes hook configurations that will execute shell commands. Only enable hooks from sources you trust.",
 		"reloadNote": "Changes to hook configuration files require clicking Reload to take effect.",
+		"openHookFileTooltip": "Open hook file in editor",
+		"openHookFileUnavailableTooltip": "Hook file location unavailable",
 		"matcherNote": "Matchers are evaluated against Roo Code's internal tool IDs (e.g. write_to_file, edit_file, apply_diff, apply_patch), not UI labels like Write/Edit.",
 		"matcherExamplesLabel": "Examples:",
 		"matcherExamples": {

@@ -7,14 +7,18 @@ vi.mock("vscode", () => {
 	const executeCommand = vi.fn().mockResolvedValue(undefined)
 	const showInformationMessage = vi.fn()
 	const showErrorMessage = vi.fn()
+	const showTextDocument = vi.fn().mockResolvedValue(undefined)
+	const openTextDocument = vi.fn().mockResolvedValue({ uri: { fsPath: "/mock/file" } })
 
 	return {
 		window: {
 			showInformationMessage,
 			showErrorMessage,
+			showTextDocument,
 		},
 		workspace: {
 			workspaceFolders: [{ uri: { fsPath: "/mock/workspace" } }],
+			openTextDocument,
 		},
 		commands: {
 			executeCommand,
@@ -503,6 +507,55 @@ describe("webviewMessageHandler - hooks commands", () => {
 			expect(mockHookManager.reloadHooksConfig).not.toHaveBeenCalled()
 			expect(mockClineProvider.postStateToWebview).not.toHaveBeenCalled()
 			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Failed to delete hook")
+		})
+	})
+
+	describe("hooksOpenHookFile", () => {
+		it("should open hook file in editor when filePath is provided and file exists", async () => {
+			const hookFilePath = "/mock/workspace/.roo/hooks/hooks.json"
+
+			await webviewMessageHandler(mockClineProvider, {
+				type: "hooksOpenHookFile",
+				filePath: hookFilePath,
+			} as any)
+
+			expect(vscode.Uri.file).toHaveBeenCalledWith(hookFilePath)
+			expect(vscode.workspace.openTextDocument).toHaveBeenCalled()
+			expect(vscode.window.showTextDocument).toHaveBeenCalled()
+		})
+
+		it("should show error message when file does not exist", async () => {
+			const hookFilePath = "/mock/workspace/.roo/hooks/missing.json"
+			vi.mocked(fsUtils.fileExistsAtPath).mockResolvedValueOnce(false)
+
+			await webviewMessageHandler(mockClineProvider, {
+				type: "hooksOpenHookFile",
+				filePath: hookFilePath,
+			} as any)
+
+			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(`Hook file not found: ${hookFilePath}`)
+		})
+
+		it("should not attempt to open when filePath is missing", async () => {
+			await webviewMessageHandler(mockClineProvider, {
+				type: "hooksOpenHookFile",
+			} as any)
+
+			expect(vscode.workspace.openTextDocument).not.toHaveBeenCalled()
+			expect(vscode.window.showTextDocument).not.toHaveBeenCalled()
+		})
+
+		it("should show error message when open fails", async () => {
+			const hookFilePath = "/mock/workspace/.roo/hooks/hooks.json"
+			vi.mocked(vscode.workspace.openTextDocument).mockRejectedValueOnce(new Error("Cannot open file"))
+
+			await webviewMessageHandler(mockClineProvider, {
+				type: "hooksOpenHookFile",
+				filePath: hookFilePath,
+			} as any)
+
+			expect(mockClineProvider.log).toHaveBeenCalledWith(expect.stringContaining("Failed to open hook file"))
+			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Failed to open hook configuration file")
 		})
 	})
 })

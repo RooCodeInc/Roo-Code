@@ -3535,6 +3535,29 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "hooksOpenHookFile": {
+			const { filePath: hookFilePath } = message
+			if (!hookFilePath) {
+				return
+			}
+
+			try {
+				const exists = await fileExistsAtPath(hookFilePath)
+				if (exists) {
+					// Open the file in the editor
+					const uri = vscode.Uri.file(hookFilePath)
+					const doc = await vscode.workspace.openTextDocument(uri)
+					await vscode.window.showTextDocument(doc)
+				} else {
+					vscode.window.showErrorMessage(`Hook file not found: ${hookFilePath}`)
+				}
+			} catch (error) {
+				provider.log(`Failed to open hook file: ${error}`)
+				vscode.window.showErrorMessage("Failed to open hook configuration file")
+			}
+			break
+		}
+
 		default: {
 			// console.log(`Unhandled message type: ${message.type}`)
 			//

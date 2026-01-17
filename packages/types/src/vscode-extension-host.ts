@@ -622,6 +622,7 @@ export interface WebviewMessage {
 		| "hooksSetAllEnabled"
 		| "hooksOpenConfigFolder"
 		| "hooksDeleteHook"
+		| "hooksOpenHookFile"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -681,6 +682,7 @@ export interface WebviewMessage {
 	hookEnabled?: boolean // For hooksSetEnabled
 	hooksEnabled?: boolean // For hooksSetAllEnabled
 	hooksSource?: "global" | "project" | "mode" // For hooksOpenConfigFolder, hooksDeleteHook
+	filePath?: string // For hooksOpenHookFile
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

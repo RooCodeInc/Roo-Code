@@ -463,6 +463,81 @@ describe("HooksSettings", () => {
 		})
 	})
 
+	it("sends hooksOpenHookFile message when open file button is clicked", async () => {
+		const { vscode } = await import("@src/utils/vscode")
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "project",
+			timeout: 30,
+			filePath: "/path/to/hooks.json",
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		fireEvent.click(screen.getByTestId("hook-open-file-hook-1"))
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "hooksOpenHookFile",
+			filePath: "/path/to/hooks.json",
+		})
+	})
+
+	it("shows correct tooltip for open file button when file path is available", () => {
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "project",
+			timeout: 30,
+			filePath: "/path/to/hooks.json",
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		const button = screen.getByTestId("hook-open-file-hook-1")
+		// In the mock, StandardTooltip wraps the button with a div having the title
+		expect(button.parentElement).toHaveAttribute("title", "settings:hooks.openHookFileTooltip")
+	})
+
+	it("shows correct tooltip for open file button when file path is unavailable", () => {
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "project",
+			timeout: 30,
+			// No filePath
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		const button = screen.getByTestId("hook-open-file-hook-1")
+		expect(button.parentElement).toHaveAttribute("title", "settings:hooks.openHookFileUnavailableTooltip")
+	})
+
 	it("sends hooksSetAllEnabled message when top-level Enable Hooks toggle is changed", async () => {
 		const { vscode } = await import("@src/utils/vscode")
 
