@@ -2652,7 +2652,7 @@ export class ClineProvider
 	 * This loads hooks configuration from project/.roo/hooks/ files.
 	 * Only initializes if the hooks experiment is enabled.
 	 */
-	private async initializeHookManager(): Promise<void> {
+	public async initializeHookManager(): Promise<void> {
 		const cwd = this.currentWorkspacePath || getWorkspacePath()
 		if (!cwd) {
 			this.log("[HookManager] No workspace path available, hooks disabled")
