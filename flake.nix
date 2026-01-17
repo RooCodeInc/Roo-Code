@@ -74,11 +74,8 @@
             !(builtins.elem baseName ignoredPaths);
         };
 
-        chromiumPath =
-          if pkgs.stdenv.isDarwin then
-            "${pkgs.chromium}/Applications/Chromium.app/Contents/MacOS/Chromium"
-          else
-            "${pkgs.chromium}/bin/chromium";
+        # Chromium is only available on Linux in nixpkgs
+        chromiumPath = if pkgs.stdenv.isLinux then "${pkgs.chromium}/bin/chromium" else null;
 
         basePnpmAttrs = {
           inherit src;
@@ -149,20 +146,24 @@
         devShells.default = pkgs.mkShell {
           name = "roo-code-dev";
 
-          packages = with pkgs; [
-            nodejs
-            pnpm
-            git
-            python3
-            pkg-config
-            gnumake
-            turbo
-            chromium
-            ripgrep
-            jp2a
-            nodePackages.typescript-language-server
-            nil
-          ];
+          packages =
+            with pkgs;
+            [
+              nodejs
+              pnpm
+              git
+              python3
+              pkg-config
+              gnumake
+              turbo
+              ripgrep
+              jp2a
+              nodePackages.typescript-language-server
+              nil
+            ]
+            ++ lib.optionals stdenv.isLinux [
+              chromium
+            ];
 
           buildInputs =
             with pkgs;
@@ -175,9 +176,11 @@
 
           env = {
             PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "1";
-            PUPPETEER_EXECUTABLE_PATH = chromiumPath;
             RIPGREP_PATH = "${pkgs.ripgrep}/bin/rg";
             NODE_ENV = "development";
+          }
+          // lib.optionalAttrs pkgs.stdenv.isLinux {
+            PUPPETEER_EXECUTABLE_PATH = chromiumPath;
           };
 
           shellHook = ''
@@ -321,12 +324,16 @@
         checks = {
           lint = mkPnpmCheck "lint" "lint" { };
           typecheck = mkPnpmCheck "typecheck" "check-types" { };
-          test = mkPnpmCheck "test" "test" {
-            nativeBuildInputs = basePnpmAttrs.nativeBuildInputs ++ [ pkgs.chromium ];
-            CI = "true";
-            PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "1";
-            PUPPETEER_EXECUTABLE_PATH = chromiumPath;
-          };
+          test = mkPnpmCheck "test" "test" (
+            {
+              CI = "true";
+              PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "1";
+            }
+            // lib.optionalAttrs pkgs.stdenv.isLinux {
+              nativeBuildInputs = basePnpmAttrs.nativeBuildInputs ++ [ pkgs.chromium ];
+              PUPPETEER_EXECUTABLE_PATH = chromiumPath;
+            }
+          );
 
           format = pkgs.stdenvNoCC.mkDerivation {
             name = "roo-code-format-check";
