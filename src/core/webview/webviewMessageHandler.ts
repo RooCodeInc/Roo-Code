@@ -3404,24 +3404,17 @@ export const webviewMessageHandler = async (
 			if (!experiments.isEnabled(hooksExperimentsState, EXPERIMENT_IDS.HOOKS)) {
 				break
 			}
-			// Enable or disable ALL currently known hooks.
-			// This mirrors MCP's "Enable MCP Servers" top-level toggle.
-			const hookManager = provider.getHookManager()
-			if (hookManager && typeof message.hooksEnabled === "boolean") {
+			// Enable or disable hooks globally via the master toggle.
+			// This is stored in global state and checked before executing any hook.
+			if (typeof message.hooksEnabled === "boolean") {
 				try {
-					const snapshot = hookManager.getConfigSnapshot()
-					const allHookIds = snapshot ? Array.from(snapshot.hooksById.keys()) : []
-
-					for (const hookId of allHookIds) {
-						await hookManager.setHookEnabled(hookId, message.hooksEnabled)
-					}
-
+					await updateGlobalState("hooksEnabled", message.hooksEnabled)
 					await provider.postStateToWebview()
 				} catch (error) {
 					provider.log(
-						`Failed to set all hooks enabled: ${error instanceof Error ? error.message : String(error)}`,
+						`Failed to set hooks enabled: ${error instanceof Error ? error.message : String(error)}`,
 					)
-					vscode.window.showErrorMessage(`Failed to ${message.hooksEnabled ? "enable" : "disable"} all hooks`)
+					vscode.window.showErrorMessage(`Failed to ${message.hooksEnabled ? "enable" : "disable"} hooks`)
 				}
 			}
 			break

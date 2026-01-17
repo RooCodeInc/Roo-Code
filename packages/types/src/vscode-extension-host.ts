@@ -382,6 +382,7 @@ export type ExtensionState = Pick<
 
 	mcpEnabled: boolean
 	enableMcpServerCreation: boolean
+	hooksEnabled: boolean
 
 	mode: string
 	customModes: ModeConfig[]

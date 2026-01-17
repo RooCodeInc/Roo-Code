@@ -11,9 +11,12 @@ import { Section } from "./Section"
 
 export const HooksSettings: React.FC = () => {
 	const { t } = useAppTranslation()
-	const { hooks } = useExtensionState()
+	const { hooks, hooksEnabled } = useExtensionState()
 	const [executionHistory, setExecutionHistory] = useState<HookExecutionRecord[]>(hooks?.executionHistory || [])
-	const [isUpdatingAllEnabled, setIsUpdatingAllEnabled] = useState(false)
+	const [isUpdatingEnabled, setIsUpdatingEnabled] = useState(false)
+
+	// Master toggle state - defaults to true if not explicitly set
+	const isHooksEnabled = hooksEnabled ?? true
 
 	// Listen for realtime hookExecutionStatus messages
 	useEffect(() => {
@@ -65,12 +68,12 @@ export const HooksSettings: React.FC = () => {
 		vscode.postMessage({ type: "hooksSetEnabled", hookId, hookEnabled: enabled })
 	}, [])
 
-	const handleToggleAllHooks = useCallback((enabled: boolean) => {
-		setIsUpdatingAllEnabled(true)
+	const handleToggleHooksEnabled = useCallback((enabled: boolean) => {
+		setIsUpdatingEnabled(true)
 		vscode.postMessage({ type: "hooksSetAllEnabled", hooksEnabled: enabled })
 		// Optimistically clear the "updating" flag after a short delay.
 		// The extension will send updated state via postStateToWebview().
-		setTimeout(() => setIsUpdatingAllEnabled(false), 500)
+		setTimeout(() => setIsUpdatingEnabled(false), 500)
 	}, [])
 
 	const handleCreateNewHook = useCallback(() => {
@@ -80,7 +83,6 @@ export const HooksSettings: React.FC = () => {
 	const enabledHooks = hooks?.enabledHooks || []
 	const hasProjectHooks = hooks?.hasProjectHooks || false
 	const snapshotTimestamp = hooks?.snapshotTimestamp
-	const allHooksEnabled = enabledHooks.length > 0 && enabledHooks.every((h) => h.enabled)
 
 	return (
 		<div>
@@ -98,125 +100,130 @@ export const HooksSettings: React.FC = () => {
 					{t("settings:hooks.description")}
 				</div>
 
-				{/* Enable all hooks - matching MCP checkbox styling */}
-				{enabledHooks.length > 0 && (
-					<div style={{ marginBottom: "20px" }}>
-						<label className="flex items-center gap-2 cursor-pointer">
-							<input
-								type="checkbox"
-								checked={allHooksEnabled}
-								disabled={isUpdatingAllEnabled}
-								onChange={(e) => handleToggleAllHooks(e.target.checked)}
-								className="w-4 h-4 cursor-pointer"
-							/>
-							<span style={{ fontWeight: "500" }}>{t("settings:hooks.enableHooks")}</span>
-						</label>
-						<p
-							style={{
-								fontSize: "12px",
-								marginTop: "5px",
-								color: "var(--vscode-descriptionForeground)",
-							}}>
-							{t("settings:hooks.enableHooksDescription")}
-						</p>
-					</div>
-				)}
-
-				{/* Header */}
-				<div className="flex items-center gap-2 mb-4">
-					<h3 className="text-base font-medium m-0">{t("settings:hooks.configuredHooks")}</h3>
-					{snapshotTimestamp && (
-						<StandardTooltip
-							content={t("settings:hooks.lastLoadedTooltip", {
-								time: new Date(snapshotTimestamp).toLocaleString(),
-							})}>
-							<Clock className="w-4 h-4 text-vscode-descriptionForeground" />
-						</StandardTooltip>
-					)}
+				{/* Master enable hooks toggle - always visible, similar to MCP toggle */}
+				<div style={{ marginBottom: "20px" }}>
+					<label className="flex items-center gap-2 cursor-pointer">
+						<input
+							type="checkbox"
+							checked={isHooksEnabled}
+							disabled={isUpdatingEnabled}
+							onChange={(e) => handleToggleHooksEnabled(e.target.checked)}
+							className="w-4 h-4 cursor-pointer"
+						/>
+						<span style={{ fontWeight: "500" }}>{t("settings:hooks.enableHooks")}</span>
+					</label>
+					<p
+						style={{
+							fontSize: "12px",
+							marginTop: "5px",
+							color: "var(--vscode-descriptionForeground)",
+						}}>
+						{t("settings:hooks.enableHooksDescription")}
+					</p>
 				</div>
 
-				{/* Security warning for project hooks */}
-				{hasProjectHooks && (
-					<div className="flex items-start gap-2 p-3 mb-4 rounded bg-yellow-500/10 border border-yellow-500/30">
-						<AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
-						<div className="text-sm">
-							<div className="font-medium mb-1">{t("settings:hooks.projectHooksWarningTitle")}</div>
-							<div className="text-vscode-descriptionForeground">
-								{t("settings:hooks.projectHooksWarningMessage")}
-							</div>
+				{/* Only show the rest of the content when hooks are enabled */}
+				{isHooksEnabled && (
+					<>
+						{/* Header */}
+						<div className="flex items-center gap-2 mb-4">
+							<h3 className="text-base font-medium m-0">{t("settings:hooks.configuredHooks")}</h3>
+							{snapshotTimestamp && (
+								<StandardTooltip
+									content={t("settings:hooks.lastLoadedTooltip", {
+										time: new Date(snapshotTimestamp).toLocaleString(),
+									})}>
+									<Clock className="w-4 h-4 text-vscode-descriptionForeground" />
+								</StandardTooltip>
+							)}
 						</div>
-					</div>
+
+						{/* Security warning for project hooks */}
+						{hasProjectHooks && (
+							<div className="flex items-start gap-2 p-3 mb-4 rounded bg-yellow-500/10 border border-yellow-500/30">
+								<AlertTriangle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+								<div className="text-sm">
+									<div className="font-medium mb-1">
+										{t("settings:hooks.projectHooksWarningTitle")}
+									</div>
+									<div className="text-vscode-descriptionForeground">
+										{t("settings:hooks.projectHooksWarningMessage")}
+									</div>
+								</div>
+							</div>
+						)}
+
+						{/* Note about edits requiring reload */}
+						<div className="text-sm text-vscode-descriptionForeground mb-4">
+							{t("settings:hooks.reloadNote")}
+							<br />
+							{t("settings:hooks.matcherNote")}
+							<br />
+							<span className="font-medium">{t("settings:hooks.matcherExamplesLabel")}</span>
+							<ul className="list-disc list-inside mt-1">
+								<li>
+									<code className="font-mono">{t("settings:hooks.matcherExamples.writeOrEdit")}</code>
+								</li>
+								<li>
+									<code className="font-mono">{t("settings:hooks.matcherExamples.readOnly")}</code>
+								</li>
+							</ul>
+						</div>
+
+						{/* Hooks list */}
+						{enabledHooks.length === 0 ? (
+							<div className="text-center py-8 text-vscode-descriptionForeground">
+								<Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
+								<p className="text-base mb-2">{t("settings:hooks.noHooksConfigured")}</p>
+								<p className="text-sm">{t("settings:hooks.noHooksHint")}</p>
+							</div>
+						) : (
+							<div className="space-y-3">
+								{enabledHooks.map((hook) => (
+									<HookItem key={hook.id} hook={hook} onToggle={handleToggleHook} />
+								))}
+							</div>
+						)}
+
+						{/* Hook Activity Log */}
+						<HookActivityLog executionHistory={executionHistory} />
+
+						{/* Bottom Action Buttons - mirroring MCP settings order: create, global, project, refresh */}
+						<div
+							style={{
+								marginTop: "10px",
+								width: "100%",
+								display: "grid",
+								gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+								gap: "10px",
+							}}>
+							<Button variant="secondary" style={{ width: "100%" }} onClick={handleCreateNewHook}>
+								<Plus className="w-4 h-4" />
+								<span className="ml-2">{t("settings:hooks.createNewHook")}</span>
+							</Button>
+							<Button
+								variant="secondary"
+								style={{ width: "100%" }}
+								onClick={() => handleOpenConfigFolder("global")}>
+								<FolderOpen className="w-4 h-4" />
+								<span className="ml-2">{t("settings:hooks.openGlobalFolder")}</span>
+							</Button>
+							<Button
+								variant="secondary"
+								style={{ width: "100%" }}
+								onClick={() => handleOpenConfigFolder("project")}>
+								<FolderOpen className="w-4 h-4" />
+								<span className="ml-2">{t("settings:hooks.openProjectFolder")}</span>
+							</Button>
+							<StandardTooltip content={t("settings:hooks.reloadTooltip")}>
+								<Button variant="secondary" style={{ width: "100%" }} onClick={handleReloadConfig}>
+									<RefreshCw className="w-4 h-4" />
+									<span className="ml-2">{t("settings:hooks.reload")}</span>
+								</Button>
+							</StandardTooltip>
+						</div>
+					</>
 				)}
-
-				{/* Note about edits requiring reload */}
-				<div className="text-sm text-vscode-descriptionForeground mb-4">
-					{t("settings:hooks.reloadNote")}
-					<br />
-					{t("settings:hooks.matcherNote")}
-					<br />
-					<span className="font-medium">{t("settings:hooks.matcherExamplesLabel")}</span>
-					<ul className="list-disc list-inside mt-1">
-						<li>
-							<code className="font-mono">{t("settings:hooks.matcherExamples.writeOrEdit")}</code>
-						</li>
-						<li>
-							<code className="font-mono">{t("settings:hooks.matcherExamples.readOnly")}</code>
-						</li>
-					</ul>
-				</div>
-
-				{/* Hooks list */}
-				{enabledHooks.length === 0 ? (
-					<div className="text-center py-8 text-vscode-descriptionForeground">
-						<Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
-						<p className="text-base mb-2">{t("settings:hooks.noHooksConfigured")}</p>
-						<p className="text-sm">{t("settings:hooks.noHooksHint")}</p>
-					</div>
-				) : (
-					<div className="space-y-3">
-						{enabledHooks.map((hook) => (
-							<HookItem key={hook.id} hook={hook} onToggle={handleToggleHook} />
-						))}
-					</div>
-				)}
-
-				{/* Hook Activity Log */}
-				<HookActivityLog executionHistory={executionHistory} />
-
-				{/* Bottom Action Buttons - mirroring MCP settings order: create, global, project, refresh */}
-				<div
-					style={{
-						marginTop: "10px",
-						width: "100%",
-						display: "grid",
-						gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-						gap: "10px",
-					}}>
-					<Button variant="secondary" style={{ width: "100%" }} onClick={handleCreateNewHook}>
-						<Plus className="w-4 h-4" />
-						<span className="ml-2">{t("settings:hooks.createNewHook")}</span>
-					</Button>
-					<Button
-						variant="secondary"
-						style={{ width: "100%" }}
-						onClick={() => handleOpenConfigFolder("global")}>
-						<FolderOpen className="w-4 h-4" />
-						<span className="ml-2">{t("settings:hooks.openGlobalFolder")}</span>
-					</Button>
-					<Button
-						variant="secondary"
-						style={{ width: "100%" }}
-						onClick={() => handleOpenConfigFolder("project")}>
-						<FolderOpen className="w-4 h-4" />
-						<span className="ml-2">{t("settings:hooks.openProjectFolder")}</span>
-					</Button>
-					<StandardTooltip content={t("settings:hooks.reloadTooltip")}>
-						<Button variant="secondary" style={{ width: "100%" }} onClick={handleReloadConfig}>
-							<RefreshCw className="w-4 h-4" />
-							<span className="ml-2">{t("settings:hooks.reload")}</span>
-						</Button>
-					</StandardTooltip>
-				</div>
 			</Section>
 		</div>
 	)

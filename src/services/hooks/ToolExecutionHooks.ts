@@ -76,6 +76,11 @@ export type HookStatusCallback = (status: {
 export type SayCallback = (type: string, text?: string) => Promise<void>
 
 /**
+ * Callback to check if hooks are globally enabled.
+ */
+export type HooksEnabledGetter = () => boolean
+
+/**
  * Tool Execution Hooks Service
  *
  * Orchestrates hook execution for tool lifecycle events.
@@ -84,11 +89,18 @@ export class ToolExecutionHooks {
 	private hookManager: IHookManager | null
 	private statusCallback?: HookStatusCallback
 	private sayCallback?: SayCallback
+	private hooksEnabledGetter?: HooksEnabledGetter
 
-	constructor(hookManager: IHookManager | null, statusCallback?: HookStatusCallback, sayCallback?: SayCallback) {
+	constructor(
+		hookManager: IHookManager | null,
+		statusCallback?: HookStatusCallback,
+		sayCallback?: SayCallback,
+		hooksEnabledGetter?: HooksEnabledGetter,
+	) {
 		this.hookManager = hookManager
 		this.statusCallback = statusCallback
 		this.sayCallback = sayCallback
+		this.hooksEnabledGetter = hooksEnabledGetter
 	}
 
 	/**
@@ -113,12 +125,31 @@ export class ToolExecutionHooks {
 	}
 
 	/**
+	 * Update the hooks enabled getter.
+	 */
+	setHooksEnabledGetter(getter: HooksEnabledGetter | undefined): void {
+		this.hooksEnabledGetter = getter
+	}
+
+	/**
+	 * Check if hooks are globally enabled.
+	 * Returns true if no getter is set (backwards compatibility) or if the getter returns true.
+	 */
+	private isHooksEnabled(): boolean {
+		if (!this.hooksEnabledGetter) {
+			return true // Default to enabled for backwards compatibility
+		}
+		return this.hooksEnabledGetter()
+	}
+
+	/**
 	 * Execute PreToolUse hooks before a tool is executed.
 	 *
 	 * @returns Result indicating whether to proceed, and optionally modified input
 	 */
 	async executePreToolUse(context: ToolExecutionContext): Promise<PreToolUseResult> {
-		if (!this.hookManager) {
+		// Check global hooks enabled state first
+		if (!this.isHooksEnabled() || !this.hookManager) {
 			// No hooks configured - proceed normally
 			return {
 				proceed: true,
@@ -210,7 +241,8 @@ export class ToolExecutionHooks {
 		output: unknown,
 		duration: number,
 	): Promise<HooksExecutionResult> {
-		if (!this.hookManager) {
+		// Check global hooks enabled state first
+		if (!this.isHooksEnabled() || !this.hookManager) {
 			return {
 				results: [],
 				blocked: false,
@@ -269,7 +301,8 @@ export class ToolExecutionHooks {
 		error: string,
 		errorMessage: string,
 	): Promise<HooksExecutionResult> {
-		if (!this.hookManager) {
+		// Check global hooks enabled state first
+		if (!this.isHooksEnabled() || !this.hookManager) {
 			return {
 				results: [],
 				blocked: false,
@@ -329,7 +362,8 @@ export class ToolExecutionHooks {
 	 * @returns Result indicating whether to proceed with showing the prompt
 	 */
 	async executePermissionRequest(context: ToolExecutionContext): Promise<PermissionRequestResult> {
-		if (!this.hookManager) {
+		// Check global hooks enabled state first
+		if (!this.isHooksEnabled() || !this.hookManager) {
 			return {
 				proceed: true,
 				hookResult: {
@@ -408,7 +442,7 @@ export class ToolExecutionHooks {
 	 * Check if hooks are configured and available.
 	 */
 	hasHooks(): boolean {
-		return this.hookManager !== null && this.hookManager.getConfigSnapshot() !== null
+		return this.isHooksEnabled() && this.hookManager !== null && this.hookManager.getConfigSnapshot() !== null
 	}
 
 	/**
@@ -494,6 +528,7 @@ export function createToolExecutionHooks(
 	hookManager: IHookManager | null,
 	statusCallback?: HookStatusCallback,
 	sayCallback?: SayCallback,
+	hooksEnabledGetter?: HooksEnabledGetter,
 ): ToolExecutionHooks {
-	return new ToolExecutionHooks(hookManager, statusCallback, sayCallback)
+	return new ToolExecutionHooks(hookManager, statusCallback, sayCallback, hooksEnabledGetter)
 }

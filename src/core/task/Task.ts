@@ -541,12 +541,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		})
 
 		// Initialize tool execution hooks (only if hooks experiment is enabled)
-		const hooksEnabled = experiments.isEnabled(experimentsConfig ?? {}, EXPERIMENT_IDS.HOOKS)
+		const hooksExperimentEnabled = experiments.isEnabled(experimentsConfig ?? {}, EXPERIMENT_IDS.HOOKS)
 		this.toolExecutionHooks = createToolExecutionHooks(
-			hooksEnabled ? (provider.getHookManager() ?? null) : null,
+			hooksExperimentEnabled ? (provider.getHookManager() ?? null) : null,
 			(status) => provider.postHookStatusToWebview(status),
 			async (type, text) => {
 				await this.say(type as ClineSay, text)
+			},
+			// Getter for global hooksEnabled state - checks both experiment and user setting
+			() => {
+				const experimentEnabled = experiments.isEnabled(
+					provider.contextProxy.getValue("experiments") ?? {},
+					EXPERIMENT_IDS.HOOKS,
+				)
+				// Default to true if hooksEnabled is undefined (backwards compatibility)
+				const userEnabled = provider.contextProxy.getValue("hooksEnabled") ?? true
+				return experimentEnabled && userEnabled
 			},
 		)
 

@@ -220,6 +220,7 @@ describe("mergeExtensionState", () => {
 			featureRoomoteControlEnabled: false,
 			isBrowserSessionActive: false,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS, // Add the checkpoint timeout property
+			hooksEnabled: true, // Enable hooks by default
 		}
 
 		const prevState: ExtensionState = {
