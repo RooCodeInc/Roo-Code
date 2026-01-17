@@ -5,6 +5,24 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.47] - 2026-01-17
+
+### Added
+
+- **Workspace flag**: New `-w, --workspace <path>` option to specify a custom workspace directory instead of using the current working directory
+- **Oneshot mode**: New `--oneshot` flag to exit upon task completion, useful for scripting and automation (can also be saved in settings via [`CliSettings.oneshot`](src/types/types.ts))
+
+### Changed
+
+- Skip onboarding flow when a provider is explicitly specified via `--provider` flag or saved in settings
+- Unified permission flags: Combined `-y`, `--yes`, and `--dangerously-skip-permissions` into a single option for Claude Code-like CLI compatibility
+- Improved Roo Code Router authentication flow and error messaging
+
+### Fixed
+
+- Removed unnecessary timeout that could cause issues with long-running tasks
+- Fixed authentication token validation for Roo Code Router provider
+
 ## [0.0.45] - 2026-01-08
 
 ### Changed

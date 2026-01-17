@@ -274,6 +274,7 @@ create_tarball() {
           'commander': pkg.dependencies.commander,
           'fuzzysort': pkg.dependencies.fuzzysort,
           'ink': pkg.dependencies.ink,
+          'p-wait-for': pkg.dependencies['p-wait-for'],
           'react': pkg.dependencies.react,
           'superjson': pkg.dependencies.superjson,
           'zustand': pkg.dependencies.zustand
@@ -420,7 +421,6 @@ verify_local_install() {
     mkdir -p "$VERIFY_WORKSPACE"
     
     # Run the CLI with a simple prompt
-    # Use timeout to prevent hanging if something goes wrong
     if timeout 60 "$VERIFY_BIN_DIR/roo" --yes --oneshot -w "$VERIFY_WORKSPACE" "1+1=?" > "$VERIFY_DIR/test-output.log" 2>&1; then
         info "End-to-end test passed"
     else
