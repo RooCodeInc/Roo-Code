@@ -131,14 +131,34 @@ const TaskHeader = ({
 	const hasTodos = todos && Array.isArray(todos) && todos.length > 0
 
 	const subtaskCosts = useMemo(() => {
-		if (!subtaskDetails || subtaskDetails.length === 0) {
-			return []
+		const processedSubtasks = new Set<string>()
+		const costs: number[] = []
+
+		const maybeAddCost = (subtaskId: unknown, cost: unknown) => {
+			if (typeof subtaskId !== "string" || subtaskId.length === 0) return
+			if (processedSubtasks.has(subtaskId)) return
+			if (typeof cost !== "number" || !Number.isFinite(cost) || cost <= 0) return
+
+			processedSubtasks.add(subtaskId)
+			costs.push(cost)
 		}
 
-		return subtaskDetails
-			.map((subtask) => subtask.cost)
-			.filter((cost): cost is number => typeof cost === "number" && Number.isFinite(cost))
-	}, [subtaskDetails])
+		// Primary source of truth: visible todos.
+		if (Array.isArray(todos)) {
+			for (const todo of todos) {
+				maybeAddCost((todo as any)?.subtaskId, (todo as any)?.cost)
+			}
+		}
+
+		// Fallback: any remaining subtasks from history-derived details.
+		if (Array.isArray(subtaskDetails)) {
+			for (const subtask of subtaskDetails) {
+				maybeAddCost(subtask.id, subtask.cost)
+			}
+		}
+
+		return costs
+	}, [todos, subtaskDetails])
 
 	const tooltipCostData = useMemo(
 		() =>
