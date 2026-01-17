@@ -521,8 +521,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		}
 	}, [])
 
-	const sections: { id: SectionName; icon: LucideIcon }[] = useMemo(
-		() => [
+	const sections: { id: SectionName; icon: LucideIcon }[] = useMemo(() => {
+		const allSections: { id: SectionName; icon: LucideIcon }[] = [
 			{ id: "providers", icon: Plug },
 			{ id: "modes", icon: Users2 },
 			{ id: "mcp", icon: Server },
@@ -539,9 +539,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "experimental", icon: FlaskConical },
 			{ id: "language", icon: Globe },
 			{ id: "about", icon: Info },
-		],
-		[], // No dependencies needed now
-	)
+		]
+		// Filter out hooks section if the experiment is not enabled
+		return allSections.filter((section) => section.id !== "hooks" || experiments?.hooks === true)
+	}, [experiments?.hooks])
 
 	// Update target section logic to set active tab
 	useEffect(() => {
@@ -635,7 +636,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	return (
 		<Tab>
-			<TabHeader className="flex justify-between items-center gap-2">
+			<TabHeader className="flex justify-between items-center gap-2 bg-vscode-editor-background/95 backdrop-blur-sm sticky top-0 z-10">
 				<div className="flex items-center gap-2 grow">
 					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
 						<Button variant="ghost" className="px-1.5 -ml-2" onClick={() => checkUnsaveChanges(onDone)}>
@@ -884,8 +885,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						{/* MCP Section */}
 						{renderTab === "mcp" && <McpView />}
 
-						{/* Hooks Section */}
-						{renderTab === "hooks" && <HooksSettings />}
+						{/* Hooks Section - only render if experiment is enabled */}
+						{renderTab === "hooks" && experiments?.hooks === true && <HooksSettings />}
 
 						{/* Prompts Section */}
 						{renderTab === "prompts" && (

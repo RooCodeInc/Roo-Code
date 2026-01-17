@@ -56,7 +56,7 @@ import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
-import { experimentDefault } from "../../shared/experiments"
+import { experimentDefault, experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
@@ -2650,6 +2650,7 @@ export class ClineProvider
 	/**
 	 * Initialize the Hook Manager for lifecycle hooks.
 	 * This loads hooks configuration from project/.roo/hooks/ files.
+	 * Only initializes if the hooks experiment is enabled.
 	 */
 	private async initializeHookManager(): Promise<void> {
 		const cwd = this.currentWorkspacePath || getWorkspacePath()
@@ -2660,6 +2661,13 @@ export class ClineProvider
 
 		try {
 			const state = await this.getState()
+
+			// Check if hooks experiment is enabled
+			if (!experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.HOOKS)) {
+				this.log("[HookManager] Hooks experiment is disabled, skipping initialization")
+				return
+			}
+
 			this.hookManager = createHookManager({
 				cwd,
 				mode: state?.mode,

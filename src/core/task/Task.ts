@@ -540,9 +540,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		})
 
-		// Initialize tool execution hooks
+		// Initialize tool execution hooks (only if hooks experiment is enabled)
+		const hooksEnabled = experiments.isEnabled(experimentsConfig ?? {}, EXPERIMENT_IDS.HOOKS)
 		this.toolExecutionHooks = createToolExecutionHooks(
-			provider.getHookManager() ?? null,
+			hooksEnabled ? (provider.getHookManager() ?? null) : null,
 			(status) => provider.postHookStatusToWebview(status),
 			async (type, text) => {
 				await this.say(type as ClineSay, text)

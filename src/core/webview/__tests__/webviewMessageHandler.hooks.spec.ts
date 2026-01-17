@@ -128,7 +128,12 @@ const createMockClineProvider = (hookManager?: IHookManager) => {
 				globalStorageUri: { fsPath: "/mock/global/storage" },
 			},
 			setValue: vi.fn(),
-			getValue: vi.fn(),
+			getValue: vi.fn().mockImplementation((key: string) => {
+				if (key === "experiments") {
+					return { hooks: true } // Enable hooks experiment for tests
+				}
+				return undefined
+			}),
 		},
 		customModesManager: {
 			getCustomModes: vi.fn(),

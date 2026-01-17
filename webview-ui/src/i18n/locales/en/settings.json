@@ -900,6 +900,10 @@
 			"refreshSuccess": "Tools refreshed successfully",
 			"refreshError": "Failed to refresh tools",
 			"toolParameters": "Parameters"
+		},
+		"HOOKS": {
+			"name": "Enable Hooks",
+			"description": "Use custom shell commands to automate actions before or after tool execution."
 		}
 	},
 	"promptCaching": {

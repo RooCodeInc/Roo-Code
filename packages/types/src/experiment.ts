@@ -14,6 +14,7 @@ export const experimentIds = [
 	"runSlashCommand",
 	"multipleNativeToolCalls",
 	"customTools",
+	"hooks",
 ] as const
 
 export const experimentIdsSchema = z.enum(experimentIds)
@@ -32,6 +33,7 @@ export const experimentsSchema = z.object({
 	runSlashCommand: z.boolean().optional(),
 	multipleNativeToolCalls: z.boolean().optional(),
 	customTools: z.boolean().optional(),
+	hooks: z.boolean().optional(),
 })
 
 export type Experiments = z.infer<typeof experimentsSchema>
