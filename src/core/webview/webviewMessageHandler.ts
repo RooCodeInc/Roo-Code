@@ -640,18 +640,6 @@ export const webviewMessageHandler = async (
 							...oldExperiments,
 							...(value as Record<ExperimentId, boolean>),
 						}
-
-						// Check if hooks experiment was just enabled
-						const newExperiments = newValue as Record<ExperimentId, boolean>
-						if (
-							!experiments.isEnabled(oldExperiments, EXPERIMENT_IDS.HOOKS) &&
-							experiments.isEnabled(newExperiments, EXPERIMENT_IDS.HOOKS)
-						) {
-							// Initialize HookManager when hooks experiment is enabled
-							provider.initializeHookManager().catch((error) => {
-								provider.log(`Failed to initialize Hook Manager after experiment enable: ${error}`)
-							})
-						}
 					} else if (key === "customSupportPrompts") {
 						if (!value) {
 							continue
@@ -3355,11 +3343,6 @@ export const webviewMessageHandler = async (
 		// =====================================================================
 
 		case "hooksReloadConfig": {
-			// Check if hooks experiment is enabled
-			const hooksExperimentsState = getGlobalState("experiments") ?? experimentDefault
-			if (!experiments.isEnabled(hooksExperimentsState, EXPERIMENT_IDS.HOOKS)) {
-				break
-			}
 			// Reload hooks configuration from all sources
 			const hookManager = provider.getHookManager()
 			if (hookManager) {
@@ -3377,11 +3360,6 @@ export const webviewMessageHandler = async (
 		}
 
 		case "hooksSetEnabled": {
-			// Check if hooks experiment is enabled
-			const hooksExperimentsState = getGlobalState("experiments") ?? experimentDefault
-			if (!experiments.isEnabled(hooksExperimentsState, EXPERIMENT_IDS.HOOKS)) {
-				break
-			}
 			// Enable or disable a specific hook
 			const hookManager = provider.getHookManager()
 			if (hookManager && message.hookId && typeof message.hookEnabled === "boolean") {
@@ -3399,11 +3377,6 @@ export const webviewMessageHandler = async (
 		}
 
 		case "hooksSetAllEnabled": {
-			// Check if hooks experiment is enabled
-			const hooksExperimentsState = getGlobalState("experiments") ?? experimentDefault
-			if (!experiments.isEnabled(hooksExperimentsState, EXPERIMENT_IDS.HOOKS)) {
-				break
-			}
 			// Enable or disable hooks globally via the master toggle.
 			// This is stored in global state and checked before executing any hook.
 			if (typeof message.hooksEnabled === "boolean") {
@@ -3421,11 +3394,6 @@ export const webviewMessageHandler = async (
 		}
 
 		case "hooksOpenConfigFolder": {
-			// Check if hooks experiment is enabled
-			const hooksExperimentsState = getGlobalState("experiments") ?? experimentDefault
-			if (!experiments.isEnabled(hooksExperimentsState, EXPERIMENT_IDS.HOOKS)) {
-				break
-			}
 			// Open the hooks configuration folder in VS Code
 			const source = message.hooksSource ?? "project"
 			try {
@@ -3456,11 +3424,6 @@ export const webviewMessageHandler = async (
 		}
 
 		case "hooksDeleteHook": {
-			// Check if hooks experiment is enabled
-			const hooksExperimentsState = getGlobalState("experiments") ?? experimentDefault
-			if (!experiments.isEnabled(hooksExperimentsState, EXPERIMENT_IDS.HOOKS)) {
-				break
-			}
 			const hookManager = provider.getHookManager()
 			if (!hookManager || !message.hookId) {
 				break
@@ -3567,11 +3530,6 @@ export const webviewMessageHandler = async (
 		}
 
 		case "hooksOpenHookFile": {
-			// Check if hooks experiment is enabled
-			const hooksExperimentsState = getGlobalState("experiments") ?? experimentDefault
-			if (!experiments.isEnabled(hooksExperimentsState, EXPERIMENT_IDS.HOOKS)) {
-				break
-			}
 			const { filePath: hookFilePath } = message
 			if (!hookFilePath) {
 				return
@@ -3595,12 +3553,6 @@ export const webviewMessageHandler = async (
 		}
 
 		case "hooksCreateNew": {
-			// Check if hooks experiment is enabled
-			const hooksExperimentsState = getGlobalState("experiments") ?? experimentDefault
-			if (!experiments.isEnabled(hooksExperimentsState, EXPERIMENT_IDS.HOOKS)) {
-				break
-			}
-
 			try {
 				const cwd = provider.cwd
 				const hooksPath = path.join(cwd, ".roo", "hooks")

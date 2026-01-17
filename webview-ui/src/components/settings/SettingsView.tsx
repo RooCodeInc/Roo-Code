@@ -521,8 +521,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		}
 	}, [])
 
-	const sections: { id: SectionName; icon: LucideIcon }[] = useMemo(() => {
-		const allSections: { id: SectionName; icon: LucideIcon }[] = [
+	const sections: { id: SectionName; icon: LucideIcon }[] = useMemo(
+		() => [
 			{ id: "providers", icon: Plug },
 			{ id: "modes", icon: Users2 },
 			{ id: "mcp", icon: Server },
@@ -539,10 +539,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "experimental", icon: FlaskConical },
 			{ id: "language", icon: Globe },
 			{ id: "about", icon: Info },
-		]
-		// Filter out hooks section if the experiment is not enabled
-		return allSections.filter((section) => section.id !== "hooks" || experiments?.hooks === true)
-	}, [experiments?.hooks])
+		],
+		[],
+	)
 
 	// Update target section logic to set active tab
 	useEffect(() => {
@@ -885,8 +884,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						{/* MCP Section */}
 						{renderTab === "mcp" && <McpView />}
 
-						{/* Hooks Section - only render if experiment is enabled */}
-						{renderTab === "hooks" && experiments?.hooks === true && <HooksSettings />}
+						{/* Hooks Section */}
+						{renderTab === "hooks" && <HooksSettings />}
 
 						{/* Prompts Section */}
 						{renderTab === "prompts" && (

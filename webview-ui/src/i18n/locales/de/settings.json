@@ -897,7 +897,7 @@
 		},
 		"HOOKS": {
 			"name": "Hooks aktivieren",
-			"description": "Verwende benutzerdefinierte Shell-Befehle, um Aktionen vor oder nach der Tool-Ausführung zu automatisieren. (Neustart erforderlich nach dem Speichern der Einstellungen)"
+			"description": "Verwende benutzerdefinierte Shell-Befehle, um Aktionen vor oder nach der Tool-Ausführung zu automatisieren."
 		}
 	},
 	"promptCaching": {

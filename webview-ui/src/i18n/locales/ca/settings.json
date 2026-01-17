@@ -897,7 +897,7 @@
 		},
 		"HOOKS": {
 			"name": "Habilitar Hooks",
-			"description": "Utilitza ordres de shell personalitzades per automatitzar accions abans o després de l'execució d'eines. (Cal reiniciar després de desar la configuració)"
+			"description": "Utilitza ordres de shell personalitzades per automatitzar accions abans o després de l'execució d'eines."
 		}
 	},
 	"promptCaching": {

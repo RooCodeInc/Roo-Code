@@ -898,7 +898,7 @@
 		},
 		"HOOKS": {
 			"name": "Abilita Hooks",
-			"description": "Usa comandi shell personalizzati per automatizzare azioni prima o dopo l'esecuzione degli strumenti. (Richiede riavvio dopo aver salvato le impostazioni)"
+			"description": "Usa comandi shell personalizzati per automatizzare azioni prima o dopo l'esecuzione degli strumenti."
 		}
 	},
 	"promptCaching": {

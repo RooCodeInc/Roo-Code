@@ -173,14 +173,14 @@ describe("App", () => {
 		})
 	})
 
-	it("auto-reloads hooks config every 5 seconds when hooks experiment is enabled", () => {
+	it("auto-reloads hooks config every 5 seconds", () => {
 		vi.useFakeTimers()
 
 		mockUseExtensionState.mockReturnValue({
 			didHydrateState: true,
 			showWelcome: false,
 			shouldShowAnnouncement: false,
-			experiments: { hooks: true },
+			experiments: {},
 			language: "en",
 			telemetrySetting: "enabled",
 		})
@@ -208,29 +208,6 @@ describe("App", () => {
 			vi.advanceTimersByTime(5000)
 		})
 		expect(vscode.postMessage).toHaveBeenCalledTimes(3)
-
-		vi.useRealTimers()
-	})
-
-	it("does not auto-reload hooks config when hooks experiment is disabled", () => {
-		vi.useFakeTimers()
-
-		mockUseExtensionState.mockReturnValue({
-			didHydrateState: true,
-			showWelcome: false,
-			shouldShowAnnouncement: false,
-			experiments: { hooks: false },
-			language: "en",
-			telemetrySetting: "enabled",
-		})
-
-		render(<AppWithProviders />)
-
-		// Advance time by 5s
-		act(() => {
-			vi.advanceTimersByTime(5000)
-		})
-		expect(vscode.postMessage).not.toHaveBeenCalledWith({ type: "hooksReloadConfig" })
 
 		vi.useRealTimers()
 	})

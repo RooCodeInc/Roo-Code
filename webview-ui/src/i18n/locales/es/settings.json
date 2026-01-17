@@ -897,7 +897,7 @@
 		},
 		"HOOKS": {
 			"name": "Habilitar Hooks",
-			"description": "Usa comandos de shell personalizados para automatizar acciones antes o después de la ejecución de herramientas. (Se requiere reinicio después de guardar la configuración)"
+			"description": "Usa comandos de shell personalizados para automatizar acciones antes o después de la ejecución de herramientas."
 		}
 	},
 	"promptCaching": {

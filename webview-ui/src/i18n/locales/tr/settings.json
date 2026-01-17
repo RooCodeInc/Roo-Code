@@ -898,7 +898,7 @@
 		},
 		"HOOKS": {
 			"name": "Hook'ları Etkinleştir",
-			"description": "Araç yürütmeden önce veya sonra eylemleri otomatikleştirmek için özel kabuk komutları kullanın. (Ayarları kaydettikten sonra yeniden başlatma gerekli)"
+			"description": "Araç yürütmeden önce veya sonra eylemleri otomatikleştirmek için özel kabuk komutları kullanın."
 		}
 	},
 	"promptCaching": {

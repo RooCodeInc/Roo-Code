@@ -56,7 +56,7 @@ import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
-import { experimentDefault, experiments, EXPERIMENT_IDS } from "../../shared/experiments"
+import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
@@ -144,6 +144,9 @@ export class ClineProvider
 	protected mcpHub?: McpHub // Change from private to protected
 	protected skillsManager?: SkillsManager
 	protected hookManager?: IHookManager
+	private hookFileWatchers: vscode.FileSystemWatcher[] = []
+	private hookReloadTimeout?: NodeJS.Timeout
+	private static readonly HOOK_RELOAD_DEBOUNCE_MS = 500
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
 	private taskCreationCallback: (task: Task) => void
@@ -623,6 +626,7 @@ export class ClineProvider
 		this.mcpHub = undefined
 		await this.skillsManager?.dispose()
 		this.skillsManager = undefined
+		this.disposeHookManager()
 		this.marketplaceManager?.cleanup()
 		this.customModesManager?.dispose()
 		this.log("Disposed all disposables")
@@ -2654,6 +2658,7 @@ export class ClineProvider
 	 * Initialize the Hook Manager for lifecycle hooks.
 	 * This loads hooks configuration from project/.roo/hooks/ files.
 	 * Only initializes if the hooks experiment is enabled.
+	 * Sets up file watchers for automatic config reloading.
 	 */
 	public async initializeHookManager(): Promise<void> {
 		const cwd = this.currentWorkspacePath || getWorkspacePath()
@@ -2664,12 +2669,6 @@ export class ClineProvider
 
 		try {
 			const state = await this.getState()
-
-			// Check if hooks experiment is enabled
-			if (!experiments.isEnabled(state?.experiments ?? {}, EXPERIMENT_IDS.HOOKS)) {
-				this.log("[HookManager] Hooks experiment is disabled, skipping initialization")
-				return
-			}
 
 			this.hookManager = createHookManager({
 				cwd,
@@ -2685,6 +2684,12 @@ export class ClineProvider
 			// Load hooks configuration
 			await this.hookManager.loadHooksConfig()
 			this.log("[HookManager] Hooks loaded successfully")
+
+			// Set up file watchers for hook configuration files
+			this.setupHookFileWatchers(cwd, state?.mode)
+
+			// Notify webview of hook state
+			await this.postStateToWebview()
 		} catch (error) {
 			this.log(
 				`[HookManager] Failed to initialize hooks: ${error instanceof Error ? error.message : String(error)}`,
@@ -2692,6 +2697,109 @@ export class ClineProvider
 			// Don't throw - hooks are optional
 			this.hookManager = undefined
 		}
+	}
+
+	/**
+	 * Set up file watchers for hook configuration files.
+	 * Watches .roo/hooks/, ~/.roo/hooks/, and mode-specific directories.
+	 */
+	private setupHookFileWatchers(cwd: string, mode?: string): void {
+		// Clean up any existing watchers first
+		this.disposeHookFileWatchers()
+
+		const watchPatterns: string[] = []
+
+		// Project hooks: .roo/hooks/*.{json,yaml,yml}
+		const projectHooksPattern = new vscode.RelativePattern(
+			vscode.Uri.file(path.join(cwd, ".roo", "hooks")),
+			"*.{json,yaml,yml}",
+		)
+		watchPatterns.push(".roo/hooks/*.{json,yaml,yml}")
+
+		// Mode-specific hooks: .roo/hooks-{mode}/*.{json,yaml,yml}
+		let modeHooksPattern: vscode.RelativePattern | undefined
+		if (mode) {
+			modeHooksPattern = new vscode.RelativePattern(
+				vscode.Uri.file(path.join(cwd, ".roo", `hooks-${mode}`)),
+				"*.{json,yaml,yml}",
+			)
+			watchPatterns.push(`.roo/hooks-${mode}/*.{json,yaml,yml}`)
+		}
+
+		// Global hooks: ~/.roo/hooks/*.{json,yaml,yml}
+		const globalHooksPattern = new vscode.RelativePattern(
+			vscode.Uri.file(path.join(os.homedir(), ".roo", "hooks")),
+			"*.{json,yaml,yml}",
+		)
+		watchPatterns.push("~/.roo/hooks/*.{json,yaml,yml}")
+
+		this.log(`[HookManager] Setting up file watchers for: ${watchPatterns.join(", ")}`)
+
+		// Create debounced reload handler
+		const debouncedReload = () => {
+			if (this.hookReloadTimeout) {
+				clearTimeout(this.hookReloadTimeout)
+			}
+			this.hookReloadTimeout = setTimeout(async () => {
+				this.log("[HookManager] Config file changed, reloading hooks...")
+				await this.reloadHooksConfig()
+				await this.postStateToWebview()
+			}, ClineProvider.HOOK_RELOAD_DEBOUNCE_MS)
+		}
+
+		// Create watchers for each pattern
+		const projectWatcher = vscode.workspace.createFileSystemWatcher(projectHooksPattern)
+		projectWatcher.onDidCreate(debouncedReload)
+		projectWatcher.onDidChange(debouncedReload)
+		projectWatcher.onDidDelete(debouncedReload)
+		this.hookFileWatchers.push(projectWatcher)
+
+		if (modeHooksPattern) {
+			const modeWatcher = vscode.workspace.createFileSystemWatcher(modeHooksPattern)
+			modeWatcher.onDidCreate(debouncedReload)
+			modeWatcher.onDidChange(debouncedReload)
+			modeWatcher.onDidDelete(debouncedReload)
+			this.hookFileWatchers.push(modeWatcher)
+		}
+
+		const globalWatcher = vscode.workspace.createFileSystemWatcher(globalHooksPattern)
+		globalWatcher.onDidCreate(debouncedReload)
+		globalWatcher.onDidChange(debouncedReload)
+		globalWatcher.onDidDelete(debouncedReload)
+		this.hookFileWatchers.push(globalWatcher)
+
+		this.log(`[HookManager] File watchers set up successfully (${this.hookFileWatchers.length} watchers)`)
+	}
+
+	/**
+	 * Dispose hook file watchers.
+	 */
+	private disposeHookFileWatchers(): void {
+		if (this.hookReloadTimeout) {
+			clearTimeout(this.hookReloadTimeout)
+			this.hookReloadTimeout = undefined
+		}
+
+		for (const watcher of this.hookFileWatchers) {
+			watcher.dispose()
+		}
+		this.hookFileWatchers = []
+	}
+
+	/**
+	 * Dispose the Hook Manager and clean up resources.
+	 * Called when hooks experiment is disabled.
+	 */
+	public disposeHookManager(): void {
+		this.log("[HookManager] Disposing hook manager...")
+
+		// Dispose file watchers
+		this.disposeHookFileWatchers()
+
+		// Clear the hook manager reference
+		this.hookManager = undefined
+
+		this.log("[HookManager] Hook manager disposed")
 	}
 
 	/**
