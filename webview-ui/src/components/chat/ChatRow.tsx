@@ -1364,6 +1364,25 @@ export const ChatRowContent = ({
 							checkpoint={message.checkpoint}
 						/>
 					)
+				case "hook_triggered":
+					return (
+						<div
+							style={{
+								display: "flex",
+								alignItems: "center",
+								gap: "8px",
+								padding: "4px 0",
+								color: "var(--vscode-descriptionForeground)",
+								fontSize: "12px",
+							}}>
+							<span
+								className="codicon codicon-symbol-event"
+								style={{ fontSize: "14px" }}
+								aria-label="Hook icon"
+							/>
+							<span>Hook: {message.text} triggered</span>
+						</div>
+					)
 				case "condense_context":
 					// In-progress state
 					if (message.partial) {

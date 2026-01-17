@@ -541,8 +541,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		})
 
 		// Initialize tool execution hooks
-		this.toolExecutionHooks = createToolExecutionHooks(provider.getHookManager() ?? null, (status) =>
-			provider.postHookStatusToWebview(status),
+		this.toolExecutionHooks = createToolExecutionHooks(
+			provider.getHookManager() ?? null,
+			(status) => provider.postHookStatusToWebview(status),
+			async (type, text) => {
+				await this.say(type as ClineSay, text)
+			},
 		)
 
 		this.diffEnabled = enableDiff

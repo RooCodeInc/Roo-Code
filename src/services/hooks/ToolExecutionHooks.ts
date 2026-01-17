@@ -71,6 +71,11 @@ export type HookStatusCallback = (status: {
 }) => void
 
 /**
+ * Callback for emitting messages to chat history.
+ */
+export type SayCallback = (type: string, text?: string) => Promise<void>
+
+/**
  * Tool Execution Hooks Service
  *
  * Orchestrates hook execution for tool lifecycle events.
@@ -78,10 +83,12 @@ export type HookStatusCallback = (status: {
 export class ToolExecutionHooks {
 	private hookManager: IHookManager | null
 	private statusCallback?: HookStatusCallback
+	private sayCallback?: SayCallback
 
-	constructor(hookManager: IHookManager | null, statusCallback?: HookStatusCallback) {
+	constructor(hookManager: IHookManager | null, statusCallback?: HookStatusCallback, sayCallback?: SayCallback) {
 		this.hookManager = hookManager
 		this.statusCallback = statusCallback
+		this.sayCallback = sayCallback
 	}
 
 	/**
@@ -96,6 +103,13 @@ export class ToolExecutionHooks {
 	 */
 	setStatusCallback(callback: HookStatusCallback | undefined): void {
 		this.statusCallback = callback
+	}
+
+	/**
+	 * Update the say callback.
+	 */
+	setSayCallback(callback: SayCallback | undefined): void {
+		this.sayCallback = callback
 	}
 
 	/**
@@ -127,6 +141,8 @@ export class ToolExecutionHooks {
 
 		try {
 			const result = await this.hookManager.executeHooks("PreToolUse", { context: hookContext })
+
+			await this.emitHookTriggeredMessages(result)
 
 			if (result.blocked) {
 				// Hook blocked the execution
@@ -216,6 +232,8 @@ export class ToolExecutionHooks {
 		try {
 			const result = await this.hookManager.executeHooks("PostToolUse", { context: hookContext })
 
+			await this.emitHookTriggeredMessages(result)
+
 			this.emitStatus({
 				status: "completed",
 				event: "PostToolUse",
@@ -272,6 +290,8 @@ export class ToolExecutionHooks {
 
 		try {
 			const result = await this.hookManager.executeHooks("PostToolUseFailure", { context: hookContext })
+
+			await this.emitHookTriggeredMessages(result)
 
 			this.emitStatus({
 				status: "completed",
@@ -330,6 +350,8 @@ export class ToolExecutionHooks {
 
 		try {
 			const result = await this.hookManager.executeHooks("PermissionRequest", { context: hookContext })
+
+			await this.emitHookTriggeredMessages(result)
 
 			if (result.blocked) {
 				// Hook blocked - do not show approval dialog, deny the tool
@@ -444,6 +466,25 @@ export class ToolExecutionHooks {
 			}
 		}
 	}
+
+	/**
+	 * Emit hook triggered messages for successful hook executions.
+	 */
+	private async emitHookTriggeredMessages(result: HooksExecutionResult): Promise<void> {
+		if (!this.sayCallback) {
+			return
+		}
+
+		for (const hookResult of result.results) {
+			if (!hookResult.error && hookResult.exitCode === 0) {
+				try {
+					await this.sayCallback("hook_triggered", hookResult.hook.id)
+				} catch {
+					// Ignore callback errors
+				}
+			}
+		}
+	}
 }
 
 /**
@@ -452,6 +493,7 @@ export class ToolExecutionHooks {
 export function createToolExecutionHooks(
 	hookManager: IHookManager | null,
 	statusCallback?: HookStatusCallback,
+	sayCallback?: SayCallback,
 ): ToolExecutionHooks {
-	return new ToolExecutionHooks(hookManager, statusCallback)
+	return new ToolExecutionHooks(hookManager, statusCallback, sayCallback)
 }
