@@ -421,7 +421,7 @@ verify_local_install() {
     
     # Run the CLI with a simple prompt
     # Use timeout to prevent hanging if something goes wrong
-    if timeout 60 "$VERIFY_BIN_DIR/roo" --yes --exit-on-complete --prompt "1+1=?" "$VERIFY_WORKSPACE" > "$VERIFY_DIR/test-output.log" 2>&1; then
+    if timeout 60 "$VERIFY_BIN_DIR/roo" --yes --oneshot -w "$VERIFY_WORKSPACE" "1+1=?" > "$VERIFY_DIR/test-output.log" 2>&1; then
         info "End-to-end test passed"
     else
         EXIT_CODE=$?
