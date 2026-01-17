@@ -456,6 +456,7 @@ function AppInner({ createExtensionHost, ...extensionHostOptions }: TUIAppProps)
 			<Box flexShrink={0}>
 				<Header
 					{...extensionHostOptions}
+					mode={currentMode || mode}
 					version={version}
 					tokenUsage={tokenUsage}
 					contextWindow={contextWindow}
