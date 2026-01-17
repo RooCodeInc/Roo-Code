@@ -639,7 +639,11 @@ const ActivityLogItem: React.FC<ActivityLogItemProps> = ({ record }) => {
 						{status.icon}
 						{status.label}
 					</span>
-					<code className="text-xs font-mono text-vscode-textLink-foreground truncate">
+					<code className="text-xs font-mono text-vscode-textLink-foreground truncate" title={record.hookId}>
+						{record.hookId}
+					</code>
+					<span className="text-vscode-descriptionForeground">·</span>
+					<code className="text-xs font-mono text-vscode-descriptionForeground truncate">
 						{record.event}
 						{record.toolName && ` (${record.toolName})`}
 					</code>
