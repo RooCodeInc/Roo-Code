@@ -97,7 +97,7 @@ const pricingTiers: PricingTier[] = [
 		description: "For AI-forward engineers",
 		featuresIntro: "Go beyond the extension with",
 		features: [
-			"Access to Cloud Agents: fully autonomous development you can call from Slack, Github and the web",
+			"Access to Cloud Agents: fully autonomous development you can kick off from Github and the web",
 			"Access to the Roo Code Router",
 			"Follow your tasks from anywhere",
 			"Share tasks with friends and co-workers",
@@ -119,7 +119,12 @@ const pricingTiers: PricingTier[] = [
 		trial: "Free for 14 days, then",
 		description: "For AI-forward teams",
 		featuresIntro: "Everything in Free +",
-		features: ["Unlimited users (no per-seat cost)", "Shared configuration & policies", "Centralized billing"],
+		features: [
+			"Unlimited users (no per-seat cost)",
+			"Shared configuration & policies",
+			"Centralized billing",
+			"Slack and Linear integrations",
+		],
 		cta: {
 			text: "Sign up",
 			href: EXTERNAL_LINKS.CLOUD_APP_SIGNUP + "?redirect_url=/billing",
@@ -234,8 +239,8 @@ export default function PricingPage() {
 							<div className="text-sm text-muted-foreground">
 								<p className="">
 									On any plan, you can use your own LLM provider API key or use the built-in Roo Code
-									Router – curated models to work with Roo with no markup, including the
-									latest Gemini, GPT and Claude. Paid with credits.
+									Router – curated models to work with Roo with no markup, including the latest
+									Gemini, GPT and Claude. Paid with credits.
 									<Link href="/provider" className="underline hover:no-underline ml-1">
 										See per model pricing.
 									</Link>

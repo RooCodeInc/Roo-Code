@@ -94,6 +94,7 @@ export interface ExtensionMessage {
 		| "claudeCodeRateLimits"
 		| "customToolsResult"
 		| "modes"
+		| "taskWithAggregatedCosts"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
@@ -182,6 +183,13 @@ export interface ExtensionMessage {
 	stepIndex?: number // For browserSessionNavigate: the target step index to display
 	tools?: SerializedCustomToolDefinition[] // For customToolsResult
 	modes?: { slug: string; name: string }[] // For modes response
+	aggregatedCosts?: {
+		// For taskWithAggregatedCosts response
+		totalCost: number
+		ownCost: number
+		childrenCost: number
+	}
+	historyItem?: HistoryItem
 }
 
 export type ExtensionState = Pick<
@@ -325,6 +333,7 @@ export type ExtensionState = Pick<
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
 	claudeCodeIsAuthenticated?: boolean
+	openAiCodexIsAuthenticated?: boolean
 	debug?: boolean
 }
 
@@ -454,6 +463,8 @@ export interface WebviewMessage {
 		| "rooCloudManualUrl"
 		| "claudeCodeSignIn"
 		| "claudeCodeSignOut"
+		| "openAiCodexSignIn"
+		| "openAiCodexSignOut"
 		| "switchOrganization"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
@@ -493,8 +504,10 @@ export interface WebviewMessage {
 		| "editQueuedMessage"
 		| "dismissUpsell"
 		| "getDismissedUpsells"
+		| "openMarkdownPreview"
 		| "updateSettings"
 		| "allowedCommands"
+		| "getTaskWithAggregatedCosts"
 		| "deniedCommands"
 		| "killBrowserSession"
 		| "openBrowserSessionPanel"

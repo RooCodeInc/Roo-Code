@@ -1,5 +1,38 @@
 # Roo Code Changelog
 
+## [3.41.2] - 2026-01-16
+
+- Add button to open markdown in VSCode preview for easier reading of formatted content (PR #10773 by @brunobergher)
+- Fix: Reset invalid model selection when using OpenAI Codex provider (PR #10777 by @hannesrudolph)
+- Fix: Add openai-codex to providers that don't require an API key (PR #10786 by @roomote)
+- Fix: Detect Gemini models with space-separated names for proper thought signature injection in LiteLLM (PR #10787 by @daniel-lxs)
+
+## [3.41.1] - 2026-01-16
+
+![3.41.1 Release - Aggregated Subtask Costs](/releases/3.41.1-release.png)
+
+- Feat: Aggregate subtask costs in parent task (#5376 by @hannesrudolph, PR #10757 by @taltas)
+- Fix: Prevent duplicate tool_use IDs causing API 400 errors (PR #10760 by @daniel-lxs)
+- Fix: Handle missing tool identity in OpenAI Native streams (PR #10719 by @hannesrudolph)
+- Fix: Truncate call_id to 64 chars for OpenAI Responses API (PR #10763 by @daniel-lxs)
+- Fix: Gemini thought signature validation errors (PR #10694 by @daniel-lxs)
+- Fix: Filter out empty text blocks from user messages for Gemini compatibility (PR #10728 by @daniel-lxs)
+- Fix: Flatten top-level anyOf/oneOf/allOf in MCP tool schemas (PR #10726 by @daniel-lxs)
+- Fix: Filter Ollama models without native tool support (PR #10735 by @daniel-lxs)
+- Feat: Add settings tab titles to search index (PR #10761 by @roomote)
+- Feat: Clarify Slack and Linear are Cloud Team only features (PR #10748 by @roomote)
+
+## [3.41.0] - 2026-01-15
+
+![3.41.0 Release - OpenAI - ChatGPT Plus/Pro Provider](/releases/3.41.0-release.png)
+
+- Add OpenAI - ChatGPT Plus/Pro Provider that gives subscription-based access to Codex models without per-token costs (PR #10736 by @hannesrudolph)
+- Add gpt-5.2-codex model to openai-native provider, providing access to the latest GPT model with enhanced coding capabilities (PR #10731 by @hannesrudolph)
+- Fix: Clear terminal output buffers to prevent memory leaks that could cause gray screens and performance degradation (#10666, PR #7666 by @hannesrudolph)
+- Fix: Inject dummy thought signatures on ALL tool calls for Gemini models, resolving issues with Gemini tool call handling through LiteLLM (PR #10743 by @daniel-lxs)
+- Enable E2E tests with 39 passing tests, improving test coverage and reliability (PR #10720 by @ArchimedesCrypto)
+- Add alwaysAllow config for MCP time server tools in E2E tests (PR #10733 by @ArchimedesCrypto)
+
 ## [3.40.1] - 2026-01-13
 
 - Fix: Add allowedFunctionNames support for Gemini to prevent mode switch errors (#10711 by @hannesrudolph, PR #10708 by @hannesrudolph)

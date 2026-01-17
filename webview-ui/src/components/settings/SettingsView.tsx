@@ -588,18 +588,33 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const initialTab = useRef<SectionName>(activeTab)
 	const isIndexing = indexingTabIndex < sectionNames.length
 	const isIndexingComplete = !isIndexing
+	const tabTitlesRegistered = useRef(false)
 
 	// Index all tabs by cycling through them on mount
 	useLayoutEffect(() => {
 		if (indexingTabIndex >= sectionNames.length) {
-			// All tabs indexed, return to initial tab
-			setActiveTab(initialTab.current)
+			// All tabs indexed, now register tab titles as searchable items
+			if (!tabTitlesRegistered.current && searchContextValue) {
+				sections.forEach(({ id }) => {
+					const tabTitle = t(`settings:sections.${id}`)
+					// Register each tab title as a searchable item
+					// Using a special naming convention for tab titles: "tab-{sectionName}"
+					searchContextValue.registerSetting({
+						settingId: `tab-${id}`,
+						section: id,
+						label: tabTitle,
+					})
+				})
+				tabTitlesRegistered.current = true
+				// Return to initial tab
+				setActiveTab(initialTab.current)
+			}
 			return
 		}
 
 		// Move to the next tab on next render
 		setIndexingTabIndex((prev) => prev + 1)
-	}, [indexingTabIndex])
+	}, [indexingTabIndex, searchContextValue, sections, t])
 
 	// Determine which tab content to render (for indexing or active display)
 	const renderTab = isIndexing ? sectionNames[indexingTabIndex] : activeTab
