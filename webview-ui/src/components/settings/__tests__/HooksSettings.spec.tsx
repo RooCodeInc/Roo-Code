@@ -5,6 +5,25 @@ import { vi, describe, it, expect, beforeEach } from "vitest"
 import { HooksSettings } from "../HooksSettings"
 import type { HookInfo, HookExecutionRecord, HooksState } from "@roo-code/types"
 
+// Mock webview-ui-toolkit components
+vi.mock("@vscode/webview-ui-toolkit/react", () => ({
+	VSCodePanels: ({ children, ...props }: any) => (
+		<div data-testid="vscode-panels" {...props}>
+			{children}
+		</div>
+	),
+	VSCodePanelTab: ({ children, id, ...props }: any) => (
+		<div data-testid={`tab-${id}`} data-tab-id={id} {...props}>
+			{children}
+		</div>
+	),
+	VSCodePanelView: ({ children, id, ...props }: any) => (
+		<div data-testid={`panel-${id}`} data-panel-id={id} {...props}>
+			{children}
+		</div>
+	),
+}))
+
 // Mock vscode utilities
 vi.mock("@src/utils/vscode", () => ({
 	vscode: {
@@ -147,9 +166,16 @@ describe("HooksSettings", () => {
 		const hookHeader = screen.getByText(mockHook.id).closest("div")
 		fireEvent.click(hookHeader!)
 
-		// Hook details should now be visible
+		// Should show tabs
+		expect(screen.getByTestId("tab-config")).toBeInTheDocument()
+		expect(screen.getByTestId("tab-command")).toBeInTheDocument()
+		expect(screen.getByTestId("tab-logs")).toBeInTheDocument()
+
+		// Check Config tab content (visible by default usually or we can check panels exist)
 		expect(screen.getByText(mockHook.event)).toBeInTheDocument()
 		expect(screen.getByText(mockHook.matcher!)).toBeInTheDocument()
+
+		// Check Command tab content
 		expect(screen.getByText(mockHook.commandPreview)).toBeInTheDocument()
 
 		// Click to collapse
@@ -159,7 +185,7 @@ describe("HooksSettings", () => {
 		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
 	})
 
-	it("shows per-hook logs in expanded view", () => {
+	it("shows per-hook logs in Logs tab", () => {
 		const mockHook: HookInfo = {
 			id: "hook-1",
 			event: "before_execute_command",
@@ -192,10 +218,80 @@ describe("HooksSettings", () => {
 		const hookHeader = screen.getByText(mockHook.id).closest("div")
 		fireEvent.click(hookHeader!)
 
-		// Logs section should be visible
-		expect(screen.getByText("settings:hooks.logs")).toBeInTheDocument()
+		// Find Logs tab panel content
+		expect(screen.getByTestId("panel-view-logs")).toBeInTheDocument()
 		expect(screen.getByText(mockRecord.toolName!)).toBeInTheDocument()
 		expect(screen.getByText("settings:hooks.status.completed")).toBeInTheDocument()
+	})
+
+	it("renders command preview with wrapping enabled (no truncation)", () => {
+		const longCommand = "long_command_".repeat(20)
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			matcher: "git*",
+			commandPreview: longCommand,
+			enabled: true,
+			source: "project",
+			timeout: 30,
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		// Expand hook
+		const hookHeader = screen.getByText(mockHook.id).closest("div")
+		fireEvent.click(hookHeader!)
+
+		const commandCode = screen.getByTestId(`command-preview-${mockHook.id}`)
+		expect(commandCode).toHaveClass("whitespace-pre-wrap")
+		expect(commandCode).toHaveClass("break-words")
+		expect(commandCode).not.toHaveClass("truncate")
+		expect(commandCode).toHaveTextContent(longCommand)
+		expect(commandCode.textContent).not.toContain("...")
+	})
+
+	it("renders log items with wrapping enabled (no truncation)", () => {
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "before_execute_command",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "global",
+			timeout: 30,
+		}
+
+		const mockRecord: HookExecutionRecord = {
+			timestamp: new Date().toISOString(),
+			hookId: "hook-1",
+			event: "before_execute_command",
+			toolName: "very_long_tool_name_that_should_not_be_truncated_" + "x".repeat(20),
+			exitCode: 0,
+			duration: 150,
+			timedOut: false,
+			blocked: false,
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [mockRecord],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		// Expand hook
+		const hookHeader = screen.getByText(mockHook.id).closest("div")
+		fireEvent.click(hookHeader!)
+
+		const toolName = screen.getByTestId("log-tool-name")
+		expect(toolName).toHaveClass("break-words")
+		expect(toolName).not.toHaveClass("truncate")
 	})
 
 	it("filters logs per hook correctly", () => {
@@ -280,7 +376,7 @@ describe("HooksSettings", () => {
 		fireEvent.click(hookHeader!)
 
 		// Should show no logs message
-		expect(screen.getByText("settings:hooks.noLogsForHook")).toBeInTheDocument()
+		expect(screen.getAllByText("settings:hooks.noLogsForHook")[0]).toBeInTheDocument()
 	})
 
 	it("shows project hooks warning when hasProjectHooks is true", () => {

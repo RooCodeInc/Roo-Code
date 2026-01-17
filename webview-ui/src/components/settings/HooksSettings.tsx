@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react"
 import { RefreshCw, FolderOpen, AlertTriangle, Clock, Zap, X } from "lucide-react"
+import { VSCodePanels, VSCodePanelTab, VSCodePanelView } from "@vscode/webview-ui-toolkit/react"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
@@ -361,73 +362,103 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 
 			{/* Expanded Content */}
 			{isExpanded && (
-				<div className="px-3 pb-3 pt-0 space-y-3 border-t border-vscode-input-border">
-					{/* Hook Details */}
-					<div className="space-y-2">
-						<div className="flex items-center gap-2">
-							<span className="text-xs text-vscode-descriptionForeground">
-								{t("settings:hooks.event")}:
-							</span>
-							<code className="text-sm font-mono text-vscode-textLink-foreground">{hook.event}</code>
-						</div>
-						{hook.matcher && (
-							<div className="flex items-center gap-2">
-								<span className="text-xs text-vscode-descriptionForeground">
-									{t("settings:hooks.matcher")}:
-								</span>
-								<code className="text-xs font-mono text-vscode-descriptionForeground">
-									{hook.matcher}
-								</code>
-							</div>
-						)}
-						{hook.description && (
-							<div>
-								<span className="text-xs text-vscode-descriptionForeground">
-									{t("settings:hooks.description")}:
-								</span>
-								<p className="text-sm text-vscode-foreground mt-1">{hook.description}</p>
-							</div>
-						)}
-						<div className="flex items-center gap-2">
-							<span className="text-xs text-vscode-descriptionForeground">
-								{t("settings:hooks.command")}:
-							</span>
-							<code className="text-xs font-mono bg-vscode-editor-background px-2 py-1 rounded flex-1">
-								{hook.commandPreview}
-							</code>
-						</div>
-						<div className="flex items-center gap-4 text-xs text-vscode-descriptionForeground">
-							{hook.shell && (
-								<span>
-									{t("settings:hooks.shell")}: <code className="font-mono">{hook.shell}</code>
-								</span>
-							)}
-							<span>
-								{t("settings:hooks.timeout")}: {hook.timeout}s
-							</span>
-						</div>
-					</div>
+				<div className="border-t border-vscode-input-border p-3">
+					<VSCodePanels>
+						<VSCodePanelTab id="config">{t("settings:hooks.tabs.config")}</VSCodePanelTab>
+						<VSCodePanelTab id="command">{t("settings:hooks.tabs.command")}</VSCodePanelTab>
+						<VSCodePanelTab id="logs">
+							{t("settings:hooks.tabs.logs")}
+							{hookLogs.length > 0 && <span className="ml-1 opacity-60">({hookLogs.length})</span>}
+						</VSCodePanelTab>
 
-					{/* Logs Section */}
-					<div className="border-t border-vscode-input-border pt-3">
-						<div className="flex items-center gap-2 mb-2">
-							<span className="text-sm font-medium">{t("settings:hooks.logs")}</span>
-							{hookLogs.length > 0 && (
-								<span className="text-xs text-vscode-descriptionForeground">({hookLogs.length})</span>
-							)}
-						</div>
-						{hookLogs.length === 0 ? (
-							<div className="text-xs text-vscode-descriptionForeground py-2">
-								{t("settings:hooks.noLogsForHook")}
+						<VSCodePanelView id="view-config">
+							<div className="flex flex-col gap-3 pt-3 w-full">
+								<div className="grid grid-cols-2 gap-4">
+									<div>
+										<span className="text-xs font-medium text-vscode-descriptionForeground block mb-1">
+											{t("settings:hooks.event")}
+										</span>
+										<code className="text-xs font-mono text-vscode-textLink-foreground bg-vscode-textCodeBlock-background px-1.5 py-0.5 rounded">
+											{hook.event}
+										</code>
+									</div>
+									<div>
+										<span className="text-xs font-medium text-vscode-descriptionForeground block mb-1">
+											{t("settings:hooks.timeout")}
+										</span>
+										<span className="text-xs text-vscode-foreground">{hook.timeout}s</span>
+									</div>
+								</div>
+
+								{hook.matcher && (
+									<div>
+										<span className="text-xs font-medium text-vscode-descriptionForeground block mb-1">
+											{t("settings:hooks.matcher")}
+										</span>
+										<div className="bg-vscode-textCodeBlock-background p-2 rounded border border-vscode-widget-border">
+											<ul className="list-disc list-inside text-xs font-mono text-vscode-foreground">
+												{hook.matcher
+													.split("|")
+													.map((m) => m.trim())
+													.filter(Boolean)
+													.map((m, i) => (
+														<li key={i}>{m}</li>
+													))}
+											</ul>
+										</div>
+									</div>
+								)}
+
+								{hook.shell && (
+									<div>
+										<span className="text-xs font-medium text-vscode-descriptionForeground block mb-1">
+											{t("settings:hooks.shell")}
+										</span>
+										<code className="text-xs font-mono text-vscode-foreground bg-vscode-textCodeBlock-background px-1.5 py-0.5 rounded">
+											{hook.shell}
+										</code>
+									</div>
+								)}
+
+								{hook.description && (
+									<div>
+										<span className="text-xs font-medium text-vscode-descriptionForeground block mb-1">
+											{t("settings:hooks.description")}
+										</span>
+										<p className="text-xs text-vscode-foreground">{hook.description}</p>
+									</div>
+								)}
 							</div>
-						) : (
-							<div className="space-y-2 max-h-48 overflow-y-auto">
-								{hookLogs.map((record, index) => (
-									<HookLogItem key={`${record.timestamp}-${index}`} record={record} />
-								))}
+						</VSCodePanelView>
+
+						<VSCodePanelView id="view-command">
+							<div className="pt-3 w-full">
+								<div className="bg-vscode-textCodeBlock-background p-3 rounded border border-vscode-widget-border overflow-x-auto max-h-48 overflow-y-auto">
+									<code
+										data-testid={`command-preview-${hook.id}`}
+										className="text-xs font-mono text-vscode-foreground whitespace-pre-wrap break-words">
+										{hook.commandPreview}
+									</code>
+								</div>
 							</div>
-						)}
-					</div>
+						</VSCodePanelView>
+
+						<VSCodePanelView id="view-logs">
+							<div className="pt-3 w-full">
+								{hookLogs.length === 0 ? (
+									<div className="text-xs text-vscode-descriptionForeground">
+										{t("settings:hooks.noLogsForHook")}
+									</div>
+								) : (
+									<div className="space-y-2 max-h-48 overflow-y-auto">
+										{hookLogs.map((record, index) => (
+											<HookLogItem key={`${record.timestamp}-${index}`} record={record} />
+										))}
+									</div>
+								)}
+							</div>
+						</VSCodePanelView>
+					</VSCodePanels>
 				</div>
 			)}
 		</div>
@@ -484,7 +515,9 @@ const HookLogItem: React.FC<HookLogItemProps> = ({ record }) => {
 						{status.label}
 					</span>
 					{record.toolName && (
-						<code className="text-xs font-mono text-vscode-descriptionForeground truncate">
+						<code
+							data-testid="log-tool-name"
+							className="text-xs font-mono text-vscode-descriptionForeground break-words">
 							{record.toolName}
 						</code>
 					)}

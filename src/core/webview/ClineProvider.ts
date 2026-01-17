@@ -2254,7 +2254,7 @@ export class ClineProvider
 			filePath: hook.filePath,
 			event: hook.event,
 			matcher: hook.matcher,
-			commandPreview: hook.command.length > 100 ? hook.command.substring(0, 97) + "..." : hook.command,
+			commandPreview: hook.command,
 			enabled: (hook.enabled ?? true) && !(snapshot?.disabledHookIds?.has(hook.id) ?? false),
 			source: hook.source,
 			timeout: hook.timeout ?? 60,

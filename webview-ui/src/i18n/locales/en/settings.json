@@ -83,6 +83,11 @@
 			"failed": "Failed",
 			"blocked": "Blocked",
 			"timeout": "Timeout"
+		},
+		"tabs": {
+			"config": "Config",
+			"command": "Command",
+			"logs": "Logs"
 		}
 	},
 	"about": {
