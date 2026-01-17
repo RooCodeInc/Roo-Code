@@ -24,12 +24,6 @@ export const MultiQuestionHandler = ({ questions, onSendResponse }: MultiQuestio
 
 		if (currentQuestionIndex < questions.length - 1) {
 			setCurrentQuestionIndex(currentQuestionIndex + 1)
-		} else {
-			// Finish
-			const combined = questions
-				.map((q, i) => `Question: ${q}\nAnswer: ${newAnswers[i] || "(skipped)"}`)
-				.join("\n\n")
-			onSendResponse(combined)
 		}
 	}
 
@@ -41,6 +35,15 @@ export const MultiQuestionHandler = ({ questions, onSendResponse }: MultiQuestio
 		if (currentQuestionIndex > 0) {
 			setCurrentQuestionIndex(currentQuestionIndex - 1)
 		}
+	}
+
+	const handleFinish = () => {
+		const newAnswers = [...answers]
+		newAnswers[currentQuestionIndex] = inputValue
+		setAnswers(newAnswers)
+
+		const combined = questions.map((q, i) => `Question: ${q}\nAnswer: ${newAnswers[i] || "(skipped)"}`).join("\n\n")
+		onSendResponse(combined)
 	}
 
 	return (
@@ -65,11 +68,15 @@ export const MultiQuestionHandler = ({ questions, onSendResponse }: MultiQuestio
 						{t("chat:questions.previous")}
 					</Button>
 				)}
-				<Button variant="primary" onClick={handleNext}>
-					{currentQuestionIndex < questions.length - 1
-						? t("chat:questions.next")
-						: t("chat:questions.finish")}
-				</Button>
+				{currentQuestionIndex < questions.length - 1 ? (
+					<Button variant="primary" onClick={handleNext}>
+						{t("chat:questions.next")}
+					</Button>
+				) : (
+					<Button variant="primary" onClick={handleFinish}>
+						{t("chat:questions.finish")}
+					</Button>
+				)}
 			</div>
 		</div>
 	)
