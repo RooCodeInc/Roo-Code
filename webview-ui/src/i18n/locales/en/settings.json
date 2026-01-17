@@ -903,7 +903,7 @@
 		},
 		"HOOKS": {
 			"name": "Enable Hooks",
-			"description": "Use custom shell commands to automate actions before or after tool execution."
+			"description": "Use custom shell commands to automate actions before or after tool execution. (Restart required after saving settings)"
 		}
 	},
 	"promptCaching": {

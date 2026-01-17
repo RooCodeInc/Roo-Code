@@ -66,7 +66,18 @@ const App = () => {
 		cloudOrganizations,
 		renderContext,
 		mdmCompliant,
+		experiments,
 	} = useExtensionState()
+
+	// Hooks auto-reload
+	useEffect(() => {
+		if (experiments?.hooks) {
+			const intervalId = setInterval(() => {
+				vscode.postMessage({ type: "hooksReloadConfig" })
+			}, 5000)
+			return () => clearInterval(intervalId)
+		}
+	}, [experiments?.hooks])
 
 	// Create a persistent state manager
 	const marketplaceStateManager = useMemo(() => new MarketplaceViewStateManager(), [])
