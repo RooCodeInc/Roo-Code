@@ -89,7 +89,7 @@ export async function run(workspaceArg: string, flagOptions: FlagOptions) {
 				process.exit(1)
 			}
 		} else {
-			console.error("[CLI] Your Roo Code Router token is not missing.")
+			console.error("[CLI] Your Roo Code Router token is missing.")
 			console.error("[CLI] Please run: roo auth login")
 			process.exit(1)
 		}
