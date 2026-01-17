@@ -3577,7 +3577,7 @@ export const webviewMessageHandler = async (
 hooks:
   PreToolUse:
     - id: example-hook
-      matcher: "write_to_file|edit_file|apply_diff|apply_patch"
+      matcher: "edit"
       enabled: true
       command: 'echo "Verification hook triggered"'
       timeout: 5
