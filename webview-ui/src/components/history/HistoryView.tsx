@@ -1,6 +1,7 @@
 import React, { memo, useState } from "react"
 import { ArrowLeft } from "lucide-react"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
+import { DeleteCheckpointsDialog } from "./DeleteCheckpointsDialog"
 import { BatchDeleteTaskDialog } from "./BatchDeleteTaskDialog"
 import { Virtuoso } from "react-virtuoso"
 
@@ -42,6 +43,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	const { t } = useAppTranslation()
 
 	const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null)
+	const [deleteCheckpointsTaskId, setDeleteCheckpointsTaskId] = useState<string | null>(null)
 	const [isSelectionMode, setIsSelectionMode] = useState(false)
 	const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
 	const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState<boolean>(false)
@@ -249,6 +251,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 							isSelectionMode={isSelectionMode}
 							isSelected={selectedTaskIds.includes(item.id)}
 							onToggleSelection={toggleTaskSelection}
+							onDeleteCheckpoints={setDeleteCheckpointsTaskId}
 							onDelete={setDeleteTaskId}
 							className="m-2"
 						/>
@@ -276,6 +279,15 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 			{/* Delete dialog */}
 			{deleteTaskId && (
 				<DeleteTaskDialog taskId={deleteTaskId} onOpenChange={(open) => !open && setDeleteTaskId(null)} open />
+			)}
+
+			{/* Delete checkpoints dialog */}
+			{deleteCheckpointsTaskId && (
+				<DeleteCheckpointsDialog
+					taskId={deleteCheckpointsTaskId}
+					onOpenChange={(open) => !open && setDeleteCheckpointsTaskId(null)}
+					open
+				/>
 			)}
 
 			{/* Batch delete dialog */}

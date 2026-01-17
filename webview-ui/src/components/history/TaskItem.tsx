@@ -18,6 +18,7 @@ interface TaskItemProps {
 	isSelectionMode?: boolean
 	isSelected?: boolean
 	onToggleSelection?: (taskId: string, isSelected: boolean) => void
+	onDeleteCheckpoints?: (taskId: string) => void
 	onDelete?: (taskId: string) => void
 	className?: string
 }
@@ -29,6 +30,7 @@ const TaskItem = ({
 	isSelectionMode = false,
 	isSelected = false,
 	onToggleSelection,
+	onDeleteCheckpoints,
 	onDelete,
 	className,
 }: TaskItemProps) => {
@@ -86,6 +88,7 @@ const TaskItem = ({
 						item={item}
 						variant={variant}
 						isSelectionMode={isSelectionMode}
+						onDeleteCheckpoints={onDeleteCheckpoints}
 						onDelete={onDelete}
 					/>
 
