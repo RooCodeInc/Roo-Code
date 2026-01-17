@@ -3223,7 +3223,7 @@ export class ClineProvider
 					{
 						ts: Date.now(),
 						type: "say",
-						say: "user_edit_todos",
+						say: "system_update_todos",
 						text: JSON.stringify({
 							tool: "updateTodoList",
 							todos,
@@ -3376,7 +3376,7 @@ export class ClineProvider
 					parentClineMessages.push({
 						ts: Date.now(),
 						type: "say",
-						say: "user_edit_todos",
+						say: "system_update_todos",
 						text: JSON.stringify({
 							tool: "updateTodoList",
 							todos,

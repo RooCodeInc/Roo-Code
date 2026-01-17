@@ -537,7 +537,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		const parentMessagesWithCompletedTodos = [
 			{
 				type: "say",
-				say: "user_edit_todos",
+				say: "system_update_todos",
 				text: JSON.stringify({
 					tool: "updateTodoList",
 					todos: [
@@ -564,8 +564,10 @@ describe("History resume delegation - parent metadata transitions", () => {
 		expect(saveTaskMessages).toHaveBeenCalled()
 		const savedCall = vi.mocked(saveTaskMessages).mock.calls[0][0]
 
-		// Find the user_edit_todos message that was added for the write-back
-		const todoEditMessages = savedCall.messages.filter((m: any) => m.type === "say" && m.say === "user_edit_todos")
+		// Find the system_update_todos message that was added for the write-back
+		const todoEditMessages = savedCall.messages.filter(
+			(m: any) => m.type === "say" && m.say === "system_update_todos",
+		)
 
 		// Should have at least 2 todo edit messages (original + write-back)
 		expect(todoEditMessages.length).toBeGreaterThanOrEqual(1)
@@ -627,7 +629,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		const parentMessagesWithTodos = [
 			{
 				type: "say",
-				say: "user_edit_todos",
+				say: "system_update_todos",
 				text: JSON.stringify({
 					tool: "updateTodoList",
 					todos: [{ id: "todo-1", content: "Some task", status: "completed" }],
@@ -650,7 +652,9 @@ describe("History resume delegation - parent metadata transitions", () => {
 		const savedCall = vi.mocked(saveTaskMessages).mock.calls[0][0]
 
 		// Find todo edit messages (if any were added beyond the original)
-		const todoEditMessages = savedCall.messages.filter((m: any) => m.type === "say" && m.say === "user_edit_todos")
+		const todoEditMessages = savedCall.messages.filter(
+			(m: any) => m.type === "say" && m.say === "system_update_todos",
+		)
 
 		// Should only have the original todo edit, no write-back because child isn't in childIds
 		// The fallback should NOT be triggered for an unrelated child
