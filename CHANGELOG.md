@@ -6,6 +6,7 @@
 - Fix: Reset invalid model selection when using OpenAI Codex provider (PR #10777 by @hannesrudolph)
 - Fix: Add openai-codex to providers that don't require an API key (PR #10786 by @roomote)
 - Fix: Detect Gemini models with space-separated names for proper thought signature injection in LiteLLM (PR #10787 by @daniel-lxs)
+- Add Nix flake for reproducible development environment with Node.js, pnpm, and native build dependencies
 
 ## [3.41.1] - 2026-01-16
 

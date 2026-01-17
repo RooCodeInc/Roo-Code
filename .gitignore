@@ -41,6 +41,11 @@ logs
 # Turborepo
 .turbo
 
+# Nix
+result
+result-*
+.direnv
+
 # IntelliJ and Qodo plugin folders
 .idea/
 .qodo/
