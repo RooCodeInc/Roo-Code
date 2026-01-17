@@ -6,7 +6,6 @@ import * as vscode from "vscode"
 import { Task } from "../../task/Task"
 import { formatResponse } from "../../prompts/responses"
 import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../../shared/tools"
-import { unescapeHtmlEntities } from "../../../utils/text-normalization"
 
 // Mock dependencies
 vitest.mock("execa", () => ({
@@ -106,36 +105,44 @@ describe("executeCommandTool", () => {
 	})
 
 	/**
-	 * Tests for HTML entity unescaping in commands
-	 * This verifies that HTML entities are properly converted to their actual characters
+	 * Tests for HTML entity preservation in commands
+	 * Commands should be passed to the terminal exactly as provided by the model
+	 * HTML entities should NOT be converted to their character equivalents
 	 */
-	describe("HTML entity unescaping", () => {
-		it("should unescape &lt; to < character", () => {
-			const input = "echo &lt;test&gt;"
-			const expected = "echo <test>"
-			expect(unescapeHtmlEntities(input)).toBe(expected)
+	describe("HTML entity preservation", () => {
+		it("should preserve HTML entities in commands (not convert them)", async () => {
+			// If a model sends a command with HTML entities, they should be preserved as-is
+			// This ensures commands are executed exactly as the model intended
+			mockToolUse.params.command = "echo &lt;test&gt;"
+
+			await executeCommandTool.handle(mockCline as unknown as Task, mockToolUse, {
+				askApproval: mockAskApproval as unknown as AskApproval,
+				handleError: mockHandleError as unknown as HandleError,
+				pushToolResult: mockPushToolResult as unknown as PushToolResult,
+				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// The command should be passed through unchanged - entities preserved
+			expect(mockAskApproval).toHaveBeenCalledWith("command", "echo &lt;test&gt;")
 		})
 
-		it("should unescape &gt; to > character", () => {
-			const input = "echo test &gt; output.txt"
-			const expected = "echo test > output.txt"
-			expect(unescapeHtmlEntities(input)).toBe(expected)
-		})
+		it("should preserve ampersand entities in commands", async () => {
+			mockToolUse.params.command = "echo foo &amp;&amp; echo bar"
 
-		it("should unescape &amp; to & character", () => {
-			const input = "echo foo &amp;&amp; echo bar"
-			const expected = "echo foo && echo bar"
-			expect(unescapeHtmlEntities(input)).toBe(expected)
-		})
+			await executeCommandTool.handle(mockCline as unknown as Task, mockToolUse, {
+				askApproval: mockAskApproval as unknown as AskApproval,
+				handleError: mockHandleError as unknown as HandleError,
+				pushToolResult: mockPushToolResult as unknown as PushToolResult,
+				removeClosingTag: mockRemoveClosingTag as unknown as RemoveClosingTag,
+				toolProtocol: "xml",
+			})
 
-		it("should handle multiple mixed HTML entities", () => {
-			const input = "grep -E 'pattern' &lt;file.txt &gt;output.txt 2&gt;&amp;1"
-			const expected = "grep -E 'pattern' <file.txt >output.txt 2>&1"
-			expect(unescapeHtmlEntities(input)).toBe(expected)
+			// Entities should be preserved, not converted to &&
+			expect(mockAskApproval).toHaveBeenCalledWith("command", "echo foo &amp;&amp; echo bar")
 		})
 	})
 
-	// Now we can run these tests
 	describe("Basic functionality", () => {
 		it("should execute a command normally", async () => {
 			// Setup

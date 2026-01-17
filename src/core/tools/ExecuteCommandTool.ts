@@ -11,7 +11,6 @@ import { Task } from "../task/Task"
 
 import { ToolUse, ToolResponse } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
-import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
@@ -58,8 +57,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 
 			task.consecutiveMistakeCount = 0
 
-			const unescapedCommand = unescapeHtmlEntities(command)
-			const didApprove = await askApproval("command", unescapedCommand)
+			const didApprove = await askApproval("command", command)
 
 			if (!didApprove) {
 				return
@@ -86,16 +84,14 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				.get<string[]>("commandTimeoutAllowlist", [])
 
 			// Check if command matches any prefix in the allowlist
-			const isCommandAllowlisted = commandTimeoutAllowlist.some((prefix) =>
-				unescapedCommand.startsWith(prefix.trim()),
-			)
+			const isCommandAllowlisted = commandTimeoutAllowlist.some((prefix) => command.startsWith(prefix.trim()))
 
 			// Convert seconds to milliseconds for internal use, but skip timeout if command is allowlisted
 			const commandExecutionTimeout = isCommandAllowlisted ? 0 : commandExecutionTimeoutSeconds * 1000
 
 			const options: ExecuteCommandOptions = {
 				executionId,
-				command: unescapedCommand,
+				command,
 				customCwd,
 				terminalShellIntegrationDisabled,
 				terminalOutputLineLimit,

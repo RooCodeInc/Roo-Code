@@ -23,9 +23,6 @@ vitest.mock("../../prompts/responses", () => ({
 		rooIgnoreError: vitest.fn((msg) => `RooIgnore Error: ${msg}`),
 	},
 }))
-vitest.mock("../../../utils/text-normalization", () => ({
-	unescapeHtmlEntities: vitest.fn((text) => text),
-}))
 vitest.mock("../../../shared/package", () => ({
 	Package: {
 		name: "roo-cline",
