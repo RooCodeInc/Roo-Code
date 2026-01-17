@@ -1,0 +1,8 @@
+version: "1"
+hooks:
+    PreToolUse:
+        - id: edit-verification
+          matcher: "edit"
+          enabled: true
+          command: 'echo "Edit verification triggered for $ROO_TOOL_NAME"'
+          timeout: 5

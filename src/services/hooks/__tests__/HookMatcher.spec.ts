@@ -9,6 +9,7 @@
  * - Cache behavior
  */
 
+import { vi } from "vitest"
 import { compileMatcher, getMatcher, clearMatcherCache, filterMatchingHooks, hookMatchesTool } from "../HookMatcher"
 import type { ResolvedHook } from "../types"
 
@@ -77,9 +78,9 @@ describe("HookMatcher", () => {
 			})
 
 			it("should be case-insensitive", () => {
-				const matcher = compileMatcher("edit|write")
-				expect(matcher.matches("Edit")).toBe(true)
-				expect(matcher.matches("WRITE")).toBe(true)
+				const matcher = compileMatcher("foo|bar")
+				expect(matcher.matches("FOO")).toBe(true)
+				expect(matcher.matches("BAR")).toBe(true)
 			})
 
 			it("should fall back to exact match on invalid regex", () => {
@@ -122,6 +123,105 @@ describe("HookMatcher", () => {
 				const matcher = compileMatcher("MCP__*")
 				expect(matcher.matches("mcp__tool")).toBe(true)
 				expect(matcher.matches("MCP__TOOL")).toBe(true)
+			})
+		})
+
+		describe("group expansion", () => {
+			it('should expand "edit" group to all edit tools', () => {
+				const matcher = compileMatcher("edit")
+				expect(matcher.type).toBe("regex")
+				expect(matcher.matches("apply_diff")).toBe(true)
+				expect(matcher.matches("write_to_file")).toBe(true)
+				expect(matcher.matches("generate_image")).toBe(true)
+				expect(matcher.matches("search_and_replace")).toBe(true)
+				expect(matcher.matches("search_replace")).toBe(true)
+				expect(matcher.matches("edit_file")).toBe(true)
+				expect(matcher.matches("apply_patch")).toBe(true)
+				expect(matcher.matches("read_file")).toBe(false)
+			})
+
+			it('should expand "read" group to all read tools', () => {
+				const matcher = compileMatcher("read")
+				expect(matcher.matches("read_file")).toBe(true)
+				expect(matcher.matches("fetch_instructions")).toBe(true)
+				expect(matcher.matches("search_files")).toBe(true)
+				expect(matcher.matches("list_files")).toBe(true)
+				expect(matcher.matches("codebase_search")).toBe(true)
+				expect(matcher.matches("write_to_file")).toBe(false)
+			})
+
+			it('should expand "browser" group', () => {
+				const matcher = compileMatcher("browser")
+				expect(matcher.matches("browser_action")).toBe(true)
+				expect(matcher.matches("read_file")).toBe(false)
+			})
+
+			it('should expand "command" group', () => {
+				const matcher = compileMatcher("command")
+				expect(matcher.matches("execute_command")).toBe(true)
+				expect(matcher.matches("read_file")).toBe(false)
+			})
+
+			it('should expand "mcp" group', () => {
+				const matcher = compileMatcher("mcp")
+				expect(matcher.matches("use_mcp_tool")).toBe(true)
+				expect(matcher.matches("access_mcp_resource")).toBe(true)
+				expect(matcher.matches("read_file")).toBe(false)
+			})
+
+			it('should expand "modes" group', () => {
+				const matcher = compileMatcher("modes")
+				expect(matcher.matches("switch_mode")).toBe(true)
+				expect(matcher.matches("new_task")).toBe(true)
+				expect(matcher.matches("read_file")).toBe(false)
+			})
+
+			it("should be case insensitive for groups", () => {
+				const matcher = compileMatcher("EDIT")
+				expect(matcher.matches("apply_diff")).toBe(true)
+				expect(matcher.matches("write_to_file")).toBe(true)
+			})
+
+			it("should still work with individual tool names", () => {
+				const matcher = compileMatcher("read_file")
+				expect(matcher.matches("read_file")).toBe(true)
+				expect(matcher.matches("write_to_file")).toBe(false)
+			})
+
+			it("should expand single group name", () => {
+				const matcher = compileMatcher("edit")
+				expect(matcher.matches("apply_diff")).toBe(true)
+				expect(matcher.matches("write_to_file")).toBe(true)
+				expect(matcher.matches("read_file")).toBe(false)
+			})
+
+			it("should treat unknown groups as literal tool names", () => {
+				// Mock console.warn to capture warnings
+				const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+				const matcher = compileMatcher("unknown_group")
+				expect(matcher.matches("unknown_group")).toBe(true)
+				expect(matcher.matches("read_file")).toBe(false)
+
+				// Should have warned about unknown group
+				expect(consoleWarnSpy).toHaveBeenCalledWith(
+					expect.stringContaining('Unknown tool group "unknown_group"'),
+				)
+
+				consoleWarnSpy.mockRestore()
+			})
+
+			it("should not warn for glob patterns that look like groups", () => {
+				const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+				const matcher = compileMatcher("edit*")
+				expect(matcher.type).toBe("glob")
+				expect(matcher.matches("edit_file")).toBe(true)
+
+				// Should not warn because it contains *
+				expect(consoleWarnSpy).not.toHaveBeenCalled()
+
+				consoleWarnSpy.mockRestore()
 			})
 		})
 	})

@@ -2,10 +2,40 @@
  * Hook Matcher
  *
  * Provides pattern matching for hooks against tool names.
- * Supports exact match, regex patterns, glob patterns, and match-all.
+ * Supports exact match, regex patterns, glob patterns, group names, and match-all.
  */
 
 import { ResolvedHook } from "./types"
+import { getToolsForGroup } from "../../shared/tools"
+
+/**
+ * Expand group patterns in a matcher pattern.
+ * Only expands groups if the pattern is a simple group name or alternation of group names.
+ * For complex regex patterns, groups are not expanded to avoid breaking existing behavior.
+ */
+function expandGroupPatterns(pattern: string): string {
+	// Don't expand groups in patterns that contain | (to preserve existing regex alternation behavior)
+	if (pattern.includes("|")) {
+		return pattern
+	}
+
+	// Don't expand groups in complex patterns that contain regex metacharacters
+	const regexMetaChars = /[*^$+.()[\]{}\\]/
+	if (regexMetaChars.test(pattern)) {
+		return pattern // Keep complex patterns as-is
+	}
+
+	// Single group name
+	const tools = getToolsForGroup(pattern)
+	if (tools) {
+		// It's a known group, expand to all tools in the group
+		return tools.join("|")
+	} else {
+		// Not a group, keep as-is, but warn if it looks like it was intended as a group
+		console.warn(`Unknown tool group "${pattern}". Treating as literal tool name.`)
+		return pattern
+	}
+}
 
 /**
  * Result of compiling a matcher pattern.
@@ -46,17 +76,20 @@ export function compileMatcher(pattern: string | undefined): CompiledMatcher {
 		}
 	}
 
-	// Check if pattern looks like a regex (contains regex metacharacters except * and ?)
-	const regexMetaChars = /[|^$+.()[\]{}\\]/
-	const isRegexPattern = regexMetaChars.test(pattern)
+	// Expand group patterns before processing
+	const expandedPattern = expandGroupPatterns(pattern)
 
-	// Check if pattern looks like a glob (contains * or ?)
-	const isGlobPattern = /[*?]/.test(pattern) && !isRegexPattern
+	// Check if expanded pattern looks like a regex (contains regex metacharacters except * and ?)
+	const regexMetaChars = /[|^$+.()[\]{}\\]/
+	const isRegexPattern = regexMetaChars.test(expandedPattern)
+
+	// Check if expanded pattern looks like a glob (contains * or ?)
+	const isGlobPattern = /[*?]/.test(expandedPattern) && !isRegexPattern
 
 	if (isRegexPattern) {
 		// Treat as regex pattern
 		try {
-			const regex = new RegExp(`^(?:${pattern})$`, "i")
+			const regex = new RegExp(`^(?:${expandedPattern})$`, "i")
 			return {
 				pattern,
 				type: "regex",
@@ -69,7 +102,7 @@ export function compileMatcher(pattern: string | undefined): CompiledMatcher {
 			return {
 				pattern,
 				type: "exact",
-				matches: (toolName: string) => toolName.toLowerCase() === pattern.toLowerCase(),
+				matches: (toolName: string) => toolName.toLowerCase() === expandedPattern.toLowerCase(),
 			}
 		}
 	}
@@ -77,7 +110,7 @@ export function compileMatcher(pattern: string | undefined): CompiledMatcher {
 	if (isGlobPattern) {
 		// Convert glob to regex
 		// * matches any characters, ? matches single character
-		const regexPattern = pattern
+		const regexPattern = expandedPattern
 			.replace(/[.+^${}()|[\]\\]/g, "\\$&") // Escape regex special chars except * and ?
 			.replace(/\*/g, ".*") // * -> .*
 			.replace(/\?/g, ".") // ? -> .
@@ -96,7 +129,7 @@ export function compileMatcher(pattern: string | undefined): CompiledMatcher {
 			return {
 				pattern,
 				type: "exact",
-				matches: (toolName: string) => toolName.toLowerCase() === pattern.toLowerCase(),
+				matches: (toolName: string) => toolName.toLowerCase() === expandedPattern.toLowerCase(),
 			}
 		}
 	}
@@ -105,7 +138,7 @@ export function compileMatcher(pattern: string | undefined): CompiledMatcher {
 	return {
 		pattern,
 		type: "exact",
-		matches: (toolName: string) => toolName.toLowerCase() === pattern.toLowerCase(),
+		matches: (toolName: string) => toolName.toLowerCase() === expandedPattern.toLowerCase(),
 	}
 }
 
