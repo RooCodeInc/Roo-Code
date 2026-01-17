@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react"
-import { RefreshCw, FolderOpen, AlertTriangle, Clock, Zap, X, Plus } from "lucide-react"
+import { RefreshCw, FolderOpen, AlertTriangle, Clock, FishingHook, X, Plus } from "lucide-react"
 import { VSCodePanels, VSCodePanelTab, VSCodePanelView } from "@vscode/webview-ui-toolkit/react"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -173,7 +173,7 @@ export const HooksSettings: React.FC = () => {
 						{/* Hooks list */}
 						{enabledHooks.length === 0 ? (
 							<div className="text-center py-8 text-vscode-descriptionForeground">
-								<Zap className="w-12 h-12 mx-auto mb-3 opacity-50" />
+								<FishingHook className="w-12 h-12 mx-auto mb-3 opacity-50" />
 								<p className="text-base mb-2">{t("settings:hooks.noHooksConfigured")}</p>
 								<p className="text-sm">{t("settings:hooks.noHooksHint")}</p>
 							</div>
@@ -316,7 +316,7 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 					▶
 				</span>
 				<div className="flex items-center gap-2 flex-1 min-w-0">
-					<Zap className="w-4 h-4 flex-shrink-0 text-vscode-textLink-foreground" />
+					<FishingHook className="w-4 h-4 flex-shrink-0 text-vscode-textLink-foreground" />
 					<code className="text-sm font-mono text-vscode-textLink-foreground truncate">{hook.id}</code>
 					<span
 						className={`ml-auto text-xs px-2 py-0.5 rounded flex-shrink-0 ${
@@ -512,7 +512,7 @@ const HookLogItem: React.FC<HookLogItemProps> = ({ record }) => {
 		return {
 			label: t("settings:hooks.status.completed"),
 			className: "bg-green-500/20 text-green-500",
-			icon: <Zap className="w-3 h-3" />,
+			icon: <FishingHook className="w-3 h-3" />,
 		}
 	}
 
@@ -622,7 +622,7 @@ const ActivityLogItem: React.FC<ActivityLogItemProps> = ({ record }) => {
 		return {
 			label: t("settings:hooks.status.completed"),
 			className: "bg-green-500/20 text-green-500",
-			icon: <Zap className="w-3 h-3" />,
+			icon: <FishingHook className="w-3 h-3" />,
 		}
 	}
 

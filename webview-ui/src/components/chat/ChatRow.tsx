@@ -67,6 +67,7 @@ import {
 	TerminalSquare,
 	MessageCircle,
 	Repeat2,
+	FishingHook,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PathTooltip } from "../ui/PathTooltip"
@@ -1375,11 +1376,7 @@ export const ChatRowContent = ({
 								color: "var(--vscode-descriptionForeground)",
 								fontSize: "12px",
 							}}>
-							<span
-								className="codicon codicon-symbol-event"
-								style={{ fontSize: "14px" }}
-								aria-label="Hook icon"
-							/>
+							<FishingHook className="w-3.5 h-3.5" aria-label="Hook icon" />
 							<span>Hook: {message.text} triggered</span>
 						</div>
 					)

@@ -28,7 +28,7 @@ import {
 	Server,
 	Users2,
 	ArrowLeft,
-	Zap,
+	FishingHook,
 } from "lucide-react"
 
 import {
@@ -528,7 +528,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "mcp", icon: Server },
 			{ id: "autoApprove", icon: CheckCheck },
 			{ id: "slashCommands", icon: SquareSlash },
-			{ id: "hooks", icon: Zap },
+			{ id: "hooks", icon: FishingHook },
 			{ id: "browser", icon: SquareMousePointer },
 			{ id: "checkpoints", icon: GitBranch },
 			{ id: "notifications", icon: Bell },
