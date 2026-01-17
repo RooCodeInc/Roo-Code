@@ -36,11 +36,62 @@
 		"contextManagement": "Bağlam",
 		"terminal": "Terminal",
 		"slashCommands": "Eğik Çizgi Komutları",
+		"hooks": "Hooks",
 		"prompts": "Promptlar",
 		"ui": "UI",
 		"experimental": "Deneysel",
 		"language": "Dil",
 		"about": "Roo Code Hakkında"
+	},
+	"hooks": {
+		"description": "Hook'lar, Roo belirli araçları kullandığında otomatik olarak özel kabuk komutları çalıştırır. Harici sistemlerle entegrasyon, iş akışlarını uygulama veya tekrarlayan görevleri otomatikleştirmek için kullanın.",
+		"configuredHooks": "Yapılandırılmış hook'lar",
+		"lastLoadedTooltip": "Son yükleme: {{time}}",
+		"reloadTooltip": "Diskten hook yapılandırmasını yeniden yükle",
+		"reload": "Yeniden Yükle",
+		"openProjectFolderTooltip": "Proje hook yapılandırma klasörünü aç",
+		"openGlobalFolderTooltip": "Global hook yapılandırma klasörünü aç",
+		"openProjectFolder": "Proje Klasörünü Aç",
+		"openGlobalFolder": "Global Klasörü Aç",
+		"createNewHook": "Yeni hook oluştur",
+		"deleteHook": "Hook'u sil",
+		"openHookFile": "Hook dosyasını aç",
+		"projectHooksWarningTitle": "Proje düzeyinde hook'lar tespit edildi",
+		"projectHooksWarningMessage": "Bu proje, kabuk komutları çalıştıracak hook yapılandırmaları içeriyor. Yalnızca güvenilir kaynaklardan hook'ları etkinleştirin.",
+		"reloadNote": "Hook yapılandırma dosyalarındaki değişikliklerin etkili olması için Yeniden Yükle'ye tıklamanız gerekir.",
+		"openHookFileTooltip": "Hook dosyasını editörde aç",
+		"openHookFileUnavailableTooltip": "Hook dosya konumu mevcut değil",
+		"matcherNote": "Eşleştiriciler, Roo Code'un dahili araç kimliklerine (örn. write_to_file, edit_file, apply_diff, apply_patch) göre değerlendirilir, Write/Edit gibi görüntüleme etiketlerine göre değil.",
+		"matcherExamplesLabel": "Örnekler:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "Yapılandırılmış hook yok",
+		"noHooksHint": "Araç yürütme olaylarında eylemleri otomatikleştirmek için hook yapılandırma dosyaları oluşturun.",
+		"enableHooks": "Hook'ları etkinleştir",
+		"enableHooksDescription": "Tüm hook'ları aynı anda etkinleştir veya devre dışı bırak",
+		"enabled": "Etkin",
+		"event": "Olay",
+		"matcher": "Eşleştirici",
+		"command": "Komut",
+		"shell": "Kabuk",
+		"timeout": "Zaman Aşımı",
+		"logs": "Günlükler",
+		"noLogsForHook": "Bu hook için henüz yürütme günlüğü yok",
+		"activityLog": "Hook etkinliği",
+		"status": {
+			"running": "Çalışıyor",
+			"completed": "Tamamlandı",
+			"failed": "Başarısız",
+			"blocked": "Engellendi",
+			"timeout": "Zaman Aşımı"
+		},
+		"tabs": {
+			"config": "Yapılandırma",
+			"command": "Komut",
+			"logs": "Günlükler"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -844,6 +895,10 @@
 			"refreshSuccess": "Araçlar başarıyla yenilendi",
 			"refreshError": "Araçlar yenilenemedi",
 			"toolParameters": "Parametreler"
+		},
+		"HOOKS": {
+			"name": "Hook'ları Etkinleştir",
+			"description": "Araç yürütmeden önce veya sonra eylemleri otomatikleştirmek için özel kabuk komutları kullanın. (Ayarları kaydettikten sonra yeniden başlatma gerekli)"
 		}
 	},
 	"promptCaching": {

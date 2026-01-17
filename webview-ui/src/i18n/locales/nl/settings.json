@@ -36,11 +36,62 @@
 		"contextManagement": "Context",
 		"terminal": "Terminal",
 		"slashCommands": "Slash-opdrachten",
+		"hooks": "Hooks",
 		"prompts": "Prompts",
 		"ui": "UI",
 		"experimental": "Experimenteel",
 		"language": "Taal",
 		"about": "Over Roo Code"
+	},
+	"hooks": {
+		"description": "Hooks voeren automatisch aangepaste shell-opdrachten uit wanneer Roo specifieke tools gebruikt. Gebruik ze om te integreren met externe systemen, workflows af te dwingen of repetitieve taken te automatiseren.",
+		"configuredHooks": "Geconfigureerde hooks",
+		"lastLoadedTooltip": "Laatst geladen om {{time}}",
+		"reloadTooltip": "Hooks-configuratie opnieuw laden van schijf",
+		"reload": "Herladen",
+		"openProjectFolderTooltip": "Project hooks configuratiemap openen",
+		"openGlobalFolderTooltip": "Globale hooks configuratiemap openen",
+		"openProjectFolder": "Projectmap openen",
+		"openGlobalFolder": "Globale map openen",
+		"createNewHook": "Nieuwe hook maken",
+		"deleteHook": "Hook verwijderen",
+		"openHookFile": "Hook-bestand openen",
+		"projectHooksWarningTitle": "Project-level hooks gedetecteerd",
+		"projectHooksWarningMessage": "Dit project bevat hooks-configuraties die shell-opdrachten uitvoeren. Schakel alleen hooks in van vertrouwde bronnen.",
+		"reloadNote": "Wijzigingen in hooks-configuratiebestanden vereisen het klikken op Herladen om van kracht te worden.",
+		"openHookFileTooltip": "Hook-bestand openen in editor",
+		"openHookFileUnavailableTooltip": "Hook-bestandslocatie niet beschikbaar",
+		"matcherNote": "Matchers worden geëvalueerd tegen Roo Code's interne tool-ID's (bijv. write_to_file, edit_file, apply_diff, apply_patch), niet tegen weergavelabels zoals Write/Edit.",
+		"matcherExamplesLabel": "Voorbeelden:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "Geen hooks geconfigureerd",
+		"noHooksHint": "Maak hooks-configuratiebestanden aan om acties te automatiseren bij tool-uitvoeringsgebeurtenissen.",
+		"enableHooks": "Hooks inschakelen",
+		"enableHooksDescription": "Schakel alle hooks tegelijk in of uit",
+		"enabled": "Ingeschakeld",
+		"event": "Gebeurtenis",
+		"matcher": "Matcher",
+		"command": "Opdracht",
+		"shell": "Shell",
+		"timeout": "Time-out",
+		"logs": "Logs",
+		"noLogsForHook": "Nog geen uitvoerlogs voor deze hook",
+		"activityLog": "Hook-activiteit",
+		"status": {
+			"running": "Wordt uitgevoerd",
+			"completed": "Voltooid",
+			"failed": "Mislukt",
+			"blocked": "Geblokkeerd",
+			"timeout": "Time-out"
+		},
+		"tabs": {
+			"config": "Configuratie",
+			"command": "Opdracht",
+			"logs": "Logs"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -844,6 +895,10 @@
 			"refreshSuccess": "Tools succesvol vernieuwd",
 			"refreshError": "Fout bij vernieuwen van tools",
 			"toolParameters": "Parameters"
+		},
+		"HOOKS": {
+			"name": "Hooks inschakelen",
+			"description": "Gebruik aangepaste shell-opdrachten om acties vóór of na tool-uitvoering te automatiseren. (Herstart vereist na opslaan van instellingen)"
 		}
 	},
 	"promptCaching": {

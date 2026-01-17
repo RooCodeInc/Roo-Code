@@ -36,11 +36,62 @@
 		"contextManagement": "Konteks",
 		"terminal": "Terminal",
 		"slashCommands": "Perintah Slash",
+		"hooks": "Hooks",
 		"prompts": "Prompt",
 		"ui": "UI",
 		"experimental": "Eksperimental",
 		"language": "Bahasa",
 		"about": "Tentang Roo Code"
+	},
+	"hooks": {
+		"description": "Hooks menjalankan perintah shell kustom secara otomatis ketika Roo menggunakan alat tertentu. Gunakan untuk integrasi dengan sistem eksternal, menerapkan alur kerja, atau mengotomatisasi tugas berulang.",
+		"configuredHooks": "Hooks yang Dikonfigurasi",
+		"lastLoadedTooltip": "Terakhir dimuat pada {{time}}",
+		"reloadTooltip": "Muat ulang konfigurasi hooks dari disk",
+		"reload": "Muat Ulang",
+		"openProjectFolderTooltip": "Buka folder konfigurasi hooks proyek",
+		"openGlobalFolderTooltip": "Buka folder konfigurasi hooks global",
+		"openProjectFolder": "Buka Folder Proyek",
+		"openGlobalFolder": "Buka Folder Global",
+		"createNewHook": "Buat Hook Baru",
+		"deleteHook": "Hapus hook",
+		"openHookFile": "Buka file hook",
+		"projectHooksWarningTitle": "Hooks tingkat proyek terdeteksi",
+		"projectHooksWarningMessage": "Proyek ini menyertakan konfigurasi hook yang akan menjalankan perintah shell. Hanya aktifkan hooks dari sumber yang Anda percaya.",
+		"reloadNote": "Perubahan pada file konfigurasi hook memerlukan klik Muat Ulang untuk diterapkan.",
+		"openHookFileTooltip": "Buka file hook di editor",
+		"openHookFileUnavailableTooltip": "Lokasi file hook tidak tersedia",
+		"matcherNote": "Matchers dievaluasi terhadap ID alat internal Roo Code (mis. write_to_file, edit_file, apply_diff, apply_patch), bukan label UI seperti Write/Edit.",
+		"matcherExamplesLabel": "Contoh:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "Tidak ada hooks yang dikonfigurasi",
+		"noHooksHint": "Buat file konfigurasi hook untuk mengotomatisasi tindakan pada event eksekusi alat.",
+		"enableHooks": "Aktifkan Hooks",
+		"enableHooksDescription": "Aktifkan atau nonaktifkan semua hooks sekaligus",
+		"enabled": "Diaktifkan",
+		"event": "Event",
+		"matcher": "Matcher",
+		"command": "Perintah",
+		"shell": "Shell",
+		"timeout": "Batas Waktu",
+		"logs": "Log",
+		"noLogsForHook": "Belum ada log eksekusi untuk hook ini",
+		"activityLog": "Aktivitas Hook",
+		"status": {
+			"running": "Berjalan",
+			"completed": "Selesai",
+			"failed": "Gagal",
+			"blocked": "Diblokir",
+			"timeout": "Waktu Habis"
+		},
+		"tabs": {
+			"config": "Konfigurasi",
+			"command": "Perintah",
+			"logs": "Log"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -873,6 +924,10 @@
 			"refreshSuccess": "Tool berhasil direfresh",
 			"refreshError": "Gagal merefresh tool",
 			"toolParameters": "Parameter"
+		},
+		"HOOKS": {
+			"name": "Aktifkan Hooks",
+			"description": "Gunakan perintah shell kustom untuk mengotomatiskan tindakan sebelum atau setelah eksekusi alat. (Perlu restart setelah menyimpan pengaturan)"
 		}
 	},
 	"promptCaching": {

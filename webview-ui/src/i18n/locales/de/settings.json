@@ -36,11 +36,62 @@
 		"contextManagement": "Kontext",
 		"terminal": "Terminal",
 		"slashCommands": "Slash-Befehle",
+		"hooks": "Hooks",
 		"prompts": "Eingabeaufforderungen",
 		"ui": "UI",
 		"experimental": "Experimentell",
 		"language": "Sprache",
 		"about": "Über Roo Code"
+	},
+	"hooks": {
+		"description": "Hooks führen benutzerdefinierte Shell-Befehle automatisch aus, wenn Roo bestimmte Werkzeuge verwendet. Nutze sie zur Integration mit externen Systemen, zur Durchsetzung von Arbeitsabläufen oder zur Automatisierung wiederkehrender Aufgaben.",
+		"configuredHooks": "Konfigurierte Hooks",
+		"lastLoadedTooltip": "Zuletzt geladen um {{time}}",
+		"reloadTooltip": "Hook-Konfiguration von der Festplatte neu laden",
+		"reload": "Neu laden",
+		"openProjectFolderTooltip": "Projekt-Hook-Konfigurationsordner öffnen",
+		"openGlobalFolderTooltip": "Globalen Hook-Konfigurationsordner öffnen",
+		"openProjectFolder": "Projektordner öffnen",
+		"openGlobalFolder": "Globalen Ordner öffnen",
+		"createNewHook": "Neuen Hook erstellen",
+		"deleteHook": "Hook löschen",
+		"openHookFile": "Hook-Datei öffnen",
+		"projectHooksWarningTitle": "Projekt-Hooks erkannt",
+		"projectHooksWarningMessage": "Dieses Projekt enthält Hook-Konfigurationen, die Shell-Befehle ausführen. Aktiviere Hooks nur aus vertrauenswürdigen Quellen.",
+		"reloadNote": "Änderungen an Hook-Konfigurationsdateien erfordern das Klicken auf Neu laden, um wirksam zu werden.",
+		"openHookFileTooltip": "Hook-Datei im Editor öffnen",
+		"openHookFileUnavailableTooltip": "Hook-Dateispeicherort nicht verfügbar",
+		"matcherNote": "Matcher werden gegen die internen Tool-IDs von Roo Code ausgewertet (z.B. write_to_file, edit_file, apply_diff, apply_patch), nicht gegen UI-Bezeichnungen wie Schreiben/Bearbeiten.",
+		"matcherExamplesLabel": "Beispiele:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "Keine Hooks konfiguriert",
+		"noHooksHint": "Erstelle Hook-Konfigurationsdateien, um Aktionen bei Werkzeugausführungsereignissen zu automatisieren.",
+		"enableHooks": "Hooks aktivieren",
+		"enableHooksDescription": "Alle Hooks gleichzeitig ein- oder ausschalten",
+		"enabled": "Aktiviert",
+		"event": "Ereignis",
+		"matcher": "Matcher",
+		"command": "Befehl",
+		"shell": "Shell",
+		"timeout": "Timeout",
+		"logs": "Protokolle",
+		"noLogsForHook": "Noch keine Ausführungsprotokolle für diesen Hook",
+		"activityLog": "Hook-Aktivität",
+		"status": {
+			"running": "Läuft",
+			"completed": "Abgeschlossen",
+			"failed": "Fehlgeschlagen",
+			"blocked": "Blockiert",
+			"timeout": "Zeitüberschreitung"
+		},
+		"tabs": {
+			"config": "Konfiguration",
+			"command": "Befehl",
+			"logs": "Protokolle"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -843,6 +894,10 @@
 			"refreshSuccess": "Tools erfolgreich aktualisiert",
 			"refreshError": "Fehler beim Aktualisieren der Tools",
 			"toolParameters": "Parameter"
+		},
+		"HOOKS": {
+			"name": "Hooks aktivieren",
+			"description": "Verwende benutzerdefinierte Shell-Befehle, um Aktionen vor oder nach der Tool-Ausführung zu automatisieren. (Neustart erforderlich nach dem Speichern der Einstellungen)"
 		}
 	},
 	"promptCaching": {

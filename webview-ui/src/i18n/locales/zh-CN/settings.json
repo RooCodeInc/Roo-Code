@@ -36,11 +36,62 @@
 		"contextManagement": "上下文",
 		"terminal": "终端",
 		"slashCommands": "斜杠命令",
+		"hooks": "Hooks",
 		"prompts": "提示词",
 		"ui": "UI",
 		"experimental": "实验性",
 		"language": "语言",
 		"about": "关于 Roo Code"
+	},
+	"hooks": {
+		"description": "Hooks 在 Roo 使用特定工具时自动执行自定义 shell 命令。用于集成外部系统、执行工作流或自动化重复任务。",
+		"configuredHooks": "已配置的 Hooks",
+		"lastLoadedTooltip": "上次加载于 {{time}}",
+		"reloadTooltip": "从磁盘重新加载 hooks 配置",
+		"reload": "重新加载",
+		"openProjectFolderTooltip": "打开项目 hooks 配置文件夹",
+		"openGlobalFolderTooltip": "打开全局 hooks 配置文件夹",
+		"openProjectFolder": "打开项目文件夹",
+		"openGlobalFolder": "打开全局文件夹",
+		"createNewHook": "创建新 hook",
+		"deleteHook": "删除 hook",
+		"openHookFile": "打开 hook 文件",
+		"projectHooksWarningTitle": "检测到项目级 hooks",
+		"projectHooksWarningMessage": "此项目包含将执行 shell 命令的 hooks 配置。仅在信任来源时启用 hooks。",
+		"reloadNote": "对 hooks 配置文件的更改需要点击重新加载才能生效。",
+		"openHookFileTooltip": "在编辑器中打开 hook 文件",
+		"openHookFileUnavailableTooltip": "hook 文件位置不可用",
+		"matcherNote": "匹配器根据 Roo Code 的内部工具 ID（如 write_to_file、edit_file、apply_diff、apply_patch）进行评估，而非 Write/Edit 等显示标签。",
+		"matcherExamplesLabel": "示例：",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "尚未配置 hooks",
+		"noHooksHint": "创建 hooks 配置文件以在工具执行时自动化操作。",
+		"enableHooks": "启用 hooks",
+		"enableHooksDescription": "一次性启用或禁用所有 hooks",
+		"enabled": "已启用",
+		"event": "事件",
+		"matcher": "匹配器",
+		"command": "命令",
+		"shell": "Shell",
+		"timeout": "超时",
+		"logs": "日志",
+		"noLogsForHook": "此 hook 暂无执行日志",
+		"activityLog": "Hooks 活动",
+		"status": {
+			"running": "运行中",
+			"completed": "已完成",
+			"failed": "失败",
+			"blocked": "已阻止",
+			"timeout": "超时"
+		},
+		"tabs": {
+			"config": "配置",
+			"command": "命令",
+			"logs": "日志"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -844,6 +895,10 @@
 			"refreshSuccess": "工具刷新成功",
 			"refreshError": "工具刷新失败",
 			"toolParameters": "参数"
+		},
+		"HOOKS": {
+			"name": "启用 Hooks",
+			"description": "使用自定义 shell 命令在工具执行前后自动执行操作。（保存设置后需要重启）"
 		}
 	},
 	"promptCaching": {
