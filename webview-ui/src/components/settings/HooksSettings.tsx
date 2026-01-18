@@ -318,9 +318,13 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 	}, [hooks?.enabledHooks, hook.id])
 
 	const selectedEvents = useMemo(() => {
-		const events = hooksForId.map((h) => h.event).filter(Boolean)
+		// Prefer the aggregated `hook.events` when present (newer extension state).
+		// Fallback to the legacy state shape where the same ID appeared once per event.
+		const rawEvents = (hook.events && hook.events.length > 0 ? hook.events : hooksForId.map((h) => h.event)).filter(
+			Boolean,
+		)
 		// Preserve stable order based on HOOK_EVENT_OPTIONS
-		return HOOK_EVENT_OPTIONS.filter((e) => events.includes(e))
+		return HOOK_EVENT_OPTIONS.filter((e) => rawEvents.includes(e))
 	}, [hooksForId])
 
 	const eventTooltipText = useCallback(

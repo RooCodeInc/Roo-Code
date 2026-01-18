@@ -2250,15 +2250,17 @@ export class ClineProvider
 
 		// Build a list of *all* known hooks (including currently disabled ones)
 		// so the webview can show per-hook toggles and a global "Enable Hooks" toggle.
-		const allHooks = snapshot
-			? Array.from(snapshot.hooksByEvent.values()).reduce((acc, hooks) => acc.concat(hooks), [] as any[])
-			: []
+		//
+		// IMPORTANT: Use hooksById to avoid duplicating the same hook ID when it is
+		// registered for multiple events. Runtime execution still uses hooksByEvent.
+		const allHooks = snapshot ? Array.from(snapshot.hooksById.values()) : []
 
 		// Convert ResolvedHook[] to HookInfo[]
 		const hookInfos = allHooks.map((hook) => ({
 			id: hook.id,
 			filePath: hook.filePath,
 			event: hook.event,
+			events: (hook.events && hook.events.length > 0 ? hook.events : [hook.event]).map(String),
 			matcher: hook.matcher,
 			commandPreview: hook.command,
 			enabled: (hook.enabled ?? true) && !(snapshot?.disabledHookIds?.has(hook.id) ?? false),

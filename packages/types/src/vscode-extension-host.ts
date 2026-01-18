@@ -229,6 +229,12 @@ export interface HookInfo {
 	filePath?: string
 	/** The event type this hook is registered for */
 	event: string
+	/**
+	 * All event types this hook ID is registered for.
+	 *
+	 * Backwards-compatible: older extensions may only provide `event`.
+	 */
+	events?: string[]
 	/** Tool name filter (regex/glob pattern) */
 	matcher?: string
 	/** Preview of the command (truncated for display) */
