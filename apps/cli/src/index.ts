@@ -30,6 +30,11 @@ program
 	)
 	.option("--ephemeral", "Run without persisting state (uses temporary storage)", false)
 	.option("--oneshot", "Exit upon task completion", false)
+	.option(
+		"--output-format <format>",
+		'Output format (only works with --print): "text" (default), "json" (single result), or "stream-json" (realtime streaming)',
+		"text",
+	)
 	.action(run)
 
 const authCommand = program.command("auth").description("Manage authentication for Roo Code Cloud")

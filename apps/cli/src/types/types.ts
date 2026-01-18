@@ -1,4 +1,5 @@
 import type { ProviderName, ReasoningEffortExtended } from "@roo-code/types"
+import type { OutputFormat } from "./json-events.js"
 
 export const supportedProviders = [
 	"anthropic",
@@ -32,6 +33,7 @@ export type FlagOptions = {
 	reasoningEffort?: ReasoningEffortFlagOptions
 	ephemeral: boolean
 	oneshot: boolean
+	outputFormat?: OutputFormat
 }
 
 export enum OnboardingProviderChoice {
