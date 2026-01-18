@@ -8,6 +8,9 @@ import type { ModeResult } from "../components/autocomplete/index.js"
 import { useUIStateStore } from "../stores/uiStateStore.js"
 import { useCLIStore } from "../store.js"
 
+// Track previous isLoading state for effect
+let prevIsLoading = false
+
 export interface UseGlobalInputOptions {
 	canToggleFocus: boolean
 	isScrollAreaActive: boolean
@@ -55,6 +58,8 @@ export function useGlobalInput({
 		setShowExitHint,
 		pendingExit,
 		setPendingExit,
+		isCancelling,
+		setIsCancelling,
 	} = useUIStateStore()
 
 	// Track Ctrl+C presses for "press again to exit" behavior
@@ -68,6 +73,15 @@ export function useGlobalInput({
 			}
 		}
 	}, [])
+
+	// Reset isCancelling when isLoading transitions from true to false
+	// This indicates the task has finished cancelling (either completed or ready to resume)
+	useEffect(() => {
+		if (prevIsLoading && !isLoading && isCancelling) {
+			setIsCancelling(false)
+		}
+		prevIsLoading = isLoading
+	}, [isLoading, isCancelling, setIsCancelling])
 
 	// Handle global keyboard shortcuts
 	useInput((input, key) => {
@@ -132,7 +146,18 @@ export function useGlobalInput({
 			if (pickerIsOpen) {
 				return
 			}
-			// Send cancel message to extension (same as webview-ui Cancel button)
+
+			// Prevent multiple cancel requests from being sent while one is in progress
+			// This fixes a crash caused by spamming the escape key, which would send
+			// multiple cancelTask messages before the first one finished processing.
+			if (isCancelling) {
+				showInfo("Cancel in progress...", 1000)
+				return
+			}
+
+			// Set cancelling state and send cancel message to extension
+			setIsCancelling(true)
+			showInfo("Cancelling task...", 2000)
 			sendToExtension({ type: "cancelTask" })
 			return
 		}

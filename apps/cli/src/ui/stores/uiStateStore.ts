@@ -10,6 +10,10 @@ interface UIState {
 	showExitHint: boolean
 	pendingExit: boolean
 
+	// Task cancellation state - prevents duplicate cancel requests from crashing the CLI
+	// When true, the Escape key will be ignored until the current cancel operation completes
+	isCancelling: boolean
+
 	// Countdown timer for auto-accepting followup questions
 	countdownSeconds: number | null
 
@@ -32,6 +36,9 @@ interface UIActions {
 	// Exit handling actions
 	setShowExitHint: (show: boolean) => void
 	setPendingExit: (pending: boolean) => void
+
+	// Task cancellation actions
+	setIsCancelling: (cancelling: boolean) => void
 
 	// Countdown timer actions
 	setCountdownSeconds: (seconds: number | null) => void
@@ -57,6 +64,7 @@ interface UIActions {
 const initialState: UIState = {
 	showExitHint: false,
 	pendingExit: false,
+	isCancelling: false,
 	countdownSeconds: null,
 	showCustomInput: false,
 	isTransitioningToCustomInput: false,
@@ -77,6 +85,7 @@ export const useUIStateStore = create<UIState & UIActions>((set) => ({
 
 	setShowExitHint: (show) => set({ showExitHint: show }),
 	setPendingExit: (pending) => set({ pendingExit: pending }),
+	setIsCancelling: (cancelling) => set({ isCancelling: cancelling }),
 	setCountdownSeconds: (seconds) => set({ countdownSeconds: seconds }),
 	setShowCustomInput: (show) => set({ showCustomInput: show }),
 	setIsTransitioningToCustomInput: (transitioning) => set({ isTransitioningToCustomInput: transitioning }),
