@@ -152,7 +152,10 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 	constructor(options: ExtensionHostOptions) {
 		super()
 
-		this.options = options
+		this.options = {
+			...options,
+			integrationTest: true, // Always set to true in CLI mode to allow tests to control console suppression
+		}
 
 		// Set up quiet mode early, before any extension code runs.
 		// This suppresses console output from the extension during load.
