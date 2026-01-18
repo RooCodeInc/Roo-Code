@@ -3727,7 +3727,7 @@ export const webviewMessageHandler = async (
     enabled: true
     command: |-
       echo "Verification hook triggered"
-    timeout: 5
+    timeout: 15
 `
 				await safeWriteText(exampleFilePath, exampleContent)
 

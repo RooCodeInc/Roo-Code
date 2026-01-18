@@ -11,7 +11,7 @@
  */
 
 import * as path from "path"
-import fs from "fs/promises"
+import * as fs from "fs/promises"
 import YAML from "yaml"
 import { z } from "zod"
 import {
@@ -31,6 +31,7 @@ import { getGlobalRooDirectory, getProjectRooDirectoryForCwd } from "../roo-conf
 interface LoadedConfigFile {
 	filePath: string
 	source: HookSource
+	createdAt?: number
 	hooks: Map<HookEventType, HookDefinition[]>
 	errors: string[]
 }
@@ -146,11 +147,21 @@ async function loadConfigFile(filePath: string, source: HookSource): Promise<Loa
 	const result: LoadedConfigFile = {
 		filePath,
 		source,
+		createdAt: undefined,
 		hooks: new Map(),
 		errors: [],
 	}
 
 	try {
+		// Prefer file birthtime when available. Fall back to ctime/mtime.
+		const stat = await fs.stat(filePath)
+		result.createdAt =
+			stat.birthtimeMs && stat.birthtimeMs > 0
+				? stat.birthtimeMs
+				: stat.ctimeMs && stat.ctimeMs > 0
+					? stat.ctimeMs
+					: stat.mtimeMs
+
 		const content = await fs.readFile(filePath, "utf-8")
 		const parsed = parseConfigContent(content, filePath)
 		const validated = validateConfig(parsed, filePath)
@@ -226,6 +237,59 @@ function mergeConfigs(loadedConfigs: LoadedConfigFile[]): {
 	hooksById: Map<string, ResolvedHook>
 	hasProjectHooks: boolean
 } {
+	function isSameHookDefinition(a: ResolvedHook, b: ResolvedHook): boolean {
+		return (
+			a.id === b.id &&
+			a.command === b.command &&
+			a.matcher === b.matcher &&
+			a.enabled === b.enabled &&
+			a.timeout === b.timeout &&
+			a.description === b.description &&
+			a.shell === b.shell &&
+			a.includeConversationHistory === b.includeConversationHistory
+		)
+	}
+
+	function removeHookIdFromAllEvents(hookId: string): void {
+		for (const [evt, list] of hooksByEvent) {
+			const next = list.filter((h) => h.id !== hookId)
+			if (next.length === 0) {
+				hooksByEvent.delete(evt)
+			} else if (next.length !== list.length) {
+				hooksByEvent.set(evt, next)
+			}
+		}
+	}
+
+	function upsertHookInEventList(event: HookEventType, hook: ResolvedHook): void {
+		if (!hooksByEvent.has(event)) {
+			hooksByEvent.set(event, [])
+		}
+		const list = hooksByEvent.get(event)!
+		const idx = list.findIndex((h) => h.id === hook.id)
+		if (idx === -1) {
+			list.push(hook)
+		} else {
+			list[idx] = hook
+		}
+	}
+
+	function syncHookInstances(hookId: string, canonical: ResolvedHook): void {
+		// Keep any existing per-event instances aligned with the canonical definition.
+		for (const [evt, list] of hooksByEvent) {
+			for (let i = 0; i < list.length; i++) {
+				const h = list[i]
+				if (h.id !== hookId) continue
+				list[i] = {
+					...canonical,
+					event: evt,
+					// Ensure the event list is consistent across all instances
+					events: canonical.events,
+				}
+			}
+		}
+	}
+
 	// Track hooks by ID to detect overrides
 	const hooksById = new Map<string, ResolvedHook>()
 
@@ -256,31 +320,44 @@ function mergeConfigs(loadedConfigs: LoadedConfigFile[]): {
 				const resolved: ResolvedHook = {
 					...def,
 					source: config.source,
+					createdAt: config.createdAt,
 					event,
+					events: [event],
 					filePath: config.filePath,
 				}
 
 				// Check for existing hook with same ID
 				const existing = hooksById.get(def.id)
 				if (existing) {
-					// Remove from its event list
-					const eventList = hooksByEvent.get(existing.event)
-					if (eventList) {
-						const idx = eventList.findIndex((h) => h.id === def.id)
-						if (idx !== -1) {
-							eventList.splice(idx, 1)
-						}
+					// If this is effectively the same hook definition, merge events instead of overwriting.
+					if (isSameHookDefinition(existing, resolved)) {
+						const mergedEvents = new Set<HookEventType>([...(existing.events ?? [existing.event]), event])
+						existing.events = Array.from(mergedEvents)
+
+						// Prefer metadata from the later (higher precedence / later file) definition.
+						existing.source = resolved.source
+						existing.createdAt = resolved.createdAt
+						existing.filePath = resolved.filePath
+
+						// Ensure hooksByEvent has an entry for this event.
+						upsertHookInEventList(event, {
+							...existing,
+							event,
+							events: existing.events,
+						})
+
+						// Keep all existing per-event hook instances up to date.
+						syncHookInstances(def.id, existing)
+						continue
 					}
+
+					// Different hook definition: higher precedence replaces the entire hook (and its events).
+					removeHookIdFromAllEvents(def.id)
 				}
 
 				// Add/replace in lookup maps
 				hooksById.set(def.id, resolved)
-
-				// Add to event list
-				if (!hooksByEvent.has(event)) {
-					hooksByEvent.set(event, [])
-				}
-				hooksByEvent.get(event)!.push(resolved)
+				upsertHookInEventList(event, resolved)
 			}
 		}
 	}

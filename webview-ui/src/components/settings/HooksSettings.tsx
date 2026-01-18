@@ -124,7 +124,20 @@ export const HooksSettings: React.FC = () => {
 		vscode.postMessage({ type: "hooksCreateNew" })
 	}, [])
 
-	const enabledHooks = hooks?.enabledHooks || []
+	const enabledHooks = useMemo(() => {
+		const list = hooks?.enabledHooks ? [...hooks.enabledHooks] : []
+		// Stable ordering to prevent jitter: sort by config file creation time (oldest first).
+		// Fall back to filePath/id as a deterministic tie-breaker.
+		return list.sort((a, b) => {
+			const aCreated = a.createdAt ?? Number.MAX_SAFE_INTEGER
+			const bCreated = b.createdAt ?? Number.MAX_SAFE_INTEGER
+			if (aCreated !== bCreated) return aCreated - bCreated
+			const aFile = a.filePath ?? ""
+			const bFile = b.filePath ?? ""
+			if (aFile !== bFile) return aFile.localeCompare(bFile)
+			return a.id.localeCompare(b.id)
+		})
+	}, [hooks?.enabledHooks])
 	const hasProjectHooks = hooks?.hasProjectHooks || false
 	const snapshotTimestamp = hooks?.snapshotTimestamp
 
@@ -351,6 +364,30 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 		}
 	}, [matcherRaw])
 
+	const customMatcherTooltip = useMemo(() => {
+		return (
+			<div className="text-xs leading-snug">
+				<div className="font-medium mb-1">Regex / matcher tips</div>
+				<ul className="list-disc list-inside space-y-1">
+					<li>
+						This field matches tool names. Use regex alternation with <code className="font-mono">|</code>{" "}
+						(e.g. <code className="font-mono">fetch_instructions|search_files</code>).
+					</li>
+					<li>
+						If you select tool groups and also add a custom matcher, they are combined with{" "}
+						<code className="font-mono">|</code>.
+					</li>
+					<li>
+						Available tool groups: <code className="font-mono">read</code>,{" "}
+						<code className="font-mono">edit</code>, <code className="font-mono">browser</code>,{" "}
+						<code className="font-mono">command</code>, <code className="font-mono">mcp</code>,{" "}
+						<code className="font-mono">modes</code>.
+					</li>
+				</ul>
+			</div>
+		)
+	}, [])
+
 	const [customMatcher, setCustomMatcher] = useState(matcherCustom)
 	useEffect(() => {
 		setCustomMatcher(matcherCustom)
@@ -390,6 +427,27 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 			setTimeout(() => setIsUpdatingConfig(false), 500)
 		},
 		[hook.filePath, hook.id],
+	)
+
+	const selectedEventsSet = useMemo(() => new Set(selectedEvents), [selectedEvents])
+
+	const handleEventToggle = useCallback(
+		(event: HookEventOption, checked: boolean) => {
+			// Base events should come from the current resolved view, but we use a Set to
+			// ensure we merge cleanly and avoid duplicates before sending to the backend.
+			const nextSet = new Set<HookEventOption>(selectedEventsSet)
+			if (checked) {
+				nextSet.add(event)
+			} else {
+				nextSet.delete(event)
+			}
+			const next = HOOK_EVENT_OPTIONS.filter((e) => nextSet.has(e))
+			if (next.length === 0) {
+				return
+			}
+			postHookUpdate({ events: next })
+		},
+		[postHookUpdate, selectedEventsSet],
 	)
 
 	const validateHookIdDraft = useCallback(
@@ -668,16 +726,7 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 													type="checkbox"
 													checked={selectedEvents.includes(event)}
 													disabled={!canEditConfig || isUpdatingConfig}
-													onChange={(e) => {
-														const checked = e.target.checked
-														const next = checked
-															? Array.from(new Set([...selectedEvents, event]))
-															: selectedEvents.filter((x) => x !== event)
-														if (next.length === 0) {
-															return
-														}
-														postHookUpdate({ events: next })
-													}}
+													onChange={(e) => handleEventToggle(event, e.target.checked)}
 												/>
 												<span className="flex items-center gap-1">
 													<span>{event}</span>
@@ -731,9 +780,23 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 										))}
 									</div>
 									<div className="mt-2">
-										<label className="text-xs text-vscode-descriptionForeground block mb-1">
-											Custom matcher
-										</label>
+										<div className="flex items-center gap-2">
+											<label className="text-xs text-vscode-descriptionForeground block mb-1">
+												Custom matcher
+											</label>
+											<StandardTooltip content={customMatcherTooltip} maxWidth={360}>
+												<button
+													type="button"
+													className="text-vscode-descriptionForeground hover:text-vscode-foreground"
+													aria-label="Custom matcher help"
+													onClick={(e) => e.preventDefault()}>
+													<span
+														className="codicon codicon-question"
+														style={{ fontSize: "12px" }}
+													/>
+												</button>
+											</StandardTooltip>
+										</div>
 										<input
 											className="w-full text-xs bg-vscode-input-background border border-vscode-input-border rounded px-2 py-1 text-vscode-foreground"
 											aria-label="Custom matcher"
@@ -744,7 +807,7 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 												const next = buildMatcherString(matcherGroups, customMatcher)
 												postHookUpdate({ matcher: next })
 											}}
-											placeholder="file.*\\.ts"
+											placeholder="fetch_instructions|search_files"
 										/>
 									</div>
 								</div>

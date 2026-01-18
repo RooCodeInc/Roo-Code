@@ -150,6 +150,15 @@ describe("HookMatcher", () => {
 				expect(matcher.matches("write_to_file")).toBe(false)
 			})
 
+			it('should expand group alternation like "read|edit"', () => {
+				const matcher = compileMatcher("read|edit")
+				expect(matcher.type).toBe("regex")
+				expect(matcher.matches("read_file")).toBe(true)
+				expect(matcher.matches("write_to_file")).toBe(true)
+				// sanity check: ensure we didn't accidentally match an unrelated tool
+				expect(matcher.matches("execute_command")).toBe(false)
+			})
+
 			it('should expand "browser" group', () => {
 				const matcher = compileMatcher("browser")
 				expect(matcher.matches("browser_action")).toBe(true)

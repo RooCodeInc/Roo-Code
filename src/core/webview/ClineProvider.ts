@@ -2263,6 +2263,7 @@ export class ClineProvider
 			commandPreview: hook.command,
 			enabled: (hook.enabled ?? true) && !(snapshot?.disabledHookIds?.has(hook.id) ?? false),
 			source: hook.source,
+			createdAt: hook.createdAt,
 			timeout: hook.timeout ?? 60,
 			shell: hook.shell,
 			description: hook.description,

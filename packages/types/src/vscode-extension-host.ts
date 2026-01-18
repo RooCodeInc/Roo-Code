@@ -237,6 +237,11 @@ export interface HookInfo {
 	enabled: boolean
 	/** Source of this hook configuration */
 	source: "project" | "mode" | "global"
+	/**
+	 * File creation timestamp (ms since epoch) for the config file this hook came from.
+	 * Used for stable UI sorting.
+	 */
+	createdAt?: number
 	/** Timeout in seconds */
 	timeout: number
 	/** Override shell if specified */

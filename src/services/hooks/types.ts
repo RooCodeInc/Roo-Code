@@ -162,8 +162,20 @@ export interface ResolvedHook extends HookDefinition {
 	/** Which config source this hook came from */
 	source: HookSource
 
+	/**
+	 * File creation timestamp (ms since epoch) for the config file this hook came from.
+	 * Used for stable UI ordering.
+	 */
+	createdAt?: number
+
 	/** The event type this hook is registered for */
+	// NOTE: A hook ID can be registered for multiple events. The loader stores the full set
+	// of events on `events`. `event` is retained for backwards-compatibility and will be set
+	// to the first event encountered for the hook.
 	event: HookEventType
+
+	/** All event types this hook ID is registered for */
+	events?: HookEventType[]
 
 	/** File path where this hook was defined */
 	filePath: string

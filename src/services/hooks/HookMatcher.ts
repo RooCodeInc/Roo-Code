@@ -14,15 +14,26 @@ import { getToolsForGroup } from "../../shared/tools"
  * For complex regex patterns, groups are not expanded to avoid breaking existing behavior.
  */
 function expandGroupPatterns(pattern: string): string {
-	// Don't expand groups in patterns that contain | (to preserve existing regex alternation behavior)
-	if (pattern.includes("|")) {
-		return pattern
-	}
-
-	// Don't expand groups in complex patterns that contain regex metacharacters
+	// Don't expand groups in complex patterns that contain regex metacharacters.
+	// NOTE: we intentionally exclude the pipe character here so that we can expand
+	// simple group alternations like "read|edit" without breaking regex support.
 	const regexMetaChars = /[*^$+.()[\]{}\\]/
 	if (regexMetaChars.test(pattern)) {
 		return pattern // Keep complex patterns as-is
+	}
+
+	// Expand group alternations, but only when the pattern is an alternation of *group names*.
+	// This preserves existing regex alternation behavior for non-group patterns like "Edit|Write".
+	if (pattern.includes("|")) {
+		const parts = pattern.split("|")
+		const expandedParts = parts.map((part) => getToolsForGroup(part))
+
+		// Only expand if every alternation part is a known group.
+		if (expandedParts.every(Boolean)) {
+			return expandedParts.map((tools) => tools!.join("|")).join("|")
+		}
+
+		return pattern
 	}
 
 	// Single group name
@@ -30,11 +41,11 @@ function expandGroupPatterns(pattern: string): string {
 	if (tools) {
 		// It's a known group, expand to all tools in the group
 		return tools.join("|")
-	} else {
-		// Not a group, keep as-is, but warn if it looks like it was intended as a group
-		console.warn(`Unknown tool group "${pattern}". Treating as literal tool name.`)
-		return pattern
 	}
+
+	// Not a group, keep as-is, but warn if it looks like it was intended as a group
+	console.warn(`Unknown tool group "${pattern}". Treating as literal tool name.`)
+	return pattern
 }
 
 /**
