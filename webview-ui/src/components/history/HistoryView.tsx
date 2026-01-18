@@ -1,4 +1,5 @@
 import React, { memo, useState } from "react"
+import { ArrowLeft } from "lucide-react"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
 import { BatchDeleteTaskDialog } from "./BatchDeleteTaskDialog"
 import { Virtuoso } from "react-virtuoso"
@@ -81,27 +82,33 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	return (
 		<Tab>
 			<TabHeader className="flex flex-col gap-2">
-				<div className="flex justify-between items-center">
-					<h3 className="text-vscode-foreground m-0">{t("history:history")}</h3>
-					<div className="flex gap-2">
-						<StandardTooltip
-							content={
-								isSelectionMode
-									? `${t("history:exitSelectionMode")}`
-									: `${t("history:enterSelectionMode")}`
-							}>
-							<Button
-								variant={isSelectionMode ? "primary" : "secondary"}
-								onClick={toggleSelectionMode}
-								data-testid="toggle-selection-mode-button">
-								<span
-									className={`codicon ${isSelectionMode ? "codicon-check-all" : "codicon-checklist"} mr-1`}
-								/>
-								{isSelectionMode ? t("history:exitSelection") : t("history:selectionMode")}
-							</Button>
-						</StandardTooltip>
-						<Button onClick={onDone}>{t("history:done")}</Button>
+				<div className="flex items-center justify-between gap-2">
+					<div className="flex items-center gap-2">
+						<Button
+							variant="ghost"
+							className="px-1.5 -ml-2"
+							onClick={onDone}
+							aria-label={t("history:done")}
+							data-testid="history-done-button">
+							<ArrowLeft />
+							<span className="sr-only">{t("history:done")}</span>
+						</Button>
+						<h3 className="text-vscode-foreground m-0">{t("history:history")}</h3>
 					</div>
+					<StandardTooltip
+						content={
+							isSelectionMode ? `${t("history:exitSelectionMode")}` : `${t("history:enterSelectionMode")}`
+						}>
+						<Button
+							variant={isSelectionMode ? "primary" : "secondary"}
+							onClick={toggleSelectionMode}
+							data-testid="toggle-selection-mode-button">
+							<span
+								className={`codicon ${isSelectionMode ? "codicon-check-all" : "codicon-checklist"} mr-1`}
+							/>
+							{isSelectionMode ? t("history:exitSelection") : t("history:selectionMode")}
+						</Button>
+					</StandardTooltip>
 				</div>
 				<div className="flex flex-col gap-2">
 					<VSCodeTextField
