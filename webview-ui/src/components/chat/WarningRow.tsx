@@ -7,24 +7,30 @@ export interface WarningRowProps {
 	title: string
 	message: string
 	docsURL?: string
+	actionText?: string
+	onAction?: () => void
 }
 
 /**
  * A generic warning row component that displays a warning icon, title, and message.
- * Optionally includes a documentation link.
+ * Optionally includes a documentation link and/or an action link.
  *
  * @param title - The warning title displayed in bold
  * @param message - The warning message displayed below the title
  * @param docsURL - Optional documentation link URL (shown as "Learn more" with book icon)
+ * @param actionText - Optional text for an action link appended to the message
+ * @param onAction - Optional callback when the action link is clicked
  *
  * @example
  * <WarningRow
  *   title="Too many tools enabled"
  *   message="You have 50 tools enabled via 5 MCP servers."
  *   docsURL="https://docs.example.com/mcp-best-practices"
+ *   actionText="Open MCP Settings"
+ *   onAction={() => openSettings()}
  * />
  */
-export const WarningRow: React.FC<WarningRowProps> = ({ title, message, docsURL }) => {
+export const WarningRow: React.FC<WarningRowProps> = ({ title, message, docsURL, actionText, onAction }) => {
 	const { t } = useAppTranslation()
 
 	return (
@@ -48,6 +54,20 @@ export const WarningRow: React.FC<WarningRowProps> = ({ title, message, docsURL 
 			<div className="cursor-default ml-2 pl-4 mt-1 pt-0.5 border-l border-vscode-editorWarning-foreground/50">
 				<p className="my-0 font-light whitespace-pre-wrap break-words text-vscode-descriptionForeground">
 					{message}
+					{actionText && onAction && (
+						<>
+							{" "}
+							<a
+								href="#"
+								className="text-vscode-textLink-foreground hover:text-vscode-textLink-activeForeground cursor-pointer"
+								onClick={(e) => {
+									e.preventDefault()
+									onAction()
+								}}>
+								{actionText}
+							</a>
+						</>
+					)}
 				</p>
 			</div>
 		</div>

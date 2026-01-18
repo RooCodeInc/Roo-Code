@@ -1,6 +1,7 @@
-import { render, screen } from "@/utils/test-utils"
+import { render, screen, fireEvent } from "@/utils/test-utils"
+import { MAX_MCP_TOOLS_THRESHOLD } from "@roo-code/types"
 
-import { TooManyToolsWarning, MAX_MCP_TOOLS_THRESHOLD } from "../TooManyToolsWarning"
+import { TooManyToolsWarning } from "../TooManyToolsWarning"
 
 // Mock vscode webview messaging
 vi.mock("@/utils/vscode", () => ({
@@ -35,6 +36,9 @@ vi.mock("@/i18n/TranslationContext", () => ({
 			}
 			if (key === "chat:tooManyTools.messageTemplate") {
 				return `You have ${params?.tools} enabled via ${params?.servers}. Such a high number can confuse the model and lead to errors. Try to keep it below ${params?.threshold}.`
+			}
+			if (key === "chat:tooManyTools.openMcpSettings") {
+				return "Open MCP Settings"
 			}
 			if (key === "chat:apiRequest.errorMessage.docs") {
 				return "Docs"
@@ -255,7 +259,38 @@ describe("TooManyToolsWarning", () => {
 		).toBeInTheDocument()
 	})
 
-	it("exports MAX_MCP_TOOLS_THRESHOLD constant", () => {
-		expect(MAX_MCP_TOOLS_THRESHOLD).toBe(40)
+	it("renders MCP settings link and opens settings when clicked", () => {
+		const mockWindowPostMessage = vi.spyOn(window, "postMessage")
+
+		// Create more tools than the threshold
+		const tools = Array.from({ length: MAX_MCP_TOOLS_THRESHOLD + 10 }, (_, i) => ({
+			name: `tool${i}`,
+			enabledForPrompt: true,
+		}))
+
+		mockMcpServers.mockReturnValue([
+			{
+				name: "server1",
+				status: "connected",
+				disabled: false,
+				tools,
+			},
+		])
+
+		render(<TooManyToolsWarning />)
+
+		// Verify the link is rendered
+		const settingsLink = screen.getByText("Open MCP Settings")
+		expect(settingsLink).toBeInTheDocument()
+
+		// Click the link and verify it posts the message
+		fireEvent.click(settingsLink)
+
+		expect(mockWindowPostMessage).toHaveBeenCalledWith(
+			{ type: "action", action: "settingsButtonClicked", values: { section: "mcp" } },
+			"*",
+		)
+
+		mockWindowPostMessage.mockRestore()
 	})
 })

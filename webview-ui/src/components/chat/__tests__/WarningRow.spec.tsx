@@ -68,4 +68,42 @@ describe("WarningRow", () => {
 		const warningIcon = container.querySelector("svg")
 		expect(warningIcon).toBeInTheDocument()
 	})
+
+	it("does not render action link when actionText and onAction are not provided", () => {
+		render(<WarningRow title="Test Warning" message="This is a test message" />)
+
+		expect(screen.queryByText("Open Settings")).not.toBeInTheDocument()
+	})
+
+	it("renders action link when actionText and onAction are provided", () => {
+		const mockOnAction = vi.fn()
+		render(
+			<WarningRow
+				title="Test Warning"
+				message="This is a test message"
+				actionText="Open Settings"
+				onAction={mockOnAction}
+			/>,
+		)
+
+		const actionLink = screen.getByText("Open Settings")
+		expect(actionLink).toBeInTheDocument()
+	})
+
+	it("calls onAction when action link is clicked", () => {
+		const mockOnAction = vi.fn()
+		render(
+			<WarningRow
+				title="Test Warning"
+				message="This is a test message"
+				actionText="Open Settings"
+				onAction={mockOnAction}
+			/>,
+		)
+
+		const actionLink = screen.getByText("Open Settings")
+		fireEvent.click(actionLink)
+
+		expect(mockOnAction).toHaveBeenCalledTimes(1)
+	})
 })

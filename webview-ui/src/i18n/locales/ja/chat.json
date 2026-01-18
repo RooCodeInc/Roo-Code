@@ -499,6 +499,7 @@
 		"toolsPart_other": "{{count}} ツール",
 		"serversPart_one": "{{count}} MCP サーバー",
 		"serversPart_other": "{{count}} MCP サーバー",
-		"messageTemplate": "{{servers}}経由で{{tools}}が有効になっています。このような高い数は、モデルを混乱させてエラーを引き起こす可能性があります。{{threshold}}以下に保つようにしてください。"
+		"messageTemplate": "{{servers}}経由で{{tools}}が有効になっています。このような高い数は、モデルを混乱させてエラーを引き起こす可能性があります。{{threshold}}以下に保つようにしてください。",
+		"openMcpSettings": "MCP 設定を開く"
 	}
 }

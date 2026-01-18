@@ -1,11 +1,8 @@
-import React, { useMemo } from "react"
+import React, { useCallback, useMemo } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { MAX_MCP_TOOLS_THRESHOLD } from "@roo-code/types"
 import WarningRow from "./WarningRow"
-
-// Re-export for backward compatibility
-export { MAX_MCP_TOOLS_THRESHOLD }
 
 /**
  * Displays a warning when the user has too many MCP tools enabled.
@@ -48,6 +45,10 @@ export const TooManyToolsWarning: React.FC = () => {
 		return { enabledServerCount: serverCount, enabledToolCount: toolCount }
 	}, [mcpServers])
 
+	const handleOpenMcpSettings = useCallback(() => {
+		window.postMessage({ type: "action", action: "settingsButtonClicked", values: { section: "mcp" } }, "*")
+	}, [])
+
 	// Don't show warning if under threshold
 	if (enabledToolCount <= MAX_MCP_TOOLS_THRESHOLD) {
 		return null
@@ -61,7 +62,14 @@ export const TooManyToolsWarning: React.FC = () => {
 		threshold: MAX_MCP_TOOLS_THRESHOLD,
 	})
 
-	return <WarningRow title={t("chat:tooManyTools.title")} message={message} />
+	return (
+		<WarningRow
+			title={t("chat:tooManyTools.title")}
+			message={message}
+			actionText={t("chat:tooManyTools.openMcpSettings")}
+			onAction={handleOpenMcpSettings}
+		/>
+	)
 }
 
 export default TooManyToolsWarning

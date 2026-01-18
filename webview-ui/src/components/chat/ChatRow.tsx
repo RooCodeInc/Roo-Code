@@ -1530,6 +1530,13 @@ export const ChatRowContent = ({
 								servers: serversPart,
 								threshold: warningData.threshold,
 							})}
+							actionText={t("chat:tooManyTools.openMcpSettings")}
+							onAction={() =>
+								window.postMessage(
+									{ type: "action", action: "settingsButtonClicked", values: { section: "mcp" } },
+									"*",
+								)
+							}
 						/>
 					)
 				}

@@ -1,7 +1,4 @@
-import { reasoningEffortsExtended, MAX_MCP_TOOLS_THRESHOLD } from "@roo-code/types"
-
-// Re-export for backward compatibility
-export { MAX_MCP_TOOLS_THRESHOLD }
+import { reasoningEffortsExtended } from "@roo-code/types"
 
 export const DEFAULT_FLAGS = {
 	mode: "code",
