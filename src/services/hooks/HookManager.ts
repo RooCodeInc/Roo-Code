@@ -22,10 +22,12 @@ import {
 	ExecuteHooksOptions,
 	HookContext,
 	ConversationHistoryEntry,
+	HookUpdateData,
 } from "./types"
 import { loadHooksConfig, getHooksForEvent, LoadHooksConfigOptions } from "./HookConfigLoader"
 import { filterMatchingHooks } from "./HookMatcher"
 import { executeHook, interpretResult, describeResult } from "./HookExecutor"
+import { updateHookConfig } from "./HookConfigWriter"
 
 /**
  * Default options for the HookManager.
@@ -274,6 +276,15 @@ export class HookManager implements IHookManager {
 	 */
 	setMode(mode: string): void {
 		this.options.mode = mode
+	}
+
+	/**
+	 * Update a hook inside a specific config file.
+	 * This modifies the file on disk; callers should trigger a reload to apply changes.
+	 */
+	async updateHook(filePath: string, hookId: string, updates: HookUpdateData): Promise<void> {
+		await updateHookConfig(filePath, hookId, updates)
+		this.log("info", `Updated hook "${hookId}" in ${filePath}`)
 	}
 
 	/**

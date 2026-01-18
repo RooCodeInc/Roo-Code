@@ -91,6 +91,9 @@ export { executeHook, interpretResult, describeResult } from "./HookExecutor"
 // Manager
 export { HookManager, createHookManager, type HookManagerOptions } from "./HookManager"
 
+// Config Writer
+export { updateHookConfig } from "./HookConfigWriter"
+
 // Tool Execution Integration
 export {
 	ToolExecutionHooks,

@@ -113,6 +113,15 @@ export type HooksConfigFile = z.infer<typeof HooksConfigFileSchema>
 export type HookSource = "project" | "mode" | "global"
 
 /**
+ * Data for updating a hook configuration.
+ */
+export interface HookUpdateData {
+	events?: HookEventType[]
+	matcher?: string
+	timeout?: number
+}
+
+/**
  * Extended hook definition with source information.
  * Used internally after merging configs from multiple sources.
  */
@@ -370,6 +379,9 @@ export interface IHookManager {
 
 	/** Enable or disable a specific hook by ID */
 	setHookEnabled(hookId: string, enabled: boolean): Promise<void>
+
+	/** Update a hook definition in its source file */
+	updateHook(filePath: string, hookId: string, updates: HookUpdateData): Promise<void>
 
 	/** Get execution history for debugging */
 	getHookExecutionHistory(): HookExecution[]

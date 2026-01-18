@@ -3552,6 +3552,23 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "hooksUpdateHook": {
+			const hookManager = provider.getHookManager()
+			if (!hookManager || !message.hookId || !message.filePath || !message.hookUpdates) {
+				break
+			}
+
+			try {
+				await hookManager.updateHook(message.filePath, message.hookId, message.hookUpdates)
+				await hookManager.reloadHooksConfig()
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(`Failed to update hook: ${error instanceof Error ? error.message : String(error)}`)
+				vscode.window.showErrorMessage("Failed to update hook")
+			}
+			break
+		}
+
 		case "hooksCreateNew": {
 			try {
 				const cwd = provider.cwd

@@ -1,6 +1,12 @@
-import React, { useCallback, useEffect, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { RefreshCw, FolderOpen, AlertTriangle, Clock, FishingHook, X, Plus } from "lucide-react"
-import { VSCodePanels, VSCodePanelTab, VSCodePanelView } from "@vscode/webview-ui-toolkit/react"
+import {
+	VSCodeDropdown,
+	VSCodeOption,
+	VSCodePanels,
+	VSCodePanelTab,
+	VSCodePanelView,
+} from "@vscode/webview-ui-toolkit/react"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
@@ -8,6 +14,37 @@ import { Button, StandardTooltip, ToggleSwitch } from "@src/components/ui"
 import type { HookInfo, HookExecutionRecord, HookExecutionStatusPayload } from "@roo-code/types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
+
+const HOOK_EVENT_OPTIONS = [
+	"PreToolUse",
+	"PostToolUse",
+	"PostToolUseFailure",
+	"PermissionRequest",
+	"UserPromptSubmit",
+	"Stop",
+	"SubagentStop",
+	"SubagentStart",
+	"SessionStart",
+	"SessionEnd",
+	"Notification",
+	"PreCompact",
+] as const
+
+type HookEventOption = (typeof HOOK_EVENT_OPTIONS)[number]
+
+const TOOL_GROUPS = ["read", "edit", "browser", "command", "mcp", "modes"] as const
+type ToolGroup = (typeof TOOL_GROUPS)[number]
+
+const TIMEOUT_OPTIONS: Array<{ label: string; seconds: number }> = [
+	{ label: "15 seconds", seconds: 15 },
+	{ label: "30 seconds", seconds: 30 },
+	{ label: "1 minute", seconds: 60 },
+	{ label: "5 minutes", seconds: 300 },
+	{ label: "10 minutes", seconds: 600 },
+	{ label: "15 minutes", seconds: 900 },
+	{ label: "30 minutes", seconds: 1800 },
+	{ label: "60 minutes", seconds: 3600 },
+]
 
 export const HooksSettings: React.FC = () => {
 	const { t } = useAppTranslation()
@@ -239,6 +276,71 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 	const { hooks } = useExtensionState()
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [hookLogs, setHookLogs] = useState<HookExecutionRecord[]>([])
+	const [isUpdatingConfig, setIsUpdatingConfig] = useState(false)
+
+	const hooksForId = useMemo(() => {
+		const enabledHooks = hooks?.enabledHooks ?? []
+		return enabledHooks.filter((h) => h.id === hook.id)
+	}, [hooks?.enabledHooks, hook.id])
+
+	const selectedEvents = useMemo(() => {
+		const events = hooksForId.map((h) => h.event).filter(Boolean)
+		// Preserve stable order based on HOOK_EVENT_OPTIONS
+		return HOOK_EVENT_OPTIONS.filter((e) => events.includes(e))
+	}, [hooksForId])
+
+	const matcherRaw = hook.matcher ?? ""
+	const { matcherGroups, matcherCustom } = useMemo(() => {
+		const parts = matcherRaw
+			.split("|")
+			.map((p) => p.trim())
+			.filter(Boolean)
+
+		const groups = parts.filter((p): p is ToolGroup =>
+			(TOOL_GROUPS as readonly string[]).includes(p),
+		) as ToolGroup[]
+		const customParts = parts.filter((p) => !(TOOL_GROUPS as readonly string[]).includes(p))
+
+		return {
+			matcherGroups: groups,
+			matcherCustom: customParts.join("|"),
+		}
+	}, [matcherRaw])
+
+	const [customMatcher, setCustomMatcher] = useState(matcherCustom)
+	useEffect(() => {
+		setCustomMatcher(matcherCustom)
+	}, [matcherCustom])
+
+	const timeoutSeconds = hook.timeout
+	const timeoutSelection = useMemo(() => {
+		const match = TIMEOUT_OPTIONS.find((o) => o.seconds === timeoutSeconds)
+		return match?.seconds ?? TIMEOUT_OPTIONS[1].seconds
+	}, [timeoutSeconds])
+
+	const postHookUpdate = useCallback(
+		(updates: { events?: HookEventOption[]; matcher?: string; timeout?: number }) => {
+			if (!hook.filePath) return
+			setIsUpdatingConfig(true)
+			vscode.postMessage({
+				type: "hooksUpdateHook",
+				hookId: hook.id,
+				filePath: hook.filePath,
+				hookUpdates: updates,
+			})
+			setTimeout(() => setIsUpdatingConfig(false), 500)
+		},
+		[hook.filePath, hook.id],
+	)
+
+	const buildMatcherString = useCallback((nextGroups: ToolGroup[], nextCustom: string) => {
+		const parts: string[] = [...nextGroups]
+		const trimmedCustom = nextCustom.trim()
+		if (trimmedCustom.length > 0) {
+			parts.push(trimmedCustom)
+		}
+		return parts.join("|")
+	}, [])
 
 	// Filter execution history for this specific hook
 	useEffect(() => {
@@ -299,6 +401,8 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 			filePath: hook.filePath,
 		})
 	}
+
+	const canEditConfig = Boolean(hook.filePath)
 
 	const getEnabledDotColor = () => {
 		return hook.enabled ? "var(--vscode-testing-iconPassed)" : "var(--vscode-descriptionForeground)"
@@ -388,41 +492,103 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 
 						<VSCodePanelView id="view-config">
 							<div className="flex flex-col gap-3 pt-3 w-full">
-								<div className="grid grid-cols-2 gap-4">
-									<div>
-										<span className="text-xs font-medium text-vscode-descriptionForeground block mb-1">
-											{t("settings:hooks.event")}
-										</span>
-										<code className="text-xs font-mono text-vscode-textLink-foreground bg-vscode-textCodeBlock-background px-1.5 py-0.5 rounded">
-											{hook.event}
-										</code>
+								<div>
+									<span className="text-xs font-medium text-vscode-descriptionForeground block mb-2">
+										{t("settings:hooks.event")}
+									</span>
+									<div className="grid grid-cols-2 gap-2">
+										{HOOK_EVENT_OPTIONS.map((event) => (
+											<label
+												key={event}
+												className="flex items-center gap-2 text-xs text-vscode-foreground">
+												<input
+													type="checkbox"
+													checked={selectedEvents.includes(event)}
+													disabled={!canEditConfig || isUpdatingConfig}
+													onChange={(e) => {
+														const checked = e.target.checked
+														const next = checked
+															? Array.from(new Set([...selectedEvents, event]))
+															: selectedEvents.filter((x) => x !== event)
+														if (next.length === 0) {
+															return
+														}
+														postHookUpdate({ events: next })
+													}}
+												/>
+												<span>{event}</span>
+											</label>
+										))}
 									</div>
-									<div>
-										<span className="text-xs font-medium text-vscode-descriptionForeground block mb-1">
-											{t("settings:hooks.timeout")}
-										</span>
-										<span className="text-xs text-vscode-foreground">{hook.timeout}s</span>
+									{!canEditConfig && (
+										<div className="text-xs text-vscode-descriptionForeground mt-2">
+											{t("settings:hooks.openHookFileUnavailableTooltip")}
+										</div>
+									)}
+								</div>
+
+								<div>
+									<span className="text-xs font-medium text-vscode-descriptionForeground block mb-2">
+										{t("settings:hooks.matcher")}
+									</span>
+									<div className="grid grid-cols-3 gap-2">
+										{TOOL_GROUPS.map((group) => (
+											<label
+												key={group}
+												className="flex items-center gap-2 text-xs text-vscode-foreground">
+												<input
+													type="checkbox"
+													checked={matcherGroups.includes(group)}
+													disabled={!canEditConfig || isUpdatingConfig}
+													onChange={(e) => {
+														const checked = e.target.checked
+														const nextGroups = checked
+															? Array.from(new Set([...matcherGroups, group]))
+															: matcherGroups.filter((g) => g !== group)
+														const next = buildMatcherString(nextGroups, customMatcher)
+														postHookUpdate({ matcher: next })
+													}}
+												/>
+												<span>{group}</span>
+											</label>
+										))}
+									</div>
+									<div className="mt-2">
+										<label className="text-xs text-vscode-descriptionForeground block mb-1">
+											Custom matcher
+										</label>
+										<input
+											className="w-full text-xs bg-vscode-input-background border border-vscode-input-border rounded px-2 py-1 text-vscode-foreground"
+											value={customMatcher}
+											disabled={!canEditConfig || isUpdatingConfig}
+											onChange={(e) => setCustomMatcher(e.target.value)}
+											onBlur={() => {
+												const next = buildMatcherString(matcherGroups, customMatcher)
+												postHookUpdate({ matcher: next })
+											}}
+											placeholder="file.*\\.ts"
+										/>
 									</div>
 								</div>
 
-								{hook.matcher && (
-									<div>
-										<span className="text-xs font-medium text-vscode-descriptionForeground block mb-1">
-											{t("settings:hooks.matcher")}
-										</span>
-										<div className="bg-vscode-textCodeBlock-background p-2 rounded border border-vscode-widget-border">
-											<ul className="list-disc list-inside text-xs font-mono text-vscode-foreground">
-												{hook.matcher
-													.split("|")
-													.map((m) => m.trim())
-													.filter(Boolean)
-													.map((m, i) => (
-														<li key={i}>{m}</li>
-													))}
-											</ul>
-										</div>
-									</div>
-								)}
+								<div>
+									<span className="text-xs font-medium text-vscode-descriptionForeground block mb-2">
+										{t("settings:hooks.timeout")}
+									</span>
+									<VSCodeDropdown
+										disabled={!canEditConfig || isUpdatingConfig}
+										value={String(timeoutSelection)}
+										onChange={(e: any) => {
+											const seconds = Number(e.target.value)
+											postHookUpdate({ timeout: seconds })
+										}}>
+										{TIMEOUT_OPTIONS.map((opt) => (
+											<VSCodeOption key={opt.seconds} value={String(opt.seconds)}>
+												{opt.label}
+											</VSCodeOption>
+										))}
+									</VSCodeDropdown>
+								</div>
 
 								{hook.shell && (
 									<div>
