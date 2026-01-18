@@ -1300,15 +1300,40 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	 * The policy is driven by ModelInfo.promptCacheRetention so that model-specific details
 	 * live in the shared types layer rather than this provider. When set to "24h" and the
 	 * model supports prompt caching, extended prompt cache retention is requested.
+	 *
+	 * Note: Azure Foundry/AI does not support the prompt_cache_retention parameter,
+	 * so we skip it when using an Azure base URL.
 	 */
 	private getPromptCacheRetention(model: OpenAiNativeModel): "24h" | undefined {
 		if (!model.info.supportsPromptCache) return undefined
+
+		// Azure Foundry/AI does not support prompt_cache_retention
+		if (this.isAzureEndpoint()) return undefined
 
 		if (model.info.promptCacheRetention === "24h") {
 			return "24h"
 		}
 
 		return undefined
+	}
+
+	/**
+	 * Checks if the configured base URL is an Azure endpoint.
+	 * Azure Foundry/AI endpoints use different URL patterns than OpenAI's API
+	 * and may not support all OpenAI-specific parameters like prompt_cache_retention.
+	 */
+	private isAzureEndpoint(): boolean {
+		const baseUrl = this.options.openAiNativeBaseUrl
+		if (!baseUrl) return false
+
+		try {
+			const url = new URL(baseUrl)
+			const host = url.host.toLowerCase()
+			// Match Azure OpenAI Service and Azure AI Foundry endpoints
+			return host.endsWith(".azure.com") || host.endsWith(".azure-api.net")
+		} catch {
+			return false
+		}
 	}
 
 	/**
