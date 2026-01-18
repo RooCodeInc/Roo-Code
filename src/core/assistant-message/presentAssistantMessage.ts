@@ -824,24 +824,48 @@ export async function presentAssistantMessage(cline: Task) {
 
 				// If execution is not allowed, notify user and break.
 				if (!repetitionCheck.allowExecution && repetitionCheck.askUser) {
-					// Handle repetition similar to mistake_limit_reached pattern.
-					const { response, text, images } = await cline.ask(
-						repetitionCheck.askUser.messageKey as ClineAsk,
-						repetitionCheck.askUser.messageDetail.replace("{toolName}", block.name),
-					)
+					let feedbackText: string | undefined
+					let feedbackImages: string[] | undefined
 
-					if (response === "messageResponse") {
-						// Add user feedback to userContent.
+					// CRITICAL FIX (GitHub #10814): Check for queued user messages first.
+					// When auto-approve is enabled and the model gets stuck in a loop,
+					// user messages are queued but never processed because the model
+					// keeps repeating the same tool call. By checking the queue here,
+					// we allow user intervention to break the loop.
+					if (!cline.messageQueueService.isEmpty()) {
+						const queuedMessage = cline.messageQueueService.dequeueMessage()
+						if (queuedMessage) {
+							feedbackText = queuedMessage.text
+							feedbackImages = queuedMessage.images
+							// Show the user's feedback in chat
+							await cline.say("user_feedback", feedbackText, feedbackImages)
+						}
+					}
+
+					// If no queued message, ask the user for feedback
+					if (!feedbackText) {
+						const { response, text, images } = await cline.ask(
+							repetitionCheck.askUser.messageKey as ClineAsk,
+							repetitionCheck.askUser.messageDetail.replace("{toolName}", block.name),
+						)
+
+						if (response === "messageResponse") {
+							feedbackText = text
+							feedbackImages = images
+							// Add user feedback to chat.
+							await cline.say("user_feedback", text, images)
+						}
+					}
+
+					// If we have user feedback (from queue or ask), add it to userContent
+					if (feedbackText) {
 						cline.userMessageContent.push(
 							{
 								type: "text" as const,
-								text: `Tool repetition limit reached. User feedback: ${text}`,
+								text: `Tool repetition limit reached. User feedback: ${feedbackText}`,
 							},
-							...formatResponse.imageBlocks(images),
+							...formatResponse.imageBlocks(feedbackImages),
 						)
-
-						// Add user feedback to chat.
-						await cline.say("user_feedback", text, images)
 					}
 
 					// Track tool repetition in telemetry via PostHog exception tracking and event.

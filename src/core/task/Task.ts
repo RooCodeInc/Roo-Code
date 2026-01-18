@@ -3540,6 +3540,29 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							await this.say("error", "MODEL_NO_TOOLS_USED")
 							// Only count toward mistake limit after second consecutive failure
 							this.consecutiveMistakeCount++
+
+							// CRITICAL: Check for queued user messages when the model appears stuck.
+							// This allows user intervention to break out of endless loops where the model
+							// keeps trying the same approach without using tools (GitHub issue #10814).
+							if (!this.messageQueueService.isEmpty()) {
+								const queuedMessage = this.messageQueueService.dequeueMessage()
+								if (queuedMessage) {
+									// Add user's message as feedback to break the loop
+									await this.say("user_feedback", queuedMessage.text, queuedMessage.images)
+									this.userMessageContent.push({
+										type: "text",
+										text: formatResponse.tooManyMistakes(queuedMessage.text),
+									})
+									if (queuedMessage.images && queuedMessage.images.length > 0) {
+										this.userMessageContent.push(
+											...formatResponse.imageBlocks(queuedMessage.images),
+										)
+									}
+									// Reset mistake counter since user provided guidance
+									this.consecutiveMistakeCount = 0
+									this.consecutiveNoToolUseCount = 0
+								}
+							}
 						}
 
 						// Use the task's locked protocol for consistent behavior
