@@ -54,6 +54,7 @@ import {
 	TOOL_PROTOCOL,
 	ConsecutiveMistakeError,
 	MAX_MCP_TOOLS_THRESHOLD,
+	countEnabledMcpTools,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
@@ -1834,15 +1835,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// Start / Resume / Abort / Dispose
 
 	/**
-	 * Count the number of enabled MCP tools across all enabled and connected servers.
+	 * Get enabled MCP tools count for this task.
 	 * Returns the count along with the number of servers contributing.
 	 *
 	 * @returns Object with enabledToolCount and enabledServerCount
 	 */
-	private async countEnabledMcpTools(): Promise<{ enabledToolCount: number; enabledServerCount: number }> {
-		let serverCount = 0
-		let toolCount = 0
-
+	private async getEnabledMcpToolsCount(): Promise<{ enabledToolCount: number; enabledServerCount: number }> {
 		try {
 			const provider = this.providerRef.deref()
 			if (!provider) {
@@ -1860,30 +1858,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 
 			const servers = mcpHub.getServers()
-			for (const server of servers) {
-				// Skip disabled servers
-				if (server.disabled) continue
-
-				// Skip servers that are not connected
-				if (server.status !== "connected") continue
-
-				serverCount++
-
-				// Count enabled tools on this server
-				if (server.tools) {
-					for (const tool of server.tools) {
-						// Tool is enabled if enabledForPrompt is undefined (default) or true
-						if (tool.enabledForPrompt !== false) {
-							toolCount++
-						}
-					}
-				}
-			}
+			return countEnabledMcpTools(servers)
 		} catch (error) {
-			console.error("[Task#countEnabledMcpTools] Error counting MCP tools:", error)
+			console.error("[Task#getEnabledMcpToolsCount] Error counting MCP tools:", error)
+			return { enabledToolCount: 0, enabledServerCount: 0 }
 		}
-
-		return { enabledToolCount: toolCount, enabledServerCount: serverCount }
 	}
 
 	private async startTask(task?: string, images?: string[]): Promise<void> {
@@ -1914,7 +1893,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await this.say("text", task, images)
 
 		// Check for too many MCP tools and warn the user
-		const { enabledToolCount, enabledServerCount } = await this.countEnabledMcpTools()
+		const { enabledToolCount, enabledServerCount } = await this.getEnabledMcpToolsCount()
 		if (enabledToolCount > MAX_MCP_TOOLS_THRESHOLD) {
 			await this.say(
 				"too_many_tools_warning",

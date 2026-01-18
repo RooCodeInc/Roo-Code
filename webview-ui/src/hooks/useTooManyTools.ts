@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { MAX_MCP_TOOLS_THRESHOLD } from "@roo-code/types"
+import { MAX_MCP_TOOLS_THRESHOLD, countEnabledMcpTools } from "@roo-code/types"
 
 export interface TooManyToolsInfo {
 	/** Number of enabled and connected MCP servers */
@@ -34,32 +34,7 @@ export function useTooManyTools(): TooManyToolsInfo {
 	const { t } = useAppTranslation()
 	const { mcpServers } = useExtensionState()
 
-	const { enabledServerCount, enabledToolCount } = useMemo(() => {
-		let serverCount = 0
-		let toolCount = 0
-
-		for (const server of mcpServers) {
-			// Skip disabled servers
-			if (server.disabled) continue
-
-			// Skip servers that are not connected
-			if (server.status !== "connected") continue
-
-			serverCount++
-
-			// Count enabled tools on this server
-			if (server.tools) {
-				for (const tool of server.tools) {
-					// Tool is enabled if enabledForPrompt is undefined (default) or true
-					if (tool.enabledForPrompt !== false) {
-						toolCount++
-					}
-				}
-			}
-		}
-
-		return { enabledServerCount: serverCount, enabledToolCount: toolCount }
-	}, [mcpServers])
+	const { enabledServerCount, enabledToolCount } = useMemo(() => countEnabledMcpTools(mcpServers), [mcpServers])
 
 	const isOverThreshold = enabledToolCount > MAX_MCP_TOOLS_THRESHOLD
 
