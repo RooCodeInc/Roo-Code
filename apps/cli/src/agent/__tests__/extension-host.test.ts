@@ -100,16 +100,17 @@ describe("ExtensionHost", () => {
 				ephemeral: false,
 				debug: false,
 				exitOnComplete: false,
+				integrationTest: true,
 			}
 
 			const host = new ExtensionHost(options)
 
-			// Options are stored but integrationTest is set to true
+			// Options are stored as provided
 			const storedOptions = getPrivate<ExtensionHostOptions>(host, "options")
 			expect(storedOptions.mode).toBe(options.mode)
 			expect(storedOptions.workspacePath).toBe(options.workspacePath)
 			expect(storedOptions.extensionPath).toBe(options.extensionPath)
-			expect(storedOptions.integrationTest).toBe(true) // Always set to true in constructor
+			expect(storedOptions.integrationTest).toBe(true)
 		})
 
 		it("should be an EventEmitter instance", () => {
@@ -287,10 +288,11 @@ describe("ExtensionHost", () => {
 	describe("quiet mode", () => {
 		describe("setupQuietMode", () => {
 			it("should not modify console when integrationTest is true", () => {
-				// By default, constructor sets integrationTest = true
-				const host = createTestHost()
+				// Create host with integrationTest: true so constructor doesn't suppress console
+				const host = createTestHost({ integrationTest: true })
 				const originalLog = console.log
 
+				// Calling setupQuietMode again should be a no-op since integrationTest is true
 				callPrivate(host, "setupQuietMode")
 
 				// Console should not be modified since integrationTest is true
@@ -298,10 +300,11 @@ describe("ExtensionHost", () => {
 			})
 
 			it("should suppress console when integrationTest is false", () => {
-				const host = createTestHost()
+				// Create host with integrationTest: true first, so constructor doesn't suppress
+				const host = createTestHost({ integrationTest: true })
 				const originalLog = console.log
 
-				// Override integrationTest to false
+				// Now override integrationTest to false
 				const options = getPrivate<ExtensionHostOptions>(host, "options")
 				options.integrationTest = false
 
@@ -315,7 +318,8 @@ describe("ExtensionHost", () => {
 			})
 
 			it("should preserve console.error even when suppressing", () => {
-				const host = createTestHost()
+				// Create host with integrationTest: true first, so constructor doesn't suppress
+				const host = createTestHost({ integrationTest: true })
 				const originalError = console.error
 
 				// Override integrationTest to false
@@ -332,7 +336,8 @@ describe("ExtensionHost", () => {
 
 		describe("restoreConsole", () => {
 			it("should restore original console methods when suppressed", () => {
-				const host = createTestHost()
+				// Create host with integrationTest: true first, so constructor doesn't suppress
+				const host = createTestHost({ integrationTest: true })
 				const originalLog = console.log
 
 				// Override integrationTest to false to actually suppress
@@ -346,7 +351,7 @@ describe("ExtensionHost", () => {
 			})
 
 			it("should handle case where console was not suppressed", () => {
-				const host = createTestHost()
+				const host = createTestHost({ integrationTest: true })
 
 				expect(() => {
 					callPrivate(host, "restoreConsole")
