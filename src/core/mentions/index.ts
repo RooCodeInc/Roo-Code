@@ -9,7 +9,8 @@ import { mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "../../sh
 import { getCommitInfo, getWorkingState } from "../../utils/git"
 
 import { openFile } from "../../integrations/misc/open-file"
-import { extractTextFromFile } from "../../integrations/misc/extract-text"
+import { extractTextFromFile, addLineNumbers } from "../../integrations/misc/extract-text"
+import { readFileWithTokenBudget } from "../../integrations/misc/read-file-with-budget"
 import { diagnosticsToProblemsString } from "../../integrations/diagnostics"
 
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
@@ -86,6 +87,7 @@ export async function parseMentions(
 	includeDiagnosticMessages: boolean = true,
 	maxDiagnosticMessages: number = 50,
 	maxReadFileLine?: number,
+	maxFileTokenBudget?: number,
 ): Promise<ParseMentionsResult> {
 	const mentions: Set<string> = new Set()
 	const validCommands: Map<string, Command> = new Map()
@@ -198,6 +200,7 @@ export async function parseMentions(
 					rooIgnoreController,
 					showRooIgnoredFiles,
 					maxReadFileLine,
+					maxFileTokenBudget,
 				)
 				if (mention.endsWith("/")) {
 					parsedText += `\n\n<folder_content path="${mentionPath}">\n${content}\n</folder_content>`
@@ -276,6 +279,7 @@ async function getFileOrFolderContent(
 	rooIgnoreController?: any,
 	showRooIgnoredFiles: boolean = false,
 	maxReadFileLine?: number,
+	maxFileTokenBudget?: number,
 ): Promise<string> {
 	const unescapedPath = unescapeSpaces(mentionPath)
 	const absPath = path.resolve(cwd, unescapedPath)
@@ -294,6 +298,22 @@ async function getFileOrFolderContent(
 				return `(File ${mentionPath} is ignored by .rooignore)`
 			}
 			try {
+				// Use token-budget based reading if budget is specified
+				if (maxFileTokenBudget && maxFileTokenBudget > 0) {
+					const result = await readFileWithTokenBudget(absPath, {
+						budgetTokens: maxFileTokenBudget,
+					})
+					// Add line numbers to the content (similar to extractTextFromFile)
+					const numberedContent = addLineNumbers(result.content)
+					if (!result.complete) {
+						return (
+							numberedContent +
+							`\n\n[File truncated: read ${result.lineCount} lines (${result.tokenCount} tokens) within token budget of ${maxFileTokenBudget}. Use the read_file tool to examine specific sections.]`
+						)
+					}
+					return numberedContent
+				}
+				// Fall back to line-based reading
 				const content = await extractTextFromFile(absPath, maxReadFileLine)
 				return content
 			} catch (error) {
@@ -330,9 +350,21 @@ async function getFileOrFolderContent(
 						fileContentPromises.push(
 							(async () => {
 								try {
-									const isBinary = await isBinaryFile(absoluteFilePath).catch(() => false)
-									if (isBinary) {
+									const isBinaryFile_ = await isBinaryFile(absoluteFilePath).catch(() => false)
+									if (isBinaryFile_) {
 										return undefined
+									}
+									// Use token-budget based reading if budget is specified
+									if (maxFileTokenBudget && maxFileTokenBudget > 0) {
+										const result = await readFileWithTokenBudget(absoluteFilePath, {
+											budgetTokens: maxFileTokenBudget,
+										})
+										const numberedContent = addLineNumbers(result.content)
+										let content = numberedContent
+										if (!result.complete) {
+											content += `\n\n[File truncated: read ${result.lineCount} lines (${result.tokenCount} tokens) within token budget of ${maxFileTokenBudget}. Use the read_file tool to examine specific sections.]`
+										}
+										return `<file_content path="${filePath.toPosix()}">\n${content}\n</file_content>`
 									}
 									const content = await extractTextFromFile(absoluteFilePath, maxReadFileLine)
 									return `<file_content path="${filePath.toPosix()}">\n${content}\n</file_content>`

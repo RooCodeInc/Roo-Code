@@ -57,6 +57,7 @@ describe("processUserContentMentions", () => {
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
 				100,
+				undefined, // maxFileTokenBudget
 			)
 		})
 
@@ -86,6 +87,7 @@ describe("processUserContentMentions", () => {
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
 				undefined,
+				undefined, // maxFileTokenBudget
 			)
 		})
 
@@ -116,6 +118,7 @@ describe("processUserContentMentions", () => {
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
 				-1,
+				undefined, // maxFileTokenBudget
 			)
 		})
 	})
@@ -326,6 +329,7 @@ describe("processUserContentMentions", () => {
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
 				undefined,
+				undefined, // maxFileTokenBudget
 			)
 		})
 
@@ -355,6 +359,7 @@ describe("processUserContentMentions", () => {
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
 				undefined,
+				undefined, // maxFileTokenBudget
 			)
 		})
 	})
