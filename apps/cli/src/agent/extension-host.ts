@@ -74,11 +74,6 @@ export interface ExtensionHostOptions {
 	 * running in an integration test and we want to see the output.
 	 */
 	integrationTest?: boolean
-	/**
-	 * When true, suppress all console output from the extension.
-	 * Use this in --print mode to ensure clean output.
-	 */
-	quietMode?: boolean
 }
 
 interface ExtensionModule {
@@ -159,11 +154,9 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 
 		this.options = options
 
-		// Set up quiet mode early, before any extension code runs
-		// This suppresses console output from the extension during load
-		if (this.options.quietMode) {
-			this.setupQuietMode()
-		}
+		// Set up quiet mode early, before any extension code runs.
+		// This suppresses console output from the extension during load.
+		this.setupQuietMode()
 
 		// Initialize client - single source of truth for agent state (including mode).
 		this.client = new ExtensionClient({
@@ -172,9 +165,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		})
 
 		// Initialize output manager.
-		this.outputManager = new OutputManager({
-			disabled: options.disableOutput,
-		})
+		this.outputManager = new OutputManager({ disabled: options.disableOutput })
 
 		// Initialize prompt manager with console mode callbacks.
 		this.promptManager = new PromptManager({

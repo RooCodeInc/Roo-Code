@@ -225,7 +225,6 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 	} else {
 		const useJsonOutput = outputFormat === "json" || outputFormat === "stream-json"
 
-		extensionHostOptions.quietMode = true
 		extensionHostOptions.disableOutput = useJsonOutput
 
 		const host = new ExtensionHost(extensionHostOptions)
