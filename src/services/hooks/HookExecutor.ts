@@ -12,6 +12,8 @@
 import { spawn, ChildProcess } from "child_process"
 import * as os from "os"
 import * as path from "path"
+import type { HookExecutionOutputStatusPayload } from "@roo-code/types"
+import { Terminal } from "../../integrations/terminal/Terminal"
 import {
 	ResolvedHook,
 	HookContext,
@@ -150,6 +152,14 @@ export async function executeHook(
 	hook: ResolvedHook,
 	context: HookContext,
 	conversationHistory?: ConversationHistoryEntry[],
+	options?: {
+		executionId?: string
+		toolName?: string
+		outputStatusCallback?: (payload: HookExecutionOutputStatusPayload) => void
+		outputThrottleMs?: number
+		terminalOutputLineLimit?: number
+		terminalOutputCharacterLimit?: number
+	},
 ): Promise<HookExecutionResult> {
 	const startTime = Date.now()
 	const timeout = (hook.timeout || DEFAULT_TIMEOUT) * 1000 // Convert to ms
@@ -168,14 +178,117 @@ export async function executeHook(
 		let timedOut = false
 		let resolved = false
 
+		const executionId = options?.executionId
+		const outputStatusCallback = options?.outputStatusCallback
+		const outputThrottleMs = options?.outputThrottleMs ?? 100
+		const terminalOutputLineLimit = options?.terminalOutputLineLimit ?? 500
+		const terminalOutputCharacterLimit = options?.terminalOutputCharacterLimit
+		const toolName = options?.toolName ?? context.tool?.name
+
+		// Throttled output emission: we keep raw stdout/stderr intact for final parsing,
+		// and maintain a merged buffer for the UI (compressed on send).
+		let mergedOutput = ""
+		let lastEmitAt = 0
+		let pendingEmitTimer: NodeJS.Timeout | undefined
+
+		const emitOutput = (force: boolean) => {
+			if (!executionId || !outputStatusCallback) return
+			const now = Date.now()
+			const shouldEmit = force || now - lastEmitAt >= outputThrottleMs
+
+			if (!shouldEmit) {
+				if (!pendingEmitTimer) {
+					pendingEmitTimer = setTimeout(
+						() => {
+							pendingEmitTimer = undefined
+							emitOutput(true)
+						},
+						Math.max(0, outputThrottleMs - (now - lastEmitAt)),
+					)
+				}
+				return
+			}
+
+			lastEmitAt = now
+			const compressed = Terminal.compressTerminalOutput(
+				mergedOutput,
+				terminalOutputLineLimit,
+				terminalOutputCharacterLimit,
+			)
+
+			const payload: HookExecutionOutputStatusPayload = {
+				executionId,
+				hookId: hook.id,
+				event: hook.event,
+				toolName,
+				status: "output",
+				command: hook.command,
+				cwd: context.project.directory,
+				shell: hook.shell,
+				pid: child?.pid,
+				output: compressed,
+			}
+
+			try {
+				outputStatusCallback(payload)
+			} catch {
+				// Ignore callback errors
+			}
+		}
+
 		const finalize = (exitCode: number | null, error?: Error) => {
 			if (resolved) return
 			resolved = true
+
+			if (pendingEmitTimer) {
+				clearTimeout(pendingEmitTimer)
+				pendingEmitTimer = undefined
+			}
 
 			const duration = Date.now() - startTime
 
 			// Try to parse modification from stdout
 			const modification = parseModificationResponse(stdout, hook)
+
+			// Emit terminal state for UI streaming.
+			if (executionId && outputStatusCallback) {
+				let finalStatus: HookExecutionOutputStatusPayload["status"] = "exited"
+				let blockMessage: string | undefined
+				let errorMessage: string | undefined
+
+				if (error || exitCode === null) {
+					finalStatus = "failed"
+					errorMessage = error?.message || "Hook failed to execute"
+				} else if (exitCode === HookExitCode.Block && isBlockingEvent(hook.event)) {
+					finalStatus = "blocked"
+					blockMessage = stderr.trim() || `Hook "${hook.id}" blocked execution`
+				} else if (exitCode !== HookExitCode.Success) {
+					finalStatus = "failed"
+				}
+
+				const terminalPayload: HookExecutionOutputStatusPayload = {
+					executionId,
+					hookId: hook.id,
+					event: hook.event,
+					toolName,
+					status: finalStatus,
+					command: hook.command,
+					cwd: context.project.directory,
+					shell: hook.shell,
+					pid: child?.pid,
+					exitCode: exitCode ?? undefined,
+					durationMs: duration,
+					blockMessage,
+					error: errorMessage,
+					modified: !!modification,
+				}
+
+				try {
+					outputStatusCallback(terminalPayload)
+				} catch {
+					// Ignore callback errors
+				}
+			}
 
 			resolve({
 				hook,
@@ -213,6 +326,27 @@ export async function executeHook(
 				windowsHide: true,
 			})
 
+			// Emit started event after spawn.
+			if (executionId && outputStatusCallback) {
+				const startedPayload: HookExecutionOutputStatusPayload = {
+					executionId,
+					hookId: hook.id,
+					event: hook.event,
+					toolName,
+					status: "started",
+					command: hook.command,
+					cwd: context.project.directory,
+					shell: hook.shell,
+					pid: child.pid,
+				}
+
+				try {
+					outputStatusCallback(startedPayload)
+				} catch {
+					// Ignore callback errors
+				}
+			}
+
 			// Write stdin
 			if (child.stdin) {
 				child.stdin.write(stdin)
@@ -222,30 +356,39 @@ export async function executeHook(
 			// Capture stdout
 			if (child.stdout) {
 				child.stdout.on("data", (data: Buffer) => {
-					stdout += data.toString()
+					const chunk = data.toString()
+					stdout += chunk
+					mergedOutput += chunk
+					emitOutput(false)
 				})
 			}
 
 			// Capture stderr
 			if (child.stderr) {
 				child.stderr.on("data", (data: Buffer) => {
-					stderr += data.toString()
+					const chunk = data.toString()
+					stderr += chunk
+					mergedOutput += chunk
+					emitOutput(false)
 				})
 			}
 
 			// Handle process exit
 			child.on("close", (code) => {
 				clearTimeout(timeoutHandle)
+				emitOutput(true)
 				finalize(code)
 			})
 
 			// Handle spawn errors
 			child.on("error", (err) => {
 				clearTimeout(timeoutHandle)
+				emitOutput(true)
 				finalize(null, err)
 			})
 		} catch (err) {
 			clearTimeout(timeoutHandle)
+			emitOutput(true)
 			finalize(null, err instanceof Error ? err : new Error(String(err)))
 		}
 	})

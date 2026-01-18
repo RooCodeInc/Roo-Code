@@ -11,6 +11,7 @@
 import { HookManager, createHookManager } from "../HookManager"
 import * as HookConfigLoader from "../HookConfigLoader"
 import * as HookExecutor from "../HookExecutor"
+import { Terminal } from "../../../integrations/terminal/Terminal"
 import type { HooksConfigSnapshot, ResolvedHook, HookEventType, HookContext } from "../types"
 
 // Mock dependencies
@@ -161,6 +162,74 @@ describe("HookManager", () => {
 			session: { taskId: "task_1", sessionId: "session_1", mode: "code" },
 			project: { directory: "/project", name: "test" },
 			tool: { name: "Write", input: { filePath: "/test.ts", content: "test" } },
+		})
+
+		it("should call hookExecutionCallback on start and terminal state", async () => {
+			const compressSpy = vi.spyOn(Terminal, "compressTerminalOutput").mockImplementation((s: string) => s)
+
+			const hook1 = createMockHook("hook1")
+			const snapshot = createMockSnapshot([hook1])
+
+			mockLoadHooksConfig.mockResolvedValue({
+				snapshot,
+				errors: [],
+				warnings: [],
+			})
+			mockGetHooksForEvent.mockReturnValue([hook1])
+			mockExecuteHook.mockResolvedValue({
+				hook: hook1,
+				exitCode: 0,
+				stdout: "out",
+				stderr: "err",
+				duration: 100,
+				timedOut: false,
+			})
+			mockInterpretResult.mockReturnValue({
+				success: true,
+				blocked: false,
+				blockMessage: undefined,
+				shouldContinue: true,
+			})
+
+			const hookExecutionCallback = vi.fn()
+
+			const manager = createHookManager({ cwd: "/project" })
+			await manager.loadHooksConfig()
+
+			await manager.executeHooks("PreToolUse", {
+				context: createMockContext(),
+				executionId: "base",
+				hookExecutionCallback,
+			})
+
+			expect(hookExecutionCallback).toHaveBeenCalledTimes(2)
+			const [startedEvt] = hookExecutionCallback.mock.calls[0]
+			const [terminalEvt] = hookExecutionCallback.mock.calls[1]
+
+			expect(startedEvt).toEqual(
+				expect.objectContaining({
+					phase: "started",
+					hookId: "hook1",
+					event: "PreToolUse",
+					command: "echo hook1",
+					cwd: "/project",
+					executionId: expect.stringContaining("base"),
+				}),
+			)
+
+			expect(terminalEvt).toEqual(
+				expect.objectContaining({
+					phase: "completed",
+					hookId: "hook1",
+					event: "PreToolUse",
+					executionId: startedEvt.executionId,
+					outputSummary: "outerr",
+					exitCode: 0,
+					durationMs: 100,
+				}),
+			)
+
+			compressSpy.mockRestore()
 		})
 
 		it("should execute hooks sequentially", async () => {

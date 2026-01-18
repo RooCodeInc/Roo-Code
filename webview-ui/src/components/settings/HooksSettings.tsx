@@ -325,7 +325,7 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 		)
 		// Preserve stable order based on HOOK_EVENT_OPTIONS
 		return HOOK_EVENT_OPTIONS.filter((e) => rawEvents.includes(e))
-	}, [hooksForId])
+	}, [hooksForId, hook.events])
 
 	const eventTooltipText = useCallback(
 		(event: HookEventOption) => {

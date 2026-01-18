@@ -180,6 +180,7 @@ export const clineSays = [
 	"condense_context_error",
 	"sliding_window_truncation",
 	"codebase_search_result",
+	"hook_execution",
 	"hook_triggered",
 	"user_edit_todos",
 ] as const

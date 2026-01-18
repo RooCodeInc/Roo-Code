@@ -2848,6 +2848,21 @@ export class ClineProvider
 		})
 	}
 
+	/**
+	 * Post streaming terminal-style hook execution output status updates to webview.
+	 *
+	 * NOTE: This intentionally matches the `commandExecutionStatus` pattern:
+	 * the payload is serialized JSON in `ExtensionMessage.text`.
+	 */
+	public postHookExecutionOutputStatusToWebview(
+		payload: import("@roo-code/types").HookExecutionOutputStatusPayload,
+	): void {
+		this.postMessageToWebview({
+			type: "hookExecutionOutputStatus",
+			text: JSON.stringify(payload),
+		})
+	}
+
 	public getSkillsManager(): SkillsManager | undefined {
 		return this.skillsManager
 	}

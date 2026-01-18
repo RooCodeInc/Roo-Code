@@ -13,8 +13,9 @@ import type {
 	HookProjectContext,
 	HookToolContext,
 	HooksExecutionResult,
-	ExecuteHooksOptions,
 } from "./types"
+
+import type { HookExecutionOutputStatusPayload } from "@roo-code/types"
 
 /**
  * Tool execution context for hooks.
@@ -71,9 +72,16 @@ export type HookStatusCallback = (status: {
 }) => void
 
 /**
+ * Callback for streaming terminal-style hook execution output status updates to the webview.
+ */
+export type HookOutputStatusCallback = (payload: HookExecutionOutputStatusPayload) => void
+
+/**
  * Callback for emitting messages to chat history.
  */
 export type SayCallback = (type: string, text?: string) => Promise<void>
+
+export type UpdateSayCallback = (messageTs: number, type: string, text?: string) => Promise<void>
 
 /**
  * Callback to check if hooks are globally enabled.
@@ -88,18 +96,24 @@ export type HooksEnabledGetter = () => boolean
 export class ToolExecutionHooks {
 	private hookManager: IHookManager | null
 	private statusCallback?: HookStatusCallback
+	private outputStatusCallback?: HookOutputStatusCallback
 	private sayCallback?: SayCallback
+	private updateSayCallback?: UpdateSayCallback
 	private hooksEnabledGetter?: HooksEnabledGetter
 
 	constructor(
 		hookManager: IHookManager | null,
 		statusCallback?: HookStatusCallback,
+		outputStatusCallback?: HookOutputStatusCallback,
 		sayCallback?: SayCallback,
+		updateSayCallback?: UpdateSayCallback,
 		hooksEnabledGetter?: HooksEnabledGetter,
 	) {
 		this.hookManager = hookManager
 		this.statusCallback = statusCallback
+		this.outputStatusCallback = outputStatusCallback
 		this.sayCallback = sayCallback
+		this.updateSayCallback = updateSayCallback
 		this.hooksEnabledGetter = hooksEnabledGetter
 	}
 
@@ -118,10 +132,21 @@ export class ToolExecutionHooks {
 	}
 
 	/**
+	 * Update the output status callback.
+	 */
+	setOutputStatusCallback(callback: HookOutputStatusCallback | undefined): void {
+		this.outputStatusCallback = callback
+	}
+
+	/**
 	 * Update the say callback.
 	 */
 	setSayCallback(callback: SayCallback | undefined): void {
 		this.sayCallback = callback
+	}
+
+	setUpdateSayCallback(callback: UpdateSayCallback | undefined): void {
+		this.updateSayCallback = callback
 	}
 
 	/**
@@ -171,9 +196,14 @@ export class ToolExecutionHooks {
 		})
 
 		try {
-			const result = await this.hookManager.executeHooks("PreToolUse", { context: hookContext })
+			const result = await this.hookManager.executeHooks("PreToolUse", {
+				context: hookContext,
+				executionId: `${context.session.taskId}:${Date.now()}`,
+				outputStatusCallback: this.outputStatusCallback,
+				hookExecutionCallback: this.buildHookExecutionCallback(),
+			})
 
-			await this.emitHookTriggeredMessages(result)
+			// Legacy: hook_triggered rows are deprecated by hook_execution and would duplicate.
 
 			if (result.blocked) {
 				// Hook blocked the execution
@@ -262,9 +292,14 @@ export class ToolExecutionHooks {
 		})
 
 		try {
-			const result = await this.hookManager.executeHooks("PostToolUse", { context: hookContext })
+			const result = await this.hookManager.executeHooks("PostToolUse", {
+				context: hookContext,
+				executionId: `${context.session.taskId}:${Date.now()}`,
+				outputStatusCallback: this.outputStatusCallback,
+				hookExecutionCallback: this.buildHookExecutionCallback(),
+			})
 
-			await this.emitHookTriggeredMessages(result)
+			// Legacy: hook_triggered rows are deprecated by hook_execution and would duplicate.
 
 			this.emitStatus({
 				status: "completed",
@@ -322,9 +357,14 @@ export class ToolExecutionHooks {
 		})
 
 		try {
-			const result = await this.hookManager.executeHooks("PostToolUseFailure", { context: hookContext })
+			const result = await this.hookManager.executeHooks("PostToolUseFailure", {
+				context: hookContext,
+				executionId: `${context.session.taskId}:${Date.now()}`,
+				outputStatusCallback: this.outputStatusCallback,
+				hookExecutionCallback: this.buildHookExecutionCallback(),
+			})
 
-			await this.emitHookTriggeredMessages(result)
+			// Legacy: hook_triggered rows are deprecated by hook_execution and would duplicate.
 
 			this.emitStatus({
 				status: "completed",
@@ -383,9 +423,14 @@ export class ToolExecutionHooks {
 		})
 
 		try {
-			const result = await this.hookManager.executeHooks("PermissionRequest", { context: hookContext })
+			const result = await this.hookManager.executeHooks("PermissionRequest", {
+				context: hookContext,
+				executionId: `${context.session.taskId}:${Date.now()}`,
+				outputStatusCallback: this.outputStatusCallback,
+				hookExecutionCallback: this.buildHookExecutionCallback(),
+			})
 
-			await this.emitHookTriggeredMessages(result)
+			// Legacy: hook_triggered rows are deprecated by hook_execution and would duplicate.
 
 			if (result.blocked) {
 				// Hook blocked - do not show approval dialog, deny the tool
@@ -501,23 +546,67 @@ export class ToolExecutionHooks {
 		}
 	}
 
-	/**
-	 * Emit hook triggered messages for successful hook executions.
-	 */
-	private async emitHookTriggeredMessages(result: HooksExecutionResult): Promise<void> {
-		if (!this.sayCallback) {
-			return
+	// Persisted hook_execution rows need to be stable across all hook runs for a task.
+	// Keep this mapping on the instance so multiple executeHooks() calls don't lose update ability.
+	private hookExecutionMessageTsByExecutionId = new Map<string, number>()
+	private hookExecutionCallbackInstance?: NonNullable<import("./types").ExecuteHooksOptions["hookExecutionCallback"]>
+
+	private buildHookExecutionCallback(): NonNullable<import("./types").ExecuteHooksOptions["hookExecutionCallback"]> {
+		if (this.hookExecutionCallbackInstance) {
+			return this.hookExecutionCallbackInstance
 		}
 
-		for (const hookResult of result.results) {
-			if (!hookResult.error && hookResult.exitCode === 0) {
-				try {
-					await this.sayCallback("hook_triggered", hookResult.hook.id)
-				} catch {
-					// Ignore callback errors
+		this.hookExecutionCallbackInstance = async (evt) => {
+			if (!this.sayCallback) return
+
+			if (evt.phase === "started") {
+				// Create one persisted row per hook run.
+				// We include an embedded messageTs so we can update the exact row later.
+				const messageTs = Date.now()
+				this.hookExecutionMessageTsByExecutionId.set(evt.executionId, messageTs)
+
+				const payload = {
+					executionId: evt.executionId,
+					hookId: evt.hookId,
+					event: evt.event,
+					toolName: evt.toolName,
+					command: evt.command,
+					// Required for stable updates.
+					messageTs,
 				}
+
+				await this.sayCallback("hook_execution", JSON.stringify(payload))
+				return
 			}
+
+			// Terminal states: update persisted row with a compressed output summary.
+			const messageTs = this.hookExecutionMessageTsByExecutionId.get(evt.executionId)
+			if (!messageTs || !this.updateSayCallback) {
+				return
+			}
+
+			const payload = {
+				executionId: evt.executionId,
+				hookId: evt.hookId,
+				event: evt.event,
+				toolName: evt.toolName,
+				command: evt.command,
+				messageTs,
+				result: {
+					phase: evt.phase,
+					exitCode: evt.exitCode,
+					durationMs: evt.durationMs,
+					blockMessage: evt.blockMessage,
+					error: evt.error,
+					modified: evt.modified,
+					outputSummary: evt.outputSummary,
+				},
+			}
+
+			await this.updateSayCallback(messageTs, "hook_execution", JSON.stringify(payload))
 		}
+
+		return this.hookExecutionCallbackInstance
 	}
 }
 
@@ -527,8 +616,17 @@ export class ToolExecutionHooks {
 export function createToolExecutionHooks(
 	hookManager: IHookManager | null,
 	statusCallback?: HookStatusCallback,
+	outputStatusCallback?: HookOutputStatusCallback,
 	sayCallback?: SayCallback,
+	updateSayCallback?: UpdateSayCallback,
 	hooksEnabledGetter?: HooksEnabledGetter,
 ): ToolExecutionHooks {
-	return new ToolExecutionHooks(hookManager, statusCallback, sayCallback, hooksEnabledGetter)
+	return new ToolExecutionHooks(
+		hookManager,
+		statusCallback,
+		outputStatusCallback,
+		sayCallback,
+		updateSayCallback,
+		hooksEnabledGetter,
+	)
 }

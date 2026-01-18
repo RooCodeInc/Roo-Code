@@ -29,6 +29,8 @@ import { filterMatchingHooks } from "./HookMatcher"
 import { executeHook, interpretResult, describeResult } from "./HookExecutor"
 import { updateHookConfig } from "./HookConfigWriter"
 
+import { Terminal } from "../../integrations/terminal/Terminal"
+
 /**
  * Default options for the HookManager.
  */
@@ -138,6 +140,12 @@ export class HookManager implements IHookManager {
 		const startTime = Date.now()
 		const results: HookExecutionResult[] = []
 
+		// Stable per-hook-run executionId seed for UI (keep ordering/semantics intact).
+		// If caller does not provide one, create a deterministic-enough unique id.
+		const baseExecutionId =
+			options.executionId ||
+			`${options.context.session.taskId}:${Date.now().toString(36)}:${Math.random().toString(36).slice(2, 8)}`
+
 		// Ensure config is loaded
 		if (!this.snapshot) {
 			await this.loadHooksConfig()
@@ -166,7 +174,30 @@ export class HookManager implements IHookManager {
 			this.log("debug", `Executing hook "${hook.id}" for ${event}`)
 
 			// Execute the hook
-			const result = await executeHook(hook, options.context, options.conversationHistory)
+			const executionId = `${baseExecutionId}:${event}:${hook.id}:${results.length}`
+			// Notify caller (Task/ToolExecutionHooks) that a hook run is starting so it can
+			// create a persisted `say: hook_execution` row keyed by this executionId.
+			try {
+				await options.hookExecutionCallback?.({
+					phase: "started",
+					executionId,
+					hookId: hook.id,
+					event,
+					toolName: options.context.tool?.name,
+					command: hook.command,
+					cwd: options.context.project.directory,
+				})
+			} catch {
+				// Ignore callback errors
+			}
+			const result = await executeHook(hook, options.context, options.conversationHistory, {
+				executionId,
+				toolName: options.context.tool?.name,
+				outputStatusCallback: options.outputStatusCallback,
+				outputThrottleMs: options.outputThrottleMs,
+				terminalOutputLineLimit: options.terminalOutputLineLimit,
+				terminalOutputCharacterLimit: options.terminalOutputCharacterLimit,
+			})
 			results.push(result)
 
 			// Record in history
@@ -177,6 +208,34 @@ export class HookManager implements IHookManager {
 
 			// Interpret the result
 			const interpretation = interpretResult(result)
+
+			// Notify caller of terminal state so it can update persisted chat row with a summary.
+			try {
+				const combinedOutput = `${result.stdout || ""}${result.stderr || ""}`
+				const outputSummary = Terminal.compressTerminalOutput(
+					combinedOutput,
+					options.terminalOutputLineLimit ?? 500,
+					options.terminalOutputCharacterLimit,
+				)
+
+				await options.hookExecutionCallback?.({
+					phase: interpretation.blocked ? "blocked" : interpretation.success ? "completed" : "failed",
+					executionId,
+					hookId: hook.id,
+					event,
+					toolName: options.context.tool?.name,
+					command: hook.command,
+					cwd: options.context.project.directory,
+					outputSummary,
+					exitCode: result.exitCode,
+					durationMs: result.duration,
+					blockMessage: interpretation.blockMessage,
+					error: result.error?.message,
+					modified: !!result.modification,
+				})
+			} catch {
+				// Ignore callback errors
+			}
 
 			// Check for blocking
 			if (interpretation.blocked) {

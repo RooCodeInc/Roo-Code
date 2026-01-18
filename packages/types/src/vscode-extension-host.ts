@@ -66,6 +66,7 @@ export interface ExtensionMessage {
 		| "acceptInput"
 		| "setHistoryPreviewCollapsed"
 		| "commandExecutionStatus"
+		| "hookExecutionOutputStatus"
 		| "mcpExecutionStatus"
 		| "vsCodeSetting"
 		| "authenticatedUser"
@@ -194,6 +195,121 @@ export interface ExtensionMessage {
 	historyItem?: HistoryItem
 	hookExecutionStatus?: HookExecutionStatusPayload
 }
+
+/**
+ * HookExecutionOutputStatusPayload
+ *
+ * Streaming terminal-style hook execution status updates.
+ *
+ * Pattern matches `commandExecutionStatus`: the payload is serialized JSON in
+ * [`ExtensionMessage.text`](packages/types/src/vscode-extension-host.ts:100).
+ */
+export const hookExecutionOutputStatusSchema = z.discriminatedUnion("status", [
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("started"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("output"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("exited"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("blocked"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("failed"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("fallback"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+])
+
+export type HookExecutionOutputStatusPayload = z.infer<typeof hookExecutionOutputStatusSchema>
 
 /**
  * HookExecutionStatusPayload

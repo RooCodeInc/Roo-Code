@@ -544,8 +544,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.toolExecutionHooks = createToolExecutionHooks(
 			provider.getHookManager() ?? null,
 			(status) => provider.postHookStatusToWebview(status),
+			(payload) => provider.postHookExecutionOutputStatusToWebview(payload),
 			async (type, text) => {
 				await this.say(type as ClineSay, text)
+			},
+			async (messageTs, type, text) => {
+				const message = this.findMessageByTimestamp(messageTs)
+				if (!message || message.type !== "say" || message.say !== (type as any)) {
+					return
+				}
+				message.text = text
+				await this.saveClineMessages()
+				await this.updateClineMessage(message)
 			},
 			// Getter for global hooksEnabled state
 			() => {

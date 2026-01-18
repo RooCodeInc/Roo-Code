@@ -47,7 +47,14 @@ describe("ToolExecutionHooks", () => {
 			const mockManager = createMockHookManager()
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, hooksEnabledGetter)
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				hooksEnabledGetter,
+			)
 
 			const result = await hooks.executePreToolUse(createMockContext())
 
@@ -61,7 +68,14 @@ describe("ToolExecutionHooks", () => {
 			const mockManager = createMockHookManager()
 			const hooksEnabledGetter: HooksEnabledGetter = () => true
 
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, hooksEnabledGetter)
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				hooksEnabledGetter,
+			)
 
 			await hooks.executePreToolUse(createMockContext())
 
@@ -72,7 +86,7 @@ describe("ToolExecutionHooks", () => {
 			const mockManager = createMockHookManager()
 
 			// No hooksEnabledGetter provided
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, undefined)
+			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, undefined, undefined, undefined)
 
 			await hooks.executePreToolUse(createMockContext())
 
@@ -83,7 +97,14 @@ describe("ToolExecutionHooks", () => {
 			const mockManager = createMockHookManager()
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, hooksEnabledGetter)
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				hooksEnabledGetter,
+			)
 
 			const result = await hooks.executePostToolUse(createMockContext(), "output", 100)
 
@@ -96,7 +117,14 @@ describe("ToolExecutionHooks", () => {
 			const mockManager = createMockHookManager()
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, hooksEnabledGetter)
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				hooksEnabledGetter,
+			)
 
 			const result = await hooks.executePostToolUseFailure(createMockContext(), "error", "error message")
 
@@ -109,7 +137,14 @@ describe("ToolExecutionHooks", () => {
 			const mockManager = createMockHookManager()
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, hooksEnabledGetter)
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				hooksEnabledGetter,
+			)
 
 			const result = await hooks.executePermissionRequest(createMockContext())
 
@@ -123,7 +158,14 @@ describe("ToolExecutionHooks", () => {
 			const mockManager = createMockHookManager()
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, hooksEnabledGetter)
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				hooksEnabledGetter,
+			)
 
 			expect(hooks.hasHooks()).toBe(false)
 		})
@@ -132,7 +174,14 @@ describe("ToolExecutionHooks", () => {
 			const mockManager = createMockHookManager()
 			const hooksEnabledGetter: HooksEnabledGetter = () => true
 
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, hooksEnabledGetter)
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				hooksEnabledGetter,
+			)
 
 			expect(hooks.hasHooks()).toBe(true)
 		})
@@ -143,7 +192,14 @@ describe("ToolExecutionHooks", () => {
 			const mockManager = createMockHookManager()
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
-			const hooks = createToolExecutionHooks(mockManager, undefined, undefined, hooksEnabledGetter)
+			const hooks = createToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				hooksEnabledGetter,
+			)
 
 			// Verify hooks don't execute when disabled
 			await hooks.executePreToolUse(createMockContext())
@@ -153,7 +209,7 @@ describe("ToolExecutionHooks", () => {
 		it("should work without hooksEnabledGetter for backwards compatibility", async () => {
 			const mockManager = createMockHookManager()
 
-			const hooks = createToolExecutionHooks(mockManager, undefined, undefined)
+			const hooks = createToolExecutionHooks(mockManager, undefined, undefined, undefined)
 
 			await hooks.executePreToolUse(createMockContext())
 			expect(mockManager.executeHooks).toHaveBeenCalled()
@@ -164,7 +220,7 @@ describe("ToolExecutionHooks", () => {
 		it("should allow updating the getter after construction", async () => {
 			const mockManager = createMockHookManager()
 
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, () => true)
+			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, undefined, undefined, () => true)
 
 			// First call with enabled
 			await hooks.executePreToolUse(createMockContext())
@@ -181,7 +237,7 @@ describe("ToolExecutionHooks", () => {
 
 	describe("No hook manager", () => {
 		it("should return default results when hookManager is null", async () => {
-			const hooks = new ToolExecutionHooks(null, undefined, undefined, () => true)
+			const hooks = new ToolExecutionHooks(null, undefined, undefined, undefined, undefined, () => true)
 
 			const result = await hooks.executePreToolUse(createMockContext())
 
@@ -190,7 +246,7 @@ describe("ToolExecutionHooks", () => {
 		})
 
 		it("hasHooks should return false when hookManager is null", () => {
-			const hooks = new ToolExecutionHooks(null, undefined, undefined, () => true)
+			const hooks = new ToolExecutionHooks(null, undefined, undefined, undefined, undefined, () => true)
 
 			expect(hooks.hasHooks()).toBe(false)
 		})
@@ -202,7 +258,14 @@ describe("ToolExecutionHooks", () => {
 			const statusCallback: HookStatusCallback = vi.fn()
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
-			const hooks = new ToolExecutionHooks(mockManager, statusCallback, undefined, hooksEnabledGetter)
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				statusCallback,
+				undefined,
+				undefined,
+				undefined,
+				hooksEnabledGetter,
+			)
 
 			await hooks.executePreToolUse(createMockContext())
 
@@ -214,11 +277,219 @@ describe("ToolExecutionHooks", () => {
 			const statusCallback: HookStatusCallback = vi.fn()
 			const hooksEnabledGetter: HooksEnabledGetter = () => true
 
-			const hooks = new ToolExecutionHooks(mockManager, statusCallback, undefined, hooksEnabledGetter)
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				statusCallback,
+				undefined,
+				undefined,
+				undefined,
+				hooksEnabledGetter,
+			)
 
 			await hooks.executePreToolUse(createMockContext())
 
 			expect(statusCallback).toHaveBeenCalled()
+		})
+	})
+
+	describe("Persisted hook_execution rows", () => {
+		it("should emit hook_execution on start and update it on completion", async () => {
+			const mockManager = createMockHookManager()
+			const sayCallback: SayCallback = vi.fn().mockResolvedValue(undefined)
+			const updateSayCallback = vi.fn().mockResolvedValue(undefined)
+			const hooksEnabledGetter: HooksEnabledGetter = () => true
+
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				sayCallback,
+				updateSayCallback,
+				hooksEnabledGetter,
+			)
+
+			await hooks.executePreToolUse(createMockContext())
+
+			const executeArgs = (mockManager.executeHooks as any).mock.calls[0][1]
+			expect(executeArgs.hookExecutionCallback).toEqual(expect.any(Function))
+
+			// Deterministic messageTs for the persisted row.
+			const nowSpy = vi.spyOn(Date, "now").mockReturnValueOnce(123456)
+
+			await executeArgs.hookExecutionCallback({
+				phase: "started",
+				executionId: "exec_1",
+				hookId: "hook_1",
+				event: "PreToolUse",
+				toolName: "Write",
+				command: "echo hi",
+				cwd: "/test/project",
+			})
+
+			expect(sayCallback).toHaveBeenCalledTimes(1)
+			expect(sayCallback).toHaveBeenCalledWith("hook_execution", expect.any(String))
+			const startPayload = JSON.parse((sayCallback as any).mock.calls[0][1])
+			expect(startPayload).toEqual(
+				expect.objectContaining({
+					executionId: "exec_1",
+					hookId: "hook_1",
+					event: "PreToolUse",
+					toolName: "Write",
+					command: "echo hi",
+					messageTs: 123456,
+				}),
+			)
+
+			await executeArgs.hookExecutionCallback({
+				phase: "completed",
+				executionId: "exec_1",
+				hookId: "hook_1",
+				event: "PreToolUse",
+				toolName: "Write",
+				command: "echo hi",
+				cwd: "/test/project",
+				outputSummary: "ok",
+				exitCode: 0,
+				durationMs: 10,
+				modified: false,
+			})
+
+			expect(updateSayCallback).toHaveBeenCalledTimes(1)
+			expect(updateSayCallback).toHaveBeenCalledWith(123456, "hook_execution", expect.any(String))
+			const updatePayload = JSON.parse((updateSayCallback as any).mock.calls[0][2])
+			expect(updatePayload).toEqual(
+				expect.objectContaining({
+					executionId: "exec_1",
+					hookId: "hook_1",
+					event: "PreToolUse",
+					toolName: "Write",
+					command: "echo hi",
+					messageTs: 123456,
+					result: expect.objectContaining({
+						phase: "completed",
+						exitCode: 0,
+						durationMs: 10,
+						modified: false,
+						outputSummary: "ok",
+					}),
+				}),
+			)
+
+			nowSpy.mockRestore()
+		})
+
+		it("should update persisted hook_execution row with blocked terminal state", async () => {
+			const mockManager = createMockHookManager()
+			const sayCallback: SayCallback = vi.fn().mockResolvedValue(undefined)
+			const updateSayCallback = vi.fn().mockResolvedValue(undefined)
+			const hooksEnabledGetter: HooksEnabledGetter = () => true
+
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				sayCallback,
+				updateSayCallback,
+				hooksEnabledGetter,
+			)
+
+			await hooks.executePreToolUse(createMockContext())
+			const executeArgs = (mockManager.executeHooks as any).mock.calls[0][1]
+
+			vi.spyOn(Date, "now").mockReturnValueOnce(111)
+			await executeArgs.hookExecutionCallback({
+				phase: "started",
+				executionId: "exec_2",
+				hookId: "hook_2",
+				event: "PreToolUse",
+				toolName: "Write",
+				command: "echo block",
+				cwd: "/test/project",
+			})
+
+			await executeArgs.hookExecutionCallback({
+				phase: "blocked",
+				executionId: "exec_2",
+				hookId: "hook_2",
+				event: "PreToolUse",
+				toolName: "Write",
+				command: "echo block",
+				cwd: "/test/project",
+				outputSummary: "blocked-output",
+				exitCode: 2,
+				durationMs: 12,
+				blockMessage: "Policy violation",
+				modified: true,
+			})
+
+			expect(updateSayCallback).toHaveBeenCalledTimes(1)
+			const updatePayload = JSON.parse((updateSayCallback as any).mock.calls[0][2])
+			expect(updatePayload.result).toEqual(
+				expect.objectContaining({
+					phase: "blocked",
+					exitCode: 2,
+					durationMs: 12,
+					blockMessage: "Policy violation",
+					modified: true,
+					outputSummary: "blocked-output",
+				}),
+			)
+		})
+
+		it("should update persisted hook_execution row with failed terminal state", async () => {
+			const mockManager = createMockHookManager()
+			const sayCallback: SayCallback = vi.fn().mockResolvedValue(undefined)
+			const updateSayCallback = vi.fn().mockResolvedValue(undefined)
+			const hooksEnabledGetter: HooksEnabledGetter = () => true
+
+			const hooks = new ToolExecutionHooks(
+				mockManager,
+				undefined,
+				undefined,
+				sayCallback,
+				updateSayCallback,
+				hooksEnabledGetter,
+			)
+
+			await hooks.executePreToolUse(createMockContext())
+			const executeArgs = (mockManager.executeHooks as any).mock.calls[0][1]
+
+			vi.spyOn(Date, "now").mockReturnValueOnce(222)
+			await executeArgs.hookExecutionCallback({
+				phase: "started",
+				executionId: "exec_3",
+				hookId: "hook_3",
+				event: "PreToolUse",
+				toolName: "Write",
+				command: "echo fail",
+				cwd: "/test/project",
+			})
+
+			await executeArgs.hookExecutionCallback({
+				phase: "failed",
+				executionId: "exec_3",
+				hookId: "hook_3",
+				event: "PreToolUse",
+				toolName: "Write",
+				command: "echo fail",
+				cwd: "/test/project",
+				outputSummary: "failed-output",
+				exitCode: 1,
+				durationMs: 34,
+				error: "Hook error",
+			})
+
+			expect(updateSayCallback).toHaveBeenCalledTimes(1)
+			const updatePayload = JSON.parse((updateSayCallback as any).mock.calls[0][2])
+			expect(updatePayload.result).toEqual(
+				expect.objectContaining({
+					phase: "failed",
+					exitCode: 1,
+					durationMs: 34,
+					error: "Hook error",
+					outputSummary: "failed-output",
+				}),
+			)
 		})
 	})
 })

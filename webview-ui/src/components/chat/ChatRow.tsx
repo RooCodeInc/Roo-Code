@@ -43,6 +43,7 @@ import { BatchDiffApproval } from "./BatchDiffApproval"
 import { ProgressIndicator } from "./ProgressIndicator"
 import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
+import { HookExecution } from "./HookExecution"
 import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
 import { InProgressRow, CondensationResultRow, CondensationErrorRow, TruncationResultRow } from "./context-management"
@@ -1365,6 +1366,8 @@ export const ChatRowContent = ({
 							checkpoint={message.checkpoint}
 						/>
 					)
+				case "hook_execution":
+					return <HookExecution message={message} />
 				case "hook_triggered":
 					return (
 						<div

@@ -6,6 +6,7 @@
  */
 
 import { z } from "zod"
+import type { HookExecutionOutputStatusPayload } from "@roo-code/types"
 
 // ============================================================================
 // Hook Events
@@ -404,6 +405,40 @@ export interface ExecuteHooksOptions {
 
 	/** Conversation history (will be included only for hooks with includeConversationHistory: true) */
 	conversationHistory?: ConversationHistoryEntry[]
+
+	/** Optional stable base execution id for this hook batch (if omitted, manager generates one). */
+	executionId?: string
+
+	/** Optional streaming output status callback (used by chat terminal UI). */
+	outputStatusCallback?: (payload: HookExecutionOutputStatusPayload) => void
+
+	/** Optional output throttling interval in ms (default handled by executor). */
+	outputThrottleMs?: number
+
+	/** Optional output compression / truncation settings (default handled by executor). */
+	terminalOutputLineLimit?: number
+	terminalOutputCharacterLimit?: number
+
+	/**
+	 * Optional lifecycle callback for persisted hook_execution chat rows.
+	 * Called for each hook run with its unique executionId.
+	 */
+	hookExecutionCallback?: (event: {
+		phase: "started" | "completed" | "failed" | "blocked"
+		executionId: string
+		hookId: string
+		event: HookEventType
+		toolName?: string
+		command: string
+		cwd: string
+		/** Compressed/trimmed summary output for transcript persistence (terminal states only). */
+		outputSummary?: string
+		exitCode?: number | null
+		durationMs?: number
+		blockMessage?: string
+		error?: string
+		modified?: boolean
+	}) => void | Promise<void>
 }
 
 /**
