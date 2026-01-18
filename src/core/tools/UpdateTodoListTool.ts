@@ -26,11 +26,23 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 		const { pushToolResult, handleError, askApproval, toolProtocol } = callbacks
 
 		try {
-			// Pull the previous todo list so we can preserve metadata fields across update_todo_list calls.
-			// Prefer the in-memory task.todoList when available; otherwise fall back to the latest todo list
-			// stored in the conversation history.
-			const previousTodos =
-				getTodoListForTask(task) ?? (getLatestTodo(task.clineMessages) as unknown as TodoItem[])
+			const previousFromMemory = getTodoListForTask(task)
+			const previousFromHistory = getLatestTodo(task.clineMessages) as unknown as TodoItem[] | undefined
+
+			const historyHasMetadata =
+				Array.isArray(previousFromHistory) &&
+				previousFromHistory.some(
+					(t) => t?.subtaskId !== undefined || t?.tokens !== undefined || t?.cost !== undefined,
+				)
+
+			const previousTodos: TodoItem[] =
+				(previousFromMemory?.length ?? 0) === 0
+					? (previousFromHistory ?? [])
+					: (previousFromHistory?.length ?? 0) === 0
+						? (previousFromMemory ?? [])
+						: historyHasMetadata
+							? (previousFromHistory ?? [])
+							: (previousFromMemory ?? [])
 
 			const todosRaw = params.todos
 
