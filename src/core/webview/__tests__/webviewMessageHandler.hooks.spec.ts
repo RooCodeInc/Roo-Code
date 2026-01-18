@@ -70,6 +70,14 @@ vi.mock("../../../utils/safeWriteText", () => ({
 	safeWriteText: vi.fn().mockResolvedValue(undefined),
 }))
 
+vi.mock("../../../services/hooks/HookConfigWriter", async () => {
+	const actual = await vi.importActual<any>("../../../services/hooks/HookConfigWriter")
+	return {
+		...actual,
+		copyHookConfig: vi.fn(),
+	}
+})
+
 vi.mock("../../../api/providers/fetchers/modelCache")
 
 import * as vscode from "vscode"
@@ -78,6 +86,7 @@ import * as fsUtils from "../../../utils/fs"
 import { safeWriteJson } from "../../../utils/safeWriteJson"
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
+import { copyHookConfig } from "../../../services/hooks/HookConfigWriter"
 
 // Create mock HookManager
 const createMockHookManager = (): IHookManager => ({
@@ -395,13 +404,10 @@ describe("webviewMessageHandler - hooks commands", () => {
 
 			vi.mocked(fs.readFile).mockResolvedValueOnce(
 				JSON.stringify({
-					version: "1",
-					hooks: {
-						PreToolUse: [
-							{ id: hookId, command: "echo hi" },
-							{ id: "keep", command: "echo keep" },
-						],
-					},
+					hooks: [
+						{ id: hookId, events: ["PreToolUse"], command: "echo hi" },
+						{ id: "keep", events: ["PreToolUse"], command: "echo keep" },
+					],
 				}),
 			)
 
@@ -413,10 +419,7 @@ describe("webviewMessageHandler - hooks commands", () => {
 			expect(safeWriteJson).toHaveBeenCalledWith(
 				hookFilePath,
 				expect.objectContaining({
-					version: "1",
-					hooks: {
-						PreToolUse: [{ id: "keep", command: "echo keep" }],
-					},
+					hooks: [{ id: "keep", events: ["PreToolUse"], command: "echo keep" }],
 				}),
 			)
 			expect(mockHookManager.reloadHooksConfig).toHaveBeenCalledTimes(1)
@@ -450,10 +453,7 @@ describe("webviewMessageHandler - hooks commands", () => {
 
 			vi.mocked(fs.readFile).mockResolvedValueOnce(
 				JSON.stringify({
-					version: "1",
-					hooks: {
-						PreToolUse: [{ id: "keep", command: "echo keep" }],
-					},
+					hooks: [{ id: "keep", events: ["PreToolUse"], command: "echo keep" }],
 				}),
 			)
 
@@ -466,6 +466,94 @@ describe("webviewMessageHandler - hooks commands", () => {
 			expect(mockHookManager.reloadHooksConfig).not.toHaveBeenCalled()
 			expect(mockClineProvider.postStateToWebview).not.toHaveBeenCalled()
 			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Failed to delete hook")
+		})
+	})
+
+	describe("hooksCopyHook", () => {
+		it("should copy hook via HookConfigWriter.copyHookConfig and then reload + post state", async () => {
+			const hookId = "hook-to-copy"
+			const hookFilePath = "/mock/workspace/.roo/hooks/hooks.json"
+
+			const hooksById = new Map<string, ResolvedHook>()
+			hooksById.set(hookId, {
+				id: hookId,
+				event: "PreToolUse" as any,
+				matcher: ".*",
+				command: "echo hi",
+				enabled: true,
+				source: "project" as any,
+				timeout: 30,
+				filePath: hookFilePath,
+				includeConversationHistory: false,
+			} as any)
+
+			vi.mocked(mockHookManager.getConfigSnapshot).mockReturnValue({
+				hooksByEvent: new Map(),
+				hooksById,
+				loadedAt: new Date(),
+				disabledHookIds: new Set(),
+				hasProjectHooks: true,
+			} as HooksConfigSnapshot)
+
+			vi.mocked(copyHookConfig as any).mockResolvedValueOnce("hook-to-copy-copy")
+
+			await webviewMessageHandler(mockClineProvider, {
+				type: "hooksCopyHook",
+				hookId,
+			} as any)
+
+			expect(copyHookConfig).toHaveBeenCalledWith(hookFilePath, hookId)
+			expect(mockHookManager.reloadHooksConfig).toHaveBeenCalledTimes(1)
+			expect(mockClineProvider.postStateToWebview).toHaveBeenCalledTimes(1)
+			expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith(
+				expect.objectContaining({
+					type: "hooksCopyHookResult",
+					success: true,
+					values: expect.objectContaining({ hookId: "hook-to-copy-copy", filePath: hookFilePath }),
+				}),
+			)
+		})
+
+		it("should show error and send failure result when copy fails", async () => {
+			const hookId = "hook-to-copy"
+			const hookFilePath = "/mock/workspace/.roo/hooks/hooks.json"
+
+			const hooksById = new Map<string, ResolvedHook>()
+			hooksById.set(hookId, {
+				id: hookId,
+				event: "PreToolUse" as any,
+				matcher: ".*",
+				command: "echo hi",
+				enabled: true,
+				source: "project" as any,
+				timeout: 30,
+				filePath: hookFilePath,
+				includeConversationHistory: false,
+			} as any)
+
+			vi.mocked(mockHookManager.getConfigSnapshot).mockReturnValue({
+				hooksByEvent: new Map(),
+				hooksById,
+				loadedAt: new Date(),
+				disabledHookIds: new Set(),
+				hasProjectHooks: true,
+			} as HooksConfigSnapshot)
+
+			vi.mocked(copyHookConfig as any).mockRejectedValueOnce(new Error("boom"))
+
+			await webviewMessageHandler(mockClineProvider, {
+				type: "hooksCopyHook",
+				hookId,
+			} as any)
+
+			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Failed to copy hook")
+			expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith(
+				expect.objectContaining({
+					type: "hooksCopyHookResult",
+					success: false,
+					error: expect.stringContaining("boom"),
+				}),
+			)
 		})
 	})
 

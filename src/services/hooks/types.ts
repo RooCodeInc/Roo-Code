@@ -58,33 +58,45 @@ export function isBlockingEvent(event: HookEventType): boolean {
 /**
  * Schema for a single hook definition within a config file.
  */
-export const HookDefinitionSchema = z.object({
-	/** Unique identifier for this hook */
-	id: z.string().min(1, "Hook ID cannot be empty"),
+export const HookDefinitionSchema = z
+	.object({
+		/** Unique identifier for this hook */
+		id: z.string().min(1, "Hook ID cannot be empty"),
 
-	/** Tool name filter (regex/glob pattern). If omitted, matches all tools. */
-	matcher: z.string().optional(),
+		/** Tool name filter (regex/glob pattern). If omitted, matches all tools. */
+		matcher: z.string().optional(),
 
-	/** Whether this hook is enabled. Defaults to true. */
-	enabled: z.boolean().optional().default(true),
+		/** Whether this hook is enabled. Defaults to true. */
+		enabled: z.boolean().optional().default(true),
 
-	/** Shell command to execute */
-	command: z.string().min(1, "Command cannot be empty"),
+		/** Shell command to execute */
+		command: z.string().min(1, "Command cannot be empty"),
 
-	/** Timeout in seconds. Defaults to 60. */
-	timeout: z.number().positive().optional().default(60),
+		/** Timeout in seconds. Defaults to 60. */
+		timeout: z.number().positive().optional().default(60),
 
-	/** Human-readable description of what this hook does */
-	description: z.string().optional(),
+		/** Human-readable description of what this hook does */
+		description: z.string().optional(),
 
-	/** Override shell (default: user's shell on Unix, PowerShell on Windows) */
-	shell: z.string().optional(),
+		/** Override shell (default: user's shell on Unix, PowerShell on Windows) */
+		shell: z.string().optional(),
 
-	/** Opt-in to receive conversation history in stdin. Defaults to false. */
-	includeConversationHistory: z.boolean().optional().default(false),
-})
+		/** Opt-in to receive conversation history in stdin. Defaults to false. */
+		includeConversationHistory: z.boolean().optional().default(false),
+	})
+	.strip()
 
 export type HookDefinition = z.infer<typeof HookDefinitionSchema>
+
+/**
+ * Schema for a single hook definition in the new (hook-centric) config format.
+ */
+export const HookDefinitionWithEventsSchema = HookDefinitionSchema.extend({
+	/** Event types this hook should run for */
+	events: z.array(HookEventType).min(1, "Hook must have at least one event"),
+}).strip()
+
+export type HookDefinitionWithEvents = z.infer<typeof HookDefinitionWithEventsSchema>
 
 // ============================================================================
 // Hook Config File Schema
@@ -93,13 +105,27 @@ export type HookDefinition = z.infer<typeof HookDefinitionSchema>
 /**
  * Schema for a hooks configuration file (.roo/hooks/*.yaml or *.json).
  */
-export const HooksConfigFileSchema = z.object({
-	/** Config format version */
-	version: z.literal("1"),
+export const LegacyHooksConfigFileSchema = z
+	.object({
+		/** Hooks organized by event type (legacy format) */
+		hooks: z.record(HookEventType, z.array(HookDefinitionSchema)).optional().default({}),
+	})
+	.strip()
 
-	/** Hooks organized by event type */
-	hooks: z.record(HookEventType, z.array(HookDefinitionSchema)).optional().default({}),
-})
+export type LegacyHooksConfigFile = z.infer<typeof LegacyHooksConfigFileSchema>
+
+export const HooksConfigFileSchema = z.union([
+	z
+		.object({
+			/** Hooks stored as an array with an events field (new format) */
+			hooks: z.array(HookDefinitionWithEventsSchema).optional().default([]),
+		})
+		.strip(),
+	LegacyHooksConfigFileSchema,
+])
+// Strip unknown keys (e.g., legacy version key)
+// so the system does not read/write/require version keys.
+// Note: .strip() is already applied to each branch above.
 
 export type HooksConfigFile = z.infer<typeof HooksConfigFileSchema>
 
@@ -116,9 +142,16 @@ export type HookSource = "project" | "mode" | "global"
  * Data for updating a hook configuration.
  */
 export interface HookUpdateData {
+	/** Rename the hook ID (must be unique within the file) */
+	id?: string
 	events?: HookEventType[]
 	matcher?: string
+	command?: string
 	timeout?: number
+	enabled?: boolean
+	description?: string
+	shell?: string
+	includeConversationHistory?: boolean
 }
 
 /**

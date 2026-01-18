@@ -16,6 +16,7 @@ import YAML from "yaml"
 import { z } from "zod"
 import {
 	HooksConfigFileSchema,
+	LegacyHooksConfigFileSchema,
 	HooksConfigSnapshot,
 	HookDefinition,
 	ResolvedHook,
@@ -98,6 +99,46 @@ function validateConfig(
 	return { success: false, errors }
 }
 
+function toHooksByEventMap(data: z.infer<typeof HooksConfigFileSchema>): Map<HookEventType, HookDefinition[]> {
+	const hooks = new Map<HookEventType, HookDefinition[]>()
+
+	// New format: hooks: HookDefinitionWithEvents[]
+	if (Array.isArray((data as any).hooks)) {
+		for (const def of (data as any).hooks as Array<any>) {
+			const events: HookEventType[] = Array.isArray(def?.events) ? def.events : []
+			for (const event of events) {
+				const hookDef: HookDefinition = {
+					id: def.id,
+					matcher: def.matcher,
+					enabled: def.enabled,
+					command: def.command,
+					timeout: def.timeout,
+					description: def.description,
+					shell: def.shell,
+					includeConversationHistory: def.includeConversationHistory,
+				}
+				if (!hooks.has(event)) {
+					hooks.set(event, [])
+				}
+				hooks.get(event)!.push(hookDef)
+			}
+		}
+		return hooks
+	}
+
+	// Legacy format: hooks: Record<Event, HookDefinition[]>
+	const legacy = LegacyHooksConfigFileSchema.parse(data)
+	const hooksRecord = legacy.hooks || {}
+	for (const [eventStr, definitions] of Object.entries(hooksRecord)) {
+		const event = eventStr as HookEventType
+		if (definitions && definitions.length > 0) {
+			hooks.set(event, definitions)
+		}
+	}
+
+	return hooks
+}
+
 /**
  * Load a single config file.
  */
@@ -119,14 +160,7 @@ async function loadConfigFile(filePath: string, source: HookSource): Promise<Loa
 			return result
 		}
 
-		// Convert hooks record to Map
-		const hooksRecord = validated.data.hooks || {}
-		for (const [eventStr, definitions] of Object.entries(hooksRecord)) {
-			const event = eventStr as HookEventType
-			if (definitions && definitions.length > 0) {
-				result.hooks.set(event, definitions)
-			}
-		}
+		result.hooks = toHooksByEventMap(validated.data)
 	} catch (err) {
 		if ((err as NodeJS.ErrnoException).code === "ENOENT") {
 			// File doesn't exist - not an error, just skip

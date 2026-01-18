@@ -96,6 +96,7 @@ export interface ExtensionMessage {
 		| "modes"
 		| "taskWithAggregatedCosts"
 		| "hookExecutionStatus"
+		| "hooksCopyHookResult"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
@@ -626,6 +627,7 @@ export interface WebviewMessage {
 		| "hooksOpenHookFile"
 		| "hooksCreateNew"
 		| "hooksUpdateHook"
+		| "hooksCopyHook"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -688,6 +690,12 @@ export interface WebviewMessage {
 	hookUpdates?: {
 		events?: string[]
 		matcher?: string
+		id?: string
+		command?: string
+		enabled?: boolean
+		description?: string
+		shell?: string
+		includeConversationHistory?: boolean
 		timeout?: number
 	} // For hooksUpdateHook
 	filePath?: string // For hooksOpenHookFile

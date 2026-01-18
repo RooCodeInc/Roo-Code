@@ -49,13 +49,12 @@ describe("HookConfigLoader", () => {
 
 		it("should parse YAML config files", async () => {
 			const yamlContent = `
-version: "1"
 hooks:
-  PreToolUse:
-    - id: lint-check
-      matcher: "Edit|Write"
-      command: "./lint.sh"
-      timeout: 30
+  - id: lint-check
+    events: ["PreToolUse"]
+    matcher: "Edit|Write"
+    command: "./lint.sh"
+    timeout: 30
 `
 			mockFsPromises.readdir.mockImplementation(async (dirPath) => {
 				const dir = dirPath.toString()
@@ -84,10 +83,7 @@ hooks:
 
 		it("should parse JSON config files", async () => {
 			const jsonContent = JSON.stringify({
-				version: "1",
-				hooks: {
-					PostToolUse: [{ id: "notify-slack", command: "./notify.sh" }],
-				},
+				hooks: [{ id: "notify-slack", events: ["PostToolUse"], command: "./notify.sh" }],
 			})
 
 			mockFsPromises.readdir.mockImplementation(async (dirPath) => {
@@ -113,11 +109,10 @@ hooks:
 		it("should report validation errors for invalid config", async () => {
 			// Missing required 'command' field
 			const invalidYaml = `
-version: "1"
 hooks:
-  PreToolUse:
-    - id: bad-hook
-      command: ""
+  - id: bad-hook
+    events: ["PreToolUse"]
+    command: ""
 `
 			mockFsPromises.readdir.mockImplementation(async (dirPath) => {
 				const dir = dirPath.toString()
@@ -142,18 +137,16 @@ hooks:
 
 		it("should merge configs with project taking precedence over global", async () => {
 			const globalYaml = `
-version: "1"
 hooks:
-  PreToolUse:
-    - id: shared-hook
-      command: "global-command"
+  - id: shared-hook
+    events: ["PreToolUse"]
+    command: "global-command"
 `
 			const projectYaml = `
-version: "1"
 hooks:
-  PreToolUse:
-    - id: shared-hook
-      command: "project-command"
+  - id: shared-hook
+    events: ["PreToolUse"]
+    command: "project-command"
 `
 			mockFsPromises.readdir.mockImplementation(async (dirPath) => {
 				const dir = dirPath.toString()
@@ -184,11 +177,10 @@ hooks:
 
 		it("should include mode-specific hooks when mode is provided", async () => {
 			const modeYaml = `
-version: "1"
 hooks:
-  PreToolUse:
-    - id: mode-hook
-      command: "./mode-specific.sh"
+  - id: mode-hook
+    events: ["PreToolUse"]
+    command: "./mode-specific.sh"
 `
 			mockFsPromises.readdir.mockImplementation(async (dirPath) => {
 				const dir = dirPath.toString()
@@ -212,11 +204,10 @@ hooks:
 
 		it("should set hasProjectHooks flag when project hooks exist", async () => {
 			const projectYaml = `
-version: "1"
 hooks:
-  PreToolUse:
-    - id: project-hook
-      command: "./project.sh"
+  - id: project-hook
+    events: ["PreToolUse"]
+    command: "./project.sh"
 `
 			mockFsPromises.readdir.mockImplementation(async (dirPath) => {
 				const dir = dirPath.toString()

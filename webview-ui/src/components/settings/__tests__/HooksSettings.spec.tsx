@@ -7,6 +7,12 @@ import type { HookInfo, HookExecutionRecord, HooksState } from "@roo-code/types"
 
 // Mock webview-ui-toolkit components
 vi.mock("@vscode/webview-ui-toolkit/react", () => ({
+	VSCodeDropdown: ({ children, value, onChange, disabled }: any) => (
+		<select value={value} onChange={onChange} disabled={disabled} data-testid="vscode-dropdown">
+			{children}
+		</select>
+	),
+	VSCodeOption: ({ children, value }: any) => <option value={value}>{children}</option>,
 	VSCodePanels: ({ children, ...props }: any) => (
 		<div data-testid="vscode-panels" {...props}>
 			{children}
@@ -57,6 +63,7 @@ let currentHooksState = mockHooksState
 vi.mock("@src/context/ExtensionStateContext", () => ({
 	useExtensionState: () => ({
 		hooks: currentHooksState,
+		hooksEnabled: true,
 	}),
 }))
 
@@ -115,13 +122,14 @@ describe("HooksSettings", () => {
 	it("renders hooks list when hooks are configured", () => {
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			matcher: "git*",
 			commandPreview: "echo 'Before git command'",
 			enabled: true,
 			source: "project",
 			timeout: 30,
 			description: "Test hook",
+			filePath: "/path/to/hooks.json",
 		}
 
 		currentHooksState = {
@@ -141,13 +149,14 @@ describe("HooksSettings", () => {
 	it("expands and collapses hook accordion on click", () => {
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			matcher: "git*",
 			commandPreview: "echo 'Before git command'",
 			enabled: true,
 			source: "project",
 			timeout: 30,
 			description: "Test hook",
+			filePath: "/path/to/hooks.json",
 		}
 
 		currentHooksState = {
@@ -173,10 +182,12 @@ describe("HooksSettings", () => {
 
 		// Check Config tab content (visible by default usually or we can check panels exist)
 		expect(screen.getByText(mockHook.event)).toBeInTheDocument()
-		expect(screen.getByText(mockHook.matcher!)).toBeInTheDocument()
+		// Matcher is split into tool-group checkboxes + custom matcher input
+		const customMatcherInput = screen.getByLabelText("Custom matcher") as HTMLInputElement
+		expect(customMatcherInput).toHaveValue(mockHook.matcher)
 
-		// Check Command tab content
-		expect(screen.getByText(mockHook.commandPreview)).toBeInTheDocument()
+		// Command textarea should be present
+		expect(screen.getByTestId(`command-textarea-${mockHook.id}`)).toBeInTheDocument()
 
 		// Click to collapse
 		fireEvent.click(hookHeader!)
@@ -188,17 +199,18 @@ describe("HooksSettings", () => {
 	it("shows per-hook logs in Logs tab", () => {
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "global",
 			timeout: 30,
+			filePath: "/path/to/hooks.json",
 		}
 
 		const mockRecord: HookExecutionRecord = {
 			timestamp: new Date().toISOString(),
 			hookId: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			toolName: "write_to_file",
 			exitCode: 0,
 			duration: 150,
@@ -219,21 +231,22 @@ describe("HooksSettings", () => {
 		fireEvent.click(hookHeader!)
 
 		// Find Logs tab panel content
-		expect(screen.getByTestId("panel-view-logs")).toBeInTheDocument()
+		expect(screen.getByTestId("panel-logs")).toBeInTheDocument()
 		expect(screen.getByText(mockRecord.toolName!)).toBeInTheDocument()
 		expect(screen.getByText("settings:hooks.status.completed")).toBeInTheDocument()
 	})
 
-	it("renders command preview with wrapping enabled (no truncation)", () => {
+	it("renders command textarea and preserves content", () => {
 		const longCommand = "long_command_".repeat(20)
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			matcher: "git*",
 			commandPreview: longCommand,
 			enabled: true,
 			source: "project",
 			timeout: 30,
+			filePath: "/path/to/hooks.json",
 		}
 
 		currentHooksState = {
@@ -248,28 +261,25 @@ describe("HooksSettings", () => {
 		const hookHeader = screen.getByText(mockHook.id).closest("div")
 		fireEvent.click(hookHeader!)
 
-		const commandCode = screen.getByTestId(`command-preview-${mockHook.id}`)
-		expect(commandCode).toHaveClass("whitespace-pre-wrap")
-		expect(commandCode).toHaveClass("break-words")
-		expect(commandCode).not.toHaveClass("truncate")
-		expect(commandCode).toHaveTextContent(longCommand)
-		expect(commandCode.textContent).not.toContain("...")
+		const commandTextArea = screen.getByTestId(`command-textarea-${mockHook.id}`) as HTMLTextAreaElement
+		expect(commandTextArea).toHaveValue(longCommand)
 	})
 
 	it("renders log items with wrapping enabled (no truncation)", () => {
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "global",
 			timeout: 30,
+			filePath: "/path/to/hooks.json",
 		}
 
 		const mockRecord: HookExecutionRecord = {
 			timestamp: new Date().toISOString(),
 			hookId: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			toolName: "very_long_tool_name_that_should_not_be_truncated_" + "x".repeat(20),
 			exitCode: 0,
 			duration: 150,
@@ -297,26 +307,28 @@ describe("HooksSettings", () => {
 	it("filters logs per hook correctly", () => {
 		const mockHook1: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "global",
 			timeout: 30,
+			filePath: "/path/to/hooks.json",
 		}
 
 		const mockHook2: HookInfo = {
 			id: "hook-2",
-			event: "after_execute_command",
+			event: "PostToolUse",
 			commandPreview: "echo after",
 			enabled: true,
 			source: "global",
 			timeout: 30,
+			filePath: "/path/to/hooks.json",
 		}
 
 		const record1: HookExecutionRecord = {
 			timestamp: new Date().toISOString(),
 			hookId: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			toolName: "write_to_file",
 			exitCode: 0,
 			duration: 100,
@@ -327,7 +339,7 @@ describe("HooksSettings", () => {
 		const record2: HookExecutionRecord = {
 			timestamp: new Date().toISOString(),
 			hookId: "hook-2",
-			event: "after_execute_command",
+			event: "PostToolUse",
 			toolName: "read_file",
 			exitCode: 0,
 			duration: 50,
@@ -356,11 +368,12 @@ describe("HooksSettings", () => {
 	it("shows 'no logs' message when hook has no execution history", () => {
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "global",
 			timeout: 30,
+			filePath: "/path/to/hooks.json",
 		}
 
 		currentHooksState = {
@@ -449,11 +462,12 @@ describe("HooksSettings", () => {
 		const { vscode } = await import("@src/utils/vscode")
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "global",
 			timeout: 30,
+			filePath: "/path/to/hooks.json",
 		}
 
 		currentHooksState = {
@@ -477,11 +491,12 @@ describe("HooksSettings", () => {
 		const { vscode } = await import("@src/utils/vscode")
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "global",
 			timeout: 30,
+			filePath: "/path/to/hooks.json",
 		}
 
 		currentHooksState = {
@@ -511,11 +526,12 @@ describe("HooksSettings", () => {
 	it("renders green status dot in collapsed row", () => {
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "global",
 			timeout: 30,
+			filePath: "/path/to/hooks.json",
 		}
 
 		currentHooksState = {
@@ -535,11 +551,12 @@ describe("HooksSettings", () => {
 		const { vscode } = await import("@src/utils/vscode")
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "project",
 			timeout: 30,
+			filePath: "/path/to/hooks.json",
 		}
 
 		currentHooksState = {
@@ -559,11 +576,111 @@ describe("HooksSettings", () => {
 		})
 	})
 
+	it("sends hooksCopyHook message when copy button is clicked", async () => {
+		const { vscode } = await import("@src/utils/vscode")
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "PreToolUse",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "project",
+			timeout: 30,
+			filePath: "/path/to/hooks.json",
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		fireEvent.click(screen.getByTestId("hook-copy-hook-1"))
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "hooksCopyHook",
+			hookId: "hook-1",
+		})
+	})
+
+	it("sends hooksUpdateHook with id when Hook ID input blurs", async () => {
+		const { vscode } = await import("@src/utils/vscode")
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "PreToolUse",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "project",
+			timeout: 30,
+			filePath: "/path/to/hooks.json",
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		// Expand hook
+		const hookHeader = screen.getByText(mockHook.id).closest("div")
+		fireEvent.click(hookHeader!)
+
+		const idInput = screen.getByDisplayValue(mockHook.id) as HTMLInputElement
+		fireEvent.change(idInput, { target: { value: "hook-1-renamed" } })
+		fireEvent.blur(idInput)
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "hooksUpdateHook",
+			hookId: "hook-1",
+			filePath: "/path/to/hooks.json",
+			hookUpdates: { id: "hook-1-renamed" },
+		})
+	})
+
+	it("sends hooksUpdateHook with command when command textarea blurs", async () => {
+		const { vscode } = await import("@src/utils/vscode")
+		const mockHook: HookInfo = {
+			id: "hook-1",
+			event: "PreToolUse",
+			commandPreview: "echo test",
+			enabled: true,
+			source: "project",
+			timeout: 30,
+			filePath: "/path/to/hooks.json",
+		}
+
+		currentHooksState = {
+			enabledHooks: [mockHook],
+			executionHistory: [],
+			hasProjectHooks: false,
+		}
+
+		render(<HooksSettings />)
+
+		// Expand hook
+		const hookHeader = screen.getByText(mockHook.id).closest("div")
+		fireEvent.click(hookHeader!)
+
+		const commandTextArea = screen.getByTestId(`command-textarea-${mockHook.id}`)
+		fireEvent.change(commandTextArea, { target: { value: "echo updated\nsecond line" } })
+		fireEvent.blur(commandTextArea)
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({
+			type: "hooksUpdateHook",
+			hookId: "hook-1",
+			filePath: "/path/to/hooks.json",
+			hookUpdates: { command: "echo updated\nsecond line" },
+		})
+	})
+
 	it("sends hooksOpenHookFile message when open file button is clicked", async () => {
 		const { vscode } = await import("@src/utils/vscode")
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "project",
@@ -590,7 +707,7 @@ describe("HooksSettings", () => {
 	it("shows correct tooltip for open file button when file path is available", () => {
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "project",
@@ -614,7 +731,7 @@ describe("HooksSettings", () => {
 	it("shows correct tooltip for open file button when file path is unavailable", () => {
 		const mockHook: HookInfo = {
 			id: "hook-1",
-			event: "before_execute_command",
+			event: "PreToolUse",
 			commandPreview: "echo test",
 			enabled: true,
 			source: "project",

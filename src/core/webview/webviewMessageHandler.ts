@@ -8,6 +8,7 @@ import {
 	type HookEventType,
 	type HookUpdateData,
 } from "../../services/hooks/types"
+import { copyHookConfig } from "../../services/hooks/HookConfigWriter"
 import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
@@ -3457,14 +3458,22 @@ export const webviewMessageHandler = async (
 						return false
 					}
 
+					// New hook-centric format: hooks: [ ... ]
 					let removed = false
-					for (const [event, defs] of Object.entries(hooks)) {
-						if (!Array.isArray(defs)) continue
-						const before = defs.length
-						const after = defs.filter((d: any) => d?.id !== hookId)
-						if (after.length !== before) {
-							removed = true
-							;(hooks as any)[event] = after
+					if (Array.isArray(hooks)) {
+						const before = hooks.length
+						;(parsed as any).hooks = hooks.filter((d: any) => d?.id !== hookId)
+						removed = (parsed as any).hooks.length !== before
+					} else {
+						// Legacy event-keyed format: hooks: { PreToolUse: [ ... ] }
+						for (const [event, defs] of Object.entries(hooks)) {
+							if (!Array.isArray(defs)) continue
+							const before = defs.length
+							const after = defs.filter((d: any) => d?.id !== hookId)
+							if (after.length !== before) {
+								removed = true
+								;(hooks as any)[event] = after
+							}
 						}
 					}
 
@@ -3534,6 +3543,87 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "hooksCopyHook": {
+			const hookManager = provider.getHookManager()
+			if (!hookManager || !message.hookId) {
+				break
+			}
+
+			try {
+				const hookId = message.hookId
+				const snapshot = hookManager.getConfigSnapshot()
+				const targetHook = snapshot?.hooksById.get(hookId)
+				const targetFilePath = targetHook?.filePath
+
+				let newId: string | undefined
+				let copiedFromFilePath: string | undefined
+
+				if (typeof targetFilePath === "string" && targetFilePath.length > 0) {
+					newId = await copyHookConfig(targetFilePath, hookId)
+					copiedFromFilePath = targetFilePath
+				} else {
+					// Fallback: scan all loaded roo directories for hook configs and copy matching id.
+					const cwd = provider.cwd
+					const rooDirs = getRooDirectoriesForCwd(cwd)
+					const candidateDirs: string[] = []
+					candidateDirs.push(path.join(rooDirs[0], "hooks"))
+					if (message.hooksSource === "mode") {
+						const mode = (await provider.getState()).mode
+						candidateDirs.push(path.join(rooDirs[1], `hooks-${mode}`))
+					}
+					candidateDirs.push(path.join(rooDirs[1], "hooks"))
+
+					for (const dir of candidateDirs) {
+						let entries: any[] = []
+						try {
+							entries = await fs.readdir(dir, { withFileTypes: true })
+						} catch {
+							continue
+						}
+						const files = entries
+							.filter((e) => e.isFile())
+							.map((e) => path.join(dir, e.name))
+							.filter((p) => {
+								const l = p.toLowerCase()
+								return l.endsWith(".json") || l.endsWith(".yaml") || l.endsWith(".yml")
+							})
+							.sort()
+						for (const filePath of files) {
+							try {
+								newId = await copyHookConfig(filePath, hookId)
+								copiedFromFilePath = filePath
+								break
+							} catch {
+								// not found / not writable; keep scanning
+							}
+						}
+						if (newId) break
+					}
+				}
+
+				if (!newId) {
+					throw new Error("Hook not found in any writable config file")
+				}
+
+				await hookManager.reloadHooksConfig()
+				await provider.postStateToWebview()
+				await provider.postMessageToWebview({
+					type: "hooksCopyHookResult",
+					success: true,
+					values: { hookId: newId, filePath: copiedFromFilePath },
+				})
+			} catch (error) {
+				provider.log(`Failed to copy hook: ${error instanceof Error ? error.message : String(error)}`)
+				vscode.window.showErrorMessage("Failed to copy hook")
+				await provider.postMessageToWebview({
+					type: "hooksCopyHookResult",
+					success: false,
+					error: error instanceof Error ? error.message : String(error),
+				})
+			}
+			break
+		}
+
 		case "hooksOpenHookFile": {
 			const { filePath: hookFilePath } = message
 			if (!hookFilePath) {
@@ -3572,7 +3662,31 @@ export const webviewMessageHandler = async (
 							)
 						: undefined,
 					matcher: typeof message.hookUpdates.matcher === "string" ? message.hookUpdates.matcher : undefined,
+					command:
+						typeof (message.hookUpdates as any).command === "string"
+							? (message.hookUpdates as any).command
+							: undefined,
 					timeout: typeof message.hookUpdates.timeout === "number" ? message.hookUpdates.timeout : undefined,
+					enabled:
+						typeof (message.hookUpdates as any).enabled === "boolean"
+							? (message.hookUpdates as any).enabled
+							: undefined,
+					description:
+						typeof (message.hookUpdates as any).description === "string"
+							? (message.hookUpdates as any).description
+							: undefined,
+					shell:
+						typeof (message.hookUpdates as any).shell === "string"
+							? (message.hookUpdates as any).shell
+							: undefined,
+					includeConversationHistory:
+						typeof (message.hookUpdates as any).includeConversationHistory === "boolean"
+							? (message.hookUpdates as any).includeConversationHistory
+							: undefined,
+					id:
+						typeof (message.hookUpdates as any).id === "string"
+							? (message.hookUpdates as any).id
+							: undefined,
 				}
 
 				await hookManager.updateHook(message.filePath, message.hookId, hookUpdates)
@@ -3605,15 +3719,15 @@ export const webviewMessageHandler = async (
 					break
 				}
 
-				// Create the example hook file
-				const exampleContent = `version: "1"
-hooks:
-  PreToolUse:
-    - id: example-hook
-      matcher: "edit"
-      enabled: true
-      command: 'echo "Verification hook triggered"'
-      timeout: 5
+				// Create the example hook file (Phase 2 hook-centric schema)
+				const exampleContent = `hooks:
+  - id: example-hook
+    events: ["PreToolUse"]
+    matcher: "edit"
+    enabled: true
+    command: |-
+      echo "Verification hook triggered"
+    timeout: 5
 `
 				await safeWriteText(exampleFilePath, exampleContent)
 

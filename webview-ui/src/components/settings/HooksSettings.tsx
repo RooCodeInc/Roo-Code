@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { RefreshCw, FolderOpen, AlertTriangle, Clock, FishingHook, X, Plus } from "lucide-react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { RefreshCw, FolderOpen, AlertTriangle, Clock, FishingHook, X, Plus, Copy } from "lucide-react"
 import {
 	VSCodeDropdown,
 	VSCodeOption,
@@ -51,6 +51,7 @@ export const HooksSettings: React.FC = () => {
 	const { hooks, hooksEnabled } = useExtensionState()
 	const [executionHistory, setExecutionHistory] = useState<HookExecutionRecord[]>(hooks?.executionHistory || [])
 	const [isUpdatingEnabled, setIsUpdatingEnabled] = useState(false)
+	const [pendingFocusHookId, setPendingFocusHookId] = useState<string | null>(null)
 
 	// Master toggle state - defaults to true if not explicitly set
 	const isHooksEnabled = hooksEnabled ?? true
@@ -78,6 +79,12 @@ export const HooksSettings: React.FC = () => {
 					}
 
 					setExecutionHistory((prev) => [record, ...prev].slice(0, 50)) // Keep last 50
+				}
+			}
+
+			if (message.type === "hooksCopyHookResult") {
+				if (message.success && message.values?.hookId) {
+					setPendingFocusHookId(String(message.values.hookId))
 				}
 			}
 		}
@@ -217,7 +224,13 @@ export const HooksSettings: React.FC = () => {
 						) : (
 							<div className="space-y-3">
 								{enabledHooks.map((hook) => (
-									<HookItem key={hook.id} hook={hook} onToggle={handleToggleHook} />
+									<HookItem
+										key={hook.id}
+										hook={hook}
+										onToggle={handleToggleHook}
+										autoExpandHookId={pendingFocusHookId}
+										onAutoExpanded={() => setPendingFocusHookId(null)}
+									/>
 								))}
 							</div>
 						)}
@@ -269,14 +282,22 @@ export const HooksSettings: React.FC = () => {
 interface HookItemProps {
 	hook: HookInfo
 	onToggle: (hookId: string, enabled: boolean) => void
+	autoExpandHookId?: string | null
+	onAutoExpanded?: () => void
 }
 
-const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
+const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, onAutoExpanded }) => {
 	const { t } = useAppTranslation()
 	const { hooks } = useExtensionState()
 	const [isExpanded, setIsExpanded] = useState(false)
 	const [hookLogs, setHookLogs] = useState<HookExecutionRecord[]>([])
 	const [isUpdatingConfig, setIsUpdatingConfig] = useState(false)
+	const [hookIdDraft, setHookIdDraft] = useState(hook.id)
+	const [hookIdError, setHookIdError] = useState<string | null>(null)
+	const [commandDraft, setCommandDraft] = useState(hook.commandPreview)
+	const commandTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
+
+	const canEditConfig = Boolean(hook.filePath)
 
 	const hooksForId = useMemo(() => {
 		const enabledHooks = hooks?.enabledHooks ?? []
@@ -288,6 +309,29 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 		// Preserve stable order based on HOOK_EVENT_OPTIONS
 		return HOOK_EVENT_OPTIONS.filter((e) => events.includes(e))
 	}, [hooksForId])
+
+	const eventTooltipText = useCallback(
+		(event: HookEventOption) => {
+			// Keep translation fallback-friendly: if keys don't exist yet, show English.
+			const fallbackMap: Record<HookEventOption, string> = {
+				PreToolUse: "Before a tool is executed. Can block execution.",
+				PostToolUse: "After a tool completes successfully.",
+				PostToolUseFailure: "After a tool fails. Can perform cleanup.",
+				PermissionRequest: "When a permission dialog is shown. Can auto-approve/deny.",
+				UserPromptSubmit: "When user submits a prompt. Can modify or block.",
+				Stop: "When task completes or stops. Can perform cleanup.",
+				SubagentStop: "When a subtask completes.",
+				SubagentStart: "When a subtask begins.",
+				SessionStart: "When a new task session starts.",
+				SessionEnd: "When task session fully ends.",
+				Notification: "When status notifications are sent.",
+				PreCompact: "Before context compaction occurs.",
+			}
+
+			return (t(`settings:hooks.eventTooltips.${event}`) as string) || fallbackMap[event] || event
+		},
+		[t],
+	)
 
 	const matcherRaw = hook.matcher ?? ""
 	const { matcherGroups, matcherCustom } = useMemo(() => {
@@ -312,6 +356,15 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 		setCustomMatcher(matcherCustom)
 	}, [matcherCustom])
 
+	useEffect(() => {
+		setHookIdDraft(hook.id)
+		setHookIdError(null)
+	}, [hook.id])
+
+	useEffect(() => {
+		setCommandDraft(hook.commandPreview)
+	}, [hook.commandPreview])
+
 	const timeoutSeconds = hook.timeout
 	const timeoutSelection = useMemo(() => {
 		const match = TIMEOUT_OPTIONS.find((o) => o.seconds === timeoutSeconds)
@@ -319,7 +372,13 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 	}, [timeoutSeconds])
 
 	const postHookUpdate = useCallback(
-		(updates: { events?: HookEventOption[]; matcher?: string; timeout?: number }) => {
+		(updates: {
+			events?: HookEventOption[]
+			matcher?: string
+			timeout?: number
+			id?: string
+			command?: string
+		}) => {
 			if (!hook.filePath) return
 			setIsUpdatingConfig(true)
 			vscode.postMessage({
@@ -331,6 +390,70 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 			setTimeout(() => setIsUpdatingConfig(false), 500)
 		},
 		[hook.filePath, hook.id],
+	)
+
+	const validateHookIdDraft = useCallback(
+		(nextId: string): string | null => {
+			const trimmed = nextId.trim()
+			if (trimmed.length === 0) return t("settings:hooks.idErrors.required")
+			if (trimmed.length > 100) return t("settings:hooks.idErrors.maxLength")
+			if (!/^[A-Za-z0-9_-]+$/.test(trimmed)) return t("settings:hooks.idErrors.invalidChars")
+
+			// Best-effort client-side uniqueness check within current view.
+			const enabledHooks = hooks?.enabledHooks ?? []
+			const duplicate = enabledHooks.some(
+				(h) => h.filePath === hook.filePath && h.id === trimmed && h.id !== hook.id,
+			)
+			if (duplicate) return t("settings:hooks.idErrors.notUnique")
+			return null
+		},
+		[hooks?.enabledHooks, hook.filePath, hook.id, t],
+	)
+
+	const handleSaveHookId = useCallback(() => {
+		if (!canEditConfig) return
+		const error = validateHookIdDraft(hookIdDraft)
+		setHookIdError(error)
+		if (error) return
+		const trimmed = hookIdDraft.trim()
+		if (trimmed === hook.id) return
+		postHookUpdate({ id: trimmed })
+	}, [canEditConfig, hook.id, hookIdDraft, postHookUpdate, validateHookIdDraft])
+
+	const handleCopyHook = useCallback(() => {
+		if (!hook.filePath) return
+		vscode.postMessage({
+			type: "hooksCopyHook",
+			hookId: hook.id,
+		})
+	}, [hook.filePath, hook.id])
+
+	const handleSaveCommand = useCallback(() => {
+		if (!canEditConfig) return
+		const trimmed = commandDraft.trim()
+		if (trimmed.length === 0) {
+			return
+		}
+		postHookUpdate({ command: commandDraft })
+	}, [canEditConfig, commandDraft, postHookUpdate])
+
+	const handleCommandKeyDown = useCallback(
+		(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+			if (e.key !== "Tab") return
+			e.preventDefault()
+			const el = e.currentTarget
+			const start = el.selectionStart ?? 0
+			const end = el.selectionEnd ?? 0
+			const next = `${commandDraft.slice(0, start)}\t${commandDraft.slice(end)}`
+			setCommandDraft(next)
+			// Re-position cursor after state update.
+			requestAnimationFrame(() => {
+				if (!commandTextAreaRef.current) return
+				commandTextAreaRef.current.selectionStart = start + 1
+				commandTextAreaRef.current.selectionEnd = start + 1
+			})
+		},
+		[commandDraft],
 	)
 
 	const buildMatcherString = useCallback((nextGroups: ToolGroup[], nextCustom: string) => {
@@ -402,7 +525,13 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 		})
 	}
 
-	const canEditConfig = Boolean(hook.filePath)
+	useEffect(() => {
+		if (!autoExpandHookId) return
+		if (autoExpandHookId !== hook.id) return
+		setIsExpanded(true)
+		onAutoExpanded?.()
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [autoExpandHookId, hook.id])
 
 	const getEnabledDotColor = () => {
 		return hook.enabled ? "var(--vscode-testing-iconPassed)" : "var(--vscode-descriptionForeground)"
@@ -434,6 +563,17 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 					</span>
 				</div>
 				<div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+					<StandardTooltip content={t("settings:hooks.copyHook")}>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={handleCopyHook}
+							disabled={!hook.filePath}
+							data-testid={`hook-copy-${hook.id}`}
+							aria-label={t("settings:hooks.copyHook")}>
+							<Copy className="w-4 h-4" />
+						</Button>
+					</StandardTooltip>
 					<Button
 						variant="ghost"
 						size="icon"
@@ -490,8 +630,31 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 							{hookLogs.length > 0 && <span className="ml-1 opacity-60">({hookLogs.length})</span>}
 						</VSCodePanelTab>
 
-						<VSCodePanelView id="view-config">
+						{/* VSCodePanels matches tabs to views by id. */}
+						<VSCodePanelView id="config">
 							<div className="flex flex-col gap-3 pt-3 w-full">
+								<div>
+									<span className="text-xs font-medium text-vscode-descriptionForeground block mb-1">
+										{t("settings:hooks.hookId")}
+									</span>
+									<input
+										className={`w-full text-xs bg-vscode-input-background border rounded px-2 py-1 text-vscode-foreground ${
+											hookIdError ? "border-red-500" : "border-vscode-input-border"
+										}`}
+										value={hookIdDraft}
+										disabled={!canEditConfig || isUpdatingConfig}
+										onChange={(e) => {
+											setHookIdDraft(e.target.value)
+											if (hookIdError) {
+												setHookIdError(validateHookIdDraft(e.target.value))
+											}
+										}}
+										onBlur={handleSaveHookId}
+										placeholder="my-hook"
+									/>
+									{hookIdError && <div className="text-xs text-red-400 mt-1">{hookIdError}</div>}
+								</div>
+
 								<div>
 									<span className="text-xs font-medium text-vscode-descriptionForeground block mb-2">
 										{t("settings:hooks.event")}
@@ -516,7 +679,21 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 														postHookUpdate({ events: next })
 													}}
 												/>
-												<span>{event}</span>
+												<span className="flex items-center gap-1">
+													<span>{event}</span>
+													<StandardTooltip content={eventTooltipText(event)}>
+														<button
+															type="button"
+															className="text-vscode-descriptionForeground hover:text-vscode-foreground"
+															aria-label={t("settings:hooks.showEventDescription")}
+															onClick={(e) => e.preventDefault()}>
+															<span
+																className="codicon codicon-question"
+																style={{ fontSize: "12px" }}
+															/>
+														</button>
+													</StandardTooltip>
+												</span>
 											</label>
 										))}
 									</div>
@@ -559,6 +736,7 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 										</label>
 										<input
 											className="w-full text-xs bg-vscode-input-background border border-vscode-input-border rounded px-2 py-1 text-vscode-foreground"
+											aria-label="Custom matcher"
 											value={customMatcher}
 											disabled={!canEditConfig || isUpdatingConfig}
 											onChange={(e) => setCustomMatcher(e.target.value)}
@@ -612,19 +790,29 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle }) => {
 							</div>
 						</VSCodePanelView>
 
-						<VSCodePanelView id="view-command">
+						<VSCodePanelView id="command">
 							<div className="pt-3 w-full">
-								<div className="bg-vscode-textCodeBlock-background p-3 rounded border border-vscode-widget-border overflow-x-auto max-h-48 overflow-y-auto">
-									<code
-										data-testid={`command-preview-${hook.id}`}
-										className="text-xs font-mono text-vscode-foreground whitespace-pre-wrap break-words">
-										{hook.commandPreview}
-									</code>
+								<span className="text-xs font-medium text-vscode-descriptionForeground block mb-2">
+									{t("settings:hooks.command")}
+								</span>
+								<textarea
+									ref={commandTextAreaRef}
+									data-testid={`command-textarea-${hook.id}`}
+									className="w-full text-xs font-mono bg-vscode-input-background border border-vscode-input-border rounded px-2 py-2 text-vscode-foreground min-h-32"
+									value={commandDraft}
+									disabled={!canEditConfig || isUpdatingConfig}
+									onChange={(e) => setCommandDraft(e.target.value)}
+									onBlur={handleSaveCommand}
+									onKeyDown={handleCommandKeyDown}
+									spellCheck={false}
+								/>
+								<div className="text-xs text-vscode-descriptionForeground mt-2">
+									{t("settings:hooks.commandHint")}
 								</div>
 							</div>
 						</VSCodePanelView>
 
-						<VSCodePanelView id="view-logs">
+						<VSCodePanelView id="logs">
 							<div className="pt-3 w-full">
 								{hookLogs.length === 0 ? (
 									<div className="text-xs text-vscode-descriptionForeground">
