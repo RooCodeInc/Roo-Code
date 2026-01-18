@@ -5,7 +5,7 @@ import { useState, useRef, useMemo, useEffect } from "react"
 
 import { formatLargeNumber } from "@src/utils/format"
 
-import type { SubtaskDetail } from "./SubtaskCostList"
+import type { SubtaskDetail } from "@src/types/subtasks"
 
 type TodoStatus = "completed" | "in_progress" | "pending"
 

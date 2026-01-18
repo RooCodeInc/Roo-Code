@@ -35,7 +35,7 @@ import { ContextWindowProgress } from "./ContextWindowProgress"
 import { Mention } from "./Mention"
 import { TodoListDisplay } from "./TodoListDisplay"
 import { LucideIconButton } from "./LucideIconButton"
-import type { SubtaskDetail } from "./SubtaskCostList"
+import type { SubtaskDetail } from "@src/types/subtasks"
 
 export interface TaskHeaderProps {
 	task: ClineMessage

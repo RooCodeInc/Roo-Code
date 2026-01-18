@@ -48,19 +48,7 @@ import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
-
-/**
- * Detailed information about a subtask for UI display.
- * Matches the SubtaskDetail interface from backend aggregateTaskCosts.ts
- */
-interface SubtaskDetail {
-	id: string // Task ID
-	name: string // First 50 chars of task description
-	tokens: number // tokensIn + tokensOut
-	cost: number // Aggregated total cost
-	status: "active" | "completed" | "delegated"
-	hasNestedChildren: boolean // Has its own subtasks
-}
+import type { SubtaskDetail } from "@src/types/subtasks"
 
 export interface ChatViewProps {
 	isHidden: boolean

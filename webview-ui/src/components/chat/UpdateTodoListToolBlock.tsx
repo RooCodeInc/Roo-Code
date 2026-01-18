@@ -179,6 +179,28 @@ const UpdateTodoListToolBlock: React.FC<UpdateTodoListToolBlockProps> = ({
 							Todo List Updated
 						</span>
 						<div className="flex-grow" />
+						{editable && (
+							<button
+								onClick={() => setIsEditing(!isEditing)}
+								style={{
+									border: isEditing
+										? "1px solid var(--vscode-button-border)"
+										: "1px solid var(--vscode-button-secondaryBorder)",
+									background: isEditing
+										? "var(--vscode-button-background)"
+										: "var(--vscode-button-secondaryBackground)",
+									color: isEditing
+										? "var(--vscode-button-foreground)"
+										: "var(--vscode-button-secondaryForeground)",
+									borderRadius: 4,
+									padding: "2px 8px",
+									cursor: "pointer",
+									fontSize: 13,
+									marginLeft: 8,
+								}}>
+								{isEditing ? "Done" : "Edit"}
+							</button>
+						)}
 					</div>
 				</ToolUseBlockHeader>
 				<div className="overflow-x-auto max-w-full" style={{ padding: "6px 0 2px 0" }}>

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 
 import { TodoListDisplay } from "../TodoListDisplay"
-import type { SubtaskDetail } from "../SubtaskCostList"
+import type { SubtaskDetail } from "@src/types/subtasks"
 
 // Mock i18next
 vi.mock("i18next", () => ({
