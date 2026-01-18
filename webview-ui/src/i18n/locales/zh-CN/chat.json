@@ -493,5 +493,9 @@
 		"updated": "已更新待办事项列表",
 		"completed": "已完成",
 		"started": "已开始"
+	},
+	"webSearch": {
+		"wantsToSearch": "Roo wants to search the web for <code>{{query}}</code>",
+		"didSearch": "Roo searched the web for <code>{{query}}</code>"
 	}
 }

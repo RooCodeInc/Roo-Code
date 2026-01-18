@@ -15,7 +15,7 @@ type ToolCategory = "file" | "directory" | "search" | "command" | "browser" | "m
 function getToolCategory(toolName: string): ToolCategory {
 	const fileTools = ["readFile", "read_file", "writeToFile", "write_to_file", "applyDiff", "apply_diff"]
 	const dirTools = ["listFiles", "list_files", "listFilesRecursive", "listFilesTopLevel"]
-	const searchTools = ["searchFiles", "search_files"]
+	const searchTools = ["searchFiles", "search_files", "webSearch", "web_search"]
 	const commandTools = ["executeCommand", "execute_command"]
 	const browserTools = ["browserAction", "browser_action"]
 	const modeTools = ["switchMode", "switch_mode", "newTask", "new_task"]

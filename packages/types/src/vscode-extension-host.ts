@@ -689,6 +689,7 @@ export interface ClineSayTool {
 		| "listFilesTopLevel"
 		| "listFilesRecursive"
 		| "searchFiles"
+		| "webSearch"
 		| "switchMode"
 		| "newTask"
 		| "finishTask"

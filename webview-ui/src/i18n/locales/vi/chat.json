@@ -493,5 +493,9 @@
 		"updated": "Đã cập nhật danh sách công việc",
 		"completed": "Đã hoàn thành",
 		"started": "Đã bắt đầu"
+	},
+	"webSearch": {
+		"wantsToSearch": "Roo wants to search the web for <code>{{query}}</code>",
+		"didSearch": "Roo searched the web for <code>{{query}}</code>"
 	}
 }
