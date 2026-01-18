@@ -8,9 +8,6 @@ import type { ModeResult } from "../components/autocomplete/index.js"
 import { useUIStateStore } from "../stores/uiStateStore.js"
 import { useCLIStore } from "../store.js"
 
-// Track previous isLoading state for effect
-let prevIsLoading = false
-
 export interface UseGlobalInputOptions {
 	canToggleFocus: boolean
 	isScrollAreaActive: boolean
@@ -65,6 +62,9 @@ export function useGlobalInput({
 	// Track Ctrl+C presses for "press again to exit" behavior
 	const exitHintTimeout = useRef<NodeJS.Timeout | null>(null)
 
+	// Track previous isLoading state for effect (using ref to properly scope to component instance)
+	const prevIsLoadingRef = useRef(false)
+
 	// Cleanup timeout on unmount
 	useEffect(() => {
 		return () => {
@@ -77,10 +77,10 @@ export function useGlobalInput({
 	// Reset isCancelling when isLoading transitions from true to false
 	// This indicates the task has finished cancelling (either completed or ready to resume)
 	useEffect(() => {
-		if (prevIsLoading && !isLoading && isCancelling) {
+		if (prevIsLoadingRef.current && !isLoading && isCancelling) {
 			setIsCancelling(false)
 		}
-		prevIsLoading = isLoading
+		prevIsLoadingRef.current = isLoading
 	}, [isLoading, isCancelling, setIsCancelling])
 
 	// Handle global keyboard shortcuts
