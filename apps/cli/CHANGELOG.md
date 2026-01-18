@@ -5,6 +5,17 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.49] - 2026-01-18
+
+### Added
+
+- **Output Format Options**: New `--output-format` flag to control CLI output format for scripting and automation:
+    - `text` (default) - Human-readable interactive output
+    - `json` - Single JSON object with all events and final result at task completion
+    - `stream-json` - NDJSON (newline-delimited JSON) for real-time streaming of events
+    - See [`json-events.ts`](src/types/json-events.ts) for the complete event schema
+    - New [`JsonEventEmitter`](src/agent/json-event-emitter.ts) for structured output generation
+
 ## [0.0.48] - 2026-01-17
 
 ### Changed
