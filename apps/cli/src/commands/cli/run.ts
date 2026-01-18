@@ -261,7 +261,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 			if (useJsonOutput) {
 				const errorEvent = { type: "error", id: Date.now(), content: errorMessage }
-				console.log(JSON.stringify(errorEvent))
+				process.stdout.write(JSON.stringify(errorEvent) + "\n")
 			} else {
 				console.error("[CLI] Error:", errorMessage)
 				if (error instanceof Error) {
