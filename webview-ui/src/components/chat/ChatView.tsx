@@ -45,6 +45,7 @@ import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
+import StickyUserMessageNav from "./StickyUserMessageNav"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
@@ -151,6 +152,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const stickyFollowRef = useRef<boolean>(false)
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 	const [isAtBottom, setIsAtBottom] = useState(false)
+	const [firstVisibleIndex, setFirstVisibleIndex] = useState(0)
 	const lastTtsRef = useRef<string>("")
 	const [wasStreaming, setWasStreaming] = useState<boolean>(false)
 	const [checkpointWarning, setCheckpointWarning] = useState<
@@ -1147,6 +1149,46 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		return result
 	}, [isCondensing, visibleMessages, isBrowserSessionMessage])
 
+	// Compute user message indices from groupedMessages for sticky navigation
+	const userMessageIndices = useMemo(() => {
+		const indices: number[] = []
+		groupedMessages.forEach((msg, index) => {
+			if (msg.say === "user_feedback") {
+				indices.push(index)
+			}
+		})
+		return indices
+	}, [groupedMessages])
+
+	// Find the last user message that is scrolled out of view (before firstVisibleIndex)
+	const stickyNavMessage = useMemo(() => {
+		// Find the last user message index that is before the first visible index
+		const lastUserIndexBeforeVisible = userMessageIndices.findLast((idx) => idx < firstVisibleIndex)
+		if (lastUserIndexBeforeVisible !== undefined) {
+			return groupedMessages[lastUserIndexBeforeVisible]
+		}
+		return null
+	}, [userMessageIndices, firstVisibleIndex, groupedMessages])
+
+	// Show sticky nav when user has scrolled up past a user message and not at top
+	const showStickyNav = useMemo(() => {
+		return stickyNavMessage !== null && firstVisibleIndex > 0 && !isAtBottom
+	}, [stickyNavMessage, firstVisibleIndex, isAtBottom])
+
+	// Handler to scroll to the sticky nav message
+	const handleStickyNavClick = useCallback(() => {
+		if (stickyNavMessage) {
+			const messageIndex = groupedMessages.findIndex((msg) => msg.ts === stickyNavMessage.ts)
+			if (messageIndex >= 0) {
+				virtuosoRef.current?.scrollToIndex({
+					index: messageIndex,
+					behavior: "smooth",
+					align: "start",
+				})
+			}
+		}
+	}, [stickyNavMessage, groupedMessages])
+
 	// scrolling
 
 	const scrollToBottomSmooth = useMemo(
@@ -1544,7 +1586,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 			{task && (
 				<>
-					<div className="grow flex" ref={scrollContainerRef}>
+					<div className="grow flex flex-col relative" ref={scrollContainerRef}>
+						<StickyUserMessageNav
+							message={stickyNavMessage}
+							onNavigate={handleStickyNavClick}
+							isVisible={showStickyNav}
+						/>
 						<Virtuoso
 							ref={virtuosoRef}
 							key={task.ts}
@@ -1560,6 +1607,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							}}
 							atBottomThreshold={10}
 							initialTopMostItemIndex={groupedMessages.length - 1}
+							rangeChanged={(range) => {
+								setFirstVisibleIndex(range.startIndex)
+							}}
 						/>
 					</div>
 					{areButtonsVisible && (
