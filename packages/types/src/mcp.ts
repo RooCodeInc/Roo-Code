@@ -4,7 +4,7 @@ import { z } from "zod"
  * Maximum number of MCP tools that can be enabled before showing a warning.
  * LLMs tend to perform poorly when given too many tools to choose from.
  */
-export const MAX_MCP_TOOLS_THRESHOLD = 40
+export const MAX_MCP_TOOLS_THRESHOLD = 60
 
 /**
  * McpServerUse
