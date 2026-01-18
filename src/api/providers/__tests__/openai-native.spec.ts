@@ -319,7 +319,6 @@ describe("OpenAiNativeHandler", () => {
 					headers: expect.objectContaining({
 						"Content-Type": "application/json",
 						Authorization: "Bearer test-api-key",
-						Accept: "text/event-stream",
 					}),
 					body: expect.any(String),
 				}),
@@ -1325,7 +1324,6 @@ describe("GPT-5 streaming event coverage (additional)", () => {
 					headers: expect.objectContaining({
 						"Content-Type": "application/json",
 						Authorization: "Bearer test-api-key",
-						Accept: "text/event-stream",
 					}),
 					body: expect.any(String),
 				}),

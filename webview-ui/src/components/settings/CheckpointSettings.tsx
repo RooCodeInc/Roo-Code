@@ -1,7 +1,6 @@
 import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { GitBranch } from "lucide-react"
 import { Trans } from "react-i18next"
 import { buildDocLink } from "@src/utils/docLinks"
 import { Slider } from "@/components/ui"
@@ -9,6 +8,7 @@ import { Slider } from "@/components/ui"
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
+import { SearchableSetting } from "./SearchableSetting"
 import {
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	MAX_CHECKPOINT_TIMEOUT_SECONDS,
@@ -30,15 +30,13 @@ export const CheckpointSettings = ({
 	const { t } = useAppTranslation()
 	return (
 		<div {...props}>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<GitBranch className="w-4" />
-					<div>{t("settings:sections.checkpoints")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("settings:sections.checkpoints")}</SectionHeader>
 
 			<Section>
-				<div>
+				<SearchableSetting
+					settingId="checkpoints-enable"
+					section="checkpoints"
+					label={t("settings:checkpoints.enable.label")}>
 					<VSCodeCheckbox
 						checked={enableCheckpoints}
 						onChange={(e: any) => {
@@ -55,10 +53,14 @@ export const CheckpointSettings = ({
 							</VSCodeLink>
 						</Trans>
 					</div>
-				</div>
+				</SearchableSetting>
 
 				{enableCheckpoints && (
-					<div className="mt-4">
+					<SearchableSetting
+						settingId="checkpoints-timeout"
+						section="checkpoints"
+						label={t("settings:checkpoints.timeout.label")}
+						className="mt-4">
 						<label className="block text-sm font-medium mb-2">
 							{t("settings:checkpoints.timeout.label")}
 						</label>
@@ -81,7 +83,7 @@ export const CheckpointSettings = ({
 						<div className="text-vscode-descriptionForeground text-sm mt-1">
 							{t("settings:checkpoints.timeout.description")}
 						</div>
-					</div>
+					</SearchableSetting>
 				)}
 			</Section>
 		</div>

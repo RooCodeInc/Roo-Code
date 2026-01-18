@@ -42,5 +42,8 @@
 	"settings.apiRequestTimeout.description": "API yanıtları için beklenecek maksimum süre (saniye cinsinden) (0 = zaman aşımı yok, 1-3600s, varsayılan: 600s). LM Studio ve Ollama gibi daha fazla işlem süresi gerektirebilecek yerel sağlayıcılar için daha yüksek değerler önerilir.",
 	"settings.newTaskRequireTodos.description": "new_task aracıyla yeni görevler oluştururken todos parametresini gerekli kıl",
 	"settings.codeIndex.embeddingBatchSize.description": "Kod indeksleme sırasında gömme işlemleri için toplu iş boyutu. Bunu API sağlayıcınızın sınırlarına göre ayarlayın. Varsayılan 60'tır.",
-	"settings.debug.description": "API konuşma geçmişini ve kullanıcı arayüzü mesajlarını geçici dosyalarda biçimlendirilmiş JSON olarak görüntülemek için ek düğmeler göstermek üzere hata ayıklama modunu etkinleştir."
+	"settings.debug.description": "API konuşma geçmişini ve kullanıcı arayüzü mesajlarını geçici dosyalarda biçimlendirilmiş JSON olarak görüntülemek için ek düğmeler göstermek üzere hata ayıklama modunu etkinleştir.",
+	"settings.debugProxy.enabled.description": "**Debug Proxy'yi etkinleştir** — Tüm giden ağ isteklerini MITM hata ayıklaması için bir proxy üzerinden yönlendir. Yalnızca debug modunda (F5) çalıştırırken aktiftir.",
+	"settings.debugProxy.serverUrl.description": "Proxy URL'si (ör. `http://127.0.0.1:8888`). Yalnızca **Debug Proxy** etkin olduğunda kullanılır.",
+	"settings.debugProxy.tlsInsecure.description": "Proxy'den gelen self-signed sertifikaları kabul et. **MITM incelemesi için gerekli.** ⚠️ Güvensiz — yalnızca lokal debugging için kullan."
 }

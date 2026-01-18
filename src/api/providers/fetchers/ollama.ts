@@ -37,10 +37,20 @@ type OllamaModelsResponse = z.infer<typeof OllamaModelsResponseSchema>
 
 type OllamaModelInfoResponse = z.infer<typeof OllamaModelInfoResponseSchema>
 
-export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo => {
+export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo | null => {
 	const contextKey = Object.keys(rawModel.model_info).find((k) => k.includes("context_length"))
 	const contextWindow =
 		contextKey && typeof rawModel.model_info[contextKey] === "number" ? rawModel.model_info[contextKey] : undefined
+
+	// Determine native tool support from capabilities array
+	// The capabilities array is populated by Ollama based on model metadata
+	const supportsNativeTools = rawModel.capabilities?.includes("tools") ?? false
+
+	// Filter out models that don't support native tools
+	// This prevents users from selecting models that won't work properly with Roo Code's tool calling
+	if (!supportsNativeTools) {
+		return null
+	}
 
 	const modelInfo: ModelInfo = Object.assign({}, ollamaDefaultModelInfo, {
 		description: `Family: ${rawModel.details.family}, Context: ${contextWindow}, Size: ${rawModel.details.parameter_size}`,
@@ -48,6 +58,7 @@ export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo =
 		supportsPromptCache: true,
 		supportsImages: rawModel.capabilities?.includes("vision"),
 		maxTokens: contextWindow || ollamaDefaultModelInfo.contextWindow,
+		supportsNativeTools: true, // Only models with tools capability reach this point
 	})
 
 	return modelInfo
@@ -89,7 +100,11 @@ export async function getOllamaModels(
 							{ headers },
 						)
 						.then((ollamaModelInfo) => {
-							models[ollamaModel.name] = parseOllamaModel(ollamaModelInfo.data)
+							const modelInfo = parseOllamaModel(ollamaModelInfo.data)
+							// Only include models that support native tools
+							if (modelInfo) {
+								models[ollamaModel.name] = modelInfo
+							}
 						}),
 				)
 			}

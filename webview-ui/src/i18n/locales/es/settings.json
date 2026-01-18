@@ -1,4 +1,5 @@
 {
+	"back": "Volver a la vista de tareas",
 	"common": {
 		"save": "Guardar",
 		"done": "Hecho",
@@ -7,6 +8,10 @@
 		"select": "Seleccionar",
 		"add": "Añadir encabezado",
 		"remove": "Eliminar"
+	},
+	"search": {
+		"placeholder": "Buscar configuración...",
+		"noResults": "No se encontró ninguna configuración"
 	},
 	"header": {
 		"title": "Configuración",
@@ -55,7 +60,11 @@
 		},
 		"community": "¿Quieres consejos o simplemente pasar el rato con otros usuarios de Roo Code? Únete a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contacto y Comunidad",
-		"manageSettings": "Gestionar Configuración"
+		"manageSettings": "Gestionar Configuración",
+		"debugMode": {
+			"label": "Activar modo de depuración",
+			"description": "Activa el modo de depuración para mostrar botones adicionales en el encabezado de la tarea que permitan ver el historial de conversación de la API y los mensajes de la UI como JSON formateado en archivos temporales."
+		}
 	},
 	"slashCommands": {
 		"description": "Gestiona tus comandos de barra para ejecutar rápidamente flujos de trabajo y acciones personalizadas. <DocsLink>Saber más</DocsLink>"
@@ -278,7 +287,6 @@
 		"useCustomBaseUrl": "Usar URL base personalizada",
 		"useReasoning": "Habilitar razonamiento",
 		"useHostHeader": "Usar encabezado Host personalizado",
-		"useLegacyFormat": "Usar formato API de OpenAI heredado",
 		"customHeaders": "Encabezados personalizados",
 		"headerName": "Nombre del encabezado",
 		"headerValue": "Valor del encabezado",
@@ -661,6 +669,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status máx. archivos",
 			"description": "Número máximo de entradas de archivo para incluir en el contexto de estado de git. Establézcalo en 0 para deshabilitar. La información de la rama y los commits siempre se muestran cuando es > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activar reglas de subcarpetas",
+			"description": "Descubrir y cargar recursivamente archivos .roo/rules y AGENTS.md desde subdirectorios. Útil para monorepos con reglas por paquete."
 		}
 	},
 	"terminal": {

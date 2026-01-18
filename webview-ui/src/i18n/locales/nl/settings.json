@@ -1,4 +1,5 @@
 {
+	"back": "Terug naar takenoverzicht",
 	"common": {
 		"save": "Opslaan",
 		"done": "Gereed",
@@ -7,6 +8,10 @@
 		"select": "Selecteren",
 		"add": "Header toevoegen",
 		"remove": "Verwijderen"
+	},
+	"search": {
+		"placeholder": "Instellingen zoeken...",
+		"noResults": "Geen instellingen gevonden"
 	},
 	"header": {
 		"title": "Instellingen",
@@ -55,7 +60,11 @@
 		},
 		"community": "Wil je tips of gewoon even hangen met andere Roo Code-gebruikers? Sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contact & Gemeenschap",
-		"manageSettings": "Instellingen Beheren"
+		"manageSettings": "Instellingen Beheren",
+		"debugMode": {
+			"label": "Debugmodus inschakelen",
+			"description": "Schakel de debugmodus in om extra knoppen in de taakkoptekst te tonen voor het bekijken van API-gesprekgeschiedenis en UI-berichten als opgemaakte JSON in tijdelijke bestanden."
+		}
 	},
 	"slashCommands": {
 		"description": "Beheer je slash-commando's om snel aangepaste workflows en acties uit te voeren. <DocsLink>Meer informatie</DocsLink>"
@@ -278,7 +287,6 @@
 		"useCustomBaseUrl": "Aangepaste basis-URL gebruiken",
 		"useReasoning": "Redenering inschakelen",
 		"useHostHeader": "Aangepaste Host-header gebruiken",
-		"useLegacyFormat": "Verouderd OpenAI API-formaat gebruiken",
 		"customHeaders": "Aangepaste headers",
 		"headerName": "Headernaam",
 		"headerValue": "Headerwaarde",
@@ -662,6 +670,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max bestanden",
 			"description": "Maximum aantal bestandsvermeldingen dat in de git-statuscontext moet worden opgenomen. Stel in op 0 om uit te schakelen. Branch-info en commits worden altijd getoond wanneer > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Submap-regels inschakelen",
+			"description": "Recursief .roo/rules en AGENTS.md-bestanden uit submappen ontdekken en laden. Handig voor monorepo's met regels per pakket."
 		}
 	},
 	"terminal": {

@@ -16,7 +16,7 @@
 		"greeting": "Roo Code에 오신 것을 환영합니다!",
 		"introduction": "내장 및 확장 가능한 다양한 모드를 통해 Roo Code는 계획, 아키텍처 설계, 코딩, 디버깅 및 전례 없는 생산성 향상을 가능하게 합니다.",
 		"accountMention": "시작하려면 Roo Code Cloud 계정을 만드세요. 강력한 모델, 웹 제어, 분석, 지원 등을 얻으세요.",
-		"getStarted": "시작하기",
+		"getStarted": "Roo 계정 만들기",
 		"noAccount": "또는 계정 없이 사용하기"
 	},
 	"providerSignup": {

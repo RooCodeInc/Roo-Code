@@ -1,4 +1,5 @@
 {
+	"back": "Wróć do widoku zadań",
 	"common": {
 		"save": "Zapisz",
 		"done": "Gotowe",
@@ -7,6 +8,10 @@
 		"select": "Wybierz",
 		"add": "Dodaj nagłówek",
 		"remove": "Usuń"
+	},
+	"search": {
+		"placeholder": "Szukaj ustawień...",
+		"noResults": "Nie znaleziono ustawień"
 	},
 	"header": {
 		"title": "Ustawienia",
@@ -55,7 +60,11 @@
 		},
 		"community": "Chcesz wskazówek lub po prostu porozmawiać z innymi użytkownikami Roo Code? Dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Kontakt i Społeczność",
-		"manageSettings": "Zarządzaj Ustawieniami"
+		"manageSettings": "Zarządzaj Ustawieniami",
+		"debugMode": {
+			"label": "Włącz tryb debugowania",
+			"description": "Włącz tryb debugowania, aby wyświetlić dodatkowe przyciski w nagłówku zadania umożliwiające przeglądanie historii konwersacji API i komunikatów UI jako sformatowany JSON w plikach tymczasowych."
+		}
 	},
 	"slashCommands": {
 		"description": "Zarządzaj poleceniami slash, aby szybko wykonywać niestandardowe przepływy pracy i akcje. <DocsLink>Dowiedz się więcej</DocsLink>"
@@ -278,7 +287,6 @@
 		"useCustomBaseUrl": "Użyj niestandardowego URL bazowego",
 		"useReasoning": "Włącz rozumowanie",
 		"useHostHeader": "Użyj niestandardowego nagłówka Host",
-		"useLegacyFormat": "Użyj starszego formatu API OpenAI",
 		"customHeaders": "Niestandardowe nagłówki",
 		"headerName": "Nazwa nagłówka",
 		"headerValue": "Wartość nagłówka",
@@ -662,6 +670,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status maks. plików",
 			"description": "Maksymalna liczba wpisów plików do uwzględnienia w kontekście statusu git. Ustaw na 0, aby wyłączyć. Informacje o gałęzi i zatwierdzenia są zawsze pokazywane, gdy > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Włącz reguły podfolderów",
+			"description": "Rekursywnie odkrywaj i ładuj pliki .roo/rules i AGENTS.md z podkatalogów. Przydatne dla monorepo z regułami dla poszczególnych pakietów."
 		}
 	},
 	"terminal": {
