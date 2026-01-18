@@ -492,5 +492,8 @@
 		"updated": "Se actualizó la lista de tareas pendientes",
 		"completed": "Completado",
 		"started": "Iniciado"
+	},
+	"hook": {
+		"triggered": "Hook: {{hookName}} activado"
 	}
 }

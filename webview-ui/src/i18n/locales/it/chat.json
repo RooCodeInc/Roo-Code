@@ -492,5 +492,8 @@
 		"updated": "Aggiornata la lista delle cose da fare",
 		"completed": "Completato",
 		"started": "Iniziato"
+	},
+	"hook": {
+		"triggered": "Hook: {{hookName}} attivato"
 	}
 }

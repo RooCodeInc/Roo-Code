@@ -492,5 +492,8 @@
 		"updated": "Zaktualizowano listę zadań do wykonania",
 		"completed": "Ukończono",
 		"started": "Rozpoczęto"
+	},
+	"hook": {
+		"triggered": "Hook: {{hookName}} wywołany"
 	}
 }

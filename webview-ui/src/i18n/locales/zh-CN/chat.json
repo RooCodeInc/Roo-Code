@@ -493,5 +493,8 @@
 		"updated": "已更新待办事项列表",
 		"completed": "已完成",
 		"started": "已开始"
+	},
+	"hook": {
+		"triggered": "Hook: {{hookName}} 已触发"
 	}
 }

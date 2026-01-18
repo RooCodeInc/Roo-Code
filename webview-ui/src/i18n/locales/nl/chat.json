@@ -492,5 +492,8 @@
 		"updated": "De to-do-lijst is bijgewerkt",
 		"completed": "Voltooid",
 		"started": "Gestart"
+	},
+	"hook": {
+		"triggered": "Hook: {{hookName}} geactiveerd"
 	}
 }
