@@ -224,11 +224,11 @@ describe("TooManyToolsWarning", () => {
 
 	it("counts tools across multiple servers", () => {
 		// Create tools across multiple servers
-		const tools1 = Array.from({ length: 25 }, (_, i) => ({
+		const tools1 = Array.from({ length: 35 }, (_, i) => ({
 			name: `server1tool${i}`,
 			enabledForPrompt: true,
 		}))
-		const tools2 = Array.from({ length: 20 }, (_, i) => ({
+		const tools2 = Array.from({ length: 30 }, (_, i) => ({
 			name: `server2tool${i}`,
 			enabledForPrompt: true,
 		}))
@@ -250,11 +250,11 @@ describe("TooManyToolsWarning", () => {
 
 		render(<TooManyToolsWarning />)
 
-		// 25 + 20 = 45 tools > 40 threshold
+		// 35 + 30 = 65 tools > 60 threshold
 		expect(screen.getByText("Too many tools enabled")).toBeInTheDocument()
 		expect(
 			screen.getByText(
-				`You have 45 tools enabled via 2 MCP servers. Such a high number can confuse the model and lead to errors. Try to keep it below ${MAX_MCP_TOOLS_THRESHOLD}.`,
+				`You have 65 tools enabled via 2 MCP servers. Such a high number can confuse the model and lead to errors. Try to keep it below ${MAX_MCP_TOOLS_THRESHOLD}.`,
 			),
 		).toBeInTheDocument()
 	})
