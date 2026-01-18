@@ -3299,7 +3299,7 @@ export const webviewMessageHandler = async (
 				}
 
 				const accountId = await openAiCodexOAuthManager.getAccountId()
-				const { fetchOpenAiCodexRateLimitInfo } = await import("../../integrations/openai-codex/rate-limits.js")
+				const { fetchOpenAiCodexRateLimitInfo } = await import("../../integrations/openai-codex/rate-limits")
 				const rateLimits = await fetchOpenAiCodexRateLimitInfo(accessToken, { accountId })
 
 				provider.postMessageToWebview({
