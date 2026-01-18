@@ -1,4 +1,4 @@
-import { hookExecutionOutputStatusSchema } from "../vscode-extension-host"
+import { hookExecutionOutputStatusSchema } from "../vscode-extension-host.js"
 
 describe("hookExecutionOutputStatusSchema", () => {
 	it("accepts a valid started payload", () => {
