@@ -1,10 +1,11 @@
 import path from "path"
+import * as fs from "fs/promises"
 import { isBinaryFile } from "isbinaryfile"
+
 import type { FileEntry, LineRange } from "@roo-code/types"
-import { isNativeProtocol, ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
+import { type ClineSayTool, isNativeProtocol, ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
 
 import { Task } from "../task/Task"
-import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
 import { getModelMaxOutputTokens } from "../../shared/api"
 import { t } from "../../i18n"
@@ -17,6 +18,8 @@ import { extractTextFromFile, addLineNumbers, getSupportedBinaryFormats } from "
 import { parseSourceCodeDefinitionsForFile } from "../../services/tree-sitter"
 import { parseXml } from "../../utils/xml"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
+import type { ToolUse } from "../../shared/tools"
+
 import {
 	DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
 	DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
@@ -28,7 +31,6 @@ import {
 import { FILE_READ_BUDGET_PERCENT, readFileWithTokenBudget } from "./helpers/fileTokenBudget"
 import { truncateDefinitionsToLineLimit } from "./helpers/truncateDefinitions"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
-import type { ToolUse } from "../../shared/tools"
 
 interface FileResult {
 	path: string
@@ -118,6 +120,18 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			task.consecutiveMistakeCount++
 			task.recordToolError("read_file")
 			const errorMsg = await task.sayAndCreateMissingParamError("read_file", "args (containing valid file paths)")
+			const errorResult = useNative ? `Error: ${errorMsg}` : `<files><error>${errorMsg}</error></files>`
+			pushToolResult(errorResult)
+			return
+		}
+
+		// Enforce maxConcurrentFileReads limit
+		const { maxConcurrentFileReads = 5 } = (await task.providerRef.deref()?.getState()) ?? {}
+		if (fileEntries.length > maxConcurrentFileReads) {
+			task.consecutiveMistakeCount++
+			task.recordToolError("read_file")
+			const errorMsg = `Too many files requested. You attempted to read ${fileEntries.length} files, but the concurrent file reads limit is ${maxConcurrentFileReads}. Please read files in batches of ${maxConcurrentFileReads} or fewer.`
+			await task.say("error", errorMsg)
 			const errorResult = useNative ? `Error: ${errorMsg}` : `<files><error>${errorMsg}</error></files>`
 			pushToolResult(errorResult)
 			return
@@ -338,6 +352,20 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				const fullPath = path.resolve(task.cwd, relPath)
 
 				try {
+					// Check if the path is a directory before attempting to read it
+					const stats = await fs.stat(fullPath)
+					if (stats.isDirectory()) {
+						const errorMsg = `Cannot read '${relPath}' because it is a directory. To view the contents of a directory, use the list_files tool instead.`
+						updateFileResult(relPath, {
+							status: "error",
+							error: errorMsg,
+							xmlContent: `<file><path>${relPath}</path><error>Error reading file: ${errorMsg}</error></file>`,
+							nativeContent: `File: ${relPath}\nError: Error reading file: ${errorMsg}`,
+						})
+						await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
+						continue
+					}
+
 					const [totalLines, isBinary] = await Promise.all([countFileLines(fullPath), isBinaryFile(fullPath)])
 
 					if (isBinary) {

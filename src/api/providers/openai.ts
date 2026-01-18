@@ -17,7 +17,6 @@ import { XmlMatcher } from "../../utils/xml-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
-import { convertToSimpleMessages } from "../transform/simple-format"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -90,10 +89,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelUrl = this.options.openAiBaseUrl ?? ""
 		const modelId = this.options.openAiModelId ?? ""
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
-		const enabledLegacyFormat = this.options.openAiLegacyFormat ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
-		const ark = modelUrl.includes(".volces.com")
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
@@ -110,8 +107,6 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			if (deepseekReasoner) {
 				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-			} else if (ark || enabledLegacyFormat) {
-				convertedMessages = [systemMessage, ...convertToSimpleMessages(messages)]
 			} else {
 				if (modelInfo.supportsPromptCache) {
 					systemMessage = {
@@ -127,7 +122,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText: true })]
+				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
 
 				if (modelInfo.supportsPromptCache) {
 					// Note: the following logic is copied from openrouter:
@@ -167,9 +162,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(reasoning && reasoning),
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" && {
-					parallel_tool_calls: metadata.parallelToolCalls ?? false,
-				}),
+				...(metadata?.toolProtocol === "native" &&
+					metadata.parallelToolCalls === true && {
+						parallel_tool_calls: true,
+					}),
 			}
 
 			// Add max_tokens if needed
@@ -233,14 +229,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				model: modelId,
 				messages: deepseekReasoner
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-					: enabledLegacyFormat
-						? [systemMessage, ...convertToSimpleMessages(messages)]
-						: [systemMessage, ...convertToOpenAiMessages(messages, { mergeToolResultText: true })],
+					: [systemMessage, ...convertToOpenAiMessages(messages)],
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" && {
-					parallel_tool_calls: metadata.parallelToolCalls ?? false,
-				}),
+				...(metadata?.toolProtocol === "native" &&
+					metadata.parallelToolCalls === true && {
+						parallel_tool_calls: true,
+					}),
 			}
 
 			// Add max_tokens if needed
@@ -356,7 +351,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
+					...convertToOpenAiMessages(messages),
 				],
 				stream: true,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -364,9 +359,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				temperature: undefined,
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" && {
-					parallel_tool_calls: metadata.parallelToolCalls ?? false,
-				}),
+				...(metadata?.toolProtocol === "native" &&
+					metadata.parallelToolCalls === true && {
+						parallel_tool_calls: true,
+					}),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
@@ -393,15 +389,16 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
+					...convertToOpenAiMessages(messages),
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" && {
-					parallel_tool_calls: metadata.parallelToolCalls ?? false,
-				}),
+				...(metadata?.toolProtocol === "native" &&
+					metadata.parallelToolCalls === true && {
+						parallel_tool_calls: true,
+					}),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter

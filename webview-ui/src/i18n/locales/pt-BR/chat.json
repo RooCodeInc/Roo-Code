@@ -82,10 +82,15 @@
 		"title": "Terminar",
 		"tooltip": "Encerrar a tarefa atual"
 	},
+	"stop": {
+		"title": "Parar",
+		"tooltip": "Parar a tarefa atual"
+	},
 	"cancel": {
 		"title": "Cancelar",
 		"tooltip": "Cancelar a operação atual"
 	},
+	"enqueueMessage": "Adicionar mensagem à fila (será enviada após a conclusão da tarefa atual)",
 	"scrollToBottom": "Rolar para o final do chat",
 	"about": "Roo Code é uma equipe inteira de desenvolvimento de IA em seu editor.",
 	"docs": "Confira nossa <DocsLink>documentação</DocsLink> para saber mais.",
@@ -138,6 +143,7 @@
 		"streaming": "Requisição API...",
 		"cancelled": "Requisição API cancelada",
 		"streamingFailed": "Streaming API falhou",
+		"rateLimitWait": "Limitação de taxa",
 		"errorTitle": "Erro do provedor {{code}}",
 		"errorMessage": {
 			"docs": "Documentação",
@@ -270,7 +276,8 @@
 		"title": "Detalhes do erro",
 		"copyToClipboard": "Copiar para área de transferência",
 		"copied": "Copiado!",
-		"diagnostics": "Obter informações detalhadas do erro"
+		"diagnostics": "Obter informações detalhadas do erro",
+		"proxyProvider": "Parece que você está usando um provedor baseado em proxy. Certifique-se de verificar seus registros e garantir que não está reescrevendo as solicitações do Roo."
 	},
 	"powershell": {
 		"issues": "Parece que você está tendo problemas com o Windows PowerShell, por favor veja este"
@@ -291,7 +298,7 @@
 		"triggerLabel_zero": "0 aprovados automaticamente",
 		"triggerLabel_one": "1 aprovado automaticamente",
 		"triggerLabel_other": "{{count}} aprovados automaticamente",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Pensando",
@@ -328,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Novidades:",
-			"minimaxM21": "Modelo rápido e acessível MiniMax M2.1 agora disponível no Roo Code Cloud, MiniMax e muito mais",
-			"glm47": "Modelo Z.AI GLM-4.7 com suporte para modo de pensamento adicionado ao Roo Code Cloud, Z.AI e muito mais",
-			"customTools": "Suporte experimental de ferramentas personalizadas para definir suas próprias ferramentas em TypeScript"
+			"openaiCodexProvider": "Adicionado o provedor OpenAI - ChatGPT Plus/Pro que oferece acesso baseado em assinatura aos modelos Codex sem custos por token.",
+			"gpt52codexModel": "O novo modelo gpt-5.2-codex foi adicionado ao Roo Code Router, ao provedor OpenAI padrão e muito mais.",
+			"bugFixes": "Corrigidos vazamentos de memória causando telas cinza, problemas de assinatura de pensamento do Gemini e outras melhorias de estabilidade."
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
@@ -340,8 +347,14 @@
 		},
 		"careers": "Além disso, <careersLink>estamos contratando!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Custo Total (incluindo subtarefas): ${{cost}}",
+		"total": "Custo Total: ${{cost}}",
+		"includesSubtasks": "Inclui custos de subtarefas"
+	},
 	"browser": {
 		"session": "Sessão do Navegador",
+		"active": "Ativo",
 		"rooWantsToUse": "Roo quer usar o navegador",
 		"consoleLogs": "Logs do console",
 		"noNewLogs": "(Sem novos logs)",

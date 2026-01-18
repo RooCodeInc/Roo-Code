@@ -19,6 +19,7 @@ import { customToolRegistry } from "@roo-code/core"
 
 import "./utils/path" // Necessary to have access to String.prototype.toPosix.
 import { createOutputChannelLogger, createDualLogger } from "./utils/outputChannelLogger"
+import { initializeNetworkProxy } from "./utils/networkProxy"
 
 import { Package } from "./shared/package"
 import { formatLanguage } from "./shared/language"
@@ -27,6 +28,7 @@ import { ClineProvider } from "./core/webview/ClineProvider"
 import { DIFF_VIEW_URI_SCHEME } from "./integrations/editor/DiffViewProvider"
 import { TerminalRegistry } from "./integrations/terminal/TerminalRegistry"
 import { claudeCodeOAuthManager } from "./integrations/claude-code/oauth"
+import { openAiCodexOAuthManager } from "./integrations/openai-codex/oauth"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
 import { MdmService } from "./services/mdm/MdmService"
@@ -68,6 +70,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(outputChannel)
 	outputChannel.appendLine(`${Package.name} extension activated - ${JSON.stringify(Package)}`)
 
+	// Initialize network proxy configuration early, before any network requests.
+	// When proxyUrl is configured, all HTTP/HTTPS traffic will be routed through it.
+	// Only applied in debug mode (F5).
+	await initializeNetworkProxy(context, outputChannel)
+
 	// Set extension path for custom tool registry to find bundled esbuild
 	customToolRegistry.setExtensionPath(context.extensionPath)
 
@@ -96,7 +103,10 @@ export async function activate(context: vscode.ExtensionContext) {
 	TerminalRegistry.initialize()
 
 	// Initialize Claude Code OAuth manager for direct API access.
-	claudeCodeOAuthManager.initialize(context)
+	claudeCodeOAuthManager.initialize(context, (message) => outputChannel.appendLine(message))
+
+	// Initialize OpenAI Codex OAuth manager for ChatGPT subscription-based access.
+	openAiCodexOAuthManager.initialize(context, (message) => outputChannel.appendLine(message))
 
 	// Get default commands from configuration.
 	const defaultCommands = vscode.workspace.getConfiguration(Package.name).get<string[]>("allowedCommands") || []

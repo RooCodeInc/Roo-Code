@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { DynamicProvider, LocalProvider } from "./provider-settings.js"
 
 /**
  * ReasoningEffort
@@ -140,3 +141,7 @@ export const modelInfoSchema = z.object({
 })
 
 export type ModelInfo = z.infer<typeof modelInfoSchema>
+
+export type ModelRecord = Record<string, ModelInfo>
+
+export type RouterModels = Record<DynamicProvider | LocalProvider, ModelRecord>

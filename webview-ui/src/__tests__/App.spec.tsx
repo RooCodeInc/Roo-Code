@@ -90,15 +90,6 @@ vi.mock("@src/components/cloud/CloudView", () => ({
 
 const mockUseExtensionState = vi.fn()
 
-// Mock the HumanRelayDialog component
-vi.mock("@src/components/human-relay/HumanRelayDialog", () => ({
-	HumanRelayDialog: ({ _children, isOpen, onClose }: any) => (
-		<div data-testid="human-relay-dialog" data-open={isOpen} onClick={onClose}>
-			Human Relay Dialog
-		</div>
-	),
-}))
-
 // Mock i18next and react-i18next
 vi.mock("i18next", () => {
 	const tFunction = (key: string) => key

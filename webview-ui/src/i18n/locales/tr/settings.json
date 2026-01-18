@@ -1,4 +1,5 @@
 {
+	"back": "Görev görünümüne dön",
 	"common": {
 		"save": "Kaydet",
 		"done": "Tamamlandı",
@@ -7,6 +8,10 @@
 		"select": "Seç",
 		"add": "Başlık Ekle",
 		"remove": "Kaldır"
+	},
+	"search": {
+		"placeholder": "Ayarları ara...",
+		"noResults": "Ayar bulunamadı"
 	},
 	"header": {
 		"title": "Ayarlar",
@@ -55,7 +60,11 @@
 		},
 		"community": "İpuçları mı istiyorsunuz yoksa sadece diğer Roo Code kullanıcılarıyla takılmak mı istiyorsunuz? <redditLink>reddit.com/r/RooCode</redditLink> veya <discordLink>discord.gg/roocode</discordLink>'a katılın",
 		"contactAndCommunity": "İletişim ve Topluluk",
-		"manageSettings": "Ayarları Yönet"
+		"manageSettings": "Ayarları Yönet",
+		"debugMode": {
+			"label": "Debug modunu etkinleştir",
+			"description": "Görev başlığında API konuşma geçmişini ve UI mesajlarını geçici dosyalarda biçimlendirilmiş JSON olarak görüntülemek için ek düğmeler göstermek üzere debug modunu etkinleştirin."
+		}
 	},
 	"slashCommands": {
 		"description": "Özel iş akışlarını ve eylemleri hızlı bir şekilde yürütmek için eğik çizgi komutlarınızı yönetin. <DocsLink>Daha fazla bilgi edinin</DocsLink>"
@@ -278,7 +287,6 @@
 		"useCustomBaseUrl": "Özel temel URL kullan",
 		"useReasoning": "Akıl yürütmeyi etkinleştir",
 		"useHostHeader": "Özel Host başlığı kullan",
-		"useLegacyFormat": "Eski OpenAI API formatını kullan",
 		"customHeaders": "Özel Başlıklar",
 		"headerName": "Başlık adı",
 		"headerValue": "Başlık değeri",
@@ -433,10 +441,6 @@
 		"getUnboundApiKey": "Unbound API Anahtarı Al",
 		"unboundRefreshModelsSuccess": "Model listesi güncellendi! Artık en son modeller arasından seçim yapabilirsiniz.",
 		"unboundInvalidApiKey": "Geçersiz API anahtarı. Lütfen API anahtarınızı kontrol edin ve tekrar deneyin.",
-		"humanRelay": {
-			"description": "API anahtarı gerekmez, ancak kullanıcının bilgileri web sohbet yapay zekasına kopyalayıp yapıştırması gerekir.",
-			"instructions": "Kullanım sırasında bir iletişim kutusu açılacak ve mevcut mesaj otomatik olarak panoya kopyalanacaktır. Bunları web yapay zekalarına (ChatGPT veya Claude gibi) yapıştırmanız, ardından yapay zekanın yanıtını iletişim kutusuna kopyalayıp onay düğmesine tıklamanız gerekir."
-		},
 		"roo": {
 			"authenticatedMessage": "Roo Code Cloud hesabın üzerinden güvenli bir şekilde kimlik doğrulandı.",
 			"connectButton": "Roo Code Cloud'a Bağlan"
@@ -666,6 +670,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git durumu maks. dosya",
 			"description": "Git durum bağlamına dahil edilecek maksimum dosya girişi sayısı. Devre dışı bırakmak için 0 olarak ayarlayın. Dal bilgisi ve commit'ler > 0 olduğunda her zaman gösterilir."
+		},
+		"enableSubfolderRules": {
+			"label": "Alt klasör kurallarını etkinleştir",
+			"description": "Alt dizinlerden .roo/rules ve AGENTS.md dosyalarını yinelemeli olarak keşfet ve yükle. Paket başına kuralları olan monorepo'lar için kullanışlı."
 		}
 	},
 	"terminal": {

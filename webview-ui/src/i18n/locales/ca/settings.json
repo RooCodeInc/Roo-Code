@@ -1,4 +1,5 @@
 {
+	"back": "Torna a la vista de tasques",
 	"common": {
 		"save": "Desar",
 		"done": "Fet",
@@ -7,6 +8,10 @@
 		"select": "Seleccionar",
 		"add": "Afegir capçalera",
 		"remove": "Eliminar"
+	},
+	"search": {
+		"placeholder": "Cercar configuració...",
+		"noResults": "No s'ha trobat cap configuració"
 	},
 	"header": {
 		"title": "Configuració",
@@ -55,7 +60,11 @@
 		},
 		"community": "Vols consells o simplement passar l'estona amb altres usuaris de Roo Code? Uneix-te a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contacte i Comunitat",
-		"manageSettings": "Gestionar Configuració"
+		"manageSettings": "Gestionar Configuració",
+		"debugMode": {
+			"label": "Activa el mode de depuració",
+			"description": "Activa el mode de depuració per mostrar botons addicionals a la capçalera de la tasca que permetin veure l'historial de conversa de l'API i els missatges de la UI com a JSON formatejat en fitxers temporals."
+		}
 	},
 	"slashCommands": {
 		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>"
@@ -278,7 +287,6 @@
 		"useCustomBaseUrl": "Utilitzar URL base personalitzada",
 		"useReasoning": "Activar raonament",
 		"useHostHeader": "Utilitzar capçalera Host personalitzada",
-		"useLegacyFormat": "Utilitzar el format d'API OpenAI antic",
 		"customHeaders": "Capçaleres personalitzades",
 		"headerName": "Nom de la capçalera",
 		"headerValue": "Valor de la capçalera",
@@ -433,10 +441,6 @@
 		"getUnboundApiKey": "Obtenir clau API d'Unbound",
 		"unboundRefreshModelsSuccess": "Llista de models actualitzada! Ara podeu seleccionar entre els últims models.",
 		"unboundInvalidApiKey": "Clau API no vàlida. Si us plau, comproveu la vostra clau API i torneu-ho a provar.",
-		"humanRelay": {
-			"description": "No es requereix clau API, però l'usuari necessita ajuda per copiar i enganxar informació al xat d'IA web.",
-			"instructions": "Durant l'ús, apareixerà un diàleg i el missatge actual es copiarà automàticament al porta-retalls. Necessiteu enganxar-lo a les versions web d'IA (com ChatGPT o Claude), després copiar la resposta de l'IA de nou al diàleg i fer clic al botó de confirmació."
-		},
 		"roo": {
 			"authenticatedMessage": "Autenticat de forma segura a través del teu compte de Roo Code Cloud.",
 			"connectButton": "Connecta amb Roo Code Cloud"
@@ -665,6 +669,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status màx. fitxers",
 			"description": "Nombre màxim d'entrades de fitxers a incloure en el context d'estat de git. Establiu a 0 per desactivar. La informació de la branca i els commits sempre es mostren quan és > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activa les regles dels subdirectoris",
+			"description": "Descobreix i carrega recursivament fitxers .roo/rules i AGENTS.md des de subdirectoris. Útil per a monorepos amb regles per paquet."
 		}
 	},
 	"terminal": {

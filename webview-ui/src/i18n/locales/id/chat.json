@@ -96,10 +96,15 @@
 		"title": "Hentikan",
 		"tooltip": "Akhiri tugas saat ini"
 	},
+	"stop": {
+		"title": "Stop",
+		"tooltip": "Hentikan tugas saat ini"
+	},
 	"cancel": {
 		"title": "Batal",
 		"tooltip": "Batalkan operasi saat ini"
 	},
+	"enqueueMessage": "Tambahkan pesan ke antrean (akan dikirim setelah tugas saat ini selesai)",
 	"scrollToBottom": "Gulir ke bawah chat",
 	"about": "Roo Code adalah seluruh tim pengembang AI di editor Anda.",
 	"docs": "Lihat <DocsLink>dokumentasi</DocsLink> kami untuk mempelajari lebih lanjut.",
@@ -147,6 +152,7 @@
 		"streaming": "Permintaan API...",
 		"cancelled": "Permintaan API Dibatalkan",
 		"streamingFailed": "Streaming API Gagal",
+		"rateLimitWait": "Pembatasan rate",
 		"errorTitle": "Kesalahan Penyedia {{code}}",
 		"errorMessage": {
 			"docs": "Dokumentasi",
@@ -306,7 +312,8 @@
 		"title": "Detail Kesalahan",
 		"copyToClipboard": "Salin ke Clipboard",
 		"copied": "Disalin!",
-		"diagnostics": "Dapatkan informasi kesalahan terperinci"
+		"diagnostics": "Dapatkan informasi kesalahan terperinci",
+		"proxyProvider": "Tampaknya kamu menggunakan penyedia berbasis proxy. Pastikan untuk memeriksa log-nya dan memastikan tidak menulis ulang permintaan Roo."
 	},
 	"powershell": {
 		"issues": "Sepertinya kamu mengalami masalah Windows PowerShell, silakan lihat ini"
@@ -327,7 +334,7 @@
 		"triggerLabel_zero": "0 disetujui otomatis",
 		"triggerLabel_one": "1 disetujui otomatis",
 		"triggerLabel_other": "{{count}} disetujui otomatis",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} Dirilis",
@@ -341,9 +348,9 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"minimaxM21": "Model MiniMax M2.1 yang cepat dan terjangkau sekarang tersedia di Roo Code Cloud, MiniMax, dan lainnya",
-			"glm47": "Model Z.AI GLM-4.7 dengan dukungan mode pemikiran ditambahkan ke Roo Code Cloud, Z.AI, dan lainnya",
-			"customTools": "Dukungan eksperimental untuk alat khusus untuk mendefinisikan alat Anda sendiri dalam TypeScript"
+			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider ditambahkan yang memberikan akses berbasis langganan ke model Codex tanpa biaya per-token.",
+			"gpt52codexModel": "Model gpt-5.2-codex baru ditambahkan ke Roo Code Router, provider OpenAI standar, dan lebih banyak lagi.",
+			"bugFixes": "Memperbaiki kebocoran memori yang menyebabkan layar abu-abu, masalah tanda tangan pemikiran Gemini, dan peningkatan stabilitas lainnya."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",
@@ -361,8 +368,14 @@
 		"copyToInput": "Salin ke input (sama dengan shift + klik)",
 		"timerPrefix": "Persetujuan otomatis diaktifkan. Memilih dalam {{seconds}}s…"
 	},
+	"costs": {
+		"totalWithSubtasks": "Total Biaya (termasuk subtugas): ${{cost}}",
+		"total": "Total Biaya: ${{cost}}",
+		"includesSubtasks": "Termasuk biaya subtugas"
+	},
 	"browser": {
 		"session": "Sesi Browser",
+		"active": "Aktif",
 		"rooWantsToUse": "Roo ingin menggunakan browser",
 		"consoleLogs": "Log Konsol",
 		"noNewLogs": "(Tidak ada log baru)",

@@ -305,6 +305,13 @@ describe("read_file tool with maxReadFileLine setting", () => {
 		mockedPathResolve.mockReturnValue(absoluteFilePath)
 		mockedIsBinaryFile.mockResolvedValue(false)
 
+		// Mock fsPromises.stat to return a file (not directory) by default
+		fsPromises.stat.mockResolvedValue({
+			isDirectory: () => false,
+			isFile: () => true,
+			isSymbolicLink: () => false,
+		} as any)
+
 		mockInputContent = fileContent
 
 		// Setup the extractTextFromFile mock implementation with the current mockInputContent
@@ -612,7 +619,12 @@ describe("read_file tool output structure", () => {
 
 		// CRITICAL: Reset fsPromises mocks to prevent cross-test contamination
 		fsPromises.stat.mockClear()
-		fsPromises.stat.mockResolvedValue({ size: 1024 })
+		fsPromises.stat.mockResolvedValue({
+			size: 1024,
+			isDirectory: () => false,
+			isFile: () => true,
+			isSymbolicLink: () => false,
+		} as any)
 		fsPromises.readFile.mockClear()
 
 		// Use shared mock setup function
@@ -852,7 +864,7 @@ describe("read_file tool output structure", () => {
 				fsPromises.stat = vi.fn().mockImplementation((filePath) => {
 					const normalizedFilePath = path.normalize(filePath.toString())
 					const image = smallImages.find((img) => normalizedFilePath.includes(path.normalize(img.path)))
-					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024 })
+					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024, isDirectory: () => false })
 				})
 
 				// Mock path.resolve for each image
@@ -928,7 +940,7 @@ describe("read_file tool output structure", () => {
 				fsPromises.stat = vi.fn().mockImplementation((filePath) => {
 					const normalizedFilePath = path.normalize(filePath.toString())
 					const image = largeImages.find((img) => normalizedFilePath.includes(path.normalize(img.path)))
-					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024 })
+					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024, isDirectory: () => false })
 				})
 
 				// Mock path.resolve for each image
@@ -1012,9 +1024,9 @@ describe("read_file tool output structure", () => {
 					const normalizedFilePath = path.normalize(filePath.toString())
 					const image = exactLimitImages.find((img) => normalizedFilePath.includes(path.normalize(img.path)))
 					if (image) {
-						return Promise.resolve({ size: image.sizeKB * 1024 })
+						return Promise.resolve({ size: image.sizeKB * 1024, isDirectory: () => false })
 					}
-					return Promise.resolve({ size: 1024 * 1024 }) // Default 1MB
+					return Promise.resolve({ size: 1024 * 1024, isDirectory: () => false }) // Default 1MB
 				})
 
 				// Mock path.resolve
@@ -1085,7 +1097,7 @@ describe("read_file tool output structure", () => {
 					const fileName = path.basename(filePath)
 					const baseName = path.parse(fileName).name
 					const image = mixedImages.find((img) => img.path.includes(baseName))
-					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024 })
+					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024, isDirectory: () => false })
 				})
 
 				// Mock provider state with 5MB individual limit
@@ -1139,9 +1151,9 @@ describe("read_file tool output structure", () => {
 					const normalizedFilePath = path.normalize(filePath.toString())
 					const file = testImages.find((f) => normalizedFilePath.includes(path.normalize(f.path)))
 					if (file) {
-						return { size: file.sizeMB * 1024 * 1024 }
+						return { size: file.sizeMB * 1024 * 1024, isDirectory: () => false }
 					}
-					return { size: 1024 * 1024 } // Default 1MB
+					return { size: 1024 * 1024, isDirectory: () => false } // Default 1MB
 				})
 
 				const imagePaths = testImages.map((img) => img.path)
@@ -1201,7 +1213,7 @@ describe("read_file tool output structure", () => {
 				// Setup - first call with images that use memory
 				const firstBatch = [{ path: "test/first.png", sizeKB: 10240 }] // 10MB
 
-				fsPromises.stat = vi.fn().mockResolvedValue({ size: 10240 * 1024 })
+				fsPromises.stat = vi.fn().mockResolvedValue({ size: 10240 * 1024, isDirectory: () => false })
 				mockedPathResolve.mockImplementation((cwd, relPath) => `/${relPath}`)
 
 				// Execute first batch
@@ -1254,7 +1266,7 @@ describe("read_file tool output structure", () => {
 				mockedCountFileLines.mockClear()
 
 				// Reset mocks for second batch
-				fsPromises.stat = vi.fn().mockResolvedValue({ size: 15360 * 1024 })
+				fsPromises.stat = vi.fn().mockResolvedValue({ size: 15360 * 1024, isDirectory: () => false })
 				fsPromises.readFile.mockResolvedValue(
 					Buffer.from(
 						"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
@@ -1303,7 +1315,7 @@ describe("read_file tool output structure", () => {
 				fsPromises.stat = vi.fn().mockImplementation((filePath) => {
 					const normalizedFilePath = path.normalize(filePath.toString())
 					const image = manyImages.find((img) => normalizedFilePath.includes(path.normalize(img.path)))
-					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024 })
+					return Promise.resolve({ size: (image?.sizeKB || 1024) * 1024, isDirectory: () => false })
 				})
 
 				// Mock path.resolve
@@ -1350,7 +1362,7 @@ describe("read_file tool output structure", () => {
 				// First invocation - use 15MB of memory
 				const firstBatch = [{ path: "test/large1.png", sizeKB: 15360 }] // 15MB
 
-				fsPromises.stat = vi.fn().mockResolvedValue({ size: 15360 * 1024 })
+				fsPromises.stat = vi.fn().mockResolvedValue({ size: 15360 * 1024, isDirectory: () => false })
 				mockedPathResolve.mockImplementation((cwd, relPath) => `/${relPath}`)
 
 				// Execute first batch
@@ -1371,7 +1383,7 @@ describe("read_file tool output structure", () => {
 				fsPromises.readFile.mockClear()
 				mockedPathResolve.mockClear()
 
-				fsPromises.stat = vi.fn().mockResolvedValue({ size: 18432 * 1024 })
+				fsPromises.stat = vi.fn().mockResolvedValue({ size: 18432 * 1024, isDirectory: () => false })
 				fsPromises.readFile.mockResolvedValue(imageBuffer)
 				mockedPathResolve.mockImplementation((cwd, relPath) => `/${relPath}`)
 
@@ -1429,6 +1441,37 @@ describe("read_file tool output structure", () => {
 				`File: ${testFilePath}\nError: Access to ${testFilePath} is blocked by the .rooignore file settings. You must try to continue in the task without using this file, or ask the user to update the .rooignore file.`,
 			)
 		})
+
+		it("should provide helpful error when trying to read a directory", async () => {
+			// Setup - mock fsPromises.stat to indicate the path is a directory
+			const dirPath = "test/my-directory"
+			const absoluteDirPath = "/test/my-directory"
+
+			mockedPathResolve.mockReturnValue(absoluteDirPath)
+
+			// Mock fs/promises stat to return directory
+			fsPromises.stat.mockResolvedValue({
+				isDirectory: () => true,
+				isFile: () => false,
+				isSymbolicLink: () => false,
+			} as any)
+
+			// Mock isBinaryFile won't be called since we check directory first
+			mockedIsBinaryFile.mockResolvedValue(false)
+
+			// Execute
+			const result = await executeReadFileTool({ args: `<file><path>${dirPath}</path></file>` })
+
+			// Verify - native format for error
+			expect(result).toContain(`File: ${dirPath}`)
+			expect(result).toContain(`Error: Error reading file: Cannot read '${dirPath}' because it is a directory`)
+			expect(result).toContain("use the list_files tool instead")
+
+			// Verify that task.say was called with the error
+			expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("Cannot read"))
+			expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("is a directory"))
+			expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("list_files tool"))
+		})
 	})
 })
 
@@ -1460,7 +1503,12 @@ describe("read_file tool with image support", () => {
 
 		// CRITICAL: Reset fsPromises.stat to prevent cross-test contamination
 		fsPromises.stat.mockClear()
-		fsPromises.stat.mockResolvedValue({ size: 1024 })
+		fsPromises.stat.mockResolvedValue({
+			size: 1024,
+			isDirectory: () => false,
+			isFile: () => true,
+			isSymbolicLink: () => false,
+		} as any)
 
 		// Use shared mock setup function with local variables
 		const mocks = createMockCline()
@@ -1769,5 +1817,197 @@ describe("read_file tool with image support", () => {
 			expect(imagePart.source.media_type).toBe("image/png")
 			expect(imagePart.source.data).toBe("")
 		})
+	})
+})
+
+describe("read_file tool concurrent file reads limit", () => {
+	const mockedCountFileLines = vi.mocked(countFileLines)
+	const mockedIsBinaryFile = vi.mocked(isBinaryFile)
+	const mockedPathResolve = vi.mocked(path.resolve)
+
+	let mockCline: any
+	let mockProvider: any
+	let toolResult: ToolResponse | undefined
+
+	beforeEach(() => {
+		// Clear specific mocks
+		mockedCountFileLines.mockClear()
+		mockedIsBinaryFile.mockClear()
+		mockedPathResolve.mockClear()
+		addLineNumbersMock.mockClear()
+		toolResultMock.mockClear()
+
+		// Use shared mock setup function
+		const mocks = createMockCline()
+		mockCline = mocks.mockCline
+		mockProvider = mocks.mockProvider
+
+		// Disable image support for these tests
+		setImageSupport(mockCline, false)
+
+		mockedPathResolve.mockImplementation((cwd, relPath) => `/${relPath}`)
+		mockedIsBinaryFile.mockResolvedValue(false)
+		mockedCountFileLines.mockResolvedValue(10)
+
+		// Mock fsPromises.stat to return a file (not directory) by default
+		fsPromises.stat.mockResolvedValue({
+			isDirectory: () => false,
+			isFile: () => true,
+			isSymbolicLink: () => false,
+		} as any)
+
+		toolResult = undefined
+	})
+
+	async function executeReadFileToolWithLimit(
+		fileCount: number,
+		maxConcurrentFileReads: number,
+	): Promise<ToolResponse | undefined> {
+		// Setup provider state with the specified limit
+		mockProvider.getState.mockResolvedValue({
+			maxReadFileLine: -1,
+			maxConcurrentFileReads,
+			maxImageFileSize: 20,
+			maxTotalImageSize: 20,
+		})
+
+		// Create args with the specified number of files
+		const files = Array.from({ length: fileCount }, (_, i) => `<file><path>file${i + 1}.txt</path></file>`)
+		const argsContent = files.join("")
+
+		const toolUse: ReadFileToolUse = {
+			type: "tool_use",
+			name: "read_file",
+			params: { args: argsContent },
+			partial: false,
+		}
+
+		// Configure mocks for successful file reads
+		mockReadFileWithTokenBudget.mockResolvedValue({
+			content: "test content",
+			tokenCount: 10,
+			lineCount: 1,
+			complete: true,
+		})
+
+		await readFileTool.handle(mockCline, toolUse, {
+			askApproval: mockCline.ask,
+			handleError: vi.fn(),
+			pushToolResult: (result: ToolResponse) => {
+				toolResult = result
+			},
+			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
+		})
+
+		return toolResult
+	}
+
+	it("should reject when file count exceeds maxConcurrentFileReads", async () => {
+		// Try to read 6 files when limit is 5
+		const result = await executeReadFileToolWithLimit(6, 5)
+
+		// Verify error result
+		expect(result).toContain("Error: Too many files requested")
+		expect(result).toContain("You attempted to read 6 files")
+		expect(result).toContain("but the concurrent file reads limit is 5")
+		expect(result).toContain("Please read files in batches of 5 or fewer")
+
+		// Verify error tracking
+		expect(mockCline.say).toHaveBeenCalledWith("error", expect.stringContaining("Too many files requested"))
+	})
+
+	it("should allow reading files when count equals maxConcurrentFileReads", async () => {
+		// Try to read exactly 5 files when limit is 5
+		const result = await executeReadFileToolWithLimit(5, 5)
+
+		// Should not contain error
+		expect(result).not.toContain("Error: Too many files requested")
+
+		// Should contain file results
+		expect(typeof result === "string" ? result : JSON.stringify(result)).toContain("file1.txt")
+	})
+
+	it("should allow reading files when count is below maxConcurrentFileReads", async () => {
+		// Try to read 3 files when limit is 5
+		const result = await executeReadFileToolWithLimit(3, 5)
+
+		// Should not contain error
+		expect(result).not.toContain("Error: Too many files requested")
+
+		// Should contain file results
+		expect(typeof result === "string" ? result : JSON.stringify(result)).toContain("file1.txt")
+	})
+
+	it("should respect custom maxConcurrentFileReads value of 1", async () => {
+		// Try to read 2 files when limit is 1
+		const result = await executeReadFileToolWithLimit(2, 1)
+
+		// Verify error result with limit of 1
+		expect(result).toContain("Error: Too many files requested")
+		expect(result).toContain("You attempted to read 2 files")
+		expect(result).toContain("but the concurrent file reads limit is 1")
+	})
+
+	it("should allow single file read when maxConcurrentFileReads is 1", async () => {
+		// Try to read 1 file when limit is 1
+		const result = await executeReadFileToolWithLimit(1, 1)
+
+		// Should not contain error
+		expect(result).not.toContain("Error: Too many files requested")
+
+		// Should contain file result
+		expect(typeof result === "string" ? result : JSON.stringify(result)).toContain("file1.txt")
+	})
+
+	it("should respect higher maxConcurrentFileReads value", async () => {
+		// Try to read 15 files when limit is 10
+		const result = await executeReadFileToolWithLimit(15, 10)
+
+		// Verify error result
+		expect(result).toContain("Error: Too many files requested")
+		expect(result).toContain("You attempted to read 15 files")
+		expect(result).toContain("but the concurrent file reads limit is 10")
+	})
+
+	it("should use default value of 5 when maxConcurrentFileReads is not set", async () => {
+		// Setup provider state without maxConcurrentFileReads
+		mockProvider.getState.mockResolvedValue({
+			maxReadFileLine: -1,
+			maxImageFileSize: 20,
+			maxTotalImageSize: 20,
+		})
+
+		// Create args with 6 files
+		const files = Array.from({ length: 6 }, (_, i) => `<file><path>file${i + 1}.txt</path></file>`)
+		const argsContent = files.join("")
+
+		const toolUse: ReadFileToolUse = {
+			type: "tool_use",
+			name: "read_file",
+			params: { args: argsContent },
+			partial: false,
+		}
+
+		mockReadFileWithTokenBudget.mockResolvedValue({
+			content: "test content",
+			tokenCount: 10,
+			lineCount: 1,
+			complete: true,
+		})
+
+		await readFileTool.handle(mockCline, toolUse, {
+			askApproval: mockCline.ask,
+			handleError: vi.fn(),
+			pushToolResult: (result: ToolResponse) => {
+				toolResult = result
+			},
+			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
+			toolProtocol: "xml",
+		})
+
+		// Should use default limit of 5 and reject 6 files
+		expect(toolResult).toContain("Error: Too many files requested")
+		expect(toolResult).toContain("but the concurrent file reads limit is 5")
 	})
 })

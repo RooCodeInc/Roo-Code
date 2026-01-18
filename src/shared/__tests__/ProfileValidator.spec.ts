@@ -47,20 +47,6 @@ describe("ProfileValidator", () => {
 			expect(ProfileValidator.isProfileAllowed(profile, allowList)).toBe(false)
 		})
 
-		it("should allow human-relay provider regardless of model", () => {
-			const allowList: OrganizationAllowList = {
-				allowAll: false,
-				providers: {
-					"human-relay": { allowAll: false },
-				},
-			}
-			const profile: ProviderSettings = {
-				apiProvider: "human-relay",
-			}
-
-			expect(ProfileValidator.isProfileAllowed(profile, allowList)).toBe(true)
-		})
-
 		it("should allow providers with allowAll=true regardless of model", () => {
 			const allowList: OrganizationAllowList = {
 				allowAll: false,

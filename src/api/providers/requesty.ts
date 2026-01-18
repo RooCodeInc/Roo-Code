@@ -3,13 +3,14 @@ import OpenAI from "openai"
 
 import {
 	type ModelInfo,
+	type ModelRecord,
 	requestyDefaultModelId,
 	requestyDefaultModelInfo,
 	TOOL_PROTOCOL,
 	NATIVE_TOOL_DEFAULTS,
 } from "@roo-code/types"
 
-import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
+import type { ApiHandlerOptions } from "../../shared/api"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
@@ -140,7 +141,7 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
+			...convertToOpenAiMessages(messages),
 		]
 
 		// Map extended efforts to OpenAI Chat Completions-accepted values (omit unsupported)

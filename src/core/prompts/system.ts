@@ -18,6 +18,7 @@ import { isEmpty } from "../../utils/object"
 
 import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
+import { SkillsManager } from "../../services/skills/SkillsManager"
 
 import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
 
@@ -34,6 +35,7 @@ import {
 	getModesSection,
 	addCustomInstructions,
 	markdownFormattingSection,
+	getSkillsSection,
 } from "./sections"
 
 // Helper function to get prompt component, filtering out empty objects
@@ -69,6 +71,7 @@ async function generatePrompt(
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
+	skillsManager?: SkillsManager,
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -91,7 +94,7 @@ async function generatePrompt(
 	// Determine the effective protocol (defaults to 'xml')
 	const effectiveProtocol = getEffectiveProtocol(settings?.toolProtocol)
 
-	const [modesSection, mcpServersSection] = await Promise.all([
+	const [modesSection, mcpServersSection, skillsSection] = await Promise.all([
 		getModesSection(context),
 		shouldIncludeMcp
 			? getMcpServersSection(
@@ -101,6 +104,7 @@ async function generatePrompt(
 					!isNativeProtocol(effectiveProtocol),
 				)
 			: Promise.resolve(""),
+		getSkillsSection(skillsManager, mode as string),
 	])
 
 	// Build tools catalog section only for XML protocol
@@ -147,7 +151,7 @@ ${mcpServersSection}
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 
 ${modesSection}
-
+${skillsSection ? `\n${skillsSection}` : ""}
 ${getRulesSection(cwd, settings)}
 
 ${getSystemInfoSection(cwd)}
@@ -183,6 +187,7 @@ export const SYSTEM_PROMPT = async (
 	settings?: SystemPromptSettings,
 	todoList?: TodoItem[],
 	modelId?: string,
+	skillsManager?: SkillsManager,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -255,5 +260,6 @@ ${customInstructions}`
 		settings,
 		todoList,
 		modelId,
+		skillsManager,
 	)
 }

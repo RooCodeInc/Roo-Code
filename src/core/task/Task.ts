@@ -2,6 +2,7 @@ import * as path from "path"
 import * as vscode from "vscode"
 import os from "os"
 import crypto from "crypto"
+import { v7 as uuidv7 } from "uuid"
 import EventEmitter from "events"
 
 import { AskIgnoredError } from "./AskIgnoredError"
@@ -33,6 +34,8 @@ import {
 	type CreateTaskOptions,
 	type ModelInfo,
 	type ToolProtocol,
+	type ClineApiReqCancelReason,
+	type ClineApiReqInfo,
 	RooCodeEventName,
 	TelemetryEventName,
 	TaskStatus,
@@ -65,7 +68,6 @@ import { findLastIndex } from "../../shared/array"
 import { combineApiRequests } from "../../shared/combineApiRequests"
 import { combineCommandSequences } from "../../shared/combineCommandSequences"
 import { t } from "../../i18n"
-import { ClineApiReqCancelReason, ClineApiReqInfo } from "../../shared/ExtensionMessage"
 import { getApiMetrics, hasTokenUsageChanged, hasToolUsageChanged } from "../../shared/getApiMetrics"
 import { ClineAskResponse } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
@@ -89,11 +91,12 @@ import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 // utils
 import { calculateApiCostAnthropic, calculateApiCostOpenAI } from "../../shared/cost"
 import { getWorkspacePath } from "../../utils/path"
+import { sanitizeToolUseId } from "../../utils/tool-id"
 
 // prompts
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
-import { buildNativeToolsArray } from "./build-tools"
+import { buildNativeToolsArrayWithRestrictions } from "./build-tools"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -247,6 +250,49 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 */
 	private taskModeReady: Promise<void>
 
+	/**
+	 * The API configuration name (provider profile) associated with this task.
+	 * Persisted across sessions to maintain the provider profile when reopening tasks from history.
+	 *
+	 * ## Lifecycle
+	 *
+	 * ### For new tasks:
+	 * 1. Initially `undefined` during construction
+	 * 2. Asynchronously initialized from provider state via `initializeTaskApiConfigName()`
+	 * 3. Falls back to "default" if provider state is unavailable
+	 *
+	 * ### For history items:
+	 * 1. Immediately set from `historyItem.apiConfigName` during construction
+	 * 2. Falls back to undefined if not stored in history (for backward compatibility)
+	 *
+	 * ## Important
+	 * If you need a non-`undefined` provider profile (e.g., for profile-dependent operations),
+	 * wait for `taskApiConfigReady` first (or use `getTaskApiConfigName()`).
+	 * The sync `taskApiConfigName` getter may return `undefined` for backward compatibility.
+	 *
+	 * @private
+	 * @see {@link getTaskApiConfigName} - For safe async access
+	 * @see {@link taskApiConfigName} - For sync access after initialization
+	 */
+	private _taskApiConfigName: string | undefined
+
+	/**
+	 * Promise that resolves when the task API config name has been initialized.
+	 * This ensures async API config name initialization completes before the task is used.
+	 *
+	 * ## Purpose
+	 * - Prevents race conditions when accessing task API config name
+	 * - Ensures provider state is properly loaded before profile-dependent operations
+	 * - Provides a synchronization point for async initialization
+	 *
+	 * ## Resolution timing
+	 * - For history items: Resolves immediately (sync initialization)
+	 * - For new tasks: Resolves after provider state is fetched (async initialization)
+	 *
+	 * @private
+	 */
+	private taskApiConfigReady: Promise<void>
+
 	providerRef: WeakRef<ClineProvider>
 	private readonly globalStoragePath: string
 	abort: boolean = false
@@ -310,6 +356,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	consecutiveMistakeCount: number = 0
 	consecutiveMistakeLimit: number
 	consecutiveMistakeCountForApplyDiff: Map<string, number> = new Map()
+	consecutiveMistakeCountForEditFile: Map<string, number> = new Map()
 	consecutiveNoToolUseCount: number = 0
 	consecutiveNoAssistantMessagesCount: number = 0
 	toolUsage: ToolUsage = {}
@@ -337,6 +384,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	presentAssistantMessageHasPendingUpdates = false
 	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam | Anthropic.ToolResultBlockParam)[] = []
 	userMessageContentReady = false
+
+	/**
+	 * Push a tool_result block to userMessageContent, preventing duplicates.
+	 * This is critical for native tool protocol where duplicate tool_use_ids cause API errors.
+	 *
+	 * @param toolResult - The tool_result block to add
+	 * @returns true if added, false if duplicate was skipped
+	 */
+	public pushToolResultToUserContent(toolResult: Anthropic.ToolResultBlockParam): boolean {
+		const existingResult = this.userMessageContent.find(
+			(block): block is Anthropic.ToolResultBlockParam =>
+				block.type === "tool_result" && block.tool_use_id === toolResult.tool_use_id,
+		)
+		if (existingResult) {
+			console.warn(
+				`[Task#pushToolResultToUserContent] Skipping duplicate tool_result for tool_use_id: ${toolResult.tool_use_id}`,
+			)
+			return false
+		}
+		this.userMessageContent.push(toolResult)
+		return true
+	}
 	didRejectTool = false
 	didAlreadyUseTool = false
 	didToolFailInCurrentTurn = false
@@ -413,7 +482,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			)
 		}
 
-		this.taskId = historyItem ? historyItem.id : crypto.randomUUID()
+		this.taskId = historyItem ? historyItem.id : uuidv7()
 		this.rootTaskId = historyItem ? historyItem.rootTaskId : rootTask?.taskId
 		this.parentTaskId = historyItem ? historyItem.parentTaskId : parentTask?.taskId
 		this.childTaskId = undefined
@@ -440,7 +509,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		})
 
 		this.apiConfiguration = apiConfiguration
-		this.api = buildApiHandler(apiConfiguration)
+		this.api = buildApiHandler(this.apiConfiguration)
 		this.autoApprovalHandler = new AutoApprovalHandler()
 
 		this.urlContentFetcher = new UrlContentFetcher(provider.context)
@@ -480,21 +549,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.taskNumber = taskNumber
 		this.initialStatus = initialStatus
 
-		// Store the task's mode when it's created.
-		// For history items, use the stored mode; for new tasks, we'll set it
+		// Store the task's mode and API config name when it's created.
+		// For history items, use the stored values; for new tasks, we'll set them
 		// after getting state.
 		if (historyItem) {
 			this._taskMode = historyItem.mode || defaultModeSlug
+			this._taskApiConfigName = historyItem.apiConfigName
 			this.taskModeReady = Promise.resolve()
+			this.taskApiConfigReady = Promise.resolve()
 			TelemetryService.instance.captureTaskRestarted(this.taskId)
 
 			// For history items, use the persisted tool protocol if available.
 			// If not available (old tasks), it will be detected in resumeTaskFromHistory.
 			this._taskToolProtocol = historyItem.toolProtocol
 		} else {
-			// For new tasks, don't set the mode yet - wait for async initialization.
+			// For new tasks, don't set the mode/apiConfigName yet - wait for async initialization.
 			this._taskMode = undefined
+			this._taskApiConfigName = undefined
 			this.taskModeReady = this.initializeTaskMode(provider)
+			this.taskApiConfigReady = this.initializeTaskApiConfigName(provider)
 			TelemetryService.instance.captureTaskCreated(this.taskId)
 
 			// For new tasks, resolve and lock the tool protocol immediately.
@@ -613,6 +686,47 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this._taskMode = defaultModeSlug
 			// Use the provider's log method for better error visibility
 			const errorMessage = `Failed to initialize task mode: ${error instanceof Error ? error.message : String(error)}`
+			provider.log(errorMessage)
+		}
+	}
+
+	/**
+	 * Initialize the task API config name from the provider state.
+	 * This method handles async initialization with proper error handling.
+	 *
+	 * ## Flow
+	 * 1. Attempts to fetch the current API config name from provider state
+	 * 2. Sets `_taskApiConfigName` to the fetched name or "default" if unavailable
+	 * 3. Handles errors gracefully by falling back to "default"
+	 * 4. Logs any initialization errors for debugging
+	 *
+	 * ## Error handling
+	 * - Network failures when fetching provider state
+	 * - Provider not yet initialized
+	 * - Invalid state structure
+	 *
+	 * All errors result in fallback to "default" to ensure task can proceed.
+	 *
+	 * @private
+	 * @param provider - The ClineProvider instance to fetch state from
+	 * @returns Promise that resolves when initialization is complete
+	 */
+	private async initializeTaskApiConfigName(provider: ClineProvider): Promise<void> {
+		try {
+			const state = await provider.getState()
+
+			// Avoid clobbering a newer value that may have been set while awaiting provider state
+			// (e.g., user switches provider profile immediately after task creation).
+			if (this._taskApiConfigName === undefined) {
+				this._taskApiConfigName = state?.currentApiConfigName ?? "default"
+			}
+		} catch (error) {
+			// If there's an error getting state, use the default profile (unless a newer value was set).
+			if (this._taskApiConfigName === undefined) {
+				this._taskApiConfigName = "default"
+			}
+			// Use the provider's log method for better error visibility
+			const errorMessage = `Failed to initialize task API config name: ${error instanceof Error ? error.message : String(error)}`
 			provider.log(errorMessage)
 		}
 	}
@@ -737,6 +851,73 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return this._taskMode
 	}
 
+	/**
+	 * Wait for the task API config name to be initialized before proceeding.
+	 * This method ensures that any operations depending on the task's provider profile
+	 * will have access to the correct value.
+	 *
+	 * ## When to use
+	 * - Before accessing provider profile-specific configurations
+	 * - When switching between tasks with different provider profiles
+	 * - Before operations that depend on the provider profile
+	 *
+	 * @returns Promise that resolves when the task API config name is initialized
+	 * @public
+	 */
+	public async waitForApiConfigInitialization(): Promise<void> {
+		return this.taskApiConfigReady
+	}
+
+	/**
+	 * Get the task API config name asynchronously, ensuring it's properly initialized.
+	 * This is the recommended way to access the task's provider profile as it guarantees
+	 * the value is available before returning.
+	 *
+	 * ## Async behavior
+	 * - Internally waits for `taskApiConfigReady` promise to resolve
+	 * - Returns the initialized API config name or undefined as fallback
+	 * - Safe to call multiple times - subsequent calls return immediately if already initialized
+	 *
+	 * @returns Promise resolving to the task API config name string or undefined
+	 * @public
+	 */
+	public async getTaskApiConfigName(): Promise<string | undefined> {
+		await this.taskApiConfigReady
+		return this._taskApiConfigName
+	}
+
+	/**
+	 * Get the task API config name synchronously. This should only be used when you're certain
+	 * that the value has already been initialized (e.g., after waitForApiConfigInitialization).
+	 *
+	 * ## When to use
+	 * - In synchronous contexts where async/await is not available
+	 * - After explicitly waiting for initialization via `waitForApiConfigInitialization()`
+	 * - In event handlers or callbacks where API config name is guaranteed to be initialized
+	 *
+	 * Note: Unlike taskMode, this getter does not throw if uninitialized since the API config
+	 * name can legitimately be undefined (backward compatibility with tasks created before
+	 * this feature was added).
+	 *
+	 * @returns The task API config name string or undefined
+	 * @public
+	 */
+	public get taskApiConfigName(): string | undefined {
+		return this._taskApiConfigName
+	}
+
+	/**
+	 * Update the task's API config name. This is called when the user switches
+	 * provider profiles while a task is active, allowing the task to remember
+	 * its new provider profile.
+	 *
+	 * @param apiConfigName - The new API config name to set
+	 * @internal
+	 */
+	public setTaskApiConfigName(apiConfigName: string | undefined): void {
+		this._taskApiConfigName = apiConfigName
+	}
+
 	static create(options: TaskOptions): [Task, Promise<void>] {
 		const instance = new Task({ ...options, startTask: false })
 		const { images, task, historyItem } = options
@@ -777,6 +958,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const reasoningSummary = handler.getSummary?.()
 			const reasoningDetails = handler.getReasoningDetails?.()
 
+			// Only Anthropic's API expects/validates the special `thinking` content block signature.
+			// Other providers (notably Gemini 3) use different signature semantics (e.g. `thoughtSignature`)
+			// and require round-tripping the signature in their own format.
+			const modelId = getModelId(this.apiConfiguration)
+			const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
+			const isAnthropicProtocol = apiProtocol === "anthropic"
+
 			// Start from the original assistant message
 			const messageWithTs: any = {
 				...message,
@@ -791,7 +979,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Store reasoning: Anthropic thinking (with signature), plain text (most providers), or encrypted (OpenAI Native)
 			// Skip if reasoning_details already contains the reasoning (to avoid duplication)
-			if (reasoning && thoughtSignature && !reasoningDetails) {
+			if (isAnthropicProtocol && reasoning && thoughtSignature && !reasoningDetails) {
 				// Anthropic provider with extended thinking: Store as proper `thinking` block
 				// This format passes through anthropic-filter.ts and is properly round-tripped
 				// for interleaved thinking with tool use (required by Anthropic API)
@@ -850,10 +1038,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 			}
 
-			// If we have a thought signature WITHOUT reasoning text (edge case),
-			// append it as a dedicated content block for non-Anthropic providers (e.g., Gemini).
-			// Note: For Anthropic, the signature is already included in the thinking block above.
-			if (thoughtSignature && !reasoning) {
+			// For non-Anthropic providers (e.g., Gemini 3), persist the thought signature as its own
+			// content block so converters can attach it back to the correct provider-specific fields.
+			// Note: For Anthropic extended thinking, the signature is already included in the thinking block above.
+			if (thoughtSignature && !isAnthropicProtocol) {
 				const thoughtSignatureBlock = {
 					type: "thoughtSignature",
 					thoughtSignature,
@@ -1005,6 +1193,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				globalStoragePath: this.globalStoragePath,
 			})
 
+			if (this._taskApiConfigName === undefined) {
+				await this.taskApiConfigReady
+			}
+
 			const { historyItem, tokenUsage } = await taskMetadata({
 				taskId: this.taskId,
 				rootTaskId: this.rootTaskId,
@@ -1014,6 +1206,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				globalStoragePath: this.globalStoragePath,
 				workspace: this.cwd,
 				mode: this._taskMode || defaultModeSlug, // Use the task's own mode, not the current provider mode.
+				apiConfigName: this._taskApiConfigName, // Use the task's own provider profile, not the current provider profile.
 				initialStatus: this.initialStatus,
 				toolProtocol: this._taskToolProtocol, // Persist the locked tool protocol.
 			})
@@ -1090,7 +1283,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// state.
 					askTs = Date.now()
 					this.lastMessageTs = askTs
-					console.log(`Task#ask: new partial ask -> ${type} @ ${askTs}`)
 					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, partial, isProtected })
 					// console.log("Task#ask: current ask promise was ignored (#2)")
 					throw new AskIgnoredError("new partial")
@@ -1115,7 +1307,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// So in this case we must make sure that the message ts is
 					// never altered after first setting it.
 					askTs = lastMessage.ts
-					console.log(`Task#ask: updating previous partial ask -> ${type} @ ${askTs}`)
 					this.lastMessageTs = askTs
 					lastMessage.text = text
 					lastMessage.partial = false
@@ -1129,7 +1320,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					this.askResponseText = undefined
 					this.askResponseImages = undefined
 					askTs = Date.now()
-					console.log(`Task#ask: new complete ask -> ${type} @ ${askTs}`)
 					this.lastMessageTs = askTs
 					await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 				}
@@ -1140,7 +1330,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.askResponseText = undefined
 			this.askResponseImages = undefined
 			askTs = Date.now()
-			console.log(`Task#ask: new complete ask -> ${type} @ ${askTs}`)
 			this.lastMessageTs = askTs
 			await this.addToClineMessages({ ts: askTs, type: "ask", ask: type, text, isProtected })
 		}
@@ -1170,15 +1359,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// block (via the `pWaitFor`).
 		const isBlocking = !(this.askResponse !== undefined || this.lastMessageTs !== askTs)
 		const isMessageQueued = !this.messageQueueService.isEmpty()
-
 		const isStatusMutable = !partial && isBlocking && !isMessageQueued && approval.decision === "ask"
 
-		if (isBlocking) {
-			console.log(`Task#ask will block -> type: ${type}`)
-		}
-
 		if (isStatusMutable) {
-			console.log(`Task#ask: status is mutable -> type: ${type}`)
 			const statusMutationTimeout = 2_000
 
 			if (isInteractiveAsk(type)) {
@@ -1217,8 +1400,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				)
 			}
 		} else if (isMessageQueued) {
-			console.log(`Task#ask: will process message queue -> type: ${type}`)
-
 			const message = this.messageQueueService.dequeueMessage()
 
 			if (message) {
@@ -1277,7 +1458,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Could happen if we send multiple asks in a row i.e. with
 			// command_output. It's important that when we know an ask could
 			// fail, it is handled gracefully.
-			console.log("Task#ask: current ask promise was ignored")
 			throw new AskIgnoredError("superseded")
 		}
 
@@ -1354,6 +1534,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.handleWebviewAskResponse("noButtonClicked", text, images)
 	}
 
+	public supersedePendingAsk(): void {
+		this.lastMessageTs = Date.now()
+	}
+
 	/**
 	 * Updates the API configuration but preserves the locked tool protocol.
 	 * The task's tool protocol is locked at creation time and should NOT change
@@ -1364,7 +1548,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public updateApiConfiguration(newApiConfiguration: ProviderSettings): void {
 		// Update the configuration and rebuild the API handler
 		this.apiConfiguration = newApiConfiguration
-		this.api = buildApiHandler(newApiConfiguration)
+		this.api = buildApiHandler(this.apiConfiguration)
 
 		// IMPORTANT: Do NOT change the parser based on the new configuration!
 		// The task's tool protocol is locked at creation time and must remain
@@ -1424,6 +1608,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	public async condenseContext(): Promise<void> {
+		// CRITICAL: Flush any pending tool results before condensing
+		// to ensure tool_use/tool_result pairs are complete in history
+		await this.flushPendingToolResultsToHistory()
+
 		const systemPrompt = await this.getSystemPrompt()
 
 		// Get condensing configuration
@@ -2343,6 +2531,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const modelId = getModelId(this.apiConfiguration)
 			const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
 
+			// Respect user-configured provider rate limiting BEFORE we emit api_req_started.
+			// This prevents the UI from showing an "API Request..." spinner while we are
+			// intentionally waiting due to the rate limit slider.
+			//
+			// NOTE: We also set Task.lastGlobalApiRequestTime here to reserve this slot
+			// before we build environment details (which can take time).
+			// This ensures subsequent requests (including subtasks) still honour the
+			// provider rate-limit window.
+			await this.maybeWaitForProviderRateLimit(currentItem.retryAttempt ?? 0)
+			Task.lastGlobalApiRequestTime = performance.now()
+
 			await this.say(
 				"api_req_started",
 				JSON.stringify({
@@ -2357,7 +2556,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxReadFileLine = -1,
 			} = (await this.providerRef.deref()?.getState()) ?? {}
 
-			const parsedUserContent = await processUserContentMentions({
+			const { content: parsedUserContent, mode: slashCommandMode } = await processUserContentMentions({
 				userContent: currentUserContent,
 				cwd: this.cwd,
 				urlContentFetcher: this.urlContentFetcher,
@@ -2368,6 +2567,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxDiagnosticMessages,
 				maxReadFileLine,
 			})
+
+			// Switch mode if specified in a slash command's frontmatter
+			if (slashCommandMode) {
+				const provider = this.providerRef.deref()
+				if (provider) {
+					const state = await provider.getState()
+					const targetMode = getModeBySlug(slashCommandMode, state?.customModes)
+					if (targetMode) {
+						await provider.handleModeSwitch(slashCommandMode)
+					}
+				}
+			}
 
 			const environmentDetails = await getEnvironmentDetails(this, currentIncludeFileDetails)
 
@@ -2484,7 +2695,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// lastMessage.ts = Date.now() DO NOT update ts since it is used as a key for virtuoso list
 						lastMessage.partial = false
 						// instead of streaming partialMessage events, we do a save and post like normal to persist to disk
-						console.log("updating partial message", lastMessage)
 					}
 
 					// Update `api_req_started` to have cancelled and cost, so that
@@ -2538,7 +2748,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Yields only if the first chunk is successful, otherwise will
 				// allow the user to retry the request (most likely due to rate
 				// limit error, which gets thrown on the first chunk).
-				const stream = this.attemptApiRequest()
+				const stream = this.attemptApiRequest(currentItem.retryAttempt ?? 0, { skipProviderRateLimit: true })
 				let assistantMessage = ""
 				let reasoningMessage = ""
 				let pendingGroundingSources: GroundingSource[] = []
@@ -2623,6 +2833,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								for (const event of events) {
 									if (event.type === "tool_call_start") {
+										// Guard against duplicate tool_call_start events for the same tool ID.
+										// This can occur due to stream retry, reconnection, or API quirks.
+										// Without this check, duplicate tool_use blocks with the same ID would
+										// be added to assistantMessageContent, causing API 400 errors:
+										// "tool_use ids must be unique"
+										if (this.streamingToolCallIndices.has(event.id)) {
+											console.warn(
+												`[Task#${this.taskId}] Ignoring duplicate tool_call_start for ID: ${event.id} (tool: ${event.name})`,
+											)
+											continue
+										}
+
 										// Initialize streaming in NativeToolCallParser
 										NativeToolCallParser.startStreamingToolCall(event.id, event.name as ToolName)
 
@@ -3058,9 +3280,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
+						const rawErrorMessage = error.message ?? JSON.stringify(serializeError(error), null, 2)
 						const streamingFailedMessage = this.abort
 							? undefined
-							: (error.message ?? JSON.stringify(serializeError(error), null, 2))
+							: `${t("common:interruption.streamTerminatedByProvider")}: ${rawErrorMessage}`
 
 						// Clean up partial state
 						await abortStream(cancelReason, streamingFailedMessage)
@@ -3215,6 +3438,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Add tool_use blocks with their IDs for native protocol
 					// This handles both regular ToolUse and McpToolUse types
+					// IMPORTANT: Track seen IDs to prevent duplicates in the API request.
+					// Duplicate tool_use IDs cause Anthropic API 400 errors:
+					// "tool_use ids must be unique"
+					const seenToolUseIds = new Set<string>()
 					const toolUseBlocks = this.assistantMessageContent.filter(
 						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 					)
@@ -3224,9 +3451,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							// The arguments are the raw tool arguments (matching the simplified schema)
 							const mcpBlock = block as import("../../shared/tools").McpToolUse
 							if (mcpBlock.id) {
+								const sanitizedId = sanitizeToolUseId(mcpBlock.id)
+								// Pre-flight deduplication: Skip if we've already added this ID
+								if (seenToolUseIds.has(sanitizedId)) {
+									console.warn(
+										`[Task#${this.taskId}] Pre-flight deduplication: Skipping duplicate MCP tool_use ID: ${sanitizedId} (tool: ${mcpBlock.name})`,
+									)
+									continue
+								}
+								seenToolUseIds.add(sanitizedId)
 								assistantContent.push({
 									type: "tool_use" as const,
-									id: mcpBlock.id,
+									id: sanitizedId,
 									name: mcpBlock.name, // Original dynamic name
 									input: mcpBlock.arguments, // Direct tool arguments
 								})
@@ -3236,6 +3472,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							const toolUse = block as import("../../shared/tools").ToolUse
 							const toolCallId = toolUse.id
 							if (toolCallId) {
+								const sanitizedId = sanitizeToolUseId(toolCallId)
+								// Pre-flight deduplication: Skip if we've already added this ID
+								if (seenToolUseIds.has(sanitizedId)) {
+									console.warn(
+										`[Task#${this.taskId}] Pre-flight deduplication: Skipping duplicate tool_use ID: ${sanitizedId} (tool: ${toolUse.name})`,
+									)
+									continue
+								}
+								seenToolUseIds.add(sanitizedId)
 								// nativeArgs is already in the correct API format for all tools
 								const input = toolUse.nativeArgs || toolUse.params
 
@@ -3247,7 +3492,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								assistantContent.push({
 									type: "tool_use" as const,
-									id: toolCallId,
+									id: sanitizedId,
 									name: toolNameForHistory,
 									input,
 								})
@@ -3478,6 +3723,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			maxConcurrentFileReads,
 			maxReadFileLine,
 			apiConfiguration,
+			enableSubfolderRules,
 		} = state ?? {}
 
 		return await (async () => {
@@ -3530,6 +3776,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					browserToolEnabled: browserToolEnabled ?? true,
 					useAgentRules:
 						vscode.workspace.getConfiguration(Package.name).get<boolean>("useAgentRules") ?? true,
+					enableSubfolderRules: enableSubfolderRules ?? false,
 					newTaskRequireTodos: vscode.workspace
 						.getConfiguration(Package.name)
 						.get<boolean>("newTaskRequireTodos", false),
@@ -3538,6 +3785,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				},
 				undefined, // todoList
 				this.api.getModel().id,
+				provider.getSkillsManager(),
 			)
 		})()
 	}
@@ -3639,7 +3887,44 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		await this.providerRef.deref()?.postMessageToWebview({ type: "condenseTaskContextResponse", text: this.taskId })
 	}
 
-	public async *attemptApiRequest(retryAttempt: number = 0): ApiStream {
+	/**
+	 * Enforce the user-configured provider rate limit.
+	 *
+	 * NOTE: This is intentionally treated as expected behavior and is surfaced via
+	 * the `api_req_rate_limit_wait` say type (not an error).
+	 */
+	private async maybeWaitForProviderRateLimit(retryAttempt: number): Promise<void> {
+		const state = await this.providerRef.deref()?.getState()
+		const rateLimitSeconds =
+			state?.apiConfiguration?.rateLimitSeconds ?? this.apiConfiguration?.rateLimitSeconds ?? 0
+
+		if (rateLimitSeconds <= 0 || !Task.lastGlobalApiRequestTime) {
+			return
+		}
+
+		const now = performance.now()
+		const timeSinceLastRequest = now - Task.lastGlobalApiRequestTime
+		const rateLimitDelay = Math.ceil(
+			Math.min(rateLimitSeconds, Math.max(0, rateLimitSeconds * 1000 - timeSinceLastRequest) / 1000),
+		)
+
+		// Only show the countdown UX on the first attempt. Retry flows have their own delay messaging.
+		if (rateLimitDelay > 0 && retryAttempt === 0) {
+			for (let i = rateLimitDelay; i > 0; i--) {
+				// Send structured JSON data for i18n-safe transport
+				const delayMessage = JSON.stringify({ seconds: i })
+				await this.say("api_req_rate_limit_wait", delayMessage, undefined, true)
+				await delay(1000)
+			}
+			// Finalize the partial message so the UI doesn't keep rendering an in-progress spinner.
+			await this.say("api_req_rate_limit_wait", undefined, undefined, false)
+		}
+	}
+
+	public async *attemptApiRequest(
+		retryAttempt: number = 0,
+		options: { skipProviderRateLimit?: boolean } = {},
+	): ApiStream {
 		const state = await this.providerRef.deref()?.getState()
 
 		const {
@@ -3676,29 +3961,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 		}
 
-		let rateLimitDelay = 0
-
-		// Use the shared timestamp so that subtasks respect the same rate-limit
-		// window as their parent tasks.
-		if (Task.lastGlobalApiRequestTime) {
-			const now = performance.now()
-			const timeSinceLastRequest = now - Task.lastGlobalApiRequestTime
-			const rateLimit = apiConfiguration?.rateLimitSeconds || 0
-			rateLimitDelay = Math.ceil(Math.min(rateLimit, Math.max(0, rateLimit * 1000 - timeSinceLastRequest) / 1000))
+		if (!options.skipProviderRateLimit) {
+			await this.maybeWaitForProviderRateLimit(retryAttempt)
 		}
 
-		// Only show rate limiting message if we're not retrying. If retrying, we'll include the delay there.
-		if (rateLimitDelay > 0 && retryAttempt === 0) {
-			// Show countdown timer
-			for (let i = rateLimitDelay; i > 0; i--) {
-				const delayMessage = `Rate limiting for ${i} seconds...`
-				await this.say("api_req_retry_delayed", delayMessage, undefined, true)
-				await delay(1000)
-			}
-		}
-
-		// Update last request time before making the request so that subsequent
+		// Update last request time right before making the request so that subsequent
 		// requests — even from new subtasks — will honour the provider's rate-limit.
+		//
+		// NOTE: When recursivelyMakeClineRequests handles rate limiting, it sets the
+		// timestamp earlier to include the environment details build. We still set it
+		// here for direct callers (tests) and for the case where we didn't rate-limit
+		// in the caller.
 		Task.lastGlobalApiRequestTime = performance.now()
 
 		const systemPrompt = await this.getSystemPrompt()
@@ -3853,15 +4126,27 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const taskProtocol = this._taskToolProtocol ?? "xml"
 		const shouldIncludeTools = taskProtocol === TOOL_PROTOCOL.NATIVE && (modelInfo.supportsNativeTools ?? false)
 
-		// Build complete tools array: native tools + dynamic MCP tools, filtered by mode restrictions
+		// Build complete tools array: native tools + dynamic MCP tools
+		// When includeAllToolsWithRestrictions is true, returns all tools but provides
+		// allowedFunctionNames for providers (like Gemini) that need to see all tool
+		// definitions in history while restricting callable tools for the current mode.
+		// Only Gemini currently supports this - other providers filter tools normally.
 		let allTools: OpenAI.Chat.ChatCompletionTool[] = []
+		let allowedFunctionNames: string[] | undefined
+
+		// Gemini requires all tool definitions to be present for history compatibility,
+		// but uses allowedFunctionNames to restrict which tools can be called.
+		// Other providers (Anthropic, OpenAI, etc.) don't support this feature yet,
+		// so they continue to receive only the filtered tools for the current mode.
+		const supportsAllowedFunctionNames = apiConfiguration?.apiProvider === "gemini"
+
 		if (shouldIncludeTools) {
 			const provider = this.providerRef.deref()
 			if (!provider) {
 				throw new Error("Provider reference lost during tool building")
 			}
 
-			allTools = await buildNativeToolsArray({
+			const toolsResult = await buildNativeToolsArrayWithRestrictions({
 				provider,
 				cwd: this.cwd,
 				mode,
@@ -3869,10 +4154,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				experiments: state?.experiments,
 				apiConfiguration,
 				maxReadFileLine: state?.maxReadFileLine ?? -1,
+				maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
 				modelInfo,
 				diffEnabled: this.diffEnabled,
+				includeAllToolsWithRestrictions: supportsAllowedFunctionNames,
 			})
+			allTools = toolsResult.tools
+			allowedFunctionNames = toolsResult.allowedFunctionNames
 		}
 
 		// Parallel tool calls are disabled - feature is on hold
@@ -3890,6 +4179,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						tool_choice: "auto",
 						toolProtocol: taskProtocol,
 						parallelToolCalls: parallelToolCallsEnabled,
+						// When mode restricts tools, provide allowedFunctionNames so providers
+						// like Gemini can see all tools in history but only call allowed ones
+						...(allowedFunctionNames ? { allowedFunctionNames } : {}),
 					}
 				: {}),
 		}
@@ -4014,7 +4306,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Respect provider rate limit window
 			let rateLimitDelay = 0
-			const rateLimit = state?.apiConfiguration?.rateLimitSeconds || 0
+			const rateLimit = (state?.apiConfiguration ?? this.apiConfiguration)?.rateLimitSeconds || 0
 			if (Task.lastGlobalApiRequestTime && rateLimit > 0) {
 				const elapsed = performance.now() - Task.lastGlobalApiRequestTime
 				rateLimitDelay = Math.ceil(Math.min(rateLimit, Math.max(0, rateLimit * 1000 - elapsed) / 1000))

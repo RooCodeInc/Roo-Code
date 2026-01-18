@@ -13,6 +13,7 @@ import {
 	unboundDefaultModelId,
 	litellmDefaultModelId,
 	openAiNativeDefaultModelId,
+	openAiCodexDefaultModelId,
 	anthropicDefaultModelId,
 	doubaoDefaultModelId,
 	claudeCodeDefaultModelId,
@@ -83,6 +84,7 @@ import {
 	Ollama,
 	OpenAI,
 	OpenAICompatible,
+	OpenAICodex,
 	OpenRouter,
 	QwenCode,
 	Requesty,
@@ -138,7 +140,8 @@ const ApiOptions = ({
 	setErrorMessage,
 }: ApiOptionsProps) => {
 	const { t } = useAppTranslation()
-	const { organizationAllowList, cloudIsAuthenticated, claudeCodeIsAuthenticated } = useExtensionState()
+	const { organizationAllowList, cloudIsAuthenticated, claudeCodeIsAuthenticated, openAiCodexIsAuthenticated } =
+		useExtensionState()
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -308,6 +311,7 @@ const ApiOptions = ({
 			// To address that we set the modelId to the default value for th
 			// provider if it's not already set.
 			const validateAndResetModel = (
+				provider: ProviderName,
 				modelId: string | undefined,
 				field: keyof ProviderSettings,
 				defaultValue?: string,
@@ -315,11 +319,32 @@ const ApiOptions = ({
 				// in case we haven't set a default value for a provider
 				if (!defaultValue) return
 
-				// only set default if no model is set, but don't reset invalid models
-				// let users see and decide what to do with invalid model selections
-				const shouldSetDefault = !modelId
+				// 1) If nothing is set, initialize to the provider default.
+				if (!modelId) {
+					setApiConfigurationField(field, defaultValue, false)
+					return
+				}
 
-				if (shouldSetDefault) {
+				// 2) If something *is* set, ensure it's valid for the newly selected provider.
+				//
+				// Without this, switching providers can leave the UI showing a model from the
+				// previously selected provider (including model IDs that don't exist for the
+				// newly selected provider).
+				//
+				// Note: We only validate providers with static model lists.
+				const staticModels = MODELS_BY_PROVIDER[provider]
+				if (!staticModels) {
+					return
+				}
+
+				// Bedrock has a special “custom-arn” pseudo-model that isn't part of MODELS_BY_PROVIDER.
+				if (provider === "bedrock" && modelId === "custom-arn") {
+					return
+				}
+
+				const filteredModels = filterModels(staticModels, provider, organizationAllowList)
+				const isValidModel = !!filteredModels && Object.prototype.hasOwnProperty.call(filteredModels, modelId)
+				if (!isValidModel) {
 					setApiConfigurationField(field, defaultValue, false)
 				}
 			}
@@ -342,6 +367,7 @@ const ApiOptions = ({
 				anthropic: { field: "apiModelId", default: anthropicDefaultModelId },
 				cerebras: { field: "apiModelId", default: cerebrasDefaultModelId },
 				"claude-code": { field: "apiModelId", default: claudeCodeDefaultModelId },
+				"openai-codex": { field: "apiModelId", default: openAiCodexDefaultModelId },
 				"qwen-code": { field: "apiModelId", default: qwenCodeDefaultModelId },
 				"openai-native": { field: "apiModelId", default: openAiNativeDefaultModelId },
 				gemini: { field: "apiModelId", default: geminiDefaultModelId },
@@ -377,13 +403,14 @@ const ApiOptions = ({
 			const config = PROVIDER_MODEL_CONFIG[value]
 			if (config) {
 				validateAndResetModel(
+					value,
 					apiConfiguration[config.field] as string | undefined,
 					config.field,
 					config.default,
 				)
 			}
 		},
-		[setApiConfigurationField, apiConfiguration],
+		[setApiConfigurationField, apiConfiguration, organizationAllowList],
 	)
 
 	const modelValidationError = useMemo(() => {
@@ -560,6 +587,15 @@ const ApiOptions = ({
 					setApiConfigurationField={setApiConfigurationField}
 					simplifySettings={fromWelcomeView}
 					claudeCodeIsAuthenticated={claudeCodeIsAuthenticated}
+				/>
+			)}
+
+			{selectedProvider === "openai-codex" && (
+				<OpenAICodex
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+					openAiCodexIsAuthenticated={openAiCodexIsAuthenticated}
 				/>
 			)}
 
@@ -741,17 +777,6 @@ const ApiOptions = ({
 				/>
 			)}
 
-			{selectedProvider === "human-relay" && (
-				<>
-					<div className="text-sm text-vscode-descriptionForeground">
-						{t("settings:providers.humanRelay.description")}
-					</div>
-					<div className="text-sm text-vscode-descriptionForeground">
-						{t("settings:providers.humanRelay.instructions")}
-					</div>
-				</>
-			)}
-
 			{selectedProvider === "fireworks" && (
 				<Fireworks apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
@@ -772,67 +797,69 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{/* Skip generic model picker for claude-code since it has its own in ClaudeCode.tsx */}
-			{selectedProviderModels.length > 0 && selectedProvider !== "claude-code" && (
-				<>
-					<div>
-						<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
-						<Select
-							value={selectedModelId === "custom-arn" ? "custom-arn" : selectedModelId}
-							onValueChange={(value) => {
-								setApiConfigurationField("apiModelId", value)
+			{/* Skip generic model picker for claude-code/openai-codex since they have their own model pickers */}
+			{selectedProviderModels.length > 0 &&
+				selectedProvider !== "claude-code" &&
+				selectedProvider !== "openai-codex" && (
+					<>
+						<div>
+							<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
+							<Select
+								value={selectedModelId === "custom-arn" ? "custom-arn" : selectedModelId}
+								onValueChange={(value) => {
+									setApiConfigurationField("apiModelId", value)
 
-								// Clear custom ARN if not using custom ARN option.
-								if (value !== "custom-arn" && selectedProvider === "bedrock") {
-									setApiConfigurationField("awsCustomArn", "")
-								}
+									// Clear custom ARN if not using custom ARN option.
+									if (value !== "custom-arn" && selectedProvider === "bedrock") {
+										setApiConfigurationField("awsCustomArn", "")
+									}
 
-								// Clear reasoning effort when switching models to allow the new model's default to take effect
-								// This is especially important for GPT-5 models which default to "medium"
-								if (selectedProvider === "openai-native") {
-									setApiConfigurationField("reasoningEffort", undefined)
-								}
-							}}>
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder={t("settings:common.select")} />
-							</SelectTrigger>
-							<SelectContent>
-								{selectedProviderModels.map((option) => (
-									<SelectItem key={option.value} value={option.value}>
-										{option.label}
-									</SelectItem>
-								))}
-								{selectedProvider === "bedrock" && (
-									<SelectItem value="custom-arn">{t("settings:labels.useCustomArn")}</SelectItem>
-								)}
-							</SelectContent>
-						</Select>
-					</div>
+									// Clear reasoning effort when switching models to allow the new model's default to take effect
+									// This is especially important for GPT-5 models which default to "medium"
+									if (selectedProvider === "openai-native") {
+										setApiConfigurationField("reasoningEffort", undefined)
+									}
+								}}>
+								<SelectTrigger className="w-full">
+									<SelectValue placeholder={t("settings:common.select")} />
+								</SelectTrigger>
+								<SelectContent>
+									{selectedProviderModels.map((option) => (
+										<SelectItem key={option.value} value={option.value}>
+											{option.label}
+										</SelectItem>
+									))}
+									{selectedProvider === "bedrock" && (
+										<SelectItem value="custom-arn">{t("settings:labels.useCustomArn")}</SelectItem>
+									)}
+								</SelectContent>
+							</Select>
+						</div>
 
-					{/* Show error if a deprecated model is selected */}
-					{selectedModelInfo?.deprecated && (
-						<ApiErrorMessage errorMessage={t("settings:validation.modelDeprecated")} />
-					)}
+						{/* Show error if a deprecated model is selected */}
+						{selectedModelInfo?.deprecated && (
+							<ApiErrorMessage errorMessage={t("settings:validation.modelDeprecated")} />
+						)}
 
-					{selectedProvider === "bedrock" && selectedModelId === "custom-arn" && (
-						<BedrockCustomArn
-							apiConfiguration={apiConfiguration}
-							setApiConfigurationField={setApiConfigurationField}
-						/>
-					)}
+						{selectedProvider === "bedrock" && selectedModelId === "custom-arn" && (
+							<BedrockCustomArn
+								apiConfiguration={apiConfiguration}
+								setApiConfigurationField={setApiConfigurationField}
+							/>
+						)}
 
-					{/* Only show model info if not deprecated */}
-					{!selectedModelInfo?.deprecated && (
-						<ModelInfoView
-							apiProvider={selectedProvider}
-							selectedModelId={selectedModelId}
-							modelInfo={selectedModelInfo}
-							isDescriptionExpanded={isDescriptionExpanded}
-							setIsDescriptionExpanded={setIsDescriptionExpanded}
-						/>
-					)}
-				</>
-			)}
+						{/* Only show model info if not deprecated */}
+						{!selectedModelInfo?.deprecated && (
+							<ModelInfoView
+								apiProvider={selectedProvider}
+								selectedModelId={selectedModelId}
+								modelInfo={selectedModelInfo}
+								isDescriptionExpanded={isDescriptionExpanded}
+								setIsDescriptionExpanded={setIsDescriptionExpanded}
+							/>
+						)}
+					</>
+				)}
 
 			{!fromWelcomeView && (
 				<ThinkingBudget

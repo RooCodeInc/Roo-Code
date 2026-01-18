@@ -1,7 +1,6 @@
 import React from "react"
 import { Trans } from "react-i18next"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
-import { Webhook } from "lucide-react"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -27,12 +26,7 @@ const McpView = () => {
 
 	return (
 		<div>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<Webhook className="w-4" />
-					<div>{t("mcp:title")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("mcp:title")}</SectionHeader>
 
 			<Section>
 				<div

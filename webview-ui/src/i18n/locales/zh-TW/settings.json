@@ -1,4 +1,5 @@
 {
+	"back": "返回工作檢視",
 	"common": {
 		"save": "儲存",
 		"done": "完成",
@@ -7,6 +8,10 @@
 		"select": "選擇",
 		"add": "新增標頭",
 		"remove": "移除"
+	},
+	"search": {
+		"placeholder": "搜尋設定...",
+		"noResults": "找不到設定"
 	},
 	"header": {
 		"title": "設定",
@@ -55,7 +60,11 @@
 		},
 		"community": "想要獲取使用技巧或與其他 Roo Code 使用者交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "聯絡與社群",
-		"manageSettings": "管理設定"
+		"manageSettings": "管理設定",
+		"debugMode": {
+			"label": "啟用偵錯模式",
+			"description": "啟用偵錯模式以在工作標題顯示額外按鈕，用於在暫存檔案中檢視 API 對話歷史記錄和 UI 訊息的格式化 JSON。"
+		}
 	},
 	"slashCommands": {
 		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>"
@@ -278,7 +287,6 @@
 		"useCustomBaseUrl": "使用自訂基礎 URL",
 		"useReasoning": "啟用推理",
 		"useHostHeader": "使用自訂 Host 標頭",
-		"useLegacyFormat": "使用舊版 OpenAI API 格式",
 		"customHeaders": "自訂標頭",
 		"headerName": "標頭名稱",
 		"headerValue": "標頭值",
@@ -433,10 +441,6 @@
 		"getUnboundApiKey": "取得 Unbound API 金鑰",
 		"unboundRefreshModelsSuccess": "模型列表已更新！您現在可以從最新模型中選擇。",
 		"unboundInvalidApiKey": "無效的 API 金鑰。請檢查您的 API 金鑰並重試。",
-		"humanRelay": {
-			"description": "不需要 API 金鑰，但使用者需要協助將資訊複製並貼上到網頁聊天 AI。",
-			"instructions": "使用期間會彈出對話框，並自動將目前訊息複製到剪貼簿。您需要將這些內容貼上到網頁版 AI（如 ChatGPT 或 Claude），然後將 AI 的回覆複製回對話框並點選確認按鈕。"
-		},
 		"roo": {
 			"authenticatedMessage": "已透過 Roo Code Cloud 帳戶安全認證。",
 			"connectButton": "連接到 Roo Code Cloud"
@@ -666,6 +670,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git 狀態最大檔案數",
 			"description": "git狀態上下文中包含的最大檔案條目數。設為0禁用。分支資訊和提交在>0時始終顯示。"
+		},
+		"enableSubfolderRules": {
+			"label": "啟用子資料夾規則",
+			"description": "遞迴發現並載入子目錄中的 .roo/rules 和 AGENTS.md 檔案。適用於具有每包規則的 monorepo。"
 		}
 	},
 	"terminal": {

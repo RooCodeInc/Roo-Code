@@ -44,10 +44,7 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
 			max_tokens,
-			messages: [
-				{ role: "system", content: systemPrompt },
-				...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
-			],
+			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
 			...(metadata?.tools && { tools: metadata.tools }),

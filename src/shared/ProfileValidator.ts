@@ -14,10 +14,6 @@ export class ProfileValidator {
 			return false
 		}
 
-		if (profile.apiProvider === "human-relay") {
-			return true
-		}
-
 		const modelId = this.getModelIdFromProfile(profile)
 
 		if (!modelId) {
@@ -90,7 +86,6 @@ export class ProfileValidator {
 				return profile.ioIntelligenceModelId
 			case "deepinfra":
 				return profile.deepInfraModelId
-			case "human-relay":
 			case "fake-ai":
 			default:
 				return undefined

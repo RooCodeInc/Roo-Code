@@ -1,7 +1,9 @@
 import OpenAI from "openai"
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import type { ApiHandlerOptions, ModelRecord } from "../../shared/api"
+import type { ModelRecord } from "@roo-code/types"
+
+import type { ApiHandlerOptions } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -56,10 +58,7 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
 			temperature,
-			messages: [
-				{ role: "system", content: systemPrompt },
-				...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
-			],
+			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
 		}

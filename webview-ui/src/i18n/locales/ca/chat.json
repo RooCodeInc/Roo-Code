@@ -82,10 +82,15 @@
 		"title": "Finalitzar",
 		"tooltip": "Finalitza la tasca actual"
 	},
+	"stop": {
+		"title": "Atura",
+		"tooltip": "Atura la tasca actual"
+	},
 	"cancel": {
 		"title": "Cancel·lar",
 		"tooltip": "Cancel·la l'operació actual"
 	},
+	"enqueueMessage": "Afegeix el missatge a la cua (s'enviarà quan acabi la tasca actual)",
 	"scrollToBottom": "Desplaça't al final del xat",
 	"about": "Roo Code és tot un equip de desenvolupament d'IA al teu editor.",
 	"docs": "Consulta els nostres <DocsLink>documents</DocsLink> per a més informació.",
@@ -138,6 +143,7 @@
 		"streaming": "Sol·licitud API...",
 		"cancelled": "Sol·licitud API cancel·lada",
 		"streamingFailed": "Transmissió API ha fallat",
+		"rateLimitWait": "Limitació de taxa",
 		"errorTitle": "Error de proveïdor {{code}}",
 		"errorMessage": {
 			"docs": "Documentació",
@@ -270,7 +276,8 @@
 		"title": "Detalls de l'error",
 		"copyToClipboard": "Copiar al porta-retalls",
 		"copied": "Copiat!",
-		"diagnostics": "Obtenir informació d'error detallada"
+		"diagnostics": "Obtenir informació d'error detallada",
+		"proxyProvider": "Sembla que estàs utilitzant un proveïdor basat en proxy. Assegura't de comprovar els seus registres i de garantir que no estàs reescrivint les sol·licituds de Roo."
 	},
 	"powershell": {
 		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació."
@@ -291,7 +298,7 @@
 		"triggerLabel_zero": "0 aprovacions automàtiques",
 		"triggerLabel_one": "1 aprovació automàtica",
 		"triggerLabel_other": "{{count}} aprovacions automàtiques",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Pensant",
@@ -328,9 +335,9 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"minimaxM21": "Model MiniMax M2.1 ràpid i assequible ara disponible a Roo Code Cloud, MiniMax i més",
-			"glm47": "Model Z.AI GLM-4.7 amb suport de mode de pensament afegit a Roo Code Cloud, Z.AI i més",
-			"customTools": "Suport experimental de ferramentes personalitzades per definir les teves pròpies ferramentes en TypeScript"
+			"openaiCodexProvider": "S'ha afegit el Proveïdor OpenAI - ChatGPT Plus/Pro que ofereix accés basat en subscripció als models Codex sense costos per token.",
+			"gpt52codexModel": "S'ha afegit el nou model gpt-5.2-codex al Roo Code Router, al proveïdor estàndard OpenAI i més.",
+			"bugFixes": "S'han corregit fuites de memòria que causaven pantalles grises, problemes de signatura de pensament de Gemini i més millores d'estabilitat."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
@@ -340,8 +347,14 @@
 		},
 		"careers": "A més, <careersLink>estem contractant!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Cost total (subtasques incloses): ${{cost}}",
+		"total": "Cost total: ${{cost}}",
+		"includesSubtasks": "Inclou els costos de les subtasques"
+	},
 	"browser": {
 		"session": "Sessió del navegador",
+		"active": "Actiu",
 		"rooWantsToUse": "Roo vol utilitzar el navegador",
 		"consoleLogs": "Registres de consola",
 		"noNewLogs": "(Cap registre nou)",

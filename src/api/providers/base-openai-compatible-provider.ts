@@ -84,19 +84,13 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 				format: "openai",
 			}) ?? undefined
 
-		const temperature = this.options.modelTemperature ?? this.defaultTemperature
+		const temperature = this.options.modelTemperature ?? info.defaultTemperature ?? this.defaultTemperature
 
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
 			max_tokens,
 			temperature,
-			// Enable mergeToolResultText to merge environment_details and other text content
-			// after tool_results into the last tool message. This prevents reasoning/thinking
-			// models from dropping reasoning_content when they see a user message after tool results.
-			messages: [
-				{ role: "system", content: systemPrompt },
-				...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
-			],
+			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
 			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),

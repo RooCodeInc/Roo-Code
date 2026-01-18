@@ -86,7 +86,7 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
+			...convertToOpenAiMessages(messages),
 		]
 
 		if (info.supportsPromptCache) {

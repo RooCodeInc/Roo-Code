@@ -34,6 +34,9 @@ import {
 	type CreateTaskOptions,
 	type TokenUsage,
 	type ToolUsage,
+	type ExtensionMessage,
+	type ExtensionState,
+	type MarketplaceInstalledMetadata,
 	RooCodeEventName,
 	requestyDefaultModelId,
 	openRouterDefaultModelId,
@@ -44,6 +47,7 @@ import {
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	getModelId,
 } from "@roo-code/types"
+import { aggregateTaskCostsRecursive, type AggregatedCosts } from "./aggregateTaskCosts"
 import { TelemetryService } from "@roo-code/telemetry"
 import { CloudService, BridgeOrchestrator, getRooCodeApiUrl } from "@roo-code/cloud"
 
@@ -51,7 +55,6 @@ import { Package } from "../../shared/package"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
-import type { ExtensionMessage, ExtensionState, MarketplaceInstalledMetadata } from "../../shared/ExtensionMessage"
 import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
@@ -71,6 +74,7 @@ import { ShadowCheckpointService } from "../../services/checkpoints/ShadowCheckp
 import { CodeIndexManager } from "../../services/code-index/manager"
 import type { IndexProgressUpdate } from "../../services/code-index/interfaces/manager"
 import { MdmService } from "../../services/mdm/MdmService"
+import { SkillsManager } from "../../services/skills/SkillsManager"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
@@ -137,6 +141,7 @@ export class ClineProvider
 	private codeIndexManager?: CodeIndexManager
 	private _workspaceTracker?: WorkspaceTracker // workSpaceTracker read-only for access outside this class
 	protected mcpHub?: McpHub // Change from private to protected
+	protected skillsManager?: SkillsManager
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
 	private taskCreationCallback: (task: Task) => void
@@ -153,7 +158,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "dec-2025-v3.37.0-minimax-m21-glm47-custom-tools" // v3.37.0 MiniMax M2.1, GLM-4.7, & Experimental Custom Tools
+	public readonly latestAnnouncementId = "jan-2026-v3.41.0-openai-codex-provider-gpt52-fixes" // v3.41.0 OpenAI Codex Provider, GPT-5.2-codex, Bug Fixes
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
@@ -196,6 +201,12 @@ export class ClineProvider
 			.catch((error) => {
 				this.log(`Failed to initialize MCP Hub: ${error}`)
 			})
+
+		// Initialize Skills Manager for skill discovery
+		this.skillsManager = new SkillsManager(this)
+		this.skillsManager.initialize().catch((error) => {
+			this.log(`Failed to initialize Skills Manager: ${error}`)
+		})
 
 		this.marketplaceManager = new MarketplaceManager(this.context, this.customModesManager)
 
@@ -609,6 +620,8 @@ export class ClineProvider
 		this._workspaceTracker = undefined
 		await this.mcpHub?.unregisterClient()
 		this.mcpHub = undefined
+		await this.skillsManager?.dispose()
+		this.skillsManager = undefined
 		this.marketplaceManager?.cleanup()
 		this.customModesManager?.dispose()
 		this.log("Disposed all disposables")
@@ -886,29 +899,75 @@ export class ClineProvider
 			await this.updateGlobalState("mode", historyItem.mode)
 
 			// Load the saved API config for the restored mode if it exists.
-			const savedConfigId = await this.providerSettingsManager.getModeConfigId(historyItem.mode)
-			const listApiConfig = await this.providerSettingsManager.listConfig()
+			// Skip mode-based profile activation if historyItem.apiConfigName exists,
+			// since the task's specific provider profile will override it anyway.
+			if (!historyItem.apiConfigName) {
+				const savedConfigId = await this.providerSettingsManager.getModeConfigId(historyItem.mode)
+				const listApiConfig = await this.providerSettingsManager.listConfig()
 
-			// Update listApiConfigMeta first to ensure UI has latest data.
-			await this.updateGlobalState("listApiConfigMeta", listApiConfig)
+				// Update listApiConfigMeta first to ensure UI has latest data.
+				await this.updateGlobalState("listApiConfigMeta", listApiConfig)
 
-			// If this mode has a saved config, use it.
-			if (savedConfigId) {
-				const profile = listApiConfig.find(({ id }) => id === savedConfigId)
+				// If this mode has a saved config, use it.
+				if (savedConfigId) {
+					const profile = listApiConfig.find(({ id }) => id === savedConfigId)
 
-				if (profile?.name) {
-					try {
-						await this.activateProviderProfile({ name: profile.name })
-					} catch (error) {
-						// Log the error but continue with task restoration.
-						this.log(
-							`Failed to restore API configuration for mode '${historyItem.mode}': ${
-								error instanceof Error ? error.message : String(error)
-							}. Continuing with default configuration.`,
-						)
-						// The task will continue with the current/default configuration.
+					if (profile?.name) {
+						try {
+							// Check if the profile has actual API configuration (not just an id).
+							// In CLI mode, the ProviderSettingsManager may return empty default profiles
+							// that only contain 'id' and 'name' fields. Activating such a profile would
+							// overwrite the CLI's working API configuration with empty settings.
+							const fullProfile = await this.providerSettingsManager.getProfile({ name: profile.name })
+							const hasActualSettings = !!fullProfile.apiProvider
+
+							if (hasActualSettings) {
+								await this.activateProviderProfile({ name: profile.name })
+							} else {
+								// The task will continue with the current/default configuration.
+							}
+						} catch (error) {
+							// Log the error but continue with task restoration.
+							this.log(
+								`Failed to restore API configuration for mode '${historyItem.mode}': ${
+									error instanceof Error ? error.message : String(error)
+								}. Continuing with default configuration.`,
+							)
+							// The task will continue with the current/default configuration.
+						}
 					}
 				}
+			}
+		}
+
+		// If the history item has a saved API config name (provider profile), restore it.
+		// This overrides any mode-based config restoration above, because the task's
+		// specific provider profile takes precedence over mode defaults.
+		if (historyItem.apiConfigName) {
+			const listApiConfig = await this.providerSettingsManager.listConfig()
+			// Keep global state/UI in sync with latest profiles for parity with mode restoration above.
+			await this.updateGlobalState("listApiConfigMeta", listApiConfig)
+			const profile = listApiConfig.find(({ name }) => name === historyItem.apiConfigName)
+
+			if (profile?.name) {
+				try {
+					await this.activateProviderProfile(
+						{ name: profile.name },
+						{ persistModeConfig: false, persistTaskHistory: false },
+					)
+				} catch (error) {
+					// Log the error but continue with task restoration.
+					this.log(
+						`Failed to restore API configuration '${historyItem.apiConfigName}' for task: ${
+							error instanceof Error ? error.message : String(error)
+						}. Continuing with current configuration.`,
+					)
+				}
+			} else {
+				// Profile no longer exists, log warning but continue
+				this.log(
+					`Provider profile '${historyItem.apiConfigName}' from history no longer exists. Using current configuration.`,
+				)
 			}
 		}
 
@@ -1287,14 +1346,29 @@ export class ClineProvider
 			const profile = listApiConfig.find(({ id }) => id === savedConfigId)
 
 			if (profile?.name) {
-				await this.activateProviderProfile({ name: profile.name })
+				// Check if the profile has actual API configuration (not just an id).
+				// In CLI mode, the ProviderSettingsManager may return empty default profiles
+				// that only contain 'id' and 'name' fields. Activating such a profile would
+				// overwrite the CLI's working API configuration with empty settings.
+				// Skip activation if the profile has no apiProvider set - this indicates
+				// an unconfigured/empty profile.
+				const fullProfile = await this.providerSettingsManager.getProfile({ name: profile.name })
+				const hasActualSettings = !!fullProfile.apiProvider
+
+				if (hasActualSettings) {
+					await this.activateProviderProfile({ name: profile.name })
+				} else {
+					// The task will continue with the current/default configuration.
+				}
+			} else {
+				// The task will continue with the current/default configuration.
 			}
 		} else {
 			// If no saved config for this mode, save current config as default.
-			const currentApiConfigName = this.getGlobalState("currentApiConfigName")
+			const currentApiConfigNameAfter = this.getGlobalState("currentApiConfigName")
 
-			if (currentApiConfigName) {
-				const config = listApiConfig.find((c) => c.name === currentApiConfigName)
+			if (currentApiConfigNameAfter) {
+				const config = listApiConfig.find((c) => c.name === currentApiConfigNameAfter)
 
 				if (config?.id) {
 					await this.providerSettingsManager.setModeConfig(newMode, config.id)
@@ -1401,6 +1475,9 @@ export class ClineProvider
 				// Change the provider for the current task.
 				// TODO: We should rename `buildApiHandler` for clarity (e.g. `getProviderClient`).
 				this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
+
+				// Keep the current task's sticky provider profile in sync with the newly-activated profile.
+				await this.persistStickyProviderProfileToCurrentTask(name)
 			} else {
 				await this.updateGlobalState("listApiConfigMeta", await this.providerSettingsManager.listConfig())
 			}
@@ -1440,8 +1517,41 @@ export class ClineProvider
 		await this.postStateToWebview()
 	}
 
-	async activateProviderProfile(args: { name: string } | { id: string }) {
+	private async persistStickyProviderProfileToCurrentTask(apiConfigName: string): Promise<void> {
+		const task = this.getCurrentTask()
+		if (!task) {
+			return
+		}
+
+		try {
+			// Update in-memory state immediately so sticky behavior works even before the task has
+			// been persisted into taskHistory (it will be captured on the next save).
+			task.setTaskApiConfigName(apiConfigName)
+
+			const history = this.getGlobalState("taskHistory") ?? []
+			const taskHistoryItem = history.find((item) => item.id === task.taskId)
+
+			if (taskHistoryItem) {
+				await this.updateTaskHistory({ ...taskHistoryItem, apiConfigName })
+			}
+		} catch (error) {
+			// If persistence fails, log the error but don't fail the profile switch.
+			this.log(
+				`Failed to persist provider profile switch for task ${task.taskId}: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+		}
+	}
+
+	async activateProviderProfile(
+		args: { name: string } | { id: string },
+		options?: { persistModeConfig?: boolean; persistTaskHistory?: boolean },
+	) {
 		const { name, id, ...providerSettings } = await this.providerSettingsManager.activateProfile(args)
+
+		const persistModeConfig = options?.persistModeConfig ?? true
+		const persistTaskHistory = options?.persistTaskHistory ?? true
 
 		// See `upsertProviderProfile` for a description of what this is doing.
 		await Promise.all([
@@ -1452,11 +1562,18 @@ export class ClineProvider
 
 		const { mode } = await this.getState()
 
-		if (id) {
+		if (id && persistModeConfig) {
 			await this.providerSettingsManager.setModeConfig(mode, id)
 		}
+
 		// Change the provider for the current task.
 		this.updateTaskApiHandlerIfNeeded(providerSettings, { forceRebuild: true })
+
+		// Update the current task's sticky provider profile, unless this activation is
+		// being used purely as a non-persisting restoration (e.g., reopening a task from history).
+		if (persistTaskHistory) {
+			await this.persistStickyProviderProfileToCurrentTask(name)
+		}
 
 		await this.postStateToWebview()
 
@@ -1599,6 +1716,20 @@ export class ClineProvider
 		// FIXME: this seems to happen sometimes when the json file doesnt save to disk for some reason
 		await this.deleteTaskFromState(id)
 		throw new Error("Task not found")
+	}
+
+	async getTaskWithAggregatedCosts(taskId: string): Promise<{
+		historyItem: HistoryItem
+		aggregatedCosts: AggregatedCosts
+	}> {
+		const { historyItem } = await this.getTaskWithId(taskId)
+
+		const aggregatedCosts = await aggregateTaskCostsRecursive(taskId, async (id: string) => {
+			const result = await this.getTaskWithId(id)
+			return result.historyItem
+		})
+
+		return { historyItem, aggregatedCosts }
 	}
 
 	async showTaskWithId(id: string) {
@@ -1875,6 +2006,7 @@ export class ClineProvider
 			browserToolEnabled,
 			telemetrySetting,
 			showRooIgnoredFiles,
+			enableSubfolderRules,
 			language,
 			maxReadFileLine,
 			maxImageFileSize,
@@ -2022,6 +2154,7 @@ export class ClineProvider
 			telemetryKey,
 			machineId,
 			showRooIgnoredFiles: showRooIgnoredFiles ?? false,
+			enableSubfolderRules: enableSubfolderRules ?? false,
 			language: language ?? formatLanguage(vscode.env.language),
 			renderContext: this.renderContext,
 			maxReadFileLine: maxReadFileLine ?? -1,
@@ -2083,6 +2216,14 @@ export class ClineProvider
 				try {
 					const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
 					return await claudeCodeOAuthManager.isAuthenticated()
+				} catch {
+					return false
+				}
+			})(),
+			openAiCodexIsAuthenticated: await (async () => {
+				try {
+					const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
+					return await openAiCodexOAuthManager.isAuthenticated()
 				} catch {
 					return false
 				}
@@ -2272,6 +2413,7 @@ export class ClineProvider
 			browserToolEnabled: stateValues.browserToolEnabled ?? true,
 			telemetrySetting: stateValues.telemetrySetting || "unset",
 			showRooIgnoredFiles: stateValues.showRooIgnoredFiles ?? false,
+			enableSubfolderRules: stateValues.enableSubfolderRules ?? false,
 			maxReadFileLine: stateValues.maxReadFileLine ?? -1,
 			maxImageFileSize: stateValues.maxImageFileSize ?? 5,
 			maxTotalImageSize: stateValues.maxTotalImageSize ?? 20,
@@ -2450,6 +2592,10 @@ export class ClineProvider
 
 	public getMcpHub(): McpHub | undefined {
 		return this.mcpHub
+	}
+
+	public getSkillsManager(): SkillsManager | undefined {
+		return this.skillsManager
 	}
 
 	/**

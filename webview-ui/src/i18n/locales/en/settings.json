@@ -1,4 +1,5 @@
 {
+	"back": "Back to tasks view",
 	"common": {
 		"save": "Save",
 		"done": "Done",
@@ -12,7 +13,11 @@
 		"title": "Settings",
 		"saveButtonTooltip": "Save changes",
 		"nothingChangedTooltip": "Nothing changed",
-		"doneButtonTooltip": "Discard unsaved changes and close settings panel"
+		"doneButtonTooltip": "Discard unsaved changes and go back to tasks view"
+	},
+	"search": {
+		"placeholder": "Search settings...",
+		"noResults": "No settings found"
 	},
 	"unsavedChangesDialog": {
 		"title": "Unsaved Changes",
@@ -55,7 +60,11 @@
 		},
 		"community": "Want tips or to just hang out with other Roo Code users? Join <redditLink>reddit.com/r/RooCode</redditLink> or <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contact & Community",
-		"manageSettings": "Manage Settings"
+		"manageSettings": "Manage Settings",
+		"debugMode": {
+			"label": "Enable debug mode",
+			"description": "Enable debug mode to show additional buttons in the task header for viewing API conversation history and UI messages as prettified JSON in temporary files."
+		}
 	},
 	"slashCommands": {
 		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
@@ -287,7 +296,6 @@
 		"useCustomBaseUrl": "Use custom base URL",
 		"useReasoning": "Enable reasoning",
 		"useHostHeader": "Use custom Host header",
-		"useLegacyFormat": "Use legacy OpenAI API format",
 		"customHeaders": "Custom Headers",
 		"headerName": "Header name",
 		"headerValue": "Header value",
@@ -442,10 +450,6 @@
 		"getUnboundApiKey": "Get Unbound API Key",
 		"unboundRefreshModelsSuccess": "Models list updated! You can now select from the latest models.",
 		"unboundInvalidApiKey": "Invalid API key. Please check your API key and try again.",
-		"humanRelay": {
-			"description": "No API key is required, but the user needs to help copy and paste the information to the web chat AI.",
-			"instructions": "During use, a dialog box will pop up and the current message will be copied to the clipboard automatically. You need to paste these to web versions of AI (such as ChatGPT or Claude), then copy the AI's reply back to the dialog box and click the confirm button."
-		},
 		"roo": {
 			"authenticatedMessage": "Securely authenticated through your Roo Code Cloud account.",
 			"connectButton": "Connect to Roo Code Cloud"
@@ -674,6 +678,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max files",
 			"description": "Maximum number of file entries to include in git status context. Set to 0 to disable. Branch info is always shown when > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Enable subfolder rules",
+			"description": "Recursively discover and load .roo/rules and AGENTS.md files from subdirectories. Useful for monorepos with per-package rules."
 		}
 	},
 	"terminal": {

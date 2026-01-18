@@ -2,6 +2,8 @@ import {
 	type ProviderName,
 	type ProviderSettings,
 	type ModelInfo,
+	type ModelRecord,
+	type RouterModels,
 	anthropicModels,
 	bedrockModels,
 	cerebrasModels,
@@ -19,6 +21,7 @@ import {
 	vscodeLlmDefaultModelId,
 	claudeCodeModels,
 	normalizeClaudeCodeModelId,
+	openAiCodexModels,
 	sambaNovaModels,
 	doubaoModels,
 	internationalZAiModels,
@@ -35,8 +38,6 @@ import {
 	getProviderDefaultModelId,
 	NATIVE_TOOL_DEFAULTS,
 } from "@roo-code/types"
-
-import type { ModelRecord, RouterModels } from "@roo/api"
 
 import { useRouterModels } from "./useRouterModels"
 import { useOpenRouterModelProviders } from "./useOpenRouterModelProviders"
@@ -381,6 +382,11 @@ function getSelectedModel({
 			const info = qwenCodeModels[id as keyof typeof qwenCodeModels]
 			return { id, info }
 		}
+		case "openai-codex": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = openAiCodexModels[id as keyof typeof openAiCodexModels]
+			return { id, info }
+		}
 		case "vercel-ai-gateway": {
 			const id = getValidatedModelId(
 				apiConfiguration.vercelAiGatewayModelId,
@@ -391,10 +397,9 @@ function getSelectedModel({
 			return { id, info }
 		}
 		// case "anthropic":
-		// case "human-relay":
 		// case "fake-ai":
 		default: {
-			provider satisfies "anthropic" | "gemini-cli" | "qwen-code" | "human-relay" | "fake-ai"
+			provider satisfies "anthropic" | "gemini-cli" | "fake-ai"
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
 

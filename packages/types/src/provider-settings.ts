@@ -17,6 +17,7 @@ import {
 	ioIntelligenceModels,
 	mistralModels,
 	moonshotModels,
+	openAiCodexModels,
 	openAiNativeModels,
 	qwenCodeModels,
 	sambaNovaModels,
@@ -102,7 +103,7 @@ export const isCustomProvider = (key: string): key is CustomProvider => customPr
  * model lists.
  */
 
-export const fauxProviders = ["fake-ai", "human-relay"] as const
+export const fauxProviders = ["fake-ai"] as const
 
 export type FauxProvider = (typeof fauxProviders)[number]
 
@@ -133,6 +134,7 @@ export const providerNames = [
 	"mistral",
 	"moonshot",
 	"minimax",
+	"openai-codex",
 	"openai-native",
 	"qwen-code",
 	"roo",
@@ -242,7 +244,6 @@ const vertexSchema = apiModelIdProviderModelSchema.extend({
 const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiBaseUrl: z.string().optional(),
 	openAiApiKey: z.string().optional(),
-	openAiLegacyFormat: z.boolean().optional(),
 	openAiR1FormatEnabled: z.boolean().optional(),
 	openAiModelId: z.string().optional(),
 	openAiCustomModelInfo: modelInfoSchema.nullish(),
@@ -288,6 +289,10 @@ const geminiSchema = apiModelIdProviderModelSchema.extend({
 const geminiCliSchema = apiModelIdProviderModelSchema.extend({
 	geminiCliOAuthPath: z.string().optional(),
 	geminiCliProjectId: z.string().optional(),
+})
+
+const openAiCodexSchema = apiModelIdProviderModelSchema.extend({
+	// No additional settings needed - uses OAuth authentication
 })
 
 const openAiNativeSchema = apiModelIdProviderModelSchema.extend({
@@ -343,8 +348,6 @@ const requestySchema = baseProviderSettingsSchema.extend({
 	requestyApiKey: z.string().optional(),
 	requestyModelId: z.string().optional(),
 })
-
-const humanRelaySchema = baseProviderSettingsSchema
 
 const fakeAiSchema = baseProviderSettingsSchema.extend({
 	fakeAi: z.unknown().optional(),
@@ -410,7 +413,8 @@ const qwenCodeSchema = apiModelIdProviderModelSchema.extend({
 })
 
 const rooSchema = apiModelIdProviderModelSchema.extend({
-	// No additional fields needed - uses cloud authentication.
+	// Can use cloud authentication or provide an API key (cli).
+	rooApiKey: z.string().optional(),
 })
 
 const vercelAiGatewaySchema = baseProviderSettingsSchema.extend({
@@ -438,6 +442,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	lmStudioSchema.merge(z.object({ apiProvider: z.literal("lmstudio") })),
 	geminiSchema.merge(z.object({ apiProvider: z.literal("gemini") })),
 	geminiCliSchema.merge(z.object({ apiProvider: z.literal("gemini-cli") })),
+	openAiCodexSchema.merge(z.object({ apiProvider: z.literal("openai-codex") })),
 	openAiNativeSchema.merge(z.object({ apiProvider: z.literal("openai-native") })),
 	mistralSchema.merge(z.object({ apiProvider: z.literal("mistral") })),
 	deepSeekSchema.merge(z.object({ apiProvider: z.literal("deepseek") })),
@@ -447,7 +452,6 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	minimaxSchema.merge(z.object({ apiProvider: z.literal("minimax") })),
 	unboundSchema.merge(z.object({ apiProvider: z.literal("unbound") })),
 	requestySchema.merge(z.object({ apiProvider: z.literal("requesty") })),
-	humanRelaySchema.merge(z.object({ apiProvider: z.literal("human-relay") })),
 	fakeAiSchema.merge(z.object({ apiProvider: z.literal("fake-ai") })),
 	xaiSchema.merge(z.object({ apiProvider: z.literal("xai") })),
 	groqSchema.merge(z.object({ apiProvider: z.literal("groq") })),
@@ -480,6 +484,7 @@ export const providerSettingsSchema = z.object({
 	...lmStudioSchema.shape,
 	...geminiSchema.shape,
 	...geminiCliSchema.shape,
+	...openAiCodexSchema.shape,
 	...openAiNativeSchema.shape,
 	...mistralSchema.shape,
 	...deepSeekSchema.shape,
@@ -489,7 +494,6 @@ export const providerSettingsSchema = z.object({
 	...minimaxSchema.shape,
 	...unboundSchema.shape,
 	...requestySchema.shape,
-	...humanRelaySchema.shape,
 	...fakeAiSchema.shape,
 	...xaiSchema.shape,
 	...groqSchema.shape,
@@ -563,6 +567,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	openrouter: "openRouterModelId",
 	bedrock: "apiModelId",
 	vertex: "apiModelId",
+	"openai-codex": "apiModelId",
 	"openai-native": "openAiModelId",
 	ollama: "ollamaModelId",
 	lmstudio: "lmStudioModelId",
@@ -627,7 +632,7 @@ export const getApiProtocol = (provider: ProviderName | undefined, modelId?: str
  */
 
 export const MODELS_BY_PROVIDER: Record<
-	Exclude<ProviderName, "fake-ai" | "human-relay" | "gemini-cli" | "openai">,
+	Exclude<ProviderName, "fake-ai" | "gemini-cli" | "openai">,
 	{ id: ProviderName; label: string; models: string[] }
 > = {
 	anthropic: {
@@ -688,13 +693,18 @@ export const MODELS_BY_PROVIDER: Record<
 		label: "MiniMax",
 		models: Object.keys(minimaxModels),
 	},
+	"openai-codex": {
+		id: "openai-codex",
+		label: "OpenAI - ChatGPT Plus/Pro",
+		models: Object.keys(openAiCodexModels),
+	},
 	"openai-native": {
 		id: "openai-native",
 		label: "OpenAI",
 		models: Object.keys(openAiNativeModels),
 	},
 	"qwen-code": { id: "qwen-code", label: "Qwen Code", models: Object.keys(qwenCodeModels) },
-	roo: { id: "roo", label: "Roo Code Cloud", models: [] },
+	roo: { id: "roo", label: "Roo Code Router", models: [] },
 	sambanova: {
 		id: "sambanova",
 		label: "SambaNova",
