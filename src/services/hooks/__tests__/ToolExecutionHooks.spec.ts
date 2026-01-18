@@ -30,6 +30,7 @@ describe("ToolExecutionHooks", () => {
 			totalDuration: 100,
 		} as HooksExecutionResult),
 		setHookEnabled: vi.fn(),
+		updateHook: vi.fn(),
 		getEnabledHooks: vi.fn().mockReturnValue([]),
 		getHookExecutionHistory: vi.fn().mockReturnValue([]),
 	})

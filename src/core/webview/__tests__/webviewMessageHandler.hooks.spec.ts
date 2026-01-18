@@ -96,6 +96,7 @@ const createMockHookManager = (): IHookManager => ({
 		totalDuration: 0,
 	}),
 	setHookEnabled: vi.fn().mockResolvedValue(undefined),
+	updateHook: vi.fn().mockResolvedValue(undefined),
 	getHookExecutionHistory: vi.fn().mockReturnValue([]),
 	getConfigSnapshot: vi.fn().mockReturnValue({
 		hooksByEvent: new Map(),
@@ -264,45 +265,15 @@ describe("webviewMessageHandler - hooks commands", () => {
 	})
 
 	describe("hooksSetAllEnabled", () => {
-		it("should call setHookEnabled for all hooks in snapshot and postStateToWebview", async () => {
-			const hooksById = new Map<string, ResolvedHook>()
-			hooksById.set("hook-1", {
-				id: "hook-1",
-				event: "PreToolUse" as any,
-				matcher: ".*",
-				command: "echo 1",
-				enabled: true,
-				source: "global" as any,
-				timeout: 30,
-				includeConversationHistory: false,
-			} as any)
-			hooksById.set("hook-2", {
-				id: "hook-2",
-				event: "PostToolUse" as any,
-				matcher: ".*",
-				command: "echo 2",
-				enabled: true,
-				source: "project" as any,
-				timeout: 30,
-				includeConversationHistory: false,
-			} as any)
-
-			vi.mocked(mockHookManager.getConfigSnapshot).mockReturnValue({
-				hooksByEvent: new Map(),
-				hooksById,
-				loadedAt: new Date(),
-				disabledHookIds: new Set(),
-				hasProjectHooks: false,
-			} as HooksConfigSnapshot)
-
+		it("should update global hooksEnabled and postStateToWebview", async () => {
 			await webviewMessageHandler(mockClineProvider, {
 				type: "hooksSetAllEnabled",
 				hooksEnabled: false,
 			})
 
-			expect(mockHookManager.setHookEnabled).toHaveBeenCalledTimes(2)
-			expect(mockHookManager.setHookEnabled).toHaveBeenCalledWith("hook-1", false)
-			expect(mockHookManager.setHookEnabled).toHaveBeenCalledWith("hook-2", false)
+			// hooksSetAllEnabled no longer iterates hooks; it toggles global state.
+			expect(mockHookManager.setHookEnabled).not.toHaveBeenCalled()
+			expect((mockClineProvider as any).contextProxy.setValue).toHaveBeenCalledWith("hooksEnabled", false)
 			expect(mockClineProvider.postStateToWebview).toHaveBeenCalledTimes(1)
 		})
 
@@ -313,39 +284,22 @@ describe("webviewMessageHandler - hooks commands", () => {
 			} as any)
 
 			expect(mockHookManager.setHookEnabled).not.toHaveBeenCalled()
+			expect((mockClineProvider as any).contextProxy.setValue).not.toHaveBeenCalled()
 			expect(mockClineProvider.postStateToWebview).not.toHaveBeenCalled()
 		})
 
-		it("should show error message when bulk setHookEnabled fails", async () => {
-			const hooksById = new Map<string, ResolvedHook>()
-			hooksById.set("hook-1", {
-				id: "hook-1",
-				event: "PreToolUse" as any,
-				matcher: ".*",
-				command: "echo 1",
-				enabled: true,
-				source: "global" as any,
-				timeout: 30,
-				includeConversationHistory: false,
-			} as any)
-
-			vi.mocked(mockHookManager.getConfigSnapshot).mockReturnValue({
-				hooksByEvent: new Map(),
-				hooksById,
-				loadedAt: new Date(),
-				disabledHookIds: new Set(),
-				hasProjectHooks: false,
-			} as HooksConfigSnapshot)
-
-			vi.mocked(mockHookManager.setHookEnabled).mockRejectedValueOnce(new Error("boom"))
+		it("should show error message when updating hooksEnabled global state fails", async () => {
+			vi.mocked((mockClineProvider as any).contextProxy.setValue).mockRejectedValueOnce(new Error("boom"))
 
 			await webviewMessageHandler(mockClineProvider, {
 				type: "hooksSetAllEnabled",
 				hooksEnabled: true,
 			})
 
-			expect(mockClineProvider.log).toHaveBeenCalledWith("Failed to set all hooks enabled: boom")
-			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Failed to enable all hooks")
+			expect(mockHookManager.setHookEnabled).not.toHaveBeenCalled()
+			expect(mockClineProvider.postStateToWebview).not.toHaveBeenCalled()
+			expect(mockClineProvider.log).toHaveBeenCalledWith("Failed to set hooks enabled: boom")
+			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith("Failed to enable hooks")
 		})
 	})
 

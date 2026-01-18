@@ -3,6 +3,11 @@ import { safeWriteText } from "../../utils/safeWriteText"
 import * as path from "path"
 import * as os from "os"
 import * as fs from "fs/promises"
+import {
+	HookEventType as HookEventTypeSchema,
+	type HookEventType,
+	type HookUpdateData,
+} from "../../services/hooks/types"
 import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
@@ -3559,7 +3564,18 @@ export const webviewMessageHandler = async (
 			}
 
 			try {
-				await hookManager.updateHook(message.filePath, message.hookId, message.hookUpdates)
+				const hookUpdates: HookUpdateData = {
+					// Webview messages are not strongly typed, so validate and narrow.
+					events: Array.isArray(message.hookUpdates.events)
+						? message.hookUpdates.events.filter(
+								(event): event is HookEventType => HookEventTypeSchema.safeParse(event).success,
+							)
+						: undefined,
+					matcher: typeof message.hookUpdates.matcher === "string" ? message.hookUpdates.matcher : undefined,
+					timeout: typeof message.hookUpdates.timeout === "number" ? message.hookUpdates.timeout : undefined,
+				}
+
+				await hookManager.updateHook(message.filePath, message.hookId, hookUpdates)
 				await hookManager.reloadHooksConfig()
 				await provider.postStateToWebview()
 			} catch (error) {

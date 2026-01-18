@@ -102,6 +102,7 @@ const createMockHookManager = (): IHookManager => ({
 		totalDuration: 0,
 	}),
 	setHookEnabled: vi.fn().mockResolvedValue(undefined),
+	updateHook: vi.fn().mockResolvedValue(undefined),
 	getHookExecutionHistory: vi.fn().mockReturnValue([]),
 	getConfigSnapshot: vi.fn().mockReturnValue({
 		hooksByEvent: new Map(),
