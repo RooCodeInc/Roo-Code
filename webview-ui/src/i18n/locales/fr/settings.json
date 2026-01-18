@@ -36,11 +36,62 @@
 		"contextManagement": "Contexte",
 		"terminal": "Terminal",
 		"slashCommands": "Commandes Slash",
+		"hooks": "Hooks",
 		"prompts": "Invites",
 		"ui": "UI",
 		"experimental": "Expérimental",
 		"language": "Langue",
 		"about": "À propos de Roo Code"
+	},
+	"hooks": {
+		"description": "Les hooks exécutent automatiquement des commandes shell personnalisées lorsque Roo utilise des outils spécifiques. Utilise-les pour t'intégrer à des systèmes externes, appliquer des workflows ou automatiser des tâches répétitives.",
+		"configuredHooks": "Hooks configurés",
+		"lastLoadedTooltip": "Dernière charge à {{time}}",
+		"reloadTooltip": "Recharger la configuration des hooks depuis le disque",
+		"reload": "Recharger",
+		"openProjectFolderTooltip": "Ouvrir le dossier de configuration des hooks du projet",
+		"openGlobalFolderTooltip": "Ouvrir le dossier de configuration des hooks global",
+		"openProjectFolder": "Ouvrir le dossier du projet",
+		"openGlobalFolder": "Ouvrir le dossier global",
+		"createNewHook": "Créer un nouveau hook",
+		"deleteHook": "Supprimer le hook",
+		"openHookFile": "Ouvrir le fichier de hook",
+		"projectHooksWarningTitle": "Hooks de projet détectés",
+		"projectHooksWarningMessage": "Ce projet inclut des configurations de hooks qui exécuteront des commandes shell. N'active les hooks que depuis des sources de confiance.",
+		"reloadNote": "Les modifications des fichiers de configuration des hooks nécessitent de cliquer sur Recharger pour prendre effet.",
+		"openHookFileTooltip": "Ouvrir le fichier de hook dans l'éditeur",
+		"openHookFileUnavailableTooltip": "Emplacement du fichier de hook non disponible",
+		"matcherNote": "Les matchers sont évalués par rapport aux IDs d'outils internes de Roo Code (ex. write_to_file, edit_file, apply_diff, apply_patch), pas par rapport aux libellés de l'UI comme Écrire/Éditer.",
+		"matcherExamplesLabel": "Exemples :",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "Aucun hook configuré",
+		"noHooksHint": "Crée des fichiers de configuration de hooks pour automatiser des actions lors des événements d'exécution d'outils.",
+		"enableHooks": "Activer les hooks",
+		"enableHooksDescription": "Activer ou désactiver tous les hooks d'un coup",
+		"enabled": "Activé",
+		"event": "Événement",
+		"matcher": "Matcher",
+		"command": "Commande",
+		"shell": "Shell",
+		"timeout": "Délai d'expiration",
+		"logs": "Journaux",
+		"noLogsForHook": "Pas encore de journaux d'exécution pour ce hook",
+		"activityLog": "Activité des hooks",
+		"status": {
+			"running": "En cours",
+			"completed": "Terminé",
+			"failed": "Échoué",
+			"blocked": "Bloqué",
+			"timeout": "Délai dépassé"
+		},
+		"tabs": {
+			"config": "Configuration",
+			"command": "Commande",
+			"logs": "Journaux"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -843,6 +894,10 @@
 			"refreshSuccess": "Outils actualisés avec succès",
 			"refreshError": "Échec de l'actualisation des outils",
 			"toolParameters": "Paramètres"
+		},
+		"HOOKS": {
+			"name": "Activer les Hooks",
+			"description": "Utilise des commandes shell personnalisées pour automatiser des actions avant ou après l'exécution des outils. (Redémarrage requis après l'enregistrement des paramètres)"
 		}
 	},
 	"promptCaching": {

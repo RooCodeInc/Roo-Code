@@ -43,6 +43,7 @@ import { BatchDiffApproval } from "./BatchDiffApproval"
 import { ProgressIndicator } from "./ProgressIndicator"
 import { Markdown } from "./Markdown"
 import { CommandExecution } from "./CommandExecution"
+import { HookExecution } from "./HookExecution"
 import { CommandExecutionError } from "./CommandExecutionError"
 import { AutoApprovedRequestLimitWarning } from "./AutoApprovedRequestLimitWarning"
 import { InProgressRow, CondensationResultRow, CondensationErrorRow, TruncationResultRow } from "./context-management"
@@ -67,6 +68,7 @@ import {
 	TerminalSquare,
 	MessageCircle,
 	Repeat2,
+	FishingHook,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PathTooltip } from "../ui/PathTooltip"
@@ -1368,6 +1370,23 @@ export const ChatRowContent = ({
 							currentHash={currentCheckpoint}
 							checkpoint={message.checkpoint}
 						/>
+					)
+				case "hook_execution":
+					return <HookExecution message={message} />
+				case "hook_triggered":
+					return (
+						<div
+							style={{
+								display: "flex",
+								alignItems: "center",
+								gap: "8px",
+								padding: "4px 0",
+								color: "var(--vscode-descriptionForeground)",
+								fontSize: "12px",
+							}}>
+							<FishingHook className="w-3.5 h-3.5" aria-label="Hook icon" />
+							<span>Hook: {message.text} triggered</span>
+						</div>
 					)
 				case "condense_context":
 					// In-progress state

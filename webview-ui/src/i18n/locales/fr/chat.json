@@ -492,5 +492,8 @@
 		"updated": "La liste des tâches a été mise à jour",
 		"completed": "Terminé",
 		"started": "Commencé"
+	},
+	"hook": {
+		"triggered": "Hook : {{hookName}} déclenché"
 	}
 }

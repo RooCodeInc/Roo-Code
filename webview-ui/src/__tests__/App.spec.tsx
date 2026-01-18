@@ -4,6 +4,7 @@ import React from "react"
 import { render, screen, act, cleanup } from "@/utils/test-utils"
 
 import AppWithProviders from "../App"
+import { vscode } from "@src/utils/vscode"
 
 vi.mock("@src/utils/vscode", () => ({
 	vscode: {
@@ -170,6 +171,45 @@ describe("App", () => {
 			language: "en",
 			telemetrySetting: "enabled",
 		})
+	})
+
+	it("auto-reloads hooks config every 5 seconds", () => {
+		vi.useFakeTimers()
+
+		mockUseExtensionState.mockReturnValue({
+			didHydrateState: true,
+			showWelcome: false,
+			shouldShowAnnouncement: false,
+			experiments: {},
+			language: "en",
+			telemetrySetting: "enabled",
+		})
+
+		const { unmount } = render(<AppWithProviders />)
+
+		// Initial render shouldn't trigger reload (it's triggered by effect interval)
+		expect(vscode.postMessage).not.toHaveBeenCalledWith({ type: "hooksReloadConfig" })
+
+		// Advance time by 5s
+		act(() => {
+			vi.advanceTimersByTime(5000)
+		})
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "hooksReloadConfig" })
+
+		// Advance time another 5s
+		act(() => {
+			vi.advanceTimersByTime(5000)
+		})
+		expect(vscode.postMessage).toHaveBeenCalledTimes(3) // 1 initial (webviewDidLaunch) + 2 repeats
+
+		// Unmount and verify no more calls
+		unmount()
+		act(() => {
+			vi.advanceTimersByTime(5000)
+		})
+		expect(vscode.postMessage).toHaveBeenCalledTimes(3)
+
+		vi.useRealTimers()
 	})
 
 	afterEach(() => {

@@ -293,6 +293,19 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	},
 }
 
+/**
+ * Gets all tools for a given group name (case-insensitive).
+ * Returns all tools in both `tools` and `customTools` arrays combined.
+ * Returns undefined if the group doesn't exist.
+ */
+export function getToolsForGroup(groupName: string): string[] | undefined {
+	const group = TOOL_GROUPS[groupName.toLowerCase() as ToolGroup]
+	if (!group) {
+		return undefined
+	}
+	return [...(group.tools || []), ...(group.customTools || [])]
+}
+
 // Tools that are always available to all modes.
 export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"ask_followup_question",

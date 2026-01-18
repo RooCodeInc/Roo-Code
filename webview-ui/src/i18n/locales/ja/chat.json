@@ -492,5 +492,8 @@
 		"updated": "To-Doリストを更新しました",
 		"completed": "完了",
 		"started": "開始"
+	},
+	"hook": {
+		"triggered": "フック: {{hookName}} がトリガーされました"
 	}
 }

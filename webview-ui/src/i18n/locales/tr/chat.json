@@ -493,5 +493,8 @@
 		"updated": "Yapılacaklar listesi güncellendi",
 		"completed": "Tamamlandı",
 		"started": "Başladı"
+	},
+	"hook": {
+		"triggered": "Hook: {{hookName}} tetiklendi"
 	}
 }

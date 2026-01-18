@@ -36,11 +36,62 @@
 		"contextManagement": "컨텍스트",
 		"terminal": "터미널",
 		"slashCommands": "슬래시 명령",
+		"hooks": "Hooks",
 		"prompts": "프롬프트",
 		"ui": "UI",
 		"experimental": "실험적",
 		"language": "언어",
 		"about": "Roo Code 정보"
+	},
+	"hooks": {
+		"description": "Hooks는 Roo가 특정 도구를 사용할 때 사용자 정의 셸 명령을 자동으로 실행합니다. 외부 시스템과 통합하거나, 워크플로우를 적용하거나, 반복적인 작업을 자동화하는 데 사용하세요.",
+		"configuredHooks": "구성된 Hooks",
+		"lastLoadedTooltip": "마지막 로드: {{time}}",
+		"reloadTooltip": "디스크에서 Hooks 구성 다시 로드",
+		"reload": "다시 로드",
+		"openProjectFolderTooltip": "프로젝트 Hooks 구성 폴더 열기",
+		"openGlobalFolderTooltip": "전역 Hooks 구성 폴더 열기",
+		"openProjectFolder": "프로젝트 폴더 열기",
+		"openGlobalFolder": "전역 폴더 열기",
+		"createNewHook": "새 Hook 만들기",
+		"deleteHook": "Hook 삭제",
+		"openHookFile": "Hook 파일 열기",
+		"projectHooksWarningTitle": "프로젝트 수준 Hooks 감지됨",
+		"projectHooksWarningMessage": "이 프로젝트에는 셸 명령을 실행하는 Hooks 구성이 포함되어 있습니다. 신뢰할 수 있는 소스의 Hooks만 활성화하세요.",
+		"reloadNote": "Hooks 구성 파일 변경 사항을 적용하려면 다시 로드를 클릭해야 합니다.",
+		"openHookFileTooltip": "편집기에서 Hook 파일 열기",
+		"openHookFileUnavailableTooltip": "Hook 파일 위치를 사용할 수 없음",
+		"matcherNote": "Matcher는 Roo Code의 내부 도구 ID(예: write_to_file, edit_file, apply_diff, apply_patch)에 대해 평가됩니다. Write/Edit과 같은 표시 레이블이 아닙니다.",
+		"matcherExamplesLabel": "예시:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "구성된 Hooks 없음",
+		"noHooksHint": "Hooks 구성 파일을 만들어 도구 실행 이벤트에서 작업을 자동화하세요.",
+		"enableHooks": "Hooks 활성화",
+		"enableHooksDescription": "모든 Hooks를 한 번에 활성화 또는 비활성화",
+		"enabled": "활성화됨",
+		"event": "이벤트",
+		"matcher": "Matcher",
+		"command": "명령",
+		"shell": "셸",
+		"timeout": "시간 초과",
+		"logs": "로그",
+		"noLogsForHook": "이 Hook의 실행 로그가 아직 없습니다",
+		"activityLog": "Hook 활동",
+		"status": {
+			"running": "실행 중",
+			"completed": "완료됨",
+			"failed": "실패",
+			"blocked": "차단됨",
+			"timeout": "시간 초과"
+		},
+		"tabs": {
+			"config": "구성",
+			"command": "명령",
+			"logs": "로그"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -844,6 +895,10 @@
 			"refreshSuccess": "도구가 성공적으로 새로고침되었습니다",
 			"refreshError": "도구 새로고침에 실패했습니다",
 			"toolParameters": "매개변수"
+		},
+		"HOOKS": {
+			"name": "Hooks 활성화",
+			"description": "사용자 정의 셸 명령을 사용하여 도구 실행 전후에 작업을 자동화합니다. (설정 저장 후 재시작 필요)"
 		}
 	},
 	"promptCaching": {

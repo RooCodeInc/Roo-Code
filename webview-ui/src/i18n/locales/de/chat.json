@@ -492,5 +492,8 @@
 		"updated": "Die To-Do-Liste wurde aktualisiert",
 		"completed": "Abgeschlossen",
 		"started": "Gestartet"
+	},
+	"hook": {
+		"triggered": "Hook: {{hookName}} ausgelöst"
 	}
 }

@@ -36,11 +36,62 @@
 		"contextManagement": "संदर्भ",
 		"terminal": "टर्मिनल",
 		"slashCommands": "स्लैश कमांड",
+		"hooks": "Hooks",
 		"prompts": "प्रॉम्प्ट्स",
 		"ui": "UI",
 		"experimental": "प्रायोगिक",
 		"language": "भाषा",
 		"about": "परिचय"
+	},
+	"hooks": {
+		"description": "जब Roo विशिष्ट टूल्स का उपयोग करता है तो Hooks स्वचालित रूप से कस्टम शेल कमांड चलाते हैं। इन्हें बाहरी सिस्टम के साथ एकीकरण, वर्कफ़्लो लागू करने, या दोहराव वाले कार्यों को स्वचालित करने के लिए उपयोग करें।",
+		"configuredHooks": "कॉन्फ़िगर किए गए Hooks",
+		"lastLoadedTooltip": "आखिरी बार {{time}} पर लोड किया गया",
+		"reloadTooltip": "डिस्क से hooks कॉन्फ़िगरेशन पुनः लोड करें",
+		"reload": "पुनः लोड करें",
+		"openProjectFolderTooltip": "प्रोजेक्ट hooks कॉन्फ़िगरेशन फ़ोल्डर खोलें",
+		"openGlobalFolderTooltip": "ग्लोबल hooks कॉन्फ़िगरेशन फ़ोल्डर खोलें",
+		"openProjectFolder": "प्रोजेक्ट फ़ोल्डर खोलें",
+		"openGlobalFolder": "ग्लोबल फ़ोल्डर खोलें",
+		"createNewHook": "नया Hook बनाएं",
+		"deleteHook": "Hook हटाएं",
+		"openHookFile": "Hook फ़ाइल खोलें",
+		"projectHooksWarningTitle": "प्रोजेक्ट-स्तर hooks पाए गए",
+		"projectHooksWarningMessage": "इस प्रोजेक्ट में hook कॉन्फ़िगरेशन शामिल हैं जो शेल कमांड चलाएंगे। केवल विश्वसनीय स्रोतों से hooks सक्षम करें।",
+		"reloadNote": "Hook कॉन्फ़िगरेशन फ़ाइलों में बदलावों को प्रभावी करने के लिए पुनः लोड करें पर क्लिक करना आवश्यक है।",
+		"openHookFileTooltip": "एडिटर में hook फ़ाइल खोलें",
+		"openHookFileUnavailableTooltip": "Hook फ़ाइल स्थान उपलब्ध नहीं है",
+		"matcherNote": "Matchers का मूल्यांकन Roo Code के आंतरिक टूल IDs (जैसे write_to_file, edit_file, apply_diff, apply_patch) के विरुद्ध किया जाता है, न कि UI लेबल जैसे Write/Edit के विरुद्ध।",
+		"matcherExamplesLabel": "उदाहरण:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "कोई hooks कॉन्फ़िगर नहीं किए गए",
+		"noHooksHint": "टूल निष्पादन इवेंट्स पर क्रियाओं को स्वचालित करने के लिए hook कॉन्फ़िगरेशन फ़ाइलें बनाएं।",
+		"enableHooks": "Hooks सक्षम करें",
+		"enableHooksDescription": "सभी hooks को एक साथ चालू या बंद करें",
+		"enabled": "सक्षम",
+		"event": "इवेंट",
+		"matcher": "Matcher",
+		"command": "कमांड",
+		"shell": "Shell",
+		"timeout": "समय सीमा",
+		"logs": "लॉग्स",
+		"noLogsForHook": "इस hook के लिए अभी तक कोई निष्पादन लॉग नहीं है",
+		"activityLog": "Hook गतिविधि",
+		"status": {
+			"running": "चल रहा है",
+			"completed": "पूर्ण",
+			"failed": "विफल",
+			"blocked": "अवरुद्ध",
+			"timeout": "समय समाप्त"
+		},
+		"tabs": {
+			"config": "कॉन्फ़िग",
+			"command": "कमांड",
+			"logs": "लॉग्स"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -844,6 +895,10 @@
 			"refreshSuccess": "टूल्स सफलतापूर्वक रिफ्रेश हुए",
 			"refreshError": "टूल्स रिफ्रेश करने में विफल",
 			"toolParameters": "पैरामीटर्स"
+		},
+		"HOOKS": {
+			"name": "Hooks सक्षम करें",
+			"description": "टूल निष्पादन से पहले या बाद में क्रियाओं को स्वचालित करने के लिए कस्टम शेल कमांड का उपयोग करें। (सेटिंग्स सहेजने के बाद पुनरारंभ आवश्यक)"
 		}
 	},
 	"promptCaching": {

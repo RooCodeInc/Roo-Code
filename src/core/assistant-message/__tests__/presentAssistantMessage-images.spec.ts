@@ -28,6 +28,7 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calls", () => 
 		mockTask = {
 			taskId: "test-task-id",
 			instanceId: "test-instance",
+			cwd: "/project",
 			abort: false,
 			presentAssistantMessageLocked: false,
 			presentAssistantMessageHasPendingUpdates: false,
@@ -48,6 +49,12 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calls", () => 
 			recordToolUsage: vi.fn(),
 			toolRepetitionDetector: {
 				check: vi.fn().mockReturnValue({ allowExecution: true }),
+			},
+			toolExecutionHooks: {
+				executePermissionRequest: vi.fn().mockResolvedValue({ proceed: true, hookResult: {} }),
+				executePreToolUse: vi.fn().mockResolvedValue({ proceed: true, hookResult: {} }),
+				executePostToolUse: vi.fn().mockResolvedValue({ results: [], blocked: false, totalDuration: 0 }),
+				executePostToolUseFailure: vi.fn().mockResolvedValue({ results: [], blocked: false, totalDuration: 0 }),
 			},
 			providerRef: {
 				deref: () => ({

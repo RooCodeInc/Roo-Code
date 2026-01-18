@@ -492,5 +492,8 @@
 		"updated": "할 일 목록을 업데이트했습니다",
 		"completed": "완료됨",
 		"started": "시작됨"
+	},
+	"hook": {
+		"triggered": "훅: {{hookName}} 트리거됨"
 	}
 }

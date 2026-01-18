@@ -36,11 +36,62 @@
 		"contextManagement": "Ngữ cảnh",
 		"terminal": "Terminal",
 		"slashCommands": "Lệnh Gạch Chéo",
+		"hooks": "Hooks",
 		"prompts": "Lời nhắc",
 		"ui": "UI",
 		"experimental": "Thử nghiệm",
 		"language": "Ngôn ngữ",
 		"about": "Giới thiệu"
+	},
+	"hooks": {
+		"description": "Hooks tự động thực thi các lệnh shell tùy chỉnh khi Roo sử dụng các công cụ cụ thể. Sử dụng chúng để tích hợp với hệ thống bên ngoài, áp dụng quy trình làm việc hoặc tự động hóa các tác vụ lặp đi lặp lại.",
+		"configuredHooks": "Hooks đã cấu hình",
+		"lastLoadedTooltip": "Lần tải cuối lúc {{time}}",
+		"reloadTooltip": "Tải lại cấu hình hooks từ đĩa",
+		"reload": "Tải lại",
+		"openProjectFolderTooltip": "Mở thư mục cấu hình hooks của dự án",
+		"openGlobalFolderTooltip": "Mở thư mục cấu hình hooks toàn cục",
+		"openProjectFolder": "Mở thư mục dự án",
+		"openGlobalFolder": "Mở thư mục toàn cục",
+		"createNewHook": "Tạo hook mới",
+		"deleteHook": "Xóa hook",
+		"openHookFile": "Mở tệp hook",
+		"projectHooksWarningTitle": "Phát hiện hooks cấp dự án",
+		"projectHooksWarningMessage": "Dự án này bao gồm các cấu hình hooks sẽ thực thi các lệnh shell. Chỉ bật hooks từ các nguồn đáng tin cậy.",
+		"reloadNote": "Các thay đổi đối với tệp cấu hình hooks yêu cầu nhấp Tải lại để có hiệu lực.",
+		"openHookFileTooltip": "Mở tệp hook trong trình soạn thảo",
+		"openHookFileUnavailableTooltip": "Vị trí tệp hook không khả dụng",
+		"matcherNote": "Các matcher được đánh giá dựa trên ID công cụ nội bộ của Roo Code (ví dụ: write_to_file, edit_file, apply_diff, apply_patch), không phải nhãn hiển thị như Write/Edit.",
+		"matcherExamplesLabel": "Ví dụ:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "Chưa có hooks nào được cấu hình",
+		"noHooksHint": "Tạo tệp cấu hình hooks để tự động hóa các hành động khi công cụ thực thi.",
+		"enableHooks": "Bật hooks",
+		"enableHooksDescription": "Bật hoặc tắt tất cả hooks cùng một lúc",
+		"enabled": "Đã bật",
+		"event": "Sự kiện",
+		"matcher": "Matcher",
+		"command": "Lệnh",
+		"shell": "Shell",
+		"timeout": "Thời gian chờ",
+		"logs": "Nhật ký",
+		"noLogsForHook": "Chưa có nhật ký thực thi cho hook này",
+		"activityLog": "Hoạt động hooks",
+		"status": {
+			"running": "Đang chạy",
+			"completed": "Hoàn thành",
+			"failed": "Thất bại",
+			"blocked": "Bị chặn",
+			"timeout": "Hết thời gian"
+		},
+		"tabs": {
+			"config": "Cấu hình",
+			"command": "Lệnh",
+			"logs": "Nhật ký"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -844,6 +895,10 @@
 			"refreshSuccess": "Làm mới công cụ thành công",
 			"refreshError": "Không thể làm mới công cụ",
 			"toolParameters": "Thông số"
+		},
+		"HOOKS": {
+			"name": "Bật Hooks",
+			"description": "Sử dụng các lệnh shell tùy chỉnh để tự động hóa các hành động trước hoặc sau khi thực thi công cụ. (Cần khởi động lại sau khi lưu cài đặt)"
 		}
 	},
 	"promptCaching": {

@@ -36,11 +36,62 @@
 		"contextManagement": "Kontekst",
 		"terminal": "Terminal",
 		"slashCommands": "Polecenia Slash",
+		"hooks": "Hooks",
 		"prompts": "Podpowiedzi",
 		"ui": "UI",
 		"experimental": "Eksperymentalne",
 		"language": "Język",
 		"about": "O Roo Code"
+	},
+	"hooks": {
+		"description": "Hooks automatycznie wykonują niestandardowe polecenia powłoki, gdy Roo używa określonych narzędzi. Używaj ich do integracji z systemami zewnętrznymi, wymuszania przepływów pracy lub automatyzacji powtarzalnych zadań.",
+		"configuredHooks": "Skonfigurowane hooki",
+		"lastLoadedTooltip": "Ostatnio załadowano o {{time}}",
+		"reloadTooltip": "Przeładuj konfigurację hooków z dysku",
+		"reload": "Przeładuj",
+		"openProjectFolderTooltip": "Otwórz folder konfiguracji hooków projektu",
+		"openGlobalFolderTooltip": "Otwórz folder globalnej konfiguracji hooków",
+		"openProjectFolder": "Otwórz folder projektu",
+		"openGlobalFolder": "Otwórz folder globalny",
+		"createNewHook": "Utwórz nowy hook",
+		"deleteHook": "Usuń hook",
+		"openHookFile": "Otwórz plik hooka",
+		"projectHooksWarningTitle": "Wykryto hooki na poziomie projektu",
+		"projectHooksWarningMessage": "Ten projekt zawiera konfiguracje hooków, które będą wykonywać polecenia powłoki. Włączaj tylko hooki z zaufanych źródeł.",
+		"reloadNote": "Zmiany w plikach konfiguracji hooków wymagają kliknięcia Przeładuj, aby weszły w życie.",
+		"openHookFileTooltip": "Otwórz plik hooka w edytorze",
+		"openHookFileUnavailableTooltip": "Lokalizacja pliku hooka niedostępna",
+		"matcherNote": "Matchery są oceniane względem wewnętrznych identyfikatorów narzędzi Roo Code (np. write_to_file, edit_file, apply_diff, apply_patch), a nie etykiet wyświetlanych jak Write/Edit.",
+		"matcherExamplesLabel": "Przykłady:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "Brak skonfigurowanych hooków",
+		"noHooksHint": "Utwórz pliki konfiguracji hooków, aby automatyzować akcje przy zdarzeniach wykonania narzędzi.",
+		"enableHooks": "Włącz hooki",
+		"enableHooksDescription": "Włącz lub wyłącz wszystkie hooki jednocześnie",
+		"enabled": "Włączony",
+		"event": "Zdarzenie",
+		"matcher": "Matcher",
+		"command": "Polecenie",
+		"shell": "Powłoka",
+		"timeout": "Limit czasu",
+		"logs": "Logi",
+		"noLogsForHook": "Brak jeszcze logów wykonania dla tego hooka",
+		"activityLog": "Aktywność hooków",
+		"status": {
+			"running": "Wykonywanie",
+			"completed": "Ukończone",
+			"failed": "Niepowodzenie",
+			"blocked": "Zablokowane",
+			"timeout": "Limit czasu"
+		},
+		"tabs": {
+			"config": "Konfiguracja",
+			"command": "Polecenie",
+			"logs": "Logi"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -844,6 +895,10 @@
 			"refreshSuccess": "Narzędzia odświeżone pomyślnie",
 			"refreshError": "Nie udało się odświeżyć narzędzi",
 			"toolParameters": "Parametry"
+		},
+		"HOOKS": {
+			"name": "Włącz Hooks",
+			"description": "Użyj niestandardowych poleceń powłoki, aby zautomatyzować działania przed lub po wykonaniu narzędzia. (Wymagany restart po zapisaniu ustawień)"
 		}
 	},
 	"promptCaching": {

@@ -66,6 +66,7 @@ export interface ExtensionMessage {
 		| "acceptInput"
 		| "setHistoryPreviewCollapsed"
 		| "commandExecutionStatus"
+		| "hookExecutionOutputStatus"
 		| "mcpExecutionStatus"
 		| "vsCodeSetting"
 		| "authenticatedUser"
@@ -95,6 +96,8 @@ export interface ExtensionMessage {
 		| "customToolsResult"
 		| "modes"
 		| "taskWithAggregatedCosts"
+		| "hookExecutionStatus"
+		| "hooksCopyHookResult"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
@@ -190,6 +193,224 @@ export interface ExtensionMessage {
 		childrenCost: number
 	}
 	historyItem?: HistoryItem
+	hookExecutionStatus?: HookExecutionStatusPayload
+}
+
+/**
+ * HookExecutionOutputStatusPayload
+ *
+ * Streaming terminal-style hook execution status updates.
+ *
+ * Pattern matches `commandExecutionStatus`: the payload is serialized JSON in
+ * [`ExtensionMessage.text`](packages/types/src/vscode-extension-host.ts:100).
+ */
+export const hookExecutionOutputStatusSchema = z.discriminatedUnion("status", [
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("started"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("output"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("exited"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("blocked"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("failed"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+	z.object({
+		executionId: z.string(),
+		hookId: z.string(),
+		event: z.string(),
+		toolName: z.string().optional(),
+		status: z.literal("fallback"),
+		command: z.string(),
+		cwd: z.string(),
+		shell: z.string().optional(),
+		pid: z.number().optional(),
+		output: z.string().optional(),
+		exitCode: z.number().optional(),
+		durationMs: z.number().optional(),
+		blockMessage: z.string().optional(),
+		error: z.string().optional(),
+		modified: z.boolean().optional(),
+	}),
+])
+
+export type HookExecutionOutputStatusPayload = z.infer<typeof hookExecutionOutputStatusSchema>
+
+/**
+ * HookExecutionStatusPayload
+ * Sent when hook execution starts, completes, or fails.
+ */
+export interface HookExecutionStatusPayload {
+	/** Status of the hook execution */
+	status: "running" | "completed" | "failed" | "blocked"
+	/** Event type that triggered the hook */
+	event: string
+	/** Tool name if this is a tool-related event */
+	toolName?: string
+	/** Hook ID being executed */
+	hookId?: string
+	/** Duration in milliseconds (only for completed/failed) */
+	duration?: number
+	/** Error message if failed */
+	error?: string
+	/** Block message if hook blocked the operation */
+	blockMessage?: string
+	/** Whether tool input was modified */
+	modified?: boolean
+}
+
+/**
+ * Serializable hook information for webview display.
+ * This is a subset of ResolvedHook that can be safely serialized to JSON.
+ */
+export interface HookInfo {
+	/** Unique identifier for this hook */
+	id: string
+	/** File path where this hook was defined (if known) */
+	filePath?: string
+	/** The event type this hook is registered for */
+	event: string
+	/**
+	 * All event types this hook ID is registered for.
+	 *
+	 * Backwards-compatible: older extensions may only provide `event`.
+	 */
+	events?: string[]
+	/** Tool name filter (regex/glob pattern) */
+	matcher?: string
+	/** Preview of the command (truncated for display) */
+	commandPreview: string
+	/** Whether this hook is enabled */
+	enabled: boolean
+	/** Source of this hook configuration */
+	source: "project" | "mode" | "global"
+	/**
+	 * File creation timestamp (ms since epoch) for the config file this hook came from.
+	 * Used for stable UI sorting.
+	 */
+	createdAt?: number
+	/** Timeout in seconds */
+	timeout: number
+	/** Override shell if specified */
+	shell?: string
+	/** Human-readable description */
+	description?: string
+}
+
+/**
+ * Serializable hook execution record for webview display.
+ */
+export interface HookExecutionRecord {
+	/** When the hook was executed (ISO string) */
+	timestamp: string
+	/** The hook ID that was executed */
+	hookId: string
+	/** The event that triggered execution */
+	event: string
+	/** Tool name if this was a tool-related event */
+	toolName?: string
+	/** Exit code from the process */
+	exitCode: number | null
+	/** Execution duration in milliseconds */
+	duration: number
+	/** Whether the hook timed out */
+	timedOut: boolean
+	/** Whether the hook blocked execution */
+	blocked: boolean
+	/** Error message if the hook failed */
+	error?: string
+	/** Block message if the hook blocked */
+	blockMessage?: string
+}
+
+/**
+ * Hooks state for webview display.
+ * Contains all information needed to render the Hooks settings tab.
+ */
+export interface HooksState {
+	/** Array of resolved hooks with display information */
+	enabledHooks: HookInfo[]
+	/** Recent execution history (last N records) */
+	executionHistory: HookExecutionRecord[]
+	/** Whether project-level hooks are present (for security warnings) */
+	hasProjectHooks: boolean
+	/** When the config snapshot was last loaded (ISO string) */
+	snapshotTimestamp?: string
 }
 
 export type ExtensionState = Pick<
@@ -289,6 +510,7 @@ export type ExtensionState = Pick<
 
 	mcpEnabled: boolean
 	enableMcpServerCreation: boolean
+	hooksEnabled: boolean
 
 	mode: string
 	customModes: ModeConfig[]
@@ -335,6 +557,9 @@ export type ExtensionState = Pick<
 	claudeCodeIsAuthenticated?: boolean
 	openAiCodexIsAuthenticated?: boolean
 	debug?: boolean
+
+	/** Hooks configuration and execution state for the Hooks settings tab */
+	hooks?: HooksState
 }
 
 export interface Command {
@@ -522,6 +747,15 @@ export interface WebviewMessage {
 		| "requestModes"
 		| "switchMode"
 		| "debugSetting"
+		| "hooksReloadConfig"
+		| "hooksSetEnabled"
+		| "hooksSetAllEnabled"
+		| "hooksOpenConfigFolder"
+		| "hooksDeleteHook"
+		| "hooksOpenHookFile"
+		| "hooksCreateNew"
+		| "hooksUpdateHook"
+		| "hooksCopyHook"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -577,6 +811,22 @@ export interface WebviewMessage {
 	list?: string[] // For dismissedUpsells response
 	organizationId?: string | null // For organization switching
 	useProviderSignup?: boolean // For rooCloudSignIn to use provider signup flow
+	hookId?: string // For hooksSetEnabled, hooksDeleteHook
+	hookEnabled?: boolean // For hooksSetEnabled
+	hooksEnabled?: boolean // For hooksSetAllEnabled
+	hooksSource?: "global" | "project" | "mode" // For hooksOpenConfigFolder, hooksDeleteHook
+	hookUpdates?: {
+		events?: string[]
+		matcher?: string
+		id?: string
+		command?: string
+		enabled?: boolean
+		description?: string
+		shell?: string
+		includeConversationHistory?: boolean
+		timeout?: number
+	} // For hooksUpdateHook
+	filePath?: string // For hooksOpenHookFile
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

@@ -68,6 +68,14 @@ const App = () => {
 		mdmCompliant,
 	} = useExtensionState()
 
+	// Hooks auto-reload (always enabled since hooks is a permanent feature)
+	useEffect(() => {
+		const intervalId = setInterval(() => {
+			vscode.postMessage({ type: "hooksReloadConfig" })
+		}, 5000)
+		return () => clearInterval(intervalId)
+	}, [])
+
 	// Create a persistent state manager
 	const marketplaceStateManager = useMemo(() => new MarketplaceViewStateManager(), [])
 

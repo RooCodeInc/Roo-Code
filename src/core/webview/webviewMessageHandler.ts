@@ -1,7 +1,14 @@
 import { safeWriteJson } from "../../utils/safeWriteJson"
+import { safeWriteText } from "../../utils/safeWriteText"
 import * as path from "path"
 import * as os from "os"
 import * as fs from "fs/promises"
+import {
+	HookEventType as HookEventTypeSchema,
+	type HookEventType,
+	type HookUpdateData,
+} from "../../services/hooks/types"
+import { copyHookConfig } from "../../services/hooks/HookConfigWriter"
 import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
@@ -38,7 +45,7 @@ import { type RouterName, toRouterName } from "../../shared/api"
 import { MessageEnhancer } from "./messageEnhancer"
 
 import { checkExistKey } from "../../shared/checkExistApiConfig"
-import { experimentDefault } from "../../shared/experiments"
+import { experimentDefault, experiments, EXPERIMENT_IDS } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { openFile } from "../../integrations/misc/open-file"
 import { openImage, saveImage } from "../../integrations/misc/image-handler"
@@ -634,8 +641,9 @@ export const webviewMessageHandler = async (
 							continue
 						}
 
+						const oldExperiments = getGlobalState("experiments") ?? experimentDefault
 						newValue = {
-							...(getGlobalState("experiments") ?? experimentDefault),
+							...oldExperiments,
 							...(value as Record<ExperimentId, boolean>),
 						}
 					} else if (key === "customSupportPrompts") {
@@ -3354,6 +3362,411 @@ export const webviewMessageHandler = async (
 				values: message.values,
 				log: (msg) => provider.log(msg),
 			})
+			break
+		}
+
+		// =====================================================================
+		// Hooks Management Commands
+		// =====================================================================
+
+		case "hooksReloadConfig": {
+			// Reload hooks configuration from all sources
+			const hookManager = provider.getHookManager()
+			if (hookManager) {
+				try {
+					await hookManager.reloadHooksConfig()
+					await provider.postStateToWebview()
+				} catch (error) {
+					provider.log(
+						`Failed to reload hooks config: ${error instanceof Error ? error.message : String(error)}`,
+					)
+					vscode.window.showErrorMessage("Failed to reload hooks configuration")
+				}
+			}
+			break
+		}
+
+		case "hooksSetEnabled": {
+			// Enable or disable a specific hook
+			const hookManager = provider.getHookManager()
+			if (hookManager && message.hookId && typeof message.hookEnabled === "boolean") {
+				try {
+					await hookManager.setHookEnabled(message.hookId, message.hookEnabled)
+					await provider.postStateToWebview()
+				} catch (error) {
+					provider.log(
+						`Failed to set hook enabled: ${error instanceof Error ? error.message : String(error)}`,
+					)
+					vscode.window.showErrorMessage(`Failed to ${message.hookEnabled ? "enable" : "disable"} hook`)
+				}
+			}
+			break
+		}
+
+		case "hooksSetAllEnabled": {
+			// Enable or disable hooks globally via the master toggle.
+			// This is stored in global state and checked before executing any hook.
+			if (typeof message.hooksEnabled === "boolean") {
+				try {
+					await updateGlobalState("hooksEnabled", message.hooksEnabled)
+					await provider.postStateToWebview()
+				} catch (error) {
+					provider.log(
+						`Failed to set hooks enabled: ${error instanceof Error ? error.message : String(error)}`,
+					)
+					vscode.window.showErrorMessage(`Failed to ${message.hooksEnabled ? "enable" : "disable"} hooks`)
+				}
+			}
+			break
+		}
+
+		case "hooksOpenConfigFolder": {
+			// Open the hooks configuration folder in VS Code
+			const source = message.hooksSource ?? "project"
+			try {
+				let hooksPath: string
+				if (source === "global") {
+					// Global hooks: ~/.roo/hooks
+					hooksPath = path.join(os.homedir(), ".roo", "hooks")
+				} else {
+					// Project hooks: .roo/hooks in workspace
+					const cwd = provider.cwd
+					hooksPath = path.join(cwd, ".roo", "hooks")
+				}
+
+				// Check if directory exists, create if not
+				const exists = await fileExistsAtPath(hooksPath)
+				if (!exists) {
+					await fs.mkdir(hooksPath, { recursive: true })
+				}
+
+				// Open the folder in VS Code
+				const uri = vscode.Uri.file(hooksPath)
+				await vscode.commands.executeCommand("revealFileInOS", uri)
+			} catch (error) {
+				provider.log(`Failed to open hooks folder: ${error instanceof Error ? error.message : String(error)}`)
+				vscode.window.showErrorMessage("Failed to open hooks configuration folder")
+			}
+			break
+		}
+
+		case "hooksDeleteHook": {
+			const hookManager = provider.getHookManager()
+			if (!hookManager || !message.hookId) {
+				break
+			}
+
+			try {
+				const hookId = message.hookId
+				const snapshot = hookManager.getConfigSnapshot()
+				const targetHook = snapshot?.hooksById.get(hookId)
+				// Prefer resolved snapshot filePath (ResolvedHook.filePath)
+				const targetFilePath = targetHook?.filePath
+
+				const removeHookFromFile = async (filePath: string): Promise<boolean> => {
+					const lower = filePath.toLowerCase()
+					const content = await fs.readFile(filePath, "utf-8")
+					const parsed = lower.endsWith(".json")
+						? JSON.parse(content)
+						: (await import("yaml")).default.parse(content)
+
+					if (!parsed || typeof parsed !== "object") {
+						throw new Error(`Invalid hooks config format in ${filePath}`)
+					}
+
+					const hooks = (parsed as any).hooks
+					if (!hooks || typeof hooks !== "object") {
+						return false
+					}
+
+					// New hook-centric format: hooks: [ ... ]
+					let removed = false
+					if (Array.isArray(hooks)) {
+						const before = hooks.length
+						;(parsed as any).hooks = hooks.filter((d: any) => d?.id !== hookId)
+						removed = (parsed as any).hooks.length !== before
+					} else {
+						// Legacy event-keyed format: hooks: { PreToolUse: [ ... ] }
+						for (const [event, defs] of Object.entries(hooks)) {
+							if (!Array.isArray(defs)) continue
+							const before = defs.length
+							const after = defs.filter((d: any) => d?.id !== hookId)
+							if (after.length !== before) {
+								removed = true
+								;(hooks as any)[event] = after
+							}
+						}
+					}
+
+					if (!removed) return false
+
+					if (lower.endsWith(".json")) {
+						await safeWriteJson(filePath, parsed)
+					} else {
+						const YAML = (await import("yaml")).default
+						const newYaml = YAML.stringify(parsed, { lineWidth: 0 })
+						await safeWriteText(filePath, newYaml)
+					}
+
+					return true
+				}
+
+				let deleted = false
+				if (typeof targetFilePath === "string" && targetFilePath.length > 0) {
+					deleted = await removeHookFromFile(targetFilePath)
+				} else {
+					// Fallback: scan all loaded roo directories for hook configs and remove matching id.
+					const cwd = provider.cwd
+					const rooDirs = getRooDirectoriesForCwd(cwd)
+					const candidateDirs: string[] = []
+					candidateDirs.push(path.join(rooDirs[0], "hooks"))
+					if (message.hooksSource === "mode") {
+						const mode = (await provider.getState()).mode
+						candidateDirs.push(path.join(rooDirs[1], `hooks-${mode}`))
+					}
+					candidateDirs.push(path.join(rooDirs[1], "hooks"))
+
+					for (const dir of candidateDirs) {
+						let entries: any[] = []
+						try {
+							entries = await fs.readdir(dir, { withFileTypes: true })
+						} catch {
+							continue
+						}
+						const files = entries
+							.filter((e) => e.isFile())
+							.map((e) => path.join(dir, e.name))
+							.filter((p) => {
+								const l = p.toLowerCase()
+								return l.endsWith(".json") || l.endsWith(".yaml") || l.endsWith(".yml")
+							})
+							.sort()
+						for (const filePath of files) {
+							if (await removeHookFromFile(filePath)) {
+								deleted = true
+								break
+							}
+						}
+						if (deleted) break
+					}
+				}
+
+				if (!deleted) {
+					throw new Error("Hook not found in any loaded config file")
+				}
+
+				await hookManager.reloadHooksConfig()
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(`Failed to delete hook: ${error instanceof Error ? error.message : String(error)}`)
+				vscode.window.showErrorMessage("Failed to delete hook")
+			}
+			break
+		}
+
+		case "hooksCopyHook": {
+			const hookManager = provider.getHookManager()
+			if (!hookManager || !message.hookId) {
+				break
+			}
+
+			try {
+				const hookId = message.hookId
+				const snapshot = hookManager.getConfigSnapshot()
+				const targetHook = snapshot?.hooksById.get(hookId)
+				const targetFilePath = targetHook?.filePath
+
+				let newId: string | undefined
+				let copiedFromFilePath: string | undefined
+
+				if (typeof targetFilePath === "string" && targetFilePath.length > 0) {
+					newId = await copyHookConfig(targetFilePath, hookId)
+					copiedFromFilePath = targetFilePath
+				} else {
+					// Fallback: scan all loaded roo directories for hook configs and copy matching id.
+					const cwd = provider.cwd
+					const rooDirs = getRooDirectoriesForCwd(cwd)
+					const candidateDirs: string[] = []
+					candidateDirs.push(path.join(rooDirs[0], "hooks"))
+					if (message.hooksSource === "mode") {
+						const mode = (await provider.getState()).mode
+						candidateDirs.push(path.join(rooDirs[1], `hooks-${mode}`))
+					}
+					candidateDirs.push(path.join(rooDirs[1], "hooks"))
+
+					for (const dir of candidateDirs) {
+						let entries: any[] = []
+						try {
+							entries = await fs.readdir(dir, { withFileTypes: true })
+						} catch {
+							continue
+						}
+						const files = entries
+							.filter((e) => e.isFile())
+							.map((e) => path.join(dir, e.name))
+							.filter((p) => {
+								const l = p.toLowerCase()
+								return l.endsWith(".json") || l.endsWith(".yaml") || l.endsWith(".yml")
+							})
+							.sort()
+						for (const filePath of files) {
+							try {
+								newId = await copyHookConfig(filePath, hookId)
+								copiedFromFilePath = filePath
+								break
+							} catch {
+								// not found / not writable; keep scanning
+							}
+						}
+						if (newId) break
+					}
+				}
+
+				if (!newId) {
+					throw new Error("Hook not found in any writable config file")
+				}
+
+				await hookManager.reloadHooksConfig()
+				await provider.postStateToWebview()
+				await provider.postMessageToWebview({
+					type: "hooksCopyHookResult",
+					success: true,
+					values: { hookId: newId, filePath: copiedFromFilePath },
+				})
+			} catch (error) {
+				provider.log(`Failed to copy hook: ${error instanceof Error ? error.message : String(error)}`)
+				vscode.window.showErrorMessage("Failed to copy hook")
+				await provider.postMessageToWebview({
+					type: "hooksCopyHookResult",
+					success: false,
+					error: error instanceof Error ? error.message : String(error),
+				})
+			}
+			break
+		}
+
+		case "hooksOpenHookFile": {
+			const { filePath: hookFilePath } = message
+			if (!hookFilePath) {
+				return
+			}
+
+			try {
+				const exists = await fileExistsAtPath(hookFilePath)
+				if (exists) {
+					// Open the file in the editor
+					const uri = vscode.Uri.file(hookFilePath)
+					const doc = await vscode.workspace.openTextDocument(uri)
+					await vscode.window.showTextDocument(doc)
+				} else {
+					vscode.window.showErrorMessage(`Hook file not found: ${hookFilePath}`)
+				}
+			} catch (error) {
+				provider.log(`Failed to open hook file: ${error}`)
+				vscode.window.showErrorMessage("Failed to open hook configuration file")
+			}
+			break
+		}
+
+		case "hooksUpdateHook": {
+			const hookManager = provider.getHookManager()
+			if (!hookManager || !message.hookId || !message.filePath || !message.hookUpdates) {
+				break
+			}
+
+			try {
+				const hookUpdates: HookUpdateData = {
+					// Webview messages are not strongly typed, so validate and narrow.
+					events: Array.isArray(message.hookUpdates.events)
+						? message.hookUpdates.events.filter(
+								(event): event is HookEventType => HookEventTypeSchema.safeParse(event).success,
+							)
+						: undefined,
+					matcher: typeof message.hookUpdates.matcher === "string" ? message.hookUpdates.matcher : undefined,
+					command:
+						typeof (message.hookUpdates as any).command === "string"
+							? (message.hookUpdates as any).command
+							: undefined,
+					timeout: typeof message.hookUpdates.timeout === "number" ? message.hookUpdates.timeout : undefined,
+					enabled:
+						typeof (message.hookUpdates as any).enabled === "boolean"
+							? (message.hookUpdates as any).enabled
+							: undefined,
+					description:
+						typeof (message.hookUpdates as any).description === "string"
+							? (message.hookUpdates as any).description
+							: undefined,
+					shell:
+						typeof (message.hookUpdates as any).shell === "string"
+							? (message.hookUpdates as any).shell
+							: undefined,
+					includeConversationHistory:
+						typeof (message.hookUpdates as any).includeConversationHistory === "boolean"
+							? (message.hookUpdates as any).includeConversationHistory
+							: undefined,
+					id:
+						typeof (message.hookUpdates as any).id === "string"
+							? (message.hookUpdates as any).id
+							: undefined,
+				}
+
+				await hookManager.updateHook(message.filePath, message.hookId, hookUpdates)
+				await hookManager.reloadHooksConfig()
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(`Failed to update hook: ${error instanceof Error ? error.message : String(error)}`)
+				vscode.window.showErrorMessage("Failed to update hook")
+			}
+			break
+		}
+
+		case "hooksCreateNew": {
+			try {
+				const cwd = provider.cwd
+				const hooksPath = path.join(cwd, ".roo", "hooks")
+
+				// Create directory if it doesn't exist
+				await fs.mkdir(hooksPath, { recursive: true })
+
+				const exampleFilePath = path.join(hooksPath, "example.yaml")
+
+				// Check if file already exists
+				const exists = await fileExistsAtPath(exampleFilePath)
+				if (exists) {
+					// Open existing file instead of overwriting
+					const uri = vscode.Uri.file(exampleFilePath)
+					const doc = await vscode.workspace.openTextDocument(uri)
+					await vscode.window.showTextDocument(doc)
+					break
+				}
+
+				// Create the example hook file (Phase 2 hook-centric schema)
+				const exampleContent = `hooks:
+  - id: example-hook
+    events: ["PreToolUse"]
+    matcher: "edit"
+    enabled: true
+    command: |-
+      echo "Verification hook triggered"
+    timeout: 15
+`
+				await safeWriteText(exampleFilePath, exampleContent)
+
+				// Open the file in the editor
+				const uri = vscode.Uri.file(exampleFilePath)
+				const doc = await vscode.workspace.openTextDocument(uri)
+				await vscode.window.showTextDocument(doc)
+
+				// Reload hooks config to pick up the new file
+				const hookManager = provider.getHookManager()
+				if (hookManager) {
+					await hookManager.reloadHooksConfig()
+					await provider.postStateToWebview()
+				}
+			} catch (error) {
+				provider.log(`Failed to create hook file: ${error instanceof Error ? error.message : String(error)}`)
+				vscode.window.showErrorMessage("Failed to create hook configuration file")
+			}
 			break
 		}
 

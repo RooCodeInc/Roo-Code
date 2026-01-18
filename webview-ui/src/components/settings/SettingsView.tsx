@@ -28,6 +28,7 @@ import {
 	Server,
 	Users2,
 	ArrowLeft,
+	FishingHook,
 } from "lucide-react"
 
 import {
@@ -79,6 +80,7 @@ import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { UISettings } from "./UISettings"
 import ModesView from "../modes/ModesView"
 import McpView from "../mcp/McpView"
+import { HooksSettings } from "./HooksSettings"
 import { SettingsSearch } from "./SettingsSearch"
 import { useSearchIndexRegistry, SearchIndexProvider } from "./useSettingsSearch"
 
@@ -97,6 +99,7 @@ export const sectionNames = [
 	"providers",
 	"autoApprove",
 	"slashCommands",
+	"hooks",
 	"browser",
 	"checkpoints",
 	"notifications",
@@ -525,6 +528,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "mcp", icon: Server },
 			{ id: "autoApprove", icon: CheckCheck },
 			{ id: "slashCommands", icon: SquareSlash },
+			{ id: "hooks", icon: FishingHook },
 			{ id: "browser", icon: SquareMousePointer },
 			{ id: "checkpoints", icon: GitBranch },
 			{ id: "notifications", icon: Bell },
@@ -536,7 +540,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "language", icon: Globe },
 			{ id: "about", icon: Info },
 		],
-		[], // No dependencies needed now
+		[],
 	)
 
 	// Update target section logic to set active tab
@@ -646,7 +650,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	return (
 		<Tab>
-			<TabHeader className="flex justify-between items-center gap-2">
+			<TabHeader className="flex justify-between items-center gap-2 bg-vscode-editor-background/95 backdrop-blur-sm sticky top-0 z-10">
 				<div className="flex items-center gap-2 grow">
 					<StandardTooltip content={t("settings:header.doneButtonTooltip")}>
 						<Button variant="ghost" className="px-1.5 -ml-2" onClick={() => checkUnsaveChanges(onDone)}>
@@ -894,6 +898,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 						{/* MCP Section */}
 						{renderTab === "mcp" && <McpView />}
+
+						{/* Hooks Section */}
+						{renderTab === "hooks" && <HooksSettings />}
 
 						{/* Prompts Section */}
 						{renderTab === "prompts" && (

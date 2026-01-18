@@ -36,11 +36,62 @@
 		"contextManagement": "Контекст",
 		"terminal": "Терминал",
 		"slashCommands": "Слэш-команды",
+		"hooks": "Hooks",
 		"prompts": "Промпты",
 		"ui": "UI",
 		"experimental": "Экспериментальное",
 		"language": "Язык",
 		"about": "О Roo Code"
+	},
+	"hooks": {
+		"description": "Hooks автоматически выполняют пользовательские команды оболочки, когда Roo использует определённые инструменты. Используйте их для интеграции с внешними системами, применения рабочих процессов или автоматизации повторяющихся задач.",
+		"configuredHooks": "Настроенные hooks",
+		"lastLoadedTooltip": "Последняя загрузка в {{time}}",
+		"reloadTooltip": "Перезагрузить конфигурацию hooks с диска",
+		"reload": "Перезагрузить",
+		"openProjectFolderTooltip": "Открыть папку конфигурации hooks проекта",
+		"openGlobalFolderTooltip": "Открыть глобальную папку конфигурации hooks",
+		"openProjectFolder": "Открыть папку проекта",
+		"openGlobalFolder": "Открыть глобальную папку",
+		"createNewHook": "Создать новый hook",
+		"deleteHook": "Удалить hook",
+		"openHookFile": "Открыть файл hook",
+		"projectHooksWarningTitle": "Обнаружены hooks на уровне проекта",
+		"projectHooksWarningMessage": "Этот проект содержит конфигурации hooks, которые будут выполнять команды оболочки. Включайте только hooks из надёжных источников.",
+		"reloadNote": "Изменения в файлах конфигурации hooks требуют нажатия «Перезагрузить» для вступления в силу.",
+		"openHookFileTooltip": "Открыть файл hook в редакторе",
+		"openHookFileUnavailableTooltip": "Расположение файла hook недоступно",
+		"matcherNote": "Сопоставители оцениваются по внутренним идентификаторам инструментов Roo Code (например, write_to_file, edit_file, apply_diff, apply_patch), а не по отображаемым меткам, таким как Write/Edit.",
+		"matcherExamplesLabel": "Примеры:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "Hooks не настроены",
+		"noHooksHint": "Создайте файлы конфигурации hooks для автоматизации действий при событиях выполнения инструментов.",
+		"enableHooks": "Включить hooks",
+		"enableHooksDescription": "Включить или отключить все hooks одновременно",
+		"enabled": "Включено",
+		"event": "Событие",
+		"matcher": "Сопоставитель",
+		"command": "Команда",
+		"shell": "Оболочка",
+		"timeout": "Тайм-аут",
+		"logs": "Логи",
+		"noLogsForHook": "Пока нет логов выполнения для этого hook",
+		"activityLog": "Активность hooks",
+		"status": {
+			"running": "Выполняется",
+			"completed": "Завершено",
+			"failed": "Ошибка",
+			"blocked": "Заблокировано",
+			"timeout": "Тайм-аут"
+		},
+		"tabs": {
+			"config": "Конфигурация",
+			"command": "Команда",
+			"logs": "Логи"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -844,6 +895,10 @@
 			"refreshSuccess": "Инструменты успешно обновлены",
 			"refreshError": "Не удалось обновить инструменты",
 			"toolParameters": "Параметры"
+		},
+		"HOOKS": {
+			"name": "Включить Hooks",
+			"description": "Используйте пользовательские shell-команды для автоматизации действий до или после выполнения инструментов. (Требуется перезапуск после сохранения настроек)"
 		}
 	},
 	"promptCaching": {

@@ -498,5 +498,8 @@
 		"updated": "Memperbarui daftar to-do",
 		"completed": "Selesai",
 		"started": "Dimulai"
+	},
+	"hook": {
+		"triggered": "Hook: {{hookName}} terpicu"
 	}
 }

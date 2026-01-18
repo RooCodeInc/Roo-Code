@@ -36,11 +36,62 @@
 		"contextManagement": "Context",
 		"terminal": "Terminal",
 		"slashCommands": "Comandes de barra",
+		"hooks": "Hooks",
 		"prompts": "Indicacions",
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
 		"about": "Sobre Roo Code"
+	},
+	"hooks": {
+		"description": "Els hooks executen ordres de shell personalitzades automàticament quan Roo utilitza eines específiques. Utilitza'ls per integrar-te amb sistemes externs, aplicar fluxos de treball o automatitzar tasques repetitives.",
+		"configuredHooks": "Hooks configurats",
+		"lastLoadedTooltip": "Última càrrega a les {{time}}",
+		"reloadTooltip": "Recarregar la configuració dels hooks des del disc",
+		"reload": "Recarregar",
+		"openProjectFolderTooltip": "Obrir la carpeta de configuració de hooks del projecte",
+		"openGlobalFolderTooltip": "Obrir la carpeta de configuració de hooks global",
+		"openProjectFolder": "Obrir carpeta del projecte",
+		"openGlobalFolder": "Obrir carpeta global",
+		"createNewHook": "Crear nou hook",
+		"deleteHook": "Eliminar hook",
+		"openHookFile": "Obrir fitxer de hook",
+		"projectHooksWarningTitle": "Hooks de projecte detectats",
+		"projectHooksWarningMessage": "Aquest projecte inclou configuracions de hooks que executaran ordres de shell. Només activa hooks de fonts en les quals confiïs.",
+		"reloadNote": "Els canvis en els fitxers de configuració de hooks requereixen fer clic a Recarregar per tenir efecte.",
+		"openHookFileTooltip": "Obrir fitxer de hook a l'editor",
+		"openHookFileUnavailableTooltip": "Ubicació del fitxer de hook no disponible",
+		"matcherNote": "Els matchers s'avaluen contra els IDs interns d'eines de Roo Code (p. ex. write_to_file, edit_file, apply_diff, apply_patch), no contra etiquetes de UI com Escriure/Editar.",
+		"matcherExamplesLabel": "Exemples:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "No hi ha hooks configurats",
+		"noHooksHint": "Crea fitxers de configuració de hooks per automatitzar accions en esdeveniments d'execució d'eines.",
+		"enableHooks": "Activar hooks",
+		"enableHooksDescription": "Activar o desactivar tots els hooks alhora",
+		"enabled": "Activat",
+		"event": "Esdeveniment",
+		"matcher": "Matcher",
+		"command": "Ordre",
+		"shell": "Shell",
+		"timeout": "Temps d'espera",
+		"logs": "Registres",
+		"noLogsForHook": "Encara no hi ha registres d'execució per aquest hook",
+		"activityLog": "Activitat de hooks",
+		"status": {
+			"running": "Executant",
+			"completed": "Completat",
+			"failed": "Fallat",
+			"blocked": "Bloquejat",
+			"timeout": "Temps esgotat"
+		},
+		"tabs": {
+			"config": "Configuració",
+			"command": "Ordre",
+			"logs": "Registres"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -843,6 +894,10 @@
 			"refreshSuccess": "Eines actualitzades correctament",
 			"refreshError": "Error en actualitzar les eines",
 			"toolParameters": "Paràmetres"
+		},
+		"HOOKS": {
+			"name": "Habilitar Hooks",
+			"description": "Utilitza ordres de shell personalitzades per automatitzar accions abans o després de l'execució d'eines."
 		}
 	},
 	"promptCaching": {

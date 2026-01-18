@@ -36,11 +36,62 @@
 		"contextManagement": "コンテキスト",
 		"terminal": "ターミナル",
 		"slashCommands": "スラッシュコマンド",
+		"hooks": "Hooks",
 		"prompts": "プロンプト",
 		"ui": "UI",
 		"experimental": "実験的",
 		"language": "言語",
 		"about": "Roo Codeについて"
+	},
+	"hooks": {
+		"description": "Hooksは、Rooが特定のツールを使用するときにカスタムシェルコマンドを自動的に実行します。外部システムとの統合、ワークフローの適用、反復タスクの自動化に使用します。",
+		"configuredHooks": "設定済みHooks",
+		"lastLoadedTooltip": "最終読み込み: {{time}}",
+		"reloadTooltip": "ディスクからHooks設定を再読み込み",
+		"reload": "再読み込み",
+		"openProjectFolderTooltip": "プロジェクトのHooks設定フォルダを開く",
+		"openGlobalFolderTooltip": "グローバルHooks設定フォルダを開く",
+		"openProjectFolder": "プロジェクトフォルダを開く",
+		"openGlobalFolder": "グローバルフォルダを開く",
+		"createNewHook": "新しいHookを作成",
+		"deleteHook": "Hookを削除",
+		"openHookFile": "Hookファイルを開く",
+		"projectHooksWarningTitle": "プロジェクトレベルのHooksが検出されました",
+		"projectHooksWarningMessage": "このプロジェクトにはシェルコマンドを実行するHooks設定が含まれています。信頼できるソースからのHooksのみを有効にしてください。",
+		"reloadNote": "Hooks設定ファイルの変更を反映するには、再読み込みをクリックする必要があります。",
+		"openHookFileTooltip": "エディターでHookファイルを開く",
+		"openHookFileUnavailableTooltip": "Hookファイルの場所が利用できません",
+		"matcherNote": "MatcherはRoo Codeの内部ツールID（例: write_to_file、edit_file、apply_diff、apply_patch）に対して評価されます。Write/Editなどの表示ラベルに対してではありません。",
+		"matcherExamplesLabel": "例:",
+		"matcherExamples": {
+			"writeOrEdit": "write_to_file|edit_file|apply_diff|apply_patch",
+			"readOnly": "read_file|list_files"
+		},
+		"noHooksConfigured": "Hooksが設定されていません",
+		"noHooksHint": "Hooks設定ファイルを作成して、ツール実行イベントでアクションを自動化します。",
+		"enableHooks": "Hooksを有効化",
+		"enableHooksDescription": "すべてのHooksを一度に有効化または無効化",
+		"enabled": "有効",
+		"event": "イベント",
+		"matcher": "Matcher",
+		"command": "コマンド",
+		"shell": "シェル",
+		"timeout": "タイムアウト",
+		"logs": "ログ",
+		"noLogsForHook": "このHookの実行ログはまだありません",
+		"activityLog": "Hookアクティビティ",
+		"status": {
+			"running": "実行中",
+			"completed": "完了",
+			"failed": "失敗",
+			"blocked": "ブロック",
+			"timeout": "タイムアウト"
+		},
+		"tabs": {
+			"config": "設定",
+			"command": "コマンド",
+			"logs": "ログ"
+		}
 	},
 	"about": {
 		"bugReport": {
@@ -844,6 +895,10 @@
 			"refreshSuccess": "ツールが正常に更新されました",
 			"refreshError": "ツールの更新に失敗しました",
 			"toolParameters": "パラメーター"
+		},
+		"HOOKS": {
+			"name": "Hooks を有効化",
+			"description": "カスタムシェルコマンドを使用して、ツール実行の前後にアクションを自動化します。（設定保存後に再起動が必要です）"
 		}
 	},
 	"promptCaching": {

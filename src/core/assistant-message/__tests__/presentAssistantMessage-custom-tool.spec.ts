@@ -52,6 +52,7 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			diffEnabled: false,
 			consecutiveMistakeCount: 0,
 			clineMessages: [],
+			cwd: "/mock/project/path",
 			api: {
 				getModel: () => ({ id: "test-model", info: {} }),
 			},
@@ -62,6 +63,26 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			recordToolError: vi.fn(),
 			toolRepetitionDetector: {
 				check: vi.fn().mockReturnValue({ allowExecution: true }),
+			},
+			toolExecutionHooks: {
+				executePreToolUse: vi.fn().mockResolvedValue({
+					proceed: true,
+					hookResult: {
+						results: [],
+						blocked: false,
+						totalDuration: 0,
+					},
+				}),
+				executePostToolUse: vi.fn().mockResolvedValue({
+					results: [],
+					blocked: false,
+					totalDuration: 0,
+				}),
+				executePostToolUseFailure: vi.fn().mockResolvedValue({
+					results: [],
+					blocked: false,
+					totalDuration: 0,
+				}),
 			},
 			providerRef: {
 				deref: () => ({

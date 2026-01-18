@@ -493,5 +493,8 @@
 		"updated": "Đã cập nhật danh sách công việc",
 		"completed": "Đã hoàn thành",
 		"started": "Đã bắt đầu"
+	},
+	"hook": {
+		"triggered": "Hook: {{hookName}} đã kích hoạt"
 	}
 }
