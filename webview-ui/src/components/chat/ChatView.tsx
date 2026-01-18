@@ -48,6 +48,7 @@ import { QueuedMessages } from "./QueuedMessages"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
+import type { SubtaskDetail } from "@src/types/subtasks"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -174,6 +175,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				totalCost: number
 				ownCost: number
 				childrenCost: number
+				childDetails?: SubtaskDetail[]
 			}
 		>
 	>(new Map())
@@ -1488,6 +1490,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 										own: t("common:costs.own"),
 										subtasks: t("common:costs.subtasks"),
 									})
+								: undefined
+						}
+						subtaskDetails={
+							currentTaskItem?.id && aggregatedCostsMap.has(currentTaskItem.id)
+								? aggregatedCostsMap.get(currentTaskItem.id)!.childDetails
 								: undefined
 						}
 						contextTokens={apiMetrics.contextTokens}

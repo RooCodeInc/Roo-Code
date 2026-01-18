@@ -3,7 +3,23 @@ import { t } from "i18next"
 import { ArrowRight, Check, ListChecks, SquareDashed } from "lucide-react"
 import { useState, useRef, useMemo, useEffect } from "react"
 
+import { formatLargeNumber } from "@src/utils/format"
+
+import type { SubtaskDetail } from "@src/types/subtasks"
+
 type TodoStatus = "completed" | "in_progress" | "pending"
+
+interface TodoItem {
+	// Legacy fields
+	id?: string
+	content: string
+	status?: TodoStatus | string | null
+
+	// Direct-linking/cost fields (optional for backward compatibility)
+	subtaskId?: string
+	tokens?: number
+	cost?: number
+}
 
 function getTodoIcon(status: TodoStatus | null) {
 	switch (status) {
@@ -16,21 +32,27 @@ function getTodoIcon(status: TodoStatus | null) {
 	}
 }
 
-export function TodoListDisplay({ todos }: { todos: any[] }) {
+export interface TodoListDisplayProps {
+	todos: TodoItem[]
+	subtaskDetails?: SubtaskDetail[]
+	onSubtaskClick?: (subtaskId: string) => void
+}
+
+export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoListDisplayProps) {
 	const [isCollapsed, setIsCollapsed] = useState(true)
 	const ulRef = useRef<HTMLUListElement>(null)
 	const itemRefs = useRef<(HTMLLIElement | null)[]>([])
 	const scrollIndex = useMemo(() => {
-		const inProgressIdx = todos.findIndex((todo: any) => todo.status === "in_progress")
+		const inProgressIdx = todos.findIndex((todo) => todo.status === "in_progress")
 		if (inProgressIdx !== -1) return inProgressIdx
-		return todos.findIndex((todo: any) => todo.status !== "completed")
+		return todos.findIndex((todo) => todo.status !== "completed")
 	}, [todos])
 
 	// Find the most important todo to display when collapsed
 	const mostImportantTodo = useMemo(() => {
-		const inProgress = todos.find((todo: any) => todo.status === "in_progress")
+		const inProgress = todos.find((todo) => todo.status === "in_progress")
 		if (inProgress) return inProgress
-		return todos.find((todo: any) => todo.status !== "completed")
+		return todos.find((todo) => todo.status !== "completed")
 	}, [todos])
 	useEffect(() => {
 		if (isCollapsed) return
@@ -49,7 +71,7 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 	if (!Array.isArray(todos) || todos.length === 0) return null
 
 	const totalCount = todos.length
-	const completedCount = todos.filter((todo: any) => todo.status === "completed").length
+	const completedCount = todos.filter((todo) => todo.status === "completed").length
 
 	const allCompleted = completedCount === totalCount && totalCount > 0
 
@@ -80,8 +102,17 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 			{/* Inline expanded list */}
 			{!isCollapsed && (
 				<ul ref={ulRef} className="list-none max-h-[300px] overflow-y-auto mt-2 -mb-1 pb-0 px-2 cursor-default">
-					{todos.map((todo: any, idx: number) => {
+					{todos.map((todo, idx: number) => {
 						const icon = getTodoIcon(todo.status as TodoStatus)
+						const isClickable = Boolean(todo.subtaskId && onSubtaskClick)
+						const subtaskById =
+							subtaskDetails && todo.subtaskId
+								? subtaskDetails.find((s) => s.id === todo.subtaskId)
+								: undefined
+						const displayTokens = todo.tokens ?? subtaskById?.tokens
+						const displayCost = todo.cost ?? subtaskById?.cost
+						const shouldShowCost = typeof displayTokens === "number" && typeof displayCost === "number"
+
 						return (
 							<li
 								key={todo.id || todo.content}
@@ -92,7 +123,24 @@ export function TodoListDisplay({ todos }: { todos: any[] }) {
 									todo.status !== "in_progress" && todo.status !== "completed" && "opacity-60",
 								)}>
 								{icon}
-								<span>{todo.content}</span>
+								<span
+									className={cn("flex-1", isClickable && "cursor-pointer hover:underline")}
+									onClick={
+										isClickable ? () => onSubtaskClick?.(todo.subtaskId as string) : undefined
+									}>
+									{todo.content}
+								</span>
+								{/* Token count and cost display */}
+								{shouldShowCost && (
+									<span className="flex items-center gap-2 text-xs text-vscode-descriptionForeground shrink-0">
+										<span className="tabular-nums opacity-70">
+											{formatLargeNumber(displayTokens)}
+										</span>
+										<span className="tabular-nums min-w-[45px] text-right">
+											${displayCost.toFixed(2)}
+										</span>
+									</span>
+								)}
 							</li>
 						)
 					})}

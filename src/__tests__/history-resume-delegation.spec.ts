@@ -491,4 +491,179 @@ describe("History resume delegation - parent metadata transitions", () => {
 			}),
 		)
 	})
+
+	it("reopenParentFromDelegation uses fallback anchor when subtaskId link is missing but child is valid", async () => {
+		const provider = {
+			contextProxy: { globalStorageUri: { fsPath: "/storage" } },
+			getTaskWithId: vi.fn().mockImplementation((taskId: string) => {
+				if (taskId === "parent-fallback") {
+					return Promise.resolve({
+						historyItem: {
+							id: "parent-fallback",
+							status: "delegated",
+							awaitingChildId: "child-fallback",
+							childIds: ["child-fallback"], // This validates the parent-child relationship
+							ts: 100,
+							task: "Parent task",
+							tokensIn: 0,
+							tokensOut: 0,
+							totalCost: 0,
+						},
+					})
+				}
+				// Child history item with tokens/cost
+				return Promise.resolve({
+					historyItem: {
+						id: "child-fallback",
+						tokensIn: 500,
+						tokensOut: 300,
+						totalCost: 0.05,
+						ts: 200,
+						task: "Child task",
+					},
+				})
+			}),
+			emit: vi.fn(),
+			getCurrentTask: vi.fn(() => ({ taskId: "child-fallback" })),
+			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
+			createTaskWithHistoryItem: vi.fn().mockResolvedValue({
+				taskId: "parent-fallback",
+				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+			}),
+			updateTaskHistory: vi.fn().mockResolvedValue([]),
+		} as unknown as ClineProvider
+
+		// Parent has all completed todos but NO subtaskId link
+		const parentMessagesWithCompletedTodos = [
+			{
+				type: "say",
+				say: "system_update_todos",
+				text: JSON.stringify({
+					tool: "updateTodoList",
+					todos: [
+						{ id: "todo-1", content: "First completed", status: "completed" },
+						{ id: "todo-2", content: "Second completed", status: "completed" },
+						{ id: "todo-3", content: "Last completed", status: "completed" },
+						// Note: NO subtaskId on any todo - this is the bug scenario
+					],
+				}),
+				ts: 50,
+			},
+		]
+
+		vi.mocked(readTaskMessages).mockResolvedValue(parentMessagesWithCompletedTodos as any)
+		vi.mocked(readApiMessages).mockResolvedValue([])
+
+		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
+			parentTaskId: "parent-fallback",
+			childTaskId: "child-fallback",
+			completionResultSummary: "Child completed successfully",
+		})
+
+		// Verify that saveTaskMessages was called and includes the todo write-back
+		expect(saveTaskMessages).toHaveBeenCalled()
+		const savedCall = vi.mocked(saveTaskMessages).mock.calls[0][0]
+
+		// Find the system_update_todos message that was added for the write-back
+		const todoEditMessages = savedCall.messages.filter(
+			(m: any) => m.type === "say" && m.say === "system_update_todos",
+		)
+
+		// Should have at least 2 todo edit messages (original + write-back)
+		expect(todoEditMessages.length).toBeGreaterThanOrEqual(1)
+
+		// Parse the last todo edit to verify fallback worked
+		const lastTodoEdit = todoEditMessages[todoEditMessages.length - 1]
+		expect(lastTodoEdit.text).toBeDefined()
+		const parsedTodos = JSON.parse(lastTodoEdit.text as string)
+
+		// The LAST completed todo should have been selected as the fallback anchor
+		// and should now have subtaskId, tokens, and cost
+		const anchoredTodo = parsedTodos.todos.find((t: any) => t.subtaskId === "child-fallback")
+		expect(anchoredTodo).toBeDefined()
+		expect(anchoredTodo.content).toBe("Last completed") // Fallback picks LAST completed
+		expect(anchoredTodo.tokens).toBe(800) // 500 + 300
+		expect(anchoredTodo.cost).toBe(0.05)
+	})
+
+	it("reopenParentFromDelegation does NOT apply fallback when childIds doesn't include the child", async () => {
+		const provider = {
+			contextProxy: { globalStorageUri: { fsPath: "/storage" } },
+			getTaskWithId: vi.fn().mockImplementation((taskId: string) => {
+				if (taskId === "parent-no-relation") {
+					return Promise.resolve({
+						historyItem: {
+							id: "parent-no-relation",
+							status: "delegated",
+							awaitingChildId: "some-other-child",
+							childIds: ["some-other-child"], // Does NOT include child-orphan
+							ts: 100,
+							task: "Parent task",
+							tokensIn: 0,
+							tokensOut: 0,
+							totalCost: 0,
+						},
+					})
+				}
+				return Promise.resolve({
+					historyItem: {
+						id: "child-orphan",
+						tokensIn: 100,
+						tokensOut: 50,
+						totalCost: 0.01,
+						ts: 200,
+						task: "Orphan child",
+					},
+				})
+			}),
+			emit: vi.fn(),
+			getCurrentTask: vi.fn(() => ({ taskId: "child-orphan" })),
+			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
+			createTaskWithHistoryItem: vi.fn().mockResolvedValue({
+				taskId: "parent-no-relation",
+				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+			}),
+			updateTaskHistory: vi.fn().mockResolvedValue([]),
+		} as unknown as ClineProvider
+
+		const parentMessagesWithTodos = [
+			{
+				type: "say",
+				say: "system_update_todos",
+				text: JSON.stringify({
+					tool: "updateTodoList",
+					todos: [{ id: "todo-1", content: "Some task", status: "completed" }],
+				}),
+				ts: 50,
+			},
+		]
+
+		vi.mocked(readTaskMessages).mockResolvedValue(parentMessagesWithTodos as any)
+		vi.mocked(readApiMessages).mockResolvedValue([])
+
+		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
+			parentTaskId: "parent-no-relation",
+			childTaskId: "child-orphan",
+			completionResultSummary: "Orphan child completed",
+		})
+
+		// Verify saveTaskMessages was called
+		expect(saveTaskMessages).toHaveBeenCalled()
+		const savedCall = vi.mocked(saveTaskMessages).mock.calls[0][0]
+
+		// Find todo edit messages (if any were added beyond the original)
+		const todoEditMessages = savedCall.messages.filter(
+			(m: any) => m.type === "say" && m.say === "system_update_todos",
+		)
+
+		// Should only have the original todo edit, no write-back because child isn't in childIds
+		// The fallback should NOT be triggered for an unrelated child
+		if (todoEditMessages.length > 1) {
+			const lastTodoEdit = todoEditMessages[todoEditMessages.length - 1]
+			const parsedTodos = JSON.parse(lastTodoEdit.text as string)
+			// If a write-back happened, it should NOT have linked to child-orphan
+			const orphanLinked = parsedTodos.todos.find((t: any) => t.subtaskId === "child-orphan")
+			expect(orphanLinked).toBeUndefined()
+		}
+	})
 })

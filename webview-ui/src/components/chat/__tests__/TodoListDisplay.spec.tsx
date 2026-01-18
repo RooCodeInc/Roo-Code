@@ -1,0 +1,227 @@
+import { describe, it, expect, vi } from "vitest"
+import { render, screen, fireEvent } from "@testing-library/react"
+
+import { TodoListDisplay } from "../TodoListDisplay"
+import type { SubtaskDetail } from "@src/types/subtasks"
+
+// Mock i18next
+vi.mock("i18next", () => ({
+	t: (key: string, options?: Record<string, unknown>) => {
+		if (key === "chat:todo.complete") return `${options?.total} to-dos done`
+		if (key === "chat:todo.partial") return `${options?.completed} of ${options?.total} to-dos done`
+		return key
+	},
+}))
+
+// Mock format utility
+vi.mock("@src/utils/format", () => ({
+	formatLargeNumber: (num: number) => {
+		if (num >= 1e3) return `${(num / 1e3).toFixed(1)}k`
+		return num.toString()
+	},
+}))
+
+describe("TodoListDisplay", () => {
+	const baseTodos = [
+		{ id: "1", content: "Task 1: Change background colour", status: "completed", subtaskId: "subtask-1" },
+		{ id: "2", content: "Task 2: Add timestamp to bottom", status: "completed", subtaskId: "subtask-2" },
+		{ id: "3", content: "Task 3: Pending task", status: "pending" },
+	]
+
+	const subtaskDetails: SubtaskDetail[] = [
+		{
+			id: "subtask-1",
+			name: "Task 1: Change background colour",
+			tokens: 95400,
+			cost: 0.22,
+			status: "completed",
+			hasNestedChildren: false,
+		},
+		{
+			id: "subtask-2",
+			name: "Task 2: Add timestamp to bottom",
+			tokens: 95000,
+			cost: 0.24,
+			status: "completed",
+			hasNestedChildren: false,
+		},
+	]
+
+	describe("basic rendering", () => {
+		it("should render nothing when todos is empty", () => {
+			const { container } = render(<TodoListDisplay todos={[]} />)
+			expect(container.firstChild).toBeNull()
+		})
+
+		it("should render collapsed view by default", () => {
+			render(<TodoListDisplay todos={baseTodos} />)
+			// Should show the first incomplete task in collapsed view
+			expect(screen.getByText("Task 3: Pending task")).toBeInTheDocument()
+		})
+
+		it("should expand when header is clicked", () => {
+			render(<TodoListDisplay todos={baseTodos} />)
+			const header = screen.getByText("Task 3: Pending task")
+			fireEvent.click(header)
+
+			// After expanding, should show all tasks
+			expect(screen.getByText("Task 1: Change background colour")).toBeInTheDocument()
+			expect(screen.getByText("Task 2: Add timestamp to bottom")).toBeInTheDocument()
+			expect(screen.getByText("Task 3: Pending task")).toBeInTheDocument()
+		})
+
+		it("should show completion count when all tasks are complete", () => {
+			const completedTodos = [
+				{ id: "1", content: "Task 1", status: "completed" },
+				{ id: "2", content: "Task 2", status: "completed" },
+			]
+			render(<TodoListDisplay todos={completedTodos} />)
+			expect(screen.getByText("2 to-dos done")).toBeInTheDocument()
+		})
+	})
+
+	describe("subtask cost display", () => {
+		it("should display tokens and cost when subtaskDetails are provided and todo.subtaskId matches", () => {
+			render(<TodoListDisplay todos={baseTodos} subtaskDetails={subtaskDetails} />)
+
+			// Expand to see the items
+			const header = screen.getByText("Task 3: Pending task")
+			fireEvent.click(header)
+
+			// Check for formatted token counts
+			expect(screen.getByText("95.4k")).toBeInTheDocument()
+			expect(screen.getByText("95.0k")).toBeInTheDocument()
+
+			// Check for costs
+			expect(screen.getByText("$0.22")).toBeInTheDocument()
+			expect(screen.getByText("$0.24")).toBeInTheDocument()
+		})
+
+		it("should not display tokens/cost for todos without subtaskId", () => {
+			render(<TodoListDisplay todos={baseTodos} subtaskDetails={subtaskDetails} />)
+
+			// Expand to see the items
+			const header = screen.getByText("Task 3: Pending task")
+			fireEvent.click(header)
+
+			// The pending task has no subtaskId, should not show cost
+			const listItems = screen.getAllByRole("listitem")
+			const pendingItem = listItems.find((item) => item.textContent?.includes("Task 3: Pending task"))
+			expect(pendingItem).toBeDefined()
+			expect(pendingItem?.textContent).not.toContain("$")
+		})
+
+		it("should not display tokens/cost when subtaskDetails is undefined", () => {
+			render(<TodoListDisplay todos={baseTodos} />)
+
+			// Expand to see the items
+			const header = screen.getByText("Task 3: Pending task")
+			fireEvent.click(header)
+
+			// No cost should be displayed
+			expect(screen.queryByText("$0.22")).not.toBeInTheDocument()
+			expect(screen.queryByText("$0.24")).not.toBeInTheDocument()
+		})
+
+		it("should not display tokens/cost when subtaskDetails is empty array", () => {
+			render(<TodoListDisplay todos={baseTodos} subtaskDetails={[]} />)
+
+			// Expand to see the items
+			const header = screen.getByText("Task 3: Pending task")
+			fireEvent.click(header)
+
+			// No cost should be displayed
+			expect(screen.queryByText("$0.22")).not.toBeInTheDocument()
+		})
+	})
+
+	describe("direct subtask linking", () => {
+		it("should use todo.tokens and todo.cost when provided (no subtaskDetails required)", () => {
+			const todosWithDirectCost = [
+				{
+					id: "1",
+					content: "Task 1: Change background colour",
+					status: "completed",
+					subtaskId: "subtask-1",
+					tokens: 95400,
+					cost: 0.22,
+				},
+			]
+			render(<TodoListDisplay todos={todosWithDirectCost} />)
+
+			// Expand
+			const header = screen.getByText("1 to-dos done")
+			fireEvent.click(header)
+
+			expect(screen.getByText("95.4k")).toBeInTheDocument()
+			expect(screen.getByText("$0.22")).toBeInTheDocument()
+		})
+
+		it("should fall back to subtaskDetails by ID when todo.tokens/cost are missing", () => {
+			const todosMissingCostFields = [
+				{
+					id: "1",
+					content: "Task 1: Change background colour",
+					status: "completed",
+					subtaskId: "subtask-1",
+				},
+			]
+			render(<TodoListDisplay todos={todosMissingCostFields} subtaskDetails={subtaskDetails} />)
+
+			// Expand
+			const header = screen.getByText("1 to-dos done")
+			fireEvent.click(header)
+
+			expect(screen.getByText("95.4k")).toBeInTheDocument()
+			expect(screen.getByText("$0.22")).toBeInTheDocument()
+		})
+	})
+
+	describe("click handler", () => {
+		it("should call onSubtaskClick when a todo with subtaskId is clicked", () => {
+			const onSubtaskClick = vi.fn()
+			render(
+				<TodoListDisplay todos={baseTodos} subtaskDetails={subtaskDetails} onSubtaskClick={onSubtaskClick} />,
+			)
+
+			// Expand
+			const header = screen.getByText("Task 3: Pending task")
+			fireEvent.click(header)
+
+			// Click on first matched todo
+			const task1 = screen.getByText("Task 1: Change background colour")
+			fireEvent.click(task1)
+
+			expect(onSubtaskClick).toHaveBeenCalledWith("subtask-1")
+		})
+
+		it("should not call onSubtaskClick when a todo does not have subtaskId", () => {
+			const onSubtaskClick = vi.fn()
+			render(
+				<TodoListDisplay todos={baseTodos} subtaskDetails={subtaskDetails} onSubtaskClick={onSubtaskClick} />,
+			)
+
+			// Expand
+			const header = screen.getByText("Task 3: Pending task")
+			fireEvent.click(header)
+
+			// Click on unmatched todo
+			const task3 = screen.getByText("Task 3: Pending task")
+			fireEvent.click(task3)
+
+			expect(onSubtaskClick).not.toHaveBeenCalled()
+		})
+
+		it("should not be clickable when onSubtaskClick is not provided", () => {
+			render(<TodoListDisplay todos={baseTodos} subtaskDetails={subtaskDetails} />)
+
+			// Expand
+			const header = screen.getByText("Task 3: Pending task")
+			fireEvent.click(header)
+
+			// Task should be present but not have hover:underline class behavior
+			const task1 = screen.getByText("Task 1: Change background colour")
+			expect(task1.className).not.toContain("cursor-pointer")
+		})
+	})
+})

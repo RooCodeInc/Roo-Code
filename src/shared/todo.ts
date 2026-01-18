@@ -4,7 +4,8 @@ export function getLatestTodo(clineMessages: ClineMessage[]) {
 	const todos = clineMessages
 		.filter(
 			(msg) =>
-				(msg.type === "ask" && msg.ask === "tool") || (msg.type === "say" && msg.say === "user_edit_todos"),
+				(msg.type === "ask" && msg.ask === "tool") ||
+				(msg.type === "say" && (msg.say === "user_edit_todos" || msg.say === "system_update_todos")),
 		)
 		.map((msg) => {
 			try {

@@ -1,5 +1,17 @@
 import type { HistoryItem } from "@roo-code/types"
 
+/**
+ * Detailed information about a subtask for UI display
+ */
+export interface SubtaskDetail {
+	id: string // Task ID
+	name: string // First 50 chars of task description
+	tokens: number // tokensIn + tokensOut
+	cost: number // Aggregated total cost
+	status: "active" | "completed" | "delegated"
+	hasNestedChildren: boolean // Has its own subtasks
+}
+
 export interface AggregatedCosts {
 	ownCost: number // This task's own API costs
 	childrenCost: number // Sum of all direct children costs (recursive)
@@ -8,6 +20,7 @@ export interface AggregatedCosts {
 		// Optional detailed breakdown
 		[childId: string]: AggregatedCosts
 	}
+	childDetails?: SubtaskDetail[] // Detailed subtask info for UI display
 }
 
 /**
@@ -62,4 +75,40 @@ export async function aggregateTaskCostsRecursive(
 	}
 
 	return result
+}
+
+/**
+ * Truncate a task name to a maximum length, adding ellipsis if needed
+ */
+function truncateTaskName(task: string, maxLength: number): string {
+	if (task.length <= maxLength) return task
+	return task.substring(0, maxLength - 3) + "..."
+}
+
+/**
+ * Build subtask details from child breakdown and history items
+ * for displaying in the UI's expandable subtask list
+ */
+export async function buildSubtaskDetails(
+	childBreakdown: { [childId: string]: AggregatedCosts },
+	getTaskHistory: (id: string) => Promise<HistoryItem | undefined>,
+): Promise<SubtaskDetail[]> {
+	const details: SubtaskDetail[] = []
+
+	for (const [childId, costs] of Object.entries(childBreakdown)) {
+		const history = await getTaskHistory(childId)
+
+		if (history) {
+			details.push({
+				id: childId,
+				name: truncateTaskName(history.task, 50),
+				tokens: (history.tokensIn || 0) + (history.tokensOut || 0),
+				cost: costs.totalCost,
+				status: history.status || "completed",
+				hasNestedChildren: costs.childrenCost > 0,
+			})
+		}
+	}
+
+	return details
 }

@@ -21,6 +21,7 @@ import { getModelMaxOutputTokens } from "@roo/api"
 import { findLastIndex } from "@roo/array"
 
 import { formatLargeNumber } from "@src/utils/format"
+import { getTaskHeaderCostTooltipData } from "@src/utils/taskCostBreakdown"
 import { cn } from "@src/lib/utils"
 import { StandardTooltip, Button } from "@src/components/ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -34,6 +35,7 @@ import { ContextWindowProgress } from "./ContextWindowProgress"
 import { Mention } from "./Mention"
 import { TodoListDisplay } from "./TodoListDisplay"
 import { LucideIconButton } from "./LucideIconButton"
+import type { SubtaskDetail } from "@src/types/subtasks"
 
 export interface TaskHeaderProps {
 	task: ClineMessage
@@ -45,6 +47,7 @@ export interface TaskHeaderProps {
 	aggregatedCost?: number
 	hasSubtasks?: boolean
 	costBreakdown?: string
+	subtaskDetails?: SubtaskDetail[]
 	contextTokens: number
 	buttonsDisabled: boolean
 	handleCondenseContext: (taskId: string) => void
@@ -61,6 +64,7 @@ const TaskHeader = ({
 	aggregatedCost,
 	hasSubtasks,
 	costBreakdown,
+	subtaskDetails,
 	contextTokens,
 	buttonsDisabled,
 	handleCondenseContext,
@@ -125,6 +129,57 @@ const TaskHeader = ({
 	)
 
 	const hasTodos = todos && Array.isArray(todos) && todos.length > 0
+
+	const subtaskCosts = useMemo(() => {
+		const processedSubtasks = new Set<string>()
+		const costs: number[] = []
+
+		const maybeAddCost = (subtaskId: unknown, cost: unknown) => {
+			if (typeof subtaskId !== "string" || subtaskId.length === 0) return
+			if (processedSubtasks.has(subtaskId)) return
+			if (typeof cost !== "number" || !Number.isFinite(cost) || cost <= 0) return
+
+			processedSubtasks.add(subtaskId)
+			costs.push(cost)
+		}
+
+		// Primary source of truth: visible todos.
+		if (Array.isArray(todos)) {
+			for (const todo of todos) {
+				maybeAddCost((todo as any)?.subtaskId, (todo as any)?.cost)
+			}
+		}
+
+		// Fallback: any remaining subtasks from history-derived details.
+		if (Array.isArray(subtaskDetails)) {
+			for (const subtask of subtaskDetails) {
+				maybeAddCost(subtask.id, subtask.cost)
+			}
+		}
+
+		return costs
+	}, [todos, subtaskDetails])
+
+	const tooltipCostData = useMemo(
+		() =>
+			getTaskHeaderCostTooltipData({
+				ownCost: totalCost,
+				aggregatedCost,
+				hasSubtasksProp: hasSubtasks,
+				costBreakdownProp: costBreakdown,
+				subtaskCosts,
+				labels: {
+					own: t("common:costs.own"),
+					subtasks: t("common:costs.subtasks"),
+				},
+			}),
+		[totalCost, aggregatedCost, hasSubtasks, costBreakdown, subtaskCosts, t],
+	)
+
+	const displayTotalCost = tooltipCostData.displayTotalCost
+	const displayCostBreakdown = tooltipCostData.displayCostBreakdown
+	const shouldTreatAsHasSubtasks = tooltipCostData.hasSubtasks
+	const hasAnyCost = tooltipCostData.hasAnyCost
 
 	return (
 		<div className="group pt-2 pb-0 px-3">
@@ -254,17 +309,19 @@ const TaskHeader = ({
 									{formatLargeNumber(contextTokens || 0)} / {formatLargeNumber(contextWindow)}
 								</span>
 							</StandardTooltip>
-							{!!totalCost && (
+							{hasAnyCost && (
 								<StandardTooltip
 									content={
-										hasSubtasks ? (
+										shouldTreatAsHasSubtasks ? (
 											<div>
 												<div>
 													{t("chat:costs.totalWithSubtasks", {
-														cost: (aggregatedCost ?? totalCost).toFixed(2),
+														cost: displayTotalCost.toFixed(2),
 													})}
 												</div>
-												{costBreakdown && <div className="text-xs mt-1">{costBreakdown}</div>}
+												{displayCostBreakdown && (
+													<div className="text-xs mt-1">{displayCostBreakdown}</div>
+												)}
 											</div>
 										) : (
 											<div>{t("chat:costs.total", { cost: totalCost.toFixed(2) })}</div>
@@ -273,8 +330,8 @@ const TaskHeader = ({
 									side="top"
 									sideOffset={8}>
 									<span>
-										${(aggregatedCost ?? totalCost).toFixed(2)}
-										{hasSubtasks && (
+										${displayTotalCost.toFixed(2)}
+										{shouldTreatAsHasSubtasks && (
 											<span className="text-xs ml-1" title={t("chat:costs.includesSubtasks")}>
 												*
 											</span>
@@ -413,7 +470,7 @@ const TaskHeader = ({
 										</tr>
 									)}
 
-									{!!totalCost && (
+									{hasAnyCost && (
 										<tr>
 											<th className="font-medium text-left align-top w-1 whitespace-nowrap pr-3 h-[24px]">
 												{t("chat:task.apiCost")}
@@ -421,15 +478,17 @@ const TaskHeader = ({
 											<td className="font-light align-top">
 												<StandardTooltip
 													content={
-														hasSubtasks ? (
+														shouldTreatAsHasSubtasks ? (
 															<div>
 																<div>
 																	{t("chat:costs.totalWithSubtasks", {
-																		cost: (aggregatedCost ?? totalCost).toFixed(2),
+																		cost: displayTotalCost.toFixed(2),
 																	})}
 																</div>
-																{costBreakdown && (
-																	<div className="text-xs mt-1">{costBreakdown}</div>
+																{displayCostBreakdown && (
+																	<div className="text-xs mt-1">
+																		{displayCostBreakdown}
+																	</div>
 																)}
 															</div>
 														) : (
@@ -441,8 +500,8 @@ const TaskHeader = ({
 													side="top"
 													sideOffset={8}>
 													<span>
-														${(aggregatedCost ?? totalCost).toFixed(2)}
-														{hasSubtasks && (
+														${displayTotalCost.toFixed(2)}
+														{shouldTreatAsHasSubtasks && (
 															<span
 																className="text-xs ml-1"
 																title={t("chat:costs.includesSubtasks")}>
@@ -472,7 +531,15 @@ const TaskHeader = ({
 					</>
 				)}
 				{/* Todo list - always shown at bottom when todos exist */}
-				{hasTodos && <TodoListDisplay todos={todos ?? (task as any)?.tool?.todos ?? []} />}
+				{hasTodos && (
+					<TodoListDisplay
+						todos={todos ?? (task as any)?.tool?.todos ?? []}
+						subtaskDetails={subtaskDetails}
+						onSubtaskClick={(subtaskId) => {
+							vscode.postMessage({ type: "showTaskWithId", text: subtaskId })
+						}}
+					/>
+				)}
 			</div>
 			<CloudUpsellDialog open={isOpen} onOpenChange={closeUpsell} onConnect={handleConnect} />
 		</div>

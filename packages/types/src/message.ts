@@ -180,6 +180,7 @@ export const clineSays = [
 	"sliding_window_truncation",
 	"codebase_search_result",
 	"user_edit_todos",
+	"system_update_todos",
 ] as const
 
 export const clineSaySchema = z.enum(clineSays)

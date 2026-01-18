@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { parseMarkdownChecklist } from "../UpdateTodoListTool"
+import { parseMarkdownChecklist, UpdateTodoListTool, setPendingTodoList } from "../UpdateTodoListTool"
 import { TodoItem } from "@roo-code/types"
 
 describe("parseMarkdownChecklist", () => {
@@ -239,5 +239,57 @@ Just some text
 			const result2 = parseMarkdownChecklist(md2)
 			expect(result1[0].id).toBe(result2[0].id)
 		})
+	})
+})
+
+describe("UpdateTodoListTool.execute", () => {
+	beforeEach(() => {
+		setPendingTodoList([])
+	})
+
+	it("should prefer history todos when they contain metadata (subtaskId/tokens/cost)", async () => {
+		const md = "[ ] Task 1"
+
+		const previousFromMemory = parseMarkdownChecklist(md)
+		const previousFromHistory: TodoItem[] = previousFromMemory.map((t) => ({
+			...t,
+			subtaskId: "subtask-1",
+			tokens: 123,
+			cost: 0.01,
+		}))
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [
+				{
+					type: "ask",
+					ask: "tool",
+					text: JSON.stringify({ tool: "updateTodoList", todos: previousFromHistory }),
+				},
+			],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: md }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(1)
+		expect(task.todoList[0]).toEqual(
+			expect.objectContaining({
+				content: "Task 1",
+				subtaskId: "subtask-1",
+				tokens: 123,
+				cost: 0.01,
+			}),
+		)
 	})
 })

@@ -128,13 +128,19 @@ interface ChatRowContentProps extends Omit<ChatRowProps, "onHeightChange"> {}
 const ChatRow = memo(
 	(props: ChatRowProps) => {
 		const { isLast, onHeightChange, message } = props
+
+		// Some message types update state but should not be visible in the chat history.
+		// We still render a row for Virtuoso compatibility, but hide it so it takes up no space.
+		const shouldHideRow = message.type === "say" && message.say === "system_update_todos"
 		// Store the previous height to compare with the current height
 		// This allows us to detect changes without causing re-renders
 		const prevHeightRef = useRef(0)
 
 		const [chatrow, { height }] = useSize(
-			<div className="px-[15px] py-[10px] pr-[6px]">
-				<ChatRowContent {...props} />
+			<div
+				className={shouldHideRow ? "hidden" : "px-[15px] py-[10px] pr-[6px]"}
+				aria-hidden={shouldHideRow ? true : undefined}>
+				{shouldHideRow ? null : <ChatRowContent {...props} />}
 			</div>,
 		)
 
@@ -1423,6 +1429,8 @@ export const ChatRowContent = ({
 					return <CodebaseSearchResultsDisplay results={results} />
 				case "user_edit_todos":
 					return <UpdateTodoListToolBlock userEdited onChange={() => {}} />
+				case "system_update_todos":
+					return null
 				case "tool" as any:
 					// Handle say tool messages
 					const sayTool = safeJsonParse<ClineSayTool>(message.text)

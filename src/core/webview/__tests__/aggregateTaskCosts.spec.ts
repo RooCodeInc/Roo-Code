@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { aggregateTaskCostsRecursive } from "../aggregateTaskCosts.js"
+import { aggregateTaskCostsRecursive, buildSubtaskDetails } from "../aggregateTaskCosts.js"
 import type { HistoryItem } from "@roo-code/types"
+import type { AggregatedCosts } from "../aggregateTaskCosts.js"
 
 describe("aggregateTaskCostsRecursive", () => {
 	let consoleWarnSpy: ReturnType<typeof vi.spyOn>
@@ -322,5 +323,213 @@ describe("aggregateTaskCostsRecursive", () => {
 		// sibling-2: 0.3 + 0.1 = 0.4
 		// Total: 1.0 + 0.6 + 0.4 = 2.0
 		expect(result.totalCost).toBe(2.0)
+	})
+})
+
+describe("buildSubtaskDetails", () => {
+	it("should build subtask details from child breakdown", async () => {
+		const childBreakdown: { [childId: string]: AggregatedCosts } = {
+			"child-1": {
+				ownCost: 0.5,
+				childrenCost: 0,
+				totalCost: 0.5,
+			},
+			"child-2": {
+				ownCost: 0.3,
+				childrenCost: 0.2,
+				totalCost: 0.5,
+			},
+		}
+
+		const mockHistory: Record<string, HistoryItem> = {
+			"child-1": {
+				id: "child-1",
+				task: "First subtask",
+				tokensIn: 100,
+				tokensOut: 50,
+				status: "completed",
+			} as unknown as HistoryItem,
+			"child-2": {
+				id: "child-2",
+				task: "Second subtask with nested children",
+				tokensIn: 200,
+				tokensOut: 100,
+				status: "active",
+			} as unknown as HistoryItem,
+		}
+
+		const getTaskHistory = vi.fn(async (id: string) => mockHistory[id])
+
+		const result = await buildSubtaskDetails(childBreakdown, getTaskHistory)
+
+		expect(result).toHaveLength(2)
+
+		const child1 = result.find((d) => d.id === "child-1")
+		expect(child1).toBeDefined()
+		expect(child1!.name).toBe("First subtask")
+		expect(child1!.tokens).toBe(150) // 100 + 50
+		expect(child1!.cost).toBe(0.5)
+		expect(child1!.status).toBe("completed")
+		expect(child1!.hasNestedChildren).toBe(false)
+
+		const child2 = result.find((d) => d.id === "child-2")
+		expect(child2).toBeDefined()
+		expect(child2!.name).toBe("Second subtask with nested children")
+		expect(child2!.tokens).toBe(300) // 200 + 100
+		expect(child2!.cost).toBe(0.5)
+		expect(child2!.status).toBe("active")
+		expect(child2!.hasNestedChildren).toBe(true) // childrenCost > 0
+	})
+
+	it("should truncate long task names to 50 characters", async () => {
+		const longTaskName =
+			"This is a very long task name that exceeds fifty characters and should be truncated with ellipsis"
+		const childBreakdown: { [childId: string]: AggregatedCosts } = {
+			"child-1": {
+				ownCost: 1.0,
+				childrenCost: 0,
+				totalCost: 1.0,
+			},
+		}
+
+		const mockHistory: Record<string, HistoryItem> = {
+			"child-1": {
+				id: "child-1",
+				task: longTaskName,
+				tokensIn: 100,
+				tokensOut: 50,
+				status: "completed",
+			} as unknown as HistoryItem,
+		}
+
+		const getTaskHistory = vi.fn(async (id: string) => mockHistory[id])
+
+		const result = await buildSubtaskDetails(childBreakdown, getTaskHistory)
+
+		expect(result).toHaveLength(1)
+		expect(result[0].name).toBe("This is a very long task name that exceeds fift...")
+		expect(result[0].name.length).toBe(50)
+	})
+
+	it("should not truncate task names at or under 50 characters", async () => {
+		const exactlyFiftyChars = "12345678901234567890123456789012345678901234567890" // exactly 50 chars
+		const childBreakdown: { [childId: string]: AggregatedCosts } = {
+			"child-1": {
+				ownCost: 1.0,
+				childrenCost: 0,
+				totalCost: 1.0,
+			},
+		}
+
+		const mockHistory: Record<string, HistoryItem> = {
+			"child-1": {
+				id: "child-1",
+				task: exactlyFiftyChars,
+				tokensIn: 100,
+				tokensOut: 50,
+				status: "completed",
+			} as unknown as HistoryItem,
+		}
+
+		const getTaskHistory = vi.fn(async (id: string) => mockHistory[id])
+
+		const result = await buildSubtaskDetails(childBreakdown, getTaskHistory)
+
+		expect(result[0].name).toBe(exactlyFiftyChars)
+		expect(result[0].name.length).toBe(50)
+	})
+
+	it("should skip children with missing history", async () => {
+		const childBreakdown: { [childId: string]: AggregatedCosts } = {
+			"child-1": {
+				ownCost: 0.5,
+				childrenCost: 0,
+				totalCost: 0.5,
+			},
+			"missing-child": {
+				ownCost: 0.3,
+				childrenCost: 0,
+				totalCost: 0.3,
+			},
+		}
+
+		const mockHistory: Record<string, HistoryItem> = {
+			"child-1": {
+				id: "child-1",
+				task: "Existing subtask",
+				tokensIn: 100,
+				tokensOut: 50,
+				status: "completed",
+			} as unknown as HistoryItem,
+			// missing-child has no history
+		}
+
+		const getTaskHistory = vi.fn(async (id: string) => mockHistory[id])
+
+		const result = await buildSubtaskDetails(childBreakdown, getTaskHistory)
+
+		expect(result).toHaveLength(1)
+		expect(result[0].id).toBe("child-1")
+	})
+
+	it("should handle empty child breakdown", async () => {
+		const childBreakdown: { [childId: string]: AggregatedCosts } = {}
+
+		const getTaskHistory = vi.fn(async () => undefined)
+
+		const result = await buildSubtaskDetails(childBreakdown, getTaskHistory)
+
+		expect(result).toHaveLength(0)
+	})
+
+	it("should default status to completed when undefined", async () => {
+		const childBreakdown: { [childId: string]: AggregatedCosts } = {
+			"child-1": {
+				ownCost: 0.5,
+				childrenCost: 0,
+				totalCost: 0.5,
+			},
+		}
+
+		const mockHistory: Record<string, HistoryItem> = {
+			"child-1": {
+				id: "child-1",
+				task: "Subtask without status",
+				tokensIn: 100,
+				tokensOut: 50,
+				// status is undefined
+			} as unknown as HistoryItem,
+		}
+
+		const getTaskHistory = vi.fn(async (id: string) => mockHistory[id])
+
+		const result = await buildSubtaskDetails(childBreakdown, getTaskHistory)
+
+		expect(result[0].status).toBe("completed")
+	})
+
+	it("should handle undefined token values", async () => {
+		const childBreakdown: { [childId: string]: AggregatedCosts } = {
+			"child-1": {
+				ownCost: 0.5,
+				childrenCost: 0,
+				totalCost: 0.5,
+			},
+		}
+
+		const mockHistory: Record<string, HistoryItem> = {
+			"child-1": {
+				id: "child-1",
+				task: "Subtask without tokens",
+				// tokensIn and tokensOut are undefined
+				status: "completed",
+			} as unknown as HistoryItem,
+		}
+
+		const getTaskHistory = vi.fn(async (id: string) => mockHistory[id])
+
+		const result = await buildSubtaskDetails(childBreakdown, getTaskHistory)
+
+		expect(result[0].tokens).toBe(0)
 	})
 })
