@@ -1711,9 +1711,7 @@ export class ClineProvider
 		return {
 			historyItem,
 			aggregatedCosts: {
-				totalCost: aggregatedCosts.totalCost,
-				ownCost: aggregatedCosts.ownCost,
-				childrenCost: aggregatedCosts.childrenCost,
+				...aggregatedCosts,
 				childDetails,
 			},
 		}
