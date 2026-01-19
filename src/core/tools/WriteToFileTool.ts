@@ -34,7 +34,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 	}
 
 	async execute(params: WriteToFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { pushToolResult, handleError, askApproval, removeClosingTag } = callbacks
+		const { pushToolResult, handleError, askApproval, removeClosingTag, toolProtocol } = callbacks
 		const relPath = params.path
 		let newContent = params.content
 
@@ -194,6 +194,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			return
 		} catch (error) {
 			await handleError("writing file", error as Error)
+			pushToolResult(formatResponse.toolError((error as Error).message, toolProtocol))
 			await task.diffViewProvider.reset()
 			this.resetPartialState()
 			return

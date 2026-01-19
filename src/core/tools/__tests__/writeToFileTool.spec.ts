@@ -443,12 +443,13 @@ describe("writeToFileTool", () => {
 	})
 
 	describe("error handling", () => {
-		it("handles general file operation errors", async () => {
+		it("handles general file operation errors and returns error to LLM", async () => {
 			mockCline.diffViewProvider.open.mockRejectedValue(new Error("General error"))
 
 			await executeWriteFileTool({})
 
 			expect(mockHandleError).toHaveBeenCalledWith("writing file", expect.any(Error))
+			expect(mockPushToolResult).toHaveBeenCalledWith("Error: General error")
 			expect(mockCline.diffViewProvider.reset).toHaveBeenCalled()
 		})
 
