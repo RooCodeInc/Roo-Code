@@ -120,6 +120,7 @@ export const providerNames = [
 	...customProviders,
 	...fauxProviders,
 	"anthropic",
+	"azure-foundry",
 	"bedrock",
 	"baseten",
 	"cerebras",
@@ -426,12 +427,19 @@ const basetenSchema = apiModelIdProviderModelSchema.extend({
 	basetenApiKey: z.string().optional(),
 })
 
+const azureFoundrySchema = baseProviderSettingsSchema.extend({
+	azureFoundryBaseUrl: z.string().optional(),
+	azureFoundryApiKey: z.string().optional(),
+	azureFoundryModelId: z.string().optional(),
+})
+
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
 
 export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProvider", [
 	anthropicSchema.merge(z.object({ apiProvider: z.literal("anthropic") })),
+	azureFoundrySchema.merge(z.object({ apiProvider: z.literal("azure-foundry") })),
 	claudeCodeSchema.merge(z.object({ apiProvider: z.literal("claude-code") })),
 	openRouterSchema.merge(z.object({ apiProvider: z.literal("openrouter") })),
 	bedrockSchema.merge(z.object({ apiProvider: z.literal("bedrock") })),
@@ -474,6 +482,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 export const providerSettingsSchema = z.object({
 	apiProvider: providerNamesSchema.optional(),
 	...anthropicSchema.shape,
+	...azureFoundrySchema.shape,
 	...claudeCodeSchema.shape,
 	...openRouterSchema.shape,
 	...bedrockSchema.shape,
@@ -531,6 +540,7 @@ export const PROVIDER_SETTINGS_KEYS = providerSettingsSchema.keyof().options
 
 export const modelIdKeys = [
 	"apiModelId",
+	"azureFoundryModelId",
 	"openRouterModelId",
 	"openAiModelId",
 	"ollamaModelId",
@@ -563,6 +573,7 @@ export const isTypicalProvider = (key: unknown): key is TypicalProvider =>
 
 export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	anthropic: "apiModelId",
+	"azure-foundry": "azureFoundryModelId",
 	"claude-code": "apiModelId",
 	openrouter: "openRouterModelId",
 	bedrock: "apiModelId",
@@ -640,6 +651,7 @@ export const MODELS_BY_PROVIDER: Record<
 		label: "Anthropic",
 		models: Object.keys(anthropicModels),
 	},
+	"azure-foundry": { id: "azure-foundry", label: "Azure Foundry", models: [] },
 	bedrock: {
 		id: "bedrock",
 		label: "Amazon Bedrock",

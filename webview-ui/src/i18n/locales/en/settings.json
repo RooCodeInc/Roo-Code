@@ -461,6 +461,14 @@
 				"learnMore": "Learn more about provider routing"
 			}
 		},
+		"azureFoundry": {
+			"baseUrl": "Azure Foundry Base URL",
+			"baseUrlDescription": "The full URL to your Azure AI Foundry endpoint. You can include an API version parameter in the URL (e.g., https://your-model.models.ai.azure.com/v1)",
+			"apiKey": "Azure Foundry API Key",
+			"modelId": "Model ID",
+			"modelIdDescription": "The model deployment name in Azure AI Foundry",
+			"getStarted": "Get Started with Azure AI Foundry"
+		},
 		"customModel": {
 			"capabilities": "Configure the capabilities and pricing for your custom OpenAI-compatible model. Be careful when specifying the model capabilities, as they can affect how Roo Code performs.",
 			"maxTokens": {
@@ -937,6 +945,8 @@
 		"projectId": "Enter Project ID...",
 		"customArn": "Enter ARN (e.g. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Enter base URL...",
+		"azureFoundryBaseUrl": "e.g. https://your-model.models.ai.azure.com/v1",
+		"azureFoundryModelId": "e.g. gpt-5.2-codex",
 		"modelId": {
 			"lmStudio": "e.g. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "e.g. lmstudio-community/llama-3.2-1b-instruct",

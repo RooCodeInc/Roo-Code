@@ -66,6 +66,7 @@ import {
 
 import {
 	Anthropic,
+	AzureFoundry,
 	Baseten,
 	Bedrock,
 	Cerebras,
@@ -575,6 +576,14 @@ const ApiOptions = ({
 
 			{selectedProvider === "anthropic" && (
 				<Anthropic
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
+			{selectedProvider === "azure-foundry" && (
+				<AzureFoundry
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					simplifySettings={fromWelcomeView}
