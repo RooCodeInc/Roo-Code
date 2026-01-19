@@ -108,7 +108,10 @@
 		"awaiting_child": "Aguardando tarefa filha {{childId}}"
 	},
 	"costs": {
-		"own": "Próprio",
+		"own": "Principal",
 		"subtasks": "Subtarefas"
+	},
+	"stats": {
+		"lines": "Linhas"
 	}
 }

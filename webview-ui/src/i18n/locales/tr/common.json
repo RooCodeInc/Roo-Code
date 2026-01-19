@@ -108,7 +108,10 @@
 		"awaiting_child": "{{childId}} alt görevi bekleniyor"
 	},
 	"costs": {
-		"own": "Kendi",
+		"own": "Ana",
 		"subtasks": "Alt görevler"
+	},
+	"stats": {
+		"lines": "Satırlar"
 	}
 }

@@ -19,6 +19,8 @@ interface TodoItem {
 	subtaskId?: string
 	tokens?: number
 	cost?: number
+	added?: number
+	removed?: number
 }
 
 function getTodoIcon(status: TodoStatus | null) {
@@ -84,7 +86,7 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 						? "text-vscode-charts-yellow"
 						: "text-vscode-foreground",
 				)}
-				onClick={() => setIsCollapsed((v) => !v)}>
+				onClick={() => setIsCollapsed((v: boolean) => !v)}>
 				<ListChecks className="size-3 shrink-0" />
 				<span className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap">
 					{isCollapsed
@@ -113,6 +115,17 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 						const displayCost = todo.cost ?? subtaskById?.cost
 						const shouldShowCost = typeof displayTokens === "number" && typeof displayCost === "number"
 
+						const displayAdded = todo.added ?? subtaskById?.added
+						const displayRemoved = todo.removed ?? subtaskById?.removed
+						const hasValidSubtaskLink = typeof todo.subtaskId === "string" && todo.subtaskId.length > 0
+						const shouldShowLineChanges =
+							hasValidSubtaskLink && (Number.isFinite(displayAdded) || Number.isFinite(displayRemoved))
+
+						const hasAdded =
+							typeof displayAdded === "number" && Number.isFinite(displayAdded) && displayAdded > 0
+						const hasRemoved =
+							typeof displayRemoved === "number" && Number.isFinite(displayRemoved) && displayRemoved > 0
+
 						return (
 							<li
 								key={todo.id || todo.content}
@@ -131,14 +144,36 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 									{todo.content}
 								</span>
 								{/* Token count and cost display */}
-								{shouldShowCost && (
+								{(shouldShowCost || shouldShowLineChanges) && (
 									<span className="flex items-center gap-2 text-xs text-vscode-descriptionForeground shrink-0">
-										<span className="tabular-nums opacity-70">
-											{formatLargeNumber(displayTokens)}
-										</span>
-										<span className="tabular-nums min-w-[45px] text-right">
-											${displayCost.toFixed(2)}
-										</span>
+										{shouldShowCost && (
+											<>
+												<span className="tabular-nums opacity-70">
+													{formatLargeNumber(displayTokens)}
+												</span>
+												<span className="tabular-nums min-w-[45px] text-right">
+													${displayCost.toFixed(2)}
+												</span>
+											</>
+										)}
+										{shouldShowLineChanges && (
+											<span className="tabular-nums ml-2 min-w-[60px] grid grid-cols-2 items-center justify-end">
+												<span
+													className={cn(
+														" text-right",
+														hasAdded ? "font-medium text-vscode-charts-green" : "",
+													)}>
+													{hasAdded ? `+${displayAdded}` : "\u00A0"}
+												</span>
+												<span
+													className={cn(
+														" text-right",
+														hasRemoved ? "font-medium text-vscode-charts-red" : "",
+													)}>
+													{hasRemoved ? `−${displayRemoved}` : "\u00A0"}
+												</span>
+											</span>
+										)}
 									</span>
 								)}
 							</li>

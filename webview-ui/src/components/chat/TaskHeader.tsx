@@ -85,7 +85,7 @@ const TaskHeader = ({
 			? (() => {
 					const lastRelevantIndex = findLastIndex(
 						clineMessages,
-						(m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"),
+						(m) => !((m as any)?.ask === "resume_task" || (m as any)?.ask === "resume_completed_task"),
 					)
 					return lastRelevantIndex !== -1
 						? clineMessages[lastRelevantIndex]?.ask === "completion_result"
@@ -159,6 +159,50 @@ const TaskHeader = ({
 
 		return costs
 	}, [todos, subtaskDetails])
+
+	const aggregatedLineChanges = useMemo(() => {
+		const ownAdded = (currentTaskItem as any)?.linesAdded
+		const ownRemoved = (currentTaskItem as any)?.linesRemoved
+
+		const processedSubtasks = new Set<string>()
+		let childrenAdded = 0
+		let childrenRemoved = 0
+
+		if (Array.isArray(subtaskDetails)) {
+			for (const subtask of subtaskDetails) {
+				if (!subtask?.id || typeof subtask.id !== "string") continue
+				if (processedSubtasks.has(subtask.id)) continue
+				processedSubtasks.add(subtask.id)
+
+				if (typeof subtask.added === "number" && Number.isFinite(subtask.added)) {
+					childrenAdded += subtask.added
+				}
+				if (typeof subtask.removed === "number" && Number.isFinite(subtask.removed)) {
+					childrenRemoved += subtask.removed
+				}
+			}
+		}
+
+		const totalAdded = (typeof ownAdded === "number" && Number.isFinite(ownAdded) ? ownAdded : 0) + childrenAdded
+		const totalRemoved =
+			(typeof ownRemoved === "number" && Number.isFinite(ownRemoved) ? ownRemoved : 0) + childrenRemoved
+
+		const hasAdded = totalAdded > 0
+		const hasRemoved = totalRemoved > 0
+		const hasAnyLineChanges = hasAdded || hasRemoved
+		const formatted = [hasAdded ? `+${totalAdded}` : null, hasRemoved ? `−${totalRemoved}` : null]
+			.filter(Boolean)
+			.join(" ")
+
+		return {
+			totalAdded,
+			totalRemoved,
+			hasAdded,
+			hasRemoved,
+			hasAnyLineChanges,
+			formatted,
+		}
+	}, [currentTaskItem, subtaskDetails])
 
 	const tooltipCostData = useMemo(
 		() =>
@@ -313,7 +357,7 @@ const TaskHeader = ({
 								<StandardTooltip
 									content={
 										shouldTreatAsHasSubtasks ? (
-											<div>
+											<div className="space-y-1">
 												<div>
 													{t("chat:costs.totalWithSubtasks", {
 														cost: displayTotalCost.toFixed(2),
@@ -329,7 +373,7 @@ const TaskHeader = ({
 									}
 									side="top"
 									sideOffset={8}>
-									<span>
+									<span className="tabular-nums">
 										${displayTotalCost.toFixed(2)}
 										{shouldTreatAsHasSubtasks && (
 											<span className="text-xs ml-1" title={t("chat:costs.includesSubtasks")}>
@@ -338,6 +382,20 @@ const TaskHeader = ({
 										)}
 									</span>
 								</StandardTooltip>
+							)}
+							{aggregatedLineChanges.hasAnyLineChanges && (
+								<span className="flex items-center gap-2 tabular-nums text-sm">
+									{aggregatedLineChanges.hasAdded && (
+										<span className="font-medium text-vscode-charts-green">
+											+{aggregatedLineChanges.totalAdded}
+										</span>
+									)}
+									{aggregatedLineChanges.hasRemoved && (
+										<span className="font-medium text-vscode-charts-red">
+											−{aggregatedLineChanges.totalRemoved}
+										</span>
+									)}
+								</span>
 							)}
 						</div>
 						{showBrowserGlobe && (
@@ -510,6 +568,28 @@ const TaskHeader = ({
 														)}
 													</span>
 												</StandardTooltip>
+											</td>
+										</tr>
+									)}
+
+									{aggregatedLineChanges.hasAnyLineChanges && (
+										<tr>
+											<th className="font-medium text-left align-top w-1 whitespace-nowrap pr-3 h-[24px]">
+												{t("common:stats.lines")}
+											</th>
+											<td className="font-light align-top">
+												<span className="flex items-center gap-2 tabular-nums">
+													{aggregatedLineChanges.hasAdded && (
+														<span className="font-medium text-vscode-charts-green">
+															+{aggregatedLineChanges.totalAdded}
+														</span>
+													)}
+													{aggregatedLineChanges.hasRemoved && (
+														<span className="font-medium text-vscode-charts-red">
+															−{aggregatedLineChanges.totalRemoved}
+														</span>
+													)}
+												</span>
 											</td>
 										</tr>
 									)}

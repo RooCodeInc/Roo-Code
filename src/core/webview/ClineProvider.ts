@@ -3372,6 +3372,8 @@ export class ClineProvider
 				if (linkedTodo) {
 					linkedTodo.tokens = (childHistoryItem?.tokensIn || 0) + (childHistoryItem?.tokensOut || 0)
 					linkedTodo.cost = childHistoryItem?.totalCost || 0
+					linkedTodo.added = childHistoryItem?.linesAdded || 0
+					linkedTodo.removed = childHistoryItem?.linesRemoved || 0
 
 					parentClineMessages.push({
 						ts: Date.now(),

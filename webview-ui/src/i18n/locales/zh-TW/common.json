@@ -108,7 +108,10 @@
 		"awaiting_child": "等待子工作 {{childId}}"
 	},
 	"costs": {
-		"own": "自身",
+		"own": "主要",
 		"subtasks": "子工作"
+	},
+	"stats": {
+		"lines": "行"
 	}
 }

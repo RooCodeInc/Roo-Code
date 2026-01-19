@@ -108,7 +108,10 @@
 		"awaiting_child": "Esperando tarea secundaria {{childId}}"
 	},
 	"costs": {
-		"own": "Propio",
+		"own": "Principal",
 		"subtasks": "Subtareas"
+	},
+	"stats": {
+		"lines": "Líneas"
 	}
 }

@@ -53,11 +53,15 @@ describe("aggregateTaskCostsRecursive", () => {
 			parent: {
 				id: "parent",
 				totalCost: 1.0,
+				linesAdded: 2,
+				linesRemoved: 1,
 				childIds: ["child-1"],
 			} as unknown as HistoryItem,
 			"child-1": {
 				id: "child-1",
 				totalCost: 0.5,
+				linesAdded: 3,
+				linesRemoved: 2,
 				childIds: [],
 			} as unknown as HistoryItem,
 		}
@@ -69,6 +73,12 @@ describe("aggregateTaskCostsRecursive", () => {
 		expect(result.ownCost).toBe(1.0)
 		expect(result.childrenCost).toBe(0.5)
 		expect(result.totalCost).toBe(1.5)
+		expect(result.ownAdded).toBe(2)
+		expect(result.ownRemoved).toBe(1)
+		expect(result.childrenAdded).toBe(3)
+		expect(result.childrenRemoved).toBe(2)
+		expect(result.totalAdded).toBe(5)
+		expect(result.totalRemoved).toBe(3)
 		expect(result.childBreakdown).toHaveProperty("child-1")
 		const child1 = result.childBreakdown?.["child-1"]
 		expect(child1).toBeDefined()
@@ -114,16 +124,22 @@ describe("aggregateTaskCostsRecursive", () => {
 			parent: {
 				id: "parent",
 				totalCost: 1.0,
+				linesAdded: 2,
+				linesRemoved: 2,
 				childIds: ["child"],
 			} as unknown as HistoryItem,
 			child: {
 				id: "child",
 				totalCost: 0.5,
+				linesAdded: 3,
+				linesRemoved: 1,
 				childIds: ["grandchild"],
 			} as unknown as HistoryItem,
 			grandchild: {
 				id: "grandchild",
 				totalCost: 0.25,
+				linesAdded: 1,
+				linesRemoved: 4,
 				childIds: [],
 			} as unknown as HistoryItem,
 		}
@@ -136,12 +152,22 @@ describe("aggregateTaskCostsRecursive", () => {
 		expect(result.childrenCost).toBe(0.75) // child (0.5) + grandchild (0.25)
 		expect(result.totalCost).toBe(1.75)
 
+		expect(result.ownAdded).toBe(2)
+		expect(result.ownRemoved).toBe(2)
+		// children totals include all descendants
+		expect(result.childrenAdded).toBe(4) // child (3) + grandchild (1)
+		expect(result.childrenRemoved).toBe(5) // child (1) + grandchild (4)
+		expect(result.totalAdded).toBe(6)
+		expect(result.totalRemoved).toBe(7)
+
 		// Verify child breakdown
 		const child = result.childBreakdown?.["child"]
 		expect(child).toBeDefined()
 		expect(child!.ownCost).toBe(0.5)
 		expect(child!.childrenCost).toBe(0.25)
 		expect(child!.totalCost).toBe(0.75)
+		expect(child!.totalAdded).toBe(4)
+		expect(child!.totalRemoved).toBe(5)
 
 		// Verify grandchild breakdown
 		const grandchild = child!.childBreakdown?.["grandchild"]
@@ -149,6 +175,8 @@ describe("aggregateTaskCostsRecursive", () => {
 		expect(grandchild!.ownCost).toBe(0.25)
 		expect(grandchild!.childrenCost).toBe(0)
 		expect(grandchild!.totalCost).toBe(0.25)
+		expect(grandchild!.totalAdded).toBe(1)
+		expect(grandchild!.totalRemoved).toBe(4)
 	})
 
 	it("should detect and prevent circular references", async () => {
@@ -156,11 +184,15 @@ describe("aggregateTaskCostsRecursive", () => {
 			"task-a": {
 				id: "task-a",
 				totalCost: 1.0,
+				linesAdded: 2,
+				linesRemoved: 3,
 				childIds: ["task-b"],
 			} as unknown as HistoryItem,
 			"task-b": {
 				id: "task-b",
 				totalCost: 0.5,
+				linesAdded: 4,
+				linesRemoved: 1,
 				childIds: ["task-a"], // Circular reference back to task-a
 			} as unknown as HistoryItem,
 		}
@@ -173,6 +205,8 @@ describe("aggregateTaskCostsRecursive", () => {
 		expect(result.ownCost).toBe(1.0)
 		expect(result.childrenCost).toBe(0.5) // Only task-b's own cost, circular ref returns 0
 		expect(result.totalCost).toBe(1.5)
+		expect(result.totalAdded).toBe(6) // task-a (2) + task-b (4)
+		expect(result.totalRemoved).toBe(4) // task-a (3) + task-b (1)
 
 		// Verify warning was logged
 		expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Circular reference detected: task-a"))
@@ -333,11 +367,23 @@ describe("buildSubtaskDetails", () => {
 				ownCost: 0.5,
 				childrenCost: 0,
 				totalCost: 0.5,
+				ownAdded: 0,
+				ownRemoved: 0,
+				childrenAdded: 0,
+				childrenRemoved: 0,
+				totalAdded: 10,
+				totalRemoved: 5,
 			},
 			"child-2": {
 				ownCost: 0.3,
 				childrenCost: 0.2,
 				totalCost: 0.5,
+				ownAdded: 0,
+				ownRemoved: 0,
+				childrenAdded: 0,
+				childrenRemoved: 0,
+				totalAdded: 1,
+				totalRemoved: 2,
 			},
 		}
 
@@ -369,6 +415,8 @@ describe("buildSubtaskDetails", () => {
 		expect(child1!.name).toBe("First subtask")
 		expect(child1!.tokens).toBe(150) // 100 + 50
 		expect(child1!.cost).toBe(0.5)
+		expect(child1!.added).toBe(10)
+		expect(child1!.removed).toBe(5)
 		expect(child1!.status).toBe("completed")
 		expect(child1!.hasNestedChildren).toBe(false)
 
@@ -377,6 +425,8 @@ describe("buildSubtaskDetails", () => {
 		expect(child2!.name).toBe("Second subtask with nested children")
 		expect(child2!.tokens).toBe(300) // 200 + 100
 		expect(child2!.cost).toBe(0.5)
+		expect(child2!.added).toBe(1)
+		expect(child2!.removed).toBe(2)
 		expect(child2!.status).toBe("active")
 		expect(child2!.hasNestedChildren).toBe(true) // childrenCost > 0
 	})
@@ -389,6 +439,12 @@ describe("buildSubtaskDetails", () => {
 				ownCost: 1.0,
 				childrenCost: 0,
 				totalCost: 1.0,
+				ownAdded: 0,
+				ownRemoved: 0,
+				childrenAdded: 0,
+				childrenRemoved: 0,
+				totalAdded: 0,
+				totalRemoved: 0,
 			},
 		}
 
@@ -418,6 +474,12 @@ describe("buildSubtaskDetails", () => {
 				ownCost: 1.0,
 				childrenCost: 0,
 				totalCost: 1.0,
+				ownAdded: 0,
+				ownRemoved: 0,
+				childrenAdded: 0,
+				childrenRemoved: 0,
+				totalAdded: 0,
+				totalRemoved: 0,
 			},
 		}
 
@@ -445,11 +507,23 @@ describe("buildSubtaskDetails", () => {
 				ownCost: 0.5,
 				childrenCost: 0,
 				totalCost: 0.5,
+				ownAdded: 0,
+				ownRemoved: 0,
+				childrenAdded: 0,
+				childrenRemoved: 0,
+				totalAdded: 0,
+				totalRemoved: 0,
 			},
 			"missing-child": {
 				ownCost: 0.3,
 				childrenCost: 0,
 				totalCost: 0.3,
+				ownAdded: 0,
+				ownRemoved: 0,
+				childrenAdded: 0,
+				childrenRemoved: 0,
+				totalAdded: 0,
+				totalRemoved: 0,
 			},
 		}
 
@@ -488,6 +562,12 @@ describe("buildSubtaskDetails", () => {
 				ownCost: 0.5,
 				childrenCost: 0,
 				totalCost: 0.5,
+				ownAdded: 0,
+				ownRemoved: 0,
+				childrenAdded: 0,
+				childrenRemoved: 0,
+				totalAdded: 0,
+				totalRemoved: 0,
 			},
 		}
 
@@ -514,6 +594,12 @@ describe("buildSubtaskDetails", () => {
 				ownCost: 0.5,
 				childrenCost: 0,
 				totalCost: 0.5,
+				ownAdded: 0,
+				ownRemoved: 0,
+				childrenAdded: 0,
+				childrenRemoved: 0,
+				totalAdded: 0,
+				totalRemoved: 0,
 			},
 		}
 

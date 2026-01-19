@@ -18,6 +18,8 @@ export const todoItemSchema = z.object({
 	subtaskId: z.string().optional(), // ID of the linked subtask (child task) for direct cost/token attribution
 	tokens: z.number().optional(), // Total tokens (in + out) for linked subtask
 	cost: z.number().optional(), // Total cost for linked subtask
+	added: z.number().optional(),
+	removed: z.number().optional(),
 })
 
 export type TodoItem = z.infer<typeof todoItemSchema>

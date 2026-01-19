@@ -34,6 +34,8 @@ describe("TodoListDisplay", () => {
 			name: "Task 1: Change background colour",
 			tokens: 95400,
 			cost: 0.22,
+			added: 10,
+			removed: 4,
 			status: "completed",
 			hasNestedChildren: false,
 		},
@@ -42,6 +44,8 @@ describe("TodoListDisplay", () => {
 			name: "Task 2: Add timestamp to bottom",
 			tokens: 95000,
 			cost: 0.24,
+			added: 3,
+			removed: 2,
 			status: "completed",
 			hasNestedChildren: false,
 		},
@@ -106,7 +110,9 @@ describe("TodoListDisplay", () => {
 
 			// The pending task has no subtaskId, should not show cost
 			const listItems = screen.getAllByRole("listitem")
-			const pendingItem = listItems.find((item) => item.textContent?.includes("Task 3: Pending task"))
+			const pendingItem = listItems.find((item: HTMLElement) =>
+				item.textContent?.includes("Task 3: Pending task"),
+			)
 			expect(pendingItem).toBeDefined()
 			expect(pendingItem?.textContent).not.toContain("$")
 		})
@@ -174,6 +180,96 @@ describe("TodoListDisplay", () => {
 
 			expect(screen.getByText("95.4k")).toBeInTheDocument()
 			expect(screen.getByText("$0.22")).toBeInTheDocument()
+		})
+	})
+
+	describe("line change display", () => {
+		it("uses todo.added/todo.removed when present", () => {
+			const todosWithDirectLineChanges = [
+				{
+					id: "1",
+					content: "Task 1: Change background colour",
+					status: "completed",
+					subtaskId: "subtask-1",
+					added: 7,
+					removed: 9,
+				},
+			]
+			render(<TodoListDisplay todos={todosWithDirectLineChanges} subtaskDetails={subtaskDetails} />)
+
+			// Expand
+			const header = screen.getByText("1 to-dos done")
+			fireEvent.click(header)
+
+			// Line changes are rendered as separate colored spans
+			expect(screen.getByText("+7")).toBeInTheDocument()
+			expect(screen.getByText("−9")).toBeInTheDocument()
+		})
+
+		it("falls back to subtaskDetails when todo added/removed are missing", () => {
+			const todosMissingDirectLineChanges = [
+				{
+					id: "1",
+					content: "Task 1: Change background colour",
+					status: "completed",
+					subtaskId: "subtask-1",
+				},
+			]
+			render(<TodoListDisplay todos={todosMissingDirectLineChanges} subtaskDetails={subtaskDetails} />)
+
+			// Expand
+			const header = screen.getByText("1 to-dos done")
+			fireEvent.click(header)
+
+			// Line changes are rendered as separate colored spans
+			expect(screen.getByText("+10")).toBeInTheDocument()
+			expect(screen.getByText("−4")).toBeInTheDocument()
+		})
+
+		it("hides line deltas when no data available (no subtaskId)", () => {
+			const todosNoSubtaskLink = [{ id: "1", content: "No link todo", status: "completed" }]
+			render(<TodoListDisplay todos={todosNoSubtaskLink} subtaskDetails={subtaskDetails} />)
+
+			// Expand
+			const header = screen.getByText("1 to-dos done")
+			fireEvent.click(header)
+
+			expect(screen.queryByText(/\+\d+/)).not.toBeInTheDocument()
+			expect(screen.queryByText(/−\d+/)).not.toBeInTheDocument()
+		})
+
+		it("hides line deltas when all values are undefined (subtaskId present)", () => {
+			const todosWithLinkButNoLineChanges = [
+				{
+					id: "1",
+					content: "Task 1: Change background colour",
+					status: "completed",
+					subtaskId: "subtask-1",
+				},
+			]
+			const subtaskDetailsWithoutLineChanges: SubtaskDetail[] = [
+				{
+					id: "subtask-1",
+					name: "Task 1: Change background colour",
+					tokens: 95400,
+					cost: 0.22,
+					status: "completed",
+					hasNestedChildren: false,
+				} as unknown as SubtaskDetail,
+			]
+			render(
+				<TodoListDisplay
+					todos={todosWithLinkButNoLineChanges}
+					subtaskDetails={subtaskDetailsWithoutLineChanges}
+				/>,
+			)
+
+			// Expand
+			const header = screen.getByText("1 to-dos done")
+			fireEvent.click(header)
+
+			expect(screen.queryByText(/\+\d+/)).not.toBeInTheDocument()
+			expect(screen.queryByText(/−\d+/)).not.toBeInTheDocument()
 		})
 	})
 

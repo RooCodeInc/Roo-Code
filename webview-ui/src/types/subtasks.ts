@@ -5,6 +5,10 @@ export type SubtaskDetail = {
 	name: string
 	/** tokensIn + tokensOut */
 	tokens: number
+	/** Total lines added across the subtask */
+	added: number
+	/** Total lines removed across the subtask */
+	removed: number
 	/** Aggregated total cost */
 	cost: number
 	status: "active" | "completed" | "delegated"

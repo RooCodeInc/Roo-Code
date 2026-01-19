@@ -108,7 +108,10 @@
 		"awaiting_child": "Awaiting child task {{childId}}"
 	},
 	"costs": {
-		"own": "Own",
+		"own": "Main",
 		"subtasks": "Subtasks"
+	},
+	"stats": {
+		"lines": "Lines"
 	}
 }

@@ -12,6 +12,64 @@ import { t } from "../../i18n"
 
 const taskSizeCache = new NodeCache({ stdTTL: 30, checkperiod: 5 * 60 })
 
+type DiffStats = { added: number; removed: number }
+
+function isFiniteNumber(value: unknown): value is number {
+	return typeof value === "number" && Number.isFinite(value)
+}
+
+function isDiffStats(value: unknown): value is DiffStats {
+	if (!value || typeof value !== "object") return false
+
+	const v = value as { added?: unknown; removed?: unknown }
+	return isFiniteNumber(v.added) && isFiniteNumber(v.removed)
+}
+
+function getLineStatsFromToolApprovalMessages(messages: ClineMessage[]): {
+	linesAdded: number
+	linesRemoved: number
+	foundAnyStats: boolean
+} {
+	let linesAdded = 0
+	let linesRemoved = 0
+	let foundAnyStats = false
+
+	for (const m of messages) {
+		// Only count complete tool approval asks (avoid double-counting partial/streaming updates)
+		if (!(m.type === "ask" && m.ask === "tool" && m.partial !== true)) continue
+		if (typeof m.text !== "string" || m.text.length === 0) continue
+
+		let payload: unknown
+		try {
+			payload = JSON.parse(m.text)
+		} catch {
+			continue
+		}
+
+		if (!payload || typeof payload !== "object") continue
+		const p = payload as { diffStats?: unknown; batchDiffs?: unknown }
+
+		if (isDiffStats(p.diffStats)) {
+			linesAdded += p.diffStats.added
+			linesRemoved += p.diffStats.removed
+			foundAnyStats = true
+		}
+
+		if (Array.isArray(p.batchDiffs)) {
+			for (const batchDiff of p.batchDiffs) {
+				if (!batchDiff || typeof batchDiff !== "object") continue
+				const bd = batchDiff as { diffStats?: unknown }
+				if (!isDiffStats(bd.diffStats)) continue
+				linesAdded += bd.diffStats.added
+				linesRemoved += bd.diffStats.removed
+				foundAnyStats = true
+			}
+		}
+	}
+
+	return { linesAdded, linesRemoved, foundAnyStats }
+}
+
 export type TaskMetadataOptions = {
 	taskId: string
 	rootTaskId?: string
@@ -55,6 +113,8 @@ export async function taskMetadata({
 	let tokenUsage: ReturnType<typeof getApiMetrics>
 	let taskDirSize: number
 	let taskMessage: ClineMessage | undefined
+	let linesAdded: number | undefined
+	let linesRemoved: number | undefined
 
 	if (!hasMessages) {
 		// Handle no messages case
@@ -93,6 +153,12 @@ export async function taskMetadata({
 		} else {
 			taskDirSize = cachedSize
 		}
+
+		const lineStats = getLineStatsFromToolApprovalMessages(messages)
+		if (lineStats.foundAnyStats) {
+			linesAdded = lineStats.linesAdded
+			linesRemoved = lineStats.linesRemoved
+		}
 	}
 
 	// Create historyItem once with pre-calculated values.
@@ -115,6 +181,8 @@ export async function taskMetadata({
 		cacheWrites: tokenUsage.totalCacheWrites,
 		cacheReads: tokenUsage.totalCacheReads,
 		totalCost: tokenUsage.totalCost,
+		...(typeof linesAdded === "number" ? { linesAdded } : {}),
+		...(typeof linesRemoved === "number" ? { linesRemoved } : {}),
 		size: taskDirSize,
 		workspace,
 		mode,

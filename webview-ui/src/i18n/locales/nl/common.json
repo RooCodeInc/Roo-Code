@@ -108,7 +108,10 @@
 		"awaiting_child": "Wachten op kindtaak {{childId}}"
 	},
 	"costs": {
-		"own": "Eigen",
+		"own": "Hoofd",
 		"subtasks": "Subtaken"
+	},
+	"stats": {
+		"lines": "Regels"
 	}
 }

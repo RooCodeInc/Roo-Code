@@ -108,7 +108,10 @@
 		"awaiting_child": "Đang chờ nhiệm vụ con {{childId}}"
 	},
 	"costs": {
-		"own": "Riêng",
+		"own": "Chính",
 		"subtasks": "Nhiệm vụ con"
+	},
+	"stats": {
+		"lines": "Dòng"
 	}
 }
