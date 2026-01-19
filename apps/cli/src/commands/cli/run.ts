@@ -69,6 +69,12 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		flagOptions.yes || flagOptions.dangerouslySkipPermissions || settings.dangerouslySkipPermissions || false
 	const effectiveExitOnComplete = flagOptions.print || flagOptions.oneshot || settings.oneshot || false
 
+	// Determine effective LiteLLM base URL: CLI flag > env var > default (when using litellm provider)
+	let effectiveLitellmBaseUrl: string | undefined = flagOptions.litellmBaseUrl || process.env.LITELLM_BASE_URL
+	if (effectiveProvider === "litellm" && !effectiveLitellmBaseUrl) {
+		effectiveLitellmBaseUrl = "http://localhost:4000"
+	}
+
 	const extensionHostOptions: ExtensionHostOptions = {
 		mode: effectiveMode,
 		reasoningEffort: effectiveReasoningEffort === "unspecified" ? undefined : effectiveReasoningEffort,
@@ -81,6 +87,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		ephemeral: flagOptions.ephemeral,
 		debug: flagOptions.debug,
 		exitOnComplete: effectiveExitOnComplete,
+		litellmBaseUrl: effectiveLitellmBaseUrl,
 	}
 
 	// Roo Code Cloud Authentication

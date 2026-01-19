@@ -9,6 +9,7 @@ const envVarMap: Record<SupportedProvider, string> = {
 	openrouter: "OPENROUTER_API_KEY",
 	"vercel-ai-gateway": "VERCEL_AI_GATEWAY_API_KEY",
 	roo: "ROO_API_KEY",
+	litellm: "LITELLM_API_KEY",
 }
 
 export function getEnvVarName(provider: SupportedProvider): string {
@@ -24,6 +25,7 @@ export function getProviderSettings(
 	provider: SupportedProvider,
 	apiKey: string | undefined,
 	model: string | undefined,
+	baseUrl?: string,
 ): RooCodeSettings {
 	const config: RooCodeSettings = { apiProvider: provider }
 
@@ -51,6 +53,11 @@ export function getProviderSettings(
 		case "roo":
 			if (apiKey) config.rooApiKey = apiKey
 			if (model) config.apiModelId = model
+			break
+		case "litellm":
+			if (apiKey) config.litellmApiKey = apiKey
+			if (model) config.litellmModelId = model
+			if (baseUrl) config.litellmBaseUrl = baseUrl
 			break
 		default:
 			if (apiKey) config.apiKey = apiKey
