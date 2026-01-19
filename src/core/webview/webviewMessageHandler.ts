@@ -742,8 +742,27 @@ export const webviewMessageHandler = async (
 			}
 
 			const rawTitle = message.text ?? ""
-			const trimmedTitle = rawTitle.trim()
-			const normalizedTitle = trimmedTitle.length > 0 ? trimmedTitle : undefined
+			const MAX_TITLE_LENGTH = 255
+
+			// Sanitize: remove control characters and normalize whitespace
+			const sanitized = rawTitle
+				// eslint-disable-next-line no-control-regex
+				.replace(/[\x00-\x1F\x7F-\x9F]/g, "") // Remove control characters
+				.replace(/\s+/g, " ") // Normalize whitespace
+				.trim()
+
+			// Truncate if too long, or clear if empty
+			let normalizedTitle: string | undefined
+			if (sanitized.length === 0) {
+				normalizedTitle = undefined // Clear empty titles
+			} else if (sanitized.length > MAX_TITLE_LENGTH) {
+				normalizedTitle = sanitized.slice(0, MAX_TITLE_LENGTH).trim() // Truncate and trim
+				console.warn(
+					`[setTaskTitle] Title truncated from ${sanitized.length} to ${MAX_TITLE_LENGTH} chars for task(s): ${ids.join(", ")}`,
+				)
+			} else {
+				normalizedTitle = sanitized // Use as-is
+			}
 			const { taskHistory } = await provider.getState()
 			if (!Array.isArray(taskHistory) || taskHistory.length === 0) {
 				break
