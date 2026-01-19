@@ -258,7 +258,7 @@ const TaskHeader = ({
 					}}
 					aria-label={t(tooltipKey)}
 					data-testid="task-title-edit-button">
-					<Pencil size={16} />
+					<Pencil size={16} className="opacity-0 group-hover:opacity-100" />
 				</button>
 			</StandardTooltip>
 		)
