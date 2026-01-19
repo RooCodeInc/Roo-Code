@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "Sperimentale",
 		"language": "Lingua",
-		"about": "Informazioni su Roo Code",
-		"commandsAndSkills": "Comandi e Competenze"
+		"about": "Informazioni su Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -1012,10 +1011,6 @@
 			"label": "Richiedi {{primaryMod}}+Invio per inviare messaggi",
 			"description": "Quando abilitato, devi premere {{primaryMod}}+Invio per inviare messaggi invece di solo Invio"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "Comandi slash",
-		"tabSkills": "Competenze"
 	},
 	"skills": {
 		"global": "Competenze globali",

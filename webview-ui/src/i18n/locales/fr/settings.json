@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "Expérimental",
 		"language": "Langue",
-		"about": "À propos de Roo Code",
-		"commandsAndSkills": "Commandes et Compétences"
+		"about": "À propos de Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -1011,10 +1010,6 @@
 			"label": "Exiger {{primaryMod}}+Entrée pour envoyer les messages",
 			"description": "Lorsqu'activé, tu dois appuyer sur {{primaryMod}}+Entrée pour envoyer des messages au lieu de simplement Entrée"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "Commandes slash",
-		"tabSkills": "Compétences"
 	},
 	"skills": {
 		"global": "Compétences globales",

@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "Eksperymentalne",
 		"language": "Język",
-		"about": "O Roo Code",
-		"commandsAndSkills": "Polecenia i Umiejętności"
+		"about": "O Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -1012,10 +1011,6 @@
 			"label": "Wymagaj {{primaryMod}}+Enter do wysyłania wiadomości",
 			"description": "Po włączeniu musisz nacisnąć {{primaryMod}}+Enter, aby wysłać wiadomości, zamiast tylko Enter"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "Polecenia slash",
-		"tabSkills": "Umiejętności"
 	},
 	"skills": {
 		"global": "Globalne umiejętności",

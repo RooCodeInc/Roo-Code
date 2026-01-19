@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "प्रायोगिक",
 		"language": "भाषा",
-		"about": "परिचय",
-		"commandsAndSkills": "कमांड और स्किल"
+		"about": "परिचय"
 	},
 	"about": {
 		"bugReport": {
@@ -1012,10 +1011,6 @@
 			"label": "संदेश भेजने के लिए {{primaryMod}}+Enter की आवश्यकता है",
 			"description": "जब सक्षम हो, तो आपको केवल Enter के बजाय संदेश भेजने के लिए {{primaryMod}}+Enter दबाना होगा"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "स्लैश कमांड",
-		"tabSkills": "स्किल"
 	},
 	"skills": {
 		"global": "ग्लोबल स्किल",

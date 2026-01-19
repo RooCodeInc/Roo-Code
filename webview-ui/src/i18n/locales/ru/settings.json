@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "Экспериментальное",
 		"language": "Язык",
-		"about": "О Roo Code",
-		"commandsAndSkills": "Команды и Навыки"
+		"about": "О Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -1012,10 +1011,6 @@
 			"label": "Требовать {{primaryMod}}+Enter для отправки сообщений",
 			"description": "Если включено, необходимо нажать {{primaryMod}}+Enter для отправки сообщений вместо простого Enter"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "Slash-команды",
-		"tabSkills": "Навыки"
 	},
 	"skills": {
 		"global": "Глобальные навыки",

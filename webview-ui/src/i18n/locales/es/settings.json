@@ -36,7 +36,6 @@
 		"contextManagement": "Contexto",
 		"terminal": "Terminal",
 		"slashCommands": "Comandos de Barra",
-		"commandsAndSkills": "Comandos y Habilidades",
 		"prompts": "Indicaciones",
 		"ui": "UI",
 		"experimental": "Experimental",
@@ -69,10 +68,6 @@
 	},
 	"slashCommands": {
 		"description": "Gestiona tus comandos de barra para ejecutar rápidamente flujos de trabajo y acciones personalizadas. <DocsLink>Saber más</DocsLink>"
-	},
-	"commandsAndSkills": {
-		"tabCommands": "Comandos de barra",
-		"tabSkills": "Habilidades"
 	},
 	"skills": {
 		"global": "Habilidades globales",

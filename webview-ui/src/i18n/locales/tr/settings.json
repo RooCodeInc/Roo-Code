@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "Deneysel",
 		"language": "Dil",
-		"about": "Roo Code Hakkında",
-		"commandsAndSkills": "Komutlar ve Yetenekler"
+		"about": "Roo Code Hakkında"
 	},
 	"about": {
 		"bugReport": {
@@ -1012,10 +1011,6 @@
 			"label": "Mesaj göndermek için {{primaryMod}}+Enter gerekli",
 			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "Slash komutları",
-		"tabSkills": "Yetenekler"
 	},
 	"skills": {
 		"global": "Global yetenekler",

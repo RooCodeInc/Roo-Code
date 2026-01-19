@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "Thử nghiệm",
 		"language": "Ngôn ngữ",
-		"about": "Giới thiệu",
-		"commandsAndSkills": "Lệnh và Kỹ năng"
+		"about": "Giới thiệu"
 	},
 	"about": {
 		"bugReport": {
@@ -1012,10 +1011,6 @@
 			"label": "Yêu cầu {{primaryMod}}+Enter để gửi tin nhắn",
 			"description": "Khi được bật, bạn phải nhấn {{primaryMod}}+Enter để gửi tin nhắn thay vì chỉ nhấn Enter"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "Lệnh gạch chéo",
-		"tabSkills": "Kỹ năng"
 	},
 	"skills": {
 		"global": "Kỹ năng toàn cục",

@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "実験的",
 		"language": "言語",
-		"about": "Roo Codeについて",
-		"commandsAndSkills": "コマンドとスキル"
+		"about": "Roo Codeについて"
 	},
 	"about": {
 		"bugReport": {
@@ -1012,10 +1011,6 @@
 			"label": "メッセージを送信するには{{primaryMod}}+Enterが必要",
 			"description": "有効にすると、Enterだけでなく{{primaryMod}}+Enterを押してメッセージを送信する必要があります"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "スラッシュコマンド",
-		"tabSkills": "スキル"
 	},
 	"skills": {
 		"global": "グローバルスキル",

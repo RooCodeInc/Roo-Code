@@ -36,7 +36,6 @@
 		"contextManagement": "Kontext",
 		"terminal": "Terminal",
 		"slashCommands": "Slash-Befehle",
-		"commandsAndSkills": "Befehle & Skills",
 		"prompts": "Eingabeaufforderungen",
 		"ui": "UI",
 		"experimental": "Experimentell",
@@ -69,10 +68,6 @@
 	},
 	"slashCommands": {
 		"description": "Verwalte deine Slash-Befehle, um benutzerdefinierte Workflows und Aktionen schnell auszuführen. <DocsLink>Mehr erfahren</DocsLink>"
-	},
-	"commandsAndSkills": {
-		"tabCommands": "Slash-Befehle",
-		"tabSkills": "Skills"
 	},
 	"skills": {
 		"global": "Globale Skills",

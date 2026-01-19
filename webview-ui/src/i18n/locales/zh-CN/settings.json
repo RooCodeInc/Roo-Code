@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "实验性",
 		"language": "语言",
-		"about": "关于 Roo Code",
-		"commandsAndSkills": "命令和技能"
+		"about": "关于 Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -1012,10 +1011,6 @@
 			"label": "需要 {{primaryMod}}+Enter 发送消息",
 			"description": "启用后，必须按 {{primaryMod}}+Enter 发送消息，而不仅仅是 Enter"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "Slash 命令",
-		"tabSkills": "技能"
 	},
 	"skills": {
 		"global": "全局技能",

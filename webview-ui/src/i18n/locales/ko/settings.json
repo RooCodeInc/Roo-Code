@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "실험적",
 		"language": "언어",
-		"about": "Roo Code 정보",
-		"commandsAndSkills": "명령어 및 스킬"
+		"about": "Roo Code 정보"
 	},
 	"about": {
 		"bugReport": {
@@ -1012,10 +1011,6 @@
 			"label": "메시지를 보내려면 {{primaryMod}}+Enter가 필요",
 			"description": "활성화하면 Enter만으로는 안 되고 {{primaryMod}}+Enter를 눌러야 메시지를 보낼 수 있습니다"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "슬래시 명령어",
-		"tabSkills": "스킬"
 	},
 	"skills": {
 		"global": "전역 스킬",

@@ -40,8 +40,7 @@
 		"ui": "UI",
 		"experimental": "Eksperimental",
 		"language": "Bahasa",
-		"about": "Tentang Roo Code",
-		"commandsAndSkills": "Perintah & Keterampilan"
+		"about": "Tentang Roo Code"
 	},
 	"about": {
 		"bugReport": {
@@ -1041,10 +1040,6 @@
 			"label": "Memerlukan {{primaryMod}}+Enter untuk mengirim pesan",
 			"description": "Ketika diaktifkan, kamu harus menekan {{primaryMod}}+Enter untuk mengirim pesan alih-alih hanya Enter"
 		}
-	},
-	"commandsAndSkills": {
-		"tabCommands": "Perintah Garis Miring",
-		"tabSkills": "Keterampilan"
 	},
 	"skills": {
 		"global": "Keterampilan Global",
