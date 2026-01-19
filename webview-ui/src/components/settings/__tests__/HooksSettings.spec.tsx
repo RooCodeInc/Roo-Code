@@ -74,6 +74,18 @@ vi.mock("@src/components/ui", () => ({
 			{children}
 		</button>
 	),
+	SearchableSelect: ({ value, onValueChange, options, placeholder, "data-testid": dataTestId, ...props }: any) => (
+		<div data-testid={dataTestId} {...props}>
+			<select value={value ?? ""} onChange={(e) => onValueChange && onValueChange(e.target.value)}>
+				<option value="">{placeholder || "Select..."}</option>
+				{options?.map((option: any) => (
+					<option key={option.value} value={option.value}>
+						{option.label}
+					</option>
+				))}
+			</select>
+		</div>
+	),
 	ToggleSwitch: ({ checked, onChange, ...props }: any) => (
 		<div role="switch" aria-checked={checked} onClick={onChange} data-testid={props["data-testid"]} />
 	),
@@ -167,9 +179,10 @@ describe("HooksSettings", () => {
 
 		render(<HooksSettings />)
 
-		// Hook details should not be visible initially
-		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
-		expect(screen.queryByText(mockHook.matcher!)).not.toBeInTheDocument()
+		// Collapsed header should show the selected event (event-centric header)
+		expect(screen.getByText(mockHook.event)).toBeInTheDocument()
+		// Tool events support matchers; show matcher summary in header
+		expect(screen.getByText(`[${mockHook.matcher}]`)).toBeInTheDocument()
 
 		// Click to expand
 		const hookHeader = screen.getByText(mockHook.id).closest("div")
@@ -180,10 +193,12 @@ describe("HooksSettings", () => {
 		expect(screen.getByTestId("tab-command")).toBeInTheDocument()
 		expect(screen.getByTestId("tab-logs")).toBeInTheDocument()
 
-		// Check Config tab content (visible by default usually or we can check panels exist)
-		expect(screen.getByText(mockHook.event)).toBeInTheDocument()
-		// Matcher is split into tool-group checkboxes + custom matcher input
-		const customMatcherInput = screen.getByLabelText("Custom matcher") as HTMLInputElement
+		// Check Config tab content: event dropdown should have the selected event
+		expect(screen.getByDisplayValue(mockHook.event)).toBeInTheDocument()
+		// Tool event matcher custom pattern input should contain the matcher string
+		const customMatcherInput = screen.getByPlaceholderText(
+			"e.g., Write|Edit or mcp__memory__.*",
+		) as HTMLInputElement
 		expect(customMatcherInput).toHaveValue(mockHook.matcher)
 
 		// Command textarea should be present
@@ -192,8 +207,8 @@ describe("HooksSettings", () => {
 		// Click to collapse
 		fireEvent.click(hookHeader!)
 
-		// Hook details should be hidden again
-		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
+		// Hook details should be hidden again (tabs/content not rendered)
+		expect(screen.queryByTestId("tab-config")).not.toBeInTheDocument()
 	})
 
 	it("shows per-hook logs in Logs tab", () => {
@@ -507,13 +522,13 @@ describe("HooksSettings", () => {
 
 		render(<HooksSettings />)
 
-		// Hook should be collapsed initially
-		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
+		// Hook should be collapsed initially (no tabs/content)
+		expect(screen.queryByTestId("tab-config")).not.toBeInTheDocument()
 
 		fireEvent.click(screen.getByTestId("hook-enabled-toggle-hook-1"))
 
 		// Hook should still be collapsed after toggling
-		expect(screen.queryByText(mockHook.event)).not.toBeInTheDocument()
+		expect(screen.queryByTestId("tab-config")).not.toBeInTheDocument()
 
 		// Toggle message should have been sent
 		expect(vscode.postMessage).toHaveBeenCalledWith({

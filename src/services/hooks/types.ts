@@ -52,6 +52,112 @@ export function isBlockingEvent(event: HookEventType): boolean {
 	return BLOCKING_EVENTS.has(event)
 }
 
+// ==========================================================================
+// Event Categories and Matchers
+// ==========================================================================
+
+// Event categories based on matcher semantics
+export const TOOL_EVENTS = ["PreToolUse", "PostToolUse", "PostToolUseFailure", "PermissionRequest"] as const
+export type ToolEvent = (typeof TOOL_EVENTS)[number]
+
+export const LIFECYCLE_EVENTS_WITH_MATCHERS = ["SessionStart", "Notification", "PreCompact"] as const
+export type LifecycleEventWithMatcher = (typeof LIFECYCLE_EVENTS_WITH_MATCHERS)[number]
+
+export const LIFECYCLE_EVENTS_WITHOUT_MATCHERS = [
+	"Stop",
+	"SubagentStart",
+	"SubagentStop",
+	"SessionEnd",
+	"UserPromptSubmit",
+] as const
+export type LifecycleEventWithoutMatcher = (typeof LIFECYCLE_EVENTS_WITHOUT_MATCHERS)[number]
+
+// Tool matchers (for tool events)
+export const TOOL_MATCHERS = ["read", "edit", "browser", "command", "mcp", "modes"] as const
+export type ToolMatcher = (typeof TOOL_MATCHERS)[number]
+
+// Session start matchers
+export const SESSION_START_MATCHERS = ["startup", "resume", "clear", "compact"] as const
+export type SessionStartMatcher = (typeof SESSION_START_MATCHERS)[number]
+
+// Notification matchers
+export const NOTIFICATION_MATCHERS = ["permission_prompt", "idle_prompt", "auth_success", "elicitation_dialog"] as const
+export type NotificationMatcher = (typeof NOTIFICATION_MATCHERS)[number]
+
+// PreCompact matchers
+export const PRE_COMPACT_MATCHERS = ["manual", "auto"] as const
+export type PreCompactMatcher = (typeof PRE_COMPACT_MATCHERS)[number]
+
+// Union of all event-specific matchers
+export type EventMatcher = ToolMatcher | SessionStartMatcher | NotificationMatcher | PreCompactMatcher
+
+// Map from event type to valid matcher values
+export const EVENT_MATCHER_MAP: Record<HookEventType, readonly string[] | null> = {
+	// Tool events use tool matchers
+	PreToolUse: TOOL_MATCHERS,
+	PostToolUse: TOOL_MATCHERS,
+	PostToolUseFailure: TOOL_MATCHERS,
+	PermissionRequest: TOOL_MATCHERS,
+	// Lifecycle events with specific matchers
+	SessionStart: SESSION_START_MATCHERS,
+	Notification: NOTIFICATION_MATCHERS,
+	PreCompact: PRE_COMPACT_MATCHERS,
+	// Lifecycle events without matchers
+	Stop: null,
+	SubagentStart: null,
+	SubagentStop: null,
+	SessionEnd: null,
+	UserPromptSubmit: null,
+}
+
+/**
+ * Check if an event type is a tool event (uses tool matchers)
+ */
+export function isToolEvent(event: HookEventType): event is ToolEvent {
+	return (TOOL_EVENTS as readonly string[]).includes(event)
+}
+
+/**
+ * Check if an event type supports matchers
+ */
+export function eventSupportsMatchers(event: HookEventType): boolean {
+	return EVENT_MATCHER_MAP[event] !== null
+}
+
+/**
+ * Get valid matcher values for a given event type
+ * Returns null for events that don't support matchers
+ */
+export function getValidMatchersForEvent(event: HookEventType): readonly string[] | null {
+	return EVENT_MATCHER_MAP[event]
+}
+
+/**
+ * Validate if a matcher value is valid for a given event type
+ * For tool events, also accepts custom patterns (regex/glob)
+ */
+export function isValidMatcherForEvent(event: HookEventType, matcher: string): boolean {
+	const validMatchers = EVENT_MATCHER_MAP[event]
+
+	// Events without matchers should not have any matcher
+	if (validMatchers === null) {
+		return false
+	}
+
+	// For tool events, allow custom patterns (any non-empty string is valid as it could be regex/glob)
+	if (isToolEvent(event)) {
+		return matcher.length > 0
+	}
+
+	// For other events with matchers, check against valid values (can be | separated)
+	const matcherParts = matcher
+		.split("|")
+		.map((m) => m.trim())
+		.filter((m) => m.length > 0)
+
+	return matcherParts.every((part) => (validMatchers as readonly string[]).includes(part))
+}
+
 // ============================================================================
 // Hook Definition Schema
 // ============================================================================

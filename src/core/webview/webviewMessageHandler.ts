@@ -7,6 +7,8 @@ import {
 	HookEventType as HookEventTypeSchema,
 	type HookEventType,
 	type HookUpdateData,
+	eventSupportsMatchers,
+	isValidMatcherForEvent,
 } from "../../services/hooks/types"
 import { copyHookConfig } from "../../services/hooks/HookConfigWriter"
 import { getRooDirectoriesForCwd } from "../../services/roo-config/index.js"
@@ -3687,6 +3689,22 @@ export const webviewMessageHandler = async (
 						typeof (message.hookUpdates as any).id === "string"
 							? (message.hookUpdates as any).id
 							: undefined,
+				}
+
+				// Validate matcher against event type.
+				// Note: For backwards compatibility, the UI may send a single event as `events: [event]`.
+				// We also accept legacy/multi-event hooks without rejecting them; validation is warning/correction only.
+				if (hookUpdates.matcher && hookUpdates.events && hookUpdates.events.length > 0) {
+					const event = hookUpdates.events[0]
+					if (!eventSupportsMatchers(event)) {
+						console.warn(`[Hooks] Event "${event}" does not support matchers, clearing matcher`)
+						hookUpdates.matcher = undefined
+					} else if (!isValidMatcherForEvent(event, hookUpdates.matcher)) {
+						console.warn(
+							`[Hooks] Matcher "${hookUpdates.matcher}" is not valid for event "${event}", clearing matcher`,
+						)
+						hookUpdates.matcher = undefined
+					}
 				}
 
 				await hookManager.updateHook(message.filePath, message.hookId, hookUpdates)

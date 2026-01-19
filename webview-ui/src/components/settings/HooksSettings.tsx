@@ -10,30 +10,105 @@ import {
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { vscode } from "@src/utils/vscode"
-import { Button, StandardTooltip, ToggleSwitch } from "@src/components/ui"
+import {
+	Button,
+	SearchableSelect,
+	StandardTooltip,
+	ToggleSwitch,
+	type SearchableSelectOption,
+} from "@src/components/ui"
 import type { HookInfo, HookExecutionRecord, HookExecutionStatusPayload } from "@roo-code/types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 
-const HOOK_EVENT_OPTIONS = [
-	"PreToolUse",
-	"PostToolUse",
-	"PostToolUseFailure",
-	"PermissionRequest",
-	"UserPromptSubmit",
-	"Stop",
-	"SubagentStop",
-	"SubagentStart",
-	"SessionStart",
-	"SessionEnd",
-	"Notification",
-	"PreCompact",
-] as const
+import {
+	TOOL_EVENTS,
+	LIFECYCLE_EVENTS_WITH_MATCHERS,
+	LIFECYCLE_EVENTS_WITHOUT_MATCHERS,
+	TOOL_MATCHERS,
+	SESSION_START_MATCHERS,
+	NOTIFICATION_MATCHERS,
+	PRE_COMPACT_MATCHERS,
+	isToolEvent,
+	eventSupportsMatchers,
+	getValidMatchersForEvent,
+	type HookEventType,
+} from "../../../../src/services/hooks/types"
 
-type HookEventOption = (typeof HOOK_EVENT_OPTIONS)[number]
+const TOOL_EVENT_DESCRIPTIONS: Record<(typeof TOOL_EVENTS)[number], string> = {
+	PreToolUse: "Before a tool is executed",
+	PostToolUse: "After a tool executes successfully",
+	PostToolUseFailure: "After a tool execution fails",
+	PermissionRequest: "When user is shown a permission dialog",
+}
 
-const TOOL_GROUPS = ["read", "edit", "browser", "command", "mcp", "modes"] as const
-type ToolGroup = (typeof TOOL_GROUPS)[number]
+const LIFECYCLE_EVENT_DESCRIPTIONS_WITH_MATCHERS: Record<(typeof LIFECYCLE_EVENTS_WITH_MATCHERS)[number], string> = {
+	SessionStart: "When a session begins",
+	Notification: "When a notification is sent",
+	PreCompact: "Before context compaction",
+}
+
+const LIFECYCLE_EVENT_DESCRIPTIONS_WITHOUT_MATCHERS: Record<
+	(typeof LIFECYCLE_EVENTS_WITHOUT_MATCHERS)[number],
+	string
+> = {
+	SessionEnd: "When a session ends",
+	Stop: "When the main agent stops",
+	SubagentStart: "When a subagent starts",
+	SubagentStop: "When a subagent stops",
+	UserPromptSubmit: "When user submits a prompt",
+}
+
+// Event options with descriptions for the dropdown
+const EVENT_OPTIONS: { value: HookEventType; label: string; description: string; category: string }[] = [
+	...TOOL_EVENTS.map((event) => ({
+		value: event,
+		label: event,
+		description: TOOL_EVENT_DESCRIPTIONS[event],
+		category: "Tool Events",
+	})),
+	...LIFECYCLE_EVENTS_WITH_MATCHERS.map((event) => ({
+		value: event,
+		label: event,
+		description: LIFECYCLE_EVENT_DESCRIPTIONS_WITH_MATCHERS[event],
+		category: "Lifecycle Events",
+	})),
+	...LIFECYCLE_EVENTS_WITHOUT_MATCHERS.map((event) => ({
+		value: event,
+		label: event,
+		description: LIFECYCLE_EVENT_DESCRIPTIONS_WITHOUT_MATCHERS[event],
+		category: "Lifecycle Events",
+	})),
+]
+
+// Matcher display labels
+const TOOL_MATCHER_LABELS: Record<string, string> = {
+	read: "Read (file reading)",
+	edit: "Edit (file writing)",
+	browser: "Browser (web tools)",
+	command: "Command (shell/bash)",
+	mcp: "MCP (protocol tools)",
+	modes: "Modes (mode tools)",
+}
+
+const SESSION_START_MATCHER_LABELS: Record<string, string> = {
+	startup: "Startup (new session)",
+	resume: "Resume (existing session)",
+	clear: "Clear (conversation cleared)",
+	compact: "Compact (context compacted)",
+}
+
+const NOTIFICATION_MATCHER_LABELS: Record<string, string> = {
+	permission_prompt: "Permission Prompt",
+	idle_prompt: "Idle Prompt",
+	auth_success: "Auth Success",
+	elicitation_dialog: "Elicitation Dialog",
+}
+
+const PRE_COMPACT_MATCHER_LABELS: Record<string, string> = {
+	manual: "Manual (user triggered)",
+	auto: "Auto (automatic)",
+}
 
 const TIMEOUT_OPTIONS: Array<{ label: string; seconds: number }> = [
 	{ label: "15 seconds", seconds: 15 },
@@ -312,90 +387,45 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 
 	const canEditConfig = Boolean(hook.filePath)
 
-	const hooksForId = useMemo(() => {
-		const enabledHooks = hooks?.enabledHooks ?? []
-		return enabledHooks.filter((h) => h.id === hook.id)
-	}, [hooks?.enabledHooks, hook.id])
-
-	const selectedEvents = useMemo(() => {
-		// Prefer the aggregated `hook.events` when present (newer extension state).
-		// Fallback to the legacy state shape where the same ID appeared once per event.
-		const rawEvents = (hook.events && hook.events.length > 0 ? hook.events : hooksForId.map((h) => h.event)).filter(
-			Boolean,
-		)
-		// Preserve stable order based on HOOK_EVENT_OPTIONS
-		return HOOK_EVENT_OPTIONS.filter((e) => rawEvents.includes(e))
-	}, [hooksForId, hook.events])
-
-	const eventTooltipText = useCallback(
-		(event: HookEventOption) => {
-			// Keep translation fallback-friendly: if keys don't exist yet, show English.
-			const fallbackMap: Record<HookEventOption, string> = {
-				PreToolUse: "Before a tool is executed. Can block execution.",
-				PostToolUse: "After a tool completes successfully.",
-				PostToolUseFailure: "After a tool fails. Can perform cleanup.",
-				PermissionRequest: "When a permission dialog is shown. Can auto-approve/deny.",
-				UserPromptSubmit: "When user submits a prompt. Can modify or block.",
-				Stop: "When task completes or stops. Can perform cleanup.",
-				SubagentStop: "When a subtask completes.",
-				SubagentStart: "When a subtask begins.",
-				SessionStart: "When a new task session starts.",
-				SessionEnd: "When task session fully ends.",
-				Notification: "When status notifications are sent.",
-				PreCompact: "Before context compaction occurs.",
-			}
-
-			return (t(`settings:hooks.eventTooltips.${event}`) as string) || fallbackMap[event] || event
-		},
-		[t],
-	)
-
-	const matcherRaw = hook.matcher ?? ""
-	const { matcherGroups, matcherCustom } = useMemo(() => {
-		const parts = matcherRaw
-			.split("|")
-			.map((p) => p.trim())
-			.filter(Boolean)
-
-		const groups = parts.filter((p): p is ToolGroup =>
-			(TOOL_GROUPS as readonly string[]).includes(p),
-		) as ToolGroup[]
-		const customParts = parts.filter((p) => !(TOOL_GROUPS as readonly string[]).includes(p))
-
-		return {
-			matcherGroups: groups,
-			matcherCustom: customParts.join("|"),
+	const selectedEvent = useMemo<HookEventType | "">(() => {
+		// Prefer events array if present, take first event
+		if (hook.events && hook.events.length > 0) {
+			return hook.events[0] as HookEventType
 		}
-	}, [matcherRaw])
+		// Fall back to legacy event field
+		if (hook.event) {
+			return hook.event as HookEventType
+		}
+		return ""
+	}, [hook.events, hook.event])
 
-	const customMatcherTooltip = useMemo(() => {
-		return (
-			<div className="text-xs leading-snug">
-				<div className="font-medium mb-1">Regex / matcher tips</div>
-				<ul className="list-disc list-inside space-y-1">
-					<li>
-						This field matches tool names. Use regex alternation with <code className="font-mono">|</code>{" "}
-						(e.g. <code className="font-mono">fetch_instructions|search_files</code>).
-					</li>
-					<li>
-						If you select tool groups and also add a custom matcher, they are combined with{" "}
-						<code className="font-mono">|</code>.
-					</li>
-					<li>
-						Available tool groups: <code className="font-mono">read</code>,{" "}
-						<code className="font-mono">edit</code>, <code className="font-mono">browser</code>,{" "}
-						<code className="font-mono">command</code>, <code className="font-mono">mcp</code>,{" "}
-						<code className="font-mono">modes</code>.
-					</li>
-				</ul>
-			</div>
-		)
+	const eventOptions = useMemo<SearchableSelectOption[]>(() => {
+		return EVENT_OPTIONS.map((opt) => ({ value: opt.value, label: opt.label }))
 	}, [])
 
-	const [customMatcher, setCustomMatcher] = useState(matcherCustom)
+	const { matcherGroups, matcherCustom: initialMatcherCustom } = useMemo(() => {
+		const matcher = hook.matcher || ""
+		if (!selectedEvent || !eventSupportsMatchers(selectedEvent)) {
+			return { matcherGroups: [] as string[], matcherCustom: "" }
+		}
+
+		const validMatchers = getValidMatchersForEvent(selectedEvent) || []
+		const parts = matcher
+			.split("|")
+			.map((p) => p.trim())
+			.filter((p) => p.length > 0)
+
+		const groups = parts.filter((p) => (validMatchers as readonly string[]).includes(p))
+		const custom = parts.filter((p) => !(validMatchers as readonly string[]).includes(p)).join("|")
+
+		return { matcherGroups: groups, matcherCustom: custom }
+	}, [hook.matcher, selectedEvent])
+
+	const [matcherCustom, setMatcherCustom] = useState(initialMatcherCustom)
+
 	useEffect(() => {
-		setCustomMatcher(matcherCustom)
-	}, [matcherCustom])
+		setMatcherCustom(initialMatcherCustom)
+	}, [initialMatcherCustom])
 
 	useEffect(() => {
 		setHookIdDraft(hook.id)
@@ -414,8 +444,8 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 
 	const postHookUpdate = useCallback(
 		(updates: {
-			events?: HookEventOption[]
-			matcher?: string
+			events?: HookEventType[]
+			matcher?: string | undefined
 			timeout?: number
 			id?: string
 			command?: string
@@ -433,26 +463,49 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 		[hook.filePath, hook.id],
 	)
 
-	const selectedEventsSet = useMemo(() => new Set(selectedEvents), [selectedEvents])
+	const buildMatcherString = useCallback((groups: string[], custom: string): string => {
+		const parts = [...groups]
+		if (custom.trim()) {
+			parts.push(custom.trim())
+		}
+		return parts.join("|")
+	}, [])
 
-	const handleEventToggle = useCallback(
-		(event: HookEventOption, checked: boolean) => {
-			// Base events should come from the current resolved view, but we use a Set to
-			// ensure we merge cleanly and avoid duplicates before sending to the backend.
-			const nextSet = new Set<HookEventOption>(selectedEventsSet)
-			if (checked) {
-				nextSet.add(event)
-			} else {
-				nextSet.delete(event)
+	const handleEventChange = useCallback(
+		(newEvent: HookEventType) => {
+			let newMatcher = hook.matcher
+
+			if (!eventSupportsMatchers(newEvent)) {
+				newMatcher = undefined
+			} else if (selectedEvent && isToolEvent(selectedEvent) !== isToolEvent(newEvent)) {
+				newMatcher = undefined
+				setMatcherCustom("")
 			}
-			const next = HOOK_EVENT_OPTIONS.filter((e) => nextSet.has(e))
-			if (next.length === 0) {
-				return
-			}
-			postHookUpdate({ events: next })
+
+			postHookUpdate({
+				events: [newEvent],
+				matcher: newMatcher,
+			})
 		},
-		[postHookUpdate, selectedEventsSet],
+		[hook.matcher, postHookUpdate, selectedEvent],
 	)
+
+	const handleMatcherGroupToggle = useCallback(
+		(matcher: string) => {
+			const newGroups = matcherGroups.includes(matcher)
+				? matcherGroups.filter((g) => g !== matcher)
+				: [...matcherGroups, matcher]
+
+			const newMatcher = buildMatcherString(newGroups, matcherCustom)
+			postHookUpdate({ matcher: newMatcher || undefined })
+		},
+		[buildMatcherString, matcherCustom, matcherGroups, postHookUpdate],
+	)
+
+	const handleMatcherSave = useCallback(() => {
+		const newMatcher = buildMatcherString(matcherGroups, matcherCustom)
+		postHookUpdate({ matcher: newMatcher || undefined })
+	}, [buildMatcherString, matcherCustom, matcherGroups, postHookUpdate])
 
 	const validateHookIdDraft = useCallback(
 		(nextId: string): string | null => {
@@ -517,15 +570,6 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 		},
 		[commandDraft],
 	)
-
-	const buildMatcherString = useCallback((nextGroups: ToolGroup[], nextCustom: string) => {
-		const parts: string[] = [...nextGroups]
-		const trimmedCustom = nextCustom.trim()
-		if (trimmedCustom.length > 0) {
-			parts.push(trimmedCustom)
-		}
-		return parts.join("|")
-	}, [])
 
 	// Filter execution history for this specific hook
 	useEffect(() => {
@@ -613,6 +657,19 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 				<div className="flex items-center gap-2 flex-1 min-w-0">
 					<FishingHook className="w-4 h-4 flex-shrink-0 text-vscode-textLink-foreground" />
 					<code className="text-sm font-mono text-vscode-textLink-foreground truncate">{hook.id}</code>
+					<div className="flex items-center gap-2 min-w-0">
+						<span className="text-vscode-descriptionForeground">·</span>
+						<div className="flex items-center gap-2 min-w-0">
+							<span className="text-xs font-medium text-vscode-foreground truncate">
+								{selectedEvent || "No event"}
+							</span>
+							{selectedEvent && eventSupportsMatchers(selectedEvent) && hook.matcher && (
+								<span className="text-xs text-vscode-descriptionForeground truncate">
+									[{hook.matcher}]
+								</span>
+							)}
+						</div>
+					</div>
 					<span
 						className={`ml-auto text-xs px-2 py-0.5 rounded flex-shrink-0 ${
 							hook.source === "project"
@@ -718,102 +775,143 @@ const HookItem: React.FC<HookItemProps> = ({ hook, onToggle, autoExpandHookId, o
 								</div>
 
 								<div>
-									<span className="text-xs font-medium text-vscode-descriptionForeground block mb-2">
-										{t("settings:hooks.event")}
-									</span>
-									<div className="grid grid-cols-2 gap-2">
-										{HOOK_EVENT_OPTIONS.map((event) => (
-											<label
-												key={event}
-												className="flex items-center gap-2 text-xs text-vscode-foreground">
-												<input
-													type="checkbox"
-													checked={selectedEvents.includes(event)}
-													disabled={!canEditConfig || isUpdatingConfig}
-													onChange={(e) => handleEventToggle(event, e.target.checked)}
-												/>
-												<span className="flex items-center gap-1">
-													<span>{event}</span>
-													<StandardTooltip content={eventTooltipText(event)}>
-														<button
-															type="button"
-															className="text-vscode-descriptionForeground hover:text-vscode-foreground"
-															aria-label={t("settings:hooks.showEventDescription")}
-															onClick={(e) => e.preventDefault()}>
-															<span
-																className="codicon codicon-question"
-																style={{ fontSize: "12px" }}
-															/>
-														</button>
-													</StandardTooltip>
-												</span>
-											</label>
-										))}
+									{/* Event Type Dropdown */}
+									<div className="flex flex-col gap-1">
+										<label className="text-xs font-medium text-vscode-descriptionForeground">
+											Event Type
+										</label>
+										<SearchableSelect
+											value={selectedEvent || undefined}
+											disabled={!canEditConfig || isUpdatingConfig}
+											onValueChange={(value) => handleEventChange(value as HookEventType)}
+											options={eventOptions}
+											placeholder="Select event type..."
+											searchPlaceholder="Search events..."
+											emptyMessage="No matching events found."
+											className="min-w-[200px]"
+											data-testid={`hook-event-select-${hook.id}`}
+										/>
+										{selectedEvent && (
+											<span className="text-xs text-vscode-descriptionForeground">
+												{EVENT_OPTIONS.find((o) => o.value === selectedEvent)?.description}
+											</span>
+										)}
 									</div>
+
+									{/* Dynamic Matcher Section */}
+									{selectedEvent && (
+										<div className="flex flex-col gap-2 mt-2">
+											<label className="text-xs font-medium text-vscode-descriptionForeground">
+												Matchers
+											</label>
+
+											{!eventSupportsMatchers(selectedEvent) ? (
+												<div className="flex items-center gap-2 text-xs text-vscode-descriptionForeground bg-vscode-editor-background rounded p-2">
+													<span className="codicon codicon-info" />
+													<span>
+														This event type does not use matchers - the hook will fire for
+														all occurrences.
+													</span>
+												</div>
+											) : isToolEvent(selectedEvent) ? (
+												<div className="flex flex-col gap-2">
+													<div className="grid grid-cols-3 gap-2">
+														{TOOL_MATCHERS.map((matcher) => (
+															<label
+																key={matcher}
+																className="flex items-center gap-1 text-xs cursor-pointer">
+																<input
+																	type="checkbox"
+																	disabled={!canEditConfig || isUpdatingConfig}
+																	checked={matcherGroups.includes(matcher)}
+																	onChange={() => handleMatcherGroupToggle(matcher)}
+																	className="accent-vscode-button-background"
+																/>
+																<span>{TOOL_MATCHER_LABELS[matcher] || matcher}</span>
+															</label>
+														))}
+													</div>
+													<div className="flex flex-col gap-1">
+														<label className="text-xs text-vscode-descriptionForeground">
+															Custom pattern (regex/glob):
+														</label>
+														<input
+															type="text"
+															disabled={!canEditConfig || isUpdatingConfig}
+															value={matcherCustom}
+															onChange={(e) => setMatcherCustom(e.target.value)}
+															onBlur={handleMatcherSave}
+															placeholder="e.g., Write|Edit or mcp__memory__.*"
+															className="bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded px-2 py-1 text-xs"
+														/>
+													</div>
+												</div>
+											) : selectedEvent === "SessionStart" ? (
+												<div className="grid grid-cols-2 gap-2">
+													{SESSION_START_MATCHERS.map((matcher) => (
+														<label
+															key={matcher}
+															className="flex items-center gap-1 text-xs cursor-pointer">
+															<input
+																type="checkbox"
+																disabled={!canEditConfig || isUpdatingConfig}
+																checked={matcherGroups.includes(matcher)}
+																onChange={() => handleMatcherGroupToggle(matcher)}
+																className="accent-vscode-button-background"
+															/>
+															<span>
+																{SESSION_START_MATCHER_LABELS[matcher] || matcher}
+															</span>
+														</label>
+													))}
+												</div>
+											) : selectedEvent === "Notification" ? (
+												<div className="grid grid-cols-2 gap-2">
+													{NOTIFICATION_MATCHERS.map((matcher) => (
+														<label
+															key={matcher}
+															className="flex items-center gap-1 text-xs cursor-pointer">
+															<input
+																type="checkbox"
+																disabled={!canEditConfig || isUpdatingConfig}
+																checked={matcherGroups.includes(matcher)}
+																onChange={() => handleMatcherGroupToggle(matcher)}
+																className="accent-vscode-button-background"
+															/>
+															<span>
+																{NOTIFICATION_MATCHER_LABELS[matcher] || matcher}
+															</span>
+														</label>
+													))}
+												</div>
+											) : selectedEvent === "PreCompact" ? (
+												<div className="grid grid-cols-2 gap-2">
+													{PRE_COMPACT_MATCHERS.map((matcher) => (
+														<label
+															key={matcher}
+															className="flex items-center gap-1 text-xs cursor-pointer">
+															<input
+																type="checkbox"
+																disabled={!canEditConfig || isUpdatingConfig}
+																checked={matcherGroups.includes(matcher)}
+																onChange={() => handleMatcherGroupToggle(matcher)}
+																className="accent-vscode-button-background"
+															/>
+															<span>
+																{PRE_COMPACT_MATCHER_LABELS[matcher] || matcher}
+															</span>
+														</label>
+													))}
+												</div>
+											) : null}
+										</div>
+									)}
+
 									{!canEditConfig && (
 										<div className="text-xs text-vscode-descriptionForeground mt-2">
 											{t("settings:hooks.openHookFileUnavailableTooltip")}
 										</div>
 									)}
-								</div>
-
-								<div>
-									<span className="text-xs font-medium text-vscode-descriptionForeground block mb-2">
-										{t("settings:hooks.matcher")}
-									</span>
-									<div className="grid grid-cols-3 gap-2">
-										{TOOL_GROUPS.map((group) => (
-											<label
-												key={group}
-												className="flex items-center gap-2 text-xs text-vscode-foreground">
-												<input
-													type="checkbox"
-													checked={matcherGroups.includes(group)}
-													disabled={!canEditConfig || isUpdatingConfig}
-													onChange={(e) => {
-														const checked = e.target.checked
-														const nextGroups = checked
-															? Array.from(new Set([...matcherGroups, group]))
-															: matcherGroups.filter((g) => g !== group)
-														const next = buildMatcherString(nextGroups, customMatcher)
-														postHookUpdate({ matcher: next })
-													}}
-												/>
-												<span>{group}</span>
-											</label>
-										))}
-									</div>
-									<div className="mt-2">
-										<div className="flex items-center gap-2">
-											<label className="text-xs text-vscode-descriptionForeground block mb-1">
-												Custom matcher
-											</label>
-											<StandardTooltip content={customMatcherTooltip} maxWidth={360}>
-												<button
-													type="button"
-													className="text-vscode-descriptionForeground hover:text-vscode-foreground"
-													aria-label="Custom matcher help"
-													onClick={(e) => e.preventDefault()}>
-													<span
-														className="codicon codicon-question"
-														style={{ fontSize: "12px" }}
-													/>
-												</button>
-											</StandardTooltip>
-										</div>
-										<input
-											className="w-full text-xs bg-vscode-input-background border border-vscode-input-border rounded px-2 py-1 text-vscode-foreground"
-											aria-label="Custom matcher"
-											value={customMatcher}
-											disabled={!canEditConfig || isUpdatingConfig}
-											onChange={(e) => setCustomMatcher(e.target.value)}
-											onBlur={() => {
-												const next = buildMatcherString(matcherGroups, customMatcher)
-												postHookUpdate({ matcher: next })
-											}}
-											placeholder="fetch_instructions|search_files"
-										/>
-									</div>
 								</div>
 
 								<div>

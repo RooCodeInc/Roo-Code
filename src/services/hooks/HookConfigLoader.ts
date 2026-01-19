@@ -22,6 +22,10 @@ import {
 	ResolvedHook,
 	HookSource,
 	HookEventType,
+	eventSupportsMatchers,
+	getValidMatchersForEvent,
+	isToolEvent,
+	isValidMatcherForEvent,
 } from "./types"
 import { getGlobalRooDirectory, getProjectRooDirectoryForCwd } from "../roo-config"
 
@@ -100,7 +104,52 @@ function validateConfig(
 	return { success: false, errors }
 }
 
-function toHooksByEventMap(data: z.infer<typeof HooksConfigFileSchema>): Map<HookEventType, HookDefinition[]> {
+/**
+ * Validate matcher against event type and log warnings for invalid combinations.
+ * Returns true if valid, false if invalid (but doesn't reject - for backward compat)
+ */
+function validateMatcherForEvent(
+	event: HookEventType,
+	matcher: string | undefined,
+	hookId: string,
+	filePath: string,
+): boolean {
+	// If no matcher specified, always valid
+	if (!matcher) {
+		return true
+	}
+
+	// If event doesn't support matchers, warn
+	if (!eventSupportsMatchers(event)) {
+		console.warn(
+			`[Hooks] Hook "${hookId}" in ${filePath}: Event "${event}" does not support matchers, ` +
+				`but matcher "${matcher}" was specified. Matcher will be ignored.`,
+		)
+		return false
+	}
+
+	// For tool events, any non-empty matcher is potentially valid (could be regex/glob)
+	if (isToolEvent(event)) {
+		return true
+	}
+
+	// For other events with matchers, validate against known values
+	if (!isValidMatcherForEvent(event, matcher)) {
+		const validMatchers = getValidMatchersForEvent(event)
+		console.warn(
+			`[Hooks] Hook "${hookId}" in ${filePath}: Matcher "${matcher}" is not valid for event "${event}". ` +
+				`Valid matchers are: ${validMatchers?.join(", ")}`,
+		)
+		return false
+	}
+
+	return true
+}
+
+function toHooksByEventMap(
+	data: z.infer<typeof HooksConfigFileSchema>,
+	filePath: string,
+): Map<HookEventType, HookDefinition[]> {
 	const hooks = new Map<HookEventType, HookDefinition[]>()
 
 	// New format: hooks: HookDefinitionWithEvents[]
@@ -108,6 +157,7 @@ function toHooksByEventMap(data: z.infer<typeof HooksConfigFileSchema>): Map<Hoo
 		for (const def of (data as any).hooks as Array<any>) {
 			const events: HookEventType[] = Array.isArray(def?.events) ? def.events : []
 			for (const event of events) {
+				validateMatcherForEvent(event, def.matcher, def.id, filePath)
 				const hookDef: HookDefinition = {
 					id: def.id,
 					matcher: def.matcher,
@@ -133,6 +183,9 @@ function toHooksByEventMap(data: z.infer<typeof HooksConfigFileSchema>): Map<Hoo
 	for (const [eventStr, definitions] of Object.entries(hooksRecord)) {
 		const event = eventStr as HookEventType
 		if (definitions && definitions.length > 0) {
+			for (const def of definitions) {
+				validateMatcherForEvent(event, def.matcher, def.id, filePath)
+			}
 			hooks.set(event, definitions)
 		}
 	}
@@ -171,7 +224,7 @@ async function loadConfigFile(filePath: string, source: HookSource): Promise<Loa
 			return result
 		}
 
-		result.hooks = toHooksByEventMap(validated.data)
+		result.hooks = toHooksByEventMap(validated.data, filePath)
 	} catch (err) {
 		if ((err as NodeJS.ErrnoException).code === "ENOENT") {
 			// File doesn't exist - not an error, just skip
