@@ -279,7 +279,7 @@ const TaskHeader = ({
 
 		if (currentTitle.length > 0) {
 			return (
-				<span className="truncate text-base" data-testid="task-title-text">
+				<span className="block truncate text-base" data-testid="task-title-text">
 					{currentTitle}
 				</span>
 			)
