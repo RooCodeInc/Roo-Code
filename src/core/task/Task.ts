@@ -384,6 +384,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	presentAssistantMessageHasPendingUpdates = false
 	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam | Anthropic.ToolResultBlockParam)[] = []
 	userMessageContentReady = false
+	/**
+	 * When an LLM stream ends, some providers may emit usage/cost information in trailing chunks.
+	 * We drain the iterator in the background to capture those, which can complete *after* a
+	 * subtask calls attempt_completion.
+	 *
+	 * This promise tracks the currently-running background usage collection so callers (notably
+	 * delegation/roll-up logic) can await final persisted cost/tokens before reading history.
+	 */
+	private pendingUsageCollectionPromise?: Promise<void>
 
 	/**
 	 * Push a tool_result block to userMessageContent, preventing duplicates.
@@ -1221,6 +1230,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.providerRef.deref()?.updateTaskHistory(historyItem)
 		} catch (error) {
 			console.error("Failed to save Roo messages:", error)
+		}
+	}
+
+	/**
+	 * Best-effort wait for any in-flight background usage collection to finish.
+	 *
+	 * This is critical when completing subtasks: the parent roll-up reads cost/tokens
+	 * from the child's persisted history item, which is updated by `saveClineMessages()`.
+	 */
+	public async waitForPendingUsageCollection(timeoutMs: number = DEFAULT_USAGE_COLLECTION_TIMEOUT_MS): Promise<void> {
+		const pending = this.pendingUsageCollectionPromise
+		if (!pending) return
+
+		try {
+			await Promise.race([pending, delay(timeoutMs)])
+		} catch {
+			// Non-fatal: background usage collection already logs errors.
 		}
 	}
 
@@ -3256,10 +3282,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						}
 					}
 
-					// Start the background task and handle any errors
-					drainStreamInBackgroundToFindAllUsage(lastApiReqIndex).catch((error) => {
-						console.error("Background usage collection failed:", error)
-					})
+					// Start the background task and handle any errors.
+					// IMPORTANT: keep a reference so completion/delegation can await final persisted usage/cost.
+					this.pendingUsageCollectionPromise = drainStreamInBackgroundToFindAllUsage(lastApiReqIndex)
+						.catch((error) => {
+							console.error("Background usage collection failed:", error)
+						})
+						.finally(() => {
+							if (this.pendingUsageCollectionPromise) {
+								this.pendingUsageCollectionPromise = undefined
+							}
+						})
 				} catch (error) {
 					// Abandoned happens when extension is no longer waiting for the
 					// Cline instance to finish aborting (error is thrown here when

@@ -91,6 +91,9 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			// This ensures the most recent stats are captured regardless of throttle timer
 			// and properly updates the snapshot to prevent redundant emissions
 			task.emitFinalTokenUsageUpdate()
+			// Ensure any trailing usage/cost emitted after stream completion is persisted
+			// before delegation/roll-up reads the child's history item.
+			await task.waitForPendingUsageCollection()
 
 			TelemetryService.instance.captureTaskCompleted(task.taskId)
 			task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)

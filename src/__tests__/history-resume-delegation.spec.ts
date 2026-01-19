@@ -3,6 +3,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { RooCodeEventName } from "@roo-code/types"
 
+// Keep AttemptCompletionTool tests deterministic (TelemetryService can be undefined in unit test env)
+vi.mock("@roo-code/telemetry", () => ({
+	TelemetryService: {
+		instance: { captureTaskCompleted: vi.fn() },
+	},
+}))
+
 /* vscode mock for Task/Provider imports */
 vi.mock("vscode", () => {
 	const window = {
@@ -374,13 +381,15 @@ describe("History resume delegation - parent metadata transitions", () => {
 		})
 
 		// Verify both events emitted
-		const eventNames = emitSpy.mock.calls.map((c) => c[0])
+		const eventNames = emitSpy.mock.calls.map((c: any[]) => c[0])
 		expect(eventNames).toContain(RooCodeEventName.TaskDelegationCompleted)
 		expect(eventNames).toContain(RooCodeEventName.TaskDelegationResumed)
 
 		// CRITICAL: verify ordering (TaskDelegationCompleted before TaskDelegationResumed)
-		const completedIdx = emitSpy.mock.calls.findIndex((c) => c[0] === RooCodeEventName.TaskDelegationCompleted)
-		const resumedIdx = emitSpy.mock.calls.findIndex((c) => c[0] === RooCodeEventName.TaskDelegationResumed)
+		const completedIdx = emitSpy.mock.calls.findIndex(
+			(c: any[]) => c[0] === RooCodeEventName.TaskDelegationCompleted,
+		)
+		const resumedIdx = emitSpy.mock.calls.findIndex((c: any[]) => c[0] === RooCodeEventName.TaskDelegationResumed)
 		expect(completedIdx).toBeGreaterThanOrEqual(0)
 		expect(resumedIdx).toBeGreaterThan(completedIdx)
 	})
@@ -424,7 +433,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 		})
 
 		// CRITICAL: verify legacy pause/unpause events NOT emitted
-		const eventNames = emitSpy.mock.calls.map((c) => c[0])
+		const eventNames = emitSpy.mock.calls.map((c: any[]) => c[0])
 		expect(eventNames).not.toContain(RooCodeEventName.TaskPaused)
 		expect(eventNames).not.toContain(RooCodeEventName.TaskUnpaused)
 		expect(eventNames).not.toContain(RooCodeEventName.TaskSpawned)
@@ -665,5 +674,104 @@ describe("History resume delegation - parent metadata transitions", () => {
 			const orphanLinked = parsedTodos.todos.find((t: any) => t.subtaskId === "child-orphan")
 			expect(orphanLinked).toBeUndefined()
 		}
+	})
+
+	it("subtask completion awaits late usage persistence before delegating (parent sees final cost)", async () => {
+		const parentTaskId = "p-late-cost"
+		const childTaskId = "c-late-cost"
+
+		// Seed parent messages with a todo linked to the child
+		const todos = [{ id: "t1", content: "do subtask", status: "in_progress", subtaskId: childTaskId }]
+		const seededParentMessages = [
+			{ type: "say", say: "system_update_todos", text: JSON.stringify({ tool: "updateTodoList", todos }), ts: 1 },
+		] as any
+		vi.mocked(readTaskMessages).mockResolvedValue(seededParentMessages)
+		vi.mocked(readApiMessages).mockResolvedValue([] as any)
+
+		// Parent history confirms relationship
+		const parentHistory = {
+			id: parentTaskId,
+			status: "delegated",
+			awaitingChildId: childTaskId,
+			childIds: [childTaskId],
+			ts: 1,
+			task: "Parent",
+			tokensIn: 0,
+			tokensOut: 0,
+			totalCost: 0,
+		} as any
+
+		// Child history initially stale cost
+		let childHistory = {
+			id: childTaskId,
+			status: "active",
+			tokensIn: 10,
+			tokensOut: 5,
+			totalCost: 0,
+			ts: 2,
+			task: "Child",
+		} as any
+
+		const reopenSpy = vi.fn().mockResolvedValue(undefined)
+		const provider: any = {
+			contextProxy: { globalStorageUri: { fsPath: "/storage" } },
+			getTaskWithId: vi.fn(async (id: string) => {
+				if (id === parentTaskId) return { historyItem: parentHistory }
+				if (id === childTaskId) return { historyItem: childHistory }
+				throw new Error("unknown")
+			}),
+			reopenParentFromDelegation: reopenSpy,
+		}
+
+		const childTask: any = {
+			parentTaskId,
+			taskId: childTaskId,
+			providerRef: { deref: () => provider },
+			didToolFailInCurrentTurn: false,
+			todoList: undefined,
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			say: vi.fn(),
+			emitFinalTokenUsageUpdate: vi.fn(),
+			getTokenUsage: () => ({}) as any,
+			toolUsage: {},
+			emit: vi.fn(),
+			ask: vi.fn().mockResolvedValue({ response: "yesButtonClicked" }),
+			waitForPendingUsageCollection: vi.fn(async () => {
+				childHistory = { ...childHistory, totalCost: 1.23 }
+			}),
+		}
+
+		const { attemptCompletionTool } = await import("../core/tools/AttemptCompletionTool")
+		const askFinishSubTaskApproval = vi.fn().mockResolvedValue(true)
+		const handleError = vi.fn((_context: string, error: Error) => {
+			// Fail loudly if AttemptCompletionTool hits its catch block
+			throw error
+		})
+		await attemptCompletionTool.execute({ result: "done" }, childTask, {
+			askApproval: vi.fn(),
+			handleError,
+			pushToolResult: vi.fn(),
+			removeClosingTag: vi.fn((_: any, s: any) => s),
+			askFinishSubTaskApproval,
+			toolDescription: vi.fn(),
+			toolProtocol: "native",
+		} as any)
+
+		// Ensure we actually awaited and hit the delegation decision point
+		expect(childTask.waitForPendingUsageCollection).toHaveBeenCalled()
+		expect(provider.getTaskWithId).toHaveBeenCalledWith(childTaskId)
+		expect(askFinishSubTaskApproval).toHaveBeenCalled()
+		expect(reopenSpy).toHaveBeenCalledOnce()
+
+		// Critical ordering: waitForPendingUsageCollection must run before delegation.
+		const waitCall = childTask.waitForPendingUsageCollection.mock.invocationCallOrder[0]
+		const reopenCall = reopenSpy.mock.invocationCallOrder[0]
+		expect(waitCall).toBeLessThan(reopenCall)
+
+		// Parent roll-up reads the child's persisted history; this ensures cost was finalized
+		// before delegation begins (the bug fix).
+		expect(childHistory.totalCost).toBe(1.23)
+		expect(childHistory.tokensIn + childHistory.tokensOut).toBe(15)
 	})
 })
