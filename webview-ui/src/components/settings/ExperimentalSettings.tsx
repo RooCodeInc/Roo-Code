@@ -51,8 +51,6 @@ export const ExperimentalSettings = ({
 			<Section>
 				{Object.entries(experimentConfigsMap)
 					.filter(([key]) => key in EXPERIMENT_IDS)
-					// Hide MULTIPLE_NATIVE_TOOL_CALLS - feature is on hold
-					.filter(([key]) => key !== "MULTIPLE_NATIVE_TOOL_CALLS")
 					.map((config) => {
 						// Use the same translation key pattern as ExperimentalFeature
 						const experimentKey = config[0]
