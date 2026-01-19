@@ -10,7 +10,7 @@ export const historyItemSchema = z.object({
 	parentTaskId: z.string().optional(),
 	number: z.number(),
 	ts: z.number(),
-	title: z.string().optional(),
+	title: z.string().max(255).optional(),
 	task: z.string(),
 	tokensIn: z.number(),
 	tokensOut: z.number(),
