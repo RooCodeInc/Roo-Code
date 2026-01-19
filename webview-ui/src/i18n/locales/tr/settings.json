@@ -869,6 +869,8 @@
 		"enableStreaming": "Akışı etkinleştir",
 		"enableR1Format": "R1 model parametrelerini etkinleştir",
 		"enableR1FormatTips": "QWQ gibi R1 modelleri kullanıldığında etkinleştirilmelidir, 400 hatası alınmaması için",
+		"enableThinkingMode": "Düşünme modunu etkinleştir",
+		"enableThinkingModeTips": "Kimi K2, DeepSeek Reasoner, GLM-4 gibi düşünme modelleri için akıl yürütme içeriği döndürmek üzere etkinleştirin",
 		"useAzure": "Azure kullan",
 		"azureApiVersion": "Azure API sürümünü ayarla",
 		"gemini": {

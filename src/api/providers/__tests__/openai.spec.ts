@@ -497,6 +497,90 @@ describe("OpenAiHandler", () => {
 			const callArgs = mockCreate.mock.calls[0][0]
 			expect(callArgs.max_completion_tokens).toBe(4096)
 		})
+
+		describe("thinking mode", () => {
+			it("should include thinking parameter when openAiThinkingModeEnabled is true (streaming)", async () => {
+				const thinkingOptions: ApiHandlerOptions = {
+					...mockOptions,
+					openAiThinkingModeEnabled: true,
+				}
+				const thinkingHandler = new OpenAiHandler(thinkingOptions)
+				const stream = thinkingHandler.createMessage(systemPrompt, messages)
+				// Consume the stream to trigger the API call
+				for await (const _chunk of stream) {
+				}
+				// Assert the mockCreate was called with thinking parameter
+				expect(mockCreate).toHaveBeenCalled()
+				const callArgs = mockCreate.mock.calls[0][0]
+				expect(callArgs.thinking).toEqual({ type: "enabled" })
+			})
+
+			it("should not include thinking parameter when openAiThinkingModeEnabled is false (streaming)", async () => {
+				const noThinkingOptions: ApiHandlerOptions = {
+					...mockOptions,
+					openAiThinkingModeEnabled: false,
+				}
+				const noThinkingHandler = new OpenAiHandler(noThinkingOptions)
+				const stream = noThinkingHandler.createMessage(systemPrompt, messages)
+				// Consume the stream to trigger the API call
+				for await (const _chunk of stream) {
+				}
+				// Assert the mockCreate was called without thinking parameter
+				expect(mockCreate).toHaveBeenCalled()
+				const callArgs = mockCreate.mock.calls[0][0]
+				expect(callArgs.thinking).toBeUndefined()
+			})
+
+			it("should not include thinking parameter when openAiThinkingModeEnabled is undefined (streaming)", async () => {
+				const defaultOptions: ApiHandlerOptions = {
+					...mockOptions,
+					// openAiThinkingModeEnabled is not set
+				}
+				const defaultHandler = new OpenAiHandler(defaultOptions)
+				const stream = defaultHandler.createMessage(systemPrompt, messages)
+				// Consume the stream to trigger the API call
+				for await (const _chunk of stream) {
+				}
+				// Assert the mockCreate was called without thinking parameter
+				expect(mockCreate).toHaveBeenCalled()
+				const callArgs = mockCreate.mock.calls[0][0]
+				expect(callArgs.thinking).toBeUndefined()
+			})
+
+			it("should include thinking parameter when openAiThinkingModeEnabled is true (non-streaming)", async () => {
+				const thinkingOptions: ApiHandlerOptions = {
+					...mockOptions,
+					openAiThinkingModeEnabled: true,
+					openAiStreamingEnabled: false,
+				}
+				const thinkingHandler = new OpenAiHandler(thinkingOptions)
+				const stream = thinkingHandler.createMessage(systemPrompt, messages)
+				// Consume the stream to trigger the API call
+				for await (const _chunk of stream) {
+				}
+				// Assert the mockCreate was called with thinking parameter
+				expect(mockCreate).toHaveBeenCalled()
+				const callArgs = mockCreate.mock.calls[0][0]
+				expect(callArgs.thinking).toEqual({ type: "enabled" })
+			})
+
+			it("should not include thinking parameter when openAiThinkingModeEnabled is false (non-streaming)", async () => {
+				const noThinkingOptions: ApiHandlerOptions = {
+					...mockOptions,
+					openAiThinkingModeEnabled: false,
+					openAiStreamingEnabled: false,
+				}
+				const noThinkingHandler = new OpenAiHandler(noThinkingOptions)
+				const stream = noThinkingHandler.createMessage(systemPrompt, messages)
+				// Consume the stream to trigger the API call
+				for await (const _chunk of stream) {
+				}
+				// Assert the mockCreate was called without thinking parameter
+				expect(mockCreate).toHaveBeenCalled()
+				const callArgs = mockCreate.mock.calls[0][0]
+				expect(callArgs.thinking).toBeUndefined()
+			})
+		})
 	})
 
 	describe("error handling", () => {

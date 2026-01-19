@@ -877,6 +877,8 @@
 		"enableStreaming": "Enable streaming",
 		"enableR1Format": "Enable R1 model parameters",
 		"enableR1FormatTips": "Must be enabled when using R1 models such as QWQ to prevent 400 errors",
+		"enableThinkingMode": "Enable thinking mode",
+		"enableThinkingModeTips": "Enable for thinking models like Kimi K2, DeepSeek Reasoner, GLM-4 to return reasoning content",
 		"useAzure": "Use Azure",
 		"azureApiVersion": "Set Azure API version",
 		"gemini": {

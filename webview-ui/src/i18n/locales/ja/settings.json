@@ -869,6 +869,8 @@
 		"enableStreaming": "ストリーミングを有効化",
 		"enableR1Format": "R1モデルパラメータを有効にする",
 		"enableR1FormatTips": "QWQなどのR1モデルを使用する際には、有効にする必要があります。400エラーを防ぐために",
+		"enableThinkingMode": "思考モードを有効にする",
+		"enableThinkingModeTips": "Kimi K2、DeepSeek Reasoner、GLM-4などの思考モデルで推論内容を返すために有効にします",
 		"useAzure": "Azureを使用",
 		"azureApiVersion": "Azure APIバージョンを設定",
 		"gemini": {
