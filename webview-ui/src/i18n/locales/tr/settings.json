@@ -1003,6 +1003,10 @@
 		}
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "Düzenlenebilir görev başlıklarını etkinleştir",
+			"description": "Sohbet ve geçmişte görevler için yalnızca özgün görev metni yerine özel başlıkları göster ve düzenle"
+		},
 		"collapseThinking": {
 			"label": "Düşünme mesajlarını varsayılan olarak daralt",
 			"description": "Etkinleştirildiğinde, düşünme blokları siz onlarla etkileşime girene kadar varsayılan olarak daraltılır"

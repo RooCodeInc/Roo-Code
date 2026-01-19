@@ -1002,6 +1002,10 @@
 		}
 	},
 	"ui": {
+		"taskTitles": {
+			"label": "Activer les titres de tâche modifiables",
+			"description": "Afficher et modifier des titres personnalisés pour les tâches dans le chat et l’historique, plutôt que seulement le texte original de la tâche"
+		},
 		"collapseThinking": {
 			"label": "Réduire les messages de réflexion par défaut",
 			"description": "Si activé, les blocs de réflexion seront réduits par défaut jusqu'à ce que vous interagissiez avec eux"

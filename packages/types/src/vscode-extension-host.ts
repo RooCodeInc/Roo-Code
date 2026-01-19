@@ -272,6 +272,7 @@ export type ExtensionState = Pick<
 	| "includeCurrentCost"
 	| "maxGitStatusFiles"
 	| "requestDelaySeconds"
+	| "taskTitlesEnabled"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
@@ -312,6 +313,7 @@ export type ExtensionState = Pick<
 	renderContext: "sidebar" | "editor"
 	settingsImportedAt?: number
 	historyPreviewCollapsed?: boolean
+	taskTitlesEnabled?: boolean
 
 	cloudUserInfo: CloudUserInfo | null
 	cloudIsAuthenticated: boolean
@@ -399,6 +401,7 @@ export interface WebviewMessage {
 		| "importSettings"
 		| "exportSettings"
 		| "resetState"
+		| "setTaskTitle"
 		| "flushRouterModels"
 		| "requestRouterModels"
 		| "requestOpenAiModels"
