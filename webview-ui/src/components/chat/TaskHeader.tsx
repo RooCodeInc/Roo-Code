@@ -264,7 +264,7 @@ const TaskHeader = ({
 					}}
 					aria-label={t(tooltipKey)}
 					data-testid="task-title-edit-button">
-					<Pencil size={16} />
+					<Pencil size={16} className="opacity-0 group-hover:opacity-100" />
 				</button>
 			</StandardTooltip>
 		)
@@ -285,7 +285,7 @@ const TaskHeader = ({
 
 		if (currentTitle.length > 0) {
 			return (
-				<span className="truncate text-base" data-testid="task-title-text">
+				<span className="block truncate text-base" data-testid="task-title-text">
 					{currentTitle}
 				</span>
 			)
@@ -389,8 +389,7 @@ const TaskHeader = ({
 							)}
 						</div>
 						<div className="flex items-center shrink-0 ml-2" onClick={(e) => e.stopPropagation()}>
-							<StandardTooltip
-								content={isTaskExpanded ? t("chat:task.collapse") : t("chat:task.expand")}>
+							<StandardTooltip content={isTaskExpanded ? t("chat:task.collapse") : t("chat:task.expand")}>
 								<button
 									onClick={() => setIsTaskExpanded(!isTaskExpanded)}
 									className="shrink-0 min-h-[20px] min-w-[20px] p-[2px] cursor-pointer opacity-85 hover:opacity-100 bg-transparent border-none rounded-md">
