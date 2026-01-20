@@ -469,6 +469,7 @@ describe("ClineProvider Task History Synchronization", () => {
 	describe("broadcastTaskHistoryUpdate", () => {
 		it("sends taskHistoryUpdated message with sorted history", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
 
 			const now = Date.now()
 			const items: HistoryItem[] = [
@@ -498,6 +499,7 @@ describe("ClineProvider Task History Synchronization", () => {
 
 		it("filters out invalid history items", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
 
 			const now = Date.now()
 			const items: HistoryItem[] = [
@@ -522,6 +524,7 @@ describe("ClineProvider Task History Synchronization", () => {
 
 		it("reads from global state when no history is provided", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
 
 			// Set up task history in global state
 			const now = Date.now()
