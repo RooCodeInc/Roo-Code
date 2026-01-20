@@ -108,7 +108,7 @@
 		"awaiting_child": "Menunggu tugas anak {{childId}}"
 	},
 	"costs": {
-		"own": "Utama",
+		"own": "Task",
 		"subtasks": "Subtugas"
 	},
 	"stats": {

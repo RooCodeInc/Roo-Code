@@ -108,7 +108,7 @@
 		"awaiting_child": "Warte auf Unteraufgabe {{childId}}"
 	},
 	"costs": {
-		"own": "Haupt",
+		"own": "Task",
 		"subtasks": "Unteraufgaben"
 	},
 	"stats": {

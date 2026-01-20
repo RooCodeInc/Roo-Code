@@ -108,7 +108,7 @@
 		"awaiting_child": "等待子任务 {{childId}}"
 	},
 	"costs": {
-		"own": "主要",
+		"own": "Task",
 		"subtasks": "子任务"
 	},
 	"stats": {

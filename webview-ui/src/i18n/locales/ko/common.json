@@ -108,7 +108,7 @@
 		"awaiting_child": "하위 작업 {{childId}} 대기 중"
 	},
 	"costs": {
-		"own": "메인",
+		"own": "Task",
 		"subtasks": "하위작업"
 	},
 	"stats": {

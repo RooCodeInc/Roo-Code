@@ -108,7 +108,7 @@
 		"awaiting_child": "Oczekiwanie na zadanie podrzędne {{childId}}"
 	},
 	"costs": {
-		"own": "Główne",
+		"own": "Task",
 		"subtasks": "Podzadania"
 	},
 	"stats": {

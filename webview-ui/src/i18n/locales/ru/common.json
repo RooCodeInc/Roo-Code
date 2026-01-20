@@ -108,7 +108,7 @@
 		"awaiting_child": "Ожидание дочерней задачи {{childId}}"
 	},
 	"costs": {
-		"own": "Основная",
+		"own": "Task",
 		"subtasks": "Подзадачи"
 	},
 	"stats": {

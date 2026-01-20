@@ -108,7 +108,7 @@
 		"awaiting_child": "In attesa dell'attività figlia {{childId}}"
 	},
 	"costs": {
-		"own": "Principale",
+		"own": "Task",
 		"subtasks": "Sottoattività"
 	},
 	"stats": {

@@ -108,7 +108,7 @@
 		"awaiting_child": "Esperant la tasca filla {{childId}}"
 	},
 	"costs": {
-		"own": "Principal",
+		"own": "Task",
 		"subtasks": "Subtasques"
 	},
 	"stats": {

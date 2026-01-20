@@ -108,7 +108,7 @@
 		"awaiting_child": "चाइल्ड कार्य {{childId}} की प्रतीक्षा में"
 	},
 	"costs": {
-		"own": "मुख्य",
+		"own": "Task",
 		"subtasks": "उपकार्य"
 	},
 	"stats": {

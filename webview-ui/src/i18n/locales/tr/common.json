@@ -108,7 +108,7 @@
 		"awaiting_child": "{{childId}} alt görevi bekleniyor"
 	},
 	"costs": {
-		"own": "Ana",
+		"own": "Task",
 		"subtasks": "Alt görevler"
 	},
 	"stats": {

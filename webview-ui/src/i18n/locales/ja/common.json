@@ -108,7 +108,7 @@
 		"awaiting_child": "子タスク{{childId}}を待機中"
 	},
 	"costs": {
-		"own": "メイン",
+		"own": "Task",
 		"subtasks": "サブタスク"
 	},
 	"stats": {
