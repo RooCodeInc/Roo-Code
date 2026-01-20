@@ -2974,6 +2974,105 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+		case "requestSkills": {
+			try {
+				const skillsManager = provider.getSkillsManager()
+				if (skillsManager) {
+					const skills = skillsManager.getSkillsMetadata()
+					await provider.postMessageToWebview({ type: "skills", skills })
+				} else {
+					await provider.postMessageToWebview({ type: "skills", skills: [] })
+				}
+			} catch (error) {
+				provider.log(`Error fetching skills: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				await provider.postMessageToWebview({ type: "skills", skills: [] })
+			}
+			break
+		}
+		case "createSkill": {
+			try {
+				const skillName = message.skillName
+				const source = message.source
+				const skillDescription = message.skillDescription
+				const skillMode = message.skillMode
+
+				if (!skillName || !source || !skillDescription) {
+					throw new Error("Missing required fields: skillName, source, or skillDescription")
+				}
+
+				const skillsManager = provider.getSkillsManager()
+				if (!skillsManager) {
+					throw new Error("Skills manager not available")
+				}
+
+				const createdPath = await skillsManager.createSkill(skillName, source, skillDescription, skillMode)
+
+				// Open the created file in the editor
+				openFile(createdPath)
+
+				// Send updated skills list
+				const skills = skillsManager.getSkillsMetadata()
+				await provider.postMessageToWebview({ type: "skills", skills })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error creating skill: ${errorMessage}`)
+				vscode.window.showErrorMessage(`Failed to create skill: ${errorMessage}`)
+			}
+			break
+		}
+		case "deleteSkill": {
+			try {
+				const skillName = message.skillName
+				const source = message.source
+				const skillMode = message.skillMode
+
+				if (!skillName || !source) {
+					throw new Error("Missing required fields: skillName or source")
+				}
+
+				const skillsManager = provider.getSkillsManager()
+				if (!skillsManager) {
+					throw new Error("Skills manager not available")
+				}
+
+				await skillsManager.deleteSkill(skillName, source, skillMode)
+
+				// UI will handle refresh via setTimeout
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error deleting skill: ${errorMessage}`)
+				vscode.window.showErrorMessage(`Failed to delete skill: ${errorMessage}`)
+			}
+			break
+		}
+		case "openSkillFile": {
+			try {
+				const skillName = message.skillName
+				const source = message.source
+				const skillMode = message.skillMode
+
+				if (!skillName || !source) {
+					throw new Error("Missing required fields: skillName or source")
+				}
+
+				const skillsManager = provider.getSkillsManager()
+				if (!skillsManager) {
+					throw new Error("Skills manager not available")
+				}
+
+				const skill = skillsManager.getSkill(skillName, source, skillMode)
+				if (!skill) {
+					throw new Error(`Skill "${skillName}" not found`)
+				}
+
+				openFile(skill.path)
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error opening skill file: ${errorMessage}`)
+				vscode.window.showErrorMessage(`Failed to open skill file: ${errorMessage}`)
+			}
+			break
+		}
 		case "openCommandFile": {
 			try {
 				if (message.text) {
