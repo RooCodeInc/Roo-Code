@@ -390,15 +390,27 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Task history retention purge (runs in background after activation)
 	// By this point, provider is fully initialized and ready to handle deletions
-	startBackgroundRetentionPurge({
-		globalStoragePath: contextProxy.globalStorageUri.fsPath,
-		log: (m) => outputChannel.appendLine(m),
-		deleteTaskById: async (taskId: string) => {
-			// Reuse the same internal deletion logic as the History view so that
-			// checkpoints, shadow repositories, and task state are cleaned up consistently.
-			await provider.deleteTaskWithId(taskId)
-		},
-	})
+	{
+		const retentionValue = contextProxy.getValue("taskHistoryRetention")
+		const retention =
+			retentionValue === "90" ||
+			retentionValue === "60" ||
+			retentionValue === "30" ||
+			retentionValue === "7" ||
+			retentionValue === "3"
+				? retentionValue
+				: "never"
+		startBackgroundRetentionPurge({
+			globalStoragePath: contextProxy.globalStorageUri.fsPath,
+			log: (m) => outputChannel.appendLine(m),
+			deleteTaskById: async (taskId: string) => {
+				// Reuse the same internal deletion logic as the History view so that
+				// checkpoints, shadow repositories, and task state are cleaned up consistently.
+				await provider.deleteTaskWithId(taskId)
+			},
+			retention,
+		})
+	}
 
 	// Implements the `RooCodeAPI` interface.
 	const socketPath = process.env.ROO_CODE_IPC_SOCKET_PATH
