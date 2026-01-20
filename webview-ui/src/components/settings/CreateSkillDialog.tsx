@@ -53,6 +53,9 @@ const validateDescription = (description: string): string | null => {
 	return null
 }
 
+// Sentinel value for "Any mode" since Radix Select doesn't allow empty string values
+const MODE_ANY = "__any__"
+
 export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 	open,
 	onOpenChange,
@@ -65,7 +68,7 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 	const [name, setName] = useState("")
 	const [description, setDescription] = useState("")
 	const [source, setSource] = useState<"global" | "project">(hasWorkspace ? "project" : "global")
-	const [mode, setMode] = useState<string>("")
+	const [mode, setMode] = useState<string>(MODE_ANY)
 	const [nameError, setNameError] = useState<string | null>(null)
 	const [descriptionError, setDescriptionError] = useState<string | null>(null)
 
@@ -87,7 +90,7 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 		setName("")
 		setDescription("")
 		setSource(hasWorkspace ? "project" : "global")
-		setMode("")
+		setMode(MODE_ANY)
 		setNameError(null)
 		setDescriptionError(null)
 	}, [hasWorkspace])
@@ -124,12 +127,13 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 		}
 
 		// Send message to create skill
+		// Convert MODE_ANY sentinel value to undefined for the backend
 		vscode.postMessage({
 			type: "createSkill",
 			skillName: name,
 			source,
 			skillDescription: description,
-			skillMode: mode || undefined,
+			skillMode: mode === MODE_ANY ? undefined : mode,
 		})
 
 		// Close dialog and notify parent
@@ -219,7 +223,7 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 								<SelectValue placeholder={t("settings:skills.createDialog.modePlaceholder")} />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="">{t("settings:skills.createDialog.modeAny")}</SelectItem>
+								<SelectItem value={MODE_ANY}>{t("settings:skills.createDialog.modeAny")}</SelectItem>
 								{availableModes.map((m) => (
 									<SelectItem key={m.slug} value={m.slug}>
 										{m.name}

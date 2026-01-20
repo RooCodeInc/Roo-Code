@@ -362,8 +362,8 @@ describe("CreateSkillDialog", () => {
 			/>,
 		)
 
-		// Should have "Any mode" option
-		expect(screen.getByTestId("select-item-")).toBeInTheDocument()
+		// Should have "Any mode" option (uses __any__ sentinel value)
+		expect(screen.getByTestId("select-item-__any__")).toBeInTheDocument()
 		// Should have built-in modes
 		expect(screen.getByTestId("select-item-code")).toBeInTheDocument()
 		expect(screen.getByTestId("select-item-architect")).toBeInTheDocument()
