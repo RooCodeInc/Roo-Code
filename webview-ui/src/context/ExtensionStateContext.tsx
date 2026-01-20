@@ -456,7 +456,11 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 						}
 						// Keep UI semantics consistent with extension: newest-first ordering.
 						nextHistory.sort((a, b) => b.ts - a.ts)
-						return { ...prevState, taskHistory: nextHistory }
+							return {
+								...prevState,
+								taskHistory: nextHistory,
+								currentTaskItem: prevState.currentTaskItem?.id === item.id ? item : prevState.currentTaskItem,
+							}
 					})
 					break
 				}
