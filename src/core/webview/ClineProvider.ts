@@ -1802,8 +1802,8 @@ export class ClineProvider
 				try {
 					await ShadowCheckpointService.deleteTask({ taskId, globalStorageDir, workspaceDir })
 				} catch (error) {
-					console.error(
-						`[deleteTaskWithId${taskId}] failed to delete associated shadow repository or branch: ${error instanceof Error ? error.message : String(error)}`,
+					this.log(
+						`[deleteTaskWithId] failed to delete shadow repository for task ${taskId}: ${error instanceof Error ? error.message : String(error)}`,
 					)
 				}
 
@@ -1811,10 +1811,9 @@ export class ClineProvider
 				try {
 					const dirPath = await getTaskDirectoryPath(globalStoragePath, taskId)
 					await fs.rm(dirPath, { recursive: true, force: true })
-					console.log(`[deleteTaskWithId${taskId}] removed task directory`)
 				} catch (error) {
-					console.error(
-						`[deleteTaskWithId${taskId}] failed to remove task directory: ${error instanceof Error ? error.message : String(error)}`,
+					this.log(
+						`[deleteTaskWithId] failed to remove task directory for task ${taskId}: ${error instanceof Error ? error.message : String(error)}`,
 					)
 				}
 			}

@@ -928,5 +928,30 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				}
 			})
 		})
+
+		describe(`${klass.name}#deleteTask`, () => {
+			it("handles non-existent workspace repo directory gracefully", async () => {
+				const nonExistentWorkspaceDir = path.join(tmpDir, `non-existent-workspace-${Date.now()}`)
+				const nonExistentGlobalStorageDir = path.join(tmpDir, `non-existent-storage-${Date.now()}`)
+				const taskIdToDelete = "non-existent-task"
+
+				// Verify the workspace repo directory doesn't exist
+				const workspaceRepoDir = path.join(
+					nonExistentGlobalStorageDir,
+					"checkpoints",
+					klass.hashWorkspaceDir(nonExistentWorkspaceDir),
+				)
+				expect(await fileExistsAtPath(workspaceRepoDir)).toBe(false)
+
+				// Should not throw when the directory doesn't exist
+				await expect(
+					klass.deleteTask({
+						taskId: taskIdToDelete,
+						globalStorageDir: nonExistentGlobalStorageDir,
+						workspaceDir: nonExistentWorkspaceDir,
+					}),
+				).resolves.not.toThrow()
+			})
+		})
 	},
 )
