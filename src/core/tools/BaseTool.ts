@@ -151,7 +151,8 @@ export abstract class BaseTool<TName extends ToolName> {
 			console.error(`Error parsing parameters:`, error)
 			const errorMessage = `Failed to parse ${this.name} parameters: ${error instanceof Error ? error.message : String(error)}`
 			await callbacks.handleError(`parsing ${this.name} args`, new Error(errorMessage))
-			callbacks.pushToolResult(errorMessage)
+			// Note: handleError already emits a tool_result via formatResponse.toolError in the caller.
+			// Do NOT call pushToolResult here to avoid duplicate tool_result payloads.
 			return
 		}
 

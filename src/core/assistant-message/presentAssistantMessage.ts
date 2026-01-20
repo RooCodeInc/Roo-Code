@@ -1032,7 +1032,15 @@ function containsXmlToolMarkup(text: string): boolean {
 	// Keep this intentionally narrow: only reject XML-style tool tags matching our tool names.
 	// Avoid regex so we don't keep legacy XML parsing artifacts around.
 	// Note: This is a best-effort safeguard; tool_use blocks without an id are rejected elsewhere.
-	const lower = text.toLowerCase()
+
+	// First, strip out content inside markdown code fences to avoid false positives
+	// when users paste documentation or examples containing tool tag references.
+	// This handles both fenced code blocks (```) and inline code (`).
+	const textWithoutCodeBlocks = text
+		.replace(/```[\s\S]*?```/g, "") // Remove fenced code blocks
+		.replace(/`[^`]+`/g, "") // Remove inline code
+
+	const lower = textWithoutCodeBlocks.toLowerCase()
 	if (!lower.includes("<") || !lower.includes(">")) {
 		return false
 	}

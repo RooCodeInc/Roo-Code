@@ -36,12 +36,18 @@ export function getToolUseGuidelinesSection(experimentFlags?: Record<string, boo
 	 - New terminal output in reaction to the changes, which you may need to consider or act upon.
 	 - Any other relevant feedback or information related to the tool use.`)
 
-	guidelinesList.push(
-		`${itemNumber++}. ALWAYS wait for user confirmation after each tool use before proceeding. Never assume the success of a tool use without explicit confirmation of the result from the user.`,
-	)
+	// Only add the "wait for confirmation" guideline when NOT using multiple tool calls.
+	// With multiple tool calls enabled, the model is expected to batch tools and get results together.
+	if (!isMultipleNativeToolCallsEnabled) {
+		guidelinesList.push(
+			`${itemNumber++}. ALWAYS wait for user confirmation after each tool use before proceeding. Never assume the success of a tool use without explicit confirmation of the result from the user.`,
+		)
+	}
 
 	// Join guidelines and add the footer
-	const footer = `\n\nIt is crucial to proceed step-by-step, waiting for the user's message after each tool use before moving forward with the task. This approach allows you to:
+	const footer = isMultipleNativeToolCallsEnabled
+		? `\n\nBy carefully considering the user's response after tool executions, you can react accordingly and make informed decisions about how to proceed with the task. This iterative process helps ensure the overall success and accuracy of your work.`
+		: `\n\nIt is crucial to proceed step-by-step, waiting for the user's message after each tool use before moving forward with the task. This approach allows you to:
 1. Confirm the success of each step before proceeding.
 2. Address any issues or errors that arise immediately.
 3. Adapt your approach based on new information or unexpected results.

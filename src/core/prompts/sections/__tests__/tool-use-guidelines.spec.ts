@@ -41,13 +41,17 @@ describe("getToolUseGuidelinesSection", () => {
 				expect(guidelines).not.toContain("use one tool at a time per message")
 			})
 
-			it("should include simplified iterative process guidelines", () => {
+			it("should use simplified footer without step-by-step language", () => {
 				const guidelines = getToolUseGuidelinesSection({
 					[EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS]: true,
 				})
 
-				expect(guidelines).toContain("carefully considering the user's response after each tool use")
-				expect(guidelines).toContain("It is crucial to proceed step-by-step")
+				// When multiple tools per message is enabled, we don't want the
+				// "step-by-step" or "after each tool use" language that would
+				// contradict the ability to batch tool calls.
+				expect(guidelines).toContain("carefully considering the user's response after tool executions")
+				expect(guidelines).not.toContain("It is crucial to proceed step-by-step")
+				expect(guidelines).not.toContain("ALWAYS wait for user confirmation after each tool use")
 			})
 		})
 	})
