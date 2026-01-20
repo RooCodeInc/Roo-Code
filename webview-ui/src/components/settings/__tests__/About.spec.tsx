@@ -1,3 +1,5 @@
+import type { ComponentProps } from "react"
+
 import { render, screen } from "@/utils/test-utils"
 
 import { TranslationProvider } from "@/i18n/__mocks__/TranslationContext"
@@ -26,7 +28,7 @@ vi.mock("@roo/package", () => ({
 }))
 
 describe("About", () => {
-	const defaultProps = {
+	const defaultProps: ComponentProps<typeof About> = {
 		telemetrySetting: "enabled" as const,
 		setTelemetrySetting: vi.fn(),
 		taskHistoryRetention: "never",
