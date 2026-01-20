@@ -99,9 +99,11 @@ describe("QwenCodeHandler Native Tools", () => {
 							}),
 						}),
 					]),
-					parallel_tool_calls: false,
 				}),
 			)
+			// parallel_tool_calls should NOT be included when not explicitly set to true
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 		})
 
 		it("should include tool_choice when provided", async () => {
@@ -145,7 +147,8 @@ describe("QwenCodeHandler Native Tools", () => {
 			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
 			expect(callArgs).toHaveProperty("tools")
 			expect(callArgs).toHaveProperty("tool_choice")
-			expect(callArgs).toHaveProperty("parallel_tool_calls", false)
+			// parallel_tool_calls should NOT be included when not explicitly set to true
+			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 		})
 
 		it("should yield tool_call_partial chunks during streaming", async () => {
