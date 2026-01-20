@@ -543,6 +543,25 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "list_files":
+				if (partialArgs.path !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+						recursive: partialArgs.recursive,
+					}
+				}
+				break
+
+			case "new_task":
+				if (partialArgs.mode !== undefined || partialArgs.message !== undefined) {
+					nativeArgs = {
+						mode: partialArgs.mode,
+						message: partialArgs.message,
+						todos: partialArgs.todos,
+					}
+				}
+				break
+
 			default:
 				break
 		}
@@ -816,6 +835,25 @@ export class NativeToolCallParser {
 							old_string: args.old_string,
 							new_string: args.new_string,
 							expected_replacements: args.expected_replacements,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "list_files":
+					if (args.path !== undefined) {
+						nativeArgs = {
+							path: args.path,
+							recursive: args.recursive,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "new_task":
+					if (args.mode !== undefined && args.message !== undefined) {
+						nativeArgs = {
+							mode: args.mode,
+							message: args.message,
+							todos: args.todos,
 						} as NativeArgsFor<TName>
 					}
 					break

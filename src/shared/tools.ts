@@ -92,6 +92,7 @@ export type NativeToolArgs = {
 	search_replace: { file_path: string; old_string: string; new_string: string }
 	edit_file: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
 	apply_patch: { patch: string }
+	list_files: { path: string; recursive?: boolean }
 	new_task: { mode: string; message: string; todos?: string }
 	ask_followup_question: {
 		question: string
