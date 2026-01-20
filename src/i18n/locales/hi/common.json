@@ -263,5 +263,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"taskHistoryRetention": {
+		"purgeNotification": "Roo Code ने {{days}} दिनों से अधिक पुराना {{count}} कार्य हटा दिया",
+		"purgeNotification_plural": "Roo Code ने {{days}} दिनों से अधिक पुराने {{count}} कार्य हटा दिए",
+		"actions": {
+			"viewSettings": "सेटिंग्स देखें",
+			"dismiss": "खारिज करें"
+		}
 	}
 }

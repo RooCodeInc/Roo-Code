@@ -263,5 +263,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"taskHistoryRetention": {
+		"purgeNotification": "Roo Code, {{days}} günden eski {{count}} görevi sildi",
+		"purgeNotification_plural": "Roo Code, {{days}} günden eski {{count}} görevi sildi",
+		"actions": {
+			"viewSettings": "Ayarları Görüntüle",
+			"dismiss": "Kapat"
+		}
 	}
 }

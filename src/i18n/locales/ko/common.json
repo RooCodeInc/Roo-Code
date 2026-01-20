@@ -263,5 +263,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"taskHistoryRetention": {
+		"purgeNotification": "Roo Code가 {{days}}일보다 오래된 작업 {{count}}개를 삭제했습니다",
+		"purgeNotification_plural": "Roo Code가 {{days}}일보다 오래된 작업 {{count}}개를 삭제했습니다",
+		"actions": {
+			"viewSettings": "설정 보기",
+			"dismiss": "닫기"
+		}
 	}
 }

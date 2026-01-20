@@ -268,5 +268,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"taskHistoryRetention": {
+		"purgeNotification": "Roo Code 已删除 {{count}} 个超过 {{days}} 天的任务",
+		"purgeNotification_plural": "Roo Code 已删除 {{count}} 个超过 {{days}} 天的任务",
+		"actions": {
+			"viewSettings": "查看设置",
+			"dismiss": "关闭"
+		}
 	}
 }

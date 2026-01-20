@@ -263,5 +263,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"taskHistoryRetention": {
+		"purgeNotification": "Roo Code ha eliminato {{count}} attività più vecchia di {{days}} giorni",
+		"purgeNotification_plural": "Roo Code ha eliminato {{count}} attività più vecchie di {{days}} giorni",
+		"actions": {
+			"viewSettings": "Visualizza Impostazioni",
+			"dismiss": "Ignora"
+		}
 	}
 }
