@@ -73,6 +73,22 @@ export class NativeToolCallParser {
 		}
 	>()
 
+	private static coerceOptionalBoolean(value: unknown): boolean | undefined {
+		if (typeof value === "boolean") {
+			return value
+		}
+		if (typeof value === "string") {
+			const lower = value.trim().toLowerCase()
+			if (lower === "true") {
+				return true
+			}
+			if (lower === "false") {
+				return false
+			}
+		}
+		return undefined
+	}
+
 	/**
 	 * Process a raw tool call chunk from the API stream.
 	 * Handles tracking, buffering, and emits start/delta/end events.
@@ -547,7 +563,7 @@ export class NativeToolCallParser {
 				if (partialArgs.path !== undefined) {
 					nativeArgs = {
 						path: partialArgs.path,
-						recursive: partialArgs.recursive,
+						recursive: this.coerceOptionalBoolean(partialArgs.recursive),
 					}
 				}
 				break
@@ -843,7 +859,7 @@ export class NativeToolCallParser {
 					if (args.path !== undefined) {
 						nativeArgs = {
 							path: args.path,
-							recursive: args.recursive,
+							recursive: this.coerceOptionalBoolean(args.recursive),
 						} as NativeArgsFor<TName>
 					}
 					break

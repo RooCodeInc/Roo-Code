@@ -30,11 +30,16 @@ export function getToolUseGuidelinesSection(experimentFlags?: Record<string, boo
 			`${itemNumber++}. If multiple actions are needed, use one tool at a time per message to accomplish the task iteratively, with each tool use being informed by the result of the previous tool use. Do not assume the outcome of any tool use. Each step must be informed by the previous step's result.`,
 		)
 	}
-	guidelinesList.push(`${itemNumber++}. After each tool use, the user will respond with the result of that tool use. This result will provide you with the necessary information to continue your task or make further decisions. This response may include:
+	// Only add the per-tool confirmation guideline when NOT using multiple tool calls.
+	// When multiple tool calls are enabled, results may arrive batched (after all tools),
+	// so "after each tool use" would contradict the batching behavior.
+	if (!isMultipleNativeToolCallsEnabled) {
+		guidelinesList.push(`${itemNumber++}. After each tool use, the user will respond with the result of that tool use. This result will provide you with the necessary information to continue your task or make further decisions. This response may include:
 	 - Information about whether the tool succeeded or failed, along with any reasons for failure.
 	 - Linter errors that may have arisen due to the changes you made, which you'll need to address.
 	 - New terminal output in reaction to the changes, which you may need to consider or act upon.
 	 - Any other relevant feedback or information related to the tool use.`)
+	}
 
 	// Only add the "wait for confirmation" guideline when NOT using multiple tool calls.
 	// With multiple tool calls enabled, the model is expected to batch tools and get results together.

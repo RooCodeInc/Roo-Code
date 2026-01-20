@@ -37,7 +37,7 @@ import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
-import { validateToolUse } from "../tools/validateToolUse"
+import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
@@ -450,6 +450,41 @@ export async function presentAssistantMessage(cline: Task) {
 
 			// Track if we've already pushed a tool result for this tool call (native tool calling only)
 			let hasToolResult = false
+
+			// If this is a native tool call but the parser couldn't construct nativeArgs
+			// (e.g., malformed/unfinished JSON in a streaming tool call), we must NOT attempt to
+			// execute the tool. Instead, emit exactly one structured tool_result so the provider
+			// receives a matching tool_result for the tool_use_id.
+			//
+			// This avoids executing an invalid tool_use block and prevents duplicate/fragmented
+			// error reporting.
+			if (!block.partial) {
+				const customTool = stateExperiments?.customTools ? customToolRegistry.get(block.name) : undefined
+				const isKnownTool = isValidToolName(String(block.name), stateExperiments)
+				if (isKnownTool && !block.nativeArgs && !customTool) {
+					const errorMessage =
+						`Invalid tool call for '${block.name}': missing nativeArgs. ` +
+						`This usually means the model streamed invalid or incomplete arguments and the call could not be finalized.`
+
+					cline.consecutiveMistakeCount++
+					try {
+						cline.recordToolError(block.name as ToolName, errorMessage)
+					} catch {
+						// Best-effort only
+					}
+
+					// Push tool_result directly without setting didAlreadyUseTool so streaming can
+					// continue gracefully.
+					cline.pushToolResultToUserContent({
+						type: "tool_result",
+						tool_use_id: toolCallId,
+						content: formatResponse.toolError(errorMessage),
+						is_error: true,
+					})
+
+					break
+				}
+			}
 
 			// Store approval feedback to merge into tool result (GitHub #10465)
 			let approvalFeedback: { text: string; images?: string[] } | undefined

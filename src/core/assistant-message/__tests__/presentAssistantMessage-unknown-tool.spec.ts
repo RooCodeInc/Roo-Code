@@ -7,6 +7,7 @@ import { presentAssistantMessage } from "../presentAssistantMessage"
 vi.mock("../../task/Task")
 vi.mock("../../tools/validateToolUse", () => ({
 	validateToolUse: vi.fn(),
+	isValidToolName: vi.fn(() => false),
 }))
 vi.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {

@@ -39,6 +39,7 @@ describe("getToolUseGuidelinesSection", () => {
 
 				expect(guidelines).toContain("you may use multiple tools in a single message")
 				expect(guidelines).not.toContain("use one tool at a time per message")
+				expect(guidelines).not.toContain("After each tool use, the user will respond")
 			})
 
 			it("should use simplified footer without step-by-step language", () => {

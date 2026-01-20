@@ -2845,8 +2845,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 											presentAssistantMessage(this)
 										} else if (toolUseIndex !== undefined) {
 											// finalizeStreamingToolCall returned null (malformed JSON or missing args)
-											// We still need to mark the tool as non-partial so it gets executed
-											// The tool's validation will catch any missing required parameters
+											// Mark the tool as non-partial so it's presented as complete, but execution
+											// will be short-circuited in presentAssistantMessage with a structured tool_result.
 											const existingToolUse = this.assistantMessageContent[toolUseIndex]
 											if (existingToolUse && existingToolUse.type === "tool_use") {
 												existingToolUse.partial = false
