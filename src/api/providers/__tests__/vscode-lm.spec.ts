@@ -396,10 +396,11 @@ describe("VsCodeLmHandler", () => {
 	describe("getModel", () => {
 		it("should return model info when client exists", async () => {
 			const mockModel = { ...mockLanguageModelChat }
-			;(vscode.lm.selectChatModels as Mock).mockResolvedValueOnce([mockModel])
-
-			// Initialize client
-			await handler["getClient"]()
+			// The handler starts async initialization in the constructor.
+			// Make the test deterministic by explicitly (re)initializing here.
+			;(vscode.lm.selectChatModels as Mock).mockResolvedValue([mockModel])
+			handler["client"] = null
+			await handler.initializeClient()
 
 			const model = handler.getModel()
 			expect(model.id).toBe("test-model")
@@ -417,10 +418,11 @@ describe("VsCodeLmHandler", () => {
 
 		it("should return basic model info when client exists", async () => {
 			const mockModel = { ...mockLanguageModelChat }
-			;(vscode.lm.selectChatModels as Mock).mockResolvedValueOnce([mockModel])
-
-			// Initialize client
-			await handler["getClient"]()
+			// The handler starts async initialization in the constructor.
+			// Make the test deterministic by explicitly (re)initializing here.
+			;(vscode.lm.selectChatModels as Mock).mockResolvedValue([mockModel])
+			handler["client"] = null
+			await handler.initializeClient()
 
 			const model = handler.getModel()
 			expect(model.info).toBeDefined()
