@@ -1,0 +1,402 @@
+import {
+	ArrowRight,
+	Brain,
+	GitBranch,
+	GraduationCap,
+	Layers,
+	Link2,
+	LucideIcon,
+	MessageSquare,
+	Settings,
+	Shield,
+	Slack,
+	Users,
+	Zap,
+} from "lucide-react"
+import type { Metadata } from "next"
+
+import { Button } from "@/components/ui"
+import { AnimatedBackground } from "@/components/homepage"
+import { SEO } from "@/lib/seo"
+import { ogImageUrl } from "@/lib/og"
+import { EXTERNAL_LINKS } from "@/lib/constants"
+
+const TITLE = "Roo Code for Slack"
+const DESCRIPTION =
+	"Summon agents to explain code, plan new features, or execute coding tasks without leaving Slack. Turn team discussions into shipped features."
+const OG_DESCRIPTION = "Your AI Team in Slack"
+const PATH = "/slack"
+
+export const metadata: Metadata = {
+	title: TITLE,
+	description: DESCRIPTION,
+	alternates: {
+		canonical: `${SEO.url}${PATH}`,
+	},
+	openGraph: {
+		title: TITLE,
+		description: DESCRIPTION,
+		url: `${SEO.url}${PATH}`,
+		siteName: SEO.name,
+		images: [
+			{
+				url: ogImageUrl(TITLE, OG_DESCRIPTION),
+				width: 1200,
+				height: 630,
+				alt: TITLE,
+			},
+		],
+		locale: SEO.locale,
+		type: "website",
+	},
+	twitter: {
+		card: SEO.twitterCard,
+		title: TITLE,
+		description: DESCRIPTION,
+		images: [ogImageUrl(TITLE, OG_DESCRIPTION)],
+	},
+	keywords: [
+		...SEO.keywords,
+		"slack integration",
+		"slack bot",
+		"AI in slack",
+		"code assistant slack",
+		"@Roomote",
+		"team collaboration",
+	],
+}
+
+// Invalidate cache when a request comes in, at most once every hour.
+export const revalidate = 3600
+
+interface ValueProp {
+	icon: LucideIcon
+	title: string
+	description: string
+}
+
+const VALUE_PROPS: ValueProp[] = [
+	{
+		icon: GitBranch,
+		title: "From discussion to shipped feature.",
+		description:
+			"Your team discusses a feature in Slack. @Roomote turns the discussion into a plan. Then builds it. All without leaving the conversation.",
+	},
+	{
+		icon: Brain,
+		title: "The agent knows the thread.",
+		description:
+			'@Roomote reads the conversation before responding. Ask "why is this happening?" after a team discussion and it understands.',
+	},
+	{
+		icon: Link2,
+		title: "Chain agents for complex work.",
+		description:
+			"Start with a Planner to spec it out. Then call the Coder to build it. Multi-step workflows, one Slack thread.",
+	},
+	{
+		icon: Users,
+		title: "Non-technical team members can investigate.",
+		description:
+			"PMs, CSMs, and support can ask @Roomote to explain code or investigate issues. Engineering gets pulled in only when truly needed.",
+	},
+	{
+		icon: GraduationCap,
+		title: "Team learning, built in.",
+		description: "Public channel mentions show everyone how to leverage agents. Learn by watching.",
+	},
+	{
+		icon: Layers,
+		title: "One platform, multiple surfaces.",
+		description:
+			"The same agents that work in your IDE and review your PRs are available in Slack. Different surfaces, same quality.",
+	},
+	{
+		icon: Shield,
+		title: "Safe by design.",
+		description: "Agents never touch main/master directly. They produce branches and PRs. Humans approve.",
+	},
+]
+
+interface WorkflowStep {
+	step: number
+	title: string
+	description: string
+	code?: string
+}
+
+const WORKFLOW_STEPS: WorkflowStep[] = [
+	{
+		step: 1,
+		title: "Turn the discussion into a plan",
+		description: "Your team discusses a feature. When it gets complex, summon the Planner agent.",
+		code: "@Roomote plan out a dark mode feature based on our discussion. Include the toggle, persistence, and system preference detection.",
+	},
+	{
+		step: 2,
+		title: "Refine the plan in the thread",
+		description:
+			"The team reviews the spec in the thread, suggests changes, asks questions. Mention @Roomote again to refine.",
+	},
+	{
+		step: 3,
+		title: "Build the plan",
+		description: "Once the plan looks good, hand it off to the Coder agent to implement.",
+		code: "@Roomote implement this plan in the frontend-web repo.",
+	},
+	{
+		step: 4,
+		title: "Review and ship",
+		description: "The Coder creates a branch and opens a PR. The team reviews, and the feature ships.",
+	},
+]
+
+interface OnboardingStep {
+	icon: LucideIcon
+	title: string
+	description: string
+}
+
+const ONBOARDING_STEPS: OnboardingStep[] = [
+	{
+		icon: Settings,
+		title: "1. Connect in Settings",
+		description: 'Go to your personal or org settings in the top right user menu. Click on "Connect" for Slack.',
+	},
+	{
+		icon: Slack,
+		title: "2. Follow the process",
+		description: "Authorize the Roo Code app to access your Slack workspace.",
+	},
+	{
+		icon: MessageSquare,
+		title: "3. Add to channels",
+		description: "Add the @Roomote bot to the channels where you want it to be available.",
+	},
+]
+
+export default function SlackPage() {
+	return (
+		<>
+			{/* Hero Section */}
+			<section className="relative flex pt-32 pb-20 items-center overflow-hidden">
+				<AnimatedBackground />
+				<div className="container relative flex flex-col items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="text-center max-w-4xl mx-auto mb-12">
+						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-sm font-medium mb-6">
+							<Slack className="size-4" />
+							Powered by Roo Code Cloud
+						</div>
+						<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-5xl lg:text-6xl">
+							<span className="text-violet-500">@Roomote:</span> Your AI Team in Slack
+						</h1>
+						<p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
+							Summon agents to explain code, plan new features, or execute coding tasks without leaving
+							Slack.
+						</p>
+						<p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+							Mention @Roomote in any channel. Pick an agent and a repo. Get answers, plans, or a PR in
+							the thread.
+						</p>
+						<div className="flex flex-col sm:flex-row gap-4 justify-center">
+							<Button
+								size="xl"
+								className="bg-violet-600 hover:bg-violet-700 text-white transition-all duration-300 shadow-lg hover:shadow-violet-500/25"
+								asChild>
+								<a
+									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex items-center justify-center">
+									Get Started
+									<ArrowRight className="ml-2 size-5" />
+								</a>
+							</Button>
+							<Button variant="outline" size="xl" className="backdrop-blur-sm" asChild>
+								<a
+									href="https://docs.roocode.com/roo-code-cloud/slack-integration"
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex items-center justify-center">
+									Read the Docs
+								</a>
+							</Button>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Value Props Section */}
+			<section className="py-24 bg-muted/30">
+				<div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+					<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2 z-1">
+						<div className="absolute left-1/2 top-1/2 h-[800px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 dark:bg-violet-700/20 blur-[140px]" />
+					</div>
+					<div className="text-center mb-16">
+						<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
+							Why your team will love @Roomote
+						</h2>
+						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+							AI agents that understand context, chain together for complex work, and keep humans in
+							control.
+						</p>
+					</div>
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto relative">
+						{VALUE_PROPS.map((prop, index) => {
+							const Icon = prop.icon
+							return (
+								<div
+									key={index}
+									className="bg-background p-8 rounded-2xl border border-border hover:shadow-lg transition-all duration-300">
+									<div className="bg-violet-100 dark:bg-violet-900/20 w-12 h-12 rounded-lg flex items-center justify-center mb-6">
+										<Icon className="size-6 text-violet-600 dark:text-violet-400" />
+									</div>
+									<h3 className="text-xl font-semibold mb-3">{prop.title}</h3>
+									<p className="text-muted-foreground leading-relaxed">{prop.description}</p>
+								</div>
+							)
+						})}
+					</div>
+				</div>
+			</section>
+
+			{/* Featured Workflow Section */}
+			<section className="relative overflow-hidden border-t border-border py-32">
+				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2 z-1">
+						<div className="absolute left-1/2 top-1/2 h-[400px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 dark:bg-blue-700/20 blur-[140px]" />
+					</div>
+
+					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
+						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6">
+							<Zap className="size-4" />
+							Featured Workflow
+						</div>
+						<h2 className="text-3xl font-bold tracking-tight sm:text-5xl mb-4">
+							Thread to Shipped Feature
+						</h2>
+						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+							Turn Slack discussions into working code. No context lost, no meetings needed.
+						</p>
+					</div>
+
+					<div className="relative mx-auto md:max-w-[1000px]">
+						{/* Workflow Steps */}
+						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+							{WORKFLOW_STEPS.map((step) => (
+								<div
+									key={step.step}
+									className="relative border border-border rounded-2xl bg-background p-8 transition-all duration-300 hover:shadow-lg">
+									<div className="flex items-center gap-3 mb-4">
+										<div className="bg-blue-100 dark:bg-blue-900/30 w-10 h-10 rounded-full flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold">
+											{step.step}
+										</div>
+										<h3 className="text-xl font-semibold text-foreground">{step.title}</h3>
+									</div>
+									<p className="leading-relaxed font-light text-muted-foreground mb-4">
+										{step.description}
+									</p>
+									{step.code && (
+										<div className="bg-muted/50 rounded-lg p-4 font-mono text-sm text-foreground/80 border border-border/50">
+											{step.code}
+										</div>
+									)}
+								</div>
+							))}
+						</div>
+
+						{/* Why This Matters */}
+						<div className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-blue-500/5 border border-border/50">
+							<h3 className="text-xl font-semibold mb-4">Why this matters</h3>
+							<ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+								<li className="flex items-start gap-3">
+									<div className="mt-1 size-2 rounded-full bg-violet-500 shrink-0" />
+									<span className="text-muted-foreground">
+										<strong className="text-foreground">No context switch:</strong> Discussion,
+										spec, and code all in one Slack thread
+									</span>
+								</li>
+								<li className="flex items-start gap-3">
+									<div className="mt-1 size-2 rounded-full bg-violet-500 shrink-0" />
+									<span className="text-muted-foreground">
+										<strong className="text-foreground">Team learning:</strong> Everyone sees the
+										workflow in public channels
+									</span>
+								</li>
+								<li className="flex items-start gap-3">
+									<div className="mt-1 size-2 rounded-full bg-violet-500 shrink-0" />
+									<span className="text-muted-foreground">
+										<strong className="text-foreground">Multi-agent handoff:</strong> Planner then
+										Coder, documented workflow
+									</span>
+								</li>
+								<li className="flex items-start gap-3">
+									<div className="mt-1 size-2 rounded-full bg-violet-500 shrink-0" />
+									<span className="text-muted-foreground">
+										<strong className="text-foreground">Human oversight:</strong> Approve the plan,
+										approve the PR. Humans decide what ships.
+									</span>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			{/* Onboarding Section */}
+			<section className="py-24 bg-muted/30">
+				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="text-center mb-16">
+						<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Get started in minutes</h2>
+						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+							Connect your Slack workspace and start summoning agents.
+						</p>
+					</div>
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+						{ONBOARDING_STEPS.map((step, index) => {
+							const Icon = step.icon
+							return (
+								<div key={index} className="text-center">
+									<div className="bg-violet-100 dark:bg-violet-900/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+										<Icon className="size-8 text-violet-600 dark:text-violet-400" />
+									</div>
+									<h3 className="text-lg font-semibold mb-2">{step.title}</h3>
+									<p className="text-muted-foreground">{step.description}</p>
+								</div>
+							)
+						})}
+					</div>
+				</div>
+			</section>
+
+			{/* CTA Section */}
+			<section className="py-24">
+				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="mx-auto max-w-4xl rounded-3xl border border-border/50 bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-blue-500/5 p-8 text-center shadow-2xl backdrop-blur-xl dark:border-white/10 sm:p-16">
+						<h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
+							Start using Roo Code in Slack
+						</h2>
+						<p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
+							Try it free today. No credit card needed.
+						</p>
+						<div className="flex flex-col justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
+							<Button
+								size="lg"
+								className="bg-foreground text-background hover:bg-foreground/90 transition-all duration-300"
+								asChild>
+								<a
+									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex items-center justify-center">
+									Sign up now
+									<ArrowRight className="ml-2 h-4 w-4" />
+								</a>
+							</Button>
+						</div>
+					</div>
+				</div>
+			</section>
+		</>
+	)
+}

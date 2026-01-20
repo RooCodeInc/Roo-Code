@@ -9,6 +9,7 @@ export const EXTERNAL_LINKS = {
 	BLUESKY: "https://bsky.app/profile/roocode.bsky.social",
 	YOUTUBE: "https://www.youtube.com/@RooCodeYT",
 	DOCUMENTATION: "https://docs.roocode.com",
+	SLACK_DOCS: "https://docs.roocode.com/roo-code-cloud/slack-integration",
 	CAREERS: "https://careers.roocode.com",
 	ISSUES: "https://github.com/RooCodeInc/Roo-Code/issues",
 	FEATURE_REQUESTS: "https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests",
