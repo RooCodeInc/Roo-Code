@@ -95,7 +95,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			stream_options: { include_usage: true },
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
-			...(metadata?.parallelToolCalls && { parallel_tool_calls: true }),
+			parallel_tool_calls: metadata?.parallelToolCalls ?? false,
 		}
 
 		// Add thinking parameter if reasoning is enabled and model supports it

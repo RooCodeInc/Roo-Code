@@ -82,9 +82,9 @@ describe("LmStudioHandler Native Tools", () => {
 					]),
 				}),
 			)
-			// parallel_tool_calls should NOT be included when not explicitly set to true
+			// parallel_tool_calls should be false when not explicitly set
 			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
+			expect(callArgs).toHaveProperty("parallel_tool_calls", false)
 		})
 
 		it("should include tool_choice when provided", async () => {
@@ -128,8 +128,8 @@ describe("LmStudioHandler Native Tools", () => {
 			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
 			expect(callArgs).toHaveProperty("tools")
 			expect(callArgs).toHaveProperty("tool_choice")
-			// parallel_tool_calls should NOT be included when not explicitly set to true
-			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
+			// parallel_tool_calls should be false when not explicitly set
+			expect(callArgs).toHaveProperty("parallel_tool_calls", false)
 		})
 
 		it("should yield tool_call_partial chunks during streaming", async () => {
@@ -283,7 +283,7 @@ describe("LmStudioHandler Native Tools", () => {
 			expect(endChunks[0].id).toBe("call_lmstudio_test")
 		})
 
-		it("should work with parallel tool calls disabled (not sent when false)", async () => {
+		it("should work with parallel tool calls disabled (sends false)", async () => {
 			mockCreate.mockImplementationOnce(() => ({
 				[Symbol.asyncIterator]: async function* () {
 					yield {
@@ -299,10 +299,9 @@ describe("LmStudioHandler Native Tools", () => {
 			})
 			await stream.next()
 
-			// When parallelToolCalls is false, the parameter should NOT be sent to the API
-			// (allows API to use its default behavior)
+			// When parallelToolCalls is false, the parameter should be sent as false
 			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).not.toHaveProperty("parallel_tool_calls")
+			expect(callArgs).toHaveProperty("parallel_tool_calls", false)
 		})
 
 		it("should handle reasoning content alongside tool calls", async () => {

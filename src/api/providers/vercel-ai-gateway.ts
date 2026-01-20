@@ -63,7 +63,7 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 			stream_options: { include_usage: true },
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
-			...(metadata?.parallelToolCalls && { parallel_tool_calls: true }),
+			parallel_tool_calls: metadata?.parallelToolCalls ?? false,
 		}
 
 		const completion = await this.client.chat.completions.create(body)

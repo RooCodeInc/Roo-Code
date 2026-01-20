@@ -378,8 +378,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					}
 				}),
 			tool_choice: metadata?.tool_choice,
-			// Only pass parallel_tool_calls when explicitly true
-			...(metadata?.parallelToolCalls && { parallel_tool_calls: true }),
+			parallel_tool_calls: metadata?.parallelToolCalls ?? false,
 		}
 
 		// Include text.verbosity only when the model explicitly supports it

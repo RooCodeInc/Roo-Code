@@ -657,7 +657,7 @@ describe("read_file tool output structure", () => {
 		// Setup mock provider with default maxReadFileLine
 		mockProvider.getState.mockResolvedValue({ maxReadFileLine: -1, maxImageFileSize: 20, maxTotalImageSize: 20 }) // Default to full file read
 
-		// Add additional properties needed for XML tests
+		// Add additional properties needed for missing param validation tests
 		mockCline.sayAndCreateMissingParamError = vi.fn().mockResolvedValue("Missing required parameter")
 
 		toolResult = undefined
