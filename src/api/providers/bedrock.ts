@@ -840,12 +840,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		usePromptCache: boolean = false,
 		modelInfo?: any,
 		conversationId?: string, // Optional conversation ID to track cache points across messages
-		useNativeTools: boolean = false, // Whether native tool calling is being used
+		_useNativeTools: boolean = false, // Deprecated: Bedrock converter is native-only now
 	): { system: SystemContentBlock[]; messages: Message[] } {
 		// First convert messages using shared converter for proper image handling
-		const convertedMessages = sharedConverter(anthropicMessages as Anthropic.Messages.MessageParam[], {
-			useNativeTools,
-		})
+		const convertedMessages = sharedConverter(anthropicMessages as Anthropic.Messages.MessageParam[])
 
 		// If prompt caching is disabled, return the converted messages directly
 		if (!usePromptCache) {

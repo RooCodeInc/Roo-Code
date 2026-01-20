@@ -104,7 +104,7 @@ describe("convertToBedrockConverseMessages", () => {
 		}
 	})
 
-	it("converts tool use messages correctly when useNativeTools=true (native tools format)", () => {
+	it("converts tool use messages correctly (native tools format)", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
@@ -121,8 +121,7 @@ describe("convertToBedrockConverseMessages", () => {
 			},
 		]
 
-		// With useNativeTools: true, keeps tool_use as native format
-		const result = convertToBedrockConverseMessages(messages, { useNativeTools: true })
+		const result = convertToBedrockConverseMessages(messages)
 
 		if (!result[0] || !result[0].content) {
 			expect.fail("Expected result to have content")
@@ -177,7 +176,7 @@ describe("convertToBedrockConverseMessages", () => {
 		}
 	})
 
-	it("converts tool result messages to native format (useNativeTools: true)", () => {
+	it("converts tool result messages to native format", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
@@ -191,8 +190,7 @@ describe("convertToBedrockConverseMessages", () => {
 			},
 		]
 
-		// With useNativeTools: true, keeps tool_result as native format
-		const result = convertToBedrockConverseMessages(messages, { useNativeTools: true })
+		const result = convertToBedrockConverseMessages(messages)
 
 		if (!result[0] || !result[0].content) {
 			expect.fail("Expected result to have content")
@@ -247,7 +245,7 @@ describe("convertToBedrockConverseMessages", () => {
 		}
 	})
 
-	it("converts tool result messages with string content to native format (useNativeTools: true)", () => {
+	it("converts tool result messages with string content to native format", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
@@ -261,7 +259,7 @@ describe("convertToBedrockConverseMessages", () => {
 			},
 		]
 
-		const result = convertToBedrockConverseMessages(messages, { useNativeTools: true })
+		const result = convertToBedrockConverseMessages(messages)
 
 		if (!result[0] || !result[0].content) {
 			expect.fail("Expected result to have content")

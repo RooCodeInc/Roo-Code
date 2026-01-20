@@ -25,14 +25,8 @@ interface BedrockMessageContent {
 /**
  * Convert Anthropic messages to Bedrock Converse format
  * @param anthropicMessages Messages in Anthropic format
- * @param options Optional configuration for conversion
- * @param options.useNativeTools When true (default), uses Bedrock's native toolUse/toolResult blocks
  */
-export function convertToBedrockConverseMessages(
-	anthropicMessages: Anthropic.Messages.MessageParam[],
-	options?: { useNativeTools?: boolean },
-): Message[] {
-	const useNativeTools = options?.useNativeTools ?? true
+export function convertToBedrockConverseMessages(anthropicMessages: Anthropic.Messages.MessageParam[]): Message[] {
 	return anthropicMessages.map((anthropicMessage) => {
 		// Map Anthropic roles to Bedrock roles
 		const role: ConversationRole = anthropicMessage.role === "assistant" ? "assistant" : "user"
@@ -104,7 +98,6 @@ export function convertToBedrockConverseMessages(
 			}
 
 			if (messageBlock.type === "tool_result") {
-				void useNativeTools
 				// Handle content field - can be string or array (native tool format)
 				if (messageBlock.content) {
 					// Content is a string
