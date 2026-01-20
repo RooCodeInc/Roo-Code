@@ -366,7 +366,7 @@ describe("VercelAiGatewayHandler", () => {
 				)
 			})
 
-			it("should NOT include parallel_tool_calls when not explicitly set (allows API default)", async () => {
+			it("should include parallel_tool_calls: false by default", async () => {
 				const handler = new VercelAiGatewayHandler(mockOptions)
 
 				const messageGenerator = handler.createMessage("test prompt", [], {
@@ -375,14 +375,12 @@ describe("VercelAiGatewayHandler", () => {
 				})
 				await messageGenerator.next()
 
-				// parallel_tool_calls should NOT be included when not explicitly set to true
 				expect(mockCreate).toHaveBeenCalledWith(
 					expect.objectContaining({
 						tools: expect.any(Array),
+						parallel_tool_calls: false,
 					}),
 				)
-				const callArgs = mockCreate.mock.calls[0][0]
-				expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 			})
 
 			it("should yield tool_call_partial chunks when streaming tool calls", async () => {

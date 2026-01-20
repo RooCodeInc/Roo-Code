@@ -61,12 +61,10 @@ describe("OpenAiHandler native tools", () => {
 						function: expect.objectContaining({ name: "test_tool" }),
 					}),
 				]),
+				parallel_tool_calls: false,
 			}),
 			expect.anything(),
 		)
-		// parallel_tool_calls should NOT be included when not explicitly set to true
-		const callArgs = mockCreate.mock.calls[0][0]
-		expect(callArgs).not.toHaveProperty("parallel_tool_calls")
 	})
 })
 
