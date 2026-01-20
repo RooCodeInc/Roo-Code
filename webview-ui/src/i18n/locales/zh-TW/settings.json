@@ -918,6 +918,15 @@
 			"3": "3天"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "儲存空間使用量",
+		"calculating": "計算中...",
+		"format": "{{size}} ({{count}} 個工作)",
+		"formatSingular": "{{size}} (1 個工作)",
+		"empty": "無已儲存工作",
+		"refresh": "重新整理",
+		"error": "無法計算"
+	},
 	"footer": {
 		"telemetry": {
 			"label": "允許匿名錯誤與使用情況回報",

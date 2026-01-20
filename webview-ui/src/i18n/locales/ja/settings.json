@@ -910,6 +910,15 @@
 			"3": "3日"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "ストレージ使用量",
+		"calculating": "計算中...",
+		"format": "{{size}} ({{count}} タスク)",
+		"formatSingular": "{{size}} (1 タスク)",
+		"empty": "保存されたタスクがありません",
+		"refresh": "更新",
+		"error": "計算できません"
+	},
 	"footer": {
 		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
 		"telemetry": {

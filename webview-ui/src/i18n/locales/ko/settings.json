@@ -910,6 +910,15 @@
 			"3": "3일"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "저장소 사용량",
+		"calculating": "계산 중...",
+		"format": "{{size}} ({{count}}개 작업)",
+		"formatSingular": "{{size}} (1개 작업)",
+		"empty": "저장된 작업 없음",
+		"refresh": "새로고침",
+		"error": "계산할 수 없음"
+	},
 	"footer": {
 		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",
 		"telemetry": {

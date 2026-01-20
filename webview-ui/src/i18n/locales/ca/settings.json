@@ -909,6 +909,15 @@
 			"3": "3 dies"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "Ús d'emmagatzematge",
+		"calculating": "Calculant...",
+		"format": "{{size}} ({{count}} tasques)",
+		"formatSingular": "{{size}} (1 tasca)",
+		"empty": "Cap tasca emmagatzemada",
+		"refresh": "Actualitzar",
+		"error": "No es pot calcular"
+	},
 	"footer": {
 		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

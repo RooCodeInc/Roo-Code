@@ -910,6 +910,15 @@
 			"3": "3 ngày"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "Dung lượng lưu trữ",
+		"calculating": "Đang tính toán...",
+		"format": "{{size}} ({{count}} tác vụ)",
+		"formatSingular": "{{size}} (1 tác vụ)",
+		"empty": "Không có tác vụ được lưu trữ",
+		"refresh": "Làm mới",
+		"error": "Không thể tính toán"
+	},
 	"footer": {
 		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

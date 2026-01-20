@@ -910,6 +910,15 @@
 			"3": "3 दिन"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "स्टोरेज उपयोग",
+		"calculating": "गणना हो रही है...",
+		"format": "{{size}} ({{count}} कार्य)",
+		"formatSingular": "{{size}} (1 कार्य)",
+		"empty": "कोई कार्य संग्रहीत नहीं",
+		"refresh": "रिफ्रेश करें",
+		"error": "गणना करने में असमर्थ"
+	},
 	"footer": {
 		"feedback": "यदि आपके कोई प्रश्न या प्रतिक्रिया है, तो <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> पर एक मुद्दा खोलने या <redditLink>reddit.com/r/RooCode</redditLink> या <discordLink>discord.gg/roocode</discordLink> में शामिल होने में संकोच न करें",
 		"telemetry": {

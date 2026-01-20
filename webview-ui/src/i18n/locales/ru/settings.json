@@ -910,6 +910,15 @@
 			"3": "3 дня"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "Использование хранилища",
+		"calculating": "Подсчет...",
+		"format": "{{size}} ({{count}} задач)",
+		"formatSingular": "{{size}} (1 задача)",
+		"empty": "Нет сохраненных задач",
+		"refresh": "Обновить",
+		"error": "Невозможно подсчитать"
+	},
 	"footer": {
 		"feedback": "Если у вас есть вопросы или предложения, откройте issue на <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> или присоединяйтесь к <redditLink>reddit.com/r/RooCode</redditLink> или <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

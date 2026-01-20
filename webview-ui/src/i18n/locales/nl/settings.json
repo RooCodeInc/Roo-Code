@@ -910,6 +910,15 @@
 			"3": "3 dagen"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "Opslaggebruik",
+		"calculating": "Berekenen...",
+		"format": "{{size}} ({{count}} taken)",
+		"formatSingular": "{{size}} (1 taak)",
+		"empty": "Geen opgeslagen taken",
+		"refresh": "Vernieuwen",
+		"error": "Kan niet berekenen"
+	},
 	"footer": {
 		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> of sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

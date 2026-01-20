@@ -910,6 +910,15 @@
 			"3": "3 gün"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "Depolama kullanımı",
+		"calculating": "Hesaplanıyor...",
+		"format": "{{size}} ({{count}} görev)",
+		"formatSingular": "{{size}} (1 görev)",
+		"empty": "Depolanmış görev yok",
+		"refresh": "Yenile",
+		"error": "Hesaplanamıyor"
+	},
 	"footer": {
 		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
 		"telemetry": {

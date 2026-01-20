@@ -910,6 +910,15 @@
 			"3": "3天"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "存储使用量",
+		"calculating": "计算中...",
+		"format": "{{size}} ({{count}} 个任务)",
+		"formatSingular": "{{size}} (1 个任务)",
+		"empty": "无任务存储",
+		"refresh": "刷新",
+		"error": "无法计算"
+	},
 	"footer": {
 		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

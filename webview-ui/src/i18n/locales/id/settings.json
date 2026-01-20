@@ -939,6 +939,15 @@
 			"3": "3 hari"
 		}
 	},
+	"taskHistoryStorage": {
+		"label": "Penggunaan penyimpanan",
+		"calculating": "Menghitung...",
+		"format": "{{size}} ({{count}} tugas)",
+		"formatSingular": "{{size}} (1 tugas)",
+		"empty": "Tidak ada tugas tersimpan",
+		"refresh": "Segarkan",
+		"error": "Tidak dapat menghitung"
+	},
 	"footer": {
 		"feedback": "Jika kamu punya pertanyaan atau feedback, jangan ragu untuk membuka issue di <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> atau bergabung <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
