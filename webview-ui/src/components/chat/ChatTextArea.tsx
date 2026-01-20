@@ -28,6 +28,7 @@ import Thumbnails from "../common/Thumbnails"
 import { ModeSelector } from "./ModeSelector"
 import { ApiConfigSelector } from "./ApiConfigSelector"
 import { AutoApproveDropdown } from "./AutoApproveDropdown"
+import ReasoningEffortDropdown from "./ReasoningEffortDropdown"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
@@ -103,6 +104,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			commands,
 			cloudUserInfo,
 			enterBehavior,
+			apiConfiguration,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -1317,6 +1319,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							pinnedApiConfigs={pinnedApiConfigs}
 							togglePinnedApiConfig={togglePinnedApiConfig}
 						/>
+						<ReasoningEffortDropdown apiConfiguration={apiConfiguration} />
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>
 					<div
