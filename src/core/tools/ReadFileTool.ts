@@ -15,6 +15,7 @@ import { getReadablePath } from "../../utils/path"
 import { countFileLines } from "../../integrations/misc/line-counter"
 import { readLines } from "../../integrations/misc/read-lines"
 import { extractTextFromFile, addLineNumbers, getSupportedBinaryFormats } from "../../integrations/misc/extract-text"
+import { readTextWithTokenBudget } from "../../integrations/misc/read-text-with-budget"
 import { parseSourceCodeDefinitionsForFile } from "../../services/tree-sitter"
 import { parseXml } from "../../utils/xml"
 import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
@@ -45,6 +46,28 @@ interface FileResult {
 	feedbackText?: string
 	feedbackImages?: any[]
 }
+
+function sliceTextLines(text: string, startLine0: number, endLine0: number): string {
+	const lines = text.split(/\r?\n/)
+	// Mirror other readers: if text ends with newline, drop the synthetic last empty line
+	if (lines.length > 0 && lines[lines.length - 1] === "") {
+		lines.pop()
+	}
+	return lines.slice(startLine0, endLine0 + 1).join("\n")
+}
+
+async function tryReadTextViaVscode(fullPath: string): Promise<string | undefined> {
+	try {
+		const vscode = await import("vscode")
+		const uri = vscode.Uri.file(fullPath)
+		const doc = await vscode.workspace.openTextDocument(uri)
+		return doc.getText()
+	} catch {
+		return undefined
+	}
+}
+
+const MAX_VSCODE_TEXT_READ_BYTES = 2 * 1024 * 1024 // avoid loading very large files into memory just to detect encoding
 
 export class ReadFileTool extends BaseTool<"read_file"> {
 	readonly name = "read_file" as const
@@ -366,6 +389,16 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						continue
 					}
 
+					const fileSizeBytes = typeof stats.size === "number" ? stats.size : 0
+					let vscodeText: string | undefined
+					const getVscodeText = async (): Promise<string | undefined> => {
+						if (!useNative) return undefined
+						if (fileSizeBytes > MAX_VSCODE_TEXT_READ_BYTES) return undefined
+						if (vscodeText !== undefined) return vscodeText
+						vscodeText = await tryReadTextViaVscode(fullPath)
+						return vscodeText
+					}
+
 					const [totalLines, isBinary] = await Promise.all([countFileLines(fullPath), isBinaryFile(fullPath)])
 
 					if (isBinary) {
@@ -461,12 +494,14 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
 						const rangeResults: string[] = []
 						const nativeRangeResults: string[] = []
+						const maybeText = await getVscodeText()
 
 						for (const range of fileResult.lineRanges) {
-							const content = addLineNumbers(
-								await readLines(fullPath, range.end - 1, range.start - 1),
-								range.start,
-							)
+							const rawRangeText =
+								useNative && maybeText !== undefined
+									? sliceTextLines(maybeText, range.start - 1, range.end - 1)
+									: await readLines(fullPath, range.end - 1, range.start - 1)
+							const content = addLineNumbers(rawRangeText, range.start)
 							const lineRangeAttr = ` lines="${range.start}-${range.end}"`
 							rangeResults.push(`<content${lineRangeAttr}>\n${content}</content>`)
 							nativeRangeResults.push(`Lines ${range.start}-${range.end}:\n${content}`)
@@ -505,7 +540,12 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					}
 
 					if (maxReadFileLine > 0 && totalLines > maxReadFileLine) {
-						const content = addLineNumbers(await readLines(fullPath, maxReadFileLine - 1, 0))
+						const maybeText = await getVscodeText()
+						const rawText =
+							useNative && maybeText !== undefined
+								? sliceTextLines(maybeText, 0, maxReadFileLine - 1)
+								: await readLines(fullPath, maxReadFileLine - 1, 0)
+						const content = addLineNumbers(rawText)
 						const lineRangeAttr = ` lines="1-${maxReadFileLine}"`
 						let xmlInfo = `<content${lineRangeAttr}>\n${content}</content>\n`
 						let nativeInfo = `Lines 1-${maxReadFileLine}:\n${content}\n`
@@ -567,10 +607,12 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 						xmlInfo = `<content/>\n<notice>${notice}</notice>\n`
 						nativeInfo = `Note: ${notice}`
 					} else {
-						// Read file with incremental token counting
-						const result = await readFileWithTokenBudget(fullPath, {
-							budgetTokens: safeReadBudget,
-						})
+						// Prefer VSCode decoding (encoding-aware) for native tool protocol.
+						const maybeText = await getVscodeText()
+						const result =
+							useNative && maybeText !== undefined
+								? await readTextWithTokenBudget(maybeText, { budgetTokens: safeReadBudget })
+								: await readFileWithTokenBudget(fullPath, { budgetTokens: safeReadBudget })
 
 						content = addLineNumbers(result.content)
 
