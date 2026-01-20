@@ -899,8 +899,8 @@
 	},
 	"aboutRetention": {
 		"label": "Görev geçmişini otomatik sil",
-		"description": "Uzantı yeniden yüklendiğinde seçilen döneme göre daha eski görevleri siler.",
-		"warning": "Uyarı: Bu işlem görevleri kalıcı olarak siler ve yalnızca eklenti yeniden yüklendiğinde çalışır.",
+		"description": "Uzantı etkinleştirildiğinde seçilen döneme göre daha eski görevleri siler.",
+		"warning": "Uyarı: Bu işlem eski görevleri kalıcı olarak siler ve uzantı etkinleştirildiğinde çalışır.",
 		"options": {
 			"never": "Asla",
 			"90": "90 gün",

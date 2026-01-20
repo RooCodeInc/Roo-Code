@@ -898,8 +898,8 @@
 	},
 	"aboutRetention": {
 		"label": "Supprimer automatiquement l'historique des tâches",
-		"description": "Supprime les tâches antérieures à la période sélectionnée lors du rechargement de l'extension.",
-		"warning": "Avertissement : Cette action supprime définitivement les tâches et ne s'exécute qu'au rechargement du plugin.",
+		"description": "Supprime les tâches antérieures à la période sélectionnée lorsque l'extension est activée.",
+		"warning": "Avertissement : Cette action supprime définitivement les anciennes tâches et s'exécute lorsque l'extension est activée.",
 		"options": {
 			"never": "Jamais",
 			"90": "90 jours",

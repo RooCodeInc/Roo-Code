@@ -928,8 +928,8 @@
 	},
 	"aboutRetention": {
 		"label": "Hapus otomatis riwayat tugas",
-		"description": "Menghapus tugas yang lebih lama dari periode yang dipilih saat memuat ulang ekstensi.",
-		"warning": "Peringatan: Tindakan ini menghapus tugas secara permanen dan hanya berjalan saat memuat ulang plugin.",
+		"description": "Menghapus tugas yang lebih lama dari periode yang dipilih saat ekstensi diaktifkan.",
+		"warning": "Peringatan: Tindakan ini menghapus tugas lama secara permanen dan berjalan saat ekstensi diaktifkan.",
 		"options": {
 			"never": "Tidak pernah",
 			"90": "90 hari",

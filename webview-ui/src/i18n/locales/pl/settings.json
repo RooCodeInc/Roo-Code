@@ -899,8 +899,8 @@
 	},
 	"aboutRetention": {
 		"label": "Automatyczne usuwanie historii zadań",
-		"description": "Usuwa zadania starsze niż wybrany okres przy ponownym ładowaniu rozszerzenia.",
-		"warning": "Ostrzeżenie: Ta akcja trwale usuwa zadania i działa tylko przy ponownym ładowaniu wtyczki.",
+		"description": "Usuwa zadania starsze niż wybrany okres po aktywacji rozszerzenia.",
+		"warning": "Ostrzeżenie: Ta akcja trwale usuwa stare zadania i działa po aktywacji rozszerzenia.",
 		"options": {
 			"never": "Nigdy",
 			"90": "90 dni",

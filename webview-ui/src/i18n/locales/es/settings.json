@@ -898,8 +898,8 @@
 	},
 	"aboutRetention": {
 		"label": "Eliminar automáticamente el historial de tareas",
-		"description": "Elimina las tareas anteriores al período seleccionado al recargar la extensión.",
-		"warning": "Advertencia: Esta acción elimina permanentemente las tareas y solo se ejecuta al recargar el complemento.",
+		"description": "Elimina las tareas anteriores al período seleccionado cuando se activa la extensión.",
+		"warning": "Advertencia: Esta acción elimina permanentemente las tareas antiguas y se ejecuta cuando se activa la extensión.",
 		"options": {
 			"never": "Nunca",
 			"90": "90 días",

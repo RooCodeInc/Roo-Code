@@ -899,8 +899,8 @@
 	},
 	"aboutRetention": {
 		"label": "Tự động xóa lịch sử tác vụ",
-		"description": "Xóa các tác vụ cũ hơn khoảng thời gian đã chọn khi tải lại tiện ích.",
-		"warning": "Cảnh báo: Hành động này xóa vĩnh viễn các tác vụ và chỉ chạy khi tải lại plugin.",
+		"description": "Xóa các tác vụ cũ hơn khoảng thời gian đã chọn khi tiện ích được kích hoạt.",
+		"warning": "Cảnh báo: Hành động này xóa vĩnh viễn các tác vụ cũ và chạy khi tiện ích được kích hoạt.",
 		"options": {
 			"never": "Không bao giờ",
 			"90": "90 ngày",

@@ -899,8 +899,8 @@
 	},
 	"aboutRetention": {
 		"label": "Elimina automaticamente la cronologia delle attività",
-		"description": "Elimina le attività più vecchie del periodo selezionato al ricaricamento dell'estensione.",
-		"warning": "Avviso: Questa azione elimina permanentemente le attività e viene eseguita solo al ricaricamento del plugin.",
+		"description": "Elimina le attività più vecchie del periodo selezionato quando l'estensione viene attivata.",
+		"warning": "Avviso: Questa azione elimina permanentemente le attività vecchie e viene eseguita quando l'estensione viene attivata.",
 		"options": {
 			"never": "Mai",
 			"90": "90 giorni",

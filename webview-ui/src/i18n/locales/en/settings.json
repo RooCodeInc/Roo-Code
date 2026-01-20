@@ -907,8 +907,8 @@
 	},
 	"aboutRetention": {
 		"label": "Auto-delete task history",
-		"description": "Deletes tasks older than the selected period on extension reload.",
-		"warning": "Warning: This action permanently deletes tasks and only runs on plugin reload.",
+		"description": "Deletes tasks older than the selected period when the extension is activated.",
+		"warning": "Warning: This action permanently deletes old tasks and runs when the extension is activated.",
 		"options": {
 			"never": "Never",
 			"90": "90 days",
@@ -917,6 +917,15 @@
 			"7": "7 days",
 			"3": "3 days"
 		}
+	},
+	"taskHistoryStorage": {
+		"label": "Storage usage",
+		"calculating": "Calculating...",
+		"format": "{{size}} ({{count}} tasks)",
+		"formatSingular": "{{size}} (1 task)",
+		"empty": "No tasks stored",
+		"refresh": "Refresh",
+		"error": "Unable to calculate"
 	},
 	"footer": {
 		"telemetry": {

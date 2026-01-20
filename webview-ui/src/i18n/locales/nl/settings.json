@@ -899,8 +899,8 @@
 	},
 	"aboutRetention": {
 		"label": "Taakgeschiedenis automatisch verwijderen",
-		"description": "Verwijdert taken ouder dan de geselecteerde periode bij het herladen van de extensie.",
-		"warning": "Waarschuwing: Deze actie verwijdert taken permanent en wordt alleen uitgevoerd bij het herladen van de plugin.",
+		"description": "Verwijdert taken ouder dan de geselecteerde periode wanneer de extensie wordt geactiveerd.",
+		"warning": "Waarschuwing: Deze actie verwijdert oude taken permanent en wordt uitgevoerd wanneer de extensie wordt geactiveerd.",
 		"options": {
 			"never": "Nooit",
 			"90": "90 dagen",
