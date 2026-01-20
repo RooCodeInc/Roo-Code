@@ -186,9 +186,8 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		// Check if this is a GPT-5 model that requires max_completion_tokens instead of max_tokens
 		const isGPT5Model = this.isGpt5(modelId)
 
-		// Check if model supports native tools and tools are provided with native protocol
-		const supportsNativeTools = info.supportsNativeTools ?? false
-		const useNativeTools = supportsNativeTools && metadata?.tools && metadata.tools.length > 0
+		// Native-only tool calling: include tools whenever they are provided.
+		const useNativeTools = Boolean(metadata?.tools && metadata.tools.length > 0)
 
 		// For Gemini models with native protocol: inject fake reasoning.encrypted block for tool calls
 		// This is required when switching from other models to Gemini to satisfy API validation.
@@ -208,8 +207,8 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			stream_options: {
 				include_usage: true,
 			},
-			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
+			...(useNativeTools && metadata?.tools ? { tools: this.convertToolsForOpenAI(metadata.tools) } : {}),
+			...(useNativeTools && metadata?.tool_choice ? { tool_choice: metadata.tool_choice } : {}),
 		}
 
 		// GPT-5 models require max_completion_tokens instead of the deprecated max_tokens parameter

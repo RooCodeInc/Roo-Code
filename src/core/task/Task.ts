@@ -3992,9 +3992,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			throw new Error("Auto-approval limit reached and user did not approve continuation")
 		}
 
-		// Determine if we should include native tools.
+		// Tool calling is native-only.
+		// Whether we include tools is determined by whether we have any tools to send.
 		const modelInfo = this.api.getModel().info
-		const shouldIncludeTools = modelInfo.supportsNativeTools ?? false
 
 		// Build complete tools array: native tools + dynamic MCP tools
 		// When includeAllToolsWithRestrictions is true, returns all tools but provides
@@ -4010,7 +4010,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// so they continue to receive only the filtered tools for the current mode.
 		const supportsAllowedFunctionNames = apiConfiguration?.apiProvider === "gemini"
 
-		if (shouldIncludeTools) {
+		{
 			const provider = this.providerRef.deref()
 			if (!provider) {
 				throw new Error("Provider reference lost during tool building")
@@ -4034,6 +4034,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			allowedFunctionNames = toolsResult.allowedFunctionNames
 		}
 
+		const shouldIncludeTools = allTools.length > 0
+
 		// Parallel tool calls are disabled - feature is on hold
 		// Previously resolved from experiments.isEnabled(..., EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS)
 		const parallelToolCallsEnabled = false
@@ -4042,7 +4044,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			mode: mode,
 			taskId: this.taskId,
 			suppressPreviousResponseId: this.skipPrevResponseIdOnce,
-			// Include tools when the model supports native tool calling.
+			// Include tools whenever they are present.
 			...(shouldIncludeTools
 				? {
 						tools: allTools,

@@ -69,7 +69,6 @@ describe("getRooModels", () => {
 				supportsImages: true,
 				supportsReasoningEffort: true,
 				requiredReasoningEffort: false,
-				supportsNativeTools: false,
 				supportsPromptCache: true,
 				inputPrice: 100, // 0.0001 * 1_000_000
 				outputPrice: 200, // 0.0002 * 1_000_000
@@ -118,7 +117,6 @@ describe("getRooModels", () => {
 			supportsImages: false,
 			supportsReasoningEffort: true,
 			requiredReasoningEffort: true,
-			supportsNativeTools: false,
 			supportsPromptCache: false,
 			inputPrice: 100, // 0.0001 * 1_000_000
 			outputPrice: 200, // 0.0002 * 1_000_000
@@ -168,7 +166,6 @@ describe("getRooModels", () => {
 			supportsImages: false,
 			supportsReasoningEffort: false,
 			requiredReasoningEffort: false,
-			supportsNativeTools: false,
 			supportsPromptCache: false,
 			inputPrice: 100, // 0.0001 * 1_000_000
 			outputPrice: 200, // 0.0002 * 1_000_000
@@ -550,7 +547,7 @@ describe("getRooModels", () => {
 		expect(models["test/model-no-temp"].defaultTemperature).toBeUndefined()
 	})
 
-	it("should set supportsNativeTools when default-native-tools tag is present", async () => {
+	it("should include models when tool-use tags are present", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
@@ -580,11 +577,10 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		expect(models["test/native-tools-model"].supportsNativeTools).toBe(true)
-		// Tool calling is native-only.
+		expect(models["test/native-tools-model"]).toBeDefined()
 	})
 
-	it("does not enable supportsNativeTools when tool tags are absent", async () => {
+	it("handles models when tool tags are absent", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
@@ -614,11 +610,10 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		// Tool calling is native-only, but supportsNativeTools should reflect model capability.
-		expect(models["test/model-without-tool-tags"].supportsNativeTools).toBe(false)
+		expect(models["test/model-without-tool-tags"]).toBeDefined()
 	})
 
-	it("should set supportsNativeTools from tool-use tag", async () => {
+	it("handles models with tool-use tag", async () => {
 		const mockResponse = {
 			object: "list",
 			data: [
@@ -648,9 +643,7 @@ describe("getRooModels", () => {
 
 		const models = await getRooModels(baseUrl, apiKey)
 
-		// tool-use tag sets supportsNativeTools
-		expect(models["test/tool-use-model"].supportsNativeTools).toBe(true)
-		// Tool calling is native-only.
+		expect(models["test/tool-use-model"]).toBeDefined()
 	})
 
 	it("should detect stealth mode from tags", async () => {

@@ -212,9 +212,8 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		const client = this.ensureClient()
 		const model = this.getModel()
 
-		// Check if model supports native tools and tools are provided with native protocol
-		const supportsNativeTools = model.info.supportsNativeTools ?? false
-		const useNativeTools = supportsNativeTools && !!(metadata?.tools && metadata.tools.length > 0)
+		// Native-only tool calling: include tools whenever they are provided.
+		const useNativeTools = Boolean(metadata?.tools && metadata.tools.length > 0)
 
 		const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
 			role: "system",
@@ -230,9 +229,9 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 			stream: true,
 			stream_options: { include_usage: true },
 			max_completion_tokens: model.info.maxTokens,
-			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
-			...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
+			...(useNativeTools && metadata?.tools ? { tools: this.convertToolsForOpenAI(metadata.tools) } : {}),
+			...(useNativeTools && metadata?.tool_choice ? { tool_choice: metadata.tool_choice } : {}),
+			...(useNativeTools ? { parallel_tool_calls: metadata?.parallelToolCalls ?? false } : {}),
 		}
 
 		const stream = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))

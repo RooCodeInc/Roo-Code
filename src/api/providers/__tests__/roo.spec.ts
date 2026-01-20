@@ -107,7 +107,6 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					contextWindow: 1_000_000,
 					supportsImages: false,
 					supportsPromptCache: true,
-					supportsNativeTools: true,
 					inputPrice: 0.15,
 					outputPrice: 0.6,
 				},
@@ -116,7 +115,6 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					contextWindow: 200_000,
 					supportsImages: true,
 					supportsPromptCache: true,
-					supportsNativeTools: true,
 					inputPrice: 0.8,
 					outputPrice: 4,
 				},
@@ -431,7 +429,6 @@ describe("RooHandler", () => {
 			})
 			const modelInfo = handlerWithMinimax.getModel()
 			// The settings from API should already be applied in the cached model info
-			expect(modelInfo.info.supportsNativeTools).toBe(true)
 			expect(modelInfo.info.inputPrice).toBe(0.15)
 			expect(modelInfo.info.outputPrice).toBe(0.6)
 		})

@@ -1240,7 +1240,7 @@ describe("VertexHandler", () => {
 				// Just consume
 			}
 
-			// Native is forced when supportsNativeTools===true, so tools should still be included
+			// Tool calling is request-driven: if tools are provided, we should include them.
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
 					tools: expect.arrayContaining([

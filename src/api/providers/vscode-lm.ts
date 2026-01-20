@@ -534,7 +534,6 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 						: openAiModelInfoSaneDefaults.contextWindow,
 				supportsImages: false, // VSCode Language Model API currently doesn't support image inputs
 				supportsPromptCache: true,
-				supportsNativeTools: true, // VSCode Language Model API supports native tool calling
 				inputPrice: 0,
 				outputPrice: 0,
 				description: `VSCode Language Model: ${modelId}`,
@@ -554,7 +553,6 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			id: fallbackId,
 			info: {
 				...openAiModelInfoSaneDefaults,
-				supportsNativeTools: true, // VSCode Language Model API supports native tool calling
 				description: `VSCode Language Model (Fallback): ${fallbackId}`,
 			},
 		}

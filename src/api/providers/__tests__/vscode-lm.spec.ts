@@ -415,7 +415,7 @@ describe("VsCodeLmHandler", () => {
 			expect(model.info).toBeDefined()
 		})
 
-		it("should return supportsNativeTools in model info", async () => {
+		it("should return basic model info when client exists", async () => {
 			const mockModel = { ...mockLanguageModelChat }
 			;(vscode.lm.selectChatModels as Mock).mockResolvedValueOnce([mockModel])
 
@@ -423,14 +423,15 @@ describe("VsCodeLmHandler", () => {
 			await handler["getClient"]()
 
 			const model = handler.getModel()
-			expect(model.info.supportsNativeTools).toBe(true)
+			expect(model.info).toBeDefined()
+			expect(model.info.contextWindow).toBe(4096)
 		})
 
-		it("should return supportsNativeTools in fallback model info", () => {
+		it("should return fallback model info when no client exists", () => {
 			// Clear the client first
 			handler["client"] = null
 			const model = handler.getModel()
-			expect(model.info.supportsNativeTools).toBe(true)
+			expect(model.info).toBeDefined()
 		})
 	})
 

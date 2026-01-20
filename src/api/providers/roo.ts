@@ -375,7 +375,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			supportsImages: false,
 			supportsReasoningEffort: false,
 			supportsPromptCache: true,
-			supportsNativeTools: false,
 			inputPrice: 0,
 			outputPrice: 0,
 			isFree: false,

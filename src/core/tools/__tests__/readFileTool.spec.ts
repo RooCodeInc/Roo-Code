@@ -244,7 +244,7 @@ function createMockCline(): any {
 					contextWindow: 200000,
 					maxTokens: 4096,
 					supportsPromptCache: false,
-					supportsNativeTools: false,
+					// (native tool support is determined at request-time; no model flag)
 				},
 			}),
 		},

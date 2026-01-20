@@ -38,7 +38,6 @@ export async function getRequestyModels(baseUrl?: string, apiKey?: string): Prom
 				supportsImages: rawModel.supports_vision,
 				supportsReasoningBudget: reasoningBudget,
 				supportsReasoningEffort: reasoningEffort,
-				supportsNativeTools: true,
 				inputPrice: parseApiPrice(rawModel.input_price),
 				outputPrice: parseApiPrice(rawModel.output_price),
 				description: rawModel.description,

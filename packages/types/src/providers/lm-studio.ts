@@ -10,7 +10,6 @@ export const lMStudioDefaultModelInfo: ModelInfo = {
 	contextWindow: 200_000,
 	supportsImages: true,
 	supportsPromptCache: true,
-	supportsNativeTools: true,
 	inputPrice: 0,
 	outputPrice: 0,
 	cacheWritesPrice: 0,

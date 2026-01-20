@@ -10,7 +10,6 @@ export const vertexModels = {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 		supportsReasoningEffort: ["low", "high"],
 		reasoningEffort: "low",
@@ -36,7 +35,6 @@ export const vertexModels = {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 		supportsReasoningEffort: ["minimal", "low", "medium", "high"],
 		reasoningEffort: "medium",
@@ -52,7 +50,6 @@ export const vertexModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 
 		inputPrice: 0.15,
@@ -65,7 +62,6 @@ export const vertexModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 
 		inputPrice: 0.15,
@@ -75,7 +71,6 @@ export const vertexModels = {
 		maxTokens: 64_000,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 
 		inputPrice: 0.3,
@@ -89,7 +84,6 @@ export const vertexModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: false,
 
 		inputPrice: 0.15,
@@ -102,7 +96,6 @@ export const vertexModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: false,
 
 		inputPrice: 0.15,
@@ -112,7 +105,6 @@ export const vertexModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 
 		inputPrice: 2.5,
@@ -122,7 +114,6 @@ export const vertexModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 
 		inputPrice: 2.5,
@@ -132,7 +123,6 @@ export const vertexModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 
 		inputPrice: 2.5,
@@ -144,7 +134,6 @@ export const vertexModels = {
 		maxTokens: 64_000,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 
 		inputPrice: 2.5,
@@ -171,7 +160,6 @@ export const vertexModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: false,
 
 		inputPrice: 0,
@@ -181,7 +169,6 @@ export const vertexModels = {
 		maxTokens: 8192,
 		contextWindow: 2_097_152,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: false,
 
 		inputPrice: 0,
@@ -191,7 +178,6 @@ export const vertexModels = {
 		maxTokens: 8192,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 
 		inputPrice: 0.15,
@@ -201,7 +187,6 @@ export const vertexModels = {
 		maxTokens: 8192,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: false,
 
 		inputPrice: 0.075,
@@ -211,7 +196,6 @@ export const vertexModels = {
 		maxTokens: 8192,
 		contextWindow: 32_768,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: false,
 
 		inputPrice: 0,
@@ -221,7 +205,6 @@ export const vertexModels = {
 		maxTokens: 8192,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 
 		inputPrice: 0.075,
@@ -231,7 +214,6 @@ export const vertexModels = {
 		maxTokens: 8192,
 		contextWindow: 2_097_152,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: false,
 
 		inputPrice: 1.25,
@@ -242,7 +224,6 @@ export const vertexModels = {
 		contextWindow: 200_000, // Default 200K, extendable to 1M with beta flag 'context-1m-2025-08-07'
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 3.0, // $3 per million input tokens (≤200K context)
 		outputPrice: 15.0, // $15 per million output tokens (≤200K context)
 		cacheWritesPrice: 3.75, // $3.75 per million tokens
@@ -264,7 +245,6 @@ export const vertexModels = {
 		contextWindow: 200_000, // Default 200K, extendable to 1M with beta flag 'context-1m-2025-08-07'
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 3.0, // $3 per million input tokens (≤200K context)
 		outputPrice: 15.0, // $15 per million output tokens (≤200K context)
 		cacheWritesPrice: 3.75, // $3.75 per million tokens
@@ -286,7 +266,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 1.0,
 		outputPrice: 5.0,
 		cacheWritesPrice: 1.25,
@@ -298,7 +277,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 5.0,
 		outputPrice: 25.0,
 		cacheWritesPrice: 6.25,
@@ -310,7 +288,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 15.0,
 		outputPrice: 75.0,
 		cacheWritesPrice: 18.75,
@@ -322,7 +299,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 15.0,
 		outputPrice: 75.0,
 		cacheWritesPrice: 18.75,
@@ -333,7 +309,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 3.0,
 		outputPrice: 15.0,
 		cacheWritesPrice: 3.75,
@@ -346,7 +321,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 3.0,
 		outputPrice: 15.0,
 		cacheWritesPrice: 3.75,
@@ -357,7 +331,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 3.0,
 		outputPrice: 15.0,
 		cacheWritesPrice: 3.75,
@@ -368,7 +341,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 3.0,
 		outputPrice: 15.0,
 		cacheWritesPrice: 3.75,
@@ -379,7 +351,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: false,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 1.0,
 		outputPrice: 5.0,
 		cacheWritesPrice: 1.25,
@@ -390,7 +361,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 15.0,
 		outputPrice: 75.0,
 		cacheWritesPrice: 18.75,
@@ -401,7 +371,6 @@ export const vertexModels = {
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsPromptCache: true,
-		supportsNativeTools: true,
 		inputPrice: 0.25,
 		outputPrice: 1.25,
 		cacheWritesPrice: 0.3,
@@ -411,7 +380,6 @@ export const vertexModels = {
 		maxTokens: 64_000,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
 		supportsPromptCache: true,
 
 		inputPrice: 0.1,
@@ -426,7 +394,6 @@ export const vertexModels = {
 		contextWindow: 131072,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
 		inputPrice: 0.35,
 		outputPrice: 1.15,
 		description: "Meta Llama 4 Maverick 17B Instruct model, 128K context.",
@@ -436,7 +403,6 @@ export const vertexModels = {
 		contextWindow: 163_840,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
 		inputPrice: 1.35,
 		outputPrice: 5.4,
 		description: "DeepSeek R1 (0528). Available in us-central1",
@@ -446,7 +412,6 @@ export const vertexModels = {
 		contextWindow: 163_840,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
 		inputPrice: 0.6,
 		outputPrice: 1.7,
 		description: "DeepSeek V3.1. Available in us-west2",
@@ -456,7 +421,6 @@ export const vertexModels = {
 		contextWindow: 131_072,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
 		inputPrice: 0.15,
 		outputPrice: 0.6,
 		description: "OpenAI gpt-oss 120B. Available in us-central1",
@@ -466,7 +430,6 @@ export const vertexModels = {
 		contextWindow: 131_072,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
 		inputPrice: 0.075,
 		outputPrice: 0.3,
 		description: "OpenAI gpt-oss 20B. Available in us-central1",
@@ -476,7 +439,6 @@ export const vertexModels = {
 		contextWindow: 262_144,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
 		inputPrice: 1.0,
 		outputPrice: 4.0,
 		description: "Qwen3 Coder 480B A35B Instruct. Available in us-south1",
@@ -486,7 +448,6 @@ export const vertexModels = {
 		contextWindow: 262_144,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
 		inputPrice: 0.25,
 		outputPrice: 1.0,
 		description: "Qwen3 235B A22B Instruct. Available in us-south1",

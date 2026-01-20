@@ -243,24 +243,12 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 
 	describe("createMessage with native tools", () => {
 		it("should include toolConfig when tools are provided", async () => {
-			// Override model info to support native tools
-			const modelInfo = handler.getModel().info
-			;(modelInfo as any).supportsNativeTools = true
-
 			const handlerWithNativeTools = new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
 				awsSecretKey: "test-secret-key",
 				awsRegion: "us-east-1",
 			})
-
-			// Manually set supportsNativeTools
-			const getModelOriginal = handlerWithNativeTools.getModel.bind(handlerWithNativeTools)
-			handlerWithNativeTools.getModel = () => {
-				const model = getModelOriginal()
-				model.info.supportsNativeTools = true
-				return model
-			}
 
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
@@ -292,14 +280,6 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 				awsRegion: "us-east-1",
 			})
 
-			// Manually set supportsNativeTools
-			const getModelOriginal = handlerWithNativeTools.getModel.bind(handlerWithNativeTools)
-			handlerWithNativeTools.getModel = () => {
-				const model = getModelOriginal()
-				model.info.supportsNativeTools = true
-				return model
-			}
-
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
 				// No tools
@@ -326,14 +306,6 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 				awsSecretKey: "test-secret-key",
 				awsRegion: "us-east-1",
 			})
-
-			// Manually set supportsNativeTools
-			const getModelOriginal = handlerWithNativeTools.getModel.bind(handlerWithNativeTools)
-			handlerWithNativeTools.getModel = () => {
-				const model = getModelOriginal()
-				model.info.supportsNativeTools = true
-				return model
-			}
 
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
@@ -362,14 +334,6 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 				awsSecretKey: "test-secret-key",
 				awsRegion: "us-east-1",
 			})
-
-			// Manually set supportsNativeTools
-			const getModelOriginal = handlerWithNativeTools.getModel.bind(handlerWithNativeTools)
-			handlerWithNativeTools.getModel = () => {
-				const model = getModelOriginal()
-				model.info.supportsNativeTools = true
-				return model
-			}
 
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",

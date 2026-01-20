@@ -92,7 +92,6 @@ describe("multiApplyDiffTool", () => {
 						maxTokens: 4096,
 						contextWindow: 128000,
 						supportsPromptCache: false,
-						supportsNativeTools: false,
 					},
 				}),
 			},

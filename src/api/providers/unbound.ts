@@ -108,9 +108,8 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 			maxTokens = info.maxTokens ?? undefined
 		}
 
-		// Check if model supports native tools and tools are provided with native protocol
-		const supportsNativeTools = info.supportsNativeTools ?? false
-		const useNativeTools = supportsNativeTools && !!(metadata?.tools && metadata.tools.length > 0)
+		// Native-only tool calling: include tools whenever they are provided.
+		const useNativeTools = Boolean(metadata?.tools && metadata.tools.length > 0)
 
 		const requestOptions: UnboundChatCompletionCreateParamsStreaming = {
 			model: modelId.split("/")[1],
@@ -123,9 +122,9 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 				taskId: metadata?.taskId,
 				mode: metadata?.mode,
 			},
-			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
-			...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
+			...(useNativeTools && metadata?.tools ? { tools: this.convertToolsForOpenAI(metadata.tools) } : {}),
+			...(useNativeTools && metadata?.tool_choice ? { tool_choice: metadata.tool_choice } : {}),
+			...(useNativeTools ? { parallel_tool_calls: metadata?.parallelToolCalls ?? false } : {}),
 		}
 
 		if (this.supportsTemperature(modelId)) {

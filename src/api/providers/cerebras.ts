@@ -125,11 +125,10 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 	): ApiStream {
 		const { id: model, info: modelInfo } = this.getModel()
 		const max_tokens = modelInfo.maxTokens
-		const supportsNativeTools = modelInfo.supportsNativeTools ?? false
 		const temperature = this.options.modelTemperature ?? CEREBRAS_DEFAULT_TEMPERATURE
 
-		// Check if we should use native tool calling
-		const useNativeTools = supportsNativeTools && !!(metadata?.tools && metadata.tools.length > 0)
+		// Native-only tool calling: include tools whenever they are provided.
+		const useNativeTools = Boolean(metadata?.tools?.length)
 
 		// Convert Anthropic messages to OpenAI format (Cerebras is OpenAI-compatible)
 		const openaiMessages = convertToOpenAiMessages(messages)
@@ -148,8 +147,8 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 					}
 				: {}),
 			// Native tool calling support
-			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
+			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata?.tools) }),
+			...(useNativeTools && metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 			...(useNativeTools && { parallel_tool_calls: metadata?.parallelToolCalls ?? false }),
 		}
 

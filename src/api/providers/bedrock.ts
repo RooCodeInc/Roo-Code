@@ -360,9 +360,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		const usePromptCache = Boolean(this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig))
 
 		// Determine early if native tools should be used (needed for message conversion)
-		const supportsNativeTools = modelConfig.info.supportsNativeTools ?? false
-		const useNativeTools =
-			supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && metadata?.tool_choice !== "none"
+		// NOTE: tool inclusion is controlled by caller metadata, not per-model flags.
+		const useNativeTools = Boolean(metadata?.tools?.length) && metadata?.tool_choice !== "none"
 
 		const conversationId =
 			messages.length > 0

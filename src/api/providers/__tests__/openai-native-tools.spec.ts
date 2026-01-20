@@ -5,7 +5,7 @@ import { OpenAiNativeHandler } from "../openai-native"
 import type { ApiHandlerOptions } from "../../../shared/api"
 
 describe("OpenAiHandler native tools", () => {
-	it("includes tools in request when custom model info lacks supportsNativeTools (regression test)", async () => {
+	it("includes tools in request when tools are provided via metadata (regression test)", async () => {
 		const mockCreate = vi.fn().mockImplementationOnce(() => ({
 			[Symbol.asyncIterator]: async function* () {
 				yield {
@@ -14,10 +14,8 @@ describe("OpenAiHandler native tools", () => {
 			},
 		}))
 
-		// Set openAiCustomModelInfo WITHOUT supportsNativeTools to simulate
-		// a user-provided custom model info that doesn't specify native tool support.
-		// The getModel() fix should merge NATIVE_TOOL_DEFAULTS to ensure
-		// supportsNativeTools defaults to true.
+		// Set openAiCustomModelInfo without any tool capability flags; tools should
+		// still be passed whenever metadata.tools is present.
 		const handler = new OpenAiHandler({
 			openAiApiKey: "test-key",
 			openAiBaseUrl: "https://example.com/v1",
@@ -49,16 +47,9 @@ describe("OpenAiHandler native tools", () => {
 			},
 		]
 
-		// Mimic the behavior in Task.attemptApiRequest() where tools are only
-		// included when modelInfo.supportsNativeTools is true. This is the
-		// actual regression path being tested - without the getModel() fix,
-		// supportsNativeTools would be undefined and tools wouldn't be passed.
-		const modelInfo = handler.getModel().info
-		const supportsNativeTools = modelInfo.supportsNativeTools ?? false
-
 		const stream = handler.createMessage("system", [], {
 			taskId: "test-task-id",
-			...(supportsNativeTools && { tools }),
+			tools,
 		})
 		await stream.next()
 

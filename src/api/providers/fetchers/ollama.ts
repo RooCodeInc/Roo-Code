@@ -42,13 +42,10 @@ export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo |
 	const contextWindow =
 		contextKey && typeof rawModel.model_info[contextKey] === "number" ? rawModel.model_info[contextKey] : undefined
 
-	// Determine native tool support from capabilities array
-	// The capabilities array is populated by Ollama based on model metadata
-	const supportsNativeTools = rawModel.capabilities?.includes("tools") ?? false
-
-	// Filter out models that don't support native tools
-	// This prevents users from selecting models that won't work properly with Roo Code's tool calling
-	if (!supportsNativeTools) {
+	// Filter out models that don't support tools.
+	// Roo Code tool calling is native-only; models without tool capability won't work.
+	const supportsTools = rawModel.capabilities?.includes("tools") ?? false
+	if (!supportsTools) {
 		return null
 	}
 
@@ -58,7 +55,6 @@ export const parseOllamaModel = (rawModel: OllamaModelInfoResponse): ModelInfo |
 		supportsPromptCache: true,
 		supportsImages: rawModel.capabilities?.includes("vision"),
 		maxTokens: contextWindow || ollamaDefaultModelInfo.contextWindow,
-		supportsNativeTools: true, // Only models with tools capability reach this point
 	})
 
 	return modelInfo

@@ -61,7 +61,6 @@ describe("applyDiffTool experiment routing", () => {
 						maxTokens: 4096,
 						contextWindow: 128000,
 						supportsPromptCache: false,
-						supportsNativeTools: false,
 					},
 				}),
 			},
@@ -137,32 +136,5 @@ describe("applyDiffTool experiment routing", () => {
 		})
 	})
 
-	it("should use class-based tool when model supports native tools", async () => {
-		// Update model to support native tools
-		mockCline.api.getModel = vi.fn().mockReturnValue({
-			id: "test-model",
-			info: {
-				maxTokens: 4096,
-				contextWindow: 128000,
-				supportsPromptCache: false,
-				supportsNativeTools: true, // Model supports native tools
-			},
-		})
-
-		mockProvider.getState.mockResolvedValue({
-			experiments: {
-				[EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF]: true,
-			},
-		})
-		;(applyDiffToolClass.handle as any).mockResolvedValue(undefined)
-
-		await multiApplyDiffTool(mockCline, mockBlock, mockAskApproval, mockHandleError, mockPushToolResult)
-
-		// MultiApplyDiffTool always delegates to the class-based tool.
-		expect(applyDiffToolClass.handle).toHaveBeenCalledWith(mockCline, mockBlock, {
-			askApproval: mockAskApproval,
-			handleError: mockHandleError,
-			pushToolResult: mockPushToolResult,
-		})
-	})
+	// MultiApplyDiffTool always delegates to the class-based tool.
 })

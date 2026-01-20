@@ -36,7 +36,6 @@ import {
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
-	NATIVE_TOOL_DEFAULTS,
 } from "@roo-code/types"
 
 import { useRouterModels } from "./useRouterModels"
@@ -160,23 +159,17 @@ function getSelectedModel({
 		case "requesty": {
 			const id = getValidatedModelId(apiConfiguration.requestyModelId, routerModels.requesty, defaultModelId)
 			const routerInfo = routerModels.requesty?.[id]
-			// Merge native tool defaults for cached models that may lack these fields
-			const info = routerInfo ? { ...NATIVE_TOOL_DEFAULTS, ...routerInfo } : undefined
-			return { id, info }
+			return { id, info: routerInfo }
 		}
 		case "unbound": {
 			const id = getValidatedModelId(apiConfiguration.unboundModelId, routerModels.unbound, defaultModelId)
 			const routerInfo = routerModels.unbound?.[id]
-			// Merge native tool defaults for cached models that may lack these fields
-			const info = routerInfo ? { ...NATIVE_TOOL_DEFAULTS, ...routerInfo } : undefined
-			return { id, info }
+			return { id, info: routerInfo }
 		}
 		case "litellm": {
 			const id = getValidatedModelId(apiConfiguration.litellmModelId, routerModels.litellm, defaultModelId)
 			const routerInfo = routerModels.litellm?.[id]
-			// Merge native tool defaults for cached models that may lack these fields
-			const info = routerInfo ? { ...NATIVE_TOOL_DEFAULTS, ...routerInfo } : litellmDefaultModelInfo
-			return { id, info }
+			return { id, info: routerInfo ?? litellmDefaultModelInfo }
 		}
 		case "xai": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
@@ -283,11 +276,7 @@ function getSelectedModel({
 		case "openai": {
 			const id = apiConfiguration.openAiModelId ?? ""
 			const customInfo = apiConfiguration?.openAiCustomModelInfo
-			// Only merge native tool call defaults.
-			const nativeToolDefaults = {
-				supportsNativeTools: openAiModelInfoSaneDefaults.supportsNativeTools,
-			}
-			const info = customInfo ? { ...nativeToolDefaults, ...customInfo } : openAiModelInfoSaneDefaults
+			const info = customInfo ?? openAiModelInfoSaneDefaults
 			return { id, info }
 		}
 		case "ollama": {
@@ -309,14 +298,9 @@ function getSelectedModel({
 		case "lmstudio": {
 			const id = apiConfiguration.lmStudioModelId ?? ""
 			const modelInfo = lmStudioModels && lmStudioModels[apiConfiguration.lmStudioModelId!]
-			// Only merge native tool call defaults.
-			const nativeToolDefaults = {
-				supportsNativeTools: lMStudioDefaultModelInfo.supportsNativeTools,
-			}
-			const info = modelInfo ? { ...nativeToolDefaults, ...modelInfo } : undefined
 			return {
 				id,
-				info,
+				info: modelInfo ? { ...lMStudioDefaultModelInfo, ...modelInfo } : undefined,
 			}
 		}
 		case "deepinfra": {

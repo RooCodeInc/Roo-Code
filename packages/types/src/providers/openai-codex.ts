@@ -27,7 +27,6 @@ export const openAiCodexModels = {
 	"gpt-5.1-codex-max": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -43,7 +42,6 @@ export const openAiCodexModels = {
 	"gpt-5.1-codex": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -59,7 +57,6 @@ export const openAiCodexModels = {
 	"gpt-5.2-codex": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -74,7 +71,6 @@ export const openAiCodexModels = {
 	"gpt-5.1": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -91,7 +87,6 @@ export const openAiCodexModels = {
 	"gpt-5": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -108,7 +103,6 @@ export const openAiCodexModels = {
 	"gpt-5-codex": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -124,7 +118,6 @@ export const openAiCodexModels = {
 	"gpt-5-codex-mini": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -140,7 +133,6 @@ export const openAiCodexModels = {
 	"gpt-5.1-codex-mini": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,
@@ -155,7 +147,6 @@ export const openAiCodexModels = {
 	"gpt-5.2": {
 		maxTokens: 128000,
 		contextWindow: 400000,
-		supportsNativeTools: true,
 		includedTools: ["apply_patch"],
 		excludedTools: ["apply_diff", "write_to_file"],
 		supportsImages: true,

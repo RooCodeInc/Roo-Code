@@ -15,7 +15,6 @@ vitest.mock("../fetchers/modelCache", () => ({
 				contextWindow: 200000,
 				supportsImages: true,
 				supportsPromptCache: true,
-				supportsNativeTools: true,
 				inputPrice: 3,
 				outputPrice: 15,
 				cacheWritesPrice: 3.75,
@@ -28,7 +27,6 @@ vitest.mock("../fetchers/modelCache", () => ({
 				contextWindow: 200000,
 				supportsImages: true,
 				supportsPromptCache: true,
-				supportsNativeTools: true,
 				inputPrice: 3,
 				outputPrice: 15,
 				cacheWritesPrice: 3.75,
@@ -41,7 +39,6 @@ vitest.mock("../fetchers/modelCache", () => ({
 				contextWindow: 200000,
 				supportsImages: true,
 				supportsPromptCache: true,
-				supportsNativeTools: true,
 				inputPrice: 3,
 				outputPrice: 15,
 				cacheWritesPrice: 3.75,
@@ -54,7 +51,6 @@ vitest.mock("../fetchers/modelCache", () => ({
 				contextWindow: 128000,
 				supportsImages: true,
 				supportsPromptCache: false,
-				supportsNativeTools: true,
 				inputPrice: 5,
 				outputPrice: 15,
 				description: "GPT-4o",
@@ -64,7 +60,6 @@ vitest.mock("../fetchers/modelCache", () => ({
 				contextWindow: 128000,
 				supportsImages: true,
 				supportsPromptCache: false,
-				supportsNativeTools: true,
 				inputPrice: 1,
 				outputPrice: 3,
 				description: "O3 Mini",
@@ -353,7 +348,7 @@ describe("UnboundHandler", () => {
 			},
 		]
 
-		it("should include tools in request when model supports native tools and tools are provided", async () => {
+		it("should include tools in request when tools are provided", async () => {
 			mockWithResponse.mockResolvedValueOnce({
 				data: {
 					[Symbol.asyncIterator]: () => ({
