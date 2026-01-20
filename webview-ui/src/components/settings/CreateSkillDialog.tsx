@@ -1,4 +1,7 @@
 import React, { useState, useCallback, useMemo } from "react"
+import { validateSkillName as validateSkillNameShared, SkillNameValidationError } from "@roo-code/types"
+
+import { getAllModes } from "@roo/modes"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
@@ -26,18 +29,27 @@ interface CreateSkillDialogProps {
 }
 
 /**
- * Validate skill name according to agentskills.io spec:
- * - Only lowercase letters, numbers, and hyphens allowed
- * - No leading/trailing hyphens
- * - No consecutive hyphens
- * - 1-64 characters
+ * Map skill name validation error codes to translation keys.
+ */
+const getSkillNameErrorTranslationKey = (error: SkillNameValidationError): string => {
+	switch (error) {
+		case SkillNameValidationError.Empty:
+			return "settings:skills.validation.nameRequired"
+		case SkillNameValidationError.TooLong:
+			return "settings:skills.validation.nameTooLong"
+		case SkillNameValidationError.InvalidFormat:
+			return "settings:skills.validation.nameInvalid"
+	}
+}
+
+/**
+ * Validate skill name using shared validation from @roo-code/types.
+ * Returns a translation key for the error, or null if valid.
  */
 const validateSkillName = (name: string): string | null => {
-	if (!name) return "settings:skills.validation.nameRequired"
-	if (name.length > 64) return "settings:skills.validation.nameTooLong"
-	// Match backend validation: /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-	if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name)) {
-		return "settings:skills.validation.nameInvalid"
+	const result = validateSkillNameShared(name)
+	if (!result.valid) {
+		return getSkillNameErrorTranslationKey(result.error!)
 	}
 	return null
 }
@@ -72,18 +84,9 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 	const [nameError, setNameError] = useState<string | null>(null)
 	const [descriptionError, setDescriptionError] = useState<string | null>(null)
 
-	// Get available modes for the dropdown
+	// Get available modes for the dropdown (built-in + custom modes)
 	const availableModes = useMemo(() => {
-		const modes = customModes?.map((m) => ({ slug: m.slug, name: m.name })) || []
-		// Add built-in modes
-		const builtInModes = [
-			{ slug: "code", name: "Code" },
-			{ slug: "architect", name: "Architect" },
-			{ slug: "ask", name: "Ask" },
-			{ slug: "debug", name: "Debug" },
-			{ slug: "orchestrator", name: "Orchestrator" },
-		]
-		return [...builtInModes, ...modes]
+		return getAllModes(customModes).map((m) => ({ slug: m.slug, name: m.name }))
 	}, [customModes])
 
 	const resetForm = useCallback(() => {

@@ -82,6 +82,22 @@ vi.mock("../../roo-config", () => ({
 	fileExists: mockFileExists,
 }))
 
+// Mock i18n
+vi.mock("../../../i18n", () => ({
+	t: (key: string, params?: Record<string, any>) => {
+		const translations: Record<string, string> = {
+			"skills:errors.name_length": `Skill name must be 1-${params?.maxLength} characters (got ${params?.length})`,
+			"skills:errors.name_format":
+				"Skill name must be lowercase letters/numbers/hyphens only (no leading/trailing hyphen, no consecutive hyphens)",
+			"skills:errors.description_length": `Skill description must be 1-1024 characters (got ${params?.length})`,
+			"skills:errors.no_workspace": "Cannot create project skill: no workspace folder is open",
+			"skills:errors.already_exists": `Skill "${params?.name}" already exists at ${params?.path}`,
+			"skills:errors.not_found": `Skill "${params?.name}" not found in ${params?.source}${params?.modeInfo}`,
+		}
+		return translations[key] || key
+	},
+}))
+
 import { SkillsManager } from "../SkillsManager"
 import { ClineProvider } from "../../../core/webview/ClineProvider"
 
@@ -1000,43 +1016,45 @@ Instructions`)
 
 		it("should throw error for invalid skill name", async () => {
 			await expect(skillsManager.createSkill("Invalid-Name", "global", "Description")).rejects.toThrow(
-				"lowercase letters/numbers/hyphens only",
+				"Skill name must be lowercase letters/numbers/hyphens only",
 			)
 		})
 
 		it("should throw error for skill name that is too long", async () => {
 			const longName = "a".repeat(65)
 			await expect(skillsManager.createSkill(longName, "global", "Description")).rejects.toThrow(
-				"1-64 characters",
+				"Skill name must be 1-64 characters",
 			)
 		})
 
 		it("should throw error for skill name starting with hyphen", async () => {
 			await expect(skillsManager.createSkill("-invalid", "global", "Description")).rejects.toThrow(
-				"lowercase letters/numbers/hyphens only",
+				"Skill name must be lowercase letters/numbers/hyphens only",
 			)
 		})
 
 		it("should throw error for skill name ending with hyphen", async () => {
 			await expect(skillsManager.createSkill("invalid-", "global", "Description")).rejects.toThrow(
-				"lowercase letters/numbers/hyphens only",
+				"Skill name must be lowercase letters/numbers/hyphens only",
 			)
 		})
 
 		it("should throw error for skill name with consecutive hyphens", async () => {
 			await expect(skillsManager.createSkill("invalid--name", "global", "Description")).rejects.toThrow(
-				"lowercase letters/numbers/hyphens only",
+				"Skill name must be lowercase letters/numbers/hyphens only",
 			)
 		})
 
 		it("should throw error for empty description", async () => {
-			await expect(skillsManager.createSkill("valid-name", "global", "   ")).rejects.toThrow("1-1024 characters")
+			await expect(skillsManager.createSkill("valid-name", "global", "   ")).rejects.toThrow(
+				"Skill description must be 1-1024 characters",
+			)
 		})
 
 		it("should throw error for description that is too long", async () => {
 			const longDesc = "d".repeat(1025)
 			await expect(skillsManager.createSkill("valid-name", "global", longDesc)).rejects.toThrow(
-				"1-1024 characters",
+				"Skill description must be 1-1024 characters",
 			)
 		})
 

@@ -19,6 +19,19 @@ vi.mock("../../../integrations/misc/open-file", () => ({
 	openFile: vi.fn(),
 }))
 
+// Mock i18n
+vi.mock("../../../i18n", () => ({
+	t: (key: string, params?: Record<string, any>) => {
+		const translations: Record<string, string> = {
+			"skills:errors.missing_create_fields": "Missing required fields: skillName, source, or skillDescription",
+			"skills:errors.manager_unavailable": "Skills manager not available",
+			"skills:errors.missing_delete_fields": "Missing required fields: skillName or source",
+			"skills:errors.skill_not_found": `Skill "${params?.name}" not found`,
+		}
+		return translations[key] || key
+	},
+}))
+
 import * as vscode from "vscode"
 import { openFile } from "../../../integrations/misc/open-file"
 import { handleRequestSkills, handleCreateSkill, handleDeleteSkill, handleOpenSkillFile } from "../skillsMessageHandler"

@@ -9,6 +9,12 @@ import { getGlobalRooDirectory } from "../roo-config"
 import { directoryExists, fileExists } from "../roo-config"
 import { SkillMetadata, SkillContent } from "../../shared/skills"
 import { modes, getAllModes } from "../../shared/modes"
+import {
+	validateSkillName as validateSkillNameShared,
+	SkillNameValidationError,
+	SKILL_NAME_MAX_LENGTH,
+} from "@roo-code/types"
+import { t } from "../../i18n"
 
 // Re-export for convenience
 export type { SkillMetadata, SkillContent }
@@ -117,23 +123,11 @@ export class SkillsManager {
 				return
 			}
 
-			// Strict spec validation (https://agentskills.io/specification)
-			// Name constraints:
-			// - 1-64 chars
-			// - lowercase letters/numbers/hyphens only
-			// - must not start/end with hyphen
-			// - must not contain consecutive hyphens
-			if (effectiveSkillName.length < 1 || effectiveSkillName.length > 64) {
-				console.error(
-					`Skill name "${effectiveSkillName}" is invalid: name must be 1-64 characters (got ${effectiveSkillName.length})`,
-				)
-				return
-			}
-			const nameFormat = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-			if (!nameFormat.test(effectiveSkillName)) {
-				console.error(
-					`Skill name "${effectiveSkillName}" is invalid: must be lowercase letters/numbers/hyphens only (no leading/trailing hyphen, no consecutive hyphens)`,
-				)
+			// Validate skill name per agentskills.io spec using shared validation
+			const nameValidation = validateSkillNameShared(effectiveSkillName)
+			if (!nameValidation.valid) {
+				const errorMessage = this.getSkillNameErrorMessage(effectiveSkillName, nameValidation.error!)
+				console.error(`Skill name "${effectiveSkillName}" is invalid: ${errorMessage}`)
 				return
 			}
 
@@ -245,7 +239,7 @@ export class SkillsManager {
 	 * Returns skills from all sources without content
 	 */
 	getSkillsMetadata(): SkillMetadata[] {
-		return Array.from(this.skills.values())
+		return this.getAllSkills()
 	}
 
 	/**
@@ -257,26 +251,29 @@ export class SkillsManager {
 	}
 
 	/**
-	 * Validate skill name per agentskills.io spec
-	 * - 1-64 chars
-	 * - lowercase letters/numbers/hyphens only
-	 * - must not start/end with hyphen
-	 * - must not contain consecutive hyphens
+	 * Validate skill name per agentskills.io spec using shared validation.
+	 * Converts error codes to user-friendly error messages.
 	 */
 	private validateSkillName(name: string): { valid: boolean; error?: string } {
-		if (name.length < 1 || name.length > 64) {
-			return { valid: false, error: `Skill name must be 1-64 characters (got ${name.length})` }
+		const result = validateSkillNameShared(name)
+		if (!result.valid) {
+			return { valid: false, error: this.getSkillNameErrorMessage(name, result.error!) }
 		}
-
-		const nameFormat = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-		if (!nameFormat.test(name)) {
-			return {
-				valid: false,
-				error: "Skill name must be lowercase letters/numbers/hyphens only (no leading/trailing hyphen, no consecutive hyphens)",
-			}
-		}
-
 		return { valid: true }
+	}
+
+	/**
+	 * Convert skill name validation error code to a user-friendly error message.
+	 */
+	private getSkillNameErrorMessage(name: string, error: SkillNameValidationError): string {
+		switch (error) {
+			case SkillNameValidationError.Empty:
+				return t("skills:errors.name_length", { maxLength: SKILL_NAME_MAX_LENGTH, length: name.length })
+			case SkillNameValidationError.TooLong:
+				return t("skills:errors.name_length", { maxLength: SKILL_NAME_MAX_LENGTH, length: name.length })
+			case SkillNameValidationError.InvalidFormat:
+				return t("skills:errors.name_format")
+		}
 	}
 
 	/**
@@ -297,7 +294,7 @@ export class SkillsManager {
 		// Validate description
 		const trimmedDescription = description.trim()
 		if (trimmedDescription.length < 1 || trimmedDescription.length > 1024) {
-			throw new Error(`Skill description must be 1-1024 characters (got ${trimmedDescription.length})`)
+			throw new Error(t("skills:errors.description_length", { length: trimmedDescription.length }))
 		}
 
 		// Determine base directory
@@ -307,7 +304,7 @@ export class SkillsManager {
 		} else {
 			const provider = this.providerRef.deref()
 			if (!provider?.cwd) {
-				throw new Error("Cannot create project skill: no workspace folder is open")
+				throw new Error(t("skills:errors.no_workspace"))
 			}
 			baseDir = path.join(provider.cwd, ".roo")
 		}
@@ -320,7 +317,7 @@ export class SkillsManager {
 
 		// Check if skill already exists
 		if (await fileExists(skillMdPath)) {
-			throw new Error(`Skill "${name}" already exists at ${skillMdPath}`)
+			throw new Error(t("skills:errors.already_exists", { name, path: skillMdPath }))
 		}
 
 		// Create the skill directory
@@ -363,7 +360,8 @@ Add your skill instructions here.
 		// Find the skill
 		const skill = this.getSkill(name, source, mode)
 		if (!skill) {
-			throw new Error(`Skill "${name}" not found in ${source} ${mode ? `(mode: ${mode})` : ""}`)
+			const modeInfo = mode ? ` (mode: ${mode})` : ""
+			throw new Error(t("skills:errors.not_found", { name, source, modeInfo }))
 		}
 
 		// Get the skill directory (parent of SKILL.md)

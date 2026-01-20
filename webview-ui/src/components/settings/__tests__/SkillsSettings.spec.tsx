@@ -339,8 +339,11 @@ describe("SkillsSettings", () => {
 		})
 	})
 
-	it("refreshes skills after deletion", async () => {
+	it("does not manually refresh after deletion (backend sends updated skills via context)", async () => {
 		renderSkillsSettings()
+
+		// Clear mock calls after initial mount
+		;(vscode.postMessage as any).mockClear()
 
 		const deleteButton = screen.getByTestId("delete-project-skill")
 		fireEvent.click(deleteButton)
@@ -348,20 +351,28 @@ describe("SkillsSettings", () => {
 		const confirmButton = screen.getByTestId("alert-dialog-action")
 		fireEvent.click(confirmButton)
 
-		// Wait for the setTimeout to execute
-		await waitFor(
-			() => {
-				const calls = (vscode.postMessage as any).mock.calls
-				const refreshCalls = calls.filter((call: any[]) => call[0].type === "requestSkills")
-				// Should have been called at least twice - once on mount, once after deletion
-				expect(refreshCalls.length).toBeGreaterThanOrEqual(2)
-			},
-			{ timeout: 200 },
-		)
+		// Verify deleteSkill message was sent
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "deleteSkill",
+				skillName: "project-skill",
+				source: "project",
+				skillMode: undefined,
+			})
+		})
+
+		// Verify that requestSkills was NOT called after deletion
+		// (the backend sends updated skills via ExtensionStateContext automatically)
+		const calls = (vscode.postMessage as any).mock.calls
+		const refreshCalls = calls.filter((call: any[]) => call[0].type === "requestSkills")
+		expect(refreshCalls.length).toBe(0)
 	})
 
-	it("refreshes skills after creating new skill", async () => {
+	it("does not manually refresh after creating new skill (backend sends updated skills via context)", async () => {
 		renderSkillsSettings()
+
+		// Clear mock calls after initial mount
+		;(vscode.postMessage as any).mockClear()
 
 		// Open create dialog
 		const addButtons = screen.getAllByTestId("button")
@@ -371,15 +382,11 @@ describe("SkillsSettings", () => {
 		const createButton = screen.getByTestId("create-skill-button")
 		fireEvent.click(createButton)
 
-		// Wait for the setTimeout to execute
-		await waitFor(
-			() => {
-				const calls = (vscode.postMessage as any).mock.calls
-				const refreshCalls = calls.filter((call: any[]) => call[0].type === "requestSkills")
-				expect(refreshCalls.length).toBeGreaterThanOrEqual(2)
-			},
-			{ timeout: 600 },
-		)
+		// Verify that requestSkills was NOT called after creation
+		// (the backend sends updated skills via ExtensionStateContext automatically)
+		const calls = (vscode.postMessage as any).mock.calls
+		const refreshCalls = calls.filter((call: any[]) => call[0].type === "requestSkills")
+		expect(refreshCalls.length).toBe(0)
 	})
 
 	it("renders empty state when no skills exist", () => {

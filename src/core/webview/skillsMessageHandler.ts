@@ -4,6 +4,7 @@ import type { SkillMetadata, WebviewMessage } from "@roo-code/types"
 
 import type { ClineProvider } from "./ClineProvider"
 import { openFile } from "../../integrations/misc/open-file"
+import { t } from "../../i18n"
 
 /**
  * Handles the requestSkills message - returns all skills metadata
@@ -40,12 +41,12 @@ export async function handleCreateSkill(
 		const skillMode = message.skillMode
 
 		if (!skillName || !source || !skillDescription) {
-			throw new Error("Missing required fields: skillName, source, or skillDescription")
+			throw new Error(t("skills:errors.missing_create_fields"))
 		}
 
 		const skillsManager = provider.getSkillsManager()
 		if (!skillsManager) {
-			throw new Error("Skills manager not available")
+			throw new Error(t("skills:errors.manager_unavailable"))
 		}
 
 		const createdPath = await skillsManager.createSkill(skillName, source, skillDescription, skillMode)
@@ -78,12 +79,12 @@ export async function handleDeleteSkill(
 		const skillMode = message.skillMode
 
 		if (!skillName || !source) {
-			throw new Error("Missing required fields: skillName or source")
+			throw new Error(t("skills:errors.missing_delete_fields"))
 		}
 
 		const skillsManager = provider.getSkillsManager()
 		if (!skillsManager) {
-			throw new Error("Skills manager not available")
+			throw new Error(t("skills:errors.manager_unavailable"))
 		}
 
 		await skillsManager.deleteSkill(skillName, source, skillMode)
@@ -110,17 +111,17 @@ export async function handleOpenSkillFile(provider: ClineProvider, message: Webv
 		const skillMode = message.skillMode
 
 		if (!skillName || !source) {
-			throw new Error("Missing required fields: skillName or source")
+			throw new Error(t("skills:errors.missing_delete_fields"))
 		}
 
 		const skillsManager = provider.getSkillsManager()
 		if (!skillsManager) {
-			throw new Error("Skills manager not available")
+			throw new Error(t("skills:errors.manager_unavailable"))
 		}
 
 		const skill = skillsManager.getSkill(skillName, source, skillMode)
 		if (!skill) {
-			throw new Error(`Skill "${skillName}" not found`)
+			throw new Error(t("skills:errors.skill_not_found", { name: skillName }))
 		}
 
 		openFile(skill.path)

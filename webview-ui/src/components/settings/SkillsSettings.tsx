@@ -27,20 +27,9 @@ import { SkillItem } from "./SkillItem"
 import { CreateSkillDialog } from "./CreateSkillDialog"
 import type { SectionName } from "./SettingsView"
 
-// Note: skills will be provided via ExtensionStateContext in Phase 4
-// For now, we type it as potentially undefined and use mock data pattern
-interface ExtendedExtensionState {
-	skills?: SkillMetadata[]
-	cwd?: string
-}
-
 export const SkillsSettings: React.FC = () => {
 	const { t } = useAppTranslation()
-	const extensionState = useExtensionState() as ExtendedExtensionState
-	const { cwd } = extensionState
-
-	// Skills will come from context in Phase 4, for now handle undefined
-	const rawSkills = (extensionState as ExtendedExtensionState).skills
+	const { cwd, skills: rawSkills } = useExtensionState()
 	const skills = useMemo(() => rawSkills ?? [], [rawSkills])
 
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -74,10 +63,8 @@ export const SkillsSettings: React.FC = () => {
 			})
 			setDeleteDialogOpen(false)
 			setSkillToDelete(null)
-			// Refresh the skills list after deletion
-			setTimeout(handleRefresh, 100)
 		}
-	}, [skillToDelete, handleRefresh])
+	}, [skillToDelete])
 
 	const handleDeleteCancel = useCallback(() => {
 		setDeleteDialogOpen(false)
@@ -93,10 +80,8 @@ export const SkillsSettings: React.FC = () => {
 		})
 	}, [])
 
-	const handleSkillCreated = useCallback(() => {
-		// Refresh skills list after creation
-		setTimeout(handleRefresh, 500)
-	}, [handleRefresh])
+	// No-op callback - the backend sends updated skills list via ExtensionStateContext
+	const handleSkillCreated = useCallback(() => {}, [])
 
 	// Group skills by source
 	const projectSkills = useMemo(() => skills.filter((skill) => skill.source === "project"), [skills])
