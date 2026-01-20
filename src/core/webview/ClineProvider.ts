@@ -2535,7 +2535,9 @@ export class ClineProvider
 	 * This sends a lightweight message with just the task history, rather than the full state.
 	 * @param history The task history to broadcast (if not provided, reads from global state)
 	 */
-	async broadcastTaskHistoryUpdate(history?: HistoryItem[]): Promise<void> {
+		if (!this.isViewLaunched) {
+			return
+		}
 		const taskHistory = history ?? (this.getGlobalState("taskHistory") as HistoryItem[] | undefined) ?? []
 
 		// Sort and filter the history the same way as getStateToPostToWebview
