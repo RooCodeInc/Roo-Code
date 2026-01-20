@@ -108,7 +108,7 @@ describe("LmStudioHandler Native Tools", () => {
 			)
 		})
 
-		it("should not include tools when no tools are provided", async () => {
+		it("should always include tools and tool_choice in request (tools are always present after PR #10841)", async () => {
 			mockCreate.mockImplementationOnce(() => ({
 				[Symbol.asyncIterator]: async function* () {
 					yield {
@@ -123,8 +123,10 @@ describe("LmStudioHandler Native Tools", () => {
 			await stream.next()
 
 			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
-			expect(callArgs).not.toHaveProperty("tools")
-			expect(callArgs).not.toHaveProperty("tool_choice")
+			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
+			expect(callArgs).toHaveProperty("tools")
+			expect(callArgs).toHaveProperty("tool_choice")
+			expect(callArgs).toHaveProperty("parallel_tool_calls")
 		})
 
 		it("should yield tool_call_partial chunks during streaming", async () => {

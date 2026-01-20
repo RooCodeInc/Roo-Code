@@ -144,16 +144,8 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 			// Generate user_id metadata in the format required by Claude Code API
 			const userId = generateUserId(email || undefined)
 
-			// Convert OpenAI tools to Anthropic format if provided and protocol is native
-			// Exclude tools when tool_choice is "none" since that means "don't use tools"
-			const shouldIncludeNativeTools =
-				metadata?.tools && metadata.tools.length > 0 && metadata?.tool_choice !== "none"
-
-			const anthropicTools = shouldIncludeNativeTools ? convertOpenAIToolsToAnthropic(metadata.tools!) : undefined
-
-			const anthropicToolChoice = shouldIncludeNativeTools
-				? convertOpenAIToolChoice(metadata.tool_choice, metadata.parallelToolCalls)
-				: undefined
+			const anthropicTools = convertOpenAIToolsToAnthropic(metadata?.tools ?? [])
+			const anthropicToolChoice = convertOpenAIToolChoice(metadata?.tool_choice, metadata?.parallelToolCalls)
 
 			// Determine reasoning effort and thinking configuration
 			const reasoningLevel = this.getReasoningEffort(model.info)

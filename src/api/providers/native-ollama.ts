@@ -240,7 +240,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				messages: ollamaMessages,
 				stream: true,
 				options: chatOptions,
-				...(metadata?.tools?.length ? { tools: this.convertToolsToOllama(metadata.tools) } : {}),
+				tools: this.convertToolsToOllama(metadata?.tools),
 			})
 
 			let totalInputTokens = 0

@@ -72,9 +72,9 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 			stream_options: { include_usage: true },
 			reasoning_effort,
 			prompt_cache_key,
-			...(_metadata?.tools?.length ? { tools: this.convertToolsForOpenAI(_metadata.tools) } : {}),
-			...(_metadata?.tools?.length && _metadata?.tool_choice ? { tool_choice: _metadata.tool_choice } : {}),
-			...(_metadata?.tools?.length ? { parallel_tool_calls: _metadata?.parallelToolCalls ?? false } : {}),
+			tools: this.convertToolsForOpenAI(_metadata?.tools),
+			tool_choice: _metadata?.tool_choice,
+			parallel_tool_calls: _metadata?.parallelToolCalls ?? false,
 		} as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming
 
 		if (this.supportsTemperature(modelId)) {

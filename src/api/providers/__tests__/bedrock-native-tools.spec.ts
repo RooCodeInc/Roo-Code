@@ -272,7 +272,7 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			expect(commandArg.toolConfig.toolChoice).toEqual({ auto: {} })
 		})
 
-		it("should not include toolConfig when no tools are provided", async () => {
+		it("should always include toolConfig (tools are always present after PR #10841)", async () => {
 			const handlerWithNativeTools = new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
@@ -282,7 +282,7 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
-				// No tools
+				// Even without explicit tools, tools are always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
 			}
 
 			const generator = handlerWithNativeTools.createMessage(
@@ -296,7 +296,10 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			expect(mockConverseStreamCommand).toHaveBeenCalled()
 			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
 
-			expect(commandArg.toolConfig).toBeUndefined()
+			// Tools are now always present
+			expect(commandArg.toolConfig).toBeDefined()
+			expect(commandArg.toolConfig.tools).toBeDefined()
+			expect(commandArg.toolConfig.toolChoice).toEqual({ auto: {} })
 		})
 
 		it("should include toolConfig with undefined toolChoice when tool_choice is none", async () => {

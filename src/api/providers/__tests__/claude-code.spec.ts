@@ -112,22 +112,25 @@ describe("ClaudeCodeHandler", () => {
 		// Verify createStreamingMessage was called with correct parameters
 		// Default model has reasoning effort of "medium" so thinking should be enabled
 		// With interleaved thinking, maxTokens comes from model definition (32768 for claude-sonnet-4-5)
-		expect(mockCreateStreamingMessage).toHaveBeenCalledWith({
-			accessToken: "test-access-token",
-			model: "claude-sonnet-4-5",
-			systemPrompt,
-			messages,
-			maxTokens: 32768, // model's maxTokens from claudeCodeModels definition
-			thinking: {
-				type: "enabled",
-				budget_tokens: 32000, // medium reasoning budget_tokens
-			},
-			tools: undefined,
-			toolChoice: undefined,
-			metadata: {
-				user_id: "user_abc123_account_def456_session_ghi789",
-			},
-		})
+		expect(mockCreateStreamingMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				accessToken: "test-access-token",
+				model: "claude-sonnet-4-5",
+				systemPrompt,
+				messages,
+				maxTokens: 32768, // model's maxTokens from claudeCodeModels definition
+				thinking: {
+					type: "enabled",
+					budget_tokens: 32000, // medium reasoning budget_tokens
+				},
+				// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
+				tools: expect.any(Array),
+				toolChoice: expect.any(Object),
+				metadata: {
+					user_id: "user_abc123_account_def456_session_ghi789",
+				},
+			}),
+		)
 	})
 
 	test("should disable thinking when reasoningEffort is set to disable", async () => {
@@ -155,19 +158,22 @@ describe("ClaudeCodeHandler", () => {
 		await iterator.next()
 
 		// Verify createStreamingMessage was called with thinking disabled
-		expect(mockCreateStreamingMessage).toHaveBeenCalledWith({
-			accessToken: "test-access-token",
-			model: "claude-sonnet-4-5",
-			systemPrompt,
-			messages,
-			maxTokens: 32768, // model maxTokens from claudeCodeModels definition
-			thinking: { type: "disabled" },
-			tools: undefined,
-			toolChoice: undefined,
-			metadata: {
-				user_id: "user_abc123_account_def456_session_ghi789",
-			},
-		})
+		expect(mockCreateStreamingMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				accessToken: "test-access-token",
+				model: "claude-sonnet-4-5",
+				systemPrompt,
+				messages,
+				maxTokens: 32768, // model maxTokens from claudeCodeModels definition
+				thinking: { type: "disabled" },
+				// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
+				tools: expect.any(Array),
+				toolChoice: expect.any(Object),
+				metadata: {
+					user_id: "user_abc123_account_def456_session_ghi789",
+				},
+			}),
+		)
 	})
 
 	test("should use high reasoning config when reasoningEffort is high", async () => {
@@ -196,22 +202,25 @@ describe("ClaudeCodeHandler", () => {
 
 		// Verify createStreamingMessage was called with high thinking config
 		// With interleaved thinking, maxTokens comes from model definition (32768 for claude-sonnet-4-5)
-		expect(mockCreateStreamingMessage).toHaveBeenCalledWith({
-			accessToken: "test-access-token",
-			model: "claude-sonnet-4-5",
-			systemPrompt,
-			messages,
-			maxTokens: 32768, // model's maxTokens from claudeCodeModels definition
-			thinking: {
-				type: "enabled",
-				budget_tokens: 64000, // high reasoning budget_tokens
-			},
-			tools: undefined,
-			toolChoice: undefined,
-			metadata: {
-				user_id: "user_abc123_account_def456_session_ghi789",
-			},
-		})
+		expect(mockCreateStreamingMessage).toHaveBeenCalledWith(
+			expect.objectContaining({
+				accessToken: "test-access-token",
+				model: "claude-sonnet-4-5",
+				systemPrompt,
+				messages,
+				maxTokens: 32768, // model's maxTokens from claudeCodeModels definition
+				thinking: {
+					type: "enabled",
+					budget_tokens: 64000, // high reasoning budget_tokens
+				},
+				// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
+				tools: expect.any(Array),
+				toolChoice: expect.any(Object),
+				metadata: {
+					user_id: "user_abc123_account_def456_session_ghi789",
+				},
+			}),
+		)
 	})
 
 	test("should handle text content from streaming", async () => {

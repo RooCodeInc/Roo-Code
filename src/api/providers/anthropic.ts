@@ -72,17 +72,10 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			betas.push("context-1m-2025-08-07")
 		}
 
-		// Native-only tool calling: include tools whenever they are provided,
-		// unless tool_choice is explicitly "none".
-		const shouldIncludeNativeTools =
-			metadata?.tools && metadata.tools.length > 0 && metadata?.tool_choice !== "none"
-
-		const nativeToolParams = shouldIncludeNativeTools
-			? {
-					tools: convertOpenAIToolsToAnthropic(metadata.tools!),
-					tool_choice: convertOpenAIToolChoiceToAnthropic(metadata.tool_choice, metadata.parallelToolCalls),
-				}
-			: {}
+		const nativeToolParams = {
+			tools: convertOpenAIToolsToAnthropic(metadata?.tools ?? []),
+			tool_choice: convertOpenAIToolChoiceToAnthropic(metadata?.tool_choice, metadata?.parallelToolCalls),
+		}
 
 		switch (modelId) {
 			case "claude-sonnet-4-5":

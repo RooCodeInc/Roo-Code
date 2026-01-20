@@ -415,7 +415,7 @@ describe("UnboundHandler", () => {
 			)
 		})
 
-		it("should not include tools when no tools are provided", async () => {
+		it("should always include tools and tool_choice (tools are guaranteed to be present after ALWAYS_AVAILABLE_TOOLS)", async () => {
 			mockWithResponse.mockResolvedValueOnce({
 				data: {
 					[Symbol.asyncIterator]: () => ({
@@ -431,9 +431,11 @@ describe("UnboundHandler", () => {
 			})
 			await messageGenerator.next()
 
+			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
 			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
-			expect(callArgs).not.toHaveProperty("tools")
-			expect(callArgs).not.toHaveProperty("tool_choice")
+			expect(callArgs).toHaveProperty("tools")
+			expect(callArgs).toHaveProperty("tool_choice")
+			expect(callArgs).toHaveProperty("parallel_tool_calls", false)
 		})
 
 		it("should yield tool_call_partial chunks during streaming", async () => {

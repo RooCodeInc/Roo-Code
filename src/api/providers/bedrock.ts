@@ -448,13 +448,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			additionalModelRequestFields.anthropic_beta = anthropicBetas
 		}
 
-		// Build tool configuration if native tools are enabled
-		let toolConfig: ToolConfiguration | undefined
-		if (metadata?.tools?.length) {
-			toolConfig = {
-				tools: this.convertToolsForBedrock(metadata.tools),
-				toolChoice: this.convertToolChoiceForBedrock(metadata.tool_choice),
-			}
+		const toolConfig: ToolConfiguration = {
+			tools: this.convertToolsForBedrock(metadata?.tools ?? []),
+			toolChoice: this.convertToolChoiceForBedrock(metadata?.tool_choice),
 		}
 
 		// Build payload with optional service_tier at top level
@@ -468,7 +464,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			...(additionalModelRequestFields && { additionalModelRequestFields }),
 			// Add anthropic_version at top level when using thinking features
 			...(thinkingEnabled && { anthropic_version: "bedrock-2023-05-31" }),
-			...(toolConfig && { toolConfig }),
+			toolConfig,
 			// Add service_tier as a top-level parameter (not inside additionalModelRequestFields)
 			...(useServiceTier && { service_tier: this.options.awsBedrockServiceTier }),
 		}

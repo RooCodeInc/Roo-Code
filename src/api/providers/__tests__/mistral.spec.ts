@@ -119,12 +119,17 @@ describe("MistralHandler", () => {
 			const iterator = handler.createMessage(systemPrompt, messages)
 			const result = await iterator.next()
 
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.apiModelId,
-				messages: expect.any(Array),
-				maxTokens: expect.any(Number),
-				temperature: 0,
-			})
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: mockOptions.apiModelId,
+					messages: expect.any(Array),
+					maxTokens: expect.any(Number),
+					temperature: 0,
+					// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
+					tools: expect.any(Array),
+					toolChoice: "any",
+				}),
+			)
 
 			expect(result.value).toBeDefined()
 			expect(result.done).toBe(false)
@@ -288,7 +293,7 @@ describe("MistralHandler", () => {
 			)
 		})
 
-		it("should not include tools when no tools are provided", async () => {
+		it("should always include tools in request (tools are always present after PR #10841)", async () => {
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
 			}
@@ -296,9 +301,11 @@ describe("MistralHandler", () => {
 			const iterator = handler.createMessage(systemPrompt, messages, metadata)
 			await iterator.next()
 
+			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
 			expect(mockCreate).toHaveBeenCalledWith(
-				expect.not.objectContaining({
-					tools: expect.anything(),
+				expect.objectContaining({
+					tools: expect.any(Array),
+					toolChoice: "any",
 				}),
 			)
 		})

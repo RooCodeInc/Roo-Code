@@ -47,8 +47,8 @@ export class ChutesHandler extends RouterProvider implements SingleCompletionHan
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
 			stream: true,
 			stream_options: { include_usage: true },
-			...(metadata?.tools && { tools: metadata.tools }),
-			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+			tools: metadata?.tools,
+			tool_choice: metadata?.tool_choice,
 		}
 
 		// Only add temperature if model supports it

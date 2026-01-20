@@ -478,7 +478,7 @@ describe("AnthropicHandler", () => {
 			)
 		})
 
-		it("should not include tools when no tools are provided", async () => {
+		it("should always include tools in request (tools are always present after PR #10841)", async () => {
 			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
@@ -489,9 +489,11 @@ describe("AnthropicHandler", () => {
 				// Just consume
 			}
 
+			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
 			expect(mockCreate).toHaveBeenCalledWith(
-				expect.not.objectContaining({
-					tools: expect.anything(),
+				expect.objectContaining({
+					tools: expect.any(Array),
+					tool_choice: expect.any(Object),
 				}),
 				expect.anything(),
 			)
@@ -539,7 +541,7 @@ describe("AnthropicHandler", () => {
 			)
 		})
 
-		it("should omit both tools and tool_choice when tool_choice is 'none'", async () => {
+		it("should set tool_choice to undefined when tool_choice is 'none' (tools are still passed)", async () => {
 			// Handler uses native protocol by default
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
@@ -552,16 +554,13 @@ describe("AnthropicHandler", () => {
 				// Just consume
 			}
 
-			// Verify that neither tools nor tool_choice are included in the request
+			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
+			// When tool_choice is 'none', the converter returns undefined for tool_choice
+			// but tools are still passed since they're always present
 			expect(mockCreate).toHaveBeenCalledWith(
-				expect.not.objectContaining({
-					tools: expect.anything(),
-				}),
-				expect.anything(),
-			)
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.not.objectContaining({
-					tool_choice: expect.anything(),
+				expect.objectContaining({
+					tools: expect.any(Array),
+					tool_choice: undefined,
 				}),
 				expect.anything(),
 			)

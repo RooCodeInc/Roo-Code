@@ -162,7 +162,7 @@ describe("VertexHandler", () => {
 			})
 
 			expect(mockCreate).toHaveBeenCalledWith(
-				{
+				expect.objectContaining({
 					model: "claude-3-5-sonnet-v2@20241022",
 					max_tokens: 8192,
 					temperature: 0,
@@ -191,7 +191,10 @@ describe("VertexHandler", () => {
 						},
 					],
 					stream: true,
-				},
+					// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
+					tools: expect.any(Array),
+					tool_choice: expect.any(Object),
+				}),
 				undefined,
 			)
 		})
