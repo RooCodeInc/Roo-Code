@@ -12,7 +12,9 @@ import * as fileSearch from "../../../services/search/file-search"
 
 import { RepoPerTaskCheckpointService } from "../RepoPerTaskCheckpointService"
 
-const tmpDir = path.join(os.tmpdir(), "CheckpointService")
+// Use a unique tmp directory per test run to avoid collisions with other
+// Vitest workers/processes and to keep cleanup fast/reliable on Windows.
+const tmpDir = path.join(os.tmpdir(), `CheckpointService-${process.pid}-${Date.now()}`)
 
 const initWorkspaceRepo = async ({
 	workspaceDir,
@@ -55,10 +57,12 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 		let workspaceGit: SimpleGit
 		let testFile: string
 		let service: RepoPerTaskCheckpointService
+		let shadowDir: string
+		let workspaceDir: string
 
 		beforeEach(async () => {
-			const shadowDir = path.join(tmpDir, `${prefix}-${Date.now()}`)
-			const workspaceDir = path.join(tmpDir, `workspace-${Date.now()}`)
+			shadowDir = path.join(tmpDir, `${prefix}-${Date.now()}`)
+			workspaceDir = path.join(tmpDir, `workspace-${Date.now()}`)
 			const repo = await initWorkspaceRepo({ workspaceDir })
 
 			workspaceGit = repo.git
@@ -70,10 +74,21 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 
 		afterEach(async () => {
 			vitest.restoreAllMocks()
+
+			// Clean up per-test directories to prevent a huge accumulated tmp tree.
+			// This makes Windows CI much less likely to hit slow/blocked recursive deletes.
+			await Promise.all([
+				fs
+					.rm(shadowDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+					.catch(() => undefined),
+				fs
+					.rm(workspaceDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+					.catch(() => undefined),
+			])
 		})
 
 		afterAll(async () => {
-			await fs.rm(tmpDir, { recursive: true, force: true })
+			await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
 		}, 60_000) // 60 second timeout for Windows cleanup
 
 		describe(`${klass.name}#getDiff`, () => {
