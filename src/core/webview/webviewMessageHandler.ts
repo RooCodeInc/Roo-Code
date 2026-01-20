@@ -532,6 +532,9 @@ export const webviewMessageHandler = async (
 				TelemetryService.instance.updateTelemetryState(isOptedIn)
 			})
 
+			// Note: Task history storage size calculation is triggered on-demand when the About
+			// settings tab is opened (via "refreshTaskHistorySize" message), not on webview launch.
+
 			provider.isViewLaunched = true
 			break
 		case "newTask":
@@ -3340,6 +3343,24 @@ export const webviewMessageHandler = async (
 				values: message.values,
 				log: (msg) => provider.log(msg),
 			})
+			break
+		}
+
+		case "refreshTaskHistorySize": {
+			// Refresh the task history storage size calculation
+			try {
+				const { calculateTaskStorageSize } = await import("../../utils/task-storage-size")
+				const globalStoragePath = provider.contextProxy.globalStorageUri.fsPath
+				const sizeInfo = await calculateTaskStorageSize(globalStoragePath)
+
+				// Update state and notify webview
+				await provider.contextProxy.setValue("taskHistorySize", sizeInfo)
+				await provider.postStateToWebview()
+			} catch (error) {
+				provider.log(
+					`Error refreshing task history size: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
 			break
 		}
 

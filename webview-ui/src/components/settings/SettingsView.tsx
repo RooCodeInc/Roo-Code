@@ -216,6 +216,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		taskHistoryRetention,
 	} = cachedState
 
+	// taskHistorySize is read-only (not a saveable setting) so we use extensionState directly
+	const taskHistorySize = extensionState.taskHistorySize
+
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
 
 	useEffect(() => {
@@ -560,6 +563,13 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	useEffect(() => {
 		scrollToActiveTab()
 	}, [activeTab, scrollToActiveTab])
+
+	// Effect to trigger task history size calculation when About tab is opened
+	useEffect(() => {
+		if (activeTab === "about") {
+			vscode.postMessage({ type: "refreshTaskHistorySize" })
+		}
+	}, [activeTab])
 
 	// Effect to scroll when the webview becomes visible
 	useLayoutEffect(() => {
@@ -962,6 +972,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								setDebug={setDebug}
 								taskHistoryRetention={normalizedTaskHistoryRetention}
 								setTaskHistoryRetention={(value) => setCachedStateField("taskHistoryRetention", value)}
+								taskHistorySize={taskHistorySize}
 							/>
 						)}
 					</SearchIndexProvider>

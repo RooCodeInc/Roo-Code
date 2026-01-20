@@ -183,6 +183,14 @@ export const globalSettingsSchema = z.object({
 	includeTaskHistoryInEnhance: z.boolean().optional(),
 	// Auto-delete task history on extension reload. "never" | "90" | "60" | "30" | "7" | "3"
 	taskHistoryRetention: z.union([z.enum(["never", "90", "60", "30", "7", "3"]), z.number()]).optional(),
+	// Calculated task history storage size info for the Settings > About page
+	taskHistorySize: z
+		.object({
+			totalBytes: z.number(),
+			taskCount: z.number(),
+			formattedSize: z.string(),
+		})
+		.optional(),
 	historyPreviewCollapsed: z.boolean().optional(),
 	reasoningBlockCollapsed: z.boolean().optional(),
 	/**

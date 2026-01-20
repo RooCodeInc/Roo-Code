@@ -1,7 +1,19 @@
-import { HTMLAttributes } from "react"
+import { HTMLAttributes, useState, useCallback, useEffect } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Trans } from "react-i18next"
-import { Download, Upload, TriangleAlert, Bug, Lightbulb, Shield, MessageCircle, MessagesSquare } from "lucide-react"
+import {
+	Download,
+	Upload,
+	TriangleAlert,
+	Bug,
+	Lightbulb,
+	Shield,
+	MessageCircle,
+	MessagesSquare,
+	RefreshCw,
+	HardDrive,
+	Loader2,
+} from "lucide-react"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
 import type { TelemetrySetting } from "@roo-code/types"
@@ -16,6 +28,12 @@ import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { SearchableSetting } from "./SearchableSetting"
 
+type TaskHistorySize = {
+	totalBytes: number
+	taskCount: number
+	formattedSize: string
+}
+
 type AboutProps = HTMLAttributes<HTMLDivElement> & {
 	telemetrySetting: TelemetrySetting
 	setTelemetrySetting: (setting: TelemetrySetting) => void
@@ -23,6 +41,7 @@ type AboutProps = HTMLAttributes<HTMLDivElement> & {
 	setDebug?: (debug: boolean) => void
 	taskHistoryRetention: "never" | "90" | "60" | "30" | "7" | "3"
 	setTaskHistoryRetention: (value: "never" | "90" | "60" | "30" | "7" | "3") => void
+	taskHistorySize?: TaskHistorySize
 }
 
 export const About = ({
@@ -32,10 +51,46 @@ export const About = ({
 	setDebug,
 	taskHistoryRetention,
 	setTaskHistoryRetention,
+	taskHistorySize,
 	className,
 	...props
 }: AboutProps) => {
 	const { t } = useAppTranslation()
+	const [isRefreshing, setIsRefreshing] = useState(false)
+	const [cachedSize, setCachedSize] = useState<TaskHistorySize | undefined>(taskHistorySize)
+
+	// Update cached size when taskHistorySize changes and reset refreshing state
+	useEffect(() => {
+		if (taskHistorySize) {
+			setCachedSize(taskHistorySize)
+			setIsRefreshing(false)
+		}
+	}, [taskHistorySize])
+
+	const handleRefreshStorageSize = useCallback(() => {
+		setIsRefreshing(true)
+		vscode.postMessage({ type: "refreshTaskHistorySize" })
+	}, [])
+
+	const getStorageDisplayText = (): string => {
+		// Use cached size if available, otherwise show "Calculating" only if no cached value
+		const displaySize = taskHistorySize || cachedSize
+		if (!displaySize) {
+			return t("settings:taskHistoryStorage.calculating")
+		}
+		if (displaySize.taskCount === 0) {
+			return t("settings:taskHistoryStorage.empty")
+		}
+		if (displaySize.taskCount === 1) {
+			return t("settings:taskHistoryStorage.formatSingular", {
+				size: displaySize.formattedSize,
+			})
+		}
+		return t("settings:taskHistoryStorage.format", {
+			size: displaySize.formattedSize,
+			count: displaySize.taskCount,
+		})
+	}
 
 	return (
 		<div className={cn("flex flex-col gap-2", className)} {...props}>
@@ -170,6 +225,32 @@ export const About = ({
 							{t("settings:aboutRetention.description")}
 						</div>
 						<div className="text-red-500 text-sm mt-1">{t("settings:aboutRetention.warning")}</div>
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="about-task-history-storage"
+					section="about"
+					label={t("settings:taskHistoryStorage.label")}
+					className="mt-4">
+					<div className="flex items-center gap-2">
+						<HardDrive className="size-4 text-vscode-descriptionForeground shrink-0" />
+						<span className="text-sm">
+							{t("settings:taskHistoryStorage.label")}: {getStorageDisplayText()}
+						</span>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={handleRefreshStorageSize}
+							disabled={isRefreshing}
+							className="h-6 w-6 p-0"
+							title={t("settings:taskHistoryStorage.refresh")}>
+							{isRefreshing ? (
+								<Loader2 className="size-3.5 animate-spin" />
+							) : (
+								<RefreshCw className="size-3.5" />
+							)}
+						</Button>
 					</div>
 				</SearchableSetting>
 

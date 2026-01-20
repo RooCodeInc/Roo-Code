@@ -396,6 +396,15 @@ export type ExtensionState = Pick<
 	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
 	profileThresholds: Record<string, number>
 	hasOpenedModeSelector: boolean
+	/** Task history storage size info for the Settings > About page */
+	taskHistorySize?: {
+		/** Total size in bytes */
+		totalBytes: number
+		/** Number of task directories */
+		taskCount: number
+		/** Formatted size string (e.g., "12.34 MB") */
+		formattedSize: string
+	}
 	openRouterImageApiKey?: string
 	messageQueue?: QueuedMessage[]
 	lastShownAnnouncementId?: string
@@ -593,6 +602,7 @@ export interface WebviewMessage {
 		| "requestModes"
 		| "switchMode"
 		| "debugSetting"
+		| "refreshTaskHistorySize"
 		// Worktree messages
 		| "listWorktrees"
 		| "createWorktree"
