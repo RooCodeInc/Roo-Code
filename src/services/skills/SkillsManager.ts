@@ -8,6 +8,7 @@ import { getGlobalRooDirectory } from "../roo-config"
 import { directoryExists, fileExists } from "../roo-config"
 import { SkillMetadata, SkillContent } from "../../shared/skills"
 import { modes, getAllModes } from "../../shared/modes"
+import { getBuiltInSkills, getBuiltInSkill } from "./built-in-skills"
 
 // Re-export for convenience
 export type { SkillMetadata, SkillContent }
@@ -28,7 +29,7 @@ export class SkillsManager {
 	}
 
 	/**
-	 * Discover all skills from global and project directories.
+	 * Discover all skills from built-in, global and project directories.
 	 * Supports both generic skills (skills/) and mode-specific skills (skills-{mode}/).
 	 * Also supports symlinks:
 	 * - .roo/skills can be a symlink to a directory containing skill subdirectories
@@ -36,6 +37,14 @@ export class SkillsManager {
 	 */
 	async discoverSkills(): Promise<void> {
 		this.skills.clear()
+
+		// Add built-in skills first (lowest priority)
+		const builtInSkills = getBuiltInSkills()
+		for (const skill of builtInSkills) {
+			const skillKey = this.getSkillKey(skill.name, skill.source, skill.mode)
+			this.skills.set(skillKey, skill)
+		}
+
 		const skillsDirs = await this.getSkillsDirectories()
 
 		for (const { dir, source, mode } of skillsDirs) {
@@ -194,12 +203,16 @@ export class SkillsManager {
 
 	/**
 	 * Determine if newSkill should override existingSkill based on priority rules.
-	 * Priority: project > global, mode-specific > generic
+	 * Priority: project > global > built-in, mode-specific > generic
 	 */
 	private shouldOverrideSkill(existing: SkillMetadata, newSkill: SkillMetadata): boolean {
-		// Project always overrides global
-		if (newSkill.source === "project" && existing.source === "global") return true
-		if (newSkill.source === "global" && existing.source === "project") return false
+		// Project always overrides global and built-in
+		if (newSkill.source === "project" && existing.source !== "project") return true
+		if (newSkill.source !== "project" && existing.source === "project") return false
+
+		// Global always overrides built-in
+		if (newSkill.source === "global" && existing.source === "built-in") return true
+		if (newSkill.source === "built-in" && existing.source === "global") return false
 
 		// Same source: mode-specific overrides generic
 		if (newSkill.mode && !existing.mode) return true
@@ -229,6 +242,12 @@ export class SkillsManager {
 		}
 
 		if (!skill) return null
+
+		// Handle built-in skills
+		if (skill.source === "built-in") {
+			const builtInSkillContent = getBuiltInSkill(skill.name)
+			return builtInSkillContent || null
+		}
 
 		const fileContent = await fs.readFile(skill.path, "utf-8")
 		const { content: body } = matter(fileContent)
