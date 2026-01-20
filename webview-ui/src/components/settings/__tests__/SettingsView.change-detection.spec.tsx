@@ -66,7 +66,7 @@ vi.mock("@src/components/ui", () => ({
 	DialogDescription: ({ children }: any) => <div data-testid="dialog-description">{children}</div>,
 	DialogFooter: ({ children }: any) => <div data-testid="dialog-footer">{children}</div>,
 	// Add Select components (used by CreateSkillDialog)
-	Select: ({ children, value, onValueChange }: any) => (
+	Select: ({ children, value, onValueChange: _onValueChange }: any) => (
 		<div data-testid="select" data-value={value}>
 			{children}
 		</div>
