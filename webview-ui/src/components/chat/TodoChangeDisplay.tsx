@@ -26,6 +26,17 @@ function getTodoIcon(status: TodoStatus | null) {
 }
 
 export function TodoChangeDisplay({ previousTodos, newTodos }: TodoChangeDisplayProps) {
+	console.log("[TODO-DEBUG]", "TodoChangeDisplay compare todos", {
+		previousTodosCount: Array.isArray(previousTodos) ? previousTodos.length : 0,
+		newTodosCount: Array.isArray(newTodos) ? newTodos.length : 0,
+		previousTodos: Array.isArray(previousTodos)
+			? previousTodos.map((t) => ({ id: t.id, content: t.content, status: t.status }))
+			: [],
+		newTodos: Array.isArray(newTodos)
+			? newTodos.map((t) => ({ id: t.id, content: t.content, status: t.status }))
+			: [],
+	})
+
 	const isInitialState = previousTodos.length === 0
 
 	// Determine which todos to display
@@ -34,18 +45,44 @@ export function TodoChangeDisplay({ previousTodos, newTodos }: TodoChangeDisplay
 	if (isInitialState && newTodos.length > 0) {
 		// For initial state, show all todos in their original order
 		todosToDisplay = newTodos
+		console.log("[TODO-DEBUG]", "TodoChangeDisplay selection: initial state -> show all newTodos", {
+			todosToDisplayCount: todosToDisplay.length,
+		})
 	} else {
 		// For updates, only show changes (completed or started) in their original order
 		todosToDisplay = newTodos.filter((newTodo) => {
 			if (newTodo.status === "completed") {
 				const previousTodo = previousTodos.find((p) => p.id === newTodo.id || p.content === newTodo.content)
-				return !previousTodo || previousTodo.status !== "completed"
+				const include = !previousTodo || previousTodo.status !== "completed"
+				console.log("[TODO-DEBUG]", "TodoChangeDisplay selection: completed todo", {
+					newTodo: { id: newTodo.id, content: newTodo.content, status: newTodo.status },
+					matchedPreviousTodo: previousTodo
+						? { id: previousTodo.id, content: previousTodo.content, status: previousTodo.status }
+						: undefined,
+					include,
+				})
+				return include
 			}
 			if (newTodo.status === "in_progress") {
 				const previousTodo = previousTodos.find((p) => p.id === newTodo.id || p.content === newTodo.content)
-				return !previousTodo || previousTodo.status !== "in_progress"
+				const include = !previousTodo || previousTodo.status !== "in_progress"
+				console.log("[TODO-DEBUG]", "TodoChangeDisplay selection: in_progress todo", {
+					newTodo: { id: newTodo.id, content: newTodo.content, status: newTodo.status },
+					matchedPreviousTodo: previousTodo
+						? { id: previousTodo.id, content: previousTodo.content, status: previousTodo.status }
+						: undefined,
+					include,
+				})
+				return include
 			}
+			console.log("[TODO-DEBUG]", "TodoChangeDisplay selection: ignored todo (not completed/in_progress)", {
+				newTodo: { id: newTodo.id, content: newTodo.content, status: newTodo.status },
+			})
 			return false
+		})
+		console.log("[TODO-DEBUG]", "TodoChangeDisplay selection result", {
+			todosToDisplayCount: todosToDisplay.length,
+			todosToDisplay: todosToDisplay.map((t) => ({ id: t.id, content: t.content, status: t.status })),
 		})
 	}
 

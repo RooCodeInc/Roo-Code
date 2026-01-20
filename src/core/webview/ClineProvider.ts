@@ -1694,18 +1694,43 @@ export class ClineProvider
 	}> {
 		const { historyItem } = await this.getTaskWithId(taskId)
 
-		const aggregatedCosts = await aggregateTaskCostsRecursive(taskId, async (id: string) => {
-			const result = await this.getTaskWithId(id)
-			return result.historyItem
-		})
+		const loadTaskHistoryItemForAggregation = async (id: string): Promise<HistoryItem | undefined> => {
+			// Root task must still error if missing (enforced by getTaskWithId(taskId) above).
+			if (id === taskId) {
+				return historyItem
+			}
+
+			try {
+				const result = await this.getTaskWithId(id)
+				return result.historyItem
+			} catch (error) {
+				const errno = error as NodeJS.ErrnoException
+				const message = error instanceof Error ? error.message : String(error)
+
+				// Child tasks may be missing on disk (e.g. pruned task folder). Treat as absent so rollups still render.
+				if (errno?.code === "ENOENT" || message === "Task not found") {
+					// getTaskWithId already performs cleanup for the "Task not found" path.
+					// For an ENOENT race (folder deleted between exists check and read), ensure state is also cleaned.
+					if (errno?.code === "ENOENT") {
+						await this.deleteTaskFromState(id)
+					}
+
+					this.log(
+						`[ClineProvider#getTaskWithAggregatedCosts] Skipping missing child task ${id} while aggregating costs for ${taskId}: ${message}`,
+					)
+					return undefined
+				}
+
+				throw error
+			}
+		}
+
+		const aggregatedCosts = await aggregateTaskCostsRecursive(taskId, loadTaskHistoryItemForAggregation)
 
 		// Build subtask details if there are children
 		let childDetails: SubtaskDetail[] | undefined
 		if (aggregatedCosts.childBreakdown && Object.keys(aggregatedCosts.childBreakdown).length > 0) {
-			childDetails = await buildSubtaskDetails(aggregatedCosts.childBreakdown, async (id: string) => {
-				const result = await this.getTaskWithId(id)
-				return result.historyItem
-			})
+			childDetails = await buildSubtaskDetails(aggregatedCosts.childBreakdown, loadTaskHistoryItemForAggregation)
 		}
 
 		return {
@@ -2558,7 +2583,9 @@ export class ClineProvider
 
 	public log(message: string) {
 		this.outputChannel.appendLine(message)
-		console.log(message)
+		// IMPORTANT: never write to stdout/stderr from shared core code.
+		// The Roo CLI runs a TUI that is corrupted by any console output (e.g., mode selector dropdown).
+		// VS Code extension logs are available via the OutputChannel.
 	}
 
 	// getters
@@ -3174,6 +3201,16 @@ export class ClineProvider
 			const parentMessages = await readTaskMessages({ taskId: parentTaskId, globalStoragePath })
 			let todos = (getLatestTodo(parentMessages) as unknown as TodoItem[]) ?? []
 
+			this.log(
+				`[TODO-DEBUG] delegateParentAndOpenChild loaded parent todos ${JSON.stringify({
+					parentTaskId,
+					childTaskId: child.taskId,
+					parentMessagesCount: Array.isArray(parentMessages) ? parentMessages.length : undefined,
+					todosCount: Array.isArray(todos) ? todos.length : undefined,
+					todos,
+				})}`,
+			)
+
 			// Ensure todos is a valid array
 			if (!Array.isArray(todos)) {
 				todos = []
@@ -3215,6 +3252,17 @@ export class ClineProvider
 			}
 
 			// Always persist the updated todo list
+			this.log(
+				`[TODO-DEBUG] delegateParentAndOpenChild persisting system_update_todos ${JSON.stringify({
+					parentTaskId,
+					childTaskId: child.taskId,
+					chosenTodoId: chosen?.id,
+					chosenTodoStatus: chosen?.status,
+					chosenTodoSubtaskId: chosen?.subtaskId,
+					persistTodosCount: Array.isArray(todos) ? todos.length : undefined,
+					todos,
+				})}`,
+			)
 			await saveTaskMessages({
 				messages: [
 					...parentMessages,
@@ -3337,6 +3385,18 @@ export class ClineProvider
 		// pick the same deterministic anchor todo and set its subtaskId = childTaskId before writing tokens/cost.
 		try {
 			let todos = (getLatestTodo(parentClineMessages) as unknown as TodoItem[]) ?? []
+
+			this.log(
+				`[TODO-DEBUG] reopenParentFromDelegation loaded parent todos ${JSON.stringify({
+					parentTaskId,
+					childTaskId,
+					parentClineMessagesCount: Array.isArray(parentClineMessages)
+						? parentClineMessages.length
+						: undefined,
+					todosCount: Array.isArray(todos) ? todos.length : undefined,
+					todos,
+				})}`,
+			)
 			if (!Array.isArray(todos)) {
 				todos = []
 			}
@@ -3344,6 +3404,7 @@ export class ClineProvider
 			if (todos.length > 0) {
 				// Primary lookup by subtaskId
 				let linkedTodo = todos.find((t) => t?.subtaskId === childTaskId)
+				let usedAnchorFallbackLinking = false
 
 				// Fallback: if subtaskId link wasn't found but parent history confirms this child belongs to it,
 				// use the deterministic anchor selection to establish the link now.
@@ -3364,14 +3425,34 @@ export class ClineProvider
 					// Set the subtaskId on the fallback anchor if found
 					if (linkedTodo) {
 						linkedTodo.subtaskId = childTaskId
+						usedAnchorFallbackLinking = true
 					}
 				}
 
 				if (linkedTodo) {
+					// Lightweight debug instrumentation (once per reopen) when we had to link via anchor
+					// instead of finding by subtaskId.
+					if (usedAnchorFallbackLinking) {
+						this.log(
+							`[Roo-Debug] [reopenParentFromDelegation] Provider write-back used anchor fallback (no subtaskId match). parent=${parentTaskId} child=${childTaskId}`,
+						)
+					}
+
 					linkedTodo.tokens = (childHistoryItem?.tokensIn || 0) + (childHistoryItem?.tokensOut || 0)
 					linkedTodo.cost = childHistoryItem?.totalCost || 0
 					linkedTodo.added = childHistoryItem?.linesAdded || 0
 					linkedTodo.removed = childHistoryItem?.linesRemoved || 0
+
+					this.log(
+						`[TODO-DEBUG] reopenParentFromDelegation persisting system_update_todos ${JSON.stringify({
+							parentTaskId,
+							childTaskId,
+							linkedTodoId: linkedTodo?.id,
+							usedAnchorFallbackLinking,
+							persistTodosCount: Array.isArray(todos) ? todos.length : undefined,
+							todos,
+						})}`,
+					)
 
 					parentClineMessages.push({
 						ts: Date.now(),

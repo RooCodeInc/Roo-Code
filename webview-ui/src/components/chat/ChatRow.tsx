@@ -393,10 +393,22 @@ export const ChatRowContent = ({
 		wordBreak: "break-word",
 	}
 
-	const tool = useMemo(
-		() => (message.ask === "tool" ? safeJsonParse<ClineSayTool>(message.text) : null),
-		[message.ask, message.text],
-	)
+	const tool = useMemo(() => {
+		if (message.ask !== "tool") return null
+		const parsed = safeJsonParse<ClineSayTool>(message.text)
+
+		// TODO debugging: verify tool JSON is actually being parsed in the webview.
+		if ((parsed as any)?.tool === "updateTodoList") {
+			console.log("[TODO-DEBUG]", "ChatRow parsed tool JSON", {
+				messageTs: message.ts,
+				toolName: (parsed as any)?.tool,
+				newTodosCount: Array.isArray((parsed as any)?.todos) ? (parsed as any).todos.length : undefined,
+				parsed,
+			})
+		}
+
+		return parsed
+	}, [message.ask, message.text, message.ts])
 
 	// Unified diff content (provided by backend when relevant)
 	const unifiedDiff = useMemo(() => {
@@ -568,6 +580,15 @@ export const ChatRowContent = ({
 				const todos = (tool as any).todos || []
 				// Get previous todos from the latest todos in the task context
 				const previousTodos = getPreviousTodos(clineMessages, message.ts)
+
+				console.log("[TODO-DEBUG]", "ChatRow rendering TodoChangeDisplay", {
+					messageTs: message.ts,
+					previousTodosCount: Array.isArray(previousTodos) ? previousTodos.length : undefined,
+					newTodosCount: Array.isArray(todos) ? todos.length : undefined,
+					previousTodos,
+					newTodos: todos,
+					parsedTool: tool,
+				})
 
 				return <TodoChangeDisplay previousTodos={previousTodos} newTodos={todos} />
 			}

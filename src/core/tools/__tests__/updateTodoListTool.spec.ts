@@ -206,7 +206,7 @@ Just some text
 	})
 
 	describe("ID generation", () => {
-		it("should generate consistent IDs for the same content and status", () => {
+		it("should generate consistent IDs for the same content", () => {
 			const md1 = `[ ] Task 1
 [x] Task 2`
 			const md2 = `[ ] Task 1
@@ -225,16 +225,32 @@ Just some text
 			expect(result[0].id).not.toBe(result[1].id)
 		})
 
-		it("should generate different IDs for same content but different status", () => {
-			const md = `[ ] Task 1
-[x] Task 1`
-			const result = parseMarkdownChecklist(md)
-			expect(result[0].id).not.toBe(result[1].id)
+		it("should generate the same ID for the same content even when status changes", () => {
+			const pending = parseMarkdownChecklist(`[ ] Task 1`)
+			const completed = parseMarkdownChecklist(`[x] Task 1`)
+			expect(pending[0].id).toBe(completed[0].id)
+		})
+
+		it("should keep duplicate IDs stable by occurrence even when status changes", () => {
+			const pending = parseMarkdownChecklist(`[ ] Task 1\n[ ] Task 1`)
+			const completed = parseMarkdownChecklist(`[x] Task 1\n[x] Task 1`)
+			expect(pending[0].id).toBe(completed[0].id)
+			expect(pending[1].id).toBe(completed[1].id)
+			// Within a single parse, duplicates must not share IDs.
+			expect(pending[0].id).not.toBe(pending[1].id)
 		})
 
 		it("should generate same IDs regardless of dash prefix", () => {
 			const md1 = `[ ] Task 1`
 			const md2 = `- [ ] Task 1`
+			const result1 = parseMarkdownChecklist(md1)
+			const result2 = parseMarkdownChecklist(md2)
+			expect(result1[0].id).toBe(result2[0].id)
+		})
+
+		it("should generate the same IDs for the same content even when whitespace differs", () => {
+			const md1 = `[ ] Task 1`
+			const md2 = `[ ] Task   1`
 			const result1 = parseMarkdownChecklist(md1)
 			const result2 = parseMarkdownChecklist(md2)
 			expect(result1[0].id).toBe(result2[0].id)
@@ -245,6 +261,244 @@ Just some text
 describe("UpdateTodoListTool.execute", () => {
 	beforeEach(() => {
 		setPendingTodoList([])
+	})
+
+	it("should preserve per-row metadata (subtaskId/tokens/cost/added/removed) when only statuses change (bulk markdown rewrite)", async () => {
+		/**
+		 * Regression test: a bulk markdown rewrite often changes the derived todo `id`
+		 * (since [`parseMarkdownChecklist()`](../UpdateTodoListTool.ts:337) hashes
+		 * `content + status`). When only statuses change, we must still preserve the
+		 * existing per-row metadata. This is especially important for duplicates,
+		 * where unstable IDs and/or duplicate IDs can cause metadata to be dropped
+		 * or misapplied.
+		 */
+		const initialMd = "[ ] Task A\n[ ] Task B\n[ ] Task A\n[ ] Task C"
+		const updatedMd = "[x] Task A\n[x] Task B\n[x] Task A\n[ ] Task C" // content identical, only statuses change
+
+		const previousFromMemory: TodoItem[] = parseMarkdownChecklist(initialMd).map((t, idx) => ({
+			...t,
+			subtaskId: `subtask-${idx + 1}`,
+			tokens: 1000 + idx,
+			cost: 0.01 * (idx + 1),
+			added: 10 * (idx + 1),
+			removed: idx,
+		}))
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: updatedMd }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(4)
+
+		// Preserve per-row metadata (including duplicates) by order.
+		expect(task.todoList[0]).toEqual(
+			expect.objectContaining({
+				content: "Task A",
+				status: "completed",
+				subtaskId: "subtask-1",
+				tokens: 1000,
+				cost: 0.01,
+				added: 10,
+				removed: 0,
+			}),
+		)
+
+		expect(task.todoList[1]).toEqual(
+			expect.objectContaining({
+				content: "Task B",
+				status: "completed",
+				subtaskId: "subtask-2",
+				tokens: 1001,
+				cost: 0.02,
+				added: 20,
+				removed: 1,
+			}),
+		)
+
+		expect(task.todoList[2]).toEqual(
+			expect.objectContaining({
+				content: "Task A",
+				status: "completed",
+				subtaskId: "subtask-3",
+				tokens: 1002,
+				cost: 0.03,
+				added: 30,
+				removed: 2,
+			}),
+		)
+
+		expect(task.todoList[3]).toEqual(
+			expect.objectContaining({
+				content: "Task C",
+				status: "pending",
+				subtaskId: "subtask-4",
+				tokens: 1003,
+				cost: 0.04,
+				added: 40,
+				removed: 3,
+			}),
+		)
+	})
+
+	it("should preserve subtaskId/metrics when items are renamed but status sequence and length are unchanged (markdown)", async () => {
+		const initialMd = "[ ] Old A\n[x] Old B\n[-] Old C"
+		const updatedMd = "[ ] New A\n[x] New B\n[-] New C" // same length + same status sequence, only content changed
+
+		const previousFromMemory: TodoItem[] = parseMarkdownChecklist(initialMd).map((t, idx) => ({
+			...t,
+			subtaskId: `subtask-${idx + 1}`,
+			tokens: 100 + idx,
+			cost: 0.01 * (idx + 1),
+			added: 10 * (idx + 1),
+			removed: idx,
+		}))
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: updatedMd }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(3)
+
+		expect(task.todoList[0]).toEqual(
+			expect.objectContaining({
+				content: "New A",
+				status: "pending",
+				subtaskId: "subtask-1",
+				tokens: 100,
+				cost: 0.01,
+				added: 10,
+				removed: 0,
+			}),
+		)
+		expect(task.todoList[1]).toEqual(
+			expect.objectContaining({
+				content: "New B",
+				status: "completed",
+				subtaskId: "subtask-2",
+				tokens: 101,
+				cost: 0.02,
+				added: 20,
+				removed: 1,
+			}),
+		)
+		expect(task.todoList[2]).toEqual(
+			expect.objectContaining({
+				content: "New C",
+				status: "in_progress",
+				subtaskId: "subtask-3",
+				tokens: 102,
+				cost: 0.03,
+				added: 30,
+				removed: 2,
+			}),
+		)
+	})
+
+	it("should accept JSON TodoItem[] payload and preserve ids/subtask links across renames", async () => {
+		const previousFromMemory: TodoItem[] = [
+			{
+				id: "id-1",
+				content: "Alpha",
+				status: "pending",
+				subtaskId: "subtask-1",
+				tokens: 111,
+				cost: 0.11,
+				added: 11,
+				removed: 1,
+			},
+			{
+				id: "id-2",
+				content: "Beta",
+				status: "completed",
+				subtaskId: "subtask-2",
+				tokens: 222,
+				cost: 0.22,
+				added: 22,
+				removed: 2,
+			},
+		]
+
+		// Reorder + rename while keeping id/subtaskId stable; omit metrics to verify preservation.
+		const jsonPayload: TodoItem[] = [
+			{ id: "id-2", content: "Beta renamed", status: "completed", subtaskId: "subtask-2" },
+			{ id: "id-1", content: "Alpha renamed", status: "pending", subtaskId: "subtask-1" },
+		]
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: JSON.stringify(jsonPayload) }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(2)
+		// Order should match the JSON payload.
+		expect(task.todoList.map((t: TodoItem) => t.id)).toEqual(["id-2", "id-1"])
+
+		expect(task.todoList[0]).toEqual(
+			expect.objectContaining({
+				id: "id-2",
+				content: "Beta renamed",
+				status: "completed",
+				subtaskId: "subtask-2",
+				tokens: 222,
+				cost: 0.22,
+				added: 22,
+				removed: 2,
+			}),
+		)
+
+		expect(task.todoList[1]).toEqual(
+			expect.objectContaining({
+				id: "id-1",
+				content: "Alpha renamed",
+				status: "pending",
+				subtaskId: "subtask-1",
+				tokens: 111,
+				cost: 0.11,
+				added: 11,
+				removed: 1,
+			}),
+		)
 	})
 
 	it("should prefer history todos when they contain metadata (subtaskId/tokens/cost)", async () => {
@@ -434,6 +688,223 @@ describe("UpdateTodoListTool.execute", () => {
 				removed: 3,
 			}),
 		)
+	})
+
+	it("should preserve metadata when content changes only by whitespace/formatting (legacy ids)", async () => {
+		const md = "[x] Task 1\n[ ] Task 2"
+
+		const previousFromMemory: TodoItem[] = [
+			{
+				id: "legacy-1",
+				content: "Task   1",
+				status: "pending",
+				tokens: 111,
+				cost: 0.11,
+				added: 11,
+				removed: 1,
+			},
+			{
+				id: "legacy-2",
+				content: "Task 2",
+				status: "pending",
+				tokens: 222,
+				cost: 0.22,
+				added: 22,
+				removed: 2,
+			},
+		]
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: md }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		} as any)
+
+		expect(task.todoList).toHaveLength(2)
+
+		const task1 = task.todoList.find((t: TodoItem) => t.content === "Task 1")
+		const task2 = task.todoList.find((t: TodoItem) => t.content === "Task 2")
+
+		expect(task1).toEqual(
+			expect.objectContaining({
+				content: "Task 1",
+				status: "completed",
+				tokens: 111,
+				cost: 0.11,
+				added: 11,
+				removed: 1,
+			}),
+		)
+		expect(task2).toEqual(
+			expect.objectContaining({
+				content: "Task 2",
+				status: "pending",
+				tokens: 222,
+				cost: 0.22,
+				added: 22,
+				removed: 2,
+			}),
+		)
+	})
+
+	it("should carry forward metadata from unmatched delegated todos when the LLM rewrites content", async () => {
+		const delegatedSubtaskId = "019bdcf3-b738-7779-ba86-a4838b490b40"
+		const previousFromMemory: TodoItem[] = [
+			{
+				id: `synthetic-${delegatedSubtaskId}`,
+				content: "Delegated to subtask",
+				status: "pending",
+				subtaskId: delegatedSubtaskId,
+				tokens: 1234,
+				cost: 0.12,
+				added: 10,
+				removed: 2,
+			},
+		]
+
+		// Simulate the LLM rewriting the todo content entirely (no content/id/subtaskId match).
+		// Use a different-length list so the rename-by-index fallback does NOT apply.
+		const updatedMd = "[ ] Delegate joke-telling to Ask mode\n[ ] Another unrelated task"
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: updatedMd }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(2)
+		expect(task.todoList[0]).toEqual(
+			expect.objectContaining({
+				content: "Delegate joke-telling to Ask mode",
+				status: "pending",
+				subtaskId: delegatedSubtaskId,
+				tokens: 1234,
+				cost: 0.12,
+				added: 10,
+				removed: 2,
+			}),
+		)
+
+		// Ensure the second new todo doesn't incorrectly inherit delegated metadata.
+		expect(task.todoList[1]).toEqual(
+			expect.objectContaining({
+				content: "Another unrelated task",
+				status: "pending",
+			}),
+		)
+		expect(task.todoList[1].subtaskId).toBeUndefined()
+		expect(task.todoList[1].tokens).toBeUndefined()
+		expect(task.todoList[1].cost).toBeUndefined()
+		expect(task.todoList[1].added).toBeUndefined()
+		expect(task.todoList[1].removed).toBeUndefined()
+	})
+
+	it("should carry forward metadata from unmatched delegated todos even when the previous id is non-synthetic (sequential updates)", async () => {
+		const delegatedSubtaskId = "019bdcf3-b738-7779-ba86-a4838b490b41"
+		const previousFromMemory: TodoItem[] = [
+			{
+				id: `synthetic-${delegatedSubtaskId}`,
+				content: "Delegated to subtask",
+				status: "pending",
+				subtaskId: delegatedSubtaskId,
+				tokens: 1234,
+				cost: 0.12,
+				added: 10,
+				removed: 2,
+			},
+			{
+				id: "other-1",
+				content: "Another unrelated task",
+				status: "pending",
+			},
+		]
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+
+		// Update 1: delegated todo gets rewritten into a new markdown todo (ID becomes derived md5, i.e. non-synthetic)
+		const updatedMd1 = "[ ] Delegate joke-telling to Ask mode\n[ ] Another unrelated task"
+		await tool.execute({ todos: updatedMd1 }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(2)
+		expect(task.todoList[0]).toEqual(
+			expect.objectContaining({
+				content: "Delegate joke-telling to Ask mode",
+				subtaskId: delegatedSubtaskId,
+				tokens: 1234,
+				cost: 0.12,
+				added: 10,
+				removed: 2,
+			}),
+		)
+		// Ensure the carried-over todo now has a non-synthetic ID (this is the regression scenario).
+		expect(task.todoList[0].id).not.toMatch(/^synthetic-/)
+
+		// Update 2: LLM rewrites the delegated todo content again, and list length changes so index-carryover won't apply.
+		// No subtaskId is provided in the markdown.
+		const updatedMd2 =
+			"[ ] Delegate joke-telling to Ask mode (updated)\n[ ] Another unrelated task\n[ ] Third task added"
+		await tool.execute({ todos: updatedMd2 }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(3)
+		expect(task.todoList[0]).toEqual(
+			expect.objectContaining({
+				content: "Delegate joke-telling to Ask mode (updated)",
+				subtaskId: delegatedSubtaskId,
+				tokens: 1234,
+				cost: 0.12,
+				added: 10,
+				removed: 2,
+			}),
+		)
+
+		// Ensure non-delegated todos do not accidentally inherit delegated metadata.
+		expect(task.todoList[1].subtaskId).toBeUndefined()
+		expect(task.todoList[2].subtaskId).toBeUndefined()
 	})
 
 	it("should not cross-contaminate metadata when no subtaskId is present", async () => {

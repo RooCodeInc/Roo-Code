@@ -233,6 +233,74 @@ describe("aggregateTaskCostsRecursive", () => {
 		expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Task nonexistent-child not found"))
 	})
 
+	/**
+	 * Regression test:
+	 * - Provider loader may hit ENOENT for missing child history files.
+	 * - Provider hardening converts ENOENT -> undefined.
+	 * - Aggregator must tolerate undefined children and still return partial results.
+	 */
+	it("should tolerate ENOENT from underlying history load and still include costs for existing children", async () => {
+		const mockHistory: Record<string, HistoryItem> = {
+			root: {
+				id: "root",
+				totalCost: 1.0,
+				linesAdded: 1,
+				linesRemoved: 0,
+				childIds: ["child-ok", "child-missing"],
+			} as unknown as HistoryItem,
+			"child-ok": {
+				id: "child-ok",
+				totalCost: 0.5,
+				linesAdded: 3,
+				linesRemoved: 2,
+				childIds: [],
+			} as unknown as HistoryItem,
+		}
+
+		const loadHistory = vi.fn(async (id: string) => {
+			if (id === "child-missing") {
+				const err = new Error("ENOENT: no such file or directory") as Error & { code?: string }
+				err.code = "ENOENT"
+				throw err
+			}
+
+			return mockHistory[id]
+		})
+
+		// Mimic provider behavior: swallow ENOENT and return undefined.
+		const getTaskHistory = vi.fn(async (id: string) => {
+			try {
+				return await loadHistory(id)
+			} catch (err) {
+				if ((err as { code?: string })?.code === "ENOENT") {
+					return undefined
+				}
+				throw err
+			}
+		})
+
+		const result = await aggregateTaskCostsRecursive("root", getTaskHistory)
+
+		// Should still include existing child contributions.
+		expect(result.ownCost).toBe(1.0)
+		expect(result.childrenCost).toBe(0.5)
+		expect(result.totalCost).toBe(1.5)
+		expect(result.childrenAdded).toBe(3)
+		expect(result.childrenRemoved).toBe(2)
+		expect(result.totalAdded).toBe(4)
+		expect(result.totalRemoved).toBe(2)
+
+		const childOk = result.childBreakdown?.["child-ok"]
+		expect(childOk).toBeDefined()
+		expect(childOk!.totalCost).toBe(0.5)
+		expect(childOk!.totalAdded).toBe(3)
+		expect(childOk!.totalRemoved).toBe(2)
+
+		// Missing child should not crash aggregation.
+		expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Task child-missing not found"))
+		expect(loadHistory).toHaveBeenCalledWith("child-missing")
+	})
+
 	it("should return zero costs for completely missing task", async () => {
 		const mockHistory: Record<string, HistoryItem> = {}
 

@@ -41,6 +41,16 @@ export interface TodoListDisplayProps {
 }
 
 export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoListDisplayProps) {
+	useEffect(() => {
+		console.log("[TODO-DEBUG]", "TodoListDisplay props received", {
+			todosCount: Array.isArray(todos) ? todos.length : 0,
+			todoSubtaskIds: Array.isArray(todos) ? todos.map((t) => t?.subtaskId).filter(Boolean) : [],
+			subtaskDetailsCount: Array.isArray(subtaskDetails) ? subtaskDetails.length : 0,
+			subtaskDetailsIds: Array.isArray(subtaskDetails) ? subtaskDetails.map((s) => s?.id).filter(Boolean) : [],
+			hasOnSubtaskClick: Boolean(onSubtaskClick),
+		})
+	}, [todos, subtaskDetails, onSubtaskClick])
+
 	const [isCollapsed, setIsCollapsed] = useState(true)
 	const ulRef = useRef<HTMLUListElement>(null)
 	const itemRefs = useRef<(HTMLLIElement | null)[]>([])
@@ -108,10 +118,25 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 						const todoStatus = (todo.status as TodoStatus) ?? "pending"
 						const icon = getTodoIcon(todoStatus)
 						const isClickable = Boolean(todo.subtaskId && onSubtaskClick)
+						console.log("[TODO-DEBUG]", "TodoListDisplay subtask match start", {
+							todoIndex: idx,
+							todoId: todo.id,
+							todoContent: todo.content,
+							todoSubtaskId: todo.subtaskId,
+							availableSubtaskDetailIds: Array.isArray(subtaskDetails)
+								? subtaskDetails.map((s) => s?.id).filter(Boolean)
+								: [],
+						})
 						const subtaskById =
 							subtaskDetails && todo.subtaskId
 								? subtaskDetails.find((s) => s.id === todo.subtaskId)
 								: undefined
+						console.log("[TODO-DEBUG]", "TodoListDisplay subtask match result", {
+							todoIndex: idx,
+							todoSubtaskId: todo.subtaskId,
+							matched: Boolean(subtaskById),
+							matchedSubtaskId: subtaskById?.id,
+						})
 						const displayTokens = todo.tokens ?? subtaskById?.tokens
 						const displayCost = todo.cost ?? subtaskById?.cost
 						const shouldShowCost = typeof displayTokens === "number" && typeof displayCost === "number"
@@ -138,6 +163,33 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 							(todoStatus === "completed" || displayRemoved !== 0 || todoRemovedIsFinite)
 
 						const shouldShowLineChanges = hasValidSubtaskLink && (canRenderAdded || canRenderRemoved)
+
+						console.log("[TODO-DEBUG]", "TodoListDisplay metadata computed", {
+							todoIndex: idx,
+							todoSubtaskId: todo.subtaskId,
+							fromTodo: {
+								tokens: todo.tokens,
+								cost: todo.cost,
+								added: todo.added,
+								removed: todo.removed,
+							},
+							fromSubtaskDetails: subtaskById
+								? {
+										tokens: subtaskById.tokens,
+										cost: subtaskById.cost,
+										added: subtaskById.added,
+										removed: subtaskById.removed,
+									}
+								: undefined,
+							display: {
+								displayTokens,
+								displayCost,
+								displayAdded,
+								displayRemoved,
+							},
+							shouldShowCost,
+							shouldShowLineChanges,
+						})
 
 						const isAddedPositive = canRenderAdded && (displayAdded as number) > 0
 						const isRemovedPositive = canRenderRemoved && (displayRemoved as number) > 0

@@ -881,6 +881,11 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "update_todo_list":
+					console.log("[TODO-DEBUG]", "presentAssistantMessage dispatching update_todo_list", {
+						toolUseId: (block as any).id,
+						partial: block.partial,
+						params: (block as any).params,
+					})
 					await updateTodoListTool.handle(cline, block as ToolUse<"update_todo_list">, {
 						askApproval,
 						handleError,
