@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "실험적",
 		"language": "언어",
-		"about": "Roo Code 정보"
+		"about": "Roo Code 정보",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -996,6 +997,51 @@
 		"requireCtrlEnterToSend": {
 			"label": "메시지를 보내려면 {{primaryMod}}+Enter가 필요",
 			"description": "활성화하면 Enter만으로는 안 되고 {{primaryMod}}+Enter를 눌러야 메시지를 보낼 수 있습니다"
+		}
+	},
+	"skills": {
+		"description": "에이전트에 컨텍스트 지침을 제공하는 스킬을 관리합니다. 스킬은 작업과 관련이 있을 때 자동으로 적용됩니다. <DocsLink>자세히 알아보기</DocsLink>",
+		"projectSkills": "프로젝트 스킬",
+		"globalSkills": "전역 스킬",
+		"noProjectSkills": "구성된 프로젝트 스킬이 없습니다. 프로젝트별 에이전트 기능을 추가하려면 하나를 만드세요.",
+		"noGlobalSkills": "구성된 전역 스킬이 없습니다. 모든 프로젝트에서 사용할 수 있는 에이전트 기능을 추가하려면 하나를 만드세요.",
+		"addSkill": "스킬 추가",
+		"editSkill": "스킬 편집",
+		"deleteSkill": "스킬 삭제",
+		"deleteDialog": {
+			"title": "스킬 삭제",
+			"description": "스킬 \"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+			"confirm": "삭제",
+			"cancel": "취소"
+		},
+		"createDialog": {
+			"title": "새 스킬 만들기",
+			"description": "에이전트에 컨텍스트 지침을 제공하는 새 스킬 템플릿을 정의합니다.",
+			"nameLabel": "이름",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "소문자, 숫자 및 하이픈만 사용(1-64자)",
+			"descriptionLabel": "설명",
+			"descriptionPlaceholder": "이 스킬을 언제 사용해야 하는지 설명하세요...",
+			"descriptionHint": "이 스킬이 무엇을 하는지, 에이전트가 언제 적용해야 하는지 설명하세요(1-1024자)",
+			"sourceLabel": "위치",
+			"sourceHint": "이 스킬을 전역으로 사용할지 이 프로젝트에만 사용할지 선택하세요",
+			"modeLabel": "모드 (선택사항)",
+			"modePlaceholder": "모든 모드",
+			"modeHint": "이 스킬을 특정 모드로 제한",
+			"modeAny": "모든 모드",
+			"create": "만들기",
+			"cancel": "취소"
+		},
+		"source": {
+			"global": "전역 (모든 프로젝트에서 사용 가능)",
+			"project": "프로젝트 (이 작업공간만)"
+		},
+		"validation": {
+			"nameRequired": "이름은 필수입니다",
+			"nameTooLong": "이름은 64자 이하여야 합니다",
+			"nameInvalid": "이름은 1-64자의 소문자, 숫자 또는 하이픈이어야 합니다",
+			"descriptionRequired": "설명은 필수입니다",
+			"descriptionTooLong": "설명은 1024자 이하여야 합니다"
 		}
 	}
 }

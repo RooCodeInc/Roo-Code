@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Deneysel",
 		"language": "Dil",
-		"about": "Roo Code Hakkında"
+		"about": "Roo Code Hakkında",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -996,6 +997,51 @@
 		"requireCtrlEnterToSend": {
 			"label": "Mesaj göndermek için {{primaryMod}}+Enter gerekli",
 			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
+		}
+	},
+	"skills": {
+		"description": "Ajana bağlamsal talimatlar sağlayan becerileri yönetin. Beceriler, görevlerinizle ilgili olduklarında otomatik olarak uygulanır. <DocsLink>Daha fazla bilgi</DocsLink>",
+		"projectSkills": "Proje Becerileri",
+		"globalSkills": "Genel Beceriler",
+		"noProjectSkills": "Yapılandırılmış proje becerisi yok. Projeye özgü ajan yetenekleri eklemek için bir tane oluşturun.",
+		"noGlobalSkills": "Yapılandırılmış genel beceri yok. Tüm projelerde kullanılabilir ajan yetenekleri eklemek için bir tane oluşturun.",
+		"addSkill": "Beceri Ekle",
+		"editSkill": "Beceriyi düzenle",
+		"deleteSkill": "Beceriyi sil",
+		"deleteDialog": {
+			"title": "Beceriyi Sil",
+			"description": "\"{{name}}\" becerisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+			"confirm": "Sil",
+			"cancel": "İptal"
+		},
+		"createDialog": {
+			"title": "Yeni Beceri Oluştur",
+			"description": "Ajana bağlamsal talimatlar sağlayan yeni bir beceri şablonu tanımlayın.",
+			"nameLabel": "Ad",
+			"namePlaceholder": "benim-beceri-adim",
+			"nameHint": "Yalnızca küçük harfler, rakamlar ve kısa çizgiler (1-64 karakter)",
+			"descriptionLabel": "Açıklama",
+			"descriptionPlaceholder": "Bu becerinin ne zaman kullanılması gerektiğini açıklayın...",
+			"descriptionHint": "Bu becerinin ne yaptığını ve ajanın ne zaman uygulaması gerektiğini açıklayın (1-1024 karakter)",
+			"sourceLabel": "Konum",
+			"sourceHint": "Bu becerinin genel olarak mı yoksa yalnızca bu projede mi kullanılabilir olduğunu seçin",
+			"modeLabel": "Mod (isteğe bağlı)",
+			"modePlaceholder": "Herhangi bir mod",
+			"modeHint": "Bu beceriyi belirli bir modla sınırlayın",
+			"modeAny": "Herhangi bir mod",
+			"create": "Oluştur",
+			"cancel": "İptal"
+		},
+		"source": {
+			"global": "Genel (tüm projelerde kullanılabilir)",
+			"project": "Proje (yalnızca bu çalışma alanı)"
+		},
+		"validation": {
+			"nameRequired": "Ad gereklidir",
+			"nameTooLong": "Ad en fazla 64 karakter olmalıdır",
+			"nameInvalid": "Ad 1-64 küçük harf, rakam veya kısa çizgi olmalıdır",
+			"descriptionRequired": "Açıklama gereklidir",
+			"descriptionTooLong": "Açıklama en fazla 1024 karakter olmalıdır"
 		}
 	}
 }
