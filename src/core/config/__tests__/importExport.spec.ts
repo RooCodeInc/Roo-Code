@@ -458,6 +458,7 @@ describe("importExport", () => {
 			const mockProvider = {
 				settingsImportedAt: 0,
 				postStateToWebview: vi.fn().mockResolvedValue(undefined),
+				postStateToWebviewWithoutTaskHistory: vi.fn().mockResolvedValue(undefined),
 			}
 
 			// Mock the showErrorMessage to capture the error
