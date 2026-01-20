@@ -29,8 +29,9 @@ describe("WorktreeService", () => {
 
 		it("should preserve root path /", () => {
 			// This is a critical test - the old regex would turn "/" into ""
+			// On Windows, path.normalize("/") returns "\", on Unix it returns "/"
 			const result = callNormalizePath(service, "/")
-			expect(result).toBe("/")
+			expect(result).toBe(path.sep)
 		})
 
 		it("should handle paths without trailing slashes", () => {

@@ -429,9 +429,11 @@ export class WorktreeService {
 	 * Normalize a path for comparison (handle trailing slashes, etc.)
 	 */
 	private normalizePath(p: string): string {
+		// normalize resolves ./.. segments, removes duplicate slashes, and standardizes path separators
 		let normalized = path.normalize(p)
-		// Remove trailing slashes without vulnerable regex
-		while (normalized.length > 1 && normalized.endsWith("/")) {
+		// however it doesn't remove trailing slashes
+		// remove trailing slash, except for root paths (handles both / and \)
+		if (normalized.length > 1 && (normalized.endsWith("/") || normalized.endsWith("\\"))) {
 			normalized = normalized.slice(0, -1)
 		}
 		return normalized
