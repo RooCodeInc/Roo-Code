@@ -33,6 +33,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	protected options: ApiHandlerOptions
 	protected client: OpenAI
 	private readonly providerName = "OpenAI"
+	// Abort controller for cancelling ongoing requests
+	private abortController?: AbortController
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -85,193 +87,206 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { info: modelInfo, reasoning } = this.getModel()
-		const modelUrl = this.options.openAiBaseUrl ?? ""
-		const modelId = this.options.openAiModelId ?? ""
-		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
-		const isAzureAiInference = this._isAzureAiInference(modelUrl)
-		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
+		// Create AbortController for cancellation
+		this.abortController = new AbortController()
 
-		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
-			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
-			return
-		}
+		try {
+			const { info: modelInfo, reasoning } = this.getModel()
+			const modelUrl = this.options.openAiBaseUrl ?? ""
+			const modelId = this.options.openAiModelId ?? ""
+			const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
+			const isAzureAiInference = this._isAzureAiInference(modelUrl)
+			const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 
-		let systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
-			role: "system",
-			content: systemPrompt,
-		}
+			if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
+				yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
+				return
+			}
 
-		if (this.options.openAiStreamingEnabled ?? true) {
-			let convertedMessages
+			let systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
+				role: "system",
+				content: systemPrompt,
+			}
 
-			if (deepseekReasoner) {
-				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-			} else {
-				if (modelInfo.supportsPromptCache) {
-					systemMessage = {
-						role: "system",
-						content: [
-							{
-								type: "text",
-								text: systemPrompt,
-								// @ts-ignore-next-line
-								cache_control: { type: "ephemeral" },
-							},
-						],
-					}
-				}
+			if (this.options.openAiStreamingEnabled ?? true) {
+				let convertedMessages
 
-				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
-
-				if (modelInfo.supportsPromptCache) {
-					// Note: the following logic is copied from openrouter:
-					// Add cache_control to the last two user messages
-					// (note: this works because we only ever add one user message at a time, but if we added multiple we'd need to mark the user message before the last assistant message)
-					const lastTwoUserMessages = convertedMessages.filter((msg) => msg.role === "user").slice(-2)
-
-					lastTwoUserMessages.forEach((msg) => {
-						if (typeof msg.content === "string") {
-							msg.content = [{ type: "text", text: msg.content }]
+				if (deepseekReasoner) {
+					convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+				} else {
+					if (modelInfo.supportsPromptCache) {
+						systemMessage = {
+							role: "system",
+							content: [
+								{
+									type: "text",
+									text: systemPrompt,
+									// @ts-ignore-next-line
+									cache_control: { type: "ephemeral" },
+								},
+							],
 						}
+					}
 
-						if (Array.isArray(msg.content)) {
-							// NOTE: this is fine since env details will always be added at the end. but if it weren't there, and the user added a image_url type message, it would pop a text part before it and then move it after to the end.
-							let lastTextPart = msg.content.filter((part) => part.type === "text").pop()
+					convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
 
-							if (!lastTextPart) {
-								lastTextPart = { type: "text", text: "..." }
-								msg.content.push(lastTextPart)
+					if (modelInfo.supportsPromptCache) {
+						// Note: the following logic is copied from openrouter:
+						// Add cache_control to the last two user messages
+						// (note: this works because we only ever add one user message at a time, but if we added multiple we'd need to mark the user message before the last assistant message)
+						const lastTwoUserMessages = convertedMessages.filter((msg) => msg.role === "user").slice(-2)
+
+						lastTwoUserMessages.forEach((msg) => {
+							if (typeof msg.content === "string") {
+								msg.content = [{ type: "text", text: msg.content }]
 							}
 
-							// @ts-ignore-next-line
-							lastTextPart["cache_control"] = { type: "ephemeral" }
-						}
+							if (Array.isArray(msg.content)) {
+								// NOTE: this is fine since env details will always be added at the end. but if it weren't there, and the user added a image_url type message, it would pop a text part before it and then move it after to the end.
+								let lastTextPart = msg.content.filter((part) => part.type === "text").pop()
+
+								if (!lastTextPart) {
+									lastTextPart = { type: "text", text: "..." }
+									msg.content.push(lastTextPart)
+								}
+
+								// @ts-ignore-next-line
+								lastTextPart["cache_control"] = { type: "ephemeral" }
+							}
+						})
+					}
+				}
+
+				const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
+
+				const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
+					model: modelId,
+					temperature:
+						this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
+					messages: convertedMessages,
+					stream: true as const,
+					...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
+					...(reasoning && reasoning),
+					...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+					...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+					...(metadata?.toolProtocol === "native" &&
+						metadata.parallelToolCalls === true && {
+							parallel_tool_calls: true,
+						}),
+				}
+
+				// Add max_tokens if needed
+				this.addMaxTokensIfNeeded(requestOptions, modelInfo)
+
+				let stream
+				try {
+					stream = await this.client.chat.completions.create(requestOptions, {
+						...(isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}),
+						signal: this.abortController.signal,
 					})
+				} catch (error) {
+					throw handleOpenAIError(error, this.providerName)
 				}
-			}
 
-			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
-
-			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
-				model: modelId,
-				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
-				messages: convertedMessages,
-				stream: true as const,
-				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
-				...(reasoning && reasoning),
-				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" &&
-					metadata.parallelToolCalls === true && {
-						parallel_tool_calls: true,
-					}),
-			}
-
-			// Add max_tokens if needed
-			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
-
-			let stream
-			try {
-				stream = await this.client.chat.completions.create(
-					requestOptions,
-					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
+				const matcher = new XmlMatcher(
+					"think",
+					(chunk) =>
+						({
+							type: chunk.matched ? "reasoning" : "text",
+							text: chunk.data,
+						}) as const,
 				)
-			} catch (error) {
-				throw handleOpenAIError(error, this.providerName)
-			}
 
-			const matcher = new XmlMatcher(
-				"think",
-				(chunk) =>
-					({
-						type: chunk.matched ? "reasoning" : "text",
-						text: chunk.data,
-					}) as const,
-			)
+				let lastUsage
+				const activeToolCallIds = new Set<string>()
 
-			let lastUsage
-			const activeToolCallIds = new Set<string>()
-
-			for await (const chunk of stream) {
-				const delta = chunk.choices?.[0]?.delta ?? {}
-				const finishReason = chunk.choices?.[0]?.finish_reason
-
-				if (delta.content) {
-					for (const chunk of matcher.update(delta.content)) {
-						yield chunk
+				for await (const chunk of stream) {
+					// Check if request was aborted
+					if (this.abortController?.signal.aborted) {
+						break
 					}
-				}
 
-				if ("reasoning_content" in delta && delta.reasoning_content) {
-					yield {
-						type: "reasoning",
-						text: (delta.reasoning_content as string | undefined) || "",
+					const delta = chunk.choices?.[0]?.delta ?? {}
+					const finishReason = chunk.choices?.[0]?.finish_reason
+
+					if (delta.content) {
+						for (const chunk of matcher.update(delta.content)) {
+							yield chunk
+						}
 					}
-				}
 
-				yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
-
-				if (chunk.usage) {
-					lastUsage = chunk.usage
-				}
-			}
-
-			for (const chunk of matcher.final()) {
-				yield chunk
-			}
-
-			if (lastUsage) {
-				yield this.processUsageMetrics(lastUsage, modelInfo)
-			}
-		} else {
-			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
-				model: modelId,
-				messages: deepseekReasoner
-					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-					: [systemMessage, ...convertToOpenAiMessages(messages)],
-				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" &&
-					metadata.parallelToolCalls === true && {
-						parallel_tool_calls: true,
-					}),
-			}
-
-			// Add max_tokens if needed
-			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
-
-			let response
-			try {
-				response = await this.client.chat.completions.create(
-					requestOptions,
-					this._isAzureAiInference(modelUrl) ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-				)
-			} catch (error) {
-				throw handleOpenAIError(error, this.providerName)
-			}
-
-			const message = response.choices?.[0]?.message
-
-			if (message?.tool_calls) {
-				for (const toolCall of message.tool_calls) {
-					if (toolCall.type === "function") {
+					if ("reasoning_content" in delta && delta.reasoning_content) {
 						yield {
-							type: "tool_call",
-							id: toolCall.id,
-							name: toolCall.function.name,
-							arguments: toolCall.function.arguments,
+							type: "reasoning",
+							text: (delta.reasoning_content as string | undefined) || "",
+						}
+					}
+
+					yield* this.processToolCalls(delta, finishReason, activeToolCallIds)
+
+					if (chunk.usage) {
+						lastUsage = chunk.usage
+					}
+				}
+
+				for (const chunk of matcher.final()) {
+					yield chunk
+				}
+
+				if (lastUsage) {
+					yield this.processUsageMetrics(lastUsage, modelInfo)
+				}
+			} else {
+				const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+					model: modelId,
+					messages: deepseekReasoner
+						? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
+						: [systemMessage, ...convertToOpenAiMessages(messages)],
+					...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+					...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+					...(metadata?.toolProtocol === "native" &&
+						metadata.parallelToolCalls === true && {
+							parallel_tool_calls: true,
+						}),
+				}
+
+				// Add max_tokens if needed
+				this.addMaxTokensIfNeeded(requestOptions, modelInfo)
+
+				let response
+				try {
+					response = await this.client.chat.completions.create(requestOptions, {
+						...(this._isAzureAiInference(modelUrl) ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}),
+						signal: this.abortController.signal,
+					})
+				} catch (error) {
+					throw handleOpenAIError(error, this.providerName)
+				}
+
+				const message = response.choices?.[0]?.message
+
+				if (message?.tool_calls) {
+					for (const toolCall of message.tool_calls) {
+						if (toolCall.type === "function") {
+							yield {
+								type: "tool_call",
+								id: toolCall.id,
+								name: toolCall.function.name,
+								arguments: toolCall.function.arguments,
+							}
 						}
 					}
 				}
-			}
 
-			yield {
-				type: "text",
-				text: message?.content || "",
-			}
+				yield {
+					type: "text",
+					text: message?.content || "",
+				}
 
-			yield this.processUsageMetrics(response.usage, modelInfo)
+				yield this.processUsageMetrics(response.usage, modelInfo)
+			}
+		} finally {
+			this.abortController = undefined
 		}
 	}
 
@@ -299,6 +314,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
+		// Create AbortController for cancellation
+		this.abortController = new AbortController()
+
 		try {
 			const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 			const model = this.getModel()
@@ -314,10 +332,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let response
 			try {
-				response = await this.client.chat.completions.create(
-					requestOptions,
-					isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-				)
+				response = await this.client.chat.completions.create(requestOptions, {
+					...(isAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}),
+					signal: this.abortController.signal,
+				})
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
 			}
@@ -329,6 +347,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			throw error
+		} finally {
+			this.abortController = undefined
 		}
 	}
 
@@ -372,10 +392,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let stream
 			try {
-				stream = await this.client.chat.completions.create(
-					requestOptions,
-					methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-				)
+				stream = await this.client.chat.completions.create(requestOptions, {
+					...(methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}),
+					signal: this.abortController!.signal,
+				})
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
 			}
@@ -408,10 +428,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			let response
 			try {
-				response = await this.client.chat.completions.create(
-					requestOptions,
-					methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {},
-				)
+				response = await this.client.chat.completions.create(requestOptions, {
+					...(methodIsAzureAiInference ? { path: OPENAI_AZURE_AI_INFERENCE_PATH } : {}),
+					signal: this.abortController!.signal,
+				})
 			} catch (error) {
 				throw handleOpenAIError(error, this.providerName)
 			}
@@ -442,6 +462,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const activeToolCallIds = new Set<string>()
 
 		for await (const chunk of stream) {
+			// Check if request was aborted
+			if (this.abortController?.signal.aborted) {
+				break
+			}
+
 			const delta = chunk.choices?.[0]?.delta
 			const finishReason = chunk.choices?.[0]?.finish_reason
 
