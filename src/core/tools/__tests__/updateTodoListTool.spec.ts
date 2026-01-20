@@ -292,4 +292,259 @@ describe("UpdateTodoListTool.execute", () => {
 			}),
 		)
 	})
+
+	it("should treat added/removed as metadata and prefer history todos when present", async () => {
+		const md = "[ ] Task 1"
+
+		const previousFromMemory = parseMarkdownChecklist(md)
+		const previousFromHistory: TodoItem[] = previousFromMemory.map((t) => ({
+			...t,
+			added: 10,
+			removed: 3,
+		}))
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [
+				{
+					type: "ask",
+					ask: "tool",
+					text: JSON.stringify({ tool: "updateTodoList", todos: previousFromHistory }),
+				},
+			],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: md }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(1)
+		expect(task.todoList[0]).toEqual(
+			expect.objectContaining({
+				content: "Task 1",
+				added: 10,
+				removed: 3,
+			}),
+		)
+	})
+
+	it("should preserve metadata by subtaskId even when content (and derived id) changes", async () => {
+		// This test simulates the "user edited todo list" flow. The tool re-applies metadata
+		// after approval; subtaskId should be used as the primary match when content/id changes.
+		const md = "[ ] Old text"
+
+		const previousFromMemory: TodoItem[] = parseMarkdownChecklist(md).map((t) => ({
+			...t,
+			subtaskId: "subtask-1",
+			tokens: 123,
+			cost: 0.01,
+			added: 10,
+			removed: 3,
+		}))
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		// Simulate user-edited todo list with updated content and a different id, but the same subtaskId.
+		const userEditedTodos: TodoItem[] = [
+			{
+				id: "new-id",
+				content: "New text",
+				status: "completed",
+				subtaskId: "subtask-1",
+				// tokens/cost/added/removed intentionally omitted to verify preservation
+			},
+		]
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: md }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockImplementation(async () => {
+				setPendingTodoList(userEditedTodos)
+				return true
+			}),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(1)
+		expect(task.todoList[0]).toEqual(
+			expect.objectContaining({
+				id: "new-id",
+				content: "New text",
+				status: "completed",
+				subtaskId: "subtask-1",
+				tokens: 123,
+				cost: 0.01,
+				added: 10,
+				removed: 3,
+			}),
+		)
+	})
+
+	it("should preserve added/removed through normalization", async () => {
+		const md = "[x] Task 1"
+
+		const previousFromMemory: TodoItem[] = parseMarkdownChecklist("[ ] Task 1").map((t) => ({
+			...t,
+			added: 10,
+			removed: 3,
+		}))
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: md }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(1)
+		expect(task.todoList[0]).toEqual(
+			expect.objectContaining({
+				content: "Task 1",
+				status: "completed",
+				added: 10,
+				removed: 3,
+			}),
+		)
+	})
+
+	it("should not cross-contaminate metadata when no subtaskId is present", async () => {
+		const initialMd = "[ ] Task 1\n[ ] Task 2"
+		const md = "[x] Task 1\n[ ] Task 2" // status changes for Task 1 -> derived id changes
+
+		const previousFromMemory: TodoItem[] = parseMarkdownChecklist(initialMd).map((t) =>
+			t.content === "Task 1"
+				? { ...t, tokens: 111, cost: 0.11, added: 11, removed: 1 }
+				: { ...t, tokens: 222, cost: 0.22, added: 22, removed: 2 },
+		)
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: md }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(2)
+
+		const task1 = task.todoList.find((t: TodoItem) => t.content === "Task 1")
+		const task2 = task.todoList.find((t: TodoItem) => t.content === "Task 2")
+
+		expect(task1).toEqual(
+			expect.objectContaining({
+				content: "Task 1",
+				status: "completed",
+				tokens: 111,
+				cost: 0.11,
+				added: 11,
+				removed: 1,
+			}),
+		)
+
+		expect(task2).toEqual(
+			expect.objectContaining({
+				content: "Task 2",
+				status: "pending",
+				tokens: 222,
+				cost: 0.22,
+				added: 22,
+				removed: 2,
+			}),
+		)
+	})
+
+	it("should not preserve metadata when content changes and there is no subtaskId", async () => {
+		const initialMd = "[ ] Task 1\n[ ] Task 2"
+		const md = "[x] Task 1 (updated)\n[ ] Task 2"
+
+		const previousFromMemory: TodoItem[] = parseMarkdownChecklist(initialMd).map((t) =>
+			t.content === "Task 1"
+				? { ...t, tokens: 111, cost: 0.11, added: 11, removed: 1 }
+				: { ...t, tokens: 222, cost: 0.22, added: 22, removed: 2 },
+		)
+
+		const task = {
+			todoList: previousFromMemory,
+			clineMessages: [],
+			consecutiveMistakeCount: 0,
+			recordToolError: vi.fn(),
+			didToolFailInCurrentTurn: false,
+			say: vi.fn(),
+		} as any
+
+		const tool = new UpdateTodoListTool()
+		await tool.execute({ todos: md }, task, {
+			pushToolResult: vi.fn(),
+			handleError: vi.fn(),
+			askApproval: vi.fn().mockResolvedValue(true),
+			removeClosingTag: vi.fn(),
+			toolProtocol: "xml",
+		})
+
+		expect(task.todoList).toHaveLength(2)
+
+		const updated = task.todoList.find((t: TodoItem) => t.content === "Task 1 (updated)")
+		const task2 = task.todoList.find((t: TodoItem) => t.content === "Task 2")
+
+		expect(updated).toEqual(
+			expect.objectContaining({
+				content: "Task 1 (updated)",
+				status: "completed",
+			}),
+		)
+		expect(updated?.tokens).toBeUndefined()
+		expect(updated?.cost).toBeUndefined()
+		expect(updated?.added).toBeUndefined()
+		expect(updated?.removed).toBeUndefined()
+
+		expect(task2).toEqual(
+			expect.objectContaining({
+				content: "Task 2",
+				status: "pending",
+				tokens: 222,
+				cost: 0.22,
+				added: 22,
+				removed: 2,
+			}),
+		)
+	})
 })

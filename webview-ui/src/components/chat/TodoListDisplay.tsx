@@ -105,7 +105,8 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 			{!isCollapsed && (
 				<ul ref={ulRef} className="list-none max-h-[300px] overflow-y-auto mt-2 -mb-1 pb-0 px-2 cursor-default">
 					{todos.map((todo, idx: number) => {
-						const icon = getTodoIcon(todo.status as TodoStatus)
+						const todoStatus = (todo.status as TodoStatus) ?? "pending"
+						const icon = getTodoIcon(todoStatus)
 						const isClickable = Boolean(todo.subtaskId && onSubtaskClick)
 						const subtaskById =
 							subtaskDetails && todo.subtaskId
@@ -115,16 +116,33 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 						const displayCost = todo.cost ?? subtaskById?.cost
 						const shouldShowCost = typeof displayTokens === "number" && typeof displayCost === "number"
 
-						const displayAdded = todo.added ?? subtaskById?.added
-						const displayRemoved = todo.removed ?? subtaskById?.removed
-						const hasValidSubtaskLink = typeof todo.subtaskId === "string" && todo.subtaskId.length > 0
-						const shouldShowLineChanges =
-							hasValidSubtaskLink && (Number.isFinite(displayAdded) || Number.isFinite(displayRemoved))
+						const todoAddedIsFinite = typeof todo.added === "number" && Number.isFinite(todo.added)
+						const todoRemovedIsFinite = typeof todo.removed === "number" && Number.isFinite(todo.removed)
 
-						const hasAdded =
-							typeof displayAdded === "number" && Number.isFinite(displayAdded) && displayAdded > 0
-						const hasRemoved =
-							typeof displayRemoved === "number" && Number.isFinite(displayRemoved) && displayRemoved > 0
+						const displayAdded = todoAddedIsFinite ? todo.added : subtaskById?.added
+						const displayRemoved = todoRemovedIsFinite ? todo.removed : subtaskById?.removed
+
+						const displayAddedIsFinite = typeof displayAdded === "number" && Number.isFinite(displayAdded)
+						const displayRemovedIsFinite =
+							typeof displayRemoved === "number" && Number.isFinite(displayRemoved)
+						const hasValidSubtaskLink = typeof todo.subtaskId === "string" && todo.subtaskId.length > 0
+
+						// Upstream aggregation may coerce missing stats to 0.
+						// To avoid showing misleading `+0/−0` for in-progress/pending rows,
+						// only render 0 while running if it was explicitly provided on the todo itself.
+						const canRenderAdded =
+							displayAddedIsFinite &&
+							(todoStatus === "completed" || displayAdded !== 0 || todoAddedIsFinite)
+						const canRenderRemoved =
+							displayRemovedIsFinite &&
+							(todoStatus === "completed" || displayRemoved !== 0 || todoRemovedIsFinite)
+
+						const shouldShowLineChanges = hasValidSubtaskLink && (canRenderAdded || canRenderRemoved)
+
+						const isAddedPositive = canRenderAdded && (displayAdded as number) > 0
+						const isRemovedPositive = canRenderRemoved && (displayRemoved as number) > 0
+						const isAddedZero = canRenderAdded && displayAdded === 0
+						const isRemovedZero = canRenderRemoved && displayRemoved === 0
 
 						return (
 							<li
@@ -132,8 +150,8 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 								ref={(el) => (itemRefs.current[idx] = el)}
 								className={cn(
 									"font-light flex flex-row gap-2 items-start min-h-[20px] leading-normal mb-2",
-									todo.status === "in_progress" && "text-vscode-charts-yellow",
-									todo.status !== "in_progress" && todo.status !== "completed" && "opacity-60",
+									todoStatus === "in_progress" && "text-vscode-charts-yellow",
+									todoStatus !== "in_progress" && todoStatus !== "completed" && "opacity-60",
 								)}>
 								{icon}
 								<span
@@ -161,16 +179,18 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 												<span
 													className={cn(
 														" text-right",
-														hasAdded ? "font-medium text-vscode-charts-green" : "",
+														isAddedPositive ? "font-medium text-vscode-charts-green" : "",
+														isAddedZero ? "opacity-50" : "",
 													)}>
-													{hasAdded ? `+${displayAdded}` : "\u00A0"}
+													{canRenderAdded ? `+${displayAdded}` : "\u00A0"}
 												</span>
 												<span
 													className={cn(
 														" text-right",
-														hasRemoved ? "font-medium text-vscode-charts-red" : "",
+														isRemovedPositive ? "font-medium text-vscode-charts-red" : "",
+														isRemovedZero ? "opacity-50" : "",
 													)}>
-													{hasRemoved ? `−${displayRemoved}` : "\u00A0"}
+													{canRenderRemoved ? `−${displayRemoved}` : "\u00A0"}
 												</span>
 											</span>
 										)}

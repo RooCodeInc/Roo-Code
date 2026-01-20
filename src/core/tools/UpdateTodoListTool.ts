@@ -32,7 +32,12 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 			const historyHasMetadata =
 				Array.isArray(previousFromHistory) &&
 				previousFromHistory.some(
-					(t) => t?.subtaskId !== undefined || t?.tokens !== undefined || t?.cost !== undefined,
+					(t) =>
+						t?.subtaskId !== undefined ||
+						t?.tokens !== undefined ||
+						t?.cost !== undefined ||
+						t?.added !== undefined ||
+						t?.removed !== undefined,
 				)
 
 			const previousTodos: TodoItem[] =
@@ -77,6 +82,8 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 				subtaskId: t.subtaskId,
 				tokens: t.tokens,
 				cost: t.cost,
+				added: t.added,
+				removed: t.removed,
 			}))
 
 			const approvalMsg = JSON.stringify({
@@ -215,45 +222,55 @@ function normalizeStatus(status: string | undefined): TodoStatus {
 }
 
 /**
- * Preserve metadata (subtaskId, tokens, cost) from previous todos onto next todos.
+ * Preserve metadata (subtaskId, tokens, cost, added, removed) from previous todos onto next todos.
  *
  * Matching strategy (in priority order):
- * 1. **ID match**: If both todos have an `id` field and they match exactly, preserve metadata.
+ * 1. **Subtask ID match**: If the next todo has a `subtaskId`, match against previous todos with
+ *    the same `subtaskId`. This is the most stable identifier when content (and derived IDs)
+ *    changes.
+ * 2. **ID match**: If both todos have an `id` field and they match exactly, preserve metadata.
  *    This handles the common case where ID is stable across updates.
- * 2. **Content match with position awareness**: For todos without matching IDs, fall back to
- *    content-based matching. Duplicates are matched in order (first unmatched previous with
- *    same content gets matched to first unmatched next with same content).
+ * 3. **Content match with position awareness**: For todos without matching subtask IDs or IDs,
+ *    fall back to content-based matching. Duplicates are matched in order (first unmatched
+ *    previous with same content gets matched to first unmatched next with same content).
  *
- * This approach ensures metadata survives status changes (which can alter the derived ID)
+ * This approach ensures metadata survives status/content changes (which can alter the derived ID)
  * and handles duplicates deterministically.
  */
 function preserveTodoMetadata(nextTodos: TodoItem[], previousTodos: TodoItem[]): TodoItem[] {
 	const safePrevious = previousTodos ?? []
 	const safeNext = nextTodos ?? []
 
-	// Build ID -> todo mapping for O(1) lookup
-	const previousById = new Map<string, TodoItem>()
-	for (const prev of safePrevious) {
-		if (prev?.id && typeof prev.id === "string") {
-			// Only store the first occurrence for each ID (handle duplicates deterministically)
-			if (!previousById.has(prev.id)) {
-				previousById.set(prev.id, prev)
-			}
-		}
-	}
-
 	// Track which previous todos have been used (by their index) to avoid double-matching
 	const usedPreviousIndices = new Set<number>()
 
-	// Build content -> queue mapping for fallback (content-based matching)
-	// Each queue entry includes the original index for tracking
+	// Build lookup maps for matching strategies.
+	// - Subtask ID: may have duplicates; match in order for determinism.
+	// - ID: should be unique; store first occurrence.
+	// - Content: may have duplicates; match in order for determinism.
+	const previousBySubtaskId = new Map<string, Array<{ todo: TodoItem; index: number }>>()
+	const previousById = new Map<string, { todo: TodoItem; index: number }>()
 	const previousByContent = new Map<string, Array<{ todo: TodoItem; index: number }>>()
+
 	for (let i = 0; i < safePrevious.length; i++) {
 		const prev = safePrevious[i]
-		if (!prev || typeof prev.content !== "string") continue
-		const list = previousByContent.get(prev.content)
-		if (list) list.push({ todo: prev, index: i })
-		else previousByContent.set(prev.content, [{ todo: prev, index: i }])
+		if (!prev) continue
+
+		if (typeof prev.subtaskId === "string") {
+			const list = previousBySubtaskId.get(prev.subtaskId)
+			if (list) list.push({ todo: prev, index: i })
+			else previousBySubtaskId.set(prev.subtaskId, [{ todo: prev, index: i }])
+		}
+
+		if (typeof prev.id === "string" && !previousById.has(prev.id)) {
+			previousById.set(prev.id, { todo: prev, index: i })
+		}
+
+		if (typeof prev.content === "string") {
+			const list = previousByContent.get(prev.content)
+			if (list) list.push({ todo: prev, index: i })
+			else previousByContent.set(prev.content, [{ todo: prev, index: i }])
+		}
 	}
 
 	return safeNext.map((next) => {
@@ -262,16 +279,26 @@ function preserveTodoMetadata(nextTodos: TodoItem[], previousTodos: TodoItem[]):
 		let matchedPrev: TodoItem | undefined = undefined
 		let matchedIndex: number | undefined = undefined
 
-		// Strategy 1: Try ID-based matching first (most reliable)
-		if (next.id && typeof next.id === "string") {
-			const byId = previousById.get(next.id)
-			if (byId) {
-				// Find the index of this todo in the original array
-				const idx = safePrevious.findIndex((p) => p === byId)
-				if (idx !== -1 && !usedPreviousIndices.has(idx)) {
-					matchedPrev = byId
-					matchedIndex = idx
+		// Strategy 0: Try subtaskId-based matching first (most stable across content/ID changes)
+		if (typeof next.subtaskId === "string") {
+			const candidates = previousBySubtaskId.get(next.subtaskId)
+			if (candidates) {
+				for (const candidate of candidates) {
+					if (!usedPreviousIndices.has(candidate.index)) {
+						matchedPrev = candidate.todo
+						matchedIndex = candidate.index
+						break
+					}
 				}
+			}
+		}
+
+		// Strategy 1: Try ID-based matching first (most reliable)
+		if (!matchedPrev && next.id && typeof next.id === "string") {
+			const byId = previousById.get(next.id)
+			if (byId && !usedPreviousIndices.has(byId.index)) {
+				matchedPrev = byId.todo
+				matchedIndex = byId.index
 			}
 		}
 
@@ -298,6 +325,8 @@ function preserveTodoMetadata(nextTodos: TodoItem[], previousTodos: TodoItem[]):
 				subtaskId: next.subtaskId ?? matchedPrev.subtaskId,
 				tokens: next.tokens ?? matchedPrev.tokens,
 				cost: next.cost ?? matchedPrev.cost,
+				added: next.added ?? matchedPrev.added,
+				removed: next.removed ?? matchedPrev.removed,
 			}
 		}
 
