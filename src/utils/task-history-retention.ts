@@ -5,6 +5,7 @@ import type { Dirent } from "fs"
 
 import { getStorageBasePath } from "./storage"
 import { GlobalFileNames } from "../shared/globalFileNames"
+import { t } from "../i18n"
 
 /**
  * Allowed retention day values (as numbers).
@@ -328,10 +329,16 @@ export function startBackgroundRetentionPurge(options: BackgroundPurgeOptions): 
 
 			// Show user notification if tasks were deleted
 			if (result.purgedCount > 0) {
-				const message = `Roo Code deleted ${result.purgedCount} task${result.purgedCount === 1 ? "" : "s"} older than ${retention} days`
+				const message = t("common:taskHistoryRetention.purgeNotification", {
+					count: result.purgedCount,
+					days: retention,
+				})
 
-				vscode.window.showInformationMessage(message, "View Settings", "Dismiss").then((action) => {
-					if (action === "View Settings") {
+				const viewSettingsLabel = t("common:taskHistoryRetention.actions.viewSettings")
+				const dismissLabel = t("common:taskHistoryRetention.actions.dismiss")
+
+				vscode.window.showInformationMessage(message, viewSettingsLabel, dismissLabel).then((action) => {
+					if (action === viewSettingsLabel) {
 						// Navigate to Roo Code settings About tab
 						vscode.commands.executeCommand("roo-cline.settingsButtonClicked")
 					}

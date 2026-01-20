@@ -597,7 +597,7 @@ export const webviewMessageHandler = async (
 							.getConfiguration(Package.name)
 							.update("deniedCommands", newValue, vscode.ConfigurationTarget.Global)
 					} else if (key === "taskHistoryRetention") {
-						// taskHistoryRetention is stored in Roo application state, not VS Code settings
+						// taskHistoryRetention is stored in Roo application state (global state), not VS Code settings.
 						newValue = ((value ?? "never") as string).toString()
 					} else if (key === "ttsEnabled") {
 						newValue = value ?? true

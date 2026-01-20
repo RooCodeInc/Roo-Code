@@ -3,6 +3,7 @@ import * as fs from "fs/promises"
 import type { Dirent, Stats } from "fs"
 
 import { getStorageBasePath } from "./storage"
+import { formatBytes } from "./formatBytes"
 
 /**
  * Result of calculating task history storage size
@@ -16,23 +17,8 @@ export interface TaskStorageSizeResult {
 	formattedSize: string
 }
 
-/**
- * Formats bytes into a human-readable string with appropriate units.
- * @param bytes Number of bytes
- * @returns Formatted string (e.g., "12.34 MB", "5.67 GB")
- */
-export function formatBytes(bytes: number): string {
-	if (bytes === 0) return "0 B"
-
-	const units = ["B", "KB", "MB", "GB", "TB"]
-	const k = 1024
-	const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), units.length - 1)
-	const size = bytes / Math.pow(k, i)
-
-	// Use 2 decimal places for MB and above, 0 for B and KB
-	const decimals = i >= 2 ? 2 : 0
-	return `${size.toFixed(decimals)} ${units[i]}`
-}
+// Re-export for backwards compatibility with existing imports/tests.
+export { formatBytes }
 
 /**
  * Recursively calculates the total size of a directory.

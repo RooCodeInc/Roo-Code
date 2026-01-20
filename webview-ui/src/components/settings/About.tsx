@@ -16,7 +16,7 @@ import {
 } from "lucide-react"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
-import type { TelemetrySetting } from "@roo-code/types"
+import type { TelemetrySetting, TaskHistoryRetentionSetting } from "@roo-code/types"
 
 import { Package } from "@roo/package"
 
@@ -39,8 +39,8 @@ type AboutProps = HTMLAttributes<HTMLDivElement> & {
 	setTelemetrySetting: (setting: TelemetrySetting) => void
 	debug?: boolean
 	setDebug?: (debug: boolean) => void
-	taskHistoryRetention: "never" | "90" | "60" | "30" | "7" | "3"
-	setTaskHistoryRetention: (value: "never" | "90" | "60" | "30" | "7" | "3") => void
+	taskHistoryRetention: TaskHistoryRetentionSetting
+	setTaskHistoryRetention: (value: TaskHistoryRetentionSetting) => void
 	taskHistorySize?: TaskHistorySize
 }
 
@@ -206,7 +206,7 @@ export const About = ({
 					<div className="mt-2">
 						<Select
 							value={taskHistoryRetention}
-							onValueChange={(value: "never" | "90" | "60" | "30" | "7" | "3") => {
+							onValueChange={(value: TaskHistoryRetentionSetting) => {
 								setTaskHistoryRetention(value)
 							}}>
 							<SelectTrigger className="w-64">
