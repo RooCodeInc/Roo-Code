@@ -299,7 +299,7 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			expect(commandArg.toolConfig).toBeUndefined()
 		})
 
-		it("should not include toolConfig when tool_choice is none", async () => {
+		it("should include toolConfig with undefined toolChoice when tool_choice is none", async () => {
 			const handlerWithNativeTools = new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
@@ -324,7 +324,9 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			expect(mockConverseStreamCommand).toHaveBeenCalled()
 			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
 
-			expect(commandArg.toolConfig).toBeUndefined()
+			// toolConfig is still provided but toolChoice is undefined for "none"
+			expect(commandArg.toolConfig).toBeDefined()
+			expect(commandArg.toolConfig.toolChoice).toBeUndefined()
 		})
 
 		it("should include fine-grained tool streaming beta for Claude models with native tools", async () => {
@@ -358,7 +360,7 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			)
 		})
 
-		it("should not include fine-grained tool streaming beta when not using native tools", async () => {
+		it("should always include fine-grained tool streaming beta for Claude models", async () => {
 			const handlerWithNativeTools = new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
@@ -382,12 +384,11 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			expect(mockConverseStreamCommand).toHaveBeenCalled()
 			const commandArg = mockConverseStreamCommand.mock.calls[0][0] as any
 
-			// Should not include anthropic_beta when not using native tools
-			if (commandArg.additionalModelRequestFields?.anthropic_beta) {
-				expect(commandArg.additionalModelRequestFields.anthropic_beta).not.toContain(
-					"fine-grained-tool-streaming-2025-05-14",
-				)
-			}
+			// Should always include anthropic_beta with fine-grained-tool-streaming for Claude models
+			expect(commandArg.additionalModelRequestFields).toBeDefined()
+			expect(commandArg.additionalModelRequestFields.anthropic_beta).toContain(
+				"fine-grained-tool-streaming-2025-05-14",
+			)
 		})
 	})
 

@@ -414,6 +414,17 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		const is1MContextEnabled =
 			BEDROCK_1M_CONTEXT_MODEL_IDS.includes(baseModelId as any) && this.options.awsBedrock1MContext
 
+		// Determine if service tier should be applied (checked later when building payload)
+		const useServiceTier =
+			this.options.awsBedrockServiceTier && BEDROCK_SERVICE_TIER_MODEL_IDS.includes(baseModelId as any)
+		if (useServiceTier) {
+			logger.info("Service tier specified for Bedrock request", {
+				ctx: "bedrock",
+				modelId: modelConfig.id,
+				serviceTier: this.options.awsBedrockServiceTier,
+			})
+		}
+
 		// Add anthropic_beta headers for various features
 		// Start with an empty array and add betas as needed
 		const anthropicBetas: string[] = []
@@ -423,7 +434,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			anthropicBetas.push("context-1m-2025-08-07")
 		}
 
-		// Add fine-grained tool streaming beta when native tools are used with Claude models
+		// Add fine-grained tool streaming beta for Claude models
 		// This enables proper tool use streaming for Anthropic models on Bedrock
 		if (baseModelId.includes("claude")) {
 			anthropicBetas.push("fine-grained-tool-streaming-2025-05-14")
@@ -435,17 +446,6 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				additionalModelRequestFields = {} as BedrockAdditionalModelFields
 			}
 			additionalModelRequestFields.anthropic_beta = anthropicBetas
-		}
-
-		// Determine if service tier should be applied (checked later when building payload)
-		const useServiceTier =
-			this.options.awsBedrockServiceTier && BEDROCK_SERVICE_TIER_MODEL_IDS.includes(baseModelId as any)
-		if (useServiceTier) {
-			logger.info("Service tier specified for Bedrock request", {
-				ctx: "bedrock",
-				modelId: modelConfig.id,
-				serviceTier: this.options.awsBedrockServiceTier,
-			})
 		}
 
 		// Build tool configuration if native tools are enabled
