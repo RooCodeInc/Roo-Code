@@ -388,6 +388,44 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Allows other extensions to activate once Roo is ready.
 	vscode.commands.executeCommand(`${Package.name}.activationCompleted`)
 
+	// Task history retention purge (runs in background after activation)
+	// Fire-and-forget to avoid blocking extension startup
+	void (async () => {
+		try {
+			const config = vscode.workspace.getConfiguration(Package.name)
+			const retention = config.get<string>("taskHistoryRetention", "never") ?? "never"
+
+			// Skip if retention is disabled (default)
+			if (retention === "never") {
+				return
+			}
+
+			outputChannel.appendLine(`[Retention] Starting background purge: setting=${retention}`)
+
+			const result = await purgeOldTasks(
+				retention as RetentionSetting,
+				contextProxy.globalStorageUri.fsPath,
+				(m) => outputChannel.appendLine(m),
+				false,
+				async (taskId: string) => {
+					// Reuse the same internal deletion logic as the History view so that
+					// checkpoints, shadow repositories, and task state are cleaned up consistently.
+					await provider.deleteTaskWithId(taskId)
+				},
+			)
+
+			if (result.purgedCount > 0) {
+				outputChannel.appendLine(
+					`[Retention] Background purge complete: purged=${result.purgedCount}, cutoff=${result.cutoff ? new Date(result.cutoff).toISOString() : "none"}`,
+				)
+			}
+		} catch (error) {
+			outputChannel.appendLine(
+				`[Retention] Failed during background purge: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	})()
+
 	// Implements the `RooCodeAPI` interface.
 	const socketPath = process.env.ROO_CODE_IPC_SOCKET_PATH
 	const enableLogging = typeof socketPath === "string"
