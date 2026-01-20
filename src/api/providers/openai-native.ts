@@ -382,11 +382,8 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
-		// For native tool protocol, control parallel tool calls based on the metadata flag.
-		// When parallelToolCalls is true, allow parallel tool calls (OpenAI's parallel_tool_calls=true).
-		// When false (default), explicitly disable parallel tool calls (false).
-		// For XML or when protocol is unset, omit the field entirely so the API default applies.
-		if (metadata?.toolProtocol === "native") {
+		// Tool calling is native-only. When tools are provided, explicitly control parallel tool calls.
+		if (metadata?.tools) {
 			body.parallel_tool_calls = metadata.parallelToolCalls ?? false
 		}
 

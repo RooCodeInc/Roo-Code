@@ -16,58 +16,69 @@ Parameters:
   ${args.partialReadsEnabled ? `- line_range: (optional) One or more line range elements in format "start-end" (1-based, inclusive)` : ""}
 
 Usage:
-<read_file>
-<args>
-  <file>
-    <path>path/to/file</path>
-    ${args.partialReadsEnabled ? `<line_range>start-end</line_range>` : ""}
-  </file>
-</args>
-</read_file>
+{
+  "files": [
+    {
+      "path": "path/to/file"${
+			args.partialReadsEnabled
+				? `,
+      "line_range": ["start-end"]`
+				: ""
+		}
+    }
+  ]
+}
 
 Examples:
 
 1. Reading a single file:
-<read_file>
-<args>
-  <file>
-    <path>src/app.ts</path>
-    ${args.partialReadsEnabled ? `<line_range>1-1000</line_range>` : ""}
-  </file>
-</args>
-</read_file>
+{
+  "files": [
+    {
+      "path": "src/app.ts"${
+			args.partialReadsEnabled
+				? `,
+      "line_range": ["1-1000"]`
+				: ""
+		}
+    }
+  ]
+}
 
 ${isMultipleReadsEnabled ? `2. Reading multiple files (within the ${maxConcurrentReads}-file limit):` : ""}${
 		isMultipleReadsEnabled
 			? `
-<read_file>
-<args>
-  <file>
-    <path>src/app.ts</path>
-    ${
-		args.partialReadsEnabled
-			? `<line_range>1-50</line_range>
-    <line_range>100-150</line_range>`
-			: ""
-	}
-  </file>
-  <file>
-    <path>src/utils.ts</path>
-    ${args.partialReadsEnabled ? `<line_range>10-20</line_range>` : ""}
-  </file>
-</args>
-</read_file>`
+{
+  "files": [
+    {
+      "path": "src/app.ts"${
+			args.partialReadsEnabled
+				? `,
+      "line_range": ["1-50", "100-150"]`
+				: ""
+		}
+    },
+    {
+      "path": "src/utils.ts"${
+			args.partialReadsEnabled
+				? `,
+      "line_range": ["10-20"]`
+				: ""
+		}
+    }
+  ]
+}`
 			: ""
 	}
 
 ${isMultipleReadsEnabled ? "3. " : "2. "}Reading an entire file:
-<read_file>
-<args>
-  <file>
-    <path>config.json</path>
-  </file>
-</args>
-</read_file>
+{
+  "files": [
+    {
+      "path": "config.json"
+    }
+  ]
+}
 
 IMPORTANT: You MUST use this Efficient Reading Strategy:
 - ${isMultipleReadsEnabled ? `You MUST read all related files and implementations together in a single operation (up to ${maxConcurrentReads} files at once)` : "You MUST read files one at a time, as multiple file reads are currently disabled"}

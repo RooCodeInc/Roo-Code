@@ -768,14 +768,6 @@
 	"advancedSettings": {
 		"title": "詳細設定"
 	},
-	"toolProtocol": {
-		"label": "ツールコールプロトコル",
-		"description": "Roo が API と通信する方法を選択します。ネイティブはプロバイダーの関数呼び出し API を使用し、XML は XML 形式のツール定義を使用します。",
-		"default": "デフォルト",
-		"xml": "XML",
-		"native": "ネイティブ",
-		"currentDefault": "デフォルト: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "diff経由の編集を有効化",

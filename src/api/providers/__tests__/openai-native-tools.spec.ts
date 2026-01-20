@@ -59,7 +59,6 @@ describe("OpenAiHandler native tools", () => {
 		const stream = handler.createMessage("system", [], {
 			taskId: "test-task-id",
 			...(supportsNativeTools && { tools }),
-			...(supportsNativeTools && { toolProtocol: "native" as const }),
 		})
 		await stream.next()
 
@@ -131,7 +130,6 @@ describe("OpenAiNativeHandler MCP tool schema handling", () => {
 		const stream = handler.createMessage("system prompt", [], {
 			taskId: "test-task-id",
 			tools: mcpTools,
-			toolProtocol: "native" as const,
 		})
 
 		// Consume the stream
@@ -199,7 +197,6 @@ describe("OpenAiNativeHandler MCP tool schema handling", () => {
 		const stream = handler.createMessage("system prompt", [], {
 			taskId: "test-task-id",
 			tools: regularTools,
-			toolProtocol: "native" as const,
 		})
 
 		// Consume the stream
@@ -281,7 +278,6 @@ describe("OpenAiNativeHandler MCP tool schema handling", () => {
 		const stream = handler.createMessage("system prompt", [], {
 			taskId: "test-task-id",
 			tools: mcpToolsWithNestedObjects,
-			toolProtocol: "native" as const,
 		})
 
 		// Consume the stream

@@ -11,24 +11,10 @@ Parameters:
 - regex: (required) The regular expression pattern to search for. Uses Rust regex syntax.
 - file_pattern: (optional) Glob pattern to filter files (e.g., '*.ts' for TypeScript files). If not provided, it will search all files (*).
 
-Usage:
-<search_files>
-<path>Directory path here</path>
-<regex>Your regex pattern here</regex>
-<file_pattern>file pattern here (optional)</file_pattern>
-</search_files>
+Usage (native tool calling):
+Call the tool with a JSON object containing the parameters.
 
-Example: Searching for all .ts files in the current directory
-<search_files>
-<path>.</path>
-<regex>.*</regex>
-<file_pattern>*.ts</file_pattern>
-</search_files>
-
-Example: Searching for function definitions in JavaScript files
-<search_files>
-<path>src</path>
-<regex>function\\s+\\w+</regex>
-<file_pattern>*.js</file_pattern>
-</search_files>`
+Examples:
+{ "path": ".", "regex": ".*", "file_pattern": "*.ts" }
+{ "path": "src", "regex": "function\\s+\\w+", "file_pattern": "*.js" }`
 }

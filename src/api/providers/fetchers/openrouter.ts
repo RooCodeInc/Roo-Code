@@ -222,8 +222,6 @@ export const parseOpenRouterModel = ({
 		supportsReasoningEffort: supportedParameters ? supportedParameters.includes("reasoning") : undefined,
 		supportsNativeTools,
 		supportedParameters: supportedParameters ? supportedParameters.filter(isModelParameter) : undefined,
-		// Default to native tool protocol when native tools are supported
-		defaultToolProtocol: supportsNativeTools ? ("native" as const) : undefined,
 	}
 
 	if (OPEN_ROUTER_REASONING_BUDGET_MODELS.has(id)) {

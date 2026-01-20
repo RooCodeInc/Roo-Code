@@ -9,7 +9,6 @@ export const doubaoModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.0001, // $0.0001 per million tokens (cache miss)
 		outputPrice: 0.0004, // $0.0004 per million tokens
 		cacheWritesPrice: 0.0001, // $0.0001 per million tokens (cache miss)
@@ -22,7 +21,6 @@ export const doubaoModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.0002, // $0.0002 per million tokens
 		outputPrice: 0.0008, // $0.0008 per million tokens
 		cacheWritesPrice: 0.0002, // $0.0002 per million
@@ -35,7 +33,6 @@ export const doubaoModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.00015, // $0.00015 per million tokens
 		outputPrice: 0.0006, // $0.0006 per million tokens
 		cacheWritesPrice: 0.00015, // $0.00015 per million

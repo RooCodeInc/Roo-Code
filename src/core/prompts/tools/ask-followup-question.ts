@@ -4,24 +4,11 @@ Description: Ask the user a question to gather additional information needed to 
 
 Parameters:
 - question: (required) A clear, specific question addressing the information needed
-- follow_up: (required) A list of 2-4 suggested answers, each in its own <suggest> tag. Suggestions must be complete, actionable answers without placeholders. Optionally include mode attribute to switch modes (code/architect/etc.)
+- follow_up: (required) A list of 2-4 suggested answers. Suggestions must be complete, actionable answers without placeholders. Optionally include mode to switch modes (code/architect/etc.)
 
 Usage:
-<ask_followup_question>
-<question>Your question here</question>
-<follow_up>
-<suggest>First suggestion</suggest>
-<suggest mode="code">Action with mode switch</suggest>
-</follow_up>
-</ask_followup_question>
+{"question":"Your question here","follow_up":[{"text":"First suggestion"},{"text":"Action with mode switch","mode":"code"}]}
 
 Example:
-<ask_followup_question>
-<question>What is the path to the frontend-config.json file?</question>
-<follow_up>
-<suggest>./src/frontend-config.json</suggest>
-<suggest>./config/frontend-config.json</suggest>
-<suggest>./frontend-config.json</suggest>
-</follow_up>
-</ask_followup_question>`
+{"question":"What is the path to the frontend-config.json file?","follow_up":[{"text":"./src/frontend-config.json"},{"text":"./config/frontend-config.json"},{"text":"./frontend-config.json"}]}`
 }

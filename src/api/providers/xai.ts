@@ -56,8 +56,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 
 		// Check if model supports native tools and tools are provided with native protocol
 		const supportsNativeTools = modelInfo.supportsNativeTools ?? false
-		const useNativeTools =
-			supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
+		const useNativeTools = supportsNativeTools && metadata?.tools && metadata.tools.length > 0
 
 		// Use the OpenAI-compatible API.
 		const requestOptions = {

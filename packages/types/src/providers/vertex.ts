@@ -11,7 +11,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 		supportsReasoningEffort: ["low", "high"],
 		reasoningEffort: "low",
@@ -38,7 +37,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 		supportsReasoningEffort: ["minimal", "low", "medium", "high"],
 		reasoningEffort: "medium",
@@ -55,7 +53,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.15,
@@ -69,7 +66,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.15,
@@ -80,7 +76,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.3,
@@ -95,7 +90,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: false,
 
 		inputPrice: 0.15,
@@ -109,7 +103,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: false,
 
 		inputPrice: 0.15,
@@ -120,7 +113,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 2.5,
@@ -131,7 +123,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 2.5,
@@ -142,7 +133,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 2.5,
@@ -155,7 +145,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 2.5,
@@ -183,7 +172,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: false,
 
 		inputPrice: 0,
@@ -194,7 +182,6 @@ export const vertexModels = {
 		contextWindow: 2_097_152,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: false,
 
 		inputPrice: 0,
@@ -205,7 +192,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.15,
@@ -216,7 +202,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: false,
 
 		inputPrice: 0.075,
@@ -227,7 +212,6 @@ export const vertexModels = {
 		contextWindow: 32_768,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: false,
 
 		inputPrice: 0,
@@ -238,7 +222,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.075,
@@ -249,7 +232,6 @@ export const vertexModels = {
 		contextWindow: 2_097_152,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: false,
 
 		inputPrice: 1.25,
@@ -261,7 +243,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 3.0, // $3 per million input tokens (≤200K context)
 		outputPrice: 15.0, // $15 per million output tokens (≤200K context)
 		cacheWritesPrice: 3.75, // $3.75 per million tokens
@@ -284,7 +265,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 3.0, // $3 per million input tokens (≤200K context)
 		outputPrice: 15.0, // $15 per million output tokens (≤200K context)
 		cacheWritesPrice: 3.75, // $3.75 per million tokens
@@ -307,7 +287,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 1.0,
 		outputPrice: 5.0,
 		cacheWritesPrice: 1.25,
@@ -320,7 +299,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 5.0,
 		outputPrice: 25.0,
 		cacheWritesPrice: 6.25,
@@ -333,7 +311,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 15.0,
 		outputPrice: 75.0,
 		cacheWritesPrice: 18.75,
@@ -346,7 +323,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 15.0,
 		outputPrice: 75.0,
 		cacheWritesPrice: 18.75,
@@ -358,7 +334,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 3.0,
 		outputPrice: 15.0,
 		cacheWritesPrice: 3.75,
@@ -372,7 +347,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 3.0,
 		outputPrice: 15.0,
 		cacheWritesPrice: 3.75,
@@ -384,7 +358,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 3.0,
 		outputPrice: 15.0,
 		cacheWritesPrice: 3.75,
@@ -396,7 +369,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 3.0,
 		outputPrice: 15.0,
 		cacheWritesPrice: 3.75,
@@ -408,7 +380,6 @@ export const vertexModels = {
 		supportsImages: false,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 1.0,
 		outputPrice: 5.0,
 		cacheWritesPrice: 1.25,
@@ -420,7 +391,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 15.0,
 		outputPrice: 75.0,
 		cacheWritesPrice: 18.75,
@@ -432,7 +402,6 @@ export const vertexModels = {
 		supportsImages: true,
 		supportsPromptCache: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.25,
 		outputPrice: 1.25,
 		cacheWritesPrice: 0.3,
@@ -443,7 +412,6 @@ export const vertexModels = {
 		contextWindow: 1_048_576,
 		supportsImages: true,
 		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.1,

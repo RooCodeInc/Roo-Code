@@ -63,8 +63,8 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 			stream_options: { include_usage: true },
 			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-			...(metadata?.toolProtocol === "native" && {
-				parallel_tool_calls: metadata.parallelToolCalls ?? false,
+			...(metadata?.parallelToolCalls !== undefined && {
+				parallel_tool_calls: metadata.parallelToolCalls,
 			}),
 		}
 

@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import type { ProviderSettings, ModelInfo, ToolProtocol } from "@roo-code/types"
+import type { ProviderSettings, ModelInfo } from "@roo-code/types"
 
 import { ApiStream } from "./transform/stream"
 
@@ -83,16 +83,11 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * Can be "none", "auto", "required", or a specific tool choice.
 	 */
 	tool_choice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"]
-	/**
-	 * The tool protocol being used (XML or Native).
-	 * Used by providers to determine whether to include native tool definitions.
-	 */
-	toolProtocol?: ToolProtocol
+	// Tool calling is native-only.
 	/**
 	 * Controls whether the model can return multiple tool calls in a single response.
 	 * When true, parallel tool calls are enabled (OpenAI's parallel_tool_calls=true).
 	 * When false (default), only one tool call is returned per response.
-	 * Only applies when toolProtocol is "native".
 	 */
 	parallelToolCalls?: boolean
 	/**

@@ -164,41 +164,7 @@ export function isToolAllowedForMode(
 				throw new FileRestrictionError(mode.name, options.fileRegex, options.description, filePath, tool)
 			}
 
-			// Handle XML args parameter (used by MULTI_FILE_APPLY_DIFF experiment)
-			if (toolParams?.args && typeof toolParams.args === "string") {
-				// Extract file paths from XML args with improved validation
-				try {
-					const filePathMatches = toolParams.args.match(/<path>([^<]+)<\/path>/g)
-					if (filePathMatches) {
-						for (const match of filePathMatches) {
-							// More robust path extraction with validation
-							const pathMatch = match.match(/<path>([^<]+)<\/path>/)
-							if (pathMatch && pathMatch[1]) {
-								const extractedPath = pathMatch[1].trim()
-								// Validate that the path is not empty and doesn't contain invalid characters
-								if (extractedPath && !extractedPath.includes("<") && !extractedPath.includes(">")) {
-									if (!doesFileMatchRegex(extractedPath, options.fileRegex)) {
-										throw new FileRestrictionError(
-											mode.name,
-											options.fileRegex,
-											options.description,
-											extractedPath,
-											tool,
-										)
-									}
-								}
-							}
-						}
-					}
-				} catch (error) {
-					// Re-throw FileRestrictionError as it's an expected validation error
-					if (error instanceof FileRestrictionError) {
-						throw error
-					}
-					// If XML parsing fails, log the error but don't block the operation
-					console.warn(`Failed to parse XML args for file restriction validation: ${error}`)
-				}
-			}
+			// Native-only: multi-file edits provide structured params; no legacy XML args parsing.
 		}
 
 		return true

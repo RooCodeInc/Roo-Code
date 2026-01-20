@@ -3,65 +3,44 @@ import * as path from "path"
 import * as diff from "diff"
 import { RooIgnoreController, LOCK_TEXT_SYMBOL } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
-import { ToolProtocol, isNativeProtocol, TOOL_PROTOCOL } from "@roo-code/types"
 
 export const formatResponse = {
-	toolDenied: (protocol?: ToolProtocol) => {
-		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
-			return JSON.stringify({
-				status: "denied",
-				message: "The user denied this operation.",
-			})
-		}
-		return `The user denied this operation.`
-	},
+	toolDenied: () =>
+		JSON.stringify({
+			status: "denied",
+			message: "The user denied this operation.",
+		}),
 
-	toolDeniedWithFeedback: (feedback?: string, protocol?: ToolProtocol) => {
-		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
-			return JSON.stringify({
-				status: "denied",
-				feedback: feedback,
-			})
-		}
-		return `The user denied this operation and responded with the message:\n<user_message>\n${feedback}\n</user_message>`
-	},
+	toolDeniedWithFeedback: (feedback?: string) =>
+		JSON.stringify({
+			status: "denied",
+			feedback,
+		}),
 
-	toolApprovedWithFeedback: (feedback?: string, protocol?: ToolProtocol) => {
-		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
-			return JSON.stringify({
-				status: "approved",
-				feedback: feedback,
-			})
-		}
-		return `The user approved this operation and responded with the message:\n<user_message>\n${feedback}\n</user_message>`
-	},
+	toolApprovedWithFeedback: (feedback?: string) =>
+		JSON.stringify({
+			status: "approved",
+			feedback,
+		}),
 
-	toolError: (error?: string, protocol?: ToolProtocol) => {
-		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
-			return JSON.stringify({
-				status: "error",
-				message: "The tool execution failed",
-				error: error,
-			})
-		}
-		return `The tool execution failed with the following error:\n<error>\n${error}\n</error>`
-	},
+	toolError: (error?: string) =>
+		JSON.stringify({
+			status: "error",
+			message: "The tool execution failed",
+			error,
+		}),
 
-	rooIgnoreError: (path: string, protocol?: ToolProtocol) => {
-		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
-			return JSON.stringify({
-				status: "error",
-				type: "access_denied",
-				message: "Access blocked by .rooignore",
-				path: path,
-				suggestion: "Try to continue without this file, or ask the user to update the .rooignore file",
-			})
-		}
-		return `Access to ${path} is blocked by the .rooignore file settings. You must try to continue in the task without using this file, or ask the user to update the .rooignore file.`
-	},
+	rooIgnoreError: (path: string) =>
+		JSON.stringify({
+			status: "error",
+			type: "access_denied",
+			message: "Access blocked by .rooignore",
+			path,
+			suggestion: "Try to continue without this file, or ask the user to update the .rooignore file",
+		}),
 
-	noToolsUsed: (protocol?: ToolProtocol) => {
-		const instructions = getToolInstructionsReminder(protocol)
+	noToolsUsed: () => {
+		const instructions = getToolInstructionsReminder()
 
 		return `[ERROR] You did not use a tool in your previous response! Please retry with a tool use.
 
@@ -75,65 +54,47 @@ Otherwise, if you have not completed the task and do not need additional informa
 (This is an automated message, so do not respond to it conversationally.)`
 	},
 
-	tooManyMistakes: (feedback?: string, protocol?: ToolProtocol) => {
-		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
-			return JSON.stringify({
-				status: "guidance",
-				feedback: feedback,
-			})
-		}
-		return `You seem to be having trouble proceeding. The user has provided the following feedback to help guide you:\n<user_message>\n${feedback}\n</user_message>`
-	},
+	tooManyMistakes: (feedback?: string) =>
+		JSON.stringify({
+			status: "guidance",
+			feedback,
+		}),
 
-	missingToolParameterError: (paramName: string, protocol?: ToolProtocol) => {
-		const instructions = getToolInstructionsReminder(protocol)
+	missingToolParameterError: (paramName: string) => {
+		const instructions = getToolInstructionsReminder()
 
 		return `Missing value for required parameter '${paramName}'. Please retry with complete response.\n\n${instructions}`
 	},
 
-	invalidMcpToolArgumentError: (serverName: string, toolName: string, protocol?: ToolProtocol) => {
-		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
-			return JSON.stringify({
-				status: "error",
-				type: "invalid_argument",
-				message: "Invalid JSON argument",
-				server: serverName,
-				tool: toolName,
-				suggestion: "Please retry with a properly formatted JSON argument",
-			})
-		}
-		return `Invalid JSON argument used with ${serverName} for ${toolName}. Please retry with a properly formatted JSON argument.`
-	},
+	invalidMcpToolArgumentError: (serverName: string, toolName: string) =>
+		JSON.stringify({
+			status: "error",
+			type: "invalid_argument",
+			message: "Invalid JSON argument",
+			server: serverName,
+			tool: toolName,
+			suggestion: "Please retry with a properly formatted JSON argument",
+		}),
 
-	unknownMcpToolError: (serverName: string, toolName: string, availableTools: string[], protocol?: ToolProtocol) => {
-		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
-			return JSON.stringify({
-				status: "error",
-				type: "unknown_tool",
-				message: "Tool does not exist on server",
-				server: serverName,
-				tool: toolName,
-				available_tools: availableTools.length > 0 ? availableTools : [],
-				suggestion: "Please use one of the available tools or check if the server is properly configured",
-			})
-		}
-		const toolsList = availableTools.length > 0 ? availableTools.join(", ") : "No tools available"
-		return `Tool '${toolName}' does not exist on server '${serverName}'.\n\nAvailable tools on this server: ${toolsList}\n\nPlease use one of the available tools or check if the server is properly configured.`
-	},
+	unknownMcpToolError: (serverName: string, toolName: string, availableTools: string[]) =>
+		JSON.stringify({
+			status: "error",
+			type: "unknown_tool",
+			message: "Tool does not exist on server",
+			server: serverName,
+			tool: toolName,
+			available_tools: availableTools.length > 0 ? availableTools : [],
+			suggestion: "Please use one of the available tools or check if the server is properly configured",
+		}),
 
-	unknownMcpServerError: (serverName: string, availableServers: string[], protocol?: ToolProtocol) => {
-		if (isNativeProtocol(protocol ?? TOOL_PROTOCOL.XML)) {
-			return JSON.stringify({
-				status: "error",
-				type: "unknown_server",
-				message: "Server is not configured",
-				server: serverName,
-				available_servers: availableServers.length > 0 ? availableServers : [],
-			})
-		}
-		const serversList = availableServers.length > 0 ? availableServers.join(", ") : "No servers available"
-		return `Server '${serverName}' is not configured. Available servers: ${serversList}`
-	},
+	unknownMcpServerError: (serverName: string, availableServers: string[]) =>
+		JSON.stringify({
+			status: "error",
+			type: "unknown_server",
+			message: "Server is not configured",
+			server: serverName,
+			available_servers: availableServers.length > 0 ? availableServers : [],
+		}),
 
 	toolResult: (
 		text: string,
@@ -255,26 +216,6 @@ const formatImagesIntoBlocks = (images?: string[]): Anthropic.ImageBlockParam[] 
 		: []
 }
 
-const toolUseInstructionsReminder = `# Reminder: Instructions for Tool Use
-
-Tool uses are formatted using XML-style tags. The tool name itself becomes the XML tag name. Each parameter is enclosed within its own set of tags. Here's the structure:
-
-<actual_tool_name>
-<parameter1_name>value1</parameter1_name>
-<parameter2_name>value2</parameter2_name>
-...
-</actual_tool_name>
-
-For example, to use the attempt_completion tool:
-
-<attempt_completion>
-<result>
-I have completed the task...
-</result>
-</attempt_completion>
-
-Always use the actual tool name as the XML tag name for proper parsing and execution.`
-
 const toolUseInstructionsReminderNative = `# Reminder: Instructions for Tool Use
 
 Tools are invoked using the platform's native tool calling mechanism. Each tool requires specific parameters as defined in the tool descriptions. Refer to the tool definitions provided in your system instructions for the correct parameter structure and usage examples.
@@ -282,12 +223,8 @@ Tools are invoked using the platform's native tool calling mechanism. Each tool 
 Always ensure you provide all required parameters for the tool you wish to use.`
 
 /**
- * Gets the appropriate tool use instructions reminder based on the protocol.
- *
- * @param protocol - Optional tool protocol, defaults to XML if not provided
- * @returns The tool use instructions reminder text
+ * Gets the tool use instructions reminder.
  */
-function getToolInstructionsReminder(protocol?: ToolProtocol): string {
-	const effectiveProtocol = protocol ?? TOOL_PROTOCOL.XML
-	return isNativeProtocol(effectiveProtocol) ? toolUseInstructionsReminderNative : toolUseInstructionsReminder
+function getToolInstructionsReminder(): string {
+	return toolUseInstructionsReminderNative
 }

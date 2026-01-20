@@ -660,11 +660,9 @@ describe("useSelectedModel", () => {
 			// Router model values override the defaults
 			const nativeToolDefaults = {
 				supportsNativeTools: litellmDefaultModelInfo.supportsNativeTools,
-				defaultToolProtocol: litellmDefaultModelInfo.defaultToolProtocol,
 			}
 			expect(result.current.info).toEqual({ ...nativeToolDefaults, ...customModelInfo })
 			expect(result.current.info?.supportsNativeTools).toBe(true)
-			expect(result.current.info?.defaultToolProtocol).toBe("native")
 		})
 	})
 
@@ -702,7 +700,6 @@ describe("useSelectedModel", () => {
 			expect(result.current.id).toBe("gpt-4o")
 			expect(result.current.info).toEqual(openAiModelInfoSaneDefaults)
 			expect(result.current.info?.supportsNativeTools).toBe(true)
-			expect(result.current.info?.defaultToolProtocol).toBe("native")
 		})
 
 		it("should merge native tool defaults with custom model info", () => {
@@ -730,11 +727,9 @@ describe("useSelectedModel", () => {
 			// Should merge native tool defaults with custom model info
 			const nativeToolDefaults = {
 				supportsNativeTools: openAiModelInfoSaneDefaults.supportsNativeTools,
-				defaultToolProtocol: openAiModelInfoSaneDefaults.defaultToolProtocol,
 			}
 			expect(result.current.info).toEqual({ ...nativeToolDefaults, ...customModelInfo })
 			expect(result.current.info?.supportsNativeTools).toBe(true)
-			expect(result.current.info?.defaultToolProtocol).toBe("native")
 		})
 
 		it("should allow custom model info to override native tool defaults", () => {
@@ -744,7 +739,6 @@ describe("useSelectedModel", () => {
 				supportsImages: false,
 				supportsPromptCache: false,
 				supportsNativeTools: false, // Explicitly disable
-				defaultToolProtocol: "xml", // Override default to use XML instead of native
 			}
 
 			const apiConfiguration: ProviderSettings = {
@@ -760,7 +754,6 @@ describe("useSelectedModel", () => {
 			expect(result.current.id).toBe("custom-model-no-tools")
 			// Custom model info should override the native tool defaults
 			expect(result.current.info?.supportsNativeTools).toBe(false)
-			expect(result.current.info?.defaultToolProtocol).toBe("xml")
 		})
 	})
 })

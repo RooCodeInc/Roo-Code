@@ -362,11 +362,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Determine early if native tools should be used (needed for message conversion)
 		const supportsNativeTools = modelConfig.info.supportsNativeTools ?? false
 		const useNativeTools =
-			supportsNativeTools &&
-			metadata?.tools &&
-			metadata.tools.length > 0 &&
-			metadata?.toolProtocol !== "xml" &&
-			metadata?.tool_choice !== "none"
+			supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && metadata?.tool_choice !== "none"
 
 		const conversationId =
 			messages.length > 0
@@ -1359,8 +1355,6 @@ Please verify:
 1. Reducing the frequency of requests
 2. If using a provisioned model, check its throughput settings
 3. Contact AWS support to request a quota increase if needed
-
-
 
 `,
 			logLevel: "error",

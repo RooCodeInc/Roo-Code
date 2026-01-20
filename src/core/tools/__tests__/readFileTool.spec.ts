@@ -7,7 +7,7 @@ import { readLines } from "../../../integrations/misc/read-lines"
 import { extractTextFromFile } from "../../../integrations/misc/extract-text"
 import { parseSourceCodeDefinitionsForFile } from "../../../services/tree-sitter"
 import { isBinaryFile } from "isbinaryfile"
-import { ReadFileToolUse, ToolParamName, ToolResponse } from "../../../shared/tools"
+import { ReadFileToolUse, ToolResponse } from "../../../shared/tools"
 import { readFileTool } from "../ReadFileTool"
 
 vi.mock("path", async () => {
@@ -222,7 +222,7 @@ function createMockCline(): any {
 		presentAssistantMessage: vi.fn(),
 		handleError: vi.fn().mockResolvedValue(undefined),
 		pushToolResult: vi.fn(),
-		removeClosingTag: vi.fn((tag, content) => content),
+		// Tool calling is native-only; tests should not depend on legacy tag-stripping helpers.
 		fileContextTracker: {
 			trackFileContext: vi.fn().mockResolvedValue(undefined),
 		},
@@ -351,19 +351,30 @@ describe("read_file tool with maxReadFileLine setting", () => {
 		// Reset the spy before each test
 		addLineNumbersMock.mockClear()
 
-		// Format args string based on params
-		let argsContent = `<file><path>${options.path || testFilePath}</path>`
-		if (options.start_line && options.end_line) {
-			argsContent += `<line_range>${options.start_line}-${options.end_line}</line_range>`
-		}
-		argsContent += `</file>`
+		const lineRanges =
+			options.start_line && options.end_line
+				? [
+						{
+							start: Number(options.start_line),
+							end: Number(options.end_line),
+						},
+					]
+				: []
 
 		// Create a tool use object
 		const toolUse: ReadFileToolUse = {
 			type: "tool_use",
 			name: "read_file",
-			params: { args: argsContent, ...params },
+			params: { ...params },
 			partial: false,
+			nativeArgs: {
+				files: [
+					{
+						path: options.path || testFilePath,
+						lineRanges,
+					},
+				],
+			},
 		}
 
 		await readFileTool.handle(mockCline, toolUse, {
@@ -372,8 +383,6 @@ describe("read_file tool with maxReadFileLine setting", () => {
 			pushToolResult: (result: ToolResponse) => {
 				toolResult = result
 			},
-			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
-			toolProtocol: "xml",
 		})
 
 		return toolResult
@@ -588,7 +597,7 @@ describe("read_file tool with maxReadFileLine setting", () => {
 })
 
 describe("read_file tool output structure", () => {
-	// Test basic XML structure
+	// Test basic native structure
 	const testFilePath = "test/file.txt"
 	const absoluteFilePath = "/test/file.txt"
 	const fileContent = "Line 1\nLine 2\nLine 3\nLine 4\nLine 5"
@@ -655,14 +664,12 @@ describe("read_file tool output structure", () => {
 	})
 
 	async function executeReadFileTool(
-		params: {
-			args?: string
-		} = {},
 		options: {
 			totalLines?: number
 			maxReadFileLine?: number
 			isBinary?: boolean
 			validateAccess?: boolean
+			filePath?: string
 		} = {},
 	): Promise<ToolResponse | undefined> {
 		// Configure mocks based on test scenario
@@ -675,15 +682,17 @@ describe("read_file tool output structure", () => {
 		mockedCountFileLines.mockResolvedValue(totalLines)
 		mockedIsBinaryFile.mockResolvedValue(isBinary)
 		mockCline.rooIgnoreController.validateAccess = vi.fn().mockReturnValue(validateAccess)
-
-		let argsContent = `<file><path>${testFilePath}</path></file>`
+		const filePath = options.filePath ?? testFilePath
 
 		// Create a tool use object
 		const toolUse: ReadFileToolUse = {
 			type: "tool_use",
 			name: "read_file",
-			params: { args: argsContent, ...params },
+			params: {},
 			partial: false,
+			nativeArgs: {
+				files: [{ path: filePath, lineRanges: [] }],
+			},
 		}
 
 		// Execute the tool
@@ -693,8 +702,6 @@ describe("read_file tool output structure", () => {
 			pushToolResult: (result: ToolResponse) => {
 				toolResult = result
 			},
-			removeClosingTag: (param: ToolParamName, content?: string) => content ?? "",
-			toolProtocol: "xml",
 		})
 
 		return toolResult
@@ -730,7 +737,7 @@ describe("read_file tool output structure", () => {
 			// Setup
 			mockInputContent = fileContent
 			// Execute
-			const result = await executeReadFileTool({}, { maxReadFileLine: -1 })
+			const result = await executeReadFileTool({ maxReadFileLine: -1 })
 
 			// Verify using regex to check native structure
 			const nativeStructureRegex = new RegExp(`^File: ${testFilePath}\\nLines 1-5:\\n.*$`, "s")
@@ -756,7 +763,7 @@ describe("read_file tool output structure", () => {
 			}) // Allow up to 20MB per image and total size
 
 			// Execute
-			const result = await executeReadFileTool({}, { totalLines: 0 })
+			const result = await executeReadFileTool({ totalLines: 0 })
 
 			// Verify native format for empty file
 			expect(result).toBe(`File: ${testFilePath}\nNote: File is empty`)
@@ -785,15 +792,14 @@ describe("read_file tool output structure", () => {
 				// Ensure image support is enabled before calling the tool
 				setImageSupport(mockCline, true)
 
-				// Create args content for multiple files
-				const filesXml = imagePaths.map((path) => `<file><path>${path}</path></file>`).join("")
-				const argsContent = filesXml
-
 				const toolUse: ReadFileToolUse = {
 					type: "tool_use",
 					name: "read_file",
-					params: { args: argsContent },
+					params: {},
 					partial: false,
+					nativeArgs: {
+						files: imagePaths.map((p) => ({ path: p, lineRanges: [] })),
+					},
 				}
 
 				let localResult: ToolResponse | undefined
@@ -803,8 +809,6 @@ describe("read_file tool output structure", () => {
 					pushToolResult: (result: ToolResponse) => {
 						localResult = result
 					},
-					removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
-					toolProtocol: "xml",
 				})
 				// In multi-image scenarios, the result is pushed to pushToolResult, not returned directly.
 				// We need to check the mock's calls to get the result.
@@ -845,7 +849,6 @@ describe("read_file tool output structure", () => {
 				mockCline.presentAssistantMessage = vi.fn()
 				mockCline.handleError = vi.fn().mockResolvedValue(undefined)
 				mockCline.pushToolResult = vi.fn()
-				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
 				}
@@ -918,7 +921,6 @@ describe("read_file tool output structure", () => {
 				mockCline.presentAssistantMessage = vi.fn()
 				mockCline.handleError = vi.fn().mockResolvedValue(undefined)
 				mockCline.pushToolResult = vi.fn()
-				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
 				}
@@ -1004,7 +1006,6 @@ describe("read_file tool output structure", () => {
 				mockCline.presentAssistantMessage = vi.fn()
 				mockCline.handleError = vi.fn().mockResolvedValue(undefined)
 				mockCline.pushToolResult = vi.fn()
-				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
 				}
@@ -1077,7 +1078,6 @@ describe("read_file tool output structure", () => {
 				mockCline.presentAssistantMessage = vi.fn()
 				mockCline.handleError = vi.fn().mockResolvedValue(undefined)
 				mockCline.pushToolResult = vi.fn()
-				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
 				}
@@ -1202,7 +1202,6 @@ describe("read_file tool output structure", () => {
 				mockCline.presentAssistantMessage = vi.fn()
 				mockCline.handleError = vi.fn().mockResolvedValue(undefined)
 				mockCline.pushToolResult = vi.fn()
-				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
 				}
@@ -1249,7 +1248,6 @@ describe("read_file tool output structure", () => {
 				mockCline.presentAssistantMessage = vi.fn()
 				mockCline.handleError = vi.fn().mockResolvedValue(undefined)
 				mockCline.pushToolResult = vi.fn()
-				mockCline.removeClosingTag = vi.fn((tag, content) => content)
 				mockCline.fileContextTracker = {
 					trackFileContext: vi.fn().mockResolvedValue(undefined),
 				}
@@ -1415,6 +1413,9 @@ describe("read_file tool output structure", () => {
 				name: "read_file",
 				params: {},
 				partial: false,
+				nativeArgs: {
+					files: [],
+				},
 			}
 
 			// Execute the tool
@@ -1424,8 +1425,6 @@ describe("read_file tool output structure", () => {
 				pushToolResult: (result: ToolResponse) => {
 					toolResult = result
 				},
-				removeClosingTag: (param: ToolParamName, content?: string) => content ?? "",
-				toolProtocol: "xml",
 			})
 
 			// Verify - native format for error
@@ -1434,7 +1433,7 @@ describe("read_file tool output structure", () => {
 
 		it("should include error for RooIgnore error", async () => {
 			// Execute - skip addLineNumbers check as it returns early with an error
-			const result = await executeReadFileTool({}, { validateAccess: false })
+			const result = await executeReadFileTool({ validateAccess: false })
 
 			// Verify - native format for error
 			expect(result).toBe(
@@ -1460,7 +1459,7 @@ describe("read_file tool output structure", () => {
 			mockedIsBinaryFile.mockResolvedValue(false)
 
 			// Execute
-			const result = await executeReadFileTool({ args: `<file><path>${dirPath}</path></file>` })
+			const result = await executeReadFileTool({ filePath: dirPath })
 
 			// Verify - native format for error
 			expect(result).toContain(`File: ${dirPath}`)
@@ -1530,12 +1529,14 @@ describe("read_file tool with image support", () => {
 	})
 
 	async function executeReadImageTool(imagePath: string = testImagePath): Promise<ToolResponse | undefined> {
-		const argsContent = `<file><path>${imagePath}</path></file>`
 		const toolUse: ReadFileToolUse = {
 			type: "tool_use",
 			name: "read_file",
-			params: { args: argsContent },
+			params: {},
 			partial: false,
+			nativeArgs: {
+				files: [{ path: imagePath, lineRanges: [] }],
+			},
 		}
 
 		// Debug: Check if mock is working
@@ -1548,8 +1549,6 @@ describe("read_file tool with image support", () => {
 			pushToolResult: (result: ToolResponse) => {
 				toolResult = result
 			},
-			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
-			toolProtocol: "xml",
 		})
 
 		console.log("Result type:", Array.isArray(toolResult) ? "array" : typeof toolResult)
@@ -1710,12 +1709,14 @@ describe("read_file tool with image support", () => {
 			mockedFsReadFile.mockRejectedValue(new Error("Failed to read image"))
 
 			// Execute
-			const argsContent = `<file><path>${testImagePath}</path></file>`
 			const toolUse: ReadFileToolUse = {
 				type: "tool_use",
 				name: "read_file",
-				params: { args: argsContent },
+				params: {},
 				partial: false,
+				nativeArgs: {
+					files: [{ path: testImagePath, lineRanges: [] }],
+				},
 			}
 
 			await readFileTool.handle(localMockCline, toolUse, {
@@ -1724,8 +1725,6 @@ describe("read_file tool with image support", () => {
 				pushToolResult: (result: ToolResponse) => {
 					toolResult = result
 				},
-				removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
-				toolProtocol: "xml",
 			})
 
 			// Verify error handling - native format
@@ -1871,15 +1870,14 @@ describe("read_file tool concurrent file reads limit", () => {
 			maxTotalImageSize: 20,
 		})
 
-		// Create args with the specified number of files
-		const files = Array.from({ length: fileCount }, (_, i) => `<file><path>file${i + 1}.txt</path></file>`)
-		const argsContent = files.join("")
-
 		const toolUse: ReadFileToolUse = {
 			type: "tool_use",
 			name: "read_file",
-			params: { args: argsContent },
+			params: {},
 			partial: false,
+			nativeArgs: {
+				files: Array.from({ length: fileCount }, (_, i) => ({ path: `file${i + 1}.txt`, lineRanges: [] })),
+			},
 		}
 
 		// Configure mocks for successful file reads
@@ -1896,8 +1894,6 @@ describe("read_file tool concurrent file reads limit", () => {
 			pushToolResult: (result: ToolResponse) => {
 				toolResult = result
 			},
-			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
-			toolProtocol: "xml",
 		})
 
 		return toolResult
@@ -1978,15 +1974,14 @@ describe("read_file tool concurrent file reads limit", () => {
 			maxTotalImageSize: 20,
 		})
 
-		// Create args with 6 files
-		const files = Array.from({ length: 6 }, (_, i) => `<file><path>file${i + 1}.txt</path></file>`)
-		const argsContent = files.join("")
-
 		const toolUse: ReadFileToolUse = {
 			type: "tool_use",
 			name: "read_file",
-			params: { args: argsContent },
+			params: {},
 			partial: false,
+			nativeArgs: {
+				files: Array.from({ length: 6 }, (_, i) => ({ path: `file${i + 1}.txt`, lineRanges: [] })),
+			},
 		}
 
 		mockReadFileWithTokenBudget.mockResolvedValue({
@@ -2002,8 +1997,6 @@ describe("read_file tool concurrent file reads limit", () => {
 			pushToolResult: (result: ToolResponse) => {
 				toolResult = result
 			},
-			removeClosingTag: (_: ToolParamName, content?: string) => content ?? "",
-			toolProtocol: "xml",
 		})
 
 		// Should use default limit of 5 and reject 6 files

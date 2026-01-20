@@ -325,9 +325,9 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
-		// For native tool protocol, control parallel tool calls
-		if (metadata?.toolProtocol === "native") {
-			body.parallel_tool_calls = metadata.parallelToolCalls ?? false
+		// Tool calling is native-only. If the caller sets parallelToolCalls, pass it through.
+		if (metadata?.parallelToolCalls !== undefined) {
+			body.parallel_tool_calls = metadata.parallelToolCalls
 		}
 
 		return body

@@ -210,7 +210,7 @@ describe("getChutesModels", () => {
 		const models = await getChutesModels("test-api-key")
 
 		expect(models["test/no-tools-model"].supportsNativeTools).toBe(false)
-		expect(models["test/no-tools-model"].defaultToolProtocol).toBeUndefined()
+		// Tool calling is native-only.
 	})
 
 	it("should skip empty objects in API response and still process valid models", async () => {

@@ -6,15 +6,9 @@ Description: Request to list files and directories within the specified director
 Parameters:
 - path: (required) The path of the directory to list contents for (relative to the current workspace directory ${args.cwd})
 - recursive: (optional) Whether to list files recursively. Use true for recursive listing, false or omit for top-level only.
-Usage:
-<list_files>
-<path>Directory path here</path>
-<recursive>true or false (optional)</recursive>
-</list_files>
+Usage (native tool calling):
+Call the tool with a JSON object containing the parameters.
 
-Example: Requesting to list all files in the current directory
-<list_files>
-<path>.</path>
-<recursive>false</recursive>
-</list_files>`
+Example:
+{ "path": ".", "recursive": false }`
 }

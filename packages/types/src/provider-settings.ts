@@ -185,9 +185,6 @@ const baseProviderSettingsSchema = z.object({
 
 	// Model verbosity.
 	verbosity: verbosityLevelsSchema.optional(),
-
-	// Tool protocol override for this profile.
-	toolProtocol: z.enum(["xml", "native"]).optional(),
 })
 
 // Several of the providers share common model config properties.

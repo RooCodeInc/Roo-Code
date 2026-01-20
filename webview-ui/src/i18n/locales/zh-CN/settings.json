@@ -768,14 +768,6 @@
 	"advancedSettings": {
 		"title": "高级设置"
 	},
-	"toolProtocol": {
-		"label": "工具调用协议",
-		"description": "选择 Roo 如何与 API 通信。原生使用提供商的函数调用 API，而 XML 使用 XML 格式的工具定义。",
-		"default": "默认",
-		"xml": "XML",
-		"native": "原生",
-		"currentDefault": "默认: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "启用diff更新",

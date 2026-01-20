@@ -147,10 +147,7 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 			// Convert OpenAI tools to Anthropic format if provided and protocol is native
 			// Exclude tools when tool_choice is "none" since that means "don't use tools"
 			const shouldIncludeNativeTools =
-				metadata?.tools &&
-				metadata.tools.length > 0 &&
-				metadata?.toolProtocol !== "xml" &&
-				metadata?.tool_choice !== "none"
+				metadata?.tools && metadata.tools.length > 0 && metadata?.tool_choice !== "none"
 
 			const anthropicTools = shouldIncludeNativeTools ? convertOpenAIToolsToAnthropic(metadata.tools!) : undefined
 

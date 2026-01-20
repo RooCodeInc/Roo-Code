@@ -67,7 +67,7 @@ describe("convertToBedrockConverseMessages", () => {
 		}
 	})
 
-	it("converts tool use messages correctly (default XML format)", () => {
+	it("converts tool use messages correctly (native tools format; default)", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
@@ -84,7 +84,6 @@ describe("convertToBedrockConverseMessages", () => {
 			},
 		]
 
-		// Default behavior (useNativeTools: false) converts tool_use to XML text format
 		const result = convertToBedrockConverseMessages(messages)
 
 		if (!result[0] || !result[0].content) {
@@ -93,17 +92,19 @@ describe("convertToBedrockConverseMessages", () => {
 		}
 
 		expect(result[0].role).toBe("assistant")
-		const textBlock = result[0].content[0] as ContentBlock
-		if ("text" in textBlock) {
-			expect(textBlock.text).toContain("<tool_use>")
-			expect(textBlock.text).toContain("<tool_name>read_file</tool_name>")
-			expect(textBlock.text).toContain("test.txt")
+		const toolBlock = result[0].content[0] as ContentBlock
+		if ("toolUse" in toolBlock && toolBlock.toolUse) {
+			expect(toolBlock.toolUse).toEqual({
+				toolUseId: "test-id",
+				name: "read_file",
+				input: { path: "test.txt" },
+			})
 		} else {
-			expect.fail("Expected text block with XML content not found")
+			expect.fail("Expected tool use block not found")
 		}
 	})
 
-	it("converts tool use messages correctly (native tools format)", () => {
+	it("converts tool use messages correctly when useNativeTools=true (native tools format)", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
@@ -141,7 +142,7 @@ describe("convertToBedrockConverseMessages", () => {
 		}
 	})
 
-	it("converts tool result messages to XML text format (default, useNativeTools: false)", () => {
+	it("converts tool result messages to native format (default)", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
@@ -155,8 +156,6 @@ describe("convertToBedrockConverseMessages", () => {
 			},
 		]
 
-		// Default behavior (useNativeTools: false) converts tool_result to XML text format
-		// This fixes the Bedrock error "toolConfig field must be defined when using toolUse and toolResult content blocks"
 		const result = convertToBedrockConverseMessages(messages)
 
 		if (!result[0] || !result[0].content) {
@@ -165,14 +164,16 @@ describe("convertToBedrockConverseMessages", () => {
 		}
 
 		expect(result[0].role).toBe("user")
-		const textBlock = result[0].content[0] as ContentBlock
-		if ("text" in textBlock) {
-			expect(textBlock.text).toContain("<tool_result>")
-			expect(textBlock.text).toContain("<tool_use_id>test-id</tool_use_id>")
-			expect(textBlock.text).toContain("File contents here")
-			expect(textBlock.text).toContain("</tool_result>")
+		const resultBlock = result[0].content[0] as ContentBlock
+		if ("toolResult" in resultBlock && resultBlock.toolResult) {
+			const expectedContent: ToolResultContentBlock[] = [{ text: "File contents here" }]
+			expect(resultBlock.toolResult).toEqual({
+				toolUseId: "test-id",
+				content: expectedContent,
+				status: "success",
+			})
 		} else {
-			expect.fail("Expected text block with XML content not found")
+			expect.fail("Expected tool result block not found")
 		}
 	})
 
@@ -212,7 +213,7 @@ describe("convertToBedrockConverseMessages", () => {
 		}
 	})
 
-	it("converts tool result messages with string content to XML text format (default)", () => {
+	it("converts tool result messages with string content to native format (default)", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "user",
@@ -234,14 +235,15 @@ describe("convertToBedrockConverseMessages", () => {
 		}
 
 		expect(result[0].role).toBe("user")
-		const textBlock = result[0].content[0] as ContentBlock
-		if ("text" in textBlock) {
-			expect(textBlock.text).toContain("<tool_result>")
-			expect(textBlock.text).toContain("<tool_use_id>test-id</tool_use_id>")
-			expect(textBlock.text).toContain("File: test.txt")
-			expect(textBlock.text).toContain("Hello World")
+		const resultBlock = result[0].content[0] as ContentBlock
+		if ("toolResult" in resultBlock && resultBlock.toolResult) {
+			expect(resultBlock.toolResult).toEqual({
+				toolUseId: "test-id",
+				content: [{ text: "File: test.txt\nLines 1-5:\nHello World" }],
+				status: "success",
+			})
 		} else {
-			expect.fail("Expected text block with XML content not found")
+			expect.fail("Expected tool result block not found")
 		}
 	})
 
@@ -279,9 +281,7 @@ describe("convertToBedrockConverseMessages", () => {
 		}
 	})
 
-	it("converts both tool_use and tool_result consistently when native tools disabled", () => {
-		// This test ensures tool_use AND tool_result are both converted to XML text
-		// when useNativeTools is false, preventing Bedrock toolConfig errors
+	it("keeps both tool_use and tool_result in native format by default", () => {
 		const messages: Anthropic.Messages.MessageParam[] = [
 			{
 				role: "assistant",
@@ -306,27 +306,16 @@ describe("convertToBedrockConverseMessages", () => {
 			},
 		]
 
-		const result = convertToBedrockConverseMessages(messages) // default useNativeTools: false
+		const result = convertToBedrockConverseMessages(messages)
 
-		// Both should be text blocks, not native toolUse/toolResult
+		// Both should be native toolUse/toolResult blocks
 		const assistantContent = result[0]?.content?.[0] as ContentBlock
 		const userContent = result[1]?.content?.[0] as ContentBlock
 
-		// tool_use should be XML text
-		expect("text" in assistantContent).toBe(true)
-		if ("text" in assistantContent) {
-			expect(assistantContent.text).toContain("<tool_use>")
-		}
-
-		// tool_result should also be XML text (this is what the fix addresses)
-		expect("text" in userContent).toBe(true)
-		if ("text" in userContent) {
-			expect(userContent.text).toContain("<tool_result>")
-		}
-
-		// Neither should have native format
-		expect("toolUse" in assistantContent).toBe(false)
-		expect("toolResult" in userContent).toBe(false)
+		expect("toolUse" in assistantContent).toBe(true)
+		expect("toolResult" in userContent).toBe(true)
+		expect("text" in assistantContent).toBe(false)
+		expect("text" in userContent).toBe(false)
 	})
 
 	it("handles text content correctly", () => {

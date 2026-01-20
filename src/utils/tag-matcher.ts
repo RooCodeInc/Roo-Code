@@ -1,10 +1,17 @@
-export interface XmlMatcherResult {
+export interface TagMatcherResult {
 	matched: boolean
 	data: string
 }
-export class XmlMatcher<Result = XmlMatcherResult> {
+
+/**
+ * Streaming matcher for lightweight tag-delimited regions.
+ *
+ * Used to separate content inside `<tag>...</tag>` from surrounding text.
+ * This is used for reasoning tags like `<think>...</think>` in provider streams.
+ */
+export class TagMatcher<Result = TagMatcherResult> {
 	index = 0
-	chunks: XmlMatcherResult[] = []
+	chunks: TagMatcherResult[] = []
 	cached: string[] = []
 	matched: boolean = false
 	state: "TEXT" | "TAG_OPEN" | "TAG_CLOSE" = "TEXT"
@@ -12,7 +19,7 @@ export class XmlMatcher<Result = XmlMatcherResult> {
 	pointer = 0
 	constructor(
 		readonly tagName: string,
-		readonly transform?: (chunks: XmlMatcherResult) => Result,
+		readonly transform?: (chunks: TagMatcherResult) => Result,
 		readonly position = 0,
 	) {}
 	private collect() {

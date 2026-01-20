@@ -112,9 +112,7 @@ __setMockImplementation(
 		}
 
 		const joinedSections = sections.join("\n\n")
-		const effectiveProtocol = options?.settings?.toolProtocol || "xml"
-		const skipXmlReferences = effectiveProtocol === "native"
-		const toolUseRef = skipXmlReferences ? "." : " without interfering with the TOOL USE guidelines."
+		const toolUseRef = "."
 		return joinedSections
 			? `\n====\n\nUSER'S CUSTOM INSTRUCTIONS\n\nThe following additional instructions are provided by the user, and should be followed to the best of your ability${toolUseRef}\n\n${joinedSections}`
 			: ""
@@ -352,7 +350,9 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
-		expect(prompt).toContain("apply_diff")
+		// Native-only: tool catalog isn't embedded in the system prompt anymore.
+		expect(prompt).not.toContain("# Tools")
+		expect(prompt).not.toContain("apply_diff")
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-true.snap")
 	})
 
@@ -376,6 +376,8 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
+		// Native-only: tool catalog isn't embedded in the system prompt anymore.
+		expect(prompt).not.toContain("# Tools")
 		expect(prompt).not.toContain("apply_diff")
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-false.snap")
 	})
@@ -400,6 +402,8 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // partialReadsEnabled
 		)
 
+		// Native-only: tool catalog isn't embedded in the system prompt anymore.
+		expect(prompt).not.toContain("# Tools")
 		expect(prompt).not.toContain("apply_diff")
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-undefined.snap")
 	})
@@ -593,7 +597,6 @@ describe("SYSTEM_PROMPT", () => {
 			todoListEnabled: false,
 			useAgentRules: true,
 			newTaskRequireTodos: false,
-			toolProtocol: "xml" as const,
 		}
 
 		const prompt = await SYSTEM_PROMPT(
@@ -627,7 +630,6 @@ describe("SYSTEM_PROMPT", () => {
 			todoListEnabled: true,
 			useAgentRules: true,
 			newTaskRequireTodos: false,
-			toolProtocol: "xml" as const,
 		}
 
 		const prompt = await SYSTEM_PROMPT(
@@ -650,8 +652,9 @@ describe("SYSTEM_PROMPT", () => {
 			settings, // settings
 		)
 
+		// update_todo_list is still referenced by mode instructions, but tool catalogs are not embedded.
 		expect(prompt).toContain("update_todo_list")
-		expect(prompt).toContain("## update_todo_list")
+		expect(prompt).not.toContain("## update_todo_list")
 	})
 
 	it("should include update_todo_list tool when todoListEnabled is undefined", async () => {
@@ -660,7 +663,6 @@ describe("SYSTEM_PROMPT", () => {
 			todoListEnabled: true,
 			useAgentRules: true,
 			newTaskRequireTodos: false,
-			toolProtocol: "xml" as const,
 		}
 
 		const prompt = await SYSTEM_PROMPT(
@@ -683,89 +685,17 @@ describe("SYSTEM_PROMPT", () => {
 			settings, // settings
 		)
 
+		// update_todo_list is still referenced by mode instructions, but tool catalogs are not embedded.
 		expect(prompt).toContain("update_todo_list")
-		expect(prompt).toContain("## update_todo_list")
+		expect(prompt).not.toContain("## update_todo_list")
 	})
 
-	it("should include XML tool instructions when disableXmlToolInstructions is false (default)", async () => {
+	it("should include native tool instructions (native-only)", async () => {
 		const settings = {
 			maxConcurrentFileReads: 5,
 			todoListEnabled: true,
 			useAgentRules: true,
 			newTaskRequireTodos: false,
-			toolProtocol: "xml" as const, // explicitly xml
-		}
-
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false,
-			undefined, // mcpHub
-			undefined, // diffStrategy
-			undefined, // browserViewportSize
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes
-			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
-			experiments,
-			true, // enableMcpServerCreation
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-			settings, // settings
-		)
-
-		// Should contain XML guidance sections
-		expect(prompt).toContain("TOOL USE")
-		expect(prompt).toContain("XML-style tags")
-		expect(prompt).toContain("<actual_tool_name>")
-		expect(prompt).toContain("</actual_tool_name>")
-		expect(prompt).toContain("Tool Use Guidelines")
-		expect(prompt).toContain("# Tools")
-
-		// Should contain tool descriptions with XML examples
-		expect(prompt).toContain("## read_file")
-		expect(prompt).toContain("<read_file>")
-		expect(prompt).toContain("<path>")
-
-		// Should be byte-for-byte compatible with default behavior
-		const defaultPrompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false,
-			undefined,
-			undefined,
-			undefined,
-			defaultModeSlug,
-			undefined,
-			undefined,
-			undefined,
-			undefined,
-			experiments,
-			true,
-			undefined,
-			undefined,
-			undefined,
-			{
-				maxConcurrentFileReads: 5,
-				todoListEnabled: true,
-				useAgentRules: true,
-				newTaskRequireTodos: false,
-				toolProtocol: "xml" as const,
-			},
-		)
-
-		expect(prompt).toBe(defaultPrompt)
-	})
-
-	it("should include native tool instructions when toolProtocol is native", async () => {
-		const settings = {
-			maxConcurrentFileReads: 5,
-			todoListEnabled: true,
-			useAgentRules: true,
-			newTaskRequireTodos: false,
-			toolProtocol: "native" as const, // native protocol
 		}
 
 		const prompt = await SYSTEM_PROMPT(
@@ -794,17 +724,13 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).toContain("Do not include XML markup or examples")
 
 		// Should NOT contain XML-style tags or examples
-		expect(prompt).not.toContain("XML-style tags")
 		expect(prompt).not.toContain("<actual_tool_name>")
 		expect(prompt).not.toContain("</actual_tool_name>")
 
-		// Should contain Tool Use Guidelines section without format-specific guidance
+		// Should contain Tool Use Guidelines section
 		expect(prompt).toContain("Tool Use Guidelines")
-		// Should NOT contain any protocol-specific formatting instructions
-		expect(prompt).not.toContain("provider's native tool-calling mechanism")
-		expect(prompt).not.toContain("XML format specified for each tool")
 
-		// Should NOT contain # Tools catalog at all in native mode
+		// Should NOT contain a tool catalog / XML examples
 		expect(prompt).not.toContain("# Tools")
 		expect(prompt).not.toContain("## read_file")
 		expect(prompt).not.toContain("## execute_command")
@@ -819,43 +745,6 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).toContain("RULES")
 		expect(prompt).toContain("SYSTEM INFORMATION")
 		expect(prompt).toContain("OBJECTIVE")
-	})
-
-	it("should default to XML tool instructions when toolProtocol is undefined", async () => {
-		const settings = {
-			maxConcurrentFileReads: 5,
-			todoListEnabled: true,
-			useAgentRules: true,
-			newTaskRequireTodos: false,
-			toolProtocol: "xml" as const,
-		}
-
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false,
-			undefined, // mcpHub
-			undefined, // diffStrategy
-			undefined, // browserViewportSize
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes
-			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
-			experiments,
-			true, // enableMcpServerCreation
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-			settings, // settings
-		)
-
-		// Should contain XML guidance (default behavior)
-		expect(prompt).toContain("TOOL USE")
-		expect(prompt).toContain("XML-style tags")
-		expect(prompt).toContain("<actual_tool_name>")
-		expect(prompt).toContain("Tool Use Guidelines")
-		expect(prompt).toContain("# Tools")
 	})
 
 	afterAll(() => {

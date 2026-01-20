@@ -242,7 +242,7 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 	})
 
 	describe("createMessage with native tools", () => {
-		it("should include toolConfig when tools are provided with native protocol", async () => {
+		it("should include toolConfig when tools are provided", async () => {
 			// Override model info to support native tools
 			const modelInfo = handler.getModel().info
 			;(modelInfo as any).supportsNativeTools = true
@@ -265,7 +265,6 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
 				tools: testTools,
-				toolProtocol: "native",
 			}
 
 			const generator = handlerWithNativeTools.createMessage(
@@ -285,7 +284,7 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			expect(commandArg.toolConfig.toolChoice).toEqual({ auto: {} })
 		})
 
-		it("should not include toolConfig when toolProtocol is xml", async () => {
+		it("should not include toolConfig when no tools are provided", async () => {
 			const handlerWithNativeTools = new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
@@ -303,8 +302,7 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
-				tools: testTools,
-				toolProtocol: "xml", // XML protocol should not use native tools
+				// No tools
 			}
 
 			const generator = handlerWithNativeTools.createMessage(
@@ -340,7 +338,6 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
 				tools: testTools,
-				toolProtocol: "native",
 				tool_choice: "none", // Explicitly disable tool use
 			}
 
@@ -377,7 +374,6 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
 				tools: testTools,
-				toolProtocol: "native",
 			}
 
 			const generator = handlerWithNativeTools.createMessage(

@@ -250,8 +250,7 @@ export async function summarizeConversation(
 	// Always preserve the first message (which may contain slash command content)
 	const firstMessage = messages[0]
 
-	// Get keepMessages and any tool_use/reasoning blocks that need to be preserved for tool_result pairing
-	// Only preserve these blocks when using native tools protocol (XML protocol doesn't need them)
+	// Get keepMessages and any tool_use/reasoning blocks that need to be preserved for tool_result pairing.
 	const { keepMessages, toolUseBlocksToPreserve, reasoningBlocksToPreserve } = useNativeTools
 		? getKeepMessagesWithToolBlocks(messages, N_MESSAGES_TO_KEEP)
 		: {

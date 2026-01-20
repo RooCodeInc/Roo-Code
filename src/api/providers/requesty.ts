@@ -6,12 +6,10 @@ import {
 	type ModelRecord,
 	requestyDefaultModelId,
 	requestyDefaultModelInfo,
-	TOOL_PROTOCOL,
 	NATIVE_TOOL_DEFAULTS,
 } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
-import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
@@ -149,10 +147,8 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			? (reasoning_effort as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming["reasoning_effort"])
 			: undefined
 
-		// Check if native tool protocol is enabled
-		// IMPORTANT: Use metadata.toolProtocol if provided (task's locked protocol) for consistency
-		const toolProtocol = resolveToolProtocol(this.options, info, metadata?.toolProtocol)
-		const useNativeTools = toolProtocol === TOOL_PROTOCOL.NATIVE
+		// Native-only tool calling: include tools whenever they are provided.
+		const useNativeTools = true
 
 		const completionParams: RequestyChatCompletionParamsStreaming = {
 			messages: openAiMessages,
@@ -164,8 +160,8 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			stream: true,
 			stream_options: { include_usage: true },
 			requesty: { trace_id: metadata?.taskId, extra: { mode: metadata?.mode } },
-			...(useNativeTools && metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(useNativeTools && metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
+			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
 		}
 
 		let stream

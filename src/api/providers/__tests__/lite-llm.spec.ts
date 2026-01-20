@@ -3,7 +3,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 
 import { LiteLLMHandler } from "../lite-llm"
 import { ApiHandlerOptions } from "../../../shared/api"
-import { litellmDefaultModelId, litellmDefaultModelInfo, TOOL_PROTOCOL } from "@roo-code/types"
+import { litellmDefaultModelId, litellmDefaultModelInfo } from "@roo-code/types"
 
 // Mock vscode first to avoid import errors
 vi.mock("vscode", () => ({}))
@@ -632,7 +632,7 @@ describe("LiteLLMHandler", () => {
 							function: { name: "read_file", description: "Read a file", parameters: {} },
 						},
 					],
-					toolProtocol: TOOL_PROTOCOL.NATIVE,
+					// Tool calling is native-only; legacy protocol fields are not supported.
 				}
 
 				const generator = handler.createMessage(systemPrompt, messages, metadata as any)
@@ -700,7 +700,7 @@ describe("LiteLLMHandler", () => {
 							function: { name: "read_file", description: "Read a file", parameters: {} },
 						},
 					],
-					toolProtocol: TOOL_PROTOCOL.NATIVE,
+					// Tool calling is native-only; legacy protocol fields are not supported.
 				}
 
 				const generator = handler.createMessage(systemPrompt, messages, metadata as any)

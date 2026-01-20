@@ -7,7 +7,7 @@ import { type ModelInfo, openAiModelInfoSaneDefaults, LMSTUDIO_DEFAULT_TEMPERATU
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
-import { XmlMatcher } from "../../utils/xml-matcher"
+import { TagMatcher } from "../../utils/tag-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
@@ -48,7 +48,7 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		]
 
 		// LM Studio always supports native tools (https://lmstudio.ai/docs/developer/core/tools)
-		const useNativeTools = metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
+		const useNativeTools = !!(metadata?.tools && metadata.tools.length > 0)
 
 		// -------------------------
 		// Track token usage
@@ -107,7 +107,7 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 				throw handleOpenAIError(error, this.providerName)
 			}
 
-			const matcher = new XmlMatcher(
+			const matcher = new TagMatcher(
 				"think",
 				(chunk) =>
 					({

@@ -768,14 +768,6 @@
 	"advancedSettings": {
 		"title": "Geavanceerde instellingen"
 	},
-	"toolProtocol": {
-		"label": "Tool Call Protocol",
-		"description": "Kies hoe Roo communiceert met de API. Native gebruikt de functie-aanroep API van de provider, terwijl XML gebruikmaakt van XML-geformatteerde tooldefinities.",
-		"default": "Standaard",
-		"xml": "XML",
-		"native": "Native",
-		"currentDefault": "Standaard: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Bewerken via diffs inschakelen",

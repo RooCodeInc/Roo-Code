@@ -768,14 +768,6 @@
 	"advancedSettings": {
 		"title": "Cài đặt nâng cao"
 	},
-	"toolProtocol": {
-		"label": "Giao thức gọi công cụ",
-		"description": "Chọn cách Roo giao tiếp với API. Native sử dụng API gọi hàm của nhà cung cấp, trong khi XML sử dụng định nghĩa công cụ định dạng XML.",
-		"default": "Mặc định",
-		"xml": "XML",
-		"native": "Native",
-		"currentDefault": "Mặc định: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Bật chỉnh sửa qua diff",

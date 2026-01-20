@@ -776,14 +776,6 @@
 	"advancedSettings": {
 		"title": "Advanced settings"
 	},
-	"toolProtocol": {
-		"label": "Tool Call Protocol",
-		"description": "Choose how Roo communicates with the API. Native uses the provider's function calling API, while XML uses XML-formatted tool definitions.",
-		"default": "Default",
-		"xml": "XML",
-		"native": "Native",
-		"currentDefault": "Default: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Enable editing through diffs",

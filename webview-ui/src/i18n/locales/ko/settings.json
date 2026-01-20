@@ -768,14 +768,6 @@
 	"advancedSettings": {
 		"title": "고급 설정"
 	},
-	"toolProtocol": {
-		"label": "도구 호출 프로토콜",
-		"description": "Roo가 API와 통신하는 방법을 선택합니다. 네이티브는 공급자의 함수 호출 API를 사용하고 XML은 XML 형식의 도구 정의를 사용합니다.",
-		"default": "기본값",
-		"xml": "XML",
-		"native": "네이티브",
-		"currentDefault": "기본값: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "diff를 통한 편집 활성화",

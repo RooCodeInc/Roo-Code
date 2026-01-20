@@ -101,7 +101,6 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					supportsPromptCache: true,
 					inputPrice: 0,
 					outputPrice: 0,
-					defaultToolProtocol: "native",
 				},
 				"minimax/minimax-m2:free": {
 					maxTokens: 32_768,
@@ -111,7 +110,6 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					supportsNativeTools: true,
 					inputPrice: 0.15,
 					outputPrice: 0.6,
-					defaultToolProtocol: "native",
 				},
 				"anthropic/claude-haiku-4.5": {
 					maxTokens: 8_192,
@@ -121,7 +119,6 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 					supportsNativeTools: true,
 					inputPrice: 0.8,
 					outputPrice: 4,
-					defaultToolProtocol: "native",
 				},
 			}
 		}
@@ -425,17 +422,6 @@ describe("RooHandler", () => {
 				// Verify the structure has required fields
 				expect(modelInfo.info.maxTokens).toBeDefined()
 				expect(modelInfo.info.contextWindow).toBeDefined()
-			}
-		})
-
-		it("should have defaultToolProtocol: native for all roo provider models", () => {
-			// Test that all models have defaultToolProtocol: native
-			const testModels = ["minimax/minimax-m2:free", "anthropic/claude-haiku-4.5", "xai/grok-code-fast-1"]
-			for (const modelId of testModels) {
-				const handlerWithModel = new RooHandler({ apiModelId: modelId })
-				const modelInfo = handlerWithModel.getModel()
-				expect(modelInfo.id).toBe(modelId)
-				expect((modelInfo.info as any).defaultToolProtocol).toBe("native")
 			}
 		})
 

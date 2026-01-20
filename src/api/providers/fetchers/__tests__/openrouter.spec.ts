@@ -30,7 +30,6 @@ describe("OpenRouter API", () => {
 				supportsReasoningEffort: false,
 				supportsNativeTools: true,
 				supportedParameters: ["max_tokens", "temperature", "reasoning", "include_reasoning"],
-				defaultToolProtocol: "native",
 			})
 
 			expect(models["anthropic/claude-3.7-sonnet:thinking"]).toEqual({
@@ -48,7 +47,6 @@ describe("OpenRouter API", () => {
 				supportsReasoningEffort: true,
 				supportsNativeTools: true,
 				supportedParameters: ["max_tokens", "temperature", "reasoning", "include_reasoning"],
-				defaultToolProtocol: "native",
 			})
 
 			expect(models["google/gemini-2.5-flash-preview-05-20"].maxTokens).toEqual(65535)
@@ -393,7 +391,7 @@ describe("OpenRouter API", () => {
 			expect(imageResult.maxTokens).toBe(64000)
 		})
 
-		it("sets defaultToolProtocol to native when model supports native tools", () => {
+		it("sets supportsNativeTools when model supports native tools", () => {
 			const mockModel = {
 				name: "Tools Model",
 				description: "Model with native tool support",
@@ -415,10 +413,9 @@ describe("OpenRouter API", () => {
 			})
 
 			expect(resultWithTools.supportsNativeTools).toBe(true)
-			expect(resultWithTools.defaultToolProtocol).toBe("native")
 		})
 
-		it("does not set defaultToolProtocol when model does not support native tools", () => {
+		it("does not set supportsNativeTools when model does not support native tools", () => {
 			const mockModel = {
 				name: "No Tools Model",
 				description: "Model without native tool support",
@@ -440,7 +437,7 @@ describe("OpenRouter API", () => {
 			})
 
 			expect(resultWithoutTools.supportsNativeTools).toBe(false)
-			expect(resultWithoutTools.defaultToolProtocol).toBeUndefined()
+			// Tool calling is native-only.
 		})
 	})
 })

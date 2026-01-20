@@ -112,8 +112,7 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		}
 
 		// Add tool support if provided - convert OpenAI format to Anthropic format
-		// Only include native tools when toolProtocol is not 'xml'
-		if (metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml") {
+		if (metadata?.tools && metadata.tools.length > 0) {
 			requestParams.tools = convertOpenAIToolsToAnthropic(metadata.tools)
 
 			// Only add tool_choice if tools are present

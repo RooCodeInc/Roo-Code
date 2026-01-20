@@ -6,7 +6,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { ApiStream } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
-import { XmlMatcher } from "../../utils/xml-matcher"
+import { TagMatcher } from "../../utils/tag-matcher"
 
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import { BaseProvider } from "./base-provider"
@@ -129,8 +129,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		const temperature = this.options.modelTemperature ?? CEREBRAS_DEFAULT_TEMPERATURE
 
 		// Check if we should use native tool calling
-		const useNativeTools =
-			supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
+		const useNativeTools = supportsNativeTools && !!(metadata?.tools && metadata.tools.length > 0)
 
 		// Convert Anthropic messages to OpenAI format (Cerebras is OpenAI-compatible)
 		const openaiMessages = convertToOpenAiMessages(messages)
@@ -197,8 +196,8 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 				throw new Error(t("common:errors.cerebras.noResponseBody"))
 			}
 
-			// Initialize XmlMatcher to parse <think>...</think> tags
-			const matcher = new XmlMatcher(
+			// Initialize TagMatcher to parse <think>...</think> tags
+			const matcher = new TagMatcher(
 				"think",
 				(chunk) =>
 					({
@@ -240,7 +239,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 								if (delta?.content) {
 									const content = delta.content
 
-									// Use XmlMatcher to parse <think>...</think> tags
+									// Use TagMatcher to parse <think>...</think> tags
 									for (const chunk of matcher.update(content)) {
 										yield chunk
 									}

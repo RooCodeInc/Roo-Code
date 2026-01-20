@@ -367,7 +367,6 @@ describe("UnboundHandler", () => {
 			const messageGenerator = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
 				tools: testTools,
-				toolProtocol: "native",
 			})
 			await messageGenerator.next()
 
@@ -405,7 +404,6 @@ describe("UnboundHandler", () => {
 			const messageGenerator = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
 				tools: testTools,
-				toolProtocol: "native",
 				tool_choice: "auto",
 			})
 			await messageGenerator.next()
@@ -422,7 +420,7 @@ describe("UnboundHandler", () => {
 			)
 		})
 
-		it("should not include tools when toolProtocol is xml", async () => {
+		it("should not include tools when no tools are provided", async () => {
 			mockWithResponse.mockResolvedValueOnce({
 				data: {
 					[Symbol.asyncIterator]: () => ({
@@ -435,8 +433,6 @@ describe("UnboundHandler", () => {
 
 			const messageGenerator = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
-				tools: testTools,
-				toolProtocol: "xml",
 			})
 			await messageGenerator.next()
 
@@ -499,7 +495,6 @@ describe("UnboundHandler", () => {
 			const stream = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
 				tools: testTools,
-				toolProtocol: "native",
 			})
 
 			const chunks = []
@@ -538,7 +533,6 @@ describe("UnboundHandler", () => {
 			const messageGenerator = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
 				tools: testTools,
-				toolProtocol: "native",
 				parallelToolCalls: true,
 			})
 			await messageGenerator.next()

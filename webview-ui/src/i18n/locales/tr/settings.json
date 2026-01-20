@@ -768,14 +768,6 @@
 	"advancedSettings": {
 		"title": "Gelişmiş ayarlar"
 	},
-	"toolProtocol": {
-		"label": "Araç Çağrı Protokolü",
-		"description": "Roo'nun API ile nasıl iletişim kuracağını seçin. Yerel, sağlayıcının işlev çağırma API'sini kullanırken, XML, XML biçimli araç tanımlarını kullanır.",
-		"default": "Varsayılan",
-		"xml": "XML",
-		"native": "Yerel",
-		"currentDefault": "Varsayılan: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Diff'ler aracılığıyla düzenlemeyi etkinleştir",

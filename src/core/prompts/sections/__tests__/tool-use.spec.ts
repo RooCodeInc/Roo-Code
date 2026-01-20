@@ -1,41 +1,24 @@
 import { getSharedToolUseSection } from "../tool-use"
-import { TOOL_PROTOCOL } from "@roo-code/types"
 
 describe("getSharedToolUseSection", () => {
-	describe("XML protocol", () => {
-		it("should include one tool per message requirement", () => {
-			const section = getSharedToolUseSection(TOOL_PROTOCOL.XML)
-
-			expect(section).toContain("You must use exactly one tool per message")
-			expect(section).toContain("every assistant message must include a tool call")
-		})
-
-		it("should include XML formatting instructions", () => {
-			const section = getSharedToolUseSection(TOOL_PROTOCOL.XML)
-
-			expect(section).toContain("XML-style tags")
-			expect(section).toContain("Always use the actual tool name as the XML tag name")
-		})
-	})
-
-	describe("native protocol", () => {
+	describe("native tool calling", () => {
 		it("should include one tool per message requirement when experiment is disabled", () => {
 			// No experiment flags passed (default: disabled)
-			const section = getSharedToolUseSection(TOOL_PROTOCOL.NATIVE)
+			const section = getSharedToolUseSection("native")
 
 			expect(section).toContain("You must use exactly one tool call per assistant response")
 			expect(section).toContain("Do not call zero tools or more than one tool")
 		})
 
 		it("should include one tool per message requirement when experiment is explicitly disabled", () => {
-			const section = getSharedToolUseSection(TOOL_PROTOCOL.NATIVE, { multipleNativeToolCalls: false })
+			const section = getSharedToolUseSection("native", { multipleNativeToolCalls: false })
 
 			expect(section).toContain("You must use exactly one tool call per assistant response")
 			expect(section).toContain("Do not call zero tools or more than one tool")
 		})
 
 		it("should NOT include one tool per message requirement when experiment is enabled", () => {
-			const section = getSharedToolUseSection(TOOL_PROTOCOL.NATIVE, { multipleNativeToolCalls: true })
+			const section = getSharedToolUseSection("native", { multipleNativeToolCalls: true })
 
 			expect(section).not.toContain("You must use exactly one tool per message")
 			expect(section).not.toContain("every assistant message must include a tool call")
@@ -44,26 +27,26 @@ describe("getSharedToolUseSection", () => {
 		})
 
 		it("should include native tool-calling instructions", () => {
-			const section = getSharedToolUseSection(TOOL_PROTOCOL.NATIVE)
+			const section = getSharedToolUseSection("native")
 
 			expect(section).toContain("provider-native tool-calling mechanism")
 			expect(section).toContain("Do not include XML markup or examples")
 		})
 
 		it("should NOT include XML formatting instructions", () => {
-			const section = getSharedToolUseSection(TOOL_PROTOCOL.NATIVE)
+			const section = getSharedToolUseSection("native")
 
-			expect(section).not.toContain("XML-style tags")
-			expect(section).not.toContain("Always use the actual tool name as the XML tag name")
+			expect(section).not.toContain("<actual_tool_name>")
+			expect(section).not.toContain("</actual_tool_name>")
 		})
 	})
 
-	describe("default protocol", () => {
-		it("should default to XML protocol when no protocol is specified", () => {
+	describe("default (native-only)", () => {
+		it("should default to native tool calling when no mode is specified", () => {
 			const section = getSharedToolUseSection()
-
-			expect(section).toContain("XML-style tags")
-			expect(section).toContain("You must use exactly one tool per message")
+			expect(section).toContain("provider-native tool-calling mechanism")
+			// No legacy XML-tag tool-calling remnants
+			expect(section).not.toContain("<actual_tool_name>")
 		})
 	})
 })

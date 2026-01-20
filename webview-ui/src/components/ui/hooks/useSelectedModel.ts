@@ -283,10 +283,9 @@ function getSelectedModel({
 		case "openai": {
 			const id = apiConfiguration.openAiModelId ?? ""
 			const customInfo = apiConfiguration?.openAiCustomModelInfo
-			// Only merge native tool call defaults, not prices or other model-specific info
+			// Only merge native tool call defaults.
 			const nativeToolDefaults = {
 				supportsNativeTools: openAiModelInfoSaneDefaults.supportsNativeTools,
-				defaultToolProtocol: openAiModelInfoSaneDefaults.defaultToolProtocol,
 			}
 			const info = customInfo ? { ...nativeToolDefaults, ...customInfo } : openAiModelInfoSaneDefaults
 			return { id, info }
@@ -310,10 +309,9 @@ function getSelectedModel({
 		case "lmstudio": {
 			const id = apiConfiguration.lmStudioModelId ?? ""
 			const modelInfo = lmStudioModels && lmStudioModels[apiConfiguration.lmStudioModelId!]
-			// Only merge native tool call defaults, not prices or other model-specific info
+			// Only merge native tool call defaults.
 			const nativeToolDefaults = {
 				supportsNativeTools: lMStudioDefaultModelInfo.supportsNativeTools,
-				defaultToolProtocol: lMStudioDefaultModelInfo.defaultToolProtocol,
 			}
 			const info = modelInfo ? { ...nativeToolDefaults, ...modelInfo } : undefined
 			return {

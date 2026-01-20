@@ -288,11 +288,9 @@ describe("MistralHandler", () => {
 			)
 		})
 
-		it("should not include tools when toolProtocol is xml", async () => {
+		it("should not include tools when no tools are provided", async () => {
 			const metadata: ApiHandlerCreateMessageMetadata = {
 				taskId: "test-task",
-				tools: mockTools,
-				toolProtocol: "xml",
 			}
 
 			const iterator = handler.createMessage(systemPrompt, messages, metadata)

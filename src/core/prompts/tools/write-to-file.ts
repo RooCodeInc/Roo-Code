@@ -14,32 +14,9 @@ Parameters:
 - path: (required) The path of the file to write to (relative to the current workspace directory ${args.cwd})
 - content: (required) The content to write to the file. ALWAYS provide the COMPLETE intended content of the file, without any truncation or omissions. You MUST include ALL parts of the file, even if they haven't been modified. Do NOT include line numbers in the content.
 
-Usage:
-<write_to_file>
-<path>File path here</path>
-<content>
-Your file content here
-</content>
-</write_to_file>
+Usage (native tool calling):
+Call the tool with a JSON object containing the parameters.
 
-Example: Writing a configuration file
-<write_to_file>
-<path>frontend-config.json</path>
-<content>
-{
-  "apiEndpoint": "https://api.example.com",
-  "theme": {
-    "primaryColor": "#007bff",
-    "secondaryColor": "#6c757d",
-    "fontFamily": "Arial, sans-serif"
-  },
-  "features": {
-    "darkMode": true,
-    "notifications": true,
-    "analytics": false
-  },
-  "version": "1.0.0"
-}
-</content>
-</write_to_file>`
+Example:
+{ "path": "frontend-config.json", "content": "{\n  \"version\": \"1.0.0\"\n}\n" }`
 }

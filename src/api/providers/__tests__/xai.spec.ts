@@ -371,7 +371,7 @@ describe("XAIHandler", () => {
 			)
 		})
 
-		it("should not include tools when toolProtocol is xml", async () => {
+		it("should not include tools when no tools are provided", async () => {
 			const handlerWithTools = new XAIHandler({ apiModelId: "grok-3" })
 
 			mockCreate.mockImplementationOnce(() => {
@@ -386,8 +386,6 @@ describe("XAIHandler", () => {
 
 			const messageGenerator = handlerWithTools.createMessage("test prompt", [], {
 				taskId: "test-task-id",
-				tools: testTools,
-				toolProtocol: "xml",
 			})
 			await messageGenerator.next()
 

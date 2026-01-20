@@ -387,7 +387,7 @@ describe("NativeOllamaHandler", () => {
 			)
 		})
 
-		it("should not include tools when toolProtocol is xml", async () => {
+		it("should not include tools when no tools are provided", async () => {
 			// Mock model with native tool support
 			mockGetOllamaModels.mockResolvedValue({
 				"llama3.2": {
@@ -412,21 +412,8 @@ describe("NativeOllamaHandler", () => {
 				yield { message: { content: "Response" } }
 			})
 
-			const tools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "get_weather",
-						description: "Get the weather",
-						parameters: { type: "object", properties: {} },
-					},
-				},
-			]
-
 			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }], {
 				taskId: "test",
-				tools,
-				toolProtocol: "xml",
 			})
 
 			// Consume the stream
@@ -434,7 +421,7 @@ describe("NativeOllamaHandler", () => {
 				// consume stream
 			}
 
-			// Verify tools were NOT passed (XML protocol forces XML format)
+			// Verify tools were NOT passed
 			expect(mockChat).toHaveBeenCalledWith(
 				expect.not.objectContaining({
 					tools: expect.anything(),

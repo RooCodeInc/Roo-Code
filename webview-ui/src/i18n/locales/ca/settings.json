@@ -767,14 +767,6 @@
 	"advancedSettings": {
 		"title": "Configuració avançada"
 	},
-	"toolProtocol": {
-		"label": "Protocol de crida d'eines",
-		"description": "Trieu com es comunica en Roo amb l'API. Natiu utilitza l'API de crida de funcions del proveïdor, mentre que XML utilitza definicions d'eines amb format XML.",
-		"default": "Per defecte",
-		"xml": "XML",
-		"native": "Natiu",
-		"currentDefault": "Per defecte: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Habilitar edició mitjançant diffs",

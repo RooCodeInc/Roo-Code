@@ -127,7 +127,7 @@ describe("QwenCodeHandler Native Tools", () => {
 			)
 		})
 
-		it("should not include tools when toolProtocol is xml", async () => {
+		it("should not include tools when no tools are provided", async () => {
 			mockCreate.mockImplementationOnce(() => ({
 				[Symbol.asyncIterator]: async function* () {
 					yield {
@@ -138,8 +138,6 @@ describe("QwenCodeHandler Native Tools", () => {
 
 			const stream = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
-				tools: testTools,
-				toolProtocol: "xml",
 			})
 			await stream.next()
 

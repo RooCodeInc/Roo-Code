@@ -1391,21 +1391,13 @@ export class ClineProvider
 		const prevConfig = task.apiConfiguration
 		const prevProvider = prevConfig?.apiProvider
 		const prevModelId = prevConfig ? getModelId(prevConfig) : undefined
-		const prevToolProtocol = prevConfig?.toolProtocol
 		const newProvider = providerSettings.apiProvider
 		const newModelId = getModelId(providerSettings)
-		const newToolProtocol = providerSettings.toolProtocol
 
-		const needsRebuild =
-			forceRebuild ||
-			prevProvider !== newProvider ||
-			prevModelId !== newModelId ||
-			prevToolProtocol !== newToolProtocol
+		const needsRebuild = forceRebuild || prevProvider !== newProvider || prevModelId !== newModelId
 
 		if (needsRebuild) {
 			// Use updateApiConfiguration which handles both API handler rebuild and parser sync.
-			// This is important when toolProtocol changes - the assistantMessageParser needs to be
-			// created/destroyed to match the new protocol (XML vs native).
 			// Note: updateApiConfiguration is declared async but has no actual async operations,
 			// so we can safely call it without awaiting.
 			task.updateApiConfiguration(providerSettings)
@@ -3121,7 +3113,7 @@ export class ClineProvider
 			)
 		}
 		// 2) Flush pending tool results to API history BEFORE disposing the parent.
-		//    This is critical for native tool protocol: when tools are called before new_task,
+		//    This is critical: when tools are called before new_task,
 		//    their tool_result blocks are in userMessageContent but not yet saved to API history.
 		//    If we don't flush them, the parent's API conversation will be incomplete and
 		//    cause 400 errors when resumed (missing tool_result for tool_use blocks).
@@ -3272,9 +3264,9 @@ export class ClineProvider
 			}
 		}
 
-		// The API expects: user → assistant (with tool_use) → user (with tool_result)
-		// We need to add a NEW user message with the tool_result AFTER the assistant's tool_use
-		// NOT add it to an existing user message
+		// Preferred: if the parent history contains the native tool_use for new_task,
+		// inject a matching tool_result for the Anthropic message contract:
+		// user → assistant (tool_use) → user (tool_result)
 		if (toolUseId) {
 			// Check if the last message is already a user message with a tool_result for this tool_use_id
 			// (in case this is a retry or the history was already updated)
@@ -3305,28 +3297,28 @@ export class ClineProvider
 					ts,
 				})
 			}
+
+			// Validate the newly injected tool_result against the preceding assistant message.
+			// This ensures the tool_result's tool_use_id matches a tool_use in the immediately
+			// preceding assistant message (Anthropic API requirement).
+			const lastMessage = parentApiMessages[parentApiMessages.length - 1]
+			if (lastMessage?.role === "user") {
+				const validatedMessage = validateAndFixToolResultIds(lastMessage, parentApiMessages.slice(0, -1))
+				parentApiMessages[parentApiMessages.length - 1] = validatedMessage
+			}
 		} else {
-			// Fallback for XML protocol or when toolUseId couldn't be found:
-			// Add a text block (not ideal but maintains backward compatibility)
+			// If there is no corresponding tool_use in the parent API history, we cannot emit a
+			// tool_result. Fall back to a plain user text note so the parent can still resume.
 			parentApiMessages.push({
 				role: "user",
 				content: [
 					{
-						type: "text",
+						type: "text" as const,
 						text: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
 					},
 				],
 				ts,
 			})
-		}
-
-		// Validate the newly injected tool_result against the preceding assistant message.
-		// This ensures the tool_result's tool_use_id matches a tool_use in the immediately
-		// preceding assistant message (Anthropic API requirement).
-		const lastMessage = parentApiMessages[parentApiMessages.length - 1]
-		if (lastMessage?.role === "user") {
-			const validatedMessage = validateAndFixToolResultIds(lastMessage, parentApiMessages.slice(0, -1))
-			parentApiMessages[parentApiMessages.length - 1] = validatedMessage
 		}
 
 		await saveApiMessages({ messages: parentApiMessages as any, taskId: parentTaskId, globalStoragePath })

@@ -110,8 +110,7 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 
 		// Check if model supports native tools and tools are provided with native protocol
 		const supportsNativeTools = info.supportsNativeTools ?? false
-		const useNativeTools =
-			supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && metadata?.toolProtocol !== "xml"
+		const useNativeTools = supportsNativeTools && !!(metadata?.tools && metadata.tools.length > 0)
 
 		const requestOptions: UnboundChatCompletionCreateParamsStreaming = {
 			model: modelId.split("/")[1],

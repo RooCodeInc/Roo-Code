@@ -348,9 +348,9 @@ export class NativeToolCallParser {
 		partial: boolean,
 		originalName?: string,
 	): ToolUse | null {
-		// Build legacy params for display
+		// Build stringified params for display/partial-progress UI.
 		// NOTE: For streaming partial updates, we MUST populate params even for complex types
-		// because tool.handlePartial() methods rely on params to show UI updates
+		// because tool.handlePartial() methods rely on params to show UI updates.
 		const params: Partial<Record<ToolParamName, string>> = {}
 
 		for (const [key, value] of Object.entries(partialArgs)) {
@@ -601,8 +601,8 @@ export class NativeToolCallParser {
 			// Parse the arguments JSON string
 			const args = toolCall.arguments === "" ? {} : JSON.parse(toolCall.arguments)
 
-			// Build legacy params object for backward compatibility with XML protocol and UI.
-			// Native execution path uses nativeArgs instead, which has proper typing.
+			// Build stringified params for display/logging.
+			// Tool execution MUST use nativeArgs (typed) and does not support legacy fallbacks.
 			const params: Partial<Record<ToolParamName, string>> = {}
 
 			for (const [key, value] of Object.entries(args)) {
@@ -625,14 +625,9 @@ export class NativeToolCallParser {
 				params[key as ToolParamName] = stringValue
 			}
 
-			// Build typed nativeArgs for tools that support it.
-			// This switch statement serves two purposes:
-			// 1. Validation: Ensures required parameters are present before constructing nativeArgs
-			// 2. Transformation: Converts raw JSON to properly typed structures
-			//
+			// Build typed nativeArgs for tool execution.
 			// Each case validates the minimum required parameters and constructs a properly typed
-			// nativeArgs object. If validation fails, nativeArgs remains undefined and the tool
-			// will fall back to legacy parameter parsing if supported.
+			// nativeArgs object. If validation fails, we treat the tool call as invalid and fail fast.
 			let nativeArgs: NativeArgsFor<TName> | undefined = undefined
 
 			switch (resolvedName) {
@@ -833,6 +828,16 @@ export class NativeToolCallParser {
 					break
 			}
 
+			// Native-only: core tools must always have typed nativeArgs.
+			// If we couldn't construct it, the model produced an invalid tool call payload.
+			if (!nativeArgs && !customToolRegistry.has(resolvedName)) {
+				throw new Error(
+					`[NativeToolCallParser] Invalid arguments for tool '${resolvedName}'. ` +
+						`Native tool calls require a valid JSON payload matching the tool schema. ` +
+						`Received: ${JSON.stringify(args)}`,
+				)
+			}
+
 			const result: ToolUse<TName> = {
 				type: "tool_use" as const,
 				name: resolvedName,
@@ -861,10 +866,6 @@ export class NativeToolCallParser {
 	 * Parse dynamic MCP tools (named mcp--serverName--toolName).
 	 * These are generated dynamically by getMcpServerTools() and are returned
 	 * as McpToolUse objects that preserve the original tool name.
-	 *
-	 * In native mode, MCP tools are NOT converted to use_mcp_tool - they keep
-	 * their original name so it appears correctly in API conversation history.
-	 * The use_mcp_tool wrapper is only used in XML mode.
 	 */
 	public static parseDynamicMcpTool(toolCall: { id: string; name: string; arguments: string }): McpToolUse | null {
 		try {

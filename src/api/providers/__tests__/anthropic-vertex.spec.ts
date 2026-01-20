@@ -1200,13 +1200,11 @@ describe("VertexHandler", () => {
 			)
 		})
 
-		it("should include tools even when toolProtocol is set to xml (user preference now ignored)", async () => {
-			// XML protocol deprecation: user preference is now ignored when model supports native tools
+		it("should include tools when tools are provided", async () => {
 			handler = new AnthropicVertexHandler({
 				apiModelId: "claude-3-5-sonnet-v2@20241022",
 				vertexProjectId: "test-project",
 				vertexRegion: "us-central1",
-				toolProtocol: "xml",
 			})
 
 			const mockStream = [

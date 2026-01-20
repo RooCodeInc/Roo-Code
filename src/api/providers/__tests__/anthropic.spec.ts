@@ -420,8 +420,7 @@ describe("AnthropicHandler", () => {
 			},
 		]
 
-		it("should include tools in request by default (native is default)", async () => {
-			// Handler uses native protocol by default via model's defaultToolProtocol
+		it("should include tools in request when tools are provided", async () => {
 			const stream = handler.createMessage(systemPrompt, messages, {
 				taskId: "test-task",
 				tools: mockTools,
@@ -451,11 +450,9 @@ describe("AnthropicHandler", () => {
 			)
 		})
 
-		it("should include tools even when toolProtocol is set to xml (user preference now ignored)", async () => {
-			// XML protocol deprecation: user preference is now ignored when model supports native tools
+		it("should include tools when tools are provided", async () => {
 			const xmlHandler = new AnthropicHandler({
 				...mockOptions,
-				toolProtocol: "xml",
 			})
 
 			const stream = xmlHandler.createMessage(systemPrompt, messages, {

@@ -39,7 +39,6 @@ export async function getRequestyModels(baseUrl?: string, apiKey?: string): Prom
 				supportsReasoningBudget: reasoningBudget,
 				supportsReasoningEffort: reasoningEffort,
 				supportsNativeTools: true,
-				defaultToolProtocol: "native",
 				inputPrice: parseApiPrice(rawModel.input_price),
 				outputPrice: parseApiPrice(rawModel.output_price),
 				description: rawModel.description,

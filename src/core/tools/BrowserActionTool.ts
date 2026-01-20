@@ -3,7 +3,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { BrowserAction, BrowserActionResult, browserActions, ClineSayBrowserAction } from "@roo-code/types"
 
 import { Task } from "../task/Task"
-import { ToolUse, AskApproval, HandleError, PushToolResult, RemoveClosingTag } from "../../shared/tools"
+import { ToolUse, AskApproval, HandleError, PushToolResult } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 
 import { scaleCoordinate } from "../../shared/browserUtils"
@@ -14,7 +14,6 @@ export async function browserActionTool(
 	askApproval: AskApproval,
 	handleError: HandleError,
 	pushToolResult: PushToolResult,
-	removeClosingTag: RemoveClosingTag,
 ) {
 	const action: BrowserAction | undefined = block.params.action as BrowserAction
 	const url: string | undefined = block.params.url
@@ -40,15 +39,15 @@ export async function browserActionTool(
 	try {
 		if (block.partial) {
 			if (action === "launch") {
-				await cline.ask("browser_action_launch", removeClosingTag("url", url), block.partial).catch(() => {})
+				await cline.ask("browser_action_launch", url ?? "", block.partial).catch(() => {})
 			} else {
 				await cline.say(
 					"browser_action",
 					JSON.stringify({
 						action: action as BrowserAction,
-						coordinate: removeClosingTag("coordinate", coordinate),
-						text: removeClosingTag("text", text),
-						size: removeClosingTag("size", size),
+						coordinate: coordinate ?? "",
+						text: text ?? "",
+						size: size ?? "",
 					} satisfies ClineSayBrowserAction),
 					undefined,
 					block.partial,

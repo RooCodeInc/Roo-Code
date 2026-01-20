@@ -13,7 +13,7 @@ import {
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { XmlMatcher } from "../../utils/xml-matcher"
+import { TagMatcher } from "../../utils/tag-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
@@ -162,10 +162,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(reasoning && reasoning),
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" &&
-					metadata.parallelToolCalls === true && {
-						parallel_tool_calls: true,
-					}),
+				...(metadata?.parallelToolCalls === true && { parallel_tool_calls: true }),
 			}
 
 			// Add max_tokens if needed
@@ -181,7 +178,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				throw handleOpenAIError(error, this.providerName)
 			}
 
-			const matcher = new XmlMatcher(
+			const matcher = new TagMatcher(
 				"think",
 				(chunk) =>
 					({
@@ -232,10 +229,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" &&
-					metadata.parallelToolCalls === true && {
-						parallel_tool_calls: true,
-					}),
+				...(metadata?.parallelToolCalls === true && { parallel_tool_calls: true }),
 			}
 
 			// Add max_tokens if needed
@@ -359,10 +353,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				temperature: undefined,
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" &&
-					metadata.parallelToolCalls === true && {
-						parallel_tool_calls: true,
-					}),
+				...(metadata?.parallelToolCalls === true && { parallel_tool_calls: true }),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
@@ -395,10 +386,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				temperature: undefined,
 				...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
 				...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-				...(metadata?.toolProtocol === "native" &&
-					metadata.parallelToolCalls === true && {
-						parallel_tool_calls: true,
-					}),
+				...(metadata?.parallelToolCalls === true && { parallel_tool_calls: true }),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
