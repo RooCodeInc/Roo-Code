@@ -6,12 +6,11 @@ import DismissibleUpsell from "@src/components/common/DismissibleUpsell"
 import {
 	ChevronUp,
 	ChevronDown,
-	SquarePen,
-	Coins,
 	HardDriveDownload,
 	HardDriveUpload,
 	FoldVertical,
 	Globe,
+	ArrowLeft,
 } from "lucide-react"
 import prettyBytes from "pretty-bytes"
 
@@ -44,6 +43,7 @@ export interface TaskHeaderProps {
 	totalCost: number
 	aggregatedCost?: number
 	hasSubtasks?: boolean
+	parentTaskId?: string
 	costBreakdown?: string
 	contextTokens: number
 	buttonsDisabled: boolean
@@ -60,6 +60,7 @@ const TaskHeader = ({
 	totalCost,
 	aggregatedCost,
 	hasSubtasks,
+	parentTaskId,
 	costBreakdown,
 	contextTokens,
 	buttonsDisabled,
@@ -126,8 +127,29 @@ const TaskHeader = ({
 
 	const hasTodos = todos && Array.isArray(todos) && todos.length > 0
 
+	// Determine if this is a subtask (has a parent)
+	const isSubtask = !!parentTaskId
+
+	const handleBackToParent = () => {
+		if (parentTaskId) {
+			vscode.postMessage({ type: "showTaskWithId", text: parentTaskId })
+		}
+	}
+
 	return (
 		<div className="group pt-2 pb-0 px-3">
+			{isSubtask && (
+				<div className="mb-2" onClick={(e) => e.stopPropagation()}>
+					<Button
+						variant="ghost"
+						size="sm"
+						onClick={handleBackToParent}
+						className="flex items-center gap-1.5 text-xs text-vscode-descriptionForeground hover:text-vscode-foreground">
+						<ArrowLeft className="size-3" />
+						{t("chat:task.backToParentTask")}
+					</Button>
+				</div>
+			)}
 			{showLongRunningTaskMessage && !isTaskComplete && (
 				<DismissibleUpsell
 					upsellId="longRunningTask"
@@ -177,11 +199,8 @@ const TaskHeader = ({
 						<div className="grow min-w-0">
 							{isTaskExpanded && <span className="font-bold">{t("chat:task.title")}</span>}
 							{!isTaskExpanded && (
-								<div className="flex items-center gap-2">
-									<SquarePen className="size-3 shrink-0" />
-									<span className="whitespace-nowrap overflow-hidden text-ellipsis">
-										<Mention text={task.text} />
-									</span>
+								<div className="flex items-center gap-2 whitespace-nowrap overflow-hidden text-ellipsis">
+									<Mention text={task.text} />
 								</div>
 							)}
 						</div>
@@ -205,10 +224,9 @@ const TaskHeader = ({
 						className="flex items-center justify-between text-sm text-muted-foreground/70"
 						onClick={(e) => e.stopPropagation()}>
 						<div className="flex items-center gap-2">
-							<Coins className="size-3 shrink-0" />
 							<StandardTooltip
 								content={
-									<div className="space-y-1">
+									<div className="p-2 space-y-1 text-base">
 										<div>
 											{t("chat:tokenProgress.tokensUsed", {
 												used: formatLargeNumber(contextTokens || 0),
@@ -250,10 +268,44 @@ const TaskHeader = ({
 								}
 								side="top"
 								sideOffset={8}>
-								<span className="mr-1">
-									{formatLargeNumber(contextTokens || 0)} / {formatLargeNumber(contextWindow)}
+								<span className="flex items-center gap-1.5">
+									{(() => {
+										const percentage = Math.round(((contextTokens || 0) / contextWindow) * 100)
+										const radius = 6
+										const circumference = 2 * Math.PI * radius
+										const strokeDashoffset = circumference - (percentage / 100) * circumference
+										return (
+											<>
+												<svg width="16" height="16" viewBox="0 0 16 16" className="shrink-0">
+													<circle
+														cx="8"
+														cy="8"
+														r={radius}
+														fill="none"
+														stroke="currentColor"
+														strokeWidth="2"
+														opacity="0.2"
+													/>
+													<circle
+														cx="8"
+														cy="8"
+														r={radius}
+														fill="none"
+														stroke="currentColor"
+														strokeWidth="2"
+														strokeDasharray={circumference}
+														strokeDashoffset={strokeDashoffset}
+														strokeLinecap="round"
+														transform="rotate(-90 8 8)"
+													/>
+												</svg>
+												<span>{percentage}%</span>
+											</>
+										)
+									})()}
 								</span>
 							</StandardTooltip>
+							<span>·</span>
 							{!!totalCost && (
 								<StandardTooltip
 									content={
@@ -272,14 +324,16 @@ const TaskHeader = ({
 									}
 									side="top"
 									sideOffset={8}>
-									<span>
-										${(aggregatedCost ?? totalCost).toFixed(2)}
-										{hasSubtasks && (
-											<span className="text-xs ml-1" title={t("chat:costs.includesSubtasks")}>
-												*
-											</span>
-										)}
-									</span>
+									<>
+										<span>
+											${(aggregatedCost ?? totalCost).toFixed(2)}
+											{hasSubtasks && (
+												<span className="text-xs ml-1" title={t("chat:costs.includesSubtasks")}>
+													*
+												</span>
+											)}
+										</span>
+									</>
 								</StandardTooltip>
 							)}
 						</div>

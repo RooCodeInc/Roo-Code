@@ -1482,6 +1482,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								aggregatedCostsMap.get(currentTaskItem.id)!.childrenCost > 0
 							)
 						}
+						parentTaskId={currentTaskItem?.parentTaskId}
 						costBreakdown={
 							currentTaskItem?.id && aggregatedCostsMap.has(currentTaskItem.id)
 								? getCostBreakdownIfNeeded(aggregatedCostsMap.get(currentTaskItem.id)!, {

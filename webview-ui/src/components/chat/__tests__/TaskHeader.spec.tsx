@@ -20,10 +20,13 @@ vi.mock("react-i18next", () => ({
 	},
 }))
 
-// Mock the vscode API
+// Mock the vscode API - use vi.hoisted to ensure the mock is available when vi.mock is hoisted
+const { mockPostMessage } = vi.hoisted(() => ({
+	mockPostMessage: vi.fn(),
+}))
 vi.mock("@/utils/vscode", () => ({
 	vscode: {
-		postMessage: vi.fn(),
+		postMessage: mockPostMessage,
 	},
 }))
 
@@ -355,6 +358,48 @@ describe("TaskHeader", () => {
 
 			// The upsell should appear because the last relevant message (skipping resume messages) is not completion_result
 			expect(screen.getByTestId("dismissible-upsell")).toBeInTheDocument()
+		})
+	})
+
+	describe("Back to parent task button", () => {
+		beforeEach(() => {
+			mockPostMessage.mockClear()
+		})
+
+		it("should not show back button when parentTaskId is not provided", () => {
+			renderTaskHeader()
+			expect(screen.queryByText("chat:task.backToParentTask")).not.toBeInTheDocument()
+		})
+
+		it("should not show back button when parentTaskId is undefined", () => {
+			renderTaskHeader({ parentTaskId: undefined })
+			expect(screen.queryByText("chat:task.backToParentTask")).not.toBeInTheDocument()
+		})
+
+		it("should show back button when parentTaskId is provided", () => {
+			renderTaskHeader({ parentTaskId: "parent-task-123" })
+			expect(screen.getByText("chat:task.backToParentTask")).toBeInTheDocument()
+		})
+
+		it("should call vscode.postMessage with showTaskWithId when back button is clicked", () => {
+			renderTaskHeader({ parentTaskId: "parent-task-123" })
+
+			const backButton = screen.getByText("chat:task.backToParentTask")
+			fireEvent.click(backButton)
+
+			expect(mockPostMessage).toHaveBeenCalledWith({
+				type: "showTaskWithId",
+				text: "parent-task-123",
+			})
+		})
+
+		it("should show back button with ArrowLeft icon", () => {
+			renderTaskHeader({ parentTaskId: "parent-task-123" })
+
+			// Find the button containing the back text and verify it has the ArrowLeft icon
+			const backButton = screen.getByText("chat:task.backToParentTask").closest("button")
+			expect(backButton).toBeInTheDocument()
+			expect(backButton?.querySelector("svg.lucide-arrow-left")).toBeInTheDocument()
 		})
 	})
 })

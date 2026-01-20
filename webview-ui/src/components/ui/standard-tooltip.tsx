@@ -62,7 +62,12 @@ export function StandardTooltip({
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild={asChild}>{children}</TooltipTrigger>
-			<TooltipContent side={side} align={align} sideOffset={sideOffset} className={className} style={style}>
+			<TooltipContent
+				side={side}
+				align={align}
+				sideOffset={sideOffset}
+				className={`rounded-lg p-2 ${className}`}
+				style={style}>
 				{content}
 			</TooltipContent>
 		</Tooltip>
