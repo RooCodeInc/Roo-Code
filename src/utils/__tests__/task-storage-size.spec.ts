@@ -1,6 +1,11 @@
 import * as path from "path"
 import { calculateTaskStorageSize, formatBytes } from "../task-storage-size"
 
+// Mock storage to avoid VS Code config access during tests
+vi.mock("../storage", () => ({
+	getStorageBasePath: (p: string) => Promise.resolve(p),
+}))
+
 // Mock fs/promises
 const mockReaddir = vi.fn()
 const mockStat = vi.fn()

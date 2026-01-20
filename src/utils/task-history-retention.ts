@@ -1,9 +1,11 @@
+import * as vscode from "vscode"
 import * as path from "path"
 import * as fs from "fs/promises"
 import type { Dirent } from "fs"
 
 import { getStorageBasePath } from "./storage"
 import { GlobalFileNames } from "../shared/globalFileNames"
+import { Package } from "../shared/package"
 
 /**
  * Allowed retention day values (as numbers).
@@ -280,4 +282,73 @@ function normalizeDays(value: RetentionSetting): number {
 	if (value === "never") return 0
 	const n = typeof value === "number" ? value : parseInt(String(value), 10)
 	return Number.isFinite(n) && n > 0 ? Math.trunc(n) : 0
+}
+
+/**
+ * Options for starting the background retention purge.
+ */
+export interface BackgroundPurgeOptions {
+	/** VS Code global storage fsPath */
+	globalStoragePath: string
+	/** Logger function */
+	log: (message: string) => void
+	/** Function to delete a task by ID (should use ClineProvider.deleteTaskWithId for full cleanup) */
+	deleteTaskById: (taskId: string, taskDirPath: string) => Promise<void>
+}
+
+/**
+ * Starts the task history retention purge in the background.
+ * This function is designed to be called after extension activation completes,
+ * using a fire-and-forget pattern (void) to avoid blocking activation.
+ *
+ * It reads the retention setting from VS Code configuration, executes the purge,
+ * and shows a notification if tasks were deleted.
+ *
+ * @param options Configuration options for the background purge
+ */
+export function startBackgroundRetentionPurge(options: BackgroundPurgeOptions): void {
+	const { globalStoragePath, log, deleteTaskById } = options
+
+	void (async () => {
+		try {
+			const config = vscode.workspace.getConfiguration(Package.name)
+			const retention = config.get<string>("taskHistoryRetention", "never") ?? "never"
+
+			// Skip if retention is disabled
+			if (retention === "never") {
+				log("[Retention] Background purge skipped: retention is set to 'never'")
+				return
+			}
+
+			log(`[Retention] Starting background purge: setting=${retention}`)
+
+			const result = await purgeOldTasks(
+				retention as RetentionSetting,
+				globalStoragePath,
+				log,
+				false,
+				deleteTaskById,
+			)
+
+			log(
+				`[Retention] Background purge complete: purged=${result.purgedCount}, cutoff=${result.cutoff ?? "none"}`,
+			)
+
+			// Show user notification if tasks were deleted
+			if (result.purgedCount > 0) {
+				const message = `Roo Code deleted ${result.purgedCount} task${result.purgedCount === 1 ? "" : "s"} older than ${retention} day${retention === "1" ? "" : "s"}`
+
+				vscode.window.showInformationMessage(message, "View Settings", "Dismiss").then((action) => {
+					if (action === "View Settings") {
+						vscode.commands.executeCommand(
+							"workbench.action.openSettings",
+							"roo-cline.taskHistoryRetention",
+						)
+					}
+				})
+			}
+		} catch (error) {
+			log(`[Retention] Failed during background purge: ${error instanceof Error ? error.message : String(error)}`)
+		}
+	})()
 }
