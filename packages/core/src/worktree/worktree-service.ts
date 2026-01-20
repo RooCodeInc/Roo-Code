@@ -5,7 +5,7 @@
  * Uses simple-git and native CLI commands - no VSCode dependencies.
  */
 
-import { exec } from "child_process"
+import { exec, execFile } from "child_process"
 import * as path from "path"
 import { promisify } from "util"
 
@@ -19,6 +19,7 @@ import type {
 } from "./types.js"
 
 const execAsync = promisify(exec)
+const execFileAsync = promisify(execFile)
 
 /**
  * Service for managing git worktrees.
@@ -105,24 +106,24 @@ export class WorktreeService {
 		try {
 			const { path: worktreePath, branch, baseBranch, createNewBranch } = options
 
-			// Build the git worktree add command
-			let command = `git worktree add`
+			// Build the git worktree add command arguments
+			const args: string[] = ["worktree", "add"]
 
 			if (createNewBranch && branch) {
 				// Create new branch: git worktree add -b <branch> <path> [<base>]
-				command += ` -b "${branch}" "${worktreePath}"`
+				args.push("-b", branch, worktreePath)
 				if (baseBranch) {
-					command += ` "${baseBranch}"`
+					args.push(baseBranch)
 				}
 			} else if (branch) {
 				// Checkout existing branch: git worktree add <path> <branch>
-				command += ` "${worktreePath}" "${branch}"`
+				args.push(worktreePath, branch)
 			} else {
 				// Detached HEAD at current commit
-				command += ` --detach "${worktreePath}"`
+				args.push("--detach", worktreePath)
 			}
 
-			await execAsync(command, { cwd })
+			await execFileAsync("git", args, { cwd })
 
 			// Get the created worktree info
 			const worktrees = await this.listWorktrees(cwd)
@@ -155,13 +156,17 @@ export class WorktreeService {
 				(wt) => this.normalizePath(wt.path) === this.normalizePath(worktreePath),
 			)
 
-			const forceFlag = force ? " --force" : ""
-			await execAsync(`git worktree remove${forceFlag} "${worktreePath}"`, { cwd })
+			const args = ["worktree", "remove"]
+			if (force) {
+				args.push("--force")
+			}
+			args.push(worktreePath)
+			await execFileAsync("git", args, { cwd })
 
 			// Also try to delete the branch if it exists
 			if (worktreeToDelete?.branch) {
 				try {
-					await execAsync(`git branch -d "${worktreeToDelete.branch}"`, { cwd })
+					await execFileAsync("git", ["branch", "-d", worktreeToDelete.branch], { cwd })
 				} catch {
 					// Branch deletion is best-effort
 				}
@@ -280,11 +285,11 @@ export class WorktreeService {
 			}
 
 			// Ensure we're on the target branch
-			await execAsync(`git checkout "${targetBranch}"`, { cwd: mergeCwd })
+			await execFileAsync("git", ["checkout", targetBranch], { cwd: mergeCwd })
 
 			// Attempt the merge
 			try {
-				await execAsync(`git merge "${sourceBranch}" --no-edit`, { cwd: mergeCwd })
+				await execFileAsync("git", ["merge", sourceBranch, "--no-edit"], { cwd: mergeCwd })
 
 				// Merge succeeded
 				if (deleteAfterMerge) {
@@ -355,7 +360,7 @@ export class WorktreeService {
 	 */
 	async checkoutBranch(cwd: string, branch: string): Promise<WorktreeResult> {
 		try {
-			await execAsync(`git checkout "${branch}"`, { cwd })
+			await execFileAsync("git", ["checkout", branch], { cwd })
 			return {
 				success: true,
 				message: `Checked out branch ${branch}`,
@@ -424,7 +429,12 @@ export class WorktreeService {
 	 * Normalize a path for comparison (handle trailing slashes, etc.)
 	 */
 	private normalizePath(p: string): string {
-		return path.normalize(p).replace(/\/+$/, "")
+		let normalized = path.normalize(p)
+		// Remove trailing slashes without vulnerable regex
+		while (normalized.length > 1 && normalized.endsWith("/")) {
+			normalized = normalized.slice(0, -1)
+		}
+		return normalized
 	}
 }
 
