@@ -27,14 +27,16 @@ interface CreateSkillDialogProps {
 
 /**
  * Validate skill name according to agentskills.io spec:
- * - Must start with a letter
  * - Only lowercase letters, numbers, and hyphens allowed
+ * - No leading/trailing hyphens
+ * - No consecutive hyphens
  * - 1-64 characters
  */
 const validateSkillName = (name: string): string | null => {
 	if (!name) return "settings:skills.validation.nameRequired"
 	if (name.length > 64) return "settings:skills.validation.nameTooLong"
-	if (!/^[a-z][a-z0-9-]*$/.test(name)) {
+	// Match backend validation: /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+	if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name)) {
 		return "settings:skills.validation.nameInvalid"
 	}
 	return null

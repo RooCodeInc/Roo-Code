@@ -3037,7 +3037,9 @@ export const webviewMessageHandler = async (
 
 				await skillsManager.deleteSkill(skillName, source, skillMode)
 
-				// UI will handle refresh via setTimeout
+				// Send updated skills list
+				const skills = skillsManager.getSkillsMetadata()
+				await provider.postMessageToWebview({ type: "skills", skills })
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error)
 				provider.log(`Error deleting skill: ${errorMessage}`)
