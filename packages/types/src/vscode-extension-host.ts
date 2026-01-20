@@ -29,6 +29,8 @@ export interface ExtensionMessage {
 	type:
 		| "action"
 		| "state"
+		| "taskHistoryUpdated"
+		| "taskHistoryItemUpdated"
 		| "selectedImages"
 		| "theme"
 		| "workspaceUpdated"
@@ -114,7 +116,11 @@ export interface ExtensionMessage {
 		| "switchTab"
 		| "toggleAutoApprove"
 	invoke?: "newChat" | "sendMessage" | "primaryButtonClick" | "secondaryButtonClick" | "setChatBoxMessage"
-	state?: ExtensionState
+	/**
+	 * Partial state updates are allowed to reduce message size (e.g. omit large fields like taskHistory).
+	 * The webview is responsible for merging.
+	 */
+	state?: Partial<ExtensionState>
 	images?: string[]
 	filePaths?: string[]
 	openedTabs?: Array<{
@@ -194,6 +200,9 @@ export interface ExtensionMessage {
 		childrenCost: number
 	}
 	historyItem?: HistoryItem
+	taskHistory?: HistoryItem[] // For taskHistoryUpdated: full sorted task history
+	/** For taskHistoryItemUpdated: single updated/added history item */
+	taskHistoryItem?: HistoryItem
 }
 
 export interface OpenAiCodexRateLimitsMessage {

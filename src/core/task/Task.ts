@@ -590,7 +590,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.messageQueueStateChangedHandler = () => {
 			this.emit(RooCodeEventName.TaskUserMessage, this.taskId)
-			this.providerRef.deref()?.postStateToWebview()
+			this.providerRef.deref()?.postStateToWebviewWithoutTaskHistory()
 		}
 
 		this.messageQueueService.on("stateChanged", this.messageQueueStateChangedHandler)
@@ -1137,7 +1137,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private async addToClineMessages(message: ClineMessage) {
 		this.clineMessages.push(message)
 		const provider = this.providerRef.deref()
-		await provider?.postStateToWebview()
+		// Avoid resending large, mostly-static fields (notably taskHistory) on every chat message update.
+		// taskHistory is maintained in-memory in the webview and updated via taskHistoryItemUpdated.
+		await provider?.postStateToWebviewWithoutTaskHistory()
 		this.emit(RooCodeEventName.Message, { action: "created", message })
 		await this.saveClineMessages()
 
@@ -1888,7 +1890,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// The todo list is already set in the constructor if initialTodos were provided
 		// No need to add any messages - the todoList property is already set
 
-		await this.providerRef.deref()?.postStateToWebview()
+		await this.providerRef.deref()?.postStateToWebviewWithoutTaskHistory()
 
 		await this.say("text", task, images)
 
@@ -2678,7 +2680,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			} satisfies ClineApiReqInfo)
 
 			await this.saveClineMessages()
-			await this.providerRef.deref()?.postStateToWebview()
+			await this.providerRef.deref()?.postStateToWebviewWithoutTaskHistory()
 
 			try {
 				let cacheWriteTokens = 0
@@ -3446,7 +3448,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 
 				await this.saveClineMessages()
-				await this.providerRef.deref()?.postStateToWebview()
+				await this.providerRef.deref()?.postStateToWebviewWithoutTaskHistory()
 
 				// Reset parser after each complete conversation round (XML protocol only)
 				this.assistantMessageParser?.reset()
