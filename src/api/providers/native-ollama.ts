@@ -223,9 +223,6 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				}) as const,
 		)
 
-		// Native-only tool calling: include tools whenever they are provided.
-		const useNativeTools = Boolean(metadata?.tools?.length)
-
 		try {
 			// Build options object conditionally
 			const chatOptions: OllamaChatOptions = {
@@ -243,8 +240,7 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 				messages: ollamaMessages,
 				stream: true,
 				options: chatOptions,
-				// Native tool calling support
-				...(useNativeTools && { tools: this.convertToolsToOllama(metadata?.tools) }),
+				...(metadata?.tools?.length ? { tools: this.convertToolsToOllama(metadata.tools) } : {}),
 			})
 
 			let totalInputTokens = 0

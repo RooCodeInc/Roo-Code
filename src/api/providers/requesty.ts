@@ -138,9 +138,6 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 			? (reasoning_effort as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming["reasoning_effort"])
 			: undefined
 
-		// Native-only tool calling: include tools whenever they are provided.
-		const useNativeTools = true
-
 		const completionParams: RequestyChatCompletionParamsStreaming = {
 			messages: openAiMessages,
 			model,

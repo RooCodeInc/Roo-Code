@@ -381,17 +381,14 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		// Accumulate the text and count at the end of the stream to reduce token counting overhead.
 		let accumulatedText: string = ""
 
-		// Native-only tool calling. Enable tools if provided.
-		const useNativeTools = Boolean(metadata?.tools && metadata.tools.length > 0)
-
 		try {
 			// Create the response stream with required options
 			const requestOptions: vscode.LanguageModelChatRequestOptions = {
 				justification: `Roo Code would like to use '${client.name}' from '${client.vendor}', Click 'Allow' to proceed.`,
 			}
 
-			// Add tools to request options when using native tool calling.
-			if (useNativeTools && metadata?.tools) {
+			// Add tools to request options when provided.
+			if (metadata?.tools?.length) {
 				requestOptions.tools = convertToVsCodeLmTools(metadata.tools)
 			}
 
@@ -441,8 +438,8 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 							inputSize: JSON.stringify(chunk.input).length,
 						})
 
-						// Yield native tool_call chunk when tools are enabled
-						if (useNativeTools) {
+						// Yield native tool_call chunk when tools are provided
+						if (metadata?.tools?.length) {
 							const argumentsString = JSON.stringify(chunk.input)
 							accumulatedText += argumentsString
 							yield {

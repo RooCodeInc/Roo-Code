@@ -54,9 +54,6 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 	): ApiStream {
 		const { id: modelId, info: modelInfo, reasoning } = this.getModel()
 
-		// Native-only tool calling: include tools whenever they are provided.
-		const useNativeTools = Boolean(metadata?.tools && metadata.tools.length > 0)
-
 		// Use the OpenAI-compatible API.
 		const requestOptions = {
 			model: modelId,
@@ -69,9 +66,9 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			stream: true as const,
 			stream_options: { include_usage: true },
 			...(reasoning && reasoning),
-			...(useNativeTools && metadata?.tools ? { tools: this.convertToolsForOpenAI(metadata.tools) } : {}),
-			...(useNativeTools && metadata?.tool_choice ? { tool_choice: metadata.tool_choice } : {}),
-			...(useNativeTools ? { parallel_tool_calls: metadata?.parallelToolCalls ?? false } : {}),
+			...(metadata?.tools?.length ? { tools: this.convertToolsForOpenAI(metadata.tools) } : {}),
+			...(metadata?.tools?.length && metadata?.tool_choice ? { tool_choice: metadata.tool_choice } : {}),
+			...(metadata?.tools?.length ? { parallel_tool_calls: metadata?.parallelToolCalls ?? false } : {}),
 		}
 
 		let stream

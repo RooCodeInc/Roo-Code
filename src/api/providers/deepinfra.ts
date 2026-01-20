@@ -65,9 +65,6 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 			prompt_cache_key = _metadata.taskId
 		}
 
-		// Native-only tool calling: include tools whenever they are provided.
-		const useNativeTools = Boolean(_metadata?.tools?.length)
-
 		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model: modelId,
 			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
@@ -75,9 +72,9 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 			stream_options: { include_usage: true },
 			reasoning_effort,
 			prompt_cache_key,
-			...(useNativeTools && { tools: this.convertToolsForOpenAI(_metadata?.tools) }),
-			...(useNativeTools && _metadata?.tool_choice && { tool_choice: _metadata.tool_choice }),
-			...(useNativeTools && { parallel_tool_calls: _metadata?.parallelToolCalls ?? false }),
+			...(_metadata?.tools?.length ? { tools: this.convertToolsForOpenAI(_metadata.tools) } : {}),
+			...(_metadata?.tools?.length && _metadata?.tool_choice ? { tool_choice: _metadata.tool_choice } : {}),
+			...(_metadata?.tools?.length ? { parallel_tool_calls: _metadata?.parallelToolCalls ?? false } : {}),
 		} as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming
 
 		if (this.supportsTemperature(modelId)) {

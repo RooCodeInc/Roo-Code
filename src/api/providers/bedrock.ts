@@ -359,10 +359,6 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		const modelConfig = this.getModel()
 		const usePromptCache = Boolean(this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig))
 
-		// Determine early if native tools should be used (needed for message conversion)
-		// NOTE: tool inclusion is controlled by caller metadata, not per-model flags.
-		const useNativeTools = Boolean(metadata?.tools?.length) && metadata?.tool_choice !== "none"
-
 		const conversationId =
 			messages.length > 0
 				? `conv_${messages[0].role}_${
@@ -378,7 +374,6 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			usePromptCache,
 			modelConfig.info,
 			conversationId,
-			useNativeTools,
 		)
 
 		let additionalModelRequestFields: BedrockAdditionalModelFields | undefined
@@ -430,7 +425,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 		// Add fine-grained tool streaming beta when native tools are used with Claude models
 		// This enables proper tool use streaming for Anthropic models on Bedrock
-		if (useNativeTools && baseModelId.includes("claude")) {
+		if (baseModelId.includes("claude")) {
 			anthropicBetas.push("fine-grained-tool-streaming-2025-05-14")
 		}
 
@@ -455,7 +450,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 		// Build tool configuration if native tools are enabled
 		let toolConfig: ToolConfiguration | undefined
-		if (useNativeTools && metadata?.tools) {
+		if (metadata?.tools?.length) {
 			toolConfig = {
 				tools: this.convertToolsForBedrock(metadata.tools),
 				toolChoice: this.convertToolChoiceForBedrock(metadata.tool_choice),
@@ -839,7 +834,6 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		usePromptCache: boolean = false,
 		modelInfo?: any,
 		conversationId?: string, // Optional conversation ID to track cache points across messages
-		_useNativeTools: boolean = false, // Deprecated: Bedrock converter is native-only now
 	): { system: SystemContentBlock[]; messages: Message[] } {
 		// First convert messages using shared converter for proper image handling
 		const convertedMessages = sharedConverter(anthropicMessages as Anthropic.Messages.MessageParam[])
