@@ -346,7 +346,6 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								const numberedContent = addLineNumbers(content)
 								const lines = content.split("\n")
 								const lineCount = lines.length
-								const lineRangeAttr = lineCount > 0 ? ` lines="1-${lineCount}"` : ""
 
 								await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
 
@@ -378,7 +377,6 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					}
 
 					if (fileResult.lineRanges && fileResult.lineRanges.length > 0) {
-						const rangeResults: string[] = []
 						const nativeRangeResults: string[] = []
 
 						for (const range of fileResult.lineRanges) {
@@ -386,8 +384,6 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 								await readLines(fullPath, range.end - 1, range.start - 1),
 								range.start,
 							)
-							const lineRangeAttr = ` lines="${range.start}-${range.end}"`
-							rangeResults.push(`<content${lineRangeAttr}>\n${content}</content>`)
 							nativeRangeResults.push(`Lines ${range.start}-${range.end}:\n${content}`)
 						}
 
@@ -423,9 +419,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 					if (maxReadFileLine > 0 && totalLines > maxReadFileLine) {
 						const content = addLineNumbers(await readLines(fullPath, maxReadFileLine - 1, 0))
-						const lineRangeAttr = ` lines="1-${maxReadFileLine}"`
-						let xmlInfo = `<content${lineRangeAttr}>\n${content}</content>\n`
-						let nativeInfo = `Lines 1-${maxReadFileLine}:\n${content}\n`
+						let toolInfo = `Lines 1-${maxReadFileLine}:\n${content}\n`
 
 						try {
 							const defResult = await parseSourceCodeDefinitionsForFile(
@@ -434,16 +428,14 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 							)
 							if (defResult) {
 								const truncatedDefs = truncateDefinitionsToLineLimit(defResult, maxReadFileLine)
-								xmlInfo += `<list_code_definition_names>${truncatedDefs}</list_code_definition_names>\n`
-								nativeInfo += `\nCode Definitions:\n${truncatedDefs}\n`
+								toolInfo += `\nCode Definitions:\n${truncatedDefs}\n`
 							}
 
 							const notice = `Showing only ${maxReadFileLine} of ${totalLines} total lines. Use line_range if you need to read more lines`
-							xmlInfo += `<notice>${notice}</notice>\n`
-							nativeInfo += `\nNote: ${notice}`
+							toolInfo += `\nNote: ${notice}`
 
 							updateFileResult(relPath, {
-								nativeContent: `File: ${relPath}\n${nativeInfo}`,
+								nativeContent: `File: ${relPath}\n${toolInfo}`,
 							})
 						} catch (error) {
 							if (error instanceof Error && error.message.startsWith("Unsupported language:")) {
@@ -472,49 +464,33 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					const remainingTokens = contextWindow - maxOutputTokens - (contextTokens || 0)
 					const safeReadBudget = Math.floor(remainingTokens * FILE_READ_BUDGET_PERCENT)
 
-					let content: string
-					let xmlInfo = ""
-					let nativeInfo = ""
+					let toolInfo = ""
 
 					if (safeReadBudget <= 0) {
 						// No budget available
-						content = ""
 						const notice = "No available context budget for file reading"
-						xmlInfo = `<content/>\n<notice>${notice}</notice>\n`
-						nativeInfo = `Note: ${notice}`
+						toolInfo = `Note: ${notice}`
 					} else {
 						// Read file with incremental token counting
 						const result = await readFileWithTokenBudget(fullPath, {
 							budgetTokens: safeReadBudget,
 						})
 
-						content = addLineNumbers(result.content)
+						const content = addLineNumbers(result.content)
 
 						if (!result.complete) {
 							// File was truncated
 							const notice = `File truncated: showing ${result.lineCount} lines (${result.tokenCount} tokens) due to context budget. Use line_range to read specific sections.`
-							const lineRangeAttr = result.lineCount > 0 ? ` lines="1-${result.lineCount}"` : ""
-							xmlInfo =
-								result.lineCount > 0
-									? `<content${lineRangeAttr}>\n${content}</content>\n<notice>${notice}</notice>\n`
-									: `<content/>\n<notice>${notice}</notice>\n`
-							nativeInfo =
+							toolInfo =
 								result.lineCount > 0
 									? `Lines 1-${result.lineCount}:\n${content}\n\nNote: ${notice}`
 									: `Note: ${notice}`
 						} else {
 							// Full file read
-							const lineRangeAttr = ` lines="1-${result.lineCount}"`
-							xmlInfo =
-								result.lineCount > 0
-									? `<content${lineRangeAttr}>\n${content}</content>\n`
-									: `<content/>`
-
 							if (result.lineCount === 0) {
-								xmlInfo += `<notice>File is empty</notice>\n`
-								nativeInfo = "Note: File is empty"
+								toolInfo = "Note: File is empty"
 							} else {
-								nativeInfo = `Lines 1-${result.lineCount}:\n${content}`
+								toolInfo = `Lines 1-${result.lineCount}:\n${content}`
 							}
 						}
 					}
@@ -522,7 +498,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 					await task.fileContextTracker.trackFileContext(relPath, "read_tool" as RecordSource)
 
 					updateFileResult(relPath, {
-						nativeContent: `File: ${relPath}\n${nativeInfo}`,
+						nativeContent: `File: ${relPath}\n${toolInfo}`,
 					})
 				} catch (error) {
 					const errorMsg = error instanceof Error ? error.message : String(error)

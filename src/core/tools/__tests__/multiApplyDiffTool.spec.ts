@@ -120,7 +120,7 @@ describe("multiApplyDiffTool", () => {
 	})
 
 	describe("Native protocol delegation", () => {
-		it("delegates XML args format to the class-based tool (no XML parsing in wrapper)", async () => {
+		it("delegates to the class-based tool for native protocol", async () => {
 			mockBlock = {
 				type: "tool_use",
 				name: "apply_diff",
