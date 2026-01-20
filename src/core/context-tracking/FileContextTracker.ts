@@ -1,6 +1,7 @@
 import { safeWriteJson } from "../../utils/safeWriteJson"
 import * as path from "path"
 import * as vscode from "vscode"
+import * as crypto from "crypto"
 import { getTaskDirectoryPath } from "../../utils/storage"
 import { GlobalFileNames } from "../../shared/globalFileNames"
 import { fileExistsAtPath } from "../../utils/fs"
@@ -78,19 +79,98 @@ export class FileContextTracker {
 
 	// Tracks a file operation in metadata and sets up a watcher for the file
 	// This is the main entry point for FileContextTracker and is called when a file is passed to Roo via a tool, mention, or edit.
-	async trackFileContext(filePath: string, operation: RecordSource) {
+	// When contentHash is provided, it's stored to enable skip-redundant-reads optimization
+	async trackFileContext(filePath: string, operation: RecordSource, contentHash?: string) {
 		try {
 			const cwd = this.getCwd()
 			if (!cwd) {
 				return
 			}
 
-			await this.addFileToFileContextTracker(this.taskId, filePath, operation)
+			await this.addFileToFileContextTracker(this.taskId, filePath, operation, contentHash)
 
 			// Set up file watcher for this file
 			await this.setupFileWatcher(filePath)
 		} catch (error) {
 			console.error("Failed to track file operation:", error)
+		}
+	}
+
+	/**
+	 * Computes a hash of file content for detecting unchanged files.
+	 * Uses MD5 for speed - we only need to detect changes, not cryptographic security.
+	 */
+	static computeContentHash(content: string): string {
+		return crypto.createHash("md5").update(content).digest("hex")
+	}
+
+	/**
+	 * Computes the hash of a file on disk.
+	 * Returns null if the file cannot be read.
+	 */
+	async computeFileHash(filePath: string): Promise<string | null> {
+		try {
+			const cwd = this.getCwd()
+			if (!cwd) {
+				return null
+			}
+			const fullPath = path.resolve(cwd, filePath)
+			const content = await fs.readFile(fullPath, "utf-8")
+			return FileContextTracker.computeContentHash(content)
+		} catch (error) {
+			console.error("Failed to compute file hash:", error)
+			return null
+		}
+	}
+
+	/**
+	 * Checks if a file's content is still valid in the current context.
+	 * Returns true if:
+	 * - The file was previously read (has an active entry with roo_read_date)
+	 * - No user edits occurred after the last read
+	 * - The content hash matches the current file on disk
+	 *
+	 * This enables the "skip redundant re-reads" optimization to reduce token usage.
+	 */
+	async isFileUnchangedInContext(filePath: string): Promise<boolean> {
+		try {
+			const metadata = await this.getTaskMetadata(this.taskId)
+
+			// Find the most recent active entry for this file that was read by Roo
+			const activeEntries = metadata.files_in_context.filter(
+				(entry) =>
+					entry.path === filePath &&
+					entry.record_state === "active" &&
+					entry.roo_read_date !== null &&
+					entry.content_hash,
+			)
+
+			if (activeEntries.length === 0) {
+				return false // No active read entry with hash found
+			}
+
+			// Get the most recent entry (highest roo_read_date)
+			const latestEntry = activeEntries.reduce((latest, current) =>
+				(current.roo_read_date ?? 0) > (latest.roo_read_date ?? 0) ? current : latest,
+			)
+
+			// Check if user edited the file after Roo's last read
+			if (latestEntry.user_edit_date && latestEntry.roo_read_date) {
+				if (latestEntry.user_edit_date > latestEntry.roo_read_date) {
+					return false // User edited after last read
+				}
+			}
+
+			// Compute current file hash and compare
+			const currentHash = await this.computeFileHash(filePath)
+			if (!currentHash) {
+				return false // Couldn't read file
+			}
+
+			return currentHash === latestEntry.content_hash
+		} catch (error) {
+			console.error("Failed to check if file is unchanged in context:", error)
+			return false
 		}
 	}
 
@@ -140,7 +220,8 @@ export class FileContextTracker {
 	// Adds a file to the metadata tracker
 	// This handles the business logic of determining if the file is new, stale, or active.
 	// It also updates the metadata with the latest read/edit dates.
-	async addFileToFileContextTracker(taskId: string, filePath: string, source: RecordSource) {
+	// When contentHash is provided (for read_tool operations), it's stored to enable skip-redundant-reads.
+	async addFileToFileContextTracker(taskId: string, filePath: string, source: RecordSource, contentHash?: string) {
 		try {
 			const metadata = await this.getTaskMetadata(taskId)
 			const now = Date.now()
@@ -168,12 +249,14 @@ export class FileContextTracker {
 				roo_read_date: getLatestDateForField(filePath, "roo_read_date"),
 				roo_edit_date: getLatestDateForField(filePath, "roo_edit_date"),
 				user_edit_date: getLatestDateForField(filePath, "user_edit_date"),
+				content_hash: null, // Will be set for read operations if provided
 			}
 
 			switch (source) {
 				// user_edited: The user has edited the file
 				case "user_edited":
 					newEntry.user_edit_date = now
+					newEntry.content_hash = null // Invalidate hash on user edit
 					this.recentlyModifiedFiles.add(filePath)
 					break
 
@@ -181,6 +264,7 @@ export class FileContextTracker {
 				case "roo_edited":
 					newEntry.roo_read_date = now
 					newEntry.roo_edit_date = now
+					newEntry.content_hash = contentHash ?? null // Store new hash if provided
 					this.checkpointPossibleFiles.add(filePath)
 					this.markFileAsEditedByRoo(filePath)
 					break
@@ -189,6 +273,7 @@ export class FileContextTracker {
 				case "read_tool":
 				case "file_mentioned":
 					newEntry.roo_read_date = now
+					newEntry.content_hash = contentHash ?? null // Store hash for skip-redundant-reads
 					break
 			}
 
