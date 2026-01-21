@@ -1,4 +1,5 @@
 import { memo } from "react"
+import { ArrowRight, Folder } from "lucide-react"
 import type { DisplayHistoryItem } from "./types"
 
 import { vscode } from "@/utils/vscode"
@@ -47,7 +48,7 @@ const TaskItem = ({
 			data-testid={`task-item-${item.id}`}
 			className={cn(
 				"cursor-pointer group relative overflow-hidden",
-				"hover:bg-vscode-editor-foreground/10 transition-colors",
+				"text-vscode-foreground/80 hover:text-vscode-foreground transition-colors",
 				hasSubtasks ? "rounded-t-xl" : "rounded-xl",
 				className,
 			)}
@@ -69,26 +70,37 @@ const TaskItem = ({
 				)}
 
 				<div className="flex-1 min-w-0">
-					<div
-						className={cn(
-							"overflow-hidden whitespace-pre-wrap font-light text-vscode-foreground text-ellipsis line-clamp-3",
-							{
-								"text-base": !isCompact,
-							},
-							!isCompact && isSelectionMode ? "mb-1" : "",
-						)}
-						data-testid="task-content"
-						{...(item.highlight
-							? {
-									dangerouslySetInnerHTML: {
-										__html: item.highlight,
-									},
-								}
-							: {})}>
-						<StandardTooltip content={item.task}>
-							<span>{item.highlight ? undefined : item.task}</span>
-						</StandardTooltip>
+					<div className="flex items-start gap-1">
+						<div
+							className={cn(
+								"flex-1 min-w-0 overflow-hidden whitespace-pre-wrap font-light text-ellipsis line-clamp-3",
+								{
+									"text-base": !isCompact,
+								},
+								!isCompact && isSelectionMode ? "mb-1" : "",
+							)}
+							data-testid="task-content"
+							{...(item.highlight
+								? {
+										dangerouslySetInnerHTML: {
+											__html: item.highlight,
+										},
+									}
+								: {})}>
+							<StandardTooltip content={item.task}>
+								<span>{item.highlight ? undefined : item.task}</span>
+							</StandardTooltip>
+						</div>
+						{/* Arrow icon that appears on hover */}
+						<ArrowRight className="size-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
 					</div>
+
+					{showWorkspace && item.workspace && (
+						<div className="flex items-center font-mono gap-1 text-vscode-descriptionForeground text-xs mt-1">
+							<Folder className="size-3" />
+							<span>{item.workspace}</span>
+						</div>
+					)}
 
 					<TaskItemFooter
 						item={item}
@@ -97,13 +109,6 @@ const TaskItem = ({
 						isSubtask={item.isSubtask}
 						onDelete={onDelete}
 					/>
-
-					{showWorkspace && item.workspace && (
-						<div className="flex flex-row gap-1 text-vscode-descriptionForeground text-xs mt-1">
-							<span className="codicon codicon-folder scale-80" />
-							<span>{item.workspace}</span>
-						</div>
-					)}
 				</div>
 			</div>
 		</div>

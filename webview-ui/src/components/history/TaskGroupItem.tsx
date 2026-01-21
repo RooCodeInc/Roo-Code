@@ -69,8 +69,13 @@ const TaskGroupItem = ({
 			)}
 
 			{/* Expanded subtasks */}
-			{hasSubtasks && isExpanded && (
-				<div data-testid="subtask-list" className="pb-2">
+			{hasSubtasks && (
+				<div
+					data-testid="subtask-list"
+					className={cn(
+						"overflow-clip transition-all duration-500",
+						isExpanded ? "max-h-100 pb-2" : "max-h-0",
+					)}>
 					{subtasks.map((subtask) => (
 						<SubtaskRow key={subtask.id} item={subtask} />
 					))}

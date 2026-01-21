@@ -29,9 +29,9 @@ const SubtaskCollapsibleRow = ({ count, isExpanded, onToggle, className }: Subta
 		<div
 			data-testid="subtask-collapsible-row"
 			className={cn(
-				"flex items-center gap-1 px-3 py-1.5 -mt-1 cursor-pointer text-xs",
-				"text-vscode-descriptionForeground/60 hover:text-vscode-descriptionForeground",
-				"hover:bg-vscode-editor-foreground/10",
+				"flex items-center gap-1 px-3 py-2 -mt-2 cursor-pointer text-xs",
+				"hover:text-vscode-descriptionForeground",
+				isExpanded ? "text-vscode-descriptionForeground" : "text-vscode-descriptionForeground/80",
 				"transition-colors",
 				className,
 			)}

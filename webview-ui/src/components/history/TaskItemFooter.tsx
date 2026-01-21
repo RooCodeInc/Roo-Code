@@ -54,7 +54,7 @@ const TaskItemFooter: React.FC<TaskItemFooterProps> = ({
 
 			{/* Action Buttons for non-compact view */}
 			{!isSelectionMode && (
-				<div className="bg-red flex flex-row gap-0 -mx-2 items-center text-vscode-descriptionForeground/60 hover:text-vscode-descriptionForeground">
+				<div className="flex flex-row gap-0 -mx-1.5 items-center text-vscode-descriptionForeground/60 hover:text-vscode-descriptionForeground opacity-0 group-hover:opacity-100">
 					<CopyButton itemTask={item.task} />
 					{variant === "full" && <ExportButton itemId={item.id} />}
 					{onDelete && <DeleteButton itemId={item.id} onDelete={onDelete} />}

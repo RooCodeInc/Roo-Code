@@ -1,4 +1,5 @@
 import { memo } from "react"
+import { ArrowRight } from "lucide-react"
 import { vscode } from "@/utils/vscode"
 import { cn } from "@/lib/utils"
 import type { DisplayHistoryItem } from "./types"
@@ -24,8 +25,8 @@ const SubtaskRow = ({ item, className }: SubtaskRowProps) => {
 		<div
 			data-testid={`subtask-row-${item.id}`}
 			className={cn(
-				"flex items-center justify-between gap-2 pl-2 pr-3 p-1.5 ml-6 cursor-pointer",
-				"text-vscode-descriptionForeground/60 hover:text-foreground transition-colors",
+				"group flex items-center justify-between gap-2 pl-1 pr-4 py-1 ml-6 cursor-pointer",
+				"text-vscode-foreground/60 hover:text-vscode-foreground transition-colors",
 				className,
 			)}
 			onClick={handleClick}
@@ -38,8 +39,9 @@ const SubtaskRow = ({ item, className }: SubtaskRowProps) => {
 				}
 			}}>
 			<StandardTooltip content={item.task} delay={600}>
-				<span className="line-clamp-1">{item.task}</span>
+				<span className="text-sm line-clamp-1">{item.task}</span>
 			</StandardTooltip>
+			<ArrowRight className="size-3 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
 		</div>
 	)
 }
