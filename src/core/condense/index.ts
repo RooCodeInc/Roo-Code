@@ -305,7 +305,6 @@ export async function summarizeConversation(
 		// This ensures the summary always has reasoning_content for DeepSeek-reasoner
 		summaryContent = [syntheticReasoningBlock as unknown as Anthropic.Messages.ContentBlockParam, textBlock]
 	}
-
 	// Generate a unique condenseId for this summary
 	const condenseId = crypto.randomUUID()
 

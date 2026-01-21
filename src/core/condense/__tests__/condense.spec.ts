@@ -139,6 +139,41 @@ describe("Condense", () => {
 			expect(effectiveHistory[0].role).toBe("user")
 		})
 
+		it("should include slash command content in the summary message", async () => {
+			const messages: ApiMessage[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "Some user text" },
+						{ type: "text", text: '<command name="prr">Help content</command>' },
+					],
+				},
+				{ role: "assistant", content: "Second message" },
+				{ role: "user", content: "Third message" },
+				{ role: "assistant", content: "Fourth message" },
+				{ role: "user", content: "Fifth message" },
+				{ role: "assistant", content: "Sixth message" },
+				{ role: "user", content: "Seventh message" },
+				{ role: "assistant", content: "Eighth message" },
+				{ role: "user", content: "Ninth message" },
+			]
+
+			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+
+			const summaryMessage = result.messages.find((msg) => msg.isSummary)
+			const content = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
+
+			// Should have: summary text block, slash command block, ...reminders
+			expect(content[0]).toEqual({
+				type: "text",
+				text: expect.stringContaining("Mock summary of the conversation"),
+			})
+			expect(content[1]).toEqual({
+				type: "text",
+				text: '<system-reminder>\n<command name="prr">Help content</command>\n</system-reminder>',
+			})
+		})
+
 		it("should handle complex first message content", async () => {
 			const complexContent: Anthropic.Messages.ContentBlockParam[] = [
 				{ type: "text", text: "/mode code" },
