@@ -41,5 +41,11 @@
 		"mostTokens": "Meeste tokens",
 		"mostRelevant": "Meest relevant"
 	},
-	"viewAllHistory": "Alles bekijken"
+	"viewAllHistory": "Alles bekijken",
+	"subtasks_one": "{{count}} subtaak",
+	"subtasks_other": "{{count}} subtaken",
+	"subtaskTag": "Subtaak",
+	"deleteWithSubtasks": "Dit zal ook {{count}} subtaak(en) verwijderen. Weet je het zeker?",
+	"expandSubtasks": "Subtaken uitvouwen",
+	"collapseSubtasks": "Subtaken samenvouwen"
 }

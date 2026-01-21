@@ -41,5 +41,11 @@
 		"mostTokens": "En Çok Token",
 		"mostRelevant": "En İlgili"
 	},
-	"viewAllHistory": "Tümünü görüntüle"
+	"viewAllHistory": "Tümünü görüntüle",
+	"subtasks_one": "{{count}} alt görev",
+	"subtasks_other": "{{count}} alt görev",
+	"subtaskTag": "Alt görev",
+	"deleteWithSubtasks": "Bu, {{count}} alt görev(i) de silecektir. Emin misiniz?",
+	"expandSubtasks": "Alt görevleri genişlet",
+	"collapseSubtasks": "Alt görevleri daralt"
 }

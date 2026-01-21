@@ -28,7 +28,8 @@
 		"openInCloud": "Abrir tarea en Roo Code Cloud",
 		"openInCloudIntro": "Continúa monitoreando o interactuando con Roo desde cualquier lugar. Escanea, haz clic o copia para abrir.",
 		"openApiHistory": "Abrir historial de API",
-		"openUiHistory": "Abrir historial de UI"
+		"openUiHistory": "Abrir historial de UI",
+		"backToParentTask": "Tarea principal"
 	},
 	"unpin": "Desfijar",
 	"pin": "Fijar",
@@ -146,14 +147,14 @@
 		"rateLimitWait": "Limitación de tasa",
 		"errorTitle": "Error del proveedor {{code}}",
 		"errorMessage": {
-			"docs": "Documentación",
-			"goToSettings": "Configuración",
 			"400": "El proveedor no pudo procesar la solicitud tal como se hizo. Detén la tarea e intenta un enfoque diferente.",
 			"401": "No se pudo autenticar con el proveedor. Por favor verifica tu configuración de clave API.",
 			"402": "Parece que se te han acabado los fondos/créditos en tu cuenta. Ve a tu proveedor y agrega más para continuar.",
 			"403": "No autorizado. Tu clave API es válida, pero el proveedor se negó a completar esta solicitud.",
 			"429": "Demasiadas solicitudes. Te estás viendo limitado por el proveedor. Por favor espera un poco antes de tu próxima llamada API.",
 			"500": "Error del servidor del proveedor. Algo está mal en el lado del proveedor, no hay nada mal con tu solicitud.",
+			"docs": "Documentación",
+			"goToSettings": "Configuración",
 			"unknown": "Error API desconocido. Por favor contacta al soporte de Roo Code.",
 			"connection": "Error de conexión. Asegúrate de tener una conexión a Internet funcional.",
 			"claudeCodeNotAuthenticated": "Debes iniciar sesión para usar Claude Code. Ve a Configuración y haz clic en \"Iniciar sesión en Claude Code\" para autenticarte."
@@ -258,7 +259,8 @@
 		"completionContent": "Subtarea completada",
 		"resultContent": "Resultados de la subtarea",
 		"defaultResult": "Por favor, continúa con la siguiente tarea.",
-		"completionInstructions": "¡Subtarea completada! Puedes revisar los resultados y sugerir correcciones o próximos pasos. Si todo se ve bien, confirma para devolver el resultado a la tarea principal."
+		"completionInstructions": "¡Subtarea completada! Puedes revisar los resultados y sugerir correcciones o próximos pasos. Si todo se ve bien, confirma para devolver el resultado a la tarea principal.",
+		"goToSubtask": "Ver tarea"
 	},
 	"questions": {
 		"hasQuestion": "Roo tiene una pregunta"

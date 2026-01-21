@@ -48,5 +48,11 @@
 		"mostTokens": "Más tokens",
 		"mostRelevant": "Más relevantes"
 	},
-	"viewAllHistory": "Ver todo"
+	"viewAllHistory": "Ver todo",
+	"subtasks_one": "{{count}} subtarea",
+	"subtasks_other": "{{count}} subtareas",
+	"subtaskTag": "Subtarea",
+	"deleteWithSubtasks": "Esto también eliminará {{count}} subtarea(s). ¿Estás seguro?",
+	"expandSubtasks": "Expandir subtareas",
+	"collapseSubtasks": "Contraer subtareas"
 }

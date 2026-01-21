@@ -28,7 +28,8 @@
 		"openInCloud": "Ouvrir la tâche dans Roo Code Cloud",
 		"openInCloudIntro": "Continue à surveiller ou interagir avec Roo depuis n'importe où. Scanne, clique ou copie pour ouvrir.",
 		"openApiHistory": "Ouvrir l'historique de l'API",
-		"openUiHistory": "Ouvrir l'historique de l'UI"
+		"openUiHistory": "Ouvrir l'historique de l'UI",
+		"backToParentTask": "Tâche parente"
 	},
 	"unpin": "Désépingler",
 	"pin": "Épingler",
@@ -146,14 +147,14 @@
 		"rateLimitWait": "Limitation du débit",
 		"errorTitle": "Erreur du fournisseur {{code}}",
 		"errorMessage": {
-			"docs": "Documentation",
-			"goToSettings": "Paramètres",
 			"400": "Le fournisseur n'a pas pu traiter la demande telle que présentée. Arrête la tâche et essaie une approche différente.",
 			"401": "Impossible de s'authentifier auprès du fournisseur. Veuillez vérifier la configuration de votre clé API.",
 			"402": "Il semble que vous ayez épuisé vos fonds/crédits sur votre compte. Allez chez votre fournisseur et ajoutez-en plus pour continuer.",
 			"403": "Non autorisé. Votre clé API est valide, mais le fournisseur a refusé de compléter cette demande.",
 			"429": "Trop de demandes. Vous êtes limité par le fournisseur. Veuillez attendre un peu avant votre prochain appel API.",
 			"500": "Erreur du serveur du fournisseur. Quelque chose ne va pas du côté du fournisseur, il n'y a rien de mal avec votre demande.",
+			"docs": "Documentation",
+			"goToSettings": "Paramètres",
 			"unknown": "Erreur API inconnue. Veuillez contacter le support Roo Code.",
 			"connection": "Erreur de connexion. Assurez-vous que vous avez une connexion Internet fonctionnelle.",
 			"claudeCodeNotAuthenticated": "Vous devez vous connecter pour utiliser Claude Code. Allez dans les Paramètres et cliquez sur \"Se connecter à Claude Code\" pour vous authentifier."
@@ -258,7 +259,8 @@
 		"completionContent": "Sous-tâche terminée",
 		"resultContent": "Résultats de la sous-tâche",
 		"defaultResult": "Veuillez continuer avec la tâche suivante.",
-		"completionInstructions": "Sous-tâche terminée ! Vous pouvez examiner les résultats et suggérer des corrections ou les prochaines étapes. Si tout semble bon, confirmez pour retourner le résultat à la tâche parente."
+		"completionInstructions": "Sous-tâche terminée ! Vous pouvez examiner les résultats et suggérer des corrections ou les prochaines étapes. Si tout semble bon, confirmez pour retourner le résultat à la tâche parente.",
+		"goToSubtask": "Afficher la tâche"
 	},
 	"questions": {
 		"hasQuestion": "Roo a une question"

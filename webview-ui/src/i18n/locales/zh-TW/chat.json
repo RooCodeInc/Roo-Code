@@ -28,7 +28,8 @@
 		"openInCloud": "在 Roo Code Cloud 中開啟工作",
 		"openInCloudIntro": "從任何地方繼續監控或與 Roo 互動。掃描、點擊或複製以開啟。",
 		"openApiHistory": "開啟 API 歷史紀錄",
-		"openUiHistory": "開啟 UI 歷史紀錄"
+		"openUiHistory": "開啟 UI 歷史紀錄",
+		"backToParentTask": "上層工作"
 	},
 	"unpin": "取消釘選",
 	"pin": "釘選",
@@ -152,14 +153,14 @@
 		"rateLimitWait": "速率限制",
 		"errorTitle": "提供商錯誤 {{code}}",
 		"errorMessage": {
-			"docs": "文件",
-			"goToSettings": "設定",
 			"400": "提供商無法按照此方式處理請求。請停止工作並嘗試其他方法。",
 			"401": "無法向提供商進行身份驗證。請檢查您的 API 金鑰設定。",
 			"402": "您的帳戶資金/額度似乎已用盡。請前往提供商增加額度以繼續。",
 			"403": "無權存取。您的 API 金鑰有效，但提供商拒絕完成此請求。",
 			"429": "請求次數過多。提供商已對您的請求進行速率限制。請在下一次 API 呼叫前稍候。",
 			"500": "提供商伺服器錯誤。提供商端發生問題，您的請求沒有問題。",
+			"docs": "文件",
+			"goToSettings": "設定",
 			"unknown": "未知 API 錯誤。請聯絡 Roo Code 支援。",
 			"connection": "連線錯誤。請確保您有可用的網際網路連線。",
 			"claudeCodeNotAuthenticated": "你需要登入才能使用 Claude Code。前往設定並點擊「登入 Claude Code」以進行驗證。"
@@ -287,7 +288,8 @@
 		"completionContent": "子工作已完成",
 		"resultContent": "子工作結果",
 		"defaultResult": "請繼續下一個工作。",
-		"completionInstructions": "子工作已完成！您可以檢閱結果並提出修正或後續步驟。如果一切順利，請確認以將結果回傳給主任務。"
+		"completionInstructions": "子工作已完成！您可以檢閱結果並提出修正或後續步驟。如果一切順利，請確認以將結果回傳給主任務。",
+		"goToSubtask": "查看工作"
 	},
 	"questions": {
 		"hasQuestion": "Roo 有一個問題"

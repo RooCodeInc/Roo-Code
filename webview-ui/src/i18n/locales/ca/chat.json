@@ -28,7 +28,8 @@
 		"openInCloud": "Obrir tasca a Roo Code Cloud",
 		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir.",
 		"openApiHistory": "Obrir historial d'API",
-		"openUiHistory": "Obrir historial d'UI"
+		"openUiHistory": "Obrir historial d'UI",
+		"backToParentTask": "Tasca principal"
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
@@ -146,14 +147,14 @@
 		"rateLimitWait": "Limitació de taxa",
 		"errorTitle": "Error de proveïdor {{code}}",
 		"errorMessage": {
-			"docs": "Documentació",
-			"goToSettings": "Configuració",
 			"400": "El proveïdor no ha pogut processar la sol·licitud tal com es va fer. Interromp la tasca i prova una abordatge diferent.",
 			"401": "No s'ha pogut autenticar amb el proveïdor. Si us plau, verifica la teva configuració de clau API.",
 			"402": "Sembla que se t'han acabat els fons/crèdits al teu compte. Vés al teu proveïdor i afegeix més per continuar.",
 			"403": "No autoritzat. La teva clau API és vàlida, però el proveïdor ha rebutjat completar aquesta sol·licitud.",
 			"429": "Massa sol·licituds. Estàs sent limitat pel proveïdor. Si us plau espera una mica abans de la teva propera crida API.",
 			"500": "Error del servidor del proveïdor. Quelcom va malament del costat del proveïdor, no hi ha res de malament amb la teva sol·licitud.",
+			"docs": "Documentació",
+			"goToSettings": "Configuració",
 			"unknown": "Error API desconegut. Si us plau contacta amb el suport de Roo Code.",
 			"connection": "Error de connexió. Assegureu-vos que teniu una connexió a Internet funcional.",
 			"claudeCodeNotAuthenticated": "Has d'iniciar sessió per utilitzar Claude Code. Vés a Configuració i fes clic a \"Iniciar sessió a Claude Code\" per autenticar-te."
@@ -258,7 +259,8 @@
 		"completionContent": "Subtasca completada",
 		"resultContent": "Resultats de la subtasca",
 		"defaultResult": "Si us plau, continua amb la següent tasca.",
-		"completionInstructions": "Subtasca completada! Pots revisar els resultats i suggerir correccions o següents passos. Si tot sembla correcte, confirma per tornar el resultat a la tasca principal."
+		"completionInstructions": "Subtasca completada! Pots revisar els resultats i suggerir correccions o següents passos. Si tot sembla correcte, confirma per tornar el resultat a la tasca principal.",
+		"goToSubtask": "Veure tasca"
 	},
 	"questions": {
 		"hasQuestion": "Roo té una pregunta"

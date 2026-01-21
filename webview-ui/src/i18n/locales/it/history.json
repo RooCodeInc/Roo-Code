@@ -41,5 +41,11 @@
 		"mostTokens": "Più token",
 		"mostRelevant": "Più rilevanti"
 	},
-	"viewAllHistory": "Visualizza tutto"
+	"viewAllHistory": "Visualizza tutto",
+	"subtasks_one": "{{count}} sottoattività",
+	"subtasks_other": "{{count}} sottoattività",
+	"subtaskTag": "Sottoattività",
+	"deleteWithSubtasks": "Questo eliminerà anche {{count}} sottoattività. Sei sicuro?",
+	"expandSubtasks": "Espandi sottoattività",
+	"collapseSubtasks": "Comprimi sottoattività"
 }

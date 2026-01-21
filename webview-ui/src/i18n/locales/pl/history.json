@@ -41,5 +41,11 @@
 		"mostTokens": "Najwięcej tokenów",
 		"mostRelevant": "Najbardziej trafne"
 	},
-	"viewAllHistory": "Zobacz wszystko"
+	"viewAllHistory": "Zobacz wszystko",
+	"subtasks_one": "{{count}} podzadanie",
+	"subtasks_other": "{{count}} podzadań",
+	"subtaskTag": "Podzadanie",
+	"deleteWithSubtasks": "Spowoduje to usunięcie {{count}} podzadania(ń). Jesteś pewny?",
+	"expandSubtasks": "Rozwiń podzadania",
+	"collapseSubtasks": "Zwiń podzadania"
 }
