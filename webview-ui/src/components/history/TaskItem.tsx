@@ -71,26 +71,33 @@ const TaskItem = ({
 
 				<div className="flex-1 min-w-0">
 					<div className="flex items-start gap-1">
-						<div
-							className={cn(
-								"flex-1 min-w-0 overflow-hidden whitespace-pre-wrap font-light text-ellipsis line-clamp-3",
-								{
-									"text-base": !isCompact,
-								},
-								!isCompact && isSelectionMode ? "mb-1" : "",
-							)}
-							data-testid="task-content"
-							{...(item.highlight
-								? {
-										dangerouslySetInnerHTML: {
-											__html: item.highlight,
-										},
-									}
-								: {})}>
-							<StandardTooltip content={item.task}>
-								<span>{item.highlight ? undefined : item.task}</span>
-							</StandardTooltip>
-						</div>
+						{item.highlight ? (
+							<div
+								className={cn(
+									"flex-1 min-w-0 overflow-hidden whitespace-pre-wrap font-light text-ellipsis line-clamp-3",
+									{
+										"text-base": !isCompact,
+									},
+									!isCompact && isSelectionMode ? "mb-1" : "",
+								)}
+								data-testid="task-content"
+								dangerouslySetInnerHTML={{ __html: item.highlight }}
+							/>
+						) : (
+							<div
+								className={cn(
+									"flex-1 min-w-0 overflow-hidden whitespace-pre-wrap font-light text-ellipsis line-clamp-3",
+									{
+										"text-base": !isCompact,
+									},
+									!isCompact && isSelectionMode ? "mb-1" : "",
+								)}
+								data-testid="task-content">
+								<StandardTooltip content={item.task}>
+									<span>{item.task}</span>
+								</StandardTooltip>
+							</div>
+						)}
 						{/* Arrow icon that appears on hover */}
 						<ArrowRight className="size-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
 					</div>
