@@ -5,7 +5,6 @@ import {
 	GitBranch,
 	GraduationCap,
 	Link2,
-	LucideIcon,
 	MessageSquare,
 	Settings,
 	Shield,
@@ -13,13 +12,15 @@ import {
 	Users,
 	Zap,
 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import type { Metadata } from "next"
 
-import { Button } from "@/components/ui"
 import { AnimatedBackground } from "@/components/homepage"
+import { SlackThreadDemo } from "@/components/slack/slack-thread-demo"
+import { Button } from "@/components/ui"
+import { EXTERNAL_LINKS } from "@/lib/constants"
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
-import { EXTERNAL_LINKS } from "@/lib/constants"
 
 const TITLE = "Roo Code for Slack"
 const DESCRIPTION =
@@ -69,7 +70,7 @@ export const metadata: Metadata = {
 // Invalidate cache when a request comes in, at most once every hour.
 export const revalidate = 3600
 
-interface ValueProp {
+type ValueProp = {
 	icon: LucideIcon
 	title: string
 	description: string
@@ -112,7 +113,7 @@ const VALUE_PROPS: ValueProp[] = [
 	},
 ]
 
-interface WorkflowStep {
+type WorkflowStep = {
 	step: number
 	title: string
 	description: string
@@ -145,7 +146,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
 	},
 ]
 
-interface OnboardingStep {
+type OnboardingStep = {
 	icon: LucideIcon
 	title: string
 	description: string
@@ -182,48 +183,54 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 	},
 ]
 
-export default function SlackPage() {
+export default function SlackPage(): JSX.Element {
 	return (
 		<>
 			{/* Hero Section */}
 			<section className="relative flex pt-32 pb-20 items-center overflow-hidden">
 				<AnimatedBackground />
 				<div className="container relative flex flex-col items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="text-center max-w-4xl mx-auto mb-12">
-						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-sm font-medium mb-6">
-							<Slack className="size-4" />
-							Powered by Roo Code Cloud
+					<div className="grid w-full max-w-6xl grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-12">
+						<div className="text-center lg:text-left">
+							<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-sm font-medium mb-6">
+								<Slack className="size-4" />
+								Powered by Roo Code Cloud
+							</div>
+							<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-5xl lg:text-6xl">
+								<span className="text-violet-500">@Roomote:</span> Your AI Team in&nbsp;Slack
+							</h1>
+							<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
+								Mention @Roomote in any channel to explain code, plan features, or ship a PR, all
+								without leaving the conversation.
+							</p>
+							<div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+								<Button
+									size="xl"
+									className="bg-violet-600 hover:bg-violet-700 text-white transition-all duration-300 shadow-lg hover:shadow-violet-500/25"
+									asChild>
+									<a
+										href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex items-center justify-center">
+										Get Started
+										<ArrowRight className="ml-2 size-5" />
+									</a>
+								</Button>
+								<Button variant="outline" size="xl" className="backdrop-blur-sm" asChild>
+									<a
+										href={EXTERNAL_LINKS.SLACK_DOCS}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="flex items-center justify-center">
+										Read the Docs
+									</a>
+								</Button>
+							</div>
 						</div>
-						<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-5xl lg:text-6xl">
-							<span className="text-violet-500">@Roomote:</span> Your AI Team in&nbsp;Slack
-						</h1>
-						<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-							Mention @Roomote in any channel to explain code, plan features, or ship a PR, all without
-							leaving the conversation.
-						</p>
-						<div className="flex flex-col sm:flex-row gap-4 justify-center">
-							<Button
-								size="xl"
-								className="bg-violet-600 hover:bg-violet-700 text-white transition-all duration-300 shadow-lg hover:shadow-violet-500/25"
-								asChild>
-								<a
-									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center justify-center">
-									Get Started
-									<ArrowRight className="ml-2 size-5" />
-								</a>
-							</Button>
-							<Button variant="outline" size="xl" className="backdrop-blur-sm" asChild>
-								<a
-									href={EXTERNAL_LINKS.SLACK_DOCS}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="flex items-center justify-center">
-									Read the Docs
-								</a>
-							</Button>
+
+						<div className="flex justify-center lg:justify-end">
+							<SlackThreadDemo />
 						</div>
 					</div>
 				</div>
@@ -264,13 +271,13 @@ export default function SlackPage() {
 			</section>
 
 			{/* Featured Workflow Section */}
-			<section className="relative overflow-hidden border-t border-border py-32">
+			<section className="relative overflow-hidden border-t border-border py-24 lg:py-32">
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2 z-1">
 						<div className="absolute left-1/2 top-1/2 h-[400px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 dark:bg-blue-700/20 blur-[140px]" />
 					</div>
 
-					<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
+					<div className="mx-auto mb-12 max-w-5xl text-center">
 						<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium mb-6">
 							<Zap className="size-4" />
 							Featured Workflow
@@ -283,29 +290,42 @@ export default function SlackPage() {
 						</p>
 					</div>
 
-					<div className="relative mx-auto md:max-w-[1000px]">
-						{/* Workflow Steps */}
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-							{WORKFLOW_STEPS.map((step) => (
-								<div
-									key={step.step}
-									className="relative border border-border rounded-2xl bg-background p-8 transition-all duration-300 hover:shadow-lg">
-									<div className="flex items-center gap-3 mb-4">
-										<div className="bg-blue-100 dark:bg-blue-900/30 w-10 h-10 rounded-full flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold">
-											{step.step}
+					<div className="relative mx-auto max-w-6xl">
+						<div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10 items-center">
+							{/* YouTube Video Embed */}
+							<div className="lg:col-span-3 overflow-hidden rounded-2xl border border-border bg-background shadow-lg">
+								<iframe
+									className="aspect-video w-full"
+									src="https://www.youtube-nocookie.com/embed/dJM_8HHGe1E?rel=0"
+									title="Roo Code Slack Integration Demo"
+									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+									referrerPolicy="strict-origin-when-cross-origin"
+									allowFullScreen
+								/>
+							</div>
+
+							{/* Workflow Steps */}
+							<div className="lg:col-span-2 space-y-3">
+								{WORKFLOW_STEPS.map((step) => (
+									<div
+										key={step.step}
+										className="relative border border-border rounded-xl bg-background p-4 transition-all duration-300 hover:shadow-md hover:border-blue-500/30">
+										<div className="flex items-start gap-3">
+											<div className="bg-blue-100 dark:bg-blue-900/30 w-7 h-7 rounded-full flex items-center justify-center text-blue-700 dark:text-blue-300 font-bold text-xs shrink-0 mt-0.5">
+												{step.step}
+											</div>
+											<div className="min-w-0">
+												<h3 className="text-base font-semibold text-foreground mb-0.5">
+													{step.title}
+												</h3>
+												<p className="text-sm leading-snug text-muted-foreground">
+													{step.description}
+												</p>
+											</div>
 										</div>
-										<h3 className="text-xl font-semibold text-foreground">{step.title}</h3>
 									</div>
-									<p className="leading-relaxed font-light text-muted-foreground mb-4">
-										{step.description}
-									</p>
-									{step.code && (
-										<div className="bg-muted/50 rounded-lg p-4 font-mono text-sm text-foreground/80 border border-border/50">
-											{step.code}
-										</div>
-									)}
-								</div>
-							))}
+								))}
+							</div>
 						</div>
 					</div>
 				</div>
