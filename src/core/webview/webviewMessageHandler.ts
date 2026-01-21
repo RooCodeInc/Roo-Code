@@ -66,6 +66,19 @@ const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
 
 import { MarketplaceManager, MarketplaceItemType } from "../../services/marketplace"
 import { setPendingTodoList } from "../tools/UpdateTodoListTool"
+import {
+	handleListWorktrees,
+	handleCreateWorktree,
+	handleDeleteWorktree,
+	handleSwitchWorktree,
+	handleGetAvailableBranches,
+	handleGetWorktreeDefaults,
+	handleGetWorktreeIncludeStatus,
+	handleCheckBranchWorktreeInclude,
+	handleCreateWorktreeInclude,
+	handleCheckoutBranch,
+	handleMergeWorktree,
+} from "./worktree"
 
 export const webviewMessageHandler = async (
 	provider: ClineProvider,
@@ -3386,6 +3399,247 @@ export const webviewMessageHandler = async (
 				values: message.values,
 				log: (msg) => provider.log(msg),
 			})
+			break
+		}
+
+		/**
+		 * Git Worktree Management
+		 */
+
+		case "listWorktrees": {
+			try {
+				const { worktrees, isGitRepo, isMultiRoot, isSubfolder, gitRootPath, error } =
+					await handleListWorktrees(provider)
+
+				await provider.postMessageToWebview({
+					type: "worktreeList",
+					worktrees,
+					isGitRepo,
+					isMultiRoot,
+					isSubfolder,
+					gitRootPath,
+					error,
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+
+				await provider.postMessageToWebview({
+					type: "worktreeList",
+					worktrees: [],
+					isGitRepo: false,
+					isMultiRoot: false,
+					isSubfolder: false,
+					gitRootPath: "",
+					error: errorMessage,
+				})
+			}
+
+			break
+		}
+
+		case "createWorktree": {
+			try {
+				const { success, message: text } = await handleCreateWorktree(provider, {
+					path: message.worktreePath!,
+					branch: message.worktreeBranch,
+					baseBranch: message.worktreeBaseBranch,
+					createNewBranch: message.worktreeCreateNewBranch,
+				})
+
+				await provider.postMessageToWebview({ type: "worktreeResult", success, text })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				await provider.postMessageToWebview({ type: "worktreeResult", success: false, text: errorMessage })
+			}
+
+			break
+		}
+
+		case "deleteWorktree": {
+			try {
+				const { success, message: text } = await handleDeleteWorktree(
+					provider,
+					message.worktreePath!,
+					message.worktreeForce ?? false,
+				)
+
+				await provider.postMessageToWebview({ type: "worktreeResult", success, text })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				await provider.postMessageToWebview({ type: "worktreeResult", success: false, text: errorMessage })
+			}
+
+			break
+		}
+
+		case "switchWorktree": {
+			try {
+				const { success, message: text } = await handleSwitchWorktree(
+					provider,
+					message.worktreePath!,
+					message.worktreeNewWindow ?? true,
+				)
+
+				await provider.postMessageToWebview({ type: "worktreeResult", success, text })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				await provider.postMessageToWebview({ type: "worktreeResult", success: false, text: errorMessage })
+			}
+
+			break
+		}
+
+		case "getAvailableBranches": {
+			try {
+				const { localBranches, remoteBranches, currentBranch } = await handleGetAvailableBranches(provider)
+
+				await provider.postMessageToWebview({
+					type: "branchList",
+					localBranches,
+					remoteBranches,
+					currentBranch,
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+
+				await provider.postMessageToWebview({
+					type: "branchList",
+					localBranches: [],
+					remoteBranches: [],
+					currentBranch: "",
+					error: errorMessage,
+				})
+			}
+
+			break
+		}
+
+		case "getWorktreeDefaults": {
+			try {
+				const { suggestedBranch, suggestedPath } = await handleGetWorktreeDefaults(provider)
+				await provider.postMessageToWebview({ type: "worktreeDefaults", suggestedBranch, suggestedPath })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+
+				await provider.postMessageToWebview({
+					type: "worktreeDefaults",
+					suggestedBranch: "",
+					suggestedPath: "",
+					error: errorMessage,
+				})
+			}
+
+			break
+		}
+
+		case "getWorktreeIncludeStatus": {
+			try {
+				const worktreeIncludeStatus = await handleGetWorktreeIncludeStatus(provider)
+				await provider.postMessageToWebview({ type: "worktreeIncludeStatus", worktreeIncludeStatus })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+
+				await provider.postMessageToWebview({
+					type: "worktreeIncludeStatus",
+					worktreeIncludeStatus: {
+						exists: false,
+						hasGitignore: false,
+						gitignoreContent: undefined,
+					},
+					error: errorMessage,
+				})
+			}
+
+			break
+		}
+
+		case "checkBranchWorktreeInclude": {
+			try {
+				const branch = message.worktreeBranch
+				if (!branch) {
+					await provider.postMessageToWebview({
+						type: "branchWorktreeIncludeResult",
+						hasWorktreeInclude: false,
+						error: "No branch specified",
+					})
+					break
+				}
+				const hasWorktreeInclude = await handleCheckBranchWorktreeInclude(provider, branch)
+				await provider.postMessageToWebview({
+					type: "branchWorktreeIncludeResult",
+					branch,
+					hasWorktreeInclude,
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				await provider.postMessageToWebview({
+					type: "branchWorktreeIncludeResult",
+					hasWorktreeInclude: false,
+					error: errorMessage,
+				})
+			}
+
+			break
+		}
+
+		case "createWorktreeInclude": {
+			try {
+				const { success, message: text } = await handleCreateWorktreeInclude(
+					provider,
+					message.worktreeIncludeContent ?? "",
+				)
+
+				await provider.postMessageToWebview({ type: "worktreeResult", success, text })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error creating worktree include: ${errorMessage}`)
+				await provider.postMessageToWebview({ type: "worktreeResult", success: false, text: errorMessage })
+			}
+
+			break
+		}
+
+		case "checkoutBranch": {
+			try {
+				const { success, message: text } = await handleCheckoutBranch(provider, message.worktreeBranch!)
+				await provider.postMessageToWebview({ type: "worktreeResult", success, text })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				await provider.postMessageToWebview({ type: "worktreeResult", success: false, text: errorMessage })
+			}
+
+			break
+		}
+
+		case "mergeWorktree": {
+			try {
+				const result = await handleMergeWorktree(provider, {
+					worktreePath: message.worktreePath!,
+					targetBranch: message.worktreeTargetBranch!,
+					deleteAfterMerge: message.worktreeDeleteAfterMerge,
+				})
+
+				await provider.postMessageToWebview({
+					type: "mergeWorktreeResult",
+					success: result.success,
+					text: result.message,
+					hasConflicts: result.hasConflicts,
+					conflictingFiles: result.conflictingFiles,
+					sourceBranch: result.sourceBranch,
+					targetBranch: result.targetBranch,
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+
+				await provider.postMessageToWebview({
+					type: "mergeWorktreeResult",
+					success: false,
+					text: errorMessage,
+					hasConflicts: false,
+					conflictingFiles: [],
+				})
+			}
+
 			break
 		}
 

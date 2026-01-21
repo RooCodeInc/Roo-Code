@@ -24,6 +24,7 @@
 	"command.openInEditor.title": "Obrir a l'Editor",
 	"command.cloud.title": "Cloud",
 	"command.settings.title": "Configuració",
+	"command.worktrees.title": "Worktrees",
 	"command.documentation.title": "Documentació",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "Ordres que es poden executar automàticament quan 'Aprova sempre les operacions d'execució' està activat",

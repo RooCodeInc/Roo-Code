@@ -1815,6 +1815,25 @@ export class ClineProvider
 	}
 
 	/**
+	 * Like postStateToWebview but intentionally omits taskHistory.
+	 *
+	 * Rationale:
+	 * - taskHistory can be large and was being resent on every chat message update.
+	 * - The webview maintains taskHistory in-memory and receives updates via
+	 *   `taskHistoryUpdated` / `taskHistoryItemUpdated`.
+	 */
+	async postStateToWebviewWithoutTaskHistory(): Promise<void> {
+		const state = await this.getStateToPostToWebview()
+		const { taskHistory: _omit, ...rest } = state
+		this.postMessageToWebview({ type: "state", state: rest })
+
+		// Preserve existing MDM redirect behavior
+		if (this.mdmService?.requiresCloudAuth() && !this.checkMdmCompliance()) {
+			await this.postMessageToWebview({ type: "action", action: "cloudButtonClicked" })
+		}
+	}
+
+	/**
 	 * Fetches marketplace data on demand to avoid blocking main state updates
 	 */
 	async fetchMarketplaceData() {
@@ -2466,11 +2485,19 @@ export class ClineProvider
 		}
 	}
 
-	async updateTaskHistory(item: HistoryItem): Promise<HistoryItem[]> {
+	/**
+	 * Updates a task in the task history and optionally broadcasts the updated history to the webview.
+	 * @param item The history item to update or add
+	 * @param options.broadcast Whether to broadcast the updated history to the webview (default: true)
+	 * @returns The updated task history array
+	 */
+	async updateTaskHistory(item: HistoryItem, options: { broadcast?: boolean } = {}): Promise<HistoryItem[]> {
+		const { broadcast = true } = options
 		const history = (this.getGlobalState("taskHistory") as HistoryItem[] | undefined) || []
 		const existingItemIndex = history.findIndex((h) => h.id === item.id)
+		const wasExisting = existingItemIndex !== -1
 
-		if (existingItemIndex !== -1) {
+		if (wasExisting) {
 			// Preserve existing metadata (e.g., delegation fields) unless explicitly overwritten.
 			// This prevents loss of status/awaitingChildId/delegatedToId when tasks are reopened,
 			// terminated, or when routine message persistence occurs.
@@ -2485,7 +2512,37 @@ export class ClineProvider
 		await this.updateGlobalState("taskHistory", history)
 		this.recentTasksCache = undefined
 
+		// Broadcast the updated history to the webview if requested.
+		// Prefer per-item updates to avoid repeatedly cloning/sending the full history.
+		if (broadcast && this.isViewLaunched) {
+			const updatedItem = wasExisting ? history[existingItemIndex] : item
+			await this.postMessageToWebview({ type: "taskHistoryItemUpdated", taskHistoryItem: updatedItem })
+		}
+
 		return history
+	}
+
+	/**
+	 * Broadcasts a task history update to the webview.
+	 * This sends a lightweight message with just the task history, rather than the full state.
+	 * @param history The task history to broadcast (if not provided, reads from global state)
+	 */
+	public async broadcastTaskHistoryUpdate(history?: HistoryItem[]): Promise<void> {
+		if (!this.isViewLaunched) {
+			return
+		}
+
+		const taskHistory = history ?? (this.getGlobalState("taskHistory") as HistoryItem[] | undefined) ?? []
+
+		// Sort and filter the history the same way as getStateToPostToWebview
+		const sortedHistory = taskHistory
+			.filter((item: HistoryItem) => item.ts && item.task)
+			.sort((a: HistoryItem, b: HistoryItem) => b.ts - a.ts)
+
+		await this.postMessageToWebview({
+			type: "taskHistoryUpdated",
+			taskHistory: sortedHistory,
+		})
 	}
 
 	// ContextProxy

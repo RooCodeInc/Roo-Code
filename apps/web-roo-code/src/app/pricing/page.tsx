@@ -292,7 +292,7 @@ export default function PricingPage() {
 								<li>
 									To pay for AI model inference costs (
 									<a
-										href="https://app.roocode.com/provider/pricing"
+										href="/provider"
 										target="_blank"
 										rel="noopener noreferrer"
 										className="underline">

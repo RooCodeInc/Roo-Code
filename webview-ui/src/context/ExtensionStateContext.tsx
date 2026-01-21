@@ -171,7 +171,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
 
-export const mergeExtensionState = (prevState: ExtensionState, newState: ExtensionState) => {
+export const mergeExtensionState = (prevState: ExtensionState, newState: Partial<ExtensionState>) => {
 	const { customModePrompts: prevCustomModePrompts, experiments: prevExperiments, ...prevRest } = prevState
 
 	const {
@@ -182,13 +182,19 @@ export const mergeExtensionState = (prevState: ExtensionState, newState: Extensi
 		...newRest
 	} = newState
 
-	const customModePrompts = { ...prevCustomModePrompts, ...newCustomModePrompts }
-	const experiments = { ...prevExperiments, ...newExperiments }
+	const customModePrompts = { ...prevCustomModePrompts, ...(newCustomModePrompts ?? {}) }
+	const experiments = { ...prevExperiments, ...(newExperiments ?? {}) }
 	const rest = { ...prevRest, ...newRest }
 
 	// Note that we completely replace the previous apiConfiguration and customSupportPrompts objects
 	// with new ones since the state that is broadcast is the entire objects so merging is not necessary.
-	return { ...rest, apiConfiguration, customModePrompts, customSupportPrompts, experiments }
+	return {
+		...rest,
+		apiConfiguration: apiConfiguration ?? prevState.apiConfiguration,
+		customModePrompts,
+		customSupportPrompts: customSupportPrompts ?? prevState.customSupportPrompts,
+		experiments,
+	}
 }
 
 export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -322,7 +328,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			const message: ExtensionMessage = event.data
 			switch (message.type) {
 				case "state": {
-					const newState = message.state!
+					const newState = message.state ?? {}
 					setState((prevState) => mergeExtensionState(prevState, newState))
 					setShowWelcome(!checkExistKey(newState.apiConfiguration))
 					setDidHydrateState(true)
@@ -422,6 +428,40 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					if (message.marketplaceInstalledMetadata !== undefined) {
 						setMarketplaceInstalledMetadata(message.marketplaceInstalledMetadata)
 					}
+					break
+				}
+				case "taskHistoryUpdated": {
+					// Efficiently update just the task history without replacing entire state
+					if (message.taskHistory !== undefined) {
+						setState((prevState) => ({
+							...prevState,
+							taskHistory: message.taskHistory!,
+						}))
+					}
+					break
+				}
+				case "taskHistoryItemUpdated": {
+					const item = message.taskHistoryItem
+					if (!item) {
+						break
+					}
+					setState((prevState) => {
+						const existingIndex = prevState.taskHistory.findIndex((h) => h.id === item.id)
+						let nextHistory: typeof prevState.taskHistory
+						if (existingIndex === -1) {
+							nextHistory = [item, ...prevState.taskHistory]
+						} else {
+							nextHistory = [...prevState.taskHistory]
+							nextHistory[existingIndex] = item
+						}
+						// Keep UI semantics consistent with extension: newest-first ordering.
+						nextHistory.sort((a, b) => b.ts - a.ts)
+							return {
+								...prevState,
+								taskHistory: nextHistory,
+								currentTaskItem: prevState.currentTaskItem?.id === item.id ? item : prevState.currentTaskItem,
+							}
+					})
 					break
 				}
 			}

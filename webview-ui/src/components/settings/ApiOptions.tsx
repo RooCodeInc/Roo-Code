@@ -41,6 +41,14 @@ import {
 	minimaxDefaultModelId,
 } from "@roo-code/types"
 
+import {
+	getProviderServiceConfig,
+	getDefaultModelIdForProvider,
+	getStaticModelsForProvider,
+	shouldUseGenericModelPicker,
+	handleModelChangeSideEffects,
+} from "./utils/providerModelConfig"
+
 import { vscode } from "@src/utils/vscode"
 import { validateApiConfigurationExcludingModelErrors, getModelValidationError } from "@src/utils/validate"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
@@ -104,7 +112,7 @@ import {
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
 import { inputEventTransform, noTransform } from "./transforms"
-import { ModelInfoView } from "./ModelInfoView"
+import { ModelPicker } from "./ModelPicker"
 import { ApiErrorMessage } from "./ApiErrorMessage"
 import { ThinkingBudget } from "./ThinkingBudget"
 import { Verbosity } from "./Verbosity"
@@ -174,7 +182,6 @@ const ApiOptions = ({
 		[customHeaders, apiConfiguration?.openAiHeaders, setApiConfigurationField],
 	)
 
-	const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false)
 	const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false)
 
 	const handleInputChange = useCallback(
@@ -272,32 +279,6 @@ const ApiOptions = ({
 		)
 		setErrorMessage(apiValidationResult)
 	}, [apiConfiguration, routerModels, organizationAllowList, setErrorMessage])
-
-	const selectedProviderModels = useMemo(() => {
-		const models = MODELS_BY_PROVIDER[selectedProvider]
-
-		if (!models) return []
-
-		const filteredModels = filterModels(models, selectedProvider, organizationAllowList)
-
-		// Include the currently selected model even if deprecated (so users can see what they have selected)
-		// But filter out other deprecated models from being newly selectable
-		const availableModels = filteredModels
-			? Object.entries(filteredModels)
-					.filter(([modelId, modelInfo]) => {
-						// Always include the currently selected model
-						if (modelId === selectedModelId) return true
-						// Filter out deprecated models that aren't currently selected
-						return !modelInfo.deprecated
-					})
-					.map(([modelId]) => ({
-						value: modelId,
-						label: modelId,
-					}))
-			: []
-
-		return availableModels
-	}, [selectedProvider, organizationAllowList, selectedModelId])
 
 	const onProviderChange = useCallback(
 		(value: ProviderName) => {
@@ -660,11 +641,7 @@ const ApiOptions = ({
 			)}
 
 			{selectedProvider === "lmstudio" && (
-				<LMStudio
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					simplifySettings={fromWelcomeView}
-				/>
+				<LMStudio apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
 			{selectedProvider === "deepseek" && (
@@ -797,69 +774,33 @@ const ApiOptions = ({
 				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{/* Skip generic model picker for claude-code/openai-codex since they have their own model pickers */}
-			{selectedProviderModels.length > 0 &&
-				selectedProvider !== "claude-code" &&
-				selectedProvider !== "openai-codex" && (
-					<>
-						<div>
-							<label className="block font-medium mb-1">{t("settings:providers.model")}</label>
-							<Select
-								value={selectedModelId === "custom-arn" ? "custom-arn" : selectedModelId}
-								onValueChange={(value) => {
-									setApiConfigurationField("apiModelId", value)
+			{/* Generic model picker for providers with static models */}
+			{shouldUseGenericModelPicker(selectedProvider) && (
+				<>
+					<ModelPicker
+						apiConfiguration={apiConfiguration}
+						setApiConfigurationField={setApiConfigurationField}
+						defaultModelId={getDefaultModelIdForProvider(selectedProvider, apiConfiguration)}
+						models={getStaticModelsForProvider(selectedProvider, t("settings:labels.useCustomArn"))}
+						modelIdKey="apiModelId"
+						serviceName={getProviderServiceConfig(selectedProvider).serviceName}
+						serviceUrl={getProviderServiceConfig(selectedProvider).serviceUrl}
+						organizationAllowList={organizationAllowList}
+						errorMessage={modelValidationError}
+						simplifySettings={fromWelcomeView}
+						onModelChange={(modelId) =>
+							handleModelChangeSideEffects(selectedProvider, modelId, setApiConfigurationField)
+						}
+					/>
 
-									// Clear custom ARN if not using custom ARN option.
-									if (value !== "custom-arn" && selectedProvider === "bedrock") {
-										setApiConfigurationField("awsCustomArn", "")
-									}
-
-									// Clear reasoning effort when switching models to allow the new model's default to take effect
-									// This is especially important for GPT-5 models which default to "medium"
-									if (selectedProvider === "openai-native") {
-										setApiConfigurationField("reasoningEffort", undefined)
-									}
-								}}>
-								<SelectTrigger className="w-full">
-									<SelectValue placeholder={t("settings:common.select")} />
-								</SelectTrigger>
-								<SelectContent>
-									{selectedProviderModels.map((option) => (
-										<SelectItem key={option.value} value={option.value}>
-											{option.label}
-										</SelectItem>
-									))}
-									{selectedProvider === "bedrock" && (
-										<SelectItem value="custom-arn">{t("settings:labels.useCustomArn")}</SelectItem>
-									)}
-								</SelectContent>
-							</Select>
-						</div>
-
-						{/* Show error if a deprecated model is selected */}
-						{selectedModelInfo?.deprecated && (
-							<ApiErrorMessage errorMessage={t("settings:validation.modelDeprecated")} />
-						)}
-
-						{selectedProvider === "bedrock" && selectedModelId === "custom-arn" && (
-							<BedrockCustomArn
-								apiConfiguration={apiConfiguration}
-								setApiConfigurationField={setApiConfigurationField}
-							/>
-						)}
-
-						{/* Only show model info if not deprecated */}
-						{!selectedModelInfo?.deprecated && (
-							<ModelInfoView
-								apiProvider={selectedProvider}
-								selectedModelId={selectedModelId}
-								modelInfo={selectedModelInfo}
-								isDescriptionExpanded={isDescriptionExpanded}
-								setIsDescriptionExpanded={setIsDescriptionExpanded}
-							/>
-						)}
-					</>
-				)}
+					{selectedProvider === "bedrock" && selectedModelId === "custom-arn" && (
+						<BedrockCustomArn
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
+						/>
+					)}
+				</>
+			)}
 
 			{!fromWelcomeView && (
 				<ThinkingBudget
