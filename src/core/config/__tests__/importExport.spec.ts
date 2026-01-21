@@ -126,6 +126,7 @@ describe("importExport", () => {
 			setValue: vi.fn(),
 			export: vi.fn().mockImplementation(() => Promise.resolve({})),
 			setProviderSettings: vi.fn(),
+			getValue: vi.fn(),
 		} as unknown as ReturnType<typeof vi.mocked<ContextProxy>>
 
 		mockCustomModesManager = { updateCustomMode: vi.fn() } as unknown as ReturnType<
@@ -703,7 +704,7 @@ describe("importExport", () => {
 				defaultUri: expect.anything(),
 			})
 
-			expect(vscode.Uri.file).toHaveBeenCalledWith(path.join("/mock/home", "Documents", "roo-code-settings.json"))
+			expect(vscode.Uri.file).toHaveBeenCalledWith(path.join("/mock/home", "Downloads", "roo-code-settings.json"))
 		})
 
 		describe("codebase indexing export", () => {

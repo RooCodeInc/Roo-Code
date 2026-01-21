@@ -197,6 +197,9 @@ export const globalSettingsSchema = z.object({
 	hasOpenedModeSelector: z.boolean().optional(),
 	lastModeExportPath: z.string().optional(),
 	lastModeImportPath: z.string().optional(),
+	lastSettingsExportPath: z.string().optional(),
+	lastTaskExportPath: z.string().optional(),
+	lastImageSavePath: z.string().optional(),
 
 	/**
 	 * Path to worktree to auto-open after switching workspaces.

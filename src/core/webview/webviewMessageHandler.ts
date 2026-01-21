@@ -60,6 +60,7 @@ import { Mode, defaultModeSlug } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
 import { GetModelsOptions } from "../../shared/api"
 import { generateSystemPrompt } from "./generateSystemPrompt"
+import { resolveDefaultSaveUri, saveLastExportPath } from "../../utils/export"
 import { getCommand } from "../../utils/commands"
 
 const ALLOWED_VSCODE_SETTINGS = new Set(["terminal.integrated.inheritEnv"])
@@ -1140,7 +1141,32 @@ export const webviewMessageHandler = async (
 			openImage(message.text!, { values: message.values })
 			break
 		case "saveImage":
-			saveImage(message.dataUri!)
+			if (message.dataUri) {
+				const matches = message.dataUri.match(/^data:image\/([a-zA-Z]+);base64,(.+)$/)
+				if (!matches) {
+					// Let saveImage handle invalid URI error
+					saveImage(message.dataUri, vscode.Uri.file(""))
+					break
+				}
+				const format = matches[1]
+				const defaultFileName = `img_${Date.now()}.${format}`
+
+				const defaultUri = await resolveDefaultSaveUri(
+					provider.contextProxy,
+					"lastImageSavePath",
+					defaultFileName,
+					{
+						useWorkspace: false,
+						fallbackDir: path.join(os.homedir(), "Downloads"),
+					},
+				)
+
+				const savedUri = await saveImage(message.dataUri, defaultUri)
+
+				if (savedUri) {
+					await saveLastExportPath(provider.contextProxy, "lastImageSavePath", savedUri)
+				}
+			}
 			break
 		case "openFile":
 			let filePath: string = message.text!
@@ -2132,25 +2158,15 @@ export const webviewMessageHandler = async (
 					const result = await provider.customModesManager.exportModeWithRules(message.slug, customPrompt)
 
 					if (result.success && result.yaml) {
-						// Get last used directory for export
-						const lastExportPath = getGlobalState("lastModeExportPath")
-						let defaultUri: vscode.Uri
-
-						if (lastExportPath) {
-							// Use the directory from the last export
-							const lastDir = path.dirname(lastExportPath)
-							defaultUri = vscode.Uri.file(path.join(lastDir, `${message.slug}-export.yaml`))
-						} else {
-							// Default to workspace or home directory
-							const workspaceFolders = vscode.workspace.workspaceFolders
-							if (workspaceFolders && workspaceFolders.length > 0) {
-								defaultUri = vscode.Uri.file(
-									path.join(workspaceFolders[0].uri.fsPath, `${message.slug}-export.yaml`),
-								)
-							} else {
-								defaultUri = vscode.Uri.file(`${message.slug}-export.yaml`)
-							}
-						}
+						const defaultUri = await resolveDefaultSaveUri(
+							provider.contextProxy,
+							"lastModeExportPath",
+							`${message.slug}-export.yaml`,
+							{
+								useWorkspace: true,
+								fallbackDir: path.join(os.homedir(), "Downloads"),
+							},
+						)
 
 						// Show save dialog
 						const saveUri = await vscode.window.showSaveDialog({
@@ -2163,7 +2179,7 @@ export const webviewMessageHandler = async (
 
 						if (saveUri && result.yaml) {
 							// Save the directory for next time
-							await updateGlobalState("lastModeExportPath", saveUri.fsPath)
+							await saveLastExportPath(provider.contextProxy, "lastModeExportPath", saveUri)
 
 							// Write the file to the selected location
 							await fs.writeFile(saveUri.fsPath, result.yaml, "utf-8")

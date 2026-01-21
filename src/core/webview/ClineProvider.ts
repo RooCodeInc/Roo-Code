@@ -63,7 +63,8 @@ import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
 import { ProfileValidator } from "../../shared/ProfileValidator"
 
 import { Terminal } from "../../integrations/terminal/Terminal"
-import { downloadTask } from "../../integrations/misc/export-markdown"
+import { downloadTask, getTaskFileName } from "../../integrations/misc/export-markdown"
+import { resolveDefaultSaveUri, saveLastExportPath } from "../../utils/export"
 import { getTheme } from "../../integrations/theme/getTheme"
 import WorkspaceTracker from "../../integrations/workspace/WorkspaceTracker"
 
@@ -1724,7 +1725,16 @@ export class ClineProvider
 
 	async exportTaskWithId(id: string) {
 		const { historyItem, apiConversationHistory } = await this.getTaskWithId(id)
-		await downloadTask(historyItem.ts, apiConversationHistory)
+		const fileName = getTaskFileName(historyItem.ts)
+		const defaultUri = await resolveDefaultSaveUri(this.contextProxy, "lastTaskExportPath", fileName, {
+			useWorkspace: false,
+			fallbackDir: path.join(os.homedir(), "Downloads"),
+		})
+		const saveUri = await downloadTask(historyItem.ts, apiConversationHistory, defaultUri)
+
+		if (saveUri) {
+			await saveLastExportPath(this.contextProxy, "lastTaskExportPath", saveUri)
+		}
 	}
 
 	/* Condenses a task's message history to use fewer tokens. */
