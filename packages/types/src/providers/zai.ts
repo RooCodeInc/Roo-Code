@@ -223,7 +223,7 @@ export const mainlandZAiModels = {
 	},
 } as const satisfies Record<string, ModelInfo>
 
-export const ZAI_DEFAULT_TEMPERATURE = 0.6
+export const ZAI_DEFAULT_TEMPERATURE = 1
 
 export const zaiApiLineConfigs = {
 	international_coding: {
