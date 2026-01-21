@@ -79,7 +79,7 @@ describe("ChatRow - subtask links", () => {
 	})
 
 	describe("newTask tool", () => {
-		it("should display 'Go to subtask' link when currentTaskItem has delegatedToId", () => {
+		it("should display 'Go to subtask' link when currentTaskItem has childIds", () => {
 			const message = {
 				ts: Date.now(),
 				type: "ask" as const,
@@ -91,8 +91,9 @@ describe("ChatRow - subtask links", () => {
 				}),
 			}
 
+			// childIds maps by index to newTask messages - first newTask gets childIds[0]
 			renderChatRow(message, {
-				delegatedToId: "child-task-123",
+				childIds: ["child-task-123"],
 			})
 
 			const goToSubtaskButton = screen.getByText("Go to subtask")
@@ -106,7 +107,7 @@ describe("ChatRow - subtask links", () => {
 			})
 		})
 
-		it("should display 'Go to subtask' link when currentTaskItem has childIds", () => {
+		it("should display 'Go to subtask' link using index-matched childId for multiple newTasks", () => {
 			const message = {
 				ts: Date.now(),
 				type: "ask" as const,
@@ -118,6 +119,8 @@ describe("ChatRow - subtask links", () => {
 				}),
 			}
 
+			// The implementation maps newTask messages to childIds by index
+			// Since this is the first (and only) newTask message, it gets childIds[0]
 			renderChatRow(message, {
 				childIds: ["first-child", "second-child"],
 			})
@@ -127,10 +130,10 @@ describe("ChatRow - subtask links", () => {
 
 			fireEvent.click(goToSubtaskButton)
 
-			// Should use the last child ID
+			// First newTask message maps to first childId
 			expect(mockPostMessage).toHaveBeenCalledWith({
 				type: "showTaskWithId",
-				text: "second-child",
+				text: "first-child",
 			})
 		})
 

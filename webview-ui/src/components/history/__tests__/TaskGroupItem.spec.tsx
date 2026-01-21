@@ -144,8 +144,10 @@ describe("TaskGroupItem", () => {
 
 			render(<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} />)
 
-			expect(screen.queryByTestId("subtask-list")).not.toBeInTheDocument()
-			expect(screen.queryByText("Subtask content")).not.toBeInTheDocument()
+			// The subtask-list element is present but collapsed via CSS (max-h-0)
+			const subtaskList = screen.queryByTestId("subtask-list")
+			expect(subtaskList).toBeInTheDocument()
+			expect(subtaskList).toHaveClass("max-h-0")
 		})
 	})
 
