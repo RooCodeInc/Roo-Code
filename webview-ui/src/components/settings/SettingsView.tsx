@@ -429,7 +429,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
 					maxGitStatusFiles: maxGitStatusFiles ?? 0,
-					taskHistoryRetention: taskHistoryRetention ?? "never",
+taskHistoryRetention: normalizedTaskHistoryRetention,
 					profileThresholds,
 					imageGenerationProvider,
 					openRouterImageApiKey,
