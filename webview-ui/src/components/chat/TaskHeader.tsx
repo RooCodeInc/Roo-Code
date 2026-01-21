@@ -21,7 +21,7 @@ import { findLastIndex } from "@roo/array"
 
 import { formatLargeNumber } from "@src/utils/format"
 import { cn } from "@src/lib/utils"
-import { StandardTooltip, Button, Table, TableBody, TableRow, TableCell } from "@src/components/ui"
+import { StandardTooltip, Button, Table, TableBody, TableRow, TableCell, CircularProgress } from "@src/components/ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@/components/ui/hooks/useSelectedModel"
 import { vscode } from "@src/utils/vscode"
@@ -277,34 +277,9 @@ const TaskHeader = ({
 								<span className="flex items-center gap-1.5">
 									{(() => {
 										const percentage = Math.round(((contextTokens || 0) / contextWindow) * 100)
-										const radius = 6
-										const circumference = 2 * Math.PI * radius
-										const strokeDashoffset = circumference - (percentage / 100) * circumference
 										return (
 											<>
-												<svg width="16" height="16" viewBox="0 0 16 16" className="shrink-0">
-													<circle
-														cx="8"
-														cy="8"
-														r={radius}
-														fill="none"
-														stroke="currentColor"
-														strokeWidth="2"
-														opacity="0.2"
-													/>
-													<circle
-														cx="8"
-														cy="8"
-														r={radius}
-														fill="none"
-														stroke="currentColor"
-														strokeWidth="2"
-														strokeDasharray={circumference}
-														strokeDashoffset={strokeDashoffset}
-														strokeLinecap="round"
-														transform="rotate(-90 8 8)"
-													/>
-												</svg>
+												<CircularProgress percentage={percentage} />
 												<span>{percentage}%</span>
 											</>
 										)
