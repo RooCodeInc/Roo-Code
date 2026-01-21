@@ -117,7 +117,6 @@ type WorkflowStep = {
 	step: number
 	title: string
 	description: string
-	code?: string
 }
 
 const WORKFLOW_STEPS: WorkflowStep[] = [
@@ -125,7 +124,6 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
 		step: 1,
 		title: "Turn the discussion into a plan",
 		description: "Your team discusses a feature. When it gets complex, summon the Planner agent.",
-		code: "@Roomote plan out a dark mode feature based on our discussion. Include the toggle, persistence, and system preference detection.",
 	},
 	{
 		step: 2,
@@ -137,7 +135,6 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
 		step: 3,
 		title: "Build the plan",
 		description: "Once the plan looks good, hand it off to the Coder agent to implement.",
-		code: "@Roomote implement this plan in the frontend-web repo.",
 	},
 	{
 		step: 4,
