@@ -3286,7 +3286,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// IMPORTANT: keep a reference so completion/delegation can await final persisted usage/cost.
 					this.pendingUsageCollectionPromise = drainStreamInBackgroundToFindAllUsage(lastApiReqIndex)
 						.catch((error) => {
-							console.error("Background usage collection failed:", error)
+							const err = error instanceof Error ? error : new Error("Background usage collection failed")
+							TelemetryService.instance.captureException(err, {
+								location: "Task.pendingUsageCollectionPromise",
+								taskId: this.taskId,
+								instanceId: this.instanceId,
+								lastApiReqIndex,
+								originalError: error instanceof Error ? undefined : serializeError(error),
+							})
 						})
 						.finally(() => {
 							if (this.pendingUsageCollectionPromise) {

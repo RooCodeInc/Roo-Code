@@ -126,13 +126,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}, [messages, currentTaskTodos])
 
 	useEffect(() => {
-		// TODO debugging: ensure todo extraction runs and surfaces state that should drive UI.
-		console.log("[TODO-DEBUG]", "ChatView latestTodos computed", {
-			messagesCount: Array.isArray(messages) ? messages.length : undefined,
-			currentTaskTodosCount: Array.isArray(currentTaskTodos) ? currentTaskTodos.length : undefined,
-			latestTodosCount: Array.isArray(latestTodos) ? latestTodos.length : undefined,
-			latestTodos,
-		})
+		// Intentionally left blank: keep dependencies so todo extraction logic remains reactive.
 	}, [messages, currentTaskTodos, latestTodos])
 
 	const modifiedMessages = useMemo(() => combineApiRequests(combineCommandSequences(messages.slice(1))), [messages])

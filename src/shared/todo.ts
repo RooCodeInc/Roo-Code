@@ -2,7 +2,6 @@ import { ClineMessage, TodoItem } from "@roo-code/types"
 
 export function getLatestTodo(clineMessages: ClineMessage[]): TodoItem[] {
 	if (!Array.isArray(clineMessages) || clineMessages.length === 0) {
-		console.log("[TODO-DEBUG]", "getLatestTodo called with empty clineMessages")
 		return []
 	}
 
@@ -30,22 +29,6 @@ export function getLatestTodo(clineMessages: ClineMessage[]): TodoItem[] {
 			lastTodos = parsed.todos as TodoItem[]
 		}
 	}
-
-	console.log("[TODO-DEBUG]", "getLatestTodo scanned messages", {
-		totalMessages: clineMessages.length,
-		candidateMessages: candidateMessages.length,
-		matchedUpdateTodoListCount,
-		parseFailureCount,
-		returnedTodosCount: Array.isArray(lastTodos) ? lastTodos.length : 0,
-		// Only log lightweight metadata for the last few candidates (avoid dumping full message content)
-		lastCandidates: candidateMessages.slice(-5).map((m) => ({
-			ts: m.ts,
-			type: m.type,
-			ask: (m as any).ask,
-			say: (m as any).say,
-			textLength: typeof m.text === "string" ? m.text.length : 0,
-		})),
-	})
 
 	return Array.isArray(lastTodos) ? lastTodos : []
 }
