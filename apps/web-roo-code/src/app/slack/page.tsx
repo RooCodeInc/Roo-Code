@@ -158,7 +158,7 @@ interface OnboardingStep {
 const ONBOARDING_STEPS: OnboardingStep[] = [
 	{
 		icon: CreditCard,
-		title: "1. Get a Team Plan",
+		title: "1. Team Plan",
 		description: "Slack requires a Team plan.",
 		link: {
 			href: EXTERNAL_LINKS.CLOUD_APP_TEAM_TRIAL,
@@ -167,19 +167,18 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 	},
 	{
 		icon: Settings,
-		title: "2. Connect in Roo Code Cloud",
-		description:
-			'Sign in to Roo Code Cloud and go to Settings. Click "Connect" next to Slack in the Integrations section.',
+		title: "2. Connect",
+		description: 'Sign in to Roo Code Cloud and go to Settings. Click "Connect" next to Slack.',
 	},
 	{
 		icon: Slack,
-		title: "3. Authorize Slack",
+		title: "3. Authorize",
 		description: "Authorize the Roo Code app to access your Slack workspace.",
 	},
 	{
 		icon: MessageSquare,
 		title: "4. Add to channels",
-		description: "Add the @Roomote bot to the channels where you want it to be available.",
+		description: "Add @Roomote to the channels where you want it available.",
 	},
 ]
 
