@@ -1573,7 +1573,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Get condensing configuration
 		const state = await this.providerRef.deref()?.getState()
 		// These properties may not exist in the state type yet, but are used for condensing configuration
-		const customCondensingPrompt = state?.customCondensingPrompt
+		const customCondensingPrompt = state?.customSupportPrompts?.CONDENSE
 		const condensingApiConfigId = state?.condensingApiConfigId
 		const listApiConfigMeta = state?.listApiConfigMeta
 
@@ -3824,7 +3824,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} = state ?? {}
 
 		// Get condensing configuration for automatic triggers.
-		const customCondensingPrompt = state?.customCondensingPrompt
+		const customCondensingPrompt = state?.customSupportPrompts?.CONDENSE
 		const condensingApiConfigId = state?.condensingApiConfigId
 		const listApiConfigMeta = state?.listApiConfigMeta
 

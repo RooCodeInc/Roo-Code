@@ -92,7 +92,41 @@ export class ContextProxy {
 		// Migration: Sanitize invalid/removed API providers
 		await this.migrateInvalidApiProvider()
 
+		// Migration: Move legacy customCondensingPrompt to customSupportPrompts
+		await this.migrateLegacyCondensingPrompt()
+
 		this._isInitialized = true
+	}
+
+	/**
+	 * Migrates the legacy customCondensingPrompt to the new customSupportPrompts structure
+	 * and removes the legacy field.
+	 */
+	private async migrateLegacyCondensingPrompt() {
+		try {
+			const legacyPrompt = this.originalContext.globalState.get<string>("customCondensingPrompt")
+			if (legacyPrompt) {
+				logger.info("Migrating legacy customCondensingPrompt to customSupportPrompts")
+
+				const currentSupportPrompts =
+					this.originalContext.globalState.get<Record<string, string>>("customSupportPrompts") || {}
+
+				// Only migrate if the new location doesn't already have a value
+				if (!currentSupportPrompts.CONDENSE) {
+					const updatedPrompts = { ...currentSupportPrompts, CONDENSE: legacyPrompt }
+					await this.originalContext.globalState.update("customSupportPrompts", updatedPrompts)
+					this.stateCache.customSupportPrompts = updatedPrompts
+				}
+
+				// Remove the legacy field
+				await this.originalContext.globalState.update("customCondensingPrompt", undefined)
+				this.stateCache.customCondensingPrompt = undefined
+			}
+		} catch (error) {
+			logger.error(
+				`Error during customCondensingPrompt migration: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
 	}
 
 	/**

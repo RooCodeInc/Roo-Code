@@ -58,8 +58,6 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setFollowupAutoApproveTimeoutMs: (value: number) => void // Setter for the timeout
 	condensingApiConfigId?: string
 	setCondensingApiConfigId: (value: string) => void
-	customCondensingPrompt?: string
-	setCustomCondensingPrompt: (value: string) => void
 	marketplaceItems?: any[]
 	marketplaceInstalledMetadata?: MarketplaceInstalledMetadata
 	profileThresholds: Record<string, number>
@@ -235,7 +233,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		experiments: experimentDefault,
 		enhancementApiConfigId: "",
 		condensingApiConfigId: "", // Default empty string for condensing API config ID
-		customCondensingPrompt: "", // Default empty string for custom condensing prompt
 		hasOpenedModeSelector: false, // Default to false (not opened yet)
 		autoApprovalEnabled: false,
 		customModes: [],
@@ -456,11 +453,12 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 						}
 						// Keep UI semantics consistent with extension: newest-first ordering.
 						nextHistory.sort((a, b) => b.ts - a.ts)
-							return {
-								...prevState,
-								taskHistory: nextHistory,
-								currentTaskItem: prevState.currentTaskItem?.id === item.id ? item : prevState.currentTaskItem,
-							}
+						return {
+							...prevState,
+							taskHistory: nextHistory,
+							currentTaskItem:
+								prevState.currentTaskItem?.id === item.id ? item : prevState.currentTaskItem,
+						}
 					})
 					break
 				}
@@ -619,8 +617,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setAutoCondenseContextPercent: (value) =>
 			setState((prevState) => ({ ...prevState, autoCondenseContextPercent: value })),
 		setCondensingApiConfigId: (value) => setState((prevState) => ({ ...prevState, condensingApiConfigId: value })),
-		setCustomCondensingPrompt: (value) =>
-			setState((prevState) => ({ ...prevState, customCondensingPrompt: value })),
 		setProfileThresholds: (value) => setState((prevState) => ({ ...prevState, profileThresholds: value })),
 		includeDiagnosticMessages: state.includeDiagnosticMessages,
 		setIncludeDiagnosticMessages: (value) => {

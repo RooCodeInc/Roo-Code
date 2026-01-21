@@ -198,7 +198,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		terminalCompressProgressBar,
 		maxConcurrentFileReads,
 		condensingApiConfigId,
-		customCondensingPrompt,
 		customSupportPrompts,
 		profileThresholds,
 		alwaysAllowFollowupQuestions,
@@ -438,7 +437,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 			// These have more complex logic so they aren't (yet) handled
 			// by the `updateSettings` message.
-			vscode.postMessage({ type: "updateCondensingPrompt", text: customCondensingPrompt || "" })
 			vscode.postMessage({ type: "upsertApiConfiguration", text: currentApiConfigName, apiConfiguration })
 			vscode.postMessage({ type: "telemetrySetting", text: telemetrySetting })
 			vscode.postMessage({ type: "debugSetting", bool: cachedState.debug })
@@ -900,10 +898,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							<PromptsSettings
 								customSupportPrompts={customSupportPrompts || {}}
 								setCustomSupportPrompts={setCustomSupportPromptsField}
-								customCondensingPrompt={customCondensingPrompt}
-								setCustomCondensingPrompt={(value) =>
-									setCachedStateField("customCondensingPrompt", value)
-								}
 								includeTaskHistoryInEnhance={includeTaskHistoryInEnhance}
 								setIncludeTaskHistoryInEnhance={(value) =>
 									setCachedStateField("includeTaskHistoryInEnhance", value)
