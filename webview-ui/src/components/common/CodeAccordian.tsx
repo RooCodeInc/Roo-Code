@@ -68,15 +68,19 @@ const CodeAccordian = ({
 								{isFeedback ? "User Edits" : "Console Logs"}
 							</span>
 						</div>
-					) : (
+					) : path ? (
 						<>
-							{path?.startsWith(".") && <span>.</span>}
+							{path.startsWith(".") && <span>.</span>}
 							<PathTooltip content={formatPathTooltip(path)}>
 								<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">
 									{formatPathTooltip(path)}
 								</span>
 							</PathTooltip>
 						</>
+					) : (
+						<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 text-vscode-descriptionForeground italic">
+							Loading file...
+						</span>
 					)}
 					<div className="flex-grow-1" />
 					{/* Prefer diff stats over generic progress indicator if available */}

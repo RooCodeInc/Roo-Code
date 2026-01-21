@@ -445,11 +445,13 @@ export const ChatRowContent = ({
 								toolIcon(tool.tool === "appliedDiff" ? "diff" : "edit")
 							)}
 							<span style={{ fontWeight: "bold" }}>
-								{tool.isProtected
-									? t("chat:fileOperations.wantsToEditProtected")
-									: tool.isOutsideWorkspace
-										? t("chat:fileOperations.wantsToEditOutsideWorkspace")
-										: t("chat:fileOperations.wantsToEdit")}
+								{!tool.path
+									? t("chat:fileOperations.preparingToEdit")
+									: tool.isProtected
+										? t("chat:fileOperations.wantsToEditProtected")
+										: tool.isOutsideWorkspace
+											? t("chat:fileOperations.wantsToEditOutsideWorkspace")
+											: t("chat:fileOperations.wantsToEdit")}
 							</span>
 						</div>
 						<div className="pl-6">
@@ -479,15 +481,17 @@ export const ChatRowContent = ({
 								toolIcon("insert")
 							)}
 							<span style={{ fontWeight: "bold" }}>
-								{tool.isProtected
-									? t("chat:fileOperations.wantsToEditProtected")
-									: tool.isOutsideWorkspace
-										? t("chat:fileOperations.wantsToEditOutsideWorkspace")
-										: tool.lineNumber === 0
-											? t("chat:fileOperations.wantsToInsertAtEnd")
-											: t("chat:fileOperations.wantsToInsertWithLineNumber", {
-													lineNumber: tool.lineNumber,
-												})}
+								{!tool.path
+									? t("chat:fileOperations.preparingToEdit")
+									: tool.isProtected
+										? t("chat:fileOperations.wantsToEditProtected")
+										: tool.isOutsideWorkspace
+											? t("chat:fileOperations.wantsToEditOutsideWorkspace")
+											: tool.lineNumber === 0
+												? t("chat:fileOperations.wantsToInsertAtEnd")
+												: t("chat:fileOperations.wantsToInsertWithLineNumber", {
+														lineNumber: tool.lineNumber,
+													})}
 							</span>
 						</div>
 						<div className="pl-6">
@@ -517,11 +521,13 @@ export const ChatRowContent = ({
 								toolIcon("replace")
 							)}
 							<span style={{ fontWeight: "bold" }}>
-								{tool.isProtected && message.type === "ask"
-									? t("chat:fileOperations.wantsToEditProtected")
-									: message.type === "ask"
-										? t("chat:fileOperations.wantsToSearchReplace")
-										: t("chat:fileOperations.didSearchReplace")}
+								{!tool.path && message.type === "ask"
+									? t("chat:fileOperations.preparingToEdit")
+									: tool.isProtected && message.type === "ask"
+										? t("chat:fileOperations.wantsToEditProtected")
+										: message.type === "ask"
+											? t("chat:fileOperations.wantsToSearchReplace")
+											: t("chat:fileOperations.didSearchReplace")}
 							</span>
 						</div>
 						<div className="pl-6">
@@ -580,9 +586,11 @@ export const ChatRowContent = ({
 								toolIcon("new-file")
 							)}
 							<span style={{ fontWeight: "bold" }}>
-								{tool.isProtected
-									? t("chat:fileOperations.wantsToEditProtected")
-									: t("chat:fileOperations.wantsToCreate")}
+								{!tool.path
+									? t("chat:fileOperations.preparingToEdit")
+									: tool.isProtected
+										? t("chat:fileOperations.wantsToEditProtected")
+										: t("chat:fileOperations.wantsToCreate")}
 							</span>
 						</div>
 						<div className="pl-6">

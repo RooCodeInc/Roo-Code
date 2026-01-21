@@ -177,6 +177,7 @@
 		"wantsToFetch": "Roo хочет получить подробные инструкции для помощи с текущей задачей"
 	},
 	"fileOperations": {
+		"preparingToEdit": "Roo is preparing to edit a file...",
 		"wantsToRead": "Roo хочет прочитать этот файл",
 		"wantsToReadOutsideWorkspace": "Roo хочет прочитать этот файл вне рабочей области",
 		"didRead": "Roo прочитал этот файл",

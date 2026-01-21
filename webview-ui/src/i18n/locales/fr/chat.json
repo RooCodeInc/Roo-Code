@@ -179,6 +179,7 @@
 		"current": "Actuel"
 	},
 	"fileOperations": {
+		"preparingToEdit": "Roo is preparing to edit a file...",
 		"wantsToRead": "Roo veut lire ce fichier",
 		"wantsToReadOutsideWorkspace": "Roo veut lire ce fichier en dehors de l'espace de travail",
 		"didRead": "Roo a lu ce fichier",

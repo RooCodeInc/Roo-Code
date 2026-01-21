@@ -257,7 +257,18 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 	override async handlePartial(task: Task, block: ToolUse<"search_and_replace">): Promise<void> {
 		const relPath: string | undefined = block.params.path
 
-		// Wait for path to stabilize before showing UI (prevents truncated paths)
+		// Send initial "preparing" message immediately (before path stabilizes)
+		if (!this.hasSentInitialMessage) {
+			this.hasSentInitialMessage = true
+			const initialMessageProps: ClineSayTool = {
+				tool: "appliedDiff",
+				path: undefined as any, // Undefined path triggers "preparing to edit" message in frontend
+				diff: "",
+			}
+			await task.ask("tool", JSON.stringify(initialMessageProps), block.partial).catch(() => {})
+		}
+
+		// Wait for path to stabilize before showing the full UI with filename
 		if (!this.hasPathStabilized(relPath)) {
 			return
 		}

@@ -182,6 +182,7 @@
 		"wantsToFetch": "Roo vol obtenir instruccions detallades per ajudar amb la tasca actual."
 	},
 	"fileOperations": {
+		"preparingToEdit": "Roo s'està preparant per editar un fitxer...",
 		"wantsToRead": "Roo vol llegir aquest fitxer",
 		"wantsToReadOutsideWorkspace": "Roo vol llegir aquest fitxer fora de l'espai de treball",
 		"didRead": "Roo ha llegit aquest fitxer",

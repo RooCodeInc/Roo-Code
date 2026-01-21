@@ -182,6 +182,7 @@
 		"wantsToFetch": "Roo mevcut göreve yardımcı olmak için ayrıntılı talimatlar almak istiyor"
 	},
 	"fileOperations": {
+		"preparingToEdit": "Roo is preparing to edit a file...",
 		"wantsToRead": "Roo bu dosyayı okumak istiyor",
 		"wantsToReadOutsideWorkspace": "Roo çalışma alanı dışındaki bu dosyayı okumak istiyor",
 		"didRead": "Roo bu dosyayı okudu",

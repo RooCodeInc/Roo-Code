@@ -203,6 +203,7 @@
 		"wantsToFetch": "Roo wants to fetch detailed instructions to assist with the current task"
 	},
 	"fileOperations": {
+		"preparingToEdit": "Roo is preparing to edit a file...",
 		"wantsToRead": "Roo wants to read this file",
 		"wantsToReadMultiple": "Roo wants to read multiple files",
 		"wantsToReadAndXMore": "Roo wants to read this file and {{count}} more",

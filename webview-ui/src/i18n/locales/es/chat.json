@@ -182,6 +182,7 @@
 		"wantsToFetch": "Roo quiere obtener instrucciones detalladas para ayudar con la tarea actual"
 	},
 	"fileOperations": {
+		"preparingToEdit": "Roo is preparing to edit a file...",
 		"wantsToRead": "Roo quiere leer este archivo",
 		"wantsToReadOutsideWorkspace": "Roo quiere leer este archivo fuera del espacio de trabajo",
 		"didRead": "Roo leyó este archivo",

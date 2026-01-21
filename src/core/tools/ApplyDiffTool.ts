@@ -271,7 +271,18 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 		const relPath: string | undefined = block.params.path
 		const diffContent: string | undefined = block.params.diff
 
-		// Wait for path to stabilize before showing UI (prevents truncated paths)
+		// Send initial "preparing" message immediately (before path stabilizes)
+		if (!this.hasSentInitialMessage) {
+			this.hasSentInitialMessage = true
+			const initialMessageProps: ClineSayTool = {
+				tool: "appliedDiff",
+				path: undefined as any, // Undefined path triggers "preparing to edit" message in frontend
+				diff: diffContent,
+			}
+			await task.ask("tool", JSON.stringify(initialMessageProps), block.partial).catch(() => {})
+		}
+
+		// Wait for path to stabilize before showing the full UI with filename
 		if (!this.hasPathStabilized(relPath)) {
 			return
 		}

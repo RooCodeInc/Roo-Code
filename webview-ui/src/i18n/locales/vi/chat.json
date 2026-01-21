@@ -182,6 +182,7 @@
 		"wantsToFetch": "Roo muốn lấy hướng dẫn chi tiết để hỗ trợ nhiệm vụ hiện tại"
 	},
 	"fileOperations": {
+		"preparingToEdit": "Roo is preparing to edit a file...",
 		"wantsToRead": "Roo muốn đọc tệp này",
 		"wantsToReadOutsideWorkspace": "Roo muốn đọc tệp này bên ngoài không gian làm việc",
 		"didRead": "Roo đã đọc tệp này",

@@ -206,6 +206,7 @@
 		"wantsToFetch": "Roo ingin mengambil instruksi detail untuk membantu tugas saat ini"
 	},
 	"fileOperations": {
+		"preparingToEdit": "Roo is preparing to edit a file...",
 		"wantsToRead": "Roo ingin membaca file ini",
 		"wantsToReadMultiple": "Roo ingin membaca beberapa file",
 		"wantsToReadAndXMore": "Roo ingin membaca file ini dan {{count}} lainnya",
