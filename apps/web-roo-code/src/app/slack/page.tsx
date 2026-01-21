@@ -22,7 +22,7 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 
 const TITLE = "Roo Code for Slack"
 const DESCRIPTION =
-	"Mention @Roomote in any channel to explain code, plan features, or ship a PR—all without leaving the conversation."
+	"Mention @Roomote in any channel to explain code, plan features, or ship a PR, all without leaving the conversation."
 const OG_DESCRIPTION = "Your AI Team in Slack"
 const PATH = "/slack"
 
@@ -185,7 +185,7 @@ export default function SlackPage() {
 							<span className="text-violet-500">@Roomote:</span> Your AI Team in&nbsp;Slack
 						</h1>
 						<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-							Mention @Roomote in any channel to explain code, plan features, or ship a PR—all without
+							Mention @Roomote in any channel to explain code, plan features, or ship a PR, all without
 							leaving the conversation.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
