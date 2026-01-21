@@ -78,31 +78,31 @@ interface ValueProp {
 const VALUE_PROPS: ValueProp[] = [
 	{
 		icon: GitBranch,
-		title: "From discussion to shipped feature.",
+		title: "Discussion to PR.",
 		description:
 			"Your team discusses a feature in Slack. @Roomote turns the discussion into a plan. Then builds it. All without leaving the conversation.",
 	},
 	{
 		icon: Brain,
-		title: "The agent knows the thread.",
+		title: "Thread-aware.",
 		description:
-			'@Roomote reads the full conversation before responding, so follow-up questions like "why is this happening?" just work.',
+			'@Roomote reads the full thread before responding. Ask "Can we add caching here?" and it knows exactly what code you mean.',
 	},
 	{
 		icon: Link2,
-		title: "Chain agents for complex work.",
+		title: "Chain agents.",
 		description:
 			"Start with a Planner to spec it out. Then call the Coder to build it. Multi-step workflows, one Slack thread.",
 	},
 	{
 		icon: Users,
-		title: "Anyone can contribute.",
+		title: "Open to all.",
 		description:
-			"PMs, CSMs, and Sales can ask @Roomote to explain code or investigate issues. Engineering gets pulled in only when truly needed.",
+			"Anyone on your team can ask @Roomote to fix bugs, build features, or investigate issues. Engineering gets looped in only when needed.",
 	},
 	{
 		icon: GraduationCap,
-		title: "Team learning, built in.",
+		title: "Built-in learning.",
 		description: "Public channel mentions show everyone how to leverage agents. Learn by watching.",
 	},
 	{
@@ -240,7 +240,7 @@ export default function SlackPage() {
 							Why your team will love using Roo Code in&nbsp;Slack
 						</h2>
 						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-							AI agents that understand context, chain together for complex work, and keep humans in
+							AI agents that understand context, chain together for complex work, and keep your team in
 							control.
 						</p>
 					</div>
@@ -359,7 +359,7 @@ export default function SlackPage() {
 							Start using Roo Code in Slack
 						</h2>
 						<p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
-							Start your Team plan trial. No credit card required.
+							Start a free 14 day Team trial.
 						</p>
 						<div className="flex flex-col justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
 							<Button
