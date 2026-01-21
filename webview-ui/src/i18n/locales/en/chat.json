@@ -282,9 +282,10 @@
 		"wantsToCreate": "Roo wants to create a new subtask in {{mode}} mode",
 		"wantsToFinish": "Roo wants to mark this as completed",
 		"newTaskContent": "Subtask Instructions",
-		"resultContent": "Task result",
+		"resultContent": "Subtask completed",
 		"defaultResult": "Please continue to the next task.",
-		"completionInstructions": "You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task."
+		"completionInstructions": "You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task.",
+		"goToSubtask": "View task"
 	},
 	"questions": {
 		"hasQuestion": "Roo has a question"
