@@ -64,7 +64,7 @@ describe("Condense", () => {
 	})
 
 	describe("summarizeConversation", () => {
-		it("should preserve the first message when summarizing", async () => {
+		it("should not preserve the first message when summarizing", async () => {
 			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message with /prr command content" },
 				{ role: "assistant", content: "Second message" },
@@ -79,36 +79,38 @@ describe("Condense", () => {
 
 			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
 
-			// Verify the first message is preserved
-			expect(result.messages[0]).toEqual(messages[0])
+			// Verify the first message is tagged for condensing
 			expect(result.messages[0].content).toBe("First message with /prr command content")
+			expect(result.messages[0].condenseParent).toBeDefined()
 
-			// Verify we have a summary message
+			// Verify we have a final condensed summary message (role=user)
 			const summaryMessage = result.messages.find((msg) => msg.isSummary)
 			expect(summaryMessage).toBeTruthy()
-			// Summary content is now always an array with a synthetic reasoning block + text block
-			// for DeepSeek-reasoner compatibility
-			expect(Array.isArray(summaryMessage?.content)).toBe(true)
-			const contentArray = summaryMessage?.content as Anthropic.Messages.ContentBlockParam[]
-			expect(contentArray).toHaveLength(2)
+			expect(summaryMessage!.role).toBe("user")
+			expect(Array.isArray(summaryMessage!.content)).toBe(true)
+			const contentArray = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
+			expect(contentArray).toHaveLength(4)
 			expect(contentArray[0]).toEqual({
-				type: "reasoning",
-				text: "Condensing conversation context. The summary below captures the key information from the prior conversation.",
-			})
-			expect(contentArray[1]).toEqual({
 				type: "text",
-				text: "Mock summary of the conversation",
+				text: expect.stringContaining("Mock summary of the conversation"),
 			})
+			for (const reminderBlock of contentArray.slice(1)) {
+				expect(reminderBlock.type).toBe("text")
+				expect((reminderBlock as Anthropic.Messages.TextBlockParam).text).toContain("<system-reminder")
+			}
 
-			// With non-destructive condensing, all messages are retained (tagged but not deleted)
-			// Use getEffectiveApiHistory to verify the effective view matches the old behavior
-			expect(result.messages.length).toBe(messages.length + 1) // All original messages + summary
+			// With the new condense output, only the final summary message is effective for API
+			expect(result.messages.length).toBe(messages.length + 1) // All original messages + final summary
 			const effectiveHistory = getEffectiveApiHistory(result.messages)
-			expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // first + summary + last N
+			expect(effectiveHistory.length).toBe(1)
+			expect(effectiveHistory[0]).toBe(summaryMessage)
 
-			// Verify the last N messages are preserved (same messages by reference)
-			const lastMessages = result.messages.slice(-N_MESSAGES_TO_KEEP)
-			expect(lastMessages).toEqual(messages.slice(-N_MESSAGES_TO_KEEP))
+			// Verify the last N messages are ALSO tagged (embedded as reminders, not kept in effective history)
+			const condenseId = summaryMessage!.condenseId
+			expect(condenseId).toBeDefined()
+			for (const msg of result.messages.slice(0, -1).slice(-N_MESSAGES_TO_KEEP)) {
+				expect(msg.condenseParent).toBe(condenseId)
+			}
 		})
 
 		it("should preserve slash command content in the first message", async () => {
@@ -127,9 +129,14 @@ describe("Condense", () => {
 
 			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
 
-			// The first message with slash command should be intact
+			// The first message with slash command should still be intact (but tagged for condensing)
 			expect(result.messages[0].content).toBe(slashCommandContent)
-			expect(result.messages[0]).toEqual(messages[0])
+			expect(result.messages[0].condenseParent).toBeDefined()
+
+			// Effective history should contain only the final condensed message
+			const effectiveHistory = getEffectiveApiHistory(result.messages)
+			expect(effectiveHistory).toHaveLength(1)
+			expect(effectiveHistory[0].role).toBe("user")
 		})
 
 		it("should handle complex first message content", async () => {
@@ -152,9 +159,14 @@ describe("Condense", () => {
 
 			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
 
-			// The first message with complex content should be preserved
+			// The first message with complex content should still be present (but tagged for condensing)
 			expect(result.messages[0].content).toEqual(complexContent)
-			expect(result.messages[0]).toEqual(messages[0])
+			expect(result.messages[0].condenseParent).toBeDefined()
+
+			// Effective history should contain only the final condensed message
+			const effectiveHistory = getEffectiveApiHistory(result.messages)
+			expect(effectiveHistory).toHaveLength(1)
+			expect(effectiveHistory[0].role).toBe("user")
 		})
 
 		it("should return error when not enough messages to summarize", async () => {
@@ -248,12 +260,10 @@ describe("Condense", () => {
 
 			const result = getMessagesSinceLastSummary(messages)
 
-			// Should include the original first user message for context preservation, the summary, and messages after
-			expect(result[0].role).toBe("user")
-			expect(result[0].content).toBe("First message") // Preserves original first message
-			expect(result[1]).toEqual(messages[2]) // The summary
-			expect(result[2]).toEqual(messages[3])
-			expect(result[3]).toEqual(messages[4])
+			// Starts at the summary and includes messages after
+			expect(result[0]).toEqual(messages[2]) // The summary
+			expect(result[1]).toEqual(messages[3])
+			expect(result[2]).toEqual(messages[4])
 		})
 
 		it("should handle multiple summaries and return from the last one", () => {
@@ -268,12 +278,10 @@ describe("Condense", () => {
 
 			const result = getMessagesSinceLastSummary(messages)
 
-			// Should only include from the last summary with original first message preserved
-			expect(result[0].role).toBe("user")
-			expect(result[0].content).toBe("First message") // Preserves original first message
-			expect(result[1]).toEqual(messages[3]) // Second summary
-			expect(result[2]).toEqual(messages[4])
-			expect(result[3]).toEqual(messages[5])
+			// Starts at the last summary and includes messages after
+			expect(result[0]).toEqual(messages[3]) // Second summary
+			expect(result[1]).toEqual(messages[4])
+			expect(result[2]).toEqual(messages[5])
 		})
 	})
 })

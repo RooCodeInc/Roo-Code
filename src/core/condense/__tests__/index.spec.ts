@@ -596,7 +596,7 @@ describe("getMessagesSinceLastSummary", () => {
 		expect(result).toEqual(messages)
 	})
 
-	it("should return messages since the last summary with original first user message", () => {
+	it("should return messages since the last summary (does not preserve original first user message)", () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
@@ -607,14 +607,13 @@ describe("getMessagesSinceLastSummary", () => {
 
 		const result = getMessagesSinceLastSummary(messages)
 		expect(result).toEqual([
-			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Summary of conversation", ts: 3, isSummary: true },
 			{ role: "user", content: "How are you?", ts: 4 },
 			{ role: "assistant", content: "I'm good", ts: 5 },
 		])
 	})
 
-	it("should handle multiple summary messages and return since the last one with original first user message", () => {
+	it("should handle multiple summary messages and return since the last one (does not preserve original first user message)", () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "First summary", ts: 2, isSummary: true },
@@ -625,7 +624,6 @@ describe("getMessagesSinceLastSummary", () => {
 
 		const result = getMessagesSinceLastSummary(messages)
 		expect(result).toEqual([
-			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Second summary", ts: 4, isSummary: true },
 			{ role: "user", content: "What's new?", ts: 5 },
 		])
@@ -746,40 +744,40 @@ describe("summarizeConversation", () => {
 		expect(mockApiHandler.createMessage).toHaveBeenCalled()
 		expect(maybeRemoveImageBlocks).toHaveBeenCalled()
 
-		// With non-destructive condensing, the result contains ALL original messages
-		// plus the summary message. Condensed messages are tagged but not deleted.
-		// Use getEffectiveApiHistory to verify the effective API view matches the old behavior.
-		expect(result.messages.length).toBe(messages.length + 1) // All original messages + summary
+		// With the new condense output, the result contains all original messages (tagged)
+		// plus a final condensed message.
+		expect(result.messages.length).toBe(messages.length + 1)
 
-		// Check that the first message is preserved
-		expect(result.messages[0]).toEqual(messages[0])
-
-		// Find the summary message (it has isSummary: true)
+		// All prior messages should be tagged
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
-		expect(summaryMessage!.role).toBe("assistant")
-		// Summary content is now always an array with [synthetic reasoning, text]
-		// for DeepSeek-reasoner compatibility (requires reasoning_content on all assistant messages)
+		const condenseId = summaryMessage!.condenseId
+		expect(condenseId).toBeDefined()
+		for (const msg of result.messages.slice(0, -1)) {
+			expect(msg.condenseParent).toBe(condenseId)
+		}
+
+		// Final condensed message is role=user with 4 text blocks: summary + 3 reminders
+		expect(summaryMessage!.role).toBe("user")
 		expect(Array.isArray(summaryMessage!.content)).toBe(true)
 		const content = summaryMessage!.content as any[]
-		expect(content).toHaveLength(2)
-		expect(content[0].type).toBe("reasoning")
-		expect(content[1].type).toBe("text")
-		expect(content[1].text).toBe("This is a summary")
-		expect(summaryMessage!.isSummary).toBe(true)
+		expect(content).toHaveLength(4)
+		expect(content[0].type).toBe("text")
+		expect(content[0].text).toContain("Condensing conversation context")
+		expect(content[0].text).toContain("This is a summary")
+		for (const reminder of content.slice(1)) {
+			expect(reminder.type).toBe("text")
+			expect(reminder.text).toContain("<system-reminder")
+		}
 
-		// Verify that the effective API history matches expected: first + summary + last N messages
+		// Effective API history should contain only the final condensed message
 		const effectiveHistory = getEffectiveApiHistory(result.messages)
-		expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
-
-		// Check that condensed messages are properly tagged
-		const condensedMessages = result.messages.filter((m) => m.condenseParent !== undefined)
-		expect(condensedMessages.length).toBeGreaterThan(0)
+		expect(effectiveHistory).toEqual([summaryMessage])
 
 		// Check the cost and token counts
 		expect(result.cost).toBe(0.05)
 		expect(result.summary).toBe("This is a summary")
-		expect(result.newContextTokens).toBe(250) // 150 output tokens + 100 from countTokens
+		expect(result.newContextTokens).toBe(100) // countTokens(systemPrompt + final condensed message)
 		expect(result.error).toBeUndefined()
 	})
 
@@ -912,11 +910,11 @@ describe("summarizeConversation", () => {
 			DEFAULT_PREV_CONTEXT_TOKENS,
 		)
 
-		// Verify that countTokens was called with the correct messages including system prompt
+		// Verify that countTokens was called with system prompt + final condensed message
 		expect(mockApiHandler.countTokens).toHaveBeenCalled()
 
-		// Check the newContextTokens calculation includes system prompt
-		expect(result.newContextTokens).toBe(300) // 200 output tokens + 100 from countTokens
+		// newContextTokens is now derived solely from countTokens(systemPrompt + condensed message)
+		expect(result.newContextTokens).toBe(100)
 		expect(result.cost).toBe(0.06)
 		expect(result.summary).toBe("This is a summary with system prompt")
 		expect(result.error).toBeUndefined()
@@ -942,9 +940,8 @@ describe("summarizeConversation", () => {
 		// Override the mock for this test
 		mockApiHandler.createMessage = vi.fn().mockReturnValue(streamWithLargeTokens) as any
 
-		// Mock countTokens to return a high value that when added to outputTokens (500)
-		// will be >= prevContextTokens (600)
-		mockApiHandler.countTokens = vi.fn().mockImplementation(() => Promise.resolve(200)) as any
+		// Mock countTokens to return a value >= prevContextTokens
+		mockApiHandler.countTokens = vi.fn().mockImplementation(() => Promise.resolve(600)) as any
 
 		const prevContextTokens = 600
 		const result = await summarizeConversation(
@@ -955,7 +952,7 @@ describe("summarizeConversation", () => {
 			prevContextTokens,
 		)
 
-		// Should return original messages when context would grow
+		// Should return original messages when context would not shrink
 		expect(result.messages).toEqual(messages)
 		expect(result.cost).toBe(0.08)
 		expect(result.summary).toBe("")
@@ -995,15 +992,14 @@ describe("summarizeConversation", () => {
 			prevContextTokens,
 		)
 
-		// With non-destructive condensing, result contains all messages plus summary
-		// Use getEffectiveApiHistory to verify the effective API view
-		expect(result.messages.length).toBe(messages.length + 1) // All messages + summary
+		// With the new condense output, result contains all messages plus final condensed message
+		expect(result.messages.length).toBe(messages.length + 1)
 		const effectiveHistory = getEffectiveApiHistory(result.messages)
-		expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
+		expect(effectiveHistory.length).toBe(1)
 		expect(result.cost).toBe(0.03)
 		expect(result.summary).toBe("Concise summary")
 		expect(result.error).toBeUndefined()
-		expect(result.newContextTokens).toBe(80) // 50 output tokens + 30 from countTokens
+		expect(result.newContextTokens).toBe(30) // countTokens(systemPrompt + condensed message)
 		expect(result.newContextTokens).toBeLessThan(prevContextTokens)
 	})
 
@@ -1100,7 +1096,7 @@ describe("summarizeConversation", () => {
 		console.error = originalError
 	})
 
-	it("should append tool_use blocks to summary message when first kept message has tool_result blocks", async () => {
+	it("should NOT preserve tool_use blocks; tool_result is captured in <system-reminder>", async () => {
 		const toolUseBlock = {
 			type: "tool_use" as const,
 			id: "toolu_123",
@@ -1148,33 +1144,27 @@ describe("summarizeConversation", () => {
 			DEFAULT_PREV_CONTEXT_TOKENS,
 		)
 
-		// Find the summary message
+		// Find the final condensed message
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
-		expect(summaryMessage!.role).toBe("assistant")
+		expect(summaryMessage!.role).toBe("user")
 		expect(summaryMessage!.isSummary).toBe(true)
 		expect(Array.isArray(summaryMessage!.content)).toBe(true)
 
-		// Content should be [synthetic reasoning, text block, tool_use block]
-		// The synthetic reasoning is always added for DeepSeek-reasoner compatibility
+		// Content is 4 text blocks; tool_result should appear in the reminder JSON
 		const content = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
-		expect(content).toHaveLength(3)
-		expect((content[0] as any).type).toBe("reasoning") // Synthetic reasoning for DeepSeek
-		expect(content[1].type).toBe("text")
-		expect((content[1] as Anthropic.Messages.TextBlockParam).text).toBe("Summary of conversation")
-		expect(content[2].type).toBe("tool_use")
-		expect((content[2] as Anthropic.Messages.ToolUseBlockParam).id).toBe("toolu_123")
-		expect((content[2] as Anthropic.Messages.ToolUseBlockParam).name).toBe("read_file")
+		expect(content).toHaveLength(4)
+		const reminderText = (content[1] as Anthropic.Messages.TextBlockParam).text
+		expect(reminderText).toContain("tool_result")
+		expect(reminderText).toContain(toolResultBlock.tool_use_id)
 
-		// With non-destructive condensing, all messages are retained plus the summary
-		expect(result.messages.length).toBe(messages.length + 1) // all original + summary
-		// Verify effective history matches expected
+		// Effective history should be only the final condensed message
 		const effectiveHistory = getEffectiveApiHistory(result.messages)
-		expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // first + summary + last 3
+		expect(effectiveHistory).toEqual([summaryMessage])
 		expect(result.error).toBeUndefined()
 	})
 
-	it("should include user tool_result message in summarize request when preserving tool_use blocks", async () => {
+	it("should include user tool_result message in summarize request", async () => {
 		const toolUseBlock = {
 			type: "tool_use" as const,
 			id: "toolu_history_fix",
@@ -1235,27 +1225,18 @@ describe("summarizeConversation", () => {
 		const historyMessages = requestMessages.slice(0, -1)
 		expect(historyMessages.length).toBeGreaterThanOrEqual(2)
 
-		const assistantMessage = historyMessages[historyMessages.length - 2]
-		const userMessage = historyMessages[historyMessages.length - 1]
-
-		expect(assistantMessage.role).toBe("assistant")
-		expect(Array.isArray(assistantMessage.content)).toBe(true)
-		expect(
-			(assistantMessage.content as any[]).some(
-				(block) => block.type === "tool_use" && block.id === toolUseBlock.id,
-			),
-		).toBe(true)
-
-		expect(userMessage.role).toBe("user")
-		expect(Array.isArray(userMessage.content)).toBe(true)
-		expect(
-			(userMessage.content as any[]).some(
-				(block) => block.type === "tool_result" && block.tool_use_id === toolUseBlock.id,
-			),
-		).toBe(true)
+		const hasToolResultUserMessage = historyMessages.some(
+			(m) =>
+				m.role === "user" &&
+				Array.isArray(m.content) &&
+				(m.content as any[]).some(
+					(block) => block.type === "tool_result" && block.tool_use_id === toolUseBlock.id,
+				),
+		)
+		expect(hasToolResultUserMessage).toBe(true)
 	})
 
-	it("should append multiple tool_use blocks for parallel tool calls", async () => {
+	it("should not append tool_use blocks for parallel tool calls (captured in reminders)", async () => {
 		const toolUseBlockA = {
 			type: "tool_use" as const,
 			id: "toolu_parallel_1",
@@ -1298,24 +1279,19 @@ describe("summarizeConversation", () => {
 			DEFAULT_PREV_CONTEXT_TOKENS,
 		)
 
-		// Find the summary message (it has isSummary: true)
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
+		expect(summaryMessage!.role).toBe("user")
 		expect(Array.isArray(summaryMessage!.content)).toBe(true)
 		const summaryContent = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
-		// First block is synthetic reasoning for DeepSeek-reasoner compatibility
-		expect((summaryContent[0] as any).type).toBe("reasoning")
-		// Second block is the text summary
-		expect(summaryContent[1]).toEqual({ type: "text", text: "This is a summary" })
-
-		const preservedToolUses = summaryContent.filter(
-			(block): block is Anthropic.Messages.ToolUseBlockParam => block.type === "tool_use",
-		)
-		expect(preservedToolUses).toHaveLength(2)
-		expect(preservedToolUses.map((block) => block.id)).toEqual(["toolu_parallel_1", "toolu_parallel_2"])
+		expect(summaryContent).toHaveLength(4)
+		// tool_use blocks should not appear directly; they should only appear inside reminder JSON
+		for (const block of summaryContent) {
+			expect(block.type).toBe("text")
+		}
 	})
 
-	it("should preserve reasoning blocks in summary message for DeepSeek/Z.ai interleaved thinking", async () => {
+	it("should not include reasoning blocks in condensed message (all text blocks)", async () => {
 		const reasoningBlock = {
 			type: "reasoning" as const,
 			text: "Let me think about this step by step...",
@@ -1368,44 +1344,20 @@ describe("summarizeConversation", () => {
 			DEFAULT_PREV_CONTEXT_TOKENS,
 		)
 
-		// Find the summary message
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
-		expect(summaryMessage!.role).toBe("assistant")
+		expect(summaryMessage!.role).toBe("user")
 		expect(summaryMessage!.isSummary).toBe(true)
 		expect(Array.isArray(summaryMessage!.content)).toBe(true)
-
-		// Content should be [synthetic reasoning, preserved reasoning, text block, tool_use block]
-		// - Synthetic reasoning is always added for DeepSeek-reasoner compatibility
-		// - Preserved reasoning from the condensed assistant message
-		// This order ensures reasoning_content is always present for DeepSeek/Z.ai
 		const content = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
 		expect(content).toHaveLength(4)
-
-		// First block should be synthetic reasoning
-		expect((content[0] as any).type).toBe("reasoning")
-		expect((content[0] as any).text).toContain("Condensing conversation context")
-
-		// Second block should be preserved reasoning from the condensed message
-		expect((content[1] as any).type).toBe("reasoning")
-		expect((content[1] as any).text).toBe("Let me think about this step by step...")
-
-		// Third block should be text (the summary)
-		expect(content[2].type).toBe("text")
-		expect((content[2] as Anthropic.Messages.TextBlockParam).text).toBe("Summary of conversation")
-
-		// Fourth block should be tool_use
-		expect(content[3].type).toBe("tool_use")
-		expect((content[3] as Anthropic.Messages.ToolUseBlockParam).id).toBe("toolu_deepseek_reason")
-
+		for (const block of content) {
+			expect(block.type).toBe("text")
+		}
 		expect(result.error).toBeUndefined()
 	})
 
-	it("should include synthetic reasoning block in summary for DeepSeek-reasoner compatibility even without tool_use blocks", async () => {
-		// This test verifies the fix for the DeepSeek-reasoner 400 error:
-		// "Missing `reasoning_content` field in the assistant message at message index 1"
-		// DeepSeek-reasoner requires reasoning_content on ALL assistant messages, not just those with tool_calls.
-		// After condensation, the summary becomes an assistant message that needs reasoning_content.
+	it("should produce 4 text blocks in condensed message even without tool calls", async () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Tell me a joke", ts: 1 },
 			{ role: "assistant", content: "Why did the programmer quit?", ts: 2 },
@@ -1433,23 +1385,17 @@ describe("summarizeConversation", () => {
 			DEFAULT_PREV_CONTEXT_TOKENS,
 		)
 
-		// Find the summary message
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
-		expect(summaryMessage!.role).toBe("assistant")
+		expect(summaryMessage!.role).toBe("user")
 		expect(summaryMessage!.isSummary).toBe(true)
-
-		// CRITICAL: Content must be an array with a synthetic reasoning block
-		// This is required for DeepSeek-reasoner which needs reasoning_content on all assistant messages
 		expect(Array.isArray(summaryMessage!.content)).toBe(true)
 		const content = summaryMessage!.content as any[]
-
-		// Should have [synthetic reasoning, text]
-		expect(content).toHaveLength(2)
-		expect(content[0].type).toBe("reasoning")
-		expect(content[0].text).toContain("Condensing conversation context")
-		expect(content[1].type).toBe("text")
-		expect(content[1].text).toBe("Summary: User requested jokes.")
+		expect(content).toHaveLength(4)
+		for (const block of content) {
+			expect(block.type).toBe("text")
+		}
+		expect(content[0].text).toContain("Summary: User requested jokes.")
 
 		expect(result.error).toBeUndefined()
 	})
