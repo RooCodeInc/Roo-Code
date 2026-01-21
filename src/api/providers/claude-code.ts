@@ -32,10 +32,10 @@ import { convertOpenAIToolsToAnthropic } from "../../core/prompts/tools/native-t
  * Workaround: namespace reserved tool names before sending the request, and map tool call names back
  * so the rest of Roo’s tool routing remains unchanged.
  */
-const RESERVED_ANTHROPIC_TOOL_NAMES = new Set(["read_file"])
-const RESERVED_ANTHROPIC_TOOL_PREFIX = "_"
+export const RESERVED_ANTHROPIC_TOOL_NAMES = new Set(["read_file"])
+export const RESERVED_ANTHROPIC_TOOL_PREFIX = "_"
 
-function patchReservedAnthropicToolNames<T extends { name: string }>(
+export function patchReservedAnthropicToolNames<T extends { name: string }>(
 	tools: T[],
 ): {
 	tools: T[]
@@ -58,7 +58,10 @@ function patchReservedAnthropicToolNames<T extends { name: string }>(
 	return { tools: patchedTools, reverseNameMap }
 }
 
-function unpatchToolName(name: string, reverseNameMap: Map<string, string>): string {
+export function unpatchToolName(name: string | undefined, reverseNameMap: Map<string, string>): string | undefined {
+	if (name === undefined) {
+		return undefined
+	}
 	return reverseNameMap.get(name) ?? name
 }
 
@@ -278,8 +281,7 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 							type: "tool_call_partial",
 							index: chunk.index,
 							id: chunk.id,
-							// chunk.name is expected to always exist for tool calls
-							name: unpatchToolName(chunk.name as string, reverseNameMap),
+							name: unpatchToolName(chunk.name, reverseNameMap),
 							arguments: chunk.arguments,
 						}
 						break

@@ -1,4 +1,10 @@
-import { ClaudeCodeHandler } from "../claude-code"
+import {
+	ClaudeCodeHandler,
+	patchReservedAnthropicToolNames,
+	unpatchToolName,
+	RESERVED_ANTHROPIC_TOOL_NAMES,
+	RESERVED_ANTHROPIC_TOOL_PREFIX,
+} from "../claude-code"
 import { ApiHandlerOptions } from "../../../shared/api"
 import type { StreamChunk } from "../../../integrations/claude-code/streaming-client"
 
@@ -601,6 +607,205 @@ describe("ClaudeCodeHandler", () => {
 					maxTokens: 32768, // opus model maxTokens
 				}),
 			)
+		})
+	})
+})
+
+describe("Reserved Anthropic Tool Name Patching", () => {
+	describe("RESERVED_ANTHROPIC_TOOL_NAMES", () => {
+		test("should contain read_file as a reserved name", () => {
+			expect(RESERVED_ANTHROPIC_TOOL_NAMES.has("read_file")).toBe(true)
+		})
+	})
+
+	describe("RESERVED_ANTHROPIC_TOOL_PREFIX", () => {
+		test("should be an underscore", () => {
+			expect(RESERVED_ANTHROPIC_TOOL_PREFIX).toBe("_")
+		})
+	})
+
+	describe("patchReservedAnthropicToolNames", () => {
+		test("should patch reserved tool names with prefix", () => {
+			const tools = [
+				{ name: "read_file", description: "Read a file" },
+				{ name: "write_file", description: "Write a file" },
+			]
+
+			const { tools: patchedTools, reverseNameMap } = patchReservedAnthropicToolNames(tools)
+
+			expect(patchedTools[0].name).toBe("_read_file")
+			expect(patchedTools[0].description).toBe("Read a file")
+			expect(patchedTools[1].name).toBe("write_file") // Not patched
+			expect(patchedTools[1].description).toBe("Write a file")
+			expect(reverseNameMap.get("_read_file")).toBe("read_file")
+			expect(reverseNameMap.size).toBe(1)
+		})
+
+		test("should not modify non-reserved tool names", () => {
+			const tools = [
+				{ name: "write_file", description: "Write a file" },
+				{ name: "execute_command", description: "Execute a command" },
+			]
+
+			const { tools: patchedTools, reverseNameMap } = patchReservedAnthropicToolNames(tools)
+
+			expect(patchedTools[0].name).toBe("write_file")
+			expect(patchedTools[1].name).toBe("execute_command")
+			expect(reverseNameMap.size).toBe(0)
+		})
+
+		test("should handle empty tools array", () => {
+			const { tools: patchedTools, reverseNameMap } = patchReservedAnthropicToolNames([])
+
+			expect(patchedTools).toHaveLength(0)
+			expect(reverseNameMap.size).toBe(0)
+		})
+
+		test("should preserve additional tool properties", () => {
+			const tools = [
+				{
+					name: "read_file",
+					description: "Read a file",
+					input_schema: { type: "object" as const, properties: {} },
+				},
+			]
+
+			const { tools: patchedTools } = patchReservedAnthropicToolNames(tools)
+
+			expect(patchedTools[0]).toEqual({
+				name: "_read_file",
+				description: "Read a file",
+				input_schema: { type: "object", properties: {} },
+			})
+		})
+
+		test("should patch multiple reserved tools if they exist", () => {
+			// Simulate if there were multiple reserved names
+			const tools = [
+				{ name: "read_file", description: "Read" },
+				{ name: "read_file", description: "Another read" }, // Duplicate name
+			]
+
+			const { tools: patchedTools, reverseNameMap } = patchReservedAnthropicToolNames(tools)
+
+			expect(patchedTools[0].name).toBe("_read_file")
+			expect(patchedTools[1].name).toBe("_read_file")
+			// Map will only have one entry since keys are unique
+			expect(reverseNameMap.get("_read_file")).toBe("read_file")
+		})
+	})
+
+	describe("unpatchToolName", () => {
+		test("should unpatch a patched tool name using reverse map", () => {
+			const reverseNameMap = new Map([["_read_file", "read_file"]])
+
+			expect(unpatchToolName("_read_file", reverseNameMap)).toBe("read_file")
+		})
+
+		test("should return original name if not in reverse map", () => {
+			const reverseNameMap = new Map([["_read_file", "read_file"]])
+
+			expect(unpatchToolName("write_file", reverseNameMap)).toBe("write_file")
+		})
+
+		test("should return undefined when name is undefined", () => {
+			const reverseNameMap = new Map([["_read_file", "read_file"]])
+
+			expect(unpatchToolName(undefined, reverseNameMap)).toBeUndefined()
+		})
+
+		test("should handle empty reverse map", () => {
+			const reverseNameMap = new Map<string, string>()
+
+			expect(unpatchToolName("read_file", reverseNameMap)).toBe("read_file")
+		})
+	})
+
+	describe("integration: tool name handling in streaming", () => {
+		test("should pass through tool names unchanged when not in reverse map", async () => {
+			const handler = new ClaudeCodeHandler({ apiModelId: "claude-sonnet-4-5" })
+			const systemPrompt = "You are a helpful assistant"
+			const messages = [{ role: "user" as const, content: "Read test.txt" }]
+
+			mockGetAccessToken.mockResolvedValue("test-access-token")
+
+			// Mock async generator that yields tool call partial chunks
+			// Note: The reverseNameMap will only contain entries for tools passed via metadata
+			// This test verifies non-reserved names pass through unchanged
+			const mockGenerator = async function* (): AsyncGenerator<StreamChunk> {
+				yield { type: "tool_call_partial", index: 0, id: "tool_123", name: "write_file", arguments: undefined }
+				yield {
+					type: "tool_call_partial",
+					index: 0,
+					id: undefined,
+					name: undefined,
+					arguments: '{"path":"test.txt"}',
+				}
+			}
+
+			mockCreateStreamingMessage.mockReturnValue(mockGenerator())
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const results = []
+
+			for await (const chunk of stream) {
+				results.push(chunk)
+			}
+
+			expect(results).toHaveLength(2)
+			// Non-reserved tool names should pass through unchanged
+			expect(results[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: "tool_123",
+				name: "write_file",
+				arguments: undefined,
+			})
+			// Continuation chunks with undefined name should remain undefined
+			expect(results[1]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
+				arguments: '{"path":"test.txt"}',
+			})
+		})
+
+		test("should handle undefined tool name in partial chunks", async () => {
+			const handler = new ClaudeCodeHandler({ apiModelId: "claude-sonnet-4-5" })
+			const systemPrompt = "You are a helpful assistant"
+			const messages = [{ role: "user" as const, content: "Hello" }]
+
+			mockGetAccessToken.mockResolvedValue("test-access-token")
+
+			// Mock a continuation chunk that only has undefined name
+			const mockGenerator = async function* (): AsyncGenerator<StreamChunk> {
+				yield {
+					type: "tool_call_partial",
+					index: 0,
+					id: undefined,
+					name: undefined,
+					arguments: '{"data":"value"}',
+				}
+			}
+
+			mockCreateStreamingMessage.mockReturnValue(mockGenerator())
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const results = []
+
+			for await (const chunk of stream) {
+				results.push(chunk)
+			}
+
+			expect(results).toHaveLength(1)
+			expect(results[0]).toEqual({
+				type: "tool_call_partial",
+				index: 0,
+				id: undefined,
+				name: undefined,
+				arguments: '{"data":"value"}',
+			})
 		})
 	})
 })
