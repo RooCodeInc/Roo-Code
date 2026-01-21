@@ -43,8 +43,7 @@ function expandGroupPatterns(pattern: string): string {
 		return tools.join("|")
 	}
 
-	// Not a group, keep as-is, but warn if it looks like it was intended as a group
-	console.warn(`Unknown tool group "${pattern}". Treating as literal tool name.`)
+	// Not a group - this is a normal tool name, keep as-is
 	return pattern
 }
 

@@ -205,19 +205,10 @@ describe("HookMatcher", () => {
 			})
 
 			it("should treat unknown groups as literal tool names", () => {
-				// Mock console.warn to capture warnings
-				const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
-
+				// Unknown group names are treated as literal tool names (no warning)
 				const matcher = compileMatcher("unknown_group")
 				expect(matcher.matches("unknown_group")).toBe(true)
 				expect(matcher.matches("read_file")).toBe(false)
-
-				// Should have warned about unknown group
-				expect(consoleWarnSpy).toHaveBeenCalledWith(
-					expect.stringContaining('Unknown tool group "unknown_group"'),
-				)
-
-				consoleWarnSpy.mockRestore()
 			})
 
 			it("should not warn for glob patterns that look like groups", () => {

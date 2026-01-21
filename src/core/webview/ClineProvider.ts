@@ -2374,7 +2374,7 @@ export class ClineProvider
 			timestamp: exec.timestamp.toISOString(),
 			hookId: exec.hook.id,
 			event: exec.event,
-			toolName: exec.result.hook.matcher ? undefined : undefined, // Tool name is in context, not easily accessible here
+			toolName: undefined, // Tool name is in context, not easily accessible here
 			exitCode: exec.result.exitCode,
 			duration: exec.result.duration,
 			timedOut: exec.result.timedOut,
