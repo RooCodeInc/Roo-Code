@@ -46,7 +46,6 @@ export const ModeSelector = ({
 	const searchInputRef = React.useRef<HTMLInputElement>(null)
 	const selectedItemRef = React.useRef<HTMLDivElement>(null)
 	const scrollContainerRef = React.useRef<HTMLDivElement>(null)
-	// Track the last invalid mode value we've notified about to prevent infinite loops
 	const lastNotifiedInvalidModeRef = React.useRef<string | null>(null)
 	const portalContainer = useRooPortal("roo-portal")
 	const { hasOpenedModeSelector, setHasOpenedModeSelector } = useExtensionState()
@@ -73,42 +72,30 @@ export const ModeSelector = ({
 		}))
 	}, [customModes, customModePrompts])
 
-	// Find the selected mode (pure computation, no side effects)
+	// Find the selected mode, falling back to default if current mode doesn't exist (e.g., after workspace switch)
 	const selectedMode = React.useMemo(() => {
-		const currentMode = modes.find((mode) => mode.slug === value)
-
-		// If the current mode exists in the available modes, use it
-		if (currentMode) {
-			return currentMode
-		}
-
-		// If the current mode doesn't exist (e.g., after workspace switch),
-		// fall back to the default "code" mode
-		return modes.find((mode) => mode.slug === defaultModeSlug)
+		return modes.find((mode) => mode.slug === value) ?? modes.find((mode) => mode.slug === defaultModeSlug)
 	}, [modes, value])
 
-	// Handle fallback notification separately in useEffect to avoid infinite loops.
-	// We intentionally omit `onChange` from dependencies because:
-	// 1. If the parent doesn't memoize onChange, it would cause infinite re-renders
-	// 2. We use a ref to track if we've already notified about this specific invalid mode
-	// 3. The effect should only trigger when modes or value changes, not when onChange reference changes
+	// Notify parent when current mode is invalid so it can update its state
 	React.useEffect(() => {
-		const currentMode = modes.find((mode) => mode.slug === value)
+		const isValidMode = modes.some((mode) => mode.slug === value)
 
-		if (currentMode) {
-			// Mode is valid, reset the notification tracker
+		if (isValidMode) {
 			lastNotifiedInvalidModeRef.current = null
-		} else {
-			// Mode is invalid - only notify if we haven't already notified about this specific value
-			if (lastNotifiedInvalidModeRef.current !== value) {
-				const fallbackMode = modes.find((mode) => mode.slug === defaultModeSlug)
-				if (fallbackMode) {
-					lastNotifiedInvalidModeRef.current = value
-					onChange(fallbackMode.slug as Mode)
-				}
-			}
+			return
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps -- onChange is intentionally omitted to prevent infinite loops when parent doesn't memoize the callback
+
+		if (lastNotifiedInvalidModeRef.current === value) {
+			return
+		}
+
+		const fallbackMode = modes.find((mode) => mode.slug === defaultModeSlug)
+		if (fallbackMode) {
+			lastNotifiedInvalidModeRef.current = value
+			onChange(fallbackMode.slug as Mode)
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- onChange omitted to prevent loops when parent doesn't memoize
 	}, [modes, value])
 
 	// Memoize searchable items for fuzzy search with separate name and
