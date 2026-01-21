@@ -16,6 +16,7 @@ import { cn } from "@src/lib/utils"
 import { Button } from "@src/components/ui"
 
 import CodeBlock from "../common/CodeBlock"
+import Thumbnails from "../common/Thumbnails"
 import McpToolRow from "../mcp/McpToolRow"
 
 import { Markdown } from "./Markdown"
@@ -36,6 +37,7 @@ interface McpExecutionProps {
 	}
 	useMcpServer?: ClineAskUseMcpServer
 	alwaysAllowMcp?: boolean
+	images?: string[]
 }
 
 export const McpExecution = ({
@@ -47,6 +49,7 @@ export const McpExecution = ({
 	server,
 	useMcpServer,
 	alwaysAllowMcp = false,
+	images,
 }: McpExecutionProps) => {
 	const { t } = useTranslation("mcp")
 
@@ -289,6 +292,13 @@ export const McpExecution = ({
 					hasArguments={!!(isArguments || useMcpServer?.arguments || argumentsText)}
 					isPartial={status ? status.status !== "completed" : false}
 				/>
+
+				{/* Images section - show thumbnails of returned images */}
+				{images && images.length > 0 && (
+					<div className="mt-2 pt-2 border-t border-border/25">
+						<Thumbnails images={images} />
+					</div>
+				)}
 			</div>
 		</>
 	)

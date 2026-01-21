@@ -67,6 +67,7 @@ export const toolParamNames = [
 	"todos",
 	"prompt",
 	"image",
+	"data", // save_image parameter for base64 image data
 	"files", // Native protocol parameter for read_file
 	"operations", // search_and_replace parameter for multiple operations
 	"patch", // apply_patch parameter
@@ -108,6 +109,7 @@ export type NativeToolArgs = {
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	write_to_file: { path: string; content: string }
+	save_image: { path: string; data: string }
 	// Add more tools as they are migrated to native protocol
 }
 
@@ -264,6 +266,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
 	generate_image: "generate images",
+	save_image: "save images",
 	custom_tool: "use custom tools",
 } as const
 
@@ -273,7 +276,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["read_file", "fetch_instructions", "search_files", "list_files", "codebase_search"],
 	},
 	edit: {
-		tools: ["apply_diff", "write_to_file", "generate_image"],
+		tools: ["apply_diff", "write_to_file", "generate_image", "save_image"],
 		customTools: ["search_and_replace", "search_replace", "edit_file", "apply_patch"],
 	},
 	browser: {
