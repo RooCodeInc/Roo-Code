@@ -81,6 +81,18 @@ export const internationalZAiModels = {
 		description:
 			"GLM-4.5V is Z.AI's multimodal visual reasoning model (image/video/text/file input), optimized for GUI tasks, grounding, and document/video understanding.",
 	},
+	"glm-4.6": {
+		maxTokens: 16_384,
+		contextWindow: 200_000,
+		supportsImages: false,
+		supportsPromptCache: true,
+		inputPrice: 0.6,
+		outputPrice: 2.2,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.11,
+		description:
+			"GLM-4.6 is Zhipu's newest model with an extended context window of up to 200k tokens, providing enhanced capabilities for processing longer documents and conversations.",
+	},
 	"glm-4.6v": {
 		maxTokens: 16_384,
 		contextWindow: 131_072,
@@ -93,17 +105,29 @@ export const internationalZAiModels = {
 		description:
 			"GLM-4.6V is an advanced multimodal vision model with improved performance and cost-efficiency for visual understanding tasks.",
 	},
-	"glm-4.6": {
+	"glm-4.6v-flash": {
 		maxTokens: 16_384,
-		contextWindow: 200_000,
-		supportsImages: false,
+		contextWindow: 131_072,
+		supportsImages: true,
 		supportsPromptCache: true,
-		inputPrice: 0.6,
-		outputPrice: 2.2,
+		inputPrice: 0,
+		outputPrice: 0,
 		cacheWritesPrice: 0,
-		cacheReadsPrice: 0.11,
+		cacheReadsPrice: 0,
 		description:
-			"GLM-4.6 is Zhipu's newest model with an extended context window of up to 200k tokens, providing enhanced capabilities for processing longer documents and conversations.",
+			"GLM-4.6V-Flash is a free, high-speed multimodal vision model for rapid image understanding and visual reasoning tasks.",
+	},
+	"glm-4.6v-flashx": {
+		maxTokens: 16_384,
+		contextWindow: 131_072,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.04,
+		outputPrice: 0.4,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.004,
+		description:
+			"GLM-4.6V-FlashX is an ultra-fast multimodal vision model optimized for high-speed visual processing at low cost.",
 	},
 	"glm-4.7": {
 		maxTokens: 16_384,
@@ -143,30 +167,6 @@ export const internationalZAiModels = {
 		cacheReadsPrice: 0.01,
 		description:
 			"GLM-4.7-FlashX is an ultra-fast variant of GLM-4.7 with exceptional speed and cost-effectiveness for high-throughput applications.",
-	},
-	"glm-4.6v-flash": {
-		maxTokens: 16_384,
-		contextWindow: 131_072,
-		supportsImages: true,
-		supportsPromptCache: true,
-		inputPrice: 0,
-		outputPrice: 0,
-		cacheWritesPrice: 0,
-		cacheReadsPrice: 0,
-		description:
-			"GLM-4.6V-Flash is a free, high-speed multimodal vision model for rapid image understanding and visual reasoning tasks.",
-	},
-	"glm-4.6v-flashx": {
-		maxTokens: 16_384,
-		contextWindow: 131_072,
-		supportsImages: true,
-		supportsPromptCache: true,
-		inputPrice: 0.04,
-		outputPrice: 0.4,
-		cacheWritesPrice: 0,
-		cacheReadsPrice: 0.004,
-		description:
-			"GLM-4.6V-FlashX is an ultra-fast multimodal vision model optimized for high-speed visual processing at low cost.",
 	},
 	"glm-4-32b-0414-128k": {
 		maxTokens: 16_384,
@@ -266,6 +266,42 @@ export const mainlandZAiModels = {
 		description:
 			"GLM-4.6 is Zhipu's newest model with an extended context window of up to 200k tokens, providing enhanced capabilities for processing longer documents and conversations.",
 	},
+	"glm-4.6v": {
+		maxTokens: 16_384,
+		contextWindow: 131_072,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.15,
+		outputPrice: 0.45,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.025,
+		description:
+			"GLM-4.6V is an advanced multimodal vision model with improved performance and cost-efficiency for visual understanding tasks.",
+	},
+	"glm-4.6v-flash": {
+		maxTokens: 16_384,
+		contextWindow: 131_072,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0,
+		outputPrice: 0,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0,
+		description:
+			"GLM-4.6V-Flash is a free, high-speed multimodal vision model for rapid image understanding and visual reasoning tasks.",
+	},
+	"glm-4.6v-flashx": {
+		maxTokens: 16_384,
+		contextWindow: 131_072,
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 0.02,
+		outputPrice: 0.2,
+		cacheWritesPrice: 0,
+		cacheReadsPrice: 0.002,
+		description:
+			"GLM-4.6V-FlashX is an ultra-fast multimodal vision model optimized for high-speed visual processing at low cost.",
+	},
 	"glm-4.7": {
 		maxTokens: 16_384,
 		contextWindow: 204_800,
@@ -304,42 +340,6 @@ export const mainlandZAiModels = {
 		cacheReadsPrice: 0.005,
 		description:
 			"GLM-4.7-FlashX is an ultra-fast variant of GLM-4.7 with exceptional speed and cost-effectiveness for high-throughput applications.",
-	},
-	"glm-4.6v": {
-		maxTokens: 16_384,
-		contextWindow: 131_072,
-		supportsImages: true,
-		supportsPromptCache: true,
-		inputPrice: 0.15,
-		outputPrice: 0.45,
-		cacheWritesPrice: 0,
-		cacheReadsPrice: 0.025,
-		description:
-			"GLM-4.6V is an advanced multimodal vision model with improved performance and cost-efficiency for visual understanding tasks.",
-	},
-	"glm-4.6v-flash": {
-		maxTokens: 16_384,
-		contextWindow: 131_072,
-		supportsImages: true,
-		supportsPromptCache: true,
-		inputPrice: 0,
-		outputPrice: 0,
-		cacheWritesPrice: 0,
-		cacheReadsPrice: 0,
-		description:
-			"GLM-4.6V-Flash is a free, high-speed multimodal vision model for rapid image understanding and visual reasoning tasks.",
-	},
-	"glm-4.6v-flashx": {
-		maxTokens: 16_384,
-		contextWindow: 131_072,
-		supportsImages: true,
-		supportsPromptCache: true,
-		inputPrice: 0.02,
-		outputPrice: 0.2,
-		cacheWritesPrice: 0,
-		cacheReadsPrice: 0.002,
-		description:
-			"GLM-4.6V-FlashX is an ultra-fast multimodal vision model optimized for high-speed visual processing at low cost.",
 	},
 } as const satisfies Record<string, ModelInfo>
 
