@@ -36,3 +36,11 @@ export interface GenerateImageParams {
 	path: string
 	image?: string
 }
+
+/**
+ * Statistics about code changes from a diff operation
+ */
+export interface DiffStats {
+	added: number
+	removed: number
+}
