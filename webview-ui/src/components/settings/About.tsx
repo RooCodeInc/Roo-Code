@@ -1,4 +1,4 @@
-import { HTMLAttributes, useState, useCallback, useEffect } from "react"
+import { HTMLAttributes, useState, useCallback, useEffect, useRef } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Trans } from "react-i18next"
 import {
@@ -58,6 +58,7 @@ export const About = ({
 	const { t } = useAppTranslation()
 	const [isRefreshing, setIsRefreshing] = useState(false)
 	const [cachedSize, setCachedSize] = useState<TaskHistorySize | undefined>(taskHistorySize)
+	const didRequestInitialSize = useRef(false)
 
 	// Update cached size when taskHistorySize changes and reset refreshing state
 	useEffect(() => {
@@ -66,6 +67,13 @@ export const About = ({
 			setIsRefreshing(false)
 		}
 	}, [taskHistorySize])
+
+	// Trigger initial task history size calculation when this tab mounts
+	useEffect(() => {
+		if (didRequestInitialSize.current) return
+		didRequestInitialSize.current = true
+		vscode.postMessage({ type: "refreshTaskHistorySize" })
+	}, [])
 
 	const handleRefreshStorageSize = useCallback(() => {
 		setIsRefreshing(true)

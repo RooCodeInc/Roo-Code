@@ -3,21 +3,13 @@ import * as path from "path"
 import * as fs from "fs/promises"
 import type { Dirent } from "fs"
 
+import { TASK_HISTORY_RETENTION_OPTIONS, type TaskHistoryRetentionSetting } from "@roo-code/types"
+
 import { getStorageBasePath } from "./storage"
 import { GlobalFileNames } from "../shared/globalFileNames"
 import { t } from "../i18n"
 
-/**
- * Allowed retention day values (as numbers).
- */
-export type RetentionDays = 90 | 60 | 30 | 7 | 3
-
-/**
- * Supported values for the retention setting.
- * - "never" or 0 disables purging
- * - "90" | "60" | "30" | "7" | "3" (string) or 90 | 60 | 30 | 7 | 3 (number) specify days
- */
-export type RetentionSetting = "never" | "0" | `${RetentionDays}` | RetentionDays | 0
+export type RetentionSetting = TaskHistoryRetentionSetting
 
 export type PurgeResult = {
 	purgedCount: number
@@ -280,7 +272,7 @@ export async function purgeOldTasks(
  */
 function normalizeDays(value: RetentionSetting): number {
 	if (value === "never") return 0
-	const n = typeof value === "number" ? value : parseInt(String(value), 10)
+	const n = parseInt(value, 10)
 	return Number.isFinite(n) && n > 0 ? Math.trunc(n) : 0
 }
 
@@ -314,8 +306,13 @@ export function startBackgroundRetentionPurge(options: BackgroundPurgeOptions): 
 	void (async () => {
 		try {
 			// Skip if retention is disabled
-			if (retention === "never" || retention === "0" || retention === 0) {
+			if (retention === "never") {
 				log("[Retention] Background purge skipped: retention is set to 'never'")
+				return
+			}
+
+			if (!TASK_HISTORY_RETENTION_OPTIONS.includes(retention)) {
+				log(`[Retention] Background purge skipped: invalid retention value '${retention}'`)
 				return
 			}
 
@@ -340,7 +337,7 @@ export function startBackgroundRetentionPurge(options: BackgroundPurgeOptions): 
 				vscode.window.showInformationMessage(message, viewSettingsLabel, dismissLabel).then((action) => {
 					if (action === viewSettingsLabel) {
 						// Navigate to Roo Code settings About tab
-						vscode.commands.executeCommand("roo-cline.settingsButtonClicked")
+						vscode.commands.executeCommand("roo-cline.settingsButtonClicked", "about")
 					}
 				})
 			}

@@ -45,6 +45,7 @@ import {
 import { initializeI18n } from "./i18n"
 import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
 import { startBackgroundRetentionPurge } from "./utils/task-history-retention"
+import { TASK_HISTORY_RETENTION_OPTIONS, type TaskHistoryRetentionSetting } from "@roo-code/types"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -392,14 +393,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	// By this point, provider is fully initialized and ready to handle deletions
 	{
 		const retentionValue = contextProxy.getValue("taskHistoryRetention")
-		const retention =
-			retentionValue === "90" ||
-			retentionValue === "60" ||
-			retentionValue === "30" ||
-			retentionValue === "7" ||
-			retentionValue === "3"
-				? retentionValue
-				: "never"
+		const retention: TaskHistoryRetentionSetting = TASK_HISTORY_RETENTION_OPTIONS.includes(
+			retentionValue as TaskHistoryRetentionSetting,
+		)
+			? (retentionValue as TaskHistoryRetentionSetting)
+			: "never"
 		startBackgroundRetentionPurge({
 			globalStoragePath: contextProxy.globalStorageUri.fsPath,
 			log: (m) => outputChannel.appendLine(m),

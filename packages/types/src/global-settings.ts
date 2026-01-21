@@ -190,8 +190,7 @@ export const globalSettingsSchema = z.object({
 	enhancementApiConfigId: z.string().optional(),
 	includeTaskHistoryInEnhance: z.boolean().optional(),
 	// Auto-delete task history on extension reload.
-	// Note: we accept `number` for backwards compatibility with older persisted state.
-	taskHistoryRetention: z.union([z.enum(TASK_HISTORY_RETENTION_OPTIONS), z.number()]).optional(),
+	taskHistoryRetention: z.enum(TASK_HISTORY_RETENTION_OPTIONS).optional(),
 	// Calculated task history storage size info for the Settings > About page
 	taskHistorySize: z
 		.object({

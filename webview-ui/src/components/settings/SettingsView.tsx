@@ -429,7 +429,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
 					maxGitStatusFiles: maxGitStatusFiles ?? 0,
-taskHistoryRetention: normalizedTaskHistoryRetention,
+					taskHistoryRetention: normalizedTaskHistoryRetention,
 					profileThresholds,
 					imageGenerationProvider,
 					openRouterImageApiKey,
@@ -565,13 +565,6 @@ taskHistoryRetention: normalizedTaskHistoryRetention,
 	useEffect(() => {
 		scrollToActiveTab()
 	}, [activeTab, scrollToActiveTab])
-
-	// Effect to trigger task history size calculation when About tab is opened
-	useEffect(() => {
-		if (activeTab === "about") {
-			vscode.postMessage({ type: "refreshTaskHistorySize" })
-		}
-	}, [activeTab])
 
 	// Effect to scroll when the webview becomes visible
 	useLayoutEffect(() => {
