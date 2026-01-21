@@ -84,9 +84,9 @@ export const CreateWorktreeModal = ({
 				}
 				case "worktreeCopyProgress": {
 					setCopyProgress({
-						bytesCopied: message.copyProgressBytesCopied,
-						totalBytes: message.copyProgressTotalBytes,
-						itemName: message.copyProgressItemName,
+						bytesCopied: message.copyProgressBytesCopied ?? 0,
+						totalBytes: message.copyProgressTotalBytes ?? 0,
+						itemName: message.copyProgressItemName ?? "",
 					})
 					break
 				}

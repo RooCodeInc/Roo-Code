@@ -324,7 +324,7 @@ export class WorktreeIncludeService {
 			let proc: ReturnType<typeof spawn>
 
 			if (isWindows) {
-				proc = spawn("robocopy", [source, target, "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/nc", "/ns", "/np"], {
+				proc = spawn("robocopy", [source, target, "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/NC", "/NS", "/NP"], {
 					windowsHide: true,
 				})
 			} else {
@@ -431,43 +431,6 @@ export class WorktreeIncludeService {
 		}
 
 		return matchingItems
-	}
-
-	/**
-	 * Copy directory using native cp command for performance.
-	 * This is 10-20x faster than Node.js fs.cp for large directories like node_modules.
-	 */
-	private async copyDirectoryNative(source: string, target: string): Promise<void> {
-		// Ensure parent directory exists
-		await fs.mkdir(path.dirname(target), { recursive: true })
-
-		// Use platform-appropriate copy command
-		const isWindows = process.platform === "win32"
-
-		if (isWindows) {
-			// Use robocopy on Windows (more reliable than xcopy)
-			// robocopy returns non-zero for success, so we check the exit code
-			try {
-				await execFileAsync(
-					"robocopy",
-					[source, target, "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/nc", "/ns", "/np"],
-					{ windowsHide: true },
-				)
-			} catch (error) {
-				// robocopy returns non-zero for success (values < 8)
-				const exitCode =
-					typeof (error as { code?: unknown }).code === "number"
-						? (error as { code: number }).code
-						: undefined
-				if (exitCode !== undefined && exitCode < 8) {
-					return // Success
-				}
-				throw error
-			}
-		} else {
-			// Use cp -r on Unix-like systems
-			await execFileAsync("cp", ["-r", "--", source, target])
-		}
 	}
 }
 
