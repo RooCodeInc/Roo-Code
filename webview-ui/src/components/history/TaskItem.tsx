@@ -1,20 +1,18 @@
 import { memo } from "react"
-import type { HistoryItem } from "@roo-code/types"
+import type { DisplayHistoryItem } from "./types"
 
 import { vscode } from "@/utils/vscode"
 import { cn } from "@/lib/utils"
 import { Checkbox } from "@/components/ui/checkbox"
 
 import TaskItemFooter from "./TaskItemFooter"
-
-interface DisplayHistoryItem extends HistoryItem {
-	highlight?: string
-}
+import { StandardTooltip } from "../ui"
 
 interface TaskItemProps {
 	item: DisplayHistoryItem
 	variant: "compact" | "full"
 	showWorkspace?: boolean
+	hasSubtasks?: boolean
 	isSelectionMode?: boolean
 	isSelected?: boolean
 	onToggleSelection?: (taskId: string, isSelected: boolean) => void
@@ -26,6 +24,7 @@ const TaskItem = ({
 	item,
 	variant,
 	showWorkspace = false,
+	hasSubtasks = false,
 	isSelectionMode = false,
 	isSelected = false,
 	onToggleSelection,
@@ -47,8 +46,9 @@ const TaskItem = ({
 			key={item.id}
 			data-testid={`task-item-${item.id}`}
 			className={cn(
-				"cursor-pointer group bg-vscode-editor-background rounded-xl relative overflow-hidden border hover:bg-vscode-editor-foreground/10 transition-colors",
-				"border-transparent",
+				"cursor-pointer group relative overflow-hidden",
+				"hover:bg-vscode-editor-foreground/10 transition-colors",
+				hasSubtasks ? "rounded-t-xl" : "rounded-xl",
 				className,
 			)}
 			onClick={handleClick}>
@@ -78,14 +78,23 @@ const TaskItem = ({
 							!isCompact && isSelectionMode ? "mb-1" : "",
 						)}
 						data-testid="task-content"
-						{...(item.highlight ? { dangerouslySetInnerHTML: { __html: item.highlight } } : {})}>
-						{item.highlight ? undefined : item.task}
+						{...(item.highlight
+							? {
+									dangerouslySetInnerHTML: {
+										__html: item.highlight,
+									},
+								}
+							: {})}>
+						<StandardTooltip content={item.task}>
+							<span>{item.highlight ? undefined : item.task}</span>
+						</StandardTooltip>
 					</div>
 
 					<TaskItemFooter
 						item={item}
 						variant={variant}
 						isSelectionMode={isSelectionMode}
+						isSubtask={item.isSubtask}
 						onDelete={onDelete}
 					/>
 

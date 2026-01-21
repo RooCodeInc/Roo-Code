@@ -19,9 +19,11 @@ import { vscode } from "@/utils/vscode"
 
 interface DeleteTaskDialogProps extends AlertDialogProps {
 	taskId: string
+	/** Number of subtasks that will also be deleted (for cascade delete warning) */
+	subtaskCount?: number
 }
 
-export const DeleteTaskDialog = ({ taskId, ...props }: DeleteTaskDialogProps) => {
+export const DeleteTaskDialog = ({ taskId, subtaskCount = 0, ...props }: DeleteTaskDialogProps) => {
 	const { t } = useAppTranslation()
 	const [isEnterPressed] = useKeyPress("Enter")
 
@@ -40,12 +42,16 @@ export const DeleteTaskDialog = ({ taskId, ...props }: DeleteTaskDialogProps) =>
 		}
 	}, [taskId, isEnterPressed, onDelete])
 
+	// Determine the message to show
+	const message =
+		subtaskCount > 0 ? t("history:deleteWithSubtasks", { count: subtaskCount }) : t("history:deleteTaskMessage")
+
 	return (
 		<AlertDialog {...props}>
 			<AlertDialogContent onEscapeKeyDown={() => onOpenChange?.(false)}>
 				<AlertDialogHeader>
 					<AlertDialogTitle>{t("history:deleteTask")}</AlertDialogTitle>
-					<AlertDialogDescription>{t("history:deleteTaskMessage")}</AlertDialogDescription>
+					<AlertDialogDescription>{message}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
 					<AlertDialogCancel asChild>
