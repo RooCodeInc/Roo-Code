@@ -2445,10 +2445,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					),
 				)
 
-				const { response, text, images } = await this.ask(
-					"mistake_limit_reached",
-					t("common:errors.mistake_limit_guidance"),
-				)
+				// Build error message with operation context for better user understanding
+				const operationContext = this.getLastAttemptedOperationContext()
+				let errorMessage = t("common:errors.mistake_limit_guidance")
+				if (operationContext) {
+					errorMessage = `${t("common:errors.mistake_limit_operation_context", { operation: operationContext })}\n\n${errorMessage}`
+				}
+
+				const { response, text, images } = await this.ask("mistake_limit_reached", errorMessage)
 
 				if (response === "messageResponse") {
 					currentUserContent.push(
@@ -4556,5 +4560,44 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (e) {
 			console.error(`[Task] Queue processing error:`, e)
 		}
+	}
+
+	/**
+	 * Get a human-readable description of the last attempted operation.
+	 * This is used to provide context in the mistake_limit_reached error message
+	 * so users can understand what operation Roo was attempting when it failed.
+	 *
+	 * @returns A descriptive string like "write_to_file for 'path/to/file'" or undefined if no operation found
+	 */
+	public getLastAttemptedOperationContext(): string | undefined {
+		// Look for the last tool_use or mcp_tool_use block in assistantMessageContent
+		for (let i = this.assistantMessageContent.length - 1; i >= 0; i--) {
+			const block = this.assistantMessageContent[i]
+			if (block.type === "tool_use" || block.type === "mcp_tool_use") {
+				const toolUse = block as import("../../shared/tools").ToolUse | import("../../shared/tools").McpToolUse
+				const toolName = toolUse.name
+
+				// Try to extract a file path from common tool parameters
+				let filePath: string | undefined
+				if ("params" in toolUse && toolUse.params) {
+					// Cast to allow accessing any parameter name
+					const params = toolUse.params as Record<string, string | undefined>
+					// Common parameter names for file paths across different tools
+					filePath = params.path || params.file_path
+				} else if ("arguments" in toolUse && toolUse.arguments) {
+					// MCP tools use 'arguments' instead of 'params'
+					const args = toolUse.arguments as Record<string, unknown>
+					filePath = (args.path as string) || (args.file_path as string)
+				}
+
+				// Format the operation context string
+				if (filePath) {
+					return `${toolName} for '${filePath}'`
+				}
+				return toolName
+			}
+		}
+
+		return undefined
 	}
 }
