@@ -438,6 +438,15 @@ vscode-dropdown::part(listbox) {
 	min-height: 16px;
 }
 
+/* Ensure checkbox borders are visible in custom themes */
+vscode-checkbox::part(control) {
+	border: 1px solid var(--vscode-input-border, var(--vscode-dropdown-border));
+}
+
+vscode-checkbox::part(control):hover {
+	border-color: var(--vscode-focusBorder);
+}
+
 /**
  * @shadcn/ui Overrides / Hacks
  */
