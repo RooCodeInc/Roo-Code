@@ -2,7 +2,7 @@ import { ReactNode } from "react"
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip"
 
-export const STANDARD_TOOLTIP_DELAY = 300
+export const STANDARD_TOOLTIP_DELAY = 600
 
 interface StandardTooltipProps {
 	/** The element(s) that trigger the tooltip */
@@ -26,7 +26,7 @@ interface StandardTooltipProps {
 }
 
 /**
- * StandardTooltip component with a configurable delay (defaults to 300ms).
+ * StandardTooltip component with a configurable delay (defaults to 600ms).
  * This component wraps the Radix UI tooltip with a standardized delay duration.
  *
  * @example
