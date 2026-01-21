@@ -58,7 +58,7 @@
 		"title": "Deny",
 		"tooltip": "Prevent this action from occurring"
 	},
-	"completeSubtaskAndReturn": "Complete Subtask and Return",
+	"completeSubtaskAndReturn": "Complete subtask and keep going",
 	"approve": {
 		"title": "Approve",
 		"tooltip": "Allow this action to happen"
@@ -280,12 +280,11 @@
 	},
 	"subtasks": {
 		"wantsToCreate": "Roo wants to create a new subtask in {{mode}} mode",
-		"wantsToFinish": "Roo wants to finish this subtask",
+		"wantsToFinish": "Roo wants to mark this as completed",
 		"newTaskContent": "Subtask Instructions",
-		"completionContent": "Subtask Completed",
-		"resultContent": "Subtask Results",
+		"resultContent": "Task result",
 		"defaultResult": "Please continue to the next task.",
-		"completionInstructions": "Subtask completed! You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task."
+		"completionInstructions": "You can review the results and suggest any corrections or next steps. If everything looks good, confirm to return the result to the parent task."
 	},
 	"questions": {
 		"hasQuestion": "Roo has a question"
