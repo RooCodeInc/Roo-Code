@@ -204,7 +204,7 @@ export default function SlackPage() {
 							</Button>
 							<Button variant="outline" size="xl" className="backdrop-blur-sm" asChild>
 								<a
-									href="https://docs.roocode.com/roo-code-cloud/slack-integration"
+									href={EXTERNAL_LINKS.SLACK_DOCS}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="flex items-center justify-center">
