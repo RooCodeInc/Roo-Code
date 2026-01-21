@@ -42,6 +42,8 @@
 	"noIncludeFileHint": ".worktreeinclude ファイルがない場合、node_modules などのファイルは新しい worktree にコピーされません。作成後に npm install を実行する必要があるかもしれません。",
 	"create": "作成",
 	"creating": "作成中...",
+	"copyingFiles": "ファイルをコピー中...",
+	"copyingProgress": "{{item}} — {{copied}} / {{total}}",
 	"cancel": "キャンセル",
 
 	"deleteWorktree": "Worktree を削除",

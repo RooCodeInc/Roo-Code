@@ -42,6 +42,8 @@
 	"noIncludeFileHint": "Sense un fitxer .worktreeinclude, fitxers com node_modules no es copiaran al worktree nou. Potser hauràs d'executar npm install després de crear-lo.",
 	"create": "Crea",
 	"creating": "S'està creant...",
+	"copyingFiles": "S'estan copiant fitxers...",
+	"copyingProgress": "{{item}} — {{copied}} / {{total}}",
 	"cancel": "Cancel·la",
 
 	"deleteWorktree": "Suprimeix worktree",

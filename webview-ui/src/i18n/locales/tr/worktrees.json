@@ -42,6 +42,8 @@
 	"noIncludeFileHint": ".worktreeinclude dosyası olmadan node_modules gibi dosyalar yeni worktree'ye kopyalanmaz. Oluşturduktan sonra npm install çalıştırman gerekebilir.",
 	"create": "Oluştur",
 	"creating": "Oluşturuluyor...",
+	"copyingFiles": "Dosyalar kopyalanıyor...",
+	"copyingProgress": "{{item}} — {{copied}} / {{total}}",
 	"cancel": "İptal",
 
 	"deleteWorktree": "Worktree'yi sil",

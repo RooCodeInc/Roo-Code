@@ -42,6 +42,8 @@
 	"noIncludeFileHint": "Không có tệp .worktreeinclude thì các tệp như node_modules sẽ không được sao chép sang worktree mới. Bạn có thể cần chạy npm install sau khi tạo.",
 	"create": "Tạo",
 	"creating": "Đang tạo...",
+	"copyingFiles": "Đang sao chép tệp...",
+	"copyingProgress": "{{item}} — {{copied}} / {{total}}",
 	"cancel": "Hủy",
 
 	"deleteWorktree": "Xóa Worktree",

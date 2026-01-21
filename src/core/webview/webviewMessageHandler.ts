@@ -3439,12 +3439,23 @@ export const webviewMessageHandler = async (
 
 		case "createWorktree": {
 			try {
-				const { success, message: text } = await handleCreateWorktree(provider, {
-					path: message.worktreePath!,
-					branch: message.worktreeBranch,
-					baseBranch: message.worktreeBaseBranch,
-					createNewBranch: message.worktreeCreateNewBranch,
-				})
+				const { success, message: text } = await handleCreateWorktree(
+					provider,
+					{
+						path: message.worktreePath!,
+						branch: message.worktreeBranch,
+						baseBranch: message.worktreeBaseBranch,
+						createNewBranch: message.worktreeCreateNewBranch,
+					},
+					(progress) => {
+						provider.postMessageToWebview({
+							type: "worktreeCopyProgress",
+							copyProgressBytesCopied: progress.bytesCopied,
+							copyProgressTotalBytes: progress.totalBytes,
+							copyProgressItemName: progress.itemName,
+						})
+					},
+				)
 
 				await provider.postMessageToWebview({ type: "worktreeResult", success, text })
 			} catch (error) {

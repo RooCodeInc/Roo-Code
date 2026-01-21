@@ -42,6 +42,8 @@
 	"noIncludeFileHint": "沒有 .worktreeinclude 檔案時，node_modules 等檔案不會複製到新的 worktree。建立後你可能需要執行 npm install。",
 	"create": "建立",
 	"creating": "正在建立...",
+	"copyingFiles": "正在複製檔案...",
+	"copyingProgress": "{{item}} — {{copied}} / {{total}}",
 	"cancel": "取消",
 
 	"deleteWorktree": "刪除 Worktree",

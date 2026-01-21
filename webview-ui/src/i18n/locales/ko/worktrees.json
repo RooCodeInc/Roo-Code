@@ -42,6 +42,8 @@
 	"noIncludeFileHint": ".worktreeinclude 파일이 없으면 node_modules 같은 파일이 새 worktree로 복사되지 않습니다. 생성 후 npm install을 실행해야 할 수도 있습니다.",
 	"create": "만들기",
 	"creating": "만드는 중...",
+	"copyingFiles": "파일 복사 중...",
+	"copyingProgress": "{{item}} — {{copied}} / {{total}}",
 	"cancel": "취소",
 
 	"deleteWorktree": "Worktree 삭제",

@@ -42,6 +42,8 @@
 	"noIncludeFileHint": "Tanpa file .worktreeinclude, file seperti node_modules tidak akan disalin ke worktree baru. Kamu mungkin perlu menjalankan npm install setelah membuatnya.",
 	"create": "Buat",
 	"creating": "Membuat...",
+	"copyingFiles": "Menyalin file...",
+	"copyingProgress": "{{item}} — {{copied}} / {{total}}",
 	"cancel": "Batal",
 
 	"deleteWorktree": "Hapus Worktree",

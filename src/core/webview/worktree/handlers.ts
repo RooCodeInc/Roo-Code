@@ -17,7 +17,7 @@ import type {
 	WorktreeListResponse,
 	WorktreeDefaultsResponse,
 } from "@roo-code/types"
-import { worktreeService, worktreeIncludeService } from "@roo-code/core"
+import { worktreeService, worktreeIncludeService, type CopyProgressCallback } from "@roo-code/core"
 
 import type { ClineProvider } from "../ClineProvider"
 
@@ -137,6 +137,7 @@ export async function handleCreateWorktree(
 		baseBranch?: string
 		createNewBranch?: boolean
 	},
+	onCopyProgress?: CopyProgressCallback,
 ): Promise<WorktreeResult> {
 	const cwd = provider.cwd
 
@@ -154,7 +155,11 @@ export async function handleCreateWorktree(
 	// If successful and .worktreeinclude exists, copy the files.
 	if (result.success && result.worktree) {
 		try {
-			const copiedItems = await worktreeIncludeService.copyWorktreeIncludeFiles(cwd, result.worktree.path)
+			const copiedItems = await worktreeIncludeService.copyWorktreeIncludeFiles(
+				cwd,
+				result.worktree.path,
+				onCopyProgress,
+			)
 			if (copiedItems.length > 0) {
 				result.message += ` (copied ${copiedItems.length} item(s) from .worktreeinclude)`
 			}

@@ -5,7 +5,7 @@
  * Used to copy untracked files (like node_modules) when creating worktrees.
  */
 
-import { execFile } from "child_process"
+import { execFile, spawn } from "child_process"
 import * as fs from "fs/promises"
 import * as path from "path"
 import { promisify } from "util"
@@ -13,6 +13,23 @@ import { promisify } from "util"
 import ignore, { type Ignore } from "ignore"
 
 import type { WorktreeIncludeStatus } from "./types.js"
+
+/**
+ * Progress info for size-based copy tracking.
+ */
+export interface CopyProgress {
+	/** Current bytes copied */
+	bytesCopied: number
+	/** Total bytes to copy */
+	totalBytes: number
+	/** Name of current item being copied */
+	itemName: string
+}
+
+/**
+ * Callback for reporting copy progress during worktree file copying.
+ */
+export type CopyProgressCallback = (progress: CopyProgress) => void
 
 const execFileAsync = promisify(execFile)
 
@@ -93,9 +110,16 @@ export class WorktreeIncludeService {
 	 * Copy files matching .worktreeinclude patterns from source to target.
 	 * Only copies files that are ALSO in .gitignore (to avoid copying tracked files).
 	 *
+	 * @param sourceDir - The source directory containing the files to copy
+	 * @param targetDir - The target directory where files will be copied
+	 * @param onProgress - Optional callback to report copy progress (size-based)
 	 * @returns Array of copied file/directory paths
 	 */
-	async copyWorktreeIncludeFiles(sourceDir: string, targetDir: string): Promise<string[]> {
+	async copyWorktreeIncludeFiles(
+		sourceDir: string,
+		targetDir: string,
+		onProgress?: CopyProgressCallback,
+	): Promise<string[]> {
 		const worktreeIncludePath = path.join(sourceDir, ".worktreeinclude")
 		const gitignorePath = path.join(sourceDir, ".gitignore")
 
@@ -136,9 +160,30 @@ export class WorktreeIncludeService {
 		// Find items that match BOTH patterns (intersection)
 		const itemsToCopy = await this.findMatchingItems(sourceDir, worktreeIncludeMatcher, gitignoreMatcher)
 
-		// Copy the items
+		if (itemsToCopy.length === 0) {
+			return []
+		}
+
+		// Calculate total size of all items to copy (for accurate progress)
+		const itemSizes = await Promise.all(
+			itemsToCopy.map(async (item) => {
+				const sourcePath = path.join(sourceDir, item)
+				const size = await this.getPathSize(sourcePath)
+				return { item, size }
+			}),
+		)
+
+		const totalBytes = itemSizes.reduce((sum, { size }) => sum + size, 0)
+		let bytesCopied = 0
+
+		// Report initial progress
+		if (onProgress && totalBytes > 0) {
+			onProgress({ bytesCopied: 0, totalBytes, itemName: itemsToCopy[0]! })
+		}
+
+		// Copy the items with size-based progress tracking
 		const copiedItems: string[] = []
-		for (const item of itemsToCopy) {
+		for (const { item, size } of itemSizes) {
 			const sourcePath = path.join(sourceDir, item)
 			const targetPath = path.join(targetDir, item)
 
@@ -146,21 +191,195 @@ export class WorktreeIncludeService {
 				const stats = await fs.stat(sourcePath)
 
 				if (stats.isDirectory()) {
-					// Use native cp for directories (much faster)
-					await this.copyDirectoryNative(sourcePath, targetPath)
+					// Use native cp for directories with progress polling
+					await this.copyDirectoryWithProgress(
+						sourcePath,
+						targetPath,
+						item,
+						bytesCopied,
+						totalBytes,
+						onProgress,
+					)
 				} else {
+					// Report progress before copying
+					onProgress?.({ bytesCopied, totalBytes, itemName: item })
+
 					// Ensure parent directory exists
 					await fs.mkdir(path.dirname(targetPath), { recursive: true })
 					await fs.copyFile(sourcePath, targetPath)
 				}
+
+				bytesCopied += size
 				copiedItems.push(item)
+
+				// Report progress after copying
+				onProgress?.({ bytesCopied, totalBytes, itemName: item })
 			} catch (error) {
 				// Log but don't fail on individual copy errors
 				console.error(`Failed to copy ${item}:`, error)
+				// Still count the size as "processed" to avoid progress getting stuck
+				bytesCopied += size
 			}
 		}
 
 		return copiedItems
+	}
+
+	/**
+	 * Get the size on disk of a file (accounts for filesystem block allocation).
+	 * Uses blksize to calculate actual disk usage including block overhead.
+	 */
+	private getSizeOnDisk(stats: { size: number; blksize?: number }): number {
+		// Calculate size on disk using filesystem block size
+		if (stats.blksize !== undefined && stats.blksize > 0) {
+			return stats.blksize * Math.ceil(stats.size / stats.blksize)
+		}
+		// Fallback to logical size when blksize not available
+		return stats.size
+	}
+
+	/**
+	 * Get the total size on disk of a file or directory (recursively).
+	 * Uses native Node.js fs operations for cross-platform compatibility.
+	 */
+	private async getPathSize(targetPath: string): Promise<number> {
+		try {
+			const stats = await fs.stat(targetPath)
+
+			if (stats.isFile()) {
+				return this.getSizeOnDisk(stats)
+			}
+
+			if (stats.isDirectory()) {
+				return await this.getDirectorySizeRecursive(targetPath)
+			}
+
+			return 0
+		} catch {
+			return 0
+		}
+	}
+
+	/**
+	 * Recursively calculate directory size on disk using Node.js fs.
+	 * Uses parallel processing for better performance on large directories.
+	 */
+	private async getDirectorySizeRecursive(dirPath: string): Promise<number> {
+		try {
+			const entries = await fs.readdir(dirPath, { withFileTypes: true })
+			const sizes = await Promise.all(
+				entries.map(async (entry) => {
+					const entryPath = path.join(dirPath, entry.name)
+					try {
+						if (entry.isFile()) {
+							const stats = await fs.stat(entryPath)
+							return this.getSizeOnDisk(stats)
+						} else if (entry.isDirectory()) {
+							return await this.getDirectorySizeRecursive(entryPath)
+						}
+						return 0
+					} catch {
+						return 0 // Skip inaccessible files
+					}
+				}),
+			)
+			return sizes.reduce((sum, size) => sum + size, 0)
+		} catch {
+			return 0
+		}
+	}
+
+	/**
+	 * Get the current size of a directory (for progress tracking).
+	 */
+	private async getCurrentDirectorySize(dirPath: string): Promise<number> {
+		try {
+			await fs.access(dirPath)
+			return await this.getDirectorySizeRecursive(dirPath)
+		} catch {
+			return 0
+		}
+	}
+
+	/**
+	 * Copy directory with progress polling.
+	 * Starts native copy and polls target directory size to report progress.
+	 */
+	private async copyDirectoryWithProgress(
+		source: string,
+		target: string,
+		itemName: string,
+		bytesCopiedBefore: number,
+		totalBytes: number,
+		onProgress?: CopyProgressCallback,
+	): Promise<void> {
+		// Ensure parent directory exists
+		await fs.mkdir(path.dirname(target), { recursive: true })
+
+		const isWindows = process.platform === "win32"
+		const expectedSize = await this.getPathSize(source)
+
+		// Start the copy process
+		const copyPromise = new Promise<void>((resolve, reject) => {
+			let proc: ReturnType<typeof spawn>
+
+			if (isWindows) {
+				proc = spawn("robocopy", [source, target, "/E", "/NFL", "/NDL", "/NJH", "/NJS", "/nc", "/ns", "/np"], {
+					windowsHide: true,
+				})
+			} else {
+				proc = spawn("cp", ["-r", "--", source, target])
+			}
+
+			proc.on("close", (code) => {
+				if (isWindows) {
+					// robocopy returns non-zero for success (values < 8)
+					if (code !== null && code < 8) {
+						resolve()
+					} else {
+						reject(new Error(`robocopy failed with code ${code}`))
+					}
+				} else {
+					if (code === 0) {
+						resolve()
+					} else {
+						reject(new Error(`cp failed with code ${code}`))
+					}
+				}
+			})
+
+			proc.on("error", reject)
+		})
+
+		// Poll progress while copying
+		const pollInterval = 500 // Poll every 500ms
+		let polling = true
+
+		const pollProgress = async () => {
+			while (polling) {
+				const currentSize = await this.getCurrentDirectorySize(target)
+				const totalCopied = bytesCopiedBefore + currentSize
+
+				onProgress?.({
+					bytesCopied: Math.min(totalCopied, bytesCopiedBefore + expectedSize),
+					totalBytes,
+					itemName,
+				})
+
+				await new Promise((resolve) => setTimeout(resolve, pollInterval))
+			}
+		}
+
+		// Start polling and wait for copy to complete
+		const pollPromise = pollProgress()
+
+		try {
+			await copyPromise
+		} finally {
+			polling = false
+			// Wait for final poll iteration to complete
+			await pollPromise.catch(() => {})
+		}
 	}
 
 	/**

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
+import prettyBytes from "pretty-bytes"
 
 import type { WorktreeDefaultsResponse, BranchInfo, WorktreeIncludeStatus } from "@roo-code/types"
 
@@ -44,6 +45,11 @@ export const CreateWorktreeModal = ({
 	// UI state
 	const [isCreating, setIsCreating] = useState(false)
 	const [error, setError] = useState<string | null>(null)
+	const [copyProgress, setCopyProgress] = useState<{
+		bytesCopied: number
+		totalBytes: number
+		itemName: string
+	} | null>(null)
 
 	// Fetch defaults and branches on open
 	useEffect(() => {
@@ -76,8 +82,17 @@ export const CreateWorktreeModal = ({
 					setIncludeStatus(message.worktreeIncludeStatus)
 					break
 				}
+				case "worktreeCopyProgress": {
+					setCopyProgress({
+						bytesCopied: message.copyProgressBytesCopied,
+						totalBytes: message.copyProgressTotalBytes,
+						itemName: message.copyProgressItemName,
+					})
+					break
+				}
 				case "worktreeResult": {
 					setIsCreating(false)
+					setCopyProgress(null)
 					if (message.success) {
 						if (openAfterCreate) {
 							vscode.postMessage({
@@ -207,10 +222,42 @@ export const CreateWorktreeModal = ({
 							<p className="text-vscode-errorForeground">{error}</p>
 						</div>
 					)}
+
+					{/* Progress section - appears during file copying */}
+					{copyProgress && (
+						<div className="flex flex-col gap-2 px-3 py-3 rounded-lg bg-vscode-editor-background border border-vscode-panel-border">
+							<div className="flex items-center justify-between text-sm">
+								<span className="text-vscode-foreground font-medium">
+									{t("worktrees:copyingFiles")}
+								</span>
+								<span className="text-vscode-descriptionForeground">
+									{copyProgress.totalBytes > 0
+										? Math.round((copyProgress.bytesCopied / copyProgress.totalBytes) * 100)
+										: 0}
+									%
+								</span>
+							</div>
+							<div className="w-full h-2 bg-vscode-input-background rounded-full overflow-hidden">
+								<div
+									className="h-full bg-vscode-button-background rounded-full transition-all duration-200"
+									style={{
+										width: `${copyProgress.totalBytes > 0 ? (copyProgress.bytesCopied / copyProgress.totalBytes) * 100 : 0}%`,
+									}}
+								/>
+							</div>
+							<div className="text-xs text-vscode-descriptionForeground truncate">
+								{t("worktrees:copyingProgress", {
+									item: copyProgress.itemName,
+									copied: prettyBytes(copyProgress.bytesCopied),
+									total: prettyBytes(copyProgress.totalBytes),
+								})}
+							</div>
+						</div>
+					)}
 				</div>
 
 				<DialogFooter>
-					<Button variant="secondary" onClick={onClose}>
+					<Button variant="secondary" onClick={onClose} disabled={isCreating}>
 						{t("worktrees:cancel")}
 					</Button>
 					<Button onClick={handleCreate} disabled={!isValid || isCreating}>

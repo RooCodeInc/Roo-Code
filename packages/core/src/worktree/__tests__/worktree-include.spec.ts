@@ -264,5 +264,45 @@ describe("WorktreeIncludeService", () => {
 
 			expect(result).toContain("node_modules")
 		})
+
+		it("should call progress callback with size-based progress", async () => {
+			// Set up files to copy
+			await fs.writeFile(path.join(sourceDir, ".worktreeinclude"), "node_modules\n.env.local")
+			await fs.writeFile(path.join(sourceDir, ".gitignore"), "node_modules\n.env.local")
+			await fs.mkdir(path.join(sourceDir, "node_modules"), { recursive: true })
+			await fs.writeFile(path.join(sourceDir, "node_modules", "test.txt"), "test")
+			await fs.writeFile(path.join(sourceDir, ".env.local"), "LOCAL_VAR=value")
+
+			const progressCalls: Array<{ bytesCopied: number; totalBytes: number; itemName: string }> = []
+			const onProgress = vi.fn((progress: { bytesCopied: number; totalBytes: number; itemName: string }) => {
+				progressCalls.push({ ...progress })
+			})
+
+			await service.copyWorktreeIncludeFiles(sourceDir, targetDir, onProgress)
+
+			// Should be called multiple times (initial + after each copy + during polling)
+			expect(onProgress).toHaveBeenCalled()
+
+			// All calls should have totalBytes > 0 (since we have files)
+			expect(progressCalls.every((p) => p.totalBytes > 0)).toBe(true)
+
+			// Final call should have bytesCopied === totalBytes (complete)
+			const finalCall = progressCalls[progressCalls.length - 1]
+			expect(finalCall?.bytesCopied).toBe(finalCall?.totalBytes)
+
+			// Each call should have an item name
+			expect(progressCalls.every((p) => typeof p.itemName === "string")).toBe(true)
+		})
+
+		it("should not fail when progress callback is not provided", async () => {
+			await fs.writeFile(path.join(sourceDir, ".worktreeinclude"), "node_modules")
+			await fs.writeFile(path.join(sourceDir, ".gitignore"), "node_modules")
+			await fs.mkdir(path.join(sourceDir, "node_modules"), { recursive: true })
+
+			// Should not throw when no callback is provided
+			const result = await service.copyWorktreeIncludeFiles(sourceDir, targetDir)
+
+			expect(result).toContain("node_modules")
+		})
 	})
 })
