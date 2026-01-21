@@ -3,7 +3,6 @@ import {
 	Brain,
 	GitBranch,
 	GraduationCap,
-	Layers,
 	Link2,
 	LucideIcon,
 	MessageSquare,
@@ -23,7 +22,7 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 
 const TITLE = "Roo Code for Slack"
 const DESCRIPTION =
-	"Summon agents to explain code, plan new features, or execute coding tasks without leaving Slack. Turn team discussions into shipped features."
+	"Mention @Roomote in any channel to explain code, plan features, or ship a PR—all without leaving the conversation."
 const OG_DESCRIPTION = "Your AI Team in Slack"
 const PATH = "/slack"
 
@@ -86,7 +85,7 @@ const VALUE_PROPS: ValueProp[] = [
 		icon: Brain,
 		title: "The agent knows the thread.",
 		description:
-			'@Roomote reads the conversation before responding. Ask "why is this happening?" after a team discussion and it understands.',
+			'@Roomote reads the full conversation before responding, so follow-up questions like "why is this happening?" just work.',
 	},
 	{
 		icon: Link2,
@@ -98,18 +97,12 @@ const VALUE_PROPS: ValueProp[] = [
 		icon: Users,
 		title: "Non-technical team members can investigate.",
 		description:
-			"PMs, CSMs, and support can ask @Roomote to explain code or investigate issues. Engineering gets pulled in only when truly needed.",
+			"PMs, CSMs, and Sales can ask @Roomote to explain code or investigate issues. Engineering gets pulled in only when truly needed.",
 	},
 	{
 		icon: GraduationCap,
 		title: "Team learning, built in.",
 		description: "Public channel mentions show everyone how to leverage agents. Learn by watching.",
-	},
-	{
-		icon: Layers,
-		title: "One platform, multiple surfaces.",
-		description:
-			"The same agents that work in your IDE and review your PRs are available in Slack. Different surfaces, same quality.",
 	},
 	{
 		icon: Shield,
@@ -160,8 +153,9 @@ interface OnboardingStep {
 const ONBOARDING_STEPS: OnboardingStep[] = [
 	{
 		icon: Settings,
-		title: "1. Connect in Settings",
-		description: 'Go to your personal or org settings in the top right user menu. Click on "Connect" for Slack.',
+		title: "1. Connect in Roo Code Cloud",
+		description:
+			'Sign in to Roo Code Cloud and go to Settings. Click "Connect" next to Slack in the Integrations section.',
 	},
 	{
 		icon: Slack,
@@ -188,15 +182,11 @@ export default function SlackPage() {
 							Powered by Roo Code Cloud
 						</div>
 						<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-5xl lg:text-6xl">
-							<span className="text-violet-500">@Roomote:</span> Your AI Team in Slack
+							<span className="text-violet-500">@Roomote:</span> Your AI Team in&nbsp;Slack
 						</h1>
-						<p className="text-xl text-muted-foreground mb-4 max-w-2xl mx-auto">
-							Summon agents to explain code, plan new features, or execute coding tasks without leaving
-							Slack.
-						</p>
-						<p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-							Mention @Roomote in any channel. Pick an agent and a repo. Get answers, plans, or a PR in
-							the thread.
+						<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+							Mention @Roomote in any channel to explain code, plan features, or ship a PR—all without
+							leaving the conversation.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">
 							<Button
@@ -234,7 +224,7 @@ export default function SlackPage() {
 					</div>
 					<div className="text-center mb-16">
 						<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-							Why your team will love @Roomote
+							Why your team will love using Roo Code in&nbsp;Slack
 						</h2>
 						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
 							AI agents that understand context, chain together for complex work, and keep humans in
@@ -349,7 +339,7 @@ export default function SlackPage() {
 					<div className="text-center mb-16">
 						<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Get started in minutes</h2>
 						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-							Connect your Slack workspace and start summoning agents.
+							Connect your Slack workspace and start working with AI agents.
 						</p>
 					</div>
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
