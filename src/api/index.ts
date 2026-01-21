@@ -7,6 +7,7 @@ import { ApiStream } from "./transform/stream"
 
 import {
 	AnthropicHandler,
+	AzureFoundryHandler,
 	AwsBedrockHandler,
 	CerebrasHandler,
 	OpenRouterHandler,
@@ -127,6 +128,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	switch (apiProvider) {
 		case "anthropic":
 			return new AnthropicHandler(options)
+		case "azure-foundry":
+			return new AzureFoundryHandler(options)
 		case "claude-code":
 			return new ClaudeCodeHandler(options)
 		case "openrouter":

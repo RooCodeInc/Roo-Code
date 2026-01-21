@@ -369,6 +369,17 @@ function getSelectedModel({
 			const info = openAiCodexModels[id as keyof typeof openAiCodexModels]
 			return { id, info }
 		}
+		case "azure-foundry": {
+			const id = apiConfiguration.azureFoundryModelId ?? ""
+			const customInfo = apiConfiguration?.openAiCustomModelInfo
+			// Only merge native tool call defaults, not prices or other model-specific info
+			const nativeToolDefaults = {
+				supportsNativeTools: openAiModelInfoSaneDefaults.supportsNativeTools,
+				defaultToolProtocol: openAiModelInfoSaneDefaults.defaultToolProtocol,
+			}
+			const info = customInfo ? { ...nativeToolDefaults, ...customInfo } : openAiModelInfoSaneDefaults
+			return { id, info }
+		}
 		case "vercel-ai-gateway": {
 			const id = getValidatedModelId(
 				apiConfiguration.vercelAiGatewayModelId,
