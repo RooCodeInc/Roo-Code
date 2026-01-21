@@ -22,6 +22,47 @@ import { countTokens } from "../../utils/countTokens"
 import { convertOpenAIToolsToAnthropic } from "../../core/prompts/tools/native-tools/converters"
 
 /**
+ * IMPORTANT:
+ * Claude Code OAuth (sk-ant-oat...) gateway can reject requests when a user-defined tool name
+ * collides with a reserved/system tool name on their side (observed for "read_file").
+ *
+ * Symptom: the request fails only when a tool is named "read_file",
+ * but starts working if renamed (e.g. "_read_file").
+ *
+ * Workaround: namespace reserved tool names before sending the request, and map tool call names back
+ * so the rest of Roo’s tool routing remains unchanged.
+ */
+const RESERVED_ANTHROPIC_TOOL_NAMES = new Set(["read_file"])
+const RESERVED_ANTHROPIC_TOOL_PREFIX = "_"
+
+function patchReservedAnthropicToolNames<T extends { name: string }>(
+	tools: T[],
+): {
+	tools: T[]
+	reverseNameMap: Map<string, string>
+} {
+	const reverseNameMap = new Map<string, string>()
+
+	const patchedTools = tools.map((tool) => {
+		if (!RESERVED_ANTHROPIC_TOOL_NAMES.has(tool.name)) {
+			return tool
+		}
+
+		const patchedName = `${RESERVED_ANTHROPIC_TOOL_PREFIX}${tool.name}`
+		reverseNameMap.set(patchedName, tool.name)
+
+		// Keep the tool shape unchanged, only patch the name
+		return { ...tool, name: patchedName } as T
+	})
+
+	return { tools: patchedTools, reverseNameMap }
+}
+
+function unpatchToolName(name: string, reverseNameMap: Map<string, string>): string {
+	return reverseNameMap.get(name) ?? name
+}
+
+/**
  * Converts OpenAI tool_choice to Anthropic ToolChoice format
  * @param toolChoice - OpenAI tool_choice parameter
  * @param parallelToolCalls - When true, allows parallel tool calls. When false (default), disables parallel tool calls.
@@ -144,8 +185,19 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 			// Generate user_id metadata in the format required by Claude Code API
 			const userId = generateUserId(email || undefined)
 
-			const anthropicTools = convertOpenAIToolsToAnthropic(metadata?.tools ?? [])
-			const anthropicToolChoice = convertOpenAIToolChoice(metadata?.tool_choice, metadata?.parallelToolCalls)
+			const rawAnthropicTools = convertOpenAIToolsToAnthropic(metadata?.tools ?? [])
+			let anthropicToolChoice = convertOpenAIToolChoice(metadata?.tool_choice, metadata?.parallelToolCalls)
+
+			// Work around reserved tool names in Claude Code OAuth gateway (e.g. "read_file")
+			const { tools: anthropicTools, reverseNameMap } = patchReservedAnthropicToolNames(rawAnthropicTools)
+
+			// If toolChoice targets a reserved tool, patch it to match the renamed tool list.
+			if (anthropicToolChoice?.type === "tool" && RESERVED_ANTHROPIC_TOOL_NAMES.has(anthropicToolChoice.name)) {
+				anthropicToolChoice = {
+					...anthropicToolChoice,
+					name: `${RESERVED_ANTHROPIC_TOOL_PREFIX}${anthropicToolChoice.name}`,
+				}
+			}
 
 			// Determine reasoning effort and thinking configuration
 			const reasoningLevel = this.getReasoningEffort(model.info)
@@ -226,7 +278,8 @@ export class ClaudeCodeHandler implements ApiHandler, SingleCompletionHandler {
 							type: "tool_call_partial",
 							index: chunk.index,
 							id: chunk.id,
-							name: chunk.name,
+							// chunk.name is expected to always exist for tool calls
+							name: unpatchToolName(chunk.name as string, reverseNameMap),
 							arguments: chunk.arguments,
 						}
 						break
