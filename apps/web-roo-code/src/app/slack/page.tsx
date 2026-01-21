@@ -1,6 +1,7 @@
 import {
 	ArrowRight,
 	Brain,
+	CreditCard,
 	GitBranch,
 	GraduationCap,
 	Link2,
@@ -95,7 +96,7 @@ const VALUE_PROPS: ValueProp[] = [
 	},
 	{
 		icon: Users,
-		title: "Non-technical team members can investigate.",
+		title: "Anyone can contribute.",
 		description:
 			"PMs, CSMs, and Sales can ask @Roomote to explain code or investigate issues. Engineering gets pulled in only when truly needed.",
 	},
@@ -107,7 +108,7 @@ const VALUE_PROPS: ValueProp[] = [
 	{
 		icon: Shield,
 		title: "Safe by design.",
-		description: "Agents never touch main/master directly. They produce branches and PRs. Humans approve.",
+		description: "Agents never touch main/master directly. They produce branches and PRs. You approve.",
 	},
 ]
 
@@ -148,23 +149,36 @@ interface OnboardingStep {
 	icon: LucideIcon
 	title: string
 	description: string
+	link?: {
+		href: string
+		text: string
+	}
 }
 
 const ONBOARDING_STEPS: OnboardingStep[] = [
 	{
+		icon: CreditCard,
+		title: "1. Get a Team Plan",
+		description: "Slack requires a Team plan.",
+		link: {
+			href: EXTERNAL_LINKS.CLOUD_APP_TEAM_TRIAL,
+			text: "Start a free trial",
+		},
+	},
+	{
 		icon: Settings,
-		title: "1. Connect in Roo Code Cloud",
+		title: "2. Connect in Roo Code Cloud",
 		description:
 			'Sign in to Roo Code Cloud and go to Settings. Click "Connect" next to Slack in the Integrations section.',
 	},
 	{
 		icon: Slack,
-		title: "2. Follow the process",
+		title: "3. Authorize Slack",
 		description: "Authorize the Roo Code app to access your Slack workspace.",
 	},
 	{
 		icon: MessageSquare,
-		title: "3. Add to channels",
+		title: "4. Add to channels",
 		description: "Add the @Roomote bot to the channels where you want it to be available.",
 	},
 ]
@@ -294,41 +308,6 @@ export default function SlackPage() {
 								</div>
 							))}
 						</div>
-
-						{/* Why This Matters */}
-						<div className="mt-12 p-8 rounded-2xl bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-blue-500/5 border border-border/50">
-							<h3 className="text-xl font-semibold mb-4">Why this matters</h3>
-							<ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<li className="flex items-start gap-3">
-									<div className="mt-1 size-2 rounded-full bg-violet-500 shrink-0" />
-									<span className="text-muted-foreground">
-										<strong className="text-foreground">No context switch:</strong> Discussion,
-										spec, and code all in one Slack thread
-									</span>
-								</li>
-								<li className="flex items-start gap-3">
-									<div className="mt-1 size-2 rounded-full bg-violet-500 shrink-0" />
-									<span className="text-muted-foreground">
-										<strong className="text-foreground">Team learning:</strong> Everyone sees the
-										workflow in public channels
-									</span>
-								</li>
-								<li className="flex items-start gap-3">
-									<div className="mt-1 size-2 rounded-full bg-violet-500 shrink-0" />
-									<span className="text-muted-foreground">
-										<strong className="text-foreground">Multi-agent handoff:</strong> Planner then
-										Coder, documented workflow
-									</span>
-								</li>
-								<li className="flex items-start gap-3">
-									<div className="mt-1 size-2 rounded-full bg-violet-500 shrink-0" />
-									<span className="text-muted-foreground">
-										<strong className="text-foreground">Human oversight:</strong> Approve the plan,
-										approve the PR. Humans decide what ships.
-									</span>
-								</li>
-							</ul>
-						</div>
 					</div>
 				</div>
 			</section>
@@ -342,7 +321,7 @@ export default function SlackPage() {
 							Connect your Slack workspace and start working with AI agents.
 						</p>
 					</div>
-					<div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
 						{ONBOARDING_STEPS.map((step, index) => {
 							const Icon = step.icon
 							return (
@@ -351,7 +330,21 @@ export default function SlackPage() {
 										<Icon className="size-8 text-violet-600 dark:text-violet-400" />
 									</div>
 									<h3 className="text-lg font-semibold mb-2">{step.title}</h3>
-									<p className="text-muted-foreground">{step.description}</p>
+									<p className="text-muted-foreground">
+										{step.description}
+										{step.link && (
+											<>
+												{" "}
+												<a
+													href={step.link.href}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-violet-600 dark:text-violet-400 hover:underline">
+													{step.link.text} →
+												</a>
+											</>
+										)}
+									</p>
 								</div>
 							)
 						})}
@@ -367,7 +360,7 @@ export default function SlackPage() {
 							Start using Roo Code in Slack
 						</h2>
 						<p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
-							Try it free today. No credit card needed.
+							Start your Team plan trial. No credit card required.
 						</p>
 						<div className="flex flex-col justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
 							<Button
@@ -375,11 +368,11 @@ export default function SlackPage() {
 								className="bg-foreground text-background hover:bg-foreground/90 transition-all duration-300"
 								asChild>
 								<a
-									href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP}
+									href={EXTERNAL_LINKS.CLOUD_APP_TEAM_TRIAL}
 									target="_blank"
 									rel="noopener noreferrer"
 									className="flex items-center justify-center">
-									Sign up now
+									Start free trial
 									<ArrowRight className="ml-2 h-4 w-4" />
 								</a>
 							</Button>
