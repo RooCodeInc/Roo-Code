@@ -24,7 +24,7 @@ import { ogImageUrl } from "@/lib/og"
 
 const TITLE = "Roo Code for Slack"
 const DESCRIPTION =
-	"Mention @Roomote in any channel to explain code, plan features, or ship a PR, all without leaving the conversation."
+	"Mention @Roocode in any channel to explain code, plan features, or ship a PR, all without leaving the conversation."
 const OG_DESCRIPTION = "Your AI Team in Slack"
 const PATH = "/slack"
 
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
 		"slack bot",
 		"AI in slack",
 		"code assistant slack",
-		"@Roomote",
+		"@Roocode",
 		"team collaboration",
 	],
 }
@@ -81,13 +81,13 @@ const VALUE_PROPS: ValueProp[] = [
 		icon: GitBranch,
 		title: "From discussion to shipped feature.",
 		description:
-			"Your team discusses a feature in Slack. @Roomote turns the discussion into a plan. Then builds it. All without leaving the conversation.",
+			"Your team discusses a feature in Slack. @Roocode turns the discussion into a plan. Then builds it. All without leaving the conversation.",
 	},
 	{
 		icon: Brain,
 		title: "The agent knows the thread.",
 		description:
-			'@Roomote reads the full conversation before responding, so follow-up questions like "why is this happening?" just work.',
+			'@Roocode reads the full conversation before responding, so follow-up questions like "why is this happening?" just work.',
 	},
 	{
 		icon: Link2,
@@ -99,7 +99,7 @@ const VALUE_PROPS: ValueProp[] = [
 		icon: Users,
 		title: "Anyone can contribute.",
 		description:
-			"PMs, CSMs, and Sales can ask @Roomote to explain code or investigate issues. Engineering gets pulled in only when truly needed.",
+			"PMs, CSMs, and Sales can ask @Roocode to explain code or investigate issues. Engineering gets pulled in only when truly needed.",
 	},
 	{
 		icon: GraduationCap,
@@ -129,7 +129,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
 		step: 2,
 		title: "Refine the plan in the thread",
 		description:
-			"The team reviews the spec in the thread, suggests changes, asks questions. Mention @Roomote again to refine.",
+			"The team reviews the spec in the thread, suggests changes, asks questions. Mention @Roocode again to refine.",
 	},
 	{
 		step: 3,
@@ -176,7 +176,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 	{
 		icon: MessageSquare,
 		title: "4. Add to channels",
-		description: "Add @Roomote to the channels where you want it available.",
+		description: "Add @Roocode to the channels where you want it available.",
 	},
 ]
 
@@ -194,10 +194,10 @@ export default function SlackPage(): JSX.Element {
 								Powered by Roo Code Cloud
 							</div>
 							<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-5xl lg:text-6xl">
-								<span className="text-violet-500">@Roomote:</span> Your AI Team in&nbsp;Slack
+								<span className="text-violet-500">@Roocode:</span> Your AI Team in&nbsp;Slack
 							</h1>
 							<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
-								Mention @Roomote in any channel to explain code, plan features, or ship a PR, all
+								Mention @Roocode in any channel to explain code, plan features, or ship a PR, all
 								without leaving the conversation.
 							</p>
 							<div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
