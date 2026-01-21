@@ -5,7 +5,7 @@
  * - Master toggle (hooksEnabled) enforcement
  * - Pre/Post tool use hook execution
  * - Permission request hooks
- * - Backwards compatibility when no getter is provided
+ * - Backwards compatibility when optional hooksEnabledGetter is omitted
  */
 
 import {
@@ -48,7 +48,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				undefined,
@@ -69,7 +69,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => true
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				undefined,
@@ -86,7 +86,14 @@ describe("ToolExecutionHooks", () => {
 			const mockManager = createMockHookManager()
 
 			// No hooksEnabledGetter provided
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, undefined, undefined, undefined)
+			const hooks = new ToolExecutionHooks(
+				() => mockManager,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+			)
 
 			await hooks.executePreToolUse(createMockContext())
 
@@ -98,7 +105,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				undefined,
@@ -118,7 +125,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				undefined,
@@ -138,7 +145,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				undefined,
@@ -159,7 +166,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				undefined,
@@ -175,7 +182,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => true
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				undefined,
@@ -193,7 +200,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
 			const hooks = createToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				undefined,
@@ -209,7 +216,7 @@ describe("ToolExecutionHooks", () => {
 		it("should work without hooksEnabledGetter for backwards compatibility", async () => {
 			const mockManager = createMockHookManager()
 
-			const hooks = createToolExecutionHooks(mockManager, undefined, undefined, undefined)
+			const hooks = createToolExecutionHooks(() => mockManager, undefined, undefined, undefined)
 
 			await hooks.executePreToolUse(createMockContext())
 			expect(mockManager.executeHooks).toHaveBeenCalled()
@@ -220,7 +227,14 @@ describe("ToolExecutionHooks", () => {
 		it("should allow updating the getter after construction", async () => {
 			const mockManager = createMockHookManager()
 
-			const hooks = new ToolExecutionHooks(mockManager, undefined, undefined, undefined, undefined, () => true)
+			const hooks = new ToolExecutionHooks(
+				() => mockManager,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				() => true,
+			)
 
 			// First call with enabled
 			await hooks.executePreToolUse(createMockContext())
@@ -237,7 +251,14 @@ describe("ToolExecutionHooks", () => {
 
 	describe("No hook manager", () => {
 		it("should return default results when hookManager is null", async () => {
-			const hooks = new ToolExecutionHooks(null, undefined, undefined, undefined, undefined, () => true)
+			const hooks = new ToolExecutionHooks(
+				() => null,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				() => true,
+			)
 
 			const result = await hooks.executePreToolUse(createMockContext())
 
@@ -246,9 +267,44 @@ describe("ToolExecutionHooks", () => {
 		})
 
 		it("hasHooks should return false when hookManager is null", () => {
-			const hooks = new ToolExecutionHooks(null, undefined, undefined, undefined, undefined, () => true)
+			const hooks = new ToolExecutionHooks(
+				() => null,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				() => true,
+			)
 
 			expect(hooks.hasHooks()).toBe(false)
+		})
+
+		it("should resolve hook manager lazily (null first, then available)", async () => {
+			let currentManager: IHookManager | null = null
+			const hookManagerGetter = vi.fn(() => currentManager)
+
+			const hooks = new ToolExecutionHooks(
+				hookManagerGetter,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				() => true,
+			)
+
+			// First call: manager unavailable, should no-op.
+			const firstResult = await hooks.executePreToolUse(createMockContext())
+			expect(firstResult.proceed).toBe(true)
+			expect(firstResult.hookResult.results).toEqual([])
+			expect(firstResult.hookResult.totalDuration).toBe(0)
+			expect(hookManagerGetter).toHaveBeenCalledTimes(1)
+
+			// Later: manager becomes available.
+			currentManager = createMockHookManager()
+			await hooks.executePreToolUse(createMockContext())
+
+			expect(hookManagerGetter).toHaveBeenCalledTimes(2)
+			expect(currentManager.executeHooks).toHaveBeenCalledWith("PreToolUse", expect.any(Object))
 		})
 	})
 
@@ -259,7 +315,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => false
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				statusCallback,
 				undefined,
 				undefined,
@@ -278,7 +334,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => true
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				statusCallback,
 				undefined,
 				undefined,
@@ -300,7 +356,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => true
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				sayCallback,
@@ -385,7 +441,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => true
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				sayCallback,
@@ -443,7 +499,7 @@ describe("ToolExecutionHooks", () => {
 			const hooksEnabledGetter: HooksEnabledGetter = () => true
 
 			const hooks = new ToolExecutionHooks(
-				mockManager,
+				() => mockManager,
 				undefined,
 				undefined,
 				sayCallback,

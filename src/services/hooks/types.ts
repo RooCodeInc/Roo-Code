@@ -320,6 +320,12 @@ export interface HookSessionContext {
 	taskId: string
 	sessionId: string
 	mode: string
+
+	/** Session start classification (SessionStart) */
+	source?: "startup" | "resume" | "clear" | "compact"
+
+	/** Session end classification (SessionEnd) */
+	endReason?: string
 }
 
 /**
@@ -351,7 +357,16 @@ export interface HookToolContext {
  */
 export interface HookPromptContext {
 	text: string
-	images?: string[]
+	/**
+	 * Image metadata for the prompt.
+	 *
+	 * Backwards compatible:
+	 * - historically this was `string[]` (paths)
+	 * - PRD expects count + (optional) sanitized paths
+	 */
+	images?: string[] | { count: number; paths?: string[] }
+	/** If distinguishable: chat_input | edit_message | queued_message */
+	source?: "chat_input" | "edit_message" | "queued_message"
 }
 
 /**
@@ -360,6 +375,24 @@ export interface HookPromptContext {
 export interface HookNotificationContext {
 	message: string
 	type: string
+	severity?: "info" | "warn" | "error"
+	/** File/component identifier */
+	source?: string
+}
+
+/** Stop information for Stop event. */
+export interface HookStopContext {
+	reason?: "user_cancelled" | "provider_cleanup" | "rehydrate" | "other"
+	isAbandoned?: boolean
+}
+
+/** Subagent information for SubagentStart/SubagentStop events. */
+export interface HookSubagentContext {
+	parentTaskId?: string
+	childTaskId?: string
+	mode?: string
+	/** Result payload (best-effort, depends on call site). */
+	result?: unknown
 }
 
 /**
@@ -379,6 +412,14 @@ export interface HookContext {
 	session: HookSessionContext
 	project: HookProjectContext
 
+	/**
+	 * Matcher string for events that support matchers.
+	 *
+	 * Note: tool events still use `tool.name` for matching.
+	 * Lifecycle events MAY set this in addition to any legacy matching mechanism.
+	 */
+	matcher?: string
+
 	/** Tool context - present for tool-related events */
 	tool?: HookToolContext
 
@@ -388,7 +429,13 @@ export interface HookContext {
 	/** Notification context - present for Notification event */
 	notification?: HookNotificationContext
 
-	/** Stop reason - present for Stop event */
+	/** Stop context - present for Stop event */
+	stop?: HookStopContext
+
+	/** Subagent context - present for SubagentStart/SubagentStop */
+	subagent?: HookSubagentContext
+
+	/** Stop reason - present for Stop event (legacy field) */
 	reason?: string
 
 	/** Summary - present for Stop event */

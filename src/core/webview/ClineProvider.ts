@@ -75,7 +75,7 @@ import { CodeIndexManager } from "../../services/code-index/manager"
 import type { IndexProgressUpdate } from "../../services/code-index/interfaces/manager"
 import { MdmService } from "../../services/mdm/MdmService"
 import { SkillsManager } from "../../services/skills/SkillsManager"
-import { HookManager, createHookManager, type IHookManager } from "../../services/hooks"
+import { HookManager, createHookManager, LifecycleHooks, type IHookManager } from "../../services/hooks"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
@@ -144,6 +144,8 @@ export class ClineProvider
 	protected mcpHub?: McpHub // Change from private to protected
 	protected skillsManager?: SkillsManager
 	protected hookManager?: IHookManager
+	private hookManagerInitPromise?: Promise<void>
+	private lifecycleHooks: LifecycleHooks | undefined
 	private hookFileWatchers: vscode.FileSystemWatcher[] = []
 	private hookReloadTimeout?: NodeJS.Timeout
 	private static readonly HOOK_RELOAD_DEBOUNCE_MS = 500
@@ -214,7 +216,8 @@ export class ClineProvider
 		})
 
 		// Initialize Hook Manager for lifecycle hooks
-		this.initializeHookManager().catch((error) => {
+		// Store the promise so Tasks can wait for initialization if needed
+		this.hookManagerInitPromise = this.initializeHookManager().catch((error) => {
 			this.log(`Failed to initialize Hook Manager: ${error}`)
 		})
 
@@ -314,6 +317,65 @@ export class ClineProvider
 		} else {
 			this.log("CloudService not ready, deferring cloud profile sync")
 		}
+	}
+
+	/**
+	 * Fire-and-forget lifecycle hook trigger for Notification events.
+	 *
+	 * Non-blocking by design: errors are logged and do not affect the main flow.
+	 * Hooks are additive and fail-open.
+	 */
+	public triggerNotificationHook(
+		matcher: "permission_prompt" | "idle_prompt" | "auth_success" | "elicitation_dialog",
+		severity: "info" | "warn" | "error",
+		message: string,
+		source: string,
+	): void
+	/**
+	 * Backwards-compatible overload (legacy POC signature).
+	 */
+	public triggerNotificationHook(
+		matcher: "permission_prompt" | "idle_prompt" | "auth_success" | "elicitation_dialog",
+		data?: { message?: string; title?: string },
+	): void
+	public triggerNotificationHook(
+		matcher: "permission_prompt" | "idle_prompt" | "auth_success" | "elicitation_dialog",
+		severityOrData?: "info" | "warn" | "error" | { message?: string; title?: string },
+		message?: string,
+		source?: string,
+	): void {
+		if (!this.lifecycleHooks) return
+
+		// When lifecycle hooks fire from provider-level events, we still want them
+		// rendered in the active task's chat history (same as tool hooks).
+		const currentTask = this.getCurrentTask()
+		const sayCallback =
+			currentTask && typeof (currentTask as any)?.sayLifecycleHookRow === "function"
+				? (currentTask as any).sayLifecycleHookRow.bind(currentTask)
+				: undefined
+		const updateSayCallback =
+			currentTask && typeof (currentTask as any)?.updateLifecycleHookRow === "function"
+				? (currentTask as any).updateLifecycleHookRow.bind(currentTask)
+				: undefined
+
+		const isNewSignature = typeof severityOrData === "string"
+		const notificationData = isNewSignature
+			? {
+					severity: severityOrData,
+					message: message ?? "",
+					source: source ?? "",
+				}
+			: severityOrData
+
+		void this.lifecycleHooks
+			.executeNotification(matcher, notificationData, {
+				sayCallback,
+				updateSayCallback,
+				outputStatusCallback: (payload) => this.postHookExecutionOutputStatusToWebview(payload),
+			})
+			.catch((err) => {
+				console.error("[ClineProvider] Notification hook error:", err)
+			})
 	}
 
 	/**
@@ -466,6 +528,22 @@ export class ClineProvider
 	async removeClineFromStack() {
 		if (this.clineStack.length === 0) {
 			return
+		}
+
+		const currentTask = this.getCurrentTask()
+
+		// Execute SessionEnd hooks (non-blocking, fail-open)
+		// Wire say/update callbacks so hook execution rows appear in chat.
+		if (this.lifecycleHooks) {
+			void this.lifecycleHooks
+				.executeSessionEnd({
+					sayCallback: currentTask?.sayLifecycleHookRow.bind(currentTask),
+					updateSayCallback: currentTask?.updateLifecycleHookRow.bind(currentTask),
+					outputStatusCallback: (payload) => this.postHookExecutionOutputStatusToWebview(payload),
+				})
+				.catch((err) => {
+					console.error("[ClineProvider] SessionEnd hook error:", err)
+				})
 		}
 
 		// Pop the top Cline instance from the stack.
@@ -1047,6 +1125,19 @@ export class ClineProvider
 			this.log(
 				`[createTaskWithHistoryItem] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
 			)
+
+			// Execute SessionStart hooks when restoring from history (fail-open)
+			if (this.lifecycleHooks) {
+				try {
+					await this.lifecycleHooks.executeSessionStart("resume", {
+						sayCallback: task.sayLifecycleHookRow.bind(task),
+						updateSayCallback: task.updateLifecycleHookRow.bind(task),
+						outputStatusCallback: (payload) => this.postHookExecutionOutputStatusToWebview(payload),
+					})
+				} catch (err) {
+					console.error("[ClineProvider] SessionStart hook error:", err)
+				}
+			}
 		}
 
 		// Check if there's a pending edit after checkpoint restoration
@@ -1652,6 +1743,12 @@ export class ClineProvider
 		}
 
 		await this.upsertProviderProfile(currentApiConfigName, newConfiguration)
+
+		// Notification hook (proof-of-concept): successful OpenRouter auth/key exchange.
+		this.triggerNotificationHook("auth_success", {
+			title: "Authentication successful",
+			message: "OpenRouter API key saved",
+		})
 	}
 
 	// Requesty
@@ -1758,7 +1855,7 @@ export class ClineProvider
 		if (!task) {
 			throw new Error(`Task with id ${taskId} not found in stack`)
 		}
-		await task.condenseContext()
+		await task.condenseContext(true) // manual trigger
 		await this.postMessageToWebview({ type: "condenseTaskContextResponse", text: taskId })
 	}
 
@@ -2688,6 +2785,25 @@ export class ClineProvider
 			await this.hookManager.loadHooksConfig()
 			this.log("[HookManager] Hooks loaded successfully")
 
+			// Initialize LifecycleHooks adapter once HookManager is available
+			this.lifecycleHooks = new LifecycleHooks(
+				() => this.hookManager ?? null,
+				() => this.contextProxy.getValues().hooksEnabled ?? true,
+				{
+					// Stream terminal-style hook output to the settings activity log.
+					outputStatusCallback: (status) => this.postHookExecutionOutputStatusToWebview(status),
+					// NOTE: sayCallback/updateSayCallback require task-level chat context.
+					// Provider-level LifecycleHooks runs (SessionStart/End/Notification) currently omit them.
+				},
+			)
+
+			// Ensure lifecycle hooks use the active task/session context when available.
+			this.lifecycleHooks.setSessionContextGetter(() => ({
+				cwd: this.cwd,
+				taskId: this.getCurrentTask()?.taskId ?? "unknown",
+				mode: this.contextProxy.getValues().mode,
+			}))
+
 			// Set up file watchers for hook configuration files
 			this.setupHookFileWatchers(cwd, state?.mode)
 
@@ -2699,6 +2815,7 @@ export class ClineProvider
 			)
 			// Don't throw - hooks are optional
 			this.hookManager = undefined
+			this.lifecycleHooks = undefined
 		}
 	}
 
@@ -2801,8 +2918,13 @@ export class ClineProvider
 
 		// Clear the hook manager reference
 		this.hookManager = undefined
+		this.lifecycleHooks = undefined
 
 		this.log("[HookManager] Hook manager disposed")
+	}
+
+	public getLifecycleHooks(): LifecycleHooks | undefined {
+		return this.lifecycleHooks
 	}
 
 	/**
@@ -2810,6 +2932,14 @@ export class ClineProvider
 	 */
 	public getHookManager(): IHookManager | undefined {
 		return this.hookManager
+	}
+
+	/**
+	 * Get the HookManager initialization promise.
+	 * Tasks can await this to ensure hooks are ready before execution.
+	 */
+	public getHookManagerInitPromise(): Promise<void> | undefined {
+		return this.hookManagerInitPromise
 	}
 
 	/**
@@ -3110,8 +3240,10 @@ export class ClineProvider
 			remoteControlEnabled,
 		} = await this.getState()
 
+		const isTopLevelTask = !parentTask
+
 		// Single-open-task invariant: always enforce for user-initiated top-level tasks
-		if (!parentTask) {
+		if (isTopLevelTask) {
 			try {
 				await this.removeClineFromStack()
 			} catch {
@@ -3144,6 +3276,19 @@ export class ClineProvider
 		})
 
 		await this.addClineToStack(task)
+
+		// Execute SessionStart hooks for new top-level tasks (fail-open)
+		if (isTopLevelTask && this.lifecycleHooks) {
+			try {
+				await this.lifecycleHooks.executeSessionStart("startup", {
+					sayCallback: task.sayLifecycleHookRow.bind(task),
+					updateSayCallback: task.updateLifecycleHookRow.bind(task),
+					outputStatusCallback: (payload) => this.postHookExecutionOutputStatusToWebview(payload),
+				})
+			} catch (err) {
+				console.error("[ClineProvider] SessionStart hook error:", err)
+			}
+		}
 
 		this.log(
 			`[createTask] ${task.parentTask ? "child" : "parent"} task ${task.taskId}.${task.instanceId} instantiated`,
@@ -3229,6 +3374,19 @@ export class ClineProvider
 		if (this.clineStack.length > 0) {
 			const task = this.clineStack[this.clineStack.length - 1]
 			console.log(`[clearTask] clearing task ${task.taskId}.${task.instanceId}`)
+
+			// Execute SessionStart hooks for clear/reset (fail-open)
+			if (this.lifecycleHooks) {
+				try {
+					await this.lifecycleHooks.executeSessionStart("clear", {
+						sayCallback: task.sayLifecycleHookRow.bind(task),
+						updateSayCallback: task.updateLifecycleHookRow.bind(task),
+						outputStatusCallback: (payload) => this.postHookExecutionOutputStatusToWebview(payload),
+					})
+				} catch (err) {
+					console.error("[ClineProvider] SessionStart hook error:", err)
+				}
+			}
 			await this.removeClineFromStack()
 		}
 	}
@@ -3457,6 +3615,53 @@ export class ClineProvider
 			initialTodos,
 			initialStatus: "active",
 		})
+
+		// 4b) Execute SubagentStart hooks (non-blocking)
+		// This is the common integration point for ALL delegation paths (including `new_task`).
+		// Fail-open by design: delegation must proceed even if hooks fail.
+		try {
+			const lifecycleHooks = this.getLifecycleHooks()
+			if (lifecycleHooks) {
+				const sayCallback =
+					typeof (child as any)?.sayLifecycleHookRow === "function"
+						? (child as any).sayLifecycleHookRow.bind(child)
+						: undefined
+				const updateSayCallback =
+					typeof (child as any)?.updateLifecycleHookRow === "function"
+						? (child as any).updateLifecycleHookRow.bind(child)
+						: undefined
+
+				void lifecycleHooks
+					.executeSubagentStart(
+						{
+							parentTaskId,
+							childTaskId: child.taskId,
+							mode,
+						},
+						sayCallback || updateSayCallback
+							? {
+									sayCallback,
+									updateSayCallback,
+									outputStatusCallback: (payload) =>
+										this.postHookExecutionOutputStatusToWebview(payload),
+								}
+							: undefined,
+					)
+					.catch((error) => {
+						this.log(
+							`[delegateParentAndOpenChild] SubagentStart hook execution failed for ${parentTaskId} -> ${child.taskId}: ${
+								error instanceof Error ? error.message : String(error)
+							}`,
+						)
+					})
+			}
+		} catch (error) {
+			this.log(
+				`[delegateParentAndOpenChild] SubagentStart hook execution setup failed for ${parentTaskId} -> ${child.taskId}: ${
+					error instanceof Error ? error.message : String(error)
+				}`,
+			)
+		}
 
 		// 5) Persist parent delegation metadata
 		try {

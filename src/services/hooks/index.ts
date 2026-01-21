@@ -103,3 +103,6 @@ export {
 	type PermissionRequestResult,
 	type HookStatusCallback,
 } from "./ToolExecutionHooks"
+
+// Lifecycle Integration
+export { LifecycleHooks, type LifecycleHookResult, type LifecycleHookOptions } from "./LifecycleHooks"

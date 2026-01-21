@@ -94,7 +94,8 @@ export type HooksEnabledGetter = () => boolean
  * Orchestrates hook execution for tool lifecycle events.
  */
 export class ToolExecutionHooks {
-	private hookManager: IHookManager | null
+	private hookManagerGetter: () => IHookManager | null
+	private hookManagerInitPromiseGetter?: () => Promise<void> | undefined
 	private statusCallback?: HookStatusCallback
 	private outputStatusCallback?: HookOutputStatusCallback
 	private sayCallback?: SayCallback
@@ -102,14 +103,16 @@ export class ToolExecutionHooks {
 	private hooksEnabledGetter?: HooksEnabledGetter
 
 	constructor(
-		hookManager: IHookManager | null,
+		hookManagerGetter: () => IHookManager | null,
 		statusCallback?: HookStatusCallback,
 		outputStatusCallback?: HookOutputStatusCallback,
 		sayCallback?: SayCallback,
 		updateSayCallback?: UpdateSayCallback,
 		hooksEnabledGetter?: HooksEnabledGetter,
+		hookManagerInitPromiseGetter?: () => Promise<void> | undefined,
 	) {
-		this.hookManager = hookManager
+		this.hookManagerGetter = hookManagerGetter
+		this.hookManagerInitPromiseGetter = hookManagerInitPromiseGetter
 		this.statusCallback = statusCallback
 		this.outputStatusCallback = outputStatusCallback
 		this.sayCallback = sayCallback
@@ -118,10 +121,50 @@ export class ToolExecutionHooks {
 	}
 
 	/**
-	 * Update the hook manager instance.
+	 * Resolve the hook manager lazily.
+	 *
+	 * This is intentionally a getter rather than a stored instance because the
+	 * hook manager initializes asynchronously and may be unavailable at
+	 * ToolExecutionHooks construction time.
 	 */
-	setHookManager(hookManager: IHookManager | null): void {
-		this.hookManager = hookManager
+	private getHookManager(): IHookManager | null {
+		return this.hookManagerGetter()
+	}
+
+	/**
+	 * Wait for HookManager initialization to complete.
+	 * Returns the HookManager if available after waiting, or null if timeout/unavailable.
+	 *
+	 * @param timeoutMs - Maximum time to wait for initialization (default: 5000ms)
+	 */
+	private async waitForHookManager(timeoutMs: number = 5000): Promise<IHookManager | null> {
+		// Check if already available
+		const manager = this.getHookManager()
+		if (manager) {
+			return manager
+		}
+
+		// Get the initialization promise
+		const initPromise = this.hookManagerInitPromiseGetter?.()
+		if (!initPromise) {
+			// No initialization in progress
+			return null
+		}
+
+		try {
+			// Wait for initialization with timeout
+			await Promise.race([
+				initPromise,
+				new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), timeoutMs)),
+			])
+
+			// Return the manager after initialization completes
+			return this.getHookManager()
+		} catch (error) {
+			// Timeout or initialization failed
+			console.warn(`[ToolExecutionHooks] Failed to wait for HookManager:`, error)
+			return null
+		}
 	}
 
 	/**
@@ -173,9 +216,23 @@ export class ToolExecutionHooks {
 	 * @returns Result indicating whether to proceed, and optionally modified input
 	 */
 	async executePreToolUse(context: ToolExecutionContext): Promise<PreToolUseResult> {
+		// Wait for HookManager initialization (with timeout)
+		const hookManager = await this.waitForHookManager()
+		const isEnabled = this.isHooksEnabled()
+
+		// DIAGNOSTIC: Log hook manager state
+		console.log(`[ToolExecutionHooks] PreToolUse for "${context.toolName}":`, {
+			isEnabled,
+			hasHookManager: !!hookManager,
+			hasSnapshot: hookManager?.getConfigSnapshot() !== null,
+		})
+
 		// Check global hooks enabled state first
-		if (!this.isHooksEnabled() || !this.hookManager) {
+		if (!isEnabled || !hookManager) {
 			// No hooks configured - proceed normally
+			console.log(
+				`[ToolExecutionHooks] PreToolUse skipped - isEnabled: ${isEnabled}, hasHookManager: ${!!hookManager}`,
+			)
 			return {
 				proceed: true,
 				hookResult: {
@@ -196,7 +253,7 @@ export class ToolExecutionHooks {
 		})
 
 		try {
-			const result = await this.hookManager.executeHooks("PreToolUse", {
+			const result = await hookManager.executeHooks("PreToolUse", {
 				context: hookContext,
 				executionId: `${context.session.taskId}:${Date.now()}`,
 				outputStatusCallback: this.outputStatusCallback,
@@ -271,8 +328,22 @@ export class ToolExecutionHooks {
 		output: unknown,
 		duration: number,
 	): Promise<HooksExecutionResult> {
+		// Wait for HookManager initialization (with timeout)
+		const hookManager = await this.waitForHookManager()
+		const isEnabled = this.isHooksEnabled()
+
+		// DIAGNOSTIC: Log hook manager state
+		console.log(`[ToolExecutionHooks] PostToolUse for "${context.toolName}":`, {
+			isEnabled,
+			hasHookManager: !!hookManager,
+			hasSnapshot: hookManager?.getConfigSnapshot() !== null,
+		})
+
 		// Check global hooks enabled state first
-		if (!this.isHooksEnabled() || !this.hookManager) {
+		if (!isEnabled || !hookManager) {
+			console.log(
+				`[ToolExecutionHooks] PostToolUse skipped - isEnabled: ${isEnabled}, hasHookManager: ${!!hookManager}`,
+			)
 			return {
 				results: [],
 				blocked: false,
@@ -292,7 +363,7 @@ export class ToolExecutionHooks {
 		})
 
 		try {
-			const result = await this.hookManager.executeHooks("PostToolUse", {
+			const result = await hookManager.executeHooks("PostToolUse", {
 				context: hookContext,
 				executionId: `${context.session.taskId}:${Date.now()}`,
 				outputStatusCallback: this.outputStatusCallback,
@@ -336,8 +407,11 @@ export class ToolExecutionHooks {
 		error: string,
 		errorMessage: string,
 	): Promise<HooksExecutionResult> {
+		// Wait for HookManager initialization (with timeout)
+		const hookManager = await this.waitForHookManager()
+
 		// Check global hooks enabled state first
-		if (!this.isHooksEnabled() || !this.hookManager) {
+		if (!this.isHooksEnabled() || !hookManager) {
 			return {
 				results: [],
 				blocked: false,
@@ -357,7 +431,7 @@ export class ToolExecutionHooks {
 		})
 
 		try {
-			const result = await this.hookManager.executeHooks("PostToolUseFailure", {
+			const result = await hookManager.executeHooks("PostToolUseFailure", {
 				context: hookContext,
 				executionId: `${context.session.taskId}:${Date.now()}`,
 				outputStatusCallback: this.outputStatusCallback,
@@ -402,8 +476,11 @@ export class ToolExecutionHooks {
 	 * @returns Result indicating whether to proceed with showing the prompt
 	 */
 	async executePermissionRequest(context: ToolExecutionContext): Promise<PermissionRequestResult> {
+		// Wait for HookManager initialization (with timeout)
+		const hookManager = await this.waitForHookManager()
+
 		// Check global hooks enabled state first
-		if (!this.isHooksEnabled() || !this.hookManager) {
+		if (!this.isHooksEnabled() || !hookManager) {
 			return {
 				proceed: true,
 				hookResult: {
@@ -423,7 +500,7 @@ export class ToolExecutionHooks {
 		})
 
 		try {
-			const result = await this.hookManager.executeHooks("PermissionRequest", {
+			const result = await hookManager.executeHooks("PermissionRequest", {
 				context: hookContext,
 				executionId: `${context.session.taskId}:${Date.now()}`,
 				outputStatusCallback: this.outputStatusCallback,
@@ -487,7 +564,8 @@ export class ToolExecutionHooks {
 	 * Check if hooks are configured and available.
 	 */
 	hasHooks(): boolean {
-		return this.isHooksEnabled() && this.hookManager !== null && this.hookManager.getConfigSnapshot() !== null
+		const hookManager = this.getHookManager()
+		return this.isHooksEnabled() && hookManager !== null && hookManager.getConfigSnapshot() !== null
 	}
 
 	/**
@@ -614,19 +692,21 @@ export class ToolExecutionHooks {
  * Create a ToolExecutionHooks instance.
  */
 export function createToolExecutionHooks(
-	hookManager: IHookManager | null,
+	hookManagerGetter: () => IHookManager | null,
 	statusCallback?: HookStatusCallback,
 	outputStatusCallback?: HookOutputStatusCallback,
 	sayCallback?: SayCallback,
 	updateSayCallback?: UpdateSayCallback,
 	hooksEnabledGetter?: HooksEnabledGetter,
+	hookManagerInitPromiseGetter?: () => Promise<void> | undefined,
 ): ToolExecutionHooks {
 	return new ToolExecutionHooks(
-		hookManager,
+		hookManagerGetter,
 		statusCallback,
 		outputStatusCallback,
 		sayCallback,
 		updateSayCallback,
 		hooksEnabledGetter,
+		hookManagerInitPromiseGetter,
 	)
 }

@@ -2394,6 +2394,12 @@ export const webviewMessageHandler = async (
 				claudeCodeOAuthManager
 					.waitForCallback()
 					.then(async () => {
+						provider.triggerNotificationHook(
+							"auth_success",
+							"info",
+							"Successfully signed in to Claude Code",
+							"webviewMessageHandler:claudeCodeSignIn",
+						)
 						vscode.window.showInformationMessage("Successfully signed in to Claude Code")
 						await provider.postStateToWebview()
 					})
@@ -2413,6 +2419,12 @@ export const webviewMessageHandler = async (
 			try {
 				const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
 				await claudeCodeOAuthManager.clearCredentials()
+				provider.triggerNotificationHook(
+					"auth_success",
+					"info",
+					"Signed out from Claude Code",
+					"webviewMessageHandler:claudeCodeSignOut",
+				)
 				vscode.window.showInformationMessage("Signed out from Claude Code")
 				await provider.postStateToWebview()
 			} catch (error) {
@@ -2433,6 +2445,12 @@ export const webviewMessageHandler = async (
 				openAiCodexOAuthManager
 					.waitForCallback()
 					.then(async () => {
+						provider.triggerNotificationHook(
+							"auth_success",
+							"info",
+							"Successfully signed in to OpenAI Codex",
+							"webviewMessageHandler:openAiCodexSignIn",
+						)
 						vscode.window.showInformationMessage("Successfully signed in to OpenAI Codex")
 						await provider.postStateToWebview()
 					})
@@ -2452,6 +2470,12 @@ export const webviewMessageHandler = async (
 			try {
 				const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
 				await openAiCodexOAuthManager.clearCredentials()
+				provider.triggerNotificationHook(
+					"auth_success",
+					"info",
+					"Signed out from OpenAI Codex",
+					"webviewMessageHandler:openAiCodexSignOut",
+				)
 				vscode.window.showInformationMessage("Signed out from OpenAI Codex")
 				await provider.postStateToWebview()
 			} catch (error) {

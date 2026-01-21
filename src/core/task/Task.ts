@@ -542,7 +542,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Initialize tool execution hooks
 		this.toolExecutionHooks = createToolExecutionHooks(
-			provider.getHookManager() ?? null,
+			() => provider.getHookManager?.() ?? null,
 			(status) => provider.postHookStatusToWebview(status),
 			(payload) => provider.postHookExecutionOutputStatusToWebview(payload),
 			async (type, text) => {
@@ -562,6 +562,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Default to true if hooksEnabled is undefined (backwards compatibility)
 				return provider.contextProxy.getValue("hooksEnabled") ?? true
 			},
+			// Getter for HookManager initialization promise
+			() => provider.getHookManagerInitPromise?.(),
 		)
 
 		this.diffEnabled = enableDiff
@@ -1263,6 +1265,64 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return undefined
 	}
 
+	/**
+	 * Lifecycle hooks write `hook_execution` rows and then update them later.
+	 *
+	 * The LifecycleHooks service expects an id-based update callback, but Task message
+	 * rows are keyed by timestamp (`ts`). We use the message ts (as a string) as the
+	 * stable id for hook_execution rows.
+	 */
+	public async sayLifecycleHookRow(type: ClineSay, message?: string): Promise<string | void> {
+		// Only hook_execution rows need stable ids for updates.
+		if (type !== "hook_execution") {
+			await this.say(type, message, undefined, undefined, undefined, undefined, { isNonInteractive: true })
+			return
+		}
+
+		const ts = Date.now()
+		await this.addToClineMessages({
+			ts,
+			type: "say",
+			say: type,
+			text: message,
+		})
+		return String(ts)
+	}
+
+	public async updateLifecycleHookRow(type: ClineSay, id: string, message?: string): Promise<string | void> {
+		if (type !== "hook_execution") return
+
+		const ts = Number(id)
+		if (!Number.isFinite(ts)) return
+
+		const row = this.findMessageByTimestamp(ts)
+		if (!row || row.type !== "say" || row.say !== type) {
+			return
+		}
+
+		row.text = message
+		await this.saveClineMessages()
+		await this.updateClineMessage(row)
+	}
+
+	/**
+	 * Get all callbacks needed for lifecycle hook execution.
+	 * This includes sayCallback, updateSayCallback, and outputStatusCallback
+	 * which streams terminal output to the chat UI.
+	 */
+	private getLifecycleHookCallbacks() {
+		const provider = this.providerRef.deref()
+		if (!provider) {
+			throw new Error("Provider reference lost")
+		}
+
+		return {
+			sayCallback: this.sayLifecycleHookRow.bind(this),
+			updateSayCallback: this.updateLifecycleHookRow.bind(this),
+			outputStatusCallback: (payload: any) => provider.postHookExecutionOutputStatusToWebview(payload),
+		}
+	}
+
 	// Note that `partial` has three valid states true (partial message),
 	// false (completion of partial message), undefined (individual complete
 	// message).
@@ -1592,7 +1652,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		providerProfile?: string,
 	): Promise<void> {
 		try {
-			text = (text ?? "").trim()
+			const rawText = text ?? ""
+
+			// Execute UserPromptSubmit hooks (blocking)
+			const providerForHooks = this.providerRef.deref() as any
+			const lifecycleHooks = providerForHooks?.getLifecycleHooks?.()
+			if (lifecycleHooks) {
+				const result = await lifecycleHooks.executeUserPromptSubmit(rawText, this.getLifecycleHookCallbacks())
+				if (result.blocked) {
+					console.log("[Task] UserPromptSubmit hook blocked the prompt")
+					const reason = (result as any).blockMessage || (result as any).error
+					await this.say("error", reason ? `Prompt blocked: ${String(reason)}` : "Prompt blocked by hook.")
+					return
+				}
+			}
+
+			text = rawText.trim()
 			images = images ?? []
 
 			if (text.length === 0 && images.length === 0) {
@@ -1636,7 +1711,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
-	public async condenseContext(): Promise<void> {
+	public async condenseContext(isManual: boolean = false): Promise<void> {
+		// Execute PreCompact hooks (non-blocking)
+		try {
+			const providerForHooks = this.providerRef.deref() as any
+			const lifecycleHooks = providerForHooks?.getLifecycleHooks?.()
+			if (lifecycleHooks) {
+				const trigger = isManual ? "manual" : "auto"
+				await lifecycleHooks.executePreCompact(trigger, this.getLifecycleHookCallbacks())
+				// Note: PreCompact is not a blocking event, so we continue regardless
+			}
+		} catch (error) {
+			// Fail-open: do not prevent compaction if hooks fail
+			console.error("[Task] PreCompact hook execution failed:", error)
+		}
+
 		// CRITICAL: Flush any pending tool results before condensing
 		// to ensure tool_use/tool_result pairs are complete in history
 		await this.flushPendingToolResultsToHistory()
@@ -1685,7 +1774,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			systemPrompt, // Default summarization prompt (fallback)
 			this.taskId,
 			prevContextTokens,
-			false, // manual trigger
+			!isManual, // automatic trigger
 			customCondensingPrompt, // User's custom prompt
 			condensingApiHandler, // Specific handler for condensing
 			useNativeTools, // Pass native tools flag for proper message handling
@@ -2221,11 +2310,71 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.debouncedEmitTokenUsage.flush()
 	}
 
-	public async abortTask(isAbandoned = false) {
+	public async abortTask(
+		isAbandonedOrOptions:
+			| boolean
+			| {
+					/** Reason classifier for Stop hook execution. */
+					reason?: "user_request" | "error" | "timeout" | "force"
+					/** Whether this abort is an abandon/teardown operation. */
+					isAbandoned?: boolean
+					/** Force-abort mode: bypass Stop hooks entirely (safety valve for cleanup). */
+					isForceAbort?: boolean
+			  } = false,
+	) {
+		const options =
+			typeof isAbandonedOrOptions === "object" && isAbandonedOrOptions !== null
+				? isAbandonedOrOptions
+				: {
+						isAbandoned: isAbandonedOrOptions,
+						// Backwards compatibility: callers previously used abortTask(true) for teardown.
+						// Treat that as a force-abort so cleanup cannot be blocked by hooks.
+						isForceAbort: isAbandonedOrOptions === true,
+					}
+
+		const stopReason: "user_request" | "error" | "timeout" | "force" =
+			options.reason ??
+			(options.isForceAbort
+				? "force"
+				: this.abortReason === "streaming_failed"
+					? "error"
+					: this.abortReason === "user_cancelled"
+						? "user_request"
+						: "user_request")
+
+		// Execute Stop hooks (blocking)
+		// Fail-open: if hooks fail, continue abort for safety.
+		// Force-abort mode bypasses Stop hooks entirely (cleanup must never be blocked).
+		if (!options.isForceAbort) {
+			try {
+				const provider = this.providerRef.deref()
+				const lifecycleHooks = provider?.getLifecycleHooks?.()
+				if (lifecycleHooks) {
+					const result = await lifecycleHooks.executeStop(
+						{
+							reason: stopReason,
+							isAbandoned: options.isAbandoned,
+							isForceAbort: false,
+						},
+						this.getLifecycleHookCallbacks(),
+					)
+					if (result.blocked) {
+						// Hook blocked the stop - do not abort
+						console.log("[Task] Stop hook blocked the abort")
+						const reason = (result as any).blockMessage || (result as any).error
+						await this.say("error", reason ? `Stop blocked: ${String(reason)}` : "Stop blocked by hook.")
+						return
+					}
+				}
+			} catch (error) {
+				console.error("[Task] Stop hook execution failed, proceeding with abort", error)
+			}
+		}
+
 		// Aborting task
 
 		// Will stop any autonomously running promises.
-		if (isAbandoned) {
+		if (options.isAbandoned) {
 			this.abandoned = true
 		}
 
@@ -2392,7 +2541,61 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * - Ensures next API call includes full context
 	 * - Immediately continues task loop without user interaction
 	 */
-	public async resumeAfterDelegation(): Promise<void> {
+	public async resumeAfterDelegation(subtaskInfo?: { taskId: string; result?: string }): Promise<void> {
+		// Execute SubagentStop hooks (blocking)
+		// If blocked, do NOT proceed with the resume routine. Surface the reason and require manual resume.
+		try {
+			const provider = this.providerRef.deref()
+			const lifecycleHooks = provider?.getLifecycleHooks?.()
+			if (lifecycleHooks) {
+				const mode = await this.getTaskMode().catch(() => "unknown")
+				const result = await lifecycleHooks.executeSubagentStop(
+					{
+						parentTaskId: this.taskId,
+						childTaskId: subtaskInfo?.taskId,
+						mode,
+						result: subtaskInfo?.result,
+					},
+					this.getLifecycleHookCallbacks(),
+				)
+				if (result.blocked) {
+					const childId = subtaskInfo?.taskId ?? "unknown"
+					const reason = result.blockMessage || result.error
+					const reasonText = reason ? String(reason) : "(no reason provided)"
+
+					console.log(
+						`[Task#resumeAfterDelegation] SubagentStop hook blocked automatic resume for subtask ${childId}: ${reasonText}`,
+					)
+
+					await this.say(
+						"error",
+						`SubagentStop blocked automatic resume from subtask ${childId}: ${reasonText}`,
+					)
+
+					// Escape hatch: allow user to manually resume anyway.
+					const { response } = await this.ask(
+						"resume_task",
+						`SubagentStop hook blocked automatic resume from subtask ${childId}.
+Reason: ${reasonText}
+
+Click Resume to continue anyway (bypasses SubagentStop block), or Cancel to keep the task paused.`,
+						false,
+					)
+
+					if (response !== "yesButtonClicked") {
+						return
+					}
+				}
+			}
+		} catch (error) {
+			// Even though SubagentStop is blocking, we should not strand the task in a non-resumed state.
+			console.error(
+				`[Task#resumeAfterDelegation] Failed to execute SubagentStop hooks for subtask ${
+					subtaskInfo?.taskId ?? "unknown"
+				}: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+
 		// Clear any ask states that might have been set during history load
 		this.idleAsk = undefined
 		this.resumableAsk = undefined
@@ -3824,6 +4027,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Send condenseTaskContextStarted to show in-progress indicator
 		await this.providerRef.deref()?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
 
+		// Execute PreCompact hooks for forced/automatic compaction (non-blocking)
+		try {
+			const providerForHooks = this.providerRef.deref() as any
+			const lifecycleHooks = providerForHooks?.getLifecycleHooks?.()
+			await lifecycleHooks?.executePreCompact("auto", this.getLifecycleHookCallbacks())
+		} catch (error) {
+			// Fail-open: do not prevent compaction if hooks fail
+			console.error("[Task] PreCompact hook execution failed:", error)
+		}
+
 		// Force aggressive truncation by keeping only 75% of the conversation history
 		const truncateResult = await manageContext({
 			messages: this.apiConversationHistory,
@@ -4020,6 +4233,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				await this.providerRef
 					.deref()
 					?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
+			}
+
+			// Execute PreCompact hooks for automatic compaction (non-blocking)
+			if (contextManagementWillRun) {
+				try {
+					const providerForHooks = this.providerRef.deref() as any
+					const lifecycleHooks = providerForHooks?.getLifecycleHooks?.()
+					await lifecycleHooks?.executePreCompact("auto", this.getLifecycleHookCallbacks())
+				} catch (error) {
+					// Fail-open: do not prevent compaction if hooks fail
+					console.error("[Task] PreCompact hook execution failed:", error)
+				}
 			}
 
 			const truncateResult = await manageContext({

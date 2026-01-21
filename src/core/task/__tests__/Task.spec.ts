@@ -1551,6 +1551,25 @@ describe("Cline", () => {
 				})
 			})
 
+			it("shows hook block reason when UserPromptSubmit blocks", async () => {
+				const task = new Task({
+					provider: mockProvider,
+					apiConfiguration: mockApiConfig,
+					task: "initial task",
+					startTask: false,
+				})
+
+				const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined as any)
+				mockProvider.getLifecycleHooks = vi.fn().mockReturnValue({
+					executeUserPromptSubmit: vi.fn().mockResolvedValue({ blocked: true, blockMessage: "policy" }),
+				})
+
+				await task.submitUserMessage("test message")
+
+				expect(mockProvider.postMessageToWebview).not.toHaveBeenCalled()
+				expect(saySpy).toHaveBeenCalledWith("error", expect.stringContaining("Prompt blocked: policy"))
+			})
+
 			it("should handle empty messages gracefully", async () => {
 				const task = new Task({
 					provider: mockProvider,
@@ -1638,6 +1657,81 @@ describe("Cline", () => {
 				// Restore console.error
 				consoleErrorSpy.mockRestore()
 			})
+
+			it("blocks auto-resume when SubagentStop hook blocks (escape hatch uses resume_task ask)", async () => {
+				const task = new Task({
+					provider: mockProvider,
+					apiConfiguration: mockApiConfig,
+					task: "initial task",
+					startTask: false,
+				})
+
+				// Stub hooks to block
+				mockProvider.getLifecycleHooks = vi.fn().mockReturnValue({
+					executeSubagentStop: vi.fn().mockResolvedValue({ blocked: true, blockMessage: "policy" }),
+				})
+
+				// Spy say/ask; ask returns Cancel => remain paused (no resume routine)
+				const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined as any)
+				const askSpy = vi.spyOn(task, "ask").mockResolvedValue({ response: "noButtonClicked" } as any)
+				const emitSpy = vi.spyOn(task, "emit")
+
+				await task.resumeAfterDelegation({ taskId: "child-1", result: "done" })
+
+				expect(saySpy).toHaveBeenCalledWith(
+					"error",
+					expect.stringContaining("SubagentStop blocked automatic resume"),
+				)
+				expect(askSpy).toHaveBeenCalledWith(
+					"resume_task",
+					expect.stringContaining("blocked automatic resume"),
+					false,
+				)
+
+				// Critical: should NOT activate the task automatically
+				expect(emitSpy).not.toHaveBeenCalledWith("taskActive", task.taskId)
+			})
+
+			it("allows resume when SubagentStop hook blocks but user clicks Resume anyway", async () => {
+				const task = new Task({
+					provider: mockProvider,
+					apiConfiguration: mockApiConfig,
+					task: "initial task",
+					startTask: false,
+				})
+
+				mockProvider.getLifecycleHooks = vi.fn().mockReturnValue({
+					executeSubagentStop: vi.fn().mockResolvedValue({ blocked: true, blockMessage: "policy" }),
+				})
+
+				vi.spyOn(task, "say").mockResolvedValue(undefined as any)
+				vi.spyOn(task, "ask").mockResolvedValue({ response: "yesButtonClicked" } as any)
+				// Avoid running full task loop in unit test
+				vi.spyOn(task as any, "initiateTaskLoop").mockResolvedValue(undefined)
+
+				const emitSpy = vi.spyOn(task, "emit")
+				await task.resumeAfterDelegation({ taskId: "child-1", result: "done" })
+				expect(emitSpy).toHaveBeenCalledWith("taskActive", task.taskId)
+			})
+
+			it("auto-resumes when SubagentStop hook does not block", async () => {
+				const task = new Task({
+					provider: mockProvider,
+					apiConfiguration: mockApiConfig,
+					task: "initial task",
+					startTask: false,
+				})
+
+				mockProvider.getLifecycleHooks = vi.fn().mockReturnValue({
+					executeSubagentStop: vi.fn().mockResolvedValue({ blocked: false }),
+				})
+
+				vi.spyOn(task as any, "initiateTaskLoop").mockResolvedValue(undefined)
+				const emitSpy = vi.spyOn(task, "emit")
+
+				await task.resumeAfterDelegation({ taskId: "child-1", result: "done" })
+				expect(emitSpy).toHaveBeenCalledWith("taskActive", task.taskId)
+			})
 		})
 	})
 
@@ -1664,6 +1758,68 @@ describe("Cline", () => {
 
 			// Verify TaskAborted event was emitted
 			expect(emitSpy).toHaveBeenCalledWith("taskAborted")
+		})
+
+		it("blocks abort and prevents state change when Stop hook blocks", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined as any)
+			const disposeSpy = vi.spyOn(task, "dispose").mockImplementation(() => {})
+
+			mockProvider.getLifecycleHooks = vi.fn().mockReturnValue({
+				executeStop: vi.fn().mockResolvedValue({ blocked: true, blockMessage: "policy" }),
+			})
+
+			await task.abortTask({ reason: "user_request" })
+
+			expect(task.abort).toBe(false)
+			expect(disposeSpy).not.toHaveBeenCalled()
+			expect(saySpy).toHaveBeenCalledWith("error", expect.stringContaining("Stop blocked: policy"))
+		})
+
+		it("bypasses Stop hooks in force abort mode", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			const disposeSpy = vi.spyOn(task, "dispose").mockImplementation(() => {})
+			const executeStop = vi.fn().mockResolvedValue({ blocked: false })
+			mockProvider.getLifecycleHooks = vi.fn().mockReturnValue({ executeStop })
+
+			// Legacy path: abortTask(true) is used for internal cleanup.
+			await task.abortTask(true)
+
+			expect(task.abort).toBe(true)
+			expect(disposeSpy).toHaveBeenCalled()
+			expect(executeStop).not.toHaveBeenCalled()
+		})
+
+		it("passes stop reason in hook context", async () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			vi.spyOn(task, "dispose").mockImplementation(() => {})
+
+			const executeStop = vi.fn().mockResolvedValue({ blocked: false })
+			mockProvider.getLifecycleHooks = vi.fn().mockReturnValue({ executeStop })
+
+			await task.abortTask({ reason: "timeout" })
+
+			expect(executeStop).toHaveBeenCalledTimes(1)
+			const [options] = executeStop.mock.calls[0]
+			expect(options).toMatchObject({ reason: "timeout" })
 		})
 
 		it("should be equivalent to clicking Cancel button functionality", async () => {
@@ -1929,7 +2085,7 @@ describe("Queued message processing after condense", () => {
 
 		// Use fake timers to capture setTimeout(0) in processQueuedMessages
 		vi.useFakeTimers()
-		await task.condenseContext()
+		await task.condenseContext(false)
 
 		// Flush the microtask that submits the queued message
 		vi.runAllTimers()
@@ -1967,7 +2123,7 @@ describe("Queued message processing after condense", () => {
 
 		// Condense in task A should only drain A's queue
 		vi.useFakeTimers()
-		await taskA.condenseContext()
+		await taskA.condenseContext(false)
 		vi.runAllTimers()
 		vi.useRealTimers()
 
@@ -1977,7 +2133,7 @@ describe("Queued message processing after condense", () => {
 
 		// Now condense in task B should drain B's queue
 		vi.useFakeTimers()
-		await taskB.condenseContext()
+		await taskB.condenseContext(false)
 		vi.runAllTimers()
 		vi.useRealTimers()
 
