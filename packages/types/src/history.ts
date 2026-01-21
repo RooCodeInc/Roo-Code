@@ -16,8 +16,6 @@ export const historyItemSchema = z.object({
 	cacheWrites: z.number().optional(),
 	cacheReads: z.number().optional(),
 	totalCost: z.number(),
-	linesAdded: z.number().optional(),
-	linesRemoved: z.number().optional(),
 	size: z.number().optional(),
 	workspace: z.string().optional(),
 	mode: z.string().optional(),

@@ -8,7 +8,6 @@ import { combineCommandSequences } from "../../shared/combineCommandSequences"
 import { getApiMetrics } from "../../shared/getApiMetrics"
 import { findLastIndex } from "../../shared/array"
 import { getTaskDirectoryPath } from "../../utils/storage"
-import { getLineStatsFromToolApprovalMessages } from "../../shared/messageUtils"
 import { t } from "../../i18n"
 
 const taskSizeCache = new NodeCache({ stdTTL: 30, checkperiod: 5 * 60 })
@@ -56,8 +55,6 @@ export async function taskMetadata({
 	let tokenUsage: ReturnType<typeof getApiMetrics>
 	let taskDirSize: number
 	let taskMessage: ClineMessage | undefined
-	let linesAdded: number | undefined
-	let linesRemoved: number | undefined
 
 	if (!hasMessages) {
 		// Handle no messages case
@@ -96,12 +93,6 @@ export async function taskMetadata({
 		} else {
 			taskDirSize = cachedSize
 		}
-
-		const lineStats = getLineStatsFromToolApprovalMessages(messages)
-		if (lineStats.foundAnyStats) {
-			linesAdded = lineStats.linesAdded
-			linesRemoved = lineStats.linesRemoved
-		}
 	}
 
 	// Create historyItem once with pre-calculated values.
@@ -124,8 +115,6 @@ export async function taskMetadata({
 		cacheWrites: tokenUsage.totalCacheWrites,
 		cacheReads: tokenUsage.totalCacheReads,
 		totalCost: tokenUsage.totalCost,
-		...(typeof linesAdded === "number" ? { linesAdded } : {}),
-		...(typeof linesRemoved === "number" ? { linesRemoved } : {}),
 		size: taskDirSize,
 		workspace,
 		mode,

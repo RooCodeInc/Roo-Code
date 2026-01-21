@@ -8,8 +8,6 @@ export interface SubtaskDetail {
 	name: string // First 50 chars of task description
 	tokens: number // tokensIn + tokensOut
 	cost: number // Aggregated total cost
-	added: number // Aggregated total lines added
-	removed: number // Aggregated total lines removed
 	status: "active" | "completed" | "delegated"
 	hasNestedChildren: boolean // Has its own subtasks
 }
@@ -18,12 +16,6 @@ export interface AggregatedCosts {
 	ownCost: number // This task's own API costs
 	childrenCost: number // Sum of all direct children costs (recursive)
 	totalCost: number // ownCost + childrenCost
-	ownAdded: number // This task's own lines added
-	ownRemoved: number // This task's own lines removed
-	childrenAdded: number // Sum of all descendant lines added
-	childrenRemoved: number // Sum of all descendant lines removed
-	totalAdded: number // ownAdded + childrenAdded
-	totalRemoved: number // ownRemoved + childrenRemoved
 	childBreakdown?: {
 		// Optional detailed breakdown
 		[childId: string]: AggregatedCosts
@@ -51,12 +43,6 @@ export async function aggregateTaskCostsRecursive(
 			ownCost: 0,
 			childrenCost: 0,
 			totalCost: 0,
-			ownAdded: 0,
-			ownRemoved: 0,
-			childrenAdded: 0,
-			childrenRemoved: 0,
-			totalAdded: 0,
-			totalRemoved: 0,
 		}
 	}
 	visited.add(taskId)
@@ -69,21 +55,11 @@ export async function aggregateTaskCostsRecursive(
 			ownCost: 0,
 			childrenCost: 0,
 			totalCost: 0,
-			ownAdded: 0,
-			ownRemoved: 0,
-			childrenAdded: 0,
-			childrenRemoved: 0,
-			totalAdded: 0,
-			totalRemoved: 0,
 		}
 	}
 
 	const ownCost = history.totalCost || 0
-	const ownAdded = history.linesAdded || 0
-	const ownRemoved = history.linesRemoved || 0
 	let childrenCost = 0
-	let childrenAdded = 0
-	let childrenRemoved = 0
 	const childBreakdown: { [childId: string]: AggregatedCosts } = {}
 
 	// Recursively aggregate child costs
@@ -95,8 +71,6 @@ export async function aggregateTaskCostsRecursive(
 				new Set(visited), // Create new Set to allow sibling traversal
 			)
 			childrenCost += childAggregated.totalCost
-			childrenAdded += childAggregated.totalAdded
-			childrenRemoved += childAggregated.totalRemoved
 			childBreakdown[childId] = childAggregated
 		}
 	}
@@ -105,12 +79,6 @@ export async function aggregateTaskCostsRecursive(
 		ownCost,
 		childrenCost,
 		totalCost: ownCost + childrenCost,
-		ownAdded,
-		ownRemoved,
-		childrenAdded,
-		childrenRemoved,
-		totalAdded: ownAdded + childrenAdded,
-		totalRemoved: ownRemoved + childrenRemoved,
 		childBreakdown,
 	}
 
@@ -144,8 +112,6 @@ export async function buildSubtaskDetails(
 				name: truncateTaskName(history.task, 50),
 				tokens: (history.tokensIn || 0) + (history.tokensOut || 0),
 				cost: costs.totalCost,
-				added: costs.totalAdded,
-				removed: costs.totalRemoved,
 				status: history.status || "completed",
 				hasNestedChildren: costs.childrenCost > 0,
 			})

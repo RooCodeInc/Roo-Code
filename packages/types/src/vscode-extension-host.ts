@@ -188,19 +188,11 @@ export interface ExtensionMessage {
 		totalCost: number
 		ownCost: number
 		childrenCost: number
-		ownAdded?: number
-		ownRemoved?: number
-		childrenAdded?: number
-		childrenRemoved?: number
-		totalAdded?: number
-		totalRemoved?: number
 		childDetails?: {
 			id: string
 			name: string
 			tokens: number
 			cost: number
-			added: number
-			removed: number
 			status: "active" | "completed" | "delegated"
 			hasNestedChildren: boolean
 		}[]

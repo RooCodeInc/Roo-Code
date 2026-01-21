@@ -116,34 +116,6 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 						const displayCost = todo.cost ?? subtaskById?.cost
 						const shouldShowCost = typeof displayTokens === "number" && typeof displayCost === "number"
 
-						const todoAddedIsFinite = typeof todo.added === "number" && Number.isFinite(todo.added)
-						const todoRemovedIsFinite = typeof todo.removed === "number" && Number.isFinite(todo.removed)
-
-						const displayAdded = todoAddedIsFinite ? todo.added : subtaskById?.added
-						const displayRemoved = todoRemovedIsFinite ? todo.removed : subtaskById?.removed
-
-						const displayAddedIsFinite = typeof displayAdded === "number" && Number.isFinite(displayAdded)
-						const displayRemovedIsFinite =
-							typeof displayRemoved === "number" && Number.isFinite(displayRemoved)
-						const hasValidSubtaskLink = typeof todo.subtaskId === "string" && todo.subtaskId.length > 0
-
-						// Upstream aggregation may coerce missing stats to 0.
-						// To avoid showing misleading `+0/−0` for in-progress/pending rows,
-						// only render 0 while running if it was explicitly provided on the todo itself.
-						const canRenderAdded =
-							displayAddedIsFinite &&
-							(todoStatus === "completed" || displayAdded !== 0 || todoAddedIsFinite)
-						const canRenderRemoved =
-							displayRemovedIsFinite &&
-							(todoStatus === "completed" || displayRemoved !== 0 || todoRemovedIsFinite)
-
-						const shouldShowLineChanges = hasValidSubtaskLink && (canRenderAdded || canRenderRemoved)
-
-						const isAddedPositive = canRenderAdded && (displayAdded as number) > 0
-						const isRemovedPositive = canRenderRemoved && (displayRemoved as number) > 0
-						const isAddedZero = canRenderAdded && displayAdded === 0
-						const isRemovedZero = canRenderRemoved && displayRemoved === 0
-
 						return (
 							<li
 								key={todo.id || todo.content}
@@ -162,38 +134,14 @@ export function TodoListDisplay({ todos, subtaskDetails, onSubtaskClick }: TodoL
 									{todo.content}
 								</span>
 								{/* Token count and cost display */}
-								{(shouldShowCost || shouldShowLineChanges) && (
+								{shouldShowCost && (
 									<span className="flex items-center gap-2 text-xs text-vscode-descriptionForeground shrink-0">
-										{shouldShowCost && (
-											<>
-												<span className="tabular-nums opacity-70">
-													{formatLargeNumber(displayTokens)}
-												</span>
-												<span className="tabular-nums min-w-[45px] text-right">
-													${displayCost.toFixed(2)}
-												</span>
-											</>
-										)}
-										{shouldShowLineChanges && (
-											<span className="tabular-nums ml-2 min-w-[60px] grid grid-cols-2 items-center justify-end">
-												<span
-													className={cn(
-														" text-right",
-														isAddedPositive ? "font-medium text-vscode-charts-green" : "",
-														isAddedZero ? "opacity-50" : "",
-													)}>
-													{canRenderAdded ? `+${displayAdded}` : "\u00A0"}
-												</span>
-												<span
-													className={cn(
-														" text-right",
-														isRemovedPositive ? "font-medium text-vscode-charts-red" : "",
-														isRemovedZero ? "opacity-50" : "",
-													)}>
-													{canRenderRemoved ? `−${displayRemoved}` : "\u00A0"}
-												</span>
-											</span>
-										)}
+										<span className="tabular-nums opacity-70">
+											{formatLargeNumber(displayTokens)}
+										</span>
+										<span className="tabular-nums min-w-[45px] text-right">
+											${displayCost.toFixed(2)}
+										</span>
 									</span>
 								)}
 							</li>

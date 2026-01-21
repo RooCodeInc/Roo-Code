@@ -263,7 +263,7 @@ describe("UpdateTodoListTool.execute", () => {
 		setPendingTodoList([])
 	})
 
-	it("should preserve per-row metadata (subtaskId/tokens/cost/added/removed) when only statuses change (bulk markdown rewrite)", async () => {
+	it("should preserve per-row metadata (subtaskId/tokens/cost) when only statuses change (bulk markdown rewrite)", async () => {
 		/**
 		 * Regression test: a bulk markdown rewrite often changes the derived todo `id`
 		 * (since [`parseMarkdownChecklist()`](../UpdateTodoListTool.ts:337) hashes
@@ -280,8 +280,6 @@ describe("UpdateTodoListTool.execute", () => {
 			subtaskId: `subtask-${idx + 1}`,
 			tokens: 1000 + idx,
 			cost: 0.01 * (idx + 1),
-			added: 10 * (idx + 1),
-			removed: idx,
 		}))
 
 		const task = {
@@ -312,8 +310,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-1",
 				tokens: 1000,
 				cost: 0.01,
-				added: 10,
-				removed: 0,
 			}),
 		)
 
@@ -324,8 +320,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-2",
 				tokens: 1001,
 				cost: 0.02,
-				added: 20,
-				removed: 1,
 			}),
 		)
 
@@ -336,8 +330,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-3",
 				tokens: 1002,
 				cost: 0.03,
-				added: 30,
-				removed: 2,
 			}),
 		)
 
@@ -348,8 +340,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-4",
 				tokens: 1003,
 				cost: 0.04,
-				added: 40,
-				removed: 3,
 			}),
 		)
 	})
@@ -363,8 +353,6 @@ describe("UpdateTodoListTool.execute", () => {
 			subtaskId: `subtask-${idx + 1}`,
 			tokens: 100 + idx,
 			cost: 0.01 * (idx + 1),
-			added: 10 * (idx + 1),
-			removed: idx,
 		}))
 
 		const task = {
@@ -394,8 +382,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-1",
 				tokens: 100,
 				cost: 0.01,
-				added: 10,
-				removed: 0,
 			}),
 		)
 		expect(task.todoList[1]).toEqual(
@@ -405,8 +391,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-2",
 				tokens: 101,
 				cost: 0.02,
-				added: 20,
-				removed: 1,
 			}),
 		)
 		expect(task.todoList[2]).toEqual(
@@ -416,8 +400,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-3",
 				tokens: 102,
 				cost: 0.03,
-				added: 30,
-				removed: 2,
 			}),
 		)
 	})
@@ -431,8 +413,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-1",
 				tokens: 111,
 				cost: 0.11,
-				added: 11,
-				removed: 1,
 			},
 			{
 				id: "id-2",
@@ -441,8 +421,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-2",
 				tokens: 222,
 				cost: 0.22,
-				added: 22,
-				removed: 2,
 			},
 		]
 
@@ -482,8 +460,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-2",
 				tokens: 222,
 				cost: 0.22,
-				added: 22,
-				removed: 2,
 			}),
 		)
 
@@ -495,8 +471,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-1",
 				tokens: 111,
 				cost: 0.11,
-				added: 11,
-				removed: 1,
 			}),
 		)
 	})
@@ -547,50 +521,6 @@ describe("UpdateTodoListTool.execute", () => {
 		)
 	})
 
-	it("should treat added/removed as metadata and prefer history todos when present", async () => {
-		const md = "[ ] Task 1"
-
-		const previousFromMemory = parseMarkdownChecklist(md)
-		const previousFromHistory: TodoItem[] = previousFromMemory.map((t) => ({
-			...t,
-			added: 10,
-			removed: 3,
-		}))
-
-		const task = {
-			todoList: previousFromMemory,
-			clineMessages: [
-				{
-					type: "ask",
-					ask: "tool",
-					text: JSON.stringify({ tool: "updateTodoList", todos: previousFromHistory }),
-				},
-			],
-			consecutiveMistakeCount: 0,
-			recordToolError: vi.fn(),
-			didToolFailInCurrentTurn: false,
-			say: vi.fn(),
-		} as any
-
-		const tool = new UpdateTodoListTool()
-		await tool.execute({ todos: md }, task, {
-			pushToolResult: vi.fn(),
-			handleError: vi.fn(),
-			askApproval: vi.fn().mockResolvedValue(true),
-			removeClosingTag: vi.fn(),
-			toolProtocol: "xml",
-		})
-
-		expect(task.todoList).toHaveLength(1)
-		expect(task.todoList[0]).toEqual(
-			expect.objectContaining({
-				content: "Task 1",
-				added: 10,
-				removed: 3,
-			}),
-		)
-	})
-
 	it("should preserve metadata by subtaskId even when content (and derived id) changes", async () => {
 		// This test simulates the "user edited todo list" flow. The tool re-applies metadata
 		// after approval; subtaskId should be used as the primary match when content/id changes.
@@ -601,8 +531,6 @@ describe("UpdateTodoListTool.execute", () => {
 			subtaskId: "subtask-1",
 			tokens: 123,
 			cost: 0.01,
-			added: 10,
-			removed: 3,
 		}))
 
 		const task = {
@@ -621,7 +549,7 @@ describe("UpdateTodoListTool.execute", () => {
 				content: "New text",
 				status: "completed",
 				subtaskId: "subtask-1",
-				// tokens/cost/added/removed intentionally omitted to verify preservation
+				// tokens/cost intentionally omitted to verify preservation
 			},
 		]
 
@@ -646,46 +574,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: "subtask-1",
 				tokens: 123,
 				cost: 0.01,
-				added: 10,
-				removed: 3,
-			}),
-		)
-	})
-
-	it("should preserve added/removed through normalization", async () => {
-		const md = "[x] Task 1"
-
-		const previousFromMemory: TodoItem[] = parseMarkdownChecklist("[ ] Task 1").map((t) => ({
-			...t,
-			added: 10,
-			removed: 3,
-		}))
-
-		const task = {
-			todoList: previousFromMemory,
-			clineMessages: [],
-			consecutiveMistakeCount: 0,
-			recordToolError: vi.fn(),
-			didToolFailInCurrentTurn: false,
-			say: vi.fn(),
-		} as any
-
-		const tool = new UpdateTodoListTool()
-		await tool.execute({ todos: md }, task, {
-			pushToolResult: vi.fn(),
-			handleError: vi.fn(),
-			askApproval: vi.fn().mockResolvedValue(true),
-			removeClosingTag: vi.fn(),
-			toolProtocol: "xml",
-		})
-
-		expect(task.todoList).toHaveLength(1)
-		expect(task.todoList[0]).toEqual(
-			expect.objectContaining({
-				content: "Task 1",
-				status: "completed",
-				added: 10,
-				removed: 3,
 			}),
 		)
 	})
@@ -700,8 +588,6 @@ describe("UpdateTodoListTool.execute", () => {
 				status: "pending",
 				tokens: 111,
 				cost: 0.11,
-				added: 11,
-				removed: 1,
 			},
 			{
 				id: "legacy-2",
@@ -709,8 +595,6 @@ describe("UpdateTodoListTool.execute", () => {
 				status: "pending",
 				tokens: 222,
 				cost: 0.22,
-				added: 22,
-				removed: 2,
 			},
 		]
 
@@ -743,8 +627,6 @@ describe("UpdateTodoListTool.execute", () => {
 				status: "completed",
 				tokens: 111,
 				cost: 0.11,
-				added: 11,
-				removed: 1,
 			}),
 		)
 		expect(task2).toEqual(
@@ -753,8 +635,6 @@ describe("UpdateTodoListTool.execute", () => {
 				status: "pending",
 				tokens: 222,
 				cost: 0.22,
-				added: 22,
-				removed: 2,
 			}),
 		)
 	})
@@ -769,8 +649,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: delegatedSubtaskId,
 				tokens: 1234,
 				cost: 0.12,
-				added: 10,
-				removed: 2,
 			},
 		]
 
@@ -804,8 +682,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: delegatedSubtaskId,
 				tokens: 1234,
 				cost: 0.12,
-				added: 10,
-				removed: 2,
 			}),
 		)
 
@@ -819,8 +695,6 @@ describe("UpdateTodoListTool.execute", () => {
 		expect(task.todoList[1].subtaskId).toBeUndefined()
 		expect(task.todoList[1].tokens).toBeUndefined()
 		expect(task.todoList[1].cost).toBeUndefined()
-		expect(task.todoList[1].added).toBeUndefined()
-		expect(task.todoList[1].removed).toBeUndefined()
 	})
 
 	it("should carry forward metadata from unmatched delegated todos even when the previous id is non-synthetic (sequential updates)", async () => {
@@ -833,8 +707,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: delegatedSubtaskId,
 				tokens: 1234,
 				cost: 0.12,
-				added: 10,
-				removed: 2,
 			},
 			{
 				id: "other-1",
@@ -871,8 +743,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: delegatedSubtaskId,
 				tokens: 1234,
 				cost: 0.12,
-				added: 10,
-				removed: 2,
 			}),
 		)
 		// Ensure the carried-over todo now has a non-synthetic ID (this is the regression scenario).
@@ -897,8 +767,6 @@ describe("UpdateTodoListTool.execute", () => {
 				subtaskId: delegatedSubtaskId,
 				tokens: 1234,
 				cost: 0.12,
-				added: 10,
-				removed: 2,
 			}),
 		)
 
@@ -912,9 +780,7 @@ describe("UpdateTodoListTool.execute", () => {
 		const md = "[x] Task 1\n[ ] Task 2" // status changes for Task 1 -> derived id changes
 
 		const previousFromMemory: TodoItem[] = parseMarkdownChecklist(initialMd).map((t) =>
-			t.content === "Task 1"
-				? { ...t, tokens: 111, cost: 0.11, added: 11, removed: 1 }
-				: { ...t, tokens: 222, cost: 0.22, added: 22, removed: 2 },
+			t.content === "Task 1" ? { ...t, tokens: 111, cost: 0.11 } : { ...t, tokens: 222, cost: 0.22 },
 		)
 
 		const task = {
@@ -946,8 +812,6 @@ describe("UpdateTodoListTool.execute", () => {
 				status: "completed",
 				tokens: 111,
 				cost: 0.11,
-				added: 11,
-				removed: 1,
 			}),
 		)
 
@@ -957,8 +821,6 @@ describe("UpdateTodoListTool.execute", () => {
 				status: "pending",
 				tokens: 222,
 				cost: 0.22,
-				added: 22,
-				removed: 2,
 			}),
 		)
 	})
@@ -968,9 +830,7 @@ describe("UpdateTodoListTool.execute", () => {
 		const md = "[x] Task 1 (updated)\n[ ] Task 2"
 
 		const previousFromMemory: TodoItem[] = parseMarkdownChecklist(initialMd).map((t) =>
-			t.content === "Task 1"
-				? { ...t, tokens: 111, cost: 0.11, added: 11, removed: 1 }
-				: { ...t, tokens: 222, cost: 0.22, added: 22, removed: 2 },
+			t.content === "Task 1" ? { ...t, tokens: 111, cost: 0.11 } : { ...t, tokens: 222, cost: 0.22 },
 		)
 
 		const task = {
@@ -1004,8 +864,6 @@ describe("UpdateTodoListTool.execute", () => {
 		)
 		expect(updated?.tokens).toBeUndefined()
 		expect(updated?.cost).toBeUndefined()
-		expect(updated?.added).toBeUndefined()
-		expect(updated?.removed).toBeUndefined()
 
 		expect(task2).toEqual(
 			expect.objectContaining({
@@ -1013,8 +871,6 @@ describe("UpdateTodoListTool.execute", () => {
 				status: "pending",
 				tokens: 222,
 				cost: 0.22,
-				added: 22,
-				removed: 2,
 			}),
 		)
 	})

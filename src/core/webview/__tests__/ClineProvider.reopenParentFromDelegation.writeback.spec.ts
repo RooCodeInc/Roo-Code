@@ -148,8 +148,6 @@ describe("ClineProvider.reopenParentFromDelegation() writeback", () => {
 				tokensIn: 10,
 				tokensOut: 5,
 				totalCost: 0.123,
-				linesAdded: 7,
-				linesRemoved: 2,
 			} as unknown as HistoryItem,
 		}
 
@@ -212,8 +210,6 @@ describe("ClineProvider.reopenParentFromDelegation() writeback", () => {
 				subtaskId: child2TaskId,
 				tokens: 15,
 				cost: 0.123,
-				added: 7,
-				removed: 2,
 			}),
 		)
 
@@ -228,8 +224,6 @@ describe("ClineProvider.reopenParentFromDelegation() writeback", () => {
 		)
 		expect(updatedChild1Row?.tokens).toBeUndefined()
 		expect(updatedChild1Row?.cost).toBeUndefined()
-		expect(updatedChild1Row?.added).toBeUndefined()
-		expect(updatedChild1Row?.removed).toBeUndefined()
 
 		expect(updatedPrepRow).toEqual(expect.objectContaining({ id: "t1b", content: "Prep", status: "completed" }))
 		expect((updatedPrepRow as any)?.subtaskId).toBeUndefined()

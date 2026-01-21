@@ -32,12 +32,7 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 			const historyHasMetadata =
 				Array.isArray(previousFromHistory) &&
 				previousFromHistory.some(
-					(t) =>
-						t?.subtaskId !== undefined ||
-						t?.tokens !== undefined ||
-						t?.cost !== undefined ||
-						t?.added !== undefined ||
-						t?.removed !== undefined,
+					(t) => t?.subtaskId !== undefined || t?.tokens !== undefined || t?.cost !== undefined,
 				)
 
 			const previousTodos: TodoItem[] =
@@ -86,8 +81,6 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 				subtaskId: t.subtaskId,
 				tokens: t.tokens,
 				cost: t.cost,
-				added: t.added,
-				removed: t.removed,
 			}))
 
 			const approvalMsg = JSON.stringify({
@@ -228,7 +221,7 @@ function normalizeStatus(status: string | undefined): TodoStatus {
 }
 
 /**
- * Preserve metadata (subtaskId, tokens, cost, added, removed) from previous todos onto next todos.
+ * Preserve metadata (subtaskId, tokens, cost) from previous todos onto next todos.
  *
  * Matching strategy (in priority order):
  * 1. **Subtask ID match**: If the next todo has a `subtaskId`, match against previous todos with
@@ -347,8 +340,6 @@ function preserveTodoMetadata(nextTodos: TodoItem[], previousTodos: TodoItem[]):
 				subtaskId: next.subtaskId ?? matchedPrev.subtaskId,
 				tokens: next.tokens ?? matchedPrev.tokens,
 				cost: next.cost ?? matchedPrev.cost,
-				added: next.added ?? matchedPrev.added,
-				removed: next.removed ?? matchedPrev.removed,
 			}
 			continue
 		}
@@ -383,8 +374,6 @@ function preserveTodoMetadata(nextTodos: TodoItem[], previousTodos: TodoItem[]):
 				subtaskId: next.subtaskId ?? prev.subtaskId,
 				tokens: next.tokens ?? prev.tokens,
 				cost: next.cost ?? prev.cost,
-				added: next.added ?? prev.added,
-				removed: next.removed ?? prev.removed,
 			}
 			usedPreviousIndices.add(i)
 		}
@@ -417,8 +406,6 @@ function preserveTodoMetadata(nextTodos: TodoItem[], previousTodos: TodoItem[]):
 			subtaskId: targetNext.subtaskId ?? orphanedPrev.subtaskId,
 			tokens: targetNext.tokens ?? orphanedPrev.tokens,
 			cost: targetNext.cost ?? orphanedPrev.cost,
-			added: targetNext.added ?? orphanedPrev.added,
-			removed: targetNext.removed ?? orphanedPrev.removed,
 		}
 
 		result[targetNextIndex] = updatedTarget
@@ -518,8 +505,6 @@ function tryParseTodoItemsJson(raw: string): { parsed?: TodoItem[]; error?: stri
 			...(typeof t.subtaskId === "string" ? { subtaskId: t.subtaskId } : {}),
 			...(typeof t.tokens === "number" ? { tokens: t.tokens } : {}),
 			...(typeof t.cost === "number" ? { cost: t.cost } : {}),
-			...(typeof t.added === "number" ? { added: t.added } : {}),
-			...(typeof t.removed === "number" ? { removed: t.removed } : {}),
 		}
 
 		normalized.push(normalizedItem)

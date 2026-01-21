@@ -3440,8 +3440,6 @@ export class ClineProvider
 
 					linkedTodo.tokens = (childHistoryItem?.tokensIn || 0) + (childHistoryItem?.tokensOut || 0)
 					linkedTodo.cost = childHistoryItem?.totalCost || 0
-					linkedTodo.added = childHistoryItem?.linesAdded || 0
-					linkedTodo.removed = childHistoryItem?.linesRemoved || 0
 
 					this.log(
 						`[TODO-DEBUG] reopenParentFromDelegation persisting system_update_todos ${JSON.stringify({
