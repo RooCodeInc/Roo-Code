@@ -21,7 +21,7 @@ import { findLastIndex } from "@roo/array"
 
 import { formatLargeNumber } from "@src/utils/format"
 import { cn } from "@src/lib/utils"
-import { StandardTooltip, Button } from "@src/components/ui"
+import { StandardTooltip, Button, Table, TableBody, TableRow, TableCell } from "@src/components/ui"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useSelectedModel } from "@/components/ui/hooks/useSelectedModel"
 import { vscode } from "@src/utils/vscode"
@@ -225,47 +225,53 @@ const TaskHeader = ({
 						onClick={(e) => e.stopPropagation()}>
 						<div className="flex items-center gap-2">
 							<StandardTooltip
-								content={
-									<div className="p-2 space-y-1 text-base">
-										<div>
-											{t("chat:tokenProgress.tokensUsed", {
-												used: formatLargeNumber(contextTokens || 0),
-												total: formatLargeNumber(contextWindow),
-											})}
-										</div>
-										{(() => {
-											const maxTokens = model
-												? getModelMaxOutputTokens({
-														modelId,
-														model,
-														settings: apiConfiguration,
-													})
-												: 0
-											const reservedForOutput = maxTokens || 0
-											const availableSpace =
-												contextWindow - (contextTokens || 0) - reservedForOutput
+								content={(() => {
+									const maxTokens = model
+										? getModelMaxOutputTokens({
+												modelId,
+												model,
+												settings: apiConfiguration,
+											})
+										: 0
+									const reservedForOutput = maxTokens || 0
+									const availableSpace = contextWindow - (contextTokens || 0) - reservedForOutput
 
-											return (
-												<>
-													{reservedForOutput > 0 && (
-														<div>
-															{t("chat:tokenProgress.reservedForResponse", {
-																amount: formatLargeNumber(reservedForOutput),
-															})}
-														</div>
-													)}
-													{availableSpace > 0 && (
-														<div>
-															{t("chat:tokenProgress.availableSpace", {
-																amount: formatLargeNumber(availableSpace),
-															})}
-														</div>
-													)}
-												</>
-											)
-										})()}
-									</div>
-								}
+									return (
+										<Table className="text-base ml-1.5">
+											<TableBody>
+												<TableRow>
+													<TableCell className="font-medium whitespace-nowrap">
+														{t("chat:tokenProgress.tokensUsedLabel")}
+													</TableCell>
+													<TableCell className="text-right text-[0.9em] font-mono">
+														{formatLargeNumber(contextTokens || 0)} /{" "}
+														{formatLargeNumber(contextWindow)}
+													</TableCell>
+												</TableRow>
+												{reservedForOutput > 0 && (
+													<TableRow>
+														<TableCell className="font-medium whitespace-nowrap">
+															{t("chat:tokenProgress.reservedForResponseLabel")}
+														</TableCell>
+														<TableCell className="text-right text-[0.9em] font-mono">
+															{formatLargeNumber(reservedForOutput)}
+														</TableCell>
+													</TableRow>
+												)}
+												{availableSpace > 0 && (
+													<TableRow>
+														<TableCell className="font-medium whitespace-nowrap">
+															{t("chat:tokenProgress.availableSpaceLabel")}
+														</TableCell>
+														<TableCell className="text-right text-[0.9em] font-mono">
+															{formatLargeNumber(availableSpace)}
+														</TableCell>
+													</TableRow>
+												)}
+											</TableBody>
+										</Table>
+									)
+								})()}
 								side="top"
 								sideOffset={8}>
 								<span className="flex items-center gap-1.5">

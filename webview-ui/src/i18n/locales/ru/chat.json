@@ -52,7 +52,10 @@
 	"tokenProgress": {
 		"availableSpace": "Доступно места: {{amount}} токенов",
 		"tokensUsed": "Использовано токенов: {{used}} из {{total}}",
-		"reservedForResponse": "Зарезервировано для ответа модели: {{amount}} токенов"
+		"reservedForResponse": "Зарезервировано для ответа модели: {{amount}} токенов",
+		"tokensUsedLabel": "Использовано токенов",
+		"reservedForResponseLabel": "Зарезервировано для ответа",
+		"availableSpaceLabel": "Доступно места"
 	},
 	"reject": {
 		"title": "Отклонить",

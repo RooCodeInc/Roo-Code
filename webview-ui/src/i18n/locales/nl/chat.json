@@ -52,7 +52,10 @@
 	"tokenProgress": {
 		"availableSpace": "Beschikbare ruimte: {{amount}} tokens",
 		"tokensUsed": "Gebruikte tokens: {{used}} van {{total}}",
-		"reservedForResponse": "Gereserveerd voor modelantwoord: {{amount}} tokens"
+		"reservedForResponse": "Gereserveerd voor modelantwoord: {{amount}} tokens",
+		"tokensUsedLabel": "Gebruikte tokens",
+		"reservedForResponseLabel": "Gereserveerd voor antwoord",
+		"availableSpaceLabel": "Beschikbare ruimte"
 	},
 	"reject": {
 		"title": "Weigeren",

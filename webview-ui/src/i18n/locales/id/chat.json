@@ -58,7 +58,10 @@
 	"tokenProgress": {
 		"availableSpace": "Ruang tersedia: {{amount}} token",
 		"tokensUsed": "Token digunakan: {{used}} dari {{total}}",
-		"reservedForResponse": "Dicadangkan untuk respons model: {{amount}} token"
+		"reservedForResponse": "Dicadangkan untuk respons model: {{amount}} token",
+		"tokensUsedLabel": "Token digunakan",
+		"reservedForResponseLabel": "Dicadangkan untuk respons",
+		"availableSpaceLabel": "Ruang tersedia"
 	},
 	"reject": {
 		"title": "Tolak",

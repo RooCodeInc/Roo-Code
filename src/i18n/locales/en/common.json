@@ -5,8 +5,8 @@
 	},
 	"number_format": {
 		"thousand_suffix": "k",
-		"million_suffix": "m",
-		"billion_suffix": "b"
+		"million_suffix": "M",
+		"billion_suffix": "B"
 	},
 	"welcome": "Welcome, {{name}}! You have {{count}} notifications.",
 	"items": {

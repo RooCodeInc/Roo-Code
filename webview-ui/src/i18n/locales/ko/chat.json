@@ -36,7 +36,10 @@
 	"tokenProgress": {
 		"availableSpace": "사용 가능한 공간: {{amount}} 토큰",
 		"tokensUsed": "사용된 토큰: {{used}} / {{total}}",
-		"reservedForResponse": "모델 응답용 예약: {{amount}} 토큰"
+		"reservedForResponse": "모델 응답용 예약: {{amount}} 토큰",
+		"tokensUsedLabel": "사용된 토큰",
+		"reservedForResponseLabel": "응답용으로 예약됨",
+		"availableSpaceLabel": "사용 가능한 공간"
 	},
 	"retry": {
 		"title": "다시 시도",

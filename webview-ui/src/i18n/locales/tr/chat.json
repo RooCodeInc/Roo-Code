@@ -36,7 +36,10 @@
 	"tokenProgress": {
 		"availableSpace": "Kullanılabilir alan: {{amount}} token",
 		"tokensUsed": "Kullanılan tokenlar: {{used}} / {{total}}",
-		"reservedForResponse": "Model yanıtı için ayrılan: {{amount}} token"
+		"reservedForResponse": "Model yanıtı için ayrılan: {{amount}} token",
+		"tokensUsedLabel": "Kullanılan tokenlar",
+		"reservedForResponseLabel": "Yanıt için ayrılan",
+		"availableSpaceLabel": "Kullanılabilir alan"
 	},
 	"retry": {
 		"title": "Yeniden Dene",

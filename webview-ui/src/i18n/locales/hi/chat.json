@@ -36,7 +36,10 @@
 	"tokenProgress": {
 		"availableSpace": "उपलब्ध स्थान: {{amount}} tokens",
 		"tokensUsed": "प्रयुक्त tokens: {{used}} / {{total}}",
-		"reservedForResponse": "मॉडल प्रतिक्रिया के लिए आरक्षित: {{amount}} tokens"
+		"reservedForResponse": "मॉडल प्रतिक्रिया के लिए आरक्षित: {{amount}} tokens",
+		"tokensUsedLabel": "प्रयुक्त tokens",
+		"reservedForResponseLabel": "प्रतिक्रिया के लिए आरक्षित",
+		"availableSpaceLabel": "उपलब्ध स्थान"
 	},
 	"retry": {
 		"title": "पुनः प्रयास करें",

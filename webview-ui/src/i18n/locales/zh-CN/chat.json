@@ -36,7 +36,10 @@
 	"tokenProgress": {
 		"availableSpace": "可用: {{amount}}",
 		"tokensUsed": "已使用: {{used}} / {{total}}",
-		"reservedForResponse": "已保留: {{amount}}"
+		"reservedForResponse": "已保留: {{amount}}",
+		"tokensUsedLabel": "已使用 Token",
+		"reservedForResponseLabel": "为回复保留",
+		"availableSpaceLabel": "可用空间"
 	},
 	"retry": {
 		"title": "重试",

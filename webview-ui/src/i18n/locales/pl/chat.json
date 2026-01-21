@@ -36,7 +36,10 @@
 	"tokenProgress": {
 		"availableSpace": "Dostępne miejsce: {{amount}} tokenów",
 		"tokensUsed": "Wykorzystane tokeny: {{used}} z {{total}}",
-		"reservedForResponse": "Zarezerwowane dla odpowiedzi modelu: {{amount}} tokenów"
+		"reservedForResponse": "Zarezerwowane dla odpowiedzi modelu: {{amount}} tokenów",
+		"tokensUsedLabel": "Wykorzystane tokeny",
+		"reservedForResponseLabel": "Zarezerwowane dla odpowiedzi",
+		"availableSpaceLabel": "Dostępne miejsce"
 	},
 	"retry": {
 		"title": "Ponów",

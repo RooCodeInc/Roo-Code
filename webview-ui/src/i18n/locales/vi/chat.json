@@ -36,7 +36,10 @@
 	"tokenProgress": {
 		"availableSpace": "Không gian khả dụng: {{amount}} tokens",
 		"tokensUsed": "Tokens đã sử dụng: {{used}} trong {{total}}",
-		"reservedForResponse": "Dành riêng cho phản hồi mô hình: {{amount}} tokens"
+		"reservedForResponse": "Dành riêng cho phản hồi mô hình: {{amount}} tokens",
+		"tokensUsedLabel": "Tokens đã sử dụng",
+		"reservedForResponseLabel": "Dành riêng cho phản hồi",
+		"availableSpaceLabel": "Không gian khả dụng"
 	},
 	"retry": {
 		"title": "Thử lại",

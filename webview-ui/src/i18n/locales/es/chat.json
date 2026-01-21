@@ -52,7 +52,10 @@
 	"tokenProgress": {
 		"availableSpace": "Espacio disponible: {{amount}} tokens",
 		"tokensUsed": "Tokens utilizados: {{used}} de {{total}}",
-		"reservedForResponse": "Reservado para respuesta del modelo: {{amount}} tokens"
+		"reservedForResponse": "Reservado para respuesta del modelo: {{amount}} tokens",
+		"tokensUsedLabel": "Tokens utilizados",
+		"reservedForResponseLabel": "Reservado para respuesta",
+		"availableSpaceLabel": "Espacio disponible"
 	},
 	"reject": {
 		"title": "Rechazar",

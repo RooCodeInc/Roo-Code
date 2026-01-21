@@ -52,7 +52,10 @@
 	"tokenProgress": {
 		"availableSpace": "Available space: {{amount}} tokens",
 		"tokensUsed": "Tokens used: {{used}} of {{total}}",
-		"reservedForResponse": "Reserved for model response: {{amount}} tokens"
+		"reservedForResponse": "Reserved for model response: {{amount}} tokens",
+		"tokensUsedLabel": "Tokens used",
+		"reservedForResponseLabel": "Reserved for response",
+		"availableSpaceLabel": "Available space"
 	},
 	"reject": {
 		"title": "Deny",

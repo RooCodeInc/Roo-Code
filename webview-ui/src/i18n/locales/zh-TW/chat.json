@@ -52,7 +52,10 @@
 	"tokenProgress": {
 		"availableSpace": "可用空間：{{amount}} Token",
 		"tokensUsed": "已使用 Token： {{used}} / {{total}}",
-		"reservedForResponse": "模型回應保留：{{amount}} Token"
+		"reservedForResponse": "模型回應保留：{{amount}} Token",
+		"tokensUsedLabel": "已使用 Token",
+		"reservedForResponseLabel": "為回覆保留",
+		"availableSpaceLabel": "可用空間"
 	},
 	"reject": {
 		"title": "拒絕",

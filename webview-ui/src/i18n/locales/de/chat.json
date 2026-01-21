@@ -36,7 +36,10 @@
 	"tokenProgress": {
 		"availableSpace": "Verfügbarer Speicher: {{amount}} Tokens",
 		"tokensUsed": "Verwendete Tokens: {{used}} von {{total}}",
-		"reservedForResponse": "Reserviert für Modellantwort: {{amount}} Tokens"
+		"reservedForResponse": "Reserviert für Modellantwort: {{amount}} Tokens",
+		"tokensUsedLabel": "Verwendete Tokens",
+		"reservedForResponseLabel": "Für Antwort reserviert",
+		"availableSpaceLabel": "Verfügbarer Speicher"
 	},
 	"retry": {
 		"title": "Wiederholen",
