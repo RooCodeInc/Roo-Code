@@ -9,7 +9,11 @@ import { SELECTOR_SEPARATOR, stringifyVsCodeLmModelSelector } from "../../shared
 import { normalizeToolSchema } from "../../utils/json-schema"
 
 import { ApiStream } from "../transform/stream"
-import { convertToVsCodeLmMessages, extractTextCountFromMessage } from "../transform/vscode-lm-format"
+import {
+	convertToVsCodeLmMessages,
+	extractTextCountFromMessage,
+	validateAndRepairToolSequence,
+} from "../transform/vscode-lm-format"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -367,9 +371,16 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		}))
 
 		// Convert Anthropic messages to VS Code LM messages
+		const convertedMessages = convertToVsCodeLmMessages(cleanedMessages)
+
+		// Validate and repair tool call/result sequences to ensure VSCode LM API requirements are met
+		// The API requires that assistant messages with ToolCallParts are immediately followed by
+		// user messages with matching ToolResultParts
+		const validatedMessages = validateAndRepairToolSequence(convertedMessages)
+
 		const vsCodeLmMessages: vscode.LanguageModelChatMessage[] = [
 			vscode.LanguageModelChatMessage.Assistant(systemPrompt),
-			...convertToVsCodeLmMessages(cleanedMessages),
+			...validatedMessages,
 		]
 
 		// Initialize cancellation token for the request
