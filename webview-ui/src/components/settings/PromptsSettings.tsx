@@ -23,6 +23,8 @@ import { SearchableSetting } from "./SearchableSetting"
 interface PromptsSettingsProps {
 	customSupportPrompts: Record<string, string | undefined>
 	setCustomSupportPrompts: (prompts: Record<string, string | undefined>) => void
+	customCondensingPrompt?: string
+	setCustomCondensingPrompt?: (value: string) => void
 	includeTaskHistoryInEnhance?: boolean
 	setIncludeTaskHistoryInEnhance?: (value: boolean) => void
 }
@@ -30,6 +32,8 @@ interface PromptsSettingsProps {
 const PromptsSettings = ({
 	customSupportPrompts,
 	setCustomSupportPrompts,
+	customCondensingPrompt: propsCustomCondensingPrompt,
+	setCustomCondensingPrompt: propsSetCustomCondensingPrompt,
 	includeTaskHistoryInEnhance: propsIncludeTaskHistoryInEnhance,
 	setIncludeTaskHistoryInEnhance: propsSetIncludeTaskHistoryInEnhance,
 }: PromptsSettingsProps) => {
@@ -40,11 +44,15 @@ const PromptsSettings = ({
 		setEnhancementApiConfigId,
 		condensingApiConfigId,
 		setCondensingApiConfigId,
-		customCondensingPrompt,
-		setCustomCondensingPrompt,
+		customCondensingPrompt: contextCustomCondensingPrompt,
+		setCustomCondensingPrompt: contextSetCustomCondensingPrompt,
 		includeTaskHistoryInEnhance: contextIncludeTaskHistoryInEnhance,
 		setIncludeTaskHistoryInEnhance: contextSetIncludeTaskHistoryInEnhance,
 	} = useExtensionState()
+
+	// Use props if provided, otherwise fall back to context
+	const customCondensingPrompt = propsCustomCondensingPrompt ?? contextCustomCondensingPrompt
+	const setCustomCondensingPrompt = propsSetCustomCondensingPrompt ?? contextSetCustomCondensingPrompt
 
 	// Use props if provided, otherwise fall back to context
 	const includeTaskHistoryInEnhance = propsIncludeTaskHistoryInEnhance ?? contextIncludeTaskHistoryInEnhance ?? true
@@ -76,10 +84,6 @@ const PromptsSettings = ({
 
 		if (type === "CONDENSE") {
 			setCustomCondensingPrompt(finalValue ?? supportPrompt.default.CONDENSE)
-			vscode.postMessage({
-				type: "updateCondensingPrompt",
-				text: finalValue ?? supportPrompt.default.CONDENSE,
-			})
 			// Also update the customSupportPrompts to trigger change detection
 			const updatedPrompts = { ...customSupportPrompts }
 			if (finalValue === undefined) {
@@ -102,10 +106,6 @@ const PromptsSettings = ({
 	const handleSupportReset = (type: SupportPromptType) => {
 		if (type === "CONDENSE") {
 			setCustomCondensingPrompt(supportPrompt.default.CONDENSE)
-			vscode.postMessage({
-				type: "updateCondensingPrompt",
-				text: supportPrompt.default.CONDENSE,
-			})
 			// Also update the customSupportPrompts to trigger change detection
 			const updatedPrompts = { ...customSupportPrompts }
 			delete updatedPrompts[type]
