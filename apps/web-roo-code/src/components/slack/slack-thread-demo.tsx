@@ -182,14 +182,14 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 				kind: "human",
 				body: (
 					<div className="space-x-2">
-						<FakeLink className="no-underline hover:text-violet-200">@Roocode</FakeLink>
+						<FakeLink className="no-underline hover:text-violet-200">@Roomote (Roo Code)</FakeLink>
 						<span>let&apos;s create the plan to deliver this</span>
 					</div>
 				),
 			},
 			{
 				id: "m5",
-				author: "Roocode",
+				author: "Roomote (Roo Code)",
 				timeLabel: "Monday at 3:09 PM",
 				avatarText: "R",
 				avatarClassName: "bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30",
@@ -215,7 +215,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 			},
 			{
 				id: "m6",
-				author: "Roocode",
+				author: "Roomote (Roo Code)",
 				timeLabel: "Monday at 3:10 PM",
 				avatarText: "R",
 				avatarClassName: "bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30",
@@ -229,7 +229,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 			},
 			{
 				id: "m7",
-				author: "Roocode",
+				author: "Roomote (Roo Code)",
 				timeLabel: "Monday at 3:12 PM",
 				avatarText: "R",
 				avatarClassName: "bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30",
@@ -260,7 +260,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 			},
 			{
 				id: "m8",
-				author: "Roocode",
+				author: "Roomote (Roo Code)",
 				timeLabel: "Monday at 3:16 PM",
 				avatarText: "R",
 				avatarClassName: "bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30",
@@ -311,14 +311,14 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 				kind: "human",
 				body: (
 					<div className="space-x-2">
-						<FakeLink className="no-underline hover:text-violet-200">@Roocode</FakeLink>
+						<FakeLink className="no-underline hover:text-violet-200">@Roomote (Roo Code)</FakeLink>
 						<span>this looks great, let&apos;s use Coderoo to build this</span>
 					</div>
 				),
 			},
 			{
 				id: "m10",
-				author: "Roocode",
+				author: "Roomote (Roo Code)",
 				timeLabel: "Monday at 3:23 PM",
 				avatarText: "R",
 				avatarClassName: "bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30",
@@ -462,7 +462,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 		<div
 			className={cn("w-full max-w-[620px] h-[520px] sm:h-[560px]", className)}
 			role="img"
-			aria-label="Animated Slack thread showing Roo Code responding as @Roocode">
+			aria-label="Animated Slack thread showing Roo Code responding as @Roomote">
 			<div
 				aria-hidden="true"
 				className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D21] shadow-2xl shadow-black/30">
