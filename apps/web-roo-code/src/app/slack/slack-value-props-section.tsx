@@ -1,4 +1,4 @@
-import { MessageSquare, Brain, GitBranch, Users, GraduationCap, Share2, Shield, LucideIcon } from "lucide-react"
+import { MessageSquare, Brain, GitBranch, Users, GraduationCap, Shield, LucideIcon } from "lucide-react"
 
 interface ValueProp {
 	icon: LucideIcon
@@ -9,43 +9,37 @@ interface ValueProp {
 const valueProps: ValueProp[] = [
 	{
 		icon: MessageSquare,
-		title: "From discussion to shipped feature",
+		title: "Discussion to feature.",
 		description:
 			"Your team discusses a feature in Slack. @Roomote turns the discussion into a plan. Then builds it. All without leaving the conversation.",
 	},
 	{
 		icon: Brain,
-		title: "The agent knows the thread",
+		title: "Full thread context.",
 		description:
 			"@Roomote reads the conversation before responding. Ask 'why is this happening?' after a team discussion and it understands.",
 	},
 	{
 		icon: GitBranch,
-		title: "Chain agents for complex work",
+		title: "Chain agents together.",
 		description:
 			"Start with a Planner to spec it out. Then call the Coder to build it. Multi-step workflows, one Slack thread.",
 	},
 	{
 		icon: Users,
-		title: "Non-technical team members can investigate",
+		title: "Anyone can contribute.",
 		description:
-			"PMs, CSMs, and support can ask @Roomote to explain code or investigate issues. Engineering gets pulled in only when truly needed.",
+			"PMs, CSMs, and Sales can ask @Roomote to explain code, prototype features, or build internal tools. No engineering bottleneck.",
 	},
 	{
 		icon: GraduationCap,
-		title: "Team learning, built in",
+		title: "Team learning, built in.",
 		description: "Public channel mentions show everyone how to leverage agents. Learn by watching.",
 	},
 	{
-		icon: Share2,
-		title: "One platform, multiple surfaces",
-		description:
-			"The same agents that work in your IDE and review your PRs are available in Slack. Different surfaces, same quality.",
-	},
-	{
 		icon: Shield,
-		title: "Safe by design",
-		description: "Agents never touch main/master directly. They produce branches and PRs. Humans approve.",
+		title: "Safe by design.",
+		description: "Agents never touch main/master directly. They produce branches and PRs. You approve.",
 	},
 ]
 
@@ -61,7 +55,7 @@ export function SlackValuePropsSection() {
 						Why teams love working with @Roomote
 					</h2>
 					<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-						Collaboration where it already happens, with AI that understands context.
+						AI agents that understand context, chain together for complex work, and keep you in control.
 					</p>
 				</div>
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto relative">

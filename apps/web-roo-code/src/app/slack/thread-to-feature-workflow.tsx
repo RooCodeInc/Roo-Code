@@ -108,7 +108,7 @@ const workflowSteps: WorkflowStep[] = [
 		step: 4,
 		title: "Review and ship",
 		description: "Review the PR and merge when ready",
-		result: "Human oversight at every step. Agents produce artifacts; humans decide what ships.",
+		result: "You stay in control. Agents produce artifacts; you decide what ships.",
 		messages: [
 			{
 				user: "Roomote",
@@ -140,7 +140,8 @@ function SlackMessageComponent({ message }: { message: SlackMessage }) {
 			</div>
 			<div className="flex-1 min-w-0">
 				<div className="flex items-baseline gap-2 mb-0.5">
-					<span className={`font-semibold text-sm ${message.isBot ? "text-violet-600 dark:text-violet-400" : ""}`}>
+					<span
+						className={`font-semibold text-sm ${message.isBot ? "text-violet-600 dark:text-violet-400" : ""}`}>
 						{message.user}
 					</span>
 					<span className="text-xs text-muted-foreground">{message.role}</span>
@@ -227,7 +228,7 @@ export function ThreadToFeatureWorkflow() {
 				<div className="mt-12 text-center">
 					<p className="text-muted-foreground max-w-2xl mx-auto">
 						<strong className="text-foreground">No context switch required.</strong> Everyone sees the
-						workflow in public channels. Multi-agent handoffs from Planner to Coder. Human oversight at
+						workflow in public channels. Multi-agent handoffs from Planner to Coder. You stay in control at
 						every step.
 					</p>
 				</div>

@@ -1,30 +1,46 @@
-import { Settings, Link2, Hash, LucideIcon } from "lucide-react"
+import { Settings, Link2, Hash, CreditCard, LucideIcon } from "lucide-react"
+
+import { EXTERNAL_LINKS } from "@/lib/constants"
 
 interface OnboardingStep {
 	step: number
 	icon: LucideIcon
 	title: string
 	description: string
+	link?: {
+		href: string
+		text: string
+	}
 }
 
 const onboardingSteps: OnboardingStep[] = [
 	{
 		step: 1,
-		icon: Settings,
-		title: "Connect your Slack workspace",
-		description: "Go to your personal or org settings in the top right user menu",
+		icon: CreditCard,
+		title: "Get a Team Plan",
+		description: "Slack requires a Team Plan.",
+		link: {
+			href: EXTERNAL_LINKS.CLOUD_APP_TEAM_TRIAL,
+			text: "Start a free 14-day trial",
+		},
 	},
 	{
 		step: 2,
-		icon: Link2,
-		title: "Authorize the integration",
-		description: "Click on 'Connect' and follow the OAuth process",
+		icon: Settings,
+		title: "Connect Slack",
+		description: 'Go to Organization Settings and click "Connect" under Integrations.',
 	},
 	{
 		step: 3,
+		icon: Link2,
+		title: "Authorize",
+		description: "Complete the OAuth flow to connect your workspace.",
+	},
+	{
+		step: 4,
 		icon: Hash,
-		title: "Add @Roomote to channels",
-		description: "Add the @Roomote bot to the channels where you want it to be available",
+		title: "Add to channels",
+		description: "Add @Roomote to the channels where you want it available.",
 	},
 ]
 
@@ -38,15 +54,15 @@ export function SlackOnboardingSteps() {
 
 				<div className="mx-auto mb-12 md:mb-24 max-w-5xl text-center">
 					<div>
-						<h2 className="text-3xl font-bold tracking-tight sm:text-5xl mb-4">Get started in 3 steps</h2>
+						<h2 className="text-3xl font-bold tracking-tight sm:text-5xl mb-4">Get started in minutes</h2>
 						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-							Connect your Slack workspace and start collaborating with agents in minutes.
+							Connect your Slack workspace and start working with AI agents.
 						</p>
 					</div>
 				</div>
 
 				<div className="relative mx-auto md:max-w-[1200px]">
-					<ul className="grid grid-cols-1 place-items-center gap-6 md:grid-cols-3 lg:gap-8">
+					<ul className="grid grid-cols-1 place-items-center gap-6 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
 						{onboardingSteps.map((step) => {
 							const Icon = step.icon
 							return (
@@ -64,6 +80,18 @@ export function SlackOnboardingSteps() {
 									<h3 className="mb-3 text-xl font-semibold text-foreground">{step.title}</h3>
 									<div className="leading-relaxed font-light text-muted-foreground">
 										{step.description}
+										{step.link && (
+											<>
+												{" "}
+												<a
+													href={step.link.href}
+													target="_blank"
+													rel="noopener noreferrer"
+													className="text-violet-600 dark:text-violet-400 hover:underline">
+													{step.link.text}
+												</a>
+											</>
+										)}
 									</div>
 								</li>
 							)
