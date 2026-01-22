@@ -9,6 +9,7 @@ import codebaseSearch from "./codebase_search"
 import executeCommand from "./execute_command"
 import fetchInstructions from "./fetch_instructions"
 import generateImage from "./generate_image"
+import saveImage from "./save_image"
 import listFiles from "./list_files"
 import newTask from "./new_task"
 import { createReadFileTool, type ReadFileToolOptions } from "./read_file"
@@ -63,6 +64,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		executeCommand,
 		fetchInstructions,
 		generateImage,
+		saveImage,
 		listFiles,
 		newTask,
 		createReadFileTool(readFileOptions),

@@ -36,6 +36,7 @@ import { newTaskTool } from "../tools/NewTaskTool"
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
+import { saveImageTool } from "../tools/SaveImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
@@ -410,6 +411,8 @@ export async function presentAssistantMessage(cline: Task) {
 					case "run_slash_command":
 						return `[${block.name} for '${block.params.command}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
+						return `[${block.name} for '${block.params.path}']`
+					case "save_image":
 						return `[${block.name} for '${block.params.path}']`
 					default:
 						return `[${block.name}]`
@@ -919,6 +922,14 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult,
 					})
 					break
+				case "save_image":
+					await checkpointSaveAndMark(cline)
+					await saveImageTool.handle(cline, block as ToolUse<"save_image">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
 				default: {
 					// Handle unknown/invalid tool names OR custom tools
 					// This is critical for native tool calling where every tool_use MUST have a tool_result
@@ -1095,6 +1106,7 @@ function containsXmlToolMarkup(text: string): boolean {
 		"list_files",
 		"new_task",
 		"read_file",
+		"save_image",
 		"search_and_replace",
 		"search_files",
 		"search_replace",

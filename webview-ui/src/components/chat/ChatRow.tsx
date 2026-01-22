@@ -119,6 +119,7 @@ interface ChatRowProps {
 	onFollowUpUnmount?: () => void
 	isFollowUpAnswered?: boolean
 	isFollowUpAutoApprovalPaused?: boolean
+	mcpResponseImages?: string[]
 	editable?: boolean
 	hasCheckpoint?: boolean
 }
@@ -173,6 +174,7 @@ export const ChatRowContent = ({
 	onBatchFileResponse,
 	isFollowUpAnswered,
 	isFollowUpAutoApprovalPaused,
+	mcpResponseImages,
 }: ChatRowContentProps) => {
 	const { t, i18n } = useTranslation()
 
@@ -1627,6 +1629,7 @@ export const ChatRowContent = ({
 										server={server}
 										useMcpServer={useMcpServer}
 										alwaysAllowMcp={alwaysAllowMcp}
+										images={mcpResponseImages ?? message.images}
 									/>
 								)}
 							</div>

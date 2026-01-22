@@ -1,9 +1,12 @@
+import path from "path"
+import fs from "fs/promises"
 import type { ClineAskUseMcpServer, McpExecutionStatus } from "@roo-code/types"
 
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
 import type { ToolUse } from "../../shared/tools"
+import { getTaskDirectoryPath } from "../../utils/storage"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -319,9 +322,24 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 					response: outputText || (images.length > 0 ? `[${images.length} image(s)]` : ""),
 				})
 
-				toolResultPretty =
-					(toolResult.isError ? "Error:\n" : "") +
-					(outputText || (images.length > 0 ? `[${images.length} image(s) received]` : ""))
+				// Build the result text
+				let resultText = outputText || ""
+
+				// If there are images, save them to temp storage and provide file paths to the LLM
+				// This avoids passing raw base64 through LLM context which causes corruption and high costs
+				if (images.length > 0) {
+					const savedImagePaths = await this.saveImagesToTempStorage(task, images, serverName, toolName)
+					const imagePathsSection = savedImagePaths
+						.map(
+							(imgPath, index) =>
+								`<image_${index + 1}>\n  <source_path>${imgPath}</source_path>\n</image_${index + 1}>`,
+						)
+						.join("\n\n")
+					const imageInfo = `\n\n[${images.length} image(s) received and saved to temporary storage. Use save_image tool with source_path to save to your desired location.]\n\n${imagePathsSection}`
+					resultText = resultText ? resultText + imageInfo : imageInfo.trim()
+				}
+
+				toolResultPretty = (toolResult.isError ? "Error:\n" : "") + resultText
 			}
 
 			// Send completion status
@@ -342,6 +360,110 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 
 		await task.say("mcp_server_response", toolResultPretty, images)
 		pushToolResult(formatResponse.toolResult(toolResultPretty, images))
+	}
+
+	/**
+	 * Save images to task-specific temp storage and return file paths.
+	 * This allows passing file paths to the LLM instead of raw base64 data,
+	 * which prevents data corruption and reduces token costs.
+	 */
+	private async saveImagesToTempStorage(
+		task: Task,
+		images: string[],
+		serverName: string,
+		toolName: string,
+	): Promise<string[]> {
+		const savedPaths: string[] = []
+
+		try {
+			const provider = task.providerRef.deref()
+			if (!provider) {
+				// Fall back to using task.cwd as temp location
+				return this.saveImagesToFallbackLocation(task, images, serverName, toolName)
+			}
+
+			const globalStoragePath = provider.context?.globalStorageUri?.fsPath
+			if (!globalStoragePath) {
+				return this.saveImagesToFallbackLocation(task, images, serverName, toolName)
+			}
+
+			// Create a temp directory for MCP images within the task directory
+			const taskDir = await getTaskDirectoryPath(globalStoragePath, task.taskId)
+			const mcpImagesDir = path.join(taskDir, "mcp_images")
+			await fs.mkdir(mcpImagesDir, { recursive: true })
+
+			const timestamp = Date.now()
+
+			for (let i = 0; i < images.length; i++) {
+				const imageDataUrl = images[i]
+				const { format, data } = this.parseImageDataUrl(imageDataUrl)
+
+				if (data) {
+					const filename = `${serverName}_${toolName}_${timestamp}_${i + 1}.${format}`
+					const filePath = path.join(mcpImagesDir, filename)
+
+					const imageBuffer = Buffer.from(data, "base64")
+					await fs.writeFile(filePath, imageBuffer)
+
+					savedPaths.push(filePath)
+				}
+			}
+		} catch (error) {
+			console.error("Error saving images to temp storage:", error)
+			// Return empty paths array on error - the LLM will see the error and handle accordingly
+		}
+
+		return savedPaths
+	}
+
+	/**
+	 * Fallback method to save images to workspace .roo/temp directory
+	 */
+	private async saveImagesToFallbackLocation(
+		task: Task,
+		images: string[],
+		serverName: string,
+		toolName: string,
+	): Promise<string[]> {
+		const savedPaths: string[] = []
+
+		try {
+			const tempDir = path.join(task.cwd, ".roo", "temp", "mcp_images")
+			await fs.mkdir(tempDir, { recursive: true })
+
+			const timestamp = Date.now()
+
+			for (let i = 0; i < images.length; i++) {
+				const imageDataUrl = images[i]
+				const { format, data } = this.parseImageDataUrl(imageDataUrl)
+
+				if (data) {
+					const filename = `${serverName}_${toolName}_${timestamp}_${i + 1}.${format}`
+					const filePath = path.join(tempDir, filename)
+
+					const imageBuffer = Buffer.from(data, "base64")
+					await fs.writeFile(filePath, imageBuffer)
+
+					savedPaths.push(filePath)
+				}
+			}
+		} catch (error) {
+			console.error("Error saving images to fallback location:", error)
+		}
+
+		return savedPaths
+	}
+
+	/**
+	 * Parse a data URL to extract format and base64 data
+	 */
+	private parseImageDataUrl(dataUrl: string): { format: string; data: string | null } {
+		const match = dataUrl.match(/^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml);base64,(.+)$/)
+		if (match) {
+			const format = match[1] === "jpeg" ? "jpg" : match[1] === "svg+xml" ? "svg" : match[1]
+			return { format, data: match[2] }
+		}
+		return { format: "png", data: null }
 	}
 }
 
