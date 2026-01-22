@@ -36,21 +36,7 @@ export class SaveImageTool extends BaseTool<"save_image"> {
 			return
 		}
 
-		// Validate access via .rooignore
-		const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
-		if (!accessAllowed) {
-			await task.say("rooignore_error", relPath)
-			pushToolResult(formatResponse.rooIgnoreError(relPath))
-			return
-		}
-
-		// Check write protection
-		const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath) || false
-
-		const fullPath = path.resolve(task.cwd, relPath)
-		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
-
-		// Validate the image data format
+		// Validate the image data format first (to determine finalPath)
 		const base64Match = data.match(/^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml);base64,(.+)$/)
 		if (!base64Match) {
 			await task.say("error", t("tools:saveImage.invalidDataFormat"))
@@ -73,6 +59,20 @@ export class SaveImageTool extends BaseTool<"save_image"> {
 			const ext = imageFormat === "jpeg" ? "jpg" : imageFormat === "svg+xml" ? "svg" : imageFormat
 			finalPath = `${finalPath}.${ext}`
 		}
+
+		// Validate access via .rooignore (using finalPath after extension is added)
+		const accessAllowed = task.rooIgnoreController?.validateAccess(finalPath)
+		if (!accessAllowed) {
+			await task.say("rooignore_error", finalPath)
+			pushToolResult(formatResponse.rooIgnoreError(finalPath))
+			return
+		}
+
+		// Check write protection (using finalPath after extension is added)
+		const isWriteProtected = task.rooProtectedController?.isWriteProtected(finalPath) || false
+
+		const fullPath = path.resolve(task.cwd, finalPath)
+		const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 
 		const sharedMessageProps = {
 			tool: "saveImage" as const,

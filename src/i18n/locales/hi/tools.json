@@ -27,5 +27,8 @@
 		"roo": {
 			"authRequired": "छवि निर्माण के लिए Roo Code Cloud प्रमाणीकरण आवश्यक है। कृपया Roo Code Cloud में साइन इन करें।"
 		}
+	},
+	"saveImage": {
+		"invalidDataFormat": "Invalid image data format. Expected a base64 data URL (e.g., 'data:image/png;base64,...')."
 	}
 }

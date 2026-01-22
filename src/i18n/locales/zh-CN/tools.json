@@ -27,5 +27,8 @@
 		"roo": {
 			"authRequired": "图像生成需要 Roo Code Cloud 认证。请登录 Roo Code Cloud。"
 		}
+	},
+	"saveImage": {
+		"invalidDataFormat": "Invalid image data format. Expected a base64 data URL (e.g., 'data:image/png;base64,...')."
 	}
 }

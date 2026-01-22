@@ -27,5 +27,8 @@
 		"roo": {
 			"authRequired": "Roo Code Cloud authentication is required for image generation. Please sign in to Roo Code Cloud."
 		}
+	},
+	"saveImage": {
+		"invalidDataFormat": "Invalid image data format. Expected a base64 data URL (e.g., 'data:image/png;base64,...')."
 	}
 }

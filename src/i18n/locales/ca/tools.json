@@ -27,5 +27,8 @@
 		"roo": {
 			"authRequired": "Es requereix autenticació de Roo Code Cloud per a la generació d'imatges. Inicia sessió a Roo Code Cloud."
 		}
+	},
+	"saveImage": {
+		"invalidDataFormat": "Format de dades d'imatge no vàlid. S'esperava una URL de dades base64 (p. ex., 'data:image/png;base64,...')."
 	}
 }
