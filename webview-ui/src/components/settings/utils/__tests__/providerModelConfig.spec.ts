@@ -168,7 +168,6 @@ describe("providerModelConfig", () => {
 			expect(PROVIDERS_WITH_CUSTOM_MODEL_UI).toContain("ollama")
 			expect(PROVIDERS_WITH_CUSTOM_MODEL_UI).toContain("lmstudio")
 			expect(PROVIDERS_WITH_CUSTOM_MODEL_UI).toContain("vscode-lm")
-			expect(PROVIDERS_WITH_CUSTOM_MODEL_UI).toContain("claude-code")
 		})
 
 		it("does not include static providers using generic picker", () => {

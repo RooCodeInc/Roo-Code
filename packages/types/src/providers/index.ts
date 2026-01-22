@@ -3,7 +3,6 @@ export * from "./baseten.js"
 export * from "./bedrock.js"
 export * from "./cerebras.js"
 export * from "./chutes.js"
-export * from "./claude-code.js"
 export * from "./deepseek.js"
 export * from "./doubao.js"
 export * from "./featherless.js"
@@ -39,7 +38,6 @@ import { basetenDefaultModelId } from "./baseten.js"
 import { bedrockDefaultModelId } from "./bedrock.js"
 import { cerebrasDefaultModelId } from "./cerebras.js"
 import { chutesDefaultModelId } from "./chutes.js"
-import { claudeCodeDefaultModelId } from "./claude-code.js"
 import { deepSeekDefaultModelId } from "./deepseek.js"
 import { doubaoDefaultModelId } from "./doubao.js"
 import { featherlessDefaultModelId } from "./featherless.js"
@@ -128,8 +126,6 @@ export function getProviderDefaultModelId(
 			return deepInfraDefaultModelId
 		case "vscode-lm":
 			return vscodeLlmDefaultModelId
-		case "claude-code":
-			return claudeCodeDefaultModelId
 		case "cerebras":
 			return cerebrasDefaultModelId
 		case "sambanova":

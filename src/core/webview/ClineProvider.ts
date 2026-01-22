@@ -2211,14 +2211,6 @@ export class ClineProvider
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled,
-			claudeCodeIsAuthenticated: await (async () => {
-				try {
-					const { claudeCodeOAuthManager } = await import("../../integrations/claude-code/oauth")
-					return await claudeCodeOAuthManager.isAuthenticated()
-				} catch {
-					return false
-				}
-			})(),
 			openAiCodexIsAuthenticated: await (async () => {
 				try {
 					const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
