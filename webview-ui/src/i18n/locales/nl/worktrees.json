@@ -43,7 +43,7 @@
 	"create": "Aanmaken",
 	"creating": "Bezig met aanmaken...",
 	"copyingFiles": "Bestanden kopiëren...",
-	"copyingProgress": "{{item}} — {{copied}} / {{total}}",
+	"copyingProgress": "{{item}} — {{copied}} copied",
 	"cancel": "Annuleren",
 
 	"deleteWorktree": "Worktree verwijderen",

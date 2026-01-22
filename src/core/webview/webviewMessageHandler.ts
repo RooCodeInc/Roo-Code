@@ -3387,7 +3387,6 @@ export const webviewMessageHandler = async (
 						provider.postMessageToWebview({
 							type: "worktreeCopyProgress",
 							copyProgressBytesCopied: progress.bytesCopied,
-							copyProgressTotalBytes: progress.totalBytes,
 							copyProgressItemName: progress.itemName,
 						})
 					},

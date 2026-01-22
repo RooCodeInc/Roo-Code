@@ -43,7 +43,7 @@
 	"create": "创建",
 	"creating": "正在创建...",
 	"copyingFiles": "正在复制文件...",
-	"copyingProgress": "{{item}} — {{copied}} / {{total}}",
+	"copyingProgress": "{{item}} — {{copied}} copied",
 	"cancel": "取消",
 
 	"deleteWorktree": "删除 Worktree",
