@@ -245,6 +245,10 @@ const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiStreamingEnabled: z.boolean().optional(),
 	openAiHostHeader: z.string().optional(), // Keep temporarily for backward compatibility during migration.
 	openAiHeaders: z.record(z.string(), z.string()).optional(),
+	// When true (default), native function calling is used. When false, tools are not passed
+	// to the API, allowing users with local providers that don't support native tool calling
+	// to use XML-style tool invocation via the system prompt instead.
+	openAiNativeToolsEnabled: z.boolean().optional(),
 })
 
 const ollamaSchema = baseProviderSettingsSchema.extend({

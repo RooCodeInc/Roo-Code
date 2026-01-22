@@ -90,9 +90,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
+		// Default to true for backward compatibility - when false, tools are not passed to the API
+		const nativeToolsEnabled = this.options.openAiNativeToolsEnabled !== false
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
-			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
+			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata, nativeToolsEnabled)
 			return
 		}
 
@@ -159,9 +161,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				...(reasoning && reasoning),
-				tools: this.convertToolsForOpenAI(metadata?.tools),
-				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+				// Only include tools if native tool calling is enabled
+				...(nativeToolsEnabled
+					? {
+							tools: this.convertToolsForOpenAI(metadata?.tools),
+							tool_choice: metadata?.tool_choice,
+							parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+						}
+					: {}),
 			}
 
 			// Add max_tokens if needed
@@ -226,10 +233,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				messages: deepseekReasoner
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
-				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
-				tools: this.convertToolsForOpenAI(metadata?.tools),
-				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+				// Only include tools if native tool calling is enabled
+				...(nativeToolsEnabled
+					? {
+							tools: this.convertToolsForOpenAI(metadata?.tools),
+							tool_choice: metadata?.tool_choice,
+							parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+						}
+					: {}),
 			}
 
 			// Add max_tokens if needed
@@ -324,7 +335,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		modelId: string,
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
+		metadata: ApiHandlerCreateMessageMetadata | undefined,
+		nativeToolsEnabled: boolean,
 	): ApiStream {
 		const modelInfo = this.getModel().info
 		const methodIsAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
@@ -345,10 +357,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
-				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
-				tools: this.convertToolsForOpenAI(metadata?.tools),
-				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+				// Only include tools if native tool calling is enabled
+				...(nativeToolsEnabled
+					? {
+							tools: this.convertToolsForOpenAI(metadata?.tools),
+							tool_choice: metadata?.tool_choice,
+							parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+						}
+					: {}),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
@@ -379,10 +395,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
-				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
-				tools: this.convertToolsForOpenAI(metadata?.tools),
-				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+				// Only include tools if native tool calling is enabled
+				...(nativeToolsEnabled
+					? {
+							tools: this.convertToolsForOpenAI(metadata?.tools),
+							tool_choice: metadata?.tool_choice,
+							parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+						}
+					: {}),
 			}
 
 			// O3 family models do not support the deprecated max_tokens parameter
