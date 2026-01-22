@@ -244,13 +244,8 @@
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
-					"command": "roo-cline.worktreesButtonClicked",
-					"group": "overflow@2",
-					"when": "view == roo-cline.SidebarProvider"
-				},
-				{
 					"command": "roo-cline.popoutButtonClicked",
-					"group": "overflow@3",
+					"group": "overflow@2",
 					"when": "view == roo-cline.SidebarProvider"
 				}
 			],
@@ -281,13 +276,8 @@
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
-					"command": "roo-cline.worktreesButtonClicked",
-					"group": "overflow@2",
-					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
-				},
-				{
 					"command": "roo-cline.popoutButtonClicked",
-					"group": "overflow@3",
+					"group": "overflow@2",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				}
 			]
