@@ -276,21 +276,21 @@ describe("isToolAllowedForMode", () => {
 
 		it("applies restrictions to apply_patch (custom tool)", () => {
 			// Test that apply_patch respects file restrictions when included
+			// Note: apply_patch only accepts { patch: string } - file paths are embedded in patch content
 			const patchResult = isToolAllowedForMode(
 				"apply_patch",
 				"markdown-editor",
 				customModes,
 				undefined,
 				{
-					path: "test.md",
-					patch: "diff --git a/test.md b/test.md\n--- a/test.md\n+++ b/test.md\n@@ -1 +1 @@\n-old\n+new",
+					patch: "*** Begin Patch\n*** Update File: test.md\n@@ \n-old\n+new\n*** End Patch",
 				},
 				undefined,
 				["apply_patch"], // Include custom tool
 			)
 			expect(patchResult).toBe(true)
 
-			// Test apply_patch with non-matching file
+			// Test apply_patch with non-matching file (file path embedded in patch content)
 			expect(() =>
 				isToolAllowedForMode(
 					"apply_patch",
@@ -298,8 +298,7 @@ describe("isToolAllowedForMode", () => {
 					customModes,
 					undefined,
 					{
-						path: "test.js",
-						patch: "diff --git a/test.js b/test.js\n--- a/test.js\n+++ b/test.js\n@@ -1 +1 @@\n-old\n+new",
+						patch: "*** Begin Patch\n*** Update File: test.js\n@@ \n-old\n+new\n*** End Patch",
 					},
 					undefined,
 					["apply_patch"], // Include custom tool
@@ -312,8 +311,7 @@ describe("isToolAllowedForMode", () => {
 					customModes,
 					undefined,
 					{
-						path: "test.js",
-						patch: "diff --git a/test.js b/test.js\n--- a/test.js\n+++ b/test.js\n@@ -1 +1 @@\n-old\n+new",
+						patch: "*** Begin Patch\n*** Update File: test.js\n@@ \n-old\n+new\n*** End Patch",
 					},
 					undefined,
 					["apply_patch"], // Include custom tool
@@ -423,6 +421,7 @@ describe("isToolAllowedForMode", () => {
 
 		it("applies restrictions to all editing tools in architect mode (custom tools)", () => {
 			// Test apply_patch in architect mode
+			// Note: apply_patch only accepts { patch: string } - file paths are embedded in patch content
 			expect(
 				isToolAllowedForMode(
 					"apply_patch",
@@ -430,8 +429,7 @@ describe("isToolAllowedForMode", () => {
 					[],
 					undefined,
 					{
-						path: "test.md",
-						patch: "diff --git a/test.md b/test.md\n--- a/test.md\n+++ b/test.md\n@@ -1 +1 @@\n-old\n+new",
+						patch: "*** Begin Patch\n*** Update File: test.md\n@@ \n-old\n+new\n*** End Patch",
 					},
 					undefined,
 					["apply_patch"], // Include custom tool
@@ -445,8 +443,7 @@ describe("isToolAllowedForMode", () => {
 					[],
 					undefined,
 					{
-						path: "test.js",
-						patch: "diff --git a/test.js b/test.js\n--- a/test.js\n+++ b/test.js\n@@ -1 +1 @@\n-old\n+new",
+						patch: "*** Begin Patch\n*** Update File: test.js\n@@ \n-old\n+new\n*** End Patch",
 					},
 					undefined,
 					["apply_patch"], // Include custom tool

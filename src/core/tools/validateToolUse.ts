@@ -75,6 +75,34 @@ const EDIT_OPERATION_PARAMS = [
 	"new_string", // Used by search_replace and edit_file
 ] as const
 
+// Markers used in apply_patch format to identify file operations
+const PATCH_FILE_MARKERS = ["*** Add File: ", "*** Delete File: ", "*** Update File: "] as const
+
+/**
+ * Extract file paths from apply_patch content.
+ * The patch format uses markers like "*** Add File: path", "*** Delete File: path", "*** Update File: path"
+ * @param patchContent The patch content string
+ * @returns Array of file paths found in the patch
+ */
+function extractFilePathsFromPatch(patchContent: string): string[] {
+	const filePaths: string[] = []
+	const lines = patchContent.split("\n")
+
+	for (const line of lines) {
+		for (const marker of PATCH_FILE_MARKERS) {
+			if (line.startsWith(marker)) {
+				const path = line.substring(marker.length).trim()
+				if (path) {
+					filePaths.push(path)
+				}
+				break
+			}
+		}
+	}
+
+	return filePaths
+}
+
 function getGroupOptions(group: GroupEntry): GroupOptions | undefined {
 	return Array.isArray(group) ? group[1] : undefined
 }
@@ -173,6 +201,22 @@ export function isToolAllowedForMode(
 			// Handle single file path validation
 			if (filePath && isEditOperation && !doesFileMatchRegex(filePath, options.fileRegex)) {
 				throw new FileRestrictionError(mode.name, options.fileRegex, options.description, filePath, tool)
+			}
+
+			// Handle apply_patch: extract file paths from patch content and validate each
+			if (tool === "apply_patch" && typeof toolParams?.patch === "string") {
+				const patchFilePaths = extractFilePathsFromPatch(toolParams.patch)
+				for (const patchFilePath of patchFilePaths) {
+					if (!doesFileMatchRegex(patchFilePath, options.fileRegex)) {
+						throw new FileRestrictionError(
+							mode.name,
+							options.fileRegex,
+							options.description,
+							patchFilePath,
+							tool,
+						)
+					}
+				}
 			}
 
 			// Native-only: multi-file edits provide structured params; no legacy XML args parsing.
