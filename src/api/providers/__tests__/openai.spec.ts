@@ -1193,18 +1193,17 @@ describe("OpenAiHandler", () => {
 			const messages = callArgs.messages
 			const toolMessageIndex = messages.findIndex((m: any) => m.role === "tool")
 
-			if (toolMessageIndex !== -1) {
-				// The message after tool should be the next user message from a new request,
-				// not a user message with environment_details (which should be merged)
-				const nextMessage = messages[toolMessageIndex + 1]
-				// If there's a next message, it should not be a user message containing environment_details
-				if (nextMessage && nextMessage.role === "user") {
-					const content =
-						typeof nextMessage.content === "string"
-							? nextMessage.content
-							: JSON.stringify(nextMessage.content)
-					expect(content).not.toContain("environment_details")
-				}
+			// Assert tool message exists - test setup should always produce a tool message
+			expect(toolMessageIndex).not.toBe(-1)
+
+			// The message after tool should be the next user message from a new request,
+			// not a user message with environment_details (which should be merged)
+			const nextMessage = messages[toolMessageIndex + 1]
+			// If there's a next message, it should not be a user message containing environment_details
+			if (nextMessage && nextMessage.role === "user") {
+				const content =
+					typeof nextMessage.content === "string" ? nextMessage.content : JSON.stringify(nextMessage.content)
+				expect(content).not.toContain("environment_details")
 			}
 		})
 
@@ -1242,10 +1241,10 @@ describe("OpenAiHandler", () => {
 
 			// Find the tool message and verify the tool_call_id is normalized
 			const toolMessage = callArgs.messages.find((m: any) => m.role === "tool")
-			if (toolMessage) {
-				// The ID should be normalized to 9 alphanumeric characters
-				expect(toolMessage.tool_call_id).toMatch(/^[a-zA-Z0-9]{9}$/)
-			}
+			// Assert tool message exists - test setup should always produce a tool message
+			expect(toolMessage).toBeDefined()
+			// The ID should be normalized to 9 alphanumeric characters
+			expect(toolMessage.tool_call_id).toMatch(/^[a-zA-Z0-9]{9}$/)
 		})
 
 		it("should NOT apply Mistral-specific handling for non-Mistral models", async () => {
@@ -1264,10 +1263,10 @@ describe("OpenAiHandler", () => {
 
 			// For non-Mistral models, tool_call_id should retain original format
 			const toolMessage = callArgs.messages.find((m: any) => m.role === "tool")
-			if (toolMessage) {
-				// The original ID format should be preserved (not normalized)
-				expect(toolMessage.tool_call_id).toBe("call_test_123456789")
-			}
+			// Assert tool message exists - test setup should always produce a tool message
+			expect(toolMessage).toBeDefined()
+			// The original ID format should be preserved (not normalized)
+			expect(toolMessage.tool_call_id).toBe("call_test_123456789")
 		})
 
 		it("should handle case-insensitive model detection", async () => {
@@ -1286,10 +1285,10 @@ describe("OpenAiHandler", () => {
 
 			// Verify model detection worked despite mixed case
 			const toolMessage = callArgs.messages.find((m: any) => m.role === "tool")
-			if (toolMessage) {
-				// The ID should be normalized (indicating Mistral detection worked)
-				expect(toolMessage.tool_call_id).toMatch(/^[a-zA-Z0-9]{9}$/)
-			}
+			// Assert tool message exists - test setup should always produce a tool message
+			expect(toolMessage).toBeDefined()
+			// The ID should be normalized (indicating Mistral detection worked)
+			expect(toolMessage.tool_call_id).toMatch(/^[a-zA-Z0-9]{9}$/)
 		})
 	})
 })
