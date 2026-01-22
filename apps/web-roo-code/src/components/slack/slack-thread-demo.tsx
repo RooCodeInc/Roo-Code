@@ -182,7 +182,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 				kind: "human",
 				body: (
 					<div className="space-x-2">
-						<FakeLink className="no-underline hover:text-violet-200">@Roomote (Roo Code)</FakeLink>
+						<FakeLink className="no-underline hover:text-violet-200">@Roomote</FakeLink>
 						<span>let&apos;s create the plan to deliver this</span>
 					</div>
 				),
