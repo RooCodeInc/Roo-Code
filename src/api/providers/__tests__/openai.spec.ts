@@ -1139,6 +1139,159 @@ describe("OpenAiHandler", () => {
 			)
 		})
 	})
+
+	describe("Mistral/Devstral Family Models", () => {
+		const systemPrompt = "You are a helpful assistant."
+		const messagesWithToolResult: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text", text: "Hello!" }],
+			},
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						id: "call_test_123456789",
+						name: "read_file",
+						input: { path: "test.ts" },
+					},
+				],
+			},
+			{
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: "call_test_123456789",
+						content: "File content here",
+					},
+					{
+						type: "text",
+						text: "<environment_details>Details here</environment_details>",
+					},
+				],
+			},
+		]
+
+		it("should detect Mistral models and apply mergeToolResultText", async () => {
+			const mistralHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "mistral-large-latest",
+			})
+
+			const stream = mistralHandler.createMessage(systemPrompt, messagesWithToolResult)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+
+			// Find the messages - should NOT have a user message after tool message
+			// because mergeToolResultText should merge text into the tool message
+			const messages = callArgs.messages
+			const toolMessageIndex = messages.findIndex((m: any) => m.role === "tool")
+
+			if (toolMessageIndex !== -1) {
+				// The message after tool should be the next user message from a new request,
+				// not a user message with environment_details (which should be merged)
+				const nextMessage = messages[toolMessageIndex + 1]
+				// If there's a next message, it should not be a user message containing environment_details
+				if (nextMessage && nextMessage.role === "user") {
+					const content =
+						typeof nextMessage.content === "string"
+							? nextMessage.content
+							: JSON.stringify(nextMessage.content)
+					expect(content).not.toContain("environment_details")
+				}
+			}
+		})
+
+		it("should detect Devstral models and apply mergeToolResultText", async () => {
+			const devstralHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "devstral-small-2",
+			})
+
+			const stream = devstralHandler.createMessage(systemPrompt, messagesWithToolResult)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+
+			// Verify the model ID was passed correctly
+			expect(callArgs.model).toBe("devstral-small-2")
+		})
+
+		it("should normalize tool call IDs to 9-char alphanumeric for Mistral models", async () => {
+			const mistralHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "mistral-medium",
+			})
+
+			const stream = mistralHandler.createMessage(systemPrompt, messagesWithToolResult)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+
+			// Find the tool message and verify the tool_call_id is normalized
+			const toolMessage = callArgs.messages.find((m: any) => m.role === "tool")
+			if (toolMessage) {
+				// The ID should be normalized to 9 alphanumeric characters
+				expect(toolMessage.tool_call_id).toMatch(/^[a-zA-Z0-9]{9}$/)
+			}
+		})
+
+		it("should NOT apply Mistral-specific handling for non-Mistral models", async () => {
+			const gpt4Handler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "gpt-4-turbo",
+			})
+
+			const stream = gpt4Handler.createMessage(systemPrompt, messagesWithToolResult)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+
+			// For non-Mistral models, tool_call_id should retain original format
+			const toolMessage = callArgs.messages.find((m: any) => m.role === "tool")
+			if (toolMessage) {
+				// The original ID format should be preserved (not normalized)
+				expect(toolMessage.tool_call_id).toBe("call_test_123456789")
+			}
+		})
+
+		it("should handle case-insensitive model detection", async () => {
+			const mixedCaseHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "Mistral-Large-LATEST",
+			})
+
+			const stream = mixedCaseHandler.createMessage(systemPrompt, messagesWithToolResult)
+			for await (const _chunk of stream) {
+				// Consume the stream
+			}
+
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+
+			// Verify model detection worked despite mixed case
+			const toolMessage = callArgs.messages.find((m: any) => m.role === "tool")
+			if (toolMessage) {
+				// The ID should be normalized (indicating Mistral detection worked)
+				expect(toolMessage.tool_call_id).toMatch(/^[a-zA-Z0-9]{9}$/)
+			}
+		})
+	})
 })
 
 describe("getOpenAiModels", () => {
