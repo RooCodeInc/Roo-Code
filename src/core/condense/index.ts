@@ -154,7 +154,7 @@ export const N_MESSAGES_TO_KEEP = 3
 export const MIN_CONDENSE_THRESHOLD = 5 // Minimum percentage of context window to trigger condensing
 export const MAX_CONDENSE_THRESHOLD = 100 // Maximum percentage of context window to trigger condensing
 
-const SUMMARY_PROMPT = supportPrompt.default.CONDENSE
+const SUMMARY_PROMPT = "Summarize the conversation so far, as described in the prompt instructions."
 
 export type SummarizeResponse = {
 	messages: ApiMessage[] // The messages after summarization
@@ -229,7 +229,7 @@ export async function summarizeConversation(
 
 	const finalRequestMessage: Anthropic.MessageParam = {
 		role: "user",
-		content: "Summarize the conversation so far, as described in the prompt instructions.",
+		content: supportPrompt.default.CONDENSE,
 	}
 
 	const requestMessages = maybeRemoveImageBlocks([...messagesToSummarize, finalRequestMessage], apiHandler).map(
