@@ -216,10 +216,8 @@ export type ContextManagementOptions = {
 	systemPrompt: string
 	taskId: string
 	customCondensingPrompt?: string
-	condensingApiHandler?: ApiHandler
 	profileThresholds: Record<string, number>
 	currentProfileId: string
-	useNativeTools?: boolean
 }
 
 export type ContextManagementResult = SummarizeResponse & {
@@ -246,10 +244,8 @@ export async function manageContext({
 	systemPrompt,
 	taskId,
 	customCondensingPrompt,
-	condensingApiHandler,
 	profileThresholds,
 	currentProfileId,
-	useNativeTools,
 }: ContextManagementOptions): Promise<ContextManagementResult> {
 	let error: string | undefined
 	let cost = 0
@@ -302,8 +298,6 @@ export async function manageContext({
 				prevContextTokens,
 				true, // automatic trigger
 				customCondensingPrompt,
-				condensingApiHandler,
-				useNativeTools,
 			)
 			if (result.error) {
 				error = result.error

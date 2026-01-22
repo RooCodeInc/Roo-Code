@@ -1572,32 +1572,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Get condensing configuration
 		const state = await this.providerRef.deref()?.getState()
-		// These properties may not exist in the state type yet, but are used for condensing configuration
 		const customCondensingPrompt = state?.customSupportPrompts?.CONDENSE
-		const condensingApiConfigId = state?.condensingApiConfigId
-		const listApiConfigMeta = state?.listApiConfigMeta
-
-		// Determine API handler to use
-		let condensingApiHandler: ApiHandler | undefined
-		if (condensingApiConfigId && listApiConfigMeta && Array.isArray(listApiConfigMeta)) {
-			// Find matching config by ID
-			const matchingConfig = listApiConfigMeta.find((config) => config.id === condensingApiConfigId)
-			if (matchingConfig) {
-				const profile = await this.providerRef.deref()?.providerSettingsManager.getProfile({
-					id: condensingApiConfigId,
-				})
-				// Ensure profile and apiProvider exist before trying to build handler
-				if (profile && profile.apiProvider) {
-					condensingApiHandler = buildApiHandler(profile)
-				}
-			}
-		}
 
 		const { contextTokens: prevContextTokens } = this.getTokenUsage()
-
-		// Pass through so summarization preserves tool_use/tool_result integrity.
-		const useNativeTools = true
-
 		const {
 			messages,
 			summary,
@@ -1613,8 +1590,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			prevContextTokens,
 			false, // manual trigger
 			customCondensingPrompt, // User's custom prompt
-			condensingApiHandler, // Specific handler for condensing
-			useNativeTools,
 		)
 		if (error) {
 			this.say(
@@ -3706,9 +3681,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				`Current tokens: ${contextTokens}, Context window: ${contextWindow}. ` +
 				`Forcing truncation to ${FORCED_CONTEXT_REDUCTION_PERCENT}% of current context.`,
 		)
-
-		const useNativeTools = true
-
 		// Send condenseTaskContextStarted to show in-progress indicator
 		await this.providerRef.deref()?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
 
@@ -3725,7 +3697,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			taskId: this.taskId,
 			profileThresholds,
 			currentProfileId,
-			useNativeTools,
 		})
 
 		if (truncateResult.messages !== this.apiConversationHistory) {
@@ -3822,27 +3793,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// Get condensing configuration for automatic triggers.
 		const customCondensingPrompt = state?.customSupportPrompts?.CONDENSE
-		const condensingApiConfigId = state?.condensingApiConfigId
-		const listApiConfigMeta = state?.listApiConfigMeta
-
-		// Determine API handler to use for condensing.
-		let condensingApiHandler: ApiHandler | undefined
-
-		if (condensingApiConfigId && listApiConfigMeta && Array.isArray(listApiConfigMeta)) {
-			// Find matching config by ID
-			const matchingConfig = listApiConfigMeta.find((config) => config.id === condensingApiConfigId)
-
-			if (matchingConfig) {
-				const profile = await this.providerRef.deref()?.providerSettingsManager.getProfile({
-					id: condensingApiConfigId,
-				})
-
-				// Ensure profile and apiProvider exist before trying to build handler.
-				if (profile && profile.apiProvider) {
-					condensingApiHandler = buildApiHandler(profile)
-				}
-			}
-		}
 
 		if (!options.skipProviderRateLimit) {
 			await this.maybeWaitForProviderRateLimit(retryAttempt)
@@ -3873,9 +3823,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Get the current profile ID using the helper method
 			const currentProfileId = this.getCurrentProfileId(state)
-
-			const useNativeTools = true
-
 			// Check if context management will likely run (threshold check)
 			// This allows us to show an in-progress indicator to the user
 			// We use the centralized willManageContext helper to avoid duplicating threshold logic
@@ -3919,10 +3866,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				systemPrompt,
 				taskId: this.taskId,
 				customCondensingPrompt,
-				condensingApiHandler,
 				profileThresholds,
 				currentProfileId,
-				useNativeTools,
 			})
 			if (truncateResult.messages !== this.apiConversationHistory) {
 				await this.overwriteApiConversationHistory(truncateResult.messages)
