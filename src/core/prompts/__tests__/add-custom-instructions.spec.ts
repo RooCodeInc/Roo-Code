@@ -244,32 +244,6 @@ describe("addCustomInstructions", () => {
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/add-custom-instructions/ask-mode-prompt.snap")
 	})
 
-	it("should include MCP server creation info when enabled", async () => {
-		const mockMcpHub = createMockMcpHub(true)
-
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false, // supportsImages
-			mockMcpHub, // mcpHub
-			undefined, // diffStrategy
-			undefined, // browserViewportSize
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes,
-			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
-			undefined, // experiments
-			true, // enableMcpServerCreation
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-		)
-
-		expect(prompt).toContain("Creating an MCP Server")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/add-custom-instructions/mcp-server-creation-enabled.snap")
-	})
-
 	it("should exclude MCP server creation info when disabled", async () => {
 		const mockMcpHub = createMockMcpHub(false)
 
