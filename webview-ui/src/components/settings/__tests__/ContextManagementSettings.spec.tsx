@@ -87,7 +87,6 @@ describe("ContextManagementSettings", () => {
 	const defaultProps = {
 		autoCondenseContext: false,
 		autoCondenseContextPercent: 80,
-		condensingApiConfigId: undefined,
 		customCondensingPrompt: undefined,
 		listApiConfigMeta: [],
 		maxOpenTabsContext: 20,
