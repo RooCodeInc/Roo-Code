@@ -908,17 +908,25 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					}
 				}
 
-				if (item.type === "text" && item.text) {
-					yield { type: "text", text: item.text }
-				} else if (item.type === "reasoning" && item.text) {
-					yield { type: "reasoning", text: item.text }
-				} else if (item.type === "message" && Array.isArray(item.content)) {
-					for (const content of item.content) {
-						if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
-							yield { type: "text", text: content.text }
+				// For "added" events, yield text/reasoning content (streaming path)
+				// For "done" events, do NOT yield text/reasoning - it's already been streamed via deltas
+				// and would cause double-emission (A, B, C, ABC).
+				if (event.type === "response.output_item.added") {
+					if (item.type === "text" && item.text) {
+						yield { type: "text", text: item.text }
+					} else if (item.type === "reasoning" && item.text) {
+						yield { type: "reasoning", text: item.text }
+					} else if (item.type === "message" && Array.isArray(item.content)) {
+						for (const content of item.content) {
+							if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
+								yield { type: "text", text: content.text }
+							}
 						}
 					}
-				} else if (
+				}
+
+				// Only handle tool/function calls from done events (to ensure arguments are complete)
+				if (
 					(item.type === "function_call" || item.type === "tool_call") &&
 					event.type === "response.output_item.done"
 				) {
