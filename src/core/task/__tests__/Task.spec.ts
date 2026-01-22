@@ -1523,13 +1523,16 @@ describe("Cline", () => {
 		})
 
 		describe("submitUserMessage", () => {
-			it("should always route through webview sendMessage invoke", async () => {
+			it("should call handleWebviewAskResponse directly", async () => {
 				const task = new Task({
 					provider: mockProvider,
 					apiConfiguration: mockApiConfig,
 					task: "initial task",
 					startTask: false,
 				})
+
+				// Spy on handleWebviewAskResponse
+				const handleResponseSpy = vi.spyOn(task, "handleWebviewAskResponse")
 
 				// Set up some existing messages to simulate an ongoing conversation
 				task.clineMessages = [
@@ -1544,13 +1547,10 @@ describe("Cline", () => {
 				// Call submitUserMessage
 				task.submitUserMessage("test message", ["image1.png"])
 
-				// Verify postMessageToWebview was called with sendMessage invoke
-				expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
-					type: "invoke",
-					invoke: "sendMessage",
-					text: "test message",
-					images: ["image1.png"],
-				})
+				// Verify handleWebviewAskResponse was called directly (not webview)
+				expect(handleResponseSpy).toHaveBeenCalledWith("messageResponse", "test message", ["image1.png"])
+				// Should NOT route through webview anymore
+				expect(mockProvider.postMessageToWebview).not.toHaveBeenCalled()
 			})
 
 			it("should handle empty messages gracefully", async () => {
@@ -1561,18 +1561,21 @@ describe("Cline", () => {
 					startTask: false,
 				})
 
+				// Spy on handleWebviewAskResponse
+				const handleResponseSpy = vi.spyOn(task, "handleWebviewAskResponse")
+
 				// Call with empty text and no images
 				task.submitUserMessage("", [])
 
-				// Should not call postMessageToWebview for empty messages
-				expect(mockProvider.postMessageToWebview).not.toHaveBeenCalled()
+				// Should not call handleWebviewAskResponse for empty messages
+				expect(handleResponseSpy).not.toHaveBeenCalled()
 
 				// Call with whitespace only
 				task.submitUserMessage("   ", [])
-				expect(mockProvider.postMessageToWebview).not.toHaveBeenCalled()
+				expect(handleResponseSpy).not.toHaveBeenCalled()
 			})
 
-			it("should route through webview for both new and existing tasks", async () => {
+			it("should call handleWebviewAskResponse for both new and existing task states", async () => {
 				const task = new Task({
 					provider: mockProvider,
 					apiConfiguration: mockApiConfig,
@@ -1580,19 +1583,17 @@ describe("Cline", () => {
 					startTask: false,
 				})
 
+				// Spy on handleWebviewAskResponse
+				const handleResponseSpy = vi.spyOn(task, "handleWebviewAskResponse")
+
 				// Test with no messages (new task scenario)
 				task.clineMessages = []
 				task.submitUserMessage("new task", ["image1.png"])
 
-				expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
-					type: "invoke",
-					invoke: "sendMessage",
-					text: "new task",
-					images: ["image1.png"],
-				})
+				expect(handleResponseSpy).toHaveBeenCalledWith("messageResponse", "new task", ["image1.png"])
 
 				// Clear mock
-				mockProvider.postMessageToWebview.mockClear()
+				handleResponseSpy.mockClear()
 
 				// Test with existing messages (ongoing task scenario)
 				task.clineMessages = [
@@ -1605,12 +1606,7 @@ describe("Cline", () => {
 				]
 				task.submitUserMessage("follow-up message", ["image2.png"])
 
-				expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
-					type: "invoke",
-					invoke: "sendMessage",
-					text: "follow-up message",
-					images: ["image2.png"],
-				})
+				expect(handleResponseSpy).toHaveBeenCalledWith("messageResponse", "follow-up message", ["image2.png"])
 			})
 
 			it("should handle undefined provider gracefully", async () => {
@@ -1620,6 +1616,9 @@ describe("Cline", () => {
 					task: "initial task",
 					startTask: false,
 				})
+
+				// Spy on handleWebviewAskResponse
+				const handleResponseSpy = vi.spyOn(task, "handleWebviewAskResponse")
 
 				// Simulate weakref returning undefined
 				Object.defineProperty(task, "providerRef", {
@@ -1635,7 +1634,7 @@ describe("Cline", () => {
 				task.submitUserMessage("test message")
 
 				expect(consoleErrorSpy).toHaveBeenCalledWith("[Task#submitUserMessage] Provider reference lost")
-				expect(mockProvider.postMessageToWebview).not.toHaveBeenCalled()
+				expect(handleResponseSpy).not.toHaveBeenCalled()
 
 				// Restore console.error
 				consoleErrorSpy.mockRestore()

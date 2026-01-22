@@ -862,7 +862,11 @@ export class ClineProvider
 		this.webviewDisposables.push(configDisposable)
 
 		// If the extension is starting a new session, clear previous task state.
-		await this.removeClineFromStack()
+		// But don't clear if there's already an active task (e.g., resumed via IPC/bridge).
+		const currentTask = this.getCurrentTask()
+		if (!currentTask || currentTask.abandoned || currentTask.abort) {
+			await this.removeClineFromStack()
+		}
 	}
 
 	public async createTaskWithHistoryItem(

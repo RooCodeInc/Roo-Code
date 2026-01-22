@@ -1546,7 +1546,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				this.emit(RooCodeEventName.TaskUserMessage, this.taskId)
 
-				provider.postMessageToWebview({ type: "invoke", invoke: "sendMessage", text, images })
+				// Handle the message directly instead of routing through the webview.
+				// This avoids a race condition where the webview's message state hasn't
+				// hydrated yet, causing it to interpret the message as a new task request.
+				this.handleWebviewAskResponse("messageResponse", text, images)
 			} else {
 				console.error("[Task#submitUserMessage] Provider reference lost")
 			}
