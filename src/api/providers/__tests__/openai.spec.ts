@@ -1195,15 +1195,19 @@ describe("OpenAiHandler", () => {
 
 			// Assert tool message exists - test setup should always produce a tool message
 			expect(toolMessageIndex).not.toBe(-1)
+			const toolMessage = messages[toolMessageIndex]
 
-			// The message after tool should be the next user message from a new request,
-			// not a user message with environment_details (which should be merged)
+			// Verify the tool message contains both the original content AND the merged environment_details
+			// This is the key verification that mergeToolResultText is working correctly
+			expect(toolMessage.content).toContain("File content here")
+			expect(toolMessage.content).toContain("environment_details")
+
+			// Verify there is NO user message immediately after the tool message
+			// This is the Mistral constraint: after tool, only assistant or tool is allowed, never user
+			// Per mistral_common validator: elif previous_role == Roles.tool: expected_roles = {Roles.assistant, Roles.tool}
 			const nextMessage = messages[toolMessageIndex + 1]
-			// If there's a next message, it should not be a user message containing environment_details
-			if (nextMessage && nextMessage.role === "user") {
-				const content =
-					typeof nextMessage.content === "string" ? nextMessage.content : JSON.stringify(nextMessage.content)
-				expect(content).not.toContain("environment_details")
+			if (nextMessage) {
+				expect(nextMessage.role).not.toBe("user")
 			}
 		})
 
