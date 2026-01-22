@@ -837,21 +837,18 @@ describe("summarizeConversation", () => {
 
 		await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId, DEFAULT_PREV_CONTEXT_TOKENS)
 
-		// Verify the final request message
-		const expectedFinalMessage = {
-			role: "user",
-			content: "Summarize the conversation so far, as described in the prompt instructions.",
-		}
-
-		// Verify that createMessage was called with the correct prompt
+		// Verify that createMessage was called with the simple system prompt
 		expect(mockApiHandler.createMessage).toHaveBeenCalledWith(
-			expect.stringContaining("Your task is to create a detailed summary of the conversation"),
+			"Summarize the conversation so far, as described in the prompt instructions.",
 			expect.any(Array),
 		)
 
 		// Check that maybeRemoveImageBlocks was called with the correct messages
+		// The final request message now contains the detailed CONDENSE instructions
 		const mockCallArgs = (maybeRemoveImageBlocks as Mock).mock.calls[0][0] as any[]
-		expect(mockCallArgs[mockCallArgs.length - 1]).toEqual(expectedFinalMessage)
+		const finalMessage = mockCallArgs[mockCallArgs.length - 1]
+		expect(finalMessage.role).toBe("user")
+		expect(finalMessage.content).toContain("Your task is to create a detailed summary of the conversation")
 	})
 	it("should include the original first user message in summarization input", async () => {
 		const messages: ApiMessage[] = [
@@ -1217,10 +1214,10 @@ describe("summarizeConversation", () => {
 		expect(capturedRequestMessages).toBeDefined()
 
 		const requestMessages = capturedRequestMessages!
-		expect(requestMessages[requestMessages.length - 1]).toEqual({
-			role: "user",
-			content: "Summarize the conversation so far, as described in the prompt instructions.",
-		})
+		// The final request message now contains the detailed CONDENSE instructions
+		const finalMessage = requestMessages[requestMessages.length - 1]
+		expect(finalMessage.role).toBe("user")
+		expect(finalMessage.content).toContain("Your task is to create a detailed summary of the conversation")
 
 		const historyMessages = requestMessages.slice(0, -1)
 		expect(historyMessages.length).toBeGreaterThanOrEqual(2)
@@ -1487,10 +1484,12 @@ describe("summarizeConversation with custom settings", () => {
 			"  ", // Empty custom prompt
 		)
 
-		// Verify the default prompt was used
+		// Verify the default prompt was used (simple system prompt)
 		let createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
 		expect(createMessageCalls.length).toBe(1)
-		expect(createMessageCalls[0][0]).toContain("Your task is to create a detailed summary")
+		expect(createMessageCalls[0][0]).toBe(
+			"Summarize the conversation so far, as described in the prompt instructions.",
+		)
 
 		// Reset mock and test with undefined
 		vi.clearAllMocks()
@@ -1504,10 +1503,12 @@ describe("summarizeConversation with custom settings", () => {
 			undefined, // No custom prompt
 		)
 
-		// Verify the default prompt was used again
+		// Verify the default prompt was used again (simple system prompt)
 		createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
 		expect(createMessageCalls.length).toBe(1)
-		expect(createMessageCalls[0][0]).toContain("Your task is to create a detailed summary")
+		expect(createMessageCalls[0][0]).toBe(
+			"Summarize the conversation so far, as described in the prompt instructions.",
+		)
 	})
 
 	/**
