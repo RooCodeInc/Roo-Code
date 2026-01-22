@@ -12,8 +12,7 @@ import { supportPrompt } from "../../shared/support-prompt"
 
 /**
  * Checks if a message contains tool_result blocks.
- * For native tools protocol, user messages with tool_result blocks require
- * corresponding tool_use blocks from the previous assistant turn.
+ * User messages with tool_result blocks require corresponding tool_use blocks from the previous assistant turn.
  */
 function hasToolResultBlocks(message: ApiMessage): boolean {
 	if (message.role !== "user" || typeof message.content === "string") {
@@ -187,7 +186,7 @@ export type SummarizeResponse = {
  * @param {boolean} isAutomaticTrigger - Whether the summarization is triggered automatically
  * @param {string} customCondensingPrompt - Optional custom prompt to use for condensing
  * @param {ApiHandler} condensingApiHandler - Optional specific API handler to use for condensing
- * @param {boolean} useNativeTools - Whether native tools protocol is being used (requires tool_use/tool_result pairing)
+ * @param {boolean} useNativeTools - Whether to preserve tool_use/tool_result pairing in summarization
  * @returns {SummarizeResponse} - The result of the summarization operation (see above)
  */
 export async function summarizeConversation(

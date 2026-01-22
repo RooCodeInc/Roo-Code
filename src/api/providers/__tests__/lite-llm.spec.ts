@@ -632,7 +632,6 @@ describe("LiteLLMHandler", () => {
 							function: { name: "read_file", description: "Read a file", parameters: {} },
 						},
 					],
-					// Tool calling is native-only; legacy protocol fields are not supported.
 				}
 
 				const generator = handler.createMessage(systemPrompt, messages, metadata as any)
@@ -700,7 +699,6 @@ describe("LiteLLMHandler", () => {
 							function: { name: "read_file", description: "Read a file", parameters: {} },
 						},
 					],
-					// Tool calling is native-only; legacy protocol fields are not supported.
 				}
 
 				const generator = handler.createMessage(systemPrompt, messages, metadata as any)

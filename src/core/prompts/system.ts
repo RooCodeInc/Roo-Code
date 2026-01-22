@@ -82,9 +82,6 @@ async function generatePrompt(
 
 	const codeIndexManager = CodeIndexManager.getInstance(context, cwd)
 
-	// Tool calling is native-only.
-	const effectiveProtocol = "native"
-
 	const [modesSection, mcpServersSection, skillsSection] = await Promise.all([
 		getModesSection(context),
 		shouldIncludeMcp
@@ -93,14 +90,14 @@ async function generatePrompt(
 		getSkillsSection(skillsManager, mode as string),
 	])
 
-	// Tools catalog is not included in the system prompt in native-only mode.
+	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
 
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection(effectiveProtocol, experiments)}${toolsCatalog}
+${getSharedToolUseSection(experiments)}${toolsCatalog}
 
  ${getToolUseGuidelinesSection(experiments)}
 

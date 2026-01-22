@@ -690,7 +690,7 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).not.toContain("## update_todo_list")
 	})
 
-	it("should include native tool instructions (native-only)", async () => {
+	it("should include native tool instructions", async () => {
 		const settings = {
 			maxConcurrentFileReads: 5,
 			todoListEnabled: true,

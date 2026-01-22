@@ -235,7 +235,6 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 		language: language ?? formatLanguage(vscode.env.language),
 	})
 
-	// Tool calling is native-only.
 	const toolFormat = "native"
 
 	details += `\n\n# Current Mode\n`

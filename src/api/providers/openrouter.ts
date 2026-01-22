@@ -23,7 +23,6 @@ import {
 	consolidateReasoningDetails,
 } from "../transform/openai-format"
 import { normalizeMistralToolCallId } from "../transform/mistral-format"
-// Tool calling is native-only.
 import { ApiStreamChunk } from "../transform/stream"
 import { convertToR1Format } from "../transform/r1-format"
 import { addCacheBreakpoints as addAnthropicCacheBreakpoints } from "../transform/caching/anthropic"

@@ -213,7 +213,7 @@ describe("Command Execution Timeout Integration", () => {
 			;(fs.access as any).mockResolvedValue(undefined)
 			;(TerminalRegistry.getOrCreateTerminal as any).mockResolvedValue(mockTerminal)
 
-			// Mock the executeCommandTool parameters (native-only)
+			// Mock the executeCommandTool parameters
 			mockBlock = {
 				type: "tool_use",
 				name: "execute_command",

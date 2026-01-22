@@ -205,8 +205,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 */
 	private _taskMode: string | undefined
 
-	// Tool calling is native-only.
-
 	/**
 	 * Promise that resolves when the task mode has been initialized.
 	 * This ensures async mode initialization completes before the task is used.
@@ -385,7 +383,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	didAlreadyUseTool = false
 	didToolFailInCurrentTurn = false
 	didCompleteReadingStream = false
-	// Tool calling is native-only; no streaming parser is required.
+	// No streaming parser is required.
 	assistantMessageParser?: undefined
 	private providerProfileChangeListener?: (config: { name: string; provider?: string }) => void
 
@@ -1501,8 +1499,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	/**
 	 * Updates the API configuration and rebuilds the API handler.
-	 * Tool calling is native-only, so there is no tool-protocol switching or
-	 * tool parser swapping here.
+	 * There is no tool-protocol switching or tool parser swapping.
 	 *
 	 * @param newApiConfiguration - The new API configuration to use
 	 */
@@ -1595,7 +1592,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		const { contextTokens: prevContextTokens } = this.getTokenUsage()
 
-		// Tool calling is native-only; pass through so summarization preserves tool_use/tool_result integrity.
+		// Pass through so summarization preserves tool_use/tool_result integrity.
 		const useNativeTools = true
 
 		const {
@@ -1950,8 +1947,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// This is important in case the user deletes messages without resuming
 		// the task first.
 		this.apiConversationHistory = await this.getSavedApiConversationHistory()
-
-		// Tool calling is native-only.
 
 		const lastClineMessage = this.clineMessages
 			.slice()
@@ -3709,7 +3704,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				`Forcing truncation to ${FORCED_CONTEXT_REDUCTION_PERCENT}% of current context.`,
 		)
 
-		// Tool calling is native-only.
 		const useNativeTools = true
 
 		// Send condenseTaskContextStarted to show in-progress indicator
@@ -3877,7 +3871,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Get the current profile ID using the helper method
 			const currentProfileId = this.getCurrentProfileId(state)
 
-			// Tool calling is native-only.
 			const useNativeTools = true
 
 			// Check if context management will likely run (threshold check)
@@ -4002,7 +3995,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			throw new Error("Auto-approval limit reached and user did not approve continuation")
 		}
 
-		// Tool calling is native-only.
 		// Whether we include tools is determined by whether we have any tools to send.
 		const modelInfo = this.api.getModel().info
 
@@ -4467,8 +4459,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public get cwd() {
 		return this.workspacePath
 	}
-
-	// Tool protocol removed (native-only).
 
 	/**
 	 * Provides convenient access to high-level message operations.

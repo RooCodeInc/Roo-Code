@@ -163,8 +163,7 @@ export function getModelParams({
 			format,
 			...params,
 			reasoning: getOpenAiReasoning({ model, reasoningBudget, reasoningEffort, settings }),
-			// Tool calling is native-only; whether tools are included is determined
-			// by whether the caller provided tool definitions.
+			// Whether tools are included is determined by whether the caller provided tool definitions.
 		}
 	} else if (format === "gemini") {
 		return {

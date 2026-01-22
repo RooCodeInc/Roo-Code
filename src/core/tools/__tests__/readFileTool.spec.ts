@@ -222,7 +222,6 @@ function createMockCline(): any {
 		presentAssistantMessage: vi.fn(),
 		handleError: vi.fn().mockResolvedValue(undefined),
 		pushToolResult: vi.fn(),
-		// Tool calling is native-only; tests should not depend on legacy tag-stripping helpers.
 		fileContextTracker: {
 			trackFileContext: vi.fn().mockResolvedValue(undefined),
 		},

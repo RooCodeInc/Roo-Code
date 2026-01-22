@@ -40,8 +40,6 @@ describe("Task Tool History Handling", () => {
 				},
 			]
 
-			// Tool calling is native-only; tool blocks must be preserved.
-
 			// Verify tool blocks are preserved
 			const assistantMessage = apiHistory[1]
 			const userMessage = apiHistory[2]
