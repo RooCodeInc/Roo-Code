@@ -84,14 +84,15 @@ vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 	VSCodeTextArea: ({ value, onChange, ...props }: any) => <textarea value={value} onChange={onChange} {...props} />,
 }))
 
-describe("ContextManagementSettings", () => {
-	const defaultProps = {
-		autoCondenseContext: false,
-		autoCondenseContextPercent: 80,
-		listApiConfigMeta: [],
-		maxOpenTabsContext: 20,
-		maxWorkspaceFiles: 200,
-		showRooIgnoredFiles: false,
+	describe("ContextManagementSettings", () => {
+		const defaultProps = {
+			autoCondenseContext: false,
+			autoCondenseContextPercent: 80,
+			customCondensingPrompt: undefined,
+			listApiConfigMeta: [],
+			maxOpenTabsContext: 20,
+			maxWorkspaceFiles: 200,
+			showRooIgnoredFiles: false,
 		maxReadFileLine: -1,
 		maxConcurrentFileReads: 5,
 		profileThresholds: {},
