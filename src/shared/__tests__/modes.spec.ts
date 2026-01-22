@@ -273,6 +273,252 @@ describe("isToolAllowedForMode", () => {
 				}),
 			).toThrow(/Markdown files only/)
 		})
+
+		it("applies restrictions to apply_patch (custom tool)", () => {
+			// Test that apply_patch respects file restrictions when included
+			const patchResult = isToolAllowedForMode(
+				"apply_patch",
+				"markdown-editor",
+				customModes,
+				undefined,
+				{
+					path: "test.md",
+					patch: "diff --git a/test.md b/test.md\n--- a/test.md\n+++ b/test.md\n@@ -1 +1 @@\n-old\n+new",
+				},
+				undefined,
+				["apply_patch"], // Include custom tool
+			)
+			expect(patchResult).toBe(true)
+
+			// Test apply_patch with non-matching file
+			expect(() =>
+				isToolAllowedForMode(
+					"apply_patch",
+					"markdown-editor",
+					customModes,
+					undefined,
+					{
+						path: "test.js",
+						patch: "diff --git a/test.js b/test.js\n--- a/test.js\n+++ b/test.js\n@@ -1 +1 @@\n-old\n+new",
+					},
+					undefined,
+					["apply_patch"], // Include custom tool
+				),
+			).toThrow(FileRestrictionError)
+			expect(() =>
+				isToolAllowedForMode(
+					"apply_patch",
+					"markdown-editor",
+					customModes,
+					undefined,
+					{
+						path: "test.js",
+						patch: "diff --git a/test.js b/test.js\n--- a/test.js\n+++ b/test.js\n@@ -1 +1 @@\n-old\n+new",
+					},
+					undefined,
+					["apply_patch"], // Include custom tool
+				),
+			).toThrow(/\\.md\$/)
+		})
+
+		it("applies restrictions to search_replace (custom tool)", () => {
+			// Test that search_replace respects file restrictions when included
+			const searchReplaceResult = isToolAllowedForMode(
+				"search_replace",
+				"markdown-editor",
+				customModes,
+				undefined,
+				{
+					file_path: "test.md",
+					old_string: "old text",
+					new_string: "new text",
+				},
+				undefined,
+				["search_replace"], // Include custom tool
+			)
+			expect(searchReplaceResult).toBe(true)
+
+			// Test search_replace with non-matching file
+			expect(() =>
+				isToolAllowedForMode(
+					"search_replace",
+					"markdown-editor",
+					customModes,
+					undefined,
+					{
+						file_path: "test.js",
+						old_string: "old text",
+						new_string: "new text",
+					},
+					undefined,
+					["search_replace"], // Include custom tool
+				),
+			).toThrow(FileRestrictionError)
+			expect(() =>
+				isToolAllowedForMode(
+					"search_replace",
+					"markdown-editor",
+					customModes,
+					undefined,
+					{
+						file_path: "test.js",
+						old_string: "old text",
+						new_string: "new text",
+					},
+					undefined,
+					["search_replace"], // Include custom tool
+				),
+			).toThrow(/\\.md\$/)
+		})
+
+		it("applies restrictions to edit_file (custom tool)", () => {
+			// Test that edit_file respects file restrictions when included
+			const editFileResult = isToolAllowedForMode(
+				"edit_file",
+				"markdown-editor",
+				customModes,
+				undefined,
+				{
+					file_path: "test.md",
+					old_string: "old text",
+					new_string: "new text",
+				},
+				undefined,
+				["edit_file"], // Include custom tool
+			)
+			expect(editFileResult).toBe(true)
+
+			// Test edit_file with non-matching file
+			expect(() =>
+				isToolAllowedForMode(
+					"edit_file",
+					"markdown-editor",
+					customModes,
+					undefined,
+					{
+						file_path: "test.js",
+						old_string: "old text",
+						new_string: "new text",
+					},
+					undefined,
+					["edit_file"], // Include custom tool
+				),
+			).toThrow(FileRestrictionError)
+			expect(() =>
+				isToolAllowedForMode(
+					"edit_file",
+					"markdown-editor",
+					customModes,
+					undefined,
+					{
+						file_path: "test.js",
+						old_string: "old text",
+						new_string: "new text",
+					},
+					undefined,
+					["edit_file"], // Include custom tool
+				),
+			).toThrow(/\\.md\$/)
+		})
+
+		it("applies restrictions to all editing tools in architect mode (custom tools)", () => {
+			// Test apply_patch in architect mode
+			expect(
+				isToolAllowedForMode(
+					"apply_patch",
+					"architect",
+					[],
+					undefined,
+					{
+						path: "test.md",
+						patch: "diff --git a/test.md b/test.md\n--- a/test.md\n+++ b/test.md\n@@ -1 +1 @@\n-old\n+new",
+					},
+					undefined,
+					["apply_patch"], // Include custom tool
+				),
+			).toBe(true)
+
+			expect(() =>
+				isToolAllowedForMode(
+					"apply_patch",
+					"architect",
+					[],
+					undefined,
+					{
+						path: "test.js",
+						patch: "diff --git a/test.js b/test.js\n--- a/test.js\n+++ b/test.js\n@@ -1 +1 @@\n-old\n+new",
+					},
+					undefined,
+					["apply_patch"], // Include custom tool
+				),
+			).toThrow(FileRestrictionError)
+
+			// Test search_replace in architect mode
+			expect(
+				isToolAllowedForMode(
+					"search_replace",
+					"architect",
+					[],
+					undefined,
+					{
+						file_path: "test.md",
+						old_string: "old text",
+						new_string: "new text",
+					},
+					undefined,
+					["search_replace"], // Include custom tool
+				),
+			).toBe(true)
+
+			expect(() =>
+				isToolAllowedForMode(
+					"search_replace",
+					"architect",
+					[],
+					undefined,
+					{
+						file_path: "test.js",
+						old_string: "old text",
+						new_string: "new text",
+					},
+					undefined,
+					["search_replace"], // Include custom tool
+				),
+			).toThrow(FileRestrictionError)
+
+			// Test edit_file in architect mode
+			expect(
+				isToolAllowedForMode(
+					"edit_file",
+					"architect",
+					[],
+					undefined,
+					{
+						file_path: "test.md",
+						old_string: "old text",
+						new_string: "new text",
+					},
+					undefined,
+					["edit_file"], // Include custom tool
+				),
+			).toBe(true)
+
+			expect(() =>
+				isToolAllowedForMode(
+					"edit_file",
+					"architect",
+					[],
+					undefined,
+					{
+						file_path: "test.js",
+						old_string: "old text",
+						new_string: "new text",
+					},
+					undefined,
+					["edit_file"], // Include custom tool
+				),
+			).toThrow(FileRestrictionError)
+		})
 	})
 
 	it("handles non-existent modes", () => {

@@ -62,7 +62,18 @@ export function validateToolUse(
 	}
 }
 
-const EDIT_OPERATION_PARAMS = ["diff", "content", "operations", "search", "replace", "args", "line"] as const
+const EDIT_OPERATION_PARAMS = [
+	"diff",
+	"content",
+	"operations",
+	"search",
+	"replace",
+	"args",
+	"line",
+	"patch", // Used by apply_patch
+	"old_string", // Used by search_replace and edit_file
+	"new_string", // Used by search_replace and edit_file
+] as const
 
 function getGroupOptions(group: GroupEntry): GroupOptions | undefined {
 	return Array.isArray(group) ? group[1] : undefined
@@ -155,7 +166,7 @@ export function isToolAllowedForMode(
 
 		// For the edit group, check file regex if specified
 		if (groupName === "edit" && options.fileRegex) {
-			const filePath = toolParams?.path
+			const filePath = toolParams?.path || toolParams?.file_path
 			// Check if this is an actual edit operation (not just path-only for streaming)
 			const isEditOperation = EDIT_OPERATION_PARAMS.some((param) => toolParams?.[param])
 
