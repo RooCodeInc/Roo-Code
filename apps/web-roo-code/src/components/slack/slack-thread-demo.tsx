@@ -181,15 +181,15 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 				avatarClassName: "bg-[#2B2D31] text-[#F8F8F9] ring-1 ring-white/10",
 				kind: "human",
 				body: (
-					<div className="space-x-2">
-						<FakeLink className="no-underline hover:text-violet-200">@Roomote</FakeLink>
-						<span>let&apos;s create the plan to deliver this</span>
-					</div>
+					<span>
+						<FakeLink className="no-underline hover:text-violet-200">@Roomote</FakeLink> let&apos;s create
+						the plan to deliver this
+					</span>
 				),
 			},
 			{
 				id: "m5",
-				author: "Roomote (Roo Code)",
+				author: "Roomote",
 				timeLabel: "Monday at 3:09 PM",
 				avatarText: "R",
 				avatarClassName: "bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30",
@@ -215,7 +215,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 			},
 			{
 				id: "m6",
-				author: "Roomote (Roo Code)",
+				author: "Roomote",
 				timeLabel: "Monday at 3:10 PM",
 				avatarText: "R",
 				avatarClassName: "bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30",
@@ -229,7 +229,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 			},
 			{
 				id: "m7",
-				author: "Roomote (Roo Code)",
+				author: "Roomote",
 				timeLabel: "Monday at 3:12 PM",
 				avatarText: "R",
 				avatarClassName: "bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30",
@@ -260,7 +260,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 			},
 			{
 				id: "m8",
-				author: "Roomote (Roo Code)",
+				author: "Roomote",
 				timeLabel: "Monday at 3:16 PM",
 				avatarText: "R",
 				avatarClassName: "bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30",
@@ -311,14 +311,14 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 				kind: "human",
 				body: (
 					<div className="space-x-2">
-						<FakeLink className="no-underline hover:text-violet-200">@Roomote (Roo Code)</FakeLink>
+						<FakeLink className="no-underline hover:text-violet-200">@Roomote</FakeLink>
 						<span>this looks great, let&apos;s use Coderoo to build this</span>
 					</div>
 				),
 			},
 			{
 				id: "m10",
-				author: "Roomote (Roo Code)",
+				author: "Roomote",
 				timeLabel: "Monday at 3:23 PM",
 				avatarText: "R",
 				avatarClassName: "bg-violet-500/20 text-violet-200 ring-1 ring-violet-500/30",
