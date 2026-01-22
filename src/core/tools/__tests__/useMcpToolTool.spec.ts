@@ -4,6 +4,19 @@ import { useMcpToolTool } from "../UseMcpToolTool"
 import { Task } from "../../task/Task"
 import { ToolUse } from "../../../shared/tools"
 
+// Mock fs/promises
+vi.mock("fs/promises", () => ({
+	default: {
+		mkdir: vi.fn().mockResolvedValue(undefined),
+		writeFile: vi.fn().mockResolvedValue(undefined),
+	},
+}))
+
+// Mock storage utils
+vi.mock("../../../utils/storage", () => ({
+	getTaskDirectoryPath: vi.fn().mockResolvedValue("/mock/storage/tasks/test-task"),
+}))
+
 // Mock dependencies
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {
@@ -62,6 +75,11 @@ describe("useMcpToolTool", () => {
 					getAllServers: vi.fn().mockReturnValue([]),
 				}),
 				postMessageToWebview: vi.fn(),
+				context: {
+					globalStorageUri: {
+						fsPath: "/mock/global/storage",
+					},
+				},
 			}),
 		}
 
@@ -73,6 +91,8 @@ describe("useMcpToolTool", () => {
 			ask: vi.fn(),
 			lastMessageTs: 123456789,
 			providerRef: mockProviderRef,
+			taskId: "test-task-123",
+			cwd: "/test/workspace",
 		}
 	})
 
@@ -638,9 +658,15 @@ describe("useMcpToolTool", () => {
 			expect(mockTask.say).toHaveBeenCalledWith(
 				"mcp_server_response",
 				expect.stringContaining(
-					"[1 image(s) received - data URLs provided below for use with save_image tool]",
+					"[1 image(s) received and saved to temporary storage. Use save_image tool with source_path to save to your desired location.]",
 				),
 				["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ"],
+			)
+			// Text response should contain source_path XML tags, not raw base64
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.stringContaining("<source_path>"),
+				expect.anything(),
 			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("with 1 image(s)"))
 		})
@@ -700,6 +726,12 @@ describe("useMcpToolTool", () => {
 				expect.stringContaining("Node name: Button"),
 				["data:image/png;base64,base64imagedata"],
 			)
+			// Text response should contain source_path, not raw base64
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.stringContaining("<source_path>"),
+				expect.anything(),
+			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("with 1 image(s)"))
 		})
 
@@ -756,7 +788,7 @@ describe("useMcpToolTool", () => {
 			expect(mockTask.say).toHaveBeenCalledWith(
 				"mcp_server_response",
 				expect.stringContaining(
-					"[1 image(s) received - data URLs provided below for use with save_image tool]",
+					"[1 image(s) received and saved to temporary storage. Use save_image tool with source_path to save to your desired location.]",
 				),
 				["data:image/jpeg;base64,/9j/4AAQSkZJRg=="],
 			)
@@ -819,7 +851,7 @@ describe("useMcpToolTool", () => {
 			expect(mockTask.say).toHaveBeenCalledWith(
 				"mcp_server_response",
 				expect.stringContaining(
-					"[2 image(s) received - data URLs provided below for use with save_image tool]",
+					"[2 image(s) received and saved to temporary storage. Use save_image tool with source_path to save to your desired location.]",
 				),
 				["data:image/png;base64,image1data", "data:image/png;base64,image2data"],
 			)

@@ -29,6 +29,9 @@
 		}
 	},
 	"saveImage": {
-		"invalidDataFormat": "Invalid image data format. Expected a base64 data URL (e.g., 'data:image/png;base64,...')."
+		"invalidDataFormat": "Invalid image data format. Expected a base64 data URL (e.g., 'data:image/png;base64,...').",
+		"missingSourceOrData": "Either 'source_path' or 'data' parameter is required. Use 'source_path' for images from MCP tools, or 'data' for base64 data URLs.",
+		"sourceNotFound": "Source image not found at path: {{path}}",
+		"invalidSourceFormat": "Invalid source image format. Supported formats: PNG, JPG, JPEG, GIF, WEBP, SVG."
 	}
 }
