@@ -1327,6 +1327,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				return <BrowserSessionStatusRow key={messageOrGroup.ts} message={messageOrGroup} />
 			}
 
+			// For use_mcp_server ask messages, find the corresponding mcp_server_response to get images
+			let mcpResponseImages: string[] | undefined
+			if (messageOrGroup.type === "ask" && messageOrGroup.ask === "use_mcp_server") {
+				const mcpResponse = modifiedMessages.find(
+					(m) => m.ts > messageOrGroup.ts && m.say === "mcp_server_response",
+				)
+				mcpResponseImages = mcpResponse?.images
+			}
+
 			// regular message
 			return (
 				<ChatRow
@@ -1342,6 +1351,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					onBatchFileResponse={handleBatchFileResponse}
 					isFollowUpAnswered={messageOrGroup.isAnswered === true || messageOrGroup.ts === currentFollowUpTs}
 					isFollowUpAutoApprovalPaused={isFollowUpAutoApprovalPaused}
+					mcpResponseImages={mcpResponseImages}
 					editable={
 						messageOrGroup.type === "ask" &&
 						messageOrGroup.ask === "tool" &&

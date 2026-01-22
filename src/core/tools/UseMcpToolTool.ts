@@ -319,9 +319,19 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 					response: outputText || (images.length > 0 ? `[${images.length} image(s)]` : ""),
 				})
 
-				toolResultPretty =
-					(toolResult.isError ? "Error:\n" : "") +
-					(outputText || (images.length > 0 ? `[${images.length} image(s) received]` : ""))
+				// Build the result text
+				let resultText = outputText || ""
+
+				// Include image data URLs in the text response so the agent can use them with save_image tool
+				if (images.length > 0) {
+					const imageDataSection = images
+						.map((img, index) => `<image_${index + 1}>\n${img}\n</image_${index + 1}>`)
+						.join("\n\n")
+					const imageInfo = `\n\n[${images.length} image(s) received - data URLs provided below for use with save_image tool]\n\n${imageDataSection}`
+					resultText = resultText ? resultText + imageInfo : imageInfo.trim()
+				}
+
+				toolResultPretty = (toolResult.isError ? "Error:\n" : "") + resultText
 			}
 
 			// Send completion status

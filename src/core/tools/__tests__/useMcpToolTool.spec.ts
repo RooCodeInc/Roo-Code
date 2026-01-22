@@ -618,14 +618,12 @@ describe("useMcpToolTool", () => {
 			mockProviderRef.deref.mockReturnValue({
 				getMcpHub: () => ({
 					callTool: vi.fn().mockResolvedValue(mockToolResult),
-					getAllServers: vi
-						.fn()
-						.mockReturnValue([
-							{
-								name: "figma-server",
-								tools: [{ name: "get_screenshot", description: "Get screenshot" }],
-							},
-						]),
+					getAllServers: vi.fn().mockReturnValue([
+						{
+							name: "figma-server",
+							tools: [{ name: "get_screenshot", description: "Get screenshot" }],
+						},
+					]),
 				}),
 				postMessageToWebview: vi.fn(),
 			})
@@ -637,9 +635,13 @@ describe("useMcpToolTool", () => {
 			})
 
 			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "[1 image(s) received]", [
-				"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ",
-			])
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.stringContaining(
+					"[1 image(s) received - data URLs provided below for use with save_image tool]",
+				),
+				["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ"],
+			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("with 1 image(s)"))
 		})
 
@@ -693,9 +695,11 @@ describe("useMcpToolTool", () => {
 			})
 
 			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "Node name: Button", [
-				"data:image/png;base64,base64imagedata",
-			])
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.stringContaining("Node name: Button"),
+				["data:image/png;base64,base64imagedata"],
+			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("with 1 image(s)"))
 		})
 
@@ -732,14 +736,12 @@ describe("useMcpToolTool", () => {
 			mockProviderRef.deref.mockReturnValue({
 				getMcpHub: () => ({
 					callTool: vi.fn().mockResolvedValue(mockToolResult),
-					getAllServers: vi
-						.fn()
-						.mockReturnValue([
-							{
-								name: "figma-server",
-								tools: [{ name: "get_screenshot", description: "Get screenshot" }],
-							},
-						]),
+					getAllServers: vi.fn().mockReturnValue([
+						{
+							name: "figma-server",
+							tools: [{ name: "get_screenshot", description: "Get screenshot" }],
+						},
+					]),
 				}),
 				postMessageToWebview: vi.fn(),
 			})
@@ -751,9 +753,13 @@ describe("useMcpToolTool", () => {
 			})
 
 			// Should not double-prefix the data URL
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "[1 image(s) received]", [
-				"data:image/jpeg;base64,/9j/4AAQSkZJRg==",
-			])
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.stringContaining(
+					"[1 image(s) received - data URLs provided below for use with save_image tool]",
+				),
+				["data:image/jpeg;base64,/9j/4AAQSkZJRg=="],
+			)
 		})
 
 		it("should handle multiple images in response", async () => {
@@ -794,14 +800,12 @@ describe("useMcpToolTool", () => {
 			mockProviderRef.deref.mockReturnValue({
 				getMcpHub: () => ({
 					callTool: vi.fn().mockResolvedValue(mockToolResult),
-					getAllServers: vi
-						.fn()
-						.mockReturnValue([
-							{
-								name: "figma-server",
-								tools: [{ name: "get_screenshots", description: "Get screenshots" }],
-							},
-						]),
+					getAllServers: vi.fn().mockReturnValue([
+						{
+							name: "figma-server",
+							tools: [{ name: "get_screenshots", description: "Get screenshots" }],
+						},
+					]),
 				}),
 				postMessageToWebview: vi.fn(),
 			})
@@ -812,10 +816,13 @@ describe("useMcpToolTool", () => {
 				pushToolResult: mockPushToolResult,
 			})
 
-			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_response", "[2 image(s) received]", [
-				"data:image/png;base64,image1data",
-				"data:image/png;base64,image2data",
-			])
+			expect(mockTask.say).toHaveBeenCalledWith(
+				"mcp_server_response",
+				expect.stringContaining(
+					"[2 image(s) received - data URLs provided below for use with save_image tool]",
+				),
+				["data:image/png;base64,image1data", "data:image/png;base64,image2data"],
+			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("with 2 image(s)"))
 		})
 	})
