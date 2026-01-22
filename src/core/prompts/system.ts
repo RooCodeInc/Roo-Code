@@ -180,6 +180,34 @@ ${fileCustomSystemPrompt}
 ${customInstructions}`
 	}
 
+	// If the mode config has a systemPrompt defined, use it as custom middle content
+	if (currentMode.systemPrompt) {
+		const { roleDefinition, baseInstructions: baseInstructionsForConfig } = getModeSelection(
+			mode,
+			promptComponent,
+			customModes,
+		)
+
+		const customInstructions = await addCustomInstructions(
+			baseInstructionsForConfig,
+			globalCustomInstructions || "",
+			cwd,
+			mode,
+			{
+				language: language ?? formatLanguage(vscode.env.language),
+				rooIgnoreInstructions,
+				settings,
+			},
+		)
+
+		// For config-based systemPrompt, use the simplified structure
+		return `${roleDefinition}
+
+${currentMode.systemPrompt}
+
+${customInstructions}`
+	}
+
 	return generatePrompt(
 		context,
 		cwd,
