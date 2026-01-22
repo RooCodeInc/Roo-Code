@@ -839,7 +839,7 @@ describe("summarizeConversation", () => {
 
 		// Verify that createMessage was called with the simple system prompt
 		expect(mockApiHandler.createMessage).toHaveBeenCalledWith(
-			"Summarize the conversation so far, as described in the prompt instructions.",
+			"You are a helpful AI assistant tasked with summarizing conversations.",
 			expect.any(Array),
 		)
 
@@ -1487,9 +1487,7 @@ describe("summarizeConversation with custom settings", () => {
 		// Verify the default prompt was used (simple system prompt)
 		let createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
 		expect(createMessageCalls.length).toBe(1)
-		expect(createMessageCalls[0][0]).toBe(
-			"Summarize the conversation so far, as described in the prompt instructions.",
-		)
+		expect(createMessageCalls[0][0]).toBe("You are a helpful AI assistant tasked with summarizing conversations.")
 
 		// Reset mock and test with undefined
 		vi.clearAllMocks()
@@ -1506,9 +1504,7 @@ describe("summarizeConversation with custom settings", () => {
 		// Verify the default prompt was used again (simple system prompt)
 		createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
 		expect(createMessageCalls.length).toBe(1)
-		expect(createMessageCalls[0][0]).toBe(
-			"Summarize the conversation so far, as described in the prompt instructions.",
-		)
+		expect(createMessageCalls[0][0]).toBe("You are a helpful AI assistant tasked with summarizing conversations.")
 	})
 
 	/**
