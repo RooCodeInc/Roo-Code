@@ -435,7 +435,7 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 
 	// Filter out messages whose condenseParent points to an existing summary
 	// or whose truncationParent points to an existing truncation marker.
-	// Messages with orphaned parents (summary/marker was deleted) are included
+	// Messages with orphaned parents (summary/marker was deleted) are included.
 	return messages.filter((msg) => {
 		// Filter out condensed messages if their summary exists
 		if (msg.condenseParent && existingSummaryIds.has(msg.condenseParent)) {
