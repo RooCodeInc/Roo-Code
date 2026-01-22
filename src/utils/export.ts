@@ -26,12 +26,12 @@ export interface ExportOptions {
  * 3. Fallback directory (e.g. Downloads or Documents)
  * 4. Default to just the filename (user's home/cwd)
  */
-export async function resolveDefaultSaveUri(
+export function resolveDefaultSaveUri(
 	context: ExportContext,
 	configKey: string,
 	fileName: string,
 	options: ExportOptions = {},
-): Promise<vscode.Uri> {
+): vscode.Uri {
 	const { useWorkspace = true, fallbackDir } = options
 	const lastExportPath = context.getValue(configKey) as string | undefined
 
