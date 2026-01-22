@@ -24,7 +24,7 @@ import { ogImageUrl } from "@/lib/og"
 
 const TITLE = "Roo Code for Slack"
 const DESCRIPTION =
-	"Mention @Roocode in any channel to explain code, plan features, or ship a PR, all without leaving the conversation."
+	"Mention @Roomote in any channel to explain code, plan features, or ship a PR, all without leaving the conversation."
 const OG_DESCRIPTION = "Your AI Team in Slack"
 const PATH = "/slack"
 
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
 		"slack bot",
 		"AI in slack",
 		"code assistant slack",
-		"@Roocode",
+		"@Roomote",
 		"team collaboration",
 	],
 }
@@ -81,7 +81,7 @@ const VALUE_PROPS: ValueProp[] = [
 		icon: GitBranch,
 		title: "Discussion to PR.",
 		description:
-			"Your team discusses a feature in Slack. @Roocode turns the discussion into a plan. Then builds it. All without leaving the conversation.",
+			"Your team discusses a feature in Slack. @Roomote turns the discussion into a plan. Then builds it. All without leaving the conversation.",
 	},
 	{
 		icon: Brain,
@@ -129,7 +129,7 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
 		step: 2,
 		title: "Refine the plan in the thread",
 		description:
-			"The team reviews the spec in the thread, suggests changes, asks questions. Mention @Roocode again to refine.",
+			"The team reviews the spec in the thread, suggests changes, asks questions. Mention @Roomote again to refine.",
 	},
 	{
 		step: 3,
@@ -176,7 +176,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 	{
 		icon: MessageSquare,
 		title: "4. Add to channels",
-		description: "Add @Roocode to the channels where you want it available.",
+		description: "Add @Roomote to the channels where you want it available.",
 	},
 ]
 
@@ -194,10 +194,10 @@ export default function SlackPage(): JSX.Element {
 								Powered by Roo Code Cloud
 							</div>
 							<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-5xl lg:text-6xl">
-								<span className="text-violet-500">@Roocode:</span> Your AI Team in&nbsp;Slack
+								<span className="text-violet-500">@Roomote:</span> Your AI Team in&nbsp;Slack
 							</h1>
 							<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto lg:mx-0">
-								Mention @Roocode in any channel to explain code, plan features, or ship a PR, all
+								Mention @Roomote in any channel to explain code, plan features, or ship a PR, all
 								without leaving the conversation.
 							</p>
 							<div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
