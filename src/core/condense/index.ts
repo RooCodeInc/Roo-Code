@@ -131,7 +131,14 @@ export type SummarizeResponse = {
  * - Post-condense, the model sees only the summary (true fresh start)
  * - All messages are still stored but tagged with condenseParent
  * - <command> blocks from the original task are preserved across condensings
- * - <environment_details> is included to provide current workspace context
+ *
+ * Environment details handling:
+ * - For AUTOMATIC condensing (isAutomaticTrigger=true): Environment details are included
+ *   in the summary because the API request is already in progress and the next user
+ *   message won't have fresh environment details injected.
+ * - For MANUAL condensing (isAutomaticTrigger=false): Environment details are NOT included
+ *   because fresh environment details will be injected on the very next turn via
+ *   getEnvironmentDetails() in recursivelyMakeClineRequests().
  *
  * @param {ApiMessage[]} messages - The conversation messages
  * @param {ApiHandler} apiHandler - The API handler to use for summarization and token counting
@@ -140,7 +147,7 @@ export type SummarizeResponse = {
  * @param {boolean} isAutomaticTrigger - Whether the summarization is triggered automatically
  * @param {string} customCondensingPrompt - Optional custom prompt to use for condensing
  * @param {ApiHandlerCreateMessageMetadata} metadata - Optional metadata to pass to createMessage (tools, taskId, etc.)
- * @param {string} environmentDetails - Optional environment details string to include in the summary
+ * @param {string} environmentDetails - Optional environment details string to include in the summary (only used when isAutomaticTrigger=true)
  * @returns {SummarizeResponse} - The result of the summarization operation (see above)
  */
 export async function summarizeConversation(
@@ -294,8 +301,10 @@ ${commandBlocks}
 		})
 	}
 
-	// Add environment details as a separate text block if provided
-	if (environmentDetails?.trim()) {
+	// Add environment details as a separate text block if provided AND this is an automatic trigger.
+	// For manual condensing, fresh environment details will be injected on the next turn.
+	// For automatic condensing, the API request is already in progress so we need them in the summary.
+	if (isAutomaticTrigger && environmentDetails?.trim()) {
 		summaryContent.push({
 			type: "text",
 			text: environmentDetails,
