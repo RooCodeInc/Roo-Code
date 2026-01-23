@@ -70,6 +70,12 @@ export const modeConfigSchema = z.object({
 	customInstructions: z.string().optional(),
 	groups: groupEntryArraySchema,
 	source: z.enum(["global", "project"]).optional(),
+	/**
+	 * When provided, replaces the middle sections of the generated system prompt
+	 * (CAPABILITIES, TOOL USE, OBJECTIVE, etc.) with this custom content.
+	 * The final prompt will be: roleDefinition + systemPrompt + customInstructions
+	 */
+	systemPrompt: z.string().optional(),
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>

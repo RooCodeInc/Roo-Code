@@ -747,6 +747,177 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).toContain("OBJECTIVE")
 	})
 
+	describe("systemPrompt override", () => {
+		it("should use systemPrompt from mode config when provided", async () => {
+			const customSystemPrompt = "This is a custom system prompt that replaces the default sections."
+
+			const customModes: ModeConfig[] = [
+				{
+					slug: "minimal-mode",
+					name: "Minimal Mode",
+					roleDefinition: "You are a minimal assistant.",
+					customInstructions: "Be concise.",
+					groups: ["mcp"] as const,
+					systemPrompt: customSystemPrompt,
+				},
+			]
+
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false,
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				undefined, // browserViewportSize
+				"minimal-mode", // mode
+				undefined, // customModePrompts
+				customModes, // customModes
+				"Global instructions", // globalCustomInstructions
+				undefined, // diffEnabled
+				experiments,
+				true, // enableMcpServerCreation
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+				undefined, // partialReadsEnabled
+			)
+
+			// Should contain the custom systemPrompt
+			expect(prompt).toContain(customSystemPrompt)
+
+			// Should contain role definition at the top
+			expect(prompt).toContain("You are a minimal assistant.")
+			expect(prompt.indexOf("You are a minimal assistant.")).toBeLessThan(prompt.indexOf(customSystemPrompt))
+
+			// Should NOT contain the default sections (TOOL USE, CAPABILITIES, OBJECTIVE, etc.)
+			expect(prompt).not.toContain("TOOL USE")
+			expect(prompt).not.toContain("CAPABILITIES")
+			expect(prompt).not.toContain("OBJECTIVE")
+			expect(prompt).not.toContain("MARKDOWN RULES")
+		})
+
+		it("should include customInstructions when using systemPrompt override", async () => {
+			const customSystemPrompt = "Custom system prompt content."
+			const modeCustomInstructions = "Be concise."
+
+			const customModes: ModeConfig[] = [
+				{
+					slug: "minimal-mode",
+					name: "Minimal Mode",
+					roleDefinition: "You are a minimal assistant.",
+					customInstructions: modeCustomInstructions,
+					groups: ["mcp"] as const,
+					systemPrompt: customSystemPrompt,
+				},
+			]
+
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false,
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				undefined, // browserViewportSize
+				"minimal-mode", // mode
+				undefined, // customModePrompts
+				customModes, // customModes
+				"Global instructions", // globalCustomInstructions
+				undefined, // diffEnabled
+				experiments,
+				true, // enableMcpServerCreation
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+				undefined, // partialReadsEnabled
+			)
+
+			// Should contain the customInstructions
+			expect(prompt).toContain(modeCustomInstructions)
+
+			// Custom instructions should come after the systemPrompt
+			expect(prompt.indexOf(customSystemPrompt)).toBeLessThan(prompt.indexOf(modeCustomInstructions))
+		})
+
+		it("should use default sections when systemPrompt is not provided", async () => {
+			const customModes: ModeConfig[] = [
+				{
+					slug: "regular-mode",
+					name: "Regular Mode",
+					roleDefinition: "You are a regular assistant.",
+					customInstructions: "Follow all guidelines.",
+					groups: ["read"] as const,
+					// No systemPrompt provided
+				},
+			]
+
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false,
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				undefined, // browserViewportSize
+				"regular-mode", // mode
+				undefined, // customModePrompts
+				customModes, // customModes
+				undefined, // globalCustomInstructions
+				undefined, // diffEnabled
+				experiments,
+				true, // enableMcpServerCreation
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+				undefined, // partialReadsEnabled
+			)
+
+			// Should contain the default sections
+			expect(prompt).toContain("TOOL USE")
+			expect(prompt).toContain("CAPABILITIES")
+			expect(prompt).toContain("OBJECTIVE")
+		})
+
+		it("should prioritize file-based system prompt over config systemPrompt", async () => {
+			// Mock fs to return a file-based system prompt
+			const fsMock = vi.mocked(await import("fs/promises"))
+			fsMock.readFile.mockResolvedValueOnce("File-based system prompt content.")
+
+			const customSystemPrompt = "Config-based system prompt content."
+
+			const customModes: ModeConfig[] = [
+				{
+					slug: "priority-mode",
+					name: "Priority Mode",
+					roleDefinition: "You are a priority assistant.",
+					customInstructions: "Test instructions.",
+					groups: ["read"] as const,
+					systemPrompt: customSystemPrompt,
+				},
+			]
+
+			const prompt = await SYSTEM_PROMPT(
+				mockContext,
+				"/test/path",
+				false,
+				undefined, // mcpHub
+				undefined, // diffStrategy
+				undefined, // browserViewportSize
+				"priority-mode", // mode
+				undefined, // customModePrompts
+				customModes, // customModes
+				undefined, // globalCustomInstructions
+				undefined, // diffEnabled
+				experiments,
+				true, // enableMcpServerCreation
+				undefined, // language
+				undefined, // rooIgnoreInstructions
+				undefined, // partialReadsEnabled
+			)
+
+			// Should contain the file-based system prompt
+			expect(prompt).toContain("File-based system prompt content.")
+
+			// Should NOT contain the config-based systemPrompt
+			expect(prompt).not.toContain(customSystemPrompt)
+		})
+	})
+
 	afterAll(() => {
 		vi.restoreAllMocks()
 	})
