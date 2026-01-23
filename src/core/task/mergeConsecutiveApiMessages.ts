@@ -34,8 +34,8 @@ export function mergeConsecutiveApiMessages(messages: ApiMessage[], options?: { 
 			prev &&
 			prev.role === msg.role &&
 			mergeRoles.has(msg.role) &&
-			// Keep summary/truncation markers isolated so rewind semantics stay clear.
-			!prev.isSummary &&
+			// Allow merging regular messages into a summary (API-only shaping),
+			// but never merge a summary into something else.
 			!msg.isSummary &&
 			!prev.isTruncationMarker &&
 			!msg.isTruncationMarker
