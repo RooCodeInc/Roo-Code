@@ -2,6 +2,8 @@ import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 
+import { settingDefaults } from "@roo-code/types"
+
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
@@ -59,11 +61,13 @@ export const NotificationSettings = ({
 									min={0.1}
 									max={2.0}
 									step={0.01}
-									value={[ttsSpeed ?? 1.0]}
+									value={[ttsSpeed ?? settingDefaults.ttsSpeed]}
 									onValueChange={([value]) => setCachedStateField("ttsSpeed", value)}
 									data-testid="tts-speed-slider"
 								/>
-								<span className="w-10">{((ttsSpeed ?? 1.0) * 100).toFixed(0)}%</span>
+								<span className="w-10">
+									{((ttsSpeed ?? settingDefaults.ttsSpeed) * 100).toFixed(0)}%
+								</span>
 							</div>
 						</SearchableSetting>
 					</div>
@@ -98,11 +102,13 @@ export const NotificationSettings = ({
 									min={0}
 									max={1}
 									step={0.01}
-									value={[soundVolume ?? 0.5]}
+									value={[soundVolume ?? settingDefaults.soundVolume]}
 									onValueChange={([value]) => setCachedStateField("soundVolume", value)}
 									data-testid="sound-volume-slider"
 								/>
-								<span className="w-10">{((soundVolume ?? 0.5) * 100).toFixed(0)}%</span>
+								<span className="w-10">
+									{((soundVolume ?? settingDefaults.soundVolume) * 100).toFixed(0)}%
+								</span>
 							</div>
 						</SearchableSetting>
 					</div>

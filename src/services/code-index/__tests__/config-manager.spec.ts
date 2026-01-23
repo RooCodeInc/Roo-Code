@@ -1292,7 +1292,7 @@ describe("CodeIndexConfigManager", () => {
 				embedderProvider: "openai",
 				modelId: "text-embedding-3-large",
 				openAiOptions: { openAiNativeApiKey: "test-openai-key" },
-				ollamaOptions: { ollamaBaseUrl: undefined },
+				ollamaOptions: { ollamaBaseUrl: "" }, // Default from settingDefaults
 				geminiOptions: undefined,
 				openAiCompatibleOptions: undefined,
 				qdrantUrl: "http://qdrant.local",
@@ -1670,10 +1670,13 @@ describe("CodeIndexConfigManager", () => {
 			expect(configManager.isConfigured()).toBe(true)
 		})
 
-		it("should return false when Qdrant URL is missing", () => {
+		it("should return true when Qdrant URL is not explicitly set (uses default)", () => {
+			// Note: settingDefaults now provides a default Qdrant URL of "http://localhost:6333"
+			// so the configuration IS valid when provider-specific requirements are met
 			mockContextProxy.getGlobalState.mockReturnValue({
 				codebaseIndexEnabled: true,
 				codebaseIndexEmbedderProvider: "openai",
+				// codebaseIndexQdrantUrl not set - will use default from settingDefaults
 			})
 			mockContextProxy.getSecret.mockImplementation((key: string) => {
 				if (key === "codeIndexOpenAiKey") return "test-key"
@@ -1681,7 +1684,8 @@ describe("CodeIndexConfigManager", () => {
 			})
 
 			configManager = new CodeIndexConfigManager(mockContextProxy)
-			expect(configManager.isConfigured()).toBe(false)
+			// With settingDefaults providing a default Qdrant URL, this is now configured
+			expect(configManager.isConfigured()).toBe(true)
 		})
 
 		describe("currentModelDimension", () => {

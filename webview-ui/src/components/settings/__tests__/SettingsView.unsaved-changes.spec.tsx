@@ -126,6 +126,9 @@ vi.mock("../SlashCommandsSettings", () => ({
 vi.mock("../UISettings", () => ({
 	UISettings: vi.fn(() => <div>UISettings</div>),
 }))
+vi.mock("../IndexingSettings", () => ({
+	IndexingSettings: vi.fn(() => <div>IndexingSettings</div>),
+}))
 vi.mock("../SectionHeader", () => ({
 	SectionHeader: ({ children }: any) => <div>{children}</div>,
 }))

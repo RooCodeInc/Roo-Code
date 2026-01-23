@@ -566,13 +566,21 @@ export const webviewMessageHandler = async (
 			break
 
 		case "updateSettings":
+			// IDEAL PATTERN: Pass values directly to storage without coercing undefined to defaults.
+			// Settings that are undefined will be removed from storage, allowing users to inherit
+			// future default improvements. Defaults are applied at READ time via settingDefaults.
+			// See packages/types/src/defaults.ts for the centralized defaults registry.
 			if (message.updatedSettings) {
 				for (const [key, value] of Object.entries(message.updatedSettings)) {
 					let newValue = value
 
 					if (key === "language") {
-						newValue = value ?? "en"
-						changeLanguage(newValue as Language)
+						// Apply side effect only when value is defined
+						if (value !== undefined) {
+							changeLanguage(value as Language)
+						}
+						// Store the value as-is (undefined will reset to default on read)
+						newValue = value
 					} else if (key === "allowedCommands") {
 						const commands = value ?? []
 
@@ -594,11 +602,19 @@ export const webviewMessageHandler = async (
 							.getConfiguration(Package.name)
 							.update("deniedCommands", newValue, vscode.ConfigurationTarget.Global)
 					} else if (key === "ttsEnabled") {
-						newValue = value ?? true
-						setTtsEnabled(newValue as boolean)
+						// Apply side effect only when value is defined
+						if (value !== undefined) {
+							setTtsEnabled(value as boolean)
+						}
+						// Store the value as-is (undefined will reset to default on read)
+						newValue = value
 					} else if (key === "ttsSpeed") {
-						newValue = value ?? 1.0
-						setTtsSpeed(newValue as number)
+						// Apply side effect only when value is defined
+						if (value !== undefined) {
+							setTtsSpeed(value as number)
+						}
+						// Store the value as-is (undefined will reset to default on read)
+						newValue = value
 					} else if (key === "terminalShellIntegrationTimeout") {
 						if (value !== undefined) {
 							Terminal.setShellIntegrationTimeout(value as number)
@@ -632,12 +648,15 @@ export const webviewMessageHandler = async (
 							Terminal.setTerminalZdotdir(value as boolean)
 						}
 					} else if (key === "mcpEnabled") {
-						newValue = value ?? true
-						const mcpHub = provider.getMcpHub()
-
-						if (mcpHub) {
-							await mcpHub.handleMcpEnabledChange(newValue as boolean)
+						// Apply side effect only when value is defined
+						if (value !== undefined) {
+							const mcpHub = provider.getMcpHub()
+							if (mcpHub) {
+								await mcpHub.handleMcpEnabledChange(value as boolean)
+							}
 						}
+						// Store the value as-is (undefined will reset to default on read)
+						newValue = value
 					} else if (key === "experiments") {
 						if (!value) {
 							continue
@@ -2514,20 +2533,41 @@ export const webviewMessageHandler = async (
 			const settings = message.codeIndexSettings
 
 			try {
-				// Check if embedder provider has changed
-				const currentConfig = getGlobalState("codebaseIndexConfig") || {}
-				const embedderProviderChanged =
-					currentConfig.codebaseIndexEmbedderProvider !== settings.codebaseIndexEmbedderProvider
+				// Check if embedder provider has changed (read from flat key)
+				const currentProvider = getGlobalState("codebaseIndexEmbedderProvider")
+				const embedderProviderChanged = currentProvider !== settings.codebaseIndexEmbedderProvider
 
-				// Save global state settings atomically
+				// Save flat keys directly to globalState (no longer using nested codebaseIndexConfig)
+				await updateGlobalState("codebaseIndexEnabled", settings.codebaseIndexEnabled)
+				await updateGlobalState("codebaseIndexQdrantUrl", settings.codebaseIndexQdrantUrl)
+				await updateGlobalState("codebaseIndexEmbedderProvider", settings.codebaseIndexEmbedderProvider)
+				await updateGlobalState("codebaseIndexEmbedderBaseUrl", settings.codebaseIndexEmbedderBaseUrl)
+				await updateGlobalState("codebaseIndexEmbedderModelId", settings.codebaseIndexEmbedderModelId)
+				await updateGlobalState(
+					"codebaseIndexEmbedderModelDimension",
+					settings.codebaseIndexEmbedderModelDimension,
+				)
+				await updateGlobalState(
+					"codebaseIndexOpenAiCompatibleBaseUrl",
+					settings.codebaseIndexOpenAiCompatibleBaseUrl,
+				)
+				await updateGlobalState("codebaseIndexBedrockRegion", settings.codebaseIndexBedrockRegion)
+				await updateGlobalState("codebaseIndexBedrockProfile", settings.codebaseIndexBedrockProfile)
+				await updateGlobalState("codebaseIndexSearchMaxResults", settings.codebaseIndexSearchMaxResults)
+				await updateGlobalState("codebaseIndexSearchMinScore", settings.codebaseIndexSearchMinScore)
+				await updateGlobalState(
+					"codebaseIndexOpenRouterSpecificProvider",
+					settings.codebaseIndexOpenRouterSpecificProvider,
+				)
+
+				// Build config object for response (for backward compatibility with webview)
 				const globalStateConfig = {
-					...currentConfig,
 					codebaseIndexEnabled: settings.codebaseIndexEnabled,
 					codebaseIndexQdrantUrl: settings.codebaseIndexQdrantUrl,
 					codebaseIndexEmbedderProvider: settings.codebaseIndexEmbedderProvider,
 					codebaseIndexEmbedderBaseUrl: settings.codebaseIndexEmbedderBaseUrl,
 					codebaseIndexEmbedderModelId: settings.codebaseIndexEmbedderModelId,
-					codebaseIndexEmbedderModelDimension: settings.codebaseIndexEmbedderModelDimension, // Generic dimension
+					codebaseIndexEmbedderModelDimension: settings.codebaseIndexEmbedderModelDimension,
 					codebaseIndexOpenAiCompatibleBaseUrl: settings.codebaseIndexOpenAiCompatibleBaseUrl,
 					codebaseIndexBedrockRegion: settings.codebaseIndexBedrockRegion,
 					codebaseIndexBedrockProfile: settings.codebaseIndexBedrockProfile,
@@ -2535,9 +2575,6 @@ export const webviewMessageHandler = async (
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
 					codebaseIndexOpenRouterSpecificProvider: settings.codebaseIndexOpenRouterSpecificProvider,
 				}
-
-				// Save global state first
-				await updateGlobalState("codebaseIndexConfig", globalStateConfig)
 
 				// Save secrets directly using context proxy
 				if (settings.codeIndexOpenAiKey !== undefined) {
@@ -2801,6 +2838,27 @@ export const webviewMessageHandler = async (
 					},
 				})
 			}
+			break
+		}
+		case "stopIndexing": {
+			try {
+				const manager = provider.getCurrentWorkspaceCodeIndexManager()
+				if (manager) {
+					manager.stopWatcher()
+					provider.log("Indexing stopped by user request")
+				}
+			} catch (error) {
+				provider.log(`Error stopping indexing: ${error instanceof Error ? error.message : String(error)}`)
+			}
+			break
+		}
+		case "openSettings": {
+			// Navigate to Settings view, optionally to a specific section/tab
+			provider.postMessageToWebview({
+				type: "action",
+				action: "settingsButtonClicked",
+				tab: message.section,
+			})
 			break
 		}
 		case "focusPanelRequest": {

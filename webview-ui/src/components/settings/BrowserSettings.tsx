@@ -2,6 +2,8 @@ import { VSCodeCheckbox, VSCodeTextField, VSCodeLink } from "@vscode/webview-ui-
 import { HTMLAttributes, useEffect, useMemo, useState } from "react"
 import { Trans } from "react-i18next"
 
+import { settingDefaults } from "@roo-code/types"
+
 import {
 	Select,
 	SelectContent,
@@ -171,10 +173,10 @@ export const BrowserSettings = ({
 									min={1}
 									max={100}
 									step={1}
-									value={[screenshotQuality ?? 75]}
+									value={[screenshotQuality ?? settingDefaults.screenshotQuality]}
 									onValueChange={([value]) => setCachedStateField("screenshotQuality", value)}
 								/>
-								<span className="w-10">{screenshotQuality ?? 75}%</span>
+								<span className="w-10">{screenshotQuality ?? settingDefaults.screenshotQuality}%</span>
 							</div>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:browser.screenshotQuality.description")}

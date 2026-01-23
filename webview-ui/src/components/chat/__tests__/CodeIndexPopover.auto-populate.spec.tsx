@@ -1,11 +1,12 @@
 /**
- * Tests for the auto-population feature in CodeIndexPopover
+ * Tests for the auto-population feature in IndexingSettings
+ * (Previously in CodeIndexPopover, now moved to SettingsView > IndexingSettings)
  *
  * Feature: When switching to Bedrock provider in code indexing configuration,
  * automatically populate Region and Profile fields from main API configuration
  * if the main API is also configured for Bedrock.
  *
- * Implementation location: CodeIndexPopover.tsx lines 737-752
+ * Implementation location: IndexingSettings.tsx handleProviderChange function
  *
  * These tests verify the core logic of the auto-population feature by directly
  * testing the onValueChange handler behavior.
@@ -19,7 +20,7 @@ type TestApiConfiguration = {
 	awsProfile?: string
 }
 
-describe("CodeIndexPopover - Auto-population Feature Logic", () => {
+describe("IndexingSettings - Auto-population Feature Logic", () => {
 	/**
 	 * Test 1: Happy Path - Auto-population works
 	 * Main API provider is Bedrock with region "us-west-2" and profile "my-profile"

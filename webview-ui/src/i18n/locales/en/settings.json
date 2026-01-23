@@ -36,6 +36,7 @@
 		"notifications": "Notifications",
 		"contextManagement": "Context",
 		"terminal": "Terminal",
+		"indexing": "Indexing",
 		"slashCommands": "Slash Commands",
 		"prompts": "Prompts",
 		"ui": "UI",
@@ -145,7 +146,10 @@
 		"searchMaxResultsDescription": "Maximum number of search results to return when querying the codebase index. Higher values provide more context but may include less relevant results.",
 		"resetToDefault": "Reset to default",
 		"startIndexingButton": "Start Indexing",
+		"stopIndexingButton": "Stop Indexing",
 		"clearIndexDataButton": "Clear Index Data",
+		"configureInSettings": "Configure in Settings →",
+		"enableInSettings": "Indexing is disabled. Enable it in Settings.",
 		"unsavedSettingsMessage": "Please save your settings before starting the indexing process.",
 		"clearDataDialog": {
 			"title": "Are you sure?",

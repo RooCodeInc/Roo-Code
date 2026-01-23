@@ -70,6 +70,15 @@ vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 			role="textbox"
 		/>
 	),
+	VSCodeDropdown: ({ children, value, onChange, "data-testid": dataTestId }: any) => (
+		<select
+			value={value}
+			onChange={(e) => onChange?.({ target: { value: e.target.value } })}
+			data-testid={dataTestId}>
+			{children}
+		</select>
+	),
+	VSCodeOption: ({ children, value }: any) => <option value={value}>{children}</option>,
 }))
 
 vi.mock("../../../components/common/Tab", () => ({

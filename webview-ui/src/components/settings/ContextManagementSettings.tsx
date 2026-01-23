@@ -5,6 +5,7 @@ import { VSCodeCheckbox, VSCodeTextArea } from "@vscode/webview-ui-toolkit/react
 import { FoldVertical } from "lucide-react"
 
 import { supportPrompt } from "@roo/support-prompt"
+import { settingDefaults } from "@roo-code/types"
 
 import { cn } from "@/lib/utils"
 import {
@@ -29,8 +30,8 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	autoCondenseContext: boolean
 	autoCondenseContextPercent: number
 	listApiConfigMeta: any[]
-	maxOpenTabsContext: number
-	maxWorkspaceFiles: number
+	maxOpenTabsContext?: number
+	maxWorkspaceFiles?: number
 	showRooIgnoredFiles?: boolean
 	enableSubfolderRules?: boolean
 	maxReadFileLine?: number
@@ -40,7 +41,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	profileThresholds?: Record<string, number>
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
-	writeDelayMs: number
+	writeDelayMs?: number
 	includeCurrentTime?: boolean
 	includeCurrentCost?: boolean
 	maxGitStatusFiles?: number
@@ -161,11 +162,11 @@ export const ContextManagementSettings = ({
 							min={0}
 							max={500}
 							step={1}
-							value={[maxOpenTabsContext ?? 20]}
+							value={[maxOpenTabsContext ?? settingDefaults.maxOpenTabsContext]}
 							onValueChange={([value]) => setCachedStateField("maxOpenTabsContext", value)}
 							data-testid="open-tabs-limit-slider"
 						/>
-						<span className="w-10">{maxOpenTabsContext ?? 20}</span>
+						<span className="w-10">{maxOpenTabsContext ?? settingDefaults.maxOpenTabsContext}</span>
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.openTabs.description")}
@@ -184,11 +185,11 @@ export const ContextManagementSettings = ({
 							min={0}
 							max={500}
 							step={1}
-							value={[maxWorkspaceFiles ?? 200]}
+							value={[maxWorkspaceFiles ?? settingDefaults.maxWorkspaceFiles]}
 							onValueChange={([value]) => setCachedStateField("maxWorkspaceFiles", value)}
 							data-testid="workspace-files-limit-slider"
 						/>
-						<span className="w-10">{maxWorkspaceFiles ?? 200}</span>
+						<span className="w-10">{maxWorkspaceFiles ?? settingDefaults.maxWorkspaceFiles}</span>
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.workspaceFiles.description")}
@@ -207,11 +208,11 @@ export const ContextManagementSettings = ({
 							min={0}
 							max={50}
 							step={1}
-							value={[maxGitStatusFiles ?? 0]}
+							value={[maxGitStatusFiles ?? settingDefaults.maxGitStatusFiles]}
 							onValueChange={([value]) => setCachedStateField("maxGitStatusFiles", value)}
 							data-testid="max-git-status-files-slider"
 						/>
-						<span className="w-10">{maxGitStatusFiles ?? 0}</span>
+						<span className="w-10">{maxGitStatusFiles ?? settingDefaults.maxGitStatusFiles}</span>
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.maxGitStatusFiles.description")}
@@ -230,11 +231,13 @@ export const ContextManagementSettings = ({
 							min={1}
 							max={100}
 							step={1}
-							value={[Math.max(1, maxConcurrentFileReads ?? 5)]}
+							value={[Math.max(1, maxConcurrentFileReads ?? settingDefaults.maxConcurrentFileReads)]}
 							onValueChange={([value]) => setCachedStateField("maxConcurrentFileReads", value)}
 							data-testid="max-concurrent-file-reads-slider"
 						/>
-						<span className="w-10 text-sm">{Math.max(1, maxConcurrentFileReads ?? 5)}</span>
+						<span className="w-10 text-sm">
+							{Math.max(1, maxConcurrentFileReads ?? settingDefaults.maxConcurrentFileReads)}
+						</span>
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:contextManagement.maxConcurrentFileReads.description")}
@@ -286,7 +289,7 @@ export const ContextManagementSettings = ({
 								type="number"
 								pattern="-?[0-9]*"
 								className="w-24 bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border px-2 py-1 rounded text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50"
-								value={maxReadFileLine ?? -1}
+								value={maxReadFileLine ?? settingDefaults.maxReadFileLine}
 								min={-1}
 								onChange={(e) => {
 									const newValue = parseInt(e.target.value, 10)
@@ -296,11 +299,11 @@ export const ContextManagementSettings = ({
 								}}
 								onClick={(e) => e.currentTarget.select()}
 								data-testid="max-read-file-line-input"
-								disabled={maxReadFileLine === -1}
+								disabled={(maxReadFileLine ?? settingDefaults.maxReadFileLine) === -1}
 							/>
 							<span>{t("settings:contextManagement.maxReadFile.lines")}</span>
 							<VSCodeCheckbox
-								checked={maxReadFileLine === -1}
+								checked={(maxReadFileLine ?? settingDefaults.maxReadFileLine) === -1}
 								onChange={(e: any) =>
 									setCachedStateField("maxReadFileLine", e.target.checked ? -1 : 500)
 								}
@@ -325,7 +328,7 @@ export const ContextManagementSettings = ({
 								type="number"
 								pattern="[0-9]*"
 								className="w-24 bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border px-2 py-1 rounded text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-								value={maxImageFileSize ?? 5}
+								value={maxImageFileSize ?? settingDefaults.maxImageFileSize}
 								min={1}
 								max={100}
 								onChange={(e) => {
@@ -356,7 +359,7 @@ export const ContextManagementSettings = ({
 								type="number"
 								pattern="[0-9]*"
 								className="w-24 bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border px-2 py-1 rounded text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-								value={maxTotalImageSize ?? 20}
+								value={maxTotalImageSize ?? settingDefaults.maxTotalImageSize}
 								min={1}
 								max={500}
 								onChange={(e) => {
@@ -408,7 +411,7 @@ export const ContextManagementSettings = ({
 							value={[
 								maxDiagnosticMessages !== undefined && maxDiagnosticMessages <= 0
 									? 100
-									: (maxDiagnosticMessages ?? 50),
+									: (maxDiagnosticMessages ?? settingDefaults.maxDiagnosticMessages),
 							]}
 							onValueChange={([value]) => {
 								// When slider reaches 100, set to -1 (unlimited)
@@ -421,28 +424,30 @@ export const ContextManagementSettings = ({
 							aria-valuenow={
 								maxDiagnosticMessages !== undefined && maxDiagnosticMessages <= 0
 									? 100
-									: (maxDiagnosticMessages ?? 50)
+									: (maxDiagnosticMessages ?? settingDefaults.maxDiagnosticMessages)
 							}
 							aria-valuetext={
 								(maxDiagnosticMessages !== undefined && maxDiagnosticMessages <= 0) ||
 								maxDiagnosticMessages === 100
 									? t("settings:contextManagement.diagnostics.maxMessages.unlimitedLabel")
-									: `${maxDiagnosticMessages ?? 50} ${t("settings:contextManagement.diagnostics.maxMessages.label")}`
+									: `${maxDiagnosticMessages ?? settingDefaults.maxDiagnosticMessages} ${t("settings:contextManagement.diagnostics.maxMessages.label")}`
 							}
 						/>
 						<span className="w-20 text-sm font-medium">
 							{(maxDiagnosticMessages !== undefined && maxDiagnosticMessages <= 0) ||
 							maxDiagnosticMessages === 100
 								? t("settings:contextManagement.diagnostics.maxMessages.unlimitedLabel")
-								: (maxDiagnosticMessages ?? 50)}
+								: (maxDiagnosticMessages ?? settingDefaults.maxDiagnosticMessages)}
 						</span>
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={() => setCachedStateField("maxDiagnosticMessages", 50)}
+							onClick={() =>
+								setCachedStateField("maxDiagnosticMessages", settingDefaults.maxDiagnosticMessages)
+							}
 							title={t("settings:contextManagement.diagnostics.maxMessages.resetTooltip")}
 							className="p-1 h-6 w-6"
-							disabled={maxDiagnosticMessages === 50}>
+							disabled={maxDiagnosticMessages === settingDefaults.maxDiagnosticMessages}>
 							<span className="codicon codicon-discard" />
 						</Button>
 					</div>
@@ -463,11 +468,11 @@ export const ContextManagementSettings = ({
 							min={0}
 							max={5000}
 							step={100}
-							value={[writeDelayMs]}
+							value={[writeDelayMs ?? settingDefaults.writeDelayMs]}
 							onValueChange={([value]) => setCachedStateField("writeDelayMs", value)}
 							data-testid="write-delay-slider"
 						/>
-						<span className="w-20">{writeDelayMs}ms</span>
+						<span className="w-20">{writeDelayMs ?? settingDefaults.writeDelayMs}ms</span>
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.diagnostics.delayAfterWrite.description")}

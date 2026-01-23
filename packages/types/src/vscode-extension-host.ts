@@ -346,19 +346,21 @@ export type ExtensionState = Pick<
 
 	writeDelayMs: number
 
-	enableCheckpoints: boolean
-	checkpointTimeout: number // Timeout for checkpoint initialization in seconds (default: 15)
-	maxOpenTabsContext: number // Maximum number of VSCode open tabs to include in context (0-500)
-	maxWorkspaceFiles: number // Maximum number of files to include in current working directory details (0-500)
-	showRooIgnoredFiles: boolean // Whether to show .rooignore'd files in listings
-	enableSubfolderRules: boolean // Whether to load rules from subdirectories
-	maxReadFileLine: number // Maximum number of lines to read from a file before truncating
-	maxImageFileSize: number // Maximum size of image files to process in MB
-	maxTotalImageSize: number // Maximum total size for all images in a single read operation in MB
+	// These fields are optional to support the "reset to default" pattern.
+	// When undefined, consumers should apply defaults from settingDefaults.
+	enableCheckpoints?: boolean
+	checkpointTimeout?: number // Timeout for checkpoint initialization in seconds (default: 15)
+	maxOpenTabsContext?: number // Maximum number of VSCode open tabs to include in context (0-500)
+	maxWorkspaceFiles?: number // Maximum number of files to include in current working directory details (0-500)
+	showRooIgnoredFiles?: boolean // Whether to show .rooignore'd files in listings
+	enableSubfolderRules?: boolean // Whether to load rules from subdirectories
+	maxReadFileLine?: number // Maximum number of lines to read from a file before truncating
+	maxImageFileSize?: number // Maximum size of image files to process in MB
+	maxTotalImageSize?: number // Maximum total size for all images in a single read operation in MB
 
 	experiments: Experiments // Map of experiment IDs to their enabled state
 
-	mcpEnabled: boolean
+	mcpEnabled?: boolean
 	enableMcpServerCreation: boolean
 
 	mode: string
@@ -537,7 +539,9 @@ export interface WebviewMessage {
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
 		| "startIndexing"
+		| "stopIndexing"
 		| "clearIndexData"
+		| "openSettings"
 		| "indexingStatusUpdate"
 		| "indexCleared"
 		| "focusPanelRequest"
@@ -603,6 +607,7 @@ export interface WebviewMessage {
 		| "checkoutBranch"
 		| "browseForWorktreePath"
 	text?: string
+	section?: string // For openSettings: the target section/tab to open
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
 	disabled?: boolean

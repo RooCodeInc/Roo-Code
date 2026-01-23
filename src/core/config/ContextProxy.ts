@@ -21,6 +21,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { logger } from "../../utils/logging"
 import { supportPrompt } from "../../shared/support-prompt"
+import { runSettingsMigrations } from "../../utils/settingsMigrations"
 
 type GlobalStateKey = keyof GlobalState
 type SecretStateKey = keyof SecretState
@@ -98,6 +99,9 @@ export class ContextProxy {
 
 		// Migration: Clear old default condensing prompt so users get the improved v2 default
 		await this.migrateOldDefaultCondensingPrompt()
+
+		// Migration: Clear hardcoded defaults so users can benefit from future default changes
+		await runSettingsMigrations(this)
 
 		this._isInitialized = true
 	}

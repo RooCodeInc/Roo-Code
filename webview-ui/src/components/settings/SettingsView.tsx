@@ -29,13 +29,14 @@ import {
 	Users2,
 	ArrowLeft,
 	GitCommitVertical,
+	Search,
 } from "lucide-react"
 
 import {
 	type ProviderSettings,
 	type ExperimentId,
 	type TelemetrySetting,
-	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
+	type CodebaseIndexConfig,
 	ImageGenerationProvider,
 } from "@roo-code/types"
 
@@ -83,6 +84,7 @@ import McpView from "../mcp/McpView"
 import { WorktreesView } from "../worktrees/WorktreesView"
 import { SettingsSearch } from "./SettingsSearch"
 import { useSearchIndexRegistry, SearchIndexProvider } from "./useSettingsSearch"
+import { IndexingSettings } from "./IndexingSettings"
 
 export const settingsTabsContainer = "flex flex-1 overflow-hidden [&.narrow_.tab-label]:hidden"
 export const settingsTabList =
@@ -103,6 +105,7 @@ export const sectionNames = [
 	"checkpoints",
 	"notifications",
 	"contextManagement",
+	"indexing",
 	"terminal",
 	"modes",
 	"mcp",
@@ -211,6 +214,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
+		codebaseIndexConfig,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -351,23 +355,43 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		})
 	}, [])
 
+	const setCodebaseIndexConfig = useCallback((updates: Partial<CodebaseIndexConfig>) => {
+		setCachedState((prevState) => {
+			const newConfig = { ...prevState.codebaseIndexConfig, ...updates }
+			const previousStr = JSON.stringify(prevState.codebaseIndexConfig)
+			const newStr = JSON.stringify(newConfig)
+
+			if (previousStr === newStr) {
+				return prevState
+			}
+
+			setChangeDetected(true)
+			return { ...prevState, codebaseIndexConfig: newConfig }
+		})
+	}, [])
+
 	const isSettingValid = !errorMessage
 
 	const handleSubmit = () => {
 		if (isSettingValid) {
+			// IDEAL PATTERN: Pass values directly without coercing undefined to defaults.
+			// Settings that are undefined will be removed from storage, allowing users
+			// to inherit future default improvements. Defaults are applied at READ time,
+			// not WRITE time. See packages/types/src/defaults.ts for the centralized defaults.
 			vscode.postMessage({
 				type: "updateSettings",
 				updatedSettings: {
 					language,
-					alwaysAllowReadOnly: alwaysAllowReadOnly ?? undefined,
-					alwaysAllowReadOnlyOutsideWorkspace: alwaysAllowReadOnlyOutsideWorkspace ?? undefined,
-					alwaysAllowWrite: alwaysAllowWrite ?? undefined,
-					alwaysAllowWriteOutsideWorkspace: alwaysAllowWriteOutsideWorkspace ?? undefined,
-					alwaysAllowWriteProtected: alwaysAllowWriteProtected ?? undefined,
-					alwaysAllowExecute: alwaysAllowExecute ?? undefined,
-					alwaysAllowBrowser: alwaysAllowBrowser ?? undefined,
+					alwaysAllowReadOnly,
+					alwaysAllowReadOnlyOutsideWorkspace,
+					alwaysAllowWrite,
+					alwaysAllowWriteOutsideWorkspace,
+					alwaysAllowWriteProtected,
+					alwaysAllowExecute,
+					alwaysAllowBrowser,
 					alwaysAllowMcp,
 					alwaysAllowModeSwitch,
+					// Commands arrays: empty array is a valid user choice, so pass through
 					allowedCommands: allowedCommands ?? [],
 					deniedCommands: deniedCommands ?? [],
 					// Note that we use `null` instead of `undefined` since `JSON.stringify`
@@ -377,19 +401,22 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					allowedMaxCost: allowedMaxCost ?? null,
 					autoCondenseContext,
 					autoCondenseContextPercent,
-					browserToolEnabled: browserToolEnabled ?? true,
-					soundEnabled: soundEnabled ?? true,
-					soundVolume: soundVolume ?? 0.5,
+					// Pass values directly - defaults applied at read time
+					browserToolEnabled,
+					soundEnabled,
+					soundVolume,
 					ttsEnabled,
 					ttsSpeed,
-					enableCheckpoints: enableCheckpoints ?? false,
-					checkpointTimeout: checkpointTimeout ?? DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
-					browserViewportSize: browserViewportSize ?? "900x600",
+					enableCheckpoints,
+					checkpointTimeout,
+					browserViewportSize,
 					remoteBrowserHost: remoteBrowserEnabled ? remoteBrowserHost : undefined,
-					remoteBrowserEnabled: remoteBrowserEnabled ?? false,
+					remoteBrowserEnabled,
 					writeDelayMs,
-					screenshotQuality: screenshotQuality ?? 75,
-					terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? 30_000,
+					screenshotQuality,
+					terminalOutputLineLimit,
+					terminalOutputCharacterLimit,
+					terminalShellIntegrationTimeout,
 					terminalShellIntegrationDisabled,
 					terminalCommandDelay,
 					terminalPowershellCounter,
@@ -399,32 +426,41 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					terminalZdotdir,
 					terminalOutputPreviewSize: terminalOutputPreviewSize ?? "medium",
 					mcpEnabled,
-					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
-					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
-					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
-					enableSubfolderRules: enableSubfolderRules ?? false,
-					maxReadFileLine: maxReadFileLine ?? -1,
-					maxImageFileSize: maxImageFileSize ?? 5,
-					maxTotalImageSize: maxTotalImageSize ?? 20,
-					maxConcurrentFileReads: cachedState.maxConcurrentFileReads ?? 5,
-					includeDiagnosticMessages:
-						includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
-					maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
+					// Apply validation bounds only when value is defined, otherwise pass undefined
+					maxOpenTabsContext:
+						maxOpenTabsContext !== undefined
+							? Math.min(Math.max(0, maxOpenTabsContext), 500)
+							: undefined,
+					maxWorkspaceFiles:
+						maxWorkspaceFiles !== undefined
+							? Math.min(Math.max(0, maxWorkspaceFiles), 500)
+							: undefined,
+					showRooIgnoredFiles,
+					enableSubfolderRules,
+					maxReadFileLine,
+					maxImageFileSize,
+					maxTotalImageSize,
+					maxConcurrentFileReads,
+					includeDiagnosticMessages,
+					maxDiagnosticMessages,
 					alwaysAllowSubtasks,
-					alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
+					alwaysAllowFollowupQuestions,
 					followupAutoApproveTimeoutMs,
-					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
-					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
-					enterBehavior: enterBehavior ?? "send",
-					includeCurrentTime: includeCurrentTime ?? true,
-					includeCurrentCost: includeCurrentCost ?? true,
-					maxGitStatusFiles: maxGitStatusFiles ?? 0,
+					includeTaskHistoryInEnhance,
+					reasoningBlockCollapsed,
+					enterBehavior,
+					includeCurrentTime,
+					includeCurrentCost,
+					maxGitStatusFiles,
 					profileThresholds,
 					imageGenerationProvider,
 					openRouterImageApiKey,
 					openRouterImageGenerationSelectedModel,
 					experiments,
 					customSupportPrompts,
+					// Indexing settings - pass the whole nested config for now
+					// Backend will extract flat keys during migration
+					codebaseIndexConfig,
 				},
 			})
 
@@ -520,6 +556,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "checkpoints", icon: GitCommitVertical },
 			{ id: "notifications", icon: Bell },
 			{ id: "contextManagement", icon: Database },
+			{ id: "indexing", icon: Search },
 			{ id: "terminal", icon: SquareTerminal },
 			{ id: "prompts", icon: MessageSquare },
 			{ id: "worktrees", icon: GitBranch },
@@ -862,6 +899,14 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								customSupportPrompts={customSupportPrompts || {}}
 								setCustomSupportPrompts={setCustomSupportPromptsField}
 								setCachedStateField={setCachedStateField}
+							/>
+						)}
+
+						{/* Indexing Section */}
+						{renderTab === "indexing" && (
+							<IndexingSettings
+								codebaseIndexConfig={codebaseIndexConfig}
+								onConfigChange={setCodebaseIndexConfig}
 							/>
 						)}
 
