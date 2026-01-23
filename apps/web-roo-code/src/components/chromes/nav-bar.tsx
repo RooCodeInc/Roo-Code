@@ -13,7 +13,7 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 import { useLogoSrc } from "@/lib/hooks/use-logo-src"
 import { ScrollButton } from "@/components/ui"
 import ThemeToggle from "@/components/chromes/theme-toggle"
-import { Brain, ChevronDown, Cloud, Puzzle, X } from "lucide-react"
+import { Brain, ChevronDown, Cloud, Puzzle, Slack, X } from "lucide-react"
 
 interface NavBarProps {
 	stars: string | null
@@ -55,10 +55,16 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 								Roo Code Cloud
 							</Link>
 							<Link
+								href="/slack"
+								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
+								<Slack className="size-3 inline mr-2 -mt-0.5" />
+								Roo Code for Slack
+							</Link>
+							<Link
 								href="/provider"
 								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
 								<Brain className="size-3 inline mr-2 -mt-0.5" />
-								Roo Code Cloud Provider
+								Roo Code Router
 							</Link>
 						</div>
 					</div>
@@ -191,10 +197,16 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 								Roo Code Cloud
 							</Link>
 							<Link
+								href="/slack"
+								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
+								onClick={() => setIsMenuOpen(false)}>
+								Roo Code for Slack
+							</Link>
+							<Link
 								href="/provider"
 								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
 								onClick={() => setIsMenuOpen(false)}>
-								Roo Code Cloud Provider
+								Roo Code Router
 							</Link>
 						</div>
 

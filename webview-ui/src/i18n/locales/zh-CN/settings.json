@@ -1,4 +1,5 @@
 {
+	"back": "返回任务视图",
 	"common": {
 		"save": "保存",
 		"done": "完成",
@@ -7,6 +8,10 @@
 		"select": "选择",
 		"add": "添加标头",
 		"remove": "移除"
+	},
+	"search": {
+		"placeholder": "搜索设置...",
+		"noResults": "未找到设置"
 	},
 	"header": {
 		"title": "设置",
@@ -55,7 +60,11 @@
 		},
 		"community": "想要获取使用技巧或与其他 Roo Code 用户交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "联系与社区",
-		"manageSettings": "管理设置"
+		"manageSettings": "管理设置",
+		"debugMode": {
+			"label": "启用调试模式",
+			"description": "启用调试模式以在任务标题栏显示额外按钮，用于在临时文件中查看 API 对话历史和 UI 消息的格式化 JSON。"
+		}
 	},
 	"slashCommands": {
 		"description": "管理您的斜杠命令，以快速执行自定义工作流和操作。 <DocsLink>了解更多</DocsLink>"
@@ -275,10 +284,40 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API 密钥",
 		"getVercelAiGatewayApiKey": "获取 Vercel AI Gateway API 密钥",
 		"apiKeyStorageNotice": "API 密钥安全存储在 VSCode 的密钥存储中",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "使用自定义基础 URL",
 		"useReasoning": "启用推理",
 		"useHostHeader": "使用自定义 Host 标头",
-		"useLegacyFormat": "使用传统 OpenAI API 格式",
 		"customHeaders": "自定义标头",
 		"headerName": "标头名称",
 		"headerValue": "标头值",
@@ -662,6 +701,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git 状态最大文件数",
 			"description": "git状态上下文中包含的最大文件条目数。设为0禁用。分支信息和提交在>0时始终显示。"
+		},
+		"enableSubfolderRules": {
+			"label": "启用子文件夹规则",
+			"description": "递归发现并加载子目录中的 .roo/rules 和 AGENTS.md 文件。适用于具有每包规则的 monorepo。"
 		}
 	},
 	"terminal": {
@@ -724,14 +767,6 @@
 	},
 	"advancedSettings": {
 		"title": "高级设置"
-	},
-	"toolProtocol": {
-		"label": "工具调用协议",
-		"description": "选择 Roo 如何与 API 通信。原生使用提供商的函数调用 API，而 XML 使用 XML 格式的工具定义。",
-		"default": "默认",
-		"xml": "XML",
-		"native": "原生",
-		"currentDefault": "默认: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {

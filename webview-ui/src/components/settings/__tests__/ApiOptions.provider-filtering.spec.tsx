@@ -80,6 +80,17 @@ vi.mock("@src/components/ui", () => ({
 	CollapsibleContent: ({ children }: any) => <div>{children}</div>,
 	Slider: ({ children, ...props }: any) => <div {...props}>{children}</div>,
 	Button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+	// Add Popover components for ModelPicker
+	Popover: ({ children }: any) => <div>{children}</div>,
+	PopoverTrigger: ({ children }: any) => <div>{children}</div>,
+	PopoverContent: ({ children }: any) => <div>{children}</div>,
+	// Add Command components for ModelPicker
+	Command: ({ children }: any) => <div>{children}</div>,
+	CommandInput: ({ ...props }: any) => <input {...props} />,
+	CommandList: ({ children }: any) => <div>{children}</div>,
+	CommandEmpty: ({ children }: any) => <div>{children}</div>,
+	CommandGroup: ({ children }: any) => <div>{children}</div>,
+	CommandItem: ({ children, ...props }: any) => <div {...props}>{children}</div>,
 }))
 
 describe("ApiOptions Provider Filtering", () => {
@@ -128,7 +139,7 @@ describe("ApiOptions Provider Filtering", () => {
 		;(MODELS_BY_PROVIDER as any).emptyProvider = {}
 
 		// Add the empty provider to PROVIDERS
-		PROVIDERS.push({ value: "emptyProvider", label: "Empty Provider" })
+		PROVIDERS.push({ value: "emptyProvider", label: "Empty Provider", proxy: false })
 
 		renderWithProviders()
 
@@ -235,7 +246,7 @@ describe("ApiOptions Provider Filtering", () => {
 		// Add an empty static provider to test
 		;(MODELS_BY_PROVIDER as any).testEmptyProvider = {}
 		// Add the provider to the PROVIDERS list
-		PROVIDERS.push({ value: "testEmptyProvider", label: "Test Empty Provider" })
+		PROVIDERS.push({ value: "testEmptyProvider", label: "Test Empty Provider", proxy: false })
 
 		// Create a mock organization allow list that allows the provider but no models
 		const allowList: OrganizationAllowList = {

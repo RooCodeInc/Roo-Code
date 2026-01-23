@@ -7,13 +7,13 @@ import {
 	VSCodePanelTab,
 	VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react"
-import { Webhook } from "lucide-react"
 
-import { McpServer } from "@roo/mcp"
+import type { McpServer } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
+import { useTooManyTools } from "@src/hooks/useTooManyTools"
 import {
 	Button,
 	Dialog,
@@ -44,15 +44,11 @@ const McpView = () => {
 	} = useExtensionState()
 
 	const { t } = useAppTranslation()
+	const { isOverThreshold, title, message } = useTooManyTools()
 
 	return (
 		<div>
-			<SectionHeader>
-				<div className="flex items-center gap-2">
-					<Webhook className="w-4" />
-					<div>{t("mcp:title")}</div>
-				</div>
-			</SectionHeader>
+			<SectionHeader>{t("mcp:title")}</SectionHeader>
 
 			<Section>
 				<div
@@ -104,6 +100,31 @@ const McpView = () => {
 								<p style={{ marginTop: "8px" }}>{t("mcp:enableServerCreation.hint")}</p>
 							</div>
 						</div>
+
+						{/* Too Many Tools Warning */}
+						{isOverThreshold && (
+							<div style={{ marginBottom: 15 }}>
+								<div
+									style={{
+										display: "flex",
+										alignItems: "center",
+										gap: "6px",
+										fontWeight: "500",
+										color: "var(--vscode-editorWarning-foreground)",
+										marginBottom: "5px",
+									}}>
+									<span className="codicon codicon-warning" />
+									{title}
+								</div>
+								<div
+									style={{
+										fontSize: "12px",
+										color: "var(--vscode-descriptionForeground)",
+									}}>
+									{message}
+								</div>
+							</div>
+						)}
 
 						{/* Server List */}
 						{servers.length > 0 && (

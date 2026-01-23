@@ -19,6 +19,7 @@ import { customToolRegistry } from "@roo-code/core"
 
 import "./utils/path" // Necessary to have access to String.prototype.toPosix.
 import { createOutputChannelLogger, createDualLogger } from "./utils/outputChannelLogger"
+import { initializeNetworkProxy } from "./utils/networkProxy"
 
 import { Package } from "./shared/package"
 import { formatLanguage } from "./shared/language"
@@ -26,7 +27,7 @@ import { ContextProxy } from "./core/config/ContextProxy"
 import { ClineProvider } from "./core/webview/ClineProvider"
 import { DIFF_VIEW_URI_SCHEME } from "./integrations/editor/DiffViewProvider"
 import { TerminalRegistry } from "./integrations/terminal/TerminalRegistry"
-import { claudeCodeOAuthManager } from "./integrations/claude-code/oauth"
+import { openAiCodexOAuthManager } from "./integrations/openai-codex/oauth"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
 import { MdmService } from "./services/mdm/MdmService"
@@ -60,6 +61,55 @@ let authStateChangedHandler: ((data: { state: AuthState; previousState: AuthStat
 let settingsUpdatedHandler: (() => void) | undefined
 let userInfoHandler: ((data: { userInfo: CloudUserInfo }) => Promise<void>) | undefined
 
+/**
+ * Check if we should auto-open the Roo Code sidebar after switching to a worktree.
+ * This is called during extension activation to handle the worktree auto-open flow.
+ */
+async function checkWorktreeAutoOpen(
+	context: vscode.ExtensionContext,
+	outputChannel: vscode.OutputChannel,
+): Promise<void> {
+	try {
+		const worktreeAutoOpenPath = context.globalState.get<string>("worktreeAutoOpenPath")
+		if (!worktreeAutoOpenPath) {
+			return
+		}
+
+		const workspaceFolders = vscode.workspace.workspaceFolders
+		if (!workspaceFolders || workspaceFolders.length === 0) {
+			return
+		}
+
+		const currentPath = workspaceFolders[0].uri.fsPath
+
+		// Normalize paths for comparison
+		const normalizePath = (p: string) => p.replace(/\/+$/, "").replace(/\\+/g, "/").toLowerCase()
+
+		// Check if current workspace matches the worktree path
+		if (normalizePath(currentPath) === normalizePath(worktreeAutoOpenPath)) {
+			// Clear the state first to prevent re-triggering
+			await context.globalState.update("worktreeAutoOpenPath", undefined)
+
+			outputChannel.appendLine(`[Worktree] Auto-opening Roo Code sidebar for worktree: ${worktreeAutoOpenPath}`)
+
+			// Open the Roo Code sidebar with a slight delay to ensure UI is ready
+			setTimeout(async () => {
+				try {
+					await vscode.commands.executeCommand("roo-cline.plusButtonClicked")
+				} catch (error) {
+					outputChannel.appendLine(
+						`[Worktree] Error auto-opening sidebar: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			}, 500)
+		}
+	} catch (error) {
+		outputChannel.appendLine(
+			`[Worktree] Error checking worktree auto-open: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+}
+
 // This method is called when your extension is activated.
 // Your extension is activated the very first time the command is executed.
 export async function activate(context: vscode.ExtensionContext) {
@@ -67,6 +117,11 @@ export async function activate(context: vscode.ExtensionContext) {
 	outputChannel = vscode.window.createOutputChannel(Package.outputChannel)
 	context.subscriptions.push(outputChannel)
 	outputChannel.appendLine(`${Package.name} extension activated - ${JSON.stringify(Package)}`)
+
+	// Initialize network proxy configuration early, before any network requests.
+	// When proxyUrl is configured, all HTTP/HTTPS traffic will be routed through it.
+	// Only applied in debug mode (F5).
+	await initializeNetworkProxy(context, outputChannel)
 
 	// Set extension path for custom tool registry to find bundled esbuild
 	customToolRegistry.setExtensionPath(context.extensionPath)
@@ -95,8 +150,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	// Initialize terminal shell execution handlers.
 	TerminalRegistry.initialize()
 
-	// Initialize Claude Code OAuth manager for direct API access.
-	claudeCodeOAuthManager.initialize(context, (message) => outputChannel.appendLine(message))
+	// Initialize OpenAI Codex OAuth manager for ChatGPT subscription-based access.
+	openAiCodexOAuthManager.initialize(context, (message) => outputChannel.appendLine(message))
 
 	// Get default commands from configuration.
 	const defaultCommands = vscode.workspace.getConfiguration(Package.name).get<string[]>("allowedCommands") || []
@@ -273,6 +328,9 @@ export async function activate(context: vscode.ExtensionContext) {
 			webviewOptions: { retainContextWhenHidden: true },
 		}),
 	)
+
+	// Check for worktree auto-open path (set when switching to a worktree)
+	await checkWorktreeAutoOpen(context, outputChannel)
 
 	// Auto-import configuration if specified in settings.
 	try {

@@ -1,4 +1,5 @@
 {
+	"back": "Görev görünümüne dön",
 	"common": {
 		"save": "Kaydet",
 		"done": "Tamamlandı",
@@ -7,6 +8,10 @@
 		"select": "Seç",
 		"add": "Başlık Ekle",
 		"remove": "Kaldır"
+	},
+	"search": {
+		"placeholder": "Ayarları ara...",
+		"noResults": "Ayar bulunamadı"
 	},
 	"header": {
 		"title": "Ayarlar",
@@ -55,7 +60,11 @@
 		},
 		"community": "İpuçları mı istiyorsunuz yoksa sadece diğer Roo Code kullanıcılarıyla takılmak mı istiyorsunuz? <redditLink>reddit.com/r/RooCode</redditLink> veya <discordLink>discord.gg/roocode</discordLink>'a katılın",
 		"contactAndCommunity": "İletişim ve Topluluk",
-		"manageSettings": "Ayarları Yönet"
+		"manageSettings": "Ayarları Yönet",
+		"debugMode": {
+			"label": "Debug modunu etkinleştir",
+			"description": "Görev başlığında API konuşma geçmişini ve UI mesajlarını geçici dosyalarda biçimlendirilmiş JSON olarak görüntülemek için ek düğmeler göstermek üzere debug modunu etkinleştirin."
+		}
 	},
 	"slashCommands": {
 		"description": "Özel iş akışlarını ve eylemleri hızlı bir şekilde yürütmek için eğik çizgi komutlarınızı yönetin. <DocsLink>Daha fazla bilgi edinin</DocsLink>"
@@ -275,10 +284,40 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Anahtarı",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API Anahtarı Al",
 		"apiKeyStorageNotice": "API anahtarları VSCode'un Gizli Depolamasında güvenli bir şekilde saklanır",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Özel temel URL kullan",
 		"useReasoning": "Akıl yürütmeyi etkinleştir",
 		"useHostHeader": "Özel Host başlığı kullan",
-		"useLegacyFormat": "Eski OpenAI API formatını kullan",
 		"customHeaders": "Özel Başlıklar",
 		"headerName": "Başlık adı",
 		"headerValue": "Başlık değeri",
@@ -662,6 +701,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git durumu maks. dosya",
 			"description": "Git durum bağlamına dahil edilecek maksimum dosya girişi sayısı. Devre dışı bırakmak için 0 olarak ayarlayın. Dal bilgisi ve commit'ler > 0 olduğunda her zaman gösterilir."
+		},
+		"enableSubfolderRules": {
+			"label": "Alt klasör kurallarını etkinleştir",
+			"description": "Alt dizinlerden .roo/rules ve AGENTS.md dosyalarını yinelemeli olarak keşfet ve yükle. Paket başına kuralları olan monorepo'lar için kullanışlı."
 		}
 	},
 	"terminal": {
@@ -724,14 +767,6 @@
 	},
 	"advancedSettings": {
 		"title": "Gelişmiş ayarlar"
-	},
-	"toolProtocol": {
-		"label": "Araç Çağrı Protokolü",
-		"description": "Roo'nun API ile nasıl iletişim kuracağını seçin. Yerel, sağlayıcının işlev çağırma API'sini kullanırken, XML, XML biçimli araç tanımlarını kullanır.",
-		"default": "Varsayılan",
-		"xml": "XML",
-		"native": "Yerel",
-		"currentDefault": "Varsayılan: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {

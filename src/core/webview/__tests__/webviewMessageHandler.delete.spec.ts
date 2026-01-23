@@ -264,7 +264,7 @@ describe("webviewMessageHandler delete functionality", () => {
 
 				// API history after condense: msg1, msg2(tagged), msg3(tagged), summary, kept1, kept2, kept3
 				getCurrentTaskMock.apiConversationHistory = [
-					{ ts: 100, role: "user", content: "First message" },
+					{ ts: 100, role: "user", content: "First message", condenseParent: condenseId },
 					{ ts: 200, role: "assistant", content: "Response 1", condenseParent: condenseId },
 					{ ts: 300, role: "user", content: "Second message", condenseParent: condenseId },
 					{ ts: 799, role: "assistant", content: "Summary", isSummary: true, condenseId },
@@ -286,6 +286,7 @@ describe("webviewMessageHandler delete functionality", () => {
 				// Expected: [msg1, msg2(tagged), msg3(tagged), summary, kept1]
 				expect(result.length).toBe(5)
 				expect(result[0].content).toBe("First message")
+				expect(result[0].condenseParent).toBe(condenseId) // Tag preserved
 				expect(result[1].content).toBe("Response 1")
 				expect(result[1].condenseParent).toBe(condenseId) // Tag preserved
 				expect(result[2].content).toBe("Second message")
@@ -310,7 +311,7 @@ describe("webviewMessageHandler delete functionality", () => {
 
 				// API history with condensed messages and summary
 				getCurrentTaskMock.apiConversationHistory = [
-					{ ts: 100, role: "user", content: "Task start" },
+					{ ts: 100, role: "user", content: "Task start", condenseParent: condenseId },
 					{ ts: 200, role: "assistant", content: "Response 1", condenseParent: condenseId },
 					{ ts: 300, role: "user", content: "Message 2", condenseParent: condenseId },
 					{ ts: 999, role: "assistant", content: "Summary", isSummary: true, condenseId },
@@ -349,7 +350,7 @@ describe("webviewMessageHandler delete functionality", () => {
 				]
 
 				getCurrentTaskMock.apiConversationHistory = [
-					{ ts: 100, role: "user", content: "First message" },
+					{ ts: 100, role: "user", content: "First message", condenseParent: condenseId1 },
 					// Messages from first condense (tagged with condenseId1)
 					{ ts: 200, role: "assistant", content: "Msg2", condenseParent: condenseId1 },
 					{ ts: 300, role: "user", content: "Msg3", condenseParent: condenseId1 },
@@ -446,7 +447,7 @@ describe("webviewMessageHandler delete functionality", () => {
 				// Summary has ts=299 (before first kept message), so it would survive basic truncation
 				// But since condense_context (ts=500) is being removed, Summary should be removed too
 				getCurrentTaskMock.apiConversationHistory = [
-					{ ts: 100, role: "user", content: "Task start" },
+					{ ts: 100, role: "user", content: "Task start", condenseParent: condenseId },
 					{ ts: 200, role: "assistant", content: "Response 1", condenseParent: condenseId },
 					// Summary timestamp is BEFORE the kept messages (this is the bug scenario)
 					{ ts: 299, role: "assistant", content: "Summary text", isSummary: true, condenseId },
@@ -503,7 +504,7 @@ describe("webviewMessageHandler delete functionality", () => {
 				]
 
 				getCurrentTaskMock.apiConversationHistory = [
-					{ ts: 100, role: "user", content: "First message" },
+					{ ts: 100, role: "user", content: "First message", condenseParent: condenseId1 },
 					// Messages from first condense (tagged with condenseId1)
 					{ ts: 200, role: "assistant", content: "Response 1", condenseParent: condenseId1 },
 					// First summary (also tagged with condenseId2 from second condense)

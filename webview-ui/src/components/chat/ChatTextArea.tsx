@@ -1,12 +1,13 @@
 import React, { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import DynamicTextArea from "react-textarea-autosize"
-import { VolumeX, Image, WandSparkles, SendHorizontal, MessageSquareX } from "lucide-react"
+import { VolumeX, Image, WandSparkles, SendHorizontal, X, ListEnd, Square } from "lucide-react"
+
+import type { ExtensionMessage } from "@roo-code/types"
 
 import { mentionRegex, mentionRegexGlobal, commandRegexGlobal, unescapeSpaces } from "@roo/context-mentions"
 import { WebviewMessage } from "@roo/WebviewMessage"
 import { Mode, getAllModes } from "@roo/modes"
-import { ExtensionMessage } from "@roo/ExtensionMessage"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
@@ -54,6 +55,10 @@ interface ChatTextAreaProps {
 	// Browser session status
 	isBrowserSessionActive?: boolean
 	showBrowserDockToggle?: boolean
+	// Stop/Queue functionality
+	isStreaming?: boolean
+	onStop?: () => void
+	onEnqueueMessage?: () => void
 }
 
 export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
@@ -76,6 +81,9 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			onCancel,
 			isBrowserSessionActive = false,
 			showBrowserDockToggle = false,
+			isStreaming = false,
+			onStop,
+			onEnqueueMessage,
 		},
 		ref,
 	) => {
@@ -1140,30 +1148,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 										<Image className="w-4 h-4" />
 									</button>
 								</StandardTooltip>
-								<StandardTooltip content={t("chat:enhancePrompt")}>
-									<button
-										aria-label={t("chat:enhancePrompt")}
-										disabled={false}
-										onClick={handleEnhancePrompt}
-										className={cn(
-											"relative inline-flex items-center justify-center",
-											"bg-transparent border-none p-1.5",
-											"rounded-md min-w-[28px] min-h-[28px]",
-											"text-vscode-descriptionForeground hover:text-vscode-foreground",
-											"transition-all duration-1000",
-											"cursor-pointer",
-											hasInputContent
-												? "opacity-50 hover:opacity-100 delay-750 pointer-events-auto"
-												: "opacity-0 pointer-events-none duration-200 delay-0",
-											hasInputContent &&
-												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
-											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-											hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
-										)}>
-										<WandSparkles className={cn("w-4 h-4", isEnhancingPrompt && "animate-spin")} />
-									</button>
-								</StandardTooltip>
-								{isEditMode && (
+								{isEditMode ? (
 									<StandardTooltip content={t("chat:cancel.title")}>
 										<button
 											aria-label={t("chat:cancel.title")}
@@ -1180,32 +1165,101 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 												"active:bg-[rgba(255,255,255,0.1)]",
 												"cursor-pointer",
 											)}>
-											<MessageSquareX className="w-4 h-4" />
+											<X className="w-4 h-4" />
+										</button>
+									</StandardTooltip>
+								) : (
+									<StandardTooltip content={t("chat:enhancePrompt")}>
+										<button
+											aria-label={t("chat:enhancePrompt")}
+											disabled={false}
+											onClick={handleEnhancePrompt}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-md min-w-[28px] min-h-[28px]",
+												"text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-1000",
+												"cursor-pointer",
+												hasInputContent
+													? "opacity-50 hover:opacity-100 delay-750 pointer-events-auto"
+													: "opacity-0 pointer-events-none duration-200 delay-0",
+												hasInputContent &&
+													"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
+											)}>
+											<WandSparkles
+												className={cn("w-4 h-4", isEnhancingPrompt && "animate-spin")}
+											/>
 										</button>
 									</StandardTooltip>
 								)}
+								{/* Queue button - shown when streaming and user has typed content */}
+								{!isEditMode && isStreaming && hasInputContent && onEnqueueMessage && (
+									<StandardTooltip content={t("chat:enqueueMessage")}>
+										<button
+											aria-label={t("chat:enqueueMessage")}
+											disabled={false}
+											onClick={onEnqueueMessage}
+											className={cn(
+												"relative inline-flex items-center justify-center",
+												"bg-transparent border-none p-1.5",
+												"rounded-md min-w-[28px] min-h-[28px]",
+												"text-vscode-descriptionForeground hover:text-vscode-foreground",
+												"transition-all duration-200",
+												"opacity-100 hover:opacity-100 pointer-events-auto",
+												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+												"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+												"active:bg-[rgba(255,255,255,0.1)]",
+												"cursor-pointer",
+											)}>
+											<ListEnd className="w-4 h-4" />
+										</button>
+									</StandardTooltip>
+								)}
+								{/* Send/Stop button - morphs based on streaming state, always visible in edit mode */}
 								<StandardTooltip
-									content={t("chat:pressToSend", { keyCombination: sendKeyCombination })}>
+									content={
+										isEditMode
+											? t("chat:pressToSend", { keyCombination: sendKeyCombination })
+											: isStreaming
+												? t("chat:stop.title")
+												: t("chat:pressToSend", { keyCombination: sendKeyCombination })
+									}>
 									<button
-										aria-label={t("chat:pressToSend", { keyCombination: sendKeyCombination })}
+										aria-label={
+											isEditMode
+												? t("chat:pressToSend", { keyCombination: sendKeyCombination })
+												: isStreaming
+													? t("chat:stop.title")
+													: t("chat:pressToSend", { keyCombination: sendKeyCombination })
+										}
 										disabled={false}
-										onClick={onSend}
+										onClick={isStreaming ? onStop : onSend}
 										className={cn(
 											"relative inline-flex items-center justify-center",
 											"bg-transparent border-none p-1.5",
-											"rounded-md min-w-[28px] min-h-[28px]",
+											"rounded-full min-w-[28px] min-h-[28px]",
 											"text-vscode-descriptionForeground hover:text-vscode-foreground",
 											"transition-all duration-200",
-											hasInputContent
+											isEditMode || isStreaming || hasInputContent
 												? "opacity-100 hover:opacity-100 pointer-events-auto"
 												: "opacity-0 pointer-events-none",
-											hasInputContent &&
+											(isEditMode || isStreaming || hasInputContent) &&
 												"hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
 											"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
-											hasInputContent && "active:bg-[rgba(255,255,255,0.1)]",
-											hasInputContent && "cursor-pointer",
+											(isEditMode || isStreaming || hasInputContent) &&
+												"active:bg-[rgba(255,255,255,0.1)]",
+											(isEditMode || isStreaming || hasInputContent) && "cursor-pointer",
+											isStreaming &&
+												"bg-vscode-button-background hover:bg-vscode-button-background",
 										)}>
-										<SendHorizontal className="w-4 h-4" />
+										{isStreaming ? (
+											<Square className="size-4 stroke-none fill-vscode-button-foreground" />
+										) : (
+											<SendHorizontal className="size-4" />
+										)}
 									</button>
 								</StandardTooltip>
 							</div>

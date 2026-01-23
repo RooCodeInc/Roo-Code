@@ -82,10 +82,15 @@
 		"title": "Terminar",
 		"tooltip": "Encerrar a tarefa atual"
 	},
+	"stop": {
+		"title": "Parar",
+		"tooltip": "Parar a tarefa atual"
+	},
 	"cancel": {
 		"title": "Cancelar",
 		"tooltip": "Cancelar a operação atual"
 	},
+	"enqueueMessage": "Adicionar mensagem à fila (será enviada após a conclusão da tarefa atual)",
 	"scrollToBottom": "Rolar para o final do chat",
 	"about": "Roo Code é uma equipe inteira de desenvolvimento de IA em seu editor.",
 	"docs": "Confira nossa <DocsLink>documentação</DocsLink> para saber mais.",
@@ -271,7 +276,8 @@
 		"title": "Detalhes do erro",
 		"copyToClipboard": "Copiar para área de transferência",
 		"copied": "Copiado!",
-		"diagnostics": "Obter informações detalhadas do erro"
+		"diagnostics": "Obter informações detalhadas do erro",
+		"proxyProvider": "Parece que você está usando um provedor baseado em proxy. Certifique-se de verificar seus registros e garantir que não está reescrevendo as solicitações do Roo."
 	},
 	"powershell": {
 		"issues": "Parece que você está tendo problemas com o Windows PowerShell, por favor veja este"
@@ -292,7 +298,7 @@
 		"triggerLabel_zero": "0 aprovados automaticamente",
 		"triggerLabel_one": "1 aprovado automaticamente",
 		"triggerLabel_other": "{{count}} aprovados automaticamente",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Pensando",
@@ -329,8 +335,9 @@
 		},
 		"release": {
 			"heading": "Novidades:",
-			"skills": "Roo agora suporta <skillsLink>Agent Skills</skillsLink> - pacotes reutilizáveis de prompts, ferramentas e recursos para estender os recursos do Roo.",
-			"nativeToolCalling": "A chamada nativa de ferramentas agora é necessária para todas as novas tarefas. <blogLink>Saiba mais</blogLink> sobre a motivação e o que fazer se encontrar problemas."
+			"chatGptUsageLimits": "Interface adicionada para rastrear seus limites de uso do ChatGPT no provedor OpenAI Codex.",
+			"claudeCodeRemoved": "Removido o provedor Claude Code descontinuado.",
+			"grokCodeFastFreeEnds": "Grok Code Fast não é mais gratuito - obrigado ao xAI pela generosa promoção!"
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
@@ -340,8 +347,14 @@
 		},
 		"careers": "Além disso, <careersLink>estamos contratando!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Custo Total (incluindo subtarefas): ${{cost}}",
+		"total": "Custo Total: ${{cost}}",
+		"includesSubtasks": "Inclui custos de subtarefas"
+	},
 	"browser": {
 		"session": "Sessão do Navegador",
+		"active": "Ativo",
 		"rooWantsToUse": "Roo quer usar o navegador",
 		"consoleLogs": "Logs do console",
 		"noNewLogs": "(Sem novos logs)",
@@ -479,5 +492,14 @@
 		"updated": "A lista de tarefas foi atualizada",
 		"completed": "Concluído",
 		"started": "Iniciado"
+	},
+	"tooManyTools": {
+		"title": "Muitas ferramentas habilitadas",
+		"toolsPart_one": "{{count}} ferramenta",
+		"toolsPart_other": "{{count}} ferramentas",
+		"serversPart_one": "{{count}} servidor MCP",
+		"serversPart_other": "{{count}} servidores MCP",
+		"messageTemplate": "Você tem {{tools}} habilitadas via {{servers}}. Um número tão alto pode confundir o modelo e levar a erros. Tente mantê-lo abaixo de {{threshold}}.",
+		"openMcpSettings": "Abrir Configurações MCP"
 	}
 }

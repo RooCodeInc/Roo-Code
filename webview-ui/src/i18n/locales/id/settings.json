@@ -1,4 +1,5 @@
 {
+	"back": "Kembali ke tampilan tugas",
 	"common": {
 		"save": "Simpan",
 		"done": "Selesai",
@@ -7,6 +8,10 @@
 		"select": "Pilih",
 		"add": "Tambah Header",
 		"remove": "Hapus"
+	},
+	"search": {
+		"placeholder": "Cari pengaturan...",
+		"noResults": "Tidak ada pengaturan yang ditemukan"
 	},
 	"header": {
 		"title": "Pengaturan",
@@ -55,7 +60,11 @@
 		},
 		"community": "Ingin tips atau hanya nongkrong dengan pengguna Roo Code lainnya? Bergabunglah dengan <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Kontak & Komunitas",
-		"manageSettings": "Kelola Pengaturan"
+		"manageSettings": "Kelola Pengaturan",
+		"debugMode": {
+			"label": "Aktifkan mode debug",
+			"description": "Aktifkan mode debug untuk menampilkan tombol tambahan di header tugas yang memungkinkan melihat riwayat percakapan API dan pesan UI sebagai JSON yang diformat dalam file sementara."
+		}
 	},
 	"slashCommands": {
 		"description": "Kelola perintah slash kamu untuk mengeksekusi alur kerja dan tindakan kustom dengan cepat. <DocsLink>Pelajari lebih lanjut</DocsLink>"
@@ -279,10 +288,40 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Key",
 		"getVercelAiGatewayApiKey": "Dapatkan Vercel AI Gateway API Key",
 		"apiKeyStorageNotice": "API key disimpan dengan aman di Secret Storage VSCode",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Gunakan base URL kustom",
 		"useReasoning": "Aktifkan reasoning",
 		"useHostHeader": "Gunakan Host header kustom",
-		"useLegacyFormat": "Gunakan format API OpenAI legacy",
 		"customHeaders": "Header Kustom",
 		"headerName": "Nama header",
 		"headerValue": "Nilai header",
@@ -666,6 +705,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status maks file",
 			"description": "Jumlah maksimum entri file untuk disertakan dalam konteks status git. Atur ke 0 untuk menonaktifkan. Info cabang dan commit selalu ditampilkan saat > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Aktifkan aturan subfolder",
+			"description": "Temukan dan muat file .roo/rules dan AGENTS.md secara rekursif dari subdirektori. Berguna untuk monorepo dengan aturan per-paket."
 		}
 	},
 	"terminal": {
@@ -728,14 +771,6 @@
 	},
 	"advancedSettings": {
 		"title": "Pengaturan lanjutan"
-	},
-	"toolProtocol": {
-		"label": "Protokol Panggilan Alat",
-		"description": "Pilih bagaimana Roo berkomunikasi dengan API. Asli menggunakan API panggilan fungsi penyedia, sedangkan XML menggunakan definisi alat berformat XML.",
-		"default": "Default",
-		"xml": "XML",
-		"native": "Asli",
-		"currentDefault": "Default: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {

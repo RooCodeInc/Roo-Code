@@ -82,10 +82,15 @@
 		"title": "Sonlandır",
 		"tooltip": "Mevcut görevi sonlandır"
 	},
+	"stop": {
+		"title": "Durdur",
+		"tooltip": "Mevcut görevi durdur"
+	},
 	"cancel": {
 		"title": "İptal",
 		"tooltip": "Mevcut işlemi iptal et"
 	},
+	"enqueueMessage": "Mesajı kuyruğa ekle (mevcut görev tamamlandıktan sonra gönderilecek)",
 	"scrollToBottom": "Sohbetin altına kaydır",
 	"about": "Roo Code, düzenleyicinizdeki bütün bir yapay zeka geliştirme ekibidir.",
 	"docs": "Daha fazla bilgi için <DocsLink>belgelerimize</DocsLink> göz atın.",
@@ -272,7 +277,8 @@
 		"title": "Hata Detayları",
 		"copyToClipboard": "Panoya Kopyala",
 		"copied": "Kopyalandı!",
-		"diagnostics": "Ayrıntılı hata bilgisi al"
+		"diagnostics": "Ayrıntılı hata bilgisi al",
+		"proxyProvider": "Proxy tabanlı bir sağlayıcı kullanıyor gibi görünüyorsun. Günlüklerini kontrol ettiğinden ve Roo'nun isteklerini yeniden yazmadığından emin ol."
 	},
 	"powershell": {
 		"issues": "Windows PowerShell ile ilgili sorunlar yaşıyor gibi görünüyorsunuz, lütfen şu konuya bakın"
@@ -293,7 +299,7 @@
 		"triggerLabel_zero": "0 otomatik onaylandı",
 		"triggerLabel_one": "1 otomatik onaylandı",
 		"triggerLabel_other": "{{count}} otomatik onaylandı",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Düşünüyor",
@@ -330,8 +336,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"skills": "Roo artık <skillsLink>Agent Skills</skillsLink>'i destekliyor - Roo'nun yeteneklerini genişletmek için yeniden kullanılabilir istem, araç ve kaynak paketleri.",
-			"nativeToolCalling": "Tüm yeni görevler için artık yerel araç çağrısı gereklidir. <blogLink>Daha fazla bilgi edinin</blogLink> motivasyon ve sorunlarla karşılaşırsanız ne yapacağınız hakkında."
+			"chatGptUsageLimits": "OpenAI Codex sağlayıcısında ChatGPT kullanım limitlerini izlemek için UI eklendi.",
+			"claudeCodeRemoved": "Kullanımdan kaldırılan Claude Code sağlayıcısı kaldırıldı.",
+			"grokCodeFastFreeEnds": "Grok Code Fast artık ücretsiz değil - cömert promosyon için xAI'ya teşekkürler!"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
@@ -341,8 +348,14 @@
 		},
 		"careers": "Ayrıca, <careersLink>işe alım yapıyoruz!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Toplam Maliyet (alt görevler dahil): ${{cost}}",
+		"total": "Toplam Maliyet: ${{cost}}",
+		"includesSubtasks": "Alt görev maliyetlerini içerir"
+	},
 	"browser": {
 		"session": "Tarayıcı Oturumu",
+		"active": "Aktif",
 		"rooWantsToUse": "Roo tarayıcıyı kullanmak istiyor",
 		"consoleLogs": "Konsol Kayıtları",
 		"noNewLogs": "(Yeni kayıt yok)",
@@ -480,5 +493,14 @@
 		"updated": "Yapılacaklar listesi güncellendi",
 		"completed": "Tamamlandı",
 		"started": "Başladı"
+	},
+	"tooManyTools": {
+		"title": "Çok fazla araç etkinleştirildi",
+		"toolsPart_one": "{{count}} araç",
+		"toolsPart_other": "{{count}} araç",
+		"serversPart_one": "{{count}} MCP sunucusu",
+		"serversPart_other": "{{count}} MCP sunucusu",
+		"messageTemplate": "{{servers}} üzerinden {{tools}} etkinleştirilmiş durumda. Bu kadar fazlası modeli kafası karışabilir ve hatalara neden olabilir. {{threshold}} altında tutmaya çalış.",
+		"openMcpSettings": "MCP Ayarlarını Aç"
 	}
 }

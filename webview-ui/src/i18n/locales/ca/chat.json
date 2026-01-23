@@ -82,10 +82,15 @@
 		"title": "Finalitzar",
 		"tooltip": "Finalitza la tasca actual"
 	},
+	"stop": {
+		"title": "Atura",
+		"tooltip": "Atura la tasca actual"
+	},
 	"cancel": {
 		"title": "Cancel·lar",
 		"tooltip": "Cancel·la l'operació actual"
 	},
+	"enqueueMessage": "Afegeix el missatge a la cua (s'enviarà quan acabi la tasca actual)",
 	"scrollToBottom": "Desplaça't al final del xat",
 	"about": "Roo Code és tot un equip de desenvolupament d'IA al teu editor.",
 	"docs": "Consulta els nostres <DocsLink>documents</DocsLink> per a més informació.",
@@ -271,7 +276,8 @@
 		"title": "Detalls de l'error",
 		"copyToClipboard": "Copiar al porta-retalls",
 		"copied": "Copiat!",
-		"diagnostics": "Obtenir informació d'error detallada"
+		"diagnostics": "Obtenir informació d'error detallada",
+		"proxyProvider": "Sembla que estàs utilitzant un proveïdor basat en proxy. Assegura't de comprovar els seus registres i de garantir que no estàs reescrivint les sol·licituds de Roo."
 	},
 	"powershell": {
 		"issues": "Sembla que estàs tenint problemes amb Windows PowerShell, si us plau consulta aquesta documentació per a més informació."
@@ -292,7 +298,7 @@
 		"triggerLabel_zero": "0 aprovacions automàtiques",
 		"triggerLabel_one": "1 aprovació automàtica",
 		"triggerLabel_other": "{{count}} aprovacions automàtiques",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Pensant",
@@ -329,8 +335,9 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"skills": "Roo ara suporta <skillsLink>Agent Skills</skillsLink> - paquets reutilitzables de prompts, ferramentes i recursos per estendre les capacitats de Roo.",
-			"nativeToolCalling": "L'invocació nativa d'eines és ara obligatòria per a totes les noves tasques. <blogLink>Més informació</blogLink> sobre la motivació i què fer si trobes problemes."
+			"chatGptUsageLimits": "S'ha afegit una interfície per rastrejar els teus límits d'ús de ChatGPT al proveïdor OpenAI Codex.",
+			"claudeCodeRemoved": "S'ha eliminat el proveïdor Claude Code obsolet.",
+			"grokCodeFastFreeEnds": "Grok Code Fast ja no és gratuït - gràcies a xAI per la promoció generosa!"
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
@@ -340,8 +347,14 @@
 		},
 		"careers": "A més, <careersLink>estem contractant!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Cost total (subtasques incloses): ${{cost}}",
+		"total": "Cost total: ${{cost}}",
+		"includesSubtasks": "Inclou els costos de les subtasques"
+	},
 	"browser": {
 		"session": "Sessió del navegador",
+		"active": "Actiu",
 		"rooWantsToUse": "Roo vol utilitzar el navegador",
 		"consoleLogs": "Registres de consola",
 		"noNewLogs": "(Cap registre nou)",
@@ -479,5 +492,14 @@
 		"updated": "S'ha actualitzat la llista de tasques pendents",
 		"completed": "Completat",
 		"started": "Iniciat"
+	},
+	"tooManyTools": {
+		"title": "Massa eines habilitades",
+		"toolsPart_one": "{{count}} eina",
+		"toolsPart_other": "{{count}} eines",
+		"serversPart_one": "{{count}} servidor MCP",
+		"serversPart_other": "{{count}} servidors MCP",
+		"messageTemplate": "Tens {{tools}} habilitades via {{servers}}. Un nombre tant alt pot confondre el model i portar a errors. Intenta mantenir-lo per sota de {{threshold}}.",
+		"openMcpSettings": "Obrir configuració de MCP"
 	}
 }

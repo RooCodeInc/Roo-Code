@@ -3,7 +3,6 @@ export * from "./baseten.js"
 export * from "./bedrock.js"
 export * from "./cerebras.js"
 export * from "./chutes.js"
-export * from "./claude-code.js"
 export * from "./deepseek.js"
 export * from "./doubao.js"
 export * from "./featherless.js"
@@ -18,6 +17,8 @@ export * from "./mistral.js"
 export * from "./moonshot.js"
 export * from "./ollama.js"
 export * from "./openai.js"
+export * from "./openai-codex.js"
+export * from "./openai-codex-rate-limits.js"
 export * from "./openrouter.js"
 export * from "./qwen-code.js"
 export * from "./requesty.js"
@@ -37,7 +38,6 @@ import { basetenDefaultModelId } from "./baseten.js"
 import { bedrockDefaultModelId } from "./bedrock.js"
 import { cerebrasDefaultModelId } from "./cerebras.js"
 import { chutesDefaultModelId } from "./chutes.js"
-import { claudeCodeDefaultModelId } from "./claude-code.js"
 import { deepSeekDefaultModelId } from "./deepseek.js"
 import { doubaoDefaultModelId } from "./doubao.js"
 import { featherlessDefaultModelId } from "./featherless.js"
@@ -48,6 +48,7 @@ import { ioIntelligenceDefaultModelId } from "./io-intelligence.js"
 import { litellmDefaultModelId } from "./lite-llm.js"
 import { mistralDefaultModelId } from "./mistral.js"
 import { moonshotDefaultModelId } from "./moonshot.js"
+import { openAiCodexDefaultModelId } from "./openai-codex.js"
 import { openRouterDefaultModelId } from "./openrouter.js"
 import { qwenCodeDefaultModelId } from "./qwen-code.js"
 import { requestyDefaultModelId } from "./requesty.js"
@@ -111,6 +112,8 @@ export function getProviderDefaultModelId(
 			return options?.isChina ? mainlandZAiDefaultModelId : internationalZAiDefaultModelId
 		case "openai-native":
 			return "gpt-4o" // Based on openai-native patterns
+		case "openai-codex":
+			return openAiCodexDefaultModelId
 		case "mistral":
 			return mistralDefaultModelId
 		case "openai":
@@ -123,8 +126,6 @@ export function getProviderDefaultModelId(
 			return deepInfraDefaultModelId
 		case "vscode-lm":
 			return vscodeLlmDefaultModelId
-		case "claude-code":
-			return claudeCodeDefaultModelId
 		case "cerebras":
 			return cerebrasDefaultModelId
 		case "sambanova":

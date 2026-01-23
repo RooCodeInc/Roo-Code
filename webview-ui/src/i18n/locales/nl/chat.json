@@ -82,10 +82,15 @@
 		"title": "Beëindigen",
 		"tooltip": "Beëindig de huidige taak"
 	},
+	"stop": {
+		"title": "Stoppen",
+		"tooltip": "Stop de huidige taak"
+	},
 	"cancel": {
 		"title": "Annuleren",
 		"tooltip": "Annuleer de huidige bewerking"
 	},
+	"enqueueMessage": "Bericht aan de wachtrij toevoegen (wordt verzonden nadat de huidige taak is voltooid)",
 	"scrollToBottom": "Scroll naar onderaan de chat",
 	"about": "Roo Code is een heel AI-ontwikkelteam in je editor.",
 	"docs": "Bekijk onze <DocsLink>documentatie</DocsLink> voor meer informatie.",
@@ -271,7 +276,8 @@
 		"title": "Foutdetails",
 		"copyToClipboard": "Naar klembord kopiëren",
 		"copied": "Gekopieerd!",
-		"diagnostics": "Gedetailleerde foutinformatie ophalen"
+		"diagnostics": "Gedetailleerde foutinformatie ophalen",
+		"proxyProvider": "Je lijkt een proxy-gebaseerde provider te gebruiken. Zorg ervoor dat je de logs controleert en dat het geen Roo-verzoeken herschrijft."
 	},
 	"powershell": {
 		"issues": "Het lijkt erop dat je problemen hebt met Windows PowerShell, zie deze"
@@ -292,7 +298,7 @@
 		"triggerLabel_zero": "0 automatisch goedgekeurd",
 		"triggerLabel_one": "1 automatisch goedgekeurd",
 		"triggerLabel_other": "{{count}} automatisch goedgekeurd",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} uitgebracht",
@@ -306,8 +312,9 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"skills": "Roo ondersteunt nu <skillsLink>Agent Skills</skillsLink> - herbruikbare pakketten van prompts, tools en resources om de mogelijkheden van Roo uit te breiden.",
-			"nativeToolCalling": "Native tool calling is nu vereist voor alle nieuwe taken. <blogLink>Meer informatie</blogLink> over de motivatie en wat je moet doen als je problemen ondervindt."
+			"chatGptUsageLimits": "UI toegevoegd om je ChatGPT-gebruikslimits in de OpenAI Codex-provider bij te houden.",
+			"claudeCodeRemoved": "De verouderde Claude Code-provider verwijderd.",
+			"grokCodeFastFreeEnds": "Grok Code Fast is niet langer gratis - dank je wel aan xAI voor de royale promotie!"
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
@@ -340,8 +347,14 @@
 		"copyToInput": "Kopiëren naar invoer (zelfde als shift + klik)",
 		"timerPrefix": "Automatisch goedkeuren ingeschakeld. Selecteren in {{seconds}}s…"
 	},
+	"costs": {
+		"totalWithSubtasks": "Totale kosten (inclusief subtaken): ${{cost}}",
+		"total": "Totale kosten: ${{cost}}",
+		"includesSubtasks": "Inclusief kosten van subtaken"
+	},
 	"browser": {
 		"session": "Browsersessie",
+		"active": "Actief",
 		"rooWantsToUse": "Roo wil de browser gebruiken",
 		"consoleLogs": "Console-logboeken",
 		"noNewLogs": "(Geen nieuwe logboeken)",
@@ -479,5 +492,14 @@
 		"updated": "De to-do-lijst is bijgewerkt",
 		"completed": "Voltooid",
 		"started": "Gestart"
+	},
+	"tooManyTools": {
+		"title": "Te veel tools ingeschakeld",
+		"toolsPart_one": "{{count}} tool",
+		"toolsPart_other": "{{count}} tools",
+		"serversPart_one": "{{count}} MCP server",
+		"serversPart_other": "{{count}} MCP servers",
+		"messageTemplate": "Je hebt {{tools}} ingeschakeld via {{servers}}. Zoveel tools kunnen het model verwarren en tot fouten leiden. Probeer dit onder {{threshold}} te houden.",
+		"openMcpSettings": "MCP-instellingen openen"
 	}
 }

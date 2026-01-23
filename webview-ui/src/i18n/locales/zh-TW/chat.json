@@ -94,6 +94,11 @@
 		"title": "取消",
 		"tooltip": "取消目前操作"
 	},
+	"stop": {
+		"title": "停止",
+		"tooltip": "停止目前的工作"
+	},
+	"enqueueMessage": "將訊息加入佇列（會在目前工作完成後傳送）",
 	"editMessage": {
 		"placeholder": "編輯您的訊息..."
 	},
@@ -305,7 +310,8 @@
 		"title": "錯誤詳細資訊",
 		"copyToClipboard": "複製到剪貼簿",
 		"copied": "已複製！",
-		"diagnostics": "取得詳細錯誤資訊"
+		"diagnostics": "取得詳細錯誤資訊",
+		"proxyProvider": "看起來你在使用基於代理的提供商。請檢查日誌並確保它不會重寫 Roo 的請求。"
 	},
 	"powershell": {
 		"issues": "您似乎遇到了 Windows PowerShell 的問題，請參閱此說明文件"
@@ -326,7 +332,7 @@
 		"triggerLabel_zero": "0 個自動核准",
 		"triggerLabel_one": "1 個自動核准",
 		"triggerLabel_other": "{{count}} 個自動核准",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
 		"title": "Roo Code {{version}} 已發布",
@@ -340,8 +346,9 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"skills": "Roo 現已支援 <skillsLink>Agent Skills</skillsLink> - 可重複使用的提示詞、工具和資源套件，用於擴展 Roo 的功能。",
-			"nativeToolCalling": "所有新工作現在都需要原生工具呼叫。<blogLink>深入了解</blogLink>相關動機以及遇到問題時的解決方案。"
+			"chatGptUsageLimits": "在 OpenAI Codex 提供商中新增 UI 以追蹤您的 ChatGPT 使用限制。",
+			"claudeCodeRemoved": "已移除已停用的 Claude Code 提供商。",
+			"grokCodeFastFreeEnds": "Grok Code Fast 不再免費 - 感謝 xAI 的慷慨促銷！"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",
@@ -359,8 +366,14 @@
 		"copyToInput": "複製到輸入框 (或按住 Shift 並點選)",
 		"timerPrefix": "自動批准已啟用。{{seconds}}秒後選擇中…"
 	},
+	"costs": {
+		"totalWithSubtasks": "總成本（包括子任務）: ${{cost}}",
+		"total": "總成本: ${{cost}}",
+		"includesSubtasks": "包括子任務成本"
+	},
 	"browser": {
 		"session": "瀏覽器會話",
+		"active": "活動中",
 		"rooWantsToUse": "Roo 想要使用瀏覽器",
 		"consoleLogs": "主控台記錄",
 		"noNewLogs": "（沒有新記錄）",
@@ -480,5 +493,14 @@
 		"updated": "已更新待辦事項列表",
 		"completed": "已完成",
 		"started": "已開始"
+	},
+	"tooManyTools": {
+		"title": "啟用的工具過多",
+		"toolsPart_one": "{{count}} 個工具",
+		"toolsPart_other": "{{count}} 個工具",
+		"serversPart_one": "{{count}} 個 MCP 伺服器",
+		"serversPart_other": "{{count}} 個 MCP 伺服器",
+		"messageTemplate": "你已啟用 {{tools}}（透過 {{servers}}）。這麼多的工具可能會混淆模型並導致錯誤。請嘗試保持在 {{threshold}} 以下。",
+		"openMcpSettings": "開啟 MCP 設定"
 	}
 }

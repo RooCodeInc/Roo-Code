@@ -1,4 +1,5 @@
 {
+	"back": "Retour à la vue des tâches",
 	"common": {
 		"save": "Enregistrer",
 		"done": "Terminé",
@@ -7,6 +8,10 @@
 		"select": "Sélectionner",
 		"add": "Ajouter un en-tête",
 		"remove": "Supprimer"
+	},
+	"search": {
+		"placeholder": "Rechercher les paramètres...",
+		"noResults": "Aucun paramètre trouvé"
 	},
 	"header": {
 		"title": "Paramètres",
@@ -55,7 +60,11 @@
 		},
 		"community": "Vous voulez des conseils ou simplement discuter avec d'autres utilisateurs de Roo Code ? Rejoignez <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Contact et Communauté",
-		"manageSettings": "Gérer les Paramètres"
+		"manageSettings": "Gérer les Paramètres",
+		"debugMode": {
+			"label": "Activer le mode debug",
+			"description": "Active le mode debug pour afficher des boutons supplémentaires dans l'en-tête de la tâche permettant de consulter l'historique de conversation de l'API et les messages de l'interface utilisateur au format JSON dans des fichiers temporaires."
+		}
 	},
 	"slashCommands": {
 		"description": "Gérez vos commandes slash pour exécuter rapidement des flux de travail et des actions personnalisées. <DocsLink>En savoir plus</DocsLink>"
@@ -275,10 +284,40 @@
 		"vercelAiGatewayApiKey": "Clé API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtenir la clé API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Les clés API sont stockées en toute sécurité dans le stockage sécurisé de VSCode",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Utiliser une URL de base personnalisée",
 		"useReasoning": "Activer le raisonnement",
 		"useHostHeader": "Utiliser un en-tête Host personnalisé",
-		"useLegacyFormat": "Utiliser le format API OpenAI hérité",
 		"customHeaders": "En-têtes personnalisés",
 		"headerName": "Nom de l'en-tête",
 		"headerValue": "Valeur de l'en-tête",
@@ -661,6 +700,10 @@
 		"maxGitStatusFiles": {
 			"label": "Git status max fichiers",
 			"description": "Nombre maximum de fichiers à inclure dans le contexte de statut git. Mettre à 0 pour désactiver. Les informations de branche et les commits sont toujours affichés si > 0."
+		},
+		"enableSubfolderRules": {
+			"label": "Activer les règles des sous-dossiers",
+			"description": "Découvrir et charger récursivement les fichiers .roo/rules et AGENTS.md depuis les sous-répertoires. Utile pour les monorepos avec des règles par package."
 		}
 	},
 	"terminal": {
@@ -723,14 +766,6 @@
 	},
 	"advancedSettings": {
 		"title": "Paramètres avancés"
-	},
-	"toolProtocol": {
-		"label": "Protocole d'appel d'outil",
-		"description": "Choisissez comment Roo communique avec l'API. Natif utilise l'API d'appel de fonction du fournisseur, tandis que XML utilise des définitions d'outils au format XML.",
-		"default": "Défaut",
-		"xml": "XML",
-		"native": "Natif",
-		"currentDefault": "Défaut: {{protocol}}"
 	},
 	"advanced": {
 		"diff": {

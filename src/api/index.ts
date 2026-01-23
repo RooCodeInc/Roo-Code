@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import type { ProviderSettings, ModelInfo, ToolProtocol } from "@roo-code/types"
+import type { ProviderSettings, ModelInfo } from "@roo-code/types"
 
 import { ApiStream } from "./transform/stream"
 
@@ -13,6 +13,7 @@ import {
 	VertexHandler,
 	AnthropicVertexHandler,
 	OpenAiHandler,
+	OpenAiCodexHandler,
 	LmStudioHandler,
 	GeminiHandler,
 	OpenAiNativeHandler,
@@ -28,7 +29,6 @@ import {
 	HuggingFaceHandler,
 	ChutesHandler,
 	LiteLLMHandler,
-	ClaudeCodeHandler,
 	QwenCodeHandler,
 	SambaNovaHandler,
 	IOIntelligenceHandler,
@@ -83,17 +83,20 @@ export interface ApiHandlerCreateMessageMetadata {
 	 */
 	tool_choice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"]
 	/**
-	 * The tool protocol being used (XML or Native).
-	 * Used by providers to determine whether to include native tool definitions.
-	 */
-	toolProtocol?: ToolProtocol
-	/**
 	 * Controls whether the model can return multiple tool calls in a single response.
 	 * When true, parallel tool calls are enabled (OpenAI's parallel_tool_calls=true).
 	 * When false (default), only one tool call is returned per response.
-	 * Only applies when toolProtocol is "native".
 	 */
 	parallelToolCalls?: boolean
+	/**
+	 * Optional array of tool names that the model is allowed to call.
+	 * When provided, all tool definitions are passed to the model (so it can reference
+	 * historical tool calls), but only the specified tools can actually be invoked.
+	 * This is used when switching modes to prevent model errors from missing tool
+	 * definitions while still restricting callable tools to the current mode's permissions.
+	 * Only applies to providers that support function calling restrictions (e.g., Gemini).
+	 */
+	allowedFunctionNames?: string[]
 }
 
 export interface ApiHandler {
@@ -122,8 +125,6 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	switch (apiProvider) {
 		case "anthropic":
 			return new AnthropicHandler(options)
-		case "claude-code":
-			return new ClaudeCodeHandler(options)
 		case "openrouter":
 			return new OpenRouterHandler(options)
 		case "bedrock":
@@ -140,6 +141,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new LmStudioHandler(options)
 		case "gemini":
 			return new GeminiHandler(options)
+		case "openai-codex":
+			return new OpenAiCodexHandler(options)
 		case "openai-native":
 			return new OpenAiNativeHandler(options)
 		case "deepseek":

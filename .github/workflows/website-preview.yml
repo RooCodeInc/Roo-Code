@@ -70,15 +70,20 @@ jobs:
                         comment.body.includes(commentIdentifier)
                       );
 
-                      if (existingComment) {
-                        return;
-                      }
-
                       const comment = commentIdentifier + '\n🚀 **Preview deployed!**\n\nYour changes have been deployed to Vercel:\n\n**Preview URL:** ' + deploymentUrl + '\n\nThis preview will be updated automatically when you push new commits to this PR.';
 
-                      await github.rest.issues.createComment({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        issue_number: context.issue.number,
-                        body: comment
-                      });
+                      if (existingComment) {
+                        await github.rest.issues.updateComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          comment_id: existingComment.id,
+                          body: comment
+                        });
+                      } else {
+                        await github.rest.issues.createComment({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          issue_number: context.issue.number,
+                          body: comment
+                        });
+                      }

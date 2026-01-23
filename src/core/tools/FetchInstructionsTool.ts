@@ -1,9 +1,11 @@
+import { type ClineSayTool } from "@roo-code/types"
+
 import { Task } from "../task/Task"
 import { fetchInstructions } from "../prompts/instructions/instructions"
-import { ClineSayTool } from "../../shared/ExtensionMessage"
 import { formatResponse } from "../prompts/responses"
-import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
+
+import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 interface FetchInstructionsParams {
 	task: string
@@ -12,14 +14,8 @@ interface FetchInstructionsParams {
 export class FetchInstructionsTool extends BaseTool<"fetch_instructions"> {
 	readonly name = "fetch_instructions" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): FetchInstructionsParams {
-		return {
-			task: params.task || "",
-		}
-	}
-
 	async execute(params: FetchInstructionsParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { handleError, pushToolResult, askApproval, toolProtocol } = callbacks
+		const { handleError, pushToolResult, askApproval } = callbacks
 		const { task: taskParam } = params
 
 		try {

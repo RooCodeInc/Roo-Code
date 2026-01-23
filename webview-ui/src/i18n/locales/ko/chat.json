@@ -82,10 +82,15 @@
 		"title": "종료",
 		"tooltip": "현재 작업 종료"
 	},
+	"stop": {
+		"title": "정지",
+		"tooltip": "현재 작업 정지"
+	},
 	"cancel": {
 		"title": "취소",
 		"tooltip": "현재 작업 취소"
 	},
+	"enqueueMessage": "메시지를 대기열에 추가 (현재 작업 완료 후 전송)",
 	"scrollToBottom": "채팅 하단으로 스크롤",
 	"about": "Roo Code는 편집기 안에 있는 전체 AI 개발팀입니다.",
 	"docs": "더 알아보려면 <DocsLink>문서</DocsLink>를 확인하세요.",
@@ -271,7 +276,8 @@
 		"title": "오류 세부 정보",
 		"copyToClipboard": "클립보드에 복사",
 		"copied": "복사됨!",
-		"diagnostics": "상세한 오류 정보 가져오기"
+		"diagnostics": "상세한 오류 정보 가져오기",
+		"proxyProvider": "프록시 기반 제공자를 사용하는 것 같습니다. 로그를 확인하고 Roo의 요청을 다시 작성하지 않는지 확인하세요."
 	},
 	"powershell": {
 		"issues": "Windows PowerShell에 문제가 있는 것 같습니다. 다음을 참조하세요"
@@ -292,7 +298,7 @@
 		"triggerLabel_zero": "0개 자동 승인됨",
 		"triggerLabel_one": "1개 자동 승인됨",
 		"triggerLabel_other": "{{count}}개 자동 승인됨",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "생각 중",
@@ -329,8 +335,9 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"skills": "Roo는 이제 <skillsLink>Agent Skills</skillsLink>를 지원합니다 - Roo의 기능을 확장하기 위한 프롬프트, 도구 및 리소스의 재사용 가능한 패키지입니다.",
-			"nativeToolCalling": "모든 새 작업에 이제 네이티브 도구 호출이 필요합니다. <blogLink>자세히 알아보기</blogLink> 동기 및 문제가 발생한 경우 수행할 작업에 대해."
+			"chatGptUsageLimits": "OpenAI Codex 공급자에서 ChatGPT 사용 제한을 추적하는 UI를 추가했습니다.",
+			"claudeCodeRemoved": "지원 중단된 Claude Code 공급자를 제거했습니다.",
+			"grokCodeFastFreeEnds": "Grok Code Fast는 더 이상 무료가 아닙니다 - 관대한 프로모션을 해준 xAI에 감사합니다!"
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",
@@ -340,8 +347,14 @@
 		},
 		"careers": "그리고, <careersLink>채용 중입니다!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "총 비용 (하위 작업 포함): ${{cost}}",
+		"total": "총 비용: ${{cost}}",
+		"includesSubtasks": "하위 작업 비용 포함"
+	},
 	"browser": {
 		"session": "브라우저 세션",
+		"active": "활성",
 		"rooWantsToUse": "Roo가 브라우저를 사용하고 싶어합니다",
 		"consoleLogs": "콘솔 로그",
 		"noNewLogs": "(새 로그 없음)",
@@ -479,5 +492,14 @@
 		"updated": "할 일 목록을 업데이트했습니다",
 		"completed": "완료됨",
 		"started": "시작됨"
+	},
+	"tooManyTools": {
+		"title": "활성화된 도구가 너무 많습니다",
+		"toolsPart_one": "{{count}}개 도구",
+		"toolsPart_other": "{{count}}개 도구",
+		"serversPart_one": "{{count}}개 MCP 서버",
+		"serversPart_other": "{{count}}개 MCP 서버",
+		"messageTemplate": "{{servers}}를 통해 {{tools}}가 활성화되어 있습니다. 이렇게 많은 수의 도구는 모델을 혼동시키고 오류를 유발할 수 있습니다. {{threshold}} 이하로 유지하도록 노력하세요.",
+		"openMcpSettings": "MCP 설정 열기"
 	}
 }

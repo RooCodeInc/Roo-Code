@@ -82,10 +82,15 @@
 		"title": "Terminer",
 		"tooltip": "Terminer la tâche actuelle"
 	},
+	"stop": {
+		"title": "Arrêter",
+		"tooltip": "Arrêter la tâche en cours"
+	},
 	"cancel": {
 		"title": "Annuler",
 		"tooltip": "Annuler l'opération actuelle"
 	},
+	"enqueueMessage": "Ajouter le message à la file d'attente (sera envoyé après la fin de la tâche en cours)",
 	"scrollToBottom": "Défiler jusqu'au bas du chat",
 	"about": "Roo Code est une équipe complète de développeurs IA dans votre éditeur.",
 	"docs": "Consultez notre <DocsLink>documentation</DocsLink> pour en savoir plus.",
@@ -271,7 +276,8 @@
 		"title": "Détails de l'erreur",
 		"copyToClipboard": "Copier dans le presse-papiers",
 		"copied": "Copié !",
-		"diagnostics": "Obtenir les détails de l'erreur"
+		"diagnostics": "Obtenir les détails de l'erreur",
+		"proxyProvider": "Il semble que tu utilises un fournisseur basé sur un proxy. Assure-toi de vérifier ses journaux et de t'assurer qu'il ne réécrit pas les demandes de Roo."
 	},
 	"powershell": {
 		"issues": "Il semble que vous rencontriez des problèmes avec Windows PowerShell, veuillez consulter ce"
@@ -292,7 +298,7 @@
 		"triggerLabel_zero": "0 approuvé automatiquement",
 		"triggerLabel_one": "1 approuvé automatiquement",
 		"triggerLabel_other": "{{count}} approuvés automatiquement",
-		"triggerLabelAll": "YOLO"
+		"triggerLabelAll": "BRRR"
 	},
 	"reasoning": {
 		"thinking": "Réflexion",
@@ -329,8 +335,9 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"skills": "Roo supporte maintenant les <skillsLink>Agent Skills</skillsLink> - des packages réutilisables de prompts, d'outils et de ressources pour étendre les capacités de Roo.",
-			"nativeToolCalling": "L'appel natif des outils est maintenant obligatoire pour toutes les nouvelles tâches. <blogLink>En savoir plus</blogLink> sur la motivation et ce qu'il faut faire si tu rencontres des problèmes."
+			"chatGptUsageLimits": "Ajout d'une interface pour suivre tes limites d'utilisation de ChatGPT dans le fournisseur OpenAI Codex.",
+			"claudeCodeRemoved": "Suppression du fournisseur Claude Code obsolète.",
+			"grokCodeFastFreeEnds": "Grok Code Fast n'est plus gratuit - merci à xAI pour la généreuse promotion !"
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",
@@ -340,8 +347,14 @@
 		},
 		"careers": "Aussi, <careersLink>on recrute !</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Coût total (sous-tâches comprises) : ${{cost}}",
+		"total": "Coût total : ${{cost}}",
+		"includesSubtasks": "Inclut les coûts des sous-tâches"
+	},
 	"browser": {
 		"session": "Session du navigateur",
+		"active": "Actif",
 		"rooWantsToUse": "Roo veut utiliser le navigateur",
 		"consoleLogs": "Journaux de console",
 		"noNewLogs": "(Pas de nouveaux journaux)",
@@ -479,5 +492,14 @@
 		"updated": "La liste des tâches a été mise à jour",
 		"completed": "Terminé",
 		"started": "Commencé"
+	},
+	"tooManyTools": {
+		"title": "Trop d'outils activés",
+		"toolsPart_one": "{{count}} outil",
+		"toolsPart_other": "{{count}} outils",
+		"serversPart_one": "{{count}} serveur MCP",
+		"serversPart_other": "{{count}} serveurs MCP",
+		"messageTemplate": "Tu as {{tools}} activés via {{servers}}. Un nombre aussi élevé peut confondre le modèle et entraîner des erreurs. Essaie de le maintenir en dessous de {{threshold}}.",
+		"openMcpSettings": "Ouvrir les paramètres MCP"
 	}
 }

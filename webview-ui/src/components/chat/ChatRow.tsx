@@ -4,12 +4,19 @@ import { useTranslation, Trans } from "react-i18next"
 import deepEqual from "fast-deep-equal"
 import { VSCodeBadge } from "@vscode/webview-ui-toolkit/react"
 
-import type { ClineMessage, FollowUpData, SuggestionItem } from "@roo-code/types"
+import type {
+	ClineMessage,
+	FollowUpData,
+	SuggestionItem,
+	ClineApiReqInfo,
+	ClineAskUseMcpServer,
+	ClineSayTool,
+} from "@roo-code/types"
+
 import { Mode } from "@roo/modes"
 
-import { ClineApiReqInfo, ClineAskUseMcpServer, ClineSayTool } from "@roo/ExtensionMessage"
 import { COMMAND_OUTPUT_STRING } from "@roo/combineCommandSequences"
-import { safeJsonParse } from "@roo/safeJsonParse"
+import { safeJsonParse } from "@roo/core"
 
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { findMatchingResourceOrTemplate } from "@src/utils/mcp"
@@ -25,6 +32,7 @@ import { ReasoningBlock } from "./ReasoningBlock"
 import Thumbnails from "../common/Thumbnails"
 import ImageBlock from "../common/ImageBlock"
 import ErrorRow from "./ErrorRow"
+import WarningRow from "./WarningRow"
 
 import McpResourceRow from "../mcp/McpResourceRow"
 
@@ -63,6 +71,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PathTooltip } from "../ui/PathTooltip"
+import { OpenMarkdownPreviewButton } from "./OpenMarkdownPreviewButton"
 
 // Helper function to get previous todos before a specific message
 function getPreviousTodos(messages: ClineMessage[], currentMessageTs: number): any[] {
@@ -1104,35 +1113,25 @@ export const ChatRowContent = ({
 					let body = t(`chat:apiRequest.failed`)
 					let retryInfo, rawError, code, docsURL
 					if (message.text !== undefined) {
-						// Check for Claude Code authentication error first
-						if (message.text.includes("Not authenticated with Claude Code")) {
-							body = t("chat:apiRequest.errorMessage.claudeCodeNotAuthenticated")
-							docsURL = "roocode://settings?provider=claude-code"
-						} else {
-							// Try to show richer error message for that code, if available
-							const potentialCode = parseInt(message.text.substring(0, 3))
-							if (!isNaN(potentialCode) && potentialCode >= 400) {
-								code = potentialCode
-								const stringForError = `chat:apiRequest.errorMessage.${code}`
-								if (i18n.exists(stringForError)) {
-									body = t(stringForError)
-									// Fill this out in upcoming PRs
-									// Do not remove this
-									// switch(code) {
-									// 	case ERROR_CODE:
-									// 		docsURL = ???
-									// 		break;
-									// }
-								} else {
-									body = t("chat:apiRequest.errorMessage.unknown")
-									docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
-								}
-							} else if (message.text.indexOf("Connection error") === 0) {
-								body = t("chat:apiRequest.errorMessage.connection")
+						// Try to show richer error message for that code, if available
+						const potentialCode = parseInt(message.text.substring(0, 3))
+						if (!isNaN(potentialCode) && potentialCode >= 400) {
+							code = potentialCode
+							const stringForError = `chat:apiRequest.errorMessage.${code}`
+							if (i18n.exists(stringForError)) {
+								body = t(stringForError)
+								// Fill this out in upcoming PRs
+								// Do not remove this
+								// switch(code) {
+								// 	case ERROR_CODE:
+								// 		docsURL = ???
+								// 		break;
+								// }
 							} else {
 								// Non-HTTP-status-code error message - store full text as errorDetails
 								body = t("chat:apiRequest.errorMessage.unknown")
-								docsURL = "mailto:support@roocode.com?subject=Unknown API Error"
+								docsURL =
+									"mailto:support@roocode.com?subject=Unknown API Error&body=[Please include full error details]"
 							}
 						}
 
@@ -1196,10 +1195,12 @@ export const ChatRowContent = ({
 					return null // we should never see this message type
 				case "text":
 					return (
-						<div>
+						<div className="group">
 							<div style={headerStyle}>
 								<MessageCircle className="w-4 shrink-0" aria-label="Speech bubble icon" />
 								<span style={{ fontWeight: "bold" }}>{t("chat:text.rooSaid")}</span>
+								<div style={{ flexGrow: 1 }} />
+								<OpenMarkdownPreviewButton markdown={message.text} />
 							</div>
 							<div className="pl-6">
 								<Markdown markdown={message.text} partial={message.partial} />
@@ -1329,18 +1330,22 @@ export const ChatRowContent = ({
 					}
 
 					// Fallback for generic errors
-					return <ErrorRow type="error" message={message.text || t("chat:error")} />
+					return (
+						<ErrorRow type="error" message={message.text || t("chat:error")} errorDetails={message.text} />
+					)
 				case "completion_result":
 					return (
-						<>
+						<div className="group">
 							<div style={headerStyle}>
 								{icon}
 								{title}
+								<div style={{ flexGrow: 1 }} />
+								<OpenMarkdownPreviewButton markdown={message.text} />
 							</div>
 							<div className="border-l border-green-600/30 ml-2 pl-4 pb-1">
 								<Markdown markdown={message.text} />
 							</div>
-						</>
+						</div>
 					)
 				case "shell_integration_warning":
 					return <CommandExecutionError />
@@ -1501,6 +1506,33 @@ export const ChatRowContent = ({
 				case "browser_action_result":
 					// Handled by BrowserSessionRow; prevent raw JSON (action/result) from rendering here
 					return null
+				case "too_many_tools_warning": {
+					const warningData = safeJsonParse<{
+						toolCount: number
+						serverCount: number
+						threshold: number
+					}>(message.text || "{}")
+					if (!warningData) return null
+					const toolsPart = t("chat:tooManyTools.toolsPart", { count: warningData.toolCount })
+					const serversPart = t("chat:tooManyTools.serversPart", { count: warningData.serverCount })
+					return (
+						<WarningRow
+							title={t("chat:tooManyTools.title")}
+							message={t("chat:tooManyTools.messageTemplate", {
+								tools: toolsPart,
+								servers: serversPart,
+								threshold: warningData.threshold,
+							})}
+							actionText={t("chat:tooManyTools.openMcpSettings")}
+							onAction={() =>
+								window.postMessage(
+									{ type: "action", action: "settingsButtonClicked", values: { section: "mcp" } },
+									"*",
+								)
+							}
+						/>
+					)
+				}
 				default:
 					return (
 						<>
@@ -1519,7 +1551,7 @@ export const ChatRowContent = ({
 		case "ask":
 			switch (message.ask) {
 				case "mistake_limit_reached":
-					return <ErrorRow type="mistake_limit" message={message.text || ""} />
+					return <ErrorRow type="mistake_limit" message={message.text || ""} errorDetails={message.text} />
 				case "command":
 					return (
 						<CommandExecution
@@ -1591,10 +1623,12 @@ export const ChatRowContent = ({
 				case "completion_result":
 					if (message.text) {
 						return (
-							<div>
+							<div className="group">
 								<div style={headerStyle}>
 									{icon}
 									{title}
+									<div style={{ flexGrow: 1 }} />
+									<OpenMarkdownPreviewButton markdown={message.text} />
 								</div>
 								<div style={{ color: "var(--vscode-charts-green)", paddingTop: 10 }}>
 									<Markdown markdown={message.text} partial={message.partial} />

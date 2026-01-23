@@ -20,17 +20,9 @@ interface NewTaskParams {
 export class NewTaskTool extends BaseTool<"new_task"> {
 	readonly name = "new_task" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): NewTaskParams {
-		return {
-			mode: params.mode || "",
-			message: params.message || "",
-			todos: params.todos,
-		}
-	}
-
 	async execute(params: NewTaskParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { mode, message, todos } = params
-		const { askApproval, handleError, pushToolResult, toolProtocol, toolCallId } = callbacks
+		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
 			// Validate required parameters.
@@ -147,9 +139,9 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 
 		const partialMessage = JSON.stringify({
 			tool: "newTask",
-			mode: this.removeClosingTag("mode", mode, block.partial),
-			content: this.removeClosingTag("message", message, block.partial),
-			todos: this.removeClosingTag("todos", todos, block.partial),
+			mode: mode ?? "",
+			content: message ?? "",
+			todos: todos,
 		})
 
 		await task.ask("tool", partialMessage, block.partial).catch(() => {})
