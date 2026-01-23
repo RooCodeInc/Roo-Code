@@ -126,7 +126,6 @@ pnpm install
 
 ### Pull Request Policy
 
-- Must reference an assigned GitHub Issue. To get assigned: comment "Claiming" on the issue and DM **Hannes Rudolph (`hrudolph`)** on [Discord](https://discord.gg/roocode). Assignment will be confirmed in the thread.
 - Unlinked PRs may be closed.
 - PRs should pass CI tests, align with the roadmap, and have clear documentation.
 
