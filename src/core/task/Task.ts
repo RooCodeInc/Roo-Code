@@ -3992,8 +3992,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					: {}),
 			}
 
-			// Generate environment details to include in the condensed summary
-			const contextMgmtEnvironmentDetails = await getEnvironmentDetails(this, true)
+			// Only generate environment details when context management will actually run.
+			// getEnvironmentDetails(this, true) triggers a recursive workspace listing which
+			// adds overhead - avoid this for the common case where context is below threshold.
+			const contextMgmtEnvironmentDetails = contextManagementWillRun
+				? await getEnvironmentDetails(this, true)
+				: undefined
 
 			try {
 				const truncateResult = await manageContext({

@@ -768,7 +768,8 @@ describe("summarizeConversation", () => {
 		// Check the cost and token counts
 		expect(result.cost).toBe(0.05)
 		expect(result.summary).toBe("This is a summary")
-		expect(result.newContextTokens).toBe(250) // outputTokens(150) + countTokens(100)
+		// newContextTokens = countTokens(systemPrompt + summaryMessage) - counts actual content, not outputTokens
+		expect(result.newContextTokens).toBe(100) // countTokens mock returns 100
 		expect(result.error).toBeUndefined()
 	})
 
@@ -938,11 +939,11 @@ describe("summarizeConversation", () => {
 
 		const result = await summarizeConversation(messages, mockApiHandler, systemPrompt, taskId)
 
-		// Verify that countTokens was called with system prompt
+		// Verify that countTokens was called with system prompt + summary message
 		expect(mockApiHandler.countTokens).toHaveBeenCalled()
 
-		// newContextTokens includes the summary output tokens plus countTokens(systemPrompt)
-		expect(result.newContextTokens).toBe(300) // outputTokens(200) + countTokens(100)
+		// newContextTokens = countTokens(systemPrompt + summaryMessage) - counts actual content
+		expect(result.newContextTokens).toBe(100) // countTokens mock returns 100
 		expect(result.cost).toBe(0.06)
 		expect(result.summary).toBe("This is a summary with system prompt")
 		expect(result.error).toBeUndefined()
@@ -984,7 +985,8 @@ describe("summarizeConversation", () => {
 		expect(result.cost).toBe(0.03)
 		expect(result.summary).toBe("Concise summary")
 		expect(result.error).toBeUndefined()
-		expect(result.newContextTokens).toBe(80) // outputTokens(50) + countTokens(30)
+		// newContextTokens = countTokens(systemPrompt + summaryMessage) - counts actual content
+		expect(result.newContextTokens).toBe(30) // countTokens mock returns 30
 	})
 
 	it("should return error when API handler is invalid", async () => {

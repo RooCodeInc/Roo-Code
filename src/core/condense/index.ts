@@ -342,15 +342,16 @@ ${commandBlocks}
 
 	// Count the tokens in the context for the next API request
 	// After condense, the context will only contain the system prompt and the summary
+	// Note: This doesn't include tool definitions - it's an informational estimate for the UI
 	const systemPromptMessage: ApiMessage = { role: "user", content: systemPrompt }
 
-	const contextMessages = outputTokens ? [systemPromptMessage] : [systemPromptMessage, summaryMessage]
-
-	const contextBlocks = contextMessages.flatMap((message) =>
+	// Count actual summaryMessage content directly instead of using outputTokens as a proxy
+	// This ensures we account for wrapper text (## Conversation Summary, <system-reminder>, <environment_details>)
+	const contextBlocks = [systemPromptMessage, summaryMessage].flatMap((message) =>
 		typeof message.content === "string" ? [{ text: message.content, type: "text" as const }] : message.content,
 	)
 
-	const newContextTokens = outputTokens + (await apiHandler.countTokens(contextBlocks))
+	const newContextTokens = await apiHandler.countTokens(contextBlocks)
 	return { messages: newMessages, summary, cost, newContextTokens, condenseId }
 }
 
