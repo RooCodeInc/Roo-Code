@@ -1233,10 +1233,14 @@ describe("summarizeConversation with custom settings", () => {
 			customPrompt,
 		)
 
-		// Verify the custom prompt was used
+		// Verify the custom prompt was used in the user message content
 		const createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
 		expect(createMessageCalls.length).toBe(1)
-		expect(createMessageCalls[0][0]).toBe(customPrompt)
+		// The custom prompt should be in the last message (the finalRequestMessage)
+		const requestMessages = createMessageCalls[0][1]
+		const lastMessage = requestMessages[requestMessages.length - 1]
+		expect(lastMessage.role).toBe("user")
+		expect(lastMessage.content).toBe(customPrompt)
 	})
 
 	/**

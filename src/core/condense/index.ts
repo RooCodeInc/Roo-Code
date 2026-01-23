@@ -179,9 +179,13 @@ export async function summarizeConversation(
 		return { ...response, error }
 	}
 
+	// Use custom prompt if provided and non-empty, otherwise use the default CONDENSE prompt
+	// This respects user's custom condensing prompt setting
+	const condenseInstructions = customCondensingPrompt?.trim() || supportPrompt.default.CONDENSE
+
 	const finalRequestMessage: Anthropic.MessageParam = {
 		role: "user",
-		content: supportPrompt.default.CONDENSE,
+		content: condenseInstructions,
 	}
 
 	// Inject synthetic tool_results for orphan tool_calls to prevent API rejections
@@ -193,8 +197,7 @@ export async function summarizeConversation(
 	)
 
 	// Note: this doesn't need to be a stream, consider using something like apiHandler.completePrompt
-	// Use custom prompt if provided and non-empty, otherwise use the default SUMMARY_PROMPT
-	const promptToUse = customCondensingPrompt?.trim() ? customCondensingPrompt.trim() : SUMMARY_PROMPT
+	const promptToUse = SUMMARY_PROMPT
 
 	// Validate that the API handler supports message creation
 	if (!apiHandler || typeof apiHandler.createMessage !== "function") {
