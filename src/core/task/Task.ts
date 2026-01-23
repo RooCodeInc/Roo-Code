@@ -1017,7 +1017,27 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const effectiveHistoryForValidation = getEffectiveApiHistory(this.apiConversationHistory)
 			const lastEffective = effectiveHistoryForValidation[effectiveHistoryForValidation.length - 1]
 			const historyForValidation = lastEffective?.role === "assistant" ? effectiveHistoryForValidation : []
-			const validatedMessage = validateAndFixToolResultIds(message, historyForValidation)
+
+			// If the previous effective message is NOT an assistant, convert tool_result blocks to text blocks.
+			// This prevents orphaned tool_results from being filtered out by getEffectiveApiHistory.
+			// This can happen when condensing occurs after the assistant sends tool_uses but before
+			// the user responds - the tool_use blocks get condensed away, leaving orphaned tool_results.
+			let messageToAdd = message
+			if (lastEffective?.role !== "assistant" && Array.isArray(message.content)) {
+				messageToAdd = {
+					...message,
+					content: message.content.map((block) =>
+						block.type === "tool_result"
+							? {
+									type: "text" as const,
+									text: `Tool result:\n${typeof block.content === "string" ? block.content : JSON.stringify(block.content)}`,
+								}
+							: block,
+					),
+				}
+			}
+
+			const validatedMessage = validateAndFixToolResultIds(messageToAdd, historyForValidation)
 			const messageWithTs = { ...validatedMessage, ts: Date.now() }
 			this.apiConversationHistory.push(messageWithTs)
 		}
