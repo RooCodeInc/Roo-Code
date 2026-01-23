@@ -800,10 +800,6 @@
 			"name": "Experimentele inhoud-invoeg-tool gebruiken",
 			"description": "Schakel de experimentele inhoud-invoeg-tool in, waarmee Roo inhoud op specifieke regelnummers kan invoegen zonder een diff te maken."
 		},
-		"POWER_STEERING": {
-			"name": "Experimentele 'power steering'-modus gebruiken",
-			"description": "Indien ingeschakeld, herinnert Roo het model vaker aan de details van de huidige modusdefinitie. Dit leidt tot sterkere naleving van roldefinities en aangepaste instructies, maar gebruikt meer tokens per bericht."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Experimentele multi-block diff-tool gebruiken",
 			"description": "Indien ingeschakeld, gebruikt Roo de multi-block diff-tool. Hiermee wordt geprobeerd meerdere codeblokken in het bestand in één verzoek bij te werken."

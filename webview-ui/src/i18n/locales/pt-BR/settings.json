@@ -800,10 +800,6 @@
 			"name": "Usar ferramenta de inserção de conteúdo experimental",
 			"description": "Ativar a ferramenta de inserção de conteúdo experimental, permitindo que o Roo insira conteúdo em números de linha específicos sem precisar criar um diff."
 		},
-		"POWER_STEERING": {
-			"name": "Usar modo \"direção assistida\" experimental",
-			"description": "Quando ativado, o Roo lembrará o modelo sobre os detalhes da sua definição de modo atual com mais frequência. Isso levará a uma adesão mais forte às definições de função e instruções personalizadas, mas usará mais tokens por mensagem."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Usar ferramenta diff de múltiplos blocos experimental",
 			"description": "Quando ativado, o Roo usará a ferramenta diff de múltiplos blocos. Isso tentará atualizar vários blocos de código no arquivo em uma única solicitação."

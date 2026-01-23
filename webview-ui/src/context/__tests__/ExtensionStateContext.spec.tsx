@@ -233,16 +233,10 @@ describe("mergeExtensionState", () => {
 			...baseState,
 			apiConfiguration: { modelMaxThinkingTokens: 456, modelTemperature: 0.3 },
 			experiments: {
-				powerSteering: true,
-				marketplace: false,
-				disableCompletionCommand: false,
-				concurrentFileReads: true,
 				multiFileApplyDiff: true,
 				preventFocusDisruption: false,
-				newTaskRequireTodos: false,
 				imageGeneration: false,
 				runSlashCommand: false,
-				nativeToolCalling: false,
 				multipleNativeToolCalls: false,
 				customTools: false,
 			} as Record<ExperimentId, boolean>,
@@ -257,16 +251,10 @@ describe("mergeExtensionState", () => {
 		})
 
 		expect(result.experiments).toEqual({
-			powerSteering: true,
-			marketplace: false,
-			disableCompletionCommand: false,
-			concurrentFileReads: true,
 			multiFileApplyDiff: true,
 			preventFocusDisruption: false,
-			newTaskRequireTodos: false,
 			imageGeneration: false,
 			runSlashCommand: false,
-			nativeToolCalling: false,
 			multipleNativeToolCalls: false,
 			customTools: false,
 		})

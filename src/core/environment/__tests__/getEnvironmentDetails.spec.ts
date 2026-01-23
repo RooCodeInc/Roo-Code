@@ -5,7 +5,6 @@ import delay from "delay"
 import type { Mock } from "vitest"
 
 import { getEnvironmentDetails } from "../getEnvironmentDetails"
-import { EXPERIMENT_IDS, experiments } from "../../../shared/experiments"
 import { getFullModeDetails } from "../../../shared/modes"
 import { isToolAllowedForMode } from "../../tools/validateToolUse"
 import { getApiMetrics } from "../../../shared/getApiMetrics"
@@ -43,7 +42,6 @@ vi.mock("execa", () => ({
 	execa: vi.fn(),
 }))
 
-vi.mock("../../../shared/experiments")
 vi.mock("../../../shared/modes")
 vi.mock("../../../shared/getApiMetrics")
 vi.mock("../../../services/glob/list-files")
@@ -319,16 +317,6 @@ describe("getEnvironmentDetails", () => {
 		// Verify the methods were called
 		expect(mockActiveTerminal.getCurrentWorkingDirectory).toHaveBeenCalled()
 		expect(mockInactiveTerminal.getCurrentWorkingDirectory).toHaveBeenCalled()
-	})
-
-	it("should include experiment-specific details when Power Steering is enabled", async () => {
-		mockState.experiments = { [EXPERIMENT_IDS.POWER_STEERING]: true }
-		;(experiments.isEnabled as Mock).mockReturnValue(true)
-
-		const result = await getEnvironmentDetails(mockCline as Task)
-
-		expect(result).toContain("<role>You are a code assistant</role>")
-		expect(result).toContain("<custom_instructions>Custom instructions</custom_instructions>")
 	})
 
 	it("should handle missing provider or state", async () => {

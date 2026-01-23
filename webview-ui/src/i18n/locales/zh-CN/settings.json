@@ -800,10 +800,6 @@
 			"name": "启用插入内容工具",
 			"description": "允许 Roo 在特定行号插入内容，无需处理差异。"
 		},
-		"POWER_STEERING": {
-			"name": "启用增强导向模式",
-			"description": "开启后，Roo 将更频繁地向模型推送当前模式定义的详细信息，从而强化对角色设定和自定义指令的遵循力度。注意：此模式会提升每条消息的 token 消耗量。"
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "允许批量搜索和替换",
 			"description": "启用后，Roo 将尝试在一个请求中进行批量搜索和替换。"
