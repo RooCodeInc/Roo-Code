@@ -62,7 +62,6 @@
 		"condense_not_enough_messages": "Không đủ tin nhắn để nén ngữ cảnh",
 		"condensed_recently": "Ngữ cảnh đã được nén gần đây; bỏ qua lần thử này",
 		"condense_handler_invalid": "Trình xử lý API để nén ngữ cảnh không hợp lệ",
-		"condense_context_grew": "Kích thước ngữ cảnh tăng lên trong quá trình nén; bỏ qua lần thử này",
 		"condense_api_failed": "Cuộc gọi API nén thất bại: {{message}}",
 		"url_timeout": "Trang web mất quá nhiều thời gian để tải (timeout). Điều này có thể do kết nối chậm, trang web nặng hoặc tạm thời không khả dụng. Bạn có thể thử lại sau hoặc kiểm tra xem URL có đúng không.",
 		"url_not_found": "Không thể tìm thấy địa chỉ trang web. Vui lòng kiểm tra URL có đúng không và thử lại.",

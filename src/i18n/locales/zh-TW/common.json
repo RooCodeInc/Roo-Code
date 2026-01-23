@@ -62,7 +62,6 @@
 		"condense_not_enough_messages": "沒有足夠的訊息來壓縮上下文",
 		"condensed_recently": "上下文最近已壓縮；跳過此次嘗試",
 		"condense_handler_invalid": "壓縮上下文的 API 處理程式無效",
-		"condense_context_grew": "壓縮過程中上下文大小增加；跳過此次嘗試",
 		"condense_api_failed": "壓縮 API 呼叫失敗：{{message}}",
 		"url_timeout": "網站載入超時。這可能是由於網路連線緩慢、網站負載過重或暫時無法使用。你可以稍後重試或檢查 URL 是否正確。",
 		"url_not_found": "找不到網站位址。請檢查 URL 是否正確並重試。",

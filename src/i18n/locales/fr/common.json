@@ -62,7 +62,6 @@
 		"condense_not_enough_messages": "Pas assez de messages pour condenser le contexte",
 		"condensed_recently": "Le contexte a été condensé récemment ; cette tentative est ignorée",
 		"condense_handler_invalid": "Le gestionnaire d'API pour condenser le contexte est invalide",
-		"condense_context_grew": "La taille du contexte a augmenté pendant la condensation ; cette tentative est ignorée",
 		"condense_api_failed": "L'appel API de condensation a échoué : {{message}}",
 		"url_timeout": "Le site web a pris trop de temps à charger (timeout). Cela pourrait être dû à une connexion lente, un site web lourd ou temporairement indisponible. Tu peux réessayer plus tard ou vérifier si l'URL est correcte.",
 		"url_not_found": "L'adresse du site web n'a pas pu être trouvée. Vérifie si l'URL est correcte et réessaie.",

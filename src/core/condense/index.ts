@@ -131,15 +131,16 @@ export type SummarizeResponse = {
  * - Post-condense, the model sees only the summary (true fresh start)
  * - All messages are still stored but tagged with condenseParent
  * - <command> blocks from the original task are preserved across condensings
+ * - <environment_details> is included to provide current workspace context
  *
  * @param {ApiMessage[]} messages - The conversation messages
  * @param {ApiHandler} apiHandler - The API handler to use for summarization and token counting
  * @param {string} systemPrompt - The system prompt for API requests (fallback if customCondensingPrompt not provided)
  * @param {string} taskId - The task ID for the conversation, used for telemetry
- * @param {number} prevContextTokens - The number of tokens currently in the context, used to ensure we don't grow the context
  * @param {boolean} isAutomaticTrigger - Whether the summarization is triggered automatically
  * @param {string} customCondensingPrompt - Optional custom prompt to use for condensing
  * @param {ApiHandlerCreateMessageMetadata} metadata - Optional metadata to pass to createMessage (tools, taskId, etc.)
+ * @param {string} environmentDetails - Optional environment details string to include in the summary
  * @returns {SummarizeResponse} - The result of the summarization operation (see above)
  */
 export async function summarizeConversation(
@@ -147,10 +148,10 @@ export async function summarizeConversation(
 	apiHandler: ApiHandler,
 	systemPrompt: string,
 	taskId: string,
-	prevContextTokens: number,
 	isAutomaticTrigger?: boolean,
 	customCondensingPrompt?: string,
 	metadata?: ApiHandlerCreateMessageMetadata,
+	environmentDetails?: string,
 ): Promise<SummarizeResponse> {
 	TelemetryService.instance.captureContextCondensed(
 		taskId,
@@ -293,6 +294,14 @@ ${commandBlocks}
 		})
 	}
 
+	// Add environment details as a separate text block if provided
+	if (environmentDetails?.trim()) {
+		summaryContent.push({
+			type: "text",
+			text: environmentDetails,
+		})
+	}
+
 	// Generate a unique condenseId for this summary
 	const condenseId = crypto.randomUUID()
 
@@ -342,10 +351,6 @@ ${commandBlocks}
 	)
 
 	const newContextTokens = outputTokens + (await apiHandler.countTokens(contextBlocks))
-	if (newContextTokens >= prevContextTokens) {
-		const error = t("common:errors.condense_context_grew")
-		return { ...response, cost, error }
-	}
 	return { messages: newMessages, summary, cost, newContextTokens, condenseId }
 }
 

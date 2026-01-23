@@ -220,6 +220,8 @@ export type ContextManagementOptions = {
 	currentProfileId: string
 	/** Optional metadata to pass through to the condensing API call (tools, taskId, etc.) */
 	metadata?: ApiHandlerCreateMessageMetadata
+	/** Optional environment details string to include in the condensed summary */
+	environmentDetails?: string
 }
 
 export type ContextManagementResult = SummarizeResponse & {
@@ -249,6 +251,7 @@ export async function manageContext({
 	profileThresholds,
 	currentProfileId,
 	metadata,
+	environmentDetails,
 }: ContextManagementOptions): Promise<ContextManagementResult> {
 	let error: string | undefined
 	let errorDetails: string | undefined
@@ -299,10 +302,10 @@ export async function manageContext({
 				apiHandler,
 				systemPrompt,
 				taskId,
-				prevContextTokens,
 				true, // automatic trigger
 				customCondensingPrompt,
 				metadata,
+				environmentDetails,
 			)
 			if (result.error) {
 				error = result.error

@@ -1626,6 +1626,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 				: {}),
 		}
+		// Generate environment details to include in the condensed summary
+		const environmentDetails = await getEnvironmentDetails(this, true)
+
 		const {
 			messages,
 			summary,
@@ -1639,10 +1642,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.api, // Main API handler (fallback)
 			systemPrompt, // Default summarization prompt (fallback)
 			this.taskId,
-			prevContextTokens,
 			false, // manual trigger
 			customCondensingPrompt, // User's custom prompt
 			metadata, // Pass metadata with tools
+			environmentDetails, // Include environment details in summary
 		)
 		if (error) {
 			await this.say(
@@ -3772,6 +3775,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		try {
+			// Generate environment details to include in the condensed summary
+			const environmentDetails = await getEnvironmentDetails(this, true)
+
 			// Force aggressive truncation by keeping only 75% of the conversation history
 			const truncateResult = await manageContext({
 				messages: this.apiConversationHistory,
@@ -3786,6 +3792,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				profileThresholds,
 				currentProfileId,
 				metadata,
+				environmentDetails,
 			})
 
 			if (truncateResult.messages !== this.apiConversationHistory) {
@@ -3985,6 +3992,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					: {}),
 			}
 
+			// Generate environment details to include in the condensed summary
+			const contextMgmtEnvironmentDetails = await getEnvironmentDetails(this, true)
+
 			try {
 				const truncateResult = await manageContext({
 					messages: this.apiConversationHistory,
@@ -4000,6 +4010,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					profileThresholds,
 					currentProfileId,
 					metadata: contextMgmtMetadata,
+					environmentDetails: contextMgmtEnvironmentDetails,
 				})
 				if (truncateResult.messages !== this.apiConversationHistory) {
 					await this.overwriteApiConversationHistory(truncateResult.messages)

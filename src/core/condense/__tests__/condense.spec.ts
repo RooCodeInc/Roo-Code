@@ -136,7 +136,7 @@ Line 2
 				{ role: "user", content: "Ninth message" },
 			]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, false)
 
 			// Verify we have a summary message with role "user" (fresh start model)
 			const summaryMessage = result.messages.find((msg) => msg.isSummary)
@@ -164,7 +164,7 @@ Line 2
 				{ role: "user", content: "Fifth message" },
 			]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, false)
 
 			// All original messages should be tagged with condenseParent
 			const taggedMessages = result.messages.filter((msg) => !msg.isSummary)
@@ -193,7 +193,7 @@ Line 2
 				{ role: "user", content: "Ninth message" },
 			]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, false)
 
 			const summaryMessage = result.messages.find((msg) => msg.isSummary)
 			expect(summaryMessage).toBeTruthy()
@@ -227,7 +227,7 @@ Line 2
 				{ role: "user", content: "Perfect!" },
 			]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, false)
 
 			// Effective history should contain only the summary (fresh start)
 			const effectiveHistory = getEffectiveApiHistory(result.messages)
@@ -239,7 +239,7 @@ Line 2
 		it("should return error when not enough messages to summarize", async () => {
 			const messages: ApiMessage[] = [{ role: "user", content: "Only one message" }]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, false)
 
 			// Should return an error since we have only 1 message
 			expect(result.error).toBeDefined()
@@ -253,7 +253,7 @@ Line 2
 				{ role: "assistant", content: "Previous summary", isSummary: true },
 			]
 
-			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, false)
 
 			// Should return an error due to recent summary with no substantial messages after
 			expect(result.error).toBeDefined()
@@ -286,7 +286,7 @@ Line 2
 				{ role: "user", content: "Seventh" },
 			]
 
-			const result = await summarizeConversation(messages, emptyHandler, "System prompt", taskId, 5000, false)
+			const result = await summarizeConversation(messages, emptyHandler, "System prompt", taskId, false)
 
 			expect(result.error).toBeDefined()
 			expect(result.messages).toEqual(messages)

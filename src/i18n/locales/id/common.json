@@ -62,7 +62,6 @@
 		"condense_not_enough_messages": "Tidak cukup pesan untuk mengompres konteks",
 		"condensed_recently": "Konteks baru saja dikompres; melewati percobaan ini",
 		"condense_handler_invalid": "Handler API untuk mengompres konteks tidak valid",
-		"condense_context_grew": "Ukuran konteks bertambah saat mengompres; melewati percobaan ini",
 		"condense_api_failed": "Panggilan API pengompresan gagal: {{message}}",
 		"url_timeout": "Situs web membutuhkan waktu terlalu lama untuk dimuat (timeout). Ini bisa disebabkan oleh koneksi lambat, situs web berat, atau sementara tidak tersedia. Kamu bisa mencoba lagi nanti atau memeriksa apakah URL sudah benar.",
 		"url_not_found": "Alamat situs web tidak dapat ditemukan. Silakan periksa apakah URL sudah benar dan coba lagi.",
