@@ -1,6 +1,6 @@
 import axios from "axios"
 
-import type { ModelInfo } from "@roo-code/types"
+import type { ModelInfo } from "@klaus-code/types"
 
 export async function getUnboundModels(apiKey?: string | null): Promise<Record<string, ModelInfo>> {
 	const models: Record<string, ModelInfo> = {}

@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import type { ModelInfo } from "@roo-code/types"
+import type { ModelInfo } from "@klaus-code/types"
 
 import { BaseProvider } from "../base-provider"
 import type { ApiStream } from "../../transform/stream"

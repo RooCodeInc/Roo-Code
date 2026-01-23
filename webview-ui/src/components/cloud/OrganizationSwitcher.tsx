@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { Building2, User, Plus } from "lucide-react"
 
-import { type CloudUserInfo, type CloudOrganizationMembership, type ExtensionMessage } from "@roo-code/types"
+import { type CloudUserInfo, type CloudOrganizationMembership, type ExtensionMessage } from "@klaus-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { vscode } from "@src/utils/vscode"

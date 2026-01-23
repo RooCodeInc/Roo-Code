@@ -2,7 +2,7 @@
 
 const mockCaptureException = vitest.fn()
 
-vitest.mock("@roo-code/telemetry", () => ({
+vitest.mock("@klaus-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureException: (...args: unknown[]) => mockCaptureException(...args),
@@ -12,7 +12,7 @@ vitest.mock("@roo-code/telemetry", () => ({
 
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import { ApiProviderError } from "@roo-code/types"
+import { ApiProviderError } from "@klaus-code/types"
 
 import { OpenAiNativeHandler } from "../openai-native"
 import { ApiHandlerOptions } from "../../../shared/api"

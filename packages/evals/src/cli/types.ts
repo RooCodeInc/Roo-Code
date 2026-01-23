@@ -1,4 +1,4 @@
-import { type TaskEvent } from "@roo-code/types"
+import { type TaskEvent } from "@klaus-code/types"
 
 import type { Run, Task } from "../db/index.js"
 import { Logger } from "./utils.js"

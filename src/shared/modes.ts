@@ -7,7 +7,7 @@ import {
 	type ToolGroup,
 	type PromptComponent,
 	DEFAULT_MODES,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import { addCustomInstructions } from "../core/prompts/sections/custom-instructions"
 

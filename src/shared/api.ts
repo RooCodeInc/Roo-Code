@@ -6,7 +6,7 @@ import {
 	ANTHROPIC_DEFAULT_MAX_TOKENS,
 	isDynamicProvider,
 	isLocalProvider,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 // ApiHandlerOptions
 // Extend ProviderSettings (minus apiProvider) with handler-specific toggles.

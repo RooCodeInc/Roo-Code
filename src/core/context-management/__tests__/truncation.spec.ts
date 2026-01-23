@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest"
-import { TelemetryService } from "@roo-code/telemetry"
+import { TelemetryService } from "@klaus-code/telemetry"
 import { truncateConversation } from "../index"
 import { getEffectiveApiHistory, cleanupAfterTruncation } from "../../condense"
 import { ApiMessage } from "../../task-persistence/apiMessages"

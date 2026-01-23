@@ -6,7 +6,7 @@ import {
 	IMAGE_GENERATION_MODEL_IDS,
 	IMAGE_GENERATION_MODELS,
 	getImageGenerationProvider,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { fileExistsAtPath } from "../../utils/fs"

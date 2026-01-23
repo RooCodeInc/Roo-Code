@@ -1,4 +1,4 @@
-// pnpm --filter @roo-code/vscode-webview test src/components/chat/__tests__/CommandExecution.spec.tsx
+// pnpm --filter @klaus-code/vscode-webview test src/components/chat/__tests__/CommandExecution.spec.tsx
 
 import React from "react"
 import { render, screen, fireEvent } from "@testing-library/react"

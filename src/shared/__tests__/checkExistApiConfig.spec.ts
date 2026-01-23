@@ -1,6 +1,6 @@
 // npx vitest run src/shared/__tests__/checkExistApiConfig.spec.ts
 
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings } from "@klaus-code/types"
 
 import { checkExistKey } from "../checkExistApiConfig"
 

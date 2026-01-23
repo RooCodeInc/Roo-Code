@@ -1,7 +1,7 @@
 import axios from "axios"
 import { LMStudioClient, LLMInstanceInfo, LLMInfo } from "@lmstudio/sdk"
 
-import { ModelInfo, lMStudioDefaultModelInfo } from "@roo-code/types"
+import { ModelInfo, lMStudioDefaultModelInfo } from "@klaus-code/types"
 
 import { getLMStudioModels, parseLMStudioModel } from "../lmstudio"
 

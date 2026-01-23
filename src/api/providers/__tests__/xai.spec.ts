@@ -2,7 +2,7 @@
 
 // Mock TelemetryService - must come before other imports
 const mockCaptureException = vitest.hoisted(() => vitest.fn())
-vitest.mock("@roo-code/telemetry", () => ({
+vitest.mock("@klaus-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureException: mockCaptureException,
@@ -24,7 +24,7 @@ vitest.mock("openai", () => {
 import OpenAI from "openai"
 import type { Anthropic } from "@anthropic-ai/sdk"
 
-import { xaiDefaultModelId, xaiModels } from "@roo-code/types"
+import { xaiDefaultModelId, xaiModels } from "@klaus-code/types"
 
 import { XAIHandler } from "../xai"
 

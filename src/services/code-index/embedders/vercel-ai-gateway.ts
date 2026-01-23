@@ -2,8 +2,8 @@ import { OpenAICompatibleEmbedder } from "./openai-compatible"
 import { IEmbedder, EmbeddingResponse, EmbedderInfo } from "../interfaces/embedder"
 import { MAX_ITEM_TOKENS } from "../constants"
 import { t } from "../../../i18n"
-import { TelemetryEventName } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+import { TelemetryEventName } from "@klaus-code/types"
+import { TelemetryService } from "@klaus-code/telemetry"
 
 /**
  * Vercel AI Gateway embedder implementation that wraps the OpenAI Compatible embedder

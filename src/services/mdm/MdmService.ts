@@ -3,7 +3,7 @@ import * as path from "path"
 import * as os from "os"
 import { z } from "zod"
 
-import { CloudService, getClerkBaseUrl, PRODUCTION_CLERK_BASE_URL } from "@roo-code/cloud"
+import { CloudService, getClerkBaseUrl, PRODUCTION_CLERK_BASE_URL } from "@klaus-code/cloud"
 
 import { t } from "../../i18n"
 

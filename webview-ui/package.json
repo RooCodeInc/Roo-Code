@@ -1,5 +1,5 @@
 {
-	"name": "@roo-code/vscode-webview",
+	"name": "@klaus-code/vscode-webview",
 	"private": true,
 	"type": "module",
 	"scripts": {
@@ -30,7 +30,7 @@
 		"@radix-ui/react-slider": "^1.2.3",
 		"@radix-ui/react-slot": "^1.1.2",
 		"@radix-ui/react-tooltip": "^1.1.8",
-		"@roo-code/types": "workspace:^",
+		"@klaus-code/types": "workspace:^",
 		"@tailwindcss/vite": "^4.0.0",
 		"@tanstack/react-query": "^5.68.0",
 		"@types/qrcode": "^1.5.5",
@@ -85,8 +85,8 @@
 		"zod": "^3.25.61"
 	},
 	"devDependencies": {
-		"@roo-code/config-eslint": "workspace:^",
-		"@roo-code/config-typescript": "workspace:^",
+		"@klaus-code/config-eslint": "workspace:^",
+		"@klaus-code/config-typescript": "workspace:^",
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/react": "^16.2.0",
 		"@testing-library/user-event": "^14.6.1",

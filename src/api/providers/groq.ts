@@ -1,4 +1,4 @@
-import { type GroqModelId, groqDefaultModelId, groqModels } from "@roo-code/types"
+import { type GroqModelId, groqDefaultModelId, groqModels } from "@klaus-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 

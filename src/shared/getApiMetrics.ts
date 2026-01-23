@@ -3,6 +3,6 @@ import {
 	consolidateTokenUsage as getApiMetrics,
 	hasTokenUsageChanged,
 	hasToolUsageChanged,
-} from "@roo-code/core/browser"
+} from "@klaus-code/core/browser"
 
 export { type ParsedApiReqStartedTextType, getApiMetrics, hasTokenUsageChanged, hasToolUsageChanged }

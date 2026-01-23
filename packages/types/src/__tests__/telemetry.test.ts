@@ -1,4 +1,4 @@
-// pnpm --filter @roo-code/types test src/__tests__/telemetry.test.ts
+// pnpm --filter @klaus-code/types test src/__tests__/telemetry.test.ts
 
 import {
 	getErrorStatusCode,

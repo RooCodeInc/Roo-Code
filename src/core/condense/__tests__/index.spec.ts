@@ -3,7 +3,7 @@
 import type { Mock } from "vitest"
 
 import { Anthropic } from "@anthropic-ai/sdk"
-import { TelemetryService } from "@roo-code/telemetry"
+import { TelemetryService } from "@klaus-code/telemetry"
 
 import { ApiHandler } from "../../../api"
 import { ApiMessage } from "../../task-persistence/apiMessages"
@@ -21,7 +21,7 @@ vi.mock("../../../api/transform/image-cleaning", () => ({
 	maybeRemoveImageBlocks: vi.fn((messages: ApiMessage[], _apiHandler: ApiHandler) => [...messages]),
 }))
 
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@klaus-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureContextCondensed: vi.fn(),

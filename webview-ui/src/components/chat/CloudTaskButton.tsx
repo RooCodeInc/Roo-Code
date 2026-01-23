@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Copy, Check, CloudUploadIcon } from "lucide-react"
 import QRCode from "qrcode"
 
-import type { HistoryItem } from "@roo-code/types"
+import type { HistoryItem } from "@klaus-code/types"
 
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useCopyToClipboard } from "@/utils/clipboard"

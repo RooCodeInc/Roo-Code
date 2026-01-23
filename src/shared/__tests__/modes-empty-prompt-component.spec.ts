@@ -1,4 +1,4 @@
-import type { PromptComponent } from "@roo-code/types"
+import type { PromptComponent } from "@klaus-code/types"
 
 import { getModeSelection, modes } from "../modes"
 

@@ -1,4 +1,4 @@
-import type { ClineAsk, ClineSay, TodoItem } from "@roo-code/types"
+import type { ClineAsk, ClineSay, TodoItem } from "@klaus-code/types"
 
 export type MessageRole = "system" | "user" | "assistant" | "tool" | "thinking"
 

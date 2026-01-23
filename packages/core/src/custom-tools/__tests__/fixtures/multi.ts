@@ -1,4 +1,4 @@
-import { parametersSchema, defineCustomTool } from "@roo-code/types"
+import { parametersSchema, defineCustomTool } from "@klaus-code/types"
 
 export const toolA = defineCustomTool({
 	name: "multi_toolA",

@@ -11,8 +11,8 @@ import {
 	type ReasoningEffort,
 	type ReasoningEffortExtended,
 	ApiProviderError,
-} from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+} from "@klaus-code/types"
+import { TelemetryService } from "@klaus-code/telemetry"
 
 import { Package } from "../../shared/package"
 import type { ApiHandlerOptions } from "../../shared/api"

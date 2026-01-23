@@ -2,7 +2,7 @@
 
 import { ZodError } from "zod"
 
-import { type ModeConfig, modeConfigSchema } from "@roo-code/types"
+import { type ModeConfig, modeConfigSchema } from "@klaus-code/types"
 
 function validateCustomMode(mode: unknown): asserts mode is ModeConfig {
 	modeConfigSchema.parse(mode)

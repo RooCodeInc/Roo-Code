@@ -5,7 +5,7 @@
  * which would break TUI applications. The log format is timestamped JSON.
  *
  * Usage:
- *   import { debugLog, DebugLogger } from "@roo-code/core/cli"
+ *   import { debugLog, DebugLogger } from "@klaus-code/core/cli"
  *
  *   // Simple logging
  *   debugLog("handleModeSwitch", { mode: newMode, configId })

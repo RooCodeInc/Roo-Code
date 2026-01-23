@@ -1,5 +1,5 @@
 {
-	"name": "@roo-code/types",
+	"name": "@klaus-code/types",
 	"version": "0.0.0",
 	"type": "module",
 	"main": "./dist/index.cjs",
@@ -26,8 +26,8 @@
 		"zod": "^3.25.61"
 	},
 	"devDependencies": {
-		"@roo-code/config-eslint": "workspace:^",
-		"@roo-code/config-typescript": "workspace:^",
+		"@klaus-code/config-eslint": "workspace:^",
+		"@klaus-code/config-typescript": "workspace:^",
 		"@types/node": "^24.1.0",
 		"globals": "^16.3.0",
 		"tsup": "^8.4.0",

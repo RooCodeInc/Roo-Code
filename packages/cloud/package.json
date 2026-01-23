@@ -1,5 +1,5 @@
 {
-	"name": "@roo-code/cloud",
+	"name": "@klaus-code/cloud",
 	"description": "Klaus Code Cloud services.",
 	"version": "0.0.0",
 	"type": "module",
@@ -11,7 +11,7 @@
 		"clean": "rimraf .turbo"
 	},
 	"dependencies": {
-		"@roo-code/types": "workspace:^",
+		"@klaus-code/types": "workspace:^",
 		"ioredis": "^5.6.1",
 		"jwt-decode": "^4.0.0",
 		"p-wait-for": "^5.0.2",
@@ -19,8 +19,8 @@
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
-		"@roo-code/config-eslint": "workspace:^",
-		"@roo-code/config-typescript": "workspace:^",
+		"@klaus-code/config-eslint": "workspace:^",
+		"@klaus-code/config-typescript": "workspace:^",
 		"@types/node": "^24.1.0",
 		"@types/vscode": "^1.102.0",
 		"globals": "^16.3.0",

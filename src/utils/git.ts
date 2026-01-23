@@ -4,7 +4,7 @@ import { promises as fs } from "fs"
 import { exec } from "child_process"
 import { promisify } from "util"
 
-import type { GitRepositoryInfo, GitCommit } from "@roo-code/types"
+import type { GitRepositoryInfo, GitCommit } from "@klaus-code/types"
 
 import { truncateOutput } from "../integrations/misc/extract-text"
 

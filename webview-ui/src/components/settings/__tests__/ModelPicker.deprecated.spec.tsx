@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 
 import { ModelPicker } from "../ModelPicker"
-import type { ModelInfo } from "@roo-code/types"
+import type { ModelInfo } from "@klaus-code/types"
 
 // Mock the i18n module
 vi.mock("@src/i18n/TranslationContext", () => ({

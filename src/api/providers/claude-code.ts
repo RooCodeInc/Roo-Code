@@ -7,7 +7,7 @@ import {
 	claudeCodeReasoningConfig,
 	type ClaudeCodeReasoningLevel,
 	type ModelInfo,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 import { type ApiHandler, ApiHandlerCreateMessageMetadata, type SingleCompletionHandler } from ".."
 import { ApiStreamUsageChunk, type ApiStream } from "../transform/stream"
 import { claudeCodeOAuthManager, generateUserId } from "../../integrations/claude-code/oauth"

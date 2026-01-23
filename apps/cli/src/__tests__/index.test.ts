@@ -10,7 +10,7 @@
  * Run with: RUN_CLI_INTEGRATION_TESTS=true OPENROUTER_API_KEY=sk-or-v1-... pnpm test
  */
 
-// pnpm --filter @roo-code/cli test src/__tests__/index.test.ts
+// pnpm --filter @klaus-code/cli test src/__tests__/index.test.ts
 
 import path from "path"
 import fs from "fs"

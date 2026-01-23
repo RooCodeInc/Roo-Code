@@ -39,7 +39,7 @@ import {
 	vercelAiGatewayDefaultModelId,
 	deepInfraDefaultModelId,
 	minimaxDefaultModelId,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import {
 	getProviderServiceConfig,

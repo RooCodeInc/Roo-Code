@@ -1,4 +1,4 @@
-import { browserActions } from "@roo-code/types"
+import { browserActions } from "@klaus-code/types"
 
 describe("Browser Action Screenshot", () => {
 	describe("browserActions array", () => {

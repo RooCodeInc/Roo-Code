@@ -1,6 +1,6 @@
-import type { ToolName, ModeConfig, ExperimentId, GroupOptions, GroupEntry } from "@roo-code/types"
-import { toolNames as validToolNames } from "@roo-code/types"
-import { customToolRegistry } from "@roo-code/core"
+import type { ToolName, ModeConfig, ExperimentId, GroupOptions, GroupEntry } from "@klaus-code/types"
+import { toolNames as validToolNames } from "@klaus-code/types"
+import { customToolRegistry } from "@klaus-code/core"
 
 import { type Mode, FileRestrictionError, getModeBySlug, getGroupName } from "../../shared/modes"
 import { EXPERIMENT_IDS } from "../../shared/experiments"

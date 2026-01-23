@@ -9,7 +9,7 @@ import {
 	type ModelInfo,
 	ZAI_DEFAULT_TEMPERATURE,
 	zaiApiLineConfigs,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import { type ApiHandlerOptions, getModelMaxOutputTokens, shouldUseReasoningEffort } from "../../shared/api"
 import { convertToZAiFormat } from "../transform/zai-format"

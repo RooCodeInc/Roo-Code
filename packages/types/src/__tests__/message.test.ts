@@ -1,4 +1,4 @@
-// pnpm --filter @roo-code/types test src/__tests__/message.test.ts
+// pnpm --filter @klaus-code/types test src/__tests__/message.test.ts
 
 import { clineAsks, isIdleAsk, isInteractiveAsk, isResumableAsk, isNonBlockingAsk } from "../message.js"
 

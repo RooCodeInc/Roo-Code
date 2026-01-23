@@ -1,8 +1,8 @@
 import path from "path"
 import fs from "fs/promises"
 
-import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+import { type ClineSayTool, DEFAULT_WRITE_DELAY_MS } from "@klaus-code/types"
+import { TelemetryService } from "@klaus-code/telemetry"
 
 import { getReadablePath } from "../../utils/path"
 import { Task } from "../task/Task"

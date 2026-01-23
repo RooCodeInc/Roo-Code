@@ -1,7 +1,7 @@
 // npx vitest run __tests__/nested-delegation-resume.spec.ts
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { RooCodeEventName } from "@roo-code/types"
+import { RooCodeEventName } from "@klaus-code/types"
 
 // Mock safe-stable-stringify to avoid runtime error
 vi.mock("safe-stable-stringify", () => ({
@@ -9,7 +9,7 @@ vi.mock("safe-stable-stringify", () => ({
 }))
 
 // Mock TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@klaus-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureTaskCompleted: vi.fn(),

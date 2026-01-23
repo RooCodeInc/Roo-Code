@@ -3,7 +3,7 @@
 import type { MockedFunction } from "vitest"
 import * as vscode from "vscode"
 
-import type { SettingsService, AuthService } from "@roo-code/types"
+import type { SettingsService, AuthService } from "@klaus-code/types"
 
 import { CloudAPI } from "../CloudAPI.js"
 import { CloudShareService } from "../CloudShareService.js"

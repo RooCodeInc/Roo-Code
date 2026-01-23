@@ -5,7 +5,7 @@ const path = require("path")
 const { execSync } = require("child_process")
 const readline = require("readline")
 
-const PACKAGE_NAME = "@roo-code/types"
+const PACKAGE_NAME = "@klaus-code/types"
 const BRANCH_NAME = "roo-code-types-v"
 
 const rootDir = path.join(__dirname, "..")

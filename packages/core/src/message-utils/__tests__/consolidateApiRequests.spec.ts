@@ -1,6 +1,6 @@
 // npx vitest run packages/core/src/message-utils/__tests__/consolidateApiRequests.spec.ts
 
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@klaus-code/types"
 
 import { consolidateApiRequests } from "../consolidateApiRequests.js"
 

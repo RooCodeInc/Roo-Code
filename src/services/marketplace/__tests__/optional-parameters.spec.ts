@@ -1,4 +1,4 @@
-import { mcpParameterSchema } from "@roo-code/types"
+import { mcpParameterSchema } from "@klaus-code/types"
 
 describe("Optional Parameters", () => {
 	describe("McpParameter Schema", () => {

@@ -1,5 +1,5 @@
 {
-	"extends": "@roo-code/config-typescript/base.json",
+	"extends": "@klaus-code/config-typescript/base.json",
 	"compilerOptions": {
 		"types": ["vitest/globals"],
 		"outDir": "dist",

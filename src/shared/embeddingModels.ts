@@ -2,7 +2,7 @@
  * Defines profiles for different embedding models, including their dimensions.
  */
 
-import type { EmbedderProvider, EmbeddingModelProfiles } from "@roo-code/types"
+import type { EmbedderProvider, EmbeddingModelProfiles } from "@klaus-code/types"
 
 // Example profiles - expand this list as needed
 export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {

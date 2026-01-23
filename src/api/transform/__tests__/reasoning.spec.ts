@@ -1,6 +1,6 @@
 // npx vitest run src/api/transform/__tests__/reasoning.spec.ts
 
-import type { ModelInfo, ProviderSettings, ReasoningEffortWithMinimal } from "@roo-code/types"
+import type { ModelInfo, ProviderSettings, ReasoningEffortWithMinimal } from "@klaus-code/types"
 
 import {
 	getOpenRouterReasoning,

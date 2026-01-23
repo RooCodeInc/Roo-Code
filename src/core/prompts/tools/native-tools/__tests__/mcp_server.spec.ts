@@ -1,6 +1,6 @@
 import type OpenAI from "openai"
 
-import type { McpServer, McpTool } from "@roo-code/types"
+import type { McpServer, McpTool } from "@klaus-code/types"
 
 import type { McpHub } from "../../../../../services/mcp/McpHub"
 

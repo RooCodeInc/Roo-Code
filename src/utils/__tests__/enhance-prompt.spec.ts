@@ -1,6 +1,6 @@
 // npx vitest run src/utils/__tests__/enhance-prompt.spec.ts
 
-import type { ProviderSettings } from "@roo-code/types"
+import type { ProviderSettings } from "@klaus-code/types"
 
 import { singleCompletionHandler } from "../single-completion-handler"
 import { buildApiHandler, SingleCompletionHandler } from "../../api"

@@ -1,4 +1,4 @@
-import { RooCodeSettings } from "@roo-code/types"
+import { RooCodeSettings } from "@klaus-code/types"
 
 import type { SupportedProvider } from "@/types/index.js"
 

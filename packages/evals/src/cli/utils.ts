@@ -4,7 +4,7 @@ import * as path from "path"
 
 import { execa, type ResultPromise } from "execa"
 
-import type { ToolUsage } from "@roo-code/types"
+import type { ToolUsage } from "@klaus-code/types"
 
 import type { Run, Task } from "../db/index.js"
 

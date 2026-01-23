@@ -1,8 +1,8 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
-import { CloudService } from "@roo-code/cloud"
+import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@klaus-code/types"
+import { CloudService } from "@klaus-code/cloud"
 
 import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
 

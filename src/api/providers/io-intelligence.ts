@@ -1,4 +1,4 @@
-import { ioIntelligenceDefaultModelId, ioIntelligenceModels, type IOIntelligenceModelId } from "@roo-code/types"
+import { ioIntelligenceDefaultModelId, ioIntelligenceModels, type IOIntelligenceModelId } from "@klaus-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"

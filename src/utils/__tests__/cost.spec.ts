@@ -1,6 +1,6 @@
 // npx vitest utils/__tests__/cost.spec.ts
 
-import type { ModelInfo } from "@roo-code/types"
+import type { ModelInfo } from "@klaus-code/types"
 
 import { calculateApiCostAnthropic, calculateApiCostOpenAI } from "../../shared/cost"
 

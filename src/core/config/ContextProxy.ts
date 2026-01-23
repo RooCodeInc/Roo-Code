@@ -16,8 +16,8 @@ import {
 	globalSettingsSchema,
 	isSecretStateKey,
 	isProviderName,
-} from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+} from "@klaus-code/types"
+import { TelemetryService } from "@klaus-code/telemetry"
 
 import { logger } from "../../utils/logging"
 import { supportPrompt } from "../../shared/support-prompt"

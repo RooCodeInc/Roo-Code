@@ -1,6 +1,6 @@
 // npx vitest run src/shared/__tests__/combineApiRequests.spec.ts
 
-import type { ClineMessage, ClineSay } from "@roo-code/types"
+import type { ClineMessage, ClineSay } from "@klaus-code/types"
 
 import { combineApiRequests } from "../combineApiRequests"
 

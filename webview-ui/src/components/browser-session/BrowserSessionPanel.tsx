@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 
-import { type ClineMessage, type ExtensionMessage } from "@roo-code/types"
+import { type ClineMessage, type ExtensionMessage } from "@klaus-code/types"
 
 import { TooltipProvider } from "@src/components/ui/tooltip"
 import TranslationProvider from "@src/i18n/TranslationContext"

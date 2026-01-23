@@ -1,4 +1,4 @@
-import type { ProviderName, ReasoningEffortExtended } from "@roo-code/types"
+import type { ProviderName, ReasoningEffortExtended } from "@klaus-code/types"
 import type { OutputFormat } from "./json-events.js"
 
 export const supportedProviders = [

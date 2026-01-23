@@ -14,7 +14,7 @@ vitest.mock("delay", () => ({ default: vitest.fn(() => Promise.resolve()) }))
 
 const mockCaptureException = vitest.fn()
 
-vitest.mock("@roo-code/telemetry", () => ({
+vitest.mock("@klaus-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureException: (...args: unknown[]) => mockCaptureException(...args),

@@ -1,6 +1,6 @@
-// pnpm --filter @roo-code/core test src/custom-tools/__tests__/serialize.spec.ts
+// pnpm --filter @klaus-code/core test src/custom-tools/__tests__/serialize.spec.ts
 
-import { parametersSchema as z, defineCustomTool } from "@roo-code/types"
+import { parametersSchema as z, defineCustomTool } from "@klaus-code/types"
 
 import { serializeCustomTool, serializeCustomTools } from "../serialize.js"
 

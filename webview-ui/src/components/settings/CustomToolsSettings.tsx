@@ -3,7 +3,7 @@ import { useEvent } from "react-use"
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react"
 import { RefreshCw, Loader2, FileCode } from "lucide-react"
 
-import type { SerializedCustomToolDefinition } from "@roo-code/types"
+import type { SerializedCustomToolDefinition } from "@klaus-code/types"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
 

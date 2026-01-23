@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import DismissibleUpsell from "../DismissibleUpsell"
-import { TelemetryEventName } from "@roo-code/types"
+import { TelemetryEventName } from "@klaus-code/types"
 
 // Mock the vscode API
 const mockPostMessage = vi.fn()

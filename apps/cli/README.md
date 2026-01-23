@@ -1,10 +1,10 @@
-# @roo-code/cli
+# @klaus-code/cli
 
 Command Line Interface for Klaus Code - Run the Klaus Code agent from the terminal without VSCode.
 
 ## Overview
 
-This CLI uses the `@roo-code/vscode-shim` package to provide a VSCode API compatibility layer, allowing the main Klaus Code extension to run in a Node.js environment.
+This CLI uses the `@klaus-code/vscode-shim` package to provide a VSCode API compatibility layer, allowing the main Klaus Code extension to run in a Node.js environment.
 
 ## Installation
 
@@ -59,7 +59,7 @@ pnpm install
 pnpm --filter roo-cline bundle
 
 # Build the cli.
-pnpm --filter @roo-code/cli build
+pnpm --filter @klaus-code/cli build
 ```
 
 ## Usage
@@ -219,7 +219,7 @@ The CLI will look for API keys in environment variables if not provided via `--a
 
 2. **ExtensionHost** (`extension-host.ts`):
 
-    - Creates a VSCode API mock using `@roo-code/vscode-shim`
+    - Creates a VSCode API mock using `@klaus-code/vscode-shim`
     - Intercepts `require('vscode')` to return the mock
     - Loads and activates the extension bundle
     - Manages bidirectional message flow

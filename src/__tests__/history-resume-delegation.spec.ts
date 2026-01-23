@@ -1,7 +1,7 @@
 // npx vitest run __tests__/history-resume-delegation.spec.ts
 
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { RooCodeEventName } from "@roo-code/types"
+import { RooCodeEventName } from "@klaus-code/types"
 
 /* vscode mock for Task/Provider imports */
 vi.mock("vscode", () => {

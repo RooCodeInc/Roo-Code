@@ -1,4 +1,4 @@
-// pnpm --filter @roo-code/vscode-webview test src/components/chat/__tests__/ChatView.spec.tsx
+// pnpm --filter @klaus-code/vscode-webview test src/components/chat/__tests__/ChatView.spec.tsx
 
 import React from "react"
 import { render, waitFor, act, fireEvent } from "@/utils/test-utils"

@@ -10,7 +10,7 @@ vitest.mock("openai")
 global.fetch = vitest.fn()
 
 // Mock TelemetryService
-vitest.mock("@roo-code/telemetry", () => ({
+vitest.mock("@klaus-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureEvent: vitest.fn(),

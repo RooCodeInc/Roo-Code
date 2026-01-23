@@ -1,7 +1,7 @@
 import { render, screen } from "@/utils/test-utils"
 import userEvent from "@testing-library/user-event"
 
-import { MarketplaceItem } from "@roo-code/types"
+import { MarketplaceItem } from "@klaus-code/types"
 
 import { vscode } from "@/utils/vscode"
 import { TooltipProvider } from "@/components/ui/tooltip"

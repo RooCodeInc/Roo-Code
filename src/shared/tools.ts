@@ -8,7 +8,7 @@ import type {
 	FileEntry,
 	BrowserActionParams,
 	GenerateImageParams,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
 

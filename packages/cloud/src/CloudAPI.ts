@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { type AuthService, type ShareVisibility, type ShareResponse, shareResponseSchema } from "@roo-code/types"
+import { type AuthService, type ShareVisibility, type ShareResponse, shareResponseSchema } from "@klaus-code/types"
 
 import { getRooCodeApiUrl } from "./config.js"
 import { getUserAgent } from "./utils.js"

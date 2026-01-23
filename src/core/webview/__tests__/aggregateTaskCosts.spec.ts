@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { aggregateTaskCostsRecursive } from "../aggregateTaskCosts.js"
-import type { HistoryItem } from "@roo-code/types"
+import type { HistoryItem } from "@klaus-code/types"
 
 describe("aggregateTaskCostsRecursive", () => {
 	let consoleWarnSpy: ReturnType<typeof vi.spyOn>

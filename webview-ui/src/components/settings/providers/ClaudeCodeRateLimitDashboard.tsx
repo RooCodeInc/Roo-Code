@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react"
-import type { ClaudeCodeRateLimitInfo } from "@roo-code/types"
+import type { ClaudeCodeRateLimitInfo } from "@klaus-code/types"
 import { vscode } from "@src/utils/vscode"
 
 interface ClaudeCodeRateLimitDashboardProps {

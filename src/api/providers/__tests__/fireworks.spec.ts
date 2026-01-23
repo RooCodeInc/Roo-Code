@@ -3,7 +3,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { type FireworksModelId, fireworksDefaultModelId, fireworksModels } from "@roo-code/types"
+import { type FireworksModelId, fireworksDefaultModelId, fireworksModels } from "@klaus-code/types"
 
 import { FireworksHandler } from "../fireworks"
 

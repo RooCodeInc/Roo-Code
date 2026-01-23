@@ -4,7 +4,7 @@ import { fileURLToPath } from "url"
 
 import { createElement } from "react"
 
-import { setLogger } from "@roo-code/vscode-shim"
+import { setLogger } from "@klaus-code/vscode-shim"
 
 import {
 	FlagOptions,

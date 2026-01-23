@@ -1,4 +1,4 @@
-import { parametersSchema, defineCustomTool } from "@roo-code/types"
+import { parametersSchema, defineCustomTool } from "@klaus-code/types"
 
 // This tool only exists in fixtures-override/ to test combined loading.
 export default defineCustomTool({

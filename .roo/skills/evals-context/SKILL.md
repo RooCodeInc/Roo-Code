@@ -158,7 +158,7 @@ cd packages/evals && npx vitest run
 cd apps/web-evals && npx vitest run
 ```
 
-## Key Types/Exports from `@roo-code/evals`
+## Key Types/Exports from `@klaus-code/evals`
 
 The package exports are defined in [`packages/evals/src/index.ts`](packages/evals/src/index.ts):
 

@@ -1,4 +1,4 @@
-import { config } from "@roo-code/config-eslint/base"
+import { config } from "@klaus-code/config-eslint/base"
 import globals from "globals"
 
 /** @type {import("eslint").Linter.Config} */

@@ -11,7 +11,7 @@ import type {
 	ClineApiReqInfo,
 	ClineAskUseMcpServer,
 	ClineSayTool,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import { Mode } from "@roo/modes"
 

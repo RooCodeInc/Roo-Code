@@ -17,7 +17,7 @@
 		{
 			"label": "watch:webview",
 			"type": "shell",
-			"command": "pnpm --filter @roo-code/vscode-webview dev",
+			"command": "pnpm --filter @klaus-code/vscode-webview dev",
 			"group": "build",
 			"problemMatcher": {
 				"owner": "vite",

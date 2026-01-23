@@ -1,6 +1,6 @@
 // Mock TelemetryService - must come before other imports
 const mockCaptureException = vi.hoisted(() => vi.fn())
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@klaus-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureException: mockCaptureException,

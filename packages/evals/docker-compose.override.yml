@@ -40,6 +40,6 @@ services:
                 }
                 wait_for_db
                 echo '🔄 Running database migrations...'
-                pnpm --filter @roo-code/evals db:migrate
+                pnpm --filter @klaus-code/evals db:migrate
                 echo '🌐 Starting Next.js dev server...'
                 cd /roo/repo/apps/web-evals && npx next dev -p 3446

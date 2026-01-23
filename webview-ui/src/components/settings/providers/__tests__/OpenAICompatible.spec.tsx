@@ -1,7 +1,7 @@
 import React from "react"
 import { render, screen, fireEvent } from "@/utils/test-utils"
 import { OpenAICompatible } from "../OpenAICompatible"
-import { ProviderSettings } from "@roo-code/types"
+import { ProviderSettings } from "@klaus-code/types"
 
 // Mock the vscrui Checkbox component
 vi.mock("vscrui", () => ({

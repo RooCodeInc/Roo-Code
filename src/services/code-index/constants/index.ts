@@ -1,4 +1,4 @@
-import { CODEBASE_INDEX_DEFAULTS } from "@roo-code/types"
+import { CODEBASE_INDEX_DEFAULTS } from "@klaus-code/types"
 
 /**Parser */
 export const MAX_BLOCK_CHARS = 1000

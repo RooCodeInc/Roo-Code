@@ -1,4 +1,4 @@
-import { reasoningEffortsExtended } from "@roo-code/types"
+import { reasoningEffortsExtended } from "@klaus-code/types"
 
 export const DEFAULT_FLAGS = {
 	mode: "code",

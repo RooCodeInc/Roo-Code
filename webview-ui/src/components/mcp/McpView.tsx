@@ -8,7 +8,7 @@ import {
 	VSCodePanelView,
 } from "@vscode/webview-ui-toolkit/react"
 
-import type { McpServer } from "@roo-code/types"
+import type { McpServer } from "@klaus-code/types"
 
 import { vscode } from "@src/utils/vscode"
 import { useExtensionState } from "@src/context/ExtensionStateContext"

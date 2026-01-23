@@ -4,7 +4,7 @@ import OpenAI from "openai"
 import * as os from "os"
 import * as path from "path"
 
-import { type ModelInfo, type QwenCodeModelId, qwenCodeModels, qwenCodeDefaultModelId } from "@roo-code/types"
+import { type ModelInfo, type QwenCodeModelId, qwenCodeModels, qwenCodeDefaultModelId } from "@klaus-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 

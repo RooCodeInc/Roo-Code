@@ -10,7 +10,7 @@ vi.mock("os", () => ({
 	platform: vi.fn(),
 }))
 
-vi.mock("@roo-code/cloud", () => ({
+vi.mock("@klaus-code/cloud", () => ({
 	CloudService: {
 		hasInstance: vi.fn(),
 		instance: {
@@ -59,7 +59,7 @@ import * as fs from "fs"
 import * as os from "os"
 import * as vscode from "vscode"
 import { MdmService } from "../MdmService"
-import { CloudService, getClerkBaseUrl, PRODUCTION_CLERK_BASE_URL } from "@roo-code/cloud"
+import { CloudService, getClerkBaseUrl, PRODUCTION_CLERK_BASE_URL } from "@klaus-code/cloud"
 
 const mockFs = fs as any
 const mockOs = os as any

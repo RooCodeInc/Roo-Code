@@ -49,7 +49,7 @@ Resumes a task from history.
 ## Usage Example
 
 ```typescript
-import { IpcClient } from "@roo-code/ipc"
+import { IpcClient } from "@klaus-code/ipc"
 
 const client = new IpcClient("/path/to/socket")
 

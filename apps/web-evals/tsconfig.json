@@ -1,5 +1,5 @@
 {
-	"extends": "@roo-code/config-typescript/nextjs.json",
+	"extends": "@klaus-code/config-typescript/nextjs.json",
 	"compilerOptions": {
 		"types": ["vitest/globals"],
 		"plugins": [{ "name": "next" }],

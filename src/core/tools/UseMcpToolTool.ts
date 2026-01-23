@@ -1,4 +1,4 @@
-import type { ClineAskUseMcpServer, McpExecutionStatus } from "@roo-code/types"
+import type { ClineAskUseMcpServer, McpExecutionStatus } from "@klaus-code/types"
 
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"

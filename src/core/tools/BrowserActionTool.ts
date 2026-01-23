@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 
-import { BrowserAction, BrowserActionResult, browserActions, ClineSayBrowserAction } from "@roo-code/types"
+import { BrowserAction, BrowserActionResult, browserActions, ClineSayBrowserAction } from "@klaus-code/types"
 
 import { Task } from "../task/Task"
 import { ToolUse, AskApproval, HandleError, PushToolResult } from "../../shared/tools"

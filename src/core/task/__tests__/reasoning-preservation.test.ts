@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import type { ClineProvider } from "../../webview/ClineProvider"
-import type { ProviderSettings, ModelInfo } from "@roo-code/types"
+import type { ProviderSettings, ModelInfo } from "@klaus-code/types"
 
 // All vi.mock() calls are hoisted to the top of the file by Vitest
 // and are applied before any imports are resolved
@@ -63,7 +63,7 @@ vi.mock("../../integrations/terminal/TerminalRegistry", () => ({
 	},
 }))
 
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@klaus-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureTaskCreated: vi.fn(),
@@ -75,8 +75,8 @@ vi.mock("@roo-code/telemetry", () => ({
 	},
 }))
 
-// Mock @roo-code/cloud to prevent socket.io-client initialization issues
-vi.mock("@roo-code/cloud", () => ({
+// Mock @klaus-code/cloud to prevent socket.io-client initialization issues
+vi.mock("@klaus-code/cloud", () => ({
 	CloudService: {
 		isEnabled: () => false,
 	},

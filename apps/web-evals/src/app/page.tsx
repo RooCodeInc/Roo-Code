@@ -1,4 +1,4 @@
-import { getRuns } from "@roo-code/evals"
+import { getRuns } from "@klaus-code/evals"
 
 import { Runs } from "@/components/home/runs"
 

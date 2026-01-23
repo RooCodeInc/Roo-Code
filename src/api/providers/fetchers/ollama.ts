@@ -1,5 +1,5 @@
 import axios from "axios"
-import { ModelInfo, ollamaDefaultModelInfo } from "@roo-code/types"
+import { ModelInfo, ollamaDefaultModelInfo } from "@klaus-code/types"
 import { z } from "zod"
 
 const OllamaModelDetailsSchema = z.object({

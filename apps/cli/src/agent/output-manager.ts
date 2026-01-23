@@ -13,7 +13,7 @@
  * - Can be disabled for TUI mode where Ink controls the terminal
  */
 
-import { ClineMessage, ClineSay } from "@roo-code/types"
+import { ClineMessage, ClineSay } from "@klaus-code/types"
 
 import { Observable } from "./events.js"
 

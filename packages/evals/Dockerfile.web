@@ -52,7 +52,7 @@ RUN pnpm install
 COPY . ./
 
 # Build the web-evals app
-RUN pnpm --filter @roo-code/web-evals build
+RUN pnpm --filter @klaus-code/web-evals build
 
 # Copy entrypoint script
 COPY packages/evals/.docker/entrypoints/web.sh /usr/local/bin/entrypoint.sh

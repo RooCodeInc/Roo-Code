@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from "@/utils/test-utils"
-import { MAX_MCP_TOOLS_THRESHOLD } from "@roo-code/types"
+import { MAX_MCP_TOOLS_THRESHOLD } from "@klaus-code/types"
 
 import { TooManyToolsWarning } from "../TooManyToolsWarning"
 

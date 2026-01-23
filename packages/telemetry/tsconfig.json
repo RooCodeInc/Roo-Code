@@ -1,5 +1,5 @@
 {
-	"extends": "@roo-code/config-typescript/vscode-library.json",
+	"extends": "@klaus-code/config-typescript/vscode-library.json",
 	"include": ["src"],
 	"exclude": ["node_modules"]
 }

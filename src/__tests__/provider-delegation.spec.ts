@@ -1,7 +1,7 @@
 // npx vitest run __tests__/provider-delegation.spec.ts
 
 import { describe, it, expect, vi } from "vitest"
-import { RooCodeEventName } from "@roo-code/types"
+import { RooCodeEventName } from "@klaus-code/types"
 import { ClineProvider } from "../core/webview/ClineProvider"
 
 describe("ClineProvider.delegateParentAndOpenChild()", () => {

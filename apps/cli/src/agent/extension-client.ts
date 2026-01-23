@@ -27,7 +27,7 @@
  * ```
  */
 
-import type { ExtensionMessage, WebviewMessage, ClineAskResponse, ClineMessage, ClineAsk } from "@roo-code/types"
+import type { ExtensionMessage, WebviewMessage, ClineAskResponse, ClineMessage, ClineAsk } from "@klaus-code/types"
 
 import { StateStore } from "./state-store.js"
 import { MessageProcessor, parseExtensionMessage } from "./message-processor.js"

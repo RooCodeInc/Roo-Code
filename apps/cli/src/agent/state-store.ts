@@ -12,7 +12,7 @@
  * - Queryable: Current state is always accessible
  */
 
-import { ClineMessage, ExtensionState } from "@roo-code/types"
+import { ClineMessage, ExtensionState } from "@klaus-code/types"
 
 import { detectAgentState, AgentStateInfo, AgentLoopState } from "./agent-state.js"
 import { Observable } from "./events.js"

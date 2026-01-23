@@ -1,4 +1,4 @@
-import type { ModelInfo } from "@roo-code/types"
+import type { ModelInfo } from "@klaus-code/types"
 
 /**
  * Apply tool preferences for models accessed through dynamic routers (OpenRouter, Requesty).

@@ -1,8 +1,8 @@
 import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
 
-import type { ClineApiReqInfo } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+import type { ClineApiReqInfo } from "@klaus-code/types"
+import { TelemetryService } from "@klaus-code/telemetry"
 
 import { Task } from "../task/Task"
 

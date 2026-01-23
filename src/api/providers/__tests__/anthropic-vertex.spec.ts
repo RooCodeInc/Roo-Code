@@ -3,7 +3,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { AnthropicVertex } from "@anthropic-ai/vertex-sdk"
 
-import { VERTEX_1M_CONTEXT_MODEL_IDS } from "@roo-code/types"
+import { VERTEX_1M_CONTEXT_MODEL_IDS } from "@klaus-code/types"
 
 import { ApiStreamChunk } from "../../transform/stream"
 

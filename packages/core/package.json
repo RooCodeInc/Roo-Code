@@ -1,5 +1,5 @@
 {
-	"name": "@roo-code/core",
+	"name": "@klaus-code/core",
 	"description": "Platform agnostic core functionality for Klaus Code.",
 	"version": "0.0.0",
 	"type": "module",
@@ -15,7 +15,7 @@
 		"clean": "rimraf .turbo"
 	},
 	"dependencies": {
-		"@roo-code/types": "workspace:^",
+		"@klaus-code/types": "workspace:^",
 		"esbuild": "^0.25.0",
 		"execa": "^9.5.2",
 		"ignore": "^7.0.3",
@@ -23,8 +23,8 @@
 		"zod": "^3.25.61"
 	},
 	"devDependencies": {
-		"@roo-code/config-eslint": "workspace:^",
-		"@roo-code/config-typescript": "workspace:^",
+		"@klaus-code/config-eslint": "workspace:^",
+		"@klaus-code/config-typescript": "workspace:^",
 		"@types/node": "^24.1.0",
 		"vitest": "^3.2.3"
 	}

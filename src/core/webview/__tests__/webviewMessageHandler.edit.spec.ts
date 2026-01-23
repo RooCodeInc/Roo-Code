@@ -39,7 +39,7 @@ vi.mock("../checkpointRestoreHandler", () => ({
 // Import after mocks
 import { webviewMessageHandler } from "../webviewMessageHandler"
 import type { ClineProvider } from "../ClineProvider"
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@klaus-code/types"
 import type { ApiMessage } from "../../task-persistence/apiMessages"
 import { MessageManager } from "../../message-manager"
 

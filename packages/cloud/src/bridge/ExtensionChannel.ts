@@ -12,7 +12,7 @@ import {
 	ExtensionBridgeEventName,
 	ExtensionSocketEvents,
 	HEARTBEAT_INTERVAL_MS,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import { type BaseChannelOptions, BaseChannel } from "./BaseChannel.js"
 

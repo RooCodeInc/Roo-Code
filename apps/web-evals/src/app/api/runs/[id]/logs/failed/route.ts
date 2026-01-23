@@ -4,7 +4,7 @@ import * as fs from "node:fs"
 import * as path from "node:path"
 import archiver from "archiver"
 
-import { findRun, getTasks } from "@roo-code/evals"
+import { findRun, getTasks } from "@klaus-code/evals"
 
 export const dynamic = "force-dynamic"
 

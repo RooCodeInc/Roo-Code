@@ -1,6 +1,6 @@
 import { useCallback } from "react"
 import { randomUUID } from "crypto"
-import type { WebviewMessage } from "@roo-code/types"
+import type { WebviewMessage } from "@klaus-code/types"
 
 import { getGlobalCommand } from "../../lib/utils/commands.js"
 

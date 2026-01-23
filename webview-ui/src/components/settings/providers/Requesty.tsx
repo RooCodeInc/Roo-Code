@@ -6,7 +6,7 @@ import {
 	type OrganizationAllowList,
 	type RouterModels,
 	requestyDefaultModelId,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"

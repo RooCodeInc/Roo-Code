@@ -5,7 +5,7 @@ import {
 	isResumableAsk,
 	isInteractiveAsk,
 	isNonBlockingAsk,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import { AgentLoopState, detectAgentState } from "../agent-state.js"
 import { createMockClient } from "../extension-client.js"

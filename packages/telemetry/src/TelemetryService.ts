@@ -5,7 +5,7 @@ import {
 	type TelemetryPropertiesProvider,
 	TelemetryEventName,
 	type TelemetrySetting,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 /**
  * TelemetryService wrapper class that defers initialization.

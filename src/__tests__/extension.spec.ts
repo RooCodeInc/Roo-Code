@@ -1,7 +1,7 @@
 // npx vitest run __tests__/extension.spec.ts
 
 import type * as vscode from "vscode"
-import type { AuthState } from "@roo-code/types"
+import type { AuthState } from "@klaus-code/types"
 
 vi.mock("vscode", () => ({
 	window: {
@@ -58,7 +58,7 @@ const mockCloudServiceInstance = {
 	},
 }
 
-vi.mock("@roo-code/cloud", () => ({
+vi.mock("@klaus-code/cloud", () => ({
 	CloudService: {
 		createInstance: vi.fn(),
 		hasInstance: vi.fn().mockReturnValue(true),
@@ -72,7 +72,7 @@ vi.mock("@roo-code/cloud", () => ({
 	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
 }))
 
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@klaus-code/telemetry", () => ({
 	TelemetryService: {
 		createInstance: vi.fn().mockReturnValue({
 			register: vi.fn(),
@@ -178,7 +178,7 @@ vi.mock("../i18n", () => ({
 
 // Mock ClineProvider - remoteControlEnabled must call BridgeOrchestrator.disconnect for the test
 vi.mock("../core/webview/ClineProvider", async () => {
-	const { BridgeOrchestrator } = await import("@roo-code/cloud")
+	const { BridgeOrchestrator } = await import("@klaus-code/cloud")
 	const mockInstance = {
 		resolveWebviewView: vi.fn(),
 		postMessageToWebview: vi.fn(),
@@ -239,7 +239,7 @@ describe("extension.ts", () => {
 	})
 
 	test("authStateChangedHandler calls BridgeOrchestrator.disconnect when logged-out event fires", async () => {
-		const { CloudService, BridgeOrchestrator } = await import("@roo-code/cloud")
+		const { CloudService, BridgeOrchestrator } = await import("@klaus-code/cloud")
 
 		// Capture the auth state changed handler.
 		vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
@@ -274,7 +274,7 @@ describe("extension.ts", () => {
 	})
 
 	test("authStateChangedHandler does not call BridgeOrchestrator.disconnect for other states", async () => {
-		const { CloudService } = await import("@roo-code/cloud")
+		const { CloudService } = await import("@klaus-code/cloud")
 
 		// Capture the auth state changed handler.
 		vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
@@ -316,7 +316,7 @@ describe("extension.ts", () => {
 				getSessionToken: vi.fn().mockReturnValue("test-session-token"),
 			}
 
-			const { CloudService } = await import("@roo-code/cloud")
+			const { CloudService } = await import("@klaus-code/cloud")
 
 			vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
 				if (handlers?.["auth-state-changed"]) {
@@ -356,7 +356,7 @@ describe("extension.ts", () => {
 
 		test("flushModels is called when auth state changes to logged-out", async () => {
 			const { flushModels } = await import("../api/providers/fetchers/modelCache")
-			const { CloudService } = await import("@roo-code/cloud")
+			const { CloudService } = await import("@klaus-code/cloud")
 
 			vi.mocked(CloudService.createInstance).mockImplementation(async (_context, _logger, handlers) => {
 				if (handlers?.["auth-state-changed"]) {

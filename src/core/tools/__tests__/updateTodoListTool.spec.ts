@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { parseMarkdownChecklist } from "../UpdateTodoListTool"
-import { TodoItem } from "@roo-code/types"
+import { TodoItem } from "@klaus-code/types"
 
 describe("parseMarkdownChecklist", () => {
 	describe("standard checkbox format (without dash prefix)", () => {

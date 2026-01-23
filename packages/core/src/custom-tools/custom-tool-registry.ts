@@ -13,7 +13,7 @@ import path from "path"
 import { createHash } from "crypto"
 import os from "os"
 
-import type { CustomToolDefinition, SerializedCustomToolDefinition, CustomToolParametersSchema } from "@roo-code/types"
+import type { CustomToolDefinition, SerializedCustomToolDefinition, CustomToolParametersSchema } from "@klaus-code/types"
 
 import type { StoredCustomTool, LoadResult } from "./types.js"
 import { serializeCustomTool } from "./serialize.js"

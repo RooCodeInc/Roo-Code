@@ -2,7 +2,7 @@ import { memo, ReactNode, useEffect, useState, useRef } from "react"
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { telemetryClient } from "@src/utils/TelemetryClient"
-import { TelemetryEventName } from "@roo-code/types"
+import { TelemetryEventName } from "@klaus-code/types"
 
 interface DismissibleUpsellProps {
 	/** Required unique identifier for this upsell */

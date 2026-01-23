@@ -12,7 +12,7 @@ import {
 	TaskBridgeEventName,
 	TaskBridgeCommandName,
 	TaskSocketEvents,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import { type BaseChannelOptions, BaseChannel } from "./BaseChannel.js"
 

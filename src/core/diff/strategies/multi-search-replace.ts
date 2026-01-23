@@ -2,7 +2,7 @@
 
 import { distance } from "fastest-levenshtein"
 
-import { ToolProgressStatus } from "@roo-code/types"
+import { ToolProgressStatus } from "@klaus-code/types"
 
 import { addLineNumbers, everyLineHasLineNumbers, stripLineNumbers } from "../../../integrations/misc/extract-text"
 import { ToolUse, DiffStrategy, DiffResult } from "../../../shared/tools"

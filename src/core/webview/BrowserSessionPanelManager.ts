@@ -1,5 +1,5 @@
 import * as vscode from "vscode"
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@klaus-code/types"
 import { getUri } from "./getUri"
 import { getNonce } from "./getNonce"
 import type { ClineProvider } from "./ClineProvider"

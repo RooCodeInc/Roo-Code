@@ -10,7 +10,7 @@ import {
 	isDynamicProvider,
 	isFauxProvider,
 	isCustomProvider,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 export function validateApiConfiguration(
 	apiConfiguration: ProviderSettings,

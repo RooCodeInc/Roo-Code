@@ -1,6 +1,6 @@
 import path from "path"
 
-import { type ClineSayTool } from "@roo-code/types"
+import { type ClineSayTool } from "@klaus-code/types"
 
 import { Task } from "../task/Task"
 import { getReadablePath } from "../../utils/path"

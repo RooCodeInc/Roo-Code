@@ -9,7 +9,7 @@
  * so they can be sent to the API again.
  */
 
-import { TelemetryService } from "@roo-code/telemetry"
+import { TelemetryService } from "@klaus-code/telemetry"
 
 import { getEffectiveApiHistory, cleanupAfterTruncation } from "../index"
 import { ApiMessage } from "../../task-persistence/apiMessages"

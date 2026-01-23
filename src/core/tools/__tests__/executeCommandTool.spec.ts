@@ -1,6 +1,6 @@
 // npx vitest run src/core/tools/__tests__/executeCommandTool.spec.ts
 
-import type { ToolUsage } from "@roo-code/types"
+import type { ToolUsage } from "@klaus-code/types"
 import * as vscode from "vscode"
 
 import { Task } from "../../task/Task"

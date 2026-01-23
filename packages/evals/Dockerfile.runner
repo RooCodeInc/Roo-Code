@@ -163,8 +163,8 @@ RUN pnpm vsix -- --out ../bin/roo-code.vsix \
 
 # Build the extension bundle and CLI (for CLI execution method)
 # The CLI requires the extension bundle (src/dist/extension.js) and the CLI build (apps/cli/dist/index.js)
-RUN pnpm --filter roo-cline bundle \
-    && pnpm --filter @roo-code/cli build
+RUN pnpm --filter klaus-code bundle \
+    && pnpm --filter @klaus-code/cli build
 
 # Copy entrypoint script
 COPY packages/evals/.docker/entrypoints/runner.sh /usr/local/bin/entrypoint.sh

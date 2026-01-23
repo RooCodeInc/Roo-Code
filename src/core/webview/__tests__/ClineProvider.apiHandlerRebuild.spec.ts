@@ -2,8 +2,8 @@
 
 import * as vscode from "vscode"
 
-import { TelemetryService } from "@roo-code/telemetry"
-import { getModelId } from "@roo-code/types"
+import { TelemetryService } from "@klaus-code/telemetry"
+import { getModelId } from "@klaus-code/types"
 
 import { ContextProxy } from "../../config/ContextProxy"
 import { Task, TaskOptions } from "../../task/Task"
@@ -120,7 +120,7 @@ vi.mock("../../task/Task", () => ({
 	}),
 }))
 
-vi.mock("@roo-code/cloud", () => ({
+vi.mock("@klaus-code/cloud", () => ({
 	CloudService: {
 		hasInstance: vi.fn().mockReturnValue(true),
 		get instance() {

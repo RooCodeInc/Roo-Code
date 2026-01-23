@@ -1,5 +1,5 @@
 /**
- * @roo-code/vscode-shim
+ * @klaus-code/vscode-shim
  *
  * A production-ready VSCode API mock for running VSCode extensions in Node.js CLI applications.
  * This package provides a complete implementation of the VSCode Extension API, allowing you to
@@ -98,7 +98,7 @@ export { createVSCodeAPIMock as createVSCodeAPI } from "./vscode.js"
  *
  * @example
  * ```typescript
- * import { createVSCodeAPI } from '@roo-code/vscode-shim'
+ * import { createVSCodeAPI } from '@klaus-code/vscode-shim'
  *
  * const vscode = createVSCodeAPI({
  *   extensionPath: '/path/to/extension',

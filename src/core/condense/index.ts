@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk"
 import crypto from "crypto"
 
-import { TelemetryService } from "@roo-code/telemetry"
+import { TelemetryService } from "@klaus-code/telemetry"
 
 import { t } from "../../i18n"
 import { ApiHandler } from "../../api"

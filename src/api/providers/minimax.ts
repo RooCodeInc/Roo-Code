@@ -3,7 +3,7 @@ import { Stream as AnthropicStream } from "@anthropic-ai/sdk/streaming"
 import { CacheControlEphemeral } from "@anthropic-ai/sdk/resources"
 import OpenAI from "openai"
 
-import { type MinimaxModelId, minimaxDefaultModelId, minimaxModels } from "@roo-code/types"
+import { type MinimaxModelId, minimaxDefaultModelId, minimaxModels } from "@klaus-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 

@@ -1,6 +1,6 @@
 import { desc, eq, inArray, sql, sum } from "drizzle-orm"
 
-import type { ToolUsage } from "@roo-code/types"
+import type { ToolUsage } from "@klaus-code/types"
 
 import { RecordNotFoundError, RecordNotCreatedError } from "./errors.js"
 import type { InsertRun, UpdateRun } from "../schema.js"

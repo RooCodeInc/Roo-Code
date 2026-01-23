@@ -1,8 +1,8 @@
 import * as vscode from "vscode"
 import delay from "delay"
 
-import type { CommandId } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+import type { CommandId } from "@klaus-code/types"
+import { TelemetryService } from "@klaus-code/telemetry"
 
 import { Package } from "../shared/package"
 import { getCommand } from "../utils/commands"

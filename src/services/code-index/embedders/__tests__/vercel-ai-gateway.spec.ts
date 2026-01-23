@@ -9,7 +9,7 @@ vi.mock("../openai-compatible", () => ({
 }))
 
 // Mock the TelemetryService
-vi.mock("@roo-code/telemetry", () => ({
+vi.mock("@klaus-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
 			captureEvent: vi.fn(),

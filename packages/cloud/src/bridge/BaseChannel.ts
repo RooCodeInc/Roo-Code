@@ -1,7 +1,7 @@
 import type { Socket } from "socket.io-client"
 import * as vscode from "vscode"
 
-import type { StaticAppProperties, GitProperties } from "@roo-code/types"
+import type { StaticAppProperties, GitProperties } from "@klaus-code/types"
 
 export interface BaseChannelOptions {
 	instanceId: string

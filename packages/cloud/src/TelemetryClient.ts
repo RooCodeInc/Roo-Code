@@ -8,7 +8,7 @@ import {
 	rooCodeTelemetryEventSchema,
 	TelemetryPropertiesProvider,
 	TelemetryEventSubscription,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import { getRooCodeApiUrl } from "./config.js"
 import type { RetryQueue } from "./retry-queue/index.js"

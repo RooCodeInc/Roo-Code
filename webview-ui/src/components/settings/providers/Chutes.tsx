@@ -1,8 +1,8 @@
 import { useCallback } from "react"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
-import type { ProviderSettings, OrganizationAllowList, RouterModels } from "@roo-code/types"
-import { chutesDefaultModelId } from "@roo-code/types"
+import type { ProviderSettings, OrganizationAllowList, RouterModels } from "@klaus-code/types"
+import { chutesDefaultModelId } from "@klaus-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"

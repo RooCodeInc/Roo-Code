@@ -1,4 +1,4 @@
-import { type BasetenModelId, basetenDefaultModelId, basetenModels } from "@roo-code/types"
+import { type BasetenModelId, basetenDefaultModelId, basetenModels } from "@klaus-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"

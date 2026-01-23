@@ -1,4 +1,4 @@
-import type { ProviderName, ModelInfo, ProviderSettings } from "@roo-code/types"
+import type { ProviderName, ModelInfo, ProviderSettings } from "@klaus-code/types"
 import {
 	anthropicDefaultModelId,
 	bedrockDefaultModelId,
@@ -20,7 +20,7 @@ import {
 	featherlessDefaultModelId,
 	minimaxDefaultModelId,
 	basetenDefaultModelId,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import { MODELS_BY_PROVIDER } from "../constants"
 

@@ -4,7 +4,7 @@ import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 import cloneDeep from "clone-deep"
 import crypto from "crypto"
-import { TodoItem, TodoStatus, todoStatusSchema } from "@roo-code/types"
+import { TodoItem, TodoStatus, todoStatusSchema } from "@klaus-code/types"
 import { getLatestTodo } from "../../shared/todo"
 
 interface UpdateTodoListParams {

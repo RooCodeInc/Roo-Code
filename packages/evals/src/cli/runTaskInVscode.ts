@@ -12,8 +12,8 @@ import {
 	RooCodeEventName,
 	IpcMessageType,
 	EVALS_SETTINGS,
-} from "@roo-code/types"
-import { IpcClient } from "@roo-code/ipc"
+} from "@klaus-code/types"
+import { IpcClient } from "@klaus-code/ipc"
 
 import { updateTask, createTaskMetrics, updateTaskMetrics, createToolError } from "../db/index.js"
 import { EVALS_REPO_PATH } from "../exercises/index.js"

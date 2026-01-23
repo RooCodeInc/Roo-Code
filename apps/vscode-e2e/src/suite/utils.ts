@@ -1,4 +1,4 @@
-import { RooCodeEventName, type RooCodeAPI } from "@roo-code/types"
+import { RooCodeEventName, type RooCodeAPI } from "@klaus-code/types"
 
 type WaitForOptions = {
 	timeout?: number

@@ -122,7 +122,7 @@ vi.mock("openai", () => {
 import OpenAI from "openai"
 import type { Anthropic } from "@anthropic-ai/sdk"
 
-import { deepSeekDefaultModelId, type ModelInfo } from "@roo-code/types"
+import { deepSeekDefaultModelId, type ModelInfo } from "@klaus-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
 

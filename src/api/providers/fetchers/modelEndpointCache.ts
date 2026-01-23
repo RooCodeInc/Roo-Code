@@ -4,7 +4,7 @@ import fs from "fs/promises"
 import NodeCache from "node-cache"
 import sanitize from "sanitize-filename"
 
-import type { ModelRecord } from "@roo-code/types"
+import type { ModelRecord } from "@klaus-code/types"
 
 import { ContextProxy } from "../../../core/config/ContextProxy"
 import { RouterName } from "../../../shared/api"

@@ -20,7 +20,7 @@ vi.mock("qrcode", () => ({
 vi.mock("react-i18next")
 
 // Mock the cloud config
-vi.mock("@roo-code/cloud/src/config", () => ({
+vi.mock("@klaus-code/cloud/src/config", () => ({
 	getRooCodeApiUrl: vi.fn(() => "https://app.roocode.com"),
 }))
 
@@ -220,7 +220,7 @@ describe("CloudTaskButton", () => {
 
 	test("uses correct URL from getRooCodeApiUrl", async () => {
 		// Mock getRooCodeApiUrl to return a custom URL
-		vi.doMock("@roo-code/cloud/src/config", () => ({
+		vi.doMock("@klaus-code/cloud/src/config", () => ({
 			getRooCodeApiUrl: vi.fn(() => "https://custom.roocode.com"),
 		}))
 

@@ -1,4 +1,4 @@
-import { type ClineSayTool } from "@roo-code/types"
+import { type ClineSayTool } from "@klaus-code/types"
 
 import { Task } from "../task/Task"
 import { fetchInstructions } from "../prompts/instructions/instructions"

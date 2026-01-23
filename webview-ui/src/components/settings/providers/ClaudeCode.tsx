@@ -1,6 +1,6 @@
 import React from "react"
 
-import { type ProviderSettings, claudeCodeDefaultModelId, claudeCodeModels } from "@roo-code/types"
+import { type ProviderSettings, claudeCodeDefaultModelId, claudeCodeModels } from "@klaus-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { Button } from "@src/components/ui"

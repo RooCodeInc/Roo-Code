@@ -1,7 +1,7 @@
 import axios from "axios"
 import { z } from "zod"
 
-import { type ModelInfo, chutesModels } from "@roo-code/types"
+import { type ModelInfo, chutesModels } from "@klaus-code/types"
 
 import { DEFAULT_HEADERS } from "../constants"
 

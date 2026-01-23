@@ -1,6 +1,6 @@
 import { render } from "ink-testing-library"
 
-import type { TodoItem } from "@roo-code/types"
+import type { TodoItem } from "@klaus-code/types"
 
 import TodoDisplay from "../TodoDisplay.js"
 import { resetNerdFontCache } from "../Icon.js"

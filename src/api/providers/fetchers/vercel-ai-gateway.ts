@@ -1,8 +1,8 @@
 import axios from "axios"
 import { z } from "zod"
 
-import type { ModelInfo } from "@roo-code/types"
-import { VERCEL_AI_GATEWAY_VISION_ONLY_MODELS, VERCEL_AI_GATEWAY_VISION_AND_TOOLS_MODELS } from "@roo-code/types"
+import type { ModelInfo } from "@klaus-code/types"
+import { VERCEL_AI_GATEWAY_VISION_ONLY_MODELS, VERCEL_AI_GATEWAY_VISION_AND_TOOLS_MODELS } from "@klaus-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
 import { parseApiPrice } from "../../../shared/cost"

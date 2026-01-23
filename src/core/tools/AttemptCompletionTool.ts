@@ -1,7 +1,7 @@
 import * as vscode from "vscode"
 
-import { RooCodeEventName, type HistoryItem } from "@roo-code/types"
-import { TelemetryService } from "@roo-code/telemetry"
+import { RooCodeEventName, type HistoryItem } from "@klaus-code/types"
+import { TelemetryService } from "@klaus-code/telemetry"
 
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"

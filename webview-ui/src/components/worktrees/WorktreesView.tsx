@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 
-import type { Worktree, WorktreeListResponse, MergeWorktreeResult, WorktreeIncludeStatus } from "@roo-code/types"
+import type { Worktree, WorktreeListResponse, MergeWorktreeResult, WorktreeIncludeStatus } from "@klaus-code/types"
 
 import { Badge, Button, StandardTooltip } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"

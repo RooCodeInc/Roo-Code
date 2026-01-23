@@ -1,5 +1,5 @@
 import { Task } from "../task/Task"
-import { ClineMessage } from "@roo-code/types"
+import { ClineMessage } from "@klaus-code/types"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { cleanupAfterTruncation } from "../condense"
 

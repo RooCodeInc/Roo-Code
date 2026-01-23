@@ -1,4 +1,4 @@
-import { parametersSchema, defineCustomTool } from "@roo-code/types"
+import { parametersSchema, defineCustomTool } from "@klaus-code/types"
 
 export default defineCustomTool({
 	name: "cached",

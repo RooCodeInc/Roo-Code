@@ -1,5 +1,5 @@
 {
-	"name": "@roo-code/evals",
+	"name": "@klaus-code/evals",
 	"description": "Klaus Code evals.",
 	"version": "0.0.0",
 	"type": "module",
@@ -28,8 +28,8 @@
 		"services:down": "dotenvx run -f .env.development .env.local -- docker compose down db redis"
 	},
 	"dependencies": {
-		"@roo-code/ipc": "workspace:^",
-		"@roo-code/types": "workspace:^",
+		"@klaus-code/ipc": "workspace:^",
+		"@klaus-code/types": "workspace:^",
 		"cmd-ts": "^0.13.0",
 		"drizzle-orm": "^0.44.1",
 		"execa": "^9.6.0",
@@ -43,8 +43,8 @@
 		"zod": "^3.25.61"
 	},
 	"devDependencies": {
-		"@roo-code/config-eslint": "workspace:^",
-		"@roo-code/config-typescript": "workspace:^",
+		"@klaus-code/config-eslint": "workspace:^",
+		"@klaus-code/config-typescript": "workspace:^",
 		"@types/node": "20.x",
 		"@types/node-ipc": "^9.2.3",
 		"@types/ps-tree": "^1.1.6",

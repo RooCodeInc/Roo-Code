@@ -2,7 +2,7 @@
 
 import * as vscode from "vscode"
 
-import type { ClineMessage } from "@roo-code/types"
+import type { ClineMessage } from "@klaus-code/types"
 
 import { TaskNotFoundError } from "../errors.js"
 import { CloudService } from "../CloudService.js"

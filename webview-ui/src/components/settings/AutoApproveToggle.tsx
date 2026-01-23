@@ -1,4 +1,4 @@
-import type { GlobalSettings } from "@roo-code/types"
+import type { GlobalSettings } from "@klaus-code/types"
 
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { cn } from "@/lib/utils"

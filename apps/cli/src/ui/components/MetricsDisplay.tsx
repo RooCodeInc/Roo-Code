@@ -1,7 +1,7 @@
 import { memo } from "react"
 import { Text, Box } from "ink"
 
-import type { TokenUsage } from "@roo-code/types"
+import type { TokenUsage } from "@klaus-code/types"
 
 import * as theme from "../theme.js"
 import ProgressBar from "./ProgressBar.js"

@@ -3,7 +3,7 @@
 import * as path from "path"
 import { fileURLToPath } from "url"
 
-import { exerciseLanguages, listDirectories } from "@roo-code/evals"
+import { exerciseLanguages, listDirectories } from "@klaus-code/evals"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url)) // <repo>/apps/web-evals/src/actions
 

@@ -3,7 +3,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import { type FeatherlessModelId, featherlessDefaultModelId, featherlessModels } from "@roo-code/types"
+import { type FeatherlessModelId, featherlessDefaultModelId, featherlessModels } from "@klaus-code/types"
 
 import { FeatherlessHandler } from "../featherless"
 

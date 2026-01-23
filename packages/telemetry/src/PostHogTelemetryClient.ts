@@ -12,7 +12,7 @@ import {
 	extractApiProviderErrorProperties,
 	isConsecutiveMistakeError,
 	extractConsecutiveMistakeErrorProperties,
-} from "@roo-code/types"
+} from "@klaus-code/types"
 
 import { BaseTelemetryClient } from "./BaseTelemetryClient"
 

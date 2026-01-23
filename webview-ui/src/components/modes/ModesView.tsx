@@ -10,7 +10,7 @@ import {
 import { Trans } from "react-i18next"
 import { ChevronDown, X, Upload, Download } from "lucide-react"
 
-import { ModeConfig, GroupEntry, PromptComponent, ToolGroup, modeConfigSchema } from "@roo-code/types"
+import { ModeConfig, GroupEntry, PromptComponent, ToolGroup, modeConfigSchema } from "@klaus-code/types"
 
 import {
 	Mode,

@@ -2,7 +2,7 @@ import { EventEmitter } from "events"
 
 import { v4 as uuidv4 } from "uuid"
 
-import { QueuedMessage } from "@roo-code/types"
+import { QueuedMessage } from "@klaus-code/types"
 
 export interface MessageQueueState {
 	messages: QueuedMessage[]

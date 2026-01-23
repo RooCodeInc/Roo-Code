@@ -6,7 +6,7 @@ import * as os from "os"
 import * as yaml from "yaml"
 import stripBom from "strip-bom"
 
-import { type ModeConfig, type PromptComponent, customModesSettingsSchema, modeConfigSchema } from "@roo-code/types"
+import { type ModeConfig, type PromptComponent, customModesSettingsSchema, modeConfigSchema } from "@klaus-code/types"
 
 import { fileExistsAtPath } from "../../utils/fs"
 import { getWorkspacePath } from "../../utils/path"

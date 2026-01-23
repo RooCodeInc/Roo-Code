@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect, useMemo } from "react"
 import { useEvent } from "react-use"
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
-import type { ProviderSettings, ExtensionMessage } from "@roo-code/types"
+import type { ProviderSettings, ExtensionMessage } from "@klaus-code/types"
 
 import { vscode } from "@src/utils/vscode"
 import { useAppTranslation } from "@src/i18n/TranslationContext"

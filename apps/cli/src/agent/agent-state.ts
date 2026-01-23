@@ -9,7 +9,7 @@
  * and the specific `ask` value determines what kind of response the agent is waiting for.
  */
 
-import { ClineMessage, ClineAsk, isIdleAsk, isResumableAsk, isInteractiveAsk, isNonBlockingAsk } from "@roo-code/types"
+import { ClineMessage, ClineAsk, isIdleAsk, isResumableAsk, isInteractiveAsk, isNonBlockingAsk } from "@klaus-code/types"
 
 // =============================================================================
 // Agent Loop State Enum

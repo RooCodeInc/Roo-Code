@@ -22,9 +22,9 @@ import type {
 	ReasoningEffortExtended,
 	RooCodeSettings,
 	WebviewMessage,
-} from "@roo-code/types"
-import { createVSCodeAPI, IExtensionHost, ExtensionHostEventMap, setRuntimeConfigValues } from "@roo-code/vscode-shim"
-import { DebugLogger } from "@roo-code/core/cli"
+} from "@klaus-code/types"
+import { createVSCodeAPI, IExtensionHost, ExtensionHostEventMap, setRuntimeConfigValues } from "@klaus-code/vscode-shim"
+import { DebugLogger } from "@klaus-code/core/cli"
 
 import type { SupportedProvider } from "@/types/index.js"
 import type { User } from "@/lib/sdk/index.js"

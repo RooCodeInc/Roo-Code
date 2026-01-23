@@ -1,4 +1,4 @@
-import type { AssertEqual, Equals, Keys, Values, ExperimentId, Experiments } from "@roo-code/types"
+import type { AssertEqual, Equals, Keys, Values, ExperimentId, Experiments } from "@klaus-code/types"
 
 export const EXPERIMENT_IDS = {
 	MULTI_FILE_APPLY_DIFF: "multiFileApplyDiff",

@@ -4,8 +4,8 @@ import { useMemo, useState, useCallback, useEffect, Fragment } from "react"
 import { toast } from "sonner"
 import { LoaderCircle, FileText, Copy, Check, StopCircle, List, Layers } from "lucide-react"
 
-import type { Run, TaskMetrics as _TaskMetrics, Task } from "@roo-code/evals"
-import type { ToolName } from "@roo-code/types"
+import type { Run, TaskMetrics as _TaskMetrics, Task } from "@klaus-code/evals"
+import type { ToolName } from "@klaus-code/types"
 
 import { formatCurrency, formatDuration, formatTokens, formatToolUsageSuccessRate } from "@/lib/formatters"
 import { useRunStatus } from "@/hooks/use-run-status"

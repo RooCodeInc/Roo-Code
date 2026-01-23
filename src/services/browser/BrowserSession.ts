@@ -7,7 +7,7 @@ import PCR from "puppeteer-chromium-resolver"
 import pWaitFor from "p-wait-for"
 import delay from "delay"
 
-import { type BrowserActionResult } from "@roo-code/types"
+import { type BrowserActionResult } from "@klaus-code/types"
 
 import { fileExistsAtPath } from "../../utils/fs"
 
