@@ -102,8 +102,6 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setTerminalOutputPreviewSize: (value: "small" | "medium" | "large") => void
 	mcpEnabled: boolean
 	setMcpEnabled: (value: boolean) => void
-	enableMcpServerCreation: boolean
-	setEnableMcpServerCreation: (value: boolean) => void
 	remoteControlEnabled: boolean
 	setRemoteControlEnabled: (value: boolean) => void
 	taskSyncEnabled: boolean
@@ -213,7 +211,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		screenshotQuality: 75,
 		terminalShellIntegrationTimeout: 4000,
 		mcpEnabled: true,
-		enableMcpServerCreation: false,
 		remoteControlEnabled: false,
 		taskSyncEnabled: false,
 		featureRoomoteControlEnabled: false,
@@ -553,8 +550,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			setState((prevState) => ({ ...prevState, terminalShellIntegrationDisabled: value })),
 		setTerminalZdotdir: (value) => setState((prevState) => ({ ...prevState, terminalZdotdir: value })),
 		setMcpEnabled: (value) => setState((prevState) => ({ ...prevState, mcpEnabled: value })),
-		setEnableMcpServerCreation: (value) =>
-			setState((prevState) => ({ ...prevState, enableMcpServerCreation: value })),
 		setRemoteControlEnabled: (value) => setState((prevState) => ({ ...prevState, remoteControlEnabled: value })),
 		setTaskSyncEnabled: (value) => setState((prevState) => ({ ...prevState, taskSyncEnabled: value }) as any),
 		setFeatureRoomoteControlEnabled: (value) =>

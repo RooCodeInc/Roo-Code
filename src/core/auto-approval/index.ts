@@ -151,16 +151,6 @@ export async function checkAutoApproval({
 			return { decision: "approve" }
 		}
 
-		if (tool?.tool === "fetchInstructions") {
-			if (tool.content === "create_mode") {
-				return state.alwaysAllowModeSwitch === true ? { decision: "approve" } : { decision: "ask" }
-			}
-
-			if (tool.content === "create_mcp_server") {
-				return state.alwaysAllowMcp === true ? { decision: "approve" } : { decision: "ask" }
-			}
-		}
-
 		if (tool?.tool === "switchMode") {
 			return state.alwaysAllowModeSwitch === true ? { decision: "approve" } : { decision: "ask" }
 		}

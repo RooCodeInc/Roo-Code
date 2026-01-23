@@ -15,6 +15,7 @@ import {
 	SKILL_NAME_MAX_LENGTH,
 } from "@roo-code/types"
 import { t } from "../../i18n"
+import { getBuiltInSkills, getBuiltInSkillContent } from "./built-in-skills"
 
 // Re-export for convenience
 export type { SkillMetadata, SkillContent }
@@ -159,13 +160,19 @@ export class SkillsManager {
 
 	/**
 	 * Get skills available for the current mode.
-	 * Resolves overrides: project > global, mode-specific > generic.
+	 * Resolves overrides: project > global > built-in, mode-specific > generic.
 	 *
 	 * @param currentMode - The current mode slug (e.g., 'code', 'architect')
 	 */
 	getSkillsForMode(currentMode: string): SkillMetadata[] {
 		const resolvedSkills = new Map<string, SkillMetadata>()
 
+		// First, add built-in skills (lowest priority)
+		for (const skill of getBuiltInSkills()) {
+			resolvedSkills.set(skill.name, skill)
+		}
+
+		// Then, add discovered skills (will override built-in skills with same name)
 		for (const skill of this.skills.values()) {
 			// Skip mode-specific skills that don't match current mode
 			if (skill.mode && skill.mode !== currentMode) continue
@@ -189,12 +196,22 @@ export class SkillsManager {
 
 	/**
 	 * Determine if newSkill should override existingSkill based on priority rules.
-	 * Priority: project > global, mode-specific > generic
+	 * Priority: project > global > built-in, mode-specific > generic
 	 */
 	private shouldOverrideSkill(existing: SkillMetadata, newSkill: SkillMetadata): boolean {
-		// Project always overrides global
-		if (newSkill.source === "project" && existing.source === "global") return true
-		if (newSkill.source === "global" && existing.source === "project") return false
+		// Define source priority: project > global > built-in
+		const sourcePriority: Record<string, number> = {
+			project: 3,
+			global: 2,
+			"built-in": 1,
+		}
+
+		const existingPriority = sourcePriority[existing.source] ?? 0
+		const newPriority = sourcePriority[newSkill.source] ?? 0
+
+		// Higher priority source always wins
+		if (newPriority > existingPriority) return true
+		if (newPriority < existingPriority) return false
 
 		// Same source: mode-specific overrides generic
 		if (newSkill.mode && !existing.mode) return true
@@ -219,12 +236,21 @@ export class SkillsManager {
 			const modeSkills = this.getSkillsForMode(currentMode)
 			skill = modeSkills.find((s) => s.name === name)
 		} else {
-			// Fall back to any skill with this name
+			// Fall back to any skill with this name (check discovered skills first, then built-in)
 			skill = Array.from(this.skills.values()).find((s) => s.name === name)
+			if (!skill) {
+				skill = getBuiltInSkills().find((s) => s.name === name)
+			}
 		}
 
 		if (!skill) return null
 
+		// For built-in skills, use the built-in content
+		if (skill.source === "built-in") {
+			return getBuiltInSkillContent(name)
+		}
+
+		// For file-based skills, read from disk
 		const fileContent = await fs.readFile(skill.path, "utf-8")
 		const { content: body } = matter(fileContent)
 

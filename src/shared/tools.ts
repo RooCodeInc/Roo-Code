@@ -60,6 +60,7 @@ export const toolParamNames = [
 	"size",
 	"query",
 	"args",
+	"skill", // skill tool parameter
 	"start_line",
 	"end_line",
 	"todos",
@@ -103,9 +104,9 @@ export type NativeToolArgs = {
 	}
 	browser_action: BrowserActionParams
 	codebase_search: { query: string; path?: string }
-	fetch_instructions: { task: string }
 	generate_image: GenerateImageParams
 	run_slash_command: { command: string; args?: string }
+	skill: { skill: string; args?: string }
 	search_files: { path: string; regex: string; file_pattern?: string | null }
 	switch_mode: { mode_slug: string; reason: string }
 	update_todo_list: { todos: string }
@@ -165,11 +166,6 @@ export interface ExecuteCommandToolUse extends ToolUse<"execute_command"> {
 export interface ReadFileToolUse extends ToolUse<"read_file"> {
 	name: "read_file"
 	params: Partial<Pick<Record<ToolParamName, string>, "args" | "path" | "start_line" | "end_line" | "files">>
-}
-
-export interface FetchInstructionsToolUse extends ToolUse<"fetch_instructions"> {
-	name: "fetch_instructions"
-	params: Partial<Pick<Record<ToolParamName, string>, "task">>
 }
 
 export interface WriteToFileToolUse extends ToolUse<"write_to_file"> {
@@ -232,6 +228,11 @@ export interface RunSlashCommandToolUse extends ToolUse<"run_slash_command"> {
 	params: Partial<Pick<Record<ToolParamName, string>, "command" | "args">>
 }
 
+export interface SkillToolUse extends ToolUse<"skill"> {
+	name: "skill"
+	params: Partial<Pick<Record<ToolParamName, string>, "skill" | "args">>
+}
+
 export interface GenerateImageToolUse extends ToolUse<"generate_image"> {
 	name: "generate_image"
 	params: Partial<Pick<Record<ToolParamName, string>, "prompt" | "path" | "image">>
@@ -248,7 +249,6 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	execute_command: "run commands",
 	read_file: "read files",
 	read_command_output: "read command output",
-	fetch_instructions: "fetch instructions",
 	write_to_file: "write files",
 	apply_diff: "apply changes",
 	search_and_replace: "apply changes using search and replace",
@@ -267,6 +267,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	codebase_search: "codebase search",
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
+	skill: "load skill",
 	generate_image: "generate images",
 	custom_tool: "use custom tools",
 } as const
@@ -274,7 +275,7 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 // Define available tool groups.
 export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	read: {
-		tools: ["read_file", "fetch_instructions", "search_files", "list_files", "codebase_search"],
+		tools: ["read_file", "search_files", "list_files", "codebase_search"],
 	},
 	edit: {
 		tools: ["apply_diff", "write_to_file", "generate_image"],
@@ -303,6 +304,7 @@ export const ALWAYS_AVAILABLE_TOOLS: ToolName[] = [
 	"new_task",
 	"update_todo_list",
 	"run_slash_command",
+	"skill",
 ] as const
 
 /**

@@ -60,7 +60,6 @@ function makeProviderStub() {
 			browserViewportSize: "900x600",
 			mcpEnabled: false,
 			experiments: {},
-			enableMcpServerCreation: false,
 			browserToolEnabled: true, // critical: enabled in settings
 			language: "en",
 			maxReadFileLine: -1,
