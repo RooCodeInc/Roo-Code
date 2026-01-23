@@ -1,7 +1,13 @@
 import * as vscode from "vscode"
 import * as os from "os"
 
-import { type ModeConfig, type PromptComponent, type CustomModePrompts, type TodoItem } from "@roo-code/types"
+import {
+	type ModeConfig,
+	type PromptComponent,
+	type CustomModePrompts,
+	type TodoItem,
+	type Personality,
+} from "@roo-code/types"
 
 import { Mode, modes, defaultModeSlug, getModeBySlug, getGroupName, getModeSelection } from "../../shared/modes"
 import { DiffStrategy } from "../../shared/tools"
@@ -63,6 +69,7 @@ async function generatePrompt(
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	personality?: Personality,
 ): Promise<string> {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -73,7 +80,9 @@ async function generatePrompt(
 
 	// Get the full mode config to ensure we have the role definition (used for groups, etc.)
 	const modeConfig = getModeBySlug(mode, customModeConfigs) || modes.find((m) => m.slug === mode) || modes[0]
-	const { roleDefinition, baseInstructions } = getModeSelection(mode, promptComponent, customModeConfigs)
+	const { roleDefinition, baseInstructions } = getModeSelection(mode, promptComponent, customModeConfigs, {
+		personality,
+	})
 
 	// Check if MCP functionality should be included
 	const hasMcpGroup = modeConfig.groups.some((groupEntry) => getGroupName(groupEntry) === "mcp")
@@ -143,6 +152,7 @@ export const SYSTEM_PROMPT = async (
 	todoList?: TodoItem[],
 	modelId?: string,
 	skillsManager?: SkillsManager,
+	personality?: Personality,
 ): Promise<string> => {
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
@@ -170,6 +180,7 @@ export const SYSTEM_PROMPT = async (
 			mode,
 			promptComponent,
 			customModes,
+			{ personality },
 		)
 
 		const customInstructions = await addCustomInstructions(
@@ -216,5 +227,6 @@ ${customInstructions}`
 		todoList,
 		modelId,
 		skillsManager,
+		personality,
 	)
 }

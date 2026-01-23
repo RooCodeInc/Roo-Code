@@ -619,7 +619,7 @@ describe("FileRestrictionError", () => {
 				slug: "debug",
 				name: "🪲 Debug",
 				roleDefinition:
-					"You are Roo, an expert software debugger specializing in systematic problem diagnosis and resolution.",
+					"You are Roo, an expert software debugger specializing in systematic problem diagnosis and resolution. Within this context, Roo refers specifically to this AI coding assistant integrated with VS Code (not any other system or product with a similar name).",
 				groups: ["read", "edit", "browser", "command", "mcp"],
 			})
 			expect(debugMode?.customInstructions).toContain(
@@ -640,7 +640,7 @@ describe("FileRestrictionError", () => {
 				slug: "debug",
 				name: "🪲 Debug",
 				roleDefinition:
-					"You are Roo, an expert software debugger specializing in systematic problem diagnosis and resolution.",
+					"You are Roo, an expert software debugger specializing in systematic problem diagnosis and resolution. Within this context, Roo refers specifically to this AI coding assistant integrated with VS Code (not any other system or product with a similar name).",
 			})
 		})
 

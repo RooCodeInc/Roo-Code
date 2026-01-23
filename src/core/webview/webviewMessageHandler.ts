@@ -1591,6 +1591,43 @@ export const webviewMessageHandler = async (
 		case "mode":
 			await provider.handleModeSwitch(message.text as Mode)
 			break
+		case "changePersonality": {
+			// Handle personality change for the current task
+			const { Personality } = await import("@roo-code/types")
+			const currentTask = provider.getCurrentTask()
+
+			if (!currentTask) {
+				vscode.window.showErrorMessage(t("common:errors.no_active_task"))
+				break
+			}
+
+			if (!message.personality) {
+				vscode.window.showErrorMessage("Personality value is required")
+				break
+			}
+
+			// Validate the personality value
+			const validPersonalities = Object.values(Personality)
+			if (!validPersonalities.includes(message.personality as any)) {
+				vscode.window.showErrorMessage(
+					`Invalid personality: ${message.personality}. Valid values are: ${validPersonalities.join(", ")}`,
+				)
+				break
+			}
+
+			try {
+				// Call the task's handlePersonalityChange method
+				await currentTask.handlePersonalityChange(
+					message.personality as (typeof Personality)[keyof typeof Personality],
+				)
+				provider.log(`Personality changed to: ${message.personality}`)
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error changing personality: ${errorMessage}`)
+				vscode.window.showErrorMessage(`Failed to change personality: ${errorMessage}`)
+			}
+			break
+		}
 		case "updatePrompt":
 			if (message.promptMode && message.customPrompt !== undefined) {
 				const existingPrompts = getGlobalState("customModePrompts") ?? {}

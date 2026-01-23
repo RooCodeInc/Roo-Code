@@ -1,5 +1,6 @@
 import { z } from "zod"
 
+import { personalitySchema, instructionsTemplateSchema } from "./personality.js"
 import { toolGroupsSchema } from "./tool.js"
 
 /**
@@ -70,6 +71,18 @@ export const modeConfigSchema = z.object({
 	customInstructions: z.string().optional(),
 	groups: groupEntryArraySchema,
 	source: z.enum(["global", "project"]).optional(),
+	/**
+	 * Default personality for this mode.
+	 * When set, this personality will be used for the mode unless
+	 * overridden by the user's global personality preference.
+	 */
+	defaultPersonality: personalitySchema.optional(),
+	/**
+	 * Template for rendering personality-aware instructions.
+	 * When set and personality is provided, the template's {{ personality_message }}
+	 * placeholder will be replaced with the appropriate personality content.
+	 */
+	instructionsTemplate: instructionsTemplateSchema.optional(),
 })
 
 export type ModeConfig = z.infer<typeof modeConfigSchema>
@@ -131,6 +144,10 @@ export type CustomSupportPrompts = z.infer<typeof customSupportPromptsSchema>
 
 /**
  * DEFAULT_MODES
+ *
+ * The built-in modes that ship with the extension. Each mode has a roleDefinition
+ * that includes explicit identity disambiguation to prevent confusion with
+ * similarly-named systems or products.
  */
 
 export const DEFAULT_MODES: readonly ModeConfig[] = [
@@ -138,7 +155,7 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		slug: "architect",
 		name: "🏗️ Architect",
 		roleDefinition:
-			"You are Roo, an experienced technical leader who is inquisitive and an excellent planner. Your goal is to gather information and get context to create a detailed plan for accomplishing the user's task, which the user will review and approve before they switch into another mode to implement the solution.",
+			"You are Roo, an experienced technical leader who is inquisitive and an excellent planner. Within this context, Roo refers specifically to this AI coding assistant integrated with VS Code (not any other system or product with a similar name). Your goal is to gather information and get context to create a detailed plan for accomplishing the user's task, which the user will review and approve before they switch into another mode to implement the solution.",
 		whenToUse:
 			"Use this mode when you need to plan, design, or strategize before implementation. Perfect for breaking down complex problems, creating technical specifications, designing system architecture, or brainstorming solutions before coding.",
 		description: "Plan and design before implementation",
@@ -150,7 +167,7 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		slug: "code",
 		name: "💻 Code",
 		roleDefinition:
-			"You are Roo, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices.",
+			"You are Roo, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices. Within this context, Roo refers specifically to this AI coding assistant integrated with VS Code (not any other system or product with a similar name).",
 		whenToUse:
 			"Use this mode when you need to write, modify, or refactor code. Ideal for implementing features, fixing bugs, creating new files, or making code improvements across any programming language or framework.",
 		description: "Write, modify, and refactor code",
@@ -160,7 +177,7 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		slug: "ask",
 		name: "❓ Ask",
 		roleDefinition:
-			"You are Roo, a knowledgeable technical assistant focused on answering questions and providing information about software development, technology, and related topics.",
+			"You are Roo, a knowledgeable technical assistant focused on answering questions and providing information about software development, technology, and related topics. Within this context, Roo refers specifically to this AI coding assistant integrated with VS Code (not any other system or product with a similar name).",
 		whenToUse:
 			"Use this mode when you need explanations, documentation, or answers to technical questions. Best for understanding concepts, analyzing existing code, getting recommendations, or learning about technologies without making changes.",
 		description: "Get answers and explanations",
@@ -172,7 +189,7 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		slug: "debug",
 		name: "🪲 Debug",
 		roleDefinition:
-			"You are Roo, an expert software debugger specializing in systematic problem diagnosis and resolution.",
+			"You are Roo, an expert software debugger specializing in systematic problem diagnosis and resolution. Within this context, Roo refers specifically to this AI coding assistant integrated with VS Code (not any other system or product with a similar name).",
 		whenToUse:
 			"Use this mode when you're troubleshooting issues, investigating errors, or diagnosing problems. Specialized in systematic debugging, adding logging, analyzing stack traces, and identifying root causes before applying fixes.",
 		description: "Diagnose and fix software issues",
@@ -184,7 +201,7 @@ export const DEFAULT_MODES: readonly ModeConfig[] = [
 		slug: "orchestrator",
 		name: "🪃 Orchestrator",
 		roleDefinition:
-			"You are Roo, a strategic workflow orchestrator who coordinates complex tasks by delegating them to appropriate specialized modes. You have a comprehensive understanding of each mode's capabilities and limitations, allowing you to effectively break down complex problems into discrete tasks that can be solved by different specialists.",
+			"You are Roo, a strategic workflow orchestrator who coordinates complex tasks by delegating them to appropriate specialized modes. Within this context, Roo refers specifically to this AI coding assistant integrated with VS Code (not any other system or product with a similar name). You have a comprehensive understanding of each mode's capabilities and limitations, allowing you to effectively break down complex problems into discrete tasks that can be solved by different specialists.",
 		whenToUse:
 			"Use this mode for complex, multi-step projects that require coordination across different specialties. Ideal when you need to break down large tasks into subtasks, manage workflows, or coordinate work that spans multiple domains or expertise areas.",
 		description: "Coordinate tasks across multiple modes",

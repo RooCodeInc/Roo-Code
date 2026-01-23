@@ -35,6 +35,8 @@ import {
 	type ModelInfo,
 	type ClineApiReqCancelReason,
 	type ClineApiReqInfo,
+	type PersonalityUpdateMessage,
+	Personality,
 	RooCodeEventName,
 	TelemetryEventName,
 	TaskStatus,
@@ -94,6 +96,7 @@ import { sanitizeToolUseId } from "../../utils/tool-id"
 // prompts
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
+import { buildPersonalityTransitionMessage, loadPersonalityContent } from "../prompts/personality"
 import { buildNativeToolsArrayWithRestrictions } from "./build-tools"
 
 // core modules
@@ -342,6 +345,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Task Bridge
 	enableBridge: boolean
+
+	// Personality
+	/**
+	 * The current personality for this task's communication style.
+	 * This is updated when the user requests a personality change mid-session.
+	 */
+	currentPersonality?: Personality
+
+	/**
+	 * The previous personality before the most recent change.
+	 * Used to provide context during personality transitions.
+	 */
+	previousPersonality?: Personality
 
 	// Message Queue Service
 	public readonly messageQueueService: MessageQueueService
@@ -1561,6 +1577,83 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} else if (terminalOperation === "abort") {
 			this.terminalProcess?.abort()
 		}
+	}
+
+	/**
+	 * Handles a mid-session personality change by injecting a personality update
+	 * message into the conversation without regenerating the entire system prompt.
+	 *
+	 * This provides a lightweight approach to personality changes that:
+	 * - Updates the task's personality tracking state
+	 * - Loads the personality instructions from markdown files
+	 * - Builds and injects a personality update message into the conversation
+	 * - Does NOT regenerate the entire system prompt
+	 *
+	 * @param newPersonality - The personality to switch to
+	 * @returns The PersonalityUpdateMessage that was injected
+	 *
+	 * @example
+	 * ```typescript
+	 * // Switch to pragmatic personality mid-session
+	 * await task.handlePersonalityChange(Personality.Pragmatic)
+	 * ```
+	 */
+	public async handlePersonalityChange(newPersonality: Personality): Promise<PersonalityUpdateMessage> {
+		const provider = this.providerRef.deref()
+		if (!provider) {
+			throw new Error("Provider reference lost during personality change")
+		}
+
+		// Update personality tracking state
+		this.previousPersonality = this.currentPersonality
+		this.currentPersonality = newPersonality
+
+		// Load personality messages from markdown files
+		const personalityMessages = loadPersonalityContent()
+		if (!personalityMessages) {
+			throw new Error("Failed to load personality messages from markdown files")
+		}
+
+		// Build the personality update message
+		// If we have a previous personality, use the transition message for smoother switching
+		let updateMessage: PersonalityUpdateMessage
+		if (this.previousPersonality) {
+			updateMessage = buildPersonalityTransitionMessage(
+				this.previousPersonality,
+				newPersonality,
+				personalityMessages,
+			)
+		} else {
+			// First time setting personality - use the simpler update message
+			const { buildPersonalityUpdateMessage } = await import("../prompts/personality/update-message")
+			updateMessage = buildPersonalityUpdateMessage(newPersonality, personalityMessages)
+		}
+
+		// Inject the personality update message into the conversation
+		// We add it as a user message containing the system-level personality directive
+		// This allows the model to see and adopt the new communication style
+		await this.addToApiConversationHistory({
+			role: "user",
+			content: [
+				{
+					type: "text",
+					text: updateMessage.content,
+				},
+			],
+		})
+
+		// Add a visible message to the UI so the user knows the personality changed
+		await this.say(
+			"text",
+			`Personality changed to "${newPersonality}". Communication style has been updated.`,
+			undefined,
+			false,
+			undefined,
+			undefined,
+			{ isNonInteractive: true },
+		)
+
+		return updateMessage
 	}
 
 	public async condenseContext(): Promise<void> {

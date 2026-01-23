@@ -6,10 +6,12 @@ import {
 	type CustomModePrompts,
 	type ToolGroup,
 	type PromptComponent,
+	type Personality,
 	DEFAULT_MODES,
 } from "@roo-code/types"
 
 import { addCustomInstructions } from "../core/prompts/sections/custom-instructions"
+import { getAgentInstructions } from "../core/prompts/personality"
 
 import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "./tools"
 
@@ -103,30 +105,74 @@ export function findModeBySlug(slug: string, modes: readonly ModeConfig[] | unde
 }
 
 /**
+ * Options for getModeSelection function.
+ */
+export interface GetModeSelectionOptions {
+	/** Optional personality to apply to instructions */
+	personality?: Personality
+}
+
+/**
  * Get the mode selection based on the provided mode slug, prompt component, and custom modes.
  * If a custom mode is found, it takes precedence over the built-in modes.
  * If no custom mode is found, the built-in mode is used with partial merging from promptComponent.
  * If neither is found, the default mode is used.
+ *
+ * When a personality is provided and the mode has an instructions_template,
+ * the baseInstructions will be rendered with personality-specific content.
+ *
+ * @param mode - The mode slug to get selection for
+ * @param promptComponent - Optional prompt component overrides
+ * @param customModes - Optional array of custom mode configurations
+ * @param options - Optional settings including personality
+ * @returns Object containing roleDefinition, baseInstructions, and description
  */
-export function getModeSelection(mode: string, promptComponent?: PromptComponent, customModes?: ModeConfig[]) {
+export function getModeSelection(
+	mode: string,
+	promptComponent?: PromptComponent,
+	customModes?: ModeConfig[],
+	options?: GetModeSelectionOptions,
+) {
 	const customMode = findModeBySlug(mode, customModes)
 	const builtInMode = findModeBySlug(mode, modes)
+	const personality = options?.personality
 
 	// If we have a custom mode, use it entirely
 	if (customMode) {
+		const baseInstructions = customMode.customInstructions || ""
+
+		// Apply personality template if available
+		const renderedInstructions = getAgentInstructions(
+			{
+				base_instructions: baseInstructions,
+				instructions_template: customMode.instructionsTemplate,
+			},
+			personality,
+		)
+
 		return {
 			roleDefinition: customMode.roleDefinition || "",
-			baseInstructions: customMode.customInstructions || "",
+			baseInstructions: renderedInstructions,
 			description: customMode.description || "",
 		}
 	}
 
 	// Otherwise, use built-in mode as base and merge with promptComponent
 	const baseMode = builtInMode || modes[0] // fallback to default mode
+	const baseInstructions = promptComponent?.customInstructions || baseMode.customInstructions || ""
+
+	// Apply personality template if available
+	const renderedInstructions = getAgentInstructions(
+		{
+			base_instructions: baseInstructions,
+			instructions_template: baseMode.instructionsTemplate,
+		},
+		personality,
+	)
 
 	return {
 		roleDefinition: promptComponent?.roleDefinition || baseMode.roleDefinition || "",
-		baseInstructions: promptComponent?.customInstructions || baseMode.customInstructions || "",
+		baseInstructions: renderedInstructions,
 		description: baseMode.description || "",
 	}
 }
