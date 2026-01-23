@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**For human developers**: See [DEVELOPMENT.md](DEVELOPMENT.md) for complete build instructions, environment setup, and release procedures.
+
 ## Project Overview
 
 Klaus Code is an AI-powered VS Code extension that assists with coding tasks. It's a TypeScript monorepo using pnpm workspaces and Turborepo.

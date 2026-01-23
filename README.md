@@ -20,6 +20,10 @@ Roo Code removed the Claude Code provider in [commit 7f854c0](https://github.com
 - **Roo Code original link**: https://github.com/RooCodeInc/Roo-Code
 - **Roo Code documentation**: https://docs.roocode.com
 
+### For Developers
+
+- **[Development Guide](DEVELOPMENT.md)**: Build instructions, environment setup, and release process
+
 ---
 
 ## Below is the original content before fork:
