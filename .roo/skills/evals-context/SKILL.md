@@ -1,6 +1,6 @@
 ---
 name: evals-context
-description: Provides context about the Klaus Code evals system structure in this monorepo. Use when tasks mention "evals", "evaluation", "eval runs", "eval exercises", or working with the evals infrastructure. Helps distinguish between the evals execution system (packages/evals, apps/web-evals) and the public website evals display page (apps/web-roo-code/src/app/evals).
+description: Provides context about the Klaus Code evals system structure in this monorepo. Use when tasks mention "evals", "evaluation", "eval runs", "eval exercises", or working with the evals infrastructure. Helps distinguish between the evals execution system (packages/evals, apps/web-evals) and the internal eval results display.
 ---
 
 # Evals Codebase Context
@@ -12,7 +12,6 @@ Use this skill when the task involves:
 - Modifying or debugging the evals execution infrastructure
 - Adding new eval exercises or languages
 - Working with the evals web interface (apps/web-evals)
-- Modifying the public evals display page on roocode.com
 - Understanding where evals code lives in this monorepo
 
 ## When NOT to Use This Skill
@@ -31,7 +30,6 @@ This monorepo has **two distinct evals-related locations** that can cause confus
 | --------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------- |
 | **Evals Execution System**  | `packages/evals/`                                              | Core eval infrastructure: CLI, DB schema, Docker configs       |
 | **Evals Management UI**     | `apps/web-evals/`                                              | Next.js app for creating/monitoring eval runs (localhost:3446) |
-| **Website Evals Page**      | `apps/web-roo-code/src/app/evals/`                             | Public roocode.com page displaying eval results                |
 | **External Exercises Repo** | [Roo-Code-Evals](https://github.com/RooCodeInc/Roo-Code-Evals) | Actual coding exercises (NOT in this monorepo)                 |
 
 ## Directory Structure Reference
@@ -84,18 +82,6 @@ apps/web-evals/
 │   └── lib/                 # Utilities and schemas
 ```
 
-### `apps/web-roo-code/src/app/evals/` - Public Website Evals Page
-
-```
-apps/web-roo-code/src/app/evals/
-├── page.tsx      # Fetches and displays public eval results
-├── evals.tsx     # Main evals display component
-├── plot.tsx      # Visualization component
-└── types.ts      # EvalRun type (extends packages/evals types)
-```
-
-This page **displays** eval results on the public roocode.com website. It imports types from `@roo-code/evals` but does NOT run evals.
-
 ## Architecture Overview
 
 The evals system is a distributed evaluation platform that runs AI coding tasks in isolated VS Code environments:
@@ -141,13 +127,6 @@ Edit files in [`apps/web-evals/src/`](apps/web-evals/src/):
 - [`app/runs/new/new-run.tsx`](apps/web-evals/src/app/runs/new/new-run.tsx) - New run form
 - [`actions/runs.ts`](apps/web-evals/src/actions/runs.ts) - Run server actions
 
-### Modifying the Public Evals Display Page
-
-Edit files in [`apps/web-roo-code/src/app/evals/`](apps/web-roo-code/src/app/evals/):
-
-- [`evals.tsx`](apps/web-roo-code/src/app/evals/evals.tsx) - Display component
-- [`plot.tsx`](apps/web-roo-code/src/app/evals/plot.tsx) - Charts
-
 ### Database Schema Changes
 
 1. Edit [`packages/evals/src/db/schema.ts`](packages/evals/src/db/schema.ts)
@@ -185,4 +164,4 @@ The package exports are defined in [`packages/evals/src/index.ts`](packages/eval
 
 - Database queries: `getRuns`, `getTasks`, `getTaskMetrics`, etc.
 - Schema types: `Run`, `Task`, `TaskMetrics`
-- Used by both `apps/web-evals` and `apps/web-roo-code`
+- Used by `apps/web-evals`
