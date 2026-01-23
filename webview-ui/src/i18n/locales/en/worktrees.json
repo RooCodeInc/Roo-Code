@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "Open in current window",
 	"openInNewWindow": "Open in new window",
-	"merge": "Merge",
 	"delete": "Delete",
 	"newWorktree": "New Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree is locked",
 	"deleting": "Deleting...",
 
-	"mergeBranch": "Merge Branch",
-	"mergeDescription": "Merge '{{source}}' into '{{target}}'",
-	"deleteAfterMerge": "Delete worktree after successful merge",
-	"merging": "Merging...",
-	"mergeSuccess": "Merge Successful",
-	"mergeConflicts": "Merge Conflicts",
-	"conflictsDescription": "The following files have conflicts that need to be resolved:",
-	"mergeFailed": "Merge Failed",
-	"resolveManually": "I'll Resolve Manually",
-	"askRooResolve": "Ask Roo to Resolve",
 	"close": "Close"
 }

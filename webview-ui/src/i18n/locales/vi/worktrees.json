@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "Mở trong cửa sổ hiện tại",
 	"openInNewWindow": "Mở trong cửa sổ mới",
-	"merge": "Gộp",
 	"delete": "Xóa",
 	"newWorktree": "Worktree Mới",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree đang bị khóa",
 	"deleting": "Đang xóa...",
 
-	"mergeBranch": "Gộp Nhánh",
-	"mergeDescription": "Gộp '{{source}}' vào '{{target}}'",
-	"deleteAfterMerge": "Xóa worktree sau khi gộp thành công",
-	"merging": "Đang gộp...",
-	"mergeSuccess": "Gộp thành công",
-	"mergeConflicts": "Xung đột khi gộp",
-	"conflictsDescription": "Các tệp sau có xung đột cần được giải quyết:",
-	"mergeFailed": "Gộp thất bại",
-	"resolveManually": "Tôi sẽ tự xử lý",
-	"askRooResolve": "Nhờ Roo xử lý",
 	"close": "Đóng"
 }

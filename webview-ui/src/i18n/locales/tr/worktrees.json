@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "Mevcut pencerede aç",
 	"openInNewWindow": "Yeni pencerede aç",
-	"merge": "Birleştir",
 	"delete": "Sil",
 	"newWorktree": "Yeni Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree kilitli",
 	"deleting": "Siliniyor...",
 
-	"mergeBranch": "Branch birleştir",
-	"mergeDescription": "'{{source}}' branch'ini '{{target}}' içine birleştir",
-	"deleteAfterMerge": "Birleştirme başarılı olursa worktree'yi sil",
-	"merging": "Birleştiriliyor...",
-	"mergeSuccess": "Birleştirme başarılı",
-	"mergeConflicts": "Birleştirme çakışmaları",
-	"conflictsDescription": "Aşağıdaki dosyalarda çözülmesi gereken çakışmalar var:",
-	"mergeFailed": "Birleştirme başarısız",
-	"resolveManually": "Kendim çözeceğim",
-	"askRooResolve": "Roo'dan çözmesini iste",
 	"close": "Kapat"
 }

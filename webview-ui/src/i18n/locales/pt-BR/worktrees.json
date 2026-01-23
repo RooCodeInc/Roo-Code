@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "Abrir na janela atual",
 	"openInNewWindow": "Abrir em uma nova janela",
-	"merge": "Mesclar",
 	"delete": "Excluir",
 	"newWorktree": "Novo Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree está bloqueado",
 	"deleting": "Excluindo...",
 
-	"mergeBranch": "Mesclar Branch",
-	"mergeDescription": "Mesclar '{{source}}' em '{{target}}'",
-	"deleteAfterMerge": "Excluir worktree após mesclagem bem-sucedida",
-	"merging": "Mesclando...",
-	"mergeSuccess": "Mesclagem bem-sucedida",
-	"mergeConflicts": "Conflitos de mesclagem",
-	"conflictsDescription": "Os seguintes arquivos têm conflitos que precisam ser resolvidos:",
-	"mergeFailed": "Falha na mesclagem",
-	"resolveManually": "Vou resolver manualmente",
-	"askRooResolve": "Pedir ao Roo para resolver",
 	"close": "Fechar"
 }

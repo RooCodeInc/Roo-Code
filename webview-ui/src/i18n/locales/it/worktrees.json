@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "Apri nella finestra corrente",
 	"openInNewWindow": "Apri in una nuova finestra",
-	"merge": "Unisci",
 	"delete": "Elimina",
 	"newWorktree": "Nuovo Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "il worktree è bloccato",
 	"deleting": "Eliminazione...",
 
-	"mergeBranch": "Unisci Branch",
-	"mergeDescription": "Unisci '{{source}}' in '{{target}}'",
-	"deleteAfterMerge": "Elimina il worktree dopo un merge riuscito",
-	"merging": "Merge in corso...",
-	"mergeSuccess": "Merge riuscito",
-	"mergeConflicts": "Conflitti di merge",
-	"conflictsDescription": "I seguenti file hanno conflitti che devono essere risolti:",
-	"mergeFailed": "Merge fallito",
-	"resolveManually": "Lo risolverò manualmente",
-	"askRooResolve": "Chiedi a Roo di risolvere",
 	"close": "Chiudi"
 }

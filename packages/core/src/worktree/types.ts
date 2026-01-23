@@ -9,8 +9,6 @@ export type {
 	WorktreeResult,
 	BranchInfo,
 	CreateWorktreeOptions,
-	MergeWorktreeOptions,
-	MergeWorktreeResult,
 	WorktreeIncludeStatus,
 	WorktreeListResponse,
 	WorktreeDefaultsResponse,

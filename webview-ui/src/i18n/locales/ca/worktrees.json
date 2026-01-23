@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "Obre a la finestra actual",
 	"openInNewWindow": "Obre en una finestra nova",
-	"merge": "Fusiona",
 	"delete": "Suprimeix",
 	"newWorktree": "Worktree nou",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "el worktree està bloquejat",
 	"deleting": "S'està suprimint...",
 
-	"mergeBranch": "Fusiona branca",
-	"mergeDescription": "Fusiona '{{source}}' a '{{target}}'",
-	"deleteAfterMerge": "Suprimeix el worktree després d'una fusió correcta",
-	"merging": "S'està fusionant...",
-	"mergeSuccess": "Fusió correcta",
-	"mergeConflicts": "Conflictes de fusió",
-	"conflictsDescription": "Els fitxers següents tenen conflictes que s'han de resoldre:",
-	"mergeFailed": "Fusió fallida",
-	"resolveManually": "Ho resoldré manualment",
-	"askRooResolve": "Demana a Roo que ho resolgui",
 	"close": "Tanca"
 }

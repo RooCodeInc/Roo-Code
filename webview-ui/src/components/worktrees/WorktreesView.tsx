@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 
-import type { Worktree, WorktreeListResponse, MergeWorktreeResult, WorktreeIncludeStatus } from "@roo-code/types"
+import type { Worktree, WorktreeListResponse, WorktreeIncludeStatus } from "@roo-code/types"
 
 import { Badge, Button, StandardTooltip } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"
@@ -34,13 +34,6 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 	// Modals
 	const [showCreateModal, setShowCreateModal] = useState(false)
 	const [deleteWorktree, setDeleteWorktree] = useState<Worktree | null>(null)
-
-	// Merge state
-	const [mergeWorktree, setMergeWorktree] = useState<Worktree | null>(null)
-	const [mergeTargetBranch, setMergeTargetBranch] = useState("")
-	const [mergeDeleteAfter, setMergeDeleteAfter] = useState(false)
-	const [isMerging, setIsMerging] = useState(false)
-	const [mergeResult, setMergeResult] = useState<MergeWorktreeResult | null>(null)
 
 	// Fetch worktrees list
 	const fetchWorktrees = useCallback(() => {
@@ -79,22 +72,6 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 					fetchWorktrees()
 					fetchIncludeStatus()
 					setIsCreatingInclude(false)
-					break
-				}
-				case "mergeWorktreeResult": {
-					setIsMerging(false)
-					// Map ExtensionMessage format (text) to MergeWorktreeResult format (message)
-					setMergeResult({
-						success: message.success,
-						message: message.text || "",
-						hasConflicts: message.hasConflicts || false,
-						conflictingFiles: message.conflictingFiles || [],
-						sourceBranch: message.sourceBranch,
-						targetBranch: message.targetBranch,
-					})
-					if (message.success) {
-						fetchWorktrees()
-					}
 					break
 				}
 			}
@@ -145,31 +122,6 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 			worktreeNewWindow: newWindow,
 		})
 	}, [])
-
-	// Handle merge
-	const handleMerge = useCallback(() => {
-		if (!mergeWorktree) return
-		setIsMerging(true)
-		vscode.postMessage({
-			type: "mergeWorktree",
-			worktreePath: mergeWorktree.path,
-			worktreeTargetBranch: mergeTargetBranch,
-			worktreeDeleteAfterMerge: mergeDeleteAfter,
-		})
-	}, [mergeWorktree, mergeTargetBranch, mergeDeleteAfter])
-
-	// Handle "Ask Roo to resolve conflicts"
-	const handleAskRooResolve = useCallback(() => {
-		if (!mergeResult) return
-		// Create a new task with conflict resolution instructions
-		const conflictMessage = `Please help me resolve merge conflicts in the following files:\n\n${mergeResult.conflictingFiles.map((f) => `- ${f}`).join("\n")}\n\nThe merge was from branch "${mergeResult.sourceBranch}" into "${mergeResult.targetBranch}".`
-		vscode.postMessage({
-			type: "newTask",
-			text: conflictMessage,
-		})
-		setMergeWorktree(null)
-		setMergeResult(null)
-	}, [mergeResult])
 
 	// Render error states
 	if (!isGitRepo) {
@@ -226,9 +178,6 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 			</Tab>
 		)
 	}
-
-	// Find the primary (bare/main) worktree for merge target.
-	const primaryWorktree = worktrees.find((w) => w.isBare || worktrees.indexOf(w) === 0)
 
 	return (
 		<Tab>
@@ -336,22 +285,6 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 												</StandardTooltip>
 											</>
 										)}
-										{!worktree.isBare &&
-											worktree.branch &&
-											primaryWorktree &&
-											worktree.branch !== primaryWorktree.branch && (
-												<StandardTooltip content={t("worktrees:merge")}>
-													<Button
-														variant="ghost"
-														size="sm"
-														onClick={() => {
-															setMergeWorktree(worktree)
-															setMergeTargetBranch(primaryWorktree.branch || "main")
-														}}>
-														<span className="codicon codicon-git-merge" />
-													</Button>
-												</StandardTooltip>
-											)}
 										{!worktree.isBare && !worktree.isCurrent && (
 											<StandardTooltip content={t("worktrees:delete")}>
 												<Button
@@ -399,127 +332,6 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 						fetchWorktrees()
 					}}
 				/>
-			)}
-
-			{/* Merge Modal */}
-			{mergeWorktree && !mergeResult && (
-				<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-					<div className="bg-vscode-editor-background border border-vscode-panel-border rounded-lg p-4 max-w-md w-full mx-4">
-						<h3 className="text-lg font-medium text-vscode-foreground mb-4">
-							{t("worktrees:mergeBranch")}
-						</h3>
-						<p className="text-sm text-vscode-descriptionForeground mb-4">
-							{t("worktrees:mergeDescription", {
-								source: mergeWorktree.branch,
-								target: mergeTargetBranch,
-							})}
-						</p>
-
-						<div className="mb-4">
-							<label className="flex items-center gap-2 text-sm text-vscode-foreground">
-								<input
-									type="checkbox"
-									checked={mergeDeleteAfter}
-									onChange={(e) => setMergeDeleteAfter(e.target.checked)}
-								/>
-								{t("worktrees:deleteAfterMerge")}
-							</label>
-						</div>
-
-						<div className="flex justify-end gap-2">
-							<Button variant="secondary" onClick={() => setMergeWorktree(null)}>
-								{t("worktrees:cancel")}
-							</Button>
-							<Button onClick={handleMerge} disabled={isMerging}>
-								{isMerging ? (
-									<>
-										<span className="codicon codicon-loading codicon-modifier-spin mr-2" />
-										{t("worktrees:merging")}
-									</>
-								) : (
-									t("worktrees:merge")
-								)}
-							</Button>
-						</div>
-					</div>
-				</div>
-			)}
-
-			{/* Merge Result Modal */}
-			{mergeResult && (
-				<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-					<div className="bg-vscode-editor-background border border-vscode-panel-border rounded-lg p-4 max-w-md w-full mx-4">
-						{mergeResult.success ? (
-							<>
-								<div className="flex items-center gap-2 mb-4">
-									<span className="codicon codicon-check text-vscode-charts-green text-2xl" />
-									<h3 className="text-lg font-medium text-vscode-foreground">
-										{t("worktrees:mergeSuccess")}
-									</h3>
-								</div>
-								<p className="text-sm text-vscode-descriptionForeground mb-4">{mergeResult.message}</p>
-								<div className="flex justify-end">
-									<Button
-										onClick={() => {
-											setMergeWorktree(null)
-											setMergeResult(null)
-										}}>
-										{t("worktrees:done")}
-									</Button>
-								</div>
-							</>
-						) : mergeResult.hasConflicts ? (
-							<>
-								<div className="flex items-center gap-2 mb-4">
-									<span className="codicon codicon-warning text-vscode-charts-yellow text-2xl" />
-									<h3 className="text-lg font-medium text-vscode-foreground">
-										{t("worktrees:mergeConflicts")}
-									</h3>
-								</div>
-								<p className="text-sm text-vscode-descriptionForeground mb-2">
-									{t("worktrees:conflictsDescription")}
-								</p>
-								<div className="bg-vscode-input-background rounded p-2 mb-4 max-h-32 overflow-y-auto">
-									{mergeResult.conflictingFiles.map((file) => (
-										<div key={file} className="text-xs text-vscode-foreground font-mono">
-											{file}
-										</div>
-									))}
-								</div>
-								<div className="flex justify-end gap-2">
-									<Button
-										variant="secondary"
-										onClick={() => {
-											setMergeWorktree(null)
-											setMergeResult(null)
-										}}>
-										{t("worktrees:resolveManually")}
-									</Button>
-									<Button onClick={handleAskRooResolve}>{t("worktrees:askRooResolve")}</Button>
-								</div>
-							</>
-						) : (
-							<>
-								<div className="flex items-center gap-2 mb-4">
-									<span className="codicon codicon-error text-vscode-errorForeground text-2xl" />
-									<h3 className="text-lg font-medium text-vscode-foreground">
-										{t("worktrees:mergeFailed")}
-									</h3>
-								</div>
-								<p className="text-sm text-vscode-descriptionForeground mb-4">{mergeResult.message}</p>
-								<div className="flex justify-end">
-									<Button
-										onClick={() => {
-											setMergeWorktree(null)
-											setMergeResult(null)
-										}}>
-										{t("worktrees:close")}
-									</Button>
-								</div>
-							</>
-						)}
-					</div>
-				</div>
 			)}
 		</Tab>
 	)

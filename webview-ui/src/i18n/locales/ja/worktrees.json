@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "現在のウィンドウで開く",
 	"openInNewWindow": "新しいウィンドウで開く",
-	"merge": "マージ",
 	"delete": "削除",
 	"newWorktree": "新しい Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree がロックされています",
 	"deleting": "削除中...",
 
-	"mergeBranch": "ブランチをマージ",
-	"mergeDescription": "'{{source}}' を '{{target}}' にマージ",
-	"deleteAfterMerge": "マージが成功したら worktree を削除",
-	"merging": "マージ中...",
-	"mergeSuccess": "マージに成功しました",
-	"mergeConflicts": "マージの競合",
-	"conflictsDescription": "次のファイルに解決が必要な競合があります:",
-	"mergeFailed": "マージに失敗しました",
-	"resolveManually": "手動で解決する",
-	"askRooResolve": "Roo に解決を依頼",
 	"close": "閉じる"
 }

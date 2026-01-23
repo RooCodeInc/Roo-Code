@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "在当前窗口打开",
 	"openInNewWindow": "在新窗口打开",
-	"merge": "合并",
 	"delete": "删除",
 	"newWorktree": "新建 Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree 已锁定",
 	"deleting": "正在删除...",
 
-	"mergeBranch": "合并分支",
-	"mergeDescription": "将 '{{source}}' 合并到 '{{target}}'",
-	"deleteAfterMerge": "合并成功后删除 worktree",
-	"merging": "正在合并...",
-	"mergeSuccess": "合并成功",
-	"mergeConflicts": "合并冲突",
-	"conflictsDescription": "以下文件存在冲突，需要解决：",
-	"mergeFailed": "合并失败",
-	"resolveManually": "我来手动解决",
-	"askRooResolve": "让 Roo 来解决",
 	"close": "关闭"
 }

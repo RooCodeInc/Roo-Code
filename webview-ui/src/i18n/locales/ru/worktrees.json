@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "Открыть в текущем окне",
 	"openInNewWindow": "Открыть в новом окне",
-	"merge": "Слить",
 	"delete": "Удалить",
 	"newWorktree": "Новый Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree заблокирован",
 	"deleting": "Удаление...",
 
-	"mergeBranch": "Слить ветку",
-	"mergeDescription": "Слить '{{source}}' в '{{target}}'",
-	"deleteAfterMerge": "Удалить worktree после успешного слияния",
-	"merging": "Слияние...",
-	"mergeSuccess": "Слияние выполнено",
-	"mergeConflicts": "Конфликты слияния",
-	"conflictsDescription": "Следующие файлы имеют конфликты, которые нужно разрешить:",
-	"mergeFailed": "Слияние не удалось",
-	"resolveManually": "Разрешу вручную",
-	"askRooResolve": "Попросить Roo разрешить",
 	"close": "Закрыть"
 }

@@ -12,7 +12,6 @@ import * as os from "os"
 import type {
 	WorktreeResult,
 	BranchInfo,
-	MergeWorktreeResult,
 	WorktreeIncludeStatus,
 	WorktreeListResponse,
 	WorktreeDefaultsResponse,
@@ -277,16 +276,4 @@ export async function handleCreateWorktreeInclude(provider: ClineProvider, conte
 export async function handleCheckoutBranch(provider: ClineProvider, branch: string): Promise<WorktreeResult> {
 	const cwd = provider.cwd
 	return worktreeService.checkoutBranch(cwd, branch)
-}
-
-export async function handleMergeWorktree(
-	provider: ClineProvider,
-	options: {
-		worktreePath: string
-		targetBranch: string
-		deleteAfterMerge?: boolean
-	},
-): Promise<MergeWorktreeResult> {
-	const cwd = provider.cwd
-	return worktreeService.mergeWorktree(cwd, options)
 }

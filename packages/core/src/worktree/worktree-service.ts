@@ -9,14 +9,7 @@ import { exec, execFile } from "child_process"
 import * as path from "path"
 import { promisify } from "util"
 
-import type {
-	BranchInfo,
-	CreateWorktreeOptions,
-	MergeWorktreeOptions,
-	MergeWorktreeResult,
-	Worktree,
-	WorktreeResult,
-} from "./types.js"
+import type { BranchInfo, CreateWorktreeOptions, Worktree, WorktreeResult } from "./types.js"
 
 const execAsync = promisify(exec)
 const execFileAsync = promisify(execFile)
@@ -229,128 +222,6 @@ export class WorktreeService {
 				localBranches: [],
 				remoteBranches: [],
 				currentBranch: "",
-			}
-		}
-	}
-
-	/**
-	 * Merge a worktree branch into target branch
-	 */
-	async mergeWorktree(cwd: string, options: MergeWorktreeOptions): Promise<MergeWorktreeResult> {
-		const { worktreePath, targetBranch, deleteAfterMerge } = options
-
-		try {
-			// Get the worktree info to find its branch
-			const worktrees = await this.listWorktrees(cwd)
-			const worktree = worktrees.find((wt) => this.normalizePath(wt.path) === this.normalizePath(worktreePath))
-
-			if (!worktree) {
-				return {
-					success: false,
-					message: "Worktree not found",
-					hasConflicts: false,
-					conflictingFiles: [],
-				}
-			}
-
-			const sourceBranch = worktree.branch
-			if (!sourceBranch) {
-				return {
-					success: false,
-					message: "Worktree has detached HEAD - cannot merge",
-					hasConflicts: false,
-					conflictingFiles: [],
-				}
-			}
-
-			// Find the worktree that has the target branch checked out
-			const targetWorktree = worktrees.find((wt) => wt.branch === targetBranch)
-			const mergeCwd = targetWorktree ? targetWorktree.path : cwd
-
-			// Check for uncommitted changes in source worktree
-			try {
-				const { stdout: statusOutput } = await execAsync("git status --porcelain", { cwd: worktreePath })
-				if (statusOutput.trim()) {
-					return {
-						success: false,
-						message: "Source worktree has uncommitted changes. Please commit or stash them first.",
-						hasConflicts: false,
-						conflictingFiles: [],
-						sourceBranch,
-						targetBranch,
-					}
-				}
-			} catch {
-				// Continue if status check fails
-			}
-
-			// Ensure we're on the target branch
-			await execFileAsync("git", ["checkout", targetBranch], { cwd: mergeCwd })
-
-			// Attempt the merge
-			try {
-				await execFileAsync("git", ["merge", sourceBranch, "--no-edit"], { cwd: mergeCwd })
-
-				// Merge succeeded
-				if (deleteAfterMerge) {
-					await this.deleteWorktree(cwd, worktreePath, false)
-				}
-
-				return {
-					success: true,
-					message: `Successfully merged ${sourceBranch} into ${targetBranch}`,
-					hasConflicts: false,
-					conflictingFiles: [],
-					sourceBranch,
-					targetBranch,
-				}
-			} catch (mergeError) {
-				// Check for merge conflicts
-				try {
-					const { stdout: conflictOutput } = await execAsync("git diff --name-only --diff-filter=U", {
-						cwd: mergeCwd,
-					})
-					const conflictingFiles = conflictOutput.trim().split("\n").filter(Boolean)
-
-					// Abort the merge to leave repo in clean state
-					await execAsync("git merge --abort", { cwd: mergeCwd })
-
-					return {
-						success: false,
-						message: `Merge conflicts detected in ${conflictingFiles.length} file(s)`,
-						hasConflicts: true,
-						conflictingFiles,
-						sourceBranch,
-						targetBranch,
-					}
-				} catch {
-					// If we can't get conflicts, just report the error
-					const errorMessage = mergeError instanceof Error ? mergeError.message : String(mergeError)
-
-					// Try to abort any in-progress merge
-					try {
-						await execAsync("git merge --abort", { cwd: mergeCwd })
-					} catch {
-						// Ignore abort errors
-					}
-
-					return {
-						success: false,
-						message: `Merge failed: ${errorMessage}`,
-						hasConflicts: false,
-						conflictingFiles: [],
-						sourceBranch,
-						targetBranch,
-					}
-				}
-			}
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			return {
-				success: false,
-				message: `Merge failed: ${errorMessage}`,
-				hasConflicts: false,
-				conflictingFiles: [],
 			}
 		}
 	}
