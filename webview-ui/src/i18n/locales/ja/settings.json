@@ -466,7 +466,8 @@
 			"numCtx": "コンテキストウィンドウサイズ (num_ctx)",
 			"numCtxHelp": "モデルのデフォルトのコンテキストウィンドウサイズを上書きします。モデルのModelfile構成を使用するには、空のままにします。最小値は128です。",
 			"description": "Ollamaを使用すると、ローカルコンピューターでモデルを実行できます。始め方については、クイックスタートガイドをご覧ください。",
-			"warning": "注意：Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。"
+			"warning": "注意：Roo Codeは複雑なプロンプトを使用し、Claudeモデルで最適に動作します。能力の低いモデルは期待通りに動作しない場合があります。",
+			"toolsNote": "Models that do not support native tool calling are excluded from this list."
 		},
 		"unboundApiKey": "Unbound APIキー",
 		"getUnboundApiKey": "Unbound APIキーを取得",
@@ -940,7 +941,8 @@
 		"providerNotAllowed": "プロバイダー「{{provider}}」は組織によって許可されていません",
 		"modelNotAllowed": "モデル「{{model}}」はプロバイダー「{{provider}}」に対して組織によって許可されていません",
 		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
-		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります"
+		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります",
+		"modelMayNotSupportTools": "The model ID ({{modelId}}) you provided is not in the available models list. This may be because the model does not support native tool calling, which is required for Roo Code."
 	},
 	"placeholders": {
 		"apiKey": "API キーを入力...",

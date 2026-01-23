@@ -466,7 +466,8 @@
 			"numCtx": "上下文窗口大小 (num_ctx)",
 			"numCtxHelp": "覆盖模型的默认上下文窗口大小。留空以使用模型的 Modelfile 配置。最小值为 128。",
 			"description": "Ollama 允许您在本地计算机上运行模型。有关如何开始使用的说明，请参阅其快速入门指南。",
-			"warning": "注意：Roo Code 使用复杂的提示，与 Claude 模型配合最佳。功能较弱的模型可能无法按预期工作。"
+			"warning": "注意：Roo Code 使用复杂的提示，与 Claude 模型配合最佳。功能较弱的模型可能无法按预期工作。",
+			"toolsNote": "Models that do not support native tool calling are excluded from this list."
 		},
 		"unboundApiKey": "Unbound API 密钥",
 		"getUnboundApiKey": "获取 Unbound API 密钥",
@@ -940,7 +941,8 @@
 		"providerNotAllowed": "提供商 '{{provider}}' 不允许用于您的组织",
 		"modelNotAllowed": "模型 '{{model}}' 不允许用于提供商 '{{provider}}'，您的组织不允许",
 		"profileInvalid": "此配置文件包含您的组织不允许的提供商或模型",
-		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径"
+		"qwenCodeOauthPath": "您必须提供有效的 OAuth 凭证路径",
+		"modelMayNotSupportTools": "The model ID ({{modelId}}) you provided is not in the available models list. This may be because the model does not support native tool calling, which is required for Roo Code."
 	},
 	"placeholders": {
 		"apiKey": "请输入 API 密钥...",
