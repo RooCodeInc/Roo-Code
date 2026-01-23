@@ -107,7 +107,6 @@ import { NativeToolCallParser } from "../assistant-message/NativeToolCallParser"
 import { manageContext, willManageContext } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
-import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
 import {
 	type ApiMessage,
 	readApiMessages,
@@ -548,20 +547,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Listen for provider profile changes to update parser state
 		this.setupProviderProfileChangeListener(provider)
 
-		// Always set up diff strategy - default to old strategy, will be updated if experiment is enabled.
+		// Set up diff strategy
 		this.diffStrategy = new MultiSearchReplaceDiffStrategy()
-
-		// Check experiment asynchronously and update strategy if needed.
-		provider.getState().then((state) => {
-			const isMultiFileApplyDiffEnabled = experiments.isEnabled(
-				state.experiments ?? {},
-				EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF,
-			)
-
-			if (isMultiFileApplyDiffEnabled) {
-				this.diffStrategy = new MultiFileSearchReplaceDiffStrategy()
-			}
-		})
 
 		this.toolRepetitionDetector = new ToolRepetitionDetector(this.consecutiveMistakeLimit)
 

@@ -233,7 +233,10 @@ describe("mergeExtensionState", () => {
 			...baseState,
 			apiConfiguration: { modelMaxThinkingTokens: 456, modelTemperature: 0.3 },
 			experiments: {
-				multiFileApplyDiff: true,
+				powerSteering: true,
+				marketplace: false,
+				disableCompletionCommand: false,
+				concurrentFileReads: true,
 				preventFocusDisruption: false,
 				imageGeneration: false,
 				runSlashCommand: false,
@@ -251,7 +254,10 @@ describe("mergeExtensionState", () => {
 		})
 
 		expect(result.experiments).toEqual({
-			multiFileApplyDiff: true,
+			powerSteering: true,
+			marketplace: false,
+			disableCompletionCommand: false,
+			concurrentFileReads: true,
 			preventFocusDisruption: false,
 			imageGeneration: false,
 			runSlashCommand: false,

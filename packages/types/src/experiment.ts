@@ -7,7 +7,7 @@ import type { Keys, Equals, AssertEqual } from "./type-fu.js"
  */
 
 export const experimentIds = [
-	"multiFileApplyDiff",
+	"powerSteering",
 	"preventFocusDisruption",
 	"imageGeneration",
 	"runSlashCommand",
@@ -24,7 +24,7 @@ export type ExperimentId = z.infer<typeof experimentIdsSchema>
  */
 
 export const experimentsSchema = z.object({
-	multiFileApplyDiff: z.boolean().optional(),
+	powerSteering: z.boolean().optional(),
 	preventFocusDisruption: z.boolean().optional(),
 	imageGeneration: z.boolean().optional(),
 	runSlashCommand: z.boolean().optional(),
