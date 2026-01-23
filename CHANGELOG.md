@@ -1,4 +1,7 @@
-# Klaus Code Changelog
+BELOW is text written before FORK
+=================================
+
+# Roo Code Changelog
 
 ## [3.42.0] - 2026-01-22
 
