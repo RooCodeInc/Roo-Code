@@ -54,7 +54,7 @@ Mencione o alinhamento com essas áreas em seus PRs.
 
 ### 3. Junte-se à comunidade Klaus Code
 
-- **Principal:** Junte-se ao nosso [Discord](https://discord.gg/roocode) e envie uma DM para **Hannes Rudolph (`hrudolph`)**.
+- **Principal:** Junte-se ao nosso [Discord](https://discord.tbd) e envie uma DM para **Hannes Rudolph (`hrudolph`)**.
 - **Alternativa:** Contribuidores experientes могут se envolver diretamente através dos [Projetos do GitHub](https://github.com/orgs/RooCodeInc/projects/1).
 
 ## Encontrando e planejando sua contribuição
@@ -73,7 +73,7 @@ Todas as contribuições começam com uma Issue do GitHub usando nossos modelos 
 - **Crie uma issue** usando:
     - **Melhorias:** modelo "Solicitação de melhoria" (linguagem simples focada no benefício do usuário).
     - **Bugs:** modelo "Relatório de bug" (reprodução mínima + esperado vs. real + versão).
-- **Quer trabalhar nisso?** Comente "Reivindicando" na issue e envie uma DM para **Hannes Rudolph (`hrudolph`)** no [Discord](https://discord.gg/roocode) para ser atribuído. A atribuição será confirmada no tópico.
+- **Quer trabalhar nisso?** Comente "Reivindicando" na issue e envie uma DM para **Hannes Rudolph (`hrudolph`)** no [Discord](https://discord.tbd) para ser atribuído. A atribuição será confirmada no tópico.
 - **Os PRs devem ser vinculados à issue.** PRs não vinculados podem ser fechados.
 
 ### Decidindo no que trabalhar
@@ -126,7 +126,7 @@ pnpm install
 
 ### Política de Pull Request
 
-- Deve fazer referência a uma Issue do GitHub atribuída. Para ser atribuído: comente "Reivindicando" na issue e envie uma DM para **Hannes Rudolph (`hrudolph`)** no [Discord](https://discord.gg/roocode). A atribuição será confirmada no tópico.
+- Deve fazer referência a uma Issue do GitHub atribuída. Para ser atribuído: comente "Reivindicando" na issue e envie uma DM para **Hannes Rudolph (`hrudolph`)** no [Discord](https://discord.tbd). A atribuição será confirmada no tópico.
 - PRs não vinculados podem ser fechados.
 - Os PRs devem passar nos testes de CI, estar alinhados com o roteiro e ter documentação clara.
 

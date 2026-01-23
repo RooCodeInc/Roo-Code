@@ -54,7 +54,7 @@ Sebutkan keselarasan dengan area-area ini di PR Anda.
 
 ### 3. Bergabunglah dengan Komunitas Klaus Code
 
-- **Utama:** Bergabunglah dengan [Discord](https://discord.gg/roocode) kami dan kirim DM ke **Hannes Rudolph (`hrudolph`)**.
+- **Utama:** Bergabunglah dengan [Discord](https://discord.tbd) kami dan kirim DM ke **Hannes Rudolph (`hrudolph`)**.
 - **Alternatif:** Kontributor berpengalaman dapat terlibat langsung melalui [Proyek GitHub](https://github.com/orgs/RooCodeInc/projects/1).
 
 ## Menemukan & Merencanakan Kontribusi Anda
@@ -73,7 +73,7 @@ Semua kontribusi dimulai dengan Masalah GitHub menggunakan template ramping kami
 - **Buat masalah** menggunakan:
     - **Penyempurnaan:** Template "Permintaan Penyempurnaan" (bahasa sederhana yang berfokus pada manfaat pengguna).
     - **Bug:** Template "Laporan Bug" (repro minimal + yang diharapkan vs aktual + versi).
-- **Ingin mengerjakannya?** Beri komentar "Mengklaim" pada masalah tersebut dan kirim DM ke **Hannes Rudolph (`hrudolph`)** di [Discord](https://discord.gg/roocode) untuk ditugaskan. Penugasan akan dikonfirmasi di utas.
+- **Ingin mengerjakannya?** Beri komentar "Mengklaim" pada masalah tersebut dan kirim DM ke **Hannes Rudolph (`hrudolph`)** di [Discord](https://discord.tbd) untuk ditugaskan. Penugasan akan dikonfirmasi di utas.
 - **PR harus menautkan ke masalah.** PR yang tidak tertaut dapat ditutup.
 
 ### Memutuskan Apa yang Akan Dikerjakan
@@ -126,7 +126,7 @@ pnpm install
 
 ### Kebijakan Pull Request
 
-- Harus merujuk pada Masalah GitHub yang ditugaskan. Untuk ditugaskan: beri komentar "Mengklaim" pada masalah tersebut dan kirim DM ke **Hannes Rudolph (`hrudolph`)** di [Discord](https://discord.gg/roocode). Penugasan akan dikonfirmasi di utas.
+- Harus merujuk pada Masalah GitHub yang ditugaskan. Untuk ditugaskan: beri komentar "Mengklaim" pada masalah tersebut dan kirim DM ke **Hannes Rudolph (`hrudolph`)** di [Discord](https://discord.tbd). Penugasan akan dikonfirmasi di utas.
 - PR yang tidak tertaut dapat ditutup.
 - PR harus lulus tes CI, selaras dengan peta jalan, dan memiliki dokumentasi yang jelas.
 

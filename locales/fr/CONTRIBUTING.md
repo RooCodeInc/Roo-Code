@@ -54,7 +54,7 @@ Mentionnez l'alignement avec ces domaines dans vos PRs.
 
 ### 3. Rejoignez la communauté Klaus Code
 
-- **Principal :** Rejoignez notre [Discord](https://discord.gg/roocode) et envoyez un DM à **Hannes Rudolph (`hrudolph`)**.
+- **Principal :** Rejoignez notre [Discord](https://discord.tbd) et envoyez un DM à **Hannes Rudolph (`hrudolph`)**.
 - **Alternative :** Les contributeurs expérimentés peuvent s'engager directement via les [Projets GitHub](https://github.com/orgs/RooCodeInc/projects/1).
 
 ## Trouver et planifier votre contribution
@@ -73,7 +73,7 @@ Toutes les contributions commencent par une Issue GitHub en utilisant nos modèl
 - **Créez une issue** en utilisant :
     - **Améliorations :** Modèle "Demande d'amélioration" (langage simple axé sur l'avantage pour l'utilisateur).
     - **Bugs :** Modèle "Rapport de bug" (reproduction minimale + attendu vs réel + version).
-- **Vous voulez y travailler ?** Commentez "Claiming" sur l'issue et envoyez un DM à **Hannes Rudolph (`hrudolph`)** sur [Discord](https://discord.gg/roocode) pour être assigné. L'assignation sera confirmée dans le fil de discussion.
+- **Vous voulez y travailler ?** Commentez "Claiming" sur l'issue et envoyez un DM à **Hannes Rudolph (`hrudolph`)** sur [Discord](https://discord.tbd) pour être assigné. L'assignation sera confirmée dans le fil de discussion.
 - **Les PRs doivent être liées à l'issue.** Les PRs non liées peuvent être fermées.
 
 ### Décider sur quoi travailler
@@ -126,7 +126,7 @@ pnpm install
 
 ### Politique de Pull Request
 
-- Doit faire référence à une Issue GitHub assignée. Pour être assigné : commentez "Claiming" sur l'issue et envoyez un DM à **Hannes Rudolph (`hrudolph`)** sur [Discord](https://discord.gg/roocode). L'assignation sera confirmée dans le fil de discussion.
+- Doit faire référence à une Issue GitHub assignée. Pour être assigné : commentez "Claiming" sur l'issue et envoyez un DM à **Hannes Rudolph (`hrudolph`)** sur [Discord](https://discord.tbd). L'assignation sera confirmée dans le fil de discussion.
 - Les PRs non liées peuvent être fermées.
 - Les PRs doivent passer les tests d'intégration continue, s'aligner sur la feuille de route et avoir une documentation claire.
 

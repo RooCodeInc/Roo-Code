@@ -2,11 +2,11 @@
   <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code Marketplace"></a>
   <a href="https://x.com/roocode"><img src="https://img.shields.io/badge/roocode-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
   <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
-  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
+  <a href="https://discord.tbd"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
+  <a href="https://www.reddit.tbd/r/KlausCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
 </p>
 <p align="center">
-  <em>すぐに助けを得る → <a href="https://discord.gg/roocode">Discordに参加</a> • 非同期を好む？ → <a href="https://www.reddit.com/r/RooCode/">r/RooCodeに参加</a></em>
+  <em>すぐに助けを得る → <a href="https://discord.tbd">Discordに参加</a> • 非同期を好む？ → <a href="https://www.reddit.tbd/r/KlausCode/">r/RooCodeに参加</a></em>
 </p>
 
 # Klaus Code
@@ -80,8 +80,8 @@ Klaus Codeは、あなたの働き方に合わせるように適応します。
 
 - **[ドキュメント](https://docs.roocode.com):** Klaus Codeのインストール、設定、習熟のための公式ガイド。
 - **[YouTubeチャンネル](https://youtube.com/@roocodeyt?feature=shared):** チュートリアルを見て、実際の機能を確認できます。
-- **[Discordサーバー](https://discord.gg/roocode):** コミュニティに参加して、リアルタイムのヘルプやディスカッションに参加できます。
-- **[Redditコミュニティ](https://www.reddit.com/r/RooCode):** あなたの経験を共有し、他の人が何を構築しているかを見ることができます。
+- **[Discordサーバー](https://discord.tbd):** コミュニティに参加して、リアルタイムのヘルプやディスカッションに参加できます。
+- **[Redditコミュニティ](https://www.reddit.tbd/r/KlausCode):** あなたの経験を共有し、他の人が何を構築しているかを見ることができます。
 - **[GitHub Issues](https://github.com/RooCodeInc/Roo-Code/issues):** バグを報告し、開発を追跡します。
 - **[機能リクエスト](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** アイデアがありますか？開発者と共有してください。
 
@@ -173,4 +173,4 @@ VSIXパッケージを手動でインストールしたい場合：
 
 ---
 
-**Klaus Codeをお楽しみください！** 手綱を短く持って使うか、自律的に歩き回らせるかにかかわらず、あなたが何を構築するか楽しみにしています。質問や機能のアイデアがあれば、私たちの[Redditコミュニティ](https://www.reddit.com/r/RooCode/)または[Discord](https://discord.gg/roocode)にお立ち寄りください。ハッピーコーディング！
+**Klaus Codeをお楽しみください！** 手綱を短く持って使うか、自律的に歩き回らせるかにかかわらず、あなたが何を構築するか楽しみにしています。質問や機能のアイデアがあれば、私たちの[Redditコミュニティ](https://www.reddit.tbd/r/KlausCode/)または[Discord](https://discord.tbd)にお立ち寄りください。ハッピーコーディング！

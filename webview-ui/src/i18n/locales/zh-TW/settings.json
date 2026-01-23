@@ -58,7 +58,7 @@
 		"contact": {
 			"label": "需要與我們聯絡？請寫信"
 		},
-		"community": "想要獲取使用技巧或與其他 Klaus Code 使用者交流？加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
+		"community": "想要獲取使用技巧或與其他 Klaus Code 使用者交流？加入 <redditLink>reddit.com/r/Klaus Code</redditLink> 或 <discordLink>discord.tbd</discordLink>",
 		"contactAndCommunity": "聯絡與社群",
 		"manageSettings": "管理設定",
 		"debugMode": {
@@ -909,7 +909,7 @@
 		"simplifiedExplanation": "你可以稍後調整詳細的模型設定。"
 	},
 	"footer": {
-		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink> 討論。",
+		"feedback": "若您有任何問題或建議，歡迎至 <githubLink>github.com/Klaus CodeInc/Roo-Code</githubLink> 提出 issue，或加入 <redditLink>reddit.com/r/Klaus Code</redditLink> 或 <discordLink>discord.tbd</discordLink> 討論。",
 		"telemetry": {
 			"label": "允許匿名錯誤與使用情況回報",
 			"description": "透過發送匿名使用資料和錯誤回報來協助改善 Klaus Code。此遙測不會收集程式碼、Prompt 或個人資訊。查看我們的<privacyLink>隱私政策</privacyLink>以了解更多詳情。您可以隨時關閉此功能。"

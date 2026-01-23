@@ -2,11 +2,11 @@
   <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code Marketplace"></a>
   <a href="https://x.com/roocode"><img src="https://img.shields.io/badge/roocode-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
   <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
-  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
+  <a href="https://discord.tbd"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
+  <a href="https://www.reddit.tbd/r/KlausCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
 </p>
 <p align="center">
-  <em>Hızlı yardım alın → <a href="https://discord.gg/roocode">Discord'a Katılın</a> • Asenkron mu tercih edersiniz? → <a href="https://www.reddit.com/r/RooCode/">r/RooCode'a Katılın</a></em>
+  <em>Hızlı yardım alın → <a href="https://discord.tbd">Discord'a Katılın</a> • Asenkron mu tercih edersiniz? → <a href="https://www.reddit.tbd/r/KlausCode/">r/RooCode'a Katılın</a></em>
 </p>
 
 # Klaus Code
@@ -80,8 +80,8 @@ Daha fazla: [Modları kullanma](https://docs.roocode.com/basic-usage/using-modes
 
 - **[Dokümantasyon](https://docs.roocode.com):** Klaus Code'u yükleme, yapılandırma ve ustalaşma konusundaki resmi kılavuz.
 - **[YouTube Kanalı](https://youtube.com/@roocodeyt?feature=shared):** Eğitimleri izleyin ve özellikleri çalışırken görün.
-- **[Discord Sunucusu](https://discord.gg/roocode):** Gerçek zamanlı yardım ve tartışma için topluluğa katılın.
-- **[Reddit Topluluğu](https://www.reddit.com/r/RooCode):** Deneyimlerinizi paylaşın ve başkalarının ne inşa ettiğini görün.
+- **[Discord Sunucusu](https://discord.tbd):** Gerçek zamanlı yardım ve tartışma için topluluğa katılın.
+- **[Reddit Topluluğu](https://www.reddit.tbd/r/KlausCode):** Deneyimlerinizi paylaşın ve başkalarının ne inşa ettiğini görün.
 - **[GitHub Sorunları](https://github.com/RooCodeInc/Roo-Code/issues):** Hataları bildirin ve gelişimi takip edin.
 - **[Özellik İstekleri](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** Bir fikriniz mi var? Geliştiricilerle paylaşın.
 
@@ -173,4 +173,4 @@ Topluluk katkılarını çok seviyoruz! [CONTRIBUTING.md](CONTRIBUTING.md) dosya
 
 ---
 
-**Klaus Code'un keyfini çıkar!** Onu kısa tasmalı tut ya da otonom dolaşsın; ne inşa edeceğini görmek için sabırsızlanıyoruz. Soruların veya özellik fikirlerin varsa [Reddit topluluğumuza](https://www.reddit.com/r/RooCode/) ya da [Discord](https://discord.gg/roocode)'a uğra. İyi kodlamalar!
+**Klaus Code'un keyfini çıkar!** Onu kısa tasmalı tut ya da otonom dolaşsın; ne inşa edeceğini görmek için sabırsızlanıyoruz. Soruların veya özellik fikirlerin varsa [Reddit topluluğumuza](https://www.reddit.tbd/r/KlausCode/) ya da [Discord](https://discord.tbd)'a uğra. İyi kodlamalar!

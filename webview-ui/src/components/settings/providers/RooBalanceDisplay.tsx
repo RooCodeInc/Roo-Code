@@ -12,7 +12,7 @@ export const RooBalanceDisplay = () => {
 	}
 
 	const formattedBalance = balance.toFixed(2)
-	const billingUrl = cloudApiUrl ? `${cloudApiUrl.replace(/\/$/, "")}/billing` : "https://app.roocode.com/billing"
+	const billingUrl = cloudApiUrl ? `${cloudApiUrl.replace(/\/$/, "")}/billing` : "https://app.tbd/billing"
 
 	return (
 		<VSCodeLink href={billingUrl} className="text-vscode-foreground hover:underline whitespace-nowrap">

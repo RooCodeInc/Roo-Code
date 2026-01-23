@@ -154,7 +154,7 @@
 	"warnings": {
 		"no_terminal_content": "Seçili terminal içeriği yok",
 		"missing_task_files": "Bu görevin dosyaları eksik. Görev listesinden kaldırmak istiyor musunuz?",
-		"auto_import_failed": "RooCode ayarları otomatik olarak içe aktarılamadı: {{error}}"
+		"auto_import_failed": "Klaus Code ayarları otomatik olarak içe aktarılamadı: {{error}}"
 	},
 	"info": {
 		"no_changes": "Değişiklik bulunamadı.",
@@ -163,7 +163,7 @@
 		"custom_storage_path_set": "Özel depolama yolu ayarlandı: {{path}}",
 		"default_storage_path": "Varsayılan depolama yoluna geri dönüldü",
 		"settings_imported": "Ayarlar başarıyla içe aktarıldı.",
-		"auto_import_success": "RooCode ayarları {{filename}} dosyasından otomatik olarak içe aktarıldı",
+		"auto_import_success": "Klaus Code ayarları {{filename}} dosyasından otomatik olarak içe aktarıldı",
 		"share_link_copied": "Paylaşım bağlantısı panoya kopyalandı",
 		"image_copied_to_clipboard": "Resim veri URI'si panoya kopyalandı",
 		"image_saved": "Resim {{path}} konumuna kaydedildi",
@@ -196,8 +196,8 @@
 	},
 	"storage": {
 		"prompt_custom_path": "Konuşma geçmişi için özel depolama yolunu girin, varsayılan konumu kullanmak için boş bırakın",
-		"path_placeholder": "D:\\RooCodeStorage",
-		"enter_absolute_path": "Lütfen mutlak bir yol girin (örn. D:\\RooCodeStorage veya /home/user/storage)",
+		"path_placeholder": "D:\\Klaus CodeStorage",
+		"enter_absolute_path": "Lütfen mutlak bir yol girin (örn. D:\\Klaus CodeStorage veya /home/user/storage)",
 		"enter_valid_path": "Lütfen geçerli bir yol girin"
 	},
 	"input": {

@@ -21,7 +21,7 @@ vi.mock("react-i18next")
 
 // Mock the cloud config
 vi.mock("@klaus-code/cloud/src/config", () => ({
-	getRooCodeApiUrl: vi.fn(() => "https://app.roocode.com"),
+	getRooCodeApiUrl: vi.fn(() => "https://app.tbd"),
 }))
 
 // Mock the extension state context
@@ -70,7 +70,7 @@ describe("CloudTaskButton", () => {
 				email: "test@example.com",
 				extensionBridgeEnabled: true,
 			},
-			cloudApiUrl: "https://app.roocode.com",
+			cloudApiUrl: "https://app.tbd",
 		} as any)
 	})
 
@@ -89,7 +89,7 @@ describe("CloudTaskButton", () => {
 				email: "test@example.com",
 				extensionBridgeEnabled: false,
 			},
-			cloudApiUrl: "https://app.roocode.com",
+			cloudApiUrl: "https://app.tbd",
 		} as any)
 
 		render(<CloudTaskButton item={mockItem} />)
@@ -100,7 +100,7 @@ describe("CloudTaskButton", () => {
 	test("does not render when cloudUserInfo is null", () => {
 		mockUseExtensionState.mockReturnValue({
 			cloudUserInfo: null,
-			cloudApiUrl: "https://app.roocode.com",
+			cloudApiUrl: "https://app.tbd",
 		} as any)
 
 		render(<CloudTaskButton item={mockItem} />)
@@ -133,7 +133,7 @@ describe("CloudTaskButton", () => {
 		fireEvent.click(button)
 
 		await waitFor(() => {
-			const input = screen.getByDisplayValue("https://app.roocode.com/task/test-task-id")
+			const input = screen.getByDisplayValue("https://app.tbd/task/test-task-id")
 			expect(input).toBeInTheDocument()
 			expect(input).toBeDisabled()
 		})

@@ -58,7 +58,7 @@
 		"contact": {
 			"label": "Нужно с нами связаться? Напишите"
 		},
-		"community": "Хотите получить советы или просто пообщаться с другими пользователями Klaus Code? Присоединяйтесь к <redditLink>reddit.com/r/RooCode</redditLink> или <discordLink>discord.gg/roocode</discordLink>",
+		"community": "Хотите получить советы или просто пообщаться с другими пользователями Klaus Code? Присоединяйтесь к <redditLink>reddit.com/r/Klaus Code</redditLink> или <discordLink>discord.tbd</discordLink>",
 		"contactAndCommunity": "Контакты и Сообщество",
 		"manageSettings": "Управление Настройками",
 		"debugMode": {
@@ -909,7 +909,7 @@
 		"simplifiedExplanation": "Ты сможешь настроить подробные параметры модели позже."
 	},
 	"footer": {
-		"feedback": "Если у вас есть вопросы или предложения, откройте issue на <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> или присоединяйтесь к <redditLink>reddit.com/r/RooCode</redditLink> или <discordLink>discord.gg/roocode</discordLink>",
+		"feedback": "Если у вас есть вопросы или предложения, откройте issue на <githubLink>github.com/Klaus CodeInc/Roo-Code</githubLink> или присоединяйтесь к <redditLink>reddit.com/r/Klaus Code</redditLink> или <discordLink>discord.tbd</discordLink>",
 		"telemetry": {
 			"label": "Разрешить анонимную отправку ошибок и статистики использования",
 			"description": "Помогите улучшить Klaus Code, отправляя анонимные данные об использовании и отчеты об ошибках. Эта телеметрия не собирает код, промпты или личную информацию. Смотрите нашу <privacyLink>политику конфиденциальности</privacyLink> для получения подробной информации."

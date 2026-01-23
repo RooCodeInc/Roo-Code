@@ -54,7 +54,7 @@ Mencione la alineación con estas áreas en sus solicitudes de extracción.
 
 ### 3. Únase a la comunidad de Klaus Code
 
-- **Principal:** Únase a nuestro [Discord](https://discord.gg/roocode) y envíe un mensaje directo a **Hannes Rudolph (`hrudolph`)**.
+- **Principal:** Únase a nuestro [Discord](https://discord.tbd) y envíe un mensaje directo a **Hannes Rudolph (`hrudolph`)**.
 - **Alternativa:** Los colaboradores experimentados pueden participar directamente a través de [Proyectos de GitHub](https://github.com/orgs/RooCodeInc/projects/1).
 
 ## Encontrar y planificar su contribución
@@ -73,7 +73,7 @@ Todas las contribuciones comienzan con una incidencia de GitHub utilizando nuest
 - **Cree una incidencia** utilizando:
     - **Mejoras:** plantilla "Solicitud de mejora" (lenguaje sencillo centrado en el beneficio del usuario).
     - **Errores:** plantilla "Informe de error" (reproducción mínima + esperado vs. real + versión).
-- **¿Quiere trabajar en ello?** Comente "Reclamando" en la incidencia y envíe un mensaje directo a **Hannes Rudolph (`hrudolph`)** en [Discord](https://discord.gg/roocode) para que se le asigne. La asignación se confirmará en el hilo.
+- **¿Quiere trabajar en ello?** Comente "Reclamando" en la incidencia y envíe un mensaje directo a **Hannes Rudolph (`hrudolph`)** en [Discord](https://discord.tbd) para que se le asigne. La asignación se confirmará en el hilo.
 - **Las solicitudes de extracción deben enlazar a la incidencia.** Las solicitudes de extracción no enlazadas pueden cerrarse.
 
 ### Decidir en qué trabajar
@@ -126,7 +126,7 @@ pnpm install
 
 ### Política de solicitud de extracción
 
-- Debe hacer referencia a una incidencia de GitHub asignada. Para que se le asigne: comente "Reclamando" en la incidencia y envíe un mensaje directo a **Hannes Rudolph (`hrudolph`)** en [Discord](https://discord.gg/roocode). La asignación se confirmará en el hilo.
+- Debe hacer referencia a una incidencia de GitHub asignada. Para que se le asigne: comente "Reclamando" en la incidencia y envíe un mensaje directo a **Hannes Rudolph (`hrudolph`)** en [Discord](https://discord.tbd). La asignación se confirmará en el hilo.
 - Las solicitudes de extracción no enlazadas pueden cerrarse.
 - Las solicitudes de extracción deben pasar las pruebas de CI, estar alineadas con la hoja de ruta y tener una documentación clara.
 

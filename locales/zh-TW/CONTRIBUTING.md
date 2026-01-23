@@ -54,7 +54,7 @@ Klaus Code 是一個由社群驅動的專案，我們非常重視每一份貢獻
 
 ### 3. 加入 Klaus Code 社群
 
-- **主要方式：** 加入我們的 [Discord](https://discord.gg/roocode) 並私訊 **Hannes Rudolph (`hrudolph`)**。
+- **主要方式：** 加入我們的 [Discord](https://discord.tbd) 並私訊 **Hannes Rudolph (`hrudolph`)**。
 - **替代方式：** 經驗豐富的貢獻者可以透過 [GitHub 專案](https://github.com/orgs/RooCodeInc/projects/1) 直接參與。
 
 ## 尋找和規劃您的貢獻
@@ -73,7 +73,7 @@ Klaus Code 是一個由社群驅動的專案，我們非常重視每一份貢獻
 - **使用以下範本建立問題**：
     - **增強功能：** 「增強請求」範本（著重於使用者利益的簡單語言）。
     - **錯誤：** 「錯誤報告」範本（最少的重現步驟 + 預期與實際 + 版本）。
-- **想參與其中嗎？** 在問題上評論“領取”，並在[Discord](https://discord.gg/roocode)上私訊 **Hannes Rudolph (`hrudolph`)** 以獲得分配。分配將在帖子中確認。
+- **想參與其中嗎？** 在問題上評論“領取”，並在[Discord](https://discord.tbd)上私訊 **Hannes Rudolph (`hrudolph`)** 以獲得分配。分配將在帖子中確認。
 - **PR 必須連結到問題。** 未連結的 PR 可能會被關閉。
 
 ### 決定做什麼
@@ -126,7 +126,7 @@ pnpm install
 
 ### 拉取請求政策
 
-- 必須引用一個已分配的 GitHub 問題。要獲得分配：在問題上評論“領取”，並在[Discord](https://discord.gg/roocode)上私訊 **Hannes Rudolph (`hrudolph`)**。分配將在帖子中確認。
+- 必須引用一個已分配的 GitHub 問題。要獲得分配：在問題上評論“領取”，並在[Discord](https://discord.tbd)上私訊 **Hannes Rudolph (`hrudolph`)**。分配將在帖子中確認。
 - 未連結的 PR 可能會被關閉。
 - PR 必須通過 CI 測試，與路線圖保持一致，並有清晰的文件。
 

@@ -54,7 +54,7 @@ Wspomnij o dostosowaniu do tych obszarów w swoich PR-ach.
 
 ### 3. Dołącz do społeczności Klaus Code
 
-- **Głównie:** Dołącz do naszego [Discorda](https://discord.gg/roocode) i wyślij wiadomość prywatną do **Hannes Rudolph (`hrudolph`)**.
+- **Głównie:** Dołącz do naszego [Discorda](https://discord.tbd) i wyślij wiadomość prywatną do **Hannes Rudolph (`hrudolph`)**.
 - **Alternatywa:** Doświadczeni współtwórcy mogą angażować się bezpośrednio za pośrednictwem [projektów na GitHubie](https://github.com/orgs/RooCodeInc/projects/1).
 
 ## Znajdowanie i planowanie swojego wkładu
@@ -73,7 +73,7 @@ Wszystkie wkłady zaczynają się od zgłoszenia na GitHubie przy użyciu naszyc
 - **Utwórz zgłoszenie**, używając:
     - **Ulepszenia:** szablon „Prośba o ulepszenie” (prosty język skoncentrowany na korzyściach dla użytkownika).
     - **Błędy:** szablon „Zgłoszenie błędu” (minimalna reprodukcja + oczekiwane a rzeczywiste + wersja).
-- **Chcesz nad tym popracować?** Skomentuj „Zgłaszam się” w zgłoszeniu i wyślij wiadomość prywatną do **Hannes Rudolph (`hrudolph`)** na [Discordzie](https://discord.gg/roocode), aby zostać przypisanym. Przypisanie zostanie potwierdzone w wątku.
+- **Chcesz nad tym popracować?** Skomentuj „Zgłaszam się” w zgłoszeniu i wyślij wiadomość prywatną do **Hannes Rudolph (`hrudolph`)** na [Discordzie](https://discord.tbd), aby zostać przypisanym. Przypisanie zostanie potwierdzone w wątku.
 - **PR-y muszą być połączone зі zgłoszeniem.** Niepołączone PR-y mogą zostać zamknięte.
 
 ### Decydowanie, nad czym pracować
@@ -126,7 +126,7 @@ pnpm install
 
 ### Polityka dotycząca żądań ściągnięcia
 
-- Musi odnosić się do przypisanego zgłoszenia na GitHubie. Aby zostać przypisanym: skomentuj „Zgłaszam się” w zgłoszeniu i wyślij wiadomość prywatną do **Hannes Rudolph (`hrudolph`)** na [Discordzie](https://discord.gg/roocode). Przypisanie zostanie potwierdzone w wątku.
+- Musi odnosić się do przypisanego zgłoszenia na GitHubie. Aby zostać przypisanym: skomentuj „Zgłaszam się” w zgłoszeniu i wyślij wiadomość prywatną do **Hannes Rudolph (`hrudolph`)** na [Discordzie](https://discord.tbd). Przypisanie zostanie potwierdzone w wątku.
 - Niepołączone PR-y mogą zostać zamknięte.
 - PR-y muszą przejść testy CI, być zgodne z mapą drogową i mieć przejrzystą dokumentację.
 

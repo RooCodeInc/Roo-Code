@@ -54,7 +54,7 @@ PRでこれらの分野との連携について言及してください。
 
 ### 3. Klaus Codeコミュニティに参加する
 
-- **プライマリ：** [Discord](https://discord.gg/roocode)に参加し、**Hannes Rudolph (`hrudolph`)**にDMしてください。
+- **プライマリ：** [Discord](https://discord.tbd)に参加し、**Hannes Rudolph (`hrudolph`)**にDMしてください。
 - **代替：** 経験豊富な貢献者は、[GitHubプロジェクト](https://github.com/orgs/RooCodeInc/projects/1)を介して直接関与できます。
 
 ## 貢献内容の検索と計画
@@ -73,7 +73,7 @@ PRでこれらの分野との連携について言及してください。
 - **課題を作成する**：
     - **機能強化：** 「機能強化リクエスト」テンプレート（ユーザーの利益に焦点を当てた平易な言葉）。
     - **バグ：** 「バグレポート」テンプレート（最小限の再現+期待値と実際値+バージョン）。
-- **それに取り組みたいですか？** 課題に「Claiming」とコメントし、[Discord](https://discord.gg/roocode)で**Hannes Rudolph（`hrudolph`）**にDMして割り当てを受けてください。割り当てはスレッドで確認されます。
+- **それに取り組みたいですか？** 課題に「Claiming」とコメントし、[Discord](https://discord.tbd)で**Hannes Rudolph（`hrudolph`）**にDMして割り当てを受けてください。割り当てはスレッドで確認されます。
 - **PRは課題にリンクする必要があります。** リンクされていないPRはクローズされる場合があります。
 
 ### 何に取り組むかを決める
@@ -126,7 +126,7 @@ pnpm install
 
 ### プルリクエストポリシー
 
-- 割り当てられたGitHubの課題を参照する必要があります。割り当てを受けるには、課題に「Claiming」とコメントし、[Discord](https://discord.gg/roocode)で**Hannes Rudolph（`hrudolph`）**にDMしてください。割り当てはスレッドで確認されます。
+- 割り当てられたGitHubの課題を参照する必要があります。割り当てを受けるには、課題に「Claiming」とコメントし、[Discord](https://discord.tbd)で**Hannes Rudolph（`hrudolph`）**にDMしてください。割り当てはスレッドで確認されます。
 - リンクされていないPRはクローズされる場合があります。
 - PRはCIテストに合格し、ロードマップに沿っており、明確なドキュメントが必要です。
 

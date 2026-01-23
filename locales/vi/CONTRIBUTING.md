@@ -54,7 +54,7 @@ Hãy đề cập đến sự phù hợp với các lĩnh vực này trong PR c�
 
 ### 3. Tham gia cộng đồng Klaus Code
 
-- **Chính:** Tham gia [Discord](https://discord.gg/roocode) của chúng tôi và nhắn tin trực tiếp cho **Hannes Rudolph (`hrudolph`)**.
+- **Chính:** Tham gia [Discord](https://discord.tbd) của chúng tôi và nhắn tin trực tiếp cho **Hannes Rudolph (`hrudolph`)**.
 - **Thay thế:** Những người đóng góp có kinh nghiệm có thể tham gia trực tiếp qua [Dự án GitHub](https://github.com/orgs/RooCodeInc/projects/1).
 
 ## Tìm kiếm và lập kế hoạch đóng góp của bạn
@@ -73,7 +73,7 @@ Tất cả các đóng góp đều bắt đầu bằng một Vấn đề trên G
 - **Tạo một vấn đề** bằng cách sử dụng:
     - **Cải tiến:** mẫu "Yêu cầu cải tiến" (ngôn ngữ đơn giản tập trung vào lợi ích của người dùng).
     - **Lỗi:** mẫu "Báo cáo lỗi" (tái tạo tối thiểu + mong đợi so với thực tế + phiên bản).
-- **Bạn muốn làm việc với nó?** Bình luận "Nhận" trên vấn đề và nhắn tin trực tiếp cho **Hannes Rudolph (`hrudolph`)** trên [Discord](https://discord.gg/roocode) để được giao. Việc giao nhiệm vụ sẽ được xác nhận trong chuỗi.
+- **Bạn muốn làm việc với nó?** Bình luận "Nhận" trên vấn đề và nhắn tin trực tiếp cho **Hannes Rudolph (`hrudolph`)** trên [Discord](https://discord.tbd) để được giao. Việc giao nhiệm vụ sẽ được xác nhận trong chuỗi.
 - **PR phải liên kết đến vấn đề.** Các PR không được liên kết có thể bị đóng.
 
 ### Quyết định nên làm gì
@@ -126,7 +126,7 @@ pnpm install
 
 ### Chính sách yêu cầu kéo
 
-- Phải tham chiếu đến một Vấn đề GitHub đã được giao. Để được giao: bình luận "Nhận" trên vấn đề và nhắn tin trực tiếp cho **Hannes Rudolph (`hrudolph`)** trên [Discord](https://discord.gg/roocode). Việc giao nhiệm vụ sẽ được xác nhận trong chuỗi.
+- Phải tham chiếu đến một Vấn đề GitHub đã được giao. Để được giao: bình luận "Nhận" trên vấn đề và nhắn tin trực tiếp cho **Hannes Rudolph (`hrudolph`)** trên [Discord](https://discord.tbd). Việc giao nhiệm vụ sẽ được xác nhận trong chuỗi.
 - Các PR không được liên kết có thể bị đóng.
 - Các PR phải vượt qua các bài kiểm tra CI, phù hợp với lộ trình và có tài liệu rõ ràng.
 

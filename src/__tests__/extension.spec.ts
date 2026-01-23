@@ -69,7 +69,7 @@ vi.mock("@klaus-code/cloud", () => ({
 	BridgeOrchestrator: {
 		disconnect: mockBridgeOrchestratorDisconnect,
 	},
-	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
+	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.tbd"),
 }))
 
 vi.mock("@klaus-code/telemetry", () => ({

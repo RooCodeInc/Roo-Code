@@ -54,7 +54,7 @@ Vermeld de afstemming met deze gebieden in je PR's.
 
 ### 3. Word lid van de Klaus Code-community
 
-- **Primair:** Word lid van onze [Discord](https://discord.gg/roocode) en stuur een DM naar **Hannes Rudolph (`hrudolph`)**.
+- **Primair:** Word lid van onze [Discord](https://discord.tbd) en stuur een DM naar **Hannes Rudolph (`hrudolph`)**.
 - **Alternatief:** Ervaren bijdragers kunnen rechtstreeks deelnemen via [GitHub Projects](https://github.com/orgs/RooCodeInc/projects/1).
 
 ## Je bijdrage vinden en plannen
@@ -73,7 +73,7 @@ Alle bijdragen beginnen met een GitHub Issue met behulp van onze slanke sjablone
 - **Maak een issue** aan met:
     - **Verbeteringen:** sjabloon "Verbeteringsverzoek" (eenvoudige taal gericht op gebruikersvoordeel).
     - **Bugs:** sjabloon "Bugrapport" (minimale repro + verwacht vs. feitelijk + versie).
-- **Wil je eraan werken?** Reageer met "Claiming" op de issue en stuur een DM naar **Hannes Rudolph (`hrudolph`)** op [Discord](https://discord.gg/roocode) om toegewezen te worden. De toewijzing wordt in de thread bevestigd.
+- **Wil je eraan werken?** Reageer met "Claiming" op de issue en stuur een DM naar **Hannes Rudolph (`hrudolph`)** op [Discord](https://discord.tbd) om toegewezen te worden. De toewijzing wordt in de thread bevestigd.
 - **PR's moeten naar de issue linken.** Niet-gekoppelde PR's kunnen worden gesloten.
 
 ### Beslissen waaraan je wilt werken
@@ -126,7 +126,7 @@ pnpm install
 
 ### Pull Request-beleid
 
-- Moet verwijzen naar een toegewezen GitHub Issue. Om toegewezen te worden: reageer met "Claiming" op de issue en stuur een DM naar **Hannes Rudolph (`hrudolph`)** op [Discord](https://discord.gg/roocode). De toewijzing wordt in de thread bevestigd.
+- Moet verwijzen naar een toegewezen GitHub Issue. Om toegewezen te worden: reageer met "Claiming" op de issue en stuur een DM naar **Hannes Rudolph (`hrudolph`)** op [Discord](https://discord.tbd). De toewijzing wordt in de thread bevestigd.
 - Niet-gekoppelde PR's kunnen worden gesloten.
 - PR's moeten slagen voor CI-tests, in lijn zijn met de roadmap en duidelijke documentatie hebben.
 

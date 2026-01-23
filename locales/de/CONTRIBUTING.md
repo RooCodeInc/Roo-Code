@@ -54,7 +54,7 @@ Erwähne die Ausrichtung auf diese Bereiche in deinen PRs.
 
 ### 3. Tritt der Klaus Code Community bei
 
-- **Primär:** Tritt unserem [Discord](https://discord.gg/roocode) bei und schreibe eine DM an **Hannes Rudolph (`hrudolph`)**.
+- **Primär:** Tritt unserem [Discord](https://discord.tbd) bei und schreibe eine DM an **Hannes Rudolph (`hrudolph`)**.
 - **Alternative:** Erfahrene Mitwirkende können sich direkt über [GitHub-Projekte](https://github.com/orgs/RooCodeInc/projects/1) beteiligen.
 
 ## Deinen Beitrag finden und planen
@@ -73,7 +73,7 @@ Alle Beiträge beginnen mit einem GitHub-Issue unter Verwendung unserer schlanke
 - **Erstelle ein Issue** mit:
     - **Verbesserungen:** Vorlage „Verbesserungsvorschlag“ (einfache Sprache mit Fokus auf den Nutzen für den Benutzer).
     - **Fehler:** Vorlage „Fehlerbericht“ (minimale Reproduktion + erwartet vs. tatsächlich + Version).
-- **Möchtest du daran arbeiten?** Kommentiere „Claiming“ im Issue und schreibe eine DM an **Hannes Rudolph (`hrudolph`)** auf [Discord](https://discord.gg/roocode), um zugewiesen zu werden. Die Zuweisung wird im Thread bestätigt.
+- **Möchtest du daran arbeiten?** Kommentiere „Claiming“ im Issue und schreibe eine DM an **Hannes Rudolph (`hrudolph`)** auf [Discord](https://discord.tbd), um zugewiesen zu werden. Die Zuweisung wird im Thread bestätigt.
 - **PRs müssen auf das Issue verweisen.** Nicht verknüpfte PRs können geschlossen werden.
 
 ### Entscheiden, woran du arbeiten möchtest
@@ -126,7 +126,7 @@ pnpm install
 
 ### Pull-Request-Richtlinie
 
-- Muss auf ein zugewiesenes GitHub-Issue verweisen. Um zugewiesen zu werden: Kommentiere „Claiming“ im Issue und schreibe eine DM an **Hannes Rudolph (`hrudolph`)** auf [Discord](https://discord.gg/roocode). Die Zuweisung wird im Thread bestätigt.
+- Muss auf ein zugewiesenes GitHub-Issue verweisen. Um zugewiesen zu werden: Kommentiere „Claiming“ im Issue und schreibe eine DM an **Hannes Rudolph (`hrudolph`)** auf [Discord](https://discord.tbd). Die Zuweisung wird im Thread bestätigt.
 - Nicht verknüpfte PRs können geschlossen werden.
 - PRs müssen die CI-Tests bestehen, mit der Roadmap übereinstimmen und eine klare Dokumentation haben.
 

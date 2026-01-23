@@ -58,7 +58,7 @@
 		"contact": {
 			"label": "お問い合わせが必要ですか？メールを送信"
 		},
-		"community": "ヒントが欲しいですか、または他のKlaus Codeユーザーと交流したいですか？<redditLink>reddit.com/r/RooCode</redditLink>または<discordLink>discord.gg/roocode</discordLink>に参加してください",
+		"community": "ヒントが欲しいですか、または他のKlaus Codeユーザーと交流したいですか？<redditLink>reddit.com/r/Klaus Code</redditLink>または<discordLink>discord.tbd</discordLink>に参加してください",
 		"contactAndCommunity": "お問い合わせとコミュニティ",
 		"manageSettings": "設定を管理",
 		"debugMode": {
@@ -909,7 +909,7 @@
 		"simplifiedExplanation": "詳細なモデル設定は後で調整できます。"
 	},
 	"footer": {
-		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",
+		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/Klaus CodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/Klaus Code</redditLink>や<discordLink>discord.tbd</discordLink>に参加してください",
 		"telemetry": {
 			"label": "匿名のエラーと使用状況レポートを許可",
 			"description": "匿名の使用データとエラーレポートを送信してKlaus Codeの改善にご協力ください。このテレメトリはコード、プロンプト、個人情報を収集しません。詳細については<privacyLink>プライバシーポリシー</privacyLink>をご覧ください。"

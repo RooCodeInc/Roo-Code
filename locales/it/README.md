@@ -2,11 +2,11 @@
   <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code Marketplace"></a>
   <a href="https://x.com/roocode"><img src="https://img.shields.io/badge/roocode-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
   <a href="https://youtube.com/@roocodeyt?feature=shared"><img src="https://img.shields.io/badge/YouTube-FF0000?style=flat&logo=youtube&logoColor=white" alt="YouTube"></a>
-  <a href="https://discord.gg/roocode"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
-  <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
+  <a href="https://discord.tbd"><img src="https://img.shields.io/badge/Join%20Discord-5865F2?style=flat&logo=discord&logoColor=white" alt="Join Discord"></a>
+  <a href="https://www.reddit.tbd/r/KlausCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
 </p>
 <p align="center">
-  <em>Ottieni aiuto velocemente → <a href="https://discord.gg/roocode">Unisciti a Discord</a> • Preferisci l'asincrono? → <a href="https://www.reddit.com/r/RooCode/">Unisciti a r/RooCode</a></em>
+  <em>Ottieni aiuto velocemente → <a href="https://discord.tbd">Unisciti a Discord</a> • Preferisci l'asincrono? → <a href="https://www.reddit.tbd/r/KlausCode/">Unisciti a r/RooCode</a></em>
 </p>
 
 # Klaus Code
@@ -80,8 +80,8 @@ Scopri di più: [Usare le Modalità](https://docs.roocode.com/basic-usage/using-
 
 - **[Documentazione](https://docs.roocode.com):** La guida ufficiale per installare, configurare e padroneggiare Klaus Code.
 - **[Canale YouTube](https://youtube.com/@roocodeyt?feature=shared):** Guarda i tutorial e le funzionalità in azione.
-- **[Server Discord](https://discord.gg/roocode):** Unisciti alla community per aiuto e discussioni in tempo reale.
-- **[Comunità Reddit](https://www.reddit.com/r/RooCode):** Condividi le tue esperienze e guarda cosa stanno costruendo gli altri.
+- **[Server Discord](https://discord.tbd):** Unisciti alla community per aiuto e discussioni in tempo reale.
+- **[Comunità Reddit](https://www.reddit.tbd/r/KlausCode):** Condividi le tue esperienze e guarda cosa stanno costruendo gli altri.
 - **[Problemi GitHub](https://github.com/RooCodeInc/Roo-Code/issues):** Segnala bug e tieni traccia dello sviluppo.
 - **[Richieste di funzionalità](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** Hai un'idea? Condividila con gli sviluppatori.
 
@@ -173,4 +173,4 @@ Adoriamo i contributi della community! Inizia leggendo il nostro [CONTRIBUTING.m
 
 ---
 
-**Buon divertimento con Klaus Code!** Che tu lo tenga a guinzaglio corto o lo lasci libero di agire in autonomia, non vediamo l'ora di vedere cosa costruirai. Se hai domande o idee per nuove funzionalità, passa dalla nostra [comunità Reddit](https://www.reddit.com/r/RooCode/) o da [Discord](https://discord.gg/roocode). Buona programmazione!
+**Buon divertimento con Klaus Code!** Che tu lo tenga a guinzaglio corto o lo lasci libero di agire in autonomia, non vediamo l'ora di vedere cosa costruirai. Se hai domande o idee per nuove funzionalità, passa dalla nostra [comunità Reddit](https://www.reddit.tbd/r/KlausCode/) o da [Discord](https://discord.tbd). Buona programmazione!

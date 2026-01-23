@@ -72,7 +72,7 @@ Object.defineProperty(window, "IMAGES_BASE_URI", {
 
 describe("CloudView", () => {
 	it("should display benefits when user is not authenticated", () => {
-		render(<CloudView userInfo={null} isAuthenticated={false} cloudApiUrl="https://app.roocode.com" />)
+		render(<CloudView userInfo={null} isAuthenticated={false} cloudApiUrl="https://app.tbd" />)
 
 		// Check that the benefits section is displayed
 		expect(screen.getByRole("heading", { name: "Try Klaus Code Cloud" })).toBeInTheDocument()
@@ -95,7 +95,7 @@ describe("CloudView", () => {
 			email: "test@example.com",
 		}
 
-		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
+		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.tbd" />)
 
 		// Check that the benefits section is NOT displayed
 		expect(screen.queryByText("Access free and paid models that work great with Roo")).not.toBeInTheDocument()
@@ -123,7 +123,7 @@ describe("CloudView", () => {
 			extensionBridgeEnabled: true,
 		}
 
-		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
+		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.tbd" />)
 
 		// Check that the remote control toggle is displayed
 		expect(screen.getByTestId("remote-control-toggle")).toBeInTheDocument()
@@ -140,7 +140,7 @@ describe("CloudView", () => {
 			extensionBridgeEnabled: false,
 		}
 
-		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
+		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.tbd" />)
 
 		// Check that the remote control toggle is NOT displayed
 		expect(screen.queryByTestId("remote-control-toggle")).not.toBeInTheDocument()
@@ -158,7 +158,7 @@ describe("CloudView", () => {
 			extensionBridgeEnabled: true, // Bridge enabled but roomote control disabled
 		}
 
-		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
+		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.tbd" />)
 
 		// Check that the remote control toggle is NOT displayed
 		expect(screen.queryByTestId("remote-control-toggle")).not.toBeInTheDocument()
@@ -181,7 +181,7 @@ describe("CloudView", () => {
 			extensionBridgeEnabled: true,
 		}
 
-		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
+		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.tbd" />)
 
 		// Check that the remote control toggle IS displayed for organization users
 		// (The ClineProvider would set featureRoomoteControlEnabled to true for org users)
@@ -198,7 +198,7 @@ describe("CloudView", () => {
 			email: "test@example.com",
 		}
 
-		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
+		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.tbd" />)
 
 		// Check that the cloud URL pill is NOT displayed for production URL
 		expect(screen.queryByText(/Klaus Code Cloud URL:/)).not.toBeInTheDocument()
@@ -245,7 +245,7 @@ describe("CloudView", () => {
 			organizationName: "Test Organization",
 		}
 
-		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
+		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.tbd" />)
 
 		// Check that the task sync toggle is disabled for organization users
 		const taskSyncToggle = screen.getByTestId("task-sync-toggle")
@@ -270,7 +270,7 @@ describe("CloudView", () => {
 			// No organizationId - regular user
 		}
 
-		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
+		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.tbd" />)
 
 		// Check that the task sync toggle is enabled for non-organization users
 		const taskSyncToggle = screen.getByTestId("task-sync-toggle")
@@ -290,7 +290,7 @@ describe("CloudView", () => {
 		}
 
 		// Test with task sync enabled
-		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.roocode.com" />)
+		render(<CloudView userInfo={mockUserInfo} isAuthenticated={true} cloudApiUrl="https://app.tbd" />)
 
 		// Check that the toggle shows the current state (enabled in this case)
 		const taskSyncToggle = screen.getByTestId("task-sync-toggle")

@@ -58,7 +58,7 @@
 		"contact": {
 			"label": "문의가 필요하신가요? 이메일 보내기"
 		},
-		"community": "팁을 얻거나 다른 Klaus Code 사용자들과 교류하고 싶으신가요? <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 참여하세요",
+		"community": "팁을 얻거나 다른 Klaus Code 사용자들과 교류하고 싶으신가요? <redditLink>reddit.com/r/Klaus Code</redditLink> 또는 <discordLink>discord.tbd</discordLink>에 참여하세요",
 		"contactAndCommunity": "문의 및 커뮤니티",
 		"manageSettings": "설정 관리",
 		"debugMode": {
@@ -909,7 +909,7 @@
 		"simplifiedExplanation": "나중에 자세한 모델 설정을 조정할 수 있습니다."
 	},
 	"footer": {
-		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",
+		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/Klaus CodeInc/Roo-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/Klaus Code</redditLink> 또는 <discordLink>discord.tbd</discordLink>에 가입하세요",
 		"telemetry": {
 			"label": "익명 오류 및 사용 보고 허용",
 			"description": "익명 사용 데이터 및 오류 보고서를 전송하여 Klaus Code 개선에 도움을 주세요. 이 텔레메트리는 코드, 프롬프트 또는 개인 정보를 수집하지 않습니다. 자세한 내용은 <privacyLink>개인정보 보호정책</privacyLink>을 참조하세요."

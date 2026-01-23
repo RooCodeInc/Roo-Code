@@ -17,7 +17,7 @@ import { OrganizationSwitcher } from "./OrganizationSwitcher"
 import { StandardTooltip } from "../ui"
 
 // Define the production URL constant locally to avoid importing from cloud package in tests
-const PRODUCTION_ROO_CODE_API_URL = "https://app.roocode.com"
+const PRODUCTION_ROO_CODE_API_URL = "https://app.tbd"
 
 type CloudViewProps = {
 	userInfo: CloudUserInfo | null

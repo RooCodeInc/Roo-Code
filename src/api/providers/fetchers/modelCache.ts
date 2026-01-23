@@ -101,7 +101,7 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 			break
 		case "roo": {
 			// Klaus Code Cloud provider requires baseUrl and optional apiKey
-			const rooBaseUrl = options.baseUrl ?? process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy"
+			const rooBaseUrl = options.baseUrl ?? process.env.ROO_CODE_PROVIDER_URL ?? "https://api.tbd/proxy"
 			models = await getRooModels(rooBaseUrl, options.apiKey)
 			break
 		}

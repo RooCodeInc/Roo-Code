@@ -116,7 +116,7 @@ vi.mock("@klaus-code/cloud", () => ({
 	BridgeOrchestrator: {
 		isEnabled: vi.fn().mockReturnValue(false),
 	},
-	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.roocode.com"),
+	getRooCodeApiUrl: vi.fn().mockReturnValue("https://app.tbd"),
 }))
 
 vi.mock("../../../shared/modes", () => ({
