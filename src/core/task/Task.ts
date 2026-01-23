@@ -1645,14 +1645,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			metadata, // Pass metadata with tools
 		)
 		if (error) {
-			// Format error as JSON with message and details for ErrorRow component
-			const errorJson = JSON.stringify({
-				message: error,
-				details: errorDetails,
-			})
 			await this.say(
 				"condense_context_error",
-				errorJson,
+				error,
 				undefined /* images */,
 				false /* partial */,
 				undefined /* checkpoint */,
@@ -4010,12 +4005,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					await this.overwriteApiConversationHistory(truncateResult.messages)
 				}
 				if (truncateResult.error) {
-					// Format error as JSON with message and details for ErrorRow component
-					const errorJson = JSON.stringify({
-						message: truncateResult.error,
-						details: truncateResult.errorDetails,
-					})
-					await this.say("condense_context_error", errorJson)
+					await this.say("condense_context_error", truncateResult.error)
 				} else if (truncateResult.summary) {
 					const { summary, cost, prevContextTokens, newContextTokens = 0, condenseId } = truncateResult
 					const contextCondense: ContextCondense = {

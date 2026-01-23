@@ -1,41 +1,25 @@
 import { useTranslation } from "react-i18next"
-import { ErrorRow } from "../ErrorRow"
 
 interface CondensationErrorRowProps {
 	errorText?: string
 }
 
-interface CondensationErrorData {
-	message: string
-	details?: string
-}
-
 /**
  * Displays an error message when context condensation fails.
- * Uses the standard ErrorRow component with the "Details" button for copy functionality.
+ * Shows a warning icon with the error header and optional error details.
  */
 export function CondensationErrorRow({ errorText }: CondensationErrorRowProps) {
 	const { t } = useTranslation()
 
-	// Parse the incoming errorText as JSON to extract message and details
-	// Fallback: if JSON parsing fails, use errorText as both message and errorDetails
-	let errorData: CondensationErrorData
-	try {
-		errorData = errorText ? JSON.parse(errorText) : { message: "" }
-	} catch {
-		// JSON parsing failed, use errorText as both message and details
-		errorData = {
-			message: errorText || "",
-			details: errorText,
-		}
-	}
-
 	return (
-		<ErrorRow
-			type="error"
-			title={t("chat:contextManagement.condensation.errorHeader")}
-			message={errorData.message}
-			errorDetails={errorData.details}
-		/>
+		<div className="flex flex-col gap-1">
+			<div className="flex items-center gap-2">
+				<span className="codicon codicon-warning text-vscode-editorWarning-foreground opacity-80 text-base -mb-0.5"></span>
+				<span className="font-bold text-vscode-foreground">
+					{t("chat:contextManagement.condensation.errorHeader")}
+				</span>
+			</div>
+			{errorText && <span className="text-vscode-descriptionForeground text-sm">{errorText}</span>}
+		</div>
 	)
 }
