@@ -1650,7 +1650,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				message: error,
 				details: errorDetails,
 			})
-			this.say(
+			await this.say(
 				"condense_context_error",
 				errorJson,
 				undefined /* images */,
@@ -4072,8 +4072,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// enabling accurate rewind operations while still sending condensed history to the API.
 		const effectiveHistory = getEffectiveApiHistory(this.apiConversationHistory)
 		const messagesSinceLastSummary = getMessagesSinceLastSummary(effectiveHistory)
-		// For API only: merge consecutive user messages (e.g., summary + the next user message)
-		// without mutating stored history.
+		// For API only: merge consecutive user messages (excludes summary messages per
+		// mergeConsecutiveApiMessages implementation) without mutating stored history.
 		const mergedForApi = mergeConsecutiveApiMessages(messagesSinceLastSummary, { roles: ["user"] })
 		const messagesWithoutImages = maybeRemoveImageBlocks(mergedForApi, this.api)
 		const cleanConversationHistory = this.buildCleanConversationHistory(messagesWithoutImages as ApiMessage[])
