@@ -336,9 +336,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"openaiCodexProvider": "Đã thêm nhà cung cấp OpenAI - ChatGPT Plus/Pro cung cấp quyền truy cập dựa trên đăng ký vào các mô hình Codex mà không có chi phí trên mỗi token.",
-			"gpt52codexModel": "Mô hình gpt-5.2-codex mới được thêm vào Roo Code Router, nhà cung cấp OpenAI tiêu chuẩn và nhiều hơn nữa.",
-			"bugFixes": "Đã sửa các rò rỉ bộ nhớ gây ra màn hình xám, các vấn đề về chữ ký suy nghĩ Gemini và các cải thiện ổn định khác."
+			"chatGptUsageLimits": "Đã thêm giao diện người dùng để theo dõi giới hạn sử dụng ChatGPT của bạn trong nhà cung cấp OpenAI Codex.",
+			"claudeCodeRemoved": "Đã xóa nhà cung cấp Claude Code không còn được hỗ trợ.",
+			"grokCodeFastFreeEnds": "Grok Code Fast không còn miễn phí nữa - cảm ơn xAI vì chương truyền thông hào phóng!"
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

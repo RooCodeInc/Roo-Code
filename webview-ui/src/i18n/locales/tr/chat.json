@@ -336,9 +336,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"openaiCodexProvider": "Codex modellerine abonelik tabanlı erişim sağlayan OpenAI - ChatGPT Plus/Pro Sağlayıcısı eklendi, token başına maliyet yok.",
-			"gpt52codexModel": "Yeni gpt-5.2-codex modeli Roo Code Router, standart OpenAI sağlayıcısı ve diğerlerine eklendi.",
-			"bugFixes": "Gri ekranlara neden olan bellek sızıntıları, Gemini düşünce imzası sorunları ve diğer stabilite iyileştirmeleri düzeltildi."
+			"chatGptUsageLimits": "OpenAI Codex sağlayıcısında ChatGPT kullanım limitlerini izlemek için UI eklendi.",
+			"claudeCodeRemoved": "Kullanımdan kaldırılan Claude Code sağlayıcısı kaldırıldı.",
+			"grokCodeFastFreeEnds": "Grok Code Fast artık ücretsiz değil - cömert promosyon için xAI'ya teşekkürler!"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

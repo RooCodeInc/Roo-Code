@@ -342,9 +342,9 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"openaiCodexProvider": "Added OpenAI - ChatGPT Plus/Pro Provider that gives subscription-based access to Codex models without per-token costs.",
-			"gpt52codexModel": "Added the new gpt-5.2-codex model to Roo Code Router, the standard OpenAI provider, and more.",
-			"bugFixes": "Fixed memory leaks causing gray screens, Gemini thought signature issues, and more stability improvements."
+			"chatGptUsageLimits": "Added UI to track your ChatGPT usage limits in the OpenAI Codex provider.",
+			"claudeCodeRemoved": "Removed the deprecated Claude Code provider.",
+			"grokCodeFastFreeEnds": "Grok Code Fast is no longer free - thank you to xAI for the generous promotion!"
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",

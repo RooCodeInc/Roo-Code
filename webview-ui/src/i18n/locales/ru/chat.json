@@ -313,9 +313,9 @@
 		},
 		"release": {
 			"heading": "Что нового:",
-			"openaiCodexProvider": "Добавлен поставщик OpenAI - ChatGPT Plus/Pro, предоставляющий доступ на основе подписки к моделям Codex без затрат на токен.",
-			"gpt52codexModel": "Новая модель gpt-5.2-codex добавлена в Roo Code Router, стандартного поставщика OpenAI и другие.",
-			"bugFixes": "Исправлены утечки памяти, вызывающие серые экраны, проблемы с подписью мысли Gemini и другие улучшения стабильности."
+			"chatGptUsageLimits": "Добавлен UI для отслеживания лимитов использования ChatGPT в провайдере OpenAI Codex.",
+			"claudeCodeRemoved": "Удален устаревший провайдер Claude Code.",
+			"grokCodeFastFreeEnds": "Grok Code Fast больше не бесплатен - спасибо xAI за щедрую акцию!"
 		},
 		"cloudAgents": {
 			"heading": "Новое в облаке:",
