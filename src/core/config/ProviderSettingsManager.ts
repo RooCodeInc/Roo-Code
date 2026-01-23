@@ -183,8 +183,7 @@ export class ProviderSettingsManager {
 				if (!providerProfiles.migrations.claudeCodeLegacySettingsMigrated) {
 					// These keys were used by the removed local Claude Code CLI wrapper.
 					for (const apiConfig of Object.values(providerProfiles.apiConfigs)) {
-						// Cast to string for comparison since "claude-code" is no longer a valid ProviderName
-						if ((apiConfig.apiProvider as string) !== "claude-code") continue
+						if (apiConfig.apiProvider !== "claude-code") continue
 
 						const config = apiConfig as unknown as Record<string, unknown>
 						if ("claudeCodePath" in config) {

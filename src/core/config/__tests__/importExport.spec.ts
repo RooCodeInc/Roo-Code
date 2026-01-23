@@ -68,6 +68,15 @@ vi.mock("../../../api", () => ({
 	buildApiHandler: vi.fn().mockImplementation((config) => {
 		// Return different model info based on the provider and model
 		const getModelInfo = () => {
+			if (config.apiProvider === "claude-code") {
+				return {
+					id: config.apiModelId || "claude-sonnet-4-5",
+					info: {
+						supportsReasoningBudget: false,
+						requiredReasoningBudget: false,
+					},
+				}
+			}
 			if (config.apiProvider === "anthropic" && config.apiModelId === "claude-3-5-sonnet-20241022") {
 				return {
 					id: "claude-3-5-sonnet-20241022",
@@ -476,17 +485,18 @@ describe("importExport", () => {
 
 		it("should handle import when reasoning budget fields are missing from config", async () => {
 			// This test verifies that import works correctly when reasoning budget fields are not present
+			// Using claude-code provider which doesn't support reasoning budgets
 
 			;(vscode.window.showOpenDialog as Mock).mockResolvedValue([{ fsPath: "/mock/path/settings.json" }])
 
 			const mockFileContent = JSON.stringify({
 				providerProfiles: {
-					currentApiConfigName: "openai-provider",
+					currentApiConfigName: "claude-code-provider",
 					apiConfigs: {
-						"openai-provider": {
-							apiProvider: "openai" as ProviderName,
-							apiModelId: "gpt-4",
-							id: "openai-id",
+						"claude-code-provider": {
+							apiProvider: "claude-code" as ProviderName,
+							apiModelId: "claude-3-5-sonnet-20241022",
+							id: "claude-code-id",
 							apiKey: "test-key",
 							// No modelMaxTokens or modelMaxThinkingTokens fields
 						},
@@ -504,7 +514,7 @@ describe("importExport", () => {
 
 			mockProviderSettingsManager.export.mockResolvedValue(previousProviderProfiles)
 			mockProviderSettingsManager.listConfig.mockResolvedValue([
-				{ name: "openai-provider", id: "openai-id", apiProvider: "openai" as ProviderName },
+				{ name: "claude-code-provider", id: "claude-code-id", apiProvider: "claude-code" as ProviderName },
 				{ name: "default", id: "default-id", apiProvider: "anthropic" as ProviderName },
 			])
 
@@ -521,21 +531,21 @@ describe("importExport", () => {
 			expect(mockProviderSettingsManager.export).toHaveBeenCalled()
 
 			expect(mockProviderSettingsManager.import).toHaveBeenCalledWith({
-				currentApiConfigName: "openai-provider",
+				currentApiConfigName: "claude-code-provider",
 				apiConfigs: {
 					default: { apiProvider: "anthropic" as ProviderName, id: "default-id" },
-					"openai-provider": {
-						apiProvider: "openai" as ProviderName,
-						apiModelId: "gpt-4",
+					"claude-code-provider": {
+						apiProvider: "claude-code" as ProviderName,
+						apiModelId: "claude-3-5-sonnet-20241022",
 						apiKey: "test-key",
-						id: "openai-id",
+						id: "claude-code-id",
 					},
 				},
 				modeApiConfigs: {},
 			})
 
 			expect(mockContextProxy.setValues).toHaveBeenCalledWith({ mode: "code", autoApprovalEnabled: true })
-			expect(mockContextProxy.setValue).toHaveBeenCalledWith("currentApiConfigName", "openai-provider")
+			expect(mockContextProxy.setValue).toHaveBeenCalledWith("currentApiConfigName", "claude-code-provider")
 		})
 	})
 
@@ -1713,27 +1723,27 @@ describe("importExport", () => {
 		it.each([
 			{
 				testCase: "supportsReasoningBudget is false",
-				providerName: "deepseek-provider",
-				modelId: "deepseek-chat",
-				providerId: "deepseek-id",
+				providerName: "claude-code-provider",
+				modelId: "claude-sonnet-4-5",
+				providerId: "claude-code-id",
 			},
 			{
 				testCase: "requiredReasoningBudget is false",
-				providerName: "deepseek-provider-2",
-				modelId: "deepseek-coder",
-				providerId: "deepseek-id-2",
+				providerName: "claude-code-provider-2",
+				modelId: "claude-sonnet-4-5",
+				providerId: "claude-code-id-2",
 			},
 			{
 				testCase: "both supportsReasoningBudget and requiredReasoningBudget are false",
-				providerName: "deepseek-provider-3",
-				modelId: "deepseek-reasoner",
-				providerId: "deepseek-id-3",
+				providerName: "claude-code-provider-3",
+				modelId: "claude-3-5-haiku-20241022",
+				providerId: "claude-code-id-3",
 			},
 		])(
 			"should exclude modelMaxTokens and modelMaxThinkingTokens when $testCase",
 			async ({ providerName, modelId, providerId }) => {
 				// This test verifies that token fields are excluded when model doesn't support reasoning budget
-				// Using deepseek provider which uses apiModelId and has supportsReasoningBudget: false
+				// Using claude-code provider which has supportsReasoningBudget: false and requiredReasoningBudget: false
 
 				;(vscode.window.showSaveDialog as Mock).mockResolvedValue({
 					fsPath: "/mock/path/roo-code-settings.json",
@@ -1745,12 +1755,12 @@ describe("importExport", () => {
 				// Wait for initialization to complete
 				await realProviderSettingsManager.initialize()
 
-				// Save a deepseek provider config with token fields
+				// Save a claude-code provider config with token fields
 				await realProviderSettingsManager.saveConfig(providerName, {
-					apiProvider: "deepseek" as ProviderName,
+					apiProvider: "claude-code" as ProviderName,
 					apiModelId: modelId,
 					id: providerId,
-					deepSeekApiKey: "test-key",
+					apiKey: "test-key",
 					modelMaxTokens: 4096, // This should be removed during export
 					modelMaxThinkingTokens: 2048, // This should be removed during export
 				})

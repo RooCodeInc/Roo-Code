@@ -7,6 +7,11 @@ describe("getApiProtocol", () => {
 			expect(getApiProtocol("anthropic", "gpt-4")).toBe("anthropic")
 		})
 
+		it("should return 'anthropic' for claude-code provider", () => {
+			expect(getApiProtocol("claude-code")).toBe("anthropic")
+			expect(getApiProtocol("claude-code", "some-model")).toBe("anthropic")
+		})
+
 		it("should return 'anthropic' for bedrock provider", () => {
 			expect(getApiProtocol("bedrock")).toBe("anthropic")
 			expect(getApiProtocol("bedrock", "gpt-4")).toBe("anthropic")

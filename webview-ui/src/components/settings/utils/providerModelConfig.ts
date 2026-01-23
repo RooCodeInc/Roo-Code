@@ -132,6 +132,7 @@ export const PROVIDERS_WITH_CUSTOM_MODEL_UI: ProviderName[] = [
 	"requesty",
 	"unbound",
 	"deepinfra",
+	"claude-code",
 	"openai", // OpenAI Compatible
 	"litellm",
 	"io-intelligence",

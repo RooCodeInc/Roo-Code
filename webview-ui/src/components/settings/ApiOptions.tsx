@@ -16,6 +16,7 @@ import {
 	openAiCodexDefaultModelId,
 	anthropicDefaultModelId,
 	doubaoDefaultModelId,
+	claudeCodeDefaultModelId,
 	qwenCodeDefaultModelId,
 	geminiDefaultModelId,
 	deepSeekDefaultModelId,
@@ -77,6 +78,7 @@ import {
 	Bedrock,
 	Cerebras,
 	Chutes,
+	ClaudeCode,
 	DeepSeek,
 	Doubao,
 	Gemini,
@@ -146,7 +148,8 @@ const ApiOptions = ({
 	setErrorMessage,
 }: ApiOptionsProps) => {
 	const { t } = useAppTranslation()
-	const { organizationAllowList, cloudIsAuthenticated, openAiCodexIsAuthenticated } = useExtensionState()
+	const { organizationAllowList, cloudIsAuthenticated, claudeCodeIsAuthenticated, openAiCodexIsAuthenticated } =
+		useExtensionState()
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -344,6 +347,7 @@ const ApiOptions = ({
 				litellm: { field: "litellmModelId", default: litellmDefaultModelId },
 				anthropic: { field: "apiModelId", default: anthropicDefaultModelId },
 				cerebras: { field: "apiModelId", default: cerebrasDefaultModelId },
+				"claude-code": { field: "apiModelId", default: claudeCodeDefaultModelId },
 				"openai-codex": { field: "apiModelId", default: openAiCodexDefaultModelId },
 				"qwen-code": { field: "apiModelId", default: qwenCodeDefaultModelId },
 				"openai-native": { field: "apiModelId", default: openAiNativeDefaultModelId },
@@ -555,6 +559,15 @@ const ApiOptions = ({
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
+			{selectedProvider === "claude-code" && (
+				<ClaudeCode
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+					claudeCodeIsAuthenticated={claudeCodeIsAuthenticated}
 				/>
 			)}
 
