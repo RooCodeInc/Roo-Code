@@ -1,5 +1,4 @@
-import { useCallback, useEffect } from "react"
-import { useKeyPress } from "react-use"
+import { useCallback } from "react"
 import { AlertDialogProps } from "@radix-ui/react-alert-dialog"
 
 import {
@@ -19,7 +18,6 @@ import { vscode } from "@/utils/vscode"
 
 export const RestoreTaskDialog = ({ ...props }: AlertDialogProps) => {
 	const { t } = useAppTranslation()
-	const [isEnterPressed] = useKeyPress("Enter")
 
 	const { onOpenChange } = props
 
@@ -27,12 +25,6 @@ export const RestoreTaskDialog = ({ ...props }: AlertDialogProps) => {
 		vscode.postMessage({ type: "restoreToTaskStart" })
 		onOpenChange?.(false)
 	}, [onOpenChange])
-
-	useEffect(() => {
-		if (props.open && isEnterPressed) {
-			onRestore()
-		}
-	}, [props.open, isEnterPressed, onRestore])
 
 	return (
 		<AlertDialog {...props}>
