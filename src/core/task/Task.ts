@@ -1597,7 +1597,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
 				modelInfo,
-				diffEnabled: this.diffEnabled,
 				includeAllToolsWithRestrictions: false,
 			})
 			allTools = toolsResult.tools
@@ -3743,7 +3742,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
 				modelInfo,
-				diffEnabled: this.diffEnabled,
 				includeAllToolsWithRestrictions: false,
 			})
 			allTools = toolsResult.tools
@@ -3960,7 +3958,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
 						browserToolEnabled: state?.browserToolEnabled ?? true,
 						modelInfo,
-						diffEnabled: this.diffEnabled,
 						includeAllToolsWithRestrictions: false,
 					})
 					contextMgmtTools = toolsResult.tools
