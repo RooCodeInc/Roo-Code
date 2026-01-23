@@ -29,7 +29,10 @@
 		"openInCloudIntro": "从任何地方继续监控或与 Roo 交互。扫描、点击或复制以打开。",
 		"openApiHistory": "打开 API 历史",
 		"openUiHistory": "打开 UI 历史",
-		"backToParentTask": "父任务"
+		"backToParentTask": "父任务",
+		"restoreToStart": "恢复工作区到任务开始时",
+		"restoreToStartConfirm": "这将把工作区中的所有文件重置为创建此任务时的状态。由此任务、其他任务或手动进行的更改都将被还原。此操作不可撤销。",
+		"restoreToStartButton": "恢复"
 	},
 	"unpin": "取消置顶",
 	"pin": "置顶",

@@ -1207,6 +1207,42 @@ export const webviewMessageHandler = async (
 
 			break
 		}
+		case "restoreToTaskStart": {
+			const currentTask = provider.getCurrentTask()
+
+			if (!currentTask) {
+				vscode.window.showErrorMessage(t("common:errors.checkpoint_no_active_task"))
+				break
+			}
+
+			if (!currentTask.enableCheckpoints) {
+				vscode.window.showErrorMessage(t("common:errors.checkpoint_not_enabled"))
+				break
+			}
+
+			// Cancel the current task first
+			await provider.cancelTask()
+
+			try {
+				await pWaitFor(() => provider.getCurrentTask()?.isInitialized === true, { timeout: 3_000 })
+			} catch (error) {
+				vscode.window.showErrorMessage(t("common:errors.checkpoint_timeout"))
+				break
+			}
+
+			try {
+				const { checkpointRestoreToBase } = await import("../checkpoints")
+				const success = await checkpointRestoreToBase(provider.getCurrentTask()!)
+
+				if (!success) {
+					vscode.window.showErrorMessage(t("common:errors.checkpoint_restore_base_failed"))
+				}
+			} catch (error) {
+				vscode.window.showErrorMessage(t("common:errors.checkpoint_failed"))
+			}
+
+			break
+		}
 		case "cancelTask":
 			await provider.cancelTask()
 			break

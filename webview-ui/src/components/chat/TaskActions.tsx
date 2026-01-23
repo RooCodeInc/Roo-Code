@@ -8,9 +8,10 @@ import { useCopyToClipboard } from "@/utils/clipboard"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 
 import { DeleteTaskDialog } from "../history/DeleteTaskDialog"
+import { RestoreTaskDialog } from "./RestoreTaskDialog"
 import { ShareButton } from "./ShareButton"
 import { CloudTaskButton } from "./CloudTaskButton"
-import { CopyIcon, DownloadIcon, Trash2Icon, FileJsonIcon, MessageSquareCodeIcon } from "lucide-react"
+import { CopyIcon, DownloadIcon, Trash2Icon, FileJsonIcon, MessageSquareCodeIcon, RotateCcw } from "lucide-react"
 import { LucideIconButton } from "./LucideIconButton"
 
 interface TaskActionsProps {
@@ -20,9 +21,10 @@ interface TaskActionsProps {
 
 export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 	const [deleteTaskId, setDeleteTaskId] = useState<string | null>(null)
+	const [showRestoreDialog, setShowRestoreDialog] = useState(false)
 	const { t } = useTranslation()
 	const { copyWithFeedback } = useCopyToClipboard()
-	const { debug } = useExtensionState()
+	const { debug, enableCheckpoints } = useExtensionState()
 
 	return (
 		<div className="flex flex-row items-center -ml-0.5 mt-1 gap-1">
@@ -65,6 +67,17 @@ export const TaskActions = ({ item, buttonsDisabled }: TaskActionsProps) => {
 			)}
 			<ShareButton item={item} disabled={false} />
 			<CloudTaskButton item={item} disabled={buttonsDisabled} />
+			{enableCheckpoints && (
+				<>
+					<LucideIconButton
+						icon={RotateCcw}
+						title={t("chat:task.restoreToStart")}
+						disabled={buttonsDisabled}
+						onClick={() => setShowRestoreDialog(true)}
+					/>
+					<RestoreTaskDialog open={showRestoreDialog} onOpenChange={setShowRestoreDialog} />
+				</>
+			)}
 			{debug && item?.id && (
 				<>
 					<LucideIconButton

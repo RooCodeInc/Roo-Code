@@ -29,7 +29,10 @@
 		"openInCloudIntro": "どこからでもRooの監視や操作を続けられます。スキャン、クリック、またはコピーして開いてください。",
 		"openApiHistory": "API履歴を開く",
 		"openUiHistory": "UI履歴を開く",
-		"backToParentTask": "親タスク"
+		"backToParentTask": "親タスク",
+		"restoreToStart": "ワークスペースをタスク開始時に復元",
+		"restoreToStartConfirm": "これにより、ワークスペース内のすべてのファイルが、このタスクが作成されたときの状態にリセットされます。このタスク、他のタスク、または手動で行われた変更はすべて元に戻されます。この操作は元に戻せません。",
+		"restoreToStartButton": "復元"
 	},
 	"unpin": "ピン留めを解除",
 	"pin": "ピン留め",

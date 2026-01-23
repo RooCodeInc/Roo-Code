@@ -29,7 +29,10 @@
 		"openInCloudIntro": "Tiếp tục theo dõi hoặc tương tác với Roo từ bất cứ đâu. Quét, nhấp hoặc sao chép để mở.",
 		"openApiHistory": "Mở lịch sử API",
 		"openUiHistory": "Mở lịch sử UI",
-		"backToParentTask": "Nhiệm vụ cha"
+		"backToParentTask": "Nhiệm vụ cha",
+		"restoreToStart": "Khôi phục không gian làm việc về lúc bắt đầu nhiệm vụ",
+		"restoreToStartConfirm": "Điều này sẽ đặt lại tất cả các tệp trong không gian làm việc về trạng thái khi nhiệm vụ này được tạo. Các thay đổi do nhiệm vụ này, do các nhiệm vụ khác hoặc được thực hiện thủ công sẽ đều bị hoàn tác. Hành động này không thể hoàn tác.",
+		"restoreToStartButton": "Khôi phục"
 	},
 	"unpin": "Bỏ ghim khỏi đầu",
 	"pin": "Ghim lên đầu",

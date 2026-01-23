@@ -29,7 +29,10 @@
 		"openInCloudIntro": "Überwache oder interagiere mit Roo von überall aus. Scanne, klicke oder kopiere zum Öffnen.",
 		"openApiHistory": "API-Verlauf öffnen",
 		"openUiHistory": "UI-Verlauf öffnen",
-		"backToParentTask": "Übergeordnete Aufgabe"
+		"backToParentTask": "Übergeordnete Aufgabe",
+		"restoreToStart": "Arbeitsbereich auf Aufgabenstart zurücksetzen",
+		"restoreToStartConfirm": "Dadurch werden alle Dateien im Arbeitsbereich auf ihren Zustand zurückgesetzt, als diese Aufgabe erstellt wurde. Änderungen durch diese Aufgabe, durch andere Aufgaben oder manuell vorgenommene Änderungen werden alle rückgängig gemacht. Diese Aktion kann nicht rückgängig gemacht werden.",
+		"restoreToStartButton": "Zurücksetzen"
 	},
 	"unpin": "Lösen von oben",
 	"pin": "Anheften",

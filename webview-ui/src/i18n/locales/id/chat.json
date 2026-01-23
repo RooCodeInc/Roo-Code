@@ -29,7 +29,10 @@
 		"openInCloudIntro": "Terus pantau atau berinteraksi dengan Roo dari mana saja. Pindai, klik atau salin untuk membuka.",
 		"openApiHistory": "Buka Riwayat API",
 		"openUiHistory": "Buka Riwayat UI",
-		"backToParentTask": "Tugas Induk"
+		"backToParentTask": "Tugas Induk",
+		"restoreToStart": "Pulihkan workspace ke awal tugas",
+		"restoreToStartConfirm": "Ini akan mereset semua file di workspace ke keadaan saat tugas ini dibuat. Perubahan yang dibuat oleh tugas ini, tugas lain, atau manual akan dikembalikan. Tindakan ini tidak dapat dibatalkan.",
+		"restoreToStartButton": "Pulihkan"
 	},
 	"history": {
 		"title": "Riwayat"
