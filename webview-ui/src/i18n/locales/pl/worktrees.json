@@ -43,7 +43,7 @@
 	"create": "Utwórz",
 	"creating": "Tworzenie...",
 	"copyingFiles": "Kopiowanie plików...",
-	"copyingProgress": "{{item}} — {{copied}} copied",
+	"copyingProgress": "{{item}} — {{copied}} skopiowano",
 	"cancel": "Anuluj",
 
 	"deleteWorktree": "Usuń Worktree",

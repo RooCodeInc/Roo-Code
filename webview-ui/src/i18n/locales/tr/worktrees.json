@@ -43,7 +43,7 @@
 	"create": "Oluştur",
 	"creating": "Oluşturuluyor...",
 	"copyingFiles": "Dosyalar kopyalanıyor...",
-	"copyingProgress": "{{item}} — {{copied}} copied",
+	"copyingProgress": "{{item}} — {{copied}} kopyalandı",
 	"cancel": "İptal",
 
 	"deleteWorktree": "Worktree'yi sil",

@@ -43,7 +43,7 @@
 	"create": "作成",
 	"creating": "作成中...",
 	"copyingFiles": "ファイルをコピー中...",
-	"copyingProgress": "{{item}} — {{copied}} copied",
+	"copyingProgress": "{{item}} — {{copied}} コピー済み",
 	"cancel": "キャンセル",
 
 	"deleteWorktree": "Worktree を削除",

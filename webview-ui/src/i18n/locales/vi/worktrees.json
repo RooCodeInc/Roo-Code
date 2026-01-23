@@ -43,7 +43,7 @@
 	"create": "Tạo",
 	"creating": "Đang tạo...",
 	"copyingFiles": "Đang sao chép tệp...",
-	"copyingProgress": "{{item}} — {{copied}} copied",
+	"copyingProgress": "{{item}} — {{copied}} đã sao chép",
 	"cancel": "Hủy",
 
 	"deleteWorktree": "Xóa Worktree",

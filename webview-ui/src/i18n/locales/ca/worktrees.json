@@ -43,7 +43,7 @@
 	"create": "Crea",
 	"creating": "S'està creant...",
 	"copyingFiles": "S'estan copiant fitxers...",
-	"copyingProgress": "{{item}} — {{copied}} copied",
+	"copyingProgress": "{{item}} — {{copied}} copiat",
 	"cancel": "Cancel·la",
 
 	"deleteWorktree": "Suprimeix worktree",

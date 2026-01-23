@@ -43,7 +43,7 @@
 	"create": "Buat",
 	"creating": "Membuat...",
 	"copyingFiles": "Menyalin file...",
-	"copyingProgress": "{{item}} — {{copied}} copied",
+	"copyingProgress": "{{item}} — {{copied}} disalin",
 	"cancel": "Batal",
 
 	"deleteWorktree": "Hapus Worktree",

@@ -43,7 +43,7 @@
 	"create": "만들기",
 	"creating": "만드는 중...",
 	"copyingFiles": "파일 복사 중...",
-	"copyingProgress": "{{item}} — {{copied}} copied",
+	"copyingProgress": "{{item}} — {{copied}} 복사됨",
 	"cancel": "취소",
 
 	"deleteWorktree": "Worktree 삭제",
