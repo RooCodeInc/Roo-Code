@@ -71,7 +71,7 @@ By default, the CLI prompts for approval before executing actions:
 ```bash
 export OPENROUTER_API_KEY=sk-or-v1-...
 
-roo ~/Documents/my-project -P "What is this project?"
+roo "What is this project?"  -w ~/Documents/my-project
 ```
 
 You can also run without a prompt and enter it interactively in TUI mode:
@@ -92,7 +92,7 @@ In interactive mode:
 For automation and scripts, use `-y` to auto-approve all actions:
 
 ```bash
-roo ~/Documents/my-project -y -P "Refactor the utils.ts file"
+roo "Refactor the utils.ts file" -y -w ~/Documents/my-project
 ```
 
 In non-interactive mode:
@@ -149,8 +149,8 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 | Option                            | Description                                                                             | Default                       |
 | --------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------- |
-| `[workspace]`                     | Workspace path to operate in (positional argument)                                      | Current directory             |
-| `-P, --prompt <prompt>`           | The prompt/task to execute (optional in TUI mode)                                       | None                          |
+| `[prompt]` | Your prompt (positional argument, optional) | None |
+| `-w, --workspace <path>` | Workspace path to operate in | Current directory |
 | `-e, --extension <path>`          | Path to the extension bundle directory                                                  | Auto-detected                 |
 | `-d, --debug`                     | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                       |
 | `-x, --exit-on-complete`          | Exit the process when task completes (useful for testing)                               | `false`                       |
@@ -249,7 +249,7 @@ pnpm lint
 To create a new release, execute the /cli-release slash command:
 
 ```bash
-roo ~/Documents/Roo-Code -P "/cli-release" -y
+roo "/cli-release"  -w ~/Documents/Roo-Code -y
 ```
 
 The workflow will:
