@@ -341,8 +341,7 @@ ${commandBlocks}
 	newMessages.push(summaryMessage)
 
 	// Count the tokens in the context for the next API request
-	// After condense, the context will only contain the system prompt and the summary
-	// Note: This doesn't include tool definitions - it's an informational estimate for the UI
+	// After condense, the context will contain: system prompt + summary + tool definitions
 	const systemPromptMessage: ApiMessage = { role: "user", content: systemPrompt }
 
 	// Count actual summaryMessage content directly instead of using outputTokens as a proxy
@@ -351,7 +350,16 @@ ${commandBlocks}
 		typeof message.content === "string" ? [{ text: message.content, type: "text" as const }] : message.content,
 	)
 
-	const newContextTokens = await apiHandler.countTokens(contextBlocks)
+	const messageTokens = await apiHandler.countTokens(contextBlocks)
+
+	// Count tool definition tokens if tools are provided
+	let toolTokens = 0
+	if (metadata?.tools && metadata.tools.length > 0) {
+		const toolsText = JSON.stringify(metadata.tools)
+		toolTokens = await apiHandler.countTokens([{ text: toolsText, type: "text" }])
+	}
+
+	const newContextTokens = messageTokens + toolTokens
 	return { messages: newMessages, summary, cost, newContextTokens, condenseId }
 }
 
