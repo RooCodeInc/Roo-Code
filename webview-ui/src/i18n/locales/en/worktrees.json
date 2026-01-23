@@ -47,9 +47,8 @@
 	"cancel": "Cancel",
 
 	"deleteWorktree": "Delete Worktree",
-	"deleteWorktreeDescription": "This will remove the worktree and all its files.",
-	"deleteWarning": "This action cannot be undone. The following will be deleted:",
-	"deleteWarningBranch": "The branch '{{branch}}' and all uncommitted changes",
+	"deleteWarning": "This can't be undone. It will delete:",
+	"deleteWarningBranch": "The branch and any uncommitted changes",
 	"deleteWarningFiles": "All files in the worktree directory",
 	"forceDelete": "Force delete",
 	"worktreeIsLocked": "worktree is locked",
