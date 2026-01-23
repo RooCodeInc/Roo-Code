@@ -1,8 +1,8 @@
 {
-	"name": "roo-cline",
+	"name": "klaus-code",
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
-	"publisher": "RooVeterinaryInc",
+	"publisher": "KlausCode",
 	"version": "3.42.0",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
@@ -14,13 +14,13 @@
 		"node": "20.19.2"
 	},
 	"author": {
-		"name": "Roo Code"
+		"name": "Klaus Code"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/RooCodeInc/Roo-Code"
+		"url": "https://github.com/PabloVitasso/Klaus-Code"
 	},
-	"homepage": "https://roocode.com",
+	"homepage": "https://github.com/PabloVitasso/Klaus-Code",
 	"categories": [
 		"AI",
 		"Chat",
@@ -42,8 +42,9 @@
 		"sonnet",
 		"ai",
 		"llama",
-		"roo code",
-		"roocode"
+		"klaus code",
+		"klauscode",
+		"claude code"
 	],
 	"activationEvents": [
 		"onLanguage",

@@ -1,5 +1,5 @@
 {
-	"greeting": "欢迎使用 Roo Code",
+	"greeting": "欢迎使用 Klaus Code",
 	"task": {
 		"title": "任务",
 		"expand": "展开任务",
@@ -21,11 +21,11 @@
 		"sharePublicly": "公开分享",
 		"sharePubliclyDescription": "任何拥有链接的人都可访问",
 		"connectToCloud": "连接到云端",
-		"connectToCloudDescription": "登录 Roo Code Cloud 以分享任务",
+		"connectToCloudDescription": "登录 Klaus Code Cloud 以分享任务",
 		"sharingDisabledByOrganization": "组织已禁用分享功能",
 		"shareSuccessOrganization": "组织链接已复制到剪贴板",
 		"shareSuccessPublic": "公开链接已复制到剪贴板",
-		"openInCloud": "在 Roo Code Cloud 中打开任务",
+		"openInCloud": "在 Klaus Code Cloud 中打开任务",
 		"openInCloudIntro": "从任何地方继续监控或与 Roo 交互。扫描、点击或复制以打开。",
 		"openApiHistory": "打开 API 历史",
 		"openUiHistory": "打开 UI 历史"
@@ -92,7 +92,7 @@
 	},
 	"enqueueMessage": "将消息加入队列（当前任务完成后发送）",
 	"scrollToBottom": "滚动到聊天底部",
-	"about": "Roo Code 是您编辑器中的整个 AI 开发团队。",
+	"about": "Klaus Code 是您编辑器中的整个 AI 开发团队。",
 	"docs": "查看我们的 <DocsLink>文档</DocsLink> 了解更多信息。",
 	"onboarding": "此工作区中的任务列表为空。",
 	"rooTips": {
@@ -154,7 +154,7 @@
 			"403": "无权限。您的 API 密钥有效，但提供商拒绝完成此请求。",
 			"429": "请求过于频繁。提供商已对您的请求进行速率限制。请在下一次 API 调用前稍候。",
 			"500": "提供商服务器错误。提供商端出现问题，您的请求无问题。",
-			"unknown": "未知 API 错误。请联系 Roo Code 支持。",
+			"unknown": "未知 API 错误。请联系 Klaus Code 支持。",
 			"connection": "连接错误。确保您有可用的互联网连接。",
 			"claudeCodeNotAuthenticated": "你需要登录才能使用 Claude Code。前往设置并点击「登录到 Claude Code」进行身份验证。"
 		}
@@ -325,13 +325,13 @@
 		"timerPrefix": "自动批准已启用。{{seconds}}秒后选择中…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} 已发布",
-		"support": "请在 <githubLink>GitHub</githubLink> 上为我们点星支持 Roo Code。",
+		"title": "Klaus Code {{version}} 已发布",
+		"support": "请在 <githubLink>GitHub</githubLink> 上为我们点星支持 Klaus Code。",
 		"stealthModel": {
-			"feature": "<bold>限时免费隐形模型</bold> - Code Supernova：现已升级为 <bold>1M Token 上下文窗口</bold>！一个支持图像输入的多功能代理编程模型，通过 Roo Code Cloud 提供。",
+			"feature": "<bold>限时免费隐形模型</bold> - Code Supernova：现已升级为 <bold>1M Token 上下文窗口</bold>！一个支持图像输入的多功能代理编程模型，通过 Klaus Code Cloud 提供。",
 			"note": "(注意：提示词和补全内容会被模型创建者记录并用于改进模型)",
-			"connectButton": "连接到 Roo Code Cloud",
-			"selectModel": "在设置中从 Roo Code Cloud 提供商选择 <code>roo/code-supernova</code> 开始使用。",
+			"connectButton": "连接到 Klaus Code Cloud",
+			"selectModel": "在设置中从 Klaus Code Cloud 提供商选择 <code>roo/code-supernova</code> 开始使用。",
 			"goToSettingsButton": "前往设置"
 		},
 		"release": {
@@ -402,7 +402,7 @@
 	"profileViolationWarning": "当前配置文件与您的组织设置不兼容",
 	"shellIntegration": {
 		"title": "命令执行警告",
-		"description": "您的命令正在没有 VSCode 终端 shell 集成的情况下执行。要隐藏此警告，您可以在 <settingsLink>Roo Code 设置</settingsLink>的 <strong>Terminal</strong> 部分禁用 shell 集成，或使用下方链接排查 VSCode 终端集成问题。",
+		"description": "您的命令正在没有 VSCode 终端 shell 集成的情况下执行。要隐藏此警告，您可以在 <settingsLink>Klaus Code 设置</settingsLink>的 <strong>Terminal</strong> 部分禁用 shell 集成，或使用下方链接排查 VSCode 终端集成问题。",
 		"troubleshooting": "点击此处查看 shell 集成文档。"
 	},
 	"ask": {
@@ -443,7 +443,7 @@
 		"ariaLabel": "版本 {{version}} - 点击查看发布说明"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud 正在进化！",
+		"title": "Klaus Code Cloud 正在进化！",
 		"description": "在云端运行远程代理，随时随地访问任务，与他人协作等更多功能。",
 		"joinWaitlist": "注册获取最新更新。"
 	},

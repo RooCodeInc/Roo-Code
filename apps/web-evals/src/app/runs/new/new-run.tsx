@@ -416,9 +416,9 @@ export function NewRun() {
 			try {
 				const baseValues = normalizeCreateRunForSubmit(values, selectedExercises, suite)
 
-				// Validate jobToken for Roo Code Cloud provider
+				// Validate jobToken for Klaus Code Cloud provider
 				if (provider === "roo" && !baseValues.jobToken?.trim()) {
-					toast.error("Roo Code Cloud Token is required")
+					toast.error("Klaus Code Cloud Token is required")
 					return
 				}
 
@@ -571,7 +571,7 @@ export function NewRun() {
 									onValueChange={(value) => setModelSource(value as "roo" | "openrouter" | "other")}>
 									<TabsList className="mb-2">
 										<TabsTrigger value="other">Import</TabsTrigger>
-										<TabsTrigger value="roo">Roo Code Cloud</TabsTrigger>
+										<TabsTrigger value="roo">Klaus Code Cloud</TabsTrigger>
 										<TabsTrigger value="openrouter">OpenRouter</TabsTrigger>
 									</TabsList>
 								</Tabs>
@@ -781,14 +781,14 @@ export function NewRun() {
 							render={({ field }) => (
 								<FormItem>
 									<div className="flex items-center gap-1">
-										<FormLabel>Roo Code Cloud Token</FormLabel>
+										<FormLabel>Klaus Code Cloud Token</FormLabel>
 										<Tooltip>
 											<TooltipTrigger asChild>
 												<Info className="size-4 text-muted-foreground cursor-help" />
 											</TooltipTrigger>
 											<TooltipContent side="right" className="max-w-xs">
 												<p>
-													If you have access to the Roo Code Cloud repository and the
+													If you have access to the Klaus Code Cloud repository and the
 													decryption key for the .env.* files, generate a token with:
 												</p>
 												<code className="text-xs block mt-1">

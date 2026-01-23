@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Klaus Code",
 		"description": "Een compleet ontwikkelteam van AI-agenten in je editor."
 	},
 	"number_format": {
@@ -121,7 +121,7 @@
 			"completionError": "Cerebras-voltooiingsfout: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Roo provider vereist cloud authenticatie. Log in bij Roo Code Cloud."
+			"authenticationRequired": "Roo provider vereist cloud authenticatie. Log in bij Klaus Code Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API-sleutel bevat ongeldige karakters.",
@@ -234,8 +234,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Je organisatie vereist Roo Code Cloud-authenticatie. Log in om door te gaan.",
-			"organization_mismatch": "Je moet geauthenticeerd zijn met het Roo Code Cloud-account van je organisatie.",
+			"cloud_auth_required": "Je organisatie vereist Klaus Code Cloud-authenticatie. Log in om door te gaan.",
+			"organization_mismatch": "Je moet geauthenticeerd zijn met het Klaus Code Cloud-account van je organisatie.",
 			"manual_url_empty": "Voer een geldige callback-URL in",
 			"manual_url_no_query": "Ongeldige callback-URL: query-parameters ontbreken",
 			"manual_url_missing_params": "Ongeldige callback-URL: vereiste parameters ontbreken (code en state)",

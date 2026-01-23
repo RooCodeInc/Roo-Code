@@ -8,7 +8,7 @@ import { RooCodeEventName, type ClineMessage } from "@roo-code/types"
 import { waitFor, sleep, waitUntilCompleted } from "../utils"
 import { setDefaultSuiteTimeout } from "../test-utils"
 
-suite.skip("Roo Code execute_command Tool", function () {
+suite.skip("Klaus Code execute_command Tool", function () {
 	setDefaultSuiteTimeout(this)
 
 	let workspaceDir: string

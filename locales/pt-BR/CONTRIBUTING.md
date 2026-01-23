@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# Contribuindo para o Roo Code
+# Contribuindo para o Klaus Code
 
-O Roo Code é um projeto impulsionado pela comunidade, e valorizamos profundamente cada contribuição. Para agilizar a colaboração, operamos com base em uma [abordagem de "primeiro a issue"](#abordagem-de-primeiro-a-issue), o que significa que todas as [Pull Requests (PRs)](#enviando-uma-pull-request) devem primeiro estar vinculadas a uma Issue do GitHub. Por favor, revise este guia com atenção.
+O Klaus Code é um projeto impulsionado pela comunidade, e valorizamos profundamente cada contribuição. Para agilizar a colaboração, operamos com base em uma [abordagem de "primeiro a issue"](#abordagem-de-primeiro-a-issue), o que significa que todas as [Pull Requests (PRs)](#enviando-uma-pull-request) devem primeiro estar vinculadas a uma Issue do GitHub. Por favor, revise este guia com atenção.
 
 ## Índice
 
@@ -52,7 +52,7 @@ Nosso roteiro guia a direção do projeto. Alinhe suas contribuições com estes
 
 Mencione o alinhamento com essas áreas em seus PRs.
 
-### 3. Junte-se à comunidade Roo Code
+### 3. Junte-se à comunidade Klaus Code
 
 - **Principal:** Junte-se ao nosso [Discord](https://discord.gg/roocode) e envie uma DM para **Hannes Rudolph (`hrudolph`)**.
 - **Alternativa:** Contribuidores experientes могут se envolver diretamente através dos [Projetos do GitHub](https://github.com/orgs/RooCodeInc/projects/1).
@@ -79,7 +79,7 @@ Todas as contribuições começam com uma Issue do GitHub usando nossos modelos 
 ### Decidindo no que trabalhar
 
 - Verifique o [Projeto do GitHub](https://github.com/orgs/RooCodeInc/projects/1) para issues "Issue [Não atribuída]".
-- Para documentação, visite [Documentação do Roo Code](https://github.com/RooCodeInc/Roo-Code-Docs).
+- Para documentação, visite [Documentação do Klaus Code](https://github.com/RooCodeInc/Roo-Code-Docs).
 
 ### Relatando bugs
 
@@ -87,7 +87,7 @@ Todas as contribuições começam com uma Issue do GitHub usando nossos modelos 
 - Crie um novo bug usando o [modelo "Relatório de bug"](https://github.com/RooCodeInc/Roo-Code/issues/new/choose) com:
     - Passos de reprodução claros e numerados
     - Resultado esperado vs. real
-    - Versão do Roo Code (obrigatório); provedor/modelo de IA, se relevante
+    - Versão do Klaus Code (obrigatório); provedor/modelo de IA, se relevante
 - **Problemas de segurança**: Relate em particular através de [avisos de segurança](https://github.com/RooCodeInc/Roo-Code/security/advisories/new).
 
 ## Processo de desenvolvimento e envio
@@ -138,4 +138,4 @@ pnpm install
 
 ## Legal
 
-Ao contribuir, você concorda que suas contribuições serão licenciadas sob a Licença Apache 2.0, consistente com o licenciamento do Roo Code.
+Ao contribuir, você concorda que suas contribuições serão licenciadas sob a Licença Apache 2.0, consistente com o licenciamento do Klaus Code.

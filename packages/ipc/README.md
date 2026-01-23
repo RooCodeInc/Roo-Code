@@ -1,6 +1,6 @@
 # IPC (Inter-Process Communication)
 
-This package provides IPC functionality for Roo Code, allowing external applications to communicate with the extension through a socket-based interface.
+This package provides IPC functionality for Klaus Code, allowing external applications to communicate with the extension through a socket-based interface.
 
 ## Available Commands
 

@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Listo",
-	"description": "Los worktrees de Git te permiten trabajar en varias ramas a la vez en directorios separados. Cada worktree tiene su propia ventana de VS Code con Roo Code.",
+	"description": "Los worktrees de Git te permiten trabajar en varias ramas a la vez en directorios separados. Cada worktree tiene su propia ventana de VS Code con Klaus Code.",
 
 	"notGitRepo": "Este espacio de trabajo no es un repositorio Git. Los worktrees requieren un repositorio Git para funcionar.",
 	"multiRootNotSupported": "Los worktrees no son compatibles con espacios de trabajo de múltiples raíces. Abre una sola carpeta para usar worktrees.",

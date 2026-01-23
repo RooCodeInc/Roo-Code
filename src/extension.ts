@@ -63,7 +63,7 @@ let settingsUpdatedHandler: (() => void) | undefined
 let userInfoHandler: ((data: { userInfo: CloudUserInfo }) => Promise<void>) | undefined
 
 /**
- * Check if we should auto-open the Roo Code sidebar after switching to a worktree.
+ * Check if we should auto-open the Klaus Code sidebar after switching to a worktree.
  * This is called during extension activation to handle the worktree auto-open flow.
  */
 async function checkWorktreeAutoOpen(
@@ -91,9 +91,9 @@ async function checkWorktreeAutoOpen(
 			// Clear the state first to prevent re-triggering
 			await context.globalState.update("worktreeAutoOpenPath", undefined)
 
-			outputChannel.appendLine(`[Worktree] Auto-opening Roo Code sidebar for worktree: ${worktreeAutoOpenPath}`)
+			outputChannel.appendLine(`[Worktree] Auto-opening Klaus Code sidebar for worktree: ${worktreeAutoOpenPath}`)
 
-			// Open the Roo Code sidebar with a slight delay to ensure UI is ready
+			// Open the Klaus Code sidebar with a slight delay to ensure UI is ready
 			setTimeout(async () => {
 				try {
 					await vscode.commands.executeCommand("roo-cline.plusButtonClicked")
@@ -190,10 +190,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	}
 
-	// Initialize the provider *before* the Roo Code Cloud service.
+	// Initialize the provider *before* the Klaus Code Cloud service.
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
 
-	// Initialize Roo Code Cloud service.
+	// Initialize Klaus Code Cloud service.
 	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
 
 	authStateChangedHandler = async (data: { state: AuthState; previousState: AuthState }) => {

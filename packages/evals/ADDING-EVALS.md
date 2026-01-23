@@ -1,6 +1,6 @@
 # Adding Additional Evals Exercises
 
-This guide explains how to add new coding exercises to the Roo Code evals system. The evals system is a distributed evaluation platform that runs AI coding tasks in isolated VS Code environments to test AI coding capabilities across multiple programming languages.
+This guide explains how to add new coding exercises to the Klaus Code evals system. The evals system is a distributed evaluation platform that runs AI coding tasks in isolated VS Code environments to test AI coding capabilities across multiple programming languages.
 
 ## Table of Contents
 
@@ -217,7 +217,7 @@ go 1.18
 [project]
 name = "python-exercises"
 version = "0.1.0"
-description = "Python exercises for Roo Code evals"
+description = "Python exercises for Klaus Code evals"
 requires-python = ">=3.9"
 dependencies = [
     "pytest>=8.3.5",
@@ -246,7 +246,7 @@ The tests should **fail** with the stub implementation and **pass** when properl
 
 ## Adding Support for New Programming Languages
 
-Adding a new programming language requires changes to both the evals repository and the main Roo Code repository.
+Adding a new programming language requires changes to both the evals repository and the main Klaus Code repository.
 
 ### Step 1: Update Language Configuration
 

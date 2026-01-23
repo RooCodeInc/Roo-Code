@@ -1,5 +1,5 @@
 {
-	"greeting": "Benvingut a Roo Code",
+	"greeting": "Benvingut a Klaus Code",
 	"task": {
 		"title": "Tasca",
 		"expand": "Expandir tasca",
@@ -21,11 +21,11 @@
 		"sharePublicly": "Compartir públicament",
 		"sharePubliclyDescription": "Qualsevol amb l'enllaç pot accedir",
 		"connectToCloud": "Connecta al núvol",
-		"connectToCloudDescription": "Inicia sessió a Roo Code Cloud per compartir tasques",
+		"connectToCloudDescription": "Inicia sessió a Klaus Code Cloud per compartir tasques",
 		"sharingDisabledByOrganization": "Compartició deshabilitada per l'organització",
 		"shareSuccessOrganization": "Enllaç d'organització copiat al porta-retalls",
 		"shareSuccessPublic": "Enllaç públic copiat al porta-retalls",
-		"openInCloud": "Obrir tasca a Roo Code Cloud",
+		"openInCloud": "Obrir tasca a Klaus Code Cloud",
 		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir.",
 		"openApiHistory": "Obrir historial d'API",
 		"openUiHistory": "Obrir historial d'UI"
@@ -92,7 +92,7 @@
 	},
 	"enqueueMessage": "Afegeix el missatge a la cua (s'enviarà quan acabi la tasca actual)",
 	"scrollToBottom": "Desplaça't al final del xat",
-	"about": "Roo Code és tot un equip de desenvolupament d'IA al teu editor.",
+	"about": "Klaus Code és tot un equip de desenvolupament d'IA al teu editor.",
 	"docs": "Consulta els nostres <DocsLink>documents</DocsLink> per a més informació.",
 	"onboarding": "La teva llista de tasques en aquest espai de treball està buida.",
 	"rooTips": {
@@ -154,7 +154,7 @@
 			"403": "No autoritzat. La teva clau API és vàlida, però el proveïdor ha rebutjat completar aquesta sol·licitud.",
 			"429": "Massa sol·licituds. Estàs sent limitat pel proveïdor. Si us plau espera una mica abans de la teva propera crida API.",
 			"500": "Error del servidor del proveïdor. Quelcom va malament del costat del proveïdor, no hi ha res de malament amb la teva sol·licitud.",
-			"unknown": "Error API desconegut. Si us plau contacta amb el suport de Roo Code.",
+			"unknown": "Error API desconegut. Si us plau contacta amb el suport de Klaus Code.",
 			"connection": "Error de connexió. Assegureu-vos que teniu una connexió a Internet funcional.",
 			"claudeCodeNotAuthenticated": "Has d'iniciar sessió per utilitzar Claude Code. Vés a Configuració i fes clic a \"Iniciar sessió a Claude Code\" per autenticar-te."
 		}
@@ -324,13 +324,13 @@
 		"timerPrefix": "Aprovació automàtica habilitada. Seleccionant en {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} Llançat",
-		"support": "Si us plau, dona suport a Roo Code fent una estrella al nostre <githubLink>GitHub</githubLink>.",
+		"title": "Klaus Code {{version}} Llançat",
+		"support": "Si us plau, dona suport a Klaus Code fent una estrella al nostre <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Model stealth GRATUÏT per temps limitat</bold> - Code Supernova: Ara actualitzat amb una <bold>finestra de context d'1M tokens</bold>! Un model de codificació agèntica versàtil que suporta entrades d'imatges, disponible a través de Roo Code Cloud.",
+			"feature": "<bold>Model stealth GRATUÏT per temps limitat</bold> - Code Supernova: Ara actualitzat amb una <bold>finestra de context d'1M tokens</bold>! Un model de codificació agèntica versàtil que suporta entrades d'imatges, disponible a través de Klaus Code Cloud.",
 			"note": "(Nota: els prompts i completacions són registrats pel creador del model i utilitzats per millorar-lo)",
-			"connectButton": "Connectar a Roo Code Cloud",
-			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveïdor Roo Code Cloud a Configuració per començar.",
+			"connectButton": "Connectar a Klaus Code Cloud",
+			"selectModel": "Selecciona <code>roo/code-supernova</code> del proveïdor Klaus Code Cloud a Configuració per començar.",
 			"goToSettingsButton": "Anar a Configuració"
 		},
 		"release": {
@@ -401,7 +401,7 @@
 	"profileViolationWarning": "El perfil actual no és compatible amb la configuració de la teva organització",
 	"shellIntegration": {
 		"title": "Advertència d'execució d'ordres",
-		"description": "La teva ordre s'està executant sense la integració de shell del terminal VSCode. Per suprimir aquest advertiment, pots desactivar la integració de shell a la secció <strong>Terminal</strong> de la <settingsLink>configuració de Roo Code</settingsLink> o solucionar problemes d'integració del terminal VSCode utilitzant l'enllaç a continuació.",
+		"description": "La teva ordre s'està executant sense la integració de shell del terminal VSCode. Per suprimir aquest advertiment, pots desactivar la integració de shell a la secció <strong>Terminal</strong> de la <settingsLink>configuració de Klaus Code</settingsLink> o solucionar problemes d'integració del terminal VSCode utilitzant l'enllaç a continuació.",
 		"troubleshooting": "Fes clic aquí per a la documentació d'integració de shell."
 	},
 	"ask": {
@@ -442,7 +442,7 @@
 		"ariaLabel": "Versió {{version}} - Feu clic per veure les notes de llançament"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud està evolucionant!",
+		"title": "Klaus Code Cloud està evolucionant!",
 		"description": "Executa agents remots al núvol, accedeix a les teves tasques des de qualsevol lloc, col·labora amb altres i molt més.",
 		"joinWaitlist": "Registra't per rebre les últimes actualitzacions."
 	},

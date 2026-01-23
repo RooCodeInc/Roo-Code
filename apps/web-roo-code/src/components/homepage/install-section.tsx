@@ -47,13 +47,13 @@ export function InstallSection({ downloads }: InstallSectionProps) {
 						<div className="relative text-center">
 							{/* Updated h2 to match other sections */}
 							<h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-5xl">
-								Install Roo Code now
+								Install Klaus Code now
 							</h2>
 							<p className="mt-6 text-lg text-muted-foreground">
 								Install from the VS Code Marketplace or the CLI in minutes, then bring your own AI
 								model.
 								<br />
-								Roo Code is also compatible with all VSCode forks.
+								Klaus Code is also compatible with all VSCode forks.
 							</p>
 
 							<div className="mt-12 flex flex-col items-center justify-center gap-6">

@@ -283,16 +283,16 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			await vscode.env.openExternal(vscode.Uri.parse(url))
 		} catch (error) {
 			const context = landingPageSlug ? ` (landing page: ${landingPageSlug})` : ""
-			this.log(`[auth] Error initiating Roo Code Cloud auth${context}: ${error}`)
-			throw new Error(`Failed to initiate Roo Code Cloud authentication${context}: ${error}`)
+			this.log(`[auth] Error initiating Klaus Code Cloud auth${context}: ${error}`)
+			throw new Error(`Failed to initiate Klaus Code Cloud authentication${context}: ${error}`)
 		}
 	}
 
 	/**
-	 * Handle the callback from Roo Code Cloud
+	 * Handle the callback from Klaus Code Cloud
 	 *
 	 * This method is called when the user is redirected back to the extension
-	 * after authenticating with Roo Code Cloud.
+	 * after authenticating with Klaus Code Cloud.
 	 *
 	 * @param code The authorization code from the callback
 	 * @param state The state parameter from the callback
@@ -309,7 +309,7 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			const vscode = await importVscode()
 
 			if (vscode) {
-				vscode.window.showInformationMessage("Invalid Roo Code Cloud sign in url")
+				vscode.window.showInformationMessage("Invalid Klaus Code Cloud sign in url")
 			}
 
 			return
@@ -345,14 +345,14 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			const vscode = await importVscode()
 
 			if (vscode) {
-				vscode.window.showInformationMessage("Successfully authenticated with Roo Code Cloud")
+				vscode.window.showInformationMessage("Successfully authenticated with Klaus Code Cloud")
 			}
 
-			this.log("[auth] Successfully authenticated with Roo Code Cloud")
+			this.log("[auth] Successfully authenticated with Klaus Code Cloud")
 		} catch (error) {
-			this.log(`[auth] Error handling Roo Code Cloud callback: ${error}`)
+			this.log(`[auth] Error handling Klaus Code Cloud callback: ${error}`)
 			this.changeState("logged-out")
-			throw new Error(`Failed to handle Roo Code Cloud callback: ${error}`)
+			throw new Error(`Failed to handle Klaus Code Cloud callback: ${error}`)
 		}
 	}
 
@@ -380,13 +380,13 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			const vscode = await importVscode()
 
 			if (vscode) {
-				vscode.window.showInformationMessage("Logged out from Roo Code Cloud")
+				vscode.window.showInformationMessage("Logged out from Klaus Code Cloud")
 			}
 
-			this.log("[auth] Logged out from Roo Code Cloud")
+			this.log("[auth] Logged out from Klaus Code Cloud")
 		} catch (error) {
-			this.log(`[auth] Error logging out from Roo Code Cloud: ${error}`)
-			throw new Error(`Failed to log out from Roo Code Cloud: ${error}`)
+			this.log(`[auth] Error logging out from Klaus Code Cloud: ${error}`)
+			throw new Error(`Failed to log out from Klaus Code Cloud: ${error}`)
 		}
 	}
 

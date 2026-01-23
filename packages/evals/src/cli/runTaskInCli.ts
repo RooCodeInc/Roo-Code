@@ -14,7 +14,7 @@ import { type RunTaskOptions } from "./types.js"
 import { mergeToolUsage, waitForSubprocessWithTimeout } from "./utils.js"
 
 /**
- * Run a task using the Roo Code CLI (headless mode).
+ * Run a task using the Klaus Code CLI (headless mode).
  * Uses the same IPC protocol as VSCode since the CLI loads the same extension bundle.
  */
 export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: RunTaskOptions) => {

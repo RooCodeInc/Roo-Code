@@ -55,7 +55,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		// The provider-proxy server will return 401 if authentication fails.
 		super({
 			...options,
-			providerName: "Roo Code Cloud",
+			providerName: "Klaus Code Cloud",
 			baseURL, // Already has /v1 suffix
 			apiKey: sessionToken,
 			defaultProviderModelId: rooDefaultModelId,
@@ -387,7 +387,7 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 	}
 
 	/**
-	 * Generate an image using Roo Code Cloud's image generation API
+	 * Generate an image using Klaus Code Cloud's image generation API
 	 * @param prompt The text prompt for image generation
 	 * @param model The model to use for generation
 	 * @param inputImage Optional base64 encoded input image data URL

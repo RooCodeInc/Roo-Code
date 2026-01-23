@@ -191,7 +191,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 
 			let result
 			if (modelProvider === "roo") {
-				// Use Roo Code Cloud provider (supports both chat completions and images API)
+				// Use Klaus Code Cloud provider (supports both chat completions and images API)
 				const rooHandler = new RooHandler({} as any)
 				result = await rooHandler.generateImage(prompt, selectedModel, inputImageData, apiMethod)
 			} else {

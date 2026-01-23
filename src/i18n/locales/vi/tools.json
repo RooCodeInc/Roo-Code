@@ -25,7 +25,7 @@
 		"invalidImageFormat": "Nhận được định dạng hình ảnh không hợp lệ",
 		"unknownError": "Đã xảy ra lỗi không xác định",
 		"roo": {
-			"authRequired": "Yêu cầu xác thực Roo Code Cloud để tạo hình ảnh. Vui lòng đăng nhập vào Roo Code Cloud."
+			"authRequired": "Yêu cầu xác thực Klaus Code Cloud để tạo hình ảnh. Vui lòng đăng nhập vào Klaus Code Cloud."
 		}
 	}
 }

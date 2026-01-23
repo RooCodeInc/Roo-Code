@@ -16,7 +16,7 @@ export function OnboardingScreen({ onSelect }: OnboardingScreenProps) {
 			<Text dimColor>Welcome! How would you like to connect to an LLM provider?</Text>
 			<Select
 				options={[
-					{ label: "Connect to Roo Code Cloud", value: OnboardingProviderChoice.Roo },
+					{ label: "Connect to Klaus Code Cloud", value: OnboardingProviderChoice.Roo },
 					{ label: "Bring your own API key", value: OnboardingProviderChoice.Byok },
 				]}
 				onChange={(value: string) => {

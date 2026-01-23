@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "완료",
-	"description": "Git worktrees를 사용하면 별도의 디렉터리에서 여러 브랜치를 동시에 작업할 수 있습니다. 각 worktree는 Roo Code가 포함된 자체 VS Code 창을 가집니다.",
+	"description": "Git worktrees를 사용하면 별도의 디렉터리에서 여러 브랜치를 동시에 작업할 수 있습니다. 각 worktree는 Klaus Code가 포함된 자체 VS Code 창을 가집니다.",
 
 	"notGitRepo": "이 워크스페이스는 Git 저장소가 아닙니다. worktrees를 사용하려면 Git 저장소가 필요합니다.",
 	"multiRootNotSupported": "멀티 루트 워크스페이스에서는 worktrees가 지원되지 않습니다. worktrees를 사용하려면 단일 폴더를 여세요.",

@@ -83,7 +83,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		exitOnComplete: effectiveExitOnComplete,
 	}
 
-	// Roo Code Cloud Authentication
+	// Klaus Code Cloud Authentication
 
 	if (isOnboardingEnabled) {
 		let { onboardingProviderChoice } = settings
@@ -112,12 +112,12 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				extensionHostOptions.apiKey = rooToken
 				extensionHostOptions.user = me.user
 			} catch {
-				console.error("[CLI] Your Roo Code Router token is not valid.")
+				console.error("[CLI] Your Klaus Code Router token is not valid.")
 				console.error("[CLI] Please run: roo auth login")
 				process.exit(1)
 			}
 		} else {
-			console.error("[CLI] Your Roo Code Router token is missing.")
+			console.error("[CLI] Your Klaus Code Router token is missing.")
 			console.error("[CLI] Please run: roo auth login")
 			process.exit(1)
 		}
@@ -139,7 +139,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 	if (!extensionHostOptions.apiKey) {
 		if (extensionHostOptions.provider === "roo") {
-			console.error("[CLI] Error: Authentication with Roo Code Cloud failed or was cancelled.")
+			console.error("[CLI] Error: Authentication with Klaus Code Cloud failed or was cancelled.")
 			console.error("[CLI] Please run: roo auth login")
 			console.error("[CLI] Or use --api-key to provide your own API key.")
 		} else {

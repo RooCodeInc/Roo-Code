@@ -3,7 +3,7 @@ import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 
 const TITLE = "Our Cookie Policy"
-const DESCRIPTION = "Learn about how Roo Code uses cookies to enhance your experience and provide our services."
+const DESCRIPTION = "Learn about how Klaus Code uses cookies to enhance your experience and provide our services."
 const OG_DESCRIPTION = ""
 const PATH = "/legal/cookies"
 
@@ -48,7 +48,7 @@ export default function CookiePolicy() {
 					<h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Cookie Policy</h1>
 
 					<p className="lead">
-						This Cookie Policy explains how Roo Code uses cookies and similar technologies to recognize you
+						This Cookie Policy explains how Klaus Code uses cookies and similar technologies to recognize you
 						when you visit our website.
 					</p>
 

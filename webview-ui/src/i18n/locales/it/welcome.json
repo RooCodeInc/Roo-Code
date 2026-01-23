@@ -13,40 +13,40 @@
 		}
 	},
 	"landing": {
-		"greeting": "Benvenuto in Roo Code!",
-		"introduction": "Con una gamma di Modalità integrate ed estensibili, Roo Code ti permette di pianificare, architettare, codificare, debuggare e aumentare la tua produttività come mai prima d'ora.",
-		"accountMention": "Per iniziare, crea il tuo account Roo Code Cloud. Ottieni modelli potenti, controllo web, analitiche, supporto e altro ancora.",
+		"greeting": "Benvenuto in Klaus Code!",
+		"introduction": "Con una gamma di Modalità integrate ed estensibili, Klaus Code ti permette di pianificare, architettare, codificare, debuggare e aumentare la tua produttività come mai prima d'ora.",
+		"accountMention": "Per iniziare, crea il tuo account Klaus Code Cloud. Ottieni modelli potenti, controllo web, analitiche, supporto e altro ancora.",
 		"getStarted": "Crea account Roo",
 		"noAccount": "o usa senza account"
 	},
 	"providerSignup": {
 		"heading": "Scegli il tuo provider",
 		"chooseProvider": "Roo ha bisogno di un provider LLM per funzionare. Scegline uno per iniziare, puoi aggiungerne altri in seguito.",
-		"rooCloudProvider": "Provider Roo Code Cloud",
-		"rooCloudDescription": "Il modo più semplice per iniziare è con il Provider Roo Code Cloud: un mix curato di modelli gratuiti e a pagamento a basso costo.",
+		"rooCloudProvider": "Provider Klaus Code Cloud",
+		"rooCloudDescription": "Il modo più semplice per iniziare è con il Provider Klaus Code Cloud: un mix curato di modelli gratuiti e a pagamento a basso costo.",
 		"learnMore": "Scopri di più",
 		"useAnotherProvider": "Provider di terze parti",
 		"useAnotherProviderDescription": "Inserisci una chiave API e inizia.",
 		"noApiKeys": "Non vuoi affrontare le chiavi API e gli account separati?",
-		"backToRoo": "Scegli il Provider Roo Code Cloud.",
+		"backToRoo": "Scegli il Provider Klaus Code Cloud.",
 		"goBack": "Indietro",
 		"finish": "Fine"
 	},
 	"waitingForCloud": {
-		"heading": "Accesso a Roo Code Cloud...",
-		"description": "Ti porteremo al tuo browser per registrarti a Roo Code Cloud. Poi ti riporteremo qui per terminare.",
+		"heading": "Accesso a Klaus Code Cloud...",
+		"description": "Ti porteremo al tuo browser per registrarti a Klaus Code Cloud. Poi ti riporteremo qui per terminare.",
 		"noPrompt": "Se non ti viene chiesto di aprire un URL, <clickHere>clicca qui</clickHere>.",
 		"havingTrouble": "Se hai completato la registrazione ma hai problemi, <clickHere>clicca qui</clickHere>.",
 		"pasteUrl": "Incolla l'URL di callback dal tuo browser:",
 		"docsLink": "Non funziona? <DocsLink>Consulta la documentazione</DocsLink>.",
-		"invalidURL": "Non sembra un URL di callback valido. Per favore copia quello che Roo Code Cloud sta mostrando nel tuo browser.",
+		"invalidURL": "Non sembra un URL di callback valido. Per favore copia quello che Klaus Code Cloud sta mostrando nel tuo browser.",
 		"goBack": "Indietro"
 	},
 	"startRouter": "Ti consigliamo di usare un router LLM:",
 	"startCustom": "Oppure puoi portare la tua chiave API:",
 	"telemetry": {
-		"helpImprove": "Aiuta a migliorare Roo Code",
-		"helpImproveMessage": "Roo Code raccoglie dati di errore e utilizzo per aiutarci a correggere i bug e migliorare l'estensione. Questa telemetria non raccoglie codice, prompt o informazioni personali. Puoi disabilitare questa funzione in <settingsLink>impostazioni</settingsLink>."
+		"helpImprove": "Aiuta a migliorare Klaus Code",
+		"helpImproveMessage": "Klaus Code raccoglie dati di errore e utilizzo per aiutarci a correggere i bug e migliorare l'estensione. Questa telemetria non raccoglie codice, prompt o informazioni personali. Puoi disabilitare questa funzione in <settingsLink>impostazioni</settingsLink>."
 	},
 	"importSettings": "Importa impostazioni"
 }

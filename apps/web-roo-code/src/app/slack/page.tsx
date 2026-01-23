@@ -22,7 +22,7 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 
-const TITLE = "Roo Code for Slack"
+const TITLE = "Klaus Code for Slack"
 const DESCRIPTION =
 	"Mention @Roomote in any channel to explain code, plan features, or ship a PR, all without leaving the conversation."
 const OG_DESCRIPTION = "Your AI Team in Slack"
@@ -166,12 +166,12 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
 	{
 		icon: Settings,
 		title: "2. Connect",
-		description: 'Sign in to Roo Code Cloud and go to Settings. Click "Connect" next to Slack.',
+		description: 'Sign in to Klaus Code Cloud and go to Settings. Click "Connect" next to Slack.',
 	},
 	{
 		icon: Slack,
 		title: "3. Authorize",
-		description: "Authorize the Roo Code app to access your Slack workspace.",
+		description: "Authorize the Klaus Code app to access your Slack workspace.",
 	},
 	{
 		icon: MessageSquare,
@@ -191,7 +191,7 @@ export default function SlackPage(): JSX.Element {
 						<div className="text-center lg:text-left">
 							<div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-sm font-medium mb-6">
 								<Slack className="size-4" />
-								Powered by Roo Code Cloud
+								Powered by Klaus Code Cloud
 							</div>
 							<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-5xl lg:text-6xl">
 								<span className="text-violet-500">@Roomote:</span> Your AI Team in&nbsp;Slack
@@ -241,7 +241,7 @@ export default function SlackPage(): JSX.Element {
 					</div>
 					<div className="text-center mb-16">
 						<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-							Why your team will love using Roo Code in&nbsp;Slack
+							Why your team will love using Klaus Code in&nbsp;Slack
 						</h2>
 						<p className="text-xl text-muted-foreground max-w-2xl mx-auto">
 							AI agents that understand context, chain together for complex work, and keep your team in
@@ -294,7 +294,7 @@ export default function SlackPage(): JSX.Element {
 								<iframe
 									className="aspect-video w-full"
 									src="https://www.youtube-nocookie.com/embed/dJM_8HHGe1E?rel=0"
-									title="Roo Code Slack Integration Demo"
+									title="Klaus Code Slack Integration Demo"
 									allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
 									referrerPolicy="strict-origin-when-cross-origin"
 									allowFullScreen
@@ -373,7 +373,7 @@ export default function SlackPage(): JSX.Element {
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto max-w-4xl rounded-3xl border border-border/50 bg-gradient-to-br from-violet-500/10 via-purple-500/5 to-blue-500/5 p-8 text-center shadow-2xl backdrop-blur-xl dark:border-white/10 sm:p-16">
 						<h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
-							Start using Roo Code in Slack
+							Start using Klaus Code in Slack
 						</h2>
 						<p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground">
 							Start a free 14 day Team trial.

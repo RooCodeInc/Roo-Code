@@ -25,7 +25,7 @@
 		"invalidImageFormat": "無効な画像フォーマットを受信しました",
 		"unknownError": "不明なエラーが発生しました",
 		"roo": {
-			"authRequired": "画像生成にはRoo Code Cloud認証が必要です。Roo Code Cloudにサインインしてください。"
+			"authRequired": "画像生成にはKlaus Code Cloud認証が必要です。Klaus Code Cloudにサインインしてください。"
 		}
 	}
 }

@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Klaus Code",
 		"description": "Düzenleyicinizde tam bir AI geliştirici ekibi."
 	},
 	"number_format": {
@@ -121,7 +121,7 @@
 			"completionError": "Cerebras tamamlama hatası: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Roo sağlayıcısı bulut kimlik doğrulaması gerektirir. Lütfen Roo Code Cloud'a giriş yapın."
+			"authenticationRequired": "Roo sağlayıcısı bulut kimlik doğrulaması gerektirir. Lütfen Klaus Code Cloud'a giriş yapın."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "API anahtarı geçersiz karakterler içeriyor.",
@@ -234,8 +234,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Kuruluşunuz Roo Code Cloud kimlik doğrulaması gerektiriyor. Devam etmek için giriş yapın.",
-			"organization_mismatch": "Kuruluşunuzun Roo Code Cloud hesabıyla kimlik doğrulaması yapmalısınız.",
+			"cloud_auth_required": "Kuruluşunuz Klaus Code Cloud kimlik doğrulaması gerektiriyor. Devam etmek için giriş yapın.",
+			"organization_mismatch": "Kuruluşunuzun Klaus Code Cloud hesabıyla kimlik doğrulaması yapmalısınız.",
 			"manual_url_empty": "Lütfen geçerli bir callback URL'si girin",
 			"manual_url_no_query": "Geçersiz callback URL'si: sorgu parametreleri eksik",
 			"manual_url_missing_params": "Geçersiz callback URL'si: gerekli parametreler eksik (code ve state)",

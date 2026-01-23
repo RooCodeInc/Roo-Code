@@ -1,5 +1,5 @@
 {
-	"greeting": "Roo Code में आपका स्वागत है",
+	"greeting": "Klaus Code में आपका स्वागत है",
 	"task": {
 		"title": "कार्य",
 		"expand": "कार्य विस्तृत करें",
@@ -21,11 +21,11 @@
 		"sharePublicly": "सार्वजनिक रूप से साझा करें",
 		"sharePubliclyDescription": "लिंक वाला कोई भी व्यक्ति पहुंच सकता है",
 		"connectToCloud": "Cloud से कनेक्ट करें",
-		"connectToCloudDescription": "कार्य साझा करने के लिए Roo Code Cloud में साइन इन करें",
+		"connectToCloudDescription": "कार्य साझा करने के लिए Klaus Code Cloud में साइन इन करें",
 		"sharingDisabledByOrganization": "संगठन द्वारा साझाकरण अक्षम किया गया",
 		"shareSuccessOrganization": "संगठन लिंक क्लिपबोर्ड में कॉपी किया गया",
 		"shareSuccessPublic": "सार्वजनिक लिंक क्लिपबोर्ड में कॉपी किया गया",
-		"openInCloud": "Roo Code Cloud में कार्य खोलें",
+		"openInCloud": "Klaus Code Cloud में कार्य खोलें",
 		"openInCloudIntro": "कहीं से भी Roo की निगरानी या इंटरैक्ट करना जारी रखें। खोलने के लिए स्कैन करें, क्लिक करें या कॉपी करें।",
 		"openApiHistory": "API इतिहास खोलें",
 		"openUiHistory": "UI इतिहास खोलें"
@@ -92,7 +92,7 @@
 	},
 	"enqueueMessage": "संदेश को कतार में जोड़ें (वर्तमान कार्य पूरा होने के बाद भेजा जाएगा)",
 	"scrollToBottom": "चैट के निचले हिस्से तक स्क्रॉल करें",
-	"about": "Roo Code आपके संपादक में एक पूरी AI देव टीम है।",
+	"about": "Klaus Code आपके संपादक में एक पूरी AI देव टीम है।",
 	"docs": "और जानने के लिए हमारे <DocsLink>दस्तावेज़</DocsLink> देखें।",
 	"onboarding": "इस कार्यक्षेत्र में आपकी कार्य सूची खाली है।",
 	"rooTips": {
@@ -154,7 +154,7 @@
 			"403": "अनुमति नहीं। आपकी API कुंजी वैध है, लेकिन प्रदाता ने इस अनुरोध को पूरा करने से इनकार कर दिया।",
 			"429": "बहुत सारे अनुरोध। आप प्रदाता द्वारा दर-सीमित हो रहे हैं। कृपया अपनी अगली API कॉल से पहले थोड़ी देर प्रतीक्षा करें।",
 			"500": "प्रदाता सर्वर त्रुटि। प्रदाता की ओर से कुछ गलत है, आपके अनुरोध में कुछ गलत नहीं है।",
-			"unknown": "अज्ञात API त्रुटि। कृपया Roo Code सहायता से संपर्क करें।",
+			"unknown": "अज्ञात API त्रुटि। कृपया Klaus Code सहायता से संपर्क करें।",
 			"connection": "कनेक्शन त्रुटि। सुनिश्चित करें कि आपके पास कार्यशील इंटरनेट कनेक्शन है।",
 			"claudeCodeNotAuthenticated": "Claude Code का उपयोग करने के लिए आपको साइन इन करना होगा। सेटिंग्स में जाएं और प्रमाणित करने के लिए \"Claude Code में साइन इन करें\" पर क्लिक करें।"
 		}
@@ -324,13 +324,13 @@
 		"timerPrefix": "ऑटो-अनुमोदन सक्षम है। {{seconds}}s में चयन किया जा रहा है…"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} रिलीज़ हुआ",
-		"support": "कृपया <githubLink>GitHub</githubLink> पर हमें स्टार देकर Roo Code का समर्थन करें।",
+		"title": "Klaus Code {{version}} रिलीज़ हुआ",
+		"support": "कृपया <githubLink>GitHub</githubLink> पर हमें स्टार देकर Klaus Code का समर्थन करें।",
 		"stealthModel": {
-			"feature": "<bold>सीमित समय के लिए मुफ़्त स्टेल्थ मॉडल</bold> - Code Supernova: अब <bold>1M Token संदर्भ विंडो</bold> के साथ अपग्रेड हुआ! एक बहुमुखी एजेंटिक कोडिंग मॉडल जो छवि इनपुट का समर्थन करता है, Roo Code Cloud के माध्यम से उपलब्ध।",
+			"feature": "<bold>सीमित समय के लिए मुफ़्त स्टेल्थ मॉडल</bold> - Code Supernova: अब <bold>1M Token संदर्भ विंडो</bold> के साथ अपग्रेड हुआ! एक बहुमुखी एजेंटिक कोडिंग मॉडल जो छवि इनपुट का समर्थन करता है, Klaus Code Cloud के माध्यम से उपलब्ध।",
 			"note": "(नोट: प्रॉम्प्ट्स और कम्प्लीशन्स मॉडल निर्माता द्वारा लॉग किए जाते हैं और मॉडल को बेहतर बनाने के लिए उपयोग किए जाते हैं)",
-			"connectButton": "Roo Code Cloud से कनेक्ट करें",
-			"selectModel": "आरंभ करने के लिए सेटिंग्स में Roo Code Cloud प्रोवाइडर से <code>roo/code-supernova</code> चुनें।",
+			"connectButton": "Klaus Code Cloud से कनेक्ट करें",
+			"selectModel": "आरंभ करने के लिए सेटिंग्स में Klaus Code Cloud प्रोवाइडर से <code>roo/code-supernova</code> चुनें।",
 			"goToSettingsButton": "सेटिंग्स पर जाएं"
 		},
 		"release": {
@@ -401,7 +401,7 @@
 	"profileViolationWarning": "वर्तमान प्रोफ़ाइल आपके संगठन की सेटिंग्स के साथ संगत नहीं है",
 	"shellIntegration": {
 		"title": "कमांड निष्पादन चेतावनी",
-		"description": "आपका कमांड VSCode टर्मिनल शेल इंटीग्रेशन के बिना निष्पादित हो रहा है। इस चेतावनी को दबाने के लिए आप <settingsLink>Roo Code सेटिंग्स</settingsLink> के <strong>Terminal</strong> अनुभाग में शेल इंटीग्रेशन को अक्षम कर सकते हैं या नीचे दिए गए लिंक का उपयोग करके VSCode टर्मिनल इंटीग्रेशन की समस्या का समाधान कर सकते हैं।",
+		"description": "आपका कमांड VSCode टर्मिनल शेल इंटीग्रेशन के बिना निष्पादित हो रहा है। इस चेतावनी को दबाने के लिए आप <settingsLink>Klaus Code सेटिंग्स</settingsLink> के <strong>Terminal</strong> अनुभाग में शेल इंटीग्रेशन को अक्षम कर सकते हैं या नीचे दिए गए लिंक का उपयोग करके VSCode टर्मिनल इंटीग्रेशन की समस्या का समाधान कर सकते हैं।",
 		"troubleshooting": "शेल इंटीग्रेशन दस्तावेज़ के लिए यहां क्लिक करें।"
 	},
 	"ask": {
@@ -442,7 +442,7 @@
 		"ariaLabel": "संस्करण {{version}} - रिलीज़ नोट्स देखने के लिए क्लिक करें"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud विकसित हो रहा है!",
+		"title": "Klaus Code Cloud विकसित हो रहा है!",
 		"description": "क्लाउड में रिमोट एजेंट चलाएं, कहीं से भी अपने कार्यों तक पहुंचें, दूसरों के साथ सहयोग करें, और बहुत कुछ।",
 		"joinWaitlist": "नवीनतम अपडेट प्राप्त करने के लिए साइन अप करें।"
 	},

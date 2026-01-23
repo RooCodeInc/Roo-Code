@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Klaus Code",
 		"description": "エディター内のAIデベロッパーチーム全体。"
 	},
 	"number_format": {
@@ -121,7 +121,7 @@
 			"completionError": "Cerebras完了エラー: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
+			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Klaus Code Cloudにサインインしてください。"
 		},
 		"api": {
 			"invalidKeyInvalidChars": "APIキーに無効な文字が含まれています。",
@@ -234,8 +234,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "あなたの組織では Roo Code Cloud 認証が必要です。続行するにはサインインしてください。",
-			"organization_mismatch": "組織の Roo Code Cloud アカウントで認証する必要があります。",
+			"cloud_auth_required": "あなたの組織では Klaus Code Cloud 認証が必要です。続行するにはサインインしてください。",
+			"organization_mismatch": "組織の Klaus Code Cloud アカウントで認証する必要があります。",
 			"manual_url_empty": "有効なコールバック URL を入力してください",
 			"manual_url_no_query": "無効なコールバック URL：クエリパラメータがありません",
 			"manual_url_missing_params": "無効なコールバック URL：必要なパラメータ（code と state）がありません",

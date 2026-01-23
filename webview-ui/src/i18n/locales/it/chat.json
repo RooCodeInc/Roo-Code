@@ -1,5 +1,5 @@
 {
-	"greeting": "Benvenuto a Roo Code",
+	"greeting": "Benvenuto a Klaus Code",
 	"task": {
 		"title": "Attività",
 		"expand": "Espandi attività",
@@ -21,11 +21,11 @@
 		"sharePublicly": "Condividi pubblicamente",
 		"sharePubliclyDescription": "Chiunque con il link può accedere",
 		"connectToCloud": "Connetti al Cloud",
-		"connectToCloudDescription": "Accedi a Roo Code Cloud per condividere attività",
+		"connectToCloudDescription": "Accedi a Klaus Code Cloud per condividere attività",
 		"sharingDisabledByOrganization": "Condivisione disabilitata dall'organizzazione",
 		"shareSuccessOrganization": "Link organizzazione copiato negli appunti",
 		"shareSuccessPublic": "Link pubblico copiato negli appunti",
-		"openInCloud": "Apri attività in Roo Code Cloud",
+		"openInCloud": "Apri attività in Klaus Code Cloud",
 		"openInCloudIntro": "Continua a monitorare o interagire con Roo da qualsiasi luogo. Scansiona, clicca o copia per aprire.",
 		"openApiHistory": "Apri cronologia API",
 		"openUiHistory": "Apri cronologia UI"
@@ -92,7 +92,7 @@
 	},
 	"enqueueMessage": "Aggiungi il messaggio alla coda (sarà inviato dopo che l'attività corrente sarà terminata)",
 	"scrollToBottom": "Scorri fino alla fine della chat",
-	"about": "Roo Code è un intero team di sviluppo AI nel tuo editor.",
+	"about": "Klaus Code è un intero team di sviluppo AI nel tuo editor.",
 	"docs": "Consulta la nostra <DocsLink>documentazione</DocsLink> per saperne di più.",
 	"onboarding": "La tua lista di attività in questo spazio di lavoro è vuota.",
 	"rooTips": {
@@ -157,7 +157,7 @@
 			"403": "Non autorizzato. La tua chiave API è valida, ma il provider ha rifiutato di completare questa richiesta.",
 			"429": "Troppe richieste. Sei limitato dal provider. Attendi un po' prima della tua prossima chiamata API.",
 			"500": "Errore del server del provider. C'è qualcosa di sbagliato dal lato del provider, non c'è nulla di sbagliato nella tua richiesta.",
-			"unknown": "Errore API sconosciuto. Contatta il supporto di Roo Code.",
+			"unknown": "Errore API sconosciuto. Contatta il supporto di Klaus Code.",
 			"connection": "Errore di connessione. Assicurati di avere una connessione Internet funzionante.",
 			"claudeCodeNotAuthenticated": "Devi accedere per utilizzare Claude Code. Vai su Impostazioni e clicca su \"Accedi a Claude Code\" per autenticarti."
 		}
@@ -324,13 +324,13 @@
 		"timerPrefix": "Approvazione automatica abilitata. Selezione tra {{seconds}}s…"
 	},
 	"announcement": {
-		"title": "Rilasciato Roo Code {{version}}",
-		"support": "Sostieni Roo Code lasciandoci una stella su <githubLink>GitHub</githubLink>.",
+		"title": "Rilasciato Klaus Code {{version}}",
+		"support": "Sostieni Klaus Code lasciandoci una stella su <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Modello stealth GRATUITO per tempo limitato</bold> - Code Supernova: Ora potenziato con una <bold>finestra di contesto da 1M token</bold>! Un modello di codificazione agentiva versatile che supporta input di immagini, accessibile tramite Roo Code Cloud.",
+			"feature": "<bold>Modello stealth GRATUITO per tempo limitato</bold> - Code Supernova: Ora potenziato con una <bold>finestra di contesto da 1M token</bold>! Un modello di codificazione agentiva versatile che supporta input di immagini, accessibile tramite Klaus Code Cloud.",
 			"note": "(Nota: i prompt e le completazioni vengono registrati dal creatore del modello e utilizzati per migliorarlo)",
-			"connectButton": "Connetti a Roo Code Cloud",
-			"selectModel": "Seleziona <code>roo/code-supernova</code> dal provider Roo Code Cloud nelle Impostazioni per iniziare.",
+			"connectButton": "Connetti a Klaus Code Cloud",
+			"selectModel": "Seleziona <code>roo/code-supernova</code> dal provider Klaus Code Cloud nelle Impostazioni per iniziare.",
 			"goToSettingsButton": "Vai alle Impostazioni"
 		},
 		"release": {
@@ -401,7 +401,7 @@
 	"profileViolationWarning": "Il profilo corrente non è compatibile con le impostazioni della tua organizzazione",
 	"shellIntegration": {
 		"title": "Avviso di esecuzione comando",
-		"description": "Il tuo comando viene eseguito senza l'integrazione shell del terminale VSCode. Per sopprimere questo avviso puoi disattivare l'integrazione shell nella sezione <strong>Terminal</strong> delle <settingsLink>impostazioni di Roo Code</settingsLink> o risolvere i problemi di integrazione del terminale VSCode utilizzando il link qui sotto.",
+		"description": "Il tuo comando viene eseguito senza l'integrazione shell del terminale VSCode. Per sopprimere questo avviso puoi disattivare l'integrazione shell nella sezione <strong>Terminal</strong> delle <settingsLink>impostazioni di Klaus Code</settingsLink> o risolvere i problemi di integrazione del terminale VSCode utilizzando il link qui sotto.",
 		"troubleshooting": "Clicca qui per la documentazione sull'integrazione shell."
 	},
 	"ask": {
@@ -442,7 +442,7 @@
 		"ariaLabel": "Versione {{version}} - Clicca per visualizzare le note di rilascio"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud si sta evolvendo!",
+		"title": "Klaus Code Cloud si sta evolvendo!",
 		"description": "Esegui agenti remoti nel cloud, accedi alle tue attività da qualsiasi luogo, collabora con altri e molto altro.",
 		"joinWaitlist": "Registrati per ricevere gli ultimi aggiornamenti."
 	},

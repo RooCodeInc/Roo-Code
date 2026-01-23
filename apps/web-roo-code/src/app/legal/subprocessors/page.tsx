@@ -3,7 +3,7 @@ import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 
 const TITLE = "Subprocessors"
-const DESCRIPTION = "List of third-party subprocessors used by Roo Code to process customer data."
+const DESCRIPTION = "List of third-party subprocessors used by Klaus Code to process customer data."
 const OG_DESCRIPTION = ""
 const PATH = "/legal/subprocessors"
 
@@ -47,7 +47,7 @@ export default function SubProcessors() {
 
 					<h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Subprocessors</h1>
 
-					<p className="lead">Roo Code engages the following third parties to process Customer Data.</p>
+					<p className="lead">Klaus Code engages the following third parties to process Customer Data.</p>
 
 					<div className="overflow-x-auto">
 						<table className="min-w-full border-collapse border border-border">

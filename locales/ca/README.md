@@ -9,7 +9,7 @@
   <em>Obté ajuda ràpidament → <a href="https://discord.gg/roocode">Uneix-te a Discord</a> • Prefereixes l'asíncron? → <a href="https://www.reddit.com/r/RooCode/">Uneix-te a r/RooCode</a></em>
 </p>
 
-# Roo Code
+# Klaus Code
 
 > El teu equip de desenvolupament impulsat per IA, directament al teu editor
 
@@ -39,7 +39,7 @@
 
 ---
 
-## Què pot fer Roo Code per TU?
+## Què pot fer Klaus Code per TU?
 
 - Generar codi a partir de descripcions en llenguatge natural
 - Adaptar-se amb modes: Codi, Arquitecte, Pregunta, Depuració i Modes personalitzats
@@ -51,7 +51,7 @@
 
 ## Modes
 
-Roo Code s'adapta a la teva manera de treballar, no a l'inrevés:
+Klaus Code s'adapta a la teva manera de treballar, no a l'inrevés:
 
 - Mode Codi: codificació diària, edicions i operacions de fitxers
 - Mode Arquitecte: planificar sistemes, especificacions i migracions
@@ -68,7 +68,7 @@ Més informació: [Ús de Modes](https://docs.roocode.com/basic-usage/using-mode
 
 |                                                                                                                                                                            |                                                                                                                                                                           |                                                                                                                                                                                    |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Instal·lant Roo Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Configurant perfils</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indexació de la base de codi</b> |
+| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Instal·lant Klaus Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Configurant perfils</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indexació de la base de codi</b> |
 | <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Modes personalitzats</b> |  <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Punts de control</b>   |      <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Gestió de Context</b>      |
 
 </div>
@@ -78,7 +78,7 @@ Més informació: [Ús de Modes](https://docs.roocode.com/basic-usage/using-mode
 
 ## Recursos
 
-- **[Documentació](https://docs.roocode.com):** La guia oficial per instal·lar, configurar i dominar Roo Code.
+- **[Documentació](https://docs.roocode.com):** La guia oficial per instal·lar, configurar i dominar Klaus Code.
 - **[Canal de YouTube](https://youtube.com/@roocodeyt?feature=shared):** Mira tutorials i veu les funcionalitats en acció.
 - **[Servidor de Discord](https://discord.gg/roocode):** Uneix-te a la comunitat per obtenir ajuda i discutir en temps real.
 - **[Comunitat de Reddit](https://www.reddit.com/r/RooCode):** Comparteix les teves experiències i veu què estan construint altres.
@@ -103,13 +103,13 @@ pnpm install
 
 3. **Executa l'extensió**:
 
-Hi ha diverses maneres d'executar l'extensió Roo Code:
+Hi ha diverses maneres d'executar l'extensió Klaus Code:
 
 ### Mode de desenvolupament (F5)
 
 Per al desenvolupament actiu, utilitza la depuració integrada de VSCode:
 
-Prem `F5` (o ves a **Executa** → **Inicia la depuració**) a VSCode. Això obrirà una nova finestra de VSCode amb l'extensió Roo Code en funcionament.
+Prem `F5` (o ves a **Executa** → **Inicia la depuració**) a VSCode. Això obrirà una nova finestra de VSCode amb l'extensió Klaus Code en funcionament.
 
 - Els canvis a la vista web apareixeran immediatament.
 - Els canvis a l'extensió principal també es recarregaran automàticament.
@@ -157,7 +157,7 @@ Utilitzem [changesets](https://github.com/changesets/changesets) per al versiona
 
 ## Avís legal
 
-**Tingueu en compte** que Roo Code, Inc **no** fa cap representació ni garantia pel que fa a cap codi, model o altres eines proporcionades o posades a disposició en relació amb Roo Code, qualsevol eina de tercers associada, o qualsevol resultat. Assumiu **tots els riscos** associats amb l'ús d'aquestes eines o resultats; aquestes eines es proporcionen **"TAL QUAL"** i **"SEGONS DISPONIBILITAT"**. Aquests riscos poden incloure, sense limitació, infraccions de propietat intel·lectual, vulnerabilitats o atacs cibernètics, biaix, inexactituds, errors, defectes, virus, temps d'inactivitat, pèrdua o dany de propietat i/o lesions personals. Sou l'únic responsable del vostre ús d'aquestes eines o resultats (incloent, sense limitació, la legalitat, idoneïtat i resultats dels mateixos).
+**Tingueu en compte** que Klaus Code, Inc **no** fa cap representació ni garantia pel que fa a cap codi, model o altres eines proporcionades o posades a disposició en relació amb Klaus Code, qualsevol eina de tercers associada, o qualsevol resultat. Assumiu **tots els riscos** associats amb l'ús d'aquestes eines o resultats; aquestes eines es proporcionen **"TAL QUAL"** i **"SEGONS DISPONIBILITAT"**. Aquests riscos poden incloure, sense limitació, infraccions de propietat intel·lectual, vulnerabilitats o atacs cibernètics, biaix, inexactituds, errors, defectes, virus, temps d'inactivitat, pèrdua o dany de propietat i/o lesions personals. Sou l'únic responsable del vostre ús d'aquestes eines o resultats (incloent, sense limitació, la legalitat, idoneïtat i resultats dels mateixos).
 
 ---
 
@@ -169,8 +169,8 @@ Ens encanten les contribucions de la comunitat! Comença llegint el nostre [CONT
 
 ## Llicència
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../../LICENSE)
+[Apache 2.0 © 2025 Klaus Code, Inc.](../../LICENSE)
 
 ---
 
-**Gaudeix de Roo Code!** Tant si el mantens amb una corretja curta com si el deixes moure's de forma autònoma, estem impacients per veure què construeixes. Si tens preguntes o idees sobre funcionalitats, passa't per la nostra [comunitat de Reddit](https://www.reddit.com/r/RooCode/) o [Discord](https://discord.gg/roocode). Feliç programació!
+**Gaudeix de Klaus Code!** Tant si el mantens amb una corretja curta com si el deixes moure's de forma autònoma, estem impacients per veure què construeixes. Si tens preguntes o idees sobre funcionalitats, passa't per la nostra [comunitat de Reddit](https://www.reddit.com/r/RooCode/) o [Discord](https://discord.gg/roocode). Feliç programació!

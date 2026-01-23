@@ -9,7 +9,7 @@
   <em>Snel hulp krijgen → <a href="https://discord.gg/roocode">Word lid van Discord</a> • Liever asynchroon? → <a href="https://www.reddit.com/r/RooCode/">Word lid van r/RooCode</a></em>
 </p>
 
-# Roo Code
+# Klaus Code
 
 > Jouw AI-aangedreven dev-team, rechtstreeks in je editor
 
@@ -39,7 +39,7 @@
 
 ---
 
-## Wat kan Roo Code voor JOU doen?
+## Wat kan Klaus Code voor JOU doen?
 
 - Genereer code vanuit natuurlijke taalomschrijvingen
 - Aanpassen met Modi: Code, Architect, Vraag, Debug en Aangepaste Modi
@@ -51,7 +51,7 @@
 
 ## Modi
 
-Roo Code past zich aan jouw werkwijze aan, niet andersom:
+Klaus Code past zich aan jouw werkwijze aan, niet andersom:
 
 - Code Modus: dagelijks coderen, bewerkingen en bestandsoperaties
 - Architect Modus: plan systemen, specificaties en migraties
@@ -68,7 +68,7 @@ Meer info: [Modi gebruiken](https://docs.roocode.com/basic-usage/using-modes) �
 
 |                                                                                                                                                                            |                                                                                                                                                                              |                                                                                                                                                                          |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Roo Code installeren</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Profielen configureren</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Codebase indexeren</b> |
+| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Klaus Code installeren</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Profielen configureren</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Codebase indexeren</b> |
 |   <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Aangepaste modi</b>    |      <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Checkpoints</b>       |   <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Contextbeheer</b>    |
 
 </div>
@@ -78,7 +78,7 @@ Meer info: [Modi gebruiken](https://docs.roocode.com/basic-usage/using-modes) �
 
 ## Hulpbronnen
 
-- **[Documentatie](https://docs.roocode.com):** De officiële gids voor het installeren, configureren en beheersen van Roo Code.
+- **[Documentatie](https://docs.roocode.com):** De officiële gids voor het installeren, configureren en beheersen van Klaus Code.
 - **[YouTube-kanaal](https://youtube.com/@roocodeyt?feature=shared):** Bekijk tutorials en zie functies in actie.
 - **[Discord Server](https://discord.gg/roocode):** Word lid van de community voor realtime hulp en discussie.
 - **[Reddit Community](https://www.reddit.com/r/RooCode):** Deel je ervaringen en kijk wat anderen bouwen.
@@ -103,13 +103,13 @@ pnpm install
 
 3. **Voer de extensie uit**:
 
-Er zijn verschillende manieren om de Roo Code-extensie uit te voeren:
+Er zijn verschillende manieren om de Klaus Code-extensie uit te voeren:
 
 ### Ontwikkelmodus (F5)
 
 Gebruik voor actieve ontwikkeling de ingebouwde foutopsporing van VSCode:
 
-Druk op `F5` (of ga naar **Uitvoeren** → **Foutopsporing starten**) in VSCode. Dit opent een nieuw VSCode-venster waarin de Roo Code-extensie wordt uitgevoerd.
+Druk op `F5` (of ga naar **Uitvoeren** → **Foutopsporing starten**) in VSCode. Dit opent een nieuw VSCode-venster waarin de Klaus Code-extensie wordt uitgevoerd.
 
 - Wijzigingen in de webweergave verschijnen onmiddellijk.
 - Wijzigingen in de kernextensie worden ook automatisch hot-herladen.
@@ -157,7 +157,7 @@ We gebruiken [changesets](https://github.com/changesets/changesets) voor versieb
 
 ## Disclaimer
 
-**Let op**: Roo Code, Inc. geeft **geen** verklaringen of garanties met betrekking tot enige code, modellen of andere tools die worden geleverd of beschikbaar worden gesteld in verband met Roo Code, enige geassocieerde tools van derden, of enige resulterende output. U aanvaardt **alle risico's** die gepaard gaan met het gebruik van dergelijke tools of output; dergelijke tools worden geleverd op een **"AS IS"** en **"AS AVAILABLE"** basis. Dergelijke risico's kunnen omvatten, maar zijn niet beperkt tot, inbreuk op intellectueel eigendom, cyberkwetsbaarheden of -aanvallen, vooringenomenheid, onnauwkeurigheden, fouten, defecten, virussen, downtime, verlies of beschadiging van eigendommen, en/of persoonlijk letsel. U bent als enige verantwoordelijk voor uw gebruik van dergelijke tools of output (inclusief, maar niet beperkt tot, de wettigheid, geschiktheid en resultaten daarvan).
+**Let op**: Klaus Code, Inc. geeft **geen** verklaringen of garanties met betrekking tot enige code, modellen of andere tools die worden geleverd of beschikbaar worden gesteld in verband met Klaus Code, enige geassocieerde tools van derden, of enige resulterende output. U aanvaardt **alle risico's** die gepaard gaan met het gebruik van dergelijke tools of output; dergelijke tools worden geleverd op een **"AS IS"** en **"AS AVAILABLE"** basis. Dergelijke risico's kunnen omvatten, maar zijn niet beperkt tot, inbreuk op intellectueel eigendom, cyberkwetsbaarheden of -aanvallen, vooringenomenheid, onnauwkeurigheden, fouten, defecten, virussen, downtime, verlies of beschadiging van eigendommen, en/of persoonlijk letsel. U bent als enige verantwoordelijk voor uw gebruik van dergelijke tools of output (inclusief, maar niet beperkt tot, de wettigheid, geschiktheid en resultaten daarvan).
 
 ---
 
@@ -169,8 +169,8 @@ We houden van bijdragen uit de community! Begin met het lezen van onze [CONTRIBU
 
 ## Licentie
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../../LICENSE)
+[Apache 2.0 © 2025 Klaus Code, Inc.](../../LICENSE)
 
 ---
 
-**Veel plezier met Roo Code!** Of je het nu strak aan de lijn houdt of autonoom laat rondlopen, we zijn benieuwd wat je bouwt. Vragen of feature-ideeën? Kom langs op onze [Reddit-community](https://www.reddit.com/r/RooCode/) of [Discord](https://discord.gg/roocode). Happy coding!
+**Veel plezier met Klaus Code!** Of je het nu strak aan de lijn houdt of autonoom laat rondlopen, we zijn benieuwd wat je bouwt. Vragen of feature-ideeën? Kom langs op onze [Reddit-community](https://www.reddit.com/r/RooCode/) of [Discord](https://discord.gg/roocode). Happy coding!

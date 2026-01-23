@@ -1,7 +1,7 @@
 {
 	"name": "@roo-code/cli",
 	"version": "0.0.49",
-	"description": "Roo Code CLI - Run the Roo Code agent from the command line",
+	"description": "Klaus Code CLI - Run the Klaus Code agent from the command line",
 	"private": true,
 	"type": "module",
 	"main": "dist/index.js",

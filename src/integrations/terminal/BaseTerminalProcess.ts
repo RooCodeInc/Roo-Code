@@ -174,7 +174,7 @@ export abstract class BaseTerminalProcess extends EventEmitter<RooTerminalProces
 
 	// These markers indicate the command is some kind of local dev
 	// server recompiling the app, which we want to wait for output
-	// of before sending request to Roo Code.
+	// of before sending request to Klaus Code.
 	private static compilingMarkers = ["compiling", "building", "bundling", "transpiling", "generating", "starting"]
 
 	private static compilingMarkerNullifiers = [

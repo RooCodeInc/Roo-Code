@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# Đóng góp cho Roo Code
+# Đóng góp cho Klaus Code
 
-Roo Code là một dự án do cộng đồng điều khiển và chúng tôi vô cùng trân trọng mọi đóng góp. Để hợp lý hóa việc cộng tác, chúng tôi hoạt động trên cơ sở [Ưu tiên vấn đề](#cách-tiếp-cận-ưu-tiên-vấn-đề), có nghĩa là tất cả các [Yêu cầu kéo (PR)](#gửi-yêu-cầu-kéo) trước tiên phải được liên kết với một Vấn đề trên GitHub. Vui lòng xem kỹ hướng dẫn này.
+Klaus Code là một dự án do cộng đồng điều khiển và chúng tôi vô cùng trân trọng mọi đóng góp. Để hợp lý hóa việc cộng tác, chúng tôi hoạt động trên cơ sở [Ưu tiên vấn đề](#cách-tiếp-cận-ưu-tiên-vấn-đề), có nghĩa là tất cả các [Yêu cầu kéo (PR)](#gửi-yêu-cầu-kéo) trước tiên phải được liên kết với một Vấn đề trên GitHub. Vui lòng xem kỹ hướng dẫn này.
 
 ## Bảng mục lục
 
@@ -52,7 +52,7 @@ Lộ trình của chúng tôi hướng dẫn định hướng của dự án. H�
 
 Hãy đề cập đến sự phù hợp với các lĩnh vực này trong PR của bạn.
 
-### 3. Tham gia cộng đồng Roo Code
+### 3. Tham gia cộng đồng Klaus Code
 
 - **Chính:** Tham gia [Discord](https://discord.gg/roocode) của chúng tôi và nhắn tin trực tiếp cho **Hannes Rudolph (`hrudolph`)**.
 - **Thay thế:** Những người đóng góp có kinh nghiệm có thể tham gia trực tiếp qua [Dự án GitHub](https://github.com/orgs/RooCodeInc/projects/1).
@@ -79,7 +79,7 @@ Tất cả các đóng góp đều bắt đầu bằng một Vấn đề trên G
 ### Quyết định nên làm gì
 
 - Kiểm tra [Dự án GitHub](https://github.com/orgs/RooCodeInc/projects/1) để tìm các vấn đề "Vấn đề [Chưa được giao]".
-- Để biết tài liệu, hãy truy cập [Tài liệu Roo Code](https://github.com/RooCodeInc/Roo-Code-Docs).
+- Để biết tài liệu, hãy truy cập [Tài liệu Klaus Code](https://github.com/RooCodeInc/Roo-Code-Docs).
 
 ### Báo cáo lỗi
 
@@ -87,7 +87,7 @@ Tất cả các đóng góp đều bắt đầu bằng một Vấn đề trên G
 - Tạo một lỗi mới bằng cách sử dụng [mẫu "Báo cáo lỗi"](https://github.com/RooCodeInc/Roo-Code/issues/new/choose) với:
     - Các bước tái tạo rõ ràng, được đánh số
     - Kết quả mong đợi so với thực tế
-    - Phiên bản Roo Code (bắt buộc); nhà cung cấp/mô hình API nếu có liên quan
+    - Phiên bản Klaus Code (bắt buộc); nhà cung cấp/mô hình API nếu có liên quan
 - **Vấn đề bảo mật**: Báo cáo riêng tư qua [tư vấn bảo mật](https://github.com/RooCodeInc/Roo-Code/security/advisories/new).
 
 ## Quy trình phát triển và gửi
@@ -138,4 +138,4 @@ pnpm install
 
 ## Pháp lý
 
-Bằng cách đóng góp, bạn đồng ý rằng những đóng góp của bạn sẽ được cấp phép theo Giấy phép Apache 2.0, phù hợp với việc cấp phép của Roo Code.
+Bằng cách đóng góp, bạn đồng ý rằng những đóng góp của bạn sẽ được cấp phép theo Giấy phép Apache 2.0, phù hợp với việc cấp phép của Klaus Code.

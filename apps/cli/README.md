@@ -1,16 +1,16 @@
 # @roo-code/cli
 
-Command Line Interface for Roo Code - Run the Roo Code agent from the terminal without VSCode.
+Command Line Interface for Klaus Code - Run the Klaus Code agent from the terminal without VSCode.
 
 ## Overview
 
-This CLI uses the `@roo-code/vscode-shim` package to provide a VSCode API compatibility layer, allowing the main Roo Code extension to run in a Node.js environment.
+This CLI uses the `@roo-code/vscode-shim` package to provide a VSCode API compatibility layer, allowing the main Klaus Code extension to run in a Node.js environment.
 
 ## Installation
 
 ### Quick Install (Recommended)
 
-Install the Roo Code CLI with a single command:
+Install the Klaus Code CLI with a single command:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh
@@ -101,12 +101,12 @@ In non-interactive mode:
 - Followup questions show a 60-second timeout, then auto-select the first suggestion
 - Typing any key cancels the timeout and allows manual input
 
-### Roo Code Cloud Authentication
+### Klaus Code Cloud Authentication
 
-To use Roo Code Cloud features (like the provider proxy), you need to authenticate:
+To use Klaus Code Cloud features (like the provider proxy), you need to authenticate:
 
 ```bash
-# Log in to Roo Code Cloud (opens browser)
+# Log in to Klaus Code Cloud (opens browser)
 roo auth login
 
 # Check authentication status
@@ -118,7 +118,7 @@ roo auth logout
 
 The `auth login` command:
 
-1. Opens your browser to authenticate with Roo Code Cloud
+1. Opens your browser to authenticate with Klaus Code Cloud
 2. Receives a secure token via localhost callback
 3. Stores the token in `~/.config/roo/credentials.json`
 
@@ -128,7 +128,7 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 ```
 ┌──────┐         ┌─────────┐         ┌───────────────┐
-│  CLI │         │ Browser │         │ Roo Code Cloud│
+│  CLI │         │ Browser │         │ Klaus Code Cloud│
 └──┬───┘         └────┬────┘         └───────┬───────┘
    │                  │                      │
    │ Open auth URL    │                      │
@@ -167,7 +167,7 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 | Command           | Description                        |
 | ----------------- | ---------------------------------- |
-| `roo auth login`  | Authenticate with Roo Code Cloud   |
+| `roo auth login`  | Authenticate with Klaus Code Cloud   |
 | `roo auth logout` | Clear stored authentication token  |
 | `roo auth status` | Show current authentication status |
 
@@ -187,7 +187,7 @@ The CLI will look for API keys in environment variables if not provided via `--a
 
 | Variable          | Description                                                          |
 | ----------------- | -------------------------------------------------------------------- |
-| `ROO_WEB_APP_URL` | Override the Roo Code Cloud URL (default: `https://app.roocode.com`) |
+| `ROO_WEB_APP_URL` | Override the Klaus Code Cloud URL (default: `https://app.roocode.com`) |
 
 ## Architecture
 

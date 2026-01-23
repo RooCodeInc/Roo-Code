@@ -1,5 +1,5 @@
 /**
- * Roo Code Client
+ * Klaus Code Client
  *
  * This is the main entry point for the client library. It provides a high-level
  * API for:
@@ -84,7 +84,7 @@ export interface ExtensionClientConfig {
 // =============================================================================
 
 /**
- * ExtensionClient is the main interface for interacting with the Roo Code extension.
+ * ExtensionClient is the main interface for interacting with the Klaus Code extension.
  *
  * Basic usage:
  * ```typescript

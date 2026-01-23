@@ -14,16 +14,16 @@ const faqs = [
 		answer: "AI model providers offer various language models with different capabilities and pricing.",
 	},
 	{
-		question: "What is the Roo Code Router?",
+		question: "What is the Klaus Code Router?",
 		answer: (
 			<>
-				<p>This is our very own model router, optimized to work seamlessly with Roo Code Cloud.</p>
-				<p>You don&apos;t have to use it to use Roo Code, but it&apos;s the easiest way to do it.</p>
+				<p>This is our very own model router, optimized to work seamlessly with Klaus Code Cloud.</p>
+				<p>You don&apos;t have to use it to use Klaus Code, but it&apos;s the easiest way to do it.</p>
 			</>
 		),
 	},
 	{
-		question: "Do I have to use the Roo Code Router to use the Roo Code products?",
+		question: "Do I have to use the Klaus Code Router to use the Klaus Code products?",
 		answer: "Not at all! You can bring your own provider key, no problem. This is just meant to make it easier.",
 	},
 	{
@@ -32,10 +32,10 @@ const faqs = [
 	},
 	{
 		question: "How is my data treated?",
-		answer: "The Roo Code Router doesn't keep any of your data, the service only aims to make it easier to use Roo Code. Each model vendor has their own privacy policy though, and usually free models use your data for training, so keep that in mind.",
+		answer: "The Klaus Code Router doesn't keep any of your data, the service only aims to make it easier to use Klaus Code. Each model vendor has their own privacy policy though, and usually free models use your data for training, so keep that in mind.",
 	},
 	{
-		question: "How much does the Roo Code Cloud service cost?",
+		question: "How much does the Klaus Code Cloud service cost?",
 		answer: (
 			<>
 				Our{" "}
@@ -134,9 +134,9 @@ export default function ProviderPage() {
 			<section className="relative overflow-hidden py-16">
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="text-center">
-						<h1 className="text-4xl md:text-5xl font-bold tracking-tight">The Roo Code Router</h1>
+						<h1 className="text-4xl md:text-5xl font-bold tracking-tight">The Klaus Code Router</h1>
 						<p className="mx-auto mt-4 max-w-3xl md:text-lg text-muted-foreground">
-							The easiest way to use Roo Code (in the{" "}
+							The easiest way to use Klaus Code (in the{" "}
 							<Link href="/cloud" className="underline hover:no-underline">
 								<Cloud className="inline size-5 mx-1 -mt-0.5" />
 								Cloud

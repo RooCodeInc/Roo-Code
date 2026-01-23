@@ -1,6 +1,6 @@
 # CLI Agent Loop
 
-This document explains how the Roo Code CLI detects and tracks the agent loop state.
+This document explains how the Klaus Code CLI detects and tracks the agent loop state.
 
 ## Overview
 

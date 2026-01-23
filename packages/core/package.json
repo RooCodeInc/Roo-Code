@@ -1,6 +1,6 @@
 {
 	"name": "@roo-code/core",
-	"description": "Platform agnostic core functionality for Roo Code.",
+	"description": "Platform agnostic core functionality for Klaus Code.",
 	"version": "0.0.0",
 	"type": "module",
 	"exports": {

@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "完成",
-	"description": "Git worktrees 讓你能在不同目錄中同時處理多個分支。每個 worktree 都會有一個搭配 Roo Code 的獨立 VS Code 視窗。",
+	"description": "Git worktrees 讓你能在不同目錄中同時處理多個分支。每個 worktree 都會有一個搭配 Klaus Code 的獨立 VS Code 視窗。",
 
 	"notGitRepo": "此工作區不是 Git 儲存庫。worktrees 需要 Git 儲存庫才能運作。",
 	"multiRootNotSupported": "多根工作區不支援 worktrees。請開啟單一資料夾以使用 worktrees。",

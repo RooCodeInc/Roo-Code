@@ -8,7 +8,7 @@ const program = new Command()
 
 program
 	.name("roo")
-	.description("Roo Code CLI - starts an interactive session by default, use -p/--print for non-interactive output")
+	.description("Klaus Code CLI - starts an interactive session by default, use -p/--print for non-interactive output")
 	.version(VERSION)
 
 program
@@ -37,11 +37,11 @@ program
 	)
 	.action(run)
 
-const authCommand = program.command("auth").description("Manage authentication for Roo Code Cloud")
+const authCommand = program.command("auth").description("Manage authentication for Klaus Code Cloud")
 
 authCommand
 	.command("login")
-	.description("Authenticate with Roo Code Cloud")
+	.description("Authenticate with Klaus Code Cloud")
 	.option("-v, --verbose", "Enable verbose output", false)
 	.action(async (options: { verbose: boolean }) => {
 		const result = await login({ verbose: options.verbose })
@@ -50,7 +50,7 @@ authCommand
 
 authCommand
 	.command("logout")
-	.description("Log out from Roo Code Cloud")
+	.description("Log out from Klaus Code Cloud")
 	.option("-v, --verbose", "Enable verbose output", false)
 	.action(async (options: { verbose: boolean }) => {
 		const result = await logout({ verbose: options.verbose })

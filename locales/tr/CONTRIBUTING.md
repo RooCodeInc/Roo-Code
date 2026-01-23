@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# Roo Code'a Katkıda Bulunma
+# Klaus Code'a Katkıda Bulunma
 
-Roo Code topluluk tarafından yürütülen bir projedir ve her katkıyı derinden takdir ediyoruz. İşbirliğini kolaylaştırmak için [Önce Sorun Yaklaşımı](#önce-sorun-yaklaşımı) temelinde çalışıyoruz, bu da tüm [Çekme İsteklerinin (PR'ler)](#bir-çekme-isteği-gönderme) önce bir GitHub Sorununa bağlanması gerektiği anlamına gelir. Lütfen bu kılavuzu dikkatlice inceleyin.
+Klaus Code topluluk tarafından yürütülen bir projedir ve her katkıyı derinden takdir ediyoruz. İşbirliğini kolaylaştırmak için [Önce Sorun Yaklaşımı](#önce-sorun-yaklaşımı) temelinde çalışıyoruz, bu da tüm [Çekme İsteklerinin (PR'ler)](#bir-çekme-isteği-gönderme) önce bir GitHub Sorununa bağlanması gerektiği anlamına gelir. Lütfen bu kılavuzu dikkatlice inceleyin.
 
 ## İçindekiler
 
@@ -52,7 +52,7 @@ Yol haritamız projenin yönünü belirler. Katkılarınızı bu temel hedeflerl
 
 PR'lerinizde bu alanlarla uyumu belirtin.
 
-### 3. Roo Code Topluluğuna Katılın
+### 3. Klaus Code Topluluğuna Katılın
 
 - **Birincil:** [Discord](https://discord.gg/roocode) sunucumuza katılın ve **Hannes Rudolph (`hrudolph`)**'a DM gönderin.
 - **Alternatif:** Deneyimli katkıda bulunanlar doğrudan [GitHub Projeleri](https://github.com/orgs/RooCodeInc/projects/1) aracılığıyla etkileşimde bulunabilirler.
@@ -79,7 +79,7 @@ Tüm katkılar, basit şablonlarımızı kullanarak bir GitHub Sorunu ile başla
 ### Ne Üzerinde Çalışılacağına Karar Verme
 
 - "Sorun [Atanmamış]" sorunları için [GitHub Projesi](https://github.com/orgs/RooCodeInc/projects/1)'ni kontrol edin.
-- Belgeler için [Roo Code Belgeleri](https://github.com/RooCodeInc/Roo-Code-Docs)ni ziyaret edin.
+- Belgeler için [Klaus Code Belgeleri](https://github.com/RooCodeInc/Roo-Code-Docs)ni ziyaret edin.
 
 ### Hataları Bildirme
 
@@ -87,7 +87,7 @@ Tüm katkılar, basit şablonlarımızı kullanarak bir GitHub Sorunu ile başla
 - Aşağıdakilerle ["Hata Raporu" şablonunu](https://github.com/RooCodeInc/Roo-Code/issues/new/choose) kullanarak yeni bir hata oluşturun:
     - Açık, numaralandırılmış yeniden oluşturma adımları
     - Beklenen vs gerçek sonuç
-    - Roo Code sürümü (gerekli); ilgiliyse API sağlayıcısı/modeli
+    - Klaus Code sürümü (gerekli); ilgiliyse API sağlayıcısı/modeli
 - **Güvenlik sorunları**: [Güvenlik tavsiyeleri](https://github.com/RooCodeInc/Roo-Code/security/advisories/new) aracılığıyla özel olarak bildirin.
 
 ## Geliştirme ve Gönderme Süreci
@@ -138,4 +138,4 @@ pnpm install
 
 ## Yasal
 
-Katkıda bulunarak, katkılarınızın Roo Code'un lisanslamasıyla tutarlı olan Apache 2.0 Lisansı altında lisanslanacağını kabul etmiş olursunuz.
+Katkıda bulunarak, katkılarınızın Klaus Code'un lisanslamasıyla tutarlı olan Apache 2.0 Lisansı altında lisanslanacağını kabul etmiş olursunuz.

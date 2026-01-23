@@ -32,7 +32,7 @@ function Header({
 	const { columns } = useTerminalSize()
 
 	const homeDir = process.env.HOME || process.env.USERPROFILE || ""
-	const title = `Roo Code CLI v${version}`
+	const title = `Klaus Code CLI v${version}`
 	const remainingDashes = Math.max(0, columns - `── ${title} `.length)
 
 	return (

@@ -13,13 +13,13 @@ import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const OG_TITLE = "Meet Roo Code"
+const OG_TITLE = "Meet Klaus Code"
 const OG_DESCRIPTION = "Your AI Software Engineering Team in the IDE and the Cloud."
 
 export const metadata: Metadata = {
 	metadataBase: new URL(SEO.url),
 	title: {
-		template: "%s | Roo Code",
+		template: "%s | Klaus Code",
 		default: SEO.title,
 	},
 	description: SEO.description,

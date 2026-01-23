@@ -13,40 +13,40 @@
 		}
 	},
 	"landing": {
-		"greeting": "Welkom bij Roo Code!",
-		"introduction": "Met een reeks ingebouwde en uitbreidbare Modi laat Roo Code je plannen, ontwerpen, coderen, debuggen en je productiviteit verhogen als nooit tevoren.",
-		"accountMention": "Maak je Roo Code Cloud-account aan om te beginnen. Krijg krachtige modellen, webcontrole, analyses, ondersteuning en meer.",
+		"greeting": "Welkom bij Klaus Code!",
+		"introduction": "Met een reeks ingebouwde en uitbreidbare Modi laat Klaus Code je plannen, ontwerpen, coderen, debuggen en je productiviteit verhogen als nooit tevoren.",
+		"accountMention": "Maak je Klaus Code Cloud-account aan om te beginnen. Krijg krachtige modellen, webcontrole, analyses, ondersteuning en meer.",
 		"getStarted": "Roo-account aanmaken",
 		"noAccount": "of gebruik zonder account"
 	},
 	"providerSignup": {
 		"heading": "Kies je provider",
 		"chooseProvider": "Roo heeft een LLM-provider nodig om te werken. Kies er een om te beginnen, je kunt er later meer toevoegen.",
-		"rooCloudProvider": "Roo Code Router",
-		"rooCloudDescription": "De eenvoudigste manier om te beginnen is met de Roo Code Router: een zorgvuldig samengesteld mix van gratis en betaalde modellen tegen lage kosten.",
+		"rooCloudProvider": "Klaus Code Router",
+		"rooCloudDescription": "De eenvoudigste manier om te beginnen is met de Klaus Code Router: een zorgvuldig samengesteld mix van gratis en betaalde modellen tegen lage kosten.",
 		"learnMore": "Meer informatie",
 		"useAnotherProvider": "Provider van derden",
 		"useAnotherProviderDescription": "Voer een API-sleutel in en begin.",
 		"noApiKeys": "Wil je je niet bezighouden met API-sleutels en aparte accounts?",
-		"backToRoo": "Kies de Roo Code Router.",
+		"backToRoo": "Kies de Klaus Code Router.",
 		"goBack": "Terug",
 		"finish": "Klaar"
 	},
 	"waitingForCloud": {
-		"heading": "Aanmelden bij Roo Code Cloud...",
-		"description": "We brengen je naar je browser om je aan te melden voor Roo Code Cloud. Dan brengen we je hierheen terug om af te ronden.",
+		"heading": "Aanmelden bij Klaus Code Cloud...",
+		"description": "We brengen je naar je browser om je aan te melden voor Klaus Code Cloud. Dan brengen we je hierheen terug om af te ronden.",
 		"noPrompt": "Als je niet wordt gevraagd een URL te openen, <clickHere>klik dan hier</clickHere>.",
 		"havingTrouble": "Als je de registratie hebt voltooid maar problemen ondervindt, <clickHere>klik dan hier</clickHere>.",
 		"pasteUrl": "Plak de callback-URL uit je browser:",
 		"docsLink": "Werkt het niet? <DocsLink>Raadpleeg de documentatie</DocsLink>.",
-		"invalidURL": "Dit ziet er niet uit als een geldige callback-URL. Kopieer alstublieft wat Roo Code Cloud in je browser weergeeft.",
+		"invalidURL": "Dit ziet er niet uit als een geldige callback-URL. Kopieer alstublieft wat Klaus Code Cloud in je browser weergeeft.",
 		"goBack": "Terug"
 	},
 	"startRouter": "We raden aan een LLM-router te gebruiken:",
 	"startCustom": "Of je kunt je eigen API-sleutel meebrengen:",
 	"telemetry": {
-		"helpImprove": "Help Roo Code te verbeteren",
-		"helpImproveMessage": "Roo Code verzamelt fout- en gebruiksgegevens om ons te helpen bugs op te lossen en de extensie te verbeteren. Deze telemetrie verzamelt geen code, prompts of persoonlijke informatie. Je kunt dit in <settingsLink>instellingen</settingsLink> uitschakelen."
+		"helpImprove": "Help Klaus Code te verbeteren",
+		"helpImproveMessage": "Klaus Code verzamelt fout- en gebruiksgegevens om ons te helpen bugs op te lossen en de extensie te verbeteren. Deze telemetrie verzamelt geen code, prompts of persoonlijke informatie. Je kunt dit in <settingsLink>instellingen</settingsLink> uitschakelen."
 	},
 	"importSettings": "Instellingen importeren"
 }

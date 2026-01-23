@@ -115,7 +115,7 @@ export const ImageGenerationSettings = ({
 							onChange={(e: any) => handleProviderChange(e.target.value)}
 							className="w-full">
 							<VSCodeOption value="roo" className="py-2 px-3">
-								Roo Code Cloud
+								Klaus Code Cloud
 							</VSCodeOption>
 							<VSCodeOption value="openrouter" className="py-2 px-3">
 								OpenRouter

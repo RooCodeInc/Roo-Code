@@ -120,7 +120,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 				avatarClassName: "bg-[#2B2D31] text-[#F8F8F9] ring-1 ring-white/10",
 				kind: "human",
 				body: (
-					<span>We need to add a page to our Marketing site that highlights using Roo Code from Slack.</span>
+					<span>We need to add a page to our Marketing site that highlights using Klaus Code from Slack.</span>
 				),
 			},
 			{
@@ -133,7 +133,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 				body: (
 					<div className="space-y-2">
 						<div>
-							The documentation for using Roo Code from Slack is here:{" "}
+							The documentation for using Klaus Code from Slack is here:{" "}
 							<FakeLink className="hover:text-violet-200">
 								https://docs.roocode.com/roo-code-cloud/slack-integration
 							</FakeLink>
@@ -268,7 +268,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 				body: (
 					<div className="space-y-3">
 						<p>
-							I&apos;ve created a comprehensive implementation plan for the Roo Code Slack integration
+							I&apos;ve created a comprehensive implementation plan for the Klaus Code Slack integration
 							marketing page at{" "}
 							<code className="rounded bg-white/10 px-1.5 py-0.5 text-[12px] text-[#F8F8F9]">
 								plans/slack-marketing-page-plan.md
@@ -326,7 +326,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 				body: (
 					<div className="space-y-3">
 						<p>
-							I&apos;ve built the Roo Code Slack integration marketing page. Here&apos;s what was
+							I&apos;ve built the Klaus Code Slack integration marketing page. Here&apos;s what was
 							implemented:
 						</p>
 
@@ -462,7 +462,7 @@ export function SlackThreadDemo({ className }: SlackThreadDemoProps): JSX.Elemen
 		<div
 			className={cn("w-full max-w-[620px] h-[520px] sm:h-[560px]", className)}
 			role="img"
-			aria-label="Animated Slack thread showing Roo Code responding as @Roomote">
+			aria-label="Animated Slack thread showing Klaus Code responding as @Roomote">
 			<div
 				aria-hidden="true"
 				className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#1A1D21] shadow-2xl shadow-black/30">

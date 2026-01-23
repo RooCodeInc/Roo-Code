@@ -1,5 +1,5 @@
 #!/bin/bash
-# Roo Code CLI Release Script
+# Klaus Code CLI Release Script
 #
 # Usage:
 #   ./apps/cli/scripts/release.sh [options] [version]
@@ -568,7 +568,7 @@ EOF
     fi
     
     gh release create "$TAG" \
-        --title "Roo Code CLI v$VERSION" \
+        --title "Klaus Code CLI v$VERSION" \
         --notes "$RELEASE_NOTES" \
         --prerelease \
         --target "$COMMIT_SHA" \
@@ -667,7 +667,7 @@ main() {
     echo ""
     printf "${BLUE}${BOLD}"
     echo "  ╭─────────────────────────────────╮"
-    echo "  │   Roo Code CLI Release Script   │"
+    echo "  │   Klaus Code CLI Release Script   │"
     echo "  ╰─────────────────────────────────╯"
     printf "${NC}"
     

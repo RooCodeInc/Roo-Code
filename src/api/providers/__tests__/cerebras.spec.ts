@@ -13,7 +13,7 @@ vi.mock("../../i18n", () => ({
 vi.mock("../constants", () => ({
 	DEFAULT_HEADERS: {
 		"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
-		"X-Title": "Roo Code",
+		"X-Title": "Klaus Code",
 		"User-Agent": "RooCode/1.0.0",
 	},
 }))
@@ -103,7 +103,7 @@ describe("CerebrasHandler", () => {
 						"Content-Type": "application/json",
 						Authorization: "Bearer test-api-key",
 						"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
-						"X-Title": "Roo Code",
+						"X-Title": "Klaus Code",
 						"User-Agent": "RooCode/1.0.0",
 					}),
 				}),

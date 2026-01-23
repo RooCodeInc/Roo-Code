@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# Contribuir a Roo Code
+# Contribuir a Klaus Code
 
-Roo Code es un proyecto impulsado por la comunidad y valoramos profundamente cada contribución. Para agilizar la colaboración, operamos con un [enfoque de "primero la incidencia"](#enfoque-de-primero-la-incidencia), lo que significa que todas las [solicitudes de extracción (PR)](#envío-de-una-solicitud-de-extracción) deben estar primero vinculadas a una incidencia de GitHub. Por favor, revise esta guía detenidamente.
+Klaus Code es un proyecto impulsado por la comunidad y valoramos profundamente cada contribución. Para agilizar la colaboración, operamos con un [enfoque de "primero la incidencia"](#enfoque-de-primero-la-incidencia), lo que significa que todas las [solicitudes de extracción (PR)](#envío-de-una-solicitud-de-extracción) deben estar primero vinculadas a una incidencia de GitHub. Por favor, revise esta guía detenidamente.
 
 ## Tabla de contenidos
 
@@ -52,7 +52,7 @@ Nuestra hoja de ruta guía la dirección del proyecto. Alinee sus contribuciones
 
 Mencione la alineación con estas áreas en sus solicitudes de extracción.
 
-### 3. Únase a la comunidad de Roo Code
+### 3. Únase a la comunidad de Klaus Code
 
 - **Principal:** Únase a nuestro [Discord](https://discord.gg/roocode) y envíe un mensaje directo a **Hannes Rudolph (`hrudolph`)**.
 - **Alternativa:** Los colaboradores experimentados pueden participar directamente a través de [Proyectos de GitHub](https://github.com/orgs/RooCodeInc/projects/1).
@@ -79,7 +79,7 @@ Todas las contribuciones comienzan con una incidencia de GitHub utilizando nuest
 ### Decidir en qué trabajar
 
 - Consulte el [Proyecto de GitHub](https://github.com/orgs/RooCodeInc/projects/1) para ver las incidencias "Incidencia [Sin asignar]".
-- Para la documentación, visite [Documentos de Roo Code](https://github.com/RooCodeInc/Roo-Code-Docs).
+- Para la documentación, visite [Documentos de Klaus Code](https://github.com/RooCodeInc/Roo-Code-Docs).
 
 ### Informar de errores
 
@@ -87,7 +87,7 @@ Todas las contribuciones comienzan con una incidencia de GitHub utilizando nuest
 - Cree un nuevo error utilizando la [plantilla "Informe de error"](https://github.com/RooCodeInc/Roo-Code/issues/new/choose) con:
     - Pasos de reproducción claros y numerados
     - Resultado esperado vs. real
-    - Versión de Roo Code (obligatorio); proveedor/modelo de API si es relevante
+    - Versión de Klaus Code (obligatorio); proveedor/modelo de API si es relevante
 - **Problemas de seguridad**: informe de forma privada a través de [avisos de seguridad](https://github.com/RooCodeInc/Roo-Code/security/advisories/new).
 
 ## Proceso de desarrollo y envío
@@ -138,4 +138,4 @@ pnpm install
 
 ## Legal
 
-Al contribuir, acepta que sus contribuciones se licenciarán bajo la Licencia Apache 2.0, de acuerdo con la licencia de Roo Code.
+Al contribuir, acepta que sus contribuciones se licenciarán bajo la Licencia Apache 2.0, de acuerdo con la licencia de Klaus Code.

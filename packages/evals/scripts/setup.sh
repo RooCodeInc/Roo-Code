@@ -1,7 +1,7 @@
 #!/bin/bash
 
 build_extension() {
-  echo "🔨 Building the Roo Code extension..."
+  echo "🔨 Building the Klaus Code extension..."
   pnpm -w vsix -- --out ../bin/roo-code-$(git rev-parse --short HEAD).vsix || exit 1
   code --install-extension ../../bin/roo-code-$(git rev-parse --short HEAD).vsix || exit 1
 }
@@ -97,7 +97,7 @@ check_docker_services() {
 
 if [[ "$(uname -s)" != "Darwin" ]]; then
   echo "⚠️ Only macOS is currently supported."
-  echo "The Roo Code evals system can also be run with Docker on any platform."
+  echo "The Klaus Code evals system can also be run with Docker on any platform."
   echo "See https://github.com/RooCodeInc/Roo-Code/blob/main/packages/evals/README.md for instructions."
   exit 1
 fi
@@ -315,7 +315,7 @@ fi
 # Check and start Docker services before database operations
 check_docker_services
 
-echo -n "🗄️ Syncing Roo Code evals database... "
+echo -n "🗄️ Syncing Klaus Code evals database... "
 pnpm --filter @roo-code/evals db:push --force &>/dev/null || exit 1
 echo "✅ Done"
 
@@ -327,7 +327,7 @@ if ! grep -q "OPENROUTER_API_KEY" .env.local; then
 fi
 
 current_version=$(code --list-extensions --show-versions 2>/dev/null | grep roo)
-read -p "💻 Do you want to build a new version of the Roo Code extension? [currently $current_version] (y/N): " build_extension
+read -p "💻 Do you want to build a new version of the Klaus Code extension? [currently $current_version] (y/N): " build_extension
 
 if [[ "$build_extension" =~ ^[Yy]$ ]]; then
   build_extension

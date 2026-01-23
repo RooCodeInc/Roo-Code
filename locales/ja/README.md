@@ -9,7 +9,7 @@
   <em>すぐに助けを得る → <a href="https://discord.gg/roocode">Discordに参加</a> • 非同期を好む？ → <a href="https://www.reddit.com/r/RooCode/">r/RooCodeに参加</a></em>
 </p>
 
-# Roo Code
+# Klaus Code
 
 > あなたのエディタの中に、AIで強化された開発チームを
 
@@ -39,7 +39,7 @@
 
 ---
 
-## Roo Codeがあなたのためにできること
+## Klaus Codeがあなたのためにできること
 
 - 自然言語の記述からコードを生成
 - モードで適応：コード、アーキテクト、質問、デバッグ、カスタムモード
@@ -51,7 +51,7 @@
 
 ## モード
 
-Roo Codeは、あなたの働き方に合わせるように適応します。
+Klaus Codeは、あなたの働き方に合わせるように適応します。
 
 - コードモード：日常的なコーディング、編集、ファイル操作
 - アーキテクトモード：システム、仕様、移行の計画
@@ -68,7 +68,7 @@ Roo Codeは、あなたの働き方に合わせるように適応します。
 
 |                                                                                                                                                                              |                                                                                                                                                                          |                                                                                                                                                                                      |
 | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Roo Codeのインストール</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>プロファイルの設定</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>コードベースのインデックス作成</b> |
+| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Klaus Codeのインストール</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>プロファイルの設定</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>コードベースのインデックス作成</b> |
 |     <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>カスタムモード</b>     |  <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>チェックポイント</b>  |           <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>コンテキスト管理</b>           |
 
 </div>
@@ -78,7 +78,7 @@ Roo Codeは、あなたの働き方に合わせるように適応します。
 
 ## リソース
 
-- **[ドキュメント](https://docs.roocode.com):** Roo Codeのインストール、設定、習熟のための公式ガイド。
+- **[ドキュメント](https://docs.roocode.com):** Klaus Codeのインストール、設定、習熟のための公式ガイド。
 - **[YouTubeチャンネル](https://youtube.com/@roocodeyt?feature=shared):** チュートリアルを見て、実際の機能を確認できます。
 - **[Discordサーバー](https://discord.gg/roocode):** コミュニティに参加して、リアルタイムのヘルプやディスカッションに参加できます。
 - **[Redditコミュニティ](https://www.reddit.com/r/RooCode):** あなたの経験を共有し、他の人が何を構築しているかを見ることができます。
@@ -103,13 +103,13 @@ pnpm install
 
 3. **拡張機能を実行する**:
 
-Roo Code拡張機能を実行するにはいくつかの方法があります：
+Klaus Code拡張機能を実行するにはいくつかの方法があります：
 
 ### 開発モード (F5)
 
 アクティブな開発には、VSCodeの内蔵デバッグ機能を使用します：
 
-VSCodeで`F5`キーを押すか、**実行** → **デバッグの開始**に移動します。これにより、Roo Code拡張機能が実行されている新しいVSCodeウィンドウが開きます。
+VSCodeで`F5`キーを押すか、**実行** → **デバッグの開始**に移動します。これにより、Klaus Code拡張機能が実行されている新しいVSCodeウィンドウが開きます。
 
 - ウェブビューへの変更はすぐに表示されます。
 - コア拡張機能への変更も自動的にホットリロードされます。
@@ -157,7 +157,7 @@ VSIXパッケージを手動でインストールしたい場合：
 
 ## 免責事項
 
-**ご注意ください**：Roo Code, Inc.は、Roo Code、関連するサードパーティのツール、またはそれらから生じる出力に関連して提供または利用可能にされたコード、モデル、またはその他のツールに関して、いかなる表明も保証も行いません。お客様は、そのようなツール或いは出力の使用に関連する**すべてのリスク**を負うものとします。そのようなツールは**「現状のまま」**および**「利用可能な限り」**のベースで提供されます。そのようなリスクには、知的財産権の侵害、サイバー脆弱性または攻撃、バイアス、不正確さ、エラー、欠陥、ウイルス、ダウンタイム、財産の損失または損害、および/または人身傷害が含まれますが、これらに限定されません。お客様は、そのようなツールまたは出力の使用（合法性、適切性、およびその結果を含むがこれらに限定されない）について単独で責任を負います。
+**ご注意ください**：Klaus Code, Inc.は、Klaus Code、関連するサードパーティのツール、またはそれらから生じる出力に関連して提供または利用可能にされたコード、モデル、またはその他のツールに関して、いかなる表明も保証も行いません。お客様は、そのようなツール或いは出力の使用に関連する**すべてのリスク**を負うものとします。そのようなツールは**「現状のまま」**および**「利用可能な限り」**のベースで提供されます。そのようなリスクには、知的財産権の侵害、サイバー脆弱性または攻撃、バイアス、不正確さ、エラー、欠陥、ウイルス、ダウンタイム、財産の損失または損害、および/または人身傷害が含まれますが、これらに限定されません。お客様は、そのようなツールまたは出力の使用（合法性、適切性、およびその結果を含むがこれらに限定されない）について単独で責任を負います。
 
 ---
 
@@ -169,8 +169,8 @@ VSIXパッケージを手動でインストールしたい場合：
 
 ## ライセンス
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../../LICENSE)
+[Apache 2.0 © 2025 Klaus Code, Inc.](../../LICENSE)
 
 ---
 
-**Roo Codeをお楽しみください！** 手綱を短く持って使うか、自律的に歩き回らせるかにかかわらず、あなたが何を構築するか楽しみにしています。質問や機能のアイデアがあれば、私たちの[Redditコミュニティ](https://www.reddit.com/r/RooCode/)または[Discord](https://discord.gg/roocode)にお立ち寄りください。ハッピーコーディング！
+**Klaus Codeをお楽しみください！** 手綱を短く持って使うか、自律的に歩き回らせるかにかかわらず、あなたが何を構築するか楽しみにしています。質問や機能のアイデアがあれば、私たちの[Redditコミュニティ](https://www.reddit.com/r/RooCode/)または[Discord](https://discord.gg/roocode)にお立ち寄りください。ハッピーコーディング！

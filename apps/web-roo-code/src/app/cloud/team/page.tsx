@@ -21,7 +21,7 @@ import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 
-const TITLE = "Roo Code Cloud Team Plan"
+const TITLE = "Klaus Code Cloud Team Plan"
 const DESCRIPTION =
 	"Scale your development with team collaboration features. Centralized billing, shared configuration, team-wide analytics, and unified GitHub, Slack, and Linear integrations."
 const OG_DESCRIPTION = "Team collaboration for AI-powered development"
@@ -75,7 +75,7 @@ const keyBenefits = [
 	{
 		title: "Centralized Billing",
 		description:
-			"Single billing point for all team members using Cloud Agents and the Roo Code Router. No more API key management.",
+			"Single billing point for all team members using Cloud Agents and the Klaus Code Router. No more API key management.",
 		icon: DollarSign,
 	},
 	{
@@ -154,7 +154,7 @@ export default function CloudTeamPage() {
 				<AnimatedBackground />
 				<div className="container relative flex flex-col items-center h-full z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="text-center max-w-4xl mx-auto mb-12">
-						<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-6xl">Roo Code Cloud Team</h1>
+						<h1 className="text-4xl font-bold tracking-tight mb-6 md:text-6xl">Klaus Code Cloud Team</h1>
 						<h2 className="text-2xl font-bold tracking-tight mb-6 md:text-4xl">
 							Built for <span className="text-violet-500">AI-Forward Teams</span>
 						</h2>

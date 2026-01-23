@@ -9,7 +9,7 @@ import { RooCodeEventName, type ClineMessage } from "@roo-code/types"
 import { waitFor, sleep } from "../utils"
 import { setDefaultSuiteTimeout } from "../test-utils"
 
-suite.skip("Roo Code use_mcp_tool Tool", function () {
+suite.skip("Klaus Code use_mcp_tool Tool", function () {
 	setDefaultSuiteTimeout(this)
 
 	let tempDir: string
@@ -185,7 +185,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			}
 		}
 		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
-		await sleep(2000) // Wait for Roo Code to fully initialize
+		await sleep(2000) // Wait for Klaus Code to fully initialize
 
 		// Trigger MCP server detection by opening and modifying the file
 		console.log("Triggering MCP server detection by modifying the config file...")
@@ -194,7 +194,7 @@ suite.skip("Roo Code use_mcp_tool Tool", function () {
 			const document = await vscode.workspace.openTextDocument(mcpConfigUri)
 			const editor = await vscode.window.showTextDocument(document)
 
-			// Make a small modification to trigger the save event, without this Roo Code won't load the MCP server
+			// Make a small modification to trigger the save event, without this Klaus Code won't load the MCP server
 			const edit = new vscode.WorkspaceEdit()
 			const currentContent = document.getText()
 			const modifiedContent = currentContent.replace(

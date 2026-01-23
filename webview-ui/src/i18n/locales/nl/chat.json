@@ -1,5 +1,5 @@
 {
-	"greeting": "Welkom bij Roo Code",
+	"greeting": "Welkom bij Klaus Code",
 	"task": {
 		"title": "Taak",
 		"expand": "Taak uitvouwen",
@@ -21,11 +21,11 @@
 		"sharePublicly": "Openbaar delen",
 		"sharePubliclyDescription": "Iedereen met de link kan toegang krijgen",
 		"connectToCloud": "Verbind met Cloud",
-		"connectToCloudDescription": "Meld je aan bij Roo Code Cloud om taken te delen",
+		"connectToCloudDescription": "Meld je aan bij Klaus Code Cloud om taken te delen",
 		"sharingDisabledByOrganization": "Delen uitgeschakeld door organisatie",
 		"shareSuccessOrganization": "Organisatielink gekopieerd naar klembord",
 		"shareSuccessPublic": "Openbare link gekopieerd naar klembord",
-		"openInCloud": "Taak openen in Roo Code Cloud",
+		"openInCloud": "Taak openen in Klaus Code Cloud",
 		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen.",
 		"openApiHistory": "API-geschiedenis openen",
 		"openUiHistory": "UI-geschiedenis openen"
@@ -92,7 +92,7 @@
 	},
 	"enqueueMessage": "Bericht aan de wachtrij toevoegen (wordt verzonden nadat de huidige taak is voltooid)",
 	"scrollToBottom": "Scroll naar onderaan de chat",
-	"about": "Roo Code is een heel AI-ontwikkelteam in je editor.",
+	"about": "Klaus Code is een heel AI-ontwikkelteam in je editor.",
 	"docs": "Bekijk onze <DocsLink>documentatie</DocsLink> voor meer informatie.",
 	"onboarding": "Je takenlijst in deze werkruimte is leeg.",
 	"rooTips": {
@@ -149,7 +149,7 @@
 			"403": "Niet geautoriseerd. Je API-sleutel is geldig, maar de provider weigerde dit verzoek in te willigen.",
 			"429": "Te veel verzoeken. Je bent rate-gelimiteerd door de provider. Wacht alsjeblieft even voor je volgende API-aanroep.",
 			"500": "Provider-serverfout. Er is iets mis aan de kant van de provider, er is niets mis met je verzoek.",
-			"unknown": "Onbekende API-fout. Neem alsjeblieft contact op met Roo Code-ondersteuning.",
+			"unknown": "Onbekende API-fout. Neem alsjeblieft contact op met Klaus Code-ondersteuning.",
 			"connection": "Verbindingsfout. Zorg ervoor dat je een werkende internetverbinding hebt.",
 			"claudeCodeNotAuthenticated": "Je moet inloggen om Claude Code te gebruiken. Ga naar Instellingen en klik op \"Inloggen bij Claude Code\" om te authenticeren."
 		}
@@ -301,13 +301,13 @@
 		"triggerLabelAll": "BRRR"
 	},
 	"announcement": {
-		"title": "Roo Code {{version}} uitgebracht",
-		"support": "Steun Roo Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
+		"title": "Klaus Code {{version}} uitgebracht",
+		"support": "Steun Klaus Code door ons een ster te geven op <githubLink>GitHub</githubLink>.",
 		"stealthModel": {
-			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Roo Code Cloud.",
+			"feature": "<bold>Beperkt tijd GRATIS stealth model</bold> - Code Supernova: Nu geüpgraded met een <bold>1M token contextvenster</bold>! Een veelzijdig agentisch codeermodel dat beeldinvoer ondersteunt, beschikbaar via Klaus Code Cloud.",
 			"note": "(Opmerking: prompts en aanvullingen worden gelogd door de modelmaker en gebruikt om het model te verbeteren)",
-			"connectButton": "Verbinden met Roo Code Cloud",
-			"selectModel": "Selecteer <code>roo/code-supernova</code> van de Roo Code Cloud provider in Instellingen om te beginnen.",
+			"connectButton": "Verbinden met Klaus Code Cloud",
+			"selectModel": "Selecteer <code>roo/code-supernova</code> van de Klaus Code Cloud provider in Instellingen om te beginnen.",
 			"goToSettingsButton": "Ga naar Instellingen"
 		},
 		"release": {
@@ -401,7 +401,7 @@
 	"profileViolationWarning": "Het huidige profiel is niet compatibel met de instellingen van uw organisatie",
 	"shellIntegration": {
 		"title": "Waarschuwing commando-uitvoering",
-		"description": "Je commando wordt uitgevoerd zonder VSCode-terminal shell-integratie. Om deze waarschuwing te onderdrukken kun je shell-integratie uitschakelen in het gedeelte <strong>Terminal</strong> van de <settingsLink>Roo Code-instellingen</settingsLink> of de VSCode-terminalintegratie oplossen via de onderstaande link.",
+		"description": "Je commando wordt uitgevoerd zonder VSCode-terminal shell-integratie. Om deze waarschuwing te onderdrukken kun je shell-integratie uitschakelen in het gedeelte <strong>Terminal</strong> van de <settingsLink>Klaus Code-instellingen</settingsLink> of de VSCode-terminalintegratie oplossen via de onderstaande link.",
 		"troubleshooting": "Klik hier voor shell-integratie documentatie."
 	},
 	"ask": {
@@ -442,7 +442,7 @@
 		"ariaLabel": "Versie {{version}} - Klik om release notes te bekijken"
 	},
 	"rooCloudCTA": {
-		"title": "Roo Code Cloud evolueert!",
+		"title": "Klaus Code Cloud evolueert!",
 		"description": "Voer externe agenten uit in de cloud, krijg overal toegang tot je taken, werk samen met anderen en nog veel meer.",
 		"joinWaitlist": "Meld je aan om de laatste updates te ontvangen."
 	},

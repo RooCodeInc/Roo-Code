@@ -59,7 +59,7 @@ interface ImagesApiOptions {
 }
 
 /**
- * Shared image generation implementation for OpenRouter and Roo Code Cloud providers
+ * Shared image generation implementation for OpenRouter and Klaus Code Cloud providers
  */
 export async function generateImageWithProvider(options: ImageGenerationOptions): Promise<ImageGenerationResult> {
 	const { baseURL, authToken, model, prompt, inputImage } = options
@@ -71,7 +71,7 @@ export async function generateImageWithProvider(options: ImageGenerationOptions)
 				Authorization: `Bearer ${authToken}`,
 				"Content-Type": "application/json",
 				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Code",
-				"X-Title": "Roo Code",
+				"X-Title": "Klaus Code",
 			},
 			body: JSON.stringify({
 				model,
@@ -217,7 +217,7 @@ export async function generateImageWithImagesApi(options: ImagesApiOptions): Pro
 				Authorization: `Bearer ${authToken}`,
 				"Content-Type": "application/json",
 				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Code",
-				"X-Title": "Roo Code",
+				"X-Title": "Klaus Code",
 			},
 			body: JSON.stringify(requestBody),
 		}

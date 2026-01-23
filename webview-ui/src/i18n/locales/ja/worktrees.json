@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "完了",
-	"description": "Git worktrees を使うと、別々のディレクトリで複数のブランチを同時に作業できます。各 worktree には Roo Code 付きの VS Code ウィンドウが割り当てられます。",
+	"description": "Git worktrees を使うと、別々のディレクトリで複数のブランチを同時に作業できます。各 worktree には Klaus Code 付きの VS Code ウィンドウが割り当てられます。",
 
 	"notGitRepo": "このワークスペースは Git リポジトリではありません。worktrees を使うには Git リポジトリが必要です。",
 	"multiRootNotSupported": "マルチルートのワークスペースでは worktrees はサポートされていません。worktrees を使うには単一のフォルダーを開いてください。",

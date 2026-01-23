@@ -1,6 +1,6 @@
 {
 	"extension": {
-		"name": "Roo Code",
+		"name": "Klaus Code",
 		"description": "Un equipo completo de desarrolladores con IA en tu editor."
 	},
 	"number_format": {
@@ -121,7 +121,7 @@
 			"completionError": "Error de finalización de Cerebras: {{error}}"
 		},
 		"roo": {
-			"authenticationRequired": "El proveedor Roo requiere autenticación en la nube. Por favor, inicia sesión en Roo Code Cloud."
+			"authenticationRequired": "El proveedor Roo requiere autenticación en la nube. Por favor, inicia sesión en Klaus Code Cloud."
 		},
 		"api": {
 			"invalidKeyInvalidChars": "La clave API contiene caracteres inválidos.",
@@ -234,8 +234,8 @@
 	},
 	"mdm": {
 		"errors": {
-			"cloud_auth_required": "Tu organización requiere autenticación de Roo Code Cloud. Por favor, inicia sesión para continuar.",
-			"organization_mismatch": "Debes estar autenticado con la cuenta de Roo Code Cloud de tu organización.",
+			"cloud_auth_required": "Tu organización requiere autenticación de Klaus Code Cloud. Por favor, inicia sesión para continuar.",
+			"organization_mismatch": "Debes estar autenticado con la cuenta de Klaus Code Cloud de tu organización.",
 			"verification_failed": "No se pudo verificar la autenticación de la organización."
 		},
 		"info": {

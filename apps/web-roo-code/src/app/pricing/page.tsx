@@ -8,9 +8,9 @@ import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { EXTERNAL_LINKS } from "@/lib/constants"
 
-const TITLE = "Roo Code Pricing"
+const TITLE = "Klaus Code Pricing"
 const DESCRIPTION =
-	"Simple, transparent pricing for all Roo Code products. The VS Code extension is free forever. Choose the cloud plan that fits your needs."
+	"Simple, transparent pricing for all Klaus Code products. The VS Code extension is free forever. Choose the cloud plan that fits your needs."
 const OG_DESCRIPTION = ""
 const PATH = "/pricing"
 
@@ -98,7 +98,7 @@ const pricingTiers: PricingTier[] = [
 		featuresIntro: "Go beyond the extension with",
 		features: [
 			"Access to Cloud Agents: fully autonomous development you can kick off from Github and the web",
-			"Access to the Roo Code Router",
+			"Access to the Klaus Code Router",
 			"Follow your tasks from anywhere",
 			"Share tasks with friends and co-workers",
 			"Token usage analytics",
@@ -142,9 +142,9 @@ export default function PricingPage() {
 			<section className="relative overflow-hidden pt-12 pb-10">
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="text-center">
-						<h1 className="text-5xl font-bold tracking-tight">Roo Code Pricing</h1>
+						<h1 className="text-5xl font-bold tracking-tight">Klaus Code Pricing</h1>
 						<p className="mt-4 text-lg text-muted-foreground">
-							For all of our products: the Roo Code VS Code Extension, Roo Code Cloud and the Roo Code
+							For all of our products: the Klaus Code VS Code Extension, Klaus Code Cloud and the Klaus Code
 							Router.
 						</p>
 					</div>
@@ -235,10 +235,10 @@ export default function PricingPage() {
 
 					<div className="max-w-6xl mx-auto mt-8 p-7 flex flex-col md:flex-row gap-8 md:gap-4 bg-violet-200/20 outline-violet-700/20 outline outline-1 rounded-2xl transition-all shadow-none">
 						<div className="md:border-r md:pr-4">
-							<h3 className="text-lg font-medium mb-1">Roo Code Router</h3>
+							<h3 className="text-lg font-medium mb-1">Klaus Code Router</h3>
 							<div className="text-sm text-muted-foreground">
 								<p className="">
-									On any plan, you can use your own LLM provider API key or use the built-in Roo Code
+									On any plan, you can use your own LLM provider API key or use the built-in Klaus Code
 									Router – curated models to work with Roo with no markup, including the latest
 									Gemini, GPT and Claude. Paid with credits.
 									<Link href="/provider" className="underline hover:no-underline ml-1">
@@ -266,9 +266,9 @@ export default function PricingPage() {
 					</div>
 					<div className="mx-auto mt-12 grid max-w-5xl gap-8 md:grid-cols-2">
 						<div className="rounded-xl border border-border bg-card p-6">
-							<h3 className="font-semibold">Wait, is Roo Code free or not?</h3>
+							<h3 className="font-semibold">Wait, is Klaus Code free or not?</h3>
 							<p className="mt-2 text-sm text-muted-foreground">
-								Yes! The Roo Code VS Code extension is open source and free forever. The extension acts
+								Yes! The Klaus Code VS Code extension is open source and free forever. The extension acts
 								as a powerful AI coding assistant right in your editor. These are the prices for Roo
 								Code Cloud.
 							</p>
@@ -285,7 +285,7 @@ export default function PricingPage() {
 						<div className="rounded-xl border border-border bg-card p-6">
 							<h3 className="font-semibold">How do credits work?</h3>
 							<p className="mt-2 text-sm text-muted-foreground">
-								Roo Code Cloud credits can be used in two ways:
+								Klaus Code Cloud credits can be used in two ways:
 							</p>
 							<ul className="mt-2 list-disc pl-5 text-sm text-muted-foreground">
 								<li>To pay for Cloud Agents running time (${PRICE_CREDITS}/hour)</li>
@@ -370,7 +370,7 @@ export default function PricingPage() {
 			<section className="py-20">
 				<div className="container mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="mx-auto max-w-4xl rounded-3xl border border-border/50 bg-gradient-to-br from-blue-500/5 via-cyan-500/5 to-purple-500/5 p-8 text-center shadow-2xl backdrop-blur-xl dark:border-white/20 dark:bg-gradient-to-br dark:from-gray-800 dark:via-gray-900 dark:to-black sm:p-12">
-						<h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Try Roo Code Cloud now</h2>
+						<h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">Try Klaus Code Cloud now</h2>
 						<p className="mx-auto mb-8 max-w-2xl text-lg text-muted-foreground">Code from anywhere.</p>
 						<div className="flex flex-col justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
 							<Button

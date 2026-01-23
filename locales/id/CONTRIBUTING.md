@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# Berkontribusi pada Roo Code
+# Berkontribusi pada Klaus Code
 
-Roo Code adalah proyek yang digerakkan oleh komunitas, dan kami sangat menghargai setiap kontribusi. Untuk menyederhanakan kolaborasi, kami beroperasi dengan dasar [Pendekatan Masalah-Dulu](#pendekatan-masalah-dulu), yang berarti semua [Pull Request (PR)](#mengajukan-pull-request) harus terlebih dahulu ditautkan ke Masalah GitHub. Harap tinjau panduan ini dengan cermat.
+Klaus Code adalah proyek yang digerakkan oleh komunitas, dan kami sangat menghargai setiap kontribusi. Untuk menyederhanakan kolaborasi, kami beroperasi dengan dasar [Pendekatan Masalah-Dulu](#pendekatan-masalah-dulu), yang berarti semua [Pull Request (PR)](#mengajukan-pull-request) harus terlebih dahulu ditautkan ke Masalah GitHub. Harap tinjau panduan ini dengan cermat.
 
 ## Daftar Isi
 
@@ -52,7 +52,7 @@ Peta jalan kami memandu arah proyek. Sejajarkan kontribusi Anda dengan tujuan-tu
 
 Sebutkan keselarasan dengan area-area ini di PR Anda.
 
-### 3. Bergabunglah dengan Komunitas Roo Code
+### 3. Bergabunglah dengan Komunitas Klaus Code
 
 - **Utama:** Bergabunglah dengan [Discord](https://discord.gg/roocode) kami dan kirim DM ke **Hannes Rudolph (`hrudolph`)**.
 - **Alternatif:** Kontributor berpengalaman dapat terlibat langsung melalui [Proyek GitHub](https://github.com/orgs/RooCodeInc/projects/1).
@@ -79,7 +79,7 @@ Semua kontribusi dimulai dengan Masalah GitHub menggunakan template ramping kami
 ### Memutuskan Apa yang Akan Dikerjakan
 
 - Periksa [Proyek GitHub](https://github.com/orgs/RooCodeInc/projects/1) untuk masalah "Masalah [Belum Ditugaskan]".
-- Untuk dokumentasi, kunjungi [Dokumentasi Roo Code](https://github.com/RooCodeInc/Roo-Code-Docs).
+- Untuk dokumentasi, kunjungi [Dokumentasi Klaus Code](https://github.com/RooCodeInc/Roo-Code-Docs).
 
 ### Melaporkan Bug
 
@@ -87,7 +87,7 @@ Semua kontribusi dimulai dengan Masalah GitHub menggunakan template ramping kami
 - Buat bug baru menggunakan [template "Laporan Bug"](https://github.com/RooCodeInc/Roo-Code/issues/new/choose) dengan:
     - Langkah-langkah reproduksi yang jelas dan bernomor
     - Hasil yang diharapkan vs aktual
-    - Versi Roo Code (wajib); penyedia/model API jika relevan
+    - Versi Klaus Code (wajib); penyedia/model API jika relevan
 - **Masalah keamanan**: Laporkan secara pribadi melalui [saran keamanan](https://github.com/RooCodeInc/Roo-Code/security/advisories/new).
 
 ## Proses Pengembangan & Pengajuan
@@ -138,4 +138,4 @@ pnpm install
 
 ## Hukum
 
-Dengan berkontribusi, Anda setuju bahwa kontribusi Anda akan dilisensikan di bawah Lisensi Apache 2.0, sesuai dengan lisensi Roo Code.
+Dengan berkontribusi, Anda setuju bahwa kontribusi Anda akan dilisensikan di bawah Lisensi Apache 2.0, sesuai dengan lisensi Klaus Code.

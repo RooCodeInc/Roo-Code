@@ -1,3 +1,31 @@
+# Klaus Code
+
+> A fork of [Roo Code](https://github.com/RooCodeInc/Roo-Code) that preserves the Claude Code provider feature.
+
+## Fork Notice
+
+This is **Klaus Code**, a community fork of Roo Code.
+
+### Why this fork exists
+
+Roo Code removed the Claude Code provider in [commit 7f854c0](https://github.com/RooCodeInc/Roo-Code/commit/7f854c0dd7ed25dac68a2310346708b4b64b48d9). This fork restores and maintains that feature, allowing users to authenticate with Claude Code OAuth tokens.
+
+### Key differences from upstream
+
+- **Claude Code Provider**: Restored and maintained
+- **Branding**: Renamed from "Roo Code" to "Klaus Code"
+
+### Original project
+
+- **Roo Code original link**: https://github.com/RooCodeInc/Roo-Code
+- **Roo Code documentation**: https://docs.roocode.com
+
+---
+
+## Below is the original content before fork:
+
+---
+
 <p align="center">
   <a href="https://marketplace.visualstudio.com/items?itemName=RooVeterinaryInc.roo-cline"><img src="https://img.shields.io/badge/VS_Code_Marketplace-007ACC?style=flat&logo=visualstudiocode&logoColor=white" alt="VS Code Marketplace"></a>
   <a href="https://x.com/roocode"><img src="https://img.shields.io/badge/roocode-000000?style=flat&logo=x&logoColor=white" alt="X"></a>
@@ -173,4 +201,4 @@ We love community contributions! Get started by reading our [CONTRIBUTING.md](CO
 
 ---
 
-**Enjoy Roo Code!** Whether you keep it on a short leash or let it roam autonomously, we can’t wait to see what you build. If you have questions or feature ideas, drop by our [Reddit community](https://www.reddit.com/r/RooCode/) or [Discord](https://discord.gg/roocode). Happy coding!
+**Enjoy Roo Code!** Whether you keep it on a short leash or let it roam autonomously, we can't wait to see what you build. If you have questions or feature ideas, drop by our [Reddit community](https://www.reddit.com/r/RooCode/) or [Discord](https://discord.gg/roocode). Happy coding!

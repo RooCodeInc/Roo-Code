@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Fet",
-	"description": "Els worktrees de Git et permeten treballar en diverses branques alhora en directoris separats. Cada worktree té la seva pròpia finestra de VS Code amb Roo Code.",
+	"description": "Els worktrees de Git et permeten treballar en diverses branques alhora en directoris separats. Cada worktree té la seva pròpia finestra de VS Code amb Klaus Code.",
 
 	"notGitRepo": "Aquest espai de treball no és un repositori Git. Els worktrees necessiten un repositori Git per funcionar.",
 	"multiRootNotSupported": "Els worktrees no són compatibles amb espais de treball de múltiples arrels. Obre una sola carpeta per fer servir worktrees.",

@@ -58,7 +58,7 @@
 		"contact": {
 			"label": "Cần nói chuyện với chúng tôi? Viết"
 		},
-		"community": "Muốn nhận mẹo hoặc chỉ muốn giao lưu với những người dùng Roo Code khác? Tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
+		"community": "Muốn nhận mẹo hoặc chỉ muốn giao lưu với những người dùng Klaus Code khác? Tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"contactAndCommunity": "Liên Hệ & Cộng Đồng",
 		"manageSettings": "Quản Lý Cài Đặt",
 		"debugMode": {
@@ -456,7 +456,7 @@
 			"draftModelDesc": "Mô hình nháp phải từ cùng một họ mô hình để giải mã suy đoán hoạt động chính xác.",
 			"selectDraftModel": "Chọn mô hình nháp",
 			"noModelsFound": "Không tìm thấy mô hình nháp nào. Vui lòng đảm bảo LM Studio đang chạy với chế độ máy chủ được bật.",
-			"description": "LM Studio cho phép bạn chạy các mô hình cục bộ trên máy tính của bạn. Để biết hướng dẫn về cách bắt đầu, xem <a>hướng dẫn nhanh</a> của họ. Bạn cũng sẽ cần khởi động tính năng <b>máy chủ cục bộ</b> của LM Studio để sử dụng nó với tiện ích mở rộng này. <span>Lưu ý:</span> Roo Code sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
+			"description": "LM Studio cho phép bạn chạy các mô hình cục bộ trên máy tính của bạn. Để biết hướng dẫn về cách bắt đầu, xem <a>hướng dẫn nhanh</a> của họ. Bạn cũng sẽ cần khởi động tính năng <b>máy chủ cục bộ</b> của LM Studio để sử dụng nó với tiện ích mở rộng này. <span>Lưu ý:</span> Klaus Code sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
 		},
 		"ollama": {
 			"baseUrl": "URL cơ sở (tùy chọn)",
@@ -466,15 +466,15 @@
 			"numCtx": "Kích thước cửa sổ ngữ cảnh (num_ctx)",
 			"numCtxHelp": "Ghi đè kích thước cửa sổ ngữ cảnh mặc định của mô hình. Để trống để sử dụng cấu hình Modelfile của mô hình. Giá trị tối thiểu là 128.",
 			"description": "Ollama cho phép bạn chạy các mô hình cục bộ trên máy tính của bạn. Để biết hướng dẫn về cách bắt đầu, xem hướng dẫn nhanh của họ.",
-			"warning": "Lưu ý: Roo Code sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
+			"warning": "Lưu ý: Klaus Code sử dụng các lời nhắc phức tạp và hoạt động tốt nhất với các mô hình Claude. Các mô hình kém mạnh hơn có thể không hoạt động như mong đợi."
 		},
 		"unboundApiKey": "Khóa API Unbound",
 		"getUnboundApiKey": "Lấy khóa API Unbound",
 		"unboundRefreshModelsSuccess": "Đã cập nhật danh sách mô hình! Bây giờ bạn có thể chọn từ các mô hình mới nhất.",
 		"unboundInvalidApiKey": "Khóa API không hợp lệ. Vui lòng kiểm tra khóa API của bạn và thử lại.",
 		"roo": {
-			"authenticatedMessage": "Đã xác thực an toàn thông qua tài khoản Roo Code Cloud của bạn.",
-			"connectButton": "Kết nối với Roo Code Cloud"
+			"authenticatedMessage": "Đã xác thực an toàn thông qua tài khoản Klaus Code Cloud của bạn.",
+			"connectButton": "Kết nối với Klaus Code Cloud"
 		},
 		"openRouter": {
 			"providerRouting": {
@@ -484,7 +484,7 @@
 			}
 		},
 		"customModel": {
-			"capabilities": "Cấu hình các khả năng và giá cả cho mô hình tương thích OpenAI tùy chỉnh của bạn. Hãy cẩn thận khi chỉ định khả năng của mô hình, vì chúng có thể ảnh hưởng đến cách Roo Code hoạt động.",
+			"capabilities": "Cấu hình các khả năng và giá cả cho mô hình tương thích OpenAI tùy chỉnh của bạn. Hãy cẩn thận khi chỉ định khả năng của mô hình, vì chúng có thể ảnh hưởng đến cách Klaus Code hoạt động.",
 			"maxTokens": {
 				"label": "Số token đầu ra tối đa",
 				"description": "Số lượng token tối đa mà mô hình có thể tạo ra trong một phản hồi. (Chỉ định -1 để cho phép máy chủ đặt số token tối đa.)"
@@ -901,7 +901,7 @@
 		}
 	},
 	"modelPicker": {
-		"automaticFetch": "Tiện ích mở rộng tự động lấy danh sách mới nhất các mô hình có sẵn trên <serviceLink>{{serviceName}}</serviceLink>. Nếu bạn không chắc chắn nên chọn mô hình nào, Roo Code hoạt động tốt nhất với <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Bạn cũng có thể thử tìm kiếm \"free\" cho các tùy chọn miễn phí hiện có.",
+		"automaticFetch": "Tiện ích mở rộng tự động lấy danh sách mới nhất các mô hình có sẵn trên <serviceLink>{{serviceName}}</serviceLink>. Nếu bạn không chắc chắn nên chọn mô hình nào, Klaus Code hoạt động tốt nhất với <defaultModelLink>{{defaultModelId}}</defaultModelLink>. Bạn cũng có thể thử tìm kiếm \"free\" cho các tùy chọn miễn phí hiện có.",
 		"label": "Mô hình",
 		"searchPlaceholder": "Tìm kiếm",
 		"noMatchFound": "Không tìm thấy kết quả",
@@ -912,7 +912,7 @@
 		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Cho phép báo cáo lỗi và sử dụng ẩn danh",
-			"description": "Giúp cải thiện Roo Code bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Telemetry này không thu thập mã, prompt hoặc thông tin cá nhân. Xem <privacyLink>chính sách bảo mật</privacyLink> của chúng tôi để biết thêm chi tiết. Bạn có thể tắt tính năng này bất cứ lúc nào."
+			"description": "Giúp cải thiện Klaus Code bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Telemetry này không thu thập mã, prompt hoặc thông tin cá nhân. Xem <privacyLink>chính sách bảo mật</privacyLink> của chúng tôi để biết thêm chi tiết. Bạn có thể tắt tính năng này bất cứ lúc nào."
 		},
 		"settings": {
 			"import": "Nhập",

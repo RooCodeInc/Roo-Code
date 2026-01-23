@@ -1,6 +1,6 @@
 {
 	"name": "@roo-code/build",
-	"description": "ESBuild utilities for Roo Code.",
+	"description": "ESBuild utilities for Klaus Code.",
 	"private": true,
 	"type": "module",
 	"main": "./dist/index.js",

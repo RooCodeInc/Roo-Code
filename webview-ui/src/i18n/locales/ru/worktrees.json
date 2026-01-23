@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Готово",
-	"description": "Git worktrees позволяют одновременно работать с несколькими ветками в отдельных каталогах. У каждого worktree есть своё окно VS Code с Roo Code.",
+	"description": "Git worktrees позволяют одновременно работать с несколькими ветками в отдельных каталогах. У каждого worktree есть своё окно VS Code с Klaus Code.",
 
 	"notGitRepo": "Этот workspace не является Git-репозиторием. Для работы worktrees нужен Git-репозиторий.",
 	"multiRootNotSupported": "Worktrees не поддерживаются в multi-root workspace. Открой один каталог, чтобы использовать worktrees.",

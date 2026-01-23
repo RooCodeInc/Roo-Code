@@ -13,7 +13,7 @@ export const content: AgentPageContent = {
 		icon: "Wrench",
 		heading: "State-of-the-art fixes for the comments on your PRs.",
 		paragraphs: [
-			"Roo Code's PR Fixer applies high-quality changes to your PRs, right from GitHub. Invoke via a PR comment and it will read the entire comment history to understand context, agreements, and tradeoffs — then implement the right fix.",
+			"Klaus Code's PR Fixer applies high-quality changes to your PRs, right from GitHub. Invoke via a PR comment and it will read the entire comment history to understand context, agreements, and tradeoffs — then implement the right fix.",
 			"As always, you bring the model key; we orchestrate smart, efficient workflows.",
 		],
 		image: {
@@ -65,7 +65,7 @@ export const content: AgentPageContent = {
 		],
 	},
 	whyBetter: {
-		heading: "Why Roo Code's PR Fixer is different",
+		heading: "Why Klaus Code's PR Fixer is different",
 		features: [
 			{
 				title: "Comment-history aware",
@@ -89,7 +89,7 @@ export const content: AgentPageContent = {
 	},
 	cta: {
 		heading: "Ship fixes, not follow-ups.",
-		description: "Let Roo Code's PR Fixer turn your review feedback into clean, ready-to-merge commits.",
+		description: "Let Klaus Code's PR Fixer turn your review feedback into clean, ready-to-merge commits.",
 		buttonText: "Try now for free",
 	},
 }

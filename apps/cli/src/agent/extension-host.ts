@@ -1,5 +1,5 @@
 /**
- * ExtensionHost - Loads and runs the Roo Code extension in CLI mode
+ * ExtensionHost - Loads and runs the Klaus Code extension in CLI mode
  *
  * This class is a thin coordination layer responsible for:
  * 1. Creating the vscode-shim mock

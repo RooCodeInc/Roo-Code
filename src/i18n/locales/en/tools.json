@@ -25,7 +25,7 @@
 		"invalidImageFormat": "Invalid image format received",
 		"unknownError": "Unknown error occurred",
 		"roo": {
-			"authRequired": "Roo Code Cloud authentication is required for image generation. Please sign in to Roo Code Cloud."
+			"authRequired": "Klaus Code Cloud authentication is required for image generation. Please sign in to Klaus Code Cloud."
 		}
 	}
 }

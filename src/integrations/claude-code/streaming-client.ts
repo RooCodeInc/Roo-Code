@@ -27,7 +27,7 @@ type ContentBlockWithType = { type: string }
  *
  * Uses an allowlist approach - only blocks with types in VALID_ANTHROPIC_BLOCK_TYPES are kept.
  * This automatically filters out:
- * - Internal "reasoning" blocks (Roo Code's internal representation) - NOT converted to "thinking"
+ * - Internal "reasoning" blocks (Klaus Code's internal representation) - NOT converted to "thinking"
  * - Gemini's "thoughtSignature" blocks
  * - Any other unknown block types
  *

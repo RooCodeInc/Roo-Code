@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# 为 Roo Code 做贡献
+# 为 Klaus Code 做贡献
 
-Roo Code 是一个由社区驱动的项目，我们非常重视每一份贡献。为了简化协作，我们采用 [“问题优先” 的方法](#问题优先方法)，这意味着所有的 [拉取请求 (PR)](#提交拉取请求) 都必须首先链接到一个 GitHub 问题。请仔细阅读本指南。
+Klaus Code 是一个由社区驱动的项目，我们非常重视每一份贡献。为了简化协作，我们采用 [“问题优先” 的方法](#问题优先方法)，这意味着所有的 [拉取请求 (PR)](#提交拉取请求) 都必须首先链接到一个 GitHub 问题。请仔细阅读本指南。
 
 ## 目录
 
@@ -52,7 +52,7 @@ Roo Code 是一个由社区驱动的项目，我们非常重视每一份贡献�
 
 在您的 PR 中提及与这些领域的一致性。
 
-### 3. 加入 Roo Code 社区
+### 3. 加入 Klaus Code 社区
 
 - **主要方式：** 加入我们的 [Discord](https://discord.gg/roocode) 并私信 **Hannes Rudolph (`hrudolph`)**。
 - **替代方式：** 经验丰富的贡献者可以通过 [GitHub 项目](https://github.com/orgs/RooCodeInc/projects/1) 直接参与。
@@ -79,7 +79,7 @@ Roo Code 是一个由社区驱动的项目，我们非常重视每一份贡献�
 ### 决定做什么
 
 - 查看 [GitHub 项目](https://github.com/orgs/RooCodeInc/projects/1) 中的“问题 [未分配]”问题。
-- 如需文档，请访问 [Roo Code 文档](https://github.com/RooCodeInc/Roo-Code-Docs)。
+- 如需文档，请访问 [Klaus Code 文档](https://github.com/RooCodeInc/Roo-Code-Docs)。
 
 ### 报告错误
 
@@ -87,7 +87,7 @@ Roo Code 是一个由社区驱动的项目，我们非常重视每一份贡献�
 - 使用 [“错误报告”模板](https://github.com/RooCodeInc/Roo-Code/issues/new/choose) 创建一个新错误，并提供：
     - 清晰、编号的复现步骤
     - 预期与实际结果
-    - Roo Code 版本（必需）；如果相关，还需提供 API 提供商/模型
+    - Klaus Code 版本（必需）；如果相关，还需提供 API 提供商/模型
 - **安全问题**：通过 [安全公告](https://github.com/RooCodeInc/Roo-Code/security/advisories/new) 私下报告。
 
 ## 开发和提交流程
@@ -138,4 +138,4 @@ pnpm install
 
 ## 法律
 
-通过贡献，您同意您的贡献将根据 Apache 2.0 许可证进行许可，这与 Roo Code 的许可一致。
+通过贡献，您同意您的贡献将根据 Apache 2.0 许可证进行许可，这与 Klaus Code 的许可一致。

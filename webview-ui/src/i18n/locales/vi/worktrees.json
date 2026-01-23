@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Xong",
-	"description": "Git worktrees cho phép bạn làm việc đồng thời trên nhiều nhánh trong các thư mục riêng. Mỗi worktree có một cửa sổ VS Code riêng với Roo Code.",
+	"description": "Git worktrees cho phép bạn làm việc đồng thời trên nhiều nhánh trong các thư mục riêng. Mỗi worktree có một cửa sổ VS Code riêng với Klaus Code.",
 
 	"notGitRepo": "Workspace này không phải là kho Git. Worktrees cần một kho Git để hoạt động.",
 	"multiRootNotSupported": "Worktrees không được hỗ trợ trong workspace đa gốc. Hãy mở một thư mục đơn để dùng worktrees.",

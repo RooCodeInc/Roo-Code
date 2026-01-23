@@ -1,5 +1,5 @@
 {
-	"name": "roo-code",
+	"name": "klaus-code",
 	"packageManager": "pnpm@10.8.1",
 	"engines": {
 		"node": "20.19.2"

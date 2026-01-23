@@ -1,6 +1,6 @@
 ---
 name: evals-context
-description: Provides context about the Roo Code evals system structure in this monorepo. Use when tasks mention "evals", "evaluation", "eval runs", "eval exercises", or working with the evals infrastructure. Helps distinguish between the evals execution system (packages/evals, apps/web-evals) and the public website evals display page (apps/web-roo-code/src/app/evals).
+description: Provides context about the Klaus Code evals system structure in this monorepo. Use when tasks mention "evals", "evaluation", "eval runs", "eval exercises", or working with the evals infrastructure. Helps distinguish between the evals execution system (packages/evals, apps/web-evals) and the public website evals display page (apps/web-roo-code/src/app/evals).
 ---
 
 # Evals Codebase Context
@@ -115,7 +115,7 @@ The evals system is a distributed evaluation platform that runs AI coding tasks 
 **Key components:**
 
 - **Controller**: Orchestrates eval runs, spawns runners, manages task queue (p-queue)
-- **Runner**: Isolated Docker container with VS Code + Roo Code extension + language runtimes
+- **Runner**: Isolated Docker container with VS Code + Klaus Code extension + language runtimes
 - **Redis**: Pub/sub for real-time events (NOT task queuing)
 - **PostgreSQL**: Stores runs, tasks, metrics
 

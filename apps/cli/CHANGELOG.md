@@ -33,12 +33,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Skip onboarding flow when a provider is explicitly specified via `--provider` flag or saved in settings
 - Unified permission flags: Combined `-y`, `--yes`, and `--dangerously-skip-permissions` into a single option for Claude Code-like CLI compatibility
-- Improved Roo Code Router authentication flow and error messaging
+- Improved Klaus Code Router authentication flow and error messaging
 
 ### Fixed
 
 - Removed unnecessary timeout that could cause issues with long-running tasks
-- Fixed authentication token validation for Roo Code Router provider
+- Fixed authentication token validation for Klaus Code Router provider
 
 ## [0.0.45] - 2026-01-08
 

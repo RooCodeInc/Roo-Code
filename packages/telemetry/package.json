@@ -1,6 +1,6 @@
 {
 	"name": "@roo-code/telemetry",
-	"description": "Roo Code telemetry service and clients.",
+	"description": "Klaus Code telemetry service and clients.",
 	"version": "0.0.0",
 	"type": "module",
 	"exports": "./src/index.ts",

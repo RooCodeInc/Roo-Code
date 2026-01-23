@@ -9,7 +9,7 @@
   <em>Obtén ayuda rápido → <a href="https://discord.gg/roocode">Únete a Discord</a> • ¿Prefieres asíncrono? → <a href="https://www.reddit.com/r/RooCode/">Únete a r/RooCode</a></em>
 </p>
 
-# Roo Code
+# Klaus Code
 
 > Tu equipo de desarrollo con IA, directamente en tu editor
 
@@ -39,7 +39,7 @@
 
 ---
 
-## ¿Qué puede hacer Roo Code por TI?
+## ¿Qué puede hacer Klaus Code por TI?
 
 - Generar código a partir de descripciones en lenguaje natural
 - Adaptarse con Modos: Código, Arquitecto, Pregunta, Depuración y Modos Personalizados
@@ -51,7 +51,7 @@
 
 ## Modos
 
-Roo Code se adapta a tu forma de trabajar, no al revés:
+Klaus Code se adapta a tu forma de trabajar, no al revés:
 
 - Modo Código: codificación diaria, ediciones y operaciones de archivos
 - Modo Arquitecto: planificar sistemas, especificaciones y migraciones
@@ -68,7 +68,7 @@ Más info: [Usar Modos](https://docs.roocode.com/basic-usage/using-modes) • [M
 
 |                                                                                                                                                                            |                                                                                                                                                                             |                                                                                                                                                                                       |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Instalando Roo Code</b>  | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Configurando perfiles</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indexación de la base de código</b> |
+| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Instalando Klaus Code</b>  | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Configurando perfiles</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Indexación de la base de código</b> |
 | <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Modos personalizados</b> |      <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Checkpoints</b>      |        <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Gestión de Contexto</b>         |
 
 </div>
@@ -78,7 +78,7 @@ Más info: [Usar Modos](https://docs.roocode.com/basic-usage/using-modes) • [M
 
 ## Recursos
 
-- **[Documentación](https://docs.roocode.com):** La guía oficial para instalar, configurar y dominar Roo Code.
+- **[Documentación](https://docs.roocode.com):** La guía oficial para instalar, configurar y dominar Klaus Code.
 - **[Canal de YouTube](https://youtube.com/@roocodeyt?feature=shared):** Mira tutoriales y ve las funcionalidades en acción.
 - **[Servidor de Discord](https://discord.gg/roocode):** Únete a la comunidad para obtener ayuda y discutir en tiempo real.
 - **[Comunidad de Reddit](https://www.reddit.com/r/RooCode):** Comparte tus experiencias y ve lo que otros están construyendo.
@@ -103,13 +103,13 @@ pnpm install
 
 3. **Ejecuta la extensión**:
 
-Hay varias formas de ejecutar la extensión Roo Code:
+Hay varias formas de ejecutar la extensión Klaus Code:
 
 ### Modo de desarrollo (F5)
 
 Para el desarrollo activo, utiliza la depuración integrada de VSCode:
 
-Presiona `F5` (o ve a **Ejecutar** → **Iniciar depuración**) en VSCode. Esto abrirá una nueva ventana de VSCode con la extensión Roo Code en ejecución.
+Presiona `F5` (o ve a **Ejecutar** → **Iniciar depuración**) en VSCode. Esto abrirá una nueva ventana de VSCode con la extensión Klaus Code en ejecución.
 
 - Los cambios en la vista web aparecerán inmediatamente.
 - Los cambios en la extensión principal también se recargarán automáticamente.
@@ -157,7 +157,7 @@ Usamos [changesets](https://github.com/changesets/changesets) para el versionado
 
 ## Aviso legal
 
-**Ten en cuenta** que Roo Code, Inc **no** hace ninguna representación o garantía con respecto a cualquier código, modelo u otras herramientas proporcionadas o puestas a disposición en relación con Roo Code, cualquier herramienta de terceros asociada, o cualquier resultado. Asumes **todos los riesgos** asociados con el uso de dichas herramientas o resultados; tales herramientas se proporcionan "**TAL CUAL**" y "**SEGÚN DISPONIBILIDAD**". Dichos riesgos pueden incluir, sin limitación, infracciones de propiedad intelectual, vulnerabilidades o ataques cibernéticos, sesgo, imprecisiones, errores, defectos, virus, tiempo de inactividad, pérdida o daño de propiedad y/o lesiones personales. Eres el único responsable de tu uso de dichas herramientas o resultados (incluidas, entre otras, la legalidad, idoneidad y resultados de los mismos).
+**Ten en cuenta** que Klaus Code, Inc **no** hace ninguna representación o garantía con respecto a cualquier código, modelo u otras herramientas proporcionadas o puestas a disposición en relación con Klaus Code, cualquier herramienta de terceros asociada, o cualquier resultado. Asumes **todos los riesgos** asociados con el uso de dichas herramientas o resultados; tales herramientas se proporcionan "**TAL CUAL**" y "**SEGÚN DISPONIBILIDAD**". Dichos riesgos pueden incluir, sin limitación, infracciones de propiedad intelectual, vulnerabilidades o ataques cibernéticos, sesgo, imprecisiones, errores, defectos, virus, tiempo de inactividad, pérdida o daño de propiedad y/o lesiones personales. Eres el único responsable de tu uso de dichas herramientas o resultados (incluidas, entre otras, la legalidad, idoneidad y resultados de los mismos).
 
 ---
 
@@ -169,8 +169,8 @@ Usamos [changesets](https://github.com/changesets/changesets) para el versionado
 
 ## Licencia
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../../LICENSE)
+[Apache 2.0 © 2025 Klaus Code, Inc.](../../LICENSE)
 
 ---
 
-**¡Disfruta de Roo Code!** Ya sea que lo mantengas con una correa corta o lo dejes deambular de forma autónoma, no podemos esperar a ver qué construyes. Si tienes preguntas o ideas sobre funcionalidades, pásate por nuestra [comunidad de Reddit](https://www.reddit.com/r/RooCode/) o [Discord](https://discord.gg/roocode). ¡Feliz codificación!
+**¡Disfruta de Klaus Code!** Ya sea que lo mantengas con una correa corta o lo dejes deambular de forma autónoma, no podemos esperar a ver qué construyes. Si tienes preguntas o ideas sobre funcionalidades, pásate por nuestra [comunidad de Reddit](https://www.reddit.com/r/RooCode/) o [Discord](https://discord.gg/roocode). ¡Feliz codificación!

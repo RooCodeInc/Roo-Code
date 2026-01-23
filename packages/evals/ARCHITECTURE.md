@@ -160,7 +160,7 @@ Both controller and runner containers use the same base image but serve differen
 #### Runner Container Features
 
 - **Multi-language Support**: Pre-installed runtimes for Go, Java, JavaScript, Python, and Rust
-- **Development Tools**: VS Code with language-specific extensions and Roo Code extension
+- **Development Tools**: VS Code with language-specific extensions and Klaus Code extension
 - **Containerization**: Docker-in-Docker capability for nested container execution
 - **Exercise Repository**: Git clone of evaluation exercises with test suites
 

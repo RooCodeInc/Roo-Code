@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Selesai",
-	"description": "Git worktrees memungkinkan kamu bekerja di beberapa branch sekaligus dalam direktori terpisah. Setiap worktree mendapatkan jendela VS Code sendiri dengan Roo Code.",
+	"description": "Git worktrees memungkinkan kamu bekerja di beberapa branch sekaligus dalam direktori terpisah. Setiap worktree mendapatkan jendela VS Code sendiri dengan Klaus Code.",
 
 	"notGitRepo": "Workspace ini bukan repository Git. Worktrees memerlukan repository Git untuk berfungsi.",
 	"multiRootNotSupported": "Worktrees tidak didukung di workspace multi-root. Buka satu folder untuk menggunakan worktrees.",

@@ -13,40 +13,40 @@
 		}
 	},
 	"landing": {
-		"greeting": "欢迎使用 Roo Code！",
-		"introduction": "通过一系列内置和可扩展的模式，Roo Code 让你能够以前所未有的方式进行规划、架构设计、编码、调试并提升工作效率。",
-		"accountMention": "开始使用，创建你的 Roo Code Cloud 账户。获得强大模型、网络控制、分析、支持等。",
+		"greeting": "欢迎使用 Klaus Code！",
+		"introduction": "通过一系列内置和可扩展的模式，Klaus Code 让你能够以前所未有的方式进行规划、架构设计、编码、调试并提升工作效率。",
+		"accountMention": "开始使用，创建你的 Klaus Code Cloud 账户。获得强大模型、网络控制、分析、支持等。",
 		"getStarted": "创建 Roo 账户",
 		"noAccount": "或不使用账户"
 	},
 	"providerSignup": {
 		"heading": "选择你的供应商",
 		"chooseProvider": "Roo 需要 LLM 提供商才能工作。选择一个开始使用，你可以稍后添加更多。",
-		"rooCloudProvider": "Roo Code Cloud 提供商",
-		"rooCloudDescription": "开始使用最简单的方式是使用 Roo Code Cloud 提供商：精心选择的免费和付费模型组合，价格低廉。",
+		"rooCloudProvider": "Klaus Code Cloud 提供商",
+		"rooCloudDescription": "开始使用最简单的方式是使用 Klaus Code Cloud 提供商：精心选择的免费和付费模型组合，价格低廉。",
 		"learnMore": "了解更多",
 		"useAnotherProvider": "第三方供应商",
 		"useAnotherProviderDescription": "输入 API 密钥开始使用。",
 		"noApiKeys": "不想处理 API 密钥和单独的账户？",
-		"backToRoo": "选择 Roo Code Cloud 提供商。",
+		"backToRoo": "选择 Klaus Code Cloud 提供商。",
 		"goBack": "返回",
 		"finish": "完成"
 	},
 	"waitingForCloud": {
-		"heading": "登录到 Roo Code Cloud...",
-		"description": "我们将带你前往浏览器注册 Roo Code Cloud。然后我们会把你带回这里以完成设置。",
+		"heading": "登录到 Klaus Code Cloud...",
+		"description": "我们将带你前往浏览器注册 Klaus Code Cloud。然后我们会把你带回这里以完成设置。",
 		"noPrompt": "如果没有提示你打开 URL，<clickHere>点击这里</clickHere>。",
 		"havingTrouble": "如果你已完成注册但遇到问题，<clickHere>点击这里</clickHere>。",
 		"pasteUrl": "粘贴浏览器中显示的回调 URL：",
 		"docsLink": "无法正常工作？<DocsLink>查看文档</DocsLink>。",
-		"invalidURL": "这不像是有效的回调 URL。请复制 Roo Code Cloud 在你的浏览器中显示的内容。",
+		"invalidURL": "这不像是有效的回调 URL。请复制 Klaus Code Cloud 在你的浏览器中显示的内容。",
 		"goBack": "返回"
 	},
 	"startRouter": "我们建议使用 LLM 路由器：",
 	"startCustom": "或者你可以带上自己的 API 密钥：",
 	"telemetry": {
-		"helpImprove": "帮助改进 Roo Code",
-		"helpImproveMessage": "Roo Code 收集错误和使用数据以帮助我们修复 Bug 并改进扩展。此遥测不收集代码、提示或个人信息。你可以在<settingsLink>设置</settingsLink>中将其关闭。"
+		"helpImprove": "帮助改进 Klaus Code",
+		"helpImproveMessage": "Klaus Code 收集错误和使用数据以帮助我们修复 Bug 并改进扩展。此遥测不收集代码、提示或个人信息。你可以在<settingsLink>设置</settingsLink>中将其关闭。"
 	},
 	"importSettings": "导入设置"
 }

@@ -2,7 +2,7 @@
  * Agent Loop State Detection
  *
  * This module provides the core logic for detecting the current state of the
- * Roo Code agent loop. The state is determined by analyzing the clineMessages
+ * Klaus Code agent loop. The state is determined by analyzing the clineMessages
  * array, specifically the last message's type and properties.
  *
  * Key insight: The agent loop stops whenever a message with `type: "ask"` arrives,

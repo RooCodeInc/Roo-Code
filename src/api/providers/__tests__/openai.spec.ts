@@ -112,7 +112,7 @@ describe("OpenAiHandler", () => {
 				apiKey: expect.any(String),
 				defaultHeaders: {
 					"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
-					"X-Title": "Roo Code",
+					"X-Title": "Klaus Code",
 					"User-Agent": `RooCode/${Package.version}`,
 				},
 				timeout: expect.any(Number),

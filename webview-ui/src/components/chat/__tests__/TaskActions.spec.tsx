@@ -40,11 +40,11 @@ vi.mock("react-i18next", () => ({
 				"chat:task.sharePublicly": "Share Publicly",
 				"chat:task.sharePubliclyDescription": "Anyone with the link can access",
 				"chat:task.connectToCloud": "Connect to Cloud",
-				"chat:task.connectToCloudDescription": "Sign in to Roo Code Cloud to share tasks",
+				"chat:task.connectToCloudDescription": "Sign in to Klaus Code Cloud to share tasks",
 				"chat:task.sharingDisabledByOrganization": "Sharing disabled by organization",
 				"chat:task.openApiHistory": "Open API History",
 				"chat:task.openUiHistory": "Open UI History",
-				"cloud:cloudBenefitsTitle": "Connect to Roo Code Cloud",
+				"cloud:cloudBenefitsTitle": "Connect to Klaus Code Cloud",
 				"cloud:cloudBenefitHistory": "Access your task history from anywhere",
 				"cloud:cloudBenefitSharing": "Share tasks with your team",
 				"cloud:cloudBenefitMetrics": "Track usage and costs",
@@ -200,7 +200,7 @@ describe("TaskActions", () => {
 			const shareButton = screen.getByTestId("share-button")
 			fireEvent.click(shareButton)
 
-			expect(screen.getByText("Connect to Roo Code Cloud")).toBeInTheDocument()
+			expect(screen.getByText("Connect to Klaus Code Cloud")).toBeInTheDocument()
 			expect(screen.getByText("Connect")).toBeInTheDocument()
 		})
 

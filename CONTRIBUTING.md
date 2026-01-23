@@ -11,9 +11,9 @@
 </sub>
 </div>
 
-# Contributing to Roo Code
+# Contributing to Klaus Code
 
-Roo Code is a community-driven project, and we deeply value every contribution. To streamline collaboration, we operate on an [Issue-First](#issue-first-approach) basis, meaning all [Pull Requests (PRs)](#submitting-a-pull-request) must first be linked to a GitHub Issue. Please review this guide carefully.
+Klaus Code is a community-driven project, and we deeply value every contribution. To streamline collaboration, we operate on an [Issue-First](#issue-first-approach) basis, meaning all [Pull Requests (PRs)](#submitting-a-pull-request) must first be linked to a GitHub Issue. Please review this guide carefully.
 
 ## Table of Contents
 
@@ -52,7 +52,7 @@ Our roadmap guides the project's direction. Align your contributions with these 
 
 Mention alignment with these areas in your PRs.
 
-### 3. Join the Roo Code Community
+### 3. Join the Klaus Code Community
 
 - **Primary:** Join our [Discord](https://discord.gg/roocode) and DM **Hannes Rudolph (`hrudolph`)**.
 - **Alternative:** Experienced contributors can engage directly via [GitHub Projects](https://github.com/orgs/RooCodeInc/projects/1).
@@ -79,7 +79,7 @@ All contributions start with a GitHub Issue using our skinny templates.
 ### Deciding What to Work On
 
 - Check the [GitHub Project](https://github.com/orgs/RooCodeInc/projects/1) for "Issue [Unassigned]" issues.
-- For docs, visit [Roo Code Docs](https://github.com/RooCodeInc/Roo-Code-Docs).
+- For docs, visit [Klaus Code Docs](https://github.com/RooCodeInc/Roo-Code-Docs).
 
 ### Reporting Bugs
 
@@ -87,7 +87,7 @@ All contributions start with a GitHub Issue using our skinny templates.
 - Create a new bug using the ["Bug Report" template](https://github.com/RooCodeInc/Roo-Code/issues/new/choose) with:
     - Clear, numbered reproduction steps
     - Expected vs actual result
-    - Roo Code version (required); API provider/model if relevant
+    - Klaus Code version (required); API provider/model if relevant
 - **Security issues**: Report privately via [security advisories](https://github.com/RooCodeInc/Roo-Code/security/advisories/new).
 
 ## Development & Submission Process
@@ -138,4 +138,4 @@ pnpm install
 
 ## Legal
 
-By contributing, you agree your contributions will be licensed under the Apache 2.0 License, consistent with Roo Code's licensing.
+By contributing, you agree your contributions will be licensed under the Apache 2.0 License, consistent with Klaus Code's licensing.

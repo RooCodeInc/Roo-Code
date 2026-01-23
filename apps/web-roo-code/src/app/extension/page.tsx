@@ -41,7 +41,7 @@ export default async function ExtensionPage() {
 									each task.
 								</p>
 								<p className="max-w-lg text-lg text-muted-foreground text-center md:text-left sm:mt-6">
-									Stop chasing this week&apos;s hot new model or CLI tool and go deep with Roo Code.
+									Stop chasing this week&apos;s hot new model or CLI tool and go deep with Klaus Code.
 								</p>
 							</div>
 							<div className="flex flex-col space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">

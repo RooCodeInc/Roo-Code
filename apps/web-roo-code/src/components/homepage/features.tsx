@@ -32,7 +32,7 @@ export const features: Feature[] = [
 		icon: ReplaceAll,
 		title: "Model-agnostic",
 		description:
-			"Use the Roo Code cloud Provider, bring your own provider key or even run local inference — no markup, lock-in, no restrictions.",
+			"Use the Klaus Code cloud Provider, bring your own provider key or even run local inference — no markup, lock-in, no restrictions.",
 		logos: ["Anthropic", "OpenAI", "Gemini", "Grok", "Qwen", "Kimi", "Mistral", "Ollama"],
 	},
 	{

@@ -9,7 +9,7 @@
   <em>Hızlı yardım alın → <a href="https://discord.gg/roocode">Discord'a Katılın</a> • Asenkron mu tercih edersiniz? → <a href="https://www.reddit.com/r/RooCode/">r/RooCode'a Katılın</a></em>
 </p>
 
-# Roo Code
+# Klaus Code
 
 > AI destekli dev ekibin, doğrudan editörünün içinde
 
@@ -39,7 +39,7 @@
 
 ---
 
-## Roo Code SİZİN İçin Ne Yapabilir?
+## Klaus Code SİZİN İçin Ne Yapabilir?
 
 - Doğal dil açıklamalarından kod üretin
 - Modlarla Uyum Sağlayın: Kod, Mimar, Sor, Hata Ayıkla ve Özel Modlar
@@ -51,7 +51,7 @@
 
 ## Modlar
 
-Roo Code, sizin çalışma şeklinize uyum sağlar, tam tersi değil:
+Klaus Code, sizin çalışma şeklinize uyum sağlar, tam tersi değil:
 
 - Kod Modu: günlük kodlama, düzenlemeler ve dosya işlemleri
 - Mimar Modu: sistemleri, özellikleri ve geçişleri planlayın
@@ -68,7 +68,7 @@ Daha fazla: [Modları kullanma](https://docs.roocode.com/basic-usage/using-modes
 
 |                                                                                                                                                                         |                                                                                                                                                                               |                                                                                                                                                                              |
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Roo Code Kurulumu</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Profilleri Yapılandırma</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Kod Tabanı İndeksleme</b>  |
+| <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>Klaus Code Kurulumu</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>Profilleri Yapılandırma</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>Kod Tabanı İndeksleme</b>  |
 |    <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>Özel Modlar</b>    |    <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>Kontrol Noktaları</b>    | <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>Bağlam Yönetimi</b> |
 
 </div>
@@ -78,7 +78,7 @@ Daha fazla: [Modları kullanma](https://docs.roocode.com/basic-usage/using-modes
 
 ## Kaynaklar
 
-- **[Dokümantasyon](https://docs.roocode.com):** Roo Code'u yükleme, yapılandırma ve ustalaşma konusundaki resmi kılavuz.
+- **[Dokümantasyon](https://docs.roocode.com):** Klaus Code'u yükleme, yapılandırma ve ustalaşma konusundaki resmi kılavuz.
 - **[YouTube Kanalı](https://youtube.com/@roocodeyt?feature=shared):** Eğitimleri izleyin ve özellikleri çalışırken görün.
 - **[Discord Sunucusu](https://discord.gg/roocode):** Gerçek zamanlı yardım ve tartışma için topluluğa katılın.
 - **[Reddit Topluluğu](https://www.reddit.com/r/RooCode):** Deneyimlerinizi paylaşın ve başkalarının ne inşa ettiğini görün.
@@ -103,13 +103,13 @@ pnpm install
 
 3. **Uzantıyı çalıştırın**:
 
-Roo Code uzantısını çalıştırmanın birkaç yolu vardır:
+Klaus Code uzantısını çalıştırmanın birkaç yolu vardır:
 
 ### Geliştirme Modu (F5)
 
 Aktif geliştirme için VSCode'un yerleşik hata ayıklama özelliğini kullanın:
 
-VSCode'da `F5` tuşuna basın (veya **Çalıştır** → **Hata Ayıklamayı Başlat**'a gidin). Bu, Roo Code uzantısının çalıştığı yeni bir VSCode penceresi açacaktır.
+VSCode'da `F5` tuşuna basın (veya **Çalıştır** → **Hata Ayıklamayı Başlat**'a gidin). Bu, Klaus Code uzantısının çalıştığı yeni bir VSCode penceresi açacaktır.
 
 - Web görünümündeki değişiklikler anında görünecektir.
 - Çekirdek uzantıdaki değişiklikler de otomatik olarak sıcak yeniden yüklenecektir.
@@ -157,7 +157,7 @@ Sürüm oluşturma ve yayınlama için [changesets](https://github.com/changeset
 
 ## Sorumluluk Reddi Beyanı
 
-**Lütfen dikkat** Roo Code, Inc., Roo Code ile bağlantılı olarak sağlanan veya kullanıma sunulan herhangi bir kod, model veya diğer araçlar, ilgili üçüncü taraf araçları veya ortaya çıkan çıktılarla ilgili olarak **hiçbir** beyanda bulunmaz veya garanti vermez. Bu tür araçların veya çıktıların kullanımıyla ilişkili **tüm riskleri** üstlenirsiniz; bu tür araçlar **"OLDUĞU GİBİ"** ve **"MEVCUT OLDUĞU GİBİ"** esasına göre sağlanır. Bu tür riskler, fikri mülkiyet ihlali, siber güvenlik açıkları veya saldırıları, önyargı, yanlışlıklar, hatalar, kusurlar, virüsler, kesintiler, mal kaybı veya hasarı ve/veya kişisel yaralanmaları içerebilir, ancak bunlarla sınırlı değildir. Bu tür araçların veya çıktıların kullanımından (yasallığı, uygunluğu ve sonuçları dahil ancak bunlarla sınırlı olmamak üzere) yalnızca siz sorumlusunuz.
+**Lütfen dikkat** Klaus Code, Inc., Klaus Code ile bağlantılı olarak sağlanan veya kullanıma sunulan herhangi bir kod, model veya diğer araçlar, ilgili üçüncü taraf araçları veya ortaya çıkan çıktılarla ilgili olarak **hiçbir** beyanda bulunmaz veya garanti vermez. Bu tür araçların veya çıktıların kullanımıyla ilişkili **tüm riskleri** üstlenirsiniz; bu tür araçlar **"OLDUĞU GİBİ"** ve **"MEVCUT OLDUĞU GİBİ"** esasına göre sağlanır. Bu tür riskler, fikri mülkiyet ihlali, siber güvenlik açıkları veya saldırıları, önyargı, yanlışlıklar, hatalar, kusurlar, virüsler, kesintiler, mal kaybı veya hasarı ve/veya kişisel yaralanmaları içerebilir, ancak bunlarla sınırlı değildir. Bu tür araçların veya çıktıların kullanımından (yasallığı, uygunluğu ve sonuçları dahil ancak bunlarla sınırlı olmamak üzere) yalnızca siz sorumlusunuz.
 
 ---
 
@@ -169,8 +169,8 @@ Topluluk katkılarını çok seviyoruz! [CONTRIBUTING.md](CONTRIBUTING.md) dosya
 
 ## Lisans
 
-[Apache 2.0 © 2025 Roo Code, Inc.](../../LICENSE)
+[Apache 2.0 © 2025 Klaus Code, Inc.](../../LICENSE)
 
 ---
 
-**Roo Code'un keyfini çıkar!** Onu kısa tasmalı tut ya da otonom dolaşsın; ne inşa edeceğini görmek için sabırsızlanıyoruz. Soruların veya özellik fikirlerin varsa [Reddit topluluğumuza](https://www.reddit.com/r/RooCode/) ya da [Discord](https://discord.gg/roocode)'a uğra. İyi kodlamalar!
+**Klaus Code'un keyfini çıkar!** Onu kısa tasmalı tut ya da otonom dolaşsın; ne inşa edeceğini görmek için sabırsızlanıyoruz. Soruların veya özellik fikirlerin varsa [Reddit topluluğumuza](https://www.reddit.com/r/RooCode/) ya da [Discord](https://discord.gg/roocode)'a uğra. İyi kodlamalar!

@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Klaar",
-	"description": "Met Git worktrees kun je tegelijkertijd aan meerdere branches werken in aparte mappen. Elke worktree krijgt zijn eigen VS Code-venster met Roo Code.",
+	"description": "Met Git worktrees kun je tegelijkertijd aan meerdere branches werken in aparte mappen. Elke worktree krijgt zijn eigen VS Code-venster met Klaus Code.",
 
 	"notGitRepo": "Deze workspace is geen Git-repository. Worktrees vereisen een Git-repository om te werken.",
 	"multiRootNotSupported": "Worktrees worden niet ondersteund in multi-root workspaces. Open één map om worktrees te gebruiken.",

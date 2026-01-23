@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 	const { searchParams } = requestUrl
 
 	// Get title and description from query params
-	const title = searchParams.get("title") || "Roo Code"
+	const title = searchParams.get("title") || "Klaus Code"
 	const description = searchParams.get("description") || ""
 
 	// Combine all text that will be displayed for font loading

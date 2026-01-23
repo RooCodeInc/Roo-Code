@@ -1,6 +1,6 @@
 {
 	"name": "@roo-code/evals",
-	"description": "Roo Code evals.",
+	"description": "Klaus Code evals.",
 	"version": "0.0.0",
 	"type": "module",
 	"exports": "./src/index.ts",

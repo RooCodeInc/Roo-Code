@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Tamam",
-	"description": "Git worktrees, ayrı dizinlerde aynı anda birden fazla branch üzerinde çalışmana olanak tanır. Her worktree, Roo Code ile kendi VS Code penceresine sahip olur.",
+	"description": "Git worktrees, ayrı dizinlerde aynı anda birden fazla branch üzerinde çalışmana olanak tanır. Her worktree, Klaus Code ile kendi VS Code penceresine sahip olur.",
 
 	"notGitRepo": "Bu çalışma alanı bir Git deposu değil. Worktrees'in çalışması için bir Git deposu gerekir.",
 	"multiRootNotSupported": "Worktrees, multi-root çalışma alanlarında desteklenmez. Worktrees kullanmak için tek bir klasör aç.",
