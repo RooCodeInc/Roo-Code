@@ -4,7 +4,7 @@ import crypto from "crypto"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { t } from "../../i18n"
-import { ApiHandler } from "../../api"
+import { ApiHandler, ApiHandlerCreateMessageMetadata } from "../../api"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
@@ -19,16 +19,6 @@ function hasToolResultBlocks(message: ApiMessage): boolean {
 		return false
 	}
 	return message.content.some((block) => block.type === "tool_result")
-}
-
-/**
- * Gets the tool_use blocks from a message.
- */
-function getToolUseBlocks(message: ApiMessage): Anthropic.Messages.ToolUseBlock[] {
-	if (message.role !== "assistant" || typeof message.content === "string") {
-		return []
-	}
-	return message.content.filter((block) => block.type === "tool_use") as Anthropic.Messages.ToolUseBlock[]
 }
 
 /**
@@ -62,7 +52,6 @@ function getReasoningBlocks(message: ApiMessage): Anthropic.Messages.ContentBloc
 	if (message.role !== "assistant" || typeof message.content === "string") {
 		return []
 	}
-	// Filter for reasoning blocks and cast to ContentBlockParam (the type field is compatible)
 	return message.content.filter((block) => (block as any).type === "reasoning") as any[]
 }
 
@@ -88,10 +77,6 @@ export type KeepMessagesResult = {
  * by DeepSeek and Z.ai for interleaved thinking mode. Without these, the API returns a 400 error
  * "Missing reasoning_content field in the assistant message".
  * See: https://api-docs.deepseek.com/guides/thinking_mode#tool-calls
- *
- * @param messages - The full conversation messages
- * @param keepCount - The number of messages to keep from the end
- * @returns Object containing keepMessages, tool_use blocks, and reasoning blocks to preserve
  */
 export function getKeepMessagesWithToolBlocks(messages: ApiMessage[], keepCount: number): KeepMessagesResult {
 	if (messages.length <= keepCount) {
@@ -105,7 +90,6 @@ export function getKeepMessagesWithToolBlocks(messages: ApiMessage[], keepCount:
 	const reasoningBlocksToPreserve: Anthropic.Messages.ContentBlockParam[] = []
 	const preservedToolUseIds = new Set<string>()
 
-	// Check ALL kept messages for tool_result blocks
 	for (const keepMsg of keepMessages) {
 		if (!hasToolResultBlocks(keepMsg)) {
 			continue
@@ -154,7 +138,105 @@ export const N_MESSAGES_TO_KEEP = 3
 export const MIN_CONDENSE_THRESHOLD = 5 // Minimum percentage of context window to trigger condensing
 export const MAX_CONDENSE_THRESHOLD = 100 // Maximum percentage of context window to trigger condensing
 
-const SUMMARY_PROMPT = "You are a helpful AI assistant tasked with summarizing conversations."
+const SUMMARY_PROMPT = `You are a helpful AI assistant tasked with summarizing conversations.
+
+CRITICAL: This is a summarization-only request. DO NOT call any tools or functions.
+Your ONLY task is to analyze the conversation and produce a text summary.
+Respond with text only - no tool calls will be processed.
+
+CRITICAL: This summarization request is a SYSTEM OPERATION, not a user message.
+When analyzing "user requests" and "user intent", completely EXCLUDE this summarization message.
+The "most recent user request" and "next step" must be based on what the user was doing BEFORE this system message appeared.
+The goal is for work to continue seamlessly after condensation - as if it never happened.`
+
+/**
+ * Injects synthetic tool_results for orphan tool_calls that don't have matching results.
+ * This is necessary because OpenAI's Responses API rejects conversations with orphan tool_calls.
+ * This can happen when the user triggers condense after receiving a tool_call (like attempt_completion)
+ * but before responding to it.
+ *
+ * @param messages - The conversation messages to process
+ * @returns The messages with synthetic tool_results appended if needed
+ */
+export function injectSyntheticToolResults(messages: ApiMessage[]): ApiMessage[] {
+	// Find all tool_call IDs in assistant messages
+	const toolCallIds = new Set<string>()
+	// Find all tool_result IDs in user messages
+	const toolResultIds = new Set<string>()
+
+	for (const msg of messages) {
+		if (msg.role === "assistant" && Array.isArray(msg.content)) {
+			for (const block of msg.content) {
+				if (block.type === "tool_use") {
+					toolCallIds.add(block.id)
+				}
+			}
+		}
+		if (msg.role === "user" && Array.isArray(msg.content)) {
+			for (const block of msg.content) {
+				if (block.type === "tool_result") {
+					toolResultIds.add(block.tool_use_id)
+				}
+			}
+		}
+	}
+
+	// Find orphans (tool_calls without matching tool_results)
+	const orphanIds = [...toolCallIds].filter((id) => !toolResultIds.has(id))
+
+	if (orphanIds.length === 0) {
+		return messages
+	}
+
+	// Inject synthetic tool_results as a new user message
+	const syntheticResults: Anthropic.Messages.ToolResultBlockParam[] = orphanIds.map((id) => ({
+		type: "tool_result" as const,
+		tool_use_id: id,
+		content: "Context condensation triggered. Tool execution deferred.",
+	}))
+
+	const syntheticMessage: ApiMessage = {
+		role: "user",
+		content: syntheticResults,
+		ts: Date.now(),
+	}
+
+	return [...messages, syntheticMessage]
+}
+
+/**
+ * Extracts <command> blocks from a message's content.
+ * These blocks represent active workflows that must be preserved across condensings.
+ *
+ * @param message - The message to extract command blocks from
+ * @returns A string containing all command blocks found, or empty string if none
+ */
+export function extractCommandBlocks(message: ApiMessage): string {
+	const content = message.content
+	let text: string
+
+	if (typeof content === "string") {
+		text = content
+	} else if (Array.isArray(content)) {
+		// Concatenate all text blocks
+		text = content
+			.filter((block): block is Anthropic.Messages.TextBlockParam => block.type === "text")
+			.map((block) => block.text)
+			.join("\n")
+	} else {
+		return ""
+	}
+
+	// Match all <command> blocks including their content
+	const commandRegex = /<command[^>]*>[\s\S]*?<\/command>/g
+	const matches = text.match(commandRegex)
+
+	if (!matches || matches.length === 0) {
+		return ""
+	}
+
+	return matches.join("\n")
+}
 
 export type SummarizeResponse = {
 	messages: ApiMessage[] // The messages after summarization
@@ -162,11 +244,18 @@ export type SummarizeResponse = {
 	cost: number // The cost of the summarization operation
 	newContextTokens?: number // The number of tokens in the context for the next API request
 	error?: string // Populated iff the operation fails: error message shown to the user on failure (see Task.ts)
+	errorDetails?: string // Detailed error information including stack trace and API error info
 	condenseId?: string // The unique ID of the created Summary message, for linking to condense_context clineMessage
 }
 
 /**
- * Summarizes the conversation messages using an LLM call
+ * Summarizes the conversation messages using an LLM call.
+ *
+ * This implements the "fresh start" model where:
+ * - The summary becomes a user message (not assistant)
+ * - Post-condense, the model sees only the summary (true fresh start)
+ * - All messages are still stored but tagged with condenseParent
+ * - <command> blocks from the original task are preserved across condensings
  *
  * @param {ApiMessage[]} messages - The conversation messages
  * @param {ApiHandler} apiHandler - The API handler to use for summarization and token counting
@@ -175,6 +264,7 @@ export type SummarizeResponse = {
  * @param {number} prevContextTokens - The number of tokens currently in the context, used to ensure we don't grow the context
  * @param {boolean} isAutomaticTrigger - Whether the summarization is triggered automatically
  * @param {string} customCondensingPrompt - Optional custom prompt to use for condensing
+ * @param {ApiHandlerCreateMessageMetadata} metadata - Optional metadata to pass to createMessage (tools, taskId, etc.)
  * @returns {SummarizeResponse} - The result of the summarization operation (see above)
  */
 export async function summarizeConversation(
@@ -185,6 +275,7 @@ export async function summarizeConversation(
 	prevContextTokens: number,
 	isAutomaticTrigger?: boolean,
 	customCondensingPrompt?: string,
+	metadata?: ApiHandlerCreateMessageMetadata,
 ): Promise<SummarizeResponse> {
 	TelemetryService.instance.captureContextCondensed(
 		taskId,
@@ -194,35 +285,21 @@ export async function summarizeConversation(
 
 	const response: SummarizeResponse = { messages, cost: 0, summary: "" }
 
-	// Always preserve the first message (which may contain slash command content)
-	const firstMessage = messages[0]
-
-	// Get keepMessages and any tool_use/reasoning blocks that need to be preserved for tool_result pairing.
-	const { keepMessages, toolUseBlocksToPreserve, reasoningBlocksToPreserve } = getKeepMessagesWithToolBlocks(
-		messages,
-		N_MESSAGES_TO_KEEP,
-	)
-
-	const keepStartIndex = Math.max(messages.length - N_MESSAGES_TO_KEEP, 0)
-	const includeFirstKeptMessageInSummary = toolUseBlocksToPreserve.length > 0
-	const summarySliceEnd = includeFirstKeptMessageInSummary ? keepStartIndex + 1 : keepStartIndex
-	const messagesBeforeKeep = summarySliceEnd > 0 ? messages.slice(0, summarySliceEnd) : []
-
-	// Get messages to summarize, including the first message and excluding the last N messages
-	const messagesToSummarize = getMessagesSinceLastSummary(messagesBeforeKeep)
+	// Get messages to summarize (all messages since the last summary, if any)
+	const messagesToSummarize = getMessagesSinceLastSummary(messages)
 
 	if (messagesToSummarize.length <= 1) {
 		const error =
-			messages.length <= N_MESSAGES_TO_KEEP + 1
+			messages.length <= 1
 				? t("common:errors.condense_not_enough_messages")
 				: t("common:errors.condensed_recently")
 		return { ...response, error }
 	}
 
-	// Check if there's a recent summary in the messages we're keeping
-	const recentSummaryExists = keepMessages.some((message: ApiMessage) => message.isSummary)
+	// Check if there's a recent summary in the messages (edge case)
+	const recentSummaryExists = messagesToSummarize.some((message: ApiMessage) => message.isSummary)
 
-	if (recentSummaryExists) {
+	if (recentSummaryExists && messagesToSummarize.length <= 2) {
 		const error = t("common:errors.condensed_recently")
 		return { ...response, error }
 	}
@@ -232,7 +309,11 @@ export async function summarizeConversation(
 		content: supportPrompt.default.CONDENSE,
 	}
 
-	const requestMessages = maybeRemoveImageBlocks([...messagesToSummarize, finalRequestMessage], apiHandler).map(
+	// Inject synthetic tool_results for orphan tool_calls to prevent API rejections
+	// (e.g., when user triggers condense after receiving attempt_completion but before responding)
+	const messagesWithToolResults = injectSyntheticToolResults(messagesToSummarize)
+
+	const requestMessages = maybeRemoveImageBlocks([...messagesWithToolResults, finalRequestMessage], apiHandler).map(
 		({ role, content }) => ({ role, content }),
 	)
 
@@ -247,19 +328,61 @@ export async function summarizeConversation(
 		return { ...response, error }
 	}
 
-	const stream = apiHandler.createMessage(promptToUse, requestMessages)
-
 	let summary = ""
 	let cost = 0
 	let outputTokens = 0
 
-	for await (const chunk of stream) {
-		if (chunk.type === "text") {
-			summary += chunk.text
-		} else if (chunk.type === "usage") {
-			// Record final usage chunk only
-			cost = chunk.totalCost ?? 0
-			outputTokens = chunk.outputTokens ?? 0
+	try {
+		const stream = apiHandler.createMessage(promptToUse, requestMessages, metadata)
+
+		for await (const chunk of stream) {
+			if (chunk.type === "text") {
+				summary += chunk.text
+			} else if (chunk.type === "usage") {
+				// Record final usage chunk only
+				cost = chunk.totalCost ?? 0
+				outputTokens = chunk.outputTokens ?? 0
+			}
+		}
+	} catch (error) {
+		console.error("Error during condensing API call:", error)
+		const errorMessage = error instanceof Error ? error.message : String(error)
+
+		// Capture detailed error information for debugging
+		let errorDetails = ""
+		if (error instanceof Error) {
+			errorDetails = `Error: ${error.message}`
+			// Capture any additional API error properties
+			const anyError = error as unknown as Record<string, unknown>
+			if (anyError.status) {
+				errorDetails += `\n\nHTTP Status: ${anyError.status}`
+			}
+			if (anyError.code) {
+				errorDetails += `\nError Code: ${anyError.code}`
+			}
+			if (anyError.response) {
+				try {
+					errorDetails += `\n\nAPI Response:\n${JSON.stringify(anyError.response, null, 2)}`
+				} catch {
+					errorDetails += `\n\nAPI Response: [Unable to serialize]`
+				}
+			}
+			if (anyError.body) {
+				try {
+					errorDetails += `\n\nResponse Body:\n${JSON.stringify(anyError.body, null, 2)}`
+				} catch {
+					errorDetails += `\n\nResponse Body: [Unable to serialize]`
+				}
+			}
+		} else {
+			errorDetails = String(error)
+		}
+
+		return {
+			...response,
+			cost,
+			error: t("common:errors.condense_api_failed", { message: errorMessage }),
+			errorDetails,
 		}
 	}
 
@@ -270,94 +393,71 @@ export async function summarizeConversation(
 		return { ...response, cost, error }
 	}
 
-	// Build the summary message content
-	// CRITICAL: Always include a reasoning block in the summary for DeepSeek-reasoner compatibility.
-	// DeepSeek-reasoner requires `reasoning_content` on ALL assistant messages, not just those with tool_calls.
-	// Without this, we get: "400 Missing `reasoning_content` field in the assistant message"
-	// See: https://api-docs.deepseek.com/guides/thinking_mode
-	//
-	// The summary content structure is:
-	// 1. Synthetic reasoning block (always present) - for DeepSeek-reasoner compatibility
-	// 2. Any preserved reasoning blocks from the condensed assistant message (if tool_use blocks are preserved)
-	// 3. Text block with the summary
-	// 4. Tool_use blocks (if any need to be preserved for tool_result pairing)
+	// Extract command blocks from the first message (original task)
+	// These represent active workflows that must persist across condensings
+	const firstMessage = messages[0]
+	const commandBlocks = firstMessage ? extractCommandBlocks(firstMessage) : ""
 
-	// Create a synthetic reasoning block that explains the summary
-	// This is minimal but satisfies DeepSeek's requirement for reasoning_content on all assistant messages
-	const syntheticReasoningBlock = {
-		type: "reasoning" as const,
-		text: "Condensing conversation context. The summary below captures the key information from the prior conversation.",
+	// Build the summary content as separate text blocks
+	const summaryContent: Anthropic.Messages.ContentBlockParam[] = [
+		{ type: "text", text: `## Conversation Summary\n${summary}` },
+	]
+
+	// Add command blocks as a separate text block if present
+	if (commandBlocks) {
+		summaryContent.push({
+			type: "text",
+			text: `<system-reminder>
+## Active Workflows
+The following directives must be maintained across all future condensings:
+${commandBlocks}
+</system-reminder>`,
+		})
 	}
 
-	const textBlock: Anthropic.Messages.TextBlockParam = { type: "text", text: summary }
-
-	let summaryContent: Anthropic.Messages.ContentBlockParam[]
-	if (toolUseBlocksToPreserve.length > 0) {
-		// Include: synthetic reasoning, preserved reasoning (if any), summary text, and tool_use blocks
-		summaryContent = [
-			syntheticReasoningBlock as unknown as Anthropic.Messages.ContentBlockParam,
-			...reasoningBlocksToPreserve,
-			textBlock,
-			...toolUseBlocksToPreserve,
-		]
-	} else {
-		// Include: synthetic reasoning and summary text
-		// This ensures the summary always has reasoning_content for DeepSeek-reasoner
-		summaryContent = [syntheticReasoningBlock as unknown as Anthropic.Messages.ContentBlockParam, textBlock]
-	}
 	// Generate a unique condenseId for this summary
 	const condenseId = crypto.randomUUID()
 
-	// Use first kept message's timestamp minus 1 to ensure unique timestamp for summary.
-	// Fallback to Date.now() if keepMessages is empty (shouldn't happen due to earlier checks).
-	const firstKeptTs = keepMessages[0]?.ts ?? Date.now()
+	// Use the last message's timestamp + 1 to ensure unique timestamp for summary.
+	// The summary goes at the end of all messages.
+	const lastMsgTs = messages[messages.length - 1]?.ts ?? Date.now()
 
 	const summaryMessage: ApiMessage = {
-		role: "assistant",
+		role: "user", // Fresh start model: summary is a user message
 		content: summaryContent,
-		ts: firstKeptTs - 1, // Unique timestamp before first kept message to avoid collision
+		ts: lastMsgTs + 1, // Unique timestamp after last message
 		isSummary: true,
 		condenseId, // Unique ID for this summary, used to track which messages it replaces
 	}
 
 	// NON-DESTRUCTIVE CONDENSE:
-	// Instead of deleting middle messages, tag them with condenseParent so they can be
-	// restored if the user rewinds to a point before the summary.
+	// Tag ALL existing messages with condenseParent so they are filtered out when
+	// the effective history is computed. The summary message is the only message
+	// that will be visible to the API after condensing (fresh start model).
 	//
 	// Storage structure after condense:
-	// [firstMessage, msg2(parent=X), ..., msg8(parent=X), summary(id=X), msg9, msg10, msg11]
+	// [msg1(parent=X), msg2(parent=X), ..., msgN(parent=X), summary(id=X)]
 	//
 	// Effective for API (filtered by getEffectiveApiHistory):
-	// [firstMessage, summary, msg9, msg10, msg11]
+	// [summary]  ← Fresh start!
 
-	// Tag middle messages with condenseParent (skip first message, skip last N messages)
-	const newMessages = messages.map((msg, index) => {
-		// First message stays as-is
-		if (index === 0) {
-			return msg
-		}
-		// Messages in the "keep" range stay as-is
-		if (index >= keepStartIndex) {
-			return msg
-		}
-		// Middle messages get tagged with condenseParent (unless they already have one from a previous condense)
-		// If they already have a condenseParent, we leave it - nested condense is handled by filtering
+	// Tag ALL messages with condenseParent
+	const newMessages = messages.map((msg) => {
+		// If message already has a condenseParent, we leave it - nested condense is handled by filtering
 		if (!msg.condenseParent) {
 			return { ...msg, condenseParent: condenseId }
 		}
 		return msg
 	})
 
-	// Insert the summary message right before the keep messages
-	newMessages.splice(keepStartIndex, 0, summaryMessage)
+	// Append the summary message at the end
+	newMessages.push(summaryMessage)
 
 	// Count the tokens in the context for the next API request
-	// We only estimate the tokens in summaryMesage if outputTokens is 0, otherwise we use outputTokens
+	// After condense, the context will only contain the system prompt and the summary
 	const systemPromptMessage: ApiMessage = { role: "user", content: systemPrompt }
 
-	const contextMessages = outputTokens
-		? [systemPromptMessage, ...keepMessages]
-		: [systemPromptMessage, summaryMessage, ...keepMessages]
+	const contextMessages = outputTokens ? [systemPromptMessage] : [systemPromptMessage, summaryMessage]
 
 	const contextBlocks = contextMessages.flatMap((message) =>
 		typeof message.content === "string" ? [{ text: message.content, type: "text" as const }] : message.content,
@@ -407,8 +507,11 @@ export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[
 
 /**
  * Filters the API conversation history to get the "effective" messages to send to the API.
- * Messages with a condenseParent that points to an existing summary are filtered out,
- * as they have been replaced by that summary.
+ *
+ * Fresh Start Model:
+ * - When a summary exists, return only messages from the summary onwards (fresh start)
+ * - Messages with a condenseParent pointing to an existing summary are filtered out
+ *
  * Messages with a truncationParent that points to an existing truncation marker are also filtered out,
  * as they have been hidden by sliding window truncation.
  *
@@ -419,6 +522,71 @@ export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[
  * @returns The filtered history that should be sent to the API
  */
 export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
+	// Find the most recent summary message
+	const lastSummary = findLast(messages, (msg) => msg.isSummary === true)
+
+	if (lastSummary) {
+		// Fresh start model: return only messages from the summary onwards
+		const summaryIndex = messages.indexOf(lastSummary)
+		let messagesFromSummary = messages.slice(summaryIndex)
+
+		// Collect all tool_use IDs from assistant messages in the result
+		// This is needed to filter out orphan tool_result blocks that reference
+		// tool_use IDs from messages that were condensed away
+		const toolUseIds = new Set<string>()
+		for (const msg of messagesFromSummary) {
+			if (msg.role === "assistant" && Array.isArray(msg.content)) {
+				for (const block of msg.content) {
+					if (block.type === "tool_use" && (block as Anthropic.Messages.ToolUseBlockParam).id) {
+						toolUseIds.add((block as Anthropic.Messages.ToolUseBlockParam).id)
+					}
+				}
+			}
+		}
+
+		// Filter out orphan tool_result blocks from user messages
+		messagesFromSummary = messagesFromSummary
+			.map((msg) => {
+				if (msg.role === "user" && Array.isArray(msg.content)) {
+					const filteredContent = msg.content.filter((block) => {
+						if (block.type === "tool_result") {
+							return toolUseIds.has((block as Anthropic.Messages.ToolResultBlockParam).tool_use_id)
+						}
+						return true
+					})
+					// If all content was filtered out, mark for removal
+					if (filteredContent.length === 0) {
+						return null
+					}
+					// If some content was filtered, return updated message
+					if (filteredContent.length !== msg.content.length) {
+						return { ...msg, content: filteredContent }
+					}
+				}
+				return msg
+			})
+			.filter((msg): msg is ApiMessage => msg !== null)
+
+		// Still need to filter out any truncated messages within this range
+		const existingTruncationIds = new Set<string>()
+		for (const msg of messagesFromSummary) {
+			if (msg.isTruncationMarker && msg.truncationId) {
+				existingTruncationIds.add(msg.truncationId)
+			}
+		}
+
+		return messagesFromSummary.filter((msg) => {
+			// Filter out truncated messages if their truncation marker exists
+			if (msg.truncationParent && existingTruncationIds.has(msg.truncationParent)) {
+				return false
+			}
+			return true
+		})
+	}
+
+	// No summary - filter based on condenseParent and truncationParent as before
+	// This handles the case of orphaned condenseParent tags (summary was deleted via rewind)
+
 	// Collect all condenseIds of summaries that exist in the current history
 	const existingSummaryIds = new Set<string>()
 	// Collect all truncationIds of truncation markers that exist in the current history

@@ -1588,14 +1588,51 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Get condensing configuration
 		const state = await this.providerRef.deref()?.getState()
 		const customCondensingPrompt = state?.customSupportPrompts?.CONDENSE
+		const { mode, apiConfiguration } = state ?? {}
 
 		const { contextTokens: prevContextTokens } = this.getTokenUsage()
+
+		// Build tools for condensing metadata (same tools used for normal API calls)
+		const provider = this.providerRef.deref()
+		let allTools: import("openai").default.Chat.ChatCompletionTool[] = []
+		if (provider) {
+			const modelInfo = this.api.getModel().info
+			const toolsResult = await buildNativeToolsArrayWithRestrictions({
+				provider,
+				cwd: this.cwd,
+				mode,
+				customModes: state?.customModes,
+				experiments: state?.experiments,
+				apiConfiguration,
+				maxReadFileLine: state?.maxReadFileLine ?? -1,
+				maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
+				browserToolEnabled: state?.browserToolEnabled ?? true,
+				modelInfo,
+				diffEnabled: this.diffEnabled,
+				includeAllToolsWithRestrictions: false,
+			})
+			allTools = toolsResult.tools
+		}
+
+		// Build metadata with tools and taskId for the condensing API call
+		const metadata: ApiHandlerCreateMessageMetadata = {
+			mode,
+			taskId: this.taskId,
+			...(allTools.length > 0
+				? {
+						tools: allTools,
+						tool_choice: "auto",
+						parallelToolCalls: false,
+					}
+				: {}),
+		}
 		const {
 			messages,
 			summary,
 			cost,
 			newContextTokens = 0,
 			error,
+			errorDetails,
 			condenseId,
 		} = await summarizeConversation(
 			this.apiConversationHistory,
@@ -1605,11 +1642,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			prevContextTokens,
 			false, // manual trigger
 			customCondensingPrompt, // User's custom prompt
+			metadata, // Pass metadata with tools
 		)
 		if (error) {
+			// Format error as JSON with message and details for ErrorRow component
+			const errorJson = JSON.stringify({
+				message: error,
+				details: errorDetails,
+			})
 			this.say(
 				"condense_context_error",
-				error,
+				errorJson,
 				undefined /* images */,
 				false /* partial */,
 				undefined /* checkpoint */,
@@ -3674,7 +3717,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	private async handleContextWindowExceededError(): Promise<void> {
 		const state = await this.providerRef.deref()?.getState()
-		const { profileThresholds = {} } = state ?? {}
+		const { profileThresholds = {}, mode, apiConfiguration } = state ?? {}
 
 		const { contextTokens } = this.getTokenUsage()
 		const modelInfo = this.api.getModel().info
@@ -3699,61 +3742,101 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Send condenseTaskContextStarted to show in-progress indicator
 		await this.providerRef.deref()?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
 
-		// Force aggressive truncation by keeping only 75% of the conversation history
-		const truncateResult = await manageContext({
-			messages: this.apiConversationHistory,
-			totalTokens: contextTokens || 0,
-			maxTokens,
-			contextWindow,
-			apiHandler: this.api,
-			autoCondenseContext: true,
-			autoCondenseContextPercent: FORCED_CONTEXT_REDUCTION_PERCENT,
-			systemPrompt: await this.getSystemPrompt(),
+		// Build tools for condensing metadata (same tools used for normal API calls)
+		const provider = this.providerRef.deref()
+		let allTools: import("openai").default.Chat.ChatCompletionTool[] = []
+		if (provider) {
+			const toolsResult = await buildNativeToolsArrayWithRestrictions({
+				provider,
+				cwd: this.cwd,
+				mode,
+				customModes: state?.customModes,
+				experiments: state?.experiments,
+				apiConfiguration,
+				maxReadFileLine: state?.maxReadFileLine ?? -1,
+				maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
+				browserToolEnabled: state?.browserToolEnabled ?? true,
+				modelInfo,
+				diffEnabled: this.diffEnabled,
+				includeAllToolsWithRestrictions: false,
+			})
+			allTools = toolsResult.tools
+		}
+
+		// Build metadata with tools and taskId for the condensing API call
+		const metadata: ApiHandlerCreateMessageMetadata = {
+			mode,
 			taskId: this.taskId,
-			profileThresholds,
-			currentProfileId,
-		})
-
-		if (truncateResult.messages !== this.apiConversationHistory) {
-			await this.overwriteApiConversationHistory(truncateResult.messages)
+			...(allTools.length > 0
+				? {
+						tools: allTools,
+						tool_choice: "auto",
+						parallelToolCalls: false,
+					}
+				: {}),
 		}
 
-		if (truncateResult.summary) {
-			const { summary, cost, prevContextTokens, newContextTokens = 0 } = truncateResult
-			const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens }
-			await this.say(
-				"condense_context",
-				undefined /* text */,
-				undefined /* images */,
-				false /* partial */,
-				undefined /* checkpoint */,
-				undefined /* progressStatus */,
-				{ isNonInteractive: true } /* options */,
-				contextCondense,
-			)
-		} else if (truncateResult.truncationId) {
-			// Sliding window truncation occurred (fallback when condensing fails or is disabled)
-			const contextTruncation: ContextTruncation = {
-				truncationId: truncateResult.truncationId,
-				messagesRemoved: truncateResult.messagesRemoved ?? 0,
-				prevContextTokens: truncateResult.prevContextTokens,
-				newContextTokens: truncateResult.newContextTokensAfterTruncation ?? 0,
+		try {
+			// Force aggressive truncation by keeping only 75% of the conversation history
+			const truncateResult = await manageContext({
+				messages: this.apiConversationHistory,
+				totalTokens: contextTokens || 0,
+				maxTokens,
+				contextWindow,
+				apiHandler: this.api,
+				autoCondenseContext: true,
+				autoCondenseContextPercent: FORCED_CONTEXT_REDUCTION_PERCENT,
+				systemPrompt: await this.getSystemPrompt(),
+				taskId: this.taskId,
+				profileThresholds,
+				currentProfileId,
+				metadata,
+			})
+
+			if (truncateResult.messages !== this.apiConversationHistory) {
+				await this.overwriteApiConversationHistory(truncateResult.messages)
 			}
-			await this.say(
-				"sliding_window_truncation",
-				undefined /* text */,
-				undefined /* images */,
-				false /* partial */,
-				undefined /* checkpoint */,
-				undefined /* progressStatus */,
-				{ isNonInteractive: true } /* options */,
-				undefined /* contextCondense */,
-				contextTruncation,
-			)
-		}
 
-		// Notify webview that context management is complete (removes in-progress spinner)
-		await this.providerRef.deref()?.postMessageToWebview({ type: "condenseTaskContextResponse", text: this.taskId })
+			if (truncateResult.summary) {
+				const { summary, cost, prevContextTokens, newContextTokens = 0 } = truncateResult
+				const contextCondense: ContextCondense = { summary, cost, newContextTokens, prevContextTokens }
+				await this.say(
+					"condense_context",
+					undefined /* text */,
+					undefined /* images */,
+					false /* partial */,
+					undefined /* checkpoint */,
+					undefined /* progressStatus */,
+					{ isNonInteractive: true } /* options */,
+					contextCondense,
+				)
+			} else if (truncateResult.truncationId) {
+				// Sliding window truncation occurred (fallback when condensing fails or is disabled)
+				const contextTruncation: ContextTruncation = {
+					truncationId: truncateResult.truncationId,
+					messagesRemoved: truncateResult.messagesRemoved ?? 0,
+					prevContextTokens: truncateResult.prevContextTokens,
+					newContextTokens: truncateResult.newContextTokensAfterTruncation ?? 0,
+				}
+				await this.say(
+					"sliding_window_truncation",
+					undefined /* text */,
+					undefined /* images */,
+					false /* partial */,
+					undefined /* checkpoint */,
+					undefined /* progressStatus */,
+					{ isNonInteractive: true } /* options */,
+					undefined /* contextCondense */,
+					contextTruncation,
+				)
+			}
+		} finally {
+			// Notify webview that context management is complete (removes in-progress spinner)
+			// IMPORTANT: Must always be sent to dismiss the spinner, even on error
+			await this.providerRef
+				.deref()
+				?.postMessageToWebview({ type: "condenseTaskContextResponse", text: this.taskId })
+		}
 	}
 
 	/**
@@ -3870,71 +3953,117 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					?.postMessageToWebview({ type: "condenseTaskContextStarted", text: this.taskId })
 			}
 
-			const truncateResult = await manageContext({
-				messages: this.apiConversationHistory,
-				totalTokens: contextTokens,
-				maxTokens,
-				contextWindow,
-				apiHandler: this.api,
-				autoCondenseContext,
-				autoCondenseContextPercent,
-				systemPrompt,
-				taskId: this.taskId,
-				customCondensingPrompt,
-				profileThresholds,
-				currentProfileId,
-			})
-			if (truncateResult.messages !== this.apiConversationHistory) {
-				await this.overwriteApiConversationHistory(truncateResult.messages)
-			}
-			if (truncateResult.error) {
-				await this.say("condense_context_error", truncateResult.error)
-			} else if (truncateResult.summary) {
-				const { summary, cost, prevContextTokens, newContextTokens = 0, condenseId } = truncateResult
-				const contextCondense: ContextCondense = {
-					summary,
-					cost,
-					newContextTokens,
-					prevContextTokens,
-					condenseId,
+			// Build tools for condensing metadata (same tools used for normal API calls)
+			// This ensures the condensing API call includes tool definitions for providers that need them
+			let contextMgmtTools: import("openai").default.Chat.ChatCompletionTool[] = []
+			{
+				const provider = this.providerRef.deref()
+				if (provider) {
+					const toolsResult = await buildNativeToolsArrayWithRestrictions({
+						provider,
+						cwd: this.cwd,
+						mode,
+						customModes: state?.customModes,
+						experiments: state?.experiments,
+						apiConfiguration,
+						maxReadFileLine: state?.maxReadFileLine ?? -1,
+						maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
+						browserToolEnabled: state?.browserToolEnabled ?? true,
+						modelInfo,
+						diffEnabled: this.diffEnabled,
+						includeAllToolsWithRestrictions: false,
+					})
+					contextMgmtTools = toolsResult.tools
 				}
-				await this.say(
-					"condense_context",
-					undefined /* text */,
-					undefined /* images */,
-					false /* partial */,
-					undefined /* checkpoint */,
-					undefined /* progressStatus */,
-					{ isNonInteractive: true } /* options */,
-					contextCondense,
-				)
-			} else if (truncateResult.truncationId) {
-				// Sliding window truncation occurred (fallback when condensing fails or is disabled)
-				const contextTruncation: ContextTruncation = {
-					truncationId: truncateResult.truncationId,
-					messagesRemoved: truncateResult.messagesRemoved ?? 0,
-					prevContextTokens: truncateResult.prevContextTokens,
-					newContextTokens: truncateResult.newContextTokensAfterTruncation ?? 0,
-				}
-				await this.say(
-					"sliding_window_truncation",
-					undefined /* text */,
-					undefined /* images */,
-					false /* partial */,
-					undefined /* checkpoint */,
-					undefined /* progressStatus */,
-					{ isNonInteractive: true } /* options */,
-					undefined /* contextCondense */,
-					contextTruncation,
-				)
 			}
 
-			// Notify webview that context management is complete (sets isCondensing = false)
-			// This removes the in-progress spinner and allows the completed result to show
-			if (contextManagementWillRun && autoCondenseContext) {
-				await this.providerRef
-					.deref()
-					?.postMessageToWebview({ type: "condenseTaskContextResponse", text: this.taskId })
+			// Build metadata with tools and taskId for the condensing API call
+			const contextMgmtMetadata: ApiHandlerCreateMessageMetadata = {
+				mode,
+				taskId: this.taskId,
+				...(contextMgmtTools.length > 0
+					? {
+							tools: contextMgmtTools,
+							tool_choice: "auto",
+							parallelToolCalls: false,
+						}
+					: {}),
+			}
+
+			try {
+				const truncateResult = await manageContext({
+					messages: this.apiConversationHistory,
+					totalTokens: contextTokens,
+					maxTokens,
+					contextWindow,
+					apiHandler: this.api,
+					autoCondenseContext,
+					autoCondenseContextPercent,
+					systemPrompt,
+					taskId: this.taskId,
+					customCondensingPrompt,
+					profileThresholds,
+					currentProfileId,
+					metadata: contextMgmtMetadata,
+				})
+				if (truncateResult.messages !== this.apiConversationHistory) {
+					await this.overwriteApiConversationHistory(truncateResult.messages)
+				}
+				if (truncateResult.error) {
+					// Format error as JSON with message and details for ErrorRow component
+					const errorJson = JSON.stringify({
+						message: truncateResult.error,
+						details: truncateResult.errorDetails,
+					})
+					await this.say("condense_context_error", errorJson)
+				} else if (truncateResult.summary) {
+					const { summary, cost, prevContextTokens, newContextTokens = 0, condenseId } = truncateResult
+					const contextCondense: ContextCondense = {
+						summary,
+						cost,
+						newContextTokens,
+						prevContextTokens,
+						condenseId,
+					}
+					await this.say(
+						"condense_context",
+						undefined /* text */,
+						undefined /* images */,
+						false /* partial */,
+						undefined /* checkpoint */,
+						undefined /* progressStatus */,
+						{ isNonInteractive: true } /* options */,
+						contextCondense,
+					)
+				} else if (truncateResult.truncationId) {
+					// Sliding window truncation occurred (fallback when condensing fails or is disabled)
+					const contextTruncation: ContextTruncation = {
+						truncationId: truncateResult.truncationId,
+						messagesRemoved: truncateResult.messagesRemoved ?? 0,
+						prevContextTokens: truncateResult.prevContextTokens,
+						newContextTokens: truncateResult.newContextTokensAfterTruncation ?? 0,
+					}
+					await this.say(
+						"sliding_window_truncation",
+						undefined /* text */,
+						undefined /* images */,
+						false /* partial */,
+						undefined /* checkpoint */,
+						undefined /* progressStatus */,
+						{ isNonInteractive: true } /* options */,
+						undefined /* contextCondense */,
+						contextTruncation,
+					)
+				}
+			} finally {
+				// Notify webview that context management is complete (sets isCondensing = false)
+				// This removes the in-progress spinner and allows the completed result to show
+				// IMPORTANT: Must always be sent to dismiss the spinner, even on error
+				if (contextManagementWillRun && autoCondenseContext) {
+					await this.providerRef
+						.deref()
+						?.postMessageToWebview({ type: "condenseTaskContextResponse", text: this.taskId })
+				}
 			}
 		}
 

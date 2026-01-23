@@ -22,22 +22,25 @@ describe("Rewind After Condense - Issue #8295", () => {
 	})
 
 	describe("getEffectiveApiHistory", () => {
-		it("should filter out messages tagged with condenseParent", () => {
+		it("should return summary and messages after summary (fresh start model)", () => {
 			const condenseId = "summary-123"
 			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message", ts: 1, condenseParent: condenseId },
 				{ role: "assistant", content: "First response", ts: 2, condenseParent: condenseId },
 				{ role: "user", content: "Second message", ts: 3, condenseParent: condenseId },
 				{ role: "user", content: "Summary", ts: 4, isSummary: true, condenseId },
+				// Messages after summary are included even if they have condenseParent
 				{ role: "user", content: "Third message", ts: 5, condenseParent: condenseId },
 				{ role: "assistant", content: "Third response", ts: 6, condenseParent: condenseId },
 			]
 
 			const effective = getEffectiveApiHistory(messages)
 
-			// Effective history should be: summary only
-			expect(effective.length).toBe(1)
+			// Fresh start model: summary + all messages after it
+			expect(effective.length).toBe(3)
 			expect(effective[0].isSummary).toBe(true)
+			expect(effective[1].content).toBe("Third message")
+			expect(effective[2].content).toBe("Third response")
 		})
 
 		it("should include messages without condenseParent", () => {
@@ -191,10 +194,11 @@ describe("Rewind After Condense - Issue #8295", () => {
 			expect(effectiveAfter.length).toBe(5) // All messages visible
 		})
 
-		it("should hide condensed messages when their summary still exists", () => {
+		it("should hide condensed messages when their summary still exists (fresh start)", () => {
 			const condenseId = "summary-exists"
 
-			// Scenario: Messages were condensed and summary exists - condensed messages should be hidden
+			// Scenario: Messages were condensed and summary exists - fresh start model returns
+			// only the summary and messages after it, NOT messages before the summary
 			const messages: ApiMessage[] = [
 				{ role: "user", content: "Start", ts: 1 },
 				{ role: "assistant", content: "Response 1", ts: 2, condenseParent: condenseId },
@@ -203,12 +207,13 @@ describe("Rewind After Condense - Issue #8295", () => {
 				{ role: "user", content: "After summary", ts: 5 },
 			]
 
-			// Effective history should hide condensed messages since summary exists
+			// Fresh start model: effective history is summary + messages after it
+			// "Start" is NOT included because it's before the summary
 			const effective = getEffectiveApiHistory(messages)
-			expect(effective.length).toBe(3) // Start, Summary, After summary
-			expect(effective[0].content).toBe("Start")
-			expect(effective[1].content).toBe("Summary")
-			expect(effective[2].content).toBe("After summary")
+			expect(effective.length).toBe(2) // Summary, After summary (NOT Start)
+			expect(effective[0].content).toBe("Summary")
+			expect(effective[0].isSummary).toBe(true)
+			expect(effective[1].content).toBe("After summary")
 
 			// cleanupAfterTruncation should NOT clear condenseParent since summary exists
 			const cleaned = cleanupAfterTruncation(messages)

@@ -3,7 +3,7 @@ import crypto from "crypto"
 
 import { TelemetryService } from "@roo-code/telemetry"
 
-import { ApiHandler } from "../../api"
+import { ApiHandler, ApiHandlerCreateMessageMetadata } from "../../api"
 import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, SummarizeResponse } from "../condense"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
@@ -218,6 +218,8 @@ export type ContextManagementOptions = {
 	customCondensingPrompt?: string
 	profileThresholds: Record<string, number>
 	currentProfileId: string
+	/** Optional metadata to pass through to the condensing API call (tools, taskId, etc.) */
+	metadata?: ApiHandlerCreateMessageMetadata
 }
 
 export type ContextManagementResult = SummarizeResponse & {
@@ -246,8 +248,10 @@ export async function manageContext({
 	customCondensingPrompt,
 	profileThresholds,
 	currentProfileId,
+	metadata,
 }: ContextManagementOptions): Promise<ContextManagementResult> {
 	let error: string | undefined
+	let errorDetails: string | undefined
 	let cost = 0
 	// Calculate the maximum tokens reserved for response
 	const reservedTokens = maxTokens || ANTHROPIC_DEFAULT_MAX_TOKENS
@@ -298,9 +302,11 @@ export async function manageContext({
 				prevContextTokens,
 				true, // automatic trigger
 				customCondensingPrompt,
+				metadata,
 			)
 			if (result.error) {
 				error = result.error
+				errorDetails = result.errorDetails
 				cost = result.cost
 			} else {
 				return { ...result, prevContextTokens }
@@ -343,11 +349,12 @@ export async function manageContext({
 			summary: "",
 			cost,
 			error,
+			errorDetails,
 			truncationId: truncationResult.truncationId,
 			messagesRemoved: truncationResult.messagesRemoved,
 			newContextTokensAfterTruncation,
 		}
 	}
 	// No truncation or condensation needed
-	return { messages, summary: "", cost, prevContextTokens, error }
+	return { messages, summary: "", cost, prevContextTokens, error, errorDetails }
 }

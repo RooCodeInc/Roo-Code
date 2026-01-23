@@ -620,6 +620,7 @@ describe("Context Management", () => {
 				70001,
 				true,
 				undefined, // customCondensingPrompt
+				undefined, // metadata
 			)
 
 			// Verify the result contains the summary information
@@ -794,6 +795,7 @@ describe("Context Management", () => {
 				60000,
 				true,
 				undefined, // customCondensingPrompt
+				undefined, // metadata
 			)
 
 			// Verify the result contains the summary information
