@@ -117,11 +117,13 @@ const PromptsSettings = ({
 							<SelectValue placeholder={t("settings:common.select")} />
 						</SelectTrigger>
 						<SelectContent>
-							{Object.keys(supportPrompt.default).map((type) => (
-								<SelectItem key={type} value={type} data-testid={`${type}-option`}>
-									{t(`prompts:supportPrompts.types.${type}.label`)}
-								</SelectItem>
-							))}
+							{Object.keys(supportPrompt.default)
+								.filter((type) => type !== "CONDENSE")
+								.map((type) => (
+									<SelectItem key={type} value={type} data-testid={`${type}-option`}>
+										{t(`prompts:supportPrompts.types.${type}.label`)}
+									</SelectItem>
+								))}
 						</SelectContent>
 					</Select>
 					<div className="text-sm text-vscode-descriptionForeground mt-1">

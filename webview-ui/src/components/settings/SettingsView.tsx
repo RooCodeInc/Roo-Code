@@ -863,6 +863,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								includeCurrentTime={includeCurrentTime}
 								includeCurrentCost={includeCurrentCost}
 								maxGitStatusFiles={maxGitStatusFiles}
+								customSupportPrompts={customSupportPrompts || {}}
+								setCustomSupportPrompts={setCustomSupportPromptsField}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
