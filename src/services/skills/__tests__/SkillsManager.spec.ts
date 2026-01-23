@@ -63,6 +63,14 @@ vi.mock("../../roo-config", () => ({
 	fileExists: mockFileExists,
 }))
 
+// Mock built-in skills to isolate tests from actual built-in skills
+vi.mock("../built-in-skills", () => ({
+	getBuiltInSkills: () => [],
+	getBuiltInSkillContent: () => null,
+	isBuiltInSkill: () => false,
+	getBuiltInSkillNames: () => [],
+}))
+
 import { SkillsManager } from "../SkillsManager"
 import { ClineProvider } from "../../../core/webview/ClineProvider"
 

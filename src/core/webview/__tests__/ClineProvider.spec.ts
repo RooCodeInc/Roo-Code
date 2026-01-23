@@ -315,6 +315,7 @@ vi.mock("../../../api/providers/fetchers/modelCache", () => ({
 
 vi.mock("../diff/strategies/multi-search-replace", () => ({
 	MultiSearchReplaceDiffStrategy: vi.fn().mockImplementation(() => ({
+		getToolDescription: () => "test",
 		getName: () => "test-strategy",
 		applyDiff: vi.fn(),
 	})),
@@ -553,11 +554,12 @@ describe("ClineProvider", () => {
 			uriScheme: "vscode",
 			soundEnabled: false,
 			ttsEnabled: false,
+			diffEnabled: false,
 			enableCheckpoints: false,
 			writeDelayMs: 1000,
 			browserViewportSize: "900x600",
+			fuzzyMatchThreshold: 1.0,
 			mcpEnabled: true,
-			enableMcpServerCreation: false,
 			mode: defaultModeSlug,
 			customModes: [],
 			experiments: experimentDefault,
@@ -764,6 +766,7 @@ describe("ClineProvider", () => {
 		expect(state).toHaveProperty("taskHistory")
 		expect(state).toHaveProperty("soundEnabled")
 		expect(state).toHaveProperty("ttsEnabled")
+		expect(state).toHaveProperty("diffEnabled")
 		expect(state).toHaveProperty("writeDelayMs")
 	})
 
@@ -773,6 +776,15 @@ describe("ClineProvider", () => {
 
 		const state = await provider.getState()
 		expect(state.language).toBe("pt-BR")
+	})
+
+	test("diffEnabled defaults to true when not set", async () => {
+		// Mock globalState.get to return undefined for diffEnabled
+		;(mockContext.globalState.get as any).mockReturnValue(undefined)
+
+		const state = await provider.getState()
+
+		expect(state.diffEnabled).toBe(true)
 	})
 
 	test("writeDelayMs defaults to 1000ms", async () => {
@@ -1349,7 +1361,6 @@ describe("ClineProvider", () => {
 					apiProvider: "openrouter" as const,
 				},
 				mcpEnabled: true,
-				enableMcpServerCreation: false,
 				mode: "code" as const,
 				experiments: experimentDefault,
 			} as any)
@@ -1374,7 +1385,6 @@ describe("ClineProvider", () => {
 					apiProvider: "openrouter" as const,
 				},
 				mcpEnabled: false,
-				enableMcpServerCreation: false,
 				mode: "code" as const,
 				experiments: experimentDefault,
 			} as any)
@@ -1431,10 +1441,10 @@ describe("ClineProvider", () => {
 			)
 		})
 
-		test("generates system prompt with various configurations", async () => {
+		test("generates system prompt with diff enabled", async () => {
 			await provider.resolveWebviewView(mockWebviewView)
 
-			// Mock getState with typical configuration
+			// Mock getState to return diffEnabled: true
 			vi.spyOn(provider, "getState").mockResolvedValue({
 				apiConfiguration: {
 					apiProvider: "openrouter",
@@ -1442,11 +1452,45 @@ describe("ClineProvider", () => {
 				},
 				customModePrompts: {},
 				mode: "code",
-				enableMcpServerCreation: true,
 				mcpEnabled: false,
 				browserViewportSize: "900x600",
+				diffEnabled: true,
+				fuzzyMatchThreshold: 0.8,
 				experiments: experimentDefault,
 				browserToolEnabled: true,
+			} as any)
+
+			// Trigger getSystemPrompt
+			const handler = getMessageHandler()
+			await handler({ type: "getSystemPrompt", mode: "code" })
+
+			// Verify system prompt was generated and sent
+			expect(mockPostMessage).toHaveBeenCalledWith(
+				expect.objectContaining({
+					type: "systemPrompt",
+					text: expect.any(String),
+					mode: "code",
+				}),
+			)
+		})
+
+		test("generates system prompt with diff disabled", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+
+			// Mock getState to return diffEnabled: false
+			vi.spyOn(provider, "getState").mockResolvedValue({
+				apiConfiguration: {
+					apiProvider: "openrouter",
+					apiModelId: "test-model",
+				},
+				customModePrompts: {},
+				mode: "code",
+				mcpEnabled: false,
+				browserViewportSize: "900x600",
+				diffEnabled: false,
+				fuzzyMatchThreshold: 0.8,
+				experiments: experimentDefault,
+				browserToolEnabled: false,
 			} as any)
 
 			// Trigger getSystemPrompt
@@ -1475,7 +1519,6 @@ describe("ClineProvider", () => {
 					architect: { customInstructions: "Architect mode instructions" },
 				},
 				mode: "architect",
-				enableMcpServerCreation: false,
 				mcpEnabled: false,
 				browserViewportSize: "900x600",
 				experiments: experimentDefault,
