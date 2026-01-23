@@ -222,7 +222,7 @@ export const ErrorRow = memo(
 					</div>
 					{isExpanded && (
 						<div className="px-2 py-1 mt-2 bg-vscode-editor-background ml-6 rounded-lg">
-							<CodeBlock source={message} language="xml" />
+							<CodeBlock source={message} language="text" />
 						</div>
 					)}
 				</div>

@@ -192,7 +192,6 @@ describe("SettingsView - Change Detection Fix", () => {
 		maxTotalImageSize: 20,
 		terminalCompressProgressBar: false,
 		maxConcurrentFileReads: 5,
-		condensingApiConfigId: "",
 		customCondensingPrompt: "",
 		customSupportPrompts: {},
 		profileThresholds: {},

@@ -36,13 +36,6 @@ interface DelegationProvider {
 export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 	readonly name = "attempt_completion" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): AttemptCompletionParams {
-		return {
-			result: params.result || "",
-			command: params.command,
-		}
-	}
-
 	async execute(params: AttemptCompletionParams, task: Task, callbacks: AttemptCompletionCallbacks): Promise<void> {
 		const { result } = params
 		const { handleError, pushToolResult, askFinishSubTaskApproval } = callbacks
@@ -194,16 +187,9 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 		if (command) {
 			if (lastMessage && lastMessage.ask === "command") {
-				await task
-					.ask("command", this.removeClosingTag("command", command, block.partial), block.partial)
-					.catch(() => {})
+				await task.ask("command", command ?? "", block.partial).catch(() => {})
 			} else {
-				await task.say(
-					"completion_result",
-					this.removeClosingTag("result", result, block.partial),
-					undefined,
-					false,
-				)
+				await task.say("completion_result", result ?? "", undefined, false)
 
 				// Force final token usage update before emitting TaskCompleted for consistency
 				task.emitFinalTokenUsageUpdate()
@@ -211,17 +197,10 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				TelemetryService.instance.captureTaskCompleted(task.taskId)
 				task.emit(RooCodeEventName.TaskCompleted, task.taskId, task.getTokenUsage(), task.toolUsage)
 
-				await task
-					.ask("command", this.removeClosingTag("command", command, block.partial), block.partial)
-					.catch(() => {})
+				await task.ask("command", command ?? "", block.partial).catch(() => {})
 			}
 		} else {
-			await task.say(
-				"completion_result",
-				this.removeClosingTag("result", result, block.partial),
-				undefined,
-				block.partial,
-			)
+			await task.say("completion_result", result ?? "", undefined, block.partial)
 		}
 	}
 }

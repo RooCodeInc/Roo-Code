@@ -25,18 +25,8 @@ type ValidationResult =
 export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 	readonly name = "use_mcp_tool" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): UseMcpToolParams {
-		// For legacy params, arguments come as a JSON string that needs parsing
-		// We don't parse here - let validateParams handle parsing and errors
-		return {
-			server_name: params.server_name || "",
-			tool_name: params.tool_name || "",
-			arguments: params.arguments as any, // Keep as string for validation to handle
-		}
-	}
-
 	async execute(params: UseMcpToolParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
+		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
 			// Validate parameters
@@ -89,9 +79,9 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		const params = block.params
 		const partialMessage = JSON.stringify({
 			type: "use_mcp_tool",
-			serverName: this.removeClosingTag("server_name", params.server_name, block.partial),
-			toolName: this.removeClosingTag("tool_name", params.tool_name, block.partial),
-			arguments: this.removeClosingTag("arguments", params.arguments, block.partial),
+			serverName: params.server_name ?? "",
+			toolName: params.tool_name ?? "",
+			arguments: params.arguments,
 		} satisfies ClineAskUseMcpServer)
 
 		await task.ask("use_mcp_server", partialMessage, true).catch(() => {})
@@ -116,31 +106,22 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			return { isValid: false }
 		}
 
-		// Parse arguments if provided
+		// Native-only: arguments are already a structured object.
 		let parsedArguments: Record<string, unknown> | undefined
-
-		if (params.arguments) {
-			// If arguments is already an object (from native protocol), use it
-			if (typeof params.arguments === "object") {
-				parsedArguments = params.arguments
-			} else if (typeof params.arguments === "string") {
-				// If arguments is a string (from legacy/XML protocol), parse it
-				try {
-					parsedArguments = JSON.parse(params.arguments)
-				} catch (error) {
-					task.consecutiveMistakeCount++
-					task.recordToolError("use_mcp_tool")
-					await task.say("error", t("mcp:errors.invalidJsonArgument", { toolName: params.tool_name }))
-					task.didToolFailInCurrentTurn = true
-
-					pushToolResult(
-						formatResponse.toolError(
-							formatResponse.invalidMcpToolArgumentError(params.server_name, params.tool_name),
-						),
-					)
-					return { isValid: false }
-				}
+		if (params.arguments !== undefined) {
+			if (typeof params.arguments !== "object" || params.arguments === null || Array.isArray(params.arguments)) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("use_mcp_tool")
+				await task.say("error", t("mcp:errors.invalidJsonArgument", { toolName: params.tool_name }))
+				task.didToolFailInCurrentTurn = true
+				pushToolResult(
+					formatResponse.toolError(
+						formatResponse.invalidMcpToolArgumentError(params.server_name, params.tool_name),
+					),
+				)
+				return { isValid: false }
 			}
+			parsedArguments = params.arguments
 		}
 
 		return {

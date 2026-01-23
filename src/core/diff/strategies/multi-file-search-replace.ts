@@ -202,7 +202,6 @@ def greet(name):
 </args>
 </apply_diff>
 
-
 Usage:
 <apply_diff>
 <args>

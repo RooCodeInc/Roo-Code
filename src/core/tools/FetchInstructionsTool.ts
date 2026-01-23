@@ -14,14 +14,8 @@ interface FetchInstructionsParams {
 export class FetchInstructionsTool extends BaseTool<"fetch_instructions"> {
 	readonly name = "fetch_instructions" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): FetchInstructionsParams {
-		return {
-			task: params.task || "",
-		}
-	}
-
 	async execute(params: FetchInstructionsParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { handleError, pushToolResult, askApproval, toolProtocol } = callbacks
+		const { handleError, pushToolResult, askApproval } = callbacks
 		const { task: taskParam } = params
 
 		try {

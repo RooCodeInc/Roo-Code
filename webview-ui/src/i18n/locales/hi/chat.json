@@ -335,9 +335,9 @@
 		},
 		"release": {
 			"heading": "नया क्या है:",
-			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider जोड़ा गया जो token लागत के बिना Codex मॉडल तक subscription-आधारित पहुंच देता है।",
-			"gpt52codexModel": "नया gpt-5.2-codex मॉडल Roo Code Router, मानक OpenAI provider और अन्य में जोड़ा गया।",
-			"bugFixes": "ग्रे स्क्रीन का कारण बनने वाली मेमोरी लीक, Gemini thought signature समस्याओं और अन्य स्थिरता सुधार ठीक किए गए।"
+			"chatGptUsageLimits": "OpenAI Codex प्रदाता में आपकी ChatGPT उपयोग सीमा को ट्रैक करने के लिए UI जोड़ा गया।",
+			"claudeCodeRemoved": "पदावनत Claude Code प्रदाता को हटाया गया।",
+			"grokCodeFastFreeEnds": "Grok Code Fast अब मुफ़्त नहीं है - उदार प्रचार के लिए xAI को धन्यवाद!"
 		},
 		"cloudAgents": {
 			"heading": "क्लाउड में नया:",

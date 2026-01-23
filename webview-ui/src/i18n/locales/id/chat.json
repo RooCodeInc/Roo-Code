@@ -348,9 +348,9 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider ditambahkan yang memberikan akses berbasis langganan ke model Codex tanpa biaya per-token.",
-			"gpt52codexModel": "Model gpt-5.2-codex baru ditambahkan ke Roo Code Router, provider OpenAI standar, dan lebih banyak lagi.",
-			"bugFixes": "Memperbaiki kebocoran memori yang menyebabkan layar abu-abu, masalah tanda tangan pemikiran Gemini, dan peningkatan stabilitas lainnya."
+			"chatGptUsageLimits": "UI ditambahkan untuk melacak batas penggunaan ChatGPT Anda di penyedia OpenAI Codex.",
+			"claudeCodeRemoved": "Penyedia Claude Code yang sudah usang telah dihapus.",
+			"grokCodeFastFreeEnds": "Grok Code Fast tidak lagi gratis - terima kasih kepada xAI atas promosi yang murah hati!"
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

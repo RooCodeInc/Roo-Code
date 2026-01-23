@@ -211,7 +211,7 @@ export function applyModelToolCustomization(
 
 /**
  * Filters native tools based on mode restrictions and model customization.
- * This ensures native tools are filtered the same way XML tools are filtered in the system prompt.
+ * This ensures native tools are filtered consistently with mode/tool permissions.
  *
  * @param nativeTools - Array of all available native tools
  * @param mode - Current mode slug

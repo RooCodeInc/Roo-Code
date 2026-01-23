@@ -9,7 +9,6 @@ import * as pathUtils from "../../../utils/path"
 vi.mock("fs/promises")
 vi.mock("../../../utils/fs")
 vi.mock("../../../utils/path")
-vi.mock("../../../utils/xml")
 
 // Mock the ApplyDiffTool class-based tool that MultiApplyDiffTool delegates to for native protocol
 vi.mock("../ApplyDiffTool", () => ({
@@ -93,7 +92,6 @@ describe("multiApplyDiffTool", () => {
 						maxTokens: 4096,
 						contextWindow: 128000,
 						supportsPromptCache: false,
-						supportsNativeTools: false,
 					},
 				}),
 			},
@@ -122,8 +120,10 @@ describe("multiApplyDiffTool", () => {
 	})
 
 	describe("Native protocol delegation", () => {
-		it("should delegate to applyDiffToolClass.handle for XML args format", async () => {
+		it("delegates to the class-based tool for native protocol", async () => {
 			mockBlock = {
+				type: "tool_use",
+				name: "apply_diff",
 				params: {
 					args: `<file>
 						<path>test.ts</path>
@@ -135,28 +135,13 @@ describe("multiApplyDiffTool", () => {
 				partial: false,
 			}
 
-			await applyDiffTool(
-				mockCline,
-				mockBlock,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await applyDiffTool(mockCline, mockBlock, mockAskApproval, mockHandleError, mockPushToolResult)
 
-			// Should delegate to the class-based tool
-			expect(applyDiffToolClass.handle).toHaveBeenCalled()
-			expect(applyDiffToolClass.handle).toHaveBeenCalledWith(
-				mockCline,
-				mockBlock,
-				expect.objectContaining({
-					askApproval: mockAskApproval,
-					handleError: mockHandleError,
-					pushToolResult: mockPushToolResult,
-					removeClosingTag: mockRemoveClosingTag,
-					toolProtocol: "native",
-				}),
-			)
+			expect(applyDiffToolClass.handle).toHaveBeenCalledWith(mockCline, mockBlock, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+			})
 		})
 
 		it("should delegate to applyDiffToolClass.handle for legacy path/diff params", async () => {
@@ -168,28 +153,14 @@ describe("multiApplyDiffTool", () => {
 				partial: false,
 			}
 
-			await applyDiffTool(
-				mockCline,
-				mockBlock,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await applyDiffTool(mockCline, mockBlock, mockAskApproval, mockHandleError, mockPushToolResult)
 
 			// Should delegate to the class-based tool
-			expect(applyDiffToolClass.handle).toHaveBeenCalled()
-			expect(applyDiffToolClass.handle).toHaveBeenCalledWith(
-				mockCline,
-				mockBlock,
-				expect.objectContaining({
-					askApproval: mockAskApproval,
-					handleError: mockHandleError,
-					pushToolResult: mockPushToolResult,
-					removeClosingTag: mockRemoveClosingTag,
-					toolProtocol: "native",
-				}),
-			)
+			expect(applyDiffToolClass.handle).toHaveBeenCalledWith(mockCline, mockBlock, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+			})
 		})
 
 		it("should handle undefined diff content by delegating to class-based tool", async () => {
@@ -201,14 +172,7 @@ describe("multiApplyDiffTool", () => {
 				partial: false,
 			}
 
-			await applyDiffTool(
-				mockCline,
-				mockBlock,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await applyDiffTool(mockCline, mockBlock, mockAskApproval, mockHandleError, mockPushToolResult)
 
 			// Should delegate to the class-based tool (which will handle the error)
 			expect(applyDiffToolClass.handle).toHaveBeenCalled()
@@ -227,14 +191,7 @@ describe("multiApplyDiffTool", () => {
 				partial: false,
 			}
 
-			await applyDiffTool(
-				mockCline,
-				mockBlock,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await applyDiffTool(mockCline, mockBlock, mockAskApproval, mockHandleError, mockPushToolResult)
 
 			// Should delegate to the class-based tool
 			expect(applyDiffToolClass.handle).toHaveBeenCalled()
@@ -261,14 +218,7 @@ another new content
 				partial: false,
 			}
 
-			await applyDiffTool(
-				mockCline,
-				mockBlock,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await applyDiffTool(mockCline, mockBlock, mockAskApproval, mockHandleError, mockPushToolResult)
 
 			// Should delegate to the class-based tool
 			expect(applyDiffToolClass.handle).toHaveBeenCalled()
@@ -289,14 +239,7 @@ new content
 				partial: false,
 			}
 
-			await applyDiffTool(
-				mockCline,
-				mockBlock,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await applyDiffTool(mockCline, mockBlock, mockAskApproval, mockHandleError, mockPushToolResult)
 
 			// Should delegate to the class-based tool
 			expect(applyDiffToolClass.handle).toHaveBeenCalled()
@@ -315,14 +258,7 @@ new content
 				partial: false,
 			}
 
-			await applyDiffTool(
-				mockCline,
-				mockBlock,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await applyDiffTool(mockCline, mockBlock, mockAskApproval, mockHandleError, mockPushToolResult)
 
 			// Should delegate to the class-based tool
 			expect(applyDiffToolClass.handle).toHaveBeenCalled()
@@ -342,14 +278,7 @@ new content
 				partial: false,
 			}
 
-			await applyDiffTool(
-				mockCline,
-				mockBlock,
-				mockAskApproval,
-				mockHandleError,
-				mockPushToolResult,
-				mockRemoveClosingTag,
-			)
+			await applyDiffTool(mockCline, mockBlock, mockAskApproval, mockHandleError, mockPushToolResult)
 
 			// Should delegate to the class-based tool
 			expect(applyDiffToolClass.handle).toHaveBeenCalled()

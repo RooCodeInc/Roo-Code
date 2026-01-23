@@ -93,8 +93,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// Gemini 3 validates thought signatures for tool/function calling steps.
 		// We must round-trip the signature when tools are in use, even if the user chose
 		// a minimal thinking level (or thinkingConfig is otherwise absent).
-		const usingNativeTools = Boolean(metadata?.tools && metadata.tools.length > 0)
-		const includeThoughtSignatures = Boolean(thinkingConfig) || usingNativeTools
+		const includeThoughtSignatures = Boolean(thinkingConfig) || Boolean(metadata?.tools?.length)
 
 		// The message list can include provider-specific meta entries such as
 		// `{ type: "reasoning", ... }` that are intended only for providers like
@@ -129,29 +128,19 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			.map((message) => convertAnthropicMessageToGemini(message, { includeThoughtSignatures, toolIdToName }))
 			.flat()
 
-		const tools: GenerateContentConfig["tools"] = []
-
-		// Google built-in tools (Grounding, URL Context) are currently mutually exclusive
-		// with function declarations in the Gemini API. If native function calling is
-		// used (Agent tools), we must prioritize it and skip built-in tools to avoid
-		// "Tool use with function calling is unsupported" (HTTP 400) errors.
-		if (metadata?.tools && metadata.tools.length > 0) {
-			tools.push({
-				functionDeclarations: metadata.tools.map((tool) => ({
+		// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS).
+		// Google built-in tools (Grounding, URL Context) are mutually exclusive
+		// with function declarations in the Gemini API, so we always use
+		// function declarations when tools are provided.
+		const tools: GenerateContentConfig["tools"] = [
+			{
+				functionDeclarations: (metadata?.tools ?? []).map((tool) => ({
 					name: (tool as any).function.name,
 					description: (tool as any).function.description,
 					parametersJsonSchema: (tool as any).function.parameters,
 				})),
-			})
-		} else {
-			if (this.options.enableUrlContext) {
-				tools.push({ urlContext: {} })
-			}
-
-			if (this.options.enableGrounding) {
-				tools.push({ googleSearch: {} })
-			}
-		}
+			},
+		]
 
 		// Determine temperature respecting model capabilities and defaults:
 		// - If supportsTemperature is explicitly false, ignore user overrides

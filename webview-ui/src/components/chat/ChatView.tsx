@@ -1529,7 +1529,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								icon={<Cloud className="size-5 shrink-0" />}
 								onClick={() => openUpsell()}
 								dismissOnClick={false}
-								className="bg-none mt-6 border-border rounded-xl p-0 py-3 !text-base">
+								className="bg-none mt-6 border-border rounded-xl p-3 !text-base">
 								<Trans
 									i18nKey="cloud:upsell.taskList"
 									components={{

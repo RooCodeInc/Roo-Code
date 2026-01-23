@@ -30,6 +30,8 @@
 		"@trpc/client": "^11.8.1",
 		"@vscode/ripgrep": "^1.15.9",
 		"commander": "^12.1.0",
+		"cross-spawn": "^7.0.6",
+		"execa": "^9.5.2",
 		"fuzzysort": "^3.1.0",
 		"ink": "^6.6.0",
 		"p-wait-for": "^5.0.2",

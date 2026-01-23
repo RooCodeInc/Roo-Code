@@ -360,34 +360,25 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			// Enable extended prompt cache retention for models that support it.
 			// This uses the OpenAI Responses API `prompt_cache_retention` parameter.
 			...(promptCacheRetention ? { prompt_cache_retention: promptCacheRetention } : {}),
-			...(metadata?.tools && {
-				tools: metadata.tools
-					.filter((tool) => tool.type === "function")
-					.map((tool) => {
-						// MCP tools use the 'mcp--' prefix - disable strict mode for them
-						// to preserve optional parameters from the MCP server schema
-						// But we still need to add additionalProperties: false for OpenAI Responses API
-						const isMcp = isMcpTool(tool.function.name)
-						return {
-							type: "function",
-							name: tool.function.name,
-							description: tool.function.description,
-							parameters: isMcp
-								? ensureAdditionalPropertiesFalse(tool.function.parameters)
-								: ensureAllRequired(tool.function.parameters),
-							strict: !isMcp,
-						}
-					}),
-			}),
-			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-		}
-
-		// For native tool protocol, control parallel tool calls based on the metadata flag.
-		// When parallelToolCalls is true, allow parallel tool calls (OpenAI's parallel_tool_calls=true).
-		// When false (default), explicitly disable parallel tool calls (false).
-		// For XML or when protocol is unset, omit the field entirely so the API default applies.
-		if (metadata?.toolProtocol === "native") {
-			body.parallel_tool_calls = metadata.parallelToolCalls ?? false
+			tools: (metadata?.tools ?? [])
+				.filter((tool) => tool.type === "function")
+				.map((tool) => {
+					// MCP tools use the 'mcp--' prefix - disable strict mode for them
+					// to preserve optional parameters from the MCP server schema
+					// But we still need to add additionalProperties: false for OpenAI Responses API
+					const isMcp = isMcpTool(tool.function.name)
+					return {
+						type: "function",
+						name: tool.function.name,
+						description: tool.function.description,
+						parameters: isMcp
+							? ensureAdditionalPropertiesFalse(tool.function.parameters)
+							: ensureAllRequired(tool.function.parameters),
+						strict: !isMcp,
+					}
+				}),
+			tool_choice: metadata?.tool_choice,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? false,
 		}
 
 		// Include text.verbosity only when the model explicitly supports it
@@ -1232,20 +1223,28 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 					}
 				}
 
-				if (item.type === "text" && item.text) {
-					yield { type: "text", text: item.text }
-				} else if (item.type === "reasoning" && item.text) {
-					yield { type: "reasoning", text: item.text }
-				} else if (item.type === "message" && Array.isArray(item.content)) {
-					for (const content of item.content) {
-						// Some implementations send 'text'; others send 'output_text'
-						if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
-							yield { type: "text", text: content.text }
+				// For "added" events, yield text/reasoning content (streaming path)
+				// For "done" events, do NOT yield text/reasoning - it's already been streamed via deltas
+				// and would cause double-emission (A, B, C, ABC).
+				if (event.type === "response.output_item.added") {
+					if (item.type === "text" && item.text) {
+						yield { type: "text", text: item.text }
+					} else if (item.type === "reasoning" && item.text) {
+						yield { type: "reasoning", text: item.text }
+					} else if (item.type === "message" && Array.isArray(item.content)) {
+						for (const content of item.content) {
+							// Some implementations send 'text'; others send 'output_text'
+							if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
+								yield { type: "text", text: content.text }
+							}
 						}
 					}
-				} else if (
+				}
+
+				// Only handle tool/function calls from done events (to ensure arguments are complete)
+				if (
 					(item.type === "function_call" || item.type === "tool_call") &&
-					event.type === "response.output_item.done" // Only handle done events for tool calls to ensure arguments are complete
+					event.type === "response.output_item.done"
 				) {
 					// Handle complete tool/function call item
 					// Emit as tool_call for backward compatibility with non-streaming tool handling

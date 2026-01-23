@@ -37,6 +37,10 @@ type ModelIdKey = keyof Pick<
 	| "ioIntelligenceModelId"
 	| "vercelAiGatewayModelId"
 	| "apiModelId"
+	| "ollamaModelId"
+	| "lmStudioModelId"
+	| "lmStudioDraftModelId"
+	| "vsCodeLmModelSelector"
 >
 
 interface ModelPickerProps {
@@ -55,6 +59,14 @@ interface ModelPickerProps {
 	errorMessage?: string
 	simplifySettings?: boolean
 	hidePricing?: boolean
+	/** Label for the model picker field - defaults to "Model" */
+	label?: string
+	/** Transform model ID string to the value stored in configuration (for compound types like VSCodeLM selector) */
+	valueTransform?: (modelId: string) => unknown
+	/** Transform stored configuration value back to display string */
+	displayTransform?: (value: unknown) => string
+	/** Callback when model changes - useful for side effects like clearing related fields */
+	onModelChange?: (modelId: string) => void
 }
 
 export const ModelPicker = ({
@@ -69,6 +81,10 @@ export const ModelPicker = ({
 	errorMessage,
 	simplifySettings,
 	hidePricing,
+	label,
+	valueTransform,
+	displayTransform,
+	onModelChange,
 }: ModelPickerProps) => {
 	const { t } = useAppTranslation()
 
@@ -80,6 +96,16 @@ export const ModelPicker = ({
 	const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
 	const { id: selectedModelId, info: selectedModelInfo } = useSelectedModel(apiConfiguration)
+
+	// Get the display value for the current selection
+	// If displayTransform is provided, use it to convert the stored value to a display string
+	const displayValue = useMemo(() => {
+		if (displayTransform) {
+			const storedValue = apiConfiguration[modelIdKey]
+			return storedValue ? displayTransform(storedValue) : undefined
+		}
+		return selectedModelId
+	}, [displayTransform, apiConfiguration, modelIdKey, selectedModelId])
 
 	const modelIds = useMemo(() => {
 		const filteredModels = filterModels(models, apiConfiguration.apiProvider, organizationAllowList)
@@ -113,7 +139,13 @@ export const ModelPicker = ({
 			}
 
 			setOpen(false)
-			setApiConfigurationField(modelIdKey, modelId)
+
+			// Apply value transform if provided (e.g., for VSCodeLM selector)
+			const valueToStore = valueTransform ? valueTransform(modelId) : modelId
+			setApiConfigurationField(modelIdKey, valueToStore as ProviderSettings[ModelIdKey])
+
+			// Call the optional change callback
+			onModelChange?.(modelId)
 
 			// Clear any existing timeout
 			if (selectTimeoutRef.current) {
@@ -123,7 +155,7 @@ export const ModelPicker = ({
 			// Delay to ensure the popover is closed before setting the search value.
 			selectTimeoutRef.current = setTimeout(() => setSearchValue(""), 100)
 		},
-		[modelIdKey, setApiConfigurationField],
+		[modelIdKey, setApiConfigurationField, valueTransform, onModelChange],
 	)
 
 	const onOpenChange = useCallback((open: boolean) => {
@@ -173,7 +205,7 @@ export const ModelPicker = ({
 	return (
 		<>
 			<div>
-				<label className="block font-medium mb-1">{t("settings:modelPicker.label")}</label>
+				<label className="block font-medium mb-1">{label ?? t("settings:modelPicker.label")}</label>
 				<Popover open={open} onOpenChange={onOpenChange}>
 					<PopoverTrigger asChild>
 						<Button
@@ -182,7 +214,7 @@ export const ModelPicker = ({
 							aria-expanded={open}
 							className="w-full justify-between"
 							data-testid="model-picker-button">
-							<div className="truncate">{selectedModelId ?? t("settings:common.select")}</div>
+							<div className="truncate">{displayValue ?? t("settings:common.select")}</div>
 							<ChevronsUpDown className="opacity-50" />
 						</Button>
 					</PopoverTrigger>
@@ -227,7 +259,7 @@ export const ModelPicker = ({
 											<Check
 												className={cn(
 													"size-4 p-0.5 ml-auto",
-													model === selectedModelId ? "opacity-100" : "opacity-0",
+													model === displayValue ? "opacity-100" : "opacity-0",
 												)}
 											/>
 										</CommandItem>

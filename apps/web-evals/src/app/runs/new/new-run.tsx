@@ -56,7 +56,6 @@ import { useRooCodeCloudModels } from "@/hooks/use-roo-code-cloud-models"
 
 import {
 	Button,
-	Checkbox,
 	FormControl,
 	FormField,
 	FormItem,
@@ -111,7 +110,6 @@ export function NewRun() {
 
 	const [provider, setModelSource] = useState<"roo" | "openrouter" | "other">("other")
 	const [executionMethod, setExecutionMethod] = useState<ExecutionMethod>("vscode")
-	const [useNativeToolProtocol, setUseNativeToolProtocol] = useState(true)
 	const [commandExecutionTimeout, setCommandExecutionTimeout] = useState(20)
 	const [terminalShellIntegrationTimeout, setTerminalShellIntegrationTimeout] = useState(30) // seconds
 
@@ -464,7 +462,6 @@ export function NewRun() {
 							...(runValues.settings || {}),
 							apiProvider: "openrouter",
 							openRouterModelId: selection.model,
-							toolProtocol: useNativeToolProtocol ? "native" : "xml",
 							commandExecutionTimeout,
 							terminalShellIntegrationTimeout: terminalShellIntegrationTimeout * 1000,
 						}
@@ -474,7 +471,6 @@ export function NewRun() {
 							...(runValues.settings || {}),
 							apiProvider: "roo",
 							apiModelId: selection.model,
-							toolProtocol: useNativeToolProtocol ? "native" : "xml",
 							commandExecutionTimeout,
 							terminalShellIntegrationTimeout: terminalShellIntegrationTimeout * 1000,
 						}
@@ -485,7 +481,6 @@ export function NewRun() {
 							...EVALS_SETTINGS,
 							...providerSettings,
 							...importedSettings.globalSettings,
-							toolProtocol: useNativeToolProtocol ? "native" : "xml",
 							commandExecutionTimeout,
 							terminalShellIntegrationTimeout: terminalShellIntegrationTimeout * 1000,
 						}
@@ -512,7 +507,6 @@ export function NewRun() {
 			configSelections,
 			importedSettings,
 			router,
-			useNativeToolProtocol,
 			commandExecutionTimeout,
 			terminalShellIntegrationTimeout,
 		],
@@ -688,26 +682,6 @@ export function NewRun() {
 											</div>
 										)}
 
-										<div className="mt-4 p-4 rounded-md bg-muted/30 border border-border space-y-3">
-											<Label className="text-sm font-medium text-muted-foreground">
-												Tool Protocol Options
-											</Label>
-											<div className="flex flex-col gap-2.5 pl-1">
-												<label
-													htmlFor="native-other"
-													className="flex items-center gap-2 cursor-pointer">
-													<Checkbox
-														id="native-other"
-														checked={useNativeToolProtocol}
-														onCheckedChange={(checked: boolean) =>
-															setUseNativeToolProtocol(checked)
-														}
-													/>
-													<span className="text-sm">Use Native Tool Calls</span>
-												</label>
-											</div>
-										</div>
-
 										{settings && (
 											<SettingsDiff defaultSettings={EVALS_SETTINGS} customSettings={settings} />
 										)}
@@ -791,26 +765,6 @@ export function NewRun() {
 													)}
 												</div>
 											))}
-										</div>
-
-										<div className="mt-4 p-4 rounded-md bg-muted/30 border border-border space-y-3">
-											<Label className="text-sm font-medium text-muted-foreground">
-												Tool Protocol Options
-											</Label>
-											<div className="flex flex-col gap-2.5 pl-1">
-												<label
-													htmlFor="native"
-													className="flex items-center gap-2 cursor-pointer">
-													<Checkbox
-														id="native"
-														checked={useNativeToolProtocol}
-														onCheckedChange={(checked: boolean) =>
-															setUseNativeToolProtocol(checked)
-														}
-													/>
-													<span className="text-sm">Use Native Tool Calls</span>
-												</label>
-											</div>
 										</div>
 									</>
 								)}

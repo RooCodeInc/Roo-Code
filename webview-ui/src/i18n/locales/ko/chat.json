@@ -335,9 +335,9 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro 공급자가 추가되었으며, 토큰당 비용 없이 Codex 모델에 대한 구독 기반 액세스를 제공합니다.",
-			"gpt52codexModel": "새로운 gpt-5.2-codex 모델이 Roo Code Router, 표준 OpenAI 공급자 등에 추가되었습니다.",
-			"bugFixes": "회색 화면을 유발하는 메모리 누수, Gemini 생각 서명 문제 및 추가 안정성 개선 사항을 수정했습니다."
+			"chatGptUsageLimits": "OpenAI Codex 공급자에서 ChatGPT 사용 제한을 추적하는 UI를 추가했습니다.",
+			"claudeCodeRemoved": "지원 중단된 Claude Code 공급자를 제거했습니다.",
+			"grokCodeFastFreeEnds": "Grok Code Fast는 더 이상 무료가 아닙니다 - 관대한 프로모션을 해준 xAI에 감사합니다!"
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

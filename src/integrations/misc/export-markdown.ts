@@ -11,8 +11,7 @@ interface ReasoningBlock {
 
 type ExtendedContentBlock = Anthropic.Messages.ContentBlockParam | ReasoningBlock
 
-export async function downloadTask(dateTs: number, conversationHistory: Anthropic.MessageParam[]) {
-	// File name
+export function getTaskFileName(dateTs: number): string {
 	const date = new Date(dateTs)
 	const month = date.toLocaleString("en-US", { month: "short" }).toLowerCase()
 	const day = date.getDate()
@@ -23,7 +22,16 @@ export async function downloadTask(dateTs: number, conversationHistory: Anthropi
 	const ampm = hours >= 12 ? "pm" : "am"
 	hours = hours % 12
 	hours = hours ? hours : 12 // the hour '0' should be '12'
-	const fileName = `roo_task_${month}-${day}-${year}_${hours}-${minutes}-${seconds}-${ampm}.md`
+	return `roo_task_${month}-${day}-${year}_${hours}-${minutes}-${seconds}-${ampm}.md`
+}
+
+export async function downloadTask(
+	dateTs: number,
+	conversationHistory: Anthropic.MessageParam[],
+	defaultUri: vscode.Uri,
+): Promise<vscode.Uri | undefined> {
+	// File name
+	const fileName = getTaskFileName(dateTs)
 
 	// Generate markdown
 	const markdownContent = conversationHistory
@@ -39,14 +47,16 @@ export async function downloadTask(dateTs: number, conversationHistory: Anthropi
 	// Prompt user for save location
 	const saveUri = await vscode.window.showSaveDialog({
 		filters: { Markdown: ["md"] },
-		defaultUri: vscode.Uri.file(path.join(os.homedir(), "Downloads", fileName)),
+		defaultUri,
 	})
 
 	if (saveUri) {
 		// Write content to the selected location
 		await vscode.workspace.fs.writeFile(saveUri, Buffer.from(markdownContent))
 		vscode.window.showTextDocument(saveUri, { preview: true })
+		return saveUri
 	}
+	return undefined
 }
 
 export function formatContentBlockToMarkdown(block: ExtendedContentBlock): string {

@@ -1,7 +1,7 @@
 import OpenAI from "openai"
 import { Anthropic } from "@anthropic-ai/sdk" // Keep for type usage only
 
-import { litellmDefaultModelId, litellmDefaultModelInfo, TOOL_PROTOCOL } from "@roo-code/types"
+import { litellmDefaultModelId, litellmDefaultModelInfo } from "@roo-code/types"
 
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
@@ -9,7 +9,6 @@ import { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
-import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { RouterProvider } from "./router-provider"
@@ -187,14 +186,6 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		// Check if this is a GPT-5 model that requires max_completion_tokens instead of max_tokens
 		const isGPT5Model = this.isGpt5(modelId)
 
-		// Resolve tool protocol - use metadata's locked protocol if provided, otherwise resolve from options
-		const toolProtocol = resolveToolProtocol(this.options, info, metadata?.toolProtocol)
-		const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
-
-		// Check if model supports native tools and tools are provided with native protocol
-		const supportsNativeTools = info.supportsNativeTools ?? false
-		const useNativeTools = supportsNativeTools && metadata?.tools && metadata.tools.length > 0 && isNativeProtocol
-
 		// For Gemini models with native protocol: inject fake reasoning.encrypted block for tool calls
 		// This is required when switching from other models to Gemini to satisfy API validation.
 		// Gemini 3 models validate thought signatures for function calls, and when conversation
@@ -202,7 +193,7 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 		// signatures. The "skip_thought_signature_validator" value bypasses this validation.
 		const isGemini = this.isGeminiModel(modelId)
 		let processedMessages = enhancedMessages
-		if (isNativeProtocol && isGemini) {
+		if (isGemini) {
 			processedMessages = this.injectThoughtSignatureForGemini(enhancedMessages)
 		}
 
@@ -213,8 +204,8 @@ export class LiteLLMHandler extends RouterProvider implements SingleCompletionHa
 			stream_options: {
 				include_usage: true,
 			},
-			...(useNativeTools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(useNativeTools && metadata.tool_choice && { tool_choice: metadata.tool_choice }),
+			tools: this.convertToolsForOpenAI(metadata?.tools),
+			tool_choice: metadata?.tool_choice,
 		}
 
 		// GPT-5 models require max_completion_tokens instead of the deprecated max_tokens parameter

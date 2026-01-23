@@ -115,7 +115,6 @@ Diff format:
 
 \`\`\`
 
-
 Example:
 
 Original file:
@@ -167,7 +166,6 @@ def calculate_sum(items):
     return sum 
 >>>>>>> REPLACE
 \`\`\`
-
 
 Usage:
 <apply_diff>

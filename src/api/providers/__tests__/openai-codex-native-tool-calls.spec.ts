@@ -72,7 +72,6 @@ describe("OpenAiCodexHandler native tool calls", () => {
 
 		const stream = handler.createMessage("system", [{ role: "user", content: "hello" } as any], {
 			taskId: "t",
-			toolProtocol: "native",
 			tools: [],
 		})
 

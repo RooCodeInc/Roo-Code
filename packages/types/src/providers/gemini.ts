@@ -10,8 +10,6 @@ export const geminiModels = {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 		supportsReasoningEffort: ["low", "high"],
 		reasoningEffort: "low",
@@ -37,8 +35,6 @@ export const geminiModels = {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 		supportsReasoningEffort: ["minimal", "low", "medium", "high"],
 		reasoningEffort: "medium",
@@ -55,8 +51,6 @@ export const geminiModels = {
 		maxTokens: 64_000,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 2.5, // This is the pricing for prompts above 200k tokens.
@@ -85,8 +79,6 @@ export const geminiModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 2.5, // This is the pricing for prompts above 200k tokens.
@@ -114,8 +106,6 @@ export const geminiModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 2.5, // This is the pricing for prompts above 200k tokens.
@@ -141,8 +131,6 @@ export const geminiModels = {
 		maxTokens: 65_535,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 2.5, // This is the pricing for prompts above 200k tokens.
@@ -172,8 +160,6 @@ export const geminiModels = {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.3,
@@ -187,8 +173,6 @@ export const geminiModels = {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.3,
@@ -202,8 +186,6 @@ export const geminiModels = {
 		maxTokens: 64_000,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.3,
@@ -219,8 +201,6 @@ export const geminiModels = {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.1,
@@ -234,8 +214,6 @@ export const geminiModels = {
 		maxTokens: 65_536,
 		contextWindow: 1_048_576,
 		supportsImages: true,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		supportsPromptCache: true,
 
 		inputPrice: 0.1,

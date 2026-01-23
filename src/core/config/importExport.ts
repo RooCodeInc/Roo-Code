@@ -12,6 +12,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { ProviderSettingsManager, providerProfilesSchema } from "./ProviderSettingsManager"
 import { ContextProxy } from "./ContextProxy"
 import { CustomModesManager } from "./CustomModesManager"
+import { resolveDefaultSaveUri, saveLastExportPath } from "../../utils/export"
 import { t } from "../../i18n"
 
 export type ImportOptions = {
@@ -143,14 +144,21 @@ export const importSettingsFromFile = async (
 }
 
 export const exportSettings = async ({ providerSettingsManager, contextProxy }: ExportOptions) => {
+	const defaultUri = await resolveDefaultSaveUri(contextProxy, "lastSettingsExportPath", "roo-code-settings.json", {
+		useWorkspace: false,
+		fallbackDir: path.join(os.homedir(), "Downloads"),
+	})
+
 	const uri = await vscode.window.showSaveDialog({
 		filters: { JSON: ["json"] },
-		defaultUri: vscode.Uri.file(path.join(os.homedir(), "Documents", "roo-code-settings.json")),
+		defaultUri,
 	})
 
 	if (!uri) {
 		return
 	}
+
+	await saveLastExportPath(contextProxy, "lastSettingsExportPath", uri)
 
 	try {
 		const providerProfiles = await providerSettingsManager.export()

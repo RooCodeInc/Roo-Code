@@ -197,7 +197,6 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		maxTotalImageSize: 20,
 		terminalCompressProgressBar: false,
 		maxConcurrentFileReads: 5,
-		condensingApiConfigId: "",
 		customCondensingPrompt: "",
 		customSupportPrompts: {},
 		profileThresholds: {},

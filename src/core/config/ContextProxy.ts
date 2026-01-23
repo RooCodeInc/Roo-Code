@@ -20,6 +20,7 @@ import {
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { logger } from "../../utils/logging"
+import { supportPrompt } from "../../shared/support-prompt"
 
 type GlobalStateKey = keyof GlobalState
 type SecretStateKey = keyof SecretState
@@ -92,7 +93,49 @@ export class ContextProxy {
 		// Migration: Sanitize invalid/removed API providers
 		await this.migrateInvalidApiProvider()
 
+		// Migration: Move legacy customCondensingPrompt to customSupportPrompts
+		await this.migrateLegacyCondensingPrompt()
+
 		this._isInitialized = true
+	}
+
+	/**
+	 * Migrates the legacy customCondensingPrompt to the new customSupportPrompts structure
+	 * and removes the legacy field.
+	 *
+	 * Note: Only true customizations are migrated. If the legacy prompt equals the default,
+	 * we skip the migration to avoid pinning users to an old default if the default changes.
+	 */
+	private async migrateLegacyCondensingPrompt() {
+		try {
+			const legacyPrompt = this.originalContext.globalState.get<string>("customCondensingPrompt")
+			if (legacyPrompt) {
+				const currentSupportPrompts =
+					this.originalContext.globalState.get<Record<string, string>>("customSupportPrompts") || {}
+
+				// Only migrate if:
+				// 1. The new location doesn't already have a value
+				// 2. The legacy prompt is a true customization (not equal to the default)
+				// This prevents pinning users to an old default if the default prompt changes.
+				const isCustomized = legacyPrompt.trim() !== supportPrompt.default.CONDENSE.trim()
+				if (!currentSupportPrompts.CONDENSE && isCustomized) {
+					logger.info("Migrating customized legacy customCondensingPrompt to customSupportPrompts")
+					const updatedPrompts = { ...currentSupportPrompts, CONDENSE: legacyPrompt }
+					await this.originalContext.globalState.update("customSupportPrompts", updatedPrompts)
+					this.stateCache.customSupportPrompts = updatedPrompts
+				} else if (!isCustomized) {
+					logger.info("Skipping migration: legacy customCondensingPrompt equals the default prompt")
+				}
+
+				// Always remove the legacy field
+				await this.originalContext.globalState.update("customCondensingPrompt", undefined)
+				this.stateCache.customCondensingPrompt = undefined
+			}
+		} catch (error) {
+			logger.error(
+				`Error during customCondensingPrompt migration: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
 	}
 
 	/**
