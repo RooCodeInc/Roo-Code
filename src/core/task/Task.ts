@@ -2471,6 +2471,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxReadFileLine = -1,
 			} = (await this.providerRef.deref()?.getState()) ?? {}
 
+			// Calculate token budget for file mentions based on context window
+			// Use 10% of context window per file mention to prevent context exhaustion
+			// This is more conservative than the read_file tool (which uses 60% of remaining context)
+			// because mentions are processed before context usage is known
+			const modelInfo = this.api.getModel().info
+			const contextWindow = modelInfo.contextWindow || 200_000
+			const maxFileTokenBudget = Math.floor(contextWindow * 0.1) // 10% of context window per file
+
 			const { content: parsedUserContent, mode: slashCommandMode } = await processUserContentMentions({
 				userContent: currentUserContent,
 				cwd: this.cwd,
@@ -2481,6 +2489,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				includeDiagnosticMessages,
 				maxDiagnosticMessages,
 				maxReadFileLine,
+				maxFileTokenBudget,
 			})
 
 			// Switch mode if specified in a slash command's frontmatter

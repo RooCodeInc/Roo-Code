@@ -1,5 +1,8 @@
 // npx vitest core/mentions/__tests__/index.spec.ts
 
+import * as path from "path"
+import * as fs from "fs/promises"
+import * as os from "os"
 import * as vscode from "vscode"
 
 import { parseMentions } from "../index"
@@ -155,5 +158,110 @@ describe("parseMentions - URL error handling", () => {
 		expect(result.text).toContain("# First Site")
 		expect(result.text).toContain('<url_content url="https://example2.com">')
 		expect(result.text).toContain("Error fetching content: timeout")
+	})
+})
+
+describe("parseMentions - file token budget", () => {
+	let mockUrlContentFetcher: UrlContentFetcher
+	let tempDir: string
+
+	beforeEach(async () => {
+		vi.clearAllMocks()
+
+		mockUrlContentFetcher = {
+			launchBrowser: vi.fn(),
+			urlToMarkdown: vi.fn(),
+			closeBrowser: vi.fn(),
+		} as any
+
+		// Create a temp directory for test files
+		tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "mentions-test-"))
+	})
+
+	afterEach(async () => {
+		// Clean up temp directory
+		await fs.rm(tempDir, { recursive: true, force: true })
+	})
+
+	it("should truncate large files when maxFileTokenBudget is specified", async () => {
+		// Create a large file with many lines
+		const lines = Array.from(
+			{ length: 1000 },
+			(_, i) => `Line ${i + 1}: This is some content that will be repeated to make the file larger.`,
+		)
+		const largeContent = lines.join("\n")
+		const filePath = path.join(tempDir, "large-file.txt")
+		await fs.writeFile(filePath, largeContent, "utf8")
+
+		// Use a small token budget to force truncation
+		const result = await parseMentions(
+			`Check @/${path.basename(filePath)}`,
+			tempDir,
+			mockUrlContentFetcher,
+			undefined,
+			undefined,
+			false,
+			true,
+			50,
+			undefined,
+			50, // Small token budget
+		)
+
+		// Should contain truncation message
+		expect(result.text).toContain("[File truncated:")
+		expect(result.text).toContain("within token budget of 50")
+		expect(result.text).toContain("Use the read_file tool to examine specific sections")
+	})
+
+	it("should read entire small file when within token budget", async () => {
+		// Create a small file
+		const smallContent = "Line 1: Hello\nLine 2: World"
+		const filePath = path.join(tempDir, "small-file.txt")
+		await fs.writeFile(filePath, smallContent, "utf8")
+
+		// Use a large token budget
+		const result = await parseMentions(
+			`Check @/${path.basename(filePath)}`,
+			tempDir,
+			mockUrlContentFetcher,
+			undefined,
+			undefined,
+			false,
+			true,
+			50,
+			undefined,
+			10000, // Large token budget
+		)
+
+		// Should not contain truncation message
+		expect(result.text).not.toContain("[File truncated:")
+		expect(result.text).toContain("1 | Line 1: Hello")
+		expect(result.text).toContain("2 | Line 2: World")
+	})
+
+	it("should fall back to line-based reading when no token budget specified", async () => {
+		// Create a file
+		const content = "Line 1: Hello\nLine 2: World\nLine 3: Test"
+		const filePath = path.join(tempDir, "test-file.txt")
+		await fs.writeFile(filePath, content, "utf8")
+
+		// Don't specify token budget
+		const result = await parseMentions(
+			`Check @/${path.basename(filePath)}`,
+			tempDir,
+			mockUrlContentFetcher,
+			undefined,
+			undefined,
+			false,
+			true,
+			50,
+			undefined, // No maxReadFileLine
+			undefined, // No maxFileTokenBudget
+		)
+
+		// Should read the full file
+		expect(result.text).toContain("1 | Line 1: Hello")
+		expect(result.text).toContain("2 | Line 2: World")
+		expect(result.text).toContain("3 | Line 3: Test")
 	})
 })
