@@ -2857,7 +2857,7 @@ export const webviewMessageHandler = async (
 			provider.postMessageToWebview({
 				type: "action",
 				action: "settingsButtonClicked",
-				tab: message.section,
+				values: { section: message.section },
 			})
 			break
 		}
