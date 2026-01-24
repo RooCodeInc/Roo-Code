@@ -60,7 +60,7 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 
 				<div className="flex flex-col gap-3 overflow-hidden">
 					{/* Worktree info */}
-					<div className="flex flex-col p-3 gap-1 cursor-default rounded-xl text-vscode-foreground bg-vscode-input-background">
+					<div className="flex flex-col p-5 gap-2 cursor-default rounded-xl text-vscode-foreground bg-vscode-input-background">
 						<p className="flex items-center gap-2 m-0">
 							<GitBranch className="size-4 shrink-0" />
 							<span className="font-medium truncate">
@@ -69,23 +69,24 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 							</span>
 						</p>
 
-						<p className="flex items-center gap-2 m-0">
+						<p className="flex items-start gap-2 m-0">
 							<Folder className="size-4 shrink-0" />
-							<span className="m-0 text-sm font-mono font-medium text-vscode-descriptionForeground truncate">
+							<span className="m-0 text-sm font-mono font-medium text-vscode-descriptionForeground">
 								{worktree.path}
 							</span>
 						</p>
 					</div>
 
 					{/* Warning message */}
-					<div className="flex items-start gap-2 p-3 rounded-xl bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder">
+					<div className="flex items-start gap-2 px-5 py-2">
 						<TriangleAlert className="size-4 text-vscode-charts-yellow flex-shrink-0" />
-						<div className="min-w-0">
-							<p className="text-vscode-foreground m-0">{t("worktrees:deleteWarning")}</p>
-							<ul className="mt-1 mb-0 pl-0 list-none space-y-0.5 text-vscode-descriptionForeground">
+						<div className="flex flex-col min-w-0 gap-2">
+							<p className="m-0 text-vscode-foreground">{t("worktrees:deleteWarning")}</p>
+							<ul className="m-0 pl-0 list-none space-y-1 text-vscode-descriptionForeground">
 								<li>• {t("worktrees:deleteWarningBranch")}</li>
 								<li>• {t("worktrees:deleteWarningFiles")}</li>
 							</ul>
+							<p className="m-0 text-vscode-descriptionForeground">{t("worktrees:deleteNoticeLarge")}</p>
 						</div>
 					</div>
 

@@ -29,6 +29,7 @@
 		"providers": "Providers",
 		"modes": "Modes",
 		"mcp": "MCP Servers",
+		"worktrees": "Worktrees",
 		"autoApprove": "Auto-Approve",
 		"browser": "Browser",
 		"checkpoints": "Checkpoints",

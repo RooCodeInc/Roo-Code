@@ -1,14 +1,14 @@
 {
 	"title": "Worktrees",
 	"done": "Done",
-	"description": "Git worktrees allow you to work on multiple branches simultaneously in separate directories. Each worktree gets its own VS Code window with Roo Code.",
+	"description": "Git worktrees are great for agentic coding, because they allow you to work on multiple branches of a repo at the same time, by keeping them in different directories. Each worktree gets its own VS Code window with Roo Code.",
 
 	"notGitRepo": "This workspace is not a Git repository. Worktrees require a Git repository to function.",
 	"multiRootNotSupported": "Worktrees are not supported in multi-root workspaces. Please open a single folder to use worktrees.",
 	"subfolderNotSupported": "This workspace is a subfolder of a Git repository. Please open the repository root to use worktrees.",
 	"gitRoot": "Git root",
 
-	"includeFileExists": ".worktreeinclude file found - files will be copied to new worktrees",
+	"includeFileExists": ".worktreeinclude file found. Files will be copied to new worktrees.",
 	"noIncludeFile": "No .worktreeinclude file found",
 	"createFromGitignore": "Create from .gitignore",
 
@@ -18,7 +18,7 @@
 	"detachedHead": "Detached HEAD",
 	"noBranch": "No branch",
 
-	"openInCurrentWindow": "Open in current window",
+	"switchInThisWindow": "Switch to worktree",
 	"openInNewWindow": "Open in new window",
 	"merge": "Merge",
 	"delete": "Delete",
@@ -50,13 +50,13 @@
 	"deleteWarning": "This can't be undone. It will delete:",
 	"deleteWarningBranch": "The branch and any uncommitted changes",
 	"deleteWarningFiles": "All files in the worktree directory",
+	"deleteNoticeLarge": "If this is a large repository, it may take a little while.",
 	"forceDelete": "Force delete",
 	"worktreeIsLocked": "worktree is locked",
 	"deleting": "Deleting...",
 
 	"mergeBranch": "Merge Branch",
-	"mergeDescription": "Merge '{{source}}' into '{{target}}'",
-	"deleteAfterMerge": "Delete worktree after successful merge",
+	"deleteAfterMerge": "Delete worktree after merging",
 	"merging": "Merging...",
 	"mergeSuccess": "Merge Successful",
 	"mergeConflicts": "Merge Conflicts",
@@ -64,5 +64,13 @@
 	"mergeFailed": "Merge Failed",
 	"resolveManually": "I'll Resolve Manually",
 	"askRooResolve": "Ask Roo to Resolve",
-	"close": "Close"
+	"close": "Close",
+
+	"selector": {
+		"title": "Worktrees",
+		"tooltip": "Switch between worktrees",
+		"description": "Git worktrees let you work on multiple branches simultaneously. Click to switch workspace.",
+		"settings": "Worktree Settings",
+		"info": "Git worktrees allow you to have multiple working directories attached to the same repository."
+	}
 }

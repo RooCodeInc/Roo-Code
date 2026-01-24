@@ -6,16 +6,15 @@ import { Badge, Button, StandardTooltip } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
 
-import { Tab, TabContent, TabHeader } from "../common/Tab"
+import { SectionHeader } from "../settings/SectionHeader"
 
 import { CreateWorktreeModal } from "./CreateWorktreeModal"
 import { DeleteWorktreeModal } from "./DeleteWorktreeModal"
+import { MergeWorktreeModal } from "./MergeWorktreeModal"
+import { MergeResultModal } from "./MergeResultModal"
+import { Folder, GitBranch, GitMerge, Lock, Plus, SquareArrowOutUpRight, Trash } from "lucide-react"
 
-type WorktreesViewProps = {
-	onDone: () => void
-}
-
-export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
+export const WorktreesView = () => {
 	const { t } = useAppTranslation()
 
 	// State
@@ -174,56 +173,41 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 	// Render error states
 	if (!isGitRepo) {
 		return (
-			<Tab>
-				<TabHeader className="flex justify-between items-center">
-					<h3 className="text-vscode-foreground m-0">{t("worktrees:title")}</h3>
-					<Button onClick={onDone}>{t("worktrees:done")}</Button>
-				</TabHeader>
-				<TabContent>
-					<div className="flex flex-col items-center justify-center h-48 text-vscode-descriptionForeground">
-						<span className="codicon codicon-warning text-4xl mb-4" />
-						<p className="text-center">{t("worktrees:notGitRepo")}</p>
-					</div>
-				</TabContent>
-			</Tab>
+			<div>
+				<SectionHeader>{t("worktrees:title")}</SectionHeader>
+				<div className="flex flex-col items-center justify-center h-48 text-vscode-descriptionForeground px-5">
+					<span className="codicon codicon-warning text-4xl mb-4" />
+					<p className="text-center">{t("worktrees:notGitRepo")}</p>
+				</div>
+			</div>
 		)
 	}
 
 	if (isMultiRoot) {
 		return (
-			<Tab>
-				<TabHeader className="flex justify-between items-center">
-					<h3 className="text-vscode-foreground m-0">{t("worktrees:title")}</h3>
-					<Button onClick={onDone}>{t("worktrees:done")}</Button>
-				</TabHeader>
-				<TabContent>
-					<div className="flex flex-col items-center justify-center h-48 text-vscode-descriptionForeground">
-						<span className="codicon codicon-warning text-4xl mb-4" />
-						<p className="text-center">{t("worktrees:multiRootNotSupported")}</p>
-					</div>
-				</TabContent>
-			</Tab>
+			<div>
+				<SectionHeader>{t("worktrees:title")}</SectionHeader>
+				<div className="flex flex-col items-center justify-center h-48 text-vscode-descriptionForeground px-5">
+					<span className="codicon codicon-warning text-4xl mb-4" />
+					<p className="text-center">{t("worktrees:multiRootNotSupported")}</p>
+				</div>
+			</div>
 		)
 	}
 
 	if (isSubfolder) {
 		return (
-			<Tab>
-				<TabHeader className="flex justify-between items-center">
-					<h3 className="text-vscode-foreground m-0">{t("worktrees:title")}</h3>
-					<Button onClick={onDone}>{t("worktrees:done")}</Button>
-				</TabHeader>
-				<TabContent>
-					<div className="flex flex-col items-center justify-center h-48 text-vscode-descriptionForeground">
-						<span className="codicon codicon-warning text-4xl mb-4" />
-						<p className="text-center">{t("worktrees:subfolderNotSupported")}</p>
-						<p className="text-sm mt-2 text-center">
-							{t("worktrees:gitRoot")}:{" "}
-							<code className="bg-vscode-input-background px-2 py-1 rounded">{gitRootPath}</code>
-						</p>
-					</div>
-				</TabContent>
-			</Tab>
+			<div>
+				<SectionHeader>{t("worktrees:title")}</SectionHeader>
+				<div className="flex flex-col items-center justify-center h-48 text-vscode-descriptionForeground px-5">
+					<span className="codicon codicon-warning text-4xl mb-4" />
+					<p className="text-center">{t("worktrees:subfolderNotSupported")}</p>
+					<p className="text-sm mt-2 text-center">
+						{t("worktrees:gitRoot")}:{" "}
+						<code className="bg-vscode-input-background px-2 py-1 rounded">{gitRootPath}</code>
+					</p>
+				</div>
+			</div>
 		)
 	}
 
@@ -231,46 +215,23 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 	const primaryWorktree = worktrees.find((w) => w.isBare || worktrees.indexOf(w) === 0)
 
 	return (
-		<Tab>
-			<TabHeader className="flex flex-col gap-2">
-				<div className="flex justify-between items-center">
-					<h3 className="text-vscode-foreground m-0">{t("worktrees:title")}</h3>
-					<Button onClick={onDone}>{t("worktrees:done")}</Button>
+		<div className="flex flex-col h-full overflow-hidden">
+			{/* Fixed Header */}
+			<div className="flex-shrink-0">
+				<SectionHeader>{t("worktrees:title")}</SectionHeader>
+				<div className="flex flex-col gap-2 px-5 py-2">
+					<p className="text-vscode-descriptionForeground text-sm m-0">{t("worktrees:description")}</p>
+
+					{/* New Worktree button */}
+					<Button variant="secondary" className="mt-2" onClick={() => setShowCreateModal(true)}>
+						<Plus />
+						{t("worktrees:newWorktree")}
+					</Button>
 				</div>
-				<p className="text-vscode-descriptionForeground text-sm m-0">{t("worktrees:description")}</p>
+			</div>
 
-				{/* Worktree include status */}
-				{includeStatus && (
-					<div className="flex items-center gap-2 text-sm">
-						{includeStatus.exists ? (
-							<>
-								<span className="codicon codicon-check text-vscode-charts-green" />
-								<span className="text-vscode-descriptionForeground">
-									{t("worktrees:includeFileExists")}
-								</span>
-							</>
-						) : (
-							<>
-								<span className="codicon codicon-warning text-vscode-charts-yellow" />
-								<span className="text-vscode-descriptionForeground">
-									{t("worktrees:noIncludeFile")}
-								</span>
-								{includeStatus.hasGitignore && (
-									<Button
-										variant="secondary"
-										size="sm"
-										onClick={handleCreateWorktreeInclude}
-										disabled={isCreatingInclude}>
-										{t("worktrees:createFromGitignore")}
-									</Button>
-								)}
-							</>
-						)}
-					</div>
-				)}
-			</TabHeader>
-
-			<TabContent className="px-2 py-0">
+			{/* Scrollable List Area */}
+			<div className="flex-1 overflow-y-auto px-4 py-2 min-h-0">
 				{isLoading ? (
 					<div className="flex items-center justify-center h-48">
 						<span className="codicon codicon-loading codicon-modifier-spin text-2xl" />
@@ -281,61 +242,60 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 						<p className="text-center">{error}</p>
 					</div>
 				) : (
-					<div className="flex flex-col gap-1 py-2">
+					<div className="flex flex-col gap-1">
 						{worktrees.map((worktree) => (
 							<div
 								key={worktree.path}
-								className={`p-3 rounded-xl border transition-colors ${
+								className={`p-2.5 px-3.5 rounded-xl hover:bg-vscode-list-hoverBackground border border-transparent ${
 									worktree.isCurrent
-										? "border-vscode-focusBorder bg-vscode-list-activeSelectionBackground"
-										: "border-transparent bg-vscode-editor-background hover:bg-vscode-editor-foreground/10"
-								}`}>
-								<div className="flex items-start justify-between">
-									<div className="flex-1 min-w-0">
-										<div className="flex items-center gap-2 flex-wrap">
-											<span className="codicon codicon-git-branch" />
+										? " bg-vscode-list-activeSelectionBackground border-vscode-list-activeSelectionForeground/20"
+										: "cursor-pointer"
+								}`}
+								onClick={
+									worktree.isCurrent ? undefined : () => handleSwitchWorktree(worktree.path, false)
+								}>
+								<div className="flex items-start min-[400px]:items-center justify-between gap-2 flex-col min-[400px]:flex-row overflow-hidden">
+									<div className={`flex-1 min-w-0 ${worktree.isCurrent && "cursor-default"}`}>
+										{/* Info */}
+										<div className="flex items-center gap-2 overflow-hidden">
+											<GitBranch className="size-3 shrink-0" />
 											<span className="font-medium truncate">
 												{worktree.branch ||
 													(worktree.isDetached
 														? t("worktrees:detachedHead")
 														: t("worktrees:noBranch"))}
 											</span>
-											{worktree.isBare && <Badge>{t("worktrees:primary")}</Badge>}
-											{worktree.isCurrent && (
-												<Badge variant="secondary">{t("worktrees:current")}</Badge>
+											{worktree.isBare && (
+												<Badge className="text-[0.7em] -mt-0.25 py-0.5">
+													{t("worktrees:primary")}
+												</Badge>
 											)}
 											{worktree.isLocked && (
 												<StandardTooltip content={worktree.lockReason || t("worktrees:locked")}>
-													<span className="codicon codicon-lock text-vscode-charts-yellow" />
+													<Lock className="text-vscode-charts-yellow" />
 												</StandardTooltip>
 											)}
 										</div>
-										<div className="text-xs text-vscode-descriptionForeground mt-1 truncate">
-											{worktree.path}
+										<div className="flex gap-2 text-xs text-vscode-descriptionForeground mt-1">
+											<Folder className="size-3 shrink-0 mt-0.5" />
+											<span className="truncate">{worktree.path}</span>
 										</div>
 									</div>
 
-									<div className="flex items-center gap-1 ml-2 flex-shrink-0">
-										{!worktree.isCurrent && (
-											<>
-												<StandardTooltip content={t("worktrees:openInCurrentWindow")}>
-													<Button
-														variant="ghost"
-														size="sm"
-														onClick={() => handleSwitchWorktree(worktree.path, false)}>
-														<span className="codicon codicon-window" />
-													</Button>
-												</StandardTooltip>
-												<StandardTooltip content={t("worktrees:openInNewWindow")}>
-													<Button
-														variant="ghost"
-														size="sm"
-														onClick={() => handleSwitchWorktree(worktree.path, true)}>
-														<span className="codicon codicon-empty-window" />
-													</Button>
-												</StandardTooltip>
-											</>
-										)}
+									{/* Actions */}
+									<div className="flex items-center gap-1 ml-3 min-[400px]:ml-0 flex-shrink-0">
+										<StandardTooltip content={t("worktrees:openInNewWindow")}>
+											<Button
+												variant="ghost"
+												size="icon"
+												disabled={worktree.isCurrent}
+												onClick={(e) => {
+													e.stopPropagation()
+													handleSwitchWorktree(worktree.path, true)
+												}}>
+												<SquareArrowOutUpRight />
+											</Button>
+										</StandardTooltip>
 										{!worktree.isBare &&
 											worktree.branch &&
 											primaryWorktree &&
@@ -343,38 +303,58 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 												<StandardTooltip content={t("worktrees:merge")}>
 													<Button
 														variant="ghost"
-														size="sm"
-														onClick={() => {
+														size="icon"
+														onClick={(e) => {
+															e.stopPropagation()
 															setMergeWorktree(worktree)
 															setMergeTargetBranch(primaryWorktree.branch || "main")
 														}}>
-														<span className="codicon codicon-git-merge" />
+														<GitMerge />
 													</Button>
 												</StandardTooltip>
 											)}
-										{!worktree.isBare && !worktree.isCurrent && (
-											<StandardTooltip content={t("worktrees:delete")}>
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={() => setDeleteWorktree(worktree)}>
-													<span className="codicon codicon-trash text-vscode-errorForeground" />
-												</Button>
-											</StandardTooltip>
-										)}
+
+										<StandardTooltip content={t("worktrees:delete")}>
+											<Button
+												variant="ghost"
+												size="icon"
+												disabled={worktree.isCurrent || worktree.isBare}
+												onClick={(e) => {
+													e.stopPropagation()
+													setDeleteWorktree(worktree)
+												}}>
+												<Trash className="text-destructive" />
+											</Button>
+										</StandardTooltip>
 									</div>
 								</div>
 							</div>
 						))}
-
-						{/* New Worktree button */}
-						<Button variant="secondary" className="mt-2" onClick={() => setShowCreateModal(true)}>
-							<span className="codicon codicon-add mr-2" />
-							{t("worktrees:newWorktree")}
-						</Button>
 					</div>
 				)}
-			</TabContent>
+			</div>
+
+			{/* Fixed Footer - Worktree include status */}
+			{includeStatus && (
+				<div className="flex-shrink-0 flex items-center gap-2 text-sm px-5 py-3 justify-between text-vscode-descriptionForeground border-t border-vscode-sideBar-background">
+					{includeStatus.exists ? (
+						<span>{t("worktrees:includeFileExists")}</span>
+					) : (
+						<>
+							<span>{t("worktrees:noIncludeFile")}</span>
+							{includeStatus.hasGitignore && (
+								<Button
+									variant="secondary"
+									size="sm"
+									onClick={handleCreateWorktreeInclude}
+									disabled={isCreatingInclude}>
+									{t("worktrees:createFromGitignore")}
+								</Button>
+							)}
+						</>
+					)}
+				</div>
+			)}
 
 			{/* Create Modal */}
 			{showCreateModal && (
@@ -403,124 +383,30 @@ export const WorktreesView = ({ onDone }: WorktreesViewProps) => {
 
 			{/* Merge Modal */}
 			{mergeWorktree && !mergeResult && (
-				<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-					<div className="bg-vscode-editor-background border border-vscode-panel-border rounded-lg p-4 max-w-md w-full mx-4">
-						<h3 className="text-lg font-medium text-vscode-foreground mb-4">
-							{t("worktrees:mergeBranch")}
-						</h3>
-						<p className="text-sm text-vscode-descriptionForeground mb-4">
-							{t("worktrees:mergeDescription", {
-								source: mergeWorktree.branch,
-								target: mergeTargetBranch,
-							})}
-						</p>
-
-						<div className="mb-4">
-							<label className="flex items-center gap-2 text-sm text-vscode-foreground">
-								<input
-									type="checkbox"
-									checked={mergeDeleteAfter}
-									onChange={(e) => setMergeDeleteAfter(e.target.checked)}
-								/>
-								{t("worktrees:deleteAfterMerge")}
-							</label>
-						</div>
-
-						<div className="flex justify-end gap-2">
-							<Button variant="secondary" onClick={() => setMergeWorktree(null)}>
-								{t("worktrees:cancel")}
-							</Button>
-							<Button onClick={handleMerge} disabled={isMerging}>
-								{isMerging ? (
-									<>
-										<span className="codicon codicon-loading codicon-modifier-spin mr-2" />
-										{t("worktrees:merging")}
-									</>
-								) : (
-									t("worktrees:merge")
-								)}
-							</Button>
-						</div>
-					</div>
-				</div>
+				<MergeWorktreeModal
+					open={!!mergeWorktree && !mergeResult}
+					onClose={() => setMergeWorktree(null)}
+					worktree={mergeWorktree}
+					targetBranch={mergeTargetBranch}
+					deleteAfterMerge={mergeDeleteAfter}
+					onDeleteAfterMergeChange={setMergeDeleteAfter}
+					isMerging={isMerging}
+					onMerge={handleMerge}
+				/>
 			)}
 
 			{/* Merge Result Modal */}
 			{mergeResult && (
-				<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-					<div className="bg-vscode-editor-background border border-vscode-panel-border rounded-lg p-4 max-w-md w-full mx-4">
-						{mergeResult.success ? (
-							<>
-								<div className="flex items-center gap-2 mb-4">
-									<span className="codicon codicon-check text-vscode-charts-green text-2xl" />
-									<h3 className="text-lg font-medium text-vscode-foreground">
-										{t("worktrees:mergeSuccess")}
-									</h3>
-								</div>
-								<p className="text-sm text-vscode-descriptionForeground mb-4">{mergeResult.message}</p>
-								<div className="flex justify-end">
-									<Button
-										onClick={() => {
-											setMergeWorktree(null)
-											setMergeResult(null)
-										}}>
-										{t("worktrees:done")}
-									</Button>
-								</div>
-							</>
-						) : mergeResult.hasConflicts ? (
-							<>
-								<div className="flex items-center gap-2 mb-4">
-									<span className="codicon codicon-warning text-vscode-charts-yellow text-2xl" />
-									<h3 className="text-lg font-medium text-vscode-foreground">
-										{t("worktrees:mergeConflicts")}
-									</h3>
-								</div>
-								<p className="text-sm text-vscode-descriptionForeground mb-2">
-									{t("worktrees:conflictsDescription")}
-								</p>
-								<div className="bg-vscode-input-background rounded p-2 mb-4 max-h-32 overflow-y-auto">
-									{mergeResult.conflictingFiles.map((file) => (
-										<div key={file} className="text-xs text-vscode-foreground font-mono">
-											{file}
-										</div>
-									))}
-								</div>
-								<div className="flex justify-end gap-2">
-									<Button
-										variant="secondary"
-										onClick={() => {
-											setMergeWorktree(null)
-											setMergeResult(null)
-										}}>
-										{t("worktrees:resolveManually")}
-									</Button>
-									<Button onClick={handleAskRooResolve}>{t("worktrees:askRooResolve")}</Button>
-								</div>
-							</>
-						) : (
-							<>
-								<div className="flex items-center gap-2 mb-4">
-									<span className="codicon codicon-error text-vscode-errorForeground text-2xl" />
-									<h3 className="text-lg font-medium text-vscode-foreground">
-										{t("worktrees:mergeFailed")}
-									</h3>
-								</div>
-								<p className="text-sm text-vscode-descriptionForeground mb-4">{mergeResult.message}</p>
-								<div className="flex justify-end">
-									<Button
-										onClick={() => {
-											setMergeWorktree(null)
-											setMergeResult(null)
-										}}>
-										{t("worktrees:close")}
-									</Button>
-								</div>
-							</>
-						)}
-					</div>
-				</div>
+				<MergeResultModal
+					open={!!mergeResult}
+					onClose={() => {
+						setMergeWorktree(null)
+						setMergeResult(null)
+					}}
+					result={mergeResult}
+					onAskRooResolve={handleAskRooResolve}
+				/>
 			)}
-		</Tab>
+		</div>
 	)
 }

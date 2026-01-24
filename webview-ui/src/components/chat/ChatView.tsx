@@ -45,6 +45,7 @@ import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
+import { WorktreeSelector } from "./WorktreeSelector"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
@@ -1521,6 +1522,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							{taskHistory.length < 6 && <RooTips />}
 							{/* Everyone should see their task history if any */}
 							{taskHistory.length > 0 && <HistoryPreview />}
+							{/* Worktree selector for quick switching between worktrees */}
+							<WorktreeSelector />
 						</div>
 						{/* Logged out users should see a one-time upsell, but not for brand new users */}
 						{!cloudIsAuthenticated && taskHistory.length >= 6 && (
