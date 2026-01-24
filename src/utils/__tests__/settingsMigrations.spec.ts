@@ -1,6 +1,13 @@
-import { runSettingsMigrations, migrations, CURRENT_MIGRATION_VERSION } from "../settingsMigrations"
+import {
+	runSettingsMigrations,
+	migrations,
+	CURRENT_MIGRATION_VERSION,
+	clearDefaultSettings,
+	runStartupSettingsMaintenance,
+} from "../settingsMigrations"
 import type { ContextProxy } from "../../core/config/ContextProxy"
 import type { GlobalState } from "@roo-code/types"
+import { settingDefaults } from "@roo-code/types"
 
 // Mock the logger
 vi.mock("../logging", () => ({
@@ -294,6 +301,138 @@ describe("settingsMigrations", () => {
 
 			// Should still remove the nested object
 			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("codebaseIndexConfig", undefined)
+		})
+	})
+
+	describe("clearDefaultSettings", () => {
+		it("should clear settings that match current defaults", async () => {
+			// Setup: user has settings that match current defaults
+			mockContextProxy.getGlobalState.mockImplementation((key: keyof GlobalState) => {
+				if (key === "browserToolEnabled") return settingDefaults.browserToolEnabled
+				if (key === "soundVolume") return settingDefaults.soundVolume
+				if (key === "maxWorkspaceFiles") return settingDefaults.maxWorkspaceFiles
+				return undefined
+			})
+
+			const clearedCount = await clearDefaultSettings(mockContextProxy as unknown as ContextProxy)
+
+			// All matching defaults should be cleared
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("browserToolEnabled", undefined)
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("soundVolume", undefined)
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("maxWorkspaceFiles", undefined)
+			expect(clearedCount).toBe(3)
+		})
+
+		it("should preserve custom values that don't match defaults", async () => {
+			// Setup: user has custom values that don't match defaults
+			mockContextProxy.getGlobalState.mockImplementation((key: keyof GlobalState) => {
+				if (key === "browserToolEnabled") return false // default is true
+				if (key === "soundVolume") return 0.8 // default is 0.5
+				if (key === "maxWorkspaceFiles") return 500 // default is 200
+				return undefined
+			})
+
+			const clearedCount = await clearDefaultSettings(mockContextProxy as unknown as ContextProxy)
+
+			// No settings should be cleared
+			expect(mockContextProxy.updateGlobalState).not.toHaveBeenCalled()
+			expect(clearedCount).toBe(0)
+		})
+
+		it("should not clear already undefined values", async () => {
+			// Setup: all settings are undefined
+			mockContextProxy.getGlobalState.mockReturnValue(undefined)
+
+			const clearedCount = await clearDefaultSettings(mockContextProxy as unknown as ContextProxy)
+
+			// No settings should be cleared (already undefined)
+			expect(mockContextProxy.updateGlobalState).not.toHaveBeenCalled()
+			expect(clearedCount).toBe(0)
+		})
+
+		it("should only clear settings in settingDefaults", async () => {
+			// Setup: user has settings - some in defaults, some not
+			mockContextProxy.getGlobalState.mockImplementation((key: keyof GlobalState) => {
+				if (key === "browserToolEnabled") return settingDefaults.browserToolEnabled
+				if (key === "customInstructions") return "my instructions" // not in settingDefaults
+				return undefined
+			})
+
+			await clearDefaultSettings(mockContextProxy as unknown as ContextProxy)
+
+			// browserToolEnabled should be cleared
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("browserToolEnabled", undefined)
+
+			// customInstructions should NOT be touched (not in settingDefaults)
+			expect(mockContextProxy.updateGlobalState).not.toHaveBeenCalledWith("customInstructions", undefined)
+		})
+
+		it("should handle string settings correctly", async () => {
+			mockContextProxy.getGlobalState.mockImplementation((key: keyof GlobalState) => {
+				if (key === "enterBehavior") return "send" // matches default
+				if (key === "language") return "en" // matches default
+				return undefined
+			})
+
+			await clearDefaultSettings(mockContextProxy as unknown as ContextProxy)
+
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("enterBehavior", undefined)
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("language", undefined)
+		})
+
+		it("should return the count of cleared settings", async () => {
+			mockContextProxy.getGlobalState.mockImplementation((key: keyof GlobalState) => {
+				if (key === "browserToolEnabled") return true // matches default
+				if (key === "soundEnabled") return true // matches default
+				if (key === "soundVolume") return 0.8 // does NOT match default (0.5)
+				return undefined
+			})
+
+			const clearedCount = await clearDefaultSettings(mockContextProxy as unknown as ContextProxy)
+
+			expect(clearedCount).toBe(2) // Only browserToolEnabled and soundEnabled match
+		})
+	})
+
+	describe("runStartupSettingsMaintenance", () => {
+		it("should run both migrations and default clearing", async () => {
+			// Setup: migration not run, and has a setting matching default
+			mockContextProxy.getGlobalState.mockImplementation((key: keyof GlobalState) => {
+				if (key === "settingsMigrationVersion") return 0
+				if (key === "browserToolEnabled") return true // matches both historical and current default
+				return undefined
+			})
+
+			await runStartupSettingsMaintenance(mockContextProxy as unknown as ContextProxy)
+
+			// Should have updated migration version
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith(
+				"settingsMigrationVersion",
+				CURRENT_MIGRATION_VERSION,
+			)
+
+			// browserToolEnabled should be cleared (by migration or clearDefaults)
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("browserToolEnabled", undefined)
+		})
+
+		it("should run clearDefaultSettings even after migrations are complete", async () => {
+			// Setup: migrations already complete, but has setting matching default
+			mockContextProxy.getGlobalState.mockImplementation((key: keyof GlobalState) => {
+				if (key === "settingsMigrationVersion") return CURRENT_MIGRATION_VERSION
+				if (key === "soundVolume") return 0.5 // matches current default
+				return undefined
+			})
+
+			await runStartupSettingsMaintenance(mockContextProxy as unknown as ContextProxy)
+
+			// Migration version should NOT be updated (already current)
+			expect(mockContextProxy.updateGlobalState).not.toHaveBeenCalledWith(
+				"settingsMigrationVersion",
+				expect.anything(),
+			)
+
+			// soundVolume should be cleared by clearDefaultSettings
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("soundVolume", undefined)
 		})
 	})
 })

@@ -1,16 +1,21 @@
 /**
- * Settings migrations for version-gated migration of hardcoded defaults.
+ * Settings migrations and defaults cleanup.
  *
- * This module tracks which migrations have been applied and runs any pending
- * migrations when the extension starts. Each migration targets specific
- * historical default values that were being hardcoded in storage before
- * the "reset to default" pattern fix.
+ * This module provides two mechanisms for managing settings:
+ *
+ * 1. **Version-gated migrations**: Run once per version to handle specific
+ *    migration scenarios (e.g., flattening nested configs).
+ *
+ * 2. **Every-startup defaults clearing**: Clears settings that exactly match
+ *    their current default values on every startup. This ensures users always
+ *    benefit from default value improvements.
  *
  * See plans/reset-to-default-ideal-pattern.md for the full design.
  */
 
 import type { ContextProxy } from "../core/config/ContextProxy"
 import type { GlobalState, CodebaseIndexConfig } from "@roo-code/types"
+import { settingDefaults, type SettingWithDefault } from "@roo-code/types"
 
 import { logger } from "./logging"
 
@@ -174,4 +179,58 @@ export async function runSettingsMigrations(contextProxy: ContextProxy): Promise
 	// Mark migration complete
 	await contextProxy.updateGlobalState("settingsMigrationVersion", CURRENT_MIGRATION_VERSION)
 	logger.info(`Settings migration complete. Now at version ${CURRENT_MIGRATION_VERSION}`)
+}
+
+/**
+ * Clears settings that exactly match their current default values.
+ *
+ * This function runs on every startup to ensure users always benefit from
+ * default value improvements. When a setting's stored value exactly matches
+ * the current default, it's cleared (set to undefined) so the default is
+ * applied at read time.
+ *
+ * Note: This approach means users cannot "lock in" a value that happens to
+ * match the default. If they explicitly set browserToolEnabled=true (the default),
+ * it will be cleared and they'll use whatever the default is in the future.
+ *
+ * @param contextProxy - The ContextProxy instance for reading/writing state
+ * @returns The number of settings that were cleared
+ */
+export async function clearDefaultSettings(contextProxy: ContextProxy): Promise<number> {
+	let clearedCount = 0
+
+	for (const key of Object.keys(settingDefaults) as SettingWithDefault[]) {
+		const storedValue = contextProxy.getGlobalState(key as keyof GlobalState)
+		const defaultValue = settingDefaults[key]
+
+		// Only clear if stored value exactly matches the current default
+		// undefined values are already "default" so skip them
+		if (storedValue !== undefined && storedValue === defaultValue) {
+			await contextProxy.updateGlobalState(key as keyof GlobalState, undefined)
+			logger.info(`Cleared default setting: ${key} (was ${JSON.stringify(storedValue)})`)
+			clearedCount++
+		}
+	}
+
+	if (clearedCount > 0) {
+		logger.info(`Cleared ${clearedCount} settings that matched their defaults`)
+	}
+
+	return clearedCount
+}
+
+/**
+ * Runs all startup settings maintenance tasks.
+ *
+ * This is the main entry point that should be called on extension startup.
+ * It runs both migrations (once per version) and defaults clearing (every startup).
+ *
+ * @param contextProxy - The ContextProxy instance for reading/writing state
+ */
+export async function runStartupSettingsMaintenance(contextProxy: ContextProxy): Promise<void> {
+	// First run any pending migrations
+	await runSettingsMigrations(contextProxy)
+
+	// Then clear any settings that match current defaults
+	await clearDefaultSettings(contextProxy)
 }
