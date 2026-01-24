@@ -223,14 +223,10 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 			const { bytesRead } = await fileHandle.read(buffer, 0, buffer.length, offset)
 			const content = buffer.slice(0, bytesRead).toString("utf8")
 
-			// Calculate line numbers based on offset
+			// Calculate line numbers based on offset using chunked reading to avoid large allocations
 			let startLineNumber = 1
 			if (offset > 0) {
-				// Count newlines before offset to determine starting line number
-				const prefixBuffer = Buffer.alloc(offset)
-				await fileHandle.read(prefixBuffer, 0, offset, 0)
-				const prefix = prefixBuffer.toString("utf8")
-				startLineNumber = (prefix.match(/\n/g) || []).length + 1
+				startLineNumber = await this.countNewlinesBeforeOffset(fileHandle, offset)
 			}
 
 			const endOffset = offset + bytesRead
@@ -373,6 +369,45 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 	 */
 	private escapeRegExp(string: string): string {
 		return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+	}
+
+	/**
+	 * Count newlines before a given byte offset using fixed-size chunks.
+	 *
+	 * This avoids allocating a buffer of size `offset` which could be huge
+	 * for large files. Instead, we read in 64KB chunks and count newlines.
+	 *
+	 * @param fileHandle - Open file handle for reading
+	 * @param offset - The byte offset to count newlines up to
+	 * @returns The line number at the given offset (1-indexed)
+	 * @private
+	 */
+	private async countNewlinesBeforeOffset(fileHandle: fs.FileHandle, offset: number): Promise<number> {
+		const CHUNK_SIZE = 64 * 1024 // 64KB chunks
+		let newlineCount = 0
+		let bytesRead = 0
+
+		while (bytesRead < offset) {
+			const chunkSize = Math.min(CHUNK_SIZE, offset - bytesRead)
+			const buffer = Buffer.alloc(chunkSize)
+			const result = await fileHandle.read(buffer, 0, chunkSize, bytesRead)
+
+			if (result.bytesRead === 0) {
+				break
+			}
+
+			// Count newlines in this chunk
+			for (let i = 0; i < result.bytesRead; i++) {
+				if (buffer[i] === 0x0a) {
+					// '\n'
+					newlineCount++
+				}
+			}
+
+			bytesRead += result.bytesRead
+		}
+
+		return newlineCount + 1 // Line numbers are 1-indexed
 	}
 }
 
