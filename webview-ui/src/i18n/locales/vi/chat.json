@@ -336,9 +336,7 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"openaiCodexProvider": "Đã thêm nhà cung cấp OpenAI - ChatGPT Plus/Pro cung cấp quyền truy cập dựa trên đăng ký vào các mô hình Codex mà không có chi phí trên mỗi token.",
-			"gpt52codexModel": "Mô hình gpt-5.2-codex mới được thêm vào Roo Code Router, nhà cung cấp OpenAI tiêu chuẩn và nhiều hơn nữa.",
-			"bugFixes": "Đã sửa các rò rỉ bộ nhớ gây ra màn hình xám, các vấn đề về chữ ký suy nghĩ Gemini và các cải thiện ổn định khác."
+			"intelligentContextCondensation": "Cô đọng Ngữ cảnh Thông minh v2: Viết lại hoàn toàn thuật toán quản lý cửa sổ ngữ cảnh. Bây giờ bạn có thể chạy các tác vụ lâu hơn mà không làm giảm chất lượng của Roo."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

@@ -82,7 +82,6 @@ export interface ApiHandlerCreateMessageMetadata {
 	 * Can be "none", "auto", "required", or a specific tool choice.
 	 */
 	tool_choice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"]
-	// Tool calling is native-only.
 	/**
 	 * Controls whether the model can return multiple tool calls in a single response.
 	 * When true, parallel tool calls are enabled (OpenAI's parallel_tool_calls=true).

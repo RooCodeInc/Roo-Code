@@ -63,7 +63,6 @@ export const globalSettingsSchema = z.object({
 	openRouterImageApiKey: z.string().optional(),
 	openRouterImageGenerationSelectedModel: z.string().optional(),
 
-	condensingApiConfigId: z.string().optional(),
 	customCondensingPrompt: z.string().optional(),
 
 	autoApprovalEnabled: z.boolean().optional(),
@@ -163,8 +162,6 @@ export const globalSettingsSchema = z.object({
 	diagnosticsEnabled: z.boolean().optional(),
 
 	rateLimitSeconds: z.number().optional(),
-	diffEnabled: z.boolean().optional(),
-	fuzzyMatchThreshold: z.number().optional(),
 	experiments: experimentsSchema.optional(),
 
 	codebaseIndexModels: codebaseIndexModelsSchema.optional(),
@@ -349,9 +346,6 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	terminalShellIntegrationDisabled: true,
 
 	diagnosticsEnabled: true,
-
-	diffEnabled: true,
-	fuzzyMatchThreshold: 1,
 
 	enableCheckpoints: false,
 

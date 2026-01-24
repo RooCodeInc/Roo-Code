@@ -47,7 +47,6 @@ export const CreateWorktreeModal = ({
 	const [error, setError] = useState<string | null>(null)
 	const [copyProgress, setCopyProgress] = useState<{
 		bytesCopied: number
-		totalBytes: number
 		itemName: string
 	} | null>(null)
 
@@ -85,7 +84,6 @@ export const CreateWorktreeModal = ({
 				case "worktreeCopyProgress": {
 					setCopyProgress({
 						bytesCopied: message.copyProgressBytesCopied ?? 0,
-						totalBytes: message.copyProgressTotalBytes ?? 0,
 						itemName: message.copyProgressItemName ?? "",
 					})
 					break
@@ -226,30 +224,16 @@ export const CreateWorktreeModal = ({
 					{/* Progress section - appears during file copying */}
 					{copyProgress && (
 						<div className="flex flex-col gap-2 px-3 py-3 rounded-lg bg-vscode-editor-background border border-vscode-panel-border">
-							<div className="flex items-center justify-between text-sm">
+							<div className="flex items-center gap-2 text-sm">
+								<span className="codicon codicon-loading codicon-modifier-spin text-vscode-button-background" />
 								<span className="text-vscode-foreground font-medium">
 									{t("worktrees:copyingFiles")}
 								</span>
-								<span className="text-vscode-descriptionForeground">
-									{copyProgress.totalBytes > 0
-										? Math.round((copyProgress.bytesCopied / copyProgress.totalBytes) * 100)
-										: 0}
-									%
-								</span>
-							</div>
-							<div className="w-full h-2 bg-vscode-input-background rounded-full overflow-hidden">
-								<div
-									className="h-full bg-vscode-button-background rounded-full transition-all duration-200"
-									style={{
-										width: `${copyProgress.totalBytes > 0 ? (copyProgress.bytesCopied / copyProgress.totalBytes) * 100 : 0}%`,
-									}}
-								/>
 							</div>
 							<div className="text-xs text-vscode-descriptionForeground truncate">
 								{t("worktrees:copyingProgress", {
 									item: copyProgress.itemName,
 									copied: prettyBytes(copyProgress.bytesCopied),
-									total: prettyBytes(copyProgress.totalBytes),
 								})}
 							</div>
 						</div>

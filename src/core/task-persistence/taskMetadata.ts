@@ -93,7 +93,6 @@ export async function taskMetadata({
 	// initialStatus is included when provided (e.g., "active" for child tasks)
 	// to ensure the status is set from the very first save, avoiding race conditions
 	// where attempt_completion might run before a separate status update.
-	// Tool calling is native-only.
 	const historyItem: HistoryItem = {
 		id,
 		rootTaskId,

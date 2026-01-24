@@ -577,5 +577,60 @@ describe("useMcpToolTool", () => {
 			expect(callToolMock).not.toHaveBeenCalled()
 			expect(mockAskApproval).not.toHaveBeenCalled()
 		})
+
+		it("should match tool names using fuzzy matching (hyphens vs underscores)", async () => {
+			// This tests the scenario where models mangle hyphens to underscores
+			// e.g., model sends "get_user_profile" but actual tool name is "get-user-profile"
+			mockTask.consecutiveMistakeCount = 0
+
+			const callToolMock = vi.fn().mockResolvedValue({
+				content: [{ type: "text", text: "Success" }],
+			})
+
+			const mockServers = [
+				{
+					name: "test-server",
+					tools: [{ name: "get-user-profile", description: "Gets a user profile" }],
+				},
+			]
+
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					getAllServers: vi.fn().mockReturnValue(mockServers),
+					callTool: callToolMock,
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			// Model sends the mangled version with underscores
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "test-server",
+					tool_name: "get_user_profile", // Model mangled hyphens to underscores
+					arguments: "{}",
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				removeClosingTag: mockRemoveClosingTag,
+				toolProtocol: "xml",
+			})
+
+			// Tool should be found and executed
+			expect(mockTask.consecutiveMistakeCount).toBe(0)
+			expect(mockTask.recordToolError).not.toHaveBeenCalled()
+			expect(mockTask.say).toHaveBeenCalledWith("mcp_server_request_started")
+
+			// The original tool name (with hyphens) should be passed to callTool
+			expect(callToolMock).toHaveBeenCalledWith("test-server", "get-user-profile", {})
+		})
 	})
 })

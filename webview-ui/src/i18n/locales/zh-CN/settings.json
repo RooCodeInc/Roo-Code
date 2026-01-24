@@ -784,10 +784,6 @@
 					"unified": "统一 diff 策略采用多种方法应用差异并选择最佳方法。",
 					"multiBlock": "多块 diff 策略允许在一个请求中更新文件中的多个代码块。"
 				}
-			},
-			"matchPrecision": {
-				"label": "匹配精度",
-				"description": "控制代码匹配的精确程度。数值越低匹配越宽松（容错率高但风险大），建议保持100%以确保安全。"
 			}
 		},
 		"todoList": {
@@ -804,10 +800,6 @@
 			"name": "启用插入内容工具",
 			"description": "允许 Roo 在特定行号插入内容，无需处理差异。"
 		},
-		"POWER_STEERING": {
-			"name": "启用增强导向模式",
-			"description": "开启后，Roo 将更频繁地向模型推送当前模式定义的详细信息，从而强化对角色设定和自定义指令的遵循力度。注意：此模式会提升每条消息的 token 消耗量。"
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "允许批量搜索和替换",
 			"description": "启用后，Roo 将尝试在一个请求中进行批量搜索和替换。"
@@ -819,10 +811,6 @@
 		"MARKETPLACE": {
 			"name": "启用 Marketplace",
 			"description": "启用后，你可以从 Marketplace 安装 MCP 和自定义模式。"
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "启用并发文件编辑",
-			"description": "启用后 Roo 可在单个请求中编辑多个文件。禁用后 Roo 必须逐个编辑文件。禁用此功能有助于使用能力较弱的模型或需要更精确控制文件修改时。"
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "后台编辑",

@@ -336,9 +336,7 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"openaiCodexProvider": "添加了 OpenAI - ChatGPT Plus/Pro 提供商，提供基于订阅的 Codex 模型访问，无需按 Token 收费。",
-			"gpt52codexModel": "新的 gpt-5.2-codex 模型已添加到 Roo Code Router、标准 OpenAI 提供商等。",
-			"bugFixes": "修复了导致灰屏的内存泄漏、Gemini 思考签名问题以及其他稳定性改进。"
+			"intelligentContextCondensation": "智能上下文压缩 v2：对管理上下文窗口的算法进行了完全重构。现在您可以更长时间地运行任务，而 Roo 不会变得迟钝。"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",

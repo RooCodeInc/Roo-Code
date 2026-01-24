@@ -783,10 +783,6 @@
 					"unified": "La estrategia de diff unificado toma múltiples enfoques para aplicar diffs y elige el mejor enfoque.",
 					"multiBlock": "La estrategia de diff multi-bloque permite actualizar múltiples bloques de código en un archivo en una sola solicitud."
 				}
-			},
-			"matchPrecision": {
-				"label": "Precisión de coincidencia",
-				"description": "Este control deslizante controla cuán precisamente deben coincidir las secciones de código al aplicar diffs. Valores más bajos permiten coincidencias más flexibles pero aumentan el riesgo de reemplazos incorrectos. Use valores por debajo del 100% con extrema precaución."
 			}
 		},
 		"todoList": {
@@ -803,10 +799,6 @@
 			"name": "Usar herramienta experimental de inserción de contenido",
 			"description": "Habilitar la herramienta experimental de inserción de contenido, permitiendo a Roo insertar contenido en números de línea específicos sin necesidad de crear un diff."
 		},
-		"POWER_STEERING": {
-			"name": "Usar modo experimental de \"dirección asistida\"",
-			"description": "Cuando está habilitado, Roo recordará al modelo los detalles de su definición de modo actual con más frecuencia. Esto llevará a una mayor adherencia a las definiciones de roles e instrucciones personalizadas, pero usará más tokens por mensaje."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Usar herramienta experimental de diff de bloques múltiples",
 			"description": "Cuando está habilitado, Roo usará la herramienta de diff de bloques múltiples. Esto intentará actualizar múltiples bloques de código en el archivo en una sola solicitud."
@@ -818,10 +810,6 @@
 		"MARKETPLACE": {
 			"name": "Habilitar Marketplace",
 			"description": "Cuando está habilitado, puedes instalar MCP y modos personalizados del Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Habilitar ediciones de archivos concurrentes",
-			"description": "Cuando está habilitado, Roo puede editar múltiples archivos en una sola solicitud. Cuando está deshabilitado, Roo debe editar archivos de uno en uno. Deshabilitar esto puede ayudar cuando trabajas con modelos menos capaces o cuando quieres más control sobre las modificaciones de archivos."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edición en segundo plano",

@@ -335,9 +335,7 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro 공급자가 추가되었으며, 토큰당 비용 없이 Codex 모델에 대한 구독 기반 액세스를 제공합니다.",
-			"gpt52codexModel": "새로운 gpt-5.2-codex 모델이 Roo Code Router, 표준 OpenAI 공급자 등에 추가되었습니다.",
-			"bugFixes": "회색 화면을 유발하는 메모리 누수, Gemini 생각 서명 문제 및 추가 안정성 개선 사항을 수정했습니다."
+			"intelligentContextCondensation": "지능형 컨텍스트 압축 v2: 컨텍스트 창을 관리하는 알고리즘을 완전히 재작업했습니다. 이제 Roo의 품질 저하 없이 더 오래 작업을 실행할 수 있습니다."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

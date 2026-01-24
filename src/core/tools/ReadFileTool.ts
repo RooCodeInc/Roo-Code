@@ -517,7 +517,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				task.didToolFailInCurrentTurn = true
 			}
 
-			// Build final result (native-only)
+			// Build final result
 			const finalResult = fileResults
 				.filter((result) => result.nativeContent)
 				.map((result) => result.nativeContent)

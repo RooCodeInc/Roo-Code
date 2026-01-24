@@ -3,7 +3,7 @@ import crypto from "crypto"
 
 import { TelemetryService } from "@roo-code/telemetry"
 
-import { ApiHandler } from "../../api"
+import { ApiHandler, ApiHandlerCreateMessageMetadata } from "../../api"
 import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, SummarizeResponse } from "../condense"
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
@@ -216,10 +216,12 @@ export type ContextManagementOptions = {
 	systemPrompt: string
 	taskId: string
 	customCondensingPrompt?: string
-	condensingApiHandler?: ApiHandler
 	profileThresholds: Record<string, number>
 	currentProfileId: string
-	useNativeTools?: boolean
+	/** Optional metadata to pass through to the condensing API call (tools, taskId, etc.) */
+	metadata?: ApiHandlerCreateMessageMetadata
+	/** Optional environment details string to include in the condensed summary */
+	environmentDetails?: string
 }
 
 export type ContextManagementResult = SummarizeResponse & {
@@ -246,12 +248,13 @@ export async function manageContext({
 	systemPrompt,
 	taskId,
 	customCondensingPrompt,
-	condensingApiHandler,
 	profileThresholds,
 	currentProfileId,
-	useNativeTools,
+	metadata,
+	environmentDetails,
 }: ContextManagementOptions): Promise<ContextManagementResult> {
 	let error: string | undefined
+	let errorDetails: string | undefined
 	let cost = 0
 	// Calculate the maximum tokens reserved for response
 	const reservedTokens = maxTokens || ANTHROPIC_DEFAULT_MAX_TOKENS
@@ -299,14 +302,14 @@ export async function manageContext({
 				apiHandler,
 				systemPrompt,
 				taskId,
-				prevContextTokens,
 				true, // automatic trigger
 				customCondensingPrompt,
-				condensingApiHandler,
-				useNativeTools,
+				metadata,
+				environmentDetails,
 			)
 			if (result.error) {
 				error = result.error
+				errorDetails = result.errorDetails
 				cost = result.cost
 			} else {
 				return { ...result, prevContextTokens }
@@ -349,11 +352,12 @@ export async function manageContext({
 			summary: "",
 			cost,
 			error,
+			errorDetails,
 			truncationId: truncationResult.truncationId,
 			messagesRemoved: truncationResult.messagesRemoved,
 			newContextTokensAfterTruncation,
 		}
 	}
 	// No truncation or condensation needed
-	return { messages, summary: "", cost, prevContextTokens, error }
+	return { messages, summary: "", cost, prevContextTokens, error, errorDetails }
 }

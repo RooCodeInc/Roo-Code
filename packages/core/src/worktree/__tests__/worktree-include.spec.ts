@@ -265,7 +265,7 @@ describe("WorktreeIncludeService", () => {
 			expect(result).toContain("node_modules")
 		})
 
-		it("should call progress callback with size-based progress", async () => {
+		it("should call progress callback with bytesCopied progress", async () => {
 			// Set up files to copy
 			await fs.writeFile(path.join(sourceDir, ".worktreeinclude"), "node_modules\n.env.local")
 			await fs.writeFile(path.join(sourceDir, ".gitignore"), "node_modules\n.env.local")
@@ -273,22 +273,20 @@ describe("WorktreeIncludeService", () => {
 			await fs.writeFile(path.join(sourceDir, "node_modules", "test.txt"), "test")
 			await fs.writeFile(path.join(sourceDir, ".env.local"), "LOCAL_VAR=value")
 
-			const progressCalls: Array<{ bytesCopied: number; totalBytes: number; itemName: string }> = []
-			const onProgress = vi.fn((progress: { bytesCopied: number; totalBytes: number; itemName: string }) => {
+			const progressCalls: Array<{ bytesCopied: number; itemName: string }> = []
+			const onProgress = vi.fn((progress: { bytesCopied: number; itemName: string }) => {
 				progressCalls.push({ ...progress })
 			})
 
 			await service.copyWorktreeIncludeFiles(sourceDir, targetDir, onProgress)
 
-			// Should be called multiple times (initial + after each copy + during polling)
+			// Should be called multiple times (initial + after each copy)
 			expect(onProgress).toHaveBeenCalled()
 
-			// All calls should have totalBytes > 0 (since we have files)
-			expect(progressCalls.every((p) => p.totalBytes > 0)).toBe(true)
-
-			// Final call should have bytesCopied === totalBytes (complete)
+			// bytesCopied should increase over time
+			expect(progressCalls.length).toBeGreaterThan(0)
 			const finalCall = progressCalls[progressCalls.length - 1]
-			expect(finalCall?.bytesCopied).toBe(finalCall?.totalBytes)
+			expect(finalCall?.bytesCopied).toBeGreaterThan(0)
 
 			// Each call should have an item name
 			expect(progressCalls.every((p) => typeof p.itemName === "string")).toBe(true)

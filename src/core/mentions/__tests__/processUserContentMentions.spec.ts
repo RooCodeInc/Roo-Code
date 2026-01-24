@@ -335,4 +335,121 @@ describe("processUserContentMentions", () => {
 			)
 		})
 	})
+
+	describe("slash command content processing", () => {
+		it("should separate slash command content into a new block", async () => {
+			vi.mocked(parseMentions).mockResolvedValueOnce({
+				text: "parsed text",
+				slashCommandHelp: "command help",
+				mode: undefined,
+			})
+
+			const userContent = [
+				{
+					type: "text" as const,
+					text: "<user_message>Run command</user_message>",
+				},
+			]
+
+			const result = await processUserContentMentions({
+				userContent,
+				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
+				fileContextTracker: mockFileContextTracker,
+			})
+
+			expect(result.content).toHaveLength(2)
+			expect(result.content[0]).toEqual({
+				type: "text",
+				text: "parsed text",
+			})
+			expect(result.content[1]).toEqual({
+				type: "text",
+				text: "command help",
+			})
+		})
+
+		it("should include slash command content in tool_result string content", async () => {
+			vi.mocked(parseMentions).mockResolvedValueOnce({
+				text: "parsed tool output",
+				slashCommandHelp: "command help",
+				mode: undefined,
+			})
+
+			const userContent = [
+				{
+					type: "tool_result" as const,
+					tool_use_id: "123",
+					content: "<user_message>Tool output</user_message>",
+				},
+			]
+
+			const result = await processUserContentMentions({
+				userContent,
+				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
+				fileContextTracker: mockFileContextTracker,
+			})
+
+			expect(result.content).toHaveLength(1)
+			expect(result.content[0]).toEqual({
+				type: "tool_result",
+				tool_use_id: "123",
+				content: [
+					{
+						type: "text",
+						text: "parsed tool output",
+					},
+					{
+						type: "text",
+						text: "command help",
+					},
+				],
+			})
+		})
+
+		it("should include slash command content in tool_result array content", async () => {
+			vi.mocked(parseMentions).mockResolvedValueOnce({
+				text: "parsed array item",
+				slashCommandHelp: "command help",
+				mode: undefined,
+			})
+
+			const userContent = [
+				{
+					type: "tool_result" as const,
+					tool_use_id: "123",
+					content: [
+						{
+							type: "text" as const,
+							text: "<user_message>Array item</user_message>",
+						},
+					],
+				},
+			]
+
+			const result = await processUserContentMentions({
+				userContent,
+				cwd: "/test",
+				urlContentFetcher: mockUrlContentFetcher,
+				fileContextTracker: mockFileContextTracker,
+			})
+
+			expect(result.content).toHaveLength(1)
+			expect(result.content[0]).toEqual({
+				type: "tool_result",
+				tool_use_id: "123",
+				content: [
+					{
+						type: "text",
+						text: "parsed array item",
+					},
+					{
+						type: "text",
+						text: "command help",
+					},
+				],
+			})
+		})
+	})
 })

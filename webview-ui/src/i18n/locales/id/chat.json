@@ -348,9 +348,7 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider ditambahkan yang memberikan akses berbasis langganan ke model Codex tanpa biaya per-token.",
-			"gpt52codexModel": "Model gpt-5.2-codex baru ditambahkan ke Roo Code Router, provider OpenAI standar, dan lebih banyak lagi.",
-			"bugFixes": "Memperbaiki kebocoran memori yang menyebabkan layar abu-abu, masalah tanda tangan pemikiran Gemini, dan peningkatan stabilitas lainnya."
+			"intelligentContextCondensation": "Kondensasi Konteks Cerdas v2: Penulisan ulang lengkap algoritma yang mengelola jendela konteks. Sekarang Anda dapat menjalankan tugas lebih lama tanpa Roo kehilangan kualitas."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

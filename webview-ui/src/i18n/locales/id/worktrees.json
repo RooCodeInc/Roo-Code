@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "Buka di jendela saat ini",
 	"openInNewWindow": "Buka di jendela baru",
-	"merge": "Merge",
 	"delete": "Hapus",
 	"newWorktree": "Worktree Baru",
 
@@ -43,7 +42,7 @@
 	"create": "Buat",
 	"creating": "Membuat...",
 	"copyingFiles": "Menyalin file...",
-	"copyingProgress": "{{item}} — {{copied}} / {{total}}",
+	"copyingProgress": "{{item}} — {{copied}} disalin",
 	"cancel": "Batal",
 
 	"deleteWorktree": "Hapus Worktree",
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree terkunci",
 	"deleting": "Menghapus...",
 
-	"mergeBranch": "Merge Branch",
-	"mergeDescription": "Merge '{{source}}' ke '{{target}}'",
-	"deleteAfterMerge": "Hapus worktree setelah merge berhasil",
-	"merging": "Menggabungkan...",
-	"mergeSuccess": "Merge Berhasil",
-	"mergeConflicts": "Konflik Merge",
-	"conflictsDescription": "File berikut memiliki konflik yang perlu diselesaikan:",
-	"mergeFailed": "Merge Gagal",
-	"resolveManually": "Aku akan menyelesaikannya manual",
-	"askRooResolve": "Minta Roo untuk menyelesaikan",
 	"close": "Tutup"
 }

@@ -54,7 +54,6 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			didCompleteReadingStream: false,
 			didRejectTool: false,
 			didAlreadyUseTool: false,
-			diffEnabled: false,
 			consecutiveMistakeCount: 0,
 			clineMessages: [],
 			api: {

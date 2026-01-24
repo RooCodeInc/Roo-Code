@@ -335,9 +335,7 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"openaiCodexProvider": "Ajout du Fournisseur OpenAI - ChatGPT Plus/Pro qui offre un accès basé sur abonnement aux modèles Codex sans frais par token.",
-			"gpt52codexModel": "Ajout du nouveau modèle gpt-5.2-codex au Roo Code Router, au fournisseur OpenAI standard et bien d'autres.",
-			"bugFixes": "Correction des fuites mémoire causant des écrans gris, problèmes de signature de pensée Gemini et autres améliorations de stabilité."
+			"intelligentContextCondensation": "Condensation Intelligente du Contexte v2 : Une refonte complète de l'algorithme utilisé pour gérer la fenêtre de contexte. Vous pouvez maintenant exécuter des tâches plus longtemps sans que Roo perde en qualité."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",

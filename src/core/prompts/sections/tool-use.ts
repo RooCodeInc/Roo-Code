@@ -1,7 +1,6 @@
 import { experiments, EXPERIMENT_IDS } from "../../../shared/experiments"
 
-export function getSharedToolUseSection(_protocol = "native", experimentFlags?: Record<string, boolean>): string {
-	// Tool calling is native-only.
+export function getSharedToolUseSection(experimentFlags?: Record<string, boolean>): string {
 	// Check if multiple native tool calls is enabled via experiment
 	const isMultipleNativeToolCallsEnabled = experiments.isEnabled(
 		experimentFlags ?? {},

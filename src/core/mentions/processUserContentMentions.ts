@@ -42,39 +42,15 @@ export async function processUserContentMentions({
 	// 2. ToolResultBlockParam's content/context text arrays if it contains
 	// "<user_message>" - we place all user generated content in this tag
 	// so it can effectively be used as a marker for when we should parse mentions.
-	const content = await Promise.all(
-		userContent.map(async (block) => {
-			const shouldProcessMentions = (text: string) => text.includes("<user_message>")
+	const content = (
+		await Promise.all(
+			userContent.map(async (block) => {
+				const shouldProcessMentions = (text: string) => text.includes("<user_message>")
 
-			if (block.type === "text") {
-				if (shouldProcessMentions(block.text)) {
-					const result = await parseMentions(
-						block.text,
-						cwd,
-						urlContentFetcher,
-						fileContextTracker,
-						rooIgnoreController,
-						showRooIgnoredFiles,
-						includeDiagnosticMessages,
-						maxDiagnosticMessages,
-						maxReadFileLine,
-					)
-					// Capture the first mode found
-					if (!commandMode && result.mode) {
-						commandMode = result.mode
-					}
-					return {
-						...block,
-						text: result.text,
-					}
-				}
-
-				return block
-			} else if (block.type === "tool_result") {
-				if (typeof block.content === "string") {
-					if (shouldProcessMentions(block.content)) {
+				if (block.type === "text") {
+					if (shouldProcessMentions(block.text)) {
 						const result = await parseMentions(
-							block.content,
+							block.text,
 							cwd,
 							urlContentFetcher,
 							fileContextTracker,
@@ -88,51 +64,112 @@ export async function processUserContentMentions({
 						if (!commandMode && result.mode) {
 							commandMode = result.mode
 						}
-						return {
-							...block,
-							content: result.text,
+						const blocks: Anthropic.Messages.ContentBlockParam[] = [
+							{
+								...block,
+								text: result.text,
+							},
+						]
+						if (result.slashCommandHelp) {
+							blocks.push({
+								type: "text" as const,
+								text: result.slashCommandHelp,
+							})
 						}
+						return blocks
 					}
 
 					return block
-				} else if (Array.isArray(block.content)) {
-					const parsedContent = await Promise.all(
-						block.content.map(async (contentBlock) => {
-							if (contentBlock.type === "text" && shouldProcessMentions(contentBlock.text)) {
-								const result = await parseMentions(
-									contentBlock.text,
-									cwd,
-									urlContentFetcher,
-									fileContextTracker,
-									rooIgnoreController,
-									showRooIgnoredFiles,
-									includeDiagnosticMessages,
-									maxDiagnosticMessages,
-									maxReadFileLine,
-								)
-								// Capture the first mode found
-								if (!commandMode && result.mode) {
-									commandMode = result.mode
-								}
+				} else if (block.type === "tool_result") {
+					if (typeof block.content === "string") {
+						if (shouldProcessMentions(block.content)) {
+							const result = await parseMentions(
+								block.content,
+								cwd,
+								urlContentFetcher,
+								fileContextTracker,
+								rooIgnoreController,
+								showRooIgnoredFiles,
+								includeDiagnosticMessages,
+								maxDiagnosticMessages,
+								maxReadFileLine,
+							)
+							// Capture the first mode found
+							if (!commandMode && result.mode) {
+								commandMode = result.mode
+							}
+							if (result.slashCommandHelp) {
 								return {
-									...contentBlock,
-									text: result.text,
+									...block,
+									content: [
+										{
+											type: "text" as const,
+											text: result.text,
+										},
+										{
+											type: "text" as const,
+											text: result.slashCommandHelp,
+										},
+									],
 								}
 							}
+							return {
+								...block,
+								content: result.text,
+							}
+						}
 
-							return contentBlock
-						}),
-					)
+						return block
+					} else if (Array.isArray(block.content)) {
+						const parsedContent = (
+							await Promise.all(
+								block.content.map(async (contentBlock) => {
+									if (contentBlock.type === "text" && shouldProcessMentions(contentBlock.text)) {
+										const result = await parseMentions(
+											contentBlock.text,
+											cwd,
+											urlContentFetcher,
+											fileContextTracker,
+											rooIgnoreController,
+											showRooIgnoredFiles,
+											includeDiagnosticMessages,
+											maxDiagnosticMessages,
+											maxReadFileLine,
+										)
+										// Capture the first mode found
+										if (!commandMode && result.mode) {
+											commandMode = result.mode
+										}
+										const blocks = [
+											{
+												...contentBlock,
+												text: result.text,
+											},
+										]
+										if (result.slashCommandHelp) {
+											blocks.push({
+												type: "text" as const,
+												text: result.slashCommandHelp,
+											})
+										}
+										return blocks
+									}
 
-					return { ...block, content: parsedContent }
+									return contentBlock
+								}),
+							)
+						).flat()
+
+						return { ...block, content: parsedContent }
+					}
+
+					return block
 				}
 
 				return block
-			}
-
-			return block
-		}),
-	)
+			}),
+		)
+	).flat()
 
 	return { content, mode: commandMode }
 }

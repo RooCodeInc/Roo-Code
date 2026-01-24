@@ -25,8 +25,6 @@ export type PushToolResult = (content: ToolResponse) => void
 
 export type AskFinishSubTaskApproval = () => Promise<boolean>
 
-export type ToolDescription = () => string
-
 export interface TextContent {
 	type: "text"
 	content: string
@@ -341,13 +339,6 @@ export interface DiffStrategy {
 	 * @returns The name of the diff strategy
 	 */
 	getName(): string
-
-	/**
-	 * Get the tool description for this diff strategy
-	 * @param args The tool arguments including cwd and toolOptions
-	 * @returns The complete tool description including format requirements and examples
-	 */
-	getToolDescription(args: { cwd: string; toolOptions?: { [key: string]: string } }): string
 
 	/**
 	 * Apply a diff to the original content

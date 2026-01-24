@@ -784,10 +784,6 @@
 					"unified": "統一差異策略會嘗試多種比對方式，並選擇最佳方案。",
 					"multiBlock": "多區塊策略可在單一請求中更新檔案內的多個程式碼區塊。"
 				}
-			},
-			"matchPrecision": {
-				"label": "比對精確度",
-				"description": "此滑桿控制套用差異時程式碼區段的比對精確度。較低的數值允許更彈性的比對，但也會增加錯誤取代的風險。使用低於 100% 的數值時請特別謹慎。"
 			}
 		},
 		"todoList": {
@@ -804,10 +800,6 @@
 			"name": "使用實驗性插入內容工具",
 			"description": "啟用實驗性的插入內容工具，允許 Roo 直接在指定行號插入內容，而無需產生差異比對。"
 		},
-		"POWER_STEERING": {
-			"name": "使用實驗性「動力輔助」模式",
-			"description": "啟用後，Roo 將更頻繁地提醒模型目前模式的詳細設定。這能讓模型更嚴格遵守角色定義和自訂指令，但每則訊息會使用更多 token。"
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "使用實驗性多區塊差異比對工具",
 			"description": "啟用後，Roo 將使用多區塊差異比對工具，嘗試在單一請求中更新檔案內的多個程式碼區塊。"
@@ -819,10 +811,6 @@
 		"MARKETPLACE": {
 			"name": "啟用 Marketplace",
 			"description": "啟用後，您可以從 Marketplace 安裝 MCP 和自訂模式。"
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "啟用並行檔案編輯",
-			"description": "啟用後 Roo 可在單個請求中編輯多個檔案。停用後 Roo 必須逐個編輯檔案。停用此功能有助於使用能力較弱的模型或需要更精確控制檔案修改時。"
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "背景編輯",
