@@ -13,6 +13,7 @@ import { experimentsSchema } from "./experiment.js"
 import { telemetrySettingsSchema } from "./telemetry.js"
 import { modeConfigSchema } from "./mode.js"
 import { customModePromptsSchema, customSupportPromptsSchema } from "./mode.js"
+import { personalitySchema } from "./personality.js"
 import { languagesSchema } from "./vscode.js"
 
 /**
@@ -179,6 +180,12 @@ export const globalSettingsSchema = z.object({
 	customModes: z.array(modeConfigSchema).optional(),
 	customModePrompts: customModePromptsSchema.optional(),
 	customSupportPrompts: customSupportPromptsSchema.optional(),
+	/**
+	 * Global agent personality preference.
+	 * This personality will be applied across all modes unless a mode
+	 * has its own defaultPersonality set.
+	 */
+	agentPersonality: personalitySchema.optional(),
 	enhancementApiConfigId: z.string().optional(),
 	includeTaskHistoryInEnhance: z.boolean().optional(),
 	historyPreviewCollapsed: z.boolean().optional(),

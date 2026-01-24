@@ -588,6 +588,7 @@ export interface WebviewMessage {
 		| "refreshCustomTools"
 		| "requestModes"
 		| "switchMode"
+		| "changePersonality"
 		| "debugSetting"
 		// Worktree messages
 		| "listWorktrees"
@@ -621,6 +622,7 @@ export interface WebviewMessage {
 	alwaysAllow?: boolean
 	isEnabled?: boolean
 	mode?: string
+	personality?: string
 	promptMode?: string | "enhance"
 	customPrompt?: PromptComponent
 	dataUrls?: string[]
