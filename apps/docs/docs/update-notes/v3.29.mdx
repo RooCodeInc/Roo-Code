@@ -1,0 +1,66 @@
+---
+description: Combined notes for the 3.29 release cycle. Highlights MiniMax provider, large-repo @ file search improvements, UI/UX refinements, and stability fixes.
+keywords:
+  - roo code 3.29
+  - release notes
+  - combined
+---
+
+# Roo Code 3.29 Release Notes (2025-10-31)
+
+This combined summary covers the 3.29.x releases. It introduces the MiniMax provider, improves @ file search on large projects, clarifies the Logs tab and VS Code LM guidance, and includes multiple stability fixes.
+
+## Feature Highlights
+
+* Cloud Agent: PR Reviewer for instant high‑quality code reviews (learn more: https://roocode.com/reviewer)
+* Intelligent file reading with token‑budget management and a 100 KB preview for very large files ([#8789](https://github.com/RooCodeInc/Roo-Code/pull/8789))
+* MiniMax provider for coding and reasoning with strong Chinese language support and competitive pricing (thanks Maosghoul!) ([#8820](https://github.com/RooCodeInc/Roo-Code/pull/8820))
+* Faster and more reliable @ file search on large repositories with configurable indexing limits and respect for VS Code ignore settings (thanks Naituw!) ([#8805](https://github.com/RooCodeInc/Roo-Code/pull/8805))
+* MCP tab renamed to “Logs” to match mixed-level messages (thanks hannesrudolph!) ([#8894](https://github.com/RooCodeInc/Roo-Code/pull/8894))
+
+## QOL Improvements
+
+* Improve @ file search for large projects; add the roo-cline.maximumIndexedFilesForFileSearch setting with guidance on memory tradeoffs ([#8805](https://github.com/RooCodeInc/Roo-Code/pull/8805))
+* Rename MCP “Errors” tab to “Logs” to match info/warning/error messages; clearer empty state (“No logs yet”) ([#8894](https://github.com/RooCodeInc/Roo-Code/pull/8894))
+* Custom modes load from the configured storage path and persist across restarts (thanks elianiva!) ([#8499](https://github.com/RooCodeInc/Roo-Code/pull/8499))
+* Clarify VS Code LM API integration warning in Settings to reduce “model not supported” errors ([#8493](https://github.com/RooCodeInc/Roo-Code/pull/8493))
+* Keyboard shortcut: “Add to Context” moved to avoid Redo conflict; restores standard Redo ([#8653](https://github.com/RooCodeInc/Roo-Code/pull/8653))
+* Auto‑approve button responsiveness improved ([#8798](https://github.com/RooCodeInc/Roo-Code/pull/8798))
+* After “Add to Context,” input auto‑focuses and inserts two newlines to keep typing immediately ([#8877](https://github.com/RooCodeInc/Roo-Code/pull/8877))
+
+## Bug Fixes
+
+* Reasoning effort selection auto-enables reasoning when needed so UI and behavior stay in sync ([#8890](https://github.com/RooCodeInc/Roo-Code/pull/8890))
+* Suppress noisy cloud‑agent exceptions for cleaner logs ([#8577](https://github.com/RooCodeInc/Roo-Code/pull/8577))
+* Prevent MCP server restart when toggling “Always allow” for MCP tools ([#8633](https://github.com/RooCodeInc/Roo-Code/pull/8633))
+* Reuse existing Qdrant index after outages to avoid full reindex and cut restart time ([#8588](https://github.com/RooCodeInc/Roo-Code/pull/8588))
+* Make code index initialization non‑blocking at activation to avoid startup hangs ([#8933](https://github.com/RooCodeInc/Roo-Code/pull/8933))
+* Honor maxReadFileLine across code definition listing and file reads to prevent context overflows ([#8509](https://github.com/RooCodeInc/Roo-Code/pull/8509))
+* Prevent infinite retry loop when canceling during auto‑retry ([#8902](https://github.com/RooCodeInc/Roo-Code/pull/8902))
+* Gate auth‑driven Roo model refresh to the active provider only to reduce background work ([#8915](https://github.com/RooCodeInc/Roo-Code/pull/8915))
+* search_files now respects .gitignore (including nested) by default; override when needed ([#8804](https://github.com/RooCodeInc/Roo-Code/pull/8804))
+* apply_diff export preserves trailing newlines (fix stripLineNumbers) ([#8227](https://github.com/RooCodeInc/Roo-Code/pull/8227))
+* Fix provider model loading race conditions to reduce timeouts and intermittent errors ([#8836](https://github.com/RooCodeInc/Roo-Code/pull/8836))
+* Rate limiting now uses a monotonic clock and enforces a hard cap to avoid long lockouts ([#8456](https://github.com/RooCodeInc/Roo-Code/pull/8456))
+* Messages typed during context condensing now send automatically once condensing finishes; per‑task queues no longer cross‑drain ([#8478](https://github.com/RooCodeInc/Roo-Code/pull/8478))
+* Checkpoint menu popover no longer clips long option text; items remain fully visible ([#8867](https://github.com/RooCodeInc/Roo-Code/pull/8867))
+
+## Provider Updates
+
+* MiniMax provider added (MiniMax‑M2) with API key setup and model selection in UI ([#8820](https://github.com/RooCodeInc/Roo-Code/pull/8820))
+* Cerebras: add zai‑glm‑4.6 and change default to gpt‑oss‑120b; deprecate qwen‑3‑coder models ([#8920](https://github.com/RooCodeInc/Roo-Code/pull/8920))
+* Roo Code Cloud: dynamic model loading in the Model Picker with caching and graceful fallback ([#8728](https://github.com/RooCodeInc/Roo-Code/pull/8728))
+* Chutes AI: LongCat‑Flash‑Thinking‑FP8 models (200K, 128K) for longer coding sessions ([#8426](https://github.com/RooCodeInc/Roo-Code/pull/8426))
+* OpenRouter: add Anthropic Claude Haiku 4.5 to prompt‑caching models ([#8764](https://github.com/RooCodeInc/Roo-Code/pull/8764))
+* Z.ai (GLM‑4.5/4.6): “Enable reasoning” Deep Thinking toggle in UI ([#8872](https://github.com/RooCodeInc/Roo-Code/pull/8872))
+* Roo provider: Reasoning effort control to choose deeper thinking vs. faster/cheaper ([#8874](https://github.com/RooCodeInc/Roo-Code/pull/8874))
+* OpenAI‑compatible: centralized ~20% maxTokens cap to prevent context overruns ([#8822](https://github.com/RooCodeInc/Roo-Code/pull/8822))
+* Gemini: updated model list and “latest” aliases for easier selection ([#8486](https://github.com/RooCodeInc/Roo-Code/pull/8486))
+
+## Documentation Updates
+
+* New: [MiniMax Provider](/providers/minimax)
+* Update: VS Code LM guidance [VS Code LM](/providers/vscode-lm)
+* Update: Custom Modes path and persistence [Custom Modes](/features/custom-modes)
+* Update: Tools truncation behavior [list_code_definition_names](/advanced-usage/available-tools/list-code-definition-names) and [read_file](/advanced-usage/available-tools/read-file)
+* Update: MCP UI wording to “Logs” [Using MCP in Roo](/features/mcp/using-mcp-in-roo)

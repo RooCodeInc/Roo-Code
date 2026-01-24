@@ -1,0 +1,15 @@
+---
+description: This release introduces free Gemini access via OAuth, fixes several bugs, and improves the overall user experience.
+---
+
+# Roo Code 3.23.14 Release Notes (2025-07-17)
+
+This release improves internal workflows and fixes API task logging.
+
+## Misc Improvements
+
+* **Internal Workflow Simplification**: Removed unnecessary orchestrator modes and unified all GitHub operations to use the GitHub CLI instead of MCP tools, making internal development processes more efficient ([#5832](https://github.com/RooCodeInc/Roo-Code/pull/5832))
+
+## Bug Fixes
+
+* **API Task Logging**: Fixed an issue where API-initiated tasks would attempt to write logs to workspace directories that might not exist. Logs now write to the system's temporary directory instead ([#5833](https://github.com/RooCodeInc/Roo-Code/pull/5833))

@@ -1,0 +1,30 @@
+---
+description: Adds Sonnet 1M context support for AWS Bedrock, improves internationalization, and fixes search functionality.
+keywords:
+  - roo code 3.25.13
+  - sonnet 1m context
+  - aws bedrock
+  - internationalization
+  - agent.md support
+---
+
+# Roo Code 3.25.13 Release Notes (2025-08-13)
+
+This release adds Sonnet 1M context support for AWS Bedrock, improves internationalization, and fixes search functionality.
+
+## Features
+
+* **Sonnet 1M Context Support**: Enable 1M token context window for Claude Sonnet 4 when using AWS Bedrock, allowing you to process much larger documents and have longer conversations ([#7032](https://github.com/RooCodeInc/Roo-Code/pull/7032))
+
+## QOL Improvements
+
+* **Internationalization**: The Account button now displays in your selected language instead of always showing in English (thanks zhangtony239!) ([#6978](https://github.com/RooCodeInc/Roo-Code/pull/6978))
+* **Agent File Flexibility**: Roo Code now recognizes both AGENT.md and AGENTS.md files for agent rules, with AGENTS.md checked first for compatibility (thanks Brendan-Z!) ([#6913](https://github.com/RooCodeInc/Roo-Code/pull/6913))
+
+## Bug Fixes
+
+* **Search Tool Reliability**: Fixed the search_files tool failing when encountering permission-denied files - it now continues working and returns results from accessible files (thanks R-omk!) ([#6757](https://github.com/RooCodeInc/Roo-Code/pull/6757))
+
+## Provider Updates
+
+* **OpenAI**: Removed the deprecated GPT-4.5 Preview model from available options as it was removed from the OpenAI API (thanks PeterDaveHello!) ([#6948](https://github.com/RooCodeInc/Roo-Code/pull/6948))

@@ -1,0 +1,28 @@
+---
+description: Adds Qwen3 235B Thinking model support, configurable embedding batch size for code indexing, and MCP resource auto-approval.
+keywords:
+  - roo code 3.26.5
+  - qwen3 thinking model
+  - code indexing batch size
+  - mcp auto-approve
+image: /img/v3.26.5/v3.26.5.png
+---
+
+# Roo Code 3.26.5 Release Notes (2025-09-03)
+
+This release adds support for the Qwen3 235B Thinking model with a 262K context window, introduces configurable embedding batch sizes for code indexing, and improves MCP resource auto-approval.
+
+<img src="/img/v3.26.5/v3.26.5.png" alt="Roo Code v3.26.5 Release" width="600" />
+## Provider Updates
+
+* **Qwen3 235B Thinking Model**: Added support for Qwen3-235B-A22B-Thinking-2507 model with an impressive 262K context window, enabling processing of extremely long documents and large codebases in a single request through the Chutes provider (thanks mohammad154, apple-techie!) ([#7578](https://github.com/RooCodeInc/Roo-Code/pull/7578))
+
+## QOL Improvements
+
+* **MCP Resource Auto-Approval**: MCP resource access requests are now automatically approved when auto-approve is enabled, eliminating manual approval steps and enabling smoother automation workflows (thanks m-ibm!) ([#7606](https://github.com/RooCodeInc/Roo-Code/pull/7606))
+* **Message Queue Performance**: Improved message queueing reliability and performance by moving the queue management to the extension host, making the interface more stable ([#7604](https://github.com/RooCodeInc/Roo-Code/pull/7604))
+
+## Bug Fixes
+
+* **Configurable Embedding Batch Size**: Fixed an issue where users with API providers having stricter batch limits couldn't use code indexing. You can now configure the embedding batch size (1-2048, default: 400) to match your provider's limits (thanks BenLampson!) ([#7464](https://github.com/RooCodeInc/Roo-Code/pull/7464))
+* **OpenAI-Native Cache Reporting**: Fixed cache usage statistics and cost calculations when using the OpenAI-Native provider with cached content ([#7602](https://github.com/RooCodeInc/Roo-Code/pull/7602))

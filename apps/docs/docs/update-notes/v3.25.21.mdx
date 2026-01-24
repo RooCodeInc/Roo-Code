@@ -1,0 +1,65 @@
+---
+description: Vertex AI grounding features, subtask todo lists, and the new Featherless provider.
+keywords:
+  - roo code 3.25.21
+  - vertex ai grounding
+  - subtask todos
+  - featherless provider
+---
+
+# Roo Code 3.25.21 Release Notes (2025-08-22)
+
+This release enables grounding features for Vertex AI, adds subtask todo list support, and includes the new Featherless provider.
+
+## Subtask Todo Lists
+
+Streamline hierarchical task planning with the new optional todo list parameter for subtasks ([#6775](https://github.com/RooCodeInc/Roo-Code/pull/6775)):
+
+- **Pass Todo Lists**: Include predefined todo lists when creating subtasks
+- **Maintain Context**: Pass along context to the subtask in the form of a todo list
+- **Optional Enforcement**: The "New Task Require Todos" setting in VS Code can enforce todo lists for all new subtasks if desired
+
+<img src="/img/v3.25.21/v3.25.21.png" alt="Subtask todo lists configuration in VS Code settings" width="600" />
+
+This feature works out of the box, and you can optionally configure VS Code settings to require todos for all new tasks.
+
+> **📚 Documentation**: See [Task Todo List](/features/task-todo-list) for detailed information about todo list management.
+
+## Vertex AI Grounding Features
+
+Vertex AI users can now access powerful grounding capabilities previously exclusive to the Gemini provider (thanks anguslees!) ([#6777](https://github.com/RooCodeInc/Roo-Code/pull/6777)):
+
+- **Google Search Grounding**: Get real-time information from web searches directly in your AI responses
+- **URL Context**: Provide specific web pages as context for more accurate, up-to-date responses
+- **Enhanced Accuracy**: Combine AI capabilities with current web information for better results
+
+These features bring Vertex AI to feature parity with Gemini for grounding capabilities.
+
+> **📚 Documentation**: See [Vertex AI Provider](/providers/vertex) for configuration details.
+
+## Provider Updates
+
+* **Featherless Provider**: Access a wide range of open-source models through the new Featherless AI platform (thanks DarinVerheijke!) ([#7235](https://github.com/RooCodeInc/Roo-Code/pull/7235))
+
+## QOL Improvements
+
+* **Context Window Error Handling**: Improved error detection and automatic recovery when hitting context limits - the system now detects errors from multiple providers (OpenAI, Anthropic, Cerebras) and automatically truncates context by 25% before retrying (up to 3 attempts) ([#6967](https://github.com/RooCodeInc/Roo-Code/pull/6967))
+* **Marketplace Filter**: New "Show installed only" checkbox to easily view and manage your installed MCPs and modes (thanks semidark!) ([#7007](https://github.com/RooCodeInc/Roo-Code/pull/7007))
+* **DeepSeek Context**: Updated DeepSeek models to support 128k context window ([#7269](https://github.com/RooCodeInc/Roo-Code/pull/7269))
+
+## Bug Fixes
+
+* **OpenAI Responses**: Fixed GPT-5 subtask results not being provided correctly in OpenAI Responses API ([#7305](https://github.com/RooCodeInc/Roo-Code/pull/7305))
+* **Temperature Handling**: Fixed temperature parameter issues for OpenAI Compatible providers ([#7188](https://github.com/RooCodeInc/Roo-Code/pull/7188))
+* **Provider Validation**: Added 'roo' provider to key validation function ([#7239](https://github.com/RooCodeInc/Roo-Code/pull/7239))
+* **UI Stability**: Fixed context condense UI crash when handling null/undefined token values ([#6916](https://github.com/RooCodeInc/Roo-Code/pull/6916))
+* **Storage Checks**: Improved filesystem checks for better storage handling (thanks elianiva!) ([#7164](https://github.com/RooCodeInc/Roo-Code/pull/7164))
+
+## Misc Improvements
+
+* **MDM Authentication**: Clear feedback when authentication is required by your organization's MDM policy ([#7291](https://github.com/RooCodeInc/Roo-Code/pull/7291))
+* **Security Updates**: Updated mermaid dependency to v11.10.0 ([#7231](https://github.com/RooCodeInc/Roo-Code/pull/7231)) and tmp dependency to v0.2.4 ([#6762](https://github.com/RooCodeInc/Roo-Code/pull/6762))
+* **Task Tracking**: Pass task ID in Roo provider request headers ([#7303](https://github.com/RooCodeInc/Roo-Code/pull/7303))
+* **Error Handling**: Removed exceptions from RooHandler constructor ([#7302](https://github.com/RooCodeInc/Roo-Code/pull/7302))
+* **Cloud Services**: Various internal improvements for cloud services ([#7299](https://github.com/RooCodeInc/Roo-Code/pull/7299), [#7258](https://github.com/RooCodeInc/Roo-Code/pull/7258))
+* **Build Optimization**: Marked non-English package files as linguist-generated ([#7271](https://github.com/RooCodeInc/Roo-Code/pull/7271))

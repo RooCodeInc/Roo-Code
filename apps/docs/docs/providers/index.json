@@ -1,0 +1,208 @@
+{
+	"providers": [
+		{
+			"id": "providers/anthropic",
+			"title": "Anthropic",
+			"extension": true,
+			"cloud": true
+		},
+		{
+			"id": "providers/openai-chatgpt-plus-pro",
+			"title": "ChatGPT Plus/Pro",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/claude-code",
+			"title": "Claude Code",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/bedrock",
+			"title": "AWS Bedrock",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/cerebras",
+			"title": "Cerebras",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/deepinfra",
+			"title": "DeepInfra",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/deepseek",
+			"title": "DeepSeek",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/doubao",
+			"title": "Doubao",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/featherless",
+			"title": "Featherless AI",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/fireworks",
+			"title": "Fireworks AI",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/chutes",
+			"title": "Chutes AI",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/gemini",
+			"title": "Google Gemini",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/glama",
+			"title": "Glama",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/groq",
+			"title": "Groq",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/huggingface",
+			"title": "Hugging Face",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/human-relay",
+			"title": "Human Relay",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/io-intelligence",
+			"title": "IO Intelligence",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/lmstudio",
+			"title": "LM Studio",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/litellm",
+			"title": "LiteLLM",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/mistral",
+			"title": "Mistral AI",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/ollama",
+			"title": "Ollama",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/openai",
+			"title": "OpenAI",
+			"extension": true,
+			"cloud": true
+		},
+		{
+			"id": "providers/openai-compatible",
+			"title": "OpenAI Compatible",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/openrouter",
+			"title": "OpenRouter",
+			"extension": true,
+			"cloud": true
+		},
+		{
+			"id": "providers/qwen-code",
+			"title": "Qwen Code CLI",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/requesty",
+			"title": "Requesty",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/roo-code-router",
+			"title": "Roo Code Router",
+			"extension": true,
+			"cloud": true
+		},
+		{
+			"id": "providers/sambanova",
+			"title": "SambaNova",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/unbound",
+			"title": "Unbound",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/vercel-ai-gateway",
+			"title": "Vercel AI Gateway",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/vertex",
+			"title": "GCP Vertex AI",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/vscode-lm",
+			"title": "VS Code Language Model API",
+			"extension": true,
+			"cloud": false
+		},
+		{
+			"id": "providers/xai",
+			"title": "xAI (Grok)",
+			"extension": true,
+			"cloud": true
+		},
+		{
+			"id": "providers/zai",
+			"title": "Z AI",
+			"extension": true,
+			"cloud": true
+		}
+	]
+}

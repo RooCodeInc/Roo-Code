@@ -1,0 +1,64 @@
+---
+description: Roo Code 3.39.0 adds image file @mentions, makes provider profiles stick to tasks, and updates key UI labels.
+keywords:
+  - roo code 3.39.0
+  - image @mentions
+  - providers
+  - qol improvements
+  - bug fixes
+image: /img/v3.39.0/v3.39.0.png
+---
+
+# Roo Code 3.39.0 Release Notes (2026-01-08)
+
+This release adds image file @mentions, makes provider profiles stick to tasks, and updates key UI labels.
+
+<img src="/img/v3.39.0/v3.39.0.png" alt="Roo Code v3.39.0 Release" width="600" />
+
+## Image file @mentions
+
+You can now @mention image files to include them as inline images in your message, making it easier to share screenshots and UI mockups without manually attaching files (thanks hannesrudolph!) ([#10189](https://github.com/RooCodeInc/Roo-Code/pull/10189)).
+
+> **📚 Documentation**: See [Context Mentions](/basic-usage/context-mentions) for usage details.
+
+## Sticky provider profiles
+
+Tasks now remember the provider profile (API configuration) they started with, so switching profiles elsewhere doesn’t affect running tasks or resumed tasks (thanks hannesrudolph!) ([#10018](https://github.com/RooCodeInc/Roo-Code/pull/10018)).
+
+> **📚 Documentation**: See [API Configuration Profiles](/features/api-configuration-profiles) for details.
+
+## YOLO → BRRRRRRRRRR
+
+The auto-approve mode label has been renamed from “YOLO” to “BRRRRRRRRRR” across the UI (thanks app/roomote!) ([#10507](https://github.com/RooCodeInc/Roo-Code/pull/10507)).
+
+> **📚 Documentation**: See [Auto-Approving Actions](/features/auto-approving-actions) for details.
+
+## QOL Improvements
+
+* The `@` file picker now respects `.rooignore`, reducing noise in large workspaces and helping you avoid accidentally attaching ignored/generated files (thanks app/roomote, jerrill-johnson-bitwerx!) ([#10174](https://github.com/RooCodeInc/Roo-Code/pull/10174))
+* Adds debug-only proxy routing settings so you can inspect extension network traffic while running under the VS Code debugger (F5) (thanks hannesrudolph, SleeperSmith!) ([#10467](https://github.com/RooCodeInc/Roo-Code/pull/10467))
+* Improves the follow-up suggestion mode badge styling for better readability (thanks mrubens!) ([#9260](https://github.com/RooCodeInc/Roo-Code/pull/9260))
+* Clarifies in the native `read_file` tool description that image formats are supported when the model supports vision (thanks app/roomote, nabilfreeman!) ([#10442](https://github.com/RooCodeInc/Roo-Code/pull/10442))
+
+## Bug Fixes
+
+* Fixes an issue where conversations could fail after condensation due to missing/mismatched tool call IDs, improving reliability in longer chats (thanks daniel-lxs!) ([#10471](https://github.com/RooCodeInc/Roo-Code/pull/10471))
+* Fixes an issue where duplicate `tool_result` blocks could cause provider API errors (including Anthropic “duplicate toolResult” failures), improving reliability in tool-heavy workflows (thanks daniel-lxs!) ([#10497](https://github.com/RooCodeInc/Roo-Code/pull/10497))
+* Fixes an edge case where switching terminals mid-run could produce duplicate tool results and trigger protocol errors, reducing unattended-mode soft-locks (thanks app/roomote, nabilfreeman!) ([#10466](https://github.com/RooCodeInc/Roo-Code/pull/10466))
+* Fixes an issue where Roo could generate the wrong command chaining syntax on Windows, making suggested terminal commands more likely to work without edits (thanks app/roomote, AlexNek!) ([#10434](https://github.com/RooCodeInc/Roo-Code/pull/10434))
+* Fixes an issue where chat requests could fail on Windows systems without PowerShell in PATH (“spawnSync powershell ENOENT”) (thanks app/roomote, Yang-strive!) ([#9897](https://github.com/RooCodeInc/Roo-Code/pull/9897))
+* Fixes a rare edge case where an API rate limit setting could be ignored when provider state is temporarily unavailable (thanks app/roomote!) ([#10266](https://github.com/RooCodeInc/Roo-Code/pull/10266))
+* Fixes validation failures in nightly builds by adding missing setting descriptions for debug proxy configuration (thanks app/roomote!) ([#10505](https://github.com/RooCodeInc/Roo-Code/pull/10505))
+
+## Provider Updates
+
+* Adds the `kimi-k2-thinking` model to the Fireworks AI provider (thanks app/roomote, kavehsfv!) ([#9202](https://github.com/RooCodeInc/Roo-Code/pull/9202))
+* Adds an “Extra High (xhigh)” reasoning effort option for OpenAI-compatible providers when supported by the endpoint/model (thanks app/roomote, Soorma718!) ([#10061](https://github.com/RooCodeInc/Roo-Code/pull/10061))
+* Adds `zai-glm-4.7` to the Cerebras model list (thanks sebastiand-cerebras!) ([#10500](https://github.com/RooCodeInc/Roo-Code/pull/10500))
+* Removes legacy Claude 2 models from AWS Bedrock to prevent selecting unsupported options (thanks app/roomote, KevinZhao!) ([#10501](https://github.com/RooCodeInc/Roo-Code/pull/10501))
+* Improves compatibility with OpenAI’s Responses API for MCP tool schemas, reducing tool-calling failures when schemas omit `additionalProperties: false` (thanks daniel-lxs!) ([#10472](https://github.com/RooCodeInc/Roo-Code/pull/10472))
+
+## Misc Improvements
+
+* Adds a one-line CLI installer workflow to simplify installing/upgrading the Roo Code CLI (thanks cte!) ([#10474](https://github.com/RooCodeInc/Roo-Code/pull/10474))
+* Adds early-stage CLI support used by eval tooling, including a new “CLI” execution option for eval runs (thanks cte!) ([#10452](https://github.com/RooCodeInc/Roo-Code/pull/10452), [#10456](https://github.com/RooCodeInc/Roo-Code/pull/10456))

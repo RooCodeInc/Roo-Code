@@ -1,0 +1,40 @@
+---
+description: This release includes improvements to MCP server connectivity, provider enhancements, UI optimizations, and several bug fixes and security updates.
+---
+
+# Roo Code 3.19.2 Release Notes (2025-06-01)
+
+This release includes improvements to MCP server connectivity, provider enhancements, UI optimizations, and several bug fixes and security updates.
+
+---
+
+## QOL Improvements
+
+*   **Streamable HTTP Transport for MCP Servers**: Added support for MCP servers using streamable HTTP-based transport (thanks taylorwilsdon!) ([#3260](https://github.com/RooCodeInc/Roo-Code/pull/3260))
+*   **MCP Server Instructions Support**: Added support for server instructions in MCP configuration (thanks qingyuan1109!) ([#4210](https://github.com/RooCodeInc/Roo-Code/pull/4210))
+*   **Optimized Chat Layout and Styles**: Fine-tuned the layout and styling of chat messages for improved readability (thanks zhangtony239!) ([#4205](https://github.com/RooCodeInc/Roo-Code/pull/4205))
+
+---
+
+## Provider Updates
+
+*   **Enhanced LiteLLM Provider**: Added cached read and write tokens to stats and cost calculation (thanks mollux!) ([#4206](https://github.com/RooCodeInc/Roo-Code/pull/4206))
+
+---
+
+## Bug Fixes
+
+*   **Prevent Full File Dump on User Edit**: Resolved an issue where editing a file before saving a proposed modification could dump the entire file content into the context. This fix prevents context bloat, maintains model focus, and reduces costs ([#4219](https://github.com/RooCodeInc/Roo-Code/pull/4219), [#3654](https://github.com/RooCodeInc/Roo-Code/pull/3654)) (thanks KJ7LNW!).
+*   **Correct OpenAI-Compatible API Key Label**: The label for OpenAI-compatible API keys in settings now correctly reads "API Key" instead of "OpenAI API Key" for better clarity ([#4191](https://github.com/RooCodeInc/Roo-Code/pull/4191)).
+*   **Prevent Invalid Markers in `apply_diff` REPLACE**: Added validation to ensure `:start_line:` and `:end_line:` markers are not incorrectly included in the `REPLACE` section of `apply_diff` operations, improving robustness ([#4015](https://github.com/RooCodeInc/Roo-Code/pull/4015)) (thanks KJ7LNW!).
+*   **Fix Virtuoso Footer Re-rendering**: Addressed an issue where the Virtuoso component's footer would continuously re-render, improving UI performance ([#4209](https://github.com/RooCodeInc/Roo-Code/pull/4209)) (thanks kiwina!).
+*   **Release Memory in `apply_diff`**: Optimized memory usage in the `apply_diff` tool by explicitly releasing the original content buffer after use, helping to prevent potential memory leaks ([#4193](https://github.com/RooCodeInc/Roo-Code/pull/4193)) (thanks xyOz-dev!).
+*   **Fix Directory Link Handling in Markdown**: Enhanced how directory links in markdown (e.g., `[some/directory/](some/directory/)`) are handled, ensuring they correctly open in the Explorer view ([#3690](https://github.com/RooCodeInc/Roo-Code/pull/3690)) (thanks KJ7LNW!).
+*   **Typo Fixes**: Corrected various typos in comments and tool use prompts ([#4220](https://github.com/RooCodeInc/Roo-Code/pull/4220), [#4095](https://github.com/RooCodeInc/Roo-Code/pull/4095)) (thanks mrubens, noritaka1166!).
+
+---
+
+## Misc Improvements
+
+*   **Unified History Item UI**: Refactored history item UI components for code consistency (thanks daniel-lxs!) ([#4151](https://github.com/RooCodeInc/Roo-Code/pull/4151))
+*   **Node.js Upgrade**: Upgraded Node.js to `v20.19.2` to incorporate the latest security enhancements and ensure a more secure environment (thanks PeterDaveHello!) ([#4212](https://github.com/RooCodeInc/Roo-Code/pull/4212))

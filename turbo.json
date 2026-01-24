@@ -11,8 +11,18 @@
 			"cache": false
 		},
 		"build": {
-			"outputs": ["dist/**"],
-			"inputs": ["src/**", "package.json", "tsconfig.json", "tsup.config.ts", "vite.config.ts"]
+			"outputs": ["dist/**", "build/**", ".docusaurus/**"],
+			"inputs": [
+				"src/**",
+				"docs/**",
+				"static/**",
+				"package.json",
+				"tsconfig.json",
+				"tsup.config.ts",
+				"vite.config.ts",
+				"docusaurus.config.ts",
+				"sidebars.ts"
+			]
 		},
 		"watch:tsc": {
 			"cache": false

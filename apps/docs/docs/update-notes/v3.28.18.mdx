@@ -1,0 +1,29 @@
+---
+description: Fixes grey screen UI crashes, improves image generation defaults, and updates provider settings.
+keywords:
+  - roo code 3.28.18
+  - bug fixes
+  - image generation
+  - provider updates
+---
+# Roo Code 3.28.18 Release Notes (2025-10-17)
+
+This patch fixes the grey screen issue, improves image generation defaults, and updates provider settings.
+
+
+## Grey Screen of Death Fix
+
+This should fix grey screens caused by long context task sessions ([#8696](https://github.com/RooCodeInc/Roo-Code/pull/8696)).
+
+## QOL Improvements
+
+* Image generation model selection update: defaults to Gemini 2.5 Flash Image; adds OpenAI GPT‑5 Image and GPT‑5 Image Mini; clearer settings dropdown (thanks chrarnoldus!) ([#8698](https://github.com/RooCodeInc/Roo-Code/pull/8698))
+
+## Bug Fixes
+
+* Editor targeting fix: avoids editing read‑only git diff views; edits the actual file (thanks hassoncs!) ([#8676](https://github.com/RooCodeInc/Roo-Code/pull/8676))
+
+## Provider Updates
+
+* Bedrock: add versioned user agent for per‑version metrics and error tracking; no action needed (thanks ajjuaire!) ([#8663](https://github.com/RooCodeInc/Roo-Code/pull/8663))
+* Z AI: only two coding endpoints (International/China) are supported; defaults to International; legacy non‑coding endpoints unsupported ([#8693](https://github.com/RooCodeInc/Roo-Code/pull/8693))

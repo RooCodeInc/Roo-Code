@@ -1,0 +1,30 @@
+---
+description: This release improves follow-up auto-approval behavior, expands tool customization options, and fixes provider settings and error reporting.
+keywords:
+  - roo code 3.36.6
+  - new features
+  - bug fixes
+image: /img/v3.36.6/v3.36.6.png
+---
+
+# Roo Code 3.36.6 Release Notes (2025-12-12)
+
+This release improves follow-up auto-approval behavior, expands tool customization options, and fixes provider settings and error reporting.
+
+<img src="/img/v3.36.6/v3.36.6.png" alt="Roo Code v3.36.6 Release" width="600" />
+
+## QOL Improvements
+
+* **Clearer auto-approve timing in follow-up suggestions**: Makes the auto-approve countdown harder to miss ([#10048](https://github.com/RooCodeInc/Roo-Code/pull/10048))
+
+## Bug Fixes
+
+* **Auto-approval stops when you start typing**: Fixes an issue where an auto-approve timer could still fire after you began writing a response ([#9937](https://github.com/RooCodeInc/Roo-Code/pull/9937))
+* **More actionable OpenRouter error messages**: Fixes an issue where failures could show only generic errors by surfacing upstream details when available ([#10039](https://github.com/RooCodeInc/Roo-Code/pull/10039))
+* **LiteLLM tool protocol dropdown always appears**: Restores the tool protocol dropdown in the provider’s Advanced settings even when LiteLLM model metadata isn’t available yet ([#10053](https://github.com/RooCodeInc/Roo-Code/pull/10053))
+* **MCP tool calls work with stricter providers**: Fixes failures caused by special characters in MCP server/tool names by sanitizing names and using an unambiguous `mcp--server--tool` ID format ([#10054](https://github.com/RooCodeInc/Roo-Code/pull/10054))
+
+## Misc Improvements
+
+* **Tool aliases for model-specific tool naming**: Adds support for alternative tool names so different models can call the same tool using the naming they expect ([#9989](https://github.com/RooCodeInc/Roo-Code/pull/9989))
+* **Workspace task visibility controls for organizations**: Adds an org-level setting for how visible Roo Code Cloud “extension tasks” are across the workspace ([#10020](https://github.com/RooCodeInc/Roo-Code/pull/10020))

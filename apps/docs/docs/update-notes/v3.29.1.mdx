@@ -1,0 +1,27 @@
+---
+description: Bug-fix patch that prevents context overruns, restores standard Redo keybinding, and improves provider model loading reliability.
+keywords:
+  - roo code 3.29.1
+  - new features
+  - bug fixes
+image: /img/v3.29.1/v3.29.1.png
+---
+
+# Roo Code 3.29.1 Release Notes (2025-10-27)
+
+This patch prevents context overruns on long generations, restores the standard Redo keybinding, and reduces intermittent provider model loading errors.
+
+<img src="/img/v3.29.1/v3.29.1.png" alt="Roo Code v3.29.1 Release" width="600" />
+
+## QOL Improvements
+
+* Keyboard shortcut update: “Add to Context” moved to Ctrl+K Ctrl+A (Windows/Linux) / Cmd+K Cmd+A (macOS) to avoid Redo conflict and restore standard Redo (thanks swythan!) ([#8653](https://github.com/RooCodeInc/Roo-Code/pull/8653))
+
+## Bug Fixes
+
+* Clean up max output token calculations to prevent context window overruns (thanks enerage!) ([#8822](https://github.com/RooCodeInc/Roo-Code/pull/8822))
+* Fix provider model loading race conditions to reduce timeouts and intermittent errors ([#8836](https://github.com/RooCodeInc/Roo-Code/pull/8836))
+
+## Provider Updates
+
+* OpenAI-compatible: centralized ~20% maxTokens cap to prevent context overruns; GLM‑4.6‑turbo default 40,960 for reliable long-context runs (thanks enerage!) ([#8822](https://github.com/RooCodeInc/Roo-Code/pull/8822))

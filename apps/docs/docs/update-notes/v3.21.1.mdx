@@ -1,0 +1,20 @@
+---
+description: Roo Code v3.21.1 introduces a new `auto_install_peers` setting to streamline dependency management during MCP package installations. This update simplifies setup by automatically installing required peer dependencies, improving developer experience and reducing manual configuration.
+---
+
+# Roo Code 3.21.1 Release Notes (2025-06-18)
+
+This patch release improves stability, security, and provides better error handling for several key features.
+
+## Bug Fixes
+
+* **Parser Reliability**: Fixed an issue that could prevent the parser from loading correctly in certain environments, improving overall stability ([#4857](https://github.com/RooCodeInc/Roo-Code/pull/4857))
+* **Windows Stability**: Resolved a crash that could occur when using MCP servers on Windows with node version managers ([#4711](https://github.com/RooCodeInc/Roo-Code/pull/4711))
+* **Subtask Rate Limiting**: Implemented global rate-limiting to prevent errors when creating subtasks, ensuring more reliable task execution (thanks olweraltuve!) ([#4453](https://github.com/RooCodeInc/Roo-Code/pull/4453))
+* **Codebase Search Errors**: Improved error messages for codebase search, making it easier to diagnose and resolve issues with embeddings ([#4432](https://github.com/RooCodeInc/Roo-Code/pull/4432))
+
+## Misc Improvements
+
+* **Anthropic Cost Tracking**: Improved the accuracy of cost reporting for Anthropic models ([#4849](https://github.com/RooCodeInc/Roo-Code/pull/4849))
+* **Performance Optimization**: The "Enable MCP Server Creation" setting is now disabled by default, reducing token usage and simplifying prompts for most users ([#4838](https://github.com/RooCodeInc/Roo-Code/pull/4838))
+* **Security**: Addressed security vulnerabilities by updating dependencies ([#4844](https://github.com/RooCodeInc/Roo-Code/pull/4844))

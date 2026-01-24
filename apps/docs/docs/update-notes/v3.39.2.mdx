@@ -1,0 +1,39 @@
+---
+description: Adds a debug toggle, improves provider error messaging, and fixes tool calling issues.
+keywords:
+  - roo code 3.39.2
+  - new features
+  - bug fixes
+---
+
+# Roo Code 3.39.2 Release Notes (2026-01-09)
+
+This release adds a new debug toggle in settings, improves provider error messaging, and fixes multiple tool-calling issues.
+
+## Bug Fixes
+
+* Fixes an issue where Cerebras could fail tool calling with a 422 error when a chat included both built-in tools and MCP tools, by ensuring tools sent to Cerebras use consistent strict-mode values (thanks brianboysen51!) ([#10589](https://github.com/RooCodeInc/Roo-Code/pull/10589))
+* Fixes an issue where OpenAI-compatible providers could break tool calling, causing models to describe tool usage instead of invoking tools ([#10575](https://github.com/RooCodeInc/Roo-Code/pull/10575))
+* Fixes cases where file edits could fail to apply due to overly strict `edit_file` matching, improving edit reliability ([#10585](https://github.com/RooCodeInc/Roo-Code/pull/10585))
+* Fixes an issue where the VS Code Language Model (vscode-lm) integration could error when tool-call parts were ordered before text parts in assistant messages ([#10573](https://github.com/RooCodeInc/Roo-Code/pull/10573))
+* Fixes an issue where Gemini requests via OpenRouter could fail when an assistant message contained only tool calls ([#10559](https://github.com/RooCodeInc/Roo-Code/pull/10559))
+* Fixes an issue where approving a tool run while adding feedback could produce duplicate tool results, improving reliability for unattended runs (thanks nabilfreeman!) ([#10519](https://github.com/RooCodeInc/Roo-Code/pull/10519))
+* Fixes an issue where Gemini tool calling could behave inconsistently across turns due to thought signatures not being preserved correctly ([#10590](https://github.com/RooCodeInc/Roo-Code/pull/10590))
+
+## Provider Updates
+
+* Improves file-edit reliability for Gemini and Vertex models by disabling the `edit_file` tool for those providers so Roo can route edits through the more appropriate patch-based flow when available ([#10594](https://github.com/RooCodeInc/Roo-Code/pull/10594))
+* Improves Gemini tool selection behavior by no longer overriding tool allow/deny lists, letting Roo’s routing decide more consistently ([#10592](https://github.com/RooCodeInc/Roo-Code/pull/10592))
+
+## QOL Improvements
+
+* Adds an **Enable debug mode** toggle in Roo Code settings (About Roo Code) so you can turn debug logging on/off from the extension UI ([#10580](https://github.com/RooCodeInc/Roo-Code/pull/10580))
+* Improves the error message shown when a provider terminates a streaming response early (for example timeouts or rate limits), making it clearer the interruption came from the provider ([#10548](https://github.com/RooCodeInc/Roo-Code/pull/10548))
+
+## Misc Improvements
+
+* Improves CLI defaults by switching the default model to `anthropic/claude-opus-4.5` ([#10544](https://github.com/RooCodeInc/Roo-Code/pull/10544))
+* Updates Roo Code Cloud’s Terms of Service (effective 2026-01-09) ([#10568](https://github.com/RooCodeInc/Roo-Code/pull/10568))
+* Improves internal CLI development and maintenance by moving more shared types to `@roo-code/types` (thanks cte!) ([#10583](https://github.com/RooCodeInc/Roo-Code/pull/10583))
+* Improves internal CLI stability by adding new functionality to `@roo-code/core` (thanks cte!) ([#10584](https://github.com/RooCodeInc/Roo-Code/pull/10584))
+* Improves internal CLI workflows by adding additional slash commands for CLI development (thanks cte!) ([#10586](https://github.com/RooCodeInc/Roo-Code/pull/10586))

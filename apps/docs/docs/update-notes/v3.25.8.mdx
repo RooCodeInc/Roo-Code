@@ -1,0 +1,53 @@
+---
+description: Memory leak fix for long conversations and Gemini 2.5 Pro thinking budget flexibility, plus multiple stability improvements.
+keywords:
+  - roo code 3.25.8
+  - memory leak fix
+  - gemini thinking budget
+  - bug fixes
+---
+
+# Roo Code 3.25.8 Release Notes (2025-08-06)
+
+This release fixes a critical memory leak in long conversations, prevents disabled MCP servers from starting, and provides more flexibility for Gemini 2.5 Pro thinking budgets, along with numerous stability improvements.
+
+## Disabled MCP Servers No Longer Start
+
+We've fixed a significant issue where disabled MCP servers were still starting processes and consuming resources ([#6084](https://github.com/RooCodeInc/Roo-Code/pull/6084)):
+
+- **No Wasted Resources**: Disabled servers now truly stay disabled and don't start background processes
+- **Clear Status Indicators**: Server status now accurately reflects whether a server is enabled or disabled
+- **Immediate Cleanup**: When MCP is globally disabled, all servers immediately disconnect
+
+This ensures your system resources are only used for the MCP servers you actually want to run.
+
+## Memory Leak Fix for Long Conversations
+
+We've resolved a critical memory leak that was causing excessive memory usage and grey screens in long conversations (thanks xyOz-dev!) ([#6697](https://github.com/RooCodeInc/Roo-Code/pull/6697)):
+
+- **Bounded Memory Usage**: Virtual scrolling now limits viewport rendering to 1000px below the current view instead of rendering infinitely
+- **Optimized Caching**: Reduced cache size and TTL to prevent memory accumulation
+- **Stable Performance**: Memory usage remains constant regardless of conversation length
+
+Your long conversations will now remain responsive and stable without the dreaded grey screen appearing.
+
+## Gemini 2.5 Pro Thinking Budget Flexibility
+
+Gemini 2.5 Pro users now have much more control over the thinking budget ([#6588](https://github.com/RooCodeInc/Roo-Code/pull/6588)):
+
+- **Lower Minimum**: The minimum thinking budget is reduced from 1024 to 128 tokens
+- **More Concise Coding**: Perfect for tasks that need quick, focused responses without extensive reasoning
+- **Manual Adjustment Required**: You'll need to manually adjust the thinking budget to 128 in your settings to take advantage of this feature
+
+This change gives you the flexibility to optimize for either deep reasoning or more concise, rapid responses depending on your needs.
+
+## Bug Fixes
+
+* **MCP Server Refresh**: Settings changes no longer trigger unnecessary MCP server refreshes ([#6779](https://github.com/RooCodeInc/Roo-Code/pull/6779))
+* **Codebase Search**: The tool now correctly searches the entire workspace when using "." as the path ([#6517](https://github.com/RooCodeInc/Roo-Code/pull/6517))
+* **Swift File Support**: Fixed VS Code crashes when indexing projects containing Swift files (thanks niteshbalusu11, sealad886!) ([#6724](https://github.com/RooCodeInc/Roo-Code/pull/6724))
+* **Context Management**: Model max tokens now intelligently capped at 20% of context window to prevent excessive condensing ([#6761](https://github.com/RooCodeInc/Roo-Code/pull/6761))
+* **OpenAI Configuration**: Extra whitespace in base URLs no longer breaks model detection (thanks vauhochzett!) ([#6560](https://github.com/RooCodeInc/Roo-Code/pull/6560))
+* **URL Fetching**: Better error recovery when fetching content from URLs (thanks QuinsZouls!) ([#6635](https://github.com/RooCodeInc/Roo-Code/pull/6635))
+* **Qdrant Recovery**: Code indexing automatically recovers when Qdrant becomes available after startup errors ([#6661](https://github.com/RooCodeInc/Roo-Code/pull/6661))
+* **Chat Scrolling**: Eliminated scroll jitter during message streaming ([#6780](https://github.com/RooCodeInc/Roo-Code/pull/6780))

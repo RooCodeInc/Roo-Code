@@ -1,0 +1,34 @@
+---
+description: This patch release adds AWS Bedrock embeddings support, improves native tool and provider behavior, and fixes several reliability issues.
+keywords:
+  - roo code 3.34.6
+  - new features
+  - bug fixes
+image: /img/v3.34.6/v3.34.6.png
+---
+
+# Roo Code 3.34.6 Release Notes (2025-11-26)
+
+This release adds AWS Bedrock embeddings support for code indexing, improves native tool and provider behavior, and fixes several reliability issues across Bedrock, Vertex, and native tooling.
+
+<img src="/img/v3.34.6/v3.34.6.png" alt="Roo Code v3.34.6 Release" width="600" />
+
+## Features
+
+* **AWS Bedrock embeddings for code indexing**: Adds support for using AWS Bedrock embeddings in code indexing so teams that standardize on Bedrock can reuse their existing infrastructure when indexing repos for Roo-based navigation and search (PR #9475).
+
+## QOL Improvements
+
+* **Native tool calling for Mistral**: Adds native tool calling support for the Mistral provider, enabling more reliable tool workflows and better multi-step automation when using Mistral models (PR #9625).
+* **Parallel native tool execution via OpenAI protocol**: Wires the `MULTIPLE_NATIVE_TOOL_CALLS` experiment to OpenAI's `parallel_tool_calls` capability so multiple tools can run in parallel under the OpenAI-compatible protocol, improving throughput for tool-heavy tasks (PR #9621).
+* **Fine-grained tool streaming for OpenRouter Anthropic**: Adds fine-grained tool streaming support for Anthropic models on OpenRouter so tool call responses stream more smoothly and stay aligned with Anthropic's tool semantics (PR #9629).
+* **Global inference selection for Bedrock with cross-region**: Allows global inference to pick Bedrock models correctly even when cross-region routing is enabled, reducing the risk of mismatched regions or unavailable models during automatic selection (PR #9616).
+
+## Bug Fixes
+
+* **Vertex Anthropic content block filtering**: Filters out non-Anthropic content blocks before sending requests to the Vertex Anthropic API so mixed or unsupported blocks no longer cause request failures (#9583, PR #9618).
+* **WriteToFileTool partial content safety**: Restores a missing `content` undefined check in `WriteToFileTool.handlePartial()` to prevent rare crashes or incorrect writes when partial content is unavailable (#9611, PR #9614).
+* **Model cache avoids persisting empty responses**: Prevents the model cache from persisting empty API responses so configuration and model metadata do not get silently replaced with blank entries (#9597, PR #9623).
+* **Skip access_mcp_resource when no resources exist**: Excludes the `access_mcp_resource` tool from native tool runs when an MCP server does not expose any resources, avoiding confusing no-op calls and making tool menus cleaner (PR #9615).
+* **Inline terminal and indexing defaults**: Updates default settings for the inline terminal and codebase indexing to better match common workflows out of the box, reducing the amount of manual tuning needed after installation (PR #9622).
+* **Native new_task tool_result timing**: Defers emitting the `new_task` tool_result in the native protocol until the corresponding subtask actually finishes, eliminating premature “done” signals and keeping task state accurate for downstream tools (PR #9628).

@@ -1,0 +1,29 @@
+---
+description: Roo Code 3.28.7 adds a Cloud account switcher, improves conversation readability with collapsible thinking blocks, fixes a checkpoint popover issue, and updates the Chutes provider.
+keywords:
+  - roo code 3.28.7
+  - cloud account switcher
+  - collapsible thinking blocks
+  - checkpoints
+  - chutes provider
+image: /img/v3.28.7/v3.28.7.png
+---
+
+# Roo Code 3.28.7 Release Notes (2025-09-23)
+
+One-click Cloud account switching, cleaner conversations with collapsible thinking blocks, a checkpoint UI fix, and a new GLM-4.5-turbo model in Chutes.
+
+<img src="/img/v3.28.7/v3.28.7.png" alt="Roo Code v3.28.7 Release" width="600" />
+## QOL Improvements
+
+* Cloud account switcher: Easily change account context without leaving your current view ([#8223](https://github.com/RooCodeInc/Roo-Code/pull/8223))
+* Collapse thinking messages by default: Conversations are easier to scan; configurable via Settings → UI ([#8254](https://github.com/RooCodeInc/Roo-Code/pull/8254))
+
+## Bug Fixes
+
+* Checkpoint restore popover remains anchored and interactive when moving from the saved checkpoint indicator to the menu, preventing flicker/misalignment and accidental closing (thanks NaccOll!) ([#8220](https://github.com/RooCodeInc/Roo-Code/pull/8220))
+
+## Provider Updates
+
+* Chutes: add `zai-org/GLM-4.5-turbo` model with a 128K context window and competitive pricing (approx. $1/M input, $3/M output), enabling longer prompts with fast inference (thanks mugnimaestra!) ([#8157](https://github.com/RooCodeInc/Roo-Code/pull/8157))
+  > See provider setup at [Chutes](/providers/chutes).

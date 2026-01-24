@@ -1,0 +1,30 @@
+---
+description: This release adds a new Gemini 3 Flash preview model across more providers, improves DeepSeek tool calling, and fixes token count display issues.
+keywords:
+  - roo code 3.36.10
+  - new features
+  - bug fixes
+image: /img/v3.36.10/v3.36.10.png
+---
+
+# Roo Code 3.36.10 Release Notes (2025-12-17)
+
+This release adds the Gemini 3 Flash preview model to more providers, improves DeepSeek reasoner “thinking” behavior during tool use, and fixes a context token-count display issue.
+
+<img src="/img/v3.36.10/v3.36.10.png" alt="Roo Code v3.36.10 Release" width="600" />
+
+## Gemini 3 Flash preview model
+
+The `gemini-3-flash-preview` model is now available in the Roo Code Cloud provider, Google Gemini, GCP Vertex AI, Requesty, and OpenRouter providers. It’s the latest model from Google, released this morning (thanks contributors!) ([#10151](https://github.com/RooCodeInc/Roo-Code/pull/10151)).
+
+## DeepSeek reasoner: interleaved thinking during tool use
+
+The DeepSeek provider’s `deepseek-reasoner` model now supports “interleaved thinking” and native tool calling. In our internal evals, tool calling succeeded 100% of the time, and the extended-run score improved to 93.4% (thanks zbww_!) ([#9969](https://github.com/RooCodeInc/Roo-Code/pull/9969), [#10141](https://github.com/RooCodeInc/Roo-Code/pull/10141)).
+
+## Bug Fixes
+
+* **Context truncation token display**: Fixes an issue where the context truncation UI could show incorrect before/after token totals, especially in tool-heavy conversations ([#9961](https://github.com/RooCodeInc/Roo-Code/pull/9961))
+
+## Misc Improvements
+
+* **Framework updates**: Updates Next.js to `~15.2.8` for improved compatibility with upstream fixes ([#10140](https://github.com/RooCodeInc/Roo-Code/pull/10140))

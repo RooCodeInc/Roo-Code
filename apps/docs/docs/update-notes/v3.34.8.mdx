@@ -1,0 +1,20 @@
+---
+title: "Roo Code v3.34.8 Release Notes"
+description: "Roo Code v3.34.8 fixes a race condition in the new_task tool for native protocol APIs."
+keywords:
+  - roo code 3.34.8
+  - bug fixes
+  - new_task tool
+  - native protocol
+image: /img/v3.34.8/v3.34.8.png
+---
+
+# Roo Code 3.34.8 Release Notes (2025-11-27)
+
+This release fixes a race condition affecting subtask handling in native protocol APIs.
+
+<img src="/img/v3.34.8/v3.34.8.png" alt="Roo Code v3.34.8 Release" width="600" />
+
+## Bug Fixes
+
+* **Race Condition in new_task Tool**: Fixes a timing issue where subtasks completing quickly (within 500ms) could break conversation history when using the `new_task` tool with native protocol APIs. Users on native protocol providers should now experience more reliable subtask handling. ([#9655](https://github.com/RooCodeInc/Roo-Code/pull/9655))

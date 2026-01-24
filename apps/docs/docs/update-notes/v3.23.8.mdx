@@ -1,0 +1,28 @@
+---
+description: This release introduces free Gemini access via OAuth, fixes several bugs, and improves the overall user experience.
+---
+
+# Roo Code 3.23.8 Release Notes (2025-07-13)
+
+This release adds command workflow controls and improves the user interface.
+
+## Command Denylist
+
+We've added the ability to automatically reject unwanted commands in your workflows (thanks hannesrudolph!) ([#5614](https://github.com/RooCodeInc/Roo-Code/pull/5614)):
+
+- **Always Reject**: Mark commands as "always reject" to prevent accidental execution
+- **Time Saving**: No need to manually reject the same commands repeatedly  
+- **Workflow Control**: Complements existing auto-approval functionality with "always reject" option
+
+This gives you better control over command execution in automated workflows.
+
+## QOL Improvements
+
+* **Codebase Indexing Toggle**: Added enable/disable checkbox for codebase indexing in settings with state persistence across sessions (thanks daniel-lxs, elasticdotventures!) ([#5599](https://github.com/RooCodeInc/Roo-Code/pull/5599))
+* **Chat Interface**: Improved chat layout with better organization and increased task history visibility (3 tasks instead of 2)
+* **Command Messaging**: Clearer messaging when command prefixes are denied - users now see that denial is due to their settings rather than automatic system behavior
+* **History Navigation**: Added "View all history" link to the HistoryPreview component for easier access to full task history when the history tab is hidden
+
+## Misc Improvements
+
+* **Type Definitions**: Updated internal type definitions for improved compatibility and development experience

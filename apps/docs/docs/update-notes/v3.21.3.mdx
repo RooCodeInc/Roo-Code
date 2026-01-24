@@ -1,0 +1,16 @@
+---
+description: This release adds profile-specific context condensing thresholds and fixes several bugs related to context length and error handling.
+---
+
+# Roo Code 3.21.3 Release Notes (2025-06-21)
+
+This release adds profile-specific context condensing thresholds and fixes several bugs related to context length and error handling.
+
+## QOL Improvements
+
+*   **Profile-Specific Context Thresholds**: You can now configure different intelligent context condensing thresholds for each of your API configuration profiles. This gives you more granular control over context management, which is especially useful when working with multiple models that have different context window sizes (thanks SannidhyaSah, SirBadfish!) ([#4456](https://github.com/RooCodeInc/Roo-Code/pull/4456)).
+
+## Bug Fixes
+
+*   **Ollama & LM Studio Context Length**: The context length for models served by Ollama and LM Studio is now automatically detected and displayed correctly, so you no longer need to configure it manually (thanks thecolorblue, Fade78!) ([#4314](https://github.com/RooCodeInc/Roo-Code/pull/4314)).
+*   **MCP Tool UI**: Resolved an issue where the eye icon for MCP tools was showing the incorrect state and was visible in chat contexts where it should have been hidden (thanks daniel-lxs!) ([#4994](https://github.com/RooCodeInc/Roo-Code/pull/4994)).

@@ -1,0 +1,28 @@
+---
+description: Introduces Roo Code Cloud waitlist signup and improves command handling with smarter validation and multi-line support.
+keywords:
+  - roo code 3.23.19
+  - roo code cloud
+  - waitlist
+  - command handling
+---
+
+# Roo Code 3.23.19 Release Notes (2025-07-23)
+
+This release introduces Roo Code Cloud waitlist signup and improves command handling with smarter validation and better multi-line command support.
+
+## Roo Code Cloud Waitlist
+
+We're excited to announce early access signup for Roo Code Cloud! (thanks brunobergher!) ([#6104](https://github.com/RooCodeInc/Roo-Code/pull/6104)):
+
+- **Website Signup**: New call-to-action button in the website header for easy waitlist registration
+- **In-Extension Access**: Users with 3+ tasks will see waitlist signup options directly in the extension
+- **Early Access**: Be among the first to experience the power of Roo Code Cloud
+
+Join the waitlist today to get early access to cloud-powered features!
+
+## QOL Improvements
+
+* **Smarter Command Validation**: Improved command validation logic that only auto-denies subshell commands if they contain denied prefixes, making the system more intelligent about which commands to allow ([#6123](https://github.com/RooCodeInc/Roo-Code/pull/6123))
+
+* **Multi-line Command Support**: Commands with newlines are now properly parsed, making it easier to work with multi-line commands across different operating systems (Unix, Windows, and old Mac formats) ([#6121](https://github.com/RooCodeInc/Roo-Code/pull/6121))

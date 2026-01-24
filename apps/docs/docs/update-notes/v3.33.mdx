@@ -1,0 +1,70 @@
+---
+description: Combined notes for Roo Code 3.33, including Gemini 3 Pro Preview support, native tool calling for OpenAI-compatible providers, and various native tool reliability fixes.
+keywords:
+  - roo code 3.33
+  - release notes
+  - gemini 3 pro
+  - native tool protocol
+  - openai compatible
+  - bug fixes
+---
+
+# Roo Code 3.33 Release Notes (2025-11-18)
+
+Roo Code 3.33 introduces support for Gemini 3 Pro Preview and native tool calling for OpenAI-compatible providers, along with improved Gemini defaults and numerous native tool protocol fixes.
+
+## Major Features
+
+### Gemini 3 Pro Preview
+
+Roo Code now supports Google’s Gemini 3 Pro Preview model through direct Gemini, Vertex AI, and aggregator providers like OpenRouter and Requesty ([#9357](https://github.com/RooCodeInc/Roo-Code/pull/9357), [#9327](https://github.com/RooCodeInc/Roo-Code/pull/9327)):
+
+- **1M-token, reasoning-capable model**: Handles very large conversations while providing higher-quality multi-step reasoning on complex coding and refactoring tasks.
+- **Strong eval performance**: Achieves a 100% score on internal Roo Code evals and 76.2% on SWE-bench Verified, giving more consistent solutions on real-world coding tasks.
+- **Reliable tool usage**: Executes complex multi-step tool workflows without getting stuck or losing track, especially in long, tool-heavy tasks.
+- **Better out-of-the-box defaults**: Uses `gemini-2.5-pro` by default where supported, sets a more natural temperature of 1, cleans up the Gemini model list, and includes reasoning / “thought” tokens in cost reporting so usage numbers better match provider billing.
+- **Image Preview Support**: Added support for image previews with Google Gemini 3 Pro image generation models ([#9440](https://github.com/RooCodeInc/Roo-Code/pull/9440)).
+
+## QOL Improvements
+
+- **Native Tool Calling for OpenAI-compatible Providers** ([#9369](https://github.com/RooCodeInc/Roo-Code/pull/9369)): Enables native tool use with a wider range of models and providers that support the OpenAI format, offering more robust tool interactions in both streaming and non-streaming modes.
+- **Minimax Provider Support** ([#9455](https://github.com/RooCodeInc/Roo-Code/pull/9455)): Added support for Minimax as an Anthropic-compatible provider.
+- **Reasoning History** ([#9451](https://github.com/RooCodeInc/Roo-Code/pull/9451)): Reasoning is now stored in conversation history for all providers.
+- **Improved Read File Tool** ([#9422](https://github.com/RooCodeInc/Roo-Code/pull/9422)): Enhanced the `read_file` tool description with clearer examples.
+
+- **Git status in environment details** ([#9310](https://github.com/RooCodeInc/Roo-Code/pull/9310)): Shows git status information in environment details so agents have more context about untracked, modified, and staged files.
+- **Tool protocol selector in advanced settings** ([#9324](https://github.com/RooCodeInc/Roo-Code/pull/9324)): Lets you choose which tool protocol to use (such as XML vs native) without editing config files.
+- **Dynamic tool protocol resolution** ([#9286](https://github.com/RooCodeInc/Roo-Code/pull/9286)): Resolves the active tool protocol using a clear precedence hierarchy.
+- **Improved Modes view toolbar** ([#9077](https://github.com/RooCodeInc/Roo-Code/pull/9077)): Moves Import/Export into the Modes view toolbar and cleans up the Mode edit view.
+- **Cloud agent CTA points to setup page** ([#9338](https://github.com/RooCodeInc/Roo-Code/pull/9338)): Updates the cloud agent call-to-action to link directly to the setup page.
+- **Roo Code Cloud provider pricing page** ([#9195](https://github.com/RooCodeInc/Roo-Code/pull/9195)): Adds a pricing page and related Cloud provider tweaks.
+- **Gemini native tool calling (experimental, Google Gemini provider only)** ([#9343](https://github.com/RooCodeInc/Roo-Code/pull/9343)): Adds an experimental native tool option (off by default) for the Google Gemini provider so Gemini-based workflows can use tools without XML translation and behave more like other native-tool providers.
+- **Roo Code Cloud credit balance in the extension** ([#9386](https://github.com/RooCodeInc/Roo-Code/pull/9386)): Shows your Roo Code Cloud RCC credit balance directly in the Roo provider settings so you can track usage and avoid unexpected interruptions.
+- **Explicit 0 pricing for free models** ([#9419](https://github.com/RooCodeInc/Roo-Code/pull/9419)): Displays explicit 0 input/output token prices for free models in the pricing UI so it is always clear which options are free.
+
+## Bug Fixes
+
+- **Native Tool Protocol Race Condition** ([#9363](https://github.com/RooCodeInc/Roo-Code/pull/9363)): Fixed a race condition where switching profiles or changing API configuration could cause 400 errors.
+- **Native Tool Repetition Detection** ([#9377](https://github.com/RooCodeInc/Roo-Code/pull/9377)): Fixed false positive "stuck in a loop" errors when using native tools repeatedly.
+- **Strict Native Protocol Parsing** ([#9371](https://github.com/RooCodeInc/Roo-Code/pull/9371)): Ensured no XML parsing occurs when the native protocol is active.
+- **Gemini Reasoning Config** ([#9375](https://github.com/RooCodeInc/Roo-Code/pull/9375)): Fixed an issue where high/low reasoning effort configuration was not being applied correctly.
+- **Gemini Thought Validation** ([#9380](https://github.com/RooCodeInc/Roo-Code/pull/9380)): Resolved integration errors with Gemini reasoning models.
+- **Prevent duplicate tool_result blocks in native protocol** ([#9248](https://github.com/RooCodeInc/Roo-Code/pull/9248)): Ensures each native tool call emits a single tool_result block.
+- **Format tool responses for native protocol** ([#9270](https://github.com/RooCodeInc/Roo-Code/pull/9270)): Normalizes the structure of tool responses for easier model comprehension.
+- **Centralize toolProtocol configuration checks** ([#9279](https://github.com/RooCodeInc/Roo-Code/pull/9279)): Uses a single source of truth for toolProtocol configuration.
+- **Preserve tool blocks in conversation history** ([#9319](https://github.com/RooCodeInc/Roo-Code/pull/9319)): Keeps native protocol tool blocks intact in history.
+- **Prevent infinite loops after successful finalization** ([#9325](https://github.com/RooCodeInc/Roo-Code/pull/9325)): Fixes a regression where certain native tool flows could loop.
+- **Sync parser state with profile and model changes** ([#9355](https://github.com/RooCodeInc/Roo-Code/pull/9355)): Keeps the conversation parser aligned with the active profile and model.
+- **Pass tool protocol to truncation errors** ([#9358](https://github.com/RooCodeInc/Roo-Code/pull/9358)): Ensures truncation errors know which tool protocol is active.
+- **Structured JSON Returns** ([#9373](https://github.com/RooCodeInc/Roo-Code/pull/9373)): Updated tools to consistently return structured JSON when using the native protocol.
+- **VS Code theme-colored outline button borders** ([#9336](https://github.com/RooCodeInc/Roo-Code/pull/9336)): Aligns outline button borders with the current VS Code theme.
+- **Use shields.io badges instead of badgen.net** ([#9318](https://github.com/RooCodeInc/Roo-Code/pull/9318)): Replaces broken badge URLs with shields.io.
+- **Cap git status file sampling in evals** ([#9322](https://github.com/RooCodeInc/Roo-Code/pull/9322)): Adds a maximum for git status files in eval settings.
+- **Preserve images in native tool call results** ([#9401](https://github.com/RooCodeInc/Roo-Code/pull/9401)): Ensures images attached to messages are preserved and passed through native tool calls so follow-up reasoning can still use visual context instead of losing it as plain text only.
+- **Faster router model metadata loading** ([#9410](https://github.com/RooCodeInc/Roo-Code/pull/9410)): Reduces redundant getModel() calls and adds a disk-backed metadata cache so router-based providers start faster and are more reliable when loading model info.
+- **Environment Details Duplication** ([#9442](https://github.com/RooCodeInc/Roo-Code/pull/9442)): Fixed an issue where `environment_details` were duplicated when resuming cancelled tasks.
+- **Preserve Reasoning Flag** ([#9453](https://github.com/RooCodeInc/Roo-Code/pull/9453)): Fixed the `preserveReasoning` flag to correctly control API reasoning inclusion.
+- **OpenAI Parallel Tool Calls** ([#9433](https://github.com/RooCodeInc/Roo-Code/pull/9433)): Prevented OpenAI Native parallel tool calls when using native tool calling to avoid errors.
+- **Search and Replace Parsing** ([#9456](https://github.com/RooCodeInc/Roo-Code/pull/9456)): Improved symbol parsing in the search and replace functionality.
+- **Skipped Tool Results** ([#9457](https://github.com/RooCodeInc/Roo-Code/pull/9457)): Fixed an issue where `tool_result` blocks were not sent for skipped tools in the native protocol.
+- **Markdown Formatting** ([#9458](https://github.com/RooCodeInc/Roo-Code/pull/9458)): Improved markdown formatting and added reasoning support.

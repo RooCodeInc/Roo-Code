@@ -1,0 +1,96 @@
+---
+description: This release introduces comprehensive context condensing improvements, YAML support for custom modes, new AI model integrations, and numerous quality-of-life improvements and bug fixes.
+---
+
+# Roo Code 3.18.0 Release Notes (2025-05-21)
+
+This release introduces comprehensive context condensing improvements, YAML support for custom modes, new AI model integrations, and numerous quality-of-life improvements and bug fixes.
+
+---
+
+## Context Condensing Upgrades
+Our Intelligent Context Condensing feature sees significant enhancements for better control and clarity. **Note**: As of version 3.19.0, this feature is enabled by default.
+
+Watch a quick overview:
+<div style={{width: '50%', margin: 'auto'}}>
+  <div style={{position: 'relative', paddingBottom: '177.77%', height: 0, overflow: 'hidden'}}>
+    <iframe
+      src="https://www.youtube.com/embed/o5xgO9N8vVU?rel=0&modestbranding=1"
+      title="YouTube Short"
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowFullScreen
+      style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
+    ></iframe>
+  </div>
+</div>
+Key updates:
+*   **Adjustable Condensing Threshold & Manual Control**: Fine-tune automatic condensing or trigger it manually. [Learn more](/features/intelligent-context-condensing#controlling-context-condensing).
+*   **Clear UI Indicators**: Better visual feedback during condensing. [Details](/features/intelligent-context-condensing#understanding-context-condensing-activity).
+*   **Accurate Token Counting**: Improved accuracy for context and cost calculations. [More info](/features/intelligent-context-condensing#token-counting).
+
+For full details, see the main [Intelligent Context Condensing documentation](/features/intelligent-context-condensing).
+
+
+---
+
+## Custom Modes: YAML Support
+
+Custom mode configuration is now significantly improved with **YAML support** for both global and project-level (`.roomodes`) definitions. YAML is the new default, offering superior readability with cleaner syntax, support for comments (`#`), and easier multi-line string management. While JSON remains supported for backward compatibility, YAML streamlines mode creation, sharing, and version control.
+
+For comprehensive details on YAML benefits, syntax, and migrating existing JSON configurations, please see our updated [Custom Modes documentation](/features/custom-modes#migration-to-yaml-format). (thanks R-omk! Additional thanks to GreatScottyMac for the YAML inspiration!)
+
+---
+
+## API Cost Control: Request Limits
+To enhance API cost management, you can now set a **Max Requests** limit for auto-approved actions. This prevents Roo Code from making an excessive number of consecutive API calls without your re-approval.
+
+<img src="/img/v3.18.0/v3.18.0.png" alt="Setting the Max Requests limit for auto-approved actions in Roo Code settings." width="600" />
+*Setting the "Max Requests" for auto-approved actions.*
+
+<img src="/img/v3.18.0/v3.18.0-1.png" alt="Warning message indicating the auto-approved request limit has been reached." width="600" />
+*Notification when the auto-approved request limit is met.*
+
+Learn more about configuring this safeguard in our [Rate Limits and Costs documentation](/advanced-usage/rate-limits-costs#limiting-auto-approved-requests). (Inspired by Cline, thanks hassoncs!)
+
+---
+
+## New Model Version: Gemini 2.5 Flash Preview (May 2025)
+Access the latest `gemini-2.5-flash-preview-05-20` model, including its thinking variant. This cutting-edge addition is available via both the generic [Gemini provider](/providers/gemini) and the [Vertex provider](/providers/vertex), further expanding your AI model options. (thanks shariqriazz, daniel-lxs!)
+
+---
+
+## QOL Improvements
+
+*   **Resizable Prompt Textareas**: Restored vertical resizing for prompt input textareas (role definition, custom instructions, support prompts) for easier viewing and editing of longer prompts.
+*   **Settings Import**: Error messages are now provided in multiple languages if an import fails. (thanks ChuKhaLi!)
+
+---
+
+## Bug Fixes
+
+*   **VSCode Command Execution**: Command execution is now type-safe, reducing potential errors.
+*   **Settings Import**: The system now gracefully handles missing `globalSettings` in import files. (thanks ChuKhaLi!)
+*   **Diff View Scrolling**: The diff view no longer scrolls unnecessarily during content updates. (thanks qdaxb!)
+*   **Syntax Highlighting**: Improved syntax highlighting consistency across file listings, code definitions, and error messages. (thanks KJ7LNW!)
+*   **Grey Screen Issue**: Implemented a fix for the "grey screen" issue by gracefully handling errors when closing diff views, preventing memory leaks. (thanks xyOz-dev!)
+*   **Settings Import Error Message**: The `settings_import_failed` message is now correctly categorized as an error. (thanks ChuKhaLi!)
+*   **File Links to Line 0**: Links to files with line number 0 now correctly open at the first line, preventing errors. (thanks RSO!)
+*   **Packaging `tiktoken.wasm`**: Fixed packaging to include the correct `tiktoken/lite/tiktoken_bg.wasm` file for accurate token counting. (thanks vagadiya!)
+*   **Audio Playback**: Moved audio playback to the webview to ensure cross-platform compatibility and reliability for notifications and sounds. (thanks SmartManoj, samhvw8!)
+
+---
+
+## Provider Updates
+
+*   **LM Studio and Ollama Token Tracking**: Token usage is now tracked for [LM Studio](/providers/lmstudio) and [Ollama](/providers/ollama) providers. (thanks xyOz-dev!)
+*   **LM Studio Reasoning Support**: Added support for parsing "think" tags in [LM Studio](/providers/lmstudio) responses for enhanced transparency into the AI's process. (thanks avtc!)
+*   **Qwen3 Model Series for Chutes**: Added new Qwen3 models to the [Chutes provider](/providers/chutes) (e.g., `Qwen/Qwen3-235B-A22B`). (thanks zeozeozeo!)
+*   **Unbound Provider Model Refresh**: Added a refresh button for [Unbound](/providers/unbound) models to easily update the list of available models and get immediate feedback on API key validity. (thanks pugazhendhi-m!)
+
+---
+
+## Misc
+
+*   **Auto-reload in Dev Mode**: Core file changes now automatically trigger a window reload in development mode for a faster workflow. (thanks hassoncs!)
+*   **Simplified Loop Syntax**: Refactored loop structures in multiple components to use `for...of` loops for improved readability. (thanks noritaka1166!)

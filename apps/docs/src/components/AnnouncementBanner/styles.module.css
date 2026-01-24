@@ -1,0 +1,84 @@
+.announcementBanner {
+	position: relative;
+	width: 100%;
+	background: linear-gradient(90deg, #4f46e5, #2563eb);
+	border-bottom: 1px solid rgba(147, 197, 253, 0.5);
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.bannerContent {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+	padding: 0.75rem 3rem;
+	color: #ffffff;
+	position: relative;
+}
+
+.bannerHeadline {
+	font-weight: 600;
+	font-size: 0.95rem;
+}
+
+.bannerLink {
+	color: #ffffff;
+	font-weight: 600;
+	font-size: 0.95rem;
+	text-decoration: underline;
+	text-decoration-color: rgba(255, 255, 255, 0.7);
+	text-decoration-thickness: 2px;
+	transition: text-decoration-color 0.2s ease;
+}
+
+.bannerLink:hover {
+	color: #ffffff;
+	text-decoration-color: rgba(255, 255, 255, 0.95);
+}
+
+.dismissButton {
+	position: absolute;
+	right: 1rem;
+	top: 1.5rem;
+	transform: translateY(-50%);
+	background: transparent;
+	border: none;
+	color: #ffffff;
+	cursor: pointer;
+	padding: 0.25rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	transition: background-color 0.2s ease;
+}
+
+.dismissButton:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dismissButton:focus {
+	outline: 2px solid rgba(255, 255, 255, 0.5);
+	outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+	.bannerContent {
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 1rem 3rem 1rem 1rem;
+		align-items: flex-start;
+	}
+
+	.bannerHeadline {
+		font-size: 0.875rem;
+	}
+
+	.bannerLink {
+		font-size: 0.875rem;
+	}
+
+	.dismissButton {
+		right: 0.5rem;
+	}
+}

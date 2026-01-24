@@ -1,0 +1,43 @@
+---
+description: Bug fixes for tool usage errors and context condensing, plus new free models and cloud account management improvements.
+keywords:
+  - roo code 3.28.8
+  - tool usage fixes
+  - context condensing
+  - free models
+  - cloud accounts
+image: /img/v3.28.8/v3.28.8.png
+---
+
+# Roo Code 3.28.8 Release Notes (2025-09-25)
+
+This release fixes critical GPT-5-Codex tool usage errors, improves context condensing, and adds new free models to the Roo provider.
+
+<img src="/img/v3.28.8/v3.28.8.png" alt="Roo Code v3.28.8 Release" width="600" />
+
+## Fixed: GPT-5-Codex errors and more!
+
+We've resolved the situation where LLMs would sometimes not make tool calls in their response which improves Roo's overall flow. ([#8292](https://github.com/RooCodeInc/Roo-Code/pull/8292))
+
+- **GPT-5-Codex Response Fix**: Fixes the issue where the model `gpt-5-codex` (and less frequently other models) would send a response with no assistant message
+- **Completion Tool Reliability**: This fix eliminates some situations where the LLM would repeat its last text message when the attempt_completion tool was called
+- **Tool Call Consistency**: Fixes where the LLM would sometimes respond without a tool call
+
+## QOL Improvements
+
+* **Cloud Account Management**: Added account switcher and "Create Team Account" option for logged-in users, making it easier to manage multiple accounts ([#8291](https://github.com/RooCodeInc/Roo-Code/pull/8291))
+* **Social Media Sharing**: Improved OpenGraph images for better preview cards when sharing Roo Code links on Slack, Twitter, and Facebook ([#8285](https://github.com/RooCodeInc/Roo-Code/pull/8285))
+
+## Bug Fixes
+
+* **Context Condensing**: Fixed an issue where the initial task request was being lost during context condensing, causing Roo to try to re-answer the original task ask when resuming after condensing ([#8298](https://github.com/RooCodeInc/Roo-Code/pull/8298))
+
+## Provider Updates
+
+* **New Free Models**: Added two more free models to the Roo provider ([#8304](https://github.com/RooCodeInc/Roo-Code/pull/8304)):
+  - xai/grok-4-fast
+  - deepseek/deepseek-chat-v3.1
+
+## Misc Improvements
+
+* **Infrastructure**: Set port 3446 for web-evals service in production mode ([#8288](https://github.com/RooCodeInc/Roo-Code/pull/8288))

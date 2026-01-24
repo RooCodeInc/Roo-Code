@@ -1,0 +1,49 @@
+---
+description: GPT-5.2 support, configurable Enter key behavior, Gemini stability fixes, and provider updates.
+keywords:
+  - roo code 3.36.5
+  - gpt-5.2
+  - enter key behavior
+  - gemini fixes
+image: /img/v3.36.5/v3.36.5.png
+---
+
+# Roo Code 3.36.5 Release Notes (2025-12-11)
+
+This release adds GPT-5.2 model support, a toggle to configure Enter key behavior in chat, and several bug fixes.
+
+<img src="/img/v3.36.5/v3.36.5.png" alt="Roo Code v3.36.5 Release" width="600" />
+
+## GPT-5.2 Model Support
+
+GPT-5.2 is now available and set as the default model for the OpenAI provider ([#10024](https://github.com/RooCodeInc/Roo-Code/pull/10024)):
+
+- 400K context window
+- 128K max output tokens
+- Configurable reasoning levels (none, low, medium, high, xhigh)
+- 24-hour prompt cache retention
+
+## Enter Key Behavior Toggle
+
+New setting to configure how Enter works in chat input (thanks lmtr0!) ([#10002](https://github.com/RooCodeInc/Roo-Code/pull/10002)):
+
+- **Default**: Enter sends, Shift+Enter for newline
+- **Alternative**: Enter for newline, Ctrl/Cmd+Enter sends
+
+Find it in **Settings > UI > Enter Key Behavior**. Useful for multiline prompts and CJK input methods where Enter confirms character composition.
+
+## Bug Fixes
+
+* **Gemini**: Fixed reasoning loops and empty response errors ([#10007](https://github.com/RooCodeInc/Roo-Code/pull/10007))
+
+* **API errors**: Fixed "Expected toolResult blocks at messages" errors during parallel tool execution ([#10015](https://github.com/RooCodeInc/Roo-Code/pull/10015))
+
+* **API errors**: Fixed `ToolResultIdMismatchError` when conversation history has orphaned tool_result blocks ([#10027](https://github.com/RooCodeInc/Roo-Code/pull/10027))
+
+## Provider Updates
+
+* **Z.ai**: Added API endpoint options for users on API billing instead of Coding plan (thanks richtong!) ([#9894](https://github.com/RooCodeInc/Roo-Code/pull/9894))
+
+## Misc Improvements
+
+* Removed deprecated `list_code_definition_names` tool ([#10005](https://github.com/RooCodeInc/Roo-Code/pull/10005))

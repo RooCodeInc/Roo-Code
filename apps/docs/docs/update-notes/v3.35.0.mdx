@@ -1,0 +1,57 @@
+---
+description: Roo Code 3.35.0 introduces resilient subtasks that persist across reloads and massive native tool calling expansion across 15+ providers.
+keywords:
+  - roo code 3.35.0
+  - subtasks
+  - native tool calling
+  - provider updates
+image: /img/v3.35.0/v3.35.0.png
+---
+
+# Roo Code 3.35.0 Release Notes (2025-12-01)
+
+This release introduces metadata-driven subtasks that never lose their parent connection, plus native tool calling support for 15+ providers.
+
+<img src="/img/v3.35.0/v3.35.0.png" alt="Roo Code v3.35.0 Release" width="600" />
+
+## Metadata-Driven Subtasks
+
+The connection between subtasks and parent tasks no longer breaks when you exit a task, crash, reboot, or reload VS Code ([#9090](https://github.com/RooCodeInc/Roo-Code/pull/9090)). Subtask relationships are now controlled by metadata, so the parent-child link persists through any interruption.
+
+## Native Tool Calling Expansion
+
+Native tool calling support has been expanded to 15+ providers:
+
+* Bedrock ([#9698](https://github.com/RooCodeInc/Roo-Code/pull/9698))
+* Cerebras ([#9692](https://github.com/RooCodeInc/Roo-Code/pull/9692))
+* Chutes ([#9715](https://github.com/RooCodeInc/Roo-Code/pull/9715))
+* DeepInfra ([#9691](https://github.com/RooCodeInc/Roo-Code/pull/9691))
+* DeepSeek & Doubao ([#9671](https://github.com/RooCodeInc/Roo-Code/pull/9671))
+* Groq ([#9673](https://github.com/RooCodeInc/Roo-Code/pull/9673))
+* LiteLLM ([#9719](https://github.com/RooCodeInc/Roo-Code/pull/9719))
+* Ollama ([#9696](https://github.com/RooCodeInc/Roo-Code/pull/9696))
+* OpenAI-compatible: Fireworks, SambaNova, Featherless, IO Intelligence ([#9676](https://github.com/RooCodeInc/Roo-Code/pull/9676))
+* Requesty ([#9672](https://github.com/RooCodeInc/Roo-Code/pull/9672))
+* Unbound ([#9699](https://github.com/RooCodeInc/Roo-Code/pull/9699))
+* Vercel AI Gateway ([#9697](https://github.com/RooCodeInc/Roo-Code/pull/9697))
+* Vertex Gemini ([#9678](https://github.com/RooCodeInc/Roo-Code/pull/9678))
+* xAI with new Grok 4 Fast models ([#9690](https://github.com/RooCodeInc/Roo-Code/pull/9690))
+
+## QOL Improvements
+
+* **Improved Onboarding**: Simplified provider settings during initial setup—advanced options remain in Settings ([#9709](https://github.com/RooCodeInc/Roo-Code/pull/9709))
+* **Cleaner Toolbar**: Modes and MCP settings consolidated into the main settings panel for better discoverability ([#9710](https://github.com/RooCodeInc/Roo-Code/pull/9710))
+* **Tool Format in Environment Details**: Models now receive tool format information, improving behavior when switching between XML and native tools ([#9661](https://github.com/RooCodeInc/Roo-Code/pull/9661))
+* **Debug Buttons**: View API and UI history with new debug buttons (requires `roo-cline.debug: true`) ([#9684](https://github.com/RooCodeInc/Roo-Code/pull/9684))
+* **Grok Code Fast Default**: Native tools now default for xai/grok-code-fast-1 ([#9717](https://github.com/RooCodeInc/Roo-Code/pull/9717))
+
+## Bug Fixes
+
+* **Parallel Tool Calls Fix**: Preserve tool_use blocks in summary during context condensation, fixing 400 errors with Anthropic's parallel tool calls feature (thanks SilentFlower!) ([#9714](https://github.com/RooCodeInc/Roo-Code/pull/9714))
+* **Navigation Button Wrapping**: Prevent navigation buttons from wrapping on smaller screens ([#9721](https://github.com/RooCodeInc/Roo-Code/pull/9721))
+
+## Misc Improvements
+
+* **Model-specific Tool Customization**: Configure `excludedTools` and `includedTools` per model for fine-grained tool availability control ([#9641](https://github.com/RooCodeInc/Roo-Code/pull/9641))
+* **apply_patch Tool**: New native tool for file editing using simplified diff format with fuzzy matching and file rename support ([#9663](https://github.com/RooCodeInc/Roo-Code/pull/9663))
+* **search_and_replace Tool**: Batch text replacements with partial matching and error recovery ([#9549](https://github.com/RooCodeInc/Roo-Code/pull/9549))

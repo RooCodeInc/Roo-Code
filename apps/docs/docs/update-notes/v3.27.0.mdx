@@ -1,0 +1,60 @@
+---
+description: Edit or delete messages with instant rollback checkpoints, Kimi K2-0905 provider update, and stability fixes across indexing, grounding, and multi-root workspaces.
+keywords:
+  - roo code 3.27.0
+  - release notes
+  - edit messages
+  - delete messages
+  - checkpoints
+  - auto checkpoints
+  - rollback
+  - chutes provider
+  - kimi k2-0905
+  - 256k context
+  - provider update
+  - codebase indexing
+  - multi-root workspace
+  - mcp config
+  - slash commands
+  - gemini grounding
+  - citations
+  - openai responses api
+  - previous_response_id
+  - vscode terminal profiles
+  - ci e2e
+image: /img/v3.27.0/v3.27.0.png
+---
+
+# Roo Code 3.27.0 Release Notes (2025-09-05)
+
+This release adds message editing and deletion with instant rollback checkpoints, updates the Chutes provider with Kimi K2-0905, and improves reliability across indexing, grounding, and multi-root workspaces.
+
+<img src="/img/v3.27.0/v3.27.0.png" alt="Roo Code v3.27.0 Release" width="600" />
+## Edit and delete messages with instant rollback checkpoints
+
+Edit or delete any chat message and quickly recover from mistakes using automatic checkpoints (thanks NaccOll!) ([#7447](https://github.com/RooCodeInc/Roo-Code/pull/7447), [#7713](https://github.com/RooCodeInc/Roo-Code/pull/7713)):
+
+- Edit or delete past messages to correct prompts without restarting the session.
+- Automatic checkpoint on every user message enables instant rollback, even when no file diffs exist.
+- Review changes with a Checkpoint Restore dialog before applying them.
+- Runs in the background and suppresses extra chat noise.
+
+> 📚 Documentation: See [Checkpoints](/features/checkpoints) and [The Chat Interface](/basic-usage/the-chat-interface).
+
+## QOL Improvements
+
+* Welcome screen readability and spacing improvements for faster scanning (#[7682](https://github.com/RooCodeInc/Roo-Code/pull/7682))
+
+## Bug Fixes
+
+* Fixes an issue where indexing very large projects could hit a stack overflow (thanks StarTrai1!) (#[7712](https://github.com/RooCodeInc/Roo-Code/pull/7712))
+* Fixes an issue where terminal launch sometimes failed when VS Code provided the shell path as an array (thanks Amosvcc!) (#[7697](https://github.com/RooCodeInc/Roo-Code/pull/7697))
+* Fixes cases where MCP and slash-command paths in multi-root workspaces resolved to the wrong folder (now uses the active folder CWD) (thanks NaccOll, kfuglsang!) (#[6904](https://github.com/RooCodeInc/Roo-Code/pull/6904))
+* Fixes an issue where Gemini grounding citations sometimes leaked or duplicated (thanks HahaBill!) (#[7434](https://github.com/RooCodeInc/Roo-Code/pull/7434))
+* Fixes an issue where conversation context could be lost when previous_response_id became invalid (now retries with full history) (#[7714](https://github.com/RooCodeInc/Roo-Code/pull/7714))
+* Fixes a CI issue where e2e runs sometimes timed out while downloading VS Code (#[7583](https://github.com/RooCodeInc/Roo-Code/pull/7583))
+
+## Provider Updates
+
+* Chutes: Adds Kimi K2-0905 model with a 256k context window and pricing metadata (thanks pwilkin!) (#[7701](https://github.com/RooCodeInc/Roo-Code/pull/7701))  
+  > 📚 Documentation: See [Chutes](/providers/chutes)
