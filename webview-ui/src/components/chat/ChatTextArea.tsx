@@ -103,6 +103,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			commands,
 			cloudUserInfo,
 			enterBehavior,
+			experiments,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -1088,7 +1089,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 								placeholder={placeholderText}
 								minRows={3}
 								maxRows={15}
-								autoFocus={true}
+								autoFocus={!experiments?.preventFocusDisruption}
 								className={cn(
 									"w-full",
 									"text-vscode-input-foreground",
