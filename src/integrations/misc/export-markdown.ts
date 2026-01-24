@@ -9,7 +9,11 @@ interface ReasoningBlock {
 	text: string
 }
 
-type ExtendedContentBlock = Anthropic.Messages.ContentBlockParam | ReasoningBlock
+interface ThoughtSignatureBlock {
+	type: "thoughtSignature"
+}
+
+export type ExtendedContentBlock = Anthropic.Messages.ContentBlockParam | ReasoningBlock | ThoughtSignatureBlock
 
 export function getTaskFileName(dateTs: number): string {
 	const date = new Date(dateTs)
@@ -98,6 +102,9 @@ export function formatContentBlockToMarkdown(block: ExtendedContentBlock): strin
 		}
 		case "reasoning":
 			return `[Reasoning]\n${block.text}`
+		case "thoughtSignature":
+			// Not relevant for human-readable exports
+			return ""
 		default:
 			return `[Unexpected content type: ${block.type}]`
 	}
