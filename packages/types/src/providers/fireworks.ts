@@ -173,8 +173,6 @@ export const fireworksModels = {
 		contextWindow: 204800,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.3,
 		outputPrice: 1.2,
 		description:
@@ -185,8 +183,6 @@ export const fireworksModels = {
 		contextWindow: 163840,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.56,
 		outputPrice: 1.68,
 		description:
@@ -197,8 +193,6 @@ export const fireworksModels = {
 		contextWindow: 198000,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.55,
 		outputPrice: 2.19,
 		description:
@@ -209,8 +203,6 @@ export const fireworksModels = {
 		contextWindow: 131072,
 		supportsImages: false,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.9,
 		outputPrice: 0.9,
 		description:
@@ -221,8 +213,6 @@ export const fireworksModels = {
 		contextWindow: 131072,
 		supportsImages: true,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.22,
 		outputPrice: 0.88,
 		description:
@@ -233,8 +223,6 @@ export const fireworksModels = {
 		contextWindow: 131072,
 		supportsImages: true,
 		supportsPromptCache: false,
-		supportsNativeTools: true,
-		defaultToolProtocol: "native",
 		inputPrice: 0.15,
 		outputPrice: 0.6,
 		description:
