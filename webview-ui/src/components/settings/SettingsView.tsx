@@ -13,7 +13,6 @@ import {
 	CheckCheck,
 	SquareMousePointer,
 	GitBranch,
-	History,
 	Bell,
 	Database,
 	SquareTerminal,
@@ -29,6 +28,7 @@ import {
 	Server,
 	Users2,
 	ArrowLeft,
+	GitCommitVertical,
 } from "lucide-react"
 
 import {
@@ -518,15 +518,15 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "providers", icon: Plug },
 			{ id: "modes", icon: Users2 },
 			{ id: "mcp", icon: Server },
-			{ id: "worktrees", icon: GitBranch },
 			{ id: "autoApprove", icon: CheckCheck },
 			{ id: "slashCommands", icon: SquareSlash },
 			{ id: "browser", icon: SquareMousePointer },
-			{ id: "checkpoints", icon: History },
+			{ id: "checkpoints", icon: GitCommitVertical },
 			{ id: "notifications", icon: Bell },
 			{ id: "contextManagement", icon: Database },
 			{ id: "terminal", icon: SquareTerminal },
 			{ id: "prompts", icon: MessageSquare },
+			{ id: "worktrees", icon: GitBranch },
 			{ id: "ui", icon: Glasses },
 			{ id: "experimental", icon: FlaskConical },
 			{ id: "language", icon: Globe },

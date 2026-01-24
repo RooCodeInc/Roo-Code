@@ -54,5 +54,7 @@
 	"worktreeIsLocked": "Worktree ist gesperrt",
 	"deleting": "Wird gelöscht...",
 
-	"close": "Schließen"
+	"close": "Schließen",
+
+	"showInHomeScreen": "Worktrees auf dem Startbildschirm anzeigen"
 }

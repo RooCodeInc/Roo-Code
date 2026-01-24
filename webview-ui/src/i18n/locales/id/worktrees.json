@@ -54,5 +54,7 @@
 	"worktreeIsLocked": "worktree terkunci",
 	"deleting": "Menghapus...",
 
-	"close": "Tutup"
+	"close": "Tutup",
+
+	"showInHomeScreen": "Tampilkan worktrees di layar beranda"
 }

@@ -54,5 +54,7 @@
 	"worktreeIsLocked": "el worktree està bloquejat",
 	"deleting": "S'està suprimint...",
 
-	"close": "Tanca"
+	"close": "Tanca",
+
+	"showInHomeScreen": "Mostra worktrees a la pantalla d'inici"
 }

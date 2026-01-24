@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from "react"
 
 import type { Worktree, WorktreeListResponse, WorktreeIncludeStatus } from "@roo-code/types"
 
-import { Badge, Button, StandardTooltip } from "@/components/ui"
+import { Badge, Button, StandardTooltip, ToggleSwitch } from "@/components/ui"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
 
@@ -14,6 +15,7 @@ import { Folder, GitBranch, Lock, Plus, SquareArrowOutUpRight, Trash } from "luc
 
 export const WorktreesView = () => {
 	const { t } = useAppTranslation()
+	const { showWorktreesInHomeScreen, setShowWorktreesInHomeScreen } = useExtensionState()
 
 	// State
 	const [worktrees, setWorktrees] = useState<Worktree[]>([])
@@ -120,12 +122,25 @@ export const WorktreesView = () => {
 		})
 	}, [])
 
+	// Handle toggle show in home screen
+	const handleToggleShowInHomeScreen = useCallback(() => {
+		const newValue = !showWorktreesInHomeScreen
+		setShowWorktreesInHomeScreen(newValue)
+		vscode.postMessage({
+			type: "updateSettings",
+			values: { showWorktreesInHomeScreen: newValue },
+		})
+	}, [showWorktreesInHomeScreen, setShowWorktreesInHomeScreen])
+
 	// Render error states
 	if (!isGitRepo) {
 		return (
 			<div>
 				<SectionHeader>{t("worktrees:title")}</SectionHeader>
-				<div className="text-vscode-descriptionForeground px-5">{t("worktrees:notGitRepo")}</div>
+				<div className="px-5 text-sm">
+					<p className="text-vscode-descriptionForeground">{t("worktrees:description")}</p>
+					<p>{t("worktrees:notGitRepo")}</p>
+				</div>
 			</div>
 		)
 	}
@@ -134,7 +149,10 @@ export const WorktreesView = () => {
 		return (
 			<div>
 				<SectionHeader>{t("worktrees:title")}</SectionHeader>
-				<div className="text-vscode-descriptionForeground px-5">{t("worktrees:multiRootNotSupported")}</div>
+				<div className="px-5 text-sm">
+					<p className="text-vscode-descriptionForeground">{t("worktrees:description")}</p>
+					<p>{t("worktrees:multiRootNotSupported")}</p>
+				</div>
 			</div>
 		)
 	}
@@ -143,12 +161,12 @@ export const WorktreesView = () => {
 		return (
 			<div>
 				<SectionHeader>{t("worktrees:title")}</SectionHeader>
-				<div className="flex flex-col items-center justify-center h-48 text-vscode-descriptionForeground px-5">
-					<span className="codicon codicon-warning text-4xl mb-4" />
-					<p className="text-center">{t("worktrees:subfolderNotSupported")}</p>
-					<p className="text-sm mt-2 text-center">
+				<div className="px-5 text-sm">
+					<p className="text-vscode-descriptionForeground">{t("worktrees:description")}</p>
+					<p>{t("worktrees:subfolderNotSupported")}</p>
+					<p>
 						{t("worktrees:gitRoot")}:{" "}
-						<code className="bg-vscode-input-background px-2 py-1 rounded">{gitRootPath}</code>
+						<code className="bg-vscode-input-background p-1 rounded-md">{gitRootPath}</code>
 					</p>
 				</div>
 			</div>
@@ -163,8 +181,16 @@ export const WorktreesView = () => {
 				<div className="flex flex-col gap-2 px-5 py-2">
 					<p className="text-vscode-descriptionForeground text-sm m-0">{t("worktrees:description")}</p>
 
+					{/* Show in Home Screen toggle */}
+					<label
+						className="flex cursor-pointer items-center gap-2 text-sm text-vscode-descriptionForeground"
+						onClick={handleToggleShowInHomeScreen}>
+						<ToggleSwitch checked={showWorktreesInHomeScreen} onChange={handleToggleShowInHomeScreen} />
+						<span>{t("worktrees:showInHomeScreen")}</span>
+					</label>
+
 					{/* New Worktree button */}
-					<Button variant="secondary" className="mt-2" onClick={() => setShowCreateModal(true)}>
+					<Button variant="secondary" className="py-1" onClick={() => setShowCreateModal(true)}>
 						<Plus />
 						{t("worktrees:newWorktree")}
 					</Button>
@@ -258,27 +284,30 @@ export const WorktreesView = () => {
 				)}
 			</div>
 
-			{/* Fixed Footer - Worktree include status */}
-			{includeStatus && (
-				<div className="flex-shrink-0 flex items-center gap-2 text-sm px-5 py-3 justify-between text-vscode-descriptionForeground border-t border-vscode-sideBar-background">
-					{includeStatus.exists ? (
-						<span>{t("worktrees:includeFileExists")}</span>
-					) : (
-						<>
-							<span>{t("worktrees:noIncludeFile")}</span>
-							{includeStatus.hasGitignore && (
-								<Button
-									variant="secondary"
-									size="sm"
-									onClick={handleCreateWorktreeInclude}
-									disabled={isCreatingInclude}>
-									{t("worktrees:createFromGitignore")}
-								</Button>
-							)}
-						</>
-					)}
-				</div>
-			)}
+			{/* Fixed Footer - Settings */}
+			<div className="flex-shrink-0 flex flex-col border-t border-vscode-sideBar-background">
+				{/* Worktree include status */}
+				{includeStatus && (
+					<div className="flex items-center gap-2 text-sm px-5 py-3 justify-between text-vscode-descriptionForeground border-t border-vscode-sideBar-background">
+						{includeStatus.exists ? (
+							<span>{t("worktrees:includeFileExists")}</span>
+						) : (
+							<>
+								<span>{t("worktrees:noIncludeFile")}</span>
+								{includeStatus.hasGitignore && (
+									<Button
+										variant="secondary"
+										size="sm"
+										onClick={handleCreateWorktreeInclude}
+										disabled={isCreatingInclude}>
+										{t("worktrees:createFromGitignore")}
+									</Button>
+								)}
+							</>
+						)}
+					</div>
+				)}
+			</div>
 
 			{/* Create Modal */}
 			{showCreateModal && (

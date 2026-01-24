@@ -54,5 +54,7 @@
 	"worktreeIsLocked": "worktree가 잠겨 있습니다",
 	"deleting": "삭제 중...",
 
-	"close": "닫기"
+	"close": "닫기",
+
+	"showInHomeScreen": "홈 화면에 worktrees 표시"
 }

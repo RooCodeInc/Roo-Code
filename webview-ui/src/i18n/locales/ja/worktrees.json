@@ -54,5 +54,7 @@
 	"worktreeIsLocked": "worktree がロックされています",
 	"deleting": "削除中...",
 
-	"close": "閉じる"
+	"close": "閉じる",
+
+	"showInHomeScreen": "ホーム画面に worktrees を表示"
 }

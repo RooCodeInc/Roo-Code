@@ -54,5 +54,7 @@
 	"worktreeIsLocked": "worktree kilitli",
 	"deleting": "Siliniyor...",
 
-	"close": "Kapat"
+	"close": "Kapat",
+
+	"showInHomeScreen": "Ana ekranda worktrees göster"
 }

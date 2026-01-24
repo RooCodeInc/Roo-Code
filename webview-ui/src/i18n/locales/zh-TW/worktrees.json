@@ -54,5 +54,7 @@
 	"worktreeIsLocked": "worktree 已鎖定",
 	"deleting": "正在刪除...",
 
-	"close": "關閉"
+	"close": "關閉",
+
+	"showInHomeScreen": "在主畫面顯示 worktrees"
 }

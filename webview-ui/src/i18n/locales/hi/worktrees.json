@@ -54,5 +54,7 @@
 	"worktreeIsLocked": "worktree लॉक्ड है",
 	"deleting": "हटाया जा रहा है...",
 
-	"close": "बंद करें"
+	"close": "बंद करें",
+
+	"showInHomeScreen": "होम स्क्रीन में worktrees दिखाएँ"
 }

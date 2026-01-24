@@ -203,6 +203,11 @@ export const globalSettingsSchema = z.object({
 	 * Used by the worktree feature to open the Roo Code sidebar in a new window.
 	 */
 	worktreeAutoOpenPath: z.string().optional(),
+	/**
+	 * Whether to show the worktree selector in the home screen.
+	 * @default true
+	 */
+	showWorktreesInHomeScreen: z.boolean().optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>

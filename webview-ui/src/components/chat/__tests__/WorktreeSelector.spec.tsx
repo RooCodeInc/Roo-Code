@@ -218,18 +218,7 @@ describe("WorktreeSelector", () => {
 		})
 	})
 
-	test("shows info icon with tooltip in footer", () => {
-		render(<WorktreeSelector />)
-
-		simulateWorktreeListMessage(mockWorktrees)
-
-		fireEvent.click(screen.getByTestId("worktree-selector-trigger"))
-
-		const infoIcon = document.querySelector(".codicon-info")
-		expect(infoIcon).toBeInTheDocument()
-	})
-
-	test("shows title in footer", () => {
+	test("shows title in header", () => {
 		render(<WorktreeSelector />)
 
 		simulateWorktreeListMessage(mockWorktrees)

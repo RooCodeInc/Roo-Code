@@ -54,5 +54,7 @@
 	"worktreeIsLocked": "worktree is vergrendeld",
 	"deleting": "Bezig met verwijderen...",
 
-	"close": "Sluiten"
+	"close": "Sluiten",
+
+	"showInHomeScreen": "Worktrees weergeven op startscherm"
 }

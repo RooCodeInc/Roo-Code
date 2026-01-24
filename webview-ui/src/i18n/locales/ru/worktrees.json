@@ -54,5 +54,7 @@
 	"worktreeIsLocked": "worktree заблокирован",
 	"deleting": "Удаление...",
 
-	"close": "Закрыть"
+	"close": "Закрыть",
+
+	"showInHomeScreen": "Показывать worktrees на главном экране"
 }
