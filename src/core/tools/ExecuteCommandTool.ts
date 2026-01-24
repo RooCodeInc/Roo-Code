@@ -224,9 +224,17 @@ export async function executeCommandInTerminal(
 	}
 
 	let accumulatedOutput = ""
+	// Bound accumulated output buffer size to prevent unbounded memory growth for long-running commands.
+	// The interceptor preserves full output; this buffer is only for UI display.
+	const maxAccumulatedOutputSize = terminalOutputCharacterLimit * 2
 	const callbacks: RooTerminalCallbacks = {
 		onLine: async (lines: string, process: RooTerminalProcess) => {
 			accumulatedOutput += lines
+
+			// Trim accumulated output to prevent unbounded memory growth
+			if (accumulatedOutput.length > maxAccumulatedOutputSize) {
+				accumulatedOutput = accumulatedOutput.slice(-maxAccumulatedOutputSize)
+			}
 
 			// Write to interceptor for persisted output
 			interceptor?.write(lines)
