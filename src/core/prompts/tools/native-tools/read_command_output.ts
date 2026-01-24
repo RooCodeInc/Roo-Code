@@ -70,7 +70,7 @@ export default {
 					description: LIMIT_DESCRIPTION,
 				},
 			},
-			required: ["artifact_id", "search", "offset", "limit"],
+			required: ["artifact_id"],
 			additionalProperties: false,
 		},
 	},

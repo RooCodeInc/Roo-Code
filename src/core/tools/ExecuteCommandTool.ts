@@ -208,9 +208,9 @@ export async function executeCommandInTerminal(
 	if (globalStoragePath) {
 		const taskDir = await getTaskDirectoryPath(globalStoragePath, task.taskId)
 		const storageDir = path.join(taskDir, "command-output")
-		// Use default preview size for now (terminalOutputPreviewSize setting will be added in Phase 5)
-		const terminalOutputPreviewSize = DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE
 		const providerState = await provider?.getState()
+		const terminalOutputPreviewSize =
+			providerState?.terminalOutputPreviewSize ?? DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE
 		const terminalCompressProgressBar = providerState?.terminalCompressProgressBar ?? true
 
 		interceptor = new OutputInterceptor({
