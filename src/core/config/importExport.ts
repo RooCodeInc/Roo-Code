@@ -123,8 +123,26 @@ export async function importSettingsFromPath(
 			}
 		}
 
+		// Determine the currentApiConfigName:
+		// 1. If the imported currentApiConfigName exists in validApiConfigs, use it
+		// 2. Otherwise, fall back to the first valid imported profile
+		// 3. If no valid profiles were imported, keep the previous currentApiConfigName
+		let currentApiConfigName = rawProviderProfiles.currentApiConfigName
+		const validProfileNames = Object.keys(validApiConfigs)
+		if (!validApiConfigs[currentApiConfigName]) {
+			if (validProfileNames.length > 0) {
+				currentApiConfigName = validProfileNames[0]
+				warnings.push(
+					`Profile "${rawProviderProfiles.currentApiConfigName}" was not available; defaulting to "${currentApiConfigName}".`,
+				)
+			} else {
+				// No valid imported profiles; keep the existing currentApiConfigName
+				currentApiConfigName = previousProviderProfiles.currentApiConfigName
+			}
+		}
+
 		const providerProfiles = {
-			currentApiConfigName: rawProviderProfiles.currentApiConfigName,
+			currentApiConfigName,
 			apiConfigs: {
 				...previousProviderProfiles.apiConfigs,
 				...validApiConfigs,
@@ -304,10 +322,16 @@ export const importSettingsWithFeedback = async (
 
 		// Show warnings if any profiles had issues but were still imported (with modifications)
 		if (result.warnings && result.warnings.length > 0) {
-			// Show everything in a single notification - VS Code will expand it if needed
-			const warningDetails = result.warnings.join(" | ")
-			const warningMessage = `${t("common:info.settings_imported")} with warnings: ${warningDetails}`
-			await vscode.window.showWarningMessage(warningMessage)
+			// Log full details to the console for debugging
+			console.warn("Settings import completed with warnings:", result.warnings)
+
+			// Show a short summary in the toast notification
+			const count = result.warnings.length
+			const summary =
+				count === 1 ? `1 profile had issues during import.` : `${count} profiles had issues during import.`
+			await vscode.window.showWarningMessage(
+				`${t("common:info.settings_imported")} ${summary} See Developer Tools console for details.`,
+			)
 		} else {
 			await vscode.window.showInformationMessage(t("common:info.settings_imported"))
 		}
