@@ -1,9 +1,9 @@
 /**
  * MarketplaceViewStateManager
  *
- * This class manages the state for the marketplace view in the Roo Code extensions interface.
+ * This class manages the state for the marketplace view in the s2sCopilot extensions interface.
  *
- * IMPORTANT: Fixed issue where the marketplace feature was causing the Roo Code extensions interface
+ * IMPORTANT: Fixed issue where the marketplace feature was causing the s2sCopilot extensions interface
  * to switch to the browse tab and redraw it every 30 seconds. The fix prevents unnecessary tab switching
  * and redraws by:
  * 1. Only updating the UI when necessary

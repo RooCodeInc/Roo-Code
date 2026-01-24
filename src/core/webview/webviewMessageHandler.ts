@@ -874,6 +874,7 @@ export const webviewMessageHandler = async (
 						lmstudio: {},
 						roo: {},
 						chutes: {},
+						s2scopilot: {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -923,6 +924,15 @@ export const webviewMessageHandler = async (
 				{
 					key: "chutes",
 					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
+				},
+				{
+					key: "s2scopilot",
+					options: {
+						provider: "s2scopilot",
+						apiKey: apiConfiguration.s2scopilotApiKey,
+						baseUrl: apiConfiguration.s2scopilotBaseUrl,
+						caCertPath: apiConfiguration.s2scopilotCaCertPath,
+					},
 				},
 			]
 
@@ -1323,7 +1333,7 @@ export const webviewMessageHandler = async (
 			break
 		}
 		case "openKeyboardShortcuts": {
-			// Open VSCode keyboard shortcuts settings and optionally filter to show the Roo Code commands
+			// Open VSCode keyboard shortcuts settings and optionally filter to show the s2sCopilot commands
 			const searchQuery = message.text || ""
 			if (searchQuery) {
 				// Open with a search query pre-filled
@@ -3551,34 +3561,6 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error)
 				await provider.postMessageToWebview({ type: "worktreeResult", success: false, text: errorMessage })
-			}
-
-			break
-		}
-
-		case "browseForWorktreePath": {
-			try {
-				const options: vscode.OpenDialogOptions = {
-					canSelectFiles: false,
-					canSelectFolders: true,
-					canSelectMany: false,
-					openLabel: t("worktrees:selectWorktreeLocation"),
-					title: t("worktrees:selectFolderForWorktree"),
-					defaultUri: vscode.workspace.workspaceFolders?.[0]?.uri
-						? vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, "..")
-						: undefined,
-				}
-
-				const result = await vscode.window.showOpenDialog(options)
-				if (result && result[0]) {
-					await provider.postMessageToWebview({
-						type: "folderSelected",
-						path: result[0].fsPath,
-					})
-				}
-			} catch (error) {
-				const errorMessage = error instanceof Error ? error.message : String(error)
-				provider.log(`Error opening folder picker: ${errorMessage}`)
 			}
 
 			break

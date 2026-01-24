@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Gotowe",
-	"description": "Git worktrees pozwalają pracować jednocześnie na wielu branchach w oddzielnych katalogach. Każdy worktree ma własne okno VS Code z Roo Code.",
+	"description": "Git worktrees pozwalają pracować jednocześnie na wielu branchach w oddzielnych katalogach. Każdy worktree ma własne okno VS Code z s2sCopilot.",
 
 	"notGitRepo": "Ten workspace nie jest repozytorium Git. Worktrees wymagają repozytorium Git, aby działać.",
 	"multiRootNotSupported": "Worktrees nie są obsługiwane w workspace'ach multi-root. Otwórz pojedynczy folder, aby używać worktrees.",
@@ -18,12 +18,13 @@
 	"detachedHead": "Detached HEAD",
 	"noBranch": "Brak brancha",
 
-	"switchInThisWindow": "Przełącz na worktree",
+	"openInCurrentWindow": "Otwórz w bieżącym oknie",
 	"openInNewWindow": "Otwórz w nowym oknie",
 	"delete": "Usuń",
 	"newWorktree": "Nowy Worktree",
 
 	"createWorktree": "Utwórz Worktree",
+	"createWorktreeDescription": "Utwórz nowy worktree, aby pracować na oddzielnym branchu w osobnym katalogu.",
 	"branchName": "Nazwa brancha",
 	"createNewBranch": "Utwórz nowy branch",
 	"checkoutExisting": "Checkout istniejącego brancha",
@@ -34,9 +35,8 @@
 	"noBranchFound": "Nie znaleziono brancha",
 	"localBranches": "Branche lokalne",
 	"remoteBranches": "Branche zdalne",
-	"worktreePath": "W",
-	"selectWorktreeLocation": "Wybierz lokalizację Worktree",
-	"selectFolderForWorktree": "Wybierz folder dla nowego worktree",
+	"worktreePath": "Ścieżka worktree",
+	"pathHint": "Ścieżka, w której zostanie utworzony worktree",
 	"noIncludeFileWarning": "Brak pliku .worktreeinclude",
 	"noIncludeFileHint": "Bez pliku .worktreeinclude pliki takie jak node_modules nie zostaną skopiowane do nowego worktree. Po utworzeniu może być konieczne uruchomienie npm install.",
 	"create": "Utwórz",
@@ -46,24 +46,13 @@
 	"cancel": "Anuluj",
 
 	"deleteWorktree": "Usuń Worktree",
+	"deleteWorktreeDescription": "To usunie worktree oraz wszystkie jego pliki.",
 	"deleteWarning": "Tej akcji nie można cofnąć. Zostanie usunięte:",
-	"deleteWarningBranch": "Branch i wszystkie niezatwierdzone zmiany",
+	"deleteWarningBranch": "Branch '{{branch}}' i wszystkie niezatwierdzone zmiany",
 	"deleteWarningFiles": "Wszystkie pliki w katalogu worktree",
-	"deleteNoticeLarge": "Jeśli jest to duże repozytorium, może to chwilę potrwać.",
 	"forceDelete": "Wymuś usunięcie",
 	"worktreeIsLocked": "worktree jest zablokowany",
 	"deleting": "Usuwanie...",
 
-	"close": "Zamknij",
-
-	"showInHomeScreen": "Pokaż worktrees na ekranie głównym",
-
-	"selector": {
-		"worktree": "Worktree",
-		"title": "Worktrees",
-		"tooltip": "Przełączaj się między worktrees",
-		"description": "Git worktrees pozwalają pracować jednocześnie na wielu branchach. Kliknij, aby zmienić workspace.",
-		"settings": "Zarządzaj Worktrees",
-		"info": "Git worktrees pozwalają mieć wiele katalogów roboczych dołączonych do tego samego repozytorium."
-	}
+	"close": "Zamknij"
 }

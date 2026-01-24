@@ -13,40 +13,40 @@
 		}
 	},
 	"landing": {
-		"greeting": "Witaj w Roo Code!",
-		"introduction": "Dzięki szerokiej gamie wbudowanych i rozszerzalnych Trybów, Roo Code pozwala planować, projektować architekturę, kodować, debugować i zwiększać produktywność jak nigdy dotąd.",
-		"accountMention": "Aby rozpocząć, utwórz konto Roo Code Cloud. Otrzymaj potężne modele, kontrolę internetową, analizę, wsparcie i wiele więcej.",
+		"greeting": "Witaj w s2sCopilot!",
+		"introduction": "Dzięki szerokiej gamie wbudowanych i rozszerzalnych Trybów, s2sCopilot pozwala planować, projektować architekturę, kodować, debugować i zwiększać produktywność jak nigdy dotąd.",
+		"accountMention": "Aby rozpocząć, utwórz konto s2sCopilot Cloud. Otrzymaj potężne modele, kontrolę internetową, analizę, wsparcie i wiele więcej.",
 		"getStarted": "Utwórz konto Roo",
 		"noAccount": "lub używaj bez konta"
 	},
 	"providerSignup": {
 		"heading": "Wybierz swojego dostawcę",
 		"chooseProvider": "Roo potrzebuje dostawcy LLM, aby działać. Wybierz jeden, aby zacząć, możesz dodać więcej później.",
-		"rooCloudProvider": "Dostawca Roo Code Cloud",
-		"rooCloudDescription": "Najłatwiejszy sposób na rozpoczęcie to skorzystanie z Dostawcy Roo Code Cloud: starannie wybrany mix bezpłatnych i płatnych modeli w niskiej cenie.",
+		"rooCloudProvider": "Dostawca s2sCopilot Cloud",
+		"rooCloudDescription": "Najłatwiejszy sposób na rozpoczęcie to skorzystanie z Dostawcy s2sCopilot Cloud: starannie wybrany mix bezpłatnych i płatnych modeli w niskiej cenie.",
 		"learnMore": "Dowiedz się więcej",
 		"useAnotherProvider": "Dostawca trzeciej strony",
 		"useAnotherProviderDescription": "Wprowadź klucz API i zacznij.",
 		"noApiKeys": "Nie chcesz radzić sobie z kluczami API i oddzielnymi kontami?",
-		"backToRoo": "Wybierz Dostawcę Roo Code Cloud.",
+		"backToRoo": "Wybierz Dostawcę s2sCopilot Cloud.",
 		"goBack": "Wróć",
 		"finish": "Zakończ"
 	},
 	"waitingForCloud": {
-		"heading": "Logowanie do Roo Code Cloud...",
-		"description": "Zaprowadzimy Cię do przeglądarki, aby zarejestrować się w Roo Code Cloud. Następnie wrócimy tutaj, aby ukończyć.",
+		"heading": "Logowanie do s2sCopilot Cloud...",
+		"description": "Zaprowadzimy Cię do przeglądarki, aby zarejestrować się w s2sCopilot Cloud. Następnie wrócimy tutaj, aby ukończyć.",
 		"noPrompt": "Jeśli nie zostaniesz poproszony o otwarcie adresu URL, <clickHere>kliknij tutaj</clickHere>.",
 		"havingTrouble": "Jeśli ukończyłeś rejestrację, ale masz problemy, <clickHere>kliknij tutaj</clickHere>.",
 		"pasteUrl": "Wklej adres URL wywołania zwrotnego z przeglądarki:",
 		"docsLink": "Nie działa? <DocsLink>Sprawdź dokumentację</DocsLink>.",
-		"invalidURL": "To nie wygląda na prawidłowy adres URL wywołania zwrotnego. Skopiuj to, co Roo Code Cloud wyświetla w przeglądarce.",
+		"invalidURL": "To nie wygląda na prawidłowy adres URL wywołania zwrotnego. Skopiuj to, co s2sCopilot Cloud wyświetla w przeglądarce.",
 		"goBack": "Wróć"
 	},
 	"startRouter": "Rekomendujemy użycie routera LLM:",
 	"startCustom": "Lub możesz przynieść swój własny klucz API:",
 	"telemetry": {
-		"helpImprove": "Pomóż ulepszyć Roo Code",
-		"helpImproveMessage": "Roo Code zbiera dane o błędach i użytkowaniu, aby pomóc nam naprawiać błędy i ulepszać rozszerzenie. Ta telemetria nie zbiera kodu, podpowiedzi ani danych osobowych. Możesz je wyłączyć w <settingsLink>ustawieniach</settingsLink>."
+		"helpImprove": "Pomóż ulepszyć s2sCopilot",
+		"helpImproveMessage": "s2sCopilot zbiera dane o błędach i użytkowaniu, aby pomóc nam naprawiać błędy i ulepszać rozszerzenie. Ta telemetria nie zbiera kodu, podpowiedzi ani danych osobowych. Możesz je wyłączyć w <settingsLink>ustawieniach</settingsLink>."
 	},
 	"importSettings": "Importuj ustawienia"
 }

@@ -50,6 +50,7 @@ export const dynamicProviders = [
 	"unbound",
 	"roo",
 	"chutes",
+	"s2scopilot",
 ] as const
 
 export type DynamicProvider = (typeof dynamicProviders)[number]
@@ -136,6 +137,7 @@ export const providerNames = [
 	"openai-native",
 	"qwen-code",
 	"roo",
+	"s2scopilot",
 	"sambanova",
 	"vertex",
 	"xai",
@@ -417,6 +419,13 @@ const basetenSchema = apiModelIdProviderModelSchema.extend({
 	basetenApiKey: z.string().optional(),
 })
 
+const s2scopilotSchema = baseProviderSettingsSchema.extend({
+	s2scopilotBaseUrl: z.string().optional(),
+	s2scopilotApiKey: z.string().optional(),
+	s2scopilotModelId: z.string().optional(),
+	s2scopilotCaCertPath: z.string().optional(),
+})
+
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
@@ -458,6 +467,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
+	s2scopilotSchema.merge(z.object({ apiProvider: z.literal("s2scopilot") })),
 	defaultSchema,
 ])
 
@@ -499,6 +509,7 @@ export const providerSettingsSchema = z.object({
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
 	...vercelAiGatewaySchema.shape,
+	...s2scopilotSchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
 
@@ -532,6 +543,7 @@ export const modelIdKeys = [
 	"ioIntelligenceModelId",
 	"vercelAiGatewayModelId",
 	"deepInfraModelId",
+	"s2scopilotModelId",
 ] as const satisfies readonly (keyof ProviderSettings)[]
 
 export type ModelIdKey = (typeof modelIdKeys)[number]
@@ -584,6 +596,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	"io-intelligence": "ioIntelligenceModelId",
 	roo: "apiModelId",
 	"vercel-ai-gateway": "vercelAiGatewayModelId",
+	s2scopilot: "s2scopilotModelId",
 }
 
 /**
@@ -720,6 +733,7 @@ export const MODELS_BY_PROVIDER: Record<
 	deepinfra: { id: "deepinfra", label: "DeepInfra", models: [] },
 	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
 	chutes: { id: "chutes", label: "Chutes AI", models: [] },
+	s2scopilot: { id: "s2scopilot", label: "S2S Copilot API Gateway", models: [] },
 
 	// Local providers; models discovered from localhost endpoints.
 	lmstudio: { id: "lmstudio", label: "LM Studio", models: [] },

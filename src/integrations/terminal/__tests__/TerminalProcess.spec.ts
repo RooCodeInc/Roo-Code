@@ -35,7 +35,7 @@ describe("TerminalProcess", () => {
 			shellIntegration: {
 				executeCommand: vi.fn(),
 			},
-			name: "Roo Code",
+			name: "s2sCopilot",
 			processId: Promise.resolve(123),
 			creationOptions: {},
 			exitStatus: undefined,

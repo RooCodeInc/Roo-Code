@@ -149,7 +149,7 @@ async function testTerminalCommand(
 			executeCommand: vi.fn(),
 			cwd: vscode.Uri.file("/test/path"),
 		},
-		name: "Roo Code",
+		name: "s2sCopilot",
 		processId: Promise.resolve(123),
 		creationOptions: {},
 		exitStatus: undefined,

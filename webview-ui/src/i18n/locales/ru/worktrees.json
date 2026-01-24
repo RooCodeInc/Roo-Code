@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Готово",
-	"description": "Git worktrees позволяют одновременно работать с несколькими ветками в отдельных каталогах. У каждого worktree есть своё окно VS Code с Roo Code.",
+	"description": "Git worktrees позволяют одновременно работать с несколькими ветками в отдельных каталогах. У каждого worktree есть своё окно VS Code с s2sCopilot.",
 
 	"notGitRepo": "Этот workspace не является Git-репозиторием. Для работы worktrees нужен Git-репозиторий.",
 	"multiRootNotSupported": "Worktrees не поддерживаются в multi-root workspace. Открой один каталог, чтобы использовать worktrees.",
@@ -18,12 +18,13 @@
 	"detachedHead": "Detached HEAD",
 	"noBranch": "Нет ветки",
 
-	"switchInThisWindow": "Перейти на worktree",
+	"openInCurrentWindow": "Открыть в текущем окне",
 	"openInNewWindow": "Открыть в новом окне",
 	"delete": "Удалить",
 	"newWorktree": "Новый Worktree",
 
 	"createWorktree": "Создать Worktree",
+	"createWorktreeDescription": "Создай новый worktree, чтобы работать с отдельной веткой в своём каталоге.",
 	"branchName": "Имя ветки",
 	"createNewBranch": "Создать новую ветку",
 	"checkoutExisting": "Переключиться на существующую ветку",
@@ -34,9 +35,8 @@
 	"noBranchFound": "Ветка не найдена",
 	"localBranches": "Локальные ветки",
 	"remoteBranches": "Удалённые ветки",
-	"worktreePath": "В",
-	"selectWorktreeLocation": "Выбрать расположение Worktree",
-	"selectFolderForWorktree": "Выбрать папку для нового worktree",
+	"worktreePath": "Путь worktree",
+	"pathHint": "Путь, где будет создан worktree",
 	"noIncludeFileWarning": "Нет файла .worktreeinclude",
 	"noIncludeFileHint": "Без файла .worktreeinclude файлы вроде node_modules не будут скопированы в новый worktree. Возможно, после создания нужно будет выполнить npm install.",
 	"create": "Создать",
@@ -46,24 +46,13 @@
 	"cancel": "Отмена",
 
 	"deleteWorktree": "Удалить Worktree",
+	"deleteWorktreeDescription": "Это удалит worktree и все его файлы.",
 	"deleteWarning": "Это действие нельзя отменить. Будет удалено:",
-	"deleteWarningBranch": "Ветка и все незакоммиченные изменения",
+	"deleteWarningBranch": "Ветка '{{branch}}' и все незакоммиченные изменения",
 	"deleteWarningFiles": "Все файлы в каталоге worktree",
-	"deleteNoticeLarge": "Если это большой репозиторий, это может занять некоторое время.",
 	"forceDelete": "Удалить принудительно",
 	"worktreeIsLocked": "worktree заблокирован",
 	"deleting": "Удаление...",
 
-	"close": "Закрыть",
-
-	"showInHomeScreen": "Показывать worktrees на главном экране",
-
-	"selector": {
-		"worktree": "Worktree",
-		"title": "Worktrees",
-		"tooltip": "Переключайтесь между worktrees",
-		"description": "Git worktrees позволяют работать с несколькими ветками одновременно. Нажми, чтобы переключить workspace.",
-		"settings": "Управление Worktrees",
-		"info": "Git worktrees позволяют иметь несколько рабочих каталогов, подключенных к одному репозиторию."
-	}
+	"close": "Закрыть"
 }

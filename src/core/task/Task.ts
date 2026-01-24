@@ -134,6 +134,7 @@ import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
+const REASONING_MODEL_USAGE_COLLECTION_TIMEOUT_MS = 30000 // 30 seconds for reasoning models (GPT-5, etc.)
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
 const MAX_CONTEXT_WINDOW_RETRIES = 3 // Maximum retries for context window errors
 
@@ -3045,9 +3046,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 
 					const drainStreamInBackgroundToFindAllUsage = async (apiReqIndex: number) => {
-						const timeoutMs = DEFAULT_USAGE_COLLECTION_TIMEOUT_MS
-						const startTime = performance.now()
 						const modelId = getModelId(this.apiConfiguration)
+						
+						// Use longer timeout for reasoning models (GPT-5, etc.) which take longer to stream
+						const modelIdLower = modelId?.toLowerCase() || ""
+						const isReasoningModel = modelIdLower.includes("gpt-5") || 
+												 modelIdLower.includes("gpt5") ||
+												 modelIdLower.includes("o1") ||
+												 modelIdLower.includes("o3")
+						const timeoutMs = isReasoningModel 
+							? REASONING_MODEL_USAGE_COLLECTION_TIMEOUT_MS 
+							: DEFAULT_USAGE_COLLECTION_TIMEOUT_MS
+						const startTime = performance.now()
 
 						// Local variables to accumulate usage data without affecting the main flow
 						let bgInputTokens = currentTokens.input

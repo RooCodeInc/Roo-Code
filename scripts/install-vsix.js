@@ -49,10 +49,10 @@ async function main() {
 		const extensionId = `${publisher}.${name}`
 		const buildType = isNightly ? "Nightly" : "Regular"
 
-		console.log(`\n🚀 Roo Code VSIX Installer (${buildType})`)
+		console.log(`\n🚀 s2sCopilot VSIX Installer (${buildType})`)
 		console.log("========================")
 		console.log("\nThis script will:")
-		console.log("1. Uninstall any existing version of the Roo Code extension")
+		console.log("1. Uninstall any existing version of the s2sCopilot extension")
 		console.log("2. Install the newly built VSIX package")
 		console.log(`\nExtension: ${extensionId}`)
 		console.log(`VSIX file: ${vsixFileName}`)

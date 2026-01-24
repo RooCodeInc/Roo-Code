@@ -10,6 +10,7 @@ import {
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	openRouterDefaultModelId,
 	requestyDefaultModelId,
+	s2scopilotDefaultModelId,
 	unboundDefaultModelId,
 	litellmDefaultModelId,
 	openAiNativeDefaultModelId,
@@ -95,6 +96,7 @@ import {
 	QwenCode,
 	Requesty,
 	Roo,
+	S2sCopilot,
 	SambaNova,
 	Unbound,
 	Vertex,
@@ -340,6 +342,7 @@ const ApiOptions = ({
 				openrouter: { field: "openRouterModelId", default: openRouterDefaultModelId },
 				unbound: { field: "unboundModelId", default: unboundDefaultModelId },
 				requesty: { field: "requestyModelId", default: requestyDefaultModelId },
+				s2scopilot: { field: "s2scopilotModelId", default: s2scopilotDefaultModelId },
 				litellm: { field: "litellmModelId", default: litellmDefaultModelId },
 				anthropic: { field: "apiModelId", default: anthropicDefaultModelId },
 				cerebras: { field: "apiModelId", default: cerebrasDefaultModelId },
@@ -399,6 +402,14 @@ const ApiOptions = ({
 
 		if (!name) {
 			return undefined
+		}
+
+		// Special case: s2scopilot uses Infineon's documentation endpoint
+		if (selectedProvider === "s2scopilot") {
+			return {
+				url: "https://gpt4ifx.icp.infineon.com/docs",
+				name,
+			}
 		}
 
 		// Get the URL slug - use custom mapping if available, otherwise use the provider key.
@@ -516,6 +527,18 @@ const ApiOptions = ({
 			{selectedProvider === "requesty" && (
 				<Requesty
 					uriScheme={uriScheme}
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					refetchRouterModels={refetchRouterModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
+			{selectedProvider === "s2scopilot" && (
+				<S2sCopilot
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					routerModels={routerModels}

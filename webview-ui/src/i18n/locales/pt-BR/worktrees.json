@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Concluído",
-	"description": "Os worktrees do Git permitem que você trabalhe em vários branches ao mesmo tempo em diretórios separados. Cada worktree tem sua própria janela do VS Code com o Roo Code.",
+	"description": "Os worktrees do Git permitem que você trabalhe em vários branches ao mesmo tempo em diretórios separados. Cada worktree tem sua própria janela do VS Code com o s2sCopilot.",
 
 	"notGitRepo": "Este workspace não é um repositório Git. Worktrees exigem um repositório Git para funcionar.",
 	"multiRootNotSupported": "Worktrees não são compatíveis com workspaces multi-root. Abra uma única pasta para usar worktrees.",
@@ -18,12 +18,13 @@
 	"detachedHead": "Detached HEAD",
 	"noBranch": "Sem branch",
 
-	"switchInThisWindow": "Mudar para worktree",
+	"openInCurrentWindow": "Abrir na janela atual",
 	"openInNewWindow": "Abrir em uma nova janela",
 	"delete": "Excluir",
 	"newWorktree": "Novo Worktree",
 
 	"createWorktree": "Criar Worktree",
+	"createWorktreeDescription": "Crie um novo worktree para trabalhar em um branch separado no seu próprio diretório.",
 	"branchName": "Nome do branch",
 	"createNewBranch": "Criar novo branch",
 	"checkoutExisting": "Fazer checkout de um branch existente",
@@ -34,9 +35,8 @@
 	"noBranchFound": "Nenhum branch encontrado",
 	"localBranches": "Branches locais",
 	"remoteBranches": "Branches remotos",
-	"worktreePath": "Em",
-	"selectWorktreeLocation": "Selecionar local do Worktree",
-	"selectFolderForWorktree": "Selecionar pasta para o novo worktree",
+	"worktreePath": "Caminho do worktree",
+	"pathHint": "O caminho onde o worktree será criado",
 	"noIncludeFileWarning": "Sem arquivo .worktreeinclude",
 	"noIncludeFileHint": "Sem um arquivo .worktreeinclude, arquivos como node_modules não serão copiados para o novo worktree. Você pode precisar executar npm install depois de criá-lo.",
 	"create": "Criar",
@@ -46,24 +46,13 @@
 	"cancel": "Cancelar",
 
 	"deleteWorktree": "Excluir Worktree",
+	"deleteWorktreeDescription": "Isso removerá o worktree e todos os seus arquivos.",
 	"deleteWarning": "Esta ação não pode ser desfeita. O seguinte será excluído:",
-	"deleteWarningBranch": "O branch e todas as alterações não commitadas",
+	"deleteWarningBranch": "O branch '{{branch}}' e todas as alterações não commitadas",
 	"deleteWarningFiles": "Todos os arquivos no diretório do worktree",
-	"deleteNoticeLarge": "Se for um repositório grande, pode levar um pouco.",
 	"forceDelete": "Forçar exclusão",
 	"worktreeIsLocked": "worktree está bloqueado",
 	"deleting": "Excluindo...",
 
-	"close": "Fechar",
-
-	"showInHomeScreen": "Mostrar worktrees na tela inicial",
-
-	"selector": {
-		"worktree": "Worktree",
-		"title": "Worktrees",
-		"tooltip": "Alterne entre worktrees",
-		"description": "Os worktrees do Git permitem trabalhar em vários branches simultaneamente. Clique para alternar o workspace.",
-		"settings": "Gerenciar Worktrees",
-		"info": "Os worktrees do Git permitem ter vários diretórios de trabalho conectados ao mesmo repositório."
-	}
+	"close": "Fechar"
 }

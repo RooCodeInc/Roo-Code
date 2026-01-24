@@ -13,40 +13,40 @@
 		}
 	},
 	"landing": {
-		"greeting": "Roo Code'a Hoş Geldin!",
-		"introduction": "Yerleşik ve genişletilebilir Modlar yelpazesiyle Roo Code, daha önce hiç olmadığı gibi planlama, mimari tasarım, kodlama, hata ayıklama ve üretkenliğini artırmanı sağlar.",
-		"accountMention": "Başlamak için Roo Code Cloud hesabını oluştur. Güçlü modeller, web kontrolü, analizler, destek ve daha fazlasını al.",
+		"greeting": "s2sCopilot'a Hoş Geldin!",
+		"introduction": "Yerleşik ve genişletilebilir Modlar yelpazesiyle s2sCopilot, daha önce hiç olmadığı gibi planlama, mimari tasarım, kodlama, hata ayıklama ve üretkenliğini artırmanı sağlar.",
+		"accountMention": "Başlamak için s2sCopilot Cloud hesabını oluştur. Güçlü modeller, web kontrolü, analizler, destek ve daha fazlasını al.",
 		"getStarted": "Roo Hesabı Oluştur",
 		"noAccount": "veya hesap olmadan kullan"
 	},
 	"providerSignup": {
 		"heading": "Sağlayıcınızı seçin",
 		"chooseProvider": "Roo'nun çalışması için bir LLM sağlayıcısına ihtiyacı var. Başlamak için bir tane seç, sonra daha fazlasını ekleyebilirsin.",
-		"rooCloudProvider": "Roo Code Cloud Sağlayıcı",
-		"rooCloudDescription": "Başlamak için en kolay yol Roo Code Cloud Sağlayıcısı'nı kullanmaktır: ücretsiz ve ücretli modellerin dikkatli seçilmiş bir karışımı, düşük maliyette.",
+		"rooCloudProvider": "s2sCopilot Cloud Sağlayıcı",
+		"rooCloudDescription": "Başlamak için en kolay yol s2sCopilot Cloud Sağlayıcısı'nı kullanmaktır: ücretsiz ve ücretli modellerin dikkatli seçilmiş bir karışımı, düşük maliyette.",
 		"learnMore": "Daha fazla bilgi",
 		"useAnotherProvider": "Üçüncü taraf Sağlayıcı",
 		"useAnotherProviderDescription": "Bir API anahtarı gir ve başla.",
 		"noApiKeys": "API anahtarları ve ayrı hesaplarla uğraşmak istemez misin?",
-		"backToRoo": "Roo Code Cloud Sağlayıcısını seç.",
+		"backToRoo": "s2sCopilot Cloud Sağlayıcısını seç.",
 		"goBack": "Geri",
 		"finish": "Bitir"
 	},
 	"waitingForCloud": {
-		"heading": "Roo Code Cloud'a giriş yapılıyor...",
-		"description": "Seni Roo Code Cloud'a kaydolmak için tarayıcına göndereceğiz. Sonra seni buraya geri getireceğiz.",
+		"heading": "s2sCopilot Cloud'a giriş yapılıyor...",
+		"description": "Seni s2sCopilot Cloud'a kaydolmak için tarayıcına göndereceğiz. Sonra seni buraya geri getireceğiz.",
 		"noPrompt": "Bir URL açmanız istenmezse, <clickHere>buraya tıklayın</clickHere>.",
 		"havingTrouble": "Kaydı tamamladıysanız ama sorun yaşıyorsanız, <clickHere>buraya tıklayın</clickHere>.",
 		"pasteUrl": "Tarayıcınızda gösterilen geri arama URL'sini yapıştırın:",
 		"docsLink": "Çalışmıyor mu? <DocsLink>Belgeleri kontrol edin</DocsLink>.",
-		"invalidURL": "Bu geçerli bir geri arama URL'si gibi görünmüyor. Roo Code Cloud'un tarayıcınızda gösterdiğini kopyalayın.",
+		"invalidURL": "Bu geçerli bir geri arama URL'si gibi görünmüyor. s2sCopilot Cloud'un tarayıcınızda gösterdiğini kopyalayın.",
 		"goBack": "Geri"
 	},
 	"startRouter": "Bir LLM yönlendiricisi kullanmanızı öneririz:",
 	"startCustom": "Veya kendi API anahtarınızı getirebilirsiniz:",
 	"telemetry": {
-		"helpImprove": "Roo Code'u iyileştirmeye yardımcı ol",
-		"helpImproveMessage": "Roo Code, hataları düzeltmemize ve uzantıyı iyileştirmemize yardımcı olmak için hata ve kullanım verilerini toplar. Bu telemetri kod, komutlar veya kişisel bilgileri toplamaz. Bunu <settingsLink>ayarlardan</settingsLink> devre dışı bırakabilirsin."
+		"helpImprove": "s2sCopilot'u iyileştirmeye yardımcı ol",
+		"helpImproveMessage": "s2sCopilot, hataları düzeltmemize ve uzantıyı iyileştirmemize yardımcı olmak için hata ve kullanım verilerini toplar. Bu telemetri kod, komutlar veya kişisel bilgileri toplamaz. Bunu <settingsLink>ayarlardan</settingsLink> devre dışı bırakabilirsin."
 	},
 	"importSettings": "Ayarları İçe Aktar"
 }

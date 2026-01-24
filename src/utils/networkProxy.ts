@@ -1,7 +1,7 @@
 /**
  * Network Proxy Configuration Module
  *
- * Provides proxy configuration for all outbound HTTP/HTTPS requests from the Roo Code extension.
+ * Provides proxy configuration for all outbound HTTP/HTTPS requests from the s2sCopilot extension.
  * When running in debug mode (F5), a proxy can be enabled for outbound traffic.
  * Optionally, TLS certificate verification can be disabled (debug only) to allow
  * MITM proxy inspection.
@@ -292,7 +292,7 @@ async function configureUndiciProxy(config: ProxyConfig): Promise<void> {
 
 		// Node's built-in `fetch()` (Node 18+) is powered by an internal undici copy.
 		// Setting a dispatcher on our `undici` dependency does NOT affect that internal fetch.
-		// To ensure Roo Code's `fetch()` calls are proxied, patch global fetch in debug mode.
+		// To ensure s2sCopilot's `fetch()` calls are proxied, patch global fetch in debug mode.
 		// This patch is scoped to the extension lifecycle (restored on deactivate) and can be restored
 		// immediately if the proxy is disabled.
 		if (!fetchPatched) {

@@ -5,9 +5,17 @@ import type { WorktreeDefaultsResponse, BranchInfo, WorktreeIncludeStatus } from
 
 import { vscode } from "@/utils/vscode"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Button, Input } from "@/components/ui"
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	Button,
+	Input,
+} from "@/components/ui"
 import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/searchable-select"
-import { CornerDownRight, Folder, FolderSearch, Info } from "lucide-react"
 
 interface CreateWorktreeModalProps {
 	open: boolean
@@ -71,12 +79,6 @@ export const CreateWorktreeModal = ({
 				}
 				case "worktreeIncludeStatus": {
 					setIncludeStatus(message.worktreeIncludeStatus)
-					break
-				}
-				case "folderSelected": {
-					if (message.path) {
-						setWorktreePath(message.path)
-					}
 					break
 				}
 				case "worktreeCopyProgress": {
@@ -150,13 +152,14 @@ export const CreateWorktreeModal = ({
 			<DialogContent className="max-w-lg">
 				<DialogHeader>
 					<DialogTitle>{t("worktrees:createWorktree")}</DialogTitle>
+					<DialogDescription>{t("worktrees:createWorktreeDescription")}</DialogDescription>
 				</DialogHeader>
 
 				<div className="flex flex-col gap-3">
 					{/* No .worktreeinclude warning - shows when the current worktree doesn't have .worktreeinclude */}
 					{includeStatus?.exists === false && (
 						<div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder text-sm">
-							<Info />
+							<span className="codicon codicon-warning text-vscode-charts-yellow flex-shrink-0" />
 							<span className="text-vscode-foreground">
 								<span className="font-medium">{t("worktrees:noIncludeFileWarning")}</span>
 								{" — "}
@@ -166,6 +169,17 @@ export const CreateWorktreeModal = ({
 							</span>
 						</div>
 					)}
+
+					{/* Branch name */}
+					<div className="flex flex-col gap-1">
+						<label className="text-sm text-vscode-foreground">{t("worktrees:branchName")}</label>
+						<Input
+							value={branchName}
+							onChange={(e) => setBranchName(e.target.value)}
+							placeholder={defaults?.suggestedBranch || "worktree/feature-name"}
+							className="rounded-full"
+						/>
+					</div>
 
 					{/* Base branch selector */}
 					<div className="flex flex-col gap-1">
@@ -187,32 +201,16 @@ export const CreateWorktreeModal = ({
 						)}
 					</div>
 
-					{/* Branch name */}
-					<div className="flex items-center gap-2">
-						<CornerDownRight className="size-4 ml-2 shrink-0" />
-						<label className="text-sm text-vscode-foreground shrink-0">{t("worktrees:branchName")}</label>
-						<Input
-							value={branchName}
-							onChange={(e) => setBranchName(e.target.value)}
-							placeholder={defaults?.suggestedBranch || "worktree/feature-name"}
-							className="rounded-full"
-						/>
-					</div>
-
 					{/* Worktree path */}
-					<div className="flex items-center gap-2 relative">
-						<Folder className="size-4 ml-2 shrink-0" />
-						<label className="text-sm text-vscode-foreground shrink-0">{t("worktrees:worktreePath")}</label>
+					<div className="flex flex-col gap-1">
+						<label className="text-sm text-vscode-foreground">{t("worktrees:worktreePath")}</label>
 						<Input
 							value={worktreePath}
 							onChange={(e) => setWorktreePath(e.target.value)}
 							placeholder={defaults?.suggestedPath || "/path/to/worktree"}
-							className="rounded-full flex-1 pr-9"
+							className="rounded-full"
 						/>
-						<FolderSearch
-							className="size-4 shrink-0 absolute right-3 cursor-pointer hover:opacity-75 transition-opacity"
-							onClick={() => vscode.postMessage({ type: "browseForWorktreePath" })}
-						/>
+						<p className="text-xs text-vscode-descriptionForeground">{t("worktrees:pathHint")}</p>
 					</div>
 
 					{/* Error message */}
@@ -246,7 +244,7 @@ export const CreateWorktreeModal = ({
 					<Button variant="secondary" onClick={onClose} disabled={isCreating}>
 						{t("worktrees:cancel")}
 					</Button>
-					<Button variant="primary" onClick={handleCreate} disabled={!isValid || isCreating}>
+					<Button onClick={handleCreate} disabled={!isValid || isCreating}>
 						{isCreating ? (
 							<>
 								<span className="codicon codicon-loading codicon-modifier-spin mr-2" />

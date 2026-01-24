@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "Selesai",
-	"description": "Git worktrees memungkinkan kamu bekerja di beberapa branch sekaligus dalam direktori terpisah. Setiap worktree mendapatkan jendela VS Code sendiri dengan Roo Code.",
+	"description": "Git worktrees memungkinkan kamu bekerja di beberapa branch sekaligus dalam direktori terpisah. Setiap worktree mendapatkan jendela VS Code sendiri dengan s2sCopilot.",
 
 	"notGitRepo": "Workspace ini bukan repository Git. Worktrees memerlukan repository Git untuk berfungsi.",
 	"multiRootNotSupported": "Worktrees tidak didukung di workspace multi-root. Buka satu folder untuk menggunakan worktrees.",
@@ -18,12 +18,13 @@
 	"detachedHead": "Detached HEAD",
 	"noBranch": "Tidak ada branch",
 
-	"switchInThisWindow": "Beralih ke worktree",
+	"openInCurrentWindow": "Buka di jendela saat ini",
 	"openInNewWindow": "Buka di jendela baru",
 	"delete": "Hapus",
 	"newWorktree": "Worktree Baru",
 
 	"createWorktree": "Buat Worktree",
+	"createWorktreeDescription": "Buat worktree baru untuk bekerja pada branch terpisah di direktori sendiri.",
 	"branchName": "Nama branch",
 	"createNewBranch": "Buat branch baru",
 	"checkoutExisting": "Checkout branch yang sudah ada",
@@ -34,9 +35,8 @@
 	"noBranchFound": "Branch tidak ditemukan",
 	"localBranches": "Branch lokal",
 	"remoteBranches": "Branch remote",
-	"worktreePath": "Di",
-	"selectWorktreeLocation": "Pilih Lokasi Worktree",
-	"selectFolderForWorktree": "Pilih folder untuk worktree baru",
+	"worktreePath": "Path worktree",
+	"pathHint": "Path tempat worktree akan dibuat",
 	"noIncludeFileWarning": "Tidak ada file .worktreeinclude",
 	"noIncludeFileHint": "Tanpa file .worktreeinclude, file seperti node_modules tidak akan disalin ke worktree baru. Kamu mungkin perlu menjalankan npm install setelah membuatnya.",
 	"create": "Buat",
@@ -46,24 +46,13 @@
 	"cancel": "Batal",
 
 	"deleteWorktree": "Hapus Worktree",
+	"deleteWorktreeDescription": "Ini akan menghapus worktree dan semua filenya.",
 	"deleteWarning": "Tindakan ini tidak dapat dibatalkan. Yang berikut akan dihapus:",
-	"deleteWarningBranch": "Branch dan semua perubahan yang belum di-commit",
+	"deleteWarningBranch": "Branch '{{branch}}' dan semua perubahan yang belum di-commit",
 	"deleteWarningFiles": "Semua file di direktori worktree",
-	"deleteNoticeLarge": "Jika ini adalah repositori besar, mungkin memerlukan waktu beberapa saat.",
 	"forceDelete": "Paksa hapus",
 	"worktreeIsLocked": "worktree terkunci",
 	"deleting": "Menghapus...",
 
-	"close": "Tutup",
-
-	"showInHomeScreen": "Tampilkan worktrees di layar beranda",
-
-	"selector": {
-		"worktree": "Worktree",
-		"title": "Worktrees",
-		"tooltip": "Beralih antar worktrees",
-		"description": "Git worktrees memungkinkan kamu bekerja di beberapa branch secara bersamaan. Klik untuk beralih workspace.",
-		"settings": "Kelola Worktrees",
-		"info": "Git worktrees memungkinkan kamu memiliki beberapa direktori kerja yang terhubung ke repositori yang sama."
-	}
+	"close": "Tutup"
 }

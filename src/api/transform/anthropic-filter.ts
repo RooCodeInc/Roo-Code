@@ -19,7 +19,7 @@ export const VALID_ANTHROPIC_BLOCK_TYPES = new Set([
  * Filters out non-Anthropic content blocks from messages before sending to Anthropic/Vertex API.
  * Uses an allowlist approach - only blocks with types in VALID_ANTHROPIC_BLOCK_TYPES are kept.
  * This automatically filters out:
- * - Internal "reasoning" blocks (Roo Code's internal representation)
+ * - Internal "reasoning" blocks (s2sCopilot's internal representation)
  * - Gemini's "thoughtSignature" blocks (encrypted reasoning continuity tokens)
  * - Any other unknown block types
  */

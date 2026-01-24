@@ -23,6 +23,7 @@ export * from "./openrouter.js"
 export * from "./qwen-code.js"
 export * from "./requesty.js"
 export * from "./roo.js"
+export * from "./s2scopilot.js"
 export * from "./sambanova.js"
 export * from "./unbound.js"
 export * from "./vertex.js"
@@ -53,6 +54,7 @@ import { openRouterDefaultModelId } from "./openrouter.js"
 import { qwenCodeDefaultModelId } from "./qwen-code.js"
 import { requestyDefaultModelId } from "./requesty.js"
 import { rooDefaultModelId } from "./roo.js"
+import { s2scopilotDefaultModelId } from "./s2scopilot.js"
 import { sambaNovaDefaultModelId } from "./sambanova.js"
 import { unboundDefaultModelId } from "./unbound.js"
 import { vertexDefaultModelId } from "./vertex.js"
@@ -138,6 +140,8 @@ export function getProviderDefaultModelId(
 			return ioIntelligenceDefaultModelId
 		case "roo":
 			return rooDefaultModelId
+		case "s2scopilot":
+			return s2scopilotDefaultModelId
 		case "qwen-code":
 			return qwenCodeDefaultModelId
 		case "vercel-ai-gateway":

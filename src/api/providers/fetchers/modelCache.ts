@@ -29,6 +29,7 @@ import { getDeepInfraModels } from "./deepinfra"
 import { getHuggingFaceModels } from "./huggingface"
 import { getRooModels } from "./roo"
 import { getChutesModels } from "./chutes"
+import { getS2sCopilotModels } from "./s2scopilot"
 
 const memoryCache = new NodeCache({ stdTTL: 5 * 60, checkperiod: 5 * 60 })
 
@@ -108,6 +109,13 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 		case "chutes":
 			models = await getChutesModels(options.apiKey)
 			break
+		case "s2scopilot": {
+			// s2sCopilot API Gateway requires baseUrl, apiKey, and optional CA cert path
+			const s2sBaseUrl = options.baseUrl ?? "https://gpt4ifx.icp.infineon.com"
+			const caCertPath = (options as any).caCertPath // Get CA cert path from options if provided
+			models = await getS2sCopilotModels(s2sBaseUrl, options.apiKey, caCertPath)
+			break
+		}
 		default: {
 			// Ensures router is exhaustively checked if RouterName is a strict union.
 			const exhaustiveCheck: never = provider

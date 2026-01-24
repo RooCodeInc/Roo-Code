@@ -1,7 +1,7 @@
 {
 	"title": "Worktrees",
 	"done": "完成",
-	"description": "Git worktrees 讓你能在不同目錄中同時處理多個分支。每個 worktree 都會有一個搭配 Roo Code 的獨立 VS Code 視窗。",
+	"description": "Git worktrees 讓你能在不同目錄中同時處理多個分支。每個 worktree 都會有一個搭配 s2sCopilot 的獨立 VS Code 視窗。",
 
 	"notGitRepo": "此工作區不是 Git 儲存庫。worktrees 需要 Git 儲存庫才能運作。",
 	"multiRootNotSupported": "多根工作區不支援 worktrees。請開啟單一資料夾以使用 worktrees。",
@@ -18,12 +18,13 @@
 	"detachedHead": "Detached HEAD",
 	"noBranch": "無分支",
 
-	"switchInThisWindow": "切換到 worktree",
+	"openInCurrentWindow": "在目前視窗開啟",
 	"openInNewWindow": "在新視窗開啟",
 	"delete": "刪除",
 	"newWorktree": "新增 Worktree",
 
 	"createWorktree": "建立 Worktree",
+	"createWorktreeDescription": "建立新的 worktree，讓你在獨立目錄中處理單獨的分支。",
 	"branchName": "分支名稱",
 	"createNewBranch": "建立新分支",
 	"checkoutExisting": "Checkout 現有分支",
@@ -34,9 +35,8 @@
 	"noBranchFound": "找不到分支",
 	"localBranches": "本機分支",
 	"remoteBranches": "遠端分支",
-	"worktreePath": "位於",
-	"selectWorktreeLocation": "選取 Worktree 位置",
-	"selectFolderForWorktree": "為新 worktree 選取資料夾",
+	"worktreePath": "Worktree 路徑",
+	"pathHint": "worktree 將建立到的路徑",
 	"noIncludeFileWarning": "沒有 .worktreeinclude 檔案",
 	"noIncludeFileHint": "沒有 .worktreeinclude 檔案時，node_modules 等檔案不會複製到新的 worktree。建立後你可能需要執行 npm install。",
 	"create": "建立",
@@ -46,24 +46,13 @@
 	"cancel": "取消",
 
 	"deleteWorktree": "刪除 Worktree",
+	"deleteWorktreeDescription": "這會刪除 worktree 及其所有檔案。",
 	"deleteWarning": "此操作無法復原。將刪除以下內容：",
-	"deleteWarningBranch": "分支以及所有未提交的變更",
+	"deleteWarningBranch": "分支 '{{branch}}' 以及所有未提交的變更",
 	"deleteWarningFiles": "worktree 目錄中的所有檔案",
-	"deleteNoticeLarge": "如果這是大型儲存庫，可能需要一些時間。",
 	"forceDelete": "強制刪除",
 	"worktreeIsLocked": "worktree 已鎖定",
 	"deleting": "正在刪除...",
 
-	"close": "關閉",
-
-	"showInHomeScreen": "在主畫面顯示 worktrees",
-
-	"selector": {
-		"worktree": "Worktree",
-		"title": "Worktrees",
-		"tooltip": "在 worktrees 之間切換",
-		"description": "Git worktrees 讓你能在多個分支上同時工作。點選以切換工作區。",
-		"settings": "管理 Worktrees",
-		"info": "Git worktrees 允許你將多個工作目錄連線到同一個儲存庫。"
-	}
+	"close": "關閉"
 }

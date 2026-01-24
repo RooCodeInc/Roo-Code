@@ -11,10 +11,15 @@ mock/
 
 # IDEs
 .idea
+.vscode/
+*.code-workspace
 
 # Builds
 bin/
 *.vsix
+*.tsbuildinfo
+.next/
+build/
 
 # Local prompts and rules
 /local-prompts
