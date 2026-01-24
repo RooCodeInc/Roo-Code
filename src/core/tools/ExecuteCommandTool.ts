@@ -4,7 +4,12 @@ import * as vscode from "vscode"
 
 import delay from "delay"
 
-import { CommandExecutionStatus, DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE, PersistedCommandOutput } from "@roo-code/types"
+import {
+	CommandExecutionStatus,
+	DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
+	DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE,
+	PersistedCommandOutput,
+} from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
@@ -196,6 +201,7 @@ export async function executeCommandInTerminal(
 		const providerState = await provider?.getState()
 		const terminalOutputPreviewSize =
 			providerState?.terminalOutputPreviewSize ?? DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE
+		const terminalCompressProgressBar = providerState?.terminalCompressProgressBar ?? true
 
 		interceptor = new OutputInterceptor({
 			executionId,
@@ -203,6 +209,7 @@ export async function executeCommandInTerminal(
 			command,
 			storageDir,
 			previewSize: terminalOutputPreviewSize,
+			compressProgressBar: terminalCompressProgressBar,
 		})
 	}
 

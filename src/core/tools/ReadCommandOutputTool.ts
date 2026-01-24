@@ -6,8 +6,8 @@ import { getTaskDirectoryPath } from "../../utils/storage"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
-/** Default byte limit for read operations (40KB) */
-const DEFAULT_LIMIT = 40 * 1024 // 40KB default limit
+/** Default byte limit for read operations (32KB) */
+const DEFAULT_LIMIT = 32 * 1024 // 32KB default limit
 
 /**
  * Parameters accepted by the read_command_output tool.
@@ -159,37 +159,14 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 			}
 
 			let result: string
-			let readStart = 0
-			let readEnd = 0
-			let matchCount: number | undefined
 
 			if (search) {
 				// Search mode: filter lines matching the pattern
-				const searchResult = await this.searchInArtifact(artifactPath, search, totalSize, limit)
-				result = searchResult.content
-				matchCount = searchResult.matchCount
-				// For search, we're scanning the whole file
-				readStart = 0
-				readEnd = totalSize
+				result = await this.searchInArtifact(artifactPath, search, totalSize, limit)
 			} else {
 				// Normal read mode with offset/limit
 				result = await this.readArtifact(artifactPath, offset, limit, totalSize)
-				// Calculate actual read range
-				readStart = offset
-				readEnd = Math.min(offset + limit, totalSize)
 			}
-
-			// Report to UI that we read command output
-			await task.say(
-				"tool",
-				JSON.stringify({
-					tool: "readCommandOutput",
-					readStart,
-					readEnd,
-					totalBytes: totalSize,
-					...(search && { searchPattern: search, matchCount }),
-				}),
-			)
 
 			task.consecutiveMistakeCount = 0
 			pushToolResult(result)
@@ -246,10 +223,14 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 			const { bytesRead } = await fileHandle.read(buffer, 0, buffer.length, offset)
 			const content = buffer.slice(0, bytesRead).toString("utf8")
 
-			// Calculate line numbers based on offset using chunked reading to avoid large allocations
+			// Calculate line numbers based on offset
 			let startLineNumber = 1
 			if (offset > 0) {
-				startLineNumber = await this.countNewlinesBeforeOffset(fileHandle, offset)
+				// Count newlines before offset to determine starting line number
+				const prefixBuffer = Buffer.alloc(offset)
+				await fileHandle.read(prefixBuffer, 0, offset, 0)
+				const prefix = prefixBuffer.toString("utf8")
+				startLineNumber = (prefix.match(/\n/g) || []).length + 1
 			}
 
 			const endOffset = offset + bytesRead
@@ -272,14 +253,10 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 	}
 
 	/**
-	 * Search artifact content for lines matching a pattern using chunked streaming.
+	 * Search artifact content for lines matching a pattern.
 	 *
-	 * Performs grep-like searching through the artifact file using bounded memory.
-	 * Instead of loading the entire file into memory, this reads in fixed-size chunks
-	 * and processes lines as they are encountered. This keeps memory usage predictable
-	 * even for very large command outputs (e.g., 100MB+ build logs).
-	 *
-	 * The pattern is treated as a case-insensitive regex. If the pattern is invalid
+	 * Performs grep-like searching through the artifact file. The pattern
+	 * is treated as a case-insensitive regex. If the pattern is invalid
 	 * regex syntax, it's escaped and treated as a literal string.
 	 *
 	 * Results are limited by the byte limit to prevent excessive output.
@@ -296,8 +273,10 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 		pattern: string,
 		totalSize: number,
 		limit: number,
-	): Promise<{ content: string; matchCount: number }> {
-		const CHUNK_SIZE = 64 * 1024 // 64KB chunks for bounded memory
+	): Promise<string> {
+		// Read the entire file for search (we need all content to search)
+		const content = await fs.readFile(artifactPath, "utf8")
+		const lines = content.split("\n")
 
 		// Create case-insensitive regex for search
 		let regex: RegExp
@@ -308,89 +287,45 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 			regex = new RegExp(this.escapeRegExp(pattern), "i")
 		}
 
-		const fileHandle = await fs.open(artifactPath, "r")
+		// Find matching lines with their line numbers
 		const matches: Array<{ lineNumber: number; content: string }> = []
 		let totalMatchBytes = 0
-		let lineNumber = 0
-		let partialLine = "" // Holds incomplete line from previous chunk
-		let bytesRead = 0
-		let hitLimit = false
 
-		try {
-			while (bytesRead < totalSize && !hitLimit) {
-				const chunkSize = Math.min(CHUNK_SIZE, totalSize - bytesRead)
-				const buffer = Buffer.alloc(chunkSize)
-				const result = await fileHandle.read(buffer, 0, chunkSize, bytesRead)
+		for (let i = 0; i < lines.length; i++) {
+			if (regex.test(lines[i])) {
+				const lineContent = lines[i]
+				const lineBytes = Buffer.byteLength(lineContent, "utf8")
 
-				if (result.bytesRead === 0) {
+				// Stop if we've exceeded the byte limit
+				if (totalMatchBytes + lineBytes > limit) {
 					break
 				}
 
-				const chunk = buffer.slice(0, result.bytesRead).toString("utf8")
-				bytesRead += result.bytesRead
-
-				// Combine with partial line from previous chunk
-				const combined = partialLine + chunk
-				const lines = combined.split("\n")
-
-				// Last element may be incomplete (no trailing newline), save for next iteration
-				partialLine = lines.pop() ?? ""
-
-				// Process complete lines
-				for (const line of lines) {
-					lineNumber++
-
-					if (regex.test(line)) {
-						const lineBytes = Buffer.byteLength(line, "utf8")
-
-						// Stop if we've exceeded the byte limit
-						if (totalMatchBytes + lineBytes > limit) {
-							hitLimit = true
-							break
-						}
-
-						matches.push({ lineNumber, content: line })
-						totalMatchBytes += lineBytes
-					}
-				}
+				matches.push({ lineNumber: i + 1, content: lineContent })
+				totalMatchBytes += lineBytes
 			}
-
-			// Process any remaining partial line at end of file
-			if (!hitLimit && partialLine.length > 0) {
-				lineNumber++
-				if (regex.test(partialLine)) {
-					const lineBytes = Buffer.byteLength(partialLine, "utf8")
-					if (totalMatchBytes + lineBytes <= limit) {
-						matches.push({ lineNumber, content: partialLine })
-					}
-				}
-			}
-		} finally {
-			await fileHandle.close()
 		}
 
 		const artifactId = path.basename(artifactPath)
 
 		if (matches.length === 0) {
-			const content = [
+			return [
 				`[Command Output: ${artifactId}] (search: "${pattern}")`,
 				`Total size: ${this.formatBytes(totalSize)}`,
 				"",
 				"No matches found for the search pattern.",
 			].join("\n")
-			return { content, matchCount: 0 }
 		}
 
 		// Format matches with line numbers
 		const matchedLines = matches.map((m) => `${String(m.lineNumber).padStart(5)} | ${m.content}`).join("\n")
 
-		const content = [
+		return [
 			`[Command Output: ${artifactId}] (search: "${pattern}")`,
 			`Total matches: ${matches.length} | Showing first ${matches.length}`,
 			"",
 			matchedLines,
 		].join("\n")
-		return { content, matchCount: matches.length }
 	}
 
 	/**
@@ -438,45 +373,6 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 	 */
 	private escapeRegExp(string: string): string {
 		return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-	}
-
-	/**
-	 * Count newlines before a given byte offset using fixed-size chunks.
-	 *
-	 * This avoids allocating a buffer of size `offset` which could be huge
-	 * for large files. Instead, we read in 64KB chunks and count newlines.
-	 *
-	 * @param fileHandle - Open file handle for reading
-	 * @param offset - The byte offset to count newlines up to
-	 * @returns The line number at the given offset (1-indexed)
-	 * @private
-	 */
-	private async countNewlinesBeforeOffset(fileHandle: fs.FileHandle, offset: number): Promise<number> {
-		const CHUNK_SIZE = 64 * 1024 // 64KB chunks
-		let newlineCount = 0
-		let bytesRead = 0
-
-		while (bytesRead < offset) {
-			const chunkSize = Math.min(CHUNK_SIZE, offset - bytesRead)
-			const buffer = Buffer.alloc(chunkSize)
-			const result = await fileHandle.read(buffer, 0, chunkSize, bytesRead)
-
-			if (result.bytesRead === 0) {
-				break
-			}
-
-			// Count newlines in this chunk
-			for (let i = 0; i < result.bytesRead; i++) {
-				if (buffer[i] === 0x0a) {
-					// '\n'
-					newlineCount++
-				}
-			}
-
-			bytesRead += result.bytesRead
-		}
-
-		return newlineCount + 1 // Line numbers are 1-indexed
 	}
 }
 

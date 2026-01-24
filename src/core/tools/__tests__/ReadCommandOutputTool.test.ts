@@ -159,16 +159,16 @@ describe("ReadCommandOutputTool", () => {
 	})
 
 	describe("Pagination (offset/limit)", () => {
-		it("should use default limit of 40KB", async () => {
+		it("should use default limit of 32KB", async () => {
 			const artifactId = "cmd-1706119234567.txt"
 			const largeContent = "x".repeat(50 * 1024) // 50KB
 			const fileSize = Buffer.byteLength(largeContent, "utf8")
 
 			vi.mocked(fs.stat).mockResolvedValue({ size: fileSize } as any)
 
-			// Mock read to return only up to default limit (40KB)
+			// Mock read to return only up to default limit (32KB)
 			mockFileHandle.read.mockImplementation((buf: Buffer) => {
-				const defaultLimit = 40 * 1024
+				const defaultLimit = 32 * 1024
 				const bytesToRead = Math.min(buf.length, defaultLimit)
 				buf.write(largeContent.slice(0, bytesToRead))
 				return Promise.resolve({ bytesRead: bytesToRead })
@@ -276,31 +276,13 @@ describe("ReadCommandOutputTool", () => {
 	})
 
 	describe("Search filtering", () => {
-		// Helper to setup file handle mock for search (which now uses streaming)
-		const setupSearchMock = (content: string) => {
-			const buffer = Buffer.from(content)
-			const fileSize = buffer.length
-			vi.mocked(fs.stat).mockResolvedValue({ size: fileSize } as any)
-
-			// Mock streaming read - return entire content in one chunk (simulates small file)
-			mockFileHandle.read.mockImplementation(
-				(buf: Buffer, bufOffset: number, length: number, position: number | null) => {
-					const pos = position ?? 0
-					if (pos >= fileSize) {
-						return Promise.resolve({ bytesRead: 0 })
-					}
-					const bytesToRead = Math.min(length, fileSize - pos)
-					buffer.copy(buf, 0, pos, pos + bytesToRead)
-					return Promise.resolve({ bytesRead: bytesToRead })
-				},
-			)
-		}
-
 		it("should filter lines matching pattern", async () => {
 			const artifactId = "cmd-1706119234567.txt"
 			const content = "Line 1: error occurred\nLine 2: success\nLine 3: error found\nLine 4: complete\n"
+			const fileSize = Buffer.byteLength(content, "utf8")
 
-			setupSearchMock(content)
+			vi.mocked(fs.stat).mockResolvedValue({ size: fileSize } as any)
+			vi.mocked(fs.readFile).mockResolvedValue(content)
 
 			await tool.execute({ artifact_id: artifactId, search: "error" }, mockTask, mockCallbacks)
 
@@ -314,8 +296,10 @@ describe("ReadCommandOutputTool", () => {
 		it("should use case-insensitive matching", async () => {
 			const artifactId = "cmd-1706119234567.txt"
 			const content = "ERROR: Something bad\nwarning: minor issue\nERROR: Another problem\n"
+			const fileSize = Buffer.byteLength(content, "utf8")
 
-			setupSearchMock(content)
+			vi.mocked(fs.stat).mockResolvedValue({ size: fileSize } as any)
+			vi.mocked(fs.readFile).mockResolvedValue(content)
 
 			await tool.execute({ artifact_id: artifactId, search: "error" }, mockTask, mockCallbacks)
 
@@ -327,8 +311,10 @@ describe("ReadCommandOutputTool", () => {
 		it("should show match count and line numbers", async () => {
 			const artifactId = "cmd-1706119234567.txt"
 			const content = "Line 1\nError on line 2\nLine 3\nError on line 4\n"
+			const fileSize = Buffer.byteLength(content, "utf8")
 
-			setupSearchMock(content)
+			vi.mocked(fs.stat).mockResolvedValue({ size: fileSize } as any)
+			vi.mocked(fs.readFile).mockResolvedValue(content)
 
 			await tool.execute({ artifact_id: artifactId, search: "Error" }, mockTask, mockCallbacks)
 
@@ -341,8 +327,10 @@ describe("ReadCommandOutputTool", () => {
 		it("should handle empty search results gracefully", async () => {
 			const artifactId = "cmd-1706119234567.txt"
 			const content = "Line 1\nLine 2\nLine 3\n"
+			const fileSize = Buffer.byteLength(content, "utf8")
 
-			setupSearchMock(content)
+			vi.mocked(fs.stat).mockResolvedValue({ size: fileSize } as any)
+			vi.mocked(fs.readFile).mockResolvedValue(content)
 
 			await tool.execute({ artifact_id: artifactId, search: "NOTFOUND" }, mockTask, mockCallbacks)
 
@@ -353,8 +341,10 @@ describe("ReadCommandOutputTool", () => {
 		it("should handle regex patterns in search", async () => {
 			const artifactId = "cmd-1706119234567.txt"
 			const content = "test123\ntest456\nabc789\ntest000\n"
+			const fileSize = Buffer.byteLength(content, "utf8")
 
-			setupSearchMock(content)
+			vi.mocked(fs.stat).mockResolvedValue({ size: fileSize } as any)
+			vi.mocked(fs.readFile).mockResolvedValue(content)
 
 			await tool.execute({ artifact_id: artifactId, search: "test\\d+" }, mockTask, mockCallbacks)
 
@@ -368,8 +358,10 @@ describe("ReadCommandOutputTool", () => {
 		it("should handle invalid regex patterns by treating as literal", async () => {
 			const artifactId = "cmd-1706119234567.txt"
 			const content = "Line with [brackets]\nLine without\n"
+			const fileSize = Buffer.byteLength(content, "utf8")
 
-			setupSearchMock(content)
+			vi.mocked(fs.stat).mockResolvedValue({ size: fileSize } as any)
+			vi.mocked(fs.readFile).mockResolvedValue(content)
 
 			// Invalid regex but valid as literal string
 			await tool.execute({ artifact_id: artifactId, search: "[" }, mockTask, mockCallbacks)

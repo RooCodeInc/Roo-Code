@@ -32,16 +32,12 @@ describe("OutputInterceptor", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 
-		storageDir = path.normalize("/tmp/test-storage")
+		storageDir = "/tmp/test-storage"
 
-		// Setup mock write stream with callback support for end()
+		// Setup mock write stream
 		mockWriteStream = {
 			write: vi.fn(),
-			end: vi.fn((callback?: () => void) => {
-				// Immediately call the callback to simulate stream flush completing
-				if (callback) callback()
-			}),
-			on: vi.fn(),
+			end: vi.fn(),
 		}
 
 		vi.mocked(fs.existsSync).mockReturnValue(true)
@@ -53,13 +49,14 @@ describe("OutputInterceptor", () => {
 	})
 
 	describe("Buffering behavior", () => {
-		it("should keep small output in memory without spilling to disk", async () => {
+		it("should keep small output in memory without spilling to disk", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "echo test",
 				storageDir,
-				previewSize: "small", // 5KB
+				previewSize: "small", // 2KB
+				compressProgressBar: false,
 			})
 
 			const smallOutput = "Hello World\n"
@@ -68,7 +65,7 @@ describe("OutputInterceptor", () => {
 			expect(interceptor.hasSpilledToDisk()).toBe(false)
 			expect(fs.createWriteStream).not.toHaveBeenCalled()
 
-			const result = await interceptor.finalize()
+			const result = interceptor.finalize()
 			expect(result.preview).toBe(smallOutput)
 			expect(result.truncated).toBe(false)
 			expect(result.artifactPath).toBe(null)
@@ -81,45 +78,44 @@ describe("OutputInterceptor", () => {
 				taskId: "task-1",
 				command: "echo test",
 				storageDir,
-				previewSize: "small", // 5KB = 5120 bytes
+				previewSize: "small", // 2KB = 2048 bytes
+				compressProgressBar: false,
 			})
 
-			// Write enough data to exceed 5KB threshold
-			const chunk = "x".repeat(2 * 1024) // 2KB chunk
+			// Write enough data to exceed 2KB threshold
+			const chunk = "x".repeat(1024) // 1KB chunk
+			interceptor.write(chunk) // 1KB - should stay in memory
+			expect(interceptor.hasSpilledToDisk()).toBe(false)
+
 			interceptor.write(chunk) // 2KB - should stay in memory
 			expect(interceptor.hasSpilledToDisk()).toBe(false)
 
-			interceptor.write(chunk) // 4KB - should stay in memory
-			expect(interceptor.hasSpilledToDisk()).toBe(false)
-
-			interceptor.write(chunk) // 6KB - should trigger spill
+			interceptor.write(chunk) // 3KB - should trigger spill
 			expect(interceptor.hasSpilledToDisk()).toBe(true)
 			expect(fs.createWriteStream).toHaveBeenCalledWith(path.join(storageDir, "cmd-12345.txt"))
 			expect(mockWriteStream.write).toHaveBeenCalled()
 		})
 
-		it("should truncate preview after spilling to disk using head/tail split", async () => {
+		it("should truncate preview after spilling to disk", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "echo test",
 				storageDir,
-				previewSize: "small", // 5KB
+				previewSize: "small", // 2KB
+				compressProgressBar: false,
 			})
 
 			// Write data that exceeds threshold
-			const chunk = "x".repeat(6000)
+			const chunk = "x".repeat(3000)
 			interceptor.write(chunk)
 
 			expect(interceptor.hasSpilledToDisk()).toBe(true)
 
-			const result = await interceptor.finalize()
+			const result = interceptor.finalize()
 			expect(result.truncated).toBe(true)
 			expect(result.artifactPath).toBe(path.join(storageDir, "cmd-12345.txt"))
-			// Preview is head (1024) + omission indicator + tail (1024)
-			// The omission indicator adds some extra bytes
-			expect(result.preview).toContain("[...")
-			expect(result.preview).toContain("bytes omitted...]")
+			expect(Buffer.byteLength(result.preview, "utf8")).toBeLessThanOrEqual(2048)
 		})
 
 		it("should write subsequent chunks directly to disk after spilling", () => {
@@ -129,10 +125,11 @@ describe("OutputInterceptor", () => {
 				command: "echo test",
 				storageDir,
 				previewSize: "small",
+				compressProgressBar: false,
 			})
 
-			// Trigger spill (must exceed 5KB = 5120 bytes)
-			const largeChunk = "x".repeat(6000)
+			// Trigger spill
+			const largeChunk = "x".repeat(3000)
 			interceptor.write(largeChunk)
 			expect(interceptor.hasSpilledToDisk()).toBe(true)
 
@@ -148,56 +145,59 @@ describe("OutputInterceptor", () => {
 	})
 
 	describe("Threshold settings", () => {
-		it("should handle small (5KB) threshold correctly", () => {
+		it("should handle small (2KB) threshold correctly", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "test",
 				storageDir,
 				previewSize: "small",
+				compressProgressBar: false,
 			})
 
-			// Write exactly 5KB
-			interceptor.write("x".repeat(5 * 1024))
+			// Write exactly 2KB
+			interceptor.write("x".repeat(2048))
 			expect(interceptor.hasSpilledToDisk()).toBe(false)
 
-			// Write more to exceed 5KB
+			// Write more to exceed 2KB
 			interceptor.write("x")
 			expect(interceptor.hasSpilledToDisk()).toBe(true)
 		})
 
-		it("should handle medium (10KB) threshold correctly", () => {
+		it("should handle medium (4KB) threshold correctly", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "test",
 				storageDir,
 				previewSize: "medium",
+				compressProgressBar: false,
 			})
 
-			// Write exactly 10KB
-			interceptor.write("x".repeat(10 * 1024))
+			// Write exactly 4KB
+			interceptor.write("x".repeat(4096))
 			expect(interceptor.hasSpilledToDisk()).toBe(false)
 
-			// Write more to exceed 10KB
+			// Write more to exceed 4KB
 			interceptor.write("x")
 			expect(interceptor.hasSpilledToDisk()).toBe(true)
 		})
 
-		it("should handle large (20KB) threshold correctly", () => {
+		it("should handle large (8KB) threshold correctly", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "test",
 				storageDir,
 				previewSize: "large",
+				compressProgressBar: false,
 			})
 
-			// Write exactly 20KB
-			interceptor.write("x".repeat(20 * 1024))
+			// Write exactly 8KB
+			interceptor.write("x".repeat(8192))
 			expect(interceptor.hasSpilledToDisk()).toBe(false)
 
-			// Write more to exceed 20KB
+			// Write more to exceed 8KB
 			interceptor.write("x")
 			expect(interceptor.hasSpilledToDisk()).toBe(true)
 		})
@@ -213,10 +213,11 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
+				compressProgressBar: false,
 			})
 
-			// Trigger spill (must exceed 5KB = 5120 bytes)
-			interceptor.write("x".repeat(6000))
+			// Trigger spill
+			interceptor.write("x".repeat(3000))
 
 			expect(fs.mkdirSync).toHaveBeenCalledWith(storageDir, { recursive: true })
 		})
@@ -229,31 +230,30 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
+				compressProgressBar: false,
 			})
 
-			// Trigger spill (must exceed 5KB = 5120 bytes)
-			interceptor.write("x".repeat(6000))
+			// Trigger spill
+			interceptor.write("x".repeat(3000))
 
 			expect(fs.createWriteStream).toHaveBeenCalledWith(path.join(storageDir, `cmd-${executionId}.txt`))
 		})
 
-		it("should write head and tail buffers to artifact when spilling", () => {
+		it("should write full output to artifact, not truncated", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "test",
 				storageDir,
-				previewSize: "small", // 5KB = 5120 bytes, so head=2560, tail=2560
+				previewSize: "small",
+				compressProgressBar: false,
 			})
 
-			const fullOutput = "x".repeat(10000)
+			const fullOutput = "x".repeat(5000)
 			interceptor.write(fullOutput)
 
-			// The write stream should receive the head buffer content first
-			// (spillToDisk writes head + tail that existed at spill time)
-			expect(mockWriteStream.write).toHaveBeenCalled()
-			// Verify that we're writing to disk
-			expect(interceptor.hasSpilledToDisk()).toBe(true)
+			// The write stream should receive the full buffer content
+			expect(mockWriteStream.write).toHaveBeenCalledWith(fullOutput)
 		})
 
 		it("should get artifact path from getArtifactPath() method", () => {
@@ -264,6 +264,7 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
+				compressProgressBar: false,
 			})
 
 			const expectedPath = path.join(storageDir, `cmd-${executionId}.txt`)
@@ -272,19 +273,20 @@ describe("OutputInterceptor", () => {
 	})
 
 	describe("finalize() method", () => {
-		it("should return preview output for small commands", async () => {
+		it("should return preview output for small commands", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "echo hello",
 				storageDir,
 				previewSize: "small",
+				compressProgressBar: false,
 			})
 
 			const output = "Hello World\n"
 			interceptor.write(output)
 
-			const result = await interceptor.finalize()
+			const result = interceptor.finalize()
 
 			expect(result.preview).toBe(output)
 			expect(result.totalBytes).toBe(Buffer.byteLength(output, "utf8"))
@@ -292,61 +294,61 @@ describe("OutputInterceptor", () => {
 			expect(result.truncated).toBe(false)
 		})
 
-		it("should return PersistedCommandOutput for large commands with head/tail preview", async () => {
+		it("should return PersistedCommandOutput for large commands", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "test",
 				storageDir,
-				previewSize: "small", // 5KB = 5120, head=2560, tail=2560
+				previewSize: "small",
+				compressProgressBar: false,
 			})
 
-			const largeOutput = "x".repeat(10000)
+			const largeOutput = "x".repeat(5000)
 			interceptor.write(largeOutput)
 
-			const result = await interceptor.finalize()
+			const result = interceptor.finalize()
 
 			expect(result.truncated).toBe(true)
 			expect(result.artifactPath).toBe(path.join(storageDir, "cmd-12345.txt"))
 			expect(result.totalBytes).toBe(Buffer.byteLength(largeOutput, "utf8"))
-			// Preview should contain head + omission indicator + tail
-			expect(result.preview).toContain("[...")
-			expect(result.preview).toContain("bytes omitted...]")
+			expect(Buffer.byteLength(result.preview, "utf8")).toBeLessThanOrEqual(2048)
 		})
 
-		it("should close write stream when finalizing", async () => {
+		it("should close write stream when finalizing", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "test",
 				storageDir,
 				previewSize: "small",
+				compressProgressBar: false,
 			})
 
-			// Trigger spill (must exceed 5KB = 5120 bytes)
-			interceptor.write("x".repeat(6000))
-			await interceptor.finalize()
+			// Trigger spill
+			interceptor.write("x".repeat(3000))
+			interceptor.finalize()
 
 			expect(mockWriteStream.end).toHaveBeenCalled()
 		})
 
-		it("should include correct metadata (artifactId, size, truncated flag)", async () => {
+		it("should include correct metadata (artifactId, size, truncated flag)", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "test",
 				storageDir,
 				previewSize: "small",
+				compressProgressBar: false,
 			})
 
-			// Must exceed 5KB = 5120 bytes to trigger truncation
-			const output = "x".repeat(6000)
+			const output = "x".repeat(5000)
 			interceptor.write(output)
 
-			const result = await interceptor.finalize()
+			const result = interceptor.finalize()
 
 			expect(result).toHaveProperty("preview")
-			expect(result).toHaveProperty("totalBytes", 6000)
+			expect(result).toHaveProperty("totalBytes", 5000)
 			expect(result).toHaveProperty("artifactPath")
 			expect(result).toHaveProperty("truncated", true)
 			expect(result.artifactPath).toMatch(/cmd-12345\.txt$/)
@@ -401,6 +403,46 @@ describe("OutputInterceptor", () => {
 		})
 	})
 
+	describe("Progress bar compression", () => {
+		it("should apply compression when compressProgressBar is true", () => {
+			const interceptor = new OutputInterceptor({
+				executionId: "12345",
+				taskId: "task-1",
+				command: "test",
+				storageDir,
+				previewSize: "small",
+				compressProgressBar: true,
+			})
+
+			// Output with carriage returns (simulating progress bar)
+			const output = "Progress: 10%\rProgress: 50%\rProgress: 100%\n"
+			interceptor.write(output)
+
+			const result = interceptor.finalize()
+
+			// Preview should be compressed (carriage returns processed)
+			// The processCarriageReturns function should keep only the last line before \r
+			expect(result.preview).not.toBe(output)
+		})
+
+		it("should not apply compression when compressProgressBar is false", () => {
+			const interceptor = new OutputInterceptor({
+				executionId: "12345",
+				taskId: "task-1",
+				command: "test",
+				storageDir,
+				previewSize: "small",
+				compressProgressBar: false,
+			})
+
+			const output = "Line 1\nLine 2\n"
+			interceptor.write(output)
+
+			const result = interceptor.finalize()
+			expect(result.preview).toBe(output)
+		})
+	})
+
 	describe("getBufferForUI() method", () => {
 		it("should return current buffer for UI updates", () => {
 			const interceptor = new OutputInterceptor({
@@ -409,6 +451,7 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
+				compressProgressBar: false,
 			})
 
 			const output = "Hello World"
@@ -417,116 +460,22 @@ describe("OutputInterceptor", () => {
 			expect(interceptor.getBufferForUI()).toBe(output)
 		})
 
-		it("should return head + tail buffer after spilling to disk", () => {
+		it("should return truncated buffer after spilling to disk", () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
 				command: "test",
 				storageDir,
-				previewSize: "small", // 5KB = 5120, head=2560, tail=2560
+				previewSize: "small",
+				compressProgressBar: false,
 			})
 
 			// Trigger spill
-			const largeOutput = "x".repeat(10000)
+			const largeOutput = "x".repeat(5000)
 			interceptor.write(largeOutput)
 
 			const buffer = interceptor.getBufferForUI()
-			// Buffer for UI is head + tail (no omission indicator for smooth streaming)
-			expect(Buffer.byteLength(buffer, "utf8")).toBeLessThanOrEqual(5120)
-		})
-	})
-
-	describe("Head/Tail split behavior", () => {
-		it("should preserve first 50% and last 50% of output", async () => {
-			const interceptor = new OutputInterceptor({
-				executionId: "12345",
-				taskId: "task-1",
-				command: "test",
-				storageDir,
-				previewSize: "small", // 5KB = 5120, head=2560, tail=2560
-			})
-
-			// Create identifiable head and tail content
-			const headContent = "HEAD".repeat(750) // 3000 bytes
-			const middleContent = "M".repeat(6000) // 6000 bytes (will be omitted)
-			const tailContent = "TAIL".repeat(750) // 3000 bytes
-
-			interceptor.write(headContent)
-			interceptor.write(middleContent)
-			interceptor.write(tailContent)
-
-			const result = await interceptor.finalize()
-
-			// Should start with HEAD content (first 2560 bytes of head budget)
-			expect(result.preview.startsWith("HEAD")).toBe(true)
-			// Should end with TAIL content (last 2560 bytes)
-			expect(result.preview.endsWith("TAIL")).toBe(true)
-			// Should have omission indicator
-			expect(result.preview).toContain("[...")
-			expect(result.preview).toContain("bytes omitted...]")
-		})
-
-		it("should not add omission indicator when output fits in budget", async () => {
-			const interceptor = new OutputInterceptor({
-				executionId: "12345",
-				taskId: "task-1",
-				command: "test",
-				storageDir,
-				previewSize: "small", // 5KB
-			})
-
-			const smallOutput = "Hello World\n"
-			interceptor.write(smallOutput)
-
-			const result = await interceptor.finalize()
-
-			// No omission indicator for small output
-			expect(result.preview).toBe(smallOutput)
-			expect(result.preview).not.toContain("[...")
-		})
-
-		it("should handle output that exactly fills head budget", async () => {
-			const interceptor = new OutputInterceptor({
-				executionId: "12345",
-				taskId: "task-1",
-				command: "test",
-				storageDir,
-				previewSize: "small", // 5KB = 5120, head=2560
-			})
-
-			// Write exactly 2560 bytes (head budget)
-			const exactHeadContent = "x".repeat(2560)
-			interceptor.write(exactHeadContent)
-
-			const result = await interceptor.finalize()
-
-			// Should fit entirely in head, no truncation
-			expect(result.preview).toBe(exactHeadContent)
-			expect(result.truncated).toBe(false)
-		})
-
-		it("should split single large chunk across head and tail", async () => {
-			const interceptor = new OutputInterceptor({
-				executionId: "12345",
-				taskId: "task-1",
-				command: "test",
-				storageDir,
-				previewSize: "small", // 5KB = 5120, head=2560, tail=2560
-			})
-
-			// Write a single chunk larger than preview budget
-			// First 2560 chars go to head, last 2560 chars go to tail
-			const content = "A".repeat(2560) + "B".repeat(4000) + "C".repeat(2560)
-			interceptor.write(content)
-
-			const result = await interceptor.finalize()
-
-			// Head should have A's
-			expect(result.preview.startsWith("A")).toBe(true)
-			// Tail should have C's
-			expect(result.preview.endsWith("C")).toBe(true)
-			// Should have omission indicator
-			expect(result.preview).toContain("[...")
+			expect(Buffer.byteLength(buffer, "utf8")).toBeLessThanOrEqual(2048)
 		})
 	})
 })

@@ -20,15 +20,15 @@ The tool supports two modes:
 
 Parameters:
 - artifact_id: (required) The artifact filename from the truncated output message (e.g., "cmd-1706119234567.txt")
-- search: (optional) Pattern to filter lines. Supports regex or literal strings. Case-insensitive. **Omit this parameter entirely if you don't need to filter - do not pass null or empty string.**
+- search: (optional) Pattern to filter lines. Supports regex or literal strings. Case-insensitive.
 - offset: (optional) Byte offset to start reading from. Default: 0. Use for pagination.
-- limit: (optional) Maximum bytes to return. Default: 40KB.
+- limit: (optional) Maximum bytes to return. Default: 32KB.
 
 Example: Reading truncated command output
 { "artifact_id": "cmd-1706119234567.txt" }
 
-Example: Reading with pagination (after first 40KB)
-{ "artifact_id": "cmd-1706119234567.txt", "offset": 40960 }
+Example: Reading with pagination (after first 32KB)
+{ "artifact_id": "cmd-1706119234567.txt", "offset": 32768 }
 
 Example: Searching for errors in build output
 { "artifact_id": "cmd-1706119234567.txt", "search": "error|failed|Error" }
@@ -38,22 +38,18 @@ Example: Finding specific test failures
 
 const ARTIFACT_ID_DESCRIPTION = `The artifact filename from the truncated command output (e.g., "cmd-1706119234567.txt")`
 
-const SEARCH_DESCRIPTION = `Optional regex or literal pattern to filter lines (case-insensitive, like grep). Omit this parameter if not searching - do not pass null or empty string.`
+const SEARCH_DESCRIPTION = `Optional regex or literal pattern to filter lines (case-insensitive, like grep)`
 
 const OFFSET_DESCRIPTION = `Byte offset to start reading from (default: 0, for pagination)`
 
-const LIMIT_DESCRIPTION = `Maximum bytes to return (default: 40KB)`
+const LIMIT_DESCRIPTION = `Maximum bytes to return (default: 32KB)`
 
 export default {
 	type: "function",
 	function: {
 		name: "read_command_output",
 		description: READ_COMMAND_OUTPUT_DESCRIPTION,
-		// Note: strict mode is intentionally disabled for this tool.
-		// With strict: true, OpenAI requires ALL properties to be in the 'required' array,
-		// which forces the LLM to always provide explicit values (even null) for optional params.
-		// This creates verbose tool calls and poor UX. By disabling strict mode, the LLM can
-		// omit optional parameters entirely, making the tool easier to use.
+		strict: true,
 		parameters: {
 			type: "object",
 			properties: {
@@ -62,19 +58,19 @@ export default {
 					description: ARTIFACT_ID_DESCRIPTION,
 				},
 				search: {
-					type: "string",
+					type: ["string", "null"],
 					description: SEARCH_DESCRIPTION,
 				},
 				offset: {
-					type: "number",
+					type: ["number", "null"],
 					description: OFFSET_DESCRIPTION,
 				},
 				limit: {
-					type: "number",
+					type: ["number", "null"],
 					description: LIMIT_DESCRIPTION,
 				},
 			},
-			required: ["artifact_id"],
+			required: ["artifact_id", "search", "offset", "limit"],
 			additionalProperties: false,
 		},
 	},

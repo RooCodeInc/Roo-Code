@@ -737,9 +737,9 @@
 			"label": "Command output preview size",
 			"description": "Controls how much command output Roo sees directly. Full output is always saved and accessible when needed.",
 			"options": {
-				"small": "Small (5KB)",
-				"medium": "Medium (10KB)",
-				"large": "Large (20KB)"
+				"small": "Small (2KB)",
+				"medium": "Medium (4KB)",
+				"large": "Large (8KB)"
 			}
 		},
 		"shellIntegrationTimeout": {
