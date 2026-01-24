@@ -125,10 +125,7 @@ export const WorktreesView = () => {
 		return (
 			<div>
 				<SectionHeader>{t("worktrees:title")}</SectionHeader>
-				<div className="flex flex-col items-center justify-center h-48 text-vscode-descriptionForeground px-5">
-					<span className="codicon codicon-warning text-4xl mb-4" />
-					<p className="text-center">{t("worktrees:notGitRepo")}</p>
-				</div>
+				<div className="text-vscode-descriptionForeground px-5">{t("worktrees:notGitRepo")}</div>
 			</div>
 		)
 	}
@@ -137,10 +134,7 @@ export const WorktreesView = () => {
 		return (
 			<div>
 				<SectionHeader>{t("worktrees:title")}</SectionHeader>
-				<div className="flex flex-col items-center justify-center h-48 text-vscode-descriptionForeground px-5">
-					<span className="codicon codicon-warning text-4xl mb-4" />
-					<p className="text-center">{t("worktrees:multiRootNotSupported")}</p>
-				</div>
+				<div className="text-vscode-descriptionForeground px-5">{t("worktrees:multiRootNotSupported")}</div>
 			</div>
 		)
 	}

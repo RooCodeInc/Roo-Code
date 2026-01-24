@@ -1,14 +1,15 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react"
-import { GitBranch, Check } from "lucide-react"
+import { GitBranch, Check, ChevronDown, Plus } from "lucide-react"
 
 import type { Worktree, WorktreeListResponse } from "@roo-code/types"
 
 import { cn } from "@/lib/utils"
 import { useRooPortal } from "@/components/ui/hooks/useRooPortal"
-import { Popover, PopoverContent, PopoverTrigger, StandardTooltip } from "@/components/ui"
+import { Popover, PopoverContent, PopoverTrigger, StandardTooltip, Button } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
 
+import { CreateWorktreeModal } from "../worktrees/CreateWorktreeModal"
 import { IconButton } from "./IconButton"
 
 interface WorktreeSelectorProps {
@@ -20,6 +21,7 @@ export const WorktreeSelector = ({ disabled = false }: WorktreeSelectorProps) =>
 	const [open, setOpen] = useState(false)
 	const [worktrees, setWorktrees] = useState<Worktree[]>([])
 	const [isGitRepo, setIsGitRepo] = useState(true)
+	const [showCreateModal, setShowCreateModal] = useState(false)
 	const portalContainer = useRooPortal("roo-portal")
 
 	// Find current worktree
@@ -75,12 +77,11 @@ export const WorktreeSelector = ({ disabled = false }: WorktreeSelectorProps) =>
 	}, [])
 
 	// Don't render if not a git repo or only one worktree
-	if (!isGitRepo || worktrees.length <= 1) {
+	if (!isGitRepo) {
 		return null
 	}
 
 	const title = t("worktrees:selector.tooltip")
-	const instructionText = t("worktrees:selector.description")
 
 	return (
 		<Popover open={open} onOpenChange={setOpen} data-testid="worktree-selector-root">
@@ -89,15 +90,17 @@ export const WorktreeSelector = ({ disabled = false }: WorktreeSelectorProps) =>
 					disabled={disabled}
 					data-testid="worktree-selector-trigger"
 					className={cn(
-						"inline-flex items-center relative whitespace-nowrap px-1.5 py-1 text-xs",
-						"bg-transparent border border-[rgba(255,255,255,0.08)] rounded-md text-vscode-foreground",
+						"inline-flex gap-1 mx-2 mb-1 items-center relative whitespace-nowrap px-3 py-2",
+						"bg-transparent rounded-full text-vscode-foreground text-left",
 						"transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder focus-visible:ring-inset",
 						disabled
 							? "opacity-50 cursor-not-allowed"
 							: "opacity-90 hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)] cursor-pointer",
 					)}>
-					<GitBranch className="w-3 h-3 mr-1" />
+					<span className="font-semibold mr-2">{t("worktrees:selector.worktree")}:</span>
+					<GitBranch className="w-3 h-3" />
 					<span className="truncate">{currentWorktree?.branch || t("worktrees:noBranch")}</span>
+					<ChevronDown className="size-3" />
 				</PopoverTrigger>
 			</StandardTooltip>
 			<PopoverContent
@@ -106,9 +109,19 @@ export const WorktreeSelector = ({ disabled = false }: WorktreeSelectorProps) =>
 				container={portalContainer}
 				className="p-0 overflow-hidden min-w-80 max-w-9/10">
 				<div className="flex flex-col w-full">
-					{/* Info blurb */}
-					<div className="p-3 border-b border-vscode-dropdown-border">
-						<p className="m-0 text-xs text-vscode-descriptionForeground">{instructionText}</p>
+					{/* Bottom bar with settings cog and title */}
+					<div className="px-3 pb-4">
+						<div className="flex flex-row items-center justify-between">
+							<h4 className="">{t("worktrees:selector.title")}</h4>
+							<IconButton
+								iconClass="codicon-settings-gear"
+								title={t("worktrees:selector.settings")}
+								onClick={handleSettingsClick}
+							/>
+						</div>
+						<p className="m-0 text-xs text-vscode-descriptionForeground">
+							{t("worktrees:selector.description")}
+						</p>
 					</div>
 
 					{/* Worktree list */}
@@ -146,28 +159,35 @@ export const WorktreeSelector = ({ disabled = false }: WorktreeSelectorProps) =>
 						})}
 					</div>
 
-					{/* Bottom bar with settings cog and title */}
-					<div className="flex flex-row items-center justify-between px-2 py-2 border-t border-vscode-dropdown-border">
-						<div className="flex flex-row gap-1">
-							<IconButton
-								iconClass="codicon-settings-gear"
-								title={t("worktrees:selector.settings")}
-								onClick={handleSettingsClick}
-							/>
-						</div>
-
-						{/* Info icon and title on the right */}
-						<div className="flex items-center gap-1 pr-1">
-							<StandardTooltip content={t("worktrees:selector.info")}>
-								<span className="codicon codicon-info text-xs text-vscode-descriptionForeground opacity-70 hover:opacity-100 cursor-help" />
-							</StandardTooltip>
-							<h4 className="m-0 font-medium text-sm text-vscode-descriptionForeground">
-								{t("worktrees:selector.title")}
-							</h4>
-						</div>
+					{/* New worktree button */}
+					<div className="px-3 py-2 border-t border-vscode-panel-border">
+						<Button
+							variant="ghost"
+							size="sm"
+							className="w-full justify-start"
+							onClick={() => {
+								setShowCreateModal(true)
+								setOpen(false)
+							}}>
+							<Plus className="w-3 h-3 mr-2" />
+							{t("worktrees:newWorktree")}
+						</Button>
 					</div>
 				</div>
 			</PopoverContent>
+
+			{/* Create Worktree Modal */}
+			{showCreateModal && (
+				<CreateWorktreeModal
+					open={showCreateModal}
+					onClose={() => setShowCreateModal(false)}
+					openAfterCreate={true}
+					onSuccess={() => {
+						setShowCreateModal(false)
+						fetchWorktrees()
+					}}
+				/>
+			)}
 		</Popover>
 	)
 }

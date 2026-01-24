@@ -57,10 +57,11 @@
 	"close": "Close",
 
 	"selector": {
+		"worktree": "Worktree",
 		"title": "Worktrees",
 		"tooltip": "Switch between worktrees",
 		"description": "Git worktrees let you work on multiple branches simultaneously. Click to switch workspace.",
-		"settings": "Worktree Settings",
+		"settings": "Manage Worktrees",
 		"info": "Git worktrees allow you to have multiple working directories attached to the same repository."
 	}
 }
