@@ -335,9 +335,7 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"chatGptUsageLimits": "OpenAI Codex 공급자에서 ChatGPT 사용 제한을 추적하는 UI를 추가했습니다.",
-			"claudeCodeRemoved": "지원 중단된 Claude Code 공급자를 제거했습니다.",
-			"grokCodeFastFreeEnds": "Grok Code Fast는 더 이상 무료가 아닙니다 - 관대한 프로모션을 해준 xAI에 감사합니다!"
+			"intelligentContextCondensation": "지능형 컨텍스트 압축 v2: 컨텍스트 창을 관리하는 알고리즘을 완전히 재작업했습니다. 이제 Roo의 품질 저하 없이 더 오래 작업을 실행할 수 있습니다."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

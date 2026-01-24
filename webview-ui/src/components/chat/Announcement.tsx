@@ -44,9 +44,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<div className="mb-4">
 						<p className="mb-3">{t("chat:announcement.release.heading")}</p>
 						<ul className="list-disc list-inside text-sm space-y-1.5">
-							<li>{t("chat:announcement.release.chatGptUsageLimits")}</li>
-							<li>{t("chat:announcement.release.claudeCodeRemoved")}</li>
-							<li>{t("chat:announcement.release.grokCodeFastFreeEnds")}</li>
+							<li>{t("chat:announcement.release.intelligentContextCondensation")}</li>
 						</ul>
 					</div>
 

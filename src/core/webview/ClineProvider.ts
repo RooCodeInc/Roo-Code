@@ -159,7 +159,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "jan-2026-v3.42.0-chatgpt-usage-limits-claude-code-removed-grok-free-ends" // v3.42.0 ChatGPT Usage Limits, Claude Code Removed, Grok Code Fast Free Ends
+	public readonly latestAnnouncementId = "jan-2026-v3.43.0-intelligent-context-condensation" // v3.43.0 Intelligent Context Condensation
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 

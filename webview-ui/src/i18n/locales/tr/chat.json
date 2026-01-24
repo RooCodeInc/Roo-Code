@@ -336,9 +336,7 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"chatGptUsageLimits": "OpenAI Codex sağlayıcısında ChatGPT kullanım limitlerini izlemek için UI eklendi.",
-			"claudeCodeRemoved": "Kullanımdan kaldırılan Claude Code sağlayıcısı kaldırıldı.",
-			"grokCodeFastFreeEnds": "Grok Code Fast artık ücretsiz değil - cömert promosyon için xAI'ya teşekkürler!"
+			"intelligentContextCondensation": "Akıllı Bağlam Yoğunlaştırma v2: Bağlam penceresini yöneten algoritmanın tamamen yeniden yazılması. Artık görevleri Roo'nun kalitesini kaybetmeden daha uzun süre çalıştırabilirsiniz."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

@@ -335,9 +335,7 @@
 		},
 		"release": {
 			"heading": "Co nowego:",
-			"chatGptUsageLimits": "Dodano interfejs użytkownika do śledzenia limitów użycia ChatGPT w dostawcy OpenAI Codex.",
-			"claudeCodeRemoved": "Usunięto przestarzałego dostawcę Claude Code.",
-			"grokCodeFastFreeEnds": "Grok Code Fast już nie jest darmowy - dziękujemy xAI za hojną promocję!"
+			"intelligentContextCondensation": "Inteligentna Kondensacja Kontekstu v2: Całkowite przerobienie algorytmu zarządzającego oknem kontekstu. Teraz możesz wykonywać zadania dłużej bez utraty jakości działania Roo."
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",

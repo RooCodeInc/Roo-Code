@@ -335,9 +335,7 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"chatGptUsageLimits": "S'ha afegit una interfície per rastrejar els teus límits d'ús de ChatGPT al proveïdor OpenAI Codex.",
-			"claudeCodeRemoved": "S'ha eliminat el proveïdor Claude Code obsolet.",
-			"grokCodeFastFreeEnds": "Grok Code Fast ja no és gratuït - gràcies a xAI per la promoció generosa!"
+			"intelligentContextCondensation": "Condensació Intel·ligent de Context v2: Una reelaboració completa de l'algorisme que gestiona la finestra de context. Ara pots executar tasques durant més temps sense que Roo perdi qualitat."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
