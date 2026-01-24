@@ -660,9 +660,8 @@ export const IndexingSettings = ({ codebaseIndexConfig, onConfigChange, ...props
 						{/* Note about API keys */}
 						<div className="mt-4 p-3 bg-vscode-inputValidation-infoBackground border border-vscode-inputValidation-infoBorder rounded">
 							<p className="text-sm text-vscode-inputValidation-infoForeground m-0">
-								<strong>Note:</strong> API keys for indexing providers (OpenAI, Gemini, Mistral, etc.)
-								are configured in the Codebase Indexing popover accessible from the chat interface
-								status bar.
+								<strong>{t("settings:codeIndex.apiKeyNote.title")}</strong>{" "}
+								{t("settings:codeIndex.apiKeyNote.description")}
 							</p>
 						</div>
 					</div>

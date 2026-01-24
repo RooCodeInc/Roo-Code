@@ -197,7 +197,11 @@
 			"baseUrlRequired": "Base URL is required",
 			"modelDimensionMinValue": "Model dimension must be greater than 0"
 		},
-		"optional": "optional"
+		"optional": "optional",
+		"apiKeyNote": {
+			"title": "Note:",
+			"description": "API keys for embedding providers are shared with your API provider configuration. If you're using OpenAI, Gemini, Mistral, or OpenRouter for indexing, ensure the corresponding API key is configured in your active provider profile."
+		}
 	},
 	"autoApprove": {
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust and if you understand the security risks.",
