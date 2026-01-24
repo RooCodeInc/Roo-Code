@@ -4,6 +4,7 @@ import { formatTimeAgo } from "@/utils/format"
 import { CopyButton } from "./CopyButton"
 import { ExportButton } from "./ExportButton"
 import { DeleteButton } from "./DeleteButton"
+import { DeleteCheckpointsButton } from "./DeleteCheckpointsButton"
 import { StandardTooltip } from "../ui/standard-tooltip"
 
 export interface TaskItemFooterProps {
@@ -11,9 +12,16 @@ export interface TaskItemFooterProps {
 	variant: "compact" | "full"
 	isSelectionMode?: boolean
 	onDelete?: (taskId: string) => void
+	onDeleteCheckpoints?: (taskId: string) => void
 }
 
-const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelectionMode = false, onDelete }) => {
+const TaskItemFooter: React.FC<TaskItemFooterProps> = ({
+	item,
+	variant,
+	isSelectionMode = false,
+	onDelete,
+	onDeleteCheckpoints,
+}) => {
 	return (
 		<div className="text-xs text-vscode-descriptionForeground flex justify-between items-center">
 			<div className="flex gap-1 items-center text-vscode-descriptionForeground/60">
@@ -35,6 +43,9 @@ const TaskItemFooter: React.FC<TaskItemFooterProps> = ({ item, variant, isSelect
 				<div className="flex flex-row gap-0 -mx-2 items-center text-vscode-descriptionForeground/60 hover:text-vscode-descriptionForeground">
 					<CopyButton itemTask={item.task} />
 					{variant === "full" && <ExportButton itemId={item.id} />}
+					{variant === "full" && onDeleteCheckpoints && (
+						<DeleteCheckpointsButton itemId={item.id} onDeleteCheckpoints={onDeleteCheckpoints} />
+					)}
 					{onDelete && <DeleteButton itemId={item.id} onDelete={onDelete} />}
 				</div>
 			)}
