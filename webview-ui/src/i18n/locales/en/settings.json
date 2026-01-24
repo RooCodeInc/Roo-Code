@@ -7,7 +7,11 @@
 		"reset": "Reset",
 		"select": "Select",
 		"add": "Add Header",
-		"remove": "Remove"
+		"remove": "Remove",
+		"true": "true",
+		"false": "false",
+		"empty": "(empty)",
+		"resetToDefault": "Reset to default ({{defaultValue}})"
 	},
 	"header": {
 		"title": "Settings",
