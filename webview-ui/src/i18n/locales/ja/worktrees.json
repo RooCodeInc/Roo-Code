@@ -18,13 +18,12 @@
 	"detachedHead": "Detached HEAD",
 	"noBranch": "ブランチなし",
 
-	"openInCurrentWindow": "現在のウィンドウで開く",
+	"switchInThisWindow": "Worktree に切り替え",
 	"openInNewWindow": "新しいウィンドウで開く",
 	"delete": "削除",
 	"newWorktree": "新しい Worktree",
 
 	"createWorktree": "Worktree を作成",
-	"createWorktreeDescription": "別のブランチで作業するために、専用ディレクトリに新しい worktree を作成します。",
 	"branchName": "ブランチ名",
 	"createNewBranch": "新しいブランチを作成",
 	"checkoutExisting": "既存のブランチをチェックアウト",
@@ -35,8 +34,9 @@
 	"noBranchFound": "ブランチが見つかりません",
 	"localBranches": "ローカルブランチ",
 	"remoteBranches": "リモートブランチ",
-	"worktreePath": "Worktree のパス",
-	"pathHint": "worktree を作成するパス",
+	"worktreePath": "In",
+	"selectWorktreeLocation": "Worktree の場所を選択",
+	"selectFolderForWorktree": "新しい worktree のフォルダーを選択",
 	"noIncludeFileWarning": ".worktreeinclude ファイルなし",
 	"noIncludeFileHint": ".worktreeinclude ファイルがない場合、node_modules などのファイルは新しい worktree にコピーされません。作成後に npm install を実行する必要があるかもしれません。",
 	"create": "作成",
@@ -46,15 +46,24 @@
 	"cancel": "キャンセル",
 
 	"deleteWorktree": "Worktree を削除",
-	"deleteWorktreeDescription": "これにより worktree とそのファイルがすべて削除されます。",
 	"deleteWarning": "この操作は元に戻せません。次のものが削除されます:",
-	"deleteWarningBranch": "ブランチ '{{branch}}' と未コミットの変更すべて",
+	"deleteWarningBranch": "ブランチと未コミットの変更すべて",
 	"deleteWarningFiles": "worktree ディレクトリ内のすべてのファイル",
+	"deleteNoticeLarge": "大規模なリポジトリの場合、少し時間がかかる場合があります。",
 	"forceDelete": "強制削除",
 	"worktreeIsLocked": "worktree がロックされています",
 	"deleting": "削除中...",
 
 	"close": "閉じる",
 
-	"showInHomeScreen": "ホーム画面に worktrees を表示"
+	"showInHomeScreen": "ホーム画面に worktrees を表示",
+
+	"selector": {
+		"worktree": "Worktree",
+		"title": "Worktrees",
+		"tooltip": "Worktree を切り替え",
+		"description": "Git worktrees を使うと、複数のブランチで同時に作業できます。クリックしてワークスペースを切り替えます。",
+		"settings": "Worktrees を管理",
+		"info": "Git worktrees を使うと、同じリポジトリに複数の作業ディレクトリを附属できます。"
+	}
 }

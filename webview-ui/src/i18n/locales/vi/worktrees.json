@@ -18,13 +18,12 @@
 	"detachedHead": "Detached HEAD",
 	"noBranch": "Không có nhánh",
 
-	"openInCurrentWindow": "Mở trong cửa sổ hiện tại",
+	"switchInThisWindow": "Chuyển sang worktree",
 	"openInNewWindow": "Mở trong cửa sổ mới",
 	"delete": "Xóa",
 	"newWorktree": "Worktree Mới",
 
 	"createWorktree": "Tạo Worktree",
-	"createWorktreeDescription": "Tạo worktree mới để làm việc trên một nhánh riêng trong thư mục riêng của nó.",
 	"branchName": "Tên nhánh",
 	"createNewBranch": "Tạo nhánh mới",
 	"checkoutExisting": "Checkout nhánh hiện có",
@@ -35,8 +34,9 @@
 	"noBranchFound": "Không tìm thấy nhánh",
 	"localBranches": "Nhánh cục bộ",
 	"remoteBranches": "Nhánh từ xa",
-	"worktreePath": "Đường dẫn worktree",
-	"pathHint": "Đường dẫn nơi worktree sẽ được tạo",
+	"worktreePath": "Trong",
+	"selectWorktreeLocation": "Chọn vị trí Worktree",
+	"selectFolderForWorktree": "Chọn thư mục cho worktree mới",
 	"noIncludeFileWarning": "Không có tệp .worktreeinclude",
 	"noIncludeFileHint": "Không có tệp .worktreeinclude thì các tệp như node_modules sẽ không được sao chép sang worktree mới. Bạn có thể cần chạy npm install sau khi tạo.",
 	"create": "Tạo",
@@ -46,15 +46,24 @@
 	"cancel": "Hủy",
 
 	"deleteWorktree": "Xóa Worktree",
-	"deleteWorktreeDescription": "Thao tác này sẽ xóa worktree và tất cả các tệp của nó.",
 	"deleteWarning": "Không thể hoàn tác thao tác này. Những thứ sau sẽ bị xóa:",
-	"deleteWarningBranch": "Nhánh '{{branch}}' và tất cả thay đổi chưa commit",
+	"deleteWarningBranch": "Nhánh và tất cả thay đổi chưa commit",
 	"deleteWarningFiles": "Tất cả tệp trong thư mục worktree",
+	"deleteNoticeLarge": "Nếu đây là kho lớn, có thể mất một chút thời gian.",
 	"forceDelete": "Buộc xóa",
 	"worktreeIsLocked": "worktree đang bị khóa",
 	"deleting": "Đang xóa...",
 
 	"close": "Đóng",
 
-	"showInHomeScreen": "Hiển thị worktrees trên màn hình chính"
+	"showInHomeScreen": "Hiển thị worktrees trên màn hình chính",
+
+	"selector": {
+		"worktree": "Worktree",
+		"title": "Worktrees",
+		"tooltip": "Chuyển đổi giữa các worktrees",
+		"description": "Git worktrees cho phép bạn làm việc trên nhiều nhánh cùng lúc. Nhấp để chuyển workspace.",
+		"settings": "Quản lý Worktrees",
+		"info": "Git worktrees cho phép bạn có nhiều thư mục làm việc được kết nối với cùng một kho."
+	}
 }

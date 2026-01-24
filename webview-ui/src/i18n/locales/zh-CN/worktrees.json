@@ -18,13 +18,12 @@
 	"detachedHead": "Detached HEAD",
 	"noBranch": "无分支",
 
-	"openInCurrentWindow": "在当前窗口打开",
+	"switchInThisWindow": "切换到 worktree",
 	"openInNewWindow": "在新窗口打开",
 	"delete": "删除",
 	"newWorktree": "新建 Worktree",
 
 	"createWorktree": "创建 Worktree",
-	"createWorktreeDescription": "创建一个新的 worktree，在独立目录中处理单独的分支。",
 	"branchName": "分支名称",
 	"createNewBranch": "创建新分支",
 	"checkoutExisting": "Checkout 现有分支",
@@ -35,8 +34,9 @@
 	"noBranchFound": "未找到分支",
 	"localBranches": "本地分支",
 	"remoteBranches": "远程分支",
-	"worktreePath": "Worktree 路径",
-	"pathHint": "worktree 将创建到的路径",
+	"worktreePath": "在",
+	"selectWorktreeLocation": "选择 Worktree 位置",
+	"selectFolderForWorktree": "为新 worktree 选择文件夹",
 	"noIncludeFileWarning": "没有 .worktreeinclude 文件",
 	"noIncludeFileHint": "没有 .worktreeinclude 文件时，node_modules 等文件不会复制到新 worktree。创建后你可能需要运行 npm install。",
 	"create": "创建",
@@ -46,15 +46,24 @@
 	"cancel": "取消",
 
 	"deleteWorktree": "删除 Worktree",
-	"deleteWorktreeDescription": "这将删除 worktree 及其所有文件。",
 	"deleteWarning": "此操作不可逆。将删除以下内容：",
-	"deleteWarningBranch": "分支 '{{branch}}' 以及所有未提交的更改",
+	"deleteWarningBranch": "分支以及所有未提交的更改",
 	"deleteWarningFiles": "worktree 目录中的所有文件",
+	"deleteNoticeLarge": "如果这是一个大型仓库，可能需要一些时间。",
 	"forceDelete": "强制删除",
 	"worktreeIsLocked": "worktree 已锁定",
 	"deleting": "正在删除...",
 
 	"close": "关闭",
 
-	"showInHomeScreen": "在主屏幕显示 worktrees"
+	"showInHomeScreen": "在主屏幕显示 worktrees",
+
+	"selector": {
+		"worktree": "Worktree",
+		"title": "Worktrees",
+		"tooltip": "在 worktrees 之间切换",
+		"description": "Git worktrees 让你能在多个分支上同时工作。点击以切换 workspace。",
+		"settings": "管理 Worktrees",
+		"info": "Git worktrees 允许你将多个工作目录连接到同一个仓库。"
+	}
 }

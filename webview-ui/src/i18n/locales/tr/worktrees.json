@@ -18,13 +18,12 @@
 	"detachedHead": "Detached HEAD",
 	"noBranch": "Branch yok",
 
-	"openInCurrentWindow": "Mevcut pencerede aç",
+	"switchInThisWindow": "Worktree'ye geç",
 	"openInNewWindow": "Yeni pencerede aç",
 	"delete": "Sil",
 	"newWorktree": "Yeni Worktree",
 
 	"createWorktree": "Worktree oluştur",
-	"createWorktreeDescription": "Kendi dizininde ayrı bir branch üzerinde çalışmak için yeni bir worktree oluştur.",
 	"branchName": "Branch adı",
 	"createNewBranch": "Yeni branch oluştur",
 	"checkoutExisting": "Mevcut branch'i checkout et",
@@ -35,8 +34,9 @@
 	"noBranchFound": "Branch bulunamadı",
 	"localBranches": "Yerel branch'ler",
 	"remoteBranches": "Uzak branch'ler",
-	"worktreePath": "Worktree yolu",
-	"pathHint": "Worktree'nin oluşturulacağı yol",
+	"worktreePath": "In",
+	"selectWorktreeLocation": "Worktree Konumunu Seç",
+	"selectFolderForWorktree": "Yeni worktree için klasör seç",
 	"noIncludeFileWarning": ".worktreeinclude dosyası yok",
 	"noIncludeFileHint": ".worktreeinclude dosyası olmadan node_modules gibi dosyalar yeni worktree'ye kopyalanmaz. Oluşturduktan sonra npm install çalıştırman gerekebilir.",
 	"create": "Oluştur",
@@ -46,15 +46,24 @@
 	"cancel": "İptal",
 
 	"deleteWorktree": "Worktree'yi sil",
-	"deleteWorktreeDescription": "Bu işlem worktree'yi ve tüm dosyalarını kaldırır.",
 	"deleteWarning": "Bu işlem geri alınamaz. Şunlar silinecek:",
-	"deleteWarningBranch": "'{{branch}}' branch'i ve commit edilmemiş tüm değişiklikler",
+	"deleteWarningBranch": "Branch'i ve commit edilmemiş tüm değişiklikler",
 	"deleteWarningFiles": "worktree dizinindeki tüm dosyalar",
+	"deleteNoticeLarge": "Bu büyük bir depo ise, biraz zaman alabilir.",
 	"forceDelete": "Silmeye zorla",
 	"worktreeIsLocked": "worktree kilitli",
 	"deleting": "Siliniyor...",
 
 	"close": "Kapat",
 
-	"showInHomeScreen": "Ana ekranda worktrees göster"
+	"showInHomeScreen": "Ana ekranda worktrees göster",
+
+	"selector": {
+		"worktree": "Worktree",
+		"title": "Worktrees",
+		"tooltip": "Worktree'ler arasında geç",
+		"description": "Git worktree'leri aynı anda birden fazla branch'te çalışmanı sağlar. Workspace'i değiştirmek için tıkla.",
+		"settings": "Worktree'leri Yönet",
+		"info": "Git worktree'leri aynı depo ile bağlantılı birden fazla çalışma dizinine sahip olmanı sağlar."
+	}
 }

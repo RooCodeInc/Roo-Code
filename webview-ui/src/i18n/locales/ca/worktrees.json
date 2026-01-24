@@ -18,13 +18,12 @@
 	"detachedHead": "HEAD separat",
 	"noBranch": "Sense branca",
 
-	"openInCurrentWindow": "Obre a la finestra actual",
+	"switchInThisWindow": "Canvia a worktree",
 	"openInNewWindow": "Obre en una finestra nova",
 	"delete": "Suprimeix",
 	"newWorktree": "Worktree nou",
 
 	"createWorktree": "Crea worktree",
-	"createWorktreeDescription": "Crea un worktree nou per treballar en una branca diferent dins del seu propi directori.",
 	"branchName": "Nom de la branca",
 	"createNewBranch": "Crea una branca nova",
 	"checkoutExisting": "Fes checkout d'una branca existent",
@@ -35,8 +34,9 @@
 	"noBranchFound": "No s'ha trobat cap branca",
 	"localBranches": "Branques locals",
 	"remoteBranches": "Branques remotes",
-	"worktreePath": "Camí del worktree",
-	"pathHint": "El camí on es crearà el worktree",
+	"worktreePath": "En",
+	"selectWorktreeLocation": "Selecciona la ubicació del Worktree",
+	"selectFolderForWorktree": "Selecciona carpeta per al worktree nou",
 	"noIncludeFileWarning": "No hi ha cap fitxer .worktreeinclude",
 	"noIncludeFileHint": "Sense un fitxer .worktreeinclude, fitxers com node_modules no es copiaran al worktree nou. Potser hauràs d'executar npm install després de crear-lo.",
 	"create": "Crea",
@@ -46,15 +46,24 @@
 	"cancel": "Cancel·la",
 
 	"deleteWorktree": "Suprimeix worktree",
-	"deleteWorktreeDescription": "Això eliminarà el worktree i tots els seus fitxers.",
 	"deleteWarning": "Aquesta acció no es pot desfer. S'eliminarà:",
-	"deleteWarningBranch": "La branca '{{branch}}' i tots els canvis sense confirmar",
+	"deleteWarningBranch": "La branca i qualsevol canvi sense confirmar",
 	"deleteWarningFiles": "Tots els fitxers del directori del worktree",
+	"deleteNoticeLarge": "Si és un gran repositori, podria trigar una mica.",
 	"forceDelete": "Força la supressió",
 	"worktreeIsLocked": "el worktree està bloquejat",
 	"deleting": "S'està suprimint...",
 
 	"close": "Tanca",
 
-	"showInHomeScreen": "Mostra worktrees a la pantalla d'inici"
+	"showInHomeScreen": "Mostra worktrees a la pantalla d'inici",
+
+	"selector": {
+		"worktree": "Worktree",
+		"title": "Worktrees",
+		"tooltip": "Canvia entre worktrees",
+		"description": "Els worktrees de Git et permeten treballar en diverses branques simultàniament. Fes clic per canviar l'espai de treball.",
+		"settings": "Gestiona Worktrees",
+		"info": "Els worktrees de Git et permeten tenir diversos directoris de treball adjunts al mateix repositori."
+	}
 }
