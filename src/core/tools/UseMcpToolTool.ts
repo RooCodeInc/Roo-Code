@@ -4,6 +4,7 @@ import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { t } from "../../i18n"
 import type { ToolUse } from "../../shared/tools"
+import { toolNamesMatch } from "../../utils/mcp-name"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -43,6 +44,10 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				return
 			}
 
+			// Use the resolved tool name (original name from the server) for MCP calls
+			// This handles cases where models mangle hyphens to underscores
+			const resolvedToolName = toolValidation.resolvedToolName ?? toolName
+
 			// Reset mistake count on successful validation
 			task.consecutiveMistakeCount = 0
 
@@ -50,7 +55,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			const completeMessage = JSON.stringify({
 				type: "use_mcp_tool",
 				serverName,
-				toolName,
+				toolName: resolvedToolName,
 				arguments: params.arguments ? JSON.stringify(params.arguments) : undefined,
 			} satisfies ClineAskUseMcpServer)
 
@@ -65,7 +70,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			await this.executeToolAndProcessResult(
 				task,
 				serverName,
-				toolName,
+				resolvedToolName,
 				parsedArguments,
 				executionId,
 				pushToolResult,
@@ -137,7 +142,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		serverName: string,
 		toolName: string,
 		pushToolResult: (content: string) => void,
-	): Promise<{ isValid: boolean; availableTools?: string[] }> {
+	): Promise<{ isValid: boolean; availableTools?: string[]; resolvedToolName?: string }> {
 		try {
 			// Get the MCP hub to access server information
 			const provider = task.providerRef.deref()
@@ -186,8 +191,8 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				return { isValid: false, availableTools: [] }
 			}
 
-			// Check if the requested tool exists
-			const tool = server.tools.find((tool) => tool.name === toolName)
+			// Check if the requested tool exists (using fuzzy matching to handle model mangling of hyphens)
+			const tool = server.tools.find((t) => toolNamesMatch(t.name, toolName))
 
 			if (!tool) {
 				// Tool not found - provide list of available tools
@@ -232,8 +237,8 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				return { isValid: false, availableTools: enabledToolNames }
 			}
 
-			// Tool exists and is enabled
-			return { isValid: true, availableTools: server.tools.map((tool) => tool.name) }
+			// Tool exists and is enabled - return the original tool name for use with the MCP server
+			return { isValid: true, availableTools: server.tools.map((t) => t.name), resolvedToolName: tool.name }
 		} catch (error) {
 			// If there's an error during validation, log it but don't block the tool execution
 			// The actual tool call might still fail with a proper error

@@ -784,10 +784,6 @@
 					"unified": "La strategia diff unificato adotta diversi approcci per applicare i diff e sceglie il migliore.",
 					"multiBlock": "La strategia diff multi-blocco consente di aggiornare più blocchi di codice in un file in una singola richiesta."
 				}
-			},
-			"matchPrecision": {
-				"label": "Precisione corrispondenza",
-				"description": "Questo cursore controlla quanto precisamente le sezioni di codice devono corrispondere quando si applicano i diff. Valori più bassi consentono corrispondenze più flessibili ma aumentano il rischio di sostituzioni errate. Usa valori inferiori al 100% con estrema cautela."
 			}
 		},
 		"todoList": {
@@ -804,10 +800,6 @@
 			"name": "Usa strumento di inserimento contenuti sperimentale",
 			"description": "Abilita lo strumento di inserimento contenuti sperimentale, consentendo a Roo di inserire contenuti a numeri di riga specifici senza dover creare un diff."
 		},
-		"POWER_STEERING": {
-			"name": "Usa modalità \"servosterzo\" sperimentale",
-			"description": "Quando abilitato, Roo ricorderà al modello i dettagli della sua definizione di modalità corrente più frequentemente. Questo porterà a una maggiore aderenza alle definizioni dei ruoli e alle istruzioni personalizzate, ma utilizzerà più token per messaggio."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Usa strumento diff multi-blocco sperimentale",
 			"description": "Quando abilitato, Roo utilizzerà lo strumento diff multi-blocco. Questo tenterà di aggiornare più blocchi di codice nel file in una singola richiesta."
@@ -819,10 +811,6 @@
 		"MARKETPLACE": {
 			"name": "Abilita Marketplace",
 			"description": "Quando abilitato, puoi installare MCP e modalità personalizzate dal Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Abilita modifiche di file concorrenti",
-			"description": "Quando abilitato, Roo può modificare più file in una singola richiesta. Quando disabilitato, Roo deve modificare i file uno alla volta. Disabilitare questa opzione può aiutare quando lavori con modelli meno capaci o quando vuoi più controllo sulle modifiche dei file."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Modifica in background",

@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "Openen in huidig venster",
 	"openInNewWindow": "Openen in nieuw venster",
-	"merge": "Samenvoegen",
 	"delete": "Verwijderen",
 	"newWorktree": "Nieuwe Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree is vergrendeld",
 	"deleting": "Bezig met verwijderen...",
 
-	"mergeBranch": "Branch samenvoegen",
-	"mergeDescription": "'{{source}}' samenvoegen in '{{target}}'",
-	"deleteAfterMerge": "Worktree verwijderen na succesvolle merge",
-	"merging": "Bezig met samenvoegen...",
-	"mergeSuccess": "Samenvoegen geslaagd",
-	"mergeConflicts": "Samenvoegconflicten",
-	"conflictsDescription": "De volgende bestanden hebben conflicten die moeten worden opgelost:",
-	"mergeFailed": "Samenvoegen mislukt",
-	"resolveManually": "Ik los het handmatig op",
-	"askRooResolve": "Roo vragen om op te lossen",
 	"close": "Sluiten"
 }

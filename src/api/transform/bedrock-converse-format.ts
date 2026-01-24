@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { ConversationRole, Message, ContentBlock } from "@aws-sdk/client-bedrock-runtime"
+import { sanitizeOpenAiCallId } from "../../utils/tool-id"
 
 interface BedrockMessageContent {
 	type: "text" | "image" | "video" | "tool_use" | "tool_result"
@@ -90,7 +91,7 @@ export function convertToBedrockConverseMessages(anthropicMessages: Anthropic.Me
 				// Native-only: keep input as JSON object for Bedrock's toolUse format
 				return {
 					toolUse: {
-						toolUseId: messageBlock.id || "",
+						toolUseId: sanitizeOpenAiCallId(messageBlock.id || ""),
 						name: messageBlock.name || "",
 						input: messageBlock.input || {},
 					},
@@ -104,7 +105,7 @@ export function convertToBedrockConverseMessages(anthropicMessages: Anthropic.Me
 					if (typeof messageBlock.content === "string") {
 						return {
 							toolResult: {
-								toolUseId: messageBlock.tool_use_id || "",
+								toolUseId: sanitizeOpenAiCallId(messageBlock.tool_use_id || ""),
 								content: [
 									{
 										text: messageBlock.content,
@@ -118,7 +119,7 @@ export function convertToBedrockConverseMessages(anthropicMessages: Anthropic.Me
 					if (Array.isArray(messageBlock.content)) {
 						return {
 							toolResult: {
-								toolUseId: messageBlock.tool_use_id || "",
+								toolUseId: sanitizeOpenAiCallId(messageBlock.tool_use_id || ""),
 								content: messageBlock.content.map((item) => ({
 									text: typeof item === "string" ? item : item.text || String(item),
 								})),
@@ -132,7 +133,7 @@ export function convertToBedrockConverseMessages(anthropicMessages: Anthropic.Me
 				if (messageBlock.output && typeof messageBlock.output === "string") {
 					return {
 						toolResult: {
-							toolUseId: messageBlock.tool_use_id || "",
+							toolUseId: sanitizeOpenAiCallId(messageBlock.tool_use_id || ""),
 							content: [
 								{
 									text: messageBlock.output,
@@ -146,7 +147,7 @@ export function convertToBedrockConverseMessages(anthropicMessages: Anthropic.Me
 				if (Array.isArray(messageBlock.output)) {
 					return {
 						toolResult: {
-							toolUseId: messageBlock.tool_use_id || "",
+							toolUseId: sanitizeOpenAiCallId(messageBlock.tool_use_id || ""),
 							content: messageBlock.output.map((part) => {
 								if (typeof part === "object" && "text" in part) {
 									return { text: part.text }
@@ -165,7 +166,7 @@ export function convertToBedrockConverseMessages(anthropicMessages: Anthropic.Me
 				// Default case
 				return {
 					toolResult: {
-						toolUseId: messageBlock.tool_use_id || "",
+						toolUseId: sanitizeOpenAiCallId(messageBlock.tool_use_id || ""),
 						content: [
 							{
 								text: String(messageBlock.output || ""),

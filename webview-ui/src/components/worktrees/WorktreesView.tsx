@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 
-import type { Worktree, WorktreeListResponse, MergeWorktreeResult, WorktreeIncludeStatus } from "@roo-code/types"
+import type { Worktree, WorktreeListResponse, WorktreeIncludeStatus } from "@roo-code/types"
 
 import { Badge, Button, StandardTooltip } from "@/components/ui"
 import { useAppTranslation } from "@/i18n/TranslationContext"
@@ -10,9 +10,7 @@ import { SectionHeader } from "../settings/SectionHeader"
 
 import { CreateWorktreeModal } from "./CreateWorktreeModal"
 import { DeleteWorktreeModal } from "./DeleteWorktreeModal"
-import { MergeWorktreeModal } from "./MergeWorktreeModal"
-import { MergeResultModal } from "./MergeResultModal"
-import { Folder, GitBranch, GitMerge, Lock, Plus, SquareArrowOutUpRight, Trash } from "lucide-react"
+import { Folder, GitBranch, Lock, Plus, SquareArrowOutUpRight, Trash } from "lucide-react"
 
 export const WorktreesView = () => {
 	const { t } = useAppTranslation()
@@ -33,13 +31,6 @@ export const WorktreesView = () => {
 	// Modals
 	const [showCreateModal, setShowCreateModal] = useState(false)
 	const [deleteWorktree, setDeleteWorktree] = useState<Worktree | null>(null)
-
-	// Merge state
-	const [mergeWorktree, setMergeWorktree] = useState<Worktree | null>(null)
-	const [mergeTargetBranch, setMergeTargetBranch] = useState("")
-	const [mergeDeleteAfter, setMergeDeleteAfter] = useState(false)
-	const [isMerging, setIsMerging] = useState(false)
-	const [mergeResult, setMergeResult] = useState<MergeWorktreeResult | null>(null)
 
 	// Fetch worktrees list
 	const fetchWorktrees = useCallback(() => {
@@ -78,22 +69,6 @@ export const WorktreesView = () => {
 					fetchWorktrees()
 					fetchIncludeStatus()
 					setIsCreatingInclude(false)
-					break
-				}
-				case "mergeWorktreeResult": {
-					setIsMerging(false)
-					// Map ExtensionMessage format (text) to MergeWorktreeResult format (message)
-					setMergeResult({
-						success: message.success,
-						message: message.text || "",
-						hasConflicts: message.hasConflicts || false,
-						conflictingFiles: message.conflictingFiles || [],
-						sourceBranch: message.sourceBranch,
-						targetBranch: message.targetBranch,
-					})
-					if (message.success) {
-						fetchWorktrees()
-					}
 					break
 				}
 			}
@@ -145,31 +120,6 @@ export const WorktreesView = () => {
 		})
 	}, [])
 
-	// Handle merge
-	const handleMerge = useCallback(() => {
-		if (!mergeWorktree) return
-		setIsMerging(true)
-		vscode.postMessage({
-			type: "mergeWorktree",
-			worktreePath: mergeWorktree.path,
-			worktreeTargetBranch: mergeTargetBranch,
-			worktreeDeleteAfterMerge: mergeDeleteAfter,
-		})
-	}, [mergeWorktree, mergeTargetBranch, mergeDeleteAfter])
-
-	// Handle "Ask Roo to resolve conflicts"
-	const handleAskRooResolve = useCallback(() => {
-		if (!mergeResult) return
-		// Create a new task with conflict resolution instructions
-		const conflictMessage = `Please help me resolve merge conflicts in the following files:\n\n${mergeResult.conflictingFiles.map((f) => `- ${f}`).join("\n")}\n\nThe merge was from branch "${mergeResult.sourceBranch}" into "${mergeResult.targetBranch}".`
-		vscode.postMessage({
-			type: "newTask",
-			text: conflictMessage,
-		})
-		setMergeWorktree(null)
-		setMergeResult(null)
-	}, [mergeResult])
-
 	// Render error states
 	if (!isGitRepo) {
 		return (
@@ -210,9 +160,6 @@ export const WorktreesView = () => {
 			</div>
 		)
 	}
-
-	// Find the primary (bare/main) worktree for merge target.
-	const primaryWorktree = worktrees.find((w) => w.isBare || worktrees.indexOf(w) === 0)
 
 	return (
 		<div className="flex flex-col h-full overflow-hidden">
@@ -296,23 +243,6 @@ export const WorktreesView = () => {
 												<SquareArrowOutUpRight />
 											</Button>
 										</StandardTooltip>
-										{!worktree.isBare &&
-											worktree.branch &&
-											primaryWorktree &&
-											worktree.branch !== primaryWorktree.branch && (
-												<StandardTooltip content={t("worktrees:merge")}>
-													<Button
-														variant="ghost"
-														size="icon"
-														onClick={(e) => {
-															e.stopPropagation()
-															setMergeWorktree(worktree)
-															setMergeTargetBranch(primaryWorktree.branch || "main")
-														}}>
-														<GitMerge />
-													</Button>
-												</StandardTooltip>
-											)}
 
 										<StandardTooltip content={t("worktrees:delete")}>
 											<Button
@@ -378,33 +308,6 @@ export const WorktreesView = () => {
 						setDeleteWorktree(null)
 						fetchWorktrees()
 					}}
-				/>
-			)}
-
-			{/* Merge Modal */}
-			{mergeWorktree && !mergeResult && (
-				<MergeWorktreeModal
-					open={!!mergeWorktree && !mergeResult}
-					onClose={() => setMergeWorktree(null)}
-					worktree={mergeWorktree}
-					targetBranch={mergeTargetBranch}
-					deleteAfterMerge={mergeDeleteAfter}
-					onDeleteAfterMergeChange={setMergeDeleteAfter}
-					isMerging={isMerging}
-					onMerge={handleMerge}
-				/>
-			)}
-
-			{/* Merge Result Modal */}
-			{mergeResult && (
-				<MergeResultModal
-					open={!!mergeResult}
-					onClose={() => {
-						setMergeWorktree(null)
-						setMergeResult(null)
-					}}
-					result={mergeResult}
-					onAskRooResolve={handleAskRooResolve}
 				/>
 			)}
 		</div>

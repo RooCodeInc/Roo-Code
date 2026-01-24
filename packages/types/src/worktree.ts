@@ -66,36 +66,6 @@ export interface CreateWorktreeOptions {
 }
 
 /**
- * Options for merging a worktree branch
- */
-export interface MergeWorktreeOptions {
-	/** Path to the worktree being merged */
-	worktreePath: string
-	/** Target branch to merge into */
-	targetBranch: string
-	/** If true, delete the worktree after successful merge */
-	deleteAfterMerge?: boolean
-}
-
-/**
- * Result of a merge operation
- */
-export interface MergeWorktreeResult {
-	/** Whether the merge succeeded */
-	success: boolean
-	/** Human-readable message describing the result */
-	message: string
-	/** Whether there are merge conflicts */
-	hasConflicts: boolean
-	/** List of files with conflicts */
-	conflictingFiles: string[]
-	/** Source branch that was merged */
-	sourceBranch?: string
-	/** Target branch that was merged into */
-	targetBranch?: string
-}
-
-/**
  * Status of .worktreeinclude file
  */
 export interface WorktreeIncludeStatus {

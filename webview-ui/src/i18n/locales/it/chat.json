@@ -335,9 +335,7 @@
 		},
 		"release": {
 			"heading": "Novità:",
-			"chatGptUsageLimits": "Aggiunta un'interfaccia per tracciare i tuoi limiti di utilizzo di ChatGPT nel provider OpenAI Codex.",
-			"claudeCodeRemoved": "Rimosso il provider Claude Code deprecato.",
-			"grokCodeFastFreeEnds": "Grok Code Fast non è più gratuito - grazie a xAI per la generosa promozione!"
+			"intelligentContextCondensation": "Condensazione Intelligente del Contesto v2: Una rielaborazione completa dell'algoritmo utilizzato per gestire la finestra di contesto. Ora puoi eseguire attività più a lungo senza che Roo perda qualità."
 		},
 		"cloudAgents": {
 			"heading": "Novità nel Cloud:",

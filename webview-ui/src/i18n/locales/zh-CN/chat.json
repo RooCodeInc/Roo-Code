@@ -336,9 +336,7 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"chatGptUsageLimits": "在 OpenAI Codex 提供商中添加了 UI 以跟踪您的 ChatGPT 使用限制。",
-			"claudeCodeRemoved": "已移除已弃用的 Claude Code 提供商。",
-			"grokCodeFastFreeEnds": "Grok Code Fast 不再免费 - 感谢 xAI 的慷慨促销！"
+			"intelligentContextCondensation": "智能上下文压缩 v2：对管理上下文窗口的算法进行了完全重构。现在您可以更长时间地运行任务，而 Roo 不会变得迟钝。"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",

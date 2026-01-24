@@ -11,10 +11,10 @@ import { maybeRemoveImageBlocks } from "../../../api/transform/image-cleaning"
 import {
 	summarizeConversation,
 	getMessagesSinceLastSummary,
-	getKeepMessagesWithToolBlocks,
 	getEffectiveApiHistory,
 	cleanupAfterTruncation,
-	N_MESSAGES_TO_KEEP,
+	extractCommandBlocks,
+	injectSyntheticToolResults,
 } from "../index"
 
 vi.mock("../../../api/transform/image-cleaning", () => ({
@@ -30,557 +30,213 @@ vi.mock("@roo-code/telemetry", () => ({
 }))
 
 const taskId = "test-task-id"
-const DEFAULT_PREV_CONTEXT_TOKENS = 1000
 
-describe("getKeepMessagesWithToolBlocks", () => {
-	it("should return keepMessages without tool blocks when no tool_result blocks in first kept message", () => {
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Hi there", ts: 2 },
-			{ role: "user", content: "How are you?", ts: 3 },
-			{ role: "assistant", content: "I'm good", ts: 4 },
-			{ role: "user", content: "What's new?", ts: 5 },
-		]
+describe("extractCommandBlocks", () => {
+	it("should extract command blocks from string content", () => {
+		const message: ApiMessage = {
+			role: "user",
+			content: 'Some text <command name="prr">/prr #123</command> more text',
+		}
 
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		expect(result.keepMessages).toHaveLength(3)
-		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
+		const result = extractCommandBlocks(message)
+		expect(result).toBe('<command name="prr">/prr #123</command>')
 	})
 
-	it("should return all messages when messages.length <= keepCount", () => {
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Hi there", ts: 2 },
-		]
+	it("should extract multiple command blocks", () => {
+		const message: ApiMessage = {
+			role: "user",
+			content: '<command name="prr">/prr #123</command> text <command name="mode">/mode code</command>',
+		}
 
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		expect(result.keepMessages).toEqual(messages)
-		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
+		const result = extractCommandBlocks(message)
+		expect(result).toBe('<command name="prr">/prr #123</command>\n<command name="mode">/mode code</command>')
 	})
 
-	it("should preserve tool_use blocks when first kept message has tool_result blocks", () => {
-		const toolUseBlock = {
-			type: "tool_use" as const,
-			id: "toolu_123",
-			name: "read_file",
-			input: { path: "test.txt" },
-		}
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_123",
-			content: "file contents",
+	it("should extract command blocks from array content", () => {
+		const message: ApiMessage = {
+			role: "user",
+			content: [
+				{ type: "text", text: "Some user text" },
+				{ type: "text", text: '<command name="prr">Help content</command>' },
+			],
 		}
 
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Let me read that file", ts: 2 },
-			{ role: "user", content: "Please continue", ts: 3 },
-			{
-				role: "assistant",
-				content: [{ type: "text" as const, text: "Reading file..." }, toolUseBlock],
-				ts: 4,
-			},
-			{
-				role: "user",
-				content: [toolResultBlock, { type: "text" as const, text: "Continue" }],
-				ts: 5,
-			},
-			{ role: "assistant", content: "Got it, the file says...", ts: 6 },
-			{ role: "user", content: "Thanks", ts: 7 },
-		]
-
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		// keepMessages should be the last 3 messages
-		expect(result.keepMessages).toHaveLength(3)
-		expect(result.keepMessages[0].ts).toBe(5)
-		expect(result.keepMessages[1].ts).toBe(6)
-		expect(result.keepMessages[2].ts).toBe(7)
-
-		// Should preserve the tool_use block from the preceding assistant message
-		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
-		expect(result.toolUseBlocksToPreserve[0]).toEqual(toolUseBlock)
+		const result = extractCommandBlocks(message)
+		expect(result).toBe('<command name="prr">Help content</command>')
 	})
 
-	it("should not preserve tool_use blocks when first kept message is assistant role", () => {
-		const toolUseBlock = {
-			type: "tool_use" as const,
-			id: "toolu_123",
-			name: "read_file",
-			input: { path: "test.txt" },
+	it("should return empty string when no command blocks found", () => {
+		const message: ApiMessage = {
+			role: "user",
+			content: "Just regular text without commands",
 		}
 
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Hi there", ts: 2 },
-			{ role: "user", content: "Please read", ts: 3 },
-			{
-				role: "assistant",
-				content: [{ type: "text" as const, text: "Reading..." }, toolUseBlock],
-				ts: 4,
-			},
-			{ role: "user", content: "Continue", ts: 5 },
-			{ role: "assistant", content: "Done", ts: 6 },
-		]
-
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		// First kept message is assistant, not user with tool_result
-		expect(result.keepMessages).toHaveLength(3)
-		expect(result.keepMessages[0].role).toBe("assistant")
-		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
+		const result = extractCommandBlocks(message)
+		expect(result).toBe("")
 	})
 
-	it("should not preserve tool_use blocks when first kept user message has string content", () => {
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Hi there", ts: 2 },
-			{ role: "user", content: "How are you?", ts: 3 },
-			{ role: "assistant", content: "Good", ts: 4 },
-			{ role: "user", content: "Simple text message", ts: 5 }, // String content, not array
-			{ role: "assistant", content: "Response", ts: 6 },
-			{ role: "user", content: "More text", ts: 7 },
-		]
+	it("should handle multiline command blocks", () => {
+		const message: ApiMessage = {
+			role: "user",
+			content: `<command name="prr">
+Line 1
+Line 2
+</command>`,
+		}
 
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		expect(result.keepMessages).toHaveLength(3)
-		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
+		const result = extractCommandBlocks(message)
+		expect(result).toContain("Line 1")
+		expect(result).toContain("Line 2")
 	})
 
-	it("should handle multiple tool_use blocks that need to be preserved", () => {
-		const toolUseBlock1 = {
-			type: "tool_use" as const,
-			id: "toolu_123",
-			name: "read_file",
-			input: { path: "file1.txt" },
-		}
-		const toolUseBlock2 = {
-			type: "tool_use" as const,
-			id: "toolu_456",
-			name: "read_file",
-			input: { path: "file2.txt" },
-		}
-		const toolResultBlock1 = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_123",
-			content: "contents 1",
-		}
-		const toolResultBlock2 = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_456",
-			content: "contents 2",
+	it("should handle command blocks with attributes", () => {
+		const message: ApiMessage = {
+			role: "user",
+			content: '<command name="test" attr1="value1" attr2="value2">content</command>',
 		}
 
+		const result = extractCommandBlocks(message)
+		expect(result).toContain('name="test"')
+		expect(result).toContain('attr1="value1"')
+	})
+})
+
+describe("injectSyntheticToolResults", () => {
+	it("should return messages unchanged when no orphan tool_calls exist", () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{
 				role: "assistant",
-				content: [{ type: "text" as const, text: "Reading files..." }, toolUseBlock1, toolUseBlock2],
+				content: [{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "test.ts" } }],
 				ts: 2,
 			},
 			{
 				role: "user",
-				content: [toolResultBlock1, toolResultBlock2],
+				content: [{ type: "tool_result", tool_use_id: "tool-1", content: "file contents" }],
 				ts: 3,
 			},
-			{ role: "assistant", content: "Got both files", ts: 4 },
-			{ role: "user", content: "Thanks", ts: 5 },
 		]
 
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		// Should preserve both tool_use blocks
-		expect(result.toolUseBlocksToPreserve).toHaveLength(2)
-		expect(result.toolUseBlocksToPreserve).toContainEqual(toolUseBlock1)
-		expect(result.toolUseBlocksToPreserve).toContainEqual(toolUseBlock2)
+		const result = injectSyntheticToolResults(messages)
+		expect(result).toEqual(messages)
 	})
 
-	it("should not preserve tool_use blocks when preceding message has no tool_use blocks", () => {
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_123",
-			content: "file contents",
-		}
-
+	it("should inject synthetic tool_result for orphan tool_call", () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Plain text response", ts: 2 }, // No tool_use blocks
-			{
-				role: "user",
-				content: [toolResultBlock], // Has tool_result but preceding message has no tool_use
-				ts: 3,
-			},
-			{ role: "assistant", content: "Response", ts: 4 },
-			{ role: "user", content: "Thanks", ts: 5 },
-		]
-
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		expect(result.keepMessages).toHaveLength(3)
-		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
-	})
-
-	it("should handle edge case when startIndex - 1 is negative", () => {
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_123",
-			content: "file contents",
-		}
-
-		// Only 3 messages total, so startIndex = 0 and precedingIndex would be -1
-		const messages: ApiMessage[] = [
-			{
-				role: "user",
-				content: [toolResultBlock],
-				ts: 1,
-			},
-			{ role: "assistant", content: "Response", ts: 2 },
-			{ role: "user", content: "Thanks", ts: 3 },
-		]
-
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		expect(result.keepMessages).toEqual(messages)
-		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
-	})
-
-	it("should preserve reasoning blocks alongside tool_use blocks for DeepSeek/Z.ai interleaved thinking", () => {
-		const reasoningBlock = {
-			type: "reasoning" as const,
-			text: "Let me think about this step by step...",
-		}
-		const toolUseBlock = {
-			type: "tool_use" as const,
-			id: "toolu_deepseek_123",
-			name: "read_file",
-			input: { path: "test.txt" },
-		}
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_deepseek_123",
-			content: "file contents",
-		}
-
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Let me help", ts: 2 },
-			{ role: "user", content: "Please read the file", ts: 3 },
-			{
-				role: "assistant",
-				// DeepSeek stores reasoning as content blocks alongside tool_use
-				content: [reasoningBlock as any, { type: "text" as const, text: "Reading file..." }, toolUseBlock],
-				ts: 4,
-			},
-			{
-				role: "user",
-				content: [toolResultBlock, { type: "text" as const, text: "Continue" }],
-				ts: 5,
-			},
-			{ role: "assistant", content: "Got it, the file says...", ts: 6 },
-			{ role: "user", content: "Thanks", ts: 7 },
-		]
-
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		// keepMessages should be the last 3 messages
-		expect(result.keepMessages).toHaveLength(3)
-		expect(result.keepMessages[0].ts).toBe(5)
-
-		// Should preserve the tool_use block
-		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
-		expect(result.toolUseBlocksToPreserve[0]).toEqual(toolUseBlock)
-
-		// Should preserve the reasoning block for DeepSeek/Z.ai interleaved thinking
-		expect(result.reasoningBlocksToPreserve).toHaveLength(1)
-		expect((result.reasoningBlocksToPreserve[0] as any).type).toBe("reasoning")
-		expect((result.reasoningBlocksToPreserve[0] as any).text).toBe("Let me think about this step by step...")
-	})
-
-	it("should return empty reasoningBlocksToPreserve when no reasoning blocks present", () => {
-		const toolUseBlock = {
-			type: "tool_use" as const,
-			id: "toolu_123",
-			name: "read_file",
-			input: { path: "test.txt" },
-		}
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_123",
-			content: "file contents",
-		}
-
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{
-				role: "assistant",
-				// No reasoning block, just text and tool_use
-				content: [{ type: "text" as const, text: "Reading file..." }, toolUseBlock],
-				ts: 2,
-			},
-			{
-				role: "user",
-				content: [toolResultBlock],
-				ts: 3,
-			},
-			{ role: "assistant", content: "Done", ts: 4 },
-			{ role: "user", content: "Thanks", ts: 5 },
-		]
-
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
-		expect(result.reasoningBlocksToPreserve).toHaveLength(0)
-	})
-
-	it("should preserve tool_use when tool_result is in 2nd kept message and tool_use is 2 messages before boundary", () => {
-		const toolUseBlock = {
-			type: "tool_use" as const,
-			id: "toolu_second_kept",
-			name: "read_file",
-			input: { path: "test.txt" },
-		}
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_second_kept",
-			content: "file contents",
-		}
-
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Let me help", ts: 2 },
-			{
-				role: "assistant",
-				content: [{ type: "text" as const, text: "Reading file..." }, toolUseBlock],
-				ts: 3,
-			},
-			{ role: "user", content: "Some other message", ts: 4 },
-			{ role: "assistant", content: "First kept message", ts: 5 },
-			{
-				role: "user",
-				content: [toolResultBlock, { type: "text" as const, text: "Continue" }],
-				ts: 6,
-			},
-			{ role: "assistant", content: "Third kept message", ts: 7 },
-		]
-
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		// keepMessages should be the last 3 messages (ts: 5, 6, 7)
-		expect(result.keepMessages).toHaveLength(3)
-		expect(result.keepMessages[0].ts).toBe(5)
-		expect(result.keepMessages[1].ts).toBe(6)
-		expect(result.keepMessages[2].ts).toBe(7)
-
-		// Should preserve the tool_use block from message at ts:3 (2 messages before boundary)
-		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
-		expect(result.toolUseBlocksToPreserve[0]).toEqual(toolUseBlock)
-	})
-
-	it("should preserve tool_use when tool_result is in 3rd kept message and tool_use is at boundary edge", () => {
-		const toolUseBlock = {
-			type: "tool_use" as const,
-			id: "toolu_third_kept",
-			name: "search",
-			input: { query: "test" },
-		}
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_third_kept",
-			content: "search results",
-		}
-
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Start", ts: 1 },
-			{
-				role: "assistant",
-				content: [{ type: "text" as const, text: "Searching..." }, toolUseBlock],
-				ts: 2,
-			},
-			{ role: "user", content: "First kept message", ts: 3 },
-			{ role: "assistant", content: "Second kept message", ts: 4 },
-			{
-				role: "user",
-				content: [toolResultBlock, { type: "text" as const, text: "Done" }],
-				ts: 5,
-			},
-		]
-
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		// keepMessages should be the last 3 messages (ts: 3, 4, 5)
-		expect(result.keepMessages).toHaveLength(3)
-		expect(result.keepMessages[0].ts).toBe(3)
-		expect(result.keepMessages[1].ts).toBe(4)
-		expect(result.keepMessages[2].ts).toBe(5)
-
-		// Should preserve the tool_use block from message at ts:2 (at the search boundary edge)
-		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
-		expect(result.toolUseBlocksToPreserve[0]).toEqual(toolUseBlock)
-	})
-
-	it("should preserve multiple tool_uses when tool_results are in different kept messages", () => {
-		const toolUseBlock1 = {
-			type: "tool_use" as const,
-			id: "toolu_multi_1",
-			name: "read_file",
-			input: { path: "file1.txt" },
-		}
-		const toolUseBlock2 = {
-			type: "tool_use" as const,
-			id: "toolu_multi_2",
-			name: "read_file",
-			input: { path: "file2.txt" },
-		}
-		const toolResultBlock1 = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_multi_1",
-			content: "contents 1",
-		}
-		const toolResultBlock2 = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_multi_2",
-			content: "contents 2",
-		}
-
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Start", ts: 1 },
-			{
-				role: "assistant",
-				content: [{ type: "text" as const, text: "Reading file 1..." }, toolUseBlock1],
-				ts: 2,
-			},
-			{ role: "user", content: "Some message", ts: 3 },
-			{
-				role: "assistant",
-				content: [{ type: "text" as const, text: "Reading file 2..." }, toolUseBlock2],
-				ts: 4,
-			},
-			{
-				role: "user",
-				content: [toolResultBlock1, { type: "text" as const, text: "First result" }],
-				ts: 5,
-			},
-			{
-				role: "user",
-				content: [toolResultBlock2, { type: "text" as const, text: "Second result" }],
-				ts: 6,
-			},
-			{ role: "assistant", content: "Got both files", ts: 7 },
-		]
-
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		// keepMessages should be the last 3 messages (ts: 5, 6, 7)
-		expect(result.keepMessages).toHaveLength(3)
-
-		// Should preserve both tool_use blocks
-		expect(result.toolUseBlocksToPreserve).toHaveLength(2)
-		expect(result.toolUseBlocksToPreserve).toContainEqual(toolUseBlock1)
-		expect(result.toolUseBlocksToPreserve).toContainEqual(toolUseBlock2)
-	})
-
-	it("should not crash when tool_result references tool_use beyond search boundary", () => {
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_beyond_boundary",
-			content: "result",
-		}
-
-		// Tool_use is at ts:1, but with N_MESSAGES_TO_KEEP=3, we only search back 3 messages
-		// from startIndex-1. StartIndex is 7 (messages.length=10, keepCount=3, startIndex=7).
-		// So we search from index 6 down to index 4 (7-1 down to 7-3).
-		// The tool_use at index 0 (ts:1) is beyond the search boundary.
-		const messages: ApiMessage[] = [
 			{
 				role: "assistant",
 				content: [
-					{ type: "text" as const, text: "Way back..." },
-					{
-						type: "tool_use" as const,
-						id: "toolu_beyond_boundary",
-						name: "old_tool",
-						input: {},
-					},
+					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
 				],
-				ts: 1,
+				ts: 2,
 			},
-			{ role: "user", content: "Message 2", ts: 2 },
-			{ role: "assistant", content: "Message 3", ts: 3 },
-			{ role: "user", content: "Message 4", ts: 4 },
-			{ role: "assistant", content: "Message 5", ts: 5 },
-			{ role: "user", content: "Message 6", ts: 6 },
-			{ role: "assistant", content: "Message 7", ts: 7 },
-			{
-				role: "user",
-				content: [toolResultBlock],
-				ts: 8,
-			},
-			{ role: "assistant", content: "Message 9", ts: 9 },
-			{ role: "user", content: "Message 10", ts: 10 },
+			// No tool_result for tool-orphan
 		]
 
-		// Should not crash
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
+		const result = injectSyntheticToolResults(messages)
 
-		// keepMessages should be the last 3 messages
-		expect(result.keepMessages).toHaveLength(3)
-		expect(result.keepMessages[0].ts).toBe(8)
-		expect(result.keepMessages[1].ts).toBe(9)
-		expect(result.keepMessages[2].ts).toBe(10)
+		expect(result.length).toBe(3)
+		expect(result[2].role).toBe("user")
 
-		// Should not preserve the tool_use since it's beyond the search boundary
-		expect(result.toolUseBlocksToPreserve).toHaveLength(0)
+		const content = result[2].content as any[]
+		expect(content.length).toBe(1)
+		expect(content[0].type).toBe("tool_result")
+		expect(content[0].tool_use_id).toBe("tool-orphan")
+		expect(content[0].content).toBe("Context condensation triggered. Tool execution deferred.")
 	})
 
-	it("should not duplicate tool_use blocks when same tool_result ID appears multiple times", () => {
-		const toolUseBlock = {
-			type: "tool_use" as const,
-			id: "toolu_duplicate",
-			name: "read_file",
-			input: { path: "test.txt" },
-		}
-		const toolResultBlock1 = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_duplicate",
-			content: "result 1",
-		}
-		const toolResultBlock2 = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_duplicate",
-			content: "result 2",
-		}
-
+	it("should inject synthetic tool_results for multiple orphan tool_calls", () => {
 		const messages: ApiMessage[] = [
-			{ role: "user", content: "Start", ts: 1 },
+			{ role: "user", content: "Hello", ts: 1 },
 			{
 				role: "assistant",
-				content: [{ type: "text" as const, text: "Using tool..." }, toolUseBlock],
+				content: [
+					{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "test.ts" } },
+					{ type: "tool_use", id: "tool-2", name: "write_file", input: { path: "out.ts", content: "code" } },
+				],
+				ts: 2,
+			},
+			// No tool_results for either
+		]
+
+		const result = injectSyntheticToolResults(messages)
+
+		expect(result.length).toBe(3)
+		const content = result[2].content as any[]
+		expect(content.length).toBe(2)
+		expect(content[0].tool_use_id).toBe("tool-1")
+		expect(content[1].tool_use_id).toBe("tool-2")
+	})
+
+	it("should only inject for orphan tool_calls, not matched ones", () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "matched-tool", name: "read_file", input: { path: "test.ts" } },
+					{ type: "tool_use", id: "orphan-tool", name: "attempt_completion", input: { result: "Done" } },
+				],
 				ts: 2,
 			},
 			{
 				role: "user",
-				content: [toolResultBlock1],
+				content: [{ type: "tool_result", tool_use_id: "matched-tool", content: "file contents" }],
 				ts: 3,
 			},
-			{ role: "assistant", content: "Processing", ts: 4 },
+			// No tool_result for orphan-tool
+		]
+
+		const result = injectSyntheticToolResults(messages)
+
+		expect(result.length).toBe(4)
+		const syntheticContent = result[3].content as any[]
+		expect(syntheticContent.length).toBe(1)
+		expect(syntheticContent[0].tool_use_id).toBe("orphan-tool")
+	})
+
+	it("should handle messages with string content (no tool_use/tool_result)", () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{ role: "assistant", content: "Hi there!", ts: 2 },
+		]
+
+		const result = injectSyntheticToolResults(messages)
+		expect(result).toEqual(messages)
+	})
+
+	it("should handle empty messages array", () => {
+		const result = injectSyntheticToolResults([])
+		expect(result).toEqual([])
+	})
+
+	it("should handle tool_results spread across multiple user messages", () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "a.ts" } },
+					{ type: "tool_use", id: "tool-2", name: "read_file", input: { path: "b.ts" } },
+				],
+				ts: 2,
+			},
 			{
 				role: "user",
-				content: [toolResultBlock2], // Same tool_use_id as first result
-				ts: 5,
+				content: [{ type: "tool_result", tool_use_id: "tool-1", content: "contents a" }],
+				ts: 3,
+			},
+			{
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-2", content: "contents b" }],
+				ts: 4,
 			},
 		]
 
-		const result = getKeepMessagesWithToolBlocks(messages, 3)
-
-		// keepMessages should be the last 3 messages (ts: 3, 4, 5)
-		expect(result.keepMessages).toHaveLength(3)
-
-		// Should only preserve the tool_use block once, not twice
-		expect(result.toolUseBlocksToPreserve).toHaveLength(1)
-		expect(result.toolUseBlocksToPreserve[0]).toEqual(toolUseBlock)
+		const result = injectSyntheticToolResults(messages)
+		// Both tool_uses have matching tool_results, no injection needed
+		expect(result).toEqual(messages)
 	})
 })
 
@@ -596,7 +252,7 @@ describe("getMessagesSinceLastSummary", () => {
 		expect(result).toEqual(messages)
 	})
 
-	it("should return messages since the last summary with original first user message", () => {
+	it("should return messages since the last summary (preserves original first user message when needed)", () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
@@ -614,7 +270,7 @@ describe("getMessagesSinceLastSummary", () => {
 		])
 	})
 
-	it("should handle multiple summary messages and return since the last one with original first user message", () => {
+	it("should handle multiple summary messages and return since the last one", () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "First summary", ts: 2, isSummary: true },
@@ -634,6 +290,383 @@ describe("getMessagesSinceLastSummary", () => {
 	it("should handle empty messages array", () => {
 		const result = getMessagesSinceLastSummary([])
 		expect(result).toEqual([])
+	})
+
+	it("should return messages from user summary (fresh start model)", () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1, condenseParent: "cond-1" },
+			{ role: "assistant", content: "Hi there", ts: 2, condenseParent: "cond-1" },
+			{ role: "user", content: "Summary content", ts: 3, isSummary: true, condenseId: "cond-1" },
+			{ role: "assistant", content: "Response after summary", ts: 4 },
+		]
+
+		const result = getMessagesSinceLastSummary(messages)
+		expect(result[0].isSummary).toBe(true)
+		expect(result[0].role).toBe("user")
+	})
+})
+
+describe("getEffectiveApiHistory", () => {
+	it("should return only summary when summary exists (fresh start model)", () => {
+		const condenseId = "test-condense-id"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First", condenseParent: condenseId },
+			{ role: "assistant", content: "Second", condenseParent: condenseId },
+			{ role: "user", content: "Third", condenseParent: condenseId },
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary content" }],
+				isSummary: true,
+				condenseId,
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		expect(result).toHaveLength(1)
+		expect(result[0].isSummary).toBe(true)
+	})
+
+	it("should include messages after summary in fresh start model", () => {
+		const condenseId = "test-condense-id"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First", condenseParent: condenseId },
+			{ role: "assistant", content: "Second", condenseParent: condenseId },
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary content" }],
+				isSummary: true,
+				condenseId,
+			},
+			{ role: "assistant", content: "New response after summary" },
+			{ role: "user", content: "New user message" },
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		expect(result).toHaveLength(3)
+		expect(result[0].isSummary).toBe(true)
+		expect(result[1].content).toBe("New response after summary")
+		expect(result[2].content).toBe("New user message")
+	})
+
+	it("should return all messages when no summary exists", () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First" },
+			{ role: "assistant", content: "Second" },
+			{ role: "user", content: "Third" },
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		expect(result).toEqual(messages)
+	})
+
+	it("should restore messages when summary is deleted (rewind - orphaned condenseParent)", () => {
+		const orphanedCondenseId = "deleted-summary-id"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First", condenseParent: orphanedCondenseId },
+			{ role: "assistant", content: "Second", condenseParent: orphanedCondenseId },
+			{ role: "user", content: "Third", condenseParent: orphanedCondenseId },
+			// Summary was deleted - no isSummary message exists
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		// With no summary, all messages should be included (orphaned condenseParent is ignored)
+		expect(result).toHaveLength(3)
+	})
+
+	it("should filter out truncated messages within summary range", () => {
+		const condenseId = "cond-1"
+		const truncationId = "trunc-1"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First", condenseParent: condenseId },
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary" }],
+				isSummary: true,
+				condenseId,
+			},
+			{ role: "assistant", content: "Response", truncationParent: truncationId },
+			{
+				role: "assistant",
+				content: [{ type: "text", text: "..." }],
+				isTruncationMarker: true,
+				truncationId,
+			},
+			{ role: "user", content: "After truncation" },
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		// Summary + truncation marker + after truncation (the truncated response is filtered out)
+		expect(result).toHaveLength(3)
+		expect(result[0].isSummary).toBe(true)
+		expect(result[1].isTruncationMarker).toBe(true)
+		expect(result[2].content).toBe("After truncation")
+	})
+
+	it("should filter out orphan tool_result blocks after fresh start condensation", () => {
+		const condenseId = "cond-1"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", condenseParent: condenseId },
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+				],
+				condenseParent: condenseId,
+			},
+			// Summary comes after the tool_use (so tool_use is condensed away)
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary content" }],
+				isSummary: true,
+				condenseId,
+			},
+			// This tool_result references a tool_use that was condensed away (orphan!)
+			{
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-orphan", content: "Rejected by user" }],
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		// Should only return the summary, orphan tool_result message should be filtered out
+		expect(result).toHaveLength(1)
+		expect(result[0].isSummary).toBe(true)
+	})
+
+	it("should keep tool_result blocks that have matching tool_use in fresh start", () => {
+		const condenseId = "cond-1"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", condenseParent: condenseId },
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary content" }],
+				isSummary: true,
+				condenseId,
+			},
+			// This tool_use is AFTER the summary, so it's not condensed away
+			{
+				role: "assistant",
+				content: [{ type: "tool_use", id: "tool-valid", name: "read_file", input: { path: "test.ts" } }],
+			},
+			// This tool_result has a matching tool_use, so it should be kept
+			{
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-valid", content: "file contents" }],
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		// All messages after summary should be included
+		expect(result).toHaveLength(3)
+		expect(result[0].isSummary).toBe(true)
+		expect((result[1].content as any[])[0].id).toBe("tool-valid")
+		expect((result[2].content as any[])[0].tool_use_id).toBe("tool-valid")
+	})
+
+	it("should filter orphan tool_results but keep other content in mixed user message", () => {
+		const condenseId = "cond-1"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", condenseParent: condenseId },
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+				],
+				condenseParent: condenseId,
+			},
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary content" }],
+				isSummary: true,
+				condenseId,
+			},
+			// This tool_use is AFTER the summary
+			{
+				role: "assistant",
+				content: [{ type: "tool_use", id: "tool-valid", name: "read_file", input: { path: "test.ts" } }],
+			},
+			// Mixed content: one orphan tool_result and one valid tool_result
+			{
+				role: "user",
+				content: [
+					{ type: "tool_result", tool_use_id: "tool-orphan", content: "Orphan result" },
+					{ type: "tool_result", tool_use_id: "tool-valid", content: "Valid result" },
+				],
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		// Summary + assistant with tool_use + filtered user message
+		expect(result).toHaveLength(3)
+		expect(result[0].isSummary).toBe(true)
+		// The user message should only contain the valid tool_result
+		const userContent = result[2].content as any[]
+		expect(userContent).toHaveLength(1)
+		expect(userContent[0].tool_use_id).toBe("tool-valid")
+	})
+
+	it("should handle multiple orphan tool_results in a single message", () => {
+		const condenseId = "cond-1"
+		const messages: ApiMessage[] = [
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "orphan-1", name: "read_file", input: { path: "a.ts" } },
+					{ type: "tool_use", id: "orphan-2", name: "write_file", input: { path: "b.ts", content: "code" } },
+				],
+				condenseParent: condenseId,
+			},
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary content" }],
+				isSummary: true,
+				condenseId,
+			},
+			// Multiple orphan tool_results - entire message should be removed
+			{
+				role: "user",
+				content: [
+					{ type: "tool_result", tool_use_id: "orphan-1", content: "Result 1" },
+					{ type: "tool_result", tool_use_id: "orphan-2", content: "Result 2" },
+				],
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		// Only summary should remain
+		expect(result).toHaveLength(1)
+		expect(result[0].isSummary).toBe(true)
+	})
+
+	it("should preserve non-tool_result content in user messages", () => {
+		const condenseId = "cond-1"
+		const messages: ApiMessage[] = [
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+				],
+				condenseParent: condenseId,
+			},
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary content" }],
+				isSummary: true,
+				condenseId,
+			},
+			// User message with text content and orphan tool_result
+			{
+				role: "user",
+				content: [
+					{ type: "text", text: "User added some text" },
+					{ type: "tool_result", tool_use_id: "tool-orphan", content: "Orphan result" },
+				],
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		// Summary + user message with only text (orphan tool_result filtered)
+		expect(result).toHaveLength(2)
+		expect(result[0].isSummary).toBe(true)
+		const userContent = result[1].content as any[]
+		expect(userContent).toHaveLength(1)
+		expect(userContent[0].type).toBe("text")
+		expect(userContent[0].text).toBe("User added some text")
+	})
+})
+
+describe("cleanupAfterTruncation", () => {
+	it("should clear orphaned condenseParent references", () => {
+		const orphanedCondenseId = "deleted-summary"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First", condenseParent: orphanedCondenseId },
+			{ role: "assistant", content: "Second", condenseParent: orphanedCondenseId },
+			{ role: "user", content: "Third" },
+		]
+
+		const result = cleanupAfterTruncation(messages)
+
+		expect(result[0].condenseParent).toBeUndefined()
+		expect(result[1].condenseParent).toBeUndefined()
+		expect(result[2].condenseParent).toBeUndefined()
+	})
+
+	it("should keep condenseParent when summary still exists", () => {
+		const condenseId = "existing-summary"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First", condenseParent: condenseId },
+			{ role: "assistant", content: "Second", condenseParent: condenseId },
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary" }],
+				isSummary: true,
+				condenseId,
+			},
+		]
+
+		const result = cleanupAfterTruncation(messages)
+
+		expect(result[0].condenseParent).toBe(condenseId)
+		expect(result[1].condenseParent).toBe(condenseId)
+	})
+
+	it("should clear orphaned truncationParent references", () => {
+		const orphanedTruncationId = "deleted-truncation"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First", truncationParent: orphanedTruncationId },
+			{ role: "assistant", content: "Second" },
+		]
+
+		const result = cleanupAfterTruncation(messages)
+
+		expect(result[0].truncationParent).toBeUndefined()
+	})
+
+	it("should keep truncationParent when marker still exists", () => {
+		const truncationId = "existing-truncation"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First", truncationParent: truncationId },
+			{
+				role: "assistant",
+				content: [{ type: "text", text: "..." }],
+				isTruncationMarker: true,
+				truncationId,
+			},
+		]
+
+		const result = cleanupAfterTruncation(messages)
+
+		expect(result[0].truncationParent).toBe(truncationId)
+	})
+
+	it("should handle mixed orphaned and valid references", () => {
+		const validCondenseId = "valid-cond"
+		const orphanedCondenseId = "orphaned-cond"
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "First", condenseParent: orphanedCondenseId },
+			{ role: "assistant", content: "Second", condenseParent: validCondenseId },
+			{
+				role: "user",
+				content: [{ type: "text", text: "Summary" }],
+				isSummary: true,
+				condenseId: validCondenseId,
+			},
+		]
+
+		const result = cleanupAfterTruncation(messages)
+
+		expect(result[0].condenseParent).toBeUndefined() // orphaned, cleared
+		expect(result[1].condenseParent).toBe(validCondenseId) // valid, kept
 	})
 })
 
@@ -677,18 +710,9 @@ describe("summarizeConversation", () => {
 	const defaultSystemPrompt = "You are a helpful assistant."
 
 	it("should not summarize when there are not enough messages", async () => {
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Hi there", ts: 2 },
-		]
+		const messages: ApiMessage[] = [{ role: "user", content: "Hello", ts: 1 }]
 
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
+		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
 		expect(result.messages).toEqual(messages)
 		expect(result.cost).toBe(0)
 		expect(result.summary).toBe("")
@@ -697,33 +721,7 @@ describe("summarizeConversation", () => {
 		expect(mockApiHandler.createMessage).not.toHaveBeenCalled()
 	})
 
-	it("should not summarize when there was a recent summary", async () => {
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Hi there", ts: 2 },
-			{ role: "user", content: "How are you?", ts: 3 },
-			{ role: "assistant", content: "I'm good", ts: 4 },
-			{ role: "user", content: "What's new?", ts: 5 },
-			{ role: "assistant", content: "Not much", ts: 6, isSummary: true }, // Recent summary
-			{ role: "user", content: "Tell me more", ts: 7 },
-		]
-
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
-		expect(result.messages).toEqual(messages)
-		expect(result.cost).toBe(0)
-		expect(result.summary).toBe("")
-		expect(result.newContextTokens).toBeUndefined()
-		expect(result.error).toBeTruthy() // Error should be set for recent summary
-		expect(mockApiHandler.createMessage).not.toHaveBeenCalled()
-	})
-
-	it("should summarize conversation and insert summary message", async () => {
+	it("should create summary with user role (fresh start model)", async () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
@@ -734,53 +732,91 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Tell me more", ts: 7 },
 		]
 
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
+		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
 
 		// Check that the API was called correctly
 		expect(mockApiHandler.createMessage).toHaveBeenCalled()
 		expect(maybeRemoveImageBlocks).toHaveBeenCalled()
 
-		// With non-destructive condensing, the result contains ALL original messages
-		// plus the summary message. Condensed messages are tagged but not deleted.
-		// Use getEffectiveApiHistory to verify the effective API view matches the old behavior.
-		expect(result.messages.length).toBe(messages.length + 1) // All original messages + summary
+		// Result contains all original messages (tagged) plus summary at end
+		expect(result.messages.length).toBe(messages.length + 1)
 
-		// Check that the first message is preserved
-		expect(result.messages[0]).toEqual(messages[0])
-
-		// Find the summary message (it has isSummary: true)
+		// All original messages should be tagged with condenseParent
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
-		expect(summaryMessage!.role).toBe("assistant")
-		// Summary content is now always an array with [synthetic reasoning, text]
-		// for DeepSeek-reasoner compatibility (requires reasoning_content on all assistant messages)
+		const condenseId = summaryMessage!.condenseId
+		expect(condenseId).toBeDefined()
+		for (const msg of result.messages.filter((m) => !m.isSummary)) {
+			expect(msg.condenseParent).toBe(condenseId)
+		}
+
+		// Summary message is a user message with just text (fresh start model)
+		expect(summaryMessage!.role).toBe("user")
 		expect(Array.isArray(summaryMessage!.content)).toBe(true)
 		const content = summaryMessage!.content as any[]
-		expect(content).toHaveLength(2)
-		expect(content[0].type).toBe("reasoning")
-		expect(content[1].type).toBe("text")
-		expect(content[1].text).toBe("This is a summary")
-		expect(summaryMessage!.isSummary).toBe(true)
+		expect(content).toHaveLength(1)
+		expect(content[0].type).toBe("text")
+		expect(content[0].text).toContain("## Conversation Summary")
+		expect(content[0].text).toContain("This is a summary")
 
-		// Verify that the effective API history matches expected: first + summary + last N messages
+		// Fresh start: effective API history should contain only the summary
 		const effectiveHistory = getEffectiveApiHistory(result.messages)
-		expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
-
-		// Check that condensed messages are properly tagged
-		const condensedMessages = result.messages.filter((m) => m.condenseParent !== undefined)
-		expect(condensedMessages.length).toBeGreaterThan(0)
+		expect(effectiveHistory).toHaveLength(1)
+		expect(effectiveHistory[0].isSummary).toBe(true)
+		expect(effectiveHistory[0].role).toBe("user")
 
 		// Check the cost and token counts
 		expect(result.cost).toBe(0.05)
 		expect(result.summary).toBe("This is a summary")
-		expect(result.newContextTokens).toBe(250) // 150 output tokens + 100 from countTokens
+		// newContextTokens = countTokens(systemPrompt + summaryMessage) - counts actual content, not outputTokens
+		expect(result.newContextTokens).toBe(100) // countTokens mock returns 100
 		expect(result.error).toBeUndefined()
+	})
+
+	it("should preserve command blocks from first message in summary", async () => {
+		const messages: ApiMessage[] = [
+			{
+				role: "user",
+				content: 'Hello <command name="prr">/prr #123</command>',
+				ts: 1,
+			},
+			{ role: "assistant", content: "Hi there", ts: 2 },
+			{ role: "user", content: "How are you?", ts: 3 },
+			{ role: "assistant", content: "I'm good", ts: 4 },
+			{ role: "user", content: "What's new?", ts: 5 },
+		]
+
+		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+
+		const summaryMessage = result.messages.find((m) => m.isSummary)
+		expect(summaryMessage).toBeDefined()
+
+		const content = summaryMessage!.content as any[]
+		// Summary content is now split into separate text blocks
+		expect(content).toHaveLength(2)
+		expect(content[0].text).toContain("## Conversation Summary")
+		expect(content[1].text).toContain("<system-reminder>")
+		expect(content[1].text).toContain("Active Workflows")
+		expect(content[1].text).toContain('<command name="prr">')
+	})
+
+	it("should not include command blocks wrapper when no commands in first message", async () => {
+		const messages: ApiMessage[] = [
+			{ role: "user", content: "Hello", ts: 1 },
+			{ role: "assistant", content: "Hi there", ts: 2 },
+			{ role: "user", content: "How are you?", ts: 3 },
+			{ role: "assistant", content: "I'm good", ts: 4 },
+			{ role: "user", content: "What's new?", ts: 5 },
+		]
+
+		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+
+		const summaryMessage = result.messages.find((m) => m.isSummary)
+		expect(summaryMessage).toBeDefined()
+
+		const content = summaryMessage!.content as any[]
+		expect(content[0].text).not.toContain("<system-reminder>")
+		expect(content[0].text).not.toContain("Active Workflows")
 	})
 
 	it("should handle empty summary response and return error", async () => {
@@ -810,13 +846,7 @@ describe("summarizeConversation", () => {
 			return messages.map(({ role, content }: { role: string; content: any }) => ({ role, content }))
 		})
 
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
+		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
 
 		// Should return original messages when summary is empty
 		expect(result.messages).toEqual(messages)
@@ -837,24 +867,27 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Tell me more", ts: 7 },
 		]
 
-		await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId, DEFAULT_PREV_CONTEXT_TOKENS)
+		await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
 
-		// Verify the final request message
-		const expectedFinalMessage = {
-			role: "user",
-			content: "Summarize the conversation so far, as described in the prompt instructions.",
-		}
-
-		// Verify that createMessage was called with the correct prompt
+		// Verify that createMessage was called with the SUMMARY_PROMPT (which contains CRITICAL instructions), messages array, and optional metadata
 		expect(mockApiHandler.createMessage).toHaveBeenCalledWith(
-			expect.stringContaining("Your task is to create a detailed summary of the conversation"),
+			expect.stringContaining("You are a helpful AI assistant tasked with summarizing conversations."),
 			expect.any(Array),
+			undefined, // metadata is undefined when not passed to summarizeConversation
 		)
+		// Verify the CRITICAL instructions are included in the prompt
+		const actualPrompt = (mockApiHandler.createMessage as Mock).mock.calls[0][0]
+		expect(actualPrompt).toContain("CRITICAL: This is a summarization-only request")
+		expect(actualPrompt).toContain("CRITICAL: This summarization request is a SYSTEM OPERATION")
 
 		// Check that maybeRemoveImageBlocks was called with the correct messages
+		// The final request message now contains the detailed CONDENSE instructions
 		const mockCallArgs = (maybeRemoveImageBlocks as Mock).mock.calls[0][0] as any[]
-		expect(mockCallArgs[mockCallArgs.length - 1]).toEqual(expectedFinalMessage)
+		const finalMessage = mockCallArgs[mockCallArgs.length - 1]
+		expect(finalMessage.role).toBe("user")
+		expect(finalMessage.content).toContain("Your task is to create a detailed summary of the conversation")
 	})
+
 	it("should include the original first user message in summarization input", async () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Initial ask", ts: 1 },
@@ -866,7 +899,7 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Newest", ts: 7 },
 		]
 
-		await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId, DEFAULT_PREV_CONTEXT_TOKENS)
+		await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
 
 		const mockCallArgs = (maybeRemoveImageBlocks as Mock).mock.calls[0][0] as any[]
 
@@ -904,66 +937,19 @@ describe("summarizeConversation", () => {
 		// Override the mock for this test
 		mockApiHandler.createMessage = vi.fn().mockReturnValue(streamWithUsage) as any
 
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			systemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
+		const result = await summarizeConversation(messages, mockApiHandler, systemPrompt, taskId)
 
-		// Verify that countTokens was called with the correct messages including system prompt
+		// Verify that countTokens was called with system prompt + summary message
 		expect(mockApiHandler.countTokens).toHaveBeenCalled()
 
-		// Check the newContextTokens calculation includes system prompt
-		expect(result.newContextTokens).toBe(300) // 200 output tokens + 100 from countTokens
+		// newContextTokens = countTokens(systemPrompt + summaryMessage) - counts actual content
+		expect(result.newContextTokens).toBe(100) // countTokens mock returns 100
 		expect(result.cost).toBe(0.06)
 		expect(result.summary).toBe("This is a summary with system prompt")
 		expect(result.error).toBeUndefined()
 	})
 
-	it("should return error when new context tokens >= previous context tokens", async () => {
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Hi there", ts: 2 },
-			{ role: "user", content: "How are you?", ts: 3 },
-			{ role: "assistant", content: "I'm good", ts: 4 },
-			{ role: "user", content: "What's new?", ts: 5 },
-			{ role: "assistant", content: "Not much", ts: 6 },
-			{ role: "user", content: "Tell me more", ts: 7 },
-		]
-
-		// Create a stream that produces a summary
-		const streamWithLargeTokens = (async function* () {
-			yield { type: "text" as const, text: "This is a very long summary that uses many tokens" }
-			yield { type: "usage" as const, totalCost: 0.08, outputTokens: 500 }
-		})()
-
-		// Override the mock for this test
-		mockApiHandler.createMessage = vi.fn().mockReturnValue(streamWithLargeTokens) as any
-
-		// Mock countTokens to return a high value that when added to outputTokens (500)
-		// will be >= prevContextTokens (600)
-		mockApiHandler.countTokens = vi.fn().mockImplementation(() => Promise.resolve(200)) as any
-
-		const prevContextTokens = 600
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			prevContextTokens,
-		)
-
-		// Should return original messages when context would grow
-		expect(result.messages).toEqual(messages)
-		expect(result.cost).toBe(0.08)
-		expect(result.summary).toBe("")
-		expect(result.error).toBeTruthy() // Error should be set
-		expect(result.newContextTokens).toBeUndefined()
-	})
-
-	it("should successfully summarize when new context tokens < previous context tokens", async () => {
+	it("should successfully summarize conversation", async () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
@@ -983,76 +969,24 @@ describe("summarizeConversation", () => {
 		// Override the mock for this test
 		mockApiHandler.createMessage = vi.fn().mockReturnValue(streamWithSmallTokens) as any
 
-		// Mock countTokens to return a small value so total is < prevContextTokens
+		// Mock countTokens to return a small value
 		mockApiHandler.countTokens = vi.fn().mockImplementation(() => Promise.resolve(30)) as any
 
-		const prevContextTokens = 200
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			prevContextTokens,
-		)
+		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
 
-		// With non-destructive condensing, result contains all messages plus summary
-		// Use getEffectiveApiHistory to verify the effective API view
-		expect(result.messages.length).toBe(messages.length + 1) // All messages + summary
+		// Result contains all messages plus summary
+		expect(result.messages.length).toBe(messages.length + 1)
+
+		// Fresh start: effective history should contain only the summary
 		const effectiveHistory = getEffectiveApiHistory(result.messages)
-		expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // First + summary + last N
+		expect(effectiveHistory.length).toBe(1)
+		expect(effectiveHistory[0].isSummary).toBe(true)
+
 		expect(result.cost).toBe(0.03)
 		expect(result.summary).toBe("Concise summary")
 		expect(result.error).toBeUndefined()
-		expect(result.newContextTokens).toBe(80) // 50 output tokens + 30 from countTokens
-		expect(result.newContextTokens).toBeLessThan(prevContextTokens)
-	})
-
-	it("should return error when not enough messages to summarize", async () => {
-		const messages: ApiMessage[] = [{ role: "user", content: "Hello", ts: 1 }]
-
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
-
-		// Should return original messages when not enough to summarize
-		expect(result.messages).toEqual(messages)
-		expect(result.cost).toBe(0)
-		expect(result.summary).toBe("")
-		expect(result.error).toBeTruthy() // Error should be set
-		expect(result.newContextTokens).toBeUndefined()
-		expect(mockApiHandler.createMessage).not.toHaveBeenCalled()
-	})
-
-	it("should return error when recent summary exists in kept messages", async () => {
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Hi there", ts: 2 },
-			{ role: "user", content: "How are you?", ts: 3 },
-			{ role: "assistant", content: "I'm good", ts: 4 },
-			{ role: "user", content: "What's new?", ts: 5 },
-			{ role: "assistant", content: "Recent summary", ts: 6, isSummary: true }, // Summary in last 3 messages
-			{ role: "user", content: "Tell me more", ts: 7 },
-		]
-
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
-
-		// Should return original messages when recent summary exists
-		expect(result.messages).toEqual(messages)
-		expect(result.cost).toBe(0)
-		expect(result.summary).toBe("")
-		expect(result.error).toBeTruthy() // Error should be set
-		expect(result.newContextTokens).toBeUndefined()
-		expect(mockApiHandler.createMessage).not.toHaveBeenCalled()
+		// newContextTokens = countTokens(systemPrompt + summaryMessage) - counts actual content
+		expect(result.newContextTokens).toBe(30) // countTokens mock returns 30
 	})
 
 	it("should return error when API handler is invalid", async () => {
@@ -1078,13 +1012,7 @@ describe("summarizeConversation", () => {
 		const mockError = vi.fn()
 		console.error = mockError
 
-		const result = await summarizeConversation(
-			messages,
-			invalidHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
+		const result = await summarizeConversation(messages, invalidHandler, defaultSystemPrompt, taskId)
 
 		// Should return original messages when handler is invalid
 		expect(result.messages).toEqual(messages)
@@ -1100,358 +1028,42 @@ describe("summarizeConversation", () => {
 		console.error = originalError
 	})
 
-	it("should append tool_use blocks to summary message when first kept message has tool_result blocks", async () => {
-		const toolUseBlock = {
-			type: "tool_use" as const,
-			id: "toolu_123",
-			name: "read_file",
-			input: { path: "test.txt" },
-		}
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_123",
-			content: "file contents",
-		}
-
+	it("should tag all messages with condenseParent (fresh start model)", async () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Let me read that file", ts: 2 },
-			{ role: "user", content: "Please continue", ts: 3 },
-			{
-				role: "assistant",
-				content: [{ type: "text" as const, text: "Reading file..." }, toolUseBlock],
-				ts: 4,
-			},
-			{
-				role: "user",
-				content: [toolResultBlock, { type: "text" as const, text: "Continue" }],
-				ts: 5,
-			},
-			{ role: "assistant", content: "Got it, the file says...", ts: 6 },
-			{ role: "user", content: "Thanks", ts: 7 },
+			{ role: "assistant", content: "Hi there", ts: 2 },
+			{ role: "user", content: "How are you?", ts: 3 },
+			{ role: "assistant", content: "I'm good", ts: 4 },
+			{ role: "user", content: "Thanks", ts: 5 },
 		]
 
-		// Create a stream with usage information
-		const streamWithUsage = (async function* () {
-			yield { type: "text" as const, text: "Summary of conversation" }
-			yield { type: "usage" as const, totalCost: 0.05, outputTokens: 100 }
-		})()
+		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
 
-		mockApiHandler.createMessage = vi.fn().mockReturnValue(streamWithUsage) as any
-		mockApiHandler.countTokens = vi.fn().mockImplementation(() => Promise.resolve(50)) as any
-
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
-
-		// Find the summary message
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
-		expect(summaryMessage!.role).toBe("assistant")
-		expect(summaryMessage!.isSummary).toBe(true)
-		expect(Array.isArray(summaryMessage!.content)).toBe(true)
+		const condenseId = summaryMessage!.condenseId
 
-		// Content should be [synthetic reasoning, text block, tool_use block]
-		// The synthetic reasoning is always added for DeepSeek-reasoner compatibility
-		const content = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
-		expect(content).toHaveLength(3)
-		expect((content[0] as any).type).toBe("reasoning") // Synthetic reasoning for DeepSeek
-		expect(content[1].type).toBe("text")
-		expect((content[1] as Anthropic.Messages.TextBlockParam).text).toBe("Summary of conversation")
-		expect(content[2].type).toBe("tool_use")
-		expect((content[2] as Anthropic.Messages.ToolUseBlockParam).id).toBe("toolu_123")
-		expect((content[2] as Anthropic.Messages.ToolUseBlockParam).name).toBe("read_file")
-
-		// With non-destructive condensing, all messages are retained plus the summary
-		expect(result.messages.length).toBe(messages.length + 1) // all original + summary
-		// Verify effective history matches expected
-		const effectiveHistory = getEffectiveApiHistory(result.messages)
-		expect(effectiveHistory.length).toBe(1 + 1 + N_MESSAGES_TO_KEEP) // first + summary + last 3
-		expect(result.error).toBeUndefined()
+		// ALL original messages should be tagged (fresh start model tags everything)
+		for (const msg of result.messages.filter((m) => !m.isSummary)) {
+			expect(msg.condenseParent).toBe(condenseId)
+		}
 	})
 
-	it("should include user tool_result message in summarize request when preserving tool_use blocks", async () => {
-		const toolUseBlock = {
-			type: "tool_use" as const,
-			id: "toolu_history_fix",
-			name: "read_file",
-			input: { path: "sample.txt" },
-		}
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_history_fix",
-			content: "file contents",
-		}
-
+	it("should place summary message at end of messages array", async () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Let me help", ts: 2 },
-			{
-				role: "assistant",
-				content: [{ type: "text" as const, text: "Running tool..." }, toolUseBlock],
-				ts: 3,
-			},
-			{
-				role: "user",
-				content: [toolResultBlock, { type: "text" as const, text: "Thanks" }],
-				ts: 4,
-			},
-			{ role: "assistant", content: "Anything else?", ts: 5 },
-			{ role: "user", content: "Nope", ts: 6 },
+			{ role: "assistant", content: "Hi there", ts: 2 },
+			{ role: "user", content: "How are you?", ts: 3 },
+			{ role: "assistant", content: "I'm good", ts: 4 },
+			{ role: "user", content: "Thanks", ts: 5 },
 		]
 
-		let capturedRequestMessages: any[] | undefined
-		const customStream = (async function* () {
-			yield { type: "text" as const, text: "Summary of conversation" }
-			yield { type: "usage" as const, totalCost: 0.05, outputTokens: 100 }
-		})()
+		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
 
-		mockApiHandler.createMessage = vi.fn().mockImplementation((_prompt, requestMessagesParam) => {
-			capturedRequestMessages = requestMessagesParam
-			return customStream
-		}) as any
-
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
-
-		expect(result.error).toBeUndefined()
-		expect(capturedRequestMessages).toBeDefined()
-
-		const requestMessages = capturedRequestMessages!
-		expect(requestMessages[requestMessages.length - 1]).toEqual({
-			role: "user",
-			content: "Summarize the conversation so far, as described in the prompt instructions.",
-		})
-
-		const historyMessages = requestMessages.slice(0, -1)
-		expect(historyMessages.length).toBeGreaterThanOrEqual(2)
-
-		const assistantMessage = historyMessages[historyMessages.length - 2]
-		const userMessage = historyMessages[historyMessages.length - 1]
-
-		expect(assistantMessage.role).toBe("assistant")
-		expect(Array.isArray(assistantMessage.content)).toBe(true)
-		expect(
-			(assistantMessage.content as any[]).some(
-				(block) => block.type === "tool_use" && block.id === toolUseBlock.id,
-			),
-		).toBe(true)
-
-		expect(userMessage.role).toBe("user")
-		expect(Array.isArray(userMessage.content)).toBe(true)
-		expect(
-			(userMessage.content as any[]).some(
-				(block) => block.type === "tool_result" && block.tool_use_id === toolUseBlock.id,
-			),
-		).toBe(true)
-	})
-
-	it("should append multiple tool_use blocks for parallel tool calls", async () => {
-		const toolUseBlockA = {
-			type: "tool_use" as const,
-			id: "toolu_parallel_1",
-			name: "search",
-			input: { query: "foo" },
-		}
-		const toolUseBlockB = {
-			type: "tool_use" as const,
-			id: "toolu_parallel_2",
-			name: "search",
-			input: { query: "bar" },
-		}
-
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Start", ts: 1 },
-			{ role: "assistant", content: "Working...", ts: 2 },
-			{
-				role: "assistant",
-				content: [{ type: "text" as const, text: "Launching parallel tools" }, toolUseBlockA, toolUseBlockB],
-				ts: 3,
-			},
-			{
-				role: "user",
-				content: [
-					{ type: "tool_result" as const, tool_use_id: "toolu_parallel_1", content: "result A" },
-					{ type: "tool_result" as const, tool_use_id: "toolu_parallel_2", content: "result B" },
-					{ type: "text" as const, text: "Continue" },
-				],
-				ts: 4,
-			},
-			{ role: "assistant", content: "Processing results", ts: 5 },
-			{ role: "user", content: "Thanks", ts: 6 },
-		]
-
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
-
-		// Find the summary message (it has isSummary: true)
-		const summaryMessage = result.messages.find((m) => m.isSummary)
-		expect(summaryMessage).toBeDefined()
-		expect(Array.isArray(summaryMessage!.content)).toBe(true)
-		const summaryContent = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
-		// First block is synthetic reasoning for DeepSeek-reasoner compatibility
-		expect((summaryContent[0] as any).type).toBe("reasoning")
-		// Second block is the text summary
-		expect(summaryContent[1]).toEqual({ type: "text", text: "This is a summary" })
-
-		const preservedToolUses = summaryContent.filter(
-			(block): block is Anthropic.Messages.ToolUseBlockParam => block.type === "tool_use",
-		)
-		expect(preservedToolUses).toHaveLength(2)
-		expect(preservedToolUses.map((block) => block.id)).toEqual(["toolu_parallel_1", "toolu_parallel_2"])
-	})
-
-	it("should preserve reasoning blocks in summary message for DeepSeek/Z.ai interleaved thinking", async () => {
-		const reasoningBlock = {
-			type: "reasoning" as const,
-			text: "Let me think about this step by step...",
-		}
-		const toolUseBlock = {
-			type: "tool_use" as const,
-			id: "toolu_deepseek_reason",
-			name: "read_file",
-			input: { path: "test.txt" },
-		}
-		const toolResultBlock = {
-			type: "tool_result" as const,
-			tool_use_id: "toolu_deepseek_reason",
-			content: "file contents",
-		}
-
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Let me help", ts: 2 },
-			{ role: "user", content: "Please read the file", ts: 3 },
-			{
-				role: "assistant",
-				// DeepSeek stores reasoning as content blocks alongside tool_use
-				content: [reasoningBlock as any, { type: "text" as const, text: "Reading file..." }, toolUseBlock],
-				ts: 4,
-			},
-			{
-				role: "user",
-				content: [toolResultBlock, { type: "text" as const, text: "Continue" }],
-				ts: 5,
-			},
-			{ role: "assistant", content: "Got it, the file says...", ts: 6 },
-			{ role: "user", content: "Thanks", ts: 7 },
-		]
-
-		// Create a stream with usage information
-		const streamWithUsage = (async function* () {
-			yield { type: "text" as const, text: "Summary of conversation" }
-			yield { type: "usage" as const, totalCost: 0.05, outputTokens: 100 }
-		})()
-
-		mockApiHandler.createMessage = vi.fn().mockReturnValue(streamWithUsage) as any
-		mockApiHandler.countTokens = vi.fn().mockImplementation(() => Promise.resolve(50)) as any
-
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
-
-		// Find the summary message
-		const summaryMessage = result.messages.find((m) => m.isSummary)
-		expect(summaryMessage).toBeDefined()
-		expect(summaryMessage!.role).toBe("assistant")
-		expect(summaryMessage!.isSummary).toBe(true)
-		expect(Array.isArray(summaryMessage!.content)).toBe(true)
-
-		// Content should be [synthetic reasoning, preserved reasoning, text block, tool_use block]
-		// - Synthetic reasoning is always added for DeepSeek-reasoner compatibility
-		// - Preserved reasoning from the condensed assistant message
-		// This order ensures reasoning_content is always present for DeepSeek/Z.ai
-		const content = summaryMessage!.content as Anthropic.Messages.ContentBlockParam[]
-		expect(content).toHaveLength(4)
-
-		// First block should be synthetic reasoning
-		expect((content[0] as any).type).toBe("reasoning")
-		expect((content[0] as any).text).toContain("Condensing conversation context")
-
-		// Second block should be preserved reasoning from the condensed message
-		expect((content[1] as any).type).toBe("reasoning")
-		expect((content[1] as any).text).toBe("Let me think about this step by step...")
-
-		// Third block should be text (the summary)
-		expect(content[2].type).toBe("text")
-		expect((content[2] as Anthropic.Messages.TextBlockParam).text).toBe("Summary of conversation")
-
-		// Fourth block should be tool_use
-		expect(content[3].type).toBe("tool_use")
-		expect((content[3] as Anthropic.Messages.ToolUseBlockParam).id).toBe("toolu_deepseek_reason")
-
-		expect(result.error).toBeUndefined()
-	})
-
-	it("should include synthetic reasoning block in summary for DeepSeek-reasoner compatibility even without tool_use blocks", async () => {
-		// This test verifies the fix for the DeepSeek-reasoner 400 error:
-		// "Missing `reasoning_content` field in the assistant message at message index 1"
-		// DeepSeek-reasoner requires reasoning_content on ALL assistant messages, not just those with tool_calls.
-		// After condensation, the summary becomes an assistant message that needs reasoning_content.
-		const messages: ApiMessage[] = [
-			{ role: "user", content: "Tell me a joke", ts: 1 },
-			{ role: "assistant", content: "Why did the programmer quit?", ts: 2 },
-			{ role: "user", content: "I don't know, why?", ts: 3 },
-			{ role: "assistant", content: "He didn't get arrays!", ts: 4 },
-			{ role: "user", content: "Another one please", ts: 5 },
-			{ role: "assistant", content: "Why do programmers prefer dark mode?", ts: 6 },
-			{ role: "user", content: "Why?", ts: 7 },
-		]
-
-		// Create a stream with usage information (no tool calls in this conversation)
-		const streamWithUsage = (async function* () {
-			yield { type: "text" as const, text: "Summary: User requested jokes." }
-			yield { type: "usage" as const, totalCost: 0.05, outputTokens: 100 }
-		})()
-
-		mockApiHandler.createMessage = vi.fn().mockReturnValue(streamWithUsage) as any
-		mockApiHandler.countTokens = vi.fn().mockImplementation(() => Promise.resolve(50)) as any
-
-		const result = await summarizeConversation(
-			messages,
-			mockApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-		)
-
-		// Find the summary message
-		const summaryMessage = result.messages.find((m) => m.isSummary)
-		expect(summaryMessage).toBeDefined()
-		expect(summaryMessage!.role).toBe("assistant")
-		expect(summaryMessage!.isSummary).toBe(true)
-
-		// CRITICAL: Content must be an array with a synthetic reasoning block
-		// This is required for DeepSeek-reasoner which needs reasoning_content on all assistant messages
-		expect(Array.isArray(summaryMessage!.content)).toBe(true)
-		const content = summaryMessage!.content as any[]
-
-		// Should have [synthetic reasoning, text]
-		expect(content).toHaveLength(2)
-		expect(content[0].type).toBe("reasoning")
-		expect(content[0].text).toContain("Condensing conversation context")
-		expect(content[1].type).toBe("text")
-		expect(content[1].text).toBe("Summary: User requested jokes.")
-
-		expect(result.error).toBeUndefined()
+		// Summary should be the last message
+		const lastMessage = result.messages[result.messages.length - 1]
+		expect(lastMessage.isSummary).toBe(true)
+		expect(lastMessage.role).toBe("user")
 	})
 })
 
@@ -1459,7 +1071,7 @@ describe("summarizeConversation with custom settings", () => {
 	// Mock necessary dependencies
 	let mockMainApiHandler: ApiHandler
 	const defaultSystemPrompt = "Default prompt"
-	const taskId = "test-task"
+	const localTaskId = "test-task"
 
 	// Sample messages for testing
 	const sampleMessages: ApiMessage[] = [
@@ -1514,16 +1126,19 @@ describe("summarizeConversation with custom settings", () => {
 			sampleMessages,
 			mockMainApiHandler,
 			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
+			localTaskId,
 			false,
 			customPrompt,
 		)
 
-		// Verify the custom prompt was used
+		// Verify the custom prompt was used in the user message content
 		const createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
 		expect(createMessageCalls.length).toBe(1)
-		expect(createMessageCalls[0][0]).toBe(customPrompt)
+		// The custom prompt should be in the last message (the finalRequestMessage)
+		const requestMessages = createMessageCalls[0][1]
+		const lastMessage = requestMessages[requestMessages.length - 1]
+		expect(lastMessage.role).toBe("user")
+		expect(lastMessage.content).toBe(customPrompt)
 	})
 
 	/**
@@ -1531,20 +1146,15 @@ describe("summarizeConversation with custom settings", () => {
 	 */
 	it("should use default systemPrompt when custom prompt is empty or not provided", async () => {
 		// Test with empty string
-		await summarizeConversation(
-			sampleMessages,
-			mockMainApiHandler,
-			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
-			false,
-			"  ", // Empty custom prompt
-		)
+		await summarizeConversation(sampleMessages, mockMainApiHandler, defaultSystemPrompt, localTaskId, false, "  ")
 
-		// Verify the default prompt was used
+		// Verify the default SUMMARY_PROMPT was used (contains CRITICAL instructions)
 		let createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
 		expect(createMessageCalls.length).toBe(1)
-		expect(createMessageCalls[0][0]).toContain("Your task is to create a detailed summary")
+		expect(createMessageCalls[0][0]).toContain(
+			"You are a helpful AI assistant tasked with summarizing conversations.",
+		)
+		expect(createMessageCalls[0][0]).toContain("CRITICAL: This is a summarization-only request")
 
 		// Reset mock and test with undefined
 		vi.clearAllMocks()
@@ -1552,16 +1162,18 @@ describe("summarizeConversation with custom settings", () => {
 			sampleMessages,
 			mockMainApiHandler,
 			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
+			localTaskId,
 			false,
-			undefined, // No custom prompt
+			undefined,
 		)
 
-		// Verify the default prompt was used again
+		// Verify the default SUMMARY_PROMPT was used again (contains CRITICAL instructions)
 		createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
 		expect(createMessageCalls.length).toBe(1)
-		expect(createMessageCalls[0][0]).toContain("Your task is to create a detailed summary")
+		expect(createMessageCalls[0][0]).toContain(
+			"You are a helpful AI assistant tasked with summarizing conversations.",
+		)
+		expect(createMessageCalls[0][0]).toContain("CRITICAL: This is a summarization-only request")
 	})
 
 	/**
@@ -1572,15 +1184,14 @@ describe("summarizeConversation with custom settings", () => {
 			sampleMessages,
 			mockMainApiHandler,
 			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
+			localTaskId,
 			false,
 			"Custom prompt",
 		)
 
 		// Verify telemetry was called with custom prompt flag
 		expect(TelemetryService.instance.captureContextCondensed).toHaveBeenCalledWith(
-			taskId,
+			localTaskId,
 			false,
 			true, // usedCustomPrompt
 		)
@@ -1594,15 +1205,14 @@ describe("summarizeConversation with custom settings", () => {
 			sampleMessages,
 			mockMainApiHandler,
 			defaultSystemPrompt,
-			taskId,
-			DEFAULT_PREV_CONTEXT_TOKENS,
+			localTaskId,
 			true, // isAutomaticTrigger
 			"Custom prompt",
 		)
 
 		// Verify telemetry was called with isAutomaticTrigger flag
 		expect(TelemetryService.instance.captureContextCondensed).toHaveBeenCalledWith(
-			taskId,
+			localTaskId,
 			true, // isAutomaticTrigger
 			true, // usedCustomPrompt
 		)

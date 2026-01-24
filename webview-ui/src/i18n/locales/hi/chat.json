@@ -335,9 +335,7 @@
 		},
 		"release": {
 			"heading": "नया क्या है:",
-			"chatGptUsageLimits": "OpenAI Codex प्रदाता में आपकी ChatGPT उपयोग सीमा को ट्रैक करने के लिए UI जोड़ा गया।",
-			"claudeCodeRemoved": "पदावनत Claude Code प्रदाता को हटाया गया।",
-			"grokCodeFastFreeEnds": "Grok Code Fast अब मुफ़्त नहीं है - उदार प्रचार के लिए xAI को धन्यवाद!"
+			"intelligentContextCondensation": "बुद्धिमान संदर्भ संघनन v2: संदर्भ विंडो प्रबंधित करने वाले एल्गोरिदम का पूर्ण पुनर्निर्माण। अब आप Roo की गुणवत्ता खोए बिना लंबे समय तक कार्य चला सकते हैं।"
 		},
 		"cloudAgents": {
 			"heading": "क्लाउड में नया:",

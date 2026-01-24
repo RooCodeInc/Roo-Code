@@ -312,9 +312,7 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"chatGptUsageLimits": "UI toegevoegd om je ChatGPT-gebruikslimits in de OpenAI Codex-provider bij te houden.",
-			"claudeCodeRemoved": "De verouderde Claude Code-provider verwijderd.",
-			"grokCodeFastFreeEnds": "Grok Code Fast is niet langer gratis - dank je wel aan xAI voor de royale promotie!"
+			"intelligentContextCondensation": "Intelligente Contextcondensatie v2: Een volledige herwerking van het algoritme dat het contextvenster beheert. Nu kun je taken langer uitvoeren zonder dat Roo minder slim wordt."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

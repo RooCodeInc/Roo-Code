@@ -617,9 +617,10 @@ describe("Context Management", () => {
 				mockApiHandler,
 				"System prompt",
 				taskId,
-				70001,
-				true,
+				true, // isAutomaticTrigger
 				undefined, // customCondensingPrompt
+				undefined, // metadata
+				undefined, // environmentDetails
 			)
 
 			// Verify the result contains the summary information
@@ -791,9 +792,10 @@ describe("Context Management", () => {
 				mockApiHandler,
 				"System prompt",
 				taskId,
-				60000,
-				true,
+				true, // isAutomaticTrigger
 				undefined, // customCondensingPrompt
+				undefined, // metadata
+				undefined, // environmentDetails
 			)
 
 			// Verify the result contains the summary information

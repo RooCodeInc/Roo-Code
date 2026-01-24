@@ -1,5 +1,25 @@
 # Roo Code Changelog
 
+## [3.43.0] - 2026-01-23
+
+![3.43.0 Release - Intelligent Context Condensation](/releases/3.43.0-release.png)
+
+- Intelligent Context Condensation v2: New context condensation system that intelligently summarizes conversation history when approaching context limits, preserving important information while reducing token usage (PR #10873 by @hannesrudolph)
+- Improved context condensation with environment details, accurate token counts, and lazy evaluation for better performance (PR #10920 by @hannesrudolph)
+- Move condense prompt editor to Context Management tab for better discoverability and organization (PR #10909 by @hannesrudolph)
+- Update Z.AI models with new variants and pricing (#10859 by @ErdemGKSL, PR #10860 by @ErdemGKSL)
+- Add pnpm install:vsix:nightly command for easier nightly build installation (PR #10912 by @hannesrudolph)
+- Fix: Convert orphaned tool_results to text blocks after condensing to prevent API errors (PR #10927 by @daniel-lxs)
+- Fix: Auto-migrate v1 condensing prompt and handle invalid providers on import (PR #10931 by @hannesrudolph)
+- Fix: Use json-stream-stringify for pretty-printing MCP config files to prevent memory issues with large configs (#9862 by @Michaelzag, PR #9864 by @Michaelzag)
+- Fix: Correct Gemini 3 pricing for Flash and Pro models (#10432 by @rossdonald, PR #10487 by @roomote)
+- Fix: Skip thoughtSignature blocks during markdown export for cleaner output (#10199 by @rossdonald, PR #10932 by @rossdonald)
+- Fix: Duplicate model display for OpenAI Codex provider (PR #10930 by @roomote)
+- Remove diffEnabled and fuzzyMatchThreshold settings as they are no longer needed (#10648 by @hannesrudolph, PR #10298 by @hannesrudolph)
+- Remove MULTI_FILE_APPLY_DIFF experiment (PR #10925 by @hannesrudolph)
+- Remove POWER_STEERING experimental feature (PR #10926 by @hannesrudolph)
+- Remove legacy XML tool calling code (getToolDescription) for cleaner codebase (PR #10929 by @hannesrudolph)
+
 ## [3.42.0] - 2026-01-22
 
 ![3.42.0 Release - ChatGPT Usage Tracking](/releases/3.42.0-release.png)

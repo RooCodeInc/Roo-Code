@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "在目前視窗開啟",
 	"openInNewWindow": "在新視窗開啟",
-	"merge": "合併",
 	"delete": "刪除",
 	"newWorktree": "新增 Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree 已鎖定",
 	"deleting": "正在刪除...",
 
-	"mergeBranch": "合併分支",
-	"mergeDescription": "將 '{{source}}' 合併到 '{{target}}'",
-	"deleteAfterMerge": "合併成功後刪除 worktree",
-	"merging": "正在合併...",
-	"mergeSuccess": "合併成功",
-	"mergeConflicts": "合併衝突",
-	"conflictsDescription": "以下檔案有衝突需要解決：",
-	"mergeFailed": "合併失敗",
-	"resolveManually": "我會手動解決",
-	"askRooResolve": "請 Roo 協助解決",
 	"close": "關閉"
 }

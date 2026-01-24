@@ -784,10 +784,6 @@
 					"unified": "Birleştirilmiş diff stratejisi, diff'leri uygulamak için birden çok yaklaşım benimser ve en iyi yaklaşımı seçer.",
 					"multiBlock": "Çoklu blok diff stratejisi, tek bir istekte bir dosyadaki birden çok kod bloğunu güncellemenize olanak tanır."
 				}
-			},
-			"matchPrecision": {
-				"label": "Eşleşme hassasiyeti",
-				"description": "Bu kaydırıcı, diff'ler uygulanırken kod bölümlerinin ne kadar hassas bir şekilde eşleşmesi gerektiğini kontrol eder. Daha düşük değerler daha esnek eşleşmeye izin verir ancak yanlış değiştirme riskini artırır. %100'ün altındaki değerleri son derece dikkatli kullanın."
 			}
 		},
 		"todoList": {
@@ -804,10 +800,6 @@
 			"name": "Deneysel içerik ekleme aracını kullan",
 			"description": "Deneysel içerik ekleme aracını etkinleştir, Roo'nun bir diff oluşturma gereği duymadan belirli satır numaralarına içerik eklemesine olanak tanır."
 		},
-		"POWER_STEERING": {
-			"name": "Deneysel \"güç direksiyon\" modunu kullan",
-			"description": "Etkinleştirildiğinde, Roo modele geçerli mod tanımının ayrıntılarını daha sık hatırlatacaktır. Bu, rol tanımlarına ve özel talimatlara daha güçlü uyum sağlayacak, ancak mesaj başına daha fazla token kullanacaktır."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Deneysel çoklu blok diff aracını kullan",
 			"description": "Etkinleştirildiğinde, Roo çoklu blok diff aracını kullanacaktır. Bu, tek bir istekte dosyadaki birden fazla kod bloğunu güncellemeye çalışacaktır."
@@ -819,10 +811,6 @@
 		"MARKETPLACE": {
 			"name": "Marketplace'i Etkinleştir",
 			"description": "Etkinleştirildiğinde, Marketplace'ten MCP'leri ve özel modları yükleyebilirsiniz."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Eşzamanlı dosya düzenlemelerini etkinleştir",
-			"description": "Etkinleştirildiğinde, Roo tek bir istekte birden fazla dosyayı düzenleyebilir. Devre dışı bırakıldığında, Roo dosyaları tek tek düzenlemek zorundadır. Bunu devre dışı bırakmak, daha az yetenekli modellerle çalışırken veya dosya değişiklikleri üzerinde daha fazla kontrol istediğinde yardımcı olabilir."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Arka plan düzenleme",

@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "현재 창에서 열기",
 	"openInNewWindow": "새 창에서 열기",
-	"merge": "병합",
 	"delete": "삭제",
 	"newWorktree": "새 Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree가 잠겨 있습니다",
 	"deleting": "삭제 중...",
 
-	"mergeBranch": "브랜치 병합",
-	"mergeDescription": "'{{source}}'을(를) '{{target}}'에 병합",
-	"deleteAfterMerge": "병합 성공 후 worktree 삭제",
-	"merging": "병합 중...",
-	"mergeSuccess": "병합 성공",
-	"mergeConflicts": "병합 충돌",
-	"conflictsDescription": "다음 파일에 해결이 필요한 충돌이 있습니다:",
-	"mergeFailed": "병합 실패",
-	"resolveManually": "수동으로 해결할게요",
-	"askRooResolve": "Roo에게 해결 요청",
 	"close": "닫기"
 }

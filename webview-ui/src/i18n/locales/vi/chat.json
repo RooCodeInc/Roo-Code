@@ -336,9 +336,7 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"chatGptUsageLimits": "Đã thêm giao diện người dùng để theo dõi giới hạn sử dụng ChatGPT của bạn trong nhà cung cấp OpenAI Codex.",
-			"claudeCodeRemoved": "Đã xóa nhà cung cấp Claude Code không còn được hỗ trợ.",
-			"grokCodeFastFreeEnds": "Grok Code Fast không còn miễn phí nữa - cảm ơn xAI vì chương truyền thông hào phóng!"
+			"intelligentContextCondensation": "Cô đọng Ngữ cảnh Thông minh v2: Viết lại hoàn toàn thuật toán quản lý cửa sổ ngữ cảnh. Bây giờ bạn có thể chạy các tác vụ lâu hơn mà không làm giảm chất lượng của Roo."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

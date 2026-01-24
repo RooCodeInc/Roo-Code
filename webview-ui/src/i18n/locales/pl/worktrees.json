@@ -20,7 +20,6 @@
 
 	"openInCurrentWindow": "Otwórz w bieżącym oknie",
 	"openInNewWindow": "Otwórz w nowym oknie",
-	"merge": "Scal",
 	"delete": "Usuń",
 	"newWorktree": "Nowy Worktree",
 
@@ -55,15 +54,5 @@
 	"worktreeIsLocked": "worktree jest zablokowany",
 	"deleting": "Usuwanie...",
 
-	"mergeBranch": "Scal Branch",
-	"mergeDescription": "Scal '{{source}}' do '{{target}}'",
-	"deleteAfterMerge": "Usuń worktree po udanym scaleniu",
-	"merging": "Scalanie...",
-	"mergeSuccess": "Scalanie zakończone sukcesem",
-	"mergeConflicts": "Konflikty scalania",
-	"conflictsDescription": "Następujące pliki mają konflikty, które trzeba rozwiązać:",
-	"mergeFailed": "Scalanie nie powiodło się",
-	"resolveManually": "Rozwiążę ręcznie",
-	"askRooResolve": "Poproś Roo o rozwiązanie",
 	"close": "Zamknij"
 }

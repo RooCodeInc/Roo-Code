@@ -784,10 +784,6 @@
 					"unified": "Strategia diff ujednoliconego stosuje wiele podejść do zastosowania różnic i wybiera najlepsze podejście.",
 					"multiBlock": "Strategia diff wieloblokowego pozwala na aktualizację wielu bloków kodu w pliku w jednym żądaniu."
 				}
-			},
-			"matchPrecision": {
-				"label": "Precyzja dopasowania",
-				"description": "Ten suwak kontroluje, jak dokładnie sekcje kodu muszą pasować podczas stosowania różnic. Niższe wartości umożliwiają bardziej elastyczne dopasowywanie, ale zwiększają ryzyko nieprawidłowych zamian. Używaj wartości poniżej 100% z najwyższą ostrożnością."
 			}
 		},
 		"todoList": {
@@ -804,10 +800,6 @@
 			"name": "Użyj eksperymentalnego narzędzia do wstawiania treści",
 			"description": "Włącz eksperymentalne narzędzie do wstawiania treści, umożliwiając Roo wstawianie treści w określonych numerach linii bez konieczności tworzenia diff."
 		},
-		"POWER_STEERING": {
-			"name": "Użyj eksperymentalnego trybu \"wspomagania kierownicy\"",
-			"description": "Po włączeniu, Roo będzie częściej przypominać modelowi o szczegółach jego bieżącej definicji trybu. Doprowadzi to do silniejszego przestrzegania definicji ról i niestandardowych instrukcji, ale będzie używać więcej tokenów na wiadomość."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Użyj eksperymentalnego narzędzia diff wieloblokowego",
 			"description": "Po włączeniu, Roo użyje narzędzia diff wieloblokowego. Spróbuje to zaktualizować wiele bloków kodu w pliku w jednym żądaniu."
@@ -819,10 +811,6 @@
 		"MARKETPLACE": {
 			"name": "Włącz Marketplace",
 			"description": "Gdy włączone, możesz instalować MCP i niestandardowe tryby z Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Włącz równoczesne edycje plików",
-			"description": "Gdy włączone, Roo może edytować wiele plików w jednym żądaniu. Gdy wyłączone, Roo musi edytować pliki jeden po drugim. Wyłączenie tego może pomóc podczas pracy z mniej zdolnymi modelami lub gdy chcesz mieć większą kontrolę nad modyfikacjami plików."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edycja w tle",

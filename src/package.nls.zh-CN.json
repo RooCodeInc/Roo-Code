@@ -24,7 +24,6 @@
 	"command.openInEditor.title": "在编辑器中打开",
 	"command.cloud.title": "Cloud",
 	"command.settings.title": "设置",
-	"command.worktrees.title": "Worktrees",
 	"command.documentation.title": "文档",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "当启用'始终批准执行操作'时可以自动执行的命令",

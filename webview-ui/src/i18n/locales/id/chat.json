@@ -348,9 +348,7 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"chatGptUsageLimits": "UI ditambahkan untuk melacak batas penggunaan ChatGPT Anda di penyedia OpenAI Codex.",
-			"claudeCodeRemoved": "Penyedia Claude Code yang sudah usang telah dihapus.",
-			"grokCodeFastFreeEnds": "Grok Code Fast tidak lagi gratis - terima kasih kepada xAI atas promosi yang murah hati!"
+			"intelligentContextCondensation": "Kondensasi Konteks Cerdas v2: Penulisan ulang lengkap algoritma yang mengelola jendela konteks. Sekarang Anda dapat menjalankan tugas lebih lama tanpa Roo kehilangan kualitas."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

@@ -783,10 +783,6 @@
 					"unified": "La stratégie de diff unifié prend plusieurs approches pour appliquer les diffs et choisit la meilleure approche.",
 					"multiBlock": "La stratégie de diff multi-blocs permet de mettre à jour plusieurs blocs de code dans un fichier en une seule requête."
 				}
-			},
-			"matchPrecision": {
-				"label": "Précision de correspondance",
-				"description": "Ce curseur contrôle la précision avec laquelle les sections de code doivent correspondre lors de l'application des diffs. Des valeurs plus basses permettent des correspondances plus flexibles mais augmentent le risque de remplacements incorrects. Utilisez des valeurs inférieures à 100 % avec une extrême prudence."
 			}
 		},
 		"todoList": {
@@ -803,10 +799,6 @@
 			"name": "Utiliser l'outil d'insertion de contenu expérimental",
 			"description": "Activer l'outil d'insertion de contenu expérimental, permettant à Roo d'insérer du contenu à des numéros de ligne spécifiques sans avoir besoin de créer un diff."
 		},
-		"POWER_STEERING": {
-			"name": "Utiliser le mode \"direction assistée\" expérimental",
-			"description": "Lorsqu'il est activé, Roo rappellera plus fréquemment au modèle les détails de sa définition de mode actuelle. Cela conduira à une adhérence plus forte aux définitions de rôles et aux instructions personnalisées, mais utilisera plus de tokens par message."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Utiliser l'outil diff multi-blocs expérimental",
 			"description": "Lorsqu'il est activé, Roo utilisera l'outil diff multi-blocs. Cela tentera de mettre à jour plusieurs blocs de code dans le fichier en une seule requête."
@@ -818,10 +810,6 @@
 		"MARKETPLACE": {
 			"name": "Activer le Marketplace",
 			"description": "Lorsque cette option est activée, tu peux installer des MCP et des modes personnalisés depuis le Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Activer les éditions de fichiers concurrentes",
-			"description": "Lorsque cette option est activée, Roo peut éditer plusieurs fichiers en une seule requête. Lorsqu'elle est désactivée, Roo doit éditer les fichiers un par un. Désactiver cette option peut aider lorsque tu travailles avec des modèles moins capables ou lorsque tu veux plus de contrôle sur les modifications de fichiers."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Édition en arrière-plan",

@@ -24,7 +24,6 @@
 	"command.openInEditor.title": "Mở trong Trình Soạn Thảo",
 	"command.cloud.title": "Cloud",
 	"command.settings.title": "Cài Đặt",
-	"command.worktrees.title": "Worktrees",
 	"command.documentation.title": "Tài Liệu",
 	"configuration.title": "Roo Code",
 	"commands.allowedCommands.description": "Các lệnh có thể được thực thi tự động khi 'Luôn phê duyệt các thao tác thực thi' được bật",

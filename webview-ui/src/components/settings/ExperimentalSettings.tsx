@@ -58,23 +58,6 @@ export const ExperimentalSettings = ({
 						const experimentKey = config[0]
 						const label = t(`settings:experimental.${experimentKey}.name`)
 
-						if (config[0] === "MULTI_FILE_APPLY_DIFF") {
-							return (
-								<SearchableSetting
-									key={config[0]}
-									settingId={`experimental-${config[0].toLowerCase()}`}
-									section="experimental"
-									label={label}>
-									<ExperimentalFeature
-										experimentKey={config[0]}
-										enabled={experiments[EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF] ?? false}
-										onChange={(enabled) =>
-											setExperimentEnabled(EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF, enabled)
-										}
-									/>
-								</SearchableSetting>
-							)
-						}
 						if (
 							config[0] === "IMAGE_GENERATION" &&
 							setImageGenerationProvider &&

@@ -16,7 +16,6 @@ export {
 	handleCheckBranchWorktreeInclude,
 	handleCreateWorktreeInclude,
 	handleCheckoutBranch,
-	handleMergeWorktree,
 } from "./handlers"
 
 // Re-export types from @roo-code/types for convenience

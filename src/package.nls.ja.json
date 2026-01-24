@@ -11,7 +11,6 @@
 	"command.openInEditor.title": "エディタで開く",
 	"command.cloud.title": "Cloud",
 	"command.settings.title": "設定",
-	"command.worktrees.title": "Worktrees",
 	"command.documentation.title": "ドキュメント",
 	"command.openInNewTab.title": "新しいタブで開く",
 	"command.explainCode.title": "コードの説明",
