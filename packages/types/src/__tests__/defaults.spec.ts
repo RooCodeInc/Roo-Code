@@ -1,9 +1,29 @@
 import { describe, expect, it } from "vitest"
 import { settingDefaults, getSettingWithDefault } from "../defaults.js"
-import { DEFAULT_CHECKPOINT_TIMEOUT_SECONDS } from "../global-settings.js"
+import { DEFAULT_CHECKPOINT_TIMEOUT_SECONDS, DEFAULT_WRITE_DELAY_MS } from "../global-settings.js"
 
 describe("settingDefaults", () => {
 	it("should have all expected default values", () => {
+		// Auto-approval settings (all default to false for safety)
+		expect(settingDefaults.autoApprovalEnabled).toBe(false)
+		expect(settingDefaults.alwaysAllowReadOnly).toBe(false)
+		expect(settingDefaults.alwaysAllowReadOnlyOutsideWorkspace).toBe(false)
+		expect(settingDefaults.alwaysAllowWrite).toBe(false)
+		expect(settingDefaults.alwaysAllowWriteOutsideWorkspace).toBe(false)
+		expect(settingDefaults.alwaysAllowWriteProtected).toBe(false)
+		expect(settingDefaults.alwaysAllowBrowser).toBe(false)
+		expect(settingDefaults.alwaysAllowMcp).toBe(false)
+		expect(settingDefaults.alwaysAllowModeSwitch).toBe(false)
+		expect(settingDefaults.alwaysAllowSubtasks).toBe(false)
+		expect(settingDefaults.alwaysAllowExecute).toBe(false)
+		expect(settingDefaults.alwaysAllowFollowupQuestions).toBe(false)
+		expect(settingDefaults.requestDelaySeconds).toBe(0)
+		expect(settingDefaults.followupAutoApproveTimeoutMs).toBe(0)
+		expect(settingDefaults.commandExecutionTimeout).toBe(0)
+		expect(settingDefaults.preventCompletionWithOpenTodos).toBe(false)
+		expect(settingDefaults.autoCondenseContext).toBe(false)
+		expect(settingDefaults.autoCondenseContextPercent).toBe(50)
+
 		// Browser settings
 		expect(settingDefaults.browserToolEnabled).toBe(true)
 		expect(settingDefaults.browserViewportSize).toBe("900x600")
@@ -16,10 +36,6 @@ describe("settingDefaults", () => {
 		expect(settingDefaults.ttsEnabled).toBe(true)
 		expect(settingDefaults.ttsSpeed).toBe(1.0)
 
-		// Diff/Editor settings
-		expect(settingDefaults.diffEnabled).toBe(true)
-		expect(settingDefaults.fuzzyMatchThreshold).toBe(1.0)
-
 		// Checkpoint settings
 		expect(settingDefaults.enableCheckpoints).toBe(false)
 		expect(settingDefaults.checkpointTimeout).toBe(DEFAULT_CHECKPOINT_TIMEOUT_SECONDS)
@@ -28,6 +44,14 @@ describe("settingDefaults", () => {
 		expect(settingDefaults.terminalOutputLineLimit).toBe(500)
 		expect(settingDefaults.terminalOutputCharacterLimit).toBe(50_000)
 		expect(settingDefaults.terminalShellIntegrationTimeout).toBe(30_000)
+		expect(settingDefaults.terminalShellIntegrationDisabled).toBe(false)
+		expect(settingDefaults.terminalCommandDelay).toBe(0)
+		expect(settingDefaults.terminalPowershellCounter).toBe(false)
+		expect(settingDefaults.terminalZshClearEolMark).toBe(false)
+		expect(settingDefaults.terminalZshOhMy).toBe(false)
+		expect(settingDefaults.terminalZshP10k).toBe(false)
+		expect(settingDefaults.terminalZdotdir).toBe(false)
+		expect(settingDefaults.terminalCompressProgressBar).toBe(false)
 
 		// Context management settings
 		expect(settingDefaults.maxOpenTabsContext).toBe(20)
@@ -40,18 +64,19 @@ describe("settingDefaults", () => {
 		expect(settingDefaults.maxConcurrentFileReads).toBe(5)
 
 		// Diagnostic settings
+		expect(settingDefaults.diagnosticsEnabled).toBe(false)
 		expect(settingDefaults.includeDiagnosticMessages).toBe(true)
 		expect(settingDefaults.maxDiagnosticMessages).toBe(50)
-
-		// Auto-approval settings
-		expect(settingDefaults.alwaysAllowFollowupQuestions).toBe(false)
+		expect(settingDefaults.writeDelayMs).toBe(DEFAULT_WRITE_DELAY_MS)
 
 		// Prompt enhancement settings
 		expect(settingDefaults.includeTaskHistoryInEnhance).toBe(true)
 
 		// UI settings
 		expect(settingDefaults.reasoningBlockCollapsed).toBe(true)
+		expect(settingDefaults.historyPreviewCollapsed).toBe(false)
 		expect(settingDefaults.enterBehavior).toBe("send")
+		expect(settingDefaults.hasOpenedModeSelector).toBe(false)
 
 		// Environment details settings
 		expect(settingDefaults.includeCurrentTime).toBe(true)
@@ -63,6 +88,24 @@ describe("settingDefaults", () => {
 
 		// MCP settings
 		expect(settingDefaults.mcpEnabled).toBe(true)
+		expect(settingDefaults.enableMcpServerCreation).toBe(false)
+
+		// Rate limiting
+		expect(settingDefaults.rateLimitSeconds).toBe(0)
+
+		// Indexing settings
+		expect(settingDefaults.codebaseIndexEnabled).toBe(false)
+		expect(settingDefaults.codebaseIndexQdrantUrl).toBe("http://localhost:6333")
+		expect(settingDefaults.codebaseIndexEmbedderProvider).toBe("openai")
+		expect(settingDefaults.codebaseIndexEmbedderBaseUrl).toBe("")
+		expect(settingDefaults.codebaseIndexEmbedderModelId).toBe("")
+		expect(settingDefaults.codebaseIndexEmbedderModelDimension).toBe(1536)
+		expect(settingDefaults.codebaseIndexOpenAiCompatibleBaseUrl).toBe("")
+		expect(settingDefaults.codebaseIndexBedrockRegion).toBe("us-east-1")
+		expect(settingDefaults.codebaseIndexBedrockProfile).toBe("")
+		expect(settingDefaults.codebaseIndexSearchMaxResults).toBe(100)
+		expect(settingDefaults.codebaseIndexSearchMinScore).toBe(0.4)
+		expect(settingDefaults.codebaseIndexOpenRouterSpecificProvider).toBe("")
 	})
 
 	it("should be immutable (readonly)", () => {

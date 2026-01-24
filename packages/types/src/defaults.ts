@@ -12,7 +12,7 @@
  * - On read: apply defaults using `value ?? settingDefaults.settingName`
  */
 
-import { DEFAULT_CHECKPOINT_TIMEOUT_SECONDS } from "./global-settings.js"
+import { DEFAULT_CHECKPOINT_TIMEOUT_SECONDS, DEFAULT_WRITE_DELAY_MS } from "./global-settings.js"
 
 /**
  * Default values for all settings that can be reset to default.
@@ -20,34 +20,63 @@ import { DEFAULT_CHECKPOINT_TIMEOUT_SECONDS } from "./global-settings.js"
  * These values are the source of truth for defaults throughout the application.
  * When a setting is undefined in storage, these defaults should be applied
  * at consumption time.
+ *
+ * IMPORTANT: Every setting that has a default value MUST be listed here.
+ * The clearDefaultSettings() function uses this registry to remove default
+ * values from storage on every startup.
  */
 export const settingDefaults = {
-	// Browser settings
+	// ===== Auto-approval settings =====
+	// All auto-approval settings default to false for safety
+	autoApprovalEnabled: false,
+	alwaysAllowReadOnly: false,
+	alwaysAllowReadOnlyOutsideWorkspace: false,
+	alwaysAllowWrite: false,
+	alwaysAllowWriteOutsideWorkspace: false,
+	alwaysAllowWriteProtected: false,
+	alwaysAllowBrowser: false,
+	alwaysAllowMcp: false,
+	alwaysAllowModeSwitch: false,
+	alwaysAllowSubtasks: false,
+	alwaysAllowExecute: false,
+	alwaysAllowFollowupQuestions: false,
+	requestDelaySeconds: 0,
+	followupAutoApproveTimeoutMs: 0,
+	commandExecutionTimeout: 0,
+	preventCompletionWithOpenTodos: false,
+	autoCondenseContext: false,
+	autoCondenseContextPercent: 50,
+
+	// ===== Browser settings =====
 	browserToolEnabled: true,
 	browserViewportSize: "900x600",
 	remoteBrowserEnabled: false,
 	screenshotQuality: 75,
 
-	// Audio/TTS settings
+	// ===== Audio/TTS settings =====
 	soundEnabled: true,
 	soundVolume: 0.5,
 	ttsEnabled: true,
 	ttsSpeed: 1.0,
 
-	// Diff/Editor settings
-	diffEnabled: true,
-	fuzzyMatchThreshold: 1.0,
-
-	// Checkpoint settings
+	// ===== Checkpoint settings =====
 	enableCheckpoints: false,
 	checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 
-	// Terminal settings
+	// ===== Terminal settings =====
 	terminalOutputLineLimit: 500,
 	terminalOutputCharacterLimit: 50_000,
 	terminalShellIntegrationTimeout: 30_000,
+	terminalShellIntegrationDisabled: false,
+	terminalCommandDelay: 0,
+	terminalPowershellCounter: false,
+	terminalZshClearEolMark: false,
+	terminalZshOhMy: false,
+	terminalZshP10k: false,
+	terminalZdotdir: false,
+	terminalCompressProgressBar: false,
 
-	// Context management settings
+	// ===== Context management settings =====
 	maxOpenTabsContext: 20,
 	maxWorkspaceFiles: 200,
 	showRooIgnoredFiles: false,
@@ -57,33 +86,37 @@ export const settingDefaults = {
 	maxTotalImageSize: 20,
 	maxConcurrentFileReads: 5,
 
-	// Diagnostic settings
+	// ===== Diagnostic settings =====
+	diagnosticsEnabled: false,
 	includeDiagnosticMessages: true,
 	maxDiagnosticMessages: 50,
-	writeDelayMs: 1000,
+	writeDelayMs: DEFAULT_WRITE_DELAY_MS,
 
-	// Auto-approval settings
-	alwaysAllowFollowupQuestions: false,
-
-	// Prompt enhancement settings
+	// ===== Prompt enhancement settings =====
 	includeTaskHistoryInEnhance: true,
 
-	// UI settings
+	// ===== UI settings =====
 	reasoningBlockCollapsed: true,
+	historyPreviewCollapsed: false,
 	enterBehavior: "send" as const,
+	hasOpenedModeSelector: false,
 
-	// Environment details settings
+	// ===== Environment details settings =====
 	includeCurrentTime: true,
 	includeCurrentCost: true,
 	maxGitStatusFiles: 0,
 
-	// Language settings
+	// ===== Language settings =====
 	language: "en" as const,
 
-	// MCP settings
+	// ===== MCP settings =====
 	mcpEnabled: true,
+	enableMcpServerCreation: false,
 
-	// Indexing settings
+	// ===== Rate limiting =====
+	rateLimitSeconds: 0,
+
+	// ===== Indexing settings =====
 	codebaseIndexEnabled: false,
 	codebaseIndexQdrantUrl: "http://localhost:6333",
 	codebaseIndexEmbedderProvider: "openai" as const,
