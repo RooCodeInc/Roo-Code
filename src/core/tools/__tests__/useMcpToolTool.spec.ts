@@ -620,8 +620,6 @@ describe("useMcpToolTool", () => {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
-				removeClosingTag: mockRemoveClosingTag,
-				toolProtocol: "xml",
 			})
 
 			// Tool should be found and executed
