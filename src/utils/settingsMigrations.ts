@@ -127,6 +127,21 @@ export const migrations: Record<number, MigrationDefinition> = {
 			logger.info("  Removed nested codebaseIndexConfig object")
 		},
 	},
+	3: {
+		description: "Remove codebaseIndexModels from globalState (now passed directly to webview)",
+		customMigration: async (contextProxy: ContextProxy) => {
+			// codebaseIndexModels was previously storing the static EMBEDDING_MODEL_PROFILES
+			// object in globalState, but this is unnecessary - it's reference data that
+			// should be passed directly to the webview without persisting.
+			const stored = contextProxy.getGlobalState("codebaseIndexModels" as keyof GlobalState)
+			if (stored !== undefined) {
+				await contextProxy.updateGlobalState("codebaseIndexModels" as keyof GlobalState, undefined)
+				logger.info("  Removed codebaseIndexModels from globalState")
+			} else {
+				logger.info("  codebaseIndexModels not found in globalState, skipping")
+			}
+		},
+	},
 }
 
 /**

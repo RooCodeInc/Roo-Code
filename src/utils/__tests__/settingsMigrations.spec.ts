@@ -213,6 +213,12 @@ describe("settingsMigrations", () => {
 			expect("customMigration" in migrations[2]).toBe(true)
 		})
 
+		it("should have migration version 3 defined with customMigration", () => {
+			expect(migrations[3]).toBeDefined()
+			expect(migrations[3].description).toContain("codebaseIndexModels")
+			expect("customMigration" in migrations[3]).toBe(true)
+		})
+
 		it("CURRENT_MIGRATION_VERSION should be the max key in migrations", () => {
 			const maxVersion = Math.max(...Object.keys(migrations).map(Number))
 			expect(CURRENT_MIGRATION_VERSION).toBe(maxVersion)
@@ -301,6 +307,48 @@ describe("settingsMigrations", () => {
 
 			// Should still remove the nested object
 			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("codebaseIndexConfig", undefined)
+		})
+	})
+
+	describe("migration v3 - remove codebaseIndexModels from globalState", () => {
+		it("should remove codebaseIndexModels if it exists", async () => {
+			const mockModels = { openai: { model: "text-embedding-3-small" } }
+
+			mockContextProxy.getGlobalState.mockImplementation((key: keyof GlobalState) => {
+				if (key === "settingsMigrationVersion") return 2 // Already completed v1 and v2
+				if (key === "codebaseIndexModels") return mockModels
+				return undefined
+			})
+
+			await runSettingsMigrations(mockContextProxy as unknown as ContextProxy)
+
+			// Should have removed codebaseIndexModels
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith("codebaseIndexModels", undefined)
+
+			// Migration version should be updated
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith(
+				"settingsMigrationVersion",
+				CURRENT_MIGRATION_VERSION,
+			)
+		})
+
+		it("should skip migration if codebaseIndexModels does not exist", async () => {
+			mockContextProxy.getGlobalState.mockImplementation((key: keyof GlobalState) => {
+				if (key === "settingsMigrationVersion") return 2 // Already completed v1 and v2
+				if (key === "codebaseIndexModels") return undefined
+				return undefined
+			})
+
+			await runSettingsMigrations(mockContextProxy as unknown as ContextProxy)
+
+			// Should NOT have called updateGlobalState for codebaseIndexModels
+			expect(mockContextProxy.updateGlobalState).not.toHaveBeenCalledWith("codebaseIndexModels", undefined)
+
+			// Should still update migration version
+			expect(mockContextProxy.updateGlobalState).toHaveBeenCalledWith(
+				"settingsMigrationVersion",
+				CURRENT_MIGRATION_VERSION,
+			)
 		})
 	})
 

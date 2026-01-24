@@ -176,7 +176,8 @@ export class ClineProvider
 		ClineProvider.activeInstances.add(this)
 
 		this.mdmService = mdmService
-		this.updateGlobalState("codebaseIndexModels", EMBEDDING_MODEL_PROFILES)
+		// Note: EMBEDDING_MODEL_PROFILES is passed directly to webview via getStateToPostToWebview()
+		// without persisting to globalState. The webview receives it via the ?? fallback.
 
 		// Start configuration loading (which might trigger indexing) in the background.
 		// Don't await, allowing activation to continue immediately.
