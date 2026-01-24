@@ -372,6 +372,8 @@
 		"geminiApiKey": "Chave de API Gemini",
 		"getGroqApiKey": "Obter chave de API Groq",
 		"groqApiKey": "Chave de API Groq",
+		"harmonyBaseUrl": "URL de Base do Harmony",
+		"harmonyApiKey": "Chave de API do Harmony",
 		"getSambaNovaApiKey": "Obter chave de API SambaNova",
 		"sambaNovaApiKey": "Chave de API SambaNova",
 		"getGeminiApiKey": "Obter chave de API Gemini",

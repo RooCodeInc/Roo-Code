@@ -372,6 +372,8 @@
 		"geminiApiKey": "Gemini API-sleutel",
 		"getGroqApiKey": "Groq API-sleutel ophalen",
 		"groqApiKey": "Groq API-sleutel",
+		"harmonyBaseUrl": "Harmony Basis-URL",
+		"harmonyApiKey": "Harmony API-sleutel",
 		"getSambaNovaApiKey": "SambaNova API-sleutel ophalen",
 		"sambaNovaApiKey": "SambaNova API-sleutel",
 		"getGeminiApiKey": "Gemini API-sleutel ophalen",

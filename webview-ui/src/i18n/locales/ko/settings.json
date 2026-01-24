@@ -372,6 +372,8 @@
 		"geminiApiKey": "Gemini API 키",
 		"getGroqApiKey": "Groq API 키 받기",
 		"groqApiKey": "Groq API 키",
+		"harmonyBaseUrl": "Harmony 기본 URL",
+		"harmonyApiKey": "Harmony API 키",
 		"getSambaNovaApiKey": "SambaNova API 키 받기",
 		"sambaNovaApiKey": "SambaNova API 키",
 		"getGeminiApiKey": "Gemini API 키 받기",

@@ -372,6 +372,8 @@
 		"geminiApiKey": "Gemini APIキー",
 		"getGroqApiKey": "Groq APIキーを取得",
 		"groqApiKey": "Groq APIキー",
+		"harmonyBaseUrl": "Harmony ベースURL",
+		"harmonyApiKey": "Harmony APIキー",
 		"getSambaNovaApiKey": "SambaNova APIキーを取得",
 		"sambaNovaApiKey": "SambaNova APIキー",
 		"getHuggingFaceApiKey": "Hugging Face APIキーを取得",

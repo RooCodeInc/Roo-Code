@@ -372,6 +372,8 @@
 		"geminiApiKey": "Gemini API-ключ",
 		"getGroqApiKey": "Получить Groq API-ключ",
 		"groqApiKey": "Groq API-ключ",
+		"harmonyBaseUrl": "Базовый URL Harmony",
+		"harmonyApiKey": "Ключ API Harmony",
 		"getSambaNovaApiKey": "Получить SambaNova API-ключ",
 		"sambaNovaApiKey": "SambaNova API-ключ",
 		"getGeminiApiKey": "Получить Gemini API-ключ",
