@@ -229,9 +229,9 @@ describe("IndexingSettings", () => {
 			<IndexingSettings codebaseIndexConfig={undefined} onConfigChange={onConfigChange} />,
 		)
 
-		// Should render without errors and show enable checkbox as checked by default
+		// Should render without errors and show enable checkbox as unchecked by default
 		const checkbox = getByTestId("enable-checkbox") as HTMLInputElement
-		expect(checkbox.checked).toBe(true)
+		expect(checkbox.checked).toBe(false)
 	})
 
 	it("updates checkbox state when prop changes", () => {

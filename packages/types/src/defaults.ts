@@ -66,7 +66,6 @@ export const settingDefaults = {
 	alwaysAllowFollowupQuestions: false,
 
 	// Prompt enhancement settings
-	condensingApiConfigId: "",
 	includeTaskHistoryInEnhance: true,
 
 	// UI settings

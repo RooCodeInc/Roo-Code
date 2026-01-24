@@ -40,7 +40,7 @@ export const IndexingSettings = ({ codebaseIndexConfig, onConfigChange, ...props
 	const { codebaseIndexModels, apiConfiguration } = useExtensionState()
 
 	// Extract values from nested config
-	const codebaseIndexEnabled = codebaseIndexConfig?.codebaseIndexEnabled ?? true
+	const codebaseIndexEnabled = codebaseIndexConfig?.codebaseIndexEnabled ?? false
 	const codebaseIndexQdrantUrl = codebaseIndexConfig?.codebaseIndexQdrantUrl ?? ""
 	const codebaseIndexEmbedderProvider = codebaseIndexConfig?.codebaseIndexEmbedderProvider ?? "openai"
 	const codebaseIndexEmbedderBaseUrl = codebaseIndexConfig?.codebaseIndexEmbedderBaseUrl ?? ""

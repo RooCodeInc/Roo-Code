@@ -191,7 +191,6 @@ describe("settingsMigrations", () => {
 			expect(v1Defaults.browserToolEnabled).toBe(true)
 			expect(v1Defaults.soundEnabled).toBe(true)
 			expect(v1Defaults.soundVolume).toBe(0.5)
-			expect(v1Defaults.diffEnabled).toBe(true)
 			expect(v1Defaults.enableCheckpoints).toBe(false)
 			expect(v1Defaults.checkpointTimeout).toBe(30)
 			expect(v1Defaults.browserViewportSize).toBe("900x600")

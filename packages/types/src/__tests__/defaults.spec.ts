@@ -47,7 +47,6 @@ describe("settingDefaults", () => {
 		expect(settingDefaults.alwaysAllowFollowupQuestions).toBe(false)
 
 		// Prompt enhancement settings
-		expect(settingDefaults.condensingApiConfigId).toBe("")
 		expect(settingDefaults.includeTaskHistoryInEnhance).toBe(true)
 
 		// UI settings
