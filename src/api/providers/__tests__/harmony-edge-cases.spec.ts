@@ -1,11 +1,11 @@
 // npx vitest run src/api/providers/__tests__/harmony-edge-cases.spec.ts
 // Integration tests for Harmony API edge cases
-// Run with: HARMONY_API_KEY=your-key npx vitest run --run api/providers/__tests__/harmony-edge-cases.spec.ts
+// Run with: HARMONY_API_KEY=your-key HARMONY_BASE_URL=your-base-url npx vitest run --run api/providers/__tests__/harmony-edge-cases.spec.ts
 
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import OpenAI from "openai"
 
-const isIntegrationTest = !!process.env.HARMONY_API_KEY
+const isIntegrationTest = !!process.env.HARMONY_API_KEY && !!process.env.HARMONY_BASE_URL
 const skipIfNoApi = isIntegrationTest ? describe : describe.skip
 
 skipIfNoApi("Harmony API Edge Cases (Integration Tests)", () => {
@@ -13,7 +13,10 @@ skipIfNoApi("Harmony API Edge Cases (Integration Tests)", () => {
 
 	beforeEach(() => {
 		const apiKey = process.env.HARMONY_API_KEY || "sk-placeholder"
-		const baseURL = process.env.HARMONY_BASE_URL || "https://ai.mezzanineapps.com/v1"
+		const baseURL = process.env.HARMONY_BASE_URL
+		if (!baseURL) {
+			throw new Error("HARMONY_BASE_URL environment variable is required for integration tests")
+		}
 		client = new OpenAI({ baseURL, apiKey })
 	})
 
@@ -46,8 +49,12 @@ skipIfNoApi("Harmony API Edge Cases (Integration Tests)", () => {
 	})
 
 	it("should return proper error for invalid API key", async () => {
+		const baseURL = process.env.HARMONY_BASE_URL
+		if (!baseURL) {
+			throw new Error("HARMONY_BASE_URL environment variable is required")
+		}
 		const badClient = new OpenAI({
-			baseURL: "https://ai.mezzanineapps.com/v1",
+			baseURL,
 			apiKey: "invalid-key-12345",
 		})
 

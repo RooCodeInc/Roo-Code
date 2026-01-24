@@ -21,12 +21,16 @@ describe("HarmonyHandler", () => {
 	beforeEach(() => {
 		vitest.clearAllMocks()
 		mockCreate = (OpenAI as unknown as any)().chat.completions.create
-		handler = new HarmonyHandler({ harmonyApiKey: "test-harmony-api-key" })
+		handler = new HarmonyHandler({
+			harmonyApiKey: "test-harmony-api-key",
+			harmonyBaseUrl: "https://test-harmony.example.com/v1",
+		})
 	})
 
-	it("should use the correct Harmony base URL by default", () => {
-		new HarmonyHandler({ harmonyApiKey: "test-harmony-api-key" })
-		expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ baseURL: "https://ai.mezzanineapps.com/v1" }))
+	it("should throw error when harmonyBaseUrl is not provided", () => {
+		expect(() => {
+			new HarmonyHandler({ harmonyApiKey: "test-harmony-api-key" })
+		}).toThrow("Harmony API base URL is required")
 	})
 
 	it("should use custom Harmony base URL when provided", () => {
@@ -37,12 +41,18 @@ describe("HarmonyHandler", () => {
 
 	it("should use the provided API key", () => {
 		const harmonyApiKey = "test-harmony-api-key-123"
-		new HarmonyHandler({ harmonyApiKey })
+		new HarmonyHandler({
+			harmonyApiKey,
+			harmonyBaseUrl: "https://test-harmony.example.com/v1",
+		})
 		expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ apiKey: harmonyApiKey }))
 	})
 
 	it("should handle empty API key gracefully with placeholder", () => {
-		new HarmonyHandler({ harmonyApiKey: "" })
+		new HarmonyHandler({
+			harmonyApiKey: "",
+			harmonyBaseUrl: "https://test-harmony.example.com/v1",
+		})
 		expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "sk-placeholder" }))
 	})
 
@@ -57,6 +67,7 @@ describe("HarmonyHandler", () => {
 		const handlerWithModel = new HarmonyHandler({
 			apiModelId: testModelId,
 			harmonyApiKey: "test-harmony-api-key",
+			harmonyBaseUrl: "https://test-harmony.example.com/v1",
 		})
 		const model = handlerWithModel.getModel()
 		expect(model.id).toBe(testModelId)
@@ -73,7 +84,10 @@ describe("HarmonyHandler", () => {
 	})
 
 	it("should have reasonable default temperature", () => {
-		const handler = new HarmonyHandler({ harmonyApiKey: "test-key" })
+		const handler = new HarmonyHandler({
+			harmonyApiKey: "test-key",
+			harmonyBaseUrl: "https://test-harmony.example.com/v1",
+		})
 		// BaseOpenAiCompatibleProvider sets defaultTemperature to 0.7
 		expect(handler["defaultTemperature"]).toBe(0.7)
 	})
@@ -105,5 +119,112 @@ describe("HarmonyHandler", () => {
 
 	it("should initialize with proper provider name", () => {
 		expect(handler["providerName"]).toBe("Harmony")
+	})
+
+	describe("convertToolsForOpenAI", () => {
+		it("should remove `strict` parameter from function tools to prevent vLLM warnings", () => {
+			const tools = [
+				{
+					type: "function",
+					function: {
+						name: "test_tool",
+						description: "A test tool",
+						parameters: { type: "object", properties: {} },
+						strict: true, // This will be added by parent class
+					},
+				},
+			]
+
+			const converted = handler.convertToolsForOpenAI(tools)
+
+			expect(converted).toBeDefined()
+			expect(converted).toHaveLength(1)
+			expect(converted![0].type).toBe("function")
+			expect(converted![0].function.name).toBe("test_tool")
+			// The strict parameter should be removed
+			expect(converted![0].function.strict).toBeUndefined()
+		})
+
+		it("should preserve all other tool properties when removing strict", () => {
+			const tools = [
+				{
+					type: "function",
+					function: {
+						name: "example_function",
+						description: "An example function",
+						parameters: {
+							type: "object",
+							properties: {
+								param1: { type: "string", description: "First parameter" },
+								param2: { type: "number" },
+							},
+							required: ["param1"],
+							additionalProperties: false,
+						},
+						strict: false,
+					},
+				},
+			]
+
+			const converted = handler.convertToolsForOpenAI(tools)
+
+			expect(converted).toBeDefined()
+			expect(converted![0].function.name).toBe("example_function")
+			expect(converted![0].function.description).toBe("An example function")
+			expect(converted![0].function.parameters).toEqual({
+				type: "object",
+				properties: {
+					param1: { type: "string", description: "First parameter" },
+					param2: { type: "number" },
+				},
+				// Parent class adds all properties to required for OpenAI strict mode
+				required: ["param1", "param2"],
+				additionalProperties: false,
+			})
+			expect(converted![0].function.strict).toBeUndefined()
+		})
+
+		it("should handle MCP tools (which have strict: false from parent)", () => {
+			const tools = [
+				{
+					type: "function",
+					function: {
+						name: "mcp--my_mcp_tool",
+						description: "An MCP tool",
+						parameters: { type: "object", properties: {} },
+						strict: false, // MCP tools get strict: false from parent
+					},
+				},
+			]
+
+			const converted = handler.convertToolsForOpenAI(tools)
+
+			expect(converted).toBeDefined()
+			expect(converted![0].function.name).toBe("mcp--my_mcp_tool")
+			// MCP tools should also have strict removed
+			expect(converted![0].function.strict).toBeUndefined()
+		})
+
+		it("should handle non-function tools without modification", () => {
+			const tools = [
+				{
+					type: "some_other_type",
+					data: "test",
+				},
+			]
+
+			const converted = handler.convertToolsForOpenAI(tools)
+
+			expect(converted).toBeDefined()
+			expect(converted![0]).toEqual({
+				type: "some_other_type",
+				data: "test",
+			})
+		})
+
+		it("should return undefined for undefined input", () => {
+			const converted = handler.convertToolsForOpenAI(undefined)
+			expect(converted).toBeUndefined()
+		})
 	})
 })

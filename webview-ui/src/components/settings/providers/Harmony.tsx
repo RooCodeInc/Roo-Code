@@ -29,10 +29,10 @@ export const Harmony = ({ apiConfiguration, setApiConfigurationField }: HarmonyP
 	return (
 		<>
 			<VSCodeTextField
-				value={apiConfiguration?.harmonyBaseUrl || "https://ai.mezzanineapps.com/v1"}
+				value={apiConfiguration?.harmonyBaseUrl || ""}
 				type="url"
 				onInput={handleInputChange("harmonyBaseUrl")}
-				placeholder="https://ai.mezzanineapps.com/v1"
+				placeholder="https://example.com/v1"
 				className="w-full">
 				<label className="block font-medium mb-1">{t("settings:providers.harmonyBaseUrl")}</label>
 			</VSCodeTextField>

@@ -1,12 +1,12 @@
 // npx vitest run src/api/providers/__tests__/harmony-roo-code-integration.spec.ts
 // Integration tests simulating the exact message format that Roo Code's
 // BaseOpenAiCompatibleProvider would send to the Harmony API
-// Run with: HARMONY_API_KEY=your-key npx vitest run --run api/providers/__tests__/harmony-roo-code-integration.spec.ts
+// Run with: HARMONY_API_KEY=your-key HARMONY_BASE_URL=your-base-url npx vitest run --run api/providers/__tests__/harmony-roo-code-integration.spec.ts
 
 import { describe, it, expect, beforeEach } from "vitest"
 import OpenAI from "openai"
 
-const isIntegrationTest = !!process.env.HARMONY_API_KEY
+const isIntegrationTest = !!process.env.HARMONY_API_KEY && !!process.env.HARMONY_BASE_URL
 const skipIfNoApi = isIntegrationTest ? describe : describe.skip
 
 skipIfNoApi("Roo Code Integration with Harmony API (Integration Tests)", () => {
@@ -14,7 +14,10 @@ skipIfNoApi("Roo Code Integration with Harmony API (Integration Tests)", () => {
 
 	beforeEach(() => {
 		const apiKey = process.env.HARMONY_API_KEY || "sk-placeholder"
-		const baseURL = process.env.HARMONY_BASE_URL || "https://ai.mezzanineapps.com/v1"
+		const baseURL = process.env.HARMONY_BASE_URL
+		if (!baseURL) {
+			throw new Error("HARMONY_BASE_URL environment variable is required for integration tests")
+		}
 		client = new OpenAI({ baseURL, apiKey })
 	})
 

@@ -1,11 +1,29 @@
 import OpenAI from "openai"
 
 async function testHarmonyAPI() {
+	// Check for required environment variables
+	const harmonyBaseUrl = process.env.HARMONY_BASE_URL
+	const harmonyApiKey = process.env.HARMONY_API_KEY
+
+	if (!harmonyBaseUrl) {
+		console.error("❌ Error: HARMONY_BASE_URL environment variable is not set")
+		console.error("Please set it before running this test:")
+		console.error("  export HARMONY_BASE_URL=https://your-harmony-endpoint/v1")
+		process.exit(1)
+	}
+
+	if (!harmonyApiKey) {
+		console.error("❌ Error: HARMONY_API_KEY environment variable is not set")
+		console.error("Please set it before running this test:")
+		console.error("  export HARMONY_API_KEY=your-api-key")
+		process.exit(1)
+	}
+
 	console.log("Testing Harmony API Compatibility...\n")
 
 	const client = new OpenAI({
-		baseURL: "https://ai.mezzanineapps.com/v1",
-		apiKey: "sk-3492bde9-b0f0-4cba-ab3a-a37be0f473de",
+		baseURL: harmonyBaseUrl,
+		apiKey: harmonyApiKey,
 	})
 
 	try {
