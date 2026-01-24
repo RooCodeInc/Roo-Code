@@ -178,7 +178,9 @@
 		"searchMinScoreResetTooltip": "기본값(0.4)으로 재설정",
 		"searchMaxResultsLabel": "최대 검색 결과",
 		"searchMaxResultsDescription": "코드베이스 인덱스를 쿼리할 때 반환할 최대 검색 결과 수입니다. 값이 높을수록 더 많은 컨텍스트를 제공하지만 관련성이 낮은 결과가 포함될 수 있습니다.",
-		"resetToDefault": "기본값으로 재설정"
+		"resetToDefault": "기본값으로 재설정",
+		"maxBatchRetriesLabel": "Maximum Batch Retries",
+		"maxBatchRetriesDescription": "Maximum number of retry attempts for failed batch operations during indexing. Higher values improve reliability on unstable connections but may delay error detection."
 	},
 	"autoApprove": {
 		"toggleShortcut": "<SettingsLink>IDE 환경 설정</SettingsLink>에서 이 설정에 대한 전역 바로 가기를 구성할 수 있습니다.",

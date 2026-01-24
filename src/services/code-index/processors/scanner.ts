@@ -33,6 +33,7 @@ import { Package } from "../../../shared/package"
 
 export class DirectoryScanner implements IDirectoryScanner {
 	private readonly batchSegmentThreshold: number
+	private readonly maxBatchRetries: number
 
 	constructor(
 		private readonly embedder: IEmbedder,
@@ -41,6 +42,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		private readonly cacheManager: CacheManager,
 		private readonly ignoreInstance: Ignore,
 		batchSegmentThreshold?: number,
+		maxBatchRetries?: number,
 	) {
 		// Get the configurable batch size from VSCode settings, fallback to default
 		// If not provided in constructor, try to get from VSCode settings
@@ -56,6 +58,8 @@ export class DirectoryScanner implements IDirectoryScanner {
 				this.batchSegmentThreshold = BATCH_SEGMENT_THRESHOLD
 			}
 		}
+		// Set max batch retries from parameter or use default constant
+		this.maxBatchRetries = maxBatchRetries ?? MAX_BATCH_RETRIES
 	}
 
 	/**
@@ -360,7 +364,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		let success = false
 		let lastError: Error | null = null
 
-		while (attempts < MAX_BATCH_RETRIES && !success) {
+		while (attempts < this.maxBatchRetries && !success) {
 			attempts++
 			try {
 				// --- Deletion Step ---
@@ -450,7 +454,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 					batchSize: batchBlocks.length,
 				})
 
-				if (attempts < MAX_BATCH_RETRIES) {
+				if (attempts < this.maxBatchRetries) {
 					const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempts - 1)
 					await new Promise((resolve) => setTimeout(resolve, delay))
 				}
@@ -458,7 +462,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		}
 
 		if (!success && lastError) {
-			console.error(`[DirectoryScanner] Failed to process batch after ${MAX_BATCH_RETRIES} attempts`)
+			console.error(`[DirectoryScanner] Failed to process batch after ${this.maxBatchRetries} attempts`)
 			if (onError) {
 				// Preserve the original error message from embedders which now have detailed i18n messages
 				const errorMessage = lastError.message || "Unknown error"
@@ -467,7 +471,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 				onError(
 					new Error(
 						t("embeddings:scanner.failedToProcessBatchWithError", {
-							maxRetries: MAX_BATCH_RETRIES,
+							maxRetries: this.maxBatchRetries,
 							errorMessage,
 						}),
 					),
