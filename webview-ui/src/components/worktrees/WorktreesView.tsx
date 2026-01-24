@@ -128,7 +128,7 @@ export const WorktreesView = () => {
 		setShowWorktreesInHomeScreen(newValue)
 		vscode.postMessage({
 			type: "updateSettings",
-			values: { showWorktreesInHomeScreen: newValue },
+			updatedSettings: { showWorktreesInHomeScreen: newValue },
 		})
 	}, [showWorktreesInHomeScreen, setShowWorktreesInHomeScreen])
 
