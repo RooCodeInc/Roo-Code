@@ -125,7 +125,12 @@ import {
 	checkpointDiff,
 } from "../checkpoints"
 import { processUserContentMentions } from "../mentions/processUserContentMentions"
-import { getMessagesSinceLastSummary, summarizeConversation, getEffectiveApiHistory } from "../condense"
+import {
+	getMessagesSinceLastSummary,
+	summarizeConversation,
+	getEffectiveApiHistory,
+	generateFoldedFileContext,
+} from "../condense"
 import { MessageQueueService } from "../message-queue/MessageQueueService"
 import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
@@ -1623,6 +1628,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Generate environment details to include in the condensed summary
 		const environmentDetails = await getEnvironmentDetails(this, true)
 
+		// Generate folded file context from files read by Roo during this task
+		// Each file gets its own <system-reminder> block as a separate content block
+		let foldedFileContextSections: string[] | undefined
+		try {
+			const filesReadByRoo = await this.fileContextTracker.getFilesReadByRoo()
+			if (filesReadByRoo.length > 0) {
+				const foldedResult = await generateFoldedFileContext(filesReadByRoo, {
+					cwd: this.cwd,
+					rooIgnoreController: this.rooIgnoreController,
+				})
+				if (foldedResult.sections.length > 0) {
+					foldedFileContextSections = foldedResult.sections
+				}
+			}
+		} catch (error) {
+			console.error("[Task#condenseContext] Failed to generate folded file context:", error)
+			// Continue without folded context - it's not critical
+		}
+
 		const {
 			messages,
 			summary,
@@ -1640,6 +1664,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			customCondensingPrompt, // User's custom prompt
 			metadata, // Pass metadata with tools
 			environmentDetails, // Include environment details in summary
+			foldedFileContextSections, // Include folded file context (each file in its own block)
 		)
 		if (error) {
 			await this.say(

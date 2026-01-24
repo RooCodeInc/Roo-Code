@@ -10,6 +10,10 @@ import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 
+// Re-export folded file context utilities
+export { generateFoldedFileContext } from "./foldedFileContext"
+export type { FoldedFileContextResult, FoldedFileContextOptions } from "./foldedFileContext"
+
 export const MIN_CONDENSE_THRESHOLD = 5 // Minimum percentage of context window to trigger condensing
 export const MAX_CONDENSE_THRESHOLD = 100 // Maximum percentage of context window to trigger condensing
 
@@ -131,6 +135,7 @@ export type SummarizeResponse = {
  * - Post-condense, the model sees only the summary (true fresh start)
  * - All messages are still stored but tagged with condenseParent
  * - <command> blocks from the original task are preserved across condensings
+ * - File context (folded code definitions) can be preserved for continuity
  *
  * Environment details handling:
  * - For AUTOMATIC condensing (isAutomaticTrigger=true): Environment details are included
@@ -148,6 +153,7 @@ export type SummarizeResponse = {
  * @param {string} customCondensingPrompt - Optional custom prompt to use for condensing
  * @param {ApiHandlerCreateMessageMetadata} metadata - Optional metadata to pass to createMessage (tools, taskId, etc.)
  * @param {string} environmentDetails - Optional environment details string to include in the summary (only used when isAutomaticTrigger=true)
+ * @param {string[]} foldedFileContextSections - Optional array of folded file context sections (each file in its own <system-reminder> block)
  * @returns {SummarizeResponse} - The result of the summarization operation (see above)
  */
 export async function summarizeConversation(
@@ -159,6 +165,7 @@ export async function summarizeConversation(
 	customCondensingPrompt?: string,
 	metadata?: ApiHandlerCreateMessageMetadata,
 	environmentDetails?: string,
+	foldedFileContextSections?: string[],
 ): Promise<SummarizeResponse> {
 	TelemetryService.instance.captureContextCondensed(
 		taskId,
@@ -289,7 +296,7 @@ export async function summarizeConversation(
 		{ type: "text", text: `## Conversation Summary\n${summary}` },
 	]
 
-	// Add command blocks as a separate text block if present
+	// Add command blocks (active workflows) in their own system-reminder block if present
 	if (commandBlocks) {
 		summaryContent.push({
 			type: "text",
@@ -299,6 +306,19 @@ The following directives must be maintained across all future condensings:
 ${commandBlocks}
 </system-reminder>`,
 		})
+	}
+
+	// Add folded file context (smart code folding) if present
+	// Each file gets its own <system-reminder> block as a separate content block
+	if (foldedFileContextSections && foldedFileContextSections.length > 0) {
+		for (const section of foldedFileContextSections) {
+			if (section.trim()) {
+				summaryContent.push({
+					type: "text",
+					text: section,
+				})
+			}
+		}
 	}
 
 	// Add environment details as a separate text block if provided AND this is an automatic trigger.

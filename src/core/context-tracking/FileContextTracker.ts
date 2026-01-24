@@ -206,6 +206,42 @@ export class FileContextTracker {
 		return files
 	}
 
+	/**
+	 * Gets a list of unique file paths that Roo has read during this task.
+	 * Optionally filters to only include files read after a specific timestamp.
+	 *
+	 * @param sinceTimestamp - Optional timestamp to filter files read after this time
+	 * @returns Array of unique file paths that have been read
+	 */
+	async getFilesReadByRoo(sinceTimestamp?: number): Promise<string[]> {
+		try {
+			const metadata = await this.getTaskMetadata(this.taskId)
+
+			const readFiles = metadata.files_in_context
+				.filter((entry) => {
+					// Only include files that were read by Roo (not user edits)
+					const isReadByRoo = entry.record_source === "read_tool" || entry.record_source === "file_mentioned"
+					if (!isReadByRoo) {
+						return false
+					}
+
+					// If sinceTimestamp is provided, only include files read after that time
+					if (sinceTimestamp && entry.roo_read_date) {
+						return entry.roo_read_date >= sinceTimestamp
+					}
+
+					return true
+				})
+				.map((entry) => entry.path)
+
+			// Return unique file paths (same file may have multiple entries)
+			return [...new Set(readFiles)]
+		} catch (error) {
+			console.error("Failed to get files read by Roo:", error)
+			return []
+		}
+	}
+
 	getAndClearCheckpointPossibleFile(): string[] {
 		const files = Array.from(this.checkpointPossibleFiles)
 		this.checkpointPossibleFiles.clear()
