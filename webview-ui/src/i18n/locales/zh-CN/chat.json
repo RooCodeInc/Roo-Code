@@ -336,9 +336,7 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"openaiCodexProvider": "添加了 OpenAI - ChatGPT Plus/Pro 提供商，提供基于订阅的 Codex 模型访问，无需按 Token 收费。",
-			"gpt52codexModel": "新的 gpt-5.2-codex 模型已添加到 Roo Code Router、标准 OpenAI 提供商等。",
-			"bugFixes": "修复了导致灰屏的内存泄漏、Gemini 思考签名问题以及其他稳定性改进。"
+			"intelligentContextCondensation": "智能上下文压缩 v2：对管理上下文窗口的算法进行了完全重构。现在您可以更长时间地运行任务，而 Roo 不会变得迟钝。"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
@@ -348,8 +346,14 @@
 		},
 		"careers": "此外，<careersLink>我们正在招聘！</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "总成本（包括子任务）: ${{cost}}",
+		"total": "总成本: ${{cost}}",
+		"includesSubtasks": "包括子任务成本"
+	},
 	"browser": {
 		"session": "浏览器会话",
+		"active": "活动中",
 		"rooWantsToUse": "Roo想使用浏览器",
 		"consoleLogs": "控制台日志",
 		"noNewLogs": "(没有新日志)",
@@ -487,5 +491,14 @@
 		"updated": "已更新待办事项列表",
 		"completed": "已完成",
 		"started": "已开始"
+	},
+	"tooManyTools": {
+		"title": "启用的工具过多",
+		"toolsPart_one": "{{count}} 个工具",
+		"toolsPart_other": "{{count}} 个工具",
+		"serversPart_one": "{{count}} 个 MCP 服务",
+		"serversPart_other": "{{count}} 个 MCP 服务",
+		"messageTemplate": "你通过 {{servers}} 启用了 {{tools}}。这么多数量会混淆模型并导致错误。建议将其保持在 {{threshold}} 以下。",
+		"openMcpSettings": "打开 MCP 设置"
 	}
 }

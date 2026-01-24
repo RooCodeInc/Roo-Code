@@ -335,9 +335,7 @@
 		},
 		"release": {
 			"heading": "नया क्या है:",
-			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider जोड़ा गया जो token लागत के बिना Codex मॉडल तक subscription-आधारित पहुंच देता है।",
-			"gpt52codexModel": "नया gpt-5.2-codex मॉडल Roo Code Router, मानक OpenAI provider और अन्य में जोड़ा गया।",
-			"bugFixes": "ग्रे स्क्रीन का कारण बनने वाली मेमोरी लीक, Gemini thought signature समस्याओं और अन्य स्थिरता सुधार ठीक किए गए।"
+			"intelligentContextCondensation": "बुद्धिमान संदर्भ संघनन v2: संदर्भ विंडो प्रबंधित करने वाले एल्गोरिदम का पूर्ण पुनर्निर्माण। अब आप Roo की गुणवत्ता खोए बिना लंबे समय तक कार्य चला सकते हैं।"
 		},
 		"cloudAgents": {
 			"heading": "क्लाउड में नया:",
@@ -347,8 +345,14 @@
 		},
 		"careers": "साथ ही, <careersLink>हम भर्ती कर रहे हैं!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "कुल लागत (उप-कार्यों सहित): ${{cost}}",
+		"total": "कुल लागत: ${{cost}}",
+		"includesSubtasks": "उप-कार्यों की लागत शामिल है"
+	},
 	"browser": {
 		"session": "ब्राउज़र सत्र",
+		"active": "सक्रिय",
 		"rooWantsToUse": "Roo ब्राउज़र का उपयोग करना चाहता है",
 		"consoleLogs": "कंसोल लॉग",
 		"noNewLogs": "(कोई नया लॉग नहीं)",
@@ -486,5 +490,14 @@
 		"updated": "टू-डू सूची अपडेट की गई",
 		"completed": "पूरा हुआ",
 		"started": "शुरू हुआ"
+	},
+	"tooManyTools": {
+		"title": "बहुत सारे उपकरण सक्षम हैं",
+		"toolsPart_one": "{{count}} उपकरण",
+		"toolsPart_other": "{{count}} उपकरण",
+		"serversPart_one": "{{count}} MCP सर्वर",
+		"serversPart_other": "{{count}} MCP सर्वर",
+		"messageTemplate": "आपके पास {{servers}} के माध्यम से {{tools}} सक्षम हैं। इतनी अधिक संख्या मॉडल को भ्रमित कर सकती है और त्रुटियों का कारण बन सकती है। इसे {{threshold}} से नीचे रखने का प्रयास करें।",
+		"openMcpSettings": "MCP सेटिंग्स खोलें"
 	}
 }

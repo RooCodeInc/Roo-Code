@@ -98,8 +98,7 @@ const features: Feature[] = [
 	{
 		icon: Brain,
 		title: "Model Agnostic",
-		description:
-			"Bring your own keys or use the Roo Code Router with access to all top models with no markup.",
+		description: "Bring your own keys or use the Roo Code Router with access to all top models with no markup.",
 	},
 	{
 		icon: Github,
@@ -115,8 +114,7 @@ const features: Feature[] = [
 	{
 		icon: Router,
 		title: "Roomote Control",
-		description:
-			"Connect to your local VS Code instance and control the extension remotely from the browser.",
+		description: "Connect to your local VS Code instance and control the extension remotely from the browser.",
 	},
 	{
 		icon: Users,
@@ -153,7 +151,7 @@ export default function CloudPage() {
 							Your AI Team <span className="text-violet-500">in the Cloud</span>
 						</h1>
 						<p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-						Create your agent team in the Cloud, give them access to GitHub, and start delegating tasks
+							Create your agent team in the Cloud, give them access to GitHub, and start delegating tasks
 							from the web, Slack, Linear, and more.
 						</p>
 						<div className="flex flex-col sm:flex-row gap-4 justify-center">

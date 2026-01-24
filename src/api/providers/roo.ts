@@ -106,8 +106,8 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			stream: true,
 			stream_options: { include_usage: true },
 			...(reasoning && { reasoning }),
-			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+			tools: this.convertToolsForOpenAI(metadata?.tools),
+			tool_choice: metadata?.tool_choice,
 		}
 
 		try {
@@ -375,7 +375,6 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			supportsImages: false,
 			supportsReasoningEffort: false,
 			supportsPromptCache: true,
-			supportsNativeTools: false,
 			inputPrice: 0,
 			outputPrice: 0,
 			isFree: false,

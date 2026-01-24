@@ -19,19 +19,9 @@ interface ListFilesParams {
 export class ListFilesTool extends BaseTool<"list_files"> {
 	readonly name = "list_files" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): ListFilesParams {
-		const recursiveRaw: string | undefined = params.recursive
-		const recursive = recursiveRaw?.toLowerCase() === "true"
-
-		return {
-			path: params.path || "",
-			recursive,
-		}
-	}
-
 	async execute(params: ListFilesParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { path: relDirPath, recursive } = params
-		const { askApproval, handleError, pushToolResult, removeClosingTag } = callbacks
+		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
 			if (!relDirPath) {
@@ -88,7 +78,7 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: !recursive ? "listFilesTopLevel" : "listFilesRecursive",
-			path: getReadablePath(task.cwd, this.removeClosingTag("path", relDirPath, block.partial)),
+			path: getReadablePath(task.cwd, relDirPath ?? ""),
 			isOutsideWorkspace,
 		}
 

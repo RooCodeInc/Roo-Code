@@ -3,7 +3,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 
 import { LiteLLMHandler } from "../lite-llm"
 import { ApiHandlerOptions } from "../../../shared/api"
-import { litellmDefaultModelId, litellmDefaultModelInfo, TOOL_PROTOCOL } from "@roo-code/types"
+import { litellmDefaultModelId, litellmDefaultModelInfo } from "@roo-code/types"
 
 // Mock vscode first to avoid import errors
 vi.mock("vscode", () => ({}))
@@ -41,11 +41,11 @@ vi.mock("../fetchers/modelCache", () => ({
 			"llama-3": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			"gpt-4-turbo": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 			// Gemini models for thought signature injection tests
-			"gemini-3-pro": { ...litellmDefaultModelInfo, maxTokens: 8192, supportsNativeTools: true },
-			"gemini-3-flash": { ...litellmDefaultModelInfo, maxTokens: 8192, supportsNativeTools: true },
-			"gemini-2.5-pro": { ...litellmDefaultModelInfo, maxTokens: 8192, supportsNativeTools: true },
-			"google/gemini-3-pro": { ...litellmDefaultModelInfo, maxTokens: 8192, supportsNativeTools: true },
-			"vertex_ai/gemini-3-pro": { ...litellmDefaultModelInfo, maxTokens: 8192, supportsNativeTools: true },
+			"gemini-3-pro": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"gemini-3-flash": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"gemini-2.5-pro": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"google/gemini-3-pro": { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			"vertex_ai/gemini-3-pro": { ...litellmDefaultModelInfo, maxTokens: 8192 },
 		})
 	}),
 	getModelsFromCache: vi.fn().mockReturnValue(undefined),
@@ -414,6 +414,18 @@ describe("LiteLLMHandler", () => {
 				expect(isGeminiModel("gemini-2.5-flash")).toBe(true)
 			})
 
+			it("should detect Gemini models with spaces (LiteLLM model groups)", () => {
+				const handler = new LiteLLMHandler(mockOptions)
+				const isGeminiModel = (handler as any).isGeminiModel.bind(handler)
+
+				// LiteLLM model groups often use space-separated names with title case
+				expect(isGeminiModel("Gemini 3 Pro")).toBe(true)
+				expect(isGeminiModel("Gemini 3 Flash")).toBe(true)
+				expect(isGeminiModel("gemini 3 pro")).toBe(true)
+				expect(isGeminiModel("Gemini 2.5 Pro")).toBe(true)
+				expect(isGeminiModel("gemini 2.5 flash")).toBe(true)
+			})
+
 			it("should detect provider-prefixed Gemini models", () => {
 				const handler = new LiteLLMHandler(mockOptions)
 				const isGeminiModel = (handler as any).isGeminiModel.bind(handler)
@@ -421,6 +433,9 @@ describe("LiteLLMHandler", () => {
 				expect(isGeminiModel("google/gemini-3-pro")).toBe(true)
 				expect(isGeminiModel("vertex_ai/gemini-3-pro")).toBe(true)
 				expect(isGeminiModel("vertex/gemini-2.5-pro")).toBe(true)
+				// Space-separated variants with provider prefix
+				expect(isGeminiModel("google/gemini 3 pro")).toBe(true)
+				expect(isGeminiModel("vertex_ai/gemini 2.5 pro")).toBe(true)
 			})
 
 			it("should not detect non-Gemini models", () => {
@@ -568,10 +583,10 @@ describe("LiteLLMHandler", () => {
 				}
 				handler = new LiteLLMHandler(optionsWithGemini)
 
-				// Mock fetchModel to return a Gemini model with native tool support
+				// Mock fetchModel to return a Gemini model
 				vi.spyOn(handler as any, "fetchModel").mockResolvedValue({
 					id: "gemini-3-pro",
-					info: { ...litellmDefaultModelInfo, maxTokens: 8192, supportsNativeTools: true },
+					info: { ...litellmDefaultModelInfo, maxTokens: 8192 },
 				})
 
 				const systemPrompt = "You are a helpful assistant"
@@ -617,7 +632,6 @@ describe("LiteLLMHandler", () => {
 							function: { name: "read_file", description: "Read a file", parameters: {} },
 						},
 					],
-					toolProtocol: TOOL_PROTOCOL.NATIVE,
 				}
 
 				const generator = handler.createMessage(systemPrompt, messages, metadata as any)
@@ -646,7 +660,7 @@ describe("LiteLLMHandler", () => {
 
 				vi.spyOn(handler as any, "fetchModel").mockResolvedValue({
 					id: "gpt-4",
-					info: { ...litellmDefaultModelInfo, maxTokens: 8192, supportsNativeTools: true },
+					info: { ...litellmDefaultModelInfo, maxTokens: 8192 },
 				})
 
 				const systemPrompt = "You are a helpful assistant"
@@ -685,7 +699,6 @@ describe("LiteLLMHandler", () => {
 							function: { name: "read_file", description: "Read a file", parameters: {} },
 						},
 					],
-					toolProtocol: TOOL_PROTOCOL.NATIVE,
 				}
 
 				const generator = handler.createMessage(systemPrompt, messages, metadata as any)

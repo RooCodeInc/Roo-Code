@@ -23,15 +23,9 @@ interface ApplyPatchParams {
 export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 	readonly name = "apply_patch" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): ApplyPatchParams {
-		return {
-			patch: params.patch || "",
-		}
-	}
-
 	async execute(params: ApplyPatchParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { patch } = params
-		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
+		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
 			// Validate required parameters
@@ -88,7 +82,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 				const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
 				if (!accessAllowed) {
 					await task.say("rooignore_error", relPath)
-					pushToolResult(formatResponse.rooIgnoreError(relPath, toolProtocol))
+					pushToolResult(formatResponse.rooIgnoreError(relPath))
 					return
 				}
 

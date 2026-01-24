@@ -5,7 +5,10 @@ import { GeminiHandler } from "../gemini"
 import type { ApiHandlerOptions } from "../../../shared/api"
 
 describe("GeminiHandler backend support", () => {
-	it("passes tools for URL context and grounding in config", async () => {
+	it("createMessage uses function declarations (URL context and grounding are only for completePrompt)", async () => {
+		// URL context and grounding are mutually exclusive with function declarations
+		// in Gemini API, so createMessage only uses function declarations.
+		// URL context/grounding are only added in completePrompt.
 		const options = {
 			apiProvider: "gemini",
 			enableUrlContext: true,
@@ -17,7 +20,9 @@ describe("GeminiHandler backend support", () => {
 		handler["client"].models.generateContentStream = stub
 		await handler.createMessage("instr", [] as any).next()
 		const config = stub.mock.calls[0][0].config
-		expect(config.tools).toEqual([{ urlContext: {} }, { googleSearch: {} }])
+		// createMessage always uses function declarations only
+		// (tools are always present from ALWAYS_AVAILABLE_TOOLS)
+		expect(config.tools).toEqual([{ functionDeclarations: expect.any(Array) }])
 	})
 
 	it("completePrompt passes config overrides without tools when URL context and grounding disabled", async () => {

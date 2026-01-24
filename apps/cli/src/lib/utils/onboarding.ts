@@ -17,9 +17,14 @@ export async function runOnboarding(): Promise<OnboardingResult> {
 			console.log("")
 
 			if (choice === OnboardingProviderChoice.Roo) {
-				const { success: authenticated } = await login()
+				const result = await login()
 				await saveSettings({ onboardingProviderChoice: choice })
-				resolve({ choice: OnboardingProviderChoice.Roo, authenticated, skipped: false })
+
+				resolve({
+					choice: OnboardingProviderChoice.Roo,
+					token: result.success ? result.token : undefined,
+					skipped: false,
+				})
 			} else {
 				console.log("Using your own API key.")
 				console.log("Set your API key via --api-key or environment variable.")

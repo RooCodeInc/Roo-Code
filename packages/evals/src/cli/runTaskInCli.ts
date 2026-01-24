@@ -1,4 +1,3 @@
-import * as fs from "fs"
 import * as path from "path"
 import * as os from "node:os"
 
@@ -20,7 +19,7 @@ import { mergeToolUsage, waitForSubprocessWithTimeout } from "./utils.js"
  */
 export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: RunTaskOptions) => {
 	const { language, exercise } = task
-	const prompt = fs.readFileSync(path.resolve(EVALS_REPO_PATH, `prompts/${language}.md`), "utf-8")
+	const promptSourcePath = path.resolve(EVALS_REPO_PATH, `prompts/${language}.md`)
 	const workspacePath = path.resolve(EVALS_REPO_PATH, language, exercise)
 	const ipcSocketPath = path.resolve(os.tmpdir(), `evals-cli-${run.id}-${task.id}.sock`)
 
@@ -40,32 +39,31 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 		"--filter",
 		"@roo-code/cli",
 		"start",
-		"--yes",
-		"--exit-on-complete",
-		"--reasoning-effort",
-		"disabled",
+		"--prompt-file",
+		promptSourcePath,
 		"--workspace",
 		workspacePath,
+		"--yes",
+		"--reasoning-effort",
+		"disabled",
+		"--oneshot",
 	]
 
 	if (run.settings?.mode) {
-		cliArgs.push("-M", run.settings.mode)
+		cliArgs.push("--mode", run.settings.mode)
 	}
 
 	if (run.settings?.apiProvider) {
-		cliArgs.push("-p", run.settings.apiProvider)
+		cliArgs.push("--provider", run.settings.apiProvider)
 	}
 
 	const modelId = run.settings?.apiModelId || run.settings?.openRouterModelId
 
 	if (modelId) {
-		cliArgs.push("-m", modelId)
+		cliArgs.push("--model", modelId)
 	}
 
-	cliArgs.push(prompt)
-
 	logger.info(`CLI command: pnpm ${cliArgs.join(" ")}`)
-
 	const subprocess = execa("pnpm", cliArgs, { env, cancelSignal, cwd: process.cwd() })
 
 	// Buffer for accumulating streaming output until we have complete lines.

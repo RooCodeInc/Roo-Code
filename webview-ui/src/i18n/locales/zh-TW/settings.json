@@ -284,6 +284,37 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API 金鑰",
 		"getVercelAiGatewayApiKey": "取得 Vercel AI Gateway API 金鑰",
 		"apiKeyStorageNotice": "API 金鑰安全儲存於 VSCode 金鑰儲存中",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "使用自訂基礎 URL",
 		"useReasoning": "啟用推理",
 		"useHostHeader": "使用自訂 Host 標頭",
@@ -737,14 +768,6 @@
 	"advancedSettings": {
 		"title": "進階設定"
 	},
-	"toolProtocol": {
-		"label": "工具呼叫協議",
-		"description": "選擇 Roo 如何與 API 通信。原生使用提供者的函數呼叫 API，而 XML 使用 XML 格式的工具定義。",
-		"default": "預設",
-		"xml": "XML",
-		"native": "原生",
-		"currentDefault": "預設: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "透過差異比對編輯",
@@ -761,10 +784,6 @@
 					"unified": "統一差異策略會嘗試多種比對方式，並選擇最佳方案。",
 					"multiBlock": "多區塊策略可在單一請求中更新檔案內的多個程式碼區塊。"
 				}
-			},
-			"matchPrecision": {
-				"label": "比對精確度",
-				"description": "此滑桿控制套用差異時程式碼區段的比對精確度。較低的數值允許更彈性的比對，但也會增加錯誤取代的風險。使用低於 100% 的數值時請特別謹慎。"
 			}
 		},
 		"todoList": {
@@ -781,10 +800,6 @@
 			"name": "使用實驗性插入內容工具",
 			"description": "啟用實驗性的插入內容工具，允許 Roo 直接在指定行號插入內容，而無需產生差異比對。"
 		},
-		"POWER_STEERING": {
-			"name": "使用實驗性「動力輔助」模式",
-			"description": "啟用後，Roo 將更頻繁地提醒模型目前模式的詳細設定。這能讓模型更嚴格遵守角色定義和自訂指令，但每則訊息會使用更多 token。"
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "使用實驗性多區塊差異比對工具",
 			"description": "啟用後，Roo 將使用多區塊差異比對工具，嘗試在單一請求中更新檔案內的多個程式碼區塊。"
@@ -796,10 +811,6 @@
 		"MARKETPLACE": {
 			"name": "啟用 Marketplace",
 			"description": "啟用後，您可以從 Marketplace 安裝 MCP 和自訂模式。"
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "啟用並行檔案編輯",
-			"description": "啟用後 Roo 可在單個請求中編輯多個檔案。停用後 Roo 必須逐個編輯檔案。停用此功能有助於使用能力較弱的模型或需要更精確控制檔案修改時。"
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "背景編輯",

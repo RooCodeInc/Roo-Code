@@ -18,17 +18,15 @@ export const MCP_TOOL_SEPARATOR = "--"
 export const MCP_TOOL_PREFIX = "mcp"
 
 /**
- * Encoding for hyphens in tool names.
- * We use triple underscores because:
- * 1. It's unlikely to appear naturally in tool names
- * 2. It's safe for all API providers
- * 3. It allows us to preserve hyphens through the encoding/decoding process
+ * Normalize a string for comparison by treating hyphens and underscores as equivalent.
+ * This is used to match tool names when models convert hyphens to underscores.
  *
- * This solves the problem where models (especially Claude) convert hyphens to underscores
- * in tool names when using native tool calling. By encoding hyphens as triple underscores,
- * we can decode them back to hyphens when parsing the tool name.
+ * @param name - The name to normalize
+ * @returns The normalized name with all hyphens converted to underscores
  */
-export const HYPHEN_ENCODING = "___"
+export function normalizeForComparison(name: string): string {
+	return name.replace(/-/g, "_")
+}
 
 /**
  * Normalize an MCP tool name by converting underscore separators back to hyphens.
@@ -37,47 +35,54 @@ export const HYPHEN_ENCODING = "___"
  *
  * For example: "mcp__server__tool" -> "mcp--server--tool"
  *
+ * This function uses fuzzy matching - it treats hyphens and underscores as equivalent
+ * when normalizing the separator pattern.
+ *
  * @param toolName - The tool name that may have underscore separators
  * @returns The normalized tool name with hyphen separators
  */
 export function normalizeMcpToolName(toolName: string): string {
-	// Only normalize if it looks like an MCP tool with underscore separators
-	if (toolName.startsWith("mcp__")) {
-		// Replace double underscores with double hyphens for the separators
-		// We need to be careful to only replace the separators, not the encoded hyphens (triple underscores)
-		// Pattern: mcp__server__tool -> mcp--server--tool
-		// But: mcp__server__tool___name should become mcp--server--tool___name (preserve triple underscores)
+	// Normalize for comparison to detect MCP tools regardless of separator style
+	const normalized = normalizeForComparison(toolName)
 
-		// First, temporarily replace triple underscores with a placeholder
-		const placeholder = "\x00HYPHEN\x00"
-		let normalized = toolName.replace(/___/g, placeholder)
+	// Only normalize if it looks like an MCP tool (starts with mcp__)
+	if (normalized.startsWith("mcp__")) {
+		// Find the pattern: mcp{sep}server{sep}tool where sep is -- or __
+		// We need to convert the separators while preserving the rest
 
-		// Now replace double underscores (separators) with double hyphens
-		normalized = normalized.replace(/__/g, "--")
+		// First, try to parse assuming all separators are underscores
+		// Pattern: mcp__server__tool or mcp__server__tool_with_underscores
+		const parts = toolName.split(/__|--/)
 
-		// Restore triple underscores from placeholder
-		normalized = normalized.replace(new RegExp(placeholder, "g"), "___")
-
-		return normalized
+		if (parts.length >= 3 && parts[0].toLowerCase() === "mcp") {
+			// Reconstruct with proper -- separators
+			const serverName = parts[1]
+			const toolNamePart = parts.slice(2).join("--") // Rejoin in case tool name had separator
+			return `${MCP_TOOL_PREFIX}${MCP_TOOL_SEPARATOR}${serverName}${MCP_TOOL_SEPARATOR}${toolNamePart}`
+		}
 	}
 	return toolName
 }
 
 /**
  * Check if a tool name is an MCP tool (starts with the MCP prefix and separator).
+ * Uses fuzzy matching to handle both hyphen and underscore separators.
  *
  * @param toolName - The tool name to check
- * @returns true if the tool name starts with "mcp--", false otherwise
+ * @returns true if the tool name starts with "mcp--" or "mcp__", false otherwise
  */
 export function isMcpTool(toolName: string): boolean {
-	return toolName.startsWith(`${MCP_TOOL_PREFIX}${MCP_TOOL_SEPARATOR}`)
+	const normalized = normalizeForComparison(toolName)
+	return normalized.startsWith(`${MCP_TOOL_PREFIX}__`)
 }
 
 /**
  * Sanitize a name to be safe for use in API function names.
- * This removes special characters, ensures the name starts correctly,
- * and encodes hyphens as triple underscores to preserve them through
- * the model's tool calling process.
+ * This removes special characters and ensures the name starts correctly.
+ *
+ * Note: Hyphens are preserved since they are valid in function names.
+ * Models may convert hyphens to underscores, but we handle this with
+ * fuzzy matching when parsing tool names.
  *
  * @param name - The original name (e.g., MCP server name or tool name)
  * @returns A sanitized name that conforms to API requirements
@@ -90,16 +95,11 @@ export function sanitizeMcpName(name: string): string {
 	// Replace spaces with underscores first
 	let sanitized = name.replace(/\s+/g, "_")
 
-	// Only allow alphanumeric, underscores, and dashes
+	// Only allow alphanumeric, underscores, and hyphens
 	sanitized = sanitized.replace(/[^a-zA-Z0-9_\-]/g, "")
 
 	// Replace any double-hyphen sequences with single hyphen to avoid separator conflicts
 	sanitized = sanitized.replace(/--+/g, "-")
-
-	// Encode single hyphens as triple underscores to preserve them
-	// This allows us to decode them back to hyphens when parsing
-	// e.g., "atlassian-jira_search" -> "atlassian___jira_search"
-	sanitized = sanitized.replace(/-/g, HYPHEN_ENCODING)
 
 	// Ensure the name starts with a letter or underscore
 	if (sanitized.length > 0 && !/^[a-zA-Z_]/.test(sanitized)) {
@@ -140,32 +140,23 @@ export function buildMcpToolName(serverName: string, toolName: string): string {
 }
 
 /**
- * Decode a sanitized name back to its original form by converting
- * triple underscores back to hyphens.
- *
- * @param sanitizedName - The sanitized name with encoded hyphens
- * @returns The decoded name with hyphens restored
- */
-export function decodeMcpName(sanitizedName: string): string {
-	return sanitizedName.replace(new RegExp(HYPHEN_ENCODING, "g"), "-")
-}
-
-/**
  * Parse an MCP tool function name back into server and tool names.
- * This handles sanitized names by splitting on the "--" separator
- * and decoding triple underscores back to hyphens.
+ * This handles both hyphen and underscore separators using fuzzy matching.
  *
- * @param mcpToolName - The full MCP tool name (e.g., "mcp--weather--get_forecast")
+ * @param mcpToolName - The full MCP tool name (e.g., "mcp--weather--get_forecast" or "mcp__weather__get_forecast")
  * @returns An object with serverName and toolName, or null if parsing fails
  */
 export function parseMcpToolName(mcpToolName: string): { serverName: string; toolName: string } | null {
+	// Normalize the name to handle both separator styles
+	const normalizedName = normalizeMcpToolName(mcpToolName)
+
 	const prefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
-	if (!mcpToolName.startsWith(prefix)) {
+	if (!normalizedName.startsWith(prefix)) {
 		return null
 	}
 
 	// Remove the "mcp--" prefix
-	const remainder = mcpToolName.slice(prefix.length)
+	const remainder = normalizedName.slice(prefix.length)
 
 	// Split on the separator to get server and tool names
 	const separatorIndex = remainder.indexOf(MCP_TOOL_SEPARATOR)
@@ -180,9 +171,20 @@ export function parseMcpToolName(mcpToolName: string): { serverName: string; too
 		return null
 	}
 
-	// Decode triple underscores back to hyphens
 	return {
-		serverName: decodeMcpName(serverName),
-		toolName: decodeMcpName(toolName),
+		serverName,
+		toolName,
 	}
+}
+
+/**
+ * Check if two tool names match using fuzzy comparison.
+ * Treats hyphens and underscores as equivalent.
+ *
+ * @param name1 - First tool name
+ * @param name2 - Second tool name
+ * @returns true if the names match (treating - and _ as equivalent)
+ */
+export function toolNamesMatch(name1: string, name2: string): boolean {
+	return normalizeForComparison(name1) === normalizeForComparison(name2)
 }

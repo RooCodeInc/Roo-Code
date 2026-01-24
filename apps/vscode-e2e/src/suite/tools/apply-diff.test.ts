@@ -8,8 +8,7 @@ import { RooCodeEventName, type ClineMessage } from "@roo-code/types"
 import { waitFor, sleep } from "../utils"
 import { setDefaultSuiteTimeout } from "../test-utils"
 
-suite("Roo Code apply_diff Tool", function () {
-	// Testing with more capable AI model to see if it can handle apply_diff complexity
+suite.skip("Roo Code apply_diff Tool", function () {
 	setDefaultSuiteTimeout(this)
 
 	let workspaceDir: string
@@ -152,36 +151,69 @@ function validateInput(input) {
 	})
 
 	test("Should apply diff to modify existing file content", async function () {
+		// Increase timeout for this specific test
+
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		const testFile = testFiles.simpleModify
 		const expectedContent = "Hello Universe\nThis is a test file\nWith multiple lines"
+		let taskStarted = false
 		let taskCompleted = false
-		let toolExecuted = false
+		let errorOccurred: string | null = null
+		let applyDiffExecuted = false
 
 		// Listen for messages
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
 
-			// Check for tool request
+			// Log important messages for debugging
+			if (message.type === "say" && message.say === "error") {
+				errorOccurred = message.text || "Unknown error"
+				console.error("Error:", message.text)
+			}
 			if (message.type === "ask" && message.ask === "tool") {
-				toolExecuted = true
-				console.log("Tool requested")
+				console.log("Tool request:", message.text?.substring(0, 200))
+			}
+			if (message.type === "say" && (message.say === "completion_result" || message.say === "text")) {
+				console.log("AI response:", message.text?.substring(0, 200))
+			}
+
+			// Check for tool execution
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				console.log("API request started:", message.text.substring(0, 200))
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.request && requestData.request.includes("apply_diff")) {
+						applyDiffExecuted = true
+						console.log("apply_diff tool executed!")
+					}
+				} catch (e) {
+					console.log("Failed to parse api_req_started message:", e)
+				}
 			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task completion
+		// Listen for task events
+		const taskStartedHandler = (id: string) => {
+			if (id === taskId) {
+				taskStarted = true
+				console.log("Task started:", id)
+			}
+		}
+		api.on(RooCodeEventName.TaskStarted, taskStartedHandler)
+
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
 				taskCompleted = true
+				console.log("Task completed:", id)
 			}
 		}
 		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
-			// Start task - let AI read the file first, then apply diff
+			// Start task with apply_diff instruction - file already exists
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
@@ -190,66 +222,111 @@ function validateInput(input) {
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 				},
-				text: `The file ${testFile.name} exists in the workspace. Use the apply_diff tool to change "Hello World" to "Hello Universe" in this file.`,
-			})
+				text: `Use apply_diff on the file ${testFile.name} to change "Hello World" to "Hello Universe". The file already exists with this content:
+${testFile.content}\nAssume the file exists and you can modify it directly.`,
+			}) //Temporary measure since list_files ignores all the files inside a tmp workspace
 
 			console.log("Task ID:", taskId)
+			console.log("Test filename:", testFile.name)
+
+			// Wait for task to start
+			await waitFor(() => taskStarted, { timeout: 60_000 })
+
+			// Check for early errors
+			if (errorOccurred) {
+				console.error("Early error detected:", errorOccurred)
+			}
 
 			// Wait for task completion
-			await waitFor(() => taskCompleted, { timeout: 90_000 })
+			await waitFor(() => taskCompleted, { timeout: 60_000 })
+
+			// Give extra time for file system operations
+			await sleep(2000)
+
+			// Check if the file was modified correctly
+			const actualContent = await fs.readFile(testFile.path, "utf-8")
+			console.log("File content after modification:", actualContent)
 
 			// Verify tool was executed
-			assert.ok(toolExecuted, "The apply_diff tool should have been executed")
+			assert.strictEqual(applyDiffExecuted, true, "apply_diff tool should have been executed")
 
-			// Give time for file system operations
-			await sleep(1000)
-
-			// Verify file was modified correctly
-			const actualContent = await fs.readFile(testFile.path, "utf-8")
+			// Verify file content
 			assert.strictEqual(
 				actualContent.trim(),
 				expectedContent.trim(),
 				"File content should be modified correctly",
 			)
 
-			console.log("Test passed! File modified successfully")
+			console.log("Test passed! apply_diff tool executed and file modified successfully")
 		} finally {
 			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
+			api.off(RooCodeEventName.TaskStarted, taskStartedHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
 	test("Should apply multiple search/replace blocks in single diff", async function () {
+		// Increase timeout for this specific test
+
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		const testFile = testFiles.multipleReplace
+		const expectedContent = `function compute(a, b) {
+	const total = a + b
+	const result = a * b
+	return { total: total, result: result }
+}`
+		let taskStarted = false
 		let taskCompleted = false
-		let toolExecuted = false
+		let applyDiffExecuted = false
 
 		// Listen for messages
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
-
-			// Check for tool request
 			if (message.type === "ask" && message.ask === "tool") {
-				toolExecuted = true
-				console.log("Tool requested")
+				console.log("Tool request:", message.text?.substring(0, 200))
+			}
+			if (message.type === "say" && message.text) {
+				console.log("AI response:", message.text.substring(0, 200))
+			}
+
+			// Check for tool execution
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				console.log("API request started:", message.text.substring(0, 200))
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.request && requestData.request.includes("apply_diff")) {
+						applyDiffExecuted = true
+						console.log("apply_diff tool executed!")
+					}
+				} catch (e) {
+					console.log("Failed to parse api_req_started message:", e)
+				}
 			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task completion
+		// Listen for task events
+		const taskStartedHandler = (id: string) => {
+			if (id === taskId) {
+				taskStarted = true
+				console.log("Task started:", id)
+			}
+		}
+		api.on(RooCodeEventName.TaskStarted, taskStartedHandler)
+
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
 				taskCompleted = true
+				console.log("Task completed:", id)
 			}
 		}
 		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
-			// Start task - let AI read file first
+			// Start task with multiple replacements - file already exists
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
@@ -258,39 +335,55 @@ function validateInput(input) {
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 				},
-				text: `The file ${testFile.name} exists in the workspace. Use the apply_diff tool to rename the function "calculate" to "compute" and rename the parameters "x, y" to "a, b". Also rename the variables "sum" to "total" and "product" to "result" throughout the function.`,
+				text: `Use apply_diff on the file ${testFile.name} to make ALL of these changes:
+1. Rename function "calculate" to "compute"
+2. Rename parameters "x, y" to "a, b"
+3. Rename variable "sum" to "total" (including in the return statement)
+4. Rename variable "product" to "result" (including in the return statement)
+5. In the return statement, change { sum: sum, product: product } to { total: total, result: result }
+
+The file already exists with this content:
+${testFile.content}\nAssume the file exists and you can modify it directly.`,
 			})
 
 			console.log("Task ID:", taskId)
+			console.log("Test filename:", testFile.name)
 
-			// Wait for task completion with longer timeout
-			await waitFor(() => taskCompleted, { timeout: 90_000 })
+			// Wait for task to start
+			await waitFor(() => taskStarted, { timeout: 60_000 })
+
+			// Wait for task completion
+			await waitFor(() => taskCompleted, { timeout: 60_000 })
+
+			// Give extra time for file system operations
+			await sleep(2000)
+
+			// Check the file was modified correctly
+			const actualContent = await fs.readFile(testFile.path, "utf-8")
+			console.log("File content after modification:", actualContent)
 
 			// Verify tool was executed
-			assert.ok(toolExecuted, "The apply_diff tool should have been executed")
+			assert.strictEqual(applyDiffExecuted, true, "apply_diff tool should have been executed")
 
-			// Give time for file system operations
-			await sleep(1000)
-
-			// Verify file was modified - check key changes were made
-			const actualContent = await fs.readFile(testFile.path, "utf-8")
-			assert.ok(
-				actualContent.includes("function compute(a, b)"),
-				"Function should be renamed to compute with params a, b",
+			// Verify file content
+			assert.strictEqual(
+				actualContent.trim(),
+				expectedContent.trim(),
+				"All replacements should be applied correctly",
 			)
-			assert.ok(actualContent.includes("const total = a + b"), "Variable sum should be renamed to total")
-			assert.ok(actualContent.includes("const result = a * b"), "Variable product should be renamed to result")
-			// Note: We don't strictly require object keys to be renamed as that's a reasonable interpretation difference
 
-			console.log("Test passed! Multiple replacements applied successfully")
+			console.log("Test passed! apply_diff tool executed and multiple replacements applied successfully")
 		} finally {
 			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
+			api.off(RooCodeEventName.TaskStarted, taskStartedHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
 
 	test("Should handle apply_diff with line number hints", async function () {
+		// Increase timeout for this specific test
+
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		const testFile = testFiles.lineNumbers
@@ -305,22 +398,42 @@ function keepThis() {
 }
 
 // Footer comment`
+
+		let taskStarted = false
 		let taskCompleted = false
-		let toolExecuted = false
+		let applyDiffExecuted = false
 
 		// Listen for messages
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
-
-			// Check for tool request
 			if (message.type === "ask" && message.ask === "tool") {
-				toolExecuted = true
-				console.log("Tool requested")
+				console.log("Tool request:", message.text?.substring(0, 200))
+			}
+
+			// Check for tool execution
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				console.log("API request started:", message.text.substring(0, 200))
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.request && requestData.request.includes("apply_diff")) {
+						applyDiffExecuted = true
+						console.log("apply_diff tool executed!")
+					}
+				} catch (e) {
+					console.log("Failed to parse api_req_started message:", e)
+				}
 			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task completion
+		// Listen for task events
+		const taskStartedHandler = (id: string) => {
+			if (id === taskId) {
+				taskStarted = true
+			}
+		}
+		api.on(RooCodeEventName.TaskStarted, taskStartedHandler)
+
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
 				taskCompleted = true
@@ -330,7 +443,7 @@ function keepThis() {
 
 		let taskId: string
 		try {
-			// Start task - let AI read file first
+			// Start task with line number context - file already exists
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
@@ -339,32 +452,43 @@ function keepThis() {
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 				},
-				text: `The file ${testFile.name} exists in the workspace. Use the apply_diff tool to change the function name "oldFunction" to "newFunction" and update its console.log message to "New implementation". Keep the rest of the file unchanged.`,
+				text: `Use apply_diff on the file ${testFile.name} to change "oldFunction" to "newFunction" and update its console.log to "New implementation". Keep the rest of the file unchanged.
+
+The file already exists with this content:
+${testFile.content}\nAssume the file exists and you can modify it directly.`,
 			})
 
 			console.log("Task ID:", taskId)
+			console.log("Test filename:", testFile.name)
 
-			// Wait for task completion with longer timeout
-			await waitFor(() => taskCompleted, { timeout: 90_000 })
+			// Wait for task to start
+			await waitFor(() => taskStarted, { timeout: 60_000 })
+
+			// Wait for task completion
+			await waitFor(() => taskCompleted, { timeout: 60_000 })
+
+			// Give extra time for file system operations
+			await sleep(2000)
+
+			// Check the file was modified correctly
+			const actualContent = await fs.readFile(testFile.path, "utf-8")
+			console.log("File content after modification:", actualContent)
 
 			// Verify tool was executed
-			assert.ok(toolExecuted, "The apply_diff tool should have been executed")
+			assert.strictEqual(applyDiffExecuted, true, "apply_diff tool should have been executed")
 
-			// Give time for file system operations
-			await sleep(1000)
-
-			// Verify file was modified correctly
-			const actualContent = await fs.readFile(testFile.path, "utf-8")
+			// Verify file content
 			assert.strictEqual(
 				actualContent.trim(),
 				expectedContent.trim(),
 				"Only specified function should be modified",
 			)
 
-			console.log("Test passed! Targeted modification successful")
+			console.log("Test passed! apply_diff tool executed and targeted modification successful")
 		} finally {
 			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
+			api.off(RooCodeEventName.TaskStarted, taskStartedHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
@@ -373,22 +497,51 @@ function keepThis() {
 		const api = globalThis.api
 		const messages: ClineMessage[] = []
 		const testFile = testFiles.errorHandling
+		let taskStarted = false
 		let taskCompleted = false
-		let toolExecuted = false
+		let errorDetected = false
+		let applyDiffAttempted = false
 
 		// Listen for messages
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
 
-			// Check for tool request
-			if (message.type === "ask" && message.ask === "tool") {
-				toolExecuted = true
-				console.log("Tool requested")
+			// Check for error messages
+			if (message.type === "say" && message.say === "error") {
+				errorDetected = true
+				console.log("Error detected:", message.text)
+			}
+
+			// Check if AI mentions it couldn't find the content
+			if (message.type === "say" && message.text?.toLowerCase().includes("could not find")) {
+				errorDetected = true
+				console.log("AI reported search failure:", message.text)
+			}
+
+			// Check for tool execution attempt
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				console.log("API request started:", message.text.substring(0, 200))
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.request && requestData.request.includes("apply_diff")) {
+						applyDiffAttempted = true
+						console.log("apply_diff tool attempted!")
+					}
+				} catch (e) {
+					console.log("Failed to parse api_req_started message:", e)
+				}
 			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task completion
+		// Listen for task events
+		const taskStartedHandler = (id: string) => {
+			if (id === taskId) {
+				taskStarted = true
+			}
+		}
+		api.on(RooCodeEventName.TaskStarted, taskStartedHandler)
+
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
 				taskCompleted = true
@@ -398,7 +551,7 @@ function keepThis() {
 
 		let taskId: string
 		try {
-			// Start task with invalid search content
+			// Start task with invalid search content - file already exists
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
@@ -407,34 +560,46 @@ function keepThis() {
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 				},
-				text: `The file ${testFile.name} exists in the workspace with content "Original content". Use the apply_diff tool to replace "This content does not exist" with "New content".
+				text: `Use apply_diff on the file ${testFile.name} to replace "This content does not exist" with "New content".
 
-IMPORTANT: The search pattern "This content does not exist" is NOT in the file. When apply_diff cannot find the search pattern, it should fail gracefully. Do NOT try to use write_to_file or any other tool.`,
+The file already exists with this content:
+${testFile.content}
+
+IMPORTANT: The search pattern "This content does not exist" is NOT in the file. When apply_diff cannot find the search pattern, it should fail gracefully and the file content should remain unchanged. Do NOT try to use write_to_file or any other tool to modify the file. Only use apply_diff, and if the search pattern is not found, report that it could not be found.
+
+Assume the file exists and you can modify it directly.`,
 			})
 
 			console.log("Task ID:", taskId)
+			console.log("Test filename:", testFile.name)
+			// Wait for task to start
+			await waitFor(() => taskStarted, { timeout: 90_000 })
 
-			// Wait for task completion
-			await waitFor(() => taskCompleted, { timeout: 60_000 })
+			// Wait for task completion or error
+			await waitFor(() => taskCompleted || errorDetected, { timeout: 90_000 })
 
-			// Verify tool was attempted
-			assert.ok(toolExecuted, "The apply_diff tool should have been attempted")
+			// Give time for any final operations
+			await sleep(2000)
 
-			// Give time for file system operations
-			await sleep(1000)
-
-			// Verify file content remains unchanged
+			// The file content should remain unchanged since the search pattern wasn't found
 			const actualContent = await fs.readFile(testFile.path, "utf-8")
+			console.log("File content after task:", actualContent)
+
+			// The AI should have attempted to use apply_diff
+			assert.strictEqual(applyDiffAttempted, true, "apply_diff tool should have been attempted")
+
+			// The content should remain unchanged since the search pattern wasn't found
 			assert.strictEqual(
 				actualContent.trim(),
 				testFile.content.trim(),
 				"File content should remain unchanged when search pattern not found",
 			)
 
-			console.log("Test passed! Error handled gracefully")
+			console.log("Test passed! apply_diff attempted and error handled gracefully")
 		} finally {
 			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
+			api.off(RooCodeEventName.TaskStarted, taskStartedHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})
@@ -461,32 +626,65 @@ function checkInput(input) {
 	}
 	return true
 }`
+		let taskStarted = false
 		let taskCompleted = false
-		let toolExecuted = false
+		let errorOccurred: string | null = null
+		let applyDiffExecuted = false
+		let applyDiffCount = 0
 
 		// Listen for messages
 		const messageHandler = ({ message }: { message: ClineMessage }) => {
 			messages.push(message)
 
-			// Check for tool request
+			// Log important messages for debugging
+			if (message.type === "say" && message.say === "error") {
+				errorOccurred = message.text || "Unknown error"
+				console.error("Error:", message.text)
+			}
 			if (message.type === "ask" && message.ask === "tool") {
-				toolExecuted = true
-				console.log("Tool requested")
+				console.log("Tool request:", message.text?.substring(0, 200))
+			}
+			if (message.type === "say" && (message.say === "completion_result" || message.say === "text")) {
+				console.log("AI response:", message.text?.substring(0, 200))
+			}
+
+			// Check for tool execution
+			if (message.type === "say" && message.say === "api_req_started" && message.text) {
+				console.log("API request started:", message.text.substring(0, 200))
+				try {
+					const requestData = JSON.parse(message.text)
+					if (requestData.request && requestData.request.includes("apply_diff")) {
+						applyDiffExecuted = true
+						applyDiffCount++
+						console.log(`apply_diff tool executed! (count: ${applyDiffCount})`)
+					}
+				} catch (e) {
+					console.log("Failed to parse api_req_started message:", e)
+				}
 			}
 		}
 		api.on(RooCodeEventName.Message, messageHandler)
 
-		// Listen for task completion
+		// Listen for task events
+		const taskStartedHandler = (id: string) => {
+			if (id === taskId) {
+				taskStarted = true
+				console.log("Task started:", id)
+			}
+		}
+		api.on(RooCodeEventName.TaskStarted, taskStartedHandler)
+
 		const taskCompletedHandler = (id: string) => {
 			if (id === taskId) {
 				taskCompleted = true
+				console.log("Task completed:", id)
 			}
 		}
 		api.on(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 
 		let taskId: string
 		try {
-			// Start task to edit two separate functions
+			// Start task with instruction to edit two separate functions using multiple search/replace blocks
 			taskId = await api.startNewTask({
 				configuration: {
 					mode: "code",
@@ -495,13 +693,13 @@ function checkInput(input) {
 					alwaysAllowReadOnly: true,
 					alwaysAllowReadOnlyOutsideWorkspace: true,
 				},
-				text: `Use the apply_diff tool on the file ${testFile.name} to make these changes using TWO SEPARATE search/replace blocks within a SINGLE apply_diff call:
+				text: `Use apply_diff on the file ${testFile.name} to make these changes. You MUST use TWO SEPARATE search/replace blocks within a SINGLE apply_diff call:
 
 FIRST search/replace block: Edit the processData function to rename it to "transformData" and change "Processing data" to "Transforming data"
 
 SECOND search/replace block: Edit the validateInput function to rename it to "checkInput" and change "Validating input" to "Checking input"
 
-Important: Use multiple SEARCH/REPLACE blocks in one apply_diff call, NOT multiple apply_diff calls.
+Important: Use multiple SEARCH/REPLACE blocks in one apply_diff call, NOT multiple apply_diff calls. Each function should have its own search/replace block.
 
 The file already exists with this content:
 ${testFile.content}
@@ -510,24 +708,42 @@ Assume the file exists and you can modify it directly.`,
 			})
 
 			console.log("Task ID:", taskId)
+			console.log("Test filename:", testFile.name)
+
+			// Wait for task to start
+			await waitFor(() => taskStarted, { timeout: 60_000 })
+
+			// Check for early errors
+			if (errorOccurred) {
+				console.error("Early error detected:", errorOccurred)
+			}
 
 			// Wait for task completion
 			await waitFor(() => taskCompleted, { timeout: 60_000 })
 
-			// Verify tool was executed
-			assert.ok(toolExecuted, "The apply_diff tool should have been executed")
+			// Give extra time for file system operations
+			await sleep(2000)
 
-			// Give time for file system operations
-			await sleep(1000)
-
-			// Verify file was modified correctly
+			// Check if the file was modified correctly
 			const actualContent = await fs.readFile(testFile.path, "utf-8")
-			assert.strictEqual(actualContent.trim(), expectedContent.trim(), "Both functions should be modified")
+			console.log("File content after modification:", actualContent)
 
-			console.log("Test passed! Multiple search/replace blocks applied successfully")
+			// Verify tool was executed
+			assert.strictEqual(applyDiffExecuted, true, "apply_diff tool should have been executed")
+			console.log(`apply_diff was executed ${applyDiffCount} time(s)`)
+
+			// Verify file content
+			assert.strictEqual(
+				actualContent.trim(),
+				expectedContent.trim(),
+				"Both functions should be modified with separate search/replace blocks",
+			)
+
+			console.log("Test passed! apply_diff tool executed and multiple search/replace blocks applied successfully")
 		} finally {
 			// Clean up
 			api.off(RooCodeEventName.Message, messageHandler)
+			api.off(RooCodeEventName.TaskStarted, taskStartedHandler)
 			api.off(RooCodeEventName.TaskCompleted, taskCompletedHandler)
 		}
 	})

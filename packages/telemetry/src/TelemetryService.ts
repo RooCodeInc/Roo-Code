@@ -111,8 +111,8 @@ export class TelemetryService {
 		this.captureEvent(TelemetryEventName.MODE_SWITCH, { taskId, newMode })
 	}
 
-	public captureToolUsage(taskId: string, tool: string, toolProtocol: string): void {
-		this.captureEvent(TelemetryEventName.TOOL_USED, { taskId, tool, toolProtocol })
+	public captureToolUsage(taskId: string, tool: string): void {
+		this.captureEvent(TelemetryEventName.TOOL_USED, { taskId, tool })
 	}
 
 	public captureCheckpointCreated(taskId: string): void {
@@ -127,17 +127,11 @@ export class TelemetryService {
 		this.captureEvent(TelemetryEventName.CHECKPOINT_RESTORED, { taskId })
 	}
 
-	public captureContextCondensed(
-		taskId: string,
-		isAutomaticTrigger: boolean,
-		usedCustomPrompt?: boolean,
-		usedCustomApiHandler?: boolean,
-	): void {
+	public captureContextCondensed(taskId: string, isAutomaticTrigger: boolean, usedCustomPrompt?: boolean): void {
 		this.captureEvent(TelemetryEventName.CONTEXT_CONDENSED, {
 			taskId,
 			isAutomaticTrigger,
 			...(usedCustomPrompt !== undefined && { usedCustomPrompt }),
-			...(usedCustomApiHandler !== undefined && { usedCustomApiHandler }),
 		})
 	}
 

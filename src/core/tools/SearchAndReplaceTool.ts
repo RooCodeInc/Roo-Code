@@ -28,26 +28,9 @@ interface SearchAndReplaceParams {
 export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 	readonly name = "search_and_replace" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): SearchAndReplaceParams {
-		// Parse operations from JSON string if provided
-		let operations: SearchReplaceOperation[] = []
-		if (params.operations) {
-			try {
-				operations = JSON.parse(params.operations)
-			} catch {
-				operations = []
-			}
-		}
-
-		return {
-			path: params.path || "",
-			operations,
-		}
-	}
-
 	async execute(params: SearchAndReplaceParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { path: relPath, operations } = params
-		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
+		const { askApproval, handleError, pushToolResult } = callbacks
 
 		try {
 			// Validate required parameters
@@ -90,7 +73,7 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 
 			if (!accessAllowed) {
 				await task.say("rooignore_error", relPath)
-				pushToolResult(formatResponse.rooIgnoreError(relPath, toolProtocol))
+				pushToolResult(formatResponse.rooIgnoreError(relPath))
 				return
 			}
 

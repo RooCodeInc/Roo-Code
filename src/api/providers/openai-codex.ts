@@ -14,6 +14,7 @@ import {
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
+import { Package } from "../../shared/package"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
@@ -22,11 +23,9 @@ import { getModelParams } from "../transform/model-params"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { isMcpTool } from "../../utils/mcp-name"
+import { sanitizeOpenAiCallId } from "../../utils/tool-id"
 import { openAiCodexOAuthManager } from "../../integrations/openai-codex/oauth"
 import { t } from "../../i18n"
-
-// Get extension version for User-Agent header
-const extensionVersion: string = require("../../package.json").version ?? "unknown"
 
 export type OpenAiCodexModel = ReturnType<OpenAiCodexHandler["getModel"]>
 
@@ -307,28 +306,22 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 						},
 					}
 				: {}),
-			...(metadata?.tools && {
-				tools: metadata.tools
-					.filter((tool) => tool.type === "function")
-					.map((tool) => {
-						const isMcp = isMcpTool(tool.function.name)
-						return {
-							type: "function",
-							name: tool.function.name,
-							description: tool.function.description,
-							parameters: isMcp
-								? ensureAdditionalPropertiesFalse(tool.function.parameters)
-								: ensureAllRequired(tool.function.parameters),
-							strict: !isMcp,
-						}
-					}),
-			}),
-			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-		}
-
-		// For native tool protocol, control parallel tool calls
-		if (metadata?.toolProtocol === "native") {
-			body.parallel_tool_calls = metadata.parallelToolCalls ?? false
+			tools: (metadata?.tools ?? [])
+				.filter((tool) => tool.type === "function")
+				.map((tool) => {
+					const isMcp = isMcpTool(tool.function.name)
+					return {
+						type: "function",
+						name: tool.function.name,
+						description: tool.function.description,
+						parameters: isMcp
+							? ensureAdditionalPropertiesFalse(tool.function.parameters)
+							: ensureAllRequired(tool.function.parameters),
+						strict: !isMcp,
+					}
+				}),
+			tool_choice: metadata?.tool_choice,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? false,
 		}
 
 		return body
@@ -354,7 +347,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				const codexHeaders: Record<string, string> = {
 					originator: "roo-code",
 					session_id: taskId || this.sessionId,
-					"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
+					"User-Agent": `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 					...(accountId ? { "ChatGPT-Account-Id": accountId } : {}),
 				}
 
@@ -428,7 +421,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 									: block.content?.map((c) => (c.type === "text" ? c.text : "")).join("") || ""
 							toolResults.push({
 								type: "function_call_output",
-								call_id: block.tool_use_id,
+								// Sanitize and truncate call_id to fit OpenAI's 64-char limit
+								call_id: sanitizeOpenAiCallId(block.tool_use_id),
 								output: result,
 							})
 						}
@@ -455,7 +449,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 						} else if (block.type === "tool_use") {
 							toolCalls.push({
 								type: "function_call",
-								call_id: block.id,
+								// Sanitize and truncate call_id to fit OpenAI's 64-char limit
+								call_id: sanitizeOpenAiCallId(block.id),
 								name: block.name,
 								arguments: JSON.stringify(block.input),
 							})
@@ -494,7 +489,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			Authorization: `Bearer ${accessToken}`,
 			originator: "roo-code",
 			session_id: taskId || this.sessionId,
-			"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
+			"User-Agent": `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 		}
 
 		// Add ChatGPT-Account-Id if available (required for organization subscriptions)
@@ -913,17 +908,25 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					}
 				}
 
-				if (item.type === "text" && item.text) {
-					yield { type: "text", text: item.text }
-				} else if (item.type === "reasoning" && item.text) {
-					yield { type: "reasoning", text: item.text }
-				} else if (item.type === "message" && Array.isArray(item.content)) {
-					for (const content of item.content) {
-						if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
-							yield { type: "text", text: content.text }
+				// For "added" events, yield text/reasoning content (streaming path)
+				// For "done" events, do NOT yield text/reasoning - it's already been streamed via deltas
+				// and would cause double-emission (A, B, C, ABC).
+				if (event.type === "response.output_item.added") {
+					if (item.type === "text" && item.text) {
+						yield { type: "text", text: item.text }
+					} else if (item.type === "reasoning" && item.text) {
+						yield { type: "reasoning", text: item.text }
+					} else if (item.type === "message" && Array.isArray(item.content)) {
+						for (const content of item.content) {
+							if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
+								yield { type: "text", text: content.text }
+							}
 						}
 					}
-				} else if (
+				}
+
+				// Only handle tool/function calls from done events (to ensure arguments are complete)
+				if (
 					(item.type === "function_call" || item.type === "tool_call") &&
 					event.type === "response.output_item.done"
 				) {
@@ -1058,7 +1061,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				Authorization: `Bearer ${accessToken}`,
 				originator: "roo-code",
 				session_id: this.sessionId,
-				"User-Agent": `roo-code/${extensionVersion} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
+				"User-Agent": `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`,
 			}
 
 			// Add ChatGPT-Account-Id if available

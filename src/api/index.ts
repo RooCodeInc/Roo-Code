@@ -1,7 +1,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
-import type { ProviderSettings, ModelInfo, ToolProtocol } from "@roo-code/types"
+import type { ProviderSettings, ModelInfo } from "@roo-code/types"
 
 import { ApiStream } from "./transform/stream"
 
@@ -29,7 +29,6 @@ import {
 	HuggingFaceHandler,
 	ChutesHandler,
 	LiteLLMHandler,
-	ClaudeCodeHandler,
 	QwenCodeHandler,
 	SambaNovaHandler,
 	IOIntelligenceHandler,
@@ -84,15 +83,9 @@ export interface ApiHandlerCreateMessageMetadata {
 	 */
 	tool_choice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"]
 	/**
-	 * The tool protocol being used (XML or Native).
-	 * Used by providers to determine whether to include native tool definitions.
-	 */
-	toolProtocol?: ToolProtocol
-	/**
 	 * Controls whether the model can return multiple tool calls in a single response.
 	 * When true, parallel tool calls are enabled (OpenAI's parallel_tool_calls=true).
 	 * When false (default), only one tool call is returned per response.
-	 * Only applies when toolProtocol is "native".
 	 */
 	parallelToolCalls?: boolean
 	/**
@@ -132,8 +125,6 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	switch (apiProvider) {
 		case "anthropic":
 			return new AnthropicHandler(options)
-		case "claude-code":
-			return new ClaudeCodeHandler(options)
 		case "openrouter":
 			return new OpenRouterHandler(options)
 		case "bedrock":

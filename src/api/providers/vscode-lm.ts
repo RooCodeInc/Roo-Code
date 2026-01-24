@@ -381,18 +381,11 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 		// Accumulate the text and count at the end of the stream to reduce token counting overhead.
 		let accumulatedText: string = ""
 
-		// Determine if we're using native tool protocol
-		const useNativeTools = metadata?.toolProtocol === "native" && metadata?.tools && metadata.tools.length > 0
-
 		try {
 			// Create the response stream with required options
 			const requestOptions: vscode.LanguageModelChatRequestOptions = {
 				justification: `Roo Code would like to use '${client.name}' from '${client.vendor}', Click 'Allow' to proceed.`,
-			}
-
-			// Add tools to request options when using native tool protocol
-			if (useNativeTools && metadata?.tools) {
-				requestOptions.tools = convertToVsCodeLmTools(metadata.tools)
+				tools: convertToVsCodeLmTools(metadata?.tools ?? []),
 			}
 
 			const response: vscode.LanguageModelChatResponse = await client.sendRequest(
@@ -441,8 +434,8 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 							inputSize: JSON.stringify(chunk.input).length,
 						})
 
-						// Yield native tool_call chunk when using native tool protocol
-						if (useNativeTools) {
+						// Yield native tool_call chunk when tools are provided
+						if (metadata?.tools?.length) {
 							const argumentsString = JSON.stringify(chunk.input)
 							accumulatedText += argumentsString
 							yield {
@@ -450,22 +443,6 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 								id: chunk.callId,
 								name: chunk.name,
 								arguments: argumentsString,
-							}
-						} else {
-							// Fallback: Convert tool calls to text format for XML tool protocol
-							const toolCall = {
-								type: "tool_call",
-								name: chunk.name,
-								arguments: chunk.input,
-								callId: chunk.callId,
-							}
-
-							const toolCallText = JSON.stringify(toolCall)
-							accumulatedText += toolCallText
-
-							yield {
-								type: "text",
-								text: toolCallText,
 							}
 						}
 					} catch (error) {
@@ -550,8 +527,6 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 						: openAiModelInfoSaneDefaults.contextWindow,
 				supportsImages: false, // VSCode Language Model API currently doesn't support image inputs
 				supportsPromptCache: true,
-				supportsNativeTools: true, // VSCode Language Model API supports native tool calling
-				defaultToolProtocol: "native", // Use native tool protocol by default
 				inputPrice: 0,
 				outputPrice: 0,
 				description: `VSCode Language Model: ${modelId}`,
@@ -571,8 +546,6 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			id: fallbackId,
 			info: {
 				...openAiModelInfoSaneDefaults,
-				supportsNativeTools: true, // VSCode Language Model API supports native tool calling
-				defaultToolProtocol: "native", // Use native tool protocol by default
 				description: `VSCode Language Model (Fallback): ${fallbackId}`,
 			},
 		}

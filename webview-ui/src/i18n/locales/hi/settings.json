@@ -284,6 +284,37 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API कुंजी",
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API कुंजी प्राप्त करें",
 		"apiKeyStorageNotice": "API कुंजियाँ VSCode के सुरक्षित स्टोरेज में सुरक्षित रूप से संग्रहीत हैं",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "कस्टम बेस URL का उपयोग करें",
 		"useReasoning": "तर्क सक्षम करें",
 		"useHostHeader": "कस्टम होस्ट हेडर का उपयोग करें",
@@ -737,14 +768,6 @@
 	"advancedSettings": {
 		"title": "उन्नत सेटिंग्स"
 	},
-	"toolProtocol": {
-		"label": "टूल कॉल प्रोटोकॉल",
-		"description": "चुनें कि रू एपीआई के साथ कैसे संचार करता है। नेटिव प्रदाता के फ़ंक्शन कॉलिंग एपीआई का उपयोग करता है, जबकि एक्सएमएल एक्सएमएल-स्वरूपित टूल परिभाषाओं का उपयोग करता है।",
-		"default": "डिफ़ॉल्ट",
-		"xml": "एक्सएमएल",
-		"native": "नेटिव",
-		"currentDefault": "डिफ़ॉल्ट: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "diffs के माध्यम से संपादन सक्षम करें",
@@ -761,10 +784,6 @@
 					"unified": "एकीकृत diff रणनीति diffs लागू करने के लिए कई दृष्टिकोण लेती है और सर्वोत्तम दृष्टिकोण चुनती है।",
 					"multiBlock": "मल्टी-ब्लॉक diff रणनीति एक अनुरोध में एक फाइल में कई कोड ब्लॉक अपडेट करने की अनुमति देती है।"
 				}
-			},
-			"matchPrecision": {
-				"label": "मिलान सटीकता",
-				"description": "यह स्लाइडर नियंत्रित करता है कि diffs लागू करते समय कोड अनुभागों को कितनी सटीकता से मेल खाना चाहिए। निम्न मान अधिक लचीले मिलान की अनुमति देते हैं लेकिन गलत प्रतिस्थापन का जोखिम बढ़ाते हैं। 100% से नीचे के मानों का उपयोग अत्यधिक सावधानी के साथ करें।"
 			}
 		},
 		"todoList": {
@@ -781,10 +800,6 @@
 			"name": "प्रायोगिक सामग्री सम्मिलित करने के उपकरण का उपयोग करें",
 			"description": "प्रायोगिक सामग्री सम्मिलित करने के उपकरण को सक्षम करें, जो Roo को diff बनाए बिना विशिष्ट लाइन नंबरों पर सामग्री सम्मिलित करने की अनुमति देता है।"
 		},
-		"POWER_STEERING": {
-			"name": "प्रायोगिक \"पावर स्टीयरिंग\" मोड का उपयोग करें",
-			"description": "जब सक्षम किया जाता है, तो Roo मॉडल को उसके वर्तमान मोड परिभाषा के विवरण के बारे में अधिक बार याद दिलाएगा। इससे भूमिका परिभाषाओं और कस्टम निर्देशों के प्रति अधिक मजबूत अनुपालन होगा, लेकिन प्रति संदेश अधिक token का उपयोग होगा।"
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "प्रायोगिक मल्टी ब्लॉक diff उपकरण का उपयोग करें",
 			"description": "जब सक्षम किया जाता है, तो Roo मल्टी ब्लॉक diff उपकरण का उपयोग करेगा। यह एक अनुरोध में फ़ाइल में कई कोड ब्लॉक अपडेट करने का प्रयास करेगा।"
@@ -796,10 +811,6 @@
 		"MARKETPLACE": {
 			"name": "Marketplace सक्षम करें",
 			"description": "जब सक्षम होता है, तो आप Marketplace से MCP और कस्टम मोड इंस्टॉल कर सकते हैं।"
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "समानांतर फ़ाइल संपादन सक्षम करें",
-			"description": "जब सक्षम किया जाता है, तो Roo एक ही अनुरोध में कई फ़ाइलों को संपादित कर सकता है। जब अक्षम किया जाता है, तो Roo को एक समय में एक फ़ाइल संपादित करनी होगी। इसे अक्षम करना तब मदद कर सकता है जब आप कम सक्षम मॉडल के साथ काम कर रहे हों या जब आप फ़ाइल संशोधनों पर अधिक नियंत्रण चाहते हों।"
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "बैकग्राउंड संपादन",

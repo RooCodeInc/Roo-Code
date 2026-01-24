@@ -14,15 +14,8 @@ interface AccessMcpResourceParams {
 export class AccessMcpResourceTool extends BaseTool<"access_mcp_resource"> {
 	readonly name = "access_mcp_resource" as const
 
-	parseLegacy(params: Partial<Record<string, string>>): AccessMcpResourceParams {
-		return {
-			server_name: params.server_name || "",
-			uri: params.uri || "",
-		}
-	}
-
 	async execute(params: AccessMcpResourceParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { askApproval, handleError, pushToolResult, toolProtocol } = callbacks
+		const { askApproval, handleError, pushToolResult } = callbacks
 		const { server_name, uri } = params
 
 		try {
@@ -51,7 +44,7 @@ export class AccessMcpResourceTool extends BaseTool<"access_mcp_resource"> {
 			const didApprove = await askApproval("use_mcp_server", completeMessage)
 
 			if (!didApprove) {
-				pushToolResult(formatResponse.toolDenied(toolProtocol))
+				pushToolResult(formatResponse.toolDenied())
 				return
 			}
 
@@ -91,8 +84,8 @@ export class AccessMcpResourceTool extends BaseTool<"access_mcp_resource"> {
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"access_mcp_resource">): Promise<void> {
-		const server_name = this.removeClosingTag("server_name", block.params.server_name, true)
-		const uri = this.removeClosingTag("uri", block.params.uri, true)
+		const server_name = block.params.server_name ?? ""
+		const uri = block.params.uri ?? ""
 
 		const partialMessage = JSON.stringify({
 			type: "access_mcp_resource",

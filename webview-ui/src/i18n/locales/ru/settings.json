@@ -284,6 +284,37 @@
 		"vercelAiGatewayApiKey": "Ключ API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Получить ключ API Vercel AI Gateway",
 		"apiKeyStorageNotice": "API-ключи хранятся безопасно в Secret Storage VSCode",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Использовать пользовательский базовый URL",
 		"useReasoning": "Включить рассуждения",
 		"useHostHeader": "Использовать пользовательский Host-заголовок",
@@ -737,14 +768,6 @@
 	"advancedSettings": {
 		"title": "Дополнительные настройки"
 	},
-	"toolProtocol": {
-		"label": "Протокол вызова инструментов",
-		"description": "Выберите, как Roo будет взаимодействовать с API. Нативный использует API вызова функций провайдера, а XML — определения инструментов в формате XML.",
-		"default": "По умолчанию",
-		"xml": "XML",
-		"native": "Нативный",
-		"currentDefault": "По умолчанию: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Включить редактирование через диффы",
@@ -761,10 +784,6 @@
 					"unified": "Унифицированная стратегия использует несколько подходов к применению диффов и выбирает лучший.",
 					"multiBlock": "Мультиблочная стратегия позволяет обновлять несколько блоков кода в файле за один запрос."
 				}
-			},
-			"matchPrecision": {
-				"label": "Точность совпадения",
-				"description": "Этот ползунок управляет точностью совпадения секций кода при применении диффов. Меньшие значения позволяют более гибкое совпадение, но увеличивают риск неверной замены. Используйте значения ниже 100% с осторожностью."
 			}
 		},
 		"todoList": {
@@ -781,10 +800,6 @@
 			"name": "Использовать экспериментальный инструмент вставки контента",
 			"description": "Включает экспериментальный инструмент вставки контента, позволяя Roo вставлять контент по номеру строки без создания диффа."
 		},
-		"POWER_STEERING": {
-			"name": "Использовать экспериментальный режим \"power steering\"",
-			"description": "Если включено, Roo будет чаще напоминать модели детали текущего режима. Это приведёт к более строгому следованию ролям и инструкциям, но увеличит расход токенов."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Использовать экспериментальный мультиблочный инструмент диффа",
 			"description": "Если включено, Roo будет использовать мультиблочный инструмент диффа, пытаясь обновить несколько блоков кода за один запрос."
@@ -796,10 +811,6 @@
 		"MARKETPLACE": {
 			"name": "Включить Marketplace",
 			"description": "Когда включено, вы можете устанавливать MCP и пользовательские режимы из Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Включить одновременное редактирование файлов",
-			"description": "Когда включено, Roo может редактировать несколько файлов в одном запросе. Когда отключено, Roo должен редактировать файлы по одному. Отключение этой функции может помочь при работе с менее способными моделями или когда вы хотите больше контроля над изменениями файлов."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Фоновое редактирование",

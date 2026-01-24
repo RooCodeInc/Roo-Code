@@ -2,13 +2,10 @@ import * as vscode from "vscode"
 import { WebviewMessage } from "../../shared/WebviewMessage"
 import { defaultModeSlug, getModeBySlug, getGroupName } from "../../shared/modes"
 import { buildApiHandler } from "../../api"
-import { experiments as experimentsModule, EXPERIMENT_IDS } from "../../shared/experiments"
 
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
-import { MultiFileSearchReplaceDiffStrategy } from "../diff/strategies/multi-file-search-replace"
 import { Package } from "../../shared/package"
-import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
 
 import { ClineProvider } from "./ClineProvider"
 
@@ -18,9 +15,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		customModePrompts,
 		customInstructions,
 		browserViewportSize,
-		diffEnabled,
 		mcpEnabled,
-		fuzzyMatchThreshold,
 		experiments,
 		enableMcpServerCreation,
 		browserToolEnabled,
@@ -30,15 +25,7 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		enableSubfolderRules,
 	} = await provider.getState()
 
-	// Check experiment to determine which diff strategy to use
-	const isMultiFileApplyDiffEnabled = experimentsModule.isEnabled(
-		experiments ?? {},
-		EXPERIMENT_IDS.MULTI_FILE_APPLY_DIFF,
-	)
-
-	const diffStrategy = isMultiFileApplyDiffEnabled
-		? new MultiFileSearchReplaceDiffStrategy(fuzzyMatchThreshold)
-		: new MultiSearchReplaceDiffStrategy(fuzzyMatchThreshold)
+	const diffStrategy = new MultiSearchReplaceDiffStrategy()
 
 	const cwd = provider.cwd
 
@@ -70,9 +57,6 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 	// and browser tools are enabled in settings
 	const canUseBrowserTool = modelSupportsBrowser && modeSupportsBrowser && (browserToolEnabled ?? true)
 
-	// Resolve tool protocol for system prompt generation
-	const toolProtocol = resolveToolProtocol(apiConfiguration, modelInfo)
-
 	const systemPrompt = await SYSTEM_PROMPT(
 		provider.context,
 		cwd,
@@ -84,7 +68,6 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		customModePrompts,
 		customModes,
 		customInstructions,
-		diffEnabled,
 		experiments,
 		enableMcpServerCreation,
 		language,
@@ -98,7 +81,6 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 			newTaskRequireTodos: vscode.workspace
 				.getConfiguration(Package.name)
 				.get<boolean>("newTaskRequireTodos", false),
-			toolProtocol,
 			isStealthModel: modelInfo?.isStealthModel,
 		},
 		undefined, // todoList

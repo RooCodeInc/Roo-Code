@@ -335,9 +335,7 @@
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider hinzugefügt, der abonnementbasierten Zugriff auf Codex Modelle ohne Pro-Token-Kosten bietet.",
-			"gpt52codexModel": "Das neue gpt-5.2-codex Modell wurde dem Roo Code Router, dem Standard OpenAI Provider und mehr hinzugefügt.",
-			"bugFixes": "Speicherlecks, die graue Bildschirme verursachten, Gemini-Gedanken-Signatur-Probleme und weitere Stabilitätsverbesserungen behoben."
+			"intelligentContextCondensation": "Intelligente Kontextkomprimierung v2: Eine komplette Überarbeitung des Algorithmus zur Verwaltung des Kontextfensters. Jetzt können Sie Aufgaben länger ausführen, ohne dass Roo an Qualität verliert."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",
@@ -347,8 +345,14 @@
 		},
 		"careers": "Außerdem, <careersLink>wir stellen ein!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Gesamtkosten (inkl. Unteraufgaben): ${{cost}}",
+		"total": "Gesamtkosten: ${{cost}}",
+		"includesSubtasks": "Enthält Kosten für Unteraufgaben"
+	},
 	"browser": {
 		"session": "Browser-Sitzung",
+		"active": "Aktiv",
 		"rooWantsToUse": "Roo möchte den Browser verwenden",
 		"consoleLogs": "Konsolenprotokolle",
 		"noNewLogs": "(Keine neuen Protokolle)",
@@ -486,5 +490,14 @@
 		"updated": "Die To-Do-Liste wurde aktualisiert",
 		"completed": "Abgeschlossen",
 		"started": "Gestartet"
+	},
+	"tooManyTools": {
+		"title": "Zu viele Tools aktiviert",
+		"toolsPart_one": "{{count}} Tool",
+		"toolsPart_other": "{{count}} Tools",
+		"serversPart_one": "{{count}} MCP-Server",
+		"serversPart_other": "{{count}} MCP-Server",
+		"messageTemplate": "Du hast {{tools}} über {{servers}} aktiviert. Eine so hohe Anzahl kann das Modell verwirren und zu Fehlern führen. Versuche, es unter {{threshold}} zu halten.",
+		"openMcpSettings": "MCP-Einstellungen öffnen"
 	}
 }

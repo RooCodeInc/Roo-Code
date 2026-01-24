@@ -336,9 +336,7 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"openaiCodexProvider": "Đã thêm nhà cung cấp OpenAI - ChatGPT Plus/Pro cung cấp quyền truy cập dựa trên đăng ký vào các mô hình Codex mà không có chi phí trên mỗi token.",
-			"gpt52codexModel": "Mô hình gpt-5.2-codex mới được thêm vào Roo Code Router, nhà cung cấp OpenAI tiêu chuẩn và nhiều hơn nữa.",
-			"bugFixes": "Đã sửa các rò rỉ bộ nhớ gây ra màn hình xám, các vấn đề về chữ ký suy nghĩ Gemini và các cải thiện ổn định khác."
+			"intelligentContextCondensation": "Cô đọng Ngữ cảnh Thông minh v2: Viết lại hoàn toàn thuật toán quản lý cửa sổ ngữ cảnh. Bây giờ bạn có thể chạy các tác vụ lâu hơn mà không làm giảm chất lượng của Roo."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",
@@ -348,8 +346,14 @@
 		},
 		"careers": "Ngoài ra, <careersLink>chúng tôi đang tuyển dụng!</careersLink>"
 	},
+	"costs": {
+		"totalWithSubtasks": "Tổng chi phí (bao gồm các tác vụ phụ): ${{cost}}",
+		"total": "Tổng chi phí: ${{cost}}",
+		"includesSubtasks": "Bao gồm chi phí của các tác vụ phụ"
+	},
 	"browser": {
 		"session": "Phiên trình duyệt",
+		"active": "Đang hoạt động",
 		"rooWantsToUse": "Roo muốn sử dụng trình duyệt",
 		"consoleLogs": "Nhật ký bảng điều khiển",
 		"noNewLogs": "(Không có nhật ký mới)",
@@ -487,5 +491,14 @@
 		"updated": "Đã cập nhật danh sách công việc",
 		"completed": "Đã hoàn thành",
 		"started": "Đã bắt đầu"
+	},
+	"tooManyTools": {
+		"title": "Đã bật quá nhiều công cụ",
+		"toolsPart_one": "{{count}} công cụ",
+		"toolsPart_other": "{{count}} công cụ",
+		"serversPart_one": "{{count}} máy chủ MCP",
+		"serversPart_other": "{{count}} máy chủ MCP",
+		"messageTemplate": "Bạn đã bật {{tools}} qua {{servers}}. Số lượng lớn như vậy có thể khiến mô hình bối rối và dẫn đến lỗi. Cố gắng giữ nó dưới {{threshold}}.",
+		"openMcpSettings": "Mở cài đặt MCP"
 	}
 }

@@ -6,31 +6,35 @@ import { run, login, logout, status } from "@/commands/index.js"
 
 const program = new Command()
 
-program.name("roo").description("Roo Code CLI - Run the Roo Code agent from the command line").version(VERSION)
+program
+	.name("roo")
+	.description("Roo Code CLI - starts an interactive session by default, use -p/--print for non-interactive output")
+	.version(VERSION)
 
 program
-	.argument("[workspace]", "Workspace path to operate in", process.cwd())
-	.option("-P, --prompt <prompt>", "The prompt/task to execute (optional in TUI mode)")
+	.argument("[prompt]", "Your prompt")
+	.option("--prompt-file <path>", "Read prompt from a file instead of command line argument")
+	.option("-w, --workspace <path>", "Workspace directory path (defaults to current working directory)")
+	.option("-p, --print", "Print response and exit (non-interactive mode)", false)
 	.option("-e, --extension <path>", "Path to the extension bundle directory")
 	.option("-d, --debug", "Enable debug output (includes detailed debug information)", false)
-	.option("-y, --yes", "Auto-approve all prompts (non-interactive mode)", false)
-	.option("-k, --api-key <key>", "API key for the LLM provider (defaults to OPENROUTER_API_KEY env var)")
-	.option("-p, --provider <provider>", "API provider (anthropic, openai, openrouter, etc.)", "openrouter")
+	.option("-y, --yes, --dangerously-skip-permissions", "Auto-approve all prompts (use with caution)", false)
+	.option("-k, --api-key <key>", "API key for the LLM provider")
+	.option("--provider <provider>", "API provider (roo, anthropic, openai, openrouter, etc.)")
 	.option("-m, --model <model>", "Model to use", DEFAULT_FLAGS.model)
-	.option("-M, --mode <mode>", "Mode to start in (code, architect, ask, debug, etc.)", DEFAULT_FLAGS.mode)
+	.option("--mode <mode>", "Mode to start in (code, architect, ask, debug, etc.)", DEFAULT_FLAGS.mode)
 	.option(
 		"-r, --reasoning-effort <effort>",
 		"Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh)",
 		DEFAULT_FLAGS.reasoningEffort,
 	)
-	.option("-x, --exit-on-complete", "Exit the process when the task completes (applies to TUI mode only)", false)
-	.option(
-		"-w, --wait-on-complete",
-		"Keep the process running when the task completes (applies to plain text mode only)",
-		false,
-	)
 	.option("--ephemeral", "Run without persisting state (uses temporary storage)", false)
-	.option("--no-tui", "Disable TUI, use plain text output")
+	.option("--oneshot", "Exit upon task completion", false)
+	.option(
+		"--output-format <format>",
+		'Output format (only works with --print): "text" (default), "json" (single result), or "stream-json" (realtime streaming)',
+		"text",
+	)
 	.action(run)
 
 const authCommand = program.command("auth").description("Manage authentication for Roo Code Cloud")
