@@ -94,6 +94,32 @@ describe("foldedFileContext", () => {
 			expect(result.filesSkipped).toBe(1)
 		})
 
+		it("should skip files when parseSourceCodeDefinitions returns error strings", async () => {
+			// Tree-sitter can return error strings for missing or denied files
+			// These should be treated as skipped, not embedded in the output
+			mockedParseSourceCodeDefinitions
+				.mockResolvedValueOnce("1--3 | export const x = 1")
+				.mockResolvedValueOnce("This file does not exist or you do not have permission to access it.")
+				.mockResolvedValueOnce("Unsupported file type: /test/file.xyz")
+
+			const result = await generateFoldedFileContext(["/test/valid.ts", "/test/missing.ts", "/test/file.xyz"], {
+				cwd: "/test",
+			})
+
+			// Only the first file should be processed, the other two return error strings
+			expect(result.filesProcessed).toBe(1)
+			expect(result.filesSkipped).toBe(2)
+
+			// The content should NOT contain the error messages
+			expect(result.content).not.toContain("does not exist")
+			expect(result.content).not.toContain("do not have permission")
+			expect(result.content).not.toContain("Unsupported file type")
+
+			// But it should contain the valid file's content
+			expect(result.content).toContain("## File Context: /test/valid.ts")
+			expect(result.content).toContain("export const x = 1")
+		})
+
 		it("should respect character budget limit", async () => {
 			// Create multiple files that would exceed a small budget
 			const longDefinitions = `1--3 | export function longFunctionName1()

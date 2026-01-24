@@ -3,6 +3,17 @@ import { parseSourceCodeDefinitionsForFile } from "../../services/tree-sitter"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 
 /**
+ * Checks if a definitions string is actually an error message from tree-sitter
+ * rather than valid code definitions. These error strings should not be embedded
+ * in the folded file context - instead, the file should be skipped.
+ */
+function isTreeSitterErrorString(definitions: string): boolean {
+	// These are known error messages from parseSourceCodeDefinitionsForFile
+	const errorPatterns = ["This file does not exist", "do not have permission", "Unsupported file type:"]
+	return errorPatterns.some((pattern) => definitions.includes(pattern))
+}
+
+/**
  * Result of generating folded file context.
  */
 export interface FoldedFileContextResult {
@@ -91,8 +102,8 @@ export async function generateFoldedFileContext(
 			// Get the folded definitions using tree-sitter
 			const definitions = await parseSourceCodeDefinitionsForFile(absolutePath, rooIgnoreController)
 
-			if (!definitions) {
-				// File type not supported or no definitions found
+			if (!definitions || isTreeSitterErrorString(definitions)) {
+				// File type not supported, no definitions found, or error accessing file
 				result.filesSkipped++
 				continue
 			}
