@@ -6,7 +6,12 @@ import fs from "fs/promises"
 import * as vscode from "vscode"
 import { z, ZodError } from "zod"
 
-import { globalSettingsSchema } from "@roo-code/types"
+import {
+	globalSettingsSchema,
+	providerSettingsWithIdSchema,
+	isProviderName,
+	type ProviderSettingsWithId,
+} from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { ProviderSettingsManager, providerProfilesSchema } from "./ProviderSettingsManager"
@@ -33,35 +38,100 @@ type ImportWithProviderOptions = ImportOptions & {
 }
 
 /**
+ * Sanitizes a provider config by resetting invalid/removed apiProvider values.
+ * Returns the sanitized config and a warning message if the provider was invalid.
+ */
+function sanitizeProviderConfig(configName: string, apiConfig: unknown): { config: unknown; warning?: string } {
+	if (typeof apiConfig !== "object" || apiConfig === null) {
+		return { config: apiConfig }
+	}
+
+	const config = apiConfig as Record<string, unknown>
+
+	// Check if apiProvider is set and if it's still valid
+	if (config.apiProvider !== undefined && !isProviderName(config.apiProvider)) {
+		const invalidProvider = config.apiProvider
+		// Return a new config object without the invalid apiProvider
+		const { apiProvider, ...restConfig } = config
+		return {
+			config: restConfig,
+			warning: `Profile "${configName}": Invalid provider "${invalidProvider}" was removed. Please reconfigure this profile.`,
+		}
+	}
+
+	return { config: apiConfig }
+}
+
+/**
  * Imports configuration from a specific file path
  * Shares base functionality for import settings for both the manual
- * and automatic settings importing
+ * and automatic settings importing.
+ *
+ * Uses lenient parsing to handle invalid/removed providers gracefully:
+ * - Invalid apiProvider values are removed (profile is kept but needs reconfiguration)
+ * - Completely invalid profiles are skipped
+ * - Warnings are returned for any issues encountered
  */
 export async function importSettingsFromPath(
 	filePath: string,
 	{ providerSettingsManager, contextProxy, customModesManager }: ImportOptions,
 ) {
-	const schema = z.object({
-		providerProfiles: providerProfilesSchema,
+	// Use a lenient schema that accepts any apiConfigs, then validate each individually
+	const lenientProviderProfilesSchema = providerProfilesSchema.extend({
+		apiConfigs: z.record(z.string(), z.any()),
+	})
+
+	const lenientSchema = z.object({
+		providerProfiles: lenientProviderProfilesSchema,
 		globalSettings: globalSettingsSchema.optional(),
 	})
 
 	try {
 		const previousProviderProfiles = await providerSettingsManager.export()
 
-		const { providerProfiles: newProviderProfiles, globalSettings = {} } = schema.parse(
-			JSON.parse(await fs.readFile(filePath, "utf-8")),
-		)
+		const rawData = JSON.parse(await fs.readFile(filePath, "utf-8"))
+		const { providerProfiles: rawProviderProfiles, globalSettings = {} } = lenientSchema.parse(rawData)
+
+		// Track warnings for profiles that had issues
+		const warnings: string[] = []
+		const validApiConfigs: Record<string, ProviderSettingsWithId> = {}
+
+		// Process each apiConfig individually with sanitization
+		for (const [configName, rawConfig] of Object.entries(rawProviderProfiles.apiConfigs)) {
+			// First sanitize to handle invalid apiProvider values
+			const { config: sanitizedConfig, warning } = sanitizeProviderConfig(configName, rawConfig)
+			if (warning) {
+				warnings.push(warning)
+			}
+
+			// Then validate the sanitized config
+			const result = providerSettingsWithIdSchema.safeParse(sanitizedConfig)
+			if (result.success) {
+				validApiConfigs[configName] = result.data
+			} else {
+				// Profile is completely invalid - skip it
+				const issues = result.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ")
+				warnings.push(`Profile "${configName}" was skipped: ${issues}`)
+			}
+		}
+
+		// If no valid configs were imported and there were issues, report them
+		if (Object.keys(validApiConfigs).length === 0 && warnings.length > 0) {
+			return {
+				success: false,
+				error: `No valid profiles could be imported:\n${warnings.join("\n")}`,
+			}
+		}
 
 		const providerProfiles = {
-			currentApiConfigName: newProviderProfiles.currentApiConfigName,
+			currentApiConfigName: rawProviderProfiles.currentApiConfigName,
 			apiConfigs: {
 				...previousProviderProfiles.apiConfigs,
-				...newProviderProfiles.apiConfigs,
+				...validApiConfigs,
 			},
 			modeApiConfigs: {
 				...previousProviderProfiles.modeApiConfigs,
-				...newProviderProfiles.modeApiConfigs,
+				...rawProviderProfiles.modeApiConfigs,
 			},
 		}
 
@@ -89,7 +159,12 @@ export async function importSettingsFromPath(
 
 		contextProxy.setValue("listApiConfigMeta", await providerSettingsManager.listConfig())
 
-		return { providerProfiles, globalSettings, success: true }
+		return {
+			providerProfiles,
+			globalSettings,
+			success: true,
+			warnings: warnings.length > 0 ? warnings : undefined,
+		}
 	} catch (e) {
 		let error = "Unknown error"
 
@@ -110,9 +185,16 @@ export async function importSettingsFromPath(
  * @returns Promise resolving to import result
  */
 export const importSettings = async ({ providerSettingsManager, contextProxy, customModesManager }: ImportOptions) => {
+	// Use the last export path as a sensible default, falling back to Downloads
+	const defaultUri = resolveDefaultSaveUri(contextProxy, "lastSettingsExportPath", "roo-code-settings.json", {
+		useWorkspace: false,
+		fallbackDir: path.join(os.homedir(), "Downloads"),
+	})
+
 	const uris = await vscode.window.showOpenDialog({
 		filters: { JSON: ["json"] },
 		canSelectMany: false,
+		defaultUri,
 	})
 
 	if (!uris) {
@@ -219,7 +301,16 @@ export const importSettingsWithFeedback = async (
 	if (result.success) {
 		provider.settingsImportedAt = Date.now()
 		await provider.postStateToWebview()
-		await vscode.window.showInformationMessage(t("common:info.settings_imported"))
+
+		// Show warnings if any profiles had issues but were still imported (with modifications)
+		if (result.warnings && result.warnings.length > 0) {
+			// Show everything in a single notification - VS Code will expand it if needed
+			const warningDetails = result.warnings.join(" | ")
+			const warningMessage = `${t("common:info.settings_imported")} with warnings: ${warningDetails}`
+			await vscode.window.showWarningMessage(warningMessage)
+		} else {
+			await vscode.window.showInformationMessage(t("common:info.settings_imported"))
+		}
 	} else if (result.error) {
 		await vscode.window.showErrorMessage(t("common:errors.settings_import_failed", { error: result.error }))
 	}

@@ -96,6 +96,9 @@ export class ContextProxy {
 		// Migration: Move legacy customCondensingPrompt to customSupportPrompts
 		await this.migrateLegacyCondensingPrompt()
 
+		// Migration: Clear old default condensing prompt so users get the improved v2 default
+		await this.migrateOldDefaultCondensingPrompt()
+
 		this._isInitialized = true
 	}
 
@@ -136,6 +139,87 @@ export class ContextProxy {
 				`Error during customCondensingPrompt migration: ${error instanceof Error ? error.message : String(error)}`,
 			)
 		}
+	}
+
+	/**
+	 * Clears the old v1 default condensing prompt from customSupportPrompts.CONDENSE if present.
+	 *
+	 * Before PR #10873 "Intelligent Context Condensation v2", the default condensing prompt was
+	 * a simpler 6-section format. Users who had this old default saved in their settings would
+	 * be stuck with it instead of getting the improved v2 default (which includes analysis tags,
+	 * error tracking, all user messages, and better task continuity).
+	 *
+	 * This migration uses fingerprinting to detect the old v1 default - checking for key
+	 * identifying phrases unique to v1 and absence of v2-specific features. This is more
+	 * lenient than exact matching and handles whitespace variations.
+	 */
+	private async migrateOldDefaultCondensingPrompt() {
+		try {
+			const currentSupportPrompts =
+				this.originalContext.globalState.get<Record<string, string>>("customSupportPrompts") || {}
+
+			const savedCondensePrompt = currentSupportPrompts.CONDENSE
+
+			if (savedCondensePrompt && this.isOldV1DefaultCondensePrompt(savedCondensePrompt)) {
+				logger.info(
+					"Clearing old v1 default condensing prompt from customSupportPrompts.CONDENSE - user will now get the improved v2 default",
+				)
+
+				// Remove the CONDENSE key from customSupportPrompts
+				const { CONDENSE: _, ...remainingPrompts } = currentSupportPrompts
+				const updatedPrompts = Object.keys(remainingPrompts).length > 0 ? remainingPrompts : undefined
+
+				await this.originalContext.globalState.update("customSupportPrompts", updatedPrompts)
+				this.stateCache.customSupportPrompts = updatedPrompts
+			}
+		} catch (error) {
+			logger.error(
+				`Error during old default condensing prompt migration: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
+	/**
+	 * Detects if a prompt is the old v1 default condensing prompt using fingerprinting.
+	 * This is more lenient than exact matching - it checks for key identifying phrases
+	 * unique to v1 and absence of v2-specific features.
+	 *
+	 * V1 characteristics:
+	 * - Exactly 6 numbered sections (1-6)
+	 * - Contains specific section headers like "Previous Conversation", "Current Work", etc.
+	 * - Does NOT contain v2-specific features like "<analysis>", "SYSTEM OPERATION", etc.
+	 */
+	private isOldV1DefaultCondensePrompt(prompt: string): boolean {
+		// Key phrases unique to the v1 default (must ALL be present)
+		const v1RequiredPhrases = [
+			"Your task is to create a detailed summary of the conversation so far",
+			"1. Previous Conversation:",
+			"2. Current Work:",
+			"3. Key Technical Concepts:",
+			"4. Relevant Files and Code:",
+			"5. Problem Solving:",
+			"6. Pending Tasks and Next Steps:",
+			"Output only the summary of the conversation so far",
+		]
+
+		// V2-specific features (if ANY are present, this is NOT v1 default)
+		const v2Features = [
+			"<analysis>",
+			"SYSTEM OPERATION",
+			"Errors and fixes",
+			"All user messages",
+			"7.", // v2 has more than 6 sections
+			"8.",
+			"9.",
+		]
+
+		// Check that all v1 required phrases are present
+		const hasAllV1Phrases = v1RequiredPhrases.every((phrase) => prompt.toLowerCase().includes(phrase.toLowerCase()))
+
+		// Check that no v2 features are present
+		const hasNoV2Features = v2Features.every((feature) => !prompt.toLowerCase().includes(feature.toLowerCase()))
+
+		return hasAllV1Phrases && hasNoV2Features
 	}
 
 	/**
