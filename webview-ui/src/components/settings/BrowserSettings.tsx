@@ -120,7 +120,7 @@ export const BrowserSettings = ({
 					label={t("settings:browser.enable.label")}>
 					<div className="flex items-center gap-1">
 						<VSCodeCheckbox
-							checked={browserToolEnabled}
+							checked={browserToolEnabled ?? settingDefaults.browserToolEnabled}
 							onChange={(e: any) => setCachedStateField("browserToolEnabled", e.target.checked)}>
 							<span className="font-medium">{t("settings:browser.enable.label")}</span>
 						</VSCodeCheckbox>
@@ -141,7 +141,7 @@ export const BrowserSettings = ({
 					</div>
 				</SearchableSetting>
 
-				{browserToolEnabled && (
+				{(browserToolEnabled ?? settingDefaults.browserToolEnabled) && (
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
 						<SearchableSetting
 							settingId="browser-viewport"
@@ -156,7 +156,7 @@ export const BrowserSettings = ({
 								/>
 							</div>
 							<Select
-								value={browserViewportSize}
+								value={browserViewportSize ?? settingDefaults.browserViewportSize}
 								onValueChange={(value) => setCachedStateField("browserViewportSize", value)}>
 								<SelectTrigger className="w-full">
 									<SelectValue placeholder={t("settings:common.select")} />
