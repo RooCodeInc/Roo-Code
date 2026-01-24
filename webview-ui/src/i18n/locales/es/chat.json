@@ -324,6 +324,10 @@
 			"description": "Se eliminaron mensajes más antiguos de la conversación para mantenerse dentro del límite de la ventana de contexto. Este es un enfoque rápido pero menos conservador del contexto en comparación con la condensación."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo quiere cargar una habilidad",
+		"didLoad": "Roo cargó una habilidad"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar a la entrada (o Shift + clic)",
 		"timerPrefix": "Aprobación automática habilitada. Seleccionando en {{seconds}}s…"

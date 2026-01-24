@@ -324,6 +324,10 @@
 			"description": "S'han eliminat missatges més antics de la conversa per mantenir-se dins del límit de la finestra de context. Aquest és un enfocament ràpid però menys conservador del context en comparació amb la condensació."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "En Roo vol carregar una habilitat",
+		"didLoad": "En Roo ha carregat una habilitat"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar a l'entrada (o Shift + clic)",
 		"timerPrefix": "Aprovació automàtica habilitada. Seleccionant en {{seconds}}s…"
