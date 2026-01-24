@@ -1794,6 +1794,74 @@ export class ClineProvider
 		}
 	}
 
+	// this function deletes only the checkpoints for a task, but keeps the task history and messages
+	async deleteTaskCheckpointsWithId(id: string) {
+		try {
+			// get the task info
+			const { historyItem, taskDirPath } = await this.getTaskWithId(id)
+
+			// Delete associated shadow repository or branch
+			const globalStorageDir = this.contextProxy.globalStorageUri.fsPath
+			const workspaceDir = historyItem.workspace || this.cwd
+
+			try {
+				await ShadowCheckpointService.deleteTask({ taskId: id, globalStorageDir, workspaceDir })
+				console.log(`[deleteTaskCheckpointsWithId${id}] deleted shadow repository/branch`)
+			} catch (error) {
+				console.error(
+					`[deleteTaskCheckpointsWithId${id}] failed to delete shadow repository or branch: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+
+			// Delete the checkpoints directory within the task folder
+			const checkpointsDir = path.join(taskDirPath, "checkpoints")
+			try {
+				const checkpointsDirExists = await fileExistsAtPath(checkpointsDir)
+				if (checkpointsDirExists) {
+					await fs.rm(checkpointsDir, { recursive: true, force: true })
+					console.log(`[deleteTaskCheckpointsWithId${id}] removed checkpoints directory`)
+				}
+			} catch (error) {
+				console.error(
+					`[deleteTaskCheckpointsWithId${id}] failed to remove checkpoints directory: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+
+			// Update ui_messages.json to remove or mark checkpoint_saved entries as deleted
+			try {
+				const uiMessagesPath = path.join(taskDirPath, GlobalFileNames.uiMessages)
+				const uiMessagesExists = await fileExistsAtPath(uiMessagesPath)
+				if (uiMessagesExists) {
+					const uiMessages = JSON.parse(await fs.readFile(uiMessagesPath, "utf8")) as ClineMessage[]
+					// Filter out checkpoint_saved messages
+					const filteredMessages = uiMessages.filter(
+						(msg) => !(msg.type === "say" && msg.say === "checkpoint_saved"),
+					)
+					await saveTaskMessages({
+						messages: filteredMessages,
+						taskId: id,
+						globalStoragePath: globalStorageDir,
+					})
+					console.log(`[deleteTaskCheckpointsWithId${id}] updated ui_messages.json`)
+				}
+			} catch (error) {
+				console.error(
+					`[deleteTaskCheckpointsWithId${id}] failed to update ui_messages.json: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+
+			// Update webview state to reflect changes
+			await this.postStateToWebview()
+		} catch (error) {
+			// If task is not found, just log the error
+			if (error instanceof Error && error.message === "Task not found") {
+				console.log(`[deleteTaskCheckpointsWithId${id}] task not found`)
+				return
+			}
+			throw error
+		}
+	}
+
 	async deleteTaskFromState(id: string) {
 		const taskHistory = this.getGlobalState("taskHistory") ?? []
 		const updatedTaskHistory = taskHistory.filter((task) => task.id !== id)
