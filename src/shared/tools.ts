@@ -72,6 +72,10 @@ export const toolParamNames = [
 	"old_string", // search_replace and edit_file parameter
 	"new_string", // search_replace and edit_file parameter
 	"expected_replacements", // edit_file parameter for multiple occurrences
+	"artifact_id", // read_command_output parameter
+	"search", // read_command_output parameter for grep-like search
+	"offset", // read_command_output parameter for pagination
+	"limit", // read_command_output parameter for max bytes to return
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -83,6 +87,7 @@ export type ToolParamName = (typeof toolParamNames)[number]
 export type NativeToolArgs = {
 	access_mcp_resource: { server_name: string; uri: string }
 	read_file: { files: FileEntry[] }
+	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
 	apply_diff: { path: string; diff: string }
@@ -242,6 +247,7 @@ export type ToolGroupConfig = {
 export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	execute_command: "run commands",
 	read_file: "read files",
+	read_command_output: "read command output",
 	fetch_instructions: "fetch instructions",
 	write_to_file: "write files",
 	apply_diff: "apply changes",
@@ -278,7 +284,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["browser_action"],
 	},
 	command: {
-		tools: ["execute_command"],
+		tools: ["execute_command", "read_command_output"],
 	},
 	mcp: {
 		tools: ["use_mcp_tool", "access_mcp_resource"],

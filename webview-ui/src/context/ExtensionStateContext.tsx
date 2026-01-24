@@ -100,6 +100,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setTerminalOutputLineLimit: (value: number) => void
 	terminalOutputCharacterLimit?: number
 	setTerminalOutputCharacterLimit: (value: number) => void
+	terminalOutputPreviewSize?: "small" | "medium" | "large"
+	setTerminalOutputPreviewSize: (value: "small" | "medium" | "large") => void
 	mcpEnabled: boolean
 	setMcpEnabled: (value: boolean) => void
 	enableMcpServerCreation: boolean
@@ -548,6 +550,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			setState((prevState) => ({ ...prevState, terminalOutputLineLimit: value })),
 		setTerminalOutputCharacterLimit: (value) =>
 			setState((prevState) => ({ ...prevState, terminalOutputCharacterLimit: value })),
+		setTerminalOutputPreviewSize: (value) =>
+			setState((prevState) => ({ ...prevState, terminalOutputPreviewSize: value })),
 		setTerminalShellIntegrationTimeout: (value) =>
 			setState((prevState) => ({ ...prevState, terminalShellIntegrationTimeout: value })),
 		setTerminalShellIntegrationDisabled: (value) =>

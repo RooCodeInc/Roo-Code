@@ -84,11 +84,13 @@ import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider"
 import { findToolName } from "../../integrations/misc/export-markdown"
 import { RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
+import { OutputInterceptor } from "../../integrations/terminal/OutputInterceptor"
 
 // utils
 import { calculateApiCostAnthropic, calculateApiCostOpenAI } from "../../shared/cost"
 import { getWorkspacePath } from "../../utils/path"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { getTaskDirectoryPath } from "../../utils/storage"
 
 // prompts
 import { formatResponse } from "../prompts/responses"
@@ -2251,6 +2253,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (error) {
 			console.error("Error releasing terminals:", error)
 		}
+
+		// Cleanup command output artifacts
+		getTaskDirectoryPath(this.globalStoragePath, this.taskId)
+			.then((taskDir) => {
+				const outputDir = path.join(taskDir, "command-output")
+				return OutputInterceptor.cleanup(outputDir)
+			})
+			.catch((error) => {
+				console.error("Error cleaning up command output artifacts:", error)
+			})
 
 		try {
 			this.urlContentFetcher.closeBrowser()

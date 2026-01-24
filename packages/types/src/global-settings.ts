@@ -30,6 +30,42 @@ export const DEFAULT_WRITE_DELAY_MS = 1000
 export const DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT = 50_000
 
 /**
+ * Terminal output preview size options for persisted command output.
+ *
+ * Controls how much command output is kept in memory as a "preview" before
+ * the LLM decides to retrieve more via `read_command_output`. Larger previews
+ * mean more immediate context but consume more of the context window.
+ *
+ * - `small`: 2KB preview - Best for long-running commands with verbose output
+ * - `medium`: 4KB preview - Balanced default for most use cases
+ * - `large`: 8KB preview - Best when commands produce critical info early
+ *
+ * @see OutputInterceptor - Uses this setting to determine when to spill to disk
+ * @see PersistedCommandOutput - Contains the resulting preview and artifact reference
+ */
+export type TerminalOutputPreviewSize = "small" | "medium" | "large"
+
+/**
+ * Byte limits for each terminal output preview size.
+ *
+ * Maps preview size names to their corresponding byte thresholds.
+ * When command output exceeds these thresholds, the excess is persisted
+ * to disk and made available via the `read_command_output` tool.
+ */
+export const TERMINAL_PREVIEW_BYTES: Record<TerminalOutputPreviewSize, number> = {
+	small: 2048, // 2KB
+	medium: 4096, // 4KB
+	large: 8192, // 8KB
+}
+
+/**
+ * Default terminal output preview size.
+ * The "medium" (4KB) setting provides a good balance between immediate
+ * visibility and context window conservation for most use cases.
+ */
+export const DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE: TerminalOutputPreviewSize = "medium"
+
+/**
  * Minimum checkpoint timeout in seconds.
  */
 export const MIN_CHECKPOINT_TIMEOUT_SECONDS = 10
@@ -149,6 +185,7 @@ export const globalSettingsSchema = z.object({
 
 	terminalOutputLineLimit: z.number().optional(),
 	terminalOutputCharacterLimit: z.number().optional(),
+	terminalOutputPreviewSize: z.enum(["small", "medium", "large"]).optional(),
 	terminalShellIntegrationTimeout: z.number().optional(),
 	terminalShellIntegrationDisabled: z.boolean().optional(),
 	terminalCommandDelay: z.number().optional(),

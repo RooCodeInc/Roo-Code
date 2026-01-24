@@ -17,6 +17,7 @@ import { Task } from "../task/Task"
 import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
 import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
+import { readCommandOutputTool } from "../tools/ReadCommandOutputTool"
 import { writeToFileTool } from "../tools/WriteToFileTool"
 import { searchAndReplaceTool } from "../tools/SearchAndReplaceTool"
 import { searchReplaceTool } from "../tools/SearchReplaceTool"
@@ -402,8 +403,10 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name}]`
 					case "switch_mode":
 						return `[${block.name} to '${block.params.mode_slug}'${block.params.reason ? ` because: ${block.params.reason}` : ""}]`
-					case "codebase_search": // Add case for the new tool
+					case "codebase_search":
 						return `[${block.name} for '${block.params.query}']`
+					case "read_command_output":
+						return `[${block.name} for '${block.params.artifact_id}']`
 					case "update_todo_list":
 						return `[${block.name}]`
 					case "new_task": {
@@ -846,6 +849,13 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult,
 					})
 					break
+				case "read_command_output":
+					await readCommandOutputTool.handle(cline, block as ToolUse<"read_command_output">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
 				case "use_mcp_tool":
 					await useMcpToolTool.handle(cline, block as ToolUse<"use_mcp_tool">, {
 						askApproval,
@@ -1088,6 +1098,7 @@ function containsXmlToolMarkup(text: string): boolean {
 		"generate_image",
 		"list_files",
 		"new_task",
+		"read_command_output",
 		"read_file",
 		"search_and_replace",
 		"search_files",

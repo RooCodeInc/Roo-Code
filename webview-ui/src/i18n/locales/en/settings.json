@@ -733,6 +733,15 @@
 			"label": "Terminal character limit",
 			"description": "Overrides the line limit to prevent memory issues by enforcing a hard cap on output size. If exceeded, keeps the beginning and end and shows a placeholder to Roo where content is skipped. <0>Learn more</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Command output preview size",
+			"description": "Controls how much command output Roo sees directly. Full output is always saved and accessible when needed.",
+			"options": {
+				"small": "Small (2KB)",
+				"medium": "Medium (4KB)",
+				"large": "Large (8KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal shell integration timeout",
 			"description": "How long to wait for VS Code shell integration before running commands. Raise if your shell starts slowly or you see 'Shell Integration Unavailable' errors. <0>Learn more</0>"

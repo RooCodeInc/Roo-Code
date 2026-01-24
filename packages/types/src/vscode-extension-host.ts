@@ -304,6 +304,7 @@ export type ExtensionState = Pick<
 	| "maxConcurrentFileReads"
 	| "terminalOutputLineLimit"
 	| "terminalOutputCharacterLimit"
+	| "terminalOutputPreviewSize"
 	| "terminalShellIntegrationTimeout"
 	| "terminalShellIntegrationDisabled"
 	| "terminalCommandDelay"

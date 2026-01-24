@@ -1013,6 +1013,9 @@ importers:
       '@types/glob':
         specifier: ^8.1.0
         version: 8.1.0
+      '@types/json-stream-stringify':
+        specifier: ^2.0.4
+        version: 2.0.4
       '@types/lodash.debounce':
         specifier: ^4.0.9
         version: 4.0.9
@@ -4264,6 +4267,10 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
+
+  '@types/json-stream-stringify@2.0.4':
+    resolution: {integrity: sha512-xSFsVnoQ8Y/7BiVF3/fEIwRx9RoGzssDKVwhy1g23wkA4GAmA3v8lsl6CxsmUD6vf4EiRd+J0ULLkMbAWRSsgQ==}
+    deprecated: This is a stub types definition. json-stream-stringify provides its own type definitions, so you do not need this installed.
 
   '@types/katex@0.16.7':
     resolution: {integrity: sha512-HMwFiRujE5PjrgwHQ25+bsLJgowjGjm5Z8FVSf0N6PwgJrwxH0QxzHYDcKsTfV3wva0vzrpqMTJS2jXPr5BMEQ==}
@@ -14240,6 +14247,10 @@ snapshots:
   '@types/js-cookie@2.2.7': {}
 
   '@types/json-schema@7.0.15': {}
+
+  '@types/json-stream-stringify@2.0.4':
+    dependencies:
+      json-stream-stringify: 3.1.6
 
   '@types/katex@0.16.7': {}
 

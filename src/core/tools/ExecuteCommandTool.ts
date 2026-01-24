@@ -4,7 +4,12 @@ import * as vscode from "vscode"
 
 import delay from "delay"
 
-import { CommandExecutionStatus, DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT } from "@roo-code/types"
+import {
+	CommandExecutionStatus,
+	DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
+	DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE,
+	PersistedCommandOutput,
+} from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
@@ -15,8 +20,10 @@ import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
+import { OutputInterceptor } from "../../integrations/terminal/OutputInterceptor"
 import { Package } from "../../shared/package"
 import { t } from "../../i18n"
+import { getTaskDirectoryPath } from "../../utils/storage"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
 class ShellIntegrationError extends Error {}
@@ -185,6 +192,7 @@ export async function executeCommandInTerminal(
 	let runInBackground = false
 	let completed = false
 	let result: string = ""
+	let persistedResult: PersistedCommandOutput | undefined
 	let exitDetails: ExitCodeDetails | undefined
 	let shellIntegrationError: string | undefined
 	let hasAskedForCommandOutput = false
@@ -192,10 +200,38 @@ export async function executeCommandInTerminal(
 	const terminalProvider = terminalShellIntegrationDisabled ? "execa" : "vscode"
 	const provider = await task.providerRef.deref()
 
+	// Get global storage path for persisted output artifacts
+	const globalStoragePath = provider?.context?.globalStorageUri?.fsPath
+	let interceptor: OutputInterceptor | undefined
+
+	// Create OutputInterceptor if we have storage available
+	if (globalStoragePath) {
+		const taskDir = await getTaskDirectoryPath(globalStoragePath, task.taskId)
+		const storageDir = path.join(taskDir, "command-output")
+		// Use default preview size for now (terminalOutputPreviewSize setting will be added in Phase 5)
+		const terminalOutputPreviewSize = DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE
+		const providerState = await provider?.getState()
+		const terminalCompressProgressBar = providerState?.terminalCompressProgressBar ?? true
+
+		interceptor = new OutputInterceptor({
+			executionId,
+			taskId: task.taskId,
+			command,
+			storageDir,
+			previewSize: terminalOutputPreviewSize,
+			compressProgressBar: terminalCompressProgressBar,
+		})
+	}
+
 	let accumulatedOutput = ""
 	const callbacks: RooTerminalCallbacks = {
 		onLine: async (lines: string, process: RooTerminalProcess) => {
 			accumulatedOutput += lines
+
+			// Write to interceptor for persisted output
+			interceptor?.write(lines)
+
+			// Continue sending compressed output to webview for UI display (unchanged behavior)
 			const compressedOutput = Terminal.compressTerminalOutput(
 				accumulatedOutput,
 				terminalOutputLineLimit,
@@ -224,6 +260,12 @@ export async function executeCommandInTerminal(
 			}
 		},
 		onCompleted: (output: string | undefined) => {
+			// Finalize interceptor and get persisted result
+			if (interceptor) {
+				persistedResult = interceptor.finalize()
+			}
+
+			// Continue using compressed output for UI display
 			result = Terminal.compressTerminalOutput(
 				output ?? "",
 				terminalOutputLineLimit,
@@ -337,6 +379,14 @@ export async function executeCommandInTerminal(
 			),
 		]
 	} else if (completed || exitDetails) {
+		const currentWorkingDir = terminal.getCurrentWorkingDirectory().toPosix()
+
+		// Use persisted output format when output was truncated and spilled to disk
+		if (persistedResult?.truncated) {
+			return [false, formatPersistedOutput(persistedResult, exitDetails, currentWorkingDir)]
+		}
+
+		// Use inline format for small outputs (original behavior with exit status)
 		let exitStatus: string = ""
 
 		if (exitDetails !== undefined) {
@@ -361,9 +411,10 @@ export async function executeCommandInTerminal(
 			exitStatus = `Exit code: <undefined, notify user>`
 		}
 
-		let workingDirInfo = ` within working directory '${terminal.getCurrentWorkingDirectory().toPosix()}'`
-
-		return [false, `Command executed in terminal ${workingDirInfo}. ${exitStatus}\nOutput:\n${result}`]
+		return [
+			false,
+			`Command executed in terminal within working directory '${currentWorkingDir}'. ${exitStatus}\nOutput:\n${result}`,
+		]
 	} else {
 		return [
 			false,
@@ -374,6 +425,71 @@ export async function executeCommandInTerminal(
 			].join("\n"),
 		]
 	}
+}
+
+/**
+ * Format exit status from ExitCodeDetails
+ */
+function formatExitStatus(exitDetails: ExitCodeDetails | undefined): string {
+	if (exitDetails === undefined) {
+		return "Exit code: <undefined, notify user>"
+	}
+
+	if (exitDetails.signalName) {
+		let status = `Process terminated by signal ${exitDetails.signalName}`
+		if (exitDetails.coreDumpPossible) {
+			status += " - core dump possible"
+		}
+		return status
+	}
+
+	if (exitDetails.exitCode === undefined) {
+		return "Exit code: <undefined, notify user>"
+	}
+
+	let status = ""
+	if (exitDetails.exitCode !== 0) {
+		status += "Command execution was not successful, inspect the cause and adjust as needed.\n"
+	}
+	status += `Exit code: ${exitDetails.exitCode}`
+	return status
+}
+
+/**
+ * Format persisted output result for tool response when output was truncated
+ */
+function formatPersistedOutput(
+	result: PersistedCommandOutput,
+	exitDetails: ExitCodeDetails | undefined,
+	workingDir: string,
+): string {
+	const exitStatus = formatExitStatus(exitDetails)
+	const sizeStr = formatBytes(result.totalBytes)
+	const artifactId = result.artifactPath ? path.basename(result.artifactPath) : ""
+
+	return [
+		`Command executed in '${workingDir}'. ${exitStatus}`,
+		"",
+		`Output (${sizeStr}) persisted. Artifact ID: ${artifactId}`,
+		"",
+		"Preview:",
+		result.preview,
+		"",
+		"Use read_command_output tool to view full output if needed.",
+	].join("\n")
+}
+
+/**
+ * Format bytes to human-readable string
+ */
+function formatBytes(bytes: number): string {
+	if (bytes < 1024) {
+		return `${bytes}B`
+	}
+	if (bytes < 1024 * 1024) {
+		return `${(bytes / 1024).toFixed(1)}KB`
+	}
+	return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
 }
 
 export const executeCommandTool = new ExecuteCommandTool()
