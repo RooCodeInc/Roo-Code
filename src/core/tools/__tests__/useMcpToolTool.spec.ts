@@ -611,6 +611,11 @@ describe("useMcpToolTool", () => {
 					tool_name: "get_user_profile", // Model mangled hyphens to underscores
 					arguments: "{}",
 				},
+				nativeArgs: {
+					server_name: "test-server",
+					tool_name: "get_user_profile", // Model mangled hyphens to underscores
+					arguments: {},
+				},
 				partial: false,
 			}
 
