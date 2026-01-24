@@ -324,6 +324,10 @@
 			"description": "コンテキストウィンドウの制限内に収めるため、古いメッセージが会話から削除されました。これは圧縮と比較して高速ですが、コンテキストの保持性が低いアプローチです。"
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Rooはスキルを読み込もうとしています",
+		"didLoad": "Rooはスキルを読み込みました"
+	},
 	"followUpSuggest": {
 		"copyToInput": "入力欄にコピー（またはShift + クリック）",
 		"timerPrefix": "自動承認が有効です。{{seconds}}秒後に選択中…"

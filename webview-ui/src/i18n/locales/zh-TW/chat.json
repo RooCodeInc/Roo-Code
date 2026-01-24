@@ -203,6 +203,10 @@
 			"description": "為保持在上下文視窗限制內，已從對話中移除較舊的訊息。與壓縮相比，這是一種快速但上下文保留較少的方法。"
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo 想要載入技能",
+		"didLoad": "Roo 載入了技能"
+	},
 	"instructions": {
 		"wantsToFetch": "Roo 想要取得詳細指示以協助目前工作"
 	},

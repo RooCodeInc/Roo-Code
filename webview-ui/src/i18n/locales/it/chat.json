@@ -324,6 +324,10 @@
 			"description": "I messaggi più vecchi sono stati rimossi dalla conversazione per rimanere entro il limite della finestra di contesto. Questo è un approccio veloce ma meno conservativo del contesto rispetto alla condensazione."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo vuole caricare una competenza",
+		"didLoad": "Roo ha caricato una competenza"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Copia nell'input (o Shift + clic)",
 		"timerPrefix": "Approvazione automatica abilitata. Selezione tra {{seconds}}s…"

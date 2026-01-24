@@ -206,6 +206,10 @@
 			"description": "Pesan lama telah dihapus dari percakapan untuk tetap dalam batas jendela konteks. Ini adalah pendekatan yang cepat tetapi kurang mempertahankan konteks dibandingkan dengan kondensasi."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo ingin memuat keterampilan",
+		"didLoad": "Roo telah memuat keterampilan"
+	},
 	"instructions": {
 		"wantsToFetch": "Roo ingin mengambil instruksi detail untuk membantu tugas saat ini"
 	},
