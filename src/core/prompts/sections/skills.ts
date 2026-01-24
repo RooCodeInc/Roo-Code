@@ -33,10 +33,11 @@ export async function getSkillsSection(
 		.map((skill) => {
 			const name = escapeXml(skill.name)
 			const description = escapeXml(skill.description)
-			// Per the Agent Skills integration guidance for filesystem-based agents,
-			// location should be an absolute path to the SKILL.md file.
-			const location = escapeXml(skill.path)
-			return `  <skill>\n    <name>${name}</name>\n    <description>${description}</description>\n    <location>${location}</location>\n  </skill>`
+			// Only include location for file-based skills (not built-in)
+			// Built-in skills are loaded via the skill tool by name, not by path
+			const isFileBasedSkill = skill.source !== "built-in" && skill.path !== "built-in"
+			const locationLine = isFileBasedSkill ? `\n    <location>${escapeXml(skill.path)}</location>` : ""
+			return `  <skill>\n    <name>${name}</name>\n    <description>${description}</description>${locationLine}\n  </skill>`
 		})
 		.join("\n")
 

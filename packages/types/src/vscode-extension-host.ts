@@ -799,6 +799,7 @@ export interface ClineSayTool {
 		| "imageGenerated"
 		| "runSlashCommand"
 		| "updateTodoList"
+		| "skill"
 	path?: string
 	// For readCommandOutput
 	readStart?: number
@@ -845,6 +846,8 @@ export interface ClineSayTool {
 	args?: string
 	source?: string
 	description?: string
+	// Properties for skill tool
+	skill?: string
 }
 
 // Must keep in sync with system prompt.
