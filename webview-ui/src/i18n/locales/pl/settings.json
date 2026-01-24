@@ -29,6 +29,7 @@
 		"providers": "Dostawcy",
 		"modes": "Tryby",
 		"mcp": "Serwery MCP",
+		"worktrees": "Worktrees",
 		"autoApprove": "Auto-zatwierdzanie",
 		"browser": "Dostęp komputera",
 		"checkpoints": "Punkty kontrolne",

@@ -29,6 +29,7 @@
 		"providers": "Proveedores",
 		"modes": "Modos",
 		"mcp": "Servidores MCP",
+		"worktrees": "Worktrees",
 		"autoApprove": "Auto-aprobación",
 		"browser": "Acceso al ordenador",
 		"checkpoints": "Puntos de control",

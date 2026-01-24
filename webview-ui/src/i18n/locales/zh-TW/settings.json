@@ -29,6 +29,7 @@
 		"providers": "供應商",
 		"modes": "模式",
 		"mcp": "MCP 伺服器",
+		"worktrees": "Worktrees",
 		"autoApprove": "自動核准",
 		"browser": "電腦存取",
 		"checkpoints": "檢查點",

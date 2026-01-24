@@ -29,6 +29,7 @@
 		"providers": "プロバイダー",
 		"modes": "モード",
 		"mcp": "MCPサーバー",
+		"worktrees": "Worktrees",
 		"autoApprove": "自動承認",
 		"browser": "コンピューターアクセス",
 		"checkpoints": "チェックポイント",

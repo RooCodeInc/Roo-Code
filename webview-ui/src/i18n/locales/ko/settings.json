@@ -29,6 +29,7 @@
 		"providers": "공급자",
 		"modes": "모드",
 		"mcp": "MCP 서버",
+		"worktrees": "Worktrees",
 		"autoApprove": "자동 승인",
 		"browser": "컴퓨터 접근",
 		"checkpoints": "체크포인트",
