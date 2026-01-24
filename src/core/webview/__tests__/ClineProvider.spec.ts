@@ -558,7 +558,6 @@ describe("ClineProvider", () => {
 			enableCheckpoints: false,
 			writeDelayMs: 1000,
 			browserViewportSize: "900x600",
-			fuzzyMatchThreshold: 1.0,
 			mcpEnabled: true,
 			mode: defaultModeSlug,
 			customModes: [],
