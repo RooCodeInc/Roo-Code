@@ -467,7 +467,8 @@
 			"numCtx": "Contextvenstergrootte (num_ctx)",
 			"numCtxHelp": "Overschrijft de standaard contextvenstergrootte van het model. Laat leeg om de Modelfile-configuratie van het model te gebruiken. De minimumwaarde is 128.",
 			"description": "Ollama laat je modellen lokaal op je computer draaien. Zie hun quickstart-gids voor instructies.",
-			"warning": "Let op: Roo Code gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht."
+			"warning": "Let op: Roo Code gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht.",
+			"toolsNote": "Models that do not support native tool calling are excluded from this list."
 		},
 		"unboundApiKey": "Unbound API-sleutel",
 		"getUnboundApiKey": "Unbound API-sleutel ophalen",
@@ -929,7 +930,8 @@
 		"providerNotAllowed": "Provider '{{provider}}' is niet toegestaan door je organisatie",
 		"modelNotAllowed": "Model '{{model}}' is niet toegestaan voor provider '{{provider}}' door je organisatie",
 		"profileInvalid": "Dit profiel bevat een provider of model dat niet is toegestaan door je organisatie",
-		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven"
+		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven",
+		"modelMayNotSupportTools": "The model ID ({{modelId}}) you provided is not in the available models list. This may be because the model does not support native tool calling, which is required for Roo Code."
 	},
 	"placeholders": {
 		"apiKey": "Voer API-sleutel in...",

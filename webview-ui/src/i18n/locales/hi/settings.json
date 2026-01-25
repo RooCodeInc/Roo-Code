@@ -467,7 +467,8 @@
 			"numCtx": "संदर्भ विंडो आकार (num_ctx)",
 			"numCtxHelp": "मॉडल के डिफ़ॉल्ट संदर्भ विंडो आकार को ओवरराइड करें। मॉडल की मॉडलफ़ाइल कॉन्फ़िगरेशन का उपयोग करने के लिए खाली छोड़ दें। न्यूनतम मान 128 है।",
 			"description": "Ollama आपको अपने कंप्यूटर पर स्थानीय रूप से मॉडल चलाने की अनुमति देता है। आरंभ करने के निर्देशों के लिए, उनकी क्विकस्टार्ट गाइड देखें।",
-			"warning": "नोट: Roo Code जटिल प्रॉम्प्ट्स का उपयोग करता है और Claude मॉडल के साथ सबसे अच्छा काम करता है। कम क्षमता वाले मॉडल अपेक्षित रूप से काम नहीं कर सकते हैं।"
+			"warning": "नोट: Roo Code जटिल प्रॉम्प्ट्स का उपयोग करता है और Claude मॉडल के साथ सबसे अच्छा काम करता है। कम क्षमता वाले मॉडल अपेक्षित रूप से काम नहीं कर सकते हैं।",
+			"toolsNote": "Models that do not support native tool calling are excluded from this list."
 		},
 		"unboundApiKey": "Unbound API कुंजी",
 		"getUnboundApiKey": "Unbound API कुंजी प्राप्त करें",
@@ -929,7 +930,8 @@
 		"providerNotAllowed": "प्रदाता '{{provider}}' आपके संगठन द्वारा अनुमत नहीं है",
 		"modelNotAllowed": "मॉडल '{{model}}' प्रदाता '{{provider}}' के लिए आपके संगठन द्वारा अनुमत नहीं है",
 		"profileInvalid": "इस प्रोफ़ाइल में एक प्रदाता या मॉडल शामिल है जो आपके संगठन द्वारा अनुमत नहीं है",
-		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा"
+		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा",
+		"modelMayNotSupportTools": "The model ID ({{modelId}}) you provided is not in the available models list. This may be because the model does not support native tool calling, which is required for Roo Code."
 	},
 	"placeholders": {
 		"apiKey": "API कुंजी दर्ज करें...",

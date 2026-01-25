@@ -69,7 +69,8 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 			const availableModels = Object.keys(routerModels.data.ollama)
 			// Show warning if model is not in the list (regardless of how many models there are)
 			if (!availableModels.includes(selectedModel)) {
-				return t("settings:validation.modelAvailability", { modelId: selectedModel })
+				// Use more specific message for Ollama explaining that the model may not support tools
+				return t("settings:validation.modelMayNotSupportTools", { modelId: selectedModel })
 			}
 		}
 
@@ -111,6 +112,7 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 				errorMessage={modelNotAvailableError}
 				hidePricing
 			/>
+			<div className="text-xs text-vscode-descriptionForeground">{t("settings:providers.ollama.toolsNote")}</div>
 			<VSCodeTextField
 				value={apiConfiguration?.ollamaNumCtx?.toString() || ""}
 				onInput={(e) => {

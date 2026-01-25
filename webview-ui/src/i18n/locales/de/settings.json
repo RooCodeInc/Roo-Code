@@ -467,7 +467,8 @@
 			"numCtx": "Kontextfenstergröße (num_ctx)",
 			"numCtxHelp": "Überschreibt die Standard-Kontextfenstergröße des Modells. Lassen Sie das Feld leer, um die Modelfile-Konfiguration des Modells zu verwenden. Der Mindestwert ist 128.",
 			"description": "Ollama ermöglicht es dir, Modelle lokal auf deinem Computer auszuführen. Eine Anleitung zum Einstieg findest du im Schnellstart-Guide.",
-			"warning": "Hinweis: Roo Code verwendet komplexe Prompts und funktioniert am besten mit Claude-Modellen. Weniger leistungsfähige Modelle funktionieren möglicherweise nicht wie erwartet."
+			"warning": "Hinweis: Roo Code verwendet komplexe Prompts und funktioniert am besten mit Claude-Modellen. Weniger leistungsfähige Modelle funktionieren möglicherweise nicht wie erwartet.",
+			"toolsNote": "Modelle, die keine native Tool-Aufrufe unterstützen, sind aus dieser Liste ausgeschlossen."
 		},
 		"unboundApiKey": "Unbound API-Schlüssel",
 		"getUnboundApiKey": "Unbound API-Schlüssel erhalten",
@@ -924,6 +925,7 @@
 			"regionMismatch": "Warnung: Die Region in deiner ARN ({{arnRegion}}) stimmt nicht mit deiner ausgewählten Region ({{region}}) überein. Dies kann zu Zugriffsproblemen führen. Der Anbieter wird die Region aus der ARN verwenden."
 		},
 		"modelAvailability": "Die von dir angegebene Modell-ID ({{modelId}}) ist nicht verfügbar. Bitte wähle ein anderes Modell.",
+		"modelMayNotSupportTools": "Die von dir angegebene Modell-ID ({{modelId}}) ist nicht in der Liste der verfügbaren Modelle. Dies kann daran liegen, dass das Modell keine nativen Tool-Aufrufe unterstützt, die für Roo Code erforderlich sind.",
 		"modelDeprecated": "Dieses Modell ist nicht mehr verfügbar. Bitte wähle ein anderes Modell.",
 		"providerNotAllowed": "Anbieter '{{provider}}' ist von deiner Organisation nicht erlaubt",
 		"modelNotAllowed": "Modell '{{model}}' ist für Anbieter '{{provider}}' von deiner Organisation nicht erlaubt",
