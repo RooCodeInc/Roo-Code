@@ -5,6 +5,7 @@ import { ModelInfo, openAiModelInfoSaneDefaults, DEEP_SEEK_DEFAULT_TEMPERATURE }
 import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import type { ApiHandlerOptions } from "../../shared/api"
+import { shouldUseReasoningEffort } from "../../shared/api"
 import { getOllamaModels } from "./fetchers/ollama"
 import { TagMatcher } from "../../utils/tag-matcher"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -13,6 +14,9 @@ interface OllamaChatOptions {
 	temperature: number
 	num_ctx?: number
 }
+
+// Ollama think option type: boolean or effort level
+type OllamaThinkOption = boolean | "high" | "medium" | "low"
 
 function convertToOllamaMessages(anthropicMessages: Anthropic.Messages.MessageParam[]): Message[] {
 	const ollamaMessages: Message[] = []
@@ -155,6 +159,37 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		this.options = options
 	}
 
+	/**
+	 * Determines the Ollama `think` option value based on model and settings.
+	 * Returns undefined if thinking is not enabled, otherwise returns the
+	 * appropriate effort level or true for basic thinking.
+	 */
+	private getThinkOption(modelInfo: ModelInfo): OllamaThinkOption | undefined {
+		// Check if reasoning should be enabled based on model and settings
+		const useReasoning = shouldUseReasoningEffort({
+			model: modelInfo,
+			settings: this.options,
+		})
+
+		if (!useReasoning) {
+			return undefined
+		}
+
+		// Map reasoning effort to Ollama think option
+		const effort = this.options.reasoningEffort
+
+		if (effort === "high" || effort === "xhigh") {
+			return "high"
+		} else if (effort === "medium") {
+			return "medium"
+		} else if (effort === "low" || effort === "minimal") {
+			return "low"
+		}
+
+		// Default to true (let Ollama decide) when reasoning is enabled but no specific effort
+		return true
+	}
+
 	private ensureClient(): Ollama {
 		if (!this.client) {
 			try {
@@ -206,13 +241,16 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const client = this.ensureClient()
-		const { id: modelId } = await this.fetchModel()
+		const { id: modelId, info: modelInfo } = await this.fetchModel()
 		const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
 
 		const ollamaMessages: Message[] = [
 			{ role: "system", content: systemPrompt },
 			...convertToOllamaMessages(messages),
 		]
+
+		// Determine if native thinking should be enabled
+		const thinkOption = this.getThinkOption(modelInfo)
 
 		const matcher = new TagMatcher(
 			"think",
@@ -235,12 +273,14 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 			}
 
 			// Create the actual API request promise
+			// Include think option if reasoning is enabled (Ollama 0.5.0+)
 			const stream = await client.chat({
 				model: modelId,
 				messages: ollamaMessages,
 				stream: true,
 				options: chatOptions,
 				tools: this.convertToolsToOllama(metadata?.tools),
+				think: thinkOption,
 			})
 
 			let totalInputTokens = 0
@@ -252,8 +292,15 @@ export class NativeOllamaHandler extends BaseProvider implements SingleCompletio
 
 			try {
 				for await (const chunk of stream) {
+					// Handle native thinking field (Ollama 0.5.0+)
+					// This is the preferred method for models that support it
+					const thinking = (chunk.message as Message & { thinking?: string }).thinking
+					if (typeof thinking === "string" && thinking.length > 0) {
+						yield { type: "reasoning", text: thinking }
+					}
+
 					if (typeof chunk.message.content === "string" && chunk.message.content.length > 0) {
-						// Process content through matcher for reasoning detection
+						// Process content through matcher for reasoning detection (fallback for <think> tags)
 						for (const matcherChunk of matcher.update(chunk.message.content)) {
 							yield matcherChunk
 						}
