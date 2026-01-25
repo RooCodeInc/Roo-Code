@@ -49,6 +49,7 @@ describe("Model Validation Functions", () => {
 		huggingface: {},
 		roo: {},
 		chutes: {},
+		firmware: {},
 	}
 
 	const allowAllOrganization: OrganizationAllowList = {
