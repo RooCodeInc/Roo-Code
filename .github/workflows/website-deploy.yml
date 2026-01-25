@@ -8,6 +8,10 @@ on:
             - 'apps/web-roo-code/**'
     workflow_dispatch:
 
+concurrency:
+    group: deploy-roocode-com
+    cancel-in-progress: true
+
 env:
     VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
     VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
@@ -27,9 +31,28 @@ jobs:
                   echo "has-vercel-token=false" >> $GITHUB_OUTPUT
                 fi
 
-    deploy:
+    quality-checks:
         runs-on: ubuntu-latest
         needs: check-secrets
+        if: ${{ needs.check-secrets.outputs.has-vercel-token == 'true' }}
+        defaults:
+            run:
+                working-directory: apps/web-roo-code
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Setup Node.js and pnpm
+              uses: ./.github/actions/setup-node-pnpm
+            - name: Run lint
+              run: pnpm run lint
+            - name: Run type check
+              run: pnpm run check-types
+            - name: Run build
+              run: pnpm run build
+
+    deploy:
+        runs-on: ubuntu-latest
+        needs: [check-secrets, quality-checks]
         if: ${{ needs.check-secrets.outputs.has-vercel-token == 'true' }}
         steps:
             - name: Checkout code
@@ -37,7 +60,7 @@ jobs:
             - name: Setup Node.js and pnpm
               uses: ./.github/actions/setup-node-pnpm
             - name: Install Vercel CLI
-              run: npm install --global vercel@canary
+              run: npm install --global vercel@latest
             - name: Pull Vercel Environment Information
               run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
             - name: Build Project Artifacts
