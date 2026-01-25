@@ -6,15 +6,15 @@
   <a href="https://www.reddit.com/r/RooCode/"><img src="https://img.shields.io/badge/Join%20r%2FRooCode-FF4500?style=flat&logo=reddit&logoColor=white" alt="Join r/RooCode"></a>
 </p>
 <p align="center">
-  <em>快速取得協助 → <a href="https://discord.gg/roocode">加入 Discord</a> • 偏好非同步？→ <a href="https://www.reddit.com/r/RooCode/">加入 r/RooCode</a></em>
+  <em>快速取得協助 → <a href="https://discord.gg/roocode">加入 Discord</a> • 偏好非同步溝通？→ <a href="https://www.reddit.com/r/RooCode/">加入 r/RooCode</a></em>
 </p>
 
 # Roo Code
 
-> 你的 AI 驅動開發團隊，就在你的編輯器裡
+> 您的 AI 驅動開發團隊，就在您的編輯器中
 
 <details>
-  <summary>🌐 可用語言</summary>
+  <summary>🌐 支援語言</summary>
 
 - [English](../../README.md)
 - [Català](../ca/README.md)
@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-  </details>
+</details>
 
 ---
 
@@ -51,14 +51,14 @@
 
 ## 模式
 
-Roo Code 適應您的工作方式，而不是相反：
+Roo Code 會配合您的工作方式，而非要您配合它：
 
-- 程式碼模式：日常編碼、編輯和檔案操作
+- 程式碼模式：日常開發、編輯和檔案操作
 - 架構師模式：規劃系統、規格和遷移
 - 詢問模式：快速回答、解釋和文件
-- 偵錯模式：追蹤問題、新增日誌、隔離根本原因
+- 偵錯模式：追蹤問題、新增日誌、鎖定根本原因
 - 自訂模式：為您的團隊或工作流程建置專門的模式
-- Roomote Control：Roomote Control 讓你能遠端控制在本機 VS Code 執行個體中運行的工作。
+- Roomote Control：Roomote Control 讓您能遠端控制在本機 VS Code 執行個體中運行的工作。
 
 更多資訊：[使用模式](https://docs.roocode.com/basic-usage/using-modes) • [自訂模式](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
 
@@ -69,7 +69,7 @@ Roo Code 適應您的工作方式，而不是相反：
 |                                                                                                                                                                     |                                                                                                                                                                  |                                                                                                                                                                    |
 | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 | <a href="https://www.youtube.com/watch?v=Mcq3r1EPZ-4"><img src="https://img.youtube.com/vi/Mcq3r1EPZ-4/maxresdefault.jpg" width="100%"></a><br><b>安裝 Roo Code</b> | <a href="https://www.youtube.com/watch?v=ZBML8h5cCgo"><img src="https://img.youtube.com/vi/ZBML8h5cCgo/maxresdefault.jpg" width="100%"></a><br><b>設定設定檔</b> | <a href="https://www.youtube.com/watch?v=r1bpod1VWhg"><img src="https://img.youtube.com/vi/r1bpod1VWhg/maxresdefault.jpg" width="100%"></a><br><b>程式碼庫索引</b> |
-|   <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>自訂模式</b>    |   <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>檢查點</b>   | <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>上下文管理</b> |
+|   <a href="https://www.youtube.com/watch?v=iiAv1eKOaxk"><img src="https://img.youtube.com/vi/iiAv1eKOaxk/maxresdefault.jpg" width="100%"></a><br><b>自訂模式</b>    |   <a href="https://www.youtube.com/watch?v=Ho30nyY332E"><img src="https://img.youtube.com/vi/Ho30nyY332E/maxresdefault.jpg" width="100%"></a><br><b>檢查點</b>   |  <a href="https://www.youtube.com/watch?v=HmnNSasv7T8"><img src="https://img.youtube.com/vi/HmnNSasv7T8/maxresdefault.jpg" width="100%"></a><br><b>上下文管理</b>  |
 
 </div>
 <p align="center">
@@ -82,12 +82,12 @@ Roo Code 適應您的工作方式，而不是相反：
 - **[YouTube 頻道](https://youtube.com/@roocodeyt?feature=shared):** 觀看教學和功能實際操作。
 - **[Discord 伺服器](https://discord.gg/roocode):** 加入社群以獲得即時協助和討論。
 - **[Reddit 社群](https://www.reddit.com/r/RooCode):** 分享您的經驗，看看其他人正在建立什麼。
-- **[GitHub 問題](https://github.com/RooCodeInc/Roo-Code/issues):** 回報錯誤並追蹤開發進度。
+- **[GitHub Issues](https://github.com/RooCodeInc/Roo-Code/issues):** 回報問題並追蹤開發進度。
 - **[功能請求](https://github.com/RooCodeInc/Roo-Code/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop):** 有想法嗎？與開發人員分享。
 
 ---
 
-## 本地設定與開發
+## 本機設定與開發
 
 1. **複製**儲存庫：
 
@@ -95,7 +95,7 @@ Roo Code 適應您的工作方式，而不是相反：
 git clone https://github.com/RooCodeInc/Roo-Code.git
 ```
 
-2. **安裝依賴套件**:
+2. **安裝相依套件**:
 
 ```sh
 pnpm install
@@ -107,7 +107,7 @@ pnpm install
 
 ### 開發模式（F5）
 
-對於積極的開發，請使用 VSCode 的內建偵錯功能：
+若要進行開發，請使用 VSCode 的內建偵錯功能：
 
 在 VSCode 中按 `F5`（或前往 **執行** → **開始偵錯**）。這將在執行 Roo Code 擴充功能的新 VSCode 視窗中開啟。
 
@@ -127,7 +127,7 @@ pnpm install:vsix [-y] [--editor=<command>]
 - 詢問要使用的編輯器命令（code/cursor/code-insiders） - 預設為“code”
 - 解除安裝任何現有版本的擴充功能。
 - 建置最新的 VSIX 套件。
-- 安裝新建立的 VSIX。
+- 安裝新建置的 VSIX。
 - 提示您重新啟動 VS Code 以使變更生效。
 
 選項：
@@ -144,7 +144,7 @@ pnpm install:vsix [-y] [--editor=<command>]
     pnpm vsix
     ```
 2.  將在 `bin/` 目錄中產生一個 `.vsix` 檔案（例如 `bin/roo-cline-<version>.vsix`）。
-3.  使用 VSCode CLI 手動安裝
+3.  使用 VSCode CLI 手動安裝：
     ```sh
     code --install-extension bin/roo-cline-<version>.vsix
     ```
@@ -163,7 +163,7 @@ pnpm install:vsix [-y] [--editor=<command>]
 
 ## 貢獻
 
-我們歡迎社群貢獻！請閱讀我們的 [CONTRIBUTING.md](CONTRIBUTING.md) 開始。
+我們歡迎社群貢獻！請從閱讀我們的 [CONTRIBUTING.md](CONTRIBUTING.md) 開始。
 
 ---
 
@@ -173,4 +173,4 @@ pnpm install:vsix [-y] [--editor=<command>]
 
 ---
 
-**享受 Roo Code！** 無論您是將它拴在短繩上還是讓它自主漫遊，我們迫不及待地想看看您會建構什麼。如果您有問題或功能想法，請造訪我們的 [Reddit 社群](https://www.reddit.com/r/RooCode/)或 [Discord](https://discord.gg/roocode)。祝您開發愉快！
+**享受 Roo Code！** 無論您是想嚴格控管它，還是讓它自主運作，我們都迫不及待地想看看您會打造些什麼。如果您有問題或功能想法，請造訪我們的 [Reddit 社群](https://www.reddit.com/r/RooCode/)或 [Discord](https://discord.gg/roocode)。祝您開發愉快！
