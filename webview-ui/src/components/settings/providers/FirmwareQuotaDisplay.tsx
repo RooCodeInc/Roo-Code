@@ -17,7 +17,7 @@ export const FirmwareQuotaDisplay = () => {
 		return null
 	}
 
-	const percentUsed = Math.round(quota.used * 100)
+	const percentUsed = (quota.used * 100).toFixed(2)
 	const resetDate = new Date(quota.reset)
 	const now = new Date()
 	const msUntilReset = resetDate.getTime() - now.getTime()

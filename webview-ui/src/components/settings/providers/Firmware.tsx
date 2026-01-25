@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { VSCodeTextField, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
+import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
 import { type OrganizationAllowList, type ProviderSettings, type RouterModels } from "@roo-code/types"
 
@@ -54,9 +54,9 @@ export const Firmware = ({
 					<label className="block font-medium">{t("settings:providers.apiKey")}</label>
 					<div className="flex items-center gap-3">
 						<FirmwareQuotaDisplay />
-						<VSCodeLink href="https://app.firmware.ai/api-keys">
+						{/* <VSCodeLink href="https://app.firmware.ai/api-keys">
 							{t("settings:providers.getApiKey")}
-						</VSCodeLink>
+						</VSCodeLink> */}
 					</div>
 				</div>
 				<VSCodeTextField
