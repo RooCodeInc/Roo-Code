@@ -149,32 +149,6 @@ If you prefer to install the VSIX package manually:
     code --install-extension bin/roo-cline-<version>.vsix
     ```
 
-### Nix Flake
-
-A `flake.nix` is provided for [Nix](https://nixos.org/) users:
-
-```sh
-nix develop        # Enter dev shell with all dependencies
-pnpm install       # Install npm packages
-pnpm build         # Build the project
-pnpm test          # Run tests
-pnpm vsix          # Create VSIX package
-```
-
-To build and install the extension directly:
-
-```sh
-nix build .#vsix && code --install-extension result/*.vsix
-```
-
-The dev shell provides Node.js 20.x, pnpm, ripgrep, and build tools for native modules.
-
-After updating dependencies, run `nix run .#update-deps` to update `flake.lock` and the pnpm dependency hash.
-
-If flakes aren't enabled, prefix commands with: `nix --extra-experimental-features 'nix-command flakes' <command>`
-
-> **Note:** Roo Code is also available as a pre-built extension in [nixpkgs](https://github.com/NixOS/nixpkgs/blob/nixos-unstable/pkgs/applications/editors/vscode/extensions/rooveterinaryinc.roo-cline/default.nix) via `vscode-extensions.rooveterinaryinc.roo-cline`.
-
 ---
 
 We use [changesets](https://github.com/changesets/changesets) for versioning and publishing. Check our `CHANGELOG.md` for release notes.
