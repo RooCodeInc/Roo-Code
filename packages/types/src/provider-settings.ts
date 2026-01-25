@@ -50,6 +50,7 @@ export const dynamicProviders = [
 	"unbound",
 	"roo",
 	"chutes",
+	"firmware",
 ] as const
 
 export type DynamicProvider = (typeof dynamicProviders)[number]
@@ -417,6 +418,11 @@ const basetenSchema = apiModelIdProviderModelSchema.extend({
 	basetenApiKey: z.string().optional(),
 })
 
+const firmwareSchema = baseProviderSettingsSchema.extend({
+	firmwareApiKey: z.string().optional(),
+	firmwareModelId: z.string().optional(),
+})
+
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
@@ -458,6 +464,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
+	firmwareSchema.merge(z.object({ apiProvider: z.literal("firmware") })),
 	defaultSchema,
 ])
 
@@ -499,6 +506,7 @@ export const providerSettingsSchema = z.object({
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
 	...vercelAiGatewaySchema.shape,
+	...firmwareSchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
 
@@ -532,6 +540,7 @@ export const modelIdKeys = [
 	"ioIntelligenceModelId",
 	"vercelAiGatewayModelId",
 	"deepInfraModelId",
+	"firmwareModelId",
 ] as const satisfies readonly (keyof ProviderSettings)[]
 
 export type ModelIdKey = (typeof modelIdKeys)[number]
@@ -584,6 +593,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	"io-intelligence": "ioIntelligenceModelId",
 	roo: "apiModelId",
 	"vercel-ai-gateway": "vercelAiGatewayModelId",
+	firmware: "firmwareModelId",
 }
 
 /**
@@ -720,6 +730,7 @@ export const MODELS_BY_PROVIDER: Record<
 	deepinfra: { id: "deepinfra", label: "DeepInfra", models: [] },
 	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
 	chutes: { id: "chutes", label: "Chutes AI", models: [] },
+	firmware: { id: "firmware", label: "Firmware", models: [] },
 
 	// Local providers; models discovered from localhost endpoints.
 	lmstudio: { id: "lmstudio", label: "LM Studio", models: [] },
