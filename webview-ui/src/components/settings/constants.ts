@@ -75,6 +75,7 @@ export const PROVIDERS = [
 	{ value: "sambanova", label: "SambaNova", proxy: false },
 	{ value: "zai", label: "Z.ai", proxy: false },
 	{ value: "fireworks", label: "Fireworks AI", proxy: false },
+	{ value: "firmware", label: "Firmware", proxy: false },
 	{ value: "featherless", label: "Featherless AI", proxy: false },
 	{ value: "io-intelligence", label: "IO Intelligence", proxy: false },
 	{ value: "roo", label: "Roo Code Router", proxy: false },

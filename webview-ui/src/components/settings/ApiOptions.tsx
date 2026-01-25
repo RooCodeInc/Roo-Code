@@ -102,6 +102,7 @@ import {
 	XAI,
 	ZAi,
 	Fireworks,
+	Firmware,
 	Featherless,
 	VercelAiGateway,
 	DeepInfra,
@@ -263,6 +264,7 @@ const ApiOptions = ({
 			apiConfiguration?.litellmApiKey,
 			apiConfiguration?.deepInfraApiKey,
 			apiConfiguration?.deepInfraBaseUrl,
+			apiConfiguration?.firmwareApiKey,
 			customHeaders,
 		],
 	)
@@ -368,6 +370,7 @@ const ApiOptions = ({
 				},
 				fireworks: { field: "apiModelId", default: fireworksDefaultModelId },
 				featherless: { field: "apiModelId", default: featherlessDefaultModelId },
+				firmware: { field: "firmwareModelId" },
 				"io-intelligence": { field: "ioIntelligenceModelId", default: ioIntelligenceDefaultModelId },
 				roo: { field: "apiModelId", default: rooDefaultModelId },
 				"vercel-ai-gateway": { field: "vercelAiGatewayModelId", default: vercelAiGatewayDefaultModelId },
@@ -539,6 +542,18 @@ const ApiOptions = ({
 
 			{selectedProvider === "deepinfra" && (
 				<DeepInfra
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					refetchRouterModels={refetchRouterModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
+			{selectedProvider === "firmware" && (
+				<Firmware
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					routerModels={routerModels}
