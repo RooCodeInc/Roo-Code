@@ -15,7 +15,7 @@ import { RouterProvider } from "./router-provider"
 import { getModels } from "./fetchers/modelCache"
 
 const FIRMWARE_BASE_URL = "https://app.firmware.ai/api/v1"
-const FIRMWARE_DEFAULT_MODEL_ID = "claude-sonnet-4-5"
+const FIRMWARE_DEFAULT_MODEL_ID = "anthropic/claude-sonnet-4-5-20250929"
 
 export class FirmwareHandler extends RouterProvider implements SingleCompletionHandler {
 	constructor(options: ApiHandlerOptions) {

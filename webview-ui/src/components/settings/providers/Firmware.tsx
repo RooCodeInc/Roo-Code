@@ -11,7 +11,7 @@ import { inputEventTransform } from "../transforms"
 import { ModelPicker } from "../ModelPicker"
 import { FirmwareQuotaDisplay } from "./FirmwareQuotaDisplay"
 
-const FIRMWARE_DEFAULT_MODEL_ID = "claude-sonnet-4-5"
+const FIRMWARE_DEFAULT_MODEL_ID = "anthropic/claude-sonnet-4-5-20250929"
 
 type FirmwareProps = {
 	apiConfiguration: ProviderSettings
@@ -50,14 +50,10 @@ export const Firmware = ({
 	return (
 		<>
 			<div className="flex flex-col gap-1">
+				<FirmwareQuotaDisplay />
 				<div className="flex items-center justify-between">
 					<label className="block font-medium">{t("settings:providers.apiKey")}</label>
-					<div className="flex items-center gap-3">
-						<FirmwareQuotaDisplay />
-						{/* <VSCodeLink href="https://app.firmware.ai/api-keys">
-							{t("settings:providers.getApiKey")}
-						</VSCodeLink> */}
-					</div>
+					<div className="flex items-center gap-3"></div>
 				</div>
 				<VSCodeTextField
 					value={apiConfiguration?.firmwareApiKey || ""}
@@ -93,7 +89,7 @@ export const Firmware = ({
 				models={routerModels?.firmware ?? {}}
 				modelIdKey="firmwareModelId"
 				serviceName="Firmware"
-				serviceUrl="https://app.firmware.ai/models"
+				serviceUrl="https://docs.firmware.ai/api-reference/models"
 				organizationAllowList={organizationAllowList}
 				errorMessage={modelValidationError}
 				simplifySettings={simplifySettings}

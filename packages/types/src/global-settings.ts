@@ -249,6 +249,7 @@ export const SECRET_STATE_KEYS = [
 	"chutesApiKey",
 	"litellmApiKey",
 	"deepInfraApiKey",
+	"firmwareApiKey",
 	"codeIndexOpenAiKey",
 	"codeIndexQdrantApiKey",
 	"codebaseIndexOpenAiCompatibleApiKey",

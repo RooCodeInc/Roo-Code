@@ -87,4 +87,12 @@ describe("checkExistKey", () => {
 		}
 		expect(checkExistKey(config)).toBe(true)
 	})
+
+	it("should return true for firmware provider with API key", () => {
+		const config: ProviderSettings = {
+			apiProvider: "firmware",
+			firmwareApiKey: "test-firmware-key",
+		}
+		expect(checkExistKey(config)).toBe(true)
+	})
 })
