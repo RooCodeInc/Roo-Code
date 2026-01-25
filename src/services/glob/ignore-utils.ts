@@ -3,6 +3,8 @@ import { DIRS_TO_IGNORE } from "./constants"
 /**
  * Checks if a file path should be ignored based on the DIRS_TO_IGNORE patterns.
  * This function handles special patterns like ".*" for hidden directories.
+ * Note: The .roo folder is explicitly exempted from hidden directory filtering
+ * to allow indexing of project configuration and custom modes.
  *
  * @param filePath The file path to check
  * @returns true if the path should be ignored, false otherwise
@@ -16,6 +18,12 @@ export function isPathInIgnoredDirectory(filePath: string): boolean {
 	for (const part of pathParts) {
 		// Skip empty parts (from leading or trailing slashes)
 		if (!part) continue
+
+		// Explicitly exempt .roo folder from hidden directory filtering
+		// to allow codebase search to index project configuration
+		if (part === ".roo") {
+			continue
+		}
 
 		// Handle the ".*" pattern for hidden directories
 		if (DIRS_TO_IGNORE.includes(".*") && part.startsWith(".") && part !== ".") {
