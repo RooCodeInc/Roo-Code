@@ -50,7 +50,7 @@ ENV MISE_DATA_DIR="/root/.local/share/mise"
 ENV PATH="/root/.local/share/mise/shims:/root/.local/bin:$PATH"
 
 # Define language runtime versions (matching setup.sh)
-ARG NODE_VERSION=20.19.2
+ARG NODE_VERSION=20.20.0
 ARG PYTHON_VERSION=3.13.2
 ARG GO_VERSION=1.24.2
 ARG RUST_VERSION=1.85.1
