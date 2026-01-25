@@ -58,6 +58,7 @@ import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getWorkspacePath } from "../../utils/path"
 import { Mode, defaultModeSlug } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
+import { getFirmwareQuota } from "../../api/providers/fetchers/firmware"
 import { GetModelsOptions } from "../../shared/api"
 import { generateSystemPrompt } from "./generateSystemPrompt"
 import { resolveDefaultSaveUri, saveLastExportPath } from "../../utils/export"
@@ -874,6 +875,7 @@ export const webviewMessageHandler = async (
 						lmstudio: {},
 						roo: {},
 						chutes: {},
+						firmware: {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -923,6 +925,10 @@ export const webviewMessageHandler = async (
 				{
 					key: "chutes",
 					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
+				},
+				{
+					key: "firmware",
+					options: { provider: "firmware", apiKey: apiConfiguration.firmwareApiKey },
 				},
 			]
 
@@ -1098,6 +1104,33 @@ export const webviewMessageHandler = async (
 				const errorMessage = error instanceof Error ? error.message : String(error)
 				provider.postMessageToWebview({
 					type: "rooCreditBalance",
+					requestId,
+					values: { error: errorMessage },
+				})
+			}
+			break
+		}
+		case "requestFirmwareQuota": {
+			const requestId = message.requestId
+			try {
+				const { apiConfiguration: firmwareApiConfig } = await provider.getState()
+				const apiKey = firmwareApiConfig?.firmwareApiKey
+
+				if (!apiKey) {
+					throw new Error("Firmware API key not configured")
+				}
+
+				const quota = await getFirmwareQuota(apiKey)
+
+				provider.postMessageToWebview({
+					type: "firmwareQuota",
+					requestId,
+					values: { remaining: quota.remaining, windowHours: quota.windowHours },
+				})
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.postMessageToWebview({
+					type: "firmwareQuota",
 					requestId,
 					values: { error: errorMessage },
 				})
