@@ -28,6 +28,7 @@ async function main() {
 		format: "cjs",
 		sourcesContent: false,
 		platform: "node",
+		resolveExtensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
 	}
 
 	const srcDir = __dirname

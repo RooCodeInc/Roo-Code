@@ -259,6 +259,11 @@ const ollamaSchema = baseProviderSettingsSchema.extend({
 	ollamaBaseUrl: z.string().optional(),
 	ollamaApiKey: z.string().optional(),
 	ollamaNumCtx: z.number().int().min(128).optional(),
+	ollamaRequestTimeout: z.number().int().min(1000).max(7200000).optional(),
+	ollamaModelDiscoveryTimeout: z.number().int().min(1000).max(600000).optional(),
+	ollamaMaxRetries: z.number().int().min(0).max(10).optional(),
+	ollamaRetryDelay: z.number().int().min(100).max(10000).optional(),
+	ollamaEnableLogging: z.boolean().optional(),
 })
 
 const vsCodeLmSchema = baseProviderSettingsSchema.extend({
