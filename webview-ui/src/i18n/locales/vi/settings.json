@@ -725,6 +725,15 @@
 			"label": "Giới hạn ký tự terminal",
 			"description": "Ghi đè giới hạn dòng để tránh vấn đề bộ nhớ bằng cách áp đặt giới hạn cứng cho kích thước đầu ra. Nếu vượt quá, giữ đầu và cuối, hiển thị placeholder cho Roo nơi nội dung bị bỏ qua. <0>Tìm hiểu thêm</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Kích thước xem trước đầu ra lệnh",
+			"description": "Kiểm soát lượng đầu ra lệnh mà Roo nhìn thấy trực tiếp. Đầu ra đầy đủ luôn được lưu và có thể truy cập khi cần thiết.",
+			"options": {
+				"small": "Nhỏ (2KB)",
+				"medium": "Trung bình (4KB)",
+				"large": "Lớn (8KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout tích hợp shell terminal",
 			"description": "Thời gian đợi tích hợp shell VS Code trước khi chạy lệnh. Tăng nếu shell khởi động chậm hoặc thấy lỗi 'Shell Integration Unavailable'. <0>Tìm hiểu thêm</0>"

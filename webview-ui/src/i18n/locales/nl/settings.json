@@ -725,6 +725,15 @@
 			"label": "Terminal-tekenlimiet",
 			"description": "Overschrijft de regellimiet om geheugenproblemen te voorkomen door een harde limiet op uitvoergrootte af te dwingen. Bij overschrijding behoudt het begin en einde en toont een placeholder aan Roo waar inhoud wordt overgeslagen. <0>Meer informatie</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Grootte opdrachtuitvoer voorvertoning",
+			"description": "Bepaalt hoeveel opdrachtuitvoer Roo direct ziet. Volledige uitvoer wordt altijd opgeslagen en is toegankelijk wanneer nodig.",
+			"options": {
+				"small": "Klein (2KB)",
+				"medium": "Gemiddeld (4KB)",
+				"large": "Groot (8KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal-shell-integratie timeout",
 			"description": "Hoe lang te wachten op VS Code-shell-integratie voordat commando's worden uitgevoerd. Verhoog als je shell traag opstart of je 'Shell-Integratie Niet Beschikbaar'-fouten ziet. <0>Meer informatie</0>"

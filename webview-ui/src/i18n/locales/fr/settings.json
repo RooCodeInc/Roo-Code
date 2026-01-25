@@ -724,6 +724,15 @@
 			"label": "Limite de caractères du terminal",
 			"description": "Remplace la limite de lignes pour éviter les problèmes de mémoire en imposant un plafond strict sur la taille de sortie. Si dépassé, conserve le début et la fin et affiche un espace réservé à Roo là où le contenu est ignoré. <0>En savoir plus</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Taille de l'aperçu de sortie des commandes",
+			"description": "Contrôle la quantité de sortie de commande que Roo voit directement. La sortie complète est toujours sauvegardée et accessible en cas de besoin.",
+			"options": {
+				"small": "Petite (2KB)",
+				"medium": "Moyenne (4KB)",
+				"large": "Grande (8KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Délai d'attente d'intégration du shell du terminal",
 			"description": "Temps d'attente de l'intégration du shell de VS Code avant d'exécuter des commandes. Augmentez si votre shell démarre lentement ou si vous voyez des erreurs 'Intégration du Shell Indisponible'. <0>En savoir plus</0>"

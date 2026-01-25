@@ -725,6 +725,15 @@
 			"label": "Terminal karakter sınırı",
 			"description": "Çıktı boyutuna katı bir üst sınır uygulayarak bellek sorunlarını önlemek için satır sınırını geçersiz kılar. Aşılırsa, başlangıcı ve sonu tutar ve içeriğin atlandığı yerde Roo'ya bir yer tutucu gösterir. <0>Daha fazla bilgi edinin</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Komut çıktısı önizleme boyutu",
+			"description": "Roo'nun doğrudan gördüğü komut çıktısı miktarını kontrol eder. Tam çıktı her zaman kaydedilir ve gerektiğinde erişilebilir.",
+			"options": {
+				"small": "Küçük (2KB)",
+				"medium": "Orta (4KB)",
+				"large": "Büyük (8KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal shell entegrasyon timeout",
 			"description": "Komut çalıştırmadan önce VS Code shell entegrasyonunu bekleme süresi. Shell yavaş başlıyorsa veya 'Shell Integration Unavailable' hatası görüyorsanız artırın. <0>Daha fazla bilgi edinin</0>"
