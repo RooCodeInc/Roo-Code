@@ -8,6 +8,7 @@ import type {
 	FileEntry,
 	BrowserActionParams,
 	GenerateImageParams,
+	ReadFileInput,
 } from "@roo-code/types"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
@@ -82,7 +83,7 @@ export type ToolParamName = (typeof toolParamNames)[number]
  */
 export type NativeToolArgs = {
 	access_mcp_resource: { server_name: string; uri: string }
-	read_file: { files: FileEntry[] }
+	read_file: ReadFileInput
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
 	apply_diff: { path: string; diff: string }
@@ -159,7 +160,7 @@ export interface ExecuteCommandToolUse extends ToolUse<"execute_command"> {
 
 export interface ReadFileToolUse extends ToolUse<"read_file"> {
 	name: "read_file"
-	params: Partial<Pick<Record<ToolParamName, string>, "args" | "path" | "start_line" | "end_line" | "files">>
+	params: Partial<Pick<Record<ToolParamName, string>, "file_path" | "args">>
 }
 
 export interface FetchInstructionsToolUse extends ToolUse<"fetch_instructions"> {

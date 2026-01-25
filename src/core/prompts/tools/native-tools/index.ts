@@ -11,7 +11,7 @@ import fetchInstructions from "./fetch_instructions"
 import generateImage from "./generate_image"
 import listFiles from "./list_files"
 import newTask from "./new_task"
-import { createReadFileTool, type ReadFileToolOptions } from "./read_file"
+import { createReadFileTool } from "./read_file"
 import runSlashCommand from "./run_slash_command"
 import searchAndReplace from "./search_and_replace"
 import searchReplace from "./search_replace"
@@ -23,35 +23,21 @@ import writeToFile from "./write_to_file"
 
 export { getMcpServerTools } from "./mcp_server"
 export { convertOpenAIToolToAnthropic, convertOpenAIToolsToAnthropic } from "./converters"
-export type { ReadFileToolOptions } from "./read_file"
 
 /**
  * Options for customizing the native tools array.
+ * Currently empty but reserved for future tool configuration.
  */
-export interface NativeToolsOptions {
-	/** Whether to include line_ranges support in read_file tool (default: true) */
-	partialReadsEnabled?: boolean
-	/** Maximum number of files that can be read in a single read_file request (default: 5) */
-	maxConcurrentFileReads?: number
-	/** Whether the model supports image processing (default: false) */
-	supportsImages?: boolean
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface NativeToolsOptions {}
 
 /**
- * Get native tools array, optionally customizing based on settings.
+ * Get native tools array.
  *
- * @param options - Configuration options for the tools
+ * @param options - Configuration options for the tools (currently unused)
  * @returns Array of native tool definitions
  */
 export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.ChatCompletionTool[] {
-	const { partialReadsEnabled = true, maxConcurrentFileReads = 5, supportsImages = false } = options
-
-	const readFileOptions: ReadFileToolOptions = {
-		partialReadsEnabled,
-		maxConcurrentFileReads,
-		supportsImages,
-	}
-
 	return [
 		accessMcpResource,
 		apply_diff,
@@ -65,7 +51,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		generateImage,
 		listFiles,
 		newTask,
-		createReadFileTool(readFileOptions),
+		createReadFileTool(),
 		runSlashCommand,
 		searchAndReplace,
 		searchReplace,
