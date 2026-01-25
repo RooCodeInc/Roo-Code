@@ -5,8 +5,8 @@ import type { ExtensionMessage } from "@roo-code/types"
 import { vscode } from "@src/utils/vscode"
 
 export interface FirmwareQuotaInfo {
-	remaining: number
-	windowHours: number
+	used: number // 0 to 1 scale (1 = limit reached)
+	reset: string // ISO timestamp when quota resets
 }
 
 export const useFirmwareQuota = () => {
@@ -25,10 +25,10 @@ export const useFirmwareQuota = () => {
 				window.removeEventListener("message", handleMessage)
 				clearTimeout(timeout)
 
-				if (message.values?.remaining !== undefined) {
+				if (message.values?.used !== undefined) {
 					setQuota({
-						remaining: message.values.remaining,
-						windowHours: message.values.windowHours ?? 5,
+						used: message.values.used,
+						reset: message.values.reset,
 					})
 					setError(null)
 				} else if (message.values?.error) {

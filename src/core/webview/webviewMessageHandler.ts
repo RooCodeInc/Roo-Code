@@ -1125,7 +1125,7 @@ export const webviewMessageHandler = async (
 				provider.postMessageToWebview({
 					type: "firmwareQuota",
 					requestId,
-					values: { remaining: quota.remaining, windowHours: quota.windowHours },
+					values: { used: quota.used, reset: quota.reset },
 				})
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error)

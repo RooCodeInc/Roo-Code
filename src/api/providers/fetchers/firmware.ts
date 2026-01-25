@@ -117,14 +117,23 @@ export async function getFirmwareModels(apiKey?: string): Promise<ModelRecord> {
 	}
 }
 
+export interface FirmwareQuotaResponse {
+	used: number // 0 to 1 scale (1 = limit reached)
+	reset: string // ISO timestamp when quota resets
+}
+
 /**
  * Fetches quota information from the Firmware.ai API
+ *
+ * Response format: { "used": 0.5217, "reset": "2026-01-25T11:02:14.242Z" }
+ * - used: Amount used in the current window (0 to 1, where 1 = limit reached)
+ * - reset: ISO timestamp when the quota resets
  *
  * @param apiKey The API key for the Firmware.ai provider
  * @returns A promise that resolves to quota information
  * @throws Will throw an error if the request fails
  */
-export async function getFirmwareQuota(apiKey: string): Promise<{ remaining: number; windowHours: number }> {
+export async function getFirmwareQuota(apiKey: string): Promise<FirmwareQuotaResponse> {
 	const url = `${FIRMWARE_BASE_URL}/quota`
 
 	try {
@@ -150,8 +159,8 @@ export async function getFirmwareQuota(apiKey: string): Promise<{ remaining: num
 			const data = await response.json()
 
 			return {
-				remaining: data.remaining ?? data.balance ?? 0,
-				windowHours: data.window_hours ?? data.windowHours ?? 5,
+				used: data.used ?? 0,
+				reset: data.reset ?? new Date().toISOString(),
 			}
 		} finally {
 			clearTimeout(timeoutId)
