@@ -32,7 +32,7 @@ describe("OutputInterceptor", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 
-		storageDir = "/tmp/test-storage"
+		storageDir = path.normalize("/tmp/test-storage")
 
 		// Setup mock write stream
 		mockWriteStream = {

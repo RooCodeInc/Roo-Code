@@ -729,9 +729,9 @@
 			"label": "Komut çıktısı önizleme boyutu",
 			"description": "Roo'nun doğrudan gördüğü komut çıktısı miktarını kontrol eder. Tam çıktı her zaman kaydedilir ve gerektiğinde erişilebilir.",
 			"options": {
-				"small": "Küçük (5KB)",
-				"medium": "Orta (10KB)",
-				"large": "Büyük (20KB)"
+				"small": "Küçük (2KB)",
+				"medium": "Orta (4KB)",
+				"large": "Büyük (8KB)"
 			}
 		},
 		"shellIntegrationTimeout": {
@@ -745,6 +745,10 @@
 		"commandDelay": {
 			"label": "Terminal komut delay",
 			"description": "VS Code terminalin tüm outputu flush edebilmesi için her komuttan sonra kısa pause ekler (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Sadece tail output eksikse kullan; yoksa 0'da bırak. <0>Daha fazla bilgi edinin</0>"
+		},
+		"compressProgressBar": {
+			"label": "İlerleme çubuğu çıktısını sıkıştır",
+			"description": "İlerleme çubukları/spinner'ları daraltır, sadece son durumu tutar (token tasarrufu). <0>Daha fazla bilgi edinin</0>"
 		},
 		"powershellCounter": {
 			"label": "PowerShell sayaç geçici çözümünü etkinleştir",

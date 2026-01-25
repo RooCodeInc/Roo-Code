@@ -729,9 +729,9 @@
 			"label": "Kích thước xem trước đầu ra lệnh",
 			"description": "Kiểm soát lượng đầu ra lệnh mà Roo nhìn thấy trực tiếp. Đầu ra đầy đủ luôn được lưu và có thể truy cập khi cần thiết.",
 			"options": {
-				"small": "Nhỏ (5KB)",
-				"medium": "Trung bình (10KB)",
-				"large": "Lớn (20KB)"
+				"small": "Nhỏ (2KB)",
+				"medium": "Trung bình (4KB)",
+				"large": "Lớn (8KB)"
 			}
 		},
 		"shellIntegrationTimeout": {
@@ -745,6 +745,10 @@
 		"commandDelay": {
 			"label": "Delay lệnh terminal",
 			"description": "Thêm khoảng dừng ngắn sau mỗi lệnh để VS Code terminal flush tất cả output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Chỉ dùng nếu thiếu tail output; nếu không để ở 0. <0>Tìm hiểu thêm</0>"
+		},
+		"compressProgressBar": {
+			"label": "Nén đầu ra thanh tiến trình",
+			"description": "Thu gọn các thanh tiến trình/vòng quay để chỉ giữ lại trạng thái cuối cùng (tiết kiệm token). <0>Tìm hiểu thêm</0>"
 		},
 		"powershellCounter": {
 			"label": "Bật workaround bộ đếm PowerShell",

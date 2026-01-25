@@ -729,9 +729,9 @@
 			"label": "Grootte opdrachtuitvoer voorvertoning",
 			"description": "Bepaalt hoeveel opdrachtuitvoer Roo direct ziet. Volledige uitvoer wordt altijd opgeslagen en is toegankelijk wanneer nodig.",
 			"options": {
-				"small": "Klein (5KB)",
-				"medium": "Gemiddeld (10KB)",
-				"large": "Groot (20KB)"
+				"small": "Klein (2KB)",
+				"medium": "Gemiddeld (4KB)",
+				"large": "Groot (8KB)"
 			}
 		},
 		"shellIntegrationTimeout": {
@@ -745,6 +745,10 @@
 		"commandDelay": {
 			"label": "Terminal-commandovertraging",
 			"description": "Voegt korte pauze toe na elk commando zodat VS Code-terminal alle uitvoer kan flushen (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gebruik alleen als je ontbrekende tail-uitvoer ziet; anders op 0 laten. <0>Meer informatie</0>"
+		},
+		"compressProgressBar": {
+			"label": "Voortgangsbalk-uitvoer comprimeren",
+			"description": "Klapt voortgangsbalken/spinners in zodat alleen eindstatus behouden blijft (bespaart tokens). <0>Meer informatie</0>"
 		},
 		"powershellCounter": {
 			"label": "PowerShell-teller workaround inschakelen",

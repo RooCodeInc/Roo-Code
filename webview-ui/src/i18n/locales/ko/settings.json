@@ -729,9 +729,9 @@
 			"label": "명령 출력 미리보기 크기",
 			"description": "Roo가 직접 보는 명령 출력량을 제어합니다. 전체 출력은 항상 저장되며 필요할 때 액세스할 수 있습니다.",
 			"options": {
-				"small": "작게 (5KB)",
-				"medium": "보통 (10KB)",
-				"large": "크게 (20KB)"
+				"small": "작게 (2KB)",
+				"medium": "보통 (4KB)",
+				"large": "크게 (8KB)"
 			}
 		},
 		"shellIntegrationTimeout": {
@@ -745,6 +745,10 @@
 		"commandDelay": {
 			"label": "터미널 명령 지연",
 			"description": "VS Code 터미널이 모든 출력을 플러시할 수 있도록 각 명령 후에 짧은 일시 중지를 추가합니다(bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). 누락된 꼬리 출력이 표시되는 경우에만 사용하고, 그렇지 않으면 0으로 둡니다. <0>자세히 알아보기</0>"
+		},
+		"compressProgressBar": {
+			"label": "진행률 표시줄 출력 압축",
+			"description": "진행률 표시줄/스피너를 축소하여 최종 상태만 유지합니다(토큰 절약). <0>자세히 알아보기</0>"
 		},
 		"powershellCounter": {
 			"label": "PowerShell 카운터 해결 방법 활성화",

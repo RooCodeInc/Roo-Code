@@ -728,9 +728,9 @@
 			"label": "Tamaño de vista previa de salida de comandos",
 			"description": "Controla cuánta salida de comandos ve Roo directamente. La salida completa siempre se guarda y es accesible cuando sea necesario.",
 			"options": {
-				"small": "Pequeño (5KB)",
-				"medium": "Mediano (10KB)",
-				"large": "Grande (20KB)"
+				"small": "Pequeño (2KB)",
+				"medium": "Mediano (4KB)",
+				"large": "Grande (8KB)"
 			}
 		},
 		"shellIntegrationTimeout": {
@@ -744,6 +744,10 @@
 		"commandDelay": {
 			"label": "Retraso de comando del terminal",
 			"description": "Añade una pausa breve después de cada comando para que el terminal de VS Code pueda vaciar toda la salida (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Usa solo si ves salida final faltante; si no, deja en 0. <0>Más información</0>"
+		},
+		"compressProgressBar": {
+			"label": "Comprimir salida de barra de progreso",
+			"description": "Colapsa barras de progreso/spinners para que solo se mantenga el estado final (ahorra tokens). <0>Más información</0>"
 		},
 		"powershellCounter": {
 			"label": "Activar solución del contador de PowerShell",
