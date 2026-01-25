@@ -140,5 +140,61 @@ describe("anthropic-filter", () => {
 			expect(result).toHaveLength(1)
 			expect(result[0].content).toEqual([{ type: "text", text: "Valid text" }])
 		})
+
+		it("should handle messages with undefined content gracefully", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: undefined as any },
+				{ role: "user", content: "Continue" },
+			]
+
+			const result = filterNonAnthropicBlocks(messages)
+
+			expect(result).toHaveLength(2)
+			expect(result[0].content).toBe("Hello")
+			expect(result[1].content).toBe("Continue")
+		})
+
+		it("should handle messages with null content gracefully", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: null as any },
+				{ role: "user", content: "Continue" },
+			]
+
+			const result = filterNonAnthropicBlocks(messages)
+
+			expect(result).toHaveLength(2)
+			expect(result[0].content).toBe("Hello")
+			expect(result[1].content).toBe("Continue")
+		})
+
+		it("should handle messages with non-array content gracefully", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: { invalid: "object" } as any },
+				{ role: "user", content: "Continue" },
+			]
+
+			const result = filterNonAnthropicBlocks(messages)
+
+			expect(result).toHaveLength(2)
+			expect(result[0].content).toBe("Hello")
+			expect(result[1].content).toBe("Continue")
+		})
+
+		it("should handle empty array content", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{ role: "assistant", content: [] },
+				{ role: "user", content: "Continue" },
+			]
+
+			const result = filterNonAnthropicBlocks(messages)
+
+			expect(result).toHaveLength(2)
+			expect(result[0].content).toBe("Hello")
+			expect(result[1].content).toBe("Continue")
+		})
 	})
 })

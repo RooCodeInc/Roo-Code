@@ -32,6 +32,11 @@ export function filterNonAnthropicBlocks(
 				return message
 			}
 
+			// Guard against undefined, null, or non-array content
+			if (!message.content || !Array.isArray(message.content)) {
+				return undefined
+			}
+
 			const filteredContent = message.content.filter((block) => {
 				const blockType = (block as { type: string }).type
 				// Only keep block types that Anthropic recognizes
