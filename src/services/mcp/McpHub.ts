@@ -1009,10 +1009,13 @@ export class McpHub {
 				// Continue with empty configs
 			}
 
+			// Check if wildcard "*" is in the alwaysAllow config
+			const hasWildcard = alwaysAllowConfig.includes("*")
+
 			// Mark tools as always allowed and enabled for prompt based on settings
 			const tools = (response?.tools || []).map((tool) => ({
 				...tool,
-				alwaysAllow: alwaysAllowConfig.includes(tool.name),
+				alwaysAllow: hasWildcard || alwaysAllowConfig.includes(tool.name),
 				enabledForPrompt: !disabledToolsList.includes(tool.name),
 			}))
 
