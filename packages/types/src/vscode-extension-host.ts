@@ -582,6 +582,8 @@ export interface WebviewMessage {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	settings?: any
 	url?: string // For openExternal
+	ollamaBaseUrl?: string // For testOllamaConnection - allows passing current value from UI
+	ollamaApiKey?: string // For testOllamaConnection - allows passing current value from UI
 	mpItem?: MarketplaceItem
 	mpInstallOptions?: InstallMarketplaceItemOptions
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any

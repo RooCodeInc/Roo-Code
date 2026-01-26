@@ -117,8 +117,12 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 	const handleTestConnection = useCallback(() => {
 		setTestingConnection(true)
 		setTestResult(null)
-		vscode.postMessage({ type: "testOllamaConnection" })
-	}, [])
+		vscode.postMessage({
+			type: "testOllamaConnection",
+			ollamaBaseUrl: apiConfiguration?.ollamaBaseUrl || "",
+			ollamaApiKey: apiConfiguration?.ollamaApiKey || "",
+		})
+	}, [apiConfiguration?.ollamaBaseUrl, apiConfiguration?.ollamaApiKey])
 
 	const handleRefreshModels = useCallback(() => {
 		setRefreshingModels(true)

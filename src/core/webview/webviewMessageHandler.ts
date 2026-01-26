@@ -1030,8 +1030,12 @@ export const webviewMessageHandler = async (
 		case "testOllamaConnection": {
 			const { testOllamaConnection } = await import("../../api/providers/fetchers/ollama")
 			const { apiConfiguration: ollamaApiConfig } = await provider.getState()
+			// Use the baseUrl and apiKey from the message if provided (current UI values),
+			// otherwise fall back to saved state
+			const baseUrl = message.ollamaBaseUrl ?? ollamaApiConfig.ollamaBaseUrl
+			const apiKey = message.ollamaApiKey ?? ollamaApiConfig.ollamaApiKey
 			try {
-				const result = await testOllamaConnection(ollamaApiConfig.ollamaBaseUrl, ollamaApiConfig.ollamaApiKey, {
+				const result = await testOllamaConnection(baseUrl, apiKey, {
 					timeout: ollamaApiConfig.ollamaModelDiscoveryTimeout ?? 10000,
 					enableLogging: ollamaApiConfig.ollamaEnableLogging ?? false,
 				})
