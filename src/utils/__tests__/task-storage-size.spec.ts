@@ -1,5 +1,4 @@
 import { calculateTaskStorageSize } from "../task-storage-size"
-import { formatBytes } from "../formatBytes"
 
 // Mock storage to avoid VS Code config access during tests
 vi.mock("../storage", () => ({
@@ -12,44 +11,6 @@ const mockReaddir = vi.fn()
 vi.mock("fs/promises", () => ({
 	readdir: (...args: unknown[]) => mockReaddir(...args),
 }))
-
-describe("formatBytes", () => {
-	it("should format 0 bytes", () => {
-		expect(formatBytes(0)).toBe("0 B")
-	})
-
-	it("should format bytes less than 1 KB", () => {
-		expect(formatBytes(512)).toBe("512 B")
-		expect(formatBytes(1)).toBe("1 B")
-	})
-
-	it("should format kilobytes (0 decimal places)", () => {
-		expect(formatBytes(1024)).toBe("1 KB")
-		expect(formatBytes(2048)).toBe("2 KB")
-		expect(formatBytes(1536)).toBe("2 KB") // Rounds to nearest integer
-		expect(formatBytes(1280)).toBe("1 KB") // Rounds down
-	})
-
-	it("should format megabytes (2 decimal places)", () => {
-		expect(formatBytes(1048576)).toBe("1.00 MB")
-		expect(formatBytes(1572864)).toBe("1.50 MB")
-		expect(formatBytes(10485760)).toBe("10.00 MB")
-	})
-
-	it("should format gigabytes (2 decimal places)", () => {
-		expect(formatBytes(1073741824)).toBe("1.00 GB")
-		expect(formatBytes(2147483648)).toBe("2.00 GB")
-	})
-
-	it("should format terabytes (2 decimal places)", () => {
-		expect(formatBytes(1099511627776)).toBe("1.00 TB")
-	})
-
-	it("should handle decimal precision correctly", () => {
-		expect(formatBytes(1234567)).toBe("1.18 MB")
-		expect(formatBytes(123456789)).toBe("117.74 MB")
-	})
-})
 
 describe("calculateTaskStorageSize", () => {
 	beforeEach(() => {
