@@ -485,14 +485,21 @@ export async function purgeOldCheckpoints(
 	const totalTasks = taskDirs.length
 
 	if (totalTasks === 0) {
+		log?.(`[Checkpoints] No tasks found`)
 		return { culledCount: 0, cutoff }
 	}
+
+	log?.(`[Checkpoints] Scanning ${totalTasks} tasks for old checkpoints...`)
 
 	// Phase 1: Read metadata for all tasks with checkpoints
 	const metadataLimit = pLimit(METADATA_READ_CONCURRENCY)
 	const metadataResults = await Promise.all(
 		taskDirs.map((d) => metadataLimit(() => readCheckpointTaskMetadata(d.name, tasksDir))),
 	)
+
+	// Count tasks that have checkpoints
+	const tasksWithCheckpoints = metadataResults.filter((m) => m !== null).length
+	log?.(`[Checkpoints] Found ${tasksWithCheckpoints} tasks with checkpoints`)
 
 	// Phase 2: Filter tasks with checkpoints that need culling
 	const tasksToCull: CheckpointTaskMetadata[] = []
@@ -507,9 +514,11 @@ export async function purgeOldCheckpoints(
 	}
 
 	if (tasksToCull.length === 0) {
-		log?.(`[Checkpoints] No checkpoints met cull criteria`)
+		log?.(`[Checkpoints] No checkpoints older than 30 days`)
 		return { culledCount: 0, cutoff }
 	}
+
+	log?.(`[Checkpoints] ${tasksToCull.length} tasks have checkpoints older than 30 days`)
 
 	// Dry run mode
 	if (dryRun) {
@@ -523,7 +532,10 @@ export async function purgeOldCheckpoints(
 	}
 
 	// Phase 3: Delete checkpoints directories in parallel
+	log?.(`[Checkpoints] Deleting checkpoints from ${tasksToCull.length} tasks...`)
 	const deleteLimit = pLimit(DELETION_CONCURRENCY)
+	let deletedCount = 0
+
 	const deleteResults = await Promise.all(
 		tasksToCull.map((metadata) =>
 			deleteLimit(async (): Promise<boolean> => {
@@ -531,6 +543,11 @@ export async function purgeOldCheckpoints(
 					await fs.rm(metadata.checkpointsDir, { recursive: true, force: true })
 					const stillExists = await pathExists(metadata.checkpointsDir)
 					if (!stillExists) {
+						deletedCount++
+						// Log progress every 100 deletions
+						if (deletedCount % 100 === 0) {
+							log?.(`[Checkpoints] Progress: ${deletedCount}/${tasksToCull.length} deleted`)
+						}
 						return true
 					}
 				} catch {
@@ -544,7 +561,7 @@ export async function purgeOldCheckpoints(
 	const culled = deleteResults.filter(Boolean).length
 
 	if (culled > 0) {
-		log?.(`[Checkpoints] Culled checkpoints from ${culled} task(s); cutoff=${new Date(cutoff).toISOString()}`)
+		log?.(`[Checkpoints] Culled checkpoints from ${culled} task(s)`)
 	}
 
 	return { culledCount: culled, cutoff }
