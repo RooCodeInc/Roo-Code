@@ -277,6 +277,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		openRouterImageGenerationSelectedModel: "",
 		includeCurrentTime: true,
 		includeCurrentCost: true,
+		taskHistoryRetention: "never", // Default to never auto-delete
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)
