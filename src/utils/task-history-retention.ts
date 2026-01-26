@@ -381,15 +381,7 @@ export function startBackgroundRetentionPurge(options: BackgroundPurgeOptions): 
 					days: retention,
 				})
 
-				const viewSettingsLabel = t("common:taskHistoryRetention.actions.viewSettings")
-				const dismissLabel = t("common:taskHistoryRetention.actions.dismiss")
-
-				vscode.window.showInformationMessage(message, viewSettingsLabel, dismissLabel).then((action) => {
-					if (action === viewSettingsLabel) {
-						// Navigate to Roo Code settings About tab
-						vscode.commands.executeCommand("roo-cline.settingsButtonClicked", "about")
-					}
-				})
+				vscode.window.showInformationMessage(message)
 			}
 		} catch (error) {
 			log(`[Retention] Failed during background purge: ${error instanceof Error ? error.message : String(error)}`)
