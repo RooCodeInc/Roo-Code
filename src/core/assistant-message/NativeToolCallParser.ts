@@ -365,6 +365,7 @@ export class NativeToolCallParser {
 								? {
 										anchor_line: this.coerceOptionalNumber(partialArgs.indentation.anchor_line),
 										max_levels: this.coerceOptionalNumber(partialArgs.indentation.max_levels),
+										max_lines: this.coerceOptionalNumber(partialArgs.indentation.max_lines),
 										include_siblings: this.coerceOptionalBoolean(
 											partialArgs.indentation.include_siblings,
 										),
@@ -664,6 +665,7 @@ export class NativeToolCallParser {
 									? {
 											anchor_line: this.coerceOptionalNumber(args.indentation.anchor_line),
 											max_levels: this.coerceOptionalNumber(args.indentation.max_levels),
+											max_lines: this.coerceOptionalNumber(args.indentation.max_lines),
 											include_siblings: this.coerceOptionalBoolean(
 												args.indentation.include_siblings,
 											),

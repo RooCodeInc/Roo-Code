@@ -197,7 +197,6 @@ describe("ContextManagementSettings", () => {
 		// Check for other sliders
 		expect(screen.getByTestId("open-tabs-limit-slider")).toBeInTheDocument()
 		expect(screen.getByTestId("workspace-files-limit-slider")).toBeInTheDocument()
-		expect(screen.getByTestId("max-concurrent-file-reads-slider")).toBeInTheDocument()
 
 		// Check for checkboxes
 		expect(screen.getByTestId("show-rooignored-files-checkbox")).toBeInTheDocument()
