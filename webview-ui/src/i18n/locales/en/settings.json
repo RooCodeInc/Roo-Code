@@ -362,6 +362,14 @@
 		"getFireworksApiKey": "Get Fireworks API Key",
 		"featherlessApiKey": "Featherless API Key",
 		"getFeatherlessApiKey": "Get Featherless API Key",
+		"keywordsAi": {
+			"apiKey": "Keywords AI API Key",
+			"getApiKey": "Get Keywords AI API Key",
+			"enableLogging": "Enable Logging",
+			"enableLoggingDescription": "When enabled, Keywords AI will log your requests for observability and analytics. Disable to opt out of logging.",
+			"useCustomBaseUrl": "Use custom base URL",
+			"baseUrl": "Base URL"
+		},
 		"ioIntelligenceApiKey": "IO Intelligence API Key",
 		"ioIntelligenceApiKeyPlaceholder": "Enter your IO Intelligence API key",
 		"getIoIntelligenceApiKey": "Get IO Intelligence API Key",

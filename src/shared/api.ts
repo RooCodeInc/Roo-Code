@@ -175,6 +175,7 @@ const dynamicProviderExtras = {
 	litellm: {} as { apiKey: string; baseUrl: string },
 	deepinfra: {} as { apiKey?: string; baseUrl?: string },
 	"io-intelligence": {} as { apiKey: string },
+	"keywords-ai": {} as { apiKey?: string; baseUrl?: string },
 	requesty: {} as { apiKey?: string; baseUrl?: string },
 	unbound: {} as { apiKey?: string },
 	ollama: {} as {}, // eslint-disable-line @typescript-eslint/no-empty-object-type

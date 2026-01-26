@@ -49,6 +49,7 @@ describe("Model Validation Functions", () => {
 		huggingface: {},
 		roo: {},
 		chutes: {},
+		"keywords-ai": {},
 	}
 
 	const allowAllOrganization: OrganizationAllowList = {
