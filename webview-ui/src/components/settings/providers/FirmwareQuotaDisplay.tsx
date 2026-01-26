@@ -18,16 +18,20 @@ export const FirmwareQuotaDisplay = () => {
 	}
 
 	const percentUsed = (quota.used * 100).toFixed(2)
-	const resetDate = new Date(quota.reset)
-	const now = new Date()
-	const msUntilReset = resetDate.getTime() - now.getTime()
+
+	// Calculate reset time only if reset is provided
+	let resetText = ""
+	if (quota.reset) {
+		const resetDate = new Date(quota.reset)
+		const now = new Date()
+		const msUntilReset = resetDate.getTime() - now.getTime()
+		resetText = ` · resets in ${formatTimeUntilReset(msUntilReset)}`
+	}
 
 	const isAtLimit = quota.used >= 1
 	const isWarning = quota.used >= 0.8
 
-	const statusText = isAtLimit
-		? `Limit reached · resets in ${formatTimeUntilReset(msUntilReset)}`
-		: `${percentUsed}% used · resets in ${formatTimeUntilReset(msUntilReset)}`
+	const statusText = isAtLimit ? `Limit reached${resetText}` : `${percentUsed}% used${resetText}`
 
 	const colorClass = isAtLimit
 		? "text-vscode-errorForeground"

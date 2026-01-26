@@ -6,7 +6,7 @@ import { vscode } from "@src/utils/vscode"
 
 export interface FirmwareQuotaInfo {
 	used: number // 0 to 1 scale (1 = limit reached)
-	reset: string // ISO timestamp when quota resets
+	reset: string | null // ISO timestamp when quota resets, null if window hasn't started
 }
 
 export const useFirmwareQuota = () => {

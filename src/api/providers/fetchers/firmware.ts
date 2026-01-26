@@ -119,7 +119,7 @@ export async function getFirmwareModels(apiKey?: string): Promise<ModelRecord> {
 
 export interface FirmwareQuotaResponse {
 	used: number // 0 to 1 scale (1 = limit reached)
-	reset: string // ISO timestamp when quota resets
+	reset: string | null // ISO timestamp when quota resets, null if window hasn't started
 }
 
 /**
@@ -160,7 +160,7 @@ export async function getFirmwareQuota(apiKey: string): Promise<FirmwareQuotaRes
 
 			return {
 				used: data.used ?? 0,
-				reset: data.reset ?? new Date().toISOString(),
+				reset: data.reset ?? null,
 			}
 		} finally {
 			clearTimeout(timeoutId)
