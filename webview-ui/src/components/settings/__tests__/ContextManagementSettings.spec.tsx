@@ -92,7 +92,6 @@ describe("ContextManagementSettings", () => {
 		maxOpenTabsContext: 20,
 		maxWorkspaceFiles: 200,
 		showRooIgnoredFiles: false,
-		maxConcurrentFileReads: 5,
 		profileThresholds: {},
 		includeDiagnosticMessages: true,
 		maxDiagnosticMessages: 50,

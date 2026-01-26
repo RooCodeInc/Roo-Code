@@ -35,7 +35,6 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	enableSubfolderRules?: boolean
 	maxImageFileSize?: number
 	maxTotalImageSize?: number
-	maxConcurrentFileReads?: number
 	profileThresholds?: Record<string, number>
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
@@ -54,7 +53,6 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "enableSubfolderRules"
 		| "maxImageFileSize"
 		| "maxTotalImageSize"
-		| "maxConcurrentFileReads"
 		| "profileThresholds"
 		| "includeDiagnosticMessages"
 		| "maxDiagnosticMessages"
@@ -76,7 +74,6 @@ export const ContextManagementSettings = ({
 	setCachedStateField,
 	maxImageFileSize,
 	maxTotalImageSize,
-	maxConcurrentFileReads,
 	profileThresholds = {},
 	includeDiagnosticMessages,
 	maxDiagnosticMessages,
@@ -212,29 +209,6 @@ export const ContextManagementSettings = ({
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.maxGitStatusFiles.description")}
-					</div>
-				</SearchableSetting>
-
-				<SearchableSetting
-					settingId="context-max-concurrent-file-reads"
-					section="contextManagement"
-					label={t("settings:contextManagement.maxConcurrentFileReads.label")}>
-					<span className="block font-medium mb-1">
-						{t("settings:contextManagement.maxConcurrentFileReads.label")}
-					</span>
-					<div className="flex items-center gap-2">
-						<Slider
-							min={1}
-							max={100}
-							step={1}
-							value={[Math.max(1, maxConcurrentFileReads ?? 5)]}
-							onValueChange={([value]) => setCachedStateField("maxConcurrentFileReads", value)}
-							data-testid="max-concurrent-file-reads-slider"
-						/>
-						<span className="w-10 text-sm">{Math.max(1, maxConcurrentFileReads ?? 5)}</span>
-					</div>
-					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
-						{t("settings:contextManagement.maxConcurrentFileReads.description")}
 					</div>
 				</SearchableSetting>
 

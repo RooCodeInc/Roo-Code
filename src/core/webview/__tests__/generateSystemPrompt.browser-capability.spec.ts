@@ -62,7 +62,6 @@ function makeProviderStub() {
 			experiments: {},
 			browserToolEnabled: true, // critical: enabled in settings
 			language: "en",
-			maxConcurrentFileReads: 5,
 		}),
 	} as any
 }
