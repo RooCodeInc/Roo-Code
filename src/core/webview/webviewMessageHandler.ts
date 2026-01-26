@@ -1059,11 +1059,16 @@ export const webviewMessageHandler = async (
 			const { apiConfiguration: ollamaApiConfig } = await provider.getState()
 			const startTime = Date.now()
 
+			// Use the baseUrl and apiKey from the message if provided (current UI values),
+			// otherwise fall back to saved state
+			const baseUrl = message.ollamaBaseUrl ?? ollamaApiConfig.ollamaBaseUrl
+			const apiKey = message.ollamaApiKey ?? ollamaApiConfig.ollamaApiKey
+
 			try {
 				const ollamaOptions = {
 					provider: "ollama" as const,
-					baseUrl: ollamaApiConfig.ollamaBaseUrl,
-					apiKey: ollamaApiConfig.ollamaApiKey,
+					baseUrl: baseUrl,
+					apiKey: apiKey,
 					ollamaModelDiscoveryTimeout: ollamaApiConfig.ollamaModelDiscoveryTimeout,
 					ollamaMaxRetries: ollamaApiConfig.ollamaMaxRetries,
 					ollamaRetryDelay: ollamaApiConfig.ollamaRetryDelay,
@@ -1072,16 +1077,12 @@ export const webviewMessageHandler = async (
 
 				await flushModels(ollamaOptions, true)
 
-				const result = await discoverOllamaModelsWithSorting(
-					ollamaApiConfig.ollamaBaseUrl,
-					ollamaApiConfig.ollamaApiKey,
-					{
-						modelDiscoveryTimeout: ollamaApiConfig.ollamaModelDiscoveryTimeout,
-						maxRetries: ollamaApiConfig.ollamaMaxRetries,
-						retryDelay: ollamaApiConfig.ollamaRetryDelay,
-						enableLogging: ollamaApiConfig.ollamaEnableLogging,
-					},
-				)
+				const result = await discoverOllamaModelsWithSorting(baseUrl, apiKey, {
+					modelDiscoveryTimeout: ollamaApiConfig.ollamaModelDiscoveryTimeout,
+					maxRetries: ollamaApiConfig.ollamaMaxRetries,
+					retryDelay: ollamaApiConfig.ollamaRetryDelay,
+					enableLogging: ollamaApiConfig.ollamaEnableLogging,
+				})
 
 				const durationMs = Date.now() - startTime
 
@@ -1093,7 +1094,7 @@ export const webviewMessageHandler = async (
 
 				if (ollamaApiConfig.ollamaEnableLogging) {
 					console.debug("[Ollama Model Refresh]", {
-						baseUrl: ollamaApiConfig.ollamaBaseUrl,
+						baseUrl: baseUrl,
 						modelsWithTools: result.modelsWithTools.length,
 						modelsWithoutTools: result.modelsWithoutTools.length,
 						totalCount: result.totalCount,

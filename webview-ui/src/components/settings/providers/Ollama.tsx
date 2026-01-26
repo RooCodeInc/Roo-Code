@@ -127,8 +127,12 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 	const handleRefreshModels = useCallback(() => {
 		setRefreshingModels(true)
 		setRefreshResult(null)
-		vscode.postMessage({ type: "refreshOllamaModels" })
-	}, [])
+		vscode.postMessage({
+			type: "refreshOllamaModels",
+			ollamaBaseUrl: apiConfiguration?.ollamaBaseUrl || "",
+			ollamaApiKey: apiConfiguration?.ollamaApiKey || "",
+		})
+	}, [apiConfiguration?.ollamaBaseUrl, apiConfiguration?.ollamaApiKey])
 
 	useEffect(() => {
 		return () => {
@@ -169,6 +173,11 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 		// If neither source has loaded yet, don't show warning
 		return false
 	}, [apiConfiguration?.ollamaModelId, routerModels.data, ollamaModels])
+
+	// Sort models with tools by name for consistent ordering
+	const sortedModelsWithTools = useMemo(() => {
+		return [...modelsWithTools].sort((a, b) => a.name.localeCompare(b.name))
+	}, [modelsWithTools])
 
 	return (
 		<>
@@ -249,7 +258,7 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 				<div className="flex flex-col gap-2 mt-4">
 					<div className="text-sm font-medium text-vscode-foreground">
 						{t("settings:providers.ollama.toolsSupport")} ({modelsWithTools.length}{" "}
-						{t("settings:providers.ollama.models")})
+						{t("settings:providers.ollama.models", { count: modelsWithTools.length })})
 					</div>
 					<VSCodeRadioGroup
 						value={apiConfiguration?.ollamaModelId || ""}
@@ -283,7 +292,7 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 									</tr>
 								</thead>
 								<tbody>
-									{modelsWithTools.map((model) => {
+									{sortedModelsWithTools.map((model) => {
 										const formatSize = (bytes?: number): string => {
 											if (!bytes) return "-"
 											const gb = bytes / (1024 * 1024 * 1024)
@@ -333,7 +342,7 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 				<div className="flex flex-col gap-2 mt-4">
 					<div className="text-sm font-medium text-vscode-descriptionForeground">
 						{t("settings:providers.ollama.noToolsSupport")} ({modelsWithoutTools.length}{" "}
-						{t("settings:providers.ollama.models")})
+						{t("settings:providers.ollama.models", { count: modelsWithoutTools.length })})
 					</div>
 					<div className="text-xs text-vscode-descriptionForeground mb-2">
 						{t("settings:providers.ollama.noToolsSupportHelp")}
