@@ -16,6 +16,8 @@
 #   pnpm build           # Build the project
 #   pnpm test            # Run tests
 #   pnpm vsix            # Create VS Code extension
+#   eslint <file>        # Lint files (eslint and eslint_d available)
+#   pnpm lint            # Run linting via pnpm scripts
 #
 # Maintenance:
 #   nix run .#update-deps   # Update flake.lock and pnpmDeps hash
@@ -50,6 +52,8 @@
         lib = pkgs.lib;
 
         nodejs = pkgs.nodejs_20;
+        # Use pnpm_9 if available, otherwise fall back to pnpm
+        # pnpm 10.26.1 is available and newer than required 10.8.1, so we'll use that
         pnpm = pkgs.pnpm;
 
         ignoredPaths = [
@@ -109,8 +113,11 @@
             echo ""
             echo "📦 pnpm install    - Install dependencies"
             echo "🔧 pnpm build      - Build the project"
-            echo "📋 pnpm test       - Run tests"
+            echo "📋 pnpm test       - Run tests (from root)"
             echo "📦 pnpm vsix       - Create VS Code extension"
+            echo ""
+            echo "💡 Tip: For webview-ui tests, run from webview-ui directory:"
+            echo "   cd webview-ui && pnpm test <test-file>"
             echo ""
             echo "For VS Code debugging: Press F5"
             echo ""
@@ -155,10 +162,14 @@
               python3
               pkg-config
               gnumake
-              turbo
+              # turbo is installed via pnpm as a devDependency (version 2.7.6 in package.json)
+              # We don't include system turbo to avoid version conflicts
+              # Users should run 'pnpm install' first to get the correct turbo version
               ripgrep
               jp2a
               nodePackages.typescript-language-server
+              nodePackages.eslint
+              nodePackages.eslint_d
               nil
             ]
             ++ lib.optionals stdenv.isLinux [
@@ -202,7 +213,7 @@
               pname = "roo-code-pnpm-deps";
               inherit version src;
               fetcherVersion = 2;
-              hash = "sha256-AuDK65r2lanMp9sj9JdTljYIQ06goT08AxwcG+LawgI=";
+              hash = "sha256-jtIRL4E4d0QjvQGHAVmcXvEXblRdg58VknaMlh/TxCY=";
             };
 
             vsix = pkgs.stdenvNoCC.mkDerivation (
