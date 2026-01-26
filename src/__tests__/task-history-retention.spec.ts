@@ -10,7 +10,7 @@ vi.mock("../utils/storage", () => ({
 	getStorageBasePath: (p: string) => Promise.resolve(p),
 }))
 
-import { purgeOldTasks } from "../utils/task-history-retention"
+import { purgeOldTasks, purgeOldCheckpoints } from "../utils/task-history-retention"
 import { GlobalFileNames } from "../shared/globalFileNames"
 
 // Helpers
@@ -258,6 +258,175 @@ describe("utils/task-history-retention.ts purgeOldTasks()", () => {
 			// Should be deleted based on metadata ts, not mtime
 			expect(await exists(taskDir)).toBe(false)
 			expect(purgedCount).toBe(1)
+		} finally {
+			await fs.rm(base, { recursive: true, force: true })
+		}
+	})
+})
+
+// Helper to create task with checkpoints
+async function createTaskWithCheckpoints(
+	base: string,
+	id: string,
+	ts: number,
+): Promise<{ taskDir: string; checkpointsDir: string }> {
+	const taskDir = path.join(base, "tasks", id)
+	await fs.mkdir(taskDir, { recursive: true })
+	const metadataPath = path.join(taskDir, GlobalFileNames.taskMetadata)
+	const metadata = JSON.stringify({ ts }, null, 2)
+	await fs.writeFile(metadataPath, metadata, "utf8")
+	const checkpointsDir = path.join(taskDir, "checkpoints")
+	await fs.mkdir(checkpointsDir, { recursive: true })
+	// Add some checkpoint content
+	await fs.writeFile(path.join(checkpointsDir, "checkpoint-1.json"), "{}", "utf8")
+	return { taskDir, checkpointsDir }
+}
+
+describe("utils/task-history-retention.ts purgeOldCheckpoints()", () => {
+	it("culls checkpoints from tasks older than 30 days", async () => {
+		const base = await mkTempBase()
+		try {
+			const now = Date.now()
+			const days = (n: number) => n * 24 * 60 * 60 * 1000
+
+			// Old task (31 days) - checkpoints should be culled
+			const old = await createTaskWithCheckpoints(base, "task-old", now - days(31))
+			// Recent task (29 days) - checkpoints should be kept
+			const recent = await createTaskWithCheckpoints(base, "task-recent", now - days(29))
+
+			const { culledCount } = await purgeOldCheckpoints(base, () => {}, false)
+
+			expect(culledCount).toBe(1)
+			// Old task checkpoints should be removed, but task dir should remain
+			expect(await exists(old.taskDir)).toBe(true)
+			expect(await exists(old.checkpointsDir)).toBe(false)
+			// Recent task should be completely intact
+			expect(await exists(recent.taskDir)).toBe(true)
+			expect(await exists(recent.checkpointsDir)).toBe(true)
+		} finally {
+			await fs.rm(base, { recursive: true, force: true })
+		}
+	})
+
+	it("does not delete checkpoints in dry run mode but reports count", async () => {
+		const base = await mkTempBase()
+		try {
+			const now = Date.now()
+			const days = (n: number) => n * 24 * 60 * 60 * 1000
+
+			const old = await createTaskWithCheckpoints(base, "task-old", now - days(31))
+
+			const { culledCount } = await purgeOldCheckpoints(base, () => {}, true)
+
+			expect(culledCount).toBe(1)
+			// In dry run, checkpoints should still exist
+			expect(await exists(old.checkpointsDir)).toBe(true)
+		} finally {
+			await fs.rm(base, { recursive: true, force: true })
+		}
+	})
+
+	it("skips tasks without checkpoints directory", async () => {
+		const base = await mkTempBase()
+		try {
+			const now = Date.now()
+			const days = (n: number) => n * 24 * 60 * 60 * 1000
+
+			// Create an old task WITHOUT checkpoints
+			const taskDir = await createTask(base, "task-no-checkpoints", now - days(31))
+
+			const { culledCount } = await purgeOldCheckpoints(base, () => {}, false)
+
+			expect(culledCount).toBe(0)
+			// Task should be completely intact
+			expect(await exists(taskDir)).toBe(true)
+		} finally {
+			await fs.rm(base, { recursive: true, force: true })
+		}
+	})
+
+	it("uses mtime fallback when no metadata timestamp", async () => {
+		const base = await mkTempBase()
+		try {
+			const now = Date.now()
+			const days = (n: number) => n * 24 * 60 * 60 * 1000
+
+			// Create a task without metadata but with checkpoints
+			const taskDir = path.join(base, "tasks", "task-no-metadata")
+			await fs.mkdir(taskDir, { recursive: true })
+			const checkpointsDir = path.join(taskDir, "checkpoints")
+			await fs.mkdir(checkpointsDir, { recursive: true })
+			await fs.writeFile(path.join(checkpointsDir, "checkpoint.json"), "{}", "utf8")
+			// Set old mtime
+			const oldTime = new Date(now - days(31))
+			await fs.utimes(taskDir, oldTime, oldTime)
+
+			const { culledCount } = await purgeOldCheckpoints(base, () => {}, false)
+
+			expect(culledCount).toBe(1)
+			// Task dir should remain, checkpoints should be gone
+			expect(await exists(taskDir)).toBe(true)
+			expect(await exists(checkpointsDir)).toBe(false)
+		} finally {
+			await fs.rm(base, { recursive: true, force: true })
+		}
+	})
+
+	it("always uses 30-day hardcoded cutoff", async () => {
+		const base = await mkTempBase()
+		try {
+			const now = Date.now()
+			const days = (n: number) => n * 24 * 60 * 60 * 1000
+
+			// Tasks at various ages around the 30-day boundary
+			const day29 = await createTaskWithCheckpoints(base, "task-29d", now - days(29))
+			const day30 = await createTaskWithCheckpoints(base, "task-30d", now - days(30))
+			const day31 = await createTaskWithCheckpoints(base, "task-31d", now - days(31))
+
+			const { culledCount, cutoff } = await purgeOldCheckpoints(base, () => {}, false)
+
+			// Check cutoff is approximately 30 days ago
+			const expectedCutoff = now - days(30)
+			expect(cutoff).toBeGreaterThan(expectedCutoff - 1000) // Allow 1 second margin
+			expect(cutoff).toBeLessThan(expectedCutoff + 1000)
+
+			// 29 day task should keep checkpoints (younger than 30 days)
+			expect(await exists(day29.checkpointsDir)).toBe(true)
+			// 30 and 31 day tasks should lose checkpoints (>= 30 days)
+			expect(await exists(day30.checkpointsDir)).toBe(false)
+			expect(await exists(day31.checkpointsDir)).toBe(false)
+			expect(culledCount).toBe(2)
+		} finally {
+			await fs.rm(base, { recursive: true, force: true })
+		}
+	})
+
+	it("preserves task metadata and other files when culling checkpoints", async () => {
+		const base = await mkTempBase()
+		try {
+			const now = Date.now()
+			const days = (n: number) => n * 24 * 60 * 60 * 1000
+
+			// Create task with checkpoints and other content
+			const taskDir = path.join(base, "tasks", "task-with-content")
+			await fs.mkdir(taskDir, { recursive: true })
+			const metadataPath = path.join(taskDir, GlobalFileNames.taskMetadata)
+			await fs.writeFile(metadataPath, JSON.stringify({ ts: now - days(31) }), "utf8")
+			const checkpointsDir = path.join(taskDir, "checkpoints")
+			await fs.mkdir(checkpointsDir, { recursive: true })
+			await fs.writeFile(path.join(checkpointsDir, "checkpoint.json"), "{}", "utf8")
+			// Add conversation history
+			await fs.writeFile(path.join(taskDir, "conversation.json"), "[]", "utf8")
+
+			const { culledCount } = await purgeOldCheckpoints(base, () => {}, false)
+
+			expect(culledCount).toBe(1)
+			// Task dir and metadata should remain
+			expect(await exists(taskDir)).toBe(true)
+			expect(await exists(metadataPath)).toBe(true)
+			expect(await exists(path.join(taskDir, "conversation.json"))).toBe(true)
+			// Only checkpoints should be removed
+			expect(await exists(checkpointsDir)).toBe(false)
 		} finally {
 			await fs.rm(base, { recursive: true, force: true })
 		}

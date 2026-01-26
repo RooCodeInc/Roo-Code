@@ -17,11 +17,19 @@ export type PurgeResult = {
 	cutoff: number | null
 }
 
+export type CheckpointPurgeResult = {
+	culledCount: number
+	cutoff: number
+}
+
 /** Concurrency limit for parallel metadata reads */
 const METADATA_READ_CONCURRENCY = 50
 
 /** Concurrency limit for parallel task deletions */
 const DELETION_CONCURRENCY = 10
+
+/** Hardcoded checkpoint retention: 30 days */
+const CHECKPOINT_RETENTION_DAYS = 30
 
 /**
  * Task metadata read result for batch processing
@@ -385,6 +393,209 @@ export function startBackgroundRetentionPurge(options: BackgroundPurgeOptions): 
 			}
 		} catch (error) {
 			log(`[Retention] Failed during background purge: ${error instanceof Error ? error.message : String(error)}`)
+		}
+	})()
+}
+
+/**
+ * Metadata result for checkpoint culling - simplified from TaskMetadata
+ */
+interface CheckpointTaskMetadata {
+	taskId: string
+	taskDir: string
+	checkpointsDir: string
+	lastActivity: number | null // ts or mtime
+}
+
+/**
+ * Read metadata for checkpoint culling - only needs task age, not orphan detection
+ */
+async function readCheckpointTaskMetadata(taskId: string, tasksDir: string): Promise<CheckpointTaskMetadata | null> {
+	const taskDir = path.join(tasksDir, taskId)
+	const checkpointsDir = path.join(taskDir, "checkpoints")
+
+	// First check if checkpoints directory exists
+	if (!(await pathExists(checkpointsDir))) {
+		return null // No checkpoints to cull
+	}
+
+	const metadataPath = path.join(taskDir, GlobalFileNames.taskMetadata)
+	let lastActivity: number | null = null
+
+	// Try to read timestamp from metadata file
+	try {
+		const raw = await fs.readFile(metadataPath, "utf8")
+		const meta: unknown = JSON.parse(raw)
+		const maybeTs = Number(
+			typeof meta === "object" && meta !== null && "ts" in meta ? (meta as { ts: unknown }).ts : undefined,
+		)
+		if (Number.isFinite(maybeTs)) {
+			lastActivity = maybeTs
+		}
+	} catch {
+		// Missing or invalid metadata
+	}
+
+	// Fallback to mtime if no valid ts
+	if (lastActivity === null) {
+		try {
+			const stat = await fs.stat(taskDir)
+			lastActivity = stat.mtime.getTime()
+		} catch {
+			// Can't determine age - skip this task
+			return null
+		}
+	}
+
+	return { taskId, taskDir, checkpointsDir, lastActivity }
+}
+
+/**
+ * Cull checkpoints from tasks that haven't been touched in CHECKPOINT_RETENTION_DAYS.
+ * This is a non-configurable, always-on feature that removes only the checkpoints/
+ * subdirectory while preserving the task itself (conversation history, metadata).
+ *
+ * @param globalStoragePath VS Code global storage fsPath
+ * @param log Optional logger
+ * @param dryRun When true, logs which checkpoints would be deleted but does not delete
+ * @returns CheckpointPurgeResult with count and cutoff used
+ */
+export async function purgeOldCheckpoints(
+	globalStoragePath: string,
+	log?: (message: string) => void,
+	dryRun: boolean = false,
+): Promise<CheckpointPurgeResult> {
+	const cutoff = Date.now() - CHECKPOINT_RETENTION_DAYS * 24 * 60 * 60 * 1000
+
+	log?.(`[Checkpoints] Starting checkpoint cull (${CHECKPOINT_RETENTION_DAYS} days)${dryRun ? " (dry run)" : ""}`)
+
+	let basePath: string
+
+	try {
+		basePath = await getStorageBasePath(globalStoragePath)
+	} catch (e) {
+		log?.(`[Checkpoints] Failed to resolve storage base path: ${e instanceof Error ? e.message : String(e)}`)
+		return { culledCount: 0, cutoff }
+	}
+
+	const tasksDir = path.join(basePath, "tasks")
+
+	let entries: Dirent[]
+	try {
+		entries = await fs.readdir(tasksDir, { withFileTypes: true })
+	} catch {
+		// No tasks directory yet or unreadable
+		log?.(`[Checkpoints] Tasks directory not found or unreadable`)
+		return { culledCount: 0, cutoff }
+	}
+
+	const taskDirs = entries.filter((d) => d.isDirectory())
+	const totalTasks = taskDirs.length
+
+	if (totalTasks === 0) {
+		return { culledCount: 0, cutoff }
+	}
+
+	// Phase 1: Read metadata for all tasks with checkpoints
+	const metadataLimit = pLimit(METADATA_READ_CONCURRENCY)
+	const metadataResults = await Promise.all(
+		taskDirs.map((d) => metadataLimit(() => readCheckpointTaskMetadata(d.name, tasksDir))),
+	)
+
+	// Phase 2: Filter tasks with checkpoints that need culling
+	const tasksToCull: CheckpointTaskMetadata[] = []
+
+	for (const metadata of metadataResults) {
+		if (!metadata) continue
+
+		// Check if task is older than cutoff
+		if (metadata.lastActivity !== null && metadata.lastActivity < cutoff) {
+			tasksToCull.push(metadata)
+		}
+	}
+
+	if (tasksToCull.length === 0) {
+		log?.(`[Checkpoints] No checkpoints met cull criteria`)
+		return { culledCount: 0, cutoff }
+	}
+
+	// Dry run mode
+	if (dryRun) {
+		for (const metadata of tasksToCull) {
+			log?.(
+				`[Checkpoints][DRY RUN] Would cull checkpoints for task ${metadata.taskId} (last activity: ${new Date(metadata.lastActivity!).toISOString()})`,
+			)
+		}
+		log?.(`[Checkpoints] Would cull checkpoints from ${tasksToCull.length} task(s) (dry run)`)
+		return { culledCount: tasksToCull.length, cutoff }
+	}
+
+	// Phase 3: Delete checkpoints directories in parallel
+	const deleteLimit = pLimit(DELETION_CONCURRENCY)
+	const deleteResults = await Promise.all(
+		tasksToCull.map((metadata) =>
+			deleteLimit(async (): Promise<boolean> => {
+				try {
+					await fs.rm(metadata.checkpointsDir, { recursive: true, force: true })
+					const stillExists = await pathExists(metadata.checkpointsDir)
+					if (!stillExists) {
+						return true
+					}
+				} catch {
+					// Ignore errors
+				}
+				return false
+			}),
+		),
+	)
+
+	const culled = deleteResults.filter(Boolean).length
+
+	if (culled > 0) {
+		log?.(`[Checkpoints] Culled checkpoints from ${culled} task(s); cutoff=${new Date(cutoff).toISOString()}`)
+	}
+
+	return { culledCount: culled, cutoff }
+}
+
+/**
+ * Options for starting the background checkpoint purge.
+ */
+export interface BackgroundCheckpointPurgeOptions {
+	/** VS Code global storage fsPath */
+	globalStoragePath: string
+	/** Logger function */
+	log: (message: string) => void
+}
+
+/**
+ * Starts the checkpoint culling in the background.
+ * This function is designed to be called after extension activation completes,
+ * using a fire-and-forget pattern (void) to avoid blocking activation.
+ *
+ * Checkpoints are culled from tasks that haven't been touched in 30 days.
+ * This is non-configurable and always runs.
+ *
+ * @param options Configuration options for the background checkpoint purge
+ */
+export function startBackgroundCheckpointPurge(options: BackgroundCheckpointPurgeOptions): void {
+	const { globalStoragePath, log } = options
+
+	void (async () => {
+		try {
+			log(`[Checkpoints] Starting background checkpoint cull (${CHECKPOINT_RETENTION_DAYS} days)`)
+
+			const result = await purgeOldCheckpoints(globalStoragePath, log, false)
+
+			log(
+				`[Checkpoints] Background checkpoint cull complete: culled=${result.culledCount}, cutoff=${new Date(result.cutoff).toISOString()}`,
+			)
+
+			// No user notification - silent operation as requested
+		} catch (error) {
+			log(
+				`[Checkpoints] Failed during background checkpoint cull: ${error instanceof Error ? error.message : String(error)}`,
+			)
 		}
 	})()
 }

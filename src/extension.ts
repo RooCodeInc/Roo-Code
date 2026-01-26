@@ -44,7 +44,7 @@ import {
 } from "./activate"
 import { initializeI18n } from "./i18n"
 import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
-import { startBackgroundRetentionPurge } from "./utils/task-history-retention"
+import { startBackgroundRetentionPurge, startBackgroundCheckpointPurge } from "./utils/task-history-retention"
 import { TASK_HISTORY_RETENTION_OPTIONS, type TaskHistoryRetentionSetting } from "@roo-code/types"
 
 /**
@@ -409,6 +409,13 @@ export async function activate(context: vscode.ExtensionContext) {
 			retention,
 		})
 	}
+
+	// Checkpoint culling (runs in background after activation)
+	// Automatically removes checkpoints from tasks not touched in 30 days (non-configurable)
+	startBackgroundCheckpointPurge({
+		globalStoragePath: contextProxy.globalStorageUri.fsPath,
+		log: (m) => outputChannel.appendLine(m),
+	})
 
 	// Implements the `RooCodeAPI` interface.
 	const socketPath = process.env.ROO_CODE_IPC_SOCKET_PATH
