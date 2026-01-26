@@ -4,13 +4,17 @@ import { streamText, generateText } from "ai"
 
 import {
 	type ModelRecord,
+	type ModelInfo,
 	openRouterDefaultModelId,
 	openRouterDefaultModelInfo,
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
+	ApiProviderError,
 } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import type { ApiHandlerOptions } from "../../shared/api"
+import { calculateApiCostOpenAI } from "../../shared/cost"
 
 import { BaseProvider } from "./base-provider"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
@@ -21,7 +25,22 @@ import { convertToAiSdkMessages, convertToolsForAiSdk, processAiSdkStreamPart } 
 import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-generation"
 
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
-import type { ApiStreamChunk } from "../transform/stream"
+import type { ApiStreamChunk, ApiStreamUsageChunk } from "../transform/stream"
+
+/**
+ * Reasoning detail structure for preserving reasoning context across multi-turn conversations.
+ * Used by models like Gemini 3 that provide structured reasoning information.
+ */
+interface ReasoningDetail {
+	type: string
+	text?: string
+	summary?: string
+	data?: string
+	id?: string | null
+	format?: string
+	signature?: string
+	index: number
+}
 
 /**
  * OpenRouter handler using the Vercel AI SDK.
@@ -32,6 +51,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	protected models: ModelRecord = {}
 	protected endpoints: ModelRecord = {}
 	private readonly providerName = "OpenRouter"
+	private currentReasoningDetails: ReasoningDetail[] = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -77,11 +97,90 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		})
 	}
 
+	/**
+	 * Get the accumulated reasoning details from the current streaming session.
+	 * These details are used by Task.ts to preserve reasoning context across multi-turn
+	 * conversations with models like Gemini 3.
+	 *
+	 * @returns Array of reasoning details if available, undefined otherwise
+	 */
+	getReasoningDetails(): ReasoningDetail[] | undefined {
+		return this.currentReasoningDetails.length > 0 ? this.currentReasoningDetails : undefined
+	}
+
+	/**
+	 * Normalize usage data from the AI SDK response into the ApiStreamUsageChunk format.
+	 * Extracts detailed usage information including cache tokens, reasoning tokens, and calculates cost.
+	 *
+	 * @param usage - Basic usage from AI SDK (inputTokens, outputTokens)
+	 * @param providerMetadata - Provider-specific metadata that may contain extended usage info
+	 * @param modelInfo - Model information for cost calculation
+	 * @returns Normalized ApiStreamUsageChunk with all available usage metrics
+	 */
+	private normalizeUsage(
+		usage: { inputTokens: number; outputTokens: number },
+		providerMetadata: Record<string, any> | undefined,
+		modelInfo: ModelInfo,
+	): ApiStreamUsageChunk {
+		const inputTokens = usage.inputTokens ?? 0
+		const outputTokens = usage.outputTokens ?? 0
+
+		// Extract OpenRouter-specific metadata
+		// The AI SDK exposes provider metadata under the provider key
+		const openrouterMeta = providerMetadata?.openrouter ?? {}
+
+		// Extract cache tokens from various possible locations
+		// OpenRouter AI SDK may provide: cachedInputTokens, cache_read_input_tokens, etc.
+		const cacheReadTokens =
+			openrouterMeta.cachedInputTokens ??
+			openrouterMeta.cache_read_input_tokens ??
+			openrouterMeta.cacheReadTokens ??
+			openrouterMeta.cached_tokens ??
+			0
+
+		const cacheWriteTokens =
+			openrouterMeta.cacheCreationInputTokens ??
+			openrouterMeta.cache_creation_input_tokens ??
+			openrouterMeta.cacheWriteTokens ??
+			0
+
+		// Extract reasoning tokens from output token details
+		// OpenRouter AI SDK may provide: reasoningOutputTokens, output_tokens_details.reasoning_tokens
+		const reasoningTokens =
+			openrouterMeta.reasoningOutputTokens ??
+			openrouterMeta.reasoning_tokens ??
+			openrouterMeta.output_tokens_details?.reasoning_tokens ??
+			undefined
+
+		// Calculate cost using model pricing information
+		// OpenRouter follows the OpenAI convention where input tokens include cached tokens
+		const { totalCost } = calculateApiCostOpenAI(
+			modelInfo,
+			inputTokens,
+			outputTokens,
+			cacheWriteTokens,
+			cacheReadTokens,
+		)
+
+		return {
+			type: "usage",
+			inputTokens,
+			outputTokens,
+			...(cacheWriteTokens > 0 ? { cacheWriteTokens } : {}),
+			...(cacheReadTokens > 0 ? { cacheReadTokens } : {}),
+			...(typeof reasoningTokens === "number" && reasoningTokens > 0 ? { reasoningTokens } : {}),
+			totalCost,
+		}
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): AsyncGenerator<ApiStreamChunk> {
+		// Reset reasoning details accumulator for this request
+		this.currentReasoningDetails = []
+
 		const model = await this.fetchModel()
 		const { id: modelId, maxTokens, temperature } = model
 
@@ -104,6 +203,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					}
 				: undefined
 
+		// Accumulator for reasoning text to build a single reasoning detail
+		let accumulatedReasoningText = ""
+
 		try {
 			const result = streamText({
 				model: openrouter.chat(modelId),
@@ -118,20 +220,45 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 			// Process the full stream for all event types
 			for await (const part of result.fullStream) {
+				// Capture reasoning text for accumulation
+				if (part.type === "reasoning-delta") {
+					accumulatedReasoningText += part.text
+				}
+
 				yield* processAiSdkStreamPart(part)
 			}
 
-			// After streaming completes, yield usage information
+			// After streaming completes, store accumulated reasoning as a detail
+			if (accumulatedReasoningText) {
+				this.currentReasoningDetails.push({
+					type: "reasoning.text",
+					text: accumulatedReasoningText,
+					index: 0,
+				})
+			}
+
+			// After streaming completes, yield usage information with detailed metrics
 			const usage = await result.usage
 			const totalUsage = await result.totalUsage
+			// Access provider metadata for extended usage information (cache tokens, reasoning tokens, etc.)
+			// The AI SDK provides this through providerMetadata or experimental_providerMetadata
+			const providerMetadata =
+				(await result.providerMetadata) ?? (await (result as any).experimental_providerMetadata)
 
-			yield {
-				type: "usage",
-				inputTokens: totalUsage.inputTokens ?? usage.inputTokens ?? 0,
-				outputTokens: totalUsage.outputTokens ?? usage.outputTokens ?? 0,
-			}
+			// Normalize and yield usage with all available metrics
+			const usageChunk = this.normalizeUsage(
+				{
+					inputTokens: totalUsage.inputTokens ?? usage.inputTokens ?? 0,
+					outputTokens: totalUsage.outputTokens ?? usage.outputTokens ?? 0,
+				},
+				providerMetadata,
+				model.info,
+			)
+			yield usageChunk
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
+			TelemetryService.instance.captureException(apiError)
 			yield {
 				type: "error",
 				error: "OpenRouterError",
@@ -229,6 +356,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			return result.text
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
+			TelemetryService.instance.captureException(apiError)
 			throw new Error(`${this.providerName} completion error: ${errorMessage}`)
 		}
 	}
