@@ -919,13 +919,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Storage usage",
-		"calculating": "Calculating...",
-		"format": "{{size}} ({{count}} tasks)",
-		"formatSingular": "{{size}} (1 task)",
+		"label": "Task count",
+		"clickToCount": "Click refresh to count",
+		"count": "{{count}} tasks",
+		"countSingular": "1 task",
 		"empty": "No tasks stored",
-		"refresh": "Refresh",
-		"error": "Unable to calculate"
+		"refresh": "Count tasks"
 	},
 	"footer": {
 		"telemetry": {

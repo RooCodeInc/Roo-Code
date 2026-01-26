@@ -243,6 +243,20 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		}
 	}, [settingsImportedAt, extensionState])
 
+	// Sync taskHistoryRetention from extensionState when it changes and the user
+	// hasn't made local changes yet. This handles the race condition where
+	// cachedState is initialized before the initial state message arrives.
+	useEffect(() => {
+		if (!isChangeDetected && extensionState.taskHistoryRetention !== undefined) {
+			setCachedState((prev) => {
+				if (prev.taskHistoryRetention === extensionState.taskHistoryRetention) {
+					return prev // No change needed
+				}
+				return { ...prev, taskHistoryRetention: extensionState.taskHistoryRetention }
+			})
+		}
+	}, [extensionState.taskHistoryRetention, isChangeDetected])
+
 	const setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType> = useCallback((field, value) => {
 		setCachedState((prevState) => {
 			if (prevState[field] === value) {

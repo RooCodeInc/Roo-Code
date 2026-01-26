@@ -1,4 +1,4 @@
-import { HTMLAttributes, useState, useCallback, useEffect, useRef } from "react"
+import { HTMLAttributes, useState, useCallback, useEffect } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Trans } from "react-i18next"
 import {
@@ -11,7 +11,7 @@ import {
 	MessageCircle,
 	MessagesSquare,
 	RefreshCw,
-	HardDrive,
+	FolderOpen,
 	Loader2,
 } from "lucide-react"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
@@ -29,9 +29,7 @@ import { Section } from "./Section"
 import { SearchableSetting } from "./SearchableSetting"
 
 type TaskHistorySize = {
-	totalBytes: number
 	taskCount: number
-	formattedSize: string
 }
 
 type AboutProps = HTMLAttributes<HTMLDivElement> & {
@@ -58,7 +56,6 @@ export const About = ({
 	const { t } = useAppTranslation()
 	const [isRefreshing, setIsRefreshing] = useState(false)
 	const [cachedSize, setCachedSize] = useState<TaskHistorySize | undefined>(taskHistorySize)
-	const didRequestInitialSize = useRef(false)
 
 	// Update cached size when taskHistorySize changes and reset refreshing state
 	useEffect(() => {
@@ -68,34 +65,27 @@ export const About = ({
 		}
 	}, [taskHistorySize])
 
-	// Trigger initial task history size calculation when this tab mounts
-	useEffect(() => {
-		if (didRequestInitialSize.current) return
-		didRequestInitialSize.current = true
-		vscode.postMessage({ type: "refreshTaskHistorySize" })
-	}, [])
+	// NOTE: No auto-trigger on mount - user must click refresh button
+	// This is intentional for performance with large task counts (e.g., 9000+ tasks)
 
-	const handleRefreshStorageSize = useCallback(() => {
+	const handleRefreshTaskCount = useCallback(() => {
 		setIsRefreshing(true)
 		vscode.postMessage({ type: "refreshTaskHistorySize" })
 	}, [])
 
-	const getStorageDisplayText = (): string => {
-		// Use cached size if available, otherwise show "Calculating" only if no cached value
+	const getTaskCountDisplayText = (): string => {
+		// Use cached size if available, otherwise prompt user to click refresh
 		const displaySize = taskHistorySize || cachedSize
 		if (!displaySize) {
-			return t("settings:taskHistoryStorage.calculating")
+			return t("settings:taskHistoryStorage.clickToCount")
 		}
 		if (displaySize.taskCount === 0) {
 			return t("settings:taskHistoryStorage.empty")
 		}
 		if (displaySize.taskCount === 1) {
-			return t("settings:taskHistoryStorage.formatSingular", {
-				size: displaySize.formattedSize,
-			})
+			return t("settings:taskHistoryStorage.countSingular")
 		}
-		return t("settings:taskHistoryStorage.format", {
-			size: displaySize.formattedSize,
+		return t("settings:taskHistoryStorage.count", {
 			count: displaySize.taskCount,
 		})
 	}
@@ -237,19 +227,19 @@ export const About = ({
 				</SearchableSetting>
 
 				<SearchableSetting
-					settingId="about-task-history-storage"
+					settingId="about-task-history-count"
 					section="about"
 					label={t("settings:taskHistoryStorage.label")}
 					className="mt-4">
 					<div className="flex items-center gap-2">
-						<HardDrive className="size-4 text-vscode-descriptionForeground shrink-0" />
+						<FolderOpen className="size-4 text-vscode-descriptionForeground shrink-0" />
 						<span className="text-sm">
-							{t("settings:taskHistoryStorage.label")}: {getStorageDisplayText()}
+							{t("settings:taskHistoryStorage.label")}: {getTaskCountDisplayText()}
 						</span>
 						<Button
 							variant="ghost"
 							size="sm"
-							onClick={handleRefreshStorageSize}
+							onClick={handleRefreshTaskCount}
 							disabled={isRefreshing}
 							className="h-6 w-6 p-0"
 							title={t("settings:taskHistoryStorage.refresh")}>

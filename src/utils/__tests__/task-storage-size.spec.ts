@@ -1,4 +1,3 @@
-import * as path from "path"
 import { calculateTaskStorageSize, formatBytes } from "../task-storage-size"
 
 // Mock storage to avoid VS Code config access during tests
@@ -8,13 +7,12 @@ vi.mock("../storage", () => ({
 
 // Mock fs/promises
 const mockReaddir = vi.fn()
-const mockStat = vi.fn()
 
 vi.mock("fs/promises", () => ({
 	readdir: (...args: unknown[]) => mockReaddir(...args),
-	stat: (...args: unknown[]) => mockStat(...args),
 }))
 
+// formatBytes is still exported for backwards compatibility but not used by calculateTaskStorageSize
 describe("formatBytes", () => {
 	it("should format 0 bytes", () => {
 		expect(formatBytes(0)).toBe("0 B")
@@ -58,33 +56,29 @@ describe("calculateTaskStorageSize", () => {
 		vi.clearAllMocks()
 	})
 
-	it("should return zeros when tasks directory does not exist", async () => {
+	it("should return zero count when tasks directory does not exist", async () => {
 		mockReaddir.mockRejectedValue(new Error("ENOENT: no such file or directory"))
 
 		const result = await calculateTaskStorageSize("/global/storage")
 
 		expect(result).toEqual({
-			totalBytes: 0,
 			taskCount: 0,
-			formattedSize: "0 B",
 		})
 	})
 
-	it("should calculate size of empty tasks directory", async () => {
+	it("should return zero count for empty tasks directory", async () => {
 		mockReaddir.mockResolvedValue([])
 
 		const result = await calculateTaskStorageSize("/global/storage")
 
 		expect(result).toEqual({
-			totalBytes: 0,
 			taskCount: 0,
-			formattedSize: "0 B",
 		})
 	})
 
 	it("should count task directories correctly", async () => {
 		// Mock the tasks directory read
-		mockReaddir.mockImplementation((dirPath: string, options?: { withFileTypes: boolean }) => {
+		mockReaddir.mockImplementation((dirPath: string) => {
 			const pathStr = typeof dirPath === "string" ? dirPath : String(dirPath)
 			if (pathStr.endsWith("tasks")) {
 				// Return task directories
@@ -94,7 +88,6 @@ describe("calculateTaskStorageSize", () => {
 					{ name: "task-3", isDirectory: () => true, isFile: () => false, isSymbolicLink: () => false },
 				])
 			}
-			// Task subdirectories are empty
 			return Promise.resolve([])
 		})
 
@@ -103,119 +96,21 @@ describe("calculateTaskStorageSize", () => {
 		expect(result.taskCount).toBe(3)
 	})
 
-	it("should calculate total size including files", async () => {
-		// Mock the tasks directory read
+	it("should only count directories, not files in tasks folder", async () => {
 		mockReaddir.mockImplementation((dirPath: string) => {
 			const pathStr = typeof dirPath === "string" ? dirPath : String(dirPath)
 			if (pathStr.endsWith("tasks")) {
 				return Promise.resolve([
 					{ name: "task-1", isDirectory: () => true, isFile: () => false, isSymbolicLink: () => false },
-				])
-			}
-			if (pathStr.includes("task-1")) {
-				return Promise.resolve([
-					{ name: "file1.txt", isDirectory: () => false, isFile: () => true, isSymbolicLink: () => false },
-					{ name: "file2.json", isDirectory: () => false, isFile: () => true, isSymbolicLink: () => false },
-				])
-			}
-			return Promise.resolve([])
-		})
-
-		mockStat.mockImplementation((filePath: string) => {
-			if (filePath.includes("file1.txt")) {
-				return Promise.resolve({ size: 1024 })
-			}
-			if (filePath.includes("file2.json")) {
-				return Promise.resolve({ size: 2048 })
-			}
-			return Promise.resolve({ size: 0 })
-		})
-
-		const result = await calculateTaskStorageSize("/global/storage")
-
-		expect(result.totalBytes).toBe(3072)
-		expect(result.formattedSize).toBe("3 KB")
-		expect(result.taskCount).toBe(1)
-	})
-
-	it("should handle nested directories (like checkpoints)", async () => {
-		mockReaddir.mockImplementation((dirPath: string) => {
-			const pathStr = typeof dirPath === "string" ? dirPath : String(dirPath)
-			if (pathStr.endsWith("tasks")) {
-				return Promise.resolve([
-					{ name: "task-1", isDirectory: () => true, isFile: () => false, isSymbolicLink: () => false },
-				])
-			}
-			if (pathStr.endsWith("task-1") && !pathStr.includes("checkpoints")) {
-				return Promise.resolve([
-					{
-						name: "api_conversation.json",
-						isDirectory: () => false,
-						isFile: () => true,
-						isSymbolicLink: () => false,
-					},
-					{ name: "checkpoints", isDirectory: () => true, isFile: () => false, isSymbolicLink: () => false },
-				])
-			}
-			if (pathStr.includes("checkpoints")) {
-				return Promise.resolve([
-					{
-						name: "checkpoint-1.json",
-						isDirectory: () => false,
-						isFile: () => true,
-						isSymbolicLink: () => false,
-					},
-				])
-			}
-			return Promise.resolve([])
-		})
-
-		mockStat.mockImplementation((filePath: string) => {
-			if (filePath.includes("api_conversation.json")) {
-				return Promise.resolve({ size: 5000 })
-			}
-			if (filePath.includes("checkpoint-1.json")) {
-				return Promise.resolve({ size: 10000 })
-			}
-			return Promise.resolve({ size: 0 })
-		})
-
-		const result = await calculateTaskStorageSize("/global/storage")
-
-		expect(result.totalBytes).toBe(15000)
-		expect(result.taskCount).toBe(1)
-	})
-
-	it("should handle stat errors gracefully", async () => {
-		mockReaddir.mockImplementation((dirPath: string) => {
-			const pathStr = typeof dirPath === "string" ? dirPath : String(dirPath)
-			if (pathStr.endsWith("tasks")) {
-				return Promise.resolve([
-					{ name: "task-1", isDirectory: () => true, isFile: () => false, isSymbolicLink: () => false },
-				])
-			}
-			return Promise.resolve([
-				{ name: "broken-file.txt", isDirectory: () => false, isFile: () => true, isSymbolicLink: () => false },
-			])
-		})
-
-		mockStat.mockRejectedValue(new Error("Permission denied"))
-
-		const result = await calculateTaskStorageSize("/global/storage")
-
-		// Should still return a result, just with 0 bytes for the failed stat
-		expect(result.taskCount).toBe(1)
-		expect(result.totalBytes).toBe(0)
-	})
-
-	it("should handle mixed files and directories in tasks folder", async () => {
-		mockReaddir.mockImplementation((dirPath: string) => {
-			const pathStr = typeof dirPath === "string" ? dirPath : String(dirPath)
-			if (pathStr.endsWith("tasks")) {
-				return Promise.resolve([
-					{ name: "task-1", isDirectory: () => true, isFile: () => false, isSymbolicLink: () => false },
+					{ name: "task-2", isDirectory: () => true, isFile: () => false, isSymbolicLink: () => false },
 					{
 						name: "some-file.txt",
+						isDirectory: () => false,
+						isFile: () => true,
+						isSymbolicLink: () => false,
+					}, // Should not count as task
+					{
+						name: "another-file.json",
 						isDirectory: () => false,
 						isFile: () => true,
 						isSymbolicLink: () => false,
@@ -225,18 +120,45 @@ describe("calculateTaskStorageSize", () => {
 			return Promise.resolve([])
 		})
 
-		mockStat.mockImplementation((filePath: string) => {
-			if (filePath.includes("some-file.txt")) {
-				return Promise.resolve({ size: 100 })
-			}
-			return Promise.resolve({ size: 0 })
-		})
-
 		const result = await calculateTaskStorageSize("/global/storage")
 
 		// Only directories count as tasks
-		expect(result.taskCount).toBe(1)
-		// But file size should be included
-		expect(result.totalBytes).toBe(100)
+		expect(result.taskCount).toBe(2)
+	})
+
+	it("should handle large task counts efficiently (does not recurse into subdirectories)", async () => {
+		// Simulate 9000 task directories - this should be fast since we don't recurse
+		const manyTasks = Array.from({ length: 9000 }, (_, i) => ({
+			name: `task-${i}`,
+			isDirectory: () => true,
+			isFile: () => false,
+			isSymbolicLink: () => false,
+		}))
+
+		mockReaddir.mockImplementation((dirPath: string) => {
+			const pathStr = typeof dirPath === "string" ? dirPath : String(dirPath)
+			if (pathStr.endsWith("tasks")) {
+				return Promise.resolve(manyTasks)
+			}
+			return Promise.resolve([])
+		})
+
+		const startTime = Date.now()
+		const result = await calculateTaskStorageSize("/global/storage")
+		const elapsed = Date.now() - startTime
+
+		expect(result.taskCount).toBe(9000)
+		// Should complete quickly since we're not recursing into directories
+		expect(elapsed).toBeLessThan(100) // Should be nearly instant
+	})
+
+	it("should handle readdir errors gracefully", async () => {
+		mockReaddir.mockRejectedValue(new Error("Permission denied"))
+
+		const result = await calculateTaskStorageSize("/global/storage")
+
+		expect(result).toEqual({
+			taskCount: 0,
+		})
 	})
 })

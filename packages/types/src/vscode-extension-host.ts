@@ -396,14 +396,13 @@ export type ExtensionState = Pick<
 	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
 	profileThresholds: Record<string, number>
 	hasOpenedModeSelector: boolean
-	/** Task history storage size info for the Settings > About page */
+	/** Task history count for the Settings > About page
+	 * Note: Size calculation was removed for performance reasons - with large numbers of
+	 * tasks (e.g., 9000+), recursively stat'ing every file caused significant delays.
+	 */
 	taskHistorySize?: {
-		/** Total size in bytes */
-		totalBytes: number
 		/** Number of task directories */
 		taskCount: number
-		/** Formatted size string (e.g., "12.34 MB") */
-		formattedSize: string
 	}
 	openRouterImageApiKey?: string
 	messageQueue?: QueuedMessage[]
