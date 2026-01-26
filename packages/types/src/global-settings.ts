@@ -118,7 +118,6 @@ export const globalSettingsSchema = z.object({
 	allowedMaxCost: z.number().nullish(),
 	autoCondenseContext: z.boolean().optional(),
 	autoCondenseContextPercent: z.number().optional(),
-	maxConcurrentFileReads: z.number().optional(),
 
 	/**
 	 * Whether to include current time in the environment details

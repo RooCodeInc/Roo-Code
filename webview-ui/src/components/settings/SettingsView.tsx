@@ -194,7 +194,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		remoteBrowserEnabled,
 		maxImageFileSize,
 		maxTotalImageSize,
-		maxConcurrentFileReads,
+		terminalCompressProgressBar,
 		customSupportPrompts,
 		profileThresholds,
 		alwaysAllowFollowupQuestions,
@@ -404,7 +404,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					enableSubfolderRules: enableSubfolderRules ?? false,
 					maxImageFileSize: maxImageFileSize ?? 5,
 					maxTotalImageSize: maxTotalImageSize ?? 20,
-					maxConcurrentFileReads: cachedState.maxConcurrentFileReads ?? 5,
 					includeDiagnosticMessages:
 						includeDiagnosticMessages !== undefined ? includeDiagnosticMessages : true,
 					maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
@@ -848,7 +847,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								enableSubfolderRules={enableSubfolderRules}
 								maxImageFileSize={maxImageFileSize}
 								maxTotalImageSize={maxTotalImageSize}
-								maxConcurrentFileReads={maxConcurrentFileReads}
 								profileThresholds={profileThresholds}
 								includeDiagnosticMessages={includeDiagnosticMessages}
 								maxDiagnosticMessages={maxDiagnosticMessages}

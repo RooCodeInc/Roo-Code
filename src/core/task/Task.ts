@@ -3757,7 +3757,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			enableMcpServerCreation,
 			browserToolEnabled,
 			language,
-			maxConcurrentFileReads,
 			apiConfiguration,
 			enableSubfolderRules,
 		} = state ?? {}
@@ -3796,7 +3795,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				language,
 				rooIgnoreInstructions,
 				{
-					maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 					todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 					browserToolEnabled: browserToolEnabled ?? true,
 					useAgentRules:

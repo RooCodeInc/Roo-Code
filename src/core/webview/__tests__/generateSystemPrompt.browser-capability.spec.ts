@@ -63,7 +63,6 @@ function makeProviderStub() {
 			enableMcpServerCreation: false,
 			browserToolEnabled: true, // critical: enabled in settings
 			language: "en",
-			maxConcurrentFileReads: 5,
 		}),
 	} as any
 }
