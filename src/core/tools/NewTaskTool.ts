@@ -109,12 +109,6 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				return
 			}
 
-			// Provider is guaranteed to be defined here due to earlier check.
-
-			if (task.enableCheckpoints) {
-				task.checkpointSave(true)
-			}
-
 			// Delegate parent and open child as sole active task
 			const child = await (provider as any).delegateParentAndOpenChild({
 				parentTaskId: task.taskId,

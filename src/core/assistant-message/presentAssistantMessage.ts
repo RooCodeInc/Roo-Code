@@ -862,6 +862,7 @@ export async function presentAssistantMessage(cline: Task) {
 					})
 					break
 				case "new_task":
+					await checkpointSaveAndMark(cline)
 					await newTaskTool.handle(cline, block as ToolUse<"new_task">, {
 						askApproval,
 						handleError,
