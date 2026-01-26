@@ -71,13 +71,13 @@ describe("FirmwareHandler", () => {
 			expect(handler.getModel().id).toBe(mockOptions.firmwareModelId)
 		})
 
-		it("should use default model ID if not provided", () => {
-			const handlerWithoutModel = new FirmwareHandler({
-				...mockOptions,
-				firmwareModelId: undefined,
-			})
-			expect(handlerWithoutModel.getModel().id).toBe("claude-sonnet-4-5")
+	it("should use default model ID if not provided", () => {
+		const handlerWithoutModel = new FirmwareHandler({
+			...mockOptions,
+			firmwareModelId: undefined,
 		})
+		expect(handlerWithoutModel.getModel().id).toBe("anthropic/claude-sonnet-4-5-20250929")
+	})
 
 		it("should initialize OpenAI client with correct base URL", () => {
 			vi.clearAllMocks()
