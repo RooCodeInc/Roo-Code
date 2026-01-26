@@ -1,4 +1,5 @@
-import { calculateTaskStorageSize, formatBytes } from "../task-storage-size"
+import { calculateTaskStorageSize } from "../task-storage-size"
+import { formatBytes } from "../formatBytes"
 
 // Mock storage to avoid VS Code config access during tests
 vi.mock("../storage", () => ({
@@ -12,7 +13,6 @@ vi.mock("fs/promises", () => ({
 	readdir: (...args: unknown[]) => mockReaddir(...args),
 }))
 
-// formatBytes is still exported for backwards compatibility but not used by calculateTaskStorageSize
 describe("formatBytes", () => {
 	it("should format 0 bytes", () => {
 		expect(formatBytes(0)).toBe("0 B")

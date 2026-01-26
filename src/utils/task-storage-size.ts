@@ -2,7 +2,6 @@ import * as path from "path"
 import * as fs from "fs/promises"
 
 import { getStorageBasePath } from "./storage"
-import { formatBytes } from "./formatBytes"
 
 /**
  * Result of counting task history items.
@@ -13,9 +12,6 @@ export interface TaskStorageSizeResult {
 	/** Number of task directories found */
 	taskCount: number
 }
-
-// Re-export for backwards compatibility with existing imports/tests.
-export { formatBytes }
 
 /**
  * Counts the number of task directories in task history storage.
