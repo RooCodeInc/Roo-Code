@@ -201,13 +201,10 @@ async function main() {
 			}
 			rebuildTimeout = setTimeout(async () => {
 				console.log(`[${name}] File ${eventType}: ${path.relative(srcDir, filePath)}`)
-				console.log(`[esbuild-problem-matcher#onStart]`)
 				try {
 					await Promise.all([extensionCtx.rebuild(), workerCtx.rebuild()])
-					console.log(`[esbuild-problem-matcher#onEnd]`)
 				} catch (err) {
 					console.error(`[${name}] Rebuild failed:`, err.message)
-					console.log(`[esbuild-problem-matcher#onEnd]`)
 				}
 			}, 200)
 		}
