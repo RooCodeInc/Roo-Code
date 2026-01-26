@@ -879,8 +879,8 @@
 		"cacheReadsPrice": "कैश रीड्स मूल्य",
 		"cacheWritesPrice": "कैश राइट्स मूल्य",
 		"enableStreaming": "स्ट्रीमिंग सक्षम करें",
-		"enableR1Format": "R1 मॉडल पैरामीटर सक्षम करें",
-		"enableR1FormatTips": "QWQ जैसी R1 मॉडलों का उपयोग करते समय इसे सक्षम करना आवश्यक है, ताकि 400 त्रुटि से बचा जा सके",
+		"enableR1Format": "रीजनिंग मॉडल फॉर्मेट सक्षम करें",
+		"enableR1FormatTips": "रीजनिंग/थिंकिंग मॉडल (DeepSeek R1, Kimi-K2, QWQ, आदि) के लिए सक्षम करें ताकि उनके रिस्पॉन्स फॉर्मेट को सही ढंग से हैंडल किया जा सके। NVIDIA NIM और अन्य OpenAI-संगत प्रोवाइडर्स पर मॉडल के लिए आवश्यक।",
 		"useAzure": "Azure का उपयोग करें",
 		"azureApiVersion": "Azure API संस्करण सेट करें",
 		"gemini": {

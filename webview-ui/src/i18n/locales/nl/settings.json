@@ -879,8 +879,8 @@
 		"cacheReadsPrice": "Cache-leesprijs",
 		"cacheWritesPrice": "Cache-schrijfprijs",
 		"enableStreaming": "Streaming inschakelen",
-		"enableR1Format": "R1-modelparameters inschakelen",
-		"enableR1FormatTips": "Moet ingeschakeld zijn bij gebruik van R1-modellen zoals QWQ om 400-fouten te voorkomen",
+		"enableR1Format": "Redeneermodel-formaat inschakelen",
+		"enableR1FormatTips": "Inschakelen voor redeneer-/denkmodellen (DeepSeek R1, Kimi-K2, QWQ, enz.) om het responsformaat correct te verwerken. Vereist voor modellen op NVIDIA NIM en andere OpenAI-compatibele providers.",
 		"useAzure": "Azure gebruiken",
 		"azureApiVersion": "Azure API-versie instellen",
 		"gemini": {

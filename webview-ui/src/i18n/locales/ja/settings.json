@@ -879,8 +879,8 @@
 		"cacheReadsPrice": "キャッシュ読み取り価格",
 		"cacheWritesPrice": "キャッシュ書き込み価格",
 		"enableStreaming": "ストリーミングを有効化",
-		"enableR1Format": "R1モデルパラメータを有効にする",
-		"enableR1FormatTips": "QWQなどのR1モデルを使用する際には、有効にする必要があります。400エラーを防ぐために",
+		"enableR1Format": "推論モデルフォーマットを有効にする",
+		"enableR1FormatTips": "推論/思考モデル（DeepSeek R1、Kimi-K2、QWQ など）のレスポンスフォーマットを正しく処理するために有効にしてください。NVIDIA NIM およびその他の OpenAI 互換プロバイダーのモデルに必要です。",
 		"useAzure": "Azureを使用",
 		"azureApiVersion": "Azure APIバージョンを設定",
 		"gemini": {

@@ -879,8 +879,8 @@
 		"cacheReadsPrice": "Önbellek okuma fiyatı",
 		"cacheWritesPrice": "Önbellek yazma fiyatı",
 		"enableStreaming": "Akışı etkinleştir",
-		"enableR1Format": "R1 model parametrelerini etkinleştir",
-		"enableR1FormatTips": "QWQ gibi R1 modelleri kullanıldığında etkinleştirilmelidir, 400 hatası alınmaması için",
+		"enableR1Format": "Akıl yürütme modeli formatını etkinleştir",
+		"enableR1FormatTips": "Yanıt formatını doğru şekilde işlemek için akıl yürütme/düşünme modelleri (DeepSeek R1, Kimi-K2, QWQ, vb.) için etkinleştirin. NVIDIA NIM ve diğer OpenAI uyumlu sağlayıcılardaki modeller için gereklidir.",
 		"useAzure": "Azure kullan",
 		"azureApiVersion": "Azure API sürümünü ayarla",
 		"gemini": {

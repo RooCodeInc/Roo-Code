@@ -908,8 +908,8 @@
 		"cacheReadsPrice": "Harga cache reads",
 		"cacheWritesPrice": "Harga cache writes",
 		"enableStreaming": "Aktifkan streaming",
-		"enableR1Format": "Aktifkan parameter model R1",
-		"enableR1FormatTips": "Harus diaktifkan saat menggunakan model R1 seperti QWQ untuk mencegah error 400",
+		"enableR1Format": "Aktifkan format model reasoning",
+		"enableR1FormatTips": "Aktifkan untuk model reasoning/thinking (DeepSeek R1, Kimi-K2, QWQ, dll.) untuk menangani format respons dengan benar. Diperlukan untuk model di NVIDIA NIM dan penyedia lain yang kompatibel dengan OpenAI.",
 		"useAzure": "Gunakan Azure",
 		"azureApiVersion": "Atur versi API Azure",
 		"gemini": {

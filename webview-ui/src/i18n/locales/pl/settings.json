@@ -879,8 +879,8 @@
 		"cacheReadsPrice": "Cena odczytów bufora",
 		"cacheWritesPrice": "Cena zapisów bufora",
 		"enableStreaming": "Włącz strumieniowanie",
-		"enableR1Format": "Włącz parametry modelu R1",
-		"enableR1FormatTips": "Należy włączyć podczas korzystania z modeli R1, takich jak QWQ, aby uniknąć błędu 400",
+		"enableR1Format": "Włącz format modelu rozumowania",
+		"enableR1FormatTips": "Włącz dla modeli rozumowania/thinking (DeepSeek R1, Kimi-K2, QWQ, itp.) aby prawidłowo obsługiwać format odpowiedzi. Wymagane dla modeli na NVIDIA NIM i innych dostawcach zgodnych z OpenAI.",
 		"useAzure": "Użyj Azure",
 		"azureApiVersion": "Ustaw wersję API Azure",
 		"gemini": {
