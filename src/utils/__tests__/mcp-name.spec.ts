@@ -250,6 +250,22 @@ describe("mcp-name utilities", () => {
 			expect(parseMcpToolName("mcp--")).toBeNull()
 			expect(parseMcpToolName("mcp--server")).toBeNull()
 		})
+
+		it("should preserve triple underscores in tool names (MCP aggregator format)", () => {
+			// MCP aggregators like 1mcp use triple underscores to separate upstream server and tool names
+			expect(parseMcpToolName("mcp--1mcp--playwright___browser_navigate")).toEqual({
+				serverName: "1mcp",
+				toolName: "playwright___browser_navigate",
+			})
+		})
+
+		it("should preserve triple underscores when model converts separators", () => {
+			// Model converts -- to __, but triple underscores should be preserved
+			expect(parseMcpToolName("mcp__1mcp__playwright___browser_navigate")).toEqual({
+				serverName: "1mcp",
+				toolName: "playwright___browser_navigate",
+			})
+		})
 	})
 
 	describe("normalizeMcpToolName", () => {
@@ -277,6 +293,26 @@ describe("mcp-name utilities", () => {
 			// Model outputs: mcp__server__get_user_profile (hyphens converted to underscores)
 			// Normalized: mcp--server--get_user_profile
 			expect(normalizeMcpToolName("mcp__server__get_user_profile")).toBe("mcp--server--get_user_profile")
+		})
+
+		it("should preserve triple underscores in tool names (MCP aggregator format)", () => {
+			// MCP aggregators like 1mcp use triple underscores to separate upstream server and tool names
+			// e.g., playwright___browser_navigate means "browser_navigate" tool from "playwright" upstream server
+			expect(normalizeMcpToolName("mcp__1mcp__playwright___browser_navigate")).toBe(
+				"mcp--1mcp--playwright___browser_navigate",
+			)
+		})
+
+		it("should preserve multiple triple underscore segments", () => {
+			// Tool name with multiple triple underscore segments
+			expect(normalizeMcpToolName("mcp__aggregator__server___tool___subtool")).toBe(
+				"mcp--aggregator--server___tool___subtool",
+			)
+		})
+
+		it("should handle quadruple underscores correctly", () => {
+			// Quadruple underscores should remain intact (not treated as separator)
+			expect(normalizeMcpToolName("mcp__server__tool____name")).toBe("mcp--server--tool____name")
 		})
 	})
 
@@ -425,6 +461,33 @@ describe("mcp-name utilities", () => {
 
 			// Use fuzzy matching to find the original tool
 			expect(toolNamesMatch("get-user-profile", parsed!.toolName)).toBe(true)
+		})
+
+		it("should handle MCP aggregator tool names with triple underscores (Issue #10858)", () => {
+			// This test covers the bug reported in Issue #10858
+			// MCP aggregators like 1mcp use triple underscores as separators
+			// e.g., playwright___browser_navigate
+
+			// Step 1: Build the tool name with an MCP aggregator (using a letter-prefixed server name)
+			const builtName = buildMcpToolName("aggregator", "playwright___browser_navigate")
+			expect(builtName).toBe("mcp--aggregator--playwright___browser_navigate")
+
+			// Step 2: Model converts -- separators to __ (but preserves ___ in tool name)
+			const modelOutput = "mcp__aggregator__playwright___browser_navigate"
+
+			// Step 3: Normalize - should preserve the triple underscores in tool name
+			const normalizedName = normalizeMcpToolName(modelOutput)
+			expect(normalizedName).toBe("mcp--aggregator--playwright___browser_navigate")
+
+			// Step 4: Parse - tool name should have triple underscores preserved
+			const parsed = parseMcpToolName(normalizedName)
+			expect(parsed).toEqual({
+				serverName: "aggregator",
+				toolName: "playwright___browser_navigate",
+			})
+
+			// The tool name should match exactly what the MCP server expects
+			expect(parsed!.toolName).toBe("playwright___browser_navigate")
 		})
 	})
 
