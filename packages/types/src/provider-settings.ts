@@ -50,6 +50,7 @@ export const dynamicProviders = [
 	"unbound",
 	"roo",
 	"chutes",
+	"keywordsai",
 ] as const
 
 export type DynamicProvider = (typeof dynamicProviders)[number]
@@ -140,6 +141,7 @@ export const providerNames = [
 	"vertex",
 	"xai",
 	"zai",
+	"keywordsai",
 ] as const
 
 export const providerNamesSchema = z.enum(providerNames)
@@ -417,6 +419,12 @@ const basetenSchema = apiModelIdProviderModelSchema.extend({
 	basetenApiKey: z.string().optional(),
 })
 
+const keywordsaiSchema = apiModelIdProviderModelSchema.extend({
+	keywordsaiApiKey: z.string().optional(),
+	keywordsaiBaseUrl: z.string().optional(),
+	keywordsaiEnableLogging: z.boolean().optional(),
+})
+
 const defaultSchema = z.object({
 	apiProvider: z.undefined(),
 })
@@ -458,6 +466,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
+	keywordsaiSchema.merge(z.object({ apiProvider: z.literal("keywordsai") })),
 	defaultSchema,
 ])
 
@@ -499,6 +508,7 @@ export const providerSettingsSchema = z.object({
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
 	...vercelAiGatewaySchema.shape,
+	...keywordsaiSchema.shape,
 	...codebaseIndexProviderSchema.shape,
 })
 
@@ -584,6 +594,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	"io-intelligence": "ioIntelligenceModelId",
 	roo: "apiModelId",
 	"vercel-ai-gateway": "vercelAiGatewayModelId",
+	keywordsai: "apiModelId",
 }
 
 /**
@@ -720,6 +731,7 @@ export const MODELS_BY_PROVIDER: Record<
 	deepinfra: { id: "deepinfra", label: "DeepInfra", models: [] },
 	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
 	chutes: { id: "chutes", label: "Chutes AI", models: [] },
+	keywordsai: { id: "keywordsai", label: "Keywords AI", models: [] },
 
 	// Local providers; models discovered from localhost endpoints.
 	lmstudio: { id: "lmstudio", label: "LM Studio", models: [] },
