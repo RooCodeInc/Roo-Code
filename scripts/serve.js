@@ -8,14 +8,15 @@
  *   brew install code-server
  *
  * Usage:
- *   pnpm serve
+ *   pnpm serve              # Build, install, and start code-server
+ *   pnpm serve:rebuild      # Only rebuild and reinstall the extension
  *
  * The script will:
  *   1. Check if code-server is installed
  *   2. Build the vsix (pnpm vsix)
  *   3. Install the vsix into code-server
  *   4. Configure user settings (disable welcome tab)
- *   5. Start code-server on http://127.0.0.1:8080
+ *   5. Start code-server on http://127.0.0.1:8080 (unless --rebuild-only)
  *
  * Your password is stored in ~/.config/code-server/config.yaml
  */
@@ -34,6 +35,9 @@ const RED = "\x1b[31m"
 
 // Build vsix to a fixed path in temp directory
 const VSIX_PATH = path.join(os.tmpdir(), "roo-code-serve.vsix")
+
+// Parse command line flags
+const rebuildOnly = process.argv.includes("--rebuild-only")
 
 function log(message) {
 	console.log(`${CYAN}[serve]${RESET} ${message}`)
@@ -93,7 +97,8 @@ function ensureUserSettings() {
 }
 
 async function main() {
-	console.log(`\n${BOLD}🚀 Roo Code - code-server Development Server${RESET}\n`)
+	const title = rebuildOnly ? "Roo Code - Rebuild Extension" : "Roo Code - code-server Development Server"
+	console.log(`\n${BOLD}🚀 ${title}${RESET}\n`)
 
 	// Step 1: Check if code-server is installed
 	log("Checking for code-server...")
@@ -129,6 +134,14 @@ async function main() {
 	log("Configuring user settings...")
 	ensureUserSettings()
 	logSuccess("User settings configured (welcome tab disabled)")
+
+	// If rebuild-only mode, exit here
+	if (rebuildOnly) {
+		console.log(`\n${GREEN}✓ Extension rebuilt and installed.${RESET}`)
+		console.log(`  Reload the code-server window to pick up changes.`)
+		console.log(`  (Cmd+Shift+P → "Developer: Reload Window")\n`)
+		return
+	}
 
 	// Step 5: Start code-server
 	const cwd = process.cwd()
