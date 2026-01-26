@@ -9,9 +9,11 @@ import { ApiMessage } from "../task-persistence/apiMessages"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
+import { RooIgnoreController } from "../ignore/RooIgnoreController"
 
 // Re-export folded file context utilities
-export { generateFoldedFileContext } from "./foldedFileContext"
+import { generateFoldedFileContext } from "./foldedFileContext"
+export { generateFoldedFileContext }
 export type { FoldedFileContextResult, FoldedFileContextOptions } from "./foldedFileContext"
 
 export const MIN_CONDENSE_THRESHOLD = 5 // Minimum percentage of context window to trigger condensing
@@ -153,7 +155,9 @@ export type SummarizeResponse = {
  * @param {string} customCondensingPrompt - Optional custom prompt to use for condensing
  * @param {ApiHandlerCreateMessageMetadata} metadata - Optional metadata to pass to createMessage (tools, taskId, etc.)
  * @param {string} environmentDetails - Optional environment details string to include in the summary (only used when isAutomaticTrigger=true)
- * @param {string[]} foldedFileContextSections - Optional array of folded file context sections (each file in its own <system-reminder> block)
+ * @param {string[]} filesReadByRoo - Optional array of file paths read by Roo during the task (will be folded via tree-sitter)
+ * @param {string} cwd - Optional current working directory for resolving file paths (required if filesReadByRoo is provided)
+ * @param {RooIgnoreController} rooIgnoreController - Optional controller for file access validation
  * @returns {SummarizeResponse} - The result of the summarization operation (see above)
  */
 export async function summarizeConversation(
@@ -165,7 +169,9 @@ export async function summarizeConversation(
 	customCondensingPrompt?: string,
 	metadata?: ApiHandlerCreateMessageMetadata,
 	environmentDetails?: string,
-	foldedFileContextSections?: string[],
+	filesReadByRoo?: string[],
+	cwd?: string,
+	rooIgnoreController?: RooIgnoreController,
 ): Promise<SummarizeResponse> {
 	TelemetryService.instance.captureContextCondensed(
 		taskId,
@@ -308,16 +314,27 @@ ${commandBlocks}
 		})
 	}
 
-	// Add folded file context (smart code folding) if present
+	// Generate and add folded file context (smart code folding) if file paths are provided
 	// Each file gets its own <system-reminder> block as a separate content block
-	if (foldedFileContextSections && foldedFileContextSections.length > 0) {
-		for (const section of foldedFileContextSections) {
-			if (section.trim()) {
-				summaryContent.push({
-					type: "text",
-					text: section,
-				})
+	if (filesReadByRoo && filesReadByRoo.length > 0 && cwd) {
+		try {
+			const foldedResult = await generateFoldedFileContext(filesReadByRoo, {
+				cwd,
+				rooIgnoreController,
+			})
+			if (foldedResult.sections.length > 0) {
+				for (const section of foldedResult.sections) {
+					if (section.trim()) {
+						summaryContent.push({
+							type: "text",
+							text: section,
+						})
+					}
+				}
 			}
+		} catch (error) {
+			console.error("[summarizeConversation] Failed to generate folded file context:", error)
+			// Continue without folded context - non-critical failure
 		}
 	}
 

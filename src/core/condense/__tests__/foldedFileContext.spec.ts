@@ -11,8 +11,19 @@ vi.mock("../../../services/tree-sitter", () => ({
 	parseSourceCodeDefinitionsForFile: vi.fn(),
 }))
 
+// Mock generateFoldedFileContext for summarizeConversation tests
+vi.mock("../foldedFileContext", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../foldedFileContext")>()
+	return {
+		...actual,
+		generateFoldedFileContext: vi.fn().mockImplementation(actual.generateFoldedFileContext),
+	}
+})
+
 import { generateFoldedFileContext } from "../foldedFileContext"
 import { parseSourceCodeDefinitionsForFile } from "../../../services/tree-sitter"
+
+const mockedGenerateFoldedFileContext = vi.mocked(generateFoldedFileContext)
 
 const mockedParseSourceCodeDefinitions = vi.mocked(parseSourceCodeDefinitionsForFile)
 
@@ -262,8 +273,8 @@ describe("foldedFileContext", () => {
 				{ role: "user", content: "Seventh message" },
 			]
 
-			// Folded file context sections - each file in its own <system-reminder> block
-			const foldedFileContextSections = [
+			// Mock generateFoldedFileContext to return the expected folded sections
+			const mockFoldedSections = [
 				`<system-reminder>
 ## File Context: src/user.ts
 1--5 | export interface User
@@ -276,6 +287,17 @@ describe("foldedFileContext", () => {
 </system-reminder>`,
 			]
 
+			mockedGenerateFoldedFileContext.mockResolvedValue({
+				content: mockFoldedSections.join("\n"),
+				sections: mockFoldedSections,
+				filesProcessed: 2,
+				filesSkipped: 0,
+				characterCount: mockFoldedSections.join("\n").length,
+			})
+
+			const filesReadByRoo = ["src/user.ts", "src/api.ts"]
+			const cwd = "/test/project"
+
 			const result = await summarizeConversation(
 				messages,
 				mockApiHandler,
@@ -285,8 +307,16 @@ describe("foldedFileContext", () => {
 				undefined, // customCondensingPrompt
 				undefined, // metadata
 				undefined, // environmentDetails
-				foldedFileContextSections, // Array of sections, each file in its own block
+				filesReadByRoo,
+				cwd,
+				undefined, // rooIgnoreController
 			)
+
+			// Verify generateFoldedFileContext was called with the right arguments
+			expect(mockedGenerateFoldedFileContext).toHaveBeenCalledWith(filesReadByRoo, {
+				cwd,
+				rooIgnoreController: undefined,
+			})
 
 			// Verify the summary was created
 			expect(result.summary).toBeDefined()
@@ -318,7 +348,7 @@ describe("foldedFileContext", () => {
 			expect(apiFileBlock.text).toContain("fetchData")
 		})
 
-		it("should not include file context section when foldedFileContextSections is empty", async () => {
+		it("should not include file context section when filesReadByRoo is empty", async () => {
 			const { summarizeConversation } = await import("../index")
 
 			const mockApiHandler = new MockApiHandler()
@@ -334,6 +364,9 @@ describe("foldedFileContext", () => {
 				{ role: "user", content: "Seventh message" },
 			]
 
+			// Reset the mock to ensure clean state
+			mockedGenerateFoldedFileContext.mockClear()
+
 			const result = await summarizeConversation(
 				messages,
 				mockApiHandler,
@@ -343,8 +376,13 @@ describe("foldedFileContext", () => {
 				undefined, // customCondensingPrompt
 				undefined, // metadata
 				undefined, // environmentDetails
-				[], // Empty foldedFileContextSections array
+				[], // Empty filesReadByRoo array
+				"/test/project",
+				undefined, // rooIgnoreController
 			)
+
+			// generateFoldedFileContext should NOT be called when filesReadByRoo is empty
+			expect(mockedGenerateFoldedFileContext).not.toHaveBeenCalled()
 
 			// Find the summary message
 			const summaryMessage = result.messages.find((msg: any) => msg.isSummary)
