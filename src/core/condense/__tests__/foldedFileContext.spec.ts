@@ -298,19 +298,15 @@ describe("foldedFileContext", () => {
 			const filesReadByRoo = ["src/user.ts", "src/api.ts"]
 			const cwd = "/test/project"
 
-			const result = await summarizeConversation(
+			const result = await summarizeConversation({
 				messages,
-				mockApiHandler,
-				"System prompt",
+				apiHandler: mockApiHandler,
+				systemPrompt: "System prompt",
 				taskId,
-				false,
-				undefined, // customCondensingPrompt
-				undefined, // metadata
-				undefined, // environmentDetails
+				isAutomaticTrigger: false,
 				filesReadByRoo,
 				cwd,
-				undefined, // rooIgnoreController
-			)
+			})
 
 			// Verify generateFoldedFileContext was called with the right arguments
 			expect(mockedGenerateFoldedFileContext).toHaveBeenCalledWith(filesReadByRoo, {
@@ -367,19 +363,15 @@ describe("foldedFileContext", () => {
 			// Reset the mock to ensure clean state
 			mockedGenerateFoldedFileContext.mockClear()
 
-			const result = await summarizeConversation(
+			const result = await summarizeConversation({
 				messages,
-				mockApiHandler,
-				"System prompt",
+				apiHandler: mockApiHandler,
+				systemPrompt: "System prompt",
 				taskId,
-				false,
-				undefined, // customCondensingPrompt
-				undefined, // metadata
-				undefined, // environmentDetails
-				[], // Empty filesReadByRoo array
-				"/test/project",
-				undefined, // rooIgnoreController
-			)
+				isAutomaticTrigger: false,
+				filesReadByRoo: [],
+				cwd: "/test/project",
+			})
 
 			// generateFoldedFileContext should NOT be called when filesReadByRoo is empty
 			expect(mockedGenerateFoldedFileContext).not.toHaveBeenCalled()

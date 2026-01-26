@@ -307,19 +307,19 @@ export async function manageContext({
 		const contextPercent = (100 * prevContextTokens) / contextWindow
 		if (contextPercent >= effectiveThreshold || prevContextTokens > allowedTokens) {
 			// Attempt to intelligently condense the context
-			const result = await summarizeConversation(
+			const result = await summarizeConversation({
 				messages,
 				apiHandler,
 				systemPrompt,
 				taskId,
-				true, // automatic trigger
+				isAutomaticTrigger: true,
 				customCondensingPrompt,
 				metadata,
 				environmentDetails,
 				filesReadByRoo,
 				cwd,
 				rooIgnoreController,
-			)
+			})
 			if (result.error) {
 				error = result.error
 				errorDetails = result.errorDetails

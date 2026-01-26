@@ -10,10 +10,8 @@ import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
-
-// Re-export folded file context utilities
 import { generateFoldedFileContext } from "./foldedFileContext"
-export { generateFoldedFileContext }
+
 export type { FoldedFileContextResult, FoldedFileContextOptions } from "./foldedFileContext"
 
 export const MIN_CONDENSE_THRESHOLD = 5 // Minimum percentage of context window to trigger condensing
@@ -129,6 +127,20 @@ export type SummarizeResponse = {
 	condenseId?: string // The unique ID of the created Summary message, for linking to condense_context clineMessage
 }
 
+export type SummarizeConversationOptions = {
+	messages: ApiMessage[]
+	apiHandler: ApiHandler
+	systemPrompt: string
+	taskId: string
+	isAutomaticTrigger?: boolean
+	customCondensingPrompt?: string
+	metadata?: ApiHandlerCreateMessageMetadata
+	environmentDetails?: string
+	filesReadByRoo?: string[]
+	cwd?: string
+	rooIgnoreController?: RooIgnoreController
+}
+
 /**
  * Summarizes the conversation messages using an LLM call.
  *
@@ -146,33 +158,21 @@ export type SummarizeResponse = {
  * - For MANUAL condensing (isAutomaticTrigger=false): Environment details are NOT included
  *   because fresh environment details will be injected on the very next turn via
  *   getEnvironmentDetails() in recursivelyMakeClineRequests().
- *
- * @param {ApiMessage[]} messages - The conversation messages
- * @param {ApiHandler} apiHandler - The API handler to use for summarization and token counting
- * @param {string} systemPrompt - The system prompt for API requests (fallback if customCondensingPrompt not provided)
- * @param {string} taskId - The task ID for the conversation, used for telemetry
- * @param {boolean} isAutomaticTrigger - Whether the summarization is triggered automatically
- * @param {string} customCondensingPrompt - Optional custom prompt to use for condensing
- * @param {ApiHandlerCreateMessageMetadata} metadata - Optional metadata to pass to createMessage (tools, taskId, etc.)
- * @param {string} environmentDetails - Optional environment details string to include in the summary (only used when isAutomaticTrigger=true)
- * @param {string[]} filesReadByRoo - Optional array of file paths read by Roo during the task (will be folded via tree-sitter)
- * @param {string} cwd - Optional current working directory for resolving file paths (required if filesReadByRoo is provided)
- * @param {RooIgnoreController} rooIgnoreController - Optional controller for file access validation
- * @returns {SummarizeResponse} - The result of the summarization operation (see above)
  */
-export async function summarizeConversation(
-	messages: ApiMessage[],
-	apiHandler: ApiHandler,
-	systemPrompt: string,
-	taskId: string,
-	isAutomaticTrigger?: boolean,
-	customCondensingPrompt?: string,
-	metadata?: ApiHandlerCreateMessageMetadata,
-	environmentDetails?: string,
-	filesReadByRoo?: string[],
-	cwd?: string,
-	rooIgnoreController?: RooIgnoreController,
-): Promise<SummarizeResponse> {
+export async function summarizeConversation(options: SummarizeConversationOptions): Promise<SummarizeResponse> {
+	const {
+		messages,
+		apiHandler,
+		systemPrompt,
+		taskId,
+		isAutomaticTrigger,
+		customCondensingPrompt,
+		metadata,
+		environmentDetails,
+		filesReadByRoo,
+		cwd,
+		rooIgnoreController,
+	} = options
 	TelemetryService.instance.captureContextCondensed(
 		taskId,
 		isAutomaticTrigger ?? false,

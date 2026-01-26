@@ -1573,6 +1573,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
+	private async getFilesReadByRooSafely(context: string): Promise<string[] | undefined> {
+		try {
+			return await this.fileContextTracker.getFilesReadByRoo()
+		} catch (error) {
+			console.error(`[Task#${context}] Failed to get files read by Roo:`, error)
+			return undefined
+		}
+	}
+
 	public async condenseContext(): Promise<void> {
 		// CRITICAL: Flush any pending tool results before condensing
 		// to ensure tool_use/tool_result pairs are complete in history
@@ -1623,14 +1632,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Generate environment details to include in the condensed summary
 		const environmentDetails = await getEnvironmentDetails(this, true)
 
-		// Get files read by Roo for code folding - the actual folding happens inside summarizeConversation()
-		let filesReadByRoo: string[] | undefined
-		try {
-			filesReadByRoo = await this.fileContextTracker.getFilesReadByRoo()
-		} catch (error) {
-			console.error("[Task#condenseContext] Failed to get files read by Roo:", error)
-			// Continue without file context - it's not critical
-		}
+		const filesReadByRoo = await this.getFilesReadByRooSafely("condenseContext")
 
 		const {
 			messages,
@@ -1640,19 +1642,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			error,
 			errorDetails,
 			condenseId,
-		} = await summarizeConversation(
-			this.apiConversationHistory,
-			this.api, // Main API handler (fallback)
-			systemPrompt, // Default summarization prompt (fallback)
-			this.taskId,
-			false, // manual trigger
-			customCondensingPrompt, // User's custom prompt
-			metadata, // Pass metadata with tools
-			environmentDetails, // Include environment details in summary
-			filesReadByRoo, // Files to fold - folding happens inside summarizeConversation
-			this.cwd,
-			this.rooIgnoreController,
-		)
+		} = await summarizeConversation({
+			messages: this.apiConversationHistory,
+			apiHandler: this.api,
+			systemPrompt,
+			taskId: this.taskId,
+			isAutomaticTrigger: false,
+			customCondensingPrompt,
+			metadata,
+			environmentDetails,
+			filesReadByRoo,
+			cwd: this.cwd,
+			rooIgnoreController: this.rooIgnoreController,
+		})
 		if (error) {
 			await this.say(
 				"condense_context_error",
@@ -4052,16 +4054,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				: undefined
 
 			// Get files read by Roo for code folding - only when context management will run
-			// The actual folding will happen inside summarizeConversation() for cleaner architecture
-			let contextMgmtFilesReadByRoo: string[] | undefined
-			if (contextManagementWillRun && autoCondenseContext) {
-				try {
-					contextMgmtFilesReadByRoo = await this.fileContextTracker.getFilesReadByRoo()
-				} catch (error) {
-					console.error("[Task#attemptApiRequest] Failed to get files read by Roo:", error)
-					// Continue without file context - it's not critical
-				}
-			}
+			const contextMgmtFilesReadByRoo =
+				contextManagementWillRun && autoCondenseContext
+					? await this.getFilesReadByRooSafely("attemptApiRequest")
+					: undefined
 
 			try {
 				const truncateResult = await manageContext({

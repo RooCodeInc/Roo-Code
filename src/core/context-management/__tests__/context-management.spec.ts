@@ -612,19 +612,13 @@ describe("Context Management", () => {
 			})
 
 			// Verify summarizeConversation was called with the right parameters
-			expect(summarizeSpy).toHaveBeenCalledWith(
-				messagesWithSmallContent,
-				mockApiHandler,
-				"System prompt",
+			expect(summarizeSpy).toHaveBeenCalledWith({
+				messages: messagesWithSmallContent,
+				apiHandler: mockApiHandler,
+				systemPrompt: "System prompt",
 				taskId,
-				true, // isAutomaticTrigger
-				undefined, // customCondensingPrompt
-				undefined, // metadata
-				undefined, // environmentDetails
-				undefined, // filesReadByRoo
-				undefined, // cwd
-				undefined, // rooIgnoreController
-			)
+				isAutomaticTrigger: true,
+			})
 
 			// Verify the result contains the summary information
 			expect(result).toMatchObject({
@@ -790,19 +784,13 @@ describe("Context Management", () => {
 			})
 
 			// Verify summarizeConversation was called with the right parameters
-			expect(summarizeSpy).toHaveBeenCalledWith(
-				messagesWithSmallContent,
-				mockApiHandler,
-				"System prompt",
+			expect(summarizeSpy).toHaveBeenCalledWith({
+				messages: messagesWithSmallContent,
+				apiHandler: mockApiHandler,
+				systemPrompt: "System prompt",
 				taskId,
-				true, // isAutomaticTrigger
-				undefined, // customCondensingPrompt
-				undefined, // metadata
-				undefined, // environmentDetails
-				undefined, // filesReadByRoo
-				undefined, // cwd
-				undefined, // rooIgnoreController
-			)
+				isAutomaticTrigger: true,
+			})
 
 			// Verify the result contains the summary information
 			expect(result).toMatchObject({
@@ -928,19 +916,16 @@ describe("Context Management", () => {
 			})
 
 			// Verify summarizeConversation was called with filesReadByRoo, cwd, and rooIgnoreController
-			expect(summarizeSpy).toHaveBeenCalledWith(
-				messagesWithSmallContent,
-				mockApiHandler,
-				"System prompt",
+			expect(summarizeSpy).toHaveBeenCalledWith({
+				messages: messagesWithSmallContent,
+				apiHandler: mockApiHandler,
+				systemPrompt: "System prompt",
 				taskId,
-				true, // isAutomaticTrigger
-				undefined, // customCondensingPrompt
-				undefined, // metadata
-				undefined, // environmentDetails
+				isAutomaticTrigger: true,
 				filesReadByRoo,
 				cwd,
-				mockRooIgnoreController,
-			)
+				rooIgnoreController: mockRooIgnoreController,
+			})
 
 			// Verify the result contains the summary information
 			expect(result).toMatchObject({
@@ -996,19 +981,13 @@ describe("Context Management", () => {
 			})
 
 			// Verify summarizeConversation was called with undefined parameters
-			expect(summarizeSpy).toHaveBeenCalledWith(
-				messagesWithSmallContent,
-				mockApiHandler,
-				"System prompt",
+			expect(summarizeSpy).toHaveBeenCalledWith({
+				messages: messagesWithSmallContent,
+				apiHandler: mockApiHandler,
+				systemPrompt: "System prompt",
 				taskId,
-				true, // isAutomaticTrigger
-				undefined, // customCondensingPrompt
-				undefined, // metadata
-				undefined, // environmentDetails
-				undefined, // filesReadByRoo should be undefined when not provided
-				undefined, // cwd should be undefined when not provided
-				undefined, // rooIgnoreController should be undefined when not provided
-			)
+				isAutomaticTrigger: true,
+			})
 
 			// Verify the result
 			expect(result).toMatchObject({
@@ -1063,19 +1042,15 @@ describe("Context Management", () => {
 			})
 
 			// Verify summarizeConversation was called with empty array
-			expect(summarizeSpy).toHaveBeenCalledWith(
-				messagesWithSmallContent,
-				mockApiHandler,
-				"System prompt",
+			expect(summarizeSpy).toHaveBeenCalledWith({
+				messages: messagesWithSmallContent,
+				apiHandler: mockApiHandler,
+				systemPrompt: "System prompt",
 				taskId,
-				true, // isAutomaticTrigger
-				undefined, // customCondensingPrompt
-				undefined, // metadata
-				undefined, // environmentDetails
-				[], // Empty array should be passed through
-				"/test/project",
-				undefined, // rooIgnoreController
-			)
+				isAutomaticTrigger: true,
+				filesReadByRoo: [],
+				cwd: "/test/project",
+			})
 
 			// Clean up
 			summarizeSpy.mockRestore()
