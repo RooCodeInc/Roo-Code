@@ -219,7 +219,7 @@ describe("OpenRouterHandler", () => {
 	})
 
 	describe("createMessage", () => {
-		it("generates correct stream chunks", async () => {
+		it("generates correct stream chunks with basic usage and totalCost", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 
 			// Create mock async iterator for fullStream
@@ -235,6 +235,7 @@ describe("OpenRouterHandler", () => {
 				fullStream: mockFullStream,
 				usage: mockUsage,
 				totalUsage: mockTotalUsage,
+				providerMetadata: Promise.resolve(undefined),
 			})
 
 			const systemPrompt = "test system prompt"
@@ -250,7 +251,16 @@ describe("OpenRouterHandler", () => {
 			// Verify stream chunks - should have text and usage chunks
 			expect(chunks).toHaveLength(2)
 			expect(chunks[0]).toEqual({ type: "text", text: "test response" })
-			expect(chunks[1]).toEqual({ type: "usage", inputTokens: 10, outputTokens: 20 })
+			// Usage chunk should include totalCost calculated from model pricing
+			// Model: anthropic/claude-sonnet-4 with inputPrice: 3, outputPrice: 15 (per million)
+			// Cost = (10 * 3 / 1_000_000) + (20 * 15 / 1_000_000) = 0.00003 + 0.0003 = 0.00033
+			expect(chunks[1]).toMatchObject({
+				type: "usage",
+				inputTokens: 10,
+				outputTokens: 20,
+				totalCost: expect.any(Number),
+			})
+			expect((chunks[1] as any).totalCost).toBeCloseTo(0.00033, 6)
 
 			// Verify streamText was called with correct parameters
 			expect(mockStreamText).toHaveBeenCalledWith(
@@ -261,6 +271,155 @@ describe("OpenRouterHandler", () => {
 					temperature: 0,
 				}),
 			)
+		})
+
+		it("includes cache read tokens in usage when provider metadata contains them", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
+				totalUsage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
+				providerMetadata: Promise.resolve({
+					openrouter: {
+						cachedInputTokens: 30,
+					},
+				}),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+			const chunks = []
+
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 100,
+				outputTokens: 50,
+				cacheReadTokens: 30,
+				totalCost: expect.any(Number),
+			})
+		})
+
+		it("includes reasoning tokens in usage when provider metadata contains them", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 100, outputTokens: 150, totalTokens: 250 }),
+				totalUsage: Promise.resolve({ inputTokens: 100, outputTokens: 150, totalTokens: 250 }),
+				providerMetadata: Promise.resolve({
+					openrouter: {
+						reasoningOutputTokens: 50,
+					},
+				}),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+			const chunks = []
+
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 100,
+				outputTokens: 150,
+				reasoningTokens: 50,
+				totalCost: expect.any(Number),
+			})
+		})
+
+		it("includes all detailed usage metrics when provider metadata contains them", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 200, outputTokens: 100, totalTokens: 300 }),
+				totalUsage: Promise.resolve({ inputTokens: 200, outputTokens: 100, totalTokens: 300 }),
+				providerMetadata: Promise.resolve({
+					openrouter: {
+						cachedInputTokens: 50,
+						cacheCreationInputTokens: 20,
+						reasoningOutputTokens: 30,
+					},
+				}),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+			const chunks = []
+
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 200,
+				outputTokens: 100,
+				cacheReadTokens: 50,
+				cacheWriteTokens: 20,
+				reasoningTokens: 30,
+				totalCost: expect.any(Number),
+			})
+		})
+
+		it("handles experimental_providerMetadata fallback", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
+				totalUsage: Promise.resolve({ inputTokens: 100, outputTokens: 50, totalTokens: 150 }),
+				providerMetadata: Promise.resolve(undefined),
+				experimental_providerMetadata: Promise.resolve({
+					openrouter: {
+						cachedInputTokens: 25,
+					},
+				}),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+			const chunks = []
+
+			for await (const chunk of generator) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 100,
+				outputTokens: 50,
+				cacheReadTokens: 25,
+				totalCost: expect.any(Number),
+			})
 		})
 
 		it("handles reasoning delta chunks", async () => {
@@ -286,6 +445,36 @@ describe("OpenRouterHandler", () => {
 
 			expect(chunks[0]).toEqual({ type: "reasoning", text: "thinking..." })
 			expect(chunks[1]).toEqual({ type: "text", text: "result" })
+		})
+
+		it("accumulates reasoning details for getReasoningDetails()", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			const mockFullStream = (async function* () {
+				yield { type: "reasoning-delta", text: "step 1...", id: "1" }
+				yield { type: "reasoning-delta", text: "step 2...", id: "2" }
+				yield { type: "text-delta", text: "result", id: "3" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+
+			for await (const _ of generator) {
+				// consume all chunks
+			}
+
+			// After streaming, getReasoningDetails should return accumulated reasoning
+			const reasoningDetails = handler.getReasoningDetails()
+			expect(reasoningDetails).toBeDefined()
+			expect(reasoningDetails).toHaveLength(1)
+			expect(reasoningDetails![0].type).toBe("reasoning.text")
+			expect(reasoningDetails![0].text).toBe("step 1...step 2...")
+			expect(reasoningDetails![0].index).toBe(0)
 		})
 
 		it("handles tool call streaming", async () => {
@@ -369,6 +558,16 @@ describe("OpenRouterHandler", () => {
 				error: "OpenRouterError",
 				message: "OpenRouter API Error: API Error",
 			})
+
+			// Verify telemetry was called
+			expect(mockCaptureException).toHaveBeenCalledTimes(1)
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "API Error",
+					provider: "OpenRouter",
+					operation: "createMessage",
+				}),
+			)
 		})
 
 		it("handles stream errors", async () => {
@@ -469,6 +668,16 @@ describe("OpenRouterHandler", () => {
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow(
 				"OpenRouter completion error: API Error",
 			)
+
+			// Verify telemetry was called
+			expect(mockCaptureException).toHaveBeenCalledTimes(1)
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "API Error",
+					provider: "OpenRouter",
+					operation: "completePrompt",
+				}),
+			)
 		})
 
 		it("handles rate limit errors", async () => {
@@ -478,6 +687,16 @@ describe("OpenRouterHandler", () => {
 
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow(
 				"OpenRouter completion error: Rate limit exceeded",
+			)
+
+			// Verify telemetry was called
+			expect(mockCaptureException).toHaveBeenCalledTimes(1)
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Rate limit exceeded",
+					provider: "OpenRouter",
+					operation: "completePrompt",
+				}),
 			)
 		})
 	})
@@ -537,6 +756,87 @@ describe("OpenRouterHandler", () => {
 				apiKey: "test-key",
 				baseURL: "https://openrouter.ai/api/v1",
 			})
+		})
+	})
+
+	describe("getReasoningDetails", () => {
+		it("returns undefined when no reasoning was captured", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			// Stream with no reasoning
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "just text", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+
+			for await (const _ of generator) {
+				// consume all chunks
+			}
+
+			// No reasoning was captured, should return undefined
+			const reasoningDetails = handler.getReasoningDetails()
+			expect(reasoningDetails).toBeUndefined()
+		})
+
+		it("resets reasoning details between requests", async () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			// First request with reasoning
+			const mockFullStream1 = (async function* () {
+				yield { type: "reasoning-delta", text: "first request reasoning", id: "1" }
+				yield { type: "text-delta", text: "result 1", id: "2" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream1,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+			})
+
+			const generator1 = handler.createMessage("test", [{ role: "user", content: "test" }])
+			for await (const _ of generator1) {
+				// consume
+			}
+
+			// Verify first request captured reasoning
+			let reasoningDetails = handler.getReasoningDetails()
+			expect(reasoningDetails).toBeDefined()
+			expect(reasoningDetails![0].text).toBe("first request reasoning")
+
+			// Second request without reasoning
+			const mockFullStream2 = (async function* () {
+				yield { type: "text-delta", text: "result 2", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream2,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+			})
+
+			const generator2 = handler.createMessage("test", [{ role: "user", content: "test" }])
+			for await (const _ of generator2) {
+				// consume
+			}
+
+			// Reasoning details should be reset (undefined since second request had no reasoning)
+			reasoningDetails = handler.getReasoningDetails()
+			expect(reasoningDetails).toBeUndefined()
+		})
+
+		it("returns undefined before any streaming occurs", () => {
+			const handler = new OpenRouterHandler(mockOptions)
+
+			// getReasoningDetails before any createMessage call
+			const reasoningDetails = handler.getReasoningDetails()
+			expect(reasoningDetails).toBeUndefined()
 		})
 	})
 })
