@@ -11,6 +11,7 @@
  *   pnpm serve                    # Build, install, and start code-server on port 9080
  *   pnpm serve -- --port 8080     # Use a custom port
  *   pnpm serve -- --host 0.0.0.0  # Bind to all interfaces (for Docker/remote access)
+ *   pnpm serve -- --auth none     # Disable authentication (password|none)
  *   pnpm serve:rebuild            # Only rebuild and reinstall the extension
  *
  * The script will:
@@ -65,6 +66,16 @@ function getHost() {
 	return DEFAULT_HOST
 }
 const host = getHost()
+
+// Parse --auth argument (optional, passed to code-server: "password" or "none")
+function getAuth() {
+	const authIndex = process.argv.indexOf("--auth")
+	if (authIndex !== -1 && process.argv[authIndex + 1]) {
+		return process.argv[authIndex + 1]
+	}
+	return null
+}
+const auth = getAuth()
 
 function log(message) {
 	console.log(`${CYAN}[serve]${RESET} ${message}`)
@@ -175,28 +186,29 @@ async function main() {
 	console.log(`\n${BOLD}Starting code-server...${RESET}`)
 	console.log(`  Working directory: ${cwd}`)
 	console.log(`  URL: ${CYAN}http://${host}:${port}${RESET}`)
-	console.log(`  Password: ${YELLOW}~/.config/code-server/config.yaml${RESET}`)
+	if (auth === "none") {
+		console.log(`  Auth: ${YELLOW}disabled${RESET}`)
+	} else {
+		console.log(`  Password: ${YELLOW}~/.config/code-server/config.yaml${RESET}`)
+	}
 	console.log(`\n  Press ${BOLD}Ctrl+C${RESET} to stop\n`)
 
 	// Spawn code-server with:
+	// --bind-addr: Address to bind to
+	// --auth: Authentication type (password or none)
 	// --disable-workspace-trust: Skip workspace trust prompts
 	// --disable-getting-started-override: Disable welcome/getting started page
 	// -e: Ignore last opened directory (start fresh)
-	const codeServer = spawn(
-		"code-server",
-		[
-			"--bind-addr",
-			`${host}:${port}`,
-			"--disable-workspace-trust",
-			"--disable-getting-started-override",
-			"-e",
-			cwd,
-		],
-		{
-			stdio: "inherit",
-			cwd: cwd,
-		},
-	)
+	const args = ["--bind-addr", `${host}:${port}`]
+	if (auth) {
+		args.push("--auth", auth)
+	}
+	args.push("--disable-workspace-trust", "--disable-getting-started-override", "-e", cwd)
+
+	const codeServer = spawn("code-server", args, {
+		stdio: "inherit",
+		cwd: cwd,
+	})
 
 	codeServer.on("error", (err) => {
 		logError(`Failed to start code-server: ${err.message}`)
