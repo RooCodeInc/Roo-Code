@@ -1,25 +1,23 @@
 /**
  * Serve script for Roo Code extension development
  *
- * This script builds the extension as a vsix, installs it into code-server,
- * and launches code-server for web-based VS Code testing.
+ * This script manages code-server for web-based VS Code testing.
  *
  * Prerequisites:
  *   brew install code-server
  *
  * Usage:
- *   pnpm serve                    # Build, install, and start code-server on port 9080
+ *   pnpm serve                    # Start code-server on port 9080
  *   pnpm serve -- --port 8080     # Use a custom port
  *   pnpm serve -- --host 0.0.0.0  # Bind to all interfaces (for Docker/remote access)
  *   pnpm serve -- --auth none     # Disable authentication (password|none)
- *   pnpm serve:rebuild            # Only rebuild and reinstall the extension
+ *   pnpm serve:install            # Build and install the extension into code-server
  *
- * The script will:
- *   1. Check if code-server is installed
- *   2. Build the vsix (pnpm vsix)
- *   3. Install the vsix into code-server
- *   4. Configure user settings (disable welcome tab)
- *   5. Start code-server on http://127.0.0.1:9080 (unless --rebuild-only)
+ * Workflow:
+ *   1. Run `pnpm serve:install` to build and install the extension
+ *   2. Run `pnpm serve` to start code-server
+ *   3. After code changes, run `pnpm serve:install` again and reload the window
+ *      (Cmd+Shift+P → "Developer: Reload Window")
  *
  * Your password is stored in ~/.config/code-server/config.yaml
  */
@@ -40,7 +38,7 @@ const RED = "\x1b[31m"
 const VSIX_PATH = path.join(os.tmpdir(), "roo-code-serve.vsix")
 
 // Parse command line flags
-const rebuildOnly = process.argv.includes("--rebuild-only")
+const installOnly = process.argv.includes("--install-only")
 
 // Parse --port argument (default: 9080)
 const DEFAULT_PORT = 9080
@@ -135,10 +133,7 @@ function ensureUserSettings() {
 }
 
 async function main() {
-	const title = rebuildOnly ? "Roo Code - Rebuild Extension" : "Roo Code - code-server Development Server"
-	console.log(`\n${BOLD}🚀 ${title}${RESET}\n`)
-
-	// Step 1: Check if code-server is installed
+	// Check if code-server is installed
 	log("Checking for code-server...")
 	if (!isCodeServerInstalled()) {
 		logError("code-server is not installed")
@@ -149,39 +144,42 @@ async function main() {
 	}
 	logSuccess("code-server found")
 
-	// Step 2: Build vsix to temp directory
-	log(`Building vsix to ${VSIX_PATH}...`)
-	try {
-		execSync(`pnpm vsix -- --out "${VSIX_PATH}"`, { stdio: "inherit" })
-		logSuccess("Build complete")
-	} catch (error) {
-		logError("Build failed")
-		process.exit(1)
-	}
+	// If install-only mode, build and install the extension
+	if (installOnly) {
+		console.log(`\n${BOLD}🔧 Roo Code - Install Extension${RESET}\n`)
 
-	// Step 3: Install extension into code-server
-	log("Installing extension into code-server...")
-	try {
-		execSync(`code-server --install-extension "${VSIX_PATH}"`, { stdio: "inherit" })
-		logSuccess("Extension installed")
-	} catch (error) {
-		logWarning("Extension installation had warnings (this is usually fine)")
-	}
+		// Build vsix to temp directory
+		log(`Building vsix to ${VSIX_PATH}...`)
+		try {
+			execSync(`pnpm vsix -- --out "${VSIX_PATH}"`, { stdio: "inherit" })
+			logSuccess("Build complete")
+		} catch (error) {
+			logError("Build failed")
+			process.exit(1)
+		}
 
-	// Step 4: Configure user settings to disable welcome tab
-	log("Configuring user settings...")
-	ensureUserSettings()
-	logSuccess("User settings configured (welcome tab disabled)")
+		// Install extension into code-server
+		log("Installing extension into code-server...")
+		try {
+			execSync(`code-server --install-extension "${VSIX_PATH}"`, { stdio: "inherit" })
+			logSuccess("Extension installed")
+		} catch (error) {
+			logWarning("Extension installation had warnings (this is usually fine)")
+		}
 
-	// If rebuild-only mode, exit here
-	if (rebuildOnly) {
-		console.log(`\n${GREEN}✓ Extension rebuilt and installed.${RESET}`)
-		console.log(`  Reload the code-server window to pick up changes.`)
+		// Configure user settings to disable welcome tab
+		log("Configuring user settings...")
+		ensureUserSettings()
+		logSuccess("User settings configured (welcome tab disabled)")
+
+		console.log(`\n${GREEN}✓ Extension built and installed.${RESET}`)
+		console.log(`  If code-server is running, reload the window to pick up changes.`)
 		console.log(`  (Cmd+Shift+P → "Developer: Reload Window")\n`)
 		return
 	}
 
-	// Step 5: Start code-server
+	// Default: Start code-server
+	console.log(`\n${BOLD}🚀 Roo Code - code-server Development Server${RESET}\n`)
 	const cwd = process.cwd()
 	console.log(`\n${BOLD}Starting code-server...${RESET}`)
 	console.log(`  Working directory: ${cwd}`)
