@@ -80,27 +80,27 @@ describe("converters", () => {
 			const openAITool: OpenAI.Chat.ChatCompletionTool = {
 				type: "function",
 				function: {
-					name: "read_file",
-					description: "Read files",
+					name: "process_data",
+					description: "Process data with filters",
 					parameters: {
 						type: "object",
 						properties: {
-							files: {
+							items: {
 								type: "array",
 								items: {
 									type: "object",
 									properties: {
-										path: { type: "string" },
-										line_ranges: {
+										name: { type: "string" },
+										tags: {
 											type: ["array", "null"],
-											items: { type: "string", pattern: "^[0-9]+-[0-9]+$" },
+											items: { type: "string" },
 										},
 									},
-									required: ["path", "line_ranges"],
+									required: ["name"],
 								},
 							},
 						},
-						required: ["files"],
+						required: ["items"],
 						additionalProperties: false,
 					},
 				},

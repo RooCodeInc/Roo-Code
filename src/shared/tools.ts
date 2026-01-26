@@ -5,7 +5,6 @@ import type {
 	ToolProgressStatus,
 	ToolGroup,
 	ToolName,
-	FileEntry,
 	BrowserActionParams,
 	GenerateImageParams,
 } from "@roo-code/types"
@@ -66,7 +65,7 @@ export const toolParamNames = [
 	"todos",
 	"prompt",
 	"image",
-	"files", // Native protocol parameter for read_file
+	// read_file parameters (native protocol)
 	"operations", // search_and_replace parameter for multiple operations
 	"patch", // apply_patch parameter
 	"file_path", // search_replace and edit_file parameter
@@ -75,8 +74,15 @@ export const toolParamNames = [
 	"expected_replacements", // edit_file parameter for multiple occurrences
 	"artifact_id", // read_command_output parameter
 	"search", // read_command_output parameter for grep-like search
-	"offset", // read_command_output parameter for pagination
-	"limit", // read_command_output parameter for max bytes to return
+	"offset", // read_command_output and read_file parameter
+	"limit", // read_command_output and read_file parameter
+	// read_file indentation mode parameters
+	"indentation",
+	"anchor_line",
+	"max_levels",
+	"include_siblings",
+	"include_header",
+	"max_lines",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -87,7 +93,7 @@ export type ToolParamName = (typeof toolParamNames)[number]
  */
 export type NativeToolArgs = {
 	access_mcp_resource: { server_name: string; uri: string }
-	read_file: { files: FileEntry[] }
+	read_file: import("@roo-code/types").ReadFileParams
 	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
@@ -165,7 +171,23 @@ export interface ExecuteCommandToolUse extends ToolUse<"execute_command"> {
 
 export interface ReadFileToolUse extends ToolUse<"read_file"> {
 	name: "read_file"
-	params: Partial<Pick<Record<ToolParamName, string>, "args" | "path" | "start_line" | "end_line" | "files">>
+	params: Partial<
+		Pick<
+			Record<ToolParamName, string>,
+			| "args"
+			| "path"
+			| "start_line"
+			| "end_line"
+			| "mode"
+			| "offset"
+			| "limit"
+			| "indentation"
+			| "anchor_line"
+			| "max_levels"
+			| "include_siblings"
+			| "include_header"
+		>
+	>
 }
 
 export interface WriteToFileToolUse extends ToolUse<"write_to_file"> {

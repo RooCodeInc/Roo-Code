@@ -1,6 +1,6 @@
 import { parseJSON } from "partial-json"
 
-import { type ToolName, toolNames, type FileEntry } from "@roo-code/types"
+import { type ToolName, toolNames } from "@roo-code/types"
 import { customToolRegistry } from "@roo-code/core"
 
 import {
@@ -313,43 +313,17 @@ export class NativeToolCallParser {
 		return finalToolUse
 	}
 
-	/**
-	 * Convert raw file entries from API (with line_ranges) to FileEntry objects
-	 * (with lineRanges). Handles multiple formats for compatibility:
-	 *
-	 * New tuple format: { path: string, line_ranges: [[1, 50], [100, 150]] }
-	 * Object format: { path: string, line_ranges: [{ start: 1, end: 50 }] }
-	 * Legacy string format: { path: string, line_ranges: ["1-50"] }
-	 *
-	 * Returns: { path: string, lineRanges: [{ start: 1, end: 50 }] }
-	 */
-	private static convertFileEntries(files: any[]): FileEntry[] {
-		return files.map((file: any) => {
-			const entry: FileEntry = { path: file.path }
-			if (file.line_ranges && Array.isArray(file.line_ranges)) {
-				entry.lineRanges = file.line_ranges
-					.map((range: any) => {
-						// Handle tuple format: [start, end]
-						if (Array.isArray(range) && range.length >= 2) {
-							return { start: Number(range[0]), end: Number(range[1]) }
-						}
-						// Handle object format: { start: number, end: number }
-						if (typeof range === "object" && range !== null && "start" in range && "end" in range) {
-							return { start: Number(range.start), end: Number(range.end) }
-						}
-						// Handle legacy string format: "1-50"
-						if (typeof range === "string") {
-							const match = range.match(/^(\d+)-(\d+)$/)
-							if (match) {
-								return { start: parseInt(match[1], 10), end: parseInt(match[2], 10) }
-							}
-						}
-						return null
-					})
-					.filter(Boolean)
+	private static coerceOptionalNumber(value: unknown): number | undefined {
+		if (typeof value === "number" && Number.isFinite(value)) {
+			return value
+		}
+		if (typeof value === "string") {
+			const n = Number(value)
+			if (Number.isFinite(n)) {
+				return n
 			}
-			return entry
-		})
+		}
+		return undefined
 	}
 
 	/**
@@ -380,8 +354,26 @@ export class NativeToolCallParser {
 
 		switch (name) {
 			case "read_file":
-				if (partialArgs.files && Array.isArray(partialArgs.files)) {
-					nativeArgs = { files: this.convertFileEntries(partialArgs.files) }
+				if (partialArgs.path !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+						mode: partialArgs.mode,
+						offset: this.coerceOptionalNumber(partialArgs.offset),
+						limit: this.coerceOptionalNumber(partialArgs.limit),
+						indentation:
+							partialArgs.indentation && typeof partialArgs.indentation === "object"
+								? {
+										anchor_line: this.coerceOptionalNumber(partialArgs.indentation.anchor_line),
+										max_levels: this.coerceOptionalNumber(partialArgs.indentation.max_levels),
+										include_siblings: this.coerceOptionalBoolean(
+											partialArgs.indentation.include_siblings,
+										),
+										include_header: this.coerceOptionalBoolean(
+											partialArgs.indentation.include_header,
+										),
+									}
+								: undefined,
+					}
 				}
 				break
 
@@ -642,13 +634,6 @@ export class NativeToolCallParser {
 			const params: Partial<Record<ToolParamName, string>> = {}
 
 			for (const [key, value] of Object.entries(args)) {
-				// Skip complex parameters that have been migrated to nativeArgs.
-				// For read_file, the 'files' parameter is a FileEntry[] array that can't be
-				// meaningfully stringified. The properly typed data is in nativeArgs instead.
-				if (resolvedName === "read_file" && key === "files") {
-					continue
-				}
-
 				// Validate parameter name
 				if (!toolParamNames.includes(key as ToolParamName) && !customToolRegistry.has(resolvedName)) {
 					console.warn(`Unknown parameter '${key}' for tool '${resolvedName}'`)
@@ -668,8 +653,24 @@ export class NativeToolCallParser {
 
 			switch (resolvedName) {
 				case "read_file":
-					if (args.files && Array.isArray(args.files)) {
-						nativeArgs = { files: this.convertFileEntries(args.files) } as NativeArgsFor<TName>
+					if (args.path !== undefined) {
+						nativeArgs = {
+							path: args.path,
+							mode: args.mode,
+							offset: this.coerceOptionalNumber(args.offset),
+							limit: this.coerceOptionalNumber(args.limit),
+							indentation:
+								args.indentation && typeof args.indentation === "object"
+									? {
+											anchor_line: this.coerceOptionalNumber(args.indentation.anchor_line),
+											max_levels: this.coerceOptionalNumber(args.indentation.max_levels),
+											include_siblings: this.coerceOptionalBoolean(
+												args.indentation.include_siblings,
+											),
+											include_header: this.coerceOptionalBoolean(args.indentation.include_header),
+										}
+									: undefined,
+						} as NativeArgsFor<TName>
 					}
 					break
 
