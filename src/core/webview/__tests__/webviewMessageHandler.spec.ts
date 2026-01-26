@@ -325,6 +325,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				litellm: mockModels,
 				roo: mockModels,
 				chutes: mockModels,
+				firmware: mockModels,
 				ollama: {},
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
@@ -415,6 +416,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				unbound: mockModels,
 				roo: mockModels,
 				chutes: mockModels,
+				firmware: mockModels,
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
@@ -445,6 +447,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockResolvedValueOnce(mockModels) // deepinfra
 			.mockResolvedValueOnce(mockModels) // roo
 			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes
+			.mockResolvedValueOnce(mockModels) // firmware
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -490,6 +493,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 				unbound: {},
 				roo: mockModels,
 				chutes: {},
+				firmware: mockModels,
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
@@ -511,6 +515,7 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			.mockRejectedValueOnce(new Error("DeepInfra API error")) // deepinfra
 			.mockRejectedValueOnce(new Error("Roo API error")) // roo
 			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes
+			.mockRejectedValueOnce(new Error("Firmware API error")) // firmware
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm
 
 		await webviewMessageHandler(mockClineProvider, {
@@ -565,6 +570,13 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 			success: false,
 			error: "Chutes API error",
 			values: { provider: "chutes" },
+		})
+
+		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({
+			type: "singleRouterModelFetchResponse",
+			success: false,
+			error: "Firmware API error",
+			values: { provider: "firmware" },
 		})
 
 		expect(mockClineProvider.postMessageToWebview).toHaveBeenCalledWith({

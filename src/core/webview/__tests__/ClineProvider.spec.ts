@@ -2643,6 +2643,7 @@ describe("ClineProvider - Router Models", () => {
 				unbound: mockModels,
 				roo: mockModels,
 				chutes: mockModels,
+				firmware: mockModels,
 				litellm: mockModels,
 				ollama: {},
 				lmstudio: {},
@@ -2682,6 +2683,7 @@ describe("ClineProvider - Router Models", () => {
 			.mockResolvedValueOnce(mockModels) // deepinfra success
 			.mockResolvedValueOnce(mockModels) // roo success
 			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes fail
+			.mockResolvedValueOnce(mockModels) // firmware success
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm fail
 
 		await messageHandler({ type: "requestRouterModels" })
@@ -2696,6 +2698,7 @@ describe("ClineProvider - Router Models", () => {
 				unbound: {},
 				roo: mockModels,
 				chutes: {},
+				firmware: mockModels,
 				ollama: {},
 				lmstudio: {},
 				litellm: {},
@@ -2817,6 +2820,7 @@ describe("ClineProvider - Router Models", () => {
 				unbound: mockModels,
 				roo: mockModels,
 				chutes: mockModels,
+				firmware: mockModels,
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
