@@ -10,6 +10,7 @@
  * Usage:
  *   pnpm serve                    # Build, install, and start code-server on port 9080
  *   pnpm serve -- --port 8080     # Use a custom port
+ *   pnpm serve -- --host 0.0.0.0  # Bind to all interfaces (for Docker/remote access)
  *   pnpm serve:rebuild            # Only rebuild and reinstall the extension
  *
  * The script will:
@@ -53,6 +54,17 @@ function getPort() {
 	return DEFAULT_PORT
 }
 const port = getPort()
+
+// Parse --host argument (default: 127.0.0.1, use 0.0.0.0 for Docker/remote access)
+const DEFAULT_HOST = "127.0.0.1"
+function getHost() {
+	const hostIndex = process.argv.indexOf("--host")
+	if (hostIndex !== -1 && process.argv[hostIndex + 1]) {
+		return process.argv[hostIndex + 1]
+	}
+	return DEFAULT_HOST
+}
+const host = getHost()
 
 function log(message) {
 	console.log(`${CYAN}[serve]${RESET} ${message}`)
@@ -162,7 +174,7 @@ async function main() {
 	const cwd = process.cwd()
 	console.log(`\n${BOLD}Starting code-server...${RESET}`)
 	console.log(`  Working directory: ${cwd}`)
-	console.log(`  URL: ${CYAN}http://127.0.0.1:${port}${RESET}`)
+	console.log(`  URL: ${CYAN}http://${host}:${port}${RESET}`)
 	console.log(`  Password: ${YELLOW}~/.config/code-server/config.yaml${RESET}`)
 	console.log(`\n  Press ${BOLD}Ctrl+C${RESET} to stop\n`)
 
@@ -174,7 +186,7 @@ async function main() {
 		"code-server",
 		[
 			"--bind-addr",
-			`127.0.0.1:${port}`,
+			`${host}:${port}`,
 			"--disable-workspace-trust",
 			"--disable-getting-started-override",
 			"-e",
