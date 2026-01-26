@@ -229,7 +229,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/consistent-system-prompt.snap")
@@ -251,7 +250,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-computer-use-support.snap")
@@ -275,7 +273,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-mcp-hub-provided.snap")
@@ -297,7 +294,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-undefined-mcp-hub.snap")
@@ -319,7 +315,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-different-viewport-size.snap")
@@ -367,7 +362,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		expect(prompt).toContain("Language Preference:")
@@ -427,7 +421,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		// Role definition should be at the top
@@ -464,7 +457,6 @@ describe("SYSTEM_PROMPT", () => {
 			false, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		// Role definition from promptComponent should be at the top
@@ -496,7 +488,6 @@ describe("SYSTEM_PROMPT", () => {
 			false, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 		)
 
 		// Should use the default mode's role definition
@@ -526,7 +517,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 			settings, // settings
 		)
 
@@ -558,7 +548,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 			settings, // settings
 		)
 
@@ -590,7 +579,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 			settings, // settings
 		)
 
@@ -622,7 +610,6 @@ describe("SYSTEM_PROMPT", () => {
 			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
 			settings, // settings
 		)
 

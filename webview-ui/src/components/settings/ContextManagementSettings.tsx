@@ -33,7 +33,6 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	maxWorkspaceFiles: number
 	showRooIgnoredFiles?: boolean
 	enableSubfolderRules?: boolean
-	maxReadFileLine?: number
 	maxImageFileSize?: number
 	maxTotalImageSize?: number
 	maxConcurrentFileReads?: number
@@ -53,7 +52,6 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "maxWorkspaceFiles"
 		| "showRooIgnoredFiles"
 		| "enableSubfolderRules"
-		| "maxReadFileLine"
 		| "maxImageFileSize"
 		| "maxTotalImageSize"
 		| "maxConcurrentFileReads"
@@ -76,7 +74,6 @@ export const ContextManagementSettings = ({
 	showRooIgnoredFiles,
 	enableSubfolderRules,
 	setCachedStateField,
-	maxReadFileLine,
 	maxImageFileSize,
 	maxTotalImageSize,
 	maxConcurrentFileReads,
@@ -272,45 +269,6 @@ export const ContextManagementSettings = ({
 					</VSCodeCheckbox>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:contextManagement.enableSubfolderRules.description")}
-					</div>
-				</SearchableSetting>
-
-				<SearchableSetting
-					settingId="context-max-read-file"
-					section="contextManagement"
-					label={t("settings:contextManagement.maxReadFile.label")}>
-					<div className="flex flex-col gap-2">
-						<span className="font-medium">{t("settings:contextManagement.maxReadFile.label")}</span>
-						<div className="flex items-center gap-4">
-							<Input
-								type="number"
-								pattern="-?[0-9]*"
-								className="w-24 bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border px-2 py-1 rounded text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-50"
-								value={maxReadFileLine ?? -1}
-								min={-1}
-								onChange={(e) => {
-									const newValue = parseInt(e.target.value, 10)
-									if (!isNaN(newValue) && newValue >= -1) {
-										setCachedStateField("maxReadFileLine", newValue)
-									}
-								}}
-								onClick={(e) => e.currentTarget.select()}
-								data-testid="max-read-file-line-input"
-								disabled={maxReadFileLine === -1}
-							/>
-							<span>{t("settings:contextManagement.maxReadFile.lines")}</span>
-							<VSCodeCheckbox
-								checked={maxReadFileLine === -1}
-								onChange={(e: any) =>
-									setCachedStateField("maxReadFileLine", e.target.checked ? -1 : 500)
-								}
-								data-testid="max-read-file-always-full-checkbox">
-								{t("settings:contextManagement.maxReadFile.always_full_read")}
-							</VSCodeCheckbox>
-						</div>
-					</div>
-					<div className="text-vscode-descriptionForeground text-sm mt-2">
-						{t("settings:contextManagement.maxReadFile.description")}
 					</div>
 				</SearchableSetting>
 

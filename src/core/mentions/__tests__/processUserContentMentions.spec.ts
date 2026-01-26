@@ -29,97 +29,6 @@ describe("processUserContentMentions", () => {
 		}))
 	})
 
-	describe("maxReadFileLine parameter", () => {
-		it("should pass maxReadFileLine to parseMentions when provided", async () => {
-			const userContent = [
-				{
-					type: "text" as const,
-					text: "<user_message>Read file with limit</user_message>",
-				},
-			]
-
-			await processUserContentMentions({
-				userContent,
-				cwd: "/test",
-				urlContentFetcher: mockUrlContentFetcher,
-				fileContextTracker: mockFileContextTracker,
-				rooIgnoreController: mockRooIgnoreController,
-				maxReadFileLine: 100,
-			})
-
-			expect(parseMentions).toHaveBeenCalledWith(
-				"<user_message>Read file with limit</user_message>",
-				"/test",
-				mockUrlContentFetcher,
-				mockFileContextTracker,
-				mockRooIgnoreController,
-				false,
-				true, // includeDiagnosticMessages
-				50, // maxDiagnosticMessages
-				100,
-			)
-		})
-
-		it("should pass undefined maxReadFileLine when not provided", async () => {
-			const userContent = [
-				{
-					type: "text" as const,
-					text: "<user_message>Read file without limit</user_message>",
-				},
-			]
-
-			await processUserContentMentions({
-				userContent,
-				cwd: "/test",
-				urlContentFetcher: mockUrlContentFetcher,
-				fileContextTracker: mockFileContextTracker,
-				rooIgnoreController: mockRooIgnoreController,
-			})
-
-			expect(parseMentions).toHaveBeenCalledWith(
-				"<user_message>Read file without limit</user_message>",
-				"/test",
-				mockUrlContentFetcher,
-				mockFileContextTracker,
-				mockRooIgnoreController,
-				false,
-				true, // includeDiagnosticMessages
-				50, // maxDiagnosticMessages
-				undefined,
-			)
-		})
-
-		it("should handle UNLIMITED_LINES constant correctly", async () => {
-			const userContent = [
-				{
-					type: "text" as const,
-					text: "<user_message>Read unlimited lines</user_message>",
-				},
-			]
-
-			await processUserContentMentions({
-				userContent,
-				cwd: "/test",
-				urlContentFetcher: mockUrlContentFetcher,
-				fileContextTracker: mockFileContextTracker,
-				rooIgnoreController: mockRooIgnoreController,
-				maxReadFileLine: -1,
-			})
-
-			expect(parseMentions).toHaveBeenCalledWith(
-				"<user_message>Read unlimited lines</user_message>",
-				"/test",
-				mockUrlContentFetcher,
-				mockFileContextTracker,
-				mockRooIgnoreController,
-				false,
-				true, // includeDiagnosticMessages
-				50, // maxDiagnosticMessages
-				-1,
-			)
-		})
-	})
-
 	describe("content processing", () => {
 		it("should process text blocks with <user_message> tags", async () => {
 			const userContent = [
@@ -258,7 +167,6 @@ describe("processUserContentMentions", () => {
 				cwd: "/test",
 				urlContentFetcher: mockUrlContentFetcher,
 				fileContextTracker: mockFileContextTracker,
-				maxReadFileLine: 50,
 			})
 
 			expect(parseMentions).toHaveBeenCalledTimes(2)
@@ -302,7 +210,6 @@ describe("processUserContentMentions", () => {
 				false, // showRooIgnoredFiles should default to false
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
-				undefined,
 			)
 		})
 
@@ -331,7 +238,6 @@ describe("processUserContentMentions", () => {
 				false,
 				true, // includeDiagnosticMessages
 				50, // maxDiagnosticMessages
-				undefined,
 			)
 		})
 	})
