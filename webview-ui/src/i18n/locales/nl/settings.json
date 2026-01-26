@@ -26,7 +26,7 @@
 		"discardButton": "Wijzigingen negeren"
 	},
 	"sections": {
-		"providers": "Providers",
+		"providers": "Aanbieders",
 		"modes": "Modi",
 		"mcp": "MCP-servers",
 		"autoApprove": "Auto-goedkeuren",
@@ -435,7 +435,59 @@
 			"numCtx": "Contextvenstergrootte (num_ctx)",
 			"numCtxHelp": "Overschrijft de standaard contextvenstergrootte van het model. Laat leeg om de Modelfile-configuratie van het model te gebruiken. De minimumwaarde is 128.",
 			"description": "Ollama laat je modellen lokaal op je computer draaien. Zie hun quickstart-gids voor instructies.",
-			"warning": "Let op: Roo Code gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht."
+			"warning": "Let op: Roo Code gebruikt complexe prompts en werkt het beste met Claude-modellen. Minder krachtige modellen werken mogelijk niet zoals verwacht.",
+			"test": "Testen",
+			"testing": "Testen...",
+			"completedIn": "Voltooid in {{duration}}ms",
+			"refreshModels": "Modellen vernieuwen",
+			"refreshing": "Vernieuwen...",
+			"messages": {
+				"connectionSuccess": "Succesvol verbonden met Ollama op {{baseUrl}}",
+				"connectionInvalidUrl": "Ongeldige URL: {{baseUrl}}",
+				"connectionRefused": "Kan niet verbinden met Ollama op {{baseUrl}}. Zorg ervoor dat Ollama draait.",
+				"connectionTimeout": "Verbinding met Ollama is verlopen. Controleer of de URL correct is en Ollama toegankelijk is.",
+				"connectionNetworkError": "Netwerkfout bij verbinden met Ollama. Controleer uw netwerkverbinding.",
+				"connectionHttpError": "Ollama gaf een fout terug: {{status}} {{statusText}}",
+				"connectionFailed": "Verbinding mislukt: {{error}}",
+				"connectionTestError": "Fout bij testen van verbinding: {{error}}",
+				"refreshSuccess": "{{count}} model(len) gevonden met tools-ondersteuning ({{total}} totaal)",
+				"refreshNoModels": "Geen modellen gevonden. Zorg ervoor dat Ollama draait en modellen heeft geïnstalleerd.",
+				"refreshFailed": "Vernieuwen van modellen mislukt: {{error}}"
+			},
+			"connectionSettings": "Verbindingsinstellingen",
+			"toolsSupport": "Toolondersteuning",
+			"noToolsSupport": "Geen toolondersteuning",
+			"models": {
+				"one": "model",
+				"other": "modellen"
+			},
+			"noToolsSupportHelp": "Deze modellen ondersteunen geen native tool-aanroepen en kunnen niet worden gebruikt met Roo Code. Ze worden alleen ter referentie weergegeven.",
+			"table": {
+				"modelName": "Modelnaam",
+				"context": "Context",
+				"size": "Grootte",
+				"quantization": "Kwantisatie",
+				"family": "Familie",
+				"images": "Afbeeldingen",
+				"yes": "Ja",
+				"no": "Nee",
+				"sizeFormatting": {
+					"gb": "GB",
+					"mb": "MB"
+				}
+			},
+			"streaming": "Streaming",
+			"streamingHelp": "Streaming is altijd ingeschakeld voor Ollama API-verzoeken. Reacties worden in real-time gestreamd terwijl ze worden gegenereerd.",
+			"requestTimeout": "Verzoek time-out (ms)",
+			"requestTimeoutHelp": "Time-out in milliseconden voor LLM API-verzoeken (chatvoltooiingen, denkwerk). Standaard: 3600000 (60 minuten). Bereik: 1000-7200000 (120 minuten).",
+			"modelDiscoveryTimeout": "Modeldetectie time-out (ms)",
+			"modelDiscoveryTimeoutHelp": "Time-out in milliseconden voor modeldetectie-verzoeken (lijst en ophalen van modeldetails). Standaard: 10000 (10 seconden). Bereik: 1000-600000 (10 minuten).",
+			"maxRetries": "Max. nieuwe pogingen",
+			"maxRetriesHelp": "Maximum aantal nieuwe pogingen voor mislukte verzoeken. Standaard: 0 (geen nieuwe pogingen). Bereik: 0-10.",
+			"retryDelay": "Vertraging nieuwe poging (ms)",
+			"retryDelayHelp": "Initiële vertraging tussen nieuwe pogingen in milliseconden. Gebruikt exponentiële backoff. Standaard: 1000 (1 seconde). Bereik: 100-10000.",
+			"enableLogging": "Verzoeklogboek inschakelen",
+			"enableLoggingHelp": "Gedetailleerde logboekregistratie van Ollama API-verzoeken, reacties en fouten inschakelen. Logboeken bevatten tijdinformatie en verbindingsdetails."
 		},
 		"unboundApiKey": "Unbound API-sleutel",
 		"getUnboundApiKey": "Unbound API-sleutel ophalen",

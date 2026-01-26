@@ -447,12 +447,29 @@
 			"warning": "Note: Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected.",
 			"test": "Test",
 			"testing": "Testing...",
+			"completedIn": "Completed in {{duration}}ms",
 			"refreshModels": "Refresh Models",
 			"refreshing": "Refreshing...",
+			"messages": {
+				"connectionSuccess": "Successfully connected to Ollama at {{baseUrl}}",
+				"connectionInvalidUrl": "Invalid URL: {{baseUrl}}",
+				"connectionRefused": "Cannot connect to Ollama at {{baseUrl}}. Make sure Ollama is running.",
+				"connectionTimeout": "Connection to Ollama timed out. Check if the URL is correct and Ollama is accessible.",
+				"connectionNetworkError": "Network error connecting to Ollama. Check your network connection.",
+				"connectionHttpError": "Ollama returned error: {{status}} {{statusText}}",
+				"connectionFailed": "Failed to connect: {{error}}",
+				"connectionTestError": "Error testing connection: {{error}}",
+				"refreshSuccess": "Found {{count}} model(s) with tools support ({{total}} total)",
+				"refreshNoModels": "No models found. Make sure Ollama is running and has models installed.",
+				"refreshFailed": "Failed to refresh models: {{error}}"
+			},
 			"connectionSettings": "Connection Settings",
 			"toolsSupport": "Tools Support",
 			"noToolsSupport": "No Tools Support",
-			"models": "models",
+			"models": {
+				"one": "model",
+				"other": "models"
+			},
 			"noToolsSupportHelp": "These models do not support native tool calling and cannot be used with Roo Code. They are shown for reference only.",
 			"table": {
 				"modelName": "Model Name",

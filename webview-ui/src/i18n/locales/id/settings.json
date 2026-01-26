@@ -26,7 +26,7 @@
 		"discardButton": "Buang perubahan"
 	},
 	"sections": {
-		"providers": "Provider",
+		"providers": "Penyedia",
 		"modes": "Mode",
 		"mcp": "Server MCP",
 		"autoApprove": "Auto-Approve",
@@ -262,7 +262,7 @@
 		"providerDocumentation": "Dokumentasi {{provider}}",
 		"configProfile": "Profil Konfigurasi",
 		"description": "Simpan konfigurasi API yang berbeda untuk beralih dengan cepat antara provider dan pengaturan.",
-		"apiProvider": "Provider API",
+		"apiProvider": "Penyedia API",
 		"apiProviderDocs": "Dokumentasi Penyedia",
 		"model": "Model",
 		"nameEmpty": "Nama tidak boleh kosong",
@@ -422,8 +422,8 @@
 		"googleCloudProjectId": "Google Cloud Project ID",
 		"googleCloudRegion": "Google Cloud Region",
 		"lmStudio": {
-			"baseUrl": "Base URL (opsional)",
-			"modelId": "Model ID",
+			"baseUrl": "URL Dasar (opsional)",
+			"modelId": "ID Model",
 			"speculativeDecoding": "Aktifkan Speculative Decoding",
 			"draftModelId": "Draft Model ID",
 			"draftModelDesc": "Draft model harus dari keluarga model yang sama agar speculative decoding bekerja dengan benar.",
@@ -432,14 +432,66 @@
 			"description": "LM Studio memungkinkan kamu menjalankan model secara lokal di komputer. Untuk instruksi cara memulai, lihat <a>panduan quickstart</a> mereka. Kamu juga perlu memulai fitur <b>local server</b> LM Studio untuk menggunakannya dengan ekstensi ini. <span>Catatan:</span> Roo Code menggunakan prompt kompleks dan bekerja terbaik dengan model Claude. Model yang kurang mampu mungkin tidak bekerja seperti yang diharapkan."
 		},
 		"ollama": {
-			"baseUrl": "Base URL (opsional)",
-			"modelId": "Model ID",
+			"baseUrl": "URL Dasar (opsional)",
+			"modelId": "ID Model",
 			"apiKey": "Ollama API Key",
 			"apiKeyHelp": "API key opsional untuk instance Ollama yang terautentikasi atau layanan cloud. Biarkan kosong untuk instalasi lokal.",
 			"numCtx": "Ukuran Jendela Konteks (num_ctx)",
 			"numCtxHelp": "Ganti ukuran jendela konteks default model. Biarkan kosong untuk menggunakan konfigurasi Modelfile model. Nilai minimum adalah 128.",
 			"description": "Ollama memungkinkan kamu menjalankan model secara lokal di komputer. Untuk instruksi cara memulai, lihat panduan quickstart mereka.",
-			"warning": "Catatan: Roo Code menggunakan prompt kompleks dan bekerja terbaik dengan model Claude. Model yang kurang mampu mungkin tidak bekerja seperti yang diharapkan."
+			"warning": "Catatan: Roo Code menggunakan prompt kompleks dan bekerja terbaik dengan model Claude. Model yang kurang mampu mungkin tidak bekerja seperti yang diharapkan.",
+			"test": "Uji",
+			"testing": "Menguji...",
+			"completedIn": "Selesai dalam {{duration}}ms",
+			"refreshModels": "Muat ulang model",
+			"refreshing": "Memuat ulang...",
+			"messages": {
+				"connectionSuccess": "Berhasil terhubung ke Ollama di {{baseUrl}}",
+				"connectionInvalidUrl": "URL tidak valid: {{baseUrl}}",
+				"connectionRefused": "Tidak dapat terhubung ke Ollama di {{baseUrl}}. Pastikan Ollama sedang berjalan.",
+				"connectionTimeout": "Koneksi ke Ollama habis waktu. Periksa apakah URL benar dan Ollama dapat diakses.",
+				"connectionNetworkError": "Kesalahan jaringan saat menghubungkan ke Ollama. Periksa koneksi jaringan Anda.",
+				"connectionHttpError": "Ollama mengembalikan kesalahan: {{status}} {{statusText}}",
+				"connectionFailed": "Gagal terhubung: {{error}}",
+				"connectionTestError": "Kesalahan saat menguji koneksi: {{error}}",
+				"refreshSuccess": "Ditemukan {{count}} model dengan dukungan tools ({{total}} total)",
+				"refreshNoModels": "Tidak ada model yang ditemukan. Pastikan Ollama sedang berjalan dan memiliki model yang terpasang.",
+				"refreshFailed": "Gagal memuat ulang model: {{error}}"
+			},
+			"connectionSettings": "Pengaturan koneksi",
+			"toolsSupport": "Dukungan alat",
+			"noToolsSupport": "Tidak ada dukungan alat",
+			"models": {
+				"one": "model",
+				"other": "model"
+			},
+			"noToolsSupportHelp": "Model-model ini tidak mendukung pemanggilan alat native dan tidak dapat digunakan dengan Roo Code. Mereka ditampilkan hanya sebagai referensi.",
+			"table": {
+				"modelName": "Nama model",
+				"context": "Konteks",
+				"size": "Ukuran",
+				"quantization": "Kuantisasi",
+				"family": "Keluarga",
+				"images": "Gambar",
+				"yes": "Ya",
+				"no": "Tidak",
+				"sizeFormatting": {
+					"gb": "GB",
+					"mb": "MB"
+				}
+			},
+			"streaming": "Streaming",
+			"streamingHelp": "Streaming selalu diaktifkan untuk permintaan API Ollama. Respons di-stream secara real-time saat dibuat.",
+			"requestTimeout": "Batas waktu permintaan (ms)",
+			"requestTimeoutHelp": "Batas waktu dalam milidetik untuk permintaan API LLM (penyelesaian chat, pekerjaan berpikir). Default: 3600000 (60 menit). Rentang: 1000-7200000 (120 menit).",
+			"modelDiscoveryTimeout": "Batas waktu penemuan model (ms)",
+			"modelDiscoveryTimeoutHelp": "Batas waktu dalam milidetik untuk permintaan penemuan model (daftar dan mengambil detail model). Default: 10000 (10 detik). Rentang: 1000-600000 (10 menit).",
+			"maxRetries": "Maks. percobaan ulang",
+			"maxRetriesHelp": "Jumlah maksimum upaya percobaan ulang untuk permintaan yang gagal. Default: 0 (tidak ada percobaan ulang). Rentang: 0-10.",
+			"retryDelay": "Penundaan percobaan ulang (ms)",
+			"retryDelayHelp": "Penundaan awal antara upaya percobaan ulang dalam milidetik. Menggunakan exponential backoff. Default: 1000 (1 detik). Rentang: 100-10000.",
+			"enableLogging": "Aktifkan pencatatan permintaan",
+			"enableLoggingHelp": "Aktifkan pencatatan detail permintaan, respons, dan kesalahan API Ollama. Log mencakup informasi waktu dan detail koneksi."
 		},
 		"unboundApiKey": "Unbound API Key",
 		"getUnboundApiKey": "Dapatkan Unbound API Key",
@@ -499,7 +551,7 @@
 			"resetDefaults": "Reset ke Default"
 		},
 		"rateLimitSeconds": {
-			"label": "Rate limit",
+			"label": "Pembatasan laju",
 			"description": "Waktu minimum antara permintaan API."
 		},
 		"consecutiveMistakeLimit": {

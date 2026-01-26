@@ -67,52 +67,135 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 		[setApiConfigurationField],
 	)
 
-	const onMessage = useCallback((event: MessageEvent) => {
-		const message: ExtensionMessage = event.data
+	// Helper function to translate backend messages
+	const translateMessage = useCallback(
+		(msg: string): string => {
+			if (!msg) return msg
 
-		switch (message.type) {
-			case "ollamaModels":
-				{
-					const newModels = message.ollamaModels ?? {}
-					setOllamaModels(newModels)
+			// Successfully connected to Ollama at {url}
+			const successMatch = msg.match(/^Successfully connected to Ollama at (.+)$/)
+			if (successMatch) {
+				return t("settings:providers.ollama.messages.connectionSuccess", { baseUrl: successMatch[1] })
+			}
+
+			// Invalid URL: {url}
+			const invalidUrlMatch = msg.match(/^Invalid URL: (.+)$/)
+			if (invalidUrlMatch) {
+				return t("settings:providers.ollama.messages.connectionInvalidUrl", { baseUrl: invalidUrlMatch[1] })
+			}
+
+			// Cannot connect to Ollama at {url}. Make sure Ollama is running.
+			const refusedMatch = msg.match(/^Cannot connect to Ollama at (.+)\. Make sure Ollama is running\.$/)
+			if (refusedMatch) {
+				return t("settings:providers.ollama.messages.connectionRefused", { baseUrl: refusedMatch[1] })
+			}
+
+			// Connection to Ollama timed out. Check if the URL is correct and Ollama is accessible.
+			if (msg.includes("Connection to Ollama timed out")) {
+				return t("settings:providers.ollama.messages.connectionTimeout")
+			}
+
+			// Network error connecting to Ollama. Check your network connection.
+			if (msg.includes("Network error connecting to Ollama")) {
+				return t("settings:providers.ollama.messages.connectionNetworkError")
+			}
+
+			// Ollama returned error: {status} {statusText}
+			const httpErrorMatch = msg.match(/^Ollama returned error: (\d+) (.+)$/)
+			if (httpErrorMatch) {
+				return t("settings:providers.ollama.messages.connectionHttpError", {
+					status: httpErrorMatch[1],
+					statusText: httpErrorMatch[2],
+				})
+			}
+
+			// Failed to connect: {error}
+			const failedMatch = msg.match(/^Failed to connect: (.+)$/)
+			if (failedMatch) {
+				return t("settings:providers.ollama.messages.connectionFailed", { error: failedMatch[1] })
+			}
+
+			// Error testing connection: {error}
+			const testErrorMatch = msg.match(/^Error testing connection: (.+)$/)
+			if (testErrorMatch) {
+				return t("settings:providers.ollama.messages.connectionTestError", { error: testErrorMatch[1] })
+			}
+
+			// Found {count} model(s) with tools support ({total} total)
+			const refreshSuccessMatch = msg.match(/^Found (\d+) model\(s\) with tools support \((\d+) total\)$/)
+			if (refreshSuccessMatch) {
+				return t("settings:providers.ollama.messages.refreshSuccess", {
+					count: refreshSuccessMatch[1],
+					total: refreshSuccessMatch[2],
+				})
+			}
+
+			// No models found. Make sure Ollama is running and has models installed.
+			if (msg === "No models found. Make sure Ollama is running and has models installed.") {
+				return t("settings:providers.ollama.messages.refreshNoModels")
+			}
+
+			// Failed to refresh models: {error}
+			const refreshFailedMatch = msg.match(/^Failed to refresh models: (.+)$/)
+			if (refreshFailedMatch) {
+				return t("settings:providers.ollama.messages.refreshFailed", { error: refreshFailedMatch[1] })
+			}
+
+			// Unknown message - return as is
+			return msg
+		},
+		[t],
+	)
+
+	const onMessage = useCallback(
+		(event: MessageEvent) => {
+			const message: ExtensionMessage = event.data
+
+			switch (message.type) {
+				case "ollamaModels":
+					{
+						const newModels = message.ollamaModels ?? {}
+						setOllamaModels(newModels)
+						if (message.ollamaModelsWithTools) {
+							setModelsWithTools(message.ollamaModelsWithTools)
+						}
+						setModelsWithoutTools(message.modelsWithoutTools ?? [])
+					}
+					break
+				case "ollamaConnectionTestResult":
+					setTestResult({
+						success: message.success ?? false,
+						message: translateMessage(message.message ?? "Unknown error"),
+						durationMs: message.durationMs,
+					})
+					setTestingConnection(false)
+					if (testResultTimerRef.current) {
+						clearTimeout(testResultTimerRef.current)
+					}
+					testResultTimerRef.current = setTimeout(() => setTestResult(null), 5000)
+					break
+				case "ollamaModelsRefreshResult":
+					setRefreshResult({
+						success: message.success ?? false,
+						message: translateMessage(message.message ?? "Unknown error"),
+						durationMs: message.durationMs,
+					})
+					setRefreshingModels(false)
 					if (message.ollamaModelsWithTools) {
 						setModelsWithTools(message.ollamaModelsWithTools)
 					}
-					setModelsWithoutTools(message.modelsWithoutTools ?? [])
-				}
-				break
-			case "ollamaConnectionTestResult":
-				setTestResult({
-					success: message.success ?? false,
-					message: message.message ?? "Unknown error",
-					durationMs: message.durationMs,
-				})
-				setTestingConnection(false)
-				if (testResultTimerRef.current) {
-					clearTimeout(testResultTimerRef.current)
-				}
-				testResultTimerRef.current = setTimeout(() => setTestResult(null), 5000)
-				break
-			case "ollamaModelsRefreshResult":
-				setRefreshResult({
-					success: message.success ?? false,
-					message: message.message ?? "Unknown error",
-					durationMs: message.durationMs,
-				})
-				setRefreshingModels(false)
-				if (message.ollamaModelsWithTools) {
-					setModelsWithTools(message.ollamaModelsWithTools)
-				}
-				if (message.modelsWithoutTools) {
-					setModelsWithoutTools(message.modelsWithoutTools)
-				}
-				if (refreshResultTimerRef.current) {
-					clearTimeout(refreshResultTimerRef.current)
-				}
-				refreshResultTimerRef.current = setTimeout(() => setRefreshResult(null), 5000)
-				break
-		}
-	}, [])
+					if (message.modelsWithoutTools) {
+						setModelsWithoutTools(message.modelsWithoutTools)
+					}
+					if (refreshResultTimerRef.current) {
+						clearTimeout(refreshResultTimerRef.current)
+					}
+					refreshResultTimerRef.current = setTimeout(() => setRefreshResult(null), 5000)
+					break
+			}
+		},
+		[translateMessage],
+	)
 
 	const handleTestConnection = useCallback(() => {
 		setTestingConnection(true)
@@ -201,7 +284,9 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 					}`}>
 					<div>{testResult.message}</div>
 					{testResult.durationMs !== undefined && (
-						<div className="text-xs mt-1 opacity-80">Completed in {testResult.durationMs}ms</div>
+						<div className="text-xs mt-1 opacity-80">
+							{t("settings:providers.ollama.completedIn", { duration: testResult.durationMs })}
+						</div>
 					)}
 				</div>
 			)}
@@ -239,7 +324,9 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 					}`}>
 					<div>{refreshResult.message}</div>
 					{refreshResult.durationMs !== undefined && (
-						<div className="text-xs mt-1 opacity-80">Completed in {refreshResult.durationMs}ms</div>
+						<div className="text-xs mt-1 opacity-80">
+							{t("settings:providers.ollama.completedIn", { duration: refreshResult.durationMs })}
+						</div>
 					)}
 				</div>
 			)}
@@ -274,20 +361,22 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 								<thead>
 									<tr className="border-b border-vscode-foreground/10">
 										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
-											Model Name
+											{t("settings:providers.ollama.table.modelName")}
 										</th>
 										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
-											Context
-										</th>
-										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">Size</th>
-										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
-											Quantization
+											{t("settings:providers.ollama.table.context")}
 										</th>
 										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
-											Family
+											{t("settings:providers.ollama.table.size")}
 										</th>
 										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
-											Images
+											{t("settings:providers.ollama.table.quantization")}
+										</th>
+										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
+											{t("settings:providers.ollama.table.family")}
+										</th>
+										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
+											{t("settings:providers.ollama.table.images")}
 										</th>
 									</tr>
 								</thead>
@@ -297,10 +386,10 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 											if (!bytes) return "-"
 											const gb = bytes / (1024 * 1024 * 1024)
 											if (gb >= 1) {
-												return `${gb.toFixed(1)} GB`
+												return `${gb.toFixed(1)} ${t("settings:providers.ollama.table.sizeFormatting.gb")}`
 											}
 											const mb = bytes / (1024 * 1024)
-											return `${mb.toFixed(1)} MB`
+											return `${mb.toFixed(1)} ${t("settings:providers.ollama.table.sizeFormatting.mb")}`
 										}
 										return (
 											<tr
@@ -326,7 +415,9 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 													{model.family || "-"}
 												</td>
 												<td className="py-2 px-3 text-vscode-descriptionForeground">
-													{model.supportsImages ? "Yes" : "No"}
+													{model.supportsImages
+														? t("settings:providers.ollama.table.yes")
+														: t("settings:providers.ollama.table.no")}
 												</td>
 											</tr>
 										)

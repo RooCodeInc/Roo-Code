@@ -35,7 +35,28 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({ childre
 	// Memoize the translation function to prevent unnecessary re-renders
 	const translate = useCallback(
 		(key: string, options?: Record<string, any>) => {
-			return i18n.t(key, options)
+			const result = i18n.t(key, options)
+			// Safeguard: ensure we always return a string, not an object
+			// This handles cases where plural objects might not be resolved correctly
+			if (typeof result === "object" && result !== null) {
+				// Type guard for plural object
+				const pluralResult = result as Record<string, any>
+				// If it's a plural object and we have a count, try to resolve it
+				if (options?.count !== undefined && "one" in pluralResult && "other" in pluralResult) {
+					const count = options.count
+					// Use i18next's pluralization logic
+					if (count === 1 && typeof pluralResult.one === "string") {
+						return pluralResult.one
+					}
+					if (typeof pluralResult.other === "string") {
+						return pluralResult.other
+					}
+				}
+				// Fallback: return the key if we can't resolve it
+				console.warn(`Translation key "${key}" returned an object instead of string:`, result)
+				return key
+			}
+			return result as string
 		},
 		[i18n],
 	)
