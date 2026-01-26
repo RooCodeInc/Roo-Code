@@ -8,15 +8,16 @@
  *   brew install code-server
  *
  * Usage:
- *   pnpm serve              # Build, install, and start code-server
- *   pnpm serve:rebuild      # Only rebuild and reinstall the extension
+ *   pnpm serve                    # Build, install, and start code-server on port 9080
+ *   pnpm serve -- --port 8080     # Use a custom port
+ *   pnpm serve:rebuild            # Only rebuild and reinstall the extension
  *
  * The script will:
  *   1. Check if code-server is installed
  *   2. Build the vsix (pnpm vsix)
  *   3. Install the vsix into code-server
  *   4. Configure user settings (disable welcome tab)
- *   5. Start code-server on http://127.0.0.1:8080 (unless --rebuild-only)
+ *   5. Start code-server on http://127.0.0.1:9080 (unless --rebuild-only)
  *
  * Your password is stored in ~/.config/code-server/config.yaml
  */
@@ -38,6 +39,20 @@ const VSIX_PATH = path.join(os.tmpdir(), "roo-code-serve.vsix")
 
 // Parse command line flags
 const rebuildOnly = process.argv.includes("--rebuild-only")
+
+// Parse --port argument (default: 9080)
+const DEFAULT_PORT = 9080
+function getPort() {
+	const portIndex = process.argv.indexOf("--port")
+	if (portIndex !== -1 && process.argv[portIndex + 1]) {
+		const port = parseInt(process.argv[portIndex + 1], 10)
+		if (!isNaN(port) && port > 0 && port < 65536) {
+			return port
+		}
+	}
+	return DEFAULT_PORT
+}
+const port = getPort()
 
 function log(message) {
 	console.log(`${CYAN}[serve]${RESET} ${message}`)
@@ -147,7 +162,7 @@ async function main() {
 	const cwd = process.cwd()
 	console.log(`\n${BOLD}Starting code-server...${RESET}`)
 	console.log(`  Working directory: ${cwd}`)
-	console.log(`  URL: ${CYAN}http://127.0.0.1:8080${RESET}`)
+	console.log(`  URL: ${CYAN}http://127.0.0.1:${port}${RESET}`)
 	console.log(`  Password: ${YELLOW}~/.config/code-server/config.yaml${RESET}`)
 	console.log(`\n  Press ${BOLD}Ctrl+C${RESET} to stop\n`)
 
@@ -157,7 +172,14 @@ async function main() {
 	// -e: Ignore last opened directory (start fresh)
 	const codeServer = spawn(
 		"code-server",
-		["--disable-workspace-trust", "--disable-getting-started-override", "-e", cwd],
+		[
+			"--bind-addr",
+			`127.0.0.1:${port}`,
+			"--disable-workspace-trust",
+			"--disable-getting-started-override",
+			"-e",
+			cwd,
+		],
 		{
 			stdio: "inherit",
 			cwd: cwd,
