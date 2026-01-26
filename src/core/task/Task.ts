@@ -4012,7 +4012,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				}
 				if (truncateResult.error) {
 					await this.say("condense_context_error", truncateResult.error)
-				} else if (truncateResult.summary) {
+				}
+				if (truncateResult.summary) {
 					const { summary, cost, prevContextTokens, newContextTokens = 0, condenseId } = truncateResult
 					const contextCondense: ContextCondense = {
 						summary,
