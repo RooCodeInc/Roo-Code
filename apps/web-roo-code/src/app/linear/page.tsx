@@ -9,7 +9,6 @@ import {
 	MessageSquare,
 	Settings,
 	Shield,
-	Users,
 	Zap,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
@@ -97,12 +96,6 @@ const VALUE_PROPS: ValueProp[] = [
 			'Need changes? Just comment "@Roo Code also add dark mode support" and the agent picks up where it left off.',
 	},
 	{
-		icon: Users,
-		title: "Consultation mode.",
-		description:
-			"Not every issue needs code. Ask @Roo Code to analyze, explain, or recommend approaches without opening a PR.",
-	},
-	{
 		icon: Link2,
 		title: "Full traceability.",
 		description:
@@ -136,8 +129,8 @@ const WORKFLOW_STEPS: WorkflowStep[] = [
 	},
 	{
 		step: 2,
-		title: "Assign to Roo Code",
-		description: "Set the assignee to Roo Code. The agent starts working immediately.",
+		title: "Call @Roo Code",
+		description: "Mention @Roo Code in a comment to start. The agent begins working immediately.",
 	},
 	{
 		step: 3,
