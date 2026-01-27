@@ -67,6 +67,13 @@ export class OutputInterceptor {
 	/** Number of bytes omitted from the middle */
 	private omittedBytes: number = 0
 
+	/**
+	 * Pending chunks accumulated before spilling to disk.
+	 * These contain ALL content (lossless) until we decide to spill.
+	 * Once spilled, this array is cleared and subsequent writes go directly to disk.
+	 */
+	private pendingChunks: string[] = []
+
 	private writeStream: fs.WriteStream | null = null
 	private artifactPath: string
 	private totalBytes: number = 0
@@ -115,8 +122,11 @@ export class OutputInterceptor {
 
 		// Handle disk spilling for full output preservation
 		if (!this.spilledToDisk) {
+			// Accumulate ALL chunks for lossless disk storage
+			this.pendingChunks.push(chunk)
+
 			if (this.totalBytes > this.previewBytes) {
-				this.spillToDisk(chunk)
+				this.spillToDisk()
 			}
 		} else {
 			// Already spilling - write directly to disk
@@ -254,7 +264,7 @@ export class OutputInterceptor {
 	 *
 	 * @private
 	 */
-	private spillToDisk(currentChunk: string): void {
+	private spillToDisk(): void {
 		// Ensure directory exists
 		const dir = path.dirname(this.artifactPath)
 		if (!fs.existsSync(dir)) {
@@ -262,22 +272,15 @@ export class OutputInterceptor {
 		}
 
 		this.writeStream = fs.createWriteStream(this.artifactPath)
-		// Write the full head buffer + any tail content accumulated so far
-		// Note: We need to reconstruct full output seen so far
-		// The full content before this chunk is: totalBytes - currentChunkBytes
-		// But we've already been tracking head/tail, so we write head + omitted + tail + current
-		// Actually, we need to write the complete original content
-		// Since we're spilling on the chunk that pushes us over, we need to write everything
-		// that came before plus this chunk
 
-		// Reconstruct: we have headBuffer (complete head) + whatever was in tail before trimming
-		// For simplicity, write head + tail + current chunk (the tail already has some data)
-		this.writeStream.write(this.headBuffer)
-		if (this.tailBuffer.length > 0) {
-			this.writeStream.write(this.tailBuffer)
+		// Write ALL pending chunks to disk for lossless storage.
+		// This ensures no content is lost, even if the preview buffers have dropped middle content.
+		for (const chunk of this.pendingChunks) {
+			this.writeStream.write(chunk)
 		}
-		// Don't write currentChunk here - it was already processed into head/tail buffers
-		// and will be written via the streaming path
+
+		// Clear pending chunks to free memory - subsequent writes go directly to disk
+		this.pendingChunks = []
 
 		this.spilledToDisk = true
 	}

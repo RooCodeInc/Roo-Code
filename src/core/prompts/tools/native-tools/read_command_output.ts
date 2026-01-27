@@ -70,7 +70,9 @@ export default {
 					description: LIMIT_DESCRIPTION,
 				},
 			},
-			required: ["artifact_id"],
+			// With strict: true, ALL properties must be listed in required.
+			// Optional params use union type with null (e.g., ["string", "null"]).
+			required: ["artifact_id", "search", "offset", "limit"],
 			additionalProperties: false,
 		},
 	},
