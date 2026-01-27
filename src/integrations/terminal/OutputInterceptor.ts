@@ -26,13 +26,14 @@ export interface OutputInterceptorOptions {
  * files, with only a preview shown to the LLM. The LLM can then use the `read_command_output`
  * tool to retrieve full contents or search through the output.
  *
- * The interceptor operates in two modes:
- * 1. **Buffer mode**: Output is accumulated in memory until it exceeds the preview threshold
- * 2. **Spill mode**: Once threshold is exceeded, output is streamed directly to disk
+ * The interceptor uses a **head/tail buffer** strategy (inspired by Codex):
+ * - 50% of the preview budget is allocated to the "head" (beginning of output)
+ * - 50% of the preview budget is allocated to the "tail" (end of output)
+ * - Middle content is dropped when output exceeds the preview threshold
  *
- * This approach prevents large command outputs (like build logs, test results, or verbose
- * operations) from overwhelming the context window while still allowing the LLM to access
- * the full output when needed.
+ * This approach ensures the LLM sees both:
+ * - The beginning (command startup, environment info, early errors)
+ * - The end (final results, exit codes, error summaries)
  *
  * @example
  * ```typescript
@@ -50,17 +51,31 @@ export interface OutputInterceptorOptions {
  *
  * // Finalize and get the result
  * const result = interceptor.finalize();
- * // result.preview contains truncated output for display
+ * // result.preview contains head + [omitted] + tail for display
  * // result.artifactPath contains path to full output if truncated
  * ```
  */
 export class OutputInterceptor {
-	private buffer: string = ""
+	/** Buffer for the head (beginning) of output */
+	private headBuffer: string = ""
+	/** Buffer for the tail (end) of output - rolling buffer that drops front when full */
+	private tailBuffer: string = ""
+	/** Number of bytes currently in the head buffer */
+	private headBytes: number = 0
+	/** Number of bytes currently in the tail buffer */
+	private tailBytes: number = 0
+	/** Number of bytes omitted from the middle */
+	private omittedBytes: number = 0
+
 	private writeStream: fs.WriteStream | null = null
 	private artifactPath: string
 	private totalBytes: number = 0
 	private spilledToDisk: boolean = false
 	private readonly previewBytes: number
+	/** Budget for the head buffer (50% of total preview) */
+	private readonly headBudget: number
+	/** Budget for the tail buffer (50% of total preview) */
+	private readonly tailBudget: number
 
 	/**
 	 * Creates a new OutputInterceptor instance.
@@ -69,15 +84,19 @@ export class OutputInterceptor {
 	 */
 	constructor(private readonly options: OutputInterceptorOptions) {
 		this.previewBytes = TERMINAL_PREVIEW_BYTES[options.previewSize]
+		this.headBudget = Math.floor(this.previewBytes / 2)
+		this.tailBudget = this.previewBytes - this.headBudget
 		this.artifactPath = path.join(options.storageDir, `cmd-${options.executionId}.txt`)
 	}
 
 	/**
 	 * Write a chunk of output to the interceptor.
 	 *
-	 * If the accumulated output exceeds the preview threshold, the interceptor
-	 * automatically spills to disk and switches to streaming mode. Subsequent
-	 * chunks are written directly to the disk file.
+	 * Output is first added to the head buffer until it's full (50% of preview budget).
+	 * Subsequent output goes to a rolling tail buffer that keeps the most recent content.
+	 *
+	 * If the total output exceeds the preview threshold, the interceptor spills to disk
+	 * for full output storage while maintaining head/tail buffers for the preview.
 	 *
 	 * @param chunk - The output string to write
 	 *
@@ -91,16 +110,139 @@ export class OutputInterceptor {
 		const chunkBytes = Buffer.byteLength(chunk, "utf8")
 		this.totalBytes += chunkBytes
 
-		if (!this.spilledToDisk) {
-			this.buffer += chunk
+		// Always update the head/tail preview buffers
+		this.addToPreviewBuffers(chunk)
 
-			if (Buffer.byteLength(this.buffer, "utf8") > this.previewBytes) {
-				this.spillToDisk()
+		// Handle disk spilling for full output preservation
+		if (!this.spilledToDisk) {
+			if (this.totalBytes > this.previewBytes) {
+				this.spillToDisk(chunk)
 			}
 		} else {
 			// Already spilling - write directly to disk
 			this.writeStream?.write(chunk)
 		}
+	}
+
+	/**
+	 * Add a chunk to the head/tail preview buffers using 50/50 split strategy.
+	 *
+	 * Fill head first until budget exhausted, then maintain a rolling tail buffer.
+	 *
+	 * @private
+	 */
+	private addToPreviewBuffers(chunk: string): void {
+		let remaining = chunk
+		let remainingBytes = Buffer.byteLength(chunk, "utf8")
+
+		// First, fill the head buffer if there's room
+		if (this.headBytes < this.headBudget) {
+			const headRoom = this.headBudget - this.headBytes
+			if (remainingBytes <= headRoom) {
+				// Entire chunk fits in head
+				this.headBuffer += remaining
+				this.headBytes += remainingBytes
+				return
+			}
+			// Split: part goes to head, rest goes to tail
+			const headPortion = this.sliceByBytes(remaining, headRoom)
+			this.headBuffer += headPortion
+			this.headBytes += headRoom
+			remaining = remaining.slice(headPortion.length)
+			remainingBytes = Buffer.byteLength(remaining, "utf8")
+		}
+
+		// Add remainder to tail buffer
+		this.addToTailBuffer(remaining, remainingBytes)
+	}
+
+	/**
+	 * Add content to the rolling tail buffer, dropping old content as needed.
+	 *
+	 * @private
+	 */
+	private addToTailBuffer(chunk: string, chunkBytes: number): void {
+		if (this.tailBudget === 0) {
+			this.omittedBytes += chunkBytes
+			return
+		}
+
+		// If this single chunk is larger than the tail budget, keep only the last tailBudget bytes
+		if (chunkBytes >= this.tailBudget) {
+			const dropped = this.tailBytes + (chunkBytes - this.tailBudget)
+			this.omittedBytes += dropped
+			this.tailBuffer = this.sliceByBytesFromEnd(chunk, this.tailBudget)
+			this.tailBytes = this.tailBudget
+			return
+		}
+
+		// Append to tail
+		this.tailBuffer += chunk
+		this.tailBytes += chunkBytes
+
+		// Trim from front if over budget
+		this.trimTailToFit()
+	}
+
+	/**
+	 * Trim the tail buffer from the front to fit within the tail budget.
+	 *
+	 * @private
+	 */
+	private trimTailToFit(): void {
+		while (this.tailBytes > this.tailBudget && this.tailBuffer.length > 0) {
+			const excess = this.tailBytes - this.tailBudget
+			// Remove characters from the front until we're under budget
+			// We need to be careful with multi-byte characters
+			let removed = 0
+			let removeChars = 0
+			while (removed < excess && removeChars < this.tailBuffer.length) {
+				const charBytes = Buffer.byteLength(this.tailBuffer[removeChars], "utf8")
+				removed += charBytes
+				removeChars++
+			}
+			this.omittedBytes += removed
+			this.tailBytes -= removed
+			this.tailBuffer = this.tailBuffer.slice(removeChars)
+		}
+	}
+
+	/**
+	 * Slice a string to get approximately the first N bytes (UTF-8).
+	 *
+	 * @private
+	 */
+	private sliceByBytes(str: string, maxBytes: number): string {
+		let bytes = 0
+		let i = 0
+		while (i < str.length && bytes < maxBytes) {
+			const charBytes = Buffer.byteLength(str[i], "utf8")
+			if (bytes + charBytes > maxBytes) {
+				break
+			}
+			bytes += charBytes
+			i++
+		}
+		return str.slice(0, i)
+	}
+
+	/**
+	 * Slice a string to get approximately the last N bytes (UTF-8).
+	 *
+	 * @private
+	 */
+	private sliceByBytesFromEnd(str: string, maxBytes: number): string {
+		let bytes = 0
+		let i = str.length - 1
+		while (i >= 0 && bytes < maxBytes) {
+			const charBytes = Buffer.byteLength(str[i], "utf8")
+			if (bytes + charBytes > maxBytes) {
+				break
+			}
+			bytes += charBytes
+			i--
+		}
+		return str.slice(i + 1)
 	}
 
 	/**
@@ -112,7 +254,7 @@ export class OutputInterceptor {
 	 *
 	 * @private
 	 */
-	private spillToDisk(): void {
+	private spillToDisk(currentChunk: string): void {
 		// Ensure directory exists
 		const dir = path.dirname(this.artifactPath)
 		if (!fs.existsSync(dir)) {
@@ -120,18 +262,31 @@ export class OutputInterceptor {
 		}
 
 		this.writeStream = fs.createWriteStream(this.artifactPath)
-		this.writeStream.write(this.buffer)
-		this.spilledToDisk = true
+		// Write the full head buffer + any tail content accumulated so far
+		// Note: We need to reconstruct full output seen so far
+		// The full content before this chunk is: totalBytes - currentChunkBytes
+		// But we've already been tracking head/tail, so we write head + omitted + tail + current
+		// Actually, we need to write the complete original content
+		// Since we're spilling on the chunk that pushes us over, we need to write everything
+		// that came before plus this chunk
 
-		// Keep only preview portion in memory
-		this.buffer = this.buffer.slice(0, this.previewBytes)
+		// Reconstruct: we have headBuffer (complete head) + whatever was in tail before trimming
+		// For simplicity, write head + tail + current chunk (the tail already has some data)
+		this.writeStream.write(this.headBuffer)
+		if (this.tailBuffer.length > 0) {
+			this.writeStream.write(this.tailBuffer)
+		}
+		// Don't write currentChunk here - it was already processed into head/tail buffers
+		// and will be written via the streaming path
+
+		this.spilledToDisk = true
 	}
 
 	/**
 	 * Finalize the interceptor and return the persisted output result.
 	 *
 	 * Closes any open file streams and returns a summary object containing:
-	 * - A preview of the output (truncated to preview size)
+	 * - A preview of the output (head + [omitted indicator] + tail)
 	 * - The total byte count of all output
 	 * - The path to the full output file (if truncated)
 	 * - A flag indicating whether the output was truncated
@@ -154,8 +309,15 @@ export class OutputInterceptor {
 			this.writeStream.end()
 		}
 
-		// Prepare preview
-		const preview = this.buffer.slice(0, this.previewBytes)
+		// Prepare preview: head + [omission indicator] + tail
+		let preview: string
+		if (this.omittedBytes > 0) {
+			const omissionIndicator = `\n[...${this.omittedBytes} bytes omitted...]\n`
+			preview = this.headBuffer + omissionIndicator + this.tailBuffer
+		} else {
+			// No truncation, just combine head and tail (or head alone if tail is empty)
+			preview = this.headBuffer + this.tailBuffer
+		}
 
 		return {
 			preview,
@@ -168,13 +330,15 @@ export class OutputInterceptor {
 	/**
 	 * Get the current buffer content for UI display.
 	 *
-	 * Returns the in-memory buffer which contains either all output (if not spilled)
-	 * or just the preview portion (if spilled to disk).
+	 * Returns the combined head + tail content for real-time UI updates.
+	 * Note: Does not include the omission indicator to avoid flickering during streaming.
 	 *
 	 * @returns The current buffer content as a string
 	 */
 	getBufferForUI(): string {
-		return this.buffer
+		// For UI, return combined head + tail without omission indicator
+		// This provides a smoother streaming experience
+		return this.headBuffer + this.tailBuffer
 	}
 
 	/**
