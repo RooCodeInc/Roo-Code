@@ -925,22 +925,12 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					}
 				}
 
-				// Only handle tool/function calls from done events (to ensure arguments are complete)
-				if (
-					(item.type === "function_call" || item.type === "tool_call") &&
-					event.type === "response.output_item.done"
-				) {
-					const callId = item.call_id || item.tool_call_id || item.id
-					if (callId) {
-						const args = item.arguments || item.function?.arguments || item.function_arguments
-						yield {
-							type: "tool_call",
-							id: callId,
-							name: item.name || item.function?.name || item.function_name || "",
-							arguments: typeof args === "string" ? args : "{}",
-						}
-					}
-				}
+				// Note: We intentionally do NOT emit tool_call from response.output_item.done
+				// for function_call/tool_call items. The streaming path handles tool calls via:
+				// 1. tool_call_partial events during argument deltas
+				// 2. NativeToolCallParser.finalizeRawChunks() at stream end emitting tool_call_end
+				// 3. NativeToolCallParser.finalizeStreamingToolCall() creating the final ToolUse
+				// Emitting tool_call here would cause duplicate tool rendering.
 			}
 			return
 		}
