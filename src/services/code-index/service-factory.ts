@@ -112,10 +112,13 @@ export class CodeIndexServiceFactory {
 
 	/**
 	 * Validates an embedder instance to ensure it's properly configured.
+	 * Also captures the detected embedding dimension from the test embedding.
 	 * @param embedder The embedder instance to validate
-	 * @returns Promise resolving to validation result
+	 * @returns Promise resolving to validation result with optional detected dimension
 	 */
-	public async validateEmbedder(embedder: IEmbedder): Promise<{ valid: boolean; error?: string }> {
+	public async validateEmbedder(
+		embedder: IEmbedder,
+	): Promise<{ valid: boolean; error?: string; detectedDimension?: number }> {
 		try {
 			return await embedder.validateConfiguration()
 		} catch (error) {
@@ -136,8 +139,10 @@ export class CodeIndexServiceFactory {
 
 	/**
 	 * Creates a vector store instance using the current configuration.
+	 * @param detectedDimension Optional embedding dimension auto-detected from a test embedding.
+	 *                          When provided, this takes priority over profile-based or manual dimensions.
 	 */
-	public createVectorStore(): IVectorStore {
+	public createVectorStore(detectedDimension?: number): IVectorStore {
 		const config = this.configManager.getConfig()
 
 		const provider = config.embedderProvider as EmbedderProvider
@@ -147,12 +152,20 @@ export class CodeIndexServiceFactory {
 
 		let vectorSize: number | undefined
 
-		// First try to get the model-specific dimension from profiles
-		vectorSize = getModelDimension(provider, modelId)
+		// Priority order for vector dimension:
+		// 1. Auto-detected dimension from test embedding (most reliable)
+		// 2. Model-specific dimension from profiles
+		// 3. Manual dimension from config (fallback for unknown models)
+		if (detectedDimension && detectedDimension > 0) {
+			vectorSize = detectedDimension
+		} else {
+			// Try to get the model-specific dimension from profiles
+			vectorSize = getModelDimension(provider, modelId)
 
-		// Only use manual dimension if model doesn't have a built-in dimension
-		if (!vectorSize && config.modelDimension && config.modelDimension > 0) {
-			vectorSize = config.modelDimension
+			// Only use manual dimension if model doesn't have a built-in dimension
+			if (!vectorSize && config.modelDimension && config.modelDimension > 0) {
+				vectorSize = config.modelDimension
+			}
 		}
 
 		if (vectorSize === undefined || vectorSize <= 0) {
@@ -230,6 +243,11 @@ export class CodeIndexServiceFactory {
 
 	/**
 	 * Creates all required service dependencies if the service is properly configured.
+	 * @param context VSCode extension context
+	 * @param cacheManager Cache manager instance
+	 * @param ignoreInstance Ignore instance for .gitignore
+	 * @param rooIgnoreController Optional RooIgnore controller
+	 * @param detectedDimension Optional auto-detected embedding dimension from validation
 	 * @throws Error if the service is not properly configured
 	 */
 	public createServices(
@@ -237,6 +255,7 @@ export class CodeIndexServiceFactory {
 		cacheManager: CacheManager,
 		ignoreInstance: Ignore,
 		rooIgnoreController?: RooIgnoreController,
+		detectedDimension?: number,
 	): {
 		embedder: IEmbedder
 		vectorStore: IVectorStore
@@ -249,7 +268,7 @@ export class CodeIndexServiceFactory {
 		}
 
 		const embedder = this.createEmbedder()
-		const vectorStore = this.createVectorStore()
+		const vectorStore = this.createVectorStore(detectedDimension)
 		const parser = codeParser
 		const scanner = this.createDirectoryScanner(embedder, vectorStore, parser, ignoreInstance)
 		const fileWatcher = this.createFileWatcher(

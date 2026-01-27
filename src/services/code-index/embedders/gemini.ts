@@ -63,10 +63,11 @@ export class GeminiEmbedder implements IEmbedder {
 	}
 
 	/**
-	 * Validates the Gemini embedder configuration by delegating to the underlying OpenAI-compatible embedder
-	 * @returns Promise resolving to validation result with success status and optional error message
+	 * Validates the Gemini embedder configuration by delegating to the underlying OpenAI-compatible embedder.
+	 * Also detects the actual embedding dimension from a test embedding.
+	 * @returns Promise resolving to validation result with success status, optional error message, and detected dimension
 	 */
-	async validateConfiguration(): Promise<{ valid: boolean; error?: string }> {
+	async validateConfiguration(): Promise<{ valid: boolean; error?: string; detectedDimension?: number }> {
 		try {
 			// Delegate validation to the OpenAI-compatible embedder
 			// The error messages will be specific to Gemini since we're using Gemini's base URL

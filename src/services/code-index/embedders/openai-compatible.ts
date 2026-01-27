@@ -357,10 +357,11 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 	}
 
 	/**
-	 * Validates the OpenAI-compatible embedder configuration by testing endpoint connectivity and API key
-	 * @returns Promise resolving to validation result with success status and optional error message
+	 * Validates the OpenAI-compatible embedder configuration by testing endpoint connectivity and API key.
+	 * Also detects the actual embedding dimension from a test embedding.
+	 * @returns Promise resolving to validation result with success status, optional error message, and detected dimension
 	 */
-	async validateConfiguration(): Promise<{ valid: boolean; error?: string }> {
+	async validateConfiguration(): Promise<{ valid: boolean; error?: string; detectedDimension?: number }> {
 		return withValidationErrorHandling(async () => {
 			try {
 				// Test with a minimal embedding request
@@ -389,7 +390,20 @@ export class OpenAICompatibleEmbedder implements IEmbedder {
 					}
 				}
 
-				return { valid: true }
+				// Convert base64 embedding to get the actual dimension
+				let detectedDimension: number | undefined
+				const firstItem = response.data[0]
+				if (firstItem?.embedding) {
+					if (typeof firstItem.embedding === "string") {
+						// Decode base64 to get float32 array length
+						const buffer = Buffer.from(firstItem.embedding, "base64")
+						detectedDimension = buffer.byteLength / 4 // 4 bytes per float32
+					} else if (Array.isArray(firstItem.embedding)) {
+						detectedDimension = firstItem.embedding.length
+					}
+				}
+
+				return { valid: true, detectedDimension }
 			} catch (error) {
 				// Capture telemetry for validation errors
 				TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
