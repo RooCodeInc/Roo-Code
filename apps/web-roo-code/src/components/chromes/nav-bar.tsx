@@ -77,6 +77,11 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 						{/* Dropdown Menu */}
 						<div className="absolute left-0 top-12 mt-2 w-40 rounded-md border border-border bg-background py-1 shadow-lg opacity-0 -translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200">
 							<Link
+								href="/blog"
+								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
+								Blog
+							</Link>
+							<Link
 								href="/evals"
 								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
 								Evals
@@ -215,6 +220,12 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 							<div className="px-5 pb-2 pt-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
 								Resources
 							</div>
+							<Link
+								href="/blog"
+								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
+								onClick={() => setIsMenuOpen(false)}>
+								Blog
+							</Link>
 							<ScrollButton
 								targetId="faq"
 								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"

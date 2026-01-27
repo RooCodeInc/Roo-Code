@@ -22,6 +22,7 @@ export const EXTERNAL_LINKS = {
 	SECURITY: "https://trust.roocode.com",
 	EVALS: "https://roocode.com/evals",
 	BLOG: "https://blog.roocode.com",
+	SUBSTACK: "https://roocode.substack.com",
 	OFFICE_HOURS_PODCAST: "https://www.youtube.com/@RooCodeYT/podcasts",
 	FAQ: "https://roocode.com/#faq",
 	TESTIMONIALS: "https://roocode.com/#testimonials",
