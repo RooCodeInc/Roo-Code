@@ -504,5 +504,8 @@
 		"serversPart_other": "{{count}}개 MCP 서버",
 		"messageTemplate": "{{servers}}를 통해 {{tools}}가 활성화되어 있습니다. 이렇게 많은 수의 도구는 모델을 혼동시키고 오류를 유발할 수 있습니다. {{threshold}} 이하로 유지하도록 노력하세요.",
 		"openMcpSettings": "MCP 설정 열기"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

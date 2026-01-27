@@ -505,5 +505,8 @@
 		"serversPart_other": "{{count}} серверов MCP",
 		"messageTemplate": "У тебя включено {{tools}} через {{servers}}. Такое большое количество может сбить модель с толку и привести к ошибкам. Постарайся держать это ниже {{threshold}}.",
 		"openMcpSettings": "Открыть настройки MCP"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

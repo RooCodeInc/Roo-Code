@@ -505,5 +505,8 @@
 		"serversPart_other": "{{count}} 个 MCP 服务",
 		"messageTemplate": "你通过 {{servers}} 启用了 {{tools}}。这么多数量会混淆模型并导致错误。建议将其保持在 {{threshold}} 以下。",
 		"openMcpSettings": "打开 MCP 设置"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

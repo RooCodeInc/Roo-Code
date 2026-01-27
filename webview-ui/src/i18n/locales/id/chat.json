@@ -510,5 +510,8 @@
 		"serversPart_other": "{{count}} server MCP",
 		"messageTemplate": "Anda memiliki {{tools}} diaktifkan melalui {{servers}}. Jumlah yang begitu besar dapat membingungkan model dan menyebabkan kesalahan. Cobalah untuk menjaganya di bawah {{threshold}}.",
 		"openMcpSettings": "Buka Pengaturan MCP"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

@@ -504,5 +504,8 @@
 		"serversPart_other": "{{count}} MCP servers",
 		"messageTemplate": "Je hebt {{tools}} ingeschakeld via {{servers}}. Zoveel tools kunnen het model verwarren en tot fouten leiden. Probeer dit onder {{threshold}} te houden.",
 		"openMcpSettings": "MCP-instellingen openen"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

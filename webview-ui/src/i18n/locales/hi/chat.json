@@ -504,5 +504,8 @@
 		"serversPart_other": "{{count}} MCP सर्वर",
 		"messageTemplate": "आपके पास {{servers}} के माध्यम से {{tools}} सक्षम हैं। इतनी अधिक संख्या मॉडल को भ्रमित कर सकती है और त्रुटियों का कारण बन सकती है। इसे {{threshold}} से नीचे रखने का प्रयास करें।",
 		"openMcpSettings": "MCP सेटिंग्स खोलें"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

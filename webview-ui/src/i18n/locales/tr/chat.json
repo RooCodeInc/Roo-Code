@@ -505,5 +505,8 @@
 		"serversPart_other": "{{count}} MCP sunucusu",
 		"messageTemplate": "{{servers}} üzerinden {{tools}} etkinleştirilmiş durumda. Bu kadar fazlası modeli kafası karışabilir ve hatalara neden olabilir. {{threshold}} altında tutmaya çalış.",
 		"openMcpSettings": "MCP Ayarlarını Aç"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

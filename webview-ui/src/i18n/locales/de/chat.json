@@ -504,5 +504,8 @@
 		"serversPart_other": "{{count}} MCP-Server",
 		"messageTemplate": "Du hast {{tools}} über {{servers}} aktiviert. Eine so hohe Anzahl kann das Modell verwirren und zu Fehlern führen. Versuche, es unter {{threshold}} zu halten.",
 		"openMcpSettings": "MCP-Einstellungen öffnen"
+	},
+	"readCommandOutput": {
+		"title": "Roo las Befehlsausgabe"
 	}
 }

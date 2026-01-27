@@ -504,5 +504,8 @@
 		"serversPart_other": "{{count}} server MCP",
 		"messageTemplate": "Hai {{tools}} abilitate via {{servers}}. Un numero così alto può confondere il modello e portare a errori. Prova a mantenerlo sotto {{threshold}}.",
 		"openMcpSettings": "Apri impostazioni MCP"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }
