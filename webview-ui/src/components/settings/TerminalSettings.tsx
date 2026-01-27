@@ -26,7 +26,6 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalZshOhMy?: boolean
 	terminalZshP10k?: boolean
 	terminalZdotdir?: boolean
-	terminalCompressProgressBar?: boolean
 	setCachedStateField: SetCachedStateField<
 		| "terminalOutputPreviewSize"
 		| "terminalShellIntegrationTimeout"
@@ -37,7 +36,6 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "terminalZshOhMy"
 		| "terminalZshP10k"
 		| "terminalZdotdir"
-		| "terminalCompressProgressBar"
 	>
 }
 
@@ -51,7 +49,6 @@ export const TerminalSettings = ({
 	terminalZshOhMy,
 	terminalZshP10k,
 	terminalZdotdir,
-	terminalCompressProgressBar,
 	setCachedStateField,
 	className,
 	...props
@@ -125,31 +122,6 @@ export const TerminalSettings = ({
 							</Select>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:terminal.outputPreviewSize.description")}
-							</div>
-						</SearchableSetting>
-						<SearchableSetting
-							settingId="terminal-compress-progress-bar"
-							section="terminal"
-							label={t("settings:terminal.compressProgressBar.label")}>
-							<VSCodeCheckbox
-								checked={terminalCompressProgressBar ?? true}
-								onChange={(e: any) =>
-									setCachedStateField("terminalCompressProgressBar", e.target.checked)
-								}
-								data-testid="terminal-compress-progress-bar-checkbox">
-								<span className="font-medium">{t("settings:terminal.compressProgressBar.label")}</span>
-							</VSCodeCheckbox>
-							<div className="text-vscode-descriptionForeground text-sm mt-1">
-								<Trans i18nKey="settings:terminal.compressProgressBar.description">
-									<VSCodeLink
-										href={buildDocLink(
-											"features/shell-integration#compress-progress-bar-output",
-											"settings_terminal_compress_progress_bar",
-										)}
-										style={{ display: "inline" }}>
-										{" "}
-									</VSCodeLink>
-								</Trans>
 							</div>
 						</SearchableSetting>
 					</div>

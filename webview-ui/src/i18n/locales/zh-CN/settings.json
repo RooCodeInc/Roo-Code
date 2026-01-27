@@ -746,10 +746,6 @@
 			"label": "终端命令延迟",
 			"description": "在每个命令后添加短暂暂停，以便 VS Code 终端刷新所有输出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。仅在看到缺少尾部输出时使用；否则保持为 0。<0>了解更多</0>"
 		},
-		"compressProgressBar": {
-			"label": "压缩进度条输出",
-			"description": "折叠进度条/旋转器，仅保留最终状态（节省 token）。<0>了解更多</0>"
-		},
 		"powershellCounter": {
 			"label": "启用 PowerShell 计数器解决方案",
 			"description": "当 PowerShell 输出丢失或重复时启用此选项；它会为每个命令附加一个小计数器以稳定输出。如果输出已正常，请保持关闭。<0>了解更多</0>"

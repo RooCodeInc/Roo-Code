@@ -211,7 +211,6 @@ export async function executeCommandInTerminal(
 		const providerState = await provider?.getState()
 		const terminalOutputPreviewSize =
 			providerState?.terminalOutputPreviewSize ?? DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE
-		const terminalCompressProgressBar = providerState?.terminalCompressProgressBar ?? true
 
 		interceptor = new OutputInterceptor({
 			executionId,
@@ -219,7 +218,6 @@ export async function executeCommandInTerminal(
 			command,
 			storageDir,
 			previewSize: terminalOutputPreviewSize,
-			compressProgressBar: terminalCompressProgressBar,
 		})
 	}
 

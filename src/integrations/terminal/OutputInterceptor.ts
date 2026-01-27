@@ -3,8 +3,6 @@ import * as path from "path"
 
 import { TerminalOutputPreviewSize, TERMINAL_PREVIEW_BYTES, PersistedCommandOutput } from "@roo-code/types"
 
-import { processCarriageReturns, processBackspaces } from "../misc/extract-text"
-
 /**
  * Configuration options for creating an OutputInterceptor instance.
  */
@@ -19,8 +17,6 @@ export interface OutputInterceptorOptions {
 	storageDir: string
 	/** Size category for the preview buffer (small/medium/large) */
 	previewSize: TerminalOutputPreviewSize
-	/** Whether to compress progress bar output using carriage return processing */
-	compressProgressBar: boolean
 }
 
 /**
@@ -46,7 +42,6 @@ export interface OutputInterceptorOptions {
  *   command: 'npm test',
  *   storageDir: '/path/to/task/command-output',
  *   previewSize: 'medium',
- *   compressProgressBar: true
  * });
  *
  * // Write output chunks as they arrive
@@ -66,7 +61,6 @@ export class OutputInterceptor {
 	private totalBytes: number = 0
 	private spilledToDisk: boolean = false
 	private readonly previewBytes: number
-	private readonly compressProgressBar: boolean
 
 	/**
 	 * Creates a new OutputInterceptor instance.
@@ -75,7 +69,6 @@ export class OutputInterceptor {
 	 */
 	constructor(private readonly options: OutputInterceptorOptions) {
 		this.previewBytes = TERMINAL_PREVIEW_BYTES[options.previewSize]
-		this.compressProgressBar = options.compressProgressBar
 		this.artifactPath = path.join(options.storageDir, `cmd-${options.executionId}.txt`)
 	}
 
@@ -143,9 +136,6 @@ export class OutputInterceptor {
 	 * - The path to the full output file (if truncated)
 	 * - A flag indicating whether the output was truncated
 	 *
-	 * If `compressProgressBar` was enabled, the preview will have carriage returns
-	 * and backspaces processed to show only final line states.
-	 *
 	 * @returns The persisted command output summary
 	 *
 	 * @example
@@ -165,13 +155,7 @@ export class OutputInterceptor {
 		}
 
 		// Prepare preview
-		let preview = this.buffer.slice(0, this.previewBytes)
-
-		// Apply compression to preview only (for readability)
-		if (this.compressProgressBar) {
-			preview = processCarriageReturns(preview)
-			preview = processBackspaces(preview)
-		}
+		const preview = this.buffer.slice(0, this.previewBytes)
 
 		return {
 			preview,

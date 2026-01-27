@@ -790,6 +790,17 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "read_command_output":
+					if (args.artifact_id !== undefined) {
+						nativeArgs = {
+							artifact_id: args.artifact_id,
+							search: args.search,
+							offset: args.offset,
+							limit: args.limit,
+						} as NativeArgsFor<TName>
+					}
+					break
+
 				case "write_to_file":
 					if (args.path !== undefined && args.content !== undefined) {
 						nativeArgs = {

@@ -1,4 +1,4 @@
-import { truncateOutput, applyRunLengthEncoding, processBackspaces, processCarriageReturns } from "../misc/extract-text"
+import { truncateOutput, applyRunLengthEncoding } from "../misc/extract-text"
 import { DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT } from "@roo-code/types"
 
 import type {
@@ -162,7 +162,6 @@ export abstract class BaseTerminal implements RooTerminal {
 	private static terminalZshOhMy: boolean = false
 	private static terminalZshP10k: boolean = false
 	private static terminalZdotdir: boolean = false
-	private static compressProgressBar: boolean = true
 
 	/**
 	 * Compresses terminal output by applying run-length encoding and truncating to line limit
@@ -273,17 +272,10 @@ export abstract class BaseTerminal implements RooTerminal {
 	 * @returns The compressed terminal output
 	 */
 	public static compressTerminalOutput(input: string, lineLimit: number, characterLimit?: number): string {
-		let processedInput = input
-
-		if (BaseTerminal.compressProgressBar) {
-			processedInput = processCarriageReturns(processedInput)
-			processedInput = processBackspaces(processedInput)
-		}
-
 		// Default character limit to prevent context window explosion
 		const effectiveCharLimit = characterLimit ?? DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT
 
-		return truncateOutput(applyRunLengthEncoding(processedInput), lineLimit, effectiveCharLimit)
+		return truncateOutput(applyRunLengthEncoding(input), lineLimit, effectiveCharLimit)
 	}
 
 	/**
@@ -300,21 +292,5 @@ export abstract class BaseTerminal implements RooTerminal {
 	 */
 	public static getTerminalZdotdir(): boolean {
 		return BaseTerminal.terminalZdotdir
-	}
-
-	/**
-	 * Sets whether to compress progress bar output by processing carriage returns
-	 * @param enabled Whether to enable progress bar compression
-	 */
-	public static setCompressProgressBar(enabled: boolean): void {
-		BaseTerminal.compressProgressBar = enabled
-	}
-
-	/**
-	 * Gets whether progress bar compression is enabled
-	 * @returns Whether progress bar compression is enabled
-	 */
-	public static getCompressProgressBar(): boolean {
-		return BaseTerminal.compressProgressBar
 	}
 }

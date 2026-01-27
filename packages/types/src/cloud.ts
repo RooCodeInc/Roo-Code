@@ -99,7 +99,6 @@ export const organizationDefaultSettingsSchema = globalSettingsSchema
 		maxWorkspaceFiles: true,
 		showRooIgnoredFiles: true,
 		terminalCommandDelay: true,
-		terminalCompressProgressBar: true,
 		terminalOutputLineLimit: true,
 		terminalShellIntegrationDisabled: true,
 		terminalShellIntegrationTimeout: true,

@@ -197,7 +197,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		maxReadFileLine,
 		maxImageFileSize,
 		maxTotalImageSize,
-		terminalCompressProgressBar,
 		maxConcurrentFileReads,
 		customSupportPrompts,
 		profileThresholds,
@@ -402,7 +401,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					terminalZshOhMy,
 					terminalZshP10k,
 					terminalZdotdir,
-					terminalCompressProgressBar,
 					terminalOutputPreviewSize: terminalOutputPreviewSize ?? "medium",
 					mcpEnabled,
 					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
@@ -883,7 +881,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								terminalZshOhMy={terminalZshOhMy}
 								terminalZshP10k={terminalZshP10k}
 								terminalZdotdir={terminalZdotdir}
-								terminalCompressProgressBar={terminalCompressProgressBar}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
