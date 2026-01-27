@@ -489,7 +489,7 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 	// Filter out messages whose condenseParent points to an existing summary
 	// or whose truncationParent points to an existing truncation marker.
 	// Messages with orphaned parents (summary/marker was deleted) are included.
-	return messages.filter((msg) => {
+	const visibleMessages = messages.filter((msg) => {
 		// Filter out condensed messages if their summary exists
 		if (msg.condenseParent && existingSummaryIds.has(msg.condenseParent)) {
 			return false
@@ -500,6 +500,43 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 		}
 		return true
 	})
+
+	// Collect all tool_use IDs from visible assistant messages.
+	// This is needed to filter out orphan tool_result blocks that reference
+	// tool_use IDs from messages that were truncated away.
+	const toolUseIds = new Set<string>()
+	for (const msg of visibleMessages) {
+		if (msg.role === "assistant" && Array.isArray(msg.content)) {
+			for (const block of msg.content) {
+				if (block.type === "tool_use" && (block as Anthropic.Messages.ToolUseBlockParam).id) {
+					toolUseIds.add((block as Anthropic.Messages.ToolUseBlockParam).id)
+				}
+			}
+		}
+	}
+
+	// Filter out orphan tool_result blocks from user messages
+	return visibleMessages
+		.map((msg) => {
+			if (msg.role === "user" && Array.isArray(msg.content)) {
+				const filteredContent = msg.content.filter((block) => {
+					if (block.type === "tool_result") {
+						return toolUseIds.has((block as Anthropic.Messages.ToolResultBlockParam).tool_use_id)
+					}
+					return true
+				})
+				// If all content was filtered out, mark for removal
+				if (filteredContent.length === 0) {
+					return null
+				}
+				// If some content was filtered, return updated message
+				if (filteredContent.length !== msg.content.length) {
+					return { ...msg, content: filteredContent }
+				}
+			}
+			return msg
+		})
+		.filter((msg): msg is ApiMessage => msg !== null)
 }
 
 /**
