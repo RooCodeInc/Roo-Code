@@ -35,3 +35,12 @@ export { getNowPt, parsePublishTimePt, formatPostDatePt } from "./pt-time"
 
 // Publishing helpers
 export { isPublished } from "./publishing"
+
+// Structured data (JSON-LD)
+export {
+	getArticleStructuredData,
+	getBlogCollectionStructuredData,
+	getBlogBreadcrumbStructuredData,
+	getBlogPostBreadcrumbStructuredData,
+	getBlogPostUrl,
+} from "./structured-data"
