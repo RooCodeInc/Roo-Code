@@ -34,10 +34,14 @@ describe("OutputInterceptor", () => {
 
 		storageDir = path.normalize("/tmp/test-storage")
 
-		// Setup mock write stream
+		// Setup mock write stream with callback support for end()
 		mockWriteStream = {
 			write: vi.fn(),
-			end: vi.fn(),
+			end: vi.fn((callback?: () => void) => {
+				// Immediately call the callback to simulate stream flush completing
+				if (callback) callback()
+			}),
+			on: vi.fn(),
 		}
 
 		vi.mocked(fs.existsSync).mockReturnValue(true)
@@ -49,7 +53,7 @@ describe("OutputInterceptor", () => {
 	})
 
 	describe("Buffering behavior", () => {
-		it("should keep small output in memory without spilling to disk", () => {
+		it("should keep small output in memory without spilling to disk", async () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
@@ -64,7 +68,7 @@ describe("OutputInterceptor", () => {
 			expect(interceptor.hasSpilledToDisk()).toBe(false)
 			expect(fs.createWriteStream).not.toHaveBeenCalled()
 
-			const result = interceptor.finalize()
+			const result = await interceptor.finalize()
 			expect(result.preview).toBe(smallOutput)
 			expect(result.truncated).toBe(false)
 			expect(result.artifactPath).toBe(null)
@@ -94,7 +98,7 @@ describe("OutputInterceptor", () => {
 			expect(mockWriteStream.write).toHaveBeenCalled()
 		})
 
-		it("should truncate preview after spilling to disk using head/tail split", () => {
+		it("should truncate preview after spilling to disk using head/tail split", async () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
@@ -109,7 +113,7 @@ describe("OutputInterceptor", () => {
 
 			expect(interceptor.hasSpilledToDisk()).toBe(true)
 
-			const result = interceptor.finalize()
+			const result = await interceptor.finalize()
 			expect(result.truncated).toBe(true)
 			expect(result.artifactPath).toBe(path.join(storageDir, "cmd-12345.txt"))
 			// Preview is head (1024) + omission indicator + tail (1024)
@@ -268,7 +272,7 @@ describe("OutputInterceptor", () => {
 	})
 
 	describe("finalize() method", () => {
-		it("should return preview output for small commands", () => {
+		it("should return preview output for small commands", async () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
@@ -280,7 +284,7 @@ describe("OutputInterceptor", () => {
 			const output = "Hello World\n"
 			interceptor.write(output)
 
-			const result = interceptor.finalize()
+			const result = await interceptor.finalize()
 
 			expect(result.preview).toBe(output)
 			expect(result.totalBytes).toBe(Buffer.byteLength(output, "utf8"))
@@ -288,7 +292,7 @@ describe("OutputInterceptor", () => {
 			expect(result.truncated).toBe(false)
 		})
 
-		it("should return PersistedCommandOutput for large commands with head/tail preview", () => {
+		it("should return PersistedCommandOutput for large commands with head/tail preview", async () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
@@ -300,7 +304,7 @@ describe("OutputInterceptor", () => {
 			const largeOutput = "x".repeat(5000)
 			interceptor.write(largeOutput)
 
-			const result = interceptor.finalize()
+			const result = await interceptor.finalize()
 
 			expect(result.truncated).toBe(true)
 			expect(result.artifactPath).toBe(path.join(storageDir, "cmd-12345.txt"))
@@ -310,7 +314,7 @@ describe("OutputInterceptor", () => {
 			expect(result.preview).toContain("bytes omitted...]")
 		})
 
-		it("should close write stream when finalizing", () => {
+		it("should close write stream when finalizing", async () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
@@ -321,12 +325,12 @@ describe("OutputInterceptor", () => {
 
 			// Trigger spill
 			interceptor.write("x".repeat(3000))
-			interceptor.finalize()
+			await interceptor.finalize()
 
 			expect(mockWriteStream.end).toHaveBeenCalled()
 		})
 
-		it("should include correct metadata (artifactId, size, truncated flag)", () => {
+		it("should include correct metadata (artifactId, size, truncated flag)", async () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
@@ -338,7 +342,7 @@ describe("OutputInterceptor", () => {
 			const output = "x".repeat(5000)
 			interceptor.write(output)
 
-			const result = interceptor.finalize()
+			const result = await interceptor.finalize()
 
 			expect(result).toHaveProperty("preview")
 			expect(result).toHaveProperty("totalBytes", 5000)
@@ -432,7 +436,7 @@ describe("OutputInterceptor", () => {
 	})
 
 	describe("Head/Tail split behavior", () => {
-		it("should preserve first 50% and last 50% of output", () => {
+		it("should preserve first 50% and last 50% of output", async () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
@@ -450,7 +454,7 @@ describe("OutputInterceptor", () => {
 			interceptor.write(middleContent)
 			interceptor.write(tailContent)
 
-			const result = interceptor.finalize()
+			const result = await interceptor.finalize()
 
 			// Should start with HEAD content (first 1024 bytes of head budget)
 			expect(result.preview.startsWith("HEAD")).toBe(true)
@@ -461,7 +465,7 @@ describe("OutputInterceptor", () => {
 			expect(result.preview).toContain("bytes omitted...]")
 		})
 
-		it("should not add omission indicator when output fits in budget", () => {
+		it("should not add omission indicator when output fits in budget", async () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
@@ -473,14 +477,14 @@ describe("OutputInterceptor", () => {
 			const smallOutput = "Hello World\n"
 			interceptor.write(smallOutput)
 
-			const result = interceptor.finalize()
+			const result = await interceptor.finalize()
 
 			// No omission indicator for small output
 			expect(result.preview).toBe(smallOutput)
 			expect(result.preview).not.toContain("[...")
 		})
 
-		it("should handle output that exactly fills head budget", () => {
+		it("should handle output that exactly fills head budget", async () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
@@ -493,14 +497,14 @@ describe("OutputInterceptor", () => {
 			const exactHeadContent = "x".repeat(1024)
 			interceptor.write(exactHeadContent)
 
-			const result = interceptor.finalize()
+			const result = await interceptor.finalize()
 
 			// Should fit entirely in head, no truncation
 			expect(result.preview).toBe(exactHeadContent)
 			expect(result.truncated).toBe(false)
 		})
 
-		it("should split single large chunk across head and tail", () => {
+		it("should split single large chunk across head and tail", async () => {
 			const interceptor = new OutputInterceptor({
 				executionId: "12345",
 				taskId: "task-1",
@@ -514,7 +518,7 @@ describe("OutputInterceptor", () => {
 			const content = "A".repeat(1024) + "B".repeat(2000) + "C".repeat(1024)
 			interceptor.write(content)
 
-			const result = interceptor.finalize()
+			const result = await interceptor.finalize()
 
 			// Head should have A's
 			expect(result.preview.startsWith("A")).toBe(true)

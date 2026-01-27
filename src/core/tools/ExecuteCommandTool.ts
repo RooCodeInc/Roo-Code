@@ -263,10 +263,10 @@ export async function executeCommandInTerminal(
 				if (interceptor) {
 					persistedResult = await interceptor.finalize()
 				}
-
+	
 				// Continue using compressed output for UI display
 				result = Terminal.compressTerminalOutput(output ?? "")
-
+	
 				task.say("command_output", result)
 				completed = true
 			} finally {
