@@ -210,6 +210,16 @@ export async function executeCommandInTerminal(
 	// Bound accumulated output buffer size to prevent unbounded memory growth for long-running commands.
 	// The interceptor preserves full output; this buffer is only for UI display (100KB limit).
 	const maxAccumulatedOutputSize = 100_000
+
+	// Track when onCompleted callback finishes to avoid race condition.
+	// The callback is async but Terminal/ExecaTerminal don't await it, so we track completion
+	// explicitly to ensure persistedResult is set before we use it.
+	let onCompletedPromise: Promise<void> | undefined
+	let resolveOnCompleted: (() => void) | undefined
+	onCompletedPromise = new Promise((resolve) => {
+		resolveOnCompleted = resolve
+	})
+
 	const callbacks: RooTerminalCallbacks = {
 		onLine: async (lines: string, process: RooTerminalProcess) => {
 			accumulatedOutput += lines
@@ -247,18 +257,23 @@ export async function executeCommandInTerminal(
 			}
 		},
 		onCompleted: async (output: string | undefined) => {
-			// Finalize interceptor and get persisted result.
-			// We await finalize() to ensure the artifact file is fully flushed
-			// before we advertise the artifact_id to the LLM.
-			if (interceptor) {
-				persistedResult = await interceptor.finalize()
+			try {
+				// Finalize interceptor and get persisted result.
+				// We await finalize() to ensure the artifact file is fully flushed
+				// before we advertise the artifact_id to the LLM.
+				if (interceptor) {
+					persistedResult = await interceptor.finalize()
+				}
+
+				// Continue using compressed output for UI display
+				result = Terminal.compressTerminalOutput(output ?? "")
+
+				task.say("command_output", result)
+				completed = true
+			} finally {
+				// Signal that onCompleted has finished, so the main code can safely use persistedResult
+				resolveOnCompleted?.()
 			}
-
-			// Continue using compressed output for UI display
-			result = Terminal.compressTerminalOutput(output ?? "")
-
-			task.say("command_output", result)
-			completed = true
 		},
 		onShellExecutionStarted: (pid: number | undefined) => {
 			const status: CommandExecutionStatus = { executionId, status: "started", pid, command }
@@ -347,6 +362,13 @@ export async function executeCommandInTerminal(
 	// the correct order of messages (although the webview is smart about
 	// grouping command_output messages despite any gaps anyways).
 	await delay(50)
+
+	// Wait for onCompleted callback to finish if shell execution completed.
+	// This ensures persistedResult is set before we try to use it, fixing the race
+	// condition where exitDetails is set (sync) before the async onCompleted finishes.
+	if (exitDetails && onCompletedPromise) {
+		await onCompletedPromise
+	}
 
 	if (message) {
 		const { text, images } = message
