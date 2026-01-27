@@ -46,6 +46,7 @@ import { selectImages } from "../../integrations/misc/process-images"
 import { getTheme } from "../../integrations/theme/getTheme"
 import { discoverChromeHostUrl, tryChromeHostUrl } from "../../services/browser/browserDiscovery"
 import { searchWorkspaceFiles } from "../../services/search/file-search"
+import { loadRoogitincludePatterns } from "../../services/glob/list-files"
 import { fileExistsAtPath } from "../../utils/fs"
 import { playTts, setTtsEnabled, setTtsSpeed, stopTts } from "../../utils/tts"
 import { searchCommits } from "../../utils/git"
@@ -1782,11 +1783,31 @@ export const webviewMessageHandler = async (
 				break
 			}
 			try {
+				// Get mentions.respectGitignore setting
+				const respectGitignore = vscode.workspace
+					.getConfiguration(Package.name)
+					.get<boolean>("mentions.respectGitignore", false)
+
+				// Load .roogitinclude patterns
+				const roogitincludePatterns = await loadRoogitincludePatterns(workspacePath)
+
+				// Get codeIndex.includePatterns setting
+				const settingsIncludePatterns = vscode.workspace
+					.getConfiguration(Package.name)
+					.get<string[]>("codeIndex.includePatterns", [])
+
+				// Combine both sources: .roogitinclude + settings includePatterns
+				const allIncludePatterns = [...roogitincludePatterns, ...settingsIncludePatterns]
+
 				// Call file search service with query from message
 				const results = await searchWorkspaceFiles(
 					message.query || "",
 					workspacePath,
 					20, // Use default limit, as filtering is now done in the backend
+					{
+						respectGitignore,
+						includePatterns: allIncludePatterns,
+					},
 				)
 
 				// Get the RooIgnoreController from the current task, or create a new one
