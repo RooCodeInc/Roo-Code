@@ -18,7 +18,7 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 	const { t } = useAppTranslation()
 
 	const [isDeleting, setIsDeleting] = useState(false)
-	const [forceDelete, setForceDelete] = useState(false)
+	const [forceDelete, setForceDelete] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
