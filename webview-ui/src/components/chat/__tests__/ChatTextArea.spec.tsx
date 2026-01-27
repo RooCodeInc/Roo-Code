@@ -112,6 +112,7 @@ describe("ChatTextArea", () => {
 			expect(mockPostMessage).toHaveBeenCalledWith({
 				type: "enhancePrompt",
 				text: "Test prompt",
+				context: "main",
 			})
 		})
 
@@ -183,7 +184,7 @@ describe("ChatTextArea", () => {
 	})
 
 	describe("enhanced prompt response", () => {
-		it("should update input value using native browser methods when receiving enhanced prompt", () => {
+		it("should update input value using native browser methods when receiving enhanced prompt with matching context", () => {
 			const setInputValue = vi.fn()
 
 			// Mock document.execCommand
@@ -205,17 +206,102 @@ describe("ChatTextArea", () => {
 			textarea.select = mockSelect
 			textarea.focus = mockFocus
 
-			// Simulate receiving enhanced prompt message
+			// Simulate receiving enhanced prompt message with matching context
 			window.dispatchEvent(
 				new MessageEvent("message", {
 					data: {
 						type: "enhancedPrompt",
 						text: "Enhanced test prompt",
+						context: "main",
 					},
 				}),
 			)
 
 			// Verify native browser methods were used
+			expect(mockFocus).toHaveBeenCalled()
+			expect(mockSelect).toHaveBeenCalled()
+			expect(mockExecCommand).toHaveBeenCalledWith("insertText", false, "Enhanced test prompt")
+		})
+
+		it("should ignore enhanced prompt with non-matching context", () => {
+			const setInputValue = vi.fn()
+
+			// Mock document.execCommand
+			const mockExecCommand = vi.fn().mockReturnValue(true)
+			Object.defineProperty(document, "execCommand", {
+				value: mockExecCommand,
+				writable: true,
+			})
+
+			const { container } = render(
+				<ChatTextArea {...defaultProps} setInputValue={setInputValue} inputValue="Original prompt" />,
+			)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Mock textarea methods
+			const mockSelect = vi.fn()
+			const mockFocus = vi.fn()
+			textarea.select = mockSelect
+			textarea.focus = mockFocus
+
+			// Simulate receiving enhanced prompt message with non-matching context (edit instead of main)
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					data: {
+						type: "enhancedPrompt",
+						text: "Enhanced test prompt",
+						context: "edit",
+					},
+				}),
+			)
+
+			// Verify native browser methods were NOT called
+			expect(mockFocus).not.toHaveBeenCalled()
+			expect(mockSelect).not.toHaveBeenCalled()
+			expect(mockExecCommand).not.toHaveBeenCalled()
+			expect(setInputValue).not.toHaveBeenCalled()
+		})
+
+		it("should handle enhanced prompt for edit mode", () => {
+			const setInputValue = vi.fn()
+
+			// Mock document.execCommand
+			const mockExecCommand = vi.fn().mockReturnValue(true)
+			Object.defineProperty(document, "execCommand", {
+				value: mockExecCommand,
+				writable: true,
+			})
+
+			const { container } = render(
+				<ChatTextArea
+					{...defaultProps}
+					setInputValue={setInputValue}
+					inputValue="Original prompt"
+					isEditMode={true}
+				/>,
+			)
+
+			const textarea = container.querySelector("textarea")!
+
+			// Mock textarea methods
+			const mockSelect = vi.fn()
+			const mockFocus = vi.fn()
+			textarea.select = mockSelect
+			textarea.focus = mockFocus
+
+			// Simulate receiving enhanced prompt message with edit context
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					data: {
+						type: "enhancedPrompt",
+						text: "Enhanced test prompt",
+						context: "edit",
+					},
+				}),
+			)
+
+			// Verify native browser methods were called for edit mode
 			expect(mockFocus).toHaveBeenCalled()
 			expect(mockSelect).toHaveBeenCalled()
 			expect(mockExecCommand).toHaveBeenCalledWith("insertText", false, "Enhanced test prompt")
@@ -238,6 +324,7 @@ describe("ChatTextArea", () => {
 					data: {
 						type: "enhancedPrompt",
 						text: "Enhanced test prompt",
+						context: "main",
 					},
 				}),
 			)
@@ -258,6 +345,7 @@ describe("ChatTextArea", () => {
 						data: {
 							type: "enhancedPrompt",
 							text: "Enhanced test prompt",
+							context: "main",
 						},
 					}),
 				)
