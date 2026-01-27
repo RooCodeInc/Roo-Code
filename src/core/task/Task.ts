@@ -4177,8 +4177,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		const shouldIncludeTools = allTools.length > 0
 
-		// Parallel tool calls can now be enabled safely with new_task isolation enforcement
-		// The runtime enforcement at line ~3427 prevents tools after new_task from executing
 		const parallelToolCallsEnabled = state?.experiments?.multipleNativeToolCalls ?? false
 
 		const metadata: ApiHandlerCreateMessageMetadata = {
