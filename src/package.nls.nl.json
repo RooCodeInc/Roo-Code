@@ -13,6 +13,7 @@
 	"command.settings.title": "Instellingen",
 	"command.documentation.title": "Documentatie",
 	"command.openInNewTab.title": "Openen in Nieuw Tabblad",
+	"command.openInCurrentTab.title": "Openen in Huidig Tabblad",
 	"command.explainCode.title": "Leg Code Uit",
 	"command.fixCode.title": "Repareer Code",
 	"command.improveCode.title": "Verbeter Code",
