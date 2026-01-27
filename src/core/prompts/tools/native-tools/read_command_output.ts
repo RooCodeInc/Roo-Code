@@ -49,7 +49,11 @@ export default {
 	function: {
 		name: "read_command_output",
 		description: READ_COMMAND_OUTPUT_DESCRIPTION,
-		strict: true,
+		// Note: strict mode is intentionally disabled for this tool.
+		// With strict: true, OpenAI requires ALL properties to be in the 'required' array,
+		// which forces the LLM to always provide explicit values (even null) for optional params.
+		// This creates verbose tool calls and poor UX. By disabling strict mode, the LLM can
+		// omit optional parameters entirely, making the tool easier to use.
 		parameters: {
 			type: "object",
 			properties: {
@@ -58,21 +62,19 @@ export default {
 					description: ARTIFACT_ID_DESCRIPTION,
 				},
 				search: {
-					type: ["string", "null"],
+					type: "string",
 					description: SEARCH_DESCRIPTION,
 				},
 				offset: {
-					type: ["number", "null"],
+					type: "number",
 					description: OFFSET_DESCRIPTION,
 				},
 				limit: {
-					type: ["number", "null"],
+					type: "number",
 					description: LIMIT_DESCRIPTION,
 				},
 			},
-			// With strict: true, ALL properties must be listed in required.
-			// Optional params use union type with null (e.g., ["string", "null"]).
-			required: ["artifact_id", "search", "offset", "limit"],
+			required: ["artifact_id"],
 			additionalProperties: false,
 		},
 	},

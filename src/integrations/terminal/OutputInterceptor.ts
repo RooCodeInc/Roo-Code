@@ -288,7 +288,10 @@ export class OutputInterceptor {
 	/**
 	 * Finalize the interceptor and return the persisted output result.
 	 *
-	 * Closes any open file streams and returns a summary object containing:
+	 * Closes any open file streams and waits for them to fully flush before returning.
+	 * This ensures the artifact file is completely written and ready for reading.
+	 *
+	 * Returns a summary object containing:
 	 * - A preview of the output (head + [omitted indicator] + tail)
 	 * - The total byte count of all output
 	 * - The path to the full output file (if truncated)
@@ -298,7 +301,7 @@ export class OutputInterceptor {
 	 *
 	 * @example
 	 * ```typescript
-	 * const result = interceptor.finalize();
+	 * const result = await interceptor.finalize();
 	 * console.log(`Preview: ${result.preview}`);
 	 * console.log(`Total bytes: ${result.totalBytes}`);
 	 * if (result.truncated) {
@@ -306,10 +309,14 @@ export class OutputInterceptor {
 	 * }
 	 * ```
 	 */
-	finalize(): PersistedCommandOutput {
-		// Close write stream if open
+	async finalize(): Promise<PersistedCommandOutput> {
+		// Close write stream if open and wait for it to fully flush.
+		// This ensures the artifact is completely written before we advertise the artifact_id.
 		if (this.writeStream) {
-			this.writeStream.end()
+			await new Promise<void>((resolve, reject) => {
+				this.writeStream!.end(() => resolve())
+				this.writeStream!.on("error", reject)
+			})
 		}
 
 		// Prepare preview: head + [omission indicator] + tail

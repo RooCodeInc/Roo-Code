@@ -246,10 +246,12 @@ export async function executeCommandInTerminal(
 				// Silently handle ask errors (e.g., "Current ask promise was ignored")
 			}
 		},
-		onCompleted: (output: string | undefined) => {
-			// Finalize interceptor and get persisted result
+		onCompleted: async (output: string | undefined) => {
+			// Finalize interceptor and get persisted result.
+			// We await finalize() to ensure the artifact file is fully flushed
+			// before we advertise the artifact_id to the LLM.
 			if (interceptor) {
-				persistedResult = interceptor.finalize()
+				persistedResult = await interceptor.finalize()
 			}
 
 			// Continue using compressed output for UI display
