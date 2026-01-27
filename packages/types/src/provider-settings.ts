@@ -243,6 +243,9 @@ const openAiSchema = baseProviderSettingsSchema.extend({
 	openAiStreamingEnabled: z.boolean().optional(),
 	openAiHostHeader: z.string().optional(), // Keep temporarily for backward compatibility during migration.
 	openAiHeaders: z.record(z.string(), z.string()).optional(),
+	// When enabled, adds strict: true to tool definitions and modifies schemas for OpenAI strict mode.
+	// Disable this for providers like kie.ai that don't support OpenAI's strict mode.
+	openAiStrictToolMode: z.boolean().optional(),
 })
 
 const ollamaSchema = baseProviderSettingsSchema.extend({

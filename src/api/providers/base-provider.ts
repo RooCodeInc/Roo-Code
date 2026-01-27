@@ -23,8 +23,12 @@ export abstract class BaseProvider implements ApiHandler {
 	 * Converts an array of tools to be compatible with OpenAI's strict mode.
 	 * Filters for function tools, applies schema conversion to their parameters,
 	 * and ensures all tools have consistent strict: true values.
+	 *
+	 * @param tools - Array of tools to convert
+	 * @param useStrictMode - When true (default), adds strict: true and modifies schemas for OpenAI strict mode.
+	 *                        When false, skips strict mode modifications for providers that don't support it (e.g. kie.ai).
 	 */
-	protected convertToolsForOpenAI(tools: any[] | undefined): any[] | undefined {
+	protected convertToolsForOpenAI(tools: any[] | undefined, useStrictMode: boolean = true): any[] | undefined {
 		if (!tools) {
 			return undefined
 		}
@@ -37,6 +41,12 @@ export abstract class BaseProvider implements ApiHandler {
 			// MCP tools use the 'mcp--' prefix - disable strict mode for them
 			// to preserve optional parameters from the MCP server schema
 			const isMcp = isMcpTool(tool.function.name)
+
+			// When strict mode is disabled (for providers like kie.ai), don't add strict: true
+			// and don't modify the schema
+			if (!useStrictMode) {
+				return tool
+			}
 
 			return {
 				...tool,
