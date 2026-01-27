@@ -8,6 +8,7 @@ import {
 	rooCodeTelemetryEventSchema,
 	TelemetryPropertiesProvider,
 	TelemetryEventSubscription,
+	type StaticAppProperties,
 } from "@roo-code/types"
 
 import { getRooCodeApiUrl } from "./config.js"
@@ -16,6 +17,12 @@ import type { RetryQueue } from "./retry-queue/index.js"
 abstract class BaseTelemetryClient implements TelemetryClient {
 	protected providerRef: WeakRef<TelemetryPropertiesProvider> | null = null
 	protected telemetryEnabled: boolean = false
+	/**
+	 * Cached static app properties captured when the provider is set.
+	 * These are used as fallback when the provider is no longer available
+	 * (e.g., after ClineProvider is disposed).
+	 */
+	protected cachedStaticProperties: StaticAppProperties | null = null
 
 	constructor(
 		public readonly subscription?: TelemetryEventSubscription,
@@ -54,6 +61,10 @@ abstract class BaseTelemetryClient implements TelemetryClient {
 					`Error getting telemetry properties: ${error instanceof Error ? error.message : String(error)}`,
 				)
 			}
+		} else if (this.cachedStaticProperties) {
+			// Provider is no longer available (e.g., ClineProvider was disposed).
+			// Use cached static properties to ensure required telemetry fields are present.
+			providerProperties = { ...this.cachedStaticProperties }
 		}
 
 		// Merge provider properties with event-specific properties.
@@ -73,6 +84,16 @@ abstract class BaseTelemetryClient implements TelemetryClient {
 
 	public setProvider(provider: TelemetryPropertiesProvider): void {
 		this.providerRef = new WeakRef(provider)
+
+		// Capture static app properties immediately so they remain available
+		// even after the provider is garbage collected.
+		// This is especially important for ClineProvider which may be disposed
+		// when the webview is closed, but telemetry events may still be in flight.
+		if ("appProperties" in provider) {
+			this.cachedStaticProperties = (
+				provider as TelemetryPropertiesProvider & { appProperties: StaticAppProperties }
+			).appProperties
+		}
 	}
 
 	public abstract updateTelemetryState(didUserOptIn: boolean): void
