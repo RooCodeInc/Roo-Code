@@ -483,6 +483,11 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				}
 			}
+			// Check experimental setting for multiple native tool calls
+			const isMultipleNativeToolCallsEnabled = experiments.isEnabled(
+				state?.experiments ?? {},
+				EXPERIMENT_IDS.MULTIPLE_NATIVE_TOOL_CALLS,
+			)
 
 			// Store approval feedback to merge into tool result (GitHub #10465)
 			let approvalFeedback: { text: string; images?: string[] } | undefined
