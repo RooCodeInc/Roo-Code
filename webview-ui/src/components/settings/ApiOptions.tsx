@@ -23,6 +23,7 @@ import {
 	mistralDefaultModelId,
 	xaiDefaultModelId,
 	groqDefaultModelId,
+	harmonyDefaultModelId,
 	cerebrasDefaultModelId,
 	chutesDefaultModelId,
 	basetenDefaultModelId,
@@ -81,6 +82,7 @@ import {
 	Doubao,
 	Gemini,
 	Groq,
+	Harmony,
 	HuggingFace,
 	IOIntelligence,
 	LMStudio,
@@ -354,6 +356,7 @@ const ApiOptions = ({
 				mistral: { field: "apiModelId", default: mistralDefaultModelId },
 				xai: { field: "apiModelId", default: xaiDefaultModelId },
 				groq: { field: "apiModelId", default: groqDefaultModelId },
+				harmony: { field: "apiModelId", default: harmonyDefaultModelId },
 				chutes: { field: "apiModelId", default: chutesDefaultModelId },
 				baseten: { field: "apiModelId", default: basetenDefaultModelId },
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
@@ -680,6 +683,10 @@ const ApiOptions = ({
 
 			{selectedProvider === "groq" && (
 				<Groq apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+			)}
+
+			{selectedProvider === "harmony" && (
+				<Harmony apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
 			{selectedProvider === "huggingface" && (
