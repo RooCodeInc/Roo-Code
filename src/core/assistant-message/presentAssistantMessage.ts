@@ -7,6 +7,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { customToolRegistry } from "@roo-code/core"
 
 import { t } from "../../i18n"
+import { XmlToolCallParser } from "./XmlToolCallParser"
 
 import { defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../shared/tools"
@@ -313,16 +314,34 @@ export async function presentAssistantMessage(cline: Task) {
 				content = content.replace(/<thinking>\s?/g, "")
 				content = content.replace(/\s?<\/thinking>/g, "")
 
-				// Tool calling is native-only. If the model emits XML-style tool tags in a text block,
-				// fail fast with a clear error.
-				if (containsXmlToolMarkup(content)) {
-					const errorMessage =
-						"XML tool calls are no longer supported. Remove any XML tool markup (e.g. <read_file>...</read_file>) and use native tool calling instead."
-					cline.consecutiveMistakeCount++
-					await cline.say("error", errorMessage)
-					cline.userMessageContent.push({ type: "text", text: errorMessage })
-					cline.didAlreadyUseTool = true
-					break
+				// Check for XML-formatted tool calls in text content.
+				// Some API providers (like kie.ai with Gemini 3 Pro) output tool calls
+				// as XML in text rather than using native function calling.
+				// We parse these and inject them for execution rather than rejecting.
+				if (!block.partial && containsXmlToolMarkup(content)) {
+					const parseResult = XmlToolCallParser.parseXmlToolCalls(content)
+
+					if (parseResult.hasToolCalls) {
+						// Show any non-tool text content first
+						if (parseResult.remainingText.trim()) {
+							await cline.say("text", parseResult.remainingText.trim(), undefined, false)
+						}
+
+						// Inject parsed tool uses into assistantMessageContent for processing.
+						// We insert them at the current index + 1 so they get processed next.
+						const currentIndex = cline.currentStreamingContentIndex
+						const insertIndex = currentIndex + 1
+
+						// Insert the parsed tool uses
+						cline.assistantMessageContent.splice(insertIndex, 0, ...parseResult.toolUses)
+
+						// Log for debugging
+						console.log(
+							`[presentAssistantMessage] Parsed ${parseResult.toolUses.length} XML tool call(s) from text block`,
+						)
+
+						break
+					}
 				}
 			}
 
