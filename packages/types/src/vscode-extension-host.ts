@@ -40,6 +40,7 @@ export interface ExtensionMessage {
 		| "mcpServers"
 		| "enhancedPrompt"
 		| "commitSearchResults"
+		| "terminalSearchResults"
 		| "listApiConfig"
 		| "routerModels"
 		| "openAiModels"
@@ -162,6 +163,7 @@ export interface ExtensionMessage {
 	}>
 	mcpServers?: McpServer[]
 	commits?: GitCommit[]
+	terminals?: TerminalInfo[] // For terminalSearchResults
 	listApiConfig?: ProviderSettingsEntry[]
 	mode?: string
 	customMode?: ModeConfig
@@ -418,6 +420,15 @@ export interface Command {
 }
 
 /**
+ * Terminal instance information for terminal selection
+ */
+export interface TerminalInfo {
+	id: number
+	name: string
+	isActive: boolean
+}
+
+/**
  * WebviewMessage
  * Webview | CLI -> Extension
  */
@@ -505,6 +516,7 @@ export interface WebviewMessage {
 		| "remoteControlEnabled"
 		| "taskSyncEnabled"
 		| "searchCommits"
+		| "searchTerminals"
 		| "setApiConfigPassword"
 		| "mode"
 		| "updatePrompt"
