@@ -64,6 +64,7 @@
 		"installError": "Installazione di \"{{itemName}}\" fallita: {{errorMessage}}",
 		"removing": "Rimozione elemento: \"{{itemName}}\"",
 		"removeSuccess": "\"{{itemName}}\" rimosso con successo",
-		"removeError": "Rimozione di \"{{itemName}}\" fallita: {{errorMessage}}"
+		"removeError": "Rimozione di \"{{itemName}}\" fallita: {{errorMessage}}",
+		"notInstalledForTarget": "Modalità non trovata"
 	}
 }

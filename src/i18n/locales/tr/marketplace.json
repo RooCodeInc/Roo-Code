@@ -64,6 +64,7 @@
 		"installError": "\"{{itemName}}\" yüklenemedi: {{errorMessage}}",
 		"removing": "Öğe kaldırılıyor: \"{{itemName}}\"",
 		"removeSuccess": "\"{{itemName}}\" başarıyla kaldırıldı",
-		"removeError": "\"{{itemName}}\" kaldırılamadı: {{errorMessage}}"
+		"removeError": "\"{{itemName}}\" kaldırılamadı: {{errorMessage}}",
+		"notInstalledForTarget": "Mod bulunamadı"
 	}
 }
