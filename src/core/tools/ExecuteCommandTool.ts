@@ -210,6 +210,7 @@ export async function executeCommandInTerminal(
 	// Bound accumulated output buffer size to prevent unbounded memory growth for long-running commands.
 	// The interceptor preserves full output; this buffer is only for UI display (100KB limit).
 	const maxAccumulatedOutputSize = 100_000
+
 	// Track when onCompleted callback finishes to avoid race condition.
 	// The callback is async but Terminal/ExecaTerminal don't await it, so we track completion
 	// explicitly to ensure persistedResult is set before we use it.
