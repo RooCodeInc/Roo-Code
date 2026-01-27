@@ -874,6 +874,7 @@ export const webviewMessageHandler = async (
 						lmstudio: {},
 						roo: {},
 						chutes: {},
+						"keywords-ai": {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {

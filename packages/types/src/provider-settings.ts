@@ -46,6 +46,7 @@ export const dynamicProviders = [
 	"litellm",
 	"deepinfra",
 	"io-intelligence",
+	"keywords-ai",
 	"requesty",
 	"unbound",
 	"roo",
@@ -399,6 +400,13 @@ const ioIntelligenceSchema = apiModelIdProviderModelSchema.extend({
 	ioIntelligenceApiKey: z.string().optional(),
 })
 
+const keywordsAiSchema = baseProviderSettingsSchema.extend({
+	keywordsAiApiKey: z.string().optional(),
+	keywordsAiBaseUrl: z.string().optional(),
+	keywordsAiModelId: z.string().optional(),
+	keywordsAiEnableLogging: z.boolean().optional(),
+})
+
 const qwenCodeSchema = apiModelIdProviderModelSchema.extend({
 	qwenCodeOauthPath: z.string().optional(),
 })
@@ -455,6 +463,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	fireworksSchema.merge(z.object({ apiProvider: z.literal("fireworks") })),
 	featherlessSchema.merge(z.object({ apiProvider: z.literal("featherless") })),
 	ioIntelligenceSchema.merge(z.object({ apiProvider: z.literal("io-intelligence") })),
+	keywordsAiSchema.merge(z.object({ apiProvider: z.literal("keywords-ai") })),
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
@@ -496,6 +505,7 @@ export const providerSettingsSchema = z.object({
 	...fireworksSchema.shape,
 	...featherlessSchema.shape,
 	...ioIntelligenceSchema.shape,
+	...keywordsAiSchema.shape,
 	...qwenCodeSchema.shape,
 	...rooSchema.shape,
 	...vercelAiGatewaySchema.shape,
@@ -530,6 +540,7 @@ export const modelIdKeys = [
 	"litellmModelId",
 	"huggingFaceModelId",
 	"ioIntelligenceModelId",
+	"keywordsAiModelId",
 	"vercelAiGatewayModelId",
 	"deepInfraModelId",
 ] as const satisfies readonly (keyof ProviderSettings)[]
@@ -582,6 +593,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	fireworks: "apiModelId",
 	featherless: "apiModelId",
 	"io-intelligence": "ioIntelligenceModelId",
+	"keywords-ai": "keywordsAiModelId",
 	roo: "apiModelId",
 	"vercel-ai-gateway": "vercelAiGatewayModelId",
 }
@@ -716,6 +728,7 @@ export const MODELS_BY_PROVIDER: Record<
 	litellm: { id: "litellm", label: "LiteLLM", models: [] },
 	openrouter: { id: "openrouter", label: "OpenRouter", models: [] },
 	requesty: { id: "requesty", label: "Requesty", models: [] },
+	"keywords-ai": { id: "keywords-ai", label: "Keywords AI", models: [] },
 	unbound: { id: "unbound", label: "Unbound", models: [] },
 	deepinfra: { id: "deepinfra", label: "DeepInfra", models: [] },
 	"vercel-ai-gateway": { id: "vercel-ai-gateway", label: "Vercel AI Gateway", models: [] },
