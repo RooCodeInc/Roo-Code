@@ -907,10 +907,17 @@
 	},
 	"aboutRetention": {
 		"label": "自動刪除工作歷程記錄",
-		"description": "擴充功能啟動時刪除早於所選時段的工作。",
-		"warning": "警告：此操作永久刪除舊工作，並在擴充功能啟動時執行。",
+		"warning": "啟用後，早於所選時段的工作將在VS Code重新啟動時被永久刪除。",
+		"confirmDialog": {
+			"title": "啟用自動刪除？",
+			"description": "每次VS Code重新啟動時，將永久刪除超過{{period}}天的工作。此操作無法復原。",
+			"descriptionNever": "自動刪除將被停用。您的工作歷程記錄將被保留。",
+			"confirm": "啟用自動刪除",
+			"confirmNever": "停用自動刪除",
+			"cancel": "取消"
+		},
 		"options": {
-			"never": "永不",
+			"never": "永不（預設）",
 			"90": "90天",
 			"60": "60天",
 			"30": "30天",
@@ -919,13 +926,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "儲存空間使用量",
-		"calculating": "計算中...",
-		"format": "{{size}} ({{count}} 個工作)",
-		"formatSingular": "{{size}} (1 個工作)",
-		"empty": "無已儲存工作",
-		"refresh": "重新整理",
-		"error": "無法計算"
+		"label": "工作歷程",
+		"clickToCount": "點擊計數",
+		"count": "歷程中有 {{count}} 個工作",
+		"countSingular": "歷程中有 1 個工作",
+		"empty": "尚無工作",
+		"refresh": "重新整理"
 	},
 	"footer": {
 		"telemetry": {

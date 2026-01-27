@@ -899,10 +899,17 @@
 	},
 	"aboutRetention": {
 		"label": "Excluir automaticamente o histórico de tarefas",
-		"description": "Exclui tarefas mais antigas que o período selecionado quando a extensão é ativada.",
-		"warning": "Aviso: Esta ação exclui permanentemente as tarefas antigas e é executada quando a extensão é ativada.",
+		"warning": "Quando ativado, tarefas mais antigas que o período selecionado são excluídas permanentemente ao reiniciar o VS Code.",
+		"confirmDialog": {
+			"title": "Ativar exclusão automática?",
+			"description": "Isso excluirá permanentemente tarefas com mais de {{period}} dias sempre que o VS Code for reiniciado. Esta ação não pode ser desfeita.",
+			"descriptionNever": "A exclusão automática será desativada. Seu histórico de tarefas será preservado.",
+			"confirm": "Ativar exclusão automática",
+			"confirmNever": "Desativar exclusão automática",
+			"cancel": "Cancelar"
+		},
 		"options": {
-			"never": "Nunca",
+			"never": "Nunca (padrão)",
 			"90": "90 dias",
 			"60": "60 dias",
 			"30": "30 dias",
@@ -911,13 +918,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Uso de armazenamento",
-		"calculating": "Calculando...",
-		"format": "{{size}} ({{count}} tarefas)",
-		"formatSingular": "{{size}} (1 tarefa)",
-		"empty": "Nenhuma tarefa armazenada",
-		"refresh": "Atualizar",
-		"error": "Não foi possível calcular"
+		"label": "Histórico de tarefas",
+		"clickToCount": "Clique para contar",
+		"count": "{{count}} tarefas no histórico",
+		"countSingular": "1 tarefa no histórico",
+		"empty": "Nenhuma tarefa ainda",
+		"refresh": "Atualizar"
 	},
 	"footer": {
 		"feedback": "Se tiver alguma dúvida ou feedback, sinta-se à vontade para abrir um problema em <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou juntar-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",

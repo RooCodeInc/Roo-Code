@@ -898,10 +898,17 @@
 	},
 	"aboutRetention": {
 		"label": "Supprimer automatiquement l'historique des tâches",
-		"description": "Supprime les tâches antérieures à la période sélectionnée lorsque l'extension est activée.",
-		"warning": "Avertissement : Cette action supprime définitivement les anciennes tâches et s'exécute lorsque l'extension est activée.",
+		"warning": "Si activé, les tâches antérieures à la période sélectionnée sont définitivement supprimées au redémarrage de VS Code.",
+		"confirmDialog": {
+			"title": "Activer la suppression automatique ?",
+			"description": "Cela supprimera définitivement les tâches de plus de {{period}} jours à chaque redémarrage de VS Code. Cette action ne peut pas être annulée.",
+			"descriptionNever": "La suppression automatique sera désactivée. Votre historique des tâches sera conservé.",
+			"confirm": "Activer la suppression automatique",
+			"confirmNever": "Désactiver la suppression automatique",
+			"cancel": "Annuler"
+		},
 		"options": {
-			"never": "Jamais",
+			"never": "Jamais (par défaut)",
 			"90": "90 jours",
 			"60": "60 jours",
 			"30": "30 jours",
@@ -910,13 +917,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Utilisation du stockage",
-		"calculating": "Calcul en cours...",
-		"format": "{{size}} ({{count}} tâches)",
-		"formatSingular": "{{size}} (1 tâche)",
-		"empty": "Aucune tâche stockée",
-		"refresh": "Actualiser",
-		"error": "Impossible de calculer"
+		"label": "Historique des tâches",
+		"clickToCount": "Cliquer pour compter",
+		"count": "{{count}} tâches dans l'historique",
+		"countSingular": "1 tâche dans l'historique",
+		"empty": "Aucune tâche pour l'instant",
+		"refresh": "Actualiser"
 	},
 	"footer": {
 		"feedback": "Si vous avez des questions ou des commentaires, n'hésitez pas à ouvrir un problème sur <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou à rejoindre <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",

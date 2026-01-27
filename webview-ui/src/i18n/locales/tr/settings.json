@@ -899,10 +899,17 @@
 	},
 	"aboutRetention": {
 		"label": "Görev geçmişini otomatik sil",
-		"description": "Uzantı etkinleştirildiğinde seçilen döneme göre daha eski görevleri siler.",
-		"warning": "Uyarı: Bu işlem eski görevleri kalıcı olarak siler ve uzantı etkinleştirildiğinde çalışır.",
+		"warning": "Etkinleştirildiğinde, seçilen döneme göre daha eski görevler VS Code yeniden başlatıldığında kalıcı olarak silinir.",
+		"confirmDialog": {
+			"title": "Otomatik silmeyi etkinleştir?",
+			"description": "Bu, VS Code her yeniden başlatıldığında {{period}} günden eski görevleri kalıcı olarak silecek. Bu işlem geri alınamaz.",
+			"descriptionNever": "Otomatik silme devre dışı bırakılacak. Görev geçmişiniz korunacak.",
+			"confirm": "Otomatik silmeyi etkinleştir",
+			"confirmNever": "Otomatik silmeyi devre dışı bırak",
+			"cancel": "İptal"
+		},
 		"options": {
-			"never": "Asla",
+			"never": "Asla (varsayılan)",
 			"90": "90 gün",
 			"60": "60 gün",
 			"30": "30 gün",
@@ -911,13 +918,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Depolama kullanımı",
-		"calculating": "Hesaplanıyor...",
-		"format": "{{size}} ({{count}} görev)",
-		"formatSingular": "{{size}} (1 görev)",
-		"empty": "Depolanmış görev yok",
-		"refresh": "Yenile",
-		"error": "Hesaplanamıyor"
+		"label": "Görev geçmişi",
+		"clickToCount": "Saymak için tıklayın",
+		"count": "Geçmişte {{count}} görev",
+		"countSingular": "Geçmişte 1 görev",
+		"empty": "Henüz görev yok",
+		"refresh": "Yenile"
 	},
 	"footer": {
 		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",

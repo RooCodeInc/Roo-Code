@@ -898,10 +898,17 @@
 	},
 	"aboutRetention": {
 		"label": "Aufgabenverlauf automatisch löschen",
-		"description": "Löscht Aufgaben, die älter als der ausgewählte Zeitraum sind, wenn die Erweiterung aktiviert wird.",
-		"warning": "Warnung: Diese Aktion löscht alte Aufgaben dauerhaft und wird ausgeführt, wenn die Erweiterung aktiviert wird.",
+		"warning": "Wenn aktiviert, werden Aufgaben, die älter als der ausgewählte Zeitraum sind, beim Neustart von VS Code dauerhaft gelöscht.",
+		"confirmDialog": {
+			"title": "Automatisches Löschen aktivieren?",
+			"description": "Dies löscht dauerhaft Aufgaben, die älter als {{period}} Tage sind, bei jedem Neustart von VS Code. Diese Aktion kann nicht rückgängig gemacht werden.",
+			"descriptionNever": "Das automatische Löschen wird deaktiviert. Dein Aufgabenverlauf bleibt erhalten.",
+			"confirm": "Automatisches Löschen aktivieren",
+			"confirmNever": "Automatisches Löschen deaktivieren",
+			"cancel": "Abbrechen"
+		},
 		"options": {
-			"never": "Nie",
+			"never": "Nie (Standard)",
 			"90": "90 Tage",
 			"60": "60 Tage",
 			"30": "30 Tage",
@@ -910,13 +917,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Speichernutzung",
-		"calculating": "Berechne...",
-		"format": "{{size}} ({{count}} Aufgaben)",
-		"formatSingular": "{{size}} (1 Aufgabe)",
-		"empty": "Keine Aufgaben gespeichert",
-		"refresh": "Aktualisieren",
-		"error": "Berechnung nicht möglich"
+		"label": "Aufgabenverlauf",
+		"clickToCount": "Klicken zum Zählen",
+		"count": "{{count}} Aufgaben im Verlauf",
+		"countSingular": "1 Aufgabe im Verlauf",
+		"empty": "Noch keine Aufgaben",
+		"refresh": "Aktualisieren"
 	},
 	"footer": {
 		"feedback": "Wenn du Fragen oder Feedback hast, kannst du gerne ein Issue auf <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> eröffnen oder <redditLink>reddit.com/r/RooCode</redditLink> oder <discordLink>discord.gg/roocode</discordLink> beitreten",

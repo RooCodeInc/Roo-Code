@@ -899,10 +899,17 @@
 	},
 	"aboutRetention": {
 		"label": "Taakgeschiedenis automatisch verwijderen",
-		"description": "Verwijdert taken ouder dan de geselecteerde periode wanneer de extensie wordt geactiveerd.",
-		"warning": "Waarschuwing: Deze actie verwijdert oude taken permanent en wordt uitgevoerd wanneer de extensie wordt geactiveerd.",
+		"warning": "Wanneer ingeschakeld, worden taken ouder dan de geselecteerde periode permanent verwijderd bij het herstarten van VS Code.",
+		"confirmDialog": {
+			"title": "Automatisch verwijderen activeren?",
+			"description": "Dit verwijdert permanent taken ouder dan {{period}} dagen telkens wanneer VS Code opnieuw wordt gestart. Deze actie kan niet ongedaan worden gemaakt.",
+			"descriptionNever": "Automatisch verwijderen wordt uitgeschakeld. Je taakgeschiedenis wordt bewaard.",
+			"confirm": "Automatisch verwijderen activeren",
+			"confirmNever": "Automatisch verwijderen uitschakelen",
+			"cancel": "Annuleren"
+		},
 		"options": {
-			"never": "Nooit",
+			"never": "Nooit (standaard)",
 			"90": "90 dagen",
 			"60": "60 dagen",
 			"30": "30 dagen",
@@ -911,13 +918,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Opslaggebruik",
-		"calculating": "Berekenen...",
-		"format": "{{size}} ({{count}} taken)",
-		"formatSingular": "{{size}} (1 taak)",
-		"empty": "Geen opgeslagen taken",
-		"refresh": "Vernieuwen",
-		"error": "Kan niet berekenen"
+		"label": "Taakgeschiedenis",
+		"clickToCount": "Klik om te tellen",
+		"count": "{{count}} taken in geschiedenis",
+		"countSingular": "1 taak in geschiedenis",
+		"empty": "Nog geen taken",
+		"refresh": "Vernieuwen"
 	},
 	"footer": {
 		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> of sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",

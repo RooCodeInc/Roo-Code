@@ -899,10 +899,17 @@
 	},
 	"aboutRetention": {
 		"label": "작업 기록 자동 삭제",
-		"description": "확장 프로그램이 활성화될 때 선택한 기간보다 오래된 작업을 삭제합니다.",
-		"warning": "경고: 이 작업은 오래된 작업을 영구적으로 삭제하며 확장 프로그램이 활성화될 때 실행됩니다.",
+		"warning": "활성화하면 선택한 기간보다 오래된 작업이 VS Code 재시작 시 영구적으로 삭제됩니다.",
+		"confirmDialog": {
+			"title": "자동 삭제를 활성화하시겠습니까?",
+			"description": "VS Code가 재시작될 때마다 {{period}}일 이상 된 작업이 영구적으로 삭제됩니다. 이 작업은 취소할 수 없습니다.",
+			"descriptionNever": "자동 삭제가 비활성화됩니다. 작업 기록이 보존됩니다.",
+			"confirm": "자동 삭제 활성화",
+			"confirmNever": "자동 삭제 비활성화",
+			"cancel": "취소"
+		},
 		"options": {
-			"never": "삭제 안 함",
+			"never": "삭제 안 함 (기본값)",
 			"90": "90일",
 			"60": "60일",
 			"30": "30일",
@@ -911,13 +918,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "저장소 사용량",
-		"calculating": "계산 중...",
-		"format": "{{size}} ({{count}}개 작업)",
-		"formatSingular": "{{size}} (1개 작업)",
-		"empty": "저장된 작업 없음",
-		"refresh": "새로고침",
-		"error": "계산할 수 없음"
+		"label": "작업 기록",
+		"clickToCount": "클릭하여 계산",
+		"count": "기록에 {{count}}개 작업",
+		"countSingular": "기록에 1개 작업",
+		"empty": "아직 작업 없음",
+		"refresh": "새로고침"
 	},
 	"footer": {
 		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",

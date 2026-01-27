@@ -898,10 +898,17 @@
 	},
 	"aboutRetention": {
 		"label": "Eliminar automàticament l'historial de tasques",
-		"description": "Elimina les tasques anteriors al període seleccionat quan s'activa l'extensió.",
-		"warning": "Advertència: Aquesta acció elimina permanentment les tasques antigues i s'executa quan s'activa l'extensió.",
+		"warning": "Quan estigui activat, les tasques anteriors al període seleccionat s'eliminen permanentment en reiniciar VS Code.",
+		"confirmDialog": {
+			"title": "Activar l'eliminació automàtica?",
+			"description": "Això eliminarà permanentment les tasques de més de {{period}} dies cada vegada que es reiniciï VS Code. Aquesta acció no es pot desfer.",
+			"descriptionNever": "L'eliminació automàtica es desactivarà. El teu historial de tasques es conservarà.",
+			"confirm": "Activar eliminació automàtica",
+			"confirmNever": "Desactivar eliminació automàtica",
+			"cancel": "Cancel·lar"
+		},
 		"options": {
-			"never": "Mai",
+			"never": "Mai (per defecte)",
 			"90": "90 dies",
 			"60": "60 dies",
 			"30": "30 dies",
@@ -910,13 +917,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Ús d'emmagatzematge",
-		"calculating": "Calculant...",
-		"format": "{{size}} ({{count}} tasques)",
-		"formatSingular": "{{size}} (1 tasca)",
-		"empty": "Cap tasca emmagatzemada",
-		"refresh": "Actualitzar",
-		"error": "No es pot calcular"
+		"label": "Historial de tasques",
+		"clickToCount": "Clica per comptar",
+		"count": "{{count}} tasques a l'historial",
+		"countSingular": "1 tasca a l'historial",
+		"empty": "Encara no hi ha tasques",
+		"refresh": "Actualitzar"
 	},
 	"footer": {
 		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",

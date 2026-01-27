@@ -899,10 +899,17 @@
 	},
 	"aboutRetention": {
 		"label": "Tự động xóa lịch sử tác vụ",
-		"description": "Xóa các tác vụ cũ hơn khoảng thời gian đã chọn khi tiện ích được kích hoạt.",
-		"warning": "Cảnh báo: Hành động này xóa vĩnh viễn các tác vụ cũ và chạy khi tiện ích được kích hoạt.",
+		"warning": "Khi được bật, các tác vụ cũ hơn khoảng thời gian đã chọn sẽ bị xóa vĩnh viễn khi VS Code khởi động lại.",
+		"confirmDialog": {
+			"title": "Bật tự động xóa?",
+			"description": "Điều này sẽ xóa vĩnh viễn các tác vụ cũ hơn {{period}} ngày mỗi khi VS Code khởi động lại. Hành động này không thể hoàn tác.",
+			"descriptionNever": "Tự động xóa sẽ bị tắt. Lịch sử tác vụ của bạn sẽ được bảo tồn.",
+			"confirm": "Bật tự động xóa",
+			"confirmNever": "Tắt tự động xóa",
+			"cancel": "Hủy"
+		},
 		"options": {
-			"never": "Không bao giờ",
+			"never": "Không bao giờ (mặc định)",
 			"90": "90 ngày",
 			"60": "60 ngày",
 			"30": "30 ngày",
@@ -911,13 +918,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Dung lượng lưu trữ",
-		"calculating": "Đang tính toán...",
-		"format": "{{size}} ({{count}} tác vụ)",
-		"formatSingular": "{{size}} (1 tác vụ)",
-		"empty": "Không có tác vụ được lưu trữ",
-		"refresh": "Làm mới",
-		"error": "Không thể tính toán"
+		"label": "Lịch sử tác vụ",
+		"clickToCount": "Nhấp để đếm",
+		"count": "{{count}} tác vụ trong lịch sử",
+		"countSingular": "1 tác vụ trong lịch sử",
+		"empty": "Chưa có tác vụ nào",
+		"refresh": "Làm mới"
 	},
 	"footer": {
 		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",

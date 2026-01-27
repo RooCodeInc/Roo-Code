@@ -898,10 +898,17 @@
 	},
 	"aboutRetention": {
 		"label": "Eliminar automáticamente el historial de tareas",
-		"description": "Elimina las tareas anteriores al período seleccionado cuando se activa la extensión.",
-		"warning": "Advertencia: Esta acción elimina permanentemente las tareas antiguas y se ejecuta cuando se activa la extensión.",
+		"warning": "Cuando está habilitado, las tareas anteriores al período seleccionado se eliminan permanentemente al reiniciar VS Code.",
+		"confirmDialog": {
+			"title": "¿Activar eliminación automática?",
+			"description": "Esto eliminará permanentemente las tareas de más de {{period}} días cada vez que VS Code se reinicie. Esta acción no se puede deshacer.",
+			"descriptionNever": "La eliminación automática se desactivará. Tu historial de tareas se conservará.",
+			"confirm": "Activar eliminación automática",
+			"confirmNever": "Desactivar eliminación automática",
+			"cancel": "Cancelar"
+		},
 		"options": {
-			"never": "Nunca",
+			"never": "Nunca (predeterminado)",
 			"90": "90 días",
 			"60": "60 días",
 			"30": "30 días",
@@ -910,13 +917,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Uso de almacenamiento",
-		"calculating": "Calculando...",
-		"format": "{{size}} ({{count}} tareas)",
-		"formatSingular": "{{size}} (1 tarea)",
-		"empty": "No hay tareas almacenadas",
-		"refresh": "Actualizar",
-		"error": "No se puede calcular"
+		"label": "Historial de tareas",
+		"clickToCount": "Clic para contar",
+		"count": "{{count}} tareas en el historial",
+		"countSingular": "1 tarea en el historial",
+		"empty": "Sin tareas aún",
+		"refresh": "Actualizar"
 	},
 	"footer": {
 		"feedback": "Si tiene alguna pregunta o comentario, no dude en abrir un issue en <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirse a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",

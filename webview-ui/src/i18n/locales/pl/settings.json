@@ -899,10 +899,17 @@
 	},
 	"aboutRetention": {
 		"label": "Automatyczne usuwanie historii zadań",
-		"description": "Usuwa zadania starsze niż wybrany okres po aktywacji rozszerzenia.",
-		"warning": "Ostrzeżenie: Ta akcja trwale usuwa stare zadania i działa po aktywacji rozszerzenia.",
+		"warning": "Po włączeniu, zadania starsze niż wybrany okres są trwale usuwane przy ponownym uruchomieniu VS Code.",
+		"confirmDialog": {
+			"title": "Włączyć automatyczne usuwanie?",
+			"description": "To trwale usunie zadania starsze niż {{period}} dni przy każdym ponownym uruchomieniu VS Code. Tej akcji nie można cofnąć.",
+			"descriptionNever": "Automatyczne usuwanie zostanie wyłączone. Historia zadań zostanie zachowana.",
+			"confirm": "Włącz automatyczne usuwanie",
+			"confirmNever": "Wyłącz automatyczne usuwanie",
+			"cancel": "Anuluj"
+		},
 		"options": {
-			"never": "Nigdy",
+			"never": "Nigdy (domyślnie)",
 			"90": "90 dni",
 			"60": "60 dni",
 			"30": "30 dni",
@@ -911,13 +918,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Wykorzystanie pamięci",
-		"calculating": "Obliczanie...",
-		"format": "{{size}} ({{count}} zadań)",
-		"formatSingular": "{{size}} (1 zadanie)",
-		"empty": "Brak zapisanych zadań",
-		"refresh": "Odśwież",
-		"error": "Nie można obliczyć"
+		"label": "Historia zadań",
+		"clickToCount": "Kliknij, aby policzyć",
+		"count": "{{count}} zadań w historii",
+		"countSingular": "1 zadanie w historii",
+		"empty": "Brak zadań",
+		"refresh": "Odśwież"
 	},
 	"footer": {
 		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> lub dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",

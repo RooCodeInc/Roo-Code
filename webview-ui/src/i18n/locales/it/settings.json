@@ -899,10 +899,17 @@
 	},
 	"aboutRetention": {
 		"label": "Elimina automaticamente la cronologia delle attività",
-		"description": "Elimina le attività più vecchie del periodo selezionato quando l'estensione viene attivata.",
-		"warning": "Avviso: Questa azione elimina permanentemente le attività vecchie e viene eseguita quando l'estensione viene attivata.",
+		"warning": "Se abilitato, le attività più vecchie del periodo selezionato vengono eliminate permanentemente al riavvio di VS Code.",
+		"confirmDialog": {
+			"title": "Attivare l'eliminazione automatica?",
+			"description": "Questo eliminerà permanentemente le attività più vecchie di {{period}} giorni ogni volta che VS Code viene riavviato. Questa azione non può essere annullata.",
+			"descriptionNever": "L'eliminazione automatica sarà disattivata. La cronologia delle attività sarà conservata.",
+			"confirm": "Attiva eliminazione automatica",
+			"confirmNever": "Disattiva eliminazione automatica",
+			"cancel": "Annulla"
+		},
 		"options": {
-			"never": "Mai",
+			"never": "Mai (predefinito)",
 			"90": "90 giorni",
 			"60": "60 giorni",
 			"30": "30 giorni",
@@ -911,13 +918,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Utilizzo dello spazio di archiviazione",
-		"calculating": "Calcolo in corso...",
-		"format": "{{size}} ({{count}} attività)",
-		"formatSingular": "{{size}} (1 attività)",
-		"empty": "Nessuna attività archiviata",
-		"refresh": "Aggiorna",
-		"error": "Impossibile calcolare"
+		"label": "Cronologia attività",
+		"clickToCount": "Clicca per contare",
+		"count": "{{count}} attività nella cronologia",
+		"countSingular": "1 attività nella cronologia",
+		"empty": "Nessuna attività ancora",
+		"refresh": "Aggiorna"
 	},
 	"footer": {
 		"feedback": "Se hai domande o feedback, sentiti libero di aprire un issue su <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirti a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",

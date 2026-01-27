@@ -928,10 +928,17 @@
 	},
 	"aboutRetention": {
 		"label": "Hapus otomatis riwayat tugas",
-		"description": "Menghapus tugas yang lebih lama dari periode yang dipilih saat ekstensi diaktifkan.",
-		"warning": "Peringatan: Tindakan ini menghapus tugas lama secara permanen dan berjalan saat ekstensi diaktifkan.",
+		"warning": "Saat diaktifkan, tugas yang lebih lama dari periode yang dipilih akan dihapus secara permanen saat VS Code dimulai ulang.",
+		"confirmDialog": {
+			"title": "Aktifkan hapus otomatis?",
+			"description": "Ini akan menghapus tugas yang lebih lama dari {{period}} hari secara permanen setiap kali VS Code dimulai ulang. Tindakan ini tidak dapat dibatalkan.",
+			"descriptionNever": "Hapus otomatis akan dinonaktifkan. Riwayat tugas Anda akan dipertahankan.",
+			"confirm": "Aktifkan hapus otomatis",
+			"confirmNever": "Nonaktifkan hapus otomatis",
+			"cancel": "Batal"
+		},
 		"options": {
-			"never": "Tidak pernah",
+			"never": "Tidak pernah (default)",
 			"90": "90 hari",
 			"60": "60 hari",
 			"30": "30 hari",
@@ -940,13 +947,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "Penggunaan penyimpanan",
-		"calculating": "Menghitung...",
-		"format": "{{size}} ({{count}} tugas)",
-		"formatSingular": "{{size}} (1 tugas)",
-		"empty": "Tidak ada tugas tersimpan",
-		"refresh": "Segarkan",
-		"error": "Tidak dapat menghitung"
+		"label": "Riwayat tugas",
+		"clickToCount": "Klik untuk menghitung",
+		"count": "{{count}} tugas dalam riwayat",
+		"countSingular": "1 tugas dalam riwayat",
+		"empty": "Belum ada tugas",
+		"refresh": "Segarkan"
 	},
 	"footer": {
 		"feedback": "Jika kamu punya pertanyaan atau feedback, jangan ragu untuk membuka issue di <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> atau bergabung <redditLink>reddit.com/r/RooCode</redditLink> atau <discordLink>discord.gg/roocode</discordLink>",

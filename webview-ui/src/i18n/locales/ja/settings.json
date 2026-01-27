@@ -899,10 +899,17 @@
 	},
 	"aboutRetention": {
 		"label": "タスク履歴を自動削除",
-		"description": "拡張機能が起動したときに、選択された期間より古いタスクを削除します。",
-		"warning": "警告：この操作は古いタスクを完全に削除し、拡張機能が起動したときに実行されます。",
+		"warning": "有効にすると、選択した期間より古いタスクはVS Code再起動時に完全に削除されます。",
+		"confirmDialog": {
+			"title": "自動削除を有効にしますか？",
+			"description": "VS Codeを再起動するたびに、{{period}}日以上経過したタスクが完全に削除されます。この操作は取り消せません。",
+			"descriptionNever": "自動削除が無効になります。タスク履歴は保持されます。",
+			"confirm": "自動削除を有効にする",
+			"confirmNever": "自動削除を無効にする",
+			"cancel": "キャンセル"
+		},
 		"options": {
-			"never": "削除しない",
+			"never": "削除しない（デフォルト）",
 			"90": "90日",
 			"60": "60日",
 			"30": "30日",
@@ -911,13 +918,12 @@
 		}
 	},
 	"taskHistoryStorage": {
-		"label": "ストレージ使用量",
-		"calculating": "計算中...",
-		"format": "{{size}} ({{count}} タスク)",
-		"formatSingular": "{{size}} (1 タスク)",
-		"empty": "保存されたタスクがありません",
-		"refresh": "更新",
-		"error": "計算できません"
+		"label": "タスク履歴",
+		"clickToCount": "クリックしてカウント",
+		"count": "履歴に{{count}}件のタスク",
+		"countSingular": "履歴に1件のタスク",
+		"empty": "タスクはまだありません",
+		"refresh": "更新"
 	},
 	"footer": {
 		"feedback": "質問やフィードバックがある場合は、<githubLink>github.com/RooCodeInc/Roo-Code</githubLink>で問題を開くか、<redditLink>reddit.com/r/RooCode</redditLink>や<discordLink>discord.gg/roocode</discordLink>に参加してください",

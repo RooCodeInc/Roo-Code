@@ -1,19 +1,7 @@
-import { HTMLAttributes, useState, useCallback, useEffect } from "react"
+import { HTMLAttributes } from "react"
 import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Trans } from "react-i18next"
-import {
-	Download,
-	Upload,
-	TriangleAlert,
-	Bug,
-	Lightbulb,
-	Shield,
-	MessageCircle,
-	MessagesSquare,
-	RefreshCw,
-	FolderOpen,
-	Loader2,
-} from "lucide-react"
+import { Download, Upload, TriangleAlert, Bug, Lightbulb, Shield, MessageCircle, MessagesSquare } from "lucide-react"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
 import type { TelemetrySetting } from "@roo-code/types"
@@ -28,63 +16,15 @@ import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
 import { SearchableSetting } from "./SearchableSetting"
 
-type TaskHistorySize = {
-	taskCount: number
-}
-
 type AboutProps = HTMLAttributes<HTMLDivElement> & {
 	telemetrySetting: TelemetrySetting
 	setTelemetrySetting: (setting: TelemetrySetting) => void
 	debug?: boolean
 	setDebug?: (debug: boolean) => void
-	taskHistorySize?: TaskHistorySize
 }
 
-export const About = ({
-	telemetrySetting,
-	setTelemetrySetting,
-	debug,
-	setDebug,
-	taskHistorySize,
-	className,
-	...props
-}: AboutProps) => {
+export const About = ({ telemetrySetting, setTelemetrySetting, debug, setDebug, className, ...props }: AboutProps) => {
 	const { t } = useAppTranslation()
-	const [isRefreshing, setIsRefreshing] = useState(false)
-	const [cachedSize, setCachedSize] = useState<TaskHistorySize | undefined>(taskHistorySize)
-
-	// Update cached size when taskHistorySize changes and reset refreshing state
-	useEffect(() => {
-		if (taskHistorySize) {
-			setCachedSize(taskHistorySize)
-			setIsRefreshing(false)
-		}
-	}, [taskHistorySize])
-
-	// NOTE: No auto-trigger on mount - user must click refresh button
-	// This is intentional for performance with large task counts (e.g., 9000+ tasks)
-
-	const handleRefreshTaskCount = useCallback(() => {
-		setIsRefreshing(true)
-		vscode.postMessage({ type: "refreshTaskHistorySize" })
-	}, [])
-
-	const getTaskCountDisplayText = (): string => {
-		// Use cached size if available, otherwise prompt user to click refresh
-		const displaySize = taskHistorySize || cachedSize
-		if (!displaySize) {
-			return t("settings:taskHistoryStorage.clickToCount")
-		}
-		if (displaySize.taskCount === 0) {
-			return t("settings:taskHistoryStorage.empty")
-		}
-		if (displaySize.taskCount === 1) {
-			return t("settings:taskHistoryStorage.countSingular")
-		}
-		return t("settings:taskHistoryStorage.count", {
-			count: displaySize.taskCount,
-		})
-	}
 
 	return (
 		<div className={cn("flex flex-col gap-2", className)} {...props}>
@@ -192,36 +132,9 @@ export const About = ({
 
 			<Section className="space-y-0">
 				<SearchableSetting
-					settingId="about-task-history-count"
-					section="about"
-					label={t("settings:taskHistoryStorage.label")}
-					className="mt-4">
-					<div className="flex items-center gap-2">
-						<FolderOpen className="size-4 text-vscode-descriptionForeground shrink-0" />
-						<span className="text-sm">
-							{t("settings:taskHistoryStorage.label")}: {getTaskCountDisplayText()}
-						</span>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={handleRefreshTaskCount}
-							disabled={isRefreshing}
-							className="h-6 w-6 p-0"
-							title={t("settings:taskHistoryStorage.refresh")}>
-							{isRefreshing ? (
-								<Loader2 className="size-3.5 animate-spin" />
-							) : (
-								<RefreshCw className="size-3.5" />
-							)}
-						</Button>
-					</div>
-				</SearchableSetting>
-
-				<SearchableSetting
 					settingId="about-manage-settings"
 					section="about"
-					label={t("settings:about.manageSettings")}
-					className="mt-4 pt-4 border-t border-vscode-settings-headerBorder">
+					label={t("settings:about.manageSettings")}>
 					<h3>{t("settings:about.manageSettings")}</h3>
 					<div className="flex flex-wrap items-center gap-2">
 						<Button onClick={() => vscode.postMessage({ type: "exportSettings" })} className="w-28">

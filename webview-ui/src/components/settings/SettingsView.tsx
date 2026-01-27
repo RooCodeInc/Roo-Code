@@ -218,9 +218,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		taskHistoryRetention,
 	} = cachedState
 
-	// taskHistorySize is read-only (not a saveable setting) so we use extensionState directly
-	const taskHistorySize = extensionState.taskHistorySize
-
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
 
 	useEffect(() => {
@@ -974,7 +971,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								setTelemetrySetting={setTelemetrySetting}
 								debug={cachedState.debug}
 								setDebug={setDebug}
-								taskHistorySize={taskHistorySize}
 							/>
 						)}
 					</SearchIndexProvider>
