@@ -76,6 +76,10 @@ export const toolParamNames = [
 	"search", // read_command_output parameter for grep-like search
 	"offset", // read_command_output parameter for pagination
 	"limit", // read_command_output parameter for max bytes to return
+	"session_id", // write_stdin parameter for terminal session
+	"chars", // write_stdin parameter for stdin input
+	"yield_time_ms", // write_stdin parameter for output wait time
+	"max_output_tokens", // write_stdin parameter for output token limit
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -110,6 +114,7 @@ export type NativeToolArgs = {
 	switch_mode: { mode_slug: string; reason: string }
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
+	write_stdin: { session_id: number; chars?: string; yield_time_ms?: number; max_output_tokens?: number }
 	write_to_file: { path: string; content: string }
 	// Add more tools as they are migrated to native protocol
 }
@@ -246,6 +251,7 @@ export type ToolGroupConfig = {
 
 export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	execute_command: "run commands",
+	write_stdin: "write to terminal input",
 	read_file: "read files",
 	read_command_output: "read command output",
 	fetch_instructions: "fetch instructions",
@@ -284,7 +290,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["browser_action"],
 	},
 	command: {
-		tools: ["execute_command", "read_command_output"],
+		tools: ["execute_command", "write_stdin", "read_command_output"],
 	},
 	mcp: {
 		tools: ["use_mcp_tool", "access_mcp_resource"],

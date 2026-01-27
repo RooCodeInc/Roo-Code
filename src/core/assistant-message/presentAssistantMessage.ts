@@ -26,6 +26,7 @@ import { applyPatchTool } from "../tools/ApplyPatchTool"
 import { searchFilesTool } from "../tools/SearchFilesTool"
 import { browserActionTool } from "../tools/BrowserActionTool"
 import { executeCommandTool } from "../tools/ExecuteCommandTool"
+import { writeStdinTool } from "../tools/WriteStdinTool"
 import { useMcpToolTool } from "../tools/UseMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
 import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
@@ -851,6 +852,13 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "read_command_output":
 					await readCommandOutputTool.handle(cline, block as ToolUse<"read_command_output">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "write_stdin":
+					await writeStdinTool.handle(cline, block as ToolUse<"write_stdin">, {
 						askApproval,
 						handleError,
 						pushToolResult,
