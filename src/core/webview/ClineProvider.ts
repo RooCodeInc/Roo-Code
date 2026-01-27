@@ -3245,23 +3245,58 @@ export class ClineProvider
 			initialStatus: "active",
 		})
 
-		// 5) Persist parent delegation metadata
-		try {
-			const { historyItem } = await this.getTaskWithId(parentTaskId)
-			const childIds = Array.from(new Set([...(historyItem.childIds ?? []), child.taskId]))
-			const updatedHistory: typeof historyItem = {
-				...historyItem,
-				status: "delegated",
-				delegatedToId: child.taskId,
-				awaitingChildId: child.taskId,
-				childIds,
+		// 5) Persist parent delegation metadata with retry logic
+		// This is critical - if it fails, the parent task can "disappear" from the UI
+		// or appear in an inconsistent state
+		const maxRetries = 3
+		let lastError: Error | undefined
+
+		for (let attempt = 1; attempt <= maxRetries; attempt++) {
+			try {
+				const { historyItem } = await this.getTaskWithId(parentTaskId)
+				const childIds = Array.from(new Set([...(historyItem.childIds ?? []), child.taskId]))
+				const updatedHistory: typeof historyItem = {
+					...historyItem,
+					status: "delegated",
+					delegatedToId: child.taskId,
+					awaitingChildId: child.taskId,
+					childIds,
+				}
+				await this.updateTaskHistory(updatedHistory)
+				lastError = undefined // Success - clear any previous error
+				break
+			} catch (err) {
+				lastError = err as Error
+				this.log(
+					`[delegateParentAndOpenChild] Attempt ${attempt}/${maxRetries} failed to persist parent metadata for ${parentTaskId} -> ${child.taskId}: ${
+						(err as Error)?.message ?? String(err)
+					}`,
+				)
+
+				// If this was the last attempt, we need to handle the failure more seriously
+				if (attempt === maxRetries) {
+					const errorMsg = `Failed to persist parent task delegation metadata after ${maxRetries} attempts. Parent task ${parentTaskId} may appear in an inconsistent state.`
+					this.log(`[delegateParentAndOpenChild] CRITICAL: ${errorMsg}`)
+					console.error(`[delegateParentAndOpenChild] CRITICAL:`, errorMsg, err)
+
+					// Show a user-visible warning for this critical failure
+					// Note: We don't throw here because the child task was already created
+					// and is now the active task. Throwing would leave both tasks in a bad state.
+					vscode.window.showWarningMessage(
+						`Warning: Task delegation succeeded but metadata persistence failed. The parent task may not resume correctly. Error: ${(err as Error)?.message ?? String(err)}`,
+					)
+				} else {
+					// Wait before retry with exponential backoff
+					await delay(100 * Math.pow(2, attempt - 1))
+				}
 			}
-			await this.updateTaskHistory(updatedHistory)
-		} catch (err) {
+		}
+
+		// If we failed all retries, log it clearly but don't throw
+		// (child task is already active and functional)
+		if (lastError) {
 			this.log(
-				`[delegateParentAndOpenChild] Failed to persist parent metadata for ${parentTaskId} -> ${child.taskId}: ${
-					(err as Error)?.message ?? String(err)
-				}`,
+				`[delegateParentAndOpenChild] WARNING: Proceeding with delegation despite metadata persistence failure. Parent=${parentTaskId}, Child=${child.taskId}`,
 			)
 		}
 
