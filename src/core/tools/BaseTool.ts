@@ -142,7 +142,8 @@ export abstract class BaseTool<TName extends ToolName> {
 				})()
 				if (paramsText.includes("<") && paramsText.includes(">")) {
 					throw new Error(
-						"XML tool calls are no longer supported. Use native tool calling (nativeArgs) instead.",
+						"The model is outputting XML-formatted tool calls instead of using native function calling. " +
+							"This typically happens when your API provider does not fully support OpenAI's function/tool calling feature.",
 					)
 				}
 				throw new Error("Tool call is missing native arguments (nativeArgs).")

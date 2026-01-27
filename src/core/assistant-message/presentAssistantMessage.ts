@@ -317,7 +317,9 @@ export async function presentAssistantMessage(cline: Task) {
 				// fail fast with a clear error.
 				if (containsXmlToolMarkup(content)) {
 					const errorMessage =
-						"XML tool calls are no longer supported. Remove any XML tool markup (e.g. <read_file>...</read_file>) and use native tool calling instead."
+						"The model is outputting XML-formatted tool calls instead of using native function calling. " +
+						"This typically happens when your API provider does not fully support OpenAI's function/tool calling feature. " +
+						"Please verify that your API provider supports native tool calling, or try using a different provider."
 					cline.consecutiveMistakeCount++
 					await cline.say("error", errorMessage)
 					cline.userMessageContent.push({ type: "text", text: errorMessage })
@@ -335,7 +337,9 @@ export async function presentAssistantMessage(cline: Task) {
 			const toolCallId = (block as any).id as string | undefined
 			if (!toolCallId) {
 				const errorMessage =
-					"Invalid tool call: missing tool_use.id. XML tool calls are no longer supported. Remove any XML tool markup (e.g. <read_file>...</read_file>) and use native tool calling instead."
+					"Invalid tool call: the model's tool call is missing a required ID. " +
+					"This typically happens when your API provider does not fully support OpenAI's function/tool calling feature. " +
+					"Please verify that your API provider supports native tool calling, or try using a different provider."
 				// Record a tool error for visibility/telemetry. Use the reported tool name if present.
 				try {
 					if (

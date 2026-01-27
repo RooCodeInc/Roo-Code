@@ -131,9 +131,11 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 		// Should not execute tool; should surface a clear error message.
 		const textBlocks = mockTask.userMessageContent.filter((item: any) => item.type === "text")
 		expect(textBlocks.length).toBeGreaterThan(0)
-		expect(textBlocks.some((b: any) => String(b.text).includes("XML tool calls are no longer supported"))).toBe(
-			true,
-		)
+		expect(
+			textBlocks.some((b: any) =>
+				String(b.text).includes("does not fully support OpenAI's function/tool calling"),
+			),
+		).toBe(true)
 
 		// Verify consecutiveMistakeCount was incremented
 		expect(mockTask.consecutiveMistakeCount).toBe(1)
