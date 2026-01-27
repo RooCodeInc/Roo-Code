@@ -64,7 +64,10 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 	const descriptionIntro =
 		"Read a file and return its contents with line numbers for diffing or discussion. IMPORTANT: This tool reads exactly one file per call. If you need multiple files, issue multiple parallel read_file calls."
 
-	const modeDescription = ` Supports two modes: 'slice' (default) reads lines sequentially with offset/limit; 'indentation' extracts semantic code blocks around an anchor line based on indentation hierarchy.`
+	const modeDescription =
+		` Supports two modes: 'slice' (default) reads lines sequentially with offset/limit; 'indentation' extracts semantic code blocks around an anchor line based on indentation hierarchy.` +
+		` Use slice mode when exploring a file from the beginning, reading configuration files, or when you don't have a specific line number to target.` +
+		` Use indentation mode when you have a specific line number from search results, error messages, or definition lookups and want the full containing function/class without truncation.`
 
 	const limitNote = ` By default, returns up to ${DEFAULT_LINE_LIMIT} lines per file. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
 
@@ -74,13 +77,14 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		limitNote +
 		" " +
 		getReadFileSupportsNote(supportsImages) +
-		` Example: { path: 'src/app.ts' }`
+		` Example: { path: 'src/app.ts' }` +
+		` Example (indentation mode): { path: 'src/app.ts', mode: 'indentation', indentation: { anchor_line: 42 } }`
 
 	const indentationProperties: Record<string, unknown> = {
 		anchor_line: {
 			type: "integer",
 			description:
-				"1-based line number to anchor indentation extraction (indentation mode). The block containing this line will be extracted with its context.",
+				"1-based line number to anchor the extraction (required for indentation mode). The complete containing function, method, or class will be extracted with proper context. Typically obtained from search results, error stack traces, or definition lookups. If you don't have a specific line number, use slice mode instead.",
 		},
 		max_levels: {
 			type: "integer",
@@ -112,7 +116,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 			type: "string",
 			enum: ["slice", "indentation"],
 			description:
-				"Reading mode. 'slice' (default): read lines sequentially with offset/limit. 'indentation': extract semantic code block around indentation.anchor_line based on indentation.",
+				"Reading mode. 'slice' (default): read lines sequentially with offset/limit - use for general file exploration or when you don't have a target line number. 'indentation': extract complete semantic code blocks containing anchor_line - use when you have a line number and want the full function/class without truncation.",
 		},
 		offset: {
 			type: "integer",
