@@ -268,10 +268,14 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 	}
 
 	/**
-	 * Search artifact content for lines matching a pattern.
+	 * Search artifact content for lines matching a pattern using chunked streaming.
 	 *
-	 * Performs grep-like searching through the artifact file. The pattern
-	 * is treated as a case-insensitive regex. If the pattern is invalid
+	 * Performs grep-like searching through the artifact file using bounded memory.
+	 * Instead of loading the entire file into memory, this reads in fixed-size chunks
+	 * and processes lines as they are encountered. This keeps memory usage predictable
+	 * even for very large command outputs (e.g., 100MB+ build logs).
+	 *
+	 * The pattern is treated as a case-insensitive regex. If the pattern is invalid
 	 * regex syntax, it's escaped and treated as a literal string.
 	 *
 	 * Results are limited by the byte limit to prevent excessive output.
@@ -289,9 +293,7 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 		totalSize: number,
 		limit: number,
 	): Promise<string> {
-		// Read the entire file for search (we need all content to search)
-		const content = await fs.readFile(artifactPath, "utf8")
-		const lines = content.split("\n")
+		const CHUNK_SIZE = 64 * 1024 // 64KB chunks for bounded memory
 
 		// Create case-insensitive regex for search
 		let regex: RegExp
@@ -302,23 +304,65 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 			regex = new RegExp(this.escapeRegExp(pattern), "i")
 		}
 
-		// Find matching lines with their line numbers
+		const fileHandle = await fs.open(artifactPath, "r")
 		const matches: Array<{ lineNumber: number; content: string }> = []
 		let totalMatchBytes = 0
+		let lineNumber = 0
+		let partialLine = "" // Holds incomplete line from previous chunk
+		let bytesRead = 0
+		let hitLimit = false
 
-		for (let i = 0; i < lines.length; i++) {
-			if (regex.test(lines[i])) {
-				const lineContent = lines[i]
-				const lineBytes = Buffer.byteLength(lineContent, "utf8")
+		try {
+			while (bytesRead < totalSize && !hitLimit) {
+				const chunkSize = Math.min(CHUNK_SIZE, totalSize - bytesRead)
+				const buffer = Buffer.alloc(chunkSize)
+				const result = await fileHandle.read(buffer, 0, chunkSize, bytesRead)
 
-				// Stop if we've exceeded the byte limit
-				if (totalMatchBytes + lineBytes > limit) {
+				if (result.bytesRead === 0) {
 					break
 				}
 
-				matches.push({ lineNumber: i + 1, content: lineContent })
-				totalMatchBytes += lineBytes
+				const chunk = buffer.slice(0, result.bytesRead).toString("utf8")
+				bytesRead += result.bytesRead
+
+				// Combine with partial line from previous chunk
+				const combined = partialLine + chunk
+				const lines = combined.split("\n")
+
+				// Last element may be incomplete (no trailing newline), save for next iteration
+				partialLine = lines.pop() ?? ""
+
+				// Process complete lines
+				for (const line of lines) {
+					lineNumber++
+
+					if (regex.test(line)) {
+						const lineBytes = Buffer.byteLength(line, "utf8")
+
+						// Stop if we've exceeded the byte limit
+						if (totalMatchBytes + lineBytes > limit) {
+							hitLimit = true
+							break
+						}
+
+						matches.push({ lineNumber, content: line })
+						totalMatchBytes += lineBytes
+					}
+				}
 			}
+
+			// Process any remaining partial line at end of file
+			if (!hitLimit && partialLine.length > 0) {
+				lineNumber++
+				if (regex.test(partialLine)) {
+					const lineBytes = Buffer.byteLength(partialLine, "utf8")
+					if (totalMatchBytes + lineBytes <= limit) {
+						matches.push({ lineNumber, content: partialLine })
+					}
+				}
+			}
+		} finally {
+			await fileHandle.close()
 		}
 
 		const artifactId = path.basename(artifactPath)
