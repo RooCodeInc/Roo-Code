@@ -1,8 +1,8 @@
 import { getSharedToolUseSection } from "../tool-use"
 
 describe("getSharedToolUseSection", () => {
-	describe("with MULTIPLE_NATIVE_TOOL_CALLS disabled (default)", () => {
-		it("should include one tool per message requirement when experiment is disabled (default)", () => {
+	describe("native tool calling", () => {
+		it("should include one tool per message requirement when experiment is disabled", () => {
 			// No experiment flags passed (default: disabled)
 			const section = getSharedToolUseSection()
 
