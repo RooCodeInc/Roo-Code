@@ -250,7 +250,7 @@ Line 2
 		it("should not summarize messages that already contain a recent summary with no new messages", async () => {
 			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message with /command" },
-				{ role: "assistant", content: "Previous summary", isSummary: true },
+				{ role: "user", content: "Previous summary", isSummary: true },
 			]
 
 			const result = await summarizeConversation(messages, mockApiHandler, "System prompt", taskId, false)
@@ -412,21 +412,6 @@ Line 2
 			expect(result[0]).toEqual(messages[3]) // Second summary
 			expect(result[1]).toEqual(messages[4])
 			expect(result[2]).toEqual(messages[5])
-		})
-
-		it("should prepend first user message when summary starts with assistant", () => {
-			const messages: ApiMessage[] = [
-				{ role: "user", content: "Original first message" },
-				{ role: "assistant", content: "Summary content", isSummary: true },
-				{ role: "user", content: "After summary" },
-			]
-
-			const result = getMessagesSinceLastSummary(messages)
-
-			// Should prepend original first message for Bedrock compatibility
-			expect(result[0]).toEqual(messages[0]) // Original first user message
-			expect(result[1]).toEqual(messages[1]) // The summary
-			expect(result[2]).toEqual(messages[2])
 		})
 	})
 })

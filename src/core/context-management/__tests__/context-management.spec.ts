@@ -578,8 +578,8 @@ describe("Context Management", () => {
 			const mockSummarizeResponse: condenseModule.SummarizeResponse = {
 				messages: [
 					{ role: "user", content: "First message" },
-					{ role: "assistant", content: mockSummary, isSummary: true },
-					{ role: "user", content: "Last message" },
+					{ role: "user", content: mockSummary, isSummary: true },
+					{ role: "assistant", content: "Last message" },
 				],
 				summary: mockSummary,
 				cost: mockCost,
@@ -751,8 +751,8 @@ describe("Context Management", () => {
 			const mockSummarizeResponse: condenseModule.SummarizeResponse = {
 				messages: [
 					{ role: "user", content: "First message" },
-					{ role: "assistant", content: mockSummary, isSummary: true },
-					{ role: "user", content: "Last message" },
+					{ role: "user", content: mockSummary, isSummary: true },
+					{ role: "assistant", content: "Last message" },
 				],
 				summary: mockSummary,
 				cost: mockCost,
@@ -899,8 +899,8 @@ describe("Context Management", () => {
 			const mockSummarizeResponse: condenseModule.SummarizeResponse = {
 				messages: [
 					{ role: "user", content: "First message" },
-					{ role: "assistant", content: mockSummary, isSummary: true },
-					{ role: "user", content: "Last message" },
+					{ role: "user", content: mockSummary, isSummary: true },
+					{ role: "assistant", content: "Last message" },
 				],
 				summary: mockSummary,
 				cost: mockCost,
@@ -965,8 +965,8 @@ describe("Context Management", () => {
 			const mockSummarizeResponse: condenseModule.SummarizeResponse = {
 				messages: [
 					{ role: "user", content: "First message" },
-					{ role: "assistant", content: mockSummary, isSummary: true },
-					{ role: "user", content: "Last message" },
+					{ role: "user", content: mockSummary, isSummary: true },
+					{ role: "assistant", content: "Last message" },
 				],
 				summary: mockSummary,
 				cost: mockCost,

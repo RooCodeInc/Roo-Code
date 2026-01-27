@@ -83,7 +83,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 			const messages: ApiMessage[] = [
 				{ role: "user", content: "First message", ts: 1 },
 				{ role: "assistant", content: "First response", ts: 2, condenseParent: condenseId },
-				{ role: "assistant", content: "Summary", ts: 3, isSummary: true, condenseId },
+				{ role: "user", content: "Summary", ts: 3, isSummary: true, condenseId },
 			]
 
 			const cleaned = cleanupAfterTruncation(messages)
@@ -97,7 +97,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 			const condenseId2 = "summary-2"
 			const messages: ApiMessage[] = [
 				{ role: "user", content: "Message 1", ts: 1, condenseParent: condenseId1 },
-				{ role: "assistant", content: "Summary 1", ts: 2, isSummary: true, condenseId: condenseId1 },
+				{ role: "user", content: "Summary 1", ts: 2, isSummary: true, condenseId: condenseId1 },
 				{ role: "user", content: "Message 2", ts: 3, condenseParent: condenseId2 },
 				// Summary 2 is NOT present (was truncated)
 			]
@@ -203,8 +203,8 @@ describe("Rewind After Condense - Issue #8295", () => {
 				{ role: "user", content: "Start", ts: 1 },
 				{ role: "assistant", content: "Response 1", ts: 2, condenseParent: condenseId },
 				{ role: "user", content: "More", ts: 3, condenseParent: condenseId },
-				{ role: "assistant", content: "Summary", ts: 4, isSummary: true, condenseId },
-				{ role: "user", content: "After summary", ts: 5 },
+				{ role: "user", content: "Summary", ts: 4, isSummary: true, condenseId },
+				{ role: "assistant", content: "After summary", ts: 5 },
 			]
 
 			// Fresh start model: effective history is summary + messages after it
@@ -250,7 +250,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 					{ role: "assistant", content: "Response 3", ts: 600, condenseParent: condenseId },
 					{ role: "user", content: "Even more", ts: 700, condenseParent: condenseId },
 					// Summary gets ts = firstKeptTs - 1 = 999, which is unique
-					{ role: "assistant", content: "Summary", ts: firstKeptTs - 1, isSummary: true, condenseId },
+					{ role: "user", content: "Summary", ts: firstKeptTs - 1, isSummary: true, condenseId },
 					// First kept message
 					{ role: "user", content: "First kept message", ts: firstKeptTs },
 					{ role: "assistant", content: "Response to first kept", ts: 1100 },
@@ -283,9 +283,9 @@ describe("Rewind After Condense - Issue #8295", () => {
 
 				const messages: ApiMessage[] = [
 					{ role: "user", content: "Initial", ts: 1 },
-					{ role: "assistant", content: "Summary", ts: firstKeptTs - 1, isSummary: true, condenseId },
-					{ role: "user", content: "First kept message", ts: firstKeptTs },
-					{ role: "assistant", content: "Response", ts: 9 },
+					{ role: "user", content: "Summary", ts: firstKeptTs - 1, isSummary: true, condenseId },
+					{ role: "assistant", content: "First kept message", ts: firstKeptTs },
+					{ role: "user", content: "Response", ts: 9 },
 				]
 
 				// Look up by first kept message's timestamp
@@ -330,7 +330,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 					{ role: "user", content: "Now the tests", ts: 700, condenseParent: condenseId },
 					// Summary inserted before first kept message
 					{
-						role: "assistant",
+						role: "user",
 						content: "Summary: Built API with validation, working on tests",
 						ts: 799, // msg8.ts - 1
 						isSummary: true,
@@ -345,12 +345,12 @@ describe("Rewind After Condense - Issue #8295", () => {
 				const effective = getEffectiveApiHistory(storageAfterCondense)
 
 				// Should send exactly 4 messages to LLM:
-				// 1. Summary (assistant)
+				// 1. Summary (user)
 				// 2-4. Last 3 kept messages
 				expect(effective.length).toBe(4)
 
 				// Verify exact order and content
-				expect(effective[0].role).toBe("assistant")
+				expect(effective[0].role).toBe("user")
 				expect(effective[0].isSummary).toBe(true)
 				expect(effective[0].content).toBe("Summary: Built API with validation, working on tests")
 
@@ -394,7 +394,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 
 					// First summary - now ALSO tagged with condenseId2 (from second condense)
 					{
-						role: "assistant",
+						role: "user",
 						content: "Summary1: Built auth and database",
 						ts: 799,
 						isSummary: true,
@@ -416,7 +416,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 
 					// Second summary - inserted before the last 3 kept messages
 					{
-						role: "assistant",
+						role: "user",
 						content: "Summary2: App complete with auth, DB, API, validation, errors, logging. Now testing.",
 						ts: 1799, // msg18.ts - 1
 						isSummary: true,
@@ -432,12 +432,12 @@ describe("Rewind After Condense - Issue #8295", () => {
 				const effective = getEffectiveApiHistory(storageAfterDoubleCondense)
 
 				// Should send exactly 4 messages to LLM:
-				// 1. Summary2 (assistant) - the ACTIVE summary
+				// 1. Summary2 (user) - the ACTIVE summary
 				// 2-4. Last 3 kept messages
 				expect(effective.length).toBe(4)
 
 				// Verify exact order and content
-				expect(effective[0].role).toBe("assistant")
+				expect(effective[0].role).toBe("user")
 				expect(effective[0].isSummary).toBe(true)
 				expect(effective[0].condenseId).toBe(condenseId2) // Must be the SECOND summary
 				expect(effective[0].content).toContain("Summary2")
@@ -477,7 +477,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 					{ role: "user", content: "Start task", ts: 100, condenseParent: condenseId },
 					{ role: "assistant", content: "Response 1", ts: 200, condenseParent: condenseId },
 					{ role: "user", content: "Continue", ts: 300, condenseParent: condenseId },
-					{ role: "assistant", content: "Summary text", ts: 399, isSummary: true, condenseId },
+					{ role: "user", content: "Summary text", ts: 399, isSummary: true, condenseId },
 					// Kept messages - should alternate properly
 					{ role: "assistant", content: "Response after summary", ts: 400 },
 					{ role: "user", content: "User message", ts: 500 },
@@ -486,10 +486,9 @@ describe("Rewind After Condense - Issue #8295", () => {
 
 				const effective = getEffectiveApiHistory(storage)
 
-				// Verify the sequence: assistant(summary), assistant, user, assistant
-				// Note: Having two assistant messages in a row (summary + next response) is valid
-				// because the summary replaces what would have been multiple messages
-				expect(effective[0].role).toBe("assistant")
+				// Verify the sequence: user(summary), assistant, user, assistant
+				// This is the fresh-start model with user-role summaries
+				expect(effective[0].role).toBe("user")
 				expect(effective[0].isSummary).toBe(true)
 				expect(effective[1].role).toBe("assistant")
 				expect(effective[2].role).toBe("user")
@@ -502,10 +501,10 @@ describe("Rewind After Condense - Issue #8295", () => {
 				const storage: ApiMessage[] = [
 					{ role: "user", content: "First", ts: 100, condenseParent: condenseId },
 					{ role: "assistant", content: "Condensed", ts: 200, condenseParent: condenseId },
-					{ role: "assistant", content: "Summary", ts: 299, isSummary: true, condenseId },
-					{ role: "user", content: "Kept 1", ts: 300 },
-					{ role: "assistant", content: "Kept 2", ts: 400 },
-					{ role: "user", content: "Kept 3", ts: 500 },
+					{ role: "user", content: "Summary", ts: 299, isSummary: true, condenseId },
+					{ role: "assistant", content: "Kept 1", ts: 300 },
+					{ role: "user", content: "Kept 2", ts: 400 },
+					{ role: "assistant", content: "Kept 3", ts: 500 },
 				]
 
 				const effective = getEffectiveApiHistory(storage)

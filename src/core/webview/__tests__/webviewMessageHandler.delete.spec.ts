@@ -267,7 +267,7 @@ describe("webviewMessageHandler delete functionality", () => {
 					{ ts: 100, role: "user", content: "First message", condenseParent: condenseId },
 					{ ts: 200, role: "assistant", content: "Response 1", condenseParent: condenseId },
 					{ ts: 300, role: "user", content: "Second message", condenseParent: condenseId },
-					{ ts: 799, role: "assistant", content: "Summary", isSummary: true, condenseId },
+					{ ts: 799, role: "user", content: "Summary", isSummary: true, condenseId },
 					{ ts: 800, role: "assistant", content: "Kept message 1" },
 					{ ts: 900, role: "user", content: "Kept message 2" },
 					{ ts: 1000, role: "assistant", content: "Kept message 3" },
@@ -314,8 +314,8 @@ describe("webviewMessageHandler delete functionality", () => {
 					{ ts: 100, role: "user", content: "Task start", condenseParent: condenseId },
 					{ ts: 200, role: "assistant", content: "Response 1", condenseParent: condenseId },
 					{ ts: 300, role: "user", content: "Message 2", condenseParent: condenseId },
-					{ ts: 999, role: "assistant", content: "Summary", isSummary: true, condenseId },
-					{ ts: 1000, role: "user", content: "First kept" },
+					{ ts: 999, role: "user", content: "Summary", isSummary: true, condenseId },
+					{ ts: 1000, role: "assistant", content: "First kept" },
 				]
 
 				// Delete "Message 2" (ts=300) - this removes summary too, so orphaned tags should be cleared
@@ -357,7 +357,7 @@ describe("webviewMessageHandler delete functionality", () => {
 					// First summary - ALSO tagged with condenseId2 from second condense
 					{
 						ts: 799,
-						role: "assistant",
+						role: "user",
 						content: "Summary1",
 						isSummary: true,
 						condenseId: condenseId1,
@@ -367,7 +367,7 @@ describe("webviewMessageHandler delete functionality", () => {
 					{ ts: 1000, role: "assistant", content: "Msg after summary1", condenseParent: condenseId2 },
 					{ ts: 1100, role: "user", content: "More msgs", condenseParent: condenseId2 },
 					// Second summary
-					{ ts: 1799, role: "assistant", content: "Summary2", isSummary: true, condenseId: condenseId2 },
+					{ ts: 1799, role: "user", content: "Summary2", isSummary: true, condenseId: condenseId2 },
 					// Kept messages
 					{ ts: 1800, role: "user", content: "Kept1" },
 					{ ts: 1900, role: "assistant", content: "Kept2" },
@@ -407,9 +407,9 @@ describe("webviewMessageHandler delete functionality", () => {
 				// Summary and regular message share timestamp (edge case)
 				getCurrentTaskMock.apiConversationHistory = [
 					{ ts: 900, role: "user", content: "Previous message" },
-					{ ts: sharedTs, role: "assistant", content: "Summary", isSummary: true, condenseId: "abc" },
-					{ ts: sharedTs, role: "user", content: "First kept message" },
-					{ ts: 1100, role: "assistant", content: "Response" },
+					{ ts: sharedTs, role: "user", content: "Summary", isSummary: true, condenseId: "abc" },
+					{ ts: sharedTs, role: "assistant", content: "First kept message" },
+					{ ts: 1100, role: "user", content: "Response" },
 				]
 
 				// Delete at shared timestamp - MessageManager uses ts < cutoffTs, so ALL
@@ -450,10 +450,10 @@ describe("webviewMessageHandler delete functionality", () => {
 					{ ts: 100, role: "user", content: "Task start", condenseParent: condenseId },
 					{ ts: 200, role: "assistant", content: "Response 1", condenseParent: condenseId },
 					// Summary timestamp is BEFORE the kept messages (this is the bug scenario)
-					{ ts: 299, role: "assistant", content: "Summary text", isSummary: true, condenseId },
-					{ ts: 300, role: "user", content: "Message to delete this and after" },
-					{ ts: 400, role: "assistant", content: "Response 2" },
-					{ ts: 600, role: "user", content: "Post-condense message" },
+					{ ts: 299, role: "user", content: "Summary text", isSummary: true, condenseId },
+					{ ts: 300, role: "assistant", content: "Message to delete this and after" },
+					{ ts: 400, role: "user", content: "Response 2" },
+					{ ts: 600, role: "assistant", content: "Post-condense message" },
 				]
 
 				// Delete at ts=300 - this removes condense_context (ts=500), so Summary should be removed too
@@ -510,30 +510,30 @@ describe("webviewMessageHandler delete functionality", () => {
 					// First summary (also tagged with condenseId2 from second condense)
 					{
 						ts: 799,
-						role: "assistant",
+						role: "user",
 						content: "First summary",
 						isSummary: true,
 						condenseId: condenseId1,
 						condenseParent: condenseId2,
 					},
-					{ ts: 900, role: "user", content: "After first condense", condenseParent: condenseId2 },
+					{ ts: 900, role: "assistant", content: "After first condense", condenseParent: condenseId2 },
 					{
 						ts: 1000,
-						role: "assistant",
+						role: "user",
 						content: "Response after 1st condense",
 						condenseParent: condenseId2,
 					},
-					{ ts: 1100, role: "user", content: "Message to delete this and after" },
+					{ ts: 1100, role: "assistant", content: "Message to delete this and after" },
 					// Second summary (timestamp is BEFORE the messages it summarized for sort purposes)
 					{
 						ts: 1799,
-						role: "assistant",
+						role: "user",
 						content: "Second summary",
 						isSummary: true,
 						condenseId: condenseId2,
 					},
-					{ ts: 1900, role: "user", content: "Post second condense" },
-					{ ts: 2000, role: "assistant", content: "Final response" },
+					{ ts: 1900, role: "assistant", content: "Post second condense" },
+					{ ts: 2000, role: "user", content: "Final response" },
 				]
 
 				// Delete at ts=1100 - this removes second condense_context (ts=1800) but keeps first (ts=800)

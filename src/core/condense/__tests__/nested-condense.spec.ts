@@ -129,157 +129,8 @@ describe("nested condensing scenarios", () => {
 		})
 	})
 
-	describe("legacy assistant-role summaries (Bedrock fix scenario)", () => {
-		it("should NOT duplicate the summary when summary is assistant role", () => {
-			const condenseId = "condense-1"
-
-			const history: ApiMessage[] = [
-				{ role: "user", content: "Task", ts: 100, condenseParent: condenseId },
-				{ role: "assistant", content: "Response", ts: 200, condenseParent: condenseId },
-				// Legacy summary with assistant role
-				{
-					role: "assistant",
-					content: "Summary of work",
-					ts: 299,
-					isSummary: true,
-					condenseId,
-				},
-				{ role: "user", content: "Continue", ts: 300 },
-			]
-
-			const effectiveHistory = getEffectiveApiHistory(history)
-			expect(effectiveHistory.length).toBe(2)
-			expect(effectiveHistory[0].isSummary).toBe(true)
-
-			const messagesSinceLastSummary = getMessagesSinceLastSummary(effectiveHistory)
-
-			// The Bedrock fix might trigger, but it should NOT create duplicates
-			// when the input is already the effective history
-			const summaryCount = messagesSinceLastSummary.filter((m) => m.isSummary).length
-			expect(summaryCount).toBe(1) // Only one summary, not duplicated
-
-			// Should have summary + "Continue"
-			expect(messagesSinceLastSummary.length).toBeLessThanOrEqual(3)
-		})
-
-		it("should NOT include original task when called on effective history", () => {
-			const condenseId = "condense-1"
-
-			const history: ApiMessage[] = [
-				{ role: "user", content: "Original task content", ts: 100, condenseParent: condenseId },
-				{
-					role: "assistant",
-					content: "Legacy summary",
-					ts: 199,
-					isSummary: true,
-					condenseId,
-				},
-				{ role: "user", content: "After summary", ts: 200 },
-			]
-
-			const effectiveHistory = getEffectiveApiHistory(history)
-			const messagesSinceLastSummary = getMessagesSinceLastSummary(effectiveHistory)
-
-			// The original task should NOT be in the result
-			const hasOriginalTask = messagesSinceLastSummary.some((m) => m.content === "Original task content")
-			expect(hasOriginalTask).toBe(false)
-		})
-
-		describe("BUG: getMessagesSinceLastSummary with full history (summarization input)", () => {
-			it("should NOT include original task in summarization input when summary is assistant role", () => {
-				const condenseId = "condense-1"
-
-				// Scenario: First condense created an assistant-role summary (legacy)
-				// Now we're doing a second condense
-				const fullHistory: ApiMessage[] = [
-					// Original task - was condensed in first condense
-					{
-						role: "user",
-						content: "Original task that should NOT be in summarization input",
-						ts: 100,
-						condenseParent: condenseId,
-					},
-					{ role: "assistant", content: "Old response", ts: 200, condenseParent: condenseId },
-					// Legacy assistant-role summary from first condense
-					{
-						role: "assistant", // <-- Legacy: assistant role
-						content: "First summary",
-						ts: 299,
-						isSummary: true,
-						condenseId,
-					},
-					// New messages to be summarized in second condense
-					{ role: "user", content: "Message after summary", ts: 300 },
-					{ role: "assistant", content: "Response after summary", ts: 400 },
-				]
-
-				// This simulates what summarizeConversation does when called for manual condense
-				const messagesToSummarize = getMessagesSinceLastSummary(fullHistory)
-
-				// THE BUG: Bedrock fix prepends messages[0] (original task) when summary is assistant role
-				// This is wrong because:
-				// 1. The original task was already condensed (has condenseParent)
-				// 2. It should not be included in the summarization input for the second condense
-
-				// Check if original task is incorrectly included
-				const hasOriginalTask = messagesToSummarize.some(
-					(m) => typeof m.content === "string" && m.content.includes("Original task"),
-				)
-
-				// This test documents the current BUGGY behavior if it fails
-				// The fix should make this pass by NOT including the original task
-				console.log(
-					"Messages to summarize:",
-					messagesToSummarize.map((m) => ({
-						role: m.role,
-						content: typeof m.content === "string" ? m.content.substring(0, 50) : "[array]",
-						condenseParent: m.condenseParent,
-						isSummary: m.isSummary,
-					})),
-				)
-
-				// EXPECTED: Original task should NOT be included
-				// ACTUAL (if bug exists): Original task IS included due to Bedrock fix
-				expect(hasOriginalTask).toBe(false)
-			})
-
-			it("should NOT include condensed messages when preparing summarization input", () => {
-				const condenseId1 = "condense-1"
-
-				const fullHistory: ApiMessage[] = [
-					// Original condensed messages
-					{ role: "user", content: "Condensed task", ts: 100, condenseParent: condenseId1 },
-					{ role: "assistant", content: "Condensed response", ts: 200, condenseParent: condenseId1 },
-					// First summary (assistant role for legacy)
-					{
-						role: "assistant",
-						content: "Summary of first condense",
-						ts: 299,
-						isSummary: true,
-						condenseId: condenseId1,
-					},
-					// Messages to be summarized
-					{ role: "user", content: "New work", ts: 300 },
-					{ role: "assistant", content: "New response", ts: 400 },
-				]
-
-				const messagesToSummarize = getMessagesSinceLastSummary(fullHistory)
-
-				// Count how many messages with condenseParent are in the result
-				const condensedMessagesInResult = messagesToSummarize.filter(
-					(m) => m.condenseParent && m.condenseParent === condenseId1 && !m.isSummary,
-				)
-
-				console.log("Condensed messages in result:", condensedMessagesInResult.length)
-
-				// No condensed messages (other than the summary which kicks off the new input) should be included
-				expect(condensedMessagesInResult.length).toBe(0)
-			})
-		})
-	})
-
 	describe("getMessagesSinceLastSummary behavior with full vs effective history", () => {
-		it("should behave differently when called with full history vs effective history", () => {
+		it("should return consistent results when called with full history vs effective history", () => {
 			const condenseId = "condense-1"
 
 			const fullHistory: ApiMessage[] = [
@@ -305,40 +156,38 @@ describe("nested condensing scenarios", () => {
 			// Both should return the same messages when summary is user role
 			expect(fromFullHistory.length).toBe(fromEffectiveHistory.length)
 
-			// The key difference: fromFullHistory[0] references fullHistory,
-			// while fromEffectiveHistory[0] references effectiveHistory
-			// With user-role summary, Bedrock fix should NOT trigger in either case
+			// Both should start with the summary
 			expect(fromFullHistory[0].isSummary).toBe(true)
 			expect(fromEffectiveHistory[0].isSummary).toBe(true)
 		})
 
-		it("BUG SCENARIO: Bedrock fix should not include condensed original task", () => {
+		it("should not include condensed original task in effective history", () => {
 			const condenseId1 = "condense-1"
 			const condenseId2 = "condense-2"
 
-			// Scenario: Two condenses, first summary is assistant role (legacy)
+			// Scenario: Two nested condenses with user-role summaries
 			const fullHistory: ApiMessage[] = [
 				{ role: "user", content: "Original task - should NOT appear", ts: 100, condenseParent: condenseId1 },
 				{ role: "assistant", content: "Old response", ts: 200, condenseParent: condenseId1 },
-				// Legacy assistant-role summary, then condensed again
+				// First summary (user role, fresh-start model), then condensed again
 				{
-					role: "assistant",
-					content: "Summary 1",
+					role: "user",
+					content: [{ type: "text", text: "Summary 1" }],
 					ts: 299,
 					isSummary: true,
 					condenseId: condenseId1,
 					condenseParent: condenseId2,
 				},
-				{ role: "user", content: "After S1", ts: 300, condenseParent: condenseId2 },
-				// Second summary (still assistant for legacy consistency in this test)
+				{ role: "assistant", content: "After S1", ts: 300, condenseParent: condenseId2 },
+				// Second summary (user role, fresh-start model)
 				{
-					role: "assistant",
-					content: "Summary 2",
+					role: "user",
+					content: [{ type: "text", text: "Summary 2" }],
 					ts: 399,
 					isSummary: true,
 					condenseId: condenseId2,
 				},
-				{ role: "user", content: "Current message", ts: 400 },
+				{ role: "assistant", content: "Current message", ts: 400 },
 			]
 
 			const effectiveHistory = getEffectiveApiHistory(fullHistory)
@@ -346,17 +195,15 @@ describe("nested condensing scenarios", () => {
 
 			const messagesSinceLastSummary = getMessagesSinceLastSummary(effectiveHistory)
 
-			// CRITICAL BUG CHECK: The original task should NEVER be included
+			// The original task should NOT be included
 			const hasOriginalTask = messagesSinceLastSummary.some((m) =>
 				typeof m.content === "string"
 					? m.content.includes("Original task")
 					: JSON.stringify(m.content).includes("Original task"),
 			)
-
-			// This assertion documents the expected behavior
 			expect(hasOriginalTask).toBe(false)
 
-			// Also verify Summary1 is not included
+			// Summary1 should not be included (it was condensed)
 			const hasSummary1 = messagesSinceLastSummary.some((m) => m.condenseId === condenseId1)
 			expect(hasSummary1).toBe(false)
 		})
