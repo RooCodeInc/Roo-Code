@@ -340,7 +340,7 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"intelligentContextCondensation": "Condensation Intelligente du Contexte v2 : Une refonte complète de l'algorithme utilisé pour gérer la fenêtre de contexte. Vous pouvez maintenant exécuter des tâches plus longtemps sans que Roo perde en qualité."
+			"worktrees": "Worktrees : Travaillez sur plusieurs branches simultanément avec Git worktrees. Chaque worktree obtient sa propre fenêtre VS Code avec Roo Code, permettant un développement parallèle sans changement de branche. <settingsLink>Essaie</settingsLink>"
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",

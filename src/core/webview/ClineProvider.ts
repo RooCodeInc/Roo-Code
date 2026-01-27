@@ -159,7 +159,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "jan-2026-v3.43.0-intelligent-context-condensation" // v3.43.0 Intelligent Context Condensation
+	public readonly latestAnnouncementId = "jan-2026-v3.44.0-worktrees" // v3.44.0 Worktrees
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 

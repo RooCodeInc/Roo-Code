@@ -341,7 +341,7 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"intelligentContextCondensation": "智能上下文压缩 v2：对管理上下文窗口的算法进行了完全重构。现在您可以更长时间地运行任务，而 Roo 不会变得迟钝。"
+			"worktrees": "Worktrees：使用 Git worktrees 同时在多个分支上工作。每个 worktree 都有自己的 VS Code 窗口和 Roo Code，可以实现无需切换分支的并行开发。<settingsLink>试试看</settingsLink>"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",

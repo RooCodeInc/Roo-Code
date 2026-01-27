@@ -341,7 +341,7 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"intelligentContextCondensation": "Cô đọng Ngữ cảnh Thông minh v2: Viết lại hoàn toàn thuật toán quản lý cửa sổ ngữ cảnh. Bây giờ bạn có thể chạy các tác vụ lâu hơn mà không làm giảm chất lượng của Roo."
+			"worktrees": "Worktrees: Làm việc trên nhiều nhánh cùng lúc với Git worktrees. Mỗi worktree có cửa sổ VS Code riêng với Roo Code, cho phép phát triển song song mà không cần chuyển nhánh. <settingsLink>Hãy thử</settingsLink>"
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

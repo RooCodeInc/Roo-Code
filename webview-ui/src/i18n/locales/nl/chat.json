@@ -317,7 +317,7 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"intelligentContextCondensation": "Intelligente Contextcondensatie v2: Een volledige herwerking van het algoritme dat het contextvenster beheert. Nu kun je taken langer uitvoeren zonder dat Roo minder slim wordt."
+			"worktrees": "Worktrees: Werk gelijktijdig aan meerdere branches met Git worktrees. Elke worktree krijgt zijn eigen VS Code-venster met Roo Code, waardoor parallelle ontwikkeling zonder brancheswissel mogelijk is. <settingsLink>Probeer het</settingsLink>"
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
