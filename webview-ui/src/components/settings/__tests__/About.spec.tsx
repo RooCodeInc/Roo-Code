@@ -31,8 +31,6 @@ describe("About", () => {
 	const defaultProps: ComponentProps<typeof About> = {
 		telemetrySetting: "enabled" as const,
 		setTelemetrySetting: vi.fn(),
-		taskHistoryRetention: "never",
-		setTaskHistoryRetention: vi.fn(),
 	}
 
 	beforeEach(() => {

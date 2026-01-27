@@ -162,6 +162,7 @@ vi.mock("../utils/autoImportSettings", () => ({
 // Avoid filesystem access during activation by stubbing background purge
 vi.mock("../utils/task-history-retention", () => ({
 	startBackgroundRetentionPurge: vi.fn(),
+	startBackgroundCheckpointPurge: vi.fn(),
 }))
 
 // Ensure storage base path resolves to provided path to avoid touching VS Code config

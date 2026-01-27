@@ -16,13 +16,13 @@ import {
 } from "lucide-react"
 import { VSCodeCheckbox, VSCodeLink } from "@vscode/webview-ui-toolkit/react"
 
-import type { TelemetrySetting, TaskHistoryRetentionSetting } from "@roo-code/types"
+import type { TelemetrySetting } from "@roo-code/types"
 
 import { Package } from "@roo/package"
 
 import { vscode } from "@/utils/vscode"
 import { cn } from "@/lib/utils"
-import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui"
+import { Button } from "@/components/ui"
 
 import { SectionHeader } from "./SectionHeader"
 import { Section } from "./Section"
@@ -37,8 +37,6 @@ type AboutProps = HTMLAttributes<HTMLDivElement> & {
 	setTelemetrySetting: (setting: TelemetrySetting) => void
 	debug?: boolean
 	setDebug?: (debug: boolean) => void
-	taskHistoryRetention: TaskHistoryRetentionSetting
-	setTaskHistoryRetention: (value: TaskHistoryRetentionSetting) => void
 	taskHistorySize?: TaskHistorySize
 }
 
@@ -47,8 +45,6 @@ export const About = ({
 	setTelemetrySetting,
 	debug,
 	setDebug,
-	taskHistoryRetention,
-	setTaskHistoryRetention,
 	taskHistorySize,
 	className,
 	...props
@@ -195,37 +191,6 @@ export const About = ({
 			</Section>
 
 			<Section className="space-y-0">
-				<SearchableSetting
-					settingId="about-task-history-retention"
-					section="about"
-					label={t("settings:aboutRetention.label")}
-					className="mt-4">
-					<h3>{t("settings:aboutRetention.label")}</h3>
-					<div className="mt-2">
-						<Select
-							value={taskHistoryRetention}
-							onValueChange={(value: TaskHistoryRetentionSetting) => {
-								setTaskHistoryRetention(value)
-							}}>
-							<SelectTrigger className="w-64">
-								<SelectValue placeholder={t("settings:common.select")} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="never">{t("settings:aboutRetention.options.never")}</SelectItem>
-								<SelectItem value="90">{t("settings:aboutRetention.options.90")}</SelectItem>
-								<SelectItem value="60">{t("settings:aboutRetention.options.60")}</SelectItem>
-								<SelectItem value="30">{t("settings:aboutRetention.options.30")}</SelectItem>
-								<SelectItem value="7">{t("settings:aboutRetention.options.7")}</SelectItem>
-								<SelectItem value="3">{t("settings:aboutRetention.options.3")}</SelectItem>
-							</SelectContent>
-						</Select>
-						<div className="text-vscode-descriptionForeground text-sm mt-1">
-							{t("settings:aboutRetention.description")}
-						</div>
-						<div className="text-red-500 text-sm mt-1">{t("settings:aboutRetention.warning")}</div>
-					</div>
-				</SearchableSetting>
-
 				<SearchableSetting
 					settingId="about-task-history-count"
 					section="about"

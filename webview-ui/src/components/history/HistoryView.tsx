@@ -1,14 +1,21 @@
 import React, { memo, useState, useMemo } from "react"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Settings } from "lucide-react"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
 import { BatchDeleteTaskDialog } from "./BatchDeleteTaskDialog"
 import { Virtuoso } from "react-virtuoso"
 
+import { TASK_HISTORY_RETENTION_OPTIONS, type TaskHistoryRetentionSetting } from "@roo-code/types"
+
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
+import { vscode } from "@/utils/vscode"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import {
 	Button,
 	Checkbox,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -41,6 +48,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		showAllWorkspaces,
 		setShowAllWorkspaces,
 	} = useTaskSearch()
+	const { taskHistoryRetention } = useExtensionState()
 	const { t } = useAppTranslation()
 
 	// Use grouped tasks hook
@@ -51,6 +59,19 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	const [isSelectionMode, setIsSelectionMode] = useState(false)
 	const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
 	const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState<boolean>(false)
+	const [isRetentionPopoverOpen, setIsRetentionPopoverOpen] = useState(false)
+
+	// Normalize retention setting to ensure it's valid
+	const normalizedRetention: TaskHistoryRetentionSetting = TASK_HISTORY_RETENTION_OPTIONS.includes(
+		taskHistoryRetention as TaskHistoryRetentionSetting,
+	)
+		? (taskHistoryRetention as TaskHistoryRetentionSetting)
+		: "never"
+
+	// Handle retention setting change
+	const handleRetentionChange = (value: TaskHistoryRetentionSetting) => {
+		vscode.postMessage({ type: "updateSettings", updatedSettings: { taskHistoryRetention: value } })
+	}
 
 	// Get subtask count for a task
 	const getSubtaskCount = useMemo(() => {
@@ -116,20 +137,67 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						</Button>
 						<h3 className="text-vscode-foreground m-0">{t("history:history")}</h3>
 					</div>
-					<StandardTooltip
-						content={
-							isSelectionMode ? `${t("history:exitSelectionMode")}` : `${t("history:enterSelectionMode")}`
-						}>
-						<Button
-							variant={isSelectionMode ? "primary" : "secondary"}
-							onClick={toggleSelectionMode}
-							data-testid="toggle-selection-mode-button">
-							<span
-								className={`codicon ${isSelectionMode ? "codicon-check-all" : "codicon-checklist"} mr-1`}
-							/>
-							{isSelectionMode ? t("history:exitSelection") : t("history:selectionMode")}
-						</Button>
-					</StandardTooltip>
+					<div className="flex items-center gap-2">
+						<Popover open={isRetentionPopoverOpen} onOpenChange={setIsRetentionPopoverOpen}>
+							<StandardTooltip content={t("settings:aboutRetention.label")}>
+								<PopoverTrigger asChild>
+									<Button variant="ghost" size="icon" data-testid="history-retention-settings-button">
+										<Settings className="size-4" />
+									</Button>
+								</PopoverTrigger>
+							</StandardTooltip>
+							<PopoverContent className="w-72" align="end">
+								<div className="space-y-3">
+									<h4 className="font-medium text-sm">{t("settings:aboutRetention.label")}</h4>
+									<Select
+										value={normalizedRetention}
+										onValueChange={(value: TaskHistoryRetentionSetting) => {
+											handleRetentionChange(value)
+										}}>
+										<SelectTrigger className="w-full">
+											<SelectValue placeholder={t("settings:common.select")} />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="never">
+												{t("settings:aboutRetention.options.never")}
+											</SelectItem>
+											<SelectItem value="90">
+												{t("settings:aboutRetention.options.90")}
+											</SelectItem>
+											<SelectItem value="60">
+												{t("settings:aboutRetention.options.60")}
+											</SelectItem>
+											<SelectItem value="30">
+												{t("settings:aboutRetention.options.30")}
+											</SelectItem>
+											<SelectItem value="7">{t("settings:aboutRetention.options.7")}</SelectItem>
+											<SelectItem value="3">{t("settings:aboutRetention.options.3")}</SelectItem>
+										</SelectContent>
+									</Select>
+									<p className="text-vscode-descriptionForeground text-xs">
+										{t("settings:aboutRetention.description")}
+									</p>
+									<p className="text-red-500 text-xs">{t("settings:aboutRetention.warning")}</p>
+								</div>
+							</PopoverContent>
+						</Popover>
+						<StandardTooltip
+							content={
+								isSelectionMode
+									? `${t("history:exitSelectionMode")}`
+									: `${t("history:enterSelectionMode")}`
+							}>
+							<Button
+								variant={isSelectionMode ? "primary" : "secondary"}
+								onClick={toggleSelectionMode}
+								data-testid="toggle-selection-mode-button">
+								<span
+									className={`codicon ${isSelectionMode ? "codicon-check-all" : "codicon-checklist"} mr-1`}
+								/>
+								{isSelectionMode ? t("history:exitSelection") : t("history:selectionMode")}
+							</Button>
+						</StandardTooltip>
+					</div>
 				</div>
 				<div className="flex flex-col gap-2">
 					<VSCodeTextField

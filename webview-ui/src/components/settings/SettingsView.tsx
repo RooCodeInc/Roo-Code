@@ -974,8 +974,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								setTelemetrySetting={setTelemetrySetting}
 								debug={cachedState.debug}
 								setDebug={setDebug}
-								taskHistoryRetention={normalizedTaskHistoryRetention}
-								setTaskHistoryRetention={(value) => setCachedStateField("taskHistoryRetention", value)}
 								taskHistorySize={taskHistorySize}
 							/>
 						)}
