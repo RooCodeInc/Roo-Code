@@ -4663,22 +4663,41 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Process any queued messages by dequeuing and submitting them.
-	 * This ensures that queued user messages are sent when appropriate,
-	 * preventing them from getting stuck in the queue.
+	 * Process any queued messages by dequeuing and adding them to the current
+	 * user message content. This ensures that queued user messages are included
+	 * in the next LLM request, preventing them from getting stuck in the queue.
 	 *
-	 * @param context - Context string for logging (e.g., the calling tool name)
+	 * Unlike submitUserMessage (which sets askResponse values for pending asks),
+	 * this method directly adds content to userMessageContent, which is appropriate
+	 * when called after tool execution when there's no pending ask.
 	 */
 	public processQueuedMessages(): void {
 		try {
 			if (!this.messageQueueService.isEmpty()) {
 				const queued = this.messageQueueService.dequeueMessage()
 				if (queued) {
-					setTimeout(() => {
-						this.submitUserMessage(queued.text, queued.images).catch((err) =>
-							console.error(`[Task] Failed to submit queued message:`, err),
+					const text = (queued.text ?? "").trim()
+					const images = queued.images ?? []
+					const hasText = text.length > 0
+					const hasImages = images.length > 0
+
+					if (hasText || hasImages) {
+						// Show user feedback in the UI
+						this.say("user_feedback", queued.text, queued.images).catch((err) =>
+							console.error(`[Task] Failed to show queued message feedback:`, err),
 						)
-					}, 0)
+
+						// Add to userMessageContent for the next LLM request
+						if (hasText) {
+							this.userMessageContent.push({
+								type: "text",
+								text: `<user_message>\n${text}\n</user_message>`,
+							})
+						}
+						if (hasImages) {
+							this.userMessageContent.push(...formatResponse.imageBlocks(images))
+						}
+					}
 				}
 			}
 		} catch (e) {
