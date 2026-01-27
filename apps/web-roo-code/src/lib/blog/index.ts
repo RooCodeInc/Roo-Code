@@ -53,4 +53,5 @@ export {
 	trackBlogPostShare,
 	trackBlogPostCTAClick,
 	trackBlogPostTimeSpent,
+	trackBlogSubstackClick,
 } from "./analytics"

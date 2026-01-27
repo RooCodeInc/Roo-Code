@@ -15,9 +15,8 @@ import type { BlogPost } from "./types"
 export function trackBlogIndexView(postCount: number): void {
 	if (typeof window === "undefined" || !posthog.__loaded) return
 
-	posthog.capture("blog_index_viewed", {
+	posthog.capture("blog_index_view", {
 		post_count: postCount,
-		page_type: "blog_index",
 	})
 }
 
@@ -28,12 +27,24 @@ export function trackBlogIndexView(postCount: number): void {
 export function trackBlogPostView(post: BlogPost): void {
 	if (typeof window === "undefined" || !posthog.__loaded) return
 
-	posthog.capture("blog_post_viewed", {
-		post_slug: post.slug,
-		post_title: post.title,
-		post_tags: post.tags,
+	posthog.capture("blog_post_view", {
+		slug: post.slug,
+		title: post.title,
+		tags: post.tags,
 		publish_date: post.publish_date,
-		page_type: "blog_post",
+		publish_time_pt: post.publish_time_pt,
+	})
+}
+
+/**
+ * Track Substack subscribe click
+ * Called when user clicks the Substack subscribe link
+ */
+export function trackBlogSubstackClick(source: "footer" | "blog_index" | "blog_post"): void {
+	if (typeof window === "undefined" || !posthog.__loaded) return
+
+	posthog.capture("blog_substack_click", {
+		source,
 	})
 }
 
