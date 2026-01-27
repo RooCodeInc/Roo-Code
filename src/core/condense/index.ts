@@ -390,6 +390,21 @@ export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[
 		// Get the original first message (should always be a user message with the task)
 		const originalFirstMessage = messages[0]
 		if (originalFirstMessage && originalFirstMessage.role === "user") {
+			// BUG FIX: Don't prepend the original first message if it has a condenseParent.
+			// This can happen during nested condensing where the original task was already
+			// condensed in a previous condense operation. Including it would incorrectly
+			// add previously-condensed content to the summarization input.
+			// See: https://github.com/RooCodeInc/Roo-Code/issues/10942 (nested condensing bug)
+			if (originalFirstMessage.condenseParent) {
+				// The original first message was already condensed, so we should NOT include it.
+				// Instead, use a generic placeholder message to satisfy the Bedrock requirement.
+				const userMessage: ApiMessage = {
+					role: "user",
+					content: "Please continue from the following summary:",
+					ts: messages[0]?.ts ? messages[0].ts - 1 : Date.now(),
+				}
+				return [userMessage, ...messagesSinceSummary]
+			}
 			// Use the original first message unchanged to maintain full context
 			return [originalFirstMessage, ...messagesSinceSummary]
 		} else {
