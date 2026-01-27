@@ -128,6 +128,9 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				}
 			}
 
+			// Process any queued messages after command execution completes
+			task.processQueuedMessages()
+
 			return
 		} catch (error) {
 			await handleError("executing command", error as Error)
