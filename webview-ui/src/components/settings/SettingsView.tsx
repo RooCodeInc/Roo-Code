@@ -179,8 +179,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		ttsSpeed,
 		soundVolume,
 		telemetrySetting,
-		terminalOutputLineLimit,
-		terminalOutputCharacterLimit,
 		terminalOutputPreviewSize,
 		terminalShellIntegrationTimeout,
 		terminalShellIntegrationDisabled, // Added from upstream

@@ -4,12 +4,7 @@ import * as vscode from "vscode"
 
 import delay from "delay"
 
-import {
-	CommandExecutionStatus,
-	DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
-	DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE,
-	PersistedCommandOutput,
-} from "@roo-code/types"
+import { CommandExecutionStatus, DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE, PersistedCommandOutput } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
@@ -215,7 +210,6 @@ export async function executeCommandInTerminal(
 	// Bound accumulated output buffer size to prevent unbounded memory growth for long-running commands.
 	// The interceptor preserves full output; this buffer is only for UI display (100KB limit).
 	const maxAccumulatedOutputSize = 100_000
-
 	// Track when onCompleted callback finishes to avoid race condition.
 	// The callback is async but Terminal/ExecaTerminal don't await it, so we track completion
 	// explicitly to ensure persistedResult is set before we use it.
