@@ -159,14 +159,33 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 			}
 
 			let result: string
+			let readStart = 0
+			let readEnd = 0
 
 			if (search) {
 				// Search mode: filter lines matching the pattern
 				result = await this.searchInArtifact(artifactPath, search, totalSize, limit)
+				// For search, we're scanning the whole file
+				readStart = 0
+				readEnd = totalSize
 			} else {
 				// Normal read mode with offset/limit
 				result = await this.readArtifact(artifactPath, offset, limit, totalSize)
+				// Calculate actual read range
+				readStart = offset
+				readEnd = Math.min(offset + limit, totalSize)
 			}
+
+			// Report to UI that we read command output
+			await task.say(
+				"tool",
+				JSON.stringify({
+					tool: "readCommandOutput",
+					readStart,
+					readEnd,
+					totalBytes: totalSize,
+				}),
+			)
 
 			task.consecutiveMistakeCount = 0
 			pushToolResult(result)

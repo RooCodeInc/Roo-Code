@@ -780,6 +780,7 @@ export interface ClineSayTool {
 		| "newFileCreated"
 		| "codebaseSearch"
 		| "readFile"
+		| "readCommandOutput"
 		| "fetchInstructions"
 		| "listFilesTopLevel"
 		| "listFilesRecursive"
@@ -792,6 +793,10 @@ export interface ClineSayTool {
 		| "runSlashCommand"
 		| "updateTodoList"
 	path?: string
+	// For readCommandOutput
+	readStart?: number
+	readEnd?: number
+	totalBytes?: number
 	diff?: string
 	content?: string
 	// Unified diff statistics computed by the extension
