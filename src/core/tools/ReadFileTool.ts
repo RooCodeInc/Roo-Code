@@ -461,12 +461,15 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 			const lineSnippet = this.getLineSnippet(fileResult.entry!)
 
+			const startLine = this.getStartLine(fileResult.entry!)
+
 			const completeMessage = JSON.stringify({
 				tool: "readFile",
 				path: getReadablePath(task.cwd, relPath),
 				isOutsideWorkspace,
 				content: fullPath,
 				reason: lineSnippet,
+				startLine,
 			} satisfies ClineSayTool)
 
 			const { response, text, images } = await task.ask("tool", completeMessage, false)
@@ -485,6 +488,17 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 				updateFileResult(relPath, { status: "approved", feedbackText: text, feedbackImages: images })
 			}
 		}
+	}
+
+	/**
+	 * Get the starting line number for navigation purposes.
+	 */
+	private getStartLine(entry: InternalFileEntry): number | undefined {
+		if (entry.mode === "indentation" && entry.anchor_line !== undefined) {
+			return entry.anchor_line
+		}
+		const offset = entry.offset ?? 1
+		return offset > 1 ? offset : undefined
 	}
 
 	/**

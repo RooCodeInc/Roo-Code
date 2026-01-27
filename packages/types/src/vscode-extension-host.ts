@@ -817,6 +817,7 @@ export interface ClineSayTool {
 	isProtected?: boolean
 	additionalFileCount?: number // Number of additional files in the same read_file request
 	lineNumber?: number
+	startLine?: number // Starting line for read_file operations (for navigation on click)
 	query?: string
 	batchFiles?: Array<{
 		path: string
