@@ -19,6 +19,7 @@ import { useAutoApprovalState } from "@/hooks/useAutoApprovalState"
 import { useAutoApprovalToggles } from "@/hooks/useAutoApprovalToggles"
 
 type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
+	autoApprovalEnabled?: boolean
 	alwaysAllowReadOnly?: boolean
 	alwaysAllowReadOnlyOutsideWorkspace?: boolean
 	alwaysAllowWrite?: boolean
@@ -36,6 +37,7 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	allowedMaxCost?: number | undefined
 	deniedCommands?: string[]
 	setCachedStateField: SetCachedStateField<
+		| "autoApprovalEnabled"
 		| "alwaysAllowReadOnly"
 		| "alwaysAllowReadOnlyOutsideWorkspace"
 		| "alwaysAllowWrite"
@@ -56,6 +58,7 @@ type AutoApproveSettingsProps = HTMLAttributes<HTMLDivElement> & {
 }
 
 export const AutoApproveSettings = ({
+	autoApprovalEnabled,
 	alwaysAllowReadOnly,
 	alwaysAllowReadOnlyOutsideWorkspace,
 	alwaysAllowWrite,
@@ -78,10 +81,11 @@ export const AutoApproveSettings = ({
 	const { t } = useAppTranslation()
 	const [commandInput, setCommandInput] = useState("")
 	const [deniedCommandInput, setDeniedCommandInput] = useState("")
-	const { autoApprovalEnabled, setAutoApprovalEnabled } = useExtensionState()
+	const { setAutoApprovalEnabled } = useExtensionState()
 
 	const toggles = useAutoApprovalToggles()
 
+	// Use the prop value (from cached state) for display, but still use context for timer effects
 	const { effectiveAutoApprovalEnabled } = useAutoApprovalState(toggles, autoApprovalEnabled)
 
 	const handleAddCommand = () => {
@@ -121,8 +125,10 @@ export const AutoApproveSettings = ({
 							aria-label={t("settings:autoApprove.toggleAriaLabel")}
 							onChange={() => {
 								const newValue = !(autoApprovalEnabled ?? false)
+								// Update cached state for Save button activation
+								setCachedStateField("autoApprovalEnabled", newValue)
+								// Also update context state for immediate timer effect (hybrid approach)
 								setAutoApprovalEnabled(newValue)
-								vscode.postMessage({ type: "autoApprovalEnabled", bool: newValue })
 							}}>
 							<span className="font-medium">{t("settings:autoApprove.enabled")}</span>
 						</VSCodeCheckbox>
