@@ -93,8 +93,10 @@ export async function generateFoldedFileContext(
 
 	const foldedSections: string[] = []
 	let currentCharCount = 0
+	const failedFiles: string[] = []
 
-	for (const filePath of filePaths) {
+	for (let i = 0; i < filePaths.length; i++) {
+		const filePath = filePaths[i]
 		// Resolve to absolute path for tree-sitter
 		const absolutePath = path.isAbsolute(filePath) ? filePath : path.resolve(cwd, filePath)
 
@@ -119,9 +121,9 @@ ${definitions}
 				// Would exceed limit - check if we can fit at least a truncated version
 				const remainingChars = maxCharacters - currentCharCount
 				if (remainingChars < 200) {
-					// Not enough room for meaningful content, stop processing
-					result.filesSkipped++
-					continue
+					// Not enough room for meaningful content, stop processing all remaining files
+					result.filesSkipped += filePaths.length - i
+					break
 				}
 
 				// Truncate the definitions to fit within the system-reminder block
@@ -143,9 +145,17 @@ ${truncatedDefinitions}
 			currentCharCount += sectionContent.length
 			result.filesProcessed++
 		} catch (error) {
-			console.error(`Failed to generate folded context for ${filePath}:`, error)
+			// Collect failed files for batch logging to reduce noise
+			failedFiles.push(filePath)
 			result.filesSkipped++
 		}
+	}
+
+	// Log failed files as a single batch summary instead of per-file errors
+	if (failedFiles.length > 0) {
+		console.warn(
+			`Folded context generation: skipped ${failedFiles.length} file(s) due to errors: ${failedFiles.slice(0, 5).join(", ")}${failedFiles.length > 5 ? ` and ${failedFiles.length - 5} more` : ""}`,
+		)
 	}
 
 	if (foldedSections.length > 0) {
