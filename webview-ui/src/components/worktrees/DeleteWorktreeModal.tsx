@@ -4,7 +4,7 @@ import type { Worktree } from "@roo-code/types"
 
 import { vscode } from "@/utils/vscode"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Button } from "@/components/ui"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Button, Checkbox } from "@/components/ui"
 import { Folder, GitBranch, TriangleAlert } from "lucide-react"
 
 interface DeleteWorktreeModalProps {
@@ -18,6 +18,7 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 	const { t } = useAppTranslation()
 
 	const [isDeleting, setIsDeleting] = useState(false)
+	const [forceDeleteLocked, setForceDeleteLocked] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
@@ -43,12 +44,15 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 		setError(null)
 		setIsDeleting(true)
 
+		// Always force delete unless worktree is locked and user hasn't opted in
+		const shouldForce = worktree.isLocked ? forceDeleteLocked : true
+
 		vscode.postMessage({
 			type: "deleteWorktree",
 			worktreePath: worktree.path,
-			worktreeForce: true,
+			worktreeForce: shouldForce,
 		})
-	}, [worktree.path])
+	}, [worktree.path, worktree.isLocked, forceDeleteLocked])
 
 	return (
 		<Dialog open={open} onOpenChange={(isOpen: boolean) => !isOpen && onClose()}>
@@ -88,6 +92,23 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 							<p className="m-0 text-vscode-descriptionForeground">{t("worktrees:deleteNoticeLarge")}</p>
 						</div>
 					</div>
+
+					{/* Force delete option (only shown if worktree is locked) */}
+					{worktree.isLocked && (
+						<div className="flex items-center gap-2">
+							<Checkbox
+								id="force-delete"
+								checked={forceDeleteLocked}
+								onCheckedChange={(checked) => setForceDeleteLocked(checked === true)}
+							/>
+							<label htmlFor="force-delete" className="text-sm text-vscode-foreground cursor-pointer">
+								{t("worktrees:forceDelete")}
+								<span className="text-vscode-descriptionForeground ml-1">
+									({t("worktrees:worktreeIsLocked")})
+								</span>
+							</label>
+						</div>
+					)}
 
 					{/* Error message */}
 					{error && (
