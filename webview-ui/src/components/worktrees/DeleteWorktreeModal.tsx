@@ -4,7 +4,7 @@ import type { Worktree } from "@roo-code/types"
 
 import { vscode } from "@/utils/vscode"
 import { useAppTranslation } from "@/i18n/TranslationContext"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Button, Checkbox } from "@/components/ui"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, Button } from "@/components/ui"
 import { Folder, GitBranch, TriangleAlert } from "lucide-react"
 
 interface DeleteWorktreeModalProps {
@@ -18,7 +18,6 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 	const { t } = useAppTranslation()
 
 	const [isDeleting, setIsDeleting] = useState(false)
-	const [forceDelete, setForceDelete] = useState(true)
 	const [error, setError] = useState<string | null>(null)
 
 	useEffect(() => {
@@ -47,9 +46,9 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 		vscode.postMessage({
 			type: "deleteWorktree",
 			worktreePath: worktree.path,
-			worktreeForce: forceDelete,
+			worktreeForce: true,
 		})
-	}, [worktree.path, forceDelete])
+	}, [worktree.path])
 
 	return (
 		<Dialog open={open} onOpenChange={(isOpen: boolean) => !isOpen && onClose()}>
@@ -89,23 +88,6 @@ export const DeleteWorktreeModal = ({ open, onClose, worktree, onSuccess }: Dele
 							<p className="m-0 text-vscode-descriptionForeground">{t("worktrees:deleteNoticeLarge")}</p>
 						</div>
 					</div>
-
-					{/* Force delete option (if worktree is locked) */}
-					{worktree.isLocked && (
-						<div className="flex items-center gap-2">
-							<Checkbox
-								id="force-delete"
-								checked={forceDelete}
-								onCheckedChange={(checked) => setForceDelete(checked === true)}
-							/>
-							<label htmlFor="force-delete" className="text-sm text-vscode-foreground cursor-pointer">
-								{t("worktrees:forceDelete")}
-								<span className="text-vscode-descriptionForeground ml-1">
-									({t("worktrees:worktreeIsLocked")})
-								</span>
-							</label>
-						</div>
-					)}
 
 					{/* Error message */}
 					{error && (
