@@ -3283,6 +3283,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 				}
 
+				// CRITICAL FIX: Explicitly mark ALL tool_use blocks as non-partial after finalization.
+				// This prevents race conditions where tools might still have partial=true if:
+				// - toolUseIndex was undefined during finalization (tool already removed from tracking)
+				// - finalizeStreamingToolCall returned null but tool exists in assistantMessageContent
+				// Without this, the first tool in a parallel batch could be presented twice.
+				for (const block of this.assistantMessageContent) {
+					if ((block.type === "tool_use" || block.type === "mcp_tool_use") && block.partial) {
+						block.partial = false
+					}
+				}
+
 				// IMPORTANT: Capture partialBlocks AFTER finalizeRawChunks() to avoid double-presentation.
 				// Tools finalized above are already presented, so we only want blocks still partial after finalization.
 				const partialBlocks = this.assistantMessageContent.filter((block) => block.partial)
