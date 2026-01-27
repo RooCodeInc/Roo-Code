@@ -1,5 +1,4 @@
 import { truncateOutput, applyRunLengthEncoding } from "../misc/extract-text"
-import { DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT } from "@roo-code/types"
 
 import type {
 	RooTerminalProvider,
@@ -265,17 +264,19 @@ export abstract class BaseTerminal implements RooTerminal {
 	}
 
 	/**
-	 * Compresses terminal output by applying run-length encoding and truncating to line and character limits
+	 * Compresses terminal output by applying run-length encoding and truncating to reasonable limits.
+	 * Uses hardcoded defaults: 500 lines, 50K characters - these are UI display limits to prevent
+	 * memory issues, not LLM context limits (which are controlled by terminalOutputPreviewSize).
 	 * @param input The terminal output to compress
-	 * @param lineLimit Maximum number of lines to keep
-	 * @param characterLimit Optional maximum number of characters to keep (defaults to DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT)
 	 * @returns The compressed terminal output
 	 */
-	public static compressTerminalOutput(input: string, lineLimit: number, characterLimit?: number): string {
-		// Default character limit to prevent context window explosion
-		const effectiveCharLimit = characterLimit ?? DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT
+	public static compressTerminalOutput(input: string): string {
+		// Hardcoded UI display limits - these prevent unbounded memory growth
+		// in the chat display, separate from the LLM context limits
+		const LINE_LIMIT = 500
+		const CHARACTER_LIMIT = 50_000
 
-		return truncateOutput(applyRunLengthEncoding(input), lineLimit, effectiveCharLimit)
+		return truncateOutput(applyRunLengthEncoding(input), LINE_LIMIT, CHARACTER_LIMIT)
 	}
 
 	/**

@@ -4,12 +4,7 @@ import * as vscode from "vscode"
 
 import delay from "delay"
 
-import {
-	CommandExecutionStatus,
-	DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
-	DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE,
-	PersistedCommandOutput,
-} from "@roo-code/types"
+import { CommandExecutionStatus, DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE, PersistedCommandOutput } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { Task } from "../task/Task"
@@ -69,11 +64,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 			const provider = await task.providerRef.deref()
 			const providerState = await provider?.getState()
 
-			const {
-				terminalOutputLineLimit = 500,
-				terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
-				terminalShellIntegrationDisabled = true,
-			} = providerState ?? {}
+			const { terminalShellIntegrationDisabled = true } = providerState ?? {}
 
 			// Get command execution timeout from VSCode configuration (in seconds)
 			const commandExecutionTimeoutSeconds = vscode.workspace
@@ -98,8 +89,6 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				command: unescapedCommand,
 				customCwd,
 				terminalShellIntegrationDisabled,
-				terminalOutputLineLimit,
-				terminalOutputCharacterLimit,
 				commandExecutionTimeout,
 			}
 
@@ -153,8 +142,6 @@ export type ExecuteCommandOptions = {
 	command: string
 	customCwd?: string
 	terminalShellIntegrationDisabled?: boolean
-	terminalOutputLineLimit?: number
-	terminalOutputCharacterLimit?: number
 	commandExecutionTimeout?: number
 }
 
@@ -165,8 +152,6 @@ export async function executeCommandInTerminal(
 		command,
 		customCwd,
 		terminalShellIntegrationDisabled = true,
-		terminalOutputLineLimit = 500,
-		terminalOutputCharacterLimit = DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 		commandExecutionTimeout = 0,
 	}: ExecuteCommandOptions,
 ): Promise<[boolean, ToolResponse]> {
@@ -223,8 +208,8 @@ export async function executeCommandInTerminal(
 
 	let accumulatedOutput = ""
 	// Bound accumulated output buffer size to prevent unbounded memory growth for long-running commands.
-	// The interceptor preserves full output; this buffer is only for UI display.
-	const maxAccumulatedOutputSize = terminalOutputCharacterLimit * 2
+	// The interceptor preserves full output; this buffer is only for UI display (100KB limit).
+	const maxAccumulatedOutputSize = 100_000
 	const callbacks: RooTerminalCallbacks = {
 		onLine: async (lines: string, process: RooTerminalProcess) => {
 			accumulatedOutput += lines
@@ -238,11 +223,7 @@ export async function executeCommandInTerminal(
 			interceptor?.write(lines)
 
 			// Continue sending compressed output to webview for UI display (unchanged behavior)
-			const compressedOutput = Terminal.compressTerminalOutput(
-				accumulatedOutput,
-				terminalOutputLineLimit,
-				terminalOutputCharacterLimit,
-			)
+			const compressedOutput = Terminal.compressTerminalOutput(accumulatedOutput)
 			const status: CommandExecutionStatus = { executionId, status: "output", output: compressedOutput }
 			provider?.postMessageToWebview({ type: "commandExecutionStatus", text: JSON.stringify(status) })
 
@@ -272,11 +253,7 @@ export async function executeCommandInTerminal(
 			}
 
 			// Continue using compressed output for UI display
-			result = Terminal.compressTerminalOutput(
-				output ?? "",
-				terminalOutputLineLimit,
-				terminalOutputCharacterLimit,
-			)
+			result = Terminal.compressTerminalOutput(output ?? "")
 
 			task.say("command_output", result)
 			completed = true

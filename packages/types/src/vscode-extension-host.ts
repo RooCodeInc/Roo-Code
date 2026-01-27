@@ -302,8 +302,6 @@ export type ExtensionState = Pick<
 	| "soundEnabled"
 	| "soundVolume"
 	| "maxConcurrentFileReads"
-	| "terminalOutputLineLimit"
-	| "terminalOutputCharacterLimit"
 	| "terminalOutputPreviewSize"
 	| "terminalShellIntegrationTimeout"
 	| "terminalShellIntegrationDisabled"
