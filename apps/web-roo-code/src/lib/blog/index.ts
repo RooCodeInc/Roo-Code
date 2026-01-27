@@ -44,3 +44,13 @@ export {
 	getBlogPostBreadcrumbStructuredData,
 	getBlogPostUrl,
 } from "./structured-data"
+
+// Analytics (PostHog events)
+export {
+	trackBlogIndexView,
+	trackBlogPostView,
+	trackBlogPostScrollDepth,
+	trackBlogPostShare,
+	trackBlogPostCTAClick,
+	trackBlogPostTimeSpent,
+} from "./analytics"

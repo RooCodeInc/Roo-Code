@@ -8,6 +8,7 @@ import {
 	getBlogCollectionStructuredData,
 	getBlogBreadcrumbStructuredData,
 } from "@/lib/blog"
+import { BlogIndexAnalytics } from "@/components/blog/blog-analytics"
 
 // Force dynamic rendering to evaluate publish gating at request-time
 export const dynamic = "force-dynamic"
@@ -64,6 +65,9 @@ export default function BlogIndex() {
 			{/* JSON-LD Structured Data */}
 			<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }} />
 			<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+
+			{/* PostHog Analytics */}
+			<BlogIndexAnalytics postCount={posts.length} />
 
 			<div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
 				<div className="mx-auto max-w-4xl">

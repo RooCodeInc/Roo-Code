@@ -12,6 +12,7 @@ import {
 	getArticleStructuredData,
 	getBlogPostBreadcrumbStructuredData,
 } from "@/lib/blog"
+import { BlogPostAnalytics } from "@/components/blog/blog-analytics"
 
 // Force dynamic rendering to evaluate publish gating at request-time
 export const dynamic = "force-dynamic"
@@ -86,6 +87,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 			{/* JSON-LD Structured Data */}
 			<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
 			<script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+
+			{/* PostHog Analytics */}
+			<BlogPostAnalytics
+				post={{
+					slug: post.slug,
+					title: post.title,
+					description: post.description,
+					tags: post.tags,
+					publish_date: post.publish_date,
+				}}
+			/>
 
 			<div className="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
 				<article className="mx-auto max-w-3xl">
