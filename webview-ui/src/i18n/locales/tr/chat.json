@@ -341,7 +341,7 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"intelligentContextCondensation": "Akıllı Bağlam Yoğunlaştırma v2: Bağlam penceresini yöneten algoritmanın tamamen yeniden yazılması. Artık görevleri Roo'nun kalitesini kaybetmeden daha uzun süre çalıştırabilirsiniz."
+			"worktrees": "Worktrees: Git worktrees ile aynı anda birden fazla şubede çalışın. Her worktree, Roo Code'lu kendi VS Code penceresini alır ve şube değiştirmeden paralel geliştirmeyi sağlar. <settingsLink>Deneyin</settingsLink>"
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

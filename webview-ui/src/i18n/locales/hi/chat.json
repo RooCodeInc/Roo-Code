@@ -340,7 +340,7 @@
 		},
 		"release": {
 			"heading": "नया क्या है:",
-			"intelligentContextCondensation": "बुद्धिमान संदर्भ संघनन v2: संदर्भ विंडो प्रबंधित करने वाले एल्गोरिदम का पूर्ण पुनर्निर्माण। अब आप Roo की गुणवत्ता खोए बिना लंबे समय तक कार्य चला सकते हैं।"
+			"worktrees": "Worktrees: Git worktrees के साथ एक साथ कई शाखाओं पर काम करें। प्रत्येक worktree को Roo Code के साथ अपनी VS Code विंडो मिलती है, शाखा स्विच किए बिना समानांतर विकास को सक्षम करता है। <settingsLink>इसे आज़माएं</settingsLink>"
 		},
 		"cloudAgents": {
 			"heading": "क्लाउड में नया:",

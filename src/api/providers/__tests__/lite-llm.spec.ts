@@ -718,4 +718,206 @@ describe("LiteLLMHandler", () => {
 			})
 		})
 	})
+
+	describe("tool ID normalization", () => {
+		it("should truncate tool IDs longer than 64 characters", async () => {
+			const optionsWithBedrock: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "bedrock/anthropic.claude-3-sonnet",
+			}
+			handler = new LiteLLMHandler(optionsWithBedrock)
+
+			vi.spyOn(handler as any, "fetchModel").mockResolvedValue({
+				id: "bedrock/anthropic.claude-3-sonnet",
+				info: { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			})
+
+			// Create a tool ID longer than 64 characters
+			const longToolId = "toolu_" + "a".repeat(70) // 76 characters total
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "I'll help you with that." },
+						{ type: "tool_use", id: longToolId, name: "read_file", input: { path: "test.txt" } },
+					],
+				},
+				{
+					role: "user",
+					content: [{ type: "tool_result", tool_use_id: longToolId, content: "file contents" }],
+				},
+			]
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Response" } }],
+						usage: { prompt_tokens: 100, completion_tokens: 20 },
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of generator) {
+				// Consume
+			}
+
+			// Verify that tool IDs are truncated to 64 characters or less
+			const createCall = mockCreate.mock.calls[0][0]
+			const assistantMessage = createCall.messages.find(
+				(msg: any) => msg.role === "assistant" && msg.tool_calls && msg.tool_calls.length > 0,
+			)
+			const toolMessage = createCall.messages.find((msg: any) => msg.role === "tool")
+
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.tool_calls[0].id.length).toBeLessThanOrEqual(64)
+
+			expect(toolMessage).toBeDefined()
+			expect(toolMessage.tool_call_id.length).toBeLessThanOrEqual(64)
+		})
+
+		it("should not modify tool IDs that are already within 64 characters", async () => {
+			const optionsWithBedrock: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "bedrock/anthropic.claude-3-sonnet",
+			}
+			handler = new LiteLLMHandler(optionsWithBedrock)
+
+			vi.spyOn(handler as any, "fetchModel").mockResolvedValue({
+				id: "bedrock/anthropic.claude-3-sonnet",
+				info: { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			})
+
+			// Create a tool ID within 64 characters
+			const shortToolId = "toolu_01ABC123" // Well under 64 characters
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "I'll help you with that." },
+						{ type: "tool_use", id: shortToolId, name: "read_file", input: { path: "test.txt" } },
+					],
+				},
+				{
+					role: "user",
+					content: [{ type: "tool_result", tool_use_id: shortToolId, content: "file contents" }],
+				},
+			]
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Response" } }],
+						usage: { prompt_tokens: 100, completion_tokens: 20 },
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of generator) {
+				// Consume
+			}
+
+			// Verify that tool IDs are unchanged
+			const createCall = mockCreate.mock.calls[0][0]
+			const assistantMessage = createCall.messages.find(
+				(msg: any) => msg.role === "assistant" && msg.tool_calls && msg.tool_calls.length > 0,
+			)
+			const toolMessage = createCall.messages.find((msg: any) => msg.role === "tool")
+
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.tool_calls[0].id).toBe(shortToolId)
+
+			expect(toolMessage).toBeDefined()
+			expect(toolMessage.tool_call_id).toBe(shortToolId)
+		})
+
+		it("should maintain uniqueness with hash suffix when truncating", async () => {
+			const optionsWithBedrock: ApiHandlerOptions = {
+				...mockOptions,
+				litellmModelId: "bedrock/anthropic.claude-3-sonnet",
+			}
+			handler = new LiteLLMHandler(optionsWithBedrock)
+
+			vi.spyOn(handler as any, "fetchModel").mockResolvedValue({
+				id: "bedrock/anthropic.claude-3-sonnet",
+				info: { ...litellmDefaultModelInfo, maxTokens: 8192 },
+			})
+
+			// Create two tool IDs that differ only near the end
+			const longToolId1 = "toolu_" + "a".repeat(60) + "_suffix1"
+			const longToolId2 = "toolu_" + "a".repeat(60) + "_suffix2"
+
+			const systemPrompt = "You are a helpful assistant"
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello" },
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "I'll help." },
+						{ type: "tool_use", id: longToolId1, name: "read_file", input: { path: "test1.txt" } },
+						{ type: "tool_use", id: longToolId2, name: "read_file", input: { path: "test2.txt" } },
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{ type: "tool_result", tool_use_id: longToolId1, content: "file1 contents" },
+						{ type: "tool_result", tool_use_id: longToolId2, content: "file2 contents" },
+					],
+				},
+			]
+
+			const mockStream = {
+				async *[Symbol.asyncIterator]() {
+					yield {
+						choices: [{ delta: { content: "Response" } }],
+						usage: { prompt_tokens: 100, completion_tokens: 20 },
+					}
+				},
+			}
+
+			mockCreate.mockReturnValue({
+				withResponse: vi.fn().mockResolvedValue({ data: mockStream }),
+			})
+
+			const generator = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of generator) {
+				// Consume
+			}
+
+			// Verify that truncated tool IDs are unique (hash suffix ensures this)
+			const createCall = mockCreate.mock.calls[0][0]
+			const assistantMessage = createCall.messages.find(
+				(msg: any) => msg.role === "assistant" && msg.tool_calls && msg.tool_calls.length > 0,
+			)
+
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.tool_calls).toHaveLength(2)
+
+			const id1 = assistantMessage.tool_calls[0].id
+			const id2 = assistantMessage.tool_calls[1].id
+
+			// Both should be truncated to 64 characters
+			expect(id1.length).toBeLessThanOrEqual(64)
+			expect(id2.length).toBeLessThanOrEqual(64)
+
+			// They should be different (hash suffix ensures uniqueness)
+			expect(id1).not.toBe(id2)
+		})
+	})
 })

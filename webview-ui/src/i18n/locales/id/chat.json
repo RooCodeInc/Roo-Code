@@ -353,7 +353,7 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"intelligentContextCondensation": "Kondensasi Konteks Cerdas v2: Penulisan ulang lengkap algoritma yang mengelola jendela konteks. Sekarang Anda dapat menjalankan tugas lebih lama tanpa Roo kehilangan kualitas."
+			"worktrees": "Worktrees: Bekerja di beberapa branch secara bersamaan dengan Git worktrees. Setiap worktree mendapat jendela VS Code sendiri dengan Roo Code, memungkinkan pengembangan paralel tanpa pengalihan branch. <settingsLink>Coba</settingsLink>"
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

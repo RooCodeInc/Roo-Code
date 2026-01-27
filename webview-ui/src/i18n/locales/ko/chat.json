@@ -340,7 +340,7 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"intelligentContextCondensation": "지능형 컨텍스트 압축 v2: 컨텍스트 창을 관리하는 알고리즘을 완전히 재작업했습니다. 이제 Roo의 품질 저하 없이 더 오래 작업을 실행할 수 있습니다."
+			"worktrees": "Worktrees: Git worktrees로 여러 브랜치에서 동시에 작업합니다. 각 worktree는 Roo Code가 있는 자체 VS Code 창을 얻으며, 브랜치 전환 없이 병렬 개발을 가능하게 합니다. <settingsLink>시도해보세요</settingsLink>"
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",

@@ -252,38 +252,36 @@ describe("getMessagesSinceLastSummary", () => {
 		expect(result).toEqual(messages)
 	})
 
-	it("should return messages since the last summary (preserves original first user message when needed)", () => {
+	it("should return messages since the last summary", () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
 			{ role: "assistant", content: "Hi there", ts: 2 },
-			{ role: "assistant", content: "Summary of conversation", ts: 3, isSummary: true },
-			{ role: "user", content: "How are you?", ts: 4 },
-			{ role: "assistant", content: "I'm good", ts: 5 },
+			{ role: "user", content: "Summary of conversation", ts: 3, isSummary: true },
+			{ role: "assistant", content: "How are you?", ts: 4 },
+			{ role: "user", content: "I'm good", ts: 5 },
 		]
 
 		const result = getMessagesSinceLastSummary(messages)
 		expect(result).toEqual([
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Summary of conversation", ts: 3, isSummary: true },
-			{ role: "user", content: "How are you?", ts: 4 },
-			{ role: "assistant", content: "I'm good", ts: 5 },
+			{ role: "user", content: "Summary of conversation", ts: 3, isSummary: true },
+			{ role: "assistant", content: "How are you?", ts: 4 },
+			{ role: "user", content: "I'm good", ts: 5 },
 		])
 	})
 
 	it("should handle multiple summary messages and return since the last one", () => {
 		const messages: ApiMessage[] = [
 			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "First summary", ts: 2, isSummary: true },
-			{ role: "user", content: "How are you?", ts: 3 },
-			{ role: "assistant", content: "Second summary", ts: 4, isSummary: true },
-			{ role: "user", content: "What's new?", ts: 5 },
+			{ role: "user", content: "First summary", ts: 2, isSummary: true },
+			{ role: "assistant", content: "How are you?", ts: 3 },
+			{ role: "user", content: "Second summary", ts: 4, isSummary: true },
+			{ role: "assistant", content: "What's new?", ts: 5 },
 		]
 
 		const result = getMessagesSinceLastSummary(messages)
 		expect(result).toEqual([
-			{ role: "user", content: "Hello", ts: 1 },
-			{ role: "assistant", content: "Second summary", ts: 4, isSummary: true },
-			{ role: "user", content: "What's new?", ts: 5 },
+			{ role: "user", content: "Second summary", ts: 4, isSummary: true },
+			{ role: "assistant", content: "What's new?", ts: 5 },
 		])
 	})
 

@@ -340,7 +340,7 @@
 		},
 		"release": {
 			"heading": "新機能:",
-			"intelligentContextCondensation": "インテリジェントコンテキスト圧縮 v2：コンテキストウィンドウを管理するアルゴリズムの完全な作り直し。Rooの品質を落とさずに、より長時間タスクを実行できるようになりました。"
+			"worktrees": "Worktrees: Git worktreesで複数のブランチに同時に取り組みます。各worktreeはRoo Codeを備えた独自のVS Codeウィンドウを取得し、ブランチ切り替えなしで並列開発を可能にします。<settingsLink>試す</settingsLink>"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",
