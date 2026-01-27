@@ -3240,17 +3240,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Finalize the streaming tool call
 						const finalToolUse = NativeToolCallParser.finalizeStreamingToolCall(event.id)
 
-						// Get the index for this tool call
-						const toolUseIndex = this.streamingToolCallIndices.get(event.id)
+						// Find by ID, not tracked index - can't get stale
+						// Only match partial blocks to ensure idempotent processing
+						// If a tool was already finalized (partial === false), skip it
+						const toolIndex = this.assistantMessageContent.findIndex(
+							(block) =>
+								(block.type === "tool_use" || block.type === "mcp_tool_use") &&
+								(block as any).id === event.id &&
+								block.partial === true,
+						)
+
+						if (toolIndex === -1) {
+							// Already finalized - clean up tracking and skip
+							this.streamingToolCallIndices.delete(event.id)
+							continue
+						}
 
 						if (finalToolUse) {
 							// Store the tool call ID
 							;(finalToolUse as any).id = event.id
 
-							// Get the index and replace partial with final
-							if (toolUseIndex !== undefined) {
-								this.assistantMessageContent[toolUseIndex] = finalToolUse
-							}
+							// Replace partial with final
+							this.assistantMessageContent[toolIndex] = finalToolUse
 
 							// Clean up tracking
 							this.streamingToolCallIndices.delete(event.id)
@@ -3260,11 +3271,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 							// Present the finalized tool call
 							presentAssistantMessage(this)
-						} else if (toolUseIndex !== undefined) {
+						} else {
 							// finalizeStreamingToolCall returned null (malformed JSON or missing args)
 							// We still need to mark the tool as non-partial so it gets executed
 							// The tool's validation will catch any missing required parameters
-							const existingToolUse = this.assistantMessageContent[toolUseIndex]
+							const existingToolUse = this.assistantMessageContent[toolIndex]
 							if (existingToolUse && existingToolUse.type === "tool_use") {
 								existingToolUse.partial = false
 								// Ensure it has the ID for native protocol
