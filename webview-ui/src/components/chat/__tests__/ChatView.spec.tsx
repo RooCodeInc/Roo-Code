@@ -1081,6 +1081,188 @@ describe("ChatView - Message Queueing Tests", () => {
 			}),
 		)
 	})
+
+	it("queues messages when tool approval buttons are shown (tool state) - Issue #10675", async () => {
+		const { getByTestId, container } = renderChatView()
+
+		// Hydrate state with a tool ask (file edit approval)
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "tool",
+					ts: Date.now(),
+					text: JSON.stringify({ tool: "editedExistingFile", path: "test.txt", diff: "some diff" }),
+					partial: false, // Buttons are shown when not partial
+				},
+			],
+		})
+
+		// Wait for buttons to become enabled (indicates enableButtons = true)
+		await waitFor(() => {
+			const buttons = container.querySelectorAll("button")
+			const saveButton = Array.from(buttons).find((btn) => btn.textContent?.includes("chat:save.title"))
+			expect(saveButton).toBeTruthy()
+			expect(saveButton).not.toHaveAttribute("disabled")
+		})
+
+		// Clear message calls before simulating user input
+		vi.mocked(vscode.postMessage).mockClear()
+
+		// Simulate user typing and sending a message while Save/Reject buttons are shown
+		const chatTextArea = getByTestId("chat-textarea")
+		const input = chatTextArea.querySelector("input")! as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "additional context for later" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		// Verify that the message was queued, not sent as askResponse
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "queueMessage",
+				text: "additional context for later",
+				images: [],
+			})
+		})
+
+		// Verify it was NOT sent as askResponse (which would cause the message to be lost)
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "askResponse",
+				askResponse: "messageResponse",
+			}),
+		)
+	})
+
+	it("queues messages when command approval buttons are shown (command state)", async () => {
+		const { getByTestId, container } = renderChatView()
+
+		// Hydrate state with a command ask (command approval)
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: Date.now(),
+					text: "npm install",
+					partial: false, // Buttons are shown when not partial
+				},
+			],
+		})
+
+		// Wait for buttons to become enabled (indicates enableButtons = true)
+		await waitFor(() => {
+			const buttons = container.querySelectorAll("button")
+			const runButton = Array.from(buttons).find((btn) => btn.textContent?.includes("chat:runCommand.title"))
+			expect(runButton).toBeTruthy()
+			expect(runButton).not.toHaveAttribute("disabled")
+		})
+
+		// Clear message calls before simulating user input
+		vi.mocked(vscode.postMessage).mockClear()
+
+		// Simulate user typing and sending a message while Run Command/Reject buttons are shown
+		const chatTextArea = getByTestId("chat-textarea")
+		const input = chatTextArea.querySelector("input")! as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "wait, let me think about this" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		// Verify that the message was queued, not sent as askResponse
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "queueMessage",
+				text: "wait, let me think about this",
+				images: [],
+			})
+		})
+
+		// Verify it was NOT sent as askResponse
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "askResponse",
+				askResponse: "messageResponse",
+			}),
+		)
+	})
+
+	it("queues messages when command is running (command_output state) - Issue #10675", async () => {
+		const { getByTestId, container } = renderChatView()
+
+		// Hydrate state with a command_output ask (command running)
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command_output",
+					ts: Date.now(),
+					text: "Running sleep 60...",
+					partial: false,
+				},
+			],
+		})
+
+		// Wait for buttons to become enabled (indicates enableButtons = true)
+		await waitFor(() => {
+			const buttons = container.querySelectorAll("button")
+			const proceedButton = Array.from(buttons).find((btn) =>
+				btn.textContent?.includes("chat:proceedWhileRunning.title"),
+			)
+			expect(proceedButton).toBeTruthy()
+			expect(proceedButton).not.toHaveAttribute("disabled")
+		})
+
+		// Clear message calls before simulating user input
+		vi.mocked(vscode.postMessage).mockClear()
+
+		// Simulate user typing and sending a message while Proceed While Running/Kill Command buttons are shown
+		const chatTextArea = getByTestId("chat-textarea")
+		const input = chatTextArea.querySelector("input")! as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "clarifying message for later" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		// Verify that the message was queued, not sent as askResponse
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "queueMessage",
+				text: "clarifying message for later",
+				images: [],
+			})
+		})
+
+		// Verify it was NOT sent as askResponse (which would cause the message to be lost)
+		expect(vscode.postMessage).not.toHaveBeenCalledWith(
+			expect.objectContaining({
+				type: "askResponse",
+				askResponse: "messageResponse",
+			}),
+		)
+	})
 })
 
 describe("ChatView - Context Condensing Indicator Tests", () => {
