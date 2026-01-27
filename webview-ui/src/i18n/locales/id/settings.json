@@ -750,10 +750,6 @@
 			"label": "Delay perintah terminal",
 			"description": "Tambahkan jeda singkat setelah setiap perintah agar VS Code terminal bisa flush semua output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gunakan hanya jika output ekor hilang; jika tidak biarkan di 0. <0>Pelajari lebih lanjut</0>"
 		},
-		"compressProgressBar": {
-			"label": "Kompres keluaran bilah kemajuan",
-			"description": "Menciutkan bilah kemajuan/spinner sehingga hanya status akhir yang disimpan (menghemat token). <0>Pelajari lebih lanjut</0>"
-		},
 		"powershellCounter": {
 			"label": "Aktifkan solusi penghitung PowerShell",
 			"description": "Aktifkan saat keluaran PowerShell hilang atau digandakan; menambahkan penghitung kecil ke setiap perintah untuk menstabilkan keluaran. Biarkan nonaktif jika keluaran sudah terlihat benar. <0>Pelajari lebih lanjut</0>"

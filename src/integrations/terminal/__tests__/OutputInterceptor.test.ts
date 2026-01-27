@@ -56,7 +56,6 @@ describe("OutputInterceptor", () => {
 				command: "echo test",
 				storageDir,
 				previewSize: "small", // 2KB
-				compressProgressBar: false,
 			})
 
 			const smallOutput = "Hello World\n"
@@ -79,7 +78,6 @@ describe("OutputInterceptor", () => {
 				command: "echo test",
 				storageDir,
 				previewSize: "small", // 2KB = 2048 bytes
-				compressProgressBar: false,
 			})
 
 			// Write enough data to exceed 2KB threshold
@@ -103,7 +101,6 @@ describe("OutputInterceptor", () => {
 				command: "echo test",
 				storageDir,
 				previewSize: "small", // 2KB
-				compressProgressBar: false,
 			})
 
 			// Write data that exceeds threshold
@@ -125,7 +122,6 @@ describe("OutputInterceptor", () => {
 				command: "echo test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			// Trigger spill
@@ -152,7 +148,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			// Write exactly 2KB
@@ -171,7 +166,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "medium",
-				compressProgressBar: false,
 			})
 
 			// Write exactly 4KB
@@ -190,7 +184,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "large",
-				compressProgressBar: false,
 			})
 
 			// Write exactly 8KB
@@ -213,7 +206,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			// Trigger spill
@@ -230,7 +222,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			// Trigger spill
@@ -246,7 +237,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			const fullOutput = "x".repeat(5000)
@@ -264,7 +254,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			const expectedPath = path.join(storageDir, `cmd-${executionId}.txt`)
@@ -280,7 +269,6 @@ describe("OutputInterceptor", () => {
 				command: "echo hello",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			const output = "Hello World\n"
@@ -301,7 +289,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			const largeOutput = "x".repeat(5000)
@@ -322,7 +309,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			// Trigger spill
@@ -339,7 +325,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			const output = "x".repeat(5000)
@@ -403,46 +388,6 @@ describe("OutputInterceptor", () => {
 		})
 	})
 
-	describe("Progress bar compression", () => {
-		it("should apply compression when compressProgressBar is true", () => {
-			const interceptor = new OutputInterceptor({
-				executionId: "12345",
-				taskId: "task-1",
-				command: "test",
-				storageDir,
-				previewSize: "small",
-				compressProgressBar: true,
-			})
-
-			// Output with carriage returns (simulating progress bar)
-			const output = "Progress: 10%\rProgress: 50%\rProgress: 100%\n"
-			interceptor.write(output)
-
-			const result = interceptor.finalize()
-
-			// Preview should be compressed (carriage returns processed)
-			// The processCarriageReturns function should keep only the last line before \r
-			expect(result.preview).not.toBe(output)
-		})
-
-		it("should not apply compression when compressProgressBar is false", () => {
-			const interceptor = new OutputInterceptor({
-				executionId: "12345",
-				taskId: "task-1",
-				command: "test",
-				storageDir,
-				previewSize: "small",
-				compressProgressBar: false,
-			})
-
-			const output = "Line 1\nLine 2\n"
-			interceptor.write(output)
-
-			const result = interceptor.finalize()
-			expect(result.preview).toBe(output)
-		})
-	})
-
 	describe("getBufferForUI() method", () => {
 		it("should return current buffer for UI updates", () => {
 			const interceptor = new OutputInterceptor({
@@ -451,7 +396,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			const output = "Hello World"
@@ -467,7 +411,6 @@ describe("OutputInterceptor", () => {
 				command: "test",
 				storageDir,
 				previewSize: "small",
-				compressProgressBar: false,
 			})
 
 			// Trigger spill

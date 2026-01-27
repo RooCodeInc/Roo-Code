@@ -746,10 +746,6 @@
 			"label": "Atraso de comando do terminal",
 			"description": "Adiciona uma pequena pausa após cada comando para que o terminal do VS Code possa liberar toda a saída (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Use apenas se você vir a saída final faltando; caso contrário, deixe em 0. <0>Saiba mais</0>"
 		},
-		"compressProgressBar": {
-			"label": "Comprimir saída da barra de progresso",
-			"description": "Recolhe barras de progresso/spinners para que apenas o estado final seja mantido (economiza tokens). <0>Saiba mais</0>"
-		},
 		"powershellCounter": {
 			"label": "Ativar solução alternativa do contador do PowerShell",
 			"description": "Ative isso quando a saída do PowerShell estiver faltando ou duplicada; ele adiciona um pequeno contador a cada comando para estabilizar a saída. Mantenha desativado se a saída já parecer correta. <0>Saiba mais</0>"

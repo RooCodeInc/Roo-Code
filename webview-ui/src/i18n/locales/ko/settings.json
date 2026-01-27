@@ -746,10 +746,6 @@
 			"label": "터미널 명령 지연",
 			"description": "VS Code 터미널이 모든 출력을 플러시할 수 있도록 각 명령 후에 짧은 일시 중지를 추가합니다(bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). 누락된 꼬리 출력이 표시되는 경우에만 사용하고, 그렇지 않으면 0으로 둡니다. <0>자세히 알아보기</0>"
 		},
-		"compressProgressBar": {
-			"label": "진행률 표시줄 출력 압축",
-			"description": "진행률 표시줄/스피너를 축소하여 최종 상태만 유지합니다(토큰 절약). <0>자세히 알아보기</0>"
-		},
 		"powershellCounter": {
 			"label": "PowerShell 카운터 해결 방법 활성화",
 			"description": "PowerShell 출력이 누락되거나 중복될 때 이 기능을 켜십시오. 출력을 안정화하기 위해 각 명령에 작은 카운터를 추가합니다. 출력이 이미 올바르게 표시되면 이 기능을 끄십시오. <0>자세히 알아보기</0>"

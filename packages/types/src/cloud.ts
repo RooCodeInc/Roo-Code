@@ -99,6 +99,7 @@ export const organizationDefaultSettingsSchema = globalSettingsSchema
 		maxWorkspaceFiles: true,
 		showRooIgnoredFiles: true,
 		terminalCommandDelay: true,
+		terminalOutputLineLimit: true,
 		terminalShellIntegrationDisabled: true,
 		terminalShellIntegrationTimeout: true,
 		terminalZshClearEolMark: true,

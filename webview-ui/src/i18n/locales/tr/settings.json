@@ -746,10 +746,6 @@
 			"label": "Terminal komut delay",
 			"description": "VS Code terminalin tüm outputu flush edebilmesi için her komuttan sonra kısa pause ekler (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Sadece tail output eksikse kullan; yoksa 0'da bırak. <0>Daha fazla bilgi edinin</0>"
 		},
-		"compressProgressBar": {
-			"label": "İlerleme çubuğu çıktısını sıkıştır",
-			"description": "İlerleme çubukları/spinner'ları daraltır, sadece son durumu tutar (token tasarrufu). <0>Daha fazla bilgi edinin</0>"
-		},
 		"powershellCounter": {
 			"label": "PowerShell sayaç geçici çözümünü etkinleştir",
 			"description": "PowerShell çıktısı eksik veya yineleniyorsa bunu açın; çıktıyı stabilize etmek için her komuta küçük bir sayaç ekler. Çıktı zaten doğru görünüyorsa bunu kapalı tutun. <0>Daha fazla bilgi edinin</0>"

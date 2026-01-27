@@ -1,5 +1,4 @@
 import { truncateOutput, applyRunLengthEncoding } from "../misc/extract-text"
-
 import type {
 	RooTerminalProvider,
 	RooTerminal,

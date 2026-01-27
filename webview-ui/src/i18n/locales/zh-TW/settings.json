@@ -754,10 +754,6 @@
 			"label": "終端機命令延遲",
 			"description": "在每個命令後新增短暫暫停，以便 VS Code 終端機刷新所有輸出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。僅在看到缺少尾部輸出時使用；否則保持為 0。<0>了解更多</0>"
 		},
-		"compressProgressBar": {
-			"label": "壓縮進度條輸出",
-			"description": "折疊進度條/旋轉器，僅保留最終狀態（節省 Token）。<0>了解更多</0>"
-		},
 		"powershellCounter": {
 			"label": "啟用 PowerShell 計數器解決方案",
 			"description": "當 PowerShell 輸出遺失或重複時啟用此選項；它會為每個命令附加一個小計數器以穩定輸出。如果輸出已正常，請保持關閉。<0>了解更多</0>"
