@@ -314,6 +314,28 @@ export class TerminalProcess extends BaseTerminalProcess {
 		return this.removeEscapeSequences(outputToProcess)
 	}
 
+	/**
+	 * Write characters to stdin of the running process.
+	 * For VSCode terminals, this uses sendText which sends to the terminal.
+	 * @param chars The characters to write
+	 * @returns true if write was successful
+	 */
+	public override writeStdin(chars: string): boolean {
+		try {
+			const vsceTerminal = this.terminal.terminal
+			if (!vsceTerminal) {
+				console.warn("[TerminalProcess#writeStdin] No VSCode terminal available")
+				return false
+			}
+			// sendText with addNewline=false to avoid double newlines
+			vsceTerminal.sendText(chars, false)
+			return true
+		} catch (error) {
+			console.error("[TerminalProcess#writeStdin] Failed to write:", error)
+			return false
+		}
+	}
+
 	private emitRemainingBufferIfListening() {
 		if (this.isListening) {
 			const remainingBuffer = this.getUnretrievedOutput()

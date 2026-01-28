@@ -42,8 +42,8 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 				shell: true,
 				cwd: this.terminal.getCurrentWorkingDirectory(),
 				all: true,
-				// Ignore stdin to ensure non-interactive mode and prevent hanging
-				stdin: "ignore",
+				// Use pipe for stdin to allow interactive input via writeStdin
+				stdin: "pipe",
 				env: {
 					...process.env,
 					// Ensure UTF-8 encoding for Ruby, CocoaPods, etc.
@@ -239,6 +239,26 @@ export class ExecaTerminalProcess extends BaseTerminalProcess {
 		// )
 
 		return output.slice(0, index)
+	}
+
+	/**
+	 * Write characters to stdin of the running process.
+	 * @param chars The characters to write
+	 * @returns true if write was successful
+	 */
+	public override writeStdin(chars: string): boolean {
+		if (!this.subprocess?.stdin) {
+			console.warn("[ExecaTerminalProcess#writeStdin] No stdin available")
+			return false
+		}
+
+		try {
+			this.subprocess.stdin.write(chars)
+			return true
+		} catch (error) {
+			console.error("[ExecaTerminalProcess#writeStdin] Failed to write:", error)
+			return false
+		}
 	}
 
 	private emitRemainingBufferIfListening() {

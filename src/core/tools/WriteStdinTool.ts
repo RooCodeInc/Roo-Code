@@ -4,7 +4,6 @@ import { Task } from "../task/Task"
 import { ToolUse } from "../../shared/tools"
 import { formatResponse } from "../prompts/responses"
 import { ProcessManager } from "../../integrations/terminal/ProcessManager"
-import { Terminal } from "../../integrations/terminal/Terminal"
 import { t } from "../../i18n"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
@@ -122,22 +121,16 @@ export class WriteStdinTool extends BaseTool<"write_stdin"> {
 			// Process escape sequences in input
 			const processedChars = this.processEscapeSequences(chars)
 
-			// Write to stdin
+			// Write to stdin using the unified writeStdin interface
 			const { terminal, process } = entry
 			let writeSuccess = false
 
 			try {
-				if (terminal instanceof Terminal) {
-					// VSCode terminal - use sendText
-					// Note: sendText automatically adds a newline by default, so we pass false
-					// to prevent double newlines when the input already ends with \n
-					terminal.terminal.sendText(processedChars, false)
-					writeSuccess = true
-				} else {
-					// Execa terminal - would need stdin pipe support
-					// For now, we'll indicate this isn't supported for execa
-					// TODO: Implement stdin support for ExecaTerminalProcess
-					const errorMsg = `Session ${session_id} is using a non-interactive terminal. Interactive stdin is only supported for VSCode terminals.`
+				// Use the process writeStdin method which works for both VSCode and Execa terminals
+				writeSuccess = process.writeStdin(processedChars)
+
+				if (!writeSuccess) {
+					const errorMsg = `Failed to write to session ${session_id}: stdin is not available`
 					await task.say("error", errorMsg)
 					pushToolResult(`Error: ${errorMsg}`)
 					return
