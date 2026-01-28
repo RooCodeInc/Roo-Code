@@ -5,6 +5,8 @@ import mammoth from "mammoth"
 import fs from "fs/promises"
 import { isBinaryFile } from "isbinaryfile"
 import { extractTextFromXLSX } from "./extract-text-from-xlsx"
+import { readWithSlice, type IndentationReadResult } from "./indentation-reader"
+import { DEFAULT_LINE_LIMIT, MAX_LINE_LENGTH } from "../../core/prompts/tools/native-tools/read_file"
 
 async function extractTextFromPDF(filePath: string): Promise<string> {
 	const dataBuffer = await fs.readFile(filePath)
@@ -49,13 +51,34 @@ export function getSupportedBinaryFormats(): string[] {
 }
 
 /**
- * Extracts text content from a file, with support for various formats including PDF, DOCX, XLSX, and plain text.
+ * Result of extracting text with metadata about truncation
+ */
+export interface ExtractTextResult {
+	/** The extracted content with line numbers */
+	content: string
+	/** Total lines in the file */
+	totalLines: number
+	/** Lines actually returned */
+	returnedLines: number
+	/** Whether output was truncated */
+	wasTruncated: boolean
+	/** Line range shown [start, end] (1-based) */
+	linesShown?: [number, number]
+}
+
+/**
+ * Extracts text content from a file with truncation support.
+ * Returns structured result with metadata about truncation.
  *
  * @param filePath - Path to the file to extract text from
- * @returns Promise resolving to the extracted text content with line numbers
+ * @param limit - Maximum lines to return (default: 2000)
+ * @returns Promise resolving to extracted text with metadata
  * @throws {Error} If file not found or unsupported binary format
  */
-export async function extractTextFromFile(filePath: string): Promise<string> {
+export async function extractTextFromFileWithMetadata(
+	filePath: string,
+	limit: number = DEFAULT_LINE_LIMIT,
+): Promise<ExtractTextResult> {
 	try {
 		await fs.access(filePath)
 	} catch (error) {
@@ -67,17 +90,47 @@ export async function extractTextFromFile(filePath: string): Promise<string> {
 	// Check if we have a specific extractor for this format
 	const extractor = SUPPORTED_BINARY_FORMATS[fileExtension as keyof typeof SUPPORTED_BINARY_FORMATS]
 	if (extractor) {
-		return extractor(filePath)
+		// For binary formats, extract and count lines
+		const content = await extractor(filePath)
+		const lines = content.split("\n")
+		return {
+			content,
+			totalLines: lines.length,
+			returnedLines: lines.length,
+			wasTruncated: false,
+		}
 	}
 
 	// Handle other files
 	const isBinary = await isBinaryFile(filePath).catch(() => false)
 
 	if (!isBinary) {
-		return addLineNumbers(await fs.readFile(filePath, "utf8"))
+		const rawContent = await fs.readFile(filePath, "utf8")
+		const result = readWithSlice(rawContent, 0, limit)
+
+		return {
+			content: result.content,
+			totalLines: result.totalLines,
+			returnedLines: result.returnedLines,
+			wasTruncated: result.wasTruncated,
+			linesShown: result.includedRanges.length > 0 ? result.includedRanges[0] : undefined,
+		}
 	} else {
 		throw new Error(`Cannot read text for file type: ${fileExtension}`)
 	}
+}
+
+/**
+ * Extracts text content from a file, with support for various formats including PDF, DOCX, XLSX, and plain text.
+ * Now uses truncation to limit large files to DEFAULT_LINE_LIMIT lines.
+ *
+ * @param filePath - Path to the file to extract text from
+ * @returns Promise resolving to the extracted text content with line numbers
+ * @throws {Error} If file not found or unsupported binary format
+ */
+export async function extractTextFromFile(filePath: string): Promise<string> {
+	const result = await extractTextFromFileWithMetadata(filePath)
+	return result.content
 }
 
 export function addLineNumbers(content: string, startLine: number = 1): string {
