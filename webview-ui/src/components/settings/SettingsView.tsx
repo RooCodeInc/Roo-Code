@@ -194,7 +194,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		remoteBrowserEnabled,
 		maxImageFileSize,
 		maxTotalImageSize,
-		terminalCompressProgressBar,
 		customSupportPrompts,
 		profileThresholds,
 		alwaysAllowFollowupQuestions,
