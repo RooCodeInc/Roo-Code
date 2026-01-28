@@ -104,6 +104,20 @@ const TaskHeader = ({
 	const textRef = useRef<HTMLDivElement>(null)
 	const contextWindow = model?.contextWindow || 1
 
+	// Calculate maxTokens (reserved for output) once for reuse in percentage and tooltip
+	const maxTokens = useMemo(
+		() =>
+			model
+				? getModelMaxOutputTokens({
+						modelId,
+						model,
+						settings: apiConfiguration,
+					})
+				: 0,
+		[model, modelId, apiConfiguration],
+	)
+	const reservedForOutput = maxTokens || 0
+
 	// Detect if this task had any browser session activity so we can show a grey globe when inactive
 	const browserSessionStartIndex = useMemo(() => {
 		const msgs = clineMessages || []
@@ -226,14 +240,6 @@ const TaskHeader = ({
 						<div className="flex items-center gap-2">
 							<StandardTooltip
 								content={(() => {
-									const maxTokens = model
-										? getModelMaxOutputTokens({
-												modelId,
-												model,
-												settings: apiConfiguration,
-											})
-										: 0
-									const reservedForOutput = maxTokens || 0
 									const availableSpace = contextWindow - (contextTokens || 0) - reservedForOutput
 
 									return (
@@ -276,7 +282,9 @@ const TaskHeader = ({
 								sideOffset={8}>
 								<span className="flex items-center gap-1.5">
 									{(() => {
-										const percentage = Math.round(((contextTokens || 0) / contextWindow) * 100)
+										const percentage = Math.round(
+											(((contextTokens || 0) + reservedForOutput) / contextWindow) * 100,
+										)
 										return (
 											<>
 												<CircularProgress percentage={percentage} />
@@ -397,15 +405,7 @@ const TaskHeader = ({
 													<ContextWindowProgress
 														contextWindow={contextWindow}
 														contextTokens={contextTokens || 0}
-														maxTokens={
-															model
-																? getModelMaxOutputTokens({
-																		modelId,
-																		model,
-																		settings: apiConfiguration,
-																	})
-																: undefined
-														}
+														maxTokens={maxTokens || undefined}
 													/>
 													{condenseButton}
 												</div>
