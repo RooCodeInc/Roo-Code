@@ -223,7 +223,6 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		maxReadFileLine: -1,
 		maxImageFileSize: 5,
 		maxTotalImageSize: 20,
-		terminalCompressProgressBar: false,
 		customCondensingPrompt: "",
 		customSupportPrompts: {},
 		profileThresholds: {},
