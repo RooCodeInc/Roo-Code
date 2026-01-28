@@ -532,7 +532,7 @@
 		"zod": "3.25.76"
 	},
 	"devDependencies": {
-		"@openrouter/ai-sdk-provider": "^1.5.4",
+		"@openrouter/ai-sdk-provider": "^2.0.4",
 		"@roo-code/build": "workspace:^",
 		"@roo-code/config-eslint": "workspace:^",
 		"@roo-code/config-typescript": "workspace:^",
@@ -557,7 +557,7 @@
 		"@types/vscode": "^1.84.0",
 		"@vscode/test-electron": "^2.5.2",
 		"@vscode/vsce": "3.3.2",
-		"ai": "^5.0.0",
+		"ai": "^6.0.0",
 		"esbuild-wasm": "^0.25.0",
 		"execa": "^9.5.2",
 		"glob": "^11.1.0",

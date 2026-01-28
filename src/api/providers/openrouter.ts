@@ -86,14 +86,16 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 	/**
 	 * Create the OpenRouter provider instance using the AI SDK
+	 * @param reasoning - Optional reasoning parameters to pass via extraBody
 	 */
-	private createOpenRouterProvider() {
+	private createOpenRouterProvider(reasoning?: { effort?: string; max_tokens?: number; exclude?: boolean }) {
 		const apiKey = this.options.openRouterApiKey ?? "not-provided"
 		const baseURL = this.options.openRouterBaseUrl || "https://openrouter.ai/api/v1"
 
 		return createOpenRouter({
 			apiKey,
 			baseURL,
+			...(reasoning && { extraBody: { reasoning } }),
 		})
 	}
 
@@ -182,14 +184,25 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		this.currentReasoningDetails = []
 
 		const model = await this.fetchModel()
-		const { id: modelId, maxTokens, temperature } = model
+		const { id: modelId, maxTokens, temperature, reasoning } = model
 
-		const openrouter = this.createOpenRouterProvider()
+		// Pass reasoning parameters to extraBody when creating the provider
+		const openrouter = this.createOpenRouterProvider(reasoning)
 		const coreMessages = convertToAiSdkMessages(messages)
 		const tools = convertToolsForAiSdk(metadata?.tools)
 
 		// Build provider options for specific provider routing
-		const providerOptions =
+		const providerOptions:
+			| {
+					openrouter?: {
+						provider?: {
+							order: string[]
+							only: string[]
+							allow_fallbacks: boolean
+						}
+					}
+			  }
+			| undefined =
 			this.options.openRouterSpecificProvider &&
 			this.options.openRouterSpecificProvider !== OPENROUTER_DEFAULT_PROVIDER_NAME
 				? {
@@ -255,7 +268,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				model.info,
 			)
 			yield usageChunk
-		} catch (error) {
+		} catch (error: any) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
 			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
 			TelemetryService.instance.captureException(apiError)
@@ -325,12 +338,23 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
-		const { id: modelId, maxTokens, temperature } = await this.fetchModel()
+		const { id: modelId, maxTokens, temperature, reasoning } = await this.fetchModel()
 
-		const openrouter = this.createOpenRouterProvider()
+		// Pass reasoning parameters to extraBody when creating the provider
+		const openrouter = this.createOpenRouterProvider(reasoning)
 
 		// Build provider options for specific provider routing
-		const providerOptions =
+		const providerOptions:
+			| {
+					openrouter?: {
+						provider?: {
+							order: string[]
+							only: string[]
+							allow_fallbacks: boolean
+						}
+					}
+			  }
+			| undefined =
 			this.options.openRouterSpecificProvider &&
 			this.options.openRouterSpecificProvider !== OPENROUTER_DEFAULT_PROVIDER_NAME
 				? {
