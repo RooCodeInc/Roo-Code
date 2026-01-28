@@ -1473,6 +1473,25 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Could happen if we send multiple asks in a row i.e. with
 			// command_output. It's important that when we know an ask could
 			// fail, it is handled gracefully.
+			//
+			// If there's a pending response with user content, queue it so the
+			// message isn't lost. This handles the race condition where a user
+			// sends a message during command_output but the command completes
+			// at nearly the same time (causing say("command_output") to update
+			// lastMessageTs before we can return the response).
+			//
+			// Use type assertions to break TypeScript's control flow narrowing
+			// from the pWaitFor callback, which incorrectly narrows these
+			// properties to 'never' in this branch.
+			const pendingText = this.askResponseText as string | undefined
+			const pendingImages = this.askResponseImages as string[] | undefined
+			if (this.askResponse === "messageResponse" && (pendingText?.trim() || pendingImages?.length)) {
+				this.messageQueueService.addMessage(pendingText || "", pendingImages)
+			}
+			// Clear response fields to prevent stale data affecting subsequent asks
+			this.askResponse = undefined
+			this.askResponseText = undefined
+			this.askResponseImages = undefined
 			throw new AskIgnoredError("superseded")
 		}
 
