@@ -158,7 +158,7 @@ export function getAllBlogPosts(options: GetAllBlogPostsOptions = {}): BlogPost[
 			return dateCompare
 		}
 		// Same date - compare times (descending)
-		return b.publish_time_pt.localeCompare(a.publish_time_pt)
+		return parsePublishTimePt(b.publish_time_pt) - parsePublishTimePt(a.publish_time_pt)
 	})
 }
 
