@@ -4,7 +4,7 @@ import matter from "gray-matter"
 import { ZodError } from "zod"
 import type { BlogPost } from "./types"
 import { blogFrontmatterSchema } from "./types"
-import { getNowPt } from "./pt-time"
+import { getNowPt, parsePublishTimePt } from "./pt-time"
 import { isPublished } from "./publishing"
 
 /**
