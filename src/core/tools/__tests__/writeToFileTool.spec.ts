@@ -400,12 +400,16 @@ describe("writeToFileTool", () => {
 		})
 
 		it("streams content updates during partial execution after path stabilizes", async () => {
-			// First call - path not yet stabilized, early return (no file operations)
+			// First call - path not yet stabilized, sends initial "preparing" message but no file operations
 			await executeWriteFileTool({}, { isPartial: true })
-			expect(mockCline.ask).not.toHaveBeenCalled()
+			// Initial "preparing" message is sent with undefined path to show UI immediately
+			expect(mockCline.ask).toHaveBeenCalledWith("tool", expect.stringContaining('"tool":"newFileCreated"'), true)
 			expect(mockCline.diffViewProvider.open).not.toHaveBeenCalled()
 
-			// Second call with same path - path is now stabilized, file operations proceed
+			// Clear mocks to track subsequent calls
+			vi.clearAllMocks()
+
+			// Second call with same path - path is now stabilized, full file operations proceed
 			await executeWriteFileTool({}, { isPartial: true })
 			expect(mockCline.ask).toHaveBeenCalled()
 			expect(mockCline.diffViewProvider.open).toHaveBeenCalledWith(testFilePath)
@@ -455,11 +459,11 @@ describe("writeToFileTool", () => {
 		it("handles partial streaming errors after path stabilizes", async () => {
 			mockCline.diffViewProvider.open.mockRejectedValue(new Error("Open failed"))
 
-			// First call - path not yet stabilized, no error yet
+			// First call - path not yet stabilized, sends initial message but no error (ask catches errors)
 			await executeWriteFileTool({}, { isPartial: true })
 			expect(mockHandleError).not.toHaveBeenCalled()
 
-			// Second call with same path - path is now stabilized, error occurs
+			// Second call with same path - path is now stabilized, error occurs during file operations
 			await executeWriteFileTool({}, { isPartial: true })
 			expect(mockHandleError).toHaveBeenCalledWith("handling partial write_to_file", expect.any(Error))
 		})
