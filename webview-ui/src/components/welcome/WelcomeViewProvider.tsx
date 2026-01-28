@@ -312,6 +312,14 @@ const WelcomeViewProvider = () => {
 							{t("welcome:landing.noAccount")}
 						</VSCodeLink>
 					</div>
+
+					<div className="mt-2">
+						<VSCodeLink
+							onClick={() => vscode.postMessage({ type: "importSettings" })}
+							className="cursor-pointer">
+							{t("welcome:importSettings")}
+						</VSCodeLink>
+					</div>
 				</TabContent>
 			</Tab>
 		)
