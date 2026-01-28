@@ -9,7 +9,6 @@ import {
 	MessageSquare,
 	Settings,
 	Shield,
-	Zap,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import type { Metadata } from "next"
@@ -26,8 +25,8 @@ const DESCRIPTION = "Assign development work to @Roo Code directly from Linear. 
 const OG_DESCRIPTION = "Turn Linear Issues into Pull Requests"
 const PATH = "/linear"
 
-// Leave empty until video is ready - shows placeholder instead of broken iframe
-const LINEAR_DEMO_YOUTUBE_ID = ""
+// Featured Workflow section is temporarily commented out until video is ready
+// const LINEAR_DEMO_YOUTUBE_ID = ""
 
 export const metadata: Metadata = {
 	title: TITLE,
@@ -115,34 +114,34 @@ const VALUE_PROPS: ValueProp[] = [
 	},
 ]
 
-type WorkflowStep = {
-	step: number
-	title: string
-	description: string
-}
+// type WorkflowStep = {
+// 	step: number
+// 	title: string
+// 	description: string
+// }
 
-const WORKFLOW_STEPS: WorkflowStep[] = [
-	{
-		step: 1,
-		title: "Create an issue",
-		description: "Write your issue with acceptance criteria. Be as detailed as you like.",
-	},
-	{
-		step: 2,
-		title: "Call @Roo Code",
-		description: "Mention @Roo Code in a comment to start. The agent begins working immediately.",
-	},
-	{
-		step: 3,
-		title: "Watch progress",
-		description: "Roo Code posts status updates as comments. Refine with @-mentions if needed.",
-	},
-	{
-		step: 4,
-		title: "Review the PR",
-		description: "When ready, the PR link appears in the issue. Review, iterate, and ship.",
-	},
-]
+// const WORKFLOW_STEPS: WorkflowStep[] = [
+// 	{
+// 		step: 1,
+// 		title: "Create an issue",
+// 		description: "Write your issue with acceptance criteria. Be as detailed as you like.",
+// 	},
+// 	{
+// 		step: 2,
+// 		title: "Call @Roo Code",
+// 		description: "Mention @Roo Code in a comment to start. The agent begins working immediately.",
+// 	},
+// 	{
+// 		step: 3,
+// 		title: "Watch progress",
+// 		description: "Roo Code posts status updates as comments. Refine with @-mentions if needed.",
+// 	},
+// 	{
+// 		step: 4,
+// 		title: "Review the PR",
+// 		description: "When ready, the PR link appears in the issue. Review, iterate, and ship.",
+// 	},
+// ]
 
 type OnboardingStep = {
 	icon: LucideIcon
@@ -223,11 +222,6 @@ export default function LinearPage(): JSX.Element {
 										<ArrowRight className="ml-2 size-5" />
 									</a>
 								</Button>
-								<Button variant="outline" size="xl" className="backdrop-blur-sm" asChild>
-									<a href="#demo" className="flex items-center justify-center">
-										Watch Demo
-									</a>
-								</Button>
 							</div>
 						</div>
 
@@ -272,7 +266,7 @@ export default function LinearPage(): JSX.Element {
 				</div>
 			</section>
 
-			{/* Featured Workflow Section */}
+			{/* Featured Workflow Section - temporarily commented out until video is ready
 			<section id="demo" className="relative overflow-hidden border-t border-border py-24 lg:py-32">
 				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2 z-1">
@@ -294,7 +288,7 @@ export default function LinearPage(): JSX.Element {
 					<div className="relative mx-auto max-w-6xl">
 						<div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10 items-center">
 							{/* YouTube Video Embed or Placeholder */}
-							<div className="lg:col-span-3 overflow-hidden rounded-2xl border border-border bg-background shadow-lg">
+			{/*<div className="lg:col-span-3 overflow-hidden rounded-2xl border border-border bg-background shadow-lg">
 								{LINEAR_DEMO_YOUTUBE_ID ? (
 									<iframe
 										className="aspect-video w-full"
@@ -319,7 +313,7 @@ export default function LinearPage(): JSX.Element {
 							</div>
 
 							{/* Workflow Steps */}
-							<div className="lg:col-span-2 space-y-3">
+			{/*<div className="lg:col-span-2 space-y-3">
 								{WORKFLOW_STEPS.map((step) => (
 									<div
 										key={step.step}
@@ -344,6 +338,7 @@ export default function LinearPage(): JSX.Element {
 					</div>
 				</div>
 			</section>
+			*/}
 
 			{/* Onboarding Section */}
 			<section className="py-24 bg-muted/30">
