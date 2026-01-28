@@ -879,8 +879,8 @@
 		"cacheReadsPrice": "缓存读取价格",
 		"cacheWritesPrice": "缓存写入价格",
 		"enableStreaming": "启用流式传输",
-		"enableR1Format": "启用 R1 模型参数",
-		"enableR1FormatTips": "使用 QWQ 等 R1 系列模型时必须启用，避免出现 400 错误",
+		"enableR1Format": "启用推理模型格式",
+		"enableR1FormatTips": "为推理/思考模型（DeepSeek R1、Kimi-K2、QWQ 等）启用，以正确处理响应格式。在 NVIDIA NIM 和其他 OpenAI 兼容提供商上使用模型时需要启用。",
 		"useAzure": "使用 Azure 服务",
 		"azureApiVersion": "设置 Azure API 版本",
 		"gemini": {

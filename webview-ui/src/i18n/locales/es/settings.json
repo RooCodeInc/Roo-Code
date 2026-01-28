@@ -878,8 +878,8 @@
 		"cacheReadsPrice": "Precio de lecturas de caché",
 		"cacheWritesPrice": "Precio de escrituras de caché",
 		"enableStreaming": "Habilitar streaming",
-		"enableR1Format": "Habilitar parámetros del modelo R1",
-		"enableR1FormatTips": "Debe habilitarse al utilizar modelos R1 como QWQ, para evitar el error 400",
+		"enableR1Format": "Habilitar formato de modelo de razonamiento",
+		"enableR1FormatTips": "Habilitar para modelos de razonamiento/pensamiento (DeepSeek R1, Kimi-K2, QWQ, etc.) para manejar correctamente el formato de respuesta. Requerido para modelos en NVIDIA NIM y otros proveedores compatibles con OpenAI.",
 		"useAzure": "Usar Azure",
 		"azureApiVersion": "Establecer versión de API de Azure",
 		"gemini": {

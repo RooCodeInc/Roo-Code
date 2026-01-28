@@ -879,8 +879,8 @@
 		"cacheReadsPrice": "Giá đọc bộ nhớ đệm",
 		"cacheWritesPrice": "Giá ghi bộ nhớ đệm",
 		"enableStreaming": "Bật streaming",
-		"enableR1Format": "Kích hoạt tham số mô hình R1",
-		"enableR1FormatTips": "Cần kích hoạt khi sử dụng các mô hình R1 như QWQ, để tránh lỗi 400",
+		"enableR1Format": "Kích hoạt định dạng mô hình suy luận",
+		"enableR1FormatTips": "Kích hoạt cho các mô hình suy luận/thinking (DeepSeek R1, Kimi-K2, QWQ, v.v.) để xử lý đúng định dạng phản hồi. Cần thiết cho các mô hình trên NVIDIA NIM và các provider tương thích OpenAI khác.",
 		"useAzure": "Sử dụng Azure",
 		"azureApiVersion": "Đặt phiên bản API Azure",
 		"gemini": {
