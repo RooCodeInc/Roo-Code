@@ -1,7 +1,6 @@
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
-import type { ToolUse } from "../../shared/tools"
 
 interface SkillParams {
 	skill: string
@@ -13,7 +12,7 @@ export class SkillTool extends BaseTool<"skill"> {
 
 	async execute(params: SkillParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { skill: skillName, args } = params
-		const { askApproval, handleError, pushToolResult } = callbacks
+		const { handleError, pushToolResult } = callbacks
 
 		try {
 			// Validate skill name parameter
@@ -60,22 +59,7 @@ export class SkillTool extends BaseTool<"skill"> {
 				return
 			}
 
-			// Build approval message
-			const toolMessage = JSON.stringify({
-				tool: "skill",
-				skill: skillName,
-				args: args,
-				source: skillContent.source,
-				description: skillContent.description,
-			})
-
-			const didApprove = await askApproval("tool", toolMessage)
-
-			if (!didApprove) {
-				return
-			}
-
-			// Build the result message
+			// Build the result message - no approval needed, skills just execute
 			let result = `Skill: ${skillName}`
 
 			if (skillContent.description) {
@@ -95,18 +79,7 @@ export class SkillTool extends BaseTool<"skill"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"skill">): Promise<void> {
-		const skillName: string | undefined = block.params.skill
-		const args: string | undefined = block.params.args
-
-		const partialMessage = JSON.stringify({
-			tool: "skill",
-			skill: skillName,
-			args: args,
-		})
-
-		await task.ask("tool", partialMessage, block.partial).catch(() => {})
-	}
+	// No handlePartial - skills execute silently without streaming UI
 }
 
 export const skillTool = new SkillTool()

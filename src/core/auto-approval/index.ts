@@ -151,10 +151,6 @@ export async function checkAutoApproval({
 			return { decision: "approve" }
 		}
 
-		if (tool.tool === "skill") {
-			return { decision: "approve" }
-		}
-
 		if (tool?.tool === "switchMode") {
 			return state.alwaysAllowModeSwitch === true ? { decision: "approve" } : { decision: "ask" }
 		}
