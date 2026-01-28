@@ -6,6 +6,20 @@ export type MoonshotModelId = keyof typeof moonshotModels
 export const moonshotDefaultModelId: MoonshotModelId = "kimi-k2-0905-preview"
 
 export const moonshotModels = {
+	"kimi-k2p5-preview": {
+		maxTokens: 32_768,
+		contextWindow: 262_144,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsTemperature: true,
+		preserveReasoning: true,
+		defaultTemperature: 1.0,
+		inputPrice: 0.6, // $0.60 per million tokens
+		outputPrice: 3.0, // $3.00 per million tokens
+		cacheReadsPrice: 0.1, // $0.10 per million tokens (cache hit)
+		description:
+			"Kimi K2.5 is Moonshot AI's flagship agentic model and a new SOTA open model. It unifies vision and text, thinking and non-thinking modes, and single-agent and multi-agent execution into one model.",
+	},
 	"kimi-k2-0711-preview": {
 		maxTokens: 32_000,
 		contextWindow: 131_072,
