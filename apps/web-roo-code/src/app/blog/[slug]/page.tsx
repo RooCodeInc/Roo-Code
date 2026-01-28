@@ -90,7 +90,6 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
 			{/* PostHog Analytics */}
 			<BlogPostAnalytics
-			<BlogPostAnalytics
 				post={{
 					slug: post.slug,
 					title: post.title,

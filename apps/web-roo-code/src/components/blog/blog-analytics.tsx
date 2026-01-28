@@ -26,7 +26,6 @@ export function BlogIndexAnalytics({ postCount }: BlogIndexAnalyticsProps) {
 }
 
 interface BlogPostAnalyticsProps {
-interface BlogPostAnalyticsProps {
 	post: {
 		slug: string
 		title: string
@@ -44,6 +43,7 @@ interface BlogPostAnalyticsProps {
 export function BlogPostAnalytics({ post }: BlogPostAnalyticsProps) {
 	const trackedView = useRef(false)
 	const trackedDepths = useRef<Set<25 | 50 | 75 | 100>>(new Set())
+	const trackedTimeSpent = useRef(false)
 	const startTime = useRef<number>(Date.now())
 
 	useEffect(() => {
@@ -74,7 +74,8 @@ export function BlogPostAnalytics({ post }: BlogPostAnalyticsProps) {
 
 		// Track time spent on page when leaving
 		const handleVisibilityChange = () => {
-			if (document.visibilityState === "hidden") {
+			if (document.visibilityState === "hidden" && !trackedTimeSpent.current) {
+				trackedTimeSpent.current = true
 				const timeSpent = Date.now() - effectStartTime
 				trackBlogPostTimeSpent(post as BlogPost, timeSpent)
 			}
@@ -90,9 +91,12 @@ export function BlogPostAnalytics({ post }: BlogPostAnalyticsProps) {
 			window.removeEventListener("scroll", handleScroll)
 			document.removeEventListener("visibilitychange", handleVisibilityChange)
 
-			// Track time spent when component unmounts
-			const timeSpent = Date.now() - effectStartTime
-			trackBlogPostTimeSpent(post as BlogPost, timeSpent)
+			// Track time spent when component unmounts (only if not already tracked)
+			if (!trackedTimeSpent.current) {
+				trackedTimeSpent.current = true
+				const timeSpent = Date.now() - effectStartTime
+				trackBlogPostTimeSpent(post as BlogPost, timeSpent)
+			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [post.slug])
