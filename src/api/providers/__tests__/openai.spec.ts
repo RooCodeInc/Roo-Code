@@ -374,6 +374,54 @@ describe("OpenAiHandler", () => {
 			expect(callArgs.reasoning_effort).toBe("high")
 		})
 
+		it("should include thinking parameter when supportsReasoningBinary is true and reasoning effort is enabled", async () => {
+			const reasoningBinaryOptions: ApiHandlerOptions = {
+				...mockOptions,
+				enableReasoningEffort: true,
+				openAiCustomModelInfo: {
+					contextWindow: 128_000,
+					supportsPromptCache: false,
+					supportsReasoningEffort: true,
+					supportsReasoningBinary: true,
+					reasoningEffort: "medium",
+				},
+			}
+			const reasoningBinaryHandler = new OpenAiHandler(reasoningBinaryOptions)
+			const stream = reasoningBinaryHandler.createMessage(systemPrompt, messages)
+			// Consume the stream to trigger the API call
+			for await (const _chunk of stream) {
+			}
+			// Assert the mockCreate was called with both reasoning_effort and thinking
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.reasoning_effort).toBe("medium")
+			expect(callArgs.thinking).toEqual({ type: "enabled" })
+		})
+
+		it("should not include thinking parameter when supportsReasoningBinary is false even with reasoning effort enabled", async () => {
+			const noReasoningBinaryOptions: ApiHandlerOptions = {
+				...mockOptions,
+				enableReasoningEffort: true,
+				openAiCustomModelInfo: {
+					contextWindow: 128_000,
+					supportsPromptCache: false,
+					supportsReasoningEffort: true,
+					supportsReasoningBinary: false,
+					reasoningEffort: "high",
+				},
+			}
+			const noReasoningBinaryHandler = new OpenAiHandler(noReasoningBinaryOptions)
+			const stream = noReasoningBinaryHandler.createMessage(systemPrompt, messages)
+			// Consume the stream to trigger the API call
+			for await (const _chunk of stream) {
+			}
+			// Assert the mockCreate was called with reasoning_effort but NOT thinking
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.reasoning_effort).toBe("high")
+			expect(callArgs.thinking).toBeUndefined()
+		})
+
 		it("should not include reasoning_effort when reasoning effort is disabled", async () => {
 			const noReasoningOptions: ApiHandlerOptions = {
 				...mockOptions,
@@ -1137,6 +1185,103 @@ describe("OpenAiHandler", () => {
 				}),
 				{ path: "/models/chat/completions" },
 			)
+		})
+
+		it("should include thinking parameter for O3 model when supportsReasoningBinary is true", async () => {
+			const o3ReasoningBinaryHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "o3-mini",
+				openAiCustomModelInfo: {
+					contextWindow: 128_000,
+					maxTokens: 65536,
+					supportsPromptCache: false,
+					reasoningEffort: "medium" as "low" | "medium" | "high",
+					supportsReasoningBinary: true,
+				},
+			})
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Hello!",
+				},
+			]
+
+			const stream = o3ReasoningBinaryHandler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.reasoning_effort).toBe("medium")
+			expect(callArgs.thinking).toEqual({ type: "enabled" })
+		})
+
+		it("should not include thinking parameter for O3 model when supportsReasoningBinary is false", async () => {
+			const o3NoReasoningBinaryHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "o3-mini",
+				openAiCustomModelInfo: {
+					contextWindow: 128_000,
+					maxTokens: 65536,
+					supportsPromptCache: false,
+					reasoningEffort: "high" as "low" | "medium" | "high",
+					supportsReasoningBinary: false,
+				},
+			})
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Hello!",
+				},
+			]
+
+			const stream = o3NoReasoningBinaryHandler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.reasoning_effort).toBe("high")
+			expect(callArgs.thinking).toBeUndefined()
+		})
+
+		it("should include thinking parameter for O3 model in non-streaming mode when supportsReasoningBinary is true", async () => {
+			const o3NonStreamingHandler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "o3-mini",
+				openAiStreamingEnabled: false,
+				openAiCustomModelInfo: {
+					contextWindow: 128_000,
+					maxTokens: 65536,
+					supportsPromptCache: false,
+					reasoningEffort: "low" as "low" | "medium" | "high",
+					supportsReasoningBinary: true,
+				},
+			})
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Hello!",
+				},
+			]
+
+			const stream = o3NonStreamingHandler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			expect(mockCreate).toHaveBeenCalled()
+			const callArgs = mockCreate.mock.calls[0][0]
+			expect(callArgs.reasoning_effort).toBe("low")
+			expect(callArgs.thinking).toEqual({ type: "enabled" })
 		})
 	})
 })
