@@ -73,6 +73,38 @@ describe("AI SDK conversion utilities", () => {
 			})
 		})
 
+		it("converts user messages with URL image content", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "What is in this image?" },
+						{
+							type: "image",
+							source: {
+								type: "url",
+								url: "https://example.com/image.png",
+							},
+						} as any,
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "user",
+				content: [
+					{ type: "text", text: "What is in this image?" },
+					{
+						type: "image",
+						image: "https://example.com/image.png",
+					},
+				],
+			})
+		})
+
 		it("converts tool results into separate tool role messages with resolved tool names", () => {
 			const messages: Anthropic.Messages.MessageParam[] = [
 				{

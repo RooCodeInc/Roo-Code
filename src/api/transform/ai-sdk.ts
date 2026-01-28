@@ -52,11 +52,20 @@ export function convertToAiSdkMessages(messages: Anthropic.Messages.MessageParam
 					if (part.type === "text") {
 						parts.push({ type: "text", text: part.text })
 					} else if (part.type === "image") {
-						parts.push({
-							type: "image",
-							image: `data:${part.source.media_type};base64,${part.source.data}`,
-							mimeType: part.source.media_type,
-						})
+						// Handle both base64 and URL source types
+						const source = part.source as { type: string; media_type?: string; data?: string; url?: string }
+						if (source.type === "base64" && source.media_type && source.data) {
+							parts.push({
+								type: "image",
+								image: `data:${source.media_type};base64,${source.data}`,
+								mimeType: source.media_type,
+							})
+						} else if (source.type === "url" && source.url) {
+							parts.push({
+								type: "image",
+								image: source.url,
+							})
+						}
 					} else if (part.type === "tool_result") {
 						// Convert tool results to string content
 						let content: string
