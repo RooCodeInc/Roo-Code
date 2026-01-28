@@ -15,6 +15,10 @@ import {
 	cleanupAfterTruncation,
 	extractCommandBlocks,
 	injectSyntheticToolResults,
+	toolUseToText,
+	toolResultToText,
+	convertToolBlocksToText,
+	transformMessagesForCondensing,
 } from "../index"
 
 vi.mock("../../../api/transform/image-cleaning", () => ({
@@ -1280,5 +1284,308 @@ describe("summarizeConversation with custom settings", () => {
 			true, // isAutomaticTrigger
 			true, // usedCustomPrompt
 		)
+	})
+})
+
+describe("toolUseToText", () => {
+	it("should convert tool_use block with object input to text", () => {
+		const block: Anthropic.Messages.ToolUseBlockParam = {
+			type: "tool_use",
+			id: "tool-123",
+			name: "read_file",
+			input: { path: "test.ts", encoding: "utf-8" },
+		}
+
+		const result = toolUseToText(block)
+
+		expect(result).toBe("[Tool Use: read_file]\npath: test.ts\nencoding: utf-8")
+	})
+
+	it("should convert tool_use block with nested object input to text", () => {
+		const block: Anthropic.Messages.ToolUseBlockParam = {
+			type: "tool_use",
+			id: "tool-456",
+			name: "write_file",
+			input: {
+				path: "output.json",
+				content: { key: "value", nested: { a: 1 } },
+			},
+		}
+
+		const result = toolUseToText(block)
+
+		expect(result).toContain("[Tool Use: write_file]")
+		expect(result).toContain("path: output.json")
+		expect(result).toContain("content:")
+		expect(result).toContain('"key"')
+		expect(result).toContain('"value"')
+	})
+
+	it("should convert tool_use block with string input to text", () => {
+		const block: Anthropic.Messages.ToolUseBlockParam = {
+			type: "tool_use",
+			id: "tool-789",
+			name: "execute_command",
+			input: "ls -la" as unknown as Record<string, unknown>,
+		}
+
+		const result = toolUseToText(block)
+
+		expect(result).toBe("[Tool Use: execute_command]\nls -la")
+	})
+
+	it("should handle empty object input", () => {
+		const block: Anthropic.Messages.ToolUseBlockParam = {
+			type: "tool_use",
+			id: "tool-empty",
+			name: "some_tool",
+			input: {},
+		}
+
+		const result = toolUseToText(block)
+
+		expect(result).toBe("[Tool Use: some_tool]\n")
+	})
+})
+
+describe("toolResultToText", () => {
+	it("should convert tool_result with string content to text", () => {
+		const block: Anthropic.Messages.ToolResultBlockParam = {
+			type: "tool_result",
+			tool_use_id: "tool-123",
+			content: "File contents here",
+		}
+
+		const result = toolResultToText(block)
+
+		expect(result).toBe("[Tool Result]\nFile contents here")
+	})
+
+	it("should convert tool_result with error flag to text", () => {
+		const block: Anthropic.Messages.ToolResultBlockParam = {
+			type: "tool_result",
+			tool_use_id: "tool-456",
+			content: "File not found",
+			is_error: true,
+		}
+
+		const result = toolResultToText(block)
+
+		expect(result).toBe("[Tool Result (Error)]\nFile not found")
+	})
+
+	it("should convert tool_result with array content to text", () => {
+		const block: Anthropic.Messages.ToolResultBlockParam = {
+			type: "tool_result",
+			tool_use_id: "tool-789",
+			content: [
+				{ type: "text", text: "First line" },
+				{ type: "text", text: "Second line" },
+			],
+		}
+
+		const result = toolResultToText(block)
+
+		expect(result).toBe("[Tool Result]\nFirst line\nSecond line")
+	})
+
+	it("should handle tool_result with image in array content", () => {
+		const block: Anthropic.Messages.ToolResultBlockParam = {
+			type: "tool_result",
+			tool_use_id: "tool-img",
+			content: [
+				{ type: "text", text: "Screenshot:" },
+				{ type: "image", source: { type: "base64", media_type: "image/png", data: "abc123" } },
+			],
+		}
+
+		const result = toolResultToText(block)
+
+		expect(result).toBe("[Tool Result]\nScreenshot:\n[Image]")
+	})
+
+	it("should handle tool_result with no content", () => {
+		const block: Anthropic.Messages.ToolResultBlockParam = {
+			type: "tool_result",
+			tool_use_id: "tool-empty",
+		}
+
+		const result = toolResultToText(block)
+
+		expect(result).toBe("[Tool Result]")
+	})
+})
+
+describe("convertToolBlocksToText", () => {
+	it("should return string content unchanged", () => {
+		const content = "Simple text content"
+
+		const result = convertToolBlocksToText(content)
+
+		expect(result).toBe("Simple text content")
+	})
+
+	it("should convert tool_use blocks to text blocks", () => {
+		const content: Anthropic.Messages.ContentBlockParam[] = [
+			{
+				type: "tool_use",
+				id: "tool-123",
+				name: "read_file",
+				input: { path: "test.ts" },
+			},
+		]
+
+		const result = convertToolBlocksToText(content)
+
+		expect(Array.isArray(result)).toBe(true)
+		expect((result as Anthropic.Messages.ContentBlockParam[])[0].type).toBe("text")
+		expect((result as Anthropic.Messages.TextBlockParam[])[0].text).toContain("[Tool Use: read_file]")
+	})
+
+	it("should convert tool_result blocks to text blocks", () => {
+		const content: Anthropic.Messages.ContentBlockParam[] = [
+			{
+				type: "tool_result",
+				tool_use_id: "tool-123",
+				content: "File contents",
+			},
+		]
+
+		const result = convertToolBlocksToText(content)
+
+		expect(Array.isArray(result)).toBe(true)
+		expect((result as Anthropic.Messages.ContentBlockParam[])[0].type).toBe("text")
+		expect((result as Anthropic.Messages.TextBlockParam[])[0].text).toContain("[Tool Result]")
+	})
+
+	it("should preserve non-tool blocks unchanged", () => {
+		const content: Anthropic.Messages.ContentBlockParam[] = [
+			{ type: "text", text: "Hello" },
+			{
+				type: "tool_use",
+				id: "tool-123",
+				name: "read_file",
+				input: { path: "test.ts" },
+			},
+			{ type: "text", text: "World" },
+		]
+
+		const result = convertToolBlocksToText(content)
+
+		expect(Array.isArray(result)).toBe(true)
+		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		expect(resultArray).toHaveLength(3)
+		expect(resultArray[0]).toEqual({ type: "text", text: "Hello" })
+		expect(resultArray[1].type).toBe("text")
+		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
+		expect(resultArray[2]).toEqual({ type: "text", text: "World" })
+	})
+
+	it("should handle mixed content with multiple tool blocks", () => {
+		const content: Anthropic.Messages.ContentBlockParam[] = [
+			{
+				type: "tool_use",
+				id: "tool-1",
+				name: "read_file",
+				input: { path: "a.ts" },
+			},
+			{
+				type: "tool_result",
+				tool_use_id: "tool-1",
+				content: "contents of a.ts",
+			},
+		]
+
+		const result = convertToolBlocksToText(content)
+
+		expect(Array.isArray(result)).toBe(true)
+		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		expect(resultArray).toHaveLength(2)
+		expect((resultArray[0] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
+		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Result]")
+		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("contents of a.ts")
+	})
+})
+
+describe("transformMessagesForCondensing", () => {
+	it("should transform all messages with tool blocks to text", () => {
+		const messages = [
+			{ role: "user" as const, content: "Hello" },
+			{
+				role: "assistant" as const,
+				content: [
+					{
+						type: "tool_use" as const,
+						id: "tool-1",
+						name: "read_file",
+						input: { path: "test.ts" },
+					},
+				],
+			},
+			{
+				role: "user" as const,
+				content: [
+					{
+						type: "tool_result" as const,
+						tool_use_id: "tool-1",
+						content: "file contents",
+					},
+				],
+			},
+		]
+
+		const result = transformMessagesForCondensing(messages)
+
+		expect(result).toHaveLength(3)
+		expect(result[0].content).toBe("Hello")
+		expect(Array.isArray(result[1].content)).toBe(true)
+		expect((result[1].content as any[])[0].type).toBe("text")
+		expect((result[1].content as any[])[0].text).toContain("[Tool Use: read_file]")
+		expect(Array.isArray(result[2].content)).toBe(true)
+		expect((result[2].content as any[])[0].type).toBe("text")
+		expect((result[2].content as any[])[0].text).toContain("[Tool Result]")
+	})
+
+	it("should preserve message role and other properties", () => {
+		const messages = [
+			{
+				role: "assistant" as const,
+				content: [
+					{
+						type: "tool_use" as const,
+						id: "tool-1",
+						name: "execute",
+						input: { cmd: "ls" },
+					},
+				],
+			},
+		]
+
+		const result = transformMessagesForCondensing(messages)
+
+		expect(result[0].role).toBe("assistant")
+	})
+
+	it("should handle empty messages array", () => {
+		const result = transformMessagesForCondensing([])
+
+		expect(result).toEqual([])
+	})
+
+	it("should not mutate original messages", () => {
+		const originalContent = [
+			{
+				type: "tool_use" as const,
+				id: "tool-1",
+				name: "read_file",
+				input: { path: "test.ts" },
+			},
+		]
+		const messages = [{ role: "assistant" as const, content: originalContent }]
+
+		transformMessagesForCondensing(messages)
+
+		// Original should still have tool_use type
+		expect(messages[0].content[0].type).toBe("tool_use")
 	})
 })
