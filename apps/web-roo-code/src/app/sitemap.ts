@@ -2,6 +2,12 @@ import type { MetadataRoute } from "next"
 import { SEO } from "@/lib/seo"
 import { getAllBlogPosts } from "@/lib/blog"
 
+// Force dynamic rendering to include newly-published scheduled posts
+export const dynamic = "force-dynamic"
+
+// Require Node.js runtime for filesystem reads
+export const runtime = "nodejs"
+
 /**
  * Generate sitemap for the website
  * Includes all static pages and dynamically generated blog post URLs
