@@ -91,6 +91,26 @@ vi.mock("@roo/array", () => ({
 	},
 }))
 
+// Create a variable to hold the mock model info for useSelectedModel
+let mockModelInfo: { contextWindow: number; maxTokens: number } | undefined = undefined
+
+// Mock useSelectedModel hook
+vi.mock("@/components/ui/hooks/useSelectedModel", () => ({
+	useSelectedModel: () => ({
+		provider: "anthropic",
+		id: "test-model",
+		info: mockModelInfo,
+		isLoading: false,
+		isError: false,
+	}),
+}))
+
+// Mock getModelMaxOutputTokens from @roo/api
+let mockMaxOutputTokens = 0
+vi.mock("@roo/api", () => ({
+	getModelMaxOutputTokens: () => mockMaxOutputTokens,
+}))
+
 describe("TaskHeader", () => {
 	const defaultProps: TaskHeaderProps = {
 		task: { type: "say", ts: Date.now(), text: "Test task", images: [] },
@@ -409,6 +429,19 @@ describe("TaskHeader", () => {
 		// This represents the percentage of AVAILABLE input space used,
 		// not the percentage of the total context window.
 
+		beforeEach(() => {
+			// Set up mock model with known contextWindow
+			mockModelInfo = { contextWindow: 1000, maxTokens: 200 }
+			// Set up mock for getModelMaxOutputTokens to return reservedForOutput
+			mockMaxOutputTokens = 200
+		})
+
+		afterEach(() => {
+			// Reset mocks
+			mockModelInfo = undefined
+			mockMaxOutputTokens = 0
+		})
+
 		it("should calculate percentage based on available input space, not total context window", () => {
 			// With the formula: contextTokens / (contextWindow - reservedForOutput) * 100
 			// If contextTokens = 200, contextWindow = 1000, reservedForOutput = 200
@@ -419,10 +452,22 @@ describe("TaskHeader", () => {
 
 			renderTaskHeader({ contextTokens: 200 })
 
-			// Look for the percentage text
-			// The exact value depends on the mocked model info
-			// Since we don't have a detailed mock, we just verify the component renders
-			expect(screen.getByText("Test task")).toBeInTheDocument()
+			// The percentage should be rendered in the collapsed header state
+			// Verify that 25% is displayed (correct formula) and NOT 40% (old incorrect formula)
+			expect(screen.getByText("25%")).toBeInTheDocument()
+			expect(screen.queryByText("40%")).not.toBeInTheDocument()
+		})
+
+		it("should handle edge case when available input space is zero", () => {
+			// When contextWindow equals reservedForOutput, available space is 0
+			// The percentage should be 0 to avoid division by zero
+			mockModelInfo = { contextWindow: 200, maxTokens: 200 }
+			mockMaxOutputTokens = 200
+
+			renderTaskHeader({ contextTokens: 100 })
+
+			// Should show 0% when available input space is 0
+			expect(screen.getByText("0%")).toBeInTheDocument()
 		})
 	})
 })
