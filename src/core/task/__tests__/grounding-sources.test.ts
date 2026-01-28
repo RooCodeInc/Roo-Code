@@ -112,7 +112,7 @@ vi.mock("fs/promises", () => ({
 
 // Mock mentions
 vi.mock("../../mentions", () => ({
-	parseMentions: vi.fn().mockImplementation((text) => Promise.resolve(text)),
+	parseMentions: vi.fn().mockImplementation((text) => Promise.resolve({ text, mode: undefined, contentBlocks: [] })),
 	openMention: vi.fn(),
 	getLatestTerminalOutput: vi.fn(),
 }))
