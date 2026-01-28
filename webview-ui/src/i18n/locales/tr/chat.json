@@ -356,6 +356,11 @@
 		"total": "Toplam Maliyet: ${{cost}}",
 		"includesSubtasks": "Alt görev maliyetlerini içerir"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} terminal oturumu çalışıyor",
+		"sessionsRunning_other": "{{count}} terminal oturumu çalışıyor",
+		"sessionsRunning": "{{count}} terminal oturumu çalışıyor"
+	},
 	"browser": {
 		"session": "Tarayıcı Oturumu",
 		"active": "Aktif",
@@ -507,6 +512,14 @@
 		"openMcpSettings": "MCP Ayarlarını Aç"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Roo komut çıktısını okudu"
+	},
+	"stdinOperations": {
+		"sentToSession": "Oturum {{sessionId}}'ye \"{{chars}}\" gönderildi",
+		"polledSession": "Oturum {{sessionId}} sorgulandı",
+		"wantsToTerminate": "Oturum {{sessionId}}'yi sonlandırmak istiyor",
+		"didTerminate": "Oturum {{sessionId}} sonlandırıldı",
+		"wantsToListSessions": "Aktif oturumları listelemek istiyor",
+		"didListSessions": "Aktif oturumlar listelendi"
 	}
 }

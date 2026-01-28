@@ -355,6 +355,11 @@
 		"total": "총 비용: ${{cost}}",
 		"includesSubtasks": "하위 작업 비용 포함"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}}개의 터미널 세션이 실행 중",
+		"sessionsRunning_other": "{{count}}개의 터미널 세션이 실행 중",
+		"sessionsRunning": "{{count}}개의 터미널 세션이 실행 중"
+	},
 	"browser": {
 		"session": "브라우저 세션",
 		"active": "활성",
@@ -506,6 +511,14 @@
 		"openMcpSettings": "MCP 설정 열기"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Roo가 명령 출력을 읽었습니다"
+	},
+	"stdinOperations": {
+		"sentToSession": "세션 {{sessionId}}에 \"{{chars}}\" 전송",
+		"polledSession": "세션 {{sessionId}} 폴링",
+		"wantsToTerminate": "세션 {{sessionId}}를 종료하려고 함",
+		"didTerminate": "세션 {{sessionId}} 종료",
+		"wantsToListSessions": "활성 세션 목록을 보려고 함",
+		"didListSessions": "활성 세션 목록 표시"
 	}
 }
