@@ -27,5 +27,10 @@
 		"roo": {
 			"authRequired": "Roo Code Cloud authentication is required for image generation. Please sign in to Roo Code Cloud."
 		}
+	},
+	"webSearch": {
+		"searching": "Searching the web for: \"{{query}}\"",
+		"results": "Web search results for \"{{query}}\":",
+		"mockNote": "Note: This is a demonstration implementation. In production, this would integrate with a real search API like Brave Search, Google Custom Search, Bing Search API, or DuckDuckGo API. You can also use the Perplexity MCP server for real web search capabilities."
 	}
 }
