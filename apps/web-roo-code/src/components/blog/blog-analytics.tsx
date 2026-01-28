@@ -1,8 +1,13 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import type { BlogPost } from "@/lib/blog"
-import { trackBlogIndexView, trackBlogPostView, trackBlogPostScrollDepth, trackBlogPostTimeSpent } from "@/lib/blog"
+import type { BlogPost } from "@/lib/blog/types"
+import {
+	trackBlogIndexView,
+	trackBlogPostView,
+	trackBlogPostScrollDepth,
+	trackBlogPostTimeSpent,
+} from "@/lib/blog/analytics"
 
 interface BlogIndexAnalyticsProps {
 	postCount: number
