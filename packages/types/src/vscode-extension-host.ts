@@ -795,6 +795,8 @@ export interface ClineSayTool {
 	readStart?: number
 	readEnd?: number
 	totalBytes?: number
+	searchPattern?: string
+	matchCount?: number
 	diff?: string
 	content?: string
 	// Unified diff statistics computed by the extension

@@ -1470,23 +1470,40 @@ export const ChatRowContent = ({
 								if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
 								return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 							}
-							const rangeInfo =
+
+							// Determine if this is a search operation
+							const isSearch = sayTool.searchPattern !== undefined
+
+							let infoText = ""
+							if (isSearch) {
+								// Search mode: show pattern and match count
+								const matchText =
+									sayTool.matchCount !== undefined
+										? sayTool.matchCount === 1
+											? "1 match"
+											: `${sayTool.matchCount} matches`
+										: ""
+								infoText = `search: "${sayTool.searchPattern}"${matchText ? ` • ${matchText}` : ""}`
+							} else if (
 								sayTool.readStart !== undefined &&
 								sayTool.readEnd !== undefined &&
 								sayTool.totalBytes !== undefined
-									? `${formatBytes(sayTool.readStart)} - ${formatBytes(sayTool.readEnd)} of ${formatBytes(sayTool.totalBytes)}`
-									: sayTool.totalBytes !== undefined
-										? formatBytes(sayTool.totalBytes)
-										: ""
+							) {
+								// Read mode: show byte range
+								infoText = `${formatBytes(sayTool.readStart)} - ${formatBytes(sayTool.readEnd)} of ${formatBytes(sayTool.totalBytes)}`
+							} else if (sayTool.totalBytes !== undefined) {
+								infoText = formatBytes(sayTool.totalBytes)
+							}
+
 							return (
 								<div style={headerStyle}>
 									<FileCode2 className="w-4 shrink-0" aria-label="Read command output icon" />
 									<span style={{ fontWeight: "bold" }}>{t("chat:readCommandOutput.title")}</span>
-									{rangeInfo && (
+									{infoText && (
 										<span
 											className="text-xs ml-1"
 											style={{ color: "var(--vscode-descriptionForeground)" }}>
-											({rangeInfo})
+											({infoText})
 										</span>
 									)}
 								</div>

@@ -161,10 +161,13 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 			let result: string
 			let readStart = 0
 			let readEnd = 0
+			let matchCount: number | undefined
 
 			if (search) {
 				// Search mode: filter lines matching the pattern
-				result = await this.searchInArtifact(artifactPath, search, totalSize, limit)
+				const searchResult = await this.searchInArtifact(artifactPath, search, totalSize, limit)
+				result = searchResult.content
+				matchCount = searchResult.matchCount
 				// For search, we're scanning the whole file
 				readStart = 0
 				readEnd = totalSize
@@ -184,6 +187,7 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 					readStart,
 					readEnd,
 					totalBytes: totalSize,
+					...(search && { searchPattern: search, matchCount }),
 				}),
 			)
 
@@ -292,7 +296,7 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 		pattern: string,
 		totalSize: number,
 		limit: number,
-	): Promise<string> {
+	): Promise<{ content: string; matchCount: number }> {
 		const CHUNK_SIZE = 64 * 1024 // 64KB chunks for bounded memory
 
 		// Create case-insensitive regex for search
@@ -368,23 +372,25 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 		const artifactId = path.basename(artifactPath)
 
 		if (matches.length === 0) {
-			return [
+			const content = [
 				`[Command Output: ${artifactId}] (search: "${pattern}")`,
 				`Total size: ${this.formatBytes(totalSize)}`,
 				"",
 				"No matches found for the search pattern.",
 			].join("\n")
+			return { content, matchCount: 0 }
 		}
 
 		// Format matches with line numbers
 		const matchedLines = matches.map((m) => `${String(m.lineNumber).padStart(5)} | ${m.content}`).join("\n")
 
-		return [
+		const content = [
 			`[Command Output: ${artifactId}] (search: "${pattern}")`,
 			`Total matches: ${matches.length} | Showing first ${matches.length}`,
 			"",
 			matchedLines,
 		].join("\n")
+		return { content, matchCount: matches.length }
 	}
 
 	/**
