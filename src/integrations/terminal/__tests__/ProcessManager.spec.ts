@@ -222,4 +222,125 @@ describe("ProcessManager", () => {
 			expect(sessions).toContain(id2)
 		})
 	})
+
+	describe("listSessions", () => {
+		it("should return all sessions when no taskId filter", () => {
+			const manager = ProcessManager.getInstance()
+			const terminal = createMockTerminal(1)
+
+			manager.registerProcess(terminal, createMockProcess(), "task-1", "echo 1")
+			manager.registerProcess(terminal, createMockProcess(), "task-2", "echo 2")
+
+			const sessions = manager.listSessions()
+
+			expect(sessions).toHaveLength(2)
+			expect(sessions[0]).toMatchObject({
+				taskId: "task-1",
+				command: "echo 1",
+				running: true,
+			})
+			expect(sessions[1]).toMatchObject({
+				taskId: "task-2",
+				command: "echo 2",
+				running: true,
+			})
+		})
+
+		it("should filter sessions by taskId", () => {
+			const manager = ProcessManager.getInstance()
+			const terminal = createMockTerminal(1)
+
+			manager.registerProcess(terminal, createMockProcess(), "task-1", "echo 1")
+			manager.registerProcess(terminal, createMockProcess(), "task-2", "echo 2")
+
+			const sessions = manager.listSessions("task-1")
+
+			expect(sessions).toHaveLength(1)
+			expect(sessions[0].taskId).toBe("task-1")
+		})
+
+		it("should return empty array when no sessions exist", () => {
+			const manager = ProcessManager.getInstance()
+
+			const sessions = manager.listSessions()
+
+			expect(sessions).toHaveLength(0)
+		})
+
+		it("should sort sessions by session ID", () => {
+			const manager = ProcessManager.getInstance()
+			const terminal = createMockTerminal(1)
+
+			const id1 = manager.registerProcess(terminal, createMockProcess(), "task-1", "echo 1")
+			const id2 = manager.registerProcess(terminal, createMockProcess(), "task-1", "echo 2")
+
+			const sessions = manager.listSessions()
+
+			expect(sessions[0].sessionId).toBe(id1)
+			expect(sessions[1].sessionId).toBe(id2)
+		})
+	})
+
+	describe("terminateSession", () => {
+		it("should return error for non-existent session", () => {
+			const manager = ProcessManager.getInstance()
+
+			const result = manager.terminateSession(999)
+
+			expect(result.success).toBe(false)
+			expect(result.message).toContain("not found")
+		})
+
+		it("should remove completed session and return success", () => {
+			const manager = ProcessManager.getInstance()
+			const terminal = createMockTerminal(1)
+			const process = createMockProcess()
+
+			const sessionId = manager.registerProcess(terminal, process, "task-1", "echo test")
+			manager.markCompleted(sessionId)
+
+			const result = manager.terminateSession(sessionId)
+
+			expect(result.success).toBe(true)
+			expect(result.message).toContain("already completed")
+			expect(manager.getProcess(sessionId)).toBeUndefined()
+		})
+
+		it("should abort running process and return success", () => {
+			const manager = ProcessManager.getInstance()
+			const terminal = createMockTerminal(1)
+			const mockAbort = vi.fn()
+			const process = {
+				...createMockProcess(),
+				abort: mockAbort,
+			} as unknown as RooTerminalProcess
+
+			const sessionId = manager.registerProcess(terminal, process, "task-1", "sleep 100")
+
+			const result = manager.terminateSession(sessionId)
+
+			expect(result.success).toBe(true)
+			expect(result.message).toContain("terminated successfully")
+			expect(mockAbort).toHaveBeenCalled()
+			expect(manager.getProcess(sessionId)).toBeUndefined()
+		})
+
+		it("should handle abort errors gracefully", () => {
+			const manager = ProcessManager.getInstance()
+			const terminal = createMockTerminal(1)
+			const process = {
+				...createMockProcess(),
+				abort: () => {
+					throw new Error("Failed to abort")
+				},
+			} as unknown as RooTerminalProcess
+
+			const sessionId = manager.registerProcess(terminal, process, "task-1", "sleep 100")
+
+			const result = manager.terminateSession(sessionId)
+
+			expect(result.success).toBe(false)
+			expect(result.message).toContain("Failed to abort")
+		})
+	})
 })

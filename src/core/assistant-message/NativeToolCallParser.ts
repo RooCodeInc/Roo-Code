@@ -411,6 +411,19 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "terminate_session":
+				if (partialArgs.session_id !== undefined) {
+					nativeArgs = {
+						session_id: partialArgs.session_id,
+					}
+				}
+				break
+
+			case "list_sessions":
+				// No parameters needed
+				nativeArgs = {}
+				break
+
 			case "write_to_file":
 				if (partialArgs.path || partialArgs.content) {
 					nativeArgs = {
@@ -707,6 +720,19 @@ export class NativeToolCallParser {
 							max_output_tokens: args.max_output_tokens,
 						} as NativeArgsFor<TName>
 					}
+					break
+
+				case "terminate_session":
+					if (args.session_id !== undefined) {
+						nativeArgs = {
+							session_id: args.session_id,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "list_sessions":
+					// No parameters needed
+					nativeArgs = {} as NativeArgsFor<TName>
 					break
 
 				case "apply_diff":

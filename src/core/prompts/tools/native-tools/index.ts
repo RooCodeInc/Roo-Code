@@ -10,6 +10,7 @@ import executeCommand from "./execute_command"
 import fetchInstructions from "./fetch_instructions"
 import generateImage from "./generate_image"
 import listFiles from "./list_files"
+import listSessions from "./list_sessions"
 import newTask from "./new_task"
 import readCommandOutput from "./read_command_output"
 import { createReadFileTool, type ReadFileToolOptions } from "./read_file"
@@ -19,6 +20,7 @@ import searchReplace from "./search_replace"
 import edit_file from "./edit_file"
 import searchFiles from "./search_files"
 import switchMode from "./switch_mode"
+import terminateSession from "./terminate_session"
 import updateTodoList from "./update_todo_list"
 import writeStdin from "./write_stdin"
 import writeToFile from "./write_to_file"
@@ -66,6 +68,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		fetchInstructions,
 		generateImage,
 		listFiles,
+		listSessions,
 		newTask,
 		readCommandOutput,
 		createReadFileTool(readFileOptions),
@@ -75,6 +78,7 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		edit_file,
 		searchFiles,
 		switchMode,
+		terminateSession,
 		updateTodoList,
 		writeStdin,
 		writeToFile,

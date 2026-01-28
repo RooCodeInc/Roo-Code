@@ -115,6 +115,8 @@ export type NativeToolArgs = {
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	write_stdin: { session_id: number; chars?: string; yield_time_ms?: number; max_output_tokens?: number }
+	terminate_session: { session_id: number }
+	list_sessions: Record<string, never> // No parameters
 	write_to_file: { path: string; content: string }
 	// Add more tools as they are migrated to native protocol
 }
@@ -252,6 +254,8 @@ export type ToolGroupConfig = {
 export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	execute_command: "run commands",
 	write_stdin: "write to terminal input",
+	terminate_session: "terminate terminal sessions",
+	list_sessions: "list active terminal sessions",
 	read_file: "read files",
 	read_command_output: "read command output",
 	fetch_instructions: "fetch instructions",
@@ -290,7 +294,7 @@ export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 		tools: ["browser_action"],
 	},
 	command: {
-		tools: ["execute_command", "write_stdin", "read_command_output"],
+		tools: ["execute_command", "write_stdin", "terminate_session", "list_sessions", "read_command_output"],
 	},
 	mcp: {
 		tools: ["use_mcp_tool", "access_mcp_resource"],

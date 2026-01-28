@@ -211,6 +211,94 @@ export class ProcessManager {
 	}
 
 	/**
+	 * List all active sessions with their info.
+	 *
+	 * @param taskId - Optional task ID to filter by
+	 * @returns Array of session info objects
+	 */
+	listSessions(taskId?: string): Array<{
+		sessionId: number
+		taskId: string
+		command: string
+		running: boolean
+		lastUsed: number
+	}> {
+		// Clean up first to get accurate state
+		this.cleanup()
+
+		const sessions: Array<{
+			sessionId: number
+			taskId: string
+			command: string
+			running: boolean
+			lastUsed: number
+		}> = []
+
+		for (const [sessionId, entry] of this.processes.entries()) {
+			if (!taskId || entry.taskId === taskId) {
+				sessions.push({
+					sessionId,
+					taskId: entry.taskId,
+					command: entry.command,
+					running: entry.running,
+					lastUsed: entry.lastUsed,
+				})
+			}
+		}
+
+		// Sort by session ID for consistent ordering
+		return sessions.sort((a, b) => a.sessionId - b.sessionId)
+	}
+
+	/**
+	 * Terminate a session by sending abort signal to the process.
+	 *
+	 * @param sessionId - The session ID to terminate
+	 * @returns Object with success status and optional message
+	 */
+	terminateSession(sessionId: number): { success: boolean; message: string } {
+		const entry = this.processes.get(sessionId)
+
+		if (!entry) {
+			return {
+				success: false,
+				message: `Session ${sessionId} not found. Use list_sessions to see active sessions.`,
+			}
+		}
+
+		if (!entry.running) {
+			// Session exists but already completed
+			this.processes.delete(sessionId)
+			return {
+				success: true,
+				message: `Session ${sessionId} was already completed. Entry removed.`,
+			}
+		}
+
+		try {
+			// Abort the process
+			entry.process.abort()
+			entry.running = false
+
+			// Remove from tracking
+			this.processes.delete(sessionId)
+
+			console.log(`[ProcessManager] Terminated session ${sessionId}`)
+			return {
+				success: true,
+				message: `Session ${sessionId} terminated successfully.`,
+			}
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			console.error(`[ProcessManager] Error terminating session ${sessionId}:`, errorMessage)
+			return {
+				success: false,
+				message: `Failed to terminate session ${sessionId}: ${errorMessage}`,
+			}
+		}
+	}
+
+	/**
 	 * Clean up completed processes.
 	 */
 	private cleanup(): void {
