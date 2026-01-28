@@ -34,7 +34,6 @@ export const EMBEDDING_MODEL_PROFILES: EmbeddingModelProfiles = {
 		},
 	},
 	gemini: {
-		"text-embedding-004": { dimension: 768 },
 		"gemini-embedding-001": { dimension: 3072, scoreThreshold: 0.4 },
 	},
 	mistral: {
