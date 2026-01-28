@@ -163,6 +163,13 @@ export function Footer() {
 								<h3 className="text-sm font-semibold uppercase leading-6 text-foreground">Resources</h3>
 								<ul className="mt-6 space-y-4">
 									<li>
+										<Link
+											href="/blog"
+											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
+											Blog
+										</Link>
+									</li>
+									<li>
 										<a
 											href={EXTERNAL_LINKS.EVALS}
 											target="_blank"
@@ -372,6 +379,15 @@ export function Footer() {
 											rel="noopener noreferrer"
 											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
 											YouTube
+										</a>
+									</li>
+									<li>
+										<a
+											href={EXTERNAL_LINKS.SUBSTACK}
+											target="_blank"
+											rel="noopener noreferrer"
+											className="text-sm leading-6 text-muted-foreground transition-colors hover:text-foreground">
+											Substack
 										</a>
 									</li>
 								</ul>
