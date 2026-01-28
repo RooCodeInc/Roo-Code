@@ -26,6 +26,7 @@ export function BlogIndexAnalytics({ postCount }: BlogIndexAnalyticsProps) {
 }
 
 interface BlogPostAnalyticsProps {
+interface BlogPostAnalyticsProps {
 	post: {
 		slug: string
 		title: string
