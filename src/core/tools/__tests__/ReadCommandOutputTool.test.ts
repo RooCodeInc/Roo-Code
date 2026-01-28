@@ -159,16 +159,16 @@ describe("ReadCommandOutputTool", () => {
 	})
 
 	describe("Pagination (offset/limit)", () => {
-		it("should use default limit of 32KB", async () => {
+		it("should use default limit of 40KB", async () => {
 			const artifactId = "cmd-1706119234567.txt"
 			const largeContent = "x".repeat(50 * 1024) // 50KB
 			const fileSize = Buffer.byteLength(largeContent, "utf8")
 
 			vi.mocked(fs.stat).mockResolvedValue({ size: fileSize } as any)
 
-			// Mock read to return only up to default limit (32KB)
+			// Mock read to return only up to default limit (40KB)
 			mockFileHandle.read.mockImplementation((buf: Buffer) => {
-				const defaultLimit = 32 * 1024
+				const defaultLimit = 40 * 1024
 				const bytesToRead = Math.min(buf.length, defaultLimit)
 				buf.write(largeContent.slice(0, bytesToRead))
 				return Promise.resolve({ bytesRead: bytesToRead })

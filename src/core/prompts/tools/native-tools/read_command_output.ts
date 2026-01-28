@@ -22,13 +22,13 @@ Parameters:
 - artifact_id: (required) The artifact filename from the truncated output message (e.g., "cmd-1706119234567.txt")
 - search: (optional) Pattern to filter lines. Supports regex or literal strings. Case-insensitive.
 - offset: (optional) Byte offset to start reading from. Default: 0. Use for pagination.
-- limit: (optional) Maximum bytes to return. Default: 32KB.
+- limit: (optional) Maximum bytes to return. Default: 40KB.
 
 Example: Reading truncated command output
 { "artifact_id": "cmd-1706119234567.txt" }
 
-Example: Reading with pagination (after first 32KB)
-{ "artifact_id": "cmd-1706119234567.txt", "offset": 32768 }
+Example: Reading with pagination (after first 40KB)
+{ "artifact_id": "cmd-1706119234567.txt", "offset": 40960 }
 
 Example: Searching for errors in build output
 { "artifact_id": "cmd-1706119234567.txt", "search": "error|failed|Error" }
@@ -42,7 +42,7 @@ const SEARCH_DESCRIPTION = `Optional regex or literal pattern to filter lines (c
 
 const OFFSET_DESCRIPTION = `Byte offset to start reading from (default: 0, for pagination)`
 
-const LIMIT_DESCRIPTION = `Maximum bytes to return (default: 32KB)`
+const LIMIT_DESCRIPTION = `Maximum bytes to return (default: 40KB)`
 
 export default {
 	type: "function",

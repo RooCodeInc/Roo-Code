@@ -29,9 +29,9 @@ export const DEFAULT_WRITE_DELAY_MS = 1000
  * the LLM decides to retrieve more via `read_command_output`. Larger previews
  * mean more immediate context but consume more of the context window.
  *
- * - `small`: 2KB preview - Best for long-running commands with verbose output
- * - `medium`: 4KB preview - Balanced default for most use cases
- * - `large`: 8KB preview - Best when commands produce critical info early
+ * - `small`: 5KB preview - Best for long-running commands with verbose output
+ * - `medium`: 10KB preview - Balanced default for most use cases
+ * - `large`: 20KB preview - Best when commands produce critical info early
  *
  * @see OutputInterceptor - Uses this setting to determine when to spill to disk
  * @see PersistedCommandOutput - Contains the resulting preview and artifact reference
@@ -46,14 +46,14 @@ export type TerminalOutputPreviewSize = "small" | "medium" | "large"
  * to disk and made available via the `read_command_output` tool.
  */
 export const TERMINAL_PREVIEW_BYTES: Record<TerminalOutputPreviewSize, number> = {
-	small: 2048, // 2KB
-	medium: 4096, // 4KB
-	large: 8192, // 8KB
+	small: 5 * 1024, // 5KB
+	medium: 10 * 1024, // 10KB
+	large: 20 * 1024, // 20KB
 }
 
 /**
  * Default terminal output preview size.
- * The "medium" (4KB) setting provides a good balance between immediate
+ * The "medium" (10KB) setting provides a good balance between immediate
  * visibility and context window conservation for most use cases.
  */
 export const DEFAULT_TERMINAL_OUTPUT_PREVIEW_SIZE: TerminalOutputPreviewSize = "medium"
