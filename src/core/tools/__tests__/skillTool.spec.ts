@@ -22,6 +22,7 @@ describe("skillTool", () => {
 			recordToolError: vi.fn(),
 			didToolFailInCurrentTurn: false,
 			sayAndCreateMissingParamError: vi.fn().mockResolvedValue("Missing parameter error"),
+			ask: vi.fn().mockResolvedValue({}),
 			providerRef: {
 				deref: vi.fn().mockReturnValue({
 					getState: vi.fn().mockResolvedValue({ mode: "code" }),
@@ -31,6 +32,7 @@ describe("skillTool", () => {
 		}
 
 		mockCallbacks = {
+			askApproval: vi.fn().mockResolvedValue(true),
 			handleError: vi.fn(),
 			pushToolResult: vi.fn(),
 		}
@@ -97,7 +99,7 @@ describe("skillTool", () => {
 		)
 	})
 
-	it("should successfully load built-in skill without approval", async () => {
+	it("should successfully load built-in skill", async () => {
 		const block: ToolUse<"skill"> = {
 			type: "tool_use" as const,
 			name: "skill" as const,
@@ -119,7 +121,17 @@ describe("skillTool", () => {
 
 		await skillTool.handle(mockTask as Task, block, mockCallbacks)
 
-		// Skills execute directly without approval
+		expect(mockCallbacks.askApproval).toHaveBeenCalledWith(
+			"tool",
+			JSON.stringify({
+				tool: "skill",
+				skill: "create-mcp-server",
+				args: undefined,
+				source: "built-in",
+				description: "Instructions for creating MCP servers",
+			}),
+		)
+
 		expect(mockCallbacks.pushToolResult).toHaveBeenCalledWith(
 			`Skill: create-mcp-server
 Description: Instructions for creating MCP servers
@@ -164,6 +176,57 @@ Source: built-in
 
 Step 1: Create the server...`,
 		)
+	})
+
+	it("should handle user rejection", async () => {
+		const block: ToolUse<"skill"> = {
+			type: "tool_use" as const,
+			name: "skill" as const,
+			params: {},
+			partial: false,
+			nativeArgs: {
+				skill: "create-mcp-server",
+			},
+		}
+
+		mockSkillsManager.getSkillContent.mockResolvedValue({
+			name: "create-mcp-server",
+			description: "Test",
+			source: "built-in",
+			instructions: "Test instructions",
+		})
+
+		mockCallbacks.askApproval.mockResolvedValue(false)
+
+		await skillTool.handle(mockTask as Task, block, mockCallbacks)
+
+		expect(mockCallbacks.pushToolResult).not.toHaveBeenCalled()
+	})
+
+	it("should handle partial block", async () => {
+		const block: ToolUse<"skill"> = {
+			type: "tool_use" as const,
+			name: "skill" as const,
+			params: {
+				skill: "create-mcp-server",
+				args: "",
+			},
+			partial: true,
+		}
+
+		await skillTool.handle(mockTask as Task, block, mockCallbacks)
+
+		expect(mockTask.ask).toHaveBeenCalledWith(
+			"tool",
+			JSON.stringify({
+				tool: "skill",
+				skill: "create-mcp-server",
+				args: "",
+			}),
+			true,
+		)
+
+		expect(mockCallbacks.pushToolResult).not.toHaveBeenCalled()
 	})
 
 	it("should handle errors during execution", async () => {
@@ -236,7 +299,7 @@ Step 1: Create the server...`,
 		)
 	})
 
-	it("should load project skill without approval", async () => {
+	it("should load project skill", async () => {
 		const block: ToolUse<"skill"> = {
 			type: "tool_use" as const,
 			name: "skill" as const,
@@ -258,7 +321,17 @@ Step 1: Create the server...`,
 
 		await skillTool.handle(mockTask as Task, block, mockCallbacks)
 
-		// Skills execute directly without approval
+		expect(mockCallbacks.askApproval).toHaveBeenCalledWith(
+			"tool",
+			JSON.stringify({
+				tool: "skill",
+				skill: "my-project-skill",
+				args: undefined,
+				source: "project",
+				description: "A custom project skill",
+			}),
+		)
+
 		expect(mockCallbacks.pushToolResult).toHaveBeenCalledWith(
 			`Skill: my-project-skill
 Description: A custom project skill
