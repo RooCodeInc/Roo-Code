@@ -14,7 +14,8 @@ import type { ApiHandlerOptions } from "../../shared/api"
 
 import { TagMatcher } from "../../utils/tag-matcher"
 
-import { convertToOpenAiMessages } from "../transform/openai-format"
+import { convertToOpenAiMessages, ConvertToOpenAiMessagesOptions } from "../transform/openai-format"
+import { normalizeMistralToolCallId } from "../transform/mistral-format"
 import { convertToR1Format } from "../transform/r1-format"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -91,6 +92,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
 		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
 
+		// Mistral/Devstral models require strict tool message ordering and normalized tool call IDs
+		const mistralConversionOptions = this._getMistralConversionOptions(modelId)
+
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
 			return
@@ -121,7 +125,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					}
 				}
 
-				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
+				convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages, mistralConversionOptions)]
 
 				if (modelInfo.supportsPromptCache) {
 					// Note: the following logic is copied from openrouter:
@@ -225,7 +229,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				model: modelId,
 				messages: deepseekReasoner
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-					: [systemMessage, ...convertToOpenAiMessages(messages)],
+					: [systemMessage, ...convertToOpenAiMessages(messages, mistralConversionOptions)],
 				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
@@ -329,6 +333,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelInfo = this.getModel().info
 		const methodIsAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 
+		// Mistral/Devstral models require strict tool message ordering and normalized tool call IDs
+		const mistralConversionOptions = this._getMistralConversionOptions(modelId)
+
 		if (this.options.openAiStreamingEnabled ?? true) {
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
 
@@ -339,7 +346,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages),
+					...convertToOpenAiMessages(messages, mistralConversionOptions),
 				],
 				stream: true,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -375,7 +382,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 						role: "developer",
 						content: `Formatting re-enabled\n${systemPrompt}`,
 					},
-					...convertToOpenAiMessages(messages),
+					...convertToOpenAiMessages(messages, mistralConversionOptions),
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
@@ -506,6 +513,36 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	protected _isAzureAiInference(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
 		return urlHost.endsWith(".services.ai.azure.com")
+	}
+
+	/**
+	 * Checks if the model is part of the Mistral/Devstral family.
+	 * Mistral models require strict message ordering (no user message after tool message)
+	 * and have specific tool call ID format requirements (9-char alphanumeric).
+	 * @param modelId - The model identifier to check
+	 * @returns true if the model is a Mistral/Devstral family model
+	 */
+	private _isMistralFamily(modelId: string): boolean {
+		const modelIdLower = modelId.toLowerCase()
+		return modelIdLower.includes("mistral") || modelIdLower.includes("devstral")
+	}
+
+	/**
+	 * Gets the conversion options for Mistral/Devstral models.
+	 * When the model is in the Mistral family, returns options to:
+	 * 1. Merge text content after tool results into the last tool message (prevents user-after-tool error)
+	 * 2. Normalize tool call IDs to 9-char alphanumeric format (Mistral's strict requirement)
+	 * @param modelId - The model identifier
+	 * @returns Conversion options for convertToOpenAiMessages, or undefined for non-Mistral models
+	 */
+	private _getMistralConversionOptions(modelId: string): ConvertToOpenAiMessagesOptions | undefined {
+		if (this._isMistralFamily(modelId)) {
+			return {
+				mergeToolResultText: true,
+				normalizeToolCallId: normalizeMistralToolCallId,
+			}
+		}
+		return undefined
 	}
 
 	/**
