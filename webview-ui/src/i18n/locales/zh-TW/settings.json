@@ -493,6 +493,10 @@
 				"learnMore": "了解更多關於供應商路由的資訊"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "啟用嚴格工具模式",
+			"strictToolModeDescription": "為工具定義添加 OpenAI 特定的嚴格模式。對於不支援嚴格模式的提供者（如 kie.ai），請停用此選項。"
+		},
 		"customModel": {
 			"capabilities": "設定自訂 OpenAI 相容模型的功能和定價。請謹慎設定模型功能，因為這會影響 Roo Code 的運作方式。",
 			"maxTokens": {

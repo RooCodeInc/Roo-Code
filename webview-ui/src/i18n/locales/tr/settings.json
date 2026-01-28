@@ -484,6 +484,10 @@
 				"learnMore": "Sağlayıcı yönlendirmesi hakkında daha fazla bilgi edinin"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "Katı araç modunu etkinleştir",
+			"strictToolModeDescription": "Araç tanımlarına OpenAI'ye özgü katı mod ekler. kie.ai gibi katı modu desteklemeyen sağlayıcılar için bunu devre dışı bırakın."
+		},
 		"customModel": {
 			"capabilities": "Özel OpenAI uyumlu modelinizin yeteneklerini ve fiyatlandırmasını yapılandırın. Model yeteneklerini belirtirken dikkatli olun, çünkü bunlar Roo Code'un performansını etkileyebilir.",
 			"maxTokens": {

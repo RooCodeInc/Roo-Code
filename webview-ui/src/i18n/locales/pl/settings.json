@@ -484,6 +484,10 @@
 				"learnMore": "Dowiedz się więcej o routingu dostawców"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "Włącz ścisły tryb narzędzi",
+			"strictToolModeDescription": "Dodaje tryb ścisły specyficzny dla OpenAI do definicji narzędzi. Wyłącz to dla dostawców takich jak kie.ai, którzy nie obsługują trybu ścisłego."
+		},
 		"customModel": {
 			"capabilities": "Skonfiguruj możliwości i ceny swojego niestandardowego modelu zgodnego z OpenAI. Zachowaj ostrożność podczas określania możliwości modelu, ponieważ mogą one wpływać na wydajność Roo Code.",
 			"maxTokens": {
