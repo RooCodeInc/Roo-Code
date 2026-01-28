@@ -68,6 +68,7 @@ describe("executeCommandTool", () => {
 			},
 			recordToolUsage: vitest.fn().mockReturnValue({} as ToolUsage),
 			recordToolError: vitest.fn(),
+			processQueuedMessages: vitest.fn(),
 			providerRef: {
 				deref: vitest.fn().mockResolvedValue({
 					getState: vitest.fn().mockResolvedValue({
@@ -156,6 +157,22 @@ describe("executeCommandTool", () => {
 			// The exact message depends on the terminal mock's behavior
 			const result = mockPushToolResult.mock.calls[0][0]
 			expect(result).toContain("Command")
+		})
+
+		it("should process queued messages after command execution", async () => {
+			// Setup
+			mockToolUse.params.command = "echo test"
+			mockToolUse.nativeArgs = { command: "echo test" }
+
+			// Execute
+			await executeCommandTool.handle(mockCline as unknown as Task, mockToolUse, {
+				askApproval: mockAskApproval as unknown as AskApproval,
+				handleError: mockHandleError as unknown as HandleError,
+				pushToolResult: mockPushToolResult as unknown as PushToolResult,
+			})
+
+			// Verify that processQueuedMessages was called after command execution
+			expect(mockCline.processQueuedMessages).toHaveBeenCalled()
 		})
 
 		it("should pass along custom working directory if provided", async () => {
