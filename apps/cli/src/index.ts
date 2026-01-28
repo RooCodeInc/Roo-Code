@@ -35,6 +35,10 @@ program
 		'Output format (only works with --print): "text" (default), "json" (single result), or "stream-json" (realtime streaming)',
 		"text",
 	)
+	.option(
+		"--litellm-base-url <url>",
+		"Base URL for LiteLLM endpoint (default: http://localhost:4000 when using litellm provider)",
+	)
 	.action(run)
 
 const authCommand = program.command("auth").description("Manage authentication for Roo Code Cloud")
