@@ -356,6 +356,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	userMessageContentReady = false
 
 	/**
+	 * Flag indicating whether the assistant message for the current streaming session
+	 * has been saved to API conversation history.
+	 *
+	 * This is critical for parallel tool calling: tools should NOT execute until
+	 * the assistant message is saved. Otherwise, if a tool like `new_task` triggers
+	 * `flushPendingToolResultsToHistory()`, the user message with tool_results would
+	 * appear BEFORE the assistant message with tool_uses, causing API errors.
+	 *
+	 * Reset to `false` at the start of each API request.
+	 * Set to `true` after the assistant message is saved in `recursivelyMakeClineRequests`.
+	 */
+	assistantMessageSavedToHistory = false
+
+	/**
 	 * Push a tool_result block to userMessageContent, preventing duplicates.
 	 * Duplicate tool_use_ids cause API errors.
 	 *
@@ -1060,6 +1074,36 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	public async flushPendingToolResultsToHistory(): Promise<void> {
 		// Only flush if there's actually pending content to save
 		if (this.userMessageContent.length === 0) {
+			return
+		}
+
+		// CRITICAL: Wait for the assistant message to be saved to API history first.
+		// Without this, tool_result blocks would appear BEFORE tool_use blocks in the
+		// conversation history, causing API errors like:
+		// "unexpected `tool_use_id` found in `tool_result` blocks"
+		//
+		// This can happen when parallel tools are called (e.g., update_todo_list + new_task).
+		// Tools execute during streaming via presentAssistantMessage, BEFORE the assistant
+		// message is saved. When new_task triggers delegation, it calls this method to
+		// flush pending results - but the assistant message hasn't been saved yet.
+		//
+		// The assistantMessageSavedToHistory flag is:
+		// - Reset to false at the start of each API request
+		// - Set to true after the assistant message is saved in recursivelyMakeClineRequests
+		if (!this.assistantMessageSavedToHistory) {
+			await pWaitFor(() => this.assistantMessageSavedToHistory || this.abort, {
+				interval: 50,
+				timeout: 30_000, // 30 second timeout as safety net
+			}).catch(() => {
+				// If timeout or abort, log and proceed anyway to avoid hanging
+				console.warn(
+					`[Task#${this.taskId}] flushPendingToolResultsToHistory: timed out waiting for assistant message to be saved`,
+				)
+			})
+		}
+
+		// If task was aborted while waiting, don't flush
+		if (this.abort) {
 			return
 		}
 
@@ -2707,6 +2751,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.userMessageContentReady = false
 				this.didRejectTool = false
 				this.didAlreadyUseTool = false
+				this.assistantMessageSavedToHistory = false
 				// Reset tool failure flag for each new assistant turn - this ensures that tool failures
 				// only prevent attempt_completion within the same assistant message, not across turns
 				// (e.g., if a tool fails, then user sends a message saying "just complete anyway")
@@ -3488,6 +3533,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						{ role: "assistant", content: assistantContent },
 						reasoningMessage || undefined,
 					)
+					this.assistantMessageSavedToHistory = true
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
 				}
