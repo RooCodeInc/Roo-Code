@@ -583,6 +583,134 @@ describe("getEffectiveApiHistory", () => {
 	})
 })
 
+describe("getEffectiveApiHistory - orphan tool_result filtering after truncation (no summary)", () => {
+	it("should filter orphan tool_result blocks when truncation removes assistant tool_use messages", () => {
+		const truncationId = "trunc-1"
+		const messages: ApiMessage[] = [
+			// Truncation marker
+			{
+				role: "user",
+				content: [{ type: "text", text: "[Previous context truncated]" }],
+				isTruncationMarker: true,
+				truncationId,
+			},
+			// Assistant message with tool_use, hidden by truncation
+			{
+				role: "assistant",
+				content: [{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "test.ts" } }],
+				truncationParent: truncationId,
+			},
+			// User message with tool_result referencing truncated tool_use
+			{
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-1", content: "file contents" }],
+				truncationParent: truncationId,
+			},
+			// Visible assistant message with tool_use
+			{
+				role: "assistant",
+				content: [
+					{ type: "tool_use", id: "tool-2", name: "write_file", input: { path: "out.ts", content: "code" } },
+				],
+			},
+			// Visible user message with tool_result for tool-2
+			{
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-2", content: "file written" }],
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		// Should have: truncation marker, visible assistant, visible user (3 messages)
+		// Truncated assistant and user are filtered by truncationParent
+		expect(result).toHaveLength(3)
+		expect(result[0].isTruncationMarker).toBe(true)
+		expect(result[1].role).toBe("assistant")
+		expect(result[2].role).toBe("user")
+		const userContent = result[2].content as any[]
+		expect(userContent[0].tool_use_id).toBe("tool-2")
+	})
+
+	it("should filter orphan tool_result when user message survives truncation but referenced assistant is truncated", () => {
+		const truncationId = "trunc-1"
+		const messages: ApiMessage[] = [
+			// Truncation marker
+			{
+				role: "user",
+				content: [{ type: "text", text: "[Previous context truncated]" }],
+				isTruncationMarker: true,
+				truncationId,
+			},
+			// Assistant message with tool_use, hidden by truncation
+			{
+				role: "assistant",
+				content: [{ type: "tool_use", id: "tool-orphan", name: "read_file", input: { path: "test.ts" } }],
+				truncationParent: truncationId,
+			},
+			// User message with orphan tool_result - NOT tagged with truncationParent
+			// This is the bug scenario: truncation removed the assistant but not the user message
+			{
+				role: "user",
+				content: [{ type: "tool_result", tool_use_id: "tool-orphan", content: "file contents" }],
+			},
+			// Visible conversation continues
+			{
+				role: "assistant",
+				content: "Here is the result.",
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		// The orphan tool_result user message should be removed entirely
+		// Result: truncation marker, assistant text (2 messages)
+		expect(result).toHaveLength(2)
+		expect(result[0].isTruncationMarker).toBe(true)
+		expect(result[1].role).toBe("assistant")
+		expect(result[1].content).toBe("Here is the result.")
+	})
+
+	it("should keep non-orphan content in mixed user message after truncation", () => {
+		const truncationId = "trunc-1"
+		const messages: ApiMessage[] = [
+			{
+				role: "user",
+				content: [{ type: "text", text: "[Previous context truncated]" }],
+				isTruncationMarker: true,
+				truncationId,
+			},
+			{
+				role: "assistant",
+				content: [{ type: "tool_use", id: "tool-orphan", name: "read_file", input: { path: "test.ts" } }],
+				truncationParent: truncationId,
+			},
+			// User message with both orphan tool_result AND text content
+			{
+				role: "user",
+				content: [
+					{ type: "text", text: "Here's some context" },
+					{ type: "tool_result", tool_use_id: "tool-orphan", content: "file contents" },
+				],
+			},
+			{
+				role: "assistant",
+				content: "Got it.",
+			},
+		]
+
+		const result = getEffectiveApiHistory(messages)
+
+		// Should keep the user message but strip the orphan tool_result
+		expect(result).toHaveLength(3)
+		expect(result[0].isTruncationMarker).toBe(true)
+		const userContent = result[1].content as any[]
+		expect(userContent).toHaveLength(1)
+		expect(userContent[0].type).toBe("text")
+		expect(userContent[0].text).toBe("Here's some context")
+	})
+})
+
 describe("cleanupAfterTruncation", () => {
 	it("should clear orphaned condenseParent references", () => {
 		const orphanedCondenseId = "deleted-summary"
