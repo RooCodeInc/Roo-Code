@@ -532,7 +532,8 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			return `lines ${offset1}-${offset1 + limit - 1}`
 		}
 
-		return limit < DEFAULT_LINE_LIMIT ? `up to ${limit} lines` : ""
+		// Always show the line limit, even when using the default
+		return `up to ${limit} lines`
 	}
 
 	/**
