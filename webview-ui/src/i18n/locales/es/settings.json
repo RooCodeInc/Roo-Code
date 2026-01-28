@@ -728,9 +728,9 @@
 			"label": "Tamaño de vista previa de salida de comandos",
 			"description": "Controla cuánta salida de comandos ve Roo directamente. La salida completa siempre se guarda y es accesible cuando sea necesario.",
 			"options": {
-				"small": "Pequeño (2KB)",
-				"medium": "Mediano (4KB)",
-				"large": "Grande (8KB)"
+				"small": "Pequeño (5KB)",
+				"medium": "Mediano (10KB)",
+				"large": "Grande (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

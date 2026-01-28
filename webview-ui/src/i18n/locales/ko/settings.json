@@ -729,9 +729,9 @@
 			"label": "명령 출력 미리보기 크기",
 			"description": "Roo가 직접 보는 명령 출력량을 제어합니다. 전체 출력은 항상 저장되며 필요할 때 액세스할 수 있습니다.",
 			"options": {
-				"small": "작게 (2KB)",
-				"medium": "보통 (4KB)",
-				"large": "크게 (8KB)"
+				"small": "작게 (5KB)",
+				"medium": "보통 (10KB)",
+				"large": "크게 (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

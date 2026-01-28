@@ -729,9 +729,9 @@
 			"label": "Dimensione anteprima output comandi",
 			"description": "Controlla quanto output dei comandi Roo vede direttamente. L'output completo viene sempre salvato ed è accessibile quando necessario.",
 			"options": {
-				"small": "Piccola (2KB)",
-				"medium": "Media (4KB)",
-				"large": "Grande (8KB)"
+				"small": "Piccola (5KB)",
+				"medium": "Media (10KB)",
+				"large": "Grande (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

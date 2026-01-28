@@ -728,9 +728,9 @@
 			"label": "Mida de la previsualització de la sortida d'ordres",
 			"description": "Controla quanta sortida d'ordres veu Roo directament. La sortida completa sempre es desa i és accessible quan calgui.",
 			"options": {
-				"small": "Petita (2KB)",
-				"medium": "Mitjana (4KB)",
-				"large": "Gran (8KB)"
+				"small": "Petita (5KB)",
+				"medium": "Mitjana (10KB)",
+				"large": "Gran (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

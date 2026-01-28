@@ -733,9 +733,9 @@
 			"label": "Ukuran pratinjau keluaran perintah",
 			"description": "Mengontrol seberapa banyak keluaran perintah yang dilihat Roo secara langsung. Keluaran lengkap selalu disimpan dan dapat diakses saat diperlukan.",
 			"options": {
-				"small": "Kecil (2KB)",
-				"medium": "Sedang (4KB)",
-				"large": "Besar (8KB)"
+				"small": "Kecil (5KB)",
+				"medium": "Sedang (10KB)",
+				"large": "Besar (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

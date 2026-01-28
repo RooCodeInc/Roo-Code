@@ -729,9 +729,9 @@
 			"label": "Rozmiar podglądu wyjścia polecenia",
 			"description": "Kontroluje, ile wyjścia polecenia Roo widzi bezpośrednio. Pełne wyjście jest zawsze zapisywane i dostępne w razie potrzeby.",
 			"options": {
-				"small": "Mały (2KB)",
-				"medium": "Średni (4KB)",
-				"large": "Duży (8KB)"
+				"small": "Mały (5KB)",
+				"medium": "Średni (10KB)",
+				"large": "Duży (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

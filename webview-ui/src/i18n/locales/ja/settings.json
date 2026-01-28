@@ -729,9 +729,9 @@
 			"label": "コマンド出力プレビューサイズ",
 			"description": "Rooが直接確認できるコマンド出力の量を制御します。完全な出力は常に保存され、必要に応じてアクセス可能です。",
 			"options": {
-				"small": "小 (2KB)",
-				"medium": "中 (4KB)",
-				"large": "大 (8KB)"
+				"small": "小 (5KB)",
+				"medium": "中 (10KB)",
+				"large": "大 (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {
