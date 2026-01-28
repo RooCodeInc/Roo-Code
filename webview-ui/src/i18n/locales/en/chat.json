@@ -407,6 +407,11 @@
 			"close": "Close browser"
 		}
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} terminal session running",
+		"sessionsRunning_other": "{{count}} terminal sessions running",
+		"sessionsRunning": "{{count}} terminal session(s) running"
+	},
 	"codeblock": {
 		"tooltips": {
 			"expand": "Expand code block",
