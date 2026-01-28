@@ -242,10 +242,12 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 	private processTextFile(content: string, entry: InternalFileEntry): string {
 		const mode = entry.mode || "slice"
 
-		if (mode === "indentation" && entry.anchor_line !== undefined) {
+		if (mode === "indentation") {
 			// Indentation mode: semantic block extraction
+			// When anchor_line is not provided, default to offset (which defaults to 1)
+			const anchorLine = entry.anchor_line ?? entry.offset ?? 1
 			const result = readWithIndentation(content, {
-				anchorLine: entry.anchor_line,
+				anchorLine,
 				maxLevels: entry.max_levels,
 				includeSiblings: entry.include_siblings,
 				includeHeader: entry.include_header,
