@@ -4,7 +4,7 @@ import matter from "gray-matter"
 import { ZodError } from "zod"
 import type { BlogPost } from "./types"
 import { blogFrontmatterSchema } from "./types"
-import { getNowPt } from "./pt-time"
+import { getNowPt, parsePublishTimePt } from "./pt-time"
 import { isPublished } from "./publishing"
 
 /**
@@ -158,7 +158,7 @@ export function getAllBlogPosts(options: GetAllBlogPostsOptions = {}): BlogPost[
 			return dateCompare
 		}
 		// Same date - compare times (descending)
-import { getNowPt, parsePublishTimePt } from "./pt-time"
+		return parsePublishTimePt(b.publish_time_pt) - parsePublishTimePt(a.publish_time_pt)
 	})
 }
 
