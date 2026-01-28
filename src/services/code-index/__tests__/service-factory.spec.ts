@@ -345,6 +345,125 @@ describe("CodeIndexServiceFactory", () => {
 			mockGetDefaultModelId.mockReturnValue("default-model")
 		})
 
+		it("should prioritize detectedDimension over all other dimension sources", () => {
+			// Arrange
+			const testConfig = {
+				embedderProvider: "openai-compatible",
+				modelId: "custom-model",
+				modelDimension: 1024, // Manual config should be ignored
+				qdrantUrl: "http://localhost:6333",
+				qdrantApiKey: "test-key",
+			}
+			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
+			mockGetModelDimension.mockReturnValue(768) // Profile dimension should be ignored
+
+			// Act - pass detected dimension from validation
+			factory.createVectorStore(4096)
+
+			// Assert - should use detected dimension (4096), not profile (768) or manual (1024)
+			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
+				"/test/workspace",
+				"http://localhost:6333",
+				4096, // Auto-detected dimension takes priority
+				"test-key",
+			)
+		})
+
+		it("should use detected dimension from Ollama embedder", () => {
+			// Arrange - simulates Ollama with qwen3-embedding returning 4096 dimensions
+			const testConfig = {
+				embedderProvider: "ollama",
+				modelId: "qwen3-embedding",
+				modelDimension: 1536, // User's incorrect manual config
+				qdrantUrl: "http://localhost:6333",
+				qdrantApiKey: "test-key",
+			}
+			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
+			mockGetModelDimension.mockReturnValue(undefined) // Unknown model
+
+			// Act - pass detected dimension from validation (like the issue scenario)
+			factory.createVectorStore(4096)
+
+			// Assert - should use auto-detected 4096, not user's incorrect 1536
+			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
+				"/test/workspace",
+				"http://localhost:6333",
+				4096,
+				"test-key",
+			)
+		})
+
+		it("should fall back to profile dimension when detected dimension is not provided", () => {
+			// Arrange
+			const testConfig = {
+				embedderProvider: "openai",
+				modelId: "text-embedding-3-large",
+				qdrantUrl: "http://localhost:6333",
+				qdrantApiKey: "test-key",
+			}
+			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
+			mockGetModelDimension.mockReturnValue(3072)
+
+			// Act - no detected dimension provided
+			factory.createVectorStore()
+
+			// Assert - should use profile dimension
+			expect(mockGetModelDimension).toHaveBeenCalledWith("openai", "text-embedding-3-large")
+			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
+				"/test/workspace",
+				"http://localhost:6333",
+				3072,
+				"test-key",
+			)
+		})
+
+		it("should fall back to manual dimension when detected and profile are unavailable", () => {
+			// Arrange
+			const testConfig = {
+				embedderProvider: "openai-compatible",
+				modelId: "unknown-model",
+				modelDimension: 2048,
+				qdrantUrl: "http://localhost:6333",
+				qdrantApiKey: "test-key",
+			}
+			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
+			mockGetModelDimension.mockReturnValue(undefined)
+
+			// Act - no detected dimension, no profile dimension
+			factory.createVectorStore()
+
+			// Assert - should use manual dimension
+			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
+				"/test/workspace",
+				"http://localhost:6333",
+				2048,
+				"test-key",
+			)
+		})
+
+		it("should ignore zero or negative detected dimension", () => {
+			// Arrange
+			const testConfig = {
+				embedderProvider: "openai",
+				modelId: "text-embedding-3-small",
+				qdrantUrl: "http://localhost:6333",
+				qdrantApiKey: "test-key",
+			}
+			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
+			mockGetModelDimension.mockReturnValue(1536)
+
+			// Act - pass invalid detected dimension
+			factory.createVectorStore(0)
+
+			// Assert - should fall back to profile dimension
+			expect(MockedQdrantVectorStore).toHaveBeenCalledWith(
+				"/test/workspace",
+				"http://localhost:6333",
+				1536,
+				"test-key",
+			)
+		})
+
 		it("should use config.modelId for OpenAI provider", () => {
 			// Arrange
 			const testModelId = "text-embedding-3-large"
@@ -668,6 +787,58 @@ describe("CodeIndexServiceFactory", () => {
 			mockEmbedderInstance = {
 				validateConfiguration: vitest.fn(),
 			}
+		})
+
+		it("should return detectedDimension from embedder validation", async () => {
+			// Arrange
+			const testConfig = {
+				embedderProvider: "ollama",
+				modelId: "qwen3-embedding",
+				ollamaOptions: {
+					ollamaBaseUrl: "http://localhost:11434",
+				},
+			}
+			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
+			MockedCodeIndexOllamaEmbedder.mockImplementation(() => mockEmbedderInstance)
+			// Mock embedder returning detected dimension
+			mockEmbedderInstance.validateConfiguration.mockResolvedValue({
+				valid: true,
+				detectedDimension: 4096,
+			})
+
+			// Act
+			const embedder = factory.createEmbedder()
+			const result = await factory.validateEmbedder(embedder)
+
+			// Assert
+			expect(result).toEqual({ valid: true, detectedDimension: 4096 })
+			expect(mockEmbedderInstance.validateConfiguration).toHaveBeenCalled()
+		})
+
+		it("should return detectedDimension from base64 embedding validation", async () => {
+			// Arrange
+			const testConfig = {
+				embedderProvider: "openai-compatible",
+				modelId: "custom-model",
+				openAiCompatibleOptions: {
+					baseUrl: "https://api.example.com/v1",
+					apiKey: "test-api-key",
+				},
+			}
+			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
+			MockedOpenAICompatibleEmbedder.mockImplementation(() => mockEmbedderInstance)
+			// Mock embedder returning detected dimension from base64 parsing
+			mockEmbedderInstance.validateConfiguration.mockResolvedValue({
+				valid: true,
+				detectedDimension: 1536,
+			})
+
+			// Act
+			const embedder = factory.createEmbedder()
+			const result = await factory.validateEmbedder(embedder)
+
+			// Assert
+			expect(result).toEqual({ valid: true, detectedDimension: 1536 })
 		})
 
 		it("should validate OpenAI embedder successfully", async () => {
