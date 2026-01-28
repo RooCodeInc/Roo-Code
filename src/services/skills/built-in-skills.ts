@@ -5,7 +5,7 @@
  * in the built-in/ directory. To modify built-in skills, edit the corresponding
  * SKILL.md file and run: pnpm generate:skills
  *
- * Generated at: 2026-01-24T03:15:43.562Z
+ * Generated at: 2026-01-28T22:42:03.971Z
  */
 
 import { SkillMetadata, SkillContent } from "../../shared/skills"
@@ -22,53 +22,57 @@ const BUILT_IN_SKILLS: Record<string, BuiltInSkillDefinition> = {
 		description:
 			"Instructions for creating custom modes in Roo Code. Use when the user asks to create a new mode, edit an existing mode, or configure mode settings.",
 		instructions: `Custom modes can be configured in two ways:
-  1. Globally via the custom modes file in your Roo Code settings directory (typically ~/.roo-code/settings/custom_modes.yaml on macOS/Linux or %APPDATA%\\roo-code\\settings\\custom_modes.yaml on Windows) - created automatically on startup
-  2. Per-workspace via '.roomodes' in the workspace root directory
+
+1. Globally via the custom modes file in your Roo Code settings directory (typically ~/.roo-code/settings/custom_modes.yaml on macOS/Linux or %APPDATA%\\roo-code\\settings\\custom_modes.yaml on Windows) - created automatically on startup
+2. Per-workspace via '.roomodes' in the workspace root directory
 
 When modes with the same slug exist in both files, the workspace-specific .roomodes version takes precedence. This allows projects to override global modes or define project-specific modes.
 
 If asked to create a project mode, create it in .roomodes in the workspace root. If asked to create a global mode, use the global custom modes file.
 
 - The following fields are required and must not be empty:
-  * slug: A valid slug (lowercase letters, numbers, and hyphens). Must be unique, and shorter is better.
-  * name: The display name for the mode
-  * roleDefinition: A detailed description of the mode's role and capabilities
-  * groups: Array of allowed tool groups (can be empty). Each group can be specified either as a string (e.g., "edit" to allow editing any file) or with file restrictions (e.g., ["edit", { fileRegex: "\\.md$", description: "Markdown files only" }] to only allow editing markdown files)
+
+    - slug: A valid slug (lowercase letters, numbers, and hyphens). Must be unique, and shorter is better.
+    - name: The display name for the mode
+    - roleDefinition: A detailed description of the mode's role and capabilities
+    - groups: Array of allowed tool groups (can be empty). Each group can be specified either as a string (e.g., "edit" to allow editing any file) or with file restrictions (e.g., ["edit", { fileRegex: "\\.md$", description: "Markdown files only" }] to only allow editing markdown files)
 
 - The following fields are optional but highly recommended:
-  * description: A short, human-readable description of what this mode does (5 words)
-  * whenToUse: A clear description of when this mode should be selected and what types of tasks it's best suited for. This helps the Orchestrator mode make better decisions.
-  * customInstructions: Additional instructions for how the mode should operate
+
+    - description: A short, human-readable description of what this mode does (5 words)
+    - whenToUse: A clear description of when this mode should be selected and what types of tasks it's best suited for. This helps the Orchestrator mode make better decisions.
+    - customInstructions: Additional instructions for how the mode should operate
 
 - For multi-line text, include newline characters in the string like "This is the first line.\\nThis is the next line.\\n\\nThis is a double line break."
 
 Both files should follow this structure (in YAML format):
 
 customModes:
-  - slug: designer  # Required: unique slug with lowercase letters, numbers, and hyphens
-    name: Designer  # Required: mode display name
-    description: UI/UX design systems expert  # Optional but recommended: short description (5 words)
-    roleDefinition: >-
-      You are Roo, a UI/UX expert specializing in design systems and frontend development. Your expertise includes:
-      - Creating and maintaining design systems
-      - Implementing responsive and accessible web interfaces
-      - Working with CSS, HTML, and modern frontend frameworks
-      - Ensuring consistent user experiences across platforms  # Required: non-empty
-    whenToUse: >-
+
+- slug: designer # Required: unique slug with lowercase letters, numbers, and hyphens
+  name: Designer # Required: mode display name
+  description: UI/UX design systems expert # Optional but recommended: short description (5 words)
+  roleDefinition: >-
+  You are Roo, a UI/UX expert specializing in design systems and frontend development. Your expertise includes:
+    - Creating and maintaining design systems
+    - Implementing responsive and accessible web interfaces
+    - Working with CSS, HTML, and modern frontend frameworks
+    - Ensuring consistent user experiences across platforms # Required: non-empty
+      whenToUse: >-
       Use this mode when creating or modifying UI components, implementing design systems,
       or ensuring responsive web interfaces. This mode is especially effective with CSS,
-      HTML, and modern frontend frameworks.  # Optional but recommended
-    groups:  # Required: array of tool groups (can be empty)
-      - read     # Read files group (read_file, search_files, list_files, codebase_search)
-      - edit     # Edit files group (apply_diff, write_to_file) - allows editing any file
-      # Or with file restrictions:
-      # - - edit
-      #   - fileRegex: \\.md$
-      #     description: Markdown files only  # Edit group that only allows editing markdown files
-      - browser  # Browser group (browser_action)
-      - command  # Command group (execute_command)
-      - mcp      # MCP group (use_mcp_tool, access_mcp_resource)
-    customInstructions: Additional instructions for the Designer mode  # Optional`,
+      HTML, and modern frontend frameworks. # Optional but recommended
+      groups: # Required: array of tool groups (can be empty)
+    - read # Read files group (read_file, search_files, list_files, codebase_search)
+    - edit # Edit files group (apply_diff, write_to_file) - allows editing any file
+    # Or with file restrictions:
+    # - - edit
+    # - fileRegex: \\.md$
+    # description: Markdown files only # Edit group that only allows editing markdown files
+    - browser # Browser group (browser_action)
+    - command # Command group (execute_command)
+    - mcp # MCP group (use_mcp_tool, access_mcp_resource)
+      customInstructions: Additional instructions for the Designer mode # Optional`,
 	},
 	"mcp-builder": {
 		name: "mcp-builder",
@@ -113,6 +117,7 @@ Start with the sitemap to find relevant pages: \`https://modelcontextprotocol.io
 Then fetch specific pages with \`.md\` suffix for markdown format (e.g., \`https://modelcontextprotocol.io/specification/draft.md\`).
 
 Key pages to review:
+
 - Specification overview and architecture
 - Transport mechanisms (streamable HTTP, stdio)
 - Tool, resource, and prompt definitions
@@ -120,6 +125,7 @@ Key pages to review:
 #### 1.3 Study Framework Documentation
 
 **Recommended stack:**
+
 - **Language**: TypeScript (high-quality SDK support and good compatibility in many execution environments e.g. MCPB. Plus AI models are good at generating TypeScript code, benefiting from its broad usage, static typing and good linting tools)
 - **Transport**: Streamable HTTP for remote servers, using stateless JSON (simpler to scale and maintain, as opposed to stateful sessions and streaming responses). stdio for local servers.
 
@@ -128,10 +134,12 @@ Key pages to review:
 - **MCP Best Practices**: [📋 View Best Practices](./reference/mcp_best_practices.md) - Core guidelines
 
 **For TypeScript (recommended):**
+
 - **TypeScript SDK**: Use WebFetch to load \`https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md\`
 - [⚡ TypeScript Guide](./reference/node_mcp_server.md) - TypeScript patterns and examples
 
 **For Python:**
+
 - **Python SDK**: Use WebFetch to load \`https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/README.md\`
 - [🐍 Python Guide](./reference/python_mcp_server.md) - Python patterns and examples
 
@@ -150,12 +158,14 @@ Prioritize comprehensive API coverage. List endpoints to implement, starting wit
 #### 2.1 Set Up Project Structure
 
 See language-specific guides for project setup:
+
 - [⚡ TypeScript Guide](./reference/node_mcp_server.md) - Project structure, package.json, tsconfig.json
 - [🐍 Python Guide](./reference/python_mcp_server.md) - Module organization, dependencies
 
 #### 2.2 Implement Core Infrastructure
 
 Create shared utilities:
+
 - API client with authentication
 - Error handling helpers
 - Response formatting (JSON/Markdown)
@@ -166,27 +176,32 @@ Create shared utilities:
 For each tool:
 
 **Input Schema:**
+
 - Use Zod (TypeScript) or Pydantic (Python)
 - Include constraints and clear descriptions
 - Add examples in field descriptions
 
 **Output Schema:**
+
 - Define \`outputSchema\` where possible for structured data
 - Use \`structuredContent\` in tool responses (TypeScript SDK feature)
 - Helps clients understand and process tool outputs
 
 **Tool Description:**
+
 - Concise summary of functionality
 - Parameter descriptions
 - Return type schema
 
 **Implementation:**
+
 - Async/await for I/O operations
 - Proper error handling with actionable messages
 - Support pagination where applicable
 - Return both text content and structured data when using modern SDKs
 
 **Annotations:**
+
 - \`readOnlyHint\`: true/false
 - \`destructiveHint\`: true/false
 - \`idempotentHint\`: true/false
@@ -199,6 +214,7 @@ For each tool:
 #### 3.1 Code Quality
 
 Review for:
+
 - No duplicated code (DRY principle)
 - Consistent error handling
 - Full type coverage
@@ -207,10 +223,12 @@ Review for:
 #### 3.2 Build and Test
 
 **TypeScript:**
+
 - Run \`npm run build\` to verify compilation
 - Test with MCP Inspector: \`npx @modelcontextprotocol/inspector\`
 
 **Python:**
+
 - Verify syntax: \`python -m py_compile your_server.py\`
 - Test with MCP Inspector
 
@@ -240,6 +258,7 @@ To create effective evaluations, follow the process outlined in the evaluation g
 #### 4.3 Evaluation Requirements
 
 Ensure each question is:
+
 - **Independent**: Not dependent on other questions
 - **Read-only**: Only non-destructive operations required
 - **Complex**: Requiring multiple tool calls and deep exploration
@@ -270,40 +289,45 @@ Create an XML file with this structure:
 Load these resources as needed during development:
 
 ### Core MCP Documentation (Load First)
+
 - **MCP Protocol**: Start with sitemap at \`https://modelcontextprotocol.io/sitemap.xml\`, then fetch specific pages with \`.md\` suffix
 - [📋 MCP Best Practices](./reference/mcp_best_practices.md) - Universal MCP guidelines including:
-  - Server and tool naming conventions
-  - Response format guidelines (JSON vs Markdown)
-  - Pagination best practices
-  - Transport selection (streamable HTTP vs stdio)
-  - Security and error handling standards
+    - Server and tool naming conventions
+    - Response format guidelines (JSON vs Markdown)
+    - Pagination best practices
+    - Transport selection (streamable HTTP vs stdio)
+    - Security and error handling standards
 
 ### SDK Documentation (Load During Phase 1/2)
+
 - **Python SDK**: Fetch from \`https://raw.githubusercontent.com/modelcontextprotocol/python-sdk/main/README.md\`
 - **TypeScript SDK**: Fetch from \`https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md\`
 
 ### Language-Specific Implementation Guides (Load During Phase 2)
+
 - [🐍 Python Implementation Guide](./reference/python_mcp_server.md) - Complete Python/FastMCP guide with:
-  - Server initialization patterns
-  - Pydantic model examples
-  - Tool registration with \`@mcp.tool\`
-  - Complete working examples
-  - Quality checklist
+
+    - Server initialization patterns
+    - Pydantic model examples
+    - Tool registration with \`@mcp.tool\`
+    - Complete working examples
+    - Quality checklist
 
 - [⚡ TypeScript Implementation Guide](./reference/node_mcp_server.md) - Complete TypeScript guide with:
-  - Project structure
-  - Zod schema patterns
-  - Tool registration with \`server.registerTool\`
-  - Complete working examples
-  - Quality checklist
+    - Project structure
+    - Zod schema patterns
+    - Tool registration with \`server.registerTool\`
+    - Complete working examples
+    - Quality checklist
 
 ### Evaluation Guide (Load During Phase 4)
+
 - [✅ Evaluation Guide](./reference/evaluation.md) - Complete evaluation creation guide with:
-  - Question creation guidelines
-  - Answer verification strategies
-  - XML format specifications
-  - Example questions and answers
-  - Running an evaluation with the provided scripts`,
+    - Question creation guidelines
+    - Answer verification strategies
+    - XML format specifications
+    - Example questions and answers
+    - Running an evaluation with the provided scripts`,
 	},
 }
 
