@@ -841,10 +841,6 @@
 			"name": "Habilitar comandes de barra diagonal iniciades pel model",
 			"description": "Quan està habilitat, Roo pot executar les vostres comandes de barra diagonal per executar fluxos de treball."
 		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Crides paral·leles a eines",
-			"description": "Quan està activat, el protocol natiu pot executar múltiples eines en un sol torn de missatge de l'assistent."
-		},
 		"CUSTOM_TOOLS": {
 			"name": "Habilitar eines personalitzades",
 			"description": "Quan està habilitat, Roo pot carregar i utilitzar eines TypeScript/JavaScript personalitzades des del directori .roo/tools del vostre projecte o ~/.roo/tools per a eines globals. Nota: aquestes eines s'aprovaran automàticament.",

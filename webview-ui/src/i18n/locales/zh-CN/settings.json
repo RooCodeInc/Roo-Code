@@ -842,10 +842,6 @@
 			"name": "启用模型发起的斜杠命令",
 			"description": "启用后 Roo 可运行斜杠命令执行工作流程。"
 		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "并行工具调用",
-			"description": "启用后，原生协议可在单个助手消息轮次中执行多个工具。"
-		},
 		"CUSTOM_TOOLS": {
 			"name": "启用自定义工具",
 			"description": "启用后 Roo 可从项目中的 .roo/tools 目录或全局工具目录 ~/.roo/tools 加载并使用自定义 TypeScript/JavaScript 工具。注意：这些工具将自动获批。",

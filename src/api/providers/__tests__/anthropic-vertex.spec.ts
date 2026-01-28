@@ -1197,7 +1197,7 @@ describe("VertexHandler", () => {
 							}),
 						}),
 					]),
-					tool_choice: { type: "auto", disable_parallel_tool_use: true },
+					tool_choice: { type: "auto", disable_parallel_tool_use: false },
 				}),
 				undefined,
 			)

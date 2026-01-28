@@ -92,9 +92,9 @@ async function generatePrompt(
 
 ${markdownFormattingSection()}
 
-${getSharedToolUseSection(experiments)}${toolsCatalog}
+${getSharedToolUseSection()}${toolsCatalog}
 
- ${getToolUseGuidelinesSection(experiments)}
+	${getToolUseGuidelinesSection()}
 
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
 

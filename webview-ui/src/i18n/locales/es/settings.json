@@ -841,10 +841,6 @@
 			"name": "Habilitar comandos slash iniciados por el modelo",
 			"description": "Cuando está habilitado, Roo puede ejecutar tus comandos slash para ejecutar flujos de trabajo."
 		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Llamadas paralelas a herramientas",
-			"description": "Cuando está habilitado, el protocolo nativo puede ejecutar múltiples herramientas en un solo turno de mensaje del asistente."
-		},
 		"CUSTOM_TOOLS": {
 			"name": "Habilitar herramientas personalizadas",
 			"description": "Cuando está habilitado, Roo puede cargar y usar herramientas TypeScript/JavaScript personalizadas desde el directorio .roo/tools de tu proyecto o ~/.roo/tools para herramientas globales. Nota: estas herramientas se aprobarán automáticamente.",

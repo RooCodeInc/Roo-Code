@@ -90,7 +90,7 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 				stream: true,
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 			}
 
 			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {

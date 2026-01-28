@@ -375,7 +375,7 @@ describe("UnboundHandler", () => {
 							}),
 						}),
 					]),
-					parallel_tool_calls: false,
+					parallel_tool_calls: true,
 				}),
 				expect.objectContaining({
 					headers: {
@@ -435,7 +435,7 @@ describe("UnboundHandler", () => {
 			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
 			expect(callArgs).toHaveProperty("tools")
 			expect(callArgs).toHaveProperty("tool_choice")
-			expect(callArgs).toHaveProperty("parallel_tool_calls", false)
+			expect(callArgs).toHaveProperty("parallel_tool_calls", true)
 		})
 
 		it("should yield tool_call_partial chunks during streaming", async () => {

@@ -103,7 +103,7 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 			thinking: useReasoning ? { type: "enabled" } : { type: "disabled" },
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 		}
 
 		return this.client.chat.completions.create(params)

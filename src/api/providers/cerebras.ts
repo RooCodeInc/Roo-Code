@@ -146,7 +146,7 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 			// Native tool calling support
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 		}
 
 		try {

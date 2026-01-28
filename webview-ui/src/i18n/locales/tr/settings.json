@@ -842,10 +842,6 @@
 			"name": "Model tarafından başlatılan slash komutlarını etkinleştir",
 			"description": "Etkinleştirildiğinde, Roo iş akışlarını yürütmek için slash komutlarınızı çalıştırabilir."
 		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Paralel araç çağrıları",
-			"description": "Etkinleştirildiğinde, yerel protokol tek bir asistan mesaj turunda birden fazla araç yürütebilir."
-		},
 		"CUSTOM_TOOLS": {
 			"name": "Özel araçları etkinleştir",
 			"description": "Etkinleştirildiğinde, Roo projenizin .roo/tools dizininden veya global araçlar için ~/.roo/tools dizininden özel TypeScript/JavaScript araçlarını yükleyebilir ve kullanabilir. Not: Bu araçlar otomatik olarak onaylanacaktır.",

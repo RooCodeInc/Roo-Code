@@ -841,10 +841,6 @@
 			"name": "Activer les commandes slash initiées par le modèle",
 			"description": "Lorsque activé, Roo peut exécuter tes commandes slash pour lancer des workflows."
 		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Appels d'outils parallèles",
-			"description": "Lorsqu'activé, le protocole natif peut exécuter plusieurs outils en un seul tour de message d'assistant."
-		},
 		"CUSTOM_TOOLS": {
 			"name": "Activer les outils personnalisés",
 			"description": "Lorsqu'activé, Roo peut charger et utiliser des outils TypeScript/JavaScript personnalisés à partir du répertoire .roo/tools de votre projet ou ~/.roo/tools pour des outils globaux. Remarque : ces outils seront automatiquement approuvés.",

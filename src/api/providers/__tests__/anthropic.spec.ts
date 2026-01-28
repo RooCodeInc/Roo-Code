@@ -514,7 +514,7 @@ describe("AnthropicHandler", () => {
 
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tool_choice: { type: "auto", disable_parallel_tool_use: true },
+					tool_choice: { type: "auto", disable_parallel_tool_use: false },
 				}),
 				expect.anything(),
 			)
@@ -535,7 +535,7 @@ describe("AnthropicHandler", () => {
 
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tool_choice: { type: "any", disable_parallel_tool_use: true },
+					tool_choice: { type: "any", disable_parallel_tool_use: false },
 				}),
 				expect.anything(),
 			)
@@ -581,7 +581,7 @@ describe("AnthropicHandler", () => {
 
 			expect(mockCreate).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tool_choice: { type: "tool", name: "get_weather", disable_parallel_tool_use: true },
+					tool_choice: { type: "tool", name: "get_weather", disable_parallel_tool_use: false },
 				}),
 				expect.anything(),
 			)
