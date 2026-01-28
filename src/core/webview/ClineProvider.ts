@@ -3347,7 +3347,9 @@ export class ClineProvider
 			// Check ALL user messages for an existing tool_result with this tool_use_id
 			// (not just the last message, to prevent duplicate tool_results - EXT-665)
 			let alreadyHasToolResult = false
-			for (const msg of parentApiMessages) {
+			let existingUserMsgIndex = -1
+			for (let i = 0; i < parentApiMessages.length; i++) {
+				const msg = parentApiMessages[i]
 				if (msg.role === "user" && Array.isArray(msg.content)) {
 					for (const block of msg.content) {
 						if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
@@ -3359,31 +3361,71 @@ export class ClineProvider
 						}
 					}
 					if (alreadyHasToolResult) break
+					// Track the last user message index for potential appending
+					existingUserMsgIndex = i
 				}
 			}
 
-			// Only create a NEW user message with the tool_result if none exists
+			// If no tool_result exists for new_task, we need to add one.
+			// IMPORTANT: If there's already a user message with tool_results AFTER the assistant
+			// message (from flushPendingToolResultsToHistory), append to it instead of creating a new one.
+			// Creating a new user message causes validateAndFixToolResultIds to generate
+			// placeholder tool_results for OTHER tool_uses that were already satisfied in
+			// the previous user message (EXT-665 root cause).
 			if (!alreadyHasToolResult) {
-				parentApiMessages.push({
-					role: "user",
-					content: [
-						{
-							type: "tool_result" as const,
-							tool_use_id: toolUseId,
-							content: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
-						},
-					],
-					ts,
-				})
-			}
+				const newToolResult: Anthropic.ToolResultBlockParam = {
+					type: "tool_result" as const,
+					tool_use_id: toolUseId,
+					content: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+				}
 
-			// Validate the newly injected tool_result against the preceding assistant message.
-			// This ensures the tool_result's tool_use_id matches a tool_use in the immediately
-			// preceding assistant message (Anthropic API requirement).
-			const lastMessage = parentApiMessages[parentApiMessages.length - 1]
-			if (lastMessage?.role === "user") {
-				const validatedMessage = validateAndFixToolResultIds(lastMessage, parentApiMessages.slice(0, -1))
-				parentApiMessages[parentApiMessages.length - 1] = validatedMessage
+				// Find the assistant message with the new_task tool_use
+				let assistantMsgIdx = -1
+				for (let i = parentApiMessages.length - 1; i >= 0; i--) {
+					const msg = parentApiMessages[i]
+					if (msg.role === "assistant" && Array.isArray(msg.content)) {
+						for (const block of msg.content) {
+							if (block.type === "tool_use" && block.name === "new_task" && block.id === toolUseId) {
+								assistantMsgIdx = i
+								break
+							}
+						}
+						if (assistantMsgIdx !== -1) break
+					}
+				}
+
+				// Find a user message with tool_results that comes AFTER the assistant message
+				// This would be from flushPendingToolResultsToHistory during delegation
+				let targetUserMsgIdx = -1
+				if (assistantMsgIdx !== -1) {
+					for (let i = assistantMsgIdx + 1; i < parentApiMessages.length; i++) {
+						const msg = parentApiMessages[i]
+						if (msg.role === "user" && Array.isArray(msg.content)) {
+							// Check if this user message has any tool_results
+							const hasToolResults = msg.content.some((block: any) => block.type === "tool_result")
+							if (hasToolResults) {
+								targetUserMsgIdx = i
+								break
+							}
+						}
+					}
+				}
+
+				if (targetUserMsgIdx !== -1 && Array.isArray(parentApiMessages[targetUserMsgIdx].content)) {
+					// Append to existing user message that has tool_results
+					;(parentApiMessages[targetUserMsgIdx].content as Anthropic.ContentBlockParam[]).push(newToolResult)
+					this.log(
+						`[reopenParentFromDelegation] Appended new_task tool_result to existing user message at index ${targetUserMsgIdx}`,
+					)
+				} else {
+					// Create new user message if no suitable existing message found
+					parentApiMessages.push({
+						role: "user",
+						content: [newToolResult],
+						ts,
+					})
+					this.log(`[reopenParentFromDelegation] Created new user message for new_task tool_result`)
+				}
 			}
 		} else {
 			// If there is no corresponding tool_use in the parent API history, we cannot emit a

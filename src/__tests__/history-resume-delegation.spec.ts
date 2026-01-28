@@ -205,6 +205,7 @@ describe("History resume delegation - parent metadata transitions", () => {
 	it("reopenParentFromDelegation injects tool_result when new_task tool_use exists in API history", async () => {
 		const provider = {
 			contextProxy: { globalStorageUri: { fsPath: "/storage" } },
+			log: vi.fn(),
 			getTaskWithId: vi.fn().mockResolvedValue({
 				historyItem: {
 					id: "p-tool",
@@ -703,5 +704,111 @@ describe("History resume delegation - parent metadata transitions", () => {
 		expect((lastMsg.content[0] as any).type).toBe("tool_result")
 		expect((lastMsg.content[0] as any).tool_use_id).toBe(toolUseId)
 		expect((lastMsg.content[0] as any).content).toContain("Subtask c-new completed")
+	})
+
+	it("reopenParentFromDelegation appends to existing user message when multiple tools in one turn (EXT-665 root cause)", async () => {
+		// This tests the actual root cause of EXT-665:
+		// When assistant calls multiple tools (e.g., update_todo_list + new_task) in one turn,
+		// flushPendingToolResultsToHistory saves a user message with update_todo_list tool_result.
+		// When child completes, we must APPEND new_task tool_result to that existing message,
+		// NOT create a new message (which would cause validateAndFixToolResultIds to generate
+		// a placeholder for update_todo_list since the new message only has new_task).
+		const logSpy = vi.fn()
+		const provider = {
+			contextProxy: { globalStorageUri: { fsPath: "/storage" } },
+			log: logSpy,
+			getTaskWithId: vi.fn().mockResolvedValue({
+				historyItem: {
+					id: "p-multi",
+					status: "delegated",
+					awaitingChildId: "c-multi",
+					childIds: [],
+					ts: 100,
+					task: "Parent with multiple tools in one turn",
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+				},
+			}),
+			emit: vi.fn(),
+			getCurrentTask: vi.fn(() => ({ taskId: "c-multi" })),
+			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
+			createTaskWithHistoryItem: vi.fn().mockResolvedValue({
+				taskId: "p-multi",
+				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+			}),
+			updateTaskHistory: vi.fn().mockResolvedValue([]),
+		} as unknown as ClineProvider
+
+		// Simulate the EXT-665 scenario:
+		// - Assistant calls update_todo_list (id=A) AND new_task (id=B) in one turn
+		// - flushPendingToolResultsToHistory saved tool_result for update_todo_list
+		const updateTodoListToolId = "toolu_update123"
+		const newTaskToolId = "toolu_newtask456"
+		const existingUiMessages = [{ type: "ask", ask: "tool", text: "tools", ts: 50 }]
+		const existingApiMessages = [
+			{ role: "user", content: [{ type: "text", text: "Do the work" }], ts: 40 },
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						name: "update_todo_list",
+						id: updateTodoListToolId,
+						input: { todos: "[ ] Task 1" },
+					},
+					{
+						type: "tool_use",
+						name: "new_task",
+						id: newTaskToolId,
+						input: { mode: "code", message: "Do subtask" },
+					},
+				],
+				ts: 50,
+			},
+			// This user message was saved by flushPendingToolResultsToHistory during delegation
+			// It has tool_result for update_todo_list, but NOT for new_task yet
+			{
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: updateTodoListToolId,
+						content: "Delegating to subtask...",
+					},
+				],
+				ts: 60,
+			},
+		]
+
+		vi.mocked(readTaskMessages).mockResolvedValue(existingUiMessages as any)
+		vi.mocked(readApiMessages).mockResolvedValue(existingApiMessages as any)
+
+		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
+			parentTaskId: "p-multi",
+			childTaskId: "c-multi",
+			completionResultSummary: "Subtask completed",
+		})
+
+		// Verify that we logged APPEND (not CREATE)
+		expect(logSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Appended new_task tool_result to existing user message"),
+		)
+
+		// Verify API history still has exactly 3 messages (no new message created)
+		const apiCall = vi.mocked(saveApiMessages).mock.calls[0][0]
+		expect(apiCall.messages).toHaveLength(3)
+
+		// Verify the last user message now has BOTH tool_results
+		const lastUserMsg = apiCall.messages[2]
+		expect(lastUserMsg.role).toBe("user")
+		expect(lastUserMsg.content).toHaveLength(2) // update_todo_list + new_task
+
+		// Verify both tool_results are present
+		const toolResults = (lastUserMsg.content as any[]).filter((b: any) => b.type === "tool_result")
+		expect(toolResults).toHaveLength(2)
+		expect(toolResults.map((t: any) => t.tool_use_id).sort()).toEqual([updateTodoListToolId, newTaskToolId].sort())
 	})
 })
