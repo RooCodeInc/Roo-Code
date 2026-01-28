@@ -55,10 +55,15 @@ export function useGlobalInput({
 		setShowExitHint,
 		pendingExit,
 		setPendingExit,
+		isCancelling,
+		setIsCancelling,
 	} = useUIStateStore()
 
 	// Track Ctrl+C presses for "press again to exit" behavior
 	const exitHintTimeout = useRef<NodeJS.Timeout | null>(null)
+
+	// Track previous isLoading state for effect (using ref to properly scope to component instance)
+	const prevIsLoadingRef = useRef(false)
 
 	// Cleanup timeout on unmount
 	useEffect(() => {
@@ -68,6 +73,15 @@ export function useGlobalInput({
 			}
 		}
 	}, [])
+
+	// Reset isCancelling when isLoading transitions from true to false
+	// This indicates the task has finished cancelling (either completed or ready to resume)
+	useEffect(() => {
+		if (prevIsLoadingRef.current && !isLoading && isCancelling) {
+			setIsCancelling(false)
+		}
+		prevIsLoadingRef.current = isLoading
+	}, [isLoading, isCancelling, setIsCancelling])
 
 	// Handle global keyboard shortcuts
 	useInput((input, key) => {
@@ -132,7 +146,18 @@ export function useGlobalInput({
 			if (pickerIsOpen) {
 				return
 			}
-			// Send cancel message to extension (same as webview-ui Cancel button)
+
+			// Prevent multiple cancel requests from being sent while one is in progress
+			// This fixes a crash caused by spamming the escape key, which would send
+			// multiple cancelTask messages before the first one finished processing.
+			if (isCancelling) {
+				showInfo("Cancel in progress...", 1000)
+				return
+			}
+
+			// Set cancelling state and send cancel message to extension
+			setIsCancelling(true)
+			showInfo("Cancelling task...", 2000)
 			sendToExtension({ type: "cancelTask" })
 			return
 		}
