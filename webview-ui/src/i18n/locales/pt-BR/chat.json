@@ -223,6 +223,7 @@
 	"commandOutput": "Saída do comando",
 	"commandExecution": {
 		"running": "Executando",
+		"executed": "Executado",
 		"abort": "Interromper",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Saiu com o status {{exitCode}}",

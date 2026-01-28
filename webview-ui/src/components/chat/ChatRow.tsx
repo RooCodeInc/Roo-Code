@@ -282,7 +282,7 @@ export const ChatRowContent = ({
 						<TerminalSquare className="size-4" aria-label="Terminal icon" />
 					),
 					<span style={{ color: normalColor, fontWeight: "bold" }}>
-						{t("chat:commandExecution.running")}
+						{isCommandExecuting ? t("chat:commandExecution.running") : t("chat:commandExecution.executed")}
 					</span>,
 				]
 			case "use_mcp_server":

@@ -250,6 +250,7 @@
 	"commandExecution": {
 		"abort": "中止",
 		"running": "執行中",
+		"executed": "已執行",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "已結束，狀態碼 {{exitCode}}",
 		"manageCommands": "自動核准的命令",

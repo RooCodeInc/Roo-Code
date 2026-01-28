@@ -223,6 +223,7 @@
 	"commandOutput": "Komut Çıktısı",
 	"commandExecution": {
 		"running": "Çalışıyor",
+		"executed": "Yürütüldü",
 		"abort": "İptal Et",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "{{exitCode}} durumuyla çıkıldı",
