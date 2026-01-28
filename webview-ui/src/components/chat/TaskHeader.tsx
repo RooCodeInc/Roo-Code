@@ -282,9 +282,13 @@ const TaskHeader = ({
 								sideOffset={8}>
 								<span className="flex items-center gap-1.5">
 									{(() => {
-										const percentage = Math.round(
-											(((contextTokens || 0) + reservedForOutput) / contextWindow) * 100,
-										)
+										// Calculate percentage of available input space used
+										// Available input space = context window - reserved for output
+										const availableInputSpace = contextWindow - reservedForOutput
+										const percentage =
+											availableInputSpace > 0
+												? Math.round(((contextTokens || 0) / availableInputSpace) * 100)
+												: 0
 										return (
 											<>
 												<CircularProgress percentage={percentage} />
