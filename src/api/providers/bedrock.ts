@@ -44,6 +44,7 @@ import { convertToBedrockConverseMessages as sharedConverter } from "../transfor
 import { getModelParams } from "../transform/model-params"
 import { shouldUseReasoningBudget } from "../../shared/api"
 import { normalizeToolSchema } from "../../utils/json-schema"
+import { getRooNodeHttpHandler } from "../../utils/http-client"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 /************************************************************************************
@@ -207,6 +208,10 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		this.options = options
 		let region = this.options.awsRegion
 
+		// Centralized request handler for proxy + custom CA + strict SSL behavior.
+		// We set requestTimeout to 0 to avoid AWS SDK timeouts fighting higher-level timeouts.
+		const requestHandler = getRooNodeHttpHandler({ requestTimeout: 0 })
+
 		// process the various user input options, be opinionated about the intent of the options
 		// and determine the model to use during inference and for cost calculations
 		// There are variations on ARN strings that can be entered making the conditional logic
@@ -254,6 +259,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		const clientConfig: BedrockRuntimeClientConfig = {
 			userAgentAppId: `RooCode#${Package.version}`,
 			region: this.options.awsRegion,
+			requestHandler,
 			// Add the endpoint configuration when specified and enabled
 			...(this.options.awsBedrockEndpoint &&
 				this.options.awsBedrockEndpointEnabled && { endpoint: this.options.awsBedrockEndpoint }),
@@ -263,16 +269,13 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			// Use API key/token-based authentication if enabled and API key is set
 			clientConfig.token = { token: this.options.awsApiKey }
 			clientConfig.authSchemePreference = ["httpBearerAuth"] // Otherwise there's no end of credential problems.
-			clientConfig.requestHandler = {
-				// This should be the default anyway, but without setting something
-				// this provider fails to work with LiteLLM passthrough.
-				requestTimeout: 0,
-			}
 		} else if (this.options.awsUseProfile && this.options.awsProfile) {
 			// Use profile-based credentials if enabled and profile is set
 			clientConfig.credentials = fromIni({
 				profile: this.options.awsProfile,
 				ignoreCache: true,
+				// Ensure SSO / profile resolution honors proxy + CA settings as well.
+				clientConfig: { requestHandler },
 			})
 		} else if (this.options.awsAccessKey && this.options.awsSecretKey) {
 			// Use direct credentials if provided

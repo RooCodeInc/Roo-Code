@@ -13,6 +13,7 @@ import { t } from "../../../i18n"
 import { withValidationErrorHandling, formatEmbeddingError, HttpError } from "../shared/validation-helpers"
 import { TelemetryEventName } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
+import { getRooNodeHttpHandler } from "../../../utils/http-client"
 
 /**
  * Amazon Bedrock implementation of the embedder interface with batching and rate limiting
@@ -36,14 +37,20 @@ export class BedrockEmbedder implements IEmbedder {
 			throw new Error("Region is required for AWS Bedrock embedder")
 		}
 
+		// Centralized request handler for proxy + custom CA + strict SSL behavior.
+		const requestHandler = getRooNodeHttpHandler({ requestTimeout: 0 })
+
 		// Initialize the Bedrock client with credentials
 		// If profile is specified, use it; otherwise use default credential chain
-		const credentials = this.profile ? fromIni({ profile: this.profile }) : fromEnv()
+		const credentials = this.profile
+			? fromIni({ profile: this.profile, clientConfig: { requestHandler } })
+			: fromEnv()
 
 		this.bedrockClient = new BedrockRuntimeClient({
 			userAgentAppId: `RooCode#${Package.version}`,
 			region: this.region,
 			credentials,
+			requestHandler,
 		})
 
 		this.defaultModelId = modelId || getDefaultModelId("bedrock")
