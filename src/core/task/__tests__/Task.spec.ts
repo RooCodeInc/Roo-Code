@@ -1861,20 +1861,63 @@ describe("Queued message processing after condense", () => {
 
 		// Make condense fast + deterministic
 		vi.spyOn(task as any, "getSystemPrompt").mockResolvedValue("system")
-		const submitSpy = vi.spyOn(task, "submitUserMessage").mockResolvedValue(undefined)
+		const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined)
 
 		// Queue a message during condensing
 		task.messageQueueService.addMessage("queued text", ["img1.png"])
 
-		// Use fake timers to capture setTimeout(0) in processQueuedMessages
-		vi.useFakeTimers()
 		await task.condenseContext()
 
-		// Flush the microtask that submits the queued message
-		vi.runAllTimers()
-		vi.useRealTimers()
+		// Verify the message was shown in UI
+		expect(saySpy).toHaveBeenCalledWith("user_feedback", "queued text", ["img1.png"])
 
-		expect(submitSpy).toHaveBeenCalledWith("queued text", ["img1.png"])
+		// Verify the content was added to userMessageContent
+		expect(task.userMessageContent.length).toBeGreaterThan(0)
+		const textBlock = task.userMessageContent.find(
+			(block) => block.type === "text" && (block as any).text?.includes("queued text"),
+		)
+		expect(textBlock).toBeDefined()
+
+		// Verify queue was emptied
+		expect(task.messageQueueService.isEmpty()).toBe(true)
+	})
+
+	it("processes image-only queued messages correctly", async () => {
+		const provider = createProvider()
+		const task = new Task({
+			provider,
+			apiConfiguration: apiConfig,
+			task: "initial task",
+			startTask: false,
+		})
+
+		vi.spyOn(task as any, "getSystemPrompt").mockResolvedValue("system")
+		const saySpy = vi.spyOn(task, "say").mockResolvedValue(undefined)
+
+		// Queue a message with ONLY images (no text) - this is the bug scenario
+		// Images must be in data URL format for formatResponse.imageBlocks to parse them correctly
+		const testImages = [
+			"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+			"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRof",
+		]
+		task.messageQueueService.addMessage("", testImages)
+
+		await task.condenseContext()
+
+		// Verify the message was shown in UI (with empty text but images)
+		expect(saySpy).toHaveBeenCalledWith("user_feedback", "", testImages)
+
+		// Verify image blocks were added to userMessageContent
+		const imageBlocks = task.userMessageContent.filter((block) => block.type === "image")
+		expect(imageBlocks.length).toBe(2)
+
+		// Verify no text block was added for empty text
+		const textBlocks = task.userMessageContent.filter(
+			(block) => block.type === "text" && (block as any).text?.includes("<user_message>"),
+		)
+		expect(textBlocks.length).toBe(0)
+
+		// Verify queue was emptied
 		expect(task.messageQueueService.isEmpty()).toBe(true)
 	})
 
@@ -1898,29 +1941,23 @@ describe("Queued message processing after condense", () => {
 		vi.spyOn(taskA as any, "getSystemPrompt").mockResolvedValue("system")
 		vi.spyOn(taskB as any, "getSystemPrompt").mockResolvedValue("system")
 
-		const spyA = vi.spyOn(taskA, "submitUserMessage").mockResolvedValue(undefined)
-		const spyB = vi.spyOn(taskB, "submitUserMessage").mockResolvedValue(undefined)
+		const saySpyA = vi.spyOn(taskA, "say").mockResolvedValue(undefined)
+		const saySpyB = vi.spyOn(taskB, "say").mockResolvedValue(undefined)
 
 		taskA.messageQueueService.addMessage("A message")
 		taskB.messageQueueService.addMessage("B message")
 
 		// Condense in task A should only drain A's queue
-		vi.useFakeTimers()
 		await taskA.condenseContext()
-		vi.runAllTimers()
-		vi.useRealTimers()
 
-		expect(spyA).toHaveBeenCalledWith("A message", undefined)
-		expect(spyB).not.toHaveBeenCalled()
+		expect(saySpyA).toHaveBeenCalledWith("user_feedback", "A message", undefined)
+		expect(saySpyB).not.toHaveBeenCalledWith("user_feedback", expect.anything(), expect.anything())
 		expect(taskB.messageQueueService.isEmpty()).toBe(false)
 
 		// Now condense in task B should drain B's queue
-		vi.useFakeTimers()
 		await taskB.condenseContext()
-		vi.runAllTimers()
-		vi.useRealTimers()
 
-		expect(spyB).toHaveBeenCalledWith("B message", undefined)
+		expect(saySpyB).toHaveBeenCalledWith("user_feedback", "B message", undefined)
 		expect(taskB.messageQueueService.isEmpty()).toBe(true)
 	})
 })
