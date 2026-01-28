@@ -729,9 +729,9 @@
 			"label": "Komut çıktısı önizleme boyutu",
 			"description": "Roo'nun doğrudan gördüğü komut çıktısı miktarını kontrol eder. Tam çıktı her zaman kaydedilir ve gerektiğinde erişilebilir.",
 			"options": {
-				"small": "Küçük (2KB)",
-				"medium": "Orta (4KB)",
-				"large": "Büyük (8KB)"
+				"small": "Küçük (5KB)",
+				"medium": "Orta (10KB)",
+				"large": "Büyük (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

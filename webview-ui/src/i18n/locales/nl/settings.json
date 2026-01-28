@@ -729,9 +729,9 @@
 			"label": "Grootte opdrachtuitvoer voorvertoning",
 			"description": "Bepaalt hoeveel opdrachtuitvoer Roo direct ziet. Volledige uitvoer wordt altijd opgeslagen en is toegankelijk wanneer nodig.",
 			"options": {
-				"small": "Klein (2KB)",
-				"medium": "Gemiddeld (4KB)",
-				"large": "Groot (8KB)"
+				"small": "Klein (5KB)",
+				"medium": "Gemiddeld (10KB)",
+				"large": "Groot (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

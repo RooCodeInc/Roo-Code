@@ -729,9 +729,9 @@
 			"label": "Tamanho da visualização da saída de comandos",
 			"description": "Controla quanto da saída de comandos Roo vê diretamente. A saída completa é sempre salva e acessível quando necessário.",
 			"options": {
-				"small": "Pequeno (2KB)",
-				"medium": "Médio (4KB)",
-				"large": "Grande (8KB)"
+				"small": "Pequeno (5KB)",
+				"medium": "Médio (10KB)",
+				"large": "Grande (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

@@ -729,9 +729,9 @@
 			"label": "命令输出预览大小",
 			"description": "控制 Roo 直接看到的命令输出量。完整输出始终会被保存，需要时可以访问。",
 			"options": {
-				"small": "小 (2KB)",
-				"medium": "中 (4KB)",
-				"large": "大 (8KB)"
+				"small": "小 (5KB)",
+				"medium": "中 (10KB)",
+				"large": "大 (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

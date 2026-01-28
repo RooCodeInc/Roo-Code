@@ -729,9 +729,9 @@
 			"label": "Kích thước xem trước đầu ra lệnh",
 			"description": "Kiểm soát lượng đầu ra lệnh mà Roo nhìn thấy trực tiếp. Đầu ra đầy đủ luôn được lưu và có thể truy cập khi cần thiết.",
 			"options": {
-				"small": "Nhỏ (2KB)",
-				"medium": "Trung bình (4KB)",
-				"large": "Lớn (8KB)"
+				"small": "Nhỏ (5KB)",
+				"medium": "Trung bình (10KB)",
+				"large": "Lớn (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

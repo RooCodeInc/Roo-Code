@@ -728,9 +728,9 @@
 			"label": "Taille de l'aperçu de sortie des commandes",
 			"description": "Contrôle la quantité de sortie de commande que Roo voit directement. La sortie complète est toujours sauvegardée et accessible en cas de besoin.",
 			"options": {
-				"small": "Petite (2KB)",
-				"medium": "Moyenne (4KB)",
-				"large": "Grande (8KB)"
+				"small": "Petite (5KB)",
+				"medium": "Moyenne (10KB)",
+				"large": "Grande (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {

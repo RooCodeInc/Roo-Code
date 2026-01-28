@@ -728,9 +728,9 @@
 			"label": "Befehlsausgabe-Vorschaugröße",
 			"description": "Steuert, wie viel Befehlsausgabe Roo direkt sieht. Die vollständige Ausgabe wird immer gespeichert und ist bei Bedarf zugänglich.",
 			"options": {
-				"small": "Klein (2KB)",
-				"medium": "Mittel (4KB)",
-				"large": "Groß (8KB)"
+				"small": "Klein (5KB)",
+				"medium": "Mittel (10KB)",
+				"large": "Groß (20KB)"
 			}
 		},
 		"shellIntegrationTimeout": {
