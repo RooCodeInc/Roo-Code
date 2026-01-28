@@ -498,5 +498,13 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"stdinOperations": {
+		"sentToSession": "Sent \"{{chars}}\" to session {{sessionId}}",
+		"polledSession": "Polled session {{sessionId}}",
+		"wantsToTerminate": "Wants to terminate session {{sessionId}}",
+		"didTerminate": "Terminated session {{sessionId}}",
+		"wantsToListSessions": "Wants to list active sessions",
+		"didListSessions": "Listed active sessions"
 	}
 }
