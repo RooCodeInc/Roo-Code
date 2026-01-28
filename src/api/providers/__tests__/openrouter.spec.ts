@@ -78,6 +78,16 @@ vitest.mock("../fetchers/modelCache", () => ({
 				cacheReadsPrice: 0.3,
 				description: "Claude 3.7 Sonnet with thinking",
 			},
+			"deepseek/deepseek-r1": {
+				maxTokens: 8192,
+				contextWindow: 64000,
+				supportsImages: false,
+				supportsPromptCache: false,
+				inputPrice: 0.55,
+				outputPrice: 2.19,
+				description: "DeepSeek R1",
+				supportsReasoningEffort: true,
+			},
 			"openai/gpt-4o": {
 				maxTokens: 16384,
 				contextWindow: 128000,
@@ -638,6 +648,86 @@ describe("OpenRouterHandler", () => {
 				}),
 			)
 		})
+
+		it("passes reasoning parameters via extraBody when reasoning effort is enabled", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "deepseek/deepseek-r1",
+				reasoningEffort: "high",
+				enableReasoningEffort: true,
+			})
+
+			const mockFullStream = (async function* () {
+				yield { type: "reasoning-delta", text: "thinking...", id: "1" }
+				yield { type: "text-delta", text: "result", id: "2" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+
+			for await (const _ of generator) {
+				// consume
+			}
+
+			// Verify that reasoning was passed via extraBody when creating the provider
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
+				expect.objectContaining({
+					extraBody: expect.objectContaining({
+						reasoning: expect.objectContaining({
+							effort: "high",
+						}),
+					}),
+				}),
+			)
+
+			// Verify that providerOptions does NOT contain extended_thinking
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: undefined,
+				}),
+			)
+		})
+
+		it("does not pass reasoning via extraBody when reasoning is disabled", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+			})
+
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test", id: "1" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+			})
+
+			const generator = handler.createMessage("test", [{ role: "user", content: "test" }])
+
+			for await (const _ of generator) {
+				// consume
+			}
+
+			// Verify that createOpenRouter was NOT called with extraBody
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith({
+				apiKey: "test-key",
+				baseURL: "https://openrouter.ai/api/v1",
+			})
+
+			// Verify that providerOptions is undefined when no provider routing
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: undefined,
+				}),
+			)
+		})
 	})
 
 	describe("completePrompt", () => {
@@ -656,6 +746,41 @@ describe("OpenRouterHandler", () => {
 					prompt: "test prompt",
 					maxOutputTokens: 8192,
 					temperature: 0,
+				}),
+			)
+		})
+
+		it("passes reasoning parameters via extraBody when reasoning effort is enabled", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "deepseek/deepseek-r1",
+				reasoningEffort: "medium",
+				enableReasoningEffort: true,
+			})
+
+			mockGenerateText.mockResolvedValue({
+				text: "test completion with reasoning",
+			})
+
+			const result = await handler.completePrompt("test prompt")
+
+			expect(result).toBe("test completion with reasoning")
+
+			// Verify that reasoning was passed via extraBody when creating the provider
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
+				expect.objectContaining({
+					extraBody: expect.objectContaining({
+						reasoning: expect.objectContaining({
+							effort: "medium",
+						}),
+					}),
+				}),
+			)
+
+			// Verify that providerOptions does NOT contain extended_thinking
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: undefined,
 				}),
 			)
 		})

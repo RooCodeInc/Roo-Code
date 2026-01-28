@@ -81,7 +81,39 @@ describe("AI SDK conversion utilities", () => {
 			})
 		})
 
-		it("converts tool results into separate tool messages with resolved tool names", () => {
+		it("converts user messages with URL image content", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: [
+						{ type: "text", text: "What is in this image?" },
+						{
+							type: "image",
+							source: {
+								type: "url",
+								url: "https://example.com/image.png",
+							},
+						} as any,
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "user",
+				content: [
+					{ type: "text", text: "What is in this image?" },
+					{
+						type: "image",
+						image: "https://example.com/image.png",
+					},
+				],
+			})
+		})
+
+		it("converts tool results into separate tool role messages with resolved tool names", () => {
 			const messages: Anthropic.Messages.MessageParam[] = [
 				{
 					role: "assistant",
@@ -116,10 +148,11 @@ describe("AI SDK conversion utilities", () => {
 						type: "tool-call",
 						toolCallId: "call_123",
 						toolName: "read_file",
-						args: { path: "test.ts" },
+						input: { path: "test.ts" },
 					},
 				],
 			})
+			// Tool results now go to role: "tool" messages per AI SDK v6 schema
 			expect(result[1]).toEqual({
 				role: "tool",
 				content: [
@@ -150,6 +183,7 @@ describe("AI SDK conversion utilities", () => {
 			const result = convertToAiSdkMessages(messages)
 
 			expect(result).toHaveLength(1)
+			// Tool results go to role: "tool" messages
 			expect(result[0]).toEqual({
 				role: "tool",
 				content: [
@@ -160,6 +194,68 @@ describe("AI SDK conversion utilities", () => {
 						output: { type: "text", value: "Orphan result" },
 					},
 				],
+			})
+		})
+
+		it("separates tool results and text content into different messages", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "call_123",
+							name: "read_file",
+							input: { path: "test.ts" },
+						},
+					],
+				},
+				{
+					role: "user",
+					content: [
+						{
+							type: "tool_result",
+							tool_use_id: "call_123",
+							content: "File contents here",
+						},
+						{
+							type: "text",
+							text: "Please analyze this file",
+						},
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(3)
+			expect(result[0]).toEqual({
+				role: "assistant",
+				content: [
+					{
+						type: "tool-call",
+						toolCallId: "call_123",
+						toolName: "read_file",
+						input: { path: "test.ts" },
+					},
+				],
+			})
+			// Tool results go first in a "tool" message
+			expect(result[1]).toEqual({
+				role: "tool",
+				content: [
+					{
+						type: "tool-result",
+						toolCallId: "call_123",
+						toolName: "read_file",
+						output: { type: "text", value: "File contents here" },
+					},
+				],
+			})
+			// Text content goes in a separate "user" message
+			expect(result[2]).toEqual({
+				role: "user",
+				content: [{ type: "text", text: "Please analyze this file" }],
 			})
 		})
 
@@ -190,7 +286,7 @@ describe("AI SDK conversion utilities", () => {
 						type: "tool-call",
 						toolCallId: "call_456",
 						toolName: "read_file",
-						args: { path: "test.ts" },
+						input: { path: "test.ts" },
 					},
 				],
 			})
@@ -476,12 +572,28 @@ describe("AI SDK conversion utilities", () => {
 			expect(chunks[0]).toEqual({ type: "text", text: "Hello" })
 		})
 
+		it("processes text chunks (fullStream format)", () => {
+			const part = { type: "text" as const, text: "Hello from fullStream" }
+			const chunks = [...processAiSdkStreamPart(part as any)]
+
+			expect(chunks).toHaveLength(1)
+			expect(chunks[0]).toEqual({ type: "text", text: "Hello from fullStream" })
+		})
+
 		it("processes reasoning-delta chunks", () => {
 			const part = { type: "reasoning-delta" as const, id: "1", text: "thinking..." }
 			const chunks = [...processAiSdkStreamPart(part)]
 
 			expect(chunks).toHaveLength(1)
 			expect(chunks[0]).toEqual({ type: "reasoning", text: "thinking..." })
+		})
+
+		it("processes reasoning chunks (fullStream format)", () => {
+			const part = { type: "reasoning" as const, text: "reasoning from fullStream" }
+			const chunks = [...processAiSdkStreamPart(part as any)]
+
+			expect(chunks).toHaveLength(1)
+			expect(chunks[0]).toEqual({ type: "reasoning", text: "reasoning from fullStream" })
 		})
 
 		it("processes tool-input-start chunks", () => {
