@@ -32,6 +32,7 @@ interface BlogPostAnalyticsProps {
 		description: string
 		tags: string[]
 		publish_date: string
+		publish_time_pt: string
 	}
 }
 
