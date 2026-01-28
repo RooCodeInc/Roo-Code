@@ -57,7 +57,9 @@ vi.mock("vscode", () => ({
 	},
 }))
 
-vi.mock("../../../../core/ignore/RooIgnoreController")
+vi.mock("../../../../core/ignore/RooIgnoreController", () => ({
+	RooIgnoreController: vi.fn(),
+}))
 vi.mock("ignore")
 
 // Override the Jest-based mock with a vitest-compatible version
@@ -149,9 +151,27 @@ describe("DirectoryScanner", () => {
 		// Get and mock the listFiles function
 		const { listFiles } = await import("../../../glob/list-files")
 		vi.mocked(listFiles).mockResolvedValue([["test/file1.js", "test/file2.js"], false])
+
+		// Default: ensure short-lived RooIgnoreController is disposed
+		const { RooIgnoreController } = await import("../../../../core/ignore/RooIgnoreController")
+		const MockedRooIgnoreController = vi.mocked(RooIgnoreController as unknown as any)
+		MockedRooIgnoreController.mockImplementation(() => ({
+			initialize: vi.fn().mockResolvedValue(undefined),
+			filterPaths: vi.fn((paths: string[]) => paths),
+			dispose: vi.fn(),
+		}))
 	})
 
 	describe("scanDirectory", () => {
+		it("should dispose its short-lived RooIgnoreController", async () => {
+			const { RooIgnoreController } = await import("../../../../core/ignore/RooIgnoreController")
+			const MockedRooIgnoreController = vi.mocked(RooIgnoreController as unknown as any)
+
+			await scanner.scanDirectory("/test")
+			const instance = MockedRooIgnoreController.mock.results[0]?.value
+			expect(instance.dispose).toHaveBeenCalledTimes(1)
+		})
+
 		it("should skip files larger than MAX_FILE_SIZE_BYTES", async () => {
 			const { listFiles } = await import("../../../glob/list-files")
 			vi.mocked(listFiles).mockResolvedValue([["test/file1.js"], false])

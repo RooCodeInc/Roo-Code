@@ -314,15 +314,19 @@ async function parseFile(
 	try {
 		// Parse the file content into an Abstract Syntax Tree (AST)
 		const tree = parser.parse(fileContent)
+		try {
+			// Apply the query to the AST and get the captures
+			const captures = tree ? query.captures(tree.rootNode) : []
 
-		// Apply the query to the AST and get the captures
-		const captures = tree ? query.captures(tree.rootNode) : []
+			// Split the file content into individual lines
+			const lines = fileContent.split("\n")
 
-		// Split the file content into individual lines
-		const lines = fileContent.split("\n")
-
-		// Process the captures
-		return processCaptures(captures, lines, extLang)
+			// Process the captures
+			return processCaptures(captures, lines, extLang)
+		} finally {
+			// web-tree-sitter parse trees hold onto WASM memory; ensure we free it.
+			;(tree as unknown as { delete?: () => void })?.delete?.()
+		}
 	} catch (error) {
 		console.log(`Error parsing file: ${error}\n`)
 		// Return null on parsing error to avoid showing error messages in the output
