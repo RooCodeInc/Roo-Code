@@ -26,6 +26,7 @@ describe("processUserContentMentions", () => {
 		vi.mocked(parseMentions).mockImplementation(async (text) => ({
 			text: `parsed: ${text}`,
 			mode: undefined,
+			contentBlocks: [],
 		}))
 	})
 
@@ -90,10 +91,16 @@ describe("processUserContentMentions", () => {
 			})
 
 			expect(parseMentions).toHaveBeenCalled()
+			// String content is now converted to array format to support content blocks
 			expect(result.content[0]).toEqual({
 				type: "tool_result",
 				tool_use_id: "123",
-				content: "parsed: <user_message>Tool feedback</user_message>",
+				content: [
+					{
+						type: "text",
+						text: "parsed: <user_message>Tool feedback</user_message>",
+					},
+				],
 			})
 			expect(result.mode).toBeUndefined()
 		})
@@ -176,10 +183,16 @@ describe("processUserContentMentions", () => {
 				text: "parsed: <user_message>First task</user_message>",
 			})
 			expect(result.content[1]).toEqual(userContent[1]) // Image block unchanged
+			// String content is now converted to array format to support content blocks
 			expect(result.content[2]).toEqual({
 				type: "tool_result",
 				tool_use_id: "456",
-				content: "parsed: <user_message>Feedback</user_message>",
+				content: [
+					{
+						type: "text",
+						text: "parsed: <user_message>Feedback</user_message>",
+					},
+				],
 			})
 			expect(result.mode).toBeUndefined()
 		})
@@ -248,6 +261,7 @@ describe("processUserContentMentions", () => {
 				text: "parsed text",
 				slashCommandHelp: "command help",
 				mode: undefined,
+				contentBlocks: [],
 			})
 
 			const userContent = [
@@ -280,6 +294,7 @@ describe("processUserContentMentions", () => {
 				text: "parsed tool output",
 				slashCommandHelp: "command help",
 				mode: undefined,
+				contentBlocks: [],
 			})
 
 			const userContent = [
@@ -319,6 +334,7 @@ describe("processUserContentMentions", () => {
 				text: "parsed array item",
 				slashCommandHelp: "command help",
 				mode: undefined,
+				contentBlocks: [],
 			})
 
 			const userContent = [

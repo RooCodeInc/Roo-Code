@@ -257,11 +257,17 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 
 			let output = result.content
 
-			if (result.wasTruncated) {
-				output += `\n\nNote: Output truncated to ${result.returnedLines} lines (limit: ${entry.limit ?? DEFAULT_LINE_LIMIT})`
-			}
-
-			if (result.includedRanges.length > 0) {
+			if (result.wasTruncated && result.includedRanges.length > 0) {
+				const [start, end] = result.includedRanges[0]
+				const nextOffset = end + 1
+				const effectiveLimit = entry.limit ?? DEFAULT_LINE_LIMIT
+				// Put truncation warning at TOP (before content) to match @ mention format
+				output = `IMPORTANT: File content truncated.
+	Status: Showing lines ${start}-${end} of ${result.totalLines} total lines.
+	To read more: Use the read_file tool with offset=${nextOffset} and limit=${effectiveLimit}.
+	
+	${result.content}`
+			} else if (result.includedRanges.length > 0) {
 				const rangeStr = result.includedRanges.map(([s, e]) => `${s}-${e}`).join(", ")
 				output += `\n\nIncluded ranges: ${rangeStr} (total: ${result.totalLines} lines)`
 			}
@@ -280,7 +286,15 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		let output = result.content
 
 		if (result.wasTruncated) {
-			output += `\n\nNote: Showing ${result.returnedLines} of ${result.totalLines} total lines. Use offset/limit to read more.`
+			const startLine = offset1
+			const endLine = offset1 + result.returnedLines - 1
+			const nextOffset = endLine + 1
+			// Put truncation warning at TOP (before content) to match @ mention format
+			output = `IMPORTANT: File content truncated.
+	Status: Showing lines ${startLine}-${endLine} of ${result.totalLines} total lines.
+	To read more: Use the read_file tool with offset=${nextOffset} and limit=${limit}.
+	
+	${result.content}`
 		} else if (result.returnedLines === 0) {
 			output = "Note: File is empty"
 		}
