@@ -6,8 +6,8 @@ import { getTaskDirectoryPath } from "../../utils/storage"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
-/** Default byte limit for read operations (32KB) */
-const DEFAULT_LIMIT = 32 * 1024 // 32KB default limit
+/** Default byte limit for read operations (40KB) */
+const DEFAULT_LIMIT = 40 * 1024 // 40KB default limit
 
 /**
  * Parameters accepted by the read_command_output tool.
