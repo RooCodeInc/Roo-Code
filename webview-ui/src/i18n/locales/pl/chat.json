@@ -340,7 +340,7 @@
 		},
 		"release": {
 			"heading": "Co nowego:",
-			"worktrees": "Worktrees: Pracuj na wielu gałęziach jednocześnie za pomocą Git worktrees. Każde worktree ma własne okno VS Code z Roo Code, umożliwiając równoległy rozwój bez przełączania gałęzi. <settingsLink>Spróbuj</settingsLink>"
+			"smartCodeFolding": "Smart Code Folding: Kondensacja kontekstu teraz zachowuje lekką mapę twoich plików—sygnatury funkcji, deklaracje klas i definicje typów. Zapewnia to lepszą ciągłość po kondensacji i mądrzejsze edycje przy odwoływaniu się do poprzedniej pracy."
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",

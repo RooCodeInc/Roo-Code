@@ -159,7 +159,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "jan-2026-v3.44.0-worktrees" // v3.44.0 Worktrees
+	public readonly latestAnnouncementId = "jan-2026-v3.45.0-smart-code-folding" // v3.45.0 Smart Code Folding
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 

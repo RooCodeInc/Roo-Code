@@ -44,12 +44,7 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<div className="mb-4">
 						<p className="mb-3">{t("chat:announcement.release.heading")}</p>
 						<ul className="list-disc list-inside text-sm space-y-1.5">
-							<li>
-								<Trans
-									i18nKey="chat:announcement.release.worktrees"
-									components={{ settingsLink: <WorktreesSettingsLink /> }}
-								/>
-							</li>
+							<li>{t("chat:announcement.release.smartCodeFolding")}</li>
 						</ul>
 					</div>
 
@@ -122,20 +117,6 @@ const CareersLink = ({ children }: { children?: ReactNode }) => (
 		onClick={(e) => {
 			e.preventDefault()
 			vscode.postMessage({ type: "openExternal", url: "https://careers.roocode.com" })
-		}}>
-		{children}
-	</VSCodeLink>
-)
-
-const WorktreesSettingsLink = ({ children }: { children?: ReactNode }) => (
-	<VSCodeLink
-		href="#"
-		onClick={(e) => {
-			e.preventDefault()
-			window.postMessage(
-				{ type: "action", action: "settingsButtonClicked", values: { section: "worktrees" } },
-				"*",
-			)
 		}}>
 		{children}
 	</VSCodeLink>

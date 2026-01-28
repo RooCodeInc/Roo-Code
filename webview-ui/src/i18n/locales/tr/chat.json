@@ -341,7 +341,7 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"worktrees": "Worktrees: Git worktrees ile aynı anda birden fazla şubede çalışın. Her worktree, Roo Code'lu kendi VS Code penceresini alır ve şube değiştirmeden paralel geliştirmeyi sağlar. <settingsLink>Deneyin</settingsLink>"
+			"smartCodeFolding": "Smart Code Folding: Bağlam yoğunlaştırması şimdi dosyalarınızın hafif bir haritasını korur—fonksiyon imzaları, sınıf bildirimleri ve tür tanımları. Bu, yoğunlaştırmadan sonra daha iyi devamlılık ve önceki çalışmaya atıfta bulunurken daha akıllı düzenlemeler sağlar."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

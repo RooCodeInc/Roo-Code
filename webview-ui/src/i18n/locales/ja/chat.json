@@ -340,7 +340,7 @@
 		},
 		"release": {
 			"heading": "新機能:",
-			"worktrees": "Worktrees: Git worktreesで複数のブランチに同時に取り組みます。各worktreeはRoo Codeを備えた独自のVS Codeウィンドウを取得し、ブランチ切り替えなしで並列開発を可能にします。<settingsLink>試す</settingsLink>"
+			"smartCodeFolding": "スマートコードフォールディング: コンテキスト圧縮により、ファイルの軽量マップが保持されるようになりました—関数シグネチャ、クラス宣言、型定義。これにより、圧縮後の継続性が向上し、以前の作業を参照する際にさらにスマートな編集が可能になります。"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",

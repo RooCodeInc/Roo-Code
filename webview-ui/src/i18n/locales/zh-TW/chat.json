@@ -346,7 +346,7 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"worktrees": "Worktrees：使用 Git worktrees 在多個分支上同時工作。每個 worktree 都配有自己的 VS Code 視窗和 Roo Code，實現無需切換分支的平行開發。<settingsLink>試試看</settingsLink>"
+			"smartCodeFolding": "智慧代碼摺疊：上下文壓縮現保留檔案的輕量級對應圖——函數簽章、類別宣告和型別定義。 這提供壓縮後更佳的連續性，以及引用之前工作時更聰慧的編輯。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",

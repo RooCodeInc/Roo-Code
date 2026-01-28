@@ -346,7 +346,7 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"worktrees": "Worktrees: Work on multiple branches simultaneously with Git worktrees. Each worktree gets its own VS Code window with Roo Code, enabling parallel development without branch switching. <settingsLink>Try it out</settingsLink>"
+			"smartCodeFolding": "Smart Code Folding: Context condensation now preserves a lightweight map of your files: function signatures, class declarations, and type definitions. This provides better continuity after condensing and smarter edits when referencing previous work."
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",

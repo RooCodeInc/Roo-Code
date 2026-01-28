@@ -340,7 +340,7 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"worktrees": "Worktrees : Travaillez sur plusieurs branches simultanément avec Git worktrees. Chaque worktree obtient sa propre fenêtre VS Code avec Roo Code, permettant un développement parallèle sans changement de branche. <settingsLink>Essaie</settingsLink>"
+			"smartCodeFolding": "Pliage de code intelligent : La condensation du contexte préserve maintenant une carte légère de vos fichiers—signatures de fonctions, déclarations de classes et définitions de types. Cela offre une meilleure continuité après la condensation et des éditions plus intelligentes lors du référencement de travail antérieur."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",

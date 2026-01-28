@@ -353,7 +353,7 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"worktrees": "Worktrees: Bekerja di beberapa branch secara bersamaan dengan Git worktrees. Setiap worktree mendapat jendela VS Code sendiri dengan Roo Code, memungkinkan pengembangan paralel tanpa pengalihan branch. <settingsLink>Coba</settingsLink>"
+			"smartCodeFolding": "Smart Code Folding: Kondensasi konteks sekarang mempertahankan peta ringan dari file Anda—tanda tangan fungsi, deklarasi kelas, dan definisi tipe. Ini memberikan kontinuitas yang lebih baik setelah kondensasi dan pengeditan yang lebih cerdas saat merujuk pekerjaan sebelumnya."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

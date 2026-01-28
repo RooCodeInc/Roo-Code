@@ -317,7 +317,7 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"worktrees": "Worktrees: Werk gelijktijdig aan meerdere branches met Git worktrees. Elke worktree krijgt zijn eigen VS Code-venster met Roo Code, waardoor parallelle ontwikkeling zonder brancheswissel mogelijk is. <settingsLink>Probeer het</settingsLink>"
+			"smartCodeFolding": "Smart Code Folding: Contextcondensatie behoudt nu een lichte kaart van je bestanden—functiehandtekeningen, klasdeclaraties en typedefinities. Dit biedt betere continuïteit na condensatie en slimmere bewerkingen bij verwijzing naar vorig werk."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

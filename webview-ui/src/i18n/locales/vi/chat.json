@@ -341,7 +341,7 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"worktrees": "Worktrees: Làm việc trên nhiều nhánh cùng lúc với Git worktrees. Mỗi worktree có cửa sổ VS Code riêng với Roo Code, cho phép phát triển song song mà không cần chuyển nhánh. <settingsLink>Hãy thử</settingsLink>"
+			"smartCodeFolding": "Smart Code Folding: Nén ngữ cảnh giờ đây bảo tồn một bản đồ nhẹ của các tệp của bạn—chữ ký hàm, khai báo lớp và định nghĩa kiểu. Điều này cung cấp tính liên tục tốt hơn sau nén và chỉnh sửa thông minh hơn khi tham chiếu công việc trước đó."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

@@ -340,7 +340,7 @@
 		},
 		"release": {
 			"heading": "새로운 기능:",
-			"worktrees": "Worktrees: Git worktrees로 여러 브랜치에서 동시에 작업합니다. 각 worktree는 Roo Code가 있는 자체 VS Code 창을 얻으며, 브랜치 전환 없이 병렬 개발을 가능하게 합니다. <settingsLink>시도해보세요</settingsLink>"
+			"smartCodeFolding": "스마트 코드 폴딩: 컨텍스트 응축이 이제 파일의 경량 맵을 보존합니다—함수 시그니처, 클래스 선언 및 타입 정의를 포함합니다. 이는 응축 후 더 나은 연속성과 이전 작업을 참조할 때 더 스마트한 편집을 제공합니다."
 		},
 		"cloudAgents": {
 			"heading": "클라우드의 새로운 기능:",
