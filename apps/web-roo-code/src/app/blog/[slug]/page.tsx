@@ -96,6 +96,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 					description: post.description,
 					tags: post.tags,
 					publish_date: post.publish_date,
+					publish_time_pt: post.publish_time_pt,
 				}}
 			/>
 
