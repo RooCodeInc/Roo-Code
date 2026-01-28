@@ -541,4 +541,167 @@ describe("History resume delegation - parent metadata transitions", () => {
 			}),
 		)
 	})
+
+	it("reopenParentFromDelegation skips duplicate tool_result when one already exists in history (EXT-665)", async () => {
+		const logSpy = vi.fn()
+		const provider = {
+			contextProxy: { globalStorageUri: { fsPath: "/storage" } },
+			log: logSpy,
+			getTaskWithId: vi.fn().mockResolvedValue({
+				historyItem: {
+					id: "p-dup",
+					status: "delegated",
+					awaitingChildId: "c-dup",
+					childIds: [],
+					ts: 100,
+					task: "Parent with existing tool_result",
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+				},
+			}),
+			emit: vi.fn(),
+			getCurrentTask: vi.fn(() => ({ taskId: "c-dup" })),
+			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
+			createTaskWithHistoryItem: vi.fn().mockResolvedValue({
+				taskId: "p-dup",
+				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+			}),
+			updateTaskHistory: vi.fn().mockResolvedValue([]),
+		} as unknown as ClineProvider
+
+		// Simulate the bug scenario: API history already has a tool_result for the same tool_use_id
+		// This can happen if the tool was interrupted and the result was already added
+		const existingToolUseId = "toolu_01SnH3c7xgVdfLc2md4Fk6yB"
+		const existingUiMessages = [{ type: "ask", ask: "tool", text: "new_task request", ts: 50 }]
+		const existingApiMessages = [
+			{ role: "user", content: [{ type: "text", text: "Create a subtask" }], ts: 40 },
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						name: "new_task",
+						id: existingToolUseId,
+						input: { mode: "code", message: "Do something" },
+					},
+				],
+				ts: 50,
+			},
+			// This tool_result already exists from a previous operation (e.g., interruption)
+			{
+				role: "user",
+				content: [
+					{
+						type: "tool_result",
+						tool_use_id: existingToolUseId,
+						content: "Tool execution was interrupted before completion.",
+					},
+				],
+				ts: 60,
+			},
+		]
+
+		vi.mocked(readTaskMessages).mockResolvedValue(existingUiMessages as any)
+		vi.mocked(readApiMessages).mockResolvedValue(existingApiMessages as any)
+
+		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
+			parentTaskId: "p-dup",
+			childTaskId: "c-dup",
+			completionResultSummary: "Subtask completed successfully",
+		})
+
+		// Verify that we logged the skip message
+		expect(logSpy).toHaveBeenCalledWith(
+			expect.stringContaining(`Skipping duplicate tool_result for tool_use_id: ${existingToolUseId}`),
+		)
+
+		// Verify API history was saved WITHOUT a new tool_result (should still have exactly 3 messages)
+		const apiCall = vi.mocked(saveApiMessages).mock.calls[0][0]
+		expect(apiCall.messages).toHaveLength(3) // Original 3 messages, no new one added
+
+		// Count tool_result blocks - should only be 1 (the existing one)
+		const toolResultBlocks = apiCall.messages.flatMap((msg: any) =>
+			msg.role === "user" && Array.isArray(msg.content)
+				? msg.content.filter((block: any) => block.type === "tool_result")
+				: [],
+		)
+		expect(toolResultBlocks).toHaveLength(1)
+		expect(toolResultBlocks[0].tool_use_id).toBe(existingToolUseId)
+	})
+
+	it("reopenParentFromDelegation adds tool_result when none exists for the tool_use_id (normal case)", async () => {
+		const logSpy = vi.fn()
+		const provider = {
+			contextProxy: { globalStorageUri: { fsPath: "/storage" } },
+			log: logSpy,
+			getTaskWithId: vi.fn().mockResolvedValue({
+				historyItem: {
+					id: "p-new",
+					status: "delegated",
+					awaitingChildId: "c-new",
+					childIds: [],
+					ts: 100,
+					task: "Parent without tool_result yet",
+					tokensIn: 0,
+					tokensOut: 0,
+					totalCost: 0,
+				},
+			}),
+			emit: vi.fn(),
+			getCurrentTask: vi.fn(() => ({ taskId: "c-new" })),
+			removeClineFromStack: vi.fn().mockResolvedValue(undefined),
+			createTaskWithHistoryItem: vi.fn().mockResolvedValue({
+				taskId: "p-new",
+				resumeAfterDelegation: vi.fn().mockResolvedValue(undefined),
+				overwriteClineMessages: vi.fn().mockResolvedValue(undefined),
+				overwriteApiConversationHistory: vi.fn().mockResolvedValue(undefined),
+			}),
+			updateTaskHistory: vi.fn().mockResolvedValue([]),
+		} as unknown as ClineProvider
+
+		// Normal case: API history has tool_use but no tool_result yet
+		const toolUseId = "toolu_normal123"
+		const existingUiMessages = [{ type: "ask", ask: "tool", text: "new_task request", ts: 50 }]
+		const existingApiMessages = [
+			{ role: "user", content: [{ type: "text", text: "Create a subtask" }], ts: 40 },
+			{
+				role: "assistant",
+				content: [
+					{
+						type: "tool_use",
+						name: "new_task",
+						id: toolUseId,
+						input: { mode: "code", message: "Do something" },
+					},
+				],
+				ts: 50,
+			},
+		]
+
+		vi.mocked(readTaskMessages).mockResolvedValue(existingUiMessages as any)
+		vi.mocked(readApiMessages).mockResolvedValue(existingApiMessages as any)
+
+		await (ClineProvider.prototype as any).reopenParentFromDelegation.call(provider, {
+			parentTaskId: "p-new",
+			childTaskId: "c-new",
+			completionResultSummary: "Subtask completed successfully",
+		})
+
+		// Verify that we did NOT log a skip message
+		expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining("Skipping duplicate tool_result"))
+
+		// Verify API history was saved WITH a new tool_result (should have 3 messages now)
+		const apiCall = vi.mocked(saveApiMessages).mock.calls[0][0]
+		expect(apiCall.messages).toHaveLength(3)
+
+		// The last message should be the new tool_result
+		const lastMsg = apiCall.messages[2]
+		expect(lastMsg.role).toBe("user")
+		expect((lastMsg.content[0] as any).type).toBe("tool_result")
+		expect((lastMsg.content[0] as any).tool_use_id).toBe(toolUseId)
+		expect((lastMsg.content[0] as any).content).toContain("Subtask c-new completed")
+	})
 })

@@ -3344,22 +3344,25 @@ export class ClineProvider
 		// inject a matching tool_result for the Anthropic message contract:
 		// user → assistant (tool_use) → user (tool_result)
 		if (toolUseId) {
-			// Check if the last message is already a user message with a tool_result for this tool_use_id
-			// (in case this is a retry or the history was already updated)
-			const lastMsg = parentApiMessages[parentApiMessages.length - 1]
+			// Check ALL user messages for an existing tool_result with this tool_use_id
+			// (not just the last message, to prevent duplicate tool_results - EXT-665)
 			let alreadyHasToolResult = false
-			if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
-				for (const block of lastMsg.content) {
-					if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
-						// Update the existing tool_result content
-						block.content = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
-						alreadyHasToolResult = true
-						break
+			for (const msg of parentApiMessages) {
+				if (msg.role === "user" && Array.isArray(msg.content)) {
+					for (const block of msg.content) {
+						if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
+							alreadyHasToolResult = true
+							this.log(
+								`[reopenParentFromDelegation] Skipping duplicate tool_result for tool_use_id: ${toolUseId}`,
+							)
+							break
+						}
 					}
+					if (alreadyHasToolResult) break
 				}
 			}
 
-			// If no existing tool_result found, create a NEW user message with the tool_result
+			// Only create a NEW user message with the tool_result if none exists
 			if (!alreadyHasToolResult) {
 				parentApiMessages.push({
 					role: "user",
