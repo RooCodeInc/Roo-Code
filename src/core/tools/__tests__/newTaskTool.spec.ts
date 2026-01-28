@@ -175,7 +175,7 @@ describe("newTaskTool", () => {
 		)
 
 		// Verify side effects
-		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
+		expect(mockPushToolResult).toHaveBeenCalledWith("Delegating to subtask...")
 	})
 
 	it("should not un-escape single escaped \@", async () => {
@@ -280,7 +280,7 @@ describe("newTaskTool", () => {
 		expect(mockStartSubtask).toHaveBeenCalledWith("Test message", [], "code")
 
 		// Should complete successfully
-		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
+		expect(mockPushToolResult).toHaveBeenCalledWith("Delegating to subtask...")
 	})
 
 	it("should work with todos parameter when provided", async () => {
@@ -311,7 +311,7 @@ describe("newTaskTool", () => {
 			"code",
 		)
 
-		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
+		expect(mockPushToolResult).toHaveBeenCalledWith("Delegating to subtask...")
 	})
 
 	it("should error when mode parameter is missing", async () => {
@@ -423,7 +423,7 @@ describe("newTaskTool", () => {
 			expect(mockStartSubtask).toHaveBeenCalledWith("Test message", [], "code")
 
 			// Should complete successfully
-			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
+			expect(mockPushToolResult).toHaveBeenCalledWith("Delegating to subtask...")
 		})
 
 		it("should REQUIRE todos when VSCode setting is enabled", async () => {
@@ -501,7 +501,7 @@ describe("newTaskTool", () => {
 			)
 
 			// Should complete successfully
-			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
+			expect(mockPushToolResult).toHaveBeenCalledWith("Delegating to subtask...")
 		})
 
 		it("should work with empty todos string when VSCode setting is enabled", async () => {
@@ -536,7 +536,7 @@ describe("newTaskTool", () => {
 			expect(mockStartSubtask).toHaveBeenCalledWith("Test message", [], "code")
 
 			// Should complete successfully
-			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task"))
+			expect(mockPushToolResult).toHaveBeenCalledWith("Delegating to subtask...")
 		})
 
 		it("should check VSCode setting with Package.name configuration key", async () => {
@@ -671,7 +671,7 @@ describe("newTaskTool delegation flow", () => {
 		)
 		expect(pauseEvents.length).toBe(0)
 
-		// Assert: tool result reflects delegation
-		expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("Delegated to child task child-1"))
+		// Assert: tool result reflects delegation (pushed BEFORE delegation, so no child ID yet)
+		expect(mockPushToolResult).toHaveBeenCalledWith("Delegating to subtask...")
 	})
 })

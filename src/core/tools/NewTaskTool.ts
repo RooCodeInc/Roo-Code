@@ -109,16 +109,23 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				return
 			}
 
+			// IMPORTANT: Push the tool_result BEFORE delegation, because delegateParentAndOpenChild
+			// disposes the parent task. If we push after, the tool_result is lost and
+			// flushPendingToolResultsToHistory will generate a placeholder "interrupted" tool_result,
+			// causing duplicate tool_results when the child completes (EXT-665).
+			//
+			// The child taskId isn't known yet, so we use a generic message. The actual completion
+			// result will be injected by reopenParentFromDelegation when the child completes.
+			pushToolResult(`Delegating to subtask...`)
+
 			// Delegate parent and open child as sole active task
-			const child = await (provider as any).delegateParentAndOpenChild({
+			await (provider as any).delegateParentAndOpenChild({
 				parentTaskId: task.taskId,
 				message: unescapedMessage,
 				initialTodos: todoItems,
 				mode,
 			})
 
-			// Reflect delegation in tool result (no pause/unpause, no wait)
-			pushToolResult(`Delegated to child task ${child.taskId}`)
 			return
 		} catch (error) {
 			await handleError("creating new task", error)
