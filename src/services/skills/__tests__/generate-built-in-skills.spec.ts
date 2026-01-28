@@ -152,7 +152,7 @@ describe("built-in skills integration", () => {
 
 		// Verify we have the expected skills
 		const skillNames = skills.map((s) => s.name)
-		expect(skillNames).toContain("mcp-builder")
+		expect(skillNames).toContain("create-mcp-server")
 		expect(skillNames).toContain("create-mode")
 
 		// Verify each skill has valid content
