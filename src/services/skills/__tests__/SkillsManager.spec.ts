@@ -142,7 +142,7 @@ Instructions here...`
 
 			await skillsManager.discoverSkills()
 
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(1)
 			expect(skills[0].name).toBe("pdf-processing")
 			expect(skills[0].description).toBe("Extract text and tables from PDF files")
@@ -193,7 +193,7 @@ Instructions here...`
 
 			await skillsManager.discoverSkills()
 
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(1)
 			expect(skills[0].name).toBe("code-review")
 			expect(skills[0].source).toBe("project")
@@ -243,7 +243,7 @@ Instructions here...`
 
 			await skillsManager.discoverSkills()
 
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(1)
 			expect(skills[0].name).toBe("refactoring")
 			expect(skills[0].mode).toBe("code")
@@ -290,7 +290,7 @@ name: invalid-skill
 
 			await skillsManager.discoverSkills()
 
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(0)
 		})
 
@@ -336,7 +336,7 @@ description: Name doesn't match directory
 
 			await skillsManager.discoverSkills()
 
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(0)
 		})
 
@@ -375,7 +375,7 @@ description: Invalid name format
 			})
 
 			await skillsManager.discoverSkills()
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(0)
 		})
 
@@ -402,7 +402,7 @@ description: Too long name
 # Long Name Skill`)
 
 			await skillsManager.discoverSkills()
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(0)
 		})
 
@@ -426,7 +426,7 @@ description: "   "
 # Empty Description`)
 
 			await skillsManager.discoverSkills()
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(0)
 		})
 
@@ -451,7 +451,7 @@ description: ${longDescription}
 # Too Long Description`)
 
 			await skillsManager.discoverSkills()
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(0)
 		})
 
@@ -506,7 +506,7 @@ Instructions here...`
 
 			await skillsManager.discoverSkills()
 
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(1)
 			expect(skills[0].name).toBe("shared-skill")
 			expect(skills[0].source).toBe("global")
@@ -559,7 +559,7 @@ Instructions here...`
 
 			await skillsManager.discoverSkills()
 
-			const skills = skillsManager.getAllSkills()
+			const skills = skillsManager.getAllSkills().filter((s) => s.source !== "built-in")
 			expect(skills).toHaveLength(1)
 			expect(skills[0].name).toBe("my-alias")
 			expect(skills[0].source).toBe("global")
@@ -617,7 +617,7 @@ Instructions`
 
 			await skillsManager.discoverSkills()
 
-			const codeSkills = skillsManager.getSkillsForMode("code")
+			const codeSkills = skillsManager.getSkillsForMode("code").filter((s) => s.source !== "built-in")
 
 			// Should include both generic and code-specific skills
 			expect(codeSkills.length).toBe(2)

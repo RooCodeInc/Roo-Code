@@ -8,6 +8,23 @@ interface BuiltInCommandDefinition {
 }
 
 const BUILT_IN_COMMANDS: Record<string, BuiltInCommandDefinition> = {
+	simplify: {
+		name: "simplify",
+		description: "Simplify and refine code for clarity, consistency, and maintainability",
+		argumentHint: "[optional-context]",
+		content: `You are now using the code-simplify skill to analyze and refine code.
+
+Your task is to simplify recently modified code while preserving all functionality. Follow the code-simplify skill instructions to enhance code clarity, consistency, and maintainability.
+
+Focus on:
+- Reducing unnecessary complexity
+- Applying project-specific best practices
+- Improving readability through clear naming
+- Avoiding nested ternaries and overly compact code
+- Maintaining explicit, understandable code
+
+Remember: Only refine code that has been recently modified unless explicitly instructed otherwise. Never change functionality - only improve how the code accomplishes its goals.`,
+	},
 	init: {
 		name: "init",
 		description: "Analyze codebase and create concise AGENTS.md files for AI assistants",
