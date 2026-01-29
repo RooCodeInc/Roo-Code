@@ -214,9 +214,9 @@ describe("DeepInfraHandler", () => {
 					]),
 				}),
 			)
-			// parallel_tool_calls should be false when not explicitly set
+			// parallel_tool_calls should be true by default when not explicitly set
 			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).toHaveProperty("parallel_tool_calls", false)
+			expect(callArgs).toHaveProperty("parallel_tool_calls", true)
 		})
 
 		it("should include tool_choice when provided", async () => {
@@ -264,8 +264,8 @@ describe("DeepInfraHandler", () => {
 			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
 			expect(callArgs).toHaveProperty("tools")
 			expect(callArgs).toHaveProperty("tool_choice")
-			// parallel_tool_calls should be false when not explicitly set
-			expect(callArgs).toHaveProperty("parallel_tool_calls", false)
+			// parallel_tool_calls should be true by default when not explicitly set
+			expect(callArgs).toHaveProperty("parallel_tool_calls", true)
 		})
 
 		it("should yield tool_call_partial chunks during streaming", async () => {

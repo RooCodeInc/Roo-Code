@@ -121,7 +121,7 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 			},
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 		}
 
 		if (this.supportsTemperature(modelId)) {

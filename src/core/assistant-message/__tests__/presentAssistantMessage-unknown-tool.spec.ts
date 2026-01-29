@@ -217,32 +217,6 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 		expect(mockTask.userMessageContentReady).toBe(true)
 	})
 
-	it("should still work with didAlreadyUseTool flag for unknown tool", async () => {
-		const toolCallId = "tool_call_already_used_test"
-		mockTask.assistantMessageContent = [
-			{
-				type: "tool_use",
-				id: toolCallId,
-				name: "unknown_tool",
-				params: {},
-				partial: false,
-			},
-		]
-
-		mockTask.didAlreadyUseTool = true
-
-		await presentAssistantMessage(mockTask)
-
-		// When didAlreadyUseTool is true, should send error tool_result
-		const toolResult = mockTask.userMessageContent.find(
-			(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId,
-		)
-
-		expect(toolResult).toBeDefined()
-		expect(toolResult.is_error).toBe(true)
-		expect(toolResult.content).toContain("was not executed because a tool has already been used")
-	})
-
 	it("should still work with didRejectTool flag for unknown tool", async () => {
 		const toolCallId = "tool_call_rejected_test"
 		mockTask.assistantMessageContent = [
