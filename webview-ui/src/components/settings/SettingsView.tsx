@@ -182,7 +182,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		ttsSpeed,
 		soundVolume,
 		telemetrySetting,
+		terminalOutputLineLimit,
+		terminalOutputCharacterLimit,
 		terminalOutputPreviewSize,
+		terminalCompressProgressBar,
 		terminalShellIntegrationTimeout,
 		terminalShellIntegrationDisabled, // Added from upstream
 		terminalCommandDelay,
@@ -428,13 +431,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					mcpEnabled,
 					// Apply validation bounds only when value is defined, otherwise pass undefined
 					maxOpenTabsContext:
-						maxOpenTabsContext !== undefined
-							? Math.min(Math.max(0, maxOpenTabsContext), 500)
-							: undefined,
+						maxOpenTabsContext !== undefined ? Math.min(Math.max(0, maxOpenTabsContext), 500) : undefined,
 					maxWorkspaceFiles:
-						maxWorkspaceFiles !== undefined
-							? Math.min(Math.max(0, maxWorkspaceFiles), 500)
-							: undefined,
+						maxWorkspaceFiles !== undefined ? Math.min(Math.max(0, maxWorkspaceFiles), 500) : undefined,
 					showRooIgnoredFiles,
 					enableSubfolderRules,
 					maxReadFileLine,
@@ -913,7 +912,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						{/* Terminal Section */}
 						{renderTab === "terminal" && (
 							<TerminalSettings
-								terminalOutputPreviewSize={terminalOutputPreviewSize}
+								terminalOutputLineLimit={terminalOutputLineLimit}
+								terminalOutputCharacterLimit={terminalOutputCharacterLimit}
 								terminalShellIntegrationTimeout={terminalShellIntegrationTimeout}
 								terminalShellIntegrationDisabled={terminalShellIntegrationDisabled}
 								terminalCommandDelay={terminalCommandDelay}
@@ -922,6 +922,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								terminalZshOhMy={terminalZshOhMy}
 								terminalZshP10k={terminalZshP10k}
 								terminalZdotdir={terminalZdotdir}
+								terminalCompressProgressBar={terminalCompressProgressBar}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
