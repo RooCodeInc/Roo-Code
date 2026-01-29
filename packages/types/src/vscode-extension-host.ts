@@ -109,7 +109,6 @@ export interface ExtensionMessage {
 		| "worktreeIncludeStatus"
 		| "branchWorktreeIncludeResult"
 		| "folderSelected"
-		| "mergeWorktreeResult"
 		| "skills"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -606,7 +605,6 @@ export interface WebviewMessage {
 		| "createWorktreeInclude"
 		| "checkoutBranch"
 		| "browseForWorktreePath"
-		| "mergeWorktree"
 		// Skills messages
 		| "requestSkills"
 		| "createSkill"
