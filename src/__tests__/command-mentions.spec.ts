@@ -36,7 +36,6 @@ describe("Command Mentions", () => {
 			false, // showRooIgnoredFiles
 			true, // includeDiagnosticMessages
 			50, // maxDiagnosticMessages
-			undefined, // maxReadFileLine
 		)
 	}
 

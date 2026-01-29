@@ -600,7 +600,13 @@ export const ChatRowContent = ({
 							<ToolUseBlock>
 								<ToolUseBlockHeader
 									className="group"
-									onClick={() => vscode.postMessage({ type: "openFile", text: tool.content })}>
+									onClick={() =>
+										vscode.postMessage({
+											type: "openFile",
+											text: tool.content,
+											values: tool.startLine ? { line: tool.startLine } : undefined,
+										})
+									}>
 									{tool.path?.startsWith(".") && <span>.</span>}
 									<PathTooltip content={formatPathTooltip(tool.path, tool.reason)}>
 										<span className="whitespace-nowrap overflow-hidden text-ellipsis text-left mr-2 rtl">

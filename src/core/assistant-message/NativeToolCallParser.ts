@@ -311,9 +311,22 @@ export class NativeToolCallParser {
 		return finalToolUse
 	}
 
+	private static coerceOptionalNumber(value: unknown): number | undefined {
+		if (typeof value === "number" && Number.isFinite(value)) {
+			return value
+		}
+		if (typeof value === "string") {
+			const n = Number(value)
+			if (Number.isFinite(n)) {
+				return n
+			}
+		}
+		return undefined
+	}
+
 	/**
 	 * Convert raw file entries from API (with line_ranges) to FileEntry objects
-	 * (with lineRanges). Handles multiple formats for compatibility:
+	 * (with lineRanges). Handles multiple formats for backward compatibility:
 	 *
 	 * New tuple format: { path: string, line_ranges: [[1, 50], [100, 150]] }
 	 * Object format: { path: string, line_ranges: [{ start: 1, end: 50 }] }
@@ -321,19 +334,21 @@ export class NativeToolCallParser {
 	 *
 	 * Returns: { path: string, lineRanges: [{ start: 1, end: 50 }] }
 	 */
-	private static convertFileEntries(files: any[]): FileEntry[] {
-		return files.map((file: any) => {
-			const entry: FileEntry = { path: file.path }
-			if (file.line_ranges && Array.isArray(file.line_ranges)) {
-				entry.lineRanges = file.line_ranges
-					.map((range: any) => {
+	private static convertFileEntries(files: unknown[]): FileEntry[] {
+		return files.map((file: unknown) => {
+			const f = file as Record<string, unknown>
+			const entry: FileEntry = { path: f.path as string }
+			if (f.line_ranges && Array.isArray(f.line_ranges)) {
+				entry.lineRanges = (f.line_ranges as unknown[])
+					.map((range: unknown) => {
 						// Handle tuple format: [start, end]
 						if (Array.isArray(range) && range.length >= 2) {
 							return { start: Number(range[0]), end: Number(range[1]) }
 						}
 						// Handle object format: { start: number, end: number }
 						if (typeof range === "object" && range !== null && "start" in range && "end" in range) {
-							return { start: Number(range.start), end: Number(range.end) }
+							const r = range as { start: unknown; end: unknown }
+							return { start: Number(r.start), end: Number(r.end) }
 						}
 						// Handle legacy string format: "1-50"
 						if (typeof range === "string") {
@@ -344,7 +359,7 @@ export class NativeToolCallParser {
 						}
 						return null
 					})
-					.filter(Boolean)
+					.filter((r): r is { start: number; end: number } => r !== null)
 			}
 			return entry
 		})
@@ -376,10 +391,60 @@ export class NativeToolCallParser {
 		// Build partial nativeArgs based on what we have so far
 		let nativeArgs: any = undefined
 
+		// Track if legacy format was used (for telemetry)
+		let usedLegacyFormat = false
+
 		switch (name) {
 			case "read_file":
-				if (partialArgs.files && Array.isArray(partialArgs.files)) {
-					nativeArgs = { files: this.convertFileEntries(partialArgs.files) }
+				// Check for legacy format first: { files: [...] }
+				// Handle both array and stringified array (some models double-stringify)
+				if (partialArgs.files !== undefined) {
+					let filesArray: unknown[] | null = null
+
+					if (Array.isArray(partialArgs.files)) {
+						filesArray = partialArgs.files
+					} else if (typeof partialArgs.files === "string") {
+						// Handle double-stringified case: files is a string containing JSON array
+						try {
+							const parsed = JSON.parse(partialArgs.files)
+							if (Array.isArray(parsed)) {
+								filesArray = parsed
+							}
+						} catch {
+							// Not valid JSON, ignore
+						}
+					}
+
+					if (filesArray && filesArray.length > 0) {
+						usedLegacyFormat = true
+						nativeArgs = {
+							files: this.convertFileEntries(filesArray),
+							_legacyFormat: true as const,
+						}
+					}
+				}
+				// New format: { path: "...", mode: "..." }
+				if (!nativeArgs && partialArgs.path !== undefined) {
+					nativeArgs = {
+						path: partialArgs.path,
+						mode: partialArgs.mode,
+						offset: this.coerceOptionalNumber(partialArgs.offset),
+						limit: this.coerceOptionalNumber(partialArgs.limit),
+						indentation:
+							partialArgs.indentation && typeof partialArgs.indentation === "object"
+								? {
+										anchor_line: this.coerceOptionalNumber(partialArgs.indentation.anchor_line),
+										max_levels: this.coerceOptionalNumber(partialArgs.indentation.max_levels),
+										max_lines: this.coerceOptionalNumber(partialArgs.indentation.max_lines),
+										include_siblings: this.coerceOptionalBoolean(
+											partialArgs.indentation.include_siblings,
+										),
+										include_header: this.coerceOptionalBoolean(
+											partialArgs.indentation.include_header,
+										),
+									}
+								: undefined,
+					}
 				}
 				break
 
@@ -601,6 +666,11 @@ export class NativeToolCallParser {
 			result.originalName = originalName
 		}
 
+		// Track legacy format usage for telemetry
+		if (usedLegacyFormat) {
+			result.usedLegacyFormat = true
+		}
+
 		return result
 	}
 
@@ -647,13 +717,6 @@ export class NativeToolCallParser {
 			const params: Partial<Record<ToolParamName, string>> = {}
 
 			for (const [key, value] of Object.entries(args)) {
-				// Skip complex parameters that have been migrated to nativeArgs.
-				// For read_file, the 'files' parameter is a FileEntry[] array that can't be
-				// meaningfully stringified. The properly typed data is in nativeArgs instead.
-				if (resolvedName === "read_file" && key === "files") {
-					continue
-				}
-
 				// Validate parameter name
 				if (!toolParamNames.includes(key as ToolParamName) && !customToolRegistry.has(resolvedName)) {
 					console.warn(`Unknown parameter '${key}' for tool '${resolvedName}'`)
@@ -671,10 +734,58 @@ export class NativeToolCallParser {
 			// nativeArgs object. If validation fails, we treat the tool call as invalid and fail fast.
 			let nativeArgs: NativeArgsFor<TName> | undefined = undefined
 
+			// Track if legacy format was used (for telemetry)
+			let usedLegacyFormat = false
+
 			switch (resolvedName) {
 				case "read_file":
-					if (args.files && Array.isArray(args.files)) {
-						nativeArgs = { files: this.convertFileEntries(args.files) } as NativeArgsFor<TName>
+					// Check for legacy format first: { files: [...] }
+					// Handle both array and stringified array (some models double-stringify)
+					if (args.files !== undefined) {
+						let filesArray: unknown[] | null = null
+
+						if (Array.isArray(args.files)) {
+							filesArray = args.files
+						} else if (typeof args.files === "string") {
+							// Handle double-stringified case: files is a string containing JSON array
+							try {
+								const parsed = JSON.parse(args.files)
+								if (Array.isArray(parsed)) {
+									filesArray = parsed
+								}
+							} catch {
+								// Not valid JSON, ignore
+							}
+						}
+
+						if (filesArray && filesArray.length > 0) {
+							usedLegacyFormat = true
+							nativeArgs = {
+								files: this.convertFileEntries(filesArray),
+								_legacyFormat: true as const,
+							} as NativeArgsFor<TName>
+						}
+					}
+					// New format: { path: "...", mode: "..." }
+					if (!nativeArgs && args.path !== undefined) {
+						nativeArgs = {
+							path: args.path,
+							mode: args.mode,
+							offset: this.coerceOptionalNumber(args.offset),
+							limit: this.coerceOptionalNumber(args.limit),
+							indentation:
+								args.indentation && typeof args.indentation === "object"
+									? {
+											anchor_line: this.coerceOptionalNumber(args.indentation.anchor_line),
+											max_levels: this.coerceOptionalNumber(args.indentation.max_levels),
+											max_lines: this.coerceOptionalNumber(args.indentation.max_lines),
+											include_siblings: this.coerceOptionalBoolean(
+												args.indentation.include_siblings,
+											),
+											include_header: this.coerceOptionalBoolean(args.indentation.include_header),
+										}
+									: undefined,
+						} as NativeArgsFor<TName>
 					}
 					break
 
@@ -928,6 +1039,11 @@ export class NativeToolCallParser {
 			// Preserve original name for API history when an alias was used
 			if (toolCall.name !== resolvedName) {
 				result.originalName = toolCall.name
+			}
+
+			// Track legacy format usage for telemetry
+			if (usedLegacyFormat) {
+				result.usedLegacyFormat = true
 			}
 
 			return result
