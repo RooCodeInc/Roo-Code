@@ -326,6 +326,44 @@ export async function checkpointRestore(
 	}
 }
 
+/**
+ * Restore to the initial checkpoint (base state when task started).
+ * This is used by the InitialCheckpoint component since it doesn't have a message timestamp.
+ */
+export async function checkpointRestoreToBase(task: Task): Promise<boolean> {
+	const service = await getCheckpointService(task)
+
+	if (!service) {
+		return false
+	}
+
+	const baseHash = service.baseHash
+
+	if (!baseHash) {
+		const provider = task.providerRef.deref()
+		provider?.log("[checkpointRestoreToBase] no baseHash available")
+		return false
+	}
+
+	const provider = task.providerRef.deref()
+
+	try {
+		await service.restoreCheckpoint(baseHash)
+		TelemetryService.instance.captureCheckpointRestored(task.taskId)
+		await provider?.postMessageToWebview({ type: "currentCheckpointUpdated", text: baseHash })
+
+		// Cancel the task to reinitialize with the restored state
+		// This follows the same pattern as checkpointRestore
+		provider?.cancelTask()
+
+		return true
+	} catch (err) {
+		provider?.log("[checkpointRestoreToBase] disabling checkpoints for this task")
+		task.enableCheckpoints = false
+		return false
+	}
+}
+
 export type CheckpointDiffOptions = {
 	ts?: number
 	previousCommitHash?: string
