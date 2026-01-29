@@ -449,22 +449,21 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		workspaceDir: string
 	}) {
 		const workspaceRepoDir = this.workspaceRepoDir({ globalStorageDir, workspaceDir })
+
+		// Check if the workspace repo directory exists before attempting git operations
+		if (!(await fileExistsAtPath(workspaceRepoDir))) {
+			return
+		}
+
 		const branchName = `roo-${taskId}`
 		const git = createSanitizedGit(workspaceRepoDir)
-		const success = await this.deleteBranch(git, branchName)
-
-		if (success) {
-			console.log(`[${this.name}#deleteTask.${taskId}] deleted branch ${branchName}`)
-		} else {
-			console.error(`[${this.name}#deleteTask.${taskId}] failed to delete branch ${branchName}`)
-		}
+		await this.deleteBranch(git, branchName)
 	}
 
 	public static async deleteBranch(git: SimpleGit, branchName: string) {
 		const branches = await git.branchLocal()
 
 		if (!branches.all.includes(branchName)) {
-			console.error(`[${this.constructor.name}#deleteBranch] branch ${branchName} does not exist`)
 			return false
 		}
 

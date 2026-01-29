@@ -902,6 +902,34 @@
 		"useCustomModel": "使用自定义：{{modelId}}",
 		"simplifiedExplanation": "你可以稍后调整详细的模型设置。"
 	},
+	"aboutRetention": {
+		"label": "自动删除任务历史",
+		"warning": "启用后，早于所选时段的任务将在VS Code重启时被永久删除。",
+		"confirmDialog": {
+			"title": "启用自动删除？",
+			"description": "每次VS Code重启时，将永久删除超过{{period}}天的任务。此操作无法撤销。",
+			"descriptionNever": "自动删除将被禁用。您的任务历史将被保留。",
+			"confirm": "启用自动删除",
+			"confirmNever": "禁用自动删除",
+			"cancel": "取消"
+		},
+		"options": {
+			"never": "永不（默认）",
+			"90": "90天",
+			"60": "60天",
+			"30": "30天",
+			"7": "7天",
+			"3": "3天"
+		}
+	},
+	"taskHistoryStorage": {
+		"label": "任务历史",
+		"clickToCount": "点击计数",
+		"count": "历史中有 {{count}} 个任务",
+		"countSingular": "历史中有 1 个任务",
+		"empty": "暂无任务",
+		"refresh": "刷新"
+	},
 	"footer": {
 		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

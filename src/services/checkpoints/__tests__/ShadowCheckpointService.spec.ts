@@ -12,7 +12,9 @@ import * as fileSearch from "../../../services/search/file-search"
 
 import { RepoPerTaskCheckpointService } from "../RepoPerTaskCheckpointService"
 
-const tmpDir = path.join(os.tmpdir(), "CheckpointService")
+// Use a unique tmp directory per test run to avoid collisions with other
+// Vitest workers/processes and to keep cleanup fast/reliable on Windows.
+const tmpDir = path.join(os.tmpdir(), `CheckpointService-${process.pid}-${Date.now()}`)
 
 const initWorkspaceRepo = async ({
 	workspaceDir,
@@ -55,10 +57,12 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 		let workspaceGit: SimpleGit
 		let testFile: string
 		let service: RepoPerTaskCheckpointService
+		let shadowDir: string
+		let workspaceDir: string
 
 		beforeEach(async () => {
-			const shadowDir = path.join(tmpDir, `${prefix}-${Date.now()}`)
-			const workspaceDir = path.join(tmpDir, `workspace-${Date.now()}`)
+			shadowDir = path.join(tmpDir, `${prefix}-${Date.now()}`)
+			workspaceDir = path.join(tmpDir, `workspace-${Date.now()}`)
 			const repo = await initWorkspaceRepo({ workspaceDir })
 
 			workspaceGit = repo.git
@@ -70,10 +74,21 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 
 		afterEach(async () => {
 			vitest.restoreAllMocks()
+
+			// Clean up per-test directories to prevent a huge accumulated tmp tree.
+			// This makes Windows CI much less likely to hit slow/blocked recursive deletes.
+			await Promise.all([
+				fs
+					.rm(shadowDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+					.catch(() => undefined),
+				fs
+					.rm(workspaceDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
+					.catch(() => undefined),
+			])
 		})
 
 		afterAll(async () => {
-			await fs.rm(tmpDir, { recursive: true, force: true })
+			await fs.rm(tmpDir, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 })
 		}, 60_000) // 60 second timeout for Windows cleanup
 
 		describe(`${klass.name}#getDiff`, () => {
@@ -911,6 +926,31 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 					// Clean up external git directory
 					await fs.rm(externalGitDir, { recursive: true, force: true })
 				}
+			})
+		})
+
+		describe(`${klass.name}#deleteTask`, () => {
+			it("handles non-existent workspace repo directory gracefully", async () => {
+				const nonExistentWorkspaceDir = path.join(tmpDir, `non-existent-workspace-${Date.now()}`)
+				const nonExistentGlobalStorageDir = path.join(tmpDir, `non-existent-storage-${Date.now()}`)
+				const taskIdToDelete = "non-existent-task"
+
+				// Verify the workspace repo directory doesn't exist
+				const workspaceRepoDir = path.join(
+					nonExistentGlobalStorageDir,
+					"checkpoints",
+					klass.hashWorkspaceDir(nonExistentWorkspaceDir),
+				)
+				expect(await fileExistsAtPath(workspaceRepoDir)).toBe(false)
+
+				// Should not throw when the directory doesn't exist
+				await expect(
+					klass.deleteTask({
+						taskId: taskIdToDelete,
+						globalStorageDir: nonExistentGlobalStorageDir,
+						workspaceDir: nonExistentWorkspaceDir,
+					}),
+				).resolves.not.toThrow()
 			})
 		})
 	},

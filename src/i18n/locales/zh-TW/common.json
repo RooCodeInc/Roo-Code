@@ -263,5 +263,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"taskHistoryRetention": {
+		"purgeNotification": "Roo Code 已刪除 {{count}} 個超過 {{days}} 天的工作",
+		"purgeNotification_plural": "Roo Code 已刪除 {{count}} 個超過 {{days}} 天的工作",
+		"actions": {
+			"viewSettings": "檢視設定",
+			"dismiss": "關閉"
+		}
 	}
 }

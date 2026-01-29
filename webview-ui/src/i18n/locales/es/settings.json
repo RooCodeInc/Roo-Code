@@ -901,6 +901,34 @@
 		"useCustomModel": "Usar personalizado: {{modelId}}",
 		"simplifiedExplanation": "Puedes ajustar la configuración detallada del modelo más tarde."
 	},
+	"aboutRetention": {
+		"label": "Eliminar automáticamente el historial de tareas",
+		"warning": "Cuando está habilitado, las tareas anteriores al período seleccionado se eliminan permanentemente al reiniciar VS Code.",
+		"confirmDialog": {
+			"title": "¿Activar eliminación automática?",
+			"description": "Esto eliminará permanentemente las tareas de más de {{period}} días cada vez que VS Code se reinicie. Esta acción no se puede deshacer.",
+			"descriptionNever": "La eliminación automática se desactivará. Tu historial de tareas se conservará.",
+			"confirm": "Activar eliminación automática",
+			"confirmNever": "Desactivar eliminación automática",
+			"cancel": "Cancelar"
+		},
+		"options": {
+			"never": "Nunca (predeterminado)",
+			"90": "90 días",
+			"60": "60 días",
+			"30": "30 días",
+			"7": "7 días",
+			"3": "3 días"
+		}
+	},
+	"taskHistoryStorage": {
+		"label": "Historial de tareas",
+		"clickToCount": "Clic para contar",
+		"count": "{{count}} tareas en el historial",
+		"countSingular": "1 tarea en el historial",
+		"empty": "Sin tareas aún",
+		"refresh": "Actualizar"
+	},
 	"footer": {
 		"feedback": "Si tiene alguna pregunta o comentario, no dude en abrir un issue en <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirse a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {

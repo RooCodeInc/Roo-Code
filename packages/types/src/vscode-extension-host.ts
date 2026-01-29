@@ -333,6 +333,7 @@ export type ExtensionState = Pick<
 	| "maxGitStatusFiles"
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
+	| "taskHistoryRetention"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
@@ -393,6 +394,14 @@ export type ExtensionState = Pick<
 	marketplaceInstalledMetadata?: { project: Record<string, any>; global: Record<string, any> }
 	profileThresholds: Record<string, number>
 	hasOpenedModeSelector: boolean
+	/** Task history count for the Settings > About page
+	 * Note: Size calculation was removed for performance reasons - with large numbers of
+	 * tasks (e.g., 9000+), recursively stat'ing every file caused significant delays.
+	 */
+	taskHistorySize?: {
+		/** Number of task directories */
+		taskCount: number
+	}
 	openRouterImageApiKey?: string
 	messageQueue?: QueuedMessage[]
 	lastShownAnnouncementId?: string
@@ -590,6 +599,7 @@ export interface WebviewMessage {
 		| "requestModes"
 		| "switchMode"
 		| "debugSetting"
+		| "refreshTaskHistorySize"
 		// Worktree messages
 		| "listWorktrees"
 		| "createWorktree"

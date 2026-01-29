@@ -1,14 +1,29 @@
-import React, { memo, useState, useMemo } from "react"
-import { ArrowLeft } from "lucide-react"
+import React, { memo, useState, useMemo, useCallback, useEffect } from "react"
+import { ArrowLeft, Settings, FolderOpen, RefreshCw, Loader2 } from "lucide-react"
 import { DeleteTaskDialog } from "./DeleteTaskDialog"
 import { BatchDeleteTaskDialog } from "./BatchDeleteTaskDialog"
 import { Virtuoso } from "react-virtuoso"
 
+import { TASK_HISTORY_RETENTION_OPTIONS, type TaskHistoryRetentionSetting } from "@roo-code/types"
+
 import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 
+import { vscode } from "@/utils/vscode"
+import { useExtensionState } from "@/context/ExtensionStateContext"
 import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
 	Button,
 	Checkbox,
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
 	Select,
 	SelectContent,
 	SelectItem,
@@ -41,6 +56,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 		showAllWorkspaces,
 		setShowAllWorkspaces,
 	} = useTaskSearch()
+	const { taskHistoryRetention, taskHistorySize } = useExtensionState()
 	const { t } = useAppTranslation()
 
 	// Use grouped tasks hook
@@ -51,6 +67,74 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	const [isSelectionMode, setIsSelectionMode] = useState(false)
 	const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
 	const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState<boolean>(false)
+	const [isRetentionPopoverOpen, setIsRetentionPopoverOpen] = useState(false)
+	const [pendingRetention, setPendingRetention] = useState<TaskHistoryRetentionSetting | null>(null)
+	const [showRetentionConfirmDialog, setShowRetentionConfirmDialog] = useState(false)
+	const [isRefreshingTaskCount, setIsRefreshingTaskCount] = useState(false)
+	const [cachedTaskCount, setCachedTaskCount] = useState<number | undefined>(taskHistorySize?.taskCount)
+
+	// Update cached task count when taskHistorySize changes
+	useEffect(() => {
+		if (taskHistorySize) {
+			setCachedTaskCount(taskHistorySize.taskCount)
+			setIsRefreshingTaskCount(false)
+		}
+	}, [taskHistorySize])
+
+	// Handle refresh task count
+	const handleRefreshTaskCount = useCallback(() => {
+		setIsRefreshingTaskCount(true)
+		vscode.postMessage({ type: "refreshTaskHistorySize" })
+	}, [])
+
+	// Get task count display text
+	const getTaskCountDisplayText = (): string => {
+		const count = taskHistorySize?.taskCount ?? cachedTaskCount
+		if (count === undefined) {
+			return t("settings:taskHistoryStorage.clickToCount")
+		}
+		if (count === 0) {
+			return t("settings:taskHistoryStorage.empty")
+		}
+		if (count === 1) {
+			return t("settings:taskHistoryStorage.countSingular")
+		}
+		return t("settings:taskHistoryStorage.count", { count })
+	}
+
+	// Normalize retention setting to ensure it's valid
+	const normalizedRetention: TaskHistoryRetentionSetting = TASK_HISTORY_RETENTION_OPTIONS.includes(
+		taskHistoryRetention as TaskHistoryRetentionSetting,
+	)
+		? (taskHistoryRetention as TaskHistoryRetentionSetting)
+		: "never"
+
+	// Handle retention setting change - show confirmation dialog first
+	const handleRetentionChange = (value: TaskHistoryRetentionSetting) => {
+		// If selecting the same value, do nothing
+		if (value === normalizedRetention) {
+			return
+		}
+		// Show confirmation dialog for any change
+		setPendingRetention(value)
+		setShowRetentionConfirmDialog(true)
+	}
+
+	// Confirm retention change
+	const confirmRetentionChange = () => {
+		if (pendingRetention !== null) {
+			vscode.postMessage({ type: "updateSettings", updatedSettings: { taskHistoryRetention: pendingRetention } })
+		}
+		setShowRetentionConfirmDialog(false)
+		setPendingRetention(null)
+		setIsRetentionPopoverOpen(false)
+	}
+
+	// Cancel retention change
+	const cancelRetentionChange = () => {
+		setShowRetentionConfirmDialog(false)
+		setPendingRetention(null)
+	}
 
 	// Get subtask count for a task
 	const getSubtaskCount = useMemo(() => {
@@ -116,20 +200,87 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 						</Button>
 						<h3 className="text-vscode-foreground m-0">{t("history:history")}</h3>
 					</div>
-					<StandardTooltip
-						content={
-							isSelectionMode ? `${t("history:exitSelectionMode")}` : `${t("history:enterSelectionMode")}`
-						}>
-						<Button
-							variant={isSelectionMode ? "primary" : "secondary"}
-							onClick={toggleSelectionMode}
-							data-testid="toggle-selection-mode-button">
-							<span
-								className={`codicon ${isSelectionMode ? "codicon-check-all" : "codicon-checklist"} mr-1`}
-							/>
-							{isSelectionMode ? t("history:exitSelection") : t("history:selectionMode")}
-						</Button>
-					</StandardTooltip>
+					<div className="flex items-center gap-2">
+						<Popover open={isRetentionPopoverOpen} onOpenChange={setIsRetentionPopoverOpen}>
+							<StandardTooltip content={t("settings:aboutRetention.label")}>
+								<PopoverTrigger asChild>
+									<Button variant="ghost" size="icon" data-testid="history-retention-settings-button">
+										<Settings className="size-4" />
+									</Button>
+								</PopoverTrigger>
+							</StandardTooltip>
+							<PopoverContent className="w-72" align="end">
+								<div className="space-y-3">
+									{/* Task count display */}
+									<div className="flex items-center gap-2">
+										<FolderOpen className="size-4 text-vscode-descriptionForeground shrink-0" />
+										<span className="text-sm">{getTaskCountDisplayText()}</span>
+										<Button
+											variant="ghost"
+											size="sm"
+											onClick={handleRefreshTaskCount}
+											disabled={isRefreshingTaskCount}
+											className="h-6 w-6 p-0 ml-auto"
+											title={t("settings:taskHistoryStorage.refresh")}>
+											{isRefreshingTaskCount ? (
+												<Loader2 className="size-3.5 animate-spin" />
+											) : (
+												<RefreshCw className="size-3.5" />
+											)}
+										</Button>
+									</div>
+
+									<div className="border-t border-vscode-settings-headerBorder pt-3">
+										<h4 className="font-medium text-sm">{t("settings:aboutRetention.label")}</h4>
+									</div>
+									<Select
+										value={normalizedRetention}
+										onValueChange={(value: TaskHistoryRetentionSetting) => {
+											handleRetentionChange(value)
+										}}>
+										<SelectTrigger className="w-full">
+											<SelectValue placeholder={t("settings:common.select")} />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="never">
+												{t("settings:aboutRetention.options.never")}
+											</SelectItem>
+											<SelectItem value="90">
+												{t("settings:aboutRetention.options.90")}
+											</SelectItem>
+											<SelectItem value="60">
+												{t("settings:aboutRetention.options.60")}
+											</SelectItem>
+											<SelectItem value="30">
+												{t("settings:aboutRetention.options.30")}
+											</SelectItem>
+											<SelectItem value="7">{t("settings:aboutRetention.options.7")}</SelectItem>
+											<SelectItem value="3">{t("settings:aboutRetention.options.3")}</SelectItem>
+										</SelectContent>
+									</Select>
+									<p className="text-vscode-descriptionForeground text-xs">
+										{t("settings:aboutRetention.warning")}
+									</p>
+								</div>
+							</PopoverContent>
+						</Popover>
+						<StandardTooltip
+							content={
+								isSelectionMode
+									? `${t("history:exitSelectionMode")}`
+									: `${t("history:enterSelectionMode")}`
+							}>
+							<Button
+								variant={isSelectionMode ? "primary" : "secondary"}
+								onClick={toggleSelectionMode}
+								data-testid="toggle-selection-mode-button">
+								<span
+									className={`codicon ${isSelectionMode ? "codicon-check-all" : "codicon-checklist"} mr-1`}
+								/>
+								{isSelectionMode ? t("history:exitSelection") : t("history:selectionMode")}
+							</Button>
+						</StandardTooltip>
+					</div>
 				</div>
 				<div className="flex flex-col gap-2">
 					<VSCodeTextField
@@ -353,6 +504,32 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 					}}
 				/>
 			)}
+
+			{/* Retention change confirmation dialog */}
+			<AlertDialog open={showRetentionConfirmDialog} onOpenChange={setShowRetentionConfirmDialog}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>{t("settings:aboutRetention.confirmDialog.title")}</AlertDialogTitle>
+						<AlertDialogDescription>
+							{pendingRetention === "never"
+								? t("settings:aboutRetention.confirmDialog.descriptionNever")
+								: t("settings:aboutRetention.confirmDialog.description", {
+										period: pendingRetention,
+									})}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel onClick={cancelRetentionChange}>
+							{t("settings:aboutRetention.confirmDialog.cancel")}
+						</AlertDialogCancel>
+						<AlertDialogAction onClick={confirmRetentionChange}>
+							{pendingRetention === "never"
+								? t("settings:aboutRetention.confirmDialog.confirmNever")
+								: t("settings:aboutRetention.confirmDialog.confirm")}
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</Tab>
 	)
 }

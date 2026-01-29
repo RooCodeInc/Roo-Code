@@ -902,6 +902,34 @@
 		"useCustomModel": "कस्टम उपयोग करें: {{modelId}}",
 		"simplifiedExplanation": "आप बाद में विस्तृत मॉडल सेटिंग्स समायोजित कर सकते हैं।"
 	},
+	"aboutRetention": {
+		"label": "कार्य इतिहास स्वचालित रूप से हटाएं",
+		"warning": "सक्षम होने पर, चयनित अवधि से पुराने कार्य VS Code के पुनः आरंभ होने पर स्थायी रूप से हटा दिए जाते हैं।",
+		"confirmDialog": {
+			"title": "स्वचालित हटाना सक्षम करें?",
+			"description": "यह VS Code के हर पुनः आरंभ पर {{period}} दिनों से पुराने कार्यों को स्थायी रूप से हटा देगा। इस क्रिया को पूर्ववत नहीं किया जा सकता।",
+			"descriptionNever": "स्वचालित हटाना अक्षम किया जाएगा। आपका कार्य इतिहास संरक्षित रहेगा।",
+			"confirm": "स्वचालित हटाना सक्षम करें",
+			"confirmNever": "स्वचालित हटाना अक्षम करें",
+			"cancel": "रद्द करें"
+		},
+		"options": {
+			"never": "कभी नहीं (डिफ़ॉल्ट)",
+			"90": "90 दिन",
+			"60": "60 दिन",
+			"30": "30 दिन",
+			"7": "7 दिन",
+			"3": "3 दिन"
+		}
+	},
+	"taskHistoryStorage": {
+		"label": "कार्य इतिहास",
+		"clickToCount": "गिनने के लिए क्लिक करें",
+		"count": "इतिहास में {{count}} कार्य",
+		"countSingular": "इतिहास में 1 कार्य",
+		"empty": "अभी तक कोई कार्य नहीं",
+		"refresh": "रिफ्रेश करें"
+	},
 	"footer": {
 		"feedback": "यदि आपके कोई प्रश्न या प्रतिक्रिया है, तो <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> पर एक मुद्दा खोलने या <redditLink>reddit.com/r/RooCode</redditLink> या <discordLink>discord.gg/roocode</discordLink> में शामिल होने में संकोच न करें",
 		"telemetry": {

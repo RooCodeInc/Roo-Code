@@ -1801,8 +1801,8 @@ export class ClineProvider
 				try {
 					await ShadowCheckpointService.deleteTask({ taskId, globalStorageDir, workspaceDir })
 				} catch (error) {
-					console.error(
-						`[deleteTaskWithId${taskId}] failed to delete associated shadow repository or branch: ${error instanceof Error ? error.message : String(error)}`,
+					this.log(
+						`[deleteTaskWithId] failed to delete shadow repository for task ${taskId}: ${error instanceof Error ? error.message : String(error)}`,
 					)
 				}
 
@@ -1810,10 +1810,9 @@ export class ClineProvider
 				try {
 					const dirPath = await getTaskDirectoryPath(globalStoragePath, taskId)
 					await fs.rm(dirPath, { recursive: true, force: true })
-					console.log(`[deleteTaskWithId${taskId}] removed task directory`)
 				} catch (error) {
-					console.error(
-						`[deleteTaskWithId${taskId}] failed to remove task directory: ${error instanceof Error ? error.message : String(error)}`,
+					this.log(
+						`[deleteTaskWithId] failed to remove task directory for task ${taskId}: ${error instanceof Error ? error.message : String(error)}`,
 					)
 				}
 			}
@@ -2049,6 +2048,8 @@ export class ClineProvider
 			reasoningBlockCollapsed,
 			enterBehavior,
 			cloudUserInfo,
+			taskHistoryRetention,
+			taskHistorySize,
 			cloudIsAuthenticated,
 			sharingEnabled,
 			publicSharingEnabled,
@@ -2229,6 +2230,10 @@ export class ClineProvider
 			includeDiagnosticMessages: includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
+			// Task history retention setting for About tab dropdown
+			taskHistoryRetention: taskHistoryRetention ?? "never",
+			// Task history storage size info for the Settings > About page
+			taskHistorySize,
 			includeCurrentTime: includeCurrentTime ?? true,
 			includeCurrentCost: includeCurrentCost ?? true,
 			maxGitStatusFiles: maxGitStatusFiles ?? 0,
@@ -2440,6 +2445,10 @@ export class ClineProvider
 			organizationAllowList,
 			organizationSettingsVersion,
 			customCondensingPrompt: stateValues.customCondensingPrompt,
+			// Task history retention selection
+			taskHistoryRetention: stateValues.taskHistoryRetention ?? "never",
+			// Task history storage size info
+			taskHistorySize: stateValues.taskHistorySize,
 			codebaseIndexModels: stateValues.codebaseIndexModels ?? EMBEDDING_MODEL_PROFILES,
 			codebaseIndexConfig: {
 				codebaseIndexEnabled: stateValues.codebaseIndexConfig?.codebaseIndexEnabled ?? false,

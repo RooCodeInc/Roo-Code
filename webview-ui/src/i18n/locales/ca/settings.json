@@ -901,6 +901,34 @@
 		"useCustomModel": "Utilitzar personalitzat: {{modelId}}",
 		"simplifiedExplanation": "Pots ajustar la configuració detallada del model més tard."
 	},
+	"aboutRetention": {
+		"label": "Eliminar automàticament l'historial de tasques",
+		"warning": "Quan estigui activat, les tasques anteriors al període seleccionat s'eliminen permanentment en reiniciar VS Code.",
+		"confirmDialog": {
+			"title": "Activar l'eliminació automàtica?",
+			"description": "Això eliminarà permanentment les tasques de més de {{period}} dies cada vegada que es reiniciï VS Code. Aquesta acció no es pot desfer.",
+			"descriptionNever": "L'eliminació automàtica es desactivarà. El teu historial de tasques es conservarà.",
+			"confirm": "Activar eliminació automàtica",
+			"confirmNever": "Desactivar eliminació automàtica",
+			"cancel": "Cancel·lar"
+		},
+		"options": {
+			"never": "Mai (per defecte)",
+			"90": "90 dies",
+			"60": "60 dies",
+			"30": "30 dies",
+			"7": "7 dies",
+			"3": "3 dies"
+		}
+	},
+	"taskHistoryStorage": {
+		"label": "Historial de tasques",
+		"clickToCount": "Clica per comptar",
+		"count": "{{count}} tasques a l'historial",
+		"countSingular": "1 tasca a l'historial",
+		"empty": "Encara no hi ha tasques",
+		"refresh": "Actualitzar"
+	},
 	"footer": {
 		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
