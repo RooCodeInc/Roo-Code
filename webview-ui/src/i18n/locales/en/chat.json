@@ -29,7 +29,10 @@
 		"openInCloudIntro": "Keep monitoring or interacting with Roo from anywhere. Scan, click or copy to open.",
 		"openApiHistory": "Open API History",
 		"openUiHistory": "Open UI History",
-		"backToParentTask": "Parent task"
+		"backToParentTask": "Parent task",
+		"restoreToStart": "Restore workspace to task start",
+		"restoreToStartConfirm": "This will reset all files in the workspace to their state when this task was created. Changes made by this task, by other tasks, or manually will all be reverted. This action cannot be undone.",
+		"restoreToStartButton": "Restore"
 	},
 	"unpin": "Unpin",
 	"pin": "Pin",

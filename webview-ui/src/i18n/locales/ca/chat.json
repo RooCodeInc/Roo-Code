@@ -29,7 +29,10 @@
 		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir.",
 		"openApiHistory": "Obrir historial d'API",
 		"openUiHistory": "Obrir historial d'UI",
-		"backToParentTask": "Tasca principal"
+		"backToParentTask": "Tasca principal",
+		"restoreToStart": "Restaurar l'espai de treball a l'inici de la tasca",
+		"restoreToStartConfirm": "Això restablirà tots els fitxers de l'espai de treball al seu estat quan es va crear aquesta tasca. Els canvis realitzats per aquesta tasca, per altres tasques o manualment seran revertits. Aquesta acció no es pot desfer.",
+		"restoreToStartButton": "Restaurar"
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",

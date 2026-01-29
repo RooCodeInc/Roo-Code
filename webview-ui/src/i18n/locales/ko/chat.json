@@ -29,7 +29,10 @@
 		"openInCloudIntro": "어디서나 Roo를 계속 모니터링하거나 상호작용할 수 있습니다. 스캔, 클릭 또는 복사하여 열기.",
 		"openApiHistory": "API 기록 열기",
 		"openUiHistory": "UI 기록 열기",
-		"backToParentTask": "상위 작업"
+		"backToParentTask": "상위 작업",
+		"restoreToStart": "작업 시작 시점으로 워크스페이스 복원",
+		"restoreToStartConfirm": "이 작업이 생성되었을 때의 상태로 워크스페이스의 모든 파일을 재설정합니다. 이 작업, 다른 작업 또는 수동으로 수행한 변경 사항이 모두 되돌려집니다. 이 작업은 취소할 수 없습니다.",
+		"restoreToStartButton": "복원"
 	},
 	"unpin": "고정 해제하기",
 	"pin": "고정하기",

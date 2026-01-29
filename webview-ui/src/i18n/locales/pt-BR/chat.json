@@ -29,7 +29,10 @@
 		"openInCloudIntro": "Continue monitorando ou interagindo com Roo de qualquer lugar. Escaneie, clique ou copie para abrir.",
 		"openApiHistory": "Abrir histórico da API",
 		"openUiHistory": "Abrir histórico da UI",
-		"backToParentTask": "Tarefa pai"
+		"backToParentTask": "Tarefa pai",
+		"restoreToStart": "Restaurar espaço de trabalho ao início da tarefa",
+		"restoreToStartConfirm": "Isso irá redefinir todos os arquivos no espaço de trabalho para seu estado quando esta tarefa foi criada. Alterações feitas por esta tarefa, por outras tarefas ou manualmente serão todas revertidas. Esta ação não pode ser desfeita.",
+		"restoreToStartButton": "Restaurar"
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",

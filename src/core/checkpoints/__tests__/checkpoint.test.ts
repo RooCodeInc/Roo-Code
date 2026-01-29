@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest"
 import { Task } from "../../task/Task"
 import { ClineProvider } from "../../webview/ClineProvider"
-import { checkpointSave, checkpointRestore, checkpointDiff, getCheckpointService } from "../index"
+import {
+	checkpointSave,
+	checkpointRestore,
+	checkpointRestoreToBase,
+	checkpointDiff,
+	getCheckpointService,
+} from "../index"
 import { MessageManager } from "../../message-manager"
 import * as vscode from "vscode"
 
@@ -293,6 +299,56 @@ describe("Checkpoint functionality", () => {
 
 			expect(mockTask.enableCheckpoints).toBe(false)
 			expect(mockProvider.log).toHaveBeenCalledWith("[checkpointRestore] disabling checkpoints for this task")
+		})
+	})
+
+	describe("checkpointRestoreToBase", () => {
+		beforeEach(() => {
+			mockCheckpointService.baseHash = "initial-commit-hash"
+		})
+
+		it("should restore to base hash successfully", async () => {
+			const result = await checkpointRestoreToBase(mockTask)
+
+			expect(result).toBe(true)
+			expect(mockCheckpointService.restoreCheckpoint).toHaveBeenCalledWith("initial-commit-hash")
+			expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
+				type: "currentCheckpointUpdated",
+				text: "initial-commit-hash",
+			})
+			expect(mockProvider.cancelTask).toHaveBeenCalled()
+		})
+
+		it("should return false if no checkpoint service available", async () => {
+			mockTask.checkpointService = undefined
+			mockTask.enableCheckpoints = false
+
+			const result = await checkpointRestoreToBase(mockTask)
+
+			expect(result).toBe(false)
+			expect(mockCheckpointService.restoreCheckpoint).not.toHaveBeenCalled()
+		})
+
+		it("should return false if no baseHash available", async () => {
+			mockCheckpointService.baseHash = undefined
+
+			const result = await checkpointRestoreToBase(mockTask)
+
+			expect(result).toBe(false)
+			expect(mockCheckpointService.restoreCheckpoint).not.toHaveBeenCalled()
+			expect(mockProvider.log).toHaveBeenCalledWith("[checkpointRestoreToBase] no baseHash available")
+		})
+
+		it("should disable checkpoints on error", async () => {
+			mockCheckpointService.restoreCheckpoint.mockRejectedValue(new Error("Restore failed"))
+
+			const result = await checkpointRestoreToBase(mockTask)
+
+			expect(result).toBe(false)
+			expect(mockTask.enableCheckpoints).toBe(false)
+			expect(mockProvider.log).toHaveBeenCalledWith(
+				"[checkpointRestoreToBase] disabling checkpoints for this task",
+			)
 		})
 	})
 

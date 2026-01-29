@@ -29,7 +29,10 @@
 		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen.",
 		"openApiHistory": "API-geschiedenis openen",
 		"openUiHistory": "UI-geschiedenis openen",
-		"backToParentTask": "Bovenliggende taak"
+		"backToParentTask": "Bovenliggende taak",
+		"restoreToStart": "Werkruimte herstellen naar taakstart",
+		"restoreToStartConfirm": "Dit zal alle bestanden in de werkruimte resetten naar hun staat toen deze taak werd aangemaakt. Wijzigingen gemaakt door deze taak, door andere taken of handmatig zullen allemaal worden teruggedraaid. Deze actie kan niet ongedaan worden gemaakt.",
+		"restoreToStartButton": "Herstellen"
 	},
 	"unpin": "Losmaken",
 	"pin": "Vastmaken",

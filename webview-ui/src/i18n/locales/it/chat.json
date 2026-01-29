@@ -29,7 +29,10 @@
 		"openInCloudIntro": "Continua a monitorare o interagire con Roo da qualsiasi luogo. Scansiona, clicca o copia per aprire.",
 		"openApiHistory": "Apri cronologia API",
 		"openUiHistory": "Apri cronologia UI",
-		"backToParentTask": "Attività principale"
+		"backToParentTask": "Attività principale",
+		"restoreToStart": "Ripristina lo spazio di lavoro all'inizio dell'attività",
+		"restoreToStartConfirm": "Questo ripristinerà tutti i file nello spazio di lavoro al loro stato quando questa attività è stata creata. Le modifiche apportate da questa attività, da altre attività o manualmente verranno tutte annullate. Questa azione non può essere annullata.",
+		"restoreToStartButton": "Ripristina"
 	},
 	"unpin": "Rilascia",
 	"pin": "Fissa",
