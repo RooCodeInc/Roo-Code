@@ -51,9 +51,11 @@ export async function calculateTaskStorageSize(
 	try {
 		const entries = await fs.readdir(tasksDir, { withFileTypes: true })
 		taskCount = entries.filter((d) => d.isDirectory()).length
-	} catch {
-		// Tasks directory doesn't exist yet
-		log?.(`[TaskStorageSize] Tasks directory not found at ${tasksDir}`)
+	} catch (e) {
+		// Tasks directory doesn't exist yet (or is unreadable)
+		log?.(
+			`[TaskStorageSize] Failed to read tasks directory at ${tasksDir}: ${e instanceof Error ? e.message : String(e)}`,
+		)
 		return defaultResult
 	}
 

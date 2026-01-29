@@ -246,7 +246,7 @@ export async function purgeOldTasks(
 		return { purgedCount: 0, cutoff }
 	}
 
-	// Phase 3: Delete tasks in parallel
+	// Phase 3: Delete tasks
 	if (dryRun) {
 		for (const { metadata, reason } of tasksToDelete) {
 			logv(`[Retention][DRY RUN] Would delete task ${metadata.taskId} (${reason}) @ ${metadata.taskDir}`)
@@ -257,52 +257,61 @@ export async function purgeOldTasks(
 		return { purgedCount: tasksToDelete.length, cutoff }
 	}
 
-	logv(`[Retention] Phase 3: Deleting ${tasksToDelete.length} tasks (concurrency: ${DELETION_CONCURRENCY})`)
-	const deleteLimit = pLimit(DELETION_CONCURRENCY)
+	// Helper function to delete a single task
+	const deleteTask = async (metadata: TaskMetadata, reason: string): Promise<boolean> => {
+		let deleted = false
 
-	const deleteResults = await Promise.all(
-		tasksToDelete.map(({ metadata, reason }) =>
-			deleteLimit(async (): Promise<boolean> => {
-				let deleted = false
+		try {
+			if (deleteTaskById) {
+				logv(`[Retention] Deleting task ${metadata.taskId} via provider @ ${metadata.taskDir} (${reason})`)
+				await deleteTaskById(metadata.taskId, metadata.taskDir)
+				deleted = !(await pathExists(metadata.taskDir))
+			} else {
+				logv(`[Retention] Deleting task ${metadata.taskId} via fs.rm @ ${metadata.taskDir} (${reason})`)
+				await fs.rm(metadata.taskDir, { recursive: true, force: true })
+				deleted = !(await pathExists(metadata.taskDir))
+			}
+		} catch (e) {
+			// Primary deletion failed, try fallback
+			logv(
+				`[Retention] Primary deletion failed for ${metadata.taskId}: ${
+					e instanceof Error ? e.message : String(e)
+				}`,
+			)
+		}
 
-				try {
-					if (deleteTaskById) {
-						logv(
-							`[Retention] Deleting task ${metadata.taskId} via provider @ ${metadata.taskDir} (${reason})`,
-						)
-						await deleteTaskById(metadata.taskId, metadata.taskDir)
-						deleted = !(await pathExists(metadata.taskDir))
-					} else {
-						logv(`[Retention] Deleting task ${metadata.taskId} via fs.rm @ ${metadata.taskDir} (${reason})`)
-						await fs.rm(metadata.taskDir, { recursive: true, force: true })
-						deleted = !(await pathExists(metadata.taskDir))
-					}
-				} catch (e) {
-					// Primary deletion failed, try fallback
-					logv(
-						`[Retention] Primary deletion failed for ${metadata.taskId}: ${
-							e instanceof Error ? e.message : String(e)
-						}`,
-					)
-				}
+		// Fallback: simplified removal
+		if (!deleted) {
+			deleted = await removeDir(metadata.taskDir)
+		}
 
-				// Fallback: simplified removal
-				if (!deleted) {
-					deleted = await removeDir(metadata.taskDir)
-				}
+		if (!deleted) {
+			log?.(`[Retention] Failed to delete task ${metadata.taskId} @ ${metadata.taskDir}: directory still present`)
+		} else {
+			logv(`[Retention] Deleted task ${metadata.taskId} (${reason}) @ ${metadata.taskDir}`)
+		}
 
-				if (!deleted) {
-					log?.(
-						`[Retention] Failed to delete task ${metadata.taskId} @ ${metadata.taskDir}: directory still present`,
-					)
-				} else {
-					logv(`[Retention] Deleted task ${metadata.taskId} (${reason}) @ ${metadata.taskDir}`)
-				}
+		return deleted
+	}
 
-				return deleted
-			}),
-		),
-	)
+	let deleteResults: boolean[]
+
+	if (deleteTaskById) {
+		// Sequential deletion when using provider-backed deletion to avoid taskHistory state races
+		logv(`[Retention] Phase 3: Deleting ${tasksToDelete.length} tasks sequentially (provider-backed)`)
+		deleteResults = []
+		for (const { metadata, reason } of tasksToDelete) {
+			const result = await deleteTask(metadata, reason)
+			deleteResults.push(result)
+		}
+	} else {
+		// Parallel deletion for filesystem-only operations (no shared state)
+		logv(`[Retention] Phase 3: Deleting ${tasksToDelete.length} tasks (concurrency: ${DELETION_CONCURRENCY})`)
+		const deleteLimit = pLimit(DELETION_CONCURRENCY)
+		deleteResults = await Promise.all(
+			tasksToDelete.map(({ metadata, reason }) => deleteLimit(() => deleteTask(metadata, reason))),
+		)
+	}
 
 	const purged = deleteResults.filter(Boolean).length
 
