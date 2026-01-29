@@ -72,6 +72,13 @@ export interface GlmModelOptions {
 export function getGlmModelOptions(modelId: string): GlmModelOptions {
 	const isGlm = isGlmModel(modelId)
 
+	// Log GLM model detection result for diagnostics
+	if (isGlm) {
+		console.log(`[GLM Detection] ✓ GLM model detected: "${modelId}"`)
+		console.log(`[GLM Detection]   - mergeToolResultText: true`)
+		console.log(`[GLM Detection]   - disableParallelToolCalls: true`)
+	}
+
 	return {
 		mergeToolResultText: isGlm,
 		disableParallelToolCalls: isGlm,

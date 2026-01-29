@@ -79,6 +79,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		// Get model-specific options for GLM models (applies Z.ai optimizations)
 		// This allows third-party GLM models via OpenAI-compatible endpoints to benefit
 		// from the same optimizations used by Z.ai
+		console.log(`[${this.providerName}] Using model ID: "${model}"`)
 		const glmOptions = getGlmModelOptions(model)
 
 		// Centralized cap: clamp to 20% of the context window (unless provider-specific exceptions apply)
@@ -97,6 +98,8 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		const parallelToolCalls = glmOptions.disableParallelToolCalls
 			? (metadata?.parallelToolCalls ?? false)
 			: (metadata?.parallelToolCalls ?? true)
+
+		console.log(`[${this.providerName}] parallel_tool_calls set to: ${parallelToolCalls}`)
 
 		// Convert messages with GLM-specific handling when applicable
 		// mergeToolResultText prevents GLM models from dropping reasoning_content

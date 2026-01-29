@@ -45,6 +45,7 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 	): ApiStream {
 		// Get model-specific options for GLM models (applies Z.ai optimizations)
 		const modelId = this.getModel().id
+		console.log(`[LM Studio] Using model ID: "${modelId}"`)
 		const glmOptions = getGlmModelOptions(modelId)
 
 		// Convert messages with GLM-specific handling when applicable
@@ -95,6 +96,8 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			const parallelToolCalls = glmOptions.disableParallelToolCalls
 				? (metadata?.parallelToolCalls ?? false)
 				: (metadata?.parallelToolCalls ?? true)
+
+			console.log(`[LM Studio] parallel_tool_calls set to: ${parallelToolCalls}`)
 
 			const params: OpenAI.Chat.ChatCompletionCreateParamsStreaming & { draft_model?: string } = {
 				model: modelId,
