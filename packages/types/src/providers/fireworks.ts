@@ -1,6 +1,7 @@
 import type { ModelInfo } from "../model.js"
 
 export type FireworksModelId =
+	| "accounts/fireworks/models/kimi-k2p5"
 	| "accounts/fireworks/models/kimi-k2-instruct"
 	| "accounts/fireworks/models/kimi-k2-instruct-0905"
 	| "accounts/fireworks/models/kimi-k2-thinking"
@@ -22,9 +23,23 @@ export type FireworksModelId =
 	| "accounts/fireworks/models/llama4-maverick-instruct-basic"
 	| "accounts/fireworks/models/llama4-scout-instruct-basic"
 
-export const fireworksDefaultModelId: FireworksModelId = "accounts/fireworks/models/kimi-k2-instruct-0905"
+export const fireworksDefaultModelId: FireworksModelId = "accounts/fireworks/models/kimi-k2p5"
 
 export const fireworksModels = {
+	"accounts/fireworks/models/kimi-k2p5": {
+		maxTokens: 32768,
+		contextWindow: 262144,
+		supportsImages: true,
+		supportsPromptCache: true,
+		supportsTemperature: true,
+		preserveReasoning: true,
+		defaultTemperature: 1.0,
+		inputPrice: 0.6,
+		outputPrice: 3.0,
+		cacheReadsPrice: 0.1,
+		description:
+			"Kimi K2.5 is Moonshot AI's flagship agentic model and a new SOTA open model. It unifies vision and text, thinking and non-thinking modes, and single-agent and multi-agent execution into one model.",
+	},
 	"accounts/fireworks/models/kimi-k2-instruct-0905": {
 		maxTokens: 16384,
 		contextWindow: 262144,
@@ -228,4 +243,4 @@ export const fireworksModels = {
 		description:
 			"Llama 4 Scout is a smaller, faster variant of Llama 4 with multimodal capabilities, ideal for quick iterations and cost-effective deployments.",
 	},
-} as const satisfies Record<string, ModelInfo>
+} as const satisfies Record<FireworksModelId, ModelInfo>
