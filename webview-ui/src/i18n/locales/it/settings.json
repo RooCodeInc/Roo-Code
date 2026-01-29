@@ -7,7 +7,11 @@
 		"reset": "Ripristina",
 		"select": "Seleziona",
 		"add": "Aggiungi intestazione",
-		"remove": "Rimuovi"
+		"remove": "Rimuovi",
+		"true": "vero",
+		"false": "falso",
+		"empty": "(vuoto)",
+		"resetToDefault": "Ripristina predefinito ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "Cerca impostazioni...",
@@ -36,6 +40,7 @@
 		"notifications": "Notifiche",
 		"contextManagement": "Contesto",
 		"terminal": "Terminal",
+		"indexing": "Indicizzazione",
 		"slashCommands": "Comandi Slash",
 		"prompts": "Prompt",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "Chiave API OpenRouter è richiesta"
 		},
 		"optional": "opzionale",
+		"stopIndexingButton": "Ferma indicizzazione",
+		"configureInSettings": "Configura nelle Impostazioni →",
+		"enableInSettings": "L'indicizzazione è disabilitata. Abilitala nelle Impostazioni.",
+		"apiKeyNote": {
+			"title": "Nota:",
+			"description": "Le chiavi API per i provider di embedding sono condivise con la tua configurazione del provider API. Se stai utilizzando OpenAI, Gemini, Mistral o OpenRouter per l'indicizzazione, assicurati che la chiave API corrispondente sia configurata nel tuo profilo provider attivo."
+		},
 		"advancedConfigLabel": "Configurazione avanzata",
 		"searchMinScoreLabel": "Soglia punteggio di ricerca",
 		"searchMinScoreDescription": "Punteggio minimo di somiglianza (0.0-1.0) richiesto per i risultati della ricerca. Valori più bassi restituiscono più risultati ma potrebbero essere meno pertinenti. Valori più alti restituiscono meno risultati ma più pertinenti.",

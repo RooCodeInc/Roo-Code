@@ -7,7 +7,11 @@
 		"reset": "Reset",
 		"select": "Pilih",
 		"add": "Tambah Header",
-		"remove": "Hapus"
+		"remove": "Hapus",
+		"true": "benar",
+		"false": "salah",
+		"empty": "(kosong)",
+		"resetToDefault": "Atur ulang ke default ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "Cari pengaturan...",
@@ -36,6 +40,7 @@
 		"notifications": "Notifikasi",
 		"contextManagement": "Konteks",
 		"terminal": "Terminal",
+		"indexing": "Pengindeksan",
 		"slashCommands": "Perintah Slash",
 		"prompts": "Prompt",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "Kunci API OpenRouter diperlukan"
 		},
 		"optional": "opsional",
+		"stopIndexingButton": "Hentikan Pengindeksan",
+		"configureInSettings": "Konfigurasi di Pengaturan →",
+		"enableInSettings": "Pengindeksan dinonaktifkan. Aktifkan di Pengaturan.",
+		"apiKeyNote": {
+			"title": "Catatan:",
+			"description": "Kunci API untuk penyedia embedding dibagikan dengan konfigurasi penyedia API kamu. Jika kamu menggunakan OpenAI, Gemini, Mistral, atau OpenRouter untuk pengindeksan, pastikan kunci API yang sesuai telah dikonfigurasi di profil penyedia aktif kamu."
+		},
 		"advancedConfigLabel": "Konfigurasi Lanjutan",
 		"searchMinScoreLabel": "Ambang Batas Skor Pencarian",
 		"searchMinScoreDescription": "Skor kesamaan minimum (0.0-1.0) yang diperlukan untuk hasil pencarian. Nilai yang lebih rendah mengembalikan lebih banyak hasil tetapi mungkin kurang relevan. Nilai yang lebih tinggi mengembalikan lebih sedikit hasil tetapi lebih relevan.",

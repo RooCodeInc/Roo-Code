@@ -7,7 +7,11 @@
 		"reset": "Redefinir",
 		"select": "Selecionar",
 		"add": "Adicionar cabeçalho",
-		"remove": "Remover"
+		"remove": "Remover",
+		"true": "verdadeiro",
+		"false": "falso",
+		"empty": "(vazio)",
+		"resetToDefault": "Redefinir para padrão ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "Pesquisar configurações...",
@@ -36,6 +40,7 @@
 		"notifications": "Notificações",
 		"contextManagement": "Contexto",
 		"terminal": "Terminal",
+		"indexing": "Indexação",
 		"slashCommands": "Comandos de Barra",
 		"prompts": "Prompts",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "Chave API do OpenRouter é obrigatória"
 		},
 		"optional": "opcional",
+		"stopIndexingButton": "Parar indexação",
+		"configureInSettings": "Configurar nas Configurações →",
+		"enableInSettings": "A indexação está desabilitada. Habilite nas Configurações.",
+		"apiKeyNote": {
+			"title": "Nota:",
+			"description": "As chaves API para provedores de embedding são compartilhadas com sua configuração de provedor de API. Se você estiver usando OpenAI, Gemini, Mistral ou OpenRouter para indexação, certifique-se de que a chave API correspondente esteja configurada em seu perfil de provedor ativo."
+		},
 		"advancedConfigLabel": "Configuração Avançada",
 		"searchMinScoreLabel": "Limite de pontuação de busca",
 		"searchMinScoreDescription": "Pontuação mínima de similaridade (0.0-1.0) necessária para os resultados da busca. Valores mais baixos retornam mais resultados, mas podem ser menos relevantes. Valores mais altos retornam menos resultados, mas mais relevantes.",

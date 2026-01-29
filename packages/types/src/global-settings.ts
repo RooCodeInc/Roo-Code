@@ -176,6 +176,8 @@ export const globalSettingsSchema = z.object({
 	maxImageFileSize: z.number().optional(),
 	maxTotalImageSize: z.number().optional(),
 
+	terminalOutputLineLimit: z.number().optional(),
+	terminalOutputCharacterLimit: z.number().optional(),
 	terminalOutputPreviewSize: z.enum(["small", "medium", "large"]).optional(),
 	terminalShellIntegrationTimeout: z.number().optional(),
 	terminalShellIntegrationDisabled: z.boolean().optional(),
@@ -185,6 +187,7 @@ export const globalSettingsSchema = z.object({
 	terminalZshOhMy: z.boolean().optional(),
 	terminalZshP10k: z.boolean().optional(),
 	terminalZdotdir: z.boolean().optional(),
+	terminalCompressProgressBar: z.boolean().optional(),
 
 	diagnosticsEnabled: z.boolean().optional(),
 
@@ -193,6 +196,31 @@ export const globalSettingsSchema = z.object({
 
 	codebaseIndexModels: codebaseIndexModelsSchema.optional(),
 	codebaseIndexConfig: codebaseIndexConfigSchema.optional(),
+
+	// Indexing settings (flattened from codebaseIndexConfig for reset-to-default pattern)
+	codebaseIndexEnabled: z.boolean().optional(),
+	codebaseIndexQdrantUrl: z.string().optional(),
+	codebaseIndexEmbedderProvider: z
+		.enum([
+			"openai",
+			"ollama",
+			"openai-compatible",
+			"gemini",
+			"mistral",
+			"vercel-ai-gateway",
+			"bedrock",
+			"openrouter",
+		])
+		.optional(),
+	codebaseIndexEmbedderBaseUrl: z.string().optional(),
+	codebaseIndexEmbedderModelId: z.string().optional(),
+	codebaseIndexEmbedderModelDimension: z.number().optional(),
+	codebaseIndexOpenAiCompatibleBaseUrl: z.string().optional(),
+	codebaseIndexBedrockRegion: z.string().optional(),
+	codebaseIndexBedrockProfile: z.string().optional(),
+	codebaseIndexSearchMaxResults: z.number().optional(),
+	codebaseIndexSearchMinScore: z.number().optional(),
+	codebaseIndexOpenRouterSpecificProvider: z.string().optional(),
 
 	language: languagesSchema.optional(),
 
@@ -235,6 +263,13 @@ export const globalSettingsSchema = z.object({
 	 * @default true
 	 */
 	showWorktreesInHomeScreen: z.boolean().optional(),
+
+	/**
+	 * Version of settings migrations that have been applied.
+	 * Used to track which migrations have run to avoid re-running them.
+	 * @internal
+	 */
+	settingsMigrationVersion: z.number().optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>

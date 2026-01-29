@@ -90,15 +90,17 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setTtsEnabled: (value: boolean) => void
 	setTtsSpeed: (value: number) => void
 	setEnableCheckpoints: (value: boolean) => void
-	checkpointTimeout: number
+	checkpointTimeout?: number // Optional - uses settingDefaults.checkpointTimeout when undefined
 	setCheckpointTimeout: (value: number) => void
 	setBrowserViewportSize: (value: string) => void
 	setWriteDelayMs: (value: number) => void
 	screenshotQuality?: number
 	setScreenshotQuality: (value: number) => void
-	terminalOutputPreviewSize?: "small" | "medium" | "large"
-	setTerminalOutputPreviewSize: (value: "small" | "medium" | "large") => void
-	mcpEnabled: boolean
+	terminalOutputLineLimit?: number
+	setTerminalOutputLineLimit: (value: number) => void
+	terminalOutputCharacterLimit?: number
+	setTerminalOutputCharacterLimit: (value: number) => void
+	mcpEnabled?: boolean // Optional - uses settingDefaults.mcpEnabled when undefined
 	setMcpEnabled: (value: boolean) => void
 	enableMcpServerCreation: boolean
 	setEnableMcpServerCreation: (value: boolean) => void
@@ -121,18 +123,18 @@ export interface ExtensionStateContextType extends ExtensionState {
 	customModes: ModeConfig[]
 	setCustomModes: (value: ModeConfig[]) => void
 	setMaxOpenTabsContext: (value: number) => void
-	maxWorkspaceFiles: number
+	maxWorkspaceFiles?: number // Optional - uses settingDefaults.maxWorkspaceFiles when undefined
 	setMaxWorkspaceFiles: (value: number) => void
 	setTelemetrySetting: (value: TelemetrySetting) => void
 	remoteBrowserEnabled?: boolean
 	setRemoteBrowserEnabled: (value: boolean) => void
 	awsUsePromptCache?: boolean
 	setAwsUsePromptCache: (value: boolean) => void
-	maxReadFileLine: number
+	maxReadFileLine?: number // Optional - uses settingDefaults.maxReadFileLine when undefined
 	setMaxReadFileLine: (value: number) => void
-	maxImageFileSize: number
+	maxImageFileSize?: number // Optional - uses settingDefaults.maxImageFileSize when undefined
 	setMaxImageFileSize: (value: number) => void
-	maxTotalImageSize: number
+	maxTotalImageSize?: number // Optional - uses settingDefaults.maxTotalImageSize when undefined
 	setMaxTotalImageSize: (value: number) => void
 	machineId?: string
 	pinnedApiConfigs?: Record<string, boolean>
@@ -537,8 +539,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			setState((prevState) => ({ ...prevState, browserViewportSize: value })),
 		setWriteDelayMs: (value) => setState((prevState) => ({ ...prevState, writeDelayMs: value })),
 		setScreenshotQuality: (value) => setState((prevState) => ({ ...prevState, screenshotQuality: value })),
-		setTerminalOutputPreviewSize: (value) =>
-			setState((prevState) => ({ ...prevState, terminalOutputPreviewSize: value })),
+		setTerminalOutputLineLimit: (value) =>
+			setState((prevState) => ({ ...prevState, terminalOutputLineLimit: value })),
+		setTerminalOutputCharacterLimit: (value) =>
+			setState((prevState) => ({ ...prevState, terminalOutputCharacterLimit: value })),
 		setTerminalShellIntegrationTimeout: (value) =>
 			setState((prevState) => ({ ...prevState, terminalShellIntegrationTimeout: value })),
 		setTerminalShellIntegrationDisabled: (value) =>

@@ -7,7 +7,11 @@
 		"reset": "Zurücksetzen",
 		"select": "Auswählen",
 		"add": "Header hinzufügen",
-		"remove": "Entfernen"
+		"remove": "Entfernen",
+		"true": "wahr",
+		"false": "falsch",
+		"empty": "(leer)",
+		"resetToDefault": "Auf Standard zurücksetzen ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "Einstellungen durchsuchen...",
@@ -36,6 +40,7 @@
 		"notifications": "Benachrichtigungen",
 		"contextManagement": "Kontext",
 		"terminal": "Terminal",
+		"indexing": "Indizierung",
 		"slashCommands": "Slash-Befehle",
 		"prompts": "Eingabeaufforderungen",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "OpenRouter API-Schlüssel ist erforderlich"
 		},
 		"optional": "optional",
+		"stopIndexingButton": "Indizierung stoppen",
+		"configureInSettings": "In Einstellungen konfigurieren →",
+		"enableInSettings": "Indizierung ist deaktiviert. Aktiviere sie in den Einstellungen.",
+		"apiKeyNote": {
+			"title": "Hinweis:",
+			"description": "API-Schlüssel für Embedding-Anbieter werden mit deiner API-Anbieter-Konfiguration geteilt. Wenn du OpenAI, Gemini, Mistral oder OpenRouter für die Indizierung verwendest, stelle sicher, dass der entsprechende API-Schlüssel in deinem aktiven Anbieter-Profil konfiguriert ist."
+		},
 		"advancedConfigLabel": "Erweiterte Konfiguration",
 		"searchMinScoreLabel": "Suchergebnis-Schwellenwert",
 		"searchMinScoreDescription": "Mindestähnlichkeitswert (0.0-1.0), der für Suchergebnisse erforderlich ist. Niedrigere Werte liefern mehr Ergebnisse, die jedoch möglicherweise weniger relevant sind. Höhere Werte liefern weniger, aber relevantere Ergebnisse.",

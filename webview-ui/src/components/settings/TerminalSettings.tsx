@@ -6,10 +6,10 @@ import { Trans } from "react-i18next"
 import { buildDocLink } from "@src/utils/docLinks"
 import { useEvent, useMount } from "react-use"
 
-import { type ExtensionMessage, type TerminalOutputPreviewSize } from "@roo-code/types"
+import { type ExtensionMessage, settingDefaults } from "@roo-code/types"
 
 import { cn } from "@/lib/utils"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider } from "@/components/ui"
+import { Slider } from "@/components/ui"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -17,7 +17,8 @@ import { Section } from "./Section"
 import { SearchableSetting } from "./SearchableSetting"
 
 type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
-	terminalOutputPreviewSize?: TerminalOutputPreviewSize
+	terminalOutputLineLimit?: number
+	terminalOutputCharacterLimit?: number
 	terminalShellIntegrationTimeout?: number
 	terminalShellIntegrationDisabled?: boolean
 	terminalCommandDelay?: number
@@ -26,8 +27,10 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalZshOhMy?: boolean
 	terminalZshP10k?: boolean
 	terminalZdotdir?: boolean
+	terminalCompressProgressBar?: boolean
 	setCachedStateField: SetCachedStateField<
-		| "terminalOutputPreviewSize"
+		| "terminalOutputLineLimit"
+		| "terminalOutputCharacterLimit"
 		| "terminalShellIntegrationTimeout"
 		| "terminalShellIntegrationDisabled"
 		| "terminalCommandDelay"
@@ -36,11 +39,13 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "terminalZshOhMy"
 		| "terminalZshP10k"
 		| "terminalZdotdir"
+		| "terminalCompressProgressBar"
 	>
 }
 
 export const TerminalSettings = ({
-	terminalOutputPreviewSize,
+	terminalOutputLineLimit,
+	terminalOutputCharacterLimit,
 	terminalShellIntegrationTimeout,
 	terminalShellIntegrationDisabled,
 	terminalCommandDelay,
@@ -49,6 +54,7 @@ export const TerminalSettings = ({
 	terminalZshOhMy,
 	terminalZshP10k,
 	terminalZdotdir,
+	terminalCompressProgressBar,
 	setCachedStateField,
 	className,
 	...props
@@ -100,28 +106,92 @@ export const TerminalSettings = ({
 							<label className="block font-medium mb-1">
 								{t("settings:terminal.outputPreviewSize.label")}
 							</label>
-							<Select
-								value={terminalOutputPreviewSize || "medium"}
-								onValueChange={(value) =>
-									setCachedStateField("terminalOutputPreviewSize", value as TerminalOutputPreviewSize)
-								}>
-								<SelectTrigger className="w-full" data-testid="terminal-output-preview-size-dropdown">
-									<SelectValue placeholder={t("settings:common.select")} />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="small">
-										{t("settings:terminal.outputPreviewSize.options.small")}
-									</SelectItem>
-									<SelectItem value="medium">
-										{t("settings:terminal.outputPreviewSize.options.medium")}
-									</SelectItem>
-									<SelectItem value="large">
-										{t("settings:terminal.outputPreviewSize.options.large")}
-									</SelectItem>
-								</SelectContent>
-							</Select>
+							<div className="flex items-center gap-2">
+								<Slider
+									min={100}
+									max={5000}
+									step={100}
+									value={[terminalOutputLineLimit ?? settingDefaults.terminalOutputLineLimit]}
+									onValueChange={([value]) => setCachedStateField("terminalOutputLineLimit", value)}
+									data-testid="terminal-output-limit-slider"
+								/>
+								<span className="w-10">
+									{terminalOutputLineLimit ?? settingDefaults.terminalOutputLineLimit}
+								</span>
+							</div>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
-								{t("settings:terminal.outputPreviewSize.description")}
+								<Trans i18nKey="settings:terminal.outputLineLimit.description">
+									<VSCodeLink
+										href={buildDocLink(
+											"features/shell-integration#terminal-output-limit",
+											"settings_terminal_output_limit",
+										)}
+										style={{ display: "inline" }}>
+										{" "}
+									</VSCodeLink>
+								</Trans>
+							</div>
+						</SearchableSetting>
+						<SearchableSetting
+							settingId="terminal-output-character-limit"
+							section="terminal"
+							label={t("settings:terminal.outputCharacterLimit.label")}>
+							<label className="block font-medium mb-1">
+								{t("settings:terminal.outputCharacterLimit.label")}
+							</label>
+							<div className="flex items-center gap-2">
+								<Slider
+									min={1000}
+									max={100000}
+									step={1000}
+									value={[
+										terminalOutputCharacterLimit ?? settingDefaults.terminalOutputCharacterLimit,
+									]}
+									onValueChange={([value]) =>
+										setCachedStateField("terminalOutputCharacterLimit", value)
+									}
+									data-testid="terminal-output-character-limit-slider"
+								/>
+								<span className="w-16">
+									{terminalOutputCharacterLimit ?? settingDefaults.terminalOutputCharacterLimit}
+								</span>
+							</div>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								<Trans i18nKey="settings:terminal.outputCharacterLimit.description">
+									<VSCodeLink
+										href={buildDocLink(
+											"features/shell-integration#terminal-output-limit",
+											"settings_terminal_output_character_limit",
+										)}
+										style={{ display: "inline" }}>
+										{" "}
+									</VSCodeLink>
+								</Trans>
+							</div>
+						</SearchableSetting>
+						<SearchableSetting
+							settingId="terminal-compress-progress-bar"
+							section="terminal"
+							label={t("settings:terminal.compressProgressBar.label")}>
+							<VSCodeCheckbox
+								checked={terminalCompressProgressBar ?? true}
+								onChange={(e: any) =>
+									setCachedStateField("terminalCompressProgressBar", e.target.checked)
+								}
+								data-testid="terminal-compress-progress-bar-checkbox">
+								<span className="font-medium">{t("settings:terminal.compressProgressBar.label")}</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm mt-1">
+								<Trans i18nKey="settings:terminal.compressProgressBar.description">
+									<VSCodeLink
+										href={buildDocLink(
+											"features/shell-integration#compress-progress-bar-output",
+											"settings_terminal_compress_progress_bar",
+										)}
+										style={{ display: "inline" }}>
+										{" "}
+									</VSCodeLink>
+								</Trans>
 							</div>
 						</SearchableSetting>
 					</div>
@@ -211,7 +281,10 @@ export const TerminalSettings = ({
 											min={1000}
 											max={60000}
 											step={1000}
-											value={[terminalShellIntegrationTimeout ?? 5000]}
+											value={[
+												terminalShellIntegrationTimeout ??
+													settingDefaults.terminalShellIntegrationTimeout,
+											]}
 											onValueChange={([value]) =>
 												setCachedStateField(
 													"terminalShellIntegrationTimeout",
@@ -220,7 +293,9 @@ export const TerminalSettings = ({
 											}
 										/>
 										<span className="w-10">
-											{(terminalShellIntegrationTimeout ?? 5000) / 1000}s
+											{(terminalShellIntegrationTimeout ??
+												settingDefaults.terminalShellIntegrationTimeout) / 1000}
+											s
 										</span>
 									</div>
 									<div className="text-vscode-descriptionForeground text-sm mt-1">

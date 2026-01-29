@@ -84,14 +84,15 @@ vi.mock("@vscode/webview-ui-toolkit/react", () => ({
 	VSCodeTextArea: ({ value, onChange, ...props }: any) => <textarea value={value} onChange={onChange} {...props} />,
 }))
 
-describe("ContextManagementSettings", () => {
-	const defaultProps = {
-		autoCondenseContext: false,
-		autoCondenseContextPercent: 80,
-		listApiConfigMeta: [],
-		maxOpenTabsContext: 20,
-		maxWorkspaceFiles: 200,
-		showRooIgnoredFiles: false,
+	describe("ContextManagementSettings", () => {
+		const defaultProps = {
+			autoCondenseContext: false,
+			autoCondenseContextPercent: 80,
+			customCondensingPrompt: undefined,
+			listApiConfigMeta: [],
+			maxOpenTabsContext: 20,
+			maxWorkspaceFiles: 200,
+			showRooIgnoredFiles: false,
 		maxReadFileLine: -1,
 		maxConcurrentFileReads: 5,
 		profileThresholds: {},
@@ -509,15 +510,19 @@ describe("ContextManagementSettings", () => {
 			}
 			render(<ContextManagementSettings {...propsWithoutMaxReadFile} />)
 
-			// Controls should still be rendered with default value of -1
+			// Controls should be rendered with default value of -1 (settingDefaults.maxReadFileLine)
 			const input = screen.getByTestId("max-read-file-line-input")
 			const checkbox = screen.getByTestId("max-read-file-always-full-checkbox")
 
 			expect(input).toBeInTheDocument()
 			expect(input).toHaveValue(-1)
-			expect(input).not.toBeDisabled() // Input is not disabled when maxReadFileLine is undefined (only when explicitly set to -1)
+			// With the new defaults system, undefined displays as the default (-1), which means:
+			// - Input IS disabled (because -1 means "always read full file")
+			// - Checkbox IS checked (because -1 means "always read full file")
+			expect(input).toBeDisabled()
 			expect(checkbox).toBeInTheDocument()
-			expect(checkbox).not.toBeChecked() // Checkbox is not checked when maxReadFileLine is undefined (only when explicitly set to -1)
+			const checkboxInput = checkbox.querySelector('input[type="checkbox"]')
+			expect(checkboxInput).toBeChecked()
 		})
 	})
 

@@ -2,6 +2,8 @@ import { VSCodeCheckbox, VSCodeTextField, VSCodeLink } from "@vscode/webview-ui-
 import { HTMLAttributes, useEffect, useMemo, useState } from "react"
 import { Trans } from "react-i18next"
 
+import { settingDefaults } from "@roo-code/types"
+
 import {
 	Select,
 	SelectContent,
@@ -16,6 +18,7 @@ import { useAppTranslation } from "@/i18n/TranslationContext"
 import { vscode } from "@/utils/vscode"
 import { buildDocLink } from "@src/utils/docLinks"
 
+import { ResetToDefault } from "./ResetToDefault"
 import { SearchableSetting } from "./SearchableSetting"
 import { Section } from "./Section"
 import { SectionHeader } from "./SectionHeader"
@@ -115,11 +118,18 @@ export const BrowserSettings = ({
 					settingId="browser-enable"
 					section="browser"
 					label={t("settings:browser.enable.label")}>
-					<VSCodeCheckbox
-						checked={browserToolEnabled}
-						onChange={(e: any) => setCachedStateField("browserToolEnabled", e.target.checked)}>
-						<span className="font-medium">{t("settings:browser.enable.label")}</span>
-					</VSCodeCheckbox>
+					<div className="flex items-center gap-1">
+						<VSCodeCheckbox
+							checked={browserToolEnabled ?? settingDefaults.browserToolEnabled}
+							onChange={(e: any) => setCachedStateField("browserToolEnabled", e.target.checked)}>
+							<span className="font-medium">{t("settings:browser.enable.label")}</span>
+						</VSCodeCheckbox>
+						<ResetToDefault
+							settingKey="browserToolEnabled"
+							currentValue={browserToolEnabled}
+							onReset={() => setCachedStateField("browserToolEnabled", undefined)}
+						/>
+					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						<Trans i18nKey="settings:browser.enable.description">
 							<VSCodeLink
@@ -131,15 +141,22 @@ export const BrowserSettings = ({
 					</div>
 				</SearchableSetting>
 
-				{browserToolEnabled && (
+				{(browserToolEnabled ?? settingDefaults.browserToolEnabled) && (
 					<div className="flex flex-col gap-3 pl-3 border-l-2 border-vscode-button-background">
 						<SearchableSetting
 							settingId="browser-viewport"
 							section="browser"
 							label={t("settings:browser.viewport.label")}>
-							<label className="block font-medium mb-1">{t("settings:browser.viewport.label")}</label>
+							<div className="flex items-center gap-1 mb-1">
+								<label className="block font-medium">{t("settings:browser.viewport.label")}</label>
+								<ResetToDefault
+									settingKey="browserViewportSize"
+									currentValue={browserViewportSize}
+									onReset={() => setCachedStateField("browserViewportSize", undefined)}
+								/>
+							</div>
 							<Select
-								value={browserViewportSize}
+								value={browserViewportSize ?? settingDefaults.browserViewportSize}
 								onValueChange={(value) => setCachedStateField("browserViewportSize", value)}>
 								<SelectTrigger className="w-full">
 									<SelectValue placeholder={t("settings:common.select")} />
@@ -163,18 +180,25 @@ export const BrowserSettings = ({
 							settingId="browser-screenshot-quality"
 							section="browser"
 							label={t("settings:browser.screenshotQuality.label")}>
-							<label className="block font-medium mb-1">
-								{t("settings:browser.screenshotQuality.label")}
-							</label>
+							<div className="flex items-center gap-1 mb-1">
+								<label className="block font-medium">
+									{t("settings:browser.screenshotQuality.label")}
+								</label>
+								<ResetToDefault
+									settingKey="screenshotQuality"
+									currentValue={screenshotQuality}
+									onReset={() => setCachedStateField("screenshotQuality", undefined)}
+								/>
+							</div>
 							<div className="flex items-center gap-2">
 								<Slider
 									min={1}
 									max={100}
 									step={1}
-									value={[screenshotQuality ?? 75]}
+									value={[screenshotQuality ?? settingDefaults.screenshotQuality]}
 									onValueChange={([value]) => setCachedStateField("screenshotQuality", value)}
 								/>
-								<span className="w-10">{screenshotQuality ?? 75}%</span>
+								<span className="w-10">{screenshotQuality ?? settingDefaults.screenshotQuality}%</span>
 							</div>
 							<div className="text-vscode-descriptionForeground text-sm mt-1">
 								{t("settings:browser.screenshotQuality.description")}

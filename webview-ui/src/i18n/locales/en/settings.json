@@ -7,7 +7,11 @@
 		"reset": "Reset",
 		"select": "Select",
 		"add": "Add Header",
-		"remove": "Remove"
+		"remove": "Remove",
+		"true": "true",
+		"false": "false",
+		"empty": "(empty)",
+		"resetToDefault": "Reset to default ({{defaultValue}})"
 	},
 	"header": {
 		"title": "Settings",
@@ -36,6 +40,7 @@
 		"notifications": "Notifications",
 		"contextManagement": "Context",
 		"terminal": "Terminal",
+		"indexing": "Indexing",
 		"slashCommands": "Slash Commands",
 		"prompts": "Prompts",
 		"ui": "UI",
@@ -145,7 +150,10 @@
 		"searchMaxResultsDescription": "Maximum number of search results to return when querying the codebase index. Higher values provide more context but may include less relevant results.",
 		"resetToDefault": "Reset to default",
 		"startIndexingButton": "Start Indexing",
+		"stopIndexingButton": "Stop Indexing",
 		"clearIndexDataButton": "Clear Index Data",
+		"configureInSettings": "Configure in Settings →",
+		"enableInSettings": "Indexing is disabled. Enable it in Settings.",
 		"unsavedSettingsMessage": "Please save your settings before starting the indexing process.",
 		"clearDataDialog": {
 			"title": "Are you sure?",
@@ -189,7 +197,11 @@
 			"baseUrlRequired": "Base URL is required",
 			"modelDimensionMinValue": "Model dimension must be greater than 0"
 		},
-		"optional": "optional"
+		"optional": "optional",
+		"apiKeyNote": {
+			"title": "Note:",
+			"description": "API keys for embedding providers are shared with your API provider configuration. If you're using OpenAI, Gemini, Mistral, or OpenRouter for indexing, ensure the corresponding API key is configured in your active provider profile."
+		}
 	},
 	"autoApprove": {
 		"description": "Run these actions without asking for permission. Only enable for actions you fully trust and if you understand the security risks.",

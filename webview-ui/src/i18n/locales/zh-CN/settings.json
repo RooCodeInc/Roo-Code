@@ -7,7 +7,11 @@
 		"reset": "恢复默认设置",
 		"select": "选择",
 		"add": "添加标头",
-		"remove": "移除"
+		"remove": "移除",
+		"true": "true",
+		"false": "false",
+		"empty": "(空)",
+		"resetToDefault": "重置为默认值 ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "搜索设置...",
@@ -36,6 +40,7 @@
 		"notifications": "通知",
 		"contextManagement": "上下文",
 		"terminal": "终端",
+		"indexing": "索引",
 		"slashCommands": "斜杠命令",
 		"prompts": "提示词",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "OpenRouter API 密钥是必需的"
 		},
 		"optional": "可选",
+		"stopIndexingButton": "停止索引",
+		"configureInSettings": "在设置中配置 →",
+		"enableInSettings": "索引已禁用。在设置中启用。",
+		"apiKeyNote": {
+			"title": "注意:",
+			"description": "嵌入提供商的 API 密钥与你的 API 提供商配置共享。如果你使用 OpenAI、Gemini、Mistral 或 OpenRouter 进行索引，请确保在你的活动提供商配置文件中配置了相应的 API 密钥。"
+		},
 		"advancedConfigLabel": "高级配置",
 		"searchMinScoreLabel": "搜索分数阈值",
 		"searchMinScoreDescription": "搜索结果所需的最低相似度分数（0.0-1.0）。较低的值返回更多结果，但可能不太相关。较高的值返回较少但更相关的结果。",

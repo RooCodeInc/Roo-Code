@@ -7,7 +7,11 @@
 		"reset": "Restablir",
 		"select": "Seleccionar",
 		"add": "Afegir capçalera",
-		"remove": "Eliminar"
+		"remove": "Eliminar",
+		"true": "cert",
+		"false": "fals",
+		"empty": "(buit)",
+		"resetToDefault": "Restablir per defecte ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "Cercar configuració...",
@@ -36,6 +40,7 @@
 		"notifications": "Notificacions",
 		"contextManagement": "Context",
 		"terminal": "Terminal",
+		"indexing": "Indexació",
 		"slashCommands": "Comandes de barra",
 		"prompts": "Indicacions",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "Clau API d'OpenRouter és requerida"
 		},
 		"optional": "opcional",
+		"stopIndexingButton": "Aturar indexació",
+		"configureInSettings": "Configurar a Ajustos →",
+		"enableInSettings": "La indexació està desactivada. Activa-la als Ajustos.",
+		"apiKeyNote": {
+			"title": "Nota:",
+			"description": "Les claus API per als proveïdors d'embedding es comparteixen amb la teva configuració de proveïdor d'API. Si utilitzes OpenAI, Gemini, Mistral o OpenRouter per a la indexació, assegura't que la clau API corresponent estigui configurada al teu perfil de proveïdor actiu."
+		},
 		"advancedConfigLabel": "Configuració avançada",
 		"searchMinScoreLabel": "Llindar de puntuació de cerca",
 		"searchMinScoreDescription": "Puntuació mínima de similitud (0.0-1.0) requerida per als resultats de la cerca. Valors més baixos retornen més resultats però poden ser menys rellevants. Valors més alts retornen menys resultats però més rellevants.",

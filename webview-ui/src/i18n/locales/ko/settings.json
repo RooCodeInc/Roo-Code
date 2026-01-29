@@ -7,7 +7,11 @@
 		"reset": "초기화",
 		"select": "선택",
 		"add": "헤더 추가",
-		"remove": "삭제"
+		"remove": "삭제",
+		"true": "참",
+		"false": "거짓",
+		"empty": "(비어있음)",
+		"resetToDefault": "기본값으로 재설정 ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "설정 검색...",
@@ -36,6 +40,7 @@
 		"notifications": "알림",
 		"contextManagement": "컨텍스트",
 		"terminal": "터미널",
+		"indexing": "인덱싱",
 		"slashCommands": "슬래시 명령",
 		"prompts": "프롬프트",
 		"ui": "UI",
@@ -117,7 +122,10 @@
 		"qdrantUrlLabel": "Qdrant URL",
 		"qdrantKeyLabel": "Qdrant 키:",
 		"startIndexingButton": "시작",
+		"stopIndexingButton": "인덱싱 중지",
 		"clearIndexDataButton": "인덱스 지우기",
+		"configureInSettings": "설정에서 구성 →",
+		"enableInSettings": "인덱싱이 비활성화되어 있습니다. 설정에서 활성화하세요.",
 		"unsavedSettingsMessage": "인덱싱 프로세스를 시작하기 전에 설정을 저장해 주세요.",
 		"clearDataDialog": {
 			"title": "확실합니까?",
@@ -152,6 +160,10 @@
 			"error": "오류"
 		},
 		"close": "닫기",
+		"apiKeyNote": {
+			"title": "참고:",
+			"description": "임베딩 제공업체의 API 키는 API 제공업체 구성과 공유됩니다. 인덱싱에 OpenAI, Gemini, Mistral 또는 OpenRouter를 사용하는 경우 활성 제공업체 프로필에 해당 API 키가 구성되어 있는지 확인하세요."
+		},
 		"validation": {
 			"invalidQdrantUrl": "잘못된 Qdrant URL",
 			"invalidOllamaUrl": "잘못된 Ollama URL",
