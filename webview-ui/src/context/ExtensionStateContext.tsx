@@ -39,6 +39,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	mcpServers: McpServer[]
 	hasSystemPromptOverride?: boolean
 	currentCheckpoint?: string
+	initialCheckpointState?: "pending" | "ready" | "failed" | null
+	initialCheckpointHash?: string | null
 	currentTaskTodos?: TodoItem[] // Initial todos for the current task
 	filePaths: string[]
 	openedTabs: Array<{ label: string; isActive: boolean; path?: string }>
@@ -283,6 +285,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [skills, setSkills] = useState<SkillMetadata[]>([])
 	const [mcpServers, setMcpServers] = useState<McpServer[]>([])
 	const [currentCheckpoint, setCurrentCheckpoint] = useState<string>()
+	const [initialCheckpointState, setInitialCheckpointState] = useState<"pending" | "ready" | "failed" | null>(null)
+	const [initialCheckpointHash, setInitialCheckpointHash] = useState<string | null>(null)
 	const [extensionRouterModels, setExtensionRouterModels] = useState<RouterModels | undefined>(undefined)
 	const [marketplaceItems, setMarketplaceItems] = useState<any[]>([])
 	const [alwaysAllowFollowupQuestions, setAlwaysAllowFollowupQuestions] = useState(false) // Add state for follow-up questions auto-approve
@@ -405,6 +409,11 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					setCurrentCheckpoint(message.text)
 					break
 				}
+				case "initialCheckpointState": {
+					setInitialCheckpointState(message.initialCheckpointState ?? null)
+					setInitialCheckpointHash(message.initialCheckpointHash ?? null)
+					break
+				}
 				case "listApiConfig": {
 					setListApiConfigMeta(message.listApiConfig ?? [])
 					break
@@ -492,6 +501,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		theme,
 		mcpServers,
 		currentCheckpoint,
+		initialCheckpointState,
+		initialCheckpointHash,
 		filePaths,
 		openedTabs,
 		commands,
