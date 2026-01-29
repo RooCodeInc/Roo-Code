@@ -54,31 +54,6 @@ vi.mock("@src/components/ui", () => ({
 	TooltipProvider: ({ children }: any) => <>{children}</>,
 	TooltipTrigger: ({ children }: any) => <>{children}</>,
 	TooltipContent: ({ children }: any) => <div>{children}</div>,
-	// Add Dialog components (used by CreateSkillDialog)
-	Dialog: ({ children, open }: any) => (open ? <div data-testid="dialog">{children}</div> : null),
-	DialogContent: ({ children, className }: any) => (
-		<div data-testid="dialog-content" className={className}>
-			{children}
-		</div>
-	),
-	DialogHeader: ({ children }: any) => <div data-testid="dialog-header">{children}</div>,
-	DialogTitle: ({ children }: any) => <div data-testid="dialog-title">{children}</div>,
-	DialogDescription: ({ children }: any) => <div data-testid="dialog-description">{children}</div>,
-	DialogFooter: ({ children }: any) => <div data-testid="dialog-footer">{children}</div>,
-	// Add Select components (used by CreateSkillDialog)
-	Select: ({ children, value, onValueChange: _onValueChange }: any) => (
-		<div data-testid="select" data-value={value}>
-			{children}
-		</div>
-	),
-	SelectContent: ({ children }: any) => <div data-testid="select-content">{children}</div>,
-	SelectItem: ({ children, value }: any) => (
-		<div data-testid={`select-item-${value}`} data-value={value}>
-			{children}
-		</div>
-	),
-	SelectTrigger: ({ children }: any) => <div data-testid="select-trigger">{children}</div>,
-	SelectValue: ({ placeholder }: any) => <div data-testid="select-value">{placeholder}</div>,
 }))
 
 // Mock ModesView and McpView since they're rendered during indexing
