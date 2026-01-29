@@ -6,7 +6,7 @@ import type OpenAI from "openai"
 export const DEFAULT_LINE_LIMIT = 2000
 
 /** Maximum characters per line before truncation */
-export const MAX_LINE_LENGTH = 500
+export const MAX_LINE_LENGTH = 2000
 
 /** Default indentation levels to include above anchor (0 = unlimited) */
 export const DEFAULT_MAX_LEVELS = 0
@@ -65,9 +65,10 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		"Read a file and return its contents with line numbers for diffing or discussion. IMPORTANT: This tool reads exactly one file per call. If you need multiple files, issue multiple parallel read_file calls."
 
 	const modeDescription =
-		` Supports two modes: 'slice' (default) reads lines sequentially with offset/limit; 'indentation' extracts semantic code blocks around an anchor line based on indentation hierarchy.` +
-		` Use slice mode when exploring a file from the beginning, reading configuration files, or when you don't have a specific line number to target.` +
-		` Use indentation mode when you have a specific line number from search results, error messages, or definition lookups and want the full containing function/class without truncation.`
+		` Supports two modes: 'slice' (default) reads lines sequentially with offset/limit; 'indentation' extracts complete semantic code blocks around an anchor line based on indentation hierarchy.` +
+		` Slice mode is ideal for initial file exploration, understanding overall structure, reading configuration/data files, or when you need a specific line range. Use it when you don't have a target line number.` +
+		` PREFER indentation mode when you have a specific line number from search results, error messages, or definition lookups - it guarantees complete, syntactically valid code blocks without mid-function truncation.` +
+		` IMPORTANT: Indentation mode requires anchor_line to be useful. Without it, only header content (imports) is returned.`
 
 	const limitNote = ` By default, returns up to ${DEFAULT_LINE_LIMIT} lines per file. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
 
@@ -84,7 +85,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		anchor_line: {
 			type: "integer",
 			description:
-				"1-based line number to anchor the extraction (required for indentation mode). The complete containing function, method, or class will be extracted with proper context. Typically obtained from search results, error stack traces, or definition lookups. If you don't have a specific line number, use slice mode instead.",
+				"1-based line number to anchor the extraction. REQUIRED for meaningful indentation mode results. The extractor finds the semantic block (function, method, class) containing this line and returns it completely. Without anchor_line, indentation mode defaults to line 1 and returns only imports/header content. Obtain anchor_line from: search results, error stack traces, definition lookups, codebase_search results, or condensed file summaries (e.g., '14--28 | export class UserService' means anchor_line=14).",
 		},
 		max_levels: {
 			type: "integer",
@@ -116,7 +117,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 			type: "string",
 			enum: ["slice", "indentation"],
 			description:
-				"Reading mode. 'slice' (default): read lines sequentially with offset/limit - use for general file exploration or when you don't have a target line number. 'indentation': extract complete semantic code blocks containing anchor_line - use when you have a line number and want the full function/class without truncation.",
+				"Reading mode. 'slice' (default): read lines sequentially with offset/limit - use for general file exploration or when you don't have a target line number (may truncate code mid-function). 'indentation': extract complete semantic code blocks containing anchor_line - PREFERRED when you have a line number because it guarantees complete, valid code blocks. WARNING: Do not use indentation mode without specifying indentation.anchor_line, or you will only get header content.",
 		},
 		offset: {
 			type: "integer",
@@ -128,7 +129,8 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		},
 		indentation: {
 			type: "object",
-			description: "Indentation mode options. Only used when mode='indentation'.",
+			description:
+				"Indentation mode options. Only used when mode='indentation'. You MUST specify anchor_line for useful results - it determines which code block to extract.",
 			properties: indentationProperties,
 			required: [],
 			additionalProperties: false,
