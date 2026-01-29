@@ -218,6 +218,7 @@ describe("mergeExtensionState", () => {
 			taskSyncEnabled: false,
 			featureRoomoteControlEnabled: false,
 			isBrowserSessionActive: false,
+			activeTerminalSessions: 0,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS, // Add the checkpoint timeout property
 		}
 

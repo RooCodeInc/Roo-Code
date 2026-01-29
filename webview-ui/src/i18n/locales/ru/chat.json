@@ -360,6 +360,11 @@
 		"total": "Общая стоимость: ${{cost}}",
 		"includesSubtasks": "Включает стоимость подзадач"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} сеанс терминала запущен",
+		"sessionsRunning_other": "{{count}} сеансов терминала запущено",
+		"sessionsRunning": "{{count}} сеанс(ов) терминала запущено"
+	},
 	"browser": {
 		"session": "Сеанс браузера",
 		"active": "Активен",
@@ -511,6 +516,14 @@
 		"openMcpSettings": "Открыть настройки MCP"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Roo прочитал вывод команды"
+	},
+	"stdinOperations": {
+		"sentToSession": "Отправлено \"{{chars}}\" в сеанс {{sessionId}}",
+		"polledSession": "Опрошен сеанс {{sessionId}}",
+		"wantsToTerminate": "Хочет завершить сеанс {{sessionId}}",
+		"didTerminate": "Завершен сеанс {{sessionId}}",
+		"wantsToListSessions": "Хочет получить список активных сеансов",
+		"didListSessions": "Получен список активных сеансов"
 	}
 }

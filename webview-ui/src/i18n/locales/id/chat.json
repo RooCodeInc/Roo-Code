@@ -380,6 +380,11 @@
 		"total": "Total Biaya: ${{cost}}",
 		"includesSubtasks": "Termasuk biaya subtugas"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} sesi terminal berjalan",
+		"sessionsRunning_other": "{{count}} sesi terminal berjalan",
+		"sessionsRunning": "{{count}} sesi terminal berjalan"
+	},
 	"browser": {
 		"session": "Sesi Browser",
 		"active": "Aktif",
@@ -516,6 +521,14 @@
 		"openMcpSettings": "Buka Pengaturan MCP"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Roo membaca output perintah"
+	},
+	"stdinOperations": {
+		"sentToSession": "Mengirim \"{{chars}}\" ke sesi {{sessionId}}",
+		"polledSession": "Memeriksa sesi {{sessionId}}",
+		"wantsToTerminate": "Ingin menghentikan sesi {{sessionId}}",
+		"didTerminate": "Menghentikan sesi {{sessionId}}",
+		"wantsToListSessions": "Ingin mendaftar sesi aktif",
+		"didListSessions": "Mendaftar sesi aktif"
 	}
 }

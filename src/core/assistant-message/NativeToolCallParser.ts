@@ -400,6 +400,30 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "write_stdin":
+				if (partialArgs.session_id !== undefined) {
+					nativeArgs = {
+						session_id: partialArgs.session_id,
+						chars: partialArgs.chars,
+						yield_time_ms: partialArgs.yield_time_ms,
+						max_output_tokens: partialArgs.max_output_tokens,
+					}
+				}
+				break
+
+			case "terminate_session":
+				if (partialArgs.session_id !== undefined) {
+					nativeArgs = {
+						session_id: partialArgs.session_id,
+					}
+				}
+				break
+
+			case "list_sessions":
+				// No parameters needed
+				nativeArgs = {}
+				break
+
 			case "write_to_file":
 				if (partialArgs.path || partialArgs.content) {
 					nativeArgs = {
@@ -686,6 +710,30 @@ export class NativeToolCallParser {
 							cwd: args.cwd,
 						} as NativeArgsFor<TName>
 					}
+					break
+
+				case "write_stdin":
+					if (args.session_id !== undefined) {
+						nativeArgs = {
+							session_id: args.session_id,
+							chars: args.chars,
+							yield_time_ms: args.yield_time_ms,
+							max_output_tokens: args.max_output_tokens,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "terminate_session":
+					if (args.session_id !== undefined) {
+						nativeArgs = {
+							session_id: args.session_id,
+						} as NativeArgsFor<TName>
+					}
+					break
+
+				case "list_sessions":
+					// No parameters needed
+					nativeArgs = {} as NativeArgsFor<TName>
 					break
 
 				case "apply_diff":

@@ -359,6 +359,11 @@
 		"total": "Coût total : ${{cost}}",
 		"includesSubtasks": "Inclut les coûts des sous-tâches"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} session de terminal en cours d'exécution",
+		"sessionsRunning_other": "{{count}} sessions de terminal en cours d'exécution",
+		"sessionsRunning": "{{count}} session(s) de terminal en cours d'exécution"
+	},
 	"browser": {
 		"session": "Session du navigateur",
 		"active": "Actif",
@@ -510,6 +515,14 @@
 		"openMcpSettings": "Ouvrir les paramètres MCP"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Roo a lu la sortie de la commande"
+	},
+	"stdinOperations": {
+		"sentToSession": "\"{{chars}}\" envoyé à la session {{sessionId}}",
+		"polledSession": "Session {{sessionId}} interrogée",
+		"wantsToTerminate": "Veut terminer la session {{sessionId}}",
+		"didTerminate": "Session {{sessionId}} terminée",
+		"wantsToListSessions": "Veut lister les sessions actives",
+		"didListSessions": "Sessions actives listées"
 	}
 }

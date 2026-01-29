@@ -373,6 +373,11 @@
 		"total": "總成本：${{cost}}",
 		"includesSubtasks": "包含子任務成本"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} 個終端機工作階段執行中",
+		"sessionsRunning_other": "{{count}} 個終端機工作階段執行中",
+		"sessionsRunning": "{{count}} 個終端機工作階段執行中"
+	},
 	"browser": {
 		"session": "瀏覽器工作階段",
 		"active": "使用中",
@@ -501,6 +506,14 @@
 		"openMcpSettings": "開啟 MCP 設定"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Roo 讀取了命令輸出"
+	},
+	"stdinOperations": {
+		"sentToSession": "已向工作階段 {{sessionId}} 傳送 \"{{chars}}\"",
+		"polledSession": "已輪詢工作階段 {{sessionId}}",
+		"wantsToTerminate": "想要終止工作階段 {{sessionId}}",
+		"didTerminate": "已終止工作階段 {{sessionId}}",
+		"wantsToListSessions": "想要列出使用中的工作階段",
+		"didListSessions": "已列出使用中的工作階段"
 	}
 }

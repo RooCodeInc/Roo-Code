@@ -360,6 +360,11 @@
 		"total": "总成本: ${{cost}}",
 		"includesSubtasks": "包括子任务成本"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} 个终端会话运行中",
+		"sessionsRunning_other": "{{count}} 个终端会话运行中",
+		"sessionsRunning": "{{count}} 个终端会话运行中"
+	},
 	"browser": {
 		"session": "浏览器会话",
 		"active": "活动中",
@@ -511,6 +516,14 @@
 		"openMcpSettings": "打开 MCP 设置"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Roo 读取了命令输出"
+	},
+	"stdinOperations": {
+		"sentToSession": "已向会话 {{sessionId}} 发送 \"{{chars}}\"",
+		"polledSession": "已轮询会话 {{sessionId}}",
+		"wantsToTerminate": "想要终止会话 {{sessionId}}",
+		"didTerminate": "已终止会话 {{sessionId}}",
+		"wantsToListSessions": "想要列出活动会话",
+		"didListSessions": "已列出活动会话"
 	}
 }

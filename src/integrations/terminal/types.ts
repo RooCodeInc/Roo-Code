@@ -37,6 +37,11 @@ export interface RooTerminalProcess extends EventEmitter<RooTerminalProcessEvent
 	hasUnretrievedOutput: () => boolean
 	getUnretrievedOutput: () => string
 	trimRetrievedOutput: () => void
+	/**
+	 * Write characters to stdin. Returns true if write was successful.
+	 * May return false if stdin is not available (e.g., stdin: "ignore").
+	 */
+	writeStdin: (chars: string) => boolean
 }
 
 export type RooTerminalProcessResultPromise = RooTerminalProcess & Promise<void>

@@ -359,6 +359,11 @@
 		"total": "Gesamtkosten: ${{cost}}",
 		"includesSubtasks": "Enthält Kosten für Unteraufgaben"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} Terminal-Sitzung läuft",
+		"sessionsRunning_other": "{{count}} Terminal-Sitzungen laufen",
+		"sessionsRunning": "{{count}} Terminal-Sitzung(en) läuft/laufen"
+	},
 	"browser": {
 		"session": "Browser-Sitzung",
 		"active": "Aktiv",
@@ -511,5 +516,13 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo las Befehlsausgabe"
+	},
+	"stdinOperations": {
+		"sentToSession": "\"{{chars}}\" an Sitzung {{sessionId}} gesendet",
+		"polledSession": "Sitzung {{sessionId}} abgefragt",
+		"wantsToTerminate": "Möchte Sitzung {{sessionId}} beenden",
+		"didTerminate": "Sitzung {{sessionId}} beendet",
+		"wantsToListSessions": "Möchte aktive Sitzungen auflisten",
+		"didListSessions": "Aktive Sitzungen aufgelistet"
 	}
 }

@@ -71,6 +71,7 @@ import {
 	Split,
 	ArrowRight,
 	Check,
+	OctagonX,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PathTooltip } from "../ui/PathTooltip"
@@ -1043,6 +1044,80 @@ export const ChatRowContent = ({
 						)}
 					</>
 				)
+			case "write_stdin": {
+				const stdinTool = tool as any
+				const sessionId = stdinTool.session_id
+				const chars = stdinTool.chars || ""
+				const displayChars = chars.length > 30 ? chars.slice(0, 30) + "..." : chars
+				const escapedChars = displayChars.replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t")
+				return (
+					<>
+						<div style={headerStyle}>
+							<TerminalSquare className="size-4" aria-label="Terminal stdin icon" />
+							<span style={{ fontWeight: "bold" }}>
+								{chars
+									? t("chat:stdinOperations.sentToSession", {
+											sessionId,
+											chars: escapedChars,
+										})
+									: t("chat:stdinOperations.polledSession", { sessionId })}
+							</span>
+						</div>
+						{stdinTool.content && (
+							<div className="pl-6">
+								<CodeAccordian
+									code={stdinTool.content}
+									language="shell-session"
+									isExpanded={isExpanded}
+									onToggleExpand={handleToggleExpand}
+								/>
+							</div>
+						)}
+					</>
+				)
+			}
+			case "terminate_session": {
+				const terminateTool = tool as any
+				const sessionId = terminateTool.session_id
+				return (
+					<>
+						<div style={headerStyle}>
+							<OctagonX className="size-4" aria-label="Terminate session icon" />
+							<span style={{ fontWeight: "bold" }}>
+								{message.type === "ask"
+									? t("chat:stdinOperations.wantsToTerminate", { sessionId })
+									: t("chat:stdinOperations.didTerminate", { sessionId })}
+							</span>
+						</div>
+						{terminateTool.content && (
+							<div className="pl-6 text-muted-foreground">{terminateTool.content}</div>
+						)}
+					</>
+				)
+			}
+			case "list_sessions":
+				return (
+					<>
+						<div style={headerStyle}>
+							<TerminalSquare className="size-4" aria-label="List sessions icon" />
+							<span style={{ fontWeight: "bold" }}>
+								{message.type === "ask"
+									? t("chat:stdinOperations.wantsToListSessions")
+									: t("chat:stdinOperations.didListSessions")}
+							</span>
+						</div>
+						{tool.content && (
+							<div className="pl-6">
+								<CodeAccordian
+									code={tool.content}
+									language="markdown"
+									isExpanded={isExpanded}
+									onToggleExpand={handleToggleExpand}
+								/>
+							</div>
+						)}
+					</>
+				)
 			default:
 				return null
 		}
@@ -1521,7 +1596,7 @@ export const ChatRowContent = ({
 								if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
 								return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 							}
-
+	
 							// Determine if this is a search operation
 							const isSearch = sayTool.searchPattern !== undefined
 

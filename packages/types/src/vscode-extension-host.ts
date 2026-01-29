@@ -387,6 +387,7 @@ export type ExtensionState = Pick<
 	organizationSettingsVersion?: number
 
 	isBrowserSessionActive: boolean // Actual browser session state
+	activeTerminalSessions: number // Count of active terminal sessions for current task
 
 	autoCondenseContext: boolean
 	autoCondenseContextPercent: number

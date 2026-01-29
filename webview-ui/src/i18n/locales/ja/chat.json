@@ -359,6 +359,11 @@
 		"total": "合計コスト: ${{cost}}",
 		"includesSubtasks": "サブタスクのコストを含む"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} 個のターミナルセッションが実行中",
+		"sessionsRunning_other": "{{count}} 個のターミナルセッションが実行中",
+		"sessionsRunning": "{{count}} 個のターミナルセッションが実行中"
+	},
 	"browser": {
 		"session": "ブラウザセッション",
 		"active": "アクティブ",
@@ -510,6 +515,14 @@
 		"openMcpSettings": "MCP 設定を開く"
 	},
 	"readCommandOutput": {
-		"title": "Rooがコマンド出力を読み込みました"
+		"title": "Rooがコマンド出力を読み取りました"
+	},
+	"stdinOperations": {
+		"sentToSession": "セッション {{sessionId}} に \"{{chars}}\" を送信しました",
+		"polledSession": "セッション {{sessionId}} をポーリングしました",
+		"wantsToTerminate": "セッション {{sessionId}} を終了したい",
+		"didTerminate": "セッション {{sessionId}} を終了しました",
+		"wantsToListSessions": "アクティブなセッションを一覧表示したい",
+		"didListSessions": "アクティブなセッションを一覧表示しました"
 	}
 }

@@ -360,6 +360,11 @@
 		"total": "Tổng chi phí: ${{cost}}",
 		"includesSubtasks": "Bao gồm chi phí của các tác vụ phụ"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} phiên terminal đang chạy",
+		"sessionsRunning_other": "{{count}} phiên terminal đang chạy",
+		"sessionsRunning": "{{count}} phiên terminal đang chạy"
+	},
 	"browser": {
 		"session": "Phiên trình duyệt",
 		"active": "Đang hoạt động",
@@ -511,6 +516,14 @@
 		"openMcpSettings": "Mở cài đặt MCP"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Roo đã đọc đầu ra lệnh"
+	},
+	"stdinOperations": {
+		"sentToSession": "Đã gửi \"{{chars}}\" tới phiên {{sessionId}}",
+		"polledSession": "Đã thăm dò phiên {{sessionId}}",
+		"wantsToTerminate": "Muốn kết thúc phiên {{sessionId}}",
+		"didTerminate": "Đã kết thúc phiên {{sessionId}}",
+		"wantsToListSessions": "Muốn liệt kê các phiên đang hoạt động",
+		"didListSessions": "Đã liệt kê các phiên đang hoạt động"
 	}
 }

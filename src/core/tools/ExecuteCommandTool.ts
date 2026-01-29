@@ -16,6 +16,7 @@ import { ExitCodeDetails, RooTerminalCallbacks, RooTerminalProcess } from "../..
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { Terminal } from "../../integrations/terminal/Terminal"
 import { OutputInterceptor } from "../../integrations/terminal/OutputInterceptor"
+import { ProcessManager } from "../../integrations/terminal/ProcessManager"
 import { Package } from "../../shared/package"
 import { t } from "../../i18n"
 import { getTaskDirectoryPath } from "../../utils/storage"
@@ -264,10 +265,10 @@ export async function executeCommandInTerminal(
 				if (interceptor) {
 					persistedResult = await interceptor.finalize()
 				}
-
+	
 				// Continue using compressed output for UI display
 				result = Terminal.compressTerminalOutput(output ?? "")
-
+	
 				task.say("command_output", result)
 				completed = true
 			} finally {
@@ -423,12 +424,31 @@ export async function executeCommandInTerminal(
 			`Command executed in terminal within working directory '${currentWorkingDir}'. ${exitStatus}\nOutput:\n${result}`,
 		]
 	} else {
+		// Process is still running - register it with ProcessManager for write_stdin interaction
+		let sessionId: number | undefined
+		const currentProcess = terminal.process
+
+		if (currentProcess) {
+			try {
+				const processManager = ProcessManager.getInstance()
+				sessionId = processManager.registerProcess(terminal, currentProcess, task.taskId, command)
+			} catch (error) {
+				console.warn(`[ExecuteCommandTool] Failed to register process: ${error}`)
+			}
+		}
+
+		const sessionInfo =
+			sessionId !== undefined
+				? `\nSession ID: ${sessionId} - Use write_stdin tool with this session_id to send input to the process.`
+				: ""
+
 		return [
 			false,
 			[
 				`Command is still running in terminal ${workingDir ? ` from '${workingDir.toPosix()}'` : ""}.`,
 				result.length > 0 ? `Here's the output so far:\n${result}\n` : "\n",
 				"You will be updated on the terminal status and new output in the future.",
+				sessionInfo,
 			].join("\n"),
 		]
 	}

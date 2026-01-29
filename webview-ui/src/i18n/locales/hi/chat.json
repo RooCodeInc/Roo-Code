@@ -359,6 +359,11 @@
 		"total": "कुल लागत: ${{cost}}",
 		"includesSubtasks": "उप-कार्यों की लागत शामिल है"
 	},
+	"terminal": {
+		"sessionsRunning_one": "{{count}} टर्मिनल सत्र चल रहा है",
+		"sessionsRunning_other": "{{count}} टर्मिनल सत्र चल रहे हैं",
+		"sessionsRunning": "{{count}} टर्मिनल सत्र चल रहा/रहे है/हैं"
+	},
 	"browser": {
 		"session": "ब्राउज़र सत्र",
 		"active": "सक्रिय",
@@ -510,6 +515,14 @@
 		"openMcpSettings": "MCP सेटिंग्स खोलें"
 	},
 	"readCommandOutput": {
-		"title": "Roo read command output"
+		"title": "Roo ने कमांड आउटपुट पढ़ा"
+	},
+	"stdinOperations": {
+		"sentToSession": "\"{{chars}}\" सत्र {{sessionId}} को भेजा गया",
+		"polledSession": "सत्र {{sessionId}} की जांच की गई",
+		"wantsToTerminate": "सत्र {{sessionId}} को समाप्त करना चाहता है",
+		"didTerminate": "सत्र {{sessionId}} समाप्त किया गया",
+		"wantsToListSessions": "सक्रिय सत्रों की सूची बनाना चाहता है",
+		"didListSessions": "सक्रिय सत्रों की सूची बनाई गई"
 	}
 }

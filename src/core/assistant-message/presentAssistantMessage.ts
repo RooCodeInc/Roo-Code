@@ -25,6 +25,9 @@ import { applyPatchTool } from "../tools/ApplyPatchTool"
 import { searchFilesTool } from "../tools/SearchFilesTool"
 import { browserActionTool } from "../tools/BrowserActionTool"
 import { executeCommandTool } from "../tools/ExecuteCommandTool"
+import { writeStdinTool } from "../tools/WriteStdinTool"
+import { terminateSessionTool } from "../tools/TerminateSessionTool"
+import { listSessionsTool } from "../tools/ListSessionsTool"
 import { useMcpToolTool } from "../tools/UseMcpToolTool"
 import { accessMcpResourceTool } from "../tools/accessMcpResourceTool"
 import { askFollowupQuestionTool } from "../tools/AskFollowupQuestionTool"
@@ -799,6 +802,27 @@ export async function presentAssistantMessage(cline: Task) {
 					break
 				case "read_command_output":
 					await readCommandOutputTool.handle(cline, block as ToolUse<"read_command_output">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "write_stdin":
+					await writeStdinTool.handle(cline, block as ToolUse<"write_stdin">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "terminate_session":
+					await terminateSessionTool.handle(cline, block as ToolUse<"terminate_session">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "list_sessions":
+					await listSessionsTool.handle(cline, block as ToolUse<"list_sessions">, {
 						askApproval,
 						handleError,
 						pushToolResult,
