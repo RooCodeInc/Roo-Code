@@ -62,6 +62,7 @@ import { EMBEDDING_MODEL_PROFILES } from "../../shared/embeddingModels"
 import { ProfileValidator } from "../../shared/ProfileValidator"
 
 import { Terminal } from "../../integrations/terminal/Terminal"
+import { ProcessManager } from "../../integrations/terminal/ProcessManager"
 import { downloadTask, getTaskFileName } from "../../integrations/misc/export-markdown"
 import { resolveDefaultSaveUri, saveLastExportPath } from "../../utils/export"
 import { getTheme } from "../../integrations/theme/getTheme"
@@ -2074,6 +2075,7 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled,
 			isBrowserSessionActive,
+			activeTerminalSessions,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -2123,6 +2125,7 @@ export class ClineProvider
 			alwaysAllowModeSwitch: alwaysAllowModeSwitch ?? false,
 			alwaysAllowSubtasks: alwaysAllowSubtasks ?? false,
 			isBrowserSessionActive,
+			activeTerminalSessions,
 			allowedMaxRequests,
 			allowedMaxCost,
 			autoCondenseContext: autoCondenseContext ?? true,
@@ -2357,6 +2360,14 @@ export class ClineProvider
 		// Get actual browser session state
 		const isBrowserSessionActive = this.getCurrentTask()?.browserSession?.isSessionActive() ?? false
 
+		// Get active terminal sessions count for current task
+		const currentTaskId = this.getCurrentTask()?.taskId
+		const activeTerminalSessions = currentTaskId
+			? ProcessManager.getInstance()
+					.listSessions(currentTaskId)
+					.filter((s) => s.running).length
+			: 0
+
 		// Return the same structure as before.
 		return {
 			apiConfiguration: providerSettings,
@@ -2375,6 +2386,7 @@ export class ClineProvider
 			alwaysAllowSubtasks: stateValues.alwaysAllowSubtasks ?? false,
 			alwaysAllowFollowupQuestions: stateValues.alwaysAllowFollowupQuestions ?? false,
 			isBrowserSessionActive,
+			activeTerminalSessions,
 			followupAutoApproveTimeoutMs: stateValues.followupAutoApproveTimeoutMs ?? 60000,
 			diagnosticsEnabled: stateValues.diagnosticsEnabled ?? true,
 			allowedMaxRequests: stateValues.allowedMaxRequests,

@@ -11,6 +11,7 @@ import {
 	FoldVertical,
 	Globe,
 	ArrowLeft,
+	TerminalSquare,
 } from "lucide-react"
 import prettyBytes from "pretty-bytes"
 
@@ -68,7 +69,8 @@ const TaskHeader = ({
 	todos,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
-	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive } = useExtensionState()
+	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive, activeTerminalSessions } =
+		useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
@@ -367,6 +369,30 @@ const TaskHeader = ({
 										{t("chat:browser.active")}
 									</span>
 								)}
+							</div>
+						)}
+						{(activeTerminalSessions ?? 0) > 0 && (
+							<div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+								<StandardTooltip
+									content={t("chat:terminal.sessionsRunning", { count: activeTerminalSessions })}>
+									<div
+										className={cn(
+											"relative flex items-center justify-center h-5 w-5 p-0",
+											"text-vscode-foreground opacity-85",
+										)}>
+										<TerminalSquare
+											className="w-4 h-4"
+											style={{
+												color: "#4ade80",
+											}}
+										/>
+									</div>
+								</StandardTooltip>
+								<span
+									className="text-sm font-medium"
+									style={{ color: "var(--vscode-testing-iconPassed)" }}>
+									{activeTerminalSessions}
+								</span>
 							</div>
 						)}
 					</div>

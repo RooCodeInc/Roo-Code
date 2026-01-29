@@ -138,6 +138,13 @@ export abstract class BaseTerminalProcess extends EventEmitter<RooTerminalProces
 	abstract getUnretrievedOutput(): string
 
 	/**
+	 * Write characters to stdin.
+	 * @param chars The characters to write
+	 * @returns true if write was successful, false if stdin is not available
+	 */
+	abstract writeStdin(chars: string): boolean
+
+	/**
 	 * Clears the internal output buffer when all content has been retrieved.
 	 *
 	 * This prevents unbounded memory growth when processing large
