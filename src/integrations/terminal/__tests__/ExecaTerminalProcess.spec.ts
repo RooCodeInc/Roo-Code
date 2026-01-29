@@ -1,20 +1,46 @@
 // npx vitest run integrations/terminal/__tests__/ExecaTerminalProcess.spec.ts
 
 const mockPid = 12345
+let mockExitCode = 0
+let mockShouldThrow = false
+let mockErrorSignal: string | undefined
 
 vitest.mock("execa", () => {
 	const mockKill = vitest.fn()
+	class MockExecaError extends Error {
+		exitCode: number
+		signal?: string
+		constructor(message: string, exitCode: number, signal?: string) {
+			super(message)
+			this.exitCode = exitCode
+			this.signal = signal
+		}
+	}
 	const execa = vitest.fn((options: any) => {
-		return (_template: TemplateStringsArray, ...args: any[]) => ({
-			pid: mockPid,
-			iterable: (_opts: any) =>
-				(async function* () {
-					yield "test output\n"
-				})(),
-			kill: mockKill,
-		})
+		return (_template: TemplateStringsArray, ...args: any[]) => {
+			// Create a promise that resolves/rejects based on mockShouldThrow
+			const resultPromise = new Promise((resolve, reject) => {
+				// Use setImmediate to allow the iterable to be consumed first
+				setImmediate(() => {
+					if (mockShouldThrow) {
+						reject(new MockExecaError("Command failed", mockExitCode, mockErrorSignal))
+					} else {
+						resolve({ exitCode: mockExitCode })
+					}
+				})
+			})
+
+			return Object.assign(resultPromise, {
+				pid: mockPid,
+				iterable: (_opts: any) =>
+					(async function* () {
+						yield "test output\n"
+					})(),
+				kill: mockKill,
+			})
+		}
 	})
-	return { execa, ExecaError: class extends Error {} }
+	return { execa, ExecaError: MockExecaError }
 })
 
 vitest.mock("ps-tree", () => ({
@@ -31,6 +57,11 @@ describe("ExecaTerminalProcess", () => {
 	let originalEnv: NodeJS.ProcessEnv
 
 	beforeEach(() => {
+		// Reset mock state
+		mockExitCode = 0
+		mockShouldThrow = false
+		mockErrorSignal = undefined
+
 		originalEnv = { ...process.env }
 		mockTerminal = {
 			provider: "execa",
@@ -161,6 +192,42 @@ describe("ExecaTerminalProcess", () => {
 
 			expect(terminalProcess["fullOutput"]).toBe("")
 			expect(terminalProcess["lastRetrievedIndex"]).toBe(0)
+		})
+	})
+
+	describe("exit code handling", () => {
+		it("should emit shell_execution_complete with non-zero exit code when command fails", async () => {
+			mockExitCode = 1
+			const spy = vitest.fn()
+			terminalProcess.on("shell_execution_complete", spy)
+			await terminalProcess.run("exit 1")
+			expect(spy).toHaveBeenCalledWith({ exitCode: 1 })
+		})
+
+		it("should emit shell_execution_complete with specific non-zero exit code", async () => {
+			mockExitCode = 127
+			const spy = vitest.fn()
+			terminalProcess.on("shell_execution_complete", spy)
+			await terminalProcess.run("nonexistent_command")
+			expect(spy).toHaveBeenCalledWith({ exitCode: 127 })
+		})
+
+		it("should handle ExecaError thrown during await with exit code and signal", async () => {
+			mockShouldThrow = true
+			mockExitCode = 128
+			mockErrorSignal = "SIGKILL"
+			const spy = vitest.fn()
+			terminalProcess.on("shell_execution_complete", spy)
+			await terminalProcess.run("killed_command")
+			expect(spy).toHaveBeenCalledWith({ exitCode: 128, signalName: "SIGKILL" })
+		})
+
+		it("should emit exitCode 0 when command succeeds", async () => {
+			mockExitCode = 0
+			const spy = vitest.fn()
+			terminalProcess.on("shell_execution_complete", spy)
+			await terminalProcess.run("echo success")
+			expect(spy).toHaveBeenCalledWith({ exitCode: 0 })
 		})
 	})
 })
