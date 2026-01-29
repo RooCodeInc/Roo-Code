@@ -9,6 +9,8 @@
 		"missing_create_fields": "Thiếu các trường bắt buộc: skillName, source hoặc skillDescription",
 		"manager_unavailable": "Trình quản lý kỹ năng không khả dụng",
 		"missing_delete_fields": "Thiếu các trường bắt buộc: skillName hoặc source",
-		"skill_not_found": "Không tìm thấy kỹ năng \"{{name}}\""
+		"skill_not_found": "Không tìm thấy kỹ năng \"{{name}}\"",
+		"cannot_modify_builtin": "Không thể tạo hoặc xóa kỹ năng tích hợp sẵn",
+		"cannot_open_builtin": "Không thể mở kỹ năng tích hợp sẵn dưới dạng tệp"
 	}
 }

@@ -9,6 +9,8 @@
 		"missing_create_fields": "缺少必填欄位：skillName、source 或 skillDescription",
 		"manager_unavailable": "技能管理器無法使用",
 		"missing_delete_fields": "缺少必填欄位：skillName 或 source",
-		"skill_not_found": "找不到技能「{{name}}」"
+		"skill_not_found": "找不到技能「{{name}}」",
+		"cannot_modify_builtin": "內建技能無法建立或刪除",
+		"cannot_open_builtin": "內建技能無法作為檔案開啟"
 	}
 }

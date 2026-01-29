@@ -9,6 +9,8 @@
 		"missing_create_fields": "Erforderliche Felder fehlen: skillName, source oder skillDescription",
 		"manager_unavailable": "Skill-Manager nicht verfügbar",
 		"missing_delete_fields": "Erforderliche Felder fehlen: skillName oder source",
-		"skill_not_found": "Skill \"{{name}}\" nicht gefunden"
+		"skill_not_found": "Skill \"{{name}}\" nicht gefunden",
+		"cannot_modify_builtin": "Integrierte Skills können nicht erstellt oder gelöscht werden",
+		"cannot_open_builtin": "Integrierte Skills können nicht als Dateien geöffnet werden"
 	}
 }

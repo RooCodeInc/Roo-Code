@@ -9,6 +9,8 @@
 		"missing_create_fields": "필수 필드 누락: skillName, source 또는 skillDescription",
 		"manager_unavailable": "스킬 관리자를 사용할 수 없습니다",
 		"missing_delete_fields": "필수 필드 누락: skillName 또는 source",
-		"skill_not_found": "스킬 \"{{name}}\"을(를) 찾을 수 없습니다"
+		"skill_not_found": "스킬 \"{{name}}\"을(를) 찾을 수 없습니다",
+		"cannot_modify_builtin": "기본 제공 스킬은 생성하거나 삭제할 수 없습니다",
+		"cannot_open_builtin": "기본 제공 스킬은 파일로 열 수 없습니다"
 	}
 }

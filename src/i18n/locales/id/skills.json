@@ -9,6 +9,8 @@
 		"missing_create_fields": "Bidang wajib tidak ada: skillName, source, atau skillDescription",
 		"manager_unavailable": "Manajer skill tidak tersedia",
 		"missing_delete_fields": "Bidang wajib tidak ada: skillName atau source",
-		"skill_not_found": "Skill \"{{name}}\" tidak ditemukan"
+		"skill_not_found": "Skill \"{{name}}\" tidak ditemukan",
+		"cannot_modify_builtin": "Skill bawaan tidak dapat dibuat atau dihapus",
+		"cannot_open_builtin": "Skill bawaan tidak dapat dibuka sebagai file"
 	}
 }

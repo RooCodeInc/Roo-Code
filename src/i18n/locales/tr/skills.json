@@ -9,6 +9,8 @@
 		"missing_create_fields": "Gerekli alanlar eksik: skillName, source veya skillDescription",
 		"manager_unavailable": "Beceri yöneticisi kullanılamıyor",
 		"missing_delete_fields": "Gerekli alanlar eksik: skillName veya source",
-		"skill_not_found": "\"{{name}}\" becerisi bulunamadı"
+		"skill_not_found": "\"{{name}}\" becerisi bulunamadı",
+		"cannot_modify_builtin": "Yerleşik beceriler oluşturulamaz veya silinemez",
+		"cannot_open_builtin": "Yerleşik beceriler dosya olarak açılamaz"
 	}
 }

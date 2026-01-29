@@ -9,6 +9,8 @@
 		"missing_create_fields": "Brakuje wymaganych pól: skillName, source lub skillDescription",
 		"manager_unavailable": "Menedżer umiejętności niedostępny",
 		"missing_delete_fields": "Brakuje wymaganych pól: skillName lub source",
-		"skill_not_found": "Nie znaleziono umiejętności \"{{name}}\""
+		"skill_not_found": "Nie znaleziono umiejętności \"{{name}}\"",
+		"cannot_modify_builtin": "Wbudowane umiejętności nie mogą być tworzone ani usuwane",
+		"cannot_open_builtin": "Wbudowane umiejętności nie mogą być otwierane jako pliki"
 	}
 }
