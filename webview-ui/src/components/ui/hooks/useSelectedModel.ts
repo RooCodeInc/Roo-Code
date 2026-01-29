@@ -312,8 +312,7 @@ function getSelectedModel({
 				: vscodeLlmDefaultModelId
 			const modelFamily = apiConfiguration?.vsCodeLmModelSelector?.family ?? vscodeLlmDefaultModelId
 			const info = vscodeLlmModels[modelFamily as keyof typeof vscodeLlmModels]
-			// VS Code LM API 1.106+ supports images via LanguageModelDataPart - use model's supportsImages capability
-			return { id, info: { ...openAiModelInfoSaneDefaults, ...info } }
+			return { id, info: { ...openAiModelInfoSaneDefaults, ...info, supportsImages: false } } // VSCode LM API currently doesn't support images.
 		}
 		case "cerebras": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId

@@ -1060,8 +1060,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5
       '@types/vscode':
-        specifier: ^1.106.0
-        version: 1.108.1
+        specifier: ^1.84.0
+        version: 1.100.0
       '@vscode/test-electron':
         specifier: ^2.5.2
         version: 2.5.2
@@ -4453,9 +4453,6 @@ packages:
 
   '@types/vscode@1.103.0':
     resolution: {integrity: sha512-o4hanZAQdNfsKecexq9L3eHICd0AAvdbLk6hA60UzGXbGH/q8b/9xv2RgR7vV3ZcHuyKVq7b37IGd/+gM4Tu+Q==}
-
-  '@types/vscode@1.108.1':
-    resolution: {integrity: sha512-DerV0BbSzt87TbrqmZ7lRDIYaMiqvP8tmJTzW2p49ZBVtGUnGAu2RGQd1Wv4XMzEVUpaHbsemVM5nfuQJj7H6w==}
 
   '@types/ws@8.18.1':
     resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
@@ -14490,8 +14487,6 @@ snapshots:
   '@types/vscode@1.100.0': {}
 
   '@types/vscode@1.103.0': {}
-
-  '@types/vscode@1.108.1': {}
 
   '@types/ws@8.18.1':
     dependencies:
