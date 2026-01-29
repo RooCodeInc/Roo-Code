@@ -223,6 +223,7 @@
 	"commandOutput": "命令输出",
 	"commandExecution": {
 		"running": "正在运行",
+		"executed": "已执行",
 		"abort": "中止",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "已退出，状态码 {{exitCode}}",

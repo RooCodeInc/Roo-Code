@@ -250,6 +250,7 @@
 	"commandExecution": {
 		"abort": "Abort",
 		"running": "Running",
+		"executed": "Executed",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Exited with status {{exitCode}}",
 		"manageCommands": "Auto-approved commands",

@@ -224,6 +224,7 @@
 	"commandExecution": {
 		"abort": "Abortar",
 		"running": "Ejecutando",
+		"executed": "Ejecutado",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Salió con el estado {{exitCode}}",
 		"manageCommands": "Comandos aprobados automáticamente",
