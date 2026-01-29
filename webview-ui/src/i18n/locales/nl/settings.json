@@ -7,7 +7,11 @@
 		"reset": "Resetten",
 		"select": "Selecteren",
 		"add": "Header toevoegen",
-		"remove": "Verwijderen"
+		"remove": "Verwijderen",
+		"true": "waar",
+		"false": "onwaar",
+		"empty": "(leeg)",
+		"resetToDefault": "Terugzetten naar standaard ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "Instellingen zoeken...",
@@ -36,6 +40,7 @@
 		"notifications": "Meldingen",
 		"contextManagement": "Context",
 		"terminal": "Terminal",
+		"indexing": "Indexering",
 		"slashCommands": "Slash-opdrachten",
 		"prompts": "Prompts",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "OpenRouter API-sleutel is vereist"
 		},
 		"optional": "optioneel",
+		"stopIndexingButton": "Indexering stoppen",
+		"configureInSettings": "Configureren in Instellingen →",
+		"enableInSettings": "Indexering is uitgeschakeld. Schakel het in via Instellingen.",
+		"apiKeyNote": {
+			"title": "Let op:",
+			"description": "API-sleutels voor embedding-providers worden gedeeld met je API-providerconfiguratie. Als je OpenAI, Gemini, Mistral of OpenRouter gebruikt voor indexering, zorg er dan voor dat de bijbehorende API-sleutel is geconfigureerd in je actieve providerprofiel."
+		},
 		"advancedConfigLabel": "Geavanceerde configuratie",
 		"searchMinScoreLabel": "Zoekscore drempel",
 		"searchMinScoreDescription": "Minimale overeenkomstscore (0.0-1.0) vereist voor zoekresultaten. Lagere waarden leveren meer resultaten op, maar zijn mogelijk minder relevant. Hogere waarden leveren minder, maar relevantere resultaten op.",

@@ -7,7 +7,11 @@
 		"reset": "रीसेट करें",
 		"select": "चुनें",
 		"add": "हेडर जोड़ें",
-		"remove": "हटाएं"
+		"remove": "हटाएं",
+		"true": "सत्य",
+		"false": "असत्य",
+		"empty": "(खाली)",
+		"resetToDefault": "डिफ़ॉल्ट पर रीसेट करें ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "सेटिंग्स खोजें...",
@@ -36,6 +40,7 @@
 		"notifications": "सूचनाएँ",
 		"contextManagement": "संदर्भ",
 		"terminal": "टर्मिनल",
+		"indexing": "इंडेक्सिंग",
 		"slashCommands": "स्लैश कमांड",
 		"prompts": "प्रॉम्प्ट्स",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "OpenRouter API कुंजी आवश्यक है"
 		},
 		"optional": "वैकल्पिक",
+		"stopIndexingButton": "इंडेक्सिंग रोकें",
+		"configureInSettings": "सेटिंग्स में कॉन्फ़िगर करें →",
+		"enableInSettings": "इंडेक्सिंग अक्षम है। इसे सेटिंग्स में सक्षम करें।",
+		"apiKeyNote": {
+			"title": "नोट:",
+			"description": "एम्बेडिंग प्रदाताओं के लिए API कुंजियाँ आपके API प्रदाता कॉन्फ़िगरेशन के साथ साझा की जाती हैं। यदि आप इंडेक्सिंग के लिए OpenAI, Gemini, Mistral, या OpenRouter का उपयोग कर रहे हैं, तो सुनिश्चित करें कि संबंधित API कुंजी आपके सक्रिय प्रदाता प्रोफ़ाइल में कॉन्फ़िगर की गई है।"
+		},
 		"advancedConfigLabel": "उन्नत कॉन्फ़िगरेशन",
 		"searchMinScoreLabel": "खोज स्कोर थ्रेसहोल्ड",
 		"searchMinScoreDescription": "खोज परिणामों के लिए आवश्यक न्यूनतम समानता स्कोर (0.0-1.0)। कम मान अधिक परिणाम लौटाते हैं लेकिन कम प्रासंगिक हो सकते हैं। उच्च मान कम लेकिन अधिक प्रासंगिक परिणाम लौटाते हैं।",

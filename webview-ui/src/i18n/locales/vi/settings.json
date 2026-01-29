@@ -7,7 +7,11 @@
 		"reset": "Đặt lại",
 		"select": "Chọn",
 		"add": "Thêm tiêu đề",
-		"remove": "Xóa"
+		"remove": "Xóa",
+		"true": "đúng",
+		"false": "sai",
+		"empty": "(trống)",
+		"resetToDefault": "Đặt lại về mặc định ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "Tìm kiếm cài đặt...",
@@ -36,6 +40,7 @@
 		"notifications": "Thông báo",
 		"contextManagement": "Ngữ cảnh",
 		"terminal": "Terminal",
+		"indexing": "Lập chỉ mục",
 		"slashCommands": "Lệnh Gạch Chéo",
 		"prompts": "Lời nhắc",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "Yêu cầu khóa API OpenRouter"
 		},
 		"optional": "tùy chọn",
+		"stopIndexingButton": "Dừng lập chỉ mục",
+		"configureInSettings": "Cấu hình trong Cài đặt →",
+		"enableInSettings": "Lập chỉ mục bị vô hiệu hóa. Kích hoạt trong Cài đặt.",
+		"apiKeyNote": {
+			"title": "Lưu ý:",
+			"description": "Khóa API cho các nhà cung cấp embedding được chia sẻ với cấu hình nhà cung cấp API của bạn. Nếu bạn đang sử dụng OpenAI, Gemini, Mistral hoặc OpenRouter để lập chỉ mục, hãy đảm bảo rằng khóa API tương ứng đã được cấu hình trong hồ sơ nhà cung cấp đang hoạt động của bạn."
+		},
 		"advancedConfigLabel": "Cấu hình nâng cao",
 		"searchMinScoreLabel": "Ngưỡng điểm tìm kiếm",
 		"searchMinScoreDescription": "Điểm tương đồng tối thiểu (0.0-1.0) cần thiết cho kết quả tìm kiếm. Giá trị thấp hơn trả về nhiều kết quả hơn nhưng có thể kém liên quan hơn. Giá trị cao hơn trả về ít kết quả hơn nhưng có liên quan hơn.",

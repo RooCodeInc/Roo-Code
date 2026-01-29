@@ -7,7 +7,11 @@
 		"reset": "リセット",
 		"select": "選択",
 		"add": "ヘッダーを追加",
-		"remove": "削除"
+		"remove": "削除",
+		"true": "真",
+		"false": "偽",
+		"empty": "(空)",
+		"resetToDefault": "デフォルトにリセット ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "設定を検索...",
@@ -36,6 +40,7 @@
 		"notifications": "通知",
 		"contextManagement": "コンテキスト",
 		"terminal": "ターミナル",
+		"indexing": "インデックス作成",
 		"slashCommands": "スラッシュコマンド",
 		"prompts": "プロンプト",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "OpenRouter APIキーが必要です"
 		},
 		"optional": "オプション",
+		"stopIndexingButton": "インデックス作成を停止",
+		"configureInSettings": "設定で構成 →",
+		"enableInSettings": "インデックス作成が無効です。設定で有効にしてください。",
+		"apiKeyNote": {
+			"title": "注意:",
+			"description": "埋め込みプロバイダーのAPIキーは、APIプロバイダー設定と共有されます。インデックス作成にOpenAI、Gemini、Mistral、またはOpenRouterを使用している場合は、対応するAPIキーがアクティブなプロバイダープロファイルで設定されていることを確認してください。"
+		},
 		"advancedConfigLabel": "詳細設定",
 		"searchMinScoreLabel": "検索スコアのしきい値",
 		"searchMinScoreDescription": "検索結果に必要な最小類似度スコア（0.0-1.0）。値を低くするとより多くの結果が返されますが、関連性が低くなる可能性があります。値を高くすると返される結果は少なくなりますが、より関連性が高くなります。",

@@ -9,7 +9,7 @@ import { useEvent, useMount } from "react-use"
 import { type ExtensionMessage, settingDefaults } from "@roo-code/types"
 
 import { cn } from "@/lib/utils"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider } from "@/components/ui"
+import { Slider } from "@/components/ui"
 
 import { SetCachedStateField } from "./types"
 import { SectionHeader } from "./SectionHeader"
@@ -17,7 +17,8 @@ import { Section } from "./Section"
 import { SearchableSetting } from "./SearchableSetting"
 
 type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
-	terminalOutputPreviewSize?: TerminalOutputPreviewSize
+	terminalOutputLineLimit?: number
+	terminalOutputCharacterLimit?: number
 	terminalShellIntegrationTimeout?: number
 	terminalShellIntegrationDisabled?: boolean
 	terminalCommandDelay?: number
@@ -26,8 +27,10 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	terminalZshOhMy?: boolean
 	terminalZshP10k?: boolean
 	terminalZdotdir?: boolean
+	terminalCompressProgressBar?: boolean
 	setCachedStateField: SetCachedStateField<
-		| "terminalOutputPreviewSize"
+		| "terminalOutputLineLimit"
+		| "terminalOutputCharacterLimit"
 		| "terminalShellIntegrationTimeout"
 		| "terminalShellIntegrationDisabled"
 		| "terminalCommandDelay"
@@ -36,11 +39,13 @@ type TerminalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "terminalZshOhMy"
 		| "terminalZshP10k"
 		| "terminalZdotdir"
+		| "terminalCompressProgressBar"
 	>
 }
 
 export const TerminalSettings = ({
-	terminalOutputPreviewSize,
+	terminalOutputLineLimit,
+	terminalOutputCharacterLimit,
 	terminalShellIntegrationTimeout,
 	terminalShellIntegrationDisabled,
 	terminalCommandDelay,
@@ -49,6 +54,7 @@ export const TerminalSettings = ({
 	terminalZshOhMy,
 	terminalZshP10k,
 	terminalZdotdir,
+	terminalCompressProgressBar,
 	setCachedStateField,
 	className,
 	...props

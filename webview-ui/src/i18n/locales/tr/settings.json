@@ -7,7 +7,11 @@
 		"reset": "Sıfırla",
 		"select": "Seç",
 		"add": "Başlık Ekle",
-		"remove": "Kaldır"
+		"remove": "Kaldır",
+		"true": "doğru",
+		"false": "yanlış",
+		"empty": "(boş)",
+		"resetToDefault": "Varsayılana sıfırla ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "Ayarları ara...",
@@ -36,6 +40,7 @@
 		"notifications": "Bildirimler",
 		"contextManagement": "Bağlam",
 		"terminal": "Terminal",
+		"indexing": "İndeksleme",
 		"slashCommands": "Eğik Çizgi Komutları",
 		"prompts": "Promptlar",
 		"ui": "UI",
@@ -173,6 +178,13 @@
 			"openRouterApiKeyRequired": "OpenRouter API anahtarı gereklidir"
 		},
 		"optional": "isteğe bağlı",
+		"stopIndexingButton": "İndekslemeyi Durdur",
+		"configureInSettings": "Ayarlar'da yapılandır →",
+		"enableInSettings": "İndeksleme devre dışı. Ayarlar'da etkinleştir.",
+		"apiKeyNote": {
+			"title": "Not:",
+			"description": "Embedding sağlayıcıları için API anahtarları, API sağlayıcı yapılandırmanla paylaşılır. İndeksleme için OpenAI, Gemini, Mistral veya OpenRouter kullanıyorsan, ilgili API anahtarının aktif sağlayıcı profilinde yapılandırıldığından emin ol."
+		},
 		"advancedConfigLabel": "Gelişmiş Yapılandırma",
 		"searchMinScoreLabel": "Arama Skoru Eşiği",
 		"searchMinScoreDescription": "Arama sonuçları için gereken minimum benzerlik puanı (0.0-1.0). Düşük değerler daha fazla sonuç döndürür ancak daha az alakalı olabilir. Yüksek değerler daha az ancak daha alakalı sonuçlar döndürür.",

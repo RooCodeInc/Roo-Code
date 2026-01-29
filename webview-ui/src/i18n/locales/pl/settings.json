@@ -7,7 +7,11 @@
 		"reset": "Resetuj",
 		"select": "Wybierz",
 		"add": "Dodaj nagłówek",
-		"remove": "Usuń"
+		"remove": "Usuń",
+		"true": "prawda",
+		"false": "fałsz",
+		"empty": "(puste)",
+		"resetToDefault": "Resetuj do domyślnego ({{defaultValue}})"
 	},
 	"search": {
 		"placeholder": "Szukaj ustawień...",
@@ -36,6 +40,7 @@
 		"notifications": "Powiadomienia",
 		"contextManagement": "Kontekst",
 		"terminal": "Terminal",
+		"indexing": "Indeksowanie",
 		"slashCommands": "Polecenia Slash",
 		"prompts": "Podpowiedzi",
 		"ui": "UI",
@@ -117,7 +122,10 @@
 		"qdrantUrlLabel": "URL Qdrant",
 		"qdrantKeyLabel": "Klucz Qdrant:",
 		"startIndexingButton": "Rozpocznij",
+		"stopIndexingButton": "Zatrzymaj indeksowanie",
 		"clearIndexDataButton": "Wyczyść indeks",
+		"configureInSettings": "Skonfiguruj w Ustawieniach →",
+		"enableInSettings": "Indeksowanie jest wyłączone. Włącz je w Ustawieniach.",
 		"unsavedSettingsMessage": "Zapisz swoje ustawienia przed rozpoczęciem procesu indeksowania.",
 		"clearDataDialog": {
 			"title": "Czy jesteś pewien?",
@@ -152,6 +160,10 @@
 			"error": "Błąd"
 		},
 		"close": "Zamknij",
+		"apiKeyNote": {
+			"title": "Uwaga:",
+			"description": "Klucze API dla dostawców osadzeń są współdzielone z konfiguracją dostawcy API. Jeśli używasz OpenAI, Gemini, Mistral lub OpenRouter do indeksowania, upewnij się, że odpowiedni klucz API jest skonfigurowany w aktywnym profilu dostawcy."
+		},
 		"validation": {
 			"invalidQdrantUrl": "Nieprawidłowy URL Qdrant",
 			"invalidOllamaUrl": "Nieprawidłowy URL Ollama",
