@@ -43,6 +43,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		this.client = new Anthropic({
 			baseURL: this.options.anthropicBaseUrl || undefined,
 			[apiKeyFieldName]: this.options.apiKey,
+			defaultHeaders: this.options.anthropicHeaders || undefined,
 		})
 	}
 
