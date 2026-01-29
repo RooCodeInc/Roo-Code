@@ -58,12 +58,18 @@ export class WebSearchTool extends BaseTool<"web_search"> {
 			const { CloudService } = await import("@roo-code/cloud")
 
 			if (!CloudService.hasInstance()) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("web_search")
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(formatResponse.toolError("Cloud service not available"))
 				return
 			}
 
 			const cloudAPI = CloudService.instance.cloudAPI
 			if (!cloudAPI) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("web_search")
+				task.didToolFailInCurrentTurn = true
 				pushToolResult(formatResponse.toolError("Cloud API not available"))
 				return
 			}
