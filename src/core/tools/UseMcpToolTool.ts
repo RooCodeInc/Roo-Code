@@ -255,12 +255,14 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		})
 	}
 
-	private processToolContent(toolResult: any): string {
+	private processToolContent(toolResult: any): { text: string; images: string[] } {
 		if (!toolResult?.content || toolResult.content.length === 0) {
-			return ""
+			return { text: "", images: [] }
 		}
 
-		return toolResult.content
+		const images: string[] = []
+
+		const textContent = toolResult.content
 			.map((item: any) => {
 				if (item.type === "text") {
 					return item.text
@@ -269,10 +271,23 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 					const { blob: _, ...rest } = item.resource
 					return JSON.stringify(rest, null, 2)
 				}
+				if (item.type === "image") {
+					// Handle image content (MCP image content has mimeType and data properties)
+					if (item.mimeType && item.data) {
+						if (item.data.startsWith("data:")) {
+							images.push(item.data)
+						} else {
+							images.push(`data:${item.mimeType};base64,${item.data}`)
+						}
+					}
+					return ""
+				}
 				return ""
 			})
 			.filter(Boolean)
 			.join("\n\n")
+
+		return { text: textContent, images }
 	}
 
 	private async executeToolAndProcessResult(
@@ -296,18 +311,22 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		const toolResult = await task.providerRef.deref()?.getMcpHub()?.callTool(serverName, toolName, parsedArguments)
 
 		let toolResultPretty = "(No response)"
+		let images: string[] = []
 
 		if (toolResult) {
-			const outputText = this.processToolContent(toolResult)
+			const { text: outputText, images: extractedImages } = this.processToolContent(toolResult)
+			images = extractedImages
 
-			if (outputText) {
+			if (outputText || images.length > 0) {
 				await this.sendExecutionStatus(task, {
 					executionId,
 					status: "output",
-					response: outputText,
+					response: outputText || (images.length > 0 ? `[${images.length} image(s)]` : ""),
 				})
 
-				toolResultPretty = (toolResult.isError ? "Error:\n" : "") + outputText
+				toolResultPretty =
+					(toolResult.isError ? "Error:\n" : "") +
+					(outputText || (images.length > 0 ? `[${images.length} image(s) received]` : ""))
 			}
 
 			// Send completion status
@@ -326,8 +345,8 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			})
 		}
 
-		await task.say("mcp_server_response", toolResultPretty)
-		pushToolResult(formatResponse.toolResult(toolResultPretty))
+		await task.say("mcp_server_response", toolResultPretty, images)
+		pushToolResult(formatResponse.toolResult(toolResultPretty, images))
 	}
 }
 
