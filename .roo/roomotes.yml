@@ -1,6 +1,10 @@
 version: "1.0"
+port: 8443
 
 commands:
     - name: Install dependencies
       run: pnpm install
       timeout: 60
+
+    - name: Serve
+      run: pnpm serve
