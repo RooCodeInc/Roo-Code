@@ -801,6 +801,7 @@ export interface ClineSayTool {
 		| "imageGenerated"
 		| "runSlashCommand"
 		| "updateTodoList"
+		| "webSearch"
 	path?: string
 	// For readCommandOutput
 	readStart?: number
@@ -847,6 +848,8 @@ export interface ClineSayTool {
 	args?: string
 	source?: string
 	description?: string
+	// Properties indicating whether the operation is in the workspace
+	operationIsLocatedInWorkspace?: boolean
 }
 
 // Must keep in sync with system prompt.
