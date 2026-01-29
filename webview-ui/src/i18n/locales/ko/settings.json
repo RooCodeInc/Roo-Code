@@ -484,6 +484,10 @@
 				"learnMore": "제공자 라우팅에 대해 자세히 알아보기"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "엄격한 도구 모드 활성화",
+			"strictToolModeDescription": "도구 정의에 OpenAI 고유의 엄격 모드를 추가합니다. 엄격 모드를 지원하지 않는 kie.ai와 같은 제공업체의 경우 비활성화하세요."
+		},
 		"customModel": {
 			"capabilities": "사용자 정의 OpenAI 호환 모델의 기능과 가격을 구성하세요. 모델 기능이 Roo Code의 성능에 영향을 미칠 수 있으므로 신중하게 지정하세요.",
 			"maxTokens": {

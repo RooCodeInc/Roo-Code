@@ -484,6 +484,10 @@
 				"learnMore": "プロバイダールーティングについて詳しく知る"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "厳密なツールモードを有効にする",
+			"strictToolModeDescription": "ツール定義にOpenAI固有の厳密モードを追加します。厳密モードをサポートしないkie.aiなどのプロバイダーの場合は無効にしてください。"
+		},
 		"customModel": {
 			"capabilities": "カスタムOpenAI互換モデルの機能と価格を設定します。モデルの機能はRoo Codeのパフォーマンスに影響を与える可能性があるため、慎重に指定してください。",
 			"maxTokens": {

@@ -484,6 +484,10 @@
 				"learnMore": "Tìm hiểu thêm về định tuyến nhà cung cấp"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "Bật chế độ công cụ nghiêm ngặt",
+			"strictToolModeDescription": "Thêm chế độ nghiêm ngặt dành riêng cho OpenAI vào định nghĩa công cụ. Tắt tính năng này cho các nhà cung cấp như kie.ai không hỗ trợ chế độ nghiêm ngặt."
+		},
 		"customModel": {
 			"capabilities": "Cấu hình các khả năng và giá cả cho mô hình tương thích OpenAI tùy chỉnh của bạn. Hãy cẩn thận khi chỉ định khả năng của mô hình, vì chúng có thể ảnh hưởng đến cách Roo Code hoạt động.",
 			"maxTokens": {

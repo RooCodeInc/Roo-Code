@@ -493,6 +493,10 @@
 				"learnMore": "Learn more about provider routing"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "Enable strict tool mode",
+			"strictToolModeDescription": "Adds OpenAI-specific strict mode to tool definitions. Disable this for providers like kie.ai that don't support strict mode."
+		},
 		"customModel": {
 			"capabilities": "Configure the capabilities and pricing for your custom OpenAI-compatible model. Be careful when specifying the model capabilities, as they can affect how Roo Code performs.",
 			"maxTokens": {

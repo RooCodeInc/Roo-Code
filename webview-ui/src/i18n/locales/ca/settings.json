@@ -484,6 +484,10 @@
 				"learnMore": "Més informació sobre l'encaminament de proveïdors"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "Activa el mode estricte d'eines",
+			"strictToolModeDescription": "Afegeix el mode estricte específic d'OpenAI a les definicions d'eines. Desactiveu-ho per a proveïdors com kie.ai que no admeten el mode estricte."
+		},
 		"customModel": {
 			"capabilities": "Configureu les capacitats i preus per al vostre model personalitzat compatible amb OpenAI. Tingueu cura en especificar les capacitats del model, ja que poden afectar com funciona Roo Code.",
 			"maxTokens": {

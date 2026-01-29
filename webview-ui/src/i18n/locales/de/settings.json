@@ -484,6 +484,10 @@
 				"learnMore": "Mehr über Anbieter-Routing erfahren"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "Strikten Tool-Modus aktivieren",
+			"strictToolModeDescription": "Fügt den OpenAI-spezifischen strikten Modus zu Tool-Definitionen hinzu. Deaktivieren Sie dies für Anbieter wie kie.ai, die den strikten Modus nicht unterstützen."
+		},
 		"customModel": {
 			"capabilities": "Konfiguriere die Fähigkeiten und Preise für dein benutzerdefiniertes OpenAI-kompatibles Modell. Sei vorsichtig bei der Angabe der Modellfähigkeiten, da diese beeinflussen können, wie Roo Code funktioniert.",
 			"maxTokens": {

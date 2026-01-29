@@ -484,6 +484,10 @@
 				"learnMore": "En savoir plus sur le routage des fournisseurs"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "Activer le mode outils strict",
+			"strictToolModeDescription": "Ajoute le mode strict spécifique à OpenAI aux définitions d'outils. Désactivez ceci pour les fournisseurs comme kie.ai qui ne prennent pas en charge le mode strict."
+		},
 		"customModel": {
 			"capabilities": "Configurez les capacités et les prix pour votre modèle personnalisé compatible OpenAI. Soyez prudent lors de la spécification des capacités du modèle, car elles peuvent affecter le fonctionnement de Roo Code.",
 			"maxTokens": {

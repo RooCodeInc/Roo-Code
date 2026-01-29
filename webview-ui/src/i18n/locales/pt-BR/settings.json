@@ -484,6 +484,10 @@
 				"learnMore": "Saiba mais sobre roteamento de provedores"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "Ativar modo estrito de ferramentas",
+			"strictToolModeDescription": "Adiciona o modo estrito específico do OpenAI às definições de ferramentas. Desative para provedores como kie.ai que não suportam o modo estrito."
+		},
 		"customModel": {
 			"capabilities": "Configure as capacidades e preços para seu modelo personalizado compatível com OpenAI. Tenha cuidado ao especificar as capacidades do modelo, pois elas podem afetar como o Roo Code funciona.",
 			"maxTokens": {

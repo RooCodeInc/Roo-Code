@@ -484,6 +484,10 @@
 				"learnMore": "Meer informatie over providerroutering"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "Strikte toolmodus inschakelen",
+			"strictToolModeDescription": "Voegt OpenAI-specifieke strikte modus toe aan tooldefinities. Schakel dit uit voor providers zoals kie.ai die de strikte modus niet ondersteunen."
+		},
 		"customModel": {
 			"capabilities": "Stel de mogelijkheden en prijzen in voor je aangepaste OpenAI-compatibele model. Wees voorzichtig met het opgeven van de modelmogelijkheden, want deze kunnen de prestaties van Roo Code beïnvloeden.",
 			"maxTokens": {

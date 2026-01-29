@@ -152,6 +152,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
 
+			// Strict tool mode is enabled by default for backward compatibility
+			// Disable for providers like kie.ai that don't support OpenAI's strict mode
+			const useStrictToolMode = this.options.openAiStrictToolMode !== false
+
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 				model: modelId,
 				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
@@ -159,7 +163,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				...(reasoning && reasoning),
-				tools: this.convertToolsForOpenAI(metadata?.tools),
+				tools: this.convertToolsForOpenAI(metadata?.tools, useStrictToolMode),
 				tool_choice: metadata?.tool_choice,
 				parallel_tool_calls: metadata?.parallelToolCalls ?? false,
 			}
@@ -221,13 +225,17 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				yield this.processUsageMetrics(lastUsage, modelInfo)
 			}
 		} else {
+			// Strict tool mode is enabled by default for backward compatibility
+			// Disable for providers like kie.ai that don't support OpenAI's strict mode
+			const useStrictToolMode = this.options.openAiStrictToolMode !== false
+
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
 				messages: deepseekReasoner
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
 				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
-				tools: this.convertToolsForOpenAI(metadata?.tools),
+				tools: this.convertToolsForOpenAI(metadata?.tools, useStrictToolMode),
 				tool_choice: metadata?.tool_choice,
 				parallel_tool_calls: metadata?.parallelToolCalls ?? false,
 			}
@@ -329,6 +337,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelInfo = this.getModel().info
 		const methodIsAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 
+		// Strict tool mode is enabled by default for backward compatibility
+		// Disable for providers like kie.ai that don't support OpenAI's strict mode
+		const useStrictToolMode = this.options.openAiStrictToolMode !== false
+
 		if (this.options.openAiStreamingEnabled ?? true) {
 			const isGrokXAI = this._isGrokXAI(this.options.openAiBaseUrl)
 
@@ -346,7 +358,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
 				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
-				tools: this.convertToolsForOpenAI(metadata?.tools),
+				tools: this.convertToolsForOpenAI(metadata?.tools, useStrictToolMode),
 				tool_choice: metadata?.tool_choice,
 				parallel_tool_calls: metadata?.parallelToolCalls ?? false,
 			}
@@ -380,7 +392,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
 				temperature: undefined,
 				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
-				tools: this.convertToolsForOpenAI(metadata?.tools),
+				tools: this.convertToolsForOpenAI(metadata?.tools, useStrictToolMode),
 				tool_choice: metadata?.tool_choice,
 				parallel_tool_calls: metadata?.parallelToolCalls ?? false,
 			}

@@ -488,6 +488,10 @@
 				"learnMore": "Pelajari lebih lanjut tentang provider routing"
 			}
 		},
+		"openAi": {
+			"strictToolMode": "Aktifkan mode tool ketat",
+			"strictToolModeDescription": "Menambahkan mode ketat khusus OpenAI ke definisi tool. Nonaktifkan ini untuk provider seperti kie.ai yang tidak mendukung mode ketat."
+		},
 		"customModel": {
 			"capabilities": "Konfigurasi kemampuan dan harga untuk model kustom yang kompatibel dengan OpenAI. Hati-hati saat menentukan kemampuan model, karena dapat mempengaruhi performa Roo Code.",
 			"maxTokens": {
