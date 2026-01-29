@@ -17,6 +17,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { getGlmModelOptions } from "./utils/model-detection"
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -42,9 +43,15 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
+		// Get model-specific options for GLM models (applies Z.ai optimizations)
+		const modelId = this.getModel().id
+		const glmOptions = getGlmModelOptions(modelId)
+
+		// Convert messages with GLM-specific handling when applicable
+		// mergeToolResultText prevents GLM models from dropping reasoning_content
 		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
 			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
+			...convertToOpenAiMessages(messages, { mergeToolResultText: glmOptions.mergeToolResultText }),
 		]
 
 		// -------------------------
@@ -83,14 +90,20 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		let assistantText = ""
 
 		try {
+			// For GLM models, disable parallel_tool_calls by default as they may not support it
+			// Users can still explicitly enable it via metadata if their model supports it
+			const parallelToolCalls = glmOptions.disableParallelToolCalls
+				? (metadata?.parallelToolCalls ?? false)
+				: (metadata?.parallelToolCalls ?? true)
+
 			const params: OpenAI.Chat.ChatCompletionCreateParamsStreaming & { draft_model?: string } = {
-				model: this.getModel().id,
+				model: modelId,
 				messages: openAiMessages,
 				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
 				stream: true,
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+				parallel_tool_calls: parallelToolCalls,
 			}
 
 			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
