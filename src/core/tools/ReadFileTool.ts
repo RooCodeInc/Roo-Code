@@ -525,8 +525,9 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 	 * Get the starting line number for navigation purposes.
 	 */
 	private getStartLine(entry: InternalFileEntry): number | undefined {
-		if (entry.mode === "indentation" && entry.anchor_line !== undefined) {
-			return entry.anchor_line
+		if (entry.mode === "indentation") {
+			// For indentation mode, always return the effective anchor line
+			return entry.anchor_line ?? entry.offset ?? 1
 		}
 		const offset = entry.offset ?? 1
 		return offset > 1 ? offset : undefined
@@ -536,8 +537,10 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 	 * Generate a human-readable line snippet for approval messages.
 	 */
 	private getLineSnippet(entry: InternalFileEntry): string {
-		if (entry.mode === "indentation" && entry.anchor_line !== undefined) {
-			return `indentation mode at line ${entry.anchor_line}`
+		if (entry.mode === "indentation") {
+			// Always show indentation mode with the effective anchor line
+			const effectiveAnchor = entry.anchor_line ?? entry.offset ?? 1
+			return `indentation mode at line ${effectiveAnchor}`
 		}
 
 		const limit = entry.limit ?? DEFAULT_LINE_LIMIT
