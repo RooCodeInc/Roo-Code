@@ -4,7 +4,7 @@ This file provides guidance to agents when working with code in this repository.
 
 Non-obvious, project-specific rules:
 
-- Start/build preload dotenv; analytics plugin is enabled only when POSTHOG_API_KEY is set. Use .env based on [.env.example](.env.example). CI injects it in [.github/workflows/docusaurus-build.yml](.github/workflows/docusaurus-build.yml). See [package.json](package.json) and [docusaurus.config.ts](docusaurus.config.ts).
+- Start/build preload dotenv; analytics plugin is enabled only when POSTHOG_API_KEY is set. Use .env based on [.env.example](.env.example). CI injects it via Vercel environment variables (see PR description for deployment setup). See [package.json](package.json) and [docusaurus.config.ts](docusaurus.config.ts).
 - Use Node 20 locally to match CI; engines allow >=18 but CI runs 20.
 - Linting targets only /src; docs content is not linted. Use "pnpm run lint:unused" to enforce unused import removal. Type checking uses "tsc" only (no emit); [tsconfig.json](tsconfig.json) is editor-focused.
 - When moving/renaming docs, you must add an explicit redirect in [docusaurus.config.ts](docusaurus.config.ts) under plugin-client-redirects. This is required by [.roorules](.roorules).
