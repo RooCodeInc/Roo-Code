@@ -737,6 +737,7 @@ export const checkoutRestorePayloadSchema = z.object({
 	ts: z.number(),
 	commitHash: z.string(),
 	mode: z.enum(["preview", "restore"]),
+	isInitial: z.boolean().optional(),
 })
 
 export type CheckpointRestorePayload = z.infer<typeof checkoutRestorePayloadSchema>

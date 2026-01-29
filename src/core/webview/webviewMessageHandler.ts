@@ -1200,7 +1200,18 @@ export const webviewMessageHandler = async (
 				}
 
 				try {
-					await provider.getCurrentTask()?.checkpointRestore(result.data)
+					// For initial checkpoint, use checkpointRestoreToBase instead of checkpointRestore
+					// because there's no message with ts to find in clineMessages
+					if (result.data.isInitial) {
+						const { checkpointRestoreToBase } = await import("../checkpoints")
+						const success = await checkpointRestoreToBase(provider.getCurrentTask()!)
+
+						if (!success) {
+							vscode.window.showErrorMessage(t("common:errors.checkpoint_restore_base_failed"))
+						}
+					} else {
+						await provider.getCurrentTask()?.checkpointRestore(result.data)
+					}
 				} catch (error) {
 					vscode.window.showErrorMessage(t("common:errors.checkpoint_failed"))
 				}
