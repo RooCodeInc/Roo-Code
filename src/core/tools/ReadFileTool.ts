@@ -100,6 +100,18 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		const supportsImages = modelInfo.supportsImages ?? false
 
 		// Initialize file results tracking
+		// Validate line number parameters (must be 1-indexed positive integers)
+		if (params.offset !== undefined && params.offset < 1) {
+			const errorMsg = `offset must be a 1-indexed line number (got ${params.offset}). Line numbers start at 1.`
+			pushToolResult(`Error: ${errorMsg}`)
+			return
+		}
+		if (params.indentation?.anchor_line !== undefined && params.indentation.anchor_line < 1) {
+			const errorMsg = `anchor_line must be a 1-indexed line number (got ${params.indentation.anchor_line}). Line numbers start at 1.`
+			pushToolResult(`Error: ${errorMsg}`)
+			return
+		}
+
 		const fileEntry: InternalFileEntry = {
 			path: filePath,
 			mode: params.mode,
@@ -540,18 +552,18 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		if (entry.mode === "indentation") {
 			// Always show indentation mode with the effective anchor line
 			const effectiveAnchor = entry.anchor_line ?? entry.offset ?? 1
-			return `indentation mode at line ${effectiveAnchor}`
+			return `(indentation mode at line ${effectiveAnchor})`
 		}
 
 		const limit = entry.limit ?? DEFAULT_LINE_LIMIT
 		const offset1 = entry.offset ?? 1
 
 		if (offset1 > 1) {
-			return `lines ${offset1}-${offset1 + limit - 1}`
+			return `(lines ${offset1}-${offset1 + limit - 1})`
 		}
 
 		// Always show the line limit, even when using the default
-		return `up to ${limit} lines`
+		return `(up to ${limit} lines)`
 	}
 
 	/**
@@ -689,7 +701,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
 			let lineSnippet = ""
 			if (entry.lineRanges && entry.lineRanges.length > 0) {
-				const ranges = entry.lineRanges.map((range: LineRange) => `lines ${range.start}-${range.end}`)
+				const ranges = entry.lineRanges.map((range: LineRange) => `(lines ${range.start}-${range.end})`)
 				lineSnippet = ranges.join(", ")
 			}
 

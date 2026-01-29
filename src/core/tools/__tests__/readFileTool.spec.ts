@@ -217,6 +217,66 @@ describe("ReadFileTool", () => {
 			expect(mockTask.consecutiveMistakeCount).toBe(1)
 			expect(callbacks.pushToolResult).toHaveBeenCalledWith(expect.stringContaining("Error:"))
 		})
+
+		it("should return error when offset is 0 or negative", async () => {
+			const mockTask = createMockTask()
+			const callbacks = createMockCallbacks()
+
+			await readFileTool.execute({ path: "test.txt", offset: 0 }, mockTask as any, callbacks)
+
+			expect(callbacks.pushToolResult).toHaveBeenCalledWith(
+				expect.stringContaining("offset must be a 1-indexed line number"),
+			)
+		})
+
+		it("should return error when offset is negative", async () => {
+			const mockTask = createMockTask()
+			const callbacks = createMockCallbacks()
+
+			await readFileTool.execute({ path: "test.txt", offset: -5 }, mockTask as any, callbacks)
+
+			expect(callbacks.pushToolResult).toHaveBeenCalledWith(
+				expect.stringContaining("offset must be a 1-indexed line number"),
+			)
+		})
+
+		it("should return error when anchor_line is 0 or negative", async () => {
+			const mockTask = createMockTask()
+			const callbacks = createMockCallbacks()
+
+			await readFileTool.execute(
+				{
+					path: "test.txt",
+					mode: "indentation",
+					indentation: { anchor_line: 0 },
+				},
+				mockTask as any,
+				callbacks,
+			)
+
+			expect(callbacks.pushToolResult).toHaveBeenCalledWith(
+				expect.stringContaining("anchor_line must be a 1-indexed line number"),
+			)
+		})
+
+		it("should return error when anchor_line is negative", async () => {
+			const mockTask = createMockTask()
+			const callbacks = createMockCallbacks()
+
+			await readFileTool.execute(
+				{
+					path: "test.txt",
+					mode: "indentation",
+					indentation: { anchor_line: -10 },
+				},
+				mockTask as any,
+				callbacks,
+			)
+
+			expect(callbacks.pushToolResult).toHaveBeenCalledWith(
+				expect.stringContaining("anchor_line must be a 1-indexed line number"),
+			)
+		})
 	})
 
 	describe("RooIgnore handling", () => {
