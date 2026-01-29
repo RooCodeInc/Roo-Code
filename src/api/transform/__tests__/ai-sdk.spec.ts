@@ -419,7 +419,10 @@ describe("AI SDK conversion utilities", () => {
 			expect(chunks[0]).toEqual({ type: "tool_call_end", id: "call_1" })
 		})
 
-		it("processes complete tool-call chunks", () => {
+		it("ignores tool-call chunks to prevent duplicate tools in UI", () => {
+			// tool-call is intentionally ignored because tool-input-start/delta/end already
+			// provide complete tool call information. Emitting tool-call would cause duplicate
+			// tools in the UI for AI SDK providers (e.g., DeepSeek, Moonshot).
 			const part = {
 				type: "tool-call" as const,
 				toolCallId: "call_1",
@@ -428,13 +431,7 @@ describe("AI SDK conversion utilities", () => {
 			}
 			const chunks = [...processAiSdkStreamPart(part)]
 
-			expect(chunks).toHaveLength(1)
-			expect(chunks[0]).toEqual({
-				type: "tool_call",
-				id: "call_1",
-				name: "read_file",
-				arguments: '{"path":"test.ts"}',
-			})
+			expect(chunks).toHaveLength(0)
 		})
 
 		it("processes source chunks with URL", () => {

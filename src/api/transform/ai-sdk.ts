@@ -228,16 +228,6 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			}
 			break
 
-		case "tool-call":
-			// Complete tool call - emit for compatibility
-			yield {
-				type: "tool_call",
-				id: part.toolCallId,
-				name: part.toolName,
-				arguments: typeof part.input === "string" ? part.input : JSON.stringify(part.input),
-			}
-			break
-
 		case "source":
 			// Handle both URL and document source types
 			if ("url" in part) {
@@ -262,7 +252,10 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			}
 			break
 
-		// Ignore lifecycle events that don't need to yield chunks
+		// Ignore lifecycle events that don't need to yield chunks.
+		// Note: tool-call is intentionally ignored because tool-input-start/delta/end already
+		// provide complete tool call information. Emitting tool-call would cause duplicate
+		// tools in the UI for AI SDK providers (e.g., DeepSeek, Moonshot).
 		case "text-start":
 		case "text-end":
 		case "reasoning-start":
@@ -275,8 +268,8 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 		case "file":
 		case "tool-result":
 		case "tool-error":
+		case "tool-call":
 		case "raw":
-			// These events don't need to be yielded
 			break
 	}
 }
