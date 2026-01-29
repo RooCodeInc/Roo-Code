@@ -100,11 +100,6 @@ export const globalSettingsSchema = z.object({
 	alwaysAllowWrite: z.boolean().optional(),
 	alwaysAllowWriteOutsideWorkspace: z.boolean().optional(),
 	alwaysAllowWriteProtected: z.boolean().optional(),
-	/**
-	 * Whether diff-based editing tools are enabled.
-	 * When disabled, the extension should avoid providing diff strategies / diff-based tooling.
-	 */
-	diffEnabled: z.boolean().optional(),
 	writeDelayMs: z.number().min(0).optional(),
 	alwaysAllowBrowser: z.boolean().optional(),
 	requestDelaySeconds: z.number().optional(),
