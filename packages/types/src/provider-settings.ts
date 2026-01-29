@@ -423,6 +423,7 @@ const keywordsaiSchema = apiModelIdProviderModelSchema.extend({
 	keywordsaiApiKey: z.string().optional(),
 	keywordsaiBaseUrl: z.string().optional(),
 	keywordsaiEnableLogging: z.boolean().optional(),
+	keywordsaiEnableTracing: z.boolean().optional(),
 })
 
 const defaultSchema = z.object({
