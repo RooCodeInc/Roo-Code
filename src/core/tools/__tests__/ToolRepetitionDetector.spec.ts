@@ -12,6 +12,10 @@ vitest.mock("../../../i18n", () => ({
 		if (key === "tools:toolRepetitionLimitReached" && options?.toolName) {
 			return `Roo appears to be stuck in a loop, attempting the same action (${options.toolName}) repeatedly. This might indicate a problem with its current strategy.`
 		}
+		// For readFilePathRepetitionLimitReached key, return a specific message.
+		if (key === "tools:readFilePathRepetitionLimitReached") {
+			return `Roo appears to be stuck reading the same file repeatedly with different parameters. This might indicate a problem with its current strategy.`
+		}
 		return key
 	}),
 }))
@@ -695,6 +699,259 @@ describe("ToolRepetitionDetector", () => {
 			const result = detector.check(legacyTool)
 			expect(result.allowExecution).toBe(false)
 			expect(result.askUser).toBeDefined()
+		})
+	})
+
+	// ===== Path-based repetition detection for read_file =====
+	describe("path-based read_file repetition detection", () => {
+		it("should detect repetition when same file is read with different line ranges", () => {
+			const detector = new ToolRepetitionDetector(3)
+
+			// First read of file with lines 1-50
+			const readFile1: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "1", end_line: "50" },
+				partial: false,
+			}
+
+			// Second read of same file with lines 51-100
+			const readFile2: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "51", end_line: "100" },
+				partial: false,
+			}
+
+			// Third read of same file with lines 101-150
+			const readFile3: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "101", end_line: "150" },
+				partial: false,
+			}
+
+			// Fourth read of same file - should trigger path-based detection
+			const readFile4: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "151", end_line: "200" },
+				partial: false,
+			}
+
+			// First three calls allowed
+			expect(detector.check(readFile1).allowExecution).toBe(true)
+			expect(detector.check(readFile2).allowExecution).toBe(true)
+			expect(detector.check(readFile3).allowExecution).toBe(true)
+
+			// Fourth call should be blocked by path-based detection
+			const result = detector.check(readFile4)
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+			expect(result.askUser?.messageKey).toBe("mistake_limit_reached")
+		})
+
+		it("should detect repetition with nativeArgs format and different line ranges", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			// Read same file with different nativeArgs line ranges
+			const readFile1: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: {},
+				partial: false,
+				nativeArgs: {
+					files: [{ path: "same-file.ts" }],
+				},
+			}
+
+			const readFile2: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: {},
+				partial: false,
+				nativeArgs: {
+					files: [{ path: "same-file.ts" }],
+				},
+			}
+
+			const readFile3: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: {},
+				partial: false,
+				nativeArgs: {
+					files: [{ path: "same-file.ts" }],
+				},
+			}
+
+			// First two allowed
+			expect(detector.check(readFile1).allowExecution).toBe(true)
+			expect(detector.check(readFile2).allowExecution).toBe(true)
+
+			// Third should be blocked
+			const result = detector.check(readFile3)
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should allow reading different files consecutively", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			const readFile1: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "file1.ts" },
+				partial: false,
+			}
+
+			const readFile2: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "file2.ts" },
+				partial: false,
+			}
+
+			const readFile3: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "file3.ts" },
+				partial: false,
+			}
+
+			// All should be allowed since they're different files
+			expect(detector.check(readFile1).allowExecution).toBe(true)
+			expect(detector.check(readFile2).allowExecution).toBe(true)
+			expect(detector.check(readFile3).allowExecution).toBe(true)
+		})
+
+		it("should reset path counter when a different tool is used", () => {
+			const detector = new ToolRepetitionDetector(2)
+
+			const readFileTool: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts" },
+				partial: false,
+			}
+
+			const otherTool = createToolUse("execute_command", "execute_command", { command: "ls" })
+
+			// Read same file twice
+			expect(detector.check(readFileTool).allowExecution).toBe(true)
+			expect(detector.check(readFileTool).allowExecution).toBe(true)
+
+			// Use a different tool - should reset path counter
+			expect(detector.check(otherTool).allowExecution).toBe(true)
+
+			// Should be able to read the same file again
+			expect(detector.check(readFileTool).allowExecution).toBe(true)
+		})
+
+		it("should use custom readFilePathLimit when provided", () => {
+			// Set identical call limit to 10, but path limit to 2
+			const detector = new ToolRepetitionDetector(10, 2)
+
+			const readFile1: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "1" },
+				partial: false,
+			}
+
+			const readFile2: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "50" },
+				partial: false,
+			}
+
+			const readFile3: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "100" },
+				partial: false,
+			}
+
+			// First two allowed
+			expect(detector.check(readFile1).allowExecution).toBe(true)
+			expect(detector.check(readFile2).allowExecution).toBe(true)
+
+			// Third should be blocked by path limit
+			const result = detector.check(readFile3)
+			expect(result.allowExecution).toBe(false)
+			expect(result.askUser).toBeDefined()
+		})
+
+		it("should recover after path-based limit is reached", () => {
+			const detector = new ToolRepetitionDetector(10, 2) // High identical limit, low path limit
+
+			// Use different params each time to avoid identical call detection
+			const readFile1: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "1" },
+				partial: false,
+			}
+
+			const readFile2: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "50" },
+				partial: false,
+			}
+
+			const readFile3: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "100" },
+				partial: false,
+			}
+
+			const readFile4: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "150" },
+				partial: false,
+			}
+
+			// Hit the path-based limit (limit is 2)
+			expect(detector.check(readFile1).allowExecution).toBe(true)
+			expect(detector.check(readFile2).allowExecution).toBe(true)
+			expect(detector.check(readFile3).allowExecution).toBe(false) // Blocked by path limit
+
+			// Should be able to continue after limit reset
+			expect(detector.check(readFile4).allowExecution).toBe(true)
+		})
+
+		it("should not affect other tools when tracking read_file paths", () => {
+			const detector = new ToolRepetitionDetector(5)
+
+			// Mix read_file and other tools
+			const readFileTool: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "1" },
+				partial: false,
+			}
+
+			const executeCommand = createToolUse("execute_command", "execute_command", { command: "ls" })
+
+			// Read file
+			expect(detector.check(readFileTool).allowExecution).toBe(true)
+
+			// Execute command multiple times - should not be affected by read_file path tracking
+			expect(detector.check(executeCommand).allowExecution).toBe(true)
+			expect(detector.check(executeCommand).allowExecution).toBe(true)
+
+			// Read the same file (after reset from different tool)
+			const readFile2: ToolUse = {
+				type: "tool_use",
+				name: "read_file" as ToolName,
+				params: { path: "test.ts", start_line: "50" },
+				partial: false,
+			}
+			expect(detector.check(readFile2).allowExecution).toBe(true)
 		})
 	})
 })
