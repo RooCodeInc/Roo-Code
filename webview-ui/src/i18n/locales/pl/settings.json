@@ -725,6 +725,15 @@
 			"label": "Limit znaków terminala",
 			"description": "Zastępuje limit linii, aby zapobiec problemom z pamięcią, narzucając twardy limit rozmiaru wyjścia. W przypadku przekroczenia zachowuje początek i koniec i pokazuje symbol zastępczy Roo tam, gdzie treść jest pomijana. <0>Dowiedz się więcej</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Rozmiar podglądu wyjścia polecenia",
+			"description": "Kontroluje, ile wyjścia polecenia Roo widzi bezpośrednio. Pełne wyjście jest zawsze zapisywane i dostępne w razie potrzeby.",
+			"options": {
+				"small": "Mały (5KB)",
+				"medium": "Średni (10KB)",
+				"large": "Duży (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Limit czasu integracji powłoki terminala",
 			"description": "Jak długo czekać na integrację powłoki VS Code przed wykonaniem poleceń. Zwiększ, jeśli twoja powłoka wolno się uruchamia lub widzisz błędy 'Integracja Powłoki Niedostępna'. <0>Dowiedz się więcej</0>"
@@ -736,10 +745,6 @@
 		"commandDelay": {
 			"label": "Opóźnienie polecenia terminala",
 			"description": "Dodaje krótką pauzę po każdym poleceniu, aby terminal VS Code mógł opróżnić całe wyjście (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Używaj tylko gdy widzisz brakujące wyjście końcowe; w przeciwnym razie zostaw na 0. <0>Dowiedz się więcej</0>"
-		},
-		"compressProgressBar": {
-			"label": "Kompresuj wyjście paska postępu",
-			"description": "Zwija paski postępu/spinnery, aby zachować tylko stan końcowy (oszczędza tokeny). <0>Dowiedz się więcej</0>"
 		},
 		"powershellCounter": {
 			"label": "Włącz obejście licznika PowerShell",

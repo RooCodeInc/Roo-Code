@@ -725,6 +725,15 @@
 			"label": "Terminal karakter sınırı",
 			"description": "Çıktı boyutuna katı bir üst sınır uygulayarak bellek sorunlarını önlemek için satır sınırını geçersiz kılar. Aşılırsa, başlangıcı ve sonu tutar ve içeriğin atlandığı yerde Roo'ya bir yer tutucu gösterir. <0>Daha fazla bilgi edinin</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Komut çıktısı önizleme boyutu",
+			"description": "Roo'nun doğrudan gördüğü komut çıktısı miktarını kontrol eder. Tam çıktı her zaman kaydedilir ve gerektiğinde erişilebilir.",
+			"options": {
+				"small": "Küçük (5KB)",
+				"medium": "Orta (10KB)",
+				"large": "Büyük (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal shell entegrasyon timeout",
 			"description": "Komut çalıştırmadan önce VS Code shell entegrasyonunu bekleme süresi. Shell yavaş başlıyorsa veya 'Shell Integration Unavailable' hatası görüyorsanız artırın. <0>Daha fazla bilgi edinin</0>"
@@ -736,10 +745,6 @@
 		"commandDelay": {
 			"label": "Terminal komut delay",
 			"description": "VS Code terminalin tüm outputu flush edebilmesi için her komuttan sonra kısa pause ekler (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Sadece tail output eksikse kullan; yoksa 0'da bırak. <0>Daha fazla bilgi edinin</0>"
-		},
-		"compressProgressBar": {
-			"label": "İlerleme çubuğu çıktısını sıkıştır",
-			"description": "İlerleme çubukları/spinner'ları daraltır, sadece son durumu tutar (token tasarrufu). <0>Daha fazla bilgi edinin</0>"
 		},
 		"powershellCounter": {
 			"label": "PowerShell sayaç geçici çözümünü etkinleştir",

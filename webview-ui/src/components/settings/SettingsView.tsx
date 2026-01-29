@@ -179,8 +179,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		ttsSpeed,
 		soundVolume,
 		telemetrySetting,
-		terminalOutputLineLimit,
-		terminalOutputCharacterLimit,
+		terminalOutputPreviewSize,
 		terminalShellIntegrationTimeout,
 		terminalShellIntegrationDisabled, // Added from upstream
 		terminalCommandDelay,
@@ -196,7 +195,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		maxReadFileLine,
 		maxImageFileSize,
 		maxTotalImageSize,
-		terminalCompressProgressBar,
 		maxConcurrentFileReads,
 		customSupportPrompts,
 		profileThresholds,
@@ -391,8 +389,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					remoteBrowserEnabled: remoteBrowserEnabled ?? false,
 					writeDelayMs,
 					screenshotQuality: screenshotQuality ?? 75,
-					terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
-					terminalOutputCharacterLimit: terminalOutputCharacterLimit ?? 50_000,
 					terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? 30_000,
 					terminalShellIntegrationDisabled,
 					terminalCommandDelay,
@@ -401,7 +397,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					terminalZshOhMy,
 					terminalZshP10k,
 					terminalZdotdir,
-					terminalCompressProgressBar,
+					terminalOutputPreviewSize: terminalOutputPreviewSize ?? "medium",
 					mcpEnabled,
 					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
 					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
@@ -872,8 +868,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						{/* Terminal Section */}
 						{renderTab === "terminal" && (
 							<TerminalSettings
-								terminalOutputLineLimit={terminalOutputLineLimit}
-								terminalOutputCharacterLimit={terminalOutputCharacterLimit}
+								terminalOutputPreviewSize={terminalOutputPreviewSize}
 								terminalShellIntegrationTimeout={terminalShellIntegrationTimeout}
 								terminalShellIntegrationDisabled={terminalShellIntegrationDisabled}
 								terminalCommandDelay={terminalCommandDelay}
@@ -882,7 +877,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								terminalZshOhMy={terminalZshOhMy}
 								terminalZshP10k={terminalZshP10k}
 								terminalZdotdir={terminalZdotdir}
-								terminalCompressProgressBar={terminalCompressProgressBar}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}

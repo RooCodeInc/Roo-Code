@@ -733,6 +733,15 @@
 			"label": "Terminal character limit",
 			"description": "Overrides the line limit to prevent memory issues by enforcing a hard cap on output size. If exceeded, keeps the beginning and end and shows a placeholder to Roo where content is skipped. <0>Learn more</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Command output preview size",
+			"description": "Controls how much command output Roo sees directly. Full output is always saved and accessible when needed.",
+			"options": {
+				"small": "Small (5KB)",
+				"medium": "Medium (10KB)",
+				"large": "Large (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal shell integration timeout",
 			"description": "How long to wait for VS Code shell integration before running commands. Raise if your shell starts slowly or you see 'Shell Integration Unavailable' errors. <0>Learn more</0>"
@@ -744,10 +753,6 @@
 		"commandDelay": {
 			"label": "Terminal command delay",
 			"description": "Adds a short pause after each command so the VS Code terminal can flush all output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Use only if you see missing tail output; otherwise leave at 0. <0>Learn more</0>"
-		},
-		"compressProgressBar": {
-			"label": "Compress progress bar output",
-			"description": "Collapses progress bars/spinners so only the final state is kept (saves tokens). <0>Learn more</0>"
 		},
 		"powershellCounter": {
 			"label": "Enable PowerShell counter workaround",

@@ -725,6 +725,15 @@
 			"label": "Giới hạn ký tự terminal",
 			"description": "Ghi đè giới hạn dòng để tránh vấn đề bộ nhớ bằng cách áp đặt giới hạn cứng cho kích thước đầu ra. Nếu vượt quá, giữ đầu và cuối, hiển thị placeholder cho Roo nơi nội dung bị bỏ qua. <0>Tìm hiểu thêm</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Kích thước xem trước đầu ra lệnh",
+			"description": "Kiểm soát lượng đầu ra lệnh mà Roo nhìn thấy trực tiếp. Đầu ra đầy đủ luôn được lưu và có thể truy cập khi cần thiết.",
+			"options": {
+				"small": "Nhỏ (5KB)",
+				"medium": "Trung bình (10KB)",
+				"large": "Lớn (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout tích hợp shell terminal",
 			"description": "Thời gian đợi tích hợp shell VS Code trước khi chạy lệnh. Tăng nếu shell khởi động chậm hoặc thấy lỗi 'Shell Integration Unavailable'. <0>Tìm hiểu thêm</0>"
@@ -736,10 +745,6 @@
 		"commandDelay": {
 			"label": "Delay lệnh terminal",
 			"description": "Thêm khoảng dừng ngắn sau mỗi lệnh để VS Code terminal flush tất cả output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Chỉ dùng nếu thiếu tail output; nếu không để ở 0. <0>Tìm hiểu thêm</0>"
-		},
-		"compressProgressBar": {
-			"label": "Nén đầu ra thanh tiến trình",
-			"description": "Thu gọn các thanh tiến trình/vòng quay để chỉ giữ lại trạng thái cuối cùng (tiết kiệm token). <0>Tìm hiểu thêm</0>"
 		},
 		"powershellCounter": {
 			"label": "Bật workaround bộ đếm PowerShell",

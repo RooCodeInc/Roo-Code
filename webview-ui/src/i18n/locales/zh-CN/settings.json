@@ -725,6 +725,15 @@
 			"label": "终端字符限制",
 			"description": "通过强制限制输出大小来覆盖行限制以防止内存问题。如果超出，保留开头和结尾并向 Roo 显示内容被跳过的占位符。<0>了解更多</0>"
 		},
+		"outputPreviewSize": {
+			"label": "命令输出预览大小",
+			"description": "控制 Roo 直接看到的命令输出量。完整输出始终会被保存，需要时可以访问。",
+			"options": {
+				"small": "小 (5KB)",
+				"medium": "中 (10KB)",
+				"large": "大 (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "终端 shell 集成超时",
 			"description": "运行命令前等待 VS Code shell 集成的时间。如果 shell 启动缓慢或看到 'Shell Integration Unavailable' 错误，请提高此值。<0>了解更多</0>"
@@ -736,10 +745,6 @@
 		"commandDelay": {
 			"label": "终端命令延迟",
 			"description": "在每个命令后添加短暂暂停，以便 VS Code 终端刷新所有输出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。仅在看到缺少尾部输出时使用；否则保持为 0。<0>了解更多</0>"
-		},
-		"compressProgressBar": {
-			"label": "压缩进度条输出",
-			"description": "折叠进度条/旋转器，仅保留最终状态（节省 token）。<0>了解更多</0>"
 		},
 		"powershellCounter": {
 			"label": "启用 PowerShell 计数器解决方案",

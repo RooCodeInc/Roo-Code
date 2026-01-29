@@ -96,10 +96,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setWriteDelayMs: (value: number) => void
 	screenshotQuality?: number
 	setScreenshotQuality: (value: number) => void
-	terminalOutputLineLimit?: number
-	setTerminalOutputLineLimit: (value: number) => void
-	terminalOutputCharacterLimit?: number
-	setTerminalOutputCharacterLimit: (value: number) => void
+	terminalOutputPreviewSize?: "small" | "medium" | "large"
+	setTerminalOutputPreviewSize: (value: "small" | "medium" | "large") => void
 	mcpEnabled: boolean
 	setMcpEnabled: (value: boolean) => void
 	enableMcpServerCreation: boolean
@@ -140,8 +138,6 @@ export interface ExtensionStateContextType extends ExtensionState {
 	pinnedApiConfigs?: Record<string, boolean>
 	setPinnedApiConfigs: (value: Record<string, boolean>) => void
 	togglePinnedApiConfig: (configName: string) => void
-	terminalCompressProgressBar?: boolean
-	setTerminalCompressProgressBar: (value: boolean) => void
 	setHistoryPreviewCollapsed: (value: boolean) => void
 	setReasoningBlockCollapsed: (value: boolean) => void
 	enterBehavior?: "send" | "newline"
@@ -213,8 +209,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		writeDelayMs: 1000,
 		browserViewportSize: "900x600",
 		screenshotQuality: 75,
-		terminalOutputLineLimit: 500,
-		terminalOutputCharacterLimit: 50000,
 		terminalShellIntegrationTimeout: 4000,
 		mcpEnabled: true,
 		enableMcpServerCreation: false,
@@ -247,7 +241,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		maxConcurrentFileReads: 5, // Default concurrent file reads
 		terminalZshP10k: false, // Default Powerlevel10k integration setting
 		terminalZdotdir: false, // Default ZDOTDIR handling setting
-		terminalCompressProgressBar: true, // Default to compress progress bar output
 		historyPreviewCollapsed: false, // Initialize the new state (default to expanded)
 		reasoningBlockCollapsed: true, // Default to collapsed
 		enterBehavior: "send", // Default: Enter sends, Shift+Enter creates newline
@@ -544,10 +537,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			setState((prevState) => ({ ...prevState, browserViewportSize: value })),
 		setWriteDelayMs: (value) => setState((prevState) => ({ ...prevState, writeDelayMs: value })),
 		setScreenshotQuality: (value) => setState((prevState) => ({ ...prevState, screenshotQuality: value })),
-		setTerminalOutputLineLimit: (value) =>
-			setState((prevState) => ({ ...prevState, terminalOutputLineLimit: value })),
-		setTerminalOutputCharacterLimit: (value) =>
-			setState((prevState) => ({ ...prevState, terminalOutputCharacterLimit: value })),
+		setTerminalOutputPreviewSize: (value) =>
+			setState((prevState) => ({ ...prevState, terminalOutputPreviewSize: value })),
 		setTerminalShellIntegrationTimeout: (value) =>
 			setState((prevState) => ({ ...prevState, terminalShellIntegrationTimeout: value })),
 		setTerminalShellIntegrationDisabled: (value) =>
@@ -581,8 +572,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setMaxImageFileSize: (value) => setState((prevState) => ({ ...prevState, maxImageFileSize: value })),
 		setMaxTotalImageSize: (value) => setState((prevState) => ({ ...prevState, maxTotalImageSize: value })),
 		setPinnedApiConfigs: (value) => setState((prevState) => ({ ...prevState, pinnedApiConfigs: value })),
-		setTerminalCompressProgressBar: (value) =>
-			setState((prevState) => ({ ...prevState, terminalCompressProgressBar: value })),
 		togglePinnedApiConfig: (configId) =>
 			setState((prevState) => {
 				const currentPinned = prevState.pinnedApiConfigs || {}

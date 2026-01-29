@@ -733,6 +733,15 @@
 			"label": "終端機字元限制",
 			"description": "透過強制限制輸出大小來覆寫行限制以防止記憶體問題。如果超出，保留開頭和結尾並向 Roo 顯示內容被跳過的佔位符。<0>了解更多</0>"
 		},
+		"outputPreviewSize": {
+			"label": "命令輸出預覽大小",
+			"description": "控制 Roo 直接看到的命令輸出量。完整輸出始終會被儲存，需要時可以存取。",
+			"options": {
+				"small": "小 (5KB)",
+				"medium": "中 (10KB)",
+				"large": "大 (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "終端機 shell 整合逾時",
 			"description": "執行命令前等待 VS Code shell 整合的時間。如果 shell 啟動緩慢或看到 'Shell Integration Unavailable' 錯誤，請提高此值。<0>了解更多</0>"
@@ -744,10 +753,6 @@
 		"commandDelay": {
 			"label": "終端機命令延遲",
 			"description": "在每個命令後新增短暫暫停，以便 VS Code 終端機刷新所有輸出（bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep）。僅在看到缺少尾部輸出時使用；否則保持為 0。<0>了解更多</0>"
-		},
-		"compressProgressBar": {
-			"label": "壓縮進度條輸出",
-			"description": "折疊進度條/旋轉器，僅保留最終狀態（節省 Token）。<0>了解更多</0>"
 		},
 		"powershellCounter": {
 			"label": "啟用 PowerShell 計數器解決方案",

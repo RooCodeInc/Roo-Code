@@ -725,6 +725,15 @@
 			"label": "Limite caratteri terminale",
 			"description": "Sovrascrive il limite di righe per prevenire problemi di memoria imponendo un limite rigido alla dimensione di output. Se superato, mantiene l'inizio e la fine e mostra un segnaposto a Roo dove il contenuto viene saltato. <0>Scopri di più</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Dimensione anteprima output comandi",
+			"description": "Controlla quanto output dei comandi Roo vede direttamente. L'output completo viene sempre salvato ed è accessibile quando necessario.",
+			"options": {
+				"small": "Piccola (5KB)",
+				"medium": "Media (10KB)",
+				"large": "Grande (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout integrazione shell terminale",
 			"description": "Quanto tempo attendere l'integrazione della shell di VS Code prima di eseguire i comandi. Aumenta se la tua shell si avvia lentamente o vedi errori 'Integrazione Shell Non Disponibile'. <0>Scopri di più</0>"
@@ -736,10 +745,6 @@
 		"commandDelay": {
 			"label": "Ritardo comando terminale",
 			"description": "Aggiunge una breve pausa dopo ogni comando affinché il terminale VS Code possa svuotare tutto l'output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Usa solo se vedi output finale mancante; altrimenti lascia a 0. <0>Scopri di più</0>"
-		},
-		"compressProgressBar": {
-			"label": "Comprimi output barra di avanzamento",
-			"description": "Comprime barre di avanzamento/spinner in modo che venga mantenuto solo lo stato finale (risparmia token). <0>Scopri di più</0>"
 		},
 		"powershellCounter": {
 			"label": "Abilita workaround contatore PowerShell",

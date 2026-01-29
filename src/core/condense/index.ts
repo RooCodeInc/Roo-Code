@@ -9,6 +9,10 @@ import { ApiMessage } from "../task-persistence/apiMessages"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
+import { RooIgnoreController } from "../ignore/RooIgnoreController"
+import { generateFoldedFileContext } from "./foldedFileContext"
+
+export type { FoldedFileContextResult, FoldedFileContextOptions } from "./foldedFileContext"
 
 export const MIN_CONDENSE_THRESHOLD = 5 // Minimum percentage of context window to trigger condensing
 export const MAX_CONDENSE_THRESHOLD = 100 // Maximum percentage of context window to trigger condensing
@@ -123,6 +127,20 @@ export type SummarizeResponse = {
 	condenseId?: string // The unique ID of the created Summary message, for linking to condense_context clineMessage
 }
 
+export type SummarizeConversationOptions = {
+	messages: ApiMessage[]
+	apiHandler: ApiHandler
+	systemPrompt: string
+	taskId: string
+	isAutomaticTrigger?: boolean
+	customCondensingPrompt?: string
+	metadata?: ApiHandlerCreateMessageMetadata
+	environmentDetails?: string
+	filesReadByRoo?: string[]
+	cwd?: string
+	rooIgnoreController?: RooIgnoreController
+}
+
 /**
  * Summarizes the conversation messages using an LLM call.
  *
@@ -131,6 +149,7 @@ export type SummarizeResponse = {
  * - Post-condense, the model sees only the summary (true fresh start)
  * - All messages are still stored but tagged with condenseParent
  * - <command> blocks from the original task are preserved across condensings
+ * - File context (folded code definitions) can be preserved for continuity
  *
  * Environment details handling:
  * - For AUTOMATIC condensing (isAutomaticTrigger=true): Environment details are included
@@ -139,27 +158,21 @@ export type SummarizeResponse = {
  * - For MANUAL condensing (isAutomaticTrigger=false): Environment details are NOT included
  *   because fresh environment details will be injected on the very next turn via
  *   getEnvironmentDetails() in recursivelyMakeClineRequests().
- *
- * @param {ApiMessage[]} messages - The conversation messages
- * @param {ApiHandler} apiHandler - The API handler to use for summarization and token counting
- * @param {string} systemPrompt - The system prompt for API requests (fallback if customCondensingPrompt not provided)
- * @param {string} taskId - The task ID for the conversation, used for telemetry
- * @param {boolean} isAutomaticTrigger - Whether the summarization is triggered automatically
- * @param {string} customCondensingPrompt - Optional custom prompt to use for condensing
- * @param {ApiHandlerCreateMessageMetadata} metadata - Optional metadata to pass to createMessage (tools, taskId, etc.)
- * @param {string} environmentDetails - Optional environment details string to include in the summary (only used when isAutomaticTrigger=true)
- * @returns {SummarizeResponse} - The result of the summarization operation (see above)
  */
-export async function summarizeConversation(
-	messages: ApiMessage[],
-	apiHandler: ApiHandler,
-	systemPrompt: string,
-	taskId: string,
-	isAutomaticTrigger?: boolean,
-	customCondensingPrompt?: string,
-	metadata?: ApiHandlerCreateMessageMetadata,
-	environmentDetails?: string,
-): Promise<SummarizeResponse> {
+export async function summarizeConversation(options: SummarizeConversationOptions): Promise<SummarizeResponse> {
+	const {
+		messages,
+		apiHandler,
+		systemPrompt,
+		taskId,
+		isAutomaticTrigger,
+		customCondensingPrompt,
+		metadata,
+		environmentDetails,
+		filesReadByRoo,
+		cwd,
+		rooIgnoreController,
+	} = options
 	TelemetryService.instance.captureContextCondensed(
 		taskId,
 		isAutomaticTrigger ?? false,
@@ -289,7 +302,7 @@ export async function summarizeConversation(
 		{ type: "text", text: `## Conversation Summary\n${summary}` },
 	]
 
-	// Add command blocks as a separate text block if present
+	// Add command blocks (active workflows) in their own system-reminder block if present
 	if (commandBlocks) {
 		summaryContent.push({
 			type: "text",
@@ -299,6 +312,30 @@ The following directives must be maintained across all future condensings:
 ${commandBlocks}
 </system-reminder>`,
 		})
+	}
+
+	// Generate and add folded file context (smart code folding) if file paths are provided
+	// Each file gets its own <system-reminder> block as a separate content block
+	if (filesReadByRoo && filesReadByRoo.length > 0 && cwd) {
+		try {
+			const foldedResult = await generateFoldedFileContext(filesReadByRoo, {
+				cwd,
+				rooIgnoreController,
+			})
+			if (foldedResult.sections.length > 0) {
+				for (const section of foldedResult.sections) {
+					if (section.trim()) {
+						summaryContent.push({
+							type: "text",
+							text: section,
+						})
+					}
+				}
+			}
+		} catch (error) {
+			console.error("[summarizeConversation] Failed to generate folded file context:", error)
+			// Continue without folded context - non-critical failure
+		}
 	}
 
 	// Add environment details as a separate text block if provided AND this is an automatic trigger.

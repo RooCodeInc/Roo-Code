@@ -340,7 +340,7 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"worktrees": "Worktrees: Treballa en múltiples branques simultàniament amb Git worktrees. Cada worktree obté la seva pròpia finestra VS Code amb Roo Code, habilitant desenvolupament paral·lel sense canvi de branches. <settingsLink>Prova-ho</settingsLink>"
+			"smartCodeFolding": "Plegament intel·ligent de codi: La condensació de context ara preserva un mapa lleuger dels teus fitxers—signatures de funcions, declaracions de classe i definicions de tipus. Això proporciona millor continuïtat després de condensar i edicions més intel·ligents quan es fa referència a feina anterior."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
@@ -504,5 +504,8 @@
 		"serversPart_other": "{{count}} servidors MCP",
 		"messageTemplate": "Tens {{tools}} habilitades via {{servers}}. Un nombre tant alt pot confondre el model i portar a errors. Intenta mantenir-lo per sota de {{threshold}}.",
 		"openMcpSettings": "Obrir configuració de MCP"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

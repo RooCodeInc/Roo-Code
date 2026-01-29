@@ -631,10 +631,6 @@ export const webviewMessageHandler = async (
 						if (value !== undefined) {
 							Terminal.setTerminalZdotdir(value as boolean)
 						}
-					} else if (key === "terminalCompressProgressBar") {
-						if (value !== undefined) {
-							Terminal.setCompressProgressBar(value as boolean)
-						}
 					} else if (key === "mcpEnabled") {
 						newValue = value ?? true
 						const mcpHub = provider.getMcpHub()

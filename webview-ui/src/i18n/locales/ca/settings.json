@@ -724,6 +724,15 @@
 			"label": "Límit de caràcters del terminal",
 			"description": "Anul·la el límit de línies per evitar problemes de memòria imposant un límit dur a la mida de sortida. Si se supera, manté l'inici i el final i mostra un marcador a Roo on s'ha omès el contingut. <0>Aprèn-ne més</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Mida de la previsualització de la sortida d'ordres",
+			"description": "Controla quanta sortida d'ordres veu Roo directament. La sortida completa sempre es desa i és accessible quan calgui.",
+			"options": {
+				"small": "Petita (5KB)",
+				"medium": "Mitjana (10KB)",
+				"large": "Gran (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Temps d'espera d'integració del shell del terminal",
 			"description": "Quant de temps esperar la integració del shell de VS Code abans d'executar comandes. Augmenta si el teu shell s'inicia lentament o veus errors 'Integració del Shell No Disponible'. <0>Aprèn-ne més</0>"
@@ -735,10 +744,6 @@
 		"commandDelay": {
 			"label": "Retard de comanda del terminal",
 			"description": "Afegeix una pausa breu després de cada comanda perquè el terminal de VS Code pugui buidar tota la sortida (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Usa només si veus que falta sortida final; altrament deixa a 0. <0>Aprèn-ne més</0>"
-		},
-		"compressProgressBar": {
-			"label": "Comprimeix sortida de barra de progrés",
-			"description": "Col·lapsa barres de progrés/spinners perquè només es mantingui l'estat final (estalvia tokens). <0>Aprèn-ne més</0>"
 		},
 		"powershellCounter": {
 			"label": "Activa solució de comptador de PowerShell",

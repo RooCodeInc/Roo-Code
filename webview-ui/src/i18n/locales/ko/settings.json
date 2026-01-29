@@ -725,6 +725,15 @@
 			"label": "터미널 문자 제한",
 			"description": "출력 크기에 대한 엄격한 상한을 적용하여 메모리 문제를 방지하기 위해 줄 제한을 재정의합니다. 초과하면 시작과 끝을 유지하고 내용이 생략된 곳에 Roo에게 자리 표시자를 표시합니다. <0>자세히 알아보기</0>"
 		},
+		"outputPreviewSize": {
+			"label": "명령 출력 미리보기 크기",
+			"description": "Roo가 직접 보는 명령 출력량을 제어합니다. 전체 출력은 항상 저장되며 필요할 때 액세스할 수 있습니다.",
+			"options": {
+				"small": "작게 (5KB)",
+				"medium": "보통 (10KB)",
+				"large": "크게 (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "터미널 셸 통합 시간 초과",
 			"description": "명령을 실행하기 전에 VS Code 셸 통합을 기다리는 시간입니다. 셸이 느리게 시작되거나 '셸 통합을 사용할 수 없음' 오류가 표시되면 이 값을 늘리십시오. <0>자세히 알아보기</0>"
@@ -736,10 +745,6 @@
 		"commandDelay": {
 			"label": "터미널 명령 지연",
 			"description": "VS Code 터미널이 모든 출력을 플러시할 수 있도록 각 명령 후에 짧은 일시 중지를 추가합니다(bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). 누락된 꼬리 출력이 표시되는 경우에만 사용하고, 그렇지 않으면 0으로 둡니다. <0>자세히 알아보기</0>"
-		},
-		"compressProgressBar": {
-			"label": "진행률 표시줄 출력 압축",
-			"description": "진행률 표시줄/스피너를 축소하여 최종 상태만 유지합니다(토큰 절약). <0>자세히 알아보기</0>"
 		},
 		"powershellCounter": {
 			"label": "PowerShell 카운터 해결 방법 활성화",

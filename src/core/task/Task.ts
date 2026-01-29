@@ -84,11 +84,13 @@ import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider"
 import { findToolName } from "../../integrations/misc/export-markdown"
 import { RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
+import { OutputInterceptor } from "../../integrations/terminal/OutputInterceptor"
 
 // utils
 import { calculateApiCostAnthropic, calculateApiCostOpenAI } from "../../shared/cost"
 import { getWorkspacePath } from "../../utils/path"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { getTaskDirectoryPath } from "../../utils/storage"
 
 // prompts
 import { formatResponse } from "../prompts/responses"
@@ -352,6 +354,20 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	presentAssistantMessageHasPendingUpdates = false
 	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam | Anthropic.ToolResultBlockParam)[] = []
 	userMessageContentReady = false
+
+	/**
+	 * Flag indicating whether the assistant message for the current streaming session
+	 * has been saved to API conversation history.
+	 *
+	 * This is critical for parallel tool calling: tools should NOT execute until
+	 * the assistant message is saved. Otherwise, if a tool like `new_task` triggers
+	 * `flushPendingToolResultsToHistory()`, the user message with tool_results would
+	 * appear BEFORE the assistant message with tool_uses, causing API errors.
+	 *
+	 * Reset to `false` at the start of each API request.
+	 * Set to `true` after the assistant message is saved in `recursivelyMakeClineRequests`.
+	 */
+	assistantMessageSavedToHistory = false
 
 	/**
 	 * Push a tool_result block to userMessageContent, preventing duplicates.
@@ -1061,6 +1077,36 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			return
 		}
 
+		// CRITICAL: Wait for the assistant message to be saved to API history first.
+		// Without this, tool_result blocks would appear BEFORE tool_use blocks in the
+		// conversation history, causing API errors like:
+		// "unexpected `tool_use_id` found in `tool_result` blocks"
+		//
+		// This can happen when parallel tools are called (e.g., update_todo_list + new_task).
+		// Tools execute during streaming via presentAssistantMessage, BEFORE the assistant
+		// message is saved. When new_task triggers delegation, it calls this method to
+		// flush pending results - but the assistant message hasn't been saved yet.
+		//
+		// The assistantMessageSavedToHistory flag is:
+		// - Reset to false at the start of each API request
+		// - Set to true after the assistant message is saved in recursivelyMakeClineRequests
+		if (!this.assistantMessageSavedToHistory) {
+			await pWaitFor(() => this.assistantMessageSavedToHistory || this.abort, {
+				interval: 50,
+				timeout: 30_000, // 30 second timeout as safety net
+			}).catch(() => {
+				// If timeout or abort, log and proceed anyway to avoid hanging
+				console.warn(
+					`[Task#${this.taskId}] flushPendingToolResultsToHistory: timed out waiting for assistant message to be saved`,
+				)
+			})
+		}
+
+		// If task was aborted while waiting, don't flush
+		if (this.abort) {
+			return
+		}
+
 		// Save the user message with tool_result blocks
 		const userMessage: Anthropic.MessageParam = {
 			role: "user",
@@ -1573,6 +1619,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 	}
 
+	private async getFilesReadByRooSafely(context: string): Promise<string[] | undefined> {
+		try {
+			return await this.fileContextTracker.getFilesReadByRoo()
+		} catch (error) {
+			console.error(`[Task#${context}] Failed to get files read by Roo:`, error)
+			return undefined
+		}
+	}
+
 	public async condenseContext(): Promise<void> {
 		// CRITICAL: Flush any pending tool results before condensing
 		// to ensure tool_use/tool_result pairs are complete in history
@@ -1623,6 +1678,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Generate environment details to include in the condensed summary
 		const environmentDetails = await getEnvironmentDetails(this, true)
 
+		const filesReadByRoo = await this.getFilesReadByRooSafely("condenseContext")
+
 		const {
 			messages,
 			summary,
@@ -1631,16 +1688,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			error,
 			errorDetails,
 			condenseId,
-		} = await summarizeConversation(
-			this.apiConversationHistory,
-			this.api, // Main API handler (fallback)
-			systemPrompt, // Default summarization prompt (fallback)
-			this.taskId,
-			false, // manual trigger
-			customCondensingPrompt, // User's custom prompt
-			metadata, // Pass metadata with tools
-			environmentDetails, // Include environment details in summary
-		)
+		} = await summarizeConversation({
+			messages: this.apiConversationHistory,
+			apiHandler: this.api,
+			systemPrompt,
+			taskId: this.taskId,
+			isAutomaticTrigger: false,
+			customCondensingPrompt,
+			metadata,
+			environmentDetails,
+			filesReadByRoo,
+			cwd: this.cwd,
+			rooIgnoreController: this.rooIgnoreController,
+		})
 		if (error) {
 			await this.say(
 				"condense_context_error",
@@ -2252,6 +2312,16 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.error("Error releasing terminals:", error)
 		}
 
+		// Cleanup command output artifacts
+		getTaskDirectoryPath(this.globalStoragePath, this.taskId)
+			.then((taskDir) => {
+				const outputDir = path.join(taskDir, "command-output")
+				return OutputInterceptor.cleanup(outputDir)
+			})
+			.catch((error) => {
+				console.error("Error cleaning up command output artifacts:", error)
+			})
+
 		try {
 			this.urlContentFetcher.closeBrowser()
 		} catch (error) {
@@ -2681,6 +2751,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.userMessageContentReady = false
 				this.didRejectTool = false
 				this.didAlreadyUseTool = false
+				this.assistantMessageSavedToHistory = false
 				// Reset tool failure flag for each new assistant turn - this ensures that tool failures
 				// only prevent attempt_completion within the same assistant message, not across turns
 				// (e.g., if a tool fails, then user sends a message saying "just complete anyway")
@@ -3462,6 +3533,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						{ role: "assistant", content: assistantContent },
 						reasoningMessage || undefined,
 					)
+					this.assistantMessageSavedToHistory = true
 
 					TelemetryService.instance.captureConversationMessage(this.taskId, "assistant")
 				}
@@ -4039,6 +4111,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				? await getEnvironmentDetails(this, true)
 				: undefined
 
+			// Get files read by Roo for code folding - only when context management will run
+			const contextMgmtFilesReadByRoo =
+				contextManagementWillRun && autoCondenseContext
+					? await this.getFilesReadByRooSafely("attemptApiRequest")
+					: undefined
+
 			try {
 				const truncateResult = await manageContext({
 					messages: this.apiConversationHistory,
@@ -4055,6 +4133,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					currentProfileId,
 					metadata: contextMgmtMetadata,
 					environmentDetails: contextMgmtEnvironmentDetails,
+					filesReadByRoo: contextMgmtFilesReadByRoo,
+					cwd: this.cwd,
+					rooIgnoreController: this.rooIgnoreController,
 				})
 				if (truncateResult.messages !== this.apiConversationHistory) {
 					await this.overwriteApiConversationHistory(truncateResult.messages)

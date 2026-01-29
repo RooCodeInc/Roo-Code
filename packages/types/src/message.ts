@@ -182,6 +182,7 @@ export const clineSays = [
 	"codebase_search_result",
 	"user_edit_todos",
 	"too_many_tools_warning",
+	"tool",
 ] as const
 
 export const clineSaySchema = z.enum(clineSays)

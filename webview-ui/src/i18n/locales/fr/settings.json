@@ -724,6 +724,15 @@
 			"label": "Limite de caractères du terminal",
 			"description": "Remplace la limite de lignes pour éviter les problèmes de mémoire en imposant un plafond strict sur la taille de sortie. Si dépassé, conserve le début et la fin et affiche un espace réservé à Roo là où le contenu est ignoré. <0>En savoir plus</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Taille de l'aperçu de sortie des commandes",
+			"description": "Contrôle la quantité de sortie de commande que Roo voit directement. La sortie complète est toujours sauvegardée et accessible en cas de besoin.",
+			"options": {
+				"small": "Petite (5KB)",
+				"medium": "Moyenne (10KB)",
+				"large": "Grande (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Délai d'attente d'intégration du shell du terminal",
 			"description": "Temps d'attente de l'intégration du shell de VS Code avant d'exécuter des commandes. Augmentez si votre shell démarre lentement ou si vous voyez des erreurs 'Intégration du Shell Indisponible'. <0>En savoir plus</0>"
@@ -735,10 +744,6 @@
 		"commandDelay": {
 			"label": "Délai de commande du terminal",
 			"description": "Ajoute une courte pause après chaque commande pour que le terminal VS Code puisse vider toute la sortie (bash/zsh : PROMPT_COMMAND sleep ; PowerShell : start-sleep). Utilisez uniquement si vous voyez une sortie de fin manquante ; sinon laissez à 0. <0>En savoir plus</0>"
-		},
-		"compressProgressBar": {
-			"label": "Compresser la sortie de barre de progression",
-			"description": "Réduit les barres de progression/spinners pour ne conserver que l'état final (économise des jetons). <0>En savoir plus</0>"
 		},
 		"powershellCounter": {
 			"label": "Activer la solution de contournement du compteur PowerShell",

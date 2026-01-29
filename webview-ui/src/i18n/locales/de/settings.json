@@ -724,6 +724,15 @@
 			"label": "Terminal-Zeichenlimit",
 			"description": "Überschreibt das Zeilenlimit, um Speicherprobleme durch eine harte Obergrenze für die Ausgabegröße zu vermeiden. Bei Überschreitung behält es Anfang und Ende und zeigt Roo einen Platzhalter, wo Inhalt übersprungen wird. <0>Mehr erfahren</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Befehlsausgabe-Vorschaugröße",
+			"description": "Steuert, wie viel Befehlsausgabe Roo direkt sieht. Die vollständige Ausgabe wird immer gespeichert und ist bei Bedarf zugänglich.",
+			"options": {
+				"small": "Klein (5KB)",
+				"medium": "Mittel (10KB)",
+				"large": "Groß (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal-Shell-Integrations-Timeout",
 			"description": "Wie lange auf VS Code Shell-Integration gewartet wird, bevor Befehle ausgeführt werden. Erhöhe den Wert, wenn deine Shell langsam startet oder du 'Shell-Integration nicht verfügbar'-Fehler siehst. <0>Mehr erfahren</0>"
@@ -735,10 +744,6 @@
 		"commandDelay": {
 			"label": "Terminal-Befehlsverzögerung",
 			"description": "Fügt nach jedem Befehl eine kurze Pause hinzu, damit das VS Code-Terminal alle Ausgaben leeren kann (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Verwende dies nur, wenn du fehlende Tail-Ausgabe siehst; sonst lass es bei 0. <0>Mehr erfahren</0>"
-		},
-		"compressProgressBar": {
-			"label": "Fortschrittsbalken-Ausgabe komprimieren",
-			"description": "Klappt Fortschrittsbalken/Spinner zusammen, sodass nur der Endzustand erhalten bleibt (spart Token). <0>Mehr erfahren</0>"
 		},
 		"powershellCounter": {
 			"label": "PowerShell-Zähler-Workaround aktivieren",

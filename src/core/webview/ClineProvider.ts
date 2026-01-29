@@ -40,7 +40,6 @@ import {
 	RooCodeEventName,
 	requestyDefaultModelId,
 	openRouterDefaultModelId,
-	DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 	DEFAULT_WRITE_DELAY_MS,
 	ORGANIZATION_ALLOW_ALL,
 	DEFAULT_MODES,
@@ -159,7 +158,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "jan-2026-v3.44.0-worktrees" // v3.44.0 Worktrees
+	public readonly latestAnnouncementId = "jan-2026-v3.45.0-smart-code-folding" // v3.45.0 Smart Code Folding
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
@@ -2016,8 +2015,6 @@ export class ClineProvider
 			remoteBrowserEnabled,
 			cachedChromeHostUrl,
 			writeDelayMs,
-			terminalOutputLineLimit,
-			terminalOutputCharacterLimit,
 			terminalShellIntegrationTimeout,
 			terminalShellIntegrationDisabled,
 			terminalCommandDelay,
@@ -2048,7 +2045,6 @@ export class ClineProvider
 			maxReadFileLine,
 			maxImageFileSize,
 			maxTotalImageSize,
-			terminalCompressProgressBar,
 			historyPreviewCollapsed,
 			reasoningBlockCollapsed,
 			enterBehavior,
@@ -2157,8 +2153,6 @@ export class ClineProvider
 			remoteBrowserEnabled: remoteBrowserEnabled ?? false,
 			cachedChromeHostUrl: cachedChromeHostUrl,
 			writeDelayMs: writeDelayMs ?? DEFAULT_WRITE_DELAY_MS,
-			terminalOutputLineLimit: terminalOutputLineLimit ?? 500,
-			terminalOutputCharacterLimit: terminalOutputCharacterLimit ?? DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 			terminalShellIntegrationTimeout: terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
 			terminalShellIntegrationDisabled: terminalShellIntegrationDisabled ?? true,
 			terminalCommandDelay: terminalCommandDelay ?? 0,
@@ -2196,7 +2190,6 @@ export class ClineProvider
 			maxTotalImageSize: maxTotalImageSize ?? 20,
 			maxConcurrentFileReads: maxConcurrentFileReads ?? 5,
 			settingsImportedAt: this.settingsImportedAt,
-			terminalCompressProgressBar: terminalCompressProgressBar ?? true,
 			hasSystemPromptOverride,
 			historyPreviewCollapsed: historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
@@ -2403,9 +2396,6 @@ export class ClineProvider
 			remoteBrowserEnabled: stateValues.remoteBrowserEnabled ?? false,
 			cachedChromeHostUrl: stateValues.cachedChromeHostUrl as string | undefined,
 			writeDelayMs: stateValues.writeDelayMs ?? DEFAULT_WRITE_DELAY_MS,
-			terminalOutputLineLimit: stateValues.terminalOutputLineLimit ?? 500,
-			terminalOutputCharacterLimit:
-				stateValues.terminalOutputCharacterLimit ?? DEFAULT_TERMINAL_OUTPUT_CHARACTER_LIMIT,
 			terminalShellIntegrationTimeout:
 				stateValues.terminalShellIntegrationTimeout ?? Terminal.defaultShellIntegrationTimeout,
 			terminalShellIntegrationDisabled: stateValues.terminalShellIntegrationDisabled ?? true,
@@ -2415,7 +2405,6 @@ export class ClineProvider
 			terminalZshOhMy: stateValues.terminalZshOhMy ?? false,
 			terminalZshP10k: stateValues.terminalZshP10k ?? false,
 			terminalZdotdir: stateValues.terminalZdotdir ?? false,
-			terminalCompressProgressBar: stateValues.terminalCompressProgressBar ?? true,
 			mode: stateValues.mode ?? defaultModeSlug,
 			language: stateValues.language ?? formatLanguage(vscode.env.language),
 			mcpEnabled: stateValues.mcpEnabled ?? true,

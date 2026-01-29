@@ -729,6 +729,15 @@
 			"label": "Batas karakter terminal",
 			"description": "Override batas baris untuk mencegah masalah memori dengan memberlakukan cap keras pada ukuran output. Jika terlampaui, simpan awal dan akhir lalu tampilkan placeholder ke Roo di mana konten dilewati. <0>Pelajari lebih lanjut</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Ukuran pratinjau keluaran perintah",
+			"description": "Mengontrol seberapa banyak keluaran perintah yang dilihat Roo secara langsung. Keluaran lengkap selalu disimpan dan dapat diakses saat diperlukan.",
+			"options": {
+				"small": "Kecil (5KB)",
+				"medium": "Sedang (10KB)",
+				"large": "Besar (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout integrasi shell terminal",
 			"description": "Waktu tunggu integrasi shell VS Code sebelum menjalankan perintah. Naikkan jika shell lambat start atau muncul error 'Shell Integration Unavailable'. <0>Pelajari lebih lanjut</0>"
@@ -740,10 +749,6 @@
 		"commandDelay": {
 			"label": "Delay perintah terminal",
 			"description": "Tambahkan jeda singkat setelah setiap perintah agar VS Code terminal bisa flush semua output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gunakan hanya jika output ekor hilang; jika tidak biarkan di 0. <0>Pelajari lebih lanjut</0>"
-		},
-		"compressProgressBar": {
-			"label": "Kompres keluaran bilah kemajuan",
-			"description": "Menciutkan bilah kemajuan/spinner sehingga hanya status akhir yang disimpan (menghemat token). <0>Pelajari lebih lanjut</0>"
 		},
 		"powershellCounter": {
 			"label": "Aktifkan solusi penghitung PowerShell",

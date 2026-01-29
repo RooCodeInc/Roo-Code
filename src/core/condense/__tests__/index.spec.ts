@@ -710,7 +710,12 @@ describe("summarizeConversation", () => {
 	it("should not summarize when there are not enough messages", async () => {
 		const messages: ApiMessage[] = [{ role: "user", content: "Hello", ts: 1 }]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 		expect(result.messages).toEqual(messages)
 		expect(result.cost).toBe(0)
 		expect(result.summary).toBe("")
@@ -730,7 +735,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Tell me more", ts: 7 },
 		]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Check that the API was called correctly
 		expect(mockApiHandler.createMessage).toHaveBeenCalled()
@@ -784,7 +794,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "What's new?", ts: 5 },
 		]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
@@ -807,7 +822,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "What's new?", ts: 5 },
 		]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
@@ -844,7 +864,12 @@ describe("summarizeConversation", () => {
 			return messages.map(({ role, content }: { role: string; content: any }) => ({ role, content }))
 		})
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Should return original messages when summary is empty
 		expect(result.messages).toEqual(messages)
@@ -865,7 +890,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Tell me more", ts: 7 },
 		]
 
-		await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Verify that createMessage was called with the SUMMARY_PROMPT (which contains CRITICAL instructions), messages array, and optional metadata
 		expect(mockApiHandler.createMessage).toHaveBeenCalledWith(
@@ -897,7 +927,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Newest", ts: 7 },
 		]
 
-		await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		const mockCallArgs = (maybeRemoveImageBlocks as Mock).mock.calls[0][0] as any[]
 
@@ -935,7 +970,12 @@ describe("summarizeConversation", () => {
 		// Override the mock for this test
 		mockApiHandler.createMessage = vi.fn().mockReturnValue(streamWithUsage) as any
 
-		const result = await summarizeConversation(messages, mockApiHandler, systemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt,
+			taskId,
+		})
 
 		// Verify that countTokens was called with system prompt + summary message
 		expect(mockApiHandler.countTokens).toHaveBeenCalled()
@@ -970,7 +1010,12 @@ describe("summarizeConversation", () => {
 		// Mock countTokens to return a small value
 		mockApiHandler.countTokens = vi.fn().mockImplementation(() => Promise.resolve(30)) as any
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Result contains all messages plus summary
 		expect(result.messages.length).toBe(messages.length + 1)
@@ -1010,7 +1055,12 @@ describe("summarizeConversation", () => {
 		const mockError = vi.fn()
 		console.error = mockError
 
-		const result = await summarizeConversation(messages, invalidHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: invalidHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Should return original messages when handler is invalid
 		expect(result.messages).toEqual(messages)
@@ -1035,7 +1085,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Thanks", ts: 5 },
 		]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		const summaryMessage = result.messages.find((m) => m.isSummary)
 		expect(summaryMessage).toBeDefined()
@@ -1056,7 +1111,12 @@ describe("summarizeConversation", () => {
 			{ role: "user", content: "Thanks", ts: 5 },
 		]
 
-		const result = await summarizeConversation(messages, mockApiHandler, defaultSystemPrompt, taskId)
+		const result = await summarizeConversation({
+			messages,
+			apiHandler: mockApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId,
+		})
 
 		// Summary should be the last message
 		const lastMessage = result.messages[result.messages.length - 1]
@@ -1120,14 +1180,14 @@ describe("summarizeConversation with custom settings", () => {
 	it("should use custom prompt when provided", async () => {
 		const customPrompt = "Custom summarization prompt"
 
-		await summarizeConversation(
-			sampleMessages,
-			mockMainApiHandler,
-			defaultSystemPrompt,
-			localTaskId,
-			false,
-			customPrompt,
-		)
+		await summarizeConversation({
+			messages: sampleMessages,
+			apiHandler: mockMainApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId: localTaskId,
+			isAutomaticTrigger: false,
+			customCondensingPrompt: customPrompt,
+		})
 
 		// Verify the custom prompt was used in the user message content
 		const createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
@@ -1144,7 +1204,14 @@ describe("summarizeConversation with custom settings", () => {
 	 */
 	it("should use default systemPrompt when custom prompt is empty or not provided", async () => {
 		// Test with empty string
-		await summarizeConversation(sampleMessages, mockMainApiHandler, defaultSystemPrompt, localTaskId, false, "  ")
+		await summarizeConversation({
+			messages: sampleMessages,
+			apiHandler: mockMainApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId: localTaskId,
+			isAutomaticTrigger: false,
+			customCondensingPrompt: "  ",
+		})
 
 		// Verify the default SUMMARY_PROMPT was used (contains CRITICAL instructions)
 		let createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
@@ -1156,14 +1223,13 @@ describe("summarizeConversation with custom settings", () => {
 
 		// Reset mock and test with undefined
 		vi.clearAllMocks()
-		await summarizeConversation(
-			sampleMessages,
-			mockMainApiHandler,
-			defaultSystemPrompt,
-			localTaskId,
-			false,
-			undefined,
-		)
+		await summarizeConversation({
+			messages: sampleMessages,
+			apiHandler: mockMainApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId: localTaskId,
+			isAutomaticTrigger: false,
+		})
 
 		// Verify the default SUMMARY_PROMPT was used again (contains CRITICAL instructions)
 		createMessageCalls = (mockMainApiHandler.createMessage as Mock).mock.calls
@@ -1178,14 +1244,14 @@ describe("summarizeConversation with custom settings", () => {
 	 * Test that telemetry is called for custom prompt usage
 	 */
 	it("should capture telemetry when using custom prompt", async () => {
-		await summarizeConversation(
-			sampleMessages,
-			mockMainApiHandler,
-			defaultSystemPrompt,
-			localTaskId,
-			false,
-			"Custom prompt",
-		)
+		await summarizeConversation({
+			messages: sampleMessages,
+			apiHandler: mockMainApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId: localTaskId,
+			isAutomaticTrigger: false,
+			customCondensingPrompt: "Custom prompt",
+		})
 
 		// Verify telemetry was called with custom prompt flag
 		expect(TelemetryService.instance.captureContextCondensed).toHaveBeenCalledWith(
@@ -1199,14 +1265,14 @@ describe("summarizeConversation with custom settings", () => {
 	 * Test that telemetry is called with isAutomaticTrigger flag
 	 */
 	it("should capture telemetry with isAutomaticTrigger flag", async () => {
-		await summarizeConversation(
-			sampleMessages,
-			mockMainApiHandler,
-			defaultSystemPrompt,
-			localTaskId,
-			true, // isAutomaticTrigger
-			"Custom prompt",
-		)
+		await summarizeConversation({
+			messages: sampleMessages,
+			apiHandler: mockMainApiHandler,
+			systemPrompt: defaultSystemPrompt,
+			taskId: localTaskId,
+			isAutomaticTrigger: true,
+			customCondensingPrompt: "Custom prompt",
+		})
 
 		// Verify telemetry was called with isAutomaticTrigger flag
 		expect(TelemetryService.instance.captureContextCondensed).toHaveBeenCalledWith(
