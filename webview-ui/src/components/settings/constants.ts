@@ -81,4 +81,5 @@ export const PROVIDERS = [
 	{ value: "vercel-ai-gateway", label: "Vercel AI Gateway", proxy: false },
 	{ value: "minimax", label: "MiniMax", proxy: false },
 	{ value: "baseten", label: "Baseten", proxy: false },
+	{ value: "keywordsai", label: "Keywords AI", proxy: false },
 ].sort((a, b) => a.label.localeCompare(b.label))

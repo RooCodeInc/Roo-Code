@@ -106,6 +106,7 @@ import {
 	VercelAiGateway,
 	DeepInfra,
 	MiniMax,
+	KeywordsAI,
 } from "./providers"
 
 import { MODELS_BY_PROVIDER, PROVIDERS } from "./constants"
@@ -587,6 +588,18 @@ const ApiOptions = ({
 				<Baseten
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
+			{selectedProvider === "keywordsai" && (
+				<KeywordsAI
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					refetchRouterModels={refetchRouterModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
 					simplifySettings={fromWelcomeView}
 				/>
 			)}
