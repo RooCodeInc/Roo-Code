@@ -159,6 +159,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				...(reasoning && reasoning),
+				// Add thinking parameter for OpenAI-compatible APIs that require it when using reasoning effort
+				...(reasoning && modelInfo.supportsReasoningBinary ? { thinking: { type: "enabled" } } : {}),
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
 				parallel_tool_calls: metadata?.parallelToolCalls ?? false,
@@ -344,6 +346,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				stream: true,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
+				// Add thinking parameter for OpenAI-compatible APIs that require it when using reasoning effort
+				...(modelInfo.reasoningEffort && modelInfo.supportsReasoningBinary
+					? { thinking: { type: "enabled" } }
+					: {}),
 				temperature: undefined,
 				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
 				tools: this.convertToolsForOpenAI(metadata?.tools),
@@ -378,6 +384,10 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 					...convertToOpenAiMessages(messages),
 				],
 				reasoning_effort: modelInfo.reasoningEffort as "low" | "medium" | "high" | undefined,
+				// Add thinking parameter for OpenAI-compatible APIs that require it when using reasoning effort
+				...(modelInfo.reasoningEffort && modelInfo.supportsReasoningBinary
+					? { thinking: { type: "enabled" } }
+					: {}),
 				temperature: undefined,
 				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
 				tools: this.convertToolsForOpenAI(metadata?.tools),
