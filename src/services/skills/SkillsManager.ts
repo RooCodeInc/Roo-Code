@@ -1,5 +1,6 @@
 import * as fs from "fs/promises"
 import * as path from "path"
+import * as os from "os"
 import * as vscode from "vscode"
 import matter from "gray-matter"
 
@@ -8,6 +9,12 @@ import { getGlobalRooDirectory } from "../roo-config"
 import { directoryExists, fileExists } from "../roo-config"
 import { SkillMetadata, SkillContent } from "../../shared/skills"
 import { modes, getAllModes } from "../../shared/modes"
+import {
+	validateSkillName as validateSkillNameShared,
+	SkillNameValidationError,
+	SKILL_NAME_MAX_LENGTH,
+} from "@roo-code/types"
+import { t } from "../../i18n"
 
 // Re-export for convenience
 export type { SkillMetadata, SkillContent }
@@ -116,23 +123,11 @@ export class SkillsManager {
 				return
 			}
 
-			// Strict spec validation (https://agentskills.io/specification)
-			// Name constraints:
-			// - 1-64 chars
-			// - lowercase letters/numbers/hyphens only
-			// - must not start/end with hyphen
-			// - must not contain consecutive hyphens
-			if (effectiveSkillName.length < 1 || effectiveSkillName.length > 64) {
-				console.error(
-					`Skill name "${effectiveSkillName}" is invalid: name must be 1-64 characters (got ${effectiveSkillName.length})`,
-				)
-				return
-			}
-			const nameFormat = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-			if (!nameFormat.test(effectiveSkillName)) {
-				console.error(
-					`Skill name "${effectiveSkillName}" is invalid: must be lowercase letters/numbers/hyphens only (no leading/trailing hyphen, no consecutive hyphens)`,
-				)
+			// Validate skill name per agentskills.io spec using shared validation
+			const nameValidation = validateSkillNameShared(effectiveSkillName)
+			if (!nameValidation.valid) {
+				const errorMessage = this.getSkillNameErrorMessage(effectiveSkillName, nameValidation.error!)
+				console.error(`Skill name "${effectiveSkillName}" is invalid: ${errorMessage}`)
 				return
 			}
 
@@ -237,6 +232,146 @@ export class SkillsManager {
 			...skill,
 			instructions: body.trim(),
 		}
+	}
+
+	/**
+	 * Get all skills metadata (for UI display)
+	 * Returns skills from all sources without content
+	 */
+	getSkillsMetadata(): SkillMetadata[] {
+		return this.getAllSkills()
+	}
+
+	/**
+	 * Get a skill by name, source, and optionally mode
+	 */
+	getSkill(name: string, source: "global" | "project", mode?: string): SkillMetadata | undefined {
+		const skillKey = this.getSkillKey(name, source, mode)
+		return this.skills.get(skillKey)
+	}
+
+	/**
+	 * Validate skill name per agentskills.io spec using shared validation.
+	 * Converts error codes to user-friendly error messages.
+	 */
+	private validateSkillName(name: string): { valid: boolean; error?: string } {
+		const result = validateSkillNameShared(name)
+		if (!result.valid) {
+			return { valid: false, error: this.getSkillNameErrorMessage(name, result.error!) }
+		}
+		return { valid: true }
+	}
+
+	/**
+	 * Convert skill name validation error code to a user-friendly error message.
+	 */
+	private getSkillNameErrorMessage(name: string, error: SkillNameValidationError): string {
+		switch (error) {
+			case SkillNameValidationError.Empty:
+				return t("skills:errors.name_length", { maxLength: SKILL_NAME_MAX_LENGTH, length: name.length })
+			case SkillNameValidationError.TooLong:
+				return t("skills:errors.name_length", { maxLength: SKILL_NAME_MAX_LENGTH, length: name.length })
+			case SkillNameValidationError.InvalidFormat:
+				return t("skills:errors.name_format")
+		}
+	}
+
+	/**
+	 * Create a new skill
+	 * @param name - Skill name (must be valid per agentskills.io spec)
+	 * @param source - "global" or "project"
+	 * @param description - Skill description
+	 * @param mode - Optional mode restriction (creates in skills-{mode}/ directory)
+	 * @returns Path to created SKILL.md file
+	 */
+	async createSkill(name: string, source: "global" | "project", description: string, mode?: string): Promise<string> {
+		// Validate skill name
+		const validation = this.validateSkillName(name)
+		if (!validation.valid) {
+			throw new Error(validation.error)
+		}
+
+		// Validate description
+		const trimmedDescription = description.trim()
+		if (trimmedDescription.length < 1 || trimmedDescription.length > 1024) {
+			throw new Error(t("skills:errors.description_length", { length: trimmedDescription.length }))
+		}
+
+		// Determine base directory
+		let baseDir: string
+		if (source === "global") {
+			baseDir = getGlobalRooDirectory()
+		} else {
+			const provider = this.providerRef.deref()
+			if (!provider?.cwd) {
+				throw new Error(t("skills:errors.no_workspace"))
+			}
+			baseDir = path.join(provider.cwd, ".roo")
+		}
+
+		// Determine skills directory (with optional mode suffix)
+		const skillsDirName = mode ? `skills-${mode}` : "skills"
+		const skillsDir = path.join(baseDir, skillsDirName)
+		const skillDir = path.join(skillsDir, name)
+		const skillMdPath = path.join(skillDir, "SKILL.md")
+
+		// Check if skill already exists
+		if (await fileExists(skillMdPath)) {
+			throw new Error(t("skills:errors.already_exists", { name, path: skillMdPath }))
+		}
+
+		// Create the skill directory
+		await fs.mkdir(skillDir, { recursive: true })
+
+		// Generate SKILL.md content with frontmatter
+		const titleName = name
+			.split("-")
+			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+			.join(" ")
+
+		const skillContent = `---
+name: ${name}
+description: ${trimmedDescription}
+---
+
+# ${titleName}
+
+## Instructions
+
+Add your skill instructions here.
+`
+
+		// Write the SKILL.md file
+		await fs.writeFile(skillMdPath, skillContent, "utf-8")
+
+		// Refresh skills list
+		await this.discoverSkills()
+
+		return skillMdPath
+	}
+
+	/**
+	 * Delete a skill
+	 * @param name - Skill name to delete
+	 * @param source - Where the skill is located
+	 * @param mode - Optional mode (to locate in skills-{mode}/ directory)
+	 */
+	async deleteSkill(name: string, source: "global" | "project", mode?: string): Promise<void> {
+		// Find the skill
+		const skill = this.getSkill(name, source, mode)
+		if (!skill) {
+			const modeInfo = mode ? ` (mode: ${mode})` : ""
+			throw new Error(t("skills:errors.not_found", { name, source, modeInfo }))
+		}
+
+		// Get the skill directory (parent of SKILL.md)
+		const skillDir = path.dirname(skill.path)
+
+		// Delete the entire skill directory
+		await fs.rm(skillDir, { recursive: true, force: true })
+
+		// Refresh skills list
+		await this.discoverSkills()
 	}
 
 	/**

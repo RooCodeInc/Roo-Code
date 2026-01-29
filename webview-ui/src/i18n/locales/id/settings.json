@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Eksperimental",
 		"language": "Bahasa",
-		"about": "Tentang Roo Code"
+		"about": "Tentang Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -1025,6 +1026,51 @@
 		"requireCtrlEnterToSend": {
 			"label": "Memerlukan {{primaryMod}}+Enter untuk mengirim pesan",
 			"description": "Ketika diaktifkan, kamu harus menekan {{primaryMod}}+Enter untuk mengirim pesan alih-alih hanya Enter"
+		}
+	},
+	"skills": {
+		"description": "Kelola skills yang memberikan instruksi kontekstual kepada agen. Skills diterapkan secara otomatis saat relevan dengan tugas Anda. <DocsLink>Pelajari lebih lanjut</DocsLink>",
+		"projectSkills": "Skills Proyek",
+		"globalSkills": "Skills Global",
+		"noProjectSkills": "Tidak ada skills proyek yang dikonfigurasi. Buat satu untuk menambahkan kemampuan agen khusus proyek.",
+		"noGlobalSkills": "Tidak ada skills global yang dikonfigurasi. Buat satu untuk menambahkan kemampuan agen yang tersedia di semua proyek.",
+		"addSkill": "Tambahkan Skill",
+		"editSkill": "Edit skill",
+		"deleteSkill": "Hapus skill",
+		"deleteDialog": {
+			"title": "Hapus Skill",
+			"description": "Apakah Anda yakin ingin menghapus skill \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
+			"confirm": "Hapus",
+			"cancel": "Batal"
+		},
+		"createDialog": {
+			"title": "Buat Skill Baru",
+			"description": "Tentukan template skill baru yang memberikan instruksi kontekstual kepada agen.",
+			"nameLabel": "Nama",
+			"namePlaceholder": "nama-skill-saya",
+			"nameHint": "Hanya huruf kecil, angka, dan tanda hubung (1-64 karakter)",
+			"descriptionLabel": "Deskripsi",
+			"descriptionPlaceholder": "Jelaskan kapan skill ini harus digunakan...",
+			"descriptionHint": "Jelaskan apa yang dilakukan skill ini dan kapan agen harus menerapkannya (1-1024 karakter)",
+			"sourceLabel": "Lokasi",
+			"sourceHint": "Pilih apakah skill ini tersedia secara global atau hanya di proyek ini",
+			"modeLabel": "Mode (opsional)",
+			"modePlaceholder": "Mode apa saja",
+			"modeHint": "Batasi skill ini ke mode tertentu",
+			"modeAny": "Mode apa saja",
+			"create": "Buat",
+			"cancel": "Batal"
+		},
+		"source": {
+			"global": "Global (tersedia di semua proyek)",
+			"project": "Proyek (workspace ini saja)"
+		},
+		"validation": {
+			"nameRequired": "Nama diperlukan",
+			"nameTooLong": "Nama harus 64 karakter atau kurang",
+			"nameInvalid": "Nama harus 1-64 huruf kecil, angka, atau tanda hubung",
+			"descriptionRequired": "Deskripsi diperlukan",
+			"descriptionTooLong": "Deskripsi harus 1024 karakter atau kurang"
 		}
 	}
 }

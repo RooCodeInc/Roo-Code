@@ -32,6 +32,7 @@ import { ClineProvider } from "./ClineProvider"
 import { BrowserSessionPanelManager } from "./BrowserSessionPanelManager"
 import { handleCheckpointRestoreOperation } from "./checkpointRestoreHandler"
 import { generateErrorDiagnostics } from "./diagnosticsHandler"
+import { handleRequestSkills, handleCreateSkill, handleDeleteSkill, handleOpenSkillFile } from "./skillsMessageHandler"
 import { changeLanguage, t } from "../../i18n"
 import { Package } from "../../shared/package"
 import { type RouterName, toRouterName } from "../../shared/api"
@@ -2972,6 +2973,22 @@ export const webviewMessageHandler = async (
 				provider.log(`Error fetching modes: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
 				await provider.postMessageToWebview({ type: "modes", modes: [] })
 			}
+			break
+		}
+		case "requestSkills": {
+			await handleRequestSkills(provider)
+			break
+		}
+		case "createSkill": {
+			await handleCreateSkill(provider, message)
+			break
+		}
+		case "deleteSkill": {
+			await handleDeleteSkill(provider, message)
+			break
+		}
+		case "openSkillFile": {
+			await handleOpenSkillFile(provider, message)
 			break
 		}
 		case "openCommandFile": {

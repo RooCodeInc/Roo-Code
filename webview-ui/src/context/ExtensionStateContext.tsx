@@ -15,6 +15,7 @@ import {
 	type MarketplaceInstalledMetadata,
 	type Command,
 	type McpServer,
+	type SkillMetadata,
 	RouterModels,
 	ORGANIZATION_ALLOW_ALL,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
@@ -42,6 +43,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	filePaths: string[]
 	openedTabs: Array<{ label: string; isActive: boolean; path?: string }>
 	commands: Command[]
+	skills: SkillMetadata[]
 	organizationAllowList: OrganizationAllowList
 	organizationSettingsVersion: number
 	cloudIsAuthenticated: boolean
@@ -278,6 +280,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [filePaths, setFilePaths] = useState<string[]>([])
 	const [openedTabs, setOpenedTabs] = useState<Array<{ label: string; isActive: boolean; path?: string }>>([])
 	const [commands, setCommands] = useState<Command[]>([])
+	const [skills, setSkills] = useState<SkillMetadata[]>([])
 	const [mcpServers, setMcpServers] = useState<McpServer[]>([])
 	const [currentCheckpoint, setCurrentCheckpoint] = useState<string>()
 	const [extensionRouterModels, setExtensionRouterModels] = useState<RouterModels | undefined>(undefined)
@@ -374,6 +377,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 				}
 				case "commands": {
 					setCommands(message.commands ?? [])
+					break
+				}
+				case "skills": {
+					setSkills(message.skills ?? [])
 					break
 				}
 				case "messageUpdated": {
@@ -488,6 +495,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		filePaths,
 		openedTabs,
 		commands,
+		skills,
 		soundVolume: state.soundVolume,
 		ttsSpeed: state.ttsSpeed,
 		writeDelayMs: state.writeDelayMs,

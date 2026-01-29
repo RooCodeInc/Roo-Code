@@ -30,6 +30,7 @@
 		"modes": "Modes",
 		"mcp": "MCP Servers",
 		"worktrees": "Worktrees",
+		"skills": "Skills",
 		"autoApprove": "Auto-Approve",
 		"browser": "Browser",
 		"checkpoints": "Checkpoints",
@@ -69,6 +70,51 @@
 	},
 	"slashCommands": {
 		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
+	},
+	"skills": {
+		"description": "Manage skills that provide contextual instructions to the agent. Skills are automatically applied when relevant to your tasks. <DocsLink>Learn more</DocsLink>",
+		"projectSkills": "Project Skills",
+		"globalSkills": "Global Skills",
+		"noProjectSkills": "No project skills configured. Create one to add project-specific agent capabilities.",
+		"noGlobalSkills": "No global skills configured. Create one to add agent capabilities available across all projects.",
+		"addSkill": "Add Skill",
+		"editSkill": "Edit skill",
+		"deleteSkill": "Delete skill",
+		"deleteDialog": {
+			"title": "Delete Skill",
+			"description": "Are you sure you want to delete the skill \"{{name}}\"? This action cannot be undone.",
+			"confirm": "Delete",
+			"cancel": "Cancel"
+		},
+		"createDialog": {
+			"title": "Create New Skill",
+			"description": "Define a new skill template that provides contextual instructions to the agent.",
+			"nameLabel": "Name",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "Lowercase letters, numbers, and hyphens only (1-64 characters)",
+			"descriptionLabel": "Description",
+			"descriptionPlaceholder": "Describe when this skill should be used...",
+			"descriptionHint": "Explain what this skill does and when the agent should apply it (1-1024 characters)",
+			"sourceLabel": "Location",
+			"sourceHint": "Choose whether this skill is available globally or only in this project",
+			"modeLabel": "Mode (optional)",
+			"modePlaceholder": "Any mode",
+			"modeHint": "Restrict this skill to a specific mode",
+			"modeAny": "Any mode",
+			"create": "Create",
+			"cancel": "Cancel"
+		},
+		"source": {
+			"global": "Global (available in all projects)",
+			"project": "Project (this workspace only)"
+		},
+		"validation": {
+			"nameRequired": "Name is required",
+			"nameTooLong": "Name must be 64 characters or less",
+			"nameInvalid": "Name must be 1-64 lowercase letters, numbers, or hyphens",
+			"descriptionRequired": "Description is required",
+			"descriptionTooLong": "Description must be 1024 characters or less"
+		}
 	},
 	"ui": {
 		"collapseThinking": {

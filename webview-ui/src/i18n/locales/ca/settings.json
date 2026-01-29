@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
-		"about": "Sobre Roo Code"
+		"about": "Sobre Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -995,6 +996,51 @@
 		"requireCtrlEnterToSend": {
 			"label": "Requereix {{primaryMod}}+Intro per enviar missatges",
 			"description": "Quan estigui activat, has de prémer {{primaryMod}}+Intro per enviar missatges en lloc de només Intro"
+		}
+	},
+	"skills": {
+		"description": "Gestiona les skills que proporcionen instruccions contextuals a l'agent. Les skills s'apliquen automàticament quan són rellevants per a les teves tasques. <DocsLink>Més informació</DocsLink>",
+		"projectSkills": "Skills del Projecte",
+		"globalSkills": "Skills Globals",
+		"noProjectSkills": "No hi ha skills de projecte configurades. Crea'n una per afegir capacitats específiques del projecte a l'agent.",
+		"noGlobalSkills": "No hi ha skills globals configurades. Crea'n una per afegir capacitats a l'agent disponibles en tots els projectes.",
+		"addSkill": "Afegir Skill",
+		"editSkill": "Editar skill",
+		"deleteSkill": "Eliminar skill",
+		"deleteDialog": {
+			"title": "Eliminar Skill",
+			"description": "Estàs segur que vols eliminar la skill \"{{name}}\"? Aquesta acció no es pot desfer.",
+			"confirm": "Eliminar",
+			"cancel": "Cancel·lar"
+		},
+		"createDialog": {
+			"title": "Crear Nova Skill",
+			"description": "Defineix una nova plantilla de skill que proporcioni instruccions contextuals a l'agent.",
+			"nameLabel": "Nom",
+			"namePlaceholder": "el-meu-nom-de-skill",
+			"nameHint": "Només lletres minúscules, números i guions (1-64 caràcters)",
+			"descriptionLabel": "Descripció",
+			"descriptionPlaceholder": "Descriu quan s'hauria d'utilitzar aquesta skill...",
+			"descriptionHint": "Explica què fa aquesta skill i quan l'agent hauria d'aplicar-la (1-1024 caràcters)",
+			"sourceLabel": "Ubicació",
+			"sourceHint": "Tria si aquesta skill està disponible globalment o només en aquest projecte",
+			"modeLabel": "Mode (opcional)",
+			"modePlaceholder": "Qualsevol mode",
+			"modeHint": "Restringeix aquesta skill a un mode específic",
+			"modeAny": "Qualsevol mode",
+			"create": "Crear",
+			"cancel": "Cancel·lar"
+		},
+		"source": {
+			"global": "Global (disponible en tots els projectes)",
+			"project": "Projecte (només aquest espai de treball)"
+		},
+		"validation": {
+			"nameRequired": "El nom és obligatori",
+			"nameTooLong": "El nom ha de tenir com a màxim 64 caràcters",
+			"nameInvalid": "El nom ha de tenir entre 1 i 64 caràcters, només lletres minúscules, números o guions",
+			"descriptionRequired": "La descripció és obligatòria",
+			"descriptionTooLong": "La descripció ha de tenir com a màxim 1024 caràcters"
 		}
 	}
 }

@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "实验性",
 		"language": "语言",
-		"about": "关于 Roo Code"
+		"about": "关于 Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -996,6 +997,51 @@
 		"requireCtrlEnterToSend": {
 			"label": "需要 {{primaryMod}}+Enter 发送消息",
 			"description": "启用后，必须按 {{primaryMod}}+Enter 发送消息，而不仅仅是 Enter"
+		}
+	},
+	"skills": {
+		"description": "管理为代理提供上下文指令的技能。技能会在与您的任务相关时自动应用。<DocsLink>了解更多</DocsLink>",
+		"projectSkills": "项目技能",
+		"globalSkills": "全局技能",
+		"noProjectSkills": "未配置项目技能。创建一个以添加特定于项目的代理功能。",
+		"noGlobalSkills": "未配置全局技能。创建一个以添加在所有项目中可用的代理功能。",
+		"addSkill": "添加技能",
+		"editSkill": "编辑技能",
+		"deleteSkill": "删除技能",
+		"deleteDialog": {
+			"title": "删除技能",
+			"description": "您确定要删除技能\"{{name}}\"吗？此操作无法撤销。",
+			"confirm": "删除",
+			"cancel": "取消"
+		},
+		"createDialog": {
+			"title": "创建新技能",
+			"description": "定义一个新的技能模板，为代理提供上下文指令。",
+			"nameLabel": "名称",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "仅小写字母、数字和连字符（1-64个字符）",
+			"descriptionLabel": "描述",
+			"descriptionPlaceholder": "描述何时应使用此技能...",
+			"descriptionHint": "解释此技能的作用以及代理应何时应用它（1-1024个字符）",
+			"sourceLabel": "位置",
+			"sourceHint": "选择此技能是全局可用还是仅在此项目中可用",
+			"modeLabel": "模式（可选）",
+			"modePlaceholder": "任何模式",
+			"modeHint": "将此技能限制为特定模式",
+			"modeAny": "任何模式",
+			"create": "创建",
+			"cancel": "取消"
+		},
+		"source": {
+			"global": "全局（在所有项目中可用）",
+			"project": "项目（仅此工作区）"
+		},
+		"validation": {
+			"nameRequired": "名称为必填项",
+			"nameTooLong": "名称不得超过64个字符",
+			"nameInvalid": "名称必须为1-64个小写字母、数字或连字符",
+			"descriptionRequired": "描述为必填项",
+			"descriptionTooLong": "描述不得超过1024个字符"
 		}
 	}
 }
