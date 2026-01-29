@@ -106,8 +106,7 @@ export function getToolIconName(toolName: string): IconName {
 		// File read operations
 		readFile: "file",
 		read_file: "file",
-		fetchInstructions: "file",
-		fetch_instructions: "file",
+		skill: "file",
 		listFilesTopLevel: "folder",
 		listFilesRecursive: "folder",
 		list_files: "folder",
