@@ -450,6 +450,7 @@
 		"clean": "rimraf README.md CHANGELOG.md LICENSE dist logs mock .turbo"
 	},
 	"dependencies": {
+		"@ai-sdk/cerebras": "^1.0.0",
 		"@ai-sdk/deepseek": "^2.0.14",
 		"@anthropic-ai/bedrock-sdk": "^0.10.2",
 		"@anthropic-ai/sdk": "^0.37.0",
