@@ -238,4 +238,167 @@ describe("NativeToolCallParser", () => {
 			})
 		})
 	})
+
+	describe("write_to_file tool - content type coercion", () => {
+		describe("parseToolCall", () => {
+			it("should handle content as a string (normal case)", () => {
+				const toolCall = {
+					id: "toolu_123",
+					name: "write_to_file" as const,
+					arguments: JSON.stringify({
+						path: "package.json",
+						content: '{\n  "name": "test"\n}',
+					}),
+				}
+
+				const result = NativeToolCallParser.parseToolCall(toolCall)
+
+				expect(result).not.toBeNull()
+				expect(result?.type).toBe("tool_use")
+				if (result?.type === "tool_use") {
+					const nativeArgs = result.nativeArgs as { path: string; content: string }
+					expect(nativeArgs.path).toBe("package.json")
+					expect(nativeArgs.content).toBe('{\n  "name": "test"\n}')
+				}
+			})
+
+			it("should coerce content from object to JSON string", () => {
+				// This simulates the bug where models like GLM 4.7 pass content as an object
+				const toolCall = {
+					id: "toolu_456",
+					name: "write_to_file" as const,
+					arguments: JSON.stringify({
+						path: "package.json",
+						content: { name: "sample-project", version: "1.0.0" },
+					}),
+				}
+
+				const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+				const result = NativeToolCallParser.parseToolCall(toolCall)
+
+				expect(result).not.toBeNull()
+				expect(result?.type).toBe("tool_use")
+				if (result?.type === "tool_use") {
+					const nativeArgs = result.nativeArgs as { path: string; content: string }
+					expect(nativeArgs.path).toBe("package.json")
+					// Content should be converted to a formatted JSON string
+					expect(nativeArgs.content).toBe(
+						JSON.stringify({ name: "sample-project", version: "1.0.0" }, null, 2),
+					)
+				}
+
+				// Should log a warning about the type coercion
+				expect(consoleSpy).toHaveBeenCalledWith(
+					expect.stringContaining("Model sent non-string content for 'write_to_file' tool"),
+				)
+
+				consoleSpy.mockRestore()
+			})
+
+			it("should coerce content from array to JSON string", () => {
+				const toolCall = {
+					id: "toolu_789",
+					name: "write_to_file" as const,
+					arguments: JSON.stringify({
+						path: "data.json",
+						content: [1, 2, 3, { key: "value" }],
+					}),
+				}
+
+				const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+				const result = NativeToolCallParser.parseToolCall(toolCall)
+
+				expect(result).not.toBeNull()
+				if (result?.type === "tool_use") {
+					const nativeArgs = result.nativeArgs as { path: string; content: string }
+					expect(nativeArgs.content).toBe(JSON.stringify([1, 2, 3, { key: "value" }], null, 2))
+				}
+
+				expect(consoleSpy).toHaveBeenCalled()
+				consoleSpy.mockRestore()
+			})
+
+			it("should coerce content from number to string", () => {
+				const toolCall = {
+					id: "toolu_num",
+					name: "write_to_file" as const,
+					arguments: JSON.stringify({
+						path: "number.txt",
+						content: 42,
+					}),
+				}
+
+				const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+				const result = NativeToolCallParser.parseToolCall(toolCall)
+
+				expect(result).not.toBeNull()
+				if (result?.type === "tool_use") {
+					const nativeArgs = result.nativeArgs as { path: string; content: string }
+					expect(nativeArgs.content).toBe("42")
+				}
+
+				expect(consoleSpy).toHaveBeenCalled()
+				consoleSpy.mockRestore()
+			})
+		})
+
+		describe("processStreamingChunk", () => {
+			it("should coerce content from object to JSON string during streaming", () => {
+				const id = "toolu_streaming_write"
+				NativeToolCallParser.startStreamingToolCall(id, "write_to_file")
+
+				const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+				const fullArgs = JSON.stringify({
+					path: "config.json",
+					content: { setting: true, value: 123 },
+				})
+
+				const result = NativeToolCallParser.processStreamingChunk(id, fullArgs)
+
+				expect(result).not.toBeNull()
+				if (result?.nativeArgs) {
+					const nativeArgs = result.nativeArgs as { path: string; content: string }
+					expect(nativeArgs.path).toBe("config.json")
+					expect(nativeArgs.content).toBe(JSON.stringify({ setting: true, value: 123 }, null, 2))
+				}
+
+				expect(consoleSpy).toHaveBeenCalled()
+				consoleSpy.mockRestore()
+			})
+		})
+
+		describe("finalizeStreamingToolCall", () => {
+			it("should coerce content from object to JSON string on finalize", () => {
+				const id = "toolu_finalize_write"
+				NativeToolCallParser.startStreamingToolCall(id, "write_to_file")
+
+				const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+
+				NativeToolCallParser.processStreamingChunk(
+					id,
+					JSON.stringify({
+						path: "tsconfig.json",
+						content: { compilerOptions: { strict: true } },
+					}),
+				)
+
+				const result = NativeToolCallParser.finalizeStreamingToolCall(id)
+
+				expect(result).not.toBeNull()
+				expect(result?.type).toBe("tool_use")
+				if (result?.type === "tool_use") {
+					const nativeArgs = result.nativeArgs as { path: string; content: string }
+					expect(nativeArgs.path).toBe("tsconfig.json")
+					expect(nativeArgs.content).toBe(JSON.stringify({ compilerOptions: { strict: true } }, null, 2))
+				}
+
+				expect(consoleSpy).toHaveBeenCalled()
+				consoleSpy.mockRestore()
+			})
+		})
+	})
 })
