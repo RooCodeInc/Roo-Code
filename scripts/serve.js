@@ -1,29 +1,18 @@
 /**
  * Serve script for Roo Code extension development
  *
- * This script manages code-server for web-based VS Code testing.
- *
- * Prerequisites:
- *   brew install code-server
- *
  * Usage:
+ *   pnpm serve:install            # Build and install the extension into code-server
  *   pnpm serve                    # Start code-server on port 9080
  *   pnpm serve -- --port 8080     # Use a custom port
  *   pnpm serve -- --host 0.0.0.0  # Bind to all interfaces (for Docker/remote access)
  *   pnpm serve -- --auth none     # Disable authentication (password|none)
- *   pnpm serve:install            # Build and install the extension into code-server
  *
- * Workflow:
- *   1. Run `pnpm serve:install` to build and install the extension
- *   2. Run `pnpm serve` to start code-server
- *   3. After code changes, run `pnpm serve:install` again and reload the window
- *      (Cmd+Shift+P → "Developer: Reload Window")
- *
- * Your password is stored in ~/.config/code-server/config.yaml
+ * After making code changes, run `pnpm serve:install` again and reload the window
+ * (Cmd+Shift+P → "Developer: Reload Window")
  */
 
 const { execSync, spawn } = require("child_process")
-const fs = require("fs")
 const path = require("path")
 const os = require("os")
 
@@ -100,51 +89,8 @@ function isCodeServerInstalled() {
 	}
 }
 
-function ensureUserSettings() {
-	// code-server stores user data in ~/.local/share/code-server
-	const userDataDir = path.join(process.env.HOME || process.env.USERPROFILE, ".local", "share", "code-server", "User")
-	const settingsFile = path.join(userDataDir, "settings.json")
-
-	// Create directory if it doesn't exist
-	if (!fs.existsSync(userDataDir)) {
-		fs.mkdirSync(userDataDir, { recursive: true })
-	}
-
-	// Read existing settings or start fresh
-	let settings = {}
-	if (fs.existsSync(settingsFile)) {
-		try {
-			settings = JSON.parse(fs.readFileSync(settingsFile, "utf8"))
-		} catch {
-			// If parsing fails, start fresh
-		}
-	}
-
-	// Set the startup editor to none (disables welcome tab)
-	settings["workbench.startupEditor"] = "none"
-
-	// Hide the secondary sidebar (auxiliary bar)
-	settings["workbench.auxiliaryBar.visible"] = false
-
-	// Disable extension recommendations prompts
-	settings["extensions.ignoreRecommendations"] = true
-
-	fs.writeFileSync(settingsFile, JSON.stringify(settings, null, "\t"))
-}
-
 async function main() {
-	// Check if code-server is installed
-	log("Checking for code-server...")
-	if (!isCodeServerInstalled()) {
-		logError("code-server is not installed")
-		console.log("\nTo install code-server on macOS:")
-		console.log(`  ${CYAN}brew install code-server${RESET}`)
-		console.log("\nFor other platforms, see: https://coder.com/docs/code-server/install")
-		process.exit(1)
-	}
-	logSuccess("code-server found")
-
-	// If install-only mode, build and install the extension
+	// If install-only mode, just build and install the extension
 	if (installOnly) {
 		console.log(`\n${BOLD}🔧 Roo Code - Install Extension${RESET}\n`)
 
@@ -167,11 +113,6 @@ async function main() {
 			logWarning("Extension installation had warnings (this is usually fine)")
 		}
 
-		// Configure user settings to disable welcome tab
-		log("Configuring user settings...")
-		ensureUserSettings()
-		logSuccess("User settings configured (welcome tab disabled)")
-
 		console.log(`\n${GREEN}✓ Extension built and installed.${RESET}`)
 		console.log(`  If code-server is running, reload the window to pick up changes.`)
 		console.log(`  (Cmd+Shift+P → "Developer: Reload Window")\n`)
@@ -179,6 +120,16 @@ async function main() {
 	}
 
 	// Default: Start code-server
+	log("Checking for code-server...")
+	if (!isCodeServerInstalled()) {
+		logError("code-server is not installed")
+		console.log("\nTo install code-server on macOS:")
+		console.log(`  ${CYAN}brew install code-server${RESET}`)
+		console.log("\nFor other platforms, see: https://coder.com/docs/code-server/install")
+		process.exit(1)
+	}
+	logSuccess("code-server found")
+
 	console.log(`\n${BOLD}🚀 Roo Code - code-server Development Server${RESET}\n`)
 	const cwd = process.cwd()
 	console.log(`\n${BOLD}Starting code-server...${RESET}`)
