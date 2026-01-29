@@ -55,15 +55,14 @@ export class WebSearchTool extends BaseTool<"web_search"> {
 			}
 
 			// Get CloudService and perform search
-			const provider = task.providerRef.deref()
-			const cloudService = provider?.getCloudService()
+			const { CloudService } = await import("@roo-code/cloud")
 
-			if (!cloudService) {
+			if (!CloudService.hasInstance()) {
 				pushToolResult(formatResponse.toolError("Cloud service not available"))
 				return
 			}
 
-			const cloudAPI = cloudService.cloudAPI
+			const cloudAPI = CloudService.instance.cloudAPI
 			if (!cloudAPI) {
 				pushToolResult(formatResponse.toolError("Cloud API not available"))
 				return
