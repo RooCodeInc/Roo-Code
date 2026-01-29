@@ -1,0 +1,127 @@
+---
+description: Understand the functionality available in the Roo Code Cloud Team plan.
+keywords:
+  - team
+  - corporate
+  - enterprise
+  - shared
+  - members
+  - invite
+---
+
+# Team Plan
+
+The team plan is designed for teams to work together using the Roo Code suite, be it the Extension, Cloud or a combination of both.
+
+It allows for:
+- Centralized LLM inference billing without managing API keys (with [Roo Code Router](/roo-code-router/overview))
+- Team-wide task history and token usage analytics
+- Shared Cloud Agent team (with centralized billing)
+- Centralized integration with Github and Slack (not one per user)
+- Extension configuration enforcement (providers/models, MCP servers and more)
+
+---
+
+## Access
+
+You can access Team functionality by starting a free 14-day trial.
+
+If you already have a Roo Code Cloud account, you can [upgrade here](https://app.roocode.com/checkout/team). If you don't, sign up from our [pricing page](https://roocode.com/pricing).
+
+
+## Capabilities
+
+Most of the team functionality can be accessed from your [Organization Settings](https://app.roocode.com/) page (from your user avatar menu)
+
+<img src="/img/team-plan/org-settings-menu.png" alt="How to access your organization settings" width="280" />
+
+From there, you'll be able to access all of the available settings:
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: "33%"}}>Setting</th>
+      <th style={{ width: "66%"}}>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+        <td>**Team Members**</td>
+        <td>
+            Invite, remove and manage permissions for team members (Admin or regular member)
+        </td>
+    </tr>
+    <tr>
+        <td>**Organization profile details**</td>
+        <td>
+            Logo, name, etc
+        </td>
+    </tr>
+    <tr>
+        <td>**Integrations**</td>
+        <td>
+            [Github](./github-integration) and [Slack](./slack-integration), for now
+        </td>
+    </tr>
+    <tr>
+        <td>**Cloud Model Providers**</td>
+        <td>
+            For use with [Cloud Agents](./cloud-agents)
+        </td>
+    </tr>
+    <tr>
+        <td>**Extension Task Sync**</td>
+        <td>
+            Whether to require task syncing, and visibility controls for who can see each others' tasks
+        </td>
+    </tr>
+    <tr>
+        <td>**Task Sharing**</td>
+        <td>
+            Whether per-task sharing is enabled, to whom and link expiration time
+        </td>
+    </tr>
+    <tr>
+        <td>**Environment Variables**</td>
+        <td>
+            Optional values to make available to Cloud Agents during runs, such as connection strings, package manager server URLs, keys, secrets, etc.
+            Encrypted in our secure secret store.
+        </td>
+    </tr>
+    <tr>
+        <td>**Marketplace MCPs**</td>
+        <td>
+            Allow/deny-list MCPs from the Roo Code marketplace to make available for team members.
+        </td>
+    </tr>
+    <tr>        
+        <td>**Custom MCPs**</td>
+        <td>
+            Custom, vetted MCP servers to make available to all team members.
+        </td>
+    </tr>
+    <tr>        
+        <td>**Extension Providers**</td>
+        <td>
+            Allow/deny-list inference Providers to be made available to team members.
+
+            Centralized API key management isn't currently supported, but let us know if you need it.
+        </td>
+    </tr>
+    <tr>        
+        <td>**Organization Connection Policy**</td>
+        <td>
+            Mechanism to require Roo Code VS Code Extension users to be logged in, so policies can be enforced.
+
+            Works via a file to be distributed via our MDM tool.
+        </td>
+    </tr>
+  </tbody>
+</table>
+
+Additional Team plan functionality is available in:
+- [Usage Analytics](./analytics) (showing team-wide activity and per-user filters)
+- Task lists (in the Home and Agent pages, showing team-wide tasks)
+
+
+We're constantly expanding and tweaking team-oriented functionality, so if you need something else, don't hesitate to get in touch via [support@roocode.com](mailto:support@roocode.com).

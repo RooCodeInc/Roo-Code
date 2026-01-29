@@ -1,0 +1,58 @@
+---
+description: Roo Code 3.36.9 defaults more providers to native tools, improves reliability for tool calls and MCP schemas, and makes error details easier to debug.
+keywords:
+  - roo code 3.36.9
+  - native tools
+  - mcp
+  - bug fixes
+  - provider updates
+image: /img/v3.36.9/v3.36.9.png
+---
+
+# Roo Code 3.36.9 Release Notes (2025-12-16)
+
+This release defaults more providers to native tools, improves tool-call reliability across providers, and makes errors easier to debug.
+
+<img src="/img/v3.36.9/v3.36.9.png" alt="Roo Code v3.36.9 Release" width="600" />
+
+## Native tools by default (more providers)
+
+Roo now defaults to the **Native** tool protocol for more providers—so tool use is more consistent out of the box on:
+
+* OpenAI
+* Azure OpenAI
+* OpenAI Compatible
+* Anthropic
+* Google Gemini
+* Vertex AI
+* xAI
+* Mistral
+* Groq
+* Amazon Bedrock
+
+If you’re already using **OpenRouter**, you’ve been getting native tool calling by default. This release extends that same default behavior across the providers listed above. You can still switch back to XML tools in your profile’s advanced settings if you need to. ([#10059](https://github.com/RooCodeInc/Roo-Code/pull/10059), [#10021](https://github.com/RooCodeInc/Roo-Code/pull/10021))
+
+## QOL Improvements
+
+* **More complete streaming failure details**: Improves the streaming failure UI so you can view/copy full error details directly in Roo instead of relying on the developer console ([#10131](https://github.com/RooCodeInc/Roo-Code/pull/10131))
+* **Richer error details dialog**: Adds extra context (extension version, provider/model, timestamp, etc.) to the error details dialog to make debugging and reporting issues faster ([#10050](https://github.com/RooCodeInc/Roo-Code/pull/10050))
+* **Fewer read_file failures on large files**: Improves large-file reading by incrementally reading up to a token budget and returning cleaner truncation when needed ([#10052](https://github.com/RooCodeInc/Roo-Code/pull/10052))
+
+## Bug Fixes
+
+* **Cross-provider tool-call ID compatibility**: Fixes an issue where tool calls could fail when routing via OpenRouter to providers/models with stricter tool-call ID requirements ([#10102](https://github.com/RooCodeInc/Roo-Code/pull/10102))
+* **MCP nested schema compatibility**: Fixes an issue where MCP tools could fail against stricter schema validation by ensuring nested tool schemas set `additionalProperties: false` ([#10109](https://github.com/RooCodeInc/Roo-Code/pull/10109))
+* **More reliable delegation resume**: Fixes an issue where resuming a parent task after delegation could fail due to mismatched tool result IDs ([#10135](https://github.com/RooCodeInc/Roo-Code/pull/10135))
+* **Avoid deleting the wrong API messages**: Fixes a race condition where deleting a user message could remove earlier assistant API messages, especially during streaming/tool use ([#10113](https://github.com/RooCodeInc/Roo-Code/pull/10113))
+* **Deduplicate MCP tools across configs**: Fixes a “tool is already defined” error when the same MCP server exists in both global and project configs ([#10096](https://github.com/RooCodeInc/Roo-Code/pull/10096))
+* **Fix provider pricing page link**: Fixes a broken route so the provider pricing link takes you to the correct destination ([#10107](https://github.com/RooCodeInc/Roo-Code/pull/10107))
+
+## Misc Improvements
+
+* **Control public task sharing**: Adds an organization-level setting to disable public task sharing links ([#10105](https://github.com/RooCodeInc/Roo-Code/pull/10105))
+* **Evals UI: clearer tool grouping + duration fixes**: Improves the evals UI by grouping related tools and fixing cases where run duration could be missing or incorrect ([#10133](https://github.com/RooCodeInc/Roo-Code/pull/10133))
+
+## Provider Updates
+
+* **Bedrock custom ARNs are less restrictive**: Removes overly strict ARN validation that could block valid AWS Bedrock custom ARNs, while keeping a non-blocking region mismatch warning (thanks wisestmumbler!) ([#10110](https://github.com/RooCodeInc/Roo-Code/pull/10110))
+* **Cleaner Bedrock service tier UI**: Removes extra description text under the Bedrock service tier selector to make the UI easier to scan ([#10118](https://github.com/RooCodeInc/Roo-Code/pull/10118))

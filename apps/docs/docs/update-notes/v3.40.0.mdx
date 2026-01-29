@@ -1,0 +1,37 @@
+---
+description: This release adds settings search, improves the stop button and error display, and fixes tool-calling compatibility issues.
+keywords:
+  - roo code 3.40.0
+  - new features
+  - bug fixes
+image: /img/v3.40.0/v3.40.0.png
+---
+
+# Roo Code 3.40.0 Release Notes (2026-01-13)
+
+This release adds settings search, improves the stop button and error display, and fixes tool-calling compatibility issues.
+
+<img src="/img/v3.40.0/v3.40.0.png" alt="Roo Code v3.40.0 Release" width="600" />
+
+## Settings search
+
+You can now quickly find and jump to the setting you need with a dedicated search inside Roo Code settings. Instead of hunting through sections, you can search by keyword and jump straight to the right setting, with a cleaner results layout that’s easier to scan. ([#10619](https://github.com/RooCodeInc/Roo-Code/pull/10619), [#10633](https://github.com/RooCodeInc/Roo-Code/pull/10633))
+
+## Stop button improvements
+
+Stopping a streaming response is now clearer and more consistent with a standard stop button, with better visibility while editing messages. The stop action stays visible in more situations and replaces the old, oversized cancel UI, so interrupting long responses feels more familiar and less visually disruptive. ([#10639](https://github.com/RooCodeInc/Roo-Code/pull/10639), [#10696](https://github.com/RooCodeInc/Roo-Code/pull/10696))
+
+## Tool-calling compatibility fixes
+
+This release improves compatibility across providers (especially Gemini and OpenAI-compatible backends) by addressing request/response validation edge cases (thanks Idlebrand!). Roo now avoids sending tool-calling parameters that some backends reject and handles cases where tool output is empty, reducing validation failures that could previously break tool-using chats mid-run. ([#10671](https://github.com/RooCodeInc/Roo-Code/pull/10671), [#10672](https://github.com/RooCodeInc/Roo-Code/pull/10672))
+
+## QOL Improvements
+
+* Errors in chat are easier to interpret, with improved styling/visibility and more complete details when something goes wrong. ([#10692](https://github.com/RooCodeInc/Roo-Code/pull/10692))
+* The stop button stays visible and more consistent while editing messages, making it easier to interrupt long responses when needed. ([#10696](https://github.com/RooCodeInc/Roo-Code/pull/10696))
+* Roo uses a standard stop button while streaming, making task cancellation more familiar and less visually disruptive. ([#10639](https://github.com/RooCodeInc/Roo-Code/pull/10639))
+
+## Bug Fixes
+
+* Fixes an issue where some LiteLLM routes could fail during native tool use because an unsupported tool-calling parameter was always being sent. ([#10671](https://github.com/RooCodeInc/Roo-Code/pull/10671))
+* Fixes an issue where Gemini-based providers could reject tool results when the tool output was empty, causing request validation errors mid-run. ([#10672](https://github.com/RooCodeInc/Roo-Code/pull/10672))

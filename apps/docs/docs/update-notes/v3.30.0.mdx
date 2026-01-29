@@ -1,0 +1,46 @@
+---
+description: Roo Code 3.30.0 adds OpenRouter embeddings, reasoning handling improvements, and stability/UI fixes.
+keywords:
+  - roo code 3.30.0
+  - new features
+  - bug fixes
+image: /img/v3.30.0/v3.30.0.png
+---
+
+# Roo Code 3.30.0 Release Notes (2025-11-03)
+
+This patch introduces OpenRouter embeddings, improves reasoning handling, and delivers stability and UI fixes.
+
+<img src="/img/v3.30.0/v3.30.0.png" alt="Roo Code v3.30.0 Release" width="600" />
+
+## OpenRouter Embeddings
+
+We've added OpenRouter as an embedding provider for codebase indexing in Roo Code (thanks dmarkey!) ([#8973](https://github.com/RooCodeInc/Roo-Code/pull/8973)).
+
+OpenRouter currently supports 7 embedding models, including the top‑ranking Qwen3 Embedding.
+
+> **📚 Documentation**: See [Codebase Indexing](/features/codebase-indexing) and [OpenRouter Provider](/providers/openrouter).
+
+## QOL Improvements
+
+* Terminal settings cleanup with Inline as the default terminal and clearer options; shell integration default is disabled to reduce environment conflicts ([#8342](https://github.com/RooCodeInc/Roo-Code/pull/8342))
+
+## Bug Fixes
+
+* Prevent message loss during queue drain race conditions to preserve message order and reliable chats ([#8955](https://github.com/RooCodeInc/Roo-Code/pull/8955))
+* Requesty OAuth: auto-create a stable "Requesty" profile with a default model so sign-in completes reliably (thanks Thibault00!) ([#8699](https://github.com/RooCodeInc/Roo-Code/pull/8699))
+* Cancel during streaming no longer causes flicker; you can resume in place, input stays enabled, and the spinner stops deterministically ([#8986](https://github.com/RooCodeInc/Roo-Code/pull/8986))
+* Remove newline-only reasoning blocks from OpenAI-compatible responses for cleaner output and logs ([#8990](https://github.com/RooCodeInc/Roo-Code/pull/8990))
+* "Disable Terminal Shell Integration" now links to the correct documentation section ([#8997](https://github.com/RooCodeInc/Roo-Code/pull/8997))
+
+## Misc Improvements
+
+* Add preserveReasoning flag to optionally include reasoning in API history so later turns can leverage prior reasoning; off by default and model‑gated ([#8934](https://github.com/RooCodeInc/Roo-Code/pull/8934))
+
+## Provider Updates
+
+* Chutes: dynamic/router provider so new models appear automatically; safer error logging and temperature applied only when supported ([#8980](https://github.com/RooCodeInc/Roo-Code/pull/8980))
+* OpenAI‑compatible providers: handle `<think>` reasoning tags in streaming for consistent reasoning chunk handling ([#8989](https://github.com/RooCodeInc/Roo-Code/pull/8989))
+* GLM 4.6: capture reasoning content in base OpenAI‑compatible provider during streaming ([#8976](https://github.com/RooCodeInc/Roo-Code/pull/8976))
+* Fireworks: add GLM‑4.6 to the model dropdown for stronger coding performance and longer context (thanks mmealman!) ([#8754](https://github.com/RooCodeInc/Roo-Code/pull/8754))
+* Fireworks: add MiniMax M2 with 204.8K context and 4K output tokens; correct pricing metadata (thanks dmarkey!) ([#8962](https://github.com/RooCodeInc/Roo-Code/pull/8962))

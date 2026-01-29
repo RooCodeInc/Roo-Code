@@ -1,0 +1,72 @@
+---
+description: Roo Code 3.25.4 adds Doubao and SambaNova providers, introduces context-aware prompt enhancement, and improves tool functionality.
+keywords:
+  - roo code 3.25.4
+  - doubao provider
+  - sambanova provider
+  - task history context
+  - prompt enhancement
+---
+
+# Roo Code 3.25.4 Release Notes (2025-07-31)
+
+This release introduces two new AI providers, enhances prompt suggestions with conversation context, and improves various tool functionalities.
+
+## Doubao Provider Support
+
+We've added support for Doubao, ByteDance's AI model provider (thanks AntiMoron!) ([#6345](https://github.com/RooCodeInc/Roo-Code/pull/6345)):
+
+- **Access to ByteDance AI Models**: Connect to Doubao's language models for your AI-powered development tasks
+- **Full Integration**: Complete provider implementation with API handling
+- **Easy Configuration**: Simple setup through Roo Code's provider settings with internationalized prompts
+
+Doubao expands your AI model options, giving you access to ByteDance's competitive language models alongside existing providers.
+
+> **📚 Documentation**: See [Doubao Provider Guide](/providers/doubao) for setup instructions and available models.
+
+## SambaNova Provider Integration
+
+We've integrated SambaNova as a new LLM provider (thanks snova-jorgep!) ([#6188](https://github.com/RooCodeInc/Roo-Code/pull/6188)):
+
+- **High-Speed Inference**: Experience competitive inference speeds for faster AI responses
+- **Broader Model Selection**: Access SambaNova's diverse range of language models
+- **Seamless Integration**: Configure and use SambaNova models just like any other provider
+
+SambaNova brings enterprise-grade AI infrastructure to Roo Code, offering powerful alternatives for your development workflows.
+
+> **📚 Documentation**: See [SambaNova Provider Guide](/providers/sambanova) for configuration details.
+
+## Context-Aware Prompt Enhancement
+
+Prompt enhancement now uses your conversation history for better suggestions (thanks liwilliam2021!) ([#6343](https://github.com/RooCodeInc/Roo-Code/pull/6343)):
+
+- **Smarter Suggestions**: Enhancement considers your last 10 messages to generate more relevant prompts
+- **Reduced Hallucinations**: Context awareness prevents the AI from making unfounded suggestions
+- **Flexible Configuration**: Use a separate API configuration for enhancement operations
+- **Toggle Control**: Enable or disable task history inclusion based on your needs
+
+To enable this feature: Settings → Prompts tab → Select "ENHANCE" → Check "Include task history in enhancement" for better context.
+
+> **📚 Documentation**: See [Prompt Enhancement Guide](/features/enhance-prompt) for configuration options.
+
+## QOL Improvements
+
+* **Task Resumption Message**: Improved LLM instructions by removing misleading message about resuming tasks (thanks KJ7LNW!) ([#5851](https://github.com/RooCodeInc/Roo-Code/pull/5851))
+* **AGENTS.md Support**: Added symlink support for AGENTS.md file loading ([#6326](https://github.com/RooCodeInc/Roo-Code/pull/6326))
+* **Marketplace Updates**: Auto-refresh marketplace data when organization settings change ([#6446](https://github.com/RooCodeInc/Roo-Code/pull/6446))
+
+## Bug Fixes
+
+* **Execute Command Kill Button**: Fixed the kill button functionality for the execute_command tool ([#6457](https://github.com/RooCodeInc/Roo-Code/pull/6457))
+* **Token Counting**: Fixed accuracy issues by extracting text from messages using VSCode LM API (thanks NaccOll!) ([#6424](https://github.com/RooCodeInc/Roo-Code/pull/6424))
+
+## Provider Updates
+
+* **Chutes AI**: Added zai-org/GLM-4.5-FP8 model support ([#6441](https://github.com/RooCodeInc/Roo-Code/pull/6441))
+* **OpenRouter**: Set horizon-alpha model max tokens to 32k ([#6470](https://github.com/RooCodeInc/Roo-Code/pull/6470))
+* **Databricks**: Added support for /invocations endpoints pattern (thanks adambrand!) ([#6317](https://github.com/RooCodeInc/Roo-Code/pull/6317))
+
+## Misc Improvements
+
+* **Navigator Global Error**: Resolved errors by updating mammoth and bluebird dependencies ([#6363](https://github.com/RooCodeInc/Roo-Code/pull/6363))
+* **Nightly Build Fixes**: Resolved marketplace freezing issues with separate changelog ([#6449](https://github.com/RooCodeInc/Roo-Code/pull/6449))

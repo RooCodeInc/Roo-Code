@@ -1,0 +1,27 @@
+---
+description: This patch release improves reliability when using tools and context condensing, refines tool error messages, and fixes a few small UI/link issues.
+keywords:
+  - roo code 3.38.1
+  - bug fixes
+  - qol improvements
+image: /img/v3.38.1/v3.38.1.png
+---
+
+# Roo Code 3.38.1 Release Notes (2025-12-29)
+
+This patch release improves reliability when using tools and context condensing, refines tool error messages, and fixes a few small UI/link issues.
+
+<img src="/img/v3.38.1/v3.38.1.png" alt="Roo Code v3.38.1 Release" width="600" />
+
+## QOL Improvements
+
+* Clarifies the navigation path for deleting a Roo Code Cloud account in the privacy policy, so you can find Security Settings faster ([#10367](https://github.com/RooCodeInc/Roo-Code/pull/10367))
+* Improves internal analytics consistency by recording custom tools the same way as MCP tools, which helps tool usage and error tracking stay accurate ([#10364](https://github.com/RooCodeInc/Roo-Code/pull/10364))
+
+## Bug Fixes
+
+* Fixes an issue where manually condensing context while a tool is still running could trigger provider protocol errors, so tool runs and manual condenses can safely overlap ([#10379](https://github.com/RooCodeInc/Roo-Code/pull/10379))
+* Reverts a change for OpenAI-compatible providers to avoid message-format regressions related to text appearing after tool results ([#10381](https://github.com/RooCodeInc/Roo-Code/pull/10381))
+* Enforces the `maxConcurrentFileReads` limit for `read_file`, returning a clear error instead of silently ignoring the setting ([#10363](https://github.com/RooCodeInc/Roo-Code/pull/10363))
+* Improves the error shown when `read_file` is run on a directory by explicitly explaining the issue and suggesting `list_files` instead ([#10371](https://github.com/RooCodeInc/Roo-Code/pull/10371))
+* Fixes an issue where the "open source" link on roocode.com could point to a non-existent GitHub organization, so it reliably opens the correct repository (thanks jishnuteegala!) ([#10377](https://github.com/RooCodeInc/Roo-Code/pull/10377))

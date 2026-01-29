@@ -1,0 +1,32 @@
+---
+description: Support for the new Horizon Beta stealth model on OpenRouter, plus cloud provider profile sync and bug fixes.
+keywords:
+  - roo code 3.25.6
+  - horizon beta
+  - stealth model
+  - cloud provider sync
+  - bug fixes
+---
+
+# Roo Code 3.25.6 Release Notes (2025-08-02)
+
+This release features support for the new Horizon Beta stealth model, cloud provider profile synchronization, and bug fixes.
+
+## Horizon Beta Stealth Model via OpenRouter
+
+We've optimized support for OpenRouter's new stealth model Horizon Beta ([#6577](https://github.com/RooCodeInc/Roo-Code/pull/6577)):
+
+- **Improved Performance**: Set max tokens to 32k (reduced from 128k default)
+- **Free to Use**: Thanks to OpenRouter, Horizon Beta is an improved version of Horizon Alpha and remains free
+
+A big thanks to OpenRouter for providing this innovative stealth model to the community!
+
+## Bug Fixes
+
+* **Claude Code Error Handling**: Fixed "spawn claude ENOENT" error when using Claude Code provider, now provides better error handling and installation guidance (thanks JamieJ1!) ([#6565](https://github.com/RooCodeInc/Roo-Code/pull/6565))
+
+## Misc Improvements
+
+* **Cloud Provider Profile Sync**: Added support for syncing provider profiles from the cloud, enabling automatic synchronization across devices and team collaboration ([#6540](https://github.com/RooCodeInc/Roo-Code/pull/6540))
+* **Type Definitions**: Updated @roo-code/types to v1.41.0 for latest type compatibility ([#6568](https://github.com/RooCodeInc/Roo-Code/pull/6568))
+

@@ -1,0 +1,20 @@
+---
+description: This release focuses on improving the user experience by fixing focus behavior, disabling conflicting features, and improving testing standards.
+---
+
+# Roo Code 3.19.7 Release Notes (2025-06-11)
+
+This release focuses on improving the user experience by fixing focus behavior, disabling conflicting features, and improving testing standards.
+
+## Bug Fixes
+
+*   **McpHub Sidebar Focus**: We've fixed an issue where the McpHub sidebar would unexpectedly grab focus, providing a smoother navigation experience. ([#4548](https://github.com/RooCodeInc/Roo-Code/pull/4548))
+*   **Checkpoints**: We've disabled the checkpoint functionality when nested git repositories are detected to prevent conflicts. ([#4509](https://github.com/RooCodeInc/Roo-Code/pull/4509))
+
+## Misc Improvements
+
+*   **Storybook**: We've removed unused Storybook components and dependencies to reduce the bundle size. ([#4517](https://github.com/RooCodeInc/Roo-Code/pull/4517))
+*   **ESLint**: We've added a `data-testid` ESLint rule to improve our testing standards (thanks elianiva!). ([#4505](https://github.com/RooCodeInc/Roo-Code/pull/4505))
+*   **Dependencies**: We've updated our development dependencies, including eslint, knip, @types/node, i18next, fast-xml-parser, and @google/genai.
+*   **CI**: We've improved our CI infrastructure with GitHub Actions and Blacksmith runner migrations. ([#4472](https://github.com/RooCodeInc/Roo-Code/pull/4472), [#4507](https://github.com/RooCodeInc/Roo-Code/pull/4507))
+*   **Gemini**: We've added the ability to control the thinking budget for Gemini models via Requesty (thanks dtrugman!). ([#4486](https://github.com/RooCodeInc/Roo-Code/pull/4486))

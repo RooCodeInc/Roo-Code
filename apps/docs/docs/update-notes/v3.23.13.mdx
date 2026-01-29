@@ -1,0 +1,45 @@
+---
+description: This release introduces free Gemini access via OAuth, fixes several bugs, and improves the overall user experience.
+---
+
+# Roo Code 3.23.13 Release Notes (2025-07-17)
+
+This release improves codebase indexing reliability, enhances UI clarity, and fixes several important bugs.
+
+## Codebase Indexing Memory Fix
+
+We've resolved a critical memory leak that was causing crashes when indexing large codebases (thanks daniel-lxs, rxpjd, buck-0x, BenWilles!) ([#5785](https://github.com/RooCodeInc/Roo-Code/pull/5785)):
+
+- **Reduced Memory Usage**: Memory consumption drops from ~500MB-1GB to just 10-50MB for large projects
+- **Increased File Limit**: Can now index up to 50,000 files (previously 3,000)
+- **No More Crashes**: Eliminates out-of-memory errors during indexing
+
+This fix makes Roo Code much more reliable for enterprise-scale codebases.
+
+## Bug Fixes
+
+* **Custom Mode Names**: Fixed an issue where clearing a custom mode name would corrupt the YAML file and make all custom modes disappear (thanks daniel-lxs, kfxmvp!) ([#5794](https://github.com/RooCodeInc/Roo-Code/pull/5794))
+* **Auto-Approve Checkbox**: Resolved confusing checkbox states where it could show as checked with "None" selected or unchecked with options selected ([#5602](https://github.com/RooCodeInc/Roo-Code/pull/5602))
+* **Date Format Clarity**: Changed date format to ISO 8601 to prevent LLMs from misinterpreting dates like 7/11/2025 as November 7th instead of July 11th (thanks chrarnoldus!) ([#5793](https://github.com/RooCodeInc/Roo-Code/pull/5793))
+* **Settings Save Issue**: Fixed a bug where opening provider settings with OpenRouter required discarding non-existent changes ([#5779](https://github.com/RooCodeInc/Roo-Code/pull/5779))
+* **LiteLLM URL Handling**: Fixed baseURL handling when paths are included, ensuring requests go to the correct endpoints (thanks ChuKhaLi!) ([#5697](https://github.com/RooCodeInc/Roo-Code/pull/5697))
+* **Project Analysis**: Fixed list-files tool to ensure complete directory structure is visible when analyzing large projects (thanks qdaxb!) ([#5303](https://github.com/RooCodeInc/Roo-Code/pull/5303))
+
+## QOL Improvements
+
+* **Ollama Timeout**: Increased API timeouts from 10s/5s to 60s/30s to prevent failures with slower models (thanks daniel-lxs, danntee, vshvedov!) ([#5778](https://github.com/RooCodeInc/Roo-Code/pull/5778))
+* **Ollama UI**: Updated to use text inputs instead of dropdowns for model selection, matching other providers (thanks daniel-lxs!) ([#5818](https://github.com/RooCodeInc/Roo-Code/pull/5818))
+* **Settings Organization**: Moved less commonly used provider settings into an "Advanced settings" dropdown for cleaner UI ([#5762](https://github.com/RooCodeInc/Roo-Code/pull/5762))
+* **Error Control**: Added configurable "Error & Repetition Limit" setting to control when "Roo is having trouble" dialogs appear, with option to disable them entirely (thanks MuriloFP, anojndr!) ([#5752](https://github.com/RooCodeInc/Roo-Code/pull/5752))
+* **Checkpoint Efficiency**: Excluded Terraform and Terragrunt cache directories from checkpoints, reducing storage usage by up to 10x (thanks MuriloFP, ijin!) ([#5750](https://github.com/RooCodeInc/Roo-Code/pull/5750))
+* **Message Editing**: Overhauled message edit/delete interface with custom modals and improved workflow (thanks liwilliam2021!) ([#5538](https://github.com/RooCodeInc/Roo-Code/pull/5538))
+
+## Provider Updates
+
+* **Claude Code + Vertex AI**: Added support for Vertex AI model name formatting when using Claude Code provider (thanks janaki-sasidhar!) ([#5728](https://github.com/RooCodeInc/Roo-Code/pull/5728))
+* **API Task Control**: Added ability to set command execution timeout via API when starting tasks ([#5825](https://github.com/RooCodeInc/Roo-Code/pull/5825))
+
+## Misc Improvements
+
+* **Telemetry**: Added tracking for todo list statistics ([#5746](https://github.com/RooCodeInc/Roo-Code/pull/5746))
+* **Documentation**: Updated evals repository link ([#5758](https://github.com/RooCodeInc/Roo-Code/pull/5758))

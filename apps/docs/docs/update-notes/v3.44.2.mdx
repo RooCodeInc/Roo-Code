@@ -1,0 +1,25 @@
+---
+description: This patch re-enables the “Parallel tool calls” experiment and fixes worktree indexing and provider tool-calling issues.
+keywords:
+  - roo code 3.44.2
+  - experimental features
+  - bug fixes
+  - provider updates
+---
+
+# Roo Code 3.44.2 Release Notes (2026-01-27)
+
+This patch re-enables the “Parallel tool calls” experiment and fixes worktree indexing and provider tool-calling issues.
+
+## Parallel tool calls (Experimental)
+
+Re-enables parallel tool calling (with new_task isolation safeguards) so you can use the experimental “Parallel tool calls” setting again without breaking task delegation workflows. ([#11006](https://github.com/RooCodeInc/Roo-Code/pull/11006))
+
+## Bug Fixes
+
+* Fixes an issue where Roo could fail to index code in worktrees stored inside hidden directories (for example `~/.roo/worktrees/`), which could break search and other codebase features in those worktrees. ([#11009](https://github.com/RooCodeInc/Roo-Code/pull/11009))
+
+## Provider Updates
+
+* Fixes an issue where local Ollama models could be incorrectly flagged as unavailable due to validation running against an empty router model list. ([#10893](https://github.com/RooCodeInc/Roo-Code/pull/10893))
+* Fixes an issue where tools could appear twice when using OpenAI Responses API-based providers, reducing duplicate tool output and making results easier to follow. ([#11008](https://github.com/RooCodeInc/Roo-Code/pull/11008))

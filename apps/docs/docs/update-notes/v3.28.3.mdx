@@ -1,0 +1,42 @@
+---
+description: This patch adds UI polish and shortcuts, improves provider configuration, and fixes issues affecting Gemini, Claude Code tools, the editor context menu, and C# parsing.
+keywords:
+  - roo code 3.28.3
+  - new features
+  - bug fixes
+image: /img/v3.28.3/v3.28.3.png
+---
+
+# Roo Code 3.28.3 Release Notes (2025-09-16)
+
+This release improves slash command discoverability, adds a global pause for auto-approve, introduces an "Add to Context" shortcut, refines the composer UI, adds region-aware Z.ai plans, and fixes Gemini bracket rendering, Claude Code tool filtering, an editing context menu issue, embedder key errors, and C# parsing.
+
+<img src="/img/v3.28.3/v3.28.3.png" alt="Roo Code v3.28.3 Release" width="600" />
+## QOL Improvements
+
+* Temporarily pause auto-approve with a global “Enabled” switch so you can pause without losing your per-toggle selections; the UI clearly distinguishes global vs. per-toggle states ([#8024](https://github.com/RooCodeInc/Roo-Code/pull/8024))
+* Slash commands management moved to Settings > Slash Commands with a gear shortcut from the chat popover; the popover is now selection-only for quick use ([#7988](https://github.com/RooCodeInc/Roo-Code/pull/7988))
+* Keyboard shortcut to quickly “Add to Context” (macOS: Cmd+Y; Windows/Linux: Ctrl+Y) ([#7908](https://github.com/RooCodeInc/Roo-Code/pull/7908))
+* Add Image button moved inside the text area (top-right) and Enhance Prompt positioned above Send to reduce pointer travel and clarify layout ([#7989](https://github.com/RooCodeInc/Roo-Code/pull/7989))
+* Composer action buttons now appear only when there’s text input, reducing visual clutter and accidental clicks ([#7987](https://github.com/RooCodeInc/Roo-Code/pull/7987))
+* New Task button icon switched from “+” to a compose/pencil icon to better match its purpose and align with codicon standards ([#7942](https://github.com/RooCodeInc/Roo-Code/pull/7942))
+
+## Bug Fixes
+
+* Restore square brackets in Gemini-generated code so arrays/indexers render correctly (e.g., `string[] items = new string[5];`) (thanks AtkinsDynamicObjects!) ([#7577](https://github.com/RooCodeInc/Roo-Code/pull/7577))
+* Filter out Claude Code built-in tools (ExitPlanMode, BashOutput, KillBash) to avoid erroneous tool calls and distracting warnings (thanks juliettefournier-econ!) ([#7818](https://github.com/RooCodeInc/Roo-Code/pull/7818))
+* Fix an issue where the context menu could be obscured while editing messages; the menu stays visible and usable across screen sizes (thanks NaccOll, mini2s!) ([#7951](https://github.com/RooCodeInc/Roo-Code/pull/7951))
+* Surface a clear, actionable error instead of cryptic ByteString conversion failures during code indexing when API keys contain invalid/special characters (thanks PavelA85!) ([#8008](https://github.com/RooCodeInc/Roo-Code/pull/8008))
+* Correct C# tree-sitter query so C# files are parsed and indexed properly, improving semantic search, navigation, and context quality (thanks mubeen-zulfiqar, vadash, Source-GuyCoder!) ([#7813](https://github.com/RooCodeInc/Roo-Code/pull/7813))
+
+## Misc Improvements
+
+* Dependency update: bump axios to 1.12.0 to improve reliability and security of HTTP requests (thanks dependabot!) ([#7963](https://github.com/RooCodeInc/Roo-Code/pull/7963))
+
+## Provider Updates
+
+* Z.ai coding plan support with region-aware options (International/China), automatic base URL selection, and sensible defaults to simplify setup (thanks chrarnoldus!) ([#8003](https://github.com/RooCodeInc/Roo-Code/pull/8003))
+
+## Documentation Updates
+
+* Contributor workflow: internal CONTRIBUTING templates refined for clearer bug reports and feature requests (no user-facing docs change) ([#8014](https://github.com/RooCodeInc/Roo-Code/pull/8014))

@@ -1,0 +1,13 @@
+---
+description: This patch release fixes issues with QdrantClient URL handling, improves LM Studio model detection, and resolves Claude Code JSON parsing issues.
+---
+
+# Roo Code 3.21.5 Release Notes (2025-06-23)
+
+This patch release fixes issues with QdrantClient URL handling, improves LM Studio model detection, and resolves Claude Code JSON parsing issues.
+
+## Bug Fixes
+
+* **Qdrant Vector Store**: Fixed URL prefix handling during QdrantClient initialization for deployments with path prefixes (thanks CW-B-W!) ([#5033](https://github.com/RooCodeInc/Roo-Code/pull/5033))
+* **Claude Code Provider**: Resolved JSON parsing issues and improved reasoning block display to show collapsible reasoning blocks instead of raw JSON (thanks hannesrudolph!) ([#5049](https://github.com/RooCodeInc/Roo-Code/pull/5049))
+* **LM Studio**: Improved model detection to display all downloaded models instead of only currently loaded models (thanks daniel-lxs!) ([#5047](https://github.com/RooCodeInc/Roo-Code/pull/5047))

@@ -1,0 +1,40 @@
+---
+description: GPT-5-Codex arrives in OpenAI Native alongside localization tooling and UI refinements.
+keywords:
+  - roo code 3.28.6
+  - gpt-5-codex
+  - localization
+  - bug fixes
+  - release notes
+image: /img/v3.28.6/v3.28.6.png
+---
+
+# Roo Code 3.28.6 Release Notes (2025-09-23)
+
+This release adds GPT-5-Codex to OpenAI Native, sharpens localization coverage, and smooths UI workflows across languages.
+
+<img src="/img/v3.28.6/v3.28.6.png" alt="Roo Code v3.28.6 Release" width="600" />
+
+## GPT-5-Codex lands in OpenAI Native
+
+- **Work with repository-scale context**: Keep multi-file specs and long reviews in a single thread thanks to a 400k token window.
+- **Reuse prompts faster and include visuals**: Prompt caching and image support help you iterate on UI fixes without re-uploading context.
+- **Let the model adapt its effort**: GPT-5-Codex automatically balances quick responses for simple questions with deeper reasoning on complex builds.
+
+This gives teams a higher-capacity OpenAI option without extra configuration.[#8260](https://github.com/RooCodeInc/Roo-Code/pull/8260):
+
+
+> **📚 Documentation**: See [OpenAI Provider Guide](/providers/openai) for capabilities and setup guidance.
+
+## QOL Improvements
+
+* **Keyboard shortcut for auto-approve**: Toggle approvals with Cmd/Ctrl+Alt+A from anywhere in the editor, keeping focus on the code review flow (via [#8214](https://github.com/RooCodeInc/Roo-Code/pull/8214))
+* **Cleaner code blocks**: Removed the snippet language picker and word-wrap toggle so wrapped code is easier to read and copy across locales (via [#8208](https://github.com/RooCodeInc/Roo-Code/pull/8208))
+* **More readable reasoning blocks**: Added spacing before section headers inside reasoning transcripts to make long explanations easier to scan (via [#7868](https://github.com/RooCodeInc/Roo-Code/pull/7868))
+* **Translation checks cover package settings**: The missing translation finder now validates package.nls files for 17 locales to catch untranslated VS Code strings earlier (via [#8255](https://github.com/RooCodeInc/Roo-Code/pull/8255))
+
+## Bug Fixes
+
+* **Bare-metal evals stay signed in**: Roo provider tokens refresh automatically and the local evals app binds to port 3446 for predictable scripts (via [#8224](https://github.com/RooCodeInc/Roo-Code/pull/8224))
+* **Checkpoint text stays on one line**: Prevented multi-line wrapping in languages such as Chinese, Korean, Japanese, and Russian so the checkpoint UI stays compact (via [#8207](https://github.com/RooCodeInc/Roo-Code/pull/8207); reported in [#8206](https://github.com/RooCodeInc/Roo-Code/issues/8206))
+* **Ollama respects Modelfile num_ctx**: Roo now defers to your Modelfile’s context window to avoid GPU OOMs while still allowing explicit overrides when needed (via [#7798](https://github.com/RooCodeInc/Roo-Code/pull/7798); reported in [#7797](https://github.com/RooCodeInc/Roo-Code/issues/7797))

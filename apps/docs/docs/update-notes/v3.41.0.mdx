@@ -1,0 +1,32 @@
+---
+description: Adds OpenAI Codex access via OAuth subscriptions, expands OpenAI model options, and fixes stability issues.
+keywords:
+  - roo code 3.41.0
+  - new features
+  - bug fixes
+image: /img/v3.41.0/v3.41.0.png
+---
+
+# Roo Code 3.41.0 Release Notes (2026-01-15)
+
+This release adds OpenAI Codex subscription access, expands OpenAI model choices, and improves stability.
+
+<img src="/img/v3.41.0/v3.41.0.png" alt="Roo Code v3.41.0 Release" width="600" />
+
+## OpenAI Codex provider with OAuth subscription access
+
+Adds the OpenAI Codex provider with subscription-based OAuth sign-in, so you can connect a ChatGPT Plus/Pro account to use Codex models without API keys or per-token billing. Just select `OpenAI - ChatGPT Plus/Pro` in the provider settings! ([#10736](https://github.com/RooCodeInc/Roo-Code/pull/10736))
+
+## GPT-5.2-Codex model option for OpenAI (Native)
+
+Adds the GPT-5.2-Codex model to the OpenAI (Native) provider so you can select the coding-optimized model with its expanded context window and reasoning effort controls. ([#10731](https://github.com/RooCodeInc/Roo-Code/pull/10731))
+
+## Bug Fixes
+
+* **Gemini sessions no longer fail after a provider switch**: Resolves a streaming error where LiteLLM Gemini tool calls could fail with corrupted thought signatures when switching models mid-task. ([#10743](https://github.com/RooCodeInc/Roo-Code/pull/10743))
+* **Long terminal runs no longer degrade memory**: Fixes a memory leak where large command outputs could keep growing buffers after completion, leading to gray screens during long sessions. ([#7666](https://github.com/RooCodeInc/Roo-Code/pull/7666))
+
+## Misc Improvements
+
+* **End-to-end tests run reliably again**: Restores MCP and subtask coverage and fixes flaky tool tests so contributors can run CI-like checks locally and catch regressions earlier. (thanks ArchimedesCrypto, dcbartlett!) ([#10720](https://github.com/RooCodeInc/Roo-Code/pull/10720))
+* **Automated tests no longer stall on tool approvals**: Fixes a problem where MCP end-to-end tests could hang on manual approval prompts by auto-approving time server tools. (thanks ArchimedesCrypto!) ([#10733](https://github.com/RooCodeInc/Roo-Code/pull/10733))

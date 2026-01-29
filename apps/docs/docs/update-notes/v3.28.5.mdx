@@ -1,0 +1,32 @@
+---
+description: Bug fixes for todo lists and Vertex AI pricing, plus QOL improvements.
+keywords:
+  - roo code 3.28.5
+  - bug fixes
+  - provider updates
+image: /img/v3.28.5/v3.28.5.png
+---
+
+# Roo Code 3.28.5 Release Notes (2025-09-20)
+
+This release includes bug fixes for todo lists and Vertex AI pricing, improved code block wrapping, and SambaNova model updates.
+
+<img src="/img/v3.28.5/v3.28.5.png" alt="Roo Code v3.28.5 Release" width="600" />
+## QOL Improvements
+
+* **Code blocks wrap by default**: Code blocks now wrap text by default, improving readability when viewing long commands and code snippets ([#8194](https://github.com/RooCodeInc/Roo-Code/pull/8194))
+
+## Bug Fixes
+
+* **Todo list compatibility**: Todo lists now display correctly when AI models return checklists with dash prefixes (`- [ ] Task`), improving compatibility with various models (thanks NaccOll!) ([#8055](https://github.com/RooCodeInc/Roo-Code/pull/8055))
+* **Vertex AI pricing accuracy**: Fixed local cost calculation for Gemini models via Vertex AI to properly apply tiered pricing and cache discounts, ensuring displayed costs match actual Google Cloud billing (thanks ikumi3!) ([#8018](https://github.com/RooCodeInc/Roo-Code/pull/8018))
+* **Conversation history preservation**: Fixed duplicate/overlaid tasks and lost conversation history when canceling during model responses, especially during reasoning phases ([#8171](https://github.com/RooCodeInc/Roo-Code/pull/8171))
+
+## Provider Updates
+
+* **SambaNova models**: Added DeepSeek-V3.1 and GPT-OSS 120B to the SambaNova provider (thanks snova-jorgep!) ([#8186](https://github.com/RooCodeInc/Roo-Code/pull/8186))
+
+## Misc Improvements
+
+* **Code Supernova announcement**: Added announcement for the new Code Supernova model with improved authentication flow and landing page redirection ([#8197](https://github.com/RooCodeInc/Roo-Code/pull/8197))
+* **Privacy policy update**: Updated privacy policy to include provisions for optional marketing emails with clear opt-out options (thanks jdilla1277!) ([#8180](https://github.com/RooCodeInc/Roo-Code/pull/8180))

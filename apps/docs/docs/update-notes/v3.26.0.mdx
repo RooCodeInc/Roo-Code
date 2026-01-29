@@ -1,0 +1,81 @@
+---
+description: Roo Code v3.26.0 introduces Grok Code Fast, built-in /init command, and Qwen Code CLI API support.
+keywords:
+  - roo code 3.26.0
+  - grok code fast
+  - init command
+  - qwen code cli
+image: /img/v3.26.0/v3.26.0.png
+---
+
+# Roo Code 3.26.0 Release Notes (2025-08-26)
+
+This release introduces Grok Code Fast (formerly Sonic), a built-in /init command, and Qwen Code CLI API support.
+
+<img src="/img/v3.26.0/v3.26.0.png" alt="Roo Code v3.26.0 Release" width="600" />
+## Grok Code Fast
+As you may have already figured out, our stealth model Sonic has officially been uncloaked! ([#7426](https://github.com/RooCodeInc/Roo-Code/pull/7426))
+
+From xAI, this model is optimized for coding tasks and already beloved by the community in Code Mode for its:
+- **Sharp reasoning** capabilities
+- **Plan execution at scale**
+- **Code suggestions with UI taste and intuition**
+
+If you've already been enjoying Sonic in Roo Code Cloud, you'll be transitioned to Grok Code Fast. The model `xai/grok-code-fast-1` is also available under the [xAI Provider](/providers/xai) and is not free (for when the free period ends on Aug 28th, 2025).
+
+A massive thank-you to our partners at xAI and to all of you — over 100B tokens (and counting!) ran through Sonic during stealth! Your incredible adoption and helpful feedback shaped Grok Code Fast into the powerful model it is today.
+
+**Important:** Grok Code Fast remains **FREE** when accessed through [Roo Code Router](/providers/roo-code-router) during the promotional period. Using it directly through the xAI provider will incur standard charges once pricing is established.
+
+> **📚 Documentation**: See [Roo Code Router](/providers/roo-code-router) for free access or [xAI Provider](/providers/xai) for direct configuration.
+
+## Built-in /init Command
+
+We've added a new /init slash command for project onboarding ([#7381](https://github.com/RooCodeInc/Roo-Code/pull/7381), [#7400](https://github.com/RooCodeInc/Roo-Code/pull/7400)):
+
+- **Automatic Project Analysis**: Analyzes your entire codebase and creates comprehensive AGENTS.md files
+- **AI Assistant Optimization**: Generates documentation that enables AI assistants to be immediately productive in your codebase
+- **Mode-Specific Guidance**: Creates tailored documentation for different Roo Code modes (code, debug, architect, etc.)
+
+The /init command helps LLMs understand your project's unique patterns and conventions by documenting project-specific information that isn't obvious from the code structure alone.
+
+> 📚 Documentation: See [Slash Commands - The init command](/features/slash-commands#the-init-command) for details.
+
+## Qwen Code CLI API Support
+
+We've integrated with the Qwen Code CLI tool, allowing Roo Code to leverage its free access tier for Alibaba's Qwen3 Coder models ([#7380](https://github.com/RooCodeInc/Roo-Code/pull/7380)):
+
+- **Free Inference**: Piggybacks off the Qwen Code CLI's generous free tier (2,000 requests/day and 60 requests/minute with no token limits) via OAuth, available during a promotional period.
+- **1M Context Windows**: Handle entire codebases in a single conversation.
+- **Seamless Setup**: Works automatically if you've already authenticated the Qwen Code CLI tool.
+
+This integration provides free access to the Qwen3 Coder models by using the local authentication from the Qwen Code CLI.
+
+> **📚 Documentation**: See [Qwen Code CLI Provider](/providers/qwen-code) for setup and configuration.
+
+## Provider Updates
+
+* **DeepSeek V3.1 on Fireworks**: Added support for DeepSeek V3.1 model in the Fireworks AI provider (thanks dmarkey!) ([#7375](https://github.com/RooCodeInc/Roo-Code/pull/7375))
+* **Provider Visibility**: Static providers with no models are now hidden from the provider list for a cleaner interface ([#7392](https://github.com/RooCodeInc/Roo-Code/pull/7392))
+
+## QOL Improvements
+
+* **Auto-Approve Toggle UI**: The auto-approve toggle now stays at the bottom when expanded, reducing mouse movements (thanks elianiva, kyle-apex!) ([#7318](https://github.com/RooCodeInc/Roo-Code/pull/7318))
+* **OpenRouter Cache Pricing**: Cache read and write prices are now displayed for OpenRouter models (thanks chrarnoldus!) ([#7176](https://github.com/RooCodeInc/Roo-Code/pull/7176))
+* **Protected Workspace Files**: VS Code workspace configuration files (*.code-workspace) are now protected from accidental modification (thanks thelicato!) ([#7403](https://github.com/RooCodeInc/Roo-Code/pull/7403))
+
+## Bug Fixes
+
+* **Security - Symlink Handling**: Fixed security vulnerability where symlinks could bypass rooignore patterns ([#7405](https://github.com/RooCodeInc/Roo-Code/pull/7405))
+* **Security - Default Commands**: Removed potentially unsafe commands (`npm test`, `npm install`, `tsc`) from default allowed list (thanks thelicato, SGudbrandsson!) ([#7404](https://github.com/RooCodeInc/Roo-Code/pull/7404))
+* **Command Validation**: Fixed handling of substitution patterns in command validation ([#7390](https://github.com/RooCodeInc/Roo-Code/pull/7390))
+* **Follow-up Input Preservation**: Fixed issue where user input wasn't preserved when selecting follow-up choices ([#7394](https://github.com/RooCodeInc/Roo-Code/pull/7394))
+* **Mistral Thinking Content**: Fixed validation errors when using Mistral models that send thinking content (thanks Biotrioo!) ([#7106](https://github.com/RooCodeInc/Roo-Code/pull/7106))
+* **Requesty Model Listing**: Fixed model listing for Requesty provider when using custom base URLs (thanks dtrugman!) ([#7378](https://github.com/RooCodeInc/Roo-Code/pull/7378))
+* **Todo List Setting**: Fixed newTaskRequireTodos setting to properly enforce todo list requirements ([#7363](https://github.com/RooCodeInc/Roo-Code/pull/7363))
+
+## Misc Improvements
+
+* **Issue Fixer Mode**: Added missing todos parameter in new_task tool usage ([#7391](https://github.com/RooCodeInc/Roo-Code/pull/7391))
+* **Privacy Policy Update**: Updated privacy policy to clarify proxy mode data handling (thanks jdilla1277!) ([#7255](https://github.com/RooCodeInc/Roo-Code/pull/7255))
+* **Dependencies**: Updated drizzle-kit to v0.31.4 ([#5453](https://github.com/RooCodeInc/Roo-Code/pull/5453))

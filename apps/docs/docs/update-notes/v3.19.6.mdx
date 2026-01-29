@@ -1,0 +1,39 @@
+---
+description: This release introduces implicit caching for Gemini models to reduce latency, clarifies the concurrent file read limit, and includes several bug fixes and quality-of-life improvements.
+---
+
+# Roo Code 3.19.6 Release Notes (2025-06-09)
+
+This release introduces implicit caching for Gemini models to reduce latency, clarifies the concurrent file read limit, and includes several bug fixes and quality-of-life improvements.
+
+---
+
+## Provider Updates
+
+*   **OpenRouter Latency**: Replaced explicit caching with implicit caching for Gemini models via OpenRouter to significantly reduce latency ([#4488](https://github.com/RooCodeInc/Roo-Code/pull/4488))
+
+---
+
+## QOL Improvements
+
+*   **History Preview**: Buttons in the history preview now fade when there is no interaction, providing a cleaner UI (thanks samhvw8!) ([#4458](https://github.com/RooCodeInc/Roo-Code/pull/4458))
+
+---
+
+## Bug Fixes
+
+*   **MCP Server Management**: Fixed a bug where the MCP server list would not update correctly after changes (like adding or deleting servers) without a full extension reload. The manual refresh button and automatic refresh on configuration changes now work reliably. (thanks taylorwilsdon!) ([#4267](https://github.com/RooCodeInc/Roo-Code/pull/4267))
+*   **LiteLLM Provider**: Fixed a bug that caused an error when the LiteLLM provider URL contained a trailing slash (thanks kcwhite!) ([#4275](https://github.com/RooCodeInc/Roo-Code/pull/4275))
+*   **Copy Button**: Fixed an issue with the copy button logic (thanks samhvw8!) ([#4458](https://github.com/RooCodeInc/Roo-Code/pull/4458))
+
+---
+
+## Documentation Updates
+
+*   **Concurrent File Reads**: Clarified that the default concurrent file read limit is 15, not the maximum (thanks olearycrew!) ([#4474](https://github.com/RooCodeInc/Roo-Code/pull/4474))
+
+---
+
+## Misc Improvements
+
+*   **Build Scripts**: Removed unnecessary `npx` usage from some npm scripts (thanks user202729!) ([#4003](https://github.com/RooCodeInc/Roo-Code/pull/4003))

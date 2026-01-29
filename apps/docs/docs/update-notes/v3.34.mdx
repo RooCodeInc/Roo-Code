@@ -1,0 +1,83 @@
+---
+description: Combined notes for Roo Code 3.34, including Browser Use 2.0, the Baseten provider, OpenAI-compatible improvements, Roo Code Cloud eval jobs, image generation UI tweaks, todo list cleanup, and cloud sync fixes.
+keywords:
+  - roo code 3.34
+  - browser use 2.0
+  - baseten provider
+  - openai compatible
+  - evals roo code cloud
+  - image generation ui
+  - todo list ui
+  - cloud sync bug fix
+image: /img/v3.34.0/v3.34.0.png
+---
+
+# Roo Code 3.34 Release Notes (2025-11-21)
+
+Roo Code 3.34 combines Browser Use 2.0, the Baseten provider, OpenAI-compatible improvements, and refined onboarding and native tool descriptions with patches that add Roo Code Cloud eval support, clearer image generation prompts, todo list cleanup, cloud sync fixes, Claude Opus 4.5 across Roo Code Cloud, OpenRouter, Anthropic, and Vertex, AWS Bedrock embeddings for code indexing, improved native tool workflows for Mistral and OpenAI-compatible providers, smoother Anthropic tool streaming on OpenRouter, better Bedrock global inference selection, plus new provider reliability and model updates, free Black Forest Labs image generation on Roo Code Cloud, native MCP tool reliability fixes, native tool calling for Anthropic, Z.AI, and Moonshot providers, improved cloud sign-in experience, a race condition fix for the new_task tool on native protocol, and multiple bug fixes.
+
+<img src="/img/v3.34.0/v3.34.0.png" alt="Roo Code v3.34 Release" width="600" />
+
+## Browser Use 2.0
+
+Browser Use now supports a more capable "2.0" experience ([#8941](https://github.com/RooCodeInc/Roo-Code/pull/8941)):
+
+- **Richer browser interaction**: Enables more advanced navigation and interaction patterns so Roo can better follow multi-step web workflows.
+- **More reliable automation**: Improves stability for sequences of clicks, typing, and scrolling, reducing the chance of flaky browser runs.
+- **Better fit for complex sites**: Makes it easier to work with modern web apps that require multiple steps or stateful interactions.
+
+> **📚 Documentation**: See [Browser Use](/features/browser-use) for details on how to enable and use browser workflows. Note: We have not yet updated these docs with images and a video of the new experience.
+
+## QOL Improvements
+
+- **Provider-oriented welcome screen**: Added a provider-focused welcome screen so new users can more quickly choose and configure a working model setup ([#9484](https://github.com/RooCodeInc/Roo-Code/pull/9484)).
+- **Pinned Roo provider**: Pinned the Roo provider to the top of the provider list so it is easier to discover and select ([#9485](https://github.com/RooCodeInc/Roo-Code/pull/9485)).
+- **Clearer native tool descriptions**: Enhanced built-in tool descriptions with examples and clarifications so Roo can choose the right tools and use them more accurately ([#9486](https://github.com/RooCodeInc/Roo-Code/pull/9486)).
+- **Clearer image generation prompts**: The full prompt and path for image generation now appear directly in the chat UI with clearer spacing and typography, making it easier to inspect, debug, and reuse prompts ([#9505](https://github.com/RooCodeInc/Roo-Code/pull/9505), [#9522](https://github.com/RooCodeInc/Roo-Code/pull/9522)).
+- **Eval jobs on Roo Code Cloud**: You can now run evaluation jobs directly on Roo Code Cloud models, reusing the same managed models and job tokens as regular cloud runs ([#9492](https://github.com/RooCodeInc/Roo-Code/pull/9492), [#9522](https://github.com/RooCodeInc/Roo-Code/pull/9522)).
+- **XML tool protocol stays in sync with configuration**: Tool runs that use the XML protocol now correctly track the configured tool protocol after configuration updates, preventing rare parser-state errors when switching between XML and native tools ([#9535](https://github.com/RooCodeInc/Roo-Code/pull/9535))).
+- **Experimental multiple native tool calls per turn with guardrails**: Lets the native tool protocol run multiple tools in a single assistant turn and blocks `attempt_completion()` if any tool fails in that turn, reducing the risk of partial or incorrect completions ([#9273](https://github.com/RooCodeInc/Roo-Code/pull/9273)).
+- **Web-evals dashboard enhancements with dynamic tool columns and UX improvements**: Adds aggregate run statistics, per-tool success metrics, and dynamic tool usage columns so you can quickly spot failing tools or exercises and compare runs without rebuilding configs ([#9592](https://github.com/RooCodeInc/Roo-Code/pull/9592)).
+- **Native tools as default for specific Roo Code Cloud models**: Sets the providers’ native tool protocol as the default for `minimax/minimax-m2` and `anthropic/claude-haiku-4.5` on Roo Code Cloud to reduce configuration overhead and improve tool-calling reliability ([#9586](https://github.com/RooCodeInc/Roo-Code/pull/9586)).
+- **Native tool calling for Mistral**: Adds native tool calling support for the Mistral provider, enabling more reliable tool workflows and better multi-step automation when using Mistral models ([#9625](https://github.com/RooCodeInc/Roo-Code/pull/9625)).
+- **Parallel native tool execution via OpenAI protocol**: Wires the `MULTIPLE_NATIVE_TOOL_CALLS` experiment to OpenAI's `parallel_tool_calls` capability so multiple tools can run in parallel under the OpenAI-compatible protocol, improving throughput for tool-heavy tasks ([#9621](https://github.com/RooCodeInc/Roo-Code/pull/9621)).
+- **Fine-grained tool streaming for OpenRouter Anthropic**: Adds fine-grained tool streaming support for Anthropic models on OpenRouter so tool call responses stream more smoothly and stay aligned with Anthropic's tool semantics ([#9629](https://github.com/RooCodeInc/Roo-Code/pull/9629)).
+- **Global inference selection for Bedrock with cross-region**: Allows global inference to pick Bedrock models correctly even when cross-region routing is enabled, reducing the risk of mismatched regions or unavailable models during automatic selection ([#9616](https://github.com/RooCodeInc/Roo-Code/pull/9616)).
+- **Improved Cloud Sign-in Experience**: Adds a "taking you to cloud" screen with a progress indicator during authentication, plus a manual URL entry option as fallback for more reliable onboarding ([#9652](https://github.com/RooCodeInc/Roo-Code/pull/9652)).
+
+## Bug Fixes
+
+- **Streaming cancel responsiveness**: Fixed the cancel button so it responds immediately during streaming, making it easier to stop long or unwanted runs ([#9448](https://github.com/RooCodeInc/Roo-Code/pull/9448)).
+- **apply_diff performance regression**: Resolved a recent performance regression in `apply_diff`, restoring fast patch application on larger edits ([#9474](https://github.com/RooCodeInc/Roo-Code/pull/9474)).
+- **Model cache refresh**: Implemented cache refreshing to avoid using stale disk-cached models, ensuring configuration updates are picked up correctly ([#9478](https://github.com/RooCodeInc/Roo-Code/pull/9478)).
+- **Tool call fallbacks**: Added a fallback to always yield tool calls regardless of `finish_reason`, preventing cases where valid tool calls were dropped ([#9476](https://github.com/RooCodeInc/Roo-Code/pull/9476)).
+- **Single todo list in updates**: Removed a redundant todo list block from chat updates so you only see one clean, focused list when the updateTodoList tool runs ([#9517](https://github.com/RooCodeInc/Roo-Code/pull/9517), [#9522](https://github.com/RooCodeInc/Roo-Code/pull/9522)).
+- **Cloud message deduplication**: Fixed cloud message syncing so duplicate copies of the same reasoning or assistant message are no longer re-synced, keeping task histories cleaner and less confusing ([#9518](https://github.com/RooCodeInc/Roo-Code/pull/9518), [#9522](https://github.com/RooCodeInc/Roo-Code/pull/9522)).
+- **Gemini 3 reasoning_details support**: Fixes 400 INVALID_ARGUMENT errors when using Gemini 3 models via OpenRouter by fully supporting the newer `reasoning_details` format, so multi-turn and tool-calling conversations now work reliably without dropping reasoning context ([#9506](https://github.com/RooCodeInc/Roo-Code/pull/9506))).
+- **Skip unsupported Gemini content blocks safely**: Gemini conversations on Vertex AI now skip unsupported metadata blocks (such as certain reasoning or document types) with a warning instead of failing the entire thread, keeping long-running chats stable ([#9537](https://github.com/RooCodeInc/Roo-Code/pull/9537))).
+- **Native MCP tool names preserved in history**: Native mode now keeps the real dynamic MCP tool names (such as `mcp_serverName_toolName`) in the API history instead of teaching the model a fake `use_mcp_tool` name, so follow-up calls pick the right tools and tool suggestions stay consistent ([#9559](https://github.com/RooCodeInc/Roo-Code/pull/9559)).
+- **Native tools condensing keeps tool_use context**: When condensing long conversations that use native tools, required `tool_use` and `tool_result` blocks are preserved in the summary message, preventing 400 errors and avoiding lost context during follow-up turns ([#9582](https://github.com/RooCodeInc/Roo-Code/pull/9582)).
+- **API handler refresh on tool protocol changes**: Ensures switching API profiles that only change the tool protocol still refreshes the underlying handler and parser so tool calls always use the correct configuration ([#9599](https://github.com/RooCodeInc/Roo-Code/pull/9599)).
+- **Native tools file reading regression for Grok Code Fast**: Restricts the single-file read behavior to XML tools so native tool calls use the standard multi-file-aware file reader and can access the workspace as expected ([#9600](https://github.com/RooCodeInc/Roo-Code/pull/9600)).
+- **Roo Code Cloud embeddings revert and reliability**: Removes Roo Code Cloud as an embeddings provider to prevent `codebase_search` from appearing when it is not configured and to avoid indexing getting stuck in a standby state ([#9602](https://github.com/RooCodeInc/Roo-Code/pull/9602)).
+- **OpenRouter GPT-5 Schema Validation**: Fixes schema validation errors when using GPT-5 models via OpenRouter with the read_file tool ([#9633](https://github.com/RooCodeInc/Roo-Code/pull/9633)).
+- **write_to_file Directory Creation**: Fixes ENOENT errors when creating files in non-existent subdirectories (thanks ivanenev!) ([#9640](https://github.com/RooCodeInc/Roo-Code/pull/9640)).
+- **OpenRouter Tool Calls**: Fixes tool calls handling when using OpenRouter provider ([#9642](https://github.com/RooCodeInc/Roo-Code/pull/9642)).
+- **Claude Code Configuration**: Fixes configuration conflicts by correctly disabling native tools and temperature support options that are managed by the Claude Code CLI ([#9643](https://github.com/RooCodeInc/Roo-Code/pull/9643)).
+- **Race Condition in new_task Tool**: Fixes a timing issue where subtasks completing quickly (within 500ms) could break conversation history when using the `new_task` tool with native protocol APIs ([#9655](https://github.com/RooCodeInc/Roo-Code/pull/9655)).
+
+## Provider Updates
+
+- **Baseten provider**: Added Baseten as a new AI provider, giving you another option for hosted models and deployments ([#9461](https://github.com/RooCodeInc/Roo-Code/pull/9461)).
+- **OpenAI-compatible improvements**: Improved the base OpenAI-compatible provider configuration and error handling so more OpenAI-style endpoints work smoothly without special tweaks ([#9462](https://github.com/RooCodeInc/Roo-Code/pull/9462)).
+- **OpenRouter capabilities**: Improved copying of model-level capabilities onto OpenRouter endpoint models so routing respects each model's real abilities ([#9483](https://github.com/RooCodeInc/Roo-Code/pull/9483)).
+- **Roo Code Cloud image generation provider**: Roo Code Cloud is now available as an image generation provider, so you can generate images directly through Roo Code Cloud instead of relying only on third-party image APIs ([#9528](https://github.com/RooCodeInc/Roo-Code/pull/9528))).
+- **Cerebras model list clean-up**: The Cerebras provider model list now only shows currently supported models, reducing errors from deprecated Cerebras/Qwen variants and keeping the model picker aligned with what the API actually serves ([#9527](https://github.com/RooCodeInc/Roo-Code/pull/9527))).
+- **Reliable LiteLLM model refresh after credential changes**: Clicking **Refresh Models** after changing your LiteLLM API key or base URL now immediately reloads the model list using the new credentials, so you do not need to clear caches or restart VS Code, while background refreshes still benefit from caching for speed ([#9536](https://github.com/RooCodeInc/Roo-Code/pull/9536))).
+- **Black Forest Labs image generation on Roo Code Cloud**: Use the free `bfl/flux-2-pro:free` model on Roo Code Cloud for high-quality image generation without unexpected charges, powered by the `images_api` image generation method for compatible models ([#9587](https://github.com/RooCodeInc/Roo-Code/pull/9587)).
+- **Black Forest Labs models on OpenRouter**: Adds Black Forest Labs FLUX.2 Flex and FLUX.2 Pro image generation models via OpenRouter, giving you additional high-quality options when you prefer to use your OpenRouter account for image generation ([#9589](https://github.com/RooCodeInc/Roo-Code/pull/9589)).
+- **Bedrock Anthropic Claude Opus 4.5 for global inference**: Adds the Anthropic Claude Opus 4.5 Bedrock model to the global inference model list so it can be used automatically anywhere global inference is supported, with no extra setup ([#9595](https://github.com/RooCodeInc/Roo-Code/pull/9595)).
+- **AWS Bedrock embeddings for code indexing**: Adds support for using AWS Bedrock embeddings in code indexing so teams that standardize on Bedrock can reuse their existing infrastructure when indexing repos for Roo-based navigation and search ([#9475](https://github.com/RooCodeInc/Roo-Code/pull/9475)).
+- **Anthropic Native Tool Calling**: Anthropic models now support native tool calling for improved performance and more reliable tool use ([#9644](https://github.com/RooCodeInc/Roo-Code/pull/9644)).
+- **Z.AI Native Tool Calling**: Z.AI models (glm-4.5, glm-4.5-air, glm-4.5-x, glm-4.5-airx, glm-4.5-flash, glm-4.5v, glm-4.6, glm-4-32b-0414-128k) now support native tool calling ([#9645](https://github.com/RooCodeInc/Roo-Code/pull/9645)).
+- **Moonshot Native Tool Calling**: Moonshot models now support native tool calling with parallel tool calls support ([#9646](https://github.com/RooCodeInc/Roo-Code/pull/9646)).

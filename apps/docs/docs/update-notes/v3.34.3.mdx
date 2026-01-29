@@ -1,0 +1,35 @@
+---
+description: This patch adds Roo Code Cloud embeddings for codebase indexing, streams native tool calls, expands Claude Opus 4.5 coverage, and includes UI and reliability improvements.
+keywords:
+  - roo code 3.34.3
+  - new features
+  - bug fixes
+  - provider updates
+  - codebase indexing
+  - roo code cloud
+image: /img/v3.34.3/v3.34.3.png
+---
+
+# Roo Code 3.34.3 Release Notes (2025-11-25)
+
+This release adds Roo Code Cloud as an embeddings provider for codebase indexing, streams native tool calls, expands Claude Opus 4.5 support, and includes UI, reliability, and cost improvements.
+
+<img src="/img/v3.34.3/v3.34.3.png" alt="Roo Code v3.34.3 Release" width="600" />
+
+* **Roo Code Cloud embeddings for codebase indexing**: Use Roo Code Cloud as a managed embeddings provider for codebase indexing so you can build semantic search over your project without running your own embedding service or managing separate API keys. The Code Index UI now exposes Roo Code Cloud as an embedder option and batches, rate-limits, and authenticates embedding requests through Roo Code Cloud for more reliable indexing. ([#9543](https://github.com/RooCodeInc/Roo-Code/pull/9543)) ([#9542](https://github.com/RooCodeInc/Roo-Code/pull/9542)) See [Codebase Indexing](/features/codebase-indexing) and [Roo Code Router](/providers/roo-code-router) for setup and usage details.
+* **Streaming native tool calls**: Native tools (including Roo Code Cloud and OpenRouter helpers) now stream arguments and partial results into the UI, matching the streaming experience of XML tools so you can watch long-running operations progress and debug tool behavior more easily. ([#9542](https://github.com/RooCodeInc/Roo-Code/pull/9542))
+
+## QOL Improvements
+
+* **Simpler bare‑metal evals setup with mise**: Standardizes the bare‑metal evals setup script on the `mise` runtime manager instead of `asdf`, reducing setup friction and avoiding version mismatches for contributors running local evals. ([#9548](https://github.com/RooCodeInc/Roo-Code/pull/9548))
+* **Contact links in the About Roo Code page**: Adds clear contact options directly to the About Roo Code settings page so you can quickly report bugs, request features, disclose security issues, or email the team without leaving the extension. ([#9570](https://github.com/RooCodeInc/Roo-Code/pull/9570))
+
+## Bug Fixes
+
+* **Streaming follow‑up questions**: Fixes `ask_followup_question` streaming so the UI shows only the intended question text instead of raw JSON, and ensures all native tools emit and handle partial tool calls correctly when streaming is enabled, preventing confusing or missing tool output. ([#9561](https://github.com/RooCodeInc/Roo-Code/pull/9561))
+* **Prompt caching for Claude Opus 4.5**: Ensures Anthropic Claude Opus 4.5 requests now use prompt caching like other Claude models, significantly reducing ongoing API costs for users who rely on Opus 4.5 (thanks iainRedro!). ([#9568](https://github.com/RooCodeInc/Roo-Code/pull/9568))
+
+## Provider Updates
+
+* **Claude Opus 4.5 in Claude Code**: Adds the `claude-opus-4-5-20251101` model to the Claude Code provider so you can select it like other Claude code models, with prompt caching support, no image support, and no reasoning effort/budget controls in the UI. ([#9560](https://github.com/RooCodeInc/Roo-Code/pull/9560))
+* **Claude Opus 4.5 in AWS Bedrock**: Exposes Claude Opus 4.5 through the AWS Bedrock provider so Bedrock users can access the same 200k-context, 8192-token limits, prompt caching, and reasoning capabilities as the existing Claude Opus 4 model (thanks pisicode!). ([#9572](https://github.com/RooCodeInc/Roo-Code/pull/9572)) See [AWS Bedrock](/providers/bedrock) for details on enabling and configuring this model.

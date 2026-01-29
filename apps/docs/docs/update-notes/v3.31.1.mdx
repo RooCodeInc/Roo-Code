@@ -1,0 +1,31 @@
+---
+description: New polished button UI, smoother auto-approvals, safer cloud execution, model profile sync fix, and a new IPC command for posting messages to the current task.
+keywords:
+  - roo code 3.31.1
+  - new features
+  - bug fixes
+image: /img/v3.31.1/v3.31.1.png
+---
+
+# Roo Code 3.31.1 Release Notes (2025-11-12)
+
+This release highlights a refreshed button look across the UI, improves auto-approvals reliability, prevents cloud tasks from stalling, keeps model profiles in sync on switch, and adds an IPC command to post messages into the current task.
+
+<img src="/img/v3.31.1/v3.31.1.png" alt="Roo Code v3.31.1 Release" width="600" />
+
+## New Button Look
+
+A consistent, rounded Button component with clear variants and sizes now appears across the UI. The result is a cleaner, more modern interface with predictable interactions where buttons are used ([#9150](https://github.com/RooCodeInc/Roo-Code/pull/9150)).
+
+## Features
+
+* IPC command to send messages (text/images) to the current task for automations and richer context ([#9149](https://github.com/RooCodeInc/Roo-Code/pull/9149))
+
+## QOL Improvements
+
+* Move auto-approval logic from ChatView to Task for more reliable handling and clearer UI safeguards ([#9157](https://github.com/RooCodeInc/Roo-Code/pull/9157))
+
+## Bug Fixes
+
+* Prevent command_output asks from blocking in cloud/headless environments, so tasks no longer stall ([#9152](https://github.com/RooCodeInc/Roo-Code/pull/9152))
+* Ensure model switch re-applies the selected profile so task configuration stays in sync ([#9181](https://github.com/RooCodeInc/Roo-Code/pull/9181))

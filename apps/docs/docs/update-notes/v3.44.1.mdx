@@ -1,0 +1,16 @@
+---
+description: This patch fixes LiteLLM + Amazon Bedrock proxy tool calling, adjusts Cerebras model defaults, and improves website deployment checks.
+keywords:
+  - roo code 3.44.1
+  - provider updates
+  - bug fixes
+---
+
+# Roo Code 3.44.1 Release Notes (2026-01-27)
+
+This patch fixes LiteLLM + Amazon Bedrock proxy tool calling, adjusts Cerebras model defaults, and improves website deployment checks.
+
+## Provider Updates
+
+* Fixes an issue where tool-enabled chats could fail when using LiteLLM as a proxy to Amazon Bedrock due to Bedrock tool call ID validation limits. ([#10990](https://github.com/RooCodeInc/Roo-Code/pull/10990))
+* Sets default sampling parameters for the Cerebras `zai-glm-4.7` model (temperature and top_p) so outputs are more consistent without extra configuration. (thanks sebastiand-cerebras!) ([#10945](https://github.com/RooCodeInc/Roo-Code/pull/10945))

@@ -1,0 +1,70 @@
+---
+description: Roo Code 3.39 includes task-level provider profile persistence, improved multimodal workflows, new provider/model options, and reliability fixes across tool calling.
+keywords:
+  - roo code 3.39
+  - new features
+  - bug fixes
+---
+
+# Roo Code 3.39 Release Notes (Combined)
+
+Roo Code 3.39 includes task-level provider profile persistence, improved multimodal workflows, new provider/model options, and reliability fixes across tool calling.
+
+## Features
+
+* **Task-level API configuration profiles**: Roo can persist the selected provider profile per task so follow-up sessions keep using the same provider/model settings.
+* **Image file @mentions**: You can mention images in your workspace to give the model visual context directly from chat.
+* **Headless Roo Code (CLI + VS Code shim)**: Run Roo Code in a headless environment with a basic CLI, plus an installer and an option to use the CLI for evals.
+* **Debug proxy routing**: Adds debug-mode proxy routing to help troubleshoot API calls.
+
+## QOL Improvements
+
+* **BRRR naming update**: Renames YOLO to BRRR.
+* **Smarter file @mention search**: Filters file @mention results using `.rooignore`.
+* **Better tooling docs**: Improves the native `read_file` tool description and examples.
+* **Web evals usability**: Remembers your last model selection in web evals and adds an evals skill.
+
+## Bug Fixes
+
+* Fixes PowerShell ENOENT issues on Windows.
+* Fixes shell-aware command chaining examples for Windows.
+* Fixes tool-result preservation/deduplication issues that could lead to API errors.
+* Fixes issues around tool protocol UI and provider configuration details.
+
+## Provider Updates
+
+* Adds new/updated models across multiple providers (e.g., Fireworks AI, OpenAI-compatible endpoints, Cerebras).
+
+---
+
+## Patch Releases
+
+### 3.39.3 (2026-01-10)
+
+* Renames Roo Code Cloud Provider to **Roo Code Router** for clearer branding.
+* Updates Roo Code Router service name and related wording so the UI uses consistent naming.
+* Improves ExtensionHost internal organization around mode changes.
+* Adds options to build and install the CLI release locally for testing.
+* Reorganizes the CLI file structure for better maintainability.
+* Adds an interactive TUI mode to the Roo CLI.
+
+### 3.39.2 (2026-01-09)
+
+* Adds an **Enable debug mode** toggle in Roo Code settings (About Roo Code) so you can turn debug logging on/off from the extension UI.
+* Improves the error message shown when a provider terminates a streaming response early, making it clearer the interruption came from the provider.
+* Fixes an issue where Cerebras could fail tool calling when a chat included both built-in tools and MCP tools.
+* Fixes tool calling for OpenAI-compatible providers.
+* Fixes cases where file edits could fail to apply due to overly strict `edit_file` matching.
+* Fixes an issue where the VS Code Language Model (vscode-lm) integration could error due to message part ordering.
+* Fixes an issue where Gemini requests via OpenRouter could fail when an assistant message contained only tool calls.
+* Fixes an issue where approving a tool run while adding feedback could produce duplicate tool results.
+* Improves Gemini tool calling reliability by preserving thought signatures correctly.
+* Improves file-edit reliability for Gemini and Vertex models.
+* Updates Roo Code CLI defaults by switching the default model to `anthropic/claude-opus-4.5`.
+* Updates Roo Code Cloud’s Terms of Service (effective 2026-01-09).
+
+### 3.39.1 (2026-01-08)
+
+* Fixes an issue where file paths shown during native tool-call streaming could appear incorrect or truncated.
+* Fixes an issue where resuming a task with Gemini extended thinking could fail with a “Corrupted thought signature” / INVALID_ARGUMENT error.
+* Fixes an Anthropic tool schema compatibility issue affecting `ask_followup_question`.

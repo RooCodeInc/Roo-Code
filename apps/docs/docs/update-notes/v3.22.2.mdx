@@ -1,0 +1,22 @@
+---
+description: This release fixes a bug that caused the extension to fail to load in certain environments and includes other minor improvements.
+---
+
+---
+description: This release introduces free Gemini access via OAuth, fixes several bugs, and improves the overall user experience.
+---
+
+# Roo Code 3.22.2 Release Notes (2025-06-27)
+
+This release includes important security fixes, bug fixes, and improvements to ensure a more reliable and secure experience.
+
+## Security Fixes
+
+* **Code Display**: Eliminated XSS vulnerability in code block rendering for enhanced security (thanks KJ7LNW!) ([#5157](https://github.com/RooCodeInc/Roo-Code/pull/5157))
+
+## Bug Fixes
+
+* **Checkpoint Menu**: Fixed checkpoint popover not opening when clicked, restoring access to checkpoint functionality (thanks daniel-lxs, aprpure!) ([#5192](https://github.com/RooCodeInc/Roo-Code/pull/5192))
+* **Terminal Integration**: Fixed keyboard shortcut errors when adding terminal content to context (thanks MuriloFP, iamhenry!) ([#5161](https://github.com/RooCodeInc/Roo-Code/pull/5161))
+* **Gemini CLI**: Corrected error message translation paths across all supported languages (thanks daniel-lxs!) ([#5194](https://github.com/RooCodeInc/Roo-Code/pull/5194))
+* **Code Index**: Fixed Qdrant service connection reliability when updating configuration settings - services now automatically recreate when configurations change (thanks catrielmuller!) ([#5152](https://github.com/RooCodeInc/Roo-Code/pull/5152))

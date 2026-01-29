@@ -1,0 +1,24 @@
+---
+description: This release introduces the new Claude Code provider for local CLI integration and fixes several critical issues.
+---
+
+# Roo Code 3.21.4 Release Notes (2025-06-23)
+
+This release introduces the new Claude Code provider for local CLI integration and fixes several critical issues.
+
+## Use Your Claude Max Subscription with Roo Code
+
+You can now use your Claude Max subscription directly in Roo Code through our new Claude Code provider (thanks Cline!) ([#4864](https://github.com/RooCodeInc/Roo-Code/pull/4864), [#5038](https://github.com/RooCodeInc/Roo-Code/pull/5038)):
+
+- **Leverage Your Existing Subscription**: Connect your Claude Max plan to Roo Code through the Claude CLI
+- **No Additional API Costs**: Use your subscription benefits instead of paying per-token API rates
+- **Access Premium Models**: Use Claude Sonnet 4, Opus 4, and other advanced models included in your plan
+- **Zero Setup Complexity**: Select Claude Code as your provider during initial setup - no API keys needed
+- **Advanced Reasoning Support**: Full access to Claude's thinking modes and reasoning capabilities
+
+Perfect for Claude Max subscribers who want to maximize their subscription value while coding.
+
+## Bug Fixes
+
+* **Apply Diff Accuracy**: Fixed start line parameter not working correctly when applying multiple file diffs (thanks samhvw8!) ([#5019](https://github.com/RooCodeInc/Roo-Code/pull/5019))
+* **Ollama Compatibility**: Resolved validation errors that prevented Ollama from working with certain models (thanks daniel-lxs, MartinHarding1998!) ([#5014](https://github.com/RooCodeInc/Roo-Code/pull/5014))

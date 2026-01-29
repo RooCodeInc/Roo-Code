@@ -1,0 +1,44 @@
+---
+description: This release improves Intelligent Context Condensation, updates providers, and fixes export and settings issues.
+keywords:
+  - roo code 3.43.0
+  - new features
+  - bug fixes
+image: /img/v3.43.0/v3.43.0.png
+---
+
+# Roo Code 3.43.0 Release Notes (2026-01-23)
+
+This release updates Intelligent Context Condensation, removes deprecated settings, and fixes export and settings issues.
+
+<img src="/img/v3.43.0/v3.43.0.png" alt="Roo Code v3.43.0 Release" width="600" />
+
+## Intelligent Context Condensation v2
+
+Intelligent Context Condensation runs when the conversation is near the model’s context limit. It summarizes earlier messages instead of dropping them. After a condense, Roo continues from a single summary, not a mix of summary plus a long tail of older messages. If your task starts with a slash command, Roo preserves those slash-command-driven directives across condenses. Roo is less likely to break tool-heavy chats during a condense, which reduces failed requests and missing tool results.
+
+Settings changes: the Condense prompt editor is now under **Context Management** and Reset clears your override. Condensing uses the active conversation model/provider. There is no separate model/provider selector for condensing.
+
+([#10873](https://github.com/RooCodeInc/Roo-Code/pull/10873), [#10920](https://github.com/RooCodeInc/Roo-Code/pull/10920), [#10909](https://github.com/RooCodeInc/Roo-Code/pull/10909), [#10927](https://github.com/RooCodeInc/Roo-Code/pull/10927), [#10931](https://github.com/RooCodeInc/Roo-Code/pull/10931), [#10876](https://github.com/RooCodeInc/Roo-Code/pull/10876), [#10881](https://github.com/RooCodeInc/Roo-Code/pull/10881), [#10901](https://github.com/RooCodeInc/Roo-Code/pull/10901))
+
+## QOL Improvements
+
+* Removes the unused “Enable concurrent file edits” experimental toggle to reduce settings clutter. ([#10925](https://github.com/RooCodeInc/Roo-Code/pull/10925))
+* Removes the experimental **Power Steering** setting (a deprecated experiment that no longer improves results). ([#10926](https://github.com/RooCodeInc/Roo-Code/pull/10926))
+* Removes obsolete diff/match-precision provider settings that no longer affect behavior. ([#10298](https://github.com/RooCodeInc/Roo-Code/pull/10298))
+* Adds a `pnpm install:vsix:nightly` command to make installing nightly VSIX builds easier. ([#10912](https://github.com/RooCodeInc/Roo-Code/pull/10912))
+
+## Bug Fixes
+
+* Fixes an issue where MCP config files saved via the UI could be rewritten as a single minified line. Files are now pretty-printed. (thanks Michaelzag!) ([#9864](https://github.com/RooCodeInc/Roo-Code/pull/9864))
+* Fixes an issue where exporting tasks to Markdown could include `[Unexpected content type: thoughtSignature]` lines for some models. Exports are now clean. (thanks rossdonald!) ([#10932](https://github.com/RooCodeInc/Roo-Code/pull/10932))
+* Fixes an issue where the **Model** section could appear twice in the OpenAI Codex provider settings. ([#10930](https://github.com/RooCodeInc/Roo-Code/pull/10930))
+
+## Misc Improvements
+
+* Removes legacy XML tool-calling code paths that are no longer used, reducing maintenance surface area. ([#10929](https://github.com/RooCodeInc/Roo-Code/pull/10929))
+
+## Provider Updates
+
+* Updates Z.AI models with new variants and pricing metadata. (thanks ErdemGKSL!) ([#10860](https://github.com/RooCodeInc/Roo-Code/pull/10860))
+* Corrects Gemini 3 pricing for Flash and Pro models to match published pricing. (thanks rossdonald!) ([#10487](https://github.com/RooCodeInc/Roo-Code/pull/10487))

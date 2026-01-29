@@ -1,0 +1,36 @@
+---
+description: Roo Code 3.36.15 adds a 1M context window option for Claude Sonnet 4.5 on Vertex AI, improves chat error troubleshooting, and expands native tool calling support.
+keywords:
+  - roo code 3.36.15
+  - vertex ai
+  - 1m context
+  - native tool calling
+  - error diagnostics
+  - bug fixes
+image: /img/v3.36.15/v3.36.15.png
+---
+
+# Roo Code 3.36.15 Release Notes (2025-12-19)
+
+This release adds a 1M context window option for Claude Sonnet 4.5 on Vertex AI, improves chat error troubleshooting, and expands native tool calling support.
+
+<img src="/img/v3.36.15/v3.36.15.png" alt="Roo Code v3.36.15 Release" width="600" />
+
+## Vertex AI: 1M context window for Claude Sonnet 4.5
+
+When you use **Claude Sonnet 4.5** on **Vertex AI**, you can now enable a **1M context window** option for supported models ([#10209](https://github.com/RooCodeInc/Roo-Code/pull/10209)).
+
+## Chat error troubleshooting improvements
+
+Chat error states now make it easier to understand what went wrong and to share the right details when filing a bug report:
+
+* **Clearer error visibility**: Error rows more consistently surface full error details (including status codes) via a more obvious **View details** affordance ([#10204](https://github.com/RooCodeInc/Roo-Code/pull/10204))
+* **Downloadable diagnostics**: You can generate a local diagnostics file from a chat error (including error metadata and the API conversation history) so you can review/redact and share it with an issue report ([#10188](https://github.com/RooCodeInc/Roo-Code/pull/10188))
+
+## Bug Fixes
+
+* **Native tool calling support for LM Studio and Qwen-Code**: Fixes an issue where these providers were missing OpenAI-style native tool call support, which could make tool use unreliable compared to other providers ([#10208](https://github.com/RooCodeInc/Roo-Code/pull/10208))
+* **More reliable tool defaults for OpenAI Compatible providers**: Fixes cases where tool calling could be inconsistent unless you manually adjusted custom model info, by applying native tool defaults unless you’ve explicitly overridden them ([#10213](https://github.com/RooCodeInc/Roo-Code/pull/10213))
+* **Requesty native tool calls enabled**: Fixes native tool calling defaults for the Requesty provider (and aligns behavior for Unbound) so tool use is more consistent, especially when model metadata is cached ([#10211](https://github.com/RooCodeInc/Roo-Code/pull/10211))
+* **Strict JSON Schema compatibility**: Fixes an issue where some MCP tool schemas could fail strict validation due to missing `additionalProperties: false` on object schemas ([#10210](https://github.com/RooCodeInc/Roo-Code/pull/10210))
+* **Refresh models cache reliability**: Fixes an issue where **Refresh models** could fail to fully flush/refresh cached model lists for some providers, and improves correctness of initial model selection when starting a new task ([#9870](https://github.com/RooCodeInc/Roo-Code/pull/9870))

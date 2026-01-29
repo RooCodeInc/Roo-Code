@@ -1,0 +1,32 @@
+---
+description: Adds Claude Sonnet 4.5 1M context for Claude Code, improves Cloud task routing telemetry, and fixes Ollama/LM Studio visibility.
+keywords:
+  - roo code 3.28.16
+  - new features
+  - bug fixes
+image: /img/v3.28.16/v3.28.16.png
+---
+
+# Roo Code 3.28.16 Release Notes (2025-10-10)
+
+This release adds a 1M‑context variant for Claude Sonnet 4.5 in Claude Code, improves Cloud task routing telemetry, and fixes Ollama/LM Studio provider visibility.
+
+<img src="/img/v3.28.16/v3.28.16.png" alt="Roo Code v3.28.16 Release" width="600" />
+
+## 1M context for Claude Sonnet 4.5 in Claude Code
+
+We've added a 1M‑token context variant of Claude Sonnet 4.5 to Claude Code (thanks ColbySerpa!) ([#8586](https://github.com/RooCodeInc/Roo-Code/pull/8586)):
+
+- Fit very large projects and long logs with fewer truncations.
+- Select it via the [1m] suffix when choosing the model; reduces splitting and manual chunking.
+
+This makes it easier to work across big repos and lengthy traces without losing context.
+
+## QOL Improvements
+
+* Identify Cloud tasks in the extension bridge to improve diagnostics, logging, and future UI behavior ([#8539](https://github.com/RooCodeInc/Roo-Code/pull/8539))
+* Add the parent task ID in telemetry to improve traceability ([#8532](https://github.com/RooCodeInc/Roo-Code/pull/8532))
+
+## Bug Fixes
+
+* Make Ollama and LM Studio appear as dynamic providers in provider lists so they can be selected and configured like others ([#8511](https://github.com/RooCodeInc/Roo-Code/pull/8511))

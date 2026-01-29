@@ -1,0 +1,17 @@
+---
+description: Fixes Vertex AI Sonnet 4.5 configuration and removes AWS Bedrock topP to improve reliability.
+keywords:
+  - roo code 3.28.13
+  - new features
+  - bug fixes
+---
+
+# Roo Code 3.28.13 Release Notes (2025-09-29)
+
+This patch improves provider reliability: Vertex AI Sonnet 4.5 now works with the correct model ID and AWS Bedrock requests avoid conflicts by removing topP.
+
+
+## Bug Fixes
+
+* Vertex AI: Fix Sonnet 4.5 model configuration so requests no longer 404; sets the correct default ID and enables computer‑use via LiteLLM (thanks nickcatal!) ([#8391](https://github.com/RooCodeInc/Roo-Code/pull/8391))
+* AWS Bedrock: Remove topP parameter to avoid conflicts with extended thinking, improving reliability for streaming and non‑streaming responses (thanks ronyblum!) ([#8388](https://github.com/RooCodeInc/Roo-Code/pull/8388))

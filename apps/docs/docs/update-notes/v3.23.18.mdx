@@ -1,0 +1,24 @@
+---
+description: Bug fixes for todo list toggle, command parsing crashes, and improved error handling.
+keywords:
+  - roo code 3.23.18
+  - bug fixes
+  - error handling
+  - command parsing
+---
+
+# Roo Code 3.23.18 Release Notes (2025-07-23)
+
+This release fixes critical bugs including todo list toggle functionality, command parsing crashes, and adds better error handling to prevent interface crashes.
+
+## Bug Fixes
+
+* **Todo List Toggle**: Fixed the todo list toggle in provider advanced settings that wasn't working properly (thanks chrarnoldus!) ([#6103](https://github.com/RooCodeInc/Roo-Code/pull/6103))
+
+* **Command Parsing**: Fixed crashes when running complex bash commands with special syntax like arithmetic expressions and array variables, allowing users to create advanced GitHub CLI aliases and other sophisticated shell scripts (thanks daniel-lxs, KJ7LNW!) ([#5743](https://github.com/RooCodeInc/Roo-Code/pull/5743))
+
+* **Error Handling**: Added error boundaries to prevent the entire Roo Code interface from crashing when errors occur. Instead of seeing a blank screen, users now see helpful error messages with debugging information, allowing them to continue using other parts of the extension (thanks KJ7LNW, elianiva!) ([#5085](https://github.com/RooCodeInc/Roo-Code/pull/5085))
+
+## Misc Improvements
+
+* **Process Termination**: Roo Code now more reliably terminates unresponsive processes, preventing hanging commands from blocking your workflow ([#6071](https://github.com/RooCodeInc/Roo-Code/pull/6071))

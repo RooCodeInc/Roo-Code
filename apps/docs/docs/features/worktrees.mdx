@@ -1,0 +1,166 @@
+---
+description: Use Git worktrees to work on multiple branches simultaneously with Roo Code, each in its own VS Code window.
+keywords:
+  - worktrees
+  - git worktrees
+  - multiple branches
+  - parallel development
+  - branch management
+  - agentic coding
+---
+
+# Worktrees
+
+Git worktrees allow you to work on multiple branches of the same repository simultaneously by keeping them in different directories. Each worktree gets its own VS Code window with Roo Code, enabling parallel development without branch switching.
+
+This is particularly powerful for agentic coding workflows where you might want to:
+
+- Test different implementation approaches in parallel
+- Review pull requests without disrupting your current work
+- Run multiple tasks on different branches simultaneously
+- Maintain separate environments for development and debugging
+
+<div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
+  <iframe title="Worktrees Tutorial Video"
+    src="https://www.youtube.com/embed/BRrhcYYSh9M?rel=0&modestbranding=1"
+    style={{
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+    }}
+    frameBorder="0"
+    allow="autoplay; encrypted-media"
+    allowFullScreen
+  ></iframe>
+</div>
+
+<div style={{ marginTop: '20px' }}></div>
+
+:::note Requirements
+- Git must be installed on your system
+- Your workspace must be a Git repository
+- Multi-root workspaces are not supported
+- Workspace must be at the repository root (not a subfolder)
+:::
+
+---
+
+## Getting Started
+
+### Accessing Worktrees
+
+You can access the worktrees feature in two ways:
+
+1. **Home Screen**: When you have multiple worktrees, a worktree selector appears at the top of the chat interface
+   - Click the selector to see all your worktrees
+   - Click on any worktree to switch to it
+   - Click the `+` button to create a new worktree
+   - Click the ⚙️ to manage worktrees
+
+2. **Settings Panel**: from the last point above or via Settings (⚙️) → Worktrees
+   - View and manage all your worktrees
+   - Create new worktrees
+   - Delete existing worktrees
+   - Configure `.worktreeinclude` settings
+   - Choose whether to show the selector in the home screen
+
+### Creating Your First Worktree
+
+1. Open the Roo Code settings by clicking the gear icon
+2. Navigate to the "Worktrees" section
+3. Click the "Create worktree" button
+4. Fill in the required fields:
+   - **Base Branch**: The branch to create your new branch from (typically `main` or `develop`)
+   - **Branch Name**: Name for the new branch (e.g., `worktree/feature-name`)
+   - **Worktree Path**: Location where the worktree will be created
+5. Click "Create"
+6. Choose whether to open the new worktree in a new window or stay in your current window
+
+The worktree will be created with all the files from the base branch, and you can immediately start working on it.
+
+---
+
+## Key Functionality
+
+### Switching Between Worktrees
+
+Once you have multiple worktrees, switching between them is seamless:
+
+**From the Home Screen**:
+- Click the worktree selector at the top of the chat
+- Select the worktree you want to switch to
+- Choose whether to switch in the current window or open a new window
+
+**From Settings**:
+- Navigate to Settings → Worktrees
+- Click on any worktree to switch to it in the current window
+- Click the icon to open in a new window
+
+:::tip Multiple Windows
+Opening worktrees in new windows allows you to have multiple tasks running in parallel, each in its own workspace. This is ideal for comparing different approaches or working on multiple features simultaneously.
+:::
+
+### Managing Worktrees
+
+**Viewing Your Worktrees**:
+The worktrees list shows:
+- Branch name (or "Detached HEAD" if not on a branch)
+- Worktree path on your filesystem
+- Status indicators (Primary, Locked)
+- Current worktree is highlighted
+
+**Deleting Worktrees**:
+1. Navigate to Settings → Worktrees
+2. Click the trash icon <Codicon name="trash" /> next to the worktree you want to delete
+
+
+### Copying Files with .worktreeinclude
+
+By default, Git worktrees only include files tracked by Git. Untracked files like `node_modules`, `.env`, or build artifacts aren't copied. The `.worktreeinclude` feature solves this problem.
+
+**How it Works**:
+- Create a `.worktreeinclude` file at the root of your repository
+- Add patterns for files/directories you want to copy (uses `.gitignore` syntax)
+- Files must also be in `.gitignore` to be copied (intersection of both files)
+- When creating a new worktree, matching files are automatically copied
+
+**Setting Up .worktreeinclude**:
+
+1. Navigate to Settings → Worktrees
+2. If you don't have a `.worktreeinclude` file, you'll see a message at the bottom
+3. Click "Create from .gitignore" to automatically create one based on your `.gitignore`
+4. Edit the file to include only the patterns you want to copy (e.g., `node_modules`, `.env.local`)
+
+**Example .worktreeinclude**:
+```
+node_modules
+.env.local
+.cache
+dist
+```
+
+:::tip What Gets Copied
+Only files that match BOTH `.worktreeinclude` AND `.gitignore` patterns are copied. This ensures you're only copying untracked files that you intentionally want to duplicate across worktrees.
+:::
+
+### Home Screen Integration
+
+The worktree selector can be shown or hidden from the home screen:
+
+1. Navigate to Settings → Worktrees
+2. Toggle "Show worktrees in home screen"
+3. When enabled, the selector appears at the top of the chat when you have multiple worktrees
+4. When disabled, you can still manage worktrees from Settings
+
+---
+
+## Tips
+
+- **Organized locations**: Use a consistent location like `~/.roo/worktrees/` for all your worktrees
+- **Descriptive branch names**: Use clear naming like `worktree/feature-name` to identify worktree branches later on
+- **Regular cleanup**: Delete worktrees you're no longer using to save disk space
+- **Commit before deleting**: Always commit and push important changes before deleting a worktree
+- **Use .worktreeinclude**: Set up a `.worktreeinclude` file once and benefit from it for all future worktrees
+- **New windows for parallel work**: Open worktrees in new windows when you want to work on multiple branches simultaneously

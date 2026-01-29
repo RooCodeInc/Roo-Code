@@ -1,0 +1,39 @@
+---
+title: Model Providers
+description: Compare all available model providers for Roo Code. See which providers work with the VS Code extension and Roo Code Cloud at a glance.
+keywords:
+  - model providers
+  - API providers
+  - Roo Code providers
+  - cloud providers
+  - extension providers
+---
+
+import ProviderTable from '@site/src/components/ProviderTable';
+
+# Model Providers
+
+The Roo Code VS Code extension and Roo Code Cloud Agents are highly capable, sophisticated coding agents. While they carry a lot of functionality on their own, they depend on LLM providers to offer the inference needed to complete tasks.
+
+Other tools are intinsically bound by design to a specific provider (like Claude Code → Anthropic Models or Codex → OpenAI models), forcing you to stick with them irrespective of how the landscape changes (which happens fast). Roo on the other hand is **model-agnostic**, allowing you to choose the model that best fits your needs, according to your budget, skill profile, codebase and more.
+
+We support connecting to a wide range of model providers, giving you flexibility in how you access AI models. Some providers work with the VS Code extension, while others are available through Roo Code Cloud Agents.
+
+Learn how to set up your provider in [the Roo Code VS Code extension here](/getting-started/connecting-api-provider).
+
+## Provider Comparison
+
+Here's every provider we support and where you can use them. Click for detailed instructions.
+
+We regularly run evals for all supported models to see how they do against our standard test suite. [See the latest results here](https://roocode.com/evals).
+
+<ProviderTable />
+
+## Overwhelmed by choice?
+
+Yeah, it's a lot.
+
+- **Want it to JustWork™?** Go with the [Roo Code Router](/roo-code-router/overview) for a curated selection and the easiest setup with no API keys required
+- **Want access to many models?** Try [OpenRouter](/providers/openrouter) for a single API to 100+ models
+- **Want to optimize for specific models?** Use the first part provider for each of them (Anthropic, OpenAI, etc)
+- **Looking for local/offline models?** Check out [Ollama](/providers/ollama) or [LM Studio](/providers/lmstudio)

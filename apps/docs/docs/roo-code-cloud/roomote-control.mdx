@@ -1,0 +1,61 @@
+---
+description: Remotely control Roo Code tasks running in VS Code from your browser.
+keywords:
+  - roomote control
+  - remote control
+  - manual override
+  - human in the loop
+  - agent handoff
+  - monitoring
+---
+
+# Roomote Control
+
+Roomote Control lets you remotely control tasks running in your local VS Code instance from the Roo Code Cloud web interface – on desktop or mobile – and far away from your computer.
+
+It creates a bidirectional connection between your local VS Code extension and Roo Code Cloud so you can:
+
+- Keep working on long-running tasks after you step away from your computer
+- Start tasks remotely, including from your phone
+- Answer questions and ensure Roo doesn't get stuck
+- Receive push notifications about task progress and questions from Roo
+- Get the most from the extension without having any code leave your computer
+
+Think of it as a halfway point between autonomous [Cloud Agents](/roo-code-cloud/cloud-agents) and overseeing Roo in the extension.
+
+:::note Things to keep in mind
+- Task Sync must be enabled
+- Roomote Control must be enabled
+- Your IDE must be running and connected to the internet
+- Only one task can be active per workspace at a time – but you can have as many workspaces open as you want (or your computer can handle)
+:::
+
+---
+
+## Getting Started
+
+1. Connect your Roo Code extension to Roo Code Cloud. Follow [Connect the Extension to Cloud](/roo-code-cloud/connect#quickstart) or [Login/Signup](/roo-code-cloud/login).
+2. Ensure Task Sync and Roomote Control are enabled:
+    - In the IDE: Click the cloud icon <Codicon name="cloud" /> and toggle Task Sync first, then Roomote Control in the Cloud panel.
+        <img src="/img/roomote-control/roomote-control-ext.png" alt="How your settings should look" width="340" />
+    - In the web app: Go to Settings › User and toggle Task Sync and Roomote Control. You may also see inline "Enable …" banners on Home/Task pages.
+
+3. Your workspace(s) should appear in the sidebar in the web app.
+
+### Creating a task
+
+1. Click New Task on a connected workspace card in the web app.
+2. Enter a task description and click Start.
+3. Watch progress and interact in real time.
+
+If "New Task" is disabled, enable in Settings › User › Roomote Control.
+
+## Notifications
+
+You can enable Push Notifications in the web app under Settings to be notified of progress on your tasks.
+
+## Permissions & Security
+
+- All communications are encrypted
+- Only the user who created a task can interact with it from the browser (send messages, approve/deny)
+- Team admins can disable Roomote Control for the account

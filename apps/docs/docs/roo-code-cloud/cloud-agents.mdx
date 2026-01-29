@@ -1,0 +1,137 @@
+---
+description: Comprehensive guide to Roo Code Cloud's autonomous agents - specialized AI workers that plan, code, review, and fix software independently.
+keywords:
+  - Cloud Agents
+  - Autonomous Agents
+  - PR Reviewer
+  - PR Fixer
+  - Coder Agent
+  - Planner Agent
+  - Explainer Agent
+  - AI orchestration
+  - hosted execution
+  - credits
+---
+
+# Cloud Agents
+
+Cloud Agents are specialized, autonomous AI workers that run in the cloud.
+
+They upend the way most people think about software development: instead of a highly specialized activity that can only happen in a specialized IDE, it encapsulates the relevant aspects of each part of the process into agents that can run on their own (but will take your guidance if you choose).
+
+In other words: instead of doing all of your learning, investigating, coding, testing and shipping from your IDE, you can delegate work to focused agents which operate as a team. And it's your choice how much you lean into it.
+
+Cloud Agents are available in all Roo Code Cloud plans, including the free one.
+
+Sounds like wishful thinking? Read on and we'll show you how to use them.
+
+---
+
+## How to work with Cloud Agents
+
+We at Roo have been developing Roo Code mostly with Cloud Agents for several months and learned that the following practices lead to the best results:
+
+- **When in doubt, start in the Cloud**: unless it's a very small change, it's usually easier to fire off several tasks to Cloud Agents (especially as you start or finish your day) and check in as they become ready. The Agents are excellent at getting things 50-80% done (often more), doing most of the heavy lifting. You can then iterate from there (be it with Cloud Agents or locally).
+- **Embrace pull requests as the main unit of work**: to ensure Cloud Agents don't break things, they work on isolated branches and deliver work via PRs. They can be created, iterated upon, reviewed and fixed without you ever checking out code locally.
+- **Let go of individual PRs**: be ready to throw stuff away once in a while, since LLMs aren't flawless. Quantity has a quality all of its own, so being generative pays off.
+- **Invest in preview environments**: if your project allows for it (eg it's a web app), set up a preview environment (like [Vercel's Deployments](https://vercel.com/docs/git)) so you can check in on PRs without running them locally.
+- **AI Coding isn't just for codes**: while only people with Engineer in the title may open IDEs in your company, everyone has questions and ideas for your product. Give access to cloud agents to everyone in our team (you don't pay per seat) and encourage people to get answers to their questions directly from them. We've seen customer support, product, design and marketing people understand code behavior and make small (and not-so-small) changes without having to open an IDE.
+- **Develop collective learning in public**: if your team works on Slack, call agent in public channels, so everyone can see their answers and the result of their work. It organically gets people on the same page.
+
+
+## The Cloud Agent Team
+
+The current line up available to your is below. Keep in mind we let you rename them as you please – we really believe in making them part of your team.
+
+### <LucideIcon name="MessageCircleQuestionMark" style={{ position: "relative", top: "2px" }}  /> The Explainer
+**Job:** Technical Educator  
+
+Explains code, concepts, and technical documentation. It helps you understand complex parts of a codebase without needing to read every line.
+
+- **Best for:** Onboarding to a new codebase, understanding legacy code, debugging conceptual issues.
+
+
+### <LucideIcon name="Map" style={{ position: "relative", top: "2px" }}  /> The Planner
+**Job:** Implementation Planning and Architecture
+
+The Planner agent maps out implementation plans and navigates complex technical decisions. It's designed to take a high-level idea or a Product Requirement Document (PRD) and break it down into a thorough, step-by-step implementation plan which can the be given to coding agent (or a human!).
+
+- **Best for:** New feature planning, system architecture design, complex refactoring strategies.
+
+### <LucideIcon name="Code" style={{ position: "relative", top: "2px" }} /> The Coder
+**Job:** Full-scale across all languages 
+
+The Coder agent writes code, creates pull requests, and implements features. It is the workhorse of the platform, capable of handling end-to-end coding tasks.
+
+- **Best for:** Building features, fixing bugs, refactoring components, writing tests.
+
+### <LucideIcon name="GitPullRequest" style={{ position: "relative", top: "2px" }}  /> The PR Reviewer
+**Job:** Code reviews
+
+The PR Reviewer agent automatically provides comprehensive code reviews with actionable comments. It can monitor your repositories and review incoming Pull Requests.
+
+- **Best for:** Automated code quality checks, catching bugs early, enforcing coding standards.
+
+### <LucideIcon name="Wrench" style={{ position: "relative", top: "2px" }}  /> The PR Fixer
+**Job:** Focused fixes
+
+The PR Fixer agent is specialized in resolving issues identified in Pull Requests. It listens for feedback and autonomously implements fixes.
+
+- **Best for:** Resolving PR comments, fixing CI/CD failures, addressing review feedback.
+
+:::info More agents coming
+While this cast of characters can get most jobs done, user feedback informs the development of new agents. We have a few [currently in development](#upcoming-agents)
+:::
+---
+
+## How Cloud Agents Work
+
+### General workflow
+
+1. **Start:** Agents can be called:
+    - Manually via [the Web UI](https://app.roocode.com) (New Task button)
+      <img src="/img/cloud-agents/cloud-agent-call-web.png" alt="New task button" width="400" />
+
+    - Automatically via [GitHub](/roo-code-cloud/github-integration) (e.g., new PR opened)
+      <img src="/img/cloud-agents/cloud-agent-call-gh-auto.png" alt="PR Review comments" width="400" />
+
+    - Manually from [GitHub](/roo-code-cloud/github-integration) (`@Roomote` mention).
+      <img src="/img/cloud-agents/cloud-agent-call-gh-mention.png" alt="Github comment @mention" width="400" />
+
+    - Manually manually via [Slack Integration](/roo-code-cloud/slack-integration) (`@Roomote` mention).
+      <img src="/img/cloud-agents/cloud-agent-call-slack.png" alt="New task button" width="400" />
+
+2. **Run:** The agent spins up a secure, isolated cloud environment to perform its task. It clones your repository, analyzes the context, and executes the required actions.
+3. **Complete:**: Once the task is done, the agent reports back with the results in the same place where you started.
+4. **Control:** You can intervene at any time by going to the task.
+5. **Look back:** all tasks are accessible in your Roo Code Cloud account.
+
+### Credits & Usage
+
+Cloud Agents consume **Cloud Credits**. Usage is measured based on the model used and the duration of the task.
+- **Free Tier:** Includes access to free models for standard tasks.
+- **Pro Tier:** Unlocks concurrent agent execution and priority queueing.
+
+There’s a [pricing page](https://roocode.com/pricing) if you want to learn more.
+
+### Settings
+
+The specific set of configuration options for each agent type varies (and are accessible in the ⚙️ icon in the agent page), but the main ones you'll find are:
+
+- **Name:** which is how the agent is referenced in the app.
+- **Model:** the model powering inference for that agent. You can mix and match providers and models across your agent team.
+- **Repositories:** the repos the agent has access to. Keep in mind we'll only lists the one you allowed when connecting to Github. If any are missing, Update your Github connection.
+- **PR Creation Action:** for agents that make code changes, you can choose if they do it by creating a full PR, a draft PR or just pushing a branch.
+- **Additional guidance:** any specific instructions for that agent, like things for the Reviewer to pay more attention to, coding practices for the Coder to follow, etc. It's a free text box, so you can type whatever you want, but keep in mind too many instructions may reduce the quality of results, so keep it concise and focused.
+
+
+Most people will only have one agent of each type, but you may want to more tha one instance to have different configurations, especially model (main agent with good model, another agent with expensive model) or custom instructions (for specific repositories).
+
+## Upcoming Agents
+
+- **Improver:** a "meta agent" which analyzes agent feedback and PR reviews to maintain and improve [custom instructions](/features/custom-instructions#what-are-custom-instructions).
+- **Security Auditor:** conducts security audits and identifies vulnerabilities regularly, across the codebase (and not just individual PRs)
+- **Documentation Writer:** a tech writer that understands your code and writes actionable user-facing documentation.
+- **Translator:** translates strings with accuracy and following your brand voice.
+
+[Write us](mailto:support@roocode.com) if you're interested in trying them out in Beta or if you have other suggestions.

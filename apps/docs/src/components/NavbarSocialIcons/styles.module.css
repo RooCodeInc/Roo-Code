@@ -1,0 +1,33 @@
+.socialIcons {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+/* Hide social icons on mobile */
+@media (max-width: 996px) {
+	.socialIcons {
+		display: none;
+	}
+}
+
+.socialLink {
+	display: flex;
+	align-items: center;
+	color: var(--ifm-color-gray-400, #9ca3af);
+	text-decoration: none;
+	font-size: 0.875rem;
+	font-weight: 500;
+	transition: color 0.2s ease;
+	white-space: nowrap;
+}
+
+.socialLink:hover {
+	color: var(--ifm-color-gray-200, #e5e7eb);
+	text-decoration: none;
+}
+
+.socialLink svg {
+	width: 1rem;
+	height: 1rem;
+}

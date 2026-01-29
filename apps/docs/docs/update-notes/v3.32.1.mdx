@@ -1,0 +1,31 @@
+---
+description: Improves reliability for OpenAI Native and native tool protocol by fixing reasoning handling, duplicate tool blocks, and cancellation behavior.
+keywords:
+  - roo code 3.32.1
+  - new features
+  - bug fixes
+image: /img/v3.32.1/v3.32.1.png
+---
+
+# Roo Code 3.32.1 Release Notes (2025-11-14)
+
+This patch improves reliability for OpenAI Native and native tool protocol by fixing reasoning handling, duplicate tool blocks, and cancellation behavior.
+
+<img src="/img/v3.32.1/v3.32.1.png" alt="Roo Code v3.32.1 Release" width="600" />
+
+## Bug Fixes
+
+* **Keep OpenAI Native reasoning stable during condensing** ([#9263](https://github.com/RooCodeInc/Roo-Code/pull/9263))  
+  Keeps encrypted reasoning blocks paired with the assistant messages that produced them so OpenAI Native condensing no longer throws errors and long-running tasks with reasoning stay stable even as history is trimmed.
+
+* **Prevent duplicate tool_result blocks for read_file in native protocol** ([#9272](https://github.com/RooCodeInc/Roo-Code/pull/9272))  
+  Ensures read_file emits exactly one tool_result per tool_call_id in native protocol, preventing 400 errors while still surfacing clear error messages to both the agent and the user.
+
+* **Fix duplicate tool blocks causing "tool has already been used" errors** ([#9275](https://github.com/RooCodeInc/Roo-Code/pull/9275))  
+  Stops XML protocol runs from merging duplicate tool blocks into assistant messages so each tool block executes only once per turn and tool-driven tasks no longer get stuck behind false “tool has already been used” errors.
+
+* **Make OpenAI Native cancellation stop streaming immediately** ([#9276](https://github.com/RooCodeInc/Roo-Code/pull/9276))  
+  Adds an abort controller so cancelling an OpenAI Native request stops streaming promptly, avoiding extra tokens after cancellation and reducing wasted usage.
+
+* **Disable XML parser for native tool protocol** ([#9277](https://github.com/RooCodeInc/Roo-Code/pull/9277))  
+  Bypasses XML parsing when toolProtocol is set to native and relies on structured tool_call chunks instead, avoiding mis-parsed XML-like snippets and making native tool runs more reliable—especially for models that sometimes mix formats.

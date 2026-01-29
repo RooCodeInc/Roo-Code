@@ -1,0 +1,32 @@
+---
+description: This release introduces free Gemini access via OAuth, fixes several bugs, and improves the overall user experience.
+---
+
+# Roo Code 3.23.9 Release Notes (2025-07-14)
+
+This release adds Windows support for Claude Code, introduces configurable command timeouts, and fixes critical workflow issues.
+
+## Windows Support
+
+We've added native Windows support for the Claude Code provider (thanks SannidhyaSah, kwk9892!) ([#5615](https://github.com/RooCodeInc/Roo-Code/pull/5615)):
+
+- **Fixed Windows Compatibility**: Claude Code provider no longer gets stuck on Windows systems
+- **Improved Input Handling**: Uses stdin-based input to eliminate command-line length limitations
+- **Cross-Platform**: Works reliably across Windows, macOS, and Linux
+
+## Command Execution Improvements
+
+We've added configurable timeout settings for command execution:
+
+- **Timeout Control**: Set timeouts from 0-600 seconds to prevent long-running commands from blocking workflows
+- **Clear Error Messages**: Commands that timeout display helpful error messages
+- **Better Visual Feedback**: Timeout errors now appear in red for better visibility
+
+## Bug Fixes
+
+* **Directory Tracking**: Fixed command execution directory tracking - Roo Code now properly maintains awareness of the current working directory when executing commands, preventing issues where subsequent commands would run in the wrong location after using `cd` commands (thanks chris-garrett!) ([#5667](https://github.com/RooCodeInc/Roo-Code/pull/5667))
+* **Embedding Model Switching**: Fixed vector dimension mismatch errors when switching between embedding models with different dimensions, allowing successful transitions from high-dimensional models to lower-dimensional models like Google Gemini (thanks hubeizys!) ([#5617](https://github.com/RooCodeInc/Roo-Code/pull/5617))
+
+## Provider Updates
+
+* **Google Gemini**: Added support for Google's new gemini-embedding-001 model with improved performance and higher dimensional embeddings (3072 vs 768) for better codebase indexing and search (thanks daniel-lxs!) ([#5698](https://github.com/RooCodeInc/Roo-Code/pull/5698))

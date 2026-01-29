@@ -1,0 +1,55 @@
+---
+description: Combined notes for Roo Code 3.31, highlighting task UX refinements, better diagnostics, and key stability fixes.
+keywords:
+  - roo code 3.31
+  - release notes
+  - combined updates
+  - bug fixes
+  - stability
+image: /img/v3.31.0/v3.31.0.png
+---
+
+# Roo Code 3.31 Release Notes (2025-11-08)
+
+Roo Code 3.31 focuses on a smoother task and to-do experience, clearer diagnostics, safer routing for custom endpoints, and more resilient long-running generations.
+
+<img src="/img/v3.31.0/v3.31.0.png" alt="Roo Code v3.31 Release" width="600" />
+
+## Integrated task header and to-do list
+
+The task header and to-do list now work together so you can see progress at a glance without juggling extra UI:
+
+- Integrated to-dos directly into the task header so active work is always visible. (From [#9096](https://github.com/RooCodeInc/Roo-Code/pull/9096))
+- Show only relevant to-do changes in chat instead of noisy full-list updates, making progress easier to track. (From [#9096](https://github.com/RooCodeInc/Roo-Code/pull/9096))
+- Simplified header layout to reduce distractions while keeping key controls in reach. (From [#9096](https://github.com/RooCodeInc/Roo-Code/pull/9096))
+
+## QOL Improvements
+
+- **Less caffeinated welcome animation** ([#9104](https://github.com/RooCodeInc/Roo-Code/pull/9104)): Smooths the Roo hover animation so it is less distracting during long sessions while keeping the interface responsive.
+- **Auto-approval is now handled by Task** ([#9157](https://github.com/RooCodeInc/Roo-Code/pull/9157)): Centralizes approval logic for commands, tools, MCP, and subtasks, reducing blocked prompts and making safeguards clearer.
+- **Consistent rounded buttons across the UI** ([#9150](https://github.com/RooCodeInc/Roo-Code/pull/9150)): New Button component with variants/sizes delivers a cleaner, more predictable interface.
+- **Batched settings updates** ([#9165](https://github.com/RooCodeInc/Roo-Code/pull/9165)): Applies multiple setting changes in one go, making saves faster and reducing UI flicker across Settings, Auto Approve, Command Execution, and MCP toggles.
+- **README badges render reliably** ([#9200](https://github.com/RooCodeInc/Roo-Code/pull/9200)): Switched to badgen.net so badges are consistently visible; Installs and Rating are clear at a glance.
+
+## Bug Fixes
+
+- **Respect custom OpenRouter-compatible URLs everywhere** ([#8951](https://github.com/RooCodeInc/Roo-Code/pull/8951)): Ensures all OpenRouter-related operations (model lists, pricing, image generation, CSP checks) consistently use your configured custom base URL for better privacy, compliance, and predictable billing (thanks sstraus!).
+- **Prevent crashes from null streaming chunks** ([#9105](https://github.com/RooCodeInc/Roo-Code/pull/9105)): Handles provider responses with null choices arrays correctly, improving stability for long-running generations across MiniMax M2 Stable and other OpenAI-compatible endpoints.
+- **Stop unwanted context condensing on settings save** ([#9108](https://github.com/RooCodeInc/Roo-Code/pull/9108)): Saving settings no longer triggers early context condensing when your provider/model is unchanged, so active tasks retain history until thresholds are truly reached.
+- **Cloud/headless: prevent command_output from blocking** ([#9152](https://github.com/RooCodeInc/Roo-Code/pull/9152)): Non‑blocking behavior avoids stalled tasks and intermittent timeouts.
+- **Model switch re‑applies selected profile** ([#9181](https://github.com/RooCodeInc/Roo-Code/pull/9181)): Ensures task configuration stays in sync when switching providers/models.
+- **API Profiles apply immediately when provider/model unchanged** ([#9210](https://github.com/RooCodeInc/Roo-Code/pull/9210)): Updates headers, baseUrl, service tier, and reasoning budgets without requiring a model change.
+- **Auto‑approval honors MCP server state** ([#9199](https://github.com/RooCodeInc/Roo-Code/pull/9199)): Restores expected tool auto‑approval behavior (thanks bozoweed!).
+- **Issue Fixer reliability via REST + ProjectsV2** ([#9207](https://github.com/RooCodeInc/Roo-Code/pull/9207)): Resolves sync errors and restores dependable triage.
+- **OpenAI (native) encrypted reasoning handling** ([#9231](https://github.com/RooCodeInc/Roo-Code/pull/9231)): Includes encrypted reasoning only when a reasoning effort is set and enforces medium‑only verbosity for gpt‑5‑chat‑latest to prevent invalid parameter errors (thanks politsin!).
+- **Roo Anthropic input token normalization** ([#9224](https://github.com/RooCodeInc/Roo-Code/pull/9224)): Prevents double‑counting cached tokens so usage metrics, cost estimates, and context calculations are accurate across providers.
+
+## Misc Improvements
+
+- **Roo Code Cloud error logging** ([#9098](https://github.com/RooCodeInc/Roo-Code/pull/9098)): Captures richer context for failed requests (status codes, response bodies, and request details), making it easier to understand and resolve provider and configuration issues.
+- **IPC: send messages to the current task** ([#9149](https://github.com/RooCodeInc/Roo-Code/pull/9149)): Programmatically post text and images into an active task for automations and richer context.
+- **Context management terminology** ([#9206](https://github.com/RooCodeInc/Roo-Code/pull/9206)): Rename “sliding window” to “context management” and unify handling under a single entry point for clearer behavior and documentation alignment.
+
+## Provider Updates
+
+- **Stateless conversation continuity via OpenAI Responses API** ([#9203](https://github.com/RooCodeInc/Roo-Code/pull/9203)): Preserves context locally with encrypted reasoning items while requests remain stateless, improving privacy and reliability and simplifying behavior (no previous_response_id).

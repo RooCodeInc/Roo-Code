@@ -1,0 +1,26 @@
+---
+description: This release resolves a race condition, enhances auto-approve logic, and adds Indonesian translation support.
+---
+
+# Roo Code 3.20.3 Release Notes (2025-06-14)
+
+This release resolves a race condition, enhances auto-approve logic, and adds Indonesian translation support.
+
+## Bug Fixes
+
+*   **Diff Editor**: Resolve diff editor race condition in multi-monitor setups (thanks daniel-lxs!) ([#4578](https://github.com/RooCodeInc/Roo-Code/pull/4578))
+*   **Auto-Approve**:
+    *   Prevent auto-approving edits of configuration files (thanks mrubens!) ([#4667](https://github.com/RooCodeInc/Roo-Code/pull/4667))
+    *   Adjust searching outside of the workspace to respect the auto-approve checkbox (thanks mrubens!) ([#4670](https://github.com/RooCodeInc/Roo-Code/pull/4670))
+    *   Make listing tools respect auto-approve settings for outside of the workspace (thanks mrubens!) ([#4682](https://github.com/RooCodeInc/Roo-Code/pull/4682))
+*   **File Read**: Fix errant `maxReadFileLine` default (thanks mrubens!) ([#4683](https://github.com/RooCodeInc/Roo-Code/pull/4683))
+*   **Multi-file Diff**: Fix multi-file diff error handling and UI feedback (thanks daniel-lxs!) ([#4674](https://github.com/RooCodeInc/Roo-Code/pull/4674))
+*   **Prompt History**: Improve prompt history navigation to not interfere with text editing (thanks daniel-lxs!) ([#4677](https://github.com/RooCodeInc/Roo-Code/pull/4677))
+
+## Misc Improvements
+
+*   **Localization**:
+    *   Add Indonesian translation support (thanks chrarnoldus!) ([#4672](https://github.com/RooCodeInc/Roo-Code/pull/4672))
+    *   Update Indonesian locale files for chat and settings (thanks daniel-lxs!) ([#4675](https://github.com/RooCodeInc/Roo-Code/pull/4675))
+    *   Fix inconsistencies in markdown file i18n (thanks mrubens!) ([#4681](https://github.com/RooCodeInc/Roo-Code/pull/4681))
+*   **Types**: Move marketplace types to `@roo-code/types` (thanks jr!) ([#4671](https://github.com/RooCodeInc/Roo-Code/pull/4671))

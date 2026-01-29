@@ -1,0 +1,34 @@
+---
+description: This patch release adds free Black Forest Labs image generation models on Roo Code Cloud and OpenRouter and improves reliability when using native MCP tools with context condensing.
+keywords:
+  - roo code 3.34.4
+  - black forest labs flux 2
+  - image generation
+  - mcp native tools
+  - context condensing
+image: /img/v3.34.4/v3.34.4.png
+---
+
+# Roo Code 3.34.4 Release Notes (2025-11-25)
+
+This patch release adds free Black Forest Labs image generation models on Roo Code Cloud and OpenRouter, and makes native MCP tools more reliable by preserving tool names and tool_use blocks during context condensing.
+
+<img src="/img/v3.34.4/v3.34.4.png" alt="Roo Code v3.34.4 Release" width="600" />
+
+## Black Forest Labs image generation on Roo Code Cloud
+
+New Black Forest Labs FLUX.2 models are now wired through Roo Code’s image pipeline for Roo Code Cloud image generation ([#9587](https://github.com/RooCodeInc/Roo-Code/pull/9587)):
+
+- **Free image generation on Roo Code Cloud**: Use the `bfl/flux-2-pro:free` model on Roo Code Cloud for high-quality image generation without worrying about unexpected image charges.
+- **Native images API support**: The `images_api` image generation method is supported for compatible models, improving parity with provider-native image APIs and giving better forwards compatibility as providers add new features.
+
+> **📚 Documentation**: See [Image Generation](/features/image-generation) for how to use image generation in Roo Code. 
+
+## Bug Fixes
+
+- **Native MCP tool names preserved in history**: Native mode now keeps the real dynamic MCP tool names (such as `mcp_serverName_toolName`) in the API history instead of teaching the model a fake `use_mcp_tool` name, so follow-up calls pick the right tools and tool suggestions stay consistent ([#9559](https://github.com/RooCodeInc/Roo-Code/pull/9559)).
+- **Native tools condensing keeps tool_use context**: When condensing long conversations that use native tools, required `tool_use` and `tool_result` blocks are preserved in the summary message, preventing 400 errors and avoiding lost context during follow-up turns ([#9582](https://github.com/RooCodeInc/Roo-Code/pull/9582)).
+
+## Provider Updates
+
+- **Black Forest Labs models on OpenRouter**: Adds Black Forest Labs FLUX.2 Flex and FLUX.2 Pro image generation models via OpenRouter, giving you additional high-quality options when you prefer to use your OpenRouter account for image generation ([#9589](https://github.com/RooCodeInc/Roo-Code/pull/9589)).

@@ -1,0 +1,53 @@
+---
+sidebar_label: Sign in from the Extension
+description: Learn how to connect your Roo Code extension to Roo Code Cloud for task syncing, online history, and collaboration features.
+keywords:
+  - Roo Code Cloud login
+  - authentication
+  - connect account
+  - sign up
+  - GitHub login
+---
+
+import Codicon from '@site/src/components/Codicon';
+
+# Login/Signup
+
+Connect your Roo Code extension to Roo Code Cloud to sync your prompts, access online task history, and enable sharing and collaboration features.
+
+## Getting Started
+
+To connect your extension to Roo Code Cloud:
+
+1. Go to the  **Cloud** <Codicon name="cloud" /> tab in the top right corner of the Roo Code extension.
+   <img src="/img/login/login-0.png" alt="Tab location in the extension" width="400" />
+2. Click on the big blue button (and click on "Open" if asked).
+3. Sign up for or sign in to your account, using the auth method of your choice
+4. Review and accept the terms of service and privacy policy
+5. The next page will attempt to redirect you back to VS Code, accept it
+   <img src="/img/login/login-3.png" alt="Account creation confirmation popup" width="500" />
+6. You'll be logged in
+
+## Troubleshooting
+
+If you're not taken to your IDE, from this screen:
+
+<img src="/img/login/login-11.png" alt="IDE selector for VS Code forks" width="500" />
+
+You can:
+- Click on the logo for your IDE (eg VS Code, Trae, Cursor) and see if the popup appears, or
+- Copy the URL from the box below and, in the extension, click on "Having Trouble?" and paste it in
+
+Your Roo Code VS Code extension is now connected to Roo Code Cloud and ready to sync your data and enable collaboration features.
+
+If you never even see the screen above, go back to the extension, click on "Start Over" and try again. It should work now.
+
+## Authentication Security
+
+Roo Code Cloud uses industry-standard OAuth with GitHub and Google, plus traditional email authentication to ensure secure access to your account:
+
+- **OAuth 2.0 Protocol** - Secure authentication through trusted providers (GitHub and Google)
+- **No Password Storage** - When using OAuth, Roo Code never stores your GitHub or Google passwords
+- **Encrypted Connections** - All authentication requests use HTTPS encryption
+- **Token-Based Access** - Secure tokens manage your session without exposing credentials
+- **Email Authentication** - Traditional email/password option with secure password hashing

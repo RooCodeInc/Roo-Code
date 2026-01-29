@@ -1,0 +1,75 @@
+---
+description: Roo Code 3.35 introduces resilient subtasks that persist across reloads and massive native tool calling expansion across 15+ providers.
+keywords:
+  - roo code 3.35
+  - subtasks
+  - native tool calling
+  - provider updates
+image: /img/v3.35.0/v3.35.0.png
+---
+
+# Roo Code 3.35 Release Notes (Combined)
+
+This release introduces metadata-driven subtasks that never lose their parent connection, plus native tool calling support for 15+ providers.
+
+<img src="/img/v3.35.0/v3.35.0.png" alt="Roo Code v3.35 Release" width="600" />
+
+## Metadata-Driven Subtasks
+
+The connection between subtasks and parent tasks no longer breaks when you exit a task, crash, reboot, or reload VS Code ([#9090](https://github.com/RooCodeInc/Roo-Code/pull/9090)). Subtask relationships are now controlled by metadata, so the parent-child link persists through any interruption.
+
+## Native Tool Calling Expansion
+
+Native tool calling support has been expanded to 15+ providers:
+
+* Bedrock ([#9698](https://github.com/RooCodeInc/Roo-Code/pull/9698))
+* Cerebras ([#9692](https://github.com/RooCodeInc/Roo-Code/pull/9692))
+* Chutes ([#9715](https://github.com/RooCodeInc/Roo-Code/pull/9715))
+* DeepInfra ([#9691](https://github.com/RooCodeInc/Roo-Code/pull/9691))
+* DeepSeek & Doubao ([#9671](https://github.com/RooCodeInc/Roo-Code/pull/9671))
+* Groq ([#9673](https://github.com/RooCodeInc/Roo-Code/pull/9673))
+* LiteLLM ([#9719](https://github.com/RooCodeInc/Roo-Code/pull/9719))
+* Ollama ([#9696](https://github.com/RooCodeInc/Roo-Code/pull/9696))
+* OpenAI-compatible: Fireworks, SambaNova, Featherless, IO Intelligence ([#9676](https://github.com/RooCodeInc/Roo-Code/pull/9676))
+* Requesty ([#9672](https://github.com/RooCodeInc/Roo-Code/pull/9672))
+* Unbound ([#9699](https://github.com/RooCodeInc/Roo-Code/pull/9699))
+* Vercel AI Gateway ([#9697](https://github.com/RooCodeInc/Roo-Code/pull/9697))
+* Vertex Gemini ([#9678](https://github.com/RooCodeInc/Roo-Code/pull/9678))
+* xAI with new Grok 4 Fast models ([#9690](https://github.com/RooCodeInc/Roo-Code/pull/9690))
+
+## QOL Improvements
+
+* **Improved Onboarding**: Simplified provider settings during initial setup—advanced options remain in Settings ([#9709](https://github.com/RooCodeInc/Roo-Code/pull/9709))
+* **Cleaner Toolbar**: Modes and MCP settings consolidated into the main settings panel for better discoverability ([#9710](https://github.com/RooCodeInc/Roo-Code/pull/9710))
+* **Tool Format in Environment Details**: Models now receive tool format information, improving behavior when switching between XML and native tools ([#9661](https://github.com/RooCodeInc/Roo-Code/pull/9661))
+* **Debug Buttons**: View API and UI history with new debug buttons (requires `roo-cline.debug: true`) ([#9684](https://github.com/RooCodeInc/Roo-Code/pull/9684))
+* **Grok Code Fast Default**: Native tools now default for xai/grok-code-fast-1 ([#9717](https://github.com/RooCodeInc/Roo-Code/pull/9717))
+* **New Welcome View**: Simplified welcome view with consolidated components for a cleaner, more consistent onboarding experience ([#9741](https://github.com/RooCodeInc/Roo-Code/pull/9741))
+* **Simplified write_to_file Tool**: The `line_count` parameter has been removed from the write_to_file tool, making tool calls cleaner and reducing potential errors from incorrect line counts ([#9667](https://github.com/RooCodeInc/Roo-Code/pull/9667))
+* **OpenRouter Embeddings Provider Routing**: Select specific routing providers for OpenRouter embeddings in code indexing settings, enabling cost optimization since providers can vary by 4-5x in price for the same embedding model (thanks SannidhyaSah!) ([#9693](https://github.com/RooCodeInc/Roo-Code/pull/9693))
+* **CloudView Interface Updates**: Cleaner UI with refreshed marketing copy, updated button styling with rounded corners for a more modern look ([#9776](https://github.com/RooCodeInc/Roo-Code/pull/9776))
+
+## Bug Fixes
+
+* **Parallel Tool Calls Fix**: Preserve tool_use blocks in summary during context condensation, fixing 400 errors with Anthropic's parallel tool calls feature (thanks SilentFlower!) ([#9714](https://github.com/RooCodeInc/Roo-Code/pull/9714))
+* **Navigation Button Wrapping**: Prevent navigation buttons from wrapping on smaller screens ([#9721](https://github.com/RooCodeInc/Roo-Code/pull/9721))
+* **Task Delegation Tool Flush**: Fixes 400 errors that occurred when using native tool protocol with parallel tool calls (e.g., `update_todo_list` + `new_task`). Pending tool results are now properly flushed before task delegation ([#9726](https://github.com/RooCodeInc/Roo-Code/pull/9726))
+* **Malformed Tool Call Fix**: Fixed a regression where malformed native tool calls would cause Roo Code to hang indefinitely. Tool calls now proceed to validation which catches and reports the missing parameters properly ([#9758](https://github.com/RooCodeInc/Roo-Code/pull/9758))
+
+## Misc Improvements
+
+* **Model-specific Tool Customization**: Configure `excludedTools` and `includedTools` per model for fine-grained tool availability control ([#9641](https://github.com/RooCodeInc/Roo-Code/pull/9641))
+* **apply_patch Tool**: New native tool for file editing using simplified diff format with fuzzy matching and file rename support ([#9663](https://github.com/RooCodeInc/Roo-Code/pull/9663))
+* **search_and_replace Tool**: Batch text replacements with partial matching and error recovery ([#9549](https://github.com/RooCodeInc/Roo-Code/pull/9549))
+* **Better IPC Error Logging**: Error logs now display detailed structured data instead of unhelpful `[object Object]` messages, making debugging extension issues easier ([#9727](https://github.com/RooCodeInc/Roo-Code/pull/9727))
+* **Stealth Model Privacy**: Models tagged with "stealth" in the Roo API now receive vendor confidentiality instructions in their system prompt, enabling white-label or anonymous model experiences ([#9742](https://github.com/RooCodeInc/Roo-Code/pull/9742))
+
+## Provider Updates
+
+* **Model Default Temperatures**: Models can now specify their own default temperature settings. Temperature precedence is: user's custom setting → model's default → system default ([#9734](https://github.com/RooCodeInc/Roo-Code/pull/9734))
+* **Roo Provider Native Tools**: Models with the `default-native-tools` tag automatically use native tool calling by default ([#9735](https://github.com/RooCodeInc/Roo-Code/pull/9735))
+* **LiteLLM Native Tool Support**: All LiteLLM models now assume native tool support by default, improving tool compatibility ([#9736](https://github.com/RooCodeInc/Roo-Code/pull/9736))
+* **App Version Tracking**: The Roo provider now sends app version information with API requests for improved request tracking ([#9730](https://github.com/RooCodeInc/Roo-Code/pull/9730))
+* **z.ai GLM Model Fix**: Removed misleading reasoning toggle UI for GLM-4.5 and GLM-4.6 models on z.ai provider, as these models don't support think/reasoning data for coding agents ([#9752](https://github.com/RooCodeInc/Roo-Code/pull/9752))
+* **Roo Provider Tool Compatibility**: Improved tool conversion for OpenAI-compatible API endpoints, ensuring tools work correctly with OpenAI-style request formats ([#9769](https://github.com/RooCodeInc/Roo-Code/pull/9769))
+* **MiniMax M2 Free Tier Default**: MiniMax M2 model now defaults to the free tier when using OpenRouter ([#9778](https://github.com/RooCodeInc/Roo-Code/pull/9778))

@@ -1,0 +1,18 @@
+---
+description: Fixes Claude Sonnet 4.5 model identifiers for AWS Bedrock and OpenRouter to prevent model ID errors.
+keywords:
+  - roo code 3.28.11
+  - bug fixes
+  - bedrock
+  - claude sonnet 4.5
+  - openrouter
+---
+
+# Roo Code 3.28.11 Release Notes (2025-09-29)
+
+This patch fixes model identifier issues for Claude Sonnet 4.5 across AWS Bedrock and OpenRouter, so prompts run reliably without ID or selection errors.
+
+## Bug Fixes
+
+* AWS Bedrock: Use the correct Claude Sonnet 4.5 model ID so prompts run without “model not found” errors (thanks sunhyung!) ([#8372](https://github.com/RooCodeInc/Roo-Code/pull/8372))
+* OpenRouter: Correct Claude Sonnet 4.5 model ID format to align with naming and prevent selection/API mismatches ([#8373](https://github.com/RooCodeInc/Roo-Code/pull/8373))

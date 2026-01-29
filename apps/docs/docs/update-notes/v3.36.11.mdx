@@ -1,0 +1,29 @@
+---
+description: Native tool calling now enabled by default for Claude Code, Z.ai, and OpenAI Compatible providers, plus several Bedrock and MCP compatibility fixes.
+keywords:
+  - roo code 3.36.11
+  - native tool calling
+  - claude code provider
+  - z.ai
+  - openai compatible
+  - bedrock fixes
+image: /img/v3.36.11/v3.36.11.png
+---
+
+# Roo Code 3.36.11 Release Notes (2025-12-17)
+
+This release brings native tool calling to more providers by default and fixes several compatibility issues with Bedrock and MCP tools.
+
+<img src="/img/v3.36.11/v3.36.11.png" alt="Roo Code v3.36.11 Release" width="600" />
+
+## Native Tool Calling Enhancements
+
+Native tool calling is now enabled by default for three additional providers: Claude Code, Z.ai models (GLM-4.5 series, GLM-4.6, etc.), and OpenAI Compatible providers. This provides more direct and efficient communication with these models, improving reliability and performance when using tools ([#10077](https://github.com/RooCodeInc/Roo-Code/pull/10077), [#10158](https://github.com/RooCodeInc/Roo-Code/pull/10158), [#10159](https://github.com/RooCodeInc/Roo-Code/pull/10159)).
+
+## Bug Fixes
+
+* **MCP Tool Schema Normalization**: Fixes an issue where MCP tool schemas could fail validation when used with Amazon Bedrock or OpenAI in strict mode by normalizing JSON Schema formats ([#10148](https://github.com/RooCodeInc/Roo-Code/pull/10148))
+* **MCP Tool Names with Bedrock**: Fixes validation errors when using MCP servers with dots or colons in their names (like `awslabs.aws-documentation-mcp-server`) with Amazon Bedrock ([#10152](https://github.com/RooCodeInc/Roo-Code/pull/10152))
+* **Bedrock Task Resumption**: Fixes an error when resuming tasks with Amazon Bedrock when native tools are disabled, where users would encounter `The toolConfig field must be defined` errors ([#10155](https://github.com/RooCodeInc/Roo-Code/pull/10155))
+* **Roo Code Cloud Model Refresh**: Fixes an issue where authentication-required models (like `google/gemini-3-flash`) wouldn't appear immediately after logging into Roo Code Cloud ([#10156](https://github.com/RooCodeInc/Roo-Code/pull/10156))
+* **AWS GovCloud and China Region Support**: Fixes an issue where users in AWS GovCloud and China regions couldn't use custom ARNs with the Bedrock provider (thanks wisestmumbler!) ([#10157](https://github.com/RooCodeInc/Roo-Code/pull/10157))

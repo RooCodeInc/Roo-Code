@@ -2,17 +2,30 @@
 	"$schema": "https://turbo.build/schema.json",
 	"tasks": {
 		"lint": {},
-		"check-types": {},
+		"check-types": {
+			"dependsOn": ["^build"]
+		},
 		"test": {
-			"dependsOn": ["@roo-code/types#build"]
+			"dependsOn": ["^build"]
 		},
 		"format": {},
 		"clean": {
 			"cache": false
 		},
 		"build": {
-			"outputs": ["dist/**"],
-			"inputs": ["src/**", "package.json", "tsconfig.json", "tsup.config.ts", "vite.config.ts"]
+			"dependsOn": ["^build"],
+			"outputs": ["dist/**", "build/**", ".docusaurus/**"],
+			"inputs": [
+				"src/**",
+				"docs/**",
+				"static/**",
+				"package.json",
+				"tsconfig.json",
+				"tsup.config.ts",
+				"vite.config.ts",
+				"docusaurus.config.ts",
+				"sidebars.ts"
+			]
 		},
 		"watch:tsc": {
 			"cache": false

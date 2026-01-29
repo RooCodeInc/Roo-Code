@@ -1,0 +1,34 @@
+---
+description: This release adds image editing capabilities to the image generation tool and improves developer experience.
+keywords:
+  - roo code 3.26.3
+  - image editing
+  - image generation
+image: /img/v3.26.3/v3.26.3.png
+---
+
+# Roo Code 3.26.3 Release Notes (2025-08-29)
+
+This release adds image editing capabilities to the image generation tool and improves developer experience.
+
+<img src="/img/v3.26.3/v3.26.3.png" alt="Roo Code v3.26.3 Release" width="600" />
+## Image Editing with Input Images
+
+We've enhanced the image generation tool with the ability to edit and transform existing images ([#7525](https://github.com/RooCodeInc/Roo-Code/pull/7525)):
+
+- **Transform Existing Images**: Apply artistic styles, convert photos to paintings, or create variations of existing artwork
+- **Style Transfer**: Convert images into watercolor, oil painting, sketch, or other artistic styles
+- **Image Enhancement**: Upscale and enhance existing images to higher resolution while maintaining composition
+- **Creative Editing**: Use text prompts to modify specific aspects of an image while preserving the rest
+
+The tool now accepts an optional `image` parameter for transforming existing images in your workspace. Supported input formats include PNG, JPG, JPEG, GIF, and WEBP.
+
+> **📚 Documentation**: See [Image Generation - Editing Existing Images](/features/image-generation#editing-existing-images) for detailed usage and transformation examples.
+
+## Bug Fixes
+
+* **Image Generation Settings**: Fixed issue where the saved API key would clear when switching modes ([#7536](https://github.com/RooCodeInc/Roo-Code/pull/7536))
+
+## Misc Improvements
+
+* **Test Debugging**: Console logs now visible in tests when using the --no-silent flag (thanks hassoncs!) ([#7467](https://github.com/RooCodeInc/Roo-Code/pull/7467))

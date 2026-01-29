@@ -1,0 +1,39 @@
+---
+description: Roo Code 3.36.7 simplifies Auto-Approve settings, improves OpenRouter behavior for OpenAI models, and expands Amazon Bedrock options.
+keywords:
+  - roo code 3.36.7
+  - auto-approve
+  - openrouter
+  - bedrock
+  - bug fixes
+---
+
+# Roo Code 3.36.7 Release Notes (2025-12-15)
+
+This release simplifies Auto-Approve settings, improves OpenRouter behavior for OpenAI models, and expands Amazon Bedrock options.
+
+## OpenRouter tool support for OpenAI models
+
+When you use **OpenAI models via OpenRouter**, Roo now makes tool usage more predictable by explicitly enabling `apply_patch` and avoiding file-writing tools that aren’t supported in that context ([#10082](https://github.com/RooCodeInc/Roo-Code/pull/10082)).
+
+This reduces friction when tool availability differs between providers/models and helps keep edits moving without unexpected interruptions.
+
+## Simplified Auto-Approve settings
+
+Auto-Approve no longer has separate toggles for **Retry failed requests** and **Update todo list**—when Auto-Approve is enabled, retries and todo updates run automatically ([#10062](https://github.com/RooCodeInc/Roo-Code/pull/10062)).
+
+If you relied on those individual switches, this reduces configuration overhead and makes the Auto-Approve behavior easier to understand.
+
+## Bug Fixes
+
+* **More consistent tool validation for modes**: Improves reliability by consolidating mode tool-availability checks in one place ([#10089](https://github.com/RooCodeInc/Roo-Code/pull/10089))
+
+## Provider Updates
+
+* **More detailed OpenRouter error reporting**: Captures more provider-specific error metadata so failures are easier to diagnose ([#10073](https://github.com/RooCodeInc/Roo-Code/pull/10073))
+* **AWS Bedrock service tier support**: Adds a Bedrock **Service tier** option (Standard/Flex/Priority) for supported models (thanks Smartsheet-JB-Brown!) ([#9955](https://github.com/RooCodeInc/Roo-Code/pull/9955))
+* **Amazon Nova 2 Lite in Bedrock**: Adds the Nova 2 Lite model to the Bedrock provider model list (thanks Smartsheet-JB-Brown!) ([#9830](https://github.com/RooCodeInc/Roo-Code/pull/9830))
+
+## Misc Improvements
+
+* **Improved web-evals run logs**: Makes evaluation runs easier to inspect by improving run logs and formatting ([#10081](https://github.com/RooCodeInc/Roo-Code/pull/10081))
