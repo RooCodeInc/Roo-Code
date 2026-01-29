@@ -103,7 +103,7 @@
 		"@vitest/ui": "^3.2.3",
 		"identity-obj-proxy": "^3.0.0",
 		"jsdom": "^26.0.0",
-		"vite": "6.3.6",
+		"vite": "6.4.1",
 		"vitest": "^3.2.3"
 	}
 }
