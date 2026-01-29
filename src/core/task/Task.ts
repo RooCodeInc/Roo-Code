@@ -3758,7 +3758,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			customModePrompts,
 			customInstructions,
 			experiments,
-			enableMcpServerCreation,
 			browserToolEnabled,
 			language,
 			maxConcurrentFileReads,
@@ -3796,8 +3795,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				customModePrompts,
 				customModes,
 				customInstructions,
+				undefined, // diffEnabled
 				experiments,
-				enableMcpServerCreation,
 				language,
 				rooIgnoreInstructions,
 				maxReadFileLine !== -1,

@@ -203,8 +203,9 @@
 			"description": "Older messages were removed from the conversation to stay within the context window limit. This is a fast but less context-preserving approach compared to condensation."
 		}
 	},
-	"instructions": {
-		"wantsToFetch": "Roo wants to fetch detailed instructions to assist with the current task"
+	"skill": {
+		"wantsToLoad": "Roo wants to load a skill",
+		"didLoad": "Roo loaded a skill"
 	},
 	"fileOperations": {
 		"wantsToRead": "Roo wants to read this file",

@@ -17,7 +17,6 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		browserViewportSize,
 		mcpEnabled,
 		experiments,
-		enableMcpServerCreation,
 		browserToolEnabled,
 		language,
 		maxReadFileLine,
@@ -68,8 +67,8 @@ export const generateSystemPrompt = async (provider: ClineProvider, message: Web
 		customModePrompts,
 		customModes,
 		customInstructions,
+		undefined, // diffEnabled
 		experiments,
-		enableMcpServerCreation,
 		language,
 		rooIgnoreInstructions,
 		maxReadFileLine !== -1,

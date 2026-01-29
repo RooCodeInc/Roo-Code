@@ -325,6 +325,10 @@
 			"description": "Các tin nhắn cũ hơn đã bị xóa khỏi cuộc trò chuyện để giữ trong giới hạn cửa sổ ngữ cảnh. Đây là cách tiếp cận nhanh nhưng ít bảo toàn ngữ cảnh hơn so với cô đọng."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo muốn tải một kỹ năng",
+		"didLoad": "Roo đã tải một kỹ năng"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Sao chép vào ô nhập liệu (hoặc Shift + nhấp chuột)",
 		"timerPrefix": "Phê duyệt tự động được bật. Chọn trong {{seconds}}s…"

@@ -346,6 +346,10 @@
 			"description": "Oudere berichten zijn uit het gesprek verwijderd om binnen de limiet van het contextvenster te blijven. Dit is een snelle maar minder contextbehoudende aanpak in vergelijking met samenvoeging."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo wil een vaardigheid laden",
+		"didLoad": "Roo heeft een vaardigheid geladen"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Kopiëren naar invoer (zelfde als shift + klik)",
 		"timerPrefix": "Automatisch goedkeuren ingeschakeld. Selecteren in {{seconds}}s…"

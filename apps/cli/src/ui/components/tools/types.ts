@@ -16,15 +16,7 @@ export type ToolCategory =
 	| "other"
 
 export function getToolCategory(toolName: string): ToolCategory {
-	const fileReadTools = [
-		"readFile",
-		"read_file",
-		"fetchInstructions",
-		"fetch_instructions",
-		"listFilesTopLevel",
-		"listFilesRecursive",
-		"list_files",
-	]
+	const fileReadTools = ["readFile", "read_file", "skill", "listFilesTopLevel", "listFilesRecursive", "list_files"]
 
 	const fileWriteTools = [
 		"editedExistingFile",

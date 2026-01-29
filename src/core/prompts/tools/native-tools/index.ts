@@ -7,13 +7,13 @@ import attemptCompletion from "./attempt_completion"
 import browserAction from "./browser_action"
 import codebaseSearch from "./codebase_search"
 import executeCommand from "./execute_command"
-import fetchInstructions from "./fetch_instructions"
 import generateImage from "./generate_image"
 import listFiles from "./list_files"
 import newTask from "./new_task"
 import readCommandOutput from "./read_command_output"
 import { createReadFileTool, type ReadFileToolOptions } from "./read_file"
 import runSlashCommand from "./run_slash_command"
+import skill from "./skill"
 import searchAndReplace from "./search_and_replace"
 import searchReplace from "./search_replace"
 import edit_file from "./edit_file"
@@ -62,13 +62,13 @@ export function getNativeTools(options: NativeToolsOptions = {}): OpenAI.Chat.Ch
 		browserAction,
 		codebaseSearch,
 		executeCommand,
-		fetchInstructions,
 		generateImage,
 		listFiles,
 		newTask,
 		readCommandOutput,
 		createReadFileTool(readFileOptions),
 		runSlashCommand,
+		skill,
 		searchAndReplace,
 		searchReplace,
 		edit_file,

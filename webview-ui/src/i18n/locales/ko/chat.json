@@ -324,6 +324,10 @@
 			"description": "컨텍스트 윈도우 제한 내에 유지하기 위해 대화에서 오래된 메시지가 제거되었습니다. 이것은 압축에 비해 빠르지만 컨텍스트 보존 능력이 낮은 접근 방식입니다."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo가 스킬을 로드하려고 합니다",
+		"didLoad": "Roo가 스킬을 로드했습니다"
+	},
 	"followUpSuggest": {
 		"copyToInput": "입력창에 복사 (또는 Shift + 클릭)",
 		"timerPrefix": "자동 승인 활성화됨. {{seconds}}초 후 선택 중…"
