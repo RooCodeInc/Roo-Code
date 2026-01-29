@@ -2017,6 +2017,8 @@ export class ClineProvider
 			remoteBrowserEnabled,
 			cachedChromeHostUrl,
 			writeDelayMs,
+			terminalOutputLineLimit,
+			terminalOutputCharacterLimit,
 			terminalShellIntegrationTimeout,
 			terminalShellIntegrationDisabled,
 			terminalCommandDelay,
