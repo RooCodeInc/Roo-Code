@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Experimenteel",
 		"language": "Taal",
-		"about": "Over Roo Code"
+		"about": "Over Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -992,6 +993,51 @@
 		"requireCtrlEnterToSend": {
 			"label": "Vereist {{primaryMod}}+Enter om berichten te versturen",
 			"description": "Wanneer ingeschakeld, moet je {{primaryMod}}+Enter indrukken om berichten te versturen in plaats van alleen Enter"
+		}
+	},
+	"skills": {
+		"description": "Beheer skills die contextuele instructies aan de agent verstrekken. Skills worden automatisch toegepast wanneer ze relevant zijn voor uw taken. <DocsLink>Meer informatie</DocsLink>",
+		"projectSkills": "Projectskills",
+		"globalSkills": "Globale Skills",
+		"noProjectSkills": "Geen projectskills geconfigureerd. Maak er een om projectspecifieke agentmogelijkheden toe te voegen.",
+		"noGlobalSkills": "Geen globale skills geconfigureerd. Maak er een om agentmogelijkheden toe te voegen die beschikbaar zijn in alle projecten.",
+		"addSkill": "Skill toevoegen",
+		"editSkill": "Skill bewerken",
+		"deleteSkill": "Skill verwijderen",
+		"deleteDialog": {
+			"title": "Skill verwijderen",
+			"description": "Weet u zeker dat u de skill \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+			"confirm": "Verwijderen",
+			"cancel": "Annuleren"
+		},
+		"createDialog": {
+			"title": "Nieuwe Skill maken",
+			"description": "Definieer een nieuwe skillsjabloon die contextuele instructies aan de agent verstrekt.",
+			"nameLabel": "Naam",
+			"namePlaceholder": "mijn-skill-naam",
+			"nameHint": "Alleen kleine letters, cijfers en streepjes (1-64 tekens)",
+			"descriptionLabel": "Beschrijving",
+			"descriptionPlaceholder": "Beschrijf wanneer deze skill moet worden gebruikt...",
+			"descriptionHint": "Leg uit wat deze skill doet en wanneer de agent deze moet toepassen (1-1024 tekens)",
+			"sourceLabel": "Locatie",
+			"sourceHint": "Kies of deze skill globaal beschikbaar is of alleen in dit project",
+			"modeLabel": "Modus (optioneel)",
+			"modePlaceholder": "Elke modus",
+			"modeHint": "Beperk deze skill tot een specifieke modus",
+			"modeAny": "Elke modus",
+			"create": "Maken",
+			"cancel": "Annuleren"
+		},
+		"source": {
+			"global": "Globaal (beschikbaar in alle projecten)",
+			"project": "Project (alleen deze workspace)"
+		},
+		"validation": {
+			"nameRequired": "Naam is verplicht",
+			"nameTooLong": "Naam moet maximaal 64 tekens zijn",
+			"nameInvalid": "Naam moet 1-64 kleine letters, cijfers of streepjes zijn",
+			"descriptionRequired": "Beschrijving is verplicht",
+			"descriptionTooLong": "Beschrijving moet maximaal 1024 tekens zijn"
 		}
 	}
 }

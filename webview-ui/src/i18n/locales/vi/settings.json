@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Thử nghiệm",
 		"language": "Ngôn ngữ",
-		"about": "Giới thiệu"
+		"about": "Giới thiệu",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -992,6 +993,51 @@
 		"requireCtrlEnterToSend": {
 			"label": "Yêu cầu {{primaryMod}}+Enter để gửi tin nhắn",
 			"description": "Khi được bật, bạn phải nhấn {{primaryMod}}+Enter để gửi tin nhắn thay vì chỉ nhấn Enter"
+		}
+	},
+	"skills": {
+		"description": "Quản lý các skill cung cấp hướng dẫn theo ngữ cảnh cho agent. Các skill được áp dụng tự động khi chúng liên quan đến nhiệm vụ của bạn. <DocsLink>Tìm hiểu thêm</DocsLink>",
+		"projectSkills": "Skills Dự Án",
+		"globalSkills": "Skills Toàn Cục",
+		"noProjectSkills": "Không có skill dự án nào được cấu hình. Tạo một skill để thêm khả năng agent cụ thể cho dự án.",
+		"noGlobalSkills": "Không có skill toàn cục nào được cấu hình. Tạo một skill để thêm khả năng agent có sẵn trong tất cả các dự án.",
+		"addSkill": "Thêm Skill",
+		"editSkill": "Chỉnh sửa skill",
+		"deleteSkill": "Xóa skill",
+		"deleteDialog": {
+			"title": "Xóa Skill",
+			"description": "Bạn có chắc chắn muốn xóa skill \"{{name}}\" không? Hành động này không thể hoàn tác.",
+			"confirm": "Xóa",
+			"cancel": "Hủy"
+		},
+		"createDialog": {
+			"title": "Tạo Skill Mới",
+			"description": "Xác định một mẫu skill mới cung cấp hướng dẫn theo ngữ cảnh cho agent.",
+			"nameLabel": "Tên",
+			"namePlaceholder": "ten-skill-cua-toi",
+			"nameHint": "Chỉ chữ thường, số và dấu gạch ngang (1-64 ký tự)",
+			"descriptionLabel": "Mô tả",
+			"descriptionPlaceholder": "Mô tả khi nào nên sử dụng skill này...",
+			"descriptionHint": "Giải thích skill này làm gì và khi nào agent nên áp dụng nó (1-1024 ký tự)",
+			"sourceLabel": "Vị trí",
+			"sourceHint": "Chọn xem skill này có sẵn toàn cục hay chỉ trong dự án này",
+			"modeLabel": "Chế độ (tùy chọn)",
+			"modePlaceholder": "Bất kỳ chế độ nào",
+			"modeHint": "Hạn chế skill này cho một chế độ cụ thể",
+			"modeAny": "Bất kỳ chế độ nào",
+			"create": "Tạo",
+			"cancel": "Hủy"
+		},
+		"source": {
+			"global": "Toàn cục (có sẵn trong tất cả các dự án)",
+			"project": "Dự án (chỉ workspace này)"
+		},
+		"validation": {
+			"nameRequired": "Tên là bắt buộc",
+			"nameTooLong": "Tên phải có tối đa 64 ký tự",
+			"nameInvalid": "Tên phải là 1-64 chữ thường, số hoặc dấu gạch ngang",
+			"descriptionRequired": "Mô tả là bắt buộc",
+			"descriptionTooLong": "Mô tả phải có tối đa 1024 ký tự"
 		}
 	}
 }

@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "प्रायोगिक",
 		"language": "भाषा",
-		"about": "परिचय"
+		"about": "परिचय",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -992,6 +993,51 @@
 		"requireCtrlEnterToSend": {
 			"label": "संदेश भेजने के लिए {{primaryMod}}+Enter की आवश्यकता है",
 			"description": "जब सक्षम हो, तो आपको केवल Enter के बजाय संदेश भेजने के लिए {{primaryMod}}+Enter दबाना होगा"
+		}
+	},
+	"skills": {
+		"description": "Skills का प्रबंधन करें जो एजेंट को संदर्भात्मक निर्देश प्रदान करते हैं। जब आपके कार्यों के लिए प्रासंगिक हों तो Skills स्वचालित रूप से लागू होते हैं। <DocsLink>और जानें</DocsLink>",
+		"projectSkills": "प्रोजेक्ट Skills",
+		"globalSkills": "ग्लोबल Skills",
+		"noProjectSkills": "कोई प्रोजेक्ट skills कॉन्फ़िगर नहीं किया गया। प्रोजेक्ट-विशिष्ट एजेंट क्षमताएं जोड़ने के लिए एक बनाएं।",
+		"noGlobalSkills": "कोई ग्लोबल skills कॉन्फ़िगर नहीं किया गया। सभी प्रोजेक्ट्स में उपलब्ध एजेंट क्षमताएं जोड़ने के लिए एक बनाएं।",
+		"addSkill": "Skill जोड़ें",
+		"editSkill": "Skill संपादित करें",
+		"deleteSkill": "Skill हटाएं",
+		"deleteDialog": {
+			"title": "Skill हटाएं",
+			"description": "क्या आप वाकई skill \"{{name}}\" को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+			"confirm": "हटाएं",
+			"cancel": "रद्द करें"
+		},
+		"createDialog": {
+			"title": "नया Skill बनाएं",
+			"description": "एक नया skill टेम्पलेट परिभाषित करें जो एजेंट को संदर्भात्मक निर्देश प्रदान करता है।",
+			"nameLabel": "नाम",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "केवल छोटे अक्षर, संख्याएं और हाइफ़न (1-64 वर्ण)",
+			"descriptionLabel": "विवरण",
+			"descriptionPlaceholder": "वर्णन करें कि इस skill का उपयोग कब किया जाना चाहिए...",
+			"descriptionHint": "समझाएं कि यह skill क्या करता है और एजेंट को इसे कब लागू करना चाहिए (1-1024 वर्ण)",
+			"sourceLabel": "स्थान",
+			"sourceHint": "चुनें कि यह skill ग्लोबल रूप से उपलब्ध है या केवल इस प्रोजेक्ट में",
+			"modeLabel": "मोड (वैकल्पिक)",
+			"modePlaceholder": "कोई भी मोड",
+			"modeHint": "इस skill को किसी विशिष्ट मोड तक सीमित करें",
+			"modeAny": "कोई भी मोड",
+			"create": "बनाएं",
+			"cancel": "रद्द करें"
+		},
+		"source": {
+			"global": "ग्लोबल (सभी प्रोजेक्ट्स में उपलब्ध)",
+			"project": "प्रोजेक्ट (केवल यह वर्कस्पेस)"
+		},
+		"validation": {
+			"nameRequired": "नाम आवश्यक है",
+			"nameTooLong": "नाम 64 वर्णों से अधिक नहीं होना चाहिए",
+			"nameInvalid": "नाम 1-64 छोटे अक्षर, संख्याएं या हाइफ़न होना चाहिए",
+			"descriptionRequired": "विवरण आवश्यक है",
+			"descriptionTooLong": "विवरण 1024 वर्णों से अधिक नहीं होना चाहिए"
 		}
 	}
 }

@@ -324,10 +324,6 @@
 			"description": "Starsze wiadomości zostały usunięte z konwersacji, aby pozostać w granicach okna kontekstu. To szybsze, ale mniej zachowujące kontekst podejście w porównaniu z kondensacją."
 		}
 	},
-	"skill": {
-		"wantsToLoad": "Roo chce załadować umiejętność",
-		"didLoad": "Roo załadował umiejętność"
-	},
 	"followUpSuggest": {
 		"copyToInput": "Kopiuj do pola wprowadzania (lub Shift + kliknięcie)",
 		"timerPrefix": "Automatyczne zatwierdzanie włączone. Zaznaczanie za {{seconds}}s…"

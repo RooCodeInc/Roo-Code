@@ -151,11 +151,14 @@ export async function checkAutoApproval({
 			return { decision: "approve" }
 		}
 
-		// The skill tool only loads pre-defined instructions from built-in, global, or project skills.
-		// It does not read arbitrary files - skills must be explicitly installed/defined by the user.
-		// Auto-approval is intentional to provide a seamless experience when loading task instructions.
-		if (tool.tool === "skill") {
-			return { decision: "approve" }
+		if (tool?.tool === "fetchInstructions") {
+			if (tool.content === "create_mode") {
+				return state.alwaysAllowModeSwitch === true ? { decision: "approve" } : { decision: "ask" }
+			}
+
+			if (tool.content === "create_mcp_server") {
+				return state.alwaysAllowMcp === true ? { decision: "approve" } : { decision: "ask" }
+			}
 		}
 
 		if (tool?.tool === "switchMode") {

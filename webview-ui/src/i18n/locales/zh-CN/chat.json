@@ -325,10 +325,6 @@
 			"description": "为保持在上下文窗口限制内，已从对话中移除较旧的消息。与压缩相比，这是一种快速但上下文保留较少的方法。"
 		}
 	},
-	"skill": {
-		"wantsToLoad": "Roo 想要加载技能",
-		"didLoad": "Roo 加载了技能"
-	},
 	"followUpSuggest": {
 		"copyToInput": "复制到输入框（或按住Shift点击）",
 		"timerPrefix": "自动批准已启用。{{seconds}}秒后选择中…"

@@ -226,6 +226,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			experiments,
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -247,6 +248,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
 			experiments,
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -270,6 +272,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
 			experiments,
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -291,6 +294,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
 			experiments,
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -312,6 +316,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
 			experiments,
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -319,7 +324,6 @@ describe("SYSTEM_PROMPT", () => {
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-different-viewport-size.snap")
 	})
-
 	it("should include vscode language in custom instructions", async () => {
 		// Mock vscode.env.language
 		const vscode = vi.mocked(await import("vscode")) as any
@@ -360,6 +364,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			undefined, // experiments
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -419,6 +424,7 @@ describe("SYSTEM_PROMPT", () => {
 			customModes, // customModes
 			"Global instructions", // globalCustomInstructions
 			experiments,
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -455,6 +461,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			undefined, // experiments
+			false, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -486,6 +493,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			undefined, // experiments
+			false, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -515,6 +523,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			experiments,
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -546,6 +555,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			experiments,
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -577,6 +587,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			experiments,
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -608,6 +619,7 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModes
 			undefined, // globalCustomInstructions
 			experiments,
+			true, // enableMcpServerCreation
 			undefined, // language
 			undefined, // rooIgnoreInstructions
 			undefined, // partialReadsEnabled
@@ -642,7 +654,6 @@ describe("SYSTEM_PROMPT", () => {
 		expect(prompt).toContain("SYSTEM INFORMATION")
 		expect(prompt).toContain("OBJECTIVE")
 	})
-
 	afterAll(() => {
 		vi.restoreAllMocks()
 	})

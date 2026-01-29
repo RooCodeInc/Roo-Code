@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Eksperymentalne",
 		"language": "Język",
-		"about": "O Roo Code"
+		"about": "O Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -992,6 +993,51 @@
 		"requireCtrlEnterToSend": {
 			"label": "Wymagaj {{primaryMod}}+Enter do wysyłania wiadomości",
 			"description": "Po włączeniu musisz nacisnąć {{primaryMod}}+Enter, aby wysłać wiadomości, zamiast tylko Enter"
+		}
+	},
+	"skills": {
+		"description": "Zarządzaj umiejętnościami, które dostarczają kontekstowe instrukcje dla agenta. Umiejętności są automatycznie stosowane, gdy są istotne dla Twoich zadań. <DocsLink>Dowiedz się więcej</DocsLink>",
+		"projectSkills": "Umiejętności Projektu",
+		"globalSkills": "Umiejętności Globalne",
+		"noProjectSkills": "Brak skonfigurowanych umiejętności projektu. Utwórz jedną, aby dodać możliwości agenta specyficzne dla projektu.",
+		"noGlobalSkills": "Brak skonfigurowanych umiejętności globalnych. Utwórz jedną, aby dodać możliwości agenta dostępne we wszystkich projektach.",
+		"addSkill": "Dodaj Umiejętność",
+		"editSkill": "Edytuj umiejętność",
+		"deleteSkill": "Usuń umiejętność",
+		"deleteDialog": {
+			"title": "Usuń Umiejętność",
+			"description": "Czy na pewno chcesz usunąć umiejętność \"{{name}}\"? Tej akcji nie można cofnąć.",
+			"confirm": "Usuń",
+			"cancel": "Anuluj"
+		},
+		"createDialog": {
+			"title": "Utwórz Nową Umiejętność",
+			"description": "Zdefiniuj nowy szablon umiejętności, który dostarcza kontekstowe instrukcje dla agenta.",
+			"nameLabel": "Nazwa",
+			"namePlaceholder": "moja-nazwa-umiejetnosci",
+			"nameHint": "Tylko małe litery, cyfry i myślniki (1-64 znaki)",
+			"descriptionLabel": "Opis",
+			"descriptionPlaceholder": "Opisz, kiedy ta umiejętność powinna być użyta...",
+			"descriptionHint": "Wyjaśnij, co robi ta umiejętność i kiedy agent powinien ją zastosować (1-1024 znaki)",
+			"sourceLabel": "Lokalizacja",
+			"sourceHint": "Wybierz, czy ta umiejętność jest dostępna globalnie, czy tylko w tym projekcie",
+			"modeLabel": "Tryb (opcjonalnie)",
+			"modePlaceholder": "Dowolny tryb",
+			"modeHint": "Ogranicz tę umiejętność do określonego trybu",
+			"modeAny": "Dowolny tryb",
+			"create": "Utwórz",
+			"cancel": "Anuluj"
+		},
+		"source": {
+			"global": "Globalnie (dostępne we wszystkich projektach)",
+			"project": "Projekt (tylko ten obszar roboczy)"
+		},
+		"validation": {
+			"nameRequired": "Nazwa jest wymagana",
+			"nameTooLong": "Nazwa musi mieć maksymalnie 64 znaki",
+			"nameInvalid": "Nazwa musi zawierać 1-64 małe litery, cyfry lub myślniki",
+			"descriptionRequired": "Opis jest wymagany",
+			"descriptionTooLong": "Opis musi mieć maksymalnie 1024 znaki"
 		}
 	}
 }

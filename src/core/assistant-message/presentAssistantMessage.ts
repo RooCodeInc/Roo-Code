@@ -14,6 +14,7 @@ import type { ToolParamName, ToolResponse, ToolUse, McpToolUse } from "../../sha
 import { AskIgnoredError } from "../task/AskIgnoredError"
 import { Task } from "../task/Task"
 
+import { fetchInstructionsTool } from "../tools/FetchInstructionsTool"
 import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
 import { readCommandOutputTool } from "../tools/ReadCommandOutputTool"
@@ -33,7 +34,6 @@ import { attemptCompletionTool, AttemptCompletionCallbacks } from "../tools/Atte
 import { newTaskTool } from "../tools/NewTaskTool"
 import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
-import { skillTool } from "../tools/SkillTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
@@ -347,6 +347,8 @@ export async function presentAssistantMessage(cline: Task) {
 							return readFileTool.getReadFileToolDescription(block.name, block.nativeArgs)
 						}
 						return readFileTool.getReadFileToolDescription(block.name, block.params)
+					case "fetch_instructions":
+						return `[${block.name} for '${block.params.task}']`
 					case "write_to_file":
 						return `[${block.name} for '${block.params.path}']`
 					case "apply_diff":
@@ -392,8 +394,6 @@ export async function presentAssistantMessage(cline: Task) {
 					}
 					case "run_slash_command":
 						return `[${block.name} for '${block.params.command}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
-					case "skill":
-						return `[${block.name} for '${block.params.skill}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
 						return `[${block.name} for '${block.params.path}']`
 					default:
@@ -760,6 +760,13 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult,
 					})
 					break
+				case "fetch_instructions":
+					await fetchInstructionsTool.handle(cline, block as ToolUse<"fetch_instructions">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
 				case "list_files":
 					await listFilesTool.handle(cline, block as ToolUse<"list_files">, {
 						askApproval,
@@ -858,13 +865,6 @@ export async function presentAssistantMessage(cline: Task) {
 				}
 				case "run_slash_command":
 					await runSlashCommandTool.handle(cline, block as ToolUse<"run_slash_command">, {
-						askApproval,
-						handleError,
-						pushToolResult,
-					})
-					break
-				case "skill":
-					await skillTool.handle(cline, block as ToolUse<"skill">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1049,6 +1049,7 @@ function containsXmlToolMarkup(text: string): boolean {
 		"codebase_search",
 		"edit_file",
 		"execute_command",
+		"fetch_instructions",
 		"generate_image",
 		"list_files",
 		"new_task",

@@ -324,10 +324,6 @@
 			"description": "Ältere Nachrichten wurden aus der Konversation entfernt, um innerhalb des Kontextfenster-Limits zu bleiben. Dies ist ein schnellerer, aber weniger kontexterhaltender Ansatz im Vergleich zur Komprimierung."
 		}
 	},
-	"skill": {
-		"wantsToLoad": "Roo möchte eine Fähigkeit laden",
-		"didLoad": "Roo hat eine Fähigkeit geladen"
-	},
 	"followUpSuggest": {
 		"copyToInput": "In Eingabefeld kopieren (oder Shift + Klick)",
 		"timerPrefix": "Automatische Genehmigung aktiviert. Wähle in {{seconds}}s…"

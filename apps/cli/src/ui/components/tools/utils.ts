@@ -50,7 +50,8 @@ export function getToolDisplayName(toolName: string): string {
 		// File read operations
 		readFile: "Read",
 		read_file: "Read",
-		skill: "Load Skill",
+		fetchInstructions: "Fetch Instructions",
+		fetch_instructions: "Fetch Instructions",
 		listFilesTopLevel: "List Files",
 		listFilesRecursive: "List Files (Recursive)",
 		list_files: "List Files",
@@ -106,7 +107,8 @@ export function getToolIconName(toolName: string): IconName {
 		// File read operations
 		readFile: "file",
 		read_file: "file",
-		skill: "file",
+		fetchInstructions: "file",
+		fetch_instructions: "file",
 		listFilesTopLevel: "folder",
 		listFilesRecursive: "folder",
 		list_files: "folder",

@@ -324,10 +324,6 @@
 			"description": "Les messages plus anciens ont été supprimés de la conversation pour rester dans la limite de la fenêtre de contexte. C'est une approche rapide mais moins conservatrice du contexte par rapport à la condensation."
 		}
 	},
-	"skill": {
-		"wantsToLoad": "Roo veut charger une compétence",
-		"didLoad": "Roo a chargé une compétence"
-	},
 	"followUpSuggest": {
 		"copyToInput": "Copier vers l'entrée (ou Shift + clic)",
 		"timerPrefix": "Approbation automatique activée. Sélection dans {{seconds}}s…"

@@ -449,6 +449,14 @@ export class NativeToolCallParser {
 				}
 				break
 
+			case "fetch_instructions":
+				if (partialArgs.task !== undefined) {
+					nativeArgs = {
+						task: partialArgs.task,
+					}
+				}
+				break
+
 			case "generate_image":
 				if (partialArgs.prompt !== undefined || partialArgs.path !== undefined) {
 					nativeArgs = {
@@ -463,15 +471,6 @@ export class NativeToolCallParser {
 				if (partialArgs.command !== undefined) {
 					nativeArgs = {
 						command: partialArgs.command,
-						args: partialArgs.args,
-					}
-				}
-				break
-
-			case "skill":
-				if (partialArgs.skill !== undefined) {
-					nativeArgs = {
-						skill: partialArgs.skill,
 						args: partialArgs.args,
 					}
 				}
@@ -737,6 +736,14 @@ export class NativeToolCallParser {
 					}
 					break
 
+				case "fetch_instructions":
+					if (args.task !== undefined) {
+						nativeArgs = {
+							task: args.task,
+						} as NativeArgsFor<TName>
+					}
+					break
+
 				case "generate_image":
 					if (args.prompt !== undefined && args.path !== undefined) {
 						nativeArgs = {
@@ -751,15 +758,6 @@ export class NativeToolCallParser {
 					if (args.command !== undefined) {
 						nativeArgs = {
 							command: args.command,
-							args: args.args,
-						} as NativeArgsFor<TName>
-					}
-					break
-
-				case "skill":
-					if (args.skill !== undefined) {
-						nativeArgs = {
-							skill: args.skill,
 							args: args.args,
 						} as NativeArgsFor<TName>
 					}

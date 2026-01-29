@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Experimental",
 		"language": "Idioma",
-		"about": "Sobre"
+		"about": "Sobre",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -992,6 +993,51 @@
 		"requireCtrlEnterToSend": {
 			"label": "Requer {{primaryMod}}+Enter para enviar mensagens",
 			"description": "Quando ativado, você deve pressionar {{primaryMod}}+Enter para enviar mensagens em vez de apenas Enter"
+		}
+	},
+	"skills": {
+		"description": "Gerencie skills que fornecem instruções contextuais ao agente. As skills são aplicadas automaticamente quando relevantes para suas tarefas. <DocsLink>Saiba mais</DocsLink>",
+		"projectSkills": "Skills do Projeto",
+		"globalSkills": "Skills Globais",
+		"noProjectSkills": "Nenhuma skill de projeto configurada. Crie uma para adicionar capacidades específicas do projeto ao agente.",
+		"noGlobalSkills": "Nenhuma skill global configurada. Crie uma para adicionar capacidades ao agente disponíveis em todos os projetos.",
+		"addSkill": "Adicionar Skill",
+		"editSkill": "Editar skill",
+		"deleteSkill": "Excluir skill",
+		"deleteDialog": {
+			"title": "Excluir Skill",
+			"description": "Tem certeza de que deseja excluir a skill \"{{name}}\"? Esta ação não pode ser desfeita.",
+			"confirm": "Excluir",
+			"cancel": "Cancelar"
+		},
+		"createDialog": {
+			"title": "Criar Nova Skill",
+			"description": "Defina um novo modelo de skill que fornece instruções contextuais ao agente.",
+			"nameLabel": "Nome",
+			"namePlaceholder": "meu-nome-de-skill",
+			"nameHint": "Apenas letras minúsculas, números e hífens (1-64 caracteres)",
+			"descriptionLabel": "Descrição",
+			"descriptionPlaceholder": "Descreva quando esta skill deve ser usada...",
+			"descriptionHint": "Explique o que esta skill faz e quando o agente deve aplicá-la (1-1024 caracteres)",
+			"sourceLabel": "Localização",
+			"sourceHint": "Escolha se esta skill está disponível globalmente ou apenas neste projeto",
+			"modeLabel": "Modo (opcional)",
+			"modePlaceholder": "Qualquer modo",
+			"modeHint": "Restrinja esta skill a um modo específico",
+			"modeAny": "Qualquer modo",
+			"create": "Criar",
+			"cancel": "Cancelar"
+		},
+		"source": {
+			"global": "Global (disponível em todos os projetos)",
+			"project": "Projeto (apenas este workspace)"
+		},
+		"validation": {
+			"nameRequired": "O nome é obrigatório",
+			"nameTooLong": "O nome deve ter no máximo 64 caracteres",
+			"nameInvalid": "O nome deve ter 1-64 letras minúsculas, números ou hífens",
+			"descriptionRequired": "A descrição é obrigatória",
+			"descriptionTooLong": "A descrição deve ter no máximo 1024 caracteres"
 		}
 	}
 }
