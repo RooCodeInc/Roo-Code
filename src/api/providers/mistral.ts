@@ -134,7 +134,6 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { temperature } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
 		// Convert messages to AI SDK format
@@ -145,11 +144,12 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
 		// Build the request options
+		// Use MISTRAL_DEFAULT_TEMPERATURE (1) as fallback to match original behavior
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
 			system: systemPrompt,
 			messages: aiSdkMessages,
-			temperature: this.options.modelTemperature ?? temperature ?? MISTRAL_DEFAULT_TEMPERATURE,
+			temperature: this.options.modelTemperature ?? MISTRAL_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
 			tools: aiSdkTools,
 			toolChoice: this.mapToolChoice(metadata?.tool_choice),
@@ -176,14 +176,14 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 	 * Complete a prompt using the AI SDK generateText.
 	 */
 	async completePrompt(prompt: string): Promise<string> {
-		const { temperature } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
+		// Use MISTRAL_DEFAULT_TEMPERATURE (1) as fallback to match original behavior
 		const { text } = await generateText({
 			model: languageModel,
 			prompt,
 			maxOutputTokens: this.getMaxOutputTokens(),
-			temperature: this.options.modelTemperature ?? temperature ?? MISTRAL_DEFAULT_TEMPERATURE,
+			temperature: this.options.modelTemperature ?? MISTRAL_DEFAULT_TEMPERATURE,
 		})
 
 		return text
