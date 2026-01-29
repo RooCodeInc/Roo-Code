@@ -1,6 +1,6 @@
 {
 	"name": "@roo-code/cli",
-	"version": "0.0.48",
+	"version": "0.0.49",
 	"description": "Roo Code CLI - Run the Roo Code agent from the command line",
 	"private": true,
 	"type": "module",
@@ -30,6 +30,8 @@
 		"@trpc/client": "^11.8.1",
 		"@vscode/ripgrep": "^1.15.9",
 		"commander": "^12.1.0",
+		"cross-spawn": "^7.0.6",
+		"execa": "^9.5.2",
 		"fuzzysort": "^3.1.0",
 		"ink": "^6.6.0",
 		"p-wait-for": "^5.0.2",

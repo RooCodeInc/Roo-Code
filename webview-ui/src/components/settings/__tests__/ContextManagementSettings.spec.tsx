@@ -56,6 +56,7 @@ vi.mock("@/components/ui", () => ({
 	SelectValue: ({ children, ...props }: any) => <div {...props}>{children}</div>,
 	SelectContent: ({ children, ...props }: any) => <div {...props}>{children}</div>,
 	SelectItem: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+	StandardTooltip: ({ children, content }: any) => <div title={content}>{children}</div>,
 }))
 
 // Mock vscode utilities - this is necessary since we're not in a VSCode environment
@@ -87,8 +88,6 @@ describe("ContextManagementSettings", () => {
 	const defaultProps = {
 		autoCondenseContext: false,
 		autoCondenseContextPercent: 80,
-		condensingApiConfigId: undefined,
-		customCondensingPrompt: undefined,
 		listApiConfigMeta: [],
 		maxOpenTabsContext: 20,
 		maxWorkspaceFiles: 200,
@@ -99,6 +98,8 @@ describe("ContextManagementSettings", () => {
 		includeDiagnosticMessages: true,
 		maxDiagnosticMessages: 50,
 		writeDelayMs: 1000,
+		customSupportPrompts: {},
+		setCustomSupportPrompts: vi.fn(),
 		setCachedStateField: vi.fn(),
 	}
 

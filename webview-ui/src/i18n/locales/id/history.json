@@ -50,5 +50,11 @@
 		"mostTokens": "Token Terbanyak",
 		"mostRelevant": "Paling Relevan"
 	},
-	"viewAllHistory": "Lihat semua"
+	"viewAllHistory": "Lihat semua",
+	"subtasks_one": "{{count}} subtask",
+	"subtasks_other": "{{count}} subtask",
+	"subtaskTag": "Subtask",
+	"deleteWithSubtasks": "Ini juga akan menghapus {{count}} subtask. Apakah Anda yakin?",
+	"expandSubtasks": "Perluas subtask",
+	"collapseSubtasks": "Tutup subtask"
 }

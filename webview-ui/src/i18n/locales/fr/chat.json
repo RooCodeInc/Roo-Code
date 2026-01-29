@@ -28,14 +28,18 @@
 		"openInCloud": "Ouvrir la tâche dans Roo Code Cloud",
 		"openInCloudIntro": "Continue à surveiller ou interagir avec Roo depuis n'importe où. Scanne, clique ou copie pour ouvrir.",
 		"openApiHistory": "Ouvrir l'historique de l'API",
-		"openUiHistory": "Ouvrir l'historique de l'UI"
+		"openUiHistory": "Ouvrir l'historique de l'UI",
+		"backToParentTask": "Tâche parente"
 	},
 	"unpin": "Désépingler",
 	"pin": "Épingler",
 	"tokenProgress": {
 		"availableSpace": "Espace disponible : {{amount}} tokens",
 		"tokensUsed": "Tokens utilisés : {{used}} sur {{total}}",
-		"reservedForResponse": "Réservé pour la réponse du modèle : {{amount}} tokens"
+		"reservedForResponse": "Réservé pour la réponse du modèle : {{amount}} tokens",
+		"tokensUsedLabel": "Tokens utilisés",
+		"reservedForResponseLabel": "Réservé pour la réponse",
+		"availableSpaceLabel": "Espace disponible"
 	},
 	"retry": {
 		"title": "Réessayer",
@@ -146,14 +150,14 @@
 		"rateLimitWait": "Limitation du débit",
 		"errorTitle": "Erreur du fournisseur {{code}}",
 		"errorMessage": {
-			"docs": "Documentation",
-			"goToSettings": "Paramètres",
 			"400": "Le fournisseur n'a pas pu traiter la demande telle que présentée. Arrête la tâche et essaie une approche différente.",
 			"401": "Impossible de s'authentifier auprès du fournisseur. Veuillez vérifier la configuration de votre clé API.",
 			"402": "Il semble que vous ayez épuisé vos fonds/crédits sur votre compte. Allez chez votre fournisseur et ajoutez-en plus pour continuer.",
 			"403": "Non autorisé. Votre clé API est valide, mais le fournisseur a refusé de compléter cette demande.",
 			"429": "Trop de demandes. Vous êtes limité par le fournisseur. Veuillez attendre un peu avant votre prochain appel API.",
 			"500": "Erreur du serveur du fournisseur. Quelque chose ne va pas du côté du fournisseur, il n'y a rien de mal avec votre demande.",
+			"docs": "Documentation",
+			"goToSettings": "Paramètres",
 			"unknown": "Erreur API inconnue. Veuillez contacter le support Roo Code.",
 			"connection": "Erreur de connexion. Assurez-vous que vous avez une connexion Internet fonctionnelle.",
 			"claudeCodeNotAuthenticated": "Vous devez vous connecter pour utiliser Claude Code. Allez dans les Paramètres et cliquez sur \"Se connecter à Claude Code\" pour vous authentifier."
@@ -258,7 +262,8 @@
 		"completionContent": "Sous-tâche terminée",
 		"resultContent": "Résultats de la sous-tâche",
 		"defaultResult": "Veuillez continuer avec la tâche suivante.",
-		"completionInstructions": "Sous-tâche terminée ! Vous pouvez examiner les résultats et suggérer des corrections ou les prochaines étapes. Si tout semble bon, confirmez pour retourner le résultat à la tâche parente."
+		"completionInstructions": "Sous-tâche terminée ! Vous pouvez examiner les résultats et suggérer des corrections ou les prochaines étapes. Si tout semble bon, confirmez pour retourner le résultat à la tâche parente.",
+		"goToSubtask": "Afficher la tâche"
 	},
 	"questions": {
 		"hasQuestion": "Roo a une question"
@@ -319,6 +324,10 @@
 			"description": "Les messages plus anciens ont été supprimés de la conversation pour rester dans la limite de la fenêtre de contexte. C'est une approche rapide mais moins conservatrice du contexte par rapport à la condensation."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo veut charger une compétence",
+		"didLoad": "Roo a chargé une compétence"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Copier vers l'entrée (ou Shift + clic)",
 		"timerPrefix": "Approbation automatique activée. Sélection dans {{seconds}}s…"
@@ -335,9 +344,7 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"openaiCodexProvider": "Ajout du Fournisseur OpenAI - ChatGPT Plus/Pro qui offre un accès basé sur abonnement aux modèles Codex sans frais par token.",
-			"gpt52codexModel": "Ajout du nouveau modèle gpt-5.2-codex au Roo Code Router, au fournisseur OpenAI standard et bien d'autres.",
-			"bugFixes": "Correction des fuites mémoire causant des écrans gris, problèmes de signature de pensée Gemini et autres améliorations de stabilité."
+			"smartCodeFolding": "Pliage de code intelligent : La condensation du contexte préserve maintenant une carte légère de vos fichiers—signatures de fonctions, déclarations de classes et définitions de types. Cela offre une meilleure continuité après la condensation et des éditions plus intelligentes lors du référencement de travail antérieur."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",
@@ -492,5 +499,17 @@
 		"updated": "La liste des tâches a été mise à jour",
 		"completed": "Terminé",
 		"started": "Commencé"
+	},
+	"tooManyTools": {
+		"title": "Trop d'outils activés",
+		"toolsPart_one": "{{count}} outil",
+		"toolsPart_other": "{{count}} outils",
+		"serversPart_one": "{{count}} serveur MCP",
+		"serversPart_other": "{{count}} serveurs MCP",
+		"messageTemplate": "Tu as {{tools}} activés via {{servers}}. Un nombre aussi élevé peut confondre le modèle et entraîner des erreurs. Essaie de le maintenir en dessous de {{threshold}}.",
+		"openMcpSettings": "Ouvrir les paramètres MCP"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

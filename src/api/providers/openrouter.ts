@@ -23,8 +23,6 @@ import {
 	consolidateReasoningDetails,
 } from "../transform/openai-format"
 import { normalizeMistralToolCallId } from "../transform/mistral-format"
-import { resolveToolProtocol } from "../../utils/resolveToolProtocol"
-import { TOOL_PROTOCOL } from "@roo-code/types"
 import { ApiStreamChunk } from "../transform/stream"
 import { convertToR1Format } from "../transform/r1-format"
 import { addCacheBreakpoints as addAnthropicCacheBreakpoints } from "../transform/caching/anthropic"
@@ -249,10 +247,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			openAiMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 		}
 
-		// Process reasoning_details when switching models to Gemini for native tool call compatibility
-		// IMPORTANT: Use metadata.toolProtocol if provided (task's locked protocol) for consistency
-		const toolProtocol = resolveToolProtocol(this.options, model.info, metadata?.toolProtocol)
-		const isNativeProtocol = toolProtocol === TOOL_PROTOCOL.NATIVE
+		// Process reasoning_details when switching models to Gemini.
 		const isGemini = modelId.startsWith("google/gemini")
 
 		// For Gemini models with native protocol:
@@ -267,7 +262,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		//    - Set `data` to "skip_thought_signature_validator" to bypass signature validation
 		//    - Set `index` to 0
 		// See: https://github.com/cline/cline/issues/8214
-		if (isNativeProtocol && isGemini) {
+		if (isGemini) {
 			// Step 1: Sanitize messages - filter out tool calls with missing/mismatched reasoning_details
 			openAiMessages = sanitizeGeminiMessages(openAiMessages, modelId)
 
@@ -332,8 +327,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 					},
 				}),
 			...(reasoning && { reasoning }),
-			...(metadata?.tools && { tools: this.convertToolsForOpenAI(metadata.tools) }),
-			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
+			tools: this.convertToolsForOpenAI(metadata?.tools),
+			tool_choice: metadata?.tool_choice,
 		}
 
 		// Add Anthropic beta header for fine-grained tool streaming when using Anthropic models

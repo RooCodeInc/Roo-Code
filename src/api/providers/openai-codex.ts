@@ -306,28 +306,22 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 						},
 					}
 				: {}),
-			...(metadata?.tools && {
-				tools: metadata.tools
-					.filter((tool) => tool.type === "function")
-					.map((tool) => {
-						const isMcp = isMcpTool(tool.function.name)
-						return {
-							type: "function",
-							name: tool.function.name,
-							description: tool.function.description,
-							parameters: isMcp
-								? ensureAdditionalPropertiesFalse(tool.function.parameters)
-								: ensureAllRequired(tool.function.parameters),
-							strict: !isMcp,
-						}
-					}),
-			}),
-			...(metadata?.tool_choice && { tool_choice: metadata.tool_choice }),
-		}
-
-		// For native tool protocol, control parallel tool calls
-		if (metadata?.toolProtocol === "native") {
-			body.parallel_tool_calls = metadata.parallelToolCalls ?? false
+			tools: (metadata?.tools ?? [])
+				.filter((tool) => tool.type === "function")
+				.map((tool) => {
+					const isMcp = isMcpTool(tool.function.name)
+					return {
+						type: "function",
+						name: tool.function.name,
+						description: tool.function.description,
+						parameters: isMcp
+							? ensureAdditionalPropertiesFalse(tool.function.parameters)
+							: ensureAllRequired(tool.function.parameters),
+						strict: !isMcp,
+					}
+				}),
+			tool_choice: metadata?.tool_choice,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
 		}
 
 		return body
@@ -914,31 +908,29 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 					}
 				}
 
-				if (item.type === "text" && item.text) {
-					yield { type: "text", text: item.text }
-				} else if (item.type === "reasoning" && item.text) {
-					yield { type: "reasoning", text: item.text }
-				} else if (item.type === "message" && Array.isArray(item.content)) {
-					for (const content of item.content) {
-						if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
-							yield { type: "text", text: content.text }
-						}
-					}
-				} else if (
-					(item.type === "function_call" || item.type === "tool_call") &&
-					event.type === "response.output_item.done"
-				) {
-					const callId = item.call_id || item.tool_call_id || item.id
-					if (callId) {
-						const args = item.arguments || item.function?.arguments || item.function_arguments
-						yield {
-							type: "tool_call",
-							id: callId,
-							name: item.name || item.function?.name || item.function_name || "",
-							arguments: typeof args === "string" ? args : "{}",
+				// For "added" events, yield text/reasoning content (streaming path)
+				// For "done" events, do NOT yield text/reasoning - it's already been streamed via deltas
+				// and would cause double-emission (A, B, C, ABC).
+				if (event.type === "response.output_item.added") {
+					if (item.type === "text" && item.text) {
+						yield { type: "text", text: item.text }
+					} else if (item.type === "reasoning" && item.text) {
+						yield { type: "reasoning", text: item.text }
+					} else if (item.type === "message" && Array.isArray(item.content)) {
+						for (const content of item.content) {
+							if ((content?.type === "text" || content?.type === "output_text") && content?.text) {
+								yield { type: "text", text: content.text }
+							}
 						}
 					}
 				}
+
+				// Note: We intentionally do NOT emit tool_call from response.output_item.done
+				// for function_call/tool_call items. The streaming path handles tool calls via:
+				// 1. tool_call_partial events during argument deltas
+				// 2. NativeToolCallParser.finalizeRawChunks() at stream end emitting tool_call_end
+				// 3. NativeToolCallParser.finalizeStreamingToolCall() creating the final ToolUse
+				// Emitting tool_call here would cause duplicate tool rendering.
 			}
 			return
 		}

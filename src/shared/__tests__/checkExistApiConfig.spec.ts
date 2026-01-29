@@ -67,13 +67,6 @@ describe("checkExistKey", () => {
 		expect(checkExistKey(config)).toBe(true)
 	})
 
-	it("should return true for claude-code provider without API key", () => {
-		const config: ProviderSettings = {
-			apiProvider: "claude-code",
-		}
-		expect(checkExistKey(config)).toBe(true)
-	})
-
 	it("should return true for openai-codex provider without API key", () => {
 		const config: ProviderSettings = {
 			apiProvider: "openai-codex",

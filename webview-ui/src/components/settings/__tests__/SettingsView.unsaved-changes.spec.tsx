@@ -29,6 +29,11 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 
 // Mock UI components
 vi.mock("@src/components/ui", () => ({
+	ToggleSwitch: ({ checked, onChange, "aria-label": ariaLabel, "data-testid": dataTestId }: any) => (
+		<button role="switch" aria-checked={checked} aria-label={ariaLabel} data-testid={dataTestId} onClick={onChange}>
+			Toggle
+		</button>
+	),
 	AlertDialog: ({ children }: any) => <div>{children}</div>,
 	AlertDialogContent: ({ children }: any) => <div>{children}</div>,
 	AlertDialogTitle: ({ children }: any) => <div>{children}</div>,
@@ -166,9 +171,7 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		browserToolEnabled: false,
 		browserViewportSize: "1280x720",
 		enableCheckpoints: false,
-		diffEnabled: true,
 		experiments: {},
-		fuzzyMatchThreshold: 1.0,
 		maxOpenTabsContext: 10,
 		maxWorkspaceFiles: 200,
 		mcpEnabled: false,
@@ -195,9 +198,7 @@ describe("SettingsView - Unsaved Changes Detection", () => {
 		maxReadFileLine: -1,
 		maxImageFileSize: 5,
 		maxTotalImageSize: 20,
-		terminalCompressProgressBar: false,
 		maxConcurrentFileReads: 5,
-		condensingApiConfigId: "",
 		customCondensingPrompt: "",
 		customSupportPrompts: {},
 		profileThresholds: {},

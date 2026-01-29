@@ -1,6 +1,12 @@
 import { z } from "zod"
 
 /**
+ * Maximum number of MCP tools that can be enabled before showing a warning.
+ * LLMs tend to perform poorly when given too many tools to choose from.
+ */
+export const MAX_MCP_TOOLS_THRESHOLD = 60
+
+/**
  * McpServerUse
  */
 
@@ -127,4 +133,54 @@ export type McpErrorEntry = {
 	message: string
 	timestamp: number
 	level: "error" | "warn" | "info"
+}
+
+/**
+ * Result of counting enabled MCP tools across servers.
+ */
+export interface EnabledMcpToolsCount {
+	/** Number of enabled and connected MCP servers */
+	enabledServerCount: number
+	/** Total number of enabled tools across all enabled servers */
+	enabledToolCount: number
+}
+
+/**
+ * Count the number of enabled MCP tools across all enabled and connected servers.
+ * This is a pure function that can be used in both backend and frontend contexts.
+ *
+ * @param servers - Array of MCP server objects
+ * @returns Object with enabledToolCount and enabledServerCount
+ *
+ * @example
+ * const { enabledToolCount, enabledServerCount } = countEnabledMcpTools(mcpServers)
+ * if (enabledToolCount > MAX_MCP_TOOLS_THRESHOLD) {
+ *   // Show warning
+ * }
+ */
+export function countEnabledMcpTools(servers: McpServer[]): EnabledMcpToolsCount {
+	let serverCount = 0
+	let toolCount = 0
+
+	for (const server of servers) {
+		// Skip disabled servers
+		if (server.disabled) continue
+
+		// Skip servers that are not connected
+		if (server.status !== "connected") continue
+
+		serverCount++
+
+		// Count enabled tools on this server
+		if (server.tools) {
+			for (const tool of server.tools) {
+				// Tool is enabled if enabledForPrompt is undefined (default) or true
+				if (tool.enabledForPrompt !== false) {
+					toolCount++
+				}
+			}
+		}
+	}
+
+	return { enabledToolCount: toolCount, enabledServerCount: serverCount }
 }

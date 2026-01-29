@@ -1,6 +1,6 @@
 import OpenAI from "openai"
 
-import { type ModelInfo, type ModelRecord, NATIVE_TOOL_DEFAULTS } from "@roo-code/types"
+import { type ModelInfo, type ModelRecord } from "@roo-code/types"
 
 import { ApiHandlerOptions, RouterName } from "../../shared/api"
 
@@ -64,9 +64,8 @@ export abstract class RouterProvider extends BaseProvider {
 		const id = this.modelId ?? this.defaultModelId
 
 		// First check instance models (populated by fetchModel)
-		// Merge native tool defaults for cached models that may lack these fields
 		if (this.models[id]) {
-			return { id, info: { ...NATIVE_TOOL_DEFAULTS, ...this.models[id] } }
+			return { id, info: this.models[id] }
 		}
 
 		// Fall back to global cache (synchronous disk/memory cache)
@@ -75,7 +74,7 @@ export abstract class RouterProvider extends BaseProvider {
 		if (cachedModels?.[id]) {
 			// Also populate instance models for future calls
 			this.models = cachedModels
-			return { id, info: { ...NATIVE_TOOL_DEFAULTS, ...cachedModels[id] } }
+			return { id, info: cachedModels[id] }
 		}
 
 		// Last resort: return default model

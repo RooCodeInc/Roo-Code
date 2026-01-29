@@ -222,7 +222,7 @@ export const ErrorRow = memo(
 					</div>
 					{isExpanded && (
 						<div className="px-2 py-1 mt-2 bg-vscode-editor-background ml-6 rounded-lg">
-							<CodeBlock source={message} language="xml" />
+							<CodeBlock source={message} language="text" />
 						</div>
 					)}
 				</div>
@@ -266,11 +266,11 @@ export const ErrorRow = memo(
 							</div>
 						</div>
 					)}
-					<div className="ml-2 pl-4 mt-1 pt-1 border-l border-vscode-errorForeground/50">
+					<div className="ml-2 pl-4 mt-1 pt-0.5 border-l border-vscode-errorForeground/50">
 						<p
 							className={
 								messageClassName ||
-								"my-0 font-light whitespace-pre-wrap break-words text-vscode-descriptionForeground"
+								"cursor-default my-0 font-light whitespace-pre-wrap break-words text-vscode-descriptionForeground"
 							}>
 							{message}
 							{formattedErrorDetails && (

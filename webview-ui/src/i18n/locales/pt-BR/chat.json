@@ -28,14 +28,18 @@
 		"openInCloud": "Abrir tarefa no Roo Code Cloud",
 		"openInCloudIntro": "Continue monitorando ou interagindo com Roo de qualquer lugar. Escaneie, clique ou copie para abrir.",
 		"openApiHistory": "Abrir histórico da API",
-		"openUiHistory": "Abrir histórico da UI"
+		"openUiHistory": "Abrir histórico da UI",
+		"backToParentTask": "Tarefa pai"
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
 	"tokenProgress": {
 		"availableSpace": "Espaço disponível: {{amount}} tokens",
 		"tokensUsed": "Tokens usados: {{used}} de {{total}}",
-		"reservedForResponse": "Reservado para resposta do modelo: {{amount}} tokens"
+		"reservedForResponse": "Reservado para resposta do modelo: {{amount}} tokens",
+		"tokensUsedLabel": "Tokens usados",
+		"reservedForResponseLabel": "Reservado para resposta",
+		"availableSpaceLabel": "Espaço disponível"
 	},
 	"retry": {
 		"title": "Tentar novamente",
@@ -146,14 +150,14 @@
 		"rateLimitWait": "Limitação de taxa",
 		"errorTitle": "Erro do provedor {{code}}",
 		"errorMessage": {
-			"docs": "Documentação",
-			"goToSettings": "Configurações",
 			"400": "O provedor não conseguiu processar a solicitação conforme feita. Interrompa a tarefa e tente uma abordagem diferente.",
 			"401": "Não foi possível autenticar com o provedor. Por favor, verifique a configuração da sua chave API.",
 			"402": "Parece que você ficou sem fundos/créditos em sua conta. Vá ao seu provedor e adicione mais para continuar.",
 			"403": "Não autorizado. Sua chave API é válida, mas o provedor se recusou a concluir esta solicitação.",
 			"429": "Muitas solicitações. Você está sendo limitado pelo provedor. Por favor, aguarde um pouco antes de sua próxima chamada de API.",
 			"500": "Erro do servidor do provedor. Algo está errado do lado do provedor, não há nada de errado com sua solicitação.",
+			"docs": "Documentação",
+			"goToSettings": "Configurações",
 			"unknown": "Erro de API desconhecido. Por favor, entre em contato com o suporte do Roo Code.",
 			"connection": "Erro de conexão. Certifique-se de que você tem uma conexão de internet funcionando.",
 			"claudeCodeNotAuthenticated": "Você precisa fazer login para usar o Claude Code. Vá para Configurações e clique em \"Entrar no Claude Code\" para autenticar."
@@ -258,7 +262,8 @@
 		"completionContent": "Subtarefa concluída",
 		"resultContent": "Resultados da subtarefa",
 		"defaultResult": "Por favor, continue com a próxima tarefa.",
-		"completionInstructions": "Subtarefa concluída! Você pode revisar os resultados e sugerir correções ou próximos passos. Se tudo parecer bom, confirme para retornar o resultado à tarefa principal."
+		"completionInstructions": "Subtarefa concluída! Você pode revisar os resultados e sugerir correções ou próximos passos. Se tudo parecer bom, confirme para retornar o resultado à tarefa principal.",
+		"goToSubtask": "Ver tarefa"
 	},
 	"questions": {
 		"hasQuestion": "Roo tem uma pergunta"
@@ -319,6 +324,10 @@
 			"description": "Mensagens mais antigas foram removidas da conversa para permanecer dentro do limite da janela de contexto. Esta é uma abordagem rápida, mas menos preservadora de contexto em comparação com a condensação."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo quer carregar uma habilidade",
+		"didLoad": "Roo carregou uma habilidade"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar para entrada (ou Shift + clique)",
 		"timerPrefix": "Aprovação automática ativada. Selecionando em {{seconds}}s…"
@@ -335,9 +344,7 @@
 		},
 		"release": {
 			"heading": "Novidades:",
-			"openaiCodexProvider": "Adicionado o provedor OpenAI - ChatGPT Plus/Pro que oferece acesso baseado em assinatura aos modelos Codex sem custos por token.",
-			"gpt52codexModel": "O novo modelo gpt-5.2-codex foi adicionado ao Roo Code Router, ao provedor OpenAI padrão e muito mais.",
-			"bugFixes": "Corrigidos vazamentos de memória causando telas cinza, problemas de assinatura de pensamento do Gemini e outras melhorias de estabilidade."
+			"smartCodeFolding": "Smart Code Folding: A condensação de contexto agora preserva um mapa leve de seus arquivos—assinaturas de função, declarações de classe e definições de tipo. Isso oferece melhor continuidade após condensação e edições mais inteligentes ao referenciar trabalho anterior."
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
@@ -492,5 +499,17 @@
 		"updated": "A lista de tarefas foi atualizada",
 		"completed": "Concluído",
 		"started": "Iniciado"
+	},
+	"tooManyTools": {
+		"title": "Muitas ferramentas habilitadas",
+		"toolsPart_one": "{{count}} ferramenta",
+		"toolsPart_other": "{{count}} ferramentas",
+		"serversPart_one": "{{count}} servidor MCP",
+		"serversPart_other": "{{count}} servidores MCP",
+		"messageTemplate": "Você tem {{tools}} habilitadas via {{servers}}. Um número tão alto pode confundir o modelo e levar a erros. Tente mantê-lo abaixo de {{threshold}}.",
+		"openMcpSettings": "Abrir Configurações MCP"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

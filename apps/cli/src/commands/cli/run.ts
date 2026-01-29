@@ -11,11 +11,13 @@ import {
 	isSupportedProvider,
 	OnboardingProviderChoice,
 	supportedProviders,
-	ASCII_ROO,
 	DEFAULT_FLAGS,
 	REASONING_EFFORTS,
 	SDK_BASE_URL,
+	OutputFormat,
 } from "@/types/index.js"
+import { isValidOutputFormat } from "@/types/json-events.js"
+import { JsonEventEmitter } from "@/agent/json-event-emitter.js"
 
 import { createClient } from "@/lib/sdk/index.js"
 import { loadToken, loadSettings } from "@/lib/storage/index.js"
@@ -164,6 +166,23 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		process.exit(1)
 	}
 
+	// Validate output format
+	const outputFormat: OutputFormat = (flagOptions.outputFormat as OutputFormat) || "text"
+
+	if (!isValidOutputFormat(outputFormat)) {
+		console.error(
+			`[CLI] Error: Invalid output format: ${flagOptions.outputFormat}; must be one of: text, json, stream-json`,
+		)
+		process.exit(1)
+	}
+
+	// Output format only works with --print mode
+	if (outputFormat !== "text" && !flagOptions.print && isTuiSupported) {
+		console.error("[CLI] Error: --output-format requires --print mode")
+		console.error("[CLI] Usage: roo <prompt> --print --output-format json")
+		process.exit(1)
+	}
+
 	if (!isTuiEnabled) {
 		if (!prompt) {
 			console.error("[CLI] Error: prompt is required in print mode")
@@ -204,38 +223,53 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			process.exit(1)
 		}
 	} else {
-		console.log(ASCII_ROO)
-		console.log()
-		console.log(
-			`[roo] Running ${extensionHostOptions.model || "default"} (${extensionHostOptions.reasoningEffort || "default"}) on ${extensionHostOptions.provider} in ${extensionHostOptions.mode || "default"} mode in ${extensionHostOptions.workspacePath} [debug = ${extensionHostOptions.debug}]`,
-		)
+		const useJsonOutput = outputFormat === "json" || outputFormat === "stream-json"
+
+		extensionHostOptions.disableOutput = useJsonOutput
 
 		const host = new ExtensionHost(extensionHostOptions)
 
-		process.on("SIGINT", async () => {
-			console.log("\n[CLI] Received SIGINT, shutting down...")
-			await host.dispose()
-			process.exit(130)
-		})
+		const jsonEmitter = useJsonOutput
+			? new JsonEventEmitter({ mode: outputFormat as "json" | "stream-json" })
+			: null
 
-		process.on("SIGTERM", async () => {
-			console.log("\n[CLI] Received SIGTERM, shutting down...")
+		async function shutdown(signal: string, exitCode: number): Promise<void> {
+			if (!useJsonOutput) {
+				console.log(`\n[CLI] Received ${signal}, shutting down...`)
+			}
+			jsonEmitter?.detach()
 			await host.dispose()
-			process.exit(143)
-		})
+			process.exit(exitCode)
+		}
+
+		process.on("SIGINT", () => shutdown("SIGINT", 130))
+		process.on("SIGTERM", () => shutdown("SIGTERM", 143))
 
 		try {
 			await host.activate()
+
+			if (jsonEmitter) {
+				jsonEmitter.attachToClient(host.client)
+			}
+
 			await host.runTask(prompt!)
+			jsonEmitter?.detach()
 			await host.dispose()
 			process.exit(0)
 		} catch (error) {
-			console.error("[CLI] Error:", error instanceof Error ? error.message : String(error))
+			const errorMessage = error instanceof Error ? error.message : String(error)
 
-			if (error instanceof Error) {
-				console.error(error.stack)
+			if (useJsonOutput) {
+				const errorEvent = { type: "error", id: Date.now(), content: errorMessage }
+				process.stdout.write(JSON.stringify(errorEvent) + "\n")
+			} else {
+				console.error("[CLI] Error:", errorMessage)
+				if (error instanceof Error) {
+					console.error(error.stack)
+				}
 			}
 
+			jsonEmitter?.detach()
 			await host.dispose()
 			process.exit(1)
 		}

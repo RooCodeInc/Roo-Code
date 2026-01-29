@@ -73,6 +73,7 @@ export async function openMention(cwd: string, mention?: string): Promise<void> 
 
 export interface ParseMentionsResult {
 	text: string
+	slashCommandHelp?: string
 	mode?: string // Mode from the first slash command that has one
 }
 
@@ -246,6 +247,7 @@ export async function parseMentions(
 	}
 
 	// Process valid command mentions using cached results
+	let slashCommandHelp = ""
 	for (const [commandName, command] of validCommands) {
 		try {
 			let commandOutput = ""
@@ -253,9 +255,9 @@ export async function parseMentions(
 				commandOutput += `Description: ${command.description}\n\n`
 			}
 			commandOutput += command.content
-			parsedText += `\n\n<command name="${commandName}">\n${commandOutput}\n</command>`
+			slashCommandHelp += `\n\n<command name="${commandName}">\n${commandOutput}\n</command>`
 		} catch (error) {
-			parsedText += `\n\n<command name="${commandName}">\nError loading command '${commandName}': ${error.message}\n</command>`
+			slashCommandHelp += `\n\n<command name="${commandName}">\nError loading command '${commandName}': ${error.message}\n</command>`
 		}
 	}
 
@@ -267,7 +269,7 @@ export async function parseMentions(
 		}
 	}
 
-	return { text: parsedText, mode: commandMode }
+	return { text: parsedText, mode: commandMode, slashCommandHelp: slashCommandHelp.trim() || undefined }
 }
 
 async function getFileOrFolderContent(

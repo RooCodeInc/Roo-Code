@@ -48,5 +48,11 @@
 		"mostTokens": "Meiste Tokens",
 		"mostRelevant": "Relevanteste"
 	},
-	"viewAllHistory": "Alle anzeigen"
+	"viewAllHistory": "Alle anzeigen",
+	"subtasks_one": "{{count}} Teilaufgabe",
+	"subtasks_other": "{{count}} Teilaufgaben",
+	"subtaskTag": "Teilaufgabe",
+	"deleteWithSubtasks": "Dies löscht auch {{count}} Teilaufgabe(n). Bist du sicher?",
+	"expandSubtasks": "Teilaufgaben erweitern",
+	"collapseSubtasks": "Teilaufgaben einklappen"
 }

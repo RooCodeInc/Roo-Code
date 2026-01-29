@@ -29,6 +29,7 @@
 		"providers": "Proveïdors",
 		"modes": "Modes",
 		"mcp": "Servidors MCP",
+		"worktrees": "Worktrees",
 		"autoApprove": "Auto-aprovació",
 		"browser": "Accés a l'ordinador",
 		"checkpoints": "Punts de control",
@@ -284,6 +285,37 @@
 		"vercelAiGatewayApiKey": "Clau API de Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Obtenir clau API de Vercel AI Gateway",
 		"apiKeyStorageNotice": "Les claus API s'emmagatzemen de forma segura a l'Emmagatzematge Secret de VSCode",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Utilitzar URL base personalitzada",
 		"useReasoning": "Activar raonament",
 		"useHostHeader": "Utilitzar capçalera Host personalitzada",
@@ -744,6 +776,15 @@
 			"label": "Límit de caràcters del terminal",
 			"description": "Anul·la el límit de línies per evitar problemes de memòria imposant un límit dur a la mida de sortida. Si se supera, manté l'inici i el final i mostra un marcador a Roo on s'ha omès el contingut. <0>Aprèn-ne més</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Mida de la previsualització de la sortida d'ordres",
+			"description": "Controla quanta sortida d'ordres veu Roo directament. La sortida completa sempre es desa i és accessible quan calgui.",
+			"options": {
+				"small": "Petita (5KB)",
+				"medium": "Mitjana (10KB)",
+				"large": "Gran (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Temps d'espera d'integració del shell del terminal",
 			"description": "Quant de temps esperar la integració del shell de VS Code abans d'executar comandes. Augmenta si el teu shell s'inicia lentament o veus errors 'Integració del Shell No Disponible'. <0>Aprèn-ne més</0>"
@@ -755,10 +796,6 @@
 		"commandDelay": {
 			"label": "Retard de comanda del terminal",
 			"description": "Afegeix una pausa breu després de cada comanda perquè el terminal de VS Code pugui buidar tota la sortida (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Usa només si veus que falta sortida final; altrament deixa a 0. <0>Aprèn-ne més</0>"
-		},
-		"compressProgressBar": {
-			"label": "Comprimeix sortida de barra de progrés",
-			"description": "Col·lapsa barres de progrés/spinners perquè només es mantingui l'estat final (estalvia tokens). <0>Aprèn-ne més</0>"
 		},
 		"powershellCounter": {
 			"label": "Activa solució de comptador de PowerShell",
@@ -788,14 +825,6 @@
 	"advancedSettings": {
 		"title": "Configuració avançada"
 	},
-	"toolProtocol": {
-		"label": "Protocol de crida d'eines",
-		"description": "Trieu com es comunica en Roo amb l'API. Natiu utilitza l'API de crida de funcions del proveïdor, mentre que XML utilitza definicions d'eines amb format XML.",
-		"default": "Per defecte",
-		"xml": "XML",
-		"native": "Natiu",
-		"currentDefault": "Per defecte: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Habilitar edició mitjançant diffs",
@@ -812,10 +841,6 @@
 					"unified": "L'estratègia de diff unificat pren múltiples enfocaments per aplicar diffs i tria el millor enfocament.",
 					"multiBlock": "L'estratègia de diff multi-bloc permet actualitzar múltiples blocs de codi en un fitxer en una sola sol·licitud."
 				}
-			},
-			"matchPrecision": {
-				"label": "Precisió de coincidència",
-				"description": "Aquest control lliscant controla amb quina precisió han de coincidir les seccions de codi en aplicar diffs. Valors més baixos permeten coincidències més flexibles però augmenten el risc de reemplaçaments incorrectes. Utilitzeu valors per sota del 100% amb extrema precaució."
 			}
 		},
 		"todoList": {
@@ -832,10 +857,6 @@
 			"name": "Utilitzar eina d'inserció de contingut experimental",
 			"description": "Activar l'eina d'inserció de contingut experimental, permetent a Roo inserir contingut a números de línia específics sense necessitat de crear un diff."
 		},
-		"POWER_STEERING": {
-			"name": "Utilitzar mode \"direcció assistida\" experimental",
-			"description": "Quan està activat, Roo recordarà al model els detalls de la seva definició de mode actual amb més freqüència. Això portarà a una adherència més forta a les definicions de rol i instruccions personalitzades, però utilitzarà més tokens per missatge."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Utilitzar eina diff de blocs múltiples experimental",
 			"description": "Quan està activat, Roo utilitzarà l'eina diff de blocs múltiples. Això intentarà actualitzar múltiples blocs de codi a l'arxiu en una sola petició."
@@ -847,10 +868,6 @@
 		"MARKETPLACE": {
 			"name": "Habilitar Marketplace",
 			"description": "Quan està habilitat, pots instal·lar MCP i modes personalitzats del Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Habilita edicions de fitxers concurrents",
-			"description": "Quan està activat, Roo pot editar múltiples fitxers en una sola petició. Quan està desactivat, Roo ha d'editar fitxers d'un en un. Desactivar això pot ajudar quan es treballa amb models menys capaços o quan vols més control sobre les modificacions de fitxers."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edició en segon pla",
@@ -880,10 +897,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Habilitar comandes de barra diagonal iniciades pel model",
 			"description": "Quan està habilitat, Roo pot executar les vostres comandes de barra diagonal per executar fluxos de treball."
-		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Crides paral·leles a eines",
-			"description": "Quan està activat, el protocol natiu pot executar múltiples eines en un sol torn de missatge de l'assistent."
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Habilitar eines personalitzades",

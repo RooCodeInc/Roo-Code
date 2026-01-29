@@ -38,7 +38,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { arePathsEqual, getWorkspacePath } from "../../utils/path"
 import { injectVariables } from "../../utils/config"
 import { safeWriteJson } from "../../utils/safeWriteJson"
-import { sanitizeMcpName } from "../../utils/mcp-name"
+import { sanitizeMcpName, toolNamesMatch } from "../../utils/mcp-name"
 
 // Discriminated union for connection states
 export type ConnectedMcpConnection = {
@@ -940,16 +940,30 @@ export class McpHub {
 	 * Find a connection by sanitized server name.
 	 * This is used when parsing MCP tool responses where the server name has been
 	 * sanitized (e.g., hyphens replaced with underscores) for API compliance.
+	 * Uses fuzzy matching to handle cases where models convert hyphens to underscores.
 	 * @param sanitizedServerName The sanitized server name from the API tool call
 	 * @returns The original server name if found, or null if no match
 	 */
 	public findServerNameBySanitizedName(sanitizedServerName: string): string | null {
+		// First, check for an exact match
 		const exactMatch = this.connections.find((conn) => conn.server.name === sanitizedServerName)
 		if (exactMatch) {
 			return exactMatch.server.name
 		}
 
-		return this.sanitizedNameRegistry.get(sanitizedServerName) ?? null
+		// Check the registry for sanitized name mapping
+		const registryMatch = this.sanitizedNameRegistry.get(sanitizedServerName)
+		if (registryMatch) {
+			return registryMatch
+		}
+
+		// Use fuzzy matching: treat hyphens and underscores as equivalent
+		const fuzzyMatch = this.connections.find((conn) => toolNamesMatch(conn.server.name, sanitizedServerName))
+		if (fuzzyMatch) {
+			return fuzzyMatch.server.name
+		}
+
+		return null
 	}
 
 	private async fetchToolsList(serverName: string, source?: "global" | "project"): Promise<McpTool[]> {
@@ -995,10 +1009,13 @@ export class McpHub {
 				// Continue with empty configs
 			}
 
+			// Check if wildcard "*" is in the alwaysAllow config
+			const hasWildcard = alwaysAllowConfig.includes("*")
+
 			// Mark tools as always allowed and enabled for prompt based on settings
 			const tools = (response?.tools || []).map((tool) => ({
 				...tool,
-				alwaysAllow: alwaysAllowConfig.includes(tool.name),
+				alwaysAllow: hasWildcard || alwaysAllowConfig.includes(tool.name),
 				enabledForPrompt: !disabledToolsList.includes(tool.name),
 			}))
 
@@ -1580,7 +1597,7 @@ export class McpHub {
 		}
 		this.isProgrammaticUpdate = true
 		try {
-			await safeWriteJson(configPath, updatedConfig)
+			await safeWriteJson(configPath, updatedConfig, { prettyPrint: true })
 		} finally {
 			// Reset flag after watcher debounce period (non-blocking)
 			this.flagResetTimer = setTimeout(() => {
@@ -1665,7 +1682,7 @@ export class McpHub {
 					mcpServers: config.mcpServers,
 				}
 
-				await safeWriteJson(configPath, updatedConfig)
+				await safeWriteJson(configPath, updatedConfig, { prettyPrint: true })
 
 				// Update server connections with the correct source
 				await this.updateServerConnections(config.mcpServers, serverSource)
@@ -1816,7 +1833,7 @@ export class McpHub {
 		}
 		this.isProgrammaticUpdate = true
 		try {
-			await safeWriteJson(normalizedPath, config)
+			await safeWriteJson(normalizedPath, config, { prettyPrint: true })
 		} finally {
 			// Reset flag after watcher debounce period (non-blocking)
 			this.flagResetTimer = setTimeout(() => {

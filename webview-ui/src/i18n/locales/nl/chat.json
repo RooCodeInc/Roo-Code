@@ -28,7 +28,8 @@
 		"openInCloud": "Taak openen in Roo Code Cloud",
 		"openInCloudIntro": "Blijf Roo vanaf elke locatie monitoren of ermee interacteren. Scan, klik of kopieer om te openen.",
 		"openApiHistory": "API-geschiedenis openen",
-		"openUiHistory": "UI-geschiedenis openen"
+		"openUiHistory": "UI-geschiedenis openen",
+		"backToParentTask": "Bovenliggende taak"
 	},
 	"unpin": "Losmaken",
 	"pin": "Vastmaken",
@@ -51,7 +52,10 @@
 	"tokenProgress": {
 		"availableSpace": "Beschikbare ruimte: {{amount}} tokens",
 		"tokensUsed": "Gebruikte tokens: {{used}} van {{total}}",
-		"reservedForResponse": "Gereserveerd voor modelantwoord: {{amount}} tokens"
+		"reservedForResponse": "Gereserveerd voor modelantwoord: {{amount}} tokens",
+		"tokensUsedLabel": "Gebruikte tokens",
+		"reservedForResponseLabel": "Gereserveerd voor antwoord",
+		"availableSpaceLabel": "Beschikbare ruimte"
 	},
 	"reject": {
 		"title": "Weigeren",
@@ -253,7 +257,8 @@
 		"completionContent": "Subtaak voltooid",
 		"resultContent": "Subtaakresultaten",
 		"defaultResult": "Ga verder met de volgende taak.",
-		"completionInstructions": "Subtaak voltooid! Je kunt de resultaten bekijken en eventuele correcties of volgende stappen voorstellen. Als alles goed is, bevestig dan om het resultaat terug te sturen naar de hoofdtaak."
+		"completionInstructions": "Subtaak voltooid! Je kunt de resultaten bekijken en eventuele correcties of volgende stappen voorstellen. Als alles goed is, bevestig dan om het resultaat terug te sturen naar de hoofdtaak.",
+		"goToSubtask": "Taak weergeven"
 	},
 	"questions": {
 		"hasQuestion": "Roo heeft een vraag"
@@ -312,9 +317,7 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"openaiCodexProvider": "OpenAI - ChatGPT Plus/Pro Provider toegevoegd dat op abonnement gebaseerde toegang tot Codex-modellen zonder token-kosten biedt.",
-			"gpt52codexModel": "Het nieuwe gpt-5.2-codex model is toegevoegd aan Roo Code Router, de standaard OpenAI provider en meer.",
-			"bugFixes": "Geheugenleaks die grijze schermen veroorzaakten, Gemini-ondertekeningsproblemen en meer stabiliteitsverhogingen opgelost."
+			"smartCodeFolding": "Smart Code Folding: Contextcondensatie behoudt nu een lichte kaart van je bestanden—functiehandtekeningen, klasdeclaraties en typedefinities. Dit biedt betere continuïteit na condensatie en slimmere bewerkingen bij verwijzing naar vorig werk."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
@@ -342,6 +345,10 @@
 			"messagesRemoved_other": "{{count}} berichten verwijderd",
 			"description": "Oudere berichten zijn uit het gesprek verwijderd om binnen de limiet van het contextvenster te blijven. Dit is een snelle maar minder contextbehoudende aanpak in vergelijking met samenvoeging."
 		}
+	},
+	"skill": {
+		"wantsToLoad": "Roo wil een vaardigheid laden",
+		"didLoad": "Roo heeft een vaardigheid geladen"
 	},
 	"followUpSuggest": {
 		"copyToInput": "Kopiëren naar invoer (zelfde als shift + klik)",
@@ -492,5 +499,17 @@
 		"updated": "De to-do-lijst is bijgewerkt",
 		"completed": "Voltooid",
 		"started": "Gestart"
+	},
+	"tooManyTools": {
+		"title": "Te veel tools ingeschakeld",
+		"toolsPart_one": "{{count}} tool",
+		"toolsPart_other": "{{count}} tools",
+		"serversPart_one": "{{count}} MCP server",
+		"serversPart_other": "{{count}} MCP servers",
+		"messageTemplate": "Je hebt {{tools}} ingeschakeld via {{servers}}. Zoveel tools kunnen het model verwarren en tot fouten leiden. Probeer dit onder {{threshold}} te houden.",
+		"openMcpSettings": "MCP-instellingen openen"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }
