@@ -1,0 +1,41 @@
+---
+description: This patch release adds Claude Opus 4.5 across multiple providers, introduces Roo Code Cloud image generation, hardens Gemini and LiteLLM behavior, and refreshes Cerebras models.
+keywords:
+  - roo code 3.34.2
+  - claude opus 4.5
+  - roo code cloud image generation
+  - gemini 3 reasoning_details
+  - litellm cache refresh
+  - cerebras models
+image: /img/v3.34.2/v3.34.2.png
+---
+
+# Roo Code 3.34.2 Release Notes (2025-11-24)
+
+This patch release adds Claude Opus 4.5 support across OpenRouter, Anthropic, and Vertex, introduces Roo Code Cloud image generation, and improves provider reliability for Gemini, Cerebras, and LiteLLM-backed models.
+
+<img src="/img/v3.34.2/v3.34.2.png" alt="Roo Code v3.34.2 Release" width="600" />
+
+## Claude Opus 4.5 across providers
+
+Claude Opus 4.5 is now available through multiple providers with support for large context windows, prompt caching, and reasoning budgets ([#9540](https://github.com/RooCodeInc/Roo-Code/pull/9540), [#9541](https://github.com/RooCodeInc/Roo-Code/pull/9541)):
+
+- **Roo Code Cloud**: Run Claude Opus 4.5 as a managed cloud model for long, reasoning-heavy tasks without managing API keys yourself.
+- **OpenRouter**: Use the `anthropic/claude-opus-4.5` model with prompt caching and reasoning budget support so you can run longer or more complex tasks with lower latency and cost.
+- **Anthropic**: Access `claude-opus-4-5-20251101` directly via the Anthropic provider with full support for large context windows and reasoning budgets.
+- **Vertex AI**: Use `claude-opus-4-5@20251101` on Vertex AI for managed, region-aware deployments with reasoning budget support.
+
+## Provider Updates
+
+- **Roo Code Cloud image generation provider**: Roo Code Cloud is now available as an image generation provider, so you can generate images directly through Roo Code Cloud instead of relying only on third-party image APIs ([#9528](https://github.com/RooCodeInc/Roo-Code/pull/9528))).
+- **Cerebras model list clean-up**: The Cerebras provider model list now only shows currently supported models, reducing errors from deprecated Cerebras/Qwen variants and keeping the model picker aligned with what the API actually serves ([#9527](https://github.com/RooCodeInc/Roo-Code/pull/9527))).
+- **Reliable LiteLLM model refresh after credential changes**: Clicking **Refresh Models** after changing your LiteLLM API key or base URL now immediately reloads the model list using the new credentials, so you do not need to clear caches or restart VS Code, while background refreshes still benefit from caching for speed ([#9536](https://github.com/RooCodeInc/Roo-Code/pull/9536))).
+
+## QOL Improvements
+
+- **XML tool protocol stays in sync with configuration**: Tool runs that use the XML protocol now correctly track the configured tool protocol after configuration updates, preventing rare parser-state errors when switching between XML and native tools ([#9535](https://github.com/RooCodeInc/Roo-Code/pull/9535))).
+
+## Bug Fixes
+
+- **Gemini 3 reasoning_details support**: Fixes 400 INVALID_ARGUMENT errors when using Gemini 3 models via OpenRouter by fully supporting the newer `reasoning_details` format, so multi-turn and tool-calling conversations now work reliably without dropping reasoning context ([#9506](https://github.com/RooCodeInc/Roo-Code/pull/9506))).
+- **Skip unsupported Gemini content blocks safely**: Gemini conversations on Vertex AI now skip unsupported metadata blocks (such as certain reasoning or document types) with a warning instead of failing the entire thread, keeping long-running chats stable ([#9537](https://github.com/RooCodeInc/Roo-Code/pull/9537))).

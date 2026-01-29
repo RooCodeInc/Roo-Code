@@ -1,0 +1,28 @@
+---
+description: This release improves codebase indexing reliability, fixes several user interface issues, and updates AI model support with enhanced debugging capabilities.
+---
+
+# Roo Code 3.18.4 Release Notes (2025-05-25)
+
+This release improves codebase indexing reliability, fixes several user interface issues, and updates AI model support with enhanced debugging capabilities.
+
+---
+
+## Bug Fixes
+
+*   **Codebase Indexing**: Fixed settings saving and improved Ollama indexing performance for more reliable semantic search (thanks daniel-lxs!)
+*   **File Handling**: Fixed handling of byte order mark (BOM) when users reject apply_diff operations (thanks avtc!)
+*   **Auto-Approve Input**: Fixed issue where chat input would incorrectly clear when auto-approve was enabled (thanks Ruakij!)
+*   **Build Process**: Fixed bootstrap script parameters for better pnpm compatibility during development setup (thanks ChuKhaLi!)
+
+---
+
+## Provider Updates
+
+*   **xAI Models**: Updated xAI model list and default model configuration for improved performance (thanks PeterDaveHello!)
+
+---
+
+## Misc Improvements
+
+*   **Enhanced Debugging**: Added metadata to API requests across all providers for better troubleshooting and monitoring (thanks dtrugman!)

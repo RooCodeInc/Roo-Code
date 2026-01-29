@@ -1,0 +1,64 @@
+---
+description: Enhanced Kimi K2 models with 256K+ context windows, OpenAI service tiers for flexible pricing, and DeepInfra as a new provider with 100+ models.
+keywords:
+  - roo code 3.26.7
+  - kimi k2 models
+  - openai service tiers
+  - deepinfra provider
+  - bug fixes
+image: /img/v3.26.7/v3.26.7.png
+---
+
+# Roo Code 3.26.7 Release Notes (2025-09-05)
+
+This release brings enhanced Kimi K2 models with massive context windows, OpenAI service tier selection, and DeepInfra as a new provider offering 100+ models.
+
+<img src="/img/v3.26.7/v3.26.7.png" alt="Roo Code v3.26.7 Release" width="600" />
+## Kimi K2-0905: Moonshot's Latest Open Source Model is Live in Roo Code
+
+We've upgraded to the latest Kimi K2-0905 models across multiple providers (thanks CellenLee!) ([#7663](https://github.com/RooCodeInc/Roo-Code/pull/7663), [#7693](https://github.com/RooCodeInc/Roo-Code/pull/7693)):
+
+K2-0905 comes with three major upgrades:
+- **256K Context Window**: Massive context supporting up to 256K-262K tokens, doubling the previous limit for processing much larger documents and conversations
+- **Improved Tool Calling**: Enhanced function calling and tool use capabilities for better agentic workflows
+- **Enhanced Front-end Development**: Superior HTML, CSS, and JavaScript generation with modern framework support
+
+Available through Groq, Moonshot, and Fireworks providers. These models excel at handling large codebases, long conversations, and complex multi-file operations.
+
+## OpenAI Service Tiers
+
+We've added support for OpenAI's new Responses API service tiers ([#7646](https://github.com/RooCodeInc/Roo-Code/pull/7646)):
+
+- **Standard Tier**: Default tier with regular pricing
+- **Flex Tier**: 50% discount with slightly longer response times for non-urgent tasks
+- **Priority Tier**: Faster response times for time-critical operations
+
+Select your preferred tier directly in the UI based on your needs and budget. This gives you more control over costs while maintaining access to OpenAI's powerful models.
+
+> **📚 Documentation**: See [OpenAI Provider Guide](/providers/openai) for detailed tier comparison and pricing.
+
+## DeepInfra Provider
+
+DeepInfra is now available as a model provider (thanks Thachnh!) ([#7677](https://github.com/RooCodeInc/Roo-Code/pull/7677)):
+
+- **100+ Models**: Access to a vast selection of open-source and frontier models
+- **Competitive Pricing**: Very cost-effective rates compared to other providers
+- **Automatic Prompt Caching**: Built-in prompt caching for supported models like Qwen3 Coder
+- **Fast Inference**: Optimized infrastructure for quick response times
+
+DeepInfra is an excellent choice for developers looking for variety and value in their AI model selection.
+
+> **📚 Documentation**: See [DeepInfra Provider Setup](/providers/deepinfra) to get started.
+
+## QOL Improvements
+
+* **Shell Security**: Added shell executable allowlist validation with platform-specific fallbacks for improved command execution safety ([#7681](https://github.com/RooCodeInc/Roo-Code/pull/7681))
+
+## Bug Fixes
+
+* **MCP Tool Validation**: Roo now validates MCP tool existence before execution and shows helpful error messages with available tools (thanks R-omk!) ([#7632](https://github.com/RooCodeInc/Roo-Code/pull/7632))
+* **OpenAI API Key Errors**: Clear error messages now display when API keys contain invalid characters instead of cryptic ByteString errors (thanks A0nameless0man!) ([#7586](https://github.com/RooCodeInc/Roo-Code/pull/7586))
+* **Follow-up Questions**: Fixed countdown timer incorrectly reappearing in task history for already answered follow-up questions (thanks XuyiK!) ([#7686](https://github.com/RooCodeInc/Roo-Code/pull/7686))
+* **Moonshot Token Limit**: Resolved issue where Moonshot models were incorrectly limited to 1024 tokens, now properly respects configured limits (thanks wangxiaolong100, greyishsong!) ([#7673](https://github.com/RooCodeInc/Roo-Code/pull/7673))
+* **Zsh Command Safety**: Improved handling of zsh process substitution and glob qualifiers to prevent auto-execution of potentially dangerous commands ([#7658](https://github.com/RooCodeInc/Roo-Code/pull/7658), [#7667](https://github.com/RooCodeInc/Roo-Code/pull/7667))
+* **Traditional Chinese Localization**: Fixed typo in zh-TW locale text (thanks PeterDaveHello!) ([#7672](https://github.com/RooCodeInc/Roo-Code/pull/7672))

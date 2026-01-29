@@ -1,0 +1,42 @@
+---
+description: Bedrock Global Inference, expanded model support and limits, and QOL fixes for UI clarity and provider reliability.
+keywords:
+  - roo code 3.30.2
+  - new features
+  - bug fixes
+  - provider updates
+  - bedrock global inference
+  - claude sonnet 4.5 defaults
+  - qwen3 embeddings
+  - cerebras zai-glm-4.6
+image: /img/v3.30.2/v3.30.2.png
+---
+
+# Roo Code 3.30.2 Release Notes (2025-11-06)
+
+This patch adds Bedrock Global Inference, expands model options and limits, improves UI clarity, and fixes provider selection and auditing issues.
+
+<img src="/img/v3.30.2/v3.30.2.png" alt="Roo Code v3.30.2 Release" width="600" />
+
+## QOL Improvements
+
+* File path tooltips show full paths on hover across reads/edits, directory listings, and search, reducing confusion in narrow layouts (thanks da2ce7!) ([#9030](https://github.com/RooCodeInc/Roo-Code/pull/9030))
+
+## Bug Fixes
+
+* Eliminates brief UI flicker when cancelling a task; the task view remains stable ([#9037](https://github.com/RooCodeInc/Roo-Code/pull/9037))
+* Pinned models remain visible at the top while scrolling long lists for quicker access (thanks XiaoYingYo!) ([#8813](https://github.com/RooCodeInc/Roo-Code/pull/8813))
+* Checkpoints always commit to Roo’s shadow repository even when GIT_DIR is set in Dev Containers, preventing leaks to external repos (thanks heyseth, nonsleepr!) ([#8811](https://github.com/RooCodeInc/Roo-Code/pull/8811))
+* Restores correct 32K maxTokens for Claude Opus 4.1 to avoid premature truncation on long generations (thanks kaveh-deriv!) ([#9046](https://github.com/RooCodeInc/Roo-Code/pull/9046))
+* Fixes dynamic provider model validation so switching providers uses a valid default model and avoids TypeErrors (thanks NotADev137!) ([#9054](https://github.com/RooCodeInc/Roo-Code/pull/9054))
+* AWS Bedrock requests now report full user agent details in CloudTrail for better auditing and troubleshooting (thanks ajjuaire!) ([#9043](https://github.com/RooCodeInc/Roo-Code/pull/9043))
+
+## Misc Improvements
+
+* Optional pre-push full test run via RUN_TESTS_ON_PUSH=true in .env.local; default behavior keeps pushes fast (tests skipped) ([#9055](https://github.com/RooCodeInc/Roo-Code/pull/9055))
+
+## Provider Updates
+
+* Sets Claude Sonnet 4.5 as the default where available across Anthropic, Bedrock, OpenRouter, Claude Code, and Unbound ([#8922](https://github.com/RooCodeInc/Roo-Code/pull/8922))
+* Updates Cerebras zai‑glm‑4.6 limits to 40,960 output tokens with a 131,072‑token context window; reflects faster response rates (~1,000 tokens/s) (thanks sebastiand-cerebras!) ([#9024](https://github.com/RooCodeInc/Roo-Code/pull/9024))
+* Adds Qwen3-Embedding-0.6B (1024‑dim) and Qwen3-Embedding-4B (2560‑dim) to OpenRouter for code indexing (thanks dmarkey!) ([#9060](https://github.com/RooCodeInc/Roo-Code/pull/9060))

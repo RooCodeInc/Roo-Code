@@ -1,0 +1,32 @@
+---
+description: Adds Roo provider reasoning control, Z.ai Deep Thinking toggle, Gemini model updates, plus fixes for rate limiting, retries, and UI polish.
+keywords:
+  - roo code 3.29.3
+  - release notes
+  - bug fixes
+  - provider updates
+  - qol improvements
+---
+
+# Roo Code 3.29.3 Release Notes (2025-10-28)
+
+This patch adds reasoning controls for Roo and Z.ai providers, updates Gemini "latest" models, and delivers stability and UI fixes.
+
+## QOL Improvements
+
+* Toggle time and cost display in the system prompt to reduce model distraction during long runs (thanks jaxnb!) ([#8451](https://github.com/RooCodeInc/Roo-Code/pull/8451))
+* After “Add to Context,” input auto‑focuses and two newlines are inserted for clearer separation, so you can keep typing immediately ([#8877](https://github.com/RooCodeInc/Roo-Code/pull/8877))
+
+## Bug Fixes
+
+* LiteLLM: Prefer max_output_tokens (with fallback to max_tokens) to prevent 400 errors on Claude Sonnet 4.5 via Vertex (thanks fabb!) ([#8455](https://github.com/RooCodeInc/Roo-Code/pull/8455))
+* Messages typed during context condensing now send automatically once condensing finishes; per‑task queues no longer cross‑drain (thanks JosXa!) ([#8478](https://github.com/RooCodeInc/Roo-Code/pull/8478))
+* Rate limiting now uses a monotonic clock and enforces a hard cap at the configured limit to avoid long lockouts (thanks chrarnoldus, intermarkec!) ([#8456](https://github.com/RooCodeInc/Roo-Code/pull/8456))
+* Restore green tests and TypeScript build for LiteLLM after interface changes; keeps monotonic clock fix and token limit behavior ([#8870](https://github.com/RooCodeInc/Roo-Code/pull/8870))
+* Checkpoint menu popover no longer clips long option text; items remain fully visible ([#8867](https://github.com/RooCodeInc/Roo-Code/pull/8867))
+
+## Provider Updates
+
+* Roo provider: Reasoning effort control lets you choose deeper step‑by‑step thinking vs. faster/cheaper responses. See [Roo Code Router](/providers/roo-code-router) for details. ([#8874](https://github.com/RooCodeInc/Roo-Code/pull/8874))
+* Z.ai (GLM‑4.5/4.6): “Enable reasoning” toggle to activate Deep Thinking; hidden on unsupported models (thanks BeWater799!). See [Z.ai provider](/providers/zai). ([#8872](https://github.com/RooCodeInc/Roo-Code/pull/8872))
+* Gemini: Updated model list and “latest” aliases for easier selection (thanks cleacos!). See [Gemini provider](/providers/gemini). ([#8486](https://github.com/RooCodeInc/Roo-Code/pull/8486))

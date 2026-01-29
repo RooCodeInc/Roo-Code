@@ -1,0 +1,32 @@
+---
+description: Improves auto-approve UI, adds Qwen3 Next 80B A3B models via chutes, and fixes @-mentions, nested repo warning, authenticated Ollama tags, and message queue performance.
+keywords:
+  - roo code 3.28.2
+  - new features
+  - bug fixes
+image: /img/v3.28.2/v3.28.2.png
+---
+
+# Roo Code 3.28.2 Release Notes (2025-09-14)
+
+This release improves the auto-approve UI, adds Qwen3 Next 80B A3B models via the chutes provider, and fixes issues with @-mentions, nested git warnings, authenticated Ollama tag fetches, and message queue performance.
+
+<img src="/img/v3.28.2/v3.28.2.png" alt="Roo Code v3.28.2 Release" width="600" />
+## QOL Improvements
+
+* Smaller and more subtle auto-approve UI (thanks brunobergher!) ([#7894](https://github.com/RooCodeInc/Roo-Code/pull/7894))
+* Disable Roomote Control on logout for better security ([#7976](https://github.com/RooCodeInc/Roo-Code/pull/7976))
+* Add padding to the cloudview for better visual spacing ([#7954](https://github.com/RooCodeInc/Roo-Code/pull/7954))
+
+## Bug Fixes
+
+* Fix message queue re-queue loop in Task.ask() that could degrade performance ([#7823](https://github.com/RooCodeInc/Roo-Code/pull/7823))
+* Restrict @-mention parsing to line-start or whitespace boundaries to prevent false triggers ([#7876](https://github.com/RooCodeInc/Roo-Code/pull/7876))
+* Make nested git repository warning persistent with path info for better visibility ([#7885](https://github.com/RooCodeInc/Roo-Code/pull/7885))
+* Include API key in Ollama /api/tags requests to support authenticated instances (thanks ItsOnlyBinary!) ([#7903](https://github.com/RooCodeInc/Roo-Code/pull/7903))
+* Preserve original first message context during conversation condensing for more coherent long chats ([#7939](https://github.com/RooCodeInc/Roo-Code/pull/7939))
+
+## Provider Updates
+
+* Add Qwen3 Next 80B A3B models to the chutes provider ([#7948](https://github.com/RooCodeInc/Roo-Code/pull/7948))  
+  > See [Chutes provider](/providers/chutes) for setup and usage.

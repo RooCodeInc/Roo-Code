@@ -1,0 +1,47 @@
+---
+description: Roo Code 3.36.0 introduces non-destructive context management for reliable checkpoint restoration, plus Roo provider enhancements and provider improvements.
+keywords:
+  - roo code 3.36.0
+  - context condensing
+  - checkpoint restoration
+  - rewind
+  - roo provider
+  - reasoning details
+image: /img/v3.36.0/v3.36.0.png
+---
+
+# Roo Code 3.36.0 Release Notes (2025-12-04)
+
+This release introduces non-destructive context management for reliable checkpoint restoration, adds reasoning visibility for supported models, and improves provider reliability across Roo, Minimax, Cerebras, and Vercel AI Gateway.
+
+<img src="/img/v3.36.0/v3.36.0.png" alt="Roo Code v3.36.0 Release" width="600" />
+
+## Non-Destructive Context Management
+
+Context condensing and sliding window truncation now preserve your original messages internally rather than deleting them ([#9665](https://github.com/RooCodeInc/Roo-Code/pull/9665)). When you rewind to an earlier checkpoint, the full conversation history is restored automatically. This applies to both automatic condensing and sliding window operations.
+
+## Provider Updates
+
+* **Reasoning Details Support**: The Roo provider now displays reasoning details from models with extended thinking capabilities, giving you visibility into how the model approaches your requests ([#9796](https://github.com/RooCodeInc/Roo-Code/pull/9796))
+
+* **Native Tools Default**: All Roo provider models now default to native tool protocol for improved reliability and performance ([#9811](https://github.com/RooCodeInc/Roo-Code/pull/9811))
+
+* **Minimax search_and_replace**: The Minimax M2 model now uses search_and_replace for more reliable file editing operations ([#9780](https://github.com/RooCodeInc/Roo-Code/pull/9780))
+
+* **Cerebras Token Optimization**: Conservative 8K token limits prevent premature rate limiting (thanks sebastiand-cerebras!), plus deprecated model cleanup ([#9804](https://github.com/RooCodeInc/Roo-Code/pull/9804))
+
+* **Vercel AI Gateway**: More reliable model fetching for models without complete pricing information ([#9791](https://github.com/RooCodeInc/Roo-Code/pull/9791))
+
+## Bug Fixes
+
+* **Write Tool Validation**: Resolved false positives where `write_to_file` incorrectly rejected complete markdown files containing inline code comments like `# NEW:` or `// Step 1:` (thanks Michaelzag!) ([#9787](https://github.com/RooCodeInc/Roo-Code/pull/9787))
+
+* **Download Count Display**: Fixed homepage download count to display with proper precision for million-scale numbers ([#9807](https://github.com/RooCodeInc/Roo-Code/pull/9807))
+
+## Misc Improvements
+
+* **Tool Consolidation**: Removed the deprecated `insert_content` tool; use `apply_diff` or `write_to_file` for file modifications ([#9751](https://github.com/RooCodeInc/Roo-Code/pull/9751))
+
+* **Experimental Settings**: Temporarily disabled the parallel tool calls experiment while improvements are in progress ([#9798](https://github.com/RooCodeInc/Roo-Code/pull/9798))
+
+* **Infrastructure**: Updated Next.js dependencies for web applications ([#9799](https://github.com/RooCodeInc/Roo-Code/pull/9799))

@@ -1,0 +1,66 @@
+---
+description: This release focuses on streamlining the user interface with intelligent context condensing enabled by default, improved mode organization, enhanced file protection, and numerous quality-of-life improvements.
+---
+
+# Roo Code 3.19.0 Release Notes (2025-05-30)
+
+This release focuses on streamlining the user interface with intelligent context condensing enabled by default, improved mode organization, enhanced file protection, and numerous quality-of-life improvements.
+
+---
+
+## Intelligent Context Condensing Now Default
+We've enabled intelligent context condensing by default and relocated the condense button for easier access:
+
+<img src="/img/intelligent-context-condensing/intelligent-context-condensing-2.png" alt="Context condensed message in chat" width="600" />
+
+- **Default Activation**: Intelligent context condensing is now enabled out of the box for all users
+- **Improved Button Placement**: Moved the condense button out of the expanded task menu for quicker access
+- **Smart Error Handling**: The system now skips condensing and shows clear error messages if context grows during the condensing process
+
+<img src="/img/intelligent-context-condensing/intelligent-context-condensing.png" alt="Settings for Intelligent Context Condensing" width="600" />
+*Intelligent Context Condensing configuration options: automatic triggering toggle, threshold slider, API configuration selection, and custom prompt customization.*
+
+---
+
+## Streamlined Mode Organization
+We've reorganized the interface for better workflow organization:
+
+- **Modes Tab**: Transformed the Prompts tab into a dedicated Modes tab for clearer navigation
+- **Settings Relocation**: Moved support prompts to Settings for better organization
+- **Cleaner Interface**: Simplified the main interface by grouping related features more logically
+
+Navigate between different modes and prompts more intuitively.
+
+---
+
+## QOL Improvements
+
+*   **Enhanced Sidebar Compatibility**: Menu functionality now remains stable when moving Roo between primary and secondary sidebars (thanks chrarnoldus!)
+
+---
+
+## Bug Fixes
+
+*   **Directory Mention Protection**: Fixed [`@directory`](/basic-usage/context-mentions) not respecting [`.rooignore`](/features/rooignore) files (thanks xyOz-dev!)
+*   **Tool File Protection**: Added [`rooignore`](/features/rooignore) checking for `insert_content` and `search_and_replace` tools
+*   **Memory Leak Fix**: Resolved memory leak in ChatView by stabilizing callback props (thanks samhvw8!)
+*   **Empty File Creation**: Fixed [`write_to_file`](/advanced-usage/available-tools/write-to-file) to properly create empty files when content is empty (thanks Ruakij!)
+*   **Chat Input Stability**: Fixed chat input clearing during running tasks (thanks xyOz-dev!)
+
+---
+
+## Provider Updates
+
+*   **DeepSeek R1 0528**: Add DeepSeek R1 0528 model support to [Chutes provider](/providers/chutes) (thanks zeozeozeo!)
+*   **AWS Regions**: Updated AWS regions to include Spain and Hyderabad
+
+---
+
+## Misc Improvements
+
+*   **MCP Environment Variables**: Add environment variable injection support for whole MCP config (thanks NamesMT!)
+*   **Shell Compatibility**: Improve POSIX shell compatibility in pre-push hook (thanks PeterDaveHello and chrarnoldus!)
+*   **Windows Terminal**: Update PAGER environment variable for Windows compatibility in Terminal (thanks SmartManoj!)
+*   **Search Clarity**: Update codebase search description to emphasize English query requirements (thanks ChuKhaLi!)
+
+Thank you to all our contributors for making Roo Code better with each release!

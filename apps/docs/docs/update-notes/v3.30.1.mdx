@@ -1,0 +1,19 @@
+---
+description: Roo Code 3.30.1 fixes an embedding dimension mismatch and reverts a problematic cancel/resume change to restore stability.
+keywords:
+  - roo code 3.30.1
+  - bug fixes
+  - embeddings
+  - OpenRouter
+  - Mistral
+  - UI flicker
+---
+# Roo Code 3.30.1 Release Notes (2025-11-04)
+
+This patch improves reliability by fixing an embedding dimension mismatch and restoring stable cancel/resume behavior.
+
+
+## Bug Fixes
+
+* Correct OpenRouter Mistral embedding dimension to 1536 to prevent vector size errors; existing Qdrant collections are recreated with the correct size for consistent similarity search ([#9028](https://github.com/RooCodeInc/Roo-Code/pull/9028))
+* Revert recent cancel/resume change that caused UI flicker and unreliable resumption, restoring the previous stable behavior while a safer fix is prepared ([#9032](https://github.com/RooCodeInc/Roo-Code/pull/9032))

@@ -1,0 +1,58 @@
+---
+description: This major release introduces 1-click task sharing, global rule directories, enhanced mode discovery, and comprehensive bug fixes for memory leaks and provider integration.
+---
+
+# Roo Code 3.22.0 Release Notes (2025-06-25)
+
+This major release introduces 1-click task sharing, global rule directories, enhanced mode discovery, and comprehensive bug fixes for memory leaks and provider integration.
+
+## 1-Click Task Sharing
+
+<img src="/img/task-sharing/task-sharing-1.gif" alt="Roo Code Task Sharing Demo" width="600" />
+
+We've added the ability to share your Roo Code tasks publicly right from within the extension ([learn more](/roo-code-cloud/task-sharing)):
+
+- **Public Sharing**: Select "Share Publicly" to generate a shareable link that anyone can access
+- **Automatic Clipboard Copy**: Generated links are automatically copied to your clipboard for easy sharing
+- **Collaboration Ready**: Share tasks with team members, collaborators, or anyone who needs to view your task and conversation history
+
+## Global Rules Directory Support
+
+We've added support for cross-workspace custom instruction sharing through global directory loading (thanks samhvw8!) ([#5016](https://github.com/RooCodeInc/Roo-Code/pull/5016)):
+
+- **Global Rules**: Store rules in `~/.roo/rules/` for consistent configuration across all projects
+- **Project-Specific Rules**: Use `.roo/rules/` directories for project-specific customizations
+- **Hierarchical Loading**: Global rules load first, with project rules taking precedence for overrides
+- **Team Collaboration**: Version-control project rules to share team standards and workflows
+
+This enables configuration management across projects and machines, perfect for organizational onboarding and maintaining consistent development environments. [Learn how to set up global rules](/features/custom-instructions#setting-up-global-rules).
+
+## QOL Improvements
+
+* **Mode Discovery**: Enhanced mode selector with highlighting for new users, redesigned interface, and descriptive text. Also moved the [Roo Code Marketplace](/features/marketplace) and [Mode configuration](/features/custom-modes) buttons out of the top menu for better organization (thanks brunobergher!) ([#4902](https://github.com/RooCodeInc/Roo-Code/pull/4902))
+
+<img src="/img/v3.22.0/v3.22.0.png" alt="Enhanced mode selector interface showing improved highlighting and descriptive text for better user experience" width="400" />
+
+* **Quick Fix Control**: Added setting to disable Roo Code quick fixes, preventing conflicts with other extensions (thanks OlegOAndreev!) ([#4878](https://github.com/RooCodeInc/Roo-Code/pull/4878)) - [Learn more](/features/code-actions#disablingenabling-code-actions)
+
+<img src="/img/v3.22.0/v3.22.0-1.png" alt="VSCode settings showing the Enable Roo Code quick fixes toggle option" width="300" />
+
+## Bug Fixes
+
+* **Task File Corruption**: Fixed race condition that corrupted task files, eliminating "No existing API conversation history" errors (thanks KJ7LNW!) ([#4733](https://github.com/RooCodeInc/Roo-Code/pull/4733))
+* **Memory Leaks**: Fixed multiple memory leaks in chat interface and CodeBlock component that could cause crashes and grey screens (thanks kiwina, xyOz-dev!) ([#4244](https://github.com/RooCodeInc/Roo-Code/pull/4244), [#4190](https://github.com/RooCodeInc/Roo-Code/pull/4190))
+* **Task Names**: Fixed blank entries in task history - tasks now display meaningful names like "Task #1 (Incomplete)" (thanks daniel-lxs!) ([#5071](https://github.com/RooCodeInc/Roo-Code/pull/5071))
+* **Settings Import**: Fixed import functionality when configuration includes allowed commands (thanks catrielmuller!) ([#5110](https://github.com/RooCodeInc/Roo-Code/pull/5110))
+* **File Creation**: Fixed [`write_to_file`](/advanced-usage/available-tools/write-to-file) tool failing with newline-only or empty content (thanks Githubguy132010!) ([#3550](https://github.com/RooCodeInc/Roo-Code/pull/3550))
+
+## Provider Updates
+
+* **Claude Code**: Fixed token counting issues, message handling for long tasks, removed misleading UI controls, and improved caching/image upload ([#5108](https://github.com/RooCodeInc/Roo-Code/pull/5108), [#5072](https://github.com/RooCodeInc/Roo-Code/pull/5072), [#5105](https://github.com/RooCodeInc/Roo-Code/pull/5105), [#5113](https://github.com/RooCodeInc/Roo-Code/pull/5113))
+* **Azure OpenAI**: Fixed compatibility with reasoning models by removing unsupported temperature parameter (thanks ExactDoug!) ([#5116](https://github.com/RooCodeInc/Roo-Code/pull/5116))
+* **AWS Bedrock**: Improved throttling error detection and retry functionality ([#4748](https://github.com/RooCodeInc/Roo-Code/pull/4748))
+
+## Misc Improvements
+
+* **VSCode Command Integration**: Added programmatic settings import capability - import settings via Command Palette ("Roo: Import Settings") or VSCode API for automation (thanks shivamd1810!) ([#5095](https://github.com/RooCodeInc/Roo-Code/pull/5095))
+* **Translation Workflow**: Improved internal translation processes to reduce file reads and improve efficiency (thanks KJ7LNW!) ([#5126](https://github.com/RooCodeInc/Roo-Code/pull/5126))
+* **YAML Parsing**: Enhanced custom modes configuration handling for edge cases and special characters ([#5099](https://github.com/RooCodeInc/Roo-Code/pull/5099))

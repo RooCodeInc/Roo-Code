@@ -1,0 +1,20 @@
+---
+description: This release introduces LaTeX rendering, a new MCP tool toggle, and fixes several bugs related to the marketplace, subtasks, and pricing.
+---
+
+# Roo Code 3.21.2 Release Notes (2025-06-21)
+This release introduces LaTeX rendering, a new MCP tool toggle, and fixes several bugs related to the marketplace, subtasks, and pricing.
+## New Features
+* **LaTeX Rendering**: You can now render LaTeX math equations directly in the chat window (thanks ColbySerpa!) ([#4786](https://github.com/RooCodeInc/Roo-Code/pull/4786))
+* **MCP Tool Toggle**: A new toggle allows you to disable individual MCP server tools from being included in the prompt context (thanks Rexarrior!) ([#3551](https://github.com/RooCodeInc/Roo-Code/pull/3551))
+* **Symlink Support**: The `list_files` tool now supports symbolic links (thanks josh-clanton-powerschool!) ([#4859](https://github.com/RooCodeInc/Roo-Code/pull/4859))
+## Bug Fixes
+* **Marketplace**: Fixed an issue where the marketplace would go blank after being populated and resolved timeout issues (thanks yangbinbin48!) ([#4941](https://github.com/RooCodeInc/Roo-Code/pull/4941))
+* **@mention**: Fixed an issue with recursive directory scanning when using "Add Folder" with @mention (thanks village-way!) ([#4863](https://github.com/RooCodeInc/Roo-Code/pull/4863))
+* **Subtasks**: Resolved an issue where a phantom "Subtask Results" would display if a task was cancelled during an API retry. ([#4893](https://github.com/RooCodeInc/Roo-Code/pull/4893))
+* **Pricing**: Corrected the pricing for the Gemini 2.5 Flash model (thanks sr-tream!) ([#4898](https://github.com/RooCodeInc/Roo-Code/pull/4898))
+* **Markdown**: Fixed an issue with markdown rendering for links that are followed by punctuation. ([#4841](https://github.com/RooCodeInc/Roo-Code/pull/4841))
+## QOL Improvements
+* **Onboarding**: Made some tweaks to the onboarding process to better emphasize modes. ([#4791](https://github.com/RooCodeInc/Roo-Code/pull/4791))
+* **Task Orchestration**: Renamed "Boomerang Tasks" to "Task Orchestration" to improve clarity. ([#4856](https://github.com/RooCodeInc/Roo-Code/pull/4856))
+* **`attempt_completion`**: The `attempt_completion` tool no longer executes commands. This is a permanent change and the experimental setting has been removed. ([#4884](https://github.com/RooCodeInc/Roo-Code/pull/4884))

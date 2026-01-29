@@ -1,0 +1,23 @@
+---
+description: This patch release lets eval jobs run on Roo Code Cloud models, clarifies image generation prompts, cleans up todo list updates, and fixes duplicate cloud message sync.
+keywords:
+  - roo code 3.34.1
+  - evals roo code cloud
+  - image generation ui
+  - todo list ui
+  - cloud sync bug fix
+---
+
+# Roo Code 3.34.1 Release Notes (2025-11-23)
+
+This patch release lets evaluation jobs run on Roo Code Cloud models, makes image generation prompts easier to read, cleans up todo list updates, and prevents duplicate cloud-synced messages.
+
+## Bug Fixes
+
+* **Single todo list in updates**: Removed a redundant todo list block from chat updates so you only see one clean, focused list when the updateTodoList tool runs ([#9517](https://github.com/RooCodeInc/Roo-Code/pull/9517), [#9522](https://github.com/RooCodeInc/Roo-Code/pull/9522)).
+* **Cloud message deduplication**: Fixed cloud message syncing so duplicate copies of the same reasoning or assistant message are no longer re-synced, keeping task histories cleaner and less confusing ([#9518](https://github.com/RooCodeInc/Roo-Code/pull/9518), [#9522](https://github.com/RooCodeInc/Roo-Code/pull/9522)).
+
+## QOL Improvements
+
+* **Clearer image generation prompts**: The full prompt and path for image generation now appear directly in the chat UI with clearer spacing and typography, making it easier to inspect, debug, and reuse prompts ([#9505](https://github.com/RooCodeInc/Roo-Code/pull/9505), [#9522](https://github.com/RooCodeInc/Roo-Code/pull/9522)).
+* **Eval jobs on Roo Code Cloud**: You can now run evaluation jobs directly on Roo Code Cloud models, reusing the same managed models and job tokens as regular cloud runs ([#9492](https://github.com/RooCodeInc/Roo-Code/pull/9492), [#9522](https://github.com/RooCodeInc/Roo-Code/pull/9522)).

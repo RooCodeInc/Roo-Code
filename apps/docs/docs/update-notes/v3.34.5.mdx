@@ -1,0 +1,30 @@
+---
+description: This patch release improves native tool workflows, enhances the web-evals dashboard, and fixes tooling reliability issues.
+keywords:
+  - roo code 3.34.5
+  - new features
+  - bug fixes
+image: /img/v3.34.5/v3.34.5.png
+---
+
+# Roo Code 3.34.5 Release Notes (2025-11-25)
+
+This release improves native tool calling workflows, enhances the web-evals dashboard, and refines provider and embeddings behavior.
+
+<img src="/img/v3.34.5/v3.34.5.png" alt="Roo Code v3.34.5 Release" width="600" />
+
+## QOL Improvements
+
+* **Experimental multiple native tool calls per turn with guardrails**: Lets the native tool protocol run multiple tools in a single assistant turn and blocks `attempt_completion()` if any tool fails in that turn, reducing the risk of partial or incorrect completions ([#9273](https://github.com/RooCodeInc/Roo-Code/pull/9273)).
+* **Web-evals dashboard enhancements with dynamic tool columns and UX improvements**: Adds aggregate run statistics, per-tool success metrics, and dynamic tool usage columns so you can quickly spot failing tools or exercises and compare runs without rebuilding configs ([#9592](https://github.com/RooCodeInc/Roo-Code/pull/9592)).
+* **Native tools as default for specific Roo Code Cloud models**: Sets the providers’ native tool protocol as the default for `minimax/minimax-m2` and `anthropic/claude-haiku-4.5` on Roo Code Cloud to reduce configuration overhead and improve tool-calling reliability ([#9586](https://github.com/RooCodeInc/Roo-Code/pull/9586)).
+
+## Bug Fixes
+
+* **API handler refresh on tool protocol changes**: Ensures switching API profiles that only change the tool protocol still refreshes the underlying handler and parser so tool calls always use the correct configuration ([#9599](https://github.com/RooCodeInc/Roo-Code/pull/9599)).
+* **Native tools file reading regression for Grok Code Fast**: Restricts the single-file read behavior to XML tools so native tool calls use the standard multi-file-aware file reader and can access the workspace as expected ([#9600](https://github.com/RooCodeInc/Roo-Code/pull/9600)).
+* **Roo Code Cloud embeddings revert and reliability**: Removes Roo Code Cloud as an embeddings provider to prevent `codebase_search` from appearing when it is not configured and to avoid indexing getting stuck in a standby state ([#9602](https://github.com/RooCodeInc/Roo-Code/pull/9602)).
+
+## Provider Updates
+
+* **Bedrock Anthropic Claude Opus 4.5 for global inference**: Adds the Anthropic Claude Opus 4.5 Bedrock model to the global inference model list so it can be used automatically anywhere global inference is supported, with no extra setup ([#9595](https://github.com/RooCodeInc/Roo-Code/pull/9595)).

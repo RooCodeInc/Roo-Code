@@ -1,0 +1,165 @@
+---
+description: Roo Code 3.18 introduces experimental codebase indexing, enhanced context condensing, YAML support for custom modes, and Gemini 2.5 Flash support.
+keywords:
+  - Roo Code 3.18
+  - release notes
+  - codebase indexing
+  - context condensing
+  - YAML custom modes
+  - Gemini 2.5
+---
+
+# Roo Code 3.18 Release Notes (2025-05-21)
+
+This release introduces advanced AI models with enhanced reasoning capabilities, comprehensive context condensing improvements, YAML support for custom modes, streamlined development infrastructure, and numerous quality-of-life improvements and bug fixes.
+
+---
+
+## Codebase Indexing (Experimental)
+Our new **experimental** [Codebase Indexing](/features/codebase-indexing) feature enables semantic search across your entire project using AI embeddings. Remember, this is **disabled by default** and requires additional setup (enable in Settings (⚙️) > "Experimental").
+
+<img src="/img/codebase-indexing/codebase-indexing.png" alt="Codebase Indexing Settings" width="600" />
+
+Key capabilities:
+*   **Semantic Code Search**: Find relevant code using natural language queries instead of exact keyword matches
+*   **AI-Powered Understanding**: The new [`codebase_search`](/advanced-usage/available-tools/codebase-search) tool understands code meaning and relationships
+*   **Cross-Project Discovery**: Search your entire indexed codebase, not just open files
+*   **Flexible Setup**: Choose between OpenAI embeddings or local Ollama processing
+*   **Vector-Powered Search**: Advanced embedding technology with Qdrant vector database storage
+*   **Enhanced Settings**: Improved configuration saving and Ollama indexing performance (thanks daniel-lxs!)
+
+Transform how you navigate large codebases - ask "find authentication logic" and get meaningful results instead of hunting through files.
+
+For setup instructions and detailed usage, see the main [Codebase Indexing documentation](/features/codebase-indexing).
+
+---
+
+## Context Condensing Upgrades
+Our Intelligent Context Condensing feature sees significant enhancements for better control and clarity. **Note**: As of version 3.19.0, this feature is enabled by default.
+
+Watch a quick overview:
+<div style={{width: '50%', margin: 'auto'}}>
+  <div style={{position: 'relative', paddingBottom: '177.77%', height: 0, overflow: 'hidden'}}>
+    <iframe
+      src="https://www.youtube.com/embed/o5xgO9N8vVU?rel=0&modestbranding=1"
+      title="YouTube Short"
+      frameBorder="0"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowFullScreen
+      style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%'}}
+    ></iframe>
+  </div>
+</div>
+Key updates:
+*   **Adjustable Condensing Threshold & Manual Control**: Fine-tune automatic condensing or trigger it manually. [Learn more](/features/intelligent-context-condensing#controlling-context-condensing).
+*   **Advanced Controls & UI Enhancements**: New settings for fine-tuning conversation compression behavior with improved interface components for managing condensing settings. (thanks SannidhyaSah!)
+*   **Clear UI Indicators**: Better visual feedback during condensing. [Details](/features/intelligent-context-condensing#understanding-context-condensing-activity).
+*   **Improved Compression**: Better conversation summarization while preserving important context during compression. (thanks SannidhyaSah!)
+*   **Accurate Token Counting**: Improved accuracy for context and cost calculations. [More info](/features/intelligent-context-condensing#token-counting).
+
+For full details, see the main [Intelligent Context Condensing documentation](/features/intelligent-context-condensing).
+
+
+---
+
+## Custom Modes: YAML Support
+
+Custom mode configuration is now significantly improved with **YAML support** for both global and project-level (`.roomodes`) definitions. YAML is the new default, offering superior readability with cleaner syntax, support for comments (`#`), and easier multi-line string management. While JSON remains supported for backward compatibility, YAML streamlines mode creation, sharing, and version control.
+
+For comprehensive details on YAML benefits, syntax, and migrating existing JSON configurations, please see our updated [Custom Modes documentation](/features/custom-modes#migration-to-yaml-format). (thanks R-omk! Additional thanks to GreatScottyMac for the YAML inspiration!)
+
+---
+
+## API Cost Control: Request Limits
+To enhance API cost management, you can now set a **Max Requests** limit for auto-approved actions. This prevents Roo Code from making an excessive number of consecutive API calls without your re-approval.
+
+<img src="/img/v3.18.0/v3.18.0.png" alt="Setting the Max Requests limit for auto-approved actions in Roo Code settings." width="600" />
+*Setting the "Max Requests" for auto-approved actions.*
+
+<img src="/img/v3.18.0/v3.18.0-1.png" alt="Warning message indicating the auto-approved request limit has been reached." width="600" />
+*Notification when the auto-approved request limit is met.*
+
+Learn more about configuring this safeguard in our [Rate Limits and Costs documentation](/advanced-usage/rate-limits-costs#limiting-auto-approved-requests). (Inspired by Cline, thanks hassoncs!)
+
+---
+
+## Documentation Updates
+
+*   **README Display**: Fixed README GIF display across all localized versions, ensuring consistent visual guides for users in all 17 supported languages
+*   **Referrer URL**: Fixed technical referrer URL issues in documentation links
+
+---
+
+## New Model Version: Gemini 2.5 Flash Preview (May 2025)
+Access the latest `gemini-2.5-flash-preview-05-20` model, including its thinking variant. This cutting-edge addition is available via both the generic [Gemini provider](/providers/gemini) and the [Vertex provider](/providers/vertex), further expanding your AI model options. (thanks shariqriazz, daniel-lxs!)
+
+---
+
+## QOL Improvements
+
+*   **Better Tool Selection**: Improved tool descriptions to guide AI in making better file editing decisions
+*   **MCP Server Loading**: Fixed MCP Server error when running with npx and bunx (thanks devxpain!)
+*   **Auto-Approve Input**: Fixed issue where chat input would incorrectly clear when auto-approve was enabled (thanks Ruakij!)
+*   **Resizable Prompt Textareas**: Restored vertical resizing for prompt input textareas (role definition, custom instructions, support prompts) for easier viewing and editing of longer prompts.
+*   **Settings Import**: Error messages are now provided in multiple languages if an import fails. (thanks ChuKhaLi!)
+*   **Traditional Chinese Locale**: Improve zh-TW Traditional Chinese locale (thanks PeterDaveHello and chrarnoldus!)
+
+---
+
+## Bug Fixes
+
+*   **Codebase Indexing**: Fixed settings saving and improved Ollama indexing performance for more reliable semantic search (thanks daniel-lxs!)
+*   **File Handling**: Fixed handling of byte order mark (BOM) when users reject apply_diff operations (thanks avtc!)
+*   **Context Tracking**: Fixed mark-as-read logic in the context tracker (thanks samhvw8!)
+*   **Model Cleanup**: Removed deprecated claude-3.7-sonnet models from vscode-lm (thanks shariqriazz!)
+*   **Global Settings Export**: Fixed global settings export functionality to ensure configurations transfer properly between setups
+*   **File Picker Icons**: Fixed vscode-material-icons display issues in the file picker for better visual consistency
+*   **Terminal Integration**: Fixed terminal integration to properly respect user-configured timeout settings (thanks KJ7LNW!)
+*   **VSCode Command Execution**: Command execution is now type-safe, reducing potential errors.
+*   **Settings Import**: The system now gracefully handles missing `globalSettings` in import files. (thanks ChuKhaLi!)
+*   **Diff View Scrolling**: The diff view no longer scrolls unnecessarily during content updates. (thanks qdaxb!)
+*   **Syntax Highlighting**: Improved syntax highlighting consistency across file listings, code definitions, and error messages. (thanks KJ7LNW!)
+*   **Grey Screen Issue**: Implemented a fix for the "grey screen" issue by gracefully handling errors when closing diff views, preventing memory leaks. (thanks xyOz-dev!)
+*   **Settings Import Error Message**: The `settings_import_failed` message is now correctly categorized as an error. (thanks ChuKhaLi!)
+*   **File Links to Line 0**: Links to files with line number 0 now correctly open at the first line, preventing errors. (thanks RSO!)
+*   **Packaging `tiktoken.wasm`**: Fixed packaging to include the correct `tiktoken/lite/tiktoken_bg.wasm` file for accurate token counting. (thanks vagadiya!)
+*   **Audio Playback**: Moved audio playback to the webview to ensure cross-platform compatibility and reliability for notifications and sounds. (thanks SmartManoj, samhvw8!)
+
+---
+
+## Provider Updates
+
+*   **Claude 4.0 Models**: Added support for [`Claude Sonnet 4`](/providers/anthropic) and [`Claude Opus 4`](/providers/anthropic) models with thinking variants for [`Anthropic`](/providers/anthropic), [`Bedrock`](/providers/bedrock), and [`Vertex`](/providers/vertex) providers (thanks shariqriazz!)
+*   **Enhanced Reasoning**: Added reasoning support for Claude 4 and Gemini 2.5 Flash on [`OpenRouter`](/providers/openrouter), plus fixed o1-pro compatibility
+*   **Improved Defaults**: Changed default model from Sonnet 3.7 to Sonnet 4 for better performance
+*   **xAI Models**: Updated [`xAI`](/providers/xai) model list and default model configuration for improved performance (thanks PeterDaveHello!)
+*   **Prompt Caching**: Enabled prompt caching for Gemini 2.5 Flash Preview to reduce costs and improve response times (thanks shariqriazz!)
+*   **OpenRouter Settings**: Model settings now persist when selecting specific [`OpenRouter`](/providers/openrouter) providers
+*   **LiteLLM Refresh**: Added ability to refresh [`LiteLLM`](/providers/litellm) models list for up-to-date model availability
+*   **LM Studio and Ollama Token Tracking**: Token usage is now tracked for [LM Studio](/providers/lmstudio) and [Ollama](/providers/ollama) providers. (thanks xyOz-dev!)
+*   **LM Studio Reasoning Support**: Added support for parsing "think" tags in [LM Studio](/providers/lmstudio) responses for enhanced transparency into the AI's process. (thanks avtc!)
+*   **Qwen3 Model Series for Chutes**: Added new Qwen3 models to the [Chutes provider](/providers/chutes) (e.g., `Qwen/Qwen3-235B-A22B`). (thanks zeozeozeo!)
+*   **Unbound Provider Model Refresh**: Added a refresh button for [Unbound](/providers/unbound) models to easily update the list of available models and get immediate feedback on API key validity. (thanks pugazhendhi-m!)
+*   **Requesty Thinking Controls**: Add thinking controls for [Requesty provider](/providers/requesty) (thanks dtrugman!)
+*   **LiteLLM Metadata**: Improve model metadata for [LiteLLM provider](/providers/litellm)
+
+---
+
+## Misc Improvements
+
+*   **Enhanced Debugging**: Added metadata to API requests across all providers for better troubleshooting and monitoring (thanks dtrugman!)
+*   **Build Process**: Improved pnpm bootstrapping and fixed bootstrap script parameters for better compatibility (thanks KJ7LNW!, ChuKhaLi!)
+*   **Code Quality**: Simplified object assignment and modernized code patterns (thanks noritaka1166!)
+*   **Monorepo Migration**: Switched codebase to a monorepo structure for improved development workflow
+*   **Automated Nightly Builds**: Created automated [nightly release system](/advanced-usage/roo-code-nightly) to deliver the latest features and fixes more quickly
+*   **Enhanced Toolchain**: Improved build processes and dependency management for better reliability
+*   **Modern Linting**: ESLint 9 upgrade with shared configurations catches issues before they reach users
+*   **E2E Test Suite**: Reorganized end-to-end testing infrastructure for better quality assurance
+*   **Build Optimizations**: Enhanced build process optimizations reduce bundle size and improve startup times
+*   **Quality Assurance**: Advanced testing infrastructure catches more issues during development
+*   **Release Automation**: Improved release process automation reduces manual errors and speeds up delivery
+*   **Auto-reload in Dev Mode**: Core file changes now automatically trigger a window reload in development mode for a faster workflow. (thanks hassoncs!)
+*   **Simplified Loop Syntax**: Refactored loop structures in multiple components to use `for...of` loops for improved readability. (thanks noritaka1166!)
+*   **Telemetry**: Re-enable telemetry
+
+These improvements work behind the scenes to provide a more reliable and stable extension experience with faster updates and higher quality releases.

@@ -1,0 +1,25 @@
+---
+description: Adds a Markdown preview button, fixes OpenAI Codex setup issues, and improves Gemini compatibility in LiteLLM.
+keywords:
+  - roo code 3.41.2
+  - new features
+  - bug fixes
+  - provider updates
+---
+
+# Roo Code 3.41.2 Release Notes (2026-01-16)
+
+This patch release makes long markdown replies easier to read, fixes OpenAI Codex setup issues, and improves Gemini compatibility in LiteLLM.
+
+## Open markdown replies in VS Code preview
+
+Markdown responses in chat can now be opened directly in VS Code’s Markdown Preview, making longer formatted replies easier to read and navigate without scrolling through the chat bubble. ([#10773](https://github.com/RooCodeInc/Roo-Code/pull/10773))
+
+## Bug Fixes
+
+* Fixes an issue where OpenAI – ChatGPT Plus/Pro could incorrectly require an API key during setup, blocking you on provider selection even though it uses OAuth sign-in. ([#10786](https://github.com/RooCodeInc/Roo-Code/pull/10786))
+* Fixes an issue where the OpenAI Codex provider could keep an invalid model selection after switching providers, restoring a valid model choice automatically. ([#10777](https://github.com/RooCodeInc/Roo-Code/pull/10777))
+
+## Provider Updates
+
+* Fixes an issue where Gemini requests routed through LiteLLM could fail when the model name contained spaces, improving compatibility for Gemini model group naming. ([#10787](https://github.com/RooCodeInc/Roo-Code/pull/10787))

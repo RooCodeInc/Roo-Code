@@ -1,0 +1,70 @@
+---
+description: Roo Code 3.24.0 introduces Hugging Face provider support, Agent Rules standard, terminal command permissions UI, and diagnostic message controls.
+keywords:
+  - roo code 3.24.0
+  - hugging face provider
+  - agent rules standard
+  - terminal permissions
+  - diagnostic controls
+---
+
+# Roo Code 3.24.0 Release Notes (2025-07-26)
+
+This release introduces Hugging Face provider with open source model support, cross-tool AI coding standards, enhanced terminal security controls, and improved diagnostic management.
+
+## Terminal Command Permissions UI
+
+Managing terminal command permissions is now easier with our new interactive UI (thanks hannesrudolph!) ([#5798](https://github.com/RooCodeInc/Roo-Code/pull/5798)):
+
+- **Visual Management**: See and manage command patterns directly in the chat interface
+- **Pattern Suggestions**: Get intelligent pattern recommendations based on commands
+- **Toggle Controls**: Easily switch between allowed and denied states for command patterns
+
+## Hugging Face Provider
+
+We've added support for Hugging Face as a new provider, bringing access to thousands of open source models (thanks TGlide, daniel-lxs!) ([#6134](https://github.com/RooCodeInc/Roo-Code/pull/6134), [#6190](https://github.com/RooCodeInc/Roo-Code/pull/6190), [#6228](https://github.com/RooCodeInc/Roo-Code/pull/6228), [#6236](https://github.com/RooCodeInc/Roo-Code/pull/6236)):
+
+- **Open Source Models**: Access a vast library of community models directly from Hugging Face
+- **Flexible Integration**: Use models hosted on Hugging Face's infrastructure
+- **Easy Configuration**: Simple setup process to get started with your preferred models and providers
+
+This opens up Roo Code to the entire Hugging Face ecosystem of open source AI models. See our [Hugging Face provider documentation](/providers/huggingface) for setup instructions.
+
+## Diagnostic Controls
+
+Take control of how many diagnostic messages appear in your context with new settings (thanks hannesrudolph!) ([#5582](https://github.com/RooCodeInc/Roo-Code/pull/5582)):
+
+- **Limit Errors and Warnings**: Prevent overwhelming amounts of diagnostics from filling up the model's context window
+- **Improved Performance**: Reduce slowdowns caused by processing too many diagnostic messages
+- **Legacy Code Support**: Especially helpful when working with codebases that temporarily have many errors during development
+
+This feature is essential for preserving the context window when working with large or legacy codebases that have many diagnostic messages.
+
+## Agent Rules Standard Support
+
+Roo Code now supports the Agent Rules standard through AGENTS.md files (thanks sgryphon!) ([#5969](https://github.com/RooCodeInc/Roo-Code/pull/5969)):
+
+- **Cross-Tool Compatibility**: Share natural language guidelines across Roo Code, Aider, Cline, and other compatible AI tools
+- **Single Source of Truth**: Maintain one set of coding standards, security practices, and workflow rules
+- **Automatic Detection**: Roo Code automatically finds and applies AGENTS.md files in your project
+
+This solves the fragmentation problem where developers using multiple AI tools had to maintain separate configuration files.
+
+## QOL Improvements
+
+* **Apply Diff Guidance**: Added efficiency warnings to guide better use of the apply_diff tool (thanks KJ7LNW!) ([#6055](https://github.com/RooCodeInc/Roo-Code/pull/6055))
+* **Error Boundaries**: Better error handling prevents complete UI crashes, showing helpful messages instead (thanks KJ7LNW, elianiva!) ([#5085](https://github.com/RooCodeInc/Roo-Code/pull/5085))
+
+## Bug Fixes
+
+* **Todo List Toggle**: Fixed the todo list toggle that wasn't responding to clicks (thanks chrarnoldus!) ([#6103](https://github.com/RooCodeInc/Roo-Code/pull/6103))
+* **Markdown List Styles**: Restored proper formatting for ordered and unordered lists in chat (thanks village-way!) ([#6095](https://github.com/RooCodeInc/Roo-Code/pull/6095))
+* **Ollama URL Handling**: Fixed API URL normalization issues with trailing slashes (thanks Naam!) ([#6079](https://github.com/RooCodeInc/Roo-Code/pull/6079))
+* **Large File Protection**: Respects maxReadFileLine setting to prevent context exhaustion (thanks sebinseban!) ([#6073](https://github.com/RooCodeInc/Roo-Code/pull/6073))
+* **Auto-Approve Safety**: Fixed critical issue where auto-approve checkbox became unresponsive (thanks KJ7LNW!) ([#6061](https://github.com/RooCodeInc/Roo-Code/pull/6061))
+* **Git Checkpoint Warning**: Added clear warning when Git is not installed for checkpoints (thanks MuriloFP!) ([#5920](https://github.com/RooCodeInc/Roo-Code/pull/5920))
+* **Bash Command Parsing**: Fixed crashes with complex bash syntax and substitutions (thanks daniel-lxs, KJ7LNW!) ([#5743](https://github.com/RooCodeInc/Roo-Code/pull/5743))
+
+## Misc Improvements
+
+* **Merge Resolver Mode**: Added internal mode for intelligent Git conflict resolution to improve PR Fixer capabilities (thanks daniel-lxs!) ([#6090](https://github.com/RooCodeInc/Roo-Code/pull/6090))

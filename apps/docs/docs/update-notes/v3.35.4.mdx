@@ -1,0 +1,24 @@
+---
+description: Roo Code 3.35.4 fixes tool call handling, simplifies the write_to_file tool, and updates z.ai provider settings.
+keywords:
+  - roo code 3.35.4
+  - bug fixes
+  - write_to_file
+  - z.ai
+---
+
+# Roo Code 3.35.4 Release Notes (2025-12-02)
+
+This release fixes a tool call handling regression, simplifies the write_to_file tool, and corrects z.ai provider UI.
+
+## QOL Improvements
+
+* **Simplified write_to_file Tool**: The `line_count` parameter has been removed from the write_to_file tool, making tool calls cleaner and reducing potential errors from incorrect line counts ([#9667](https://github.com/RooCodeInc/Roo-Code/pull/9667))
+
+## Bug Fixes
+
+* **Malformed Tool Call Fix**: Fixed a regression where malformed native tool calls would cause Roo Code to hang indefinitely. Tool calls now proceed to validation which catches and reports the missing parameters properly ([#9758](https://github.com/RooCodeInc/Roo-Code/pull/9758))
+
+## Provider Updates
+
+* **z.ai GLM Model Fix**: Removed misleading reasoning toggle UI for GLM-4.5 and GLM-4.6 models on z.ai provider, as these models don't support think/reasoning data for coding agents ([#9752](https://github.com/RooCodeInc/Roo-Code/pull/9752))

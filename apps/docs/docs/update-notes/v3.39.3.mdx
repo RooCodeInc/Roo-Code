@@ -1,0 +1,30 @@
+---
+description: This release renames Roo Code Cloud Provider to Roo Code Router and improves CLI and internal organization.
+keywords:
+  - roo code 3.39.3
+  - new features
+  - bug fixes
+image: /img/v3.39.3/v3.39.3.png
+---
+
+# Roo Code 3.39.3 Release Notes (2026-01-10)
+
+This release renames Roo Code Cloud Provider to Roo Code Router and improves CLI and internal organization.
+
+<img src="/img/v3.39.3/v3.39.3.png" alt="Roo Code v3.39.3 Release" width="600" />
+
+## Roo Code Router rename
+
+Roo Code now shows **Roo Code Router** anywhere the extension previously referred to the **Roo Code Cloud Provider**. The new name is meant to make the intent clearer: Roo Code Router is a router-style provider (similar in idea to other router/aggregator services), but with a **curated set of models we’ve tested with Roo Code**. ([#10560](https://github.com/RooCodeInc/Roo-Code/pull/10560)).
+
+## QOL Improvements
+
+* **Roo Code Router naming consistency**: Updates the Roo Code Router service name and link so the UI points at the correct destination ([#10607](https://github.com/RooCodeInc/Roo-Code/pull/10607))
+* **Roo Code Router naming consistency**: Updates router naming in shared types so labels stay consistent across the UI ([#10605](https://github.com/RooCodeInc/Roo-Code/pull/10605))
+* **ExtensionHost organization**: Improves internal organization around mode changes and related events to help keep behavior consistent ([#10600](https://github.com/RooCodeInc/Roo-Code/pull/10600))
+* **CLI release testing**: Adds options to build and install the CLI release locally for testing ([#10597](https://github.com/RooCodeInc/Roo-Code/pull/10597))
+* **CLI organization**: Reorganizes the CLI file structure to make future changes easier to maintain ([#10599](https://github.com/RooCodeInc/Roo-Code/pull/10599))
+
+## Misc Improvements
+
+* **CLI TUI**: Adds an interactive terminal UI mode to the Roo CLI ([#10480](https://github.com/RooCodeInc/Roo-Code/pull/10480))

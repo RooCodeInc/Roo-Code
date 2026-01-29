@@ -1,0 +1,40 @@
+---
+description: A patch release adding Google Gemini 3 Pro Image Preview support, Minimax provider support, and various bug fixes.
+keywords:
+  - roo code 3.33.3
+  - google gemini 3 pro
+  - image preview
+  - minimax
+  - bug fixes
+image: /img/v3.33.3/v3.33.3.png
+---
+
+# Roo Code 3.33.3 Release Notes (2025-11-20)
+
+This release introduces image preview support for Google Gemini 3 Pro, adds Minimax as a new provider, and includes several important bug fixes and quality of life improvements.
+
+<img src="/img/v3.33.3/v3.33.3.png" alt="Roo Code v3.33.3 Release" width="600" />
+
+## Google Gemini 3 Pro Image Preview
+
+We've added support for image generation with Google Gemini 3 Pro image generation model ([#9440](https://github.com/RooCodeInc/Roo-Code/pull/9440))
+
+## QOL Improvements
+
+* **Minimax Provider Support**: Added support for Minimax as an Anthropic-compatible provider ([#9455](https://github.com/RooCodeInc/Roo-Code/pull/9455))
+* **Reasoning History**: Reasoning is now stored in conversation history for all providers ([#9451](https://github.com/RooCodeInc/Roo-Code/pull/9451))
+* **Improved Read File Tool**: Enhanced the `read_file` tool description with clearer examples ([#9422](https://github.com/RooCodeInc/Roo-Code/pull/9422))
+
+## Bug Fixes
+
+* **Environment Details Duplication**: Fixed an issue where `environment_details` were duplicated when resuming cancelled tasks ([#9442](https://github.com/RooCodeInc/Roo-Code/pull/9442))
+* **Preserve Reasoning Flag**: Fixed the `preserveReasoning` flag to correctly control API reasoning inclusion ([#9453](https://github.com/RooCodeInc/Roo-Code/pull/9453))
+* **OpenAI Parallel Tool Calls**: Prevented OpenAI Native parallel tool calls when using native tool calling to avoid errors ([#9433](https://github.com/RooCodeInc/Roo-Code/pull/9433))
+* **Search and Replace Parsing**: Improved symbol parsing in the search and replace functionality ([#9456](https://github.com/RooCodeInc/Roo-Code/pull/9456))
+* **Skipped Tool Results**: Fixed an issue where `tool_result` blocks were not sent for skipped tools in the native protocol ([#9457](https://github.com/RooCodeInc/Roo-Code/pull/9457))
+* **Markdown Formatting**: Improved markdown formatting and added reasoning support ([#9458](https://github.com/RooCodeInc/Roo-Code/pull/9458))
+
+## Misc Improvements
+
+* **Dependency Update**: Updated `glob` dependency to ^11.1.0 ([#9449](https://github.com/RooCodeInc/Roo-Code/pull/9449))
+* **Dependency Update**: Updated `tar-fs` to 3.1.1 via pnpm override ([#9450](https://github.com/RooCodeInc/Roo-Code/pull/9450))

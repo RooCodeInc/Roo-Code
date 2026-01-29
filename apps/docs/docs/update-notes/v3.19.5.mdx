@@ -1,0 +1,20 @@
+---
+description: This release focuses on fixing a bug with the Gemini 2.5 Pro Preview model and improving the internal evaluation system.
+---
+
+# Roo Code 3.19.5 Release Notes (2025-06-05)
+
+This release focuses on fixing a bug with the Gemini 2.5 Pro Preview model and improving the internal evaluation system.
+
+---
+
+## Bug Fixes
+
+*   **Gemini 2.5 Pro Preview**: Fixed a bug where the thinking budget was not being correctly applied, causing errors. Roo Code will now correctly default to the specified token values when they are not defined in the settings. (thanks cte!) ([#4401](https://github.com/RooCodeInc/Roo-Code/pull/4401))
+
+---
+
+## Misc Improvements
+
+*   **Evals**: Improved the "run status" section of the internal evaluation system to provide more detailed information about the status of the task stream, controller, and runners. (thanks cte!) ([#4400](https://github.com/RooCodeInc/Roo-Code/pull/4400))
+*   **Evals**: Rust evaluations are now run using bash to improve reliability. Logging has also been improved to provide more consistent output. (thanks cte!) ([#4392](https://github.com/RooCodeInc/Roo-Code/pull/4392))

@@ -1,0 +1,37 @@
+---
+description: This release improves codebase indexing reliability, adds new provider options, and enhances the user interface.
+---
+
+# Roo Code 3.23.7 Release Notes (2025-07-12)
+
+This release improves codebase indexing reliability, adds new provider options, and enhances the user interface.
+
+## Provider Updates
+
+* **Devstral Medium**: Added support for Mistral's Devstral Medium model with 131,000 token context window and image support capabilities
+* **Claude Code**: Added configurable maximum output tokens setting (8,000-64,000 tokens) for complex code generation tasks
+* **Vertex AI**: Expanded region configuration to include all available GCP Vertex AI regions for better compliance and access to third-party models like Anthropic Claude (thanks shubhamgupta731!) ([#5557](https://github.com/RooCodeInc/Roo-Code/pull/5557))
+
+## Bug Fixes
+
+* **Context Token Display**: Fixed inflated context token count displays by excluding cache tokens from calculation, showing accurate context window usage (thanks daniel-lxs!) ([#5603](https://github.com/RooCodeInc/Roo-Code/pull/5603))
+* **Codebase Indexing Errors**: Fixed cryptic error messages when configuring codebase indexing - users now see clear, understandable error messages instead of translation keys (thanks daniel-lxs, nikhil-swamix!) ([#5574](https://github.com/RooCodeInc/Roo-Code/pull/5574))
+* **Embedding Model Switching**: Fixed issues when switching between embedding models with different vector dimensions, allowing use of models beyond 1536 dimensions like Google Gemini's text-embedding-004 (thanks daniel-lxs, mkdir700!) ([#5565](https://github.com/RooCodeInc/Roo-Code/pull/5565))
+* **Mermaid Diagrams**: Fixed Mermaid diagram rendering issues in architect mode by preventing common syntax errors (thanks MuriloFP, joshmouch!) ([#5530](https://github.com/RooCodeInc/Roo-Code/pull/5530))
+* **UI Button Overlap**: Fixed overlapping enhancement and text-to-speech buttons, making both features accessible when text-to-speech is enabled (thanks sensei-woo!) ([#5586](https://github.com/RooCodeInc/Roo-Code/pull/5586))
+
+## QOL Improvements
+
+* **Marketplace Access**: Added Marketplace buttons to both MCP and modes tabs for easier discovery and access
+* **MCP Interface**: Improved MCP UI with toggle switches instead of eye buttons for enabling/disabling tools and servers, providing clearer visual feedback
+* **Codebase Search**: Cleaner and more readable codebase search results with improved visual styling and better internationalization
+* **Error Messages**: Friendlier error messages when API configuration profiles aren't compatible with organization settings
+* **Architect Mode**: Intelligently selects the best available tools for context discovery, including semantic search when available
+
+## Misc Improvements
+
+* **Error Telemetry**: Improved debugging capabilities for better reliability and faster issue resolution, with enhanced privacy protection through hashed file paths (thanks daniel-lxs!) ([#5595](https://github.com/RooCodeInc/Roo-Code/pull/5595))
+
+## Documentation Updates
+
+* **Typo Fixes**: Improved accuracy and clarity of documentation and code comments across multiple files (thanks noritaka1166!) ([#5569](https://github.com/RooCodeInc/Roo-Code/pull/5569))

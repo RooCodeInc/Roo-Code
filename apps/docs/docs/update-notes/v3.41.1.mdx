@@ -1,0 +1,40 @@
+---
+description: Improves Orchestrator cost visibility, enhances settings navigation, and fixes provider compatibility issues.
+keywords:
+  - roo code 3.41.1
+  - new features
+  - bug fixes
+  - provider updates
+image: /img/v3.41.1/v3.41.1.png
+---
+
+# Roo Code 3.41.1 Release Notes (2026-01-16)
+
+This patch release improves Orchestrator cost visibility, makes settings navigation faster, and fixes multiple provider compatibility issues.
+
+<img src="/img/v3.41.1/v3.41.1.png" alt="Roo Code v3.41.1 Release" width="600" />
+
+## Aggregated Orchestrator subtask costs
+
+Orchestrator parent tasks now show a cumulative cost total that aggregates spend across the full subtask tree, making it easier to understand the true end-to-end cost of an orchestrated workflow at a glance. (thanks taltas!) ([#10757](https://github.com/RooCodeInc/Roo-Code/pull/10757))
+
+## Settings search now includes tab titles
+
+Settings search now indexes tab/section titles (like “MCP” or “Providers”), so you can search for a section name and jump directly to the right part of the settings UI instead of hunting through individual settings. ([#10761](https://github.com/RooCodeInc/Roo-Code/pull/10761))
+
+## QOL Improvements
+
+* Clarifies that Slack and Linear integrations are only available on the Roo Code Cloud Team plan, reducing confusion when comparing plans. ([#10748](https://github.com/RooCodeInc/Roo-Code/pull/10748))
+
+## Bug Fixes
+
+* Fixes an issue where Anthropic native tool calling could fail with a 400 error after stream retries/reconnections due to duplicate tool call IDs. ([#10760](https://github.com/RooCodeInc/Roo-Code/pull/10760))
+* Fixes an issue where OpenAI Native streaming could drop tool identity fields mid-stream, causing tool calls to be missed or fail in some OpenAI-compatible streams. ([#10719](https://github.com/RooCodeInc/Roo-Code/pull/10719))
+* Fixes an issue where the OpenAI Responses API could reject tool calls when `call_id` exceeded the 64-character limit, preventing 400 validation errors during tool use. ([#10763](https://github.com/RooCodeInc/Roo-Code/pull/10763))
+* Fixes an issue where Gemini requests (for example via OpenRouter) could fail with thought-signature validation errors mid-task, improving reliability for Gemini tool-calling chats. ([#10694](https://github.com/RooCodeInc/Roo-Code/pull/10694))
+* Fixes an issue where Gemini requests could fail when a user message contained an empty text block, ensuring only non-empty content is sent while preserving images. ([#10728](https://github.com/RooCodeInc/Roo-Code/pull/10728))
+* Fixes an issue where some MCP tool schemas could be rejected by providers when they used top-level `anyOf`/`oneOf`/`allOf`, improving cross-provider tool schema compatibility. ([#10726](https://github.com/RooCodeInc/Roo-Code/pull/10726))
+
+## Provider Updates
+
+* Prevents Ollama setups from offering models that can’t use native tool calling, avoiding loops where the model outputs tool JSON as text instead of actually invoking tools. ([#10735](https://github.com/RooCodeInc/Roo-Code/pull/10735))

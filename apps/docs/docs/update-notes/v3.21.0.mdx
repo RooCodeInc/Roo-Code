@@ -1,0 +1,65 @@
+---
+description: Roo Code v3.21.0 enhances workspace context awareness by automatically adding the active file to the conversation history. This release also stops Roo from automatically focusing on the chat input box after a task completes, streamlining user workflow and improving usability.
+---
+
+# Roo Code 3.21.0 Release Notes (2025-06-17)
+
+This release launches the Roo Marketplace, adds support for the latest Gemini 2.5 models, and introduces Excel file support along with numerous improvements and fixes.
+
+## [Roo Marketplace Launch](/features/marketplace)
+
+We're excited to announce the official launch of the [Roo Marketplace](/features/marketplace) ([#4788](https://github.com/RooCodeInc/Roo-Code/pull/4788)):
+
+- **Discover Great MCPs and Modes**: Browse and install community-created Model Context Protocol servers and custom modes directly from within Roo Code
+- **Seamless Integration**: The marketplace is now available to all users without needing experimental features
+- **Easy Installation**: Find and install the tools you need with just a few clicks
+
+The Roo Marketplace makes it easy to extend Roo Code's functionality with powerful integrations created by our vibrant community.
+
+## [Gemini 2.5 Models Support](https://blog.google/products/gemini/gemini-2-5-model-family-expands/)
+
+We've added support for [Google's latest Gemini 2.5 models](https://blog.google/products/gemini/gemini-2-5-model-family-expands/) (thanks @daniel-lxs!) ([#4762](https://github.com/RooCodeInc/Roo-Code/pull/4762), [#4770](https://github.com/RooCodeInc/Roo-Code/pull/4770), [#4767](https://github.com/RooCodeInc/Roo-Code/pull/4767)):
+
+- **Gemini 2.5 Pro**: Enhanced capabilities for complex coding tasks
+- **Gemini 2.5 Flash**: Fast model with improved performance
+- **Gemini 2.5 Flash Lite**: Lightweight model perfect for quick tasks
+
+These new models bring enhanced reasoning capabilities and better performance across various coding tasks.
+
+## Excel File Support
+
+Added support for reading Excel (.xlsx) files in tools (thanks @chrarnoldus!) ([#4751](https://github.com/RooCodeInc/Roo-Code/pull/4751)). You can now:
+
+- **Read Excel Files**: Directly analyze and work with Excel spreadsheets
+- **Extract Data**: Access cell values, formulas, and sheet information
+- **Seamless Integration**: Works with all existing Roo Code tools and features
+
+## QOL Improvements
+
+* **OpenAI Compatible Max Tokens**: Added checkbox option for max tokens in OpenAI compatible provider settings (thanks @AlexandruSmirnov!) ([#4600](https://github.com/RooCodeInc/Roo-Code/pull/4600), [#4623](https://github.com/RooCodeInc/Roo-Code/pull/4623))
+* **Provider Updates**: Updated model lists and pricing for Groq & Mistral (thanks @KanTakahiro!) ([#4798](https://github.com/RooCodeInc/Roo-Code/pull/4798), [#4797](https://github.com/RooCodeInc/Roo-Code/pull/4797))
+* **Terminal Details**: Now includes current working directory for better context awareness ([#4783](https://github.com/RooCodeInc/Roo-Code/pull/4783))
+* **Multi-file Diff**: Encourages use of start_line parameter to match legacy diff behavior ([#4777](https://github.com/RooCodeInc/Roo-Code/pull/4777))
+
+## UI/UX Improvements
+
+* **Marketplace Branding**: Updated to show "Roo Marketplace" for consistent branding (thanks @SannidhyaSah!) ([#4718](https://github.com/RooCodeInc/Roo-Code/pull/4718))
+* **History UI**: Refactored to more consistent and modern interface (thanks @elianiva!) ([#4598](https://github.com/RooCodeInc/Roo-Code/pull/4598))
+* **Context Menu**: Adjusted positioning to be near GitHub Copilot for easier access ([#4306](https://github.com/RooCodeInc/Roo-Code/pull/4306))
+* **Panel Focus**: Always focus the panel when clicked to ensure menu buttons are visible (thanks @hassoncs!) ([#4312](https://github.com/RooCodeInc/Roo-Code/pull/4312))
+
+## Bug Fixes
+
+* **API Conversation History**: Added proper error handling for conversation history issues (thanks @KJ7LNW!) ([#4741](https://github.com/RooCodeInc/Roo-Code/pull/4741), [#4738](https://github.com/RooCodeInc/Roo-Code/pull/4738))
+* **Model ID Errors**: Fixed ambiguous model ID error messages (thanks @elianiva!) ([#4709](https://github.com/RooCodeInc/Roo-Code/pull/4709), [#4710](https://github.com/RooCodeInc/Roo-Code/pull/4710))
+* **Prompt Settings**: Fixed save/discard/revert flow for Prompt Settings (thanks @hassoncs!) ([#4623](https://github.com/RooCodeInc/Roo-Code/pull/4623), [#4312](https://github.com/RooCodeInc/Roo-Code/pull/4312))
+* **Codebase Indexing**: Fixed alignment with list-files hidden directory filtering (thanks @daniel-lxs!) ([#4684](https://github.com/RooCodeInc/Roo-Code/pull/4684))
+* **Subtask Completion**: Fixed mismatch between subtask and overall task completion (thanks @feifei325!) ([#4656](https://github.com/RooCodeInc/Roo-Code/pull/4656))
+* **Windows MCP Configuration**: Fixed path normalization in MCP variable injection on Windows (thanks @daniel-lxs!) ([#4607](https://github.com/RooCodeInc/Roo-Code/pull/4607))
+
+## Misc Improvements
+
+* **Test Mode Update**: Updated test mode to support Vitest testing framework ([#4778](https://github.com/RooCodeInc/Roo-Code/pull/4778))
+* **Working Directory Warning**: Removed unnecessary warning about working directory changes ([#4795](https://github.com/RooCodeInc/Roo-Code/pull/4795))
+* **Telemetry**: Added marketplace tab view and install click tracking ([#4781](https://github.com/RooCodeInc/Roo-Code/pull/4781))
+* **Windows Docker**: Updated evals Docker setup to work on Windows (thanks @StevenTCramer!) ([#4467](https://github.com/RooCodeInc/Roo-Code/pull/4467))

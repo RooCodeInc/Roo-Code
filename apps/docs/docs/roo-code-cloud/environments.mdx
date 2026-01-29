@@ -1,0 +1,389 @@
+---
+description: Configure multi-port preview environments with automatic domain routing and environment variable injection for full-stack applications.
+keywords:
+  - Preview Environments
+  - Multi-port
+  - Named Ports
+  - Environment Variables
+  - Full Stack
+  - Services
+  - Postgres
+  - Redis
+---
+
+# Preview Environments
+
+Preview environments let you run multiple services in a cloud container with automatic domain routing. Each port you configure gets a unique public URL, and environment variables are injected so your applications can communicate with each other.
+
+## Overview
+
+When you spawn an environment, Roo Code Cloud:
+
+1. Creates a cloud container with your configured ports exposed
+2. Generates unique HTTPS domains for each port
+3. Injects environment variables like `ROO_WEB_HOST` and `ROO_API_HOST` into your container
+4. Clones your repositories, starts services, and runs your commands
+
+This allows you to run a complete stack—frontend, API, workers—in a single preview environment where all the pieces can talk to each other.
+
+## Configuration
+
+Environments are configured in YAML format. Here's the complete schema:
+
+```yaml
+name: My Full Stack App
+description: Frontend and API running together
+
+repositories:
+  - repository: myorg/frontend
+    commands:
+      - name: Install
+        run: npm install
+      - name: Start
+        run: npm run dev &
+
+  - repository: myorg/backend
+    commands:
+      - name: Install
+        run: npm install
+      - name: Start
+        run: npm run dev &
+
+ports:
+  - name: WEB
+    port: 3000
+  - name: API
+    port: 3001
+
+services:
+  - postgres16
+  - redis7
+
+env:
+  NODE_ENV: development
+```
+
+## Named Ports
+
+The `ports` section defines which ports to expose and what to call them:
+
+```yaml
+ports:
+  - name: WEB
+    port: 3000
+  - name: API
+    port: 3001
+  - name: ADMIN
+    port: 3002
+```
+
+For each named port, an environment variable is injected into your container:
+
+| Port Config | Environment Variable | Example Value |
+|-------------|---------------------|---------------|
+| `name: WEB, port: 3000` | `ROO_WEB_HOST` | `https://abc123.vercel.run` |
+| `name: API, port: 3001` | `ROO_API_HOST` | `https://def456.vercel.run` |
+| `name: ADMIN, port: 3002` | `ROO_ADMIN_HOST` | `https://ghi789.vercel.run` |
+
+### Naming Rules
+
+Port names must:
+- Start with a letter
+- Contain only letters, numbers, and underscores
+- Be 1-50 characters long
+
+The name is converted to uppercase for the environment variable (e.g., `web` becomes `ROO_WEB_HOST`).
+
+### Limits
+
+You can configure up to **4 named ports** per environment.
+
+## Using Environment Variables in Your Code
+
+The injected environment variables let your applications find each other without hardcoded URLs.
+
+### React/Vite Frontend
+
+```typescript
+// vite.config.ts
+export default defineConfig({
+  define: {
+    'import.meta.env.API_URL': JSON.stringify(process.env.ROO_API_HOST || 'http://localhost:3001')
+  }
+})
+
+// In your React code
+const response = await fetch(`${import.meta.env.API_URL}/api/users`);
+```
+
+### Next.js Frontend
+
+```typescript
+// next.config.js
+module.exports = {
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.ROO_API_HOST || 'http://localhost:3001'
+  }
+}
+
+// In your code
+const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/users`);
+```
+
+### Node.js/Express/Hono Backend
+
+```typescript
+// Configure CORS to allow requests from the frontend domain
+app.use(cors({
+  origin: process.env.ROO_WEB_HOST || 'http://localhost:3000'
+}));
+
+// Or allow multiple frontends
+app.use(cors({
+  origin: [
+    process.env.ROO_WEB_HOST,
+    process.env.ROO_ADMIN_HOST
+  ].filter(Boolean)
+}));
+```
+
+### Inter-Service Communication
+
+If you have multiple backend services:
+
+```typescript
+// In your API service, call a worker service
+const workerUrl = process.env.ROO_WORKER_HOST || 'http://localhost:3002';
+await fetch(`${workerUrl}/jobs`, { method: 'POST', body: jobData });
+```
+
+## Repositories
+
+List the repositories to clone into your environment:
+
+```yaml
+repositories:
+  - repository: myorg/frontend
+    commands:
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Start dev server
+        run: npm run dev &
+
+  - repository: myorg/backend
+    commands:
+      - name: Install dependencies
+        run: npm install
+      - name: Run migrations
+        run: npm run db:migrate
+      - name: Start server
+        run: npm run start &
+```
+
+### Repository Format
+
+Use the `owner/repo` format (e.g., `myorg/my-app`).
+
+### Commands
+
+Each repository can have its own commands that run in order. Commands support:
+
+| Field | Description | Default |
+|-------|-------------|---------|
+| `name` | Display name for the command | Required |
+| `run` | The shell command to execute | Required |
+| `working_dir` | Directory to run the command in | Repository root |
+| `env` | Command-specific environment variables | None |
+| `timeout` | Maximum seconds to wait | 60 |
+| `continue_on_error` | Keep going if command fails | false |
+
+### Background Processes
+
+To start a server that keeps running, end the command with `&`:
+
+```yaml
+commands:
+  - name: Start server
+    run: npm run dev &
+```
+
+## Services
+
+Add managed database and cache services:
+
+```yaml
+services:
+  - redis7
+  - postgres16
+```
+
+### Available Services
+
+| Service | Default Port | Connection Variables |
+|---------|--------------|---------------------|
+| `redis6` | 6379 | `REDIS_URL` |
+| `redis7` | 6379 | `REDIS_URL` |
+| `postgres15` | 5432 | `DATABASE_URL`, `POSTGRES_*` |
+| `postgres16` | 5432 | `DATABASE_URL`, `POSTGRES_*` |
+| `postgres17` | 5432 | `DATABASE_URL`, `POSTGRES_*` |
+| `mysql8` | 3306 | `DATABASE_URL`, `MYSQL_*` |
+| `mariadb10` | 3306 | `DATABASE_URL`, `MARIADB_*` |
+| `clickhouse` | 9000 | `CLICKHOUSE_URL` |
+
+### Custom Ports
+
+If you need a service on a non-default port:
+
+```yaml
+services:
+  - name: postgres16
+    port: 5433
+```
+
+## Environment Variables
+
+Define environment variables available to all commands:
+
+```yaml
+env:
+  NODE_ENV: development
+  LOG_LEVEL: debug
+  FEATURE_FLAGS: "new-ui,beta-api"
+```
+
+These are merged with:
+1. Service connection variables (e.g., `DATABASE_URL`)
+2. Named port variables (e.g., `ROO_WEB_HOST`)
+3. Command-specific variables (highest priority)
+
+## Complete Example
+
+Here's a full-stack application with a React frontend, Hono API, and background worker:
+
+```yaml
+name: E-Commerce Platform
+description: Full stack with frontend, API, and worker
+
+repositories:
+  - repository: acme/storefront
+    commands:
+      - name: Install
+        run: npm install
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_URL: ${ROO_API_HOST}
+      - name: Serve
+        run: npx serve -s dist -l 3000 &
+
+  - repository: acme/api
+    commands:
+      - name: Install
+        run: npm install
+      - name: Migrate
+        run: npm run db:push
+      - name: Start
+        run: npm run start &
+        env:
+          ALLOWED_ORIGINS: ${ROO_WEB_HOST}
+
+  - repository: acme/worker
+    commands:
+      - name: Install
+        run: npm install
+      - name: Start
+        run: npm run start &
+
+ports:
+  - name: WEB
+    port: 3000
+  - name: API
+    port: 3001
+  - name: WORKER
+    port: 3002
+
+services:
+  - postgres16
+  - redis7
+
+env:
+  NODE_ENV: production
+  LOG_LEVEL: info
+```
+
+After the environment starts, you'll get unique URLs for each port. Visit the WEB URL to access your running application.
+
+## Tips
+
+### 1. Always Use Environment Variables for URLs
+
+Don't hardcode URLs between services:
+
+```typescript
+// Bad - breaks in preview environments
+const apiUrl = 'http://localhost:3001';
+
+// Good - works everywhere
+const apiUrl = process.env.ROO_API_HOST || 'http://localhost:3001';
+```
+
+### 2. Configure CORS Dynamically
+
+```typescript
+// Bad - only works locally
+app.use(cors({ origin: 'http://localhost:3000' }));
+
+// Good - works in preview and locally
+app.use(cors({
+  origin: process.env.ROO_WEB_HOST || 'http://localhost:3000'
+}));
+```
+
+### 3. Use Build-Time Variables for Static Sites
+
+For frameworks like Vite, CRA, or Next.js, the API URL often needs to be known at build time:
+
+```yaml
+commands:
+  - name: Build
+    run: npm run build
+    env:
+      VITE_API_URL: ${ROO_API_HOST}
+```
+
+### 4. Handle Missing Variables Gracefully
+
+In development, you might not have all variables set:
+
+```typescript
+const apiUrl = process.env.ROO_API_HOST;
+if (!apiUrl) {
+  console.warn('ROO_API_HOST not set, using localhost');
+}
+```
+
+### 5. Use Consistent Naming
+
+Pick a naming convention and stick with it:
+
+```yaml
+# Good - clear and consistent
+ports:
+  - name: WEB
+    port: 3000
+  - name: API
+    port: 3001
+  - name: ADMIN
+    port: 3002
+
+# Avoid - inconsistent naming
+ports:
+  - name: frontend
+    port: 3000
+  - name: BACKEND_API
+    port: 3001
+  - name: Admin_Panel
+    port: 3002
+```

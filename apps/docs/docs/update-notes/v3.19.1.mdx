@@ -1,0 +1,48 @@
+---
+description: This patch release delivers critical fixes and experimental features to enhance your development experience, including multi-file reading capabilities, improved MCP server integration, and enterprise security enhancements.
+---
+
+# Roo Code 3.19.1 Release Notes (2025-05-31)
+
+This patch release delivers critical fixes and experimental features to enhance your development experience, including multi-file reading capabilities, improved MCP server integration, and enterprise security enhancements.
+
+---
+
+## Multi-File Reading (Experimental)
+We've introduced an experimental feature for handling large codebases more efficiently:
+
+- **Batch File Processing**: Read up to 100 files in a single operation for comprehensive code analysis
+- **Performance Control**: Adjustable concurrent file read limits to optimize for your system
+- **Smart Permission Management**: Streamlined approval process for multi-file operations
+- **Efficiency Boost**: Dramatically reduces the time needed to analyze multiple related files
+
+This experimental feature transforms how Roo Code understands and works with your entire codebase at once (thanks samhvw8!).
+
+---
+
+## Enterprise-Ready VPC Endpoint Support
+We've added crucial enterprise security features for [AWS Bedrock](/providers/bedrock) users:
+
+- **Secure Corporate Access**: Configure custom VPC endpoints to keep all LLM transactions within your firewall
+- **Easy Configuration**: Simple checkbox and text field to enable VPC endpoint usage
+- **Compliance Ready**: Meet your organization's security policies while using powerful AI models
+- **Flexible Control**: Toggle VPC endpoints on/off as needed with settings persistence
+
+Enterprise customers can now use Roo Code with AWS Bedrock while maintaining complete network security (thanks kcwhite!). See the [AWS Bedrock configuration guide](/providers/bedrock#configuration-in-roo-code) for setup instructions.
+
+---
+
+## Bug Fixes
+
+*   **MCP Server Authentication**: Fixed SSE header passing to correctly authenticate with remote MCP servers
+*   **AWS Bedrock Conversations**: Resolved context condensing error that required conversations to start with user messages
+*   **Terminal UTF-8 Encoding**: Fixed encoding errors when running Ruby/CocoaPods commands (thanks mr-ryan-james!)
+*   **Sidebar Context Menus**: Resolved empty menu items by properly setting sidebar name (thanks chrarnoldus!)
+*   **Documentation Links**: Fixed broken CONTRIBUTING.md link in feature request template (thanks cannuri!)
+
+---
+
+## Misc Improvements
+
+*   **Backend Task Tracking**: Added metadata to Unbound API requests for improved service reliability (thanks pugazhendhi-m!)
+*   **Model-Specific Caching**: Optimized cache strategies for Gemini and Anthropic models for better performance

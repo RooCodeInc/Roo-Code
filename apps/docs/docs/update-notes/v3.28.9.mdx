@@ -1,0 +1,41 @@
+---
+description: Upgrade Supernova to a 1M‑token context, plus onboarding/UI improvements and cleaner prompts.
+keywords:
+  - roo code 3.28.9
+  - new features
+  - bug fixes
+image: /img/v3.28.9/v3.28.9.png
+---
+
+# Roo Code 3.28.9 Release Notes (2025-09-26)
+
+This release upgrades Supernova to a 1M‑token context, improves onboarding and UI clarity, and cleans up prompts for leaner outputs.
+
+<img src="/img/v3.28.9/v3.28.9.png" alt="Roo Code v3.28.9 Release" width="600" />
+
+## Supernova upgraded to 1M-token context
+
+Supernova is now roo/code-supernova-1-million with a 1,000,000‑token context window. Existing settings migrate automatically; no action needed:
+
+- Work across very large files and long multi‑step conversations with far fewer truncations
+- More stable execution on big refactors and long file read/write loops
+- Auto‑migrate: previous roo/code-supernova maps to roo/code-supernova-1-million
+
+Quick start: https://app.roocode.com/l/supernova
+
+## QOL Improvements
+
+* **Reset logs you out of Roo Code Cloud**: Reset now also logs you out of Roo Code Cloud for a truly clean slate; the reset still completes even if logout fails. ([#8312](https://github.com/RooCodeInc/Roo-Code/pull/8312))
+* **Measure engagement with upsell messages**: Telemetry for DismissibleUpsell tracks dismiss vs click (upsellId only) to tune messaging and reduce noise; no user-facing behavior change. ([#8309](https://github.com/RooCodeInc/Roo-Code/pull/8309))
+* **Discover Roo Code Cloud faster in the welcome screen**: Experiment to show the Roo provider on the welcome screen (localized strings with click telemetry) to speed up setup. ([#8317](https://github.com/RooCodeInc/Roo-Code/pull/8317))
+* **Cleaner prompts (no “thinking” tags)**: Removes &lt;thinking&gt; tags for cleaner output, fewer tokens, and better model compatibility; preserves the plain‑language rule to confirm tool success. ([#8319](https://github.com/RooCodeInc/Roo-Code/pull/8319))
+* **Simpler Requesty model refresh**: Removes an unnecessary warning when refreshing the Requesty models list so you can fetch new policies without leaving the screen (thanks requesty-JohnCosta27!) ([#7710](https://github.com/RooCodeInc/Roo-Code/pull/7710))
+
+## Bug Fixes
+
+* **Tool‑use guidance clarity**: Clarifies the retry suggestion so the model selects the correct file‑reading step during apply‑diff retries, reducing failed file edits. ([#8315](https://github.com/RooCodeInc/Roo-Code/pull/8315))
+
+## Misc Improvements
+
+* **Website improvements**: New pricing page, clearer homepage messaging, and tighter navigation/visuals (including mobile). No changes to the extension UX. ([#8303](https://github.com/RooCodeInc/Roo-Code/pull/8303), [#8326](https://github.com/RooCodeInc/Roo-Code/pull/8326))
+* **Internal cleanup**: Removes the deprecated pr-reviewer mode. No changes to the extension UX. ([#8222](https://github.com/RooCodeInc/Roo-Code/pull/8222))

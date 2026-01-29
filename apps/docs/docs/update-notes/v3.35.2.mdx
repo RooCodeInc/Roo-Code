@@ -1,0 +1,26 @@
+---
+description: Provider updates including model default temperatures and improved native tool support.
+keywords:
+  - roo code 3.35.2
+  - provider updates
+  - model temperature
+  - native tools
+  - litellm
+image: /img/v3.35.2/v3.35.2.png
+---
+
+# Roo Code 3.35.2 Release Notes (2025-12-01)
+
+This release improves provider behavior with model default temperatures and enhanced native tool support across providers.
+
+<img src="/img/v3.35.2/v3.35.2.png" alt="Roo Code v3.35.2 Release" width="600" />
+
+## Provider Updates
+
+* **Model Default Temperatures**: Models can now specify their own default temperature settings. Temperature precedence is: user's custom setting → model's default → system default ([#9734](https://github.com/RooCodeInc/Roo-Code/pull/9734))
+
+* **Roo Provider Native Tools**: Models with the `default-native-tools` tag automatically use native tool calling by default for improved tool-based interactions ([#9735](https://github.com/RooCodeInc/Roo-Code/pull/9735))
+
+* **LiteLLM Native Tool Support**: All LiteLLM models now assume native tool support by default, improving tool compatibility and reducing configuration issues ([#9736](https://github.com/RooCodeInc/Roo-Code/pull/9736))
+
+* **App Version Tracking**: The Roo provider now sends app version information with API requests for improved request tracking and analytics ([#9730](https://github.com/RooCodeInc/Roo-Code/pull/9730))

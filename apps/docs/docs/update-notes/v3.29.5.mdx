@@ -1,0 +1,18 @@
+---
+description: Reliability fixes for code search with Qdrant and more accurate cost/token usage metrics across providers.
+keywords:
+  - roo code 3.29.5
+  - bug fixes
+  - qdrant
+  - codebase search
+---
+
+# Roo Code 3.29.5 Release Notes (2025-11-01)
+
+This patch improves code search reliability with Qdrant and ensures accurate usage and cost reporting across providers.
+
+
+## Bug Fixes
+
+* Qdrant codebase_search reliability: Indexes the type field to prevent errors when using Qdrant hosted instances (thanks rossdonald!) ([#8964](https://github.com/RooCodeInc/Roo-Code/pull/8964))
+* Accurate cost and token tracking across providers: Ensures consistent usage metrics and billing in Roo Code Cloud dashboards ([#8954](https://github.com/RooCodeInc/Roo-Code/pull/8954))

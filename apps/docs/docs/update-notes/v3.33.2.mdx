@@ -1,0 +1,25 @@
+---
+description: Patch release adding Gemini native tool calling, in-extension Roo Code Cloud credit visibility, clearer free model pricing, and native tool reliability fixes.
+keywords:
+  - roo code 3.33.2
+  - new features
+  - bug fixes
+  - performance improvements
+  - gemini provider
+  - roo code cloud
+---
+
+# Roo Code 3.33.2 Release Notes (2025-11-20)
+
+This patch release focuses on Gemini native tool calling, making Roo Code Cloud usage more visible, clarifying which models are free, and improving native tool reliability and performance.
+
+## QOL Improvements
+
+* **Gemini native tool calling (experimental, Google Gemini provider only)**: Add an experimental option for the Google Gemini provider to call tools through the native tool protocol (off by default), so Gemini-based workflows that rely on tools can behave more like other native-tool providers without going through XML translation. ([#9343](https://github.com/RooCodeInc/Roo-Code/pull/9343))
+* **Roo Code Cloud credit balance in the extension**: Show your Roo Code Cloud RCC credit balance directly in the Roo provider settings when signed in, helping you track usage and avoid unexpected interruptions. ([#9386](https://github.com/RooCodeInc/Roo-Code/pull/9386))
+* **Explicit 0 pricing for free models**: Display a 0 price for both input and output tokens on free models in the pricing UI so it is obvious which options are free instead of leaving prices blank. ([#9419](https://github.com/RooCodeInc/Roo-Code/pull/9419))
+
+## Bug Fixes
+
+* **Preserve images in native tool call results**: Ensure images attached to messages are preserved and passed through native tool calls to the model, so follow-up reasoning can still use important visual context instead of losing it as plain text only. ([#9401](https://github.com/RooCodeInc/Roo-Code/pull/9401))
+* **Faster router model metadata loading**: Cut redundant getModel() calls and add a disk cache fallback for router-based providers, making capability metadata available on startup and reducing latency and flakiness when loading model info. ([#9410](https://github.com/RooCodeInc/Roo-Code/pull/9410))

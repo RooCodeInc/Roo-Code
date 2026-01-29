@@ -1,0 +1,114 @@
+---
+description: Roo Code 3.20 introduces the experimental Marketplace for extensions and modes, concurrent file edits and reads, and prompt history navigation.
+keywords:
+  - Roo Code 3.20
+  - release notes
+  - marketplace
+  - concurrent file edits
+  - multi-file operations
+---
+
+# Roo Code 3.20 Release Notes (2025-06-12)
+
+This release introduces the experimental Marketplace for extensions and modes, concurrent file edits and reads, and numerous other improvements and bug fixes.
+
+## MCP & Mode Marketplace (experimental)
+
+We've introduced an experimental [Marketplace](/features/marketplace) for discovering and installing community-contributed extensions and modes. This feature allows you to:
+- Browse and search for new modes and MCP servers
+- Install items at project or global scope
+- Manage installations directly from the Marketplace view
+
+**To enable:** Open Roo Code settings (gear icon) → Experimental Settings → Enable "Marketplace"
+
+(thanks Smartsheet-JB-Brown, elianiva, monkeyDluffy6017, NamesMT, daniel-lxs, and more!) ([#4538](https://github.com/RooCodeInc/Roo-Code/pull/4538), [#4604](https://github.com/RooCodeInc/Roo-Code/pull/4604))
+
+<img src="/img/marketplace/marketplace-1.png" alt="MCP tab showing available MCPs with install and remove buttons" width="600" />
+
+## Concurrent Edits (aka multi-file)(experimental)
+
+You can now perform edits across multiple files at once, dramatically speeding up refactoring and multi-file changes. Instead of approving each file edit individually, you can review and approve all changes at once through a unified batch approval interface. Check out our [concurrent file edits documentation](/features/experimental/concurrent-file-edits) for more details.
+
+**To enable:** Open Roo Code settings (gear icon) → Experimental Settings → Enable "Enable multi-file edits"
+
+(thanks samhvw8!) ([#4608](https://github.com/RooCodeInc/Roo-Code/pull/4608))
+
+<img src="/img/concurrent-file-edits/concurrent-file-edits-1.png" alt="Batch diff approval interface showing multiple file changes" width="600" />
+
+## Concurrent Reads (aka multi-file)
+
+The setting for concurrent reads has been moved to the context settings, with a default of 5. This feature allows Roo to read multiple files from your workspace in a single step, significantly improving efficiency when working on tasks that require context from several files. Learn more in our [concurrent file reads documentation](/features/concurrent-file-reads).
+
+([#4597](https://github.com/RooCodeInc/Roo-Code/pull/4597))
+
+<img src="/img/concurrent-file-reads/concurrent-file-reads-2.png" alt="Batch approval interface for reading multiple files" width="600" />
+
+## Prompt History
+
+Navigate your prompt history with a terminal-like experience using the arrow keys. This feature makes it easy to reuse and refine previous prompts, whether from your current conversation or past tasks. See our [keyboard shortcuts documentation](/features/keyboard-shortcuts#command-line-style-prompt-history-navigation) for usage details.
+
+([#4580](https://github.com/RooCodeInc/Roo-Code/pull/4580))
+
+## QOL Improvements
+
+*   **MCP Execution**: The user experience for MCP execution has been improved (thanks samhvw8!). ([#4615](https://github.com/RooCodeInc/Roo-Code/pull/4615))
+*   **Magic Variables**: Added support for magic variables for MCPs, including `workspaceFolder` injection (thanks NamesMT!) ([#4442](https://github.com/RooCodeInc/Roo-Code/pull/4442)).
+*   **Context Mentions**: Added support for escaping context mentions (thanks KJ7LNW!).
+*   **Mermaid Diagrams**: Added buttons to Mermaid diagrams for zooming, copying, and viewing the code (thanks qdaxb!) ([#4547](https://github.com/RooCodeInc/Roo-Code/pull/4547)).
+
+## Provider Updates
+
+*   **[DeepSeek](/providers/deepseek)**: Added DeepSeek R1 support to the Chutes provider.
+*   **[Bedrock](/providers/bedrock)**: Temporarily revert thinking support for Bedrock models ([#4626](https://github.com/RooCodeInc/Roo-Code/pull/4626)).
+*   **[XAI](/providers/xai)**: Updated XAI models and pricing (thanks edwin-truthsearch-io!).
+*   **[O3](/providers/openai)**: Updated O3 model pricing ([#4580](https://github.com/RooCodeInc/Roo-Code/pull/4580)).
+*   **[OpenAI-Compatible](/providers/openai-compatible)**: Added manual OpenAI-compatible format specification and parsing (thanks dflatline!) ([#4463](https://github.com/RooCodeInc/Roo-Code/pull/4463)).
+*   **[OpenRouter](/providers/openrouter)**: Fixed cost calculation with BYOK (thanks chrarnoldus!) ([#4543](https://github.com/RooCodeInc/Roo-Code/pull/4543)).
+
+## Bug Fixes
+
+*   **[`write_to_file`](/advanced-usage/available-tools/write-to-file)**: Fixed an issue with the `write_to_file` tool with early `relPath` & `newContent` validation checks (thanks Ruakij!) ([#4378](https://github.com/RooCodeInc/Roo-Code/pull/4378)).
+*   **TaskItem Display**: Fixed display and copy issues with HTML tags in task messages (thanks forestyoo!) ([#4444](https://github.com/RooCodeInc/Roo-Code/pull/4444)).
+*   **Terminal Busy State**: Fixed an issue where the terminal busy state was not reset after manual commands completed ([#4583](https://github.com/RooCodeInc/Roo-Code/pull/4583)).
+*   **[`apply_diff`](/advanced-usage/available-tools/apply-diff)**: Fixed an issue with undefined output on multi-file `apply_diff` operations (thanks daniel-lxs!) ([#4608](https://github.com/RooCodeInc/Roo-Code/pull/4608)).
+*   **Security**:
+    *   Force `tar-fs >=2.1.3` to fix a security vulnerability ([#4629](https://github.com/RooCodeInc/Roo-Code/pull/4629))
+    *   Limit `search_files` to workspace for improved security ([#4642](https://github.com/RooCodeInc/Roo-Code/pull/4642))
+*   **UI**:
+    *   Sync `BatchDiffApproval` styling with `BatchFilePermission` for UI consistency (thanks @samhvw8!) ([#4640](https://github.com/RooCodeInc/Roo-Code/pull/4640))
+    *   Add max height constraint to MCP execution response for better UX (thanks @samhvw8!) ([#4644](https://github.com/RooCodeInc/Roo-Code/pull/4644))
+    *   Prevent MCP 'installed' label from being squeezed (thanks @daniel-lxs!) ([#4649](https://github.com/RooCodeInc/Roo-Code/pull/4649))
+    *   Add indexing status badge to chat view ([#4532](https://github.com/RooCodeInc/Roo-Code/pull/4532))
+*   **Bedrock**: Reapply reasoning for bedrock with fix (thanks @daniel-lxs!) ([#4645](https://github.com/RooCodeInc/Roo-Code/pull/4645))
+*   **Diff Editor**: Resolve diff editor race condition in multi-monitor setups (thanks daniel-lxs!) ([#4578](https://github.com/RooCodeInc/Roo-Code/pull/4578))
+*   **Auto-Approve**:
+    *   Prevent auto-approving edits of configuration files (thanks mrubens!) ([#4667](https://github.com/RooCodeInc/Roo-Code/pull/4667))
+    *   Adjust searching outside of the workspace to respect the auto-approve checkbox (thanks mrubens!) ([#4670](https://github.com/RooCodeInc/Roo-Code/pull/4670))
+    *   Make listing tools respect auto-approve settings for outside of the workspace (thanks mrubens!) ([#4682](https://github.com/RooCodeInc/Roo-Code/pull/4682))
+*   **File Read**: Fix errant `maxReadFileLine` default (thanks mrubens!) ([#4683](https://github.com/RooCodeInc/Roo-Code/pull/4683))
+*   **Multi-file Diff**: Fix multi-file diff error handling and UI feedback (thanks daniel-lxs!) ([#4674](https://github.com/RooCodeInc/Roo-Code/pull/4674))
+*   **Prompt History**: Improve prompt history navigation to not interfere with text editing (thanks daniel-lxs!) ([#4677](https://github.com/RooCodeInc/Roo-Code/pull/4677))
+
+## Misc Improvements
+
+*   **Context Condensing**: Allow a lower context condensing threshold (thanks @SECKainersdorfer!) ([#4634](https://github.com/RooCodeInc/Roo-Code/pull/4634))
+*   **Code Quality**:
+    *   Avoid type system duplication for cleaner codebase (thanks @EamonNerbonne!) ([#4596](https://github.com/RooCodeInc/Roo-Code/pull/4596))
+    *   Improve PR Reviewer and Issue Fixer Rules for better guidance and targeted fixes ([#4651](https://github.com/RooCodeInc/Roo-Code/pull/4651), [#4652](https://github.com/RooCodeInc/Roo-Code/pull/4652))
+*   **Unbound**: Add cache breakpoints for custom vertex models on Unbound (thanks @pugazhendhi-m!) ([#4585](https://github.com/RooCodeInc/Roo-Code/pull/4585))
+*   **Localization**:
+    *   Add Indonesian translation support (thanks chrarnoldus!) ([#4672](https://github.com/RooCodeInc/Roo-Code/pull/4672))
+    *   Update Indonesian locale files for chat and settings (thanks daniel-lxs!) ([#4675](https://github.com/RooCodeInc/Roo-Code/pull/4675))
+    *   Fix inconsistencies in markdown file i18n (thanks mrubens!) ([#4681](https://github.com/RooCodeInc/Roo-Code/pull/4681))
+*   **Types**: Move marketplace types to `@roo-code/types` (thanks jr!) ([#4671](https://github.com/RooCodeInc/Roo-Code/pull/4671))
+
+## Documentation
+
+*   **`whenToUse`**: Populated `whenToUse` descriptions for built-in modes ([#4579](https://github.com/RooCodeInc/Roo-Code/pull/4579)).
+*   **JSDoc**: Added JSDoc documentation for `ClineAsk` and `ClineSay` types ([#4427](https://github.com/RooCodeInc/Roo-Code/pull/4427)).
+*   **Docs**: Add docs extractor mode for comprehensive documentation extraction ([#4621](https://github.com/RooCodeInc/Roo-Code/pull/4621))
+*   **Docs**: Update contributors list ([#4348](https://github.com/RooCodeInc/Roo-Code/pull/4348))
+
+## Internal
+
+*   **Integration Tests**: Added core tools integration tests for comprehensive coverage ([#4433](https://github.com/RooCodeInc/Roo-Code/pull/4433)).

@@ -1,0 +1,70 @@
+---
+description: Adds built-in image generation (OpenRouter), a free Gemini preview option, GPT-5 usage without BYOK rate limit blockers, plus QOL improvements and fixes.
+keywords:
+  - roo code 3.26.2
+  - release notes
+  - image generation
+  - openrouter
+  - gemini 2.5 flash image preview
+  - free image generation
+  - prompt to image
+  - image viewer
+  - approvals flow
+  - gpt-5
+  - rate limits
+  - byok
+  - openai provider
+  - model picker
+  - input modalities
+  - output modalities
+  - provider updates
+  - qol improvements
+  - bug fixes
+  - release automation
+  - taskspawned event
+image: /img/v3.26.2/v3.26.2.png
+---
+
+# Roo Code 3.26.2 Release Notes (2025-08-28)
+
+This release adds integrated image generation, a free Gemini image preview option, improved GPT-5 availability without BYOK rate limit blockers, and multiple quality-of-life improvements and fixes.
+
+<img src="/img/v3.26.2/v3.26.2.png" alt="Roo Code v3.26.2 Release" width="600" />
+## Image Generation (OpenRouter) — Free option: Gemini 2.5 Flash Image Preview
+
+Generate images from natural‑language prompts directly inside Roo Code using OpenRouter’s image generation models. Configure your OpenRouter API key, pick a supported model, and preview results in the built‑in Image Viewer. See [Image Generation](/features/image-generation) and [OpenRouter Provider](/providers/openrouter) for setup and model selection.
+
+- **Free option available: Gemini 2.5 Flash Image Preview** — try image generation without paid credits for faster onboarding and quick experiments
+- Prompt‑to‑image workflow inside the editor with approvals flow (supports auto‑approval when write permissions are granted)
+- Image Viewer with zoom, copy, and save for quick reuse in docs and prototypes
+
+PRs: [#7474](https://github.com/RooCodeInc/Roo-Code/pull/7474), [#7492](https://github.com/RooCodeInc/Roo-Code/pull/7492), [#7493](https://github.com/RooCodeInc/Roo-Code/pull/7493)
+
+
+## GPT-5 usage without BYOK rate limit blockers
+
+If you’re being rate limited with GPT‑5, you can now use GPT‑5 models without bringing your own key. This improves availability and reduces interruptions during development. See [OpenAI Provider](/providers/openai) for model support and guidance.
+
+
+## QOL Improvements
+
+- Improved padding and click targets in the image model picker for easier selection and fewer misclicks. (#[7494](https://github.com/RooCodeInc/Roo-Code/pull/7494))
+- Generic default filename for saved images (e.g., `img_<timestamp>`) instead of `mermaid_diagram_<timestamp>`. (#[7479](https://github.com/RooCodeInc/Roo-Code/pull/7479))
+
+## Bug Fixes
+
+- ImageGenerationSettings no longer shows a dirty state on first open; the save button only enables after an actual change. (#[7495](https://github.com/RooCodeInc/Roo-Code/pull/7495))
+- GPT‑5 reliability improvements:
+  - Manual condense preserves conversation continuity by correctly handling `previous_response_id` on the next request
+  - Image inputs work reliably with structured text+image payloads
+  - Temperature control is shown only for models that support it
+  - Fewer GPT‑5–specific errors with updated provider definitions and SDK (thanks nlbuescher!)
+
+  (#[7067](https://github.com/RooCodeInc/Roo-Code/pull/7067))
+
+
+## Misc Improvements
+
+- Release automation: version bumps, changelog updates, and auto-publishing on merge for a faster, more reliable release process. (#[7490](https://github.com/RooCodeInc/Roo-Code/pull/7490))
+- New TaskSpawned developer event so integrations can detect when a subtask is created and capture its ID for chaining or monitoring. (#[7465](https://github.com/RooCodeInc/Roo-Code/pull/7465))
+- Roo Code Cloud SDK bumped to 0.25.0. (#[7475](https://github.com/RooCodeInc/Roo-Code/pull/7475))

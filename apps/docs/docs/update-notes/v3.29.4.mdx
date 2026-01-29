@@ -1,0 +1,44 @@
+---
+description: Adds MiniMax provider, improves @ file search for large repos, clarifies Logs tab and VS Code LM guidance, and fixes indexing/startup issues.
+keywords:
+  - roo code 3.29.4
+  - new features
+  - bug fixes
+image: /img/v3.29.4/v3.29.4.png
+---
+# Roo Code 3.29.4 Release Notes (2025-10-31)
+
+This release adds the MiniMax provider, improves @ file search on large projects, clarifies the Logs tab and VS Code LM guidance, and delivers multiple stability fixes.
+
+<img src="/img/v3.29.4/v3.29.4.png" alt="Roo Code v3.29.4 Release" width="600" />
+
+## We’re hiring
+
+We added a “We’re hiring” link to the announcement modal. Explore open roles at [careers.roocode.com](https://careers.roocode.com).
+
+## MiniMax provider
+
+We've added the MiniMax provider so you can run coding and reasoning tasks with strong Chinese language support and competitive pricing (thanks Maosghoul!) ([#8820](https://github.com/RooCodeInc/Roo-Code/pull/8820)):
+
+## QOL Improvements
+
+* Improve @ file search for large projects with a higher default index limit and respect for VS Code ignore settings; add the roo-cline.maximumIndexedFilesForFileSearch setting for tunable limits (thanks Naituw!) ([#8805](https://github.com/RooCodeInc/Roo-Code/pull/8805))
+* Rename MCP “Errors” tab to “Logs” to match mixed-level messages; clearer empty state (“No logs yet”) ([#8894](https://github.com/RooCodeInc/Roo-Code/pull/8894))
+* Custom modes now load from your configured storage path and persist after restart (thanks elianiva!) ([#8499](https://github.com/RooCodeInc/Roo-Code/pull/8499))
+* Breaking: Removed search_and_replace tool. Use [apply_diff](/advanced-usage/available-tools/apply-diff) instead. Migration notes below. ([#8892](https://github.com/RooCodeInc/Roo-Code/pull/8892))
+* Clarified VS Code LM API integration warning in Settings to reduce “model not supported” errors ([#8493](https://github.com/RooCodeInc/Roo-Code/pull/8493))
+
+## Bug Fixes
+
+* Reasoning effort selection now auto-enables reasoning when needed so UI and behavior stay in sync ([#8890](https://github.com/RooCodeInc/Roo-Code/pull/8890))
+* Reduce noisy cloud-agent exceptions by suppressing repeated auth messages ([#8577](https://github.com/RooCodeInc/Roo-Code/pull/8577))
+* Prevent MCP server restart when toggling “Always allow” for MCP tools (thanks heyseth!) ([#8633](https://github.com/RooCodeInc/Roo-Code/pull/8633))
+* Reuse existing Qdrant index after outages to avoid full reindex and cut restart time (thanks heyseth, jaroslaw-weber!) ([#8588](https://github.com/RooCodeInc/Roo-Code/pull/8588))
+* Make code index initialization non‑blocking at activation to avoid startup hangs (thanks cjlawson02!) ([#8933](https://github.com/RooCodeInc/Roo-Code/pull/8933))
+* Honor maxReadFileLine across code definition listing and file reads to prevent context overflows (thanks elianiva, chenxluo!) ([#8509](https://github.com/RooCodeInc/Roo-Code/pull/8509))
+* Prevent infinite retry loop when canceling during auto‑retry (thanks mini2s!) ([#8902](https://github.com/RooCodeInc/Roo-Code/pull/8902))
+* Gate auth‑driven Roo model refresh to the active provider only to reduce background work ([#8915](https://github.com/RooCodeInc/Roo-Code/pull/8915))
+
+## Provider Updates
+
+* Cerebras: add zai‑glm‑4.6 and change default to gpt‑oss‑120b; deprecate qwen‑3‑coder models ([#8920](https://github.com/RooCodeInc/Roo-Code/pull/8920))

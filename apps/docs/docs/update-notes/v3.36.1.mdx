@@ -1,0 +1,44 @@
+---
+description: Message management improvements, GPT-5.1 Codex Max support, symlink support for slash commands, and stability fixes.
+keywords:
+  - roo code 3.36.1
+  - gpt-5.1 codex max
+  - slash commands symlinks
+  - message management
+  - bug fixes
+image: /img/v3.36.1/v3.36.1.png
+---
+
+# Roo Code 3.36.1 Release Notes (2025-12-04)
+
+This release adds GPT-5.1 Codex Max support, enables symlinks for slash commands, improves message management with better checkpoint restore, and fixes several stability issues.
+
+<img src="/img/v3.36.1/v3.36.1.png" alt="Roo Code v3.36.1 Release" width="600" />
+
+## GPT-5.1 Codex Max Support
+
+Roo Code now supports GPT-5.1 Codex Max ([#9848](https://github.com/RooCodeInc/Roo-Code/pull/9848)), OpenAI's most intelligent coding model optimized for long-horizon, agentic coding tasks. This release also adds model defaults for gpt-5.1, gpt-5, and gpt-5-mini variants with optimized configurations.
+
+> **📚 Documentation**: See [OpenAI Provider](/providers/openai) for configuration details.
+
+## QOL Improvements
+
+* **Symlink support for slash commands**: Share and organize commands across projects using symlinks for individual files or directories, with command names derived from symlink names for easy aliasing ([#9838](https://github.com/RooCodeInc/Roo-Code/pull/9838))
+* **Smoother chat scroll**: Chat view maintains scroll position more reliably during streaming, eliminating disruptive jumps ([#8999](https://github.com/RooCodeInc/Roo-Code/pull/8999))
+* **Improved error messages**: Clearer, more actionable error messages with proper attribution and direct links to documentation ([#9777](https://github.com/RooCodeInc/Roo-Code/pull/9777))
+
+## Bug Fixes
+
+* **Extension freeze prevention**: The extension no longer freezes when a model attempts to call a non-existent tool (thanks daniel-lxs!) ([#9834](https://github.com/RooCodeInc/Roo-Code/pull/9834))
+* **Checkpoint restore reliability**: MessageManager layer ensures consistent message history handling across all rewind operations ([#9842](https://github.com/RooCodeInc/Roo-Code/pull/9842))
+* **Context truncation fix**: Prevent cascading truncation loops by only truncating visible messages ([#9844](https://github.com/RooCodeInc/Roo-Code/pull/9844))
+* **Reasoning models**: Models that require reasoning now always receive valid reasoning effort values ([#9836](https://github.com/RooCodeInc/Roo-Code/pull/9836))
+* **Terminal input handling**: Inline terminal no longer hangs when commands require user input ([#9827](https://github.com/RooCodeInc/Roo-Code/pull/9827))
+* **Large file safety**: Safer large file reads with proper token budget accounting for model output ([#9843](https://github.com/RooCodeInc/Roo-Code/pull/9843))
+* **Follow-up button styling**: Fixed overly rounded corners on follow-up question suggestions ([#9829](https://github.com/RooCodeInc/Roo-Code/pull/9829))
+
+## Misc Improvements
+
+* **Evals UI enhancements**: Added filtering by timeframe/model/provider, bulk delete actions, tool column consolidation, and run notes ([#9837](https://github.com/RooCodeInc/Roo-Code/pull/9837))
+* **Multi-model evals launch**: Launch identical test runs across multiple models with automatic staggering ([#9845](https://github.com/RooCodeInc/Roo-Code/pull/9845))
+* **New pricing page**: Updated website pricing page with clearer feature explanations ([#9821](https://github.com/RooCodeInc/Roo-Code/pull/9821))

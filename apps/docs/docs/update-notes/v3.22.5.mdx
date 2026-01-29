@@ -1,0 +1,18 @@
+---
+description: This release introduces free Gemini access via OAuth, fixes several bugs, and improves the overall user experience.
+---
+
+# Roo Code 3.22.5 Release Notes (2025-06-29)
+
+This patch release removes the Gemini CLI provider and fixes several internal telemetry issues.
+
+## Provider Updates
+
+* **Gemini CLI Removal**: The Gemini CLI provider has been removed per Google's request for a more standard implementation. Users previously using the Gemini CLI provider should migrate to the standard Gemini provider for continued access to Gemini models ([#5223](https://github.com/RooCodeInc/Roo-Code/pull/5223))
+
+## Bug Fixes
+
+* **Repository URL Handling**: Fixed telemetry functionality to properly handle git repository URLs by automatically converting SSH URLs to HTTPS format, ensuring telemetry works correctly regardless of which URL format users have configured ([#5202](https://github.com/RooCodeInc/Roo-Code/pull/5202)) (thanks liwilliam2021!)
+* **Cloud Telemetry**: Fixed cloud telemetry capture for assistant messages that was accidentally broken by a previous optimization ([#5220](https://github.com/RooCodeInc/Roo-Code/pull/5220))
+* **Internal Telemetry**: Improved internal telemetry system to prevent duplicate event capturing, enhancing data accuracy and system efficiency ([#5211](https://github.com/RooCodeInc/Roo-Code/pull/5211))
+* **Type Error Prevention**: Fixed internal type errors when the gemini-cli provider is removed, ensuring smoother operation ([#5226](https://github.com/RooCodeInc/Roo-Code/pull/5226))

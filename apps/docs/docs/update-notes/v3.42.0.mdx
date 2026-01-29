@@ -1,0 +1,44 @@
+---
+description: This release adds ChatGPT usage tracking for the OpenAI Codex provider, refreshes provider options and model selection UX, and improves reliability for prompts, exporting, and editing safety.
+keywords:
+  - roo code 3.42.0
+  - new features
+  - bug fixes
+image: /img/v3.42.0/v3.42.0.png
+---
+
+# Roo Code 3.42.0 Release Notes (2026-01-22)
+
+This release adds ChatGPT usage tracking for the OpenAI Codex provider, refreshes provider options and model selection UX, and improves reliability for prompts, exporting, and editing safety.
+
+<img src="/img/v3.42.0/v3.42.0.png" alt="Roo Code v3.42.0 Release" width="600" />
+
+## QOL Improvements
+
+* Adds a usage limits dashboard in the OpenAI Codex provider so you can track your ChatGPT subscription usage and avoid unexpected slowdowns or blocks. ([#10813](https://github.com/RooCodeInc/Roo-Code/pull/10813))
+* Standardizes the model picker UI across providers, reducing friction when switching providers or comparing models. ([#10294](https://github.com/RooCodeInc/Roo-Code/pull/10294))
+* Warns you when too many MCP tools are enabled, helping you avoid bloated prompts and unexpected tool behavior. ([#10772](https://github.com/RooCodeInc/Roo-Code/pull/10772))
+* Makes exports easier to find by defaulting export destinations to your Downloads folder. ([#10882](https://github.com/RooCodeInc/Roo-Code/pull/10882))
+* Clarifies how linked `SKILL.md` files should be handled in prompts. ([#10907](https://github.com/RooCodeInc/Roo-Code/pull/10907))
+
+## Bug Fixes
+
+* Fixes an issue where switching workspaces could temporarily show an empty Mode selector, making it harder to confirm which mode you’re in. ([#9674](https://github.com/RooCodeInc/Roo-Code/pull/9674))
+* Fixes a race condition where the context condensing prompt input could become inconsistent, improving reliability when condensing runs. ([#10876](https://github.com/RooCodeInc/Roo-Code/pull/10876))
+* Fixes an issue where OpenAI native and Codex handlers could emit duplicated text/reasoning, reducing repeated output in streaming responses. ([#10888](https://github.com/RooCodeInc/Roo-Code/pull/10888))
+* Fixes an issue where resuming a task via the IPC/bridge layer could abort unexpectedly, improving stability for resumed sessions. ([#10892](https://github.com/RooCodeInc/Roo-Code/pull/10892))
+* Fixes an issue where file restrictions were not enforced consistently across all editing tools, improving safety when using restricted workflows. ([#10896](https://github.com/RooCodeInc/Roo-Code/pull/10896))
+* Fixes an issue where a “custom condensing model” option could appear even when it was no longer supported, simplifying the condense configuration UI. ([#10901](https://github.com/RooCodeInc/Roo-Code/pull/10901))
+* Fixes gray-screen performance issues by avoiding redundant task history payloads during webview state updates. ([#10842](https://github.com/RooCodeInc/Roo-Code/pull/10842))
+
+## Misc Improvements
+
+* Improves prompt formatting consistency by standardizing user content tags to `<user_message>`. ([#10723](https://github.com/RooCodeInc/Roo-Code/pull/10723))
+* Removes legacy XML tool-calling support so new tasks use the native tool format only, reducing confusion and preventing mismatched tool formatting across providers. ([#10841](https://github.com/RooCodeInc/Roo-Code/pull/10841))
+* Refactors internal prompt plumbing by migrating the context condensing prompt into `customSupportPrompts`. ([#10881](https://github.com/RooCodeInc/Roo-Code/pull/10881))
+
+## Provider Updates
+
+* Removes the deprecated Claude Code provider from the provider list. ([#10883](https://github.com/RooCodeInc/Roo-Code/pull/10883))
+* Enables prompt caching for the Cerebras `zai-glm-4.7` model to reduce latency and repeat costs on repeated prompts. ([#10670](https://github.com/RooCodeInc/Roo-Code/pull/10670))
+* Adds the Kimi K2 thinking model to the Vertex AI provider. ([#9269](https://github.com/RooCodeInc/Roo-Code/pull/9269))

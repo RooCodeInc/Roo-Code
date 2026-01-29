@@ -1,0 +1,45 @@
+---
+description: Roo Code 3.33.0 adds Gemini 3 Pro Preview, improves Gemini defaults and cost reporting, and enables native tool calling for the OpenAI-native provider.
+keywords:
+  - roo code 3.33.0
+  - new features
+  - bug fixes
+image: /img/v3.33.0/v3.33.0.png
+---
+
+# Roo Code 3.33.0 Release Notes (2025-11-18)
+
+Gemini 3 Pro Preview is now available in Roo Code and already performing extremely well in real-world coding tasks, alongside 16 tweaks and fixes—thanks to everyone in the Roo Code community who helped shape this release.
+
+<img src="/img/v3.33.0/v3.33.0.png" alt="Roo Code v3.33.0 Release" width="600" />
+
+## Gemini 3 Pro Preview
+
+Roo Code now supports Google’s Gemini 3 Pro Preview model through direct Gemini, Vertex AI, and aggregator providers like OpenRouter and Requesty ([#9357](https://github.com/RooCodeInc/Roo-Code/pull/9357), [#9327](https://github.com/RooCodeInc/Roo-Code/pull/9327)):
+ 
+- **1M-token, reasoning-capable model**: Handles very large conversations while providing higher-quality multi-step reasoning on complex coding and refactoring tasks.
+- **Strong eval performance**: Achieves a 100% score on internal Roo Code evals and 76.2% on SWE-bench Verified, giving more consistent solutions on real-world coding tasks.
+- **Reliable tool usage**: Executes complex multi-step tool workflows without getting stuck or losing track, especially in long, tool-heavy tasks.
+- **Better out-of-the-box defaults**: Uses `gemini-2.5-pro` by default where supported, sets a more natural temperature of 1, cleans up the Gemini model list, and includes reasoning / “thought” tokens in cost reporting so usage numbers better match provider billing.
+
+## QOL Improvements
+
+- **Git status in environment details** ([#9310](https://github.com/RooCodeInc/Roo-Code/pull/9310)): Shows git status information in environment details so agents have more context about untracked, modified, and staged files when reasoning about your workspace.
+- **Tool protocol selector in advanced settings** ([#9324](https://github.com/RooCodeInc/Roo-Code/pull/9324)): Lets you choose which tool protocol to use (such as XML vs native) without editing config files, making it easier to experiment with different tool behaviors.
+- **Dynamic tool protocol resolution** ([#9286](https://github.com/RooCodeInc/Roo-Code/pull/9286)): Resolves the active tool protocol using a clear precedence hierarchy, so provider defaults, mode settings, and user overrides interact in a predictable way.
+- **Improved Modes view toolbar** ([#9077](https://github.com/RooCodeInc/Roo-Code/pull/9077)): Moves Import/Export into the Modes view toolbar and cleans up the Mode edit view, making it easier to manage and share modes from a single place.
+- **Cloud agent CTA points to setup page** ([#9338](https://github.com/RooCodeInc/Roo-Code/pull/9338)): Updates the cloud agent call-to-action to link directly to the setup page so new users can get started faster.
+- **Roo Code Cloud provider pricing page** ([#9195](https://github.com/RooCodeInc/Roo-Code/pull/9195)): Adds a pricing page and related Cloud provider tweaks so pricing is easier to understand before you enable Roo Code Cloud.
+
+## Bug Fixes
+
+- **Prevent duplicate tool_result blocks in native protocol** ([#9248](https://github.com/RooCodeInc/Roo-Code/pull/9248)): Ensures each native tool call emits a single tool_result block, avoiding 400 errors and duplicated tool executions.
+- **Format tool responses for native protocol** ([#9270](https://github.com/RooCodeInc/Roo-Code/pull/9270)): Normalizes the structure of tool responses so native protocol runs are easier for models to follow and less likely to error.
+- **Centralize toolProtocol configuration checks** ([#9279](https://github.com/RooCodeInc/Roo-Code/pull/9279)): Uses a single source of truth for toolProtocol configuration, reducing configuration drift and subtle behavior differences.
+- **Preserve tool blocks in conversation history** ([#9319](https://github.com/RooCodeInc/Roo-Code/pull/9319)): Keeps native protocol tool blocks intact in history so follow-up turns can reason correctly about prior tool calls.
+- **Prevent infinite loops after successful finalization** ([#9325](https://github.com/RooCodeInc/Roo-Code/pull/9325)): Fixes a regression where certain native tool flows could loop after successful completion instead of stopping cleanly.
+- **Sync parser state with profile and model changes** ([#9355](https://github.com/RooCodeInc/Roo-Code/pull/9355)): Keeps the conversation parser aligned with the active profile and model so switching models or profiles does not leave the parser in an inconsistent state.
+- **Pass tool protocol to truncation errors** ([#9358](https://github.com/RooCodeInc/Roo-Code/pull/9358)): Ensures truncation errors know which tool protocol is active so error handling and messaging stay accurate.
+- **VS Code theme-colored outline button borders** ([#9336](https://github.com/RooCodeInc/Roo-Code/pull/9336)): Aligns outline button borders with the current VS Code theme for a more consistent UI.
+- **Use shields.io badges instead of badgen.net** ([#9318](https://github.com/RooCodeInc/Roo-Code/pull/9318)): Replaces broken badge URLs with shields.io so badges render reliably again.
+- **Cap git status file sampling in evals** ([#9322](https://github.com/RooCodeInc/Roo-Code/pull/9322)): Adds a maximum for git status files in eval settings so evaluations don’t pull excessively large environment details.

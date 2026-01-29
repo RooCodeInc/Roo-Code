@@ -1,0 +1,23 @@
+---
+description: Bug fixes for AWS Bedrock 1M context, OpenAI model switching, and development environment improvements.
+keywords:
+  - roo code 3.25.14
+  - aws bedrock fix
+  - openai verbosity fix
+  - bug fixes
+---
+
+# Roo Code 3.25.14 Release Notes (2025-08-13)
+
+This release fixes critical issues with AWS Bedrock 1M context support, OpenAI model switching, and improves the development environment.
+
+## Bug Fixes
+
+* **AWS Bedrock 1M Context**: Fixed parameter placement for Claude Sonnet 4 models to properly enable 1M context window support ([#7056](https://github.com/RooCodeInc/Roo-Code/pull/7056))
+* **OpenAI Model Switching**: Fixed API errors when switching from GPT-5 models to GPT-4.1 or other models that don't support the verbosity parameter (thanks eastonmeth!) ([#7055](https://github.com/RooCodeInc/Roo-Code/pull/7055))
+* **Development Environment**: Fixed webview functionality in development mode ([#7044](https://github.com/RooCodeInc/Roo-Code/pull/7044))
+* **Token Usage Reporting**: Reverted previous changes to prioritize user experience by allowing request interruption over precise cost reporting ([#7039](https://github.com/RooCodeInc/Roo-Code/pull/7039))
+
+## Internal Improvements
+
+* **Code Organization**: Moved cloud-related types from @roo-code/types to dedicated @roo-code/cloud package ([#7038](https://github.com/RooCodeInc/Roo-Code/pull/7038))
