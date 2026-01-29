@@ -29,12 +29,14 @@ function asObjectSafe(value: any): object {
 }
 
 /**
- * Converts an Anthropic image block to a VS Code LanguageModelDataPart.
+ * Converts an Anthropic image block to a VS Code LanguageModelDataPart or TextPart.
  * Uses the new LanguageModelDataPart.image() API available in VS Code 1.106+.
  * @param imageBlock The Anthropic image block param
- * @returns A LanguageModelDataPart for the image
+ * @returns A LanguageModelDataPart for the image, or TextPart if the image cannot be converted
  */
-function convertImageToDataPart(imageBlock: Anthropic.ImageBlockParam): vscode.LanguageModelDataPart {
+function convertImageToDataPart(
+	imageBlock: Anthropic.ImageBlockParam,
+): vscode.LanguageModelDataPart | vscode.LanguageModelTextPart {
 	const source = imageBlock.source
 	const mediaType = source.media_type || "image/png"
 
@@ -47,18 +49,23 @@ function convertImageToDataPart(imageBlock: Anthropic.ImageBlockParam): vscode.L
 		}
 		return vscode.LanguageModelDataPart.image(bytes, mediaType)
 	} else if (source.type === "url") {
-		// For URL-based images, we create a placeholder since LanguageModelDataPart.image
-		// expects binary data. The URL would need to be fetched first.
-		// This is a limitation - URL images should be fetched and converted to base64 upstream.
+		// URL-based images cannot be directly converted - return a text placeholder
+		// explaining the limitation. URL images should be fetched and converted to base64 upstream.
 		console.warn(
-			"Roo Code <Language Model API>: URL-based images require fetching the image data first. Using placeholder.",
+			"Roo Code <Language Model API>: URL-based images are not supported by the VS Code LM API. " +
+				"Images must be provided as base64 data.",
 		)
-		return new vscode.LanguageModelDataPart(new Uint8Array(0), mediaType)
+		return new vscode.LanguageModelTextPart(
+			`[Image from URL not supported: ${(source as any).url || "unknown URL"}. ` +
+				`VS Code LM API requires base64-encoded image data.]`,
+		)
 	}
 
-	// Fallback for unknown source types
+	// Fallback for unknown source types - return a text placeholder
 	console.warn(`Roo Code <Language Model API>: Unknown image source type: ${(source as any).type}`)
-	return new vscode.LanguageModelDataPart(new Uint8Array(0), mediaType)
+	return new vscode.LanguageModelTextPart(
+		`[Image with unsupported source type "${(source as any).type}" cannot be displayed]`,
+	)
 }
 
 export function convertToVsCodeLmMessages(

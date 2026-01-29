@@ -591,46 +591,42 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 }
 
 /**
- * Model families known to support image inputs via VS Code Language Model API.
+ * Model ID prefixes that support image inputs via VS Code Language Model API.
  * These models support the LanguageModelDataPart.image() API introduced in VS Code 1.106+.
+ *
+ * All GitHub Copilot models with these prefixes support images.
+ * Only grok-* models don't support images (text only).
+ *
+ * Source: https://models.dev/api.json (github-copilot provider models)
  */
-const IMAGE_CAPABLE_MODEL_FAMILIES = [
-	// OpenAI models with vision capabilities
-	"gpt-4o",
-	"gpt-4o-mini",
-	"gpt-4.1",
-	"gpt-5",
-	"gpt-5-mini",
-	// Anthropic Claude models with vision
-	"claude-3.5-sonnet",
-	"claude-3-5-sonnet",
-	"claude-sonnet-4",
-	"claude-4-sonnet",
-	// Google Gemini models with vision
-	"gemini-2.0-flash",
-	"gemini-2.5-pro",
-	"gemini-pro-vision",
+export const IMAGE_CAPABLE_MODEL_PREFIXES = [
+	"gpt", // All GPT models (gpt-4o, gpt-4.1, gpt-5, gpt-5.1, gpt-5.2, gpt-5-mini, gpt-5.1-codex, etc.)
+	"claude", // All Claude models (claude-haiku-4.5, claude-opus-4.5, claude-sonnet-4, claude-sonnet-4.5)
+	"gemini", // All Gemini models (gemini-2.5-pro, gemini-3-flash-preview, gemini-3-pro-preview)
+	"o1", // OpenAI o1 reasoning models
+	"o3", // OpenAI o3 reasoning models
 ]
 
 /**
- * Checks if a model supports image inputs based on its family or ID.
- * @param family The model family (e.g., "gpt-4o", "claude-3.5-sonnet")
+ * Checks if a model supports image inputs based on its model ID.
+ * Uses prefix matching against known image-capable model families.
+ *
+ * @param _family The model family (unused, kept for API compatibility)
  * @param id The model ID
  * @returns true if the model supports image inputs
  */
-function checkModelSupportsImages(family: string, id: string): boolean {
-	// Check if the family matches any known image-capable model
-	const familyLower = family.toLowerCase()
+export function checkModelSupportsImages(_family: string, id: string): boolean {
 	const idLower = id.toLowerCase()
-
-	return IMAGE_CAPABLE_MODEL_FAMILIES.some(
-		(capableFamily) =>
-			familyLower.includes(capableFamily.toLowerCase()) || idLower.includes(capableFamily.toLowerCase()),
-	)
+	return IMAGE_CAPABLE_MODEL_PREFIXES.some((prefix) => idLower.startsWith(prefix))
 }
 
-// Static blacklist of VS Code Language Model IDs that should be excluded from the model list e.g. because they will never work
-const VSCODE_LM_STATIC_BLACKLIST: string[] = ["claude-3.7-sonnet", "claude-3.7-sonnet-thought"]
+// Static blacklist of VS Code Language Model IDs that should be excluded from the model list
+// e.g. because they don't support native tool calling or will never work
+const VSCODE_LM_STATIC_BLACKLIST: string[] = [
+	"claude-3.7-sonnet",
+	"claude-3.7-sonnet-thought",
+	"claude-opus-41", // Does not support native tool calling
+]
 
 export async function getVsCodeLmModels() {
 	try {

@@ -256,6 +256,68 @@ describe("convertToVsCodeLmMessages", () => {
 		expect(imagePart.type).toBe("data")
 		expect(imagePart.mimeType).toBe("image/jpeg")
 	})
+
+	it("should return text placeholder for URL-based images", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{ type: "text", text: "Check this image:" },
+					{
+						type: "image",
+						source: {
+							type: "url",
+							url: "https://example.com/image.png",
+						} as any,
+					},
+				],
+			},
+		]
+
+		const result = convertToVsCodeLmMessages(messages)
+
+		expect(result).toHaveLength(1)
+		expect(result[0].content).toHaveLength(2)
+
+		// First part should be text
+		const textPart = result[0].content[0] as MockLanguageModelTextPart
+		expect(textPart.type).toBe("text")
+		expect(textPart.value).toBe("Check this image:")
+
+		// Second part should be a text placeholder (not an empty DataPart)
+		const imagePlaceholder = result[0].content[1] as MockLanguageModelTextPart
+		expect(imagePlaceholder.type).toBe("text")
+		expect(imagePlaceholder.value).toContain("URL not supported")
+		expect(imagePlaceholder.value).toContain("https://example.com/image.png")
+	})
+
+	it("should return text placeholder for unknown image source types", () => {
+		const messages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "image",
+						source: {
+							type: "unknown",
+							media_type: "image/png",
+							data: "", // Required by type but ignored for unknown source types
+						} as any,
+					},
+				],
+			},
+		]
+
+		const result = convertToVsCodeLmMessages(messages)
+
+		expect(result).toHaveLength(1)
+		expect(result[0].content).toHaveLength(1)
+
+		// Should return a text placeholder for unknown source types
+		const placeholder = result[0].content[0] as MockLanguageModelTextPart
+		expect(placeholder.type).toBe("text")
+		expect(placeholder.value).toContain("unsupported source type")
+	})
 })
 
 describe("convertToAnthropicRole", () => {
