@@ -23,7 +23,7 @@ const RED = "\x1b[31m"
 const VSIX_PATH = path.join(os.tmpdir(), "roo-code-serve.vsix")
 
 function log(message) {
-	console.log(`${CYAN}[serve]${RESET} ${message}`)
+	console.log(`${CYAN}[code-server]${RESET} ${message}`)
 }
 
 function logSuccess(message) {
