@@ -529,6 +529,10 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 
 			const modelId = this.client.id || modelParts.join(SELECTOR_SEPARATOR)
 
+			// Check if the model supports images based on known model families
+			// VS Code Language Model API 1.106+ supports image inputs via LanguageModelDataPart
+			const supportsImages = checkModelSupportsImages(this.client.family, this.client.id)
+
 			// Build model info with conservative defaults for missing values
 			const modelInfo: ModelInfo = {
 				maxTokens: -1, // Unlimited tokens by default
@@ -536,7 +540,7 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 					typeof this.client.maxInputTokens === "number"
 						? Math.max(0, this.client.maxInputTokens)
 						: openAiModelInfoSaneDefaults.contextWindow,
-				supportsImages: false, // VSCode Language Model API currently doesn't support image inputs
+				supportsImages,
 				supportsPromptCache: true,
 				inputPrice: 0,
 				outputPrice: 0,
@@ -584,6 +588,45 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 			throw error
 		}
 	}
+}
+
+/**
+ * Model families known to support image inputs via VS Code Language Model API.
+ * These models support the LanguageModelDataPart.image() API introduced in VS Code 1.106+.
+ */
+const IMAGE_CAPABLE_MODEL_FAMILIES = [
+	// OpenAI models with vision capabilities
+	"gpt-4o",
+	"gpt-4o-mini",
+	"gpt-4.1",
+	"gpt-5",
+	"gpt-5-mini",
+	// Anthropic Claude models with vision
+	"claude-3.5-sonnet",
+	"claude-3-5-sonnet",
+	"claude-sonnet-4",
+	"claude-4-sonnet",
+	// Google Gemini models with vision
+	"gemini-2.0-flash",
+	"gemini-2.5-pro",
+	"gemini-pro-vision",
+]
+
+/**
+ * Checks if a model supports image inputs based on its family or ID.
+ * @param family The model family (e.g., "gpt-4o", "claude-3.5-sonnet")
+ * @param id The model ID
+ * @returns true if the model supports image inputs
+ */
+function checkModelSupportsImages(family: string, id: string): boolean {
+	// Check if the family matches any known image-capable model
+	const familyLower = family.toLowerCase()
+	const idLower = id.toLowerCase()
+
+	return IMAGE_CAPABLE_MODEL_FAMILIES.some(
+		(capableFamily) =>
+			familyLower.includes(capableFamily.toLowerCase()) || idLower.includes(capableFamily.toLowerCase()),
+	)
 }
 
 // Static blacklist of VS Code Language Model IDs that should be excluded from the model list e.g. because they will never work

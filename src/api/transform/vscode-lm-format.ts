@@ -28,6 +28,39 @@ function asObjectSafe(value: any): object {
 	}
 }
 
+/**
+ * Converts an Anthropic image block to a VS Code LanguageModelDataPart.
+ * Uses the new LanguageModelDataPart.image() API available in VS Code 1.106+.
+ * @param imageBlock The Anthropic image block param
+ * @returns A LanguageModelDataPart for the image
+ */
+function convertImageToDataPart(imageBlock: Anthropic.ImageBlockParam): vscode.LanguageModelDataPart {
+	const source = imageBlock.source
+	const mediaType = source.media_type || "image/png"
+
+	if (source.type === "base64") {
+		// Convert base64 string to Uint8Array
+		const binaryString = atob(source.data)
+		const bytes = new Uint8Array(binaryString.length)
+		for (let i = 0; i < binaryString.length; i++) {
+			bytes[i] = binaryString.charCodeAt(i)
+		}
+		return vscode.LanguageModelDataPart.image(bytes, mediaType)
+	} else if (source.type === "url") {
+		// For URL-based images, we create a placeholder since LanguageModelDataPart.image
+		// expects binary data. The URL would need to be fetched first.
+		// This is a limitation - URL images should be fetched and converted to base64 upstream.
+		console.warn(
+			"Roo Code <Language Model API>: URL-based images require fetching the image data first. Using placeholder.",
+		)
+		return new vscode.LanguageModelDataPart(new Uint8Array(0), mediaType)
+	}
+
+	// Fallback for unknown source types
+	console.warn(`Roo Code <Language Model API>: Unknown image source type: ${(source as any).type}`)
+	return new vscode.LanguageModelDataPart(new Uint8Array(0), mediaType)
+}
+
 export function convertToVsCodeLmMessages(
 	anthropicMessages: Anthropic.Messages.MessageParam[],
 ): vscode.LanguageModelChatMessage[] {
@@ -66,15 +99,13 @@ export function convertToVsCodeLmMessages(
 				const contentParts = [
 					// Convert tool messages to ToolResultParts
 					...toolMessages.map((toolMessage) => {
-						// Process tool result content into TextParts
-						const toolContentParts: vscode.LanguageModelTextPart[] =
+						// Process tool result content into TextParts or DataParts
+						const toolContentParts: (vscode.LanguageModelTextPart | vscode.LanguageModelDataPart)[] =
 							typeof toolMessage.content === "string"
 								? [new vscode.LanguageModelTextPart(toolMessage.content)]
 								: (toolMessage.content?.map((part) => {
 										if (part.type === "image") {
-											return new vscode.LanguageModelTextPart(
-												`[Image (${part.source?.type || "Unknown source-type"}): ${part.source?.media_type || "unknown media-type"} not supported by VSCode LM API]`,
-											)
+											return convertImageToDataPart(part)
 										}
 										return new vscode.LanguageModelTextPart(part.text)
 									}) ?? [new vscode.LanguageModelTextPart("")])
@@ -82,12 +113,10 @@ export function convertToVsCodeLmMessages(
 						return new vscode.LanguageModelToolResultPart(toolMessage.tool_use_id, toolContentParts)
 					}),
 
-					// Convert non-tool messages to TextParts after tool messages
+					// Convert non-tool messages to TextParts or DataParts after tool messages
 					...nonToolMessages.map((part) => {
 						if (part.type === "image") {
-							return new vscode.LanguageModelTextPart(
-								`[Image (${part.source?.type || "Unknown source-type"}): ${part.source?.media_type || "unknown media-type"} not supported by VSCode LM API]`,
-							)
+							return convertImageToDataPart(part)
 						}
 						return new vscode.LanguageModelTextPart(part.text)
 					}),
