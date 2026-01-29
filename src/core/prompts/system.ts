@@ -52,7 +52,6 @@ async function generatePrompt(
 	promptComponent?: PromptComponent,
 	customModeConfigs?: ModeConfig[],
 	globalCustomInstructions?: string,
-	diffEnabled?: boolean,
 	experiments?: Record<string, boolean>,
 	language?: string,
 	rooIgnoreInstructions?: string,
@@ -65,9 +64,6 @@ async function generatePrompt(
 	if (!context) {
 		throw new Error("Extension context is required for generating system prompt")
 	}
-
-	// If diff is disabled, don't pass the diffStrategy
-	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
 
 	// Get the full mode config to ensure we have the role definition (used for groups, etc.)
 	const modeConfig = getModeBySlug(mode, customModeConfigs) || modes.find((m) => m.slug === mode) || modes[0]
@@ -129,7 +125,6 @@ export const SYSTEM_PROMPT = async (
 	customModePrompts?: CustomModePrompts,
 	customModes?: ModeConfig[],
 	globalCustomInstructions?: string,
-	diffEnabled?: boolean,
 	experiments?: Record<string, boolean>,
 	language?: string,
 	rooIgnoreInstructions?: string,
@@ -187,21 +182,17 @@ ${fileCustomSystemPrompt}
 ${customInstructions}`
 	}
 
-	// If diff is disabled, don't pass the diffStrategy
-	const effectiveDiffStrategy = diffEnabled ? diffStrategy : undefined
-
 	return generatePrompt(
 		context,
 		cwd,
 		supportsComputerUse,
 		currentMode.slug,
 		mcpHub,
-		effectiveDiffStrategy,
+		diffStrategy,
 		browserViewportSize,
 		promptComponent,
 		customModes,
 		globalCustomInstructions,
-		diffEnabled,
 		experiments,
 		language,
 		rooIgnoreInstructions,

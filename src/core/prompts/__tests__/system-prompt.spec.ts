@@ -225,7 +225,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -247,7 +246,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -271,7 +269,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -293,7 +290,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -315,7 +311,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes,
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -323,81 +318,6 @@ describe("SYSTEM_PROMPT", () => {
 		)
 
 		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-different-viewport-size.snap")
-	})
-
-	it("should include diff strategy tool description when diffEnabled is true", async () => {
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false,
-			undefined, // mcpHub
-			new MultiSearchReplaceDiffStrategy(), // Use actual diff strategy from the codebase
-			undefined, // browserViewportSize
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes
-			undefined, // globalCustomInstructions
-			true, // diffEnabled
-			experiments,
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-		)
-
-		// Native-only: tool catalog isn't embedded in the system prompt anymore.
-		expect(prompt).not.toContain("# Tools")
-		expect(prompt).not.toContain("apply_diff")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-true.snap")
-	})
-
-	it("should exclude diff strategy tool description when diffEnabled is false", async () => {
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false, // supportsImages
-			undefined, // mcpHub
-			new MultiSearchReplaceDiffStrategy(), // Use actual diff strategy from the codebase
-			undefined, // browserViewportSize
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes
-			undefined, // globalCustomInstructions
-			false, // diffEnabled
-			experiments,
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-		)
-
-		// Native-only: tool catalog isn't embedded in the system prompt anymore.
-		expect(prompt).not.toContain("# Tools")
-		expect(prompt).not.toContain("apply_diff")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-false.snap")
-	})
-
-	it("should exclude diff strategy tool description when diffEnabled is undefined", async () => {
-		const prompt = await SYSTEM_PROMPT(
-			mockContext,
-			"/test/path",
-			false,
-			undefined, // mcpHub
-			new MultiSearchReplaceDiffStrategy(), // Use actual diff strategy from the codebase
-			undefined, // browserViewportSize
-			defaultModeSlug, // mode
-			undefined, // customModePrompts
-			undefined, // customModes
-			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
-			experiments,
-			undefined, // language
-			undefined, // rooIgnoreInstructions
-			undefined, // partialReadsEnabled
-		)
-
-		// Native-only: tool catalog isn't embedded in the system prompt anymore.
-		expect(prompt).not.toContain("# Tools")
-		expect(prompt).not.toContain("apply_diff")
-		expect(prompt).toMatchFileSnapshot("./__snapshots__/system-prompt/with-diff-enabled-undefined.snap")
 	})
 
 	it("should include vscode language in custom instructions", async () => {
@@ -439,7 +359,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			undefined, // experiments
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -499,7 +418,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			customModes, // customModes
 			"Global instructions", // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -536,7 +454,6 @@ describe("SYSTEM_PROMPT", () => {
 			customModePrompts, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			undefined, // experiments
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -568,7 +485,6 @@ describe("SYSTEM_PROMPT", () => {
 			customModePrompts, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			undefined, // experiments
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -598,7 +514,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -630,7 +545,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -662,7 +576,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			undefined, // language
 			undefined, // rooIgnoreInstructions
@@ -694,7 +607,6 @@ describe("SYSTEM_PROMPT", () => {
 			undefined, // customModePrompts
 			undefined, // customModes
 			undefined, // globalCustomInstructions
-			undefined, // diffEnabled
 			experiments,
 			undefined, // language
 			undefined, // rooIgnoreInstructions
