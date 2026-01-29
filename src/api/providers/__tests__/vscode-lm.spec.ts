@@ -1,4 +1,5 @@
 import type { Mock } from "vitest"
+import { checkModelSupportsImages, IMAGE_CAPABLE_MODEL_PREFIXES } from "../vscode-lm"
 
 // Mocks must come first, before imports
 vi.mock("vscode", () => {
@@ -535,5 +536,94 @@ describe("VsCodeLmHandler", () => {
 			const promise = handler.completePrompt("Test prompt")
 			await expect(promise).rejects.toThrow("VSCode LM completion error: Completion failed")
 		})
+	})
+})
+
+describe("checkModelSupportsImages", () => {
+	describe("OpenAI GPT models", () => {
+		it("should return true for all gpt-* models (GitHub Copilot)", () => {
+			// All GPT models in GitHub Copilot support images
+			expect(checkModelSupportsImages("gpt", "gpt-4o")).toBe(true)
+			expect(checkModelSupportsImages("gpt", "gpt-4.1")).toBe(true)
+			expect(checkModelSupportsImages("gpt", "gpt-5")).toBe(true)
+			expect(checkModelSupportsImages("gpt", "gpt-5.1")).toBe(true)
+			expect(checkModelSupportsImages("gpt", "gpt-5.2")).toBe(true)
+			expect(checkModelSupportsImages("gpt-mini", "gpt-5-mini")).toBe(true)
+			expect(checkModelSupportsImages("gpt-codex", "gpt-5.1-codex")).toBe(true)
+			expect(checkModelSupportsImages("gpt-codex", "gpt-5.2-codex")).toBe(true)
+			expect(checkModelSupportsImages("gpt-codex", "gpt-5.1-codex-max")).toBe(true)
+			expect(checkModelSupportsImages("gpt-codex", "gpt-5.1-codex-mini")).toBe(true)
+		})
+
+		it("should return true for o1 and o3 reasoning models", () => {
+			expect(checkModelSupportsImages("o1", "o1-preview")).toBe(true)
+			expect(checkModelSupportsImages("o1", "o1-mini")).toBe(true)
+			expect(checkModelSupportsImages("o3", "o3")).toBe(true)
+		})
+	})
+
+	describe("Anthropic Claude models", () => {
+		it("should return true for all claude-* models (GitHub Copilot)", () => {
+			// All Claude models in GitHub Copilot support images
+			expect(checkModelSupportsImages("claude-haiku", "claude-haiku-4.5")).toBe(true)
+			expect(checkModelSupportsImages("claude-opus", "claude-opus-4.5")).toBe(true)
+			expect(checkModelSupportsImages("claude-sonnet", "claude-sonnet-4")).toBe(true)
+			expect(checkModelSupportsImages("claude-sonnet", "claude-sonnet-4.5")).toBe(true)
+		})
+	})
+
+	describe("Google Gemini models", () => {
+		it("should return true for all gemini-* models (GitHub Copilot)", () => {
+			// All Gemini models in GitHub Copilot support images
+			expect(checkModelSupportsImages("gemini-pro", "gemini-2.5-pro")).toBe(true)
+			expect(checkModelSupportsImages("gemini-flash", "gemini-3-flash-preview")).toBe(true)
+			expect(checkModelSupportsImages("gemini-pro", "gemini-3-pro-preview")).toBe(true)
+		})
+	})
+
+	describe("non-vision models", () => {
+		it("should return false for grok models (text-only in GitHub Copilot)", () => {
+			// Grok is the only model family in GitHub Copilot that doesn't support images
+			expect(checkModelSupportsImages("grok", "grok-code-fast-1")).toBe(false)
+		})
+
+		it("should return false for models with non-matching prefixes", () => {
+			// Models that don't start with gpt, claude, gemini, o1, or o3
+			expect(checkModelSupportsImages("mistral", "mistral-large")).toBe(false)
+			expect(checkModelSupportsImages("llama", "llama-3-70b")).toBe(false)
+			expect(checkModelSupportsImages("unknown", "some-random-model")).toBe(false)
+		})
+	})
+
+	describe("case insensitivity", () => {
+		it("should match regardless of case", () => {
+			expect(checkModelSupportsImages("GPT", "GPT-4O")).toBe(true)
+			expect(checkModelSupportsImages("CLAUDE", "CLAUDE-SONNET-4")).toBe(true)
+			expect(checkModelSupportsImages("GEMINI", "GEMINI-2.5-PRO")).toBe(true)
+		})
+	})
+
+	describe("prefix matching", () => {
+		it("should only match IDs that start with known prefixes", () => {
+			// ID must START with the prefix, not just contain it
+			expect(checkModelSupportsImages("custom", "gpt-4o")).toBe(true) // ID starts with gpt
+			expect(checkModelSupportsImages("custom", "my-gpt-model")).toBe(false) // gpt not at start
+			expect(checkModelSupportsImages("custom", "not-claude-model")).toBe(false) // claude not at start
+		})
+	})
+})
+
+describe("IMAGE_CAPABLE_MODEL_PREFIXES", () => {
+	it("should export the model prefixes array", () => {
+		expect(Array.isArray(IMAGE_CAPABLE_MODEL_PREFIXES)).toBe(true)
+		expect(IMAGE_CAPABLE_MODEL_PREFIXES.length).toBeGreaterThan(0)
+	})
+
+	it("should include key model prefixes", () => {
+		expect(IMAGE_CAPABLE_MODEL_PREFIXES).toContain("gpt")
+		expect(IMAGE_CAPABLE_MODEL_PREFIXES).toContain("claude")
+		expect(IMAGE_CAPABLE_MODEL_PREFIXES).toContain("gemini")
+		expect(IMAGE_CAPABLE_MODEL_PREFIXES).toContain("o1")
+		expect(IMAGE_CAPABLE_MODEL_PREFIXES).toContain("o3")
 	})
 })
