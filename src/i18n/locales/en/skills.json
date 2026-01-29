@@ -9,6 +9,8 @@
 		"missing_create_fields": "Missing required fields: skillName, source, or skillDescription",
 		"manager_unavailable": "Skills manager not available",
 		"missing_delete_fields": "Missing required fields: skillName or source",
-		"skill_not_found": "Skill \"{{name}}\" not found"
+		"skill_not_found": "Skill \"{{name}}\" not found",
+		"cannot_modify_builtin": "Built-in skills cannot be created or deleted",
+		"cannot_open_builtin": "Built-in skills cannot be opened as files"
 	}
 }

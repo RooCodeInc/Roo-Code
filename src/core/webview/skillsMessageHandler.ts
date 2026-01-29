@@ -44,6 +44,11 @@ export async function handleCreateSkill(
 			throw new Error(t("skills:errors.missing_create_fields"))
 		}
 
+		// Built-in skills cannot be created
+		if (source === "built-in") {
+			throw new Error(t("skills:errors.cannot_modify_builtin"))
+		}
+
 		const skillsManager = provider.getSkillsManager()
 		if (!skillsManager) {
 			throw new Error(t("skills:errors.manager_unavailable"))
@@ -82,6 +87,11 @@ export async function handleDeleteSkill(
 			throw new Error(t("skills:errors.missing_delete_fields"))
 		}
 
+		// Built-in skills cannot be deleted
+		if (source === "built-in") {
+			throw new Error(t("skills:errors.cannot_modify_builtin"))
+		}
+
 		const skillsManager = provider.getSkillsManager()
 		if (!skillsManager) {
 			throw new Error(t("skills:errors.manager_unavailable"))
@@ -112,6 +122,11 @@ export async function handleOpenSkillFile(provider: ClineProvider, message: Webv
 
 		if (!skillName || !source) {
 			throw new Error(t("skills:errors.missing_delete_fields"))
+		}
+
+		// Built-in skills cannot be opened as files (they have no file path)
+		if (source === "built-in") {
+			throw new Error(t("skills:errors.cannot_open_builtin"))
 		}
 
 		const skillsManager = provider.getSkillsManager()
