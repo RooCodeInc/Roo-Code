@@ -2,9 +2,9 @@
  * Serve script for Roo Code extension development
  *
  * Usage:
- *   pnpm serve:install    # Build and install the extension into code-server
+ *   pnpm code-server:install    # Build and install the extension into code-server
  *
- * After making code changes, run `pnpm serve:install` again and reload the window
+ * After making code changes, run `pnpm code-server:install` again and reload the window
  * (Cmd+Shift+P → "Developer: Reload Window")
  */
 
