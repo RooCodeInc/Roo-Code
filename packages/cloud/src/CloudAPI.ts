@@ -144,4 +144,45 @@ export class CloudAPI {
 			},
 		})
 	}
+
+	async webSearch(
+		query: string,
+		options?: { allowed_domains?: string[]; blocked_domains?: string[] },
+	): Promise<{ results: Array<{ title: string; url: string }> }> {
+		const requestBody: {
+			query: string
+			allowed_domains?: string[]
+			blocked_domains?: string[]
+		} = {
+			query,
+		}
+
+		if (options?.allowed_domains && options.allowed_domains.length > 0) {
+			requestBody.allowed_domains = options.allowed_domains
+		}
+		if (options?.blocked_domains && options.blocked_domains.length > 0) {
+			requestBody.blocked_domains = options.blocked_domains
+		}
+
+		return this.request("/api/v1/search/websearch", {
+			method: "POST",
+			body: JSON.stringify(requestBody),
+			timeout: 15000,
+			parseResponse: (data) => {
+				const result = z
+					.object({
+						data: z.object({
+							results: z.array(
+								z.object({
+									title: z.string(),
+									url: z.string(),
+								}),
+							),
+						}),
+					})
+					.parse(data)
+				return result.data
+			},
+		})
+	}
 }

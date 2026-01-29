@@ -76,6 +76,8 @@ export const toolParamNames = [
 	"search", // read_command_output parameter for grep-like search
 	"offset", // read_command_output parameter for pagination
 	"limit", // read_command_output parameter for max bytes to return
+	"allowed_domains", // web_search parameter for domain filtering
+	"blocked_domains", // web_search parameter for domain filtering
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -111,6 +113,7 @@ export type NativeToolArgs = {
 	update_todo_list: { todos: string }
 	use_mcp_tool: { server_name: string; tool_name: string; arguments?: Record<string, unknown> }
 	write_to_file: { path: string; content: string }
+	web_search: { query: string; allowed_domains?: string[]; blocked_domains?: string[] }
 	// Add more tools as they are migrated to native protocol
 }
 
@@ -268,13 +271,14 @@ export const TOOL_DISPLAY_NAMES: Record<ToolName, string> = {
 	update_todo_list: "update todo list",
 	run_slash_command: "run slash command",
 	generate_image: "generate images",
+	web_search: "search the web",
 	custom_tool: "use custom tools",
 } as const
 
 // Define available tool groups.
 export const TOOL_GROUPS: Record<ToolGroup, ToolGroupConfig> = {
 	read: {
-		tools: ["read_file", "fetch_instructions", "search_files", "list_files", "codebase_search"],
+		tools: ["read_file", "fetch_instructions", "search_files", "list_files", "codebase_search", "web_search"],
 	},
 	edit: {
 		tools: ["apply_diff", "write_to_file", "generate_image"],

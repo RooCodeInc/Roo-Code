@@ -36,6 +36,7 @@ import { updateTodoListTool } from "../tools/UpdateTodoListTool"
 import { runSlashCommandTool } from "../tools/RunSlashCommandTool"
 import { generateImageTool } from "../tools/GenerateImageTool"
 import { applyDiffTool as applyDiffToolClass } from "../tools/ApplyDiffTool"
+import { webSearchTool } from "../tools/WebSearchTool"
 import { isValidToolName, validateToolUse } from "../tools/validateToolUse"
 import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
@@ -396,6 +397,8 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.command}'${block.params.args ? ` with args: ${block.params.args}` : ""}]`
 					case "generate_image":
 						return `[${block.name} for '${block.params.path}']`
+					case "web_search":
+						return `[${block.name} for '${block.params.query}']`
 					default:
 						return `[${block.name}]`
 				}
@@ -873,6 +876,13 @@ export async function presentAssistantMessage(cline: Task) {
 				case "generate_image":
 					await checkpointSaveAndMark(cline)
 					await generateImageTool.handle(cline, block as ToolUse<"generate_image">, {
+						askApproval,
+						handleError,
+						pushToolResult,
+					})
+					break
+				case "web_search":
+					await webSearchTool.handle(cline, block as ToolUse<"web_search">, {
 						askApproval,
 						handleError,
 						pushToolResult,
