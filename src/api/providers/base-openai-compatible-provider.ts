@@ -86,11 +86,17 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 		const temperature = this.options.modelTemperature ?? info.defaultTemperature ?? this.defaultTemperature
 
+		// Enable mergeToolResultText to prevent text content after tool_results from creating
+		// separate user messages that can disrupt the model's conversation flow.
+		// This helps models like GLM4.5 avoid getting stuck in repeated file read loops.
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
 			max_tokens,
 			temperature,
-			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+			messages: [
+				{ role: "system", content: systemPrompt },
+				...convertToOpenAiMessages(messages, { mergeToolResultText: true }),
+			],
 			stream: true,
 			stream_options: { include_usage: true },
 			tools: this.convertToolsForOpenAI(metadata?.tools),
