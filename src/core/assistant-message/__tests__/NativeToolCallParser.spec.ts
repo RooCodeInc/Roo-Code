@@ -96,6 +96,200 @@ describe("NativeToolCallParser", () => {
 					expect(nativeArgs.indentation?.include_header).toBe(false)
 				}
 			})
+
+			// Legacy format backward compatibility tests
+			describe("legacy format backward compatibility", () => {
+				it("should parse legacy files array format with single file", () => {
+					const toolCall = {
+						id: "toolu_legacy_1",
+						name: "read_file" as const,
+						arguments: JSON.stringify({
+							files: [{ path: "src/legacy/file.ts" }],
+						}),
+					}
+
+					const result = NativeToolCallParser.parseToolCall(toolCall)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						expect(result.usedLegacyFormat).toBe(true)
+						const nativeArgs = result.nativeArgs as { files: Array<{ path: string }>; _legacyFormat: true }
+						expect(nativeArgs._legacyFormat).toBe(true)
+						expect(nativeArgs.files).toHaveLength(1)
+						expect(nativeArgs.files[0].path).toBe("src/legacy/file.ts")
+					}
+				})
+
+				it("should parse legacy files array format with multiple files", () => {
+					const toolCall = {
+						id: "toolu_legacy_2",
+						name: "read_file" as const,
+						arguments: JSON.stringify({
+							files: [{ path: "src/file1.ts" }, { path: "src/file2.ts" }, { path: "src/file3.ts" }],
+						}),
+					}
+
+					const result = NativeToolCallParser.parseToolCall(toolCall)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						expect(result.usedLegacyFormat).toBe(true)
+						const nativeArgs = result.nativeArgs as { files: Array<{ path: string }>; _legacyFormat: true }
+						expect(nativeArgs.files).toHaveLength(3)
+						expect(nativeArgs.files[0].path).toBe("src/file1.ts")
+						expect(nativeArgs.files[1].path).toBe("src/file2.ts")
+						expect(nativeArgs.files[2].path).toBe("src/file3.ts")
+					}
+				})
+
+				it("should parse legacy line_ranges as tuples", () => {
+					const toolCall = {
+						id: "toolu_legacy_3",
+						name: "read_file" as const,
+						arguments: JSON.stringify({
+							files: [
+								{
+									path: "src/task.ts",
+									line_ranges: [
+										[1, 50],
+										[100, 150],
+									],
+								},
+							],
+						}),
+					}
+
+					const result = NativeToolCallParser.parseToolCall(toolCall)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						expect(result.usedLegacyFormat).toBe(true)
+						const nativeArgs = result.nativeArgs as {
+							files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+							_legacyFormat: true
+						}
+						expect(nativeArgs.files[0].lineRanges).toHaveLength(2)
+						expect(nativeArgs.files[0].lineRanges?.[0]).toEqual({ start: 1, end: 50 })
+						expect(nativeArgs.files[0].lineRanges?.[1]).toEqual({ start: 100, end: 150 })
+					}
+				})
+
+				it("should parse legacy line_ranges as objects", () => {
+					const toolCall = {
+						id: "toolu_legacy_4",
+						name: "read_file" as const,
+						arguments: JSON.stringify({
+							files: [
+								{
+									path: "src/task.ts",
+									line_ranges: [
+										{ start: 10, end: 20 },
+										{ start: 30, end: 40 },
+									],
+								},
+							],
+						}),
+					}
+
+					const result = NativeToolCallParser.parseToolCall(toolCall)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						expect(result.usedLegacyFormat).toBe(true)
+						const nativeArgs = result.nativeArgs as {
+							files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+						}
+						expect(nativeArgs.files[0].lineRanges).toHaveLength(2)
+						expect(nativeArgs.files[0].lineRanges?.[0]).toEqual({ start: 10, end: 20 })
+						expect(nativeArgs.files[0].lineRanges?.[1]).toEqual({ start: 30, end: 40 })
+					}
+				})
+
+				it("should parse legacy line_ranges as strings", () => {
+					const toolCall = {
+						id: "toolu_legacy_5",
+						name: "read_file" as const,
+						arguments: JSON.stringify({
+							files: [
+								{
+									path: "src/task.ts",
+									line_ranges: ["1-50", "100-150"],
+								},
+							],
+						}),
+					}
+
+					const result = NativeToolCallParser.parseToolCall(toolCall)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						expect(result.usedLegacyFormat).toBe(true)
+						const nativeArgs = result.nativeArgs as {
+							files: Array<{ path: string; lineRanges?: Array<{ start: number; end: number }> }>
+						}
+						expect(nativeArgs.files[0].lineRanges).toHaveLength(2)
+						expect(nativeArgs.files[0].lineRanges?.[0]).toEqual({ start: 1, end: 50 })
+						expect(nativeArgs.files[0].lineRanges?.[1]).toEqual({ start: 100, end: 150 })
+					}
+				})
+
+				it("should parse double-stringified files array (model quirk)", () => {
+					// This tests the real-world case where some models double-stringify the files array
+					// e.g., { files: "[{\"path\": \"...\"}]" } instead of { files: [{path: "..."}] }
+					const toolCall = {
+						id: "toolu_double_stringify",
+						name: "read_file" as const,
+						arguments: JSON.stringify({
+							files: JSON.stringify([
+								{ path: "src/services/browser/browserDiscovery.ts" },
+								{ path: "src/services/mcp/McpServerManager.ts" },
+							]),
+						}),
+					}
+
+					const result = NativeToolCallParser.parseToolCall(toolCall)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						expect(result.usedLegacyFormat).toBe(true)
+						const nativeArgs = result.nativeArgs as {
+							files: Array<{ path: string }>
+							_legacyFormat: true
+						}
+						expect(nativeArgs._legacyFormat).toBe(true)
+						expect(nativeArgs.files).toHaveLength(2)
+						expect(nativeArgs.files[0].path).toBe("src/services/browser/browserDiscovery.ts")
+						expect(nativeArgs.files[1].path).toBe("src/services/mcp/McpServerManager.ts")
+					}
+				})
+
+				it("should NOT set usedLegacyFormat for new format", () => {
+					const toolCall = {
+						id: "toolu_new",
+						name: "read_file" as const,
+						arguments: JSON.stringify({
+							path: "src/new/format.ts",
+							mode: "slice",
+							offset: 1,
+							limit: 100,
+						}),
+					}
+
+					const result = NativeToolCallParser.parseToolCall(toolCall)
+
+					expect(result).not.toBeNull()
+					expect(result?.type).toBe("tool_use")
+					if (result?.type === "tool_use") {
+						expect(result.usedLegacyFormat).toBeUndefined()
+					}
+				})
+			})
 		})
 	})
 

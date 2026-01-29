@@ -83,6 +83,9 @@ export const toolParamNames = [
 	"include_siblings",
 	"include_header",
 	"max_lines",
+	// read_file legacy format parameter (backward compatibility)
+	"files",
+	"line_ranges",
 ] as const
 
 export type ToolParamName = (typeof toolParamNames)[number]
@@ -93,7 +96,7 @@ export type ToolParamName = (typeof toolParamNames)[number]
  */
 export type NativeToolArgs = {
 	access_mcp_resource: { server_name: string; uri: string }
-	read_file: import("@roo-code/types").ReadFileParams
+	read_file: import("@roo-code/types").ReadFileToolParams
 	read_command_output: { artifact_id: string; search?: string; offset?: number; limit?: number }
 	attempt_completion: { result: string }
 	execute_command: { command: string; cwd?: string }
@@ -141,6 +144,11 @@ export interface ToolUse<TName extends ToolName = ToolName> {
 	partial: boolean
 	// nativeArgs is properly typed based on TName if it's in NativeToolArgs, otherwise never
 	nativeArgs?: TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
+	/**
+	 * Flag indicating whether the tool call used a legacy/deprecated format.
+	 * Used for telemetry tracking to monitor migration from old formats.
+	 */
+	usedLegacyFormat?: boolean
 }
 
 /**

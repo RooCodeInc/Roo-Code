@@ -26,7 +26,7 @@ export interface IndentationParams {
 }
 
 /**
- * Parameters for the read_file tool.
+ * Parameters for the read_file tool (new format).
  *
  * NOTE: This is the canonical, single-file-per-call shape.
  */
@@ -41,6 +41,55 @@ export interface ReadFileParams {
 	limit?: number
 	/** Indentation-mode configuration (only used when mode === "indentation") */
 	indentation?: IndentationParams
+}
+
+// ─── Legacy Format Types (Backward Compatibility) ─────────────────────────────
+
+/**
+ * Line range specification for legacy read_file format.
+ * Represents a contiguous range of lines [start, end] (1-based, inclusive).
+ */
+export interface LineRange {
+	start: number
+	end: number
+}
+
+/**
+ * File entry for legacy read_file format.
+ * Supports reading multiple disjoint line ranges from a single file.
+ */
+export interface FileEntry {
+	/** Path to the file, relative to workspace */
+	path: string
+	/** Optional list of line ranges to read (if omitted, reads entire file) */
+	lineRanges?: LineRange[]
+}
+
+/**
+ * Legacy parameters for the read_file tool (pre-refactor format).
+ * Supports reading multiple files in a single call with optional line ranges.
+ *
+ * @deprecated Use ReadFileParams instead. This format is maintained for
+ * backward compatibility with existing chat histories.
+ */
+export interface LegacyReadFileParams {
+	/** Array of file entries to read */
+	files: FileEntry[]
+	/** Discriminant flag for type narrowing */
+	_legacyFormat: true
+}
+
+/**
+ * Union type for read_file tool parameters.
+ * Supports both new single-file format and legacy multi-file format.
+ */
+export type ReadFileToolParams = ReadFileParams | LegacyReadFileParams
+
+/**
+ * Type guard to check if params are in legacy format.
+ */
+export function isLegacyReadFileParams(params: ReadFileToolParams): params is LegacyReadFileParams {
+	return "_legacyFormat" in params && params._legacyFormat === true
 }
 
 export interface Coordinate {

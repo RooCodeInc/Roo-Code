@@ -4,13 +4,16 @@
  * Supports two modes:
  * 1. Slice mode (default): Read contiguous lines with offset/limit
  * 2. Indentation mode: Extract semantic code blocks based on indentation hierarchy
+ *
+ * Also supports legacy format for backward compatibility:
+ * - Legacy format: { files: [{ path: string, lineRanges?: [...] }] }
  */
 import path from "path"
 import * as fs from "fs/promises"
 import { isBinaryFile } from "isbinaryfile"
 
-import type { ReadFileParams, ReadFileMode } from "@roo-code/types"
-import { type ClineSayTool } from "@roo-code/types"
+import type { ReadFileParams, ReadFileMode, ReadFileToolParams, FileEntry, LineRange } from "@roo-code/types"
+import { isLegacyReadFileParams, type ClineSayTool } from "@roo-code/types"
 
 import { Task } from "../task/Task"
 import { formatResponse } from "../prompts/responses"
@@ -68,7 +71,19 @@ interface FileResult {
 export class ReadFileTool extends BaseTool<"read_file"> {
 	readonly name = "read_file" as const
 
-	async execute(params: ReadFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+	async execute(params: ReadFileToolParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
+		// Dispatch to legacy or new execution path based on format
+		if (isLegacyReadFileParams(params)) {
+			return this.executeLegacy(params.files, task, callbacks)
+		}
+
+		return this.executeNew(params, task, callbacks)
+	}
+
+	/**
+	 * Execute new single-file format with slice/indentation mode support.
+	 */
+	private async executeNew(params: ReadFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { pushToolResult } = callbacks
 		const modelInfo = task.api.getModel().info
 		const filePath = params.path
@@ -606,7 +621,16 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"read_file">): Promise<void> {
-		const filePath = block.nativeArgs?.path ?? ""
+		// Handle both legacy and new format for partial display
+		let filePath = ""
+		if (block.nativeArgs) {
+			if (isLegacyReadFileParams(block.nativeArgs)) {
+				// Legacy format - show first file
+				filePath = block.nativeArgs.files[0]?.path ?? ""
+			} else {
+				filePath = block.nativeArgs.path ?? ""
+			}
+		}
 
 		const fullPath = filePath ? path.resolve(task.cwd, filePath) : ""
 		const sharedMessageProps: ClineSayTool = {
@@ -619,6 +643,155 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 			content: undefined,
 		} satisfies ClineSayTool)
 		await task.ask("tool", partialMessage, block.partial).catch(() => {})
+	}
+
+	/**
+	 * Execute legacy multi-file format for backward compatibility.
+	 * This handles the old format: { files: [{ path: string, lineRanges?: [...] }] }
+	 */
+	private async executeLegacy(fileEntries: FileEntry[], task: Task, callbacks: ToolCallbacks): Promise<void> {
+		const { pushToolResult } = callbacks
+		const modelInfo = task.api.getModel().info
+
+		// Temporary indicator for testing legacy format detection
+		console.warn("[read_file] Legacy format detected - using backward compatibility path")
+
+		if (!fileEntries || fileEntries.length === 0) {
+			task.consecutiveMistakeCount++
+			task.recordToolError("read_file")
+			const errorMsg = await task.sayAndCreateMissingParamError("read_file", "files")
+			pushToolResult(`Error: ${errorMsg}`)
+			return
+		}
+
+		const supportsImages = modelInfo.supportsImages ?? false
+
+		// Process each file sequentially (legacy behavior)
+		const results: string[] = []
+
+		for (const entry of fileEntries) {
+			const relPath = entry.path
+			const fullPath = path.resolve(task.cwd, relPath)
+
+			// RooIgnore validation
+			const accessAllowed = task.rooIgnoreController?.validateAccess(relPath)
+			if (!accessAllowed) {
+				await task.say("rooignore_error", relPath)
+				const errorMsg = formatResponse.rooIgnoreError(relPath)
+				results.push(`File: ${relPath}\nError: ${errorMsg}`)
+				continue
+			}
+
+			// Request approval for single file
+			const isOutsideWorkspace = isPathOutsideWorkspace(fullPath)
+			let lineSnippet = ""
+			if (entry.lineRanges && entry.lineRanges.length > 0) {
+				const ranges = entry.lineRanges.map((range: LineRange) => `lines ${range.start}-${range.end}`)
+				lineSnippet = ranges.join(", ")
+			}
+
+			const completeMessage = JSON.stringify({
+				tool: "readFile",
+				path: getReadablePath(task.cwd, relPath),
+				isOutsideWorkspace,
+				content: fullPath,
+				reason: lineSnippet || undefined,
+			} satisfies ClineSayTool)
+
+			const { response, text, images } = await task.ask("tool", completeMessage, false)
+
+			if (response !== "yesButtonClicked") {
+				if (text) await task.say("user_feedback", text, images)
+				task.didRejectTool = true
+				results.push(`File: ${relPath}\nStatus: Denied by user`)
+				continue
+			}
+
+			if (text) await task.say("user_feedback", text, images)
+
+			try {
+				// Check if the path is a directory
+				const stats = await fs.stat(fullPath)
+				if (stats.isDirectory()) {
+					const errorMsg = `Cannot read '${relPath}' because it is a directory.`
+					results.push(`File: ${relPath}\nError: ${errorMsg}`)
+					await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
+					continue
+				}
+
+				const isBinary = await isBinaryFile(fullPath).catch(() => false)
+
+				if (isBinary) {
+					// Handle binary files (images)
+					const fileExtension = path.extname(relPath).toLowerCase()
+					if (supportsImages && isSupportedImageFormat(fileExtension)) {
+						const state = await task.providerRef.deref()?.getState()
+						const {
+							maxImageFileSize = DEFAULT_MAX_IMAGE_FILE_SIZE_MB,
+							maxTotalImageSize = DEFAULT_MAX_TOTAL_IMAGE_SIZE_MB,
+						} = state ?? {}
+						const validation = await validateImageForProcessing(
+							fullPath,
+							supportsImages,
+							maxImageFileSize,
+							maxTotalImageSize,
+							0, // Legacy path doesn't track cumulative memory
+						)
+						if (!validation.isValid) {
+							results.push(`File: ${relPath}\nNotice: ${validation.notice ?? "Image validation failed"}`)
+							continue
+						}
+						const imageResult = await processImageFile(fullPath)
+						if (imageResult) {
+							results.push(`File: ${relPath}\n[Image file - content processed for vision model]`)
+						}
+					} else {
+						results.push(`File: ${relPath}\nError: Cannot read binary file`)
+					}
+					continue
+				}
+
+				// Read text file
+				const rawContent = await fs.readFile(fullPath, "utf8")
+
+				// Handle line ranges if specified
+				let content: string
+				if (entry.lineRanges && entry.lineRanges.length > 0) {
+					const lines = rawContent.split("\n")
+					const selectedLines: string[] = []
+
+					for (const range of entry.lineRanges) {
+						// Convert to 0-based index, ranges are 1-based inclusive
+						const startIdx = Math.max(0, range.start - 1)
+						const endIdx = Math.min(lines.length - 1, range.end - 1)
+
+						for (let i = startIdx; i <= endIdx; i++) {
+							selectedLines.push(`${i + 1} | ${lines[i]}`)
+						}
+					}
+					content = selectedLines.join("\n")
+				} else {
+					// Read with default limits using slice mode
+					const result = readWithSlice(rawContent, 0, DEFAULT_LINE_LIMIT)
+					content = result.content
+					if (result.wasTruncated) {
+						content += `\n\n[File truncated: showing ${result.returnedLines} of ${result.totalLines} total lines]`
+					}
+				}
+
+				results.push(`File: ${relPath}\n${content}`)
+
+				// Track file in context
+				await task.fileContextTracker.trackFileContext(relPath, "read_tool")
+			} catch (error) {
+				const errorMsg = error instanceof Error ? error.message : String(error)
+				results.push(`File: ${relPath}\nError: ${errorMsg}`)
+				await task.say("error", `Error reading file ${relPath}: ${errorMsg}`)
+			}
+		}
+
+		// Push combined results
+		pushToolResult(results.join("\n\n---\n\n"))
 	}
 }
 
