@@ -1,5 +1,5 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { parseMentions, ParseMentionsResult } from "./index"
+import { parseMentions, ParseMentionsResult, MentionContentBlock } from "./index"
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 
@@ -9,7 +9,23 @@ export interface ProcessUserContentMentionsResult {
 }
 
 /**
- * Process mentions in user content, specifically within task and feedback tags
+ * Converts MentionContentBlocks to Anthropic text blocks.
+ * Each file/folder mention becomes a separate text block formatted
+ * to look like a read_file tool result.
+ */
+function contentBlocksToAnthropicBlocks(contentBlocks: MentionContentBlock[]): Anthropic.Messages.TextBlockParam[] {
+	return contentBlocks.map((block) => ({
+		type: "text" as const,
+		text: block.content,
+	}))
+}
+
+/**
+ * Process mentions in user content, specifically within task and feedback tags.
+ *
+ * File/folder @ mentions are now returned as separate text blocks that
+ * look like read_file tool results, making it clear to the model that
+ * the file has already been read.
  */
 export async function processUserContentMentions({
 	userContent,
@@ -20,7 +36,6 @@ export async function processUserContentMentions({
 	showRooIgnoredFiles = false,
 	includeDiagnosticMessages = true,
 	maxDiagnosticMessages = 50,
-	maxReadFileLine,
 }: {
 	userContent: Anthropic.Messages.ContentBlockParam[]
 	cwd: string
@@ -30,7 +45,6 @@ export async function processUserContentMentions({
 	showRooIgnoredFiles?: boolean
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
-	maxReadFileLine?: number
 }): Promise<ProcessUserContentMentionsResult> {
 	// Track the first mode found from slash commands
 	let commandMode: string | undefined
@@ -58,18 +72,28 @@ export async function processUserContentMentions({
 							showRooIgnoredFiles,
 							includeDiagnosticMessages,
 							maxDiagnosticMessages,
-							maxReadFileLine,
 						)
 						// Capture the first mode found
 						if (!commandMode && result.mode) {
 							commandMode = result.mode
 						}
+
+						// Build the blocks array:
+						// 1. User's text (with @ mentions replaced by clean paths)
+						// 2. File/folder content blocks (formatted like read_file results)
+						// 3. Slash command help (if any)
 						const blocks: Anthropic.Messages.ContentBlockParam[] = [
 							{
 								...block,
 								text: result.text,
 							},
 						]
+
+						// Add file/folder content as separate blocks
+						if (result.contentBlocks.length > 0) {
+							blocks.push(...contentBlocksToAnthropicBlocks(result.contentBlocks))
+						}
+
 						if (result.slashCommandHelp) {
 							blocks.push({
 								type: "text" as const,
@@ -92,30 +116,38 @@ export async function processUserContentMentions({
 								showRooIgnoredFiles,
 								includeDiagnosticMessages,
 								maxDiagnosticMessages,
-								maxReadFileLine,
 							)
 							// Capture the first mode found
 							if (!commandMode && result.mode) {
 								commandMode = result.mode
 							}
-							if (result.slashCommandHelp) {
-								return {
-									...block,
-									content: [
-										{
-											type: "text" as const,
-											text: result.text,
-										},
-										{
-											type: "text" as const,
-											text: result.slashCommandHelp,
-										},
-									],
-								}
+
+							// Build content array with file blocks included
+							const contentParts: Array<{ type: "text"; text: string }> = [
+								{
+									type: "text" as const,
+									text: result.text,
+								},
+							]
+
+							// Add file/folder content blocks
+							for (const contentBlock of result.contentBlocks) {
+								contentParts.push({
+									type: "text" as const,
+									text: contentBlock.content,
+								})
 							}
+
+							if (result.slashCommandHelp) {
+								contentParts.push({
+									type: "text" as const,
+									text: result.slashCommandHelp,
+								})
+							}
+
 							return {
 								...block,
-								content: result.text,
+								content: contentParts,
 							}
 						}
 
@@ -134,18 +166,28 @@ export async function processUserContentMentions({
 											showRooIgnoredFiles,
 											includeDiagnosticMessages,
 											maxDiagnosticMessages,
-											maxReadFileLine,
 										)
 										// Capture the first mode found
 										if (!commandMode && result.mode) {
 											commandMode = result.mode
 										}
-										const blocks = [
+
+										// Build blocks array with file content
+										const blocks: Array<{ type: "text"; text: string }> = [
 											{
 												...contentBlock,
 												text: result.text,
 											},
 										]
+
+										// Add file/folder content blocks
+										for (const cb of result.contentBlocks) {
+											blocks.push({
+												type: "text" as const,
+												text: cb.content,
+											})
+										}
+
 										if (result.slashCommandHelp) {
 											blocks.push({
 												type: "text" as const,

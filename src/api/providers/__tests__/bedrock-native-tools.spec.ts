@@ -135,23 +135,18 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 						parameters: {
 							type: "object",
 							properties: {
-								files: {
-									type: "array",
-									items: {
-										type: "object",
-										properties: {
-											path: { type: "string" },
-											line_ranges: {
-												type: ["array", "null"],
-												items: { type: "integer" },
-												description: "Optional line ranges",
-											},
+								path: { type: "string" },
+								indentation: {
+									type: ["object", "null"],
+									properties: {
+										anchor_line: {
+											type: ["integer", "null"],
+											description: "Optional anchor line",
 										},
-										required: ["path", "line_ranges"],
 									},
 								},
 							},
-							required: ["files"],
+							required: ["path"],
 						},
 					},
 				},
@@ -167,15 +162,14 @@ describe("AwsBedrockHandler Native Tool Calling", () => {
 			expect(executeCommandSchema.properties.cwd.type).toBeUndefined()
 			expect(executeCommandSchema.properties.cwd.description).toBe("Working directory (optional)")
 
-			// Second tool: line_ranges should be transformed from type: ["array", "null"] to anyOf
-			// with items moved inside the array variant (required by GPT-5-mini strict schema validation)
+			// Second tool: nested nullable object should be transformed from type: ["object", "null"] to anyOf
 			const readFileSchema = bedrockTools[1].toolSpec.inputSchema.json as any
-			const lineRanges = readFileSchema.properties.files.items.properties.line_ranges
-			expect(lineRanges.anyOf).toEqual([{ type: "array", items: { type: "integer" } }, { type: "null" }])
-			expect(lineRanges.type).toBeUndefined()
-			// items should now be inside the array variant, not at root
-			expect(lineRanges.items).toBeUndefined()
-			expect(lineRanges.description).toBe("Optional line ranges")
+			const indentation = readFileSchema.properties.indentation
+			expect(indentation.anyOf).toBeDefined()
+			expect(indentation.type).toBeUndefined()
+			// Object-level schema properties are preserved at the root, not inside the anyOf object variant
+			expect(indentation.additionalProperties).toBe(false)
+			expect(indentation.properties.anchor_line.anyOf).toEqual([{ type: "integer" }, { type: "null" }])
 		})
 
 		it("should filter non-function tools", () => {
