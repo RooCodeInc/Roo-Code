@@ -130,17 +130,28 @@ describe("GLM Model Detection", () => {
 		})
 
 		describe("thinking support detection", () => {
-			it("should detect thinking support for GLM-4.7", () => {
+			it("should detect thinking support for GLM-4.7 variants", () => {
 				expect(detectGlmModel("glm-4.7").supportsThinking).toBe(true)
 				expect(detectGlmModel("glm-4.7-flash").supportsThinking).toBe(true)
 				expect(detectGlmModel("GLM-4.7-FlashX").supportsThinking).toBe(true)
 			})
 
-			it("should NOT detect thinking support for GLM-4.5 and GLM-4.6", () => {
+			it("should detect thinking support for GLM-4.6 base model", () => {
+				expect(detectGlmModel("glm-4.6").supportsThinking).toBe(true)
+			})
+
+			it("should detect thinking support for GLM-4.6V vision variants", () => {
+				expect(detectGlmModel("glm-4.6v").supportsThinking).toBe(true)
+				expect(detectGlmModel("GLM-4.6V").supportsThinking).toBe(true)
+				expect(detectGlmModel("glm-4.6v-flash").supportsThinking).toBe(true)
+				expect(detectGlmModel("glm-4.6v-flashx").supportsThinking).toBe(true)
+			})
+
+			it("should NOT detect thinking support for GLM-4.5 variants", () => {
 				expect(detectGlmModel("glm-4.5").supportsThinking).toBe(false)
-				expect(detectGlmModel("glm-4.6").supportsThinking).toBe(false)
 				expect(detectGlmModel("glm-4.5-air").supportsThinking).toBe(false)
-				expect(detectGlmModel("glm-4.6v").supportsThinking).toBe(false)
+				expect(detectGlmModel("glm-4.5-flash").supportsThinking).toBe(false)
+				expect(detectGlmModel("glm-4.5v").supportsThinking).toBe(false)
 			})
 		})
 

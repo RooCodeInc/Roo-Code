@@ -138,8 +138,12 @@ export function detectGlmModel(modelId: string): GlmModelConfig {
 		variant = "x"
 	}
 
-	// GLM-4.7 has built-in thinking support
-	const supportsThinking = version === "4.7"
+	// GLM-4.6, GLM-4.6V, and GLM-4.7 have built-in thinking support
+	// For GLM-4.6, only the base model and vision variants support thinking
+	const supportsThinking =
+		version === "4.7" ||
+		(version === "4.6" &&
+			(variant === "base" || variant === "v" || variant === "v-flash" || variant === "v-flashx"))
 
 	// Generate display name
 	let displayName = `GLM-${version !== "unknown" ? version : "4.x"}`
