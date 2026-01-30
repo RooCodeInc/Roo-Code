@@ -748,14 +748,13 @@ importers:
         version: 1.0.35(zod@3.25.76)
       '@ai-sdk/deepseek':
         specifier: ^2.0.14
-        version: 2.0.15(zod@3.25.76)
-      '@ai-sdk/mistral':
-        specifier: ^3.0.0
-        version: 3.0.16(zod@3.25.76)
         version: 2.0.14(zod@3.25.76)
       '@ai-sdk/groq':
         specifier: ^3.0.19
         version: 3.0.19(zod@3.25.76)
+      '@ai-sdk/mistral':
+        specifier: ^3.0.0
+        version: 3.0.16(zod@3.25.76)
       '@anthropic-ai/bedrock-sdk':
         specifier: ^0.10.2
         version: 0.10.4
@@ -1418,10 +1417,14 @@ packages:
     peerDependencies:
       zod: 3.25.76
 
-  '@ai-sdk/mistral@3.0.16':
-    resolution: {integrity: sha512-8I/gxXJwghaDLbQQHMBwd61WxYz/PaFUFlG8I38daNYj5qRTMmQ5V10Idi6GJJC0wWEqQkal31lidm9+Y+u6TQ==}
   '@ai-sdk/groq@3.0.19':
     resolution: {integrity: sha512-WAeGVnp9rvU3RUvu6S1HiD8hAjKgNlhq+z3m4j5Z1fIKRXqcKjOscVZGwL36If8qxsqXNVCtG3ltXawM5UAa8w==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
+
+  '@ai-sdk/mistral@3.0.16':
+    resolution: {integrity: sha512-8I/gxXJwghaDLbQQHMBwd61WxYz/PaFUFlG8I38daNYj5qRTMmQ5V10Idi6GJJC0wWEqQkal31lidm9+Y+u6TQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: 3.25.76
@@ -11039,8 +11042,13 @@ snapshots:
       '@vercel/oidc': 3.1.0
       zod: 3.25.76
 
-  '@ai-sdk/mistral@3.0.16(zod@3.25.76)':
   '@ai-sdk/groq@3.0.19(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.6
+      '@ai-sdk/provider-utils': 4.0.11(zod@3.25.76)
+      zod: 3.25.76
+
+  '@ai-sdk/mistral@3.0.16(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.6
       '@ai-sdk/provider-utils': 4.0.11(zod@3.25.76)
