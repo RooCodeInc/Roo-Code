@@ -447,7 +447,6 @@ Add your skill instructions here.
 
 		// Check if skill already exists at destination
 		if (await fileExists(destSkillMdPath)) {
-			const newModeInfo = newMode ? ` (mode: ${newMode})` : ""
 			throw new Error(t("skills:errors.already_exists", { name, path: destSkillMdPath }))
 		}
 
