@@ -65,6 +65,20 @@ export const McpExecution = ({
 		return (trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))
 	}, [])
 
+	const looksLikeEscapedJsonBlob = useCallback(
+		(value: string): boolean => {
+			// Gate the "unescape blob" fallback strictly to avoid mutating arbitrary strings
+			// that merely contain backslashes.
+			// Examples we want to handle:
+			// - `{\"id\":1}`
+			// - `[{\"id\":1}]`
+			const trimmed = value.trim()
+			if (!looksLikeJson(trimmed)) return false
+			return /^\{\\"/.test(trimmed) || /^\[\s*\{\\"/.test(trimmed)
+		},
+		[looksLikeJson],
+	)
+
 	const tryParseJsonValue = useCallback((value: string): unknown | undefined => {
 		try {
 			return JSON.parse(value)
@@ -108,7 +122,7 @@ export const McpExecution = ({
 			let parsed: unknown | undefined = tryParseJsonValue(trimmed)
 
 			// If initial parse fails, try un-escaping common "JSON encoded as a string blob" patterns.
-			if (parsed === undefined && (trimmed.includes('\\"') || trimmed.includes("\\\\"))) {
+			if (parsed === undefined && looksLikeEscapedJsonBlob(trimmed)) {
 				const unescaped = tryUnescapeJsonBlob(trimmed)
 				if (unescaped !== undefined) {
 					parsed = tryParseJsonValue(unescaped)
@@ -137,7 +151,7 @@ export const McpExecution = ({
 				formatted: text,
 			}
 		},
-		[looksLikeJson, tryParseJsonValue, tryUnescapeJsonBlob],
+		[looksLikeEscapedJsonBlob, looksLikeJson, tryParseJsonValue, tryUnescapeJsonBlob],
 	)
 
 	// Only parse response data when expanded AND complete to avoid parsing partial JSON
