@@ -3372,6 +3372,9 @@ export const webviewMessageHandler = async (
 				if (!message.hook || !message.eventType || !message.source) {
 					throw new Error("Missing required fields: hook, eventType, source")
 				}
+				if (message.source === "built-in") {
+					throw new Error("Cannot modify built-in hooks")
+				}
 				await hooksService.saveHook(message.hook, message.eventType, message.source)
 				// Reload and send updated hooks
 				const hooks = await hooksService.loadHooks()
@@ -3392,6 +3395,9 @@ export const webviewMessageHandler = async (
 				}
 				if (!message.hookId || !message.eventType || !message.source) {
 					throw new Error("Missing required fields: hookId, eventType, source")
+				}
+				if (message.source === "built-in") {
+					throw new Error("Cannot delete built-in hooks")
 				}
 				await hooksService.deleteHook(message.hookId, message.eventType, message.source)
 				// Reload and send updated hooks
@@ -3414,6 +3420,9 @@ export const webviewMessageHandler = async (
 				if (!message.eventType || !message.hookIds || !message.source) {
 					throw new Error("Missing required fields: eventType, hookIds, source")
 				}
+				if (message.source === "built-in") {
+					throw new Error("Cannot reorder built-in hooks")
+				}
 				await hooksService.reorderHooks(message.eventType, message.hookIds, message.source)
 				// Reload and send updated hooks
 				const hooks = await hooksService.loadHooks()
@@ -3435,6 +3444,9 @@ export const webviewMessageHandler = async (
 				if (!message.hook || !message.fromEventType || !message.toEventType || !message.source) {
 					throw new Error("Missing required fields: hook, fromEventType, toEventType, source")
 				}
+				if (message.source === "built-in") {
+					throw new Error("Cannot move built-in hooks")
+				}
 				await hooksService.moveHook(message.hook, message.fromEventType, message.toEventType, message.source)
 				// Reload and send updated hooks
 				const hooks = await hooksService.loadHooks()
@@ -3455,6 +3467,9 @@ export const webviewMessageHandler = async (
 				}
 				if (!message.source) {
 					throw new Error("Missing required field: source")
+				}
+				if (message.source === "built-in") {
+					throw new Error("Cannot open folder for built-in hooks")
 				}
 				await hooksService.openHooksFolder(message.source)
 			} catch (error) {
