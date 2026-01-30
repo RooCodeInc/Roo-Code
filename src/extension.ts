@@ -1,15 +1,19 @@
 import * as vscode from "vscode"
 import * as dotenvx from "@dotenvx/dotenvx"
+import * as fs from "fs"
 import * as path from "path"
 
 // Load environment variables from .env file
 try {
-	// Specify path to .env file in the project root directory
+	// The extension-level .env is optional (not shipped in production builds).
+	// Avoid calling dotenvx when the file doesn't exist, otherwise dotenvx emits
+	// a noisy [MISSING_ENV_FILE] error to the extension host console.
 	const envPath = path.join(__dirname, "..", ".env")
-	dotenvx.config({ path: envPath })
-} catch (e) {
-	// Silently handle environment loading errors
-	console.warn("Failed to load environment variables:", e)
+	if (fs.existsSync(envPath)) {
+		dotenvx.config({ path: envPath })
+	}
+} catch {
+	// Best-effort only: never fail extension activation due to optional env loading.
 }
 
 import type { CloudUserInfo, AuthState } from "@roo-code/types"
