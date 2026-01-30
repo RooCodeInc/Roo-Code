@@ -42,6 +42,46 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 import { formatResponse } from "../prompts/responses"
 
 /**
+ * Checks if all tool_use blocks in the assistant message have corresponding tool_result
+ * blocks in the user message content. This is critical for parallel tool execution -
+ * we must wait for all tool results before signaling that the message is ready.
+ *
+ * @param cline - The Task instance
+ * @returns true if all tool_use blocks have matching tool_result blocks, false otherwise
+ */
+function areAllToolResultsCollected(cline: Task): boolean {
+	// Count tool_use and mcp_tool_use blocks in assistant message
+	const toolUseIds = new Set<string>()
+	for (const block of cline.assistantMessageContent) {
+		if ((block.type === "tool_use" || block.type === "mcp_tool_use") && (block as any).id) {
+			toolUseIds.add((block as any).id)
+		}
+	}
+
+	// If no tool_use blocks, we're ready
+	if (toolUseIds.size === 0) {
+		return true
+	}
+
+	// Count tool_result blocks in user message content
+	const toolResultIds = new Set<string>()
+	for (const block of cline.userMessageContent) {
+		if (block.type === "tool_result" && (block as any).tool_use_id) {
+			toolResultIds.add((block as any).tool_use_id)
+		}
+	}
+
+	// Check if every tool_use has a corresponding tool_result
+	for (const toolUseId of toolUseIds) {
+		if (!toolResultIds.has(toolUseId)) {
+			return false
+		}
+	}
+
+	return true
+}
+
+/**
  * Processes and presents assistant message content to the user interface.
  *
  * This function is the core message handling system that:
@@ -76,7 +116,8 @@ export async function presentAssistantMessage(cline: Task) {
 		// streaming could finish. If streaming is finished, and we're out of
 		// bounds then this means we already  presented/executed the last
 		// content block and are ready to continue to next request.
-		if (cline.didCompleteReadingStream) {
+		// CRITICAL: Also verify all tool results are collected for parallel tool execution
+		if (cline.didCompleteReadingStream && areAllToolResultsCollected(cline)) {
 			cline.userMessageContentReady = true
 		}
 
@@ -984,8 +1025,13 @@ export async function presentAssistantMessage(cline: Task) {
 			// streaming is finished then we set `userMessageContentReady` to
 			// true when out of bounds. This gracefully allows the stream to
 			// continue on and all potential content blocks be presented.
-			// Last block is complete and it is finished executing
-			cline.userMessageContentReady = true // Will allow `pWaitFor` to continue.
+			// Last block is complete and it is finished executing.
+			// CRITICAL: For parallel tool execution, we must verify all tool results
+			// are collected before signaling ready. Without this check, the message
+			// queue could proceed before all tool_result blocks are in userMessageContent.
+			if (areAllToolResultsCollected(cline)) {
+				cline.userMessageContentReady = true // Will allow `pWaitFor` to continue.
+			}
 		}
 
 		// Call next block if it exists (if not then read stream will call it
@@ -1002,7 +1048,8 @@ export async function presentAssistantMessage(cline: Task) {
 		} else {
 			// CRITICAL FIX: If we're out of bounds and the stream is complete, set userMessageContentReady
 			// This handles the case where assistantMessageContent is empty or becomes empty after processing
-			if (cline.didCompleteReadingStream) {
+			// Also verify all tool results are collected for parallel tool execution
+			if (cline.didCompleteReadingStream && areAllToolResultsCollected(cline)) {
 				cline.userMessageContentReady = true
 			}
 		}
