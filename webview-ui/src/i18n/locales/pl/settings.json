@@ -1004,6 +1004,8 @@
 		"addSkill": "Dodaj Umiejętność",
 		"editSkill": "Edytuj umiejętność",
 		"deleteSkill": "Usuń umiejętność",
+		"changeMode": "Zmień tryb",
+		"modeAny": "Dowolny tryb",
 		"deleteDialog": {
 			"title": "Usuń Umiejętność",
 			"description": "Czy na pewno chcesz usunąć umiejętność \"{{name}}\"? Tej akcji nie można cofnąć.",

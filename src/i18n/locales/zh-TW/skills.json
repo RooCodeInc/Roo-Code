@@ -7,6 +7,7 @@
 		"already_exists": "技能「{{name}}」已存在於 {{path}}",
 		"not_found": "在 {{source}}{{modeInfo}} 中找不到技能「{{name}}」",
 		"missing_create_fields": "缺少必填欄位：skillName、source 或 skillDescription",
+		"missing_move_fields": "缺少必填欄位：skillName 或 source",
 		"manager_unavailable": "技能管理器無法使用",
 		"missing_delete_fields": "缺少必填欄位：skillName 或 source",
 		"skill_not_found": "找不到技能「{{name}}」",

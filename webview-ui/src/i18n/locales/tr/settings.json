@@ -1004,6 +1004,8 @@
 		"addSkill": "Beceri Ekle",
 		"editSkill": "Beceriyi düzenle",
 		"deleteSkill": "Beceriyi sil",
+		"changeMode": "Modu değiştir",
+		"modeAny": "Herhangi bir mod",
 		"deleteDialog": {
 			"title": "Beceriyi Sil",
 			"description": "\"{{name}}\" becerisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",

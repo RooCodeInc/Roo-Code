@@ -1003,6 +1003,8 @@
 		"addSkill": "Afegir Skill",
 		"editSkill": "Editar skill",
 		"deleteSkill": "Eliminar skill",
+		"changeMode": "Canvia mode",
+		"modeAny": "Qualsevol mode",
 		"deleteDialog": {
 			"title": "Eliminar Skill",
 			"description": "Estàs segur que vols eliminar la skill \"{{name}}\"? Aquesta acció no es pot desfer.",

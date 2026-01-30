@@ -1004,6 +1004,8 @@
 		"addSkill": "Thêm Skill",
 		"editSkill": "Chỉnh sửa skill",
 		"deleteSkill": "Xóa skill",
+		"changeMode": "Thay đổi chế độ",
+		"modeAny": "Bất kỳ chế độ nào",
 		"deleteDialog": {
 			"title": "Xóa Skill",
 			"description": "Bạn có chắc chắn muốn xóa skill \"{{name}}\" không? Hành động này không thể hoàn tác.",

@@ -7,6 +7,7 @@
 		"already_exists": "Skill \"{{name}}\" existiert bereits unter {{path}}",
 		"not_found": "Skill \"{{name}}\" nicht gefunden in {{source}}{{modeInfo}}",
 		"missing_create_fields": "Erforderliche Felder fehlen: skillName, source oder skillDescription",
+		"missing_move_fields": "Erforderliche Felder fehlen: skillName oder source",
 		"manager_unavailable": "Skill-Manager nicht verfügbar",
 		"missing_delete_fields": "Erforderliche Felder fehlen: skillName oder source",
 		"skill_not_found": "Skill \"{{name}}\" nicht gefunden",
