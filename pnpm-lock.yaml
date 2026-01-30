@@ -244,8 +244,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/evals
       '@roo-code/types':
-        specifier: workspace:^
-        version: link:../../packages/types
+        specifier: ^1.106.0
+        version: 1.106.0
       '@tanstack/react-query':
         specifier: ^5.69.0
         version: 5.76.1(react@18.3.1)
