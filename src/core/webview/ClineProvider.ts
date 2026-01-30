@@ -1684,11 +1684,32 @@ export class ClineProvider
 					apiConversationHistory,
 				}
 			}
+
+			// File doesn't exist but history item does - don't delete delegated tasks
+			// as they are expected to be resumed when their child task completes.
+			// Also don't delete tasks with awaitingChildId as they have an active subtask.
+			const isDelegated = historyItem.status === "delegated" || !!historyItem.awaitingChildId
+			if (isDelegated) {
+				this.log(
+					`[getTaskWithId] API history file missing for delegated task ${id}, returning empty history to allow recovery`,
+				)
+				// Return with empty history to allow delegation recovery flow to proceed
+				return {
+					historyItem,
+					taskDirPath,
+					apiConversationHistoryFilePath,
+					uiMessagesFilePath,
+					apiConversationHistory: [],
+				}
+			}
+
+			// For non-delegated tasks with missing files, delete from state as it's likely corrupted
+			this.log(`[getTaskWithId] API history file missing for task ${id}, removing from state`)
+			await this.deleteTaskFromState(id)
+			throw new Error("Task not found")
 		}
 
-		// if we tried to get a task that doesn't exist, remove it from state
-		// FIXME: this seems to happen sometimes when the json file doesnt save to disk for some reason
-		await this.deleteTaskFromState(id)
+		// Task doesn't exist in history at all
 		throw new Error("Task not found")
 	}
 
