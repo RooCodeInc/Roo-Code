@@ -2235,9 +2235,21 @@ export class ClineProvider
 			openAiCodexIsAuthenticated: await (async () => {
 				try {
 					const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
-					return await openAiCodexOAuthManager.isAuthenticated()
+					// Ensure we use the latest currentApiConfigName from stateValues
+					const configName = this.contextProxy.getValue("currentApiConfigName")
+					return await openAiCodexOAuthManager.isAuthenticated(configName)
 				} catch {
 					return false
+				}
+			})(),
+			openAiCodexEmail: await (async () => {
+				try {
+					const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
+					const configName = this.contextProxy.getValue("currentApiConfigName")
+					const email = await openAiCodexOAuthManager.getEmail(configName)
+					return email || undefined
+				} catch {
+					return undefined
 				}
 			})(),
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),

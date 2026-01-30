@@ -151,7 +151,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		this.pendingToolCallName = undefined
 
 		// Get access token from OAuth manager
-		let accessToken = await openAiCodexOAuthManager.getAccessToken()
+		const profileId = this.options.currentApiConfigName
+		let accessToken = await openAiCodexOAuthManager.getAccessToken(profileId)
 		if (!accessToken) {
 			throw new Error(
 				t("common:errors.openAiCodex.notAuthenticated", {
@@ -183,7 +184,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 
 				if (attempt === 0 && isAuthFailure) {
 					// Force refresh the token for retry
-					const refreshed = await openAiCodexOAuthManager.forceRefreshAccessToken()
+					const refreshed = await openAiCodexOAuthManager.forceRefreshAccessToken(profileId)
 					if (!refreshed) {
 						throw new Error(
 							t("common:errors.openAiCodex.notAuthenticated", {
@@ -341,7 +342,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			// is consistent across providers.
 			try {
 				// Get ChatGPT account ID for organization subscriptions
-				const accountId = await openAiCodexOAuthManager.getAccountId()
+				const accountId = await openAiCodexOAuthManager.getAccountId(this.options.currentApiConfigName)
 
 				// Build Codex-specific headers. Authorization is provided by the SDK apiKey.
 				const codexHeaders: Record<string, string> = {
@@ -481,7 +482,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		const url = `${CODEX_API_BASE_URL}/responses`
 
 		// Get ChatGPT account ID for organization subscriptions
-		const accountId = await openAiCodexOAuthManager.getAccountId()
+		const accountId = await openAiCodexOAuthManager.getAccountId(this.options.currentApiConfigName)
 
 		// Build headers with required Codex-specific fields
 		const headers: Record<string, string> = {
@@ -1008,7 +1009,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			const model = this.getModel()
 
 			// Get access token
-			const accessToken = await openAiCodexOAuthManager.getAccessToken()
+			const profileId = this.options.currentApiConfigName
+			const accessToken = await openAiCodexOAuthManager.getAccessToken(profileId)
 			if (!accessToken) {
 				throw new Error(
 					t("common:errors.openAiCodex.notAuthenticated", {
@@ -1043,7 +1045,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			const url = `${CODEX_API_BASE_URL}/responses`
 
 			// Get ChatGPT account ID for organization subscriptions
-			const accountId = await openAiCodexOAuthManager.getAccountId()
+			const accountId = await openAiCodexOAuthManager.getAccountId(this.options.currentApiConfigName)
 
 			// Build headers with required Codex-specific fields
 			const headers: Record<string, string> = {
