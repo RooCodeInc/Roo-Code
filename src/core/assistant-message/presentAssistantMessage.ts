@@ -1029,7 +1029,8 @@ export async function presentAssistantMessage(cline: Task) {
 			// CRITICAL: For parallel tool execution, we must verify all tool results
 			// are collected before signaling ready. Without this check, the message
 			// queue could proceed before all tool_result blocks are in userMessageContent.
-			if (areAllToolResultsCollected(cline)) {
+			// Also verify the stream is complete - more content may still arrive.
+			if (cline.didCompleteReadingStream && areAllToolResultsCollected(cline)) {
 				cline.userMessageContentReady = true // Will allow `pWaitFor` to continue.
 			}
 		}

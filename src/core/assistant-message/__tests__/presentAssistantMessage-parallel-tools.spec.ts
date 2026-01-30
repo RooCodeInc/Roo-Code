@@ -237,6 +237,7 @@ describe("presentAssistantMessage - Parallel Tool Execution Timing", () => {
 		// Even if the tool executed, userMessageContentReady should NOT be true
 		// because the stream hasn't completed yet (more content may arrive)
 		// Note: The fix specifically checks both conditions
+		expect(mockTask.userMessageContentReady).toBe(false)
 	})
 
 	it("should handle mcp_tool_use blocks the same as tool_use blocks", async () => {
