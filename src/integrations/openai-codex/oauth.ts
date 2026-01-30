@@ -490,12 +490,16 @@ export class OpenAiCodexOAuthManager {
 						`[openai-codex-oauth] Access token expired for profile ${profileId || "global"} (expires=${credentials.expires}). Refreshing...`,
 					)
 					const prevRefreshToken = credentials.refresh_token
-					refreshPromise = refreshAccessToken(credentials).then((newCreds) => {
+					refreshPromise = refreshAccessToken(credentials).then(async (newCreds) => {
 						const rotated = newCreds.refresh_token !== prevRefreshToken
 						this.log(
 							`[openai-codex-oauth] Refresh response received for profile ${profileId || "global"} (expires_in≈${Math.round(
 								(newCreds.expires - Date.now()) / 1000,
 							)}s, refresh_token_rotated=${rotated})`,
+						)
+						await this.saveCredentialsForProfile(newCreds, profileId)
+						this.log(
+							`[openai-codex-oauth] Token persisted for profile ${profileId || "global"} (expires=${newCreds.expires})`,
 						)
 						return newCreds
 					})
@@ -504,10 +508,6 @@ export class OpenAiCodexOAuthManager {
 
 				const newCredentials = await refreshPromise
 				this.refreshPromises.delete(cacheKey)
-				await this.saveCredentialsForProfile(newCredentials, profileId)
-				this.log(
-					`[openai-codex-oauth] Token persisted for profile ${profileId || "global"} (expires=${newCredentials.expires})`,
-				)
 				credentials = newCredentials
 			} catch (error) {
 				this.refreshPromises.delete(cacheKey)
@@ -553,12 +553,16 @@ export class OpenAiCodexOAuthManager {
 				this.log(
 					`[openai-codex-oauth] Forcing token refresh for profile ${profileId || "global"} (expires=${credentials.expires})...`,
 				)
-				refreshPromise = refreshAccessToken(credentials).then((newCreds) => {
+				refreshPromise = refreshAccessToken(credentials).then(async (newCreds) => {
 					const rotated = newCreds.refresh_token !== prevRefreshToken
 					this.log(
 						`[openai-codex-oauth] Forced refresh response received for profile ${profileId || "global"} (expires_in≈${Math.round(
 							(newCreds.expires - Date.now()) / 1000,
 						)}s, refresh_token_rotated=${rotated})`,
+					)
+					await this.saveCredentialsForProfile(newCreds, profileId)
+					this.log(
+						`[openai-codex-oauth] Forced token persisted for profile ${profileId || "global"} (expires=${newCreds.expires})`,
 					)
 					return newCreds
 				})
@@ -567,10 +571,6 @@ export class OpenAiCodexOAuthManager {
 
 			const newCredentials = await refreshPromise
 			this.refreshPromises.delete(cacheKey)
-			await this.saveCredentialsForProfile(newCredentials, profileId)
-			this.log(
-				`[openai-codex-oauth] Forced token persisted for profile ${profileId || "global"} (expires=${newCredentials.expires})`,
-			)
 			return newCredentials.access_token
 		} catch (error) {
 			this.refreshPromises.delete(cacheKey)
