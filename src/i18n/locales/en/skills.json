@@ -7,10 +7,11 @@
 		"already_exists": "Skill \"{{name}}\" already exists at {{path}}",
 		"not_found": "Skill \"{{name}}\" not found in {{source}}{{modeInfo}}",
 		"missing_create_fields": "Missing required fields: skillName, source, or skillDescription",
+		"missing_move_fields": "Missing required fields: skillName or source",
 		"manager_unavailable": "Skills manager not available",
 		"missing_delete_fields": "Missing required fields: skillName or source",
 		"skill_not_found": "Skill \"{{name}}\" not found",
-		"cannot_modify_builtin": "Built-in skills cannot be created or deleted",
+		"cannot_modify_builtin": "Built-in skills cannot be created, deleted, or moved",
 		"cannot_open_builtin": "Built-in skills cannot be opened as files"
 	}
 }

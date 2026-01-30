@@ -32,7 +32,13 @@ import { ClineProvider } from "./ClineProvider"
 import { BrowserSessionPanelManager } from "./BrowserSessionPanelManager"
 import { handleCheckpointRestoreOperation } from "./checkpointRestoreHandler"
 import { generateErrorDiagnostics } from "./diagnosticsHandler"
-import { handleRequestSkills, handleCreateSkill, handleDeleteSkill, handleOpenSkillFile } from "./skillsMessageHandler"
+import {
+	handleRequestSkills,
+	handleCreateSkill,
+	handleDeleteSkill,
+	handleMoveSkill,
+	handleOpenSkillFile,
+} from "./skillsMessageHandler"
 import { changeLanguage, t } from "../../i18n"
 import { Package } from "../../shared/package"
 import { type RouterName, toRouterName } from "../../shared/api"
@@ -2980,6 +2986,10 @@ export const webviewMessageHandler = async (
 		}
 		case "deleteSkill": {
 			await handleDeleteSkill(provider, message)
+			break
+		}
+		case "moveSkill": {
+			await handleMoveSkill(provider, message)
 			break
 		}
 		case "openSkillFile": {
