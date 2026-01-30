@@ -827,6 +827,74 @@ description: A test skill
 		})
 	})
 
+	describe("getSkillsAsCommands", () => {
+		it("should return all skills as slash commands automatically", async () => {
+			const skillDir = p(globalSkillsDir, "my-skill")
+			const skillMdPath = p(skillDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (p: string) => {
+				if (p === globalSkillsDir) return true
+				return false
+			})
+			mockFileExists.mockImplementation(async (p: string) => p === skillMdPath)
+			mockRealpath.mockImplementation(async (p: string) => p)
+			mockReaddir.mockResolvedValue(["my-skill"])
+			mockStat.mockResolvedValue({ isDirectory: () => true })
+
+			const skillContent = `---
+name: my-skill
+description: A test skill
+---
+
+# My Skill Instructions`
+
+			mockReadFile.mockResolvedValue(skillContent)
+
+			await skillsManager.discoverSkills()
+
+			const commands = skillsManager.getSkillsAsCommands("code")
+
+			expect(commands).toHaveLength(1)
+			expect(commands[0].name).toBe("my-skill")
+			expect(commands[0].skillName).toBe("my-skill")
+			expect(commands[0].description).toBe("A test skill")
+			expect(commands[0].source).toBe("global")
+		})
+
+		it("should filter by mode when getting skills as commands", async () => {
+			const skillDir = p(globalSkillsCodeDir, "code-skill")
+			const skillMdPath = p(skillDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (p: string) => {
+				if (p === globalSkillsCodeDir) return true
+				return false
+			})
+			mockFileExists.mockImplementation(async (p: string) => p === skillMdPath)
+			mockRealpath.mockImplementation(async (p: string) => p)
+			mockReaddir.mockResolvedValue(["code-skill"])
+			mockStat.mockResolvedValue({ isDirectory: () => true })
+
+			const skillContent = `---
+name: code-skill
+description: A code-specific skill
+---
+
+# Code Skill`
+
+			mockReadFile.mockResolvedValue(skillContent)
+
+			await skillsManager.discoverSkills()
+
+			// Should appear for code mode
+			const codeCommands = skillsManager.getSkillsAsCommands("code")
+			expect(codeCommands).toHaveLength(1)
+
+			// Should not appear for architect mode
+			const architectCommands = skillsManager.getSkillsAsCommands("architect")
+			expect(architectCommands).toHaveLength(0)
+		})
+	})
+
 	describe("dispose", () => {
 		it("should clean up resources", async () => {
 			await skillsManager.dispose()

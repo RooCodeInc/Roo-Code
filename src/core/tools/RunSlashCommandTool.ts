@@ -5,6 +5,7 @@ import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 import { getModeBySlug } from "../../shared/modes"
+import type { SkillContent } from "../../shared/skills"
 
 interface RunSlashCommandParams {
 	command: string
@@ -49,26 +50,91 @@ export class RunSlashCommandTool extends BaseTool<"run_slash_command"> {
 			// Get the command from the commands service
 			const command = await getCommand(task.cwd, commandName)
 
+			// Check if this might be a skill-based command
+			let skillContent: SkillContent | null = null
+			let skillName: string | undefined
+
 			if (!command) {
+				// Try to find a skill-based command with this name
+				const skillsManager = provider?.getSkillsManager?.()
+				const currentMode = state?.mode ?? "code"
+
+				if (skillsManager) {
+					const skillCommands = skillsManager.getSkillsAsCommands(currentMode)
+					const matchingSkillCmd = skillCommands.find((sc) => sc.name === commandName)
+
+					if (matchingSkillCmd) {
+						// Found a skill-based command - load the skill content
+						skillName = matchingSkillCmd.skillName
+						skillContent = await skillsManager.getSkillContent(skillName, currentMode)
+					}
+				}
+			}
+
+			if (!command && !skillContent) {
 				// Get available commands for error message
 				const availableCommands = await getCommandNames(task.cwd)
+
+				// Also include skill-based command names
+				const skillsManager = provider?.getSkillsManager?.()
+				const currentMode = state?.mode ?? "code"
+				const skillCommandNames = skillsManager?.getSkillsAsCommands(currentMode).map((sc) => sc.name) ?? []
+				const allCommandNames = [...new Set([...availableCommands, ...skillCommandNames])]
+
 				task.recordToolError("run_slash_command")
 				task.didToolFailInCurrentTurn = true
 				pushToolResult(
 					formatResponse.toolError(
-						`Command '${commandName}' not found. Available commands: ${availableCommands.join(", ") || "(none)"}`,
+						`Command '${commandName}' not found. Available commands: ${allCommandNames.join(", ") || "(none)"}`,
 					),
 				)
 				return
 			}
 
+			// Handle skill-based command
+			if (skillContent) {
+				const toolMessage = JSON.stringify({
+					tool: "runSlashCommand",
+					command: commandName,
+					args: args,
+					source: skillContent.source,
+					description: skillContent.description,
+					isSkill: true,
+					skillName: skillName,
+				})
+
+				const didApprove = await askApproval("tool", toolMessage)
+
+				if (!didApprove) {
+					return
+				}
+
+				// Build the result message for skill-based command
+				let result = `Skill Command: /${commandName}`
+
+				if (skillContent.description) {
+					result += `\nDescription: ${skillContent.description}`
+				}
+
+				if (args) {
+					result += `\nProvided arguments: ${args}`
+				}
+
+				result += `\nSource: ${skillContent.source} (skill: ${skillName})`
+				result += `\n\n--- Skill Instructions ---\n\n${skillContent.instructions}`
+
+				pushToolResult(result)
+				return
+			}
+
+			// Handle regular command
 			const toolMessage = JSON.stringify({
 				tool: "runSlashCommand",
 				command: commandName,
 				args: args,
-				source: command.source,
-				description: command.description,
-				mode: command.mode,
+				source: command!.source,
+				description: command!.description,
+				mode: command!.mode,
 			})
 
 			const didApprove = await askApproval("tool", toolMessage)
@@ -78,35 +144,34 @@ export class RunSlashCommandTool extends BaseTool<"run_slash_command"> {
 			}
 
 			// Switch mode if specified in the command frontmatter
-			if (command.mode) {
-				const provider = task.providerRef.deref()
-				const targetMode = getModeBySlug(command.mode, (await provider?.getState())?.customModes)
+			if (command!.mode) {
+				const targetMode = getModeBySlug(command!.mode, (await provider?.getState())?.customModes)
 				if (targetMode) {
-					await provider?.handleModeSwitch(command.mode)
+					await provider?.handleModeSwitch(command!.mode)
 				}
 			}
 
 			// Build the result message
 			let result = `Command: /${commandName}`
 
-			if (command.description) {
-				result += `\nDescription: ${command.description}`
+			if (command!.description) {
+				result += `\nDescription: ${command!.description}`
 			}
 
-			if (command.argumentHint) {
-				result += `\nArgument hint: ${command.argumentHint}`
+			if (command!.argumentHint) {
+				result += `\nArgument hint: ${command!.argumentHint}`
 			}
 
-			if (command.mode) {
-				result += `\nMode: ${command.mode}`
+			if (command!.mode) {
+				result += `\nMode: ${command!.mode}`
 			}
 
 			if (args) {
 				result += `\nProvided arguments: ${args}`
 			}
 
-			result += `\nSource: ${command.source}`
-			result += `\n\n--- Command Content ---\n\n${command.content}`
+			result += `\nSource: ${command!.source}`
+			result += `\n\n--- Command Content ---\n\n${command!.content}`
 
 			// Return the command content as the tool result
 			pushToolResult(result)

@@ -2951,9 +2951,43 @@ export const webviewMessageHandler = async (
 					filePath: command.filePath,
 					description: command.description,
 					argumentHint: command.argumentHint,
+					isSkill: false,
 				}))
 
-				await provider.postMessageToWebview({ type: "commands", commands: commandList })
+				// Get skill-based commands
+				const skillsManager = provider.getSkillsManager()
+				const state = await provider.getState()
+				const currentMode = state?.mode ?? "code"
+				const skillCommands = skillsManager?.getSkillsAsCommands(currentMode) ?? []
+
+				// Add skill-based commands (with isSkill flag for differentiation)
+				const skillCommandList = skillCommands.map((skill) => ({
+					name: skill.name,
+					source: skill.source,
+					filePath: skill.skillPath,
+					description: skill.description,
+					argumentHint: undefined as string | undefined,
+					isSkill: true,
+					skillName: skill.skillName,
+				}))
+
+				// Merge, with regular commands taking priority over skill commands
+				const mergedCommands: Array<{
+					name: string
+					source: "global" | "project" | "built-in"
+					filePath: string
+					description: string | undefined
+					argumentHint?: string | undefined
+					isSkill: boolean
+					skillName?: string
+				}> = [...commandList]
+				for (const skillCmd of skillCommandList) {
+					if (!mergedCommands.some((c) => c.name === skillCmd.name)) {
+						mergedCommands.push(skillCmd)
+					}
+				}
+
+				await provider.postMessageToWebview({ type: "commands", commands: mergedCommands })
 			} catch (error) {
 				provider.log(`Error fetching commands: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
 				await provider.postMessageToWebview({ type: "commands", commands: [] })

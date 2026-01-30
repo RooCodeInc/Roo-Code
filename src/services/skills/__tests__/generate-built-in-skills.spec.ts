@@ -172,4 +172,16 @@ describe("built-in skills integration", () => {
 		const content = getBuiltInSkillContent("non-existent-skill")
 		expect(content).toBeNull()
 	})
+
+	it("should have accessible skill content for all built-in skills", async () => {
+		const { getBuiltInSkills, getBuiltInSkillContent } = await import("../built-in-skills")
+
+		const skills = getBuiltInSkills()
+
+		// All built-in skills should have accessible content
+		for (const skill of skills) {
+			const content = getBuiltInSkillContent(skill.name)
+			expect(content).not.toBeNull()
+		}
+	})
 })

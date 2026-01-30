@@ -233,6 +233,33 @@ export class SkillsManager {
 		return Array.from(this.skills.values())
 	}
 
+	/**
+	 * Get all skills as slash commands.
+	 * All skills are automatically available as slash commands.
+	 * Returns them in a format compatible with the Command interface.
+	 *
+	 * @param currentMode - The current mode slug to filter skills by
+	 */
+	getSkillsAsCommands(currentMode: string): Array<{
+		name: string
+		description: string
+		source: "global" | "project" | "built-in"
+		skillPath: string
+		skillName: string
+		mode?: string
+	}> {
+		const skills = this.getSkillsForMode(currentMode)
+
+		return skills.map((skill) => ({
+			name: skill.name,
+			description: skill.description,
+			source: skill.source,
+			skillPath: skill.path,
+			skillName: skill.name, // Original skill name for invocation
+			mode: skill.mode,
+		}))
+	}
+
 	async getSkillContent(name: string, currentMode?: string): Promise<SkillContent | null> {
 		// If mode is provided, try to find the best matching skill
 		let skill: SkillMetadata | undefined
