@@ -13,7 +13,17 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 import { useLogoSrc } from "@/lib/hooks/use-logo-src"
 import { ScrollButton } from "@/components/ui"
 import ThemeToggle from "@/components/chromes/theme-toggle"
-import { Brain, ChevronDown, Cloud, Puzzle, Slack, X } from "lucide-react"
+import { Brain, Cloud, Puzzle, Slack, X } from "lucide-react"
+import {
+	NavigationMenu,
+	NavigationMenuContent,
+	NavigationMenuItem,
+	NavigationMenuLink,
+	NavigationMenuList,
+	NavigationMenuTrigger,
+	navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu"
+import { cn } from "@/lib/utils"
 
 function LinearIcon({ className }: { className?: string }) {
 	return (
@@ -30,115 +40,142 @@ interface NavBarProps {
 
 export function NavBar({ stars, downloads }: NavBarProps) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
-	const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 	const logoSrc = useLogoSrc()
 
 	return (
 		<header className="sticky font-light top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
 			<div className="container flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-				<div className="flex items-center">
+				<div className="flex items-center flex-shrink-0">
 					<Link href="/" className="flex items-center">
 						<Image src={logoSrc} alt="Roo Code Logo" width={130} height={24} className="h-[24px] w-auto" />
 					</Link>
 				</div>
 
 				{/* Desktop Navigation */}
-				<nav className="grow ml-6 hidden text-sm md:flex md:items-center">
-					{/* Product Dropdown */}
-					<div
-						className="relative"
-						onMouseEnter={() => setOpenDropdown("product")}
-						onMouseLeave={() => setOpenDropdown(null)}>
-						<button className="flex items-center px-4 py-6 gap-1 transition-transform duration-200 hover:scale-105 hover:text-foreground">
-							Product
-							<ChevronDown className="size-3 ml-1 mt-0.5" />
-						</button>
-						<div
-							className={`absolute left-0 top-12 mt-2 w-[260px] rounded-md border border-border bg-background py-1 shadow-lg transition-all duration-200 ${openDropdown === "product" ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-2 pointer-events-none"}`}>
-							<Link
-								href="/extension"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
-								onClick={() => setOpenDropdown(null)}>
-								<Puzzle className="size-3 inline mr-2 -mt-0.5" />
-								Roo Code VS Code Extension
-							</Link>
-							<Link
-								href="/cloud"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
-								onClick={() => setOpenDropdown(null)}>
-								<Cloud className="size-3 inline mr-2 -mt-0.5" />
-								Roo Code Cloud
-							</Link>
-							<Link
-								href="/slack"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
-								onClick={() => setOpenDropdown(null)}>
-								<Slack className="size-3 inline mr-2 -mt-0.5" />
-								Roo Code for Slack
-							</Link>
-							<Link
-								href="/linear"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
-								onClick={() => setOpenDropdown(null)}>
-								<LinearIcon className="size-3 inline mr-2 -mt-0.5" />
-								Roo Code for Linear
-							</Link>
-							<Link
-								href="/provider"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
-								onClick={() => setOpenDropdown(null)}>
-								<Brain className="size-3 inline mr-2 -mt-0.5" />
-								Roo Code Router
-							</Link>
-						</div>
-					</div>
-					{/* Resources Dropdown */}
-					<div
-						className="relative"
-						onMouseEnter={() => setOpenDropdown("resources")}
-						onMouseLeave={() => setOpenDropdown(null)}>
-						<button className="flex items-center px-4 py-6 gap-1 transition-transform duration-200 hover:scale-105 hover:text-foreground">
-							Resources
-							<ChevronDown className="size-3 ml-1 mt-0.5" />
-						</button>
-						<div
-							className={`absolute left-0 top-12 mt-2 w-40 rounded-md border border-border bg-background py-1 shadow-lg transition-all duration-200 ${openDropdown === "resources" ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-2 pointer-events-none"}`}>
-							<Link
-								href="/evals"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
-								onClick={() => setOpenDropdown(null)}>
-								Evals
-							</Link>
-							<a
-								href={EXTERNAL_LINKS.DISCORD}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
-								onClick={() => setOpenDropdown(null)}>
-								Discord
-							</a>
-							<a
-								href={EXTERNAL_LINKS.SECURITY}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
-								onClick={() => setOpenDropdown(null)}>
-								Trust Center
-							</a>
-						</div>
-					</div>
-					<a
-						href={EXTERNAL_LINKS.DOCUMENTATION}
-						target="_blank"
-						className="px-4 py-6 transition-transform duration-200 hover:scale-105 hover:text-foreground">
-						Docs
-					</a>
-					<Link
-						href="/pricing"
-						className="px-4 py-6 transition-transform duration-200 hover:scale-105 hover:text-foreground">
-						Pricing
-					</Link>
-				</nav>
+				<NavigationMenu className="grow ml-6 hidden text-sm md:flex">
+					<NavigationMenuList>
+						{/* Product Dropdown */}
+						<NavigationMenuItem>
+							<NavigationMenuTrigger className="bg-transparent font-light">Product</NavigationMenuTrigger>
+							<NavigationMenuContent>
+								<ul className="grid min-w-[260px] gap-1 p-2">
+									<li>
+										<NavigationMenuLink asChild>
+											<Link
+												href="/extension"
+												className="flex items-center select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+												<Puzzle className="size-3 mr-2" />
+												Roo Code VS Code Extension
+											</Link>
+										</NavigationMenuLink>
+									</li>
+									<li>
+										<NavigationMenuLink asChild>
+											<Link
+												href="/cloud"
+												className="flex items-center select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+												<Cloud className="size-3 mr-2" />
+												Roo Code Cloud
+											</Link>
+										</NavigationMenuLink>
+									</li>
+									<li>
+										<NavigationMenuLink asChild>
+											<Link
+												href="/slack"
+												className="flex items-center select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+												<Slack className="size-3 mr-2" />
+												Roo Code for Slack
+											</Link>
+										</NavigationMenuLink>
+									</li>
+									<li>
+										<NavigationMenuLink asChild>
+											<Link
+												href="/linear"
+												className="flex items-center select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+												<LinearIcon className="size-3 mr-2" />
+												Roo Code for Linear
+											</Link>
+										</NavigationMenuLink>
+									</li>
+									<li>
+										<NavigationMenuLink asChild>
+											<Link
+												href="/provider"
+												className="flex items-center select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+												<Brain className="size-3 mr-2" />
+												Roo Code Router
+											</Link>
+										</NavigationMenuLink>
+									</li>
+								</ul>
+							</NavigationMenuContent>
+						</NavigationMenuItem>
+
+						{/* Resources Dropdown */}
+						<NavigationMenuItem>
+							<NavigationMenuTrigger className="bg-transparent font-light">
+								Resources
+							</NavigationMenuTrigger>
+							<NavigationMenuContent>
+								<ul className="grid min-w-[260px] gap-1 p-2">
+									<li>
+										<NavigationMenuLink asChild>
+											<Link
+												href="/evals"
+												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+												Evals
+											</Link>
+										</NavigationMenuLink>
+									</li>
+									<li>
+										<NavigationMenuLink asChild>
+											<a
+												href={EXTERNAL_LINKS.DISCORD}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+												Discord
+											</a>
+										</NavigationMenuLink>
+									</li>
+									<li>
+										<NavigationMenuLink asChild>
+											<a
+												href={EXTERNAL_LINKS.SECURITY}
+												target="_blank"
+												rel="noopener noreferrer"
+												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+												Trust Center
+											</a>
+										</NavigationMenuLink>
+									</li>
+								</ul>
+							</NavigationMenuContent>
+						</NavigationMenuItem>
+
+						{/* Docs Link */}
+						<NavigationMenuItem>
+							<NavigationMenuLink
+								asChild
+								className={cn(navigationMenuTriggerStyle(), "bg-transparent font-light")}>
+								<a href={EXTERNAL_LINKS.DOCUMENTATION} target="_blank">
+									Docs
+								</a>
+							</NavigationMenuLink>
+						</NavigationMenuItem>
+
+						{/* Pricing Link */}
+						<NavigationMenuItem>
+							<NavigationMenuLink
+								asChild
+								className={cn(navigationMenuTriggerStyle(), "bg-transparent font-light")}>
+								<Link href="/pricing">Pricing</Link>
+							</NavigationMenuLink>
+						</NavigationMenuItem>
+					</NavigationMenuList>
+				</NavigationMenu>
 
 				<div className="hidden md:flex md:items-center md:space-x-4 flex-shrink-0 font-medium">
 					<div className="flex flex-row space-x-2 flex-shrink-0">
