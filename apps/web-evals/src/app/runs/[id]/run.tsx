@@ -658,7 +658,10 @@ export function Run({ run }: { run: Run }) {
 							{formatTokens(taskMetrics[task.id]!.tokensContext)}
 						</TableCell>
 						{toolColumns.map((toolName) => {
-							const dbUsage = task.taskMetrics?.toolUsage?.[toolName]
+							const dbUsage = (
+								task.taskMetrics?.toolUsage as Partial<Record<ToolName, ToolUsageEntry>> | undefined
+							)?.[toolName]
+
 							const streamingUsage = toolUsage.get(task.id)?.[toolName]
 							const usage = task.finishedAt ? (dbUsage ?? streamingUsage) : streamingUsage
 

@@ -10,6 +10,7 @@ import pMap from "p-map"
 
 import {
 	type ExerciseLanguage,
+	type InsertRun,
 	exerciseLanguages,
 	createRun as _createRun,
 	deleteRun as _deleteRun,
@@ -36,12 +37,14 @@ export async function createRun({
 	executionMethod = "vscode",
 	...values
 }: CreateRun) {
+	// Cast to InsertRun to handle type mismatch between @roo-code/types and @roo-code/evals
+	// The evals package schema may not include all apiProvider values from the types package
 	const run = await _createRun({
 		...values,
 		timeout,
 		executionMethod,
 		socketPath: "", // TODO: Get rid of this.
-	})
+	} as unknown as InsertRun)
 
 	if (suite === "partial") {
 		for (const path of exercises) {
