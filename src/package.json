@@ -452,6 +452,7 @@
 	"dependencies": {
 		"@ai-sdk/cerebras": "^1.0.0",
 		"@ai-sdk/deepseek": "^2.0.14",
+		"@ai-sdk/fireworks": "^2.0.26",
 		"@ai-sdk/groq": "^3.0.19",
 		"@anthropic-ai/bedrock-sdk": "^0.10.2",
 		"@anthropic-ai/sdk": "^0.37.0",
