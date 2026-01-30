@@ -33,11 +33,14 @@ export const TranslationProvider: React.FC<{ children: ReactNode }> = ({ childre
 	}, [i18n, extensionState.language])
 
 	// Memoize the translation function to prevent unnecessary re-renders
+	// Include i18n.language in deps so translate is recreated on language change
+	// This is critical for React Compiler which may cache results aggressively
 	const translate = useCallback(
 		(key: string, options?: Record<string, any>) => {
 			return i18n.t(key, options)
 		},
-		[i18n],
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- i18n.language is intentionally included to force re-memoization on language change (React Compiler fix)
+		[i18n, i18n.language],
 	)
 
 	return (
