@@ -3344,7 +3344,142 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
+		/**
+		 * Hooks Settings
+		 */
+		case "hooks/load": {
+			try {
+				const hooksService = provider.getHooksService()
+				if (!hooksService) {
+					throw new Error("HooksService not available")
+				}
+				const hooks = await hooksService.loadHooks()
+				await provider.postMessageToWebview({ type: "hooks/loaded", hooks })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error loading hooks: ${errorMessage}`)
+				await provider.postMessageToWebview({ type: "hooks/error", error: errorMessage })
+			}
+			break
+		}
 
+		case "hooks/save": {
+			try {
+				const hooksService = provider.getHooksService()
+				if (!hooksService) {
+					throw new Error("HooksService not available")
+				}
+				if (!message.hook || !message.eventType || !message.source) {
+					throw new Error("Missing required fields: hook, eventType, source")
+				}
+				await hooksService.saveHook(message.hook, message.eventType, message.source)
+				// Reload and send updated hooks
+				const hooks = await hooksService.loadHooks()
+				await provider.postMessageToWebview({ type: "hooks/loaded", hooks })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error saving hook: ${errorMessage}`)
+				await provider.postMessageToWebview({ type: "hooks/error", error: errorMessage })
+			}
+			break
+		}
+
+		case "hooks/delete": {
+			try {
+				const hooksService = provider.getHooksService()
+				if (!hooksService) {
+					throw new Error("HooksService not available")
+				}
+				if (!message.hookId || !message.eventType || !message.source) {
+					throw new Error("Missing required fields: hookId, eventType, source")
+				}
+				await hooksService.deleteHook(message.hookId, message.eventType, message.source)
+				// Reload and send updated hooks
+				const hooks = await hooksService.loadHooks()
+				await provider.postMessageToWebview({ type: "hooks/loaded", hooks })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error deleting hook: ${errorMessage}`)
+				await provider.postMessageToWebview({ type: "hooks/error", error: errorMessage })
+			}
+			break
+		}
+
+		case "hooks/reorder": {
+			try {
+				const hooksService = provider.getHooksService()
+				if (!hooksService) {
+					throw new Error("HooksService not available")
+				}
+				if (!message.eventType || !message.hookIds || !message.source) {
+					throw new Error("Missing required fields: eventType, hookIds, source")
+				}
+				await hooksService.reorderHooks(message.eventType, message.hookIds, message.source)
+				// Reload and send updated hooks
+				const hooks = await hooksService.loadHooks()
+				await provider.postMessageToWebview({ type: "hooks/loaded", hooks })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error reordering hooks: ${errorMessage}`)
+				await provider.postMessageToWebview({ type: "hooks/error", error: errorMessage })
+			}
+			break
+		}
+
+		case "hooks/move": {
+			try {
+				const hooksService = provider.getHooksService()
+				if (!hooksService) {
+					throw new Error("HooksService not available")
+				}
+				if (!message.hook || !message.fromEventType || !message.toEventType || !message.source) {
+					throw new Error("Missing required fields: hook, fromEventType, toEventType, source")
+				}
+				await hooksService.moveHook(message.hook, message.fromEventType, message.toEventType, message.source)
+				// Reload and send updated hooks
+				const hooks = await hooksService.loadHooks()
+				await provider.postMessageToWebview({ type: "hooks/loaded", hooks })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error moving hook: ${errorMessage}`)
+				await provider.postMessageToWebview({ type: "hooks/error", error: errorMessage })
+			}
+			break
+		}
+
+		case "hooks/openFolder": {
+			try {
+				const hooksService = provider.getHooksService()
+				if (!hooksService) {
+					throw new Error("HooksService not available")
+				}
+				if (!message.source) {
+					throw new Error("Missing required field: source")
+				}
+				await hooksService.openHooksFolder(message.source)
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error opening hooks folder: ${errorMessage}`)
+				await provider.postMessageToWebview({ type: "hooks/error", error: errorMessage })
+			}
+			break
+		}
+
+		case "hooks/reload": {
+			try {
+				const hooksService = provider.getHooksService()
+				if (!hooksService) {
+					throw new Error("HooksService not available")
+				}
+				const hooks = await hooksService.loadHooks()
+				await provider.postMessageToWebview({ type: "hooks/loaded", hooks })
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error reloading hooks: ${errorMessage}`)
+				await provider.postMessageToWebview({ type: "hooks/error", error: errorMessage })
+			}
+			break
+		}
 		/**
 		 * Git Worktree Management
 		 */
@@ -3588,7 +3723,6 @@ export const webviewMessageHandler = async (
 				const errorMessage = error instanceof Error ? error.message : String(error)
 				provider.log(`Error opening folder picker: ${errorMessage}`)
 			}
-
 			break
 		}
 
