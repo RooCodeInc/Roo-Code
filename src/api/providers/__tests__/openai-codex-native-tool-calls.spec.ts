@@ -24,8 +24,8 @@ describe("OpenAiCodexHandler native tool calls", () => {
 	})
 
 	it("yields tool_call_partial chunks when API returns function_call-only response", async () => {
-		vi.spyOn(openAiCodexOAuthManager, "getAccessToken").mockResolvedValue("test-token")
-		vi.spyOn(openAiCodexOAuthManager, "getAccountId").mockResolvedValue("acct_test")
+		vi.spyOn(openAiCodexOAuthManager, "getAccessTokenForProfile").mockResolvedValue("test-token")
+		vi.spyOn(openAiCodexOAuthManager, "getAccountIdForProfile").mockResolvedValue("acct_test")
 
 		// Mock OpenAI SDK streaming (preferred path).
 		;(handler as any).client = {
