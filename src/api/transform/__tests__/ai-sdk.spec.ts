@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
-import { convertToAiSdkMessages, convertToolsForAiSdk, processAiSdkStreamPart } from "../ai-sdk"
+import { convertToAiSdkMessages, convertToolsForAiSdk, processAiSdkStreamPart, mapToolChoice } from "../ai-sdk"
 
 vitest.mock("ai", () => ({
 	tool: vitest.fn((t) => t),
@@ -484,6 +484,51 @@ describe("AI SDK conversion utilities", () => {
 				const chunks = [...processAiSdkStreamPart(event as any)]
 				expect(chunks).toHaveLength(0)
 			}
+		})
+	})
+
+	describe("mapToolChoice", () => {
+		it("should return undefined for null or undefined", () => {
+			expect(mapToolChoice(null)).toBeUndefined()
+			expect(mapToolChoice(undefined)).toBeUndefined()
+		})
+
+		it("should handle string tool choices", () => {
+			expect(mapToolChoice("auto")).toBe("auto")
+			expect(mapToolChoice("none")).toBe("none")
+			expect(mapToolChoice("required")).toBe("required")
+		})
+
+		it("should return auto for unknown string values", () => {
+			expect(mapToolChoice("unknown")).toBe("auto")
+			expect(mapToolChoice("invalid")).toBe("auto")
+		})
+
+		it("should handle object tool choice with function name", () => {
+			const result = mapToolChoice({
+				type: "function",
+				function: { name: "my_tool" },
+			})
+
+			expect(result).toEqual({ type: "tool", toolName: "my_tool" })
+		})
+
+		it("should return undefined for object without function name", () => {
+			const result = mapToolChoice({
+				type: "function",
+				function: {},
+			})
+
+			expect(result).toBeUndefined()
+		})
+
+		it("should return undefined for object with non-function type", () => {
+			const result = mapToolChoice({
+				type: "other",
+				function: { name: "my_tool" },
+			})
+
+			expect(result).toBeUndefined()
 		})
 	})
 })

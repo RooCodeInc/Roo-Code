@@ -273,3 +273,44 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			break
 	}
 }
+
+/**
+ * Type for AI SDK tool choice format.
+ */
+export type AiSdkToolChoice = "auto" | "none" | "required" | { type: "tool"; toolName: string } | undefined
+
+/**
+ * Map OpenAI-style tool_choice to AI SDK toolChoice format.
+ * This is a shared utility to avoid duplication across providers.
+ *
+ * @param toolChoice - OpenAI-style tool choice (string or object)
+ * @returns AI SDK toolChoice format
+ */
+export function mapToolChoice(toolChoice: any): AiSdkToolChoice {
+	if (!toolChoice) {
+		return undefined
+	}
+
+	// Handle string values
+	if (typeof toolChoice === "string") {
+		switch (toolChoice) {
+			case "auto":
+				return "auto"
+			case "none":
+				return "none"
+			case "required":
+				return "required"
+			default:
+				return "auto"
+		}
+	}
+
+	// Handle object values (OpenAI ChatCompletionNamedToolChoice format)
+	if (typeof toolChoice === "object" && "type" in toolChoice) {
+		if (toolChoice.type === "function" && "function" in toolChoice && toolChoice.function?.name) {
+			return { type: "tool", toolName: toolChoice.function.name }
+		}
+	}
+
+	return undefined
+}
