@@ -60,33 +60,75 @@ export const McpExecution = ({
 	// Only need expanded state for response section (like command output)
 	const [isResponseExpanded, setIsResponseExpanded] = useState(false)
 
-	// Try to parse JSON and return both the result and formatted text
-	const tryParseJson = useCallback((text: string): { isJson: boolean; formatted: string } => {
-		if (!text) return { isJson: false, formatted: "" }
+	const looksLikeJson = useCallback((value: string): boolean => {
+		const trimmed = value.trim()
+		return (trimmed.startsWith("{") && trimmed.endsWith("}")) || (trimmed.startsWith("[") && trimmed.endsWith("]"))
+	}, [])
 
+	const tryParseJsonValue = useCallback((value: string): unknown | undefined => {
 		try {
-			const parsed = JSON.parse(text)
-			return {
-				isJson: true,
-				formatted: JSON.stringify(parsed, null, 2),
-			}
+			return JSON.parse(value)
 		} catch {
+			return undefined
+		}
+	}, [])
+
+	// Try to parse JSON and return both the result and formatted text.
+	// Handles:
+	// - minified JSON
+	// - double-encoded JSON (JSON string containing JSON)
+	// - escaped JSON blobs (eg `[{"id":1}]`)
+	const tryParseJson = useCallback(
+		(text: string): { isJson: boolean; formatted: string } => {
+			if (!text) return { isJson: false, formatted: "" }
+
+			const trimmed = text.trim()
+			let parsed: unknown | undefined = tryParseJsonValue(trimmed)
+
+			// If initial parse fails, try un-escaping common "JSON encoded as a string blob" patterns.
+			if (parsed === undefined && (trimmed.includes('\\"') || trimmed.includes("\\\\"))) {
+				const unescaped = trimmed.replaceAll("\\\\", "\\").replaceAll('\\"', '"')
+				parsed = tryParseJsonValue(unescaped)
+			}
+
+			// If we parsed a string that itself looks like JSON, try parsing again (double-encoded).
+			for (let i = 0; i < 2; i++) {
+				if (typeof parsed === "string" && looksLikeJson(parsed)) {
+					parsed = tryParseJsonValue(parsed)
+					continue
+				}
+				break
+			}
+
+			// Only treat as JSON when we end up with a non-string JSON value.
+			if (parsed !== undefined && typeof parsed !== "string") {
+				return {
+					isJson: true,
+					formatted: JSON.stringify(parsed, null, 2),
+				}
+			}
+
 			return {
 				isJson: false,
 				formatted: text,
 			}
-		}
-	}, [])
+		},
+		[looksLikeJson, tryParseJsonValue],
+	)
 
 	// Only parse response data when expanded AND complete to avoid parsing partial JSON
 	const responseData = useMemo(() => {
 		if (!isResponseExpanded) {
 			return { isJson: false, formatted: responseText }
 		}
-		// Only try to parse JSON if the response is complete
-		if (status && status.status === "completed") {
+
+		// If we have streaming status, only parse when completed.
+		// If we have no status, this is typically a non-streaming "ask" payload, so treat as complete.
+		const shouldParse = status ? status.status === "completed" : true
+		if (shouldParse) {
 			return tryParseJson(responseText)
 		}
+
 		// For partial responses, just return as-is without parsing
 		return { isJson: false, formatted: responseText }
 	}, [responseText, isResponseExpanded, tryParseJson, status])
@@ -125,6 +167,7 @@ export const McpExecution = ({
 	const formattedResponseText = responseData.formatted
 	const formattedArgumentsText = argumentsData.formatted
 	const responseIsJson = responseData.isJson
+	const rawResponseText = responseText
 
 	const onToggleResponseExpand = useCallback(() => {
 		setIsResponseExpanded(!isResponseExpanded)
@@ -277,7 +320,7 @@ export const McpExecution = ({
 							"mt-1 pt-1":
 								!isArguments && (useMcpServer?.type === "use_mcp_tool" || (toolName && serverName)),
 						})}>
-						<CodeBlock source={formattedArgumentsText} language="json" />
+						<CodeBlock source={formattedArgumentsText} rawSource={argumentsText} language="json" />
 					</div>
 				)}
 
@@ -285,6 +328,7 @@ export const McpExecution = ({
 				<ResponseContainer
 					isExpanded={isResponseExpanded}
 					response={formattedResponseText}
+					rawResponse={rawResponseText}
 					isJson={responseIsJson}
 					hasArguments={!!(isArguments || useMcpServer?.arguments || argumentsText)}
 					isPartial={status ? status.status !== "completed" : false}
@@ -299,12 +343,14 @@ McpExecution.displayName = "McpExecution"
 const ResponseContainerInternal = ({
 	isExpanded,
 	response,
+	rawResponse,
 	isJson,
 	hasArguments,
 	isPartial = false,
 }: {
 	isExpanded: boolean
 	response: string
+	rawResponse: string
 	isJson: boolean
 	hasArguments?: boolean
 	isPartial?: boolean
@@ -327,7 +373,7 @@ const ResponseContainerInternal = ({
 				"max-h-96 overflow-y-auto mt-1 pt-1": !hasArguments,
 			})}>
 			{isJson ? (
-				<CodeBlock source={response} language="json" />
+				<CodeBlock source={response} rawSource={rawResponse} language="json" />
 			) : (
 				<Markdown markdown={response} partial={isPartial} />
 			)}
