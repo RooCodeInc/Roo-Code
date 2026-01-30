@@ -245,6 +245,7 @@ describe("extension.ts", () => {
 
 	test("does not call dotenvx.config when optional .env does not exist", async () => {
 		vi.resetModules()
+		vi.clearAllMocks()
 
 		const fs = await import("fs")
 		vi.mocked(fs.existsSync).mockReturnValue(false)
@@ -259,6 +260,7 @@ describe("extension.ts", () => {
 
 	test("calls dotenvx.config when optional .env exists", async () => {
 		vi.resetModules()
+		vi.clearAllMocks()
 
 		const fs = await import("fs")
 		vi.mocked(fs.existsSync).mockReturnValue(true)

@@ -4,16 +4,17 @@ import * as fs from "fs"
 import * as path from "path"
 
 // Load environment variables from .env file
-try {
-	// The extension-level .env is optional (not shipped in production builds).
-	// Avoid calling dotenvx when the file doesn't exist, otherwise dotenvx emits
-	// a noisy [MISSING_ENV_FILE] error to the extension host console.
-	const envPath = path.join(__dirname, "..", ".env")
-	if (fs.existsSync(envPath)) {
+// The extension-level .env is optional (not shipped in production builds).
+// Avoid calling dotenvx when the file doesn't exist, otherwise dotenvx emits
+// a noisy [MISSING_ENV_FILE] error to the extension host console.
+const envPath = path.join(__dirname, "..", ".env")
+if (fs.existsSync(envPath)) {
+	try {
 		dotenvx.config({ path: envPath })
+	} catch (e) {
+		// Best-effort only: never fail extension activation due to optional env loading.
+		console.warn("Failed to load environment variables:", e)
 	}
-} catch {
-	// Best-effort only: never fail extension activation due to optional env loading.
 }
 
 import type { CloudUserInfo, AuthState } from "@roo-code/types"
