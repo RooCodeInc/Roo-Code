@@ -11,6 +11,7 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
+	handleAiSdkError,
 } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -120,17 +121,22 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 		// Use streamText for streaming responses
 		const result = streamText(requestOptions)
 
-		// Process the full stream to get all events including reasoning
-		for await (const part of result.fullStream) {
-			for (const chunk of processAiSdkStreamPart(part)) {
-				yield chunk
+		try {
+			// Process the full stream to get all events including reasoning
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
+				}
 			}
-		}
 
-		// Yield usage metrics at the end
-		const usage = await result.usage
-		if (usage) {
-			yield this.processUsageMetrics(usage)
+			// Yield usage metrics at the end
+			const usage = await result.usage
+			if (usage) {
+				yield this.processUsageMetrics(usage)
+			}
+		} catch (error) {
+			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
+			throw handleAiSdkError(error, "Cerebras")
 		}
 	}
 

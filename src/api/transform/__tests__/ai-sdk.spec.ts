@@ -1,6 +1,13 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
-import { convertToAiSdkMessages, convertToolsForAiSdk, processAiSdkStreamPart, mapToolChoice } from "../ai-sdk"
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	mapToolChoice,
+	extractAiSdkErrorMessage,
+	handleAiSdkError,
+} from "../ai-sdk"
 
 vitest.mock("ai", () => ({
 	tool: vitest.fn((t) => t),
@@ -529,6 +536,112 @@ describe("AI SDK conversion utilities", () => {
 			})
 
 			expect(result).toBeUndefined()
+		})
+	})
+
+	describe("extractAiSdkErrorMessage", () => {
+		it("should return 'Unknown error' for null/undefined", () => {
+			expect(extractAiSdkErrorMessage(null)).toBe("Unknown error")
+			expect(extractAiSdkErrorMessage(undefined)).toBe("Unknown error")
+		})
+
+		it("should extract message from AI_RetryError", () => {
+			const retryError = {
+				name: "AI_RetryError",
+				message: "Failed after 3 attempts",
+				errors: [new Error("Error 1"), new Error("Error 2"), new Error("Too Many Requests")],
+				lastError: { message: "Too Many Requests", status: 429 },
+			}
+
+			const result = extractAiSdkErrorMessage(retryError)
+			expect(result).toBe("Failed after 3 attempts (429): Too Many Requests")
+		})
+
+		it("should handle AI_RetryError without status", () => {
+			const retryError = {
+				name: "AI_RetryError",
+				message: "Failed after 2 attempts",
+				errors: [new Error("Error 1"), new Error("Connection failed")],
+				lastError: { message: "Connection failed" },
+			}
+
+			const result = extractAiSdkErrorMessage(retryError)
+			expect(result).toBe("Failed after 2 attempts: Connection failed")
+		})
+
+		it("should extract message from AI_APICallError", () => {
+			const apiError = {
+				name: "AI_APICallError",
+				message: "Rate limit exceeded",
+				status: 429,
+			}
+
+			const result = extractAiSdkErrorMessage(apiError)
+			expect(result).toBe("API Error (429): Rate limit exceeded")
+		})
+
+		it("should handle AI_APICallError without status", () => {
+			const apiError = {
+				name: "AI_APICallError",
+				message: "Connection timeout",
+			}
+
+			const result = extractAiSdkErrorMessage(apiError)
+			expect(result).toBe("Connection timeout")
+		})
+
+		it("should extract message from standard Error", () => {
+			const error = new Error("Something went wrong")
+			expect(extractAiSdkErrorMessage(error)).toBe("Something went wrong")
+		})
+
+		it("should convert non-Error to string", () => {
+			expect(extractAiSdkErrorMessage("string error")).toBe("string error")
+			expect(extractAiSdkErrorMessage({ custom: "object" })).toBe("[object Object]")
+		})
+	})
+
+	describe("handleAiSdkError", () => {
+		it("should wrap error with provider name", () => {
+			const error = new Error("API Error")
+			const result = handleAiSdkError(error, "Fireworks")
+
+			expect(result.message).toBe("Fireworks: API Error")
+		})
+
+		it("should preserve status code from AI_RetryError", () => {
+			const retryError = {
+				name: "AI_RetryError",
+				errors: [new Error("Too Many Requests")],
+				lastError: { message: "Too Many Requests", status: 429 },
+			}
+
+			const result = handleAiSdkError(retryError, "Groq")
+
+			expect(result.message).toContain("Groq:")
+			expect(result.message).toContain("429")
+			expect((result as any).status).toBe(429)
+		})
+
+		it("should preserve status code from AI_APICallError", () => {
+			const apiError = {
+				name: "AI_APICallError",
+				message: "Unauthorized",
+				status: 401,
+			}
+
+			const result = handleAiSdkError(apiError, "DeepSeek")
+
+			expect(result.message).toContain("DeepSeek:")
+			expect(result.message).toContain("401")
+			expect((result as any).status).toBe(401)
+		})
+
+		it("should preserve original error as cause", () => {
+			const originalError = new Error("Original error")
+			const result = handleAiSdkError(originalError, "Cerebras")
+
+			expect((result as any).cause).toBe(originalError)
 		})
 	})
 })

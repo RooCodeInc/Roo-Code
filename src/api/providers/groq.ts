@@ -11,6 +11,7 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
+	handleAiSdkError,
 } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -137,18 +138,23 @@ export class GroqHandler extends BaseProvider implements SingleCompletionHandler
 		// Use streamText for streaming responses
 		const result = streamText(requestOptions)
 
-		// Process the full stream to get all events including reasoning
-		for await (const part of result.fullStream) {
-			for (const chunk of processAiSdkStreamPart(part)) {
-				yield chunk
+		try {
+			// Process the full stream to get all events including reasoning
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
+				}
 			}
-		}
 
-		// Yield usage metrics at the end, including cache metrics from providerMetadata
-		const usage = await result.usage
-		const providerMetadata = await result.providerMetadata
-		if (usage) {
-			yield this.processUsageMetrics(usage, providerMetadata as any)
+			// Yield usage metrics at the end, including cache metrics from providerMetadata
+			const usage = await result.usage
+			const providerMetadata = await result.providerMetadata
+			if (usage) {
+				yield this.processUsageMetrics(usage, providerMetadata as any)
+			}
+		} catch (error) {
+			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
+			throw handleAiSdkError(error, "Groq")
 		}
 	}
 

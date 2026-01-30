@@ -17,6 +17,7 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
+	handleAiSdkError,
 } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 
@@ -150,18 +151,23 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 		// Use streamText for streaming responses
 		const result = streamText(requestOptions)
 
-		// Process the full stream to get all events
-		for await (const part of result.fullStream) {
-			// Use the processAiSdkStreamPart utility to convert stream parts
-			for (const chunk of processAiSdkStreamPart(part)) {
-				yield chunk
+		try {
+			// Process the full stream to get all events
+			for await (const part of result.fullStream) {
+				// Use the processAiSdkStreamPart utility to convert stream parts
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
+				}
 			}
-		}
 
-		// Yield usage metrics at the end
-		const usage = await result.usage
-		if (usage) {
-			yield this.processUsageMetrics(usage)
+			// Yield usage metrics at the end
+			const usage = await result.usage
+			if (usage) {
+				yield this.processUsageMetrics(usage)
+			}
+		} catch (error) {
+			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
+			throw handleAiSdkError(error, this.config.providerName)
 		}
 	}
 
