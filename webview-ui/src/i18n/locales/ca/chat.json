@@ -344,7 +344,9 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"smartCodeFolding": "Plegament intel·ligent de codi: La condensació de context ara preserva un mapa lleuger dels teus fitxers—signatures de funcions, declaracions de classe i definicions de tipus. Això proporciona millor continuïtat després de condensar i edicions més intel·ligents quan es fa referència a feina anterior."
+			"parallelTools": "Crides de ferramenta paral·leles: Les ferramentes ara s'executen en paral·lel per defecte, accelerant significativament les operacions multi-fitxer i les tasques complexes.",
+			"readFileIndentation": "Lectura de fitxers més intel·ligent: El nou mode de indentació extreu blocs de codi semàntics complets (funcions, classes) sense truncament al mig de la funció—ideal per als casos específics de línies dels resultats de cerca.",
+			"readCommandOutput": "Sortida de terminal sense pèrdua: La nova ferramenta read_command_output recupera la sortida completa de la comanda des d'execucions truncades amb paginació i filtrat regex."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",

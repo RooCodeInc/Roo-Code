@@ -344,7 +344,9 @@
 		},
 		"release": {
 			"heading": "Novidades:",
-			"smartCodeFolding": "Smart Code Folding: A condensação de contexto agora preserva um mapa leve de seus arquivos—assinaturas de função, declarações de classe e definições de tipo. Isso oferece melhor continuidade após condensação e edições mais inteligentes ao referenciar trabalho anterior."
+			"parallelTools": "Chamadas de ferramentas paralelas: As ferramentas agora são executadas em paralelo por padrão, acelerando significativamente operações multi-arquivos e tarefas complexas.",
+			"readFileIndentation": "Leitura de arquivo mais inteligente: O novo modo de indentação extrai blocos de código semântico completos (funções, classes) sem truncamento no meio da função—ideal ao segmentar linhas específicas de resultados de busca.",
+			"readCommandOutput": "Saída de terminal sem perda: A nova ferramenta read_command_output recupera a saída completa do comando de execuções truncadas com paginação e filtro regex."
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",
