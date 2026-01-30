@@ -73,6 +73,28 @@ export const McpExecution = ({
 		}
 	}, [])
 
+	const tryUnescapeJsonBlob = useCallback((value: string): string | undefined => {
+		// Some MCP servers return JSON "blobs" with escaped quotes/backslashes but WITHOUT
+		// wrapping the value in a JSON string literal (e.g. `[{\"id\":1}]`).
+		//
+		// Avoid manual `replaceAll("\\\\", "\\")` / `replaceAll('\\"', '"')` transformations,
+		// which can accidentally double-unescape sequences. Instead, ask the JSON parser to
+		// interpret escape sequences by wrapping the blob into a JSON string literal.
+		try {
+			// Intentionally do NOT escape backslashes, so sequences like `\"` and `\\` are
+			// interpreted as escapes inside the JSON string literal.
+			// We only escape raw newlines/tabs so the wrapper remains valid JSON.
+			const jsonStringLiteral = `"${value
+				.replaceAll("\n", "\\n")
+				.replaceAll("\r", "\\r")
+				.replaceAll("\t", "\\t")}"`
+			const decoded = JSON.parse(jsonStringLiteral)
+			return typeof decoded === "string" ? decoded : undefined
+		} catch {
+			return undefined
+		}
+	}, [])
+
 	// Try to parse JSON and return both the result and formatted text.
 	// Handles:
 	// - minified JSON
@@ -87,8 +109,10 @@ export const McpExecution = ({
 
 			// If initial parse fails, try un-escaping common "JSON encoded as a string blob" patterns.
 			if (parsed === undefined && (trimmed.includes('\\"') || trimmed.includes("\\\\"))) {
-				const unescaped = trimmed.replaceAll("\\\\", "\\").replaceAll('\\"', '"')
-				parsed = tryParseJsonValue(unescaped)
+				const unescaped = tryUnescapeJsonBlob(trimmed)
+				if (unescaped !== undefined) {
+					parsed = tryParseJsonValue(unescaped)
+				}
 			}
 
 			// If we parsed a string that itself looks like JSON, try parsing again (double-encoded).
@@ -113,7 +137,7 @@ export const McpExecution = ({
 				formatted: text,
 			}
 		},
-		[looksLikeJson, tryParseJsonValue],
+		[looksLikeJson, tryParseJsonValue, tryUnescapeJsonBlob],
 	)
 
 	// Only parse response data when expanded AND complete to avoid parsing partial JSON
