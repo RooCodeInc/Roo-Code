@@ -218,7 +218,6 @@ describe("SettingsView - Change Detection Fix", () => {
 		maxReadFileLine: -1,
 		maxImageFileSize: 5,
 		maxTotalImageSize: 20,
-		maxConcurrentFileReads: 5,
 		customCondensingPrompt: "",
 		customSupportPrompts: {},
 		profileThresholds: {},

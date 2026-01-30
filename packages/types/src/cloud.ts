@@ -95,7 +95,6 @@ export const organizationDefaultSettingsSchema = globalSettingsSchema
 	.pick({
 		enableCheckpoints: true,
 		maxOpenTabsContext: true,
-		maxReadFileLine: true,
 		maxWorkspaceFiles: true,
 		showRooIgnoredFiles: true,
 		terminalCommandDelay: true,
@@ -107,7 +106,6 @@ export const organizationDefaultSettingsSchema = globalSettingsSchema
 	.merge(
 		z.object({
 			maxOpenTabsContext: z.number().int().nonnegative().optional(),
-			maxReadFileLine: z.number().int().gte(-1).optional(),
 			maxWorkspaceFiles: z.number().int().nonnegative().optional(),
 			terminalCommandDelay: z.number().int().nonnegative().optional(),
 			terminalShellIntegrationTimeout: z.number().int().nonnegative().optional(),

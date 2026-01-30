@@ -30,6 +30,7 @@ interface NavBarProps {
 
 export function NavBar({ stars, downloads }: NavBarProps) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
+	const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 	const logoSrc = useLogoSrc()
 
 	return (
@@ -44,62 +45,76 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 				{/* Desktop Navigation */}
 				<nav className="grow ml-6 hidden text-sm md:flex md:items-center">
 					{/* Product Dropdown */}
-					<div className="relative group">
+					<div
+						className="relative"
+						onMouseEnter={() => setOpenDropdown("product")}
+						onMouseLeave={() => setOpenDropdown(null)}>
 						<button className="flex items-center px-4 py-6 gap-1 transition-transform duration-200 hover:scale-105 hover:text-foreground">
 							Product
 							<ChevronDown className="size-3 ml-1 mt-0.5" />
 						</button>
-						<div className="absolute left-0 top-12 mt-2 w-[260px] rounded-md border border-border bg-background py-1 shadow-lg opacity-0 -translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200">
+						<div
+							className={`absolute left-0 top-12 mt-2 w-[260px] rounded-md border border-border bg-background py-1 shadow-lg transition-all duration-200 ${openDropdown === "product" ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-2 pointer-events-none"}`}>
 							<Link
 								href="/extension"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
+								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
+								onClick={() => setOpenDropdown(null)}>
 								<Puzzle className="size-3 inline mr-2 -mt-0.5" />
 								Roo Code VS Code Extension
 							</Link>
 							<Link
 								href="/cloud"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
+								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
+								onClick={() => setOpenDropdown(null)}>
 								<Cloud className="size-3 inline mr-2 -mt-0.5" />
 								Roo Code Cloud
 							</Link>
 							<Link
 								href="/slack"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
+								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
+								onClick={() => setOpenDropdown(null)}>
 								<Slack className="size-3 inline mr-2 -mt-0.5" />
 								Roo Code for Slack
 							</Link>
 							<Link
 								href="/linear"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
+								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
+								onClick={() => setOpenDropdown(null)}>
 								<LinearIcon className="size-3 inline mr-2 -mt-0.5" />
 								Roo Code for Linear
 							</Link>
 							<Link
 								href="/provider"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
+								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
+								onClick={() => setOpenDropdown(null)}>
 								<Brain className="size-3 inline mr-2 -mt-0.5" />
 								Roo Code Router
 							</Link>
 						</div>
 					</div>
 					{/* Resources Dropdown */}
-					<div className="relative group">
+					<div
+						className="relative"
+						onMouseEnter={() => setOpenDropdown("resources")}
+						onMouseLeave={() => setOpenDropdown(null)}>
 						<button className="flex items-center px-4 py-6 gap-1 transition-transform duration-200 hover:scale-105 hover:text-foreground">
 							Resources
 							<ChevronDown className="size-3 ml-1 mt-0.5" />
 						</button>
-						{/* Dropdown Menu */}
-						<div className="absolute left-0 top-12 mt-2 w-40 rounded-md border border-border bg-background py-1 shadow-lg opacity-0 -translate-y-2 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-200">
+						<div
+							className={`absolute left-0 top-12 mt-2 w-40 rounded-md border border-border bg-background py-1 shadow-lg transition-all duration-200 ${openDropdown === "resources" ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 -translate-y-2 pointer-events-none"}`}>
 							<Link
 								href="/evals"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
+								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
+								onClick={() => setOpenDropdown(null)}>
 								Evals
 							</Link>
 							<a
 								href={EXTERNAL_LINKS.DISCORD}
 								target="_blank"
 								rel="noopener noreferrer"
-								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground">
+								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
+								onClick={() => setOpenDropdown(null)}>
 								Discord
 							</a>
 							<a
@@ -107,7 +122,7 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 								target="_blank"
 								rel="noopener noreferrer"
 								className="block px-4 py-2 text-sm transition-colors hover:bg-accent hover:text-foreground"
-								onClick={() => setIsMenuOpen(false)}>
+								onClick={() => setOpenDropdown(null)}>
 								Trust Center
 							</a>
 						</div>
