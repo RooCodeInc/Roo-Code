@@ -7,11 +7,11 @@ import { execa } from "execa"
 import { type ToolUsage, TaskCommandName, RooCodeEventName, IpcMessageType } from "@roo-code/types"
 import { IpcClient } from "@roo-code/ipc"
 
-import { updateTask, createTaskMetrics, updateTaskMetrics, createToolError } from "../db/index.js"
-import { EVALS_REPO_PATH } from "../exercises/index.js"
+import { updateTask, createTaskMetrics, updateTaskMetrics, createToolError } from "../db/index"
+import { EVALS_REPO_PATH } from "../exercises/index"
 
-import { type RunTaskOptions } from "./types.js"
-import { mergeToolUsage, waitForSubprocessWithTimeout } from "./utils.js"
+import { type RunTaskOptions } from "./types"
+import { mergeToolUsage, waitForSubprocessWithTimeout } from "./utils"
 
 /**
  * Run a task using the Roo Code CLI (headless mode).
