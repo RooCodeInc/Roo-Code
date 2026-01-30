@@ -12,6 +12,11 @@ import {
 // Extend ProviderSettings (minus apiProvider) with handler-specific toggles.
 export type ApiHandlerOptions = Omit<ProviderSettings, "apiProvider"> & {
 	/**
+	 * The name of the currently active provider profile.
+	 * Used for profile-scoped operations like OAuth credential storage.
+	 */
+	currentApiConfigName?: string
+	/**
 	 * When true and using OpenAI Responses API models that support reasoning summaries,
 	 * include reasoning.summary: "auto" so the API returns summaries (we already parse
 	 * and surface them). Defaults to true; set to false to disable summaries.

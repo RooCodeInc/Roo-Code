@@ -4,6 +4,7 @@ import OpenAI from "openai"
 import type { ProviderSettings, ModelInfo } from "@roo-code/types"
 
 import { ApiStream } from "./transform/stream"
+import { ApiHandlerOptions } from "../shared/api"
 
 import {
 	AnthropicHandler,
@@ -122,82 +123,91 @@ export interface ApiHandler {
 export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	const { apiProvider, ...options } = configuration
 
+	// Inject currentApiConfigName into options if available in configuration
+	// This ensures handlers (like OpenAiCodexHandler) can access the profile name
+	// for profile-scoped operations.
+	const currentApiConfigName = (configuration as any).currentApiConfigName
+	const handlerOptions: ApiHandlerOptions = {
+		...options,
+		currentApiConfigName,
+	}
+
 	switch (apiProvider) {
 		case "anthropic":
-			return new AnthropicHandler(options)
+			return new AnthropicHandler(handlerOptions)
 		case "openrouter":
-			return new OpenRouterHandler(options)
+			return new OpenRouterHandler(handlerOptions)
 		case "bedrock":
-			return new AwsBedrockHandler(options)
+			return new AwsBedrockHandler(handlerOptions)
 		case "vertex":
 			return options.apiModelId?.startsWith("claude")
-				? new AnthropicVertexHandler(options)
-				: new VertexHandler(options)
+				? new AnthropicVertexHandler(handlerOptions)
+				: new VertexHandler(handlerOptions)
 		case "openai":
-			return new OpenAiHandler(options)
+			return new OpenAiHandler(handlerOptions)
 		case "ollama":
-			return new NativeOllamaHandler(options)
+			return new NativeOllamaHandler(handlerOptions)
 		case "lmstudio":
-			return new LmStudioHandler(options)
+			return new LmStudioHandler(handlerOptions)
 		case "gemini":
-			return new GeminiHandler(options)
+			return new GeminiHandler(handlerOptions)
 		case "openai-codex":
-			return new OpenAiCodexHandler(options)
+			return new OpenAiCodexHandler(handlerOptions)
 		case "openai-native":
-			return new OpenAiNativeHandler(options)
+			return new OpenAiNativeHandler(handlerOptions)
 		case "deepseek":
-			return new DeepSeekHandler(options)
+			return new DeepSeekHandler(handlerOptions)
 		case "doubao":
-			return new DoubaoHandler(options)
+			return new DoubaoHandler(handlerOptions)
 		case "qwen-code":
-			return new QwenCodeHandler(options)
+			return new QwenCodeHandler(handlerOptions)
 		case "moonshot":
-			return new MoonshotHandler(options)
+			return new MoonshotHandler(handlerOptions)
 		case "vscode-lm":
-			return new VsCodeLmHandler(options)
+			return new VsCodeLmHandler(handlerOptions)
 		case "mistral":
-			return new MistralHandler(options)
+			return new MistralHandler(handlerOptions)
 		case "unbound":
-			return new UnboundHandler(options)
+			return new UnboundHandler(handlerOptions)
 		case "requesty":
-			return new RequestyHandler(options)
+			return new RequestyHandler(handlerOptions)
 		case "fake-ai":
-			return new FakeAIHandler(options)
+			return new FakeAIHandler(handlerOptions)
 		case "xai":
-			return new XAIHandler(options)
+			return new XAIHandler(handlerOptions)
 		case "groq":
-			return new GroqHandler(options)
+			return new GroqHandler(handlerOptions)
 		case "deepinfra":
-			return new DeepInfraHandler(options)
+			return new DeepInfraHandler(handlerOptions)
 		case "huggingface":
-			return new HuggingFaceHandler(options)
+			return new HuggingFaceHandler(handlerOptions)
 		case "chutes":
-			return new ChutesHandler(options)
+			return new ChutesHandler(handlerOptions)
 		case "litellm":
-			return new LiteLLMHandler(options)
+			return new LiteLLMHandler(handlerOptions)
 		case "cerebras":
-			return new CerebrasHandler(options)
+			return new CerebrasHandler(handlerOptions)
 		case "sambanova":
-			return new SambaNovaHandler(options)
+			return new SambaNovaHandler(handlerOptions)
 		case "zai":
-			return new ZAiHandler(options)
+			return new ZAiHandler(handlerOptions)
 		case "fireworks":
-			return new FireworksHandler(options)
+			return new FireworksHandler(handlerOptions)
 		case "io-intelligence":
-			return new IOIntelligenceHandler(options)
+			return new IOIntelligenceHandler(handlerOptions)
 		case "roo":
 			// Never throw exceptions from provider constructors
 			// The provider-proxy server will handle authentication and return appropriate error codes
-			return new RooHandler(options)
+			return new RooHandler(handlerOptions)
 		case "featherless":
-			return new FeatherlessHandler(options)
+			return new FeatherlessHandler(handlerOptions)
 		case "vercel-ai-gateway":
-			return new VercelAiGatewayHandler(options)
+			return new VercelAiGatewayHandler(handlerOptions)
 		case "minimax":
-			return new MiniMaxHandler(options)
+			return new MiniMaxHandler(handlerOptions)
 		case "baseten":
-			return new BasetenHandler(options)
+			return new BasetenHandler(handlerOptions)
 		default:
-			return new AnthropicHandler(options)
+			return new AnthropicHandler(handlerOptions)
 	}
 }
