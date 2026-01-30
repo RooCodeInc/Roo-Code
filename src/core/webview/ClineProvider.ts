@@ -2232,14 +2232,24 @@ export class ClineProvider
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled,
-			openAiCodexIsAuthenticated: await (async () => {
+			...(await (async () => {
 				try {
 					const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
-					return await openAiCodexOAuthManager.isAuthenticated()
+					// Get the current profile ID for profile-scoped OAuth
+					const profileId = listApiConfigMeta?.find(({ name }) => name === currentApiConfigName)?.id
+					const isAuthenticated = await openAiCodexOAuthManager.isAuthenticatedForProfile(profileId)
+					const email = isAuthenticated ? await openAiCodexOAuthManager.getEmailForProfile(profileId) : null
+					return {
+						openAiCodexIsAuthenticated: isAuthenticated,
+						openAiCodexAuthenticatedEmail: email ?? undefined,
+					}
 				} catch {
-					return false
+					return {
+						openAiCodexIsAuthenticated: false,
+						openAiCodexAuthenticatedEmail: undefined,
+					}
 				}
-			})(),
+			})()),
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
 		}
 	}

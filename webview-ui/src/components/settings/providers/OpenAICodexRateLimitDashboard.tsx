@@ -6,6 +6,7 @@ import { vscode } from "@src/utils/vscode"
 
 interface OpenAICodexRateLimitDashboardProps {
 	isAuthenticated: boolean
+	profileId?: string
 }
 
 type Translate = (key: string, options?: Record<string, any>) => string
@@ -84,7 +85,10 @@ const UsageProgressBar: React.FC<{ usedPercent: number; label?: string }> = ({ u
 	)
 }
 
-export const OpenAICodexRateLimitDashboard: React.FC<OpenAICodexRateLimitDashboardProps> = ({ isAuthenticated }) => {
+export const OpenAICodexRateLimitDashboard: React.FC<OpenAICodexRateLimitDashboardProps> = ({
+	isAuthenticated,
+	profileId,
+}) => {
 	const { t } = useAppTranslation()
 	const [rateLimits, setRateLimits] = useState<OpenAiCodexRateLimitInfo | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
@@ -98,8 +102,8 @@ export const OpenAICodexRateLimitDashboard: React.FC<OpenAICodexRateLimitDashboa
 		}
 		setIsLoading(true)
 		setError(null)
-		vscode.postMessage({ type: "requestOpenAiCodexRateLimits" })
-	}, [isAuthenticated])
+		vscode.postMessage({ type: "requestOpenAiCodexRateLimits", profileId })
+	}, [isAuthenticated, profileId])
 
 	useEffect(() => {
 		const handleMessage = (event: MessageEvent) => {

@@ -23,8 +23,19 @@ export const OPENAI_CODEX_OAUTH_CONFIG = {
 	callbackPort: 1455,
 } as const
 
-// Token storage key
-const OPENAI_CODEX_CREDENTIALS_KEY = "openai-codex-oauth-credentials"
+// Token storage key prefix for profile-scoped credentials
+const OPENAI_CODEX_CREDENTIALS_KEY_PREFIX = "openai-codex-oauth-credentials"
+
+/**
+ * Get the credential storage key for a specific profile
+ * Falls back to global key if no profile ID is provided
+ */
+function getCredentialsKey(profileId?: string): string {
+	if (profileId) {
+		return `${OPENAI_CODEX_CREDENTIALS_KEY_PREFIX}-${profileId}`
+	}
+	return OPENAI_CODEX_CREDENTIALS_KEY_PREFIX
+}
 
 // Credentials schema
 const openAiCodexCredentialsSchema = z.object({
@@ -337,17 +348,26 @@ export function isTokenExpired(credentials: OpenAiCodexCredentials): boolean {
 
 /**
  * OpenAiCodexOAuthManager - Handles OAuth flow and token management
+ * Supports profile-scoped credentials: each provider profile can have its own OAuth session
  */
 export class OpenAiCodexOAuthManager {
 	private context: ExtensionContext | null = null
-	private credentials: OpenAiCodexCredentials | null = null
 	private logFn: ((message: string) => void) | null = null
-	private refreshPromise: Promise<OpenAiCodexCredentials> | null = null
+	// Profile-specific credential caches (profileId -> credentials)
+	private credentialsCache: Map<string, OpenAiCodexCredentials> = new Map()
+	// Profile-specific refresh promises (profileId -> promise)
+	private refreshPromises: Map<string, Promise<OpenAiCodexCredentials>> = new Map()
+	// Pending authorization flow with optional profile ID
 	private pendingAuth: {
 		codeVerifier: string
 		state: string
 		server?: http.Server
+		profileId?: string
 	} | null = null
+
+	// Legacy: global credentials for backward compatibility
+	private credentials: OpenAiCodexCredentials | null = null
+	private refreshPromise: Promise<OpenAiCodexCredentials> | null = null
 
 	private log(message: string): void {
 		if (this.logFn) {
@@ -372,185 +392,239 @@ export class OpenAiCodexOAuthManager {
 		this.logFn = logFn ?? null
 	}
 
-	/**
-	 * Force a refresh using the stored refresh token even if the access token is not expired.
-	 * Useful when the server invalidates an access token early.
-	 */
-	async forceRefreshAccessToken(): Promise<string | null> {
-		if (!this.credentials) {
-			await this.loadCredentials()
-		}
-
-		if (!this.credentials) {
-			return null
-		}
-
-		try {
-			// De-dupe concurrent refreshes
-			if (!this.refreshPromise) {
-				const prevRefreshToken = this.credentials.refresh_token
-				this.log(`[openai-codex-oauth] Forcing token refresh (expires=${this.credentials.expires})...`)
-				this.refreshPromise = refreshAccessToken(this.credentials).then((newCreds) => {
-					const rotated = newCreds.refresh_token !== prevRefreshToken
-					this.log(
-						`[openai-codex-oauth] Forced refresh response received (expires_in≈${Math.round(
-							(newCreds.expires - Date.now()) / 1000,
-						)}s, refresh_token_rotated=${rotated})`,
-					)
-					return newCreds
-				})
-			}
-
-			const newCredentials = await this.refreshPromise
-			this.refreshPromise = null
-			await this.saveCredentials(newCredentials)
-			this.log(`[openai-codex-oauth] Forced token persisted (expires=${newCredentials.expires})`)
-			return newCredentials.access_token
-		} catch (error) {
-			this.refreshPromise = null
-			this.logError("[openai-codex-oauth] Failed to force refresh token:", error)
-			if (error instanceof OpenAiCodexOAuthTokenError && error.isLikelyInvalidGrant()) {
-				this.log("[openai-codex-oauth] Refresh token appears invalid; clearing stored credentials")
-				await this.clearCredentials()
-			}
-			return null
-		}
-	}
+	// =====================
+	// PROFILE-SCOPED METHODS
+	// These methods allow each provider profile to have its own OAuth credentials
+	// =====================
 
 	/**
-	 * Load credentials from storage
+	 * Load credentials for a specific profile from storage
 	 */
-	async loadCredentials(): Promise<OpenAiCodexCredentials | null> {
+	async loadCredentialsForProfile(profileId?: string): Promise<OpenAiCodexCredentials | null> {
 		if (!this.context) {
 			return null
 		}
 
+		const key = getCredentialsKey(profileId)
+		const cacheKey = profileId || "__global__"
+
+		// Check cache first
+		const cached = this.credentialsCache.get(cacheKey)
+		if (cached) {
+			return cached
+		}
+
 		try {
-			const credentialsJson = await this.context.secrets.get(OPENAI_CODEX_CREDENTIALS_KEY)
+			const credentialsJson = await this.context.secrets.get(key)
 			if (!credentialsJson) {
 				return null
 			}
 
 			const parsed = JSON.parse(credentialsJson)
-			this.credentials = openAiCodexCredentialsSchema.parse(parsed)
-			return this.credentials
+			const credentials = openAiCodexCredentialsSchema.parse(parsed)
+			this.credentialsCache.set(cacheKey, credentials)
+			return credentials
 		} catch (error) {
-			this.logError("[openai-codex-oauth] Failed to load credentials:", error)
+			this.logError(
+				`[openai-codex-oauth] Failed to load credentials for profile ${profileId || "global"}:`,
+				error,
+			)
 			return null
 		}
 	}
 
 	/**
-	 * Save credentials to storage
+	 * Save credentials for a specific profile to storage
 	 */
-	async saveCredentials(credentials: OpenAiCodexCredentials): Promise<void> {
+	async saveCredentialsForProfile(credentials: OpenAiCodexCredentials, profileId?: string): Promise<void> {
 		if (!this.context) {
 			throw new Error("OAuth manager not initialized")
 		}
 
-		await this.context.secrets.store(OPENAI_CODEX_CREDENTIALS_KEY, JSON.stringify(credentials))
-		this.credentials = credentials
+		const key = getCredentialsKey(profileId)
+		const cacheKey = profileId || "__global__"
+
+		await this.context.secrets.store(key, JSON.stringify(credentials))
+		this.credentialsCache.set(cacheKey, credentials)
 	}
 
 	/**
-	 * Clear credentials from storage
+	 * Clear credentials for a specific profile from storage
 	 */
-	async clearCredentials(): Promise<void> {
+	async clearCredentialsForProfile(profileId?: string): Promise<void> {
 		if (!this.context) {
 			return
 		}
 
-		await this.context.secrets.delete(OPENAI_CODEX_CREDENTIALS_KEY)
-		this.credentials = null
+		const key = getCredentialsKey(profileId)
+		const cacheKey = profileId || "__global__"
+
+		await this.context.secrets.delete(key)
+		this.credentialsCache.delete(cacheKey)
+		this.refreshPromises.delete(cacheKey)
 	}
 
 	/**
-	 * Get a valid access token, refreshing if necessary
+	 * Get a valid access token for a specific profile, refreshing if necessary
 	 */
-	async getAccessToken(): Promise<string | null> {
-		// Try to load credentials if not already loaded
-		if (!this.credentials) {
-			await this.loadCredentials()
+	async getAccessTokenForProfile(profileId?: string): Promise<string | null> {
+		const cacheKey = profileId || "__global__"
+
+		// Try to load credentials if not already cached
+		let credentials = this.credentialsCache.get(cacheKey)
+		if (!credentials) {
+			credentials = (await this.loadCredentialsForProfile(profileId)) ?? undefined
 		}
 
-		if (!this.credentials) {
+		if (!credentials) {
 			return null
 		}
 
 		// Check if token is expired and refresh if needed
-		if (isTokenExpired(this.credentials)) {
+		if (isTokenExpired(credentials)) {
 			try {
-				// De-dupe concurrent refreshes
-				if (!this.refreshPromise) {
+				// De-dupe concurrent refreshes for this profile
+				let refreshPromise = this.refreshPromises.get(cacheKey)
+				if (!refreshPromise) {
 					this.log(
-						`[openai-codex-oauth] Access token expired (expires=${this.credentials.expires}). Refreshing...`,
+						`[openai-codex-oauth] Access token expired for profile ${profileId || "global"} (expires=${credentials.expires}). Refreshing...`,
 					)
-					const prevRefreshToken = this.credentials.refresh_token
-					this.refreshPromise = refreshAccessToken(this.credentials).then((newCreds) => {
+					const prevRefreshToken = credentials.refresh_token
+					refreshPromise = refreshAccessToken(credentials).then((newCreds) => {
 						const rotated = newCreds.refresh_token !== prevRefreshToken
 						this.log(
-							`[openai-codex-oauth] Refresh response received (expires_in≈${Math.round(
+							`[openai-codex-oauth] Refresh response received for profile ${profileId || "global"} (expires_in≈${Math.round(
 								(newCreds.expires - Date.now()) / 1000,
 							)}s, refresh_token_rotated=${rotated})`,
 						)
 						return newCreds
 					})
+					this.refreshPromises.set(cacheKey, refreshPromise)
 				}
 
-				const newCredentials = await this.refreshPromise
-				this.refreshPromise = null
-				await this.saveCredentials(newCredentials)
-				this.log(`[openai-codex-oauth] Token persisted (expires=${newCredentials.expires})`)
+				const newCredentials = await refreshPromise
+				this.refreshPromises.delete(cacheKey)
+				await this.saveCredentialsForProfile(newCredentials, profileId)
+				this.log(
+					`[openai-codex-oauth] Token persisted for profile ${profileId || "global"} (expires=${newCredentials.expires})`,
+				)
+				credentials = newCredentials
 			} catch (error) {
-				this.refreshPromise = null
-				this.logError("[openai-codex-oauth] Failed to refresh token:", error)
+				this.refreshPromises.delete(cacheKey)
+				this.logError(
+					`[openai-codex-oauth] Failed to refresh token for profile ${profileId || "global"}:`,
+					error,
+				)
 
 				// Only clear secrets when the refresh token is clearly invalid/revoked.
 				if (error instanceof OpenAiCodexOAuthTokenError && error.isLikelyInvalidGrant()) {
-					this.log("[openai-codex-oauth] Refresh token appears invalid; clearing stored credentials")
-					await this.clearCredentials()
+					this.log(
+						`[openai-codex-oauth] Refresh token appears invalid for profile ${profileId || "global"}; clearing stored credentials`,
+					)
+					await this.clearCredentialsForProfile(profileId)
 				}
 				return null
 			}
 		}
 
-		return this.credentials.access_token
+		return credentials.access_token
 	}
 
 	/**
-	 * Get the user's email from credentials
+	 * Force a refresh for a specific profile
 	 */
-	async getEmail(): Promise<string | null> {
-		if (!this.credentials) {
-			await this.loadCredentials()
+	async forceRefreshAccessTokenForProfile(profileId?: string): Promise<string | null> {
+		const cacheKey = profileId || "__global__"
+
+		let credentials = this.credentialsCache.get(cacheKey)
+		if (!credentials) {
+			credentials = (await this.loadCredentialsForProfile(profileId)) ?? undefined
 		}
-		return this.credentials?.email || null
-	}
 
-	/**
-	 * Get the ChatGPT account ID from credentials
-	 * Used for the ChatGPT-Account-Id header required by the Codex API
-	 */
-	async getAccountId(): Promise<string | null> {
-		if (!this.credentials) {
-			await this.loadCredentials()
+		if (!credentials) {
+			return null
 		}
-		return this.credentials?.accountId || null
+
+		try {
+			// De-dupe concurrent refreshes
+			let refreshPromise = this.refreshPromises.get(cacheKey)
+			if (!refreshPromise) {
+				const prevRefreshToken = credentials.refresh_token
+				this.log(
+					`[openai-codex-oauth] Forcing token refresh for profile ${profileId || "global"} (expires=${credentials.expires})...`,
+				)
+				refreshPromise = refreshAccessToken(credentials).then((newCreds) => {
+					const rotated = newCreds.refresh_token !== prevRefreshToken
+					this.log(
+						`[openai-codex-oauth] Forced refresh response received for profile ${profileId || "global"} (expires_in≈${Math.round(
+							(newCreds.expires - Date.now()) / 1000,
+						)}s, refresh_token_rotated=${rotated})`,
+					)
+					return newCreds
+				})
+				this.refreshPromises.set(cacheKey, refreshPromise)
+			}
+
+			const newCredentials = await refreshPromise
+			this.refreshPromises.delete(cacheKey)
+			await this.saveCredentialsForProfile(newCredentials, profileId)
+			this.log(
+				`[openai-codex-oauth] Forced token persisted for profile ${profileId || "global"} (expires=${newCredentials.expires})`,
+			)
+			return newCredentials.access_token
+		} catch (error) {
+			this.refreshPromises.delete(cacheKey)
+			this.logError(
+				`[openai-codex-oauth] Failed to force refresh token for profile ${profileId || "global"}:`,
+				error,
+			)
+			if (error instanceof OpenAiCodexOAuthTokenError && error.isLikelyInvalidGrant()) {
+				this.log(
+					`[openai-codex-oauth] Refresh token appears invalid for profile ${profileId || "global"}; clearing stored credentials`,
+				)
+				await this.clearCredentialsForProfile(profileId)
+			}
+			return null
+		}
 	}
 
 	/**
-	 * Check if the user is authenticated
+	 * Get the user's email for a specific profile
 	 */
-	async isAuthenticated(): Promise<boolean> {
-		const token = await this.getAccessToken()
+	async getEmailForProfile(profileId?: string): Promise<string | null> {
+		const cacheKey = profileId || "__global__"
+		let credentials = this.credentialsCache.get(cacheKey)
+		if (!credentials) {
+			credentials = (await this.loadCredentialsForProfile(profileId)) ?? undefined
+		}
+		return credentials?.email || null
+	}
+
+	/**
+	 * Get the ChatGPT account ID for a specific profile
+	 */
+	async getAccountIdForProfile(profileId?: string): Promise<string | null> {
+		const cacheKey = profileId || "__global__"
+		let credentials = this.credentialsCache.get(cacheKey)
+		if (!credentials) {
+			credentials = (await this.loadCredentialsForProfile(profileId)) ?? undefined
+		}
+		return credentials?.accountId || null
+	}
+
+	/**
+	 * Check if a specific profile is authenticated
+	 */
+	async isAuthenticatedForProfile(profileId?: string): Promise<boolean> {
+		const token = await this.getAccessTokenForProfile(profileId)
 		return token !== null
 	}
 
 	/**
-	 * Start the OAuth authorization flow
+	 * Start the OAuth authorization flow for a specific profile
 	 * Returns the authorization URL to open in browser
 	 */
-	startAuthorizationFlow(): string {
+	startAuthorizationFlowForProfile(profileId?: string): string {
 		// Cancel any existing authorization flow before starting a new one
 		this.cancelAuthorizationFlow()
 
@@ -561,19 +635,21 @@ export class OpenAiCodexOAuthManager {
 		this.pendingAuth = {
 			codeVerifier,
 			state,
+			profileId,
 		}
 
 		return buildAuthorizationUrl(codeChallenge, state)
 	}
 
 	/**
-	 * Start a local server to receive the OAuth callback
-	 * Returns a promise that resolves when authentication is complete
+	 * Wait for OAuth callback and save credentials for the pending profile
 	 */
-	async waitForCallback(): Promise<OpenAiCodexCredentials> {
+	async waitForCallbackForProfile(): Promise<OpenAiCodexCredentials> {
 		if (!this.pendingAuth) {
 			throw new Error("No pending authorization flow")
 		}
+
+		const profileId = this.pendingAuth.profileId
 
 		// Close any existing server before starting a new one
 		if (this.pendingAuth.server) {
@@ -629,7 +705,8 @@ export class OpenAiCodexOAuthManager {
 						// per the implementation guide (OpenAI rejects it)
 						const credentials = await exchangeCodeForTokens(code, this.pendingAuth.codeVerifier)
 
-						await this.saveCredentials(credentials)
+						// Save to the profile-specific storage
+						await this.saveCredentialsForProfile(credentials, profileId)
 
 						res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" })
 						res.end(`<!DOCTYPE html>
@@ -638,22 +715,22 @@ export class OpenAiCodexOAuthManager {
 <meta charset="utf-8">
 <title>Authentication Successful</title>
 <style>
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background: linear-gradient(135deg, #10a37f 0%, #0d8f6f 100%);
-    color: white;
-  }
-  .container {
-    text-align: center;
-    padding: 2rem;
-  }
-  h1 { font-size: 2rem; margin-bottom: 1rem; }
-  p { opacity: 0.9; }
+	 body {
+	   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+	   display: flex;
+	   justify-content: center;
+	   align-items: center;
+	   height: 100vh;
+	   margin: 0;
+	   background: linear-gradient(135deg, #10a37f 0%, #0d8f6f 100%);
+	   color: white;
+	 }
+	 .container {
+	   text-align: center;
+	   padding: 2rem;
+	 }
+	 h1 { font-size: 2rem; margin-bottom: 1rem; }
+	 p { opacity: 0.9; }
 </style>
 </head>
 <body>
@@ -719,6 +796,107 @@ export class OpenAiCodexOAuthManager {
 	}
 
 	/**
+	 * Get credentials for a specific profile (for display purposes)
+	 */
+	getCredentialsForProfile(profileId?: string): OpenAiCodexCredentials | null {
+		const cacheKey = profileId || "__global__"
+		return this.credentialsCache.get(cacheKey) || null
+	}
+
+	// =====================
+	// LEGACY METHODS (for backward compatibility)
+	// These methods use global credentials when no profile is specified
+	// =====================
+
+	/**
+	 * Force a refresh using the stored refresh token even if the access token is not expired.
+	 * Useful when the server invalidates an access token early.
+	 * @deprecated Use forceRefreshAccessTokenForProfile for profile-scoped credentials
+	 */
+	async forceRefreshAccessToken(): Promise<string | null> {
+		return this.forceRefreshAccessTokenForProfile()
+	}
+
+	/**
+	 * Load credentials from storage
+	 * @deprecated Use loadCredentialsForProfile for profile-scoped credentials
+	 */
+	async loadCredentials(): Promise<OpenAiCodexCredentials | null> {
+		const creds = await this.loadCredentialsForProfile()
+		this.credentials = creds
+		return creds
+	}
+
+	/**
+	 * Save credentials to storage
+	 * @deprecated Use saveCredentialsForProfile for profile-scoped credentials
+	 */
+	async saveCredentials(credentials: OpenAiCodexCredentials): Promise<void> {
+		await this.saveCredentialsForProfile(credentials)
+		this.credentials = credentials
+	}
+
+	/**
+	 * Clear credentials from storage
+	 * @deprecated Use clearCredentialsForProfile for profile-scoped credentials
+	 */
+	async clearCredentials(): Promise<void> {
+		await this.clearCredentialsForProfile()
+		this.credentials = null
+	}
+
+	/**
+	 * Get a valid access token, refreshing if necessary
+	 * @deprecated Use getAccessTokenForProfile for profile-scoped credentials
+	 */
+	async getAccessToken(): Promise<string | null> {
+		return this.getAccessTokenForProfile()
+	}
+
+	/**
+	 * Get the user's email from credentials
+	 * @deprecated Use getEmailForProfile for profile-scoped credentials
+	 */
+	async getEmail(): Promise<string | null> {
+		return this.getEmailForProfile()
+	}
+
+	/**
+	 * Get the ChatGPT account ID from credentials
+	 * Used for the ChatGPT-Account-Id header required by the Codex API
+	 * @deprecated Use getAccountIdForProfile for profile-scoped credentials
+	 */
+	async getAccountId(): Promise<string | null> {
+		return this.getAccountIdForProfile()
+	}
+
+	/**
+	 * Check if the user is authenticated
+	 * @deprecated Use isAuthenticatedForProfile for profile-scoped credentials
+	 */
+	async isAuthenticated(): Promise<boolean> {
+		return this.isAuthenticatedForProfile()
+	}
+
+	/**
+	 * Start the OAuth authorization flow
+	 * Returns the authorization URL to open in browser
+	 * @deprecated Use startAuthorizationFlowForProfile for profile-scoped credentials
+	 */
+	startAuthorizationFlow(): string {
+		return this.startAuthorizationFlowForProfile()
+	}
+
+	/**
+	 * Start a local server to receive the OAuth callback
+	 * Returns a promise that resolves when authentication is complete
+	 * @deprecated Use waitForCallbackForProfile for profile-scoped credentials
+	 */
+	async waitForCallback(): Promise<OpenAiCodexCredentials> {
+		return this.waitForCallbackForProfile()
+	}
+
+	/**
 	 * Cancel any pending authorization flow
 	 */
 	cancelAuthorizationFlow(): void {
@@ -730,6 +908,7 @@ export class OpenAiCodexOAuthManager {
 
 	/**
 	 * Get the current credentials (for display purposes)
+	 * @deprecated Use getCredentialsForProfile for profile-scoped credentials
 	 */
 	getCredentials(): OpenAiCodexCredentials | null {
 		return this.credentials

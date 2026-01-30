@@ -9,6 +9,8 @@ vi.mock("../../../integrations/openai-codex/oauth", () => ({
 	openAiCodexOAuthManager: {
 		getAccessToken: vi.fn(),
 		getAccountId: vi.fn(),
+		getAccessTokenForProfile: vi.fn(),
+		getAccountIdForProfile: vi.fn(),
 	},
 }))
 
@@ -32,6 +34,8 @@ const { fetchOpenAiCodexRateLimitInfo } = await import("../../../integrations/op
 const mockGetModels = getModels as Mock<typeof getModels>
 const mockGetAccessToken = vi.mocked(openAiCodexOAuthManager.getAccessToken)
 const mockGetAccountId = vi.mocked(openAiCodexOAuthManager.getAccountId)
+const mockGetAccessTokenForProfile = vi.mocked(openAiCodexOAuthManager.getAccessTokenForProfile)
+const mockGetAccountIdForProfile = vi.mocked(openAiCodexOAuthManager.getAccountIdForProfile)
 const mockFetchOpenAiCodexRateLimitInfo = vi.mocked(fetchOpenAiCodexRateLimitInfo)
 
 // Mock ClineProvider
@@ -599,8 +603,8 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 describe("webviewMessageHandler - requestOpenAiCodexRateLimits", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
-		mockGetAccessToken.mockResolvedValue(null)
-		mockGetAccountId.mockResolvedValue(null)
+		mockGetAccessTokenForProfile.mockResolvedValue(null)
+		mockGetAccountIdForProfile.mockResolvedValue(null)
 	})
 
 	it("posts error when not authenticated", async () => {
@@ -613,8 +617,8 @@ describe("webviewMessageHandler - requestOpenAiCodexRateLimits", () => {
 	})
 
 	it("posts values when authenticated", async () => {
-		mockGetAccessToken.mockResolvedValue("token")
-		mockGetAccountId.mockResolvedValue("acct_123")
+		mockGetAccessTokenForProfile.mockResolvedValue("token")
+		mockGetAccountIdForProfile.mockResolvedValue("acct_123")
 		mockFetchOpenAiCodexRateLimitInfo.mockResolvedValue({
 			primary: { usedPercent: 10, resetsAt: 1700000000000 },
 			fetchedAt: 1700000000000,

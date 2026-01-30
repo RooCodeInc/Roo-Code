@@ -23,6 +23,12 @@ export type ApiHandlerOptions = Omit<ProviderSettings, "apiProvider"> & {
 	 * When undefined, Ollama will use the model's default num_ctx from the Modelfile.
 	 */
 	ollamaNumCtx?: number
+	/**
+	 * Optional API configuration ID (profile ID).
+	 * Used by providers that support profile-scoped authentication (e.g., OpenAI Codex OAuth).
+	 * This allows each profile to have its own credentials/session.
+	 */
+	apiConfigurationId?: string
 }
 
 // RouterName

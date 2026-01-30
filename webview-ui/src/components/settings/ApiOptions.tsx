@@ -145,7 +145,17 @@ const ApiOptions = ({
 	setErrorMessage,
 }: ApiOptionsProps) => {
 	const { t } = useAppTranslation()
-	const { organizationAllowList, cloudIsAuthenticated, openAiCodexIsAuthenticated } = useExtensionState()
+	const {
+		organizationAllowList,
+		cloudIsAuthenticated,
+		openAiCodexIsAuthenticated,
+		openAiCodexAuthenticatedEmail,
+		listApiConfigMeta,
+		currentApiConfigName,
+	} = useExtensionState()
+
+	// Get the current profile ID for profile-scoped OAuth operations
+	const currentProfileId = listApiConfigMeta?.find(({ name }) => name === currentApiConfigName)?.id
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -563,6 +573,8 @@ const ApiOptions = ({
 					setApiConfigurationField={setApiConfigurationField}
 					simplifySettings={fromWelcomeView}
 					openAiCodexIsAuthenticated={openAiCodexIsAuthenticated}
+					openAiCodexAuthenticatedEmail={openAiCodexAuthenticatedEmail}
+					profileId={currentProfileId}
 				/>
 			)}
 

@@ -403,6 +403,7 @@ export type ExtensionState = Pick<
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
 	openAiCodexIsAuthenticated?: boolean
+	openAiCodexAuthenticatedEmail?: string
 	debug?: boolean
 }
 
@@ -664,6 +665,7 @@ export interface WebviewMessage {
 	list?: string[] // For dismissedUpsells response
 	organizationId?: string | null // For organization switching
 	useProviderSignup?: boolean // For rooCloudSignIn to use provider signup flow
+	profileId?: string // For profile-scoped OAuth operations (openAiCodexSignIn, openAiCodexSignOut, requestOpenAiCodexRateLimits)
 	codeIndexSettings?: {
 		// Global state settings
 		codebaseIndexEnabled: boolean

@@ -14,6 +14,8 @@ interface OpenAICodexProps {
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
 	simplifySettings?: boolean
 	openAiCodexIsAuthenticated?: boolean
+	openAiCodexAuthenticatedEmail?: string
+	profileId?: string
 }
 
 export const OpenAICodex: React.FC<OpenAICodexProps> = ({
@@ -21,6 +23,8 @@ export const OpenAICodex: React.FC<OpenAICodexProps> = ({
 	setApiConfigurationField,
 	simplifySettings,
 	openAiCodexIsAuthenticated = false,
+	openAiCodexAuthenticatedEmail,
+	profileId,
 }) => {
 	const { t } = useAppTranslation()
 
@@ -29,20 +33,30 @@ export const OpenAICodex: React.FC<OpenAICodexProps> = ({
 			{/* Authentication Section */}
 			<div className="flex flex-col gap-2">
 				{openAiCodexIsAuthenticated ? (
-					<div className="flex justify-end">
-						<Button
-							variant="secondary"
-							size="sm"
-							onClick={() => vscode.postMessage({ type: "openAiCodexSignOut" })}>
-							{t("settings:providers.openAiCodex.signOutButton", {
-								defaultValue: "Sign Out",
-							})}
-						</Button>
+					<div className="flex flex-col gap-2">
+						{openAiCodexAuthenticatedEmail && (
+							<p className="text-sm text-vscode-descriptionForeground">
+								{t("settings:providers.openAiCodex.signedInAs", {
+									defaultValue: "Signed in as {{email}}",
+									email: openAiCodexAuthenticatedEmail,
+								})}
+							</p>
+						)}
+						<div className="flex justify-end">
+							<Button
+								variant="secondary"
+								size="sm"
+								onClick={() => vscode.postMessage({ type: "openAiCodexSignOut", profileId })}>
+								{t("settings:providers.openAiCodex.signOutButton", {
+									defaultValue: "Sign Out",
+								})}
+							</Button>
+						</div>
 					</div>
 				) : (
 					<Button
 						variant="primary"
-						onClick={() => vscode.postMessage({ type: "openAiCodexSignIn" })}
+						onClick={() => vscode.postMessage({ type: "openAiCodexSignIn", profileId })}
 						className="w-fit">
 						{t("settings:providers.openAiCodex.signInButton", {
 							defaultValue: "Sign in to OpenAI Codex",
@@ -52,7 +66,7 @@ export const OpenAICodex: React.FC<OpenAICodexProps> = ({
 			</div>
 
 			{/* Rate Limit Dashboard - only shown when authenticated */}
-			<OpenAICodexRateLimitDashboard isAuthenticated={openAiCodexIsAuthenticated} />
+			<OpenAICodexRateLimitDashboard isAuthenticated={openAiCodexIsAuthenticated} profileId={profileId} />
 
 			{/* Model Picker */}
 			<ModelPicker
