@@ -2,7 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import * as vscode from "vscode"
 import OpenAI from "openai"
 
-import { type ModelInfo, openAiModelInfoSaneDefaults } from "@roo-code/types"
+import { type ModelInfo, openAiModelInfoSaneDefaults, vscodeLlmModels } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { SELECTOR_SEPARATOR, stringifyVsCodeLmModelSelector } from "../../shared/vsCodeSelectorUtils"
@@ -591,33 +591,63 @@ export class VsCodeLmHandler extends BaseProvider implements SingleCompletionHan
 }
 
 /**
- * Model ID prefixes that support image inputs via VS Code Language Model API.
+ * Model ID patterns that support image inputs via VS Code Language Model API.
  * These models support the LanguageModelDataPart.image() API introduced in VS Code 1.106+.
  *
- * All GitHub Copilot models with these prefixes support images.
- * Only grok-* models don't support images (text only).
+ * For models not in the static vscodeLlmModels definitions, we use pattern matching
+ * to determine image support. Only newer model versions support images.
  *
  * Source: https://models.dev/api.json (github-copilot provider models)
  */
-export const IMAGE_CAPABLE_MODEL_PREFIXES = [
-	"gpt", // All GPT models (gpt-4o, gpt-4.1, gpt-5, gpt-5.1, gpt-5.2, gpt-5-mini, gpt-5.1-codex, etc.)
-	"claude", // All Claude models (claude-haiku-4.5, claude-opus-4.5, claude-sonnet-4, claude-sonnet-4.5)
-	"gemini", // All Gemini models (gemini-2.5-pro, gemini-3-flash-preview, gemini-3-pro-preview)
-	"o1", // OpenAI o1 reasoning models
-	"o3", // OpenAI o3 reasoning models
+export const IMAGE_CAPABLE_MODEL_PATTERNS = [
+	/^gpt-4o$/i, // GPT-4o (omni) supports images, but NOT gpt-4o-mini
+	/^gpt-4\.[1-9]/i, // GPT-4.1 and higher versions
+	/^gpt-[5-9]/i, // GPT-5 and higher (gpt-5, gpt-5-mini, gpt-5.1-codex, etc.)
+	/^claude-/i, // All Claude models support images
+	/^gemini-/i, // All Gemini models support images
+]
+
+/**
+ * Model ID patterns that explicitly do NOT support images.
+ * These patterns are checked before IMAGE_CAPABLE_MODEL_PATTERNS.
+ */
+export const IMAGE_INCAPABLE_MODEL_PATTERNS = [
+	/^gpt-3\.5/i, // GPT-3.5 models don't support images
+	/^gpt-4$/i, // Base GPT-4 doesn't support images
+	/^gpt-4-/i, // GPT-4 variants like gpt-4-0125-preview don't support images
+	/^gpt-4o-mini/i, // GPT-4o-mini doesn't support images
+	/^o[1-4]-?/i, // Reasoning models (o1, o3-mini, o4-mini) don't support images
+	/^grok-/i, // Grok models don't support images
 ]
 
 /**
  * Checks if a model supports image inputs based on its model ID.
- * Uses prefix matching against known image-capable model families.
+ * First checks static vscodeLlmModels definitions for known models,
+ * then falls back to pattern matching for unknown models.
  *
- * @param _family The model family (unused, kept for API compatibility)
+ * @param family The model family (used for lookup in static definitions)
  * @param id The model ID
  * @returns true if the model supports image inputs
  */
-export function checkModelSupportsImages(_family: string, id: string): boolean {
-	const idLower = id.toLowerCase()
-	return IMAGE_CAPABLE_MODEL_PREFIXES.some((prefix) => idLower.startsWith(prefix))
+export function checkModelSupportsImages(family: string, id: string): boolean {
+	// First, check if the model exists in static definitions by family or id
+	const familyInfo = vscodeLlmModels[family as keyof typeof vscodeLlmModels]
+	if (familyInfo) {
+		return familyInfo.supportsImages ?? false
+	}
+
+	const idInfo = vscodeLlmModels[id as keyof typeof vscodeLlmModels]
+	if (idInfo) {
+		return idInfo.supportsImages ?? false
+	}
+
+	// For unknown models, first check if it matches any incapable patterns
+	if (IMAGE_INCAPABLE_MODEL_PATTERNS.some((pattern) => pattern.test(id))) {
+		return false
+	}
+
+	// Then check if it matches any capable patterns
+	return IMAGE_CAPABLE_MODEL_PATTERNS.some((pattern) => pattern.test(id))
 }
 
 // Static blacklist of VS Code Language Model IDs that should be excluded from the model list
