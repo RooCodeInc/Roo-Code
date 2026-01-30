@@ -3,7 +3,7 @@ import OpenAI from "openai"
 
 import type { ModelInfo } from "@roo-code/types"
 
-import { type ApiHandlerOptions, getModelMaxOutputTokens } from "../../shared/api"
+import { type ApiHandlerOptions, getModelMaxOutputTokens, shouldUseReasoningEffort } from "../../shared/api"
 import { TagMatcher } from "../../utils/tag-matcher"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
@@ -14,6 +14,7 @@ import { BaseProvider } from "./base-provider"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { getApiRequestTimeout } from "./utils/timeout-config"
+import { getGlmModelOptions } from "./utils/glm-model-detection"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -21,6 +22,11 @@ type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerO
 	defaultProviderModelId: ModelName
 	providerModels: Record<ModelName, ModelInfo>
 	defaultTemperature?: number
+}
+
+// Extended chat completion params to support thinking mode for GLM-4.7+
+type ChatCompletionParamsWithThinking = OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming & {
+	thinking?: { type: "enabled" | "disabled" }
 }
 
 export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
@@ -75,6 +81,9 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	) {
 		const { id: model, info } = this.getModel()
 
+		// Check if this is a GLM model and get recommended options
+		const glmOptions = getGlmModelOptions(model)
+
 		// Centralized cap: clamp to 20% of the context window (unless provider-specific exceptions apply)
 		const max_tokens =
 			getModelMaxOutputTokens({
@@ -86,21 +95,35 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 		const temperature = this.options.modelTemperature ?? info.defaultTemperature ?? this.defaultTemperature
 
-		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
+		// For GLM models, disable parallel_tool_calls as they may not support it
+		const parallelToolCalls = glmOptions?.disableParallelToolCalls ? false : (metadata?.parallelToolCalls ?? true)
+
+		const params: ChatCompletionParamsWithThinking = {
 			model,
 			max_tokens,
 			temperature,
-			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+			messages: [
+				{ role: "system", content: systemPrompt },
+				...convertToOpenAiMessages(messages, {
+					mergeToolResultText: glmOptions?.mergeToolResultText ?? false,
+				}),
+			],
 			stream: true,
 			stream_options: { include_usage: true },
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+			parallel_tool_calls: parallelToolCalls,
 		}
 
 		// Add thinking parameter if reasoning is enabled and model supports it
 		if (this.options.enableReasoningEffort && info.supportsReasoningBinary) {
-			;(params as any).thinking = { type: "enabled" }
+			params.thinking = { type: "enabled" }
+		}
+
+		// For GLM-4.7+ models, add thinking mode support similar to Z.ai
+		if (glmOptions?.supportsThinking) {
+			const useReasoning = shouldUseReasoningEffort({ model: info, settings: this.options })
+			params.thinking = useReasoning ? { type: "enabled" } : { type: "disabled" }
 		}
 
 		try {
