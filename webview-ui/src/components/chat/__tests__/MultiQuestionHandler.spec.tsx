@@ -7,6 +7,7 @@ import { MultiQuestionHandler } from "../MultiQuestionHandler"
 vi.mock("@src/context/ExtensionStateContext", () => ({
 	useExtensionState: () => ({
 		language: "en",
+		showQuestionsOneByOne: true,
 	}),
 }))
 
@@ -18,6 +19,9 @@ vi.mock("react-i18next", () => ({
 				// Mock specific translations used in tests
 				if (key === "chat:questions.questionNumberOfTotal" && options) {
 					return `Question ${options.current} of ${options.total}`
+				}
+				if (key === "chat:questions.questionNumber" && options) {
+					return `Question ${options.number}`
 				}
 				if (key === "chat:questions.typeAnswer") return "Type your answer..."
 				if (key === "chat:questions.previous") return "Previous"
@@ -37,6 +41,9 @@ vi.mock("@src/i18n/setup", () => ({
 			// Mock specific translations used in tests
 			if (key === "chat:questions.questionNumberOfTotal" && options) {
 				return `Question ${options.current} of ${options.total}`
+			}
+			if (key === "chat:questions.questionNumber" && options) {
+				return `Question ${options.number}`
 			}
 			if (key === "chat:questions.typeAnswer") return "Type your answer..."
 			if (key === "chat:questions.previous") return "Previous"
@@ -191,5 +198,45 @@ describe("MultiQuestionHandler", () => {
 		expect(textarea).toHaveValue("A2")
 
 		expect(mockOnSendResponse).not.toHaveBeenCalled()
+	})
+
+	it("should handle options correctly without copying to text area", () => {
+		const questions = [{ text: "Color?", options: ["Red", "Blue"] }]
+		render(
+			<TestWrapper>
+				<MultiQuestionHandler questions={questions} onSendResponse={mockOnSendResponse} />
+			</TestWrapper>,
+		)
+
+		const redButton = screen.getByText("Red")
+		fireEvent.click(redButton)
+
+		const textarea = screen.getByPlaceholderText("Type your answer...")
+		expect(textarea).toHaveValue("")
+
+		const finishButton = screen.getByText("Finish")
+		fireEvent.click(finishButton)
+
+		expect(mockOnSendResponse).toHaveBeenCalledWith("Question: Color?\nAnswer: Red")
+	})
+
+	it("should handle both option and text answer", () => {
+		const questions = [{ text: "Color?", options: ["Red", "Blue"] }]
+		render(
+			<TestWrapper>
+				<MultiQuestionHandler questions={questions} onSendResponse={mockOnSendResponse} />
+			</TestWrapper>,
+		)
+
+		const redButton = screen.getByText("Red")
+		fireEvent.click(redButton)
+
+		const textarea = screen.getByPlaceholderText("Type your answer...")
+		fireEvent.change(textarea, { target: { value: "very dark" } })
+
+		const finishButton = screen.getByText("Finish")
+		fireEvent.click(finishButton)
+
+		expect(mockOnSendResponse).toHaveBeenCalledWith("Question: Color?\nAnswer: Red: very dark")
 	})
 })

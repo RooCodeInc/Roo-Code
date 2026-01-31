@@ -288,6 +288,7 @@
 	},
 	"questions": {
 		"hasQuestion": "Roo has a question",
+		"questionNumber": "Question {{number}}",
 		"questionNumberOfTotal": "Question {{current}} of {{total}}",
 		"typeAnswer": "Type your answer here...",
 		"previous": "Previous",

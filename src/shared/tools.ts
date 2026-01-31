@@ -98,7 +98,7 @@ export type NativeToolArgs = {
 	edit_file: { file_path: string; old_string: string; new_string: string; expected_replacements?: number }
 	apply_patch: { patch: string }
 	ask_followup_question: {
-		question: string
+		questions: Array<string | { text: string; options?: string[] }>
 		follow_up: Array<{ text: string; mode?: string }>
 	}
 	browser_action: BrowserActionParams

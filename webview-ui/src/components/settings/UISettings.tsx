@@ -12,12 +12,14 @@ import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
 	enterBehavior: "send" | "newline"
+	showQuestionsOneByOne: boolean
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
 export const UISettings = ({
 	reasoningBlockCollapsed,
 	enterBehavior,
+	showQuestionsOneByOne,
 	setCachedStateField,
 	...props
 }: UISettingsProps) => {
@@ -45,6 +47,15 @@ export const UISettings = ({
 		// Track telemetry event
 		telemetryClient.capture("ui_settings_enter_behavior_changed", {
 			behavior: newBehavior,
+		})
+	}
+
+	const handleShowQuestionsOneByOneChange = (value: boolean) => {
+		setCachedStateField("showQuestionsOneByOne", value)
+
+		// Track telemetry event
+		telemetryClient.capture("ui_settings_show_questions_one_by_one_changed", {
+			enabled: value,
 		})
 	}
 
@@ -88,6 +99,24 @@ export const UISettings = ({
 							</VSCodeCheckbox>
 							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 								{t("settings:ui.requireCtrlEnterToSend.description", { primaryMod })}
+							</div>
+						</div>
+					</SearchableSetting>
+
+					{/* Show Questions One By One Setting */}
+					<SearchableSetting
+						settingId="ui-show-questions-one-by-one"
+						section="ui"
+						label={t("settings:ui.showQuestionsOneByOne.label")}>
+						<div className="flex flex-col gap-1">
+							<VSCodeCheckbox
+								checked={showQuestionsOneByOne}
+								onChange={(e: any) => handleShowQuestionsOneByOneChange(e.target.checked)}
+								data-testid="show-questions-one-by-one-checkbox">
+								<span className="font-medium">{t("settings:ui.showQuestionsOneByOne.label")}</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
+								{t("settings:ui.showQuestionsOneByOne.description")}
 							</div>
 						</div>
 					</SearchableSetting>

@@ -10,9 +10,13 @@ interface Suggestion {
 	mode?: string
 }
 
+interface Question {
+	text: string
+	options?: string[]
+}
+
 interface AskFollowupQuestionParams {
-	question: string
-	questions?: string[]
+	questions: Array<string | Question>
 	follow_up: Suggestion[]
 }
 
@@ -25,21 +29,33 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 		const follow_up_xml = params.follow_up
 
 		const suggestions: Suggestion[] = []
-		const questions: string[] = []
+		const questions: Array<string | Question> = []
 
 		if (questions_xml) {
 			try {
+				// Handle both simple <question> tags and more complex <question> tags with options
 				const parsedQuestions = parseXml(questions_xml, ["question"]) as {
-					question: string[] | string
+					question: any[] | any
 				}
 
 				const rawQuestions = Array.isArray(parsedQuestions?.question)
 					? parsedQuestions.question
-					: [parsedQuestions?.question].filter((q): q is string => q !== undefined)
+					: [parsedQuestions?.question].filter((q): q is any => q !== undefined)
 
 				for (const q of rawQuestions) {
 					if (typeof q === "string") {
 						questions.push(q)
+					} else if (typeof q === "object" && q !== null) {
+						const text = q["#text"] || ""
+						const optionsStr = q["@_options"]
+						if (optionsStr) {
+							questions.push({
+								text,
+								options: optionsStr.split(",").map((o: string) => o.trim()),
+							})
+						} else {
+							questions.push(text)
+						}
 					}
 				}
 			} catch (error) {
@@ -49,8 +65,12 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 			}
 		}
 
+		// If no questions array but we have a single question, use that
+		if (questions.length === 0 && question) {
+			questions.push(question)
+		}
+
 		if (follow_up_xml) {
-			// Define the actual structure returned by the XML parser
 			type ParsedSuggestion = string | { "#text": string; "@_mode"?: string }
 
 			try {
@@ -62,13 +82,10 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 					? parsedSuggest.suggest
 					: [parsedSuggest?.suggest].filter((sug): sug is ParsedSuggestion => sug !== undefined)
 
-				// Transform parsed XML to our Suggest format
 				for (const sug of rawSuggestions) {
 					if (typeof sug === "string") {
-						// Simple string suggestion (no mode attribute)
 						suggestions.push({ text: sug })
 					} else {
-						// XML object with text content and optional mode attribute
 						const suggestion: Suggestion = { text: sug["#text"] }
 						if (sug["@_mode"]) {
 							suggestion.mode = sug["@_mode"]
@@ -84,34 +101,32 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 		}
 
 		return {
-			question,
 			questions,
 			follow_up: suggestions,
 		}
 	}
 
 	async execute(params: AskFollowupQuestionParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
-		const { question, questions, follow_up } = params
-		const { handleError, pushToolResult, toolProtocol } = callbacks
+		const { questions, follow_up } = params
+		const { handleError, pushToolResult } = callbacks
 
 		try {
-			if (!question && (!questions || questions.length === 0)) {
+			if (!questions || questions.length === 0) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("ask_followup_question")
 				task.didToolFailInCurrentTurn = true
-				pushToolResult(await task.sayAndCreateMissingParamError("ask_followup_question", "question"))
+				pushToolResult(await task.sayAndCreateMissingParamError("ask_followup_question", "questions"))
 				return
 			}
 
 			// Transform follow_up suggestions to the format expected by task.ask
-			const follow_up_json = {
-				question,
+			const followup_json = {
 				questions,
 				suggest: follow_up.map((s) => ({ answer: s.text, mode: s.mode })),
 			}
 
 			task.consecutiveMistakeCount = 0
-			const { text, images } = await task.ask("followup", JSON.stringify(follow_up_json), false)
+			const { text, images } = await task.ask("followup", JSON.stringify(followup_json), false)
 			await task.say("user_feedback", text ?? "", images)
 			pushToolResult(formatResponse.toolResult(`<answer>\n${text}\n</answer>`, images))
 		} catch (error) {
@@ -120,15 +135,15 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"ask_followup_question">): Promise<void> {
-		// Get question from params (for XML protocol) or nativeArgs (for native protocol)
-		const question: string | undefined = block.params.question ?? block.nativeArgs?.question
-		// For now we don't stream multiple questions, only the main one if present
-		// We could improve this to stream multiple questions but it requires UI changes to handle partial arrays
+		// Get first question from questions array for streaming display
+		const questions = block.nativeArgs?.questions ?? []
+		const firstQuestion = questions[0]
+		const questionText = typeof firstQuestion === "string" ? firstQuestion : firstQuestion?.text
 
-		// During partial streaming, only show the question to avoid displaying raw JSON
-		// The full JSON with suggestions will be sent when the tool call is complete (!block.partial)
+		// During partial streaming, only show the first question to avoid displaying raw JSON
+		// The full JSON with all questions and suggestions will be sent when the tool call is complete
 		await task
-			.ask("followup", this.removeClosingTag("question", question, block.partial), block.partial)
+			.ask("followup", this.removeClosingTag("question", questionText, block.partial), block.partial)
 			.catch(() => {})
 	}
 }
