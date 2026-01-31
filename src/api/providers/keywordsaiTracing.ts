@@ -1,5 +1,6 @@
 import axios from "axios"
 import { randomUUID } from "crypto"
+import { KeywordsAIPayloadSchema } from "@keywordsai/keywordsai-sdk"
 
 type ChatMessage = { role: "user" | "assistant"; content: string }
 
@@ -75,7 +76,26 @@ export async function ingestKeywordsAiTraceSpans(options: {
 	const { apiKey, baseUrl, spans } = options
 	if (!spans || spans.length === 0) return
 
-	await axios.post(getTracesIngestUrl(baseUrl), spans, {
+	// Validate outgoing spans against the official KeywordsAI Zod schema.
+	// We only send spans that successfully validate to avoid ingest failures.
+	const validatedSpans = spans.flatMap((span) => {
+		// KeywordsAI schemas typically model "optional" as "missing", not "null".
+		// Ensure we don't send nulls for optional fields.
+		const normalizedSpan: Record<string, unknown> = { ...(span as unknown as Record<string, unknown>) }
+		for (const [key, value] of Object.entries(normalizedSpan)) {
+			if (value === null) delete normalizedSpan[key]
+		}
+		try {
+			return [KeywordsAIPayloadSchema.parse(normalizedSpan)]
+		} catch (error) {
+			console.warn("Dropping invalid KeywordsAI tracing span payload", { error, span })
+			return []
+		}
+	})
+
+	if (validatedSpans.length === 0) return
+
+	await axios.post(getTracesIngestUrl(baseUrl), validatedSpans, {
 		headers: {
 			Authorization: `Bearer ${apiKey}`,
 			"Content-Type": "application/json",
@@ -117,7 +137,6 @@ export async function ingestKeywordsAiChatTrace(options: KeywordsAiTraceIngestOp
 			trace_unique_id: traceUniqueId,
 			span_unique_id: rootSpanId,
 			span_name: `${workflowName}.workflow`,
-			span_parent_id: null,
 			start_time: start,
 			timestamp: end,
 			span_workflow_name: workflowName,
