@@ -30,6 +30,7 @@ import {
 	ArrowLeft,
 	GitCommitVertical,
 	Zap,
+	FishingHook,
 } from "lucide-react"
 
 import {
@@ -79,6 +80,7 @@ import { Section } from "./Section"
 import PromptsSettings from "./PromptsSettings"
 import { SlashCommandsSettings } from "./SlashCommandsSettings"
 import { SkillsSettings } from "./SkillsSettings"
+import { HooksSettings } from "./HooksSettings"
 import { UISettings } from "./UISettings"
 import ModesView from "../modes/ModesView"
 import McpView from "../mcp/McpView"
@@ -100,6 +102,7 @@ export interface SettingsViewRef {
 export const sectionNames = [
 	"providers",
 	"autoApprove",
+	"hooks",
 	"slashCommands",
 	"skills",
 	"browser",
@@ -514,6 +517,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			{ id: "modes", icon: Users2 },
 			{ id: "mcp", icon: Server },
 			{ id: "autoApprove", icon: CheckCheck },
+			{ id: "hooks", icon: FishingHook },
 			{ id: "slashCommands", icon: SquareSlash },
 			{ id: "skills", icon: Zap },
 			{ id: "browser", icon: SquareMousePointer },
@@ -802,6 +806,9 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
+
+						{/* Hooks Section */}
+						{renderTab === "hooks" && <HooksSettings />}
 
 						{/* Slash Commands Section */}
 						{renderTab === "slashCommands" && <SlashCommandsSettings />}

@@ -69,6 +69,7 @@ import WorkspaceTracker from "../../integrations/workspace/WorkspaceTracker"
 
 import { McpHub } from "../../services/mcp/McpHub"
 import { McpServerManager } from "../../services/mcp/McpServerManager"
+import { HooksService } from "../../services/hooks"
 import { MarketplaceManager } from "../../services/marketplace"
 import { ShadowCheckpointService } from "../../services/checkpoints/ShadowCheckpointService"
 import { CodeIndexManager } from "../../services/code-index/manager"
@@ -142,6 +143,7 @@ export class ClineProvider
 	private _workspaceTracker?: WorkspaceTracker // workSpaceTracker read-only for access outside this class
 	protected mcpHub?: McpHub // Change from private to protected
 	protected skillsManager?: SkillsManager
+	private hooksService?: HooksService
 	private marketplaceManager: MarketplaceManager
 	private mdmService?: MdmService
 	private taskCreationCallback: (task: Task) => void
@@ -206,6 +208,18 @@ export class ClineProvider
 		this.skillsManager = new SkillsManager(this)
 		this.skillsManager.initialize().catch((error) => {
 			this.log(`Failed to initialize Skills Manager: ${error}`)
+		})
+
+		// Initialize Hooks Service for hook configuration management
+		this.hooksService = new HooksService(
+			this.contextProxy.globalStorageUri.fsPath,
+			this.currentWorkspacePath || null,
+		)
+		this.hooksService.setOutputChannel(this.outputChannel)
+		this.hooksService.startWatching()
+		// Subscribe to hooks changes and push updates to webview
+		this.hooksService.onHooksChanged(async (hooks) => {
+			await this.postMessageToWebview({ type: "hooks/loaded", hooks })
 		})
 
 		this.marketplaceManager = new MarketplaceManager(this.context, this.customModesManager)
@@ -616,6 +630,8 @@ export class ClineProvider
 		this.mcpHub = undefined
 		await this.skillsManager?.dispose()
 		this.skillsManager = undefined
+		this.hooksService?.dispose()
+		this.hooksService = undefined
 		this.marketplaceManager?.cleanup()
 		this.customModesManager?.dispose()
 		this.log("Disposed all disposables")
@@ -2636,6 +2652,10 @@ export class ClineProvider
 
 	public getSkillsManager(): SkillsManager | undefined {
 		return this.skillsManager
+	}
+
+	public getHooksService(): HooksService | undefined {
+		return this.hooksService
 	}
 
 	/**
