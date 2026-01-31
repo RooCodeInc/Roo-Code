@@ -176,11 +176,13 @@ export const HooksSettings: React.FC = () => {
 			onDragEnd={handleDragEnd}
 			onDragCancel={handleDragCancel}>
 			<div>
-				<SectionHeader description="Hooks execute custom shell commands automatically when Roo uses specific tools. Use them to integrate with external systems, enforce workflows, or automate repetitive tasks.">
-					Hooks
-				</SectionHeader>
+				<SectionHeader>Hooks</SectionHeader>
 
 				<Section>
+					<p className="text-sm text-vscode-descriptionForeground mb-4">
+						Hooks execute custom shell commands automatically when Roo uses specific tools. Use them to
+						integrate with external systems, enforce workflows, or automate repetitive tasks.
+					</p>
 					{/* Global Enable Toggle */}
 					<SearchableSetting settingId="hooks-enable" section="hooks" label="Enable Hooks" className="mb-4">
 						<div className="flex items-center gap-2">

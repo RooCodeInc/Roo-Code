@@ -52,23 +52,6 @@ export const HookItem: React.FC<HookItemProps> = ({
 		transition,
 	}
 
-	// Get matcher badges for display
-	const getMatcherBadges = (): string[] => {
-		if (!hook.matchers) return []
-
-		if ("tools" in hook.matchers && hook.matchers.tools) {
-			return hook.matchers.tools
-		}
-
-		if ("sessionType" in hook.matchers && hook.matchers.sessionType) {
-			return hook.matchers.sessionType
-		}
-
-		return []
-	}
-
-	const matcherBadges = getMatcherBadges()
-
 	return (
 		<div
 			ref={setNodeRef}
@@ -105,19 +88,11 @@ export const HookItem: React.FC<HookItemProps> = ({
 				)}
 				{/* Hook name */}
 				<span className="font-mono text-sm text-vscode-foreground">{hook.name}</span>
-				{/* Matcher badges */}
-				{matcherBadges.length > 0 && (
-					<div className="flex gap-1">
-						<span className="text-xs bg-vscode-badge-background text-vscode-badge-foreground px-1.5 py-0.5 rounded">
-							{matcherBadges.join("|")}
-						</span>
-					</div>
-				)}
 				{/* Source badge */}
-				<span className="text-xs bg-vscode-badge-background text-vscode-badge-foreground px-1.5 py-0.5 rounded ml-auto">
+				<span className="text-xs bg-vscode-badge-background text-vscode-badge-foreground px-1.5 py-0.5 rounded">
 					{hook.source}
 				</span>
-				<div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+				<div className="flex items-center gap-1 ml-auto" onClick={(e) => e.stopPropagation()}>
 					<Button
 						variant="ghost"
 						size="icon"
