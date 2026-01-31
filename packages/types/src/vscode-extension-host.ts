@@ -618,6 +618,7 @@ export interface WebviewMessage {
 		| "hooks/reorder"
 		| "hooks/move"
 		| "hooks/openFolder"
+		| "hooks/openFile"
 		| "hooks/reload"
 	text?: string
 	editedMessageContent?: string

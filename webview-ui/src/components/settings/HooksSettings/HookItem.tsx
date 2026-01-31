@@ -1,12 +1,12 @@
 import React, { useState } from "react"
-import { ChevronDown, ChevronRight, GripVertical, Link2, Copy, Trash2, FolderOpen } from "lucide-react"
+import { ChevronDown, ChevronRight, GripVertical, Copy, Trash2, FileText } from "lucide-react"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 
 import type { HookWithMetadata } from "@roo-code/types"
 
 import { cn } from "@/lib/utils"
-import { Button, Checkbox } from "@/components/ui"
+import { Button, ToggleSwitch } from "@/components/ui"
 
 import { HookConfigTab } from "./HookConfigTab"
 import { HookCommandTab } from "./HookCommandTab"
@@ -97,20 +97,14 @@ export const HookItem: React.FC<HookItemProps> = ({
 					onClick={(e) => e.stopPropagation()}>
 					<GripVertical className="w-4 h-4" />
 				</div>
-
 				{/* Expand/collapse indicator */}
 				{isExpanded ? (
 					<ChevronDown className="w-4 h-4 text-vscode-foreground" />
 				) : (
 					<ChevronRight className="w-4 h-4 text-vscode-foreground" />
 				)}
-
-				{/* Link icon */}
-				<Link2 className="w-4 h-4 text-vscode-descriptionForeground" />
-
-				{/* Hook ID */}
-				<span className="font-mono text-sm text-vscode-foreground">{hook.id}</span>
-
+				{/* Hook name */}
+				<span className="font-mono text-sm text-vscode-foreground">{hook.name}</span>
 				{/* Matcher badges */}
 				{matcherBadges.length > 0 && (
 					<div className="flex gap-1">
@@ -119,20 +113,11 @@ export const HookItem: React.FC<HookItemProps> = ({
 						</span>
 					</div>
 				)}
-
 				{/* Source badge */}
-				<span className="text-xs text-vscode-descriptionForeground ml-auto">{hook.source}</span>
-
-				{/* Action buttons */}
+				<span className="text-xs bg-vscode-badge-background text-vscode-badge-foreground px-1.5 py-0.5 rounded ml-auto">
+					{hook.source}
+				</span>
 				<div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-					<Button
-						variant="ghost"
-						size="icon"
-						className="w-6 h-6 opacity-60 hover:opacity-100"
-						onClick={onCopy}
-						title="Copy hook">
-						<Copy className="w-3.5 h-3.5" />
-					</Button>
 					<Button
 						variant="ghost"
 						size="icon"
@@ -145,20 +130,41 @@ export const HookItem: React.FC<HookItemProps> = ({
 						variant="ghost"
 						size="icon"
 						className="w-6 h-6 opacity-60 hover:opacity-100"
+						onClick={onCopy}
+						title="Copy hook">
+						<Copy className="w-3.5 h-3.5" />
+					</Button>
+					<Button
+						variant="ghost"
+						size="icon"
+						className="w-6 h-6 opacity-60 hover:opacity-100"
 						onClick={onOpenFolder}
-						title="Open folder">
-						<FolderOpen className="w-3.5 h-3.5" />
+						title="Open in editor">
+						<FileText className="w-3.5 h-3.5" />
 					</Button>
 
+					{/* Status indicator */}
+					<div
+						style={{
+							width: "8px",
+							height: "8px",
+							borderRadius: "50%",
+							background: hook.enabled
+								? "var(--vscode-testing-iconPassed)"
+								: "var(--vscode-descriptionForeground)",
+							marginLeft: "4px",
+						}}
+						title={hook.enabled ? "Enabled" : "Disabled"}
+					/>
+
 					{/* Enable toggle */}
-					<div className="flex items-center ml-1">
-						<Checkbox
-							id={`hook-enabled-${hook.id}`}
-							checked={hook.enabled}
-							onCheckedChange={onToggleEnabled}
-							disabled={disabled}
-						/>
-					</div>
+					<ToggleSwitch
+						checked={hook.enabled}
+						onChange={onToggleEnabled}
+						disabled={disabled}
+						size="medium"
+						aria-label={`Toggle ${hook.id} hook`}
+					/>
 				</div>
 			</div>
 

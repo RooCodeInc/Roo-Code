@@ -4,6 +4,7 @@ import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core"
 
 import { hookEventTypes, type HookEventType, type HookWithMetadata } from "@roo-code/types"
 
+import { vscode } from "@/utils/vscode"
 import { Button, Checkbox } from "@/components/ui"
 
 import { SectionHeader } from "./SectionHeader"
@@ -133,36 +134,37 @@ export const HooksSettings: React.FC = () => {
 		}
 	}, [hookToDelete, deleteHook])
 
-	// Handler for copying hook configuration
+	// Handler for duplicating a hook
 	const handleCopyHook = useCallback(
 		(hookId: string) => {
 			const hook = hooks.find((h) => h.id === hookId)
 			if (hook) {
-				// Copy the hook configuration as JSON to clipboard
-				const hookConfig = {
-					id: hook.id,
+				// Generate a 10-character random hash
+				const randomHash = Math.random().toString(36).substring(2, 12)
+				const newId = `${hook.id}-${randomHash}`
+
+				// Create duplicated hook (starts disabled for safety)
+				const duplicatedHook: HookWithMetadata = {
+					id: newId,
 					name: hook.name,
-					enabled: hook.enabled,
+					enabled: false, // Duplicated hooks start disabled
 					action: hook.action,
 					matchers: hook.matchers,
+					eventType: hook.eventType,
+					source: hook.source,
 				}
-				navigator.clipboard
-					.writeText(JSON.stringify(hookConfig, null, 2))
-					.then(() => {
-						console.log(`[HooksSettings] Copied hook ${hookId} to clipboard`)
-					})
-					.catch((err) => {
-						console.error(`[HooksSettings] Failed to copy hook: ${err}`)
-					})
+
+				// Add the duplicated hook under the same event type
+				createHook(hook.eventType, duplicatedHook, hook.source)
+				console.log(`[HooksSettings] Duplicated hook ${hookId} as ${newId}`)
 			}
 		},
-		[hooks],
+		[hooks, createHook],
 	)
 
-	// Handler for opening hook folder (placeholder for Phase 5)
+	// Handler for opening hook file and scrolling to the hook definition
 	const handleOpenHookFolder = useCallback((hookId: string) => {
-		// Placeholder - in real implementation, this would open the folder containing the hook
-		console.log(`[HooksSettings] Open folder for hook: ${hookId}`)
+		vscode.postMessage({ type: "hooks/openFile", hookId })
 	}, [])
 
 	return (

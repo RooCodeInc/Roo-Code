@@ -3480,6 +3480,24 @@ export const webviewMessageHandler = async (
 			break
 		}
 
+		case "hooks/openFile": {
+			try {
+				const hooksService = provider.getHooksService()
+				if (!hooksService) {
+					throw new Error("HooksService not available")
+				}
+				if (!message.hookId) {
+					throw new Error("Missing required field: hookId")
+				}
+				await hooksService.openHookInEditor(message.hookId)
+			} catch (error) {
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				provider.log(`Error opening hook file: ${errorMessage}`)
+				await provider.postMessageToWebview({ type: "hooks/error", error: errorMessage })
+			}
+			break
+		}
+
 		case "hooks/reload": {
 			try {
 				const hooksService = provider.getHooksService()

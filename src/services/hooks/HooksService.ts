@@ -336,6 +336,44 @@ export class HooksService {
 	}
 
 	/**
+	 * Open the hooks file in the editor and scroll to a specific hook
+	 *
+	 * @param hookId - The ID of the hook to scroll to
+	 */
+	public async openHookInEditor(hookId: string): Promise<void> {
+		// Find the hook to determine its source file
+		const hooks = await this.loadHooks()
+		const hook = hooks.find((h) => h.id === hookId)
+
+		if (!hook) {
+			throw new Error(`Hook not found: ${hookId}`)
+		}
+
+		// Get the file path based on hook source
+		const filePath = this.getHooksFilePath(hook.source)
+		if (!filePath) {
+			throw new Error(`Cannot find hooks file for source: ${hook.source}`)
+		}
+
+		// Open the document
+		const uri = vscode.Uri.file(filePath)
+		const doc = await vscode.workspace.openTextDocument(uri)
+		const editor = await vscode.window.showTextDocument(doc)
+
+		// Search for the hook ID in the file and scroll to it
+		const text = doc.getText()
+		const hookIdPattern = `id: ${hookId}`
+		const position = text.indexOf(hookIdPattern)
+
+		if (position !== -1) {
+			const line = doc.positionAt(position).line
+			const range = new vscode.Range(line, 0, line, 0)
+			editor.revealRange(range, vscode.TextEditorRevealType.InCenter)
+			editor.selection = new vscode.Selection(line, 0, line, 0)
+		}
+	}
+
+	/**
 	 * Start watching hooks files for external changes
 	 */
 	public startWatching(): void {
