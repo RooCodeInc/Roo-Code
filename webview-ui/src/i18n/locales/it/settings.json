@@ -402,6 +402,8 @@
 		"getXaiApiKey": "Ottieni chiave API xAI",
 		"litellmApiKey": "Chiave API LiteLLM",
 		"litellmBaseUrl": "URL base LiteLLM",
+		"litellmFlattenContent": "Appiattisci contenuto messaggi",
+		"litellmFlattenContentDescription": "Converte il contenuto dei messaggi in formato array in stringhe semplici. Abilita questa opzione per la compatibilità con auto_router di LiteLLM e le funzionalità di routing basate su embedding. Disabilita solo se hai bisogno di contenuti multimodali (immagini).",
 		"awsCredentials": "Credenziali AWS",
 		"awsProfile": "Profilo AWS",
 		"awsApiKey": "Chiave API Amazon Bedrock",

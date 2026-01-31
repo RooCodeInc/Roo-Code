@@ -402,6 +402,8 @@
 		"getXaiApiKey": "xAI API-Schlüssel erhalten",
 		"litellmApiKey": "LiteLLM API-Schlüssel",
 		"litellmBaseUrl": "LiteLLM Basis-URL",
+		"litellmFlattenContent": "Nachrichteninhalt abflachen",
+		"litellmFlattenContentDescription": "Konvertiert Array-formatierten Nachrichteninhalt in einfache Zeichenketten. Aktivieren Sie dies für die Kompatibilität mit LiteLLMs auto_router und Embedding-basierten Routing-Funktionen. Deaktivieren Sie es nur, wenn Sie multimodale Inhalte (Bilder) benötigen.",
 		"awsCredentials": "AWS Anmeldedaten",
 		"awsProfile": "AWS Profil",
 		"awsApiKey": "Amazon Bedrock API-Schlüssel",

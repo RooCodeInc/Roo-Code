@@ -406,6 +406,8 @@
 		"getXaiApiKey": "Dapatkan xAI API Key",
 		"litellmApiKey": "LiteLLM API Key",
 		"litellmBaseUrl": "LiteLLM Base URL",
+		"litellmFlattenContent": "Ratakan konten pesan",
+		"litellmFlattenContentDescription": "Mengubah konten pesan berformat array menjadi string teks biasa. Aktifkan untuk kompatibilitas dengan auto_router LiteLLM dan fitur routing berbasis embedding. Nonaktifkan hanya jika Anda memerlukan konten multimodal (gambar).",
 		"awsCredentials": "AWS Credentials",
 		"awsProfile": "AWS Profile",
 		"awsApiKey": "Kunci API Amazon Bedrock",

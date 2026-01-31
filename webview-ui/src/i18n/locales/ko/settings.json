@@ -402,6 +402,8 @@
 		"getXaiApiKey": "xAI API 키 받기",
 		"litellmApiKey": "LiteLLM API 키",
 		"litellmBaseUrl": "LiteLLM 기본 URL",
+		"litellmFlattenContent": "메시지 콘텐츠 평탄화",
+		"litellmFlattenContentDescription": "배열 형식의 메시지 콘텐츠를 일반 문자열로 변환합니다. LiteLLM의 auto_router 및 임베딩 기반 라우팅 기능과의 호환성을 위해 활성화하세요. 멀티모달 콘텐츠(이미지)가 필요한 경우에만 비활성화하세요.",
 		"awsCredentials": "AWS 자격 증명",
 		"awsProfile": "AWS 프로필",
 		"awsApiKey": "Amazon Bedrock API 키",

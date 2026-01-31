@@ -402,6 +402,8 @@
 		"getXaiApiKey": "Lấy khóa API xAI",
 		"litellmApiKey": "Khóa API LiteLLM",
 		"litellmBaseUrl": "URL cơ sở LiteLLM",
+		"litellmFlattenContent": "Làm phẳng nội dung tin nhắn",
+		"litellmFlattenContentDescription": "Chuyển đổi nội dung tin nhắn định dạng mảng thành chuỗi văn bản thuần. Bật tùy chọn này để tương thích với auto_router của LiteLLM và các tính năng định tuyến dựa trên embedding. Chỉ tắt nếu bạn cần nội dung đa phương thức (hình ảnh).",
 		"awsCredentials": "Thông tin xác thực AWS",
 		"awsProfile": "Hồ sơ AWS",
 		"awsApiKey": "Khóa API Amazon Bedrock",
