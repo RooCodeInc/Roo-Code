@@ -1010,6 +1010,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 						)}
 
 						<div
+							dir="auto"
 							className={cn(
 								"relative",
 								"flex-1",

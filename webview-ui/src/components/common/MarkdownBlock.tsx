@@ -304,7 +304,7 @@ const MarkdownBlock = memo(({ markdown }: MarkdownBlockProps) => {
 	)
 
 	return (
-		<StyledMarkdown>
+		<StyledMarkdown dir="auto">
 			<ReactMarkdown
 				remarkPlugins={[
 					remarkGfm,

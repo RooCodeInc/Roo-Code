@@ -32,7 +32,9 @@ export const CheckpointWarning = ({ warning }: CheckpointWarningProps) => {
 		warning.type === "WAIT_TIMEOUT" ? "errors.wait_checkpoint_long_time" : "errors.init_checkpoint_fail_long_time"
 
 	return (
-		<div className="flex items-center p-3 my-3 bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder rounded">
+		<div
+			dir="auto"
+			className="flex items-center p-3 my-3 bg-vscode-inputValidation-warningBackground border border-vscode-inputValidation-warningBorder rounded">
 			<span className="codicon codicon-loading codicon-modifier-spin mr-2" />
 			<span className="text-vscode-foreground">
 				<Trans
