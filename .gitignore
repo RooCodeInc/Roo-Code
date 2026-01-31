@@ -35,6 +35,9 @@ docs/_site/
 logs
 *.log
 
+# Oncall incident logs
+incidents/
+
 # Vite development
 .vite-port
 
