@@ -63,6 +63,7 @@ const extensions = [
 	// HTML
 	"html",
 	"htm",
+	"xml",
 	// Markdown
 	"md",
 	"markdown",

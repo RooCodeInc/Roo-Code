@@ -14,6 +14,7 @@ import {
 	javaQuery,
 	phpQuery,
 	htmlQuery,
+	xmlQuery,
 	swiftQuery,
 	kotlinQuery,
 	cssQuery,
@@ -165,6 +166,10 @@ export async function loadRequiredLanguageParsers(filesToParse: string[], source
 			case "html":
 				language = await loadLanguage("html", sourceDirectory)
 				query = new Query(language, htmlQuery)
+				break
+			case "xml":
+				language = await loadLanguage("xml", sourceDirectory)
+				query = new Query(language, xmlQuery)
 				break
 			case "ml":
 			case "mli":
