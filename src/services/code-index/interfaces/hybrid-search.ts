@@ -114,7 +114,7 @@ export interface HybridSearchResult {
  * Default configuration for hybrid search
  */
 export const DEFAULT_HYBRID_SEARCH_CONFIG: HybridSearchConfig = {
-	enabled: false,
+	enabled: true,
 	semanticWeight: 0.5,
 	keywordWeight: 0.5,
 	fusionMethod: "rrf",

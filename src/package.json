@@ -344,7 +344,7 @@
 				},
 				"roo-cline.preventCompletionWithOpenTodos": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "%commands.preventCompletionWithOpenTodos.description%"
 				},
 				"roo-cline.vsCodeLmModelSelector": {
@@ -397,7 +397,7 @@
 				},
 				"roo-cline.newTaskRequireTodos": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "%settings.newTaskRequireTodos.description%"
 				},
 				"roo-cline.codeIndex.embeddingBatchSize": {
@@ -409,12 +409,12 @@
 				},
 				"roo-cline.debug": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "%settings.debug.description%"
 				},
 				"roo-cline.debugProxy.enabled": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "%settings.debugProxy.enabled.description%",
 					"markdownDescription": "%settings.debugProxy.enabled.description%"
 				},
@@ -426,9 +426,83 @@
 				},
 				"roo-cline.debugProxy.tlsInsecure": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "%settings.debugProxy.tlsInsecure.description%",
 					"markdownDescription": "%settings.debugProxy.tlsInsecure.description%"
+				},
+				"roo-cline.codeIndex.hybridSearch": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"default": true,
+							"description": "%settings.codeIndex.hybridSearch.enabled.description%"
+						},
+						"semanticWeight": {
+							"type": "number",
+							"default": 0.7,
+							"minimum": 0,
+							"maximum": 1,
+							"description": "%settings.codeIndex.hybridSearch.semanticWeight.description%"
+						},
+						"keywordWeight": {
+							"type": "number",
+							"default": 0.3,
+							"minimum": 0,
+							"maximum": 1,
+							"description": "%settings.codeIndex.hybridSearch.keywordWeight.description%"
+						},
+						"rrfK": {
+							"type": "number",
+							"default": 60,
+							"minimum": 1,
+							"maximum": 100,
+							"description": "%settings.codeIndex.hybridSearch.rrfK.description%"
+						}
+					},
+					"description": "%settings.codeIndex.hybridSearch.description%"
+				},
+				"roo-cline.codeIndex.adaptiveChunking": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"default": true,
+							"description": "%settings.codeIndex.adaptiveChunking.enabled.description%"
+						},
+						"strategy": {
+							"type": "string",
+							"enum": [
+								"syntactic",
+								"semantic",
+								"balanced"
+							],
+							"default": "balanced",
+							"description": "%settings.codeIndex.adaptiveChunking.strategy.description%"
+						}
+					},
+					"description": "%settings.codeIndex.adaptiveChunking.description%"
+				},
+				"roo-cline.context.compression": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"default": true,
+							"description": "%settings.context.compression.enabled.description%"
+						},
+						"strategy": {
+							"type": "string",
+							"enum": [
+								"aggressive",
+								"balanced",
+								"preservative"
+							],
+							"default": "balanced",
+							"description": "%settings.context.compression.strategy.description%"
+						}
+					},
+					"description": "%settings.context.compression.description%"
 				}
 			}
 		}

@@ -72,7 +72,7 @@ export interface Chunk {
  * Default chunking configuration
  */
 export const DEFAULT_CHUNKING_CONFIG: ChunkingConfig = {
-	enabled: false,
+	enabled: true,
 	strategy: "balanced",
 	maxChunkSize: 2000,
 	minChunkSize: 200,
