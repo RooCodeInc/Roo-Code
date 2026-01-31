@@ -506,11 +506,7 @@
 				"family": "Keluarga",
 				"images": "Gambar",
 				"yes": "Ya",
-				"no": "Tidak",
-				"sizeFormatting": {
-					"gb": "GB",
-					"mb": "MB"
-				}
+				"no": "Tidak"
 			},
 			"streaming": "Streaming",
 			"streamingHelp": "Streaming selalu diaktifkan untuk permintaan API Ollama. Respons di-stream secara real-time saat dibuat.",

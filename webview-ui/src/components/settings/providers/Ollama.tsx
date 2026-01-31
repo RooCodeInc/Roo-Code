@@ -15,9 +15,9 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useRouterModels } from "@src/components/ui/hooks/useRouterModels"
 import { vscode } from "@src/utils/vscode"
 import { Button } from "@src/components/ui/button"
+import prettyBytes from "pretty-bytes"
 
 import { inputEventTransform } from "../transforms"
-import { ModelPicker } from "../ModelPicker"
 
 type OllamaProps = {
 	apiConfiguration: ProviderSettings
@@ -382,47 +382,36 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 									</tr>
 								</thead>
 								<tbody>
-									{sortedModelsWithTools.map((model) => {
-										const formatSize = (bytes?: number): string => {
-											if (!bytes) return "-"
-											const gb = bytes / (1024 * 1024 * 1024)
-											if (gb >= 1) {
-												return `${gb.toFixed(1)} ${t("settings:providers.ollama.table.sizeFormatting.gb")}`
-											}
-											const mb = bytes / (1024 * 1024)
-											return `${mb.toFixed(1)} ${t("settings:providers.ollama.table.sizeFormatting.mb")}`
-										}
-										return (
-											<tr
-												key={model.name}
-												className="border-b border-vscode-foreground/5 hover:bg-vscode-foreground/5">
-												<td className="py-2 px-3">
-													<VSCodeRadio
-														value={model.name}
-														checked={apiConfiguration?.ollamaModelId === model.name}>
-														{model.name}
-													</VSCodeRadio>
-												</td>
-												<td className="py-2 px-3 text-vscode-descriptionForeground">
-													{model.contextWindow.toLocaleString()}
-												</td>
-												<td className="py-2 px-3 text-vscode-descriptionForeground">
-													{formatSize(model.size)}
-												</td>
-												<td className="py-2 px-3 text-vscode-descriptionForeground">
-													{model.quantizationLevel || "-"}
-												</td>
-												<td className="py-2 px-3 text-vscode-descriptionForeground">
-													{model.family || "-"}
-												</td>
-												<td className="py-2 px-3 text-vscode-descriptionForeground">
-													{model.supportsImages
-														? t("settings:providers.ollama.table.yes")
-														: t("settings:providers.ollama.table.no")}
-												</td>
-											</tr>
-										)
-									})}
+									{sortedModelsWithTools.map((model) => (
+										<tr
+											key={model.name}
+											className="border-b border-vscode-foreground/5 hover:bg-vscode-foreground/5">
+											<td className="py-2 px-3">
+												<VSCodeRadio
+													value={model.name}
+													checked={apiConfiguration?.ollamaModelId === model.name}>
+													{model.name}
+												</VSCodeRadio>
+											</td>
+											<td className="py-2 px-3 text-vscode-descriptionForeground">
+												{model.contextWindow.toLocaleString()}
+											</td>
+											<td className="py-2 px-3 text-vscode-descriptionForeground">
+												{model.size ? prettyBytes(model.size) : "-"}
+											</td>
+											<td className="py-2 px-3 text-vscode-descriptionForeground">
+												{model.quantizationLevel || "-"}
+											</td>
+											<td className="py-2 px-3 text-vscode-descriptionForeground">
+												{model.family || "-"}
+											</td>
+											<td className="py-2 px-3 text-vscode-descriptionForeground">
+												{model.supportsImages
+													? t("settings:providers.ollama.table.yes")
+													: t("settings:providers.ollama.table.no")}
+											</td>
+										</tr>
+									))}
 								</tbody>
 							</table>
 						</div>

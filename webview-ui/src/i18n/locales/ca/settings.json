@@ -502,11 +502,7 @@
 				"family": "Família",
 				"images": "Imatges",
 				"yes": "Sí",
-				"no": "No",
-				"sizeFormatting": {
-					"gb": "GB",
-					"mb": "MB"
-				}
+				"no": "No"
 			},
 			"streaming": "Transmissió",
 			"streamingHelp": "La transmissió sempre està habilitada per a les sol·licituds de l'API d'Ollama. Les respostes es transmeten en temps real mentre es generen.",

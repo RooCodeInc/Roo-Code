@@ -502,11 +502,7 @@
 				"family": "Familie",
 				"images": "Bilder",
 				"yes": "Ja",
-				"no": "Nein",
-				"sizeFormatting": {
-					"gb": "GB",
-					"mb": "MB"
-				}
+				"no": "Nein"
 			},
 			"streaming": "Streaming",
 			"streamingHelp": "Streaming ist für Ollama API-Anfragen immer aktiviert. Antworten werden in Echtzeit gestreamt, während sie generiert werden.",

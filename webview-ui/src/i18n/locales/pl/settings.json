@@ -504,11 +504,7 @@
 				"family": "Rodzina",
 				"images": "Obrazy",
 				"yes": "Tak",
-				"no": "Nie",
-				"sizeFormatting": {
-					"gb": "GB",
-					"mb": "MB"
-				}
+				"no": "Nie"
 			},
 			"streaming": "Przesyłanie strumieniowe",
 			"streamingHelp": "Przesyłanie strumieniowe jest zawsze włączone dla żądań API Ollama. Odpowiedzi są przesyłane strumieniowo w czasie rzeczywistym podczas generowania.",

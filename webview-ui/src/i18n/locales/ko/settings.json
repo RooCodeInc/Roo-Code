@@ -502,11 +502,7 @@
 				"family": "패밀리",
 				"images": "이미지",
 				"yes": "예",
-				"no": "아니오",
-				"sizeFormatting": {
-					"gb": "GB",
-					"mb": "MB"
-				}
+				"no": "아니오"
 			},
 			"streaming": "스트리밍",
 			"streamingHelp": "Ollama API 요청에 대해 스트리밍이 항상 활성화되어 있습니다. 응답은 생성되는 대로 실시간으로 스트리밍됩니다.",

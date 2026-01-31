@@ -502,11 +502,7 @@
 				"family": "Famille",
 				"images": "Images",
 				"yes": "Oui",
-				"no": "Non",
-				"sizeFormatting": {
-					"gb": "Go",
-					"mb": "Mo"
-				}
+				"no": "Non"
 			},
 			"streaming": "Diffusion en continu",
 			"streamingHelp": "La diffusion en continu est toujours activée pour les requêtes API Ollama. Les réponses sont diffusées en temps réel au fur et à mesure de leur génération.",

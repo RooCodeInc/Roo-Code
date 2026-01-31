@@ -502,11 +502,7 @@
 				"family": "Họ",
 				"images": "Hình ảnh",
 				"yes": "Có",
-				"no": "Không",
-				"sizeFormatting": {
-					"gb": "GB",
-					"mb": "MB"
-				}
+				"no": "Không"
 			},
 			"streaming": "Phát trực tuyến",
 			"streamingHelp": "Phát trực tuyến luôn được bật cho các yêu cầu API Ollama. Phản hồi được phát trực tuyến theo thời gian thực khi chúng được tạo.",

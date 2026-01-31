@@ -502,11 +502,7 @@
 				"family": "Aile",
 				"images": "Görüntüler",
 				"yes": "Evet",
-				"no": "Hayır",
-				"sizeFormatting": {
-					"gb": "GB",
-					"mb": "MB"
-				}
+				"no": "Hayır"
 			},
 			"streaming": "Akış",
 			"streamingHelp": "Ollama API istekleri için akış her zaman etkindir. Yanıtlar oluşturuldukça gerçek zamanlı olarak akışa alınır.",

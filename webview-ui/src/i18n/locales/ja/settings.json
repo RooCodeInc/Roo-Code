@@ -502,11 +502,7 @@
 				"family": "ファミリー",
 				"images": "画像",
 				"yes": "はい",
-				"no": "いいえ",
-				"sizeFormatting": {
-					"gb": "GB",
-					"mb": "MB"
-				}
+				"no": "いいえ"
 			},
 			"streaming": "ストリーミング",
 			"streamingHelp": "Ollama APIリクエストではストリーミングが常に有効です。応答は生成されると同時にリアルタイムでストリーミングされます。",
