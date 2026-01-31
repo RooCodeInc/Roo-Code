@@ -7,6 +7,7 @@
 		"already_exists": "L'habilitat \"{{name}}\" ja existeix a {{path}}",
 		"not_found": "No s'ha trobat l'habilitat \"{{name}}\" a {{source}}{{modeInfo}}",
 		"missing_create_fields": "Falten camps obligatoris: skillName, source o skillDescription",
+		"missing_move_fields": "Falten camps obligatoris: skillName o source",
 		"manager_unavailable": "El gestor d'habilitats no està disponible",
 		"missing_delete_fields": "Falten camps obligatoris: skillName o source",
 		"skill_not_found": "No s'ha trobat l'habilitat \"{{name}}\"",

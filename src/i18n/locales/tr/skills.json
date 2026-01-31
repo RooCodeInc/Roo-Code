@@ -7,6 +7,7 @@
 		"already_exists": "\"{{name}}\" becerisi zaten {{path}} konumunda mevcut",
 		"not_found": "\"{{name}}\" becerisi {{source}}{{modeInfo}} içinde bulunamadı",
 		"missing_create_fields": "Gerekli alanlar eksik: skillName, source veya skillDescription",
+		"missing_move_fields": "Gerekli alanlar eksik: skillName veya source",
 		"manager_unavailable": "Beceri yöneticisi kullanılamıyor",
 		"missing_delete_fields": "Gerekli alanlar eksik: skillName veya source",
 		"skill_not_found": "\"{{name}}\" becerisi bulunamadı",

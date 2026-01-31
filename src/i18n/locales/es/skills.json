@@ -7,6 +7,7 @@
 		"already_exists": "La habilidad \"{{name}}\" ya existe en {{path}}",
 		"not_found": "No se encontró la habilidad \"{{name}}\" en {{source}}{{modeInfo}}",
 		"missing_create_fields": "Faltan campos obligatorios: skillName, source o skillDescription",
+		"missing_move_fields": "Faltan campos obligatorios: skillName o source",
 		"manager_unavailable": "El gestor de habilidades no está disponible",
 		"missing_delete_fields": "Faltan campos obligatorios: skillName o source",
 		"skill_not_found": "No se encontró la habilidad \"{{name}}\"",

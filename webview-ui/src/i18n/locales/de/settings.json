@@ -1003,6 +1003,8 @@
 		"addSkill": "Skill hinzufügen",
 		"editSkill": "Skill bearbeiten",
 		"deleteSkill": "Skill löschen",
+		"changeMode": "Modus ändern",
+		"modeAny": "Beliebiger Modus",
 		"deleteDialog": {
 			"title": "Skill löschen",
 			"description": "Sind Sie sicher, dass Sie die Skill \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",

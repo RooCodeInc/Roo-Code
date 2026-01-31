@@ -1003,6 +1003,8 @@
 		"addSkill": "Añadir Skill",
 		"editSkill": "Editar skill",
 		"deleteSkill": "Eliminar skill",
+		"changeMode": "Cambiar modo",
+		"modeAny": "Cualquier modo",
 		"deleteDialog": {
 			"title": "Eliminar Skill",
 			"description": "¿Estás seguro de que quieres eliminar la skill \"{{name}}\"? Esta acción no se puede deshacer.",

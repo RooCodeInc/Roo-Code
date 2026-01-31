@@ -7,6 +7,7 @@
 		"already_exists": "スキル「{{name}}」は既に{{path}}に存在します",
 		"not_found": "スキル「{{name}}」が{{source}}{{modeInfo}}に見つかりません",
 		"missing_create_fields": "必須フィールドが不足しています：skillName、source、またはskillDescription",
+		"missing_move_fields": "必須フィールドが不足しています：skillNameまたはsource",
 		"manager_unavailable": "スキルマネージャーが利用できません",
 		"missing_delete_fields": "必須フィールドが不足しています：skillNameまたはsource",
 		"skill_not_found": "スキル「{{name}}」が見つかりません",

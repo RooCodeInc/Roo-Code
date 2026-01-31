@@ -7,6 +7,7 @@
 		"already_exists": "Kỹ năng \"{{name}}\" đã tồn tại tại {{path}}",
 		"not_found": "Không tìm thấy kỹ năng \"{{name}}\" trong {{source}}{{modeInfo}}",
 		"missing_create_fields": "Thiếu các trường bắt buộc: skillName, source hoặc skillDescription",
+		"missing_move_fields": "Thiếu các trường bắt buộc: skillName hoặc source",
 		"manager_unavailable": "Trình quản lý kỹ năng không khả dụng",
 		"missing_delete_fields": "Thiếu các trường bắt buộc: skillName hoặc source",
 		"skill_not_found": "Không tìm thấy kỹ năng \"{{name}}\"",

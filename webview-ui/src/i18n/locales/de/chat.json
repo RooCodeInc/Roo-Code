@@ -344,7 +344,9 @@
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"smartCodeFolding": "Intelligentes Code-Folding: Kontextkomprimierung bewahrt jetzt eine leichte Karte deiner Dateien—Funktionssignaturen, Klassendeklarationen und Typdefinitionen. Dies ermöglicht bessere Kontinuität nach der Komprimierung und intelligentere Bearbeitungen beim Verweisen auf vorherige Arbeiten."
+			"parallelTools": "Parallele Tool-Aufrufe: Tools werden jetzt standardmäßig parallel ausgeführt und beschleunigen Dateioperationen und komplexe Aufgaben erheblich.",
+			"readFileIndentation": "Intelligenteres Dateienlesen: Neuer Indentationsmodus extrahiert komplette semantische Codeblöcke (Funktionen, Klassen) ohne Unterbrechung in der Mitte—ideal für die Arbeit mit spezifischen Zeilen aus Suchergebnissen.",
+			"readCommandOutput": "Verlustfreie Terminalausgabe: Neues read_command_output-Tool ruft vollständige Befehlsausgabe aus abgekürzten Ausführungen mit Paginierung und Regex-Filterung ab."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",

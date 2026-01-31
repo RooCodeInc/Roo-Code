@@ -7,6 +7,7 @@
 		"already_exists": "La compétence \"{{name}}\" existe déjà à {{path}}",
 		"not_found": "Compétence \"{{name}}\" introuvable dans {{source}}{{modeInfo}}",
 		"missing_create_fields": "Champs obligatoires manquants : skillName, source ou skillDescription",
+		"missing_move_fields": "Champs obligatoires manquants : skillName ou source",
 		"manager_unavailable": "Le gestionnaire de compétences n'est pas disponible",
 		"missing_delete_fields": "Champs obligatoires manquants : skillName ou source",
 		"skill_not_found": "Compétence \"{{name}}\" introuvable",
