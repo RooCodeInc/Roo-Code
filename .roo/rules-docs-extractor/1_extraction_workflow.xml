@@ -1,163 +1,113 @@
 <extraction_workflow>
-  <mode_overview>
-    The Docs Extractor mode has exactly two workflow paths:
-    1) Verify provided documentation for factual accuracy against the codebase
-    2) Generate source material for user-facing docs about a requested feature or aspect of the codebase
+  <overview>
+    Extract raw facts from a codebase about a feature or aspect.
+    Output is structured data for documentation teams to use.
+    Do NOT write documentation. Do NOT format prose. Do NOT make structure decisions.
+  </overview>
 
-    Outputs are designed to support explanatory documentation (not merely descriptive):
-    - Capture why users need steps and why certain actions are restricted
-    - Surface constraints, limitations, and trade‑offs
-    - Provide troubleshooting playbooks (symptoms → causes → fixes → prevention)
-    - Recommend targeted visuals for complex states (not step‑by‑step screenshots)
-
-    This mode does not generate final user documentation; it produces verification and source-material reports for docs teams.
-  </mode_overview>
-
-  <initialization_phase>
+  <process>
     <step number="1">
-      <title>Parse Request</title>
+      <title>Identify Target</title>
       <actions>
-        <action>Identify the feature/aspect in the user's request.</action>
-        <action>Decide path: verification vs. source-material generation.</action>
-        <action>For source-material: capture audience (user or developer) and depth (overview vs task-focused).</action>
-        <action>For verification: identify the documentation to be verified (provided text/links/files).</action>
-        <action>Note any specific areas to emphasize or check.</action>
+        <action>Parse the user's request to identify the feature/aspect</action>
+        <action>Clarify scope if ambiguous (ask one question max)</action>
       </actions>
     </step>
 
     <step number="2">
-      <title>Discover Feature</title>
+      <title>Discover Code</title>
       <actions>
-        <action>Locate relevant code and assets using appropriate discovery methods.</action>
-        <action>Identify entry points and key components that affect user experience.</action>
-        <action>Map the high-level workflow a user follows.</action>
+        <action>Use codebase_search to find relevant files</action>
+        <action>Identify entry points, components, and related code</action>
+        <action>Map the boundaries of the feature</action>
       </actions>
     </step>
-  </initialization_phase>
 
-  <analysis_focus>
-    <area>UI components and their interactions</area>
-    <area>User workflows and decision points</area>
-    <area>Configuration that changes user-visible behavior</area>
-    <area>Error states, messages, and recovery</area>
-    <area>Benefits, limits, prerequisites, and version notes</area>
-    <area>Why this exists: user goals, constraints, and design intent</area>
-    <area>“Cannot do” boundaries: permissions, invariants, and business rules</area>
-    <area>Troubleshooting: symptoms, likely causes, diagnostics, fixes, prevention</area>
-    <area>Common pitfalls and anti‑patterns (what to avoid and why)</area>
-    <area>Decision rationale and trade‑offs that affect user choices</area>
-    <area>Complex UI states that merit visuals (criteria for screenshots/diagrams)</area>
-  </analysis_focus>
+    <step number="3">
+      <title>Extract Facts</title>
+      <actions>
+        <action>Read code and extract facts into categories (see fact_categories)</action>
+        <action>Record file paths as sources for each fact</action>
+        <action>Do NOT interpret, summarize, or explain - just extract</action>
+      </actions>
+    </step>
 
-  <workflow_paths>
-    <path name="source_material">
-      <title>Generate Source Material for User-Facing Docs</title>
-      <description>Extract concise, user-oriented facts and structure them for documentation teams.</description>
-      <steps>
-        <step number="1">
-          <title>Scope and Audience</title>
-          <actions>
-            <action>Confirm the feature/aspect and intended audience.</action>
-            <action>List primary tasks the audience performs with this feature.</action>
-          </actions>
-        </step>
-        <step number="2">
-          <title>Extract User-Facing Facts</title>
-          <actions>
-            <action>Summarize what the feature does and key benefits.</action>
-            <action>Explain why users need this (jobs-to-be-done, outcomes) and when to use it.</action>
-            <action>Document step-by-step user workflows and UI interactions.</action>
-            <action>Capture configuration options that impact user behavior (name, default, effect).</action>
-            <action>Clarify constraints, limits, and “cannot do” cases with rationale.</action>
-            <action>Identify common pitfalls and anti-patterns; include “Do/Don’t” guidance.</action>
-            <action>List common errors with user-facing messages, diagnostics, fixes, and prevention.</action>
-            <action>Record prerequisites, permissions, and compatibility/version notes.</action>
-            <action>Flag complex states that warrant visuals (what to show and why), not every step.</action>
-          </actions>
-        </step>
-        <step number="3">
-          <title>Create Source Material Report</title>
-          <actions>
-            <action>Organize findings using user-focused structure (benefits, use cases, how it works, configuration, FAQ, troubleshooting).</action>
-            <action>Include short code/UI snippets or paths where relevant.</action>
-            <action>Create `EXTRACTION-[feature].md` with findings.</action>
-            <action>Highlight items that need visuals (screenshots/diagrams).</action>
-          </actions>
-          <output_format>
-            - Executive summary of the feature/aspect
-            - Why it matters (goals, value, when to use)
-            - User workflows and interactions
-            - Configuration and setup affecting users (with defaults and impact)
-            - Constraints and limitations (with rationale)
-            - Common scenarios and troubleshooting playbooks (symptoms → causes → fixes → prevention)
-            - Do/Don’t and anti‑patterns
-            - Recommended visuals (what complex states to illustrate and why)
-            - FAQ and tips
-            - Version/compatibility notes
-          </output_format>
-        </step>
-      </steps>
-    </path>
+    <step number="4">
+      <title>Output Structured Data</title>
+      <actions>
+        <action>Write extraction to .roo/extraction/EXTRACT-[feature].yaml</action>
+        <action>Use the output schema (see output_format.xml)</action>
+      </actions>
+    </step>
+  </process>
 
-    <path name="verification">
-      <title>Verify Documentation Accuracy</title>
-      <description>Check provided documentation against codebase reality and actual UX.</description>
-      <steps>
-        <step number="1">
-          <title>Analyze Provided Documentation</title>
-          <actions>
-            <action>Parse the documentation to identify claims and descriptions.</action>
-            <action>Extract technical or user-facing specifics mentioned.</action>
-            <action>Note workflows, configuration, and examples described.</action>
-          </actions>
-        </step>
-        <step number="2">
-          <title>Verify Against Codebase</title>
-          <actions>
-            <action>Check claims against actual implementation and UX.</action>
-            <action>Verify endpoints/parameters if referenced.</action>
-            <action>Confirm configuration options and defaults.</action>
-            <action>Validate code snippets and examples.</action>
-            <action>Ensure described workflows match implementation.</action>
-          </actions>
-        </step>
-        <step number="3">
-          <title>Create Verification Report</title>
-          <actions>
-            <action>Categorize findings by severity (Critical, Major, Minor).</action>
-            <action>List inaccuracies with the correct information.</action>
-            <action>Identify missing important information.</action>
-            <action>Provide specific corrections and suggestions.</action>
-            <action>Create `VERIFICATION-[feature].md` with findings.</action>
-          </actions>
-          <output_format>
-            - Verification summary (Accurate/Needs Updates)
-            - Critical inaccuracies that could mislead users
-            - Corrections and missing information
-            - Explanatory gaps (missing “why”, constraints, or decision rationale)
-            - Troubleshooting coverage gaps (missing symptoms/diagnostics/fixes/prevention)
-            - Visual recommendations (which complex states warrant screenshots/diagrams)
-            - Suggestions for clarity improvements
-          </output_format>
-        </step>
-      </steps>
-    </path>
-  </workflow_paths>
+  <fact_categories>
+    <category name="identity">
+      <extracts>
+        <extract>Feature name as it appears in code</extract>
+        <extract>File paths where feature is implemented</extract>
+        <extract>Entry points (commands, UI elements, API endpoints)</extract>
+      </extracts>
+    </category>
 
-  <completion_criteria>
-    <for_source_material>
-      <criterion>Audience and scope captured</criterion>
-      <criterion>User workflows and UI interactions documented</criterion>
-      <criterion>User-impacting configuration recorded</criterion>
-      <criterion>Common errors and troubleshooting documented</criterion>
-      <criterion>Report organized for documentation team use</criterion>
-    </for_source_material>
-    <for_verification>
-      <criterion>All documentation claims verified</criterion>
-      <criterion>Inaccuracies identified and corrected</criterion>
-      <criterion>Missing information noted</criterion>
-      <criterion>Suggestions for improvement provided</criterion>
-      <criterion>Clear verification report created</criterion>
-    </for_verification>
-  </completion_criteria>
+    <category name="behavior">
+      <extracts>
+        <extract>What the feature does (from code logic)</extract>
+        <extract>Inputs it accepts</extract>
+        <extract>Outputs it produces</extract>
+        <extract>Side effects (files created, state changed, etc.)</extract>
+      </extracts>
+    </category>
+
+    <category name="configuration">
+      <extracts>
+        <extract>Settings/options that affect behavior</extract>
+        <extract>Default values</extract>
+        <extract>Valid ranges or allowed values</extract>
+        <extract>Where configured (settings file, env var, UI)</extract>
+      </extracts>
+    </category>
+
+    <category name="constraints">
+      <extracts>
+        <extract>Prerequisites and dependencies</extract>
+        <extract>Limitations (what it cannot do)</extract>
+        <extract>Permissions required</extract>
+        <extract>Compatibility requirements</extract>
+      </extracts>
+    </category>
+
+    <category name="errors">
+      <extracts>
+        <extract>Error conditions in code</extract>
+        <extract>Error messages (exact text)</extract>
+        <extract>Recovery paths in code</extract>
+      </extracts>
+    </category>
+
+    <category name="ui">
+      <extracts>
+        <extract>UI components involved</extract>
+        <extract>User-visible labels and text</extract>
+        <extract>Interaction patterns</extract>
+      </extracts>
+    </category>
+
+    <category name="integration">
+      <extracts>
+        <extract>Other features this interacts with</extract>
+        <extract>External APIs or services called</extract>
+        <extract>Events emitted or consumed</extract>
+      </extracts>
+    </category>
+  </fact_categories>
+
+  <rules>
+    <rule>Extract facts, not opinions</rule>
+    <rule>Include source file paths for every fact</rule>
+    <rule>Use code identifiers and exact strings from source</rule>
+    <rule>Do NOT paraphrase - quote when possible</rule>
+    <rule>Do NOT decide what's important - extract everything relevant</rule>
+    <rule>Do NOT format for end users - output is for docs team</rule>
+  </rules>
 </extraction_workflow>

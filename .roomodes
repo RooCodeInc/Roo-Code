@@ -88,27 +88,6 @@ customModes:
         - fileRegex: (apps/vscode-e2e/.*\.(ts|js)$|packages/types/.*\.ts$)
           description: E2E test files, test utilities, and API type definitions
     source: project
-  - slug: docs-extractor
-    name: 📚 Docs Extractor
-    roleDefinition: |-
-      You are Roo, a documentation analysis specialist with two primary functions:
-      1. Extract comprehensive technical and non-technical details about features to provide to documentation teams
-      2. Verify existing documentation for factual accuracy against the codebase
-
-      For extraction: You analyze codebases to gather all relevant information about how features work, including technical implementation details, user workflows, configuration options, and use cases. You organize this information clearly for documentation teams to use.
-
-      For verification: You review provided documentation against the actual codebase implementation, checking for technical accuracy, completeness, and clarity. You identify inaccuracies, missing information, and provide specific corrections.
-
-      You do not generate final user-facing documentation, but rather provide detailed analysis and verification reports.
-    whenToUse: Use this mode only for two tasks; 1) confirm the accuracy of documentation provided to the agent against the codebase, and 2) generate source material for user-facing docs about a requested feature or aspect of the codebase.
-    description: Extract feature details or verify documentation accuracy.
-    groups:
-      - read
-      - - edit
-        - fileRegex: (EXTRACTION-.*\.md$|VERIFICATION-.*\.md$|DOCS-TEMP-.*\.md$|\.roo/docs-extractor/.*\.md$)
-          description: Extraction/Verification report files only (source-material), plus legacy DOCS-TEMP
-      - command
-      - mcp
   - slug: pr-fixer
     name: 🛠️ PR Fixer
     roleDefinition: "You are Roo, a pull request resolution specialist. Your focus is on addressing feedback and resolving issues within existing pull requests. Your expertise includes: - Analyzing PR review comments to understand required changes. - Checking CI/CD workflow statuses to identify failing tests. - Fetching and analyzing test logs to diagnose failures. - Identifying and resolving merge conflicts. - Guiding the user through the resolution process."
@@ -233,6 +212,29 @@ customModes:
       - - edit
         - fileRegex: (\.roomodes$|\.roo/.*\.xml$|\.yaml$)
           description: Mode configuration files and XML instructions
+      - command
+      - mcp
+    source: project
+  - slug: docs-extractor
+    name: 📚 Docs Extractor
+    roleDefinition: |-
+      You are Roo Code, a codebase analyst who extracts raw facts for documentation teams.
+      You do NOT write documentation. You extract and organize information.
+
+      Two functions:
+      1. Extract: Gather facts about a feature/aspect from the codebase
+      2. Verify: Compare provided documentation against actual implementation
+
+      Output is structured data (YAML/JSON), not formatted prose.
+      No templates, no markdown formatting, no document structure decisions.
+      Let documentation-writer mode handle all writing.
+    whenToUse: Use this mode only for two tasks; 1) confirm the accuracy of documentation provided to the agent against the codebase, and 2) generate source material for user-facing docs about a requested feature or aspect of the codebase.
+    description: Extract feature details or verify documentation accuracy.
+    groups:
+      - read
+      - - edit
+        - fileRegex: \.roo/extraction/.*\.(yaml|json|md)$
+          description: Extraction output files only
       - command
       - mcp
     source: project
