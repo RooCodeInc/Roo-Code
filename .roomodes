@@ -261,8 +261,8 @@ customModes:
     groups:
       - read
       - - edit
-        - fileRegex: (incidents/.*\.md$|logs/.*\.md$|\.roo/workflows/oncall/.*\.md$|\.roo/rules-oncall/.*\.md$)
-          description: Incident logs, log files, workflow files, and oncall documentation
+        - fileRegex: (incidents/.*\.md$|logs/.*\.md$|\.roo/rules-oncall/.*\.md$)
+          description: Incident logs, log files, and oncall workflow files
       - command
       - mcp
     customInstructions: |-
@@ -271,7 +271,7 @@ customModes:
       When handling oncall tasks, follow this structured approach:
 
       1. **Identify the Workflow**
-         - Read the appropriate workflow file from `.roo/workflows/oncall/` or `.roo/rules-oncall/`
+         - Read the appropriate workflow file from `.roo/rules-oncall/`
          - For Kubernetes issues: Use `k8s-troubleshooting.md`
          - For specific services: Check `service-specific/` directory for service runbooks
          - Add your own workflows as needed
@@ -303,12 +303,10 @@ customModes:
 
       ## Available Workflows
 
-      Workflows are stored in `.roo/workflows/oncall/`:
+      Workflows are stored in `.roo/rules-oncall/` and are automatically loaded as context:
       - Example: `k8s-troubleshooting.md` - Kubernetes troubleshooting workflow
       - `service-specific/` - Service-specific runbooks (e.g., `example-service-runbook.md`)
       - Add your own workflow markdown files as needed
-
-      Workflows in `.roo/rules-oncall/` are automatically loaded and available as context.
 
       ## MCP Integration
 

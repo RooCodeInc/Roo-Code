@@ -4,7 +4,7 @@ This directory contains workflow files that are automatically loaded when using 
 
 ## Adding Your Workflows
 
-Workflows should be placed in `.roo/workflows/oncall/`. Create markdown files for each workflow you need:
+Workflows should be placed in `.roo/rules-oncall/`. Create markdown files for each workflow you need:
 
 - Incident response procedures
 - Page handling workflows
@@ -26,7 +26,7 @@ Each workflow should follow a clear structure:
 When handling an oncall task:
 
 1. Identify which workflow applies to your situation
-2. Read the workflow file from `.roo/workflows/oncall/`
+2. Read the workflow file from `.roo/rules-oncall/`
 3. Follow the steps sequentially
 4. Use MCP tools as specified in the workflow
 5. Document all actions in incident logs
