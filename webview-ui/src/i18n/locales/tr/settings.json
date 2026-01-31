@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Deneysel",
 		"language": "Dil",
-		"about": "Roo Code Hakkında"
+		"about": "Roo Code Hakkında",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -338,11 +339,11 @@
 		"getAnthropicApiKey": "Anthropic API Anahtarı Al",
 		"anthropicUseAuthToken": "Anthropic API Anahtarını X-Api-Key yerine Authorization başlığı olarak geçir",
 		"anthropic1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"anthropic1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
+		"anthropic1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
 		"awsBedrock1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
+		"awsBedrock1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
 		"vertex1MContextBetaLabel": "1M bağlam penceresini etkinleştir (Beta)",
-		"vertex1MContextBetaDescription": "Claude Sonnet 4 / 4.5 / Claude Opus 4.6 için bağlam penceresini 1 milyon token'a genişletir",
+		"vertex1MContextBetaDescription": "Claude Sonnet 4 için bağlam penceresini 1 milyon token'a genişletir",
 		"basetenApiKey": "Baseten API Anahtarı",
 		"getBasetenApiKey": "Baseten API Anahtarı Al",
 		"cerebrasApiKey": "Cerebras API Anahtarı",
@@ -992,6 +993,53 @@
 		"requireCtrlEnterToSend": {
 			"label": "Mesaj göndermek için {{primaryMod}}+Enter gerekli",
 			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
+		}
+	},
+	"skills": {
+		"description": "Ajana bağlamsal talimatlar sağlayan becerileri yönetin. Beceriler, görevlerinizle ilgili olduklarında otomatik olarak uygulanır. <DocsLink>Daha fazla bilgi</DocsLink>",
+		"projectSkills": "Proje Becerileri",
+		"globalSkills": "Genel Beceriler",
+		"noProjectSkills": "Yapılandırılmış proje becerisi yok. Projeye özgü ajan yetenekleri eklemek için bir tane oluşturun.",
+		"noGlobalSkills": "Yapılandırılmış genel beceri yok. Tüm projelerde kullanılabilir ajan yetenekleri eklemek için bir tane oluşturun.",
+		"addSkill": "Beceri Ekle",
+		"editSkill": "Beceriyi düzenle",
+		"deleteSkill": "Beceriyi sil",
+		"changeMode": "Modu değiştir",
+		"modeAny": "Herhangi bir mod",
+		"deleteDialog": {
+			"title": "Beceriyi Sil",
+			"description": "\"{{name}}\" becerisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+			"confirm": "Sil",
+			"cancel": "İptal"
+		},
+		"createDialog": {
+			"title": "Yeni Beceri Oluştur",
+			"description": "Ajana bağlamsal talimatlar sağlayan yeni bir beceri şablonu tanımlayın.",
+			"nameLabel": "Ad",
+			"namePlaceholder": "benim-beceri-adim",
+			"nameHint": "Yalnızca küçük harfler, rakamlar ve kısa çizgiler (1-64 karakter)",
+			"descriptionLabel": "Açıklama",
+			"descriptionPlaceholder": "Bu becerinin ne zaman kullanılması gerektiğini açıklayın...",
+			"descriptionHint": "Bu becerinin ne yaptığını ve ajanın ne zaman uygulaması gerektiğini açıklayın (1-1024 karakter)",
+			"sourceLabel": "Konum",
+			"sourceHint": "Bu becerinin genel olarak mı yoksa yalnızca bu projede mi kullanılabilir olduğunu seçin",
+			"modeLabel": "Mod (isteğe bağlı)",
+			"modePlaceholder": "Herhangi bir mod",
+			"modeHint": "Bu beceriyi belirli bir modla sınırlayın",
+			"modeAny": "Herhangi bir mod",
+			"create": "Oluştur",
+			"cancel": "İptal"
+		},
+		"source": {
+			"global": "Genel (tüm projelerde kullanılabilir)",
+			"project": "Proje (yalnızca bu çalışma alanı)"
+		},
+		"validation": {
+			"nameRequired": "Ad gereklidir",
+			"nameTooLong": "Ad en fazla 64 karakter olmalıdır",
+			"nameInvalid": "Ad 1-64 küçük harf, rakam veya kısa çizgi olmalıdır",
+			"descriptionRequired": "Açıklama gereklidir",
+			"descriptionTooLong": "Açıklama en fazla 1024 karakter olmalıdır"
 		}
 	}
 }

@@ -41,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Sperimentale",
 		"language": "Lingua",
-		"about": "Informazioni su Roo Code"
+		"about": "Informazioni su Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -338,11 +339,11 @@
 		"getAnthropicApiKey": "Ottieni chiave API Anthropic",
 		"anthropicUseAuthToken": "Passa la chiave API Anthropic come header di autorizzazione invece di X-Api-Key",
 		"anthropic1MContextBetaLabel": "Abilita finestra di contesto da 1M (Beta)",
-		"anthropic1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"anthropic1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
 		"awsBedrock1MContextBetaLabel": "Abilita finestra di contesto da 1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"awsBedrock1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
 		"vertex1MContextBetaLabel": "Abilita finestra di contesto da 1M (Beta)",
-		"vertex1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
+		"vertex1MContextBetaDescription": "Estende la finestra di contesto a 1 milione di token per Claude Sonnet 4",
 		"basetenApiKey": "Chiave API Baseten",
 		"getBasetenApiKey": "Ottieni chiave API Baseten",
 		"cerebrasApiKey": "Chiave API Cerebras",
@@ -992,6 +993,53 @@
 		"requireCtrlEnterToSend": {
 			"label": "Richiedi {{primaryMod}}+Invio per inviare messaggi",
 			"description": "Quando abilitato, devi premere {{primaryMod}}+Invio per inviare messaggi invece di solo Invio"
+		}
+	},
+	"skills": {
+		"description": "Gestisci le skills che forniscono istruzioni contestuali all'agente. Le skills vengono applicate automaticamente quando rilevanti per le tue attività. <DocsLink>Scopri di più</DocsLink>",
+		"projectSkills": "Skills del Progetto",
+		"globalSkills": "Skills Globali",
+		"noProjectSkills": "Nessuna skill di progetto configurata. Creane una per aggiungere capacità specifiche del progetto all'agente.",
+		"noGlobalSkills": "Nessuna skill globale configurata. Creane una per aggiungere capacità all'agente disponibili in tutti i progetti.",
+		"addSkill": "Aggiungi Skill",
+		"editSkill": "Modifica skill",
+		"deleteSkill": "Elimina skill",
+		"changeMode": "Cambia modalità",
+		"modeAny": "Qualsiasi modalità",
+		"deleteDialog": {
+			"title": "Elimina Skill",
+			"description": "Sei sicuro di voler eliminare la skill \"{{name}}\"? Questa azione non può essere annullata.",
+			"confirm": "Elimina",
+			"cancel": "Annulla"
+		},
+		"createDialog": {
+			"title": "Crea Nuova Skill",
+			"description": "Definisci un nuovo modello di skill che fornisce istruzioni contestuali all'agente.",
+			"nameLabel": "Nome",
+			"namePlaceholder": "il-mio-nome-skill",
+			"nameHint": "Solo lettere minuscole, numeri e trattini (1-64 caratteri)",
+			"descriptionLabel": "Descrizione",
+			"descriptionPlaceholder": "Descrivi quando questa skill dovrebbe essere utilizzata...",
+			"descriptionHint": "Spiega cosa fa questa skill e quando l'agente dovrebbe applicarla (1-1024 caratteri)",
+			"sourceLabel": "Posizione",
+			"sourceHint": "Scegli se questa skill è disponibile globalmente o solo in questo progetto",
+			"modeLabel": "Modalità (opzionale)",
+			"modePlaceholder": "Qualsiasi modalità",
+			"modeHint": "Limita questa skill a una modalità specifica",
+			"modeAny": "Qualsiasi modalità",
+			"create": "Crea",
+			"cancel": "Annulla"
+		},
+		"source": {
+			"global": "Globale (disponibile in tutti i progetti)",
+			"project": "Progetto (solo questo workspace)"
+		},
+		"validation": {
+			"nameRequired": "Il nome è obbligatorio",
+			"nameTooLong": "Il nome deve essere di massimo 64 caratteri",
+			"nameInvalid": "Il nome deve contenere 1-64 lettere minuscole, numeri o trattini",
+			"descriptionRequired": "La descrizione è obbligatoria",
+			"descriptionTooLong": "La descrizione deve essere di massimo 1024 caratteri"
 		}
 	}
 }
