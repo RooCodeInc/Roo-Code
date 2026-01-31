@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react"
-import { Plus, FolderOpen, RefreshCw, GripVertical, Link2, AlertCircle, Loader2 } from "lucide-react"
+import { FolderOpen, RefreshCw, GripVertical, Link2, AlertCircle, Loader2 } from "lucide-react"
 import { DndContext, DragOverlay, closestCenter } from "@dnd-kit/core"
 
 import { hookEventTypes, type HookEventType, type HookWithMetadata } from "@roo-code/types"
@@ -96,12 +96,6 @@ export const HooksSettings: React.FC = () => {
 	// Handler for adding hook from event group "+ Add" button
 	const handleAddHook = useCallback((eventType: HookEventType) => {
 		setCreateForEventType(eventType)
-		setShowCreateDialog(true)
-	}, [])
-
-	// Handler for creating a new hook from footer button
-	const handleCreateNewHook = useCallback(() => {
-		setCreateForEventType(undefined)
 		setShowCreateDialog(true)
 	}, [])
 
@@ -255,13 +249,6 @@ export const HooksSettings: React.FC = () => {
 					{/* Footer Buttons */}
 					<SearchableSetting settingId="hooks-actions" section="hooks" label="Hook Actions" className="mt-6">
 						<div className="flex flex-wrap gap-2">
-							<Button
-								variant="secondary"
-								onClick={handleCreateNewHook}
-								disabled={!hooksEnabled || isLoading}>
-								<Plus className="w-4 h-4 mr-1" />
-								Create New Hook
-							</Button>
 							<Button variant="ghost" onClick={openGlobalFolder}>
 								<FolderOpen className="w-4 h-4 mr-1" />
 								Open Global Folder

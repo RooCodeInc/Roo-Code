@@ -95,9 +95,8 @@ export const HookEventGroup: React.FC<HookEventGroupProps> = ({
 
 				{/* Add button */}
 				<Button
-					variant="ghost"
-					size="sm"
-					className="opacity-60 hover:opacity-100"
+					variant="secondary"
+					className="py-1 hover:brightness-75"
 					onClick={(e) => {
 						e.stopPropagation()
 						onAddHook()
