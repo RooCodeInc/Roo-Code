@@ -29,6 +29,7 @@
 		"providers": "Anbieter",
 		"modes": "Modi",
 		"mcp": "MCP-Server",
+		"worktrees": "Worktrees",
 		"autoApprove": "Auto-Genehmigung",
 		"browser": "Computerzugriff",
 		"checkpoints": "Kontrollpunkte",
@@ -40,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Experimentell",
 		"language": "Sprache",
-		"about": "Über Roo Code"
+		"about": "Über Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -286,6 +288,37 @@
 		"doubaoApiKey": "Doubao API-Schlüssel",
 		"getDoubaoApiKey": "Doubao API-Schlüssel erhalten",
 		"apiKeyStorageNotice": "API-Schlüssel werden sicher im VSCode Secret Storage gespeichert",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Benutzerdefinierte Basis-URL verwenden",
 		"useReasoning": "Reasoning aktivieren",
 		"useHostHeader": "Benutzerdefinierten Host-Header verwenden",
@@ -692,6 +725,15 @@
 			"label": "Terminal-Zeichenlimit",
 			"description": "Überschreibt das Zeilenlimit, um Speicherprobleme durch eine harte Obergrenze für die Ausgabegröße zu vermeiden. Bei Überschreitung behält es Anfang und Ende und zeigt Roo einen Platzhalter, wo Inhalt übersprungen wird. <0>Mehr erfahren</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Befehlsausgabe-Vorschaugröße",
+			"description": "Steuert, wie viel Befehlsausgabe Roo direkt sieht. Die vollständige Ausgabe wird immer gespeichert und ist bei Bedarf zugänglich.",
+			"options": {
+				"small": "Klein (5KB)",
+				"medium": "Mittel (10KB)",
+				"large": "Groß (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal-Shell-Integrations-Timeout",
 			"description": "Wie lange auf VS Code Shell-Integration gewartet wird, bevor Befehle ausgeführt werden. Erhöhe den Wert, wenn deine Shell langsam startet oder du 'Shell-Integration nicht verfügbar'-Fehler siehst. <0>Mehr erfahren</0>"
@@ -703,10 +745,6 @@
 		"commandDelay": {
 			"label": "Terminal-Befehlsverzögerung",
 			"description": "Fügt nach jedem Befehl eine kurze Pause hinzu, damit das VS Code-Terminal alle Ausgaben leeren kann (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Verwende dies nur, wenn du fehlende Tail-Ausgabe siehst; sonst lass es bei 0. <0>Mehr erfahren</0>"
-		},
-		"compressProgressBar": {
-			"label": "Fortschrittsbalken-Ausgabe komprimieren",
-			"description": "Klappt Fortschrittsbalken/Spinner zusammen, sodass nur der Endzustand erhalten bleibt (spart Token). <0>Mehr erfahren</0>"
 		},
 		"powershellCounter": {
 			"label": "PowerShell-Zähler-Workaround aktivieren",
@@ -736,14 +774,6 @@
 	"advancedSettings": {
 		"title": "Erweiterte Einstellungen"
 	},
-	"toolProtocol": {
-		"label": "Tool-Aufruf-Protokoll",
-		"description": "Wähle, wie Roo mit der API kommuniziert. Nativ verwendet die Funktionsaufruf-API des Anbieters, während XML XML-formatierte Werkzeugdefinitionen verwendet.",
-		"default": "Standard",
-		"xml": "XML",
-		"native": "Nativ",
-		"currentDefault": "Standard: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Bearbeitung durch Diffs aktivieren",
@@ -760,10 +790,6 @@
 					"unified": "Die einheitliche Diff-Strategie wendet mehrere Ansätze zur Anwendung von Diffs an und wählt den besten Ansatz.",
 					"multiBlock": "Die Mehrblock-Diff-Strategie ermöglicht das Aktualisieren mehrerer Codeblöcke in einer Datei in einer Anfrage."
 				}
-			},
-			"matchPrecision": {
-				"label": "Übereinstimmungspräzision",
-				"description": "Dieser Schieberegler steuert, wie genau Codeabschnitte bei der Anwendung von Diffs übereinstimmen müssen. Niedrigere Werte ermöglichen eine flexiblere Übereinstimmung, erhöhen aber das Risiko falscher Ersetzungen. Verwenden Sie Werte unter 100 % mit äußerster Vorsicht."
 			}
 		},
 		"todoList": {
@@ -780,10 +806,6 @@
 			"name": "Experimentelles Inhalts-Einfügewerkzeug verwenden",
 			"description": "Aktiviere das experimentelle Inhalts-Einfügewerkzeug, mit dem Roo Inhalte an bestimmten Zeilennummern einfügen kann, ohne einen Diff erstellen zu müssen."
 		},
-		"POWER_STEERING": {
-			"name": "Experimentellen \"Power Steering\"-Modus verwenden",
-			"description": "Wenn aktiviert, erinnert Roo das Modell häufiger an die Details seiner aktuellen Modusdefinition. Dies führt zu einer stärkeren Einhaltung von Rollendefinitionen und benutzerdefinierten Anweisungen, verbraucht aber mehr Token pro Nachricht."
-		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Gleichzeitiges Lesen von Dateien aktivieren",
 			"description": "Wenn aktiviert, kann Roo mehrere Dateien in einer einzigen Anfrage lesen. Wenn deaktiviert, muss Roo Dateien einzeln lesen. Das Deaktivieren kann hilfreich sein, wenn mit weniger fähigen Modellen gearbeitet wird oder wenn du mehr Kontrolle über den Dateizugriff haben möchtest."
@@ -795,10 +817,6 @@
 		"MARKETPLACE": {
 			"name": "Marktplatz aktivieren",
 			"description": "Wenn aktiviert, können Sie MCPs und benutzerdefinierte Modi aus dem Marketplace installieren."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Gleichzeitige Dateibearbeitungen aktivieren",
-			"description": "Wenn aktiviert, kann Roo mehrere Dateien in einer einzigen Anfrage bearbeiten. Wenn deaktiviert, muss Roo Dateien einzeln bearbeiten. Das Deaktivieren kann hilfreich sein, wenn mit weniger fähigen Modellen gearbeitet wird oder wenn du mehr Kontrolle über Dateiänderungen haben möchtest."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Hintergrundbearbeitung",
@@ -828,10 +846,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Modellinitierte Slash-Befehle aktivieren",
 			"description": "Wenn aktiviert, kann Roo deine Slash-Befehle ausführen, um Workflows zu starten."
-		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Parallele Tool-Aufrufe",
-			"description": "Wenn aktiviert, kann das native Protokoll mehrere Tools in einer einzigen Assistenten-Nachrichtenrunde ausführen."
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Benutzerdefinierte Tools aktivieren",
@@ -978,6 +992,53 @@
 		"requireCtrlEnterToSend": {
 			"label": "{{primaryMod}}+Enter zum Senden erfordern",
 			"description": "Wenn aktiviert, musst du {{primaryMod}}+Enter drücken, um Nachrichten zu senden, anstatt nur Enter"
+		}
+	},
+	"skills": {
+		"description": "Verwalten Sie Skills, die dem Agenten kontextbezogene Anweisungen bereitstellen. Skills werden automatisch angewendet, wenn sie für Ihre Aufgaben relevant sind. <DocsLink>Mehr erfahren</DocsLink>",
+		"projectSkills": "Projekt-Skills",
+		"globalSkills": "Globale Skills",
+		"noProjectSkills": "Keine Projekt-Skills konfiguriert. Erstellen Sie eine, um projektspezifische Agentenfähigkeiten hinzuzufügen.",
+		"noGlobalSkills": "Keine globalen Skills konfiguriert. Erstellen Sie eine, um Agentenfähigkeiten hinzuzufügen, die in allen Projekten verfügbar sind.",
+		"addSkill": "Skill hinzufügen",
+		"editSkill": "Skill bearbeiten",
+		"deleteSkill": "Skill löschen",
+		"changeMode": "Modus ändern",
+		"modeAny": "Beliebiger Modus",
+		"deleteDialog": {
+			"title": "Skill löschen",
+			"description": "Sind Sie sicher, dass Sie die Skill \"{{name}}\" löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+			"confirm": "Löschen",
+			"cancel": "Abbrechen"
+		},
+		"createDialog": {
+			"title": "Neue Skill erstellen",
+			"description": "Definieren Sie eine neue Skill-Vorlage, die dem Agenten kontextbezogene Anweisungen bereitstellt.",
+			"nameLabel": "Name",
+			"namePlaceholder": "mein-skill-name",
+			"nameHint": "Nur Kleinbuchstaben, Zahlen und Bindestriche (1-64 Zeichen)",
+			"descriptionLabel": "Beschreibung",
+			"descriptionPlaceholder": "Beschreiben Sie, wann diese Skill verwendet werden sollte...",
+			"descriptionHint": "Erklären Sie, was diese Skill tut und wann der Agent sie anwenden sollte (1-1024 Zeichen)",
+			"sourceLabel": "Standort",
+			"sourceHint": "Wählen Sie, ob diese Skill global oder nur in diesem Projekt verfügbar ist",
+			"modeLabel": "Modus (optional)",
+			"modePlaceholder": "Beliebiger Modus",
+			"modeHint": "Beschränken Sie diese Skill auf einen bestimmten Modus",
+			"modeAny": "Beliebiger Modus",
+			"create": "Erstellen",
+			"cancel": "Abbrechen"
+		},
+		"source": {
+			"global": "Global (in allen Projekten verfügbar)",
+			"project": "Projekt (nur dieser Arbeitsbereich)"
+		},
+		"validation": {
+			"nameRequired": "Name ist erforderlich",
+			"nameTooLong": "Name darf höchstens 64 Zeichen lang sein",
+			"nameInvalid": "Name muss 1-64 Kleinbuchstaben, Zahlen oder Bindestriche enthalten",
+			"descriptionRequired": "Beschreibung ist erforderlich",
+			"descriptionTooLong": "Beschreibung darf höchstens 1024 Zeichen lang sein"
 		}
 	}
 }

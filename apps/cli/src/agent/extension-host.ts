@@ -58,16 +58,17 @@ export interface ExtensionHostOptions {
 	workspacePath: string
 	extensionPath: string
 	nonInteractive?: boolean
-	debug?: boolean
+	/**
+	 * When true, uses a temporary storage directory that is cleaned up on exit.
+	 */
+	ephemeral: boolean
+	debug: boolean
+	exitOnComplete: boolean
 	/**
 	 * When true, completely disables all direct stdout/stderr output.
 	 * Use this when running in TUI mode where Ink controls the terminal.
 	 */
 	disableOutput?: boolean
-	/**
-	 * When true, uses a temporary storage directory that is cleaned up on exit.
-	 */
-	ephemeral?: boolean
 	/**
 	 * When true, don't suppress node warnings and console output since we're
 	 * running in an integration test and we want to see the output.
@@ -152,7 +153,10 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		super()
 
 		this.options = options
-		this.options.integrationTest = true
+
+		// Set up quiet mode early, before any extension code runs.
+		// This suppresses console output from the extension during load.
+		this.setupQuietMode()
 
 		// Initialize client - single source of truth for agent state (including mode).
 		this.client = new ExtensionClient({
@@ -161,9 +165,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		})
 
 		// Initialize output manager.
-		this.outputManager = new OutputManager({
-			disabled: options.disableOutput,
-		})
+		this.outputManager = new OutputManager({ disabled: options.disableOutput })
 
 		// Initialize prompt manager with console mode callbacks.
 		this.promptManager = new PromptManager({
@@ -221,8 +223,6 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 				this.initialSettings.reasoningEffort = this.options.reasoningEffort
 			}
 		}
-
-		this.setupQuietMode()
 	}
 
 	// ==========================================================================
@@ -266,7 +266,8 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 	// ==========================================================================
 
 	private setupQuietMode(): void {
-		if (this.options.integrationTest) {
+		// Skip if already set up or if integrationTest mode
+		if (this.originalConsole || this.options.integrationTest) {
 			return
 		}
 
@@ -291,18 +292,16 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 	}
 
 	private restoreConsole(): void {
-		if (this.options.integrationTest) {
+		if (!this.originalConsole) {
 			return
 		}
 
-		if (this.originalConsole) {
-			console.log = this.originalConsole.log
-			console.warn = this.originalConsole.warn
-			console.error = this.originalConsole.error
-			console.debug = this.originalConsole.debug
-			console.info = this.originalConsole.info
-			this.originalConsole = null
-		}
+		console.log = this.originalConsole.log
+		console.warn = this.originalConsole.warn
+		console.error = this.originalConsole.error
+		console.debug = this.originalConsole.debug
+		console.info = this.originalConsole.info
+		this.originalConsole = null
 
 		if (this.originalProcessEmitWarning) {
 			process.emitWarning = this.originalProcessEmitWarning
@@ -436,9 +435,6 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		this.sendToExtension({ type: "newTask", text: prompt })
 
 		return new Promise((resolve, reject) => {
-			let timeoutId: NodeJS.Timeout | null = null
-			const timeoutMs: number = 110_000
-
 			const completeHandler = () => {
 				cleanup()
 				resolve()
@@ -450,22 +446,9 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			}
 
 			const cleanup = () => {
-				if (timeoutId) {
-					clearTimeout(timeoutId)
-					timeoutId = null
-				}
-
 				this.client.off("taskCompleted", completeHandler)
 				this.client.off("error", errorHandler)
 			}
-
-			// Set timeout to prevent indefinite hanging.
-			timeoutId = setTimeout(() => {
-				cleanup()
-				reject(
-					new Error(`Task completion timeout after ${timeoutMs}ms - no completion or error event received`),
-				)
-			}, timeoutMs)
 
 			this.client.once("taskCompleted", completeHandler)
 			this.client.once("error", errorHandler)

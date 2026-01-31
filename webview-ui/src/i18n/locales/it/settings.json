@@ -29,6 +29,7 @@
 		"providers": "Fornitori",
 		"modes": "Modalità",
 		"mcp": "Server MCP",
+		"worktrees": "Worktrees",
 		"autoApprove": "Auto-approvazione",
 		"browser": "Accesso computer",
 		"checkpoints": "Punti di controllo",
@@ -40,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Sperimentale",
 		"language": "Lingua",
-		"about": "Informazioni su Roo Code"
+		"about": "Informazioni su Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -284,6 +286,37 @@
 		"vercelAiGatewayApiKey": "Chiave API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Ottieni chiave API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Le chiavi API sono memorizzate in modo sicuro nell'Archivio Segreto di VSCode",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Usa URL base personalizzato",
 		"useReasoning": "Abilita ragionamento",
 		"useHostHeader": "Usa intestazione Host personalizzata",
@@ -693,6 +726,15 @@
 			"label": "Limite caratteri terminale",
 			"description": "Sovrascrive il limite di righe per prevenire problemi di memoria imponendo un limite rigido alla dimensione di output. Se superato, mantiene l'inizio e la fine e mostra un segnaposto a Roo dove il contenuto viene saltato. <0>Scopri di più</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Dimensione anteprima output comandi",
+			"description": "Controlla quanto output dei comandi Roo vede direttamente. L'output completo viene sempre salvato ed è accessibile quando necessario.",
+			"options": {
+				"small": "Piccola (5KB)",
+				"medium": "Media (10KB)",
+				"large": "Grande (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout integrazione shell terminale",
 			"description": "Quanto tempo attendere l'integrazione della shell di VS Code prima di eseguire i comandi. Aumenta se la tua shell si avvia lentamente o vedi errori 'Integrazione Shell Non Disponibile'. <0>Scopri di più</0>"
@@ -704,10 +746,6 @@
 		"commandDelay": {
 			"label": "Ritardo comando terminale",
 			"description": "Aggiunge una breve pausa dopo ogni comando affinché il terminale VS Code possa svuotare tutto l'output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Usa solo se vedi output finale mancante; altrimenti lascia a 0. <0>Scopri di più</0>"
-		},
-		"compressProgressBar": {
-			"label": "Comprimi output barra di avanzamento",
-			"description": "Comprime barre di avanzamento/spinner in modo che venga mantenuto solo lo stato finale (risparmia token). <0>Scopri di più</0>"
 		},
 		"powershellCounter": {
 			"label": "Abilita workaround contatore PowerShell",
@@ -737,14 +775,6 @@
 	"advancedSettings": {
 		"title": "Impostazioni avanzate"
 	},
-	"toolProtocol": {
-		"label": "Protocollo di chiamata dello strumento",
-		"description": "Scegli come Roo comunica con l'API. Nativo utilizza l'API di chiamata di funzione del provider, mentre XML utilizza definizioni di strumenti in formato XML.",
-		"default": "Predefinito",
-		"xml": "XML",
-		"native": "Nativo",
-		"currentDefault": "Predefinito: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Abilita modifica tramite diff",
@@ -761,10 +791,6 @@
 					"unified": "La strategia diff unificato adotta diversi approcci per applicare i diff e sceglie il migliore.",
 					"multiBlock": "La strategia diff multi-blocco consente di aggiornare più blocchi di codice in un file in una singola richiesta."
 				}
-			},
-			"matchPrecision": {
-				"label": "Precisione corrispondenza",
-				"description": "Questo cursore controlla quanto precisamente le sezioni di codice devono corrispondere quando si applicano i diff. Valori più bassi consentono corrispondenze più flessibili ma aumentano il rischio di sostituzioni errate. Usa valori inferiori al 100% con estrema cautela."
 			}
 		},
 		"todoList": {
@@ -781,10 +807,6 @@
 			"name": "Usa strumento di inserimento contenuti sperimentale",
 			"description": "Abilita lo strumento di inserimento contenuti sperimentale, consentendo a Roo di inserire contenuti a numeri di riga specifici senza dover creare un diff."
 		},
-		"POWER_STEERING": {
-			"name": "Usa modalità \"servosterzo\" sperimentale",
-			"description": "Quando abilitato, Roo ricorderà al modello i dettagli della sua definizione di modalità corrente più frequentemente. Questo porterà a una maggiore aderenza alle definizioni dei ruoli e alle istruzioni personalizzate, ma utilizzerà più token per messaggio."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Usa strumento diff multi-blocco sperimentale",
 			"description": "Quando abilitato, Roo utilizzerà lo strumento diff multi-blocco. Questo tenterà di aggiornare più blocchi di codice nel file in una singola richiesta."
@@ -796,10 +818,6 @@
 		"MARKETPLACE": {
 			"name": "Abilita Marketplace",
 			"description": "Quando abilitato, puoi installare MCP e modalità personalizzate dal Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Abilita modifiche di file concorrenti",
-			"description": "Quando abilitato, Roo può modificare più file in una singola richiesta. Quando disabilitato, Roo deve modificare i file uno alla volta. Disabilitare questa opzione può aiutare quando lavori con modelli meno capaci o quando vuoi più controllo sulle modifiche dei file."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Modifica in background",
@@ -829,10 +847,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Abilita comandi slash avviati dal modello",
 			"description": "Quando abilitato, Roo può eseguire i tuoi comandi slash per eseguire flussi di lavoro."
-		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Chiamate parallele agli strumenti",
-			"description": "Quando abilitato, il protocollo nativo può eseguire più strumenti in un singolo turno di messaggio dell'assistente."
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Abilita strumenti personalizzati",
@@ -979,6 +993,53 @@
 		"requireCtrlEnterToSend": {
 			"label": "Richiedi {{primaryMod}}+Invio per inviare messaggi",
 			"description": "Quando abilitato, devi premere {{primaryMod}}+Invio per inviare messaggi invece di solo Invio"
+		}
+	},
+	"skills": {
+		"description": "Gestisci le skills che forniscono istruzioni contestuali all'agente. Le skills vengono applicate automaticamente quando rilevanti per le tue attività. <DocsLink>Scopri di più</DocsLink>",
+		"projectSkills": "Skills del Progetto",
+		"globalSkills": "Skills Globali",
+		"noProjectSkills": "Nessuna skill di progetto configurata. Creane una per aggiungere capacità specifiche del progetto all'agente.",
+		"noGlobalSkills": "Nessuna skill globale configurata. Creane una per aggiungere capacità all'agente disponibili in tutti i progetti.",
+		"addSkill": "Aggiungi Skill",
+		"editSkill": "Modifica skill",
+		"deleteSkill": "Elimina skill",
+		"changeMode": "Cambia modalità",
+		"modeAny": "Qualsiasi modalità",
+		"deleteDialog": {
+			"title": "Elimina Skill",
+			"description": "Sei sicuro di voler eliminare la skill \"{{name}}\"? Questa azione non può essere annullata.",
+			"confirm": "Elimina",
+			"cancel": "Annulla"
+		},
+		"createDialog": {
+			"title": "Crea Nuova Skill",
+			"description": "Definisci un nuovo modello di skill che fornisce istruzioni contestuali all'agente.",
+			"nameLabel": "Nome",
+			"namePlaceholder": "il-mio-nome-skill",
+			"nameHint": "Solo lettere minuscole, numeri e trattini (1-64 caratteri)",
+			"descriptionLabel": "Descrizione",
+			"descriptionPlaceholder": "Descrivi quando questa skill dovrebbe essere utilizzata...",
+			"descriptionHint": "Spiega cosa fa questa skill e quando l'agente dovrebbe applicarla (1-1024 caratteri)",
+			"sourceLabel": "Posizione",
+			"sourceHint": "Scegli se questa skill è disponibile globalmente o solo in questo progetto",
+			"modeLabel": "Modalità (opzionale)",
+			"modePlaceholder": "Qualsiasi modalità",
+			"modeHint": "Limita questa skill a una modalità specifica",
+			"modeAny": "Qualsiasi modalità",
+			"create": "Crea",
+			"cancel": "Annulla"
+		},
+		"source": {
+			"global": "Globale (disponibile in tutti i progetti)",
+			"project": "Progetto (solo questo workspace)"
+		},
+		"validation": {
+			"nameRequired": "Il nome è obbligatorio",
+			"nameTooLong": "Il nome deve essere di massimo 64 caratteri",
+			"nameInvalid": "Il nome deve contenere 1-64 lettere minuscole, numeri o trattini",
+			"descriptionRequired": "La descrizione è obbligatoria",
+			"descriptionTooLong": "La descrizione deve essere di massimo 1024 caratteri"
 		}
 	}
 }

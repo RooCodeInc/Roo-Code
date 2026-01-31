@@ -48,5 +48,11 @@
 		"mostTokens": "Més tokens",
 		"mostRelevant": "Més rellevants"
 	},
-	"viewAllHistory": "Veure-ho tot"
+	"viewAllHistory": "Veure-ho tot",
+	"subtasks_one": "{{count}} subtasca",
+	"subtasks_other": "{{count}} subtasques",
+	"subtaskTag": "Subtasca",
+	"deleteWithSubtasks": "Això també eliminarà {{count}} subtasca(s). Estàs segur?",
+	"expandSubtasks": "Expandir subtasques",
+	"collapseSubtasks": "Contreure subtasques"
 }

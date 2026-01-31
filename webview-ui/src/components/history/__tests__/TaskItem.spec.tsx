@@ -107,6 +107,6 @@ describe("TaskItem", () => {
 		)
 
 		const taskItem = screen.getByTestId("task-item-1")
-		expect(taskItem).toHaveClass("hover:bg-vscode-editor-foreground/10")
+		expect(taskItem).toHaveClass("hover:text-vscode-foreground")
 	})
 })

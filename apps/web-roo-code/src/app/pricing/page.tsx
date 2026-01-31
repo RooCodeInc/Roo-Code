@@ -239,8 +239,8 @@ export default function PricingPage() {
 							<div className="text-sm text-muted-foreground">
 								<p className="">
 									On any plan, you can use your own LLM provider API key or use the built-in Roo Code
-									Router – curated models to work with Roo with no markup, including the
-									latest Gemini, GPT and Claude. Paid with credits.
+									Router – curated models to work with Roo with no markup, including the latest
+									Gemini, GPT and Claude. Paid with credits.
 									<Link href="/provider" className="underline hover:no-underline ml-1">
 										See per model pricing.
 									</Link>
@@ -291,11 +291,7 @@ export default function PricingPage() {
 								<li>To pay for Cloud Agents running time (${PRICE_CREDITS}/hour)</li>
 								<li>
 									To pay for AI model inference costs (
-									<a
-										href="https://app.roocode.com/provider/pricing"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="underline">
+									<a href="/provider" target="_blank" rel="noopener noreferrer" className="underline">
 										varies by model
 									</a>
 									)

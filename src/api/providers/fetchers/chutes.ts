@@ -57,8 +57,10 @@ export async function getChutesModels(apiKey?: string): Promise<Record<string, M
 				continue
 			}
 
-			const contextWindow = typeof m.context_length === "number" && Number.isFinite(m.context_length) ? m.context_length : undefined
-			const maxModelLen = typeof m.max_model_len === "number" && Number.isFinite(m.max_model_len) ? m.max_model_len : undefined
+			const contextWindow =
+				typeof m.context_length === "number" && Number.isFinite(m.context_length) ? m.context_length : undefined
+			const maxModelLen =
+				typeof m.max_model_len === "number" && Number.isFinite(m.max_model_len) ? m.max_model_len : undefined
 
 			// Skip models without valid context window information
 			if (!contextWindow) {
@@ -70,7 +72,6 @@ export async function getChutesModels(apiKey?: string): Promise<Record<string, M
 				contextWindow,
 				supportsImages: (m.input_modalities || []).includes("image"),
 				supportsPromptCache: false,
-				supportsNativeTools: (m.supported_features || []).includes("tools"),
 				inputPrice: 0,
 				outputPrice: 0,
 				description: `Chutes AI model: ${m.id}`,

@@ -48,16 +48,58 @@ mode: code
     - Include links to relevant source files where helpful
     - Describe changes from the user's perspective
 
-5. Commit the version bump and changelog update:
+5. Create a release branch and commit the changes:
 
     ```bash
+    # Ensure you're on main and up to date
+    git checkout main
+    git pull origin main
+
+    # Create a new branch for the release
+    git checkout -b cli-release-v<version>
+
+    # Commit the version bump and changelog update
     git add apps/cli/package.json apps/cli/CHANGELOG.md
     git commit -m "chore(cli): prepare release v<version>"
+
+    # Push the branch to origin
+    git push -u origin cli-release-v<version>
     ```
 
-6. Run the release script from the monorepo root:
+6. Create a pull request for the release:
 
     ```bash
+    gh pr create --title "chore(cli): prepare release v<version>" \
+        --body "## CLI Release v<version>
+
+    This PR prepares the CLI release v<version>.
+
+    ### Changes
+    - Version bump in package.json
+    - Changelog update
+
+    ### Checklist
+    - [ ] Version number is correct
+    - [ ] Changelog entry is complete and accurate
+    - [ ] All CI checks pass" \
+        --base main
+    ```
+
+7. Wait for PR approval and merge:
+
+    - Request review if required by your workflow
+    - Ensure CI checks pass
+    - Merge the PR using: `gh pr merge --squash --delete-branch`
+    - Or merge via the GitHub UI
+
+8. Run the release script from the monorepo root:
+
+    ```bash
+    # Ensure you're on the updated main branch after the PR merge
+    git checkout main
+    git pull origin main
+
+    # Run the release script
     ./apps/cli/scripts/release.sh
     ```
 
@@ -69,7 +111,7 @@ mode: code
     - Extract changelog content and include it in the GitHub release notes
     - Create the GitHub release with the tarball attached
 
-7. After a successful release, verify:
+9. After a successful release, verify:
     - Check the release page: https://github.com/RooCodeInc/Roo-Code/releases
     - Verify the "What's New" section contains the changelog content
     - Test installation: `curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh`

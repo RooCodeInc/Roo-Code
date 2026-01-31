@@ -29,6 +29,7 @@
 		"providers": "Provider",
 		"modes": "Mode",
 		"mcp": "Server MCP",
+		"worktrees": "Worktrees",
 		"autoApprove": "Auto-Approve",
 		"browser": "Browser",
 		"checkpoints": "Checkpoint",
@@ -40,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Eksperimental",
 		"language": "Bahasa",
-		"about": "Tentang Roo Code"
+		"about": "Tentang Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -288,6 +290,37 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Key",
 		"getVercelAiGatewayApiKey": "Dapatkan Vercel AI Gateway API Key",
 		"apiKeyStorageNotice": "API key disimpan dengan aman di Secret Storage VSCode",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Gunakan base URL kustom",
 		"useReasoning": "Aktifkan reasoning",
 		"useHostHeader": "Gunakan Host header kustom",
@@ -697,6 +730,15 @@
 			"label": "Batas karakter terminal",
 			"description": "Override batas baris untuk mencegah masalah memori dengan memberlakukan cap keras pada ukuran output. Jika terlampaui, simpan awal dan akhir lalu tampilkan placeholder ke Roo di mana konten dilewati. <0>Pelajari lebih lanjut</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Ukuran pratinjau keluaran perintah",
+			"description": "Mengontrol seberapa banyak keluaran perintah yang dilihat Roo secara langsung. Keluaran lengkap selalu disimpan dan dapat diakses saat diperlukan.",
+			"options": {
+				"small": "Kecil (5KB)",
+				"medium": "Sedang (10KB)",
+				"large": "Besar (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Timeout integrasi shell terminal",
 			"description": "Waktu tunggu integrasi shell VS Code sebelum menjalankan perintah. Naikkan jika shell lambat start atau muncul error 'Shell Integration Unavailable'. <0>Pelajari lebih lanjut</0>"
@@ -708,10 +750,6 @@
 		"commandDelay": {
 			"label": "Delay perintah terminal",
 			"description": "Tambahkan jeda singkat setelah setiap perintah agar VS Code terminal bisa flush semua output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Gunakan hanya jika output ekor hilang; jika tidak biarkan di 0. <0>Pelajari lebih lanjut</0>"
-		},
-		"compressProgressBar": {
-			"label": "Kompres keluaran bilah kemajuan",
-			"description": "Menciutkan bilah kemajuan/spinner sehingga hanya status akhir yang disimpan (menghemat token). <0>Pelajari lebih lanjut</0>"
 		},
 		"powershellCounter": {
 			"label": "Aktifkan solusi penghitung PowerShell",
@@ -741,14 +779,6 @@
 	"advancedSettings": {
 		"title": "Pengaturan lanjutan"
 	},
-	"toolProtocol": {
-		"label": "Protokol Panggilan Alat",
-		"description": "Pilih bagaimana Roo berkomunikasi dengan API. Asli menggunakan API panggilan fungsi penyedia, sedangkan XML menggunakan definisi alat berformat XML.",
-		"default": "Default",
-		"xml": "XML",
-		"native": "Asli",
-		"currentDefault": "Default: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Aktifkan editing melalui diff",
@@ -765,10 +795,6 @@
 					"unified": "Strategi unified diff mengambil beberapa pendekatan untuk menerapkan diff dan memilih pendekatan terbaik.",
 					"multiBlock": "Strategi multi-block diff memungkinkan memperbarui beberapa blok kode dalam file dalam satu permintaan."
 				}
-			},
-			"matchPrecision": {
-				"label": "Presisi pencocokan",
-				"description": "Slider ini mengontrol seberapa tepat bagian kode harus cocok saat menerapkan diff. Nilai yang lebih rendah memungkinkan pencocokan yang lebih fleksibel tetapi meningkatkan risiko penggantian yang salah. Gunakan nilai di bawah 100% dengan sangat hati-hati."
 			}
 		},
 		"todoList": {
@@ -806,10 +832,6 @@
 			"name": "Gunakan tool insert content eksperimental",
 			"description": "Aktifkan tool insert content eksperimental, memungkinkan Roo menyisipkan konten pada nomor baris spesifik tanpa perlu membuat diff."
 		},
-		"POWER_STEERING": {
-			"name": "Gunakan mode \"power steering\" eksperimental",
-			"description": "Ketika diaktifkan, Roo akan mengingatkan model tentang detail definisi mode saat ini lebih sering. Ini akan menghasilkan kepatuhan yang lebih kuat terhadap definisi peran dan instruksi kustom, tetapi akan menggunakan lebih banyak token per pesan."
-		},
 		"AUTOCOMPLETE": {
 			"name": "Gunakan fitur \"autocomplete\" eksperimental",
 			"description": "Ketika diaktifkan, Roo akan memberikan saran kode inline saat kamu mengetik. Memerlukan Roo Code API Provider."
@@ -825,10 +847,6 @@
 		"MARKETPLACE": {
 			"name": "Aktifkan Marketplace",
 			"description": "Ketika diaktifkan, kamu dapat menginstal MCP dan mode kustom dari Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Aktifkan edit file bersamaan",
-			"description": "Ketika diaktifkan, Roo dapat mengedit beberapa file dalam satu permintaan. Ketika dinonaktifkan, Roo harus mengedit file satu per satu. Menonaktifkan ini dapat membantu saat bekerja dengan model yang kurang mampu atau ketika kamu ingin kontrol lebih terhadap modifikasi file."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Pengeditan Latar Belakang",
@@ -858,10 +876,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Aktifkan perintah slash yang dimulai model",
 			"description": "Ketika diaktifkan, Roo dapat menjalankan perintah slash Anda untuk mengeksekusi alur kerja."
-		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Panggilan tool paralel",
-			"description": "Ketika diaktifkan, protokol native dapat mengeksekusi beberapa tool dalam satu giliran pesan asisten."
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Aktifkan tool kustom",
@@ -1008,6 +1022,53 @@
 		"requireCtrlEnterToSend": {
 			"label": "Memerlukan {{primaryMod}}+Enter untuk mengirim pesan",
 			"description": "Ketika diaktifkan, kamu harus menekan {{primaryMod}}+Enter untuk mengirim pesan alih-alih hanya Enter"
+		}
+	},
+	"skills": {
+		"description": "Kelola skills yang memberikan instruksi kontekstual kepada agen. Skills diterapkan secara otomatis saat relevan dengan tugas Anda. <DocsLink>Pelajari lebih lanjut</DocsLink>",
+		"projectSkills": "Skills Proyek",
+		"globalSkills": "Skills Global",
+		"noProjectSkills": "Tidak ada skills proyek yang dikonfigurasi. Buat satu untuk menambahkan kemampuan agen khusus proyek.",
+		"noGlobalSkills": "Tidak ada skills global yang dikonfigurasi. Buat satu untuk menambahkan kemampuan agen yang tersedia di semua proyek.",
+		"addSkill": "Tambahkan Skill",
+		"editSkill": "Edit skill",
+		"deleteSkill": "Hapus skill",
+		"changeMode": "Ubah mode",
+		"modeAny": "Mode apa saja",
+		"deleteDialog": {
+			"title": "Hapus Skill",
+			"description": "Apakah Anda yakin ingin menghapus skill \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
+			"confirm": "Hapus",
+			"cancel": "Batal"
+		},
+		"createDialog": {
+			"title": "Buat Skill Baru",
+			"description": "Tentukan template skill baru yang memberikan instruksi kontekstual kepada agen.",
+			"nameLabel": "Nama",
+			"namePlaceholder": "nama-skill-saya",
+			"nameHint": "Hanya huruf kecil, angka, dan tanda hubung (1-64 karakter)",
+			"descriptionLabel": "Deskripsi",
+			"descriptionPlaceholder": "Jelaskan kapan skill ini harus digunakan...",
+			"descriptionHint": "Jelaskan apa yang dilakukan skill ini dan kapan agen harus menerapkannya (1-1024 karakter)",
+			"sourceLabel": "Lokasi",
+			"sourceHint": "Pilih apakah skill ini tersedia secara global atau hanya di proyek ini",
+			"modeLabel": "Mode (opsional)",
+			"modePlaceholder": "Mode apa saja",
+			"modeHint": "Batasi skill ini ke mode tertentu",
+			"modeAny": "Mode apa saja",
+			"create": "Buat",
+			"cancel": "Batal"
+		},
+		"source": {
+			"global": "Global (tersedia di semua proyek)",
+			"project": "Proyek (workspace ini saja)"
+		},
+		"validation": {
+			"nameRequired": "Nama diperlukan",
+			"nameTooLong": "Nama harus 64 karakter atau kurang",
+			"nameInvalid": "Nama harus 1-64 huruf kecil, angka, atau tanda hubung",
+			"descriptionRequired": "Deskripsi diperlukan",
+			"descriptionTooLong": "Deskripsi harus 1024 karakter atau kurang"
 		}
 	}
 }

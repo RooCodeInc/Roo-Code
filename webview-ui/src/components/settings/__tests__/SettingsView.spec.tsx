@@ -116,6 +116,11 @@ vi.mock("../../../components/common/Tab", () => ({
 
 vi.mock("@/components/ui", () => ({
 	...vi.importActual("@/components/ui"),
+	ToggleSwitch: ({ checked, onChange, "aria-label": ariaLabel, "data-testid": dataTestId }: any) => (
+		<button role="switch" aria-checked={checked} aria-label={ariaLabel} data-testid={dataTestId} onClick={onChange}>
+			Toggle
+		</button>
+	),
 	Popover: ({ children }: any) => <div data-testid="popover">{children}</div>,
 	PopoverTrigger: ({ children }: any) => <div data-testid="popover-trigger">{children}</div>,
 	PopoverContent: ({ children }: any) => <div data-testid="popover-content">{children}</div>,
@@ -207,6 +212,17 @@ vi.mock("@/components/ui", () => ({
 	CollapsibleContent: ({ children, className }: any) => (
 		<div className={`collapsible-content-mock ${className || ""}`}>{children}</div>
 	),
+	// Add Dialog components (used by CreateSkillDialog)
+	Dialog: ({ children, open }: any) => (open ? <div data-testid="dialog">{children}</div> : null),
+	DialogContent: ({ children, className }: any) => (
+		<div data-testid="dialog-content" className={className}>
+			{children}
+		</div>
+	),
+	DialogHeader: ({ children }: any) => <div data-testid="dialog-header">{children}</div>,
+	DialogTitle: ({ children }: any) => <div data-testid="dialog-title">{children}</div>,
+	DialogDescription: ({ children }: any) => <div data-testid="dialog-description">{children}</div>,
+	DialogFooter: ({ children }: any) => <div data-testid="dialog-footer">{children}</div>,
 }))
 
 // Mock window.postMessage to trigger state hydration

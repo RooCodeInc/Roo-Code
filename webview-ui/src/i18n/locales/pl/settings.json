@@ -29,6 +29,7 @@
 		"providers": "Dostawcy",
 		"modes": "Tryby",
 		"mcp": "Serwery MCP",
+		"worktrees": "Worktrees",
 		"autoApprove": "Auto-zatwierdzanie",
 		"browser": "Dostęp komputera",
 		"checkpoints": "Punkty kontrolne",
@@ -40,7 +41,8 @@
 		"ui": "UI",
 		"experimental": "Eksperymentalne",
 		"language": "Język",
-		"about": "O Roo Code"
+		"about": "O Roo Code",
+		"skills": "Skills"
 	},
 	"about": {
 		"bugReport": {
@@ -284,6 +286,37 @@
 		"vercelAiGatewayApiKey": "Klucz API Vercel AI Gateway",
 		"getVercelAiGatewayApiKey": "Uzyskaj klucz API Vercel AI Gateway",
 		"apiKeyStorageNotice": "Klucze API są bezpiecznie przechowywane w Tajnym Magazynie VSCode",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Użyj niestandardowego URL bazowego",
 		"useReasoning": "Włącz rozumowanie",
 		"useHostHeader": "Użyj niestandardowego nagłówka Host",
@@ -693,6 +726,15 @@
 			"label": "Limit znaków terminala",
 			"description": "Zastępuje limit linii, aby zapobiec problemom z pamięcią, narzucając twardy limit rozmiaru wyjścia. W przypadku przekroczenia zachowuje początek i koniec i pokazuje symbol zastępczy Roo tam, gdzie treść jest pomijana. <0>Dowiedz się więcej</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Rozmiar podglądu wyjścia polecenia",
+			"description": "Kontroluje, ile wyjścia polecenia Roo widzi bezpośrednio. Pełne wyjście jest zawsze zapisywane i dostępne w razie potrzeby.",
+			"options": {
+				"small": "Mały (5KB)",
+				"medium": "Średni (10KB)",
+				"large": "Duży (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Limit czasu integracji powłoki terminala",
 			"description": "Jak długo czekać na integrację powłoki VS Code przed wykonaniem poleceń. Zwiększ, jeśli twoja powłoka wolno się uruchamia lub widzisz błędy 'Integracja Powłoki Niedostępna'. <0>Dowiedz się więcej</0>"
@@ -704,10 +746,6 @@
 		"commandDelay": {
 			"label": "Opóźnienie polecenia terminala",
 			"description": "Dodaje krótką pauzę po każdym poleceniu, aby terminal VS Code mógł opróżnić całe wyjście (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Używaj tylko gdy widzisz brakujące wyjście końcowe; w przeciwnym razie zostaw na 0. <0>Dowiedz się więcej</0>"
-		},
-		"compressProgressBar": {
-			"label": "Kompresuj wyjście paska postępu",
-			"description": "Zwija paski postępu/spinnery, aby zachować tylko stan końcowy (oszczędza tokeny). <0>Dowiedz się więcej</0>"
 		},
 		"powershellCounter": {
 			"label": "Włącz obejście licznika PowerShell",
@@ -737,14 +775,6 @@
 	"advancedSettings": {
 		"title": "Ustawienia zaawansowane"
 	},
-	"toolProtocol": {
-		"label": "Protokół wywołania narzędzia",
-		"description": "Wybierz, jak Roo komunikuje się z API. Natywny używa API wywołania funkcji dostawcy, podczas gdy XML używa definicji narzędzi w formacie XML.",
-		"default": "Domyślny",
-		"xml": "XML",
-		"native": "Natywny",
-		"currentDefault": "Domyślny: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Włącz edycję przez różnice",
@@ -761,10 +791,6 @@
 					"unified": "Strategia diff ujednoliconego stosuje wiele podejść do zastosowania różnic i wybiera najlepsze podejście.",
 					"multiBlock": "Strategia diff wieloblokowego pozwala na aktualizację wielu bloków kodu w pliku w jednym żądaniu."
 				}
-			},
-			"matchPrecision": {
-				"label": "Precyzja dopasowania",
-				"description": "Ten suwak kontroluje, jak dokładnie sekcje kodu muszą pasować podczas stosowania różnic. Niższe wartości umożliwiają bardziej elastyczne dopasowywanie, ale zwiększają ryzyko nieprawidłowych zamian. Używaj wartości poniżej 100% z najwyższą ostrożnością."
 			}
 		},
 		"todoList": {
@@ -781,10 +807,6 @@
 			"name": "Użyj eksperymentalnego narzędzia do wstawiania treści",
 			"description": "Włącz eksperymentalne narzędzie do wstawiania treści, umożliwiając Roo wstawianie treści w określonych numerach linii bez konieczności tworzenia diff."
 		},
-		"POWER_STEERING": {
-			"name": "Użyj eksperymentalnego trybu \"wspomagania kierownicy\"",
-			"description": "Po włączeniu, Roo będzie częściej przypominać modelowi o szczegółach jego bieżącej definicji trybu. Doprowadzi to do silniejszego przestrzegania definicji ról i niestandardowych instrukcji, ale będzie używać więcej tokenów na wiadomość."
-		},
 		"MULTI_SEARCH_AND_REPLACE": {
 			"name": "Użyj eksperymentalnego narzędzia diff wieloblokowego",
 			"description": "Po włączeniu, Roo użyje narzędzia diff wieloblokowego. Spróbuje to zaktualizować wiele bloków kodu w pliku w jednym żądaniu."
@@ -796,10 +818,6 @@
 		"MARKETPLACE": {
 			"name": "Włącz Marketplace",
 			"description": "Gdy włączone, możesz instalować MCP i niestandardowe tryby z Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Włącz równoczesne edycje plików",
-			"description": "Gdy włączone, Roo może edytować wiele plików w jednym żądaniu. Gdy wyłączone, Roo musi edytować pliki jeden po drugim. Wyłączenie tego może pomóc podczas pracy z mniej zdolnymi modelami lub gdy chcesz mieć większą kontrolę nad modyfikacjami plików."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Edycja w tle",
@@ -829,10 +847,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Włącz polecenia slash inicjowane przez model",
 			"description": "Gdy włączone, Roo może uruchamiać twoje polecenia slash w celu wykonywania przepływów pracy."
-		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Równoległe wywołania narzędzi",
-			"description": "Po włączeniu protokół natywny może wykonywać wiele narzędzi w jednej turze wiadomości asystenta."
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Włącz niestandardowe narzędzia",
@@ -979,6 +993,53 @@
 		"requireCtrlEnterToSend": {
 			"label": "Wymagaj {{primaryMod}}+Enter do wysyłania wiadomości",
 			"description": "Po włączeniu musisz nacisnąć {{primaryMod}}+Enter, aby wysłać wiadomości, zamiast tylko Enter"
+		}
+	},
+	"skills": {
+		"description": "Zarządzaj umiejętnościami, które dostarczają kontekstowe instrukcje dla agenta. Umiejętności są automatycznie stosowane, gdy są istotne dla Twoich zadań. <DocsLink>Dowiedz się więcej</DocsLink>",
+		"projectSkills": "Umiejętności Projektu",
+		"globalSkills": "Umiejętności Globalne",
+		"noProjectSkills": "Brak skonfigurowanych umiejętności projektu. Utwórz jedną, aby dodać możliwości agenta specyficzne dla projektu.",
+		"noGlobalSkills": "Brak skonfigurowanych umiejętności globalnych. Utwórz jedną, aby dodać możliwości agenta dostępne we wszystkich projektach.",
+		"addSkill": "Dodaj Umiejętność",
+		"editSkill": "Edytuj umiejętność",
+		"deleteSkill": "Usuń umiejętność",
+		"changeMode": "Zmień tryb",
+		"modeAny": "Dowolny tryb",
+		"deleteDialog": {
+			"title": "Usuń Umiejętność",
+			"description": "Czy na pewno chcesz usunąć umiejętność \"{{name}}\"? Tej akcji nie można cofnąć.",
+			"confirm": "Usuń",
+			"cancel": "Anuluj"
+		},
+		"createDialog": {
+			"title": "Utwórz Nową Umiejętność",
+			"description": "Zdefiniuj nowy szablon umiejętności, który dostarcza kontekstowe instrukcje dla agenta.",
+			"nameLabel": "Nazwa",
+			"namePlaceholder": "moja-nazwa-umiejetnosci",
+			"nameHint": "Tylko małe litery, cyfry i myślniki (1-64 znaki)",
+			"descriptionLabel": "Opis",
+			"descriptionPlaceholder": "Opisz, kiedy ta umiejętność powinna być użyta...",
+			"descriptionHint": "Wyjaśnij, co robi ta umiejętność i kiedy agent powinien ją zastosować (1-1024 znaki)",
+			"sourceLabel": "Lokalizacja",
+			"sourceHint": "Wybierz, czy ta umiejętność jest dostępna globalnie, czy tylko w tym projekcie",
+			"modeLabel": "Tryb (opcjonalnie)",
+			"modePlaceholder": "Dowolny tryb",
+			"modeHint": "Ogranicz tę umiejętność do określonego trybu",
+			"modeAny": "Dowolny tryb",
+			"create": "Utwórz",
+			"cancel": "Anuluj"
+		},
+		"source": {
+			"global": "Globalnie (dostępne we wszystkich projektach)",
+			"project": "Projekt (tylko ten obszar roboczy)"
+		},
+		"validation": {
+			"nameRequired": "Nazwa jest wymagana",
+			"nameTooLong": "Nazwa musi mieć maksymalnie 64 znaki",
+			"nameInvalid": "Nazwa musi zawierać 1-64 małe litery, cyfry lub myślniki",
+			"descriptionRequired": "Opis jest wymagany",
+			"descriptionTooLong": "Opis musi mieć maksymalnie 1024 znaki"
 		}
 	}
 }

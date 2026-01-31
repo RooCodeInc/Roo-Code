@@ -1,15 +1,20 @@
 import * as vscode from "vscode"
 import * as dotenvx from "@dotenvx/dotenvx"
+import * as fs from "fs"
 import * as path from "path"
 
 // Load environment variables from .env file
-try {
-	// Specify path to .env file in the project root directory
-	const envPath = path.join(__dirname, "..", ".env")
-	dotenvx.config({ path: envPath })
-} catch (e) {
-	// Silently handle environment loading errors
-	console.warn("Failed to load environment variables:", e)
+// The extension-level .env is optional (not shipped in production builds).
+// Avoid calling dotenvx when the file doesn't exist, otherwise dotenvx emits
+// a noisy [MISSING_ENV_FILE] error to the extension host console.
+const envPath = path.join(__dirname, "..", ".env")
+if (fs.existsSync(envPath)) {
+	try {
+		dotenvx.config({ path: envPath })
+	} catch (e) {
+		// Best-effort only: never fail extension activation due to optional env loading.
+		console.warn("Failed to load environment variables:", e)
+	}
 }
 
 import type { CloudUserInfo, AuthState } from "@roo-code/types"
@@ -27,7 +32,6 @@ import { ContextProxy } from "./core/config/ContextProxy"
 import { ClineProvider } from "./core/webview/ClineProvider"
 import { DIFF_VIEW_URI_SCHEME } from "./integrations/editor/DiffViewProvider"
 import { TerminalRegistry } from "./integrations/terminal/TerminalRegistry"
-import { claudeCodeOAuthManager } from "./integrations/claude-code/oauth"
 import { openAiCodexOAuthManager } from "./integrations/openai-codex/oauth"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
@@ -61,6 +65,55 @@ let cloudService: CloudService | undefined
 let authStateChangedHandler: ((data: { state: AuthState; previousState: AuthState }) => Promise<void>) | undefined
 let settingsUpdatedHandler: (() => void) | undefined
 let userInfoHandler: ((data: { userInfo: CloudUserInfo }) => Promise<void>) | undefined
+
+/**
+ * Check if we should auto-open the Roo Code sidebar after switching to a worktree.
+ * This is called during extension activation to handle the worktree auto-open flow.
+ */
+async function checkWorktreeAutoOpen(
+	context: vscode.ExtensionContext,
+	outputChannel: vscode.OutputChannel,
+): Promise<void> {
+	try {
+		const worktreeAutoOpenPath = context.globalState.get<string>("worktreeAutoOpenPath")
+		if (!worktreeAutoOpenPath) {
+			return
+		}
+
+		const workspaceFolders = vscode.workspace.workspaceFolders
+		if (!workspaceFolders || workspaceFolders.length === 0) {
+			return
+		}
+
+		const currentPath = workspaceFolders[0].uri.fsPath
+
+		// Normalize paths for comparison
+		const normalizePath = (p: string) => p.replace(/\/+$/, "").replace(/\\+/g, "/").toLowerCase()
+
+		// Check if current workspace matches the worktree path
+		if (normalizePath(currentPath) === normalizePath(worktreeAutoOpenPath)) {
+			// Clear the state first to prevent re-triggering
+			await context.globalState.update("worktreeAutoOpenPath", undefined)
+
+			outputChannel.appendLine(`[Worktree] Auto-opening Roo Code sidebar for worktree: ${worktreeAutoOpenPath}`)
+
+			// Open the Roo Code sidebar with a slight delay to ensure UI is ready
+			setTimeout(async () => {
+				try {
+					await vscode.commands.executeCommand("roo-cline.plusButtonClicked")
+				} catch (error) {
+					outputChannel.appendLine(
+						`[Worktree] Error auto-opening sidebar: ${error instanceof Error ? error.message : String(error)}`,
+					)
+				}
+			}, 500)
+		}
+	} catch (error) {
+		outputChannel.appendLine(
+			`[Worktree] Error checking worktree auto-open: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+}
 
 // This method is called when your extension is activated.
 // Your extension is activated the very first time the command is executed.
@@ -101,9 +154,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Initialize terminal shell execution handlers.
 	TerminalRegistry.initialize()
-
-	// Initialize Claude Code OAuth manager for direct API access.
-	claudeCodeOAuthManager.initialize(context, (message) => outputChannel.appendLine(message))
 
 	// Initialize OpenAI Codex OAuth manager for ChatGPT subscription-based access.
 	openAiCodexOAuthManager.initialize(context, (message) => outputChannel.appendLine(message))
@@ -283,6 +333,9 @@ export async function activate(context: vscode.ExtensionContext) {
 			webviewOptions: { retainContextWhenHidden: true },
 		}),
 	)
+
+	// Check for worktree auto-open path (set when switching to a worktree)
+	await checkWorktreeAutoOpen(context, outputChannel)
 
 	// Auto-import configuration if specified in settings.
 	try {

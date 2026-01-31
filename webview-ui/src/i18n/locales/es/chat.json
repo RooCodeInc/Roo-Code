@@ -28,7 +28,8 @@
 		"openInCloud": "Abrir tarea en Roo Code Cloud",
 		"openInCloudIntro": "Continúa monitoreando o interactuando con Roo desde cualquier lugar. Escanea, haz clic o copia para abrir.",
 		"openApiHistory": "Abrir historial de API",
-		"openUiHistory": "Abrir historial de UI"
+		"openUiHistory": "Abrir historial de UI",
+		"backToParentTask": "Tarea principal"
 	},
 	"unpin": "Desfijar",
 	"pin": "Fijar",
@@ -51,7 +52,10 @@
 	"tokenProgress": {
 		"availableSpace": "Espacio disponible: {{amount}} tokens",
 		"tokensUsed": "Tokens utilizados: {{used}} de {{total}}",
-		"reservedForResponse": "Reservado para respuesta del modelo: {{amount}} tokens"
+		"reservedForResponse": "Reservado para respuesta del modelo: {{amount}} tokens",
+		"tokensUsedLabel": "Tokens utilizados",
+		"reservedForResponseLabel": "Reservado para respuesta",
+		"availableSpaceLabel": "Espacio disponible"
 	},
 	"reject": {
 		"title": "Rechazar",
@@ -146,14 +150,14 @@
 		"rateLimitWait": "Limitación de tasa",
 		"errorTitle": "Error del proveedor {{code}}",
 		"errorMessage": {
-			"docs": "Documentación",
-			"goToSettings": "Configuración",
 			"400": "El proveedor no pudo procesar la solicitud tal como se hizo. Detén la tarea e intenta un enfoque diferente.",
 			"401": "No se pudo autenticar con el proveedor. Por favor verifica tu configuración de clave API.",
 			"402": "Parece que se te han acabado los fondos/créditos en tu cuenta. Ve a tu proveedor y agrega más para continuar.",
 			"403": "No autorizado. Tu clave API es válida, pero el proveedor se negó a completar esta solicitud.",
 			"429": "Demasiadas solicitudes. Te estás viendo limitado por el proveedor. Por favor espera un poco antes de tu próxima llamada API.",
 			"500": "Error del servidor del proveedor. Algo está mal en el lado del proveedor, no hay nada mal con tu solicitud.",
+			"docs": "Documentación",
+			"goToSettings": "Configuración",
 			"unknown": "Error API desconocido. Por favor contacta al soporte de Roo Code.",
 			"connection": "Error de conexión. Asegúrate de tener una conexión a Internet funcional.",
 			"claudeCodeNotAuthenticated": "Debes iniciar sesión para usar Claude Code. Ve a Configuración y haz clic en \"Iniciar sesión en Claude Code\" para autenticarte."
@@ -258,7 +262,8 @@
 		"completionContent": "Subtarea completada",
 		"resultContent": "Resultados de la subtarea",
 		"defaultResult": "Por favor, continúa con la siguiente tarea.",
-		"completionInstructions": "¡Subtarea completada! Puedes revisar los resultados y sugerir correcciones o próximos pasos. Si todo se ve bien, confirma para devolver el resultado a la tarea principal."
+		"completionInstructions": "¡Subtarea completada! Puedes revisar los resultados y sugerir correcciones o próximos pasos. Si todo se ve bien, confirma para devolver el resultado a la tarea principal.",
+		"goToSubtask": "Ver tarea"
 	},
 	"questions": {
 		"hasQuestion": "Roo tiene una pregunta"
@@ -319,6 +324,10 @@
 			"description": "Se eliminaron mensajes más antiguos de la conversación para mantenerse dentro del límite de la ventana de contexto. Este es un enfoque rápido pero menos conservador del contexto en comparación con la condensación."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "Roo quiere cargar una habilidad",
+		"didLoad": "Roo cargó una habilidad"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar a la entrada (o Shift + clic)",
 		"timerPrefix": "Aprobación automática habilitada. Seleccionando en {{seconds}}s…"
@@ -335,9 +344,9 @@
 		},
 		"release": {
 			"heading": "Qué hay de nuevo:",
-			"openaiCodexProvider": "Se añadió el Proveedor OpenAI - ChatGPT Plus/Pro que ofrece acceso basado en suscripción a modelos Codex sin costos por token.",
-			"gpt52codexModel": "Se añadió el nuevo modelo gpt-5.2-codex al Roo Code Router, al proveedor estándar OpenAI y más.",
-			"bugFixes": "Se corrigieron fugas de memoria que causaban pantallas grises, problemas de firma de pensamiento de Gemini y más mejoras de estabilidad."
+			"parallelTools": "Llamadas de herramientas paralelas: Las herramientas ahora se ejecutan en paralelo por defecto, acelerando significativamente operaciones con múltiples archivos y tareas complejas.",
+			"readFileIndentation": "Lectura de archivos más inteligente: El nuevo modo de indentación extrae bloques de código semántico completos (funciones, clases) sin truncamiento a mitad de función—ideal para apuntar a líneas específicas de resultados de búsqueda.",
+			"readCommandOutput": "Salida de terminal sin pérdida: La nueva herramienta read_command_output recupera la salida completa del comando desde ejecuciones truncadas con paginación y filtrado regex."
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",
@@ -492,5 +501,17 @@
 		"updated": "Se actualizó la lista de tareas pendientes",
 		"completed": "Completado",
 		"started": "Iniciado"
+	},
+	"tooManyTools": {
+		"title": "Demasiadas herramientas habilitadas",
+		"toolsPart_one": "{{count}} herramienta",
+		"toolsPart_other": "{{count}} herramientas",
+		"serversPart_one": "{{count}} servidor MCP",
+		"serversPart_other": "{{count}} servidores MCP",
+		"messageTemplate": "Tienes {{tools}} habilitadas a través de {{servers}}. Un número tan alto puede confundir al modelo y llevar a errores. Intenta mantenerlo por debajo de {{threshold}}.",
+		"openMcpSettings": "Abrir configuración de MCP"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

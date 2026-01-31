@@ -1,6 +1,6 @@
 {
 	"name": "@roo-code/cli",
-	"version": "0.0.45",
+	"version": "0.0.49",
 	"description": "Roo Code CLI - Run the Roo Code agent from the command line",
 	"private": true,
 	"type": "module",
@@ -14,8 +14,10 @@
 		"check-types": "tsc --noEmit",
 		"test": "vitest run",
 		"build": "tsup",
+		"build:extension": "pnpm --filter roo-cline bundle",
+		"build:all": "pnpm --filter roo-cline bundle && tsup",
 		"dev": "tsup --watch",
-		"start": "ROO_SDK_BASE_URL=http://localhost:3001 ROO_AUTH_BASE_URL=http://localhost:3000 node dist/index.js",
+		"start": "ROO_AUTH_BASE_URL=http://localhost:3000 ROO_SDK_BASE_URL=http://localhost:3001 ROO_CODE_PROVIDER_URL=http://localhost:8080/proxy node dist/index.js",
 		"start:production": "node dist/index.js",
 		"release": "scripts/release.sh",
 		"clean": "rimraf dist .turbo"
@@ -28,6 +30,8 @@
 		"@trpc/client": "^11.8.1",
 		"@vscode/ripgrep": "^1.15.9",
 		"commander": "^12.1.0",
+		"cross-spawn": "^7.0.6",
+		"execa": "^9.5.2",
 		"fuzzysort": "^3.1.0",
 		"ink": "^6.6.0",
 		"p-wait-for": "^5.0.2",

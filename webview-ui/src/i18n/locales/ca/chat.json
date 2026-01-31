@@ -28,14 +28,18 @@
 		"openInCloud": "Obrir tasca a Roo Code Cloud",
 		"openInCloudIntro": "Continua monitoritzant o interactuant amb Roo des de qualsevol lloc. Escaneja, fes clic o copia per obrir.",
 		"openApiHistory": "Obrir historial d'API",
-		"openUiHistory": "Obrir historial d'UI"
+		"openUiHistory": "Obrir historial d'UI",
+		"backToParentTask": "Tasca principal"
 	},
 	"unpin": "Desfixar",
 	"pin": "Fixar",
 	"tokenProgress": {
 		"availableSpace": "Espai disponible: {{amount}} tokens",
 		"tokensUsed": "Tokens utilitzats: {{used}} de {{total}}",
-		"reservedForResponse": "Reservat per a resposta del model: {{amount}} tokens"
+		"reservedForResponse": "Reservat per a resposta del model: {{amount}} tokens",
+		"tokensUsedLabel": "Tokens utilitzats",
+		"reservedForResponseLabel": "Reservat per a resposta",
+		"availableSpaceLabel": "Espai disponible"
 	},
 	"retry": {
 		"title": "Tornar a intentar",
@@ -146,14 +150,14 @@
 		"rateLimitWait": "Limitació de taxa",
 		"errorTitle": "Error de proveïdor {{code}}",
 		"errorMessage": {
-			"docs": "Documentació",
-			"goToSettings": "Configuració",
 			"400": "El proveïdor no ha pogut processar la sol·licitud tal com es va fer. Interromp la tasca i prova una abordatge diferent.",
 			"401": "No s'ha pogut autenticar amb el proveïdor. Si us plau, verifica la teva configuració de clau API.",
 			"402": "Sembla que se t'han acabat els fons/crèdits al teu compte. Vés al teu proveïdor i afegeix més per continuar.",
 			"403": "No autoritzat. La teva clau API és vàlida, però el proveïdor ha rebutjat completar aquesta sol·licitud.",
 			"429": "Massa sol·licituds. Estàs sent limitat pel proveïdor. Si us plau espera una mica abans de la teva propera crida API.",
 			"500": "Error del servidor del proveïdor. Quelcom va malament del costat del proveïdor, no hi ha res de malament amb la teva sol·licitud.",
+			"docs": "Documentació",
+			"goToSettings": "Configuració",
 			"unknown": "Error API desconegut. Si us plau contacta amb el suport de Roo Code.",
 			"connection": "Error de connexió. Assegureu-vos que teniu una connexió a Internet funcional.",
 			"claudeCodeNotAuthenticated": "Has d'iniciar sessió per utilitzar Claude Code. Vés a Configuració i fes clic a \"Iniciar sessió a Claude Code\" per autenticar-te."
@@ -258,7 +262,8 @@
 		"completionContent": "Subtasca completada",
 		"resultContent": "Resultats de la subtasca",
 		"defaultResult": "Si us plau, continua amb la següent tasca.",
-		"completionInstructions": "Subtasca completada! Pots revisar els resultats i suggerir correccions o següents passos. Si tot sembla correcte, confirma per tornar el resultat a la tasca principal."
+		"completionInstructions": "Subtasca completada! Pots revisar els resultats i suggerir correccions o següents passos. Si tot sembla correcte, confirma per tornar el resultat a la tasca principal.",
+		"goToSubtask": "Veure tasca"
 	},
 	"questions": {
 		"hasQuestion": "Roo té una pregunta"
@@ -319,6 +324,10 @@
 			"description": "S'han eliminat missatges més antics de la conversa per mantenir-se dins del límit de la finestra de context. Aquest és un enfocament ràpid però menys conservador del context en comparació amb la condensació."
 		}
 	},
+	"skill": {
+		"wantsToLoad": "En Roo vol carregar una habilitat",
+		"didLoad": "En Roo ha carregat una habilitat"
+	},
 	"followUpSuggest": {
 		"copyToInput": "Copiar a l'entrada (o Shift + clic)",
 		"timerPrefix": "Aprovació automàtica habilitada. Seleccionant en {{seconds}}s…"
@@ -335,9 +344,9 @@
 		},
 		"release": {
 			"heading": "Què hi ha de nou:",
-			"openaiCodexProvider": "S'ha afegit el Proveïdor OpenAI - ChatGPT Plus/Pro que ofereix accés basat en subscripció als models Codex sense costos per token.",
-			"gpt52codexModel": "S'ha afegit el nou model gpt-5.2-codex al Roo Code Router, al proveïdor estàndard OpenAI i més.",
-			"bugFixes": "S'han corregit fuites de memòria que causaven pantalles grises, problemes de signatura de pensament de Gemini i més millores d'estabilitat."
+			"parallelTools": "Crides de ferramenta paral·leles: Les ferramentes ara s'executen en paral·lel per defecte, accelerant significativament les operacions multi-fitxer i les tasques complexes.",
+			"readFileIndentation": "Lectura de fitxers més intel·ligent: El nou mode de indentació extreu blocs de codi semàntics complets (funcions, classes) sense truncament al mig de la funció—ideal per als casos específics de línies dels resultats de cerca.",
+			"readCommandOutput": "Sortida de terminal sense pèrdua: La nova ferramenta read_command_output recupera la sortida completa de la comanda des d'execucions truncades amb paginació i filtrat regex."
 		},
 		"cloudAgents": {
 			"heading": "Novetats al núvol:",
@@ -492,5 +501,17 @@
 		"updated": "S'ha actualitzat la llista de tasques pendents",
 		"completed": "Completat",
 		"started": "Iniciat"
+	},
+	"tooManyTools": {
+		"title": "Massa eines habilitades",
+		"toolsPart_one": "{{count}} eina",
+		"toolsPart_other": "{{count}} eines",
+		"serversPart_one": "{{count}} servidor MCP",
+		"serversPart_other": "{{count}} servidors MCP",
+		"messageTemplate": "Tens {{tools}} habilitades via {{servers}}. Un nombre tant alt pot confondre el model i portar a errors. Intenta mantenir-lo per sota de {{threshold}}.",
+		"openMcpSettings": "Obrir configuració de MCP"
+	},
+	"readCommandOutput": {
+		"title": "Roo read command output"
 	}
 }

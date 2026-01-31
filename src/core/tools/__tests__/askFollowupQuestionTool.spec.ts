@@ -27,7 +27,10 @@ describe("askFollowupQuestionTool", () => {
 			name: "ask_followup_question",
 			params: {
 				question: "What would you like to do?",
-				follow_up: "<suggest>Option 1</suggest><suggest>Option 2</suggest>",
+			},
+			nativeArgs: {
+				questions: ["What would you like to do?"],
+				follow_up: [{ text: "Option 1" }, { text: "Option 2" }],
 			},
 			partial: false,
 		}
@@ -36,8 +39,6 @@ describe("askFollowupQuestionTool", () => {
 			askApproval: vi.fn(),
 			handleError: vi.fn(),
 			pushToolResult: mockPushToolResult,
-			removeClosingTag: vi.fn((tag, content) => content),
-			toolProtocol: "xml",
 		})
 
 		expect(mockCline.ask).toHaveBeenCalledWith(
@@ -53,7 +54,13 @@ describe("askFollowupQuestionTool", () => {
 			name: "ask_followup_question",
 			params: {
 				question: "What would you like to do?",
-				follow_up: '<suggest mode="code">Write code</suggest><suggest mode="debug">Debug issue</suggest>',
+			},
+			nativeArgs: {
+				questions: ["What would you like to do?"],
+				follow_up: [
+					{ text: "Write code", mode: "code" },
+					{ text: "Debug issue", mode: "debug" },
+				],
 			},
 			partial: false,
 		}
@@ -62,8 +69,6 @@ describe("askFollowupQuestionTool", () => {
 			askApproval: vi.fn(),
 			handleError: vi.fn(),
 			pushToolResult: mockPushToolResult,
-			removeClosingTag: vi.fn((tag, content) => content),
-			toolProtocol: "xml",
 		})
 
 		expect(mockCline.ask).toHaveBeenCalledWith(
@@ -81,7 +86,10 @@ describe("askFollowupQuestionTool", () => {
 			name: "ask_followup_question",
 			params: {
 				question: "What would you like to do?",
-				follow_up: '<suggest>Regular option</suggest><suggest mode="architect">Plan architecture</suggest>',
+			},
+			nativeArgs: {
+				questions: ["What would you like to do?"],
+				follow_up: [{ text: "Regular option" }, { text: "Plan architecture", mode: "architect" }],
 			},
 			partial: false,
 		}
@@ -90,8 +98,6 @@ describe("askFollowupQuestionTool", () => {
 			askApproval: vi.fn(),
 			handleError: vi.fn(),
 			pushToolResult: mockPushToolResult,
-			removeClosingTag: vi.fn((tag, content) => content),
-			toolProtocol: "xml",
 		})
 
 		expect(mockCline.ask).toHaveBeenCalledWith(
@@ -99,32 +105,6 @@ describe("askFollowupQuestionTool", () => {
 			expect.stringContaining(
 				'"suggest":[{"answer":"Regular option"},{"answer":"Plan architecture","mode":"architect"}]',
 			),
-			false,
-		)
-	})
-
-	it("should parse multiple questions from XML", async () => {
-		const block: ToolUse = {
-			type: "tool_use",
-			name: "ask_followup_question",
-			params: {
-				questions: "<question>Question 1</question><question>Question 2</question>",
-				follow_up: "",
-			},
-			partial: false,
-		}
-
-		await askFollowupQuestionTool.handle(mockCline, block as ToolUse<"ask_followup_question">, {
-			askApproval: vi.fn(),
-			handleError: vi.fn(),
-			pushToolResult: mockPushToolResult,
-			removeClosingTag: vi.fn((tag, content) => content),
-			toolProtocol: "xml",
-		})
-
-		expect(mockCline.ask).toHaveBeenCalledWith(
-			"followup",
-			expect.stringContaining('"questions":["Question 1","Question 2"]'),
 			false,
 		)
 	})
@@ -145,8 +125,6 @@ describe("askFollowupQuestionTool", () => {
 			askApproval: vi.fn(),
 			handleError: vi.fn(),
 			pushToolResult: mockPushToolResult,
-			removeClosingTag: vi.fn((tag, content) => content),
-			toolProtocol: "native",
 		})
 
 		expect(mockCline.ask).toHaveBeenCalledWith(
@@ -176,8 +154,6 @@ describe("askFollowupQuestionTool", () => {
 			askApproval: vi.fn(),
 			handleError: vi.fn(),
 			pushToolResult: mockPushToolResult,
-			removeClosingTag: vi.fn((tag, content) => content),
-			toolProtocol: "native",
 		})
 
 		expect(mockCline.ask).toHaveBeenCalledWith(
@@ -209,8 +185,6 @@ describe("askFollowupQuestionTool", () => {
 				askApproval: vi.fn(),
 				handleError: vi.fn(),
 				pushToolResult: mockPushToolResult,
-				removeClosingTag: vi.fn((tag, content) => content || ""),
-				toolProtocol: "native",
 			})
 
 			// During partial streaming, only the first question should be sent (not JSON with suggestions)
@@ -233,8 +207,6 @@ describe("askFollowupQuestionTool", () => {
 				askApproval: vi.fn(),
 				handleError: vi.fn(),
 				pushToolResult: mockPushToolResult,
-				removeClosingTag: vi.fn((tag, content) => content || ""),
-				toolProtocol: "native",
 			})
 
 			// Should show first question during streaming

@@ -29,6 +29,8 @@
 		"providers": "Providers",
 		"modes": "Modes",
 		"mcp": "MCP Servers",
+		"worktrees": "Worktrees",
+		"skills": "Skills",
 		"autoApprove": "Auto-Approve",
 		"browser": "Browser",
 		"checkpoints": "Checkpoints",
@@ -68,6 +70,53 @@
 	},
 	"slashCommands": {
 		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
+	},
+	"skills": {
+		"description": "Manage skills that provide contextual instructions to the agent. Skills are automatically applied when relevant to your tasks. <DocsLink>Learn more</DocsLink>",
+		"projectSkills": "Project Skills",
+		"globalSkills": "Global Skills",
+		"noProjectSkills": "No project skills configured. Create one to add project-specific agent capabilities.",
+		"noGlobalSkills": "No global skills configured. Create one to add agent capabilities available across all projects.",
+		"addSkill": "Add Skill",
+		"editSkill": "Edit skill",
+		"deleteSkill": "Delete skill",
+		"changeMode": "Change mode",
+		"modeAny": "Any mode",
+		"deleteDialog": {
+			"title": "Delete Skill",
+			"description": "Are you sure you want to delete the skill \"{{name}}\"? This action cannot be undone.",
+			"confirm": "Delete",
+			"cancel": "Cancel"
+		},
+		"createDialog": {
+			"title": "Create New Skill",
+			"description": "Define a new skill template that provides contextual instructions to the agent.",
+			"nameLabel": "Name",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "Lowercase letters, numbers, and hyphens only (1-64 characters)",
+			"descriptionLabel": "Description",
+			"descriptionPlaceholder": "Describe when this skill should be used...",
+			"descriptionHint": "Explain what this skill does and when the agent should apply it (1-1024 characters)",
+			"sourceLabel": "Location",
+			"sourceHint": "Choose whether this skill is available globally or only in this project",
+			"modeLabel": "Mode (optional)",
+			"modePlaceholder": "Any mode",
+			"modeHint": "Restrict this skill to a specific mode",
+			"modeAny": "Any mode",
+			"create": "Create",
+			"cancel": "Cancel"
+		},
+		"source": {
+			"global": "Global (available in all projects)",
+			"project": "Project (this workspace only)"
+		},
+		"validation": {
+			"nameRequired": "Name is required",
+			"nameTooLong": "Name must be 64 characters or less",
+			"nameInvalid": "Name must be 1-64 lowercase letters, numbers, or hyphens",
+			"descriptionRequired": "Description is required",
+			"descriptionTooLong": "Description must be 1024 characters or less"
+		}
 	},
 	"ui": {
 		"collapseThinking": {
@@ -293,6 +342,37 @@
 		"vercelAiGatewayApiKey": "Vercel AI Gateway API Key",
 		"getVercelAiGatewayApiKey": "Get Vercel AI Gateway API Key",
 		"apiKeyStorageNotice": "API keys are stored securely in VSCode's Secret Storage",
+		"openAiCodexRateLimits": {
+			"title": "Usage Limits for Codex{{planLabel}}",
+			"loading": "Loading usage limits...",
+			"loadError": "Failed to load usage limits",
+			"retry": "Retry",
+			"usedPercent": "{{percent}}% used",
+			"resetsIn": "Resets in {{time}}",
+			"plan": {
+				"default": "",
+				"withType": " ({{planType}})"
+			},
+			"time": {
+				"now": "Now",
+				"notAvailable": "N/A"
+			},
+			"duration": {
+				"daysHours": "{{days}}d {{hours}}h",
+				"hoursMinutes": "{{hours}}h {{minutes}}m",
+				"minutes": "{{minutes}}m"
+			},
+			"window": {
+				"usage": "Usage",
+				"fiveHour": "5h limit",
+				"oneHour": "1h limit",
+				"daily": "Daily limit",
+				"weekly": "Weekly limit",
+				"days": "{{days}}d limit",
+				"hours": "{{hours}}h limit",
+				"minutes": "{{minutes}}m limit"
+			}
+		},
 		"useCustomBaseUrl": "Use custom base URL",
 		"useReasoning": "Enable reasoning",
 		"useHostHeader": "Use custom Host header",
@@ -701,6 +781,15 @@
 			"label": "Terminal character limit",
 			"description": "Overrides the line limit to prevent memory issues by enforcing a hard cap on output size. If exceeded, keeps the beginning and end and shows a placeholder to Roo where content is skipped. <0>Learn more</0>"
 		},
+		"outputPreviewSize": {
+			"label": "Command output preview size",
+			"description": "Controls how much command output Roo sees directly. Full output is always saved and accessible when needed.",
+			"options": {
+				"small": "Small (5KB)",
+				"medium": "Medium (10KB)",
+				"large": "Large (20KB)"
+			}
+		},
 		"shellIntegrationTimeout": {
 			"label": "Terminal shell integration timeout",
 			"description": "How long to wait for VS Code shell integration before running commands. Raise if your shell starts slowly or you see 'Shell Integration Unavailable' errors. <0>Learn more</0>"
@@ -712,10 +801,6 @@
 		"commandDelay": {
 			"label": "Terminal command delay",
 			"description": "Adds a short pause after each command so the VS Code terminal can flush all output (bash/zsh: PROMPT_COMMAND sleep; PowerShell: start-sleep). Use only if you see missing tail output; otherwise leave at 0. <0>Learn more</0>"
-		},
-		"compressProgressBar": {
-			"label": "Compress progress bar output",
-			"description": "Collapses progress bars/spinners so only the final state is kept (saves tokens). <0>Learn more</0>"
 		},
 		"powershellCounter": {
 			"label": "Enable PowerShell counter workaround",
@@ -745,14 +830,6 @@
 	"advancedSettings": {
 		"title": "Advanced settings"
 	},
-	"toolProtocol": {
-		"label": "Tool Call Protocol",
-		"description": "Choose how Roo communicates with the API. Native uses the provider's function calling API, while XML uses XML-formatted tool definitions.",
-		"default": "Default",
-		"xml": "XML",
-		"native": "Native",
-		"currentDefault": "Default: {{protocol}}"
-	},
 	"advanced": {
 		"diff": {
 			"label": "Enable editing through diffs",
@@ -769,10 +846,6 @@
 					"unified": "Unified diff strategy takes multiple approaches to applying diffs and chooses the best approach.",
 					"multiBlock": "Multi-block diff strategy allows updating multiple code blocks in a file in one request."
 				}
-			},
-			"matchPrecision": {
-				"label": "Match precision",
-				"description": "This slider controls how precisely code sections must match when applying diffs. Lower values allow more flexible matching but increase the risk of incorrect replacements. Use values below 100% with extreme caution."
 			}
 		},
 		"todoList": {
@@ -789,10 +862,6 @@
 			"name": "Use experimental insert content tool",
 			"description": "Enable the experimental insert content tool, allowing Roo to insert content at specific line numbers without needing to create a diff."
 		},
-		"POWER_STEERING": {
-			"name": "Use experimental \"power steering\" mode",
-			"description": "When enabled, Roo will remind the model about the details of its current mode definition more frequently. This will lead to stronger adherence to role definitions and custom instructions, but will use more tokens per message."
-		},
 		"CONCURRENT_FILE_READS": {
 			"name": "Enable concurrent file reads",
 			"description": "When enabled, Roo can read multiple files in a single request. When disabled, Roo must read files one at a time. Disabling this can help when working with less capable models or when you want more control over file access."
@@ -804,10 +873,6 @@
 		"MARKETPLACE": {
 			"name": "Enable Marketplace",
 			"description": "When enabled, you can install MCPs and custom modes from the Marketplace."
-		},
-		"MULTI_FILE_APPLY_DIFF": {
-			"name": "Enable concurrent file edits",
-			"description": "When enabled, Roo can edit multiple files in a single request. When disabled, Roo must edit files one at a time. Disabling this can help when working with less capable models or when you want more control over file modifications."
 		},
 		"PREVENT_FOCUS_DISRUPTION": {
 			"name": "Background editing",
@@ -837,10 +902,6 @@
 		"RUN_SLASH_COMMAND": {
 			"name": "Enable model-initiated slash commands",
 			"description": "When enabled, Roo can run your slash commands to execute workflows."
-		},
-		"MULTIPLE_NATIVE_TOOL_CALLS": {
-			"name": "Parallel tool calls",
-			"description": "When enabled, the native protocol can execute multiple tools in a single assistant message turn."
 		},
 		"CUSTOM_TOOLS": {
 			"name": "Enable custom tools",

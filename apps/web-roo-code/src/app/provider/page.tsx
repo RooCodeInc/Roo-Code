@@ -252,7 +252,7 @@ export default function ProviderPage() {
 						{faqs.map((faq, index) => (
 							<div key={index} className="rounded-2xl border border-border bg-card p-6">
 								<h3 className="font-semibold">{faq.question}</h3>
-								<p className="mt-2 text-sm text-muted-foreground">{faq.answer}</p>
+								<div className="mt-2 text-sm text-muted-foreground">{faq.answer}</div>
 							</div>
 						))}
 					</div>

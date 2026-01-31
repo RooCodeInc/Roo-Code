@@ -187,7 +187,6 @@ describe("mergeExtensionState", () => {
 		const baseState: ExtensionState = {
 			version: "",
 			mcpEnabled: false,
-			enableMcpServerCreation: false,
 			clineMessages: [],
 			taskHistory: [],
 			shouldShowAnnouncement: false,
@@ -203,7 +202,6 @@ describe("mergeExtensionState", () => {
 			showRooIgnoredFiles: true,
 			enableSubfolderRules: false,
 			renderContext: "sidebar",
-			maxReadFileLine: 500,
 			cloudUserInfo: null,
 			organizationAllowList: { allowAll: true, providers: {} },
 			autoCondenseContext: true,
@@ -233,17 +231,9 @@ describe("mergeExtensionState", () => {
 			...baseState,
 			apiConfiguration: { modelMaxThinkingTokens: 456, modelTemperature: 0.3 },
 			experiments: {
-				powerSteering: true,
-				marketplace: false,
-				disableCompletionCommand: false,
-				concurrentFileReads: true,
-				multiFileApplyDiff: true,
 				preventFocusDisruption: false,
-				newTaskRequireTodos: false,
 				imageGeneration: false,
 				runSlashCommand: false,
-				nativeToolCalling: false,
-				multipleNativeToolCalls: false,
 				customTools: false,
 			} as Record<ExperimentId, boolean>,
 			checkpointTimeout: DEFAULT_CHECKPOINT_TIMEOUT_SECONDS + 5,
@@ -257,17 +247,9 @@ describe("mergeExtensionState", () => {
 		})
 
 		expect(result.experiments).toEqual({
-			powerSteering: true,
-			marketplace: false,
-			disableCompletionCommand: false,
-			concurrentFileReads: true,
-			multiFileApplyDiff: true,
 			preventFocusDisruption: false,
-			newTaskRequireTodos: false,
 			imageGeneration: false,
 			runSlashCommand: false,
-			nativeToolCalling: false,
-			multipleNativeToolCalls: false,
 			customTools: false,
 		})
 	})

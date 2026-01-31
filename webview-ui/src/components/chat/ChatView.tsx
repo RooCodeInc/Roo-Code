@@ -45,6 +45,7 @@ import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
+import { WorktreeSelector } from "./WorktreeSelector"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
@@ -95,6 +96,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		cloudIsAuthenticated,
 		messageQueue = [],
 		isBrowserSessionActive,
+		showWorktreesInHomeScreen,
 	} = useExtensionState()
 
 	const messagesRef = useRef(messages)
@@ -1134,7 +1136,76 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const groupedMessages = useMemo(() => {
 		// Only filter out the launch ask and result messages - browser actions appear in chat
-		const result: ClineMessage[] = visibleMessages.filter((msg) => !isBrowserSessionMessage(msg))
+		const filtered: ClineMessage[] = visibleMessages.filter((msg) => !isBrowserSessionMessage(msg))
+
+		// Helper to check if a message is a read_file ask that should be batched
+		const isReadFileAsk = (msg: ClineMessage): boolean => {
+			if (msg.type !== "ask" || msg.ask !== "tool") return false
+			try {
+				const tool = JSON.parse(msg.text || "{}")
+				return tool.tool === "readFile" && !tool.batchFiles // Don't re-batch already batched
+			} catch {
+				return false
+			}
+		}
+
+		// Consolidate consecutive read_file ask messages into batches
+		const result: ClineMessage[] = []
+		let i = 0
+		while (i < filtered.length) {
+			const msg = filtered[i]
+
+			// Check if this starts a sequence of read_file asks
+			if (isReadFileAsk(msg)) {
+				// Collect all consecutive read_file asks
+				const batch: ClineMessage[] = [msg]
+				let j = i + 1
+				while (j < filtered.length && isReadFileAsk(filtered[j])) {
+					batch.push(filtered[j])
+					j++
+				}
+
+				if (batch.length > 1) {
+					// Create a synthetic batch message
+					const batchFiles = batch.map((batchMsg) => {
+						try {
+							const tool = JSON.parse(batchMsg.text || "{}")
+							return {
+								path: tool.path || "",
+								lineSnippet: tool.reason || "",
+								isOutsideWorkspace: tool.isOutsideWorkspace || false,
+								key: `${tool.path}${tool.reason ? ` (${tool.reason})` : ""}`,
+								content: tool.content || "",
+							}
+						} catch {
+							return { path: "", lineSnippet: "", key: "", content: "" }
+						}
+					})
+
+					// Use the first message as the base, but add batchFiles
+					const firstTool = JSON.parse(msg.text || "{}")
+					const syntheticMessage: ClineMessage = {
+						...msg,
+						text: JSON.stringify({
+							...firstTool,
+							batchFiles,
+						}),
+						// Store original messages for response handling
+						_batchedMessages: batch,
+					} as ClineMessage & { _batchedMessages: ClineMessage[] }
+
+					result.push(syntheticMessage)
+					i = j // Skip past all batched messages
+				} else {
+					// Single read_file ask, keep as-is
+					result.push(msg)
+					i++
+				}
+			} else {
+				result.push(msg)
+				i++
+			}
+		}
 
 		if (isCondensing) {
 			result.push({
@@ -1482,6 +1553,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								aggregatedCostsMap.get(currentTaskItem.id)!.childrenCost > 0
 							)
 						}
+						parentTaskId={currentTaskItem?.parentTaskId}
 						costBreakdown={
 							currentTaskItem?.id && aggregatedCostsMap.has(currentTaskItem.id)
 								? getCostBreakdownIfNeeded(aggregatedCostsMap.get(currentTaskItem.id)!, {
@@ -1529,7 +1601,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								icon={<Cloud className="size-5 shrink-0" />}
 								onClick={() => openUpsell()}
 								dismissOnClick={false}
-								className="bg-none mt-6 border-border rounded-xl p-0 py-3 !text-base">
+								className="bg-none mt-6 border-border rounded-xl p-3 !text-base">
 								<Trans
 									i18nKey="cloud:upsell.taskList"
 									components={{
@@ -1541,6 +1613,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					</div>
 				</div>
 			)}
+
+			{!task && showWorktreesInHomeScreen && <WorktreeSelector />}
 
 			{task && (
 				<>

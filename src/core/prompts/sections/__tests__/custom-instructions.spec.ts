@@ -543,7 +543,6 @@ describe("addCustomInstructions", () => {
 			"test-mode",
 			{
 				settings: {
-					maxConcurrentFileReads: 5,
 					todoListEnabled: true,
 					useAgentRules: true,
 					newTaskRequireTodos: false,
@@ -575,7 +574,6 @@ describe("addCustomInstructions", () => {
 			"test-mode",
 			{
 				settings: {
-					maxConcurrentFileReads: 5,
 					todoListEnabled: true,
 					useAgentRules: false,
 					newTaskRequireTodos: false,
@@ -636,7 +634,6 @@ describe("addCustomInstructions", () => {
 			"test-mode",
 			{
 				settings: {
-					maxConcurrentFileReads: 5,
 					todoListEnabled: true,
 					useAgentRules: true,
 					newTaskRequireTodos: false,
@@ -682,7 +679,6 @@ describe("addCustomInstructions", () => {
 			"test-mode",
 			{
 				settings: {
-					maxConcurrentFileReads: 5,
 					todoListEnabled: true,
 					useAgentRules: true,
 					newTaskRequireTodos: false,
@@ -750,7 +746,6 @@ describe("addCustomInstructions", () => {
 			"test-mode",
 			{
 				settings: {
-					maxConcurrentFileReads: 5,
 					todoListEnabled: true,
 					useAgentRules: true,
 					newTaskRequireTodos: false,
@@ -802,7 +797,6 @@ describe("addCustomInstructions", () => {
 			"test-mode",
 			{
 				settings: {
-					maxConcurrentFileReads: 5,
 					todoListEnabled: true,
 					useAgentRules: true,
 					newTaskRequireTodos: false,
@@ -856,7 +850,6 @@ describe("addCustomInstructions", () => {
 			"test-mode",
 			{
 				settings: {
-					maxConcurrentFileReads: 5,
 					todoListEnabled: true,
 					useAgentRules: true,
 					newTaskRequireTodos: false,
@@ -902,7 +895,6 @@ describe("addCustomInstructions", () => {
 			"test-mode",
 			{
 				settings: {
-					maxConcurrentFileReads: 5,
 					todoListEnabled: true,
 					useAgentRules: true,
 					newTaskRequireTodos: false,

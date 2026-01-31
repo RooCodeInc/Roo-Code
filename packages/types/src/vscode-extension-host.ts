@@ -18,7 +18,10 @@ import type { CloudUserInfo, CloudOrganizationMembership, OrganizationAllowList,
 import type { SerializedCustomToolDefinition } from "./custom-tool.js"
 import type { GitCommit } from "./git.js"
 import type { McpServer } from "./mcp.js"
+import type { SkillMetadata } from "./skills.js"
 import type { ModelRecord, RouterModels } from "./model.js"
+import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.js"
+import type { WorktreeIncludeStatus } from "./worktree.js"
 
 /**
  * ExtensionMessage
@@ -28,6 +31,8 @@ export interface ExtensionMessage {
 	type:
 		| "action"
 		| "state"
+		| "taskHistoryUpdated"
+		| "taskHistoryItemUpdated"
 		| "selectedImages"
 		| "theme"
 		| "workspaceUpdated"
@@ -60,7 +65,6 @@ export interface ExtensionMessage {
 		| "remoteBrowserEnabled"
 		| "ttsStart"
 		| "ttsStop"
-		| "maxReadFileLine"
 		| "fileSearchResults"
 		| "toggleApiConfigPin"
 		| "acceptInput"
@@ -91,10 +95,20 @@ export interface ExtensionMessage {
 		| "interactionRequired"
 		| "browserSessionUpdate"
 		| "browserSessionNavigate"
-		| "claudeCodeRateLimits"
 		| "customToolsResult"
 		| "modes"
 		| "taskWithAggregatedCosts"
+		| "openAiCodexRateLimits"
+		// Worktree response types
+		| "worktreeList"
+		| "worktreeResult"
+		| "worktreeCopyProgress"
+		| "branchList"
+		| "worktreeDefaults"
+		| "worktreeIncludeStatus"
+		| "branchWorktreeIncludeResult"
+		| "folderSelected"
+		| "skills"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
@@ -112,7 +126,11 @@ export interface ExtensionMessage {
 		| "switchTab"
 		| "toggleAutoApprove"
 	invoke?: "newChat" | "sendMessage" | "primaryButtonClick" | "secondaryButtonClick" | "setChatBoxMessage"
-	state?: ExtensionState
+	/**
+	 * Partial state updates are allowed to reduce message size (e.g. omit large fields like taskHistory).
+	 * The webview is responsible for merging.
+	 */
+	state?: Partial<ExtensionState>
 	images?: string[]
 	filePaths?: string[]
 	openedTabs?: Array<{
@@ -150,7 +168,9 @@ export interface ExtensionMessage {
 	customMode?: ModeConfig
 	slug?: string
 	success?: boolean
-	values?: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
+	/** Generic payload for extension messages that use `values` */
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	values?: Record<string, any>
 	requestId?: string
 	promptText?: string
 	results?:
@@ -183,6 +203,7 @@ export interface ExtensionMessage {
 	stepIndex?: number // For browserSessionNavigate: the target step index to display
 	tools?: SerializedCustomToolDefinition[] // For customToolsResult
 	modes?: { slug: string; name: string }[] // For modes response
+	skills?: SkillMetadata[] // For skills response
 	aggregatedCosts?: {
 		// For taskWithAggregatedCosts response
 		totalCost: number
@@ -190,6 +211,62 @@ export interface ExtensionMessage {
 		childrenCost: number
 	}
 	historyItem?: HistoryItem
+	taskHistory?: HistoryItem[] // For taskHistoryUpdated: full sorted task history
+	/** For taskHistoryItemUpdated: single updated/added history item */
+	taskHistoryItem?: HistoryItem
+	// Worktree response properties
+	worktrees?: Array<{
+		path: string
+		branch: string
+		commitHash: string
+		isCurrent: boolean
+		isBare: boolean
+		isDetached: boolean
+		isLocked: boolean
+		lockReason?: string
+	}>
+	isGitRepo?: boolean
+	isMultiRoot?: boolean
+	isSubfolder?: boolean
+	gitRootPath?: string
+	worktreeResult?: {
+		success: boolean
+		message: string
+		worktree?: {
+			path: string
+			branch: string
+			commitHash: string
+			isCurrent: boolean
+			isBare: boolean
+			isDetached: boolean
+			isLocked: boolean
+			lockReason?: string
+		}
+	}
+	localBranches?: string[]
+	remoteBranches?: string[]
+	currentBranch?: string
+	suggestedBranch?: string
+	suggestedPath?: string
+	worktreeIncludeExists?: boolean
+	worktreeIncludeStatus?: WorktreeIncludeStatus
+	hasGitignore?: boolean
+	gitignoreContent?: string
+	// branchWorktreeIncludeResult
+	branch?: string
+	hasWorktreeInclude?: boolean
+	// worktreeCopyProgress (size-based)
+	copyProgressBytesCopied?: number
+	copyProgressTotalBytes?: number
+	copyProgressItemName?: string
+	// folderSelected
+	path?: string
+}
+
+export interface OpenAiCodexRateLimitsMessage {
+	type: "openAiCodexRateLimits"
+	values?: OpenAiCodexRateLimitInfo
+	error?: string
 }
 
 export type ExtensionState = Pick<
@@ -226,9 +303,7 @@ export type ExtensionState = Pick<
 	| "ttsSpeed"
 	| "soundEnabled"
 	| "soundVolume"
-	| "maxConcurrentFileReads"
-	| "terminalOutputLineLimit"
-	| "terminalOutputCharacterLimit"
+	| "terminalOutputPreviewSize"
 	| "terminalShellIntegrationTimeout"
 	| "terminalShellIntegrationDisabled"
 	| "terminalCommandDelay"
@@ -237,16 +312,12 @@ export type ExtensionState = Pick<
 	| "terminalZshOhMy"
 	| "terminalZshP10k"
 	| "terminalZdotdir"
-	| "terminalCompressProgressBar"
 	| "diagnosticsEnabled"
-	| "diffEnabled"
-	| "fuzzyMatchThreshold"
 	| "language"
 	| "modeApiConfigs"
 	| "customModePrompts"
 	| "customSupportPrompts"
 	| "enhancementApiConfigId"
-	| "condensingApiConfigId"
 	| "customCondensingPrompt"
 	| "codebaseIndexConfig"
 	| "codebaseIndexModels"
@@ -263,6 +334,7 @@ export type ExtensionState = Pick<
 	| "showQuestionsOneByOne"
 	| "maxGitStatusFiles"
 	| "requestDelaySeconds"
+	| "showWorktreesInHomeScreen"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
@@ -282,18 +354,16 @@ export type ExtensionState = Pick<
 	maxWorkspaceFiles: number // Maximum number of files to include in current working directory details (0-500)
 	showRooIgnoredFiles: boolean // Whether to show .rooignore'd files in listings
 	enableSubfolderRules: boolean // Whether to load rules from subdirectories
-	maxReadFileLine: number // Maximum number of lines to read from a file before truncating
 	maxImageFileSize: number // Maximum size of image files to process in MB
 	maxTotalImageSize: number // Maximum total size for all images in a single read operation in MB
 
 	experiments: Experiments // Map of experiment IDs to their enabled state
 
 	mcpEnabled: boolean
-	enableMcpServerCreation: boolean
 
 	mode: string
 	customModes: ModeConfig[]
-	toolRequirements?: Record<string, boolean> // Map of tool names to their requirements (e.g. {"apply_diff": true} if diffEnabled)
+	toolRequirements?: Record<string, boolean> // Map of tool names to their requirements (e.g. {"apply_diff": true})
 
 	cwd?: string // Current working directory
 	telemetrySetting: TelemetrySetting
@@ -333,7 +403,6 @@ export type ExtensionState = Pick<
 	remoteControlEnabled: boolean
 	taskSyncEnabled: boolean
 	featureRoomoteControlEnabled: boolean
-	claudeCodeIsAuthenticated?: boolean
 	openAiCodexIsAuthenticated?: boolean
 	debug?: boolean
 }
@@ -430,7 +499,6 @@ export interface WebviewMessage {
 		| "deleteMessageConfirm"
 		| "submitEditedMessage"
 		| "editMessageConfirm"
-		| "enableMcpServerCreation"
 		| "remoteControlEnabled"
 		| "taskSyncEnabled"
 		| "searchCommits"
@@ -462,8 +530,6 @@ export interface WebviewMessage {
 		| "cloudLandingPageSignIn"
 		| "rooCloudSignOut"
 		| "rooCloudManualUrl"
-		| "claudeCodeSignIn"
-		| "claudeCodeSignOut"
 		| "openAiCodexSignIn"
 		| "openAiCodexSignOut"
 		| "switchOrganization"
@@ -518,11 +584,29 @@ export interface WebviewMessage {
 		| "openDebugApiHistory"
 		| "openDebugUiHistory"
 		| "downloadErrorDiagnostics"
-		| "requestClaudeCodeRateLimits"
+		| "requestOpenAiCodexRateLimits"
 		| "refreshCustomTools"
 		| "requestModes"
 		| "switchMode"
 		| "debugSetting"
+		// Worktree messages
+		| "listWorktrees"
+		| "createWorktree"
+		| "deleteWorktree"
+		| "switchWorktree"
+		| "getAvailableBranches"
+		| "getWorktreeDefaults"
+		| "getWorktreeIncludeStatus"
+		| "checkBranchWorktreeInclude"
+		| "createWorktreeInclude"
+		| "checkoutBranch"
+		| "browseForWorktreePath"
+		// Skills messages
+		| "requestSkills"
+		| "createSkill"
+		| "deleteSkill"
+		| "moveSkill"
+		| "openSkillFile"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -547,6 +631,7 @@ export interface WebviewMessage {
 	promptMode?: string | "enhance"
 	customPrompt?: PromptComponent
 	dataUrls?: string[]
+	/** Generic payload for webview messages that use `values` */
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	values?: Record<string, any>
 	query?: string
@@ -555,7 +640,11 @@ export interface WebviewMessage {
 	modeConfig?: ModeConfig
 	timeout?: number
 	payload?: WebViewMessagePayload
-	source?: "global" | "project"
+	source?: "global" | "project" | "built-in"
+	skillName?: string // For skill operations (createSkill, deleteSkill, moveSkill, openSkillFile)
+	skillMode?: string // For skill operations (current mode restriction)
+	newSkillMode?: string // For moveSkill (target mode)
+	skillDescription?: string // For createSkill (skill description)
 	requestId?: string
 	ids?: string[]
 	hasSystemPromptOverride?: boolean
@@ -611,6 +700,18 @@ export interface WebviewMessage {
 		codebaseIndexOpenRouterApiKey?: string
 	}
 	updatedSettings?: RooCodeSettings
+	// Worktree properties
+	worktreePath?: string
+	worktreeBranch?: string
+	worktreeBaseBranch?: string
+	worktreeCreateNewBranch?: boolean
+	worktreeForce?: boolean
+	worktreeNewWindow?: boolean
+	worktreeIncludeContent?: string
+}
+
+export interface RequestOpenAiCodexRateLimitsMessage {
+	type: "requestOpenAiCodexRateLimits"
 }
 
 export const checkoutDiffPayloadSchema = z.object({
@@ -686,7 +787,7 @@ export interface ClineSayTool {
 		| "newFileCreated"
 		| "codebaseSearch"
 		| "readFile"
-		| "fetchInstructions"
+		| "readCommandOutput"
 		| "listFilesTopLevel"
 		| "listFilesRecursive"
 		| "searchFiles"
@@ -697,7 +798,14 @@ export interface ClineSayTool {
 		| "imageGenerated"
 		| "runSlashCommand"
 		| "updateTodoList"
+		| "skill"
 	path?: string
+	// For readCommandOutput
+	readStart?: number
+	readEnd?: number
+	totalBytes?: number
+	searchPattern?: string
+	matchCount?: number
 	diff?: string
 	content?: string
 	// Unified diff statistics computed by the extension
@@ -710,6 +818,7 @@ export interface ClineSayTool {
 	isProtected?: boolean
 	additionalFileCount?: number // Number of additional files in the same read_file request
 	lineNumber?: number
+	startLine?: number // Starting line for read_file operations (for navigation on click)
 	query?: string
 	batchFiles?: Array<{
 		path: string
@@ -737,6 +846,8 @@ export interface ClineSayTool {
 	args?: string
 	source?: string
 	description?: string
+	// Properties for skill tool
+	skill?: string
 }
 
 // Must keep in sync with system prompt.
