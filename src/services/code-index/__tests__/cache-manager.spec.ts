@@ -79,14 +79,19 @@ describe("CacheManager", () => {
 
 	describe("initialize", () => {
 		it("should load existing cache file successfully", async () => {
-			const mockCache = { "file1.ts": "hash1", "file2.ts": "hash2" }
+			// Mock cache with new format (includes timestamp)
+			const now = Date.now()
+			const mockCache = {
+				"file1.ts": { value: "hash1", timestamp: now },
+				"file2.ts": { value: "hash2", timestamp: now },
+			}
 			const mockBuffer = Buffer.from(JSON.stringify(mockCache))
 			;(vscode.workspace.fs.readFile as Mock).mockResolvedValue(mockBuffer)
 
 			await cacheManager.initialize()
 
 			expect(vscode.workspace.fs.readFile).toHaveBeenCalledWith(mockCachePath)
-			expect(cacheManager.getAllHashes()).toEqual(mockCache)
+			expect(cacheManager.getAllHashes()).toEqual({ "file1.ts": "hash1", "file2.ts": "hash2" })
 		})
 
 		it("should handle missing cache file by creating empty cache", async () => {
@@ -144,9 +149,9 @@ describe("CacheManager", () => {
 
 			expect(safeWriteJson).toHaveBeenCalledWith(mockCachePath.fsPath, expect.any(Object))
 
-			// Verify the saved data
+			// Verify the saved data has the new format with timestamp
 			const savedData = (safeWriteJson as Mock).mock.calls[0][1]
-			expect(savedData).toEqual({ [filePath]: hash })
+			expect(savedData[filePath]).toEqual({ value: hash, timestamp: expect.any(Number) })
 		})
 
 		it("should handle save errors gracefully", async () => {
@@ -191,6 +196,48 @@ describe("CacheManager", () => {
 			)
 
 			consoleErrorSpy.mockRestore()
+		})
+	})
+
+	describe("Multi-Level Cache (L1/L2)", () => {
+		it("should update both L1 and L2 caches when updating hash", () => {
+			cacheManager.updateHash("test.ts", "newhash")
+
+			// Verify getHash returns the correct value (from L1)
+			expect(cacheManager.getHash("test.ts")).toBe("newhash")
+		})
+
+		it("should delete from both L1 and L2 caches when deleting hash", () => {
+			cacheManager.updateHash("test.ts", "hash")
+			cacheManager.deleteHash("test.ts")
+
+			expect(cacheManager.getHash("test.ts")).toBeUndefined()
+		})
+
+		it("should clear both L1 and L2 caches", async () => {
+			cacheManager.updateHash("file1.ts", "hash1")
+			cacheManager.updateHash("file2.ts", "hash2")
+			;(safeWriteJson as Mock).mockClear()
+			;(safeWriteJson as Mock).mockResolvedValue(undefined)
+
+			await cacheManager.clearCacheFile()
+
+			const stats = cacheManager.getCacheStats()
+			expect(stats.l1Size).toBe(0)
+			expect(stats.l2Size).toBe(0)
+			expect(cacheManager.getHash("file1.ts")).toBeUndefined()
+			expect(cacheManager.getHash("file2.ts")).toBeUndefined()
+		})
+
+		it("should maintain backward compatibility with existing API", () => {
+			// All existing methods should work as before
+			cacheManager.updateHash("test.ts", "hash")
+			expect(cacheManager.getHash("test.ts")).toBe("hash")
+			expect(cacheManager.getAllHashes()).toEqual({ "test.ts": "hash" })
+
+			cacheManager.deleteHash("test.ts")
+			expect(cacheManager.getHash("test.ts")).toBeUndefined()
+			expect(cacheManager.getAllHashes()).toEqual({})
 		})
 	})
 })

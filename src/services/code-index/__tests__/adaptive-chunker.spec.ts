@@ -14,8 +14,8 @@ describe("AdaptiveChunker", () => {
 	describe("constructor", () => {
 		it("should create with default config", () => {
 			const chunker = new AdaptiveChunker()
-			expect(chunker.isEnabled()).toBe(false)
-			expect(chunker.getConfig().enabled).toBe(false)
+			expect(chunker.isEnabled()).toBe(true) // Enabled by default
+			expect(chunker.getConfig().enabled).toBe(true)
 		})
 
 		it("should create with custom config", () => {
@@ -34,7 +34,7 @@ describe("AdaptiveChunker", () => {
 	describe("setEnabled", () => {
 		it("should enable adaptive chunking", () => {
 			const chunker = new AdaptiveChunker()
-			expect(chunker.isEnabled()).toBe(false)
+			expect(chunker.isEnabled()).toBe(true) // Already enabled by default
 			chunker.setEnabled(true)
 			expect(chunker.isEnabled()).toBe(true)
 		})
@@ -299,7 +299,7 @@ const x = 1;
 
 describe("Chunking Configuration", () => {
 	it("should have correct default values", () => {
-		expect(DEFAULT_CHUNKING_CONFIG.enabled).toBe(false)
+		expect(DEFAULT_CHUNKING_CONFIG.enabled).toBe(true)
 		expect(DEFAULT_CHUNKING_CONFIG.strategy).toBe("balanced")
 		expect(DEFAULT_CHUNKING_CONFIG.maxChunkSize).toBe(2000)
 		expect(DEFAULT_CHUNKING_CONFIG.minChunkSize).toBe(200)

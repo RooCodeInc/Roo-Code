@@ -60,6 +60,8 @@ describe("CodeParser", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		parser = new CodeParser()
+		// Disable adaptive chunking to test the core parser behavior
+		parser.setAdaptiveChunkingEnabled(false)
 		;(loadRequiredLanguageParsers as any).mockResolvedValue(mockLanguageParser as any)
 		// Set up default fs.readFile mock return value
 		vi.mocked(readFile).mockResolvedValue("// default test content")
@@ -897,6 +899,8 @@ This content verifies that processing continues after multiple oversized lines.`
 
 		it("should properly chunk a markdown file with a single very long line", async () => {
 			const parser = new CodeParser()
+			// Disable adaptive chunking to test the core parser behavior
+			parser.setAdaptiveChunkingEnabled(false)
 			const veryLongLine = "x".repeat(5000) // 5000 chars in a single line
 
 			// Mock parseMarkdown to return empty array (no headers)
@@ -927,6 +931,8 @@ This content verifies that processing continues after multiple oversized lines.`
 
 		it("should handle markdown with headers followed by oversized lines", async () => {
 			const parser = new CodeParser()
+			// Disable adaptive chunking to test the core parser behavior
+			parser.setAdaptiveChunkingEnabled(false)
 			const longLineA = "a".repeat(2000)
 			const longLineB = "b".repeat(3000)
 			const content = `# Header 1\n\n${longLineA}\n\n## Header 2\n\n${longLineB}`
@@ -974,6 +980,8 @@ This content verifies that processing continues after multiple oversized lines.`
 
 		it("should not chunk markdown files with lines under the threshold", async () => {
 			const parser = new CodeParser()
+			// Disable adaptive chunking to test the core parser behavior
+			parser.setAdaptiveChunkingEnabled(false)
 			const normalContent = "This is a normal line.\n".repeat(50) // Multiple normal lines
 			const totalLength = normalContent.length
 

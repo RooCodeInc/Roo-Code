@@ -1,4 +1,5 @@
 import * as path from "path"
+import { createHash } from "crypto"
 import { VectorStoreSearchResult, HybridSearchConfig, DEFAULT_HYBRID_SEARCH_CONFIG } from "./interfaces"
 import { IEmbedder } from "./interfaces/embedder"
 import { IVectorStore } from "./interfaces/vector-store"
@@ -8,7 +9,26 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { regexSearchFiles } from "../ripgrep"
 import { performHybridSearch, parseRipgrepResults, validateHybridSearchConfig } from "./hybrid-search"
+import NodeCache from "node-cache"
 import * as vscode from "vscode"
+
+/**
+ * Interface for search result cache entry
+ */
+interface SearchResultCacheEntry {
+	results: VectorStoreSearchResult[]
+	timestamp: number
+	query: string
+	directoryPrefix?: string
+}
+
+/**
+ * Interface for embedding cache entry
+ */
+interface EmbeddingCacheEntry {
+	embedding: number[]
+	textHash: string
+}
 
 /**
  * Service responsible for searching the code index.
@@ -19,12 +39,84 @@ export class CodeIndexSearchService {
 	 */
 	private hybridConfig: HybridSearchConfig = { ...DEFAULT_HYBRID_SEARCH_CONFIG }
 
+	/**
+	 * LRU cache for search results (max 100 entries, TTL 10 minutes)
+	 */
+	private searchResultCache: NodeCache = new NodeCache({
+		stdTTL: 600, // 10 minutes
+	})
+
+	/**
+	 * Track the number of items in search result cache for accurate stats
+	 */
+	private searchCacheSizeTracker = 0
+
+	/**
+	 * Cache for embeddings to avoid recalculating same text embeddings
+	 */
+	private embeddingCache: Map<string, EmbeddingCacheEntry> = new Map()
+
+	/**
+	 * Statistics for monitoring cache performance
+	 */
+	private searchCacheHits = 0
+	private searchCacheMisses = 0
+	private embeddingCacheHits = 0
+	private embeddingCacheMisses = 0
+
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
 		private readonly stateManager: CodeIndexStateManager,
 		private readonly embedder: IEmbedder,
 		private readonly vectorStore: IVectorStore,
 	) {}
+
+	/**
+	 * Generates a cache key for search queries
+	 */
+	private generateSearchCacheKey(query: string, directoryPrefix?: string): string {
+		const keyParts = [query]
+		if (directoryPrefix) {
+			keyParts.push(directoryPrefix)
+		}
+		return createHash("sha256").update(keyParts.join("|")).digest("hex")
+	}
+
+	/**
+	 * Generates a hash for text to use as embedding cache key
+	 */
+	private generateTextHash(text: string): string {
+		return createHash("sha256").update(text).digest("hex")
+	}
+
+	/**
+	 * Gets embedding from cache or creates new one
+	 */
+	private async getOrCreateEmbedding(text: string): Promise<number[]> {
+		const textHash = this.generateTextHash(text)
+		const cached = this.embeddingCache.get(textHash)
+
+		if (cached) {
+			this.embeddingCacheHits++
+			console.log("[CodeIndexSearchService] Embedding cache hit for query")
+			return cached.embedding
+		}
+
+		this.embeddingCacheMisses++
+		console.log("[CodeIndexSearchService] Embedding cache miss for query")
+
+		const embeddingResponse = await this.embedder.createEmbeddings([text])
+		const embedding = embeddingResponse?.embeddings[0]
+
+		if (embedding) {
+			this.embeddingCache.set(textHash, {
+				embedding,
+				textHash,
+			})
+		}
+
+		return embedding
+	}
 
 	/**
 	 * Sets the hybrid search configuration
@@ -46,6 +138,51 @@ export class CodeIndexSearchService {
 	 */
 	public getHybridSearchConfig(): HybridSearchConfig {
 		return { ...this.hybridConfig }
+	}
+
+	/**
+	 * Gets cache statistics for monitoring
+	 * @returns Object containing cache statistics
+	 */
+	public getCacheStats(): {
+		searchCacheSize: number
+		embeddingCacheSize: number
+		searchCacheHits: number
+		searchCacheMisses: number
+		embeddingCacheHits: number
+		embeddingCacheMisses: number
+		searchCacheHitRate: number
+		embeddingCacheHitRate: number
+	} {
+		const searchTotal = this.searchCacheHits + this.searchCacheMisses
+		const embeddingTotal = this.embeddingCacheHits + this.embeddingCacheMisses
+
+		return {
+			searchCacheSize: this.searchCacheSizeTracker,
+			embeddingCacheSize: this.embeddingCache.size,
+			searchCacheHits: this.searchCacheHits,
+			searchCacheMisses: this.searchCacheMisses,
+			embeddingCacheHits: this.embeddingCacheHits,
+			embeddingCacheMisses: this.embeddingCacheMisses,
+			searchCacheHitRate: searchTotal > 0 ? Math.round((this.searchCacheHits / searchTotal) * 10000) / 100 : 0,
+			embeddingCacheHitRate:
+				embeddingTotal > 0 ? Math.round((this.embeddingCacheHits / embeddingTotal) * 10000) / 100 : 0,
+		}
+	}
+
+	/**
+	 * Clears all caches
+	 */
+	public clearCaches(): void {
+		this.searchResultCache.flushAll()
+		this.embeddingCache.clear()
+		this.searchCacheSizeTracker = 0
+		// Reset stats
+		this.searchCacheHits = 0
+		this.searchCacheMisses = 0
+		this.embeddingCacheHits = 0
+		this.embeddingCacheMisses = 0
+		console.log("[CodeIndexSearchService] All caches cleared")
 	}
 
 	/**
@@ -75,10 +212,22 @@ export class CodeIndexSearchService {
 			throw new Error(`Code index is not ready for search. Current state: ${currentState}`)
 		}
 
+		// Check search result cache first
+		const cacheKey = this.generateSearchCacheKey(query, directoryPrefix)
+		const cachedResult = this.searchResultCache.get<SearchResultCacheEntry>(cacheKey)
+
+		if (cachedResult) {
+			this.searchCacheHits++
+			console.log("[CodeIndexSearchService] Search cache hit for query:", query)
+			return cachedResult.results
+		}
+
+		this.searchCacheMisses++
+		console.log("[CodeIndexSearchService] Search cache miss for query:", query)
+
 		try {
-			// Generate embedding for query
-			const embeddingResponse = await this.embedder.createEmbeddings([query])
-			const vector = embeddingResponse?.embeddings[0]
+			// Get embedding from cache or create new one
+			const vector = await this.getOrCreateEmbedding(query)
 			if (!vector) {
 				throw new Error("Failed to generate embedding for query.")
 			}
@@ -94,6 +243,14 @@ export class CodeIndexSearchService {
 
 			// If hybrid search is disabled, return semantic results only
 			if (!this.hybridConfig.enabled || !workspacePath) {
+				// Cache semantic-only results
+				this.searchResultCache.set(cacheKey, {
+					results: semanticResults,
+					timestamp: Date.now(),
+					query,
+					directoryPrefix,
+				})
+				this.searchCacheSizeTracker++
 				return semanticResults
 			}
 
@@ -113,6 +270,14 @@ export class CodeIndexSearchService {
 					"[CodeIndexSearchService] Keyword search failed, falling back to semantic only:",
 					ripgrepError,
 				)
+				// Cache semantic-only results
+				this.searchResultCache.set(cacheKey, {
+					results: semanticResults,
+					timestamp: Date.now(),
+					query,
+					directoryPrefix,
+				})
+				this.searchCacheSizeTracker++
 				return semanticResults
 			}
 
@@ -120,7 +285,7 @@ export class CodeIndexSearchService {
 			const hybridResults = performHybridSearch(semanticResults, keywordResults, this.hybridConfig, maxResults)
 
 			// Convert hybrid results back to VectorStoreSearchResult format
-			return hybridResults.map((result) => ({
+			const formattedResults = hybridResults.map((result) => ({
 				id: `${result.filePath}:${result.startLine}`,
 				score: result.score,
 				payload: {
@@ -133,6 +298,17 @@ export class CodeIndexSearchService {
 					keywordScore: result.keywordScore,
 				},
 			}))
+
+			// Cache the hybrid results
+			this.searchResultCache.set(cacheKey, {
+				results: formattedResults,
+				timestamp: Date.now(),
+				query,
+				directoryPrefix,
+			})
+			this.searchCacheSizeTracker++
+
+			return formattedResults
 		} catch (error) {
 			console.error("[CodeIndexSearchService] Error during search:", error)
 			this.stateManager.setSystemState("Error", `Search failed: ${(error as Error).message}`)

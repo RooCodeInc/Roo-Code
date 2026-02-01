@@ -276,7 +276,7 @@ describe("Hybrid Search", () => {
 		it("should return default configuration", () => {
 			const config = getDefaultHybridSearchConfig()
 
-			expect(config.enabled).toBe(false)
+			expect(config.enabled).toBe(true)
 			expect(config.semanticWeight).toBe(0.5)
 			expect(config.keywordWeight).toBe(0.5)
 			expect(config.fusionMethod).toBe("rrf")

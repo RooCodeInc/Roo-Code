@@ -360,8 +360,9 @@ export class CodeParser implements ICodeParser {
 					createSegmentBlock(segment, originalLineNumber, currentSegmentStartChar)
 					currentSegmentStartChar += MAX_BLOCK_CHARS
 				}
-				// Update chunkStartLineIndex to continue processing from the next line
-				chunkStartLineIndex = i + 1
+				// Update chunkStartLineIndex to start a new chunk from the NEXT line (i+1)
+				// Don't skip the next line - let the normal loop continue to add it to a new chunk
+				chunkStartLineIndex = i
 				continue
 			}
 

@@ -9,6 +9,30 @@ import { ContextProxy } from "../config/ContextProxy"
 import type { FileMetadataEntry, RecordSource, TaskMetadata } from "./FileContextTrackerTypes"
 import { ClineProvider } from "../webview/ClineProvider"
 
+// ============================================================================
+// Usage Tracking Interfaces
+// ============================================================================
+
+/**
+ * Tracks usage statistics for files.
+ * Used to identify "hot" files that are frequently accessed.
+ */
+export interface UsageStats {
+	readCount: number
+	lastAccessed: number
+	editCount: number
+}
+
+/**
+ * Cached summary data for avoiding recalculation.
+ */
+export interface ContextSummary {
+	summary: string
+	tokenCount: number
+	timestamp: number
+	messagesHash: string
+}
+
 // This class is responsible for tracking file operations that may result in stale context.
 // If a user modifies a file outside of Roo, the context may become stale and need to be updated.
 // We do not want Roo to reload the context every time a file is modified, so we use this class merely
@@ -30,6 +54,15 @@ export class FileContextTracker {
 	private recentlyEditedByRoo = new Set<string>()
 	private checkpointPossibleFiles = new Set<string>()
 
+	// Phase 3: Usage Tracking for hot files detection
+	private usageStats: Map<string, UsageStats> = new Map()
+
+	// Phase 3: Context Memory for persistent summary caching
+	private summaryCache: Map<string, ContextSummary> = new Map()
+
+	// Threshold for determining stale watchers (24 hours)
+	private readonly STALE_WATCHER_THRESHOLD_MS = 24 * 60 * 60 * 1000
+
 	constructor(provider: ClineProvider, taskId: string) {
 		this.providerRef = new WeakRef(provider)
 		this.taskId = taskId
@@ -42,6 +75,165 @@ export class FileContextTracker {
 			console.info("No workspace folder available - cannot determine current working directory")
 		}
 		return cwd
+	}
+
+	// ============================================================================
+	// Phase 3: Usage Tracking Methods
+	// ============================================================================
+
+	/**
+	 * Tracks a file access for usage statistics.
+	 * @param filePath - Path of the file accessed
+	 * @param isEdit - Whether this was an edit operation
+	 */
+	private trackUsage(filePath: string, isEdit: boolean): void {
+		const now = Date.now()
+		const existing = this.usageStats.get(filePath)
+
+		if (existing) {
+			if (isEdit) {
+				existing.editCount++
+			} else {
+				existing.readCount++
+			}
+			existing.lastAccessed = now
+		} else {
+			this.usageStats.set(filePath, {
+				readCount: isEdit ? 0 : 1,
+				lastAccessed: now,
+				editCount: isEdit ? 1 : 0,
+			})
+		}
+	}
+
+	/**
+	 * Gets the most frequently accessed files (hot files).
+	 * @param limit - Maximum number of files to return (default: 10)
+	 * @returns Array of file paths sorted by read count (descending)
+	 */
+	getHotFiles(limit: number = 10): string[] {
+		return Array.from(this.usageStats.entries())
+			.sort((a, b) => b[1].readCount - a[1].readCount)
+			.slice(0, limit)
+			.map(([path]) => path)
+	}
+
+	/**
+	 * Gets usage statistics for a specific file.
+	 * @param filePath - Path of the file
+	 * @returns UsageStats or undefined if not tracked
+	 */
+	getUsageStats(filePath: string): UsageStats | undefined {
+		return this.usageStats.get(filePath)
+	}
+
+	/**
+	 * Gets all usage statistics.
+	 * @returns Map of file paths to UsageStats
+	 */
+	getAllUsageStats(): Map<string, UsageStats> {
+		return new Map(this.usageStats)
+	}
+
+	// ============================================================================
+	// Phase 3: Context Summary Caching Methods
+	// ============================================================================
+
+	/**
+	 * Gets a cached summary if it exists and is still valid.
+	 * @param messagesHash - Hash of the messages that generated this summary
+	 * @returns ContextSummary or undefined if not cached or expired
+	 */
+	getCachedSummary(messagesHash: string): ContextSummary | undefined {
+		const cached = this.summaryCache.get(messagesHash)
+		if (!cached) {
+			return undefined
+		}
+
+		// Cache expires after 1 hour to ensure summaries stay current
+		const ONE_HOUR_MS = 60 * 60 * 1000
+		if (Date.now() - cached.timestamp > ONE_HOUR_MS) {
+			this.summaryCache.delete(messagesHash)
+			return undefined
+		}
+
+		return cached
+	}
+
+	/**
+	 * Caches a summary for later reuse.
+	 * @param messagesHash - Hash of the messages that generated this summary
+	 * @param summary - The summary content
+	 * @param tokenCount - Token count of the summary
+	 */
+	cacheSummary(messagesHash: string, summary: string, tokenCount: number): void {
+		this.summaryCache.set(messagesHash, {
+			summary,
+			tokenCount,
+			timestamp: Date.now(),
+			messagesHash,
+		})
+	}
+
+	/**
+	 * Clears the summary cache.
+	 */
+	clearSummaryCache(): void {
+		this.summaryCache.clear()
+	}
+
+	/**
+	 * Gets the size of the summary cache.
+	 * @returns Number of cached summaries
+	 */
+	getSummaryCacheSize(): number {
+		return this.summaryCache.size
+	}
+
+	// ============================================================================
+	// Phase 3: Memory Leak Prevention Methods
+	// ============================================================================
+
+	/**
+	 * Checks if a file watcher is stale (not accessed recently).
+	 * @param filePath - Path of the file being watched
+	 * @returns true if the watcher is stale
+	 */
+	private isStale(filePath: string): boolean {
+		const stats = this.usageStats.get(filePath)
+		if (!stats) {
+			// If no usage stats, check if watcher was created long ago
+			// Default to stale if we have no information
+			return true
+		}
+		return Date.now() - stats.lastAccessed > this.STALE_WATCHER_THRESHOLD_MS
+	}
+
+	/**
+	 * Cleans up stale file watchers to prevent memory leaks.
+	 * Removes watchers for files that haven't been accessed in 24 hours.
+	 */
+	cleanupWatchers(): void {
+		for (const [filePath, watcher] of this.fileWatchers) {
+			if (this.isStale(filePath)) {
+				watcher.dispose()
+				this.fileWatchers.delete(filePath)
+				this.usageStats.delete(filePath)
+			}
+		}
+	}
+
+	/**
+	 * Force cleanup of all watchers and stats.
+	 * Use when disposing the tracker.
+	 */
+	forceCleanup(): void {
+		for (const watcher of this.fileWatchers.values()) {
+			watcher.dispose()
+		}
+		this.fileWatchers.clear()
+		this.usageStats.clear()
+		this.summaryCache.clear()
 	}
 
 	// File watchers are set up for each file that is tracked in the task metadata.
@@ -84,6 +276,10 @@ export class FileContextTracker {
 			if (!cwd) {
 				return
 			}
+
+			// Phase 3: Track usage statistics
+			const isEdit = operation === "roo_edited" || operation === "user_edited"
+			this.trackUsage(filePath, isEdit)
 
 			await this.addFileToFileContextTracker(this.taskId, filePath, operation)
 
@@ -276,5 +472,7 @@ export class FileContextTracker {
 			watcher.dispose()
 		}
 		this.fileWatchers.clear()
+		this.usageStats.clear()
+		this.summaryCache.clear()
 	}
 }
