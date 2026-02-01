@@ -41,6 +41,7 @@ import { codebaseSearchTool } from "../tools/CodebaseSearchTool"
 
 import { formatResponse } from "../prompts/responses"
 import { sanitizeToolUseId } from "../../utils/tool-id"
+import { ToolDependencyGraphBuilder } from "../tools/dependency-graph"
 
 /**
  * Processes and presents assistant message content to the user interface.
@@ -101,6 +102,165 @@ export async function presentAssistantMessage(cline: Task) {
 		cline.presentAssistantMessageLocked = false
 		return
 	}
+
+	// =========================================================================
+	// Parallel Execution Batching
+	// =========================================================================
+	// Check if we should execute multiple tools in parallel
+	if (shouldExecuteToolsInParallel(cline) && !cline.didRejectTool && !block.partial) {
+		const toolBlocks: Array<{ index: number; block: ToolUse | McpToolUse }> = []
+		let i = cline.currentStreamingContentIndex
+
+		// Look ahead to find a sequence of complete tool blocks
+		while (i < cline.assistantMessageContent.length) {
+			const contentBlock = cline.assistantMessageContent[i]
+			if ((contentBlock.type === "tool_use" || contentBlock.type === "mcp_tool_use") && !contentBlock.partial) {
+				// Check if this tool can run in parallel
+				const toolName =
+					contentBlock.type === "mcp_tool_use" ? contentBlock.name : (contentBlock as ToolUse).name
+				if (canExecuteToolInParallel(toolName)) {
+					toolBlocks.push({ index: i, block: contentBlock as ToolUse | McpToolUse })
+					i++
+				} else {
+					// Hit an exclusive tool - stop collecting
+					break
+				}
+			} else {
+				// Non-tool or partial block - stop collecting
+				break
+			}
+		}
+
+		// Only use parallel execution if we found 2+ parallelizable tools
+		if (toolBlocks.length >= 2) {
+			console.log(`[ParallelExecution] Detected ${toolBlocks.length} parallelizable tools, executing in parallel`)
+
+			// Execute the batch using ParallelToolExecutor
+			const executor = cline.getParallelExecutor()
+			if (executor) {
+				try {
+					const state = await cline.providerRef.deref()?.getState()
+					const { mode = "default", customModes = [], experiments: stateExperiments = {} } = state ?? {}
+
+					const parallelResult = await executor.execute(
+						toolBlocks.map(({ block }) => block),
+						async (toolBlock: ToolUse | McpToolUse): Promise<ToolResponse> => {
+							// Wrapper to capture tool results via callbacks
+							return new Promise<ToolResponse>((resolve, reject) => {
+								let capturedResult: ToolResponse = ""
+
+								const captureCallbacks = {
+									askApproval: async () => true, // Auto-approve for parallel (user already approved batch)
+									handleError: async (_action: string, error: Error) => {
+										reject(error)
+									},
+									pushToolResult: (content: ToolResponse) => {
+										capturedResult = content
+									},
+								}
+
+								// Execute based on tool type
+								if (toolBlock.type === "tool_use") {
+									const tu = toolBlock as ToolUse
+									const params = tu.nativeArgs || tu.params
+
+									const executeAsync = async () => {
+										try {
+											switch (tu.name) {
+												case "read_file":
+													await readFileTool.execute(params as any, cline, captureCallbacks)
+													break
+												case "list_files":
+													await listFilesTool.execute(params as any, cline, captureCallbacks)
+													break
+												case "search_files":
+													await searchFilesTool.execute(
+														params as any,
+														cline,
+														captureCallbacks,
+													)
+													break
+												case "codebase_search":
+													await codebaseSearchTool.execute(
+														params as any,
+														cline,
+														captureCallbacks,
+													)
+													break
+												default:
+													throw new Error(`Tool ${tu.name} not supported in parallel mode`)
+											}
+											resolve(capturedResult)
+										} catch (err) {
+											reject(err)
+										}
+									}
+									executeAsync()
+								} else {
+									// MCP tools not yet supported
+									reject(new Error("MCP tools not yet supported in parallel mode"))
+								}
+							})
+						},
+						{
+							mode,
+							customModes,
+							experiments: stateExperiments,
+						},
+					)
+
+					// Push results for each tool
+					for (let j = 0; j < parallelResult.results.length; j++) {
+						const result = parallelResult.results[j]
+						const toolBlock = toolBlocks[j].block
+						const toolId = toolBlock.id || `tool_${j}`
+
+						if (result.success && result.result) {
+							const content =
+								typeof result.result === "string"
+									? result.result
+									: Array.isArray(result.result)
+										? result.result
+												.filter((b: any) => b.type === "text")
+												.map((b: any) => b.text)
+												.join("\n")
+										: "(tool did not return anything)"
+
+							cline.pushToolResultToUserContent({
+								type: "tool_result",
+								tool_use_id: sanitizeToolUseId(toolId),
+								content: content || "(tool did not return anything)",
+							})
+						} else {
+							cline.pushToolResultToUserContent({
+								type: "tool_result",
+								tool_use_id: sanitizeToolUseId(toolId),
+								content: formatResponse.toolError(result.error?.message || "Tool execution failed"),
+								is_error: true,
+							})
+						}
+					}
+
+					// Advance the index past all processed tools
+					cline.currentStreamingContentIndex += toolBlocks.length
+					cline.didAlreadyUseTool = true
+					cline.presentAssistantMessageLocked = false
+
+					// Continue processing remaining blocks
+					if (cline.currentStreamingContentIndex < cline.assistantMessageContent.length) {
+						presentAssistantMessage(cline)
+					} else if (cline.didCompleteReadingStream) {
+						cline.userMessageContentReady = true
+					}
+					return
+				} catch (error) {
+					console.error(`[ParallelExecution] Error executing batch:`, error)
+					// Fall through to sequential execution
+				}
+			}
+		}
+	}
+	// =========================================================================
 
 	switch (block.type) {
 		case "mcp_tool_use": {
@@ -1032,6 +1192,145 @@ async function checkpointSaveAndMark(task: Task) {
 	}
 }
 
+/**
+ * Exported wrapper for checkpointSaveAndMark to be used by parallel executor.
+ * @param task The Task instance to checkpoint save and mark.
+ */
+export async function checkpointSaveForParallelExecution(task: Task): Promise<void> {
+	await checkpointSaveAndMark(task)
+}
+
+/**
+ * Execute multiple tools in parallel when they are independent.
+ * This function is called when parallel execution is enabled and multiple
+ * independent read-only tools are detected.
+ *
+ * @param cline The Task instance
+ * @param toolBlocks Array of tool blocks to execute
+ * @param executeTool Function to execute a single tool
+ * @returns Array of tool results in order
+ */
+export async function executeParallelToolBatch(
+	cline: Task,
+	toolBlocks: Array<{ index: number; block: ToolUse | McpToolUse }>,
+	executeTool: (block: ToolUse | McpToolUse) => Promise<string>,
+): Promise<Array<{ index: number; result: string; error?: Error }>> {
+	// Get the parallel executor from the Task instance
+	const executor = cline.getParallelExecutor()
+
+	if (!executor) {
+		// Fallback to sequential execution if no executor
+		const results: Array<{ index: number; result: string; error?: Error }> = []
+		for (const { index, block } of toolBlocks) {
+			try {
+				const result = await executeTool(block)
+				results.push({ index, result })
+			} catch (error) {
+				results.push({ index, result: "", error: error as Error })
+			}
+		}
+		return results
+	}
+
+	// Use the parallel executor
+	const parallelResults = await executor.execute(
+		toolBlocks.map(({ block }) => block),
+		async (tool: ToolUse | McpToolUse) => {
+			const result = await executeTool(tool)
+			return result
+		},
+		{
+			mode: "default",
+			customModes: [],
+			experiments: {},
+		},
+	)
+
+	// Map results back with indices
+	return toolBlocks.map(({ index }, i) => ({
+		index,
+		result:
+			typeof parallelResults.results[i]?.result === "string" ? (parallelResults.results[i].result as string) : "",
+		error: parallelResults.results[i]?.error,
+	}))
+}
+
+/**
+ * Check if a batch of tools can be executed in parallel.
+ * Returns the subset of tools that can safely run in parallel.
+ *
+ * @param toolBlocks Array of tool blocks to check
+ * @returns Subset of tools that can run in parallel
+ */
+export function getParallelizableTools(
+	toolBlocks: Array<{ index: number; block: ToolUse | McpToolUse }>,
+): Array<{ index: number; block: ToolUse | McpToolUse }> {
+	return toolBlocks.filter(({ block }) => {
+		const toolName = block.type === "mcp_tool_use" ? block.name : block.name
+		return canExecuteToolInParallel(toolName)
+	})
+}
+
+/**
+ * Checks if a tool can be executed in parallel with other tools.
+ * Some tools must always execute sequentially (e.g., new_task, attempt_completion).
+ *
+ * @param toolName The name of the tool to check.
+ * @returns true if the tool can be executed in parallel, false otherwise.
+ */
+export function canExecuteToolInParallel(toolName: string): boolean {
+	// These tools have side effects that require sequential execution
+	const exclusiveTools = [
+		"attempt_completion", // Finishes the task
+		"new_task", // Creates a sub-task
+		"switch_mode", // Changes the mode
+		"ask_followup_question", // Requires user interaction
+		"browser_action", // Browser state is not thread-safe
+		"execute_command", // Terminal state can conflict
+	]
+
+	return !exclusiveTools.includes(toolName)
+}
+
+/**
+ * Checks if a tool is a write tool that requires checkpoint before execution.
+ *
+ * @param toolName The name of the tool to check.
+ * @returns true if the tool writes to files, false otherwise.
+ */
+export function isWriteTool(toolName: string): boolean {
+	const writeTools = [
+		"write_to_file",
+		"apply_diff",
+		"search_and_replace",
+		"search_replace",
+		"edit_file",
+		"apply_patch",
+	]
+
+	return writeTools.includes(toolName)
+}
+
+/**
+ * Gets all completed (non-partial) tool use blocks from assistant message content.
+ * Used to collect tools that can potentially be executed in parallel.
+ *
+ * @param cline The Task instance.
+ * @returns Array of completed tool use blocks with their indices.
+ */
+export function getCompletedToolBlocks(cline: Task): Array<{ block: ToolUse | McpToolUse; index: number }> {
+	const completedBlocks: Array<{ block: ToolUse | McpToolUse; index: number }> = []
+
+	for (let i = 0; i < cline.assistantMessageContent.length; i++) {
+		const block = cline.assistantMessageContent[i]
+		if ((block.type === "tool_use" || block.type === "mcp_tool_use") && !block.partial) {
+			completedBlocks.push({ block: block as ToolUse | McpToolUse, index: i })
+		}
+	}
+
+	return completedBlocks
+}
+
 function containsXmlToolMarkup(text: string): boolean {
 	// Keep this intentionally narrow: only reject XML-style tool tags matching our tool names.
 	// Avoid regex so we don't keep legacy XML parsing artifacts around.
@@ -1074,4 +1373,100 @@ function containsXmlToolMarkup(text: string): boolean {
 	] as const
 
 	return toolNames.some((name) => lower.includes(`<${name}`) || lower.includes(`</${name}`))
+}
+
+/**
+ * Determines if parallel tool execution should be used for the current task.
+ * This checks the feature flag and whether there are multiple independent tools.
+ *
+ * @param cline The Task instance to check.
+ * @returns true if parallel execution should be used, false otherwise.
+ */
+export function shouldExecuteToolsInParallel(cline: Task): boolean {
+	// Check if parallel execution is enabled - check both explicit flag and experiments config
+	const isExperimentEnabled = cline.experiments?.parallelToolExecution === true
+	const isExplicitlyEnabled = cline.enableParallelToolExecution === true
+
+	// Enable if either the experiment is enabled OR the flag is explicitly set
+	if (!isExperimentEnabled && !isExplicitlyEnabled) {
+		return false
+	}
+
+	// Get all completed (non-partial) tool blocks
+	const completedBlocks = getCompletedToolBlocks(cline)
+
+	// Need at least 2 tools to benefit from parallel execution
+	if (completedBlocks.length < 2) {
+		return false
+	}
+
+	// Build dependency graph to check if tools can run in parallel
+	const builder = new ToolDependencyGraphBuilder()
+	const tools = completedBlocks.map((b) => b.block)
+	const graph = builder.build(tools, {
+		mode: "default",
+		customModes: [],
+		experiments: {},
+	})
+
+	// If there are multiple execution groups, some tools can run in parallel
+	return graph.executionGroups.length > 0 && graph.executionGroups[0].length > 1
+}
+
+/**
+ * Gets the parallel execution status for logging/debugging purposes.
+ *
+ * @param cline The Task instance.
+ * @returns Object with parallel execution status information.
+ */
+export function getParallelExecutionStatus(cline: Task): {
+	enabled: boolean
+	toolCount: number
+	canParallelize: boolean
+	reason: string
+} {
+	// Check if parallel execution is enabled - check both explicit flag and experiments config
+	const isExperimentEnabled = cline.experiments?.parallelToolExecution === true
+	const isExplicitlyEnabled = cline.enableParallelToolExecution === true
+
+	// Enable if either the experiment is enabled OR the flag is explicitly set
+	if (!isExperimentEnabled && !isExplicitlyEnabled) {
+		return {
+			enabled: false,
+			toolCount: 0,
+			canParallelize: false,
+			reason: "Feature flag disabled",
+		}
+	}
+
+	const completedBlocks = getCompletedToolBlocks(cline)
+	const toolCount = completedBlocks.length
+
+	if (toolCount < 2) {
+		return {
+			enabled: true,
+			toolCount,
+			canParallelize: false,
+			reason: `Need at least 2 tools, have ${toolCount}`,
+		}
+	}
+
+	const builder = new ToolDependencyGraphBuilder()
+	const tools = completedBlocks.map((b) => b.block)
+	const graph = builder.build(tools, {
+		mode: "default",
+		customModes: [],
+		experiments: {},
+	})
+
+	const canParallelize = graph.executionGroups.length > 0 && graph.executionGroups[0].length > 1
+
+	return {
+		enabled: true,
+		toolCount,
+		canParallelize,
+		reason: canParallelize
+			? `${graph.executionGroups[0].length} tools can run in parallel`
+			: "All tools have dependencies",
+	}
 }
