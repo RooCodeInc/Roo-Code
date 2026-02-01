@@ -5,6 +5,7 @@ export const EXPERIMENT_IDS = {
 	IMAGE_GENERATION: "imageGeneration",
 	RUN_SLASH_COMMAND: "runSlashCommand",
 	CUSTOM_TOOLS: "customTools",
+	PARALLEL_TOOL_EXECUTION: "parallelToolExecution",
 } as const satisfies Record<string, ExperimentId>
 
 type _AssertExperimentIds = AssertEqual<Equals<ExperimentId, Values<typeof EXPERIMENT_IDS>>>
@@ -20,6 +21,7 @@ export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
 	IMAGE_GENERATION: { enabled: false },
 	RUN_SLASH_COMMAND: { enabled: false },
 	CUSTOM_TOOLS: { enabled: false },
+	PARALLEL_TOOL_EXECUTION: { enabled: true }, // Enabled by default for parallel tool execution
 }
 
 export const experimentDefault = Object.fromEntries(
