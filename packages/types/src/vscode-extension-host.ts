@@ -534,6 +534,8 @@ export interface WebviewMessage {
 		| "switchOrganization"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
+		| "clearFileTypeFilter"
+		| "setFileTypeFilter"
 		| "startIndexing"
 		| "clearIndexData"
 		| "indexingStatusUpdate"
@@ -707,6 +709,7 @@ export interface WebviewMessage {
 	worktreeForce?: boolean
 	worktreeNewWindow?: boolean
 	worktreeIncludeContent?: string
+	extension?: string // For file type filter (setFileTypeFilter)
 }
 
 export interface RequestOpenAiCodexRateLimitsMessage {
@@ -765,6 +768,8 @@ export interface IndexingStatus {
 	totalItems: number
 	currentItemUnit?: string
 	workspacePath?: string
+	fileTypeStats?: { extension: string; count: number }[]
+	totalFileCount?: number
 }
 
 export interface IndexingStatusUpdateMessage {

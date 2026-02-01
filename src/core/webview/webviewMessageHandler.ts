@@ -2703,6 +2703,22 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
+		case "setFileTypeFilter": {
+			// Handle file type filter selection
+			const extension = message.extension
+			if (extension) {
+				provider.log(`File type filter set to: ${extension}`)
+				// The filter is currently handled on the UI side only
+				// In the future, this could be used to filter search results
+			}
+			break
+		}
+		case "clearFileTypeFilter": {
+			// Handle clearing the file type filter
+			provider.log("File type filter cleared")
+			// The filter is currently handled on the UI side only
+			break
+		}
 		case "requestCodeIndexSecretStatus": {
 			// Check if secrets are set using the VSCode context directly for async access
 			const hasOpenAiKey = !!(await provider.context.secrets.get("codeIndexOpenAiKey"))

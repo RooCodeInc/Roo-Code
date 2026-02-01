@@ -48,6 +48,21 @@ export interface ScanResult {
 }
 
 /**
+ * Interface for file type statistics
+ */
+export interface FileTypeStats {
+	extension: string
+	count: number
+}
+
+/**
+ * Interface for file type count map
+ */
+export interface FileTypeCountMap {
+	[extension: string]: number
+}
+
+/**
  * Manages the code indexing workflow, coordinating between different services and managers.
  */
 export class CodeIndexOrchestrator {
@@ -258,6 +273,9 @@ export class CodeIndexOrchestrator {
 				await this.vectorStore.markIndexingComplete()
 
 				this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
+
+				// Update file type statistics
+				this.updateFileTypeStats()
 			} else {
 				// No existing data or collection was just created - do a full scan
 				this.stateManager.setSystemState("Indexing", "Services ready. Starting workspace scan...")
@@ -339,6 +357,9 @@ export class CodeIndexOrchestrator {
 				await this.vectorStore.markIndexingComplete()
 
 				this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
+
+				// Update file type statistics
+				this.updateFileTypeStats()
 			}
 		} catch (error: any) {
 			console.error("[CodeIndexOrchestrator] Error during indexing:", error)
@@ -808,5 +829,63 @@ export class CodeIndexOrchestrator {
 	 */
 	public getIndexedFiles(): IndexedFile[] {
 		return Array.from(this.indexedFiles.values())
+	}
+
+	// ==================== File Type Statistics ====================
+
+	/**
+	 * Gets file type statistics (count by extension)
+	 * @returns Array of file type stats sorted by count descending
+	 */
+	public getFileTypeStats(): FileTypeStats[] {
+		const counts: FileTypeCountMap = {}
+
+		// Use cacheManager to get all indexed files
+		// The indexedFiles Map is only populated during incremental operations,
+		// but cacheManager contains the actual indexed files from the scanner
+		const allHashes = this.cacheManager.getAllHashes()
+
+		for (const filePath of Object.keys(allHashes)) {
+			const ext = path.extname(filePath).toLowerCase() || ".noext"
+			counts[ext] = (counts[ext] || 0) + 1
+		}
+
+		return Object.entries(counts)
+			.map(([extension, count]) => ({ extension, count }))
+			.sort((a, b) => b.count - a.count)
+	}
+
+	/**
+	 * Gets total number of indexed files
+	 * @returns Total file count
+	 */
+	public getTotalFileCount(): number {
+		// Use cacheManager to get accurate count of indexed files
+		const allHashes = this.cacheManager.getAllHashes()
+		return Object.keys(allHashes).length
+	}
+
+	/**
+	 * Gets files filtered by extension
+	 * @param extension File extension to filter by (with or without dot)
+	 * @returns Array of indexed files with the specified extension
+	 */
+	public getFilesByExtension(extension: string): IndexedFile[] {
+		const normalizedExt = extension.toLowerCase()
+		const extWithDot = normalizedExt.startsWith(".") ? normalizedExt : `.${normalizedExt}`
+
+		return Array.from(this.indexedFiles.values()).filter((file) =>
+			path.extname(file.path).toLowerCase() === extWithDot
+		)
+	}
+
+	/**
+	 * Updates file type stats in the state manager
+	 * This should be called when indexing is complete or when files change
+	 */
+	public updateFileTypeStats(): void {
+		const stats = this.getFileTypeStats()
+		const totalCount = this.getTotalFileCount()
+		this.stateManager.setFileTypeStats(stats, totalCount)
 	}
 }

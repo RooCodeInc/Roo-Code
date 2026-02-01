@@ -255,6 +255,7 @@
 	},
 	"settings": {
 		"codeIndex": {
+			"fileTypesLabel": "Indexed File Types",
 			"hybridSearch": {
 				"enabled": {
 					"description": "Enable hybrid search combining keyword and semantic matching for code indexing"

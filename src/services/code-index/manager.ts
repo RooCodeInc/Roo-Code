@@ -285,6 +285,42 @@ export class CodeIndexManager {
 	}
 
 	/**
+	 * Gets file type statistics (count by extension)
+	 * @returns Array of file type stats sorted by count descending
+	 */
+	public getFileTypeStats(): { extension: string; count: number }[] {
+		if (!this.isFeatureEnabled) {
+			return []
+		}
+		this.assertInitialized()
+		return this._orchestrator!.getFileTypeStats()
+	}
+
+	/**
+	 * Gets total number of indexed files
+	 * @returns Total file count
+	 */
+	public getTotalFileCount(): number {
+		if (!this.isFeatureEnabled) {
+			return 0
+		}
+		this.assertInitialized()
+		return this._orchestrator!.getTotalFileCount()
+	}
+
+	/**
+	 * Updates file type stats in the state manager
+	 * This should be called when indexing is complete
+	 */
+	public updateFileTypeStats(): void {
+		if (!this.isFeatureEnabled) {
+			return
+		}
+		this.assertInitialized()
+		this._orchestrator!.updateFileTypeStats()
+	}
+
+	/**
 	 * Private helper method to recreate services with current configuration.
 	 * Used by both initialize() and handleSettingsChange().
 	 */

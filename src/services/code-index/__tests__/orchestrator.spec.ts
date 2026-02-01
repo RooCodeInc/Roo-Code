@@ -877,4 +877,232 @@ describe("CodeIndexOrchestrator - Performance", () => {
 		// Should still only have parsed once
 		expect(codeParser.parseFile).toHaveBeenCalledTimes(1)
 	})
+
+	describe("CodeIndexOrchestrator - File Type Statistics", () => {
+		let orchestrator: CodeIndexOrchestrator
+		let mockConfigManager: any
+		let mockStateManager: any
+		let mockCacheManager: any
+		let mockVectorStore: any
+		let mockScanner: any
+		let mockFileWatcher: any
+		let mockCodeParser: any
+		const workspacePath = "/test/workspace"
+
+		beforeEach(() => {
+			mockConfigManager = {
+				isFeatureConfigured: true,
+				isFeatureEnabled: true,
+			}
+
+			mockStateManager = {
+				setSystemState: vi.fn(),
+				reportBlockIndexingProgress: vi.fn(),
+				reportFileQueueProgress: vi.fn(),
+				setFileTypeStats: vi.fn(),
+				getCurrentStatus: vi.fn().mockReturnValue({
+					systemStatus: "Standby",
+					message: "",
+					processedItems: 0,
+					totalItems: 0,
+					currentItemUnit: "blocks",
+					fileTypeStats: [],
+					totalFileCount: 0,
+				}),
+				state: "Standby" as const,
+			}
+
+			mockCacheManager = {
+				getHash: vi.fn(),
+				getAllHashes: vi.fn().mockReturnValue({}),
+				initialize: vi.fn().mockResolvedValue(undefined),
+			}
+
+			mockVectorStore = {
+				initialize: vi.fn().mockResolvedValue(true),
+				hasIndexedData: vi.fn().mockResolvedValue(false),
+				markIndexingIncomplete: vi.fn().mockResolvedValue(undefined),
+				markIndexingComplete: vi.fn().mockResolvedValue(undefined),
+				deleteCollection: vi.fn().mockResolvedValue(undefined),
+				upsertPoints: vi.fn().mockResolvedValue(undefined),
+				deletePointsByFilePath: vi.fn().mockResolvedValue(undefined),
+				clearCollection: vi.fn().mockResolvedValue(undefined),
+			}
+
+			mockScanner = {
+				scanDirectory: vi.fn().mockResolvedValue({
+					success: true,
+					stats: { filesFound: 0, blocksFound: 0 },
+				}),
+			}
+
+			mockFileWatcher = {
+				initialize: vi.fn().mockResolvedValue(undefined),
+				onDidStartBatchProcessing: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				onBatchProgressUpdate: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				onDidFinishBatchProcessing: vi.fn().mockReturnValue({ dispose: vi.fn() }),
+				dipose: vi.fn(),
+			}
+
+			mockCodeParser = {
+				parseFile: vi.fn().mockResolvedValue([]),
+			}
+
+			orchestrator = new CodeIndexOrchestrator(
+				mockConfigManager,
+				mockStateManager,
+				workspacePath,
+				mockCacheManager,
+				mockVectorStore,
+				mockScanner,
+				mockFileWatcher,
+				mockCodeParser,
+			)
+		})
+
+		it("should return correct file type stats for mixed files", () => {
+			// Mock getAllHashes to return files with different extensions
+			mockCacheManager.getAllHashes.mockReturnValue({
+				"/test/file1.ts": "hash1",
+				"/test/file2.ts": "hash2",
+				"/test/file3.js": "hash3",
+				"/test/readme.md": "hash4",
+			})
+
+			const stats = orchestrator.getFileTypeStats()
+
+			expect(stats).toHaveLength(3)
+			expect(stats[0].extension).toBe(".ts")
+			expect(stats[0].count).toBe(2)
+			expect(stats[1].extension).toBe(".js")
+			expect(stats[1].count).toBe(1)
+			expect(stats[2].extension).toBe(".md")
+			expect(stats[2].count).toBe(1)
+		})
+
+		it("should sort file type stats by count descending", () => {
+			// Mock getAllHashes with varying counts
+			mockCacheManager.getAllHashes.mockReturnValue({
+				"/test/a.py": "hash1",
+				"/test/b.py": "hash2",
+				"/test/c.py": "hash3",
+				"/test/a.ts": "hash4",
+			})
+
+			const stats = orchestrator.getFileTypeStats()
+
+			expect(stats[0].extension).toBe(".py")
+			expect(stats[0].count).toBe(3)
+			expect(stats[1].extension).toBe(".ts")
+			expect(stats[1].count).toBe(1)
+		})
+
+		it("should handle files without extensions", () => {
+			mockCacheManager.getAllHashes.mockReturnValue({
+				"/test/Makefile": "hash1",
+				"/test/Dockerfile": "hash2",
+			})
+
+			const stats = orchestrator.getFileTypeStats()
+
+			expect(stats).toHaveLength(1)
+			expect(stats[0].extension).toBe(".noext")
+			expect(stats[0].count).toBe(2)
+		})
+
+		it("should return empty array when no files indexed", () => {
+			const stats = orchestrator.getFileTypeStats()
+
+			expect(stats).toEqual([])
+		})
+
+		it("should return correct total file count", () => {
+			mockCacheManager.getAllHashes.mockReturnValue({
+				"/test/file1.ts": "hash1",
+				"/test/file2.js": "hash2",
+				"/test/file3.py": "hash3",
+			})
+
+			expect(orchestrator.getTotalFileCount()).toBe(3)
+		})
+
+		it("should return zero for empty index", () => {
+			expect(orchestrator.getTotalFileCount()).toBe(0)
+		})
+
+		it("should filter files by extension", () => {
+			// @ts-expect-error - accessing private property for testing
+			orchestrator.indexedFiles.set("/test/file1.ts", {
+				path: "/test/file1.ts",
+				contentHash: "hash1",
+				lastIndexed: Date.now(),
+				priority: FilePriority.LOW,
+			})
+			// @ts-expect-error - accessing private property for testing
+			orchestrator.indexedFiles.set("/test/file2.ts", {
+				path: "/test/file2.ts",
+				contentHash: "hash2",
+				lastIndexed: Date.now(),
+				priority: FilePriority.LOW,
+			})
+			// @ts-expect-error - accessing private property for testing
+			orchestrator.indexedFiles.set("/test/file3.js", {
+				path: "/test/file3.js",
+				contentHash: "hash3",
+				lastIndexed: Date.now(),
+				priority: FilePriority.LOW,
+			})
+
+			const tsFiles = orchestrator.getFilesByExtension(".ts")
+
+			expect(tsFiles).toHaveLength(2)
+			expect(tsFiles.every((f) => f.path.endsWith(".ts"))).toBe(true)
+		})
+
+		it("should filter files by extension with or without dot", () => {
+			// @ts-expect-error - accessing private property for testing
+			orchestrator.indexedFiles.set("/test/file1.ts", {
+				path: "/test/file1.ts",
+				contentHash: "hash1",
+				lastIndexed: Date.now(),
+				priority: FilePriority.LOW,
+			})
+
+			const filesWithDot = orchestrator.getFilesByExtension(".ts")
+			const filesWithoutDot = orchestrator.getFilesByExtension("ts")
+
+			expect(filesWithDot).toHaveLength(1)
+			expect(filesWithoutDot).toHaveLength(1)
+		})
+
+		it("should update file type stats in state manager", () => {
+			mockCacheManager.getAllHashes.mockReturnValue({
+				"/test/file1.ts": "hash1",
+				"/test/file2.js": "hash2",
+			})
+
+			orchestrator.updateFileTypeStats()
+
+			expect(mockStateManager.setFileTypeStats).toHaveBeenCalledWith(
+				expect.arrayContaining([
+					expect.objectContaining({ extension: ".ts" }),
+					expect.objectContaining({ extension: ".js" }),
+				]),
+				2,
+			)
+		})
+
+		it("should handle case-insensitive extension matching", () => {
+			mockCacheManager.getAllHashes.mockReturnValue({
+				"/test/file1.TS": "hash1",
+				"/test/file2.ts": "hash2",
+			})
+
+			const stats = orchestrator.getFileTypeStats()
+
+			expect(stats).toHaveLength(1)
+			expect(stats[0].extension).toBe(".ts")
+			expect(stats[0].count).toBe(2)
+		})
+	})
 })
