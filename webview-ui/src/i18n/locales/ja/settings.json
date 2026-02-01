@@ -971,6 +971,8 @@
 		"projectId": "プロジェクト ID を入力...",
 		"customArn": "ARN を入力（例：arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model）",
 		"baseUrl": "ベース URL を入力...",
+		"azureResourceName": "e.g. my-openai-resource",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "例：meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "例：lmstudio-community/llama-3.2-1b-instruct",
