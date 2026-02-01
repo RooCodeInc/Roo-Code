@@ -971,6 +971,8 @@
 		"projectId": "Nhập ID dự án...",
 		"customArn": "Nhập ARN (vd: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Nhập URL cơ sở...",
+		"azureResourceName": "e.g. my-openai-resource",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "vd: meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "vd: lmstudio-community/llama-3.2-1b-instruct",

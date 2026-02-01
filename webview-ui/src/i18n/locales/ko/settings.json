@@ -971,6 +971,8 @@
 		"projectId": "프로젝트 ID 입력...",
 		"customArn": "ARN 입력 (예: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "기본 URL 입력...",
+		"azureResourceName": "e.g. my-openai-resource",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "예: meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "예: lmstudio-community/llama-3.2-1b-instruct",

@@ -971,6 +971,8 @@
 		"projectId": "Inserisci ID progetto...",
 		"customArn": "Inserisci ARN (es. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Inserisci URL base...",
+		"azureResourceName": "e.g. my-openai-resource",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "es. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "es. lmstudio-community/llama-3.2-1b-instruct",
