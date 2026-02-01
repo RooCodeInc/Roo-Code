@@ -80,6 +80,8 @@
 		"addSkill": "Add Skill",
 		"editSkill": "Edit skill",
 		"deleteSkill": "Delete skill",
+		"changeMode": "Change mode",
+		"modeAny": "Any mode",
 		"deleteDialog": {
 			"title": "Delete Skill",
 			"description": "Are you sure you want to delete the skill \"{{name}}\"? This action cannot be undone.",

@@ -3,7 +3,7 @@
 	"displayName": "%extension.displayName%",
 	"description": "%extension.description%",
 	"publisher": "RooVeterinaryInc",
-	"version": "3.45.0",
+	"version": "3.46.1",
 	"icon": "assets/icons/icon.png",
 	"galleryBanner": {
 		"color": "#617A91",
@@ -452,8 +452,9 @@
 	"dependencies": {
 		"@ai-sdk/cerebras": "^1.0.0",
 		"@ai-sdk/deepseek": "^2.0.14",
-		"@ai-sdk/mistral": "^3.0.0",
+		"@ai-sdk/fireworks": "^2.0.26",
 		"@ai-sdk/groq": "^3.0.19",
+		"@ai-sdk/mistral": "^3.0.0",
 		"@anthropic-ai/bedrock-sdk": "^0.10.2",
 		"@anthropic-ai/sdk": "^0.37.0",
 		"@anthropic-ai/vertex-sdk": "^0.7.0",

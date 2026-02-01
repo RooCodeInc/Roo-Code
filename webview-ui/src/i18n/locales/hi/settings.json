@@ -1004,6 +1004,8 @@
 		"addSkill": "Skill जोड़ें",
 		"editSkill": "Skill संपादित करें",
 		"deleteSkill": "Skill हटाएं",
+		"changeMode": "मोड बदलें",
+		"modeAny": "कोई भी मोड",
 		"deleteDialog": {
 			"title": "Skill हटाएं",
 			"description": "क्या आप वाकई skill \"{{name}}\" को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",

@@ -6,7 +6,13 @@ import { deepSeekModels, deepSeekDefaultModelId, DEEP_SEEK_DEFAULT_TEMPERATURE, 
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { convertToAiSdkMessages, convertToolsForAiSdk, processAiSdkStreamPart } from "../transform/ai-sdk"
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	mapToolChoice,
+	handleAiSdkError,
+} from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -84,40 +90,6 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 	}
 
 	/**
-	 * Map OpenAI tool_choice to AI SDK toolChoice format.
-	 */
-	protected mapToolChoice(
-		toolChoice: any,
-	): "auto" | "none" | "required" | { type: "tool"; toolName: string } | undefined {
-		if (!toolChoice) {
-			return undefined
-		}
-
-		// Handle string values
-		if (typeof toolChoice === "string") {
-			switch (toolChoice) {
-				case "auto":
-					return "auto"
-				case "none":
-					return "none"
-				case "required":
-					return "required"
-				default:
-					return "auto"
-			}
-		}
-
-		// Handle object values (OpenAI ChatCompletionNamedToolChoice format)
-		if (typeof toolChoice === "object" && "type" in toolChoice) {
-			if (toolChoice.type === "function" && "function" in toolChoice && toolChoice.function?.name) {
-				return { type: "tool", toolName: toolChoice.function.name }
-			}
-		}
-
-		return undefined
-	}
-
-	/**
 	 * Get the max tokens parameter to include in the request.
 	 */
 	protected getMaxOutputTokens(): number | undefined {
@@ -152,24 +124,29 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 			temperature: this.options.modelTemperature ?? temperature ?? DEEP_SEEK_DEFAULT_TEMPERATURE,
 			maxOutputTokens: this.getMaxOutputTokens(),
 			tools: aiSdkTools,
-			toolChoice: this.mapToolChoice(metadata?.tool_choice),
+			toolChoice: mapToolChoice(metadata?.tool_choice),
 		}
 
 		// Use streamText for streaming responses
 		const result = streamText(requestOptions)
 
-		// Process the full stream to get all events including reasoning
-		for await (const part of result.fullStream) {
-			for (const chunk of processAiSdkStreamPart(part)) {
-				yield chunk
+		try {
+			// Process the full stream to get all events including reasoning
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
+				}
 			}
-		}
 
-		// Yield usage metrics at the end, including cache metrics from providerMetadata
-		const usage = await result.usage
-		const providerMetadata = await result.providerMetadata
-		if (usage) {
-			yield this.processUsageMetrics(usage, providerMetadata as any)
+			// Yield usage metrics at the end, including cache metrics from providerMetadata
+			const usage = await result.usage
+			const providerMetadata = await result.providerMetadata
+			if (usage) {
+				yield this.processUsageMetrics(usage, providerMetadata as any)
+			}
+		} catch (error) {
+			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
+			throw handleAiSdkError(error, "DeepSeek")
 		}
 	}
 

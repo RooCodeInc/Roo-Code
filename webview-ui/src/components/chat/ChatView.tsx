@@ -612,7 +612,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				// - Task is busy (sendingDisabled)
 				// - API request in progress (isStreaming)
 				// - Queue has items (preserve message order during drain)
-				if (sendingDisabled || isStreaming || messageQueue.length > 0) {
+				// - Command is running (command_output) - user's message should be queued for AI, not sent to terminal
+				if (
+					sendingDisabled ||
+					isStreaming ||
+					messageQueue.length > 0 ||
+					clineAskRef.current === "command_output"
+				) {
 					try {
 						console.log("queueMessage", text, images)
 						vscode.postMessage({ type: "queueMessage", text, images })
@@ -645,7 +651,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "tool":
 						case "browser_action_launch":
 						case "command": // User can provide feedback to a tool or command use.
-						case "command_output": // User can send input to command stdin.
 						case "use_mcp_server":
 						case "completion_result": // If this happens then the user has feedback for the completion result.
 						case "resume_task":
@@ -1496,9 +1501,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	useImperativeHandle(ref, () => ({
 		acceptInput: () => {
+			const hasInput = inputValue.trim() || selectedImages.length > 0
+
+			// Special case: during command_output, queue the message instead of
+			// triggering the primary button action (which would lose the message)
+			if (clineAskRef.current === "command_output" && hasInput) {
+				vscode.postMessage({ type: "queueMessage", text: inputValue.trim(), images: selectedImages })
+				setInputValue("")
+				setSelectedImages([])
+				return
+			}
+
 			if (enableButtons && primaryButtonText) {
 				handlePrimaryButtonClick(inputValue, selectedImages)
-			} else if (!sendingDisabled && !isProfileDisabled && (inputValue.trim() || selectedImages.length > 0)) {
+			} else if (!sendingDisabled && !isProfileDisabled && hasInput) {
 				handleSendMessage(inputValue, selectedImages)
 			}
 		},

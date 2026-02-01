@@ -1011,6 +1011,8 @@
 		"addSkill": "新增技能",
 		"editSkill": "編輯技能",
 		"deleteSkill": "刪除技能",
+		"changeMode": "變更模式",
+		"modeAny": "任意模式",
 		"deleteDialog": {
 			"title": "刪除技能",
 			"description": "您確定要刪除技能「{{name}}」嗎？此動作無法復原。",

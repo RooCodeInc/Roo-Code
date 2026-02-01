@@ -345,7 +345,9 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"smartCodeFolding": "Smart Code Folding: Nén ngữ cảnh giờ đây bảo tồn một bản đồ nhẹ của các tệp của bạn—chữ ký hàm, khai báo lớp và định nghĩa kiểu. Điều này cung cấp tính liên tục tốt hơn sau nén và chỉnh sửa thông minh hơn khi tham chiếu công việc trước đó."
+			"parallelTools": "Gọi Công cụ Song song: Các công cụ hiện chạy song song theo mặc định, tăng tốc độ đáng kể cho các hoạt động đa tệp và tác vụ phức tạp.",
+			"readFileIndentation": "Đọc tệp thông minh hơn: Chế độ thụt lề mới trích xuất các khối mã ngữ nghĩa hoàn chỉnh (hàm, lớp) mà không cắt ngắn ở giữa hàm—lý tưởng khi nhắm mục tiêu các dòng cụ thể từ kết quả tìm kiếm.",
+			"readCommandOutput": "Đầu ra Thiết bị đầu cuối Không mất dữ liệu: Công cụ read_command_output mới lấy đầu ra lệnh đầy đủ từ các thực thi bị cắt ngắn với phân trang và lọc regex."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

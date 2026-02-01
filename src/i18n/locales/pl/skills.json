@@ -7,6 +7,7 @@
 		"already_exists": "Umiejętność \"{{name}}\" już istnieje w {{path}}",
 		"not_found": "Nie znaleziono umiejętności \"{{name}}\" w {{source}}{{modeInfo}}",
 		"missing_create_fields": "Brakuje wymaganych pól: skillName, source lub skillDescription",
+		"missing_move_fields": "Brakuje wymaganych pól: skillName lub source",
 		"manager_unavailable": "Menedżer umiejętności niedostępny",
 		"missing_delete_fields": "Brakuje wymaganych pól: skillName lub source",
 		"skill_not_found": "Nie znaleziono umiejętności \"{{name}}\"",

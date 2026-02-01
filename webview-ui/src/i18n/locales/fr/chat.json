@@ -344,7 +344,9 @@
 		},
 		"release": {
 			"heading": "Quoi de neuf :",
-			"smartCodeFolding": "Pliage de code intelligent : La condensation du contexte préserve maintenant une carte légère de vos fichiers—signatures de fonctions, déclarations de classes et définitions de types. Cela offre une meilleure continuité après la condensation et des éditions plus intelligentes lors du référencement de travail antérieur."
+			"parallelTools": "Appels d'outils parallèles : Les outils s'exécutent maintenant en parallèle par défaut, accélérant considérablement les opérations multi-fichiers et les tâches complexes.",
+			"readFileIndentation": "Lecture de fichiers plus intelligente : Le nouveau mode d'indentation extrait les blocs de code sémantiques complets (fonctions, classes) sans troncature au milieu de la fonction—idéal pour cibler des lignes spécifiques des résultats de recherche.",
+			"readCommandOutput": "Sortie de terminal sans perte : Le nouvel outil read_command_output récupère la sortie complète de la commande à partir d'exécutions tronquées avec pagination et filtrage regex."
 		},
 		"cloudAgents": {
 			"heading": "Nouveautés dans le Cloud :",

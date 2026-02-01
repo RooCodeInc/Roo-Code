@@ -1004,6 +1004,8 @@
 		"addSkill": "スキルを追加",
 		"editSkill": "スキルを編集",
 		"deleteSkill": "スキルを削除",
+		"changeMode": "モードを変更",
+		"modeAny": "任意のモード",
 		"deleteDialog": {
 			"title": "スキルを削除",
 			"description": "スキル「{{name}}」を削除してもよろしいですか？この操作は元に戻せません。",

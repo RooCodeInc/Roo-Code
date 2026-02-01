@@ -345,7 +345,9 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"smartCodeFolding": "Smart Code Folding: Bağlam yoğunlaştırması şimdi dosyalarınızın hafif bir haritasını korur—fonksiyon imzaları, sınıf bildirimleri ve tür tanımları. Bu, yoğunlaştırmadan sonra daha iyi devamlılık ve önceki çalışmaya atıfta bulunurken daha akıllı düzenlemeler sağlar."
+			"parallelTools": "Paralel Araç Çağrıları: Araçlar artık varsayılan olarak paralel çalışır ve çok dosyalı işlemler ile karmaşık görevleri önemli ölçüde hızlandırır.",
+			"readFileIndentation": "Daha Akıllı Dosya Okuma: Yeni girinti modu, tam anlamsal kod bloklarını (işlevler, sınıflar) fonksiyon ortasında kesme olmadan ayıklar—arama sonuçlarından belirli satırları hedeflediğinizde idealdir.",
+			"readCommandOutput": "Kayıpsız Terminal Çıktısı: Yeni read_command_output aracı, sayfalandırma ve regex filtrelemesiyle kesilen yürütmelerden tam komut çıktısını alır."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

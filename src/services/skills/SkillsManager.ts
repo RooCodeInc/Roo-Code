@@ -401,6 +401,77 @@ Add your skill instructions here.
 	}
 
 	/**
+	 * Move a skill to a different mode
+	 * @param name - Skill name to move
+	 * @param source - Where the skill is located ("global" or "project")
+	 * @param currentMode - Current mode (undefined for generic skills)
+	 * @param newMode - Target mode (undefined for generic skills)
+	 */
+	async moveSkill(
+		name: string,
+		source: "global" | "project",
+		currentMode: string | undefined,
+		newMode: string | undefined,
+	): Promise<void> {
+		// Don't move if source and destination are the same
+		if (currentMode === newMode) {
+			return
+		}
+
+		// Find the skill at its current location
+		const skill = this.getSkill(name, source, currentMode)
+		if (!skill) {
+			const modeInfo = currentMode ? ` (mode: ${currentMode})` : ""
+			throw new Error(t("skills:errors.not_found", { name, source, modeInfo }))
+		}
+
+		// Determine base directory
+		let baseDir: string
+		if (source === "global") {
+			baseDir = getGlobalRooDirectory()
+		} else {
+			const provider = this.providerRef.deref()
+			if (!provider?.cwd) {
+				throw new Error(t("skills:errors.no_workspace"))
+			}
+			baseDir = path.join(provider.cwd, ".roo")
+		}
+
+		// Determine source and destination directories
+		const sourceDirName = currentMode ? `skills-${currentMode}` : "skills"
+		const destDirName = newMode ? `skills-${newMode}` : "skills"
+		const sourceDir = path.join(baseDir, sourceDirName, name)
+		const destSkillsDir = path.join(baseDir, destDirName)
+		const destDir = path.join(destSkillsDir, name)
+		const destSkillMdPath = path.join(destDir, "SKILL.md")
+
+		// Check if skill already exists at destination
+		if (await fileExists(destSkillMdPath)) {
+			throw new Error(t("skills:errors.already_exists", { name, path: destSkillMdPath }))
+		}
+
+		// Ensure destination skills directory exists
+		await fs.mkdir(destSkillsDir, { recursive: true })
+
+		// Move the skill directory
+		await fs.rename(sourceDir, destDir)
+
+		// Clean up empty source skills directory
+		const sourceSkillsDir = path.join(baseDir, sourceDirName)
+		try {
+			const entries = await fs.readdir(sourceSkillsDir)
+			if (entries.length === 0) {
+				await fs.rmdir(sourceSkillsDir)
+			}
+		} catch {
+			// Ignore errors - directory might not exist or have permission issues
+		}
+
+		// Refresh skills list
+		await this.discoverSkills()
+	}
+
+	/**
 	 * Get all skills directories to scan, including mode-specific directories.
 	 */
 	private async getSkillsDirectories(): Promise<

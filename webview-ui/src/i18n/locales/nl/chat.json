@@ -317,7 +317,9 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"smartCodeFolding": "Smart Code Folding: Contextcondensatie behoudt nu een lichte kaart van je bestanden—functiehandtekeningen, klasdeclaraties en typedefinities. Dit biedt betere continuïteit na condensatie en slimmere bewerkingen bij verwijzing naar vorig werk."
+			"parallelTools": "Parallelle Gereedschaproepen: Gereedschappen worden nu standaard parallel uitgevoerd, wat multi-file operaties en complexe taken aanzienlijk versnelt.",
+			"readFileIndentation": "Slimmer Bestand Lezen: Nieuwe inspringingmodus extraheert volledige semantische codeblokken (functies, klassen) zonder afkapping in het midden van de functie—ideaal voor het richten op specifieke lijnen uit zoekresultaten.",
+			"readCommandOutput": "Verliesvrije Terminaluitvoer: Nieuw read_command_output gereedschap haalt volledige opdrachtuitvoer op van afgekapte uitvoeringen met paginering en regex-filtering."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

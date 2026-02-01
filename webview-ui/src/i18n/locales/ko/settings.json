@@ -1004,6 +1004,8 @@
 		"addSkill": "스킬 추가",
 		"editSkill": "스킬 편집",
 		"deleteSkill": "스킬 삭제",
+		"changeMode": "모드 변경",
+		"modeAny": "모든 모드",
 		"deleteDialog": {
 			"title": "스킬 삭제",
 			"description": "스킬 \"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",

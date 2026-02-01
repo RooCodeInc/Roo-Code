@@ -7,6 +7,7 @@
 		"already_exists": "स्किल \"{{name}}\" पहले से {{path}} पर मौजूद है",
 		"not_found": "स्किल \"{{name}}\" {{source}}{{modeInfo}} में नहीं मिला",
 		"missing_create_fields": "आवश्यक फ़ील्ड गायब हैं: skillName, source, या skillDescription",
+		"missing_move_fields": "आवश्यक फ़ील्ड गायब हैं: skillName या source",
 		"manager_unavailable": "स्किल मैनेजर उपलब्ध नहीं है",
 		"missing_delete_fields": "आवश्यक फ़ील्ड गायब हैं: skillName या source",
 		"skill_not_found": "स्किल \"{{name}}\" नहीं मिला",

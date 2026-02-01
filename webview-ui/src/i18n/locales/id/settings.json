@@ -1033,6 +1033,8 @@
 		"addSkill": "Tambahkan Skill",
 		"editSkill": "Edit skill",
 		"deleteSkill": "Hapus skill",
+		"changeMode": "Ubah mode",
+		"modeAny": "Mode apa saja",
 		"deleteDialog": {
 			"title": "Hapus Skill",
 			"description": "Apakah Anda yakin ingin menghapus skill \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",

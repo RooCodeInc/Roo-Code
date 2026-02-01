@@ -1004,6 +1004,8 @@
 		"addSkill": "Skill toevoegen",
 		"editSkill": "Skill bewerken",
 		"deleteSkill": "Skill verwijderen",
+		"changeMode": "Modus wijzigen",
+		"modeAny": "Elke modus",
 		"deleteDialog": {
 			"title": "Skill verwijderen",
 			"description": "Weet u zeker dat u de skill \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
