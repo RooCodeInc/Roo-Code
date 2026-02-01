@@ -50,6 +50,7 @@ export const PROVIDERS = [
 	{ value: "openrouter", label: "OpenRouter", proxy: false },
 	{ value: "deepinfra", label: "DeepInfra", proxy: false },
 	{ value: "anthropic", label: "Anthropic", proxy: false },
+	{ value: "azure", label: "Azure OpenAI", proxy: false },
 	{ value: "cerebras", label: "Cerebras", proxy: false },
 	{ value: "gemini", label: "Google Gemini", proxy: false },
 	{ value: "doubao", label: "Doubao", proxy: false },
