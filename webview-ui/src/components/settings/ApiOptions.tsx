@@ -66,6 +66,7 @@ import {
 
 import {
 	Anthropic,
+	Azure,
 	Baseten,
 	Bedrock,
 	DeepSeek,
@@ -526,6 +527,14 @@ const ApiOptions = ({
 						/>
 					)}
 
+					{selectedProvider === "azure" && (
+						<Azure
+							apiConfiguration={apiConfiguration}
+							setApiConfigurationField={setApiConfigurationField}
+							simplifySettings={fromWelcomeView}
+						/>
+					)}
+
 					{selectedProvider === "openai-codex" && (
 						<OpenAICodex
 							apiConfiguration={apiConfiguration}
@@ -647,6 +656,10 @@ const ApiOptions = ({
 
 					{selectedProvider === "xai" && (
 						<XAI apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
+					)}
+
+					{selectedProvider === "cerebras" && (
+						<Cerebras apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 					)}
 
 					{selectedProvider === "litellm" && (

@@ -41,6 +41,8 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 export const PROVIDERS = [
 	{ value: "openrouter", label: "OpenRouter", proxy: false },
 	{ value: "anthropic", label: "Anthropic", proxy: false },
+	{ value: "azure", label: "Azure OpenAI", proxy: false },
+	{ value: "cerebras", label: "Cerebras", proxy: false },
 	{ value: "gemini", label: "Google Gemini", proxy: false },
 	{ value: "deepseek", label: "DeepSeek", proxy: false },
 	{ value: "moonshot", label: "Moonshot", proxy: false },
