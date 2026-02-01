@@ -331,6 +331,11 @@ function getSelectedModel({
 			const info = routerModels["vercel-ai-gateway"]?.[id]
 			return { id, info }
 		}
+		case "azure": {
+			// Azure uses deployment names configured by the user
+			const id = apiConfiguration.azureDeploymentName ?? apiConfiguration.apiModelId ?? ""
+			return { id, info: undefined }
+		}
 		// case "anthropic":
 		// case "fake-ai":
 		default: {
