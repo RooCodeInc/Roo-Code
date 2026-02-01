@@ -252,5 +252,14 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"settings": {
+		"codeIndex": {
+			"hybridSearch": {
+				"enabled": {
+					"description": "Enable hybrid search combining keyword and semantic matching for code indexing"
+				}
+			}
+		}
 	}
 }

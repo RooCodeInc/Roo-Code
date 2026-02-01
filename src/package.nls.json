@@ -45,5 +45,16 @@
 	"settings.debug.description": "Enable debug mode to show additional buttons for viewing API conversation history and UI messages as prettified JSON in temporary files.",
 	"settings.debugProxy.enabled.description": "**Enable Debug Proxy** — Route all outbound network requests through a proxy for MITM debugging. Only active when running in debug mode (F5).",
 	"settings.debugProxy.serverUrl.description": "Proxy URL (e.g., `http://127.0.0.1:8888`). Only used when **Debug Proxy** is enabled.",
-	"settings.debugProxy.tlsInsecure.description": "Accept self-signed certificates from the proxy. **Required for MITM inspection.** ⚠️ Insecure — only use for local debugging."
+	"settings.debugProxy.tlsInsecure.description": "Accept self-signed certificates from the proxy. **Required for MITM inspection.** ⚠️ Insecure — only use for local debugging.",
+	"settings.codeIndex.hybridSearch.enabled.description": "Enable hybrid search combining keyword and semantic matching for code indexing",
+	"settings.codeIndex.hybridSearch.description": "Hybrid search settings combining keyword and semantic matching for improved code indexing results",
+	"settings.codeIndex.hybridSearch.semanticWeight.description": "Weight for semantic search results in hybrid search (0-1). Higher values prioritize semantic similarity.",
+	"settings.codeIndex.hybridSearch.keywordWeight.description": "Weight for keyword search results in hybrid search (0-1). Higher values prioritize exact keyword matches.",
+	"settings.codeIndex.hybridSearch.rrfK.description": "K parameter for Reciprocal Rank Fusion (RRF). Controls the ranking fusion between keyword and semantic search results.",
+	"settings.codeIndex.adaptiveChunking.description": "Adaptive chunking settings for intelligent code segmentation based on language structure",
+	"settings.codeIndex.adaptiveChunking.enabled.description": "Enable adaptive chunking that adjusts code segmentation based on language structure and content",
+	"settings.codeIndex.adaptiveChunking.strategy.description": "Chunking strategy: 'syntactic' (based on code syntax), 'semantic' (based on semantic meaning), or 'balanced' (combination of both)",
+	"settings.context.compression.description": "Context compression settings for managing conversation context size",
+	"settings.context.compression.enabled.description": "Enable context compression to manage conversation context size and token usage",
+	"settings.context.compression.strategy.description": "Compression strategy: 'aggressive' (maximum compression), 'balanced' (recommended), or 'preservative' (minimal compression)"
 }
