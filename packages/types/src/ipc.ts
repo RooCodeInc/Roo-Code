@@ -46,6 +46,8 @@ export enum TaskCommandName {
 	CloseTask = "CloseTask",
 	ResumeTask = "ResumeTask",
 	SendMessage = "SendMessage",
+	ApproveAsk = "ApproveAsk",
+	DenyAsk = "DenyAsk",
 }
 
 /**
@@ -76,6 +78,20 @@ export const taskCommandSchema = z.discriminatedUnion("commandName", [
 	}),
 	z.object({
 		commandName: z.literal(TaskCommandName.SendMessage),
+		data: z.object({
+			text: z.string().optional(),
+			images: z.array(z.string()).optional(),
+		}),
+	}),
+	z.object({
+		commandName: z.literal(TaskCommandName.ApproveAsk),
+		data: z.object({
+			text: z.string().optional(),
+			images: z.array(z.string()).optional(),
+		}),
+	}),
+	z.object({
+		commandName: z.literal(TaskCommandName.DenyAsk),
 		data: z.object({
 			text: z.string().optional(),
 			images: z.array(z.string()).optional(),
