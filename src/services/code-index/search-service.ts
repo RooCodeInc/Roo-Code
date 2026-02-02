@@ -11,6 +11,7 @@ import { regexSearchFiles } from "../ripgrep"
 import { performHybridSearch, parseRipgrepResults, validateHybridSearchConfig } from "./hybrid-search"
 import NodeCache from "node-cache"
 import * as vscode from "vscode"
+import { IGraphStore } from "./graph"
 
 /**
  * Interface for search result cache entry
@@ -64,12 +65,33 @@ export class CodeIndexSearchService {
 	private embeddingCacheHits = 0
 	private embeddingCacheMisses = 0
 
+	/**
+	 * Knowledge Graph store for context-enhanced search (optional)
+	 */
+	private graphStore?: IGraphStore
+
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
 		private readonly stateManager: CodeIndexStateManager,
 		private readonly embedder: IEmbedder,
 		private readonly vectorStore: IVectorStore,
 	) {}
+
+	/**
+	 * Enables graph-enhanced search with the provided graph store
+	 * @param graphStore The graph store for context queries
+	 */
+	public enableGraphContext(graphStore: IGraphStore): void {
+		this.graphStore = graphStore
+		console.log("[CodeIndexSearchService] Graph context enabled for enhanced search")
+	}
+
+	/**
+	 * Check if graph context is available
+	 */
+	public isGraphContextEnabled(): boolean {
+		return !!this.graphStore
+	}
 
 	/**
 	 * Generates a cache key for search queries
@@ -321,6 +343,139 @@ export class CodeIndexSearchService {
 			})
 
 			throw error // Re-throw the error after setting state
+		}
+	}
+
+	/**
+	 * Searches the code index with graph-enhanced context.
+	 * Returns results with related files from the knowledge graph.
+	 * @param query The search query
+	 * @param directoryPrefix Optional directory path to filter results by
+	 * @param workspacePath Optional workspace path for keyword search
+	 * @param options Additional options for graph context
+	 * @returns Array of search results with related context
+	 */
+	public async searchWithGraphContext(
+		query: string,
+		directoryPrefix?: string,
+		workspacePath?: string,
+		options: {
+			includeDependencies?: boolean
+			includeDependents?: boolean
+			maxRelatedFiles?: number
+		} = {},
+	): Promise<{
+		results: VectorStoreSearchResult[]
+		relatedFiles: Array<{
+			filePath: string
+			relationType: "dependency" | "dependent"
+			sourceFile: string
+		}>
+	}> {
+		// Get base search results
+		const results = await this.searchIndex(query, directoryPrefix, workspacePath)
+
+		// If graph context is not enabled, return results without related files
+		if (!this.graphStore) {
+			return { results, relatedFiles: [] }
+		}
+
+		const { includeDependencies = true, includeDependents = true, maxRelatedFiles = 10 } = options
+
+		const relatedFiles: Array<{
+			filePath: string
+			relationType: "dependency" | "dependent"
+			sourceFile: string
+		}> = []
+
+		const seenFiles = new Set<string>()
+
+		try {
+			// Collect unique file paths from results
+			const resultFilePaths = new Set<string>()
+			for (const result of results) {
+				if (result.payload?.filePath) {
+					resultFilePaths.add(result.payload.filePath)
+					seenFiles.add(result.payload.filePath)
+				}
+			}
+
+			// Get related files from graph for each result file
+			for (const filePath of resultFilePaths) {
+				if (relatedFiles.length >= maxRelatedFiles) break
+
+				// Get dependencies
+				if (includeDependencies) {
+					const deps = await this.graphStore.getDependencies(filePath)
+					for (const dep of deps) {
+						if (!seenFiles.has(dep.target) && relatedFiles.length < maxRelatedFiles) {
+							seenFiles.add(dep.target)
+							relatedFiles.push({
+								filePath: dep.target,
+								relationType: "dependency",
+								sourceFile: filePath,
+							})
+						}
+					}
+				}
+
+				// Get dependents
+				if (includeDependents) {
+					const dependents = await this.graphStore.getDependents(filePath)
+					for (const dep of dependents) {
+						if (!seenFiles.has(dep) && relatedFiles.length < maxRelatedFiles) {
+							seenFiles.add(dep)
+							relatedFiles.push({
+								filePath: dep,
+								relationType: "dependent",
+								sourceFile: filePath,
+							})
+						}
+					}
+				}
+			}
+		} catch (graphError) {
+			// Graph context is optional - log and continue
+			console.warn("[CodeIndexSearchService] Graph context lookup failed:", graphError)
+		}
+
+		return { results, relatedFiles }
+	}
+
+	/**
+	 * Get files related to a specific file using the knowledge graph
+	 * @param filePath The file to find relations for
+	 * @param maxDepth Maximum depth for transitive relations
+	 * @returns Object with dependencies and dependents
+	 */
+	public async getFileRelations(
+		filePath: string,
+		maxDepth: number = 2,
+	): Promise<{
+		directDependencies: string[]
+		directDependents: string[]
+		transitiveDependencies: string[]
+		transitiveDependents: string[]
+	} | null> {
+		if (!this.graphStore) {
+			return null
+		}
+
+		try {
+			const directDeps = await this.graphStore.getDependencies(filePath)
+			const directDependents = await this.graphStore.getDependents(filePath)
+			const transitiveDeps = await this.graphStore.getTransitiveDependencies(filePath, maxDepth)
+			const transitiveDependents = await this.graphStore.getTransitiveDependents(filePath, maxDepth)
+
+			return {
+				directDependencies: directDeps.map((d) => d.target),
+				directDependents,
+				transitiveDependencies: Array.from(transitiveDeps),
+				transitiveDependents: Array.from(transitiveDependents),
+			}
+		} catch (error) {
+			console.warn("[CodeIndexSearchService] Failed to get file relations:", error)
+			return null
 		}
 	}
 }

@@ -98,6 +98,7 @@ export interface FileProcessingResult {
 	reason?: string
 	newHash?: string
 	pointsToUpsert?: PointStruct[]
+	operation?: "upsert" | "delete"
 }
 
 /**

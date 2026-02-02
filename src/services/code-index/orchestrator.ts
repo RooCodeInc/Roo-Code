@@ -9,6 +9,7 @@ import { CacheManager } from "./cache-manager"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { t } from "../../i18n"
+import { IGraphStore, IGraphParser, DependencyType } from "./graph"
 
 /**
  * File priority levels for priority-based processing
@@ -87,6 +88,11 @@ export class CodeIndexOrchestrator {
 	// Maximum cache size for parse results (500 entries)
 	private readonly maxParseCacheSize = 500
 
+	// Knowledge Graph components (optional - fail-safe)
+	private graphStore?: IGraphStore
+	private graphBuilder?: IGraphParser
+	private graphEnabled: boolean = false
+
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
 		private readonly stateManager: CodeIndexStateManager,
@@ -98,6 +104,26 @@ export class CodeIndexOrchestrator {
 		codeParser?: CodeParser,
 	) {
 		this.codeParser = codeParser ?? new CodeParser()
+	}
+
+	/**
+	 * Enables Knowledge Graph features with the provided services.
+	 * This is optional and graph failures won't affect vector indexing.
+	 * @param graphStore - The graph storage service
+	 * @param graphBuilder - The graph parser service
+	 */
+	public enableGraphFeatures(graphStore: IGraphStore, graphBuilder: IGraphParser): void {
+		this.graphStore = graphStore
+		this.graphBuilder = graphBuilder
+		this.graphEnabled = true
+		console.log("[CodeIndexOrchestrator] Knowledge Graph features enabled")
+	}
+
+	/**
+	 * Check if graph features are enabled
+	 */
+	public isGraphEnabled(): boolean {
+		return this.graphEnabled && !!this.graphStore && !!this.graphBuilder
 	}
 
 	/**
@@ -140,7 +166,32 @@ export class CodeIndexOrchestrator {
 				this.fileWatcher.onDidFinishBatchProcessing((summary: BatchProcessingSummary) => {
 					if (summary.batchError) {
 						console.error(`[CodeIndexOrchestrator] Batch processing failed:`, summary.batchError)
-					} else {
+					}
+
+					// Process successful results regardless of batch error (some might have succeeded)
+					let hasUpdates = false
+					for (const result of summary.processedFiles) {
+						if (result.status === "success") {
+							hasUpdates = true
+							if (result.operation === "delete") {
+								this.indexedFiles.delete(result.path)
+								this.parseResultCache.delete(result.path)
+							} else if (result.operation === "upsert") {
+								this.indexedFiles.set(result.path, {
+									path: result.path,
+									contentHash: result.newHash || "",
+									lastIndexed: Date.now(),
+									priority: this.calculateFilePriority(result.path),
+								})
+							}
+						}
+					}
+
+					if (hasUpdates) {
+						this.updateFileTypeStats()
+					}
+
+					if (!summary.batchError) {
 						const successCount = summary.processedFiles.filter(
 							(f: { status: string }) => f.status === "success",
 						).length
@@ -200,6 +251,7 @@ export class CodeIndexOrchestrator {
 		// Track whether we successfully connected to Qdrant and started indexing
 		// This helps us decide whether to preserve cache on error
 		let indexingStarted = false
+		let scanCompleted = false
 
 		try {
 			const collectionCreated = await this.vectorStore.initialize()
@@ -253,6 +305,7 @@ export class CodeIndexOrchestrator {
 					handleBlocksIndexed,
 					handleFileParsed,
 				)
+				scanCompleted = true
 
 				if (!result) {
 					throw new Error("Incremental scan failed, is scanner initialized?")
@@ -309,6 +362,7 @@ export class CodeIndexOrchestrator {
 					handleBlocksIndexed,
 					handleFileParsed,
 				)
+				scanCompleted = true
 
 				if (!result) {
 					throw new Error("Scan failed, is scanner initialized?")
@@ -381,9 +435,9 @@ export class CodeIndexOrchestrator {
 				}
 			}
 
-			// Only clear cache if indexing had started (Qdrant connection succeeded)
+			// Only clear cache if indexing had started (Qdrant connection succeeded) and scan didn't complete
 			// If we never connected to Qdrant, preserve cache for incremental scan when it comes back
-			if (indexingStarted) {
+			if (indexingStarted && !scanCompleted) {
 				// Indexing started but failed mid-way - clear cache to avoid cache-Qdrant mismatch
 				await this.cacheManager.clearCacheFile()
 				console.log(
@@ -560,6 +614,21 @@ export class CodeIndexOrchestrator {
 			// Convert blocks to points and upsert
 			const points = this.blocksToPoints(blocks)
 			await this.vectorStore.upsertPoints(points)
+
+			// Knowledge Graph update (fail-safe - won't affect vector indexing)
+			if (this.isGraphEnabled() && this.graphStore && this.graphBuilder && cachedHash.length > 0) {
+				try {
+					const content = blocks.map((b) => b.content).join("\n")
+					const graphResult = await this.graphBuilder.parseFile(filePath, content)
+
+					if (graphResult.success) {
+						await this.graphStore.updateNode(filePath, cachedHash, graphResult.imports, graphResult.exports)
+					}
+				} catch (graphError) {
+					// Log but don't fail - graph is optional
+					console.warn(`[CodeIndexOrchestrator] Graph update failed for ${filePath}:`, graphError)
+				}
+			}
 
 			// Update indexed files map
 			this.indexedFiles.set(filePath, {
@@ -874,8 +943,8 @@ export class CodeIndexOrchestrator {
 		const normalizedExt = extension.toLowerCase()
 		const extWithDot = normalizedExt.startsWith(".") ? normalizedExt : `.${normalizedExt}`
 
-		return Array.from(this.indexedFiles.values()).filter((file) =>
-			path.extname(file.path).toLowerCase() === extWithDot
+		return Array.from(this.indexedFiles.values()).filter(
+			(file) => path.extname(file.path).toLowerCase() === extWithDot,
 		)
 	}
 

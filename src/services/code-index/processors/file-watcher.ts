@@ -213,7 +213,7 @@ export class FileWatcher implements IFileWatcher {
 
 				for (const path of pathsToExplicitlyDelete) {
 					this.cacheManager.deleteHash(path)
-					batchResults.push({ path, status: "success" })
+					batchResults.push({ path, status: "success", operation: "delete" })
 					processedCountInBatch++
 					this._onBatchProgressUpdate.fire({
 						processedInBatch: processedCountInBatch,
@@ -393,7 +393,7 @@ export class FileWatcher implements IFileWatcher {
 					if (newHash) {
 						this.cacheManager.updateHash(path, newHash)
 					}
-					batchResults.push({ path, status: "success" })
+					batchResults.push({ path, status: "success", newHash, operation: "upsert" })
 				}
 			} catch (error) {
 				const err = error as Error
