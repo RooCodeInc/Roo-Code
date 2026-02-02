@@ -12,6 +12,7 @@ tags:
 status: published
 publish_date: "2025-08-06"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 ---
 
 The keyboard shortcut that matters is the one that sends a prompt, not the one that accepts a suggestion.

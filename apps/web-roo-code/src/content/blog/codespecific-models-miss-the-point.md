@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-10-22"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 ---
 
 The model trained on code can't tell you why users abandon checkout flows.

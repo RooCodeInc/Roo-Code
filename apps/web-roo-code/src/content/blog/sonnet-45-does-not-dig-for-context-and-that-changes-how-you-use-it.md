@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-10-03"
 publish_time_pt: "9:00am"
+source: "After Hours"
 ---
 
 You describe the bug. The model suggests a fix.

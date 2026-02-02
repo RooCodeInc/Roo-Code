@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-05-14"
 publish_time_pt: "9:00am"
+source: "Office Hours"
 ---
 
 Rule: If the parent cannot check in on the child, it is not an orchestrator. It is a launcher.

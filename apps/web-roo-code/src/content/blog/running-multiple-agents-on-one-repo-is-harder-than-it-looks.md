@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-09-17"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 ---
 
 Five IDEs. Three or four agents per IDE. One developer keeping track of all of them.

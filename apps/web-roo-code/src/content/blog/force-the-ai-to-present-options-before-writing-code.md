@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-07-23"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 ---
 
 You ask for a feature. The AI picks one approach and executes immediately.

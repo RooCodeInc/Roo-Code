@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-11-14"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 ---
 
 "I need a separate mode for the API client because I want its objective to be 100% faithful to the client, not to my request."

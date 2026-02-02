@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-10-01"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 ---
 
 The diff solves the problem. It's also the brute-force solution you'll refactor next sprint.

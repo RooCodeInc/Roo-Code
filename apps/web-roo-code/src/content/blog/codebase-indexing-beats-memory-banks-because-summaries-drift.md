@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-06-04"
 publish_time_pt: "9:00am"
+source: "Office Hours"
 ---
 
 Memory banks drift. Code doesn't.

@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-05-21"
 publish_time_pt: "9:00am"
+source: "Office Hours"
 ---
 
 Twenty-seven hours. One autonomous run. Zero human interventions.

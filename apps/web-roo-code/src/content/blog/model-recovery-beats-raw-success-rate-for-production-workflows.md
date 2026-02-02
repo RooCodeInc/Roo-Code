@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-08-27"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 ---
 
 The model fails a tool call. Then fails the same way again. And again.

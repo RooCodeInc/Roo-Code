@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-10-03"
 publish_time_pt: "9:00am"
+source: "After Hours"
 ---
 
 `temperature: 1.0`

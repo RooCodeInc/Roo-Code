@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2026-01-12"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 ---
 
 Forty-seven prompts refined. Three modes configured. One PR merged.

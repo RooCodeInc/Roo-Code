@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-09-25"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 ---
 
 500 tokens per second.

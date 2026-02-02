@@ -13,6 +13,7 @@ tags:
 status: published
 publish_date: "2025-08-06"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 ---
 
 The benchmark says the model works.

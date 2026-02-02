@@ -4,6 +4,7 @@ slug: "vibe-coders-build-and-rebuild"
 description: "Throwaway apps aren't a bug. They're the workflow. Understanding when rebuilding beats migrating, and what makes prototypes production-ready."
 publish_date: "2025-10-16"
 publish_time_pt: "9:00am"
+source: "Roo Cast"
 status: "published"
 primary_schema:
     - Article
