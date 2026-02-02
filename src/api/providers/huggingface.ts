@@ -21,7 +21,7 @@ import { BaseProvider } from "./base-provider"
 import { getHuggingFaceModels, getCachedHuggingFaceModels } from "./fetchers/huggingface"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
-const HUGGINGFACE_DEFAULT_TEMPERATURE = 0.5
+const HUGGINGFACE_DEFAULT_TEMPERATURE = 0.7
 
 /**
  * HuggingFace provider using the dedicated @ai-sdk/huggingface package.

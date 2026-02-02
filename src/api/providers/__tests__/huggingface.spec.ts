@@ -258,7 +258,7 @@ describe("HuggingFaceHandler", () => {
 			expect(usageChunks[0].cacheWriteTokens).toBeUndefined()
 		})
 
-		it("should pass correct temperature (0.5 default) to streamText", async () => {
+		it("should pass correct temperature (0.7 default) to streamText", async () => {
 			async function* mockFullStream() {
 				yield { type: "text-delta", text: "Test" }
 			}
@@ -281,7 +281,7 @@ describe("HuggingFaceHandler", () => {
 
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					temperature: 0.5,
+					temperature: 0.7,
 				}),
 			)
 		})
@@ -389,7 +389,7 @@ describe("HuggingFaceHandler", () => {
 
 			expect(mockGenerateText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					temperature: 0.5,
+					temperature: 0.7,
 				}),
 			)
 		})
