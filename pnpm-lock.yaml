@@ -761,6 +761,9 @@ importers:
       '@ai-sdk/mistral':
         specifier: ^3.0.0
         version: 3.0.16(zod@3.25.76)
+      '@ai-sdk/xai':
+        specifier: ^3.0.46
+        version: 3.0.46(zod@3.25.76)
       '@anthropic-ai/bedrock-sdk':
         specifier: ^0.10.2
         version: 0.10.4
@@ -1453,6 +1456,12 @@ packages:
     peerDependencies:
       zod: 3.25.76
 
+  '@ai-sdk/openai-compatible@2.0.26':
+    resolution: {integrity: sha512-l6jdFjI1C2eDAEm7oo+dnRn0oG1EkcyqfbEZ7ozT0TnYrah6amX2JkftYMP1GRzNtAeCB3WNN8XspXdmi6ZNlQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
+
   '@ai-sdk/provider-utils@3.0.20':
     resolution: {integrity: sha512-iXHVe0apM2zUEzauqJwqmpC37A5rihrStAih5Ks+JE32iTe4LZ58y17UGBjpQQTCRw9YxMeo2UFLxLpBluyvLQ==}
     engines: {node: '>=18'}
@@ -1471,6 +1480,12 @@ packages:
     peerDependencies:
       zod: 3.25.76
 
+  '@ai-sdk/provider-utils@4.0.13':
+    resolution: {integrity: sha512-HHG72BN4d+OWTcq2NwTxOm/2qvk1duYsnhCDtsbYwn/h/4zeqURu1S0+Cn0nY2Ysq9a9HGKvrYuMn9bgFhR2Og==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
+
   '@ai-sdk/provider@2.0.1':
     resolution: {integrity: sha512-KCUwswvsC5VsW2PWFqF8eJgSCu5Ysj7m1TxiHTVA6g7k360bk0RNQENT8KTMAYEs+8fWPD3Uu4dEmzGHc+jGng==}
     engines: {node: '>=18'}
@@ -1482,6 +1497,16 @@ packages:
   '@ai-sdk/provider@3.0.6':
     resolution: {integrity: sha512-hSfoJtLtpMd7YxKM+iTqlJ0ZB+kJ83WESMiWuWrNVey3X8gg97x0OdAAaeAeclZByCX3UdPOTqhvJdK8qYA3ww==}
     engines: {node: '>=18'}
+
+  '@ai-sdk/provider@3.0.7':
+    resolution: {integrity: sha512-VkPLrutM6VdA924/mG8OS+5frbVTcu6e046D2bgDo00tehBANR1QBJ/mPcZ9tXMFOsVcm6SQArOregxePzTFPw==}
+    engines: {node: '>=18'}
+
+  '@ai-sdk/xai@3.0.46':
+    resolution: {integrity: sha512-26qM/jYcFhF5krTM7bQT1CiZcdz22EQmA+r5me1hKYFM/yM20sSUMHnAcUzvzuuG9oQVKF0tziU2IcC0HX5huQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
 
   '@alcalzone/ansi-tokenize@0.2.3':
     resolution: {integrity: sha512-jsElTJ0sQ4wHRz+C45tfect76BwbTbgkgKByOzpCN9xG61N5V6u/glvg1CsNJhq2xJIFpKHSwG3D2wPPuEYOrQ==}
@@ -6497,10 +6522,6 @@ packages:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
 
-  eventsource-parser@3.0.2:
-    resolution: {integrity: sha512-6RxOBZ/cYgd8usLwsEl+EC09Au/9BcmCKYF2/xbml6DNczf7nv0MQb+7BA2F+li6//I+28VNlQR37XfQtcAJuA==}
-    engines: {node: '>=18.0.0'}
-
   eventsource-parser@3.0.6:
     resolution: {integrity: sha512-Vo1ab+QXPzZ4tCa8SwIHJFaSzy4R6SHf7BY79rFBDf0idraZWAkYrDjDj8uWaSm3S2TK+hJ7/t1CEmZ7jXw+pg==}
     engines: {node: '>=18.0.0'}
@@ -11104,6 +11125,12 @@ snapshots:
       '@ai-sdk/provider-utils': 4.0.11(zod@3.25.76)
       zod: 3.25.76
 
+  '@ai-sdk/openai-compatible@2.0.26(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.7
+      '@ai-sdk/provider-utils': 4.0.13(zod@3.25.76)
+      zod: 3.25.76
+
   '@ai-sdk/provider-utils@3.0.20(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 2.0.1
@@ -11125,6 +11152,13 @@ snapshots:
       eventsource-parser: 3.0.6
       zod: 3.25.76
 
+  '@ai-sdk/provider-utils@4.0.13(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.7
+      '@standard-schema/spec': 1.1.0
+      eventsource-parser: 3.0.6
+      zod: 3.25.76
+
   '@ai-sdk/provider@2.0.1':
     dependencies:
       json-schema: 0.4.0
@@ -11136,6 +11170,17 @@ snapshots:
   '@ai-sdk/provider@3.0.6':
     dependencies:
       json-schema: 0.4.0
+
+  '@ai-sdk/provider@3.0.7':
+    dependencies:
+      json-schema: 0.4.0
+
+  '@ai-sdk/xai@3.0.46(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/openai-compatible': 2.0.26(zod@3.25.76)
+      '@ai-sdk/provider': 3.0.7
+      '@ai-sdk/provider-utils': 4.0.13(zod@3.25.76)
+      zod: 3.25.76
 
   '@alcalzone/ansi-tokenize@0.2.3':
     dependencies:
@@ -15113,7 +15158,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.17.50)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -16960,13 +17005,11 @@ snapshots:
 
   events@3.3.0: {}
 
-  eventsource-parser@3.0.2: {}
-
   eventsource-parser@3.0.6: {}
 
   eventsource@3.0.7:
     dependencies:
-      eventsource-parser: 3.0.2
+      eventsource-parser: 3.0.6
 
   exceljs@4.4.0:
     dependencies:
