@@ -12,6 +12,7 @@ import {
 	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
+	flattenAiSdkMessagesToStringContent,
 } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
@@ -20,7 +21,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
-const SAMBANOVA_DEFAULT_TEMPERATURE = 0.5
+const SAMBANOVA_DEFAULT_TEMPERATURE = 0.7
 
 /**
  * SambaNova provider using the dedicated sambanova-ai-provider package.
@@ -112,11 +113,15 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const { temperature } = this.getModel()
+		const { temperature, info } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		// For models that don't support multi-part content (like DeepSeek), flatten messages to string content
+		// SambaNova's DeepSeek models expect string content, not array content
+		const aiSdkMessages = convertToAiSdkMessages(messages, {
+			transform: info.supportsImages ? undefined : flattenAiSdkMessagesToStringContent,
+		})
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
