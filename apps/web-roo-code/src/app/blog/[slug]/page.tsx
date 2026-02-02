@@ -151,13 +151,15 @@ export default async function BlogPostPage({ params }: Props) {
 	const { faqItems, contentWithoutFAQ } = parseFAQFromMarkdown(post.content)
 	const hasFAQ = faqItems.length > 0
 
-	// Article JSON-LD schema
+	// BlogPosting JSON-LD schema (more specific than Article for SEO)
 	const articleSchema = {
 		"@context": "https://schema.org",
-		"@type": "Article",
+		"@type": "BlogPosting",
 		headline: post.title,
 		description: post.description,
 		datePublished: post.publish_date,
+		image: ogImageUrl(post.title, post.description),
+		wordCount: post.content.split(/\s+/).filter(Boolean).length,
 		mainEntityOfPage: {
 			"@type": "WebPage",
 			"@id": `${SEO.url}/blog/${post.slug}`,
