@@ -13,6 +13,7 @@ import {
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import { TagMatcher } from "../../utils/tag-matcher"
+import { interpolateHeaders } from "../../utils/config"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
 import { convertToR1Format } from "../transform/r1-format"
@@ -542,9 +543,11 @@ export async function getOpenAiModels(baseUrl?: string, apiKey?: string, openAiH
 		}
 
 		const config: Record<string, any> = {}
+		// Interpolate variables in custom headers (e.g., ${workspaceFolderBasename}, ${env:VAR_NAME})
+		const interpolatedHeaders = interpolateHeaders(openAiHeaders)
 		const headers: Record<string, string> = {
 			...DEFAULT_HEADERS,
-			...(openAiHeaders || {}),
+			...(interpolatedHeaders || {}),
 		}
 
 		if (apiKey) {
