@@ -97,7 +97,7 @@ The key insight: AI code review readiness is about documentation and process mat
 
 ## Why this matters for your organization
 
-For a 20-person engineering team reviewing 30 PRs per week, first-pass review time compounds quickly. If AI review can handle initial passes on straightforward changes while humans focus on complex decisions, you reclaim hours without changing your merge requirements.
+For a 20-person engineering team reviewing PRs every day, first-pass review time compounds quickly. If AI review can handle initial passes on straightforward changes while humans focus on complex decisions, you reclaim hours without changing your merge requirements.
 
 The barrier is not capability. It is readiness. And readiness is work you control.
 

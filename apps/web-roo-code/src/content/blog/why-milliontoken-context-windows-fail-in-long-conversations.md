@@ -91,7 +91,7 @@ For a team running multi-hour agent tasks, the million-token marketing number cr
 
 The impact shows up in subtle ways: tasks that should converge keep looping. Bugs that were "fixed" reappear. The agent suggests approaches you already rejected. You start wondering if the model is broken when the real issue is context length.
 
-If your team is shipping 5-10 PRs a week through agentic workflows, calibrating for effective context (not advertised context) saves hours of debugging attention drift.
+If your team is shipping daily through agentic workflows, calibrating for effective context (not advertised context) saves hours of debugging attention drift.
 
 ## The practical calibration
 

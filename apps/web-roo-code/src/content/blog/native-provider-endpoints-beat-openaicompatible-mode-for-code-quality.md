@@ -75,7 +75,7 @@ These are infrastructure decisions, not model decisions. But they affect model q
 
 ## Why this matters for your team
 
-For a Series A team running 50 model requests a day, the wrong configuration compounds. If thinking mode is silently disabled, every complex refactor suggestion is shallower than it should be. If context is truncated, every large-file edit misses relevant code. Your developers blame the model and switch tools instead of fixing the endpoint.
+For a Series A - C team running 50 model requests a day, the wrong configuration compounds. If thinking mode is silently disabled, every complex refactor suggestion is shallower than it should be. If context is truncated, every large-file edit misses relevant code. Your developers blame the model and switch tools instead of fixing the endpoint.
 
 The cost isn't just the wasted token spend. It's the evaluation time spent on the wrong hypothesis.
 

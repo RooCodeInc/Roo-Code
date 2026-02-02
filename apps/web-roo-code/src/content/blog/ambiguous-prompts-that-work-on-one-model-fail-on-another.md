@@ -62,7 +62,7 @@ If your prompts only work on one model, you're not building a workflow. You're b
 >
 > Hannes Rudolph, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=3464)
 
-The 90% success rate feels fine until you're the one debugging the 10%. On a team shipping 10 PRs a week, 10% failure means one task per week goes sideways. Someone has to untangle what the model did wrong, rewrite the prompt, and try again. That adds up.
+The 90% success rate feels fine until you're the one debugging the 10%. At daily shipping velocity, 10% failure means something goes sideways every week. Someone has to untangle what the model did wrong, rewrite the prompt, and try again. That adds up.
 
 ## Why this matters for your team
 

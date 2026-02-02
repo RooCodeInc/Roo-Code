@@ -72,7 +72,7 @@ The tradeoff is explicit: thinking adds latency and cost. If the task doesn't be
 
 ## Why this matters for your team
 
-For a Series A team with limited engineering bandwidth, the compounding effect is significant. If three developers each run five thinking-enabled tasks per day that don't need thinking overhead, you're burning tokens and time on reasoning that doesn't improve outcomes.
+For a Series A - C team with limited engineering bandwidth, the compounding effect is significant. If three developers each run five thinking-enabled tasks per day that don't need thinking overhead, you're burning tokens and time on reasoning that doesn't improve outcomes.
 
 The shift isn't "never use thinking." The shift is "default to off, enable when the task requires it."
 

@@ -17,6 +17,12 @@ source: "Office Hours"
 ---
 
 ```xml
+<tool_use>
+  <read_file>
+    <path>src/index.ts</path>
+  </read_file>
+</tool_use>
+```
 
 That's a broken tool call. The model wrapped `read_file` inside generic XML tags instead of using `read_file` as the tag name.
 
@@ -82,13 +88,13 @@ Roo Code's approval system also provides a safety net. When tool calls do fail, 
 
 ## Traditional benchmarks vs. agentic reliability
 
-| Dimension | Traditional benchmarks | Agentic reliability testing |
-|-----------|----------------------|---------------------------|
-| Test duration | Single prompt, single response | 50+ message sessions |
-| Context conditions | Fresh context only | Growing context to 80% of limit |
-| Success metric | Correct code output | Tool call format compliance rate |
-| Failure visibility | Wrong answer | Stalled agent, broken loop |
-| Real-world prediction | Autocomplete quality | Production workflow reliability |
+| Dimension             | Traditional benchmarks         | Agentic reliability testing      |
+| --------------------- | ------------------------------ | -------------------------------- |
+| Test duration         | Single prompt, single response | 50+ message sessions             |
+| Context conditions    | Fresh context only             | Growing context to 80% of limit  |
+| Success metric        | Correct code output            | Tool call format compliance rate |
+| Failure visibility    | Wrong answer                   | Stalled agent, broken loop       |
+| Real-world prediction | Autocomplete quality           | Production workflow reliability  |
 
 ## Frequently asked questions
 
@@ -111,5 +117,3 @@ The agent stalls. It may retry with another malformed call, or it may produce ou
 ### Which models currently have the best tool call reliability?
 
 As of early 2025, Claude Sonnet models (3.5 and 3.7) are known for consistent tool call compliance under growing context. Other models like Gemini 2.5 have strong coding capabilities but show more tool call format drift in long sessions. Model behavior changes with each release, so teams should retest whenever providers ship updates.
-
-```

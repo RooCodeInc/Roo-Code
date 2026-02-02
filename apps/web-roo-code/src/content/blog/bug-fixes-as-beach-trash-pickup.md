@@ -32,9 +32,9 @@ The result: a growing list of "known issues" that everyone works around.
 
 ## The new loop
 
-One team tried a different approach. When someone notices a bug, they describe it in Slack with a screenshot. An agent picks it up, creates a PR with the fix, and posts it for review.
+The Roo Vet team tried a different approach. When someone notices a bug, they describe it in Slack with a screenshot. An agent picks it up, creates a PR with the fix, and posts it for review.
 
-> "I realized one of the buttons to like save a primary contact didn't work... And remote just fixed it, created a PR, and then John went in, reviewed the PR, and fixed the bug."
+> "I realized one of the buttons to like save a primary contact didn't work... And @roomote just fixed it, created a PR, and then John went in, reviewed the PR, and fixed the bug."
 >
 > Audrey, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU)
 
@@ -50,9 +50,9 @@ The metaphor that stuck:
 
 Here's the catch: if anyone can trigger a PR, you need a review gate.
 
-One team solved this by requiring triple sign-off on any agent-generated PR:
+The Roo Vet team solved this by requiring triple sign-off on any agent-generated PR:
 
-> "The way we did it was essentially to have to require an approval from a PM, a designer and an engineer on any remote PR that gets opened."
+> "The way we did it was essentially to have to require an approval from a PM, a designer and an engineer on any @roomote PR that gets opened."
 >
 > John Sterns, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU&t=1539)
 

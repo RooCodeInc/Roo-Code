@@ -26,11 +26,11 @@ You know the move. A PR lands with forty files changed. You have fifteen minutes
 
 You're not lazy. You're outnumbered. The PRs keep coming, the context keeps shifting, and the honest truth is that human reviewers miss nuances when they're tired, rushed, or just don't have the full picture of what changed three directories deep.
 
-One team decided to stop pretending a single pass catches everything.
+The Roo Vet team decided to stop pretending a single pass catches everything.
 
 ## Two reviewers, different perspectives
 
-Ruvette runs dual AI code reviewers on every PR: Ellipsus and Roo Code's PR Reviewer. Not as backups for each other. As complements.
+Roo Vet runs dual AI code reviewers on every PR: Ellipsis and Roo Code's PR Reviewer. Not as backups for each other. As complements.
 
 The two systems flag different types of issues. One might catch a performance concern in a loop. The other might notice a missing null check that would only surface under edge conditions. Neither is "complete." Together, they cover ground that a single reviewer, human or AI, would miss.
 
@@ -88,7 +88,7 @@ The reviewer closes the loop by not just identifying problems but explaining the
 
 ## Why this matters for your team
 
-For a Series A team with five engineers shipping eight PRs a week, the math is straightforward. If your human reviewers are skimming (and they are), you're already missing issues. The question is whether you find them in review or in production.
+For a Series A - C team with five engineers shipping eight PRs a week, the math is straightforward. If your human reviewers are skimming (and they are), you're already missing issues. The question is whether you find them in review or in production.
 
 Dual AI reviewers increase your surface area for catching problems. The cost is review noise. The benefit is fewer surprises after merge.
 
@@ -110,7 +110,7 @@ Different AI systems have different training data, prompts, and review prioritie
 
 ### Does Roo Code's PR Reviewer work with other AI review tools?
 
-Yes. Roo Code's PR Reviewer runs independently as a Cloud Agent and comments on PRs through your Git provider. It does not conflict with other review tools. Teams like Ruvette run it alongside Ellipsus specifically because the two systems catch different types of issues.
+Yes. Roo Code's PR Reviewer runs independently as a Cloud Agent and comments on PRs through your Git provider. It does not conflict with other review tools. Teams like Roo Vet run it alongside Ellipsis specifically because the two systems catch different types of issues.
 
 ### How much extra time does dual AI review add to the PR process?
 

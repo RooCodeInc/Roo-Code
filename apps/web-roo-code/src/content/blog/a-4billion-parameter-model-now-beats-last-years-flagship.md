@@ -109,4 +109,4 @@ Yes. Roo Code uses BYOK (Bring Your Own Key), so you can connect to local model 
 
 ### How much can teams save by moving tasks to local models?
 
-Savings depend on your current API volume. Teams shipping 10+ PRs per week generate hundreds of model calls daily. Each call shifted from per-token API pricing to local inference eliminates that marginal cost. The fixed cost of hardware you already own replaces the variable cost of cloud API charges.
+Savings depend on your current API volume. Teams shipping daily at high velocity generate hundreds of model calls daily. Each call shifted from per-token API pricing to local inference eliminates that marginal cost. The fixed cost of hardware you already own replaces the variable cost of cloud API charges.

@@ -80,9 +80,9 @@ This addresses the "lost rationale" failure mode without requiring a separate do
 
 ## Why this matters for your team
 
-For a Series A team with five engineers, a three-week PRD cycle is a significant tax. That's three weeks where no code ships while stakeholders negotiate requirements that will change anyway.
+For a Series A - C team with five engineers, a three-week PRD cycle is a significant tax. That's three weeks where no code ships while stakeholders negotiate requirements that will change anyway.
 
-If your team is shipping 8-10 PRs a week, the prototype-first model lets you compress the feedback loop. Instead of aligning on a document and then discovering problems in production, you discover problems in the prototype and align on fixes that already work.
+If your team is shipping daily, the prototype-first model lets you compress the feedback loop. Instead of aligning on a document and then discovering problems in production, you discover problems in the prototype and align on fixes that already work.
 
 The compounding effect: teams that treat prototypes as the specification ship more iterations per quarter. Teams that cling to waterfall-style documentation lose velocity to teams that iterate against real user feedback.
 

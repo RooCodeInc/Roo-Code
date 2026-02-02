@@ -82,7 +82,7 @@ This matters because Roo Code closes the loop: it proposes diffs, runs commands 
 
 ## Why this matters for your team
 
-For a team shipping 10 PRs a week across a codebase that's actively evolving, the drift problem compounds. Each stale summary creates a small failure mode. A developer asks about the auth flow, gets outdated guidance, spends twenty minutes figuring out why the suggested approach doesn't work.
+For a team shipping daily across a codebase that's actively evolving, the drift problem compounds. Each stale summary creates a small failure mode. A developer asks about the auth flow, gets outdated guidance, spends twenty minutes figuring out why the suggested approach doesn't work.
 
 Multiply that by the number of developers, the number of queries per day, and the velocity of your codebase changes. The cost of stale context adds up.
 

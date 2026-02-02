@@ -49,7 +49,7 @@ The complexity is the point. Model selection is not a single variable. It's a co
 
 ## The GLM 4.6 case
 
-One team ran evals on GLM 4.6 and got disappointing results. Standard reaction: mark the model as underperforming and move on.
+The Roo Code team ran evals on GLM 4.6 and got disappointing results. Standard reaction: mark the model as underperforming and move on.
 
 Instead, they adjusted provider and temperature. The results shifted dramatically.
 

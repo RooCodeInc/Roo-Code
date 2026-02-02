@@ -88,7 +88,7 @@ The agent can execute your eval suite after each prompt change, surface regressi
 
 ## Why this matters for your team
 
-For a Series A team with three engineers, the iteration trap is especially dangerous. You do not have the bandwidth to manually QA every prompt change. You do not have institutional memory to remember what "good" looked like six months ago.
+For a Series A - C team with three engineers, the iteration trap is especially dangerous. You do not have the bandwidth to manually QA every prompt change. You do not have institutional memory to remember what "good" looked like six months ago.
 
 Without evals, every prompt tweak is a coin flip. With evals, you can confidently ship changes knowing you have not broken the cases that matter.
 

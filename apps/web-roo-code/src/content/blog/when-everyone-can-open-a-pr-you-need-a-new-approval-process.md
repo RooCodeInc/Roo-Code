@@ -18,7 +18,7 @@ source: "Roo Cast"
 
 "People were pretty scared of what this meant and pretty nervous about what was going to develop."
 
-That's Audrey describing the reaction when Ruvette rolled out Slack-based agents to the entire company. Not just engineering. Everyone.
+That's Audrey describing the reaction when Roo Vet rolled out Slack-based agents to the entire company. Not just engineering. Everyone.
 
 ## The governance gap
 
@@ -34,9 +34,9 @@ The fear is reasonable. The old flow assumed that anyone opening a PR understood
 
 ## The fix: cross-functional approval gates
 
-Ruvette's solution was explicit governance. Every agent-generated PR now requires sign-off from three roles: a PM, a designer, and an engineer.
+Roo Vet's solution was explicit governance. Every agent-generated PR now requires sign-off from three roles: a PM, a designer, and an engineer.
 
-> "One thing we had to do is we had to define a pretty good process for managing those. And the way we did it was essentially to have to require an approval from a PM, a designer, and an engineer on any remote PR that gets opened."
+> "One thing we had to do is we had to define a pretty good process for managing those. And the way we did it was essentially to have to require an approval from a PM, a designer, and an engineer on any @roomote PR that gets opened."
 >
 > John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=1452)
 
@@ -84,7 +84,7 @@ When AI agents can generate production code from a single prompt, governance bec
 
 With BYOK (Bring Your Own Key), teams maintain full control over their AI spending and provider relationships. Combined with configurable approval workflows, engineering leads can define exactly which actions require human sign-off before execution. This means you can enable broad access to AI-assisted development while maintaining the quality gates your organization needs.
 
-The key insight from Ruvette's rollout applies directly: the friction of approval processes is intentional, and tools that make approval workflows configurable rather than all-or-nothing let organizations find the right balance between speed and safety.
+The key insight from Roo Vet's rollout applies directly: the friction of approval processes is intentional, and tools that make approval workflows configurable rather than all-or-nothing let organizations find the right balance between speed and safety.
 
 ## Why this matters for your organization
 
@@ -111,7 +111,7 @@ The three-role model (engineering, product, design) provides comprehensive cover
 
 ### What happens when the approval queue backs up?
 
-Backlogged queues are the most common failure mode for agent governance. Ruvette solved this with a rotating on-call schedule where someone is always responsible for reviewing agent-generated PRs. Without explicit ownership, PRs pile up, requesters get frustrated, and teams abandon the process.
+Backlogged queues are the most common failure mode for agent governance. Roo Vet solved this with a rotating on-call schedule where someone is always responsible for reviewing agent-generated PRs. Without explicit ownership, PRs pile up, requesters get frustrated, and teams abandon the process.
 
 ### How does Roo Code help teams manage agent-generated code review?
 

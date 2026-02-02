@@ -75,7 +75,7 @@ For a team of 5-8 engineers working across a shared codebase, context-building i
 
 Running parallel exploratory tasks means that context arrives while you're doing something else. Instead of blocking on "let me understand the auth module before I can estimate this ticket," you kick off the exploration, move to another task, and come back with answers.
 
-For a team shipping 10+ PRs per week, even 30 minutes saved per developer per day on context-building compounds to 10-15 hours per week. That's time that goes into actual shipping instead of waiting.
+For a team shipping daily, even 30 minutes saved per developer per day on context-building compounds to 10-15 hours per week. That's time that goes into actual shipping instead of waiting.
 
 ## How Roo Code enables parallel context building
 

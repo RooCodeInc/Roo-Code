@@ -66,7 +66,7 @@ Translation: orchestration improvements are coming, but not tomorrow. The infras
 
 ## Why this matters for your team
 
-For a Series A-to-C engineering team running orchestrated workflows across multiple PRs per week, the visibility gap hurts in two places.
+For a Series A-to-C engineering team running orchestrated workflows alongside daily shipping, the visibility gap hurts in two places.
 
 First, debugging. When a subtask fails and you can't trace what context it received or what the parent's intent was, you're guessing at the failure mode instead of diagnosing it.
 

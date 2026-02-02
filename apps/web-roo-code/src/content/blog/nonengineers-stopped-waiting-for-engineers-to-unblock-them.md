@@ -16,7 +16,7 @@ publish_time_pt: "9:00am"
 source: "Roo Cast"
 ---
 
-"I use remote every day to ask questions about the codebase."
+"I use @roomote every day to ask questions about the codebase."
 
 That's a product manager talking. Not an engineer. Not someone who reads code for a living.
 
@@ -26,9 +26,9 @@ Every growing startup has this bottleneck. A PM needs to know why the pricing mo
 
 The default behavior: schedule a meeting. Wait for engineering bandwidth. Hope someone remembers the context when they finally have time to answer.
 
-At Ruvette, the behavior changed. Product managers, customer service reps, and operations staff now query the codebase directly through a Slack-connected agent. The question goes to the agent before it goes to a calendar invite.
+At Roo Vet, the behavior changed. Product managers, customer service reps, and operations staff now query the codebase directly through a Slack-connected agent. The question goes to the agent before it goes to a calendar invite.
 
-> "One nonobvious behavior change that came out of that I think is people don't wait around to be unblocked anymore. Non-engineers especially just ask our remote agent first."
+> "One nonobvious behavior change that came out of that I think is people don't wait around to be unblocked anymore. Non-engineers especially just ask our @roomote agent first."
 >
 > John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=290)
 
@@ -40,7 +40,7 @@ A PM wondering about pricing logic can ask the agent to find where pricing is ca
 
 The answers come from the codebase itself. Not from tribal knowledge. Not from someone's memory of a Slack thread from six months ago.
 
-> "I use remote like every day to ask questions about the codebase. I think that is the most effective thing as a PM."
+> "I use @roomote like every day to ask questions about the codebase. I think that is the most effective thing as a PM."
 >
 > Theo, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=2288)
 

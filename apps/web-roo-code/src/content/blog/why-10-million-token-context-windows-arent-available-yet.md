@@ -30,7 +30,7 @@ Serving a 10 million context window request requires a dedicated cluster of 16 t
 
 > "That 10 million context window node might only be able to serve, I don't know, 10, 20, 50 requests per minute, which is a very, very small number. Those requests might also take minutes to respond to if you are using that 10 million context window."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=2248)
+> Tovan, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=2248)
 
 The inference business runs on thin margins. Providers make money by packing as many requests as possible onto their hardware. A 10 million context endpoint does the opposite: it monopolizes expensive GPUs for minutes at a time, serving a handful of users, generating almost no margin.
 
@@ -42,7 +42,7 @@ When Google announces a 10 million token context window, they're demonstrating w
 
 > "Offering a 10 million context window is extremely compute intensive. It requires a lot of hardware. The inference business is a very very low margin business."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=2156)
+> Tovan, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=2156)
 
 The result: announced capabilities that exist in demos but not in production APIs. Or context limits that are technically available but priced so high that no one uses them. Or latency so severe that the workflow breaks before the response arrives.
 
@@ -54,13 +54,13 @@ Organizations with specific use cases and their own infrastructure. Companies th
 
 > "My guess is that these kinds of deployments are going to be happening on prem for organizations that have specific usage and not are not worried about the costs involved because you know they have a need for it outside of serving it as a serverless endpoint for inference."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=2298)
+> Tovan, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=2298)
 
 This is the reality behind the announcements: long-context inference at scale is an on-prem capability for now. The serverless model that makes AI accessible to smaller teams doesn't support it economically.
 
 ## Why this matters for your team
 
-For a Series A team evaluating AI tooling, this distinction changes how you plan.
+For a Series A - C team evaluating AI tooling, this distinction changes how you plan.
 
 If your workflow depends on feeding an entire codebase into a single prompt, you're betting on infrastructure that doesn't exist at accessible price points. The 10 million token context window is real, but the endpoint that serves it affordably isn't.
 

@@ -66,7 +66,7 @@ But the friction is the feature. The conversation that happens before code exist
 
 ## Why this matters for your team
 
-For a Series A team shipping with five engineers, every architectural misstep compounds. You do not have the headcount to refactor constantly. You cannot afford to have three people debugging a merge conflict that exists because two PRs made conflicting assumptions about how auth should work.
+For a Series A - C team shipping with five engineers, every architectural misstep compounds. You do not have the headcount to refactor constantly. You cannot afford to have three people debugging a merge conflict that exists because two PRs made conflicting assumptions about how auth should work.
 
 The issues-first approach forces the conversation to happen at the cheapest possible moment: before anyone writes code. A ten-minute issue review can prevent a week of cleanup.
 

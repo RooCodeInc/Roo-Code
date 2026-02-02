@@ -54,7 +54,7 @@ The benchmarks that felt definitive a year ago are now saturated. Aider Polyglot
 
 > "A lot of the traditionally hard coding benchmarks like Aider Polyglot and SWE-bench are getting close to saturated now."
 >
-> Arouch, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE&t=1736)
+> Aarush, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE&t=1736)
 
 ## What this means for your team
 

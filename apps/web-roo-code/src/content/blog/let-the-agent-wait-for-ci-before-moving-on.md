@@ -82,7 +82,7 @@ An agent that watches CI and iterates on failures removes that re-orientation co
 
 ## How Roo Code closes the loop on CI failures
 
-Roo Code is an AI coding agent designed to close the loop: it proposes diffs, runs commands and tests, and iterates based on the results. The CI watch pattern extends this capability beyond local execution to the full CI pipeline.
+Roo Code is an AI coding agent that closes the loop: it proposes diffs, runs commands and tests, and iterates based on results. The CI watch pattern extends this capability beyond local execution to the full CI pipeline.
 
 With Roo Code's BYOK (bring your own key) model and configurable approvals, you control exactly how much autonomy the agent has. You can allowlist specific commands like `git push` and test runners, enabling the agent to iterate on CI failures without requiring manual approval at each step. The agent reads actual CI output directly rather than relying on your summary, which means it sees the exact failure context needed to propose accurate fixes.
 

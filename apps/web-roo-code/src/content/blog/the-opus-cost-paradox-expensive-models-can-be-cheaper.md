@@ -58,7 +58,7 @@ The investment is upfront: write a thorough prompt, get a thorough result. Small
 
 ## Why this matters for your team
 
-For a five-person engineering team shipping 8-10 PRs a week, the spiral problem compounds. If two developers hit spiral loops per week, each burning an hour before switching models, that's 8-10 hours of lost productivity per month. Time that could have gone into the next feature.
+For a five-person engineering team shipping daily, the spiral problem compounds. If two developers hit spiral loops per week, each burning an hour before switching models, that's 8-10 hours of lost productivity per month. Time that could have gone into the next feature.
 
 The counterintuitive finding: embracing the expensive model can actually reduce your bill.
 

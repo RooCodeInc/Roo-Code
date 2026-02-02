@@ -68,7 +68,7 @@ The cost of verification is predictable. The cost of late-stage integration debu
 
 ## Why this matters for your team
 
-For a Series A team running spec-driven workflows on a new feature, this pattern hits hard. You kicked off the orchestrator on Friday. You expected to review a working PR on Monday. Instead, you're debugging why the app won't start.
+For a Series A - C team running spec-driven workflows on a new feature, this pattern hits hard. You kicked off the orchestrator on Friday. You expected to review a working PR on Monday. Instead, you're debugging why the app won't start.
 
 The compounding effect is real. If one integration failure takes two hours to diagnose, and three boundaries failed silently, you've lost a day. That's a day you planned to spend on the next feature.
 

@@ -68,7 +68,7 @@ But do not make "explore and find what works" the official rollout strategy. Tha
 
 ## Why this matters for your team
 
-For a Series A team with 8 engineers, the difference between prescriptive and exploratory adoption is the difference between 2 daily users and 6 daily users. The compound effect shows up in code review cycles, in debugging time, in the gap between "we have an AI tool" and "we use an AI tool."
+For a Series A - C team with 8 engineers, the difference between prescriptive and exploratory adoption is the difference between 2 daily users and 6 daily users. The compound effect shows up in code review cycles, in debugging time, in the gap between "we have an AI tool" and "we use an AI tool."
 
 > "If you really want to get adoption within a team, I think having a foundation that gets people experience and lets them kind of learn it as they go and by doing. That's where we see the most successful teams."
 >

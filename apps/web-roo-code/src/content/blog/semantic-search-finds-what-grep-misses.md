@@ -82,7 +82,7 @@ With BYOK (bring your own key), every token spent on failed file searches comes 
 
 ## Why this matters for your team
 
-For a Series A team with a five-year-old codebase full of legacy naming conventions, semantic search is the difference between an AI that understands your project and one that keeps asking where things are.
+For a Series A - C team with a five-year-old codebase full of legacy naming conventions, semantic search is the difference between an AI that understands your project and one that keeps asking where things are.
 
 The practical shift: instead of rewriting prompts to match your file names, you let the index bridge the gap. The model finds `gatekeeper.ts` when you ask about authentication because the semantic index knows what that file does, not just what it's called.
 

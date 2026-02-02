@@ -74,7 +74,7 @@ Define the artifacts. Make them inspectable. That's how you debug agent configur
 
 ## Why this matters for your team
 
-For a Series A team with five engineers trying to ship like a team of fifteen, agent configuration isn't a nice-to-have. It's leverage.
+For a Series A - C team with five engineers trying to ship like a team of fifteen, agent configuration isn't a nice-to-have. It's leverage.
 
 But leverage that's misconfigured becomes drag. Modes that overlap create confusion. Modes with blurry objectives produce inconsistent outputs. Orchestrators without clear routing logic become bottlenecks that need human intervention to resolve.
 

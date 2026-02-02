@@ -24,7 +24,7 @@ Your AI can produce a component in seconds. But can your designer see it without
 
 Teams focused on generation quality are optimizing the wrong end of the pipeline. The code appears almost instantly now. The delay happens afterward: getting that output into a state where someone can look at it, click through it, and say "yes, this is what I meant" or "no, try again."
 
-For a Series A team with three engineers and a designer who has ideas faster than anyone can implement them, this gap is where velocity dies. The designer describes a change. An agent generates the code. Then everyone waits while an engineer reviews, runs, and deploys a preview. The generation took four seconds. The verification loop took four hours.
+For a Series A - C team with three engineers and a designer who has ideas faster than anyone can implement them, this gap is where velocity dies. The designer describes a change. An agent generates the code. Then everyone waits while an engineer reviews, runs, and deploys a preview. The generation took four seconds. The verification loop took four hours.
 
 > "My theory is that we've moved the bottleneck now to: the hard part's going to be going in testing it, making sure it's good to go."
 >
@@ -48,7 +48,7 @@ Preview environments cost money. Every branch becomes infrastructure. For a team
 
 The question is whether the cost of previews is lower than the cost of the current loop: engineer stops what they're doing, checks out the branch, runs the build, shares their screen or deploys manually, waits for feedback, context-switches back to their real work.
 
-For most Series A teams, the math favors previews. Engineering time is the constraint. Infrastructure is cheaper than interruption.
+For most Series A - C teams, the math favors previews. Engineering time is the constraint. Infrastructure is cheaper than interruption.
 
 ## Why this matters for your team
 

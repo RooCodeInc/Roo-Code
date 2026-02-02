@@ -82,7 +82,7 @@ Context compression in Roo Code works as an instruction reset, not just a memory
 
 ## Why this matters for your team
 
-For a Series A team running long debugging sessions, the ten-to-twelve turn threshold hits faster than you'd expect. A complex bug investigation can easily burn through that budget: initial context, first attempt, test failure, second attempt, another failure, debugging output, third attempt.
+For a Series A - C team running long debugging sessions, the ten-to-twelve turn threshold hits faster than you'd expect. A complex bug investigation can easily burn through that budget: initial context, first attempt, test failure, second attempt, another failure, debugging output, third attempt.
 
 By the time you're on attempt four, you're past the threshold. And the symptoms look like the model got dumber, when actually it just lost its grip on the structured workflow.
 

@@ -77,7 +77,7 @@ The handoff is the point. You start the task, you walk away, you come back to a 
 
 ## Why this matters for your team
 
-For a Series A team with four engineers shipping 6-8 PRs a week, the persistence ceiling matters.
+For a Series A - C team with four engineers shipping daily, the persistence ceiling matters.
 
 Before: you assign a refactor to the agent. It runs for 8 minutes. It drifts. You spend 15 minutes re-prompting. It runs for another 5 minutes. It hits a tool failure. You give up and do it manually.
 

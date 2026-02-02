@@ -61,7 +61,7 @@ The hard version: pick the default, ship it, watch the feedback, and adjust. The
 
 ## Why this matters for your team
 
-For a Series A team with three engineers, every setting is also a test matrix. If you have ten settings with two states each, you have 1,024 possible configurations. You are not testing all of them. You are hoping most of them work.
+For a Series A - C team with three engineers, every setting is also a test matrix. If you have ten settings with two states each, you have 1,024 possible configurations. You are not testing all of them. You are hoping most of them work.
 
 When something breaks in production, the first question is "What are their settings?" When you onboard a new engineer, part of their ramp is understanding which settings interact with which features. When you want to refactor a component, you have to trace how many settings touch it.
 

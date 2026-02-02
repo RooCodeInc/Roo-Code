@@ -63,7 +63,7 @@ The implementation complexity is also real. Abstracting over multiple caching st
 
 ## Why this matters for your team
 
-For a Series A team running multi-provider setups, this creates a specific kind of risk: silent cost drift.
+For a Series A - C team running multi-provider setups, this creates a specific kind of risk: silent cost drift.
 
 You test on one provider. Caching works. You add a second provider for redundancy or capability reasons. You assume caching works the same way. It doesn't. Your cost projections are now wrong, and you won't notice until the bill arrives or someone digs into latency metrics.
 

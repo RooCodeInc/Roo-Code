@@ -70,7 +70,7 @@ The checklist does not judge your codebase. It tells you what kind of results to
 
 ## Why this matters for your team
 
-For a Series A team with five engineers, every hour spent debugging agent output is an hour not spent shipping features. If your project fails the readiness checklist, you already know where the friction will appear.
+For a Series A - C team with five engineers, every hour spent debugging agent output is an hour not spent shipping features. If your project fails the readiness checklist, you already know where the friction will appear.
 
 The fix is not "get a smarter model." The fix is "make your build runnable from the CLI." One is a vendor decision. The other is infrastructure work that pays dividends whether you use AI or not.
 
@@ -78,7 +78,7 @@ A team that invests a sprint in CLI buildability and standalone linting gets two
 
 ## How Roo Code closes the loop on ready projects
 
-Roo Code is an AI coding agent designed to close the loop: it proposes diffs, runs commands and tests, and iterates based on the results. When your project passes the readiness checklist, Roo Code can execute your build, run your linter, and verify its own changes without requiring you to paste errors back and forth.
+Roo Code is an AI coding agent that closes the loop: it proposes diffs, runs commands and tests, and iterates based on results. When your project passes the readiness checklist, Roo Code can execute your build, run your linter, and verify its own changes without requiring you to paste errors back and forth.
 
 With BYOK (bring your own key), you connect directly to your preferred model provider and pay for tokens at cost. Roo Code does not mark up token prices or require a subscription to access agent capabilities.
 

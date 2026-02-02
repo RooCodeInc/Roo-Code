@@ -96,7 +96,7 @@ Because Roo Code closes the loop by running commands, executing tests, and itera
 
 ## Why this matters for your team
 
-For a Series A team with five engineers and a compliance-conscious customer segment, this distinction shapes your tooling strategy.
+For a Series A - C team with five engineers and a compliance-conscious customer segment, this distinction shapes your tooling strategy.
 
 If you're building internal tools or modifying well-structured existing code, a local model workflow might satisfy both your security requirements and your shipping velocity. The constraint is real: keep tasks scoped to modifications, not generation.
 

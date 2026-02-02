@@ -67,9 +67,9 @@ With AI that can read, write, and iterate on code, the break-even point moves. O
 
 ## Why this matters for your team
 
-For a Series A team with three engineers, every fork is a time sink. Every vulnerability report is a context switch. Every transitive dependency is a trust decision you didn't explicitly make.
+For a Series A - C team with three engineers, every fork is a time sink. Every vulnerability report is a context switch. Every transitive dependency is a trust decision you didn't explicitly make.
 
-If your team ships 5-10 PRs a week, and one of those PRs each week is "update dependencies and pray nothing breaks," you're spending 10-20% of your shipping capacity on maintenance you didn't choose.
+If your team ships daily, and one of those PRs each week is "update dependencies and pray nothing breaks," you're spending a meaningful share of your shipping capacity on maintenance you didn't choose.
 
 The compounding effect: as your dependency tree grows, so does your attack surface and your update burden. Shrinking the tree isn't just about security. It's about preserving engineering bandwidth for features instead of maintenance.
 

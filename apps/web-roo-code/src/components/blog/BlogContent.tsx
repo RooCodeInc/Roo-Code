@@ -6,16 +6,39 @@ import remarkGfm from "remark-gfm"
 import { Play } from "lucide-react"
 import { YouTubeModal, isYouTubeUrl, extractYouTubeVideoId, extractYouTubeTimestamp } from "./YouTubeModal"
 
+type HastLikeNode = {
+	type?: unknown
+	tagName?: unknown
+	url?: unknown
+	properties?: unknown
+	children?: unknown
+}
+
+function getNodeUrl(node: HastLikeNode): string | null {
+	// mdast link node (remark)
+	if (node.type === "link" && typeof node.url === "string") return node.url
+
+	// hast anchor element (rehype)
+	if (node.type === "element" && node.tagName === "a") {
+		const props = node.properties as { href?: unknown } | undefined
+		if (typeof props?.href === "string") return props.href
+	}
+
+	return null
+}
+
 function nodeHasYouTubeLink(node: unknown): boolean {
 	if (!node || typeof node !== "object") return false
 
-	const anyNode = node as { type?: unknown; url?: unknown; children?: unknown }
-	if (anyNode.type === "link" && typeof anyNode.url === "string" && isYouTubeUrl(anyNode.url)) {
+	const anyNode = node as HastLikeNode
+	const url = getNodeUrl(anyNode)
+	if (url && isYouTubeUrl(url)) {
 		return true
 	}
 
-	if (Array.isArray(anyNode.children)) {
-		return anyNode.children.some(nodeHasYouTubeLink)
+	const children = (anyNode as { children?: unknown }).children
+	if (Array.isArray(children)) {
+		return children.some(nodeHasYouTubeLink)
 	}
 
 	return false
@@ -128,28 +151,29 @@ export function BlogContent({ content }: BlogContentProps) {
 					},
 					// Styled blockquotes
 					blockquote: ({ node, ...props }) => {
-						const isAttributedQuote =
-							node &&
-							typeof node === "object" &&
-							Array.isArray((node as { children?: unknown[] }).children) &&
-							nodeHasYouTubeLink((node as { children?: unknown[] }).children?.slice(-1)[0])
+						const children = (node as { children?: unknown[] } | undefined)?.children
+						const lastNonTextChild = Array.isArray(children)
+							? [...children].reverse().find((c) => {
+									if (!c || typeof c !== "object") return false
+									const anyChild = c as { type?: unknown }
+									// mdast uses "paragraph"; hast uses "element"
+									return anyChild.type === "paragraph" || anyChild.type === "element"
+								})
+							: null
+						const isAttributedQuote = nodeHasYouTubeLink(lastNonTextChild)
 
 						return (
 							<blockquote
 								className={[
-									"border-l-4 border-primary pl-4 text-muted-foreground",
-									// Tailwind Typography adds open/close quotes via pseudo-elements. Disable them so
-									// our attribution line doesn't end with a dangling quotation mark.
-									"[&>p:first-of-type]:before:content-none [&>p:last-of-type]:after:content-none",
+									// Opt out of Tailwind Typography's automatic quote marks for blockquotes.
+									"not-prose my-6 border-l-4 border-primary pl-4 text-muted-foreground",
+									// Normalize paragraph spacing inside blockquotes regardless of our global <p> renderer.
+									"[&>p]:m-0 [&>p+ p]:mt-4",
 									isAttributedQuote
 										? [
 												// Quote text reads well in italics, but the attribution line shouldn't.
 												"[&>p:not(:last-child)]:italic",
-												"[&>p:last-child]:not-italic [&>p:last-child]:text-sm",
-												"[&>p:last-child]:before:content-['—'] [&>p:last-child]:before:mr-2",
-												// Attribution should look like a citation (not a CTA button).
-												"[&>p:last-child_>button_svg]:hidden",
-												"[&>p:last-child_>button]:text-muted-foreground [&>p:last-child_>button]:hover:text-foreground",
+												"[&>p:last-child]:not-italic",
 											].join(" ")
 										: "italic",
 								].join(" ")}

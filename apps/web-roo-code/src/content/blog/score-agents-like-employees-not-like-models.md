@@ -93,7 +93,7 @@ The tradeoff: this takes more upfront work than a correctness benchmark. The pay
 
 ## How Roo Code closes the loop on agent reliability
 
-Roo Code is an AI coding agent designed around work style principles, not just code correctness. It closes the loop by proposing diffs, running commands and tests, and iterating based on the results. This maps directly to the rubric:
+Roo Code is an AI coding agent that closes the loop: it proposes diffs, runs commands and tests, and iterates based on results. This maps directly to the rubric:
 
 - **Proactivity:** Roo Code continues working through sub-tasks without waiting for hand-holding on each step
 - **Context management:** The agent maintains context across multi-file changes within your VS Code workspace
@@ -104,7 +104,7 @@ With BYOK (bring your own key), you control which model powers the agent while R
 
 ## Why this matters for your team
 
-For a Series A team with five engineers, agent reliability is a force multiplier. If your agent drifts or goes silent on complex tasks, someone has to babysit it. That someone is an engineer who could be shipping.
+For a Series A - C team with five engineers, agent reliability is a force multiplier. If your agent drifts or goes silent on complex tasks, someone has to babysit it. That someone is an engineer who could be shipping.
 
 Work style evals surface these problems before you've built workflows around an agent that can't handle the job. You find out in the eval, not in the incident postmortem.
 

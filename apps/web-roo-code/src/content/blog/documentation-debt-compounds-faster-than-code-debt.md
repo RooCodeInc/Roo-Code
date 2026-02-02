@@ -86,7 +86,7 @@ With BYOK (bring your own key), you control the model and context. Your document
 
 ## Why this matters for your team
 
-For a Series A team shipping weekly, documentation drift compounds in weeks, not months. Every feature that ships without a docs update is a liability for the next hire, the next handoff, the next AI session.
+For a Series A - C team shipping weekly, documentation drift compounds in weeks, not months. Every feature that ships without a docs update is a liability for the next hire, the next handoff, the next AI session.
 
 The compounding works both ways. If the agent updates docs on every pass, knowledge stays current. Onboarding stays fast. Handoffs stay clean. The next person (or the next agent) starts with accurate context instead of archaeological guesswork.
 
