@@ -187,6 +187,11 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 		if (provider) {
 			await provider.cancelTask()
 			this.taskMap.delete(taskId)
+		} else {
+			// Fallback: taskMap entry may have been removed on TaskCompleted
+			// but the task is still the current task on the provider's stack
+			// (e.g. after SendMessage resumed a completed task).
+			await this.sidebarProvider.cancelTask()
 		}
 	}
 
@@ -299,6 +304,10 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 
 			task.on(RooCodeEventName.TaskAskResponded, () => {
 				this.emit(RooCodeEventName.TaskAskResponded, task.taskId)
+			})
+
+			task.on(RooCodeEventName.QueuedMessagesUpdated, (taskId, messages) => {
+				this.emit(RooCodeEventName.QueuedMessagesUpdated, taskId, messages)
 			})
 
 			// Task Analytics
