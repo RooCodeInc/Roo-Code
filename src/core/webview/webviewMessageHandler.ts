@@ -894,7 +894,7 @@ export const webviewMessageHandler = async (
 
 			// Base candidates (only those handled by this aggregate fetcher)
 			const candidates: { key: RouterName; options: GetModelsOptions }[] = [
-				{ key: "openrouter", options: { provider: "openrouter" } },
+				{ key: "openrouter", options: { provider: "openrouter", baseUrl: apiConfiguration.openRouterBaseUrl } },
 				{
 					key: "requesty",
 					options: {
