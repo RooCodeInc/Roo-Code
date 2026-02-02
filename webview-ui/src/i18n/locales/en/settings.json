@@ -738,6 +738,10 @@
 				"description": "Time to wait after file writes before proceeding, allowing diagnostic tools to process changes and detect issues."
 			}
 		},
+		"fuzzyMatchThreshold": {
+			"label": "Fuzzy match threshold for file edits",
+			"description": "Controls how strictly the search content must match when editing files. Lower values allow more tolerance for minor formatting differences that some models produce. 100% requires exact match (default), 90% is recommended for models that produce slight variations."
+		},
 		"condensingThreshold": {
 			"label": "Condensing Trigger Threshold",
 			"selectProfile": "Configure threshold for profile",

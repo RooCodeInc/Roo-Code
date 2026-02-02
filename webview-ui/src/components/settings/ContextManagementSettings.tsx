@@ -39,6 +39,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	includeDiagnosticMessages?: boolean
 	maxDiagnosticMessages?: number
 	writeDelayMs: number
+	fuzzyMatchThreshold?: number
 	includeCurrentTime?: boolean
 	includeCurrentCost?: boolean
 	maxGitStatusFiles?: number
@@ -57,6 +58,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "includeDiagnosticMessages"
 		| "maxDiagnosticMessages"
 		| "writeDelayMs"
+		| "fuzzyMatchThreshold"
 		| "includeCurrentTime"
 		| "includeCurrentCost"
 		| "maxGitStatusFiles"
@@ -78,6 +80,7 @@ export const ContextManagementSettings = ({
 	includeDiagnosticMessages,
 	maxDiagnosticMessages,
 	writeDelayMs,
+	fuzzyMatchThreshold,
 	includeCurrentTime,
 	includeCurrentCost,
 	maxGitStatusFiles,
@@ -403,6 +406,29 @@ export const ContextManagementSettings = ({
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.diagnostics.delayAfterWrite.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="context-fuzzy-match-threshold"
+					section="contextManagement"
+					label={t("settings:contextManagement.fuzzyMatchThreshold.label")}>
+					<span className="block font-medium mb-1">
+						{t("settings:contextManagement.fuzzyMatchThreshold.label")}
+					</span>
+					<div className="flex items-center gap-2">
+						<Slider
+							min={80}
+							max={100}
+							step={1}
+							value={[Math.round((fuzzyMatchThreshold ?? 1.0) * 100)]}
+							onValueChange={([value]) => setCachedStateField("fuzzyMatchThreshold", value / 100)}
+							data-testid="fuzzy-match-threshold-slider"
+						/>
+						<span className="w-12">{Math.round((fuzzyMatchThreshold ?? 1.0) * 100)}%</span>
+					</div>
+					<div className="text-vscode-descriptionForeground text-sm mt-1">
+						{t("settings:contextManagement.fuzzyMatchThreshold.description")}
 					</div>
 				</SearchableSetting>
 

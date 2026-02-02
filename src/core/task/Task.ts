@@ -159,6 +159,13 @@ export interface TaskOptions extends CreateTaskOptions {
 	workspacePath?: string
 	/** Initial status for the task's history item (e.g., "active" for child tasks) */
 	initialStatus?: "active" | "delegated" | "completed"
+	/**
+	 * Fuzzy match threshold for diff operations (0-1).
+	 * 1.0 = exact match required (default)
+	 * 0.9 = 90% similarity (recommended for some models)
+	 * @default 1.0
+	 */
+	fuzzyMatchThreshold?: number
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -565,6 +572,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		initialTodos,
 		workspacePath,
 		initialStatus,
+		fuzzyMatchThreshold,
 	}: TaskOptions) {
 		super()
 
@@ -683,8 +691,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// Listen for provider profile changes to update parser state
 		this.setupProviderProfileChangeListener(provider)
 
-		// Set up diff strategy
-		this.diffStrategy = new MultiSearchReplaceDiffStrategy()
+		// Set up diff strategy with optional fuzzy match threshold
+		this.diffStrategy = new MultiSearchReplaceDiffStrategy(fuzzyMatchThreshold)
 
 		this.toolRepetitionDetector = new ToolRepetitionDetector(this.consecutiveMistakeLimit)
 

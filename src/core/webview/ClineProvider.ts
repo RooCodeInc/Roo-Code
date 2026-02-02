@@ -969,8 +969,15 @@ export class ClineProvider
 			}
 		}
 
-		const { apiConfiguration, enableCheckpoints, checkpointTimeout, experiments, cloudUserInfo, taskSyncEnabled } =
-			await this.getState()
+		const {
+			apiConfiguration,
+			enableCheckpoints,
+			checkpointTimeout,
+			experiments,
+			cloudUserInfo,
+			taskSyncEnabled,
+			fuzzyMatchThreshold,
+		} = await this.getState()
 
 		const task = new Task({
 			provider: this,
@@ -980,6 +987,7 @@ export class ClineProvider
 			consecutiveMistakeLimit: apiConfiguration.consecutiveMistakeLimit,
 			historyItem,
 			experiments,
+			fuzzyMatchThreshold,
 			rootTask: historyItem.rootTask,
 			parentTask: historyItem.parentTask,
 			taskNumber: historyItem.number,
@@ -2877,6 +2885,7 @@ export class ClineProvider
 			experiments,
 			cloudUserInfo,
 			remoteControlEnabled,
+			fuzzyMatchThreshold,
 		} = await this.getState()
 
 		// Single-open-task invariant: always enforce for user-initiated top-level tasks
@@ -2901,6 +2910,7 @@ export class ClineProvider
 			task: text,
 			images,
 			experiments,
+			fuzzyMatchThreshold,
 			rootTask: this.clineStack.length > 0 ? this.clineStack[0] : undefined,
 			parentTask,
 			taskNumber: this.clineStack.length + 1,
