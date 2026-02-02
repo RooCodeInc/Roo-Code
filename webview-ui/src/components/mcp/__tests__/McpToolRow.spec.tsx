@@ -13,6 +13,8 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 				"mcp:tool.parameters": "Parameters",
 				"mcp:tool.noDescription": "No description",
 				"mcp:tool.togglePromptInclusion": "Toggle prompt inclusion",
+				"mcp:tool.expand": "Expand description",
+				"mcp:tool.collapse": "Collapse description",
 			}
 			return translations[key] || key
 		},
@@ -284,5 +286,73 @@ describe("McpToolRow", () => {
 		// Check that the description has normal opacity
 		expect(toolDescription).toHaveClass("opacity-80")
 		expect(toolDescription).not.toHaveClass("opacity-40")
+	})
+
+	describe("collapsible description in chat context", () => {
+		const toolWithLongDescription = {
+			...mockTool,
+			description:
+				"This is a very long description that should be truncated to two lines when displayed in chat context. It provides detailed information about what the tool does and how it works.",
+		}
+
+		it("shows collapsible description when isInChatContext is true", () => {
+			render(<McpToolRow tool={toolWithLongDescription} isInChatContext={true} />)
+
+			// Should have the toggle button
+			const toggleButton = screen.getByTestId("description-toggle")
+			expect(toggleButton).toBeInTheDocument()
+		})
+
+		it("does not show collapsible description when isInChatContext is false", () => {
+			render(<McpToolRow tool={toolWithLongDescription} isInChatContext={false} />)
+
+			// Should not have the toggle button
+			const toggleButton = screen.queryByTestId("description-toggle")
+			expect(toggleButton).not.toBeInTheDocument()
+		})
+
+		it("expands description when toggle button is clicked", () => {
+			render(<McpToolRow tool={toolWithLongDescription} isInChatContext={true} />)
+
+			const toggleButton = screen.getByTestId("description-toggle")
+
+			// Initially collapsed - description should have line-clamp-2 class
+			const descriptionText = screen.getByText(toolWithLongDescription.description)
+			expect(descriptionText).toHaveClass("line-clamp-2")
+
+			// Click to expand
+			fireEvent.click(toggleButton)
+
+			// After expanding - description should not have line-clamp-2 class
+			expect(descriptionText).not.toHaveClass("line-clamp-2")
+		})
+
+		it("collapses description when toggle button is clicked twice", () => {
+			render(<McpToolRow tool={toolWithLongDescription} isInChatContext={true} />)
+
+			const toggleButton = screen.getByTestId("description-toggle")
+			const descriptionText = screen.getByText(toolWithLongDescription.description)
+
+			// Click to expand
+			fireEvent.click(toggleButton)
+			expect(descriptionText).not.toHaveClass("line-clamp-2")
+
+			// Click again to collapse
+			fireEvent.click(toggleButton)
+			expect(descriptionText).toHaveClass("line-clamp-2")
+		})
+
+		it("expands description when clicking on the description text", () => {
+			render(<McpToolRow tool={toolWithLongDescription} isInChatContext={true} />)
+
+			const descriptionText = screen.getByText(toolWithLongDescription.description)
+			expect(descriptionText).toHaveClass("line-clamp-2")
+
+			// Click on the description text
+			fireEvent.click(descriptionText)
+
+			// Should expand
+			expect(descriptionText).not.toHaveClass("line-clamp-2")
+		})
 	})
 })
