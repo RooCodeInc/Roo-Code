@@ -40,11 +40,16 @@ export abstract class BaseTerminal implements RooTerminal {
 	abstract runCommand(command: string, callbacks: RooTerminalCallbacks): RooTerminalProcessResultPromise
 
 	/**
-	 * Sets the active stream for this terminal and notifies the process
+	 * Sets the active stream for this terminal and notifies the process.
+	 * When eventCommand is provided, the stream is only set if it matches the process's command.
+	 * This prevents conda/other auto-activation commands from interfering with Roo's command execution.
+	 *
 	 * @param stream The stream to set, or undefined to clean up
+	 * @param pid The process ID from the shell execution event
+	 * @param eventCommand The command from the shell execution event, used to verify this is Roo's command
 	 * @throws Error if process is undefined when a stream is provided
 	 */
-	public setActiveStream(stream: AsyncIterable<string> | undefined, pid?: number): void {
+	public setActiveStream(stream: AsyncIterable<string> | undefined, pid?: number, eventCommand?: string): void {
 		if (stream) {
 			if (!this.process) {
 				this.running = false
@@ -56,6 +61,18 @@ export abstract class BaseTerminal implements RooTerminal {
 				return
 			}
 
+			// If eventCommand is provided, verify it matches the process's expected command
+			// This prevents conda/pyenv/other auto-activation commands from hijacking the stream
+			if (eventCommand !== undefined && this.process.command) {
+				if (!BaseTerminal.commandsMatch(this.process.command, eventCommand)) {
+					console.warn(
+						`[Terminal ${this.provider}/${this.id}] Ignoring shell execution for non-matching command. ` +
+							`Expected: "${this.process.command}", Got: "${eventCommand}"`,
+					)
+					return
+				}
+			}
+
 			this.running = true
 			this.streamClosed = false
 			this.process.emit("shell_execution_started", pid)
@@ -63,6 +80,39 @@ export abstract class BaseTerminal implements RooTerminal {
 		} else {
 			this.streamClosed = true
 		}
+	}
+
+	/**
+	 * Checks if two commands match. Uses flexible matching to handle cases where
+	 * the executed command might be modified (e.g., PowerShell counter workaround).
+	 *
+	 * @param expectedCommand The command Roo is trying to execute
+	 * @param actualCommand The command from the shell execution event
+	 * @returns true if the commands match
+	 */
+	public static commandsMatch(expectedCommand: string, actualCommand: string): boolean {
+		// Normalize commands by trimming whitespace
+		const expected = expectedCommand.trim()
+		const actual = actualCommand.trim()
+
+		// Exact match (handles both empty string case and exact matches)
+		if (expected === actual) {
+			return true
+		}
+
+		// If expected is empty but actual is not, they don't match
+		// (this prevents empty process command from matching any event command)
+		if (expected.length === 0) {
+			return false
+		}
+
+		// Check if expected is a prefix of actual (handles PowerShell counter workaround
+		// which appends extra commands like ` ; "(Roo/PS Workaround: N)" > $null`)
+		if (actual.startsWith(expected)) {
+			return true
+		}
+
+		return false
 	}
 
 	/**
