@@ -82,7 +82,8 @@ export async function handleDeleteSkill(
 	try {
 		const skillName = message.skillName
 		const source = message.source
-		const skillMode = message.skillMode
+		// Support new skillModeSlugs array or fall back to legacy skillMode
+		const skillMode = message.skillModeSlugs?.[0] ?? message.skillMode
 
 		if (!skillName || !source) {
 			throw new Error(t("skills:errors.missing_delete_fields"))
