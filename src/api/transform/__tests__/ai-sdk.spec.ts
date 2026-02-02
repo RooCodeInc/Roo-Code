@@ -4,6 +4,7 @@ import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
+	createAiSdkToolStreamProcessor,
 	mapToolChoice,
 	extractAiSdkErrorMessage,
 	handleAiSdkError,
@@ -492,6 +493,148 @@ describe("AI SDK conversion utilities", () => {
 				const chunks = [...processAiSdkStreamPart(event as any)]
 				expect(chunks).toHaveLength(0)
 			}
+		})
+	})
+
+	describe("createAiSdkToolStreamProcessor", () => {
+		it("processes text-delta chunks like processAiSdkStreamPart", () => {
+			const processor = createAiSdkToolStreamProcessor()
+			const part = { type: "text-delta" as const, id: "1", text: "Hello" }
+			const chunks = [...processor(part)]
+
+			expect(chunks).toHaveLength(1)
+			expect(chunks[0]).toEqual({ type: "text", text: "Hello" })
+		})
+
+		it("processes tool-input-start/delta/end events (streaming tools)", () => {
+			const processor = createAiSdkToolStreamProcessor()
+
+			// Simulate streaming tool events
+			const startChunks = [
+				...processor({ type: "tool-input-start" as const, id: "call_1", toolName: "read_file" }),
+			]
+			const deltaChunks = [...processor({ type: "tool-input-delta" as const, id: "call_1", delta: '{"path":' })]
+			const delta2Chunks = [
+				...processor({ type: "tool-input-delta" as const, id: "call_1", delta: '"test.ts"}' }),
+			]
+			const endChunks = [...processor({ type: "tool-input-end" as const, id: "call_1" })]
+
+			expect(startChunks).toHaveLength(1)
+			expect(startChunks[0]).toEqual({ type: "tool_call_start", id: "call_1", name: "read_file" })
+
+			expect(deltaChunks).toHaveLength(1)
+			expect(deltaChunks[0]).toEqual({ type: "tool_call_delta", id: "call_1", delta: '{"path":' })
+
+			expect(delta2Chunks).toHaveLength(1)
+			expect(delta2Chunks[0]).toEqual({ type: "tool_call_delta", id: "call_1", delta: '"test.ts"}' })
+
+			expect(endChunks).toHaveLength(1)
+			expect(endChunks[0]).toEqual({ type: "tool_call_end", id: "call_1" })
+		})
+
+		it("ignores tool-call events when tool was already streamed", () => {
+			const processor = createAiSdkToolStreamProcessor()
+
+			// Process streaming events first (consume the generator to update state)
+			Array.from(processor({ type: "tool-input-start" as const, id: "call_1", toolName: "read_file" }))
+			Array.from(processor({ type: "tool-input-delta" as const, id: "call_1", delta: '{"path":"test.ts"}' }))
+			Array.from(processor({ type: "tool-input-end" as const, id: "call_1" }))
+
+			// Now the tool-call event for the same tool should be ignored
+			const toolCallChunks = [
+				...processor({
+					type: "tool-call" as const,
+					toolCallId: "call_1",
+					toolName: "read_file",
+					input: { path: "test.ts" },
+				} as any),
+			]
+
+			expect(toolCallChunks).toHaveLength(0)
+		})
+
+		it("processes tool-call events for non-streaming providers", () => {
+			const processor = createAiSdkToolStreamProcessor()
+
+			// Directly process a tool-call event (no streaming events first)
+			const chunks = [
+				...processor({
+					type: "tool-call" as const,
+					toolCallId: "call_1",
+					toolName: "read_file",
+					input: { path: "test.ts" },
+				} as any),
+			]
+
+			// Should emit start/delta/end events
+			expect(chunks).toHaveLength(3)
+			expect(chunks[0]).toEqual({ type: "tool_call_start", id: "call_1", name: "read_file" })
+			expect(chunks[1]).toEqual({ type: "tool_call_delta", id: "call_1", delta: '{"path":"test.ts"}' })
+			expect(chunks[2]).toEqual({ type: "tool_call_end", id: "call_1" })
+		})
+
+		it("handles multiple tool calls correctly", () => {
+			const processor = createAiSdkToolStreamProcessor()
+
+			// First tool is streamed
+			Array.from(processor({ type: "tool-input-start" as const, id: "call_1", toolName: "read_file" }))
+			Array.from(processor({ type: "tool-input-end" as const, id: "call_1" }))
+
+			// Second tool is not streamed (non-streaming provider behavior)
+			const chunks = [
+				...processor({
+					type: "tool-call" as const,
+					toolCallId: "call_2",
+					toolName: "write_to_file",
+					input: { path: "output.ts", content: "test" },
+				} as any),
+			]
+
+			// Second tool should be emitted
+			expect(chunks).toHaveLength(3)
+			expect(chunks[0]).toEqual({ type: "tool_call_start", id: "call_2", name: "write_to_file" })
+
+			// First tool's tool-call should be ignored
+			const ignoredChunks = [
+				...processor({
+					type: "tool-call" as const,
+					toolCallId: "call_1",
+					toolName: "read_file",
+					input: {},
+				} as any),
+			]
+			expect(ignoredChunks).toHaveLength(0)
+		})
+
+		it("maintains separate state per processor instance", () => {
+			const processor1 = createAiSdkToolStreamProcessor()
+			const processor2 = createAiSdkToolStreamProcessor()
+
+			// Stream a tool with processor1
+			Array.from(processor1({ type: "tool-input-start" as const, id: "call_1", toolName: "test" }))
+			Array.from(processor1({ type: "tool-input-end" as const, id: "call_1" }))
+
+			// processor1 should ignore tool-call for call_1
+			const p1Chunks = [
+				...processor1({
+					type: "tool-call" as const,
+					toolCallId: "call_1",
+					toolName: "test",
+					input: {},
+				} as any),
+			]
+			expect(p1Chunks).toHaveLength(0)
+
+			// processor2 should emit tool-call for call_1 (it has its own state)
+			const p2Chunks = [
+				...processor2({
+					type: "tool-call" as const,
+					toolCallId: "call_1",
+					toolName: "test",
+					input: {},
+				} as any),
+			]
+			expect(p2Chunks).toHaveLength(3)
 		})
 	})
 

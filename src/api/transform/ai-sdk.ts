@@ -365,6 +365,95 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 }
 
 /**
+ * Creates a stateful stream processor that handles tool call deduplication.
+ * Some AI SDK providers (like HuggingFace) don't emit streaming tool events
+ * (tool-input-start/delta/end), only the final tool-call event. This function
+ * returns a processor that tracks which tools have been processed via streaming
+ * events and emits tool-call events only for tools that weren't streamed.
+ *
+ * Usage:
+ * ```typescript
+ * const processStreamPart = createAiSdkToolStreamProcessor()
+ * for await (const part of result.fullStream) {
+ *     for (const chunk of processStreamPart(part)) {
+ *         yield chunk
+ *     }
+ * }
+ * ```
+ *
+ * @returns A generator function that processes stream parts with tool deduplication
+ */
+export function createAiSdkToolStreamProcessor(): (
+	part: ExtendedStreamPart,
+) => Generator<ApiStreamChunk, void, unknown> {
+	// Track tool IDs that have been processed via streaming events
+	const streamedToolIds = new Set<string>()
+
+	return function* processStreamPart(part: ExtendedStreamPart): Generator<ApiStreamChunk> {
+		switch (part.type) {
+			case "tool-input-start":
+				// Track that this tool has streaming events
+				streamedToolIds.add(part.id)
+				yield {
+					type: "tool_call_start",
+					id: part.id,
+					name: part.toolName,
+				}
+				break
+
+			case "tool-input-delta":
+				yield {
+					type: "tool_call_delta",
+					id: part.id,
+					delta: part.delta,
+				}
+				break
+
+			case "tool-input-end":
+				yield {
+					type: "tool_call_end",
+					id: part.id,
+				}
+				break
+
+			case "tool-call": {
+				// Only emit tool-call if this tool wasn't already processed via streaming
+				const toolCallPart = part as {
+					type: "tool-call"
+					toolCallId: string
+					toolName: string
+					input: unknown
+				}
+				if (!streamedToolIds.has(toolCallPart.toolCallId)) {
+					// Emit as start/delta/end for consistency with streaming providers
+					const args = JSON.stringify(toolCallPart.input)
+					yield {
+						type: "tool_call_start",
+						id: toolCallPart.toolCallId,
+						name: toolCallPart.toolName,
+					}
+					yield {
+						type: "tool_call_delta",
+						id: toolCallPart.toolCallId,
+						delta: args,
+					}
+					yield {
+						type: "tool_call_end",
+						id: toolCallPart.toolCallId,
+					}
+				}
+				break
+			}
+
+			// Handle all other events with the stateless processor
+			default:
+				yield* processAiSdkStreamPart(part)
+				break
+		}
+	}
+}
+
+/**
  * Type for AI SDK tool choice format.
  */
 export type AiSdkToolChoice = "auto" | "none" | "required" | { type: "tool"; toolName: string } | undefined
