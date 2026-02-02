@@ -30,7 +30,7 @@ The AI isn't being lazy. It's doing exactly what you asked: implement this featu
 
 > "A lot of times, and all of you that code know this, if you tell the AI to do something, it'll pick the one thing it thinks it needs to do and just go do it. And that is usually not the right way to do it."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=1176)
 
 The fix isn't prompting harder. The fix is changing the workflow.
 
@@ -40,7 +40,7 @@ A pair programmer mode forces the AI to present two or three implementation opti
 
 > "The idea with the pair programmer is it forces the AI to give you options for approaches and analyze it based on the complexity of it and then you can kind of like overwrite it."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=1197)
 
 The key word is "forces." Left to its own defaults, the AI will skip this step. The mode constraint makes the options phase mandatory.
 
@@ -50,7 +50,7 @@ Here's the honest tradeoff: the AI recommends the right approach about half the 
 
 > "I'd say 50% of the time the one they recommend is usually the one that I go with. But sometimes they're way off and I can catch it before any code's written."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=1458)
 
 That 50% hit rate sounds mediocre until you consider the alternative. Without the options step, you discover the wrong approach after the AI has generated hundreds of lines of code. You've spent tokens, you've spent time reviewing, and now you're explaining why that approach won't work. The AI apologizes and starts over with the same blind confidence.
 

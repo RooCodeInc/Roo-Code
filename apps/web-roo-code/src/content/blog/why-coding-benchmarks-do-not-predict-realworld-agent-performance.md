@@ -30,7 +30,7 @@ This is a reasonable test of raw code generation ability. It is not a test of wh
 
 > "When we think about coding, we're thinking about using it in real code and it working well. When they think about coding, it's like: can it make a Python script, and then does a function pass? It's just two very different things."
 >
-> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=2953)
 
 Real coding means navigating an existing codebase with years of accumulated decisions. It means interpreting a PRD that references three other documents. It means making changes that do not break the fourteen services that depend on this endpoint.
 
@@ -42,7 +42,7 @@ The challenge shows up the moment you hand an agent something real.
 
 > "The challenge is working with existing codebases, or giving a very complex PRD or some sort of technical specification."
 >
-> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=2867)
 
 A benchmark task has clean boundaries. The function signature tells you exactly what to implement. The test tells you exactly what success looks like.
 
@@ -56,7 +56,7 @@ Teams that want accurate signal build their own evals.
 
 > "A lot of my testing I do and my eval are unfortunately manual... I have 20 complex prompts. I feed them into Roo Code for a model."
 >
-> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=2889)
 
 The process is straightforward: collect prompts that represent real tasks your team faces. Feed them into the agent. Let it run. Score the output against your actual acceptance criteria.
 

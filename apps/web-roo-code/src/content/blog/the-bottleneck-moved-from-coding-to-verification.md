@@ -28,7 +28,7 @@ For a Series A team with three engineers and a designer who has ideas faster tha
 
 > "My theory is that we've moved the bottleneck now to: the hard part's going to be going in testing it, making sure it's good to go."
 >
-> Adam, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE)
+> Adam, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE&t=3166)
 
 ## What teams actually need
 
@@ -38,7 +38,7 @@ This means automatic preview environments. Every task, every branch, every itera
 
 > "I really want people that are non-technical to be able to see what they've output and that before it even gets to an engineer's hand. This is my goal."
 >
-> Hannes Rudolph, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE)
+> Hannes Rudolph, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE&t=3369)
 
 The technical pieces exist. Preview deployment platforms (Vercel, Netlify, Railway) can spin up instances on every push. The missing piece is the connection: task runs, branch pushes, preview URL appears, non-engineer clicks and validates.
 

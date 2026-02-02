@@ -30,7 +30,7 @@ After a month of running Opus with and without the extra reasoning step, the pat
 
 > "I've used Opus for like a month now without thinking, and I've tried it with thinking. I think for Opus, thinking is overkill and pretty much a waste."
 >
-> Hannes Rudolph, [Roo Cast S01E20](https://www.youtube.com/watch?v=qxC0iyFBfWc)
+> Hannes Rudolph, [Roo Cast S01E20](https://www.youtube.com/watch?v=qxC0iyFBfWc&t=0)
 
 The mechanism makes sense when you think about what thinking mode actually does. It gives the model a scratch pad to reason through a problem before responding. For models that need that extra step to handle complexity, it helps. For Opus, the base model already handles complex reasoning well enough that the scratch pad becomes redundant compute.
 
@@ -40,7 +40,7 @@ The pattern extends beyond just Opus. Match thinking mode to model tier, not tas
 
 > "When I run Opus, I don't do thinking. When I run Sonnet, I use minimal thinking."
 >
-> Hannes Rudolph, [Roo Cast S01E20](https://www.youtube.com/watch?v=qxC0iyFBfWc)
+> Hannes Rudolph, [Roo Cast S01E20](https://www.youtube.com/watch?v=qxC0iyFBfWc&t=0)
 
 **Opus:** Skip thinking entirely. The base reasoning is strong enough.
 
@@ -56,7 +56,7 @@ For Opus on coding tasks, the evidence points to no.
 
 > "I feel like Opus is just so good at doing everything that having thinking enabled doesn't improve anything at all."
 >
-> Hannes Rudolph, [Roo Cast S01E20](https://www.youtube.com/watch?v=qxC0iyFBfWc)
+> Hannes Rudolph, [Roo Cast S01E20](https://www.youtube.com/watch?v=qxC0iyFBfWc&t=7)
 
 The cost is concrete: thinking mode consumes tokens for the reasoning trace. If the reasoning trace does not change the final output, those tokens are overhead. Multiply that across a day of coding tasks and the waste compounds.
 

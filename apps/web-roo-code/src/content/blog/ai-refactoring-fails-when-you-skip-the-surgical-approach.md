@@ -34,7 +34,7 @@ The issue is not the model's capability. The issue is the scope.
 
 > "Making a project from scratch is quite easy for a model. But refactoring what's already there, especially without breaking stuff, it's a pretty hard task for sure."
 >
-> Dan, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Dan, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=3333)
 
 When a model builds from scratch, it owns the entire dependency graph. Every function exists because the model created it. Every interface matches because the model designed both sides.
 
@@ -48,7 +48,7 @@ The pattern that works: one change, tested, then repeat.
 
 > "For something especially critical, you just want to do it piecemeal. So have AI build a plan of the most impactful single change it can make."
 >
-> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=3269)
 
 Instead of "refactor the whole component," you ask: "What is the single most impactful change we could make right now?" The model proposes one change. You implement it. You run the tests. You verify the UI still works.
 
@@ -72,7 +72,7 @@ The surgical approach converts that risk into predictable progress. Smaller diff
 
 > "You will never achieve a refactoring. Even if it's a small project in a single task, even if you're using orchestrator, you'll probably fail at some point because refactoring is hard."
 >
-> Dan, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Dan, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=3333)
 
 The model is good at identifying what to change. Let it do that. Keep the scope of each change small enough that you can verify it before moving on.
 

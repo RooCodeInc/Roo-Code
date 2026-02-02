@@ -34,7 +34,7 @@ The pattern that works: don't run documentation MCPs in your main coding mode at
 
 > "You really don't want this to be part of your main coding mode. And I would say you really want your Context7 in an orchestrator type setup."
 >
-> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=631)
 
 Create a dedicated researcher mode. Give it a lightweight model. Let it handle the documentation lookup cycle: query the MCP, summarize the relevant parts, and pass the summary back to your orchestrator. Your expensive coding model never sees the raw API traffic.
 
@@ -46,7 +46,7 @@ The documentation lookup cycle does not require your most capable model. It need
 
 > "I was using Gemini 2.5 Flash for the MCP stuff because it can gather the basics of your request."
 >
-> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=672)
 
 Gemini 2.5 Flash, Claude 3.5 Haiku, or similar lightweight models handle this well. They're inexpensive per token, and the task is bounded: read docs, extract relevant section, summarize. No complex reasoning required.
 
@@ -63,7 +63,7 @@ The setup looks like this:
 
 > "If you have a couple frameworks that you're using constantly, just go figure out like the context that you want in there and like how you want to query that."
 >
-> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=287)
 
 For frameworks you use constantly, pre-tune the query patterns. Know what context you need from the Next.js docs versus the Prisma docs. The researcher mode can be specialized per framework if the query patterns differ significantly.
 

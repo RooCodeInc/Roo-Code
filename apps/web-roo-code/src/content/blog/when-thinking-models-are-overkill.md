@@ -36,7 +36,7 @@ The counterintuitive finding: high-capability models often perform just as well 
 
 > "I feel like Opus is just so good at doing everything that having thinking enabled just doesn't improve anything at all."
 >
-> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM)
+> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM&t=620)
 
 Teams running Opus without thinking for a month report comparable results to thinking-enabled runs. The model's base capability already handles most coding tasks. The thinking overhead adds latency and cost without moving the needle on output quality.
 
@@ -54,7 +54,7 @@ Extended thinking wastes tokens on:
 
 > "For example here in Roo we have to edit a lot of translation files and sometimes I do it with flash because if I use Gemini 2.5 to edit 17 different language files it's going to think and think for each one of them. So it's like a lot slower and more expensive than just running flash that can do this task."
 >
-> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM)
+> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM&t=667)
 
 The pattern: use thinking for novelty, skip it for repetition.
 
@@ -66,7 +66,7 @@ A five-person team shipping daily faces this decision constantly. Every task run
 
 > "I think it depends on the task that you're working on. Like if it's something that can be achieved without thinking then sure you should go without thinking like because the thinking is just going to waste more tokens and take a lot longer to complete the task."
 >
-> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM)
+> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM&t=652)
 
 The tradeoff is explicit: thinking adds latency and cost. If the task doesn't benefit, you're paying twice for the same result.
 

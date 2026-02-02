@@ -2,19 +2,24 @@
  * Blog Index Page
  * MKT-68: Blog Index Page
  *
- * Lists published blog posts with pagination (12 posts per page).
+ * Lists published blog posts with two views:
+ * - Featured (default): Curated 24 posts aligned with Roo Code positioning
+ * - All: Full list with pagination (12 posts per page)
+ *
  * Uses dynamic rendering (force-dynamic) for request-time publish gating.
  */
 
 import type { Metadata } from "next"
 import Script from "next/script"
-import { getPaginatedBlogPosts, getAllBlogPosts } from "@/lib/blog"
+import { Suspense } from "react"
+import { getPaginatedBlogPosts, getAllBlogPosts, getCuratedBlogPosts } from "@/lib/blog"
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { BlogIndexAnalytics } from "@/components/blog/BlogAnalytics"
 import { BlogPostList } from "@/components/blog/BlogPostList"
 import { BlogPagination } from "@/components/blog/BlogPagination"
 import { BlogPostCTA } from "@/components/blog/BlogPostCTA"
+import { BlogViewToggle } from "@/components/blog/BlogViewToggle"
 
 // Force dynamic rendering for request-time publish gating
 export const dynamic = "force-dynamic"
@@ -55,9 +60,35 @@ export const metadata: Metadata = {
 	keywords: [...SEO.keywords, "blog", "articles", "engineering", "AI development"],
 }
 
-export default function BlogIndexPage() {
-	const { posts, currentPage, totalPages, totalPosts } = getPaginatedBlogPosts(1)
+interface Props {
+	searchParams: Promise<{ view?: string; page?: string }>
+}
+
+export default async function BlogIndexPage({ searchParams }: Props) {
+	const params = await searchParams
+	const view = params.view === "all" ? "all" : "featured"
+	const pageParam = params.page ? parseInt(params.page, 10) : 1
+
+	// Get all posts for counts and schema
 	const allPosts = getAllBlogPosts()
+	const curatedPosts = getCuratedBlogPosts()
+
+	// Determine which posts to display based on view
+	let displayPosts
+	let currentPage = 1
+	let totalPages = 1
+	let showPagination = false
+
+	if (view === "all") {
+		const paginated = getPaginatedBlogPosts(pageParam)
+		displayPosts = paginated.posts
+		currentPage = paginated.currentPage
+		totalPages = paginated.totalPages
+		showPagination = totalPages > 1
+	} else {
+		// Featured view shows curated posts without pagination
+		displayPosts = curatedPosts
+	}
 
 	// Schema.org CollectionPage + ItemList (includes all posts for SEO)
 	const blogSchema = {
@@ -117,17 +148,31 @@ export default function BlogIndexPage() {
 					<h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Blog</h1>
 					<p className="mt-4 text-lg text-muted-foreground">{DESCRIPTION}</p>
 
-					{totalPosts > 0 && totalPages > 1 && (
-						<p className="mt-2 text-sm text-muted-foreground">
-							Showing {posts.length} of {totalPosts} posts
+					{/* View Toggle */}
+					<Suspense
+						fallback={
+							<div className="mt-6 flex items-center gap-4">
+								<div className="h-11 w-64 animate-pulse rounded-lg bg-muted" />
+							</div>
+						}>
+						<BlogViewToggle curatedCount={curatedPosts.length} totalCount={allPosts.length} />
+					</Suspense>
+
+					{/* Post count indicator for "all" view */}
+					{view === "all" && totalPages > 1 && (
+						<p className="mt-4 text-sm text-muted-foreground">
+							Showing {displayPosts.length} of {allPosts.length} posts
 						</p>
 					)}
 
-					<BlogPostList posts={posts} />
+					<BlogPostList posts={displayPosts} />
 
-					<BlogPagination currentPage={currentPage} totalPages={totalPages} />
+					{/* Pagination only for "all" view */}
+					{showPagination && (
+						<BlogPagination currentPage={currentPage} totalPages={totalPages} useQueryParams />
+					)}
 
-					{/* Cloud CTA - shown after pagination */}
+					{/* Cloud CTA - shown after posts */}
 					<BlogPostCTA />
 				</div>
 			</div>

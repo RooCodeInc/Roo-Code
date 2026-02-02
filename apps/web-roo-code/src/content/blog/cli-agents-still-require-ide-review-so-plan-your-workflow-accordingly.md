@@ -30,7 +30,7 @@ Not because the agent failed. Because you don't know if it succeeded until you l
 
 > "I don't think I trust the models enough just yet to let it run and not check what it's doing. Not as it's doing it, but at the end. I like to at least take a look at the code at the end once it's done."
 >
-> Dan, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw)
+> Dan, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw&t=2186)
 
 This isn't a critique of CLI tools. It's a workflow observation. The agent runs outside your IDE, but the review happens inside it. Your workflow now has a mandatory handoff step.
 
@@ -42,7 +42,7 @@ That moment hasn't arrived yet.
 
 > "I saw us getting to the point of just giving a large language model a command and it producing something that I was ready to keep. I saw this as happening and I think it is happening, but I saw it as happening much sooner than I currently think it's going to happen."
 >
-> Dan, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw)
+> Dan, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw&t=2289)
 
 The timeline shifted. Not because the models regressed, but because the bar for "ready to keep" is higher than "looks plausible." Production code has edge cases. It has integration points. It has that one function that breaks if you change the return type.
 
@@ -56,7 +56,7 @@ The value shows up when you have three fact-finding tasks that don't depend on e
 
 > "You're not locked into an IDE. So you can take it to any repo that you want in any kind of codebase and it'll work."
 >
-> Adam, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw)
+> Adam, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw&t=2447)
 
 The flexibility is real. The autonomy is not.
 

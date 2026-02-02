@@ -30,7 +30,7 @@ After a long session, the agent condenses your conversation to fit within contex
 
 > "I was seeing some weird behavior with some of my workflows. Some of my workflows have really like strict instructions about the output how it should look and I saw that it was just after condensing it was just forgetting how to properly format you know comments reviews."
 >
-> Dan, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY)
+> Dan, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY&t=1299)
 
 You didn't change anything. The agent didn't misunderstand. Something got lost in the condensing.
 
@@ -42,7 +42,7 @@ When the context window fills up and condensing kicks in, the system needs to su
 
 > "It turns out the first message was being replaced with something else when condensing something along the lines of please continue with this summary or something like that."
 >
-> Dan, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY)
+> Dan, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY&t=1313)
 
 The model now treats the summary as the main instruction. Your formatting rules existed in the first message. The first message is gone. The rules are gone.
 
@@ -52,7 +52,7 @@ This explains a pattern you might have noticed: many providers use middle-out tr
 
 > "The first message includes... that's why providers for example do middle out transformations when when you reach the context window limit... because the first message contains your directive."
 >
-> Dan, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY)
+> Dan, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY&t=1341)
 
 The first message is architecturally significant. It's not just another turn in the conversation. It's the directive that shapes everything else. Lose it, and the model loses its purpose.
 

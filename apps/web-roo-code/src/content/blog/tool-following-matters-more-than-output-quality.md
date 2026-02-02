@@ -34,7 +34,7 @@ If a model fails to follow tools, the agent gets stuck. No amount of prompt engi
 
 > "The test is: did it follow along and did it do roughly what we asked it to do? Because if you can get a model to do roughly what you asked it to do, then adjusting your instructions or breaking the task down into smaller steps can get you to where you need to go."
 >
-> Hannes Rudolph, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Hannes Rudolph, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=1129)
 
 ## What "following" actually looks like
 
@@ -50,7 +50,7 @@ The difference shows up immediately in practice. A model that follows tools migh
 
 > "I mean, look, it made something. It doesn't fit the browser very well, but all in all I would say that it actually followed."
 >
-> Hannes Rudolph, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Hannes Rudolph, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=1107)
 
 ## The recovery path
 

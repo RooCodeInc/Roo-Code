@@ -30,7 +30,7 @@ The variable that determines switching cost isn't brand loyalty. It's how much c
 
 > "If you know the codebase really well, switching from AI agent to AI agent, very easy. If you don't and you've built up a lot of rules and custom things that are particular to that particular AI agent, it can be very hard."
 >
-> Adam @GosuCoder, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Adam @GosuCoder, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=2960)
 
 If your rules are portable (standard linters, shared config files, documented conventions), switching is trivial. If your rules live in agent-specific memory or custom prompt chains that don't export, you're locked in.
 
@@ -40,7 +40,7 @@ Instead of picking one tool and hoping it covers every case, match the agent to 
 
 > "Roo Code is like I'll use it to ideate, look through certain large files, help me break it apart, come up with a plan for that. And then when it's surgical stuff, I may use another agent. When I just want to ask questions about a codebase, I might use another agent for that."
 >
-> Adam @GosuCoder, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Adam @GosuCoder, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=3028)
 
 The pattern:
 
@@ -56,7 +56,7 @@ The other pattern that enables multi-agent flexibility: keep loops short.
 
 > "I'm not as big of a fan of these long-running conversations. I actually like, you know, build a plan, execute it. If that worked or didn't, a lot of times I'll even clear my context at that point and kind of then incrementally work through stuff."
 >
-> Adam @GosuCoder, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Adam @GosuCoder, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=2992)
 
 Long-running conversations accumulate stale assumptions. The model references decisions you've since revised. The context window fills with artifacts from three iterations ago. Eventually you're debugging the prompt history instead of the code.
 

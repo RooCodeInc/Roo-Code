@@ -30,7 +30,7 @@ Here's why: Codex was hyper-trained on one specific setup. Apply patch. Ripgrep 
 
 > "If you're sort of like giving somebody a whole bunch of stuff to do and they're like trying really hard to do a really good job and they have this like slightly different way of like having to give you the answer... then they're going to like have to think harder about that part of it and they might screw something else up along the way."
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE)
+> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=2990)
 
 This isn't a bug. It's a tradeoff OpenAI made deliberately. Codex is optimized for the Codex product cycle: heads-down execution, minimal back-and-forth, tight integration with their specific tooling.
 
@@ -40,7 +40,7 @@ Teams that get good results with Codex in third-party harnesses share one patter
 
 > "When people implement Codex in their harness, it works better for them to just cut out almost all of their tools and just have it use our apply patch, which is open-sourced, and basically ripgrep to search around code."
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE)
+> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=814)
 
 OpenAI's apply patch format is available. Ripgrep is the search primitive it expects. When you align your harness to what Codex was trained on, you stop paying the attention tax.
 
@@ -54,7 +54,7 @@ But Codex wasn't built for that use case. It was built to execute autonomously w
 
 > "Codex is very tightly optimized to the Codex harness and the Codex basically kind of like product cycle... it's not going to do things like communicate as much with you along the way."
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE)
+> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=763)
 
 The tradeoff is explicit: Codex trades flexibility for execution depth. GPT-5 trades some of that depth for adaptability.
 

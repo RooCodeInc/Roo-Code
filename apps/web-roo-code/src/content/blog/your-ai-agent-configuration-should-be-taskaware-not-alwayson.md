@@ -38,7 +38,7 @@ The practical split depends on which model you're using and what you're asking i
 
 > "If it's something that can be achieved without thinking, then sure, you should go without thinking. Because the thinking is just going to waste more tokens and take a lot longer to complete the task."
 >
-> Hannes Rudolph, [Roo Cast S01E20](https://www.youtube.com/watch?v=qxC0iyFBfWc)
+> Hannes Rudolph, [Roo Cast S01E20](https://www.youtube.com/watch?v=qxC0iyFBfWc&t=28)
 
 The question is not "should I use thinking mode?" The question is "does this specific task benefit from extended reasoning?"
 
@@ -48,7 +48,7 @@ Different models have different capability baselines. A task that requires think
 
 > "When I run Opus, I don't do thinking. When I run Sonnet, I use minimal thinking."
 >
-> Guest, [Roo Cast S01E20](https://www.youtube.com/watch?v=qxC0iyFBfWc)
+> Guest, [Roo Cast S01E20](https://www.youtube.com/watch?v=qxC0iyFBfWc&t=0)
 
 The pattern: more capable models need less reasoning scaffolding. Their base capability already handles the task. Adding thinking mode just adds cost and latency without changing the output.
 

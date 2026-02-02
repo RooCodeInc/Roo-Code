@@ -32,7 +32,7 @@ When you point Orchestrator at a simple task, it does what it's designed to do: 
 
 > "I think that using orchestrator for simple tasks can backfire, that's for sure."
 >
-> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM)
+> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM&t=1650)
 
 Each delegation is a potential failure point. Each plan is a prompt that might miss the mark. Each sub-agent call burns tokens on coordination overhead that a direct prompt would skip entirely.
 
@@ -42,7 +42,7 @@ For straightforward coding tasks, Code mode with a clear prompt outperforms Orch
 
 > "For simpler tasks, I think that just using the code mode with a simple prompt does very well. But when you're talking about a more complex project... then the code mode would probably mess up somewhere."
 >
-> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM)
+> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM&t=1611)
 
 The decision boundary is project scope, not task importance. A critical bug fix on a single file is still a simple task. A minor feature that touches twelve files and requires API documentation is complex.
 
@@ -56,7 +56,7 @@ Reserve Orchestrator for projects that need:
 
 > "The orchestrator is usually better for the more complicated tasks when you need to have a project that is well defined in documentation."
 >
-> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM)
+> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM&t=1636)
 
 If you can describe the task in one sentence and the output is one file, start with Code mode. You can always escalate.
 

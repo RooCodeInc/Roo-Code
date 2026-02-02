@@ -38,7 +38,7 @@ But the integration patterns from 2023 don't just need updating. They need remov
 
 > "The way of building around LLMs at that time was completely different than how you would build right now."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=1977)
 
 The gap isn't "add multimodal support." The gap is that models now have native reasoning, agentic tool use, and structured outputs. If your integration was designed around "send text, get text, parse text," you built for a different tool.
 
@@ -46,7 +46,7 @@ The scaffolding you wrote to compensate for 2023 model limitations is now scaffo
 
 > "For a lot of these folks it was basically: you have to strip everything out and start over again. You're completely rewriting your product."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=2025)
 
 ## The cost of not rewriting
 
@@ -58,7 +58,7 @@ Every time you patch the old integration, you're paying engineers to maintain co
 
 > "That work is definitely transitory. It's not going to be the thing that sticks around."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=2052)
 
 The 2023 integration was correct for 2023. Keeping it in 2026 is a choice to maintain technical debt that compounds every time the models improve.
 

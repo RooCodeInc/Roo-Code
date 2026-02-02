@@ -32,7 +32,7 @@ This is the migration wall. And if you don't have a software engineering backgro
 
 > "We're at this very strange time where people can build an initial prototype and kind of get it working enough to kind of deploy it to even turn it into a small business. But given that they don't have software engineering backgrounds, it's still a struggle for them to make updates, to swap out backends, to migrate from one release of an API to another."
 >
-> Paige Bailey, [Roo Cast S01E14](https://www.youtube.com/watch?v=k3od6FjUfK0)
+> Paige Bailey, [Roo Cast S01E14](https://www.youtube.com/watch?v=k3od6FjUfK0&t=1247)
 
 ## The pattern: rebuild, don't migrate
 
@@ -44,7 +44,7 @@ The apps become disposable. Version 1 ships. Version 2 is a new repo.
 
 > "All of these earlier career builders are creating apps and the apps are effectively throwaway apps where, you know, if they need to make even smaller changes or upgrade to significantly new architectures, then they're going to rebuild as opposed to migrating existing systems."
 >
-> Paige Bailey, [Roo Cast S01E14](https://www.youtube.com/watch?v=k3od6FjUfK0)
+> Paige Bailey, [Roo Cast S01E14](https://www.youtube.com/watch?v=k3od6FjUfK0&t=1307)
 
 This works up to a point. If your app is simple enough to rebuild in an afternoon, rebuilding is fine. But the pattern breaks when the app gets complicated enough that rebuilding takes longer than you have, and migrating requires skills you don't.
 

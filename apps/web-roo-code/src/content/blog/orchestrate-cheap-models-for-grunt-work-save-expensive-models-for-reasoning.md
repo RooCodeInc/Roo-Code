@@ -34,7 +34,7 @@ The pattern emerging from teams using Roo Code: route tasks by complexity, not j
 
 > "Can I pair local models with big models? So it's like a new orchestrator mode. Can I have different levels of engineers that the micromanager figures out: 'All right, intern you do this, junior level you do this.'"
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=1164)
 
 ## The layered approach
 
@@ -58,7 +58,7 @@ The mental model: think of your AI tooling like a team with different experience
 
 > "You don't need Claude to go create a file for you, to like stub something out. You can use a small model to do that."
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=1180)
 
 The orchestrator routes based on task type. A request to "create a new React component with standard props" goes to the cheap tier. A request to "figure out why this auth flow fails intermittently" goes to the frontier tier.
 
@@ -68,7 +68,7 @@ The approach scales in both directions. You can run the intern tier on a local m
 
 > "You could just put it all as good models, too. You can be like, 'All right, I'm going to have a cheap online model for the low level. I'm going to have an expensive model for the senior level.'"
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=1258)
 
 The point isn't to squeeze every token. The point is to match capability to task complexity. A small model that generates correct boilerplate on the first pass is more valuable than a frontier model doing the same work at 10x the cost.
 

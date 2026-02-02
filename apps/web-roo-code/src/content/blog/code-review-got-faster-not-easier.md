@@ -28,7 +28,7 @@ Review cycles that used to take days or weeks can now move much faster. That sou
 
 > "There's certainly a lot more code to review now than there was historically. And so I think that we're writing more code than we have ever before. But also the rate at which code reviews are happening is happening at a much more rapid clip."
 >
-> Paige Bailey, [Roo Cast S01E14](https://www.youtube.com/watch?v=k3od6FjUfK0)
+> Paige Bailey, [Roo Cast S01E14](https://www.youtube.com/watch?v=k3od6FjUfK0&t=2583)
 
 More code. Faster turnaround. Higher review load. The math gets tight unless something changes in how review happens.
 
@@ -44,7 +44,7 @@ The distinction matters because the failure mode is different. If you treat AI r
 
 > "I remember when I first started at Google, if you were trying to shepherd a CL through into production, it would sometimes be like a days- or weeks-long process. But now it's much much faster."
 >
-> Paige Bailey, [Roo Cast S01E14](https://www.youtube.com/watch?v=k3od6FjUfK0)
+> Paige Bailey, [Roo Cast S01E14](https://www.youtube.com/watch?v=k3od6FjUfK0&t=2617)
 
 In practice, part of the speedup comes from shifting the bottleneck from "waiting for a reviewer to have time" to "reviewer receives pre-triaged issues."
 

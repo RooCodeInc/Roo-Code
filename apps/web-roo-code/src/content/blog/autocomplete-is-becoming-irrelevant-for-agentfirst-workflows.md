@@ -31,7 +31,7 @@ One developer felt exactly this way. Scared to leave Cursor. Convinced the autoc
 
 > "I was like so scared of leaving cursor. I was like, 'No, I'm going to miss the autocomplete.' Then I stopped writing my code altogether. So now the AI completes the code, not just me tabbing."
 >
-> Guest, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Guest, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=3077)
 
 The shift happened when the agent started writing the code. Not completing partial lines. Writing the whole thing.
 
@@ -43,7 +43,7 @@ Another developer noticed the same thing after switching back to VS Code from Cu
 
 > "I actually stopped using cursor because I got frustrated that the nightly build didn't update in real time. So I'm back on VS Code and I hardly missed the you know the smarter tab complete. I don't tab as much."
 >
-> Guest, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Guest, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=3057)
 
 The smarter autocomplete didn't leave a gap. The workflow had already moved past it.
 
@@ -63,7 +63,7 @@ Notice what's missing: the incremental tab-to-accept loop. The code arrives in c
 
 > "I'd rather evaluate the code, have the AI kind of do the first pass on it, manually change things that I need to."
 >
-> Adam, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Adam, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=3098)
 
 The skill shifts from "typing fast with assistance" to "reviewing fast with context."
 

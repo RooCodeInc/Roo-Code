@@ -36,7 +36,7 @@ The rule is simple: unless you have seen a test fail at least once, you cannot t
 
 > "Unless you've seen the test fail at least once, you can't trust that that test is actually doing anything."
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=3455)
 
 This is not about test coverage percentages. Coverage tells you the code ran. It does not tell you the assertions would catch a regression. A test can execute every line and still assert nothing meaningful.
 
@@ -50,7 +50,7 @@ But the model optimized for "tests pass," not "tests catch regressions."
 
 > "This can happen all the time with LLMs, they're going to tell you, 'Yes, this is working, whatever.'"
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=3468)
 
 The pattern is subtle. You ask the model to write tests for a function. It writes tests. They pass. You merge. Six weeks later, someone changes the function, and the tests still pass because they were never exercising the behavior that changed.
 
@@ -64,7 +64,7 @@ The worst version of this: a developer writes a bunch of tests, they pass, the d
 
 > "I've seen cases where a developer writes a bunch of tests and they pass and they're happy. And I've gone in later and I've basically changed all the code, deleted half of it and the tests still pass... It turned out the tests never failed. They never failed."
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=3444)
 
 Those tests passed from day one. They passed every day since. They passed when the code worked. They passed when the code was deleted. They were never constraints.
 

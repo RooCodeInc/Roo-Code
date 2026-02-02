@@ -38,7 +38,7 @@ Ruvette's solution was explicit governance. Every agent-generated PR now require
 
 > "One thing we had to do is we had to define a pretty good process for managing those. And the way we did it was essentially to have to require an approval from a PM, a designer, and an engineer on any remote PR that gets opened."
 >
-> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk)
+> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=1452)
 
 The three-role requirement ensures that:
 
@@ -56,7 +56,7 @@ Agent-generated PRs flip this. The code exists first. The alignment happens at r
 
 > "Almost every engineering team I've worked on, the flow has been that someone opens a PR and then everyone is just working to help get that PR over the line... that's just different in this world where we prototype first."
 >
-> Matt Rubens, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk)
+> Matt Rubens, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=1741)
 
 This means the review process has to do work that used to happen in planning meetings. The PR review is where you ask: should this exist? Does this fit? Who does this affect?
 

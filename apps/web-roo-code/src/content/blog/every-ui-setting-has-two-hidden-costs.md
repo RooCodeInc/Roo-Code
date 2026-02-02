@@ -37,13 +37,13 @@ The first is cognitive load. Users who do not care about that option still have 
 
 > "People who don't care about that or haven't gotten to the level of sophistication have to parse and understand what that setting does."
 >
-> Bruno, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI)
+> Bruno, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=813)
 
 The second is carrying cost. Anything you make customizable becomes something you cannot authoritatively change. You give up the ability to improve defaults without risking breakage for the subset of users who already made a choice.
 
 > "Everything that we make customizable is something that we can't authoritatively change directly. If type size was an important one and we already had a setting that allowed people to customize the type size and I wanted to make it a little bit bigger and then it just exploded."
 >
-> Bruno, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI)
+> Bruno, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=842)
 
 The explosion is not dramatic. It is slow. You notice it when you try to ship a design update and realize half your layout assumptions depend on values that users can override. You notice it when onboarding new engineers who have to understand not just what the code does, but what it does across every possible configuration state.
 
@@ -53,7 +53,7 @@ The alternative is deciding upfront what 80% of users need and shipping that as 
 
 > "I would try to go for a Pareto rule. Make it work by default like what 80% of people would use it for."
 >
-> Bruno, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI)
+> Bruno, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=1578)
 
 This is not about removing control. It is about being honest about what constitutes a real decision versus a deferred decision. When you add a setting because you are not sure what the right default is, you are not giving users power. You are offloading your product decision to them.
 

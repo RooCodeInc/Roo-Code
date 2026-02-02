@@ -38,7 +38,7 @@ Teams that succeed fastest come in with structure. Not "here's a tool, explore."
 
 > "I think leaders on teams, tinkerers and things like that, they've got to be prescriptive to be successful with a broad group of people to start... a great simple example is like some common slash commands. That's a way to basically share prompts, talk about when to use them, get people to use them. They don't have to know what's behind that command."
 >
-> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o)
+> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o&t=1378)
 
 Shared slash commands are the clearest example. Instead of asking every engineer to craft their own prompts, you curate a handful of commands that work for your codebase. The team learns by using them, not by researching prompt engineering.
 
@@ -54,7 +54,7 @@ For a team, exploration creates fragmentation. Everyone develops their own patte
 
 > "When you're trying to scale it to an organization and get within a process, that's where I think you run into some different needs."
 >
-> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o)
+> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o&t=605)
 
 The teams that get adoption are the ones who treat the tool like infrastructure: a shared foundation with sensible defaults, not a blank canvas for individual creativity.
 
@@ -72,7 +72,7 @@ For a Series A team with 8 engineers, the difference between prescriptive and ex
 
 > "If you really want to get adoption within a team, I think having a foundation that gets people experience and lets them kind of learn it as they go and by doing. That's where we see the most successful teams."
 >
-> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o)
+> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o&t=1427)
 
 Learning by doing scales. Learning by researching does not.
 

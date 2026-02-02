@@ -32,7 +32,7 @@ The pattern is familiar: the agent runs for five minutes, maybe ten, then drifts
 
 > "There is no way any of these tools would actually run without failing or falling over on the face, running out of context or tool call failures for 30 minutes."
 >
-> Hannes Rudolph, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs)
+> Hannes Rudolph, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs&t=1728)
 
 That was the baseline expectation. Thirty minutes of autonomous work was not a thing agents did reliably.
 
@@ -53,7 +53,7 @@ One tester pushed it to the limit:
 
 > "I spent $400 almost or over $400 yesterday on API calls because this new to-do tool actually keeps it doing the thing. It doesn't stop."
 >
-> Hannes Rudolph, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs)
+> Hannes Rudolph, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs&t=1739)
 
 Four hundred dollars in one day is a lot. But $400 for completed work is different from $40 for a loop that went nowhere.
 
@@ -71,7 +71,7 @@ The to-do list shifts the cost from your time to the model's time. For teams whe
 
 > "The end goal is to make the experience as handoff as possible... to make it run autonomously."
 >
-> Melo, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs)
+> Melo, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs&t=1750)
 
 The handoff is the point. You start the task, you walk away, you come back to a diff.
 

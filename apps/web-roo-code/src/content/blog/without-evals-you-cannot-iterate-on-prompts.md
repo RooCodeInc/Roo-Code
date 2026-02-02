@@ -40,7 +40,7 @@ The problem compounds when you are iterating daily. You fix something, ship it, 
 
 > "There was a while where everyone was getting gas-lit by LLMs when an update would secretly come out and people are like 'this is garbage, was it ever good?' or did I just... my expectations shifted so much."
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=1749)
 
 You end up gas-lit by your own model. The output feels worse, but you cannot prove it. Or it feels better, but you cannot replicate it.
 
@@ -52,7 +52,7 @@ The pattern is simple: define a set of inputs, define expected outputs, run the 
 
 > "You can build a prototype using LLMs amazingly fast... But when you try iterate on it, try changing the prompt or you're seeing that there's an edge case that it's failing horribly on and you tweak the prompt and now some other edge case pops up and the LLM starts failing at that. Evals are at the center of everything."
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=1681)
 
 The key insight: evals are not about proving your model is good. They are about knowing when your model gets worse. Regression detection is the unlock.
 
@@ -64,7 +64,7 @@ The evals that matter are the ones built from your actual edge cases. Every time
 
 > "Giving general guidance is incredibly hard and to solve the problem I think you need a set of evals and a set of benchmarks for domain-specific use cases."
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=1768)
 
 This is work. It is slower than just tweaking prompts and hoping. But it is the difference between iterating and wandering.
 

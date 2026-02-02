@@ -38,19 +38,19 @@ The maintainer's job changes. Instead of reviewing contributor code, they're rev
 
 > "Hannes used to tell everyone like open a PR, you want to fix that. Now, it's really open an issue, you know, and it's been interesting to see that evolution."
 >
-> Hannes Rudolph, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Hannes Rudolph, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=861)
 
 The feedback loop tightens. A PR that doesn't land still generates information: you now know what not to do.
 
 > "If the PR is not like accurate or it's not valid or something weird then we can go back to the issue and we can go like oh you need to do this instead."
 >
-> Guest, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Guest, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=1056)
 
 Even failed attempts become documentation. The agent's wrong approach becomes a constraint for the next attempt.
 
 > "So we have like a base we have some information now on how not to do something. It's easier to tell it now what to do correctly."
 >
-> Hannes Rudolph, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Hannes Rudolph, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=1072)
 
 ## What this changes for teams
 

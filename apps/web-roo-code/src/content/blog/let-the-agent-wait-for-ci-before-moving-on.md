@@ -37,13 +37,13 @@ Claude Code introduced a pattern worth stealing: after submitting a PR, it doesn
 
 > "When it submitted the PR, it ran a GitHub check watch function and pinged every 10 seconds. Well, the checks the CI checks did their thing."
 >
-> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=696)
 
 If the tests pass, the agent confirms success and moves on. If the tests fail, it reads the failure output and immediately starts fixing them.
 
 > "Once we submit a fix, a PR, it waits, checks, it keeps checking it, and then once it's done, it goes, 'Hey, tests aren't passing.' And then it just starts fixing them."
 >
-> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=727)
 
 No human intervention required. The agent incorporates the CI output into its next iteration, pushes a fix, and watches the tests again. The loop closes without you becoming the message bus between GitHub Actions and your coding tool.
 
@@ -60,7 +60,7 @@ The watch loop skips all of that. The agent reads the actual failure output, not
 
 > "Sometimes it just gets the hint. Sonnet's pretty smart that way or Opus and it just submits the changes and watches the tests again."
 >
-> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=738)
 
 ## The tradeoffs
 

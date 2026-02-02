@@ -40,7 +40,7 @@ At 8 billion parameters, that chain breaks.
 
 > "I found 8 billion parameter models to kind of be useless at coding in Roo Code. So if I'm going to be using an 8 billion parameter model, it's typically a copy and paste situation."
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=1527)
 
 Copy and paste means you're back to being the human glue. You read the output, decide what's relevant, paste it into the next prompt, and hope the model incorporates it correctly. The loop isn't closing. You're closing it manually.
 
@@ -48,7 +48,7 @@ The practical threshold is 14 billion parameters and up.
 
 > "I would say 14 billion up is about the place that I'd start considering trying it in your code."
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=1539)
 
 At 14B, models start handling the full sequence: read context, propose changes, apply diffs, interpret errors, iterate. Not perfectly. But well enough that you're debugging your code instead of debugging the model.
 
@@ -58,7 +58,7 @@ Parameter count is only half the equation. You also need enough memory to load t
 
 > "You need something with like 24 gigabytes of VRAM or something with unified memory that you can run it on, just simply because you need a pretty decent amount of context loaded in."
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=462)
 
 A 14B model quantized to fit in 8GB of VRAM will have a tiny context window. You'll be able to run it, but it won't see enough of your codebase to be useful. The model will hallucinate file paths, miss imports, and suggest changes to functions it can't see.
 

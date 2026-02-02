@@ -58,13 +58,13 @@ Teams with yeses across these questions get quick wins. The agent has the tools 
 
 > "If somebody's answering yes to most of those, we know that we're going to have really quick success because the agent's going to be really effective."
 >
-> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o)
+> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o&t=3278)
 
 Teams with noes still get value from AI, but the value is different. The wins are not "I asked for unit tests and got working unit tests." The wins are more like "I got a draft I could manually fix" or "I got ideas for how to approach this."
 
 > "If a lot of those are no, there's still going to be wins with AI, but the wins they're looking for are not, okay, I got unit tests, right?"
 >
-> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o)
+> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o&t=3302)
 
 The checklist does not judge your codebase. It tells you what kind of results to expect and where to invest if you want different results.
 

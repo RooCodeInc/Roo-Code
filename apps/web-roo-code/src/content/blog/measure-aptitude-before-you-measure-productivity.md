@@ -28,7 +28,7 @@ You know this. Your executives know this. But when the quarterly review comes an
 
 > "Any change that you go through, you can't measure the impact of the change until after that classic change management dip."
 >
-> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE)
+> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE&t=958)
 
 This is where AI adoption initiatives die. Not because the tool failed. Because the measurement came too early.
 
@@ -40,7 +40,7 @@ Engineers were rated on a four-point scale: red, yellow, orange, green. Not base
 
 > "We tried to drive learning velocity at first... rate for one of those and then there was no negative outcome of that, no punishment out of that. But then that gave us a baseline."
 >
-> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE)
+> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE&t=1009)
 
 Managers got goals to improve their team's distribution over six months. Move more people from red to yellow. Move yellow to orange. The goal was adoption, not acceleration.
 
@@ -54,7 +54,7 @@ Protected time is not a perk. It is infrastructure.
 
 > "Oftentimes it's just giving them time. I'm going to stop loading you up with all these assignments... I want you to go do a week of just using this tool in this way."
 >
-> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE)
+> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE&t=1070)
 
 One week of dedicated experimentation produces more adoption signal than three months of "use it when you can."
 

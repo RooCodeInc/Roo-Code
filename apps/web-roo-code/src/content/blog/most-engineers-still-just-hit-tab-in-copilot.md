@@ -28,7 +28,7 @@ Ask someone who spends hours on Discord about AI coding tools, and you'll hear a
 
 > "When you talk to people who work jobs, don't spend all day on Discord and you ask them how much they use AI, their answers are usually like, I hit tab sometimes in copilot."
 >
-> Matt, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Matt, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=2470)
 
 The gap between early adopters and the median developer is wider than the discourse suggests. Most engineers haven't experienced what AI can do beyond autocomplete. They haven't seen a tool close the loop: run the tests, read the output, iterate on the fix.
 
@@ -54,7 +54,7 @@ The gap represents unrealized value. Engineers who haven't experienced agentic i
 
 > "For me, it's completely rejuvenated my excitement for programming and building stuff. And I just think there's room to do that for a lot more people."
 >
-> Matt, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Matt, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=2552)
 
 That's the prize: not just productivity gains, but engineers who are excited about their work again. But you only get there if the median developer can actually cross the threshold.
 
@@ -79,7 +79,7 @@ This also changes how to evaluate competitors. Instead of "which tool is winning
 
 > "I think just viewing them as like a friendly competitor and looking at all the things we could do better to meet the level they're at on a lot of the UX stuff."
 >
-> Matt, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Matt, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=2565)
 
 The honest assessment: some competitors have UX that makes the gap smaller. The agent capabilities matter, but only if people actually use them of their own volition.
 

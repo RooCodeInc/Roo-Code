@@ -34,7 +34,7 @@ When an AI agent can open a PR from a Slack message, the cost of creating a PR d
 
 > "Almost every engineering team I've worked on, the flow has been that someone opens a PR and then everyone is just working to help get that PR over the line at the pull request."
 >
-> Matt Rubens, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU)
+> Matt Rubens, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU&t=1819)
 
 That instinct is still there. But when PRs multiply, the instinct becomes a bottleneck.
 
@@ -46,7 +46,7 @@ This is uncomfortable. Engineers are trained to finish what they start. Closing 
 
 > "You really have to change the way you operate I think to not go for 100% completion and just find the important things that move you forward and be willing to just throw away slop or throw away things that aren't good."
 >
-> Matt Rubens, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU)
+> Matt Rubens, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU&t=1856)
 
 The mental model shifts from "help every PR succeed" to "find the PRs that matter and merge those."
 
@@ -60,7 +60,7 @@ When opening a PR signals "let's see if this approach works," those rituals beco
 
 > "It's been hard I think for organizations to adapt to that. I think it's going to take work."
 >
-> Matt Rubens, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU)
+> Matt Rubens, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU&t=1864)
 
 The work is cultural as much as procedural. Eng leads need to signal that closing PRs is acceptable. That "I tried this, it didn't work, closing" is a valid outcome.
 

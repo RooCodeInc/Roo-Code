@@ -38,7 +38,7 @@ The early feedback is that it works more reliably across different models.
 
 > "Cline uses the XML tag style approach for defining tools. And so that seems to be a little bit more reliable than some of the other models that they've been experimenting with."
 >
-> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8)
+> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8&t=874)
 
 Why would an older, seemingly "less native" approach work better? One hypothesis: XML tagging is a format the models have seen extensively in training data. The structure is unambiguous. Opening and closing tags create clear boundaries. The model doesn't have to switch between "reasoning mode" and "structured output mode" in the same way.
 
@@ -52,7 +52,7 @@ The tradeoff is reliability vs. ecosystem support. If you're using a single mode
 
 > "I would be really curious to see if you've created benchmarks or eval showing different performance between using native function calling versus this XML tagging style and approach."
 >
-> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8)
+> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8&t=845)
 
 The honest answer: the data is thin. Practitioners report better results with XML tagging, but rigorous benchmarks comparing the two approaches are rare. If you build one, that data would be useful to the community.
 

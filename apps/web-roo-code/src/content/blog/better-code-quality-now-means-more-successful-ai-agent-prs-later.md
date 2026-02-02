@@ -32,7 +32,7 @@ When an agent reads your codebase, every ambiguous type signature becomes a gues
 
 > "All those things that we've always known is good about our codebases. You know, better type safety and better lower coupling between things, those are all related to how well those initial PRs end up working."
 >
-> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64)
+> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64&t=3116)
 
 The agents are not magic. They read what you wrote. If what you wrote is ambiguous, the PR will be ambiguous.
 
@@ -48,7 +48,7 @@ If your baseline is 20% of agent PRs being mergeable, and you invest in type saf
 
 > "If I can bump that 10%, I can get three extra PRs out of there. Like now as a CTO, I'm thinking financially."
 >
-> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64)
+> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64&t=3094)
 
 Three extra mergeable PRs per batch. For the same compute cost. That's the leverage.
 
@@ -60,7 +60,7 @@ The higher-leverage investment is the scaffolding around the codebase itself.
 
 > "It's less about what prompts are we using and what's the newest model and all these things, but more about our codebase, our system, the scaffolding around our development environments. How can we invest in those better and improve those?"
 >
-> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64)
+> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64&t=3147)
 
 Concrete places to start:
 

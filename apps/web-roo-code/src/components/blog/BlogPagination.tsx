@@ -11,13 +11,23 @@ interface BlogPaginationProps {
 	currentPage: number
 	totalPages: number
 	basePath?: string
+	/** If true, use query params (?view=all&page=N) instead of path-based pagination */
+	useQueryParams?: boolean
 }
 
 /**
  * Generates the URL for a given page number
- * Page 1 goes to /blog, pages 2+ go to /blog/page/N
+ * Default: Page 1 goes to /blog, pages 2+ go to /blog/page/N
+ * With useQueryParams: Uses /blog?view=all or /blog?view=all&page=N
  */
-function getPageUrl(page: number, basePath: string): string {
+function getPageUrl(page: number, basePath: string, useQueryParams?: boolean): string {
+	if (useQueryParams) {
+		if (page === 1) {
+			return "/blog?view=all"
+		}
+		return `/blog?view=all&page=${page}`
+	}
+
 	if (page === 1) {
 		return basePath
 	}
@@ -67,7 +77,7 @@ function getPageNumbers(currentPage: number, totalPages: number): (number | "ell
 	return pages
 }
 
-export function BlogPagination({ currentPage, totalPages, basePath = "/blog" }: BlogPaginationProps) {
+export function BlogPagination({ currentPage, totalPages, basePath = "/blog", useQueryParams }: BlogPaginationProps) {
 	if (totalPages <= 1) {
 		return null
 	}
@@ -81,7 +91,7 @@ export function BlogPagination({ currentPage, totalPages, basePath = "/blog" }: 
 			{/* Previous button */}
 			{hasPreviousPage ? (
 				<Link
-					href={getPageUrl(currentPage - 1, basePath)}
+					href={getPageUrl(currentPage - 1, basePath, useQueryParams)}
 					className={cn(
 						"flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium",
 						"text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -133,7 +143,7 @@ export function BlogPagination({ currentPage, totalPages, basePath = "/blog" }: 
 					return (
 						<Link
 							key={page}
-							href={getPageUrl(page, basePath)}
+							href={getPageUrl(page, basePath, useQueryParams)}
 							className={cn(
 								"flex h-9 w-9 items-center justify-center rounded-md text-sm font-medium",
 								"text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -149,7 +159,7 @@ export function BlogPagination({ currentPage, totalPages, basePath = "/blog" }: 
 			{/* Next button */}
 			{hasNextPage ? (
 				<Link
-					href={getPageUrl(currentPage + 1, basePath)}
+					href={getPageUrl(currentPage + 1, basePath, useQueryParams)}
 					className={cn(
 						"flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium",
 						"text-muted-foreground hover:bg-muted hover:text-foreground",

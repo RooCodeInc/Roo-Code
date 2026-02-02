@@ -38,7 +38,7 @@ The fix is structural, not prompting. You need a file the agent can read but nev
 
 > "You need to have a single source of truth... you need to have something that Roo Code will never touch but is always verifiable by Roo Code. So that's just to make sure the model can never ever get confused about what the instruction is."
 >
-> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw)
+> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw&t=1083)
 
 In the 27-hour porting run, the legacy Laravel codebase served as that anchor. The agent could:
 
@@ -56,7 +56,7 @@ That's 83% route success and 97% page success for a 27-hour autonomous run.
 
 > "This full 27 hour run basically only cost me about $110 all in."
 >
-> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw)
+> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw&t=1824)
 
 The cost matters. $110 for a migration that would take a human team days or weeks of context-switching between two codebases.
 

@@ -14,8 +14,6 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import Script from "next/script"
-import ReactMarkdown from "react-markdown"
-import remarkGfm from "remark-gfm"
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react"
 import {
 	getBlogPostBySlug,
@@ -27,6 +25,7 @@ import {
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { BlogPostAnalytics } from "@/components/blog/BlogAnalytics"
+import { BlogContent } from "@/components/blog/BlogContent"
 import { BlogFAQ, type FAQItem } from "@/components/blog/BlogFAQ"
 import { BlogPostCTA } from "@/components/blog/BlogPostCTA"
 
@@ -288,73 +287,7 @@ export default async function BlogPostPage({ params }: Props) {
 							)}
 						</header>
 
-						<ReactMarkdown
-							remarkPlugins={[remarkGfm]}
-							components={{
-								// Custom heading styles - note: h1 in content becomes h2 to preserve single H1
-								h1: ({ ...props }) => <h2 className="mt-12 text-2xl font-bold" {...props} />,
-								h2: ({ ...props }) => <h2 className="mt-12 text-2xl font-bold" {...props} />,
-								h3: ({ ...props }) => <h3 className="mt-8 text-xl font-semibold" {...props} />,
-								// Links open in new tab
-								a: ({ ...props }) => (
-									<a
-										className="text-primary hover:underline"
-										target="_blank"
-										rel="noopener noreferrer"
-										{...props}
-									/>
-								),
-								// Styled blockquotes
-								blockquote: ({ ...props }) => (
-									<blockquote
-										className="border-l-4 border-primary pl-4 italic text-muted-foreground"
-										{...props}
-									/>
-								),
-								// Code blocks
-								code: ({ className, children, ...props }) => {
-									const isInline = !className
-									if (isInline) {
-										return (
-											<code className="rounded bg-muted px-1.5 py-0.5 text-sm" {...props}>
-												{children}
-											</code>
-										)
-									}
-									return (
-										<code className={className} {...props}>
-											{children}
-										</code>
-									)
-								},
-								// Strong text
-								strong: ({ ...props }) => <strong className="font-semibold" {...props} />,
-								// Paragraphs
-								p: ({ ...props }) => <p className="leading-7 [&:not(:first-child)]:mt-6" {...props} />,
-								// Lists
-								ul: ({ ...props }) => <ul className="my-6 ml-6 list-disc [&>li]:mt-2" {...props} />,
-								ol: ({ ...props }) => <ol className="my-6 ml-6 list-decimal [&>li]:mt-2" {...props} />,
-								// Tables with zebra striping (visible in both light and dark mode)
-								table: ({ ...props }) => (
-									<div className="not-prose my-6 w-full overflow-x-auto rounded-lg border border-border">
-										<table className="w-full border-collapse text-sm" {...props} />
-									</div>
-								),
-								thead: ({ ...props }) => <thead className="bg-muted" {...props} />,
-								tbody: ({ ...props }) => <tbody {...props} />,
-								tr: ({ ...props }) => (
-									<tr
-										className="border-b border-border last:border-b-0 transition-colors even:bg-muted/70 hover:bg-muted"
-										{...props}
-									/>
-								),
-								th: ({ ...props }) => (
-									<th className="px-4 py-3 text-left font-semibold text-foreground" {...props} />
-								),
-								td: ({ ...props }) => <td className="px-4 py-3" {...props} />,
-							}}>
-							{contentWithoutFAQ}
-						</ReactMarkdown>
+						<BlogContent content={contentWithoutFAQ} />
 
 						{/* FAQ Section rendered as accordion */}
 						{hasFAQ && <BlogFAQ items={faqItems} />}

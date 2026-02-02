@@ -38,7 +38,7 @@ The other is free: show it what you want.
 
 > "Don't underestimate the value of just putting things into the context window and showing the model examples."
 >
-> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8)
+> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8&t=1612)
 
 Before you ask for code, paste two examples of the kind of app you're building. Not documentation links. Actual code. The file structure you expect. The patterns you follow. The imports that signal your framework.
 
@@ -79,7 +79,7 @@ For straightforward requests where the framework is unambiguous, skip the exampl
 
 > "If you want it to be able to reliably generate other kinds of web applications, something that is more Next.js specific or another framework, then you might need to fine-tune it to be excellent at producing that kind of code."
 >
-> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8)
+> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8&t=1568)
 
 Fine-tuning is the heavy solution. Context window steering is the lightweight one. For most individual developers and small teams, lightweight wins.
 

@@ -32,7 +32,7 @@ This is the old workflow. PRs were precious. You worked at them until they merge
 
 > "We used to like, okay, you got to fix this, gotta fix this and you work at it, work at it. Like now some of them you're going to look at and close half of those."
 >
-> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg)
+> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg&t=3264)
 
 ## The shift: PRs as explanation artifacts
 
@@ -42,13 +42,13 @@ Each closed PR shows you how the agent interpreted the task. It shows what files
 
 > "The default assumption that a PR is for merging is like wrong now."
 >
-> Hannes Rudolph, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg)
+> Hannes Rudolph, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg&t=3365)
 
 The artifact matters more than the merge. The PR becomes a structured handoff: from one mode to another, or from agent to human. The diff explains what changed. The commit history shows the reasoning. The PR description (if written well) captures the intent.
 
 > "In order for the modes to transfer their work from one to another, it's got to go into Git. And the way to explain what changed is to create an MR, right? And it's really an explanation. It's a handoff process as opposed to a request to merge in some cases."
 >
-> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg)
+> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg&t=3390)
 
 ## Practical implications
 

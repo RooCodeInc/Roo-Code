@@ -32,7 +32,7 @@ The model that wins isn't the one that writes the prettiest code. It's the one t
 
 > "The reason why people have been so gaga for Sonnet 3.5 and now 3.7 for so long is because when it comes to tool use it just pretty much works most of the time."
 >
-> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=181)
 
 That's the bar: "just pretty much works most of the time." Not "best at coding." Not "highest benchmark score." Just consistent enough that you're not constantly restarting sessions because the agent forgot how to call a tool.
 
@@ -44,7 +44,7 @@ Then context grows. You're 30 messages in. The model has seen hundreds of tool c
 
 > "What will happen sometimes is Gemini will go to read a file and it'll wrap it in XML you know it'll say something like tool use and it will put the read file in the XML tags instead of XML tags titled read file."
 >
-> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=134)
 
 Gemini 2.5 is a capable model. Strong raw coding ability. But if it can't maintain tool call formatting as context accumulates, you can't trust it for long-running agent sessions.
 
@@ -56,7 +56,7 @@ For teams evaluating models, the test isn't "can it solve this problem once." Th
 
 > "Getting it to abide by your tool calls continually as your context grows up to the max on a consistent basis. That is where Sonnet comes into play. And it is just it just works."
 >
-> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=216)
 
 Run a session to 80% of the model's context limit. Count how many tool calls succeeded versus malformed. If you're seeing failures above 1-2%, that model isn't ready for agentic workflows in production.
 

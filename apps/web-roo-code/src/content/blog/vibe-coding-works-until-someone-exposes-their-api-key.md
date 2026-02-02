@@ -37,7 +37,7 @@ The builders who already ship secure production code have internalized patterns 
 
 > "I think that longer term we're going to have some struggles. We're already seeing this right? Like with people accidentally exposing their API keys or not necessarily knowing what kind of security to kind of use for their application."
 >
-> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8)
+> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8&t=1373)
 
 The struggles are already here. Every week, someone discovers their prototype is public, their keys are scraped, and their cloud bill is someone else's crypto mining operation.
 
@@ -45,7 +45,7 @@ The fix is not "teach everyone security from scratch." The fix is tooling that c
 
 > "The software engineers who have experience and expertise deploying things in a reliable and scalable and secure way I think they need to be building tooling such that everybody else who's just beginning to build doesn't end up running into challenges that they might not be able to see themselves."
 >
-> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8)
+> Paige Bailey, [Office Hours S01E03](https://www.youtube.com/watch?v=rqMSBUSJos8&t=1439)
 
 ## What good tooling looks like
 

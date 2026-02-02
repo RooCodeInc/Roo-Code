@@ -32,7 +32,7 @@ Not dramatically. The model doesn't refuse to respond. It just starts losing the
 
 > "I see 1 million context with Gemini as not 1 million context. If you dump it all in at the beginning no problem. But once you're slowly building that context, adding one file at a time, several files at a time, doing some thinking back and forth, that context goes to crap 3, 400,000."
 >
-> Guest, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64)
+> Guest, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64&t=2000)
 
 The distinction matters: static context versus incrementally built context. If you paste your entire codebase into a single prompt and ask one question, the advertised limit holds. But agentic workflows don't work that way. The context accumulates through the conversation, interleaved with reasoning and tool outputs.
 
@@ -42,7 +42,7 @@ Every model has a degradation curve. The spec sheet tells you the maximum. It do
 
 > "It's a secret stat for the models... where the model starts to degrade heavily every turn."
 >
-> Hannes Rudolph, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64)
+> Hannes Rudolph, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64&t=2047)
 
 This isn't published anywhere. You discover it empirically: the agent starts repeating itself, losing track of prior reasoning, or confidently stating things that contradict earlier context.
 
@@ -63,7 +63,7 @@ The fix isn't "use a bigger context window." The fix is task design: break large
 
 > "With Sonnet, I haven't tested to see does it hold on to reality as you go up one 100,000, 200,000, 300,000."
 >
-> Guest, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64)
+> Guest, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64&t=2028)
 
 Different models degrade at different rates. Testing your specific workflow against your specific model is the only way to know where the effective limit lives.
 

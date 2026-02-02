@@ -30,7 +30,7 @@ Here's where it gets worse: every failed request counts against your daily quota
 
 > "When you shoot out a request to Gemini 2.5 Pro experimental and you get a rate limit error from Google, not necessarily from us because there is so much capacity or so much demand, that'll count against your 80 requests per day."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM)
+> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=2781)
 
 So you're burning quota on failures. And the failures aren't your fault. They're a supply problem masquerading as a pricing problem.
 
@@ -42,7 +42,7 @@ But rate limits on experimental models aren't about your spend. They're about in
 
 > "Even with that pretty insane capacity number, there is so much demand for the model. There is two to five times more requests made to the model per minute than Open Router can reasonably serve."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM)
+> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=770)
 
 Two to five times more demand than capacity. That's not a billing issue. That's a queue longer than the service can process.
 
@@ -52,7 +52,7 @@ When a model blows benchmarks out of the water, everyone wants to use it immedia
 
 > "2.5 pro came out from Google and it blew all the benchmarks out of the water... and I don't think anybody was ready for it to have as much demand and when I say anybody I include Google."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM)
+> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=703)
 
 This is the pattern: a model launches, benchmarks circulate, and suddenly every developer tool routing to that model sees a traffic spike. The model provider wasn't ready. The routing layer wasn't ready. Your workflow breaks.
 

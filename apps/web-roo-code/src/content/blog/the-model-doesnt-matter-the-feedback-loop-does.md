@@ -34,7 +34,7 @@ The differentiator in agentic systems is not model selection. It's whether the s
 
 > "It's not the model: you could use pretty much any model, as long as there's ability to say, 'I'm doing a task. Did it work? If it didn't work, what went wrong?' and then feed back to the orchestrator or LLM to fix that, and only move to the next step once that task is fixed. That's the heart of basically any agentic system."
 >
-> Rob, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0)
+> Rob, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0&t=505)
 
 This is the close-the-loop principle. The agent proposes a change. The agent runs a command to validate. The agent reads the output. The agent adjusts based on real results.
 
@@ -46,7 +46,7 @@ The structure that makes this work is familiar. It's the same structure that mak
 
 > "When you look at agentic systems, what makes a really good agentic system? Orchestration is important, and the idea of tasks and subtasks is important, but ultimately it's a feedback loop: the feedback loop that you find within the structure of a sort of test-driven development, that is actually what makes autonomous development work."
 >
-> Rob, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0)
+> Rob, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0&t=484)
 
 The test is the spec. The failure is the signal. The loop is the mechanism.
 

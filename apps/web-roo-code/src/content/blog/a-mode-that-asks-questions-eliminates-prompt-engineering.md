@@ -40,7 +40,7 @@ When you are done, the mode has all the context it needs. Not because you wrote 
 
 > "Something that asks you questions eliminates the need for prompt engineering completely, because the mode already has all the context it needs from you just by asking you questions."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=1365)
 
 This works because humans are better at answering questions than writing comprehensive specifications. You know what you want when someone asks you directly. You do not always know what details are relevant until someone prompts you for them.
 
@@ -50,7 +50,7 @@ The pattern is straightforward. You create a custom mode in Roo Code that does n
 
 > "I had a mode that I called chat mode. Basically, it did sort of the same thing. It didn't have access to code tools at all, so it really needed to use the orchestrator tool, the new task tool, but the mode would ask me questions about anything."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=1249)
 
 The constraint is the feature. Because the mode cannot touch code, it has to gather information. It cannot skip ahead and make assumptions.
 
@@ -68,7 +68,7 @@ A questioning mode inverts the burden. Instead of requiring everyone to become p
 
 > "A mode that gets information from you, because sometimes you're lazy or you don't know exactly what you want, a mode that can ask you relevant questions is really, really useful when you're trying to implement something new."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=1353)
 
 The shift is from "write a better prompt" to "answer questions until the mode knows enough." The second one scales across skill levels.
 

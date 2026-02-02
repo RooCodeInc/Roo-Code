@@ -40,7 +40,7 @@ The tradeoff looks counterintuitive. That fat system prompt costs tokens upfront
 
 > "You can go and use the code mode to try and resolve some conflicts on a PR and you're going to be stuck in there for an hour. You know, with that mode, it, you know, the instructions are quite detailed, but it just one shots the conflicts."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=2862)
 
 The specialized mode doesn't guess your workflow. It already has the workflow encoded: which files to check first, how to handle lock files, when to abort and ask for human input.
 
@@ -52,7 +52,7 @@ Every domain-specific assumption you haven't taught it becomes a potential failu
 
 > "If you're for example running code mode and you need to give instructions for example to solve a merge conflict and then it fails and then you need to say oh you need to do it like this, that adds up eventually to the point where it's just simpler to send detailed instructions rather than having to go back and forth getting it to do what you want for a more generic mode."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=2816)
 
 The correction loop isn't just inefficient. It's fragile. Next week, you'll have the same conversation again, because the model didn't learn from last time.
 

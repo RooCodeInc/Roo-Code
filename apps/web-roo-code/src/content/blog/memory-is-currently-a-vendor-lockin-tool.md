@@ -28,7 +28,7 @@ But here is the constraint that surfaces later: once your team has accumulated c
 
 > "Currently, it feels that memory is kind of a vendor lock-in tool. OpenAI is putting memory out and if you use ChatGPT and you have a lot of memory, odds are you can't just switch to Claude."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM)
+> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=3986)
 
 This runs counter to a principle that matters for enterprise flexibility: the ability to swap models without rebuilding your workflow. If you have built infrastructure around the idea that you can change one line of code and route to any LLM you want, memory breaks that promise.
 
@@ -46,13 +46,13 @@ There is a different version of this feature. One where memory is an asset you o
 
 > "We think there absolutely is value add in doing something like you ingested where you can take your memory with you to any model, to any API, to any shape, any blob, any section of that memory. There's absolutely something there."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM)
+> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=4009)
 
 The shape of that solution and the pricing model are still unclear. But the direction is compelling: if every model could access the same personalized memory layer, switching costs drop to near zero. You get the benefits of accumulated context without the vendor dependency.
 
 > "If we can have personalized memory on every model, that sounds like an awesome feature. So how we do that and when, up in the air, but we like where your head's at."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM)
+> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=4055)
 
 ## The evaluation question for your team
 

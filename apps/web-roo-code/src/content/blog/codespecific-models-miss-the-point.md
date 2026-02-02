@@ -38,7 +38,7 @@ These questions require world understanding: how people use software, how they n
 
 > "There's so much world understanding as an example that's required in order to build software."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=2498)
 
 Code-specific models strip this out. They optimize for predicting the next line of code, not for understanding whether the code should exist at all.
 
@@ -52,7 +52,7 @@ Domain-specific LSP features? Also reasonable. Indexing a codebase and predictin
 
 > "Code specific models for like autocomplete and other like very domain specific tasks I think makes perfect sense."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=2529)
 
 The gap shows up when you want something that thinks alongside you. When you ask: "How should I structure this feature?" or "What edge cases am I missing?" or "Does this flow make sense for someone who's never seen this app before?"
 
@@ -64,7 +64,7 @@ The argument isn't "avoid specialized models." The argument is: if you want a pa
 
 > "If you want like a general LLM that's going to be your AI senior engineering sort of co-programmer pair programmer... I feel like the path is not building a bespoke coding model. I think there's just too many, you lose too much by going down that route."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=2544)
 
 General models that happen to be excellent at coding. That's the direction. Not models stripped of everything except code, but models trained on the full breadth of human knowledge that also write code well.
 

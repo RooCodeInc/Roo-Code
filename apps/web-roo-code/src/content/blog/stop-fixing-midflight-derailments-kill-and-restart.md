@@ -35,7 +35,7 @@ The teams that ship fastest have a different pattern: they kill derailed tasks a
 
 > "Instead of trying to fix a shitty task once it derails, just kill it. Start over. Fix your workflow if you need to, but just stop trying to use a workflow that doesn't work."
 >
-> Hannes Rudolph, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk)
+> Hannes Rudolph, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk&t=2256)
 
 The insight isn't "give up easily." It's that mid-flight correction is expensive. Every prompt you spend trying to salvage a derailed task is a prompt that could have gone into a clean run with a workflow that actually works.
 
@@ -49,7 +49,7 @@ The problem is that checkpoints become interaction points. Every time you stop t
 
 > "The main thing I learned recently is stop creating workflows that need human interaction."
 >
-> Dan, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk)
+> Dan, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk&t=2181)
 
 Instead: let the task run. Inspect the end result. If it worked, ship it. If it didn't, fix the workflow and restart.
 
@@ -57,7 +57,7 @@ This feels riskier. You're giving up control. But if your workflow is solid, the
 
 > "If it gets distracted, just go and edit your workflow, your instructions, instead of just going back on every task trying to get it to work. Just let it do its thing. Inspect the end."
 >
-> Hannes Rudolph, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk)
+> Hannes Rudolph, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk&t=2283)
 
 ## The tradeoff
 

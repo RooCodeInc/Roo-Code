@@ -38,7 +38,7 @@ Not as an insult. As a constraint. Junior devs need extremely specific, simple i
 
 > "The way that I managed that was just simply by telling orchestrator that your subtasks are junior devs and you need to treat them like they are stupid."
 >
-> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw)
+> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw&t=1199)
 
 This framing forces the orchestrator to decompose work into atomic units. Each subtask gets a narrow mandate. When something goes wrong, the blast radius is one short task, not a chain of contaminated context.
 
@@ -46,7 +46,7 @@ The 27-hour autonomous run worked because subtasks were kept extremely short:
 
 > "Keeping tasks extremely short so that context didn't really have a chance to get poisoned before the task was returned back to orchestrator."
 >
-> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw)
+> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw&t=1135)
 
 ## The model matters
 
@@ -54,7 +54,7 @@ Not every model can follow this pattern. Orchestration requires listening to rul
 
 > "4.1 is the only model that actually managed to listen to my rules well enough to actually continue this for a prolonged period of time."
 >
-> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw)
+> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw&t=2112)
 
 The tradeoff: models that follow rules well may be slower or cost more per token. But if a cheaper model ignores your scope constraints and runs subtasks too long, you pay in poisoned context and failed orchestration runs.
 

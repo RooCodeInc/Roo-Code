@@ -35,7 +35,7 @@ One developer switched from OpenAI embeddings to Gemini and immediately noticed 
 
 > "When I switched to Gemini the first thing I saw was well this result is 0.8, it's from 0 to 1. I was like well it seems to be more confident about the results. Then I looked at them and it was bringing up stuff that was relevant to the query, but it wasn't an exact match."
 >
-> Dan, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI)
+> Dan, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=2283)
 
 The Gemini results scored higher confidence but returned contextually relevant files rather than exact keyword matches. For codebase navigation, that contextual understanding made the search more useful for the actual task.
 
@@ -49,7 +49,7 @@ The distinction matters for how you use codebase search in a workflow.
 
 > "If you're looking for the word color, they're not going to just bring a list of colors, but if you're working on a website, they're going to give you the location of where the CSS is, where the styling is."
 >
-> Dan, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI)
+> Dan, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=2085)
 
 Neither behavior is objectively correct. The tradeoff is between precision and recall, between "give me exactly what I typed" and "give me what I probably meant."
 

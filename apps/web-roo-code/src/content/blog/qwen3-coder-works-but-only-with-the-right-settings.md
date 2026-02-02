@@ -38,7 +38,7 @@ Most complaints about Qwen3 Coder trace back to skipping the setup steps.
 
 > "There's been a few people that have complained about Qwen3 Coder, and every time I ask them it's because they haven't selected the provider; they're on a quantized version or they don't have temperature set correctly."
 >
-> Hannes Rudolph, [Roo Cast S01E03](https://www.youtube.com/watch?v=c8Z08kEP02c)
+> Hannes Rudolph, [Roo Cast S01E03](https://www.youtube.com/watch?v=c8Z08kEP02c&t=493)
 
 The fix is specific:
 
@@ -48,13 +48,13 @@ The fix is specific:
 
 > "Set your temperature and set your provider to Alibaba."
 >
-> Adam, [Roo Cast S01E03](https://www.youtube.com/watch?v=c8Z08kEP02c)
+> Adam, [Roo Cast S01E03](https://www.youtube.com/watch?v=c8Z08kEP02c&t=132)
 
 **3. Avoid quantized versions.** This is where most people get burned. OpenRouter and similar aggregators often serve quantized models to save on inference costs. Quantized Qwen3 Coder produces noticeably worse results.
 
 > "Be very picky about your provider because if you get a provider from OpenRouter that's got it quantized down, you'll get poor results."
 >
-> Adam, [Roo Cast S01E03](https://www.youtube.com/watch?v=c8Z08kEP02c)
+> Adam, [Roo Cast S01E03](https://www.youtube.com/watch?v=c8Z08kEP02c&t=113)
 
 ## The tradeoffs
 
@@ -66,7 +66,7 @@ Qwen3 Coder is not a drop-in replacement for Sonnet. The cost advantage comes wi
 
 > "The price can actually get up there due to lack of prompt caching on some of the providers, and then no vision capabilities, but otherwise very, very optimistic."
 >
-> Adam, [Roo Cast S01E03](https://www.youtube.com/watch?v=c8Z08kEP02c)
+> Adam, [Roo Cast S01E03](https://www.youtube.com/watch?v=c8Z08kEP02c&t=59)
 
 For backend work with short-to-medium context, the savings hold. For long-running refactors or sessions that require image input, the math changes.
 

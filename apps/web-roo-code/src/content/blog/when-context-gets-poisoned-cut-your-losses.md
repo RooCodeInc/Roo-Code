@@ -38,7 +38,7 @@ But here's the mechanism: once the context window contains a pattern of broken t
 
 > "Once your context has been poisoned with those tool calls, they act like suggestions for future consideration. So even if you get it back on track, there's a decent chance that it's going to actually pull it right back."
 >
-> Hannes Rudolph, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk)
+> Hannes Rudolph, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk&t=2764)
 
 You can fight this. You can spend another ten prompts trying to steer the conversation. Sometimes it works. But the odds are against you, and every additional prompt adds tokens to a context that's already compromised.
 
@@ -50,7 +50,7 @@ This feels counterintuitive. You've invested time and tokens. But the math usual
 
 > "My general rule is that I'm using orchestrator and I just end that task and, you know, prompt it, tell it that one didn't work, try it again and go from there."
 >
-> Hannes Rudolph, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk)
+> Hannes Rudolph, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk&t=2745)
 
 The orchestrator pattern makes this explicit: treat each task as disposable. If a subtask fails in a way that corrupts its context, terminate it and spawn a fresh attempt. The parent task keeps the high-level goal; the child task starts with a clean slate.
 

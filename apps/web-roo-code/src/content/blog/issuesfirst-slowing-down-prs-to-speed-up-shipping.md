@@ -40,7 +40,7 @@ The Roo Code team made a deliberate change. Issues are now required before PRs g
 
 > "In the last week, we have shifted to an issues first approach where issues are required before we make PRs and where we review these issues on a regular basis."
 >
-> Hannes Rudolph, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk)
+> Hannes Rudolph, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk&t=2858)
 
 The goal is not bureaucracy. The goal is catching misalignment before code exists. A five-minute conversation about approach is cheaper than a two-hour code review that ends with "actually, we should have done this differently."
 
@@ -50,7 +50,7 @@ Code review is supposed to catch problems. But by the time a PR exists, the auth
 
 > "We're doing this as a team to prevent just simply taking on PRs. Oh, there's a good PR. Let's put it in there. And then we end up with a mountain of technical debt, of really a spaghetti codebase."
 >
-> Hannes Rudolph, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk)
+> Hannes Rudolph, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk&t=2876)
 
 The pattern is predictable. A contributor submits a PR. It looks reasonable. The team merges it to avoid blocking progress. Repeat until the codebase is a patchwork of isolated decisions that never had a chance to be coordinated.
 
@@ -62,7 +62,7 @@ But the friction is the feature. The conversation that happens before code exist
 
 > "The technical debt has really gone down. From the days where we were just client work or the code was really messy back in the day, but right now I can say the code is much better organized."
 >
-> Dan, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk)
+> Dan, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk&t=2931)
 
 ## Why this matters for your team
 

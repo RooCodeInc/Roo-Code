@@ -30,7 +30,7 @@ If your eval only tests single-file edits, you're measuring something, but not t
 
 > "A lot of the evals out there aren't doing - you know, a lot of mine will be from 8 to 30 files that are touched in that regard, or you know building something from zero to one, or editing an existing codebase, or adding a new feature with a very detailed spec."
 >
-> Adam, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE)
+> Adam, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE&t=1896)
 
 ## The spec is the test
 
@@ -52,7 +52,7 @@ A hybrid scoring system provides more signal:
 
 > "About 30% of my score is LLM as a judge. Then there's points allocated for unit tests. And then there's points allocated for static code analysis."
 >
-> Adam, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE)
+> Adam, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE&t=2080)
 
 The weights matter. If you rely entirely on unit tests, you miss style and structure issues. If you rely entirely on LLM-as-judge, you miss concrete correctness. The combination catches failures that any single method would miss.
 
@@ -64,7 +64,7 @@ This is closer to how teams actually deploy agents: set the task, let it run, re
 
 > "It's autonomous. So it's basically like it gives a - it's imagine like a really - like some of the prompts can be four or 500 lines like it is - it details out everything that needs to be there without like filling in the logic."
 >
-> Adam, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE)
+> Adam, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE&t=1973)
 
 ## How Roo Code closes the loop on multi-file tasks
 

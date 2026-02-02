@@ -36,13 +36,13 @@ The problem is that the quality loss isn't zero. And on long-running tasks, it c
 
 > "Quantization, no matter what anybody says, degrades the quality of the output of the model. And with long-running agent loops, it's a compounding effect."
 >
-> Adam, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Adam, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=3287)
 
 One tester ran the same model, same eval suite, through two different endpoints: a fast quantized provider and the original Alibaba endpoint for Qwen 3 Coder. The difference was measurable.
 
 > "If you use the Alibaba endpoint directly with Qwen 3 Coder, with my evals in particular, they score about 8% higher."
 >
-> Adam, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Adam, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=3213)
 
 8% sounds small. On a single prompt, you might not notice. Over a 200-call agent loop where each step builds on the last, that 8% compounds. A slightly wrong file reference in step 30 leads to a completely wrong approach by step 100.
 
@@ -52,7 +52,7 @@ The benchmarks aren't lying. They're just measuring short tasks.
 
 > "A lot of the tests are running, if you dig into it, are very short-run agent loops or even a single like code test. But the things that I test are much longer running, you know, hundreds of tool calls that go out."
 >
-> Adam, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI)
+> Adam, [Roo Cast S01E04](https://www.youtube.com/watch?v=ily1bY8w2vI&t=3305)
 
 If your use case is "generate a function, run a test, done," quantized inference is probably fine. The quality loss doesn't have time to compound. But if your use case involves multi-step reasoning, file exploration, iterative debugging, or any workflow where the model's output at step N becomes the context for step N+1, you're running a different experiment than the benchmark measured.
 

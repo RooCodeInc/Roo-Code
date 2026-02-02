@@ -40,13 +40,13 @@ Then the provider ships a new version. The vocabulary shifts. The same input pro
 
 > "I think it was 3.5 because although it's less powerful, it listened more to my instructions. It was less back and forth of me telling, 'No, don't do this,' and it was more straightforward towards the task I was trying to do."
 >
-> Thibault, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ)
+> Thibault, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ&t=1484)
 
 This is the core tension: capability and predictability are not the same thing. A model can be objectively more capable on benchmarks while being subjectively worse for your specific workflow. The benchmarks measure general performance. Your workflow measures "does it do what I expect when I say this?"
 
 > "You guys had a joint understanding, and then they brought 3.7 along and now the things you say produce different results."
 >
-> Hannes Rudolph, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ)
+> Hannes Rudolph, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ&t=1494)
 
 ## The failure mode
 
@@ -56,7 +56,7 @@ You ask for a focused fix. You get a refactor that touches twelve files. You ask
 
 > "Claude 3.7 will go off the rails and do a lot of weird things if you don't prompt it correctly."
 >
-> Thibault, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ)
+> Thibault, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ&t=2545)
 
 The fix is not "go back to 3.5 forever." The fix is acknowledging that prompt-model coupling is real, and model upgrades require prompt validation.
 

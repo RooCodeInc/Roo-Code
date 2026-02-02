@@ -44,7 +44,7 @@ For agentic tool calling, where the model needs to plan multi-step operations, e
 
 > "Agent models behave and work a lot better for stuff like that rather than oneshotting stuff."
 >
-> Adam, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Adam, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=6010)
 
 The distinction is between modification and generation. When you're adding a method to an existing class, the codebase itself provides the context: naming conventions, import patterns, test structures. The model fills in a gap within a known frame.
 
@@ -52,7 +52,7 @@ When you're generating from scratch, the model has to hold the entire applicatio
 
 > "There is no comparison. They don't touch the local models."
 >
-> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=6130)
 
 ## The real use case
 
@@ -62,7 +62,7 @@ The practical use case is privacy-sensitive enterprises or developers working on
 
 > "Local models are for people, you know, enterprises who have privacy concerns mostly. They want to build something up on their own and they have highly secure privacy issues. Otherwise you're just better off using some large language model online because it's going to cost you less money, less time."
 >
-> Shik, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Shik, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=6450)
 
 The tradeoff is explicit: privacy versus capability. If you need both, you need to scope your tasks differently depending on which model you're using.
 

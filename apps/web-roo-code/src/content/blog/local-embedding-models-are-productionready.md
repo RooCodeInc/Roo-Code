@@ -34,7 +34,7 @@ The nomic embedding model running locally through Ollama performs on par with Op
 
 > "The nomic model from Ollama is actually pretty good. I think it's on par with small from OpenAI small 3. So you can use all local setup and it's going to get you pretty good results."
 >
-> Hannes Rudolph, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Hannes Rudolph, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=3276)
 
 This changes the calculus. Teams that dismissed local indexing because of quality concerns can revisit that decision.
 
@@ -50,7 +50,7 @@ If speed is critical and external calls are acceptable, Google offers a middle p
 
 > "There's a Google model for free that you can get for embeddings. It's text embedding 004 and it's I think 1,500 requests a minute that you get for free, which is quite decent for most of the people if they want to go that way."
 >
-> Hannes Rudolph, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Hannes Rudolph, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=3482)
 
 That rate limit covers most indexing workflows for teams under 50 engineers.
 

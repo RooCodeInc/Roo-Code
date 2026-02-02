@@ -34,7 +34,7 @@ The overhead compounds. More context means more tokens spent reading. More readi
 
 > "Sometimes that can go on a downside because I feel like overprompting is actually a thing. When you try to give way too much details, all these documents, and then it tries to read and create a super-detailed to-do list. I think it adds too much overhead into the process."
 >
-> Melo, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs)
+> Melo, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs&t=875)
 
 ## The mandate pattern
 
@@ -48,7 +48,7 @@ Sometimes that's what you want. If your codebase has unusual conventions, you ne
 
 > "Sometimes we actually get better results by using a simpler prompt and just letting the model do its thing. Giving it a mandate instead of micromanaging it."
 >
-> Roo Code Team, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs)
+> Roo Code Team, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs&t=888)
 
 ## When models know more than your spec
 
@@ -58,7 +58,7 @@ If your spec matches what the model knows, the extra context is redundant. If yo
 
 > "The models are getting so good at doing everything code related. So sometimes by using a prompt that's too specific, it might go against what they know already about code."
 >
-> Melo, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs)
+> Melo, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs&t=907)
 
 The tradeoff: simpler prompts require more trust. You're betting that the model's default behavior is close enough to what you want. If it isn't, you'll need to iterate. But iteration on a short prompt is cheaper than debugging output from a conflicted long prompt.
 

@@ -34,7 +34,7 @@ The actual mechanism is different. The model isn't losing track of your codebase
 
 > "I actually have experienced not that it goes to crap once you hit a certain context level, but a certain number of turns. Maybe 10 or 12 turns, it starts to degrade and forget those instructions."
 >
-> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=3047)
 
 The model can still read your files. It can still parse your code. What degrades is the tool use: the structured calls, the parameter accuracy, the ability to follow the workflow you established at the start.
 
@@ -46,7 +46,7 @@ The model gets a fresh start with a summary of what happened and what's next. In
 
 > "When you compress the context, it actually pulls it back to basically be a new chat with a summary of what was going on and what the next steps are. That gets it back on track."
 >
-> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=3067)
 
 This isn't about freeing up tokens. It's about resetting the conversation structure so instructions don't get lost in the archaeology of prior exchanges.
 
@@ -56,7 +56,7 @@ The degradation is specific. Understanding stays intact. Tool use falls apart.
 
 > "You don't see it hallucinating or something like that. It is able to understand what you're saying. The only thing that degrades is basically the tool use at some point at certain amount of turns."
 >
-> Matt Rubens, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Matt Rubens, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=3229)
 
 The model still comprehends your request. It still knows what you're asking for. But when it tries to translate that understanding into a structured tool call, the parameters drift. The file paths become approximate. The function names mutate.
 

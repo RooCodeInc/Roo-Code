@@ -36,7 +36,7 @@ The agent doesn't know the rule is wrong. It follows the rule faithfully, which 
 
 > "A line of incorrect code is just a line of bad code. A line in a spec, like an incorrect line in a spec is like a hundred or a thousand lines of bad code... an incorrect line in a rule or like an agent file or something like that is maybe 10,000 lines of bad code."
 >
-> Hannes Rudolph, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o)
+> Hannes Rudolph, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o&t=2577)
 
 ## Where your review effort should go
 
@@ -48,7 +48,7 @@ A PR that changes your agent configuration, your rules file, your system prompts
 
 > "Something that's going to come out of the init command or that you're putting into rules, I think that's where more review should be gone into, right? Like so if you got a PR that's changing your core rules or your structure, I think it's pretty critical."
 >
-> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o)
+> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o&t=2607)
 
 The practical implication: treat rules file changes like infrastructure changes. More eyes. More scrutiny. Slower merge velocity is acceptable because the cost of a bad merge is so much higher.
 

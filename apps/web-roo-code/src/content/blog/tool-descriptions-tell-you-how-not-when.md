@@ -43,7 +43,7 @@ Tool descriptions answer "how does this work?" They do not answer:
 
 > "Tool descriptions are not always enough. They tell you how the tool works, but they generally don't include when to use the tool. When to use the tool is very much dependent on the specific workflow and the MCP does not know the Roo Code workflow or your workflow."
 >
-> Hannes Rudolph, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM)
+> Hannes Rudolph, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM&t=2968)
 
 The MCP author does not know your context. They cannot predict that you want the search tool invoked before any code generation, or that the Slack tool should only fire after a PR is merged, never during debugging.
 
@@ -58,13 +58,13 @@ The solution is explicit instructions that encode your workflow logic. A dedicat
 
 > "Building some, I guess, a rules file that has a section called tool use guidelines or MCP tool use... and then being very clear and doing some trial and error, that's the most effective way to get that MCP to work."
 >
-> Hannes Rudolph, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM)
+> Hannes Rudolph, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM&t=2993)
 
 You can add these instructions to global settings or mode-specific configurations:
 
 > "If you want to use an MCP natively into your workflow, basically you just have to create the instructions for it and you can add it to the global instructions or your mode instructions."
 >
-> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM)
+> Guest, [Office Hours S01E14](https://www.youtube.com/watch?v=mi-3BxpZRgM&t=3038)
 
 ## Trial and error is part of the process
 

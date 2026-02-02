@@ -38,7 +38,7 @@ That gap closed. Now 10-15 models pass the same evals with similar scores. The b
 
 > "I remember when Sonnet 3.5 was the only thing that worked with Roo. And I think the eval reflecting that there's actually like a bunch of models, 10, 15 of them that work pretty well with Roo right now. And that's great. We should celebrate it. But I think now we just need to level up a little bit. We need something harder to test it against."
 >
-> Matt Rubens, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE)
+> Matt Rubens, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE&t=1652)
 
 The problem isn't that the evals are bad. The problem is that when scores cluster in the high 90s, the eval can no longer distinguish between the top tier.
 
@@ -48,13 +48,13 @@ Think of it like a test where everyone scores between 97 and 99. The test isn't 
 
 > "I don't think our evals suck. But I think the fidelity when you get in the high 90s is not enough. What we see with GPT-5 and what this GPT-5 Mini thing from last night showed is like GPT-5 is better than our evals."
 >
-> Matt Rubens, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE)
+> Matt Rubens, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE&t=1618)
 
 The benchmarks that felt definitive a year ago are now saturated. Aider Polyglot, SWE-bench, the Exercism-based coding challenges: these were hard problems when they were created. They're solved problems now.
 
 > "A lot of the traditionally hard coding benchmarks like Aider Polyglot and SWE-bench are getting close to saturated now."
 >
-> Arouch, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE)
+> Arouch, [Roo Cast S01E08](https://www.youtube.com/watch?v=uA7NLvGwHAE&t=1736)
 
 ## What this means for your team
 

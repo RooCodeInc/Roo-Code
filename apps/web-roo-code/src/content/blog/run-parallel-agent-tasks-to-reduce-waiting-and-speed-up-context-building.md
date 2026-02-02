@@ -36,7 +36,7 @@ Power users treat agent tasks like background jobs. Instead of running one task 
 
 > "I'll have Roo Code on the left. I'll have like a couple terminal tools in the middle. And I'm actually working in the codebase in multiple parts at the same time. And CLIs allow you to run multiple tasks."
 >
-> Adam, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw)
+> Adam, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw&t=2482)
 
 The key insight: not all tasks need the same speed. Exploratory work, where you're building context and understanding the codebase, can run in the background. Active coding, where you want tight feedback loops, stays in focus.
 
@@ -48,7 +48,7 @@ Think of it as two categories:
 
 > "One of them might simply be a fact-finding mission, right? Like go find out how something's put together so I can start thinking about how I need to change it. Basically your ask mode, right?"
 >
-> Adam, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw)
+> Adam, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw&t=2493)
 
 **Execution tasks:** "Write this migration." "Fix this test." "Refactor this function." These need your attention when they complete because you'll review the diff and iterate. Keep these in your primary focus.
 
@@ -65,7 +65,7 @@ This works best with CLI-based agents or multiple terminal instances. The patter
 
 > "When you're locked into like a single experience, you don't really want to be. You want to be able to open up any number of windows and do a bunch of different things without having to open new IDEs for each one of them."
 >
-> Adam, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw)
+> Adam, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw&t=2793)
 
 The tradeoff: more context switching, more terminal management. If you're deep in a single problem and don't need background context, sequential is fine. But if you're starting a new feature or onboarding to an unfamiliar codebase, parallel exploration compounds.
 

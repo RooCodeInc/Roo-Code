@@ -40,7 +40,7 @@ Then you iterate. You prompt the agent to fix a bug. Add a feature. Refactor a s
 
 > "There's been too many times I've missed that and then the documentation that was created maybe on round one and then I do a bunch of things and forget to do that along the way and then it has resulted in my documentation being completely out of date."
 >
-> Matthew Rudolph, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk)
+> Matthew Rudolph, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk&t=2063)
 
 The problem isn't that the agent can't update docs. It can. The problem is that you didn't ask it to.
 
@@ -52,7 +52,7 @@ Not as an afterthought. Not as a separate task. As part of the work definition.
 
 > "I include that stuff in the prompt. Like when I'm getting orchestrator mode going, I say, Hey, look at the dev plan. I want you to follow the dev plan. Update it as you go along so another AI coding assistant can step in and know where to continue working and to update documentation as features are added and as bugs are fixed."
 >
-> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk)
+> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk&t=2087)
 
 The key insight: documentation is a handoff artifact. It isn't just for humans reading it later. It's for the next AI session that picks up where you left off. If the docs are stale, the next agent starts with wrong assumptions. The loop breaks before it begins.
 

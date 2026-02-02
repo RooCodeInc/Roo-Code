@@ -40,7 +40,7 @@ The insight from teams building orchestration: treat communication between agent
 
 > "I think in some ways we found it to be such a powerful change: the idea that the agents can be orchestrators and managers of other agents."
 >
-> Matt, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk)
+> Matt, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk&t=1435)
 
 The power is real. But the power requires infrastructure.
 
@@ -52,7 +52,7 @@ What does that infrastructure look like? Start with the primitives that are miss
 
 > "It would also be interesting if they could give feedback on some of the things. They could check in while the task is running."
 >
-> Matt, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk)
+> Matt, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk&t=1489)
 
 **Cost rollup.** Token spend and runtime should accumulate visibly at the parent level. You should be able to see "this orchestration tree cost X" without summing logs manually.
 
@@ -62,7 +62,7 @@ What does that infrastructure look like? Start with the primitives that are miss
 
 > "Spoiler alert: we added a new field to the modes that's optional to have them kind of introduce themselves a little bit and make it easier for the orchestrator to know when to use them."
 >
-> Matt, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk)
+> Matt, [Office Hours S01E06](https://www.youtube.com/watch?v=zPhNXCHJ5xk&t=1540)
 
 ## The tradeoff
 

@@ -40,7 +40,7 @@ Real user context. Real codebase constraints. Real edge cases that no benchmark 
 
 > "We've been really interested in the issues that you all are submitting as almost like a real life eval of like what are the things?"
 >
-> Matt Rubens, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Matt Rubens, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=1030)
 
 The measurement is simple: run each incoming issue through your agent. Track how often the fix ships without human correction.
 
@@ -60,7 +60,7 @@ The agent that solves the stated problem but breaks an implicit constraint that 
 
 > "We're not at like a 97% accuracy on building the issues in a way that is good enough that we want to ship to production."
 >
-> Matt Rubens, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Matt Rubens, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=1144)
 
 This is the honest answer. Production-quality outputs on real issues are rarer than benchmark scores suggest. Knowing that changes how you evaluate.
 

@@ -30,7 +30,7 @@ When the comments disagree with each other, the model has to pick a side. Someti
 
 > "If your code is full of comments, those comments are often not in agreement with one another. And so those comments influence the large language model as you go."
 >
-> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=4203)
 
 ## The experiment
 
@@ -40,7 +40,7 @@ The fix was not a prompt change. It was not a model switch. It was stripping the
 
 > "I was working on an experimental project where I 100% vibed it and I didn't look at anything and then I got to a place where it just stopped working. So what I did is strip out all the comments and it responded 100 times better immediately."
 >
-> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=4228)
 
 No tuning. No elaborate system prompt. Just removing the contradictory context that was poisoning every interaction.
 
@@ -54,7 +54,7 @@ For human readers, this is annoying but manageable. For LLMs treating every toke
 
 > "If you're going to have comments, make sure they're extremely accurate. Otherwise, just don't have them."
 >
-> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=4237)
 
 The rule is binary: accurate comments help. Inaccurate comments hurt. There is no neutral middle ground where stale comments are "fine."
 

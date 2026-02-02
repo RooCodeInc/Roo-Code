@@ -40,7 +40,7 @@ Four dollars. Four minutes. Done.
 
 > "So yeah, it might look scary because it is expensive, but you ended up spending less because it gets the job done quicker. $4 and four minutes instead of $4 and four hours, I guess."
 >
-> Dan, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4)
+> Dan, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4&t=3002)
 
 The pattern repeats: cheaper model spirals, adding unrelated code until you abandon it, then Opus solves the same task in one pass. The difference isn't that Opus is smarter. The difference is that it finishes.
 
@@ -52,7 +52,7 @@ Lazy prompts punish you harder on Opus. Token cost scales with context. If you'r
 
 > "But I would caution anyone listening or watching, if you're using Opus, really take the time to make sure your prompts are thorough. 100% a thing. If you don't, that's when if you do lazy coding where you're just like, try this. Try that. It can work, but it gets very expensive with Opus."
 >
-> Dan, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4)
+> Dan, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4&t=3029)
 
 The investment is upfront: write a thorough prompt, get a thorough result. Smaller models work fine for straightforward tasks where the failure mode is obvious. The spiral problem hits hardest on ambiguous tasks, the ones where you won't know the model is wrong until you've run the code and checked the output.
 
@@ -64,7 +64,7 @@ The counterintuitive finding: embracing the expensive model can actually reduce 
 
 > "Like if you just embrace Opus, like at first you might see the price go up, like it is an expensive model, but I think you can end up spending a lot less because it doesn't mess up as much."
 >
-> Dan, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4)
+> Dan, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4&t=2962)
 
 For Series A through C teams with limited engineering bandwidth, this math matters. You're not optimizing for lowest token price. You're optimizing for tasks completed per dollar spent.
 

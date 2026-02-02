@@ -36,7 +36,7 @@ OpenAI's applied team grades their coding agents differently. They treat the age
 
 > "If you design your coding evals like you would a software engineer performance review, then you can measure their ability in the same ways as you can measure somebody who's coding."
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE)
+> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=1225)
 
 The rubric they use for GPT-5 development:
 
@@ -73,7 +73,7 @@ The framing shift is simple: your prompt is a job description.
 
 > "You're giving it a job description. That's your prompt."
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE)
+> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=1377)
 
 If you hired an engineer and gave them vague instructions, you'd expect vague output. The same applies here. But beyond prompt quality, you need to know how the agent performs when the instructions are clear and the task is complex.
 

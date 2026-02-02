@@ -32,7 +32,7 @@ Cloud models kept shipping improvements. Local models for coding stagnated. The 
 
 > "About a year ago I thought local models were going to just progress insanely fast for coding in particular and that just has not happened. In fact I would say like they've kind of stagnated to a point."
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=127)
 
 For teams that invested in local infrastructure, this is frustrating. The hardware is there. The motivation is there. The models are not.
 
@@ -44,13 +44,13 @@ The difference is in the details that matter for agentic coding: tool calling wo
 
 > "There is one like shining model that has come out recently called Devstral that works insanely well."
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=151)
 
 The hardware requirement is specific: 32GB of VRAM. That is a meaningful constraint. It rules out most laptops and many workstations. But for teams with the hardware or the budget to acquire it, Devstral delivers.
 
 > "If you can get 32 gigs of VRAM and you can run Devstral model, I could code all day with that and be quite okay."
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=167)
 
 "Code all day" is the bar. Not "handles simple completions." Not "works for prototypes." Productive, sustained coding work.
 

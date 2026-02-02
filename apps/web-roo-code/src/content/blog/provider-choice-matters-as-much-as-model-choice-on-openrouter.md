@@ -43,7 +43,7 @@ Both parameters materially affect output quality. A model served by a random pro
 
 > "A lot of people will be like, 'Oh, I tried that model and it sucked.' I'm like, 'Well, what provider did you try? What temperature did you try?' And it's such a complicated space."
 >
-> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU)
+> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU&t=1487)
 
 The complexity is the point. Model selection is not a single variable. It's a configuration space with at least three dimensions: model, provider, and temperature. Evaluating one combination tells you nothing about the other combinations.
 
@@ -55,7 +55,7 @@ Instead, they adjusted provider and temperature. The results shifted dramaticall
 
 > "We ran the evals on it and they didn't do as well as we hoped. But then when I actually bumped the temperature and the provider, it really really changed how things worked. I think it got somewhere in the 90s."
 >
-> Dan, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU)
+> Dan, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU&t=54)
 
 From "didn't do as well as we hoped" to "somewhere in the 90s." Same model. Different configuration.
 
@@ -77,7 +77,7 @@ For teams running systematic evals, this means expanding the test matrix. Model 
 
 > "You do have to be careful with providers on OpenRouter. So if you try it and you select just whatever random provider and it's not good, don't give up because some of them are unfortunately worse quality than others."
 >
-> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU)
+> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU&t=1474)
 
 ## The first step
 

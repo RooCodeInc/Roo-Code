@@ -34,7 +34,7 @@ Stickiness beats benchmarks. The pattern is consistent across every developer to
 
 > "Creator experience and then also the user experience engaging with a model, or engaging with an app, rather, like the stickiness of the app, is much more important than necessarily having the best model under the hood."
 >
-> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4)
+> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4&t=1475)
 
 This is not about having a worse model. It is about sequencing. The teams that ship a good-enough experience and iterate on developer feedback are building adoption curves that compound. The teams that wait for technical perfection before releasing are losing the window.
 
@@ -44,7 +44,7 @@ Developer adoption creates its own momentum. Once developers are using a tool da
 
 > "If you get significant numbers of developers adopting your product, then you're going to have the kind of network and word-of-mouth marketing effects that will lead to continued adoption."
 >
-> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4)
+> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4&t=1514)
 
 Word-of-mouth from developers carries more weight than any marketing claim about model capabilities. A senior engineer saying "I use this every day" in a Slack thread moves more adoption than a benchmark comparison.
 
@@ -54,7 +54,7 @@ Here is the part that makes technical leaders uncomfortable: the model under the
 
 > "If you just build the thing and get everybody using it, you can swap out models, swap out infrastructure, swap out quantization approaches... And the user doesn't ever need to care."
 >
-> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4)
+> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4&t=1627)
 
 The abstraction layer is the product. The user interacts with the experience, not the model directly. If a new model is released that performs better for certain tasks, the product swaps it in. If a more cost-effective quantization approach becomes available, the product adopts it. The user never notices because they are interacting with a stable interface, not raw model outputs.
 

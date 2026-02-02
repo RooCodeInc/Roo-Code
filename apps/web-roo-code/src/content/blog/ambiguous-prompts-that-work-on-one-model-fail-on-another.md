@@ -34,7 +34,7 @@ The Roo Code team hit this exact wall. They switched to GPT5 and watched their s
 
 > "We switched to GPT5 and we're like, 'Well, this isn't that good. It's like 50/50 or like 40/60 or 60/40.' Not nearly as good. And then when we dig into it deeper, we discover that the issue was that we had ambiguous wording. We were asking the model to read between the lines without realizing it."
 >
-> Hannes Rudolph, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI)
+> Hannes Rudolph, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=3404)
 
 The problem was not that GPT5 was less capable. The problem was that prompts contained implicit instructions that Opus inferred but GPT5 did not.
 
@@ -46,7 +46,7 @@ The result: GPT5 hit 99% success. Not 90%. Not 95%. Ninety-nine percent. Higher 
 
 > "When you cleared that language up, often removing some of the extra language, suddenly that model would do like 99% of the time. It would go the direction. Better than Opus ever did. So now it's not guessing."
 >
-> Hannes Rudolph, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI)
+> Hannes Rudolph, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=3434)
 
 The insight here is uncomfortable: Opus's "reading between the lines" was masking prompt quality problems. The model was papering over ambiguity with good guesses. Good enough to feel like it was working. Not good enough to survive a model switch.
 
@@ -60,7 +60,7 @@ If your prompts only work on one model, you're not building a workflow. You're b
 
 > "That intentionality unlocks a superpower. That 90% isn't good enough. We want a workflow that works the vast majority of the time."
 >
-> Hannes Rudolph, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI)
+> Hannes Rudolph, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=3464)
 
 The 90% success rate feels fine until you're the one debugging the 10%. On a team shipping 10 PRs a week, 10% failure means one task per week goes sideways. Someone has to untangle what the model did wrong, rewrite the prompt, and try again. That adds up.
 

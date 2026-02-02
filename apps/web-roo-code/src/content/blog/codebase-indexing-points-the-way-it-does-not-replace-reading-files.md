@@ -30,7 +30,7 @@ Think of it like a senior engineer who just joined your team. They don't have yo
 
 > "Indexing in this case is not replacing the model's ability to read the files. It's just pointing, it's just giving it clues about whatever you're looking for."
 >
-> Hannes Rudolph, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Hannes Rudolph, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=3461)
 
 ## What indexing actually does
 
@@ -42,7 +42,7 @@ Without indexing, the model either guesses which files to read or asks you to po
 
 > "What codebase indexing does is it gives you kind of a good starting point. So it gives the AI the ability to go like: I don't need to go do all this initial stuff. I can start here."
 >
-> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Adam, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=3552)
 
 The workflow still involves reading files. Indexing just shortens the search phase.
 
@@ -56,7 +56,7 @@ The failure mode: if you expect indexing to replace reading, you'll be confused 
 
 > "What we want from codebase indexing is just to point the model in the right direction so it can choose to read the file if it finds it relevant."
 >
-> Dan, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc)
+> Dan, [Office Hours S01E10](https://www.youtube.com/watch?v=yVf2LalAubc&t=3523)
 
 ## Why this matters for your workflow
 

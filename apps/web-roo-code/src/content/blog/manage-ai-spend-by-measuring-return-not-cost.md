@@ -34,7 +34,7 @@ The technical capability to track individual spend exists. You authenticate to u
 
 > "I could actually get down to it because you have to authenticate to use tokens and so then there's a tracking to amount of tokens per person but I don't. I'm kind of staying away from that. I think it will lead to bad mindset and bad behavior."
 >
-> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg)
+> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg&t=824)
 
 The tracking is possible. The question is whether you should. Per-person dashboards create the exact cost anxiety that undermines the productivity gain you're paying for.
 
@@ -44,7 +44,7 @@ Smartsheet took the opposite path. They moved all AI tool spend into a single ac
 
 > "Here we're trying to drive return, not trying to reduce cost. And so to get that mindset shift and behavior and practice shift, I'm sort of precluding people from thinking about the cost too much."
 >
-> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg)
+> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg&t=748)
 
 The goal is explicit: shift the mental model from "how do I spend less?" to "how do I ship more?"
 
@@ -56,7 +56,7 @@ Their answer: MR throughput. Merge requests completed. Commits merged. Work ship
 
 > "We would measure it by MR throughput. And that's what we're trying to drive towards as that outcome."
 >
-> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg)
+> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg&t=668)
 
 This is the difference between treating AI as an expense line and treating it as a productivity lever. Expenses get minimized. Levers get pulled.
 

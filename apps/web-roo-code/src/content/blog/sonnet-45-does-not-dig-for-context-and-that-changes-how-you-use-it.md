@@ -38,13 +38,13 @@ But debugging in existing codebases exposes a different behavior.
 
 > "If you take Sonnet 4.5 and you give it a spec and you tell it to build this thing, it's going to nail it. So it's a one-shot from zero to something. But existing codebase: if you're saying like, hey, I've got this problem, I need help tracking it down, it will take the most surface level answer possible."
 >
-> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU)
+> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU&t=902)
 
 The pattern is consistent: the model doesn't proactively gather context. It doesn't read files to understand the actual structure before answering. It works with what you gave it in the prompt, and if that's incomplete, the answer will be incomplete.
 
 > "It's lazy. It's a lazy model. That's the best way I can describe it. If you say it, if you tell it here's what you need to do, probably going to do it. But it's not going to be proactive at gathering context."
 >
-> Dan, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU)
+> Dan, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU&t=1040)
 
 ## The contrast: models that dig
 

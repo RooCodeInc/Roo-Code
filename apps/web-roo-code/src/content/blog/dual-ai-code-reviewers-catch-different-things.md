@@ -36,7 +36,7 @@ The two systems flag different types of issues. One might catch a performance co
 
 > "We essentially have dual AI code reviewers on all our PRs... they both have very different perspectives and opinions and now like we're covering all the bases it feels like."
 >
-> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk)
+> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=1406)
 
 The value isn't that one AI is more capable than the other. The value is that they disagree in useful ways. When two systems with different training, different prompts, and different review rubrics both flag the same line, you know it matters. When only one flags it, you have a decision to make. That's still more signal than you had before.
 
@@ -50,7 +50,7 @@ But the question is: what's the cost of the alternative?
 
 > "It was very obvious right out of the gate that AI code reviews will oftentimes catch a lot of the things, a lot of the nuances that our human reviewers would normally miss."
 >
-> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk)
+> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=1380)
 
 The nuances that tired human reviewers miss are the ones that show up at 2am as production incidents. The null check that wasn't there. The race condition that only surfaces under load. The auth change buried in a refactor.
 
@@ -62,7 +62,7 @@ Most developers know what their manual reviews actually look like:
 
 > "It's doing a very thorough PR, especially compared to how I do them manually where I kind of... just skim through the diff and give a thumbs up."
 >
-> Matt Rubens, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk)
+> Matt Rubens, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=3063)
 
 That's not a failure of discipline. That's a failure of capacity. You can't hold forty files in your head while also thinking about the three other PRs in queue and the feature you're supposed to ship by Friday.
 

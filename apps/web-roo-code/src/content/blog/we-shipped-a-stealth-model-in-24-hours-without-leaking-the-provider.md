@@ -32,7 +32,7 @@ The OpenRouter team had about 24 hours from approval to go-live. Not 24 hours to
 
 > "We did that in about 24 hours from being given the go live to how do we make sure we don't leak it ourselves and ruin this opportunity. It was a hectic 24 hours with a lot of double and triple checking."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM)
+> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=482)
 
 The checklist looked something like this:
 
@@ -46,7 +46,7 @@ The checklist looked something like this:
 
 > "We obfuscated the error shapes. We changed the IDs in the messages. We did a couple of things here and there just to make sure."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM)
+> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=460)
 
 ## The catch
 
@@ -56,7 +56,7 @@ The obfuscation held for the casual observer. But the "nerdier people in the AI 
 
 > "Of course, the nerdier people in the AI scene would be able to tell the differences between tokenization and tool calling shapes and all these kinds of things that ended up popping up on Twitter that we knew were likely to happen."
 >
-> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM)
+> Tovin, [Office Hours S01E02](https://www.youtube.com/watch?v=hihrUCRwkFM&t=452)
 
 The team knew this would happen. The goal was never perfect secrecy. It was operational security for a controlled trial: prevent accidental leaks, discourage casual identification, and accept that determined reverse-engineers would figure it out anyway.
 

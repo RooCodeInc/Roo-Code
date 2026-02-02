@@ -30,7 +30,7 @@ Nothing. A blank page staring back at you. Five hundred tasks completed, and the
 
 > "I had like 500 tasks passing but nothing was working like I couldn't see anything my page was just blank."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=375)
 
 This is the orchestration trap. Spec-driven development tools promise to parallelize work: break the project into pieces, assign each piece to an agent, let them run independently, merge the results. The theory is sound. The integration step is where it falls apart.
 
@@ -42,7 +42,7 @@ Agent A builds the auth module. Agent B builds the dashboard. Agent A exports a 
 
 > "I feel like this is the problem with orchestration workflows or tasks dividing something into smaller tasks and giving it to individual agents. I feel like the integration part that glues all of it together it's not good enough for now."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=477)
 
 The integration layer, the thing that glues the pieces together, is the weakest link in the chain. Individual task completion is easy to verify: run the test, check the output. Cross-task integration is harder to specify and harder to test in isolation.
 
@@ -54,7 +54,7 @@ Don't let 500 tasks run to completion before you check if the app loads. Insert 
 
 > "I think the solution to this might be to add some human in the middle you know when you're creating the plan when you're dividing all of these tasks add some verification points so the user can test like everything we have so far."
 >
-> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs)
+> Guest, [Roo Cast S01E02](https://www.youtube.com/watch?v=Hjw7rUlGLPs&t=494)
 
 This feels like a step backward. The whole point of parallelizing work was to remove the human bottleneck. But the alternative is worse: waiting until everything is "done" and discovering that nothing works.
 

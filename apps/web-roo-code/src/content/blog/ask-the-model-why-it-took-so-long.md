@@ -36,7 +36,7 @@ So they asked it.
 
 > "I just asked it, 'Hey, why did it take you so long to start editing the file at the end of it?' And it was like, 'Well, the instructions said to make sure I look at every single file that's included.'"
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE)
+> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=1730)
 
 The model wasn't confused. It was following instructions. Instructions written for a less thorough model that needed explicit reminders to check context. The newer model was being too diligent.
 
@@ -50,7 +50,7 @@ This means you can debug instructions the same way you'd debug code: by asking "
 
 > "If you understand how it thinks about its behaviors, you can tell it to change them."
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE)
+> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=1619)
 
 The pattern is simple. When a model does something unexpected, ask inside the same session:
 
@@ -80,7 +80,7 @@ The iteration cost drops significantly. You're not guessing at what the model is
 
 > "Asking it inside of the harness, 'Hey, how do I instruct you? What about your instructions right now are making you do this thing that I don't like?'"
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE)
+> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=1757)
 
 This is especially useful when inheriting prompts from someone else, or when using system prompts written for older models. The instructions may have constraints that made sense for a model that needed hand-holding but create overhead for a model that's more thorough by default.
 

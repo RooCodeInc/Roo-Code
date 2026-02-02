@@ -32,7 +32,7 @@ The same model from different providers isn't the same model. Quantization level
 
 > "One of the things that we run into a lot of times is provider variance in basically the quantization of the model. Sometimes the context limit, pricing, caching, you name it, there's a bunch of things, even the way they host it. For example, Grok will host with a warmer temp than others."
 >
-> Hannes Rudolph, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0)
+> Hannes Rudolph, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0&t=3310)
 
 Rate limiting on aggregators like OpenRouter compounds the issue. Your team hits a limit, requests fail, and now you're debugging infrastructure instead of shipping code.
 
@@ -46,7 +46,7 @@ Instead of configuring one provider per model, you define a policy that says: "T
 
 > "You can make a template which we call a policy and say these four Qwen 3 Coders I want to use and call it Qwen 3 Coder and you can also choose by agency that will always choose the fastest one."
 >
-> Dan, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0)
+> Dan, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0&t=3383)
 
 The developer sees "Qwen 3 Coder." The policy handles the routing. No one debugs provider infrastructure during a sprint.
 
@@ -58,7 +58,7 @@ Your European infrastructure team can only use EU-hosted instances of Claude on 
 
 > "We have like huge teams saying like, oh, the European infra team can only use the European hosted servers of Claude on Vertex and Bedrock. So, they make a policy for that team."
 >
-> Tibol, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0)
+> Tibol, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0&t=3433)
 
 The policy becomes the source of truth. Onboarding is: "Use the EU-Infra policy." Compliance is: "The policy enforces the constraint."
 

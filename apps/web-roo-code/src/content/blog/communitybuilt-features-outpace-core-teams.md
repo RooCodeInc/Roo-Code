@@ -30,7 +30,7 @@ Then you actually read it.
 
 > "My first thought is defensive. And I'm like, 'There's already lots of features. Like, you're just making my life.' And then I look and I go, 'No, that's a good damn idea.'"
 >
-> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0)
+> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0&t=205)
 
 The pattern repeats. A user asks for something. The initial reaction is skepticism. Then the idea proves valuable. Then someone in the community actually builds it.
 
@@ -44,7 +44,7 @@ Boomerang Tasks is the clearest example. It's a flagship feature now. It came fr
 
 > "Even Boomerang Tasks, the new task tool, was built by a community member, and that's something that we think is really amazing."
 >
-> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0)
+> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0&t=239)
 
 This isn't an accident. It's what happens when you make contributing accessible and treat community PRs with the same seriousness as internal work.
 
@@ -56,7 +56,7 @@ When a feature request comes in that's valid but not prioritized, there's a ques
 
 > "Quite often people pull their socks up and actually get it done. It's amazing the number of things that people have made."
 >
-> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0)
+> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0&t=233)
 
 This works for two reasons. First, it signals that contributions are welcome and will be reviewed seriously. Second, it matches motivated builders with problems they care about solving.
 

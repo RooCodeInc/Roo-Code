@@ -44,7 +44,7 @@ The metaphor that stuck:
 
 > "It's like you're walking on the beach and you see trash and you just pick up trash and put it into a trash can. That's exactly what fixing bugs in your code has felt like."
 >
-> Audrey, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU)
+> Audrey, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU&t=1151)
 
 ## The guardrail that makes it work
 
@@ -54,7 +54,7 @@ One team solved this by requiring triple sign-off on any agent-generated PR:
 
 > "The way we did it was essentially to have to require an approval from a PM, a designer and an engineer on any remote PR that gets opened."
 >
-> John Sterns, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU)
+> John Sterns, [Roo Cast S01E12](https://www.youtube.com/watch?v=uoiTEYzOahU&t=1539)
 
 That policy sounds heavy. But it serves a purpose: it prevents unreviewed changes from shipping while still allowing non-engineers to trigger fixes.
 

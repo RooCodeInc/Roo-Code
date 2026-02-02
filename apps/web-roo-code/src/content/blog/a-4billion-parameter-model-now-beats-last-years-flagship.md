@@ -32,7 +32,7 @@ Google's Gemma 3N model, at 4 billion parameters, now outperforms Gemini 1.5 Pro
 
 > "Our Gemma 3N model is better than Gemini 1.5 Pro was even though it's 4 billion parameters in size and you can run it on your laptop as opposed to like needing a whole big slice of TPUs in order to run the model."
 >
-> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4)
+> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4&t=1126)
 
 The practical implication: teams can now get flagship-quality outputs from local models, eliminating latency and API costs for many use cases.
 
@@ -46,7 +46,7 @@ The gap between cloud-hosted frontier models and on-device models is closing fas
 
 > "I think longer term we'll see super super tiny models be extremely good, extremely capable and like not even needing to send rest requests to get the kinds of responses that you would need."
 >
-> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4)
+> Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4&t=1144)
 
 ## The tradeoff
 

@@ -34,7 +34,7 @@ GPT-5 Codex takes longer to respond because it's doing something different. Inst
 
 > "GPT-5 on medium reasoning is just the opposite. Like, you ask a question, it's going to use every tool it has, mostly codebase indexing, to actually answer and give you references."
 >
-> Dan, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU)
+> Dan, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU&t=1067)
 
 The difference isn't capability. It's methodology. A model that takes 30 seconds to find the actual dependency chain is doing different work than a model that takes 3 seconds to guess based on the error message.
 
@@ -44,7 +44,7 @@ This isn't "always use the slow model." The tradeoff is real, and it's favorable
 
 > "Yes, it's faster and 90% of the time it'll do the same job faster, but that 10% is what matters to me. I'll just wait."
 >
-> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU)
+> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU&t=953)
 
 For straightforward tasks, the fast model works fine. Renaming a variable, writing a test for a pure function, generating boilerplate: these don't require deep investigation. The failure mode is obvious and the fix is quick.
 
@@ -56,7 +56,7 @@ The pressure to optimize for time-to-first-token is real. Users want fast respon
 
 > "This whole race for the fastest model: I know people are like, I want it fast, I want it fast. But I feel that OpenAI has done a service to us by not caving and actually letting the model do what it needs to do in their Codex version."
 >
-> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU)
+> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU&t=940)
 
 The service is refusing to optimize for the wrong metric. A model that takes time to use its tools, that actually indexes the codebase and finds references before answering, is doing the work that matters for debugging.
 

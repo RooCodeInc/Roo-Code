@@ -30,7 +30,7 @@ At Ruvette, the behavior changed. Product managers, customer service reps, and o
 
 > "One nonobvious behavior change that came out of that I think is people don't wait around to be unblocked anymore. Non-engineers especially just ask our remote agent first."
 >
-> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk)
+> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=290)
 
 ## The shift: ask the agent first
 
@@ -42,7 +42,7 @@ The answers come from the codebase itself. Not from tribal knowledge. Not from s
 
 > "I use remote like every day to ask questions about the codebase. I think that is the most effective thing as a PM."
 >
-> Theo, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk)
+> Theo, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=2288)
 
 ## What the queries look like
 

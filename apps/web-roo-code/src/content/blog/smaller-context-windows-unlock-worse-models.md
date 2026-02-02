@@ -36,7 +36,7 @@ One engineer tested this with Grok Coder Fast. It's a budget model. It's not goi
 
 > "When your context window isn't packed full, even a shitty model, well, shitty like Grok Coder Fast is capable of doing really really impressive stuff. You just can't give it too much on its plate at once."
 >
-> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk)
+> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk&t=2009)
 
 The key phrase: "too much on its plate at once." The constraint isn't model capability. The constraint is attention management.
 
@@ -48,7 +48,7 @@ When a parent agent breaks work into subtasks and delegates to child agents, eac
 
 > "When the orchestrator is breaking the tasks up, handing it off to different modes, that's a fresh context window every time. That's the secret."
 >
-> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk)
+> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk&t=1994)
 
 The secret is structural, not magical. Fresh context windows mean the model's attention isn't diluted across irrelevant context. A budget model with 20k of focused context can outperform a premium model with 150k of noise because the signal-to-noise ratio inverts.
 
@@ -60,7 +60,7 @@ There's a specific threshold where models fall off. For Grok Coder Fast, it's ar
 
 > "Grok Coder Fast is not good at looking at a lot at once. When as soon as the context window is anywhere above 80,000 tokens or so it just falls apart."
 >
-> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk)
+> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk&t=1854)
 
 Below the cliff: solid results. Above the cliff: falls apart. The model doesn't degrade gracefully; it hits a wall.
 

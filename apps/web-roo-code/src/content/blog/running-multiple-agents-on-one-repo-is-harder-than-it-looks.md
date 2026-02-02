@@ -30,7 +30,7 @@ The harder problem is everything else: local databases, migrations, running serv
 
 > "I think there are more shared resources than just the git workspace. If you're doing anything with a local database or migrations or trying to run a server, you might have the illusion of being able to run multiple things locally, but in practice you would need to be thoughtful about it."
 >
-> Matt, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY)
+> Matt, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY&t=2482)
 
 The illusion is that parallelism is free. The reality is that shared resources beyond git create implicit dependencies between agents.
 
@@ -70,7 +70,7 @@ The pattern that might emerge: local and cloud agents becoming more analogous.
 
 > "Maybe you imagine a world where local and the cloud were a little more analogous to each other, where you can just kick things off in either direction and they run in parallel."
 >
-> Matt, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY)
+> Matt, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY&t=2508)
 
 If cloud agents run in isolated environments by default, the coordination problem shifts from "how do I keep agents from stepping on each other" to "how do I merge their outputs."
 

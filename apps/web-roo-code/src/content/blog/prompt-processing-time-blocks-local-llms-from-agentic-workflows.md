@@ -34,7 +34,7 @@ A 20,000-token system prompt takes significant time to process before the first 
 
 > "You've got a big amount of prompt processing time that happens and you could be getting 500 tokens per second but that still ends up being pretty long amount of time... that just makes it unattainable when you're doing that."
 >
-> Adam, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI)
+> Adam, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=531)
 
 ## The math that breaks agent loops
 
@@ -52,7 +52,7 @@ Load the codebase. Request a specific change. Generate a diff. Apply it. Done.
 
 > "I can actually load in my codebase. I can actually say, 'Hey, I want you to update the design of this page.' It'll go through and do it and create a diff for me that I can immediately apply to my codebase. That works a lot better than trying to drive an agentic task just due to the speed and nature of it."
 >
-> Adam, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI)
+> Adam, [Roo Cast S01E10](https://www.youtube.com/watch?v=BWxsa_JxGZI&t=402)
 
 Diff view workflows succeed where agent loops fail because they pay the prompt processing cost exactly once. You get one generation pass, one output, one decision point.
 

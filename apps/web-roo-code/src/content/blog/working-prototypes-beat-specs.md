@@ -32,7 +32,7 @@ The problem isn't the spec. The problem is that everyone reading a document is d
 
 > "You end up doing a bunch of guesswork and then people are surprised when the guesswork that other people are doing doesn't actually connect with the guesswork that they were doing in their head."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=721)
 
 The spec felt complete when you wrote it. It wasn't. It was a scaffolding for assumptions.
 
@@ -50,7 +50,7 @@ The prototype forces you to confront edge cases that disappear in mocks. What ha
 
 > "It forces design and product to think through the experience edge cases that aren't evident on a mock."
 >
-> Hannes Rudolph, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Hannes Rudolph, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=706)
 
 You find out what's missing when you try to use it, not when engineering asks "what should happen here?" two weeks into the build.
 
@@ -70,7 +70,7 @@ If you're a PM or designer working with a small team, the leverage is significan
 
 > "It's way easier to show up with something like a prototype and be like, 'Hey, here's what I'm thinking.' And there's much less guesswork in that."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=687)
 
 For teams shipping 4-5 features a quarter, replacing even half of your spec-first workflows with prototype-first conversations can eliminate entire rounds of revision. The feedback happens before the build, not after.
 

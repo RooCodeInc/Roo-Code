@@ -37,7 +37,7 @@ Google's caching requires explicit time budgets. Five minutes. Ten minutes. Twen
 
 > "So for Google, you basically have to do what you're going to cache and invoke that caching for a certain amount of time. So you have to say: let's cache the system prompt or this user prompt for five minutes, 10 minutes, 20 minutes."
 >
-> Thibault, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ)
+> Thibault, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ&t=2283)
 
 This isn't a minor implementation detail. It changes your caching strategy from "what content to cache" to "how long will this session last."
 
@@ -45,7 +45,7 @@ The structure is unfamiliar. If you've built caching logic around content hashin
 
 > "It was a totally new structure. We've never seen it before."
 >
-> Thibault, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ)
+> Thibault, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ&t=2323)
 
 ## The tradeoff
 
@@ -57,7 +57,7 @@ The implementation complexity is also real. Abstracting over multiple caching st
 
 > "The way you do it technically is a nightmare."
 >
-> Thibault, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ)
+> Thibault, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ&t=2292)
 
 "Nightmare" is strong language, but the frustration is understandable. When you expect caching to be a transparent optimization and it becomes a configuration surface with failure modes, the debugging time compounds.
 

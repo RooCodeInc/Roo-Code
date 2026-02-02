@@ -34,7 +34,7 @@ The problem: it looks like something broke.
 
 > "One of the things we've really noticed is that it's not always clear what's going on in the task orchestration process. You start a task, it says, 'Okay, I'm going to plan this out.' Boom. It jumps into architect mode. Architect mode's doing its thing. Now, your context is back at zero."
 >
-> Hannes Rudolph, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4)
+> Hannes Rudolph, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4&t=1953)
 
 ## The isolation is a feature
 
@@ -46,7 +46,7 @@ When you watch a subtask spin up, you lose the thread. You can't easily see: wha
 
 > "If you're paying really close attention to the process, you can see that a new task was spawned. And so, the new task stands alone from the parent task. And this is sort of confusing."
 >
-> Hannes Rudolph, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4)
+> Hannes Rudolph, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4&t=1975)
 
 ## Recovery is manual
 
@@ -60,7 +60,7 @@ The team knows this needs work. But orchestration visibility competes with other
 
 > "I think the possibility of expanding the workflow is good, but we still have a lot of stuff that can be reprioritized first. It is definitely something that we look forward to. It's just that the prep work that needs to be done to get there is quite a lot."
 >
-> Ellie, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4)
+> Ellie, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4&t=2004)
 
 Translation: orchestration improvements are coming, but not tomorrow. The infrastructure work required to surface parent-child relationships, cost breakdowns, and resumable branches is substantial.
 

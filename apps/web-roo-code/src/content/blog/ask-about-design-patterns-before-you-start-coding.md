@@ -32,7 +32,7 @@ The fix is two words, applied before the agent starts writing code.
 
 > "I just actually unlocked a new one recently that I'm going to use a lot more going forward and that is to ask the agent what design patterns we should apply to the problem we're trying to solve up front."
 >
-> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk)
+> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=2006)
 
 The prompt shift is simple: before you describe the feature, ask the agent which design patterns apply to the problem you're trying to solve.
 
@@ -48,7 +48,7 @@ Asking about patterns front-loads architectural thinking. The agent names the pa
 
 > "Those magic words, design patterns, is creating much more elegant implementations than just kind of the sometimes the brute force solution that we'll go to by default."
 >
-> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk)
+> John Sterns, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=2024)
 
 The tradeoff: this adds a step. You're not diving straight into implementation. For trivial tasks, it's overhead. For anything you'll maintain for more than a week, the upfront investment prevents the "technically correct but structurally messy" pattern that creates refactoring debt.
 

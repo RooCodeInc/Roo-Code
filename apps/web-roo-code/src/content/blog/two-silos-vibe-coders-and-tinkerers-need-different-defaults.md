@@ -34,7 +34,7 @@ That instinct is wrong.
 
 > "Our users are in two silos ultimately... we have the silo of people who are newer or truly don't want to learn how to code, possibly. You know, you could call them the straight vibe coders, and then you have the actual, you know, the engineers, the tinkerers, the coders."
 >
-> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0)
+> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0&t=68)
 
 ## The design pattern that works
 
@@ -48,7 +48,7 @@ The key insight: the default mode is not "the mode." It works. It's fine. It's g
 
 > "We're trying to find this balance between an out-of-the-box experience... and really that's a preview of what it can do."
 >
-> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0)
+> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0&t=91)
 
 ## The tradeoff you are actually making
 
@@ -70,7 +70,7 @@ The shift: name the silo. Build the path. Don't pretend one mode serves both.
 
 > "We want to be very cautious to point people at this as the mode. Now, this is a mode that works. It works. It's fine. It's good. It doesn't do everything for everybody."
 >
-> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0)
+> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0&t=37)
 
 ## The first step
 

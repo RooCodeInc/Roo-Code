@@ -40,7 +40,7 @@ When each step is explicit, even inexpensive models can run autonomously for hou
 
 > "Building a dev plan is the difference between fumbling around blindly not knowing what you're doing and fumbling around with glasses on not knowing what you're doing because it yeah you get much better results."
 >
-> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk)
+> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk&t=1921)
 
 The glasses metaphor is apt. The model still doesn't "understand" your codebase the way you do. But with a plan, it knows where to look and what to produce. The fumbling becomes directed fumbling.
 
@@ -52,7 +52,7 @@ The plan becomes a coordination document. Instead of one model doing everything 
 
 > "The only reason I was able to do that is because I gave it a really complete and complex dev plan."
 >
-> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk)
+> Ru Tang, [After Hours S01E02](https://www.youtube.com/watch?v=I3HiU_G-cjk&t=1659)
 
 "Complete and complex" is the operative phrase. A plan that says "add auth" is not a plan. A plan that says "Step 1: Create migration for sessions table with columns X, Y, Z. Step 2: Add session middleware in /src/middleware/auth.ts following the pattern in /src/middleware/logging.ts" is a plan.
 

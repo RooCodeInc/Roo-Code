@@ -44,7 +44,7 @@ At higher temperature, the model takes aesthetic risks. It adds visual flourishe
 
 > "So this is temperature one... Now it looks like our website."
 >
-> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU)
+> GosuCoder, [After Hours S01E01](https://www.youtube.com/watch?v=bmZ2Cl8ohlU&t=280)
 
 ## The practical setup
 

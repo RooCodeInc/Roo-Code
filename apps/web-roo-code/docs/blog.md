@@ -99,6 +99,28 @@ AND (
 - Use `react-markdown` with `remark-gfm` plugin
 - Do NOT include `rehype-raw`
 
+## YouTube Quotes + Timestamps
+
+Blog posts often include blockquotes sourced from Roo Code podcast videos.
+
+- Any YouTube link in markdown opens in an in-page modal (does not navigate away).
+- To start the modal at a specific point in the episode, add a timestamp to the URL:
+    - `...watch?v=VIDEO_ID&t=123` (seconds)
+    - `...watch?v=VIDEO_ID&t=1m23s` (h/m/s)
+    - `...watch?v=VIDEO_ID&t=1:23` (mm:ss)
+
+### Authoring Helper Script
+
+If you have the Knowledge Graph repo checked out locally, you can auto-suggest timestamps by matching quotes against transcript lines:
+
+- `Roo-Code-GTM-Knowledge-Graph/scripts/add-youtube-quote-timestamps.ts`
+- Run (recommended from the `Roo-Code/` repo root):
+    - `npx tsx ../Roo-Code-GTM-Knowledge-Graph/scripts/add-youtube-quote-timestamps.ts` (dry-run + JSON output)
+    - `npx tsx ../Roo-Code-GTM-Knowledge-Graph/scripts/add-youtube-quote-timestamps.ts --write` (updates blog markdown links)
+    - Optional tuning:
+        - `--maxWindowLines=12` (increase if transcripts are heavily line-wrapped)
+        - `--writeMinScore=0.9` (only write very high-confidence matches)
+
 ## Substack Syndication Checklist
 
 When syndicating to Substack (`blog.roocode.com`):

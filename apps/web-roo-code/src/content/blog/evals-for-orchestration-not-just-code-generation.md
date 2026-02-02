@@ -40,7 +40,7 @@ These are the failure modes that matter in production. A model can ace HumanEval
 
 > "We are really interested in using evals to try to measure which works better, though. That is: we're trying to apply evals to these sort of unique tools instead of just, 'Can it solve a coding problem?'"
 >
-> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0)
+> Harris, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0&t=642)
 
 ## The hard part
 
@@ -52,7 +52,7 @@ This requires scaffolding that most teams skip. It's easier to run a public benc
 
 > "If you're doing any kind of, you know, deep agentic engineering, you have to have an evaluation framework: otherwise you're just vibe coding, right? So the absence of an eval is the absence of engineering."
 >
-> Rob, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0)
+> Rob, [Roo Cast S01E01](https://www.youtube.com/watch?v=oY0Ox16BrR0&t=669)
 
 ## The tradeoff
 

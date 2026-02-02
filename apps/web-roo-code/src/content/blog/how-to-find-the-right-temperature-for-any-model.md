@@ -38,13 +38,13 @@ The systematic approach: run hundreds of tests at each temperature increment, gr
 
 > "I then ran through a series of hundreds of tests at each temp, each temperature, then grading each one and it zoned in at it was literally like 0.72 or something was the best."
 >
-> Adam, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0)
+> Adam, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0&t=1572)
 
 The test setup matters. Not toy prompts. Real specs across multiple files.
 
 > "Imagine like a big spec where I'm asking it to build a specific thing across a bunch of different files and then being able to measure the output of that is really what I'm doing. And I do that across I have multiple of those things that are running."
 >
-> Adam, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0)
+> Adam, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0&t=1623)
 
 The grading criteria: tool call failures, output completeness, whether the generated code actually satisfies the spec. Binary where possible. Did it complete the task or not?
 
@@ -54,7 +54,7 @@ Some models want temperatures that seem wrong.
 
 > "Some of them actually I found recommend even higher, like one, like the new ByteDance Seed OSS model has a like ideal temperature of like one or 1.1, which is insane."
 >
-> Adam, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0)
+> Adam, [Roo Cast S01E07](https://www.youtube.com/watch?v=ECO4kNueKL0&t=1587)
 
 Temperature 1.1 for a coding model sounds like you're asking for chaos. But if the model was trained with that distribution in mind, that's where it performs.
 

@@ -33,7 +33,7 @@ Every time the upstream pushes a release, you have to pull it, resolve the confl
 
 > "How many of you have forked packages to make a change because there's a bug in it? I've done that countless times in my career. And now I'm managing that thing, trying to keep it up to date."
 >
-> Matt, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY)
+> Matt, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY&t=591)
 
 The fork isn't the fix. The fork is the beginning of a maintenance relationship you didn't ask for.
 
@@ -53,7 +53,7 @@ You own the code. You understand the code. You don't wake up to a vulnerability 
 
 > "I think we're going to see a going back to where things are simpler, less dependencies, and we just use AI to write the services that we need rather than bringing in all these packages. It's probably going to take a decade for that to happen. But I honestly think it's going to result in better software long term."
 >
-> Matt, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY)
+> Matt, [Roo Cast S01E09](https://www.youtube.com/watch?v=Vo5grOXbjIY&t=567)
 
 ## The tradeoff
 

@@ -30,7 +30,7 @@ Yet when evaluating AI-assisted review, teams implicitly raise the bar to "would
 
 > "Person who joined the team yesterday and is two years of their career is okay to review a PR and it get merged and go to users but this agent and model is not... I think that we as humans have an inherent bias there."
 >
-> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o)
+> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o&t=3776)
 
 The bias is not irrational. It reflects something real: we have established processes for onboarding humans but not for onboarding AI reviewers.
 
@@ -40,7 +40,7 @@ The question engineering leaders ask is usually "Is the AI good enough?" The que
 
 > "I don't think it's an issue of AI doesn't cross a threshold at this point. It's teams' ability to have documentation, have processes, have prompts in a way to get there."
 >
-> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o)
+> Elliot, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o&t=3814)
 
 The capability gap closed faster than the process gap. Models can now reference real diffs, understand context across files, and cite specific lines. What they cannot do is compensate for missing style guides, undocumented architectural decisions, or tribal knowledge that exists only in Slack threads.
 
@@ -54,7 +54,7 @@ No team we have encountered has reached full automation: AI writes the code, AI 
 
 > "I think we've yet to encounter a company that is at the maturity with AI reviews and kind of automation to where AI is going to write the code and it's going to get merged out to users without a human doing anything."
 >
-> Hannes Rudolph, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o)
+> Hannes Rudolph, [Roo Cast S01E13](https://www.youtube.com/watch?v=fFUxIKH-t7o&t=3718)
 
 What organizations can reach is a middle state: AI handles first-pass review, flags issues, and surfaces context. Humans make the final call. This mirrors how junior reviewers work: they add value, catch issues, and learn from corrections.
 

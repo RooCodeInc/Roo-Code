@@ -38,7 +38,7 @@ The teams getting reliable results from large context windows use a different pa
 
 > "Basically, give it your 20,000 system prompt, 780,000 worth of code base or documentation, and then do your ask and you got 200,000 to finish the job."
 >
-> Hannes Rudolph, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Hannes Rudolph, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=722)
 
 The ratio matters: 80% context, 20% generation headroom. You front-load the codebase, the documentation, the relevant files. Then you ask. The model has everything it needs in one pass.
 
@@ -52,7 +52,7 @@ This pattern works especially well for specific task types:
 
 > "I find the million models to be quite effective when I feed them a huge chunk of context up front. For example, when we're doing translating files, doing, you know, 17 or 20 reads at once, boom, filling it up and then doing one or two writes with concurrent, right? It does. It works pretty smoothly."
 >
-> Hannes Rudolph, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Hannes Rudolph, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=565)
 
 ## The tradeoff
 
@@ -64,7 +64,7 @@ The other constraint: once the conversation drifts, recovery is expensive.
 
 > "It works good until it doesn't and then once it doesn't it's hard to get it back on track."
 >
-> Hannes Rudolph, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU)
+> Hannes Rudolph, [Office Hours S01E12](https://www.youtube.com/watch?v=QmmyZ2h7ffU&t=596)
 
 If turn twelve goes wrong, you often cannot fix it in turn thirteen. The model has internalized assumptions from the earlier turns. Starting fresh with a front-loaded context is usually faster than trying to correct course mid-conversation.
 

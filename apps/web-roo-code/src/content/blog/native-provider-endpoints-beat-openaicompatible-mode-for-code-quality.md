@@ -34,7 +34,7 @@ Except the translation isn't lossless.
 
 > "Going through the provider specific endpoint can actually give like drastically different results. Like for Claude 3.7 people were thinking it was pretty dumb until they tried the Anthropic endpoint and they're like okay wait actually this is this is so much better than going through the OpenAI compatible one."
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=1445)
 
 The model is the same. The capability is the same. But the API layer between your tool and the model can silently misconfigure features that matter: thinking tokens, prompt caching, tool format handling.
 
@@ -48,7 +48,7 @@ The tricky part: you can't always tell it's broken.
 
 > "Even if things like thinking isn't working, it's even tricky to figure out that it's not working until it's until it's too late because maybe the LLM didn't feel like spending tokens on thinking for that one particular question."
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=1392)
 
 The model doesn't error out. It just gives you a worse answer. And if you're evaluating models based on these worse answers, you're making decisions on corrupted data.
 
@@ -58,7 +58,7 @@ The model doesn't error out. It just gives you a worse answer. And if you're eva
 
 > "I've seen some people who didn't realize that we have sane defaults which are not that great where it's like 128k context window instead of 200,000 or a million."
 >
-> Matt Rubens, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> Matt Rubens, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=1464)
 
 Your developers truncate context to fit a limit that doesn't need to exist. The model sees less of the codebase. The suggestions get worse.
 

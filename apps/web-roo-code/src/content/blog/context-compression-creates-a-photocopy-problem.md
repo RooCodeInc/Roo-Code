@@ -32,7 +32,7 @@ This is the photocopy problem. Each compression pass loses fidelity. The summary
 
 > "You create a new task, you squish it down, but we find that actually becomes a bit of a photocopy of a photocopy situation and we're not interested in getting lesser results like that."
 >
-> Hannes Rudolph, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ)
+> Hannes Rudolph, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ&t=493)
 
 ## Why teams compress
 
@@ -54,7 +54,7 @@ The alternative is task orchestration: a parent task spawns focused child tasks.
 
 > "The child task then returns just the necessary context to the parent task, thus keeping your context clean."
 >
-> Hannes Rudolph, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ)
+> Hannes Rudolph, [Office Hours S01E05](https://www.youtube.com/watch?v=Wa8ox5EVBZQ&t=466)
 
 The parent's context stays clean because it never ingested the full working state of each child. It only receives what it needs: the outcome, the decision, the artifact.
 

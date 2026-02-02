@@ -41,7 +41,7 @@ The fix: "use the read file tool to get the latest content of the file before at
 
 > "The wording in the system prompt referred to the apply diff tool as diff. So it said use the read file tool to get the latest content of the file before attempting the diff again. So we changed it to use the read file tool to get the latest content of the file before attempting to use the apply diff tool."
 >
-> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Hannes Rudolph, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=2901)
 
 The model was interpreting "diff" as a concept, not as a tool name. It knew what a diff was. It didn't know you meant the specific tool called "apply diff tool."
 
@@ -53,7 +53,7 @@ When you write a prompt, you're not writing for a colleague who will infer your 
 
 > "Indefinite articles make a difference in prompt engineering. Be very very it's like telling your six-year-old what to do."
 >
-> Matt, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY)
+> Matt, [Office Hours S01E01](https://www.youtube.com/watch?v=DZIkxSMPKOY&t=2950)
 
 "Use the diff" and "use the apply diff tool" feel synonymous when you read them. They're not synonymous to the model. One is a vague reference; the other is an exact tool invocation.
 

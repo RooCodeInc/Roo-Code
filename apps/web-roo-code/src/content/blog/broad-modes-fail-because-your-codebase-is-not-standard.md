@@ -28,7 +28,7 @@ Your codebase has patterns. Some of them are documented. Most of them live in yo
 
 > "A large part of the context of a codebase is actually in our heads. Something we don't write down. Certain behaviors, certain patterns that aren't always that apparent to AI the way we have it set up right now."
 >
-> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=1791)
 
 The mode author didn't have access to that context. They built something that works for a general case. Your codebase is not the general case.
 
@@ -40,7 +40,7 @@ A mode that knows "use our custom logger, not console.log" will catch that every
 
 > "When we write modes, often they apply somewhat narrowly to how we're using them. And the broader we make them, I find often the less accurate they are."
 >
-> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=1721)
 
 The instinct to grab the most popular, most general tool is understandable. It feels safer. But generality is a liability when your patterns diverge from the assumptions baked into the mode's instructions.
 
@@ -50,7 +50,7 @@ This is the uncomfortable part: your codebase has patterns that are not standard
 
 > "Your code and the way you have built it are not always standard. They might be better, they might be worse, they might just be different."
 >
-> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek)
+> Hannes Rudolph, [Office Hours S01E11](https://www.youtube.com/watch?v=yiNyqIkKjek&t=1713)
 
 The AI doesn't know which. It only knows what you tell it. A mode tuned to your conventions carries that context. A generic mode guesses based on what worked elsewhere.
 

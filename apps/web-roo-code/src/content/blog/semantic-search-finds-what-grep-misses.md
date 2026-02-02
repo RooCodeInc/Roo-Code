@@ -28,7 +28,7 @@ Grep matches strings. Your codebase doesn't speak in strings. It speaks in conce
 
 > "My ability to name elements that are totally not what they should be named and an LLM can't guess. My ability to do that is greater than an LLM's ability to guess them."
 >
-> Hannes Rudolph, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs)
+> Hannes Rudolph, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs&t=460)
 
 This isn't about bad code. It's about the gap between what you meant and what you typed. Semantic search closes that gap by matching meaning rather than characters.
 
@@ -42,7 +42,7 @@ Semantic search indexes the codebase by meaning. When you prompt about a concept
 
 > "In situations where grep can't get there, indexing can, the semantic search can. There are edge cases when you're running through your development process where it can easily miss something if it's just using grep."
 >
-> Hannes Rudolph, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs)
+> Hannes Rudolph, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs&t=447)
 
 The edge cases are where this matters most. On straightforward tasks with obvious file names, grep works fine. On the ambiguous tasks where you need the model to understand your codebase, semantic search is the difference between a useful suggestion and a confidently wrong one.
 
@@ -56,7 +56,7 @@ Semantic indexing is an upfront cost. You index once, and subsequent lookups go 
 
 > "I think it's a big cost saving too... grep can be very expensive when it's trying to figure out where it needs to go in the codebase; codebase indexing can get you right to the right spot."
 >
-> Hannes Rudolph, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs)
+> Hannes Rudolph, [Office Hours S01E13](https://www.youtube.com/watch?v=gI0FImx5Qjs&t=479)
 
 For a team running dozens of tasks per day, the token savings compound. The model stops wandering through your file tree and starts landing on the right files on the first attempt.
 

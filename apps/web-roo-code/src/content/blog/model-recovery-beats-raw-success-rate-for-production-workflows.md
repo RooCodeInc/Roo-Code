@@ -40,7 +40,7 @@ A recoverable model treats failed tool calls as information, not as a template. 
 
 > "It's not about, you know, failing the occasional right to file. It's about not getting stuck on a loop after it fails a single call, which we've seen with some models after they fail once, they just continue failing forever."
 >
-> Dan, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw)
+> Dan, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw&t=1747)
 
 A non-recoverable model does the opposite. It sees the failed call, treats it as a valid approach, and doubles down. Each retry reinforces the pattern. The context window fills with repeated failures, which makes recovery even less likely.
 
@@ -54,7 +54,7 @@ A model that passes 95% of tasks but loops indefinitely on the other 5% might be
 
 > "So if the model, you know, fails occasionally, probably more often than Sonic 4, but it's able to keep going even if it fails, I think that makes it a useful model for sure."
 >
-> Dan, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw)
+> Dan, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw&t=1768)
 
 The tradeoff is explicit: you might accept a lower raw success rate in exchange for graceful degradation. The question isn't "how often does this model succeed?" It's "what happens when it fails?"
 
@@ -70,7 +70,7 @@ Does the model parse the error and adjust? Does it try a different approach? Or 
 
 > "Basically if it can sort of purge that poisoning and move on instead of taking that failed tool call as the new the new... this is the new pattern to follow and I'm just going to keep beating my head against the ball."
 >
-> Dan, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw)
+> Dan, [Roo Cast S01E06](https://www.youtube.com/watch?v=PZgkQtTRtUw&t=1786)
 
 ## Why this matters for your workflow
 

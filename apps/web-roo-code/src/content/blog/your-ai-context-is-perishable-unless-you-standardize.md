@@ -30,7 +30,7 @@ JB Brown at Smartsheet has a name for this pattern.
 
 > "I would characterize our efforts as like perishable single engineer work. So I use Roo, prompt it for some stuff... but all of the context and all of the learnings that I put into the prompt history: all that stuff is gone."
 >
-> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE)
+> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE&t=641)
 
 The code survives. The context does not.
 
@@ -46,13 +46,13 @@ The pattern has three parts.
 
 > "We've multi-tenanted that so that developers can share a task and not have: get collapse. You know when you check that in have it sort of overwrite and have a clash of two different recent tasks overwriting another."
 >
-> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE)
+> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE&t=750)
 
 **Standard modes per repository.** The same set of modes exists in every repo. When an engineer picks up unfamiliar code, they inherit the team's accumulated AI context instead of starting from scratch.
 
 > "We're now moving to team-based where teams have standards, practices, paradigms that they all use the same way and then they get to benefit from each other from their efforts of the context that they build up and the modes that they build that are specific for that codebase."
 >
-> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE)
+> JB Brown, [Roo Cast S01E19](https://www.youtube.com/watch?v=DG6IB4v_NGE&t=676)
 
 ## The tradeoff
 

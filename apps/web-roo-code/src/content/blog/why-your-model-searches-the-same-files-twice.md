@@ -36,7 +36,7 @@ The model receives your question. It reasons through the problem, maybe for 30 s
 
 > "If you were to use an open reasoning model inside of chat completions, it does all the reasoning sort of like out of band and its reasoning tokens don't get outputted at all into the chat completion. So you're like you're asking a question, it thinks about it for a while, it answers, but then all it sees is the ask and the answer, and it doesn't remember what it thought about."
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE)
+> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=1898)
 
 This explains the file search pattern. The model reasoned about your codebase structure on turn one. It figured out which files matter and why. But that reasoning got thrown away before turn two started. So it searches again, because from its perspective, it has never seen your codebase before.
 
@@ -48,7 +48,7 @@ The impact is measurable. Not "feels smarter" measurable. SWE-bench measurable.
 
 > "We've seen like four to five percentage point boosts in like SWE-bench just by like having it like keep its intelligence along the way."
 >
-> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE)
+> Brian Fioca, [Roo Cast S01E16](https://www.youtube.com/watch?v=Nu5TeVQbOOE&t=1951)
 
 Four to five percentage points on a coding benchmark is significant. And that improvement comes entirely from not throwing away context that the model already generated.
 

@@ -30,7 +30,7 @@ This is the memory bank failure mode: summaries capture a snapshot, but codebase
 
 > "Codebase indexing provides an understanding of what your codebase currently is, whereas a memory bank does not. It provides an understanding of what a bunch of summaries have indicated your codebase is."
 >
-> Hannes Rudolph, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4)
+> Hannes Rudolph, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4&t=402)
 
 ## The sync gap
 
@@ -38,7 +38,7 @@ Memory banks require manual updates. You tell the model to update a specific sec
 
 > "With memory bank you have to do like I've done this: you should update this memory bank, and sometimes it fails because I've tried using memory bank in the past and then like I told it please update this specific part and instead of updating it just appends the thing that I want to replace."
 >
-> Ellie, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4)
+> Ellie, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4&t=759)
 
 Codebase indexing solves this by syncing with your project automatically. Add a file, the index updates. Rename a function, the index reflects it. The queries return results from the current state, not cached summaries that may or may not match reality.
 
@@ -48,7 +48,7 @@ Here's the part that compounds the drift: if something in the memory bank is ina
 
 > "If there is something inaccurate in the codebase, there's no way for Roo to detect that."
 >
-> Hannes Rudolph, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4)
+> Hannes Rudolph, [Office Hours S01E08](https://www.youtube.com/watch?v=xs52gRPH9P4&t=410)
 
 The model treats the memory bank as ground truth. If the summary says "auth is handled in `/lib/auth.js`" but you moved it to `/services/authentication/` last sprint, the model will confidently reference the wrong location. It won't check. It can't check. The summary is what it knows.
 

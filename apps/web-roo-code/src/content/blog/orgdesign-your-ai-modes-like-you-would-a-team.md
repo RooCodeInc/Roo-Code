@@ -30,7 +30,7 @@ Engineering leaders who have structured teams before have this skill. They just 
 
 > "Managers who have done org design, who have tried to figure out the best combination of people to work together, have this innately in them. They just have to recognize: okay, now you're org-designing your modes, your agents, the cooperation mechanisms between them, and the responsibility delegation between them."
 >
-> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg)
+> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg&t=1831)
 
 ## Start from the orchestrator
 
@@ -40,7 +40,7 @@ Think of it as a value stream map. Work enters from the left (an issue, a PR, a 
 
 > "Start from the orchestrator level. Where do you get your inputs from? Where do your outputs need to go to? You're kind of doing a value stream map: here's where stuff comes from the left and goes out to the right."
 >
-> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg)
+> JB Brown, [Roo Cast S01E17](https://www.youtube.com/watch?v=R4U89z9eGPg&t=1874)
 
 If you skip this step, you end up with modes that overlap, compete for the same tasks, or produce outputs that don't fit the next step in the chain.
 

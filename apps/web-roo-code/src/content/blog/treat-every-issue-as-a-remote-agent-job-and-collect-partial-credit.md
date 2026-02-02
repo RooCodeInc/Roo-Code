@@ -36,7 +36,7 @@ The shift is simple: throw broad tasks at remote agents and evaluate outcomes th
 
 > "That PR might not actually be mergeable in its state, but did it help us develop? Did it accelerate our process? When we jump into that task, do we now know, hey, these are the nine parts of the codebase that need to be updated to get this done. Was that a step of research that we would have had to do otherwise?"
 >
-> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64)
+> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64&t=2671)
 
 An unmergeable PR that identifies nine files you need to touch is not a failed task. It's a research artifact that would have taken hours to produce manually. The agent did the exploration. You get the map.
 
@@ -54,7 +54,7 @@ The value shows up in specific artifacts:
 
 > "PR acts as almost a planning phase, or research. And then you start the process over with the knowledge you've now gained through development of that PR."
 >
-> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64)
+> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64&t=2680)
 
 The PR becomes a research document. The second attempt starts with context the first attempt generated.
 
@@ -72,7 +72,7 @@ Teams using the partial credit pattern report a specific shift: senior engineers
 
 > "We put PRDs and Figma screenshots up and we see... creating opportunities for partial credit is the best way I describe this."
 >
-> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64)
+> Peter Hamilton, [Roo Cast S01E05](https://www.youtube.com/watch?v=h5lA0vaLH64&t=2656)
 
 This works especially well for ambiguous tasks: features with unclear scope, refactors touching unknown parts of the codebase, or integrations where you don't know what will break.
 

@@ -30,7 +30,7 @@ The operation requires exact matching of code blocks. Not approximate matching. 
 
 > "The biggest issue we run into with Roo Code is just the applied diff like the diffing side of it. Like all the other tool calls seem to work very well like 99% of the time."
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=603)
 
 The precision requirement explains why local models struggle here more than anywhere else. A model can understand your codebase, reason about the fix, and generate syntactically correct code. But if it cannot reproduce the exact search block, the diff fails. And when the diff fails, you're back to copying and pasting manually.
 
@@ -40,7 +40,7 @@ The problem is structural. Apply diff needs the model to output a search block t
 
 > "Apply diff is because it's so precise on what it actually needs to change that the matching at 100% just typically will not happen."
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=385)
 
 Local models, especially smaller ones, tend to normalize whitespace, reformat code slightly, or introduce minor variations that break the match. Some frontier models have the same problem. Gemini 2.5 Pro, despite its capabilities, has been reported to struggle with apply diff consistency.
 
@@ -56,7 +56,7 @@ For teams running local models, two strategies reduce apply diff failures:
 
 > "Devstral is the latest local model that actually does a pretty dang good job with it to be honest with you."
 >
-> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo)
+> Adam, [Office Hours S01E09](https://www.youtube.com/watch?v=QZkxzxTu6Qo&t=411)
 
 Devstral has shown consistent performance on apply diff where other local models struggle. If you're committed to local inference and apply diff is critical, testing against Devstral is a reasonable starting point.
 

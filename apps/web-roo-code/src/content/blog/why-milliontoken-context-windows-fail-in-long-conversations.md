@@ -40,7 +40,7 @@ The million-token context window works differently depending on how you use it.
 
 > "The million context works differently when you're dumping it, you're one-shotting, you're saying, here's a giant trove of stuff and you ask it a question... But when you have an ongoing conversation back and forth and it grows to hundreds of thousands, it doesn't maintain focus. So, for extended tasks, it's more like 200K in my experience."
 >
-> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw)
+> Shank, [Office Hours S01E07](https://www.youtube.com/watch?v=yGVPIdn0mVw&t=2183)
 
 The advertised number tells you the theoretical maximum. The effective number for agentic workflows is closer to 200K. Sometimes less.
 

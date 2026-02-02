@@ -32,7 +32,7 @@ That narrative spreads. The tool never gets a second chance.
 
 > "If you sort of don't get the first iteration right, like no one's going to stick around to like try 10 other times unless you have like a super high activation energy."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=2984)
 
 ## The activation energy problem
 
@@ -44,7 +44,7 @@ Product teams optimize for the tenth iteration: better context handling, smarter
 
 > "If you have that bad first impression then it's like you're like this thing can't do anything."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=2961)
 
 The implication for product design is clear: the first response has to work. Not "work after some back-and-forth." Not "work if you phrase it right." Work on the first attempt, with whatever messy prompt the user actually types.
 
@@ -54,7 +54,7 @@ There's a deeper problem here. AI coding tools often have capabilities that user
 
 > "A lot of people just don't spend the time to like figure out the nuance of what these things can do."
 >
-> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg)
+> Logan Kilpatrick, [Roo Cast S01E15](https://www.youtube.com/watch?v=HPdvro2nnRg&t=2954)
 
 For Series A through C teams evaluating tools, this means the real question isn't "which tool is most capable?" It's "which tool succeeds on the first prompt our developers will actually type?"
 

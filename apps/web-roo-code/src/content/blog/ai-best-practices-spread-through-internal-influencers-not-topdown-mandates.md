@@ -34,13 +34,13 @@ What works instead is something Netflix discovered through practice, not theory.
 
 > "I think that's probably the model that has happened organically at Netflix is look at the people who are the most effective and try to do what they're doing."
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=1628)
 
 The insight: every engineering org already has internal influencers. Developers that others watch and emulate. When one of these engineers shares a prompt or recommends a tool, people try it. Not because of a mandate. Because trust already exists.
 
 > "A term that I like to use is almost like influencers. Developers that other people see, wow, this is a 10x developer or look how productive she is. And when that person speaks everyone listens and when they say try this as your prompt or I found this tool to be amazing, people around them try to emulate them."
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=1584)
 
 This isn't about creating evangelists from scratch. It's about identifying who already has influence and giving them time and space to experiment.
 
@@ -50,7 +50,7 @@ Identifying influencers is step one. Step two is creating forums where they can 
 
 > "We have monthly get-togethers at the company where people can demo what they've built, shared lessons learned and that usually has like a two to three hundred engineer audience every month and that's been super valuable for sharing what's new."
 >
-> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ)
+> David Leen, [Office Hours S01E04](https://www.youtube.com/watch?v=ZnKkwWuQ9QQ&t=2465)
 
 The format matters. A demo with a live audience is different from a doc in a wiki. Demos show what actually works. They invite questions. They create social proof in real time.
 
