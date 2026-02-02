@@ -34,6 +34,27 @@ vi.mock("@/components/ui", () => ({
 			{children}
 		</button>
 	),
+	Input: ({ value, onChange, placeholder, id, type, className, ...props }: any) => (
+		<input
+			type={type || "text"}
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
+	Textarea: ({ value, onChange, placeholder, id, className, ...props }: any) => (
+		<textarea
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
 	Dialog: ({ children, open }: any) => (
 		<div data-testid="dialog" data-open={open}>
 			{open && children}
