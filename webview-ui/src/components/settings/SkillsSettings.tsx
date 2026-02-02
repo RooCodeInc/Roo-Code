@@ -282,6 +282,30 @@ export const SkillsSettings: React.FC = () => {
 				</div>
 			</div>
 
+			{/* Fixed Footer */}
+			<div className="px-6 py-1 text-sm border-t border-vscode-panel-border text-muted-foreground">
+				<Trans
+					i18nKey="settings:skills.footer"
+					components={{
+						MarketplaceLink: (
+							<span
+								onClick={() => {
+									window.postMessage(
+										{
+											type: "action",
+											action: "marketplaceButtonClicked",
+											values: { marketplaceTab: "mode" },
+										},
+										"*",
+									)
+								}}
+								className="text-vscode-textLink-foreground hover:underline cursor-pointer"
+							/>
+						),
+					}}
+				/>
+			</div>
+
 			{/* Delete Confirmation Dialog */}
 			<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
 				<AlertDialogContent>

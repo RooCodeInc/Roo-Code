@@ -123,7 +123,8 @@
 			"nameInvalid": "Name must be 1-64 lowercase letters, numbers, or hyphens",
 			"descriptionRequired": "Description is required",
 			"descriptionTooLong": "Description must be 1024 characters or less"
-		}
+		},
+		"footer": "Create your own skills with the Skill Writer mode, available in the <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	},
 	"ui": {
 		"collapseThinking": {
