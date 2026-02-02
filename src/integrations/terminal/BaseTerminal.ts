@@ -65,7 +65,7 @@ export abstract class BaseTerminal implements RooTerminal {
 			// This prevents conda/pyenv/other auto-activation commands from hijacking the stream
 			if (eventCommand !== undefined && this.process.command) {
 				if (!BaseTerminal.commandsMatch(this.process.command, eventCommand)) {
-					console.warn(
+					console.debug(
 						`[Terminal ${this.provider}/${this.id}] Ignoring shell execution for non-matching command. ` +
 							`Expected: "${this.process.command}", Got: "${eventCommand}"`,
 					)

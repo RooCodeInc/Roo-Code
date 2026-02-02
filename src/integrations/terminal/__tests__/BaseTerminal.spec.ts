@@ -161,7 +161,7 @@ describe("BaseTerminal", () => {
 
 		it("ignores stream when eventCommand does not match process command", () => {
 			const stream = createMockStream()
-			const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+			const consoleSpy = vi.spyOn(console, "debug").mockImplementation(() => {})
 
 			terminal.setActiveStream(stream, undefined, "conda activate base")
 
