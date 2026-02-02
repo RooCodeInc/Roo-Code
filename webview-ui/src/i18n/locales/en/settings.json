@@ -69,10 +69,42 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
+		"description": "Slash commands are shortcuts for reusable workflows and actions to be used on demand (like creating a PR, running a set of tasks, etc). <DocsLink>Learn more</DocsLink>",
+		"workspaceCommands": "Workspace Commands",
+		"globalCommands": "Global Commands",
+		"noWorkspaceCommands": "No commands in this project yet.",
+		"noGlobalCommands": "No global commands yet.",
+		"addCommand": "Add Slash Command",
+		"editCommand": "Edit command",
+		"deleteCommand": "Delete command",
+		"deleteDialog": {
+			"title": "Delete Command",
+			"description": "Are you sure you want to delete the command \"{{name}}\"? This action cannot be undone.",
+			"confirm": "Delete",
+			"cancel": "Cancel"
+		},
+		"createDialog": {
+			"title": "Create New Slash Command",
+			"nameLabel": "Name",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Lowercase letters, numbers, hyphens and underscores only",
+			"sourceLabel": "Location",
+			"create": "Create",
+			"cancel": "Cancel"
+		},
+		"source": {
+			"global": "Global (available in all workspaces)",
+			"project": "Workspace"
+		},
+		"validation": {
+			"nameRequired": "Name is required",
+			"nameTooLong": "Name must be 64 characters or less",
+			"nameInvalid": "Name must contain only letters, numbers, hyphens, and underscores"
+		},
+		"footer": "Use slash commands for quick access to frequently used prompts and workflows."
 	},
 	"skills": {
-		"description": "Skills encapsulate contextual instructions and workflows, which the agent can load on-demand. <DocsLink>Learn more</DocsLink>",
+		"description": "Skills encapsulate contextual instructions and workflows, which the agent can load on-demand. They can include general instructions, specific workflows and even scripts to be run as needed. <DocsLink>Learn more</DocsLink>",
 		"workspaceSkills": "Workspace Skills",
 		"globalSkills": "Global Skills",
 		"noWorkspaceSkills": "No skills in this project yet.",
