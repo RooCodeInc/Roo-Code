@@ -22,6 +22,7 @@ import type { SkillMetadata } from "./skills.js"
 import type { ModelRecord, RouterModels } from "./model.js"
 import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.js"
 import type { WorktreeIncludeStatus } from "./worktree.js"
+import type { SavedPrompt, SavedPromptCreate, SavedPromptUpdate, SavedPromptsExport } from "./saved-prompt.js"
 
 /**
  * ExtensionMessage
@@ -109,6 +110,7 @@ export interface ExtensionMessage {
 		| "branchWorktreeIncludeResult"
 		| "folderSelected"
 		| "skills"
+		| "savedPrompts"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
@@ -334,6 +336,7 @@ export type ExtensionState = Pick<
 	| "maxGitStatusFiles"
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
+	| "savedPrompts"
 > & {
 	version: string
 	clineMessages: ClineMessage[]
@@ -606,6 +609,14 @@ export interface WebviewMessage {
 		| "deleteSkill"
 		| "moveSkill"
 		| "openSkillFile"
+		// Saved prompts messages
+		| "requestSavedPrompts"
+		| "createSavedPrompt"
+		| "updateSavedPrompt"
+		| "deleteSavedPrompt"
+		| "exportSavedPrompts"
+		| "importSavedPrompts"
+		| "useSavedPrompt"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -707,6 +718,12 @@ export interface WebviewMessage {
 	worktreeForce?: boolean
 	worktreeNewWindow?: boolean
 	worktreeIncludeContent?: string
+	// Saved prompts properties
+	savedPrompt?: SavedPrompt
+	savedPromptCreate?: SavedPromptCreate
+	savedPromptUpdate?: SavedPromptUpdate
+	savedPromptsExport?: SavedPromptsExport
+	savedPromptId?: string
 }
 
 export interface RequestOpenAiCodexRateLimitsMessage {

@@ -273,6 +273,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [openedTabs, setOpenedTabs] = useState<Array<{ label: string; isActive: boolean; path?: string }>>([])
 	const [commands, setCommands] = useState<Command[]>([])
 	const [skills, setSkills] = useState<SkillMetadata[]>([])
+	const [savedPrompts, setSavedPrompts] = useState<any[]>([])
 	const [mcpServers, setMcpServers] = useState<McpServer[]>([])
 	const [currentCheckpoint, setCurrentCheckpoint] = useState<string>()
 	const [extensionRouterModels, setExtensionRouterModels] = useState<RouterModels | undefined>(undefined)
@@ -373,6 +374,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 				}
 				case "skills": {
 					setSkills(message.skills ?? [])
+					break
+				}
+				case "savedPrompts": {
+					setSavedPrompts(message.savedPrompts ?? [])
 					break
 				}
 				case "messageUpdated": {
@@ -488,6 +493,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		openedTabs,
 		commands,
 		skills,
+		savedPrompts,
 		soundVolume: state.soundVolume,
 		ttsSpeed: state.ttsSpeed,
 		writeDelayMs: state.writeDelayMs,

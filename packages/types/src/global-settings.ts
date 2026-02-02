@@ -14,6 +14,7 @@ import { telemetrySettingsSchema } from "./telemetry.js"
 import { modeConfigSchema } from "./mode.js"
 import { customModePromptsSchema, customSupportPromptsSchema } from "./mode.js"
 import { languagesSchema } from "./vscode.js"
+import { savedPromptSchema } from "./saved-prompt.js"
 
 /**
  * Default delay in milliseconds after writes to allow diagnostics to detect potential problems.
@@ -232,6 +233,11 @@ export const globalSettingsSchema = z.object({
 	 * @default true
 	 */
 	showWorktreesInHomeScreen: z.boolean().optional(),
+
+	/**
+	 * User-saved prompts that can be quickly inserted into chat
+	 */
+	savedPrompts: z.array(savedPromptSchema).optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>
