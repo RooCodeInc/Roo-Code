@@ -62,6 +62,7 @@ export const moonshotModels = {
 		outputPrice: 3.0, // $3.00 per million tokens
 		cacheReadsPrice: 0.1, // $0.10 per million tokens (cache hit)
 		supportsTemperature: true,
+		preserveReasoning: true,
 		defaultTemperature: 1.0,
 		description:
 			"Kimi K2.5 is the latest generation of Moonshot AI's Kimi series, featuring improved reasoning capabilities and enhanced performance across diverse tasks.",
