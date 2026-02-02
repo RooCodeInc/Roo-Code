@@ -93,6 +93,9 @@ export class CodeIndexOrchestrator {
 	private graphBuilder?: IGraphParser
 	private graphEnabled: boolean = false
 
+	// Graph periodic save timer (every 5 minutes)
+	private graphSaveTimer?: vscode.Disposable
+
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
 		private readonly stateManager: CodeIndexStateManager,
@@ -116,7 +119,35 @@ export class CodeIndexOrchestrator {
 		this.graphStore = graphStore
 		this.graphBuilder = graphBuilder
 		this.graphEnabled = true
-		console.log("[CodeIndexOrchestrator] Knowledge Graph features enabled")
+
+		// Start periodic save timer (every 5 minutes) using setInterval
+		const saveGraph = async (): Promise<void> => {
+			if (this.graphStore) {
+				try {
+					const result = await this.graphStore.save()
+					if (result.success) {
+						console.log(
+							`[CodeIndexOrchestrator] Graph saved: ${result.nodeCount} nodes, ${result.edgeCount} edges`,
+						)
+					} else {
+						console.warn(`[CodeIndexOrchestrator] Graph save failed: ${result.error}`)
+					}
+				} catch (saveError) {
+					console.warn("[CodeIndexOrchestrator] Graph save failed:", saveError)
+				}
+			}
+		}
+
+		// Initial save
+		saveGraph()
+
+		// Periodic save every 5 minutes
+		const intervalId = setInterval(saveGraph, 5 * 60 * 1000)
+
+		// Create VSCode disposable for cleanup
+		this.graphSaveTimer = { dispose: () => clearInterval(intervalId) }
+
+		console.log("[CodeIndexOrchestrator] Knowledge Graph features enabled with periodic save")
 	}
 
 	/**
@@ -414,6 +445,25 @@ export class CodeIndexOrchestrator {
 
 				// Update file type statistics
 				this.updateFileTypeStats()
+
+				// Populate Knowledge Graph from cached files
+				if (this.isGraphEnabled()) {
+					this.stateManager.setSystemState("Indexing", "Building knowledge graph...")
+					try {
+						const graphStats = await this.populateGraphFromCache((current, total) => {
+							this.stateManager.setSystemState(
+								"Indexing",
+								`Building knowledge graph: ${current}/${total} files`,
+							)
+						})
+						console.log(
+							`[CodeIndexOrchestrator] Knowledge Graph built: ${graphStats.nodeCount} nodes, ${graphStats.edgeCount} edges`,
+						)
+					} catch (graphError) {
+						console.warn("[CodeIndexOrchestrator] Failed to build knowledge graph:", graphError)
+						// Continue - graph is optional
+					}
+				}
 			}
 		} catch (error: any) {
 			console.error("[CodeIndexOrchestrator] Error during indexing:", error)
@@ -466,6 +516,15 @@ export class CodeIndexOrchestrator {
 	 * Stops the file watcher and cleans up resources.
 	 */
 	public stopWatcher(): void {
+		// Save graph before stopping
+		this.saveGraphSync()
+
+		// Dispose periodic save timer
+		if (this.graphSaveTimer) {
+			this.graphSaveTimer.dispose()
+			this.graphSaveTimer = undefined
+		}
+
 		this.fileWatcher.dispose()
 		this._fileWatcherSubscriptions.forEach((sub) => sub.dispose())
 		this._fileWatcherSubscriptions = []
@@ -474,6 +533,29 @@ export class CodeIndexOrchestrator {
 			this.stateManager.setSystemState("Standby", t("embeddings:orchestrator.fileWatcherStopped"))
 		}
 		this._isProcessing = false
+	}
+
+	/**
+	 * Save graph synchronously (for cleanup)
+	 */
+	private saveGraphSync(): void {
+		if (this.graphStore) {
+			try {
+				// Fire and forget - best effort save
+				this.graphStore
+					.save()
+					.then((result) => {
+						if (result.success) {
+							console.log(`[CodeIndexOrchestrator] Graph saved on shutdown: ${result.nodeCount} nodes`)
+						}
+					})
+					.catch((error) => {
+						console.warn("[CodeIndexOrchestrator] Graph save on shutdown failed:", error)
+					})
+			} catch {
+				// Best effort
+			}
+		}
 	}
 
 	/**
@@ -956,5 +1038,73 @@ export class CodeIndexOrchestrator {
 		const stats = this.getFileTypeStats()
 		const totalCount = this.getTotalFileCount()
 		this.stateManager.setFileTypeStats(stats, totalCount)
+	}
+
+	/**
+	 * Populates the knowledge graph from cached files.
+	 * This should be called after the initial scan to build the graph.
+	 * @param onProgress Optional progress callback
+	 */
+	public async populateGraphFromCache(
+		onProgress?: (current: number, total: number) => void,
+	): Promise<{ nodeCount: number; edgeCount: number }> {
+		if (!this.isGraphEnabled() || !this.graphStore || !this.graphBuilder) {
+			return { nodeCount: 0, edgeCount: 0 }
+		}
+
+		const allHashes = this.cacheManager.getAllHashes()
+		const filePaths = Object.keys(allHashes)
+		const total = filePaths.length
+		let processed = 0
+
+		console.log(`[CodeIndexOrchestrator] Populating graph from ${total} cached files...`)
+
+		// Process files in batches to avoid memory issues
+		const batchSize = 50
+		for (let i = 0; i < filePaths.length; i += batchSize) {
+			const batch = filePaths.slice(i, i + batchSize)
+
+			await Promise.all(
+				batch.map(async (filePath) => {
+					try {
+						let content: string | null = null
+						try {
+							content = await vscode.workspace.fs
+								.readFile(vscode.Uri.file(filePath))
+								.then((buffer) => Buffer.from(buffer).toString("utf-8"))
+						} catch {
+							// File may have been deleted
+							content = null
+						}
+
+						if (!content) return
+
+						const graphResult = await this.graphBuilder!.parseFile(filePath, content)
+						if (graphResult.success) {
+							await this.graphStore!.updateNode(
+								filePath,
+								allHashes[filePath] || "",
+								graphResult.imports,
+								graphResult.exports,
+							)
+						}
+					} catch (error) {
+						// Best effort - skip file
+						console.warn(`[CodeIndexOrchestrator] Failed to parse ${filePath} for graph:`, error)
+					}
+				}),
+			)
+
+			processed += batch.length
+			onProgress?.(processed, total)
+		}
+
+		// Save the graph
+		const saveResult = await this.graphStore.save()
+		console.log(
+			`[CodeIndexOrchestrator] Graph populated: ${saveResult.nodeCount} nodes, ${saveResult.edgeCount} edges`,
+		)
+
+		return { nodeCount: saveResult.nodeCount, edgeCount: saveResult.edgeCount }
 	}
 }
