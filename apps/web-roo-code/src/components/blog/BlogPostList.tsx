@@ -12,36 +12,11 @@ interface BlogPostListProps {
 }
 
 /**
- * Source badge colors and icons
- * Each podcast has a distinct color for visual differentiation
+ * Source badge component
+ * Styling matches the tag badges (rounded, same padding)
  */
-const SOURCE_STYLES: Record<BlogSource, { bg: string; text: string; icon: string }> = {
-	"Office Hours": {
-		bg: "bg-blue-500/10 dark:bg-blue-400/10",
-		text: "text-blue-700 dark:text-blue-300",
-		icon: "🎙️",
-	},
-	"After Hours": {
-		bg: "bg-purple-500/10 dark:bg-purple-400/10",
-		text: "text-purple-700 dark:text-purple-300",
-		icon: "🌙",
-	},
-	"Roo Cast": {
-		bg: "bg-emerald-500/10 dark:bg-emerald-400/10",
-		text: "text-emerald-700 dark:text-emerald-300",
-		icon: "📻",
-	},
-}
-
 function SourceBadge({ source }: { source: BlogSource }) {
-	const style = SOURCE_STYLES[source]
-	return (
-		<span
-			className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${style.bg} ${style.text}`}>
-			<span aria-hidden="true">{style.icon}</span>
-			{source}
-		</span>
-	)
+	return <span className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">{source}</span>
 }
 
 export function BlogPostList({ posts }: BlogPostListProps) {
