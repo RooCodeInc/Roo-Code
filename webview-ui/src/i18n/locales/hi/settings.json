@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "कस्टम वर्कफ़्लो और क्रियाओं को तेज़ी से निष्पादित करने के लिए अपने स्लैश कमांड प्रबंधित करें। <DocsLink>और जानें</DocsLink>"
+		"description": "कस्टम वर्कफ़्लो और क्रियाओं को तेज़ी से निष्पादित करने के लिए अपने स्लैश कमांड प्रबंधित करें। <DocsLink>और जानें</DocsLink>",
+		"workspaceCommands": "वर्कस्पेस कमांड",
+		"globalCommands": "ग्लोबल कमांड",
+		"noWorkspaceCommands": "इस प्रोजेक्ट में अभी तक कोई कमांड नहीं।",
+		"noGlobalCommands": "अभी तक कोई ग्लोबल कमांड नहीं।",
+		"addCommand": "स्लैश कमांड जोड़ें",
+		"editCommand": "कमांड संपादित करें",
+		"deleteCommand": "कमांड हटाएं",
+		"deleteDialog": {
+			"title": "कमांड हटाएं",
+			"description": "क्या आप वाकई कमांड \"{{name}}\" को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+			"confirm": "हटाएं",
+			"cancel": "रद्द करें"
+		},
+		"createDialog": {
+			"title": "नया स्लैश कमांड बनाएं",
+			"nameLabel": "नाम",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "केवल लोअरकेस अक्षर, संख्याएं, हाइफन और अंडरस्कोर",
+			"sourceLabel": "स्थान",
+			"create": "बनाएं",
+			"cancel": "रद्द करें"
+		},
+		"source": {
+			"global": "ग्लोबल (सभी वर्कस्पेस में उपलब्ध)",
+			"project": "वर्कस्पेस"
+		},
+		"validation": {
+			"nameRequired": "नाम आवश्यक है",
+			"nameTooLong": "नाम 64 वर्ण या उससे कम होना चाहिए",
+			"nameInvalid": "नाम में केवल अक्षर, संख्याएं, हाइफन और अंडरस्कोर हो सकते हैं"
+		},
+		"footer": "अक्सर उपयोग किए जाने वाले संकेतों और वर्कफ़्लो तक तेज़ी से पहुंचने के लिए स्लैश कमांड का उपयोग करें।"
 	},
 	"prompts": {
 		"description": "प्रॉम्प्ट्स को बेहतर बनाना, कोड की व्याख्या करना और समस्याओं को ठीक करना जैसी त्वरित कार्रवाइयों के लिए उपयोग किए जाने वाले सहायक प्रॉम्प्ट्स को कॉन्फ़िगर करें। ये प्रॉम्प्ट्स Roo को सामान्य विकास कार्यों के लिए बेहतर सहायता प्रदान करने में मदद करते हैं।"
@@ -997,11 +1029,60 @@
 	},
 	"skills": {
 		"description": "Skills का प्रबंधन करें जो एजेंट को संदर्भात्मक निर्देश प्रदान करते हैं। जब आपके कार्यों के लिए प्रासंगिक हों तो Skills स्वचालित रूप से लागू होते हैं। <DocsLink>और जानें</DocsLink>",
-		"projectSkills": "प्रोजेक्ट Skills",
+		"workspaceSkills": "वर्कस्पेस Skills",
 		"globalSkills": "ग्लोबल Skills",
-		"noProjectSkills": "कोई प्रोजेक्ट skills कॉन्फ़िगर नहीं किया गया। प्रोजेक्ट-विशिष्ट एजेंट क्षमताएं जोड़ने के लिए एक बनाएं।",
-		"noGlobalSkills": "कोई ग्लोबल skills कॉन्फ़िगर नहीं किया गया। सभी प्रोजेक्ट्स में उपलब्ध एजेंट क्षमताएं जोड़ने के लिए एक बनाएं।",
+		"noWorkspaceSkills": "इस प्रोजेक्ट में अभी तक कोई skills नहीं।",
+		"noGlobalSkills": "अभी तक कोई ग्लोबल skills नहीं।",
 		"addSkill": "Skill जोड़ें",
+		"editSkill": "Skill संपादित करें",
+		"deleteSkill": "Skill हटाएं",
+		"configureModes": "मोड उपलब्धता",
+		"modeAny": "कोई भी मोड",
+		"modeCount": "{{count}} मोड",
+		"deleteDialog": {
+			"title": "Skill हटाएं",
+			"description": "क्या आप वाकई Skill \"{{name}}\" को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+			"confirm": "हटाएं",
+			"cancel": "रद्द करें"
+		},
+		"modeDialog": {
+			"title": "Skill मोड कॉन्फ़िगर करें",
+			"description": "चुनें कि कौन से मोड इस Skill का उपयोग कर सकते हैं",
+			"intro": "अपना संदर्भ हल्का रखने के लिए, हम अनुशंसा करते हैं कि Skill को केवल उन मोड के लिए उपलब्ध बनाएं जिन्हें इसकी आवश्यकता है।",
+			"anyMode": "कोई भी मोड (हर जगह उपलब्ध)",
+			"save": "सहेजें",
+			"cancel": "रद्द करें"
+		},
+		"createDialog": {
+			"title": "नया Skill बनाएं",
+			"nameLabel": "नाम",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "केवल लोअरकेस अक्षर, संख्याएं और हाइफन",
+			"descriptionLabel": "विवरण",
+			"descriptionPlaceholder": "बताएं कि इस Skill का उपयोग कब करना चाहिए...",
+			"descriptionHint": "समझाएं कि यह Skill क्या करता है और एजेंट को इसे कब लागू करना चाहिए",
+			"sourceLabel": "स्थान",
+			"modeLabel": "मोड (वैकल्पिक)",
+			"modePlaceholder": "कोई भी मोड",
+			"modeAny": "कोई भी मोड",
+			"modeHint": "इस Skill को किसी विशिष्ट मोड तक सीमित करें",
+			"create": "बनाएं",
+			"cancel": "रद्द करें"
+		},
+		"source": {
+			"global": "ग्लोबल (सभी प्रोजेक्ट्स में उपलब्ध)",
+			"project": "प्रोजेक्ट (केवल यह वर्कस्पेस)"
+		},
+		"validation": {
+			"nameRequired": "नाम आवश्यक है",
+			"nameTooLong": "नाम 64 वर्ण या उससे कम होना चाहिए",
+			"nameInvalid": "नाम 1-64 लोअरकेस अक्षर, संख्याएं या हाइफन होना चाहिए",
+			"descriptionRequired": "विवरण आवश्यक है",
+			"descriptionTooLong": "विवरण 1024 वर्ण या उससे कम होना चाहिए"
+		},
+		"footer": "Skill Writer मोड के साथ अपने स्वयं के Skills बनाएं, <MarketplaceLink>Modes Marketplace</MarketplaceLink> में उपलब्ध।",
+		"projectSkills": "प्रोजेक्ट Skills",
+		"noProjectSkills": "कोई प्रोजेक्ट skills कॉन्फ़िगर नहीं किया गया। प्रोजेक्ट-विशिष्ट एजेंट क्षमताएं जोड़ने के लिए एक बनाएं।",
 		"editSkill": "Skill संपादित करें",
 		"deleteSkill": "Skill हटाएं",
 		"changeMode": "मोड बदलें",

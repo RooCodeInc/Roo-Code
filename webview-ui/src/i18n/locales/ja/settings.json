@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>"
+		"description": "スラッシュコマンドを管理して、カスタムワークフローやアクションを素早く実行します。<DocsLink>詳細はこちら</DocsLink>",
+		"workspaceCommands": "ワークスペースコマンド",
+		"globalCommands": "グローバルコマンド",
+		"noWorkspaceCommands": "このプロジェクトにはまだコマンドがありません。",
+		"noGlobalCommands": "グローバルコマンドはまだありません。",
+		"addCommand": "スラッシュコマンドを追加",
+		"editCommand": "コマンドを編集",
+		"deleteCommand": "コマンドを削除",
+		"deleteDialog": {
+			"title": "コマンドを削除",
+			"description": "コマンド \"{{name}}\" を削除してもよろしいですか？このアクションは取り消せません。",
+			"confirm": "削除",
+			"cancel": "キャンセル"
+		},
+		"createDialog": {
+			"title": "新しいスラッシュコマンドを作成",
+			"nameLabel": "名前",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "小文字、数字、ハイフン、アンダースコアのみ",
+			"sourceLabel": "場所",
+			"create": "作成",
+			"cancel": "キャンセル"
+		},
+		"source": {
+			"global": "グローバル（すべてのワークスペースで利用可能）",
+			"project": "ワークスペース"
+		},
+		"validation": {
+			"nameRequired": "名前は必須です",
+			"nameTooLong": "名前は64文字以下である必要があります",
+			"nameInvalid": "名前は文字、数字、ハイフン、アンダースコアのみを含める必要があります"
+		},
+		"footer": "スラッシュコマンドを使用して、頻繁に使用するプロンプトとワークフローにすばやくアクセスします。"
 	},
 	"prompts": {
 		"description": "プロンプトの強化、コードの説明、問題の修正などの迅速なアクションに使用されるサポートプロンプトを設定します。これらのプロンプトは、Rooが一般的な開発タスクでより良いサポートを提供するのに役立ちます。"
@@ -997,6 +1029,58 @@
 	},
 	"skills": {
 		"description": "エージェントにコンテキスト指示を提供するスキルを管理します。スキルはタスクに関連する場合に自動的に適用されます。<DocsLink>詳細を見る</DocsLink>",
+		"workspaceSkills": "ワークスペーススキル",
+		"globalSkills": "グローバルスキル",
+		"noWorkspaceSkills": "このプロジェクトにはまだスキルがありません。",
+		"noGlobalSkills": "グローバルスキルはまだありません。",
+		"addSkill": "スキルを追加",
+		"editSkill": "スキルを編集",
+		"deleteSkill": "スキルを削除",
+		"configureModes": "モード可用性",
+		"modeAny": "任意のモード",
+		"modeCount": "{{count}} モード",
+		"deleteDialog": {
+			"title": "スキルを削除",
+			"description": "スキル \"{{name}}\" を削除してもよろしいですか？このアクションは取り消せません。",
+			"confirm": "削除",
+			"cancel": "キャンセル"
+		},
+		"modeDialog": {
+			"title": "スキルモードを設定",
+			"description": "このスキルを使用できるモードを選択します",
+			"intro": "コンテキストを軽く保つために、必要なモードのみでスキルを利用可能にすることをお勧めします。",
+			"anyMode": "任意のモード（どこでも利用可能）",
+			"save": "保存",
+			"cancel": "キャンセル"
+		},
+		"createDialog": {
+			"title": "新しいスキルを作成",
+			"nameLabel": "名前",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "小文字、数字、ハイフンのみ",
+			"descriptionLabel": "説明",
+			"descriptionPlaceholder": "このスキルを使用するべき場合について説明してください...",
+			"descriptionHint": "このスキルが何をするか、およびエージェントがいつそれを適用すべきかを説明してください",
+			"sourceLabel": "場所",
+			"modeLabel": "モード（オプション）",
+			"modePlaceholder": "任意のモード",
+			"modeAny": "任意のモード",
+			"modeHint": "このスキルを特定のモードに制限します",
+			"create": "作成",
+			"cancel": "キャンセル"
+		},
+		"source": {
+			"global": "グローバル（すべてのプロジェクトで利用可能）",
+			"project": "プロジェクト（このワークスペースのみ）"
+		},
+		"validation": {
+			"nameRequired": "名前は必須です",
+			"nameTooLong": "名前は64文字以下である必要があります",
+			"nameInvalid": "名前は1〜64文字の小文字、数字、またはハイフンである必要があります",
+			"descriptionRequired": "説明は必須です",
+			"descriptionTooLong": "説明は1024文字以下である必要があります"
+		},
+		"footer": "スキルライターモードで独自のスキルを作成します。<MarketplaceLink>モードマーケットプレイス</MarketplaceLink>で入手可能です。",
 		"projectSkills": "プロジェクトスキル",
 		"globalSkills": "グローバルスキル",
 		"noProjectSkills": "プロジェクトスキルが設定されていません。プロジェクト固有のエージェント機能を追加するには、作成してください。",

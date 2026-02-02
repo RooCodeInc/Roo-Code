@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Zarządzaj poleceniami slash, aby szybko wykonywać niestandardowe przepływy pracy i akcje. <DocsLink>Dowiedz się więcej</DocsLink>"
+		"description": "Zarządzaj poleceniami slash, aby szybko wykonywać niestandardowe przepływy pracy i akcje. <DocsLink>Dowiedz się więcej</DocsLink>",
+		"workspaceCommands": "Polecenia obszaru roboczego",
+		"globalCommands": "Polecenia globalne",
+		"noWorkspaceCommands": "Brak poleceń w tym projekcie.",
+		"noGlobalCommands": "Brak poleceń globalnych.",
+		"addCommand": "Dodaj polecenie Slash",
+		"editCommand": "Edytuj polecenie",
+		"deleteCommand": "Usuń polecenie",
+		"deleteDialog": {
+			"title": "Usuń polecenie",
+			"description": "Czy na pewno chcesz usunąć polecenie \"{{name}}\"? Tej czynności nie można cofnąć.",
+			"confirm": "Usuń",
+			"cancel": "Anuluj"
+		},
+		"createDialog": {
+			"title": "Utwórz nowe polecenie Slash",
+			"nameLabel": "Nazwa",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Tylko małe litery, cyfry, łączniki i podkreślenia",
+			"sourceLabel": "Lokalizacja",
+			"create": "Utwórz",
+			"cancel": "Anuluj"
+		},
+		"source": {
+			"global": "Globalne (dostępne we wszystkich obszarach roboczych)",
+			"project": "Obszar roboczy"
+		},
+		"validation": {
+			"nameRequired": "Nazwa jest wymagana",
+			"nameTooLong": "Nazwa musi mieć 64 znaki lub mniej",
+			"nameInvalid": "Nazwa może zawierać tylko litery, cyfry, łączniki i podkreślenia"
+		},
+		"footer": "Używaj poleceń slash do szybkiego dostępu do często używanych podpowiedzi i przepływów pracy."
 	},
 	"prompts": {
 		"description": "Skonfiguruj podpowiedzi wsparcia używane do szybkich działań, takich jak ulepszanie podpowiedzi, wyjaśnianie kodu i rozwiązywanie problemów. Te podpowiedzi pomagają Roo zapewnić lepsze wsparcie dla typowych zadań programistycznych."
@@ -997,6 +1029,58 @@
 	},
 	"skills": {
 		"description": "Zarządzaj umiejętnościami, które dostarczają kontekstowe instrukcje dla agenta. Umiejętności są automatycznie stosowane, gdy są istotne dla Twoich zadań. <DocsLink>Dowiedz się więcej</DocsLink>",
+		"workspaceSkills": "Umiejętności obszaru roboczego",
+		"globalSkills": "Umiejętności globalne",
+		"noWorkspaceSkills": "Brak umiejętności w tym projekcie.",
+		"noGlobalSkills": "Brak umiejętności globalnych.",
+		"addSkill": "Dodaj umiejętność",
+		"editSkill": "Edytuj umiejętność",
+		"deleteSkill": "Usuń umiejętność",
+		"configureModes": "Dostępność trybu",
+		"modeAny": "Dowolny tryb",
+		"modeCount": "{{count}} tryby",
+		"deleteDialog": {
+			"title": "Usuń umiejętność",
+			"description": "Czy na pewno chcesz usunąć umiejętność \"{{name}}\"? Tej czynności nie można cofnąć.",
+			"confirm": "Usuń",
+			"cancel": "Anuluj"
+		},
+		"modeDialog": {
+			"title": "Konfiguruj tryby umiejętności",
+			"description": "Wybierz, które tryby mogą korzystać z tej umiejętności",
+			"intro": "Aby utrzymać lekki kontekst, zalecamy udostępnienie umiejętności tylko trybom, które ich potrzebują.",
+			"anyMode": "Dowolny tryb (dostępny wszędzie)",
+			"save": "Zapisz",
+			"cancel": "Anuluj"
+		},
+		"createDialog": {
+			"title": "Utwórz nową umiejętność",
+			"nameLabel": "Nazwa",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "Tylko małe litery, cyfry i łączniki",
+			"descriptionLabel": "Opis",
+			"descriptionPlaceholder": "Opisz, kiedy ta umiejętność powinna być używana...",
+			"descriptionHint": "Wyjaśnij, co robi ta umiejętność i kiedy agent powinien ją zastosować",
+			"sourceLabel": "Lokalizacja",
+			"modeLabel": "Tryb (opcjonalnie)",
+			"modePlaceholder": "Dowolny tryb",
+			"modeAny": "Dowolny tryb",
+			"modeHint": "Ogranicz tę umiejętność do określonego trybu",
+			"create": "Utwórz",
+			"cancel": "Anuluj"
+		},
+		"source": {
+			"global": "Globalne (dostępne we wszystkich projektach)",
+			"project": "Projekt (tylko ten obszar roboczy)"
+		},
+		"validation": {
+			"nameRequired": "Nazwa jest wymagana",
+			"nameTooLong": "Nazwa musi mieć 64 znaki lub mniej",
+			"nameInvalid": "Nazwa musi zawierać 1-64 małe litery, cyfry lub łączniki",
+			"descriptionRequired": "Opis jest wymagany",
+			"descriptionTooLong": "Opis musi mieć 1024 znaki lub mniej"
+		},
+		"footer": "Twórz własne umiejętności za pomocą trybu Skill Writer, dostępnego w <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
 		"projectSkills": "Umiejętności Projektu",
 		"globalSkills": "Umiejętności Globalne",
 		"noProjectSkills": "Brak skonfigurowanych umiejętności projektu. Utwórz jedną, aby dodać możliwości agenta specyficzne dla projektu.",

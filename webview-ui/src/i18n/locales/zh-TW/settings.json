@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>"
+		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>",
+		"workspaceCommands": "工作區命令",
+		"globalCommands": "全域命令",
+		"noWorkspaceCommands": "此專案中還沒有命令。",
+		"noGlobalCommands": "還沒有全域命令。",
+		"addCommand": "新增斜線命令",
+		"editCommand": "編輯命令",
+		"deleteCommand": "刪除命令",
+		"deleteDialog": {
+			"title": "刪除命令",
+			"description": "您確定要刪除命令 \"{{name}}\" 嗎？此動作無法復原。",
+			"confirm": "刪除",
+			"cancel": "取消"
+		},
+		"createDialog": {
+			"title": "建立新斜線命令",
+			"nameLabel": "名稱",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "僅限小寫字母、數字、連字號和底線",
+			"sourceLabel": "位置",
+			"create": "建立",
+			"cancel": "取消"
+		},
+		"source": {
+			"global": "全域（可在所有工作區中使用）",
+			"project": "工作區"
+		},
+		"validation": {
+			"nameRequired": "名稱為必填項",
+			"nameTooLong": "名稱必須為 64 個字元或更少",
+			"nameInvalid": "名稱只能包含字母、數字、連字號和底線"
+		},
+		"footer": "使用斜線命令快速存取經常使用的提示詞和工作流程。"
 	},
 	"ui": {
 		"collapseThinking": {
@@ -1004,6 +1036,58 @@
 	},
 	"skills": {
 		"description": "管理為代理提供上下文指令的技能。技能會在與您的任務相關時自動套用。<DocsLink>深入了解</DocsLink>",
+		"workspaceSkills": "工作區技能",
+		"globalSkills": "全域技能",
+		"noWorkspaceSkills": "此專案中還沒有技能。",
+		"noGlobalSkills": "還沒有全域技能。",
+		"addSkill": "新增技能",
+		"editSkill": "編輯技能",
+		"deleteSkill": "刪除技能",
+		"configureModes": "模式可用性",
+		"modeAny": "任何模式",
+		"modeCount": "{{count}} 種模式",
+		"deleteDialog": {
+			"title": "刪除技能",
+			"description": "您確定要刪除技能 \"{{name}}\" 嗎？此動作無法復原。",
+			"confirm": "刪除",
+			"cancel": "取消"
+		},
+		"modeDialog": {
+			"title": "設定技能模式",
+			"description": "選擇哪些模式可以使用此技能",
+			"intro": "為了保持您的上下文簡潔，我們建議只在需要的模式中提供技能。",
+			"anyMode": "任何模式（隨處可用）",
+			"save": "儲存",
+			"cancel": "取消"
+		},
+		"createDialog": {
+			"title": "建立新技能",
+			"nameLabel": "名稱",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "僅限小寫字母、數字和連字號",
+			"descriptionLabel": "描述",
+			"descriptionPlaceholder": "描述此技能何時應使用...",
+			"descriptionHint": "說明此技能的功能以及代理何時應應用它",
+			"sourceLabel": "位置",
+			"modeLabel": "模式（選用）",
+			"modePlaceholder": "任何模式",
+			"modeAny": "任何模式",
+			"modeHint": "將此技能限制為特定模式",
+			"create": "建立",
+			"cancel": "取消"
+		},
+		"source": {
+			"global": "全域（可在所有專案中使用）",
+			"project": "專案（僅此工作區）"
+		},
+		"validation": {
+			"nameRequired": "名稱為必填項",
+			"nameTooLong": "名稱必須為 64 個字元或更少",
+			"nameInvalid": "名稱必須是 1-64 個小寫字母、數字或連字號",
+			"descriptionRequired": "描述為必填項",
+			"descriptionTooLong": "描述必須為 1024 個字元或更少"
+		},
+		"footer": "使用技能編寫器模式建立您自己的技能，可在 <MarketplaceLink>模式市集</MarketplaceLink> 中取得。",
 		"projectSkills": "專案技能",
 		"globalSkills": "全域技能",
 		"noProjectSkills": "未設定專案技能。建立一個以新增專案特定的代理功能。",

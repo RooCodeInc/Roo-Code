@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Quản lý các lệnh slash của bạn để thực thi nhanh các quy trình công việc và hành động tùy chỉnh. <DocsLink>Tìm hiểu thêm</DocsLink>"
+		"description": "Quản lý các lệnh slash của bạn để thực thi nhanh các quy trình công việc và hành động tùy chỉnh. <DocsLink>Tìm hiểu thêm</DocsLink>",
+		"workspaceCommands": "Lệnh không gian làm việc",
+		"globalCommands": "Lệnh toàn cầu",
+		"noWorkspaceCommands": "Chưa có lệnh trong dự án này.",
+		"noGlobalCommands": "Chưa có lệnh toàn cầu.",
+		"addCommand": "Thêm lệnh Slash",
+		"editCommand": "Chỉnh sửa lệnh",
+		"deleteCommand": "Xóa lệnh",
+		"deleteDialog": {
+			"title": "Xóa lệnh",
+			"description": "Bạn có chắc chắn muốn xóa lệnh \"{{name}}\" không? Không thể hoàn tác hành động này.",
+			"confirm": "Xóa",
+			"cancel": "Hủy"
+		},
+		"createDialog": {
+			"title": "Tạo lệnh Slash mới",
+			"nameLabel": "Tên",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Chỉ chữ cái thường, số, dấu gạch ngang và dấu gạch dưới",
+			"sourceLabel": "Vị trí",
+			"create": "Tạo",
+			"cancel": "Hủy"
+		},
+		"source": {
+			"global": "Toàn cầu (có sẵn ở tất cả các không gian làm việc)",
+			"project": "Không gian làm việc"
+		},
+		"validation": {
+			"nameRequired": "Tên là bắt buộc",
+			"nameTooLong": "Tên phải có 64 ký tự hoặc ít hơn",
+			"nameInvalid": "Tên chỉ có thể chứa chữ cái, số, dấu gạch ngang và dấu gạch dưới"
+		},
+		"footer": "Sử dụng lệnh slash để truy cập nhanh các prompt và quy trình công việc được sử dụng thường xuyên."
 	},
 	"prompts": {
 		"description": "Cấu hình các lời nhắc hỗ trợ được sử dụng cho các hành động nhanh như cải thiện lời nhắc, giải thích mã và khắc phục sự cố. Những lời nhắc này giúp Roo cung cấp hỗ trợ tốt hơn cho các tác vụ phát triển phổ biến."
@@ -997,6 +1029,58 @@
 	},
 	"skills": {
 		"description": "Quản lý các skill cung cấp hướng dẫn theo ngữ cảnh cho agent. Các skill được áp dụng tự động khi chúng liên quan đến nhiệm vụ của bạn. <DocsLink>Tìm hiểu thêm</DocsLink>",
+		"workspaceSkills": "Kỹ năng không gian làm việc",
+		"globalSkills": "Kỹ năng toàn cầu",
+		"noWorkspaceSkills": "Chưa có kỹ năng trong dự án này.",
+		"noGlobalSkills": "Chưa có kỹ năng toàn cầu.",
+		"addSkill": "Thêm Skill",
+		"editSkill": "Chỉnh sửa skill",
+		"deleteSkill": "Xóa skill",
+		"configureModes": "Tính khả dụng của chế độ",
+		"modeAny": "Bất kỳ chế độ nào",
+		"modeCount": "{{count}} chế độ",
+		"deleteDialog": {
+			"title": "Xóa Skill",
+			"description": "Bạn có chắc chắn muốn xóa skill \"{{name}}\" không? Không thể hoàn tác hành động này.",
+			"confirm": "Xóa",
+			"cancel": "Hủy"
+		},
+		"modeDialog": {
+			"title": "Cấu hình chế độ Skill",
+			"description": "Chọn chế độ nào có thể sử dụng skill này",
+			"intro": "Để giữ bối cảnh của bạn nhẹ, chúng tôi khuyên bạn nên chỉ cung cấp các kỹ năng cho các chế độ cần chúng.",
+			"anyMode": "Bất kỳ chế độ nào (có sẵn ở mọi nơi)",
+			"save": "Lưu",
+			"cancel": "Hủy"
+		},
+		"createDialog": {
+			"title": "Tạo Skill mới",
+			"nameLabel": "Tên",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "Chỉ chữ cái thường, số và dấu gạch ngang",
+			"descriptionLabel": "Mô tả",
+			"descriptionPlaceholder": "Mô tả khi nên sử dụng skill này...",
+			"descriptionHint": "Giải thích skill này làm gì và khi nào agent nên áp dụng nó",
+			"sourceLabel": "Vị trí",
+			"modeLabel": "Chế độ (tùy chọn)",
+			"modePlaceholder": "Bất kỳ chế độ nào",
+			"modeAny": "Bất kỳ chế độ nào",
+			"modeHint": "Hạn chế skill này cho một chế độ cụ thể",
+			"create": "Tạo",
+			"cancel": "Hủy"
+		},
+		"source": {
+			"global": "Toàn cầu (có sẵn ở tất cả các dự án)",
+			"project": "Dự án (chỉ không gian làm việc này)"
+		},
+		"validation": {
+			"nameRequired": "Tên là bắt buộc",
+			"nameTooLong": "Tên phải có 64 ký tự hoặc ít hơn",
+			"nameInvalid": "Tên phải là 1-64 chữ cái thường, số hoặc dấu gạch ngang",
+			"descriptionRequired": "Mô tả là bắt buộc",
+			"descriptionTooLong": "Mô tả phải có 1024 ký tự hoặc ít hơn"
+		},
+		"footer": "Tạo các skill của riêng bạn với chế độ Skill Writer, có sẵn tại <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
 		"projectSkills": "Skills Dự Án",
 		"globalSkills": "Skills Toàn Cục",
 		"noProjectSkills": "Không có skill dự án nào được cấu hình. Tạo một skill để thêm khả năng agent cụ thể cho dự án.",

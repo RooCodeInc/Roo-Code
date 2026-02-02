@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Kelola perintah slash kamu untuk mengeksekusi alur kerja dan tindakan kustom dengan cepat. <DocsLink>Pelajari lebih lanjut</DocsLink>"
+		"description": "Kelola perintah slash kamu untuk mengeksekusi alur kerja dan tindakan kustom dengan cepat. <DocsLink>Pelajari lebih lanjut</DocsLink>",
+		"workspaceCommands": "Perintah Ruang Kerja",
+		"globalCommands": "Perintah Global",
+		"noWorkspaceCommands": "Tidak ada perintah di proyek ini belum.",
+		"noGlobalCommands": "Tidak ada perintah global belum.",
+		"addCommand": "Tambahkan Perintah Slash",
+		"editCommand": "Edit perintah",
+		"deleteCommand": "Hapus perintah",
+		"deleteDialog": {
+			"title": "Hapus Perintah",
+			"description": "Apakah Anda yakin ingin menghapus perintah \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
+			"confirm": "Hapus",
+			"cancel": "Batal"
+		},
+		"createDialog": {
+			"title": "Buat Perintah Slash Baru",
+			"nameLabel": "Nama",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Hanya huruf kecil, angka, tanda hubung dan garis bawah",
+			"sourceLabel": "Lokasi",
+			"create": "Buat",
+			"cancel": "Batal"
+		},
+		"source": {
+			"global": "Global (tersedia di semua ruang kerja)",
+			"project": "Ruang Kerja"
+		},
+		"validation": {
+			"nameRequired": "Nama diperlukan",
+			"nameTooLong": "Nama harus 64 karakter atau kurang",
+			"nameInvalid": "Nama hanya dapat berisi huruf, angka, tanda hubung, dan garis bawah"
+		},
+		"footer": "Gunakan perintah slash untuk akses cepat ke prompt dan alur kerja yang sering digunakan."
 	},
 	"prompts": {
 		"description": "Konfigurasi support prompt yang digunakan untuk aksi cepat seperti meningkatkan prompt, menjelaskan kode, dan memperbaiki masalah. Prompt ini membantu Roo memberikan bantuan yang lebih baik untuk tugas pengembangan umum."
@@ -1026,11 +1058,60 @@
 	},
 	"skills": {
 		"description": "Kelola skills yang memberikan instruksi kontekstual kepada agen. Skills diterapkan secara otomatis saat relevan dengan tugas Anda. <DocsLink>Pelajari lebih lanjut</DocsLink>",
-		"projectSkills": "Skills Proyek",
+		"workspaceSkills": "Skills Ruang Kerja",
 		"globalSkills": "Skills Global",
-		"noProjectSkills": "Tidak ada skills proyek yang dikonfigurasi. Buat satu untuk menambahkan kemampuan agen khusus proyek.",
-		"noGlobalSkills": "Tidak ada skills global yang dikonfigurasi. Buat satu untuk menambahkan kemampuan agen yang tersedia di semua proyek.",
+		"noWorkspaceSkills": "Tidak ada skills di proyek ini belum.",
+		"noGlobalSkills": "Tidak ada skills global belum.",
 		"addSkill": "Tambahkan Skill",
+		"editSkill": "Edit skill",
+		"deleteSkill": "Hapus skill",
+		"configureModes": "Ketersediaan mode",
+		"modeAny": "Mode apa pun",
+		"modeCount": "{{count}} mode",
+		"deleteDialog": {
+			"title": "Hapus Skill",
+			"description": "Apakah Anda yakin ingin menghapus skill \"{{name}}\"? Tindakan ini tidak dapat dibatalkan.",
+			"confirm": "Hapus",
+			"cancel": "Batal"
+		},
+		"modeDialog": {
+			"title": "Konfigurasi Mode Skill",
+			"description": "Pilih mode mana yang dapat menggunakan skill ini",
+			"intro": "Untuk menjaga konteks Anda tetap ringan, kami merekomendasikan hanya membuat skills tersedia untuk mode yang membutuhkannya.",
+			"anyMode": "Mode apa pun (tersedia di mana-mana)",
+			"save": "Simpan",
+			"cancel": "Batal"
+		},
+		"createDialog": {
+			"title": "Buat Skill Baru",
+			"nameLabel": "Nama",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "Hanya huruf kecil, angka, dan tanda hubung",
+			"descriptionLabel": "Deskripsi",
+			"descriptionPlaceholder": "Jelaskan kapan skill ini harus digunakan...",
+			"descriptionHint": "Jelaskan apa yang dilakukan skill ini dan kapan agen harus menerapkannya",
+			"sourceLabel": "Lokasi",
+			"modeLabel": "Mode (opsional)",
+			"modePlaceholder": "Mode apa pun",
+			"modeAny": "Mode apa pun",
+			"modeHint": "Batasi skill ini ke mode tertentu",
+			"create": "Buat",
+			"cancel": "Batal"
+		},
+		"source": {
+			"global": "Global (tersedia di semua proyek)",
+			"project": "Proyek (hanya ruang kerja ini)"
+		},
+		"validation": {
+			"nameRequired": "Nama diperlukan",
+			"nameTooLong": "Nama harus 64 karakter atau kurang",
+			"nameInvalid": "Nama harus 1-64 huruf kecil, angka, atau tanda hubung",
+			"descriptionRequired": "Deskripsi diperlukan",
+			"descriptionTooLong": "Deskripsi harus 1024 karakter atau kurang"
+		},
+		"footer": "Buat skills Anda sendiri dengan mode Skill Writer, tersedia di <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
+		"projectSkills": "Skills Proyek",
+		"noProjectSkills": "Tidak ada skills proyek yang dikonfigurasi. Buat satu untuk menambahkan kemampuan agen khusus proyek.",
 		"editSkill": "Edit skill",
 		"deleteSkill": "Hapus skill",
 		"changeMode": "Ubah mode",

@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Gerencie seus comandos de barra para executar rapidamente fluxos de trabalho e ações personalizadas. <DocsLink>Saiba mais</DocsLink>"
+		"description": "Gerencie seus comandos de barra para executar rapidamente fluxos de trabalho e ações personalizadas. <DocsLink>Saiba mais</DocsLink>",
+		"workspaceCommands": "Comandos do espaço de trabalho",
+		"globalCommands": "Comandos globais",
+		"noWorkspaceCommands": "Sem comandos neste projeto ainda.",
+		"noGlobalCommands": "Sem comandos globais ainda.",
+		"addCommand": "Adicionar comando de barra",
+		"editCommand": "Editar comando",
+		"deleteCommand": "Excluir comando",
+		"deleteDialog": {
+			"title": "Excluir comando",
+			"description": "Tem certeza de que deseja excluir o comando \"{{name}}\"? Esta ação não pode ser desfeita.",
+			"confirm": "Excluir",
+			"cancel": "Cancelar"
+		},
+		"createDialog": {
+			"title": "Criar novo comando de barra",
+			"nameLabel": "Nome",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Apenas letras minúsculas, números, hífens e sublinhados",
+			"sourceLabel": "Localização",
+			"create": "Criar",
+			"cancel": "Cancelar"
+		},
+		"source": {
+			"global": "Global (disponível em todos os espaços de trabalho)",
+			"project": "Espaço de trabalho"
+		},
+		"validation": {
+			"nameRequired": "Nome é obrigatório",
+			"nameTooLong": "O nome deve ter 64 caracteres ou menos",
+			"nameInvalid": "O nome pode conter apenas letras, números, hífens e sublinhados"
+		},
+		"footer": "Use comandos de barra para acesso rápido a prompts e fluxos de trabalho usados com frequência."
 	},
 	"prompts": {
 		"description": "Configure prompts de suporte usados para ações rápidas como melhorar prompts, explicar código e corrigir problemas. Esses prompts ajudam o Roo a fornecer melhor assistência para tarefas comuns de desenvolvimento."
@@ -997,6 +1029,58 @@
 	},
 	"skills": {
 		"description": "Gerencie skills que fornecem instruções contextuais ao agente. As skills são aplicadas automaticamente quando relevantes para suas tarefas. <DocsLink>Saiba mais</DocsLink>",
+		"workspaceSkills": "Skills do espaço de trabalho",
+		"globalSkills": "Skills globais",
+		"noWorkspaceSkills": "Sem skills neste projeto ainda.",
+		"noGlobalSkills": "Sem skills globais ainda.",
+		"addSkill": "Adicionar Skill",
+		"editSkill": "Editar skill",
+		"deleteSkill": "Excluir skill",
+		"configureModes": "Disponibilidade de modo",
+		"modeAny": "Qualquer modo",
+		"modeCount": "{{count}} modos",
+		"deleteDialog": {
+			"title": "Excluir Skill",
+			"description": "Tem certeza de que deseja excluir a skill \"{{name}}\"? Esta ação não pode ser desfeita.",
+			"confirm": "Excluir",
+			"cancel": "Cancelar"
+		},
+		"modeDialog": {
+			"title": "Configurar modos de Skill",
+			"description": "Escolha quais modos podem usar esta skill",
+			"intro": "Para manter seu contexto leve, recomendamos tornar skills disponíveis apenas para os modos que os precisam.",
+			"anyMode": "Qualquer modo (disponível em qualquer lugar)",
+			"save": "Salvar",
+			"cancel": "Cancelar"
+		},
+		"createDialog": {
+			"title": "Criar nova Skill",
+			"nameLabel": "Nome",
+			"namePlaceholder": "my-skill-name",
+			"nameHint": "Apenas letras minúsculas, números e hífens",
+			"descriptionLabel": "Descrição",
+			"descriptionPlaceholder": "Descreva quando essa skill deve ser usada...",
+			"descriptionHint": "Explique o que essa skill faz e quando o agente deve aplicá-la",
+			"sourceLabel": "Localização",
+			"modeLabel": "Modo (opcional)",
+			"modePlaceholder": "Qualquer modo",
+			"modeAny": "Qualquer modo",
+			"modeHint": "Restrinja essa skill a um modo específico",
+			"create": "Criar",
+			"cancel": "Cancelar"
+		},
+		"source": {
+			"global": "Global (disponível em todos os projetos)",
+			"project": "Projeto (apenas este espaço de trabalho)"
+		},
+		"validation": {
+			"nameRequired": "Nome é obrigatório",
+			"nameTooLong": "O nome deve ter 64 caracteres ou menos",
+			"nameInvalid": "O nome deve ser 1-64 letras minúsculas, números ou hífens",
+			"descriptionRequired": "Descrição é obrigatória",
+			"descriptionTooLong": "A descrição deve ter 1024 caracteres ou menos"
+		},
+		"footer": "Crie suas próprias skills com o modo Skill Writer, disponível em <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
 		"projectSkills": "Skills do Projeto",
 		"globalSkills": "Skills Globais",
 		"noProjectSkills": "Nenhuma skill de projeto configurada. Crie uma para adicionar capacidades específicas do projeto ao agente.",
