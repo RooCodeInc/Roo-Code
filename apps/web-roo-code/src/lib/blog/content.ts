@@ -12,6 +12,19 @@ import { getNowPt, isPublished, parsePublishTimePt } from "./time"
 
 const BLOG_DIR = path.join(process.cwd(), "src/content/blog")
 
+/** Posts per page for pagination */
+export const POSTS_PER_PAGE = 12
+
+/** Pagination result type */
+export interface PaginatedBlogPosts {
+	posts: BlogPost[]
+	currentPage: number
+	totalPages: number
+	totalPosts: number
+	hasNextPage: boolean
+	hasPreviousPage: boolean
+}
+
 /**
  * Get all blog posts from the content directory
  * @param options.includeDrafts - If true, include draft and future posts
@@ -73,6 +86,34 @@ export function getAllBlogPosts(options?: { includeDrafts?: boolean }): BlogPost
 		const bMinutes = parsePublishTimePt(b.publish_time_pt)
 		return bMinutes - aMinutes
 	})
+}
+
+/**
+ * Get paginated blog posts
+ * @param page - Page number (1-indexed)
+ * @param options.includeDrafts - If true, include draft and future posts
+ * @returns Paginated result with posts and pagination metadata
+ */
+export function getPaginatedBlogPosts(page: number = 1, options?: { includeDrafts?: boolean }): PaginatedBlogPosts {
+	const allPosts = getAllBlogPosts(options)
+	const totalPosts = allPosts.length
+	const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE)
+
+	// Clamp page to valid range
+	const currentPage = Math.max(1, Math.min(page, totalPages || 1))
+
+	const startIndex = (currentPage - 1) * POSTS_PER_PAGE
+	const endIndex = startIndex + POSTS_PER_PAGE
+	const posts = allPosts.slice(startIndex, endIndex)
+
+	return {
+		posts,
+		currentPage,
+		totalPages,
+		totalPosts,
+		hasNextPage: currentPage < totalPages,
+		hasPreviousPage: currentPage > 1,
+	}
 }
 
 /**

@@ -2,25 +2,26 @@
  * Blog Index Page
  * MKT-68: Blog Index Page
  *
- * Lists all published blog posts, sorted newest-first.
+ * Lists published blog posts with pagination (12 posts per page).
  * Uses dynamic rendering (force-dynamic) for request-time publish gating.
  */
 
 import type { Metadata } from "next"
-import Link from "next/link"
 import Script from "next/script"
-import { getAllBlogPosts, formatPostDatePt } from "@/lib/blog"
+import { getPaginatedBlogPosts, getAllBlogPosts } from "@/lib/blog"
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { BlogIndexAnalytics } from "@/components/blog/BlogAnalytics"
+import { BlogPostList } from "@/components/blog/BlogPostList"
+import { BlogPagination } from "@/components/blog/BlogPagination"
+import { BlogPostCTA } from "@/components/blog/BlogPostCTA"
 
 // Force dynamic rendering for request-time publish gating
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 const TITLE = "Blog"
-const DESCRIPTION =
-	"Insights on AI-powered development, engineering practices, and building better software with Roo Code."
+const DESCRIPTION = "How teams use agents to iterate, review, and ship PRs with proof."
 const PATH = "/blog"
 
 export const metadata: Metadata = {
@@ -55,9 +56,10 @@ export const metadata: Metadata = {
 }
 
 export default function BlogIndexPage() {
-	const posts = getAllBlogPosts()
+	const { posts, currentPage, totalPages, totalPosts } = getPaginatedBlogPosts(1)
+	const allPosts = getAllBlogPosts()
 
-	// Schema.org CollectionPage + ItemList
+	// Schema.org CollectionPage + ItemList (includes all posts for SEO)
 	const blogSchema = {
 		"@context": "https://schema.org",
 		"@type": "CollectionPage",
@@ -66,7 +68,7 @@ export default function BlogIndexPage() {
 		url: `${SEO.url}${PATH}`,
 		mainEntity: {
 			"@type": "ItemList",
-			itemListElement: posts.map((post, index) => ({
+			itemListElement: allPosts.map((post, index) => ({
 				"@type": "ListItem",
 				position: index + 1,
 				url: `${SEO.url}/blog/${post.slug}`,
@@ -115,43 +117,18 @@ export default function BlogIndexPage() {
 					<h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">Blog</h1>
 					<p className="mt-4 text-lg text-muted-foreground">{DESCRIPTION}</p>
 
-					{posts.length === 0 ? (
-						<div className="mt-12 text-center">
-							<p className="text-muted-foreground">No posts published yet. Check back soon!</p>
-						</div>
-					) : (
-						<div className="mt-12 space-y-12">
-							{posts.map((post) => (
-								<article key={post.slug} className="border-b border-border pb-12 last:border-b-0">
-									<Link href={`/blog/${post.slug}`} className="group">
-										<h2 className="text-xl font-semibold tracking-tight transition-colors group-hover:text-primary sm:text-2xl">
-											{post.title}
-										</h2>
-									</Link>
-									<p className="mt-2 text-sm text-muted-foreground">
-										Posted {formatPostDatePt(post.publish_date)}
-									</p>
-									<p className="mt-3 text-muted-foreground">{post.description}</p>
-									{post.tags.length > 0 && (
-										<div className="mt-4 flex flex-wrap gap-2">
-											{post.tags.map((tag) => (
-												<span
-													key={tag}
-													className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
-													{tag}
-												</span>
-											))}
-										</div>
-									)}
-									<Link
-										href={`/blog/${post.slug}`}
-										className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
-										Read more →
-									</Link>
-								</article>
-							))}
-						</div>
+					{totalPosts > 0 && totalPages > 1 && (
+						<p className="mt-2 text-sm text-muted-foreground">
+							Showing {posts.length} of {totalPosts} posts
+						</p>
 					)}
+
+					<BlogPostList posts={posts} />
+
+					<BlogPagination currentPage={currentPage} totalPages={totalPages} />
+
+					{/* Cloud CTA - shown after pagination */}
+					<BlogPostCTA />
 				</div>
 			</div>
 		</>

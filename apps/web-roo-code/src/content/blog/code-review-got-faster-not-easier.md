@@ -2,13 +2,16 @@
 title: Code Review Got Faster, Not Easier
 slug: code-review-got-faster-not-easier
 description: AI is generating over half of Google's production code. The bottleneck didn't disappear, it moved. Here's how teams are adapting review workflows to handle the volume.
+primary_schema:
+    - Article
+    - FAQPage
 tags:
     - code-review
     - ai-development
     - engineering-practices
     - productivity
 status: published
-publish_date: "2026-01-19"
+publish_date: "2025-10-16"
 publish_time_pt: "9:00am"
 ---
 
@@ -52,6 +55,22 @@ The answer is the same pattern, scaled down. Use an AI agent that can check out 
 
 Code review load scales with AI-generated volume. Headcount doesn't have to scale linearly.
 
+## How Roo Code closes the loop on review
+
+Roo Code can act as the intermediate check before human review. When you use Roo Code's PR Reviewer, it checks out the branch, runs your test suite, analyzes the changes, and flags issues with priority levels-all before the code lands in a human reviewer's queue.
+
+The key difference from a standalone linter: Roo Code closes the loop. It doesn't just flag problems-it proposes fixes and can iterate on them until the tests pass. The human reviewer sees a cleaner diff with fewer obvious issues to catch.
+
+## Manual review vs. AI-assisted review
+
+|                    | Manual Review Only               | AI-Assisted Review (Intermediate Check)          |
+| ------------------ | -------------------------------- | ------------------------------------------------ |
+| **First pass**     | Human catches all issues         | AI flags priority issues + recommends fixes      |
+| **Time per PR**    | Proportional to code volume      | Reduced by pre-triage                            |
+| **Reviewer focus** | Everything, including formatting | Ambiguous decisions and context-sensitive issues |
+| **Scale**          | Linear with headcount            | Sublinear-review capacity grows faster than team |
+| **Ownership**      | Human owns final approval        | Human still owns final approval                  |
+
 ## The tradeoff
 
 The tradeoff is ownership. Someone still needs to own the stamp.
@@ -69,3 +88,25 @@ The hours reclaimed go somewhere. They go into shipping, not into waiting for re
 If your team is generating more code with AI assistance, the review queue is already growing. The question is whether you scale review with headcount or with an intermediate check that preserves human ownership.
 
 The first step: audit how much time your reviewers spend on issues that an automated check could have caught. That number is your leverage.
+
+## Frequently asked questions
+
+### Can AI replace human code reviewers?
+
+No-and that's the point. The intermediate check pattern uses AI to triage, not to replace. The model flags priority issues and recommends fixes. The human reviewer still owns final approval and catches what the model missed. The goal is to shift human attention from "find all the problems" to "validate flagged problems and catch context-sensitive issues."
+
+### How do I handle increased code review volume without adding headcount?
+
+Use an AI agent as the first pass before human review. The agent runs linters, executes tests, and flags issues with priority levels. The human reviewer sees a pre-triaged PR with fewer obvious problems to catch. Review load scales with AI-generated code volume; headcount doesn't have to scale linearly.
+
+### What's the difference between a linter and an AI code reviewer?
+
+A linter catches static issues and stops. An AI code reviewer like Roo Code closes the loop: it flags issues, proposes fixes, runs tests to verify the fixes, and iterates until the problems are resolved. The human reviewer sees a cleaner diff, not just a list of warnings.
+
+### How does Roo Code help with code review?
+
+Roo Code's PR Reviewer acts as the intermediate check. It checks out the branch, runs your test suite, analyzes changes, and flags issues with priority levels-before the code reaches a human reviewer. Unlike a standalone linter, Roo Code proposes fixes and can iterate on them automatically. The human reviewer focuses on ambiguous decisions and context-sensitive issues.
+
+### What happens if the AI misses something?
+
+The human reviewer is still the final checkpoint. The intermediate check pattern is designed for this: AI handles triage and obvious issues; humans catch what the model missed and make judgment calls on anything ambiguous. The risk is lower than "no review at all" and the coverage is higher than "human reviews everything cold."

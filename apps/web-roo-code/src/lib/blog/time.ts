@@ -96,3 +96,52 @@ export function isPublished(post: BlogPost, nowPt: NowPt): boolean {
 export function formatPostDatePt(publishDate: string): string {
 	return publishDate
 }
+
+/**
+ * Calculate reading time for a piece of content
+ * Uses average reading speed of 200 words per minute
+ * @param content - The markdown content to calculate reading time for
+ * @returns Reading time in minutes (minimum 1)
+ */
+export function calculateReadingTime(content: string): number {
+	// Strip markdown syntax for more accurate word count
+	const plainText = content
+		// Remove code blocks
+		.replace(/```[\s\S]*?```/g, "")
+		// Remove inline code
+		.replace(/`[^`]+`/g, "")
+		// Remove images
+		.replace(/!\[.*?\]\(.*?\)/g, "")
+		// Remove links but keep text
+		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+		// Remove headers markers
+		.replace(/^#{1,6}\s+/gm, "")
+		// Remove emphasis
+		.replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, "$1")
+		// Remove horizontal rules
+		.replace(/^[-*_]{3,}\s*$/gm, "")
+		// Remove HTML tags
+		.replace(/<[^>]+>/g, "")
+
+	// Count words (split on whitespace)
+	const words = plainText
+		.trim()
+		.split(/\s+/)
+		.filter((word) => word.length > 0)
+	const wordCount = words.length
+
+	// Calculate reading time (200 words per minute average)
+	const readingTime = Math.ceil(wordCount / 200)
+
+	// Return minimum of 1 minute
+	return Math.max(1, readingTime)
+}
+
+/**
+ * Format reading time for display
+ * @param minutes - Reading time in minutes
+ * @returns Formatted string (e.g., "5 min read")
+ */
+export function formatReadingTime(minutes: number): string {
+	return `${minutes} min read`
+}

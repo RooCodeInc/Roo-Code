@@ -5,12 +5,20 @@
 
 // Types
 export type { BlogPost, BlogPostFrontmatter, NowPt } from "./types"
+export type { PaginatedBlogPosts } from "./content"
 
 // Content loading
-export { getAllBlogPosts, getBlogPostBySlug, getAdjacentPosts } from "./content"
+export { getAllBlogPosts, getBlogPostBySlug, getAdjacentPosts, getPaginatedBlogPosts, POSTS_PER_PAGE } from "./content"
 
 // Time utilities
-export { getNowPt, parsePublishTimePt, isPublished, formatPostDatePt } from "./time"
+export {
+	getNowPt,
+	parsePublishTimePt,
+	isPublished,
+	formatPostDatePt,
+	calculateReadingTime,
+	formatReadingTime,
+} from "./time"
 
 // Validation
 export { BlogFrontmatterSchema, type ValidatedFrontmatter } from "./validation"

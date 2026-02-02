@@ -5,6 +5,9 @@
  * Renders a single blog post from Markdown.
  * Uses dynamic rendering (force-dynamic) for request-time publish gating.
  * Does NOT use generateStaticParams to avoid static generation.
+ *
+ * AEO Enhancement: Parses FAQ sections from markdown, renders as accordion,
+ * and generates FAQPage JSON-LD schema for AI search optimization.
  */
 
 import type { Metadata } from "next"
@@ -13,11 +16,19 @@ import { notFound } from "next/navigation"
 import Script from "next/script"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { getBlogPostBySlug, getAdjacentPosts, formatPostDatePt } from "@/lib/blog"
+import { ChevronLeft, ChevronRight, Clock } from "lucide-react"
+import {
+	getBlogPostBySlug,
+	getAdjacentPosts,
+	formatPostDatePt,
+	calculateReadingTime,
+	formatReadingTime,
+} from "@/lib/blog"
 import { SEO } from "@/lib/seo"
 import { ogImageUrl } from "@/lib/og"
 import { BlogPostAnalytics } from "@/components/blog/BlogAnalytics"
+import { BlogFAQ, type FAQItem } from "@/components/blog/BlogFAQ"
+import { BlogPostCTA } from "@/components/blog/BlogPostCTA"
 
 // Force dynamic rendering for request-time publish gating
 export const dynamic = "force-dynamic"
@@ -25,6 +36,58 @@ export const runtime = "nodejs"
 
 interface Props {
 	params: Promise<{ slug: string }>
+}
+
+/**
+ * Parse FAQ section from markdown content
+ *
+ * Looks for a section starting with "## Frequently asked questions"
+ * and extracts H3 questions with their content as answers.
+ *
+ * Returns the FAQ items and the content with FAQ section removed.
+ */
+function parseFAQFromMarkdown(content: string): {
+	faqItems: FAQItem[]
+	contentWithoutFAQ: string
+} {
+	// Match FAQ section: ## Frequently asked questions (case-insensitive)
+	const faqSectionRegex = /^## Frequently asked questions\s*$/im
+	const faqMatch = content.match(faqSectionRegex)
+
+	if (!faqMatch || faqMatch.index === undefined) {
+		return { faqItems: [], contentWithoutFAQ: content }
+	}
+
+	const faqStartIndex = faqMatch.index
+	const beforeFAQ = content.slice(0, faqStartIndex).trim()
+	const faqSection = content.slice(faqStartIndex)
+
+	// Find where FAQ section ends (next H2 or end of content)
+	const nextH2Match = faqSection.slice(faqMatch[0].length).match(/^## /m)
+	const faqContent =
+		nextH2Match && nextH2Match.index !== undefined
+			? faqSection.slice(0, faqMatch[0].length + nextH2Match.index)
+			: faqSection
+
+	const afterFAQ =
+		nextH2Match && nextH2Match.index !== undefined ? faqSection.slice(faqMatch[0].length + nextH2Match.index) : ""
+
+	// Parse individual FAQ items (### Question followed by content)
+	const faqItems: FAQItem[] = []
+	const questionRegex = /^### (.+?)$\s*([\s\S]*?)(?=^### |$(?![\s\S]))/gm
+	let match
+
+	while ((match = questionRegex.exec(faqContent)) !== null) {
+		const question = match[1]?.trim()
+		const answer = match[2]?.trim()
+		if (question && answer) {
+			faqItems.push({ question, answer })
+		}
+	}
+
+	const contentWithoutFAQ = (beforeFAQ + "\n\n" + afterFAQ).trim()
+
+	return { faqItems, contentWithoutFAQ }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -80,6 +143,14 @@ export default async function BlogPostPage({ params }: Props) {
 
 	const { previous, next } = getAdjacentPosts(slug)
 
+	// Calculate reading time
+	const readingTime = calculateReadingTime(post.content)
+	const readingTimeDisplay = formatReadingTime(readingTime)
+
+	// Parse FAQ section from markdown content
+	const { faqItems, contentWithoutFAQ } = parseFAQFromMarkdown(post.content)
+	const hasFAQ = faqItems.length > 0
+
 	// Article JSON-LD schema
 	const articleSchema = {
 		"@context": "https://schema.org",
@@ -134,6 +205,22 @@ export default async function BlogPostPage({ params }: Props) {
 		],
 	}
 
+	// FAQPage schema (only if post has FAQ section) - AEO optimization
+	const faqSchema = hasFAQ
+		? {
+				"@context": "https://schema.org",
+				"@type": "FAQPage",
+				mainEntity: faqItems.map((item) => ({
+					"@type": "Question",
+					name: item.question,
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: item.answer,
+					},
+				})),
+			}
+		: null
+
 	return (
 		<>
 			<Script
@@ -146,6 +233,13 @@ export default async function BlogPostPage({ params }: Props) {
 				type="application/ld+json"
 				dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
 			/>
+			{faqSchema && (
+				<Script
+					id="faq-schema"
+					type="application/ld+json"
+					dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+				/>
+			)}
 
 			<BlogPostAnalytics post={post} />
 
@@ -171,7 +265,14 @@ export default async function BlogPostPage({ params }: Props) {
 					<div className="prose prose-lg dark:prose-invert">
 						<header className="not-prose mb-8">
 							<h1 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">{post.title}</h1>
-							<p className="mt-4 text-muted-foreground">Posted {formatPostDatePt(post.publish_date)}</p>
+							<div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+								<span>{formatPostDatePt(post.publish_date)}</span>
+								<span className="text-border">•</span>
+								<span className="flex items-center gap-1">
+									<Clock className="h-4 w-4" />
+									{readingTimeDisplay}
+								</span>
+							</div>
 							{post.tags.length > 0 && (
 								<div className="mt-4 flex flex-wrap gap-2">
 									{post.tags.map((tag) => (
@@ -231,9 +332,34 @@ export default async function BlogPostPage({ params }: Props) {
 								// Lists
 								ul: ({ ...props }) => <ul className="my-6 ml-6 list-disc [&>li]:mt-2" {...props} />,
 								ol: ({ ...props }) => <ol className="my-6 ml-6 list-decimal [&>li]:mt-2" {...props} />,
+								// Tables with zebra striping (visible in both light and dark mode)
+								table: ({ ...props }) => (
+									<div className="not-prose my-6 w-full overflow-x-auto rounded-lg border border-border">
+										<table className="w-full border-collapse text-sm" {...props} />
+									</div>
+								),
+								thead: ({ ...props }) => <thead className="bg-muted" {...props} />,
+								tbody: ({ ...props }) => <tbody {...props} />,
+								tr: ({ ...props }) => (
+									<tr
+										className="border-b border-border last:border-b-0 transition-colors even:bg-muted/70 hover:bg-muted"
+										{...props}
+									/>
+								),
+								th: ({ ...props }) => (
+									<th className="px-4 py-3 text-left font-semibold text-foreground" {...props} />
+								),
+								td: ({ ...props }) => <td className="px-4 py-3" {...props} />,
 							}}>
-							{post.content}
+							{contentWithoutFAQ}
 						</ReactMarkdown>
+
+						{/* FAQ Section rendered as accordion */}
+						{hasFAQ && <BlogFAQ items={faqItems} />}
+
+						{/* Product CTA Module - Inspired by Vercel's blog design
+						    Default variant prioritizes Roo Code Cloud sign-up */}
+						<BlogPostCTA />
 					</div>
 
 					{/* Previous/Next Post Navigation */}

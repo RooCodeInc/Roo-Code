@@ -2,13 +2,16 @@
 title: "Async Agents Change the Speed vs Quality Calculus"
 slug: "async-agents-change-the-speed-vs-quality-calculus"
 description: "In many workflows, quality at scale beats speed in series. That sentence sounds wrong until you stop running one agent at a time."
-publish_date: "2026-02-02"
-publish_time_pt: "9:00am"
-status: "published"
+primary_schema:
+    - Article
+    - FAQPage
 tags:
     - AI Development
     - Workflow
     - Performance
+status: "published"
+publish_date: "2025-10-16"
+publish_time_pt: "9:00am"
 ---
 
 In many workflows, quality at scale beats speed in series.
