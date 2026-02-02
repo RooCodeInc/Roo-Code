@@ -395,6 +395,21 @@ export class CodeIndexManager {
 			fileWatcher,
 		)
 
+		// (Optional) Enable Knowledge Graph features - fail-safe
+		let graphStore: import("./graph").IGraphStore | undefined
+		try {
+			const graphServices = this._serviceFactory.createGraphServices()
+			if (graphServices) {
+				// Try to load existing graph data
+				await graphServices.graphStore.load()
+				this._orchestrator.enableGraphFeatures(graphServices.graphStore, graphServices.graphBuilder)
+				graphStore = graphServices.graphStore
+			}
+		} catch (graphError) {
+			// Graph features are optional - log and continue
+			console.warn("[CodeIndexManager] Knowledge Graph features disabled:", graphError)
+		}
+
 		// (Re)Initialize search service
 		this._searchService = new CodeIndexSearchService(
 			this._configManager!,
@@ -402,6 +417,11 @@ export class CodeIndexManager {
 			embedder,
 			vectorStore,
 		)
+
+		// Enable graph context in search service if available
+		if (graphStore) {
+			this._searchService.enableGraphContext(graphStore)
+		}
 
 		// Clear any error state after successful recreation
 		this._stateManager.setSystemState("Standby", "")

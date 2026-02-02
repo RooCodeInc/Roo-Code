@@ -26,6 +26,7 @@ import { ICodeParser, IEmbedder, IFileWatcher, IVectorStore } from "./interfaces
 import { CodeIndexConfigManager } from "./config-manager"
 import { CacheManager } from "./cache-manager"
 import { BATCH_SEGMENT_THRESHOLD } from "./constants"
+import { GraphStore, GraphBuilder, IGraphStore, IGraphParser } from "./graph"
 
 /**
  * Factory class responsible for creating and configuring code indexing service dependencies.
@@ -267,6 +268,22 @@ export class CodeIndexServiceFactory {
 			parser,
 			scanner,
 			fileWatcher,
+		}
+	}
+
+	/**
+	 * Creates Knowledge Graph service dependencies.
+	 * This is optional and fail-safe - if creation fails, graph features are disabled.
+	 * @returns Graph store and builder, or undefined if creation fails
+	 */
+	public createGraphServices(): { graphStore: IGraphStore; graphBuilder: IGraphParser } | undefined {
+		try {
+			const graphStore = new GraphStore(this.workspacePath)
+			const graphBuilder = new GraphBuilder()
+			return { graphStore, graphBuilder }
+		} catch (error) {
+			console.warn("[CodeIndexServiceFactory] Failed to create graph services:", error)
+			return undefined
 		}
 	}
 }
