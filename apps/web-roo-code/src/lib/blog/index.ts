@@ -4,7 +4,7 @@
  */
 
 // Types
-export type { BlogPost, BlogPostFrontmatter, NowPt } from "./types"
+export type { BlogPost, BlogPostFrontmatter, BlogSource, NowPt } from "./types"
 export type { PaginatedBlogPosts } from "./content"
 
 // Content loading
