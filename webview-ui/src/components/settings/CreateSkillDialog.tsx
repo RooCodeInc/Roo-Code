@@ -13,11 +13,13 @@ import {
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	Input,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Textarea,
 } from "@/components/ui"
 import { vscode } from "@/utils/vscode"
 
@@ -149,23 +151,23 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>{t("settings:skills.createDialog.title")}</DialogTitle>
-					<DialogDescription>{t("settings:skills.createDialog.description")}</DialogDescription>
+					<DialogDescription></DialogDescription>
 				</DialogHeader>
 
-				<div className="flex flex-col gap-4 py-4">
+				<div className="flex flex-col gap-4">
 					{/* Name Input */}
-					<div className="flex flex-col gap-1.5">
+					<div className="flex flex-col gap-1">
 						<label htmlFor="skill-name" className="text-sm font-medium text-vscode-foreground">
-							{t("settings:skills.createDialog.nameLabel")} *
+							{t("settings:skills.createDialog.nameLabel")}
 						</label>
-						<input
+						<Input
 							id="skill-name"
 							type="text"
 							value={name}
 							onChange={handleNameChange}
 							placeholder={t("settings:skills.createDialog.namePlaceholder")}
 							maxLength={64}
-							className="w-full bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded px-3 py-2 text-sm focus:outline-none focus:border-vscode-focusBorder"
+							className="w-full bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-vscode-focusBorder"
 						/>
 						<span className="text-xs text-vscode-descriptionForeground">
 							{t("settings:skills.createDialog.nameHint")}
@@ -174,18 +176,17 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 					</div>
 
 					{/* Description Input */}
-					<div className="flex flex-col gap-1.5">
+					<div className="flex flex-col gap-1">
 						<label htmlFor="skill-description" className="text-sm font-medium text-vscode-foreground">
-							{t("settings:skills.createDialog.descriptionLabel")} *
+							{t("settings:skills.createDialog.descriptionLabel")}
 						</label>
-						<textarea
+						<Textarea
 							id="skill-description"
 							value={description}
 							onChange={handleDescriptionChange}
 							placeholder={t("settings:skills.createDialog.descriptionPlaceholder")}
 							maxLength={1024}
-							rows={3}
-							className="w-full bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded px-3 py-2 text-sm focus:outline-none focus:border-vscode-focusBorder resize-none"
+							rows={6}
 						/>
 						<span className="text-xs text-vscode-descriptionForeground">
 							{t("settings:skills.createDialog.descriptionHint")}
@@ -196,7 +197,7 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 					</div>
 
 					{/* Source Selection */}
-					<div className="flex flex-col gap-1.5">
+					<div className="flex flex-col gap-1">
 						<label className="text-sm font-medium text-vscode-foreground">
 							{t("settings:skills.createDialog.sourceLabel")}
 						</label>
@@ -211,13 +212,10 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 								)}
 							</SelectContent>
 						</Select>
-						<span className="text-xs text-vscode-descriptionForeground">
-							{t("settings:skills.createDialog.sourceHint")}
-						</span>
 					</div>
 
 					{/* Mode Selection (Optional) */}
-					<div className="flex flex-col gap-1.5">
+					<div className="flex flex-col gap-1">
 						<label className="text-sm font-medium text-vscode-foreground">
 							{t("settings:skills.createDialog.modeLabel")}
 						</label>
@@ -234,9 +232,6 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 								))}
 							</SelectContent>
 						</Select>
-						<span className="text-xs text-vscode-descriptionForeground">
-							{t("settings:skills.createDialog.modeHint")}
-						</span>
 					</div>
 				</div>
 
