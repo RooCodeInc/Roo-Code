@@ -21,7 +21,9 @@
 		"alwaysAllow": "總是允許",
 		"parameters": "參數",
 		"noDescription": "暫無說明",
-		"togglePromptInclusion": "切換提示包含狀態"
+		"togglePromptInclusion": "切換提示包含狀態",
+		"expand": "展開說明",
+		"collapse": "收合說明"
 	},
 	"tabs": {
 		"tools": "工具",

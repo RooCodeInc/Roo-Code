@@ -20,7 +20,9 @@
 		"alwaysAllow": "Luôn cho phép",
 		"parameters": "Tham số",
 		"noDescription": "Không có mô tả",
-		"togglePromptInclusion": "Bật/tắt bao gồm trong lời nhắc"
+		"togglePromptInclusion": "Bật/tắt bao gồm trong lời nhắc",
+		"expand": "Mở rộng mô tả",
+		"collapse": "Thu gọn mô tả"
 	},
 	"tabs": {
 		"tools": "Công cụ",

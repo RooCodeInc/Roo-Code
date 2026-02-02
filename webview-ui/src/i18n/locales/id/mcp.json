@@ -21,7 +21,9 @@
 		"alwaysAllow": "Selalu izinkan",
 		"parameters": "Parameter",
 		"noDescription": "Tidak ada deskripsi",
-		"togglePromptInclusion": "Aktifkan daya untuk meminta"
+		"togglePromptInclusion": "Aktifkan daya untuk meminta",
+		"expand": "Perluas deskripsi",
+		"collapse": "Ciutkan deskripsi"
 	},
 	"tabs": {
 		"tools": "Tools",

@@ -20,7 +20,9 @@
 		"alwaysAllow": "Zawsze pozwalaj",
 		"parameters": "Parametry",
 		"noDescription": "Brak opisu",
-		"togglePromptInclusion": "Przełącz uwzględnianie w podpowiedzi"
+		"togglePromptInclusion": "Przełącz uwzględnianie w podpowiedzi",
+		"expand": "Rozwiń opis",
+		"collapse": "Zwiń opis"
 	},
 	"tabs": {
 		"tools": "Narzędzia",

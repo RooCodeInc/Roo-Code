@@ -20,7 +20,9 @@
 		"alwaysAllow": "Sempre permitir",
 		"parameters": "Parâmetros",
 		"noDescription": "Sem descrição",
-		"togglePromptInclusion": "Alternar inclusão no prompt"
+		"togglePromptInclusion": "Alternar inclusão no prompt",
+		"expand": "Expandir descrição",
+		"collapse": "Recolher descrição"
 	},
 	"tabs": {
 		"tools": "Ferramentas",

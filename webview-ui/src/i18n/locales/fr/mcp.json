@@ -20,7 +20,9 @@
 		"alwaysAllow": "Toujours autoriser",
 		"parameters": "Paramètres",
 		"noDescription": "Aucune description",
-		"togglePromptInclusion": "Basculer l'inclusion dans le prompt"
+		"togglePromptInclusion": "Basculer l'inclusion dans le prompt",
+		"expand": "Développer la description",
+		"collapse": "Réduire la description"
 	},
 	"tabs": {
 		"tools": "Outils",

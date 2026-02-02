@@ -20,7 +20,9 @@
 		"alwaysAllow": "始终允许",
 		"parameters": "参数",
 		"noDescription": "无描述",
-		"togglePromptInclusion": "切换在提示中的包含"
+		"togglePromptInclusion": "切换在提示中的包含",
+		"expand": "展开描述",
+		"collapse": "收起描述"
 	},
 	"tabs": {
 		"tools": "工具",
