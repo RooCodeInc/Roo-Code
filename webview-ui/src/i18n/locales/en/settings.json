@@ -72,7 +72,7 @@
 		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
 	},
 	"skills": {
-		"description": "Manage skills that provide contextual instructions to the agent. Skills are automatically applied when relevant to your tasks. <DocsLink>Learn more</DocsLink>",
+		"description": "Skills encapsulate contextual instructions and workflows, which the agent can load on-demand. <DocsLink>Learn more</DocsLink>",
 		"workspaceSkills": "Workspace Skills",
 		"globalSkills": "Global Skills",
 		"noWorkspaceSkills": "No skills in this project yet.",
@@ -80,12 +80,21 @@
 		"addSkill": "Add Skill",
 		"editSkill": "Edit skill",
 		"deleteSkill": "Delete skill",
-		"changeMode": "Change mode",
+		"configureModes": "Mode availability",
 		"modeAny": "Any mode",
+		"modeCount": "{{count}} modes",
 		"deleteDialog": {
 			"title": "Delete Skill",
 			"description": "Are you sure you want to delete the skill \"{{name}}\"? This action cannot be undone.",
 			"confirm": "Delete",
+			"cancel": "Cancel"
+		},
+		"modeDialog": {
+			"title": "Configure Skill Modes",
+			"description": "Choose which modes can use this skill",
+			"intro": "To keep your context light, we recommend only making skills available for the modes that need them.",
+			"anyMode": "Any mode (available everywhere)",
+			"save": "Save",
 			"cancel": "Cancel"
 		},
 		"createDialog": {
@@ -99,6 +108,7 @@
 			"sourceLabel": "Location",
 			"modeLabel": "Mode (optional)",
 			"modePlaceholder": "Any mode",
+			"modeAny": "Any mode",
 			"modeHint": "Restrict this skill to a specific mode",
 			"create": "Create",
 			"cancel": "Cancel"

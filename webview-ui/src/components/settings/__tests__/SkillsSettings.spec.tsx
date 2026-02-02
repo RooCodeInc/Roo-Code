@@ -74,7 +74,26 @@ vi.mock("@/components/ui", () => ({
 		</button>
 	),
 	StandardTooltip: ({ children }: any) => <>{children}</>,
-	Select: ({ children, value, onValueChange }: any) => (
+	Dialog: ({ children, open, _onOpenChange }: any) => (
+		<div data-testid="mode-dialog" data-open={open}>
+			{open && children}
+		</div>
+	),
+	DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
+	DialogHeader: ({ children }: any) => <div data-testid="dialog-header">{children}</div>,
+	DialogTitle: ({ children }: any) => <div data-testid="dialog-title">{children}</div>,
+	DialogDescription: ({ children }: any) => <div data-testid="dialog-description">{children}</div>,
+	DialogFooter: ({ children }: any) => <div data-testid="dialog-footer">{children}</div>,
+	Checkbox: ({ id, checked, onCheckedChange }: any) => (
+		<input
+			type="checkbox"
+			id={id}
+			checked={checked}
+			onChange={(e) => onCheckedChange?.(e.target.checked)}
+			data-testid={`checkbox-${id}`}
+		/>
+	),
+	Select: ({ children, value, _onValueChange }: any) => (
 		<div data-testid="select" data-value={value}>
 			{children}
 		</div>
@@ -126,9 +145,9 @@ const mockSkills: SkillMetadata[] = [
 	{
 		name: "project-mode-skill",
 		description: "A project mode-specific skill",
-		path: "/workspace/.roo/skills-architect/project-mode-skill/SKILL.md",
+		path: "/workspace/.roo/skills/project-mode-skill/SKILL.md",
 		source: "project",
-		mode: "architect",
+		modeSlugs: ["architect"],
 	},
 	{
 		name: "global-skill",
@@ -192,7 +211,7 @@ describe("SkillsSettings", () => {
 	it("displays project skills section when in a workspace", () => {
 		renderSkillsSettings()
 
-		expect(screen.getByText("settings:skills.projectSkills")).toBeInTheDocument()
+		expect(screen.getByText("settings:skills.workspaceSkills")).toBeInTheDocument()
 		expect(screen.getByText("project-skill")).toBeInTheDocument()
 	})
 
@@ -207,14 +226,14 @@ describe("SkillsSettings", () => {
 		const globalOnlySkills = mockSkills.filter((s) => s.source === "global")
 		renderSkillsSettings(globalOnlySkills, "")
 
-		expect(screen.queryByText("settings:skills.projectSkills")).not.toBeInTheDocument()
+		expect(screen.queryByText("settings:skills.workspaceSkills")).not.toBeInTheDocument()
 	})
 
 	it("shows empty state for project skills when none exist", () => {
 		const globalOnlySkills = mockSkills.filter((s) => s.source === "global")
 		renderSkillsSettings(globalOnlySkills)
 
-		expect(screen.getByText("settings:skills.noProjectSkills")).toBeInTheDocument()
+		expect(screen.getByText("settings:skills.noWorkspaceSkills")).toBeInTheDocument()
 	})
 
 	it("shows empty state for global skills when none exist", () => {
@@ -310,9 +329,14 @@ describe("SkillsSettings", () => {
 
 		// Find edit buttons (buttons without destructive class that are icon size)
 		const buttons = screen.getAllByTestId("button")
-		// Filter to find edit buttons (the ones with Edit icon, not Add or Delete)
+		// Filter to find edit buttons (the ones with Edit icon, not Add, Delete, or Settings/Gear)
+		// Edit button uses lucide-square-pen icon, Settings uses lucide-settings
 		const editButtons = buttons.filter(
-			(btn) => btn.getAttribute("data-size") === "icon" && !btn.querySelector('[class*="text-destructive"]'),
+			(btn) =>
+				btn.getAttribute("data-size") === "icon" &&
+				!btn.querySelector('[class*="text-destructive"]') &&
+				!btn.querySelector('[class*="lucide-settings"]') &&
+				btn.querySelector('[class*="lucide-square-pen"]'),
 		)
 		// Click the first edit button (for project-skill)
 		fireEvent.click(editButtons[0])
@@ -382,7 +406,7 @@ describe("SkillsSettings", () => {
 	it("renders empty state when no skills exist", () => {
 		renderSkillsSettings([])
 
-		expect(screen.getByText("settings:skills.noProjectSkills")).toBeInTheDocument()
+		expect(screen.getByText("settings:skills.noWorkspaceSkills")).toBeInTheDocument()
 		expect(screen.getByText("settings:skills.noGlobalSkills")).toBeInTheDocument()
 	})
 

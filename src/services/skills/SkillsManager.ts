@@ -143,15 +143,34 @@ export class SkillsManager {
 				return
 			}
 
-			// Create unique key combining name, source, and mode for override resolution
-			const skillKey = this.getSkillKey(effectiveSkillName, source, mode)
+			// Parse modeSlugs from frontmatter (new format) or fall back to directory-based mode
+			// Priority: frontmatter.modeSlugs > frontmatter.mode > directory mode
+			let modeSlugs: string[] | undefined
+			if (Array.isArray(frontmatter.modeSlugs)) {
+				modeSlugs = frontmatter.modeSlugs.filter((s: unknown) => typeof s === "string" && s.length > 0)
+				if (modeSlugs.length === 0) {
+					modeSlugs = undefined // Empty array means "any mode"
+				}
+			} else if (typeof frontmatter.mode === "string" && frontmatter.mode.length > 0) {
+				// Legacy single mode in frontmatter
+				modeSlugs = [frontmatter.mode]
+			} else if (mode) {
+				// Fall back to directory-based mode (skills-{mode}/)
+				modeSlugs = [mode]
+			}
+
+			// Create unique key combining name, source, and modeSlugs for override resolution
+			// For backward compatibility, use first mode slug or undefined for the key
+			const primaryMode = modeSlugs?.[0]
+			const skillKey = this.getSkillKey(effectiveSkillName, source, primaryMode)
 
 			this.skills.set(skillKey, {
 				name: effectiveSkillName,
 				description,
 				path: skillMdPath,
 				source,
-				mode, // undefined for generic skills, string for mode-specific
+				mode: primaryMode, // Deprecated: kept for backward compatibility
+				modeSlugs, // New: array of mode slugs, undefined = any mode
 			})
 		} catch (error) {
 			console.error(`Failed to load skill at ${skillDir}:`, error)
@@ -174,8 +193,11 @@ export class SkillsManager {
 
 		// Then, add discovered skills (will override built-in skills with same name)
 		for (const skill of this.skills.values()) {
-			// Skip mode-specific skills that don't match current mode
-			if (skill.mode && skill.mode !== currentMode) continue
+			// Check if skill is available in current mode:
+			// - modeSlugs undefined or empty = available in all modes ("Any mode")
+			// - modeSlugs array with values = available only if currentMode is in the array
+			const isAvailableInMode = this.isSkillAvailableInMode(skill, currentMode)
+			if (!isAvailableInMode) continue
 
 			const existingSkill = resolvedSkills.get(skill.name)
 
@@ -192,6 +214,20 @@ export class SkillsManager {
 		}
 
 		return Array.from(resolvedSkills.values())
+	}
+
+	/**
+	 * Check if a skill is available in the given mode.
+	 * - modeSlugs undefined or empty = available in all modes ("Any mode")
+	 * - modeSlugs with values = available only if mode is in the array
+	 */
+	private isSkillAvailableInMode(skill: SkillMetadata, currentMode: string): boolean {
+		// No mode restrictions = available in all modes
+		if (!skill.modeSlugs || skill.modeSlugs.length === 0) {
+			return true
+		}
+		// Check if current mode is in the allowed modes
+		return skill.modeSlugs.includes(currentMode)
 	}
 
 	/**
@@ -214,8 +250,11 @@ export class SkillsManager {
 		if (newPriority < existingPriority) return false
 
 		// Same source: mode-specific overrides generic
-		if (newSkill.mode && !existing.mode) return true
-		if (!newSkill.mode && existing.mode) return false
+		// A skill with modeSlugs (restricted) is more specific than one without (any mode)
+		const existingHasModes = existing.modeSlugs && existing.modeSlugs.length > 0
+		const newHasModes = newSkill.modeSlugs && newSkill.modeSlugs.length > 0
+		if (newHasModes && !existingHasModes) return true
+		if (!newHasModes && existingHasModes) return false
 
 		// Same source and same mode-specificity: keep existing (first wins)
 		return false
@@ -277,6 +316,19 @@ export class SkillsManager {
 	}
 
 	/**
+	 * Find a skill by name and source (regardless of mode).
+	 * Useful for opening/editing skills where the exact mode key may vary.
+	 */
+	findSkillByNameAndSource(name: string, source: "global" | "project"): SkillMetadata | undefined {
+		for (const skill of this.skills.values()) {
+			if (skill.name === name && skill.source === source) {
+				return skill
+			}
+		}
+		return undefined
+	}
+
+	/**
 	 * Validate skill name per agentskills.io spec using shared validation.
 	 * Converts error codes to user-friendly error messages.
 	 */
@@ -307,10 +359,15 @@ export class SkillsManager {
 	 * @param name - Skill name (must be valid per agentskills.io spec)
 	 * @param source - "global" or "project"
 	 * @param description - Skill description
-	 * @param mode - Optional mode restriction (creates in skills-{mode}/ directory)
+	 * @param modeSlugs - Optional mode restrictions (undefined/empty = any mode)
 	 * @returns Path to created SKILL.md file
 	 */
-	async createSkill(name: string, source: "global" | "project", description: string, mode?: string): Promise<string> {
+	async createSkill(
+		name: string,
+		source: "global" | "project",
+		description: string,
+		modeSlugs?: string[],
+	): Promise<string> {
 		// Validate skill name
 		const validation = this.validateSkillName(name)
 		if (!validation.valid) {
@@ -335,9 +392,8 @@ export class SkillsManager {
 			baseDir = path.join(provider.cwd, ".roo")
 		}
 
-		// Determine skills directory (with optional mode suffix)
-		const skillsDirName = mode ? `skills-${mode}` : "skills"
-		const skillsDir = path.join(baseDir, skillsDirName)
+		// Always use the generic skills directory (mode info stored in frontmatter now)
+		const skillsDir = path.join(baseDir, "skills")
 		const skillDir = path.join(skillsDir, name)
 		const skillMdPath = path.join(skillDir, "SKILL.md")
 
@@ -355,9 +411,17 @@ export class SkillsManager {
 			.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
 			.join(" ")
 
+		// Build frontmatter with optional modeSlugs
+		const frontmatterLines = [`name: ${name}`, `description: ${trimmedDescription}`]
+		if (modeSlugs && modeSlugs.length > 0) {
+			frontmatterLines.push(`modeSlugs:`)
+			for (const slug of modeSlugs) {
+				frontmatterLines.push(`  - ${slug}`)
+			}
+		}
+
 		const skillContent = `---
-name: ${name}
-description: ${trimmedDescription}
+${frontmatterLines.join("\n")}
 ---
 
 # ${titleName}
@@ -466,6 +530,49 @@ Add your skill instructions here.
 		} catch {
 			// Ignore errors - directory might not exist or have permission issues
 		}
+
+		// Refresh skills list
+		await this.discoverSkills()
+	}
+
+	/**
+	 * Update the mode associations for a skill by modifying its SKILL.md frontmatter.
+	 * @param name - Skill name
+	 * @param source - Where the skill is located ("global" or "project")
+	 * @param newModeSlugs - New mode slugs (undefined/empty = any mode)
+	 */
+	async updateSkillModes(name: string, source: "global" | "project", newModeSlugs?: string[]): Promise<void> {
+		// Find any skill with this name and source (regardless of current mode)
+		let skill: SkillMetadata | undefined
+		for (const s of this.skills.values()) {
+			if (s.name === name && s.source === source) {
+				skill = s
+				break
+			}
+		}
+
+		if (!skill) {
+			throw new Error(t("skills:errors.not_found", { name, source, modeInfo: "" }))
+		}
+
+		// Read the current SKILL.md file
+		const fileContent = await fs.readFile(skill.path, "utf-8")
+		const { data: frontmatter, content: body } = matter(fileContent)
+
+		// Update the frontmatter with new modeSlugs
+		if (newModeSlugs && newModeSlugs.length > 0) {
+			frontmatter.modeSlugs = newModeSlugs
+			// Remove legacy mode field if present
+			delete frontmatter.mode
+		} else {
+			// Empty/undefined = any mode, remove mode restrictions
+			delete frontmatter.modeSlugs
+			delete frontmatter.mode
+		}
+
+		// Serialize back to SKILL.md format
+		const newContent = matter.stringify(body, frontmatter)
+		await fs.writeFile(skill.path, newContent, "utf-8")
 
 		// Refresh skills list
 		await this.discoverSkills()

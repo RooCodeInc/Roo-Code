@@ -605,6 +605,7 @@ export interface WebviewMessage {
 		| "createSkill"
 		| "deleteSkill"
 		| "moveSkill"
+		| "updateSkillModes"
 		| "openSkillFile"
 	text?: string
 	editedMessageContent?: string
@@ -641,9 +642,15 @@ export interface WebviewMessage {
 	payload?: WebViewMessagePayload
 	source?: "global" | "project" | "built-in"
 	skillName?: string // For skill operations (createSkill, deleteSkill, moveSkill, openSkillFile)
+	/** @deprecated Use skillModeSlugs instead */
 	skillMode?: string // For skill operations (current mode restriction)
+	/** @deprecated Use newSkillModeSlugs instead */
 	newSkillMode?: string // For moveSkill (target mode)
 	skillDescription?: string // For createSkill (skill description)
+	/** Mode slugs for skill operations. undefined/empty = any mode */
+	skillModeSlugs?: string[] // For skill operations (mode restrictions)
+	/** Target mode slugs for updateSkillModes */
+	newSkillModeSlugs?: string[] // For updateSkillModes (new mode restrictions)
 	requestId?: string
 	ids?: string[]
 	hasSystemPromptOverride?: boolean

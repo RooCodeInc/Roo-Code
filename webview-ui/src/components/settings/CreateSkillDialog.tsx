@@ -132,13 +132,14 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 		}
 
 		// Send message to create skill
-		// Convert MODE_ANY sentinel value to undefined for the backend
+		// Convert MODE_ANY sentinel value to undefined, single mode to array for the backend
+		const modeSlugs = mode === MODE_ANY ? undefined : [mode]
 		vscode.postMessage({
 			type: "createSkill",
 			skillName: name,
 			source,
 			skillDescription: description,
-			skillMode: mode === MODE_ANY ? undefined : mode,
+			skillModeSlugs: modeSlugs,
 		})
 
 		// Close dialog and notify parent
