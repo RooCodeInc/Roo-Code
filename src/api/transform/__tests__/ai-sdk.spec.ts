@@ -7,6 +7,7 @@ import {
 	mapToolChoice,
 	extractAiSdkErrorMessage,
 	handleAiSdkError,
+	flattenAiSdkMessagesToStringContent,
 } from "../ai-sdk"
 
 vitest.mock("ai", () => ({
@@ -642,6 +643,179 @@ describe("AI SDK conversion utilities", () => {
 			const result = handleAiSdkError(originalError, "Cerebras")
 
 			expect((result as any).cause).toBe(originalError)
+		})
+	})
+
+	describe("flattenAiSdkMessagesToStringContent", () => {
+		it("should return messages unchanged if content is already a string", () => {
+			const messages = [
+				{ role: "user" as const, content: "Hello" },
+				{ role: "assistant" as const, content: "Hi there" },
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should flatten user messages with only text parts to string", () => {
+			const messages = [
+				{
+					role: "user" as const,
+					content: [
+						{ type: "text" as const, text: "Hello" },
+						{ type: "text" as const, text: "World" },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0].role).toBe("user")
+			expect(result[0].content).toBe("Hello\nWorld")
+		})
+
+		it("should flatten assistant messages with only text parts to string", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [{ type: "text" as const, text: "I am an assistant" }],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0].role).toBe("assistant")
+			expect(result[0].content).toBe("I am an assistant")
+		})
+
+		it("should not flatten user messages with image parts", () => {
+			const messages = [
+				{
+					role: "user" as const,
+					content: [
+						{ type: "text" as const, text: "Look at this" },
+						{ type: "image" as const, image: "data:image/png;base64,abc123" },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should not flatten assistant messages with tool calls", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [
+						{ type: "text" as const, text: "Let me use a tool" },
+						{
+							type: "tool-call" as const,
+							toolCallId: "123",
+							toolName: "read_file",
+							input: { path: "test.txt" },
+						},
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should not flatten tool role messages", () => {
+			const messages = [
+				{
+					role: "tool" as const,
+					content: [
+						{
+							type: "tool-result" as const,
+							toolCallId: "123",
+							toolName: "test",
+							output: { type: "text" as const, value: "result" },
+						},
+					],
+				},
+			] as any
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should respect flattenUserMessages option", () => {
+			const messages = [
+				{
+					role: "user" as const,
+					content: [{ type: "text" as const, text: "Hello" }],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages, { flattenUserMessages: false })
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should respect flattenAssistantMessages option", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [{ type: "text" as const, text: "Hi" }],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages, { flattenAssistantMessages: false })
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should handle mixed message types correctly", () => {
+			const messages = [
+				{ role: "user" as const, content: "Simple string" },
+				{
+					role: "user" as const,
+					content: [{ type: "text" as const, text: "Text parts" }],
+				},
+				{
+					role: "assistant" as const,
+					content: [{ type: "text" as const, text: "Assistant text" }],
+				},
+				{
+					role: "assistant" as const,
+					content: [
+						{ type: "text" as const, text: "With tool" },
+						{ type: "tool-call" as const, toolCallId: "456", toolName: "test", input: {} },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result[0].content).toBe("Simple string") // unchanged
+			expect(result[1].content).toBe("Text parts") // flattened
+			expect(result[2].content).toBe("Assistant text") // flattened
+			expect(result[3]).toEqual(messages[3]) // unchanged (has tool call)
+		})
+
+		it("should handle empty text parts", () => {
+			const messages = [
+				{
+					role: "user" as const,
+					content: [
+						{ type: "text" as const, text: "" },
+						{ type: "text" as const, text: "Hello" },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result[0].content).toBe("\nHello")
 		})
 	})
 })
