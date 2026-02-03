@@ -276,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Maximale verzoeken",
-			"description": "Voer automatisch dit aantal API-verzoeken uit voordat om goedkeuring wordt gevraagd om door te gaan met de taak.",
 			"unlimited": "Onbeperkt"
 		},
 		"selectOptionsFirst": "Selecteer ten minste één optie hieronder om automatische goedkeuring in te schakelen",
@@ -707,7 +706,6 @@
 				"label": "Maximale diagnostische berichten",
 				"description": "Maximaal aantal diagnostische berichten dat per bestand moet worden opgenomen. Deze limiet geldt voor zowel automatische opname (wanneer checkbox is ingeschakeld) als handmatige @problems vermeldingen. Hogere waarden bieden meer context maar verhogen het tokengebruik.",
 				"resetTooltip": "Reset naar standaardwaarde (50)",
-				"unlimited": "Onbeperkte diagnostische berichten",
 				"unlimitedLabel": "Onbeperkt"
 			},
 			"delayAfterWrite": {
@@ -932,7 +930,6 @@
 		"simplifiedExplanation": "Je kunt later gedetailleerde modelinstellingen aanpassen."
 	},
 	"footer": {
-		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> of sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Anonieme fout- en gebruiksrapportage toestaan",
 			"description": "Help Roo Code te verbeteren door anonieme gebruiksgegevens en foutmeldingen te versturen. Deze telemetrie verzamelt geen code, prompts of persoonlijke informatie. Zie ons <privacyLink>privacybeleid</privacyLink> voor meer details."
@@ -1041,7 +1038,7 @@
 		"modeCount": "{{count}} modus",
 		"deleteDialog": {
 			"title": "Skill verwijderen",
-			"description": "Weet je zeker dat je de skill \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+			"description": "Weet u zeker dat u de skill \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
 			"confirm": "Verwijderen",
 			"cancel": "Annuleren"
 		},
@@ -1054,56 +1051,12 @@
 			"cancel": "Annuleren"
 		},
 		"createDialog": {
-			"title": "Nieuwe skill maken",
-			"nameLabel": "Naam",
-			"namePlaceholder": "my-skill-name",
-			"nameHint": "Alleen kleine letters, cijfers en streepjes",
-			"descriptionLabel": "Beschrijving",
-			"descriptionPlaceholder": "Beschrijf wanneer deze skill moet worden gebruikt...",
-			"descriptionHint": "Leg uit wat deze skill doet en wanneer de agent deze moet toepassen",
-			"sourceLabel": "Locatie",
-			"modeLabel": "Modus (optioneel)",
-			"modePlaceholder": "Elke modus",
-			"modeAny": "Elke modus",
-			"modeHint": "Beperk deze skill tot een specifieke modus",
-			"create": "Maken",
-			"cancel": "Annuleren"
-		},
-		"source": {
-			"global": "Globaal (beschikbaar in alle projecten)",
-			"project": "Project (alleen deze werkruimte)"
-		},
-		"validation": {
-			"nameRequired": "Naam is vereist",
-			"nameTooLong": "Naam mag max. 64 tekens zijn",
-			"nameInvalid": "Naam mag 1-64 kleine letters, cijfers of streepjes zijn",
-			"descriptionRequired": "Beschrijving is vereist",
-			"descriptionTooLong": "Beschrijving mag max. 1024 tekens zijn"
-		},
-		"footer": "Maak je eigen skills met de Skill Writer modus, beschikbaar in de <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
-		"projectSkills": "Projectskills",
-		"noProjectSkills": "Geen projectskills geconfigureerd. Maak er een om projectspecifieke agentmogelijkheden toe te voegen.",
-		"editSkill": "Skill bewerken",
-		"deleteSkill": "Skill verwijderen",
-		"changeMode": "Modus wijzigen",
-		"modeAny": "Elke modus",
-		"deleteDialog": {
-			"title": "Skill verwijderen",
-			"description": "Weet u zeker dat u de skill \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
-			"confirm": "Verwijderen",
-			"cancel": "Annuleren"
-		},
-		"createDialog": {
 			"title": "Nieuwe Skill maken",
-			"description": "Definieer een nieuwe skillsjabloon die contextuele instructies aan de agent verstrekt.",
 			"nameLabel": "Naam",
 			"namePlaceholder": "mijn-skill-naam",
-			"nameHint": "Alleen kleine letters, cijfers en streepjes (1-64 tekens)",
 			"descriptionLabel": "Beschrijving",
 			"descriptionPlaceholder": "Beschrijf wanneer deze skill moet worden gebruikt...",
-			"descriptionHint": "Leg uit wat deze skill doet en wanneer de agent deze moet toepassen (1-1024 tekens)",
 			"sourceLabel": "Locatie",
-			"sourceHint": "Kies of deze skill globaal beschikbaar is of alleen in dit project",
 			"modeLabel": "Modus (optioneel)",
 			"modePlaceholder": "Elke modus",
 			"modeHint": "Beperk deze skill tot een specifieke modus",
@@ -1121,6 +1074,7 @@
 			"nameInvalid": "Naam moet 1-64 kleine letters, cijfers of streepjes zijn",
 			"descriptionRequired": "Beschrijving is verplicht",
 			"descriptionTooLong": "Beschrijving moet maximaal 1024 tekens zijn"
-		}
+		},
+		"footer": "Maak je eigen skills met de Skill Writer modus, beschikbaar in de <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

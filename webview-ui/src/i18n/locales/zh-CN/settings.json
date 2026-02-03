@@ -276,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "最大请求数",
-			"description": "在请求批准以继续执行任务之前，自动发出此数量的 API 请求。",
 			"unlimited": "无限制"
 		},
 		"selectOptionsFirst": "请至少选择以下一个选项以启用自动批准",
@@ -697,7 +696,6 @@
 				"label": "最大诊断消息数",
 				"description": "每个文件包含的最大诊断消息数。此限制适用于自动包含（启用复选框时）和手动 @problems 提及。较高的值提供更多上下文，但会增加令牌使用量。",
 				"resetTooltip": "重置为默认值 (50)",
-				"unlimited": "无限制诊断消息",
 				"unlimitedLabel": "无限制"
 			},
 			"delayAfterWrite": {
@@ -932,7 +930,6 @@
 		"simplifiedExplanation": "你可以稍后调整详细的模型设置。"
 	},
 	"footer": {
-		"feedback": "如果您有任何问题或反馈，请随时在 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> 上提出问题或加入 <redditLink>reddit.com/r/RooCode</redditLink> 或 <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "允许匿名数据收集",
 			"description": "通过发送匿名使用数据和错误报告来帮助改进 Roo Code。此遥测不会收集代码、提示 或个人信息。详细信息请参阅我们的<privacyLink>隐私政策</privacyLink>。您可以随时关闭此功能。"
@@ -1032,16 +1029,16 @@
 		"workspaceSkills": "工作区技能",
 		"globalSkills": "全局技能",
 		"noWorkspaceSkills": "此项目中还没有技能。",
-		"noGlobalSkills": "还没有全局技能。",
+		"noGlobalSkills": "未配置全局技能。创建一个以添加在所有项目中可用的代理功能。",
 		"addSkill": "添加技能",
 		"editSkill": "编辑技能",
 		"deleteSkill": "删除技能",
 		"configureModes": "模式可用性",
-		"modeAny": "任何模式",
+		"modeAny": "任意模式",
 		"modeCount": "{{count}} 种模式",
 		"deleteDialog": {
 			"title": "删除技能",
-			"description": "确定要删除技能 \"{{name}}\" 吗？此操作无法撤销。",
+			"description": "您确定要删除技能\"{{name}}\"吗？此操作无法撤销。",
 			"confirm": "删除",
 			"cancel": "取消"
 		},
@@ -1057,56 +1054,9 @@
 			"title": "创建新技能",
 			"nameLabel": "名称",
 			"namePlaceholder": "my-skill-name",
-			"nameHint": "仅限小写字母、数字和连字符",
-			"descriptionLabel": "描述",
-			"descriptionPlaceholder": "描述此技能何时应使用...",
-			"descriptionHint": "说明此技能的功能以及代理何时应应用它",
-			"sourceLabel": "位置",
-			"modeLabel": "模式（可选）",
-			"modePlaceholder": "任何模式",
-			"modeAny": "任何模式",
-			"modeHint": "将此技能限制为特定模式",
-			"create": "创建",
-			"cancel": "取消"
-		},
-		"source": {
-			"global": "全局（在所有项目中可用）",
-			"project": "项目（仅此工作区）"
-		},
-		"validation": {
-			"nameRequired": "名称为必填项",
-			"nameTooLong": "名称必须为 64 个字符或更少",
-			"nameInvalid": "名称必须是 1-64 个小写字母、数字或连字符",
-			"descriptionRequired": "描述为必填项",
-			"descriptionTooLong": "描述必须为 1024 个字符或更少"
-		},
-		"footer": "使用技能编写器模式创建您自己的技能，可在 <MarketplaceLink>模式市集</MarketplaceLink> 中获得。",
-		"projectSkills": "项目技能",
-		"globalSkills": "全局技能",
-		"noProjectSkills": "未配置项目技能。创建一个以添加特定于项目的代理功能。",
-		"noGlobalSkills": "未配置全局技能。创建一个以添加在所有项目中可用的代理功能。",
-		"addSkill": "添加技能",
-		"editSkill": "编辑技能",
-		"deleteSkill": "删除技能",
-		"changeMode": "更改模式",
-		"modeAny": "任意模式",
-		"deleteDialog": {
-			"title": "删除技能",
-			"description": "您确定要删除技能\"{{name}}\"吗？此操作无法撤销。",
-			"confirm": "删除",
-			"cancel": "取消"
-		},
-		"createDialog": {
-			"title": "创建新技能",
-			"description": "定义一个新的技能模板，为代理提供上下文指令。",
-			"nameLabel": "名称",
-			"namePlaceholder": "my-skill-name",
-			"nameHint": "仅小写字母、数字和连字符（1-64个字符）",
 			"descriptionLabel": "描述",
 			"descriptionPlaceholder": "描述何时应使用此技能...",
-			"descriptionHint": "解释此技能的作用以及代理应何时应用它（1-1024个字符）",
 			"sourceLabel": "位置",
-			"sourceHint": "选择此技能是全局可用还是仅在此项目中可用",
 			"modeLabel": "模式（可选）",
 			"modePlaceholder": "任何模式",
 			"modeHint": "将此技能限制为特定模式",
@@ -1124,6 +1074,7 @@
 			"nameInvalid": "名称必须为1-64个小写字母、数字或连字符",
 			"descriptionRequired": "描述为必填项",
 			"descriptionTooLong": "描述不得超过1024个字符"
-		}
+		},
+		"footer": "使用技能编写器模式创建您自己的技能，可在 <MarketplaceLink>模式市集</MarketplaceLink> 中获得。"
 	}
 }

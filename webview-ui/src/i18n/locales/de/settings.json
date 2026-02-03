@@ -276,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Maximale Anfragen",
-			"description": "Automatisch so viele API-Anfragen stellen, bevor du um die Erlaubnis gebeten wirst, mit der Aufgabe fortzufahren.",
 			"unlimited": "Unbegrenzt"
 		},
 		"selectOptionsFirst": "Wähle mindestens eine Option unten aus, um die automatische Genehmigung zu aktivieren",
@@ -931,7 +930,6 @@
 		"simplifiedExplanation": "Du kannst detaillierte Modelleinstellungen später anpassen."
 	},
 	"footer": {
-		"feedback": "Wenn du Fragen oder Feedback hast, kannst du gerne ein Issue auf <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> eröffnen oder <redditLink>reddit.com/r/RooCode</redditLink> oder <discordLink>discord.gg/roocode</discordLink> beitreten",
 		"telemetry": {
 			"label": "Anonyme Fehler- und Nutzungsberichte zulassen",
 			"description": "Hilf mit, Roo Code zu verbessern, indem du anonyme Nutzungsdaten und Fehlerberichte sendest. Diese Telemetrie sammelt keine Code-, Prompt- oder persönliche Informationen. Weitere Einzelheiten findest du in unserer <privacyLink>Datenschutzrichtlinie</privacyLink>."
@@ -1056,10 +1054,8 @@
 			"title": "Neuen Skill erstellen",
 			"nameLabel": "Name",
 			"namePlaceholder": "my-skill-name",
-			"nameHint": "Nur Kleinbuchstaben, Zahlen und Bindestriche",
 			"descriptionLabel": "Beschreibung",
 			"descriptionPlaceholder": "Beschreibe, wann dieser Skill verwendet werden sollte...",
-			"descriptionHint": "Erkläre, was dieser Skill tut und wann der Agent ihn anwenden sollte",
 			"sourceLabel": "Speicherort",
 			"modeLabel": "Modus (optional)",
 			"modePlaceholder": "Beliebiger Modus",

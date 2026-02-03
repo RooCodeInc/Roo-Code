@@ -276,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Maksimum İstek",
-			"description": "Göreve devam etmek için onay istemeden önce bu sayıda API isteği otomatik olarak yap.",
 			"unlimited": "Sınırsız"
 		},
 		"selectOptionsFirst": "Otomatik onayı etkinleştirmek için aşağıdan en az bir seçenek seçin",
@@ -697,7 +696,6 @@
 				"label": "Maksimum tanı mesajı",
 				"description": "Dosya başına dahil edilecek maksimum tanı mesajı sayısı. Bu sınır hem otomatik dahil etme (onay kutusu etkinleştirildiğinde) hem de manuel @problems bahisleri için geçerlidir. Daha yüksek değerler daha fazla bağlam sağlar ancak jeton kullanımını artırır.",
 				"resetTooltip": "Varsayılan değere sıfırla (50)",
-				"unlimited": "Sınırsız tanı mesajları",
 				"unlimitedLabel": "Sınırsız"
 			},
 			"delayAfterWrite": {
@@ -932,7 +930,6 @@
 		"simplifiedExplanation": "Ayrıntılı model ayarlarını daha sonra ayarlayabilirsiniz."
 	},
 	"footer": {
-		"feedback": "Herhangi bir sorunuz veya geri bildiriminiz varsa, <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> adresinde bir konu açmaktan veya <redditLink>reddit.com/r/RooCode</redditLink> ya da <discordLink>discord.gg/roocode</discordLink>'a katılmaktan çekinmeyin",
 		"telemetry": {
 			"label": "Anonim hata ve kullanım raporlamaya izin ver",
 			"description": "Anonim kullanım verileri ve hata raporları göndererek Roo Code'u geliştirmeye yardım edin. Bu telemetri kod, prompt veya kişisel bilgi toplamaz. Daha fazla ayrıntı için <privacyLink>gizlilik politikamıza</privacyLink> bakın. Bunu istediğiniz zaman kapatabilirsiniz."
@@ -1032,7 +1029,7 @@
 		"workspaceSkills": "Çalışma Alanı Becerileri",
 		"globalSkills": "Genel Beceriler",
 		"noWorkspaceSkills": "Bu projede henüz beceri yok.",
-		"noGlobalSkills": "Henüz genel beceri yok.",
+		"noGlobalSkills": "Yapılandırılmış genel beceri yok. Tüm projelerde kullanılabilir ajan yetenekleri eklemek için bir tane oluşturun.",
 		"addSkill": "Beceri Ekle",
 		"editSkill": "Beceriyi düzenle",
 		"deleteSkill": "Beceriyi sil",
@@ -1040,7 +1037,7 @@
 		"modeAny": "Herhangi bir mod",
 		"modeCount": "{{count}} mod",
 		"deleteDialog": {
-			"title": "Beceriyi sil",
+			"title": "Beceriyi Sil",
 			"description": "\"{{name}}\" becerisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
 			"confirm": "Sil",
 			"cancel": "İptal"
@@ -1056,57 +1053,10 @@
 		"createDialog": {
 			"title": "Yeni Beceri Oluştur",
 			"nameLabel": "Ad",
-			"namePlaceholder": "my-skill-name",
-			"nameHint": "Yalnızca küçük harfler, sayılar ve tireleme",
-			"descriptionLabel": "Açıklama",
-			"descriptionPlaceholder": "Bu becerinin ne zaman kullanılması gerektiğini açıklayın...",
-			"descriptionHint": "Bu becerinin ne yaptığını ve ajanın bunu ne zaman uygulaması gerektiğini açıklayın",
-			"sourceLabel": "Konum",
-			"modeLabel": "Mod (isteğe bağlı)",
-			"modePlaceholder": "Herhangi bir mod",
-			"modeAny": "Herhangi bir mod",
-			"modeHint": "Bu beceriyi belirli bir moda sınırla",
-			"create": "Oluştur",
-			"cancel": "İptal"
-		},
-		"source": {
-			"global": "Genel (tüm projelerde mevcut)",
-			"project": "Proje (yalnızca bu çalışma alanı)"
-		},
-		"validation": {
-			"nameRequired": "Ad gereklidir",
-			"nameTooLong": "Ad en fazla 64 karakter olmalıdır",
-			"nameInvalid": "Ad 1-64 küçük harf, sayı veya tireleme olmalıdır",
-			"descriptionRequired": "Açıklama gereklidir",
-			"descriptionTooLong": "Açıklama en fazla 1024 karakter olmalıdır"
-		},
-		"footer": "Skill Writer modu ile kendi becerilerinizi oluşturun. <MarketplaceLink>Modes Marketplace</MarketplaceLink>'de mevcut.",
-		"projectSkills": "Proje Becerileri",
-		"globalSkills": "Genel Beceriler",
-		"noProjectSkills": "Yapılandırılmış proje becerisi yok. Projeye özgü ajan yetenekleri eklemek için bir tane oluşturun.",
-		"noGlobalSkills": "Yapılandırılmış genel beceri yok. Tüm projelerde kullanılabilir ajan yetenekleri eklemek için bir tane oluşturun.",
-		"addSkill": "Beceri Ekle",
-		"editSkill": "Beceriyi düzenle",
-		"deleteSkill": "Beceriyi sil",
-		"changeMode": "Modu değiştir",
-		"modeAny": "Herhangi bir mod",
-		"deleteDialog": {
-			"title": "Beceriyi Sil",
-			"description": "\"{{name}}\" becerisini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
-			"confirm": "Sil",
-			"cancel": "İptal"
-		},
-		"createDialog": {
-			"title": "Yeni Beceri Oluştur",
-			"description": "Ajana bağlamsal talimatlar sağlayan yeni bir beceri şablonu tanımlayın.",
-			"nameLabel": "Ad",
 			"namePlaceholder": "benim-beceri-adim",
-			"nameHint": "Yalnızca küçük harfler, rakamlar ve kısa çizgiler (1-64 karakter)",
 			"descriptionLabel": "Açıklama",
 			"descriptionPlaceholder": "Bu becerinin ne zaman kullanılması gerektiğini açıklayın...",
-			"descriptionHint": "Bu becerinin ne yaptığını ve ajanın ne zaman uygulaması gerektiğini açıklayın (1-1024 karakter)",
 			"sourceLabel": "Konum",
-			"sourceHint": "Bu becerinin genel olarak mı yoksa yalnızca bu projede mi kullanılabilir olduğunu seçin",
 			"modeLabel": "Mod (isteğe bağlı)",
 			"modePlaceholder": "Herhangi bir mod",
 			"modeHint": "Bu beceriyi belirli bir modla sınırlayın",
@@ -1124,6 +1074,7 @@
 			"nameInvalid": "Ad 1-64 küçük harf, rakam veya kısa çizgi olmalıdır",
 			"descriptionRequired": "Açıklama gereklidir",
 			"descriptionTooLong": "Açıklama en fazla 1024 karakter olmalıdır"
-		}
+		},
+		"footer": "Skill Writer modu ile kendi becerilerinizi oluşturun. <MarketplaceLink>Modes Marketplace</MarketplaceLink>'de mevcut."
 	}
 }

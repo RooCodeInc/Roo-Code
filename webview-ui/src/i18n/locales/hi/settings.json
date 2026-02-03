@@ -276,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "अधिकतम अनुरोध",
-			"description": "कार्य जारी रखने के लिए अनुमति मांगने से पहले स्वचालित रूप से इतने API अनुरोध करें।",
 			"unlimited": "असीमित"
 		},
 		"selectOptionsFirst": "स्वतः-अनुमोदन सक्षम करने के लिए नीचे से कम से कम एक विकल्प चुनें",
@@ -697,7 +696,6 @@
 				"label": "अधिकतम डायग्नोस्टिक संदेश",
 				"description": "प्रति फ़ाइल शामिल किए जाने वाले डायग्नोस्टिक संदेशों की अधिकतम संख्या। यह सीमा स्वचालित समावेशन (जब चेकबॉक्स सक्षम है) और मैन्युअल @problems उल्लेख दोनों पर लागू होती है। उच्च मान अधिक संदर्भ प्रदान करते हैं लेकिन टोकन उपयोग बढ़ाते हैं।",
 				"resetTooltip": "डिफ़ॉल्ट मान पर रीसेट करें (50)",
-				"unlimited": "असीमित डायग्नोस्टिक संदेश",
 				"unlimitedLabel": "असीमित"
 			},
 			"delayAfterWrite": {
@@ -932,7 +930,6 @@
 		"simplifiedExplanation": "आप बाद में विस्तृत मॉडल सेटिंग्स समायोजित कर सकते हैं।"
 	},
 	"footer": {
-		"feedback": "यदि आपके कोई प्रश्न या प्रतिक्रिया है, तो <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> पर एक मुद्दा खोलने या <redditLink>reddit.com/r/RooCode</redditLink> या <discordLink>discord.gg/roocode</discordLink> में शामिल होने में संकोच न करें",
 		"telemetry": {
 			"label": "गुमनाम त्रुटि और उपयोग रिपोर्टिंग की अनुमति दें",
 			"description": "गुमनाम उपयोग डेटा और त्रुटि रिपोर्ट भेजकर Roo Code को बेहतर बनाने में मदद करें। यह टेलीमेट्री कोड, प्रॉम्प्ट या व्यक्तिगत जानकारी एकत्र नहीं करती। अधिक विवरण के लिए हमारी <privacyLink>गोपनीयता नीति</privacyLink> देखें। आप इसे कभी भी बंद कर सकते हैं।"
@@ -1041,7 +1038,7 @@
 		"modeCount": "{{count}} मोड",
 		"deleteDialog": {
 			"title": "Skill हटाएं",
-			"description": "क्या आप वाकई Skill \"{{name}}\" को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
+			"description": "क्या आप वाकई skill \"{{name}}\" को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
 			"confirm": "हटाएं",
 			"cancel": "रद्द करें"
 		},
@@ -1057,53 +1054,9 @@
 			"title": "नया Skill बनाएं",
 			"nameLabel": "नाम",
 			"namePlaceholder": "my-skill-name",
-			"nameHint": "केवल लोअरकेस अक्षर, संख्याएं और हाइफन",
-			"descriptionLabel": "विवरण",
-			"descriptionPlaceholder": "बताएं कि इस Skill का उपयोग कब करना चाहिए...",
-			"descriptionHint": "समझाएं कि यह Skill क्या करता है और एजेंट को इसे कब लागू करना चाहिए",
-			"sourceLabel": "स्थान",
-			"modeLabel": "मोड (वैकल्पिक)",
-			"modePlaceholder": "कोई भी मोड",
-			"modeAny": "कोई भी मोड",
-			"modeHint": "इस Skill को किसी विशिष्ट मोड तक सीमित करें",
-			"create": "बनाएं",
-			"cancel": "रद्द करें"
-		},
-		"source": {
-			"global": "ग्लोबल (सभी प्रोजेक्ट्स में उपलब्ध)",
-			"project": "प्रोजेक्ट (केवल यह वर्कस्पेस)"
-		},
-		"validation": {
-			"nameRequired": "नाम आवश्यक है",
-			"nameTooLong": "नाम 64 वर्ण या उससे कम होना चाहिए",
-			"nameInvalid": "नाम 1-64 लोअरकेस अक्षर, संख्याएं या हाइफन होना चाहिए",
-			"descriptionRequired": "विवरण आवश्यक है",
-			"descriptionTooLong": "विवरण 1024 वर्ण या उससे कम होना चाहिए"
-		},
-		"footer": "Skill Writer मोड के साथ अपने स्वयं के Skills बनाएं, <MarketplaceLink>Modes Marketplace</MarketplaceLink> में उपलब्ध।",
-		"projectSkills": "प्रोजेक्ट Skills",
-		"noProjectSkills": "कोई प्रोजेक्ट skills कॉन्फ़िगर नहीं किया गया। प्रोजेक्ट-विशिष्ट एजेंट क्षमताएं जोड़ने के लिए एक बनाएं।",
-		"editSkill": "Skill संपादित करें",
-		"deleteSkill": "Skill हटाएं",
-		"changeMode": "मोड बदलें",
-		"modeAny": "कोई भी मोड",
-		"deleteDialog": {
-			"title": "Skill हटाएं",
-			"description": "क्या आप वाकई skill \"{{name}}\" को हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।",
-			"confirm": "हटाएं",
-			"cancel": "रद्द करें"
-		},
-		"createDialog": {
-			"title": "नया Skill बनाएं",
-			"description": "एक नया skill टेम्पलेट परिभाषित करें जो एजेंट को संदर्भात्मक निर्देश प्रदान करता है।",
-			"nameLabel": "नाम",
-			"namePlaceholder": "my-skill-name",
-			"nameHint": "केवल छोटे अक्षर, संख्याएं और हाइफ़न (1-64 वर्ण)",
 			"descriptionLabel": "विवरण",
 			"descriptionPlaceholder": "वर्णन करें कि इस skill का उपयोग कब किया जाना चाहिए...",
-			"descriptionHint": "समझाएं कि यह skill क्या करता है और एजेंट को इसे कब लागू करना चाहिए (1-1024 वर्ण)",
 			"sourceLabel": "स्थान",
-			"sourceHint": "चुनें कि यह skill ग्लोबल रूप से उपलब्ध है या केवल इस प्रोजेक्ट में",
 			"modeLabel": "मोड (वैकल्पिक)",
 			"modePlaceholder": "कोई भी मोड",
 			"modeHint": "इस skill को किसी विशिष्ट मोड तक सीमित करें",
@@ -1121,6 +1074,7 @@
 			"nameInvalid": "नाम 1-64 छोटे अक्षर, संख्याएं या हाइफ़न होना चाहिए",
 			"descriptionRequired": "विवरण आवश्यक है",
 			"descriptionTooLong": "विवरण 1024 वर्णों से अधिक नहीं होना चाहिए"
-		}
+		},
+		"footer": "Skill Writer मोड के साथ अपने स्वयं के Skills बनाएं, <MarketplaceLink>Modes Marketplace</MarketplaceLink> में उपलब्ध।"
 	}
 }

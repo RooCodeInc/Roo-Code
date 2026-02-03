@@ -276,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Máximo de Solicitações",
-			"description": "Fazer automaticamente este número de requisições à API antes de pedir aprovação para continuar com a tarefa.",
 			"unlimited": "Ilimitado"
 		},
 		"selectOptionsFirst": "Selecione pelo menos uma opção abaixo para habilitar a aprovação automática",
@@ -697,7 +696,6 @@
 				"label": "Máximo de mensagens de diagnóstico",
 				"description": "Número máximo de mensagens de diagnóstico a serem incluídas por arquivo. Este limite se aplica tanto à inclusão automática (quando a caixa de seleção está ativada) quanto às menções manuais de @problems. Valores mais altos fornecem mais contexto, mas aumentam o uso de tokens.",
 				"resetTooltip": "Redefinir para o valor padrão (50)",
-				"unlimited": "Mensagens de diagnóstico ilimitadas",
 				"unlimitedLabel": "Ilimitado"
 			},
 			"delayAfterWrite": {
@@ -932,7 +930,6 @@
 		"simplifiedExplanation": "Você pode ajustar as configurações detalhadas do modelo mais tarde."
 	},
 	"footer": {
-		"feedback": "Se tiver alguma dúvida ou feedback, sinta-se à vontade para abrir um problema em <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou juntar-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permitir relatórios anônimos de erros e uso",
 			"description": "Ajude a melhorar o Roo Code enviando dados de uso anônimos e relatórios de erros. Esta telemetria não coleta código, prompts ou informações pessoais. Consulte nossa <privacyLink>política de privacidade</privacyLink> para mais detalhes."
@@ -1030,9 +1027,9 @@
 	"skills": {
 		"description": "Gerencie skills que fornecem instruções contextuais ao agente. As skills são aplicadas automaticamente quando relevantes para suas tarefas. <DocsLink>Saiba mais</DocsLink>",
 		"workspaceSkills": "Skills do espaço de trabalho",
-		"globalSkills": "Skills globais",
+		"globalSkills": "Skills Globais",
 		"noWorkspaceSkills": "Sem skills neste projeto ainda.",
-		"noGlobalSkills": "Sem skills globais ainda.",
+		"noGlobalSkills": "Nenhuma skill global configurada. Crie uma para adicionar capacidades ao agente disponíveis em todos os projetos.",
 		"addSkill": "Adicionar Skill",
 		"editSkill": "Editar skill",
 		"deleteSkill": "Excluir skill",
@@ -1054,59 +1051,12 @@
 			"cancel": "Cancelar"
 		},
 		"createDialog": {
-			"title": "Criar nova Skill",
-			"nameLabel": "Nome",
-			"namePlaceholder": "my-skill-name",
-			"nameHint": "Apenas letras minúsculas, números e hífens",
-			"descriptionLabel": "Descrição",
-			"descriptionPlaceholder": "Descreva quando essa skill deve ser usada...",
-			"descriptionHint": "Explique o que essa skill faz e quando o agente deve aplicá-la",
-			"sourceLabel": "Localização",
-			"modeLabel": "Modo (opcional)",
-			"modePlaceholder": "Qualquer modo",
-			"modeAny": "Qualquer modo",
-			"modeHint": "Restrinja essa skill a um modo específico",
-			"create": "Criar",
-			"cancel": "Cancelar"
-		},
-		"source": {
-			"global": "Global (disponível em todos os projetos)",
-			"project": "Projeto (apenas este espaço de trabalho)"
-		},
-		"validation": {
-			"nameRequired": "Nome é obrigatório",
-			"nameTooLong": "O nome deve ter 64 caracteres ou menos",
-			"nameInvalid": "O nome deve ser 1-64 letras minúsculas, números ou hífens",
-			"descriptionRequired": "Descrição é obrigatória",
-			"descriptionTooLong": "A descrição deve ter 1024 caracteres ou menos"
-		},
-		"footer": "Crie suas próprias skills com o modo Skill Writer, disponível em <MarketplaceLink>Modes Marketplace</MarketplaceLink>.",
-		"projectSkills": "Skills do Projeto",
-		"globalSkills": "Skills Globais",
-		"noProjectSkills": "Nenhuma skill de projeto configurada. Crie uma para adicionar capacidades específicas do projeto ao agente.",
-		"noGlobalSkills": "Nenhuma skill global configurada. Crie uma para adicionar capacidades ao agente disponíveis em todos os projetos.",
-		"addSkill": "Adicionar Skill",
-		"editSkill": "Editar skill",
-		"deleteSkill": "Excluir skill",
-		"changeMode": "Alterar modo",
-		"modeAny": "Qualquer modo",
-		"deleteDialog": {
-			"title": "Excluir Skill",
-			"description": "Tem certeza de que deseja excluir a skill \"{{name}}\"? Esta ação não pode ser desfeita.",
-			"confirm": "Excluir",
-			"cancel": "Cancelar"
-		},
-		"createDialog": {
 			"title": "Criar Nova Skill",
-			"description": "Defina um novo modelo de skill que fornece instruções contextuais ao agente.",
 			"nameLabel": "Nome",
 			"namePlaceholder": "meu-nome-de-skill",
-			"nameHint": "Apenas letras minúsculas, números e hífens (1-64 caracteres)",
 			"descriptionLabel": "Descrição",
 			"descriptionPlaceholder": "Descreva quando esta skill deve ser usada...",
-			"descriptionHint": "Explique o que esta skill faz e quando o agente deve aplicá-la (1-1024 caracteres)",
 			"sourceLabel": "Localização",
-			"sourceHint": "Escolha se esta skill está disponível globalmente ou apenas neste projeto",
 			"modeLabel": "Modo (opcional)",
 			"modePlaceholder": "Qualquer modo",
 			"modeHint": "Restrinja esta skill a um modo específico",
@@ -1124,6 +1074,7 @@
 			"nameInvalid": "O nome deve ter 1-64 letras minúsculas, números ou hífens",
 			"descriptionRequired": "A descrição é obrigatória",
 			"descriptionTooLong": "A descrição deve ter no máximo 1024 caracteres"
-		}
+		},
+		"footer": "Crie suas próprias skills com o modo Skill Writer, disponível em <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }
