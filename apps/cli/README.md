@@ -156,12 +156,13 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 | `-x, --exit-on-complete`          | Exit the process when task completes (useful for testing)                               | `false`                       |
 | `-y, --yes`                       | Non-interactive mode: auto-approve all actions                                          | `false`                       |
 | `-k, --api-key <key>`             | API key for the LLM provider                                                            | From env var                  |
-| `-p, --provider <provider>`       | API provider (anthropic, openai, openrouter, etc.)                                      | `openrouter`                  |
+| `-p, --provider <provider>`       | API provider (anthropic, openai, openrouter, litellm, etc.)                             | `openrouter`                  |
 | `-m, --model <model>`             | Model to use                                                                            | `anthropic/claude-sonnet-4.5` |
 | `-M, --mode <mode>`               | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                        |
 | `-r, --reasoning-effort <effort>` | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                      |
 | `--ephemeral`                     | Run without persisting state (uses temporary storage)                                   | `false`                       |
 | `--no-tui`                        | Disable TUI, use plain text output                                                      | `false`                       |
+| `--litellm-base-url <url>`        | Base URL for LiteLLM endpoint                                                           | `http://localhost:4000`       |
 
 ## Auth Commands
 
@@ -181,7 +182,15 @@ The CLI will look for API keys in environment variables if not provided via `--a
 | openai        | `OPENAI_API_KEY`     |
 | openrouter    | `OPENROUTER_API_KEY` |
 | google/gemini | `GOOGLE_API_KEY`     |
+| litellm       | `LITELLM_API_KEY`    |
 | ...           | ...                  |
+
+**LiteLLM Environment Variables:**
+
+| Variable           | Description                                                      |
+| ------------------ | ---------------------------------------------------------------- |
+| `LITELLM_API_KEY`  | API key for LiteLLM                                              |
+| `LITELLM_BASE_URL` | Base URL for LiteLLM endpoint (default: `http://localhost:4000`) |
 
 **Authentication Environment Variables:**
 

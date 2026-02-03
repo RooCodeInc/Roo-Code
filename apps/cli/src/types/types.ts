@@ -8,6 +8,7 @@ export const supportedProviders = [
 	"openrouter",
 	"vercel-ai-gateway",
 	"roo",
+	"litellm",
 ] as const satisfies ProviderName[]
 
 export type SupportedProvider = (typeof supportedProviders)[number]
@@ -34,6 +35,7 @@ export type FlagOptions = {
 	ephemeral: boolean
 	oneshot: boolean
 	outputFormat?: OutputFormat
+	litellmBaseUrl?: string
 }
 
 export enum OnboardingProviderChoice {

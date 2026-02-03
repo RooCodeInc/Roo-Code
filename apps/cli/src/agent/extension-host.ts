@@ -74,6 +74,10 @@ export interface ExtensionHostOptions {
 	 * running in an integration test and we want to see the output.
 	 */
 	integrationTest?: boolean
+	/**
+	 * Base URL for LiteLLM endpoint (only used when provider is "litellm").
+	 */
+	litellmBaseUrl?: string
 }
 
 interface ExtensionModule {
@@ -191,7 +195,12 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			commandExecutionTimeout: 30,
 			browserToolEnabled: false,
 			enableCheckpoints: false,
-			...getProviderSettings(this.options.provider, this.options.apiKey, this.options.model),
+			...getProviderSettings(
+				this.options.provider,
+				this.options.apiKey,
+				this.options.model,
+				this.options.litellmBaseUrl,
+			),
 		}
 
 		this.initialSettings = this.options.nonInteractive
