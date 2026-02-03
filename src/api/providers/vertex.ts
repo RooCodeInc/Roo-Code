@@ -105,17 +105,21 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		const aiSdkMessages = convertToAiSdkMessages(filteredMessages)
 
 		// Convert tools to OpenAI format first, then to AI SDK format
-		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+
+		// Filter tools based on allowedFunctionNames for mode-restricted tool access
+		if (metadata?.allowedFunctionNames && metadata.allowedFunctionNames.length > 0 && openAiTools) {
+			const allowedSet = new Set(metadata.allowedFunctionNames)
+			openAiTools = openAiTools.filter((tool) => tool.type === "function" && allowedSet.has(tool.function.name))
+		}
+
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
-		// Build tool choice - handle allowedFunctionNames for mode-restricted tool access
-		let toolChoice = mapToolChoice(metadata?.tool_choice)
-		if (metadata?.allowedFunctionNames && metadata.allowedFunctionNames.length > 0) {
-			// When allowedFunctionNames is provided, we need to use 'required' mode
-			// The AI SDK doesn't have direct allowedFunctionNames support like Gemini's native API,
-			// so we filter the tools to only include the allowed ones
-			toolChoice = "required"
-		}
+		// Build tool choice - use 'required' when allowedFunctionNames restricts available tools
+		const toolChoice =
+			metadata?.allowedFunctionNames && metadata.allowedFunctionNames.length > 0
+				? "required"
+				: mapToolChoice(metadata?.tool_choice)
 
 		// Build the request options
 		const requestOptions: Parameters<typeof streamText>[0] = {
