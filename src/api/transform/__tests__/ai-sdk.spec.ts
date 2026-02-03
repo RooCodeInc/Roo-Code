@@ -573,11 +573,47 @@ describe("AI SDK conversion utilities", () => {
 			expect(chunks[2]).toEqual({ type: "tool_call_end", id: "call_1" })
 		})
 
+		it("handles HuggingFace-like providers (start/end but no deltas, args in tool-call)", () => {
+			const processor = createAiSdkToolStreamProcessor()
+
+			// HuggingFace emits tool-input-start and tool-input-end but NOT tool-input-delta
+			// The arguments come in the tool-call event
+			const startChunks = [
+				...processor({ type: "tool-input-start" as const, id: "call_1", toolName: "read_file" }),
+			]
+			const endChunks = [...processor({ type: "tool-input-end" as const, id: "call_1" })]
+
+			// tool-call should emit just the delta (arguments) since start/end were already emitted
+			const toolCallChunks = [
+				...processor({
+					type: "tool-call" as const,
+					toolCallId: "call_1",
+					toolName: "read_file",
+					input: { path: "test.ts" },
+				} as any),
+			]
+
+			expect(startChunks).toHaveLength(1)
+			expect(startChunks[0]).toEqual({ type: "tool_call_start", id: "call_1", name: "read_file" })
+
+			expect(endChunks).toHaveLength(1)
+			expect(endChunks[0]).toEqual({ type: "tool_call_end", id: "call_1" })
+
+			// The tool-call should emit just the delta with arguments
+			expect(toolCallChunks).toHaveLength(1)
+			expect(toolCallChunks[0]).toEqual({
+				type: "tool_call_delta",
+				id: "call_1",
+				delta: '{"path":"test.ts"}',
+			})
+		})
+
 		it("handles multiple tool calls correctly", () => {
 			const processor = createAiSdkToolStreamProcessor()
 
-			// First tool is streamed
+			// First tool is fully streamed with deltas
 			Array.from(processor({ type: "tool-input-start" as const, id: "call_1", toolName: "read_file" }))
+			Array.from(processor({ type: "tool-input-delta" as const, id: "call_1", delta: '{"path":"a.ts"}' }))
 			Array.from(processor({ type: "tool-input-end" as const, id: "call_1" }))
 
 			// Second tool is not streamed (non-streaming provider behavior)
@@ -590,17 +626,17 @@ describe("AI SDK conversion utilities", () => {
 				} as any),
 			]
 
-			// Second tool should be emitted
+			// Second tool should be emitted with full start/delta/end
 			expect(chunks).toHaveLength(3)
 			expect(chunks[0]).toEqual({ type: "tool_call_start", id: "call_2", name: "write_to_file" })
 
-			// First tool's tool-call should be ignored
+			// First tool's tool-call should be ignored (it had deltas)
 			const ignoredChunks = [
 				...processor({
 					type: "tool-call" as const,
 					toolCallId: "call_1",
 					toolName: "read_file",
-					input: {},
+					input: { path: "a.ts" },
 				} as any),
 			]
 			expect(ignoredChunks).toHaveLength(0)
@@ -610,11 +646,12 @@ describe("AI SDK conversion utilities", () => {
 			const processor1 = createAiSdkToolStreamProcessor()
 			const processor2 = createAiSdkToolStreamProcessor()
 
-			// Stream a tool with processor1
+			// Stream a tool fully with processor1 (with delta)
 			Array.from(processor1({ type: "tool-input-start" as const, id: "call_1", toolName: "test" }))
+			Array.from(processor1({ type: "tool-input-delta" as const, id: "call_1", delta: "{}" }))
 			Array.from(processor1({ type: "tool-input-end" as const, id: "call_1" }))
 
-			// processor1 should ignore tool-call for call_1
+			// processor1 should ignore tool-call for call_1 (it had deltas)
 			const p1Chunks = [
 				...processor1({
 					type: "tool-call" as const,

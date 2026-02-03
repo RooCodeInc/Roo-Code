@@ -386,14 +386,16 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 export function createAiSdkToolStreamProcessor(): (
 	part: ExtendedStreamPart,
 ) => Generator<ApiStreamChunk, void, unknown> {
-	// Track tool IDs that have been processed via streaming events
-	const streamedToolIds = new Set<string>()
+	// Track tool IDs that have been started via streaming events
+	const startedToolIds = new Set<string>()
+	// Track tool IDs that have received actual argument deltas
+	const toolsWithDeltas = new Set<string>()
 
 	return function* processStreamPart(part: ExtendedStreamPart): Generator<ApiStreamChunk> {
 		switch (part.type) {
 			case "tool-input-start":
-				// Track that this tool has streaming events
-				streamedToolIds.add(part.id)
+				// Track that this tool has started streaming
+				startedToolIds.add(part.id)
 				yield {
 					type: "tool_call_start",
 					id: part.id,
@@ -402,6 +404,8 @@ export function createAiSdkToolStreamProcessor(): (
 				break
 
 			case "tool-input-delta":
+				// Track that we received actual argument content for this tool
+				toolsWithDeltas.add(part.id)
 				yield {
 					type: "tool_call_delta",
 					id: part.id,
@@ -417,30 +421,46 @@ export function createAiSdkToolStreamProcessor(): (
 				break
 
 			case "tool-call": {
-				// Only emit tool-call if this tool wasn't already processed via streaming
+				// Handle tool-call events - the logic depends on whether we got streaming deltas
 				const toolCallPart = part as {
 					type: "tool-call"
 					toolCallId: string
 					toolName: string
 					input: unknown
 				}
-				if (!streamedToolIds.has(toolCallPart.toolCallId)) {
-					// Emit as start/delta/end for consistency with streaming providers
+
+				// If we received deltas, the arguments were already streamed - ignore tool-call
+				if (toolsWithDeltas.has(toolCallPart.toolCallId)) {
+					break
+				}
+
+				// If tool was started but no deltas received (like HuggingFace),
+				// emit the arguments from tool-call as a delta
+				if (startedToolIds.has(toolCallPart.toolCallId)) {
 					const args = JSON.stringify(toolCallPart.input)
-					yield {
-						type: "tool_call_start",
-						id: toolCallPart.toolCallId,
-						name: toolCallPart.toolName,
-					}
 					yield {
 						type: "tool_call_delta",
 						id: toolCallPart.toolCallId,
 						delta: args,
 					}
-					yield {
-						type: "tool_call_end",
-						id: toolCallPart.toolCallId,
-					}
+					break
+				}
+
+				// Tool wasn't started via streaming - emit full start/delta/end sequence
+				const args = JSON.stringify(toolCallPart.input)
+				yield {
+					type: "tool_call_start",
+					id: toolCallPart.toolCallId,
+					name: toolCallPart.toolName,
+				}
+				yield {
+					type: "tool_call_delta",
+					id: toolCallPart.toolCallId,
+					delta: args,
+				}
+				yield {
+					type: "tool_call_end",
+					id: toolCallPart.toolCallId,
 				}
 				break
 			}
