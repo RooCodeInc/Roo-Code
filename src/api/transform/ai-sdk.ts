@@ -390,6 +390,8 @@ export function createAiSdkToolStreamProcessor(): (
 	const startedToolIds = new Set<string>()
 	// Track tool IDs that have received actual argument deltas
 	const toolsWithDeltas = new Set<string>()
+	// Track tool IDs that have ended but are waiting for arguments from tool-call
+	const pendingEndToolIds = new Set<string>()
 
 	return function* processStreamPart(part: ExtendedStreamPart): Generator<ApiStreamChunk> {
 		switch (part.type) {
@@ -414,9 +416,16 @@ export function createAiSdkToolStreamProcessor(): (
 				break
 
 			case "tool-input-end":
-				yield {
-					type: "tool_call_end",
-					id: part.id,
+				// If we already have deltas, we can emit the end now
+				// Otherwise, defer the end until we get arguments from tool-call
+				if (toolsWithDeltas.has(part.id)) {
+					yield {
+						type: "tool_call_end",
+						id: part.id,
+					}
+				} else {
+					// HuggingFace case: started but no deltas, arguments will come in tool-call
+					pendingEndToolIds.add(part.id)
 				}
 				break
 
@@ -435,13 +444,21 @@ export function createAiSdkToolStreamProcessor(): (
 				}
 
 				// If tool was started but no deltas received (like HuggingFace),
-				// emit the arguments from tool-call as a delta
+				// emit the arguments from tool-call as a delta, then the pending end
 				if (startedToolIds.has(toolCallPart.toolCallId)) {
 					const args = JSON.stringify(toolCallPart.input)
 					yield {
 						type: "tool_call_delta",
 						id: toolCallPart.toolCallId,
 						delta: args,
+					}
+					// Now emit the deferred end
+					if (pendingEndToolIds.has(toolCallPart.toolCallId)) {
+						pendingEndToolIds.delete(toolCallPart.toolCallId)
+						yield {
+							type: "tool_call_end",
+							id: toolCallPart.toolCallId,
+						}
 					}
 					break
 				}

@@ -581,9 +581,10 @@ describe("AI SDK conversion utilities", () => {
 			const startChunks = [
 				...processor({ type: "tool-input-start" as const, id: "call_1", toolName: "read_file" }),
 			]
+			// End is deferred since we haven't received deltas yet
 			const endChunks = [...processor({ type: "tool-input-end" as const, id: "call_1" })]
 
-			// tool-call should emit just the delta (arguments) since start/end were already emitted
+			// tool-call should emit the delta (arguments) AND the deferred end
 			const toolCallChunks = [
 				...processor({
 					type: "tool-call" as const,
@@ -596,15 +597,19 @@ describe("AI SDK conversion utilities", () => {
 			expect(startChunks).toHaveLength(1)
 			expect(startChunks[0]).toEqual({ type: "tool_call_start", id: "call_1", name: "read_file" })
 
-			expect(endChunks).toHaveLength(1)
-			expect(endChunks[0]).toEqual({ type: "tool_call_end", id: "call_1" })
+			// End is deferred when no deltas received
+			expect(endChunks).toHaveLength(0)
 
-			// The tool-call should emit just the delta with arguments
-			expect(toolCallChunks).toHaveLength(1)
+			// tool-call emits delta followed by the deferred end
+			expect(toolCallChunks).toHaveLength(2)
 			expect(toolCallChunks[0]).toEqual({
 				type: "tool_call_delta",
 				id: "call_1",
 				delta: '{"path":"test.ts"}',
+			})
+			expect(toolCallChunks[1]).toEqual({
+				type: "tool_call_end",
+				id: "call_1",
 			})
 		})
 
