@@ -878,6 +878,7 @@ export const webviewMessageHandler = async (
 						lmstudio: {},
 						roo: {},
 						chutes: {},
+						keywordsai: {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -927,6 +928,13 @@ export const webviewMessageHandler = async (
 				{
 					key: "chutes",
 					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
+				},
+				{
+					key: "keywordsai",
+					options: {
+						provider: "keywordsai",
+						baseUrl: apiConfiguration.keywordsaiBaseUrl || "https://api.keywordsai.co/api/",
+					},
 				},
 			]
 

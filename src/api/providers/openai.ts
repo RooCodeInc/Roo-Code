@@ -167,6 +167,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
+			Object.assign(requestOptions, this.getExtraRequestParams())
+
 			let stream
 			try {
 				stream = await this.client.chat.completions.create(
@@ -235,6 +237,8 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			// Add max_tokens if needed
 			this.addMaxTokensIfNeeded(requestOptions, modelInfo)
 
+			Object.assign(requestOptions, this.getExtraRequestParams())
+
 			let response
 			try {
 				response = await this.client.chat.completions.create(
@@ -267,6 +271,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			yield this.processUsageMetrics(response.usage, modelInfo)
 		}
+	}
+
+	/**
+	 * Optional extra body params merged into chat completions create().
+	 * Subclasses (e.g. Keywords AI gateway) use this for provider-specific params like disable_log.
+	 */
+	protected getExtraRequestParams(): Record<string, unknown> {
+		return {}
 	}
 
 	protected processUsageMetrics(usage: any, _modelInfo?: ModelInfo): ApiStreamUsageChunk {

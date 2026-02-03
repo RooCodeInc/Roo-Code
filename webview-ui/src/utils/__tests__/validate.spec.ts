@@ -20,6 +20,7 @@ import { getModelValidationError, validateApiConfigurationExcludingModelErrors, 
 
 describe("Model Validation Functions", () => {
 	const mockRouterModels: RouterModels = {
+		keywordsai: {},
 		openrouter: {
 			"valid-model": {
 				maxTokens: 8192,

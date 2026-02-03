@@ -41,6 +41,7 @@ import {
 	DeepInfraHandler,
 	MiniMaxHandler,
 	BasetenHandler,
+	KeywordsAiHandler,
 } from "./providers"
 import { NativeOllamaHandler } from "./providers/native-ollama"
 
@@ -197,6 +198,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new MiniMaxHandler(options)
 		case "baseten":
 			return new BasetenHandler(options)
+		case "keywordsai":
+			return new KeywordsAiHandler(options)
 		default:
 			return new AnthropicHandler(options)
 	}
