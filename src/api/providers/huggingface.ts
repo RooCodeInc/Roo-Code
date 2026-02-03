@@ -9,7 +9,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	createAiSdkToolStreamProcessor,
+	processAiSdkStreamPart,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
@@ -172,12 +172,10 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 		const result = streamText(requestOptions)
 
 		try {
-			// Use the stateful processor to handle tool call deduplication
-			// HuggingFace doesn't emit streaming tool events (tool-input-start/delta/end),
-			// only the final tool-call event, so we need the processor to handle this
-			const processStreamPart = createAiSdkToolStreamProcessor()
+			// Process the full stream to get all events
 			for await (const part of result.fullStream) {
-				for (const chunk of processStreamPart(part)) {
+				// Use the processAiSdkStreamPart utility to convert stream parts
+				for (const chunk of processAiSdkStreamPart(part)) {
 					yield chunk
 				}
 			}
