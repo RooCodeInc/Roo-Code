@@ -80,7 +80,7 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { setTtsEnabled, setTtsSpeed } from "../../utils/tts"
 import { getWorkspaceGitInfo } from "../../utils/git"
 import { getWorkspacePath } from "../../utils/path"
-import { OrganizationAllowListViolationError } from "../../utils/errors"
+import { OrganizationAllowListViolationError, TaskFileMissingError, TaskNotFoundError } from "../../utils/errors"
 
 import { setPanel } from "../../activate/registerCommands"
 
@@ -1665,31 +1665,67 @@ export class ClineProvider
 		const history = this.getGlobalState("taskHistory") ?? []
 		const historyItem = history.find((item) => item.id === id)
 
-		if (historyItem) {
-			const { getTaskDirectoryPath } = await import("../../utils/storage")
-			const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
-			const taskDirPath = await getTaskDirectoryPath(globalStoragePath, id)
-			const apiConversationHistoryFilePath = path.join(taskDirPath, GlobalFileNames.apiConversationHistory)
-			const uiMessagesFilePath = path.join(taskDirPath, GlobalFileNames.uiMessages)
+		// Task not found in history at all
+		if (!historyItem) {
+			throw new TaskNotFoundError(id)
+		}
+
+		const { getTaskDirectoryPath } = await import("../../utils/storage")
+		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+		const taskDirPath = await getTaskDirectoryPath(globalStoragePath, id)
+		const apiConversationHistoryFilePath = path.join(taskDirPath, GlobalFileNames.apiConversationHistory)
+		const uiMessagesFilePath = path.join(taskDirPath, GlobalFileNames.uiMessages)
+
+		// Retry logic with exponential backoff for transient file I/O issues
+		const maxRetries = 3
+		const baseDelayMs = 100
+
+		for (let attempt = 0; attempt < maxRetries; attempt++) {
 			const fileExists = await fileExistsAtPath(apiConversationHistoryFilePath)
 
 			if (fileExists) {
-				const apiConversationHistory = JSON.parse(await fs.readFile(apiConversationHistoryFilePath, "utf8"))
+				try {
+					const apiConversationHistory = JSON.parse(await fs.readFile(apiConversationHistoryFilePath, "utf8"))
 
-				return {
-					historyItem,
-					taskDirPath,
-					apiConversationHistoryFilePath,
-					uiMessagesFilePath,
-					apiConversationHistory,
+					return {
+						historyItem,
+						taskDirPath,
+						apiConversationHistoryFilePath,
+						uiMessagesFilePath,
+						apiConversationHistory,
+					}
+				} catch (parseError) {
+					// File exists but failed to parse - log and retry
+					this.log(
+						`[getTaskWithId] Failed to parse API history file for task ${id} (attempt ${attempt + 1}/${maxRetries}): ${
+							parseError instanceof Error ? parseError.message : String(parseError)
+						}`,
+					)
 				}
+			}
+
+			// Wait before retrying (exponential backoff)
+			if (attempt < maxRetries - 1) {
+				const delayMs = baseDelayMs * Math.pow(2, attempt)
+				await delay(delayMs)
 			}
 		}
 
-		// if we tried to get a task that doesn't exist, remove it from state
-		// FIXME: this seems to happen sometimes when the json file doesnt save to disk for some reason
-		await this.deleteTaskFromState(id)
-		throw new Error("Task not found")
+		// File is missing after all retries - DO NOT delete the task from state
+		// The task metadata exists but the file is temporarily or permanently unavailable.
+		// Deleting the task would orphan any child tasks and break delegation chains.
+		//
+		// Check if this task has delegation metadata (parentTaskId, childIds, etc.)
+		// which makes it even more critical to preserve.
+		const hasDelegationMetadata = Boolean(
+			historyItem.parentTaskId ||
+				(historyItem.childIds && historyItem.childIds.length > 0) ||
+				historyItem.delegatedToId ||
+				historyItem.awaitingChildId ||
+				historyItem.completedByChildId,
+		)
+
+		throw new TaskFileMissingError(id, apiConversationHistoryFilePath, hasDelegationMetadata)
 	}
 
 	async getTaskWithAggregatedCosts(taskId: string): Promise<{
@@ -1709,8 +1745,28 @@ export class ClineProvider
 	async showTaskWithId(id: string) {
 		if (id !== this.getCurrentTask()?.taskId) {
 			// Non-current task.
-			const { historyItem } = await this.getTaskWithId(id)
-			await this.createTaskWithHistoryItem(historyItem) // Clears existing task.
+			try {
+				const { historyItem } = await this.getTaskWithId(id)
+				await this.createTaskWithHistoryItem(historyItem) // Clears existing task.
+			} catch (error) {
+				if (error instanceof TaskFileMissingError) {
+					// File is missing but task metadata exists - show user-friendly error
+					// DO NOT delete the task, as it may be part of a delegation chain
+					const errorMessage = error.hasDelegationMetadata
+						? `Task ${id} files are temporarily unavailable. This task is part of a delegation chain and cannot be opened at this time.`
+						: `Task ${id} files are temporarily unavailable. The task history has been preserved.`
+					this.log(`[showTaskWithId] ${error.message}`)
+					vscode.window.showErrorMessage(errorMessage)
+					return
+				}
+				if (error instanceof TaskNotFoundError) {
+					// Task truly doesn't exist in history - this is expected in some cases
+					this.log(`[showTaskWithId] ${error.message}`)
+					vscode.window.showErrorMessage(`Task ${id} not found in history.`)
+					return
+				}
+				throw error
+			}
 		}
 
 		await this.postMessageToWebview({ type: "action", action: "chatButtonClicked" })
@@ -1749,31 +1805,57 @@ export class ClineProvider
 	// this function deletes a task from task history, and deletes its checkpoints and delete the task folder
 	// If the task has subtasks (childIds), they will also be deleted recursively
 	async deleteTaskWithId(id: string, cascadeSubtasks: boolean = true) {
+		// Helper to get task metadata from history without requiring file existence
+		const getHistoryItemById = (taskId: string): HistoryItem | undefined => {
+			const history = this.getGlobalState("taskHistory") ?? []
+			return history.find((item) => item.id === taskId)
+		}
+
 		try {
-			// get the task directory full path and history item
-			const { taskDirPath, historyItem } = await this.getTaskWithId(id)
+			// Try to get the task with file - this gives us full info including taskDirPath
+			let taskDirPath: string | undefined
+			let historyItem: HistoryItem | undefined
+
+			try {
+				const result = await this.getTaskWithId(id)
+				taskDirPath = result.taskDirPath
+				historyItem = result.historyItem
+			} catch (error) {
+				if (error instanceof TaskFileMissingError || error instanceof TaskNotFoundError) {
+					// File is missing or task not in history - still try to delete from history if it exists
+					historyItem = getHistoryItemById(id)
+					if (!historyItem) {
+						// Task truly doesn't exist anywhere - nothing to delete
+						this.log(`[deleteTaskWithId] Task ${id} not found in history, nothing to delete`)
+						return
+					}
+					// Get task directory path for cleanup
+					const { getTaskDirectoryPath } = await import("../../utils/storage")
+					const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+					taskDirPath = await getTaskDirectoryPath(globalStoragePath, id)
+				} else {
+					throw error
+				}
+			}
 
 			// Collect all task IDs to delete (parent + all subtasks)
 			const allIdsToDelete: string[] = [id]
 
-			if (cascadeSubtasks) {
-				// Recursively collect all child IDs
-				const collectChildIds = async (taskId: string): Promise<void> => {
-					try {
-						const { historyItem: item } = await this.getTaskWithId(taskId)
-						if (item.childIds && item.childIds.length > 0) {
-							for (const childId of item.childIds) {
+			if (cascadeSubtasks && historyItem) {
+				// Recursively collect all child IDs from history metadata
+				const collectChildIds = (taskId: string): void => {
+					const item = getHistoryItemById(taskId)
+					if (item?.childIds && item.childIds.length > 0) {
+						for (const childId of item.childIds) {
+							if (!allIdsToDelete.includes(childId)) {
 								allIdsToDelete.push(childId)
-								await collectChildIds(childId)
+								collectChildIds(childId)
 							}
 						}
-					} catch (error) {
-						// Child task may already be deleted or not found, continue
-						console.log(`[deleteTaskWithId] child task ${taskId} not found, skipping`)
 					}
 				}
 
-				await collectChildIds(id)
+				collectChildIds(id)
 			}
 
 			// Remove from stack if any of the tasks to delete are in the current task stack
@@ -1820,11 +1902,10 @@ export class ClineProvider
 
 			await this.postStateToWebview()
 		} catch (error) {
-			// If task is not found, just remove it from state
-			if (error instanceof Error && error.message === "Task not found") {
-				await this.deleteTaskFromState(id)
-				return
-			}
+			// Log unexpected errors
+			this.log(
+				`[deleteTaskWithId] Unexpected error deleting task ${id}: ${error instanceof Error ? error.message : String(error)}`,
+			)
 			throw error
 		}
 	}
@@ -3267,7 +3348,34 @@ export class ClineProvider
 		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
 
 		// 1) Load parent from history and current persisted messages
-		const { historyItem } = await this.getTaskWithId(parentTaskId)
+		let historyItem: HistoryItem
+		try {
+			const result = await this.getTaskWithId(parentTaskId)
+			historyItem = result.historyItem
+		} catch (error) {
+			if (error instanceof TaskFileMissingError) {
+				// Parent file is missing but metadata exists - log and try to recover
+				// DO NOT delete the parent, as it would orphan this child and break the delegation chain
+				this.log(
+					`[reopenParentFromDelegation] Parent task ${parentTaskId} file is missing, attempting recovery. ${error.message}`,
+				)
+				// Try to get historyItem directly from state
+				const history = this.getGlobalState("taskHistory") ?? []
+				const item = history.find((h: HistoryItem) => h.id === parentTaskId)
+				if (!item) {
+					throw new Error(
+						`[reopenParentFromDelegation] Parent task ${parentTaskId} not found in history after file missing error`,
+					)
+				}
+				historyItem = item
+			} else if (error instanceof TaskNotFoundError) {
+				// Parent truly doesn't exist - this is a critical error
+				this.log(`[reopenParentFromDelegation] Parent task ${parentTaskId} not found in history`)
+				throw error
+			} else {
+				throw error
+			}
+		}
 
 		let parentClineMessages: ClineMessage[] = []
 		try {

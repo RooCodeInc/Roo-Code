@@ -6,6 +6,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 
 import { ContextProxy } from "../../config/ContextProxy"
 import { ClineProvider } from "../ClineProvider"
+import { TaskFileMissingError, TaskNotFoundError } from "../../../utils/errors"
 
 // Mock setup
 vi.mock("p-wait-for", () => ({
@@ -590,6 +591,199 @@ describe("ClineProvider Task History Synchronization", () => {
 			expect(state.taskHistory.some((item: HistoryItem) => item.workspace === "/path/to/workspace1")).toBe(true)
 			expect(state.taskHistory.some((item: HistoryItem) => item.workspace === "/path/to/workspace2")).toBe(true)
 			expect(state.taskHistory.some((item: HistoryItem) => item.workspace === "/different/workspace")).toBe(true)
+		})
+	})
+
+	describe("getTaskWithId error handling", () => {
+		it("throws TaskNotFoundError when task does not exist in history", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
+
+			// Set up empty task history
+			;(mockContext.globalState.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+				if (key === "taskHistory") return []
+				return undefined
+			})
+
+			await expect(provider.getTaskWithId("non-existent-task")).rejects.toThrow(TaskNotFoundError)
+		})
+
+		it("throws TaskFileMissingError when task exists but file is missing", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
+
+			const historyItem = createHistoryItem({
+				id: "task-with-missing-file",
+				task: "Test task",
+			})
+
+			// Set up task history with this item
+			;(mockContext.globalState.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+				if (key === "taskHistory") return [historyItem]
+				return undefined
+			})
+
+			// The file check will fail because the mock file doesn't exist
+			await expect(provider.getTaskWithId("task-with-missing-file")).rejects.toThrow(TaskFileMissingError)
+		})
+
+		it("does NOT delete task from history when file is missing", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
+
+			const historyItem = createHistoryItem({
+				id: "task-should-not-be-deleted",
+				task: "Test task",
+			})
+
+			const taskHistoryArray = [historyItem]
+
+			// Set up task history with this item
+			;(mockContext.globalState.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+				if (key === "taskHistory") return taskHistoryArray
+				return undefined
+			})
+
+			// Try to get the task - should throw TaskFileMissingError
+			try {
+				await provider.getTaskWithId("task-should-not-be-deleted")
+			} catch (error) {
+				expect(error).toBeInstanceOf(TaskFileMissingError)
+			}
+
+			// Verify that updateGlobalState was NOT called to remove the task
+			const updateCalls = (mockContext.globalState.update as ReturnType<typeof vi.fn>).mock.calls
+			const taskHistoryUpdateCalls = updateCalls.filter((call: any[]) => call[0] === "taskHistory")
+
+			// If there were any updates to taskHistory, verify the task is still there
+			if (taskHistoryUpdateCalls.length > 0) {
+				const lastUpdate = taskHistoryUpdateCalls[taskHistoryUpdateCalls.length - 1]
+				const updatedHistory = lastUpdate[1] as HistoryItem[]
+				expect(updatedHistory.some((item: HistoryItem) => item.id === "task-should-not-be-deleted")).toBe(true)
+			}
+		})
+
+		it("includes hasDelegationMetadata flag when task has parentTaskId", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
+
+			const historyItem = createHistoryItem({
+				id: "child-task",
+				task: "Child task",
+				parentTaskId: "parent-task",
+			})
+
+			// Set up task history with this item
+			;(mockContext.globalState.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+				if (key === "taskHistory") return [historyItem]
+				return undefined
+			})
+
+			try {
+				await provider.getTaskWithId("child-task")
+			} catch (error) {
+				expect(error).toBeInstanceOf(TaskFileMissingError)
+				expect((error as TaskFileMissingError).hasDelegationMetadata).toBe(true)
+			}
+		})
+
+		it("includes hasDelegationMetadata flag when task has childIds", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
+
+			const historyItem = createHistoryItem({
+				id: "parent-task",
+				task: "Parent task",
+				childIds: ["child-1", "child-2"],
+			})
+
+			// Set up task history with this item
+			;(mockContext.globalState.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+				if (key === "taskHistory") return [historyItem]
+				return undefined
+			})
+
+			try {
+				await provider.getTaskWithId("parent-task")
+			} catch (error) {
+				expect(error).toBeInstanceOf(TaskFileMissingError)
+				expect((error as TaskFileMissingError).hasDelegationMetadata).toBe(true)
+			}
+		})
+	})
+
+	describe("showTaskWithId error handling", () => {
+		it("shows error message when TaskFileMissingError is thrown", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
+
+			const historyItem = createHistoryItem({
+				id: "task-with-missing-file",
+				task: "Test task",
+			})
+
+			// Set up task history with this item
+			;(mockContext.globalState.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+				if (key === "taskHistory") return [historyItem]
+				return undefined
+			})
+
+			// This should NOT throw, but should show an error message via vscode.window
+			await provider.showTaskWithId("task-with-missing-file")
+
+			// Verify error message was shown via vscode.window.showErrorMessage
+			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(
+				expect.stringContaining("temporarily unavailable"),
+			)
+		})
+
+		it("shows error message when TaskNotFoundError is thrown", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
+
+			// Set up empty task history
+			;(mockContext.globalState.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+				if (key === "taskHistory") return []
+				return undefined
+			})
+
+			// This should NOT throw, but should show an error message via vscode.window
+			await provider.showTaskWithId("non-existent-task")
+
+			// Verify error message was shown via vscode.window.showErrorMessage
+			expect(vscode.window.showErrorMessage).toHaveBeenCalledWith(expect.stringContaining("not found in history"))
+		})
+	})
+
+	describe("deleteTaskWithId with missing files", () => {
+		it("can delete task even when file is missing", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
+
+			const historyItem = createHistoryItem({
+				id: "task-to-delete",
+				task: "Task to delete",
+			})
+
+			const taskHistoryArray = [historyItem]
+
+			// Set up task history with this item
+			;(mockContext.globalState.get as ReturnType<typeof vi.fn>).mockImplementation((key: string) => {
+				if (key === "taskHistory") return taskHistoryArray
+				return undefined
+			})
+
+			// This should NOT throw even though the file doesn't exist
+			await provider.deleteTaskWithId("task-to-delete")
+
+			// Verify that the task was removed from history
+			const updateCalls = (mockContext.globalState.update as ReturnType<typeof vi.fn>).mock.calls
+			const taskHistoryUpdateCalls = updateCalls.filter((call: any[]) => call[0] === "taskHistory")
+
+			expect(taskHistoryUpdateCalls.length).toBeGreaterThan(0)
+			const lastUpdate = taskHistoryUpdateCalls[taskHistoryUpdateCalls.length - 1]
+			const updatedHistory = lastUpdate[1] as HistoryItem[]
+			expect(updatedHistory.some((item: HistoryItem) => item.id === "task-to-delete")).toBe(false)
 		})
 	})
 })
