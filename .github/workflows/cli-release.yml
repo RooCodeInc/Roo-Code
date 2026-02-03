@@ -128,23 +128,22 @@ jobs:
 
           # Create the wrapper script
           echo "Creating wrapper script..."
-          cat > "$RELEASE_DIR/bin/roo" << 'WRAPPER_EOF'
-#!/usr/bin/env node
-
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-// Set environment variables for the CLI
-process.env.ROO_CLI_ROOT = join(__dirname, '..');
-process.env.ROO_EXTENSION_PATH = join(__dirname, '..', 'extension');
-process.env.ROO_RIPGREP_PATH = join(__dirname, 'rg');
-
-// Import and run the actual CLI
-await import(join(__dirname, '..', 'lib', 'index.js'));
-WRAPPER_EOF
+          printf '%s\n' '#!/usr/bin/env node' \
+            '' \
+            "import { fileURLToPath } from 'url';" \
+            "import { dirname, join } from 'path';" \
+            '' \
+            'const __filename = fileURLToPath(import.meta.url);' \
+            'const __dirname = dirname(__filename);' \
+            '' \
+            '// Set environment variables for the CLI' \
+            "process.env.ROO_CLI_ROOT = join(__dirname, '..');" \
+            "process.env.ROO_EXTENSION_PATH = join(__dirname, '..', 'extension');" \
+            "process.env.ROO_RIPGREP_PATH = join(__dirname, 'rg');" \
+            '' \
+            '// Import and run the actual CLI' \
+            "await import(join(__dirname, '..', 'lib', 'index.js'));" \
+            > "$RELEASE_DIR/bin/roo"
 
           chmod +x "$RELEASE_DIR/bin/roo"
 
@@ -309,63 +308,61 @@ WRAPPER_EOF
           CHANGELOG_CONTENT: ${{ steps.changelog.outputs.content }}
           CHECKSUMS: ${{ steps.checksums.outputs.checksums }}
         run: |
-          WHATS_NEW=""
+          NOTES_FILE=$(mktemp)
+
           if [ -n "$CHANGELOG_CONTENT" ]; then
-            WHATS_NEW="## What's New
-
-$CHANGELOG_CONTENT
-
-"
+            echo "## What's New" >> "$NOTES_FILE"
+            echo "" >> "$NOTES_FILE"
+            echo "$CHANGELOG_CONTENT" >> "$NOTES_FILE"
+            echo "" >> "$NOTES_FILE"
           fi
 
-          RELEASE_NOTES=$(cat << EOF
-${WHATS_NEW}## Installation
-
-\`\`\`bash
-curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh
-\`\`\`
-
-Or install a specific version:
-\`\`\`bash
-ROO_VERSION=$VERSION curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh
-\`\`\`
-
-## Requirements
-
-- Node.js 20 or higher
-- macOS (Intel or Apple Silicon) or Linux x64
-
-## Usage
-
-\`\`\`bash
-# Run a task
-roo "What is this project?"
-
-# See all options
-roo --help
-\`\`\`
-
-## Platform Support
-
-This release includes binaries for:
-- \`roo-cli-darwin-arm64.tar.gz\` - macOS Apple Silicon (M1/M2/M3)
-- \`roo-cli-darwin-x64.tar.gz\` - macOS Intel
-- \`roo-cli-linux-x64.tar.gz\` - Linux x64
-
-## Checksums
-
-\`\`\`
-${CHECKSUMS}
-\`\`\`
-EOF
-          )
+          echo "## Installation" >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo '```bash' >> "$NOTES_FILE"
+          echo "curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh" >> "$NOTES_FILE"
+          echo '```' >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo "Or install a specific version:" >> "$NOTES_FILE"
+          echo '```bash' >> "$NOTES_FILE"
+          echo "ROO_VERSION=$VERSION curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/install.sh | sh" >> "$NOTES_FILE"
+          echo '```' >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo "## Requirements" >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo "- Node.js 20 or higher" >> "$NOTES_FILE"
+          echo "- macOS (Intel or Apple Silicon) or Linux x64" >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo "## Usage" >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo '```bash' >> "$NOTES_FILE"
+          echo "# Run a task" >> "$NOTES_FILE"
+          echo 'roo "What is this project?"' >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo "# See all options" >> "$NOTES_FILE"
+          echo "roo --help" >> "$NOTES_FILE"
+          echo '```' >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo "## Platform Support" >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo "This release includes binaries for:" >> "$NOTES_FILE"
+          echo '- `roo-cli-darwin-arm64.tar.gz` - macOS Apple Silicon (M1/M2/M3)' >> "$NOTES_FILE"
+          echo '- `roo-cli-darwin-x64.tar.gz` - macOS Intel' >> "$NOTES_FILE"
+          echo '- `roo-cli-linux-x64.tar.gz` - Linux x64' >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo "## Checksums" >> "$NOTES_FILE"
+          echo "" >> "$NOTES_FILE"
+          echo '```' >> "$NOTES_FILE"
+          echo "$CHECKSUMS" >> "$NOTES_FILE"
+          echo '```' >> "$NOTES_FILE"
 
           gh release create "$TAG" \
             --title "Roo Code CLI v$VERSION" \
-            --notes "$RELEASE_NOTES" \
+            --notes-file "$NOTES_FILE" \
             --prerelease \
             release/*
 
+          rm -f "$NOTES_FILE"
           echo "Release created: https://github.com/${{ github.repository }}/releases/tag/$TAG"
 
   # Summary job for dry runs
