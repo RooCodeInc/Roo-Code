@@ -7,6 +7,7 @@ import { type ApiHandlerOptions, getModelMaxOutputTokens } from "../../shared/ap
 import { TagMatcher } from "../../utils/tag-matcher"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { convertToZAiFormat } from "../transform/zai-format"
 
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { DEFAULT_HEADERS } from "./constants"
@@ -14,6 +15,7 @@ import { BaseProvider } from "./base-provider"
 import { handleOpenAIError } from "./utils/openai-error-handler"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 import { getApiRequestTimeout } from "./utils/timeout-config"
+import { detectGlmModel, logGlmDetection, type GlmModelConfig } from "./utils/glm-model-detection"
 
 type BaseOpenAiCompatibleProviderOptions<ModelName extends string> = ApiHandlerOptions & {
 	providerName: string
@@ -36,6 +38,7 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 	protected readonly options: ApiHandlerOptions
 
 	protected client: OpenAI
+	protected glmConfig: GlmModelConfig | null = null
 
 	constructor({
 		providerName,
@@ -65,6 +68,13 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			defaultHeaders: DEFAULT_HEADERS,
 			timeout: getApiRequestTimeout(),
 		})
+
+		// Detect GLM model on construction if model ID is available
+		const modelId = this.options.apiModelId || ""
+		if (modelId) {
+			this.glmConfig = detectGlmModel(modelId)
+			logGlmDetection(this.providerName, modelId, this.glmConfig)
+		}
 	}
 
 	protected createStream(
@@ -74,6 +84,12 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 		requestOptions?: OpenAI.RequestOptions,
 	) {
 		const { id: model, info } = this.getModel()
+
+		// Re-detect GLM model if not already done or if model ID changed
+		if (!this.glmConfig || this.glmConfig.originalModelId !== model) {
+			this.glmConfig = detectGlmModel(model)
+			logGlmDetection(this.providerName, model, this.glmConfig)
+		}
 
 		// Centralized cap: clamp to 20% of the context window (unless provider-specific exceptions apply)
 		const max_tokens =
@@ -86,21 +102,44 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 		const temperature = this.options.modelTemperature ?? info.defaultTemperature ?? this.defaultTemperature
 
+		// Convert messages based on whether this is a GLM model
+		// GLM models benefit from mergeToolResultText to prevent reasoning_content loss
+		const convertedMessages = this.glmConfig.isGlmModel
+			? convertToZAiFormat(messages, { mergeToolResultText: this.glmConfig.mergeToolResultText })
+			: convertToOpenAiMessages(messages)
+
+		// Determine parallel_tool_calls setting
+		// Disable for GLM models as they may not support it properly
+		let parallelToolCalls: boolean
+		if (this.glmConfig.isGlmModel && this.glmConfig.disableParallelToolCalls) {
+			parallelToolCalls = false
+			console.log(`[${this.providerName}] parallel_tool_calls disabled for GLM model`)
+		} else {
+			parallelToolCalls = metadata?.parallelToolCalls ?? true
+		}
+
 		const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 			model,
 			max_tokens,
 			temperature,
-			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
+			messages: [{ role: "system", content: systemPrompt }, ...convertedMessages],
 			stream: true,
 			stream_options: { include_usage: true },
 			tools: this.convertToolsForOpenAI(metadata?.tools),
 			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+			parallel_tool_calls: parallelToolCalls,
 		}
 
 		// Add thinking parameter if reasoning is enabled and model supports it
 		if (this.options.enableReasoningEffort && info.supportsReasoningBinary) {
 			;(params as any).thinking = { type: "enabled" }
+		}
+
+		// For GLM-4.7 models with thinking support, add thinking parameter
+		if (this.glmConfig.isGlmModel && this.glmConfig.supportsThinking) {
+			const useReasoning = this.options.enableReasoningEffort !== false // Default to enabled for GLM-4.7
+			;(params as any).thinking = useReasoning ? { type: "enabled" } : { type: "disabled" }
+			console.log(`[${this.providerName}] GLM-4.7 thinking mode: ${useReasoning ? "enabled" : "disabled"}`)
 		}
 
 		try {
