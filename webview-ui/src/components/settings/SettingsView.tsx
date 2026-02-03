@@ -29,7 +29,7 @@ import {
 	Users2,
 	ArrowLeft,
 	GitCommitVertical,
-	Zap,
+	GraduationCap,
 } from "lucide-react"
 
 import {
@@ -512,10 +512,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		() => [
 			{ id: "providers", icon: Plug },
 			{ id: "modes", icon: Users2 },
-			{ id: "mcp", icon: Server },
-			{ id: "autoApprove", icon: CheckCheck },
+			{ id: "skills", icon: GraduationCap },
 			{ id: "slashCommands", icon: SquareSlash },
-			{ id: "skills", icon: Zap },
+			{ id: "autoApprove", icon: CheckCheck },
+			{ id: "mcp", icon: Server },
 			{ id: "browser", icon: SquareMousePointer },
 			{ id: "checkpoints", icon: GitCommitVertical },
 			{ id: "notifications", icon: Bell },

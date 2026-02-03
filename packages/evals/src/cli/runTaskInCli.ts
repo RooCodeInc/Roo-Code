@@ -264,7 +264,7 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 
 		if (rooTaskId && !isClientDisconnected) {
 			logger.info("cancelling task")
-			client.sendCommand({ commandName: TaskCommandName.CancelTask, data: rooTaskId })
+			client.sendCommand({ commandName: TaskCommandName.CancelTask })
 			await new Promise((resolve) => setTimeout(resolve, 5_000))
 		}
 
@@ -289,7 +289,7 @@ export const runTaskWithCli = async ({ run, task, publish, logger, jobToken }: R
 
 	if (rooTaskId && !isClientDisconnected) {
 		logger.info("closing task")
-		client.sendCommand({ commandName: TaskCommandName.CloseTask, data: rooTaskId })
+		client.sendCommand({ commandName: TaskCommandName.CloseTask })
 		await new Promise((resolve) => setTimeout(resolve, 2_000))
 	}
 

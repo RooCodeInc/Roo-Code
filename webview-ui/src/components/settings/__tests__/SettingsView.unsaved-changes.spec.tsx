@@ -34,6 +34,37 @@ vi.mock("@src/components/ui", () => ({
 			Toggle
 		</button>
 	),
+	Input: ({ value, onChange, placeholder, id, type, className, ...props }: any) => (
+		<input
+			type={type || "text"}
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
+	Textarea: ({ value, onChange, placeholder, id, className, ...props }: any) => (
+		<textarea
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
+	Checkbox: ({ checked, onCheckedChange, id, className, ...props }: any) => (
+		<input
+			type="checkbox"
+			checked={checked}
+			onChange={(e) => onCheckedChange?.(e.target.checked)}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
 	AlertDialog: ({ children }: any) => <div>{children}</div>,
 	AlertDialogContent: ({ children }: any) => <div>{children}</div>,
 	AlertDialogTitle: ({ children }: any) => <div>{children}</div>,

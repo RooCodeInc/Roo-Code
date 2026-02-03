@@ -154,6 +154,7 @@ export type TaskEvents = {
 	[RooCodeEventName.TaskModeSwitched]: [taskId: string, mode: string]
 	[RooCodeEventName.TaskAskResponded]: []
 	[RooCodeEventName.TaskUserMessage]: [taskId: string]
+	[RooCodeEventName.QueuedMessagesUpdated]: [taskId: string, messages: QueuedMessage[]]
 
 	// Task Analytics
 	[RooCodeEventName.TaskToolFailed]: [taskId: string, tool: ToolName, error: string]
