@@ -19,7 +19,7 @@ curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/i
 **Requirements:**
 
 - Node.js 20 or higher
-- macOS (Intel or Apple Silicon) or Linux x64
+- macOS Apple Silicon (M1/M2/M3/M4) or Linux x64
 
 **Custom installation directory:**
 
@@ -259,7 +259,7 @@ To trigger a release:
 
 The workflow will:
 
-1. Build the CLI on all platforms (macOS Intel, macOS ARM, Linux x64)
+1. Build the CLI on all platforms (macOS Apple Silicon, Linux x64)
 2. Create platform-specific tarballs with bundled ripgrep
 3. Verify each tarball
 4. Create a GitHub release with all tarballs attached
