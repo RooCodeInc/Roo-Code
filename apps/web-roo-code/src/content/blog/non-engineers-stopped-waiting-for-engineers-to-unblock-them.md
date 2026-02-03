@@ -1,7 +1,7 @@
 ---
 title: Non-Engineers Stopped Waiting for Engineers to Unblock Them
-slug: nonengineers-stopped-waiting-for-engineers-to-unblock-them
-description: How product managers, ops, and support teams use AI coding agents to query codebases directly - reducing engineering interruptions and eliminating meeting bottlenecks
+slug: non-engineers-stopped-waiting-for-engineers-to-unblock-them
+description: How product managers, ops, and support teams use AI coding agents to query codebases directly - reducing engineering interruptions and cutting the meeting tax.
 primary_schema:
     - Article
     - FAQPage
@@ -11,6 +11,7 @@ tags:
     - enterprise-workflows
     - cross-functional-collaboration
 status: published
+featured: true
 publish_date: "2025-10-01"
 publish_time_pt: "9:00am"
 source: "Roo Cast"
@@ -22,11 +23,11 @@ That's a product manager talking. Not an engineer. Not someone who reads code fo
 
 ## The meeting that didn't happen
 
-Every growing startup has this bottleneck. A PM needs to know why the pricing modal shows one value to new users and another to existing customers. Customer service needs to understand why a refund didn't process. Ops wants to know if a feature flag applies to enterprise accounts.
+Every growing startup has this bottleneck. A PM needs to know why the pricing modal shows one value to new users and another to existing customers. Support needs to understand why a refund didn't process. Ops wants to know if a feature flag applies to enterprise accounts.
 
-The default behavior: schedule a meeting. Wait for engineering bandwidth. Hope someone remembers the context when they finally have time to answer.
+The default behavior: send a Slack or schedule a meeting. Wait for engineering bandwidth. Hope someone remembers the context when they finally have time to answer.
 
-At Roo Vet, the behavior changed. Product managers, customer service reps, and operations staff now query the codebase directly through a Slack-connected agent. The question goes to the agent before it goes to a calendar invite.
+At Roo Vet, the behavior changed. Product managers, support reps, and operations staff started querying the codebase directly through a Roo Code's Slack agent. The question goes to the agent before it goes to a calendar invite.
 
 > "One nonobvious behavior change that came out of that I think is people don't wait around to be unblocked anymore. Non-engineers especially just ask our @roomote agent first."
 >
@@ -38,9 +39,9 @@ This isn't about replacing engineers. It's about reducing the number of times so
 
 A PM wondering about pricing logic can ask the agent to find where pricing is calculated. A support rep confused about a refund flow can ask what conditions trigger a failed transaction. An ops person checking feature flags can get a direct answer without waiting for standup.
 
-The answers come from the codebase itself. Not from tribal knowledge. Not from someone's memory of a Slack thread from six months ago.
+The answers come from the codebase itself. Not tribal knowledge. Not someone's memory of a Slack thread from six months ago.
 
-> "I use @roomote like every day to ask questions about the codebase. I think that is the most effective thing as a PM."
+> "I use @roomote every day to ask questions about the codebase. I think that is the most effective thing as a PM."
 >
 > Theo, [Roo Cast S01E11](https://www.youtube.com/watch?v=bqLEMZ1c9Uk&t=2288)
 
@@ -54,7 +55,7 @@ The questions that used to block people are often simple:
 
 These aren't deep architectural questions. They're "point me to the right file" questions. But without direct access, each one requires finding an engineer, explaining the context, waiting for them to context-switch, and hoping they have time to answer before your next deadline.
 
-With a codebase-connected agent, the answer comes in seconds.
+With a codebase-connected agent, the answer comes back fast.
 
 > "You can ask it questions to better understand the logic that's been built into the product... it took me like 30 seconds to find that answer."
 >
@@ -80,19 +81,19 @@ Non-engineers still need engineers for decisions. But they no longer need engine
 
 ## Why this matters for your team
 
-For a Series A or B company with 5-10 engineers and 15-20 non-technical staff, the meeting tax is real. Every "quick question" that requires an engineer to stop, context-switch, answer, and then recover their flow costs more than the five minutes the question takes.
+For a Series A or B company, the meeting tax is real. Every "quick question" that requires an engineer to stop, context-switch, answer, and then recover their flow costs more than the five minutes the question takes.
 
 If half of those questions can be answered by the codebase directly, the compounding effect is significant. Not because individual questions take less time, but because engineers stay in flow and non-engineers stop waiting.
 
 The behavior shift is the real outcome: people stop treating engineering bandwidth as a prerequisite for understanding the product.
 
-## How Roo Code closes the loop for cross-functional teams
+## How Roo Code makes questions self-serve
 
-Roo Code operates as an AI coding agent that closes the loop: it reads your codebase, understands the relationships between files, and answers questions by tracing actual code paths rather than guessing. With BYOK (bring your own key), your team pays the model provider directly with no token markup, making it economical for high-volume query patterns across non-engineering staff.
+The key capability for cross-functional teams is read-only codebase access through integrations. People can ask questions in the tools they already use and get answers grounded in the actual implementation, not documentation that may be outdated.
 
-The key capability for cross-functional teams is read-only codebase access through integrations. Product managers, support reps, and ops staff can ask questions like "where is trial length calculated" and receive answers grounded in the actual implementation, not documentation that may be outdated.
+In practice, the best answers are inspectable: what file to look at, what function or endpoint is involved, and what conditions drive the behavior.
 
-**Roo Code enables non-engineers to self-serve codebase questions in seconds, reducing engineering interruptions while keeping engineers available for decisions that require human judgment.**
+**Roo Code helps non-engineers self-serve codebase questions, reducing engineering interruptions while keeping engineers available for decisions that require judgment.**
 
 ## The first step
 
@@ -112,12 +113,8 @@ Modern AI coding agents like Roo Code explain code in plain language rather than
 
 ### Does giving non-engineers codebase access create security risks?
 
-Read-only access through a controlled integration limits exposure. The agent can answer questions about code without giving users direct repository access. Teams typically start with specific channels and expand access based on demonstrated value and security review.
-
-### How does Roo Code handle questions that span multiple files or services?
-
-Roo Code closes the loop by tracing code paths across files and understanding how components connect. When someone asks about a refund flow, the agent follows the logic through controllers, services, and database operations rather than pointing to a single file.
+Read-only access through a controlled integration can reduce exposure compared to giving users direct repository access. Teams typically start with specific channels and expand access based on demonstrated value and a security review.
 
 ### What's the ROI of reducing "quick question" interruptions for engineers?
 
-Context-switching costs compound. A five-minute question that interrupts deep work can cost 20-30 minutes of recovery time. For a team handling 10-15 such interruptions daily, eliminating half of them recovers hours of focused engineering time per week, without adding headcount or changing priorities.
+Context-switching costs compound. A five-minute question can cost far more than five minutes once you include interruption and recovery. If you can route routine "where is X" questions away from engineering, you buy back real focus time without adding headcount.

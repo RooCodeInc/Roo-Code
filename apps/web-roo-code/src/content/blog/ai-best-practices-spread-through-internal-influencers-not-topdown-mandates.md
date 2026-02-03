@@ -1,7 +1,7 @@
 ---
 title: AI Best Practices Spread Through Internal Influencers, Not Top-Down Mandates
 slug: ai-best-practices-spread-through-internal-influencers-not-topdown-mandates
-description: Why centralized AI documentation fails and how engineering orgs can drive adoption through trusted internal influencers and recurring demo forums
+description: Why centralized AI documentation fails and how engineering orgs drive adoption through trusted internal influencers and recurring demo forums.
 primary_schema:
     - Article
     - FAQPage
@@ -11,6 +11,7 @@ tags:
     - developer-productivity
     - change-management
 status: published
+featured: true
 publish_date: "2025-04-30"
 publish_time_pt: "9:00am"
 source: "Office Hours"
@@ -22,7 +23,7 @@ That's how adoption actually works. Not through wikis. Not through mandates. Thr
 
 ## The documentation problem
 
-You're rolling out AI coding tools to a 200-person engineering org. The instinct is to centralize: write a best practices guide, create a wiki, schedule a training session.
+You're rolling out AI coding tools to a large engineering org. The instinct is to centralize: write a best practices guide, create a wiki, schedule a training session.
 
 Three weeks later, the wiki is stale. The domain moved. The models changed. The prompts that worked in September don't work in October.
 
@@ -54,7 +55,7 @@ Identifying influencers is step one. Step two is creating forums where they can 
 
 The format matters. A demo with a live audience is different from a doc in a wiki. Demos show what actually works. They invite questions. They create social proof in real time.
 
-The cadence matters too. Monthly keeps pace with how fast AI tools evolve. Quarterly would be too slow; the landscape shifts between sessions.
+The cadence matters too. Monthly keeps pace with how fast AI tools evolve. Quarterly is too slow; the landscape shifts between demos.
 
 ## The constraint: this requires investment
 
@@ -76,9 +77,9 @@ Create the forum. Protect the experimentation time. Let adoption spread through 
 
 ## How Roo Code supports organic adoption patterns
 
-Internal influencers need tools that close the loop between intent and outcome. Roo Code operates as an AI coding agent that proposes diffs, runs commands and tests, and iterates based on results - giving your most productive developers concrete workflows they can demonstrate and share.
+Internal influencers need tools that produce repeatable, reviewable outcomes - not just clever prompts. Roo Code helps by turning intent into inspectable artifacts (diffs, test output, and a clear trail of what happened) that are easy to demo and share.
 
-The BYOK (Bring Your Own Key) model means influencers can experiment with different providers and models without waiting for procurement cycles. When they find a workflow that works, they can share it immediately with their team.
+Influencers can share what actually worked: the workflow, the artifacts, and the failure modes. That's what spreads.
 
 **Roo Code accelerates organic adoption because internal influencers can demonstrate real, reproducible workflows - not theoretical best practices - in their monthly demo forums.**
 
@@ -108,7 +109,7 @@ Start with 10-20% of their time dedicated to exploring new AI workflows. This is
 
 ### How does Roo Code help internal influencers share what they learn?
 
-Roo Code's mode system and custom instructions make workflows reproducible. An influencer can configure a specific approach to code review or test generation, then share that exact configuration with teammates. Because Roo Code closes the loop by running tests and iterating on failures, demos show real outcomes rather than theoretical possibilities.
+Roo Code makes workflows easier to demonstrate because the artifacts are explicit: diffs, test output, and a clear trail of what was tried. That makes it easier to share what worked (and what didn't) without hand-wavy advice.
 
 ### Why do centralized AI wikis fail?
 

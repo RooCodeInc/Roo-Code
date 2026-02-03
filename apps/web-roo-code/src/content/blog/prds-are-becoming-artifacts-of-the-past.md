@@ -8,9 +8,10 @@ primary_schema:
 tags:
     - product-management
     - ai-development
-    - agile
+    - iterative-development
     - documentation
 status: published
+featured: true
 publish_date: "2026-01-12"
 publish_time_pt: "9:00am"
 source: "Office Hours"
@@ -66,7 +67,7 @@ The mitigation is lightweight decision records: ADRs, RFC-style docs, or even st
 
 When you build with Roo Code, you get decision documentation as a side effect of the workflow. Every task generates a log of what was tried, what failed, and what worked. The diff history shows the evolution. PR comments capture the reasoning. The prototype becomes the specification, and the trail becomes the decision record.
 
-This addresses the "lost rationale" failure mode without requiring a separate documentation step. The institutional memory accumulates automatically because Roo Code closes the loop: it proposes changes, runs tests, observes results, and iterates-and all of that is logged.
+This addresses the "lost rationale" failure mode without requiring a separate documentation step. The institutional memory accumulates automatically because Roo Code iterates: it proposes changes, runs tests, observes results, and keeps iterating until the code passes. All of that is logged.
 
 ## PRD-first vs. prototype-first workflows
 
@@ -80,13 +81,13 @@ This addresses the "lost rationale" failure mode without requiring a separate do
 
 ## Why this matters for your team
 
-For a Series A - C team with five engineers, a three-week PRD cycle is a significant tax. That's three weeks where no code ships while stakeholders negotiate requirements that will change anyway.
+For a fast-moving team, a three-week PRD cycle is a significant tax. That's three weeks where no code ships while stakeholders negotiate requirements that will change anyway.
 
 If your team is shipping daily, the prototype-first model lets you compress the feedback loop. Instead of aligning on a document and then discovering problems in production, you discover problems in the prototype and align on fixes that already work.
 
-The compounding effect: teams that treat prototypes as the specification ship more iterations per quarter. Teams that cling to waterfall-style documentation lose velocity to teams that iterate against real user feedback.
+The compounding effect: teams that treat prototypes as the specification ship more iterations per quarter. Teams that still use waterfall-style documentation lose velocity to teams that iterate against real user feedback.
 
-> "I also feel like we don't have nearly as rigorous of a process around PRDs. Like PRDs kind of feel like an artifact of the past."
+> "I also feel like we don't have nearly as rigorous of a process around PRDs. PRDs kind of feel like an artifact of the past."
 >
 > Paige Bailey, [Office Hours S01E15](https://www.youtube.com/watch?v=sAFQIqmDFL4&t=2739)
 
@@ -96,7 +97,7 @@ The question is not "should we have documentation?" The question is "when does d
 
 If your PRDs take longer to write than your prototypes take to ship, the economics have flipped. Start with a working prototype. Capture decisions as you make them. Align stakeholders around something they can touch, not something they have to imagine.
 
-The artifact that matters is the diff, not the document.
+The artifact that matters is the shipped code, not the document.
 
 ## Frequently asked questions
 
@@ -118,4 +119,4 @@ Lightweight constraints still matter. A one-page brief stating the problem, succ
 
 ### How does Roo Code help with prototype-first workflows?
 
-Roo Code closes the loop between idea and working prototype. You describe what you want; Roo Code proposes changes, runs tests, observes results, and iterates. The task log captures decisions automatically. The result is a working prototype with a built-in decision trail-no separate documentation step required.
+Roo Code connects idea to working prototype. You describe what you want; Roo Code proposes changes, runs tests, observes results, and iterates. The task log captures decisions automatically. The result is a working prototype with a built-in decision trail-no separate documentation step required.

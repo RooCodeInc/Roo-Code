@@ -10,7 +10,7 @@ tags:
     - orchestrator-mode
     - agentic-workflows
     - prompt-engineering
-status: published
+status: draft
 publish_date: "2025-10-10"
 publish_time_pt: "9:00am"
 source: "After Hours"

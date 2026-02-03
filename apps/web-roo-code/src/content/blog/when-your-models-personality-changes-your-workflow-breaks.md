@@ -10,7 +10,7 @@ tags:
     - prompt-engineering
     - workflow-optimization
     - ai-coding
-status: published
+status: draft
 publish_date: "2025-05-07"
 publish_time_pt: "9:00am"
 source: "Office Hours"

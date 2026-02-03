@@ -5,7 +5,7 @@ description: "Throwaway apps aren't a bug. They're the workflow. Understanding w
 publish_date: "2025-10-16"
 publish_time_pt: "9:00am"
 source: "Roo Cast"
-status: "published"
+status: draft
 primary_schema:
     - Article
     - FAQPage

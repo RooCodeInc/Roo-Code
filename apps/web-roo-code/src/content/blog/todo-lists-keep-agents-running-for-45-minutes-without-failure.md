@@ -10,7 +10,7 @@ tags:
     - productivity
     - agent-persistence
     - coding-agents
-status: published
+status: draft
 publish_date: "2025-07-09"
 publish_time_pt: "9:00am"
 source: "Office Hours"

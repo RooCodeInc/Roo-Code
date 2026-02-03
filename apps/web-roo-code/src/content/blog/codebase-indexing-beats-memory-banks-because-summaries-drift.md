@@ -10,7 +10,7 @@ tags:
     - memory-banks
     - ai-context
     - developer-productivity
-status: published
+status: draft
 publish_date: "2025-06-04"
 publish_time_pt: "9:00am"
 source: "Office Hours"

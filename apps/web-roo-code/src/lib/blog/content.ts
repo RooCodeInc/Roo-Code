@@ -9,7 +9,7 @@ import matter from "gray-matter"
 import { BlogFrontmatterSchema } from "./validation"
 import type { BlogPost } from "./types"
 import { getNowPt, isPublished, parsePublishTimePt } from "./time"
-import { CURATED_POST_SLUGS } from "./curated"
+import { filterFeaturedPosts } from "./curated"
 
 const BLOG_DIR = path.join(process.cwd(), "src/content/blog")
 
@@ -192,19 +192,14 @@ export function getAdjacentPosts(slug: string): { previous: BlogPost | null; nex
 }
 
 /**
- * Get curated blog posts in strategic display order
+ * Get featured blog posts
  *
- * These posts are hand-selected to align with Roo Code's positioning:
- * Sessions, Cloud Agents, Modes/Orchestrator, BYOK, and Enterprise.
+ * Returns published posts with `featured: true` in frontmatter,
+ * sorted by publish_date (newest first).
  *
- * @returns Array of curated blog posts in strategic order
+ * @returns Array of featured blog posts
  */
 export function getCuratedBlogPosts(): BlogPost[] {
 	const allPosts = getAllBlogPosts()
-	const postsBySlug = new Map(allPosts.map((post) => [post.slug, post]))
-
-	// Return posts in curated order, filtering out any that don't exist
-	return CURATED_POST_SLUGS.map((slug) => postsBySlug.get(slug)).filter(
-		(post): post is BlogPost => post !== undefined,
-	)
+	return filterFeaturedPosts(allPosts)
 }

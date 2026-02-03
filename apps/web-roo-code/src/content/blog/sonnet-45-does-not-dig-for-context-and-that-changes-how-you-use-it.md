@@ -10,7 +10,7 @@ tags:
     - debugging
     - developer-workflow
     - ai-coding
-status: published
+status: draft
 publish_date: "2025-10-03"
 publish_time_pt: "9:00am"
 source: "After Hours"

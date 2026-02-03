@@ -23,6 +23,7 @@ export const BlogFrontmatterSchema = z.object({
 	publish_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Must be YYYY-MM-DD format"),
 	publish_time_pt: z.string().regex(TIME_REGEX, "Must be h:mmam/pm format (e.g., 9:00am)"),
 	source: z.enum(["Office Hours", "After Hours", "Roo Cast"]).optional(),
+	featured: z.boolean().optional(),
 })
 
 export type ValidatedFrontmatter = z.infer<typeof BlogFrontmatterSchema>

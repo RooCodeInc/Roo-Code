@@ -10,7 +10,7 @@ tags:
     - preview-environments
     - verification
     - team-velocity
-status: published
+status: draft
 publish_date: "2025-09-10"
 publish_time_pt: "9:00am"
 source: "Roo Cast"

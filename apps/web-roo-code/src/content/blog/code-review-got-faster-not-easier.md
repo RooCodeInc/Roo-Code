@@ -10,7 +10,7 @@ tags:
     - ai-development
     - engineering-practices
     - productivity
-status: published
+status: draft
 publish_date: "2025-10-16"
 publish_time_pt: "9:00am"
 source: "Roo Cast"

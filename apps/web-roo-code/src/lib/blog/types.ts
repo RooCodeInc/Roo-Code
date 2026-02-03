@@ -18,6 +18,7 @@ export interface BlogPostFrontmatter {
 	publish_date: string // YYYY-MM-DD
 	publish_time_pt: string // h:mmam/pm (e.g., "9:00am")
 	source?: BlogSource // Optional: indicates podcast source
+	featured?: boolean // Optional: marks post as featured
 }
 
 export interface BlogPost extends BlogPostFrontmatter {

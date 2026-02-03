@@ -17,9 +17,8 @@ export {
 	POSTS_PER_PAGE,
 } from "./content"
 
-// Curated posts
-export { CURATED_POST_SLUGS, isCuratedPost } from "./curated"
-export type { CuratedPostSlug } from "./curated"
+// Featured posts
+export { isCuratedPost, filterFeaturedPosts } from "./curated"
 
 // Time utilities
 export {

@@ -10,7 +10,7 @@ tags:
     - AI-coding
     - cost-optimization
     - developer-workflow
-status: published
+status: draft
 publish_date: "2026-01-12"
 publish_time_pt: "9:00am"
 source: "Office Hours"
