@@ -19,7 +19,7 @@ curl -fsSL https://raw.githubusercontent.com/RooCodeInc/Roo-Code/main/apps/cli/i
 **Requirements:**
 
 - Node.js 20 or higher
-- macOS (Intel or Apple Silicon) or Linux (x64 or ARM64)
+- macOS (Intel or Apple Silicon) or Linux x64
 
 **Custom installation directory:**
 
@@ -77,7 +77,7 @@ roo "What is this project?"  -w ~/Documents/my-project
 You can also run without a prompt and enter it interactively in TUI mode:
 
 ```bash
-roo ~/Documents/my-project
+roo -w ~/Documents/my-project
 ```
 
 In interactive mode:
@@ -147,21 +147,23 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 
 ## Options
 
-| Option                            | Description                                                                             | Default                       |
-| --------------------------------- | --------------------------------------------------------------------------------------- | ----------------------------- |
-| `[prompt]`                        | Your prompt (positional argument, optional)                                             | None                          |
-| `-w, --workspace <path>`          | Workspace path to operate in                                                            | Current directory             |
-| `-e, --extension <path>`          | Path to the extension bundle directory                                                  | Auto-detected                 |
-| `-d, --debug`                     | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                       |
-| `-x, --exit-on-complete`          | Exit the process when task completes (useful for testing)                               | `false`                       |
-| `-y, --yes`                       | Non-interactive mode: auto-approve all actions                                          | `false`                       |
-| `-k, --api-key <key>`             | API key for the LLM provider                                                            | From env var                  |
-| `-p, --provider <provider>`       | API provider (anthropic, openai, openrouter, etc.)                                      | `openrouter`                  |
-| `-m, --model <model>`             | Model to use                                                                            | `anthropic/claude-sonnet-4.5` |
-| `-M, --mode <mode>`               | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                        |
-| `-r, --reasoning-effort <effort>` | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                      |
-| `--ephemeral`                     | Run without persisting state (uses temporary storage)                                   | `false`                       |
-| `--no-tui`                        | Disable TUI, use plain text output                                                      | `false`                       |
+| Option                                      | Description                                                                             | Default                                  |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `[prompt]`                                  | Your prompt (positional argument, optional)                                             | None                                     |
+| `--prompt-file <path>`                      | Read prompt from a file instead of command line argument                                | None                                     |
+| `-w, --workspace <path>`                    | Workspace path to operate in                                                            | Current directory                        |
+| `-p, --print`                               | Print response and exit (non-interactive mode)                                          | `false`                                  |
+| `-e, --extension <path>`                    | Path to the extension bundle directory                                                  | Auto-detected                            |
+| `-d, --debug`                               | Enable debug output (includes detailed debug information, prompts, paths, etc)          | `false`                                  |
+| `-y, --yes, --dangerously-skip-permissions` | Auto-approve all actions (use with caution)                                             | `false`                                  |
+| `-k, --api-key <key>`                       | API key for the LLM provider                                                            | From env var                             |
+| `--provider <provider>`                     | API provider (roo, anthropic, openai, openrouter, etc.)                                 | `openrouter` (or `roo` if authenticated) |
+| `-m, --model <model>`                       | Model to use                                                                            | `anthropic/claude-opus-4.5`              |
+| `--mode <mode>`                             | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                   |
+| `-r, --reasoning-effort <effort>`           | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                 |
+| `--ephemeral`                               | Run without persisting state (uses temporary storage)                                   | `false`                                  |
+| `--oneshot`                                 | Exit upon task completion                                                               | `false`                                  |
+| `--output-format <format>`                  | Output format with `--print`: `text`, `json`, or `stream-json`                          | `text`                                   |
 
 ## Auth Commands
 
@@ -246,17 +248,33 @@ pnpm lint
 
 ## Releasing
 
-To create a new release, execute the /cli-release slash command:
+Official releases are created via the GitHub Actions workflow at `.github/workflows/cli-release.yml`.
 
-```bash
-roo "/cli-release"  -w ~/Documents/Roo-Code -y
-```
+To trigger a release:
+
+1. Go to **Actions** → **CLI Release**
+2. Click **Run workflow**
+3. Optionally specify a version (defaults to `package.json` version)
+4. Click **Run workflow**
 
 The workflow will:
 
-1. Bump the version
-2. Update the CHANGELOG
-3. Build the extension and CLI
-4. Create a platform-specific tarball (for your current OS/architecture)
-5. Test the install script
-6. Create a GitHub release with the tarball attached
+1. Build the CLI on all platforms (macOS Intel, macOS ARM, Linux x64)
+2. Create platform-specific tarballs with bundled ripgrep
+3. Verify each tarball
+4. Create a GitHub release with all tarballs attached
+
+### Local Builds
+
+For local development and testing, use the build script:
+
+```bash
+# Build tarball for your current platform
+./apps/cli/scripts/build.sh
+
+# Build and install locally
+./apps/cli/scripts/build.sh --install
+
+# Fast build (skip verification)
+./apps/cli/scripts/build.sh --skip-verify
+```

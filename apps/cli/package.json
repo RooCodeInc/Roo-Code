@@ -19,7 +19,7 @@
 		"dev": "tsup --watch",
 		"start": "ROO_AUTH_BASE_URL=http://localhost:3000 ROO_SDK_BASE_URL=http://localhost:3001 ROO_CODE_PROVIDER_URL=http://localhost:8080/proxy node dist/index.js",
 		"start:production": "node dist/index.js",
-		"release": "scripts/release.sh",
+		"build:local": "scripts/build.sh",
 		"clean": "rimraf dist .turbo"
 	},
 	"dependencies": {
