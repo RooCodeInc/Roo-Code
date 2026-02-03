@@ -134,7 +134,7 @@
 			"nameLabel": "Name",
 			"namePlaceholder": "my-skill-name (Lowercase letters, numbers, and hyphens only)",
 			"descriptionLabel": "Description",
-			"descriptionPlaceholder": "Decribe when this skill should be used and its contents...",
+			"descriptionPlaceholder": "Describe when this skill should be used and its contents...",
 			"sourceLabel": "Location",
 			"modeLabel": "Mode (optional)",
 			"modePlaceholder": "Any mode",
