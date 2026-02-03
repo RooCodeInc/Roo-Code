@@ -5,7 +5,7 @@ import * as vscode from "vscode"
 import matter from "gray-matter"
 
 import type { ClineProvider } from "../../core/webview/ClineProvider"
-import { getGlobalRooDirectory } from "../roo-config"
+import { getGlobalRooDirectory, getGlobalAgentsDirectory, getProjectAgentsDirectoryForCwd } from "../roo-config"
 import { directoryExists, fileExists } from "../roo-config"
 import { SkillMetadata, SkillContent } from "../../shared/skills"
 import { modes, getAllModes } from "../../shared/modes"
@@ -590,19 +590,41 @@ Add your skill instructions here.
 	> {
 		const dirs: Array<{ dir: string; source: "global" | "project"; mode?: string }> = []
 		const globalRooDir = getGlobalRooDirectory()
+		const globalAgentsDir = getGlobalAgentsDirectory()
 		const provider = this.providerRef.deref()
 		const projectRooDir = provider?.cwd ? path.join(provider.cwd, ".roo") : null
+		const projectAgentsDir = provider?.cwd ? getProjectAgentsDirectoryForCwd(provider.cwd) : null
 
 		// Get list of modes to check for mode-specific skills
 		const modesList = await this.getAvailableModes()
 
-		// Global directories
+		// Priority order (later entries override earlier ones with same skill name):
+		// 1. Global .agents/skills (shared across AI coding tools, lowest priority)
+		// 2. Project .agents/skills
+		// 3. Global .roo/skills (Roo-specific)
+		// 4. Project .roo/skills (highest priority)
+
+		// Global .agents directories (lowest priority - shared across agents)
+		dirs.push({ dir: path.join(globalAgentsDir, "skills"), source: "global" })
+		for (const mode of modesList) {
+			dirs.push({ dir: path.join(globalAgentsDir, `skills-${mode}`), source: "global", mode })
+		}
+
+		// Project .agents directories
+		if (projectAgentsDir) {
+			dirs.push({ dir: path.join(projectAgentsDir, "skills"), source: "project" })
+			for (const mode of modesList) {
+				dirs.push({ dir: path.join(projectAgentsDir, `skills-${mode}`), source: "project", mode })
+			}
+		}
+
+		// Global .roo directories (Roo-specific, higher priority than .agents)
 		dirs.push({ dir: path.join(globalRooDir, "skills"), source: "global" })
 		for (const mode of modesList) {
 			dirs.push({ dir: path.join(globalRooDir, `skills-${mode}`), source: "global", mode })
 		}
 
-		// Project directories
+		// Project .roo directories (highest priority)
 		if (projectRooDir) {
 			dirs.push({ dir: path.join(projectRooDir, "skills"), source: "project" })
 			for (const mode of modesList) {
@@ -647,20 +669,32 @@ Add your skill instructions here.
 		if (!provider?.cwd) return
 
 		// Watch for changes in skills directories
-		const globalSkillsDir = path.join(getGlobalRooDirectory(), "skills")
-		const projectSkillsDir = path.join(provider.cwd, ".roo", "skills")
+		const globalRooDir = getGlobalRooDirectory()
+		const globalAgentsDir = getGlobalAgentsDirectory()
+		const projectRooDir = path.join(provider.cwd, ".roo")
+		const projectAgentsDir = getProjectAgentsDirectoryForCwd(provider.cwd)
 
-		// Watch global skills directory
-		this.watchDirectory(globalSkillsDir)
+		// Watch global .roo skills directory
+		this.watchDirectory(path.join(globalRooDir, "skills"))
 
-		// Watch project skills directory
-		this.watchDirectory(projectSkillsDir)
+		// Watch global .agents skills directory
+		this.watchDirectory(path.join(globalAgentsDir, "skills"))
+
+		// Watch project .roo skills directory
+		this.watchDirectory(path.join(projectRooDir, "skills"))
+
+		// Watch project .agents skills directory
+		this.watchDirectory(path.join(projectAgentsDir, "skills"))
 
 		// Watch mode-specific directories for all available modes
 		const modesList = await this.getAvailableModes()
 		for (const mode of modesList) {
-			this.watchDirectory(path.join(getGlobalRooDirectory(), `skills-${mode}`))
-			this.watchDirectory(path.join(provider.cwd, ".roo", `skills-${mode}`))
+			// .roo mode-specific
+			this.watchDirectory(path.join(globalRooDir, `skills-${mode}`))
+			this.watchDirectory(path.join(projectRooDir, `skills-${mode}`))
+			// .agents mode-specific
+			this.watchDirectory(path.join(globalAgentsDir, `skills-${mode}`))
+			this.watchDirectory(path.join(projectAgentsDir, `skills-${mode}`))
 		}
 	}
 
