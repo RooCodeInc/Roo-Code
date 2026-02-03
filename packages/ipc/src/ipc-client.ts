@@ -108,6 +108,20 @@ export class IpcClient extends EventEmitter<IpcClientEvents> {
 		})
 	}
 
+	public approveAsk(text?: string, images?: string[]) {
+		this.sendCommand({
+			commandName: TaskCommandName.ApproveAsk,
+			data: { text, images },
+		})
+	}
+
+	public denyAsk(text?: string, images?: string[]) {
+		this.sendCommand({
+			commandName: TaskCommandName.DenyAsk,
+			data: { text, images },
+		})
+	}
+
 	public sendMessage(message: IpcMessage) {
 		ipc.of[this._id]?.emit("message", message)
 	}

@@ -96,6 +96,14 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 						this.log(`[API] SendMessage -> ${command.data.text}`)
 						await this.sendMessage(command.data.text, command.data.images)
 						break
+					case TaskCommandName.ApproveAsk:
+						this.log(`[API] ApproveAsk -> ${data.text}`)
+						await this.approveCurrentAsk(data.text, data.images)
+						break
+					case TaskCommandName.DenyAsk:
+						this.log(`[API] DenyAsk -> ${data.text}`)
+						await this.denyCurrentAsk(data.text, data.images)
+						break
 				}
 			})
 		}
@@ -184,6 +192,24 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 
 	public async sendMessage(text?: string, images?: string[]) {
 		await this.sidebarProvider.postMessageToWebview({ type: "invoke", invoke: "sendMessage", text, images })
+	}
+
+	public async approveCurrentAsk(text?: string, images?: string[]) {
+		const currentTask = this.sidebarProvider.getCurrentTask()
+		if (currentTask) {
+			currentTask.approveAsk({ text, images })
+		} else {
+			this.log("[API] ApproveAsk failed: no current task")
+		}
+	}
+
+	public async denyCurrentAsk(text?: string, images?: string[]) {
+		const currentTask = this.sidebarProvider.getCurrentTask()
+		if (currentTask) {
+			currentTask.denyAsk({ text, images })
+		} else {
+			this.log("[API] DenyAsk failed: no current task")
+		}
 	}
 
 	public async pressPrimaryButton() {

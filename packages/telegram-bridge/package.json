@@ -1,0 +1,38 @@
+{
+	"name": "@roo-code/telegram-bridge",
+	"version": "0.1.0",
+	"description": "Telegram bridge for remote control of Roo Code via IPC",
+	"type": "module",
+	"main": "build/index.js",
+	"types": "build/index.d.ts",
+	"scripts": {
+		"build": "tsc",
+		"start": "node build/index.js",
+		"dev": "tsx src/index.ts",
+		"clean": "rm -rf build",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.0.0",
+		"@roo-code/ipc": "workspace:*",
+		"@roo-code/types": "workspace:*",
+		"node-telegram-bot-api": "^0.66.0",
+		"zod": "^3.24.1"
+	},
+	"devDependencies": {
+		"@types/node": "^22.10.0",
+		"@types/node-telegram-bot-api": "^0.64.7",
+		"tsx": "^4.0.0",
+		"typescript": "~5.8.0-dev.20250121"
+	},
+	"peerDependencies": {
+		"typescript": "~5.8.0-dev.20250121"
+	},
+	"keywords": [
+		"roo-code",
+		"telegram",
+		"mcp",
+		"remote-control"
+	],
+	"license": "Apache-2.0"
+}

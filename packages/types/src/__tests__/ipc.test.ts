@@ -7,12 +7,28 @@ describe("IPC Types", () => {
 		})
 
 		it("should have all expected task commands", () => {
-			const expectedCommands = ["StartNewTask", "CancelTask", "CloseTask", "ResumeTask"]
+			const expectedCommands = [
+				"StartNewTask",
+				"CancelTask",
+				"CloseTask",
+				"ResumeTask",
+				"SendMessage",
+				"ApproveAsk",
+				"DenyAsk",
+			]
 			const actualCommands = Object.values(TaskCommandName)
 
 			expectedCommands.forEach((command) => {
 				expect(actualCommands).toContain(command)
 			})
+		})
+
+		it("should include ApproveAsk command", () => {
+			expect(TaskCommandName.ApproveAsk).toBe("ApproveAsk")
+		})
+
+		it("should include DenyAsk command", () => {
+			expect(TaskCommandName.DenyAsk).toBe("DenyAsk")
 		})
 
 		describe("Error Handling", () => {
@@ -69,6 +85,56 @@ describe("IPC Types", () => {
 
 			const result = taskCommandSchema.safeParse(invalidCommand)
 			expect(result.success).toBe(false)
+		})
+
+		it("should validate ApproveAsk command with optional text and images", () => {
+			const approveCommand = {
+				commandName: TaskCommandName.ApproveAsk,
+				data: { text: "Approved with comment", images: [] },
+			}
+
+			const result = taskCommandSchema.safeParse(approveCommand)
+			expect(result.success).toBe(true)
+
+			if (result.success) {
+				expect(result.data.commandName).toBe("ApproveAsk")
+				expect(result.data.data.text).toBe("Approved with comment")
+			}
+		})
+
+		it("should validate ApproveAsk command with empty data", () => {
+			const approveCommand = {
+				commandName: TaskCommandName.ApproveAsk,
+				data: {},
+			}
+
+			const result = taskCommandSchema.safeParse(approveCommand)
+			expect(result.success).toBe(true)
+		})
+
+		it("should validate DenyAsk command with optional text and images", () => {
+			const denyCommand = {
+				commandName: TaskCommandName.DenyAsk,
+				data: { text: "Denied with reason", images: [] },
+			}
+
+			const result = taskCommandSchema.safeParse(denyCommand)
+			expect(result.success).toBe(true)
+
+			if (result.success) {
+				expect(result.data.commandName).toBe("DenyAsk")
+				expect(result.data.data.text).toBe("Denied with reason")
+			}
+		})
+
+		it("should validate DenyAsk command with empty data", () => {
+			const denyCommand = {
+				commandName: TaskCommandName.DenyAsk,
+				data: {},
+			}
+
+			const result = taskCommandSchema.safeParse(denyCommand)
+			expect(result.success).toBe(true)
 		})
 	})
 })
