@@ -54,18 +54,18 @@ async function safeWriteJson(filePath: string, data: any, options?: SafeWriteJso
 	// Acquire the lock before any file operations
 	try {
 		releaseLock = await lockfile.lock(absoluteFilePath, {
-			stale: 31000, // Stale after 31 seconds
+			stale: 60000, // Increased to 60 seconds to handle complex orchestrator scenarios with multiple rapid writes
 			update: 10000, // Update mtime every 10 seconds to prevent staleness if operation is long
 			realpath: false, // the file may not exist yet, which is acceptable
 			retries: {
 				// Configuration for retrying lock acquisition
-				retries: 5, // Number of retries after the initial attempt
+				retries: 10, // Increased retries to handle rapid succession writes during orchestrator delegation
 				factor: 2, // Exponential backoff factor (e.g., 100ms, 200ms, 400ms, ...)
-				minTimeout: 100, // Minimum time to wait before the first retry (in ms)
-				maxTimeout: 1000, // Maximum time to wait for any single retry (in ms)
+				minTimeout: 200, // Increased minimum timeout for better contention handling
+				maxTimeout: 2000, // Increased maximum timeout for high-contention scenarios
 			},
 			onCompromised: (err) => {
-				console.error(`Lock at ${absoluteFilePath} was compromised:`, err)
+				console.error(`[safeWriteJson] Lock at ${absoluteFilePath} was compromised:`, err)
 				throw err
 			},
 		})
@@ -73,9 +73,22 @@ async function safeWriteJson(filePath: string, data: any, options?: SafeWriteJso
 		// If lock acquisition fails, we throw immediately.
 		// The releaseLock remains a no-op, so the finally block in the main file operations
 		// try-catch-finally won't try to release an unacquired lock if this path is taken.
-		console.error(`Failed to acquire lock for ${absoluteFilePath}:`, lockError)
-		// Propagate the lock acquisition error
-		throw lockError
+		console.error(
+			`[safeWriteJson] Failed to acquire lock for ${absoluteFilePath} after retries. This may indicate:
+- High contention from rapid task delegation (e.g., Orchestrator mode creating multiple subtasks)
+- A stale lock from a crashed process
+- File system issues
+
+Error:`,
+			lockError,
+		)
+		// Propagate the lock acquisition error with enhanced context
+		const enhancedError = new Error(
+			`Failed to acquire file lock for ${path.basename(absoluteFilePath)}: ${lockError instanceof Error ? lockError.message : String(lockError)}`,
+		)
+		;(enhancedError as any).originalError = lockError
+		;(enhancedError as any).filePath = absoluteFilePath
+		throw enhancedError
 	}
 
 	// Variables to hold the actual paths of temp files if they are created.
