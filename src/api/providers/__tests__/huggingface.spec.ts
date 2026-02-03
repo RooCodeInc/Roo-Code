@@ -15,8 +15,8 @@ vi.mock("ai", async (importOriginal) => {
 	}
 })
 
-vi.mock("@ai-sdk/huggingface", () => ({
-	createHuggingFace: vi.fn(() => {
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: vi.fn(() => {
 		// Return a function that returns a mock language model
 		return vi.fn(() => ({
 			modelId: "meta-llama/Llama-3.3-70B-Instruct",

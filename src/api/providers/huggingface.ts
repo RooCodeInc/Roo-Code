@@ -1,5 +1,5 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { createHuggingFace } from "@ai-sdk/huggingface"
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import { streamText, generateText, ToolSet } from "ai"
 
 import type { ModelRecord, ModelInfo } from "@roo-code/types"
@@ -24,12 +24,13 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 const HUGGINGFACE_DEFAULT_TEMPERATURE = 0.7
 
 /**
- * HuggingFace provider using the dedicated @ai-sdk/huggingface package.
- * Provides native support for various models on HuggingFace Hub via the Responses API.
+ * HuggingFace provider using @ai-sdk/openai-compatible for OpenAI-compatible API.
+ * Uses HuggingFace's OpenAI-compatible endpoint to enable tool message support.
+ * @see https://github.com/vercel/ai/issues/10766 - Workaround for tool messages not supported in @ai-sdk/huggingface
  */
 export class HuggingFaceHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
-	protected provider: ReturnType<typeof createHuggingFace>
+	protected provider: ReturnType<typeof createOpenAICompatible>
 	private modelCache: ModelRecord | null = null
 
 	constructor(options: ApiHandlerOptions) {
@@ -40,8 +41,11 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 			throw new Error("Hugging Face API key is required")
 		}
 
-		// Create the HuggingFace provider using AI SDK
-		this.provider = createHuggingFace({
+		// Create an OpenAI-compatible provider pointing to HuggingFace's /v1 endpoint
+		// This fixes "tool messages not supported" error - the HuggingFace SDK doesn't
+		// properly handle function_call_output format, but OpenAI SDK does
+		this.provider = createOpenAICompatible({
+			name: "huggingface",
 			baseURL: "https://router.huggingface.co/v1",
 			apiKey: this.options.huggingFaceApiKey,
 			headers: DEFAULT_HEADERS,
