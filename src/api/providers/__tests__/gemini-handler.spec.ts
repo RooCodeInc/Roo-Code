@@ -1,28 +1,78 @@
+// npx vitest run src/api/providers/__tests__/gemini-handler.spec.ts
+
+// Mock the AI SDK functions
+const mockStreamText = vi.fn()
+const mockGenerateText = vi.fn()
+
+vi.mock("ai", async (importOriginal) => {
+	const original = await importOriginal<typeof import("ai")>()
+	return {
+		...original,
+		streamText: (...args: unknown[]) => mockStreamText(...args),
+		generateText: (...args: unknown[]) => mockGenerateText(...args),
+	}
+})
+
 import { t } from "i18next"
-import { FunctionCallingConfigMode } from "@google/genai"
 
 import { GeminiHandler } from "../gemini"
 import type { ApiHandlerOptions } from "../../../shared/api"
 
 describe("GeminiHandler backend support", () => {
-	it("createMessage uses function declarations (URL context and grounding are only for completePrompt)", async () => {
-		// URL context and grounding are mutually exclusive with function declarations
-		// in Gemini API, so createMessage only uses function declarations.
-		// URL context/grounding are only added in completePrompt.
+	beforeEach(() => {
+		mockStreamText.mockClear()
+		mockGenerateText.mockClear()
+	})
+
+	it("createMessage uses AI SDK tools format", async () => {
 		const options = {
 			apiProvider: "gemini",
 			enableUrlContext: true,
 			enableGrounding: true,
 		} as ApiHandlerOptions
 		const handler = new GeminiHandler(options)
-		const stub = vi.fn().mockReturnValue((async function* () {})())
-		// @ts-ignore access private client
-		handler["client"].models.generateContentStream = stub
+
+		const mockFullStream = (async function* () {})()
+
+		mockStreamText.mockReturnValue({
+			fullStream: mockFullStream,
+			usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			providerMetadata: Promise.resolve({}),
+		})
+
 		await handler.createMessage("instr", [] as any).next()
-		const config = stub.mock.calls[0][0].config
-		// createMessage always uses function declarations only
-		// (tools are always present from ALWAYS_AVAILABLE_TOOLS)
-		expect(config.tools).toEqual([{ functionDeclarations: expect.any(Array) }])
+
+		// Verify streamText was called
+		expect(mockStreamText).toHaveBeenCalledWith(
+			expect.objectContaining({
+				system: "instr",
+			}),
+		)
+	})
+
+	it("completePrompt passes tools when URL context and grounding enabled", async () => {
+		const options = {
+			apiProvider: "gemini",
+			enableUrlContext: true,
+			enableGrounding: true,
+		} as ApiHandlerOptions
+		const handler = new GeminiHandler(options)
+
+		mockGenerateText.mockResolvedValue({
+			text: "ok",
+			providerMetadata: {},
+		})
+
+		const res = await handler.completePrompt("hi")
+		expect(res).toBe("ok")
+
+		// Verify generateText was called with tools
+		expect(mockGenerateText).toHaveBeenCalledWith(
+			expect.objectContaining({
+				prompt: "hi",
+				tools: expect.any(Object),
+			}),
+		)
 	})
 
 	it("completePrompt passes config overrides without tools when URL context and grounding disabled", async () => {
@@ -32,13 +82,18 @@ describe("GeminiHandler backend support", () => {
 			enableGrounding: false,
 		} as ApiHandlerOptions
 		const handler = new GeminiHandler(options)
-		const stub = vi.fn().mockResolvedValue({ text: "ok" })
-		// @ts-ignore access private client
-		handler["client"].models.generateContent = stub
+
+		mockGenerateText.mockResolvedValue({
+			text: "ok",
+			providerMetadata: {},
+		})
+
 		const res = await handler.completePrompt("hi")
 		expect(res).toBe("ok")
-		const promptConfig = stub.mock.calls[0][0].config
-		expect(promptConfig.tools).toBeUndefined()
+
+		// Verify generateText was called without tools
+		const callArgs = mockGenerateText.mock.calls[0][0]
+		expect(callArgs.tools).toBeUndefined()
 	})
 
 	describe("error scenarios", () => {
@@ -49,23 +104,22 @@ describe("GeminiHandler backend support", () => {
 			} as ApiHandlerOptions
 			const handler = new GeminiHandler(options)
 
-			const mockStream = async function* () {
-				yield {
-					candidates: [
-						{
-							groundingMetadata: {
-								// Invalid structure - missing groundingChunks
-							},
-							content: { parts: [{ text: "test response" }] },
-						},
-					],
-					usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 },
-				}
-			}
+			// AI SDK text-delta events have a 'text' property (processAiSdkStreamPart casts to this)
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test response" }
+			})()
 
-			const stub = vi.fn().mockReturnValue(mockStream())
-			// @ts-ignore access private client
-			handler["client"].models.generateContentStream = stub
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({
+					google: {
+						groundingMetadata: {
+							// Invalid structure - missing groundingChunks
+						},
+					},
+				}),
+			})
 
 			const messages = []
 			for await (const chunk of handler.createMessage("test", [] as any)) {
@@ -74,7 +128,7 @@ describe("GeminiHandler backend support", () => {
 
 			// Should still return the main content without sources
 			expect(messages.some((m) => m.type === "text" && m.text === "test response")).toBe(true)
-			expect(messages.some((m) => m.type === "text" && m.text?.includes("Sources:"))).toBe(false)
+			expect(messages.some((m) => m.type === "grounding")).toBe(false)
 		})
 
 		it("should handle malformed grounding metadata", async () => {
@@ -84,27 +138,26 @@ describe("GeminiHandler backend support", () => {
 			} as ApiHandlerOptions
 			const handler = new GeminiHandler(options)
 
-			const mockStream = async function* () {
-				yield {
-					candidates: [
-						{
-							groundingMetadata: {
-								groundingChunks: [
-									{ web: null }, // Missing URI
-									{ web: { uri: "https://example.com", title: "Example Site" } }, // Valid
-									{}, // Missing web property entirely
-								],
-							},
-							content: { parts: [{ text: "test response" }] },
-						},
-					],
-					usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 5 },
-				}
-			}
+			// AI SDK text-delta events have a 'text' property (processAiSdkStreamPart casts to this)
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "test response" }
+			})()
 
-			const stub = vi.fn().mockReturnValue(mockStream())
-			// @ts-ignore access private client
-			handler["client"].models.generateContentStream = stub
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({
+					google: {
+						groundingMetadata: {
+							groundingChunks: [
+								{ web: null }, // Missing URI
+								{ web: { uri: "https://example.com", title: "Example Site" } }, // Valid
+								{}, // Missing web property entirely
+							],
+						},
+					},
+				}),
+			})
 
 			const messages = []
 			for await (const chunk of handler.createMessage("test", [] as any)) {
@@ -137,9 +190,16 @@ describe("GeminiHandler backend support", () => {
 			const handler = new GeminiHandler(options)
 
 			const mockError = new Error("API rate limit exceeded")
-			const stub = vi.fn().mockRejectedValue(mockError)
-			// @ts-ignore access private client
-			handler["client"].models.generateContentStream = stub
+			// eslint-disable-next-line require-yield
+			const mockFullStream = (async function* () {
+				throw mockError
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({}),
+				providerMetadata: Promise.resolve({}),
+			})
 
 			await expect(async () => {
 				const generator = handler.createMessage("test", [] as any)
@@ -148,7 +208,7 @@ describe("GeminiHandler backend support", () => {
 		})
 	})
 
-	describe("allowedFunctionNames support", () => {
+	describe("toolChoice support", () => {
 		const testTools = [
 			{
 				type: "function" as const,
@@ -176,123 +236,120 @@ describe("GeminiHandler backend support", () => {
 			},
 		]
 
-		it("should pass allowedFunctionNames to toolConfig when provided", async () => {
+		it("should pass tools to streamText", async () => {
 			const options = {
 				apiProvider: "gemini",
 			} as ApiHandlerOptions
 			const handler = new GeminiHandler(options)
-			const stub = vi.fn().mockReturnValue((async function* () {})())
-			// @ts-ignore access private client
-			handler["client"].models.generateContentStream = stub
 
-			await handler
-				.createMessage("test", [] as any, {
-					taskId: "test-task",
-					tools: testTools,
-					allowedFunctionNames: ["read_file", "write_to_file"],
-				})
-				.next()
+			const mockFullStream = (async function* () {})()
 
-			const config = stub.mock.calls[0][0].config
-			expect(config.toolConfig).toEqual({
-				functionCallingConfig: {
-					mode: FunctionCallingConfigMode.ANY,
-					allowedFunctionNames: ["read_file", "write_to_file"],
-				},
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({}),
+				providerMetadata: Promise.resolve({}),
 			})
-		})
-
-		it("should include all tools but restrict callable functions via allowedFunctionNames", async () => {
-			const options = {
-				apiProvider: "gemini",
-			} as ApiHandlerOptions
-			const handler = new GeminiHandler(options)
-			const stub = vi.fn().mockReturnValue((async function* () {})())
-			// @ts-ignore access private client
-			handler["client"].models.generateContentStream = stub
 
 			await handler
 				.createMessage("test", [] as any, {
 					taskId: "test-task",
 					tools: testTools,
-					allowedFunctionNames: ["read_file"],
 				})
 				.next()
 
-			const config = stub.mock.calls[0][0].config
-			// All tools should be passed to the model
-			expect(config.tools[0].functionDeclarations).toHaveLength(3)
-			// But only read_file should be allowed to be called
-			expect(config.toolConfig.functionCallingConfig.allowedFunctionNames).toEqual(["read_file"])
+			// Verify streamText was called with tools
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					tools: expect.any(Object),
+				}),
+			)
 		})
 
-		it("should take precedence over tool_choice when allowedFunctionNames is provided", async () => {
+		it("should pass toolChoice when allowedFunctionNames is provided", async () => {
 			const options = {
 				apiProvider: "gemini",
 			} as ApiHandlerOptions
 			const handler = new GeminiHandler(options)
-			const stub = vi.fn().mockReturnValue((async function* () {})())
-			// @ts-ignore access private client
-			handler["client"].models.generateContentStream = stub
+
+			const mockFullStream = (async function* () {})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({}),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			await handler
+				.createMessage("test", [] as any, {
+					taskId: "test-task",
+					tools: testTools,
+					allowedFunctionNames: ["read_file", "write_to_file"],
+				})
+				.next()
+
+			// Verify toolChoice is 'required' when allowedFunctionNames is provided
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					toolChoice: "required",
+				}),
+			)
+		})
+
+		it("should use tool_choice when allowedFunctionNames is not provided", async () => {
+			const options = {
+				apiProvider: "gemini",
+			} as ApiHandlerOptions
+			const handler = new GeminiHandler(options)
+
+			const mockFullStream = (async function* () {})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({}),
+				providerMetadata: Promise.resolve({}),
+			})
 
 			await handler
 				.createMessage("test", [] as any, {
 					taskId: "test-task",
 					tools: testTools,
 					tool_choice: "auto",
-					allowedFunctionNames: ["read_file"],
 				})
 				.next()
 
-			const config = stub.mock.calls[0][0].config
-			// allowedFunctionNames should take precedence - mode should be ANY, not AUTO
-			expect(config.toolConfig.functionCallingConfig.mode).toBe(FunctionCallingConfigMode.ANY)
-			expect(config.toolConfig.functionCallingConfig.allowedFunctionNames).toEqual(["read_file"])
+			// Verify toolChoice follows tool_choice
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					toolChoice: "auto",
+				}),
+			)
 		})
 
-		it("should fall back to tool_choice when allowedFunctionNames is empty", async () => {
+		it("should not set toolChoice when allowedFunctionNames is empty and no tool_choice", async () => {
 			const options = {
 				apiProvider: "gemini",
 			} as ApiHandlerOptions
 			const handler = new GeminiHandler(options)
-			const stub = vi.fn().mockReturnValue((async function* () {})())
-			// @ts-ignore access private client
-			handler["client"].models.generateContentStream = stub
+
+			const mockFullStream = (async function* () {})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({}),
+				providerMetadata: Promise.resolve({}),
+			})
 
 			await handler
 				.createMessage("test", [] as any, {
 					taskId: "test-task",
 					tools: testTools,
-					tool_choice: "auto",
 					allowedFunctionNames: [],
 				})
 				.next()
 
-			const config = stub.mock.calls[0][0].config
-			// Empty allowedFunctionNames should fall back to tool_choice behavior
-			expect(config.toolConfig.functionCallingConfig.mode).toBe(FunctionCallingConfigMode.AUTO)
-			expect(config.toolConfig.functionCallingConfig.allowedFunctionNames).toBeUndefined()
-		})
-
-		it("should not set toolConfig when allowedFunctionNames is undefined and no tool_choice", async () => {
-			const options = {
-				apiProvider: "gemini",
-			} as ApiHandlerOptions
-			const handler = new GeminiHandler(options)
-			const stub = vi.fn().mockReturnValue((async function* () {})())
-			// @ts-ignore access private client
-			handler["client"].models.generateContentStream = stub
-
-			await handler
-				.createMessage("test", [] as any, {
-					taskId: "test-task",
-					tools: testTools,
-				})
-				.next()
-
-			const config = stub.mock.calls[0][0].config
-			// No toolConfig should be set when neither allowedFunctionNames nor tool_choice is provided
-			expect(config.toolConfig).toBeUndefined()
+			// With empty allowedFunctionNames, toolChoice should be undefined
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.toolChoice).toBeUndefined()
 		})
 	})
 })
