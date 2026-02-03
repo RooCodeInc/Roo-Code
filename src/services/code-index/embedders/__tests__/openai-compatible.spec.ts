@@ -978,6 +978,7 @@ describe("OpenAICompatibleEmbedder", () => {
 
 			expect(result.valid).toBe(true)
 			expect(result.error).toBeUndefined()
+			expect(result.detectedDimension).toBe(3) // Auto-detected from array embedding
 			expect(mockEmbeddingsCreate).toHaveBeenCalledWith({
 				input: ["test"],
 				model: testModelId,
@@ -1003,6 +1004,7 @@ describe("OpenAICompatibleEmbedder", () => {
 
 			expect(result.valid).toBe(true)
 			expect(result.error).toBeUndefined()
+			expect(result.detectedDimension).toBe(3) // Auto-detected from array embedding
 			expect(mockFetch).toHaveBeenCalledWith(
 				fullUrl,
 				expect.objectContaining({
@@ -1012,6 +1014,25 @@ describe("OpenAICompatibleEmbedder", () => {
 					}),
 				}),
 			)
+		})
+
+		it("should detect dimension from base64 encoded embedding", async () => {
+			embedder = new OpenAICompatibleEmbedder(testBaseUrl, testApiKey, testModelId)
+
+			// Create a 1536-dimension embedding as base64 (like text-embedding-3-small)
+			const embedding = new Float32Array(1536).fill(0.1)
+			const base64String = Buffer.from(embedding.buffer).toString("base64")
+
+			const mockResponse = {
+				data: [{ embedding: base64String }],
+				usage: { prompt_tokens: 2, total_tokens: 2 },
+			}
+			mockEmbeddingsCreate.mockResolvedValue(mockResponse)
+
+			const result = await embedder.validateConfiguration()
+
+			expect(result.valid).toBe(true)
+			expect(result.detectedDimension).toBe(1536) // Auto-detected from base64 (1536 * 4 bytes / 4 = 1536)
 		})
 
 		it("should fail validation with authentication error", async () => {

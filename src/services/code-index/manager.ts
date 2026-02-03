@@ -332,21 +332,30 @@ export class CodeIndexManager {
 		const rooIgnoreController = new RooIgnoreController(workspacePath)
 		await rooIgnoreController.initialize()
 
-		// (Re)Create shared service instances
-		const { embedder, vectorStore, scanner, fileWatcher } = this._serviceFactory.createServices(
-			this.context,
-			this._cacheManager!,
-			ignoreInstance,
-			rooIgnoreController,
-		)
+		// Create embedder first to validate and detect embedding dimension
+		const embedder = this._serviceFactory.createEmbedder()
 
-		// Validate embedder configuration before proceeding
+		// Validate embedder configuration and detect actual embedding dimension
 		const validationResult = await this._serviceFactory.validateEmbedder(embedder)
 		if (!validationResult.valid) {
 			const errorMessage = validationResult.error || "Embedder configuration validation failed"
 			this._stateManager.setSystemState("Error", errorMessage)
 			throw new Error(errorMessage)
 		}
+
+		// Use the auto-detected dimension if available
+		// This ensures we always use the actual dimension from the model,
+		// preventing mismatches between configured and actual dimensions (Issue #10991)
+		const detectedDimension = validationResult.detectedDimension
+
+		// (Re)Create shared service instances with the detected dimension
+		const { vectorStore, scanner, fileWatcher } = this._serviceFactory.createServices(
+			this.context,
+			this._cacheManager!,
+			ignoreInstance,
+			rooIgnoreController,
+			detectedDimension,
+		)
 
 		// (Re)Initialize orchestrator
 		this._orchestrator = new CodeIndexOrchestrator(
