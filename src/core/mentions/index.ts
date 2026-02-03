@@ -13,6 +13,18 @@ import { extractTextFromFileWithMetadata, type ExtractTextResult } from "../../i
 import { diagnosticsToProblemsString } from "../../integrations/diagnostics"
 import { DEFAULT_LINE_LIMIT } from "../prompts/tools/native-tools/read_file"
 
+/**
+ * Maximum number of files to read from a folder mention.
+ * This prevents context window explosion when mentioning large directories.
+ */
+export const MAX_FOLDER_FILES_TO_READ = 10
+
+/**
+ * Maximum total content size (in characters) to read from a folder mention.
+ * This is approximately 100KB which should be safe for most context windows.
+ */
+export const MAX_FOLDER_CONTENT_SIZE = 100_000
+
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
@@ -390,6 +402,12 @@ async function getFileOrFolderContentWithMetadata(
 			const fileReadResults: string[] = []
 			const LOCK_SYMBOL = "🔒"
 
+			// Track limits to prevent context window explosion
+			let filesRead = 0
+			let totalContentSize = 0
+			let limitReached: "files" | "size" | null = null
+			let skippedFilesCount = 0
+
 			for (let index = 0; index < entries.length; index++) {
 				const entry = entries[index]
 				const isLast = index === entries.length - 1
@@ -410,13 +428,44 @@ async function getFileOrFolderContentWithMetadata(
 				if (entry.isFile()) {
 					folderListing += `${linePrefix}${displayName}\n`
 					if (!isIgnored) {
+						// Check if we've hit the file limit
+						if (filesRead >= MAX_FOLDER_FILES_TO_READ) {
+							if (!limitReached) {
+								limitReached = "files"
+							}
+							skippedFilesCount++
+							continue
+						}
+
+						// Check if we've hit the content size limit
+						if (totalContentSize >= MAX_FOLDER_CONTENT_SIZE) {
+							if (!limitReached) {
+								limitReached = "size"
+							}
+							skippedFilesCount++
+							continue
+						}
+
 						const filePath = path.join(mentionPath, entry.name)
 						const absoluteFilePath = path.resolve(absPath, entry.name)
 						try {
 							const isBinary = await isBinaryFile(absoluteFilePath).catch(() => false)
 							if (!isBinary) {
 								const result = await extractTextFromFileWithMetadata(absoluteFilePath)
-								fileReadResults.push(formatFileReadResult(filePath.toPosix(), result))
+								const fileContent = formatFileReadResult(filePath.toPosix(), result)
+
+								// Check if adding this file would exceed the size limit
+								if (totalContentSize + fileContent.length > MAX_FOLDER_CONTENT_SIZE) {
+									if (!limitReached) {
+										limitReached = "size"
+									}
+									skippedFilesCount++
+									continue
+								}
+
+								fileReadResults.push(fileContent)
+								filesRead++
+								totalContentSize += fileContent.length
 							}
 						} catch (error) {
 							// Skip files that can't be read
@@ -433,6 +482,15 @@ async function getFileOrFolderContentWithMetadata(
 			let content = `[read_file for folder '${mentionPath}']\nFolder listing:\n${folderListing}`
 			if (fileReadResults.length > 0) {
 				content += `\n\n--- File Contents ---\n\n${fileReadResults.join("\n\n")}`
+			}
+
+			// Add truncation notice if limits were hit
+			if (limitReached) {
+				const limitMessage =
+					limitReached === "files"
+						? `\n\n--- Content Truncated ---\nNote: Only ${MAX_FOLDER_FILES_TO_READ} files were read to prevent context window overflow. ${skippedFilesCount} additional file(s) were skipped.\nTo read specific files, use individual @file mentions instead of @folder.`
+						: `\n\n--- Content Truncated ---\nNote: Content was limited to approximately ${Math.round(MAX_FOLDER_CONTENT_SIZE / 1000)}KB to prevent context window overflow. ${skippedFilesCount} additional file(s) were skipped.\nTo read specific files, use individual @file mentions instead of @folder.`
+				content += limitMessage
 			}
 
 			return {
