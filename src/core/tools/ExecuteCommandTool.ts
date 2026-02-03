@@ -248,10 +248,13 @@ export async function executeCommandInTerminal(
 				const { response, text, images } = await task.ask("command_output", "")
 				runInBackground = true
 
+				// Handle both user clicking "Continue While Running" (yesButtonClicked)
+				// and user providing a message (messageResponse)
 				if (response === "messageResponse") {
 					message = { text, images }
-					process.continue()
 				}
+				// Always continue the process when user responds
+				process.continue()
 			} catch (_error) {
 				// Silently handle ask errors (e.g., "Current ask promise was ignored")
 			}
