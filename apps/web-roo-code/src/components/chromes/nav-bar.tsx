@@ -13,6 +13,7 @@ import { EXTERNAL_LINKS } from "@/lib/constants"
 import { useLogoSrc } from "@/lib/hooks/use-logo-src"
 import { ScrollButton } from "@/components/ui"
 import ThemeToggle from "@/components/chromes/theme-toggle"
+import { InstallModal } from "@/components/homepage/install-modal"
 import { Brain, Cloud, Puzzle, Slack, X } from "lucide-react"
 import {
 	NavigationMenu,
@@ -40,6 +41,7 @@ interface NavBarProps {
 
 export function NavBar({ stars, downloads }: NavBarProps) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false)
+	const [isInstallModalOpen, setIsInstallModalOpen] = useState(false)
 	const logoSrc = useLogoSrc()
 
 	return (
@@ -202,16 +204,15 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 						className="hidden items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground transition-all duration-200 hover:shadow-lg hover:scale-105 md:flex">
 						Sign Up
 					</a>
-					<Link
-						href={EXTERNAL_LINKS.MARKETPLACE}
-						target="_blank"
+					<button
+						onClick={() => setIsInstallModalOpen(true)}
 						className="hidden items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground transition-all duration-200 hover:shadow-lg hover:scale-105 md:flex whitespace-nowrap">
 						<VscVscode className="-mr-[2px] mt-[1px] h-4 w-4" />
 						<span>
 							Install <span className="font-black max-lg:text-xs">&middot;</span>
 						</span>
 						{downloads !== null && <span>{downloads}</span>}
-					</Link>
+					</button>
 				</div>
 
 				{/* Mobile Menu Button */}
@@ -332,14 +333,15 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 							<div className="flex items-center rounded-md p-3 transition-colors hover:bg-accent">
 								<ThemeToggle />
 							</div>
-							<Link
-								href={EXTERNAL_LINKS.MARKETPLACE}
-								target="_blank"
-								className="inline-flex items-center gap-2 rounded-md p-3 text-sm transition-colors hover:bg-accent hover:text-foreground"
-								onClick={() => setIsMenuOpen(false)}>
+							<button
+								onClick={() => {
+									setIsMenuOpen(false)
+									setIsInstallModalOpen(true)
+								}}
+								className="inline-flex items-center gap-2 rounded-md p-3 text-sm transition-colors hover:bg-accent hover:text-foreground">
 								<VscVscode className="h-6 w-6" />
 								{downloads !== null && <span>{downloads}</span>}
-							</Link>
+							</button>
 						</div>
 						<div className="flex gap-2 px-4 pb-4">
 							<a
@@ -362,6 +364,9 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 					</div>
 				</nav>
 			</div>
+
+			{/* Install Modal */}
+			<InstallModal open={isInstallModalOpen} onOpenChange={setIsInstallModalOpen} />
 		</header>
 	)
 }
