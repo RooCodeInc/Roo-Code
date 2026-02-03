@@ -89,7 +89,20 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const modelId = this.options.openAiModelId ?? ""
 		const enabledR1Format = this.options.openAiR1FormatEnabled ?? false
 		const isAzureAiInference = this._isAzureAiInference(modelUrl)
-		const deepseekReasoner = modelId.includes("deepseek-reasoner") || enabledR1Format
+		// Auto-detect reasoning/thinking models that require R1 format:
+		// - DeepSeek Reasoner models
+		// - Models with "thinking" suffix (e.g., kimi-k2-thinking)
+		// - DeepSeek R1 models (deepseek-r1, deepseek/deepseek-r1)
+		// - QWQ models
+		// - Or when user explicitly enables R1 format
+		const modelIdLower = modelId.toLowerCase()
+		const useR1Format =
+			enabledR1Format ||
+			modelIdLower.includes("deepseek-reasoner") ||
+			modelIdLower.includes("-thinking") ||
+			modelIdLower.includes("deepseek-r1") ||
+			modelIdLower.includes("/deepseek-r1") ||
+			modelIdLower.includes("qwq")
 
 		if (modelId.includes("o1") || modelId.includes("o3") || modelId.includes("o4")) {
 			yield* this.handleO3FamilyMessage(modelId, systemPrompt, messages, metadata)
@@ -104,7 +117,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		if (this.options.openAiStreamingEnabled ?? true) {
 			let convertedMessages
 
-			if (deepseekReasoner) {
+			if (useR1Format) {
 				convertedMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 			} else {
 				if (modelInfo.supportsPromptCache) {
@@ -154,7 +167,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
 				model: modelId,
-				temperature: this.options.modelTemperature ?? (deepseekReasoner ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
+				temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
 				messages: convertedMessages,
 				stream: true as const,
 				...(isGrokXAI ? {} : { stream_options: { include_usage: true } }),
@@ -223,7 +236,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		} else {
 			const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
 				model: modelId,
-				messages: deepseekReasoner
+				messages: useR1Format
 					? convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
 					: [systemMessage, ...convertToOpenAiMessages(messages)],
 				// Tools are always present (minimum ALWAYS_AVAILABLE_TOOLS)
