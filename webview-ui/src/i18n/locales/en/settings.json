@@ -132,11 +132,9 @@
 		"createDialog": {
 			"title": "Create New Skill",
 			"nameLabel": "Name",
-			"namePlaceholder": "my-skill-name",
-			"nameHint": "Lowercase letters, numbers, and hyphens only",
+			"namePlaceholder": "my-skill-name (Lowercase letters, numbers, and hyphens only)",
 			"descriptionLabel": "Description",
-			"descriptionPlaceholder": "Describe when this skill should be used...",
-			"descriptionHint": "Explain what this skill does and when the agent should apply it",
+			"descriptionPlaceholder": "Decribe when this skill should be used and its contents...",
 			"sourceLabel": "Location",
 			"modeLabel": "Mode (optional)",
 			"modePlaceholder": "Any mode",

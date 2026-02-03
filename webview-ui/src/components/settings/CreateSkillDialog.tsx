@@ -197,30 +197,21 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 							onChange={handleNameChange}
 							placeholder={t("settings:skills.createDialog.namePlaceholder")}
 							maxLength={64}
-							className="w-full bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-vscode-focusBorder"
+							className="w-full bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded-xl px-3 py-2 focus:outline-none focus:border-vscode-focusBorder"
 						/>
-						<span className="text-xs text-vscode-descriptionForeground">
-							{t("settings:skills.createDialog.nameHint")}
-						</span>
 						{nameError && <span className="text-xs text-vscode-errorForeground">{t(nameError)}</span>}
 					</div>
 
 					{/* Description Input */}
 					<div className="flex flex-col gap-1">
-						<label htmlFor="skill-description" className="text-sm font-medium text-vscode-foreground">
-							{t("settings:skills.createDialog.descriptionLabel")}
-						</label>
 						<Textarea
 							id="skill-description"
 							value={description}
 							onChange={handleDescriptionChange}
 							placeholder={t("settings:skills.createDialog.descriptionPlaceholder")}
 							maxLength={1024}
-							rows={6}
+							rows={5}
 						/>
-						<span className="text-xs text-vscode-descriptionForeground">
-							{t("settings:skills.createDialog.descriptionHint")}
-						</span>
 						{descriptionError && (
 							<span className="text-xs text-vscode-errorForeground">{t(descriptionError)}</span>
 						)}
@@ -253,23 +244,19 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 							{t("settings:skills.modeDialog.intro")}
 						</span>
 
-						{/* Any mode option */}
-						<div className="flex items-center gap-3 px-1 rounded-lg hover:bg-vscode-list-hoverBackground">
-							<Checkbox
-								id="create-mode-any"
-								checked={isAnyMode}
-								onCheckedChange={(checked) => handleAnyModeToggle(checked === true)}
-							/>
-							<label htmlFor="create-mode-any" className="flex-1 cursor-pointer font-medium">
-								{t("settings:skills.modeDialog.anyMode")}
-							</label>
-						</div>
-
-						{/* Separator */}
-						<div className="h-px bg-vscode-widget-border my-1" />
-
 						{/* Individual mode checkboxes */}
-						<div className="flex flex-col max-h-40 overflow-y-auto">
+						<div className="flex flex-col max-h-28 overflow-y-auto">
+							{/* Any mode option */}
+							<div className="flex items-center gap-3 p-1 rounded-lg hover:bg-vscode-list-hoverBackground">
+								<Checkbox
+									id="create-mode-any"
+									checked={isAnyMode}
+									onCheckedChange={(checked) => handleAnyModeToggle(checked === true)}
+								/>
+								<label htmlFor="create-mode-any" className="flex-1 cursor-pointer font-medium">
+									{t("settings:skills.modeDialog.anyMode")}
+								</label>
+							</div>
 							{availableModes.map((m) => (
 								<div
 									key={m.slug}
