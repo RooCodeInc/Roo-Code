@@ -608,6 +608,13 @@ export interface WebviewMessage {
 		| "deleteSkill"
 		| "moveSkill"
 		| "openSkillFile"
+		// Git messages
+		| "gitCommitPush"
+		| "gitExecuteCommand"
+		| "openTerminal"
+		// Git response messages (Extension -> Webview)
+		| "gitCommitResult"
+		| "terminalOpened"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -743,6 +750,20 @@ export interface IndexClearedPayload {
 	error?: string
 }
 
+export interface GitCommitResultPayload {
+	success: boolean
+	text: string
+	branch?: string
+}
+
+export interface GitCommitPushPayload {
+	branch?: string
+}
+
+export interface TerminalOpenedPayload {
+	text: string
+}
+
 export const installMarketplaceItemWithParametersPayloadSchema = z.object({
 	item: marketplaceItemSchema,
 	parameters: z.record(z.string(), z.any()),
@@ -760,6 +781,9 @@ export type WebViewMessagePayload =
 	| InstallMarketplaceItemWithParametersPayload
 	| UpdateTodoListPayload
 	| EditQueuedMessagePayload
+	| GitCommitPushPayload
+	| GitCommitResultPayload
+	| TerminalOpenedPayload
 
 export interface IndexingStatus {
 	systemStatus: string

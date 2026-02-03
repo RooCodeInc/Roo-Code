@@ -1,1 +1,1 @@
-export { ContextDashboard, default } from "./ContextDashboard"
+export { ContextDashboardButton, default } from "./ContextDashboard"

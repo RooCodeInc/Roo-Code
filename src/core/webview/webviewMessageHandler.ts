@@ -47,6 +47,7 @@ import { MessageEnhancer } from "./messageEnhancer"
 import { checkExistKey } from "../../shared/checkExistApiConfig"
 import { experimentDefault } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
+import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { openFile } from "../../integrations/misc/open-file"
 import { openImage, saveImage } from "../../integrations/misc/image-handler"
 import { selectImages } from "../../integrations/misc/process-images"
@@ -3613,6 +3614,199 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error)
 				provider.log(`Error opening folder picker: ${errorMessage}`)
+			}
+
+			break
+		}
+
+		case "gitCommitPush": {
+			try {
+				const cwd = getCurrentCwd()
+				if (!cwd) {
+					await vscode.window.showErrorMessage(t("common:errors.no_workspace"))
+					await provider.postMessageToWebview({
+						type: "gitCommitResult",
+						success: false,
+						text: "No workspace path available",
+					})
+					break
+				}
+
+				// Get list of remote branches
+				const terminal = await TerminalRegistry.getOrCreateTerminal(cwd, provider.getCurrentTask()?.taskId)
+				if (!terminal) {
+					await vscode.window.showErrorMessage("Terminal not available")
+					await provider.postMessageToWebview({
+						type: "gitCommitResult",
+						success: false,
+						text: "Terminal not available",
+					})
+					break
+				}
+
+				// Get all remote branches
+				let branchesOutput = ""
+				try {
+					await terminal.runCommand("git branch -r", {
+						onLine: (line: string) => {
+							branchesOutput += line + "\n"
+						},
+						onCompleted: (output: string | undefined) => {
+							if (output) branchesOutput += output
+						},
+						onShellExecutionStarted: () => {},
+						onShellExecutionComplete: () => {},
+					})
+				} catch (error) {
+					// If we can't get branches, use a default list
+					branchesOutput = "main\ndevelop\nfeat/context-dashboard\nfeature/knowledge-graph"
+				}
+
+				// Parse branches and filter out invalid ones
+				let branchList = branchesOutput
+					.split("\n")
+					.map((line) => line.trim().replace(/^origin\//, ""))
+					.filter((branch) => branch && !branch.includes("HEAD"))
+
+				// Add current branch to the list
+				let currentBranchOutput = ""
+				try {
+					await terminal.runCommand("git rev-parse --abbrev-ref HEAD", {
+						onLine: (line: string) => {
+							currentBranchOutput = line.trim()
+						},
+						onCompleted: (output: string | undefined) => {
+							if (output) currentBranchOutput = output.trim()
+						},
+						onShellExecutionStarted: () => {},
+						onShellExecutionComplete: () => {},
+					})
+				} catch {
+					currentBranchOutput = "main"
+				}
+
+				// If branch is provided in payload, use it; otherwise ask user to select
+				let selectedBranch: string | undefined
+				if (message.payload?.branch) {
+					selectedBranch = message.payload.branch
+				} else {
+					// Ask user to select branch
+					selectedBranch = await vscode.window.showQuickPick(branchList, {
+						placeHolder: "Select branch to push to:",
+						title: "Push Changes to Branch",
+					})
+
+					if (!selectedBranch) {
+						// User cancelled
+						await vscode.window.showInformationMessage("Push cancelled")
+						break
+					}
+				}
+
+				// Execute git commands sequentially
+				// 1. git add .
+				// 2. git commit with default message
+				// 3. git push <branch>
+				const commands = [
+					"git add .",
+					"git commit -m 'Update from Roo Code'",
+					`git push origin ${selectedBranch}`,
+				]
+
+				let output = ""
+				let success = true
+
+				for (const cmd of commands) {
+					try {
+						await terminal.runCommand(cmd, {
+							onLine: (line: string) => {
+								output += line + "\n"
+								provider.log(`[Git] ${line}`)
+							},
+							onCompleted: (cmdOutput: string | undefined) => {
+								if (cmdOutput) {
+									output += cmdOutput + "\n"
+									provider.log(`[Git] Completed: ${cmdOutput}`)
+								}
+							},
+							onShellExecutionStarted: () => {},
+							onShellExecutionComplete: () => {},
+						})
+					} catch (error) {
+						success = false
+						output += `\nError executing ${cmd}: ${error instanceof Error ? error.message : String(error)}\n`
+						provider.log(`[Git] Error executing ${cmd}: ${error}`)
+						break
+					}
+				}
+
+				if (success) {
+					await vscode.window.showInformationMessage(t("chat:gitCommit.success"))
+				} else {
+					await vscode.window.showErrorMessage(t("common:errors.git_commit_failed"))
+				}
+
+				await provider.postMessageToWebview({
+					type: "gitCommitResult",
+					success,
+					branch: selectedBranch,
+					text:
+						output.trim() ||
+						(success
+							? `Changes committed and pushed to ${selectedBranch} successfully!`
+							: "Failed to commit changes"),
+				})
+			} catch (error) {
+				provider.log(`Error in gitCommitPush: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				await vscode.window.showErrorMessage(t("common:errors.git_commit_failed"))
+				await provider.postMessageToWebview({
+					type: "gitCommitResult",
+					success: false,
+					text: error instanceof Error ? error.message : String(error),
+				})
+			}
+
+			break
+		}
+
+		case "openTerminal": {
+			try {
+				const command = message.text || ""
+				if (!command) {
+					await vscode.window.showErrorMessage("No command provided")
+					break
+				}
+
+				const cwd = getCurrentCwd()
+				if (!cwd) {
+					await vscode.window.showErrorMessage(t("common:errors.no_workspace"))
+					break
+				}
+
+				const terminal = await TerminalRegistry.getOrCreateTerminal(cwd, provider.getCurrentTask()?.taskId)
+				if (!terminal) {
+					await vscode.window.showErrorMessage("Terminal not available")
+					break
+				}
+
+				await terminal.runCommand(command, {
+					onLine: (line: string) => {
+						provider.log(`[Terminal] ${line}`)
+					},
+					onCompleted: (output: string | undefined) => {
+						provider.log(`[Terminal] Completed: ${output || ""}`)
+					},
+					onShellExecutionStarted: () => {},
+					onShellExecutionComplete: () => {},
+				})
+
+				await provider.postMessageToWebview({
+					type: "terminalOpened",
+					text: command,
+				})
+			} catch (error) {
+				provider.log(`Error opening terminal: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				await vscode.window.showErrorMessage(t("common:errors.terminal_open_failed"))
 			}
 
 			break

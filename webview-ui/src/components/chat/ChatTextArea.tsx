@@ -31,6 +31,8 @@ import { AutoApproveDropdown } from "./AutoApproveDropdown"
 import { MAX_IMAGES_PER_MESSAGE } from "./ChatView"
 import ContextMenu from "./ContextMenu"
 import { IndexingStatusBadge } from "./IndexingStatusBadge"
+import { ContextDashboardButton } from "./ContextDashboard"
+import { GitCommitButton } from "./GitCommitButton"
 import { usePromptHistory } from "./hooks/usePromptHistory"
 import { CloudAccountSwitcher } from "../cloud/CloudAccountSwitcher"
 
@@ -1346,6 +1348,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							</StandardTooltip>
 						)}
 						{!isEditMode ? <IndexingStatusBadge /> : null}
+						{!isEditMode && <ContextDashboardButton />}
+						{!isEditMode && <GitCommitButton />}
 						{!isEditMode && cloudUserInfo && <CloudAccountSwitcher />}
 						{/* keep props referenced after moving browser button */}
 						<div

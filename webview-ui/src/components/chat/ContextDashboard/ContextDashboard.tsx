@@ -1,60 +1,76 @@
 import React, { useState } from "react"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
-import { ChevronDown, ChevronRight, FileText, Folder, Layers } from "lucide-react"
+import { Layers, FileText, Folder } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@src/components/ui/popover"
 import { cn } from "@src/lib/utils"
 
-interface ContextDashboardProps {
+interface ContextDashboardButtonProps {
 	className?: string
 }
 
-export const ContextDashboard: React.FC<ContextDashboardProps> = ({ className }) => {
+export const ContextDashboardButton: React.FC<ContextDashboardButtonProps> = ({ className }) => {
 	const { t } = useAppTranslation()
 	const { filePaths, openedTabs } = useExtensionState()
-	const [isExpanded, setIsExpanded] = useState(true)
+	const [isOpen, setIsOpen] = useState(false)
 
 	// Calculate stats
 	const totalFiles = filePaths.length
 	const totalOpenedTabs = openedTabs.length
-
-	const handleToggle = () => {
-		setIsExpanded(!isExpanded)
-	}
 
 	// Don't render if no context
 	if (totalFiles === 0 && totalOpenedTabs === 0) {
 		return null
 	}
 
-	return (
-		<div className={cn("border-b border-vscode-editorGroup-border", className)}>
-			{/* Header */}
-			<button
-				onClick={handleToggle}
-				className="w-full flex items-center gap-2 px-3 py-2 hover:bg-vscode-list-hoverBackground transition-colors cursor-pointer"
-				aria-expanded={isExpanded}
-				aria-label={isExpanded ? t("chat:contextDashboard.collapse") : t("chat:contextDashboard.expand")}>
-				{isExpanded ? (
-					<ChevronDown className="w-4 h-4 text-vscode-descriptionForeground shrink-0" />
-				) : (
-					<ChevronRight className="w-4 h-4 text-vscode-descriptionForeground shrink-0" />
-				)}
-				<Layers className="w-4 h-4 text-vscode-foreground shrink-0" />
-				<span className="font-medium text-vscode-foreground text-sm flex-grow text-left">
-					{t("chat:contextDashboard.title")}
-				</span>
-				{/* Stats badge */}
-				<span className="text-xs text-vscode-descriptionForeground px-2 py-0.5 rounded bg-vscode-editorWidget-background">
-					{t("chat:contextDashboard.stats", { files: totalFiles, tabs: totalOpenedTabs })}
-				</span>
-			</button>
+	const hasContext = totalFiles > 0 || totalOpenedTabs > 0
 
-			{/* Content */}
-			{isExpanded && (
-				<div className="px-3 pb-3 max-h-[200px] overflow-y-auto">
+	return (
+		<Popover open={isOpen} onOpenChange={setIsOpen}>
+			<PopoverTrigger asChild>
+				<button
+					className={cn(
+						"inline-flex items-center justify-center",
+						"bg-transparent border-none p-1.5",
+						"rounded-md min-w-[28px] min-h-[28px]",
+						"text-vscode-foreground opacity-85",
+						"transition-all duration-150",
+						"hover:opacity-100 hover:bg-[rgba(255,255,255,0.03)] hover:border-[rgba(255,255,255,0.15)]",
+						"focus:outline-none focus-visible:ring-1 focus-visible:ring-vscode-focusBorder",
+						"active:bg-[rgba(255,255,255,0.1)]",
+						"cursor-pointer relative",
+						className,
+					)}
+					aria-label={t("chat:contextDashboard.tooltip")}
+					title={hasContext ? t("chat:contextDashboard.tooltip") : undefined}>
+					<Layers className="w-4 h-4" />
+					{hasContext && (
+						<span className="absolute top-0 right-0 w-2 h-2 bg-vscode-activityBar-activeBorder rounded-full" />
+					)}
+				</button>
+			</PopoverTrigger>
+			<PopoverContent
+				align="end"
+				className="w-80 bg-vscode-editor-background border border-vscode-editorGroup-border shadow-lg p-3 max-h-[300px] overflow-y-auto"
+				onEscapeKeyDown={() => setIsOpen(false)}
+				onPointerDownOutside={() => setIsOpen(false)}>
+				{/* Header */}
+				<div className="flex items-center gap-2 pb-2 border-b border-vscode-editorGroup-border mb-2">
+					<Layers className="w-4 h-4 text-vscode-foreground shrink-0" />
+					<span className="font-medium text-vscode-foreground text-sm flex-grow text-left">
+						{t("chat:contextDashboard.title")}
+					</span>
+					{/* Stats badge */}
+					<span className="text-xs text-vscode-descriptionForeground px-2 py-0.5 rounded bg-vscode-editorWidget-background">
+						{t("chat:contextDashboard.stats", { files: totalFiles, tabs: totalOpenedTabs })}
+					</span>
+				</div>
+
+				{/* Content */}
+				<div className="space-y-3">
 					{/* Opened Tabs Section */}
 					{totalOpenedTabs > 0 && (
-						<div className="mb-2">
+						<div>
 							<div className="flex items-center gap-1.5 mb-1">
 								<FileText className="w-3.5 h-3.5 text-vscode-descriptionForeground shrink-0" />
 								<span className="text-xs font-medium text-vscode-descriptionForeground uppercase tracking-wide">
@@ -123,9 +139,9 @@ export const ContextDashboard: React.FC<ContextDashboardProps> = ({ className })
 						</div>
 					)}
 				</div>
-			)}
-		</div>
+			</PopoverContent>
+		</Popover>
 	)
 }
 
-export default ContextDashboard
+export default ContextDashboardButton

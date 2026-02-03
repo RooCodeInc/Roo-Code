@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import userEvent from "@testing-library/user-event"
 
-import ContextDashboard from "../ContextDashboard"
+import ContextDashboardButton from "../ContextDashboard"
 
 // Mock i18n TranslationContext
 vi.mock("@src/i18n/TranslationContext", () => ({
@@ -19,6 +19,7 @@ vi.mock("@src/i18n/TranslationContext", () => ({
 				"chat:contextDashboard.workspaceFiles": "Workspace Files",
 				"chat:contextDashboard.more": "+{{count}} more",
 				"chat:contextDashboard.moreFiles": "+{{count}} more files",
+				"chat:contextDashboard.tooltip": "View context files and folders",
 			}
 			if (options && typeof options === "object") {
 				// Replace placeholders with actual values
@@ -46,7 +47,7 @@ vi.mock("@src/context/ExtensionStateContext", () => ({
 
 const queryClient = new QueryClient()
 
-const renderWithProviders = (
+const renderWithProviders = async (
 	props: { filePaths?: string[]; openedTabs?: Array<{ label: string; isActive: boolean; path?: string }> } = {},
 ) => {
 	const { filePaths = [], openedTabs = [] } = props
@@ -55,14 +56,16 @@ const renderWithProviders = (
 	mockFilePaths.mockReturnValue(filePaths)
 	mockOpenedTabs.mockReturnValue(openedTabs)
 
-	return render(
+	const user = userEvent.setup()
+	const result = render(
 		<QueryClientProvider client={queryClient}>
-			<ContextDashboard />
+			<ContextDashboardButton />
 		</QueryClientProvider>,
 	)
+	return { result, user }
 }
 
-describe("ContextDashboard", () => {
+describe("ContextDashboardButton", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
 		// Reset mocks to return empty arrays
@@ -71,112 +74,104 @@ describe("ContextDashboard", () => {
 	})
 
 	it("does not render when no context is available", () => {
-		const { container } = renderWithProviders({ filePaths: [], openedTabs: [] })
+		const { container } = render(
+			<QueryClientProvider client={queryClient}>
+				<ContextDashboardButton />
+			</QueryClientProvider>,
+		)
 		expect(container).toBeEmptyDOMElement()
 	})
 
-	it("renders with opened tabs", () => {
+	it("renders as a button when context is available", async () => {
+		const openedTabs = [{ label: "index.ts", isActive: true, path: "/src/index.ts" }]
+
+		await renderWithProviders({ openedTabs })
+
+		// Button should be rendered
+		expect(screen.getByRole("button", { name: /view context files and folders/i })).toBeInTheDocument()
+	})
+
+	it("opens popover and shows content when clicked", async () => {
 		const openedTabs = [
 			{ label: "index.ts", isActive: true, path: "/src/index.ts" },
 			{ label: "App.tsx", isActive: false, path: "/src/App.tsx" },
 		]
 
-		renderWithProviders({ openedTabs })
+		const { user } = await renderWithProviders({ openedTabs })
 
+		// Click to open popover
+		await user.click(screen.getByRole("button", { name: /view context files and folders/i }))
+
+		// Content should be visible
 		expect(screen.getByText("Context")).toBeInTheDocument()
 		expect(screen.getByText("Open Tabs")).toBeInTheDocument()
 		expect(screen.getByText("index.ts")).toBeInTheDocument()
 		expect(screen.getByText("App.tsx")).toBeInTheDocument()
 	})
 
-	it("renders with workspace files", () => {
+	it("shows workspace files in popover", async () => {
 		const filePaths = ["/src/index.ts", "/src/App.tsx", "/src/utils.ts"]
 
-		renderWithProviders({ filePaths })
+		const { user } = await renderWithProviders({ filePaths })
 
+		// Click to open popover
+		await user.click(screen.getByRole("button", { name: /view context files and folders/i }))
+
+		// Workspace files should be visible
 		expect(screen.getByText("Workspace Files")).toBeInTheDocument()
 		expect(screen.getByText("index.ts")).toBeInTheDocument()
 		expect(screen.getByText("App.tsx")).toBeInTheDocument()
 		expect(screen.getByText("utils.ts")).toBeInTheDocument()
 	})
 
-	it("shows correct stats badge", () => {
+	it("shows correct stats badge", async () => {
 		const filePaths = ["/src/file1.ts", "/src/file2.ts"]
 		const openedTabs = [{ label: "test.ts", isActive: true }]
 
-		renderWithProviders({ filePaths, openedTabs })
+		const { user } = await renderWithProviders({ filePaths, openedTabs })
+
+		// Click to open popover
+		await user.click(screen.getByRole("button", { name: /view context files and folders/i }))
 
 		expect(screen.getByText("2 files, 1 tabs")).toBeInTheDocument()
 	})
 
-	it("can collapse and expand", async () => {
-		const filePaths = ["/src/index.ts"]
-		const openedTabs = [{ label: "test.ts", isActive: true }]
-		const user = userEvent.setup()
-
-		renderWithProviders({ filePaths, openedTabs })
-
-		// Initially expanded
-		expect(screen.getByText("Open Tabs")).toBeInTheDocument()
-		expect(screen.getByText("Workspace Files")).toBeInTheDocument()
-
-		// Find the toggle button and click to collapse
-		const toggleButton = screen.getByRole("button", { name: /collapse context/i })
-		await user.click(toggleButton)
-
-		// Content should be hidden
-		expect(screen.queryByText("Open Tabs")).not.toBeInTheDocument()
-		expect(screen.queryByText("Workspace Files")).not.toBeInTheDocument()
-
-		// Click to expand again
-		const expandButton = screen.getByRole("button", { name: /expand context/i })
-		await user.click(expandButton)
-
-		// Content should be visible again
-		expect(screen.getByText("Open Tabs")).toBeInTheDocument()
-		expect(screen.getByText("Workspace Files")).toBeInTheDocument()
-	})
-
-	it("shows active tab indicator", () => {
-		const openedTabs = [
-			{ label: "index.ts", isActive: true, path: "/src/index.ts" },
-			{ label: "App.tsx", isActive: false, path: "/src/App.tsx" },
-		]
-
-		renderWithProviders({ openedTabs })
-
-		// Get all elements matching either filename (fixed regex to match .ts or .tsx)
-		const tabs = screen.getAllByText(/index\.ts|App\.tsx/)
-		expect(tabs.length).toBeGreaterThanOrEqual(2)
-	})
-
-	it("limits displayed items and shows more indicator", () => {
+	it("limits displayed tabs and shows more indicator", async () => {
 		const openedTabs = Array.from({ length: 15 }, (_, i) => ({
 			label: `file${i}.ts`,
 			isActive: false,
 		}))
 
-		renderWithProviders({ openedTabs })
+		const { user } = await renderWithProviders({ openedTabs })
+
+		// Click to open popover
+		await user.click(screen.getByRole("button", { name: /view context files and folders/i }))
 
 		expect(screen.getByText("+5 more")).toBeInTheDocument()
 	})
 
-	it("limits workspace files and shows more indicator", () => {
+	it("limits workspace files and shows more indicator", async () => {
 		const filePaths = Array.from({ length: 20 }, (_, i) => `/src/file${i}.ts`)
 
-		renderWithProviders({ filePaths })
+		const { user } = await renderWithProviders({ filePaths })
+
+		// Click to open popover
+		await user.click(screen.getByRole("button", { name: /view context files and folders/i }))
 
 		expect(screen.getByText("+5 more files")).toBeInTheDocument()
 	})
 
-	it("renders with both tabs and files", () => {
+	it("shows both tabs and files in popover", async () => {
 		const filePaths = ["/src/component.tsx", "/src/styles.css"]
 		const openedTabs = [
 			{ label: "Dashboard.tsx", isActive: true },
 			{ label: "Settings.tsx", isActive: false },
 		]
 
-		renderWithProviders({ filePaths, openedTabs })
+		const { user } = await renderWithProviders({ filePaths, openedTabs })
+
+		// Click to open popover
+		await user.click(screen.getByRole("button", { name: /view context files and folders/i }))
 
 		expect(screen.getByText("Context")).toBeInTheDocument()
 		expect(screen.getByText("Open Tabs")).toBeInTheDocument()
@@ -185,5 +180,21 @@ describe("ContextDashboard", () => {
 		expect(screen.getByText("Settings.tsx")).toBeInTheDocument()
 		expect(screen.getByText("component.tsx")).toBeInTheDocument()
 		expect(screen.getByText("styles.css")).toBeInTheDocument()
+	})
+
+	it("shows active tab indicator", async () => {
+		const openedTabs = [
+			{ label: "index.ts", isActive: true, path: "/src/index.ts" },
+			{ label: "App.tsx", isActive: false, path: "/src/App.tsx" },
+		]
+
+		const { user } = await renderWithProviders({ openedTabs })
+
+		// Click to open popover
+		await user.click(screen.getByRole("button", { name: /view context files and folders/i }))
+
+		// Should have active indicator (first tab is active)
+		expect(screen.getByText("index.ts")).toBeInTheDocument()
+		expect(screen.getByText("App.tsx")).toBeInTheDocument()
 	})
 })

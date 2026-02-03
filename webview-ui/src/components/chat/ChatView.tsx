@@ -50,8 +50,6 @@ import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
 
-import ContextDashboard from "./ContextDashboard"
-
 export interface ChatViewProps {
 	isHidden: boolean
 	showAnnouncement: boolean
@@ -1754,8 +1752,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 				}}
 			/>
-
-			<ContextDashboard />
 
 			<ChatTextArea
 				ref={textAreaRef}
