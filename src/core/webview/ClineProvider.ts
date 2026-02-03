@@ -1684,10 +1684,24 @@ export class ClineProvider
 					apiConversationHistory,
 				}
 			}
+
+			// EXT-696: historyItem exists but API conversation file doesn't.
+			// This can happen during race conditions (e.g., delegation before file is flushed).
+			// Return with empty apiConversationHistory instead of deleting the task.
+			// The task's metadata is still valid and should be preserved.
+			this.log(
+				`[getTaskWithId] Task ${id} exists in history but API conversation file not found. Returning with empty history.`,
+			)
+			return {
+				historyItem,
+				taskDirPath,
+				apiConversationHistoryFilePath,
+				uiMessagesFilePath,
+				apiConversationHistory: [],
+			}
 		}
 
-		// if we tried to get a task that doesn't exist, remove it from state
-		// FIXME: this seems to happen sometimes when the json file doesnt save to disk for some reason
+		// Only delete from state if historyItem truly doesn't exist
 		await this.deleteTaskFromState(id)
 		throw new Error("Task not found")
 	}

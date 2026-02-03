@@ -592,4 +592,58 @@ describe("ClineProvider Task History Synchronization", () => {
 			expect(state.taskHistory.some((item: HistoryItem) => item.workspace === "/different/workspace")).toBe(true)
 		})
 	})
+
+	describe("getTaskWithId", () => {
+		it("returns task with empty apiConversationHistory when file does not exist but historyItem exists (EXT-696 fix)", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
+
+			const historyItem = createHistoryItem({
+				id: "delegated-parent-task",
+				task: "Parent task that was delegated",
+			})
+
+			// Add the task to history
+			await provider.updateTaskHistory(historyItem)
+
+			// Mock fileExistsAtPath to return false (simulating race condition during delegation)
+			const fsUtils = await import("../../../utils/fs")
+			const fileExistsSpy = vi.spyOn(fsUtils, "fileExistsAtPath").mockResolvedValue(false)
+
+			// Track if deleteTaskFromState was called
+			const deleteTaskSpy = vi.spyOn(provider, "deleteTaskFromState")
+
+			// Call getTaskWithId
+			const result = await provider.getTaskWithId("delegated-parent-task")
+
+			// Should return the task with empty API conversation history, NOT delete it
+			expect(result.historyItem.id).toBe("delegated-parent-task")
+			expect(result.historyItem.task).toBe("Parent task that was delegated")
+			expect(result.apiConversationHistory).toEqual([])
+
+			// Should NOT have called deleteTaskFromState
+			expect(deleteTaskSpy).not.toHaveBeenCalled()
+
+			// Clean up
+			fileExistsSpy.mockRestore()
+			deleteTaskSpy.mockRestore()
+		})
+
+		it("throws error and deletes task when historyItem does not exist", async () => {
+			await provider.resolveWebviewView(mockWebviewView)
+			provider.isViewLaunched = true
+
+			// Track if deleteTaskFromState was called
+			const deleteTaskSpy = vi.spyOn(provider, "deleteTaskFromState").mockResolvedValue()
+
+			// Call getTaskWithId with a task that doesn't exist
+			await expect(provider.getTaskWithId("non-existent-task")).rejects.toThrow("Task not found")
+
+			// Should have called deleteTaskFromState
+			expect(deleteTaskSpy).toHaveBeenCalledWith("non-existent-task")
+
+			// Clean up
+			deleteTaskSpy.mockRestore()
+		})
+	})
 })
