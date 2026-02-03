@@ -958,7 +958,9 @@
 		"providerNotAllowed": "O provedor '{{provider}}' não é permitido pela sua organização",
 		"modelNotAllowed": "O modelo '{{model}}' não é permitido para o provedor '{{provider}}' pela sua organização",
 		"profileInvalid": "Este perfil contém um provedor ou modelo que não é permitido pela sua organização",
-		"qwenCodeOauthPath": "Você deve fornecer um caminho válido de credenciais OAuth"
+		"qwenCodeOauthPath": "Você deve fornecer um caminho válido de credenciais OAuth",
+		"azureResourceName": "Você deve fornecer um nome de recurso do Azure.",
+		"azureDeploymentName": "Você deve fornecer um nome de implantação do Azure."
 	},
 	"placeholders": {
 		"apiKey": "Digite a chave API...",

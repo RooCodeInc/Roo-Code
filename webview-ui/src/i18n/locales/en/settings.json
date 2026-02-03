@@ -1000,7 +1000,9 @@
 		"providerNotAllowed": "Provider '{{provider}}' is not allowed by your organization",
 		"modelNotAllowed": "Model '{{model}}' is not allowed for provider '{{provider}}' by your organization",
 		"profileInvalid": "This profile contains a provider or model that is not allowed by your organization",
-		"qwenCodeOauthPath": "You must provide a valid OAuth credentials path."
+		"qwenCodeOauthPath": "You must provide a valid OAuth credentials path.",
+		"azureResourceName": "You must provide an Azure resource name.",
+		"azureDeploymentName": "You must provide an Azure deployment name."
 	},
 	"placeholders": {
 		"apiKey": "Enter API Key...",

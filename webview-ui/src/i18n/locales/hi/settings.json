@@ -958,7 +958,9 @@
 		"providerNotAllowed": "प्रदाता '{{provider}}' आपके संगठन द्वारा अनुमत नहीं है",
 		"modelNotAllowed": "मॉडल '{{model}}' प्रदाता '{{provider}}' के लिए आपके संगठन द्वारा अनुमत नहीं है",
 		"profileInvalid": "इस प्रोफ़ाइल में एक प्रदाता या मॉडल शामिल है जो आपके संगठन द्वारा अनुमत नहीं है",
-		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा"
+		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा",
+		"azureResourceName": "आपको एक Azure संसाधन नाम प्रदान करना होगा।",
+		"azureDeploymentName": "आपको एक Azure परिनियोजन नाम प्रदान करना होगा।"
 	},
 	"placeholders": {
 		"apiKey": "API कुंजी दर्ज करें...",
