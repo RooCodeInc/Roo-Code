@@ -958,7 +958,9 @@
 		"providerNotAllowed": "Anbieter '{{provider}}' ist von deiner Organisation nicht erlaubt",
 		"modelNotAllowed": "Modell '{{model}}' ist für Anbieter '{{provider}}' von deiner Organisation nicht erlaubt",
 		"profileInvalid": "Dieses Profil enthält einen Anbieter oder ein Modell, das von deiner Organisation nicht erlaubt ist",
-		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben"
+		"qwenCodeOauthPath": "Du musst einen gültigen OAuth-Anmeldedaten-Pfad angeben",
+		"azureResourceName": "Du musst einen Azure-Ressourcennamen angeben.",
+		"azureDeploymentName": "Du musst einen Azure-Bereitstellungsnamen angeben."
 	},
 	"placeholders": {
 		"apiKey": "API-Schlüssel eingeben...",

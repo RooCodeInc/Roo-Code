@@ -155,6 +155,17 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
+		case "azure":
+			if (!apiConfiguration.azureApiKey) {
+				return i18next.t("settings:validation.apiKey")
+			}
+			if (!apiConfiguration.azureResourceName) {
+				return i18next.t("settings:validation.azureResourceName")
+			}
+			if (!apiConfiguration.azureDeploymentName) {
+				return i18next.t("settings:validation.azureDeploymentName")
+			}
+			break
 	}
 
 	return undefined

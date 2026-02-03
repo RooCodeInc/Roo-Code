@@ -958,7 +958,9 @@
 		"providerNotAllowed": "Провайдер '{{provider}}' не разрешен вашей организацией",
 		"modelNotAllowed": "Модель '{{model}}' не разрешена для провайдера '{{provider}}' вашей организацией",
 		"profileInvalid": "Этот профиль содержит провайдера или модель, которые не разрешены вашей организацией",
-		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth"
+		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth",
+		"azureResourceName": "Вы должны указать имя ресурса Azure.",
+		"azureDeploymentName": "Вы должны указать имя развёртывания Azure."
 	},
 	"placeholders": {
 		"apiKey": "Введите API-ключ...",

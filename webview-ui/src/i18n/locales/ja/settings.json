@@ -958,7 +958,9 @@
 		"providerNotAllowed": "プロバイダー「{{provider}}」は組織によって許可されていません",
 		"modelNotAllowed": "モデル「{{model}}」はプロバイダー「{{provider}}」に対して組織によって許可されていません",
 		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
-		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります"
+		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります",
+		"azureResourceName": "Azureリソース名を入力してください。",
+		"azureDeploymentName": "Azureデプロイメント名を入力してください。"
 	},
 	"placeholders": {
 		"apiKey": "API キーを入力...",
