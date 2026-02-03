@@ -52,6 +52,7 @@ describe("skillsMessageHandler", () => {
 	const mockDeleteSkill = vi.fn()
 	const mockMoveSkill = vi.fn()
 	const mockGetSkill = vi.fn()
+	const mockFindSkillByNameAndSource = vi.fn()
 
 	const createMockProvider = (hasSkillsManager: boolean = true): ClineProvider => {
 		const skillsManager = hasSkillsManager
@@ -61,6 +62,7 @@ describe("skillsMessageHandler", () => {
 					deleteSkill: mockDeleteSkill,
 					moveSkill: mockMoveSkill,
 					getSkill: mockGetSkill,
+					findSkillByNameAndSource: mockFindSkillByNameAndSource,
 				}
 			: undefined
 
@@ -158,7 +160,7 @@ describe("skillsMessageHandler", () => {
 			} as WebviewMessage)
 
 			expect(result).toEqual(mockSkills)
-			expect(mockCreateSkill).toHaveBeenCalledWith("new-skill", "project", "New skill description", "code")
+			expect(mockCreateSkill).toHaveBeenCalledWith("new-skill", "project", "New skill description", ["code"])
 		})
 
 		it("returns undefined when required fields are missing", async () => {
@@ -355,7 +357,7 @@ describe("skillsMessageHandler", () => {
 	describe("handleOpenSkillFile", () => {
 		it("opens a skill file successfully", async () => {
 			const provider = createMockProvider(true)
-			mockGetSkill.mockReturnValue(mockSkills[0])
+			mockFindSkillByNameAndSource.mockReturnValue(mockSkills[0])
 
 			await handleOpenSkillFile(provider, {
 				type: "openSkillFile",
@@ -363,13 +365,13 @@ describe("skillsMessageHandler", () => {
 				source: "global",
 			} as WebviewMessage)
 
-			expect(mockGetSkill).toHaveBeenCalledWith("test-skill", "global", undefined)
+			expect(mockFindSkillByNameAndSource).toHaveBeenCalledWith("test-skill", "global")
 			expect(openFile).toHaveBeenCalledWith("/path/to/test-skill/SKILL.md")
 		})
 
 		it("opens a skill file with mode restriction", async () => {
 			const provider = createMockProvider(true)
-			mockGetSkill.mockReturnValue(mockSkills[1])
+			mockFindSkillByNameAndSource.mockReturnValue(mockSkills[1])
 
 			await handleOpenSkillFile(provider, {
 				type: "openSkillFile",
@@ -378,7 +380,7 @@ describe("skillsMessageHandler", () => {
 				skillMode: "code",
 			} as WebviewMessage)
 
-			expect(mockGetSkill).toHaveBeenCalledWith("project-skill", "project", "code")
+			expect(mockFindSkillByNameAndSource).toHaveBeenCalledWith("project-skill", "project")
 			expect(openFile).toHaveBeenCalledWith("/project/.roo/skills/project-skill/SKILL.md")
 		})
 
@@ -416,7 +418,7 @@ describe("skillsMessageHandler", () => {
 
 		it("shows error when skill is not found", async () => {
 			const provider = createMockProvider(true)
-			mockGetSkill.mockReturnValue(undefined)
+			mockFindSkillByNameAndSource.mockReturnValue(undefined)
 
 			await handleOpenSkillFile(provider, {
 				type: "openSkillFile",

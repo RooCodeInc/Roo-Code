@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Gestisci i tuoi comandi slash per eseguire rapidamente flussi di lavoro e azioni personalizzate. <DocsLink>Scopri di più</DocsLink>"
+		"description": "Gestisci i tuoi comandi slash per eseguire rapidamente flussi di lavoro e azioni personalizzate. <DocsLink>Scopri di più</DocsLink>",
+		"workspaceCommands": "Comandi dell'area di lavoro",
+		"globalCommands": "Comandi globali",
+		"noWorkspaceCommands": "Nessun comando in questo progetto ancora.",
+		"noGlobalCommands": "Nessun comando globale ancora.",
+		"addCommand": "Aggiungi comando Slash",
+		"editCommand": "Modifica comando",
+		"deleteCommand": "Elimina comando",
+		"deleteDialog": {
+			"title": "Elimina comando",
+			"description": "Sei sicuro di voler eliminare il comando \"{{name}}\"? Questa azione non può essere annullata.",
+			"confirm": "Elimina",
+			"cancel": "Annulla"
+		},
+		"createDialog": {
+			"title": "Crea nuovo comando Slash",
+			"nameLabel": "Nome",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Solo lettere minuscole, numeri, trattini e sottolineature",
+			"sourceLabel": "Posizione",
+			"create": "Crea",
+			"cancel": "Annulla"
+		},
+		"source": {
+			"global": "Global (disponibile in tutte le aree di lavoro)",
+			"project": "Area di lavoro"
+		},
+		"validation": {
+			"nameRequired": "Il nome è obbligatorio",
+			"nameTooLong": "Il nome deve avere 64 caratteri o meno",
+			"nameInvalid": "Il nome può contenere solo lettere, numeri, trattini e sottolineature"
+		},
+		"footer": "Usa i comandi slash per accedere rapidamente ai prompt e ai flussi di lavoro utilizzati di frequente."
 	},
 	"prompts": {
 		"description": "Configura i prompt di supporto utilizzati per azioni rapide come il miglioramento dei prompt, la spiegazione del codice e la risoluzione dei problemi. Questi prompt aiutano Roo a fornire una migliore assistenza per le attività di sviluppo comuni."
@@ -244,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Richieste massime",
-			"description": "Esegui automaticamente questo numero di richieste API prima di chiedere l'approvazione per continuare con l'attività.",
 			"unlimited": "Illimitato"
 		},
 		"selectOptionsFirst": "Seleziona almeno un'opzione qui sotto per abilitare l'approvazione automatica",
@@ -665,7 +696,6 @@
 				"label": "Numero massimo di messaggi diagnostici",
 				"description": "Numero massimo di messaggi diagnostici da includere per file. Questo limite si applica sia all'inclusione automatica (quando la casella è abilitata) che alle menzioni manuali di @problems. Valori più alti forniscono più contesto ma aumentano l'utilizzo dei token.",
 				"resetTooltip": "Ripristina al valore predefinito (50)",
-				"unlimited": "Messaggi diagnostici illimitati",
 				"unlimitedLabel": "Illimitato"
 			},
 			"delayAfterWrite": {
@@ -900,7 +930,6 @@
 		"simplifiedExplanation": "Puoi modificare le impostazioni dettagliate del modello in seguito."
 	},
 	"footer": {
-		"feedback": "Se hai domande o feedback, sentiti libero di aprire un issue su <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unirti a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Consenti segnalazioni anonime di errori e utilizzo",
 			"description": "Aiuta a migliorare Roo Code inviando dati di utilizzo anonimi e segnalazioni di errori. Questa telemetria non raccoglie codice, prompt o informazioni personali. Consulta la nostra <privacyLink>informativa sulla privacy</privacyLink> per maggiori dettagli."
@@ -997,32 +1026,37 @@
 	},
 	"skills": {
 		"description": "Gestisci le skills che forniscono istruzioni contestuali all'agente. Le skills vengono applicate automaticamente quando rilevanti per le tue attività. <DocsLink>Scopri di più</DocsLink>",
-		"projectSkills": "Skills del Progetto",
+		"workspaceSkills": "Skills dell'area di lavoro",
 		"globalSkills": "Skills Globali",
-		"noProjectSkills": "Nessuna skill di progetto configurata. Creane una per aggiungere capacità specifiche del progetto all'agente.",
+		"noWorkspaceSkills": "Nessuna skill in questo progetto ancora.",
 		"noGlobalSkills": "Nessuna skill globale configurata. Creane una per aggiungere capacità all'agente disponibili in tutti i progetti.",
 		"addSkill": "Aggiungi Skill",
 		"editSkill": "Modifica skill",
 		"deleteSkill": "Elimina skill",
-		"changeMode": "Cambia modalità",
+		"configureModes": "Disponibilità modalità",
 		"modeAny": "Qualsiasi modalità",
+		"modeCount": "{{count}} modalità",
 		"deleteDialog": {
 			"title": "Elimina Skill",
 			"description": "Sei sicuro di voler eliminare la skill \"{{name}}\"? Questa azione non può essere annullata.",
 			"confirm": "Elimina",
 			"cancel": "Annulla"
 		},
+		"modeDialog": {
+			"title": "Configura modalità Skill",
+			"description": "Scegli quali modalità possono utilizzare questa skill",
+			"intro": "Per mantenere il tuo contesto leggero, consigliamo di rendere le skills disponibili solo per le modalità che le richiedono.",
+			"anyMode": "Qualsiasi modalità (disponibile ovunque)",
+			"save": "Salva",
+			"cancel": "Annulla"
+		},
 		"createDialog": {
 			"title": "Crea Nuova Skill",
-			"description": "Definisci un nuovo modello di skill che fornisce istruzioni contestuali all'agente.",
 			"nameLabel": "Nome",
 			"namePlaceholder": "il-mio-nome-skill",
-			"nameHint": "Solo lettere minuscole, numeri e trattini (1-64 caratteri)",
 			"descriptionLabel": "Descrizione",
 			"descriptionPlaceholder": "Descrivi quando questa skill dovrebbe essere utilizzata...",
-			"descriptionHint": "Spiega cosa fa questa skill e quando l'agente dovrebbe applicarla (1-1024 caratteri)",
 			"sourceLabel": "Posizione",
-			"sourceHint": "Scegli se questa skill è disponibile globalmente o solo in questo progetto",
 			"modeLabel": "Modalità (opzionale)",
 			"modePlaceholder": "Qualsiasi modalità",
 			"modeHint": "Limita questa skill a una modalità specifica",
@@ -1040,6 +1074,7 @@
 			"nameInvalid": "Il nome deve contenere 1-64 lettere minuscole, numeri o trattini",
 			"descriptionRequired": "La descrizione è obbligatoria",
 			"descriptionTooLong": "La descrizione deve essere di massimo 1024 caratteri"
-		}
+		},
+		"footer": "Crea le tue skill con la modalità Skill Writer, disponibile in <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

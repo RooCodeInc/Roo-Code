@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Quản lý các lệnh slash của bạn để thực thi nhanh các quy trình công việc và hành động tùy chỉnh. <DocsLink>Tìm hiểu thêm</DocsLink>"
+		"description": "Quản lý các lệnh slash của bạn để thực thi nhanh các quy trình công việc và hành động tùy chỉnh. <DocsLink>Tìm hiểu thêm</DocsLink>",
+		"workspaceCommands": "Lệnh không gian làm việc",
+		"globalCommands": "Lệnh toàn cầu",
+		"noWorkspaceCommands": "Chưa có lệnh trong dự án này.",
+		"noGlobalCommands": "Chưa có lệnh toàn cầu.",
+		"addCommand": "Thêm lệnh Slash",
+		"editCommand": "Chỉnh sửa lệnh",
+		"deleteCommand": "Xóa lệnh",
+		"deleteDialog": {
+			"title": "Xóa lệnh",
+			"description": "Bạn có chắc chắn muốn xóa lệnh \"{{name}}\" không? Không thể hoàn tác hành động này.",
+			"confirm": "Xóa",
+			"cancel": "Hủy"
+		},
+		"createDialog": {
+			"title": "Tạo lệnh Slash mới",
+			"nameLabel": "Tên",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Chỉ chữ cái thường, số, dấu gạch ngang và dấu gạch dưới",
+			"sourceLabel": "Vị trí",
+			"create": "Tạo",
+			"cancel": "Hủy"
+		},
+		"source": {
+			"global": "Toàn cầu (có sẵn ở tất cả các không gian làm việc)",
+			"project": "Không gian làm việc"
+		},
+		"validation": {
+			"nameRequired": "Tên là bắt buộc",
+			"nameTooLong": "Tên phải có 64 ký tự hoặc ít hơn",
+			"nameInvalid": "Tên chỉ có thể chứa chữ cái, số, dấu gạch ngang và dấu gạch dưới"
+		},
+		"footer": "Sử dụng lệnh slash để truy cập nhanh các prompt và quy trình công việc được sử dụng thường xuyên."
 	},
 	"prompts": {
 		"description": "Cấu hình các lời nhắc hỗ trợ được sử dụng cho các hành động nhanh như cải thiện lời nhắc, giải thích mã và khắc phục sự cố. Những lời nhắc này giúp Roo cung cấp hỗ trợ tốt hơn cho các tác vụ phát triển phổ biến."
@@ -244,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Số lượng yêu cầu tối đa",
-			"description": "Tự động thực hiện số lượng API request này trước khi yêu cầu phê duyệt để tiếp tục với nhiệm vụ.",
 			"unlimited": "Không giới hạn"
 		},
 		"selectOptionsFirst": "Chọn ít nhất một tùy chọn bên dưới để bật tự động phê duyệt",
@@ -665,7 +696,6 @@
 				"label": "Thông báo chẩn đoán tối đa",
 				"description": "Số lượng thông báo chẩn đoán tối đa được bao gồm cho mỗi tệp. Giới hạn này áp dụng cho cả việc bao gồm tự động (khi hộp kiểm được bật) và đề cập thủ công @problems. Giá trị cao hơn cung cấp nhiều ngữ cảnh hơn nhưng tăng mức sử dụng token.",
 				"resetTooltip": "Đặt lại về giá trị mặc định (50)",
-				"unlimited": "Thông báo chẩn đoán không giới hạn",
 				"unlimitedLabel": "Không giới hạn"
 			},
 			"delayAfterWrite": {
@@ -900,7 +930,6 @@
 		"simplifiedExplanation": "Bạn có thể điều chỉnh cài đặt mô hình chi tiết sau."
 	},
 	"footer": {
-		"feedback": "Nếu bạn có bất kỳ câu hỏi hoặc phản hồi nào, vui lòng mở một vấn đề tại <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> hoặc tham gia <redditLink>reddit.com/r/RooCode</redditLink> hoặc <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Cho phép báo cáo lỗi và sử dụng ẩn danh",
 			"description": "Giúp cải thiện Roo Code bằng cách gửi dữ liệu sử dụng ẩn danh và báo cáo lỗi. Telemetry này không thu thập mã, prompt hoặc thông tin cá nhân. Xem <privacyLink>chính sách bảo mật</privacyLink> của chúng tôi để biết thêm chi tiết. Bạn có thể tắt tính năng này bất cứ lúc nào."
@@ -997,32 +1026,37 @@
 	},
 	"skills": {
 		"description": "Quản lý các skill cung cấp hướng dẫn theo ngữ cảnh cho agent. Các skill được áp dụng tự động khi chúng liên quan đến nhiệm vụ của bạn. <DocsLink>Tìm hiểu thêm</DocsLink>",
-		"projectSkills": "Skills Dự Án",
+		"workspaceSkills": "Kỹ năng không gian làm việc",
 		"globalSkills": "Skills Toàn Cục",
-		"noProjectSkills": "Không có skill dự án nào được cấu hình. Tạo một skill để thêm khả năng agent cụ thể cho dự án.",
+		"noWorkspaceSkills": "Chưa có kỹ năng trong dự án này.",
 		"noGlobalSkills": "Không có skill toàn cục nào được cấu hình. Tạo một skill để thêm khả năng agent có sẵn trong tất cả các dự án.",
 		"addSkill": "Thêm Skill",
 		"editSkill": "Chỉnh sửa skill",
 		"deleteSkill": "Xóa skill",
-		"changeMode": "Thay đổi chế độ",
+		"configureModes": "Tính khả dụng của chế độ",
 		"modeAny": "Bất kỳ chế độ nào",
+		"modeCount": "{{count}} chế độ",
 		"deleteDialog": {
 			"title": "Xóa Skill",
 			"description": "Bạn có chắc chắn muốn xóa skill \"{{name}}\" không? Hành động này không thể hoàn tác.",
 			"confirm": "Xóa",
 			"cancel": "Hủy"
 		},
+		"modeDialog": {
+			"title": "Cấu hình chế độ Skill",
+			"description": "Chọn chế độ nào có thể sử dụng skill này",
+			"intro": "Để giữ bối cảnh của bạn nhẹ, chúng tôi khuyên bạn nên chỉ cung cấp các kỹ năng cho các chế độ cần chúng.",
+			"anyMode": "Bất kỳ chế độ nào (có sẵn ở mọi nơi)",
+			"save": "Lưu",
+			"cancel": "Hủy"
+		},
 		"createDialog": {
 			"title": "Tạo Skill Mới",
-			"description": "Xác định một mẫu skill mới cung cấp hướng dẫn theo ngữ cảnh cho agent.",
 			"nameLabel": "Tên",
 			"namePlaceholder": "ten-skill-cua-toi",
-			"nameHint": "Chỉ chữ thường, số và dấu gạch ngang (1-64 ký tự)",
 			"descriptionLabel": "Mô tả",
 			"descriptionPlaceholder": "Mô tả khi nào nên sử dụng skill này...",
-			"descriptionHint": "Giải thích skill này làm gì và khi nào agent nên áp dụng nó (1-1024 ký tự)",
 			"sourceLabel": "Vị trí",
-			"sourceHint": "Chọn xem skill này có sẵn toàn cục hay chỉ trong dự án này",
 			"modeLabel": "Chế độ (tùy chọn)",
 			"modePlaceholder": "Bất kỳ chế độ nào",
 			"modeHint": "Hạn chế skill này cho một chế độ cụ thể",
@@ -1040,6 +1074,7 @@
 			"nameInvalid": "Tên phải là 1-64 chữ thường, số hoặc dấu gạch ngang",
 			"descriptionRequired": "Mô tả là bắt buộc",
 			"descriptionTooLong": "Mô tả phải có tối đa 1024 ký tự"
-		}
+		},
+		"footer": "Tạo các skill của riêng bạn với chế độ Skill Writer, có sẵn tại <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

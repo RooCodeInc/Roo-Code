@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>"
+		"description": "管理您的斜線命令，以便快速執行自訂工作流程和動作。 <DocsLink>了解更多</DocsLink>",
+		"workspaceCommands": "工作區命令",
+		"globalCommands": "全域命令",
+		"noWorkspaceCommands": "此專案中還沒有命令。",
+		"noGlobalCommands": "還沒有全域命令。",
+		"addCommand": "新增斜線命令",
+		"editCommand": "編輯命令",
+		"deleteCommand": "刪除命令",
+		"deleteDialog": {
+			"title": "刪除命令",
+			"description": "您確定要刪除命令 \"{{name}}\" 嗎？此動作無法復原。",
+			"confirm": "刪除",
+			"cancel": "取消"
+		},
+		"createDialog": {
+			"title": "建立新斜線命令",
+			"nameLabel": "名稱",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "僅限小寫字母、數字、連字號和底線",
+			"sourceLabel": "位置",
+			"create": "建立",
+			"cancel": "取消"
+		},
+		"source": {
+			"global": "全域（可在所有工作區中使用）",
+			"project": "工作區"
+		},
+		"validation": {
+			"nameRequired": "名稱為必填項",
+			"nameTooLong": "名稱必須為 64 個字元或更少",
+			"nameInvalid": "名稱只能包含字母、數字、連字號和底線"
+		},
+		"footer": "使用斜線命令快速存取經常使用的提示詞和工作流程。"
 	},
 	"ui": {
 		"collapseThinking": {
@@ -992,44 +1024,39 @@
 			"cacheReads": "快取讀取"
 		}
 	},
-	"ui": {
-		"collapseThinking": {
-			"label": "預設折疊「思考」訊息",
-			"description": "啟用後，「思考」塊將預設折疊，直到您與其互動"
-		},
-		"requireCtrlEnterToSend": {
-			"label": "需要 {{primaryMod}}+Enter 傳送訊息",
-			"description": "啟用後，必須按 {{primaryMod}}+Enter 傳送訊息，而不只是 Enter"
-		}
-	},
 	"skills": {
 		"description": "管理為代理提供上下文指令的技能。技能會在與您的任務相關時自動套用。<DocsLink>深入了解</DocsLink>",
-		"projectSkills": "專案技能",
+		"workspaceSkills": "工作區技能",
 		"globalSkills": "全域技能",
-		"noProjectSkills": "未設定專案技能。建立一個以新增專案特定的代理功能。",
+		"noWorkspaceSkills": "此專案中還沒有技能。",
 		"noGlobalSkills": "未設定全域技能。建立一個以新增在所有專案中可用的代理功能。",
 		"addSkill": "新增技能",
 		"editSkill": "編輯技能",
 		"deleteSkill": "刪除技能",
-		"changeMode": "變更模式",
+		"configureModes": "模式可用性",
 		"modeAny": "任意模式",
+		"modeCount": "{{count}} 種模式",
 		"deleteDialog": {
 			"title": "刪除技能",
 			"description": "您確定要刪除技能「{{name}}」嗎？此動作無法復原。",
 			"confirm": "刪除",
 			"cancel": "取消"
 		},
+		"modeDialog": {
+			"title": "設定技能模式",
+			"description": "選擇哪些模式可以使用此技能",
+			"intro": "為了保持您的上下文簡潔，我們建議只在需要的模式中提供技能。",
+			"anyMode": "任何模式（隨處可用）",
+			"save": "儲存",
+			"cancel": "取消"
+		},
 		"createDialog": {
 			"title": "建立新技能",
-			"description": "定義新的技能範本，為代理提供上下文指令。",
 			"nameLabel": "名稱",
 			"namePlaceholder": "my-skill-name",
-			"nameHint": "僅限小寫字母、數字和連字號（1-64個字元）",
 			"descriptionLabel": "說明",
 			"descriptionPlaceholder": "描述何時應使用此技能...",
-			"descriptionHint": "說明此技能的作用以及代理應何時套用它（1-1024個字元）",
 			"sourceLabel": "位置",
-			"sourceHint": "選擇此技能是全域可用還是僅在此專案中可用",
 			"modeLabel": "模式（選填）",
 			"modePlaceholder": "任何模式",
 			"modeHint": "將此技能限制為特定模式",
@@ -1047,6 +1074,7 @@
 			"nameInvalid": "名稱必須為1-64個小寫字母、數字或連字號",
 			"descriptionRequired": "說明為必填",
 			"descriptionTooLong": "說明不得超過1024個字元"
-		}
+		},
+		"footer": "使用技能編寫器模式建立您自己的技能，可在 <MarketplaceLink>模式市集</MarketplaceLink> 中取得。"
 	}
 }

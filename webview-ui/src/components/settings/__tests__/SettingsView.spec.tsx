@@ -121,6 +121,26 @@ vi.mock("@/components/ui", () => ({
 			Toggle
 		</button>
 	),
+	Checkbox: ({ checked, onCheckedChange, id, className, ...props }: any) => (
+		<input
+			type="checkbox"
+			checked={checked}
+			onChange={(e) => onCheckedChange?.(e.target.checked)}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
+	Textarea: ({ value, onChange, placeholder, id, className, ...props }: any) => (
+		<textarea
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
 	Popover: ({ children }: any) => <div data-testid="popover">{children}</div>,
 	PopoverTrigger: ({ children }: any) => <div data-testid="popover-trigger">{children}</div>,
 	PopoverContent: ({ children }: any) => <div data-testid="popover-content">{children}</div>,

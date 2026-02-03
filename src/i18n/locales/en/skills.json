@@ -8,6 +8,7 @@
 		"not_found": "Skill \"{{name}}\" not found in {{source}}{{modeInfo}}",
 		"missing_create_fields": "Missing required fields: skillName, source, or skillDescription",
 		"missing_move_fields": "Missing required fields: skillName or source",
+		"missing_update_modes_fields": "Missing required fields: skillName or source",
 		"manager_unavailable": "Skills manager not available",
 		"missing_delete_fields": "Missing required fields: skillName or source",
 		"skill_not_found": "Skill \"{{name}}\" not found",

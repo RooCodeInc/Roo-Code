@@ -37,6 +37,7 @@ import {
 	handleCreateSkill,
 	handleDeleteSkill,
 	handleMoveSkill,
+	handleUpdateSkillModes,
 	handleOpenSkillFile,
 } from "./skillsMessageHandler"
 import { changeLanguage, t } from "../../i18n"
@@ -3005,6 +3006,10 @@ export const webviewMessageHandler = async (
 		}
 		case "moveSkill": {
 			await handleMoveSkill(provider, message)
+			break
+		}
+		case "updateSkillModes": {
+			await handleUpdateSkillModes(provider, message)
 			break
 		}
 		case "openSkillFile": {

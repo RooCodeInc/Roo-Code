@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Gerencie seus comandos de barra para executar rapidamente fluxos de trabalho e ações personalizadas. <DocsLink>Saiba mais</DocsLink>"
+		"description": "Gerencie seus comandos de barra para executar rapidamente fluxos de trabalho e ações personalizadas. <DocsLink>Saiba mais</DocsLink>",
+		"workspaceCommands": "Comandos do espaço de trabalho",
+		"globalCommands": "Comandos globais",
+		"noWorkspaceCommands": "Sem comandos neste projeto ainda.",
+		"noGlobalCommands": "Sem comandos globais ainda.",
+		"addCommand": "Adicionar comando de barra",
+		"editCommand": "Editar comando",
+		"deleteCommand": "Excluir comando",
+		"deleteDialog": {
+			"title": "Excluir comando",
+			"description": "Tem certeza de que deseja excluir o comando \"{{name}}\"? Esta ação não pode ser desfeita.",
+			"confirm": "Excluir",
+			"cancel": "Cancelar"
+		},
+		"createDialog": {
+			"title": "Criar novo comando de barra",
+			"nameLabel": "Nome",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Apenas letras minúsculas, números, hífens e sublinhados",
+			"sourceLabel": "Localização",
+			"create": "Criar",
+			"cancel": "Cancelar"
+		},
+		"source": {
+			"global": "Global (disponível em todos os espaços de trabalho)",
+			"project": "Espaço de trabalho"
+		},
+		"validation": {
+			"nameRequired": "Nome é obrigatório",
+			"nameTooLong": "O nome deve ter 64 caracteres ou menos",
+			"nameInvalid": "O nome pode conter apenas letras, números, hífens e sublinhados"
+		},
+		"footer": "Use comandos de barra para acesso rápido a prompts e fluxos de trabalho usados com frequência."
 	},
 	"prompts": {
 		"description": "Configure prompts de suporte usados para ações rápidas como melhorar prompts, explicar código e corrigir problemas. Esses prompts ajudam o Roo a fornecer melhor assistência para tarefas comuns de desenvolvimento."
@@ -244,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Máximo de Solicitações",
-			"description": "Fazer automaticamente este número de requisições à API antes de pedir aprovação para continuar com a tarefa.",
 			"unlimited": "Ilimitado"
 		},
 		"selectOptionsFirst": "Selecione pelo menos uma opção abaixo para habilitar a aprovação automática",
@@ -665,7 +696,6 @@
 				"label": "Máximo de mensagens de diagnóstico",
 				"description": "Número máximo de mensagens de diagnóstico a serem incluídas por arquivo. Este limite se aplica tanto à inclusão automática (quando a caixa de seleção está ativada) quanto às menções manuais de @problems. Valores mais altos fornecem mais contexto, mas aumentam o uso de tokens.",
 				"resetTooltip": "Redefinir para o valor padrão (50)",
-				"unlimited": "Mensagens de diagnóstico ilimitadas",
 				"unlimitedLabel": "Ilimitado"
 			},
 			"delayAfterWrite": {
@@ -900,7 +930,6 @@
 		"simplifiedExplanation": "Você pode ajustar as configurações detalhadas do modelo mais tarde."
 	},
 	"footer": {
-		"feedback": "Se tiver alguma dúvida ou feedback, sinta-se à vontade para abrir um problema em <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou juntar-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permitir relatórios anônimos de erros e uso",
 			"description": "Ajude a melhorar o Roo Code enviando dados de uso anônimos e relatórios de erros. Esta telemetria não coleta código, prompts ou informações pessoais. Consulte nossa <privacyLink>política de privacidade</privacyLink> para mais detalhes."
@@ -997,32 +1026,37 @@
 	},
 	"skills": {
 		"description": "Gerencie skills que fornecem instruções contextuais ao agente. As skills são aplicadas automaticamente quando relevantes para suas tarefas. <DocsLink>Saiba mais</DocsLink>",
-		"projectSkills": "Skills do Projeto",
+		"workspaceSkills": "Skills do espaço de trabalho",
 		"globalSkills": "Skills Globais",
-		"noProjectSkills": "Nenhuma skill de projeto configurada. Crie uma para adicionar capacidades específicas do projeto ao agente.",
+		"noWorkspaceSkills": "Sem skills neste projeto ainda.",
 		"noGlobalSkills": "Nenhuma skill global configurada. Crie uma para adicionar capacidades ao agente disponíveis em todos os projetos.",
 		"addSkill": "Adicionar Skill",
 		"editSkill": "Editar skill",
 		"deleteSkill": "Excluir skill",
-		"changeMode": "Alterar modo",
+		"configureModes": "Disponibilidade de modo",
 		"modeAny": "Qualquer modo",
+		"modeCount": "{{count}} modos",
 		"deleteDialog": {
 			"title": "Excluir Skill",
 			"description": "Tem certeza de que deseja excluir a skill \"{{name}}\"? Esta ação não pode ser desfeita.",
 			"confirm": "Excluir",
 			"cancel": "Cancelar"
 		},
+		"modeDialog": {
+			"title": "Configurar modos de Skill",
+			"description": "Escolha quais modos podem usar esta skill",
+			"intro": "Para manter seu contexto leve, recomendamos tornar skills disponíveis apenas para os modos que os precisam.",
+			"anyMode": "Qualquer modo (disponível em qualquer lugar)",
+			"save": "Salvar",
+			"cancel": "Cancelar"
+		},
 		"createDialog": {
 			"title": "Criar Nova Skill",
-			"description": "Defina um novo modelo de skill que fornece instruções contextuais ao agente.",
 			"nameLabel": "Nome",
 			"namePlaceholder": "meu-nome-de-skill",
-			"nameHint": "Apenas letras minúsculas, números e hífens (1-64 caracteres)",
 			"descriptionLabel": "Descrição",
 			"descriptionPlaceholder": "Descreva quando esta skill deve ser usada...",
-			"descriptionHint": "Explique o que esta skill faz e quando o agente deve aplicá-la (1-1024 caracteres)",
 			"sourceLabel": "Localização",
-			"sourceHint": "Escolha se esta skill está disponível globalmente ou apenas neste projeto",
 			"modeLabel": "Modo (opcional)",
 			"modePlaceholder": "Qualquer modo",
 			"modeHint": "Restrinja esta skill a um modo específico",
@@ -1040,6 +1074,7 @@
 			"nameInvalid": "O nome deve ter 1-64 letras minúsculas, números ou hífens",
 			"descriptionRequired": "A descrição é obrigatória",
 			"descriptionTooLong": "A descrição deve ter no máximo 1024 caracteres"
-		}
+		},
+		"footer": "Crie suas próprias skills com o modo Skill Writer, disponível em <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }
