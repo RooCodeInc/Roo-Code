@@ -17,6 +17,7 @@ import {
 	vertexModels,
 	xaiModels,
 	groqModels,
+	harmonyModels,
 	vscodeLlmModels,
 	vscodeLlmDefaultModelId,
 	openAiCodexModels,
@@ -177,6 +178,11 @@ function getSelectedModel({
 		case "groq": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = groqModels[id as keyof typeof groqModels]
+			return { id, info }
+		}
+		case "harmony": {
+			const id = apiConfiguration.apiModelId ?? defaultModelId
+			const info = harmonyModels[id as keyof typeof harmonyModels]
 			return { id, info }
 		}
 		case "huggingface": {

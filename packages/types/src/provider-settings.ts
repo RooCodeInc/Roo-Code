@@ -13,6 +13,7 @@ import {
 	fireworksModels,
 	geminiModels,
 	groqModels,
+	harmonyModels,
 	ioIntelligenceModels,
 	mistralModels,
 	moonshotModels,
@@ -129,6 +130,7 @@ export const providerNames = [
 	"gemini",
 	"gemini-cli",
 	"groq",
+	"harmony",
 	"mistral",
 	"moonshot",
 	"minimax",
@@ -352,6 +354,11 @@ const groqSchema = apiModelIdProviderModelSchema.extend({
 	groqApiKey: z.string().optional(),
 })
 
+const harmonySchema = apiModelIdProviderModelSchema.extend({
+	harmonyApiKey: z.string().optional(),
+	harmonyBaseUrl: z.string().optional(),
+})
+
 const huggingFaceSchema = baseProviderSettingsSchema.extend({
 	huggingFaceApiKey: z.string().optional(),
 	huggingFaceModelId: z.string().optional(),
@@ -445,6 +452,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	fakeAiSchema.merge(z.object({ apiProvider: z.literal("fake-ai") })),
 	xaiSchema.merge(z.object({ apiProvider: z.literal("xai") })),
 	groqSchema.merge(z.object({ apiProvider: z.literal("groq") })),
+	harmonySchema.merge(z.object({ apiProvider: z.literal("harmony") })),
 	basetenSchema.merge(z.object({ apiProvider: z.literal("baseten") })),
 	huggingFaceSchema.merge(z.object({ apiProvider: z.literal("huggingface") })),
 	chutesSchema.merge(z.object({ apiProvider: z.literal("chutes") })),
@@ -486,6 +494,7 @@ export const providerSettingsSchema = z.object({
 	...fakeAiSchema.shape,
 	...xaiSchema.shape,
 	...groqSchema.shape,
+	...harmonySchema.shape,
 	...basetenSchema.shape,
 	...huggingFaceSchema.shape,
 	...chutesSchema.shape,
@@ -572,6 +581,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	requesty: "requestyModelId",
 	xai: "apiModelId",
 	groq: "apiModelId",
+	harmony: "apiModelId",
 	baseten: "apiModelId",
 	chutes: "apiModelId",
 	litellm: "litellmModelId",
@@ -660,6 +670,7 @@ export const MODELS_BY_PROVIDER: Record<
 		models: Object.keys(geminiModels),
 	},
 	groq: { id: "groq", label: "Groq", models: Object.keys(groqModels) },
+	harmony: { id: "harmony", label: "Harmony", models: Object.keys(harmonyModels) },
 	"io-intelligence": {
 		id: "io-intelligence",
 		label: "IO Intelligence",

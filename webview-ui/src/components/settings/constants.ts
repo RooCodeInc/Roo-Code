@@ -21,6 +21,7 @@ import {
 	featherlessModels,
 	minimaxModels,
 	basetenModels,
+	harmonyModels,
 } from "@roo-code/types"
 
 export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, ModelInfo>>> = {
@@ -31,6 +32,7 @@ export const MODELS_BY_PROVIDER: Partial<Record<ProviderName, Record<string, Mod
 	doubao: doubaoModels,
 	moonshot: moonshotModels,
 	gemini: geminiModels,
+	harmony: harmonyModels,
 	mistral: mistralModels,
 	"openai-native": openAiNativeModels,
 	"openai-codex": openAiCodexModels,
@@ -52,6 +54,7 @@ export const PROVIDERS = [
 	{ value: "anthropic", label: "Anthropic", proxy: false },
 	{ value: "cerebras", label: "Cerebras", proxy: false },
 	{ value: "gemini", label: "Google Gemini", proxy: false },
+	{ value: "harmony", label: "Harmony", proxy: false },
 	{ value: "doubao", label: "Doubao", proxy: false },
 	{ value: "deepseek", label: "DeepSeek", proxy: false },
 	{ value: "moonshot", label: "Moonshot", proxy: false },
