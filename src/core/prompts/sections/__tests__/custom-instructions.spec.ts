@@ -1635,7 +1635,7 @@ describe("Rules directory reading", () => {
 		expect(result).toContain("Local overrides from AGENTS.local.md")
 	})
 
-	it("should not load AGENTS.local.md when base AGENTS.md does not exist", async () => {
+	it("should load AGENTS.local.md even when base AGENTS.md does not exist", async () => {
 		// Simulate no .roo/rules-test-mode directory
 		statMock.mockRejectedValueOnce({ code: "ENOENT" })
 
@@ -1672,9 +1672,9 @@ describe("Rules directory reading", () => {
 			},
 		)
 
-		// Should NOT contain AGENTS.local.md content since there's no base AGENTS.md
-		expect(result).not.toContain("AGENTS.local.md")
-		expect(result).not.toContain("Local overrides without base file")
+		// Should contain AGENTS.local.md content even without base AGENTS.md
+		expect(result).toContain("# Agent Rules Local (AGENTS.local.md):")
+		expect(result).toContain("Local overrides without base file")
 	})
 
 	it("should load AGENTS.md without .local.md when local file does not exist", async () => {
