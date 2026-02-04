@@ -1358,6 +1358,27 @@ export class ClineProvider
 			}
 		}
 
+		// Create incidents directory when switching to oncall mode
+		if (newMode === "oncall") {
+			try {
+				const workspacePath = getWorkspacePath()
+				if (workspacePath) {
+					const incidentsDir = path.join(workspacePath, "incidents")
+					const pagesDir = path.join(incidentsDir, "pages")
+					const escalationsDir = path.join(incidentsDir, "escalations")
+
+					// Create directories if they don't exist
+					await fs.mkdir(pagesDir, { recursive: true })
+					await fs.mkdir(escalationsDir, { recursive: true })
+				}
+			} catch (error) {
+				// Log error but don't fail mode switch if directory creation fails
+				this.log(
+					`Failed to create incidents directory when switching to oncall mode: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+		}
+
 		await this.postStateToWebview()
 	}
 
