@@ -70,7 +70,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		` PREFER indentation mode when you have a specific line number from search results, error messages, or definition lookups - it guarantees complete, syntactically valid code blocks without mid-function truncation.` +
 		` IMPORTANT: Indentation mode requires anchor_line to be useful. Without it, only header content (imports) is returned.`
 
-	const limitNote = ` By default, returns up to ${DEFAULT_LINE_LIMIT} lines per file. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
+	const limitNote = ` Default limit is ${DEFAULT_LINE_LIMIT} lines - use this default by omitting the limit parameter. Only specify a smaller limit if you know the file exceeds ${DEFAULT_LINE_LIMIT} lines and you need pagination. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
 
 	const description =
 		descriptionIntro +
@@ -117,7 +117,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 			type: "string",
 			enum: ["slice", "indentation"],
 			description:
-				"Reading mode. 'slice' (default): read lines sequentially with offset/limit - use for general file exploration or when you don't have a target line number (may truncate code mid-function). 'indentation': extract complete semantic code blocks containing anchor_line - PREFERRED when you have a line number because it guarantees complete, valid code blocks. WARNING: Do not use indentation mode without specifying indentation.anchor_line, or you will only get header content.",
+				"Reading mode. 'slice' (default): read lines sequentially with offset/limit - use for general file exploration or when you don't have a target line number (may truncate code mid-function). 'indentation': extract complete semantic code blocks containing anchor_line - PREFERRED when you have a line number because it guarantees complete, valid code blocks (ignores offset/limit entirely). WARNING: Do not use indentation mode without specifying indentation.anchor_line, or you will only get header content.",
 		},
 		offset: {
 			type: "integer",
@@ -125,7 +125,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		},
 		limit: {
 			type: "integer",
-			description: `Maximum number of lines to return (slice mode, default: ${DEFAULT_LINE_LIMIT})`,
+			description: `Maximum number of lines to return (slice mode). Default is ${DEFAULT_LINE_LIMIT}. Omit this parameter to use the default. Only specify a value if you need pagination for files larger than ${DEFAULT_LINE_LIMIT} lines.`,
 		},
 		indentation: {
 			type: "object",
