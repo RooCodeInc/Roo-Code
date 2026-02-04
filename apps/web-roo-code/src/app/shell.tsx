@@ -1,6 +1,7 @@
 import { getGitHubStars, getVSCodeDownloads } from "@/lib/stats"
 
 import { NavBar, Footer } from "@/components/chromes"
+import { ValentinesBanner } from "@/components/homepage"
 
 // Invalidate cache when a request comes in, at most once every hour.
 export const revalidate = 3600
@@ -10,6 +11,7 @@ export default async function Shell({ children }: { children: React.ReactNode })
 
 	return (
 		<div className="flex min-h-screen flex-col bg-background text-foreground">
+			<ValentinesBanner />
 			<NavBar stars={stars} downloads={downloads} />
 			<main className="flex-1">{children}</main>
 			<Footer />
