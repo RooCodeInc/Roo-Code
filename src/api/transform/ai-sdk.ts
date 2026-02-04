@@ -127,6 +127,10 @@ export function convertToAiSdkMessages(
 			} else if (message.role === "assistant") {
 				const textParts: string[] = []
 				const reasoningParts: string[] = []
+				const reasoningContent = (() => {
+					const maybe = (message as unknown as { reasoning_content?: unknown }).reasoning_content
+					return typeof maybe === "string" && maybe.length > 0 ? maybe : undefined
+				})()
 				const toolCalls: Array<{
 					type: "tool-call"
 					toolCallId: string
@@ -154,6 +158,10 @@ export function convertToAiSdkMessages(
 					// Task stores reasoning as a content block (type: "reasoning") and Anthropic extended
 					// thinking as (type: "thinking"). Convert both to AI SDK's reasoning part.
 					if ((part as unknown as { type?: string }).type === "reasoning") {
+						// If message-level reasoning_content is present, treat it as canonical and
+						// avoid mixing it with content-block reasoning (which can cause duplication).
+						if (reasoningContent) continue
+
 						const text = (part as unknown as { text?: string }).text
 						if (typeof text === "string" && text.length > 0) {
 							reasoningParts.push(text)
@@ -162,6 +170,8 @@ export function convertToAiSdkMessages(
 					}
 
 					if ((part as unknown as { type?: string }).type === "thinking") {
+						if (reasoningContent) continue
+
 						const thinking = (part as unknown as { thinking?: string }).thinking
 						if (typeof thinking === "string" && thinking.length > 0) {
 							reasoningParts.push(thinking)
@@ -176,7 +186,9 @@ export function convertToAiSdkMessages(
 					| { type: "tool-call"; toolCallId: string; toolName: string; input: unknown }
 				> = []
 
-				if (reasoningParts.length > 0) {
+				if (reasoningContent) {
+					content.push({ type: "reasoning", text: reasoningContent })
+				} else if (reasoningParts.length > 0) {
 					content.push({ type: "reasoning", text: reasoningParts.join("") })
 				}
 
