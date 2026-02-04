@@ -2,6 +2,9 @@ import initSqlJs, { Database, QueryExecResult } from "sql.js"
 import * as fs from "fs/promises"
 import * as path from "path"
 
+// Maximum number of backup files to keep
+const MAX_BACKUPS = 3
+
 export interface StorageAdapter {
 	initialize(): Promise<void>
 	close(): Promise<void>
@@ -25,6 +28,91 @@ export class SQLiteAdapter implements StorageAdapter {
 		}
 	}
 
+	/**
+	 * Create a backup of the current database file
+	 */
+	private async createBackup(): Promise<void> {
+		if (this.isMemory || !this.dbPath) return
+
+		try {
+			// Export current database
+			const data = this.db!.export()
+			const backupPath = `${this.dbPath}.backup.${Date.now()}`
+			await fs.writeFile(backupPath, Buffer.from(data))
+
+			// Clean up old backups
+			const dir = path.dirname(this.dbPath)
+			const baseName = path.basename(this.dbPath)
+			const backups = (await fs.readdir(dir))
+				.filter(f => f.startsWith(`${baseName}.backup.`))
+				.map(f => ({
+					name: f,
+					time: parseInt(f.split(".").pop() || "0")
+				}))
+				.sort((a, b) => b.time - a.time)
+
+			// Remove excess backups
+			for (const backup of backups.slice(MAX_BACKUPS)) {
+				try {
+					await fs.unlink(path.join(dir, backup.name))
+				} catch (e) {
+					// Ignore deletion errors
+				}
+			}
+
+			console.log(`[SQLiteAdapter] Created backup at ${backupPath}`)
+		} catch (error) {
+			console.warn("[SQLiteAdapter] Failed to create backup:", error)
+		}
+	}
+
+	/**
+	 * Attempt to recover from a corrupted database file
+	 */
+	private async recoverFromCorruption(SQL: any, data: Buffer | undefined): Promise<Database | null> {
+		if (this.isMemory || !data) return null
+
+		// Try to create a new database and recover data
+		try {
+			// First, try to recover by re-reading and creating new database
+			// This sometimes works if the corruption is minor
+			const tempDb = new SQL.Database(data)
+			
+			// Test if we can execute a simple query
+			tempDb.exec("SELECT name FROM sqlite_master WHERE type='table' LIMIT 1")
+			return tempDb
+		} catch (recoveryError) {
+			console.warn("[SQLiteAdapter] Recovery attempt 1 failed, trying backup restore...")
+		}
+
+		// Try to find and restore from the most recent backup
+		try {
+			const dir = path.dirname(this.dbPath)
+			const baseName = path.basename(this.dbPath)
+			const backups = (await fs.readdir(dir))
+				.filter(f => f.startsWith(`${baseName}.backup.`))
+				.map(f => ({
+					name: f,
+					time: parseInt(f.split(".").pop() || "0")
+				}))
+				.sort((a, b) => b.time - a.time)
+
+			if (backups.length > 0) {
+				const latestBackup = path.join(dir, backups[0].name)
+				const backupData = await fs.readFile(latestBackup)
+				const backupDb = new SQL.Database(backupData)
+				console.log(`[SQLiteAdapter] Restored from backup: ${backups[0].name}`)
+				return backupDb
+			}
+		} catch (backupError) {
+			console.warn("[SQLiteAdapter] Backup restore failed:", backupError)
+		}
+
+		// Last resort: create a new database
+		console.log("[SQLiteAdapter] Creating new database (data will be lost)")
+		return new SQL.Database()
+	}
+
 	async initialize(): Promise<void> {
 		try {
 			const SQL = await initSqlJs()
@@ -41,7 +129,36 @@ export class SQLiteAdapter implements StorageAdapter {
 				} catch (e) {
 					// File doesn't exist, create new
 				}
-				this.db = new SQL.Database(data)
+
+				// Try to create database with existing data
+				try {
+					this.db = data ? new SQL.Database(data) : new SQL.Database()
+				} catch (dbError: any) {
+					// Database is corrupted, attempt recovery
+					console.warn("[SQLiteAdapter] Database corruption detected, attempting recovery...", dbError?.message || dbError)
+
+					// Create backup of corrupted file before recovery
+					if (data) {
+						const corruptedPath = `${this.dbPath}.corrupted.${Date.now()}`
+						await fs.writeFile(corruptedPath, data)
+						console.log(`[SQLiteAdapter] Corrupted file saved to: ${corruptedPath}`)
+					}
+
+					// Attempt recovery
+					const recoveredDb = await this.recoverFromCorruption(SQL, data)
+					if (recoveredDb) {
+						this.db = recoveredDb
+					} else {
+						// Final fallback: create new database
+						this.db = new SQL.Database()
+						console.log("[SQLiteAdapter] Created new database after failed recovery")
+					}
+				}
+			}
+
+			// Create backup before migrations
+			if (!this.isMemory && this.db) {
+				await this.createBackup()
 			}
 
 			await this.migrate()
@@ -56,6 +173,8 @@ export class SQLiteAdapter implements StorageAdapter {
 	async close(): Promise<void> {
 		if (this.db) {
 			if (!this.isMemory) {
+				// Create final backup before closing
+				await this.createBackup()
 				await this.save()
 			}
 			this.db.close()
