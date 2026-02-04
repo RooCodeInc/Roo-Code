@@ -15,6 +15,7 @@ import {
 	type ModelRecord,
 	type WebviewMessage,
 	type EditQueuedMessagePayload,
+	type GitCommitPushPayload,
 	TelemetryEventName,
 	RooCodeSettings,
 	ExperimentId,
@@ -3686,9 +3687,10 @@ export const webviewMessageHandler = async (
 				}
 
 				// If branch is provided in payload, use it; otherwise ask user to select
+				const gitPushPayload = message.payload as GitCommitPushPayload
 				let selectedBranch: string | undefined
-				if (message.payload?.branch) {
-					selectedBranch = message.payload.branch
+				if (gitPushPayload.branch) {
+					selectedBranch = gitPushPayload.branch
 				} else {
 					// Ask user to select branch
 					selectedBranch = await vscode.window.showQuickPick(branchList, {

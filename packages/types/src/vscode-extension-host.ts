@@ -109,6 +109,9 @@ export interface ExtensionMessage {
 		| "branchWorktreeIncludeResult"
 		| "folderSelected"
 		| "skills"
+		// Git response types
+		| "gitCommitResult"
+		| "terminalOpened"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
@@ -426,6 +429,7 @@ export type AudioType = "notification" | "celebration" | "progress_loop"
 export interface UpdateTodoListPayload {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	todos: any[]
+	branch?: string
 }
 
 export type EditQueuedMessagePayload = Pick<QueuedMessage, "id" | "text" | "images">
@@ -615,6 +619,7 @@ export interface WebviewMessage {
 		// Git response messages (Extension -> Webview)
 		| "gitCommitResult"
 		| "terminalOpened"
+		| "branchWorktreeIncludeResult"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -782,6 +787,8 @@ export type WebViewMessagePayload =
 	| UpdateTodoListPayload
 	| EditQueuedMessagePayload
 	| GitCommitPushPayload
+	| GitCommitResultPayload
+	| TerminalOpenedPayload
 	| GitCommitResultPayload
 	| TerminalOpenedPayload
 
