@@ -38,6 +38,7 @@ import {
 	handleCreateSkill,
 	handleDeleteSkill,
 	handleMoveSkill,
+	handleUpdateSkillModes,
 	handleOpenSkillFile,
 } from "./skillsMessageHandler"
 import { changeLanguage, t } from "../../i18n"
@@ -896,7 +897,7 @@ export const webviewMessageHandler = async (
 
 			// Base candidates (only those handled by this aggregate fetcher)
 			const candidates: { key: RouterName; options: GetModelsOptions }[] = [
-				{ key: "openrouter", options: { provider: "openrouter" } },
+				{ key: "openrouter", options: { provider: "openrouter", baseUrl: apiConfiguration.openRouterBaseUrl } },
 				{
 					key: "requesty",
 					options: {
@@ -3084,6 +3085,10 @@ export const webviewMessageHandler = async (
 		}
 		case "moveSkill": {
 			await handleMoveSkill(provider, message)
+			break
+		}
+		case "updateSkillModes": {
+			await handleUpdateSkillModes(provider, message)
 			break
 		}
 		case "openSkillFile": {

@@ -34,6 +34,36 @@ vi.mock("@/components/ui", () => ({
 			{children}
 		</button>
 	),
+	Checkbox: ({ id, checked, onCheckedChange }: any) => (
+		<input
+			type="checkbox"
+			id={id}
+			checked={checked}
+			data-testid={`checkbox-${id}`}
+			onChange={(e) => onCheckedChange(e.target.checked)}
+		/>
+	),
+	Input: ({ value, onChange, placeholder, id, type, className, ...props }: any) => (
+		<input
+			type={type || "text"}
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
+	Textarea: ({ value, onChange, placeholder, id, className, ...props }: any) => (
+		<textarea
+			value={value}
+			onChange={onChange}
+			placeholder={placeholder}
+			id={id}
+			className={className}
+			{...props}
+		/>
+	),
 	Dialog: ({ children, open }: any) => (
 		<div data-testid="dialog" data-open={open}>
 			{open && children}
@@ -235,7 +265,7 @@ describe("CreateSkillDialog", () => {
 				skillName: "my-skill",
 				source: "project",
 				skillDescription: "My skill description",
-				skillMode: undefined,
+				skillModeSlugs: undefined,
 			})
 		})
 	})
@@ -352,7 +382,7 @@ describe("CreateSkillDialog", () => {
 		expect(screen.getByTestId("select-item-project")).toBeInTheDocument()
 	})
 
-	it("renders mode selection dropdown", () => {
+	it("renders mode selection checkboxes", () => {
 		render(
 			<CreateSkillDialog
 				open={true}
@@ -362,13 +392,95 @@ describe("CreateSkillDialog", () => {
 			/>,
 		)
 
-		// Should have "Any mode" option (uses __any__ sentinel value)
-		expect(screen.getByTestId("select-item-__any__")).toBeInTheDocument()
-		// Should have built-in modes
-		expect(screen.getByTestId("select-item-code")).toBeInTheDocument()
-		expect(screen.getByTestId("select-item-architect")).toBeInTheDocument()
-		// Should have custom modes from state
-		expect(screen.getByTestId("select-item-custom-mode")).toBeInTheDocument()
+		// Should have "Any mode" checkbox (checked by default)
+		expect(screen.getByTestId("checkbox-create-mode-any")).toBeInTheDocument()
+		expect(screen.getByTestId("checkbox-create-mode-any")).toBeChecked()
+		// Should have built-in mode checkboxes
+		expect(screen.getByTestId("checkbox-create-mode-code")).toBeInTheDocument()
+		expect(screen.getByTestId("checkbox-create-mode-architect")).toBeInTheDocument()
+		// Should have custom mode checkbox from state
+		expect(screen.getByTestId("checkbox-create-mode-custom-mode")).toBeInTheDocument()
+	})
+
+	it("unchecks 'Any mode' when a specific mode is selected", () => {
+		render(
+			<CreateSkillDialog
+				open={true}
+				onOpenChange={mockOnOpenChange}
+				onSkillCreated={mockOnSkillCreated}
+				hasWorkspace={true}
+			/>,
+		)
+
+		// Initially "Any mode" is checked
+		expect(screen.getByTestId("checkbox-create-mode-any")).toBeChecked()
+		expect(screen.getByTestId("checkbox-create-mode-code")).not.toBeChecked()
+
+		// Click on "Code" mode checkbox
+		fireEvent.click(screen.getByTestId("checkbox-create-mode-code"))
+
+		// "Any mode" should be unchecked and "Code" should be checked
+		expect(screen.getByTestId("checkbox-create-mode-any")).not.toBeChecked()
+		expect(screen.getByTestId("checkbox-create-mode-code")).toBeChecked()
+	})
+
+	it("reverts to 'Any mode' when all specific modes are unchecked", () => {
+		render(
+			<CreateSkillDialog
+				open={true}
+				onOpenChange={mockOnOpenChange}
+				onSkillCreated={mockOnSkillCreated}
+				hasWorkspace={true}
+			/>,
+		)
+
+		// Select a specific mode
+		fireEvent.click(screen.getByTestId("checkbox-create-mode-code"))
+		expect(screen.getByTestId("checkbox-create-mode-any")).not.toBeChecked()
+		expect(screen.getByTestId("checkbox-create-mode-code")).toBeChecked()
+
+		// Uncheck it
+		fireEvent.click(screen.getByTestId("checkbox-create-mode-code"))
+
+		// Should revert to "Any mode"
+		expect(screen.getByTestId("checkbox-create-mode-any")).toBeChecked()
+		expect(screen.getByTestId("checkbox-create-mode-code")).not.toBeChecked()
+	})
+
+	it("sends selected modes when creating skill with specific modes", async () => {
+		render(
+			<CreateSkillDialog
+				open={true}
+				onOpenChange={mockOnOpenChange}
+				onSkillCreated={mockOnSkillCreated}
+				hasWorkspace={true}
+			/>,
+		)
+
+		const nameInput = screen.getByPlaceholderText("settings:skills.createDialog.namePlaceholder")
+		const descInput = screen.getByPlaceholderText("settings:skills.createDialog.descriptionPlaceholder")
+
+		fireEvent.change(nameInput, { target: { value: "my-skill" } })
+		fireEvent.change(descInput, { target: { value: "My skill description" } })
+
+		// Select "Code" and "Architect" modes
+		fireEvent.click(screen.getByTestId("checkbox-create-mode-code"))
+		fireEvent.click(screen.getByTestId("checkbox-create-mode-architect"))
+
+		const buttons = screen.getAllByTestId("button")
+		const createButton = buttons.find((btn) => btn.getAttribute("data-variant") === "primary")
+
+		fireEvent.click(createButton!)
+
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "createSkill",
+				skillName: "my-skill",
+				source: "project",
+				skillDescription: "My skill description",
+				skillModeSlugs: ["code", "architect"],
+			})
+		})
 	})
 
 	it("clears form after successful skill creation", async () => {

@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "사용자 지정 워크플로와 작업을 신속하게 실행하기 위해 슬래시 명령을 관리합니다. <DocsLink>더 알아보기</DocsLink>"
+		"description": "사용자 지정 워크플로와 작업을 신속하게 실행하기 위해 슬래시 명령을 관리합니다. <DocsLink>더 알아보기</DocsLink>",
+		"workspaceCommands": "워크스페이스 명령",
+		"globalCommands": "글로벌 명령",
+		"noWorkspaceCommands": "이 프로젝트에 명령이 아직 없습니다.",
+		"noGlobalCommands": "글로벌 명령이 아직 없습니다.",
+		"addCommand": "슬래시 명령 추가",
+		"editCommand": "명령 편집",
+		"deleteCommand": "명령 삭제",
+		"deleteDialog": {
+			"title": "명령 삭제",
+			"description": "명령 \"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+			"confirm": "삭제",
+			"cancel": "취소"
+		},
+		"createDialog": {
+			"title": "새 슬래시 명령 만들기",
+			"nameLabel": "이름",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "소문자, 숫자, 하이픈 및 밑줄만",
+			"sourceLabel": "위치",
+			"create": "만들기",
+			"cancel": "취소"
+		},
+		"source": {
+			"global": "글로벌 (모든 워크스페이스에서 사용 가능)",
+			"project": "워크스페이스"
+		},
+		"validation": {
+			"nameRequired": "이름은 필수입니다",
+			"nameTooLong": "이름은 64자 이하여야 합니다",
+			"nameInvalid": "이름은 문자, 숫자, 하이픈 및 밑줄만 포함할 수 있습니다"
+		},
+		"footer": "슬래시 명령을 사용하여 자주 사용하는 프롬프트 및 워크플로에 빠르게 액세스합니다."
 	},
 	"prompts": {
 		"description": "프롬프트 향상, 코드 설명, 문제 해결과 같은 빠른 작업에 사용되는 지원 프롬프트를 구성합니다. 이러한 프롬프트는 Roo가 일반적인 개발 작업에 대해 더 나은 지원을 제공하는 데 도움이 됩니다."
@@ -244,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "최대 요청 수",
-			"description": "작업을 계속하기 위한 승인을 요청하기 전에 자동으로 이 수의 API 요청을 수행합니다.",
 			"unlimited": "무제한"
 		},
 		"selectOptionsFirst": "자동 승인을 활성화하려면 아래에서 하나 이상의 옵션을 선택하세요",
@@ -665,7 +696,6 @@
 				"label": "최대 진단 메시지",
 				"description": "파일당 포함할 최대 진단 메시지 수입니다. 이 제한은 자동 포함(체크박스가 활성화된 경우)과 수동 @problems 언급 모두에 적용됩니다. 값이 높을수록 더 많은 컨텍스트를 제공하지만 토큰 사용량이 증가합니다.",
 				"resetTooltip": "기본값(50)으로 재설정",
-				"unlimited": "무제한 진단 메시지",
 				"unlimitedLabel": "무제한"
 			},
 			"delayAfterWrite": {
@@ -900,7 +930,6 @@
 		"simplifiedExplanation": "나중에 자세한 모델 설정을 조정할 수 있습니다."
 	},
 	"footer": {
-		"feedback": "질문이나 피드백이 있으시면 <githubLink>github.com/RooCodeInc/Roo-Code</githubLink>에서 이슈를 열거나 <redditLink>reddit.com/r/RooCode</redditLink> 또는 <discordLink>discord.gg/roocode</discordLink>에 가입하세요",
 		"telemetry": {
 			"label": "익명 오류 및 사용 보고 허용",
 			"description": "익명 사용 데이터 및 오류 보고서를 전송하여 Roo Code 개선에 도움을 주세요. 이 텔레메트리는 코드, 프롬프트 또는 개인 정보를 수집하지 않습니다. 자세한 내용은 <privacyLink>개인정보 보호정책</privacyLink>을 참조하세요."
@@ -997,32 +1026,37 @@
 	},
 	"skills": {
 		"description": "에이전트에 컨텍스트 지침을 제공하는 스킬을 관리합니다. 스킬은 작업과 관련이 있을 때 자동으로 적용됩니다. <DocsLink>자세히 알아보기</DocsLink>",
-		"projectSkills": "프로젝트 스킬",
+		"workspaceSkills": "워크스페이스 스킬",
 		"globalSkills": "전역 스킬",
-		"noProjectSkills": "구성된 프로젝트 스킬이 없습니다. 프로젝트별 에이전트 기능을 추가하려면 하나를 만드세요.",
+		"noWorkspaceSkills": "이 프로젝트에 스킬이 아직 없습니다.",
 		"noGlobalSkills": "구성된 전역 스킬이 없습니다. 모든 프로젝트에서 사용할 수 있는 에이전트 기능을 추가하려면 하나를 만드세요.",
 		"addSkill": "스킬 추가",
 		"editSkill": "스킬 편집",
 		"deleteSkill": "스킬 삭제",
-		"changeMode": "모드 변경",
+		"configureModes": "모드 가용성",
 		"modeAny": "모든 모드",
+		"modeCount": "{{count}} 모드",
 		"deleteDialog": {
 			"title": "스킬 삭제",
 			"description": "스킬 \"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
 			"confirm": "삭제",
 			"cancel": "취소"
 		},
+		"modeDialog": {
+			"title": "스킬 모드 구성",
+			"description": "이 스킬을 사용할 수 있는 모드를 선택합니다",
+			"intro": "컨텍스트를 가볍게 유지하기 위해 필요한 모드에서만 스킬을 사용 가능하게 하는 것을 권장합니다.",
+			"anyMode": "모든 모드 (모든 곳에서 사용 가능)",
+			"save": "저장",
+			"cancel": "취소"
+		},
 		"createDialog": {
 			"title": "새 스킬 만들기",
-			"description": "에이전트에 컨텍스트 지침을 제공하는 새 스킬 템플릿을 정의합니다.",
 			"nameLabel": "이름",
 			"namePlaceholder": "my-skill-name",
-			"nameHint": "소문자, 숫자 및 하이픈만 사용(1-64자)",
 			"descriptionLabel": "설명",
 			"descriptionPlaceholder": "이 스킬을 언제 사용해야 하는지 설명하세요...",
-			"descriptionHint": "이 스킬이 무엇을 하는지, 에이전트가 언제 적용해야 하는지 설명하세요(1-1024자)",
 			"sourceLabel": "위치",
-			"sourceHint": "이 스킬을 전역으로 사용할지 이 프로젝트에만 사용할지 선택하세요",
 			"modeLabel": "모드 (선택사항)",
 			"modePlaceholder": "모든 모드",
 			"modeHint": "이 스킬을 특정 모드로 제한",
@@ -1040,6 +1074,7 @@
 			"nameInvalid": "이름은 1-64자의 소문자, 숫자 또는 하이픈이어야 합니다",
 			"descriptionRequired": "설명은 필수입니다",
 			"descriptionTooLong": "설명은 1024자 이하여야 합니다"
-		}
+		},
+		"footer": "스킬 작성자 모드로 자신만의 스킬을 만들 수 있습니다. <MarketplaceLink>모드 마켓플레이스</MarketplaceLink>에서 사용 가능합니다."
 	}
 }

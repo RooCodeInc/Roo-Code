@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Beheer je slash-commando's om snel aangepaste workflows en acties uit te voeren. <DocsLink>Meer informatie</DocsLink>"
+		"description": "Beheer je slash-commando's om snel aangepaste workflows en acties uit te voeren. <DocsLink>Meer informatie</DocsLink>",
+		"workspaceCommands": "Werkruimteopdrachten",
+		"globalCommands": "Globale opdrachten",
+		"noWorkspaceCommands": "Nog geen opdrachten in dit project.",
+		"noGlobalCommands": "Nog geen globale opdrachten.",
+		"addCommand": "Slash-opdracht toevoegen",
+		"editCommand": "Opdracht bewerken",
+		"deleteCommand": "Opdracht verwijderen",
+		"deleteDialog": {
+			"title": "Opdracht verwijderen",
+			"description": "Weet je zeker dat je de opdracht \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+			"confirm": "Verwijderen",
+			"cancel": "Annuleren"
+		},
+		"createDialog": {
+			"title": "Nieuw slash-commando maken",
+			"nameLabel": "Naam",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Alleen kleine letters, cijfers, streepjes en onderstrepen",
+			"sourceLabel": "Locatie",
+			"create": "Maken",
+			"cancel": "Annuleren"
+		},
+		"source": {
+			"global": "Globaal (beschikbaar in alle werkruimten)",
+			"project": "Werkruimte"
+		},
+		"validation": {
+			"nameRequired": "Naam is vereist",
+			"nameTooLong": "Naam mag max. 64 tekens zijn",
+			"nameInvalid": "Naam mag alleen letters, cijfers, streepjes en onderstrepen bevatten"
+		},
+		"footer": "Gebruik slash-commando's voor snelle toegang tot veelgebruikte prompts en workflows."
 	},
 	"prompts": {
 		"description": "Configureer ondersteuningsprompts die worden gebruikt voor snelle acties zoals het verbeteren van prompts, het uitleggen van code en het oplossen van problemen. Deze prompts helpen Roo om betere ondersteuning te bieden voor veelvoorkomende ontwikkelingstaken."
@@ -244,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Maximale verzoeken",
-			"description": "Voer automatisch dit aantal API-verzoeken uit voordat om goedkeuring wordt gevraagd om door te gaan met de taak.",
 			"unlimited": "Onbeperkt"
 		},
 		"selectOptionsFirst": "Selecteer ten minste één optie hieronder om automatische goedkeuring in te schakelen",
@@ -675,7 +706,6 @@
 				"label": "Maximale diagnostische berichten",
 				"description": "Maximaal aantal diagnostische berichten dat per bestand moet worden opgenomen. Deze limiet geldt voor zowel automatische opname (wanneer checkbox is ingeschakeld) als handmatige @problems vermeldingen. Hogere waarden bieden meer context maar verhogen het tokengebruik.",
 				"resetTooltip": "Reset naar standaardwaarde (50)",
-				"unlimited": "Onbeperkte diagnostische berichten",
 				"unlimitedLabel": "Onbeperkt"
 			},
 			"delayAfterWrite": {
@@ -900,7 +930,6 @@
 		"simplifiedExplanation": "Je kunt later gedetailleerde modelinstellingen aanpassen."
 	},
 	"footer": {
-		"feedback": "Heb je vragen of feedback? Open gerust een issue op <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> of sluit je aan bij <redditLink>reddit.com/r/RooCode</redditLink> of <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Anonieme fout- en gebruiksrapportage toestaan",
 			"description": "Help Roo Code te verbeteren door anonieme gebruiksgegevens en foutmeldingen te versturen. Deze telemetrie verzamelt geen code, prompts of persoonlijke informatie. Zie ons <privacyLink>privacybeleid</privacyLink> voor meer details."
@@ -997,32 +1026,37 @@
 	},
 	"skills": {
 		"description": "Beheer skills die contextuele instructies aan de agent verstrekken. Skills worden automatisch toegepast wanneer ze relevant zijn voor uw taken. <DocsLink>Meer informatie</DocsLink>",
-		"projectSkills": "Projectskills",
-		"globalSkills": "Globale Skills",
-		"noProjectSkills": "Geen projectskills geconfigureerd. Maak er een om projectspecifieke agentmogelijkheden toe te voegen.",
-		"noGlobalSkills": "Geen globale skills geconfigureerd. Maak er een om agentmogelijkheden toe te voegen die beschikbaar zijn in alle projecten.",
+		"workspaceSkills": "Werkruimteskills",
+		"globalSkills": "Globale skills",
+		"noWorkspaceSkills": "Nog geen skills in dit project.",
+		"noGlobalSkills": "Nog geen globale skills.",
 		"addSkill": "Skill toevoegen",
 		"editSkill": "Skill bewerken",
 		"deleteSkill": "Skill verwijderen",
-		"changeMode": "Modus wijzigen",
+		"configureModes": "Modebeschikbaarheid",
 		"modeAny": "Elke modus",
+		"modeCount": "{{count}} modus",
 		"deleteDialog": {
 			"title": "Skill verwijderen",
 			"description": "Weet u zeker dat u de skill \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
 			"confirm": "Verwijderen",
 			"cancel": "Annuleren"
 		},
+		"modeDialog": {
+			"title": "Skillmodi configureren",
+			"description": "Kies welke modi deze skill kunnen gebruiken",
+			"intro": "Om je context licht te houden, raden we aan skills alleen beschikbaar te maken voor de modi die ze nodig hebben.",
+			"anyMode": "Elke modus (overal beschikbaar)",
+			"save": "Opslaan",
+			"cancel": "Annuleren"
+		},
 		"createDialog": {
 			"title": "Nieuwe Skill maken",
-			"description": "Definieer een nieuwe skillsjabloon die contextuele instructies aan de agent verstrekt.",
 			"nameLabel": "Naam",
 			"namePlaceholder": "mijn-skill-naam",
-			"nameHint": "Alleen kleine letters, cijfers en streepjes (1-64 tekens)",
 			"descriptionLabel": "Beschrijving",
 			"descriptionPlaceholder": "Beschrijf wanneer deze skill moet worden gebruikt...",
-			"descriptionHint": "Leg uit wat deze skill doet en wanneer de agent deze moet toepassen (1-1024 tekens)",
 			"sourceLabel": "Locatie",
-			"sourceHint": "Kies of deze skill globaal beschikbaar is of alleen in dit project",
 			"modeLabel": "Modus (optioneel)",
 			"modePlaceholder": "Elke modus",
 			"modeHint": "Beperk deze skill tot een specifieke modus",
@@ -1040,6 +1074,7 @@
 			"nameInvalid": "Naam moet 1-64 kleine letters, cijfers of streepjes zijn",
 			"descriptionRequired": "Beschrijving is verplicht",
 			"descriptionTooLong": "Beschrijving moet maximaal 1024 tekens zijn"
-		}
+		},
+		"footer": "Maak je eigen skills met de Skill Writer modus, beschikbaar in de <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

@@ -69,40 +69,77 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
+		"description": "Slash commands are shortcuts for reusable workflows and actions to be used on demand (like creating a PR, running a set of tasks, etc). <DocsLink>Learn more</DocsLink>",
+		"workspaceCommands": "Workspace Commands",
+		"globalCommands": "Global Commands",
+		"noWorkspaceCommands": "No commands in this project yet.",
+		"noGlobalCommands": "No global commands yet.",
+		"addCommand": "Add Slash Command",
+		"editCommand": "Edit command",
+		"deleteCommand": "Delete command",
+		"deleteDialog": {
+			"title": "Delete Command",
+			"description": "Are you sure you want to delete the command \"{{name}}\"? This action cannot be undone.",
+			"confirm": "Delete",
+			"cancel": "Cancel"
+		},
+		"createDialog": {
+			"title": "Create New Slash Command",
+			"nameLabel": "Name",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Lowercase letters, numbers, hyphens and underscores only",
+			"sourceLabel": "Location",
+			"create": "Create",
+			"cancel": "Cancel"
+		},
+		"source": {
+			"global": "Global (available in all workspaces)",
+			"project": "Workspace"
+		},
+		"validation": {
+			"nameRequired": "Name is required",
+			"nameTooLong": "Name must be 64 characters or less",
+			"nameInvalid": "Name must contain only letters, numbers, hyphens, and underscores"
+		},
+		"footer": "Use slash commands for quick access to frequently used prompts and workflows."
 	},
 	"skills": {
-		"description": "Manage skills that provide contextual instructions to the agent. Skills are automatically applied when relevant to your tasks. <DocsLink>Learn more</DocsLink>",
-		"projectSkills": "Project Skills",
+		"description": "Skills encapsulate contextual instructions and workflows, which the agent can load on-demand. They can include general instructions, specific workflows and even scripts to be run as needed. <DocsLink>Learn more</DocsLink>",
+		"workspaceSkills": "Workspace Skills",
 		"globalSkills": "Global Skills",
-		"noProjectSkills": "No project skills configured. Create one to add project-specific agent capabilities.",
-		"noGlobalSkills": "No global skills configured. Create one to add agent capabilities available across all projects.",
+		"noWorkspaceSkills": "No skills in this project yet.",
+		"noGlobalSkills": "No global skills yet.",
 		"addSkill": "Add Skill",
 		"editSkill": "Edit skill",
 		"deleteSkill": "Delete skill",
-		"changeMode": "Change mode",
+		"configureModes": "Mode availability",
 		"modeAny": "Any mode",
+		"modeCount": "{{count}} modes",
 		"deleteDialog": {
 			"title": "Delete Skill",
 			"description": "Are you sure you want to delete the skill \"{{name}}\"? This action cannot be undone.",
 			"confirm": "Delete",
 			"cancel": "Cancel"
 		},
+		"modeDialog": {
+			"title": "Configure Skill Modes",
+			"description": "Choose which modes can use this skill",
+			"intro": "To keep your context light, we recommend only making skills available for the modes that need them.",
+			"anyMode": "Any mode (available everywhere)",
+			"save": "Save",
+			"cancel": "Cancel"
+		},
 		"createDialog": {
 			"title": "Create New Skill",
-			"description": "Define a new skill template that provides contextual instructions to the agent.",
 			"nameLabel": "Name",
-			"namePlaceholder": "my-skill-name",
-			"nameHint": "Lowercase letters, numbers, and hyphens only (1-64 characters)",
+			"namePlaceholder": "my-skill-name (Lowercase letters, numbers, and hyphens only)",
 			"descriptionLabel": "Description",
-			"descriptionPlaceholder": "Describe when this skill should be used...",
-			"descriptionHint": "Explain what this skill does and when the agent should apply it (1-1024 characters)",
+			"descriptionPlaceholder": "Describe when this skill should be used and its contents...",
 			"sourceLabel": "Location",
-			"sourceHint": "Choose whether this skill is available globally or only in this project",
 			"modeLabel": "Mode (optional)",
 			"modePlaceholder": "Any mode",
-			"modeHint": "Restrict this skill to a specific mode",
 			"modeAny": "Any mode",
+			"modeHint": "Restrict this skill to a specific mode",
 			"create": "Create",
 			"cancel": "Cancel"
 		},
@@ -116,7 +153,8 @@
 			"nameInvalid": "Name must be 1-64 lowercase letters, numbers, or hyphens",
 			"descriptionRequired": "Description is required",
 			"descriptionTooLong": "Description must be 1024 characters or less"
-		}
+		},
+		"footer": "Create your own skills with the Skill Writer mode, available in the <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	},
 	"ui": {
 		"collapseThinking": {

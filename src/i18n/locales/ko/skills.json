@@ -8,6 +8,7 @@
 		"not_found": "{{source}}{{modeInfo}}에서 스킬 \"{{name}}\"을(를) 찾을 수 없습니다",
 		"missing_create_fields": "필수 필드 누락: skillName, source 또는 skillDescription",
 		"missing_move_fields": "필수 필드 누락: skillName 또는 source",
+		"missing_update_modes_fields": "필수 필드 누락: skillName 또는 source",
 		"manager_unavailable": "스킬 관리자를 사용할 수 없습니다",
 		"missing_delete_fields": "필수 필드 누락: skillName 또는 source",
 		"skill_not_found": "스킬 \"{{name}}\"을(를) 찾을 수 없습니다",

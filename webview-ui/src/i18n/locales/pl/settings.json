@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Zarządzaj poleceniami slash, aby szybko wykonywać niestandardowe przepływy pracy i akcje. <DocsLink>Dowiedz się więcej</DocsLink>"
+		"description": "Zarządzaj poleceniami slash, aby szybko wykonywać niestandardowe przepływy pracy i akcje. <DocsLink>Dowiedz się więcej</DocsLink>",
+		"workspaceCommands": "Polecenia obszaru roboczego",
+		"globalCommands": "Polecenia globalne",
+		"noWorkspaceCommands": "Brak poleceń w tym projekcie.",
+		"noGlobalCommands": "Brak poleceń globalnych.",
+		"addCommand": "Dodaj polecenie Slash",
+		"editCommand": "Edytuj polecenie",
+		"deleteCommand": "Usuń polecenie",
+		"deleteDialog": {
+			"title": "Usuń polecenie",
+			"description": "Czy na pewno chcesz usunąć polecenie \"{{name}}\"? Tej czynności nie można cofnąć.",
+			"confirm": "Usuń",
+			"cancel": "Anuluj"
+		},
+		"createDialog": {
+			"title": "Utwórz nowe polecenie Slash",
+			"nameLabel": "Nazwa",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Tylko małe litery, cyfry, łączniki i podkreślenia",
+			"sourceLabel": "Lokalizacja",
+			"create": "Utwórz",
+			"cancel": "Anuluj"
+		},
+		"source": {
+			"global": "Globalne (dostępne we wszystkich obszarach roboczych)",
+			"project": "Obszar roboczy"
+		},
+		"validation": {
+			"nameRequired": "Nazwa jest wymagana",
+			"nameTooLong": "Nazwa musi mieć 64 znaki lub mniej",
+			"nameInvalid": "Nazwa może zawierać tylko litery, cyfry, łączniki i podkreślenia"
+		},
+		"footer": "Używaj poleceń slash do szybkiego dostępu do często używanych podpowiedzi i przepływów pracy."
 	},
 	"prompts": {
 		"description": "Skonfiguruj podpowiedzi wsparcia używane do szybkich działań, takich jak ulepszanie podpowiedzi, wyjaśnianie kodu i rozwiązywanie problemów. Te podpowiedzi pomagają Roo zapewnić lepsze wsparcie dla typowych zadań programistycznych."
@@ -244,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Maksymalna liczba żądań",
-			"description": "Automatycznie wykonaj tyle żądań API przed poproszeniem o zgodę na kontynuowanie zadania.",
 			"unlimited": "Bez limitu"
 		},
 		"selectOptionsFirst": "Wybierz co najmniej jedną opcję poniżej, aby włączyć automatyczne zatwierdzanie",
@@ -665,7 +696,6 @@
 				"label": "Maksymalna liczba komunikatów diagnostycznych",
 				"description": "Maksymalna liczba komunikatów diagnostycznych dołączanych na plik. Ten limit dotyczy zarówno automatycznego dołączania (gdy pole wyboru jest włączone) jak i ręcznych wzmianek @problems. Wyższe wartości dostarczają więcej kontekstu, ale zwiększają zużycie tokenów.",
 				"resetTooltip": "Resetuj do wartości domyślnej (50)",
-				"unlimited": "Nieograniczone komunikaty diagnostyczne",
 				"unlimitedLabel": "Nieograniczone"
 			},
 			"delayAfterWrite": {
@@ -900,7 +930,6 @@
 		"simplifiedExplanation": "Można dostosować szczegółowe ustawienia modelu później."
 	},
 	"footer": {
-		"feedback": "Jeśli masz jakiekolwiek pytania lub opinie, śmiało otwórz zgłoszenie na <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> lub dołącz do <redditLink>reddit.com/r/RooCode</redditLink> lub <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Zezwól na anonimowe raportowanie błędów i użycia",
 			"description": "Pomóż ulepszyć Roo Code, wysyłając anonimowe dane użytkowania i raporty błędów. Ta telemetria nie zbiera kodu, promptów ani danych osobowych. Zobacz naszą <privacyLink>politykę prywatności</privacyLink>, aby uzyskać więcej szczegółów. Możesz to wyłączyć w dowolnym momencie."
@@ -997,32 +1026,37 @@
 	},
 	"skills": {
 		"description": "Zarządzaj umiejętnościami, które dostarczają kontekstowe instrukcje dla agenta. Umiejętności są automatycznie stosowane, gdy są istotne dla Twoich zadań. <DocsLink>Dowiedz się więcej</DocsLink>",
-		"projectSkills": "Umiejętności Projektu",
+		"workspaceSkills": "Umiejętności obszaru roboczego",
 		"globalSkills": "Umiejętności Globalne",
-		"noProjectSkills": "Brak skonfigurowanych umiejętności projektu. Utwórz jedną, aby dodać możliwości agenta specyficzne dla projektu.",
+		"noWorkspaceSkills": "Brak umiejętności w tym projekcie.",
 		"noGlobalSkills": "Brak skonfigurowanych umiejętności globalnych. Utwórz jedną, aby dodać możliwości agenta dostępne we wszystkich projektach.",
 		"addSkill": "Dodaj Umiejętność",
 		"editSkill": "Edytuj umiejętność",
 		"deleteSkill": "Usuń umiejętność",
-		"changeMode": "Zmień tryb",
+		"configureModes": "Dostępność trybu",
 		"modeAny": "Dowolny tryb",
+		"modeCount": "{{count}} tryby",
 		"deleteDialog": {
 			"title": "Usuń Umiejętność",
 			"description": "Czy na pewno chcesz usunąć umiejętność \"{{name}}\"? Tej akcji nie można cofnąć.",
 			"confirm": "Usuń",
 			"cancel": "Anuluj"
 		},
+		"modeDialog": {
+			"title": "Konfiguruj tryby umiejętności",
+			"description": "Wybierz, które tryby mogą korzystać z tej umiejętności",
+			"intro": "Aby utrzymać lekki kontekst, zalecamy udostępnienie umiejętności tylko trybom, które ich potrzebują.",
+			"anyMode": "Dowolny tryb (dostępny wszędzie)",
+			"save": "Zapisz",
+			"cancel": "Anuluj"
+		},
 		"createDialog": {
 			"title": "Utwórz Nową Umiejętność",
-			"description": "Zdefiniuj nowy szablon umiejętności, który dostarcza kontekstowe instrukcje dla agenta.",
 			"nameLabel": "Nazwa",
 			"namePlaceholder": "moja-nazwa-umiejetnosci",
-			"nameHint": "Tylko małe litery, cyfry i myślniki (1-64 znaki)",
 			"descriptionLabel": "Opis",
 			"descriptionPlaceholder": "Opisz, kiedy ta umiejętność powinna być użyta...",
-			"descriptionHint": "Wyjaśnij, co robi ta umiejętność i kiedy agent powinien ją zastosować (1-1024 znaki)",
 			"sourceLabel": "Lokalizacja",
-			"sourceHint": "Wybierz, czy ta umiejętność jest dostępna globalnie, czy tylko w tym projekcie",
 			"modeLabel": "Tryb (opcjonalnie)",
 			"modePlaceholder": "Dowolny tryb",
 			"modeHint": "Ogranicz tę umiejętność do określonego trybu",
@@ -1040,6 +1074,7 @@
 			"nameInvalid": "Nazwa musi zawierać 1-64 małe litery, cyfry lub myślniki",
 			"descriptionRequired": "Opis jest wymagany",
 			"descriptionTooLong": "Opis musi mieć maksymalnie 1024 znaki"
-		}
+		},
+		"footer": "Twórz własne umiejętności za pomocą trybu Skill Writer, dostępnego w <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

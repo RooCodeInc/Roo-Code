@@ -239,8 +239,47 @@ export async function loadRuleFiles(cwd: string, enableSubfolderRules: boolean =
 }
 
 /**
+ * Read content from an agent rules file (AGENTS.md, AGENT.md, etc.)
+ * Handles symlink resolution.
+ *
+ * @param filePath - Full path to the agent rules file
+ * @returns File content or empty string if file doesn't exist
+ */
+async function readAgentRulesFile(filePath: string): Promise<string> {
+	let resolvedPath = filePath
+
+	// Check if file exists and handle symlinks
+	try {
+		const stats = await fs.lstat(filePath)
+		if (stats.isSymbolicLink()) {
+			// Create a temporary fileInfo array to use with resolveSymLink
+			const fileInfo: Array<{
+				originalPath: string
+				resolvedPath: string
+			}> = []
+
+			// Use the existing resolveSymLink function to handle symlink resolution
+			await resolveSymLink(filePath, fileInfo, 0)
+
+			// Extract the resolved path from fileInfo
+			if (fileInfo.length > 0) {
+				resolvedPath = fileInfo[0].resolvedPath
+			}
+		}
+	} catch (err) {
+		// If lstat fails (file doesn't exist), return empty
+		return ""
+	}
+
+	// Read the content from the resolved path
+	return safeReadFile(resolvedPath)
+}
+
+/**
  * Load AGENTS.md or AGENT.md file from a specific directory
  * Checks for both AGENTS.md (standard) and AGENT.md (alternative) for compatibility
+ * Also loads AGENTS.local.md for personal overrides (not checked in to version control)
+ * AGENTS.local.md can be loaded even if AGENTS.md doesn't exist
  *
  * @param directory - Directory to check for AGENTS.md
  * @param showPath - Whether to include the directory path in the header
@@ -253,50 +292,46 @@ async function loadAgentRulesFileFromDirectory(
 ): Promise<string> {
 	// Try both filenames - AGENTS.md (standard) first, then AGENT.md (alternative)
 	const filenames = ["AGENTS.md", "AGENT.md"]
+	const results: string[] = []
+	const displayPath = cwd ? path.relative(cwd, directory) : directory
 
 	for (const filename of filenames) {
 		try {
 			const agentPath = path.join(directory, filename)
-			let resolvedPath = agentPath
+			const content = await readAgentRulesFile(agentPath)
 
-			// Check if file exists and handle symlinks
-			try {
-				const stats = await fs.lstat(agentPath)
-				if (stats.isSymbolicLink()) {
-					// Create a temporary fileInfo array to use with resolveSymLink
-					const fileInfo: Array<{
-						originalPath: string
-						resolvedPath: string
-					}> = []
-
-					// Use the existing resolveSymLink function to handle symlink resolution
-					await resolveSymLink(agentPath, fileInfo, 0)
-
-					// Extract the resolved path from fileInfo
-					if (fileInfo.length > 0) {
-						resolvedPath = fileInfo[0].resolvedPath
-					}
-				}
-			} catch (err) {
-				// If lstat fails (file doesn't exist), try next filename
-				continue
-			}
-
-			// Read the content from the resolved path
-			const content = await safeReadFile(resolvedPath)
 			if (content) {
 				// Compute relative path for display if cwd is provided
-				const displayPath = cwd ? path.relative(cwd, directory) : directory
 				const header = showPath
 					? `# Agent Rules Standard (${filename}) from ${displayPath}:`
 					: `# Agent Rules Standard (${filename}):`
-				return `${header}\n${content}`
+				results.push(`${header}\n${content}`)
+
+				// Found a standard file, don't check alternative
+				break
 			}
 		} catch (err) {
 			// Silently ignore errors - agent rules files are optional
 		}
 	}
-	return ""
+
+	// Always try to load AGENTS.local.md for personal overrides (even if AGENTS.md doesn't exist)
+	try {
+		const localFilename = "AGENTS.local.md"
+		const localPath = path.join(directory, localFilename)
+		const localContent = await readAgentRulesFile(localPath)
+
+		if (localContent) {
+			const localHeader = showPath
+				? `# Agent Rules Local (${localFilename}) from ${displayPath}:`
+				: `# Agent Rules Local (${localFilename}):`
+			results.push(`${localHeader}\n${localContent}`)
+		}
+	} catch (err) {
+		// Silently ignore errors - local agent rules file is optional
+	}
+
+	return results.join("\n\n")
 }
 
 /**

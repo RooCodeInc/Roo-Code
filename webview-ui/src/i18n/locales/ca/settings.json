@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>"
+		"description": "Gestiona les teves comandes de barra per executar ràpidament fluxos de treball i accions personalitzades. <DocsLink>Aprèn-ne més</DocsLink>",
+		"workspaceCommands": "Comandes de l'espai de treball",
+		"globalCommands": "Comandes globals",
+		"noWorkspaceCommands": "Sense comandes en aquest projecte encara.",
+		"noGlobalCommands": "Sense comandes globals encara.",
+		"addCommand": "Afegir comanda de barra",
+		"editCommand": "Editar comanda",
+		"deleteCommand": "Suprimir comanda",
+		"deleteDialog": {
+			"title": "Suprimir comanda",
+			"description": "Estàs segur que vols suprimir la comanda \"{{name}}\"? Aquesta acció no es pot desfer.",
+			"confirm": "Suprimir",
+			"cancel": "Cancel·lar"
+		},
+		"createDialog": {
+			"title": "Crear una nova comanda de barra",
+			"nameLabel": "Nom",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Només lletres minúscules, números, guions i subratllats",
+			"sourceLabel": "Ubicació",
+			"create": "Crear",
+			"cancel": "Cancel·lar"
+		},
+		"source": {
+			"global": "Global (disponible en tots els espais de treball)",
+			"project": "Espai de treball"
+		},
+		"validation": {
+			"nameRequired": "El nom és obligatori",
+			"nameTooLong": "El nom ha de tenir 64 caràcters o menys",
+			"nameInvalid": "El nom ha de contenir només lletres, números, guions i subratllats"
+		},
+		"footer": "Utilitza comandes de barra per accedir ràpidament a indicacions i fluxos de treball utilitzats freqüentment."
 	},
 	"prompts": {
 		"description": "Configura les indicacions de suport utilitzades per a accions ràpides com millorar indicacions, explicar codi i solucionar problemes. Aquestes indicacions ajuden Roo a proporcionar millor assistència per a tasques comunes de desenvolupament."
@@ -244,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Màximes Sol·licituds",
-			"description": "Fes aquesta quantitat de sol·licituds API automàticament abans de demanar aprovació per continuar amb la tasca.",
 			"unlimited": "Il·limitat"
 		},
 		"selectOptionsFirst": "Seleccioneu almenys una opció a continuació per activar l'aprovació automàtica",
@@ -899,7 +930,6 @@
 		"simplifiedExplanation": "Pots ajustar la configuració detallada del model més tard."
 	},
 	"footer": {
-		"feedback": "Si teniu qualsevol pregunta o comentari, no dubteu a obrir un issue a <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> o unir-vos a <redditLink>reddit.com/r/RooCode</redditLink> o <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permetre informes anònims d'errors i ús",
 			"description": "Ajuda a millorar Roo Code enviant dades d'ús anònimes i informes d'error. Aquesta telemetria no recull codi, prompts o informació personal. Consulta la nostra <privacyLink>política de privacitat</privacyLink> per a més detalls. Pots desactivar-ho en qualsevol moment."
@@ -996,32 +1026,37 @@
 	},
 	"skills": {
 		"description": "Gestiona les skills que proporcionen instruccions contextuals a l'agent. Les skills s'apliquen automàticament quan són rellevants per a les teves tasques. <DocsLink>Més informació</DocsLink>",
-		"projectSkills": "Skills del Projecte",
-		"globalSkills": "Skills Globals",
-		"noProjectSkills": "No hi ha skills de projecte configurades. Crea'n una per afegir capacitats específiques del projecte a l'agent.",
-		"noGlobalSkills": "No hi ha skills globals configurades. Crea'n una per afegir capacitats a l'agent disponibles en tots els projectes.",
+		"workspaceSkills": "Skills de l'espai de treball",
+		"globalSkills": "Skills globals",
+		"noWorkspaceSkills": "Sense skills en aquest projecte encara.",
+		"noGlobalSkills": "Sense skills globals encara.",
 		"addSkill": "Afegir Skill",
 		"editSkill": "Editar skill",
 		"deleteSkill": "Eliminar skill",
-		"changeMode": "Canvia mode",
+		"configureModes": "Disponibilitat del mode",
 		"modeAny": "Qualsevol mode",
+		"modeCount": "{{count}} modes",
 		"deleteDialog": {
 			"title": "Eliminar Skill",
 			"description": "Estàs segur que vols eliminar la skill \"{{name}}\"? Aquesta acció no es pot desfer.",
 			"confirm": "Eliminar",
 			"cancel": "Cancel·lar"
 		},
+		"modeDialog": {
+			"title": "Configurar els modes de Skill",
+			"description": "Tria quins modes poden usar aquesta skill",
+			"intro": "Per mantenir el teu context lleuger, et recomanem que només facis disponibles skills per als modes que les necessiten.",
+			"anyMode": "Qualsevol mode (disponible a tot arreu)",
+			"save": "Desar",
+			"cancel": "Cancel·lar"
+		},
 		"createDialog": {
 			"title": "Crear Nova Skill",
-			"description": "Defineix una nova plantilla de skill que proporcioni instruccions contextuals a l'agent.",
 			"nameLabel": "Nom",
 			"namePlaceholder": "el-meu-nom-de-skill",
-			"nameHint": "Només lletres minúscules, números i guions (1-64 caràcters)",
 			"descriptionLabel": "Descripció",
 			"descriptionPlaceholder": "Descriu quan s'hauria d'utilitzar aquesta skill...",
-			"descriptionHint": "Explica què fa aquesta skill i quan l'agent hauria d'aplicar-la (1-1024 caràcters)",
 			"sourceLabel": "Ubicació",
-			"sourceHint": "Tria si aquesta skill està disponible globalment o només en aquest projecte",
 			"modeLabel": "Mode (opcional)",
 			"modePlaceholder": "Qualsevol mode",
 			"modeHint": "Restringeix aquesta skill a un mode específic",
@@ -1039,6 +1074,7 @@
 			"nameInvalid": "El nom ha de tenir entre 1 i 64 caràcters, només lletres minúscules, números o guions",
 			"descriptionRequired": "La descripció és obligatòria",
 			"descriptionTooLong": "La descripció ha de tenir com a màxim 1024 caràcters"
-		}
+		},
+		"footer": "Crea les teves pròpies skills amb el mode Skill Writer, disponible al <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

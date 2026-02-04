@@ -1004,7 +1004,7 @@ Instructions`)
 			expect(writeCall[1]).toContain("description: A new skill description")
 		})
 
-		it("should create a mode-specific skill", async () => {
+		it("should create a mode-specific skill with modeSlugs array", async () => {
 			mockDirectoryExists.mockResolvedValue(false)
 			mockRealpath.mockImplementation(async (p: string) => p)
 			mockReaddir.mockResolvedValue([])
@@ -1012,9 +1012,15 @@ Instructions`)
 			mockMkdir.mockResolvedValue(undefined)
 			mockWriteFile.mockResolvedValue(undefined)
 
-			const createdPath = await skillsManager.createSkill("code-skill", "global", "A code skill", "code")
+			const createdPath = await skillsManager.createSkill("code-skill", "global", "A code skill", ["code"])
 
-			expect(createdPath).toBe(p(GLOBAL_ROO_DIR, "skills-code", "code-skill", "SKILL.md"))
+			// Skills are always created in the generic skills directory now; mode info is in frontmatter
+			expect(createdPath).toBe(p(GLOBAL_ROO_DIR, "skills", "code-skill", "SKILL.md"))
+
+			// Verify frontmatter contains modeSlugs
+			const writeCall = mockWriteFile.mock.calls[0]
+			expect(writeCall[1]).toContain("modeSlugs:")
+			expect(writeCall[1]).toContain("- code")
 		})
 
 		it("should create a project skill", async () => {

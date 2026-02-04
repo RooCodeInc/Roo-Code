@@ -1,5 +1,18 @@
 # Roo Code Changelog
 
+## [3.46.2] - 2026-02-03
+
+- Fix: Queue messages during command execution instead of losing them (PR #11140 by @mrubens)
+- Fix: Transform tool blocks to text before condensing to prevent context corruption (PR #10975 by @daniel-lxs)
+- Fix: Add image content support to MCP tool responses (PR #10874 by @roomote)
+- Fix: Remove deprecated text-embedding-004 and migrate code index to gemini-embedding-001 (PR #11038 by @roomote)
+- Feat: Use custom Base URL for OpenRouter model list fetch (#11150 by @sebastianlang84, PR #11154 by @roomote)
+- Feat: Migrate Mistral provider to AI SDK (PR #11089 by @daniel-lxs)
+- Feat: Migrate SambaNova provider to AI SDK (PR #11153 by @roomote)
+- Feat: Migrate xAI provider to AI SDK (PR #11158 by @roomote)
+- Chore: Remove Feature Request from issue template options (PR #11141 by @roomote)
+- Fix: IPC improvements for task cancellation and queued message handling (PR #11162 by @cte)
+
 ## [3.46.1] - 2026-01-30
 
 - Fix: Sanitize tool_use_id in tool_result blocks to match API history, preventing message format errors (PR #11131 by @daniel-lxs)
