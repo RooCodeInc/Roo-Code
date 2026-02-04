@@ -73,6 +73,17 @@ export const KeywordsAI = ({
 				Controls whether request/response data is logged. When disabled, only performance metrics are recorded.
 			</div>
 
+			<VSCodeCheckbox
+				checked={apiConfiguration?.keywordsaiEnableTracing === true}
+				onChange={(e: any) => {
+					setApiConfigurationField("keywordsaiEnableTracing", e.target.checked)
+				}}>
+				<span className="font-medium">Enable Tracing</span>
+			</VSCodeCheckbox>
+			<div className="text-sm text-vscode-descriptionForeground ml-6 mt-1 mb-2">
+				When enabled, each chat turn (question + answer) is sent to KeywordsAI Traces.
+			</div>
+
 			<Button
 				variant="outline"
 				onClick={() => {
