@@ -598,11 +598,13 @@ Add your skill instructions here.
 		// Get list of modes to check for mode-specific skills
 		const modesList = await this.getAvailableModes()
 
-		// Priority order (later entries override earlier ones with same skill name):
-		// 1. Global .agents/skills (shared across AI coding tools, lowest priority)
-		// 2. Project .agents/skills
-		// 3. Global .roo/skills (Roo-specific)
-		// 4. Project .roo/skills (highest priority)
+		// Priority rules for skills with the same name:
+		// 1. Source level: project > global > built-in (project always wins over global)
+		// 2. Within the same source level: .roo overrides .agents
+		//
+		// Processing order (later entries override earlier ones at the same source level):
+		// - Global: .agents/skills, then .roo/skills
+		// - Project: .agents/skills, then .roo/skills
 
 		// Global .agents directories (lowest priority - shared across agents)
 		dirs.push({ dir: path.join(globalAgentsDir, "skills"), source: "global" })
