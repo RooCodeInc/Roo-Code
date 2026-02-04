@@ -76,7 +76,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			await task.say("completion_result", result, undefined, false)
 

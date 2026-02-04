@@ -51,7 +51,7 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			const unescapedCommand = unescapeHtmlEntities(command)
 			const didApprove = await askApproval("command", unescapedCommand)

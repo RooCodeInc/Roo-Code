@@ -49,7 +49,7 @@ export class CodebaseSearchTool extends BaseTool<"codebase_search"> {
 			return
 		}
 
-		task.consecutiveMistakeCount = 0
+		task.recordToolSuccess()
 
 		try {
 			const context = task.providerRef.deref()?.context

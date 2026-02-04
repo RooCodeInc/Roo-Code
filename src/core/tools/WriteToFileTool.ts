@@ -97,7 +97,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		}
 
 		try {
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			const provider = task.providerRef.deref()
 			const state = await provider?.getState()

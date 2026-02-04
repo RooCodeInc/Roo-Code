@@ -928,7 +928,7 @@ export async function presentAssistantMessage(cline: Task) {
 							)
 
 							pushToolResult(result)
-							cline.consecutiveMistakeCount = 0
+							cline.recordToolSuccess()
 						} catch (executionError: any) {
 							cline.consecutiveMistakeCount++
 							// Record custom tool error with static name

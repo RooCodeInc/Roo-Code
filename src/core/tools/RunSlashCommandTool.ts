@@ -44,7 +44,7 @@ export class RunSlashCommandTool extends BaseTool<"run_slash_command"> {
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			// Get the command from the commands service
 			const command = await getCommand(task.cwd, commandName)

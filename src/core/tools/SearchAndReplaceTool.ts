@@ -147,7 +147,7 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			// Initialize diff view
 			task.diffViewProvider.editType = "modify"

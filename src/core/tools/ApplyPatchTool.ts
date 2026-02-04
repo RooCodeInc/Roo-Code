@@ -101,7 +101,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 				}
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 			task.recordToolUsage("apply_patch")
 		} catch (error) {
 			await handleError("apply patch", error as Error)

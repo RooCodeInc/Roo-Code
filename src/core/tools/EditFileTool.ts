@@ -361,7 +361,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 			// Check if any changes were made
 			if (!isNewFile && newContent === currentContent) {
 				if (relPathForErrorHandling) {
-					task.consecutiveMistakeCount = 0
+					task.recordToolSuccess()
 					task.consecutiveMistakeCountForEditFile.delete(relPathForErrorHandling)
 				}
 				await finalizePartialToolAskIfNeeded(relPath)
@@ -369,7 +369,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 			task.consecutiveMistakeCountForEditFile.delete(relPath)
 
 			// Initialize diff view
@@ -379,7 +379,7 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 			// Generate and validate diff
 			const diff = formatResponse.createPrettyPatch(relPath, currentContent || "", newContent)
 			if (!diff && !isNewFile) {
-				task.consecutiveMistakeCount = 0
+				task.recordToolSuccess()
 				task.consecutiveMistakeCountForEditFile.delete(relPath)
 				await finalizePartialToolAskIfNeeded(relPath)
 				pushToolResult(`No changes needed for '${relPath}'`)

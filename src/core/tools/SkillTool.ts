@@ -25,7 +25,7 @@ export class SkillTool extends BaseTool<"skill"> {
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			// Get SkillsManager from provider
 			const provider = task.providerRef.deref()
