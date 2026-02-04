@@ -354,6 +354,51 @@ describe("AI SDK conversion utilities", () => {
 				],
 			})
 		})
+
+		it("converts assistant message-level reasoning_content to reasoning part", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [{ type: "text", text: "Answer" }],
+					reasoning_content: "Thinking...",
+				} as any,
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "assistant",
+				content: [
+					{ type: "reasoning", text: "Thinking..." },
+					{ type: "text", text: "Answer" },
+				],
+			})
+		})
+
+		it("prefers message-level reasoning_content over reasoning blocks", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "reasoning" as any, text: "BLOCK" },
+						{ type: "text", text: "Answer" },
+					],
+					reasoning_content: "MSG",
+				} as any,
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "assistant",
+				content: [
+					{ type: "reasoning", text: "MSG" },
+					{ type: "text", text: "Answer" },
+				],
+			})
+		})
 	})
 
 	describe("convertToolsForAiSdk", () => {
