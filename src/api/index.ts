@@ -30,6 +30,7 @@ import {
 	ChutesHandler,
 	LiteLLMHandler,
 	QwenCodeHandler,
+	QwenHandler,
 	SambaNovaHandler,
 	IOIntelligenceHandler,
 	DoubaoHandler,
@@ -151,6 +152,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new DoubaoHandler(options)
 		case "qwen-code":
 			return new QwenCodeHandler(options)
+		case "qwen":
+			return new QwenHandler(options)
 		case "moonshot":
 			return new MoonshotHandler(options)
 		case "vscode-lm":

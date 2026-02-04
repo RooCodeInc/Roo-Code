@@ -17,6 +17,7 @@ import {
 	anthropicDefaultModelId,
 	doubaoDefaultModelId,
 	qwenCodeDefaultModelId,
+	qwenDefaultModelId,
 	geminiDefaultModelId,
 	deepSeekDefaultModelId,
 	moonshotDefaultModelId,
@@ -93,6 +94,7 @@ import {
 	OpenAICodex,
 	OpenRouter,
 	QwenCode,
+	Qwen,
 	Requesty,
 	Roo,
 	SambaNova,
@@ -345,6 +347,7 @@ const ApiOptions = ({
 				cerebras: { field: "apiModelId", default: cerebrasDefaultModelId },
 				"openai-codex": { field: "apiModelId", default: openAiCodexDefaultModelId },
 				"qwen-code": { field: "apiModelId", default: qwenCodeDefaultModelId },
+				qwen: { field: "apiModelId", default: qwenDefaultModelId },
 				"openai-native": { field: "apiModelId", default: openAiNativeDefaultModelId },
 				gemini: { field: "apiModelId", default: geminiDefaultModelId },
 				deepseek: { field: "apiModelId", default: deepSeekDefaultModelId },
@@ -648,6 +651,14 @@ const ApiOptions = ({
 
 			{selectedProvider === "qwen-code" && (
 				<QwenCode
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
+			{selectedProvider === "qwen" && (
+				<Qwen
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					simplifySettings={fromWelcomeView}
