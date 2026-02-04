@@ -129,6 +129,18 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 
 		visibleProvider.postMessageToWebview({ type: "action", action: "historyButtonClicked" })
 	},
+	checkpointsButtonClicked: () => {
+		const visibleProvider = getVisibleProviderOrLog(outputChannel)
+
+		if (!visibleProvider) {
+			return
+		}
+
+		TelemetryService.instance.captureTitleButtonClicked("checkpoints")
+
+		visibleProvider.postMessageToWebview({ type: "action", action: "checkpointsButtonClicked" })
+		visibleProvider.postMessageToWebview({ type: "action", action: "didBecomeVisible" })
+	},
 	marketplaceButtonClicked: () => {
 		const visibleProvider = getVisibleProviderOrLog(outputChannel)
 		if (!visibleProvider) return

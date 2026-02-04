@@ -101,6 +101,11 @@
 				"icon": "$(settings-gear)"
 			},
 			{
+				"command": "roo-cline.checkpointsButtonClicked",
+				"title": "%command.checkpoints.title%",
+				"icon": "$(git-commit)"
+			},
+			{
 				"command": "roo-cline.openInNewTab",
 				"title": "%command.openInNewTab.title%",
 				"category": "%configuration.title%"
@@ -229,6 +234,11 @@
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
+					"command": "roo-cline.checkpointsButtonClicked",
+					"group": "navigation@5",
+					"when": "view == roo-cline.SidebarProvider"
+				},
+				{
 					"command": "roo-cline.marketplaceButtonClicked",
 					"group": "navigation@4",
 					"when": "view == roo-cline.SidebarProvider"
@@ -258,6 +268,11 @@
 				{
 					"command": "roo-cline.cloudButtonClicked",
 					"group": "navigation@3",
+					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
+				},
+				{
+					"command": "roo-cline.checkpointsButtonClicked",
+					"group": "navigation@5",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{

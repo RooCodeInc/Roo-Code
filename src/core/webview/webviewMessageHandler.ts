@@ -1187,7 +1187,7 @@ export const webviewMessageHandler = async (
 				vscode.env.openExternal(vscode.Uri.parse(message.url))
 			}
 			break
-		case "checkpointDiff":
+		case "checkpointDiff": {
 			const result = checkoutDiffPayloadSchema.safeParse(message.payload)
 
 			if (result.success) {
@@ -1195,6 +1195,82 @@ export const webviewMessageHandler = async (
 			}
 
 			break
+		}
+		case "getCheckpoints": {
+			const task = provider.getCurrentTask()
+			// We can only get checkpoints if the task has the service initialized
+			if (task && task.checkpointService) {
+				const checkpoints = task.checkpointService.getAllCheckpointMetadata()
+				// The last checkpoint in the list is the current head
+				const allCheckpoints = task.checkpointService.getCheckpoints()
+				const currentCheckpointId =
+					allCheckpoints.length > 0 ? allCheckpoints[allCheckpoints.length - 1] : undefined
+
+				await provider.postMessageToWebview({
+					type: "checkpointHistory",
+					checkpoints,
+					currentCheckpointId,
+				})
+			}
+			break
+		}
+		case "renameCheckpoint": {
+			const task = provider.getCurrentTask()
+			if (task && task.checkpointService && message.ids && message.ids.length > 0 && message.text) {
+				await task.checkpointService.renameCheckpoint(message.ids[0], message.text)
+
+				// Refresh checkpoints
+				const checkpoints = task.checkpointService.getAllCheckpointMetadata()
+				const allCheckpoints = task.checkpointService.getCheckpoints()
+				const currentCheckpointId =
+					allCheckpoints.length > 0 ? allCheckpoints[allCheckpoints.length - 1] : undefined
+
+				await provider.postMessageToWebview({
+					type: "checkpointHistory",
+					checkpoints,
+					currentCheckpointId,
+				})
+			}
+			break
+		}
+		case "toggleCheckpointStar": {
+			const task = provider.getCurrentTask()
+			if (task && task.checkpointService && message.ids && message.ids.length > 0) {
+				await task.checkpointService.toggleCheckpointStar(message.ids[0])
+
+				// Refresh checkpoints
+				const checkpoints = task.checkpointService.getAllCheckpointMetadata()
+				const allCheckpoints = task.checkpointService.getCheckpoints()
+				const currentCheckpointId =
+					allCheckpoints.length > 0 ? allCheckpoints[allCheckpoints.length - 1] : undefined
+
+				await provider.postMessageToWebview({
+					type: "checkpointHistory",
+					checkpoints,
+					currentCheckpointId,
+				})
+			}
+			break
+		}
+		case "deleteCheckpoint": {
+			const task = provider.getCurrentTask()
+			if (task && task.checkpointService && message.ids && message.ids.length > 0) {
+				await task.checkpointService.deleteCheckpoint(message.ids[0])
+
+				// Refresh checkpoints
+				const checkpoints = task.checkpointService.getAllCheckpointMetadata()
+				const allCheckpoints = task.checkpointService.getCheckpoints()
+				const currentCheckpointId =
+					allCheckpoints.length > 0 ? allCheckpoints[allCheckpoints.length - 1] : undefined
+
+				await provider.postMessageToWebview({
+					type: "checkpointHistory",
+					checkpoints,
+					currentCheckpointId,
+				})
+			}
+			break
+		}
 		case "checkpointRestore": {
 			const result = checkoutRestorePayloadSchema.safeParse(message.payload)
 

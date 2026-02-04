@@ -1,0 +1,264 @@
+/**
+ * Checkpoint Timeline Styles
+ * CSS for the checkpoint timeline component and its children
+ */
+
+/* Timeline Container */
+.checkpoint-timeline {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	background: var(--vscode-editor-background);
+	color: var(--vscode-editor-foreground);
+}
+
+/* Timeline Header */
+.checkpoint-timeline-header {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 12px;
+	border-bottom: 1px solid var(--vscode-panel-border);
+}
+
+/* Search Container */
+.checkpoint-search {
+	position: relative;
+}
+
+.checkpoint-search-icon {
+	position: absolute;
+	left: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: var(--vscode-input-placeholderForeground);
+}
+
+.checkpoint-search-input {
+	width: 100%;
+	padding: 4px 8px 4px 28px;
+	background: var(--vscode-input-background);
+	border: 1px solid var(--vscode-input-border);
+	border-radius: 4px;
+	color: var(--vscode-input-foreground);
+	font-size: 12px;
+}
+
+.checkpoint-search-input:focus {
+	outline: none;
+	border-color: var(--vscode-focusBorder);
+}
+
+/* View Mode Toggle */
+.checkpoint-view-toggle {
+	display: flex;
+	gap: 4px;
+}
+
+/* Filter Panel */
+.checkpoint-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding-top: 8px;
+	border-top: 1px solid var(--vscode-panel-border);
+}
+
+/* Timeline List */
+.checkpoint-list {
+	flex: 1;
+	overflow-y: auto;
+	padding: 8px;
+}
+
+/* Individual Checkpoint Node */
+.checkpoint-node {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	padding: 8px;
+	border-radius: 6px;
+	transition: background-color 0.15s ease;
+}
+
+.checkpoint-node:hover {
+	background: var(--vscode-list-hoverBackground);
+}
+
+.checkpoint-node--current {
+	background: var(--vscode-list-activeSelectionBackground);
+	outline: 1px solid var(--vscode-focusBorder);
+}
+
+/* Category Icon */
+.checkpoint-category-icon {
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+/* Checkpoint Content */
+.checkpoint-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.checkpoint-name {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-weight: 500;
+	font-size: 13px;
+}
+
+.checkpoint-name-text {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Stats Row */
+.checkpoint-stats {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 2px;
+	font-size: 11px;
+	color: var(--vscode-descriptionForeground);
+}
+
+.checkpoint-stat-additions {
+	color: var(--vscode-gitDecoration-addedResourceForeground, #4ec9b0);
+}
+
+.checkpoint-stat-deletions {
+	color: var(--vscode-gitDecoration-deletedResourceForeground, #f14c4c);
+}
+
+/* Tags */
+.checkpoint-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 4px;
+}
+
+.checkpoint-tag {
+	font-size: 10px;
+	padding: 2px 6px;
+	border-radius: 3px;
+	background: var(--vscode-badge-background);
+	color: var(--vscode-badge-foreground);
+}
+
+/* Description */
+.checkpoint-description {
+	margin-top: 4px;
+	font-size: 11px;
+	color: var(--vscode-descriptionForeground);
+	overflow: hidden;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+}
+
+/* Actions */
+.checkpoint-actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.checkpoint-node:hover .checkpoint-actions {
+	opacity: 1;
+}
+
+/* Tree View Connectors */
+.checkpoint-tree-connector {
+	position: absolute;
+	left: 16px;
+	width: 2px;
+	background: var(--vscode-panel-border);
+}
+
+.checkpoint-tree-connector--top {
+	top: -4px;
+	height: 8px;
+}
+
+.checkpoint-tree-connector--bottom {
+	bottom: 0;
+	height: 100%;
+}
+
+/* Calendar View */
+.checkpoint-calendar-group {
+	margin-bottom: 16px;
+}
+
+.checkpoint-calendar-date {
+	position: sticky;
+	top: 0;
+	padding: 4px 0;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--vscode-descriptionForeground);
+	background: var(--vscode-editor-background);
+	z-index: 1;
+}
+
+/* Footer Stats */
+.checkpoint-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 12px;
+	border-top: 1px solid var(--vscode-panel-border);
+	font-size: 11px;
+	color: var(--vscode-descriptionForeground);
+}
+
+/* Category Colors */
+.checkpoint-category--auto {
+	color: var(--vscode-charts-blue, #3794ff);
+}
+
+.checkpoint-category--manual {
+	color: var(--vscode-charts-green, #89d185);
+}
+
+.checkpoint-category--milestone {
+	color: var(--vscode-charts-yellow, #cca702);
+}
+
+.checkpoint-category--experiment {
+	color: var(--vscode-charts-purple, #b180d7);
+}
+
+.checkpoint-category--backup {
+	color: var(--vscode-charts-orange, #cd9731);
+}
+
+.checkpoint-category--recovery {
+	color: var(--vscode-charts-red, #f14c4c);
+}
+
+/* Status Indicators */
+.checkpoint-current-badge {
+	font-size: 10px;
+	padding: 2px 6px;
+	border-radius: 3px;
+	background: var(--vscode-inputValidation-infoBackground);
+	color: var(--vscode-inputValidation-infoForeground);
+}
+
+/* Empty State */
+.checkpoint-empty {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 128px;
+	color: var(--vscode-descriptionForeground);
+}

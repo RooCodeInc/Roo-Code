@@ -12,8 +12,17 @@ import { fileExistsAtPath } from "../../utils/fs"
 import { executeRipgrep } from "../../services/search/file-search"
 import { t } from "../../i18n"
 
-import { CheckpointDiff, CheckpointResult, CheckpointEventMap } from "./types"
+import {
+	CheckpointDiff,
+	CheckpointResult,
+	CheckpointEventMap,
+	CheckpointSaveOptions,
+	CheckpointStats,
+	CheckpointCategory,
+	CheckpointMetadata,
+} from "./types"
 import { getExcludePatterns } from "./excludes"
+import { CheckpointMetadataService } from "./checkpoint-metadata"
 
 /**
  * Creates a SimpleGit instance with sanitized environment variables to prevent
@@ -85,6 +94,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 	protected readonly dotGitDir: string
 	protected git?: SimpleGit
 	protected readonly log: (message: string) => void
+	protected metadataService?: CheckpointMetadataService
 	protected shadowGitConfigWorktree?: string
 
 	public get baseHash() {
@@ -184,6 +194,10 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 		)
 
 		this.git = git
+
+		// Initialize metadata service
+		this.metadataService = new CheckpointMetadataService(this.checkpointsDir)
+		await this.metadataService.initialize()
 
 		await onInit?.()
 
@@ -286,7 +300,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 
 	public async saveCheckpoint(
 		message: string,
-		options?: { allowEmpty?: boolean; suppressMessage?: boolean },
+		options?: CheckpointSaveOptions,
 	): Promise<CheckpointResult | undefined> {
 		try {
 			this.log(
@@ -306,6 +320,13 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			this._checkpoints.push(toHash)
 			const duration = Date.now() - startTime
 
+			// Create metadata for the checkpoint
+			let metadata: CheckpointMetadata | undefined
+			if (result.commit && this.metadataService) {
+				const stats = await this.getCheckpointStats(fromHash, toHash)
+				metadata = await this.metadataService.createMetadata(toHash, this.taskId, stats, options)
+			}
+
 			if (result.commit) {
 				this.emit("checkpoint", {
 					type: "checkpoint",
@@ -313,6 +334,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 					toHash,
 					duration,
 					suppressMessage: options?.suppressMessage ?? false,
+					metadata,
 				})
 			}
 
@@ -331,6 +353,113 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			this.emit("error", { type: "error", error })
 			throw error
 		}
+	}
+
+	/**
+	 * Get statistics for a checkpoint by comparing two commits
+	 */
+	private async getCheckpointStats(fromHash: string, toHash: string): Promise<CheckpointStats> {
+		if (!this.git) {
+			return {
+				filesChanged: 0,
+				additions: 0,
+				deletions: 0,
+				filesCreated: [],
+				filesDeleted: [],
+				filesModified: [],
+			}
+		}
+
+		try {
+			const diff = await this.git.diffSummary([`${fromHash}..${toHash}`])
+
+			const filesCreated: string[] = []
+			const filesDeleted: string[] = []
+			const filesModified: string[] = []
+
+			for (const file of diff.files) {
+				if ("insertions" in file && "deletions" in file) {
+					if (file.insertions > 0 && file.deletions === 0) {
+						filesCreated.push(file.file)
+					} else if (file.deletions > 0 && file.insertions === 0) {
+						filesDeleted.push(file.file)
+					} else {
+						filesModified.push(file.file)
+					}
+				}
+			}
+
+			return {
+				filesChanged: diff.files.length,
+				additions: diff.insertions,
+				deletions: diff.deletions,
+				filesCreated,
+				filesDeleted,
+				filesModified,
+			}
+		} catch (error) {
+			this.log(
+				`[${this.constructor.name}#getCheckpointStats] failed to get stats: ${error instanceof Error ? error.message : String(error)}`,
+			)
+			return {
+				filesChanged: 0,
+				additions: 0,
+				deletions: 0,
+				filesCreated: [],
+				filesDeleted: [],
+				filesModified: [],
+			}
+		}
+	}
+
+	/**
+	 * Rename a checkpoint
+	 */
+	public async renameCheckpoint(commitHash: string, name: string): Promise<CheckpointMetadata | undefined> {
+		const metadata = this.metadataService?.getMetadataByCommitHash(commitHash)
+		if (!metadata) {
+			return undefined
+		}
+		return this.metadataService?.renameCheckpoint(metadata.id, name)
+	}
+
+	/**
+	 * Star/unstar a checkpoint
+	 */
+	public async toggleCheckpointStar(commitHash: string): Promise<CheckpointMetadata | undefined> {
+		const metadata = this.metadataService?.getMetadataByCommitHash(commitHash)
+		if (!metadata) {
+			return undefined
+		}
+		return this.metadataService?.toggleStar(metadata.id)
+	}
+
+	public async deleteCheckpoint(commitHash: string): Promise<void> {
+		if (this.metadataService) {
+			const metadata = this.metadataService.getMetadataByCommitHash(commitHash)
+			if (metadata) {
+				await this.metadataService.deleteMetadata(metadata.id)
+			}
+		}
+
+		const index = this._checkpoints.indexOf(commitHash)
+		if (index !== -1) {
+			this._checkpoints.splice(index, 1)
+		}
+	}
+
+	/**
+	 * Get metadata for a checkpoint
+	 */
+	public getCheckpointMetadata(commitHash: string): CheckpointMetadata | undefined {
+		return this.metadataService?.getMetadataByCommitHash(commitHash)
+	}
+
+	/**
+	 * Get all checkpoint metadata for this task
+	 */
+	public getAllCheckpointMetadata(): CheckpointMetadata[] {
+		return this.metadataService?.getMetadataByTaskId(this.taskId) ?? []
 	}
 
 	public async restoreCheckpoint(commitHash: string) {
