@@ -278,7 +278,7 @@ async function readAgentRulesFile(filePath: string): Promise<string> {
 /**
  * Load AGENTS.md or AGENT.md file from a specific directory
  * Checks for both AGENTS.md (standard) and AGENT.md (alternative) for compatibility
- * Also loads corresponding .local.md files for personal overrides
+ * Also loads AGENTS.local.md for personal overrides (not checked in to version control)
  *
  * @param directory - Directory to check for AGENTS.md
  * @param showPath - Whether to include the directory path in the header
@@ -306,16 +306,18 @@ async function loadAgentRulesFileFromDirectory(
 					: `# Agent Rules Standard (${filename}):`
 				results.push(`${header}\n${content}`)
 
-				// Also try to load the corresponding .local.md file for personal overrides
-				const localFilename = filename.replace(".md", ".local.md")
-				const localPath = path.join(directory, localFilename)
-				const localContent = await readAgentRulesFile(localPath)
+				// Also try to load AGENTS.local.md for personal overrides (only supported for AGENTS.md, not AGENT.md)
+				if (filename === "AGENTS.md") {
+					const localFilename = "AGENTS.local.md"
+					const localPath = path.join(directory, localFilename)
+					const localContent = await readAgentRulesFile(localPath)
 
-				if (localContent) {
-					const localHeader = showPath
-						? `# Agent Rules Local (${localFilename}) from ${displayPath}:`
-						: `# Agent Rules Local (${localFilename}):`
-					results.push(`${localHeader}\n${localContent}`)
+					if (localContent) {
+						const localHeader = showPath
+							? `# Agent Rules Local (${localFilename}) from ${displayPath}:`
+							: `# Agent Rules Local (${localFilename}):`
+						results.push(`${localHeader}\n${localContent}`)
+					}
 				}
 
 				// Found a standard file (and optionally its local override), don't check alternative

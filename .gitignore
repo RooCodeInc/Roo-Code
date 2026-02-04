@@ -19,7 +19,6 @@ bin/
 # Local prompts and rules
 /local-prompts
 AGENTS.local.md
-AGENT.local.md
 
 # Test environment
 .test_env

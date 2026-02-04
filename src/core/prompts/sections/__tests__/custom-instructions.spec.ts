@@ -1635,17 +1635,17 @@ describe("Rules directory reading", () => {
 		expect(result).toContain("Local overrides from AGENTS.local.md")
 	})
 
-	it("should load AGENT.local.md alongside AGENT.md when AGENTS.md is not found", async () => {
+	it("should not load AGENT.local.md (only AGENTS.local.md is supported)", async () => {
 		// Simulate no .roo/rules-test-mode directory
 		statMock.mockRejectedValueOnce({ code: "ENOENT" })
 
-		// Mock lstat to indicate AGENTS.md doesn't exist but AGENT.md and AGENT.local.md do
+		// Mock lstat to indicate AGENTS.md doesn't exist but AGENT.md does
 		lstatMock.mockImplementation((filePath: PathLike) => {
 			const pathStr = filePath.toString()
 			if (pathStr.endsWith("AGENTS.md") || pathStr.endsWith("AGENTS.local.md")) {
 				return Promise.reject({ code: "ENOENT" })
 			}
-			if (pathStr.endsWith("AGENT.md") || pathStr.endsWith("AGENT.local.md")) {
+			if (pathStr.endsWith("AGENT.md")) {
 				return Promise.resolve({
 					isSymbolicLink: vi.fn().mockReturnValue(false),
 				})
@@ -1655,9 +1655,6 @@ describe("Rules directory reading", () => {
 
 		readFileMock.mockImplementation((filePath: PathLike) => {
 			const pathStr = filePath.toString()
-			if (pathStr.endsWith("AGENT.local.md")) {
-				return Promise.resolve("Local overrides from AGENT.local.md")
-			}
 			if (pathStr.endsWith("AGENT.md")) {
 				return Promise.resolve("Base rules from AGENT.md")
 			}
@@ -1678,11 +1675,10 @@ describe("Rules directory reading", () => {
 			},
 		)
 
-		// Should contain both AGENT.md and AGENT.local.md content
+		// Should contain AGENT.md but NOT AGENT.local.md (only AGENTS.local.md is supported)
 		expect(result).toContain("# Agent Rules Standard (AGENT.md):")
 		expect(result).toContain("Base rules from AGENT.md")
-		expect(result).toContain("# Agent Rules Local (AGENT.local.md):")
-		expect(result).toContain("Local overrides from AGENT.local.md")
+		expect(result).not.toContain("AGENT.local.md")
 	})
 
 	it("should not load AGENTS.local.md when base AGENTS.md does not exist", async () => {
