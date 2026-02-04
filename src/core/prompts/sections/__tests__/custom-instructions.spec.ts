@@ -862,7 +862,7 @@ describe("addCustomInstructions", () => {
 		expect(readFileMock).toHaveBeenCalledWith(expect.stringContaining("AGENT.md"), "utf-8")
 	})
 
-	it("should prefer AGENTS.md over AGENT.md when both exist", async () => {
+	it("should load both AGENTS.md and AGENT.md when both exist", async () => {
 		// Simulate no .roo/rules-test-mode directory
 		statMock.mockRejectedValueOnce({ code: "ENOENT" })
 
@@ -902,11 +902,13 @@ describe("addCustomInstructions", () => {
 			},
 		)
 
-		// Should contain AGENTS.md content (preferred) and not AGENT.md
+		// Should contain BOTH AGENTS.md and AGENT.md content
 		expect(result).toContain("# Agent Rules Standard (AGENTS.md):")
 		expect(result).toContain("Agent rules from AGENTS.md file (plural)")
-		expect(result).not.toContain("Agent rules from AGENT.md file (singular)")
+		expect(result).toContain("# Agent Rules Standard (AGENT.md):")
+		expect(result).toContain("Agent rules from AGENT.md file (singular)")
 		expect(readFileMock).toHaveBeenCalledWith(expect.stringContaining("AGENTS.md"), "utf-8")
+		expect(readFileMock).toHaveBeenCalledWith(expect.stringContaining("AGENT.md"), "utf-8")
 	})
 
 	it("should return empty string when no instructions provided", async () => {

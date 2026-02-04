@@ -276,12 +276,13 @@ async function readAgentRulesFile(filePath: string): Promise<string> {
 }
 
 /**
- * Load AGENTS.md or AGENT.md file from a specific directory
- * Checks for both AGENTS.md (standard) and AGENT.md (alternative) for compatibility
- * Also loads AGENTS.local.md for personal overrides (not checked in to version control)
- * AGENTS.local.md can be loaded even if AGENTS.md doesn't exist
+ * Load agent rules files from a specific directory
+ * Loads ALL of the following files if they exist:
+ * - AGENTS.md (standard agent rules)
+ * - AGENT.md (alternative naming)
+ * - AGENTS.local.md (personal overrides, not checked in to version control)
  *
- * @param directory - Directory to check for AGENTS.md
+ * @param directory - Directory to check for agent rules files
  * @param showPath - Whether to include the directory path in the header
  * @param cwd - Current working directory for computing relative paths (optional)
  */
@@ -306,9 +307,7 @@ async function loadAgentRulesFileFromDirectory(
 					? `# Agent Rules Standard (${filename}) from ${displayPath}:`
 					: `# Agent Rules Standard (${filename}):`
 				results.push(`${header}\n${content}`)
-
-				// Found a standard file, don't check alternative
-				break
+				// Continue to check for additional agent rules files
 			}
 		} catch (err) {
 			// Silently ignore errors - agent rules files are optional
