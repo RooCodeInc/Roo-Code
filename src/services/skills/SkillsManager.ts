@@ -599,12 +599,13 @@ Add your skill instructions here.
 		const modesList = await this.getAvailableModes()
 
 		// Priority rules for skills with the same name:
-		// 1. Source level: project > global > built-in (project always wins over global)
-		// 2. Within the same source level: .roo overrides .agents
+		// 1. Source level: project > global > built-in (handled by shouldOverrideSkill in getSkillsForMode)
+		// 2. Within the same source level: later-processed directories override earlier ones
+		//    (via Map.set replacement during discovery - same source+mode+name key gets replaced)
 		//
-		// Processing order (later entries override earlier ones at the same source level):
-		// - Global: .agents/skills, then .roo/skills
-		// - Project: .agents/skills, then .roo/skills
+		// Processing order (later directories override earlier ones at the same source level):
+		// - Global: .agents/skills first, then .roo/skills (so .roo wins)
+		// - Project: .agents/skills first, then .roo/skills (so .roo wins)
 
 		// Global .agents directories (lowest priority - shared across agents)
 		dirs.push({ dir: path.join(globalAgentsDir, "skills"), source: "global" })
