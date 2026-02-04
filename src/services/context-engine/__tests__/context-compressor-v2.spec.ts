@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest"
-import type { BuiltContext, ContextItem, ContextType } from "../context-builder"
+import { BuiltContext, ContextItem, ContextType } from "../context-builder"
 import { ContextCompressorV2, createContextCompressorV2 } from "../context-compressor-v2"
 
 describe("ContextCompressorV2", () => {
@@ -27,10 +27,7 @@ describe("ContextCompressorV2", () => {
 	})
 
 	describe("compress", () => {
-		function createMockContext(
-			items: ContextItem[],
-			totalTokens: number,
-		): BuiltContext {
+		function createMockContext(items: ContextItem[], totalTokens: number): BuiltContext {
 			return {
 				items,
 				totalTokens,
@@ -124,7 +121,7 @@ describe("ContextCompressorV2", () => {
 		it("should handle large context with multiple items", async () => {
 			const items: ContextItem[] = []
 			for (let i = 0; i < 20; i++) {
-				const typeMap: ContextType[] = ["code", "conversation", "pattern"]
+				const typeMap: ContextType[] = [ContextType.CODE, ContextType.CONVERSATION, ContextType.PATTERN]
 				items.push(
 					createMockItem(
 						typeMap[i % 3],
@@ -160,9 +157,7 @@ describe("ContextCompressorV2", () => {
 		})
 
 		it("should return valid compression ratio", async () => {
-			const items: ContextItem[] = [
-				createMockItem("code" as ContextType, "x".repeat(1000), "/test.ts", 0.5, 5),
-			]
+			const items: ContextItem[] = [createMockItem("code" as ContextType, "x".repeat(1000), "/test.ts", 0.5, 5)]
 			const context = createMockContext(items, 250)
 			const result = await compressor.compress(context, 100)
 
@@ -173,10 +168,7 @@ describe("ContextCompressorV2", () => {
 	})
 
 	describe("quickCompress", () => {
-		function createMockContext(
-			items: ContextItem[],
-			totalTokens: number,
-		): BuiltContext {
+		function createMockContext(items: ContextItem[], totalTokens: number): BuiltContext {
 			return {
 				items,
 				totalTokens,
@@ -192,11 +184,7 @@ describe("ContextCompressorV2", () => {
 			}
 		}
 
-		function createMockItem(
-			type: ContextType,
-			content: string,
-			source: string,
-		): ContextItem {
+		function createMockItem(type: ContextType, content: string, source: string): ContextItem {
 			return {
 				type,
 				content,
@@ -208,9 +196,7 @@ describe("ContextCompressorV2", () => {
 		}
 
 		it("should compress with default options", async () => {
-			const items: ContextItem[] = [
-				createMockItem("code" as ContextType, "test", "/test.ts"),
-			]
+			const items: ContextItem[] = [createMockItem("code" as ContextType, "test", "/test.ts")]
 			const context = createMockContext(items, 5)
 			const result = await compressor.quickCompress(context, 100)
 
@@ -220,10 +206,7 @@ describe("ContextCompressorV2", () => {
 	})
 
 	describe("getCompressionStats", () => {
-		function createMockContext(
-			items: ContextItem[],
-			totalTokens: number,
-		): BuiltContext {
+		function createMockContext(items: ContextItem[], totalTokens: number): BuiltContext {
 			return {
 				items,
 				totalTokens,
@@ -239,11 +222,7 @@ describe("ContextCompressorV2", () => {
 			}
 		}
 
-		function createMockItem(
-			type: ContextType,
-			content: string,
-			source: string,
-		): ContextItem {
+		function createMockItem(type: ContextType, content: string, source: string): ContextItem {
 			return {
 				type,
 				content,
@@ -255,9 +234,7 @@ describe("ContextCompressorV2", () => {
 		}
 
 		it("should return canCompress=false when content fits", async () => {
-			const items: ContextItem[] = [
-				createMockItem("code" as ContextType, "test", "/test.ts"),
-			]
+			const items: ContextItem[] = [createMockItem("code" as ContextType, "test", "/test.ts")]
 			const context = createMockContext(items, 10)
 			const stats = await compressor.getCompressionStats(context, 100)
 
@@ -267,9 +244,7 @@ describe("ContextCompressorV2", () => {
 		})
 
 		it("should return canCompress=true when content exceeds limit", async () => {
-			const items: ContextItem[] = [
-				createMockItem("code" as ContextType, "x".repeat(1000), "/test.ts"),
-			]
+			const items: ContextItem[] = [createMockItem("code" as ContextType, "x".repeat(1000), "/test.ts")]
 			const context = createMockContext(items, 250)
 			const stats = await compressor.getCompressionStats(context, 100)
 
@@ -279,9 +254,7 @@ describe("ContextCompressorV2", () => {
 		})
 
 		it("should limit estimated ratio to 0.9", async () => {
-			const items: ContextItem[] = [
-				createMockItem("code" as ContextType, "x".repeat(10000), "/test.ts"),
-			]
+			const items: ContextItem[] = [createMockItem("code" as ContextType, "x".repeat(10000), "/test.ts")]
 			const context = createMockContext(items, 2500)
 			const stats = await compressor.getCompressionStats(context, 10)
 
@@ -290,10 +263,7 @@ describe("ContextCompressorV2", () => {
 	})
 
 	describe("edge cases", () => {
-		function createMockContext(
-			items: ContextItem[],
-			totalTokens: number,
-		): BuiltContext {
+		function createMockContext(items: ContextItem[], totalTokens: number): BuiltContext {
 			return {
 				items,
 				totalTokens,
@@ -391,7 +361,15 @@ describe("ContextCompressorV2", () => {
 		})
 
 		it("should handle all context types", async () => {
-		const types: ContextType[] = ["code", "conversation", "pattern", "decision", "architecture", "behavior", "symbol"] as ContextType[]
+			const types: ContextType[] = [
+				"code",
+				"conversation",
+				"pattern",
+				"decision",
+				"architecture",
+				"behavior",
+				"symbol",
+			] as ContextType[]
 			const items: ContextItem[] = types.map((type, i) => ({
 				type,
 				content: `content for ${type}`,

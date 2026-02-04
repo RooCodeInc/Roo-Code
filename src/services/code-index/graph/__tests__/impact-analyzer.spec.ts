@@ -37,6 +37,9 @@ describe("ImpactAnalyzer", () => {
 				memoryUsage: 1000,
 				lastUpdated: Date.now(),
 			}),
+			updateRelationsRealtime: vi.fn(),
+			quickImpactAnalysis: vi.fn(),
+			getSmartSuggestions: vi.fn(),
 		}
 
 		analyzer = new ImpactAnalyzer(mockGraphStore)

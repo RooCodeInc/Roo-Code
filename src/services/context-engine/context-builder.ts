@@ -223,7 +223,7 @@ export class ContextBuilder implements IContextBuilder {
 		const startTime = Date.now()
 		const maxTokens = request.maxTokens || 8000
 
-			// Step 1: Gather current state
+		// Step 1: Gather current state
 		const currentState = await this.gatherCurrentState(request)
 
 		// Step 2: Get relevant code from index
@@ -311,7 +311,7 @@ export class ContextBuilder implements IContextBuilder {
 					content,
 					tokens: this.estimateTokens(content),
 					source: conv.conversation.id,
-					relevance: conv.relevanceScore,
+					relevance: conv.relevance,
 					priority: 3,
 					metadata: { timestamp: conv.conversation.updatedAt },
 				})
@@ -433,11 +433,7 @@ export class ContextBuilder implements IContextBuilder {
 
 			if (item.tokens > remainingTokens) {
 				// Compress the item
-				const compressedContent = await this.compressor.compressFile(
-					item.content,
-					remainingTokens,
-					item.source,
-				)
+				const compressedContent = await this.compressor.compressFile(item.content, remainingTokens, item.source)
 				const compressedItem: ContextItem = {
 					...item,
 					content: compressedContent,
@@ -492,12 +488,12 @@ export class ContextBuilder implements IContextBuilder {
 
 	private extractFiles(items: ContextItem[], currentFile?: string): string[] {
 		const files = new Set<string>()
-		
+
 		// Add current file if provided
 		if (currentFile) {
 			files.add(currentFile)
 		}
-		
+
 		for (const item of items) {
 			if (item.type === ContextType.CODE && item.source) {
 				files.add(item.source)
