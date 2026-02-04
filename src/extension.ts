@@ -35,6 +35,7 @@ import { TerminalRegistry } from "./integrations/terminal/TerminalRegistry"
 import { openAiCodexOAuthManager } from "./integrations/openai-codex/oauth"
 import { McpServerManager } from "./services/mcp/McpServerManager"
 import { CodeIndexManager } from "./services/code-index/manager"
+import { ContextEngineService, createContextEngineService } from "./services/context-engine"
 import { MdmService } from "./services/mdm/MdmService"
 import { migrateSettings } from "./utils/migrateSettings"
 import { autoImportSettings } from "./utils/autoImportSettings"
@@ -49,6 +50,7 @@ import {
 } from "./activate"
 import { initializeI18n } from "./i18n"
 import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
+import { setupContextTracking } from "./core/context-tracking/context-tracking-integration"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -61,6 +63,7 @@ import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/p
 let outputChannel: vscode.OutputChannel
 let extensionContext: vscode.ExtensionContext
 let cloudService: CloudService | undefined
+let contextEngineService: ContextEngineService | null = null
 
 let authStateChangedHandler: ((data: { state: AuthState; previousState: AuthState }) => Promise<void>) | undefined
 let settingsUpdatedHandler: (() => void) | undefined
@@ -190,6 +193,31 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		}
 	}
+
+	// Initialize Context Engine Service for intelligent context building
+	try {
+		contextEngineService = await createContextEngineService(context, {
+			maxTokens: 8000,
+			enableBehavioralTracking: true,
+			enablePatternLearning: true,
+		})
+		outputChannel.appendLine("[ContextEngine] Initialized successfully")
+
+		// Add to subscriptions for proper cleanup
+		context.subscriptions.push({
+			dispose: async () => {
+				await ContextEngineService.dispose()
+				outputChannel.appendLine("[ContextEngine] Disposed")
+			},
+		})
+	} catch (error) {
+		outputChannel.appendLine(
+			`[ContextEngine] Failed to initialize: ${error instanceof Error ? error.message : String(error)}`,
+		)
+	}
+
+	// Setup behavioral tracking if context engine is available
+	setupContextTracking(context)
 
 	// Initialize the provider *before* the Roo Code Cloud service.
 	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)

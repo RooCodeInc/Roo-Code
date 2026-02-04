@@ -3,7 +3,19 @@
  * Enterprise-grade interfaces for graph operations
  */
 
-import { DependencyEdge, ExportSymbol, GraphSnapshot, GraphStats, LoadResult, ParseResult, SaveResult } from "./types"
+import {
+	CurrentContext,
+	DependencyEdge,
+	ExportSymbol,
+	FileChange,
+	GraphSnapshot,
+	GraphStats,
+	ImpactReport,
+	LoadResult,
+	ParseResult,
+	SaveResult,
+	Suggestion,
+} from "./types"
 
 /**
  * Enterprise-grade graph store interface
@@ -117,6 +129,28 @@ export interface IGraphStore {
 	 * Get statistics about the graph
 	 */
 	getStats(): GraphStats
+
+	// Enhanced Graph Operations
+
+	/**
+	 * Update graph relations in real-time based on file changes
+	 * @param change - File change information
+	 */
+	updateRelationsRealtime(change: FileChange): Promise<void>
+
+	/**
+	 * Perform quick impact analysis for a file change
+	 * @param filePath - Path to the changed file
+	 * @returns Impact analysis report
+	 */
+	quickImpactAnalysis(filePath: string): Promise<ImpactReport>
+
+	/**
+	 * Get smart suggestions based on current context
+	 * @param context - Current editing context
+	 * @returns Array of suggestions
+	 */
+	getSmartSuggestions(context: CurrentContext): Promise<Suggestion[]>
 }
 
 /**

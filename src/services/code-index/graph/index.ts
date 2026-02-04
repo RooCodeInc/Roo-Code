@@ -25,3 +25,4 @@ export {
 	type AffectedFile,
 	type ImpactAnalysis,
 } from "./impact-analyzer"
+export { PatternTracker } from "./pattern-tracker"

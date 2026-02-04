@@ -7,14 +7,18 @@ import * as fs from "fs/promises"
 import * as path from "path"
 import { IGraphStore } from "./interfaces"
 import {
+	CurrentContext,
 	DependencyEdge,
 	ExportSymbol,
+	FileChange,
 	GraphNode,
 	GraphSnapshot,
 	GraphStats,
 	GRAPH_VERSION,
+	ImpactReport,
 	LoadResult,
 	SaveResult,
+	Suggestion,
 } from "./types"
 
 const GRAPH_FILENAME = "knowledge-graph.json"
@@ -464,5 +468,200 @@ export class GraphStore implements IGraphStore {
 	 */
 	getNode(filePath: string): GraphNode | undefined {
 		return this.nodes.get(filePath)
+	}
+
+	// ============================================================================
+	// Enhanced Graph Operations
+	// ============================================================================
+
+	/**
+	 * Update graph relations in real-time based on file changes
+	 */
+	async updateRelationsRealtime(change: FileChange): Promise<void> {
+		const startTime = Date.now()
+
+		try {
+			switch (change.type) {
+				case "created":
+				case "modified":
+					// For modified/created files, we need to refresh the node's imports/exports
+					// This requires parsing the file, which should be done by the parser
+					// For now, we mark the node as needing update
+					if (change.contentHash) {
+						const needsUpdate = await this.needsUpdate(change.filePath, change.contentHash)
+						if (needsUpdate) {
+							this.dirtyNodes.add(change.filePath)
+						}
+					}
+					break
+
+				case "deleted":
+					// Remove the node from the graph
+					await this.removeNode(change.filePath)
+					break
+			}
+
+			console.log(`[GraphStore] Real-time update completed in ${Date.now() - startTime}ms`)
+		} catch (error) {
+			console.error(`[GraphStore] Real-time update failed for ${change.filePath}:`, error)
+			throw error
+		}
+	}
+
+	/**
+	 * Perform quick impact analysis for a file change
+	 */
+	async quickImpactAnalysis(filePath: string): Promise<ImpactReport> {
+		const startTime = Date.now()
+
+		try {
+			// Get direct dependents
+			const directImpact = await this.getDependents(filePath)
+
+			// Get transitive dependents (limited depth for speed)
+			const transitiveSet = await this.getTransitiveDependents(filePath, 3)
+			const transitiveImpact = Array.from(transitiveSet).filter((f) => !directImpact.includes(f))
+
+			// Calculate risk level
+			const totalImpact = directImpact.length + transitiveImpact.length
+			let riskLevel: "low" | "medium" | "high" | "critical"
+			if (totalImpact === 0) {
+				riskLevel = "low"
+			} else if (totalImpact < 5) {
+				riskLevel = "low"
+			} else if (totalImpact < 20) {
+				riskLevel = "medium"
+			} else if (totalImpact < 50) {
+				riskLevel = "high"
+			} else {
+				riskLevel = "critical"
+			}
+
+			// Generate suggestions
+			const suggestions: string[] = []
+			if (totalImpact > 0) {
+				suggestions.push(`This change affects ${totalImpact} file(s)`)
+
+				if (directImpact.length > 0) {
+					suggestions.push(`Review ${directImpact.length} direct dependent(s)`)
+				}
+
+				if (totalImpact > 10) {
+					suggestions.push("Consider running full test suite")
+				} else if (totalImpact > 0) {
+					suggestions.push("Run tests for affected files")
+				}
+
+				if (riskLevel === "critical") {
+					suggestions.push("⚠️ High-risk change - consider breaking into smaller changes")
+				}
+			} else {
+				suggestions.push("No dependencies affected - safe to change")
+			}
+
+			console.log(`[GraphStore] Impact analysis completed in ${Date.now() - startTime}ms`)
+
+			return {
+				directImpact,
+				transitiveImpact,
+				riskLevel,
+				suggestions,
+				estimatedTestCount: Math.min(totalImpact * 2, 100), // Rough estimate
+			}
+		} catch (error) {
+			console.error(`[GraphStore] Impact analysis failed for ${filePath}:`, error)
+			// Return safe defaults on error
+			return {
+				directImpact: [],
+				transitiveImpact: [],
+				riskLevel: "low",
+				suggestions: ["Error performing impact analysis"],
+			}
+		}
+	}
+
+	/**
+	 * Get smart suggestions based on current context
+	 */
+	async getSmartSuggestions(context: CurrentContext): Promise<Suggestion[]> {
+		const suggestions: Suggestion[] = []
+
+		try {
+			const currentNode = this.nodes.get(context.currentFile)
+			if (!currentNode) {
+				return suggestions
+			}
+
+			// 1. Suggest related files based on imports
+			for (const imp of currentNode.imports.slice(0, 5)) {
+				suggestions.push({
+					type: "dependency",
+					target: imp.target,
+					reason: `Imported by ${context.currentFile}`,
+					confidence: imp.confidence,
+					priority: 70,
+				})
+			}
+
+			// 2. Suggest files that import this file
+			const dependents = await this.getDependents(context.currentFile)
+			for (const dep of dependents.slice(0, 3)) {
+				suggestions.push({
+					type: "related_file",
+					target: dep,
+					reason: `Depends on ${context.currentFile}`,
+					confidence: 0.8,
+					priority: 60,
+				})
+			}
+
+			// 3. Suggest common dependencies (files that share imports)
+			if (context.recentFiles && context.recentFiles.length > 0) {
+				for (const recentFile of context.recentFiles.slice(0, 2)) {
+					const commonDeps = await this.findCommonDependencies(context.currentFile, recentFile)
+					for (const common of commonDeps.slice(0, 2)) {
+						suggestions.push({
+							type: "related_file",
+							target: common,
+							reason: `Common dependency with ${recentFile}`,
+							confidence: 0.7,
+							priority: 50,
+						})
+					}
+				}
+			}
+
+			// 4. Suggest test files (heuristic: files ending with .test.* or .spec.*)
+			const testPatterns = [".test.", ".spec."]
+			for (const [filePath] of this.nodes) {
+				if (testPatterns.some((pattern) => filePath.includes(pattern))) {
+					// Check if this test file imports the current file
+					const testNode = this.nodes.get(filePath)
+					if (testNode?.imports.some((imp) => imp.target === context.currentFile)) {
+						suggestions.push({
+							type: "test_file",
+							target: filePath,
+							reason: `Test file for ${context.currentFile}`,
+							confidence: 0.9,
+							priority: 80,
+						})
+						break // Only suggest one test file
+					}
+				}
+			}
+
+			// Sort by priority and confidence
+			suggestions.sort((a, b) => {
+				const scoreA = a.priority * a.confidence
+				const scoreB = b.priority * b.confidence
+				return scoreB - scoreA
+			})
+
+			// Return top 10 suggestions
+			 return suggestions.slice(0, 10)
+		} catch (error) {
+			console.error(`[GraphStore] Error generating suggestions:`, error)
+			return suggestions
+		}
 	}
 }

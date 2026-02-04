@@ -208,3 +208,118 @@ export interface GraphStats {
 	memoryUsage: number
 	lastUpdated: number
 }
+
+/**
+ * Represents a file change for real-time graph updates
+ */
+export interface FileChange {
+	/** Type of change */
+	type: "created" | "modified" | "deleted"
+	/** File path */
+	filePath: string
+	/** New content hash (if created/modified) */
+	contentHash?: string
+	/** Previous content hash (if modified/deleted) */
+	previousHash?: string
+	/** Timestamp of change */
+	timestamp: number
+}
+
+/**
+ * Impact analysis report
+ */
+export interface ImpactReport {
+	/** Files directly affected by the change */
+	directImpact: string[]
+	/** Files transitively affected (dependencies of dependents) */
+	transitiveImpact: string[]
+	/** Risk level assessment */
+	riskLevel: "low" | "medium" | "high" | "critical"
+	/** Suggested actions */
+	suggestions: string[]
+	/** Estimated number of tests that may need to run */
+	estimatedTestCount?: number
+}
+
+/**
+ * Current context for smart suggestions
+ */
+export interface CurrentContext {
+	/** Current file being edited */
+	currentFile: string
+	/** Current cursor position */
+	position?: { line: number; column: number }
+	/** Recently accessed files */
+	recentFiles?: string[]
+	/** Current working directory */
+	workingDirectory?: string
+	/** User's intent (if known) */
+	intent?: "coding" | "debugging" | "refactoring" | "exploring"
+}
+
+/**
+ * Smart suggestion
+ */
+export interface Suggestion {
+	/** Type of suggestion */
+	type: "related_file" | "similar_pattern" | "dependency" | "test_file" | "documentation"
+	/** Suggested file path or action */
+	target: string
+	/** Reason for suggestion */
+	reason: string
+	/** Confidence score (0-1) */
+	confidence: number
+	/** Priority (higher is more important) */
+	priority: number
+	/** Additional metadata */
+	metadata?: Record<string, any>
+}
+
+/**
+ * Context in which a pattern was found
+ */
+export interface PatternContext {
+	/** File where pattern was found */
+	filePath: string
+	/** Line number */
+	line: number
+	/** Surrounding scope (function/class name) */
+	scope?: string
+	/** Language */
+	language: string
+}
+
+/**
+ * Represents a recurring code pattern
+ */
+export interface CodePattern {
+	/** Unique hash of the pattern */
+	hash: string
+	/** Abstracted template of the code */
+	template: string
+	/** Number of times this pattern occurs */
+	occurrences: number
+	/** Context where it was first seen */
+	firstSeen: {
+		timestamp: number
+		context: PatternContext
+	}
+	/** Metadata about the pattern */
+	metadata?: {
+		complexity?: number
+		category?: string
+		tags?: string[]
+	}
+}
+
+/**
+ * Suggestion based on pattern similarity
+ */
+export interface PatternSuggestion {
+	/** The matched pattern */
+	pattern: CodePattern
+	/** Similarity score (0-1) */
+	similarity: number
+	/** Description of the suggestion */
+	description: string
+}

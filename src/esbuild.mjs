@@ -7,8 +7,11 @@ import * as console from "node:console"
 
 import { copyPaths, copyWasms, copyLocales, setupLocaleWatcher } from "@roo-code/build"
 
+import { createRequire } from "module"
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const require = createRequire(import.meta.url)
 
 async function main() {
 	const name = "extension"
@@ -59,6 +62,20 @@ async function main() {
 						srcDir,
 						buildDir,
 					)
+
+					// Manually copy sql-wasm.wasm needed for sql.js
+					try {
+						const sqlJsPath = path.dirname(require.resolve("sql.js/package.json"))
+						const sqlWasmSource = path.join(sqlJsPath, "dist", "sql-wasm.wasm")
+						// Ensure dist directory exists (it should, but just in case)
+						if (!fs.existsSync(distDir)) {
+							fs.mkdirSync(distDir, { recursive: true })
+						}
+						fs.copyFileSync(sqlWasmSource, path.join(distDir, "sql-wasm.wasm"))
+						console.log(`[${name}] Copied sql-wasm.wasm to dist`)
+					} catch (e) {
+						console.error(`[${name}] Failed to copy sql-wasm.wasm:`, e)
+					}
 				})
 			},
 		},
