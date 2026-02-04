@@ -1,5 +1,11 @@
 // npx vitest run api/providers/__tests__/qwen-code-native-tools.spec.ts
 
+// Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
+const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+}))
+
 // Mock filesystem - must come before other imports
 vi.mock("node:fs", () => ({
 	promises: {
@@ -8,25 +14,27 @@ vi.mock("node:fs", () => ({
 	},
 }))
 
-const mockCreate = vi.fn()
-vi.mock("openai", () => {
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
 	return {
-		__esModule: true,
-		default: vi.fn().mockImplementation(() => ({
-			apiKey: "test-key",
-			baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-			chat: {
-				completions: {
-					create: mockCreate,
-				},
-			},
-		})),
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
 	}
 })
 
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: vi.fn(() => {
+		// Return a function that returns a mock language model
+		return vi.fn(() => ({
+			modelId: "qwen3-coder-plus",
+			provider: "qwen-code",
+		}))
+	}),
+}))
+
 import { promises as fs } from "node:fs"
 import { QwenCodeHandler } from "../qwen-code"
-import { NativeToolCallParser } from "../../../core/assistant-message/NativeToolCallParser"
 import type { ApiHandlerOptions } from "../../../shared/api"
 
 describe("QwenCodeHandler Native Tools", () => {
@@ -68,20 +76,18 @@ describe("QwenCodeHandler Native Tools", () => {
 			apiModelId: "qwen3-coder-plus",
 		}
 		handler = new QwenCodeHandler(mockOptions)
-
-		// Clear NativeToolCallParser state before each test
-		NativeToolCallParser.clearRawChunkState()
 	})
 
 	describe("Native Tool Calling Support", () => {
 		it("should include tools in request when model supports native tools and tools are provided", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [{ delta: { content: "Test response" } }],
-					}
-				},
-			}))
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
 
 			const stream = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
@@ -89,29 +95,24 @@ describe("QwenCodeHandler Native Tools", () => {
 			})
 			await stream.next()
 
-			expect(mockCreate).toHaveBeenCalledWith(
+			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tools: expect.arrayContaining([
-						expect.objectContaining({
-							type: "function",
-							function: expect.objectContaining({
-								name: "test_tool",
-							}),
-						}),
-					]),
-					parallel_tool_calls: true,
+					tools: expect.objectContaining({
+						test_tool: expect.any(Object),
+					}),
 				}),
 			)
 		})
 
 		it("should include tool_choice when provided", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [{ delta: { content: "Test response" } }],
-					}
-				},
-			}))
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
 
 			const stream = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
@@ -120,21 +121,22 @@ describe("QwenCodeHandler Native Tools", () => {
 			})
 			await stream.next()
 
-			expect(mockCreate).toHaveBeenCalledWith(
+			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					tool_choice: "auto",
+					toolChoice: "auto",
 				}),
 			)
 		})
 
-		it("should always include tools and tool_choice (tools are guaranteed to be present after ALWAYS_AVAILABLE_TOOLS)", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [{ delta: { content: "Test response" } }],
-					}
-				},
-			}))
+		it("should always include tools and toolChoice (tools are guaranteed to be present after ALWAYS_AVAILABLE_TOOLS)", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
 
 			const stream = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
@@ -142,204 +144,123 @@ describe("QwenCodeHandler Native Tools", () => {
 			await stream.next()
 
 			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
-			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
+			const callArgs = mockStreamText.mock.calls[mockStreamText.mock.calls.length - 1][0]
 			expect(callArgs).toHaveProperty("tools")
-			expect(callArgs).toHaveProperty("tool_choice")
-			expect(callArgs).toHaveProperty("parallel_tool_calls", true)
+			expect(callArgs).toHaveProperty("toolChoice")
 		})
 
-		it("should yield tool_call_partial chunks during streaming", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_qwen_123",
-											function: {
-												name: "test_tool",
-												arguments: '{"arg1":',
-											},
-										},
-									],
-								},
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											function: {
-												arguments: '"value"}',
-											},
-										},
-									],
-								},
-							},
-						],
-					}
-				},
-			}))
-
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-				tools: testTools,
-			})
-
-			const chunks = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			expect(chunks).toContainEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: "call_qwen_123",
-				name: "test_tool",
-				arguments: '{"arg1":',
-			})
-
-			expect(chunks).toContainEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: undefined,
-				name: undefined,
-				arguments: '"value"}',
-			})
-		})
-
-		it("should set parallel_tool_calls based on metadata", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [{ delta: { content: "Test response" } }],
-					}
-				},
-			}))
-
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-				tools: testTools,
-				parallelToolCalls: true,
-			})
-			await stream.next()
-
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					parallel_tool_calls: true,
-				}),
-			)
-		})
-
-		it("should yield tool_call_end events when finish_reason is tool_calls", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_qwen_test",
-											function: {
-												name: "test_tool",
-												arguments: '{"arg1":"value"}',
-											},
-										},
-									],
-								},
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {},
-								finish_reason: "tool_calls",
-							},
-						],
-						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-					}
-				},
-			}))
-
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-				tools: testTools,
-			})
-
-			const chunks = []
-			for await (const chunk of stream) {
-				// Simulate what Task.ts does: when we receive tool_call_partial,
-				// process it through NativeToolCallParser to populate rawChunkTracker
-				if (chunk.type === "tool_call_partial") {
-					NativeToolCallParser.processRawChunk({
-						index: chunk.index,
-						id: chunk.id,
-						name: chunk.name,
-						arguments: chunk.arguments,
-					})
+		it("should yield tool call chunks during streaming", async () => {
+			async function* mockFullStream() {
+				yield {
+					type: "tool-input-start",
+					id: "call_qwen_123",
+					toolName: "test_tool",
 				}
+				yield {
+					type: "tool-input-delta",
+					id: "call_qwen_123",
+					delta: '{"arg1":',
+				}
+				yield {
+					type: "tool-input-delta",
+					id: "call_qwen_123",
+					delta: '"value"}',
+				}
+				yield {
+					type: "tool-input-end",
+					id: "call_qwen_123",
+				}
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+				tools: testTools,
+			})
+
+			const chunks = []
+			for await (const chunk of stream) {
 				chunks.push(chunk)
 			}
 
-			// Should have tool_call_partial and tool_call_end
-			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			// Check for tool_call_start, tool_call_delta, and tool_call_end chunks
+			const startChunks = chunks.filter((chunk) => chunk.type === "tool_call_start")
+			const deltaChunks = chunks.filter((chunk) => chunk.type === "tool_call_delta")
 			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+			expect(startChunks.length).toBeGreaterThan(0)
+			expect(deltaChunks.length).toBeGreaterThan(0)
+			expect(endChunks.length).toBeGreaterThan(0)
+		})
 
-			expect(partialChunks).toHaveLength(1)
+		it("should yield tool_call_end events when tool call is complete", async () => {
+			async function* mockFullStream() {
+				yield {
+					type: "tool-input-start",
+					id: "call_qwen_test",
+					toolName: "test_tool",
+				}
+				yield {
+					type: "tool-input-delta",
+					id: "call_qwen_test",
+					delta: '{"arg1":"value"}',
+				}
+				yield {
+					type: "tool-input-end",
+					id: "call_qwen_test",
+				}
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+				tools: testTools,
+			})
+
+			const chunks = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have tool_call_end from the tool-input-end event
+			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
 			expect(endChunks).toHaveLength(1)
 			expect(endChunks[0].id).toBe("call_qwen_test")
 		})
 
-		it("should preserve thinking block handling alongside tool calls", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									reasoning_content: "Thinking about this...",
-								},
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_after_think",
-											function: {
-												name: "test_tool",
-												arguments: '{"arg1":"result"}',
-											},
-										},
-									],
-								},
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {},
-								finish_reason: "tool_calls",
-							},
-						],
-					}
-				},
-			}))
+		it("should preserve reasoning handling alongside tool calls", async () => {
+			async function* mockFullStream() {
+				yield {
+					type: "reasoning",
+					text: "Thinking about this...",
+				}
+				yield {
+					type: "tool-input-start",
+					id: "call_after_think",
+					toolName: "test_tool",
+				}
+				yield {
+					type: "tool-input-delta",
+					id: "call_after_think",
+					delta: '{"arg1":"result"}',
+				}
+				yield {
+					type: "tool-input-end",
+					id: "call_after_think",
+				}
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
 
 			const stream = handler.createMessage("test prompt", [], {
 				taskId: "test-task-id",
@@ -348,26 +269,156 @@ describe("QwenCodeHandler Native Tools", () => {
 
 			const chunks = []
 			for await (const chunk of stream) {
-				if (chunk.type === "tool_call_partial") {
-					NativeToolCallParser.processRawChunk({
-						index: chunk.index,
-						id: chunk.id,
-						name: chunk.name,
-						arguments: chunk.arguments,
-					})
-				}
 				chunks.push(chunk)
 			}
 
-			// Should have reasoning, tool_call_partial, and tool_call_end
+			// Should have reasoning and tool_call_end
 			const reasoningChunks = chunks.filter((chunk) => chunk.type === "reasoning")
-			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
 			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
 
 			expect(reasoningChunks).toHaveLength(1)
 			expect(reasoningChunks[0].text).toBe("Thinking about this...")
-			expect(partialChunks).toHaveLength(1)
 			expect(endChunks).toHaveLength(1)
+		})
+	})
+
+	describe("completePrompt", () => {
+		it("should complete a prompt using generateText", async () => {
+			mockGenerateText.mockResolvedValue({
+				text: "Test completion",
+			})
+
+			const result = await handler.completePrompt("Test prompt")
+
+			expect(result).toBe("Test completion")
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					prompt: "Test prompt",
+				}),
+			)
+		})
+	})
+
+	describe("OAuth credential handling", () => {
+		it("should load credentials from file", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+			})
+			await stream.next()
+
+			expect(fs.readFile).toHaveBeenCalled()
+		})
+
+		it("should refresh token when expired", async () => {
+			// Mock expired credentials
+			const expiredCredentials = {
+				access_token: "expired-token",
+				refresh_token: "test-refresh-token",
+				token_type: "Bearer",
+				expiry_date: Date.now() - 1000, // Expired 1 second ago
+				resource_url: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+			}
+			;(fs.readFile as any).mockResolvedValue(JSON.stringify(expiredCredentials))
+
+			// Mock the token refresh endpoint
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: async () => ({
+					access_token: "new-access-token",
+					refresh_token: "new-refresh-token",
+					token_type: "Bearer",
+					expires_in: 3600,
+				}),
+			})
+			global.fetch = mockFetch
+
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+			})
+			await stream.next()
+
+			// Should have called fetch to refresh the token
+			expect(mockFetch).toHaveBeenCalledWith(
+				expect.stringContaining("oauth2/token"),
+				expect.objectContaining({
+					method: "POST",
+				}),
+			)
+
+			// Should have saved the new credentials
+			expect(fs.writeFile).toHaveBeenCalled()
+		})
+	})
+
+	describe("getModel", () => {
+		it("should return model info for valid model ID", () => {
+			const model = handler.getModel()
+			expect(model.id).toBe("qwen3-coder-plus")
+			expect(model.info).toBeDefined()
+			expect(model.info.maxTokens).toBe(65536)
+			expect(model.info.contextWindow).toBe(1000000)
+		})
+
+		it("should return default model if no model ID is provided", () => {
+			const handlerWithoutModel = new QwenCodeHandler({})
+			const model = handlerWithoutModel.getModel()
+			expect(model.id).toBe("qwen3-coder-plus")
+			expect(model.info).toBeDefined()
+		})
+
+		it("should include model parameters from getModelParams", () => {
+			const model = handler.getModel()
+			expect(model).toHaveProperty("temperature")
+			expect(model).toHaveProperty("maxTokens")
+		})
+	})
+
+	describe("usage metrics", () => {
+		it("should include usage information", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 10,
+					outputTokens: 5,
+					details: {},
+				}),
+			})
+
+			const stream = handler.createMessage("test prompt", [], {
+				taskId: "test-task-id",
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+			expect(usageChunks.length).toBeGreaterThan(0)
+			expect(usageChunks[0].inputTokens).toBe(10)
+			expect(usageChunks[0].outputTokens).toBe(5)
 		})
 	})
 })

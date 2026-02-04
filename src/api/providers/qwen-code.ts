@@ -1,18 +1,26 @@
 import { promises as fs } from "node:fs"
-import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
 import * as os from "os"
 import * as path from "path"
+
+import { Anthropic } from "@anthropic-ai/sdk"
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
+import { streamText, generateText, ToolSet } from "ai"
 
 import { type ModelInfo, type QwenCodeModelId, qwenCodeModels, qwenCodeDefaultModelId } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	mapToolChoice,
+	handleAiSdkError,
+} from "../transform/ai-sdk"
+import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
+import { getModelParams } from "../transform/model-params"
 
-import { convertToOpenAiMessages } from "../transform/openai-format"
-import { ApiStream } from "../transform/stream"
-
+import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
@@ -51,27 +59,19 @@ function objectToUrlEncoded(data: Record<string, string>): string {
 		.join("&")
 }
 
+/**
+ * Qwen Code provider using @ai-sdk/openai-compatible.
+ * Uses OAuth credentials for authentication with automatic token refresh.
+ */
 export class QwenCodeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: QwenCodeHandlerOptions
 	private credentials: QwenOAuthCredentials | null = null
-	private client: OpenAI | undefined
+	private provider: ReturnType<typeof createOpenAICompatible> | null = null
 	private refreshPromise: Promise<QwenOAuthCredentials> | null = null
 
 	constructor(options: QwenCodeHandlerOptions) {
 		super()
 		this.options = options
-	}
-
-	private ensureClient(): OpenAI {
-		if (!this.client) {
-			// Create the client instance with dummy key initially
-			// The API key will be updated dynamically via ensureAuthenticated
-			this.client = new OpenAI({
-				apiKey: "dummy-key-will-be-replaced",
-				baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-			})
-		}
-		return this.client
 	}
 
 	private async loadCachedQwenCredentials(): Promise<QwenOAuthCredentials> {
@@ -170,12 +170,9 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 
 		if (!this.isTokenValid(this.credentials)) {
 			this.credentials = await this.refreshAccessToken(this.credentials)
+			// Invalidate provider when credentials change
+			this.provider = null
 		}
-
-		// After authentication, update the apiKey and baseURL on the existing client
-		const client = this.ensureClient()
-		client.apiKey = this.credentials.access_token
-		client.baseURL = this.getBaseUrl(this.credentials)
 	}
 
 	private getBaseUrl(creds: QwenOAuthCredentials): string {
@@ -186,154 +183,182 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		return baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/v1`
 	}
 
-	private async callApiWithRetry<T>(apiCall: () => Promise<T>): Promise<T> {
-		try {
-			return await apiCall()
-		} catch (error: any) {
-			if (error.status === 401) {
-				// Token expired, refresh and retry
-				this.credentials = await this.refreshAccessToken(this.credentials!)
-				const client = this.ensureClient()
-				client.apiKey = this.credentials.access_token
-				client.baseURL = this.getBaseUrl(this.credentials)
-				return await apiCall()
-			} else {
-				throw error
-			}
+	/**
+	 * Get or create the AI SDK provider. Creates a new provider if credentials have changed.
+	 */
+	private getProvider(): ReturnType<typeof createOpenAICompatible> {
+		if (!this.credentials) {
+			throw new Error("Not authenticated. Call ensureAuthenticated first.")
+		}
+
+		if (!this.provider) {
+			this.provider = createOpenAICompatible({
+				name: "qwen-code",
+				baseURL: this.getBaseUrl(this.credentials),
+				apiKey: this.credentials.access_token,
+				headers: DEFAULT_HEADERS,
+			})
+		}
+
+		return this.provider
+	}
+
+	/**
+	 * Get the language model for the configured model ID.
+	 */
+	private getLanguageModel() {
+		const { id } = this.getModel()
+		const provider = this.getProvider()
+		return provider(id)
+	}
+
+	override getModel(): { id: string; info: ModelInfo; maxTokens?: number; temperature?: number } {
+		const id = this.options.apiModelId ?? qwenCodeDefaultModelId
+		const info = qwenCodeModels[id as keyof typeof qwenCodeModels] || qwenCodeModels[qwenCodeDefaultModelId]
+		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		return { id, info, ...params }
+	}
+
+	/**
+	 * Process usage metrics from the AI SDK response.
+	 */
+	protected processUsageMetrics(usage: {
+		inputTokens?: number
+		outputTokens?: number
+		details?: {
+			cachedInputTokens?: number
+			reasoningTokens?: number
+		}
+	}): ApiStreamUsageChunk {
+		return {
+			type: "usage",
+			inputTokens: usage.inputTokens || 0,
+			outputTokens: usage.outputTokens || 0,
+			cacheReadTokens: usage.details?.cachedInputTokens,
+			reasoningTokens: usage.details?.reasoningTokens,
 		}
 	}
 
+	/**
+	 * Get the max output tokens for requests.
+	 */
+	protected getMaxOutputTokens(): number | undefined {
+		const { info } = this.getModel()
+		return this.options.modelMaxTokens || info.maxTokens || undefined
+	}
+
+	/**
+	 * Create a message stream using the AI SDK.
+	 */
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		await this.ensureAuthenticated()
-		const client = this.ensureClient()
+
 		const model = this.getModel()
+		const languageModel = this.getLanguageModel()
 
-		const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
-			role: "system",
-			content: systemPrompt,
+		// Convert messages to AI SDK format
+		const aiSdkMessages = convertToAiSdkMessages(messages)
+
+		// Convert tools to OpenAI format first, then to AI SDK format
+		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+
+		// Build the request options
+		const requestOptions: Parameters<typeof streamText>[0] = {
+			model: languageModel,
+			system: systemPrompt,
+			messages: aiSdkMessages,
+			temperature: model.temperature ?? 0,
+			maxOutputTokens: this.getMaxOutputTokens(),
+			tools: aiSdkTools,
+			toolChoice: mapToolChoice(metadata?.tool_choice),
 		}
 
-		const convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
+		try {
+			// Use streamText for streaming responses
+			const result = streamText(requestOptions)
 
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
-			model: model.id,
-			temperature: 0,
-			messages: convertedMessages,
-			stream: true,
-			stream_options: { include_usage: true },
-			max_completion_tokens: model.info.maxTokens,
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
-		}
-
-		const stream = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
-
-		let fullContent = ""
-
-		for await (const apiChunk of stream) {
-			const delta = apiChunk.choices[0]?.delta ?? {}
-			const finishReason = apiChunk.choices[0]?.finish_reason
-
-			if (delta.content) {
-				let newText = delta.content
-				if (newText.startsWith(fullContent)) {
-					newText = newText.substring(fullContent.length)
+			// Process the full stream to get all events including reasoning
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
 				}
-				fullContent = delta.content
+			}
 
-				if (newText) {
-					// Check for thinking blocks
-					if (newText.includes("<think>") || newText.includes("</think>")) {
-						// Simple parsing for thinking blocks
-						const parts = newText.split(/<\/?think>/g)
-						for (let i = 0; i < parts.length; i++) {
-							if (parts[i]) {
-								if (i % 2 === 0) {
-									// Outside thinking block
-									yield {
-										type: "text",
-										text: parts[i],
-									}
-								} else {
-									// Inside thinking block
-									yield {
-										type: "reasoning",
-										text: parts[i],
-									}
-								}
-							}
-						}
-					} else {
-						yield {
-							type: "text",
-							text: newText,
-						}
+			// Yield usage metrics at the end
+			const usage = await result.usage
+			if (usage) {
+				yield this.processUsageMetrics(usage)
+			}
+		} catch (error: any) {
+			// Handle 401 errors by refreshing token and retrying once
+			if (error?.statusCode === 401 || error?.response?.status === 401) {
+				this.credentials = await this.refreshAccessToken(this.credentials!)
+				this.provider = null // Force provider recreation
+
+				// Retry with new credentials
+				const retryResult = streamText({
+					...requestOptions,
+					model: this.getLanguageModel(),
+				})
+
+				for await (const part of retryResult.fullStream) {
+					for (const chunk of processAiSdkStreamPart(part)) {
+						yield chunk
 					}
 				}
+
+				const retryUsage = await retryResult.usage
+				if (retryUsage) {
+					yield this.processUsageMetrics(retryUsage)
+				}
+				return
 			}
 
-			if ("reasoning_content" in delta && delta.reasoning_content) {
-				yield {
-					type: "reasoning",
-					text: (delta.reasoning_content as string | undefined) || "",
-				}
-			}
-
-			// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
-			if (delta.tool_calls) {
-				for (const toolCall of delta.tool_calls) {
-					yield {
-						type: "tool_call_partial",
-						index: toolCall.index,
-						id: toolCall.id,
-						name: toolCall.function?.name,
-						arguments: toolCall.function?.arguments,
-					}
-				}
-			}
-
-			// Process finish_reason to emit tool_call_end events
-			if (finishReason) {
-				const endEvents = NativeToolCallParser.processFinishReason(finishReason)
-				for (const event of endEvents) {
-					yield event
-				}
-			}
-
-			if (apiChunk.usage) {
-				yield {
-					type: "usage",
-					inputTokens: apiChunk.usage.prompt_tokens || 0,
-					outputTokens: apiChunk.usage.completion_tokens || 0,
-				}
-			}
+			// Handle other AI SDK errors
+			throw handleAiSdkError(error, "Qwen Code")
 		}
 	}
 
-	override getModel(): { id: string; info: ModelInfo } {
-		const id = this.options.apiModelId ?? qwenCodeDefaultModelId
-		const info = qwenCodeModels[id as keyof typeof qwenCodeModels] || qwenCodeModels[qwenCodeDefaultModelId]
-		return { id, info }
-	}
-
+	/**
+	 * Complete a prompt using the AI SDK generateText.
+	 */
 	async completePrompt(prompt: string): Promise<string> {
 		await this.ensureAuthenticated()
-		const client = this.ensureClient()
-		const model = this.getModel()
 
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
-			model: model.id,
-			messages: [{ role: "user", content: prompt }],
-			max_completion_tokens: model.info.maxTokens,
+		const { temperature } = this.getModel()
+		const languageModel = this.getLanguageModel()
+
+		try {
+			const { text } = await generateText({
+				model: languageModel,
+				prompt,
+				maxOutputTokens: this.getMaxOutputTokens(),
+				temperature: temperature ?? 0,
+			})
+
+			return text
+		} catch (error: any) {
+			// Handle 401 errors by refreshing token and retrying once
+			if (error?.statusCode === 401 || error?.response?.status === 401) {
+				this.credentials = await this.refreshAccessToken(this.credentials!)
+				this.provider = null
+
+				const { text } = await generateText({
+					model: this.getLanguageModel(),
+					prompt,
+					maxOutputTokens: this.getMaxOutputTokens(),
+					temperature: temperature ?? 0,
+				})
+
+				return text
+			}
+
+			throw handleAiSdkError(error, "Qwen Code")
 		}
-
-		const response = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
-
-		return response.choices[0]?.message.content || ""
 	}
 }
