@@ -126,6 +126,7 @@ export function convertToAiSdkMessages(
 				}
 			} else if (message.role === "assistant") {
 				const textParts: string[] = []
+				const reasoningParts: string[] = []
 				const toolCalls: Array<{
 					type: "tool-call"
 					toolCallId: string
@@ -136,20 +137,48 @@ export function convertToAiSdkMessages(
 				for (const part of message.content) {
 					if (part.type === "text") {
 						textParts.push(part.text)
-					} else if (part.type === "tool_use") {
+						continue
+					}
+
+					if (part.type === "tool_use") {
 						toolCalls.push({
 							type: "tool-call",
 							toolCallId: part.id,
 							toolName: part.name,
 							input: part.input,
 						})
+						continue
+					}
+
+					// Some providers (DeepSeek, Gemini, etc.) require reasoning to be round-tripped.
+					// Task stores reasoning as a content block (type: "reasoning") and Anthropic extended
+					// thinking as (type: "thinking"). Convert both to AI SDK's reasoning part.
+					if ((part as unknown as { type?: string }).type === "reasoning") {
+						const text = (part as unknown as { text?: string }).text
+						if (typeof text === "string" && text.length > 0) {
+							reasoningParts.push(text)
+						}
+						continue
+					}
+
+					if ((part as unknown as { type?: string }).type === "thinking") {
+						const thinking = (part as unknown as { thinking?: string }).thinking
+						if (typeof thinking === "string" && thinking.length > 0) {
+							reasoningParts.push(thinking)
+						}
+						continue
 					}
 				}
 
 				const content: Array<
+					| { type: "reasoning"; text: string }
 					| { type: "text"; text: string }
 					| { type: "tool-call"; toolCallId: string; toolName: string; input: unknown }
 				> = []
+
+				if (reasoningParts.length > 0) {
+					content.push({ type: "reasoning", text: reasoningParts.join("") })
+				}
 
 				if (textParts.length > 0) {
 					content.push({ type: "text", text: textParts.join("\n") })

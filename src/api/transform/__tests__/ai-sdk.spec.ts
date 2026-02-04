@@ -308,6 +308,52 @@ describe("AI SDK conversion utilities", () => {
 				content: [{ type: "text", text: "" }],
 			})
 		})
+
+		it("converts assistant reasoning blocks", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "reasoning" as any, text: "Thinking..." },
+						{ type: "text", text: "Answer" },
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "assistant",
+				content: [
+					{ type: "reasoning", text: "Thinking..." },
+					{ type: "text", text: "Answer" },
+				],
+			})
+		})
+
+		it("converts assistant thinking blocks to reasoning", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "thinking" as any, thinking: "Deep thought", signature: "sig" },
+						{ type: "text", text: "OK" },
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "assistant",
+				content: [
+					{ type: "reasoning", text: "Deep thought" },
+					{ type: "text", text: "OK" },
+				],
+			})
+		})
 	})
 
 	describe("convertToolsForAiSdk", () => {
