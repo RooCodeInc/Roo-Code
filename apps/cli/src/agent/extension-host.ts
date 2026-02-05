@@ -80,6 +80,10 @@ export interface ExtensionHostOptions {
 	debug: boolean
 	exitOnComplete: boolean
 	/**
+	 * When true, exit the process on API request errors instead of retrying.
+	 */
+	exitOnError?: boolean
+	/**
 	 * When true, completely disables all direct stdout/stderr output.
 	 * Use this when running in TUI mode where Ink controls the terminal.
 	 */
@@ -199,6 +203,7 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			promptManager: this.promptManager,
 			sendMessage: (msg) => this.sendToExtension(msg),
 			nonInteractive: options.nonInteractive,
+			exitOnError: options.exitOnError,
 			disabled: options.disableOutput, // TUI mode handles asks directly.
 		})
 
@@ -468,6 +473,25 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 			const cleanup = () => {
 				this.client.off("taskCompleted", completeHandler)
 				this.client.off("error", errorHandler)
+
+				if (messageHandler) {
+					this.client.off("message", messageHandler)
+				}
+			}
+
+			// When exitOnError is enabled, listen for api_req_retry_delayed messages
+			// (sent by Task.ts during auto-approval retry backoff) and exit immediately.
+			let messageHandler: ((msg: ClineMessage) => void) | null = null
+
+			if (this.options.exitOnError) {
+				messageHandler = (msg: ClineMessage) => {
+					if (msg.type === "say" && msg.say === "api_req_retry_delayed") {
+						cleanup()
+						reject(new Error(msg.text?.split("\n")[0] || "API request failed"))
+					}
+				}
+
+				this.client.on("message", messageHandler)
 			}
 
 			this.client.once("taskCompleted", completeHandler)

@@ -5,6 +5,29 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.50] - 2026-02-05
+
+### Added
+
+- **Linux Support**: The CLI now supports Linux platforms in addition to macOS
+- **Roo Provider API Key Support**: Allow `--api-key` flag and `ROO_API_KEY` environment variable for the roo provider instead of requiring cloud auth token
+- **Exit on Error**: New `--exit-on-error` flag to exit immediately on API request errors instead of retrying, useful for CI/CD pipelines
+
+### Changed
+
+- **Improved Dev Experience**: Dev scripts now use `tsx` for running directly from source without building first
+- **Path Resolution Fixes**: Fixed path resolution in [`version.ts`](src/lib/utils/version.ts), [`extension.ts`](src/lib/utils/extension.ts), and [`extension-host.ts`](src/agent/extension-host.ts) to work from both source and bundled locations
+- **Debug Logging**: Debug log file (`~/.roo/cli-debug.log`) is now disabled by default unless `--debug` flag is passed
+- Updated README with complete environment variable table and dev workflow documentation
+
+### Fixed
+
+- Corrected example in install script
+
+### Removed
+
+- Dropped macOS 13 support
+
 ## [0.0.49] - 2026-01-18
 
 ### Added
