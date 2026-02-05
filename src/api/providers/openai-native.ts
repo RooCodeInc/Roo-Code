@@ -87,7 +87,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		// Include originator, session_id, and User-Agent headers for API tracking and debugging
 		const userAgent = `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
 		this.client = new OpenAI({
-			baseURL: this.options.openAiNativeBaseUrl,
+			baseURL: this.options.openAiNativeBaseUrl || undefined,
 			apiKey,
 			defaultHeaders: {
 				originator: "roo-code",
