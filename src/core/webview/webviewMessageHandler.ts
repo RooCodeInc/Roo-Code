@@ -3178,6 +3178,199 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
+
+		/**
+		 * Saved Prompts
+		 */
+
+		case "requestSavedPrompts": {
+			const savedPrompts = getGlobalState("savedPrompts") || []
+			await provider.postMessageToWebview({
+				type: "savedPrompts",
+				savedPrompts,
+			})
+			break
+		}
+
+		case "createSavedPrompt": {
+			try {
+				const promptData = message.savedPromptCreate
+				if (!promptData) {
+					provider.log("Missing savedPromptCreate data")
+					break
+				}
+
+				const savedPrompts = getGlobalState("savedPrompts") || []
+				const newPrompt = {
+					...promptData,
+					id: `prompt-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+					createdAt: Date.now(),
+					updatedAt: Date.now(),
+				}
+
+				await updateGlobalState("savedPrompts", [...savedPrompts, newPrompt])
+				await provider.postMessageToWebview({
+					type: "savedPrompts",
+					savedPrompts: [...savedPrompts, newPrompt],
+				})
+			} catch (error) {
+				provider.log(`Error creating saved prompt: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+			}
+			break
+		}
+
+		case "updateSavedPrompt": {
+			try {
+				const promptUpdate = message.savedPromptUpdate
+				if (!promptUpdate?.id) {
+					provider.log("Missing savedPromptUpdate data or id")
+					break
+				}
+
+				const savedPrompts = getGlobalState("savedPrompts") || []
+				const updatedPrompts = savedPrompts.map((prompt: any) =>
+					prompt.id === promptUpdate.id
+						? { ...prompt, ...promptUpdate, updatedAt: Date.now() }
+						: prompt,
+				)
+
+				await updateGlobalState("savedPrompts", updatedPrompts)
+				await provider.postMessageToWebview({
+					type: "savedPrompts",
+					savedPrompts: updatedPrompts,
+				})
+			} catch (error) {
+				provider.log(`Error updating saved prompt: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+			}
+			break
+		}
+
+		case "deleteSavedPrompt": {
+			try {
+				const promptId = message.savedPromptId
+				if (!promptId) {
+					provider.log("Missing savedPromptId")
+					break
+				}
+
+				const savedPrompts = getGlobalState("savedPrompts") || []
+				const filteredPrompts = savedPrompts.filter((prompt: any) => prompt.id !== promptId)
+
+				await updateGlobalState("savedPrompts", filteredPrompts)
+				await provider.postMessageToWebview({
+					type: "savedPrompts",
+					savedPrompts: filteredPrompts,
+				})
+			} catch (error) {
+				provider.log(`Error deleting saved prompt: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+			}
+			break
+		}
+
+		case "exportSavedPrompts": {
+			try {
+				const savedPrompts = getGlobalState("savedPrompts") || []
+				const exportData = {
+					version: 1 as const,
+					exportedAt: Date.now(),
+					prompts: savedPrompts,
+				}
+
+				const defaultUri = await resolveDefaultSaveUri(provider, "savedPrompts", "json", "lastSavedPromptsExportPath")
+				const saveUri = await vscode.window.showSaveDialog({
+					defaultUri,
+					filters: { JSON: ["json"] },
+					title: t("common:savedPrompts.exportTitle"),
+				})
+
+				if (saveUri) {
+					await fs.writeFile(saveUri.fsPath, JSON.stringify(exportData, null, 2), "utf8")
+					vscode.window.showInformationMessage(t("common:savedPrompts.exportSuccess"))
+					await saveLastExportPath(provider, "lastSavedPromptsExportPath", saveUri.fsPath)
+				}
+			} catch (error) {
+				provider.log(`Error exporting saved prompts: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				vscode.window.showErrorMessage(t("common:savedPrompts.exportError"))
+			}
+			break
+		}
+
+		case "importSavedPrompts": {
+			try {
+				const openUri = await vscode.window.showOpenDialog({
+					canSelectMany: false,
+					filters: { JSON: ["json"] },
+					title: t("common:savedPrompts.importTitle"),
+				})
+
+				if (openUri && openUri[0]) {
+					const content = await fs.readFile(openUri[0].fsPath, "utf8")
+					const importData = JSON.parse(content)
+
+					// Validate the import data structure
+					if (!importData.version || !Array.isArray(importData.prompts)) {
+						vscode.window.showErrorMessage(t("common:savedPrompts.invalidFormat"))
+						break
+					}
+
+					const existingPrompts = getGlobalState("savedPrompts") || []
+
+					// Merge prompts, avoiding duplicates by ID
+					const existingIds = new Set(existingPrompts.map((p: any) => p.id))
+					const newPrompts = importData.prompts.filter((p: any) => !existingIds.has(p.id))
+					const mergedPrompts = [...existingPrompts, ...newPrompts]
+
+					await updateGlobalState("savedPrompts", mergedPrompts)
+					await provider.postMessageToWebview({
+						type: "savedPrompts",
+						savedPrompts: mergedPrompts,
+					})
+
+					vscode.window.showInformationMessage(
+						t("common:savedPrompts.importSuccess", { count: newPrompts.length }),
+					)
+				}
+			} catch (error) {
+				provider.log(`Error importing saved prompts: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				vscode.window.showErrorMessage(t("common:savedPrompts.importError"))
+			}
+			break
+		}
+
+		case "useSavedPrompt": {
+			try {
+				const promptId = message.savedPromptId
+				if (!promptId) {
+					provider.log("Missing savedPromptId")
+					break
+				}
+
+				const savedPrompts = getGlobalState("savedPrompts") || []
+				const prompt = savedPrompts.find((p: any) => p.id === promptId)
+
+				if (prompt) {
+					// If the prompt has an associated API config, switch to it
+					if (prompt.apiConfigId) {
+						const listApiConfigMeta = getGlobalState("listApiConfigMeta") || []
+						const targetConfig = listApiConfigMeta.find((config: any) => config.id === prompt.apiConfigId)
+						if (targetConfig) {
+							await updateGlobalState("currentApiConfigName", targetConfig.name)
+							await provider.postStateToWebview()
+						}
+					}
+
+					// Insert the prompt content into the textarea (replacing current content)
+					await provider.postMessageToWebview({
+						type: "insertTextIntoTextarea",
+						text: prompt.content,
+					})
+				}
+			} catch (error) {
+				provider.log(`Error using saved prompt: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+			}
+			break
+		}
+
 		case "showMdmAuthRequiredNotification": {
 			// Show notification that organization requires authentication
 			vscode.window.showWarningMessage(t("common:mdm.info.organization_requires_auth"))
