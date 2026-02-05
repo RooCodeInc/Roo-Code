@@ -91,6 +91,12 @@ describe("AzureHandler", () => {
 		})
 	})
 
+	describe("isAiSdkProvider", () => {
+		it("should return true", () => {
+			expect(handler.isAiSdkProvider()).toBe(true)
+		})
+	})
+
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
 		const messages: Anthropic.Messages.MessageParam[] = [
