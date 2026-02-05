@@ -33,21 +33,59 @@ describe("createReadFileTool", () => {
 			expect(schema.properties).toHaveProperty("indentation")
 		})
 
-		it("should include mode parameter in schema", () => {
+		it("should include mode parameter in schema with nullable type", () => {
 			const tool = createReadFileTool()
 			const schema = getFunctionDef(tool).parameters as any
 
 			expect(schema.properties).toHaveProperty("mode")
+			expect(schema.properties.mode.type).toEqual(["string", "null"])
 			expect(schema.properties.mode.enum).toContain("slice")
 			expect(schema.properties.mode.enum).toContain("indentation")
 		})
 
-		it("should include offset and limit parameters in schema", () => {
+		it("should include nullable offset and limit parameters in schema", () => {
 			const tool = createReadFileTool()
 			const schema = getFunctionDef(tool).parameters as any
 
 			expect(schema.properties).toHaveProperty("offset")
+			expect(schema.properties.offset.type).toEqual(["integer", "null"])
 			expect(schema.properties).toHaveProperty("limit")
+			expect(schema.properties.limit.type).toEqual(["integer", "null"])
+		})
+
+		it("should have nullable indentation object type", () => {
+			const tool = createReadFileTool()
+			const schema = getFunctionDef(tool).parameters as any
+
+			expect(schema.properties.indentation.type).toEqual(["object", "null"])
+		})
+
+		it("should have nullable indentation sub-properties", () => {
+			const tool = createReadFileTool()
+			const schema = getFunctionDef(tool).parameters as any
+			const indentProps = schema.properties.indentation.properties
+
+			expect(indentProps.anchor_line.type).toEqual(["integer", "null"])
+			expect(indentProps.max_levels.type).toEqual(["integer", "null"])
+			expect(indentProps.include_siblings.type).toEqual(["boolean", "null"])
+			expect(indentProps.include_header.type).toEqual(["boolean", "null"])
+			expect(indentProps.max_lines.type).toEqual(["integer", "null"])
+		})
+
+		it("should require all indentation sub-properties for strict mode", () => {
+			const tool = createReadFileTool()
+			const schema = getFunctionDef(tool).parameters as any
+			const indentation = schema.properties.indentation
+
+			expect(indentation.required).toEqual(
+				expect.arrayContaining([
+					"anchor_line",
+					"max_levels",
+					"include_siblings",
+					"include_header",
+					"max_lines",
+				]),
+			)
 		})
 	})
 
@@ -112,11 +150,11 @@ describe("createReadFileTool", () => {
 			expect(getFunctionDef(tool).strict).toBe(true)
 		})
 
-		it("should require path parameter", () => {
+		it("should require all parameters for strict mode compatibility", () => {
 			const tool = createReadFileTool()
 			const schema = getFunctionDef(tool).parameters as any
 
-			expect(schema.required).toContain("path")
+			expect(schema.required).toEqual(expect.arrayContaining(["path", "mode", "offset", "limit", "indentation"]))
 		})
 	})
 })

@@ -70,7 +70,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 		` PREFER indentation mode when you have a specific line number from search results, error messages, or definition lookups - it guarantees complete, syntactically valid code blocks without mid-function truncation.` +
 		` IMPORTANT: Indentation mode requires anchor_line to be useful. Without it, only header content (imports) is returned.`
 
-	const limitNote = ` By default, returns up to ${DEFAULT_LINE_LIMIT} lines per file. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
+	const limitNote = ` Default limit is ${DEFAULT_LINE_LIMIT} lines. Pass null for limit to use the default — only specify a value when paginating files larger than ${DEFAULT_LINE_LIMIT} lines. Lines longer than ${MAX_LINE_LENGTH} characters are truncated.`
 
 	const description =
 		descriptionIntro +
@@ -83,28 +83,28 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 
 	const indentationProperties: Record<string, unknown> = {
 		anchor_line: {
-			type: "integer",
+			type: ["integer", "null"],
 			description:
 				"1-based line number to anchor the extraction. REQUIRED for meaningful indentation mode results. The extractor finds the semantic block (function, method, class) containing this line and returns it completely. Without anchor_line, indentation mode defaults to line 1 and returns only imports/header content. Obtain anchor_line from: search results, error stack traces, definition lookups, codebase_search results, or condensed file summaries (e.g., '14--28 | export class UserService' means anchor_line=14).",
 		},
 		max_levels: {
-			type: "integer",
-			description: `Maximum indentation levels to include above the anchor (indentation mode, 0 = unlimited (default)). Higher values include more parent context.`,
+			type: ["integer", "null"],
+			description: `Maximum indentation levels to include above the anchor (indentation mode, 0 = unlimited (default)). Higher values include more parent context. Pass null for default (unlimited).`,
 		},
 		include_siblings: {
-			type: "boolean",
+			type: ["boolean", "null"],
 			description:
-				"Include sibling blocks at the same indentation level as the anchor block (indentation mode, default: false). Useful for seeing related methods in a class.",
+				"Include sibling blocks at the same indentation level as the anchor block (indentation mode, default: false). Useful for seeing related methods in a class. Pass null for default (false).",
 		},
 		include_header: {
-			type: "boolean",
+			type: ["boolean", "null"],
 			description:
-				"Include file header content (imports, module-level comments) at the top of output (indentation mode, default: true).",
+				"Include file header content (imports, module-level comments) at the top of output (indentation mode, default: true). Pass null for default (true).",
 		},
 		max_lines: {
-			type: "integer",
+			type: ["integer", "null"],
 			description:
-				"Hard cap on lines returned for indentation mode. Acts as a separate limit from the top-level 'limit' parameter.",
+				"Hard cap on lines returned for indentation mode. Acts as a separate limit from the top-level 'limit' parameter. Pass null for no cap.",
 		},
 	}
 
@@ -114,25 +114,26 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 			description: "Path to the file to read, relative to the workspace",
 		},
 		mode: {
-			type: "string",
+			type: ["string", "null"],
 			enum: ["slice", "indentation"],
 			description:
-				"Reading mode. 'slice' (default): read lines sequentially with offset/limit - use for general file exploration or when you don't have a target line number (may truncate code mid-function). 'indentation': extract complete semantic code blocks containing anchor_line - PREFERRED when you have a line number because it guarantees complete, valid code blocks. WARNING: Do not use indentation mode without specifying indentation.anchor_line, or you will only get header content.",
+				"Reading mode. 'slice' (default): read lines sequentially with offset/limit - use for general file exploration or when you don't have a target line number (may truncate code mid-function). 'indentation': extract complete semantic code blocks containing anchor_line - PREFERRED when you have a line number because it guarantees complete, valid code blocks (ignores offset/limit entirely). WARNING: Do not use indentation mode without specifying indentation.anchor_line, or you will only get header content. Pass null for default (slice).",
 		},
 		offset: {
-			type: "integer",
-			description: "1-based line offset to start reading from (slice mode, default: 1)",
+			type: ["integer", "null"],
+			description:
+				"1-based line offset to start reading from (slice mode, default: 1). Pass null to start from line 1.",
 		},
 		limit: {
-			type: "integer",
-			description: `Maximum number of lines to return (slice mode, default: ${DEFAULT_LINE_LIMIT})`,
+			type: ["integer", "null"],
+			description: `Maximum number of lines to return (slice mode). Default: ${DEFAULT_LINE_LIMIT}. Pass null to use the default — only specify a value when paginating files larger than ${DEFAULT_LINE_LIMIT} lines.`,
 		},
 		indentation: {
-			type: "object",
+			type: ["object", "null"],
 			description:
-				"Indentation mode options. Only used when mode='indentation'. You MUST specify anchor_line for useful results - it determines which code block to extract.",
+				"Indentation mode options. Only used when mode='indentation'. You MUST specify anchor_line for useful results - it determines which code block to extract. Pass null when using slice mode.",
 			properties: indentationProperties,
-			required: [],
+			required: ["anchor_line", "max_levels", "include_siblings", "include_header", "max_lines"],
 			additionalProperties: false,
 		},
 	}
@@ -146,7 +147,7 @@ export function createReadFileTool(options: ReadFileToolOptions = {}): OpenAI.Ch
 			parameters: {
 				type: "object",
 				properties,
-				required: ["path"],
+				required: ["path", "mode", "offset", "limit", "indentation"],
 				additionalProperties: false,
 			},
 		},
