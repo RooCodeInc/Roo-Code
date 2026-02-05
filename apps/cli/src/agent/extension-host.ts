@@ -428,12 +428,16 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 	public markWebviewReady(): void {
 		this.isReady = true
 
-		// Send initial webview messages to trigger proper extension initialization.
-		// This is critical for the extension to start sending state updates properly.
-		this.sendToExtension({ type: "webviewDidLaunch" })
-
+		// Apply CLI settings to the runtime config and context proxy BEFORE
+		// sending webviewDidLaunch. This prevents a race condition where the
+		// webviewDidLaunch handler's first-time init sync reads default state
+		// (apiProvider: "anthropic") instead of the CLI-provided settings.
 		setRuntimeConfigValues("roo-cline", this.initialSettings as Record<string, unknown>)
 		this.sendToExtension({ type: "updateSettings", updatedSettings: this.initialSettings })
+
+		// Now trigger extension initialization. The context proxy should already
+		// have CLI-provided values when the webviewDidLaunch handler runs.
+		this.sendToExtension({ type: "webviewDidLaunch" })
 	}
 
 	public isInInitialSetup(): boolean {
