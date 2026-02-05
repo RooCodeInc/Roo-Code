@@ -7,6 +7,7 @@ import type {
 	ToolName,
 	BrowserActionParams,
 	GenerateImageParams,
+	FollowUpQuestion,
 } from "@roo-code/types"
 
 export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
@@ -110,7 +111,7 @@ export type NativeToolArgs = {
 	list_files: { path: string; recursive?: boolean }
 	new_task: { mode: string; message: string; todos?: string }
 	ask_followup_question: {
-		questions: Array<string | { text: string; options?: string[] }>
+		questions: FollowUpQuestion[]
 		follow_up: Array<{ text: string; mode?: string }>
 	}
 	browser_action: BrowserActionParams
@@ -237,7 +238,7 @@ export interface AccessMcpResourceToolUse extends ToolUse<"access_mcp_resource">
 
 export interface AskFollowupQuestionToolUse extends ToolUse<"ask_followup_question"> {
 	name: "ask_followup_question"
-	params: Partial<Pick<Record<ToolParamName, string>, "question" | "follow_up">>
+	params: Partial<Pick<Record<ToolParamName, string>, "question" | "follow_up" | "questions">>
 }
 
 export interface AttemptCompletionToolUse extends ToolUse<"attempt_completion"> {

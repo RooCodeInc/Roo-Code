@@ -2,19 +2,15 @@ import { useState, useEffect } from "react"
 import { Button, AutosizeTextarea } from "@/components/ui"
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
-
-interface Question {
-	text: string
-	options?: string[]
-}
+import { FollowUpQuestion } from "@roo-code/types"
 
 interface MultiQuestionHandlerProps {
-	questions: Array<string | Question>
+	questions: FollowUpQuestion[]
 	onSendResponse: (response: string) => void
 }
 
 interface QuestionItemProps {
-	question: string | Question
+	question: FollowUpQuestion
 	title: string
 	textValue: string
 	selectedOption?: string

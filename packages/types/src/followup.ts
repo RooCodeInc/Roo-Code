@@ -9,7 +9,7 @@ export interface FollowUpData {
 	/** The question being asked by the LLM */
 	question?: string
 	/** Array of questions being asked by the LLM */
-	questions?: string[]
+	questions?: FollowUpQuestion[]
 	/** Array of suggested answers that the user can select */
 	suggest?: Array<SuggestionItem>
 }
@@ -25,6 +25,12 @@ export interface SuggestionItem {
 }
 
 /**
+ * Type definition for a follow-up question
+ * Can be a simple string or an object with text and options
+ */
+export type FollowUpQuestion = string | { text: string; options?: string[] }
+
+/**
  * Zod schema for SuggestionItem
  */
 export const suggestionItemSchema = z.object({
@@ -33,11 +39,22 @@ export const suggestionItemSchema = z.object({
 })
 
 /**
+ * Zod schema for FollowUpQuestion
+ */
+export const followUpQuestionSchema = z.union([
+	z.string(),
+	z.object({
+		text: z.string(),
+		options: z.array(z.string()).optional(),
+	}),
+])
+
+/**
  * Zod schema for FollowUpData
  */
 export const followUpDataSchema = z.object({
 	question: z.string().optional(),
-	questions: z.array(z.string()).optional(),
+	questions: z.array(followUpQuestionSchema).optional(),
 	suggest: z.array(suggestionItemSchema).optional(),
 })
 
