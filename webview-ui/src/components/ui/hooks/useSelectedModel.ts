@@ -211,7 +211,7 @@ function getSelectedModel({
 				}
 			}
 
-			// Apply 1M context for Claude Sonnet 4 / 4.5 when enabled
+			// Apply 1M context for supported Claude 4 models when enabled
 			if (BEDROCK_1M_CONTEXT_MODEL_IDS.includes(id as any) && apiConfiguration.awsBedrock1MContext && baseInfo) {
 				// Create a new ModelInfo object with updated context window
 				const info: ModelInfo = {
@@ -375,10 +375,10 @@ function getSelectedModel({
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
 
-			// Apply 1M context beta tier pricing for Claude Sonnet 4
+			// Apply 1M context beta tier pricing for supported Claude 4 models
 			if (
 				provider === "anthropic" &&
-				(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") &&
+				(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5" || id === "claude-opus-4-6") &&
 				apiConfiguration.anthropicBeta1MContext &&
 				baseInfo
 			) {
