@@ -224,6 +224,7 @@
 	"commandExecution": {
 		"abort": "रद्द करें",
 		"running": "चल रहा है",
+		"executed": "निष्पादित",
 		"pid": "पीआईडी: {{pid}}",
 		"exitStatus": "{{exitCode}} स्थिति के साथ बाहर निकल गया",
 		"manageCommands": "स्वतः-अनुमोदित कमांड",

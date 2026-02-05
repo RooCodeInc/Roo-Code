@@ -218,6 +218,7 @@
 	"commandOutput": "Вывод команды",
 	"commandExecution": {
 		"running": "Выполняется",
+		"executed": "Выполнено",
 		"abort": "Прервать",
 		"pid": "PID: {{pid}}",
 		"exitStatus": "Завершено со статусом {{exitCode}}",
