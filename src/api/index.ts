@@ -32,6 +32,7 @@ import {
 	QwenCodeHandler,
 	SambaNovaHandler,
 	IOIntelligenceHandler,
+	KeywordsAiHandler,
 	DoubaoHandler,
 	ZAiHandler,
 	FireworksHandler,
@@ -185,6 +186,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new FireworksHandler(options)
 		case "io-intelligence":
 			return new IOIntelligenceHandler(options)
+		case "keywords-ai":
+			return new KeywordsAiHandler(options)
 		case "roo":
 			// Never throw exceptions from provider constructors
 			// The provider-proxy server will handle authentication and return appropriate error codes

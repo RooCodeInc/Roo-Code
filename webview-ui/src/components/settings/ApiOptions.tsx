@@ -14,6 +14,7 @@ import {
 	litellmDefaultModelId,
 	openAiNativeDefaultModelId,
 	openAiCodexDefaultModelId,
+	keywordsAiDefaultModelId,
 	anthropicDefaultModelId,
 	doubaoDefaultModelId,
 	qwenCodeDefaultModelId,
@@ -83,6 +84,7 @@ import {
 	Groq,
 	HuggingFace,
 	IOIntelligence,
+	KeywordsAi,
 	LMStudio,
 	LiteLLM,
 	Mistral,
@@ -340,6 +342,7 @@ const ApiOptions = ({
 				openrouter: { field: "openRouterModelId", default: openRouterDefaultModelId },
 				unbound: { field: "unboundModelId", default: unboundDefaultModelId },
 				requesty: { field: "requestyModelId", default: requestyDefaultModelId },
+				"keywords-ai": { field: "keywordsAiModelId", default: keywordsAiDefaultModelId },
 				litellm: { field: "litellmModelId", default: litellmDefaultModelId },
 				anthropic: { field: "apiModelId", default: anthropicDefaultModelId },
 				cerebras: { field: "apiModelId", default: cerebrasDefaultModelId },
@@ -516,6 +519,18 @@ const ApiOptions = ({
 			{selectedProvider === "requesty" && (
 				<Requesty
 					uriScheme={uriScheme}
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					routerModels={routerModels}
+					refetchRouterModels={refetchRouterModels}
+					organizationAllowList={organizationAllowList}
+					modelValidationError={modelValidationError}
+					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
+			{selectedProvider === "keywords-ai" && (
+				<KeywordsAi
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					routerModels={routerModels}

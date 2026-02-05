@@ -11,6 +11,7 @@ export * from "./gemini.js"
 export * from "./groq.js"
 export * from "./huggingface.js"
 export * from "./io-intelligence.js"
+export * from "./keywords-ai.js"
 export * from "./lite-llm.js"
 export * from "./lm-studio.js"
 export * from "./mistral.js"
@@ -45,6 +46,7 @@ import { fireworksDefaultModelId } from "./fireworks.js"
 import { geminiDefaultModelId } from "./gemini.js"
 import { groqDefaultModelId } from "./groq.js"
 import { ioIntelligenceDefaultModelId } from "./io-intelligence.js"
+import { keywordsAiDefaultModelId } from "./keywords-ai.js"
 import { litellmDefaultModelId } from "./lite-llm.js"
 import { mistralDefaultModelId } from "./mistral.js"
 import { moonshotDefaultModelId } from "./moonshot.js"
@@ -136,6 +138,8 @@ export function getProviderDefaultModelId(
 			return featherlessDefaultModelId
 		case "io-intelligence":
 			return ioIntelligenceDefaultModelId
+		case "keywords-ai":
+			return keywordsAiDefaultModelId
 		case "roo":
 			return rooDefaultModelId
 		case "qwen-code":
