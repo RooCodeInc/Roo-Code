@@ -28,15 +28,22 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 	async execute(params: WriteToFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { pushToolResult, handleError, askApproval } = callbacks
-		const relPath = params.path
 		let newContent = params.content
 
-		if (!relPath) {
+		if (!params.path) {
 			task.consecutiveMistakeCount++
 			task.recordToolError("write_to_file")
 			pushToolResult(await task.sayAndCreateMissingParamError("write_to_file", "path"))
 			await task.diffViewProvider.reset()
 			return
+		}
+
+		// Determine relative path - path can be absolute or relative
+		let relPath: string
+		if (path.isAbsolute(params.path)) {
+			relPath = path.relative(task.cwd, params.path)
+		} else {
+			relPath = params.path
 		}
 
 		if (newContent === undefined) {
