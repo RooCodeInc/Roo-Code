@@ -285,6 +285,42 @@ export class CodeIndexManager {
 	}
 
 	/**
+	 * Gets file type statistics (count by extension)
+	 * @returns Array of file type stats sorted by count descending
+	 */
+	public getFileTypeStats(): { extension: string; count: number }[] {
+		if (!this.isFeatureEnabled) {
+			return []
+		}
+		this.assertInitialized()
+		return this._orchestrator!.getFileTypeStats()
+	}
+
+	/**
+	 * Gets total number of indexed files
+	 * @returns Total file count
+	 */
+	public getTotalFileCount(): number {
+		if (!this.isFeatureEnabled) {
+			return 0
+		}
+		this.assertInitialized()
+		return this._orchestrator!.getTotalFileCount()
+	}
+
+	/**
+	 * Updates file type stats in the state manager
+	 * This should be called when indexing is complete
+	 */
+	public updateFileTypeStats(): void {
+		if (!this.isFeatureEnabled) {
+			return
+		}
+		this.assertInitialized()
+		this._orchestrator!.updateFileTypeStats()
+	}
+
+	/**
 	 * Private helper method to recreate services with current configuration.
 	 * Used by both initialize() and handleSettingsChange().
 	 */
@@ -359,6 +395,21 @@ export class CodeIndexManager {
 			fileWatcher,
 		)
 
+		// (Optional) Enable Knowledge Graph features - fail-safe
+		let graphStore: import("./graph").IGraphStore | undefined
+		try {
+			const graphServices = this._serviceFactory.createGraphServices()
+			if (graphServices) {
+				// Try to load existing graph data
+				await graphServices.graphStore.load()
+				this._orchestrator.enableGraphFeatures(graphServices.graphStore, graphServices.graphBuilder)
+				graphStore = graphServices.graphStore
+			}
+		} catch (graphError) {
+			// Graph features are optional - log and continue
+			console.warn("[CodeIndexManager] Knowledge Graph features disabled:", graphError)
+		}
+
 		// (Re)Initialize search service
 		this._searchService = new CodeIndexSearchService(
 			this._configManager!,
@@ -366,6 +417,11 @@ export class CodeIndexManager {
 			embedder,
 			vectorStore,
 		)
+
+		// Enable graph context in search service if available
+		if (graphStore) {
+			this._searchService.enableGraphContext(graphStore)
+		}
 
 		// Clear any error state after successful recreation
 		this._stateManager.setSystemState("Standby", "")

@@ -2,12 +2,22 @@ import * as vscode from "vscode"
 
 export type IndexingState = "Standby" | "Indexing" | "Indexed" | "Error"
 
+/**
+ * Interface for file type statistics
+ */
+export interface FileTypeStats {
+	extension: string
+	count: number
+}
+
 export class CodeIndexStateManager {
 	private _systemStatus: IndexingState = "Standby"
 	private _statusMessage: string = ""
 	private _processedItems: number = 0
 	private _totalItems: number = 0
 	private _currentItemUnit: string = "blocks"
+	private _fileTypeStats: FileTypeStats[] = []
+	private _totalFileCount: number = 0
 	private _progressEmitter = new vscode.EventEmitter<ReturnType<typeof this.getCurrentStatus>>()
 
 	// --- Public API ---
@@ -25,6 +35,25 @@ export class CodeIndexStateManager {
 			processedItems: this._processedItems,
 			totalItems: this._totalItems,
 			currentItemUnit: this._currentItemUnit,
+			fileTypeStats: this._fileTypeStats,
+			totalFileCount: this._totalFileCount,
+		}
+	}
+
+	/**
+	 * Updates file type statistics
+	 * @param stats Array of file type statistics
+	 * @param totalCount Total number of indexed files
+	 */
+	public setFileTypeStats(stats: FileTypeStats[], totalCount: number): void {
+		const statsChanged =
+			JSON.stringify(this._fileTypeStats) !== JSON.stringify(stats) ||
+			this._totalFileCount !== totalCount
+
+		if (statsChanged) {
+			this._fileTypeStats = stats
+			this._totalFileCount = totalCount
+			this._progressEmitter.fire(this.getCurrentStatus())
 		}
 	}
 

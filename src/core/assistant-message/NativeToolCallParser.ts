@@ -887,7 +887,7 @@ export class NativeToolCallParser {
 					break
 
 				case "switch_mode":
-					if (args.mode_slug !== undefined && args.reason !== undefined) {
+					if (args.mode_slug !== undefined) {
 						nativeArgs = {
 							mode_slug: args.mode_slug,
 							reason: args.reason,

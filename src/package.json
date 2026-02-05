@@ -101,6 +101,11 @@
 				"icon": "$(settings-gear)"
 			},
 			{
+				"command": "roo-cline.checkpointsButtonClicked",
+				"title": "%command.checkpoints.title%",
+				"icon": "$(git-commit)"
+			},
+			{
 				"command": "roo-cline.openInNewTab",
 				"title": "%command.openInNewTab.title%",
 				"category": "%configuration.title%"
@@ -229,6 +234,11 @@
 					"when": "view == roo-cline.SidebarProvider"
 				},
 				{
+					"command": "roo-cline.checkpointsButtonClicked",
+					"group": "navigation@5",
+					"when": "view == roo-cline.SidebarProvider"
+				},
+				{
 					"command": "roo-cline.marketplaceButtonClicked",
 					"group": "navigation@4",
 					"when": "view == roo-cline.SidebarProvider"
@@ -258,6 +268,11 @@
 				{
 					"command": "roo-cline.cloudButtonClicked",
 					"group": "navigation@3",
+					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
+				},
+				{
+					"command": "roo-cline.checkpointsButtonClicked",
+					"group": "navigation@5",
 					"when": "activeWebviewPanelId == roo-cline.TabPanelProvider"
 				},
 				{
@@ -344,7 +359,7 @@
 				},
 				"roo-cline.preventCompletionWithOpenTodos": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "%commands.preventCompletionWithOpenTodos.description%"
 				},
 				"roo-cline.vsCodeLmModelSelector": {
@@ -397,7 +412,7 @@
 				},
 				"roo-cline.newTaskRequireTodos": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "%settings.newTaskRequireTodos.description%"
 				},
 				"roo-cline.codeIndex.embeddingBatchSize": {
@@ -409,12 +424,12 @@
 				},
 				"roo-cline.debug": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "%settings.debug.description%"
 				},
 				"roo-cline.debugProxy.enabled": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "%settings.debugProxy.enabled.description%",
 					"markdownDescription": "%settings.debugProxy.enabled.description%"
 				},
@@ -426,9 +441,83 @@
 				},
 				"roo-cline.debugProxy.tlsInsecure": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "%settings.debugProxy.tlsInsecure.description%",
 					"markdownDescription": "%settings.debugProxy.tlsInsecure.description%"
+				},
+				"roo-cline.codeIndex.hybridSearch": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"default": true,
+							"description": "%settings.codeIndex.hybridSearch.enabled.description%"
+						},
+						"semanticWeight": {
+							"type": "number",
+							"default": 0.7,
+							"minimum": 0,
+							"maximum": 1,
+							"description": "%settings.codeIndex.hybridSearch.semanticWeight.description%"
+						},
+						"keywordWeight": {
+							"type": "number",
+							"default": 0.3,
+							"minimum": 0,
+							"maximum": 1,
+							"description": "%settings.codeIndex.hybridSearch.keywordWeight.description%"
+						},
+						"rrfK": {
+							"type": "number",
+							"default": 60,
+							"minimum": 1,
+							"maximum": 100,
+							"description": "%settings.codeIndex.hybridSearch.rrfK.description%"
+						}
+					},
+					"description": "%settings.codeIndex.hybridSearch.description%"
+				},
+				"roo-cline.codeIndex.adaptiveChunking": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"default": true,
+							"description": "%settings.codeIndex.adaptiveChunking.enabled.description%"
+						},
+						"strategy": {
+							"type": "string",
+							"enum": [
+								"syntactic",
+								"semantic",
+								"balanced"
+							],
+							"default": "balanced",
+							"description": "%settings.codeIndex.adaptiveChunking.strategy.description%"
+						}
+					},
+					"description": "%settings.codeIndex.adaptiveChunking.description%"
+				},
+				"roo-cline.context.compression": {
+					"type": "object",
+					"properties": {
+						"enabled": {
+							"type": "boolean",
+							"default": true,
+							"description": "%settings.context.compression.enabled.description%"
+						},
+						"strategy": {
+							"type": "string",
+							"enum": [
+								"aggressive",
+								"balanced",
+								"preservative"
+							],
+							"default": "balanced",
+							"description": "%settings.context.compression.strategy.description%"
+						}
+					},
+					"description": "%settings.context.compression.description%"
 				}
 			}
 		}
@@ -524,6 +613,7 @@
 		"simple-git": "^3.27.0",
 		"socket.io-client": "^4.8.1",
 		"sound-play": "^1.1.0",
+		"sql.js": "^1.13.0",
 		"stream-json": "^1.8.0",
 		"string-similarity": "^4.0.4",
 		"strip-ansi": "^7.1.0",
@@ -546,6 +636,7 @@
 		"@roo-code/build": "workspace:^",
 		"@roo-code/config-eslint": "workspace:^",
 		"@roo-code/config-typescript": "workspace:^",
+		"@types/better-sqlite3": "^7.6.13",
 		"@types/clone-deep": "^4.0.4",
 		"@types/debug": "^4.1.12",
 		"@types/diff": "^5.2.1",
@@ -560,6 +651,8 @@
 		"@types/ps-tree": "^1.1.6",
 		"@types/semver-compare": "^1.0.3",
 		"@types/shell-quote": "^1.7.5",
+		"@types/sql.js": "^1.4.9",
+		"@types/sqlite3": "^5.1.0",
 		"@types/stream-json": "^1.7.8",
 		"@types/string-similarity": "^4.0.2",
 		"@types/tmp": "^0.2.6",

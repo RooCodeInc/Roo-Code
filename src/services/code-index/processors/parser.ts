@@ -10,6 +10,7 @@ import { MAX_BLOCK_CHARS, MIN_BLOCK_CHARS, MIN_CHUNK_REMAINDER_CHARS, MAX_CHARS_
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { sanitizeErrorMessage } from "../shared/validation-helpers"
+import { AdaptiveChunker, ChunkingConfig } from "../chunking"
 
 /**
  * Implementation of the code parser interface
@@ -17,8 +18,39 @@ import { sanitizeErrorMessage } from "../shared/validation-helpers"
 export class CodeParser implements ICodeParser {
 	private loadedParsers: LanguageParser = {}
 	private pendingLoads: Map<string, Promise<LanguageParser>> = new Map()
-	// Markdown files are now supported using the custom markdown parser
-	// which extracts headers and sections for semantic indexing
+	private adaptiveChunker: AdaptiveChunker
+
+	// Feature flag for adaptive chunking
+	private _adaptiveChunkingEnabled = true
+
+	constructor() {
+		this.adaptiveChunker = new AdaptiveChunker()
+	}
+
+	/**
+	 * Enable or disable adaptive chunking
+	 * @param enabled Whether adaptive chunking should be enabled
+	 */
+	setAdaptiveChunkingEnabled(enabled: boolean): void {
+		this._adaptiveChunkingEnabled = enabled
+		this.adaptiveChunker.setEnabled(enabled)
+	}
+
+	/**
+	 * Check if adaptive chunking is enabled
+	 * @returns True if adaptive chunking is enabled
+	 */
+	isAdaptiveChunkingEnabled(): boolean {
+		return this._adaptiveChunkingEnabled
+	}
+
+	/**
+	 * Update the adaptive chunking configuration
+	 * @param config Partial configuration to update
+	 */
+	updateAdaptiveChunkingConfig(config: Partial<ChunkingConfig>): void {
+		this.adaptiveChunker.updateConfig(config)
+	}
 
 	/**
 	 * Parses a code file into code blocks
@@ -95,6 +127,15 @@ export class CodeParser implements ICodeParser {
 	private async parseContent(filePath: string, content: string, fileHash: string): Promise<CodeBlock[]> {
 		const ext = path.extname(filePath).slice(1).toLowerCase()
 		const seenSegmentHashes = new Set<string>()
+
+		// Check if adaptive chunking is enabled and use it
+		if (this._adaptiveChunkingEnabled) {
+			const adaptiveChunks = this.adaptiveChunker.chunkFile(content, ext, filePath, fileHash)
+			if (adaptiveChunks.length > 0) {
+				return adaptiveChunks
+			}
+			// Fall back to regular parsing if adaptive chunking produces no results
+		}
 
 		// Handle markdown files specially
 		if (ext === "md" || ext === "markdown") {
@@ -319,8 +360,9 @@ export class CodeParser implements ICodeParser {
 					createSegmentBlock(segment, originalLineNumber, currentSegmentStartChar)
 					currentSegmentStartChar += MAX_BLOCK_CHARS
 				}
-				// Update chunkStartLineIndex to continue processing from the next line
-				chunkStartLineIndex = i + 1
+				// Update chunkStartLineIndex to start a new chunk from the NEXT line (i+1)
+				// Don't skip the next line - let the normal loop continue to add it to a new chunk
+				chunkStartLineIndex = i
 				continue
 			}
 

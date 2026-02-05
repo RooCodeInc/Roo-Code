@@ -8,6 +8,12 @@ import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, 
 import { ApiMessage } from "../task-persistence/apiMessages"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
+import {
+	ContextCompressor,
+	createDefaultCompressor,
+	CompressionConfig,
+	CompressionStrategy,
+} from "../../services/context-compression"
 
 /**
  * Context Management
@@ -373,4 +379,152 @@ export async function manageContext({
 	}
 	// No truncation or condensation needed
 	return { messages, summary: "", cost, prevContextTokens, error, errorDetails }
+}
+
+// ============================================================================
+// Context Compression Integration
+// ============================================================================
+
+/**
+ * Context compression configuration for context management
+ */
+export type ContextCompressionConfig = {
+	/** Enable context compression */
+	enabled: boolean
+	/** Compression strategy to use */
+	strategy: CompressionStrategy
+	/** Preserve comments in compressed content */
+	preserveComments: boolean
+	/** Preserve documentation comments */
+	preserveDocs: boolean
+	/** Minimum retention ratio (0-1) */
+	minRetentionRatio: number
+	/** Maximum tokens for compressed content */
+	maxTokens?: number
+}
+
+/**
+ * Default context compression configuration
+ */
+const DEFAULT_CONTEXT_COMPRESSION_CONFIG: ContextCompressionConfig = {
+	enabled: true,
+	strategy: "balanced",
+	preserveComments: true,
+	preserveDocs: true,
+	minRetentionRatio: 0.3,
+}
+
+/**
+ * Get context compression configuration from settings
+ * @param compressionEnabled - Global compression setting
+ * @param compressionStrategy - Compression strategy setting
+ * @returns ContextCompressionConfig
+ */
+export function getContextCompressionConfig(
+	compressionEnabled?: boolean,
+	compressionStrategy?: string,
+): ContextCompressionConfig {
+	return {
+		...DEFAULT_CONTEXT_COMPRESSION_CONFIG,
+		enabled: compressionEnabled ?? true,
+		strategy: (compressionStrategy as CompressionStrategy) ?? "balanced",
+	}
+}
+
+/**
+ * Create a context compressor for context management
+ * @param config - Compression configuration
+ * @returns ContextCompressor instance
+ */
+export function createContextCompressionEngine(config?: ContextCompressionConfig): ContextCompressor {
+	return new ContextCompressor({
+		enabled: config?.enabled ?? true,
+		strategy: config?.strategy ?? "balanced",
+		preserveComments: config?.preserveComments ?? true,
+		preserveDocs: config?.preserveDocs ?? true,
+		minRetentionRatio: config?.minRetentionRatio ?? 0.3,
+	})
+}
+
+/**
+ * Compress message content using context compression
+ * Useful for compressing code content in tool results
+ *
+ * @param content - Content to compress
+ * @param maxTokens - Maximum tokens allowed
+ * @param config - Compression configuration
+ * @returns Promise resolving to compressed content
+ */
+export async function compressMessageContent(
+	content: string,
+	maxTokens: number,
+	config?: ContextCompressionConfig,
+): Promise<string> {
+	const compressor = createContextCompressionEngine(config)
+	const result = await compressor.compress(content, maxTokens)
+	return result.content
+}
+
+/**
+ * Compress all text content in messages using context compression
+ *
+ * @param messages - Messages to compress
+ * @param maxTokensPerMessage - Maximum tokens per message
+ * @param config - Compression configuration
+ * @returns Promise resolving to compressed messages
+ */
+export async function compressMessages(
+	messages: ApiMessage[],
+	maxTokensPerMessage: number,
+	config?: ContextCompressionConfig,
+): Promise<ApiMessage[]> {
+	const compressor = createContextCompressionEngine(config)
+	const compressedMessages: ApiMessage[] = []
+
+	for (const message of messages) {
+		const content = message.content
+
+		if (typeof content === "string") {
+			// Compress string content
+			const compressed = await compressor.compress(content, maxTokensPerMessage)
+			compressedMessages.push({
+				...message,
+				content: compressed.content,
+			})
+		} else if (Array.isArray(content)) {
+			// Process array content (e.g., tool results with text blocks)
+			const processedContent = await Promise.all(
+				content.map(async (block) => {
+					if (block.type === "text" && typeof block.text === "string") {
+						const compressed = await compressor.compress(block.text, maxTokensPerMessage)
+						return { ...block, text: compressed.content }
+					}
+					return block
+				}),
+			)
+			compressedMessages.push({
+				...message,
+				content: processedContent,
+			})
+		} else {
+			compressedMessages.push(message)
+		}
+	}
+
+	return compressedMessages
+}
+
+/**
+ * Get compression statistics for monitoring
+ *
+ * @param config - Compression configuration
+ * @returns Compression statistics
+ */
+export function getCompressionStats(config?: ContextCompressionConfig): {
+	totalCompressions: number
+	averageCompressionRatio: number
+	totalTokensSaved: number
+} {
+	const compressor = createContextCompressionEngine(config)
+	return compressor.getCompressionStats()
 }

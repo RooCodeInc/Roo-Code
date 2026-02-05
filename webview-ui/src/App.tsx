@@ -23,8 +23,9 @@ import { CloudView } from "./components/cloud/CloudView"
 import { useAddNonInteractiveClickListener } from "./components/ui/hooks/useNonInteractiveClick"
 import { TooltipProvider } from "./components/ui/tooltip"
 import { STANDARD_TOOLTIP_DELAY } from "./components/ui/standard-tooltip"
+import { CheckpointView } from "./components/chat/checkpoints/CheckpointView"
 
-type Tab = "settings" | "history" | "chat" | "marketplace" | "cloud"
+type Tab = "settings" | "history" | "chat" | "marketplace" | "cloud" | "checkpoints"
 
 interface DeleteMessageDialogState {
 	isOpen: boolean
@@ -50,6 +51,7 @@ const tabsByMessageAction: Partial<Record<NonNullable<ExtensionMessage["action"]
 	historyButtonClicked: "history",
 	marketplaceButtonClicked: "marketplace",
 	cloudButtonClicked: "cloud",
+	checkpointsButtonClicked: "checkpoints",
 }
 
 const App = () => {
@@ -245,6 +247,7 @@ const App = () => {
 					organizations={cloudOrganizations}
 				/>
 			)}
+			{tab === "checkpoints" && <CheckpointView onDone={() => switchTab("chat")} />}
 			<ChatView
 				ref={chatViewRef}
 				isHidden={tab !== "chat"}

@@ -134,6 +134,10 @@ import { MessageManager } from "../message-manager"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
 import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
 
+// Parallel Tool Execution
+import { ToolDependencyGraphBuilder, type DependencyGraph, type BuildGraphOptions } from "../tools/dependency-graph"
+import { ParallelToolExecutor, type ParallelExecutorConfig, type ParallelExecutionResult } from "../tools/executor"
+
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
 const FORCED_CONTEXT_REDUCTION_PERCENT = 75 // Keep 75% of context (remove 25%) on context window errors
@@ -159,6 +163,10 @@ export interface TaskOptions extends CreateTaskOptions {
 	workspacePath?: string
 	/** Initial status for the task's history item (e.g., "active" for child tasks) */
 	initialStatus?: "active" | "delegated" | "completed"
+	/** Enable parallel tool execution (default: false) */
+	enableParallelToolExecution?: boolean
+	/** Configuration for parallel executor */
+	parallelExecutorConfig?: Partial<ParallelExecutorConfig>
 }
 
 export class Task extends EventEmitter<TaskEvents> implements TaskLike {
@@ -546,6 +554,75 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// MessageManager for high-level message operations (lazy initialized)
 	private _messageManager?: MessageManager
 
+	/**
+	 * Experiments configuration for the task.
+	 * Used to check if experimental features are enabled.
+	 */
+	experiments?: Record<string, boolean>
+
+	// ==========================================
+	// Parallel Tool Execution State
+	// ==========================================
+
+	/**
+	 * Whether parallel tool execution is enabled.
+	 * When disabled, falls back to sequential execution.
+	 */
+	enableParallelToolExecution: boolean = false
+
+	/**
+	 * Configuration for parallel execution.
+	 * Controls concurrency limits, timeouts, and checkpoint behavior.
+	 */
+	parallelExecutorConfig: ParallelExecutorConfig = {
+		maxConcurrentTools: 3,
+		timeoutPerTool: 60000,
+		checkpointBeforeWriteTools: true,
+		preserveResultOrder: true,
+		continueOnError: false,
+	}
+
+	/**
+	 * The parallel tool executor instance.
+	 * Created lazily when parallel execution is first used.
+	 */
+	private parallelExecutor?: ParallelToolExecutor
+
+	/**
+	 * Dependency graph builder for analyzing tool dependencies.
+	 */
+	private dependencyGraphBuilder: ToolDependencyGraphBuilder = new ToolDependencyGraphBuilder()
+
+	/**
+	 * Current dependency graph for the tools being executed.
+	 * Set when building execution plan for parallel tools.
+	 */
+	private currentDependencyGraph?: DependencyGraph
+
+	/**
+	 * Set of tool IDs currently being executed.
+	 * Used to track parallel execution progress.
+	 */
+	private executingToolIds: Set<string> = new Set()
+
+	/**
+	 * Set of tool IDs that have completed execution.
+	 * Used to determine when all tools are done.
+	 */
+	private completedToolIds: Set<string> = new Set()
+
+	/**
+	 * Map of tool IDs to their execution start times.
+	 * Used for performance tracking and timeout detection.
+	 */
+	private toolExecutionStartTimes: Map<string, number> = new Map()
+
+	/**
+	 * Set of tool IDs that were rejected by the user.
+	 * Used to skip dependent tools.
+	 */
+	private rejectedToolIds: Set<string> = new Set()
+
 	constructor({
 		provider,
 		apiConfiguration,
@@ -565,6 +642,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		initialTodos,
 		workspacePath,
 		initialStatus,
+		enableParallelToolExecution = false,
+		parallelExecutorConfig: parallelConfig,
 	}: TaskOptions) {
 		super()
 
@@ -646,6 +725,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.enableCheckpoints = enableCheckpoints
 		this.checkpointTimeout = checkpointTimeout
 		this.enableBridge = enableBridge
+
+		// Initialize parallel execution
+		this.enableParallelToolExecution = enableParallelToolExecution
+		// Store experiments configuration
+		this.experiments = experimentsConfig
+		if (parallelConfig) {
+			this.parallelExecutorConfig = { ...this.parallelExecutorConfig, ...parallelConfig }
+		}
 
 		this.parentTask = parentTask
 		this.taskNumber = taskNumber
@@ -2017,6 +2104,129 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (error) {
 			console.error("[Task#getEnabledMcpToolsCount] Error counting MCP tools:", error)
 			return { enabledToolCount: 0, enabledServerCount: 0 }
+		}
+	}
+
+	// ==========================================
+	// Parallel Tool Execution Methods
+	// ==========================================
+
+	/**
+	 * Check if parallel execution should be used for the current tools.
+	 * Returns false if parallel execution is disabled or if tools require sequential execution.
+	 */
+	shouldUseParallelExecution(toolUses: Array<ToolUse>): boolean {
+		// Feature flag check - check both explicit flag and experiments config
+		const isExperimentEnabled = this.experiments?.parallelToolExecution === true
+		const isExplicitlyEnabled = this.enableParallelToolExecution === true
+
+		// Enable if either the experiment is enabled OR the flag is explicitly set
+		if (!isExperimentEnabled && !isExplicitlyEnabled) {
+			return false
+		}
+
+		// Need at least 2 tools for parallel execution to be useful
+		if (toolUses.length < 2) {
+			return false
+		}
+
+		// Build dependency graph to check if parallel execution is beneficial
+		const graph = this.buildDependencyGraph(toolUses)
+
+		// If all tools must be sequential anyway, no benefit from parallel execution
+		if (graph.requiresSequentialExecution) {
+			return false
+		}
+
+		return true
+	}
+
+	/**
+	 * Get or create the parallel executor instance.
+	 */
+	getParallelExecutor(): ParallelToolExecutor {
+		if (!this.parallelExecutor) {
+			this.parallelExecutor = new ParallelToolExecutor(this.parallelExecutorConfig)
+		}
+		return this.parallelExecutor
+	}
+
+	/**
+	 * Reset parallel execution state for a new turn.
+	 * Called at the start of each API request.
+	 */
+	resetParallelExecutionState(): void {
+		this.executingToolIds.clear()
+		this.completedToolIds.clear()
+		this.toolExecutionStartTimes.clear()
+		this.rejectedToolIds.clear()
+		this.currentDependencyGraph = undefined
+	}
+
+	/**
+	 * Build a dependency graph for the given tool uses.
+	 */
+	buildDependencyGraph(toolUses: Array<ToolUse>): DependencyGraph {
+		const options: BuildGraphOptions = {
+			mode: this.taskMode,
+			customModes: [],
+			experiments: {},
+		}
+		return this.dependencyGraphBuilder.build(toolUses, options)
+	}
+
+	/**
+	 * Mark a tool as started executing.
+	 */
+	markToolExecutionStarted(toolId: string): void {
+		this.executingToolIds.add(toolId)
+		this.toolExecutionStartTimes.set(toolId, Date.now())
+	}
+
+	/**
+	 * Mark a tool as completed.
+	 */
+	markToolExecutionCompleted(toolId: string): void {
+		this.executingToolIds.delete(toolId)
+		this.completedToolIds.add(toolId)
+	}
+
+	/**
+	 * Mark a tool as rejected by the user.
+	 */
+	markToolRejected(toolId: string): void {
+		this.executingToolIds.delete(toolId)
+		this.rejectedToolIds.add(toolId)
+	}
+
+	/**
+	 * Check if all tools have been processed (completed or rejected).
+	 */
+	areAllToolsProcessed(): boolean {
+		if (!this.currentDependencyGraph) {
+			return true
+		}
+		return this.completedToolIds.size + this.rejectedToolIds.size >= this.currentDependencyGraph.totalTools
+	}
+
+	/**
+	 * Get the current parallel execution progress.
+	 */
+	getParallelExecutionProgress(): { completed: number; total: number; executing: number } {
+		return {
+			completed: this.completedToolIds.size,
+			total: this.currentDependencyGraph?.totalTools ?? 0,
+			executing: this.executingToolIds.size,
+		}
+	}
+
+	/**
+	 * Dispose of parallel execution resources.
+	 */
+	disposeParallelExecutor(): void {
+		if (this.parallelExecutor) {
+			this.parallelExecutor.dispose()
+			this.parallelExecutor = undefined
 		}
 	}
 

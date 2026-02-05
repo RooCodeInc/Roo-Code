@@ -951,6 +951,10 @@
 			"refreshSuccess": "Tools refreshed successfully",
 			"refreshError": "Failed to refresh tools",
 			"toolParameters": "Parameters"
+		},
+		"PARALLEL_TOOL_EXECUTION": {
+			"name": "Parallel Tool Execution",
+			"description": "When enabled, Roo can execute multiple independent tools in parallel for faster task completion. Tools that depend on each other's results will still run sequentially."
 		}
 	},
 	"promptCaching": {

@@ -191,6 +191,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 	const [open, setOpen] = useState(false)
 	const [isAdvancedSettingsOpen, setIsAdvancedSettingsOpen] = useState(false)
 	const [isSetupSettingsOpen, setIsSetupSettingsOpen] = useState(false)
+	const [isFileTypesOpen, setIsFileTypesOpen] = useState(false)
+	const [selectedExtension, setSelectedExtension] = useState<string | undefined>(undefined)
 
 	const [indexingStatus, setIndexingStatus] = useState<IndexingStatus>(externalIndexingStatus)
 
@@ -678,6 +680,52 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 								</div>
 							)}
 						</div>
+
+						{/* File Types Section */}
+						{indexingStatus.fileTypeStats && indexingStatus.fileTypeStats.length > 0 && (
+							<div className="mt-4">
+								<button
+									onClick={() => setIsFileTypesOpen(!isFileTypesOpen)}
+									className="flex items-center text-xs text-vscode-foreground hover:text-vscode-textLink-foreground focus:outline-none"
+									aria-expanded={isFileTypesOpen}>
+									<span
+										className={`codicon codicon-${isFileTypesOpen ? "chevron-down" : "chevron-right"} mr-1`}></span>
+									<span className="text-base font-semibold">
+										{t("settings:codeIndex.fileTypesLabel")}
+									</span>
+									<span className="ml-2 text-xs text-vscode-descriptionForeground">
+										({indexingStatus.totalFileCount || 0})
+									</span>
+								</button>
+
+							{isFileTypesOpen && (
+								<div className="mt-2 space-y-1 max-h-48 overflow-y-auto">
+									{indexingStatus.fileTypeStats.map((fileType) => (
+										<button
+											key={fileType.extension}
+											onClick={() => {
+												if (selectedExtension === fileType.extension) {
+													setSelectedExtension(undefined)
+														vscode.postMessage({ type: "clearFileTypeFilter" })
+												} else {
+														setSelectedExtension(fileType.extension)
+														vscode.postMessage({ type: "setFileTypeFilter", extension: fileType.extension })
+												}
+											}}
+											className={cn(
+												"flex justify-between text-sm w-full px-2 py-1 rounded",
+												selectedExtension === fileType.extension
+													? "bg-primary/20"
+													: "hover:bg-secondary"
+												)}>
+											<span>{fileType.extension || "No extension"}</span>
+											<span className="font-mono">{fileType.count}</span>
+										</button>
+									))}
+								</div>
+							)}
+						</div>
+						)}
 
 						{/* Setup Settings Disclosure */}
 						<div className="mt-4">

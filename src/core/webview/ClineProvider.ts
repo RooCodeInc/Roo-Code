@@ -989,6 +989,8 @@ export class ClineProvider
 			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, taskSyncEnabled),
 			// Preserve the status from the history item to avoid overwriting it when the task saves messages
 			initialStatus: historyItem.status,
+			// Enable parallel tool execution for improved performance
+			enableParallelToolExecution: experiments?.parallelToolExecution ?? false,
 		})
 
 		if (isRehydratingCurrentTask) {
@@ -2907,6 +2909,8 @@ export class ClineProvider
 			onCreated: this.taskCreationCallback,
 			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
 			initialTodos: options.initialTodos,
+			// Enable parallel tool execution for improved performance
+			enableParallelToolExecution: experiments?.parallelToolExecution ?? false,
 			...options,
 		})
 

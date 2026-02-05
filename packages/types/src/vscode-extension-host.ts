@@ -22,6 +22,7 @@ import type { SkillMetadata } from "./skills.js"
 import type { ModelRecord, RouterModels } from "./model.js"
 import type { OpenAiCodexRateLimitInfo } from "./providers/openai-codex-rate-limits.js"
 import type { WorktreeIncludeStatus } from "./worktree.js"
+import type { CheckpointMetadata } from "./checkpoints.js"
 
 /**
  * ExtensionMessage
@@ -109,6 +110,14 @@ export interface ExtensionMessage {
 		| "branchWorktreeIncludeResult"
 		| "folderSelected"
 		| "skills"
+		// Git response types
+		| "gitCommitResult"
+		| "gitCommitResult"
+		| "terminalOpened"
+		| "checkpointHistory"
+		| "renameCheckpoint"
+		| "toggleCheckpointStar"
+		| "deleteCheckpoint"
 	text?: string
 	payload?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 	checkpointWarning?: {
@@ -125,6 +134,7 @@ export interface ExtensionMessage {
 		| "focusInput"
 		| "switchTab"
 		| "toggleAutoApprove"
+		| "checkpointsButtonClicked"
 	invoke?: "newChat" | "sendMessage" | "primaryButtonClick" | "secondaryButtonClick" | "setChatBoxMessage"
 	/**
 	 * Partial state updates are allowed to reduce message size (e.g. omit large fields like taskHistory).
@@ -260,7 +270,11 @@ export interface ExtensionMessage {
 	copyProgressTotalBytes?: number
 	copyProgressItemName?: string
 	// folderSelected
+	// folderSelected
 	path?: string
+	checkpoints?: CheckpointMetadata[]
+	currentCheckpointId?: string
+	name?: string // For renameCheckpoint
 }
 
 export interface OpenAiCodexRateLimitsMessage {
@@ -426,6 +440,7 @@ export type AudioType = "notification" | "celebration" | "progress_loop"
 export interface UpdateTodoListPayload {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	todos: any[]
+	branch?: string
 }
 
 export type EditQueuedMessagePayload = Pick<QueuedMessage, "id" | "text" | "images">
@@ -534,6 +549,8 @@ export interface WebviewMessage {
 		| "switchOrganization"
 		| "condenseTaskContextRequest"
 		| "requestIndexingStatus"
+		| "clearFileTypeFilter"
+		| "setFileTypeFilter"
 		| "startIndexing"
 		| "clearIndexData"
 		| "indexingStatusUpdate"
@@ -607,6 +624,18 @@ export interface WebviewMessage {
 		| "moveSkill"
 		| "updateSkillModes"
 		| "openSkillFile"
+		// Git messages
+		| "gitCommitPush"
+		| "gitExecuteCommand"
+		| "openTerminal"
+		// Git response messages (Extension -> Webview)
+		| "gitCommitResult"
+		| "terminalOpened"
+		| "branchWorktreeIncludeResult"
+		| "getCheckpoints"
+		| "renameCheckpoint"
+		| "toggleCheckpointStar"
+		| "deleteCheckpoint"
 	text?: string
 	editedMessageContent?: string
 	tab?: "settings" | "history" | "mcp" | "modes" | "chat" | "marketplace" | "cloud"
@@ -714,6 +743,7 @@ export interface WebviewMessage {
 	worktreeForce?: boolean
 	worktreeNewWindow?: boolean
 	worktreeIncludeContent?: string
+	extension?: string // For file type filter (setFileTypeFilter)
 }
 
 export interface RequestOpenAiCodexRateLimitsMessage {
@@ -747,6 +777,20 @@ export interface IndexClearedPayload {
 	error?: string
 }
 
+export interface GitCommitResultPayload {
+	success: boolean
+	text: string
+	branch?: string
+}
+
+export interface GitCommitPushPayload {
+	branch?: string
+}
+
+export interface TerminalOpenedPayload {
+	text: string
+}
+
 export const installMarketplaceItemWithParametersPayloadSchema = z.object({
 	item: marketplaceItemSchema,
 	parameters: z.record(z.string(), z.any()),
@@ -764,6 +808,11 @@ export type WebViewMessagePayload =
 	| InstallMarketplaceItemWithParametersPayload
 	| UpdateTodoListPayload
 	| EditQueuedMessagePayload
+	| GitCommitPushPayload
+	| GitCommitResultPayload
+	| TerminalOpenedPayload
+	| GitCommitResultPayload
+	| TerminalOpenedPayload
 
 export interface IndexingStatus {
 	systemStatus: string
@@ -772,6 +821,8 @@ export interface IndexingStatus {
 	totalItems: number
 	currentItemUnit?: string
 	workspacePath?: string
+	fileTypeStats?: { extension: string; count: number }[]
+	totalFileCount?: number
 }
 
 export interface IndexingStatusUpdateMessage {

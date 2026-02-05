@@ -15,6 +15,7 @@ import {
 	type ModelRecord,
 	type WebviewMessage,
 	type EditQueuedMessagePayload,
+	type GitCommitPushPayload,
 	TelemetryEventName,
 	RooCodeSettings,
 	ExperimentId,
@@ -48,6 +49,7 @@ import { MessageEnhancer } from "./messageEnhancer"
 import { checkExistKey } from "../../shared/checkExistApiConfig"
 import { experimentDefault } from "../../shared/experiments"
 import { Terminal } from "../../integrations/terminal/Terminal"
+import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
 import { openFile } from "../../integrations/misc/open-file"
 import { openImage, saveImage } from "../../integrations/misc/image-handler"
 import { selectImages } from "../../integrations/misc/process-images"
@@ -1186,7 +1188,7 @@ export const webviewMessageHandler = async (
 				vscode.env.openExternal(vscode.Uri.parse(message.url))
 			}
 			break
-		case "checkpointDiff":
+		case "checkpointDiff": {
 			const result = checkoutDiffPayloadSchema.safeParse(message.payload)
 
 			if (result.success) {
@@ -1194,6 +1196,82 @@ export const webviewMessageHandler = async (
 			}
 
 			break
+		}
+		case "getCheckpoints": {
+			const task = provider.getCurrentTask()
+			// We can only get checkpoints if the task has the service initialized
+			if (task && task.checkpointService) {
+				const checkpoints = task.checkpointService.getAllCheckpointMetadata()
+				// The last checkpoint in the list is the current head
+				const allCheckpoints = task.checkpointService.getCheckpoints()
+				const currentCheckpointId =
+					allCheckpoints.length > 0 ? allCheckpoints[allCheckpoints.length - 1] : undefined
+
+				await provider.postMessageToWebview({
+					type: "checkpointHistory",
+					checkpoints,
+					currentCheckpointId,
+				})
+			}
+			break
+		}
+		case "renameCheckpoint": {
+			const task = provider.getCurrentTask()
+			if (task && task.checkpointService && message.ids && message.ids.length > 0 && message.text) {
+				await task.checkpointService.renameCheckpoint(message.ids[0], message.text)
+
+				// Refresh checkpoints
+				const checkpoints = task.checkpointService.getAllCheckpointMetadata()
+				const allCheckpoints = task.checkpointService.getCheckpoints()
+				const currentCheckpointId =
+					allCheckpoints.length > 0 ? allCheckpoints[allCheckpoints.length - 1] : undefined
+
+				await provider.postMessageToWebview({
+					type: "checkpointHistory",
+					checkpoints,
+					currentCheckpointId,
+				})
+			}
+			break
+		}
+		case "toggleCheckpointStar": {
+			const task = provider.getCurrentTask()
+			if (task && task.checkpointService && message.ids && message.ids.length > 0) {
+				await task.checkpointService.toggleCheckpointStar(message.ids[0])
+
+				// Refresh checkpoints
+				const checkpoints = task.checkpointService.getAllCheckpointMetadata()
+				const allCheckpoints = task.checkpointService.getCheckpoints()
+				const currentCheckpointId =
+					allCheckpoints.length > 0 ? allCheckpoints[allCheckpoints.length - 1] : undefined
+
+				await provider.postMessageToWebview({
+					type: "checkpointHistory",
+					checkpoints,
+					currentCheckpointId,
+				})
+			}
+			break
+		}
+		case "deleteCheckpoint": {
+			const task = provider.getCurrentTask()
+			if (task && task.checkpointService && message.ids && message.ids.length > 0) {
+				await task.checkpointService.deleteCheckpoint(message.ids[0])
+
+				// Refresh checkpoints
+				const checkpoints = task.checkpointService.getAllCheckpointMetadata()
+				const allCheckpoints = task.checkpointService.getCheckpoints()
+				const currentCheckpointId =
+					allCheckpoints.length > 0 ? allCheckpoints[allCheckpoints.length - 1] : undefined
+
+				await provider.postMessageToWebview({
+					type: "checkpointHistory",
+					checkpoints,
+					currentCheckpointId,
+				})
+			}
+			break
+		}
 		case "checkpointRestore": {
 			const result = checkoutRestorePayloadSchema.safeParse(message.payload)
 
@@ -2704,6 +2782,22 @@ export const webviewMessageHandler = async (
 			})
 			break
 		}
+		case "setFileTypeFilter": {
+			// Handle file type filter selection
+			const extension = message.extension
+			if (extension) {
+				provider.log(`File type filter set to: ${extension}`)
+				// The filter is currently handled on the UI side only
+				// In the future, this could be used to filter search results
+			}
+			break
+		}
+		case "clearFileTypeFilter": {
+			// Handle clearing the file type filter
+			provider.log("File type filter cleared")
+			// The filter is currently handled on the UI side only
+			break
+		}
 		case "requestCodeIndexSecretStatus": {
 			// Check if secrets are set using the VSCode context directly for async access
 			const hasOpenAiKey = !!(await provider.context.secrets.get("codeIndexOpenAiKey"))
@@ -3602,6 +3696,200 @@ export const webviewMessageHandler = async (
 			} catch (error) {
 				const errorMessage = error instanceof Error ? error.message : String(error)
 				provider.log(`Error opening folder picker: ${errorMessage}`)
+			}
+
+			break
+		}
+
+		case "gitCommitPush": {
+			try {
+				const cwd = getCurrentCwd()
+				if (!cwd) {
+					await vscode.window.showErrorMessage(t("common:errors.no_workspace"))
+					await provider.postMessageToWebview({
+						type: "gitCommitResult",
+						success: false,
+						text: "No workspace path available",
+					})
+					break
+				}
+
+				// Get list of remote branches
+				const terminal = await TerminalRegistry.getOrCreateTerminal(cwd, provider.getCurrentTask()?.taskId)
+				if (!terminal) {
+					await vscode.window.showErrorMessage("Terminal not available")
+					await provider.postMessageToWebview({
+						type: "gitCommitResult",
+						success: false,
+						text: "Terminal not available",
+					})
+					break
+				}
+
+				// Get all remote branches
+				let branchesOutput = ""
+				try {
+					await terminal.runCommand("git branch -r", {
+						onLine: (line: string) => {
+							branchesOutput += line + "\n"
+						},
+						onCompleted: (output: string | undefined) => {
+							if (output) branchesOutput += output
+						},
+						onShellExecutionStarted: () => {},
+						onShellExecutionComplete: () => {},
+					})
+				} catch (error) {
+					// If we can't get branches, use a default list
+					branchesOutput = "main\ndevelop\nfeat/context-dashboard\nfeature/knowledge-graph"
+				}
+
+				// Parse branches and filter out invalid ones
+				let branchList = branchesOutput
+					.split("\n")
+					.map((line) => line.trim().replace(/^origin\//, ""))
+					.filter((branch) => branch && !branch.includes("HEAD"))
+
+				// Add current branch to the list
+				let currentBranchOutput = ""
+				try {
+					await terminal.runCommand("git rev-parse --abbrev-ref HEAD", {
+						onLine: (line: string) => {
+							currentBranchOutput = line.trim()
+						},
+						onCompleted: (output: string | undefined) => {
+							if (output) currentBranchOutput = output.trim()
+						},
+						onShellExecutionStarted: () => {},
+						onShellExecutionComplete: () => {},
+					})
+				} catch {
+					currentBranchOutput = "main"
+				}
+
+				// If branch is provided in payload, use it; otherwise ask user to select
+				const gitPushPayload = message.payload as GitCommitPushPayload
+				let selectedBranch: string | undefined
+				if (gitPushPayload.branch) {
+					selectedBranch = gitPushPayload.branch
+				} else {
+					// Ask user to select branch
+					selectedBranch = await vscode.window.showQuickPick(branchList, {
+						placeHolder: "Select branch to push to:",
+						title: "Push Changes to Branch",
+					})
+
+					if (!selectedBranch) {
+						// User cancelled
+						await vscode.window.showInformationMessage("Push cancelled")
+						break
+					}
+				}
+
+				// Execute git commands sequentially
+				// 1. git add .
+				// 2. git commit with default message
+				// 3. git push <branch>
+				const commands = [
+					"git add .",
+					"git commit -m 'Update from Roo Code'",
+					`git push origin ${selectedBranch}`,
+				]
+
+				let output = ""
+				let success = true
+
+				for (const cmd of commands) {
+					try {
+						await terminal.runCommand(cmd, {
+							onLine: (line: string) => {
+								output += line + "\n"
+								provider.log(`[Git] ${line}`)
+							},
+							onCompleted: (cmdOutput: string | undefined) => {
+								if (cmdOutput) {
+									output += cmdOutput + "\n"
+									provider.log(`[Git] Completed: ${cmdOutput}`)
+								}
+							},
+							onShellExecutionStarted: () => {},
+							onShellExecutionComplete: () => {},
+						})
+					} catch (error) {
+						success = false
+						output += `\nError executing ${cmd}: ${error instanceof Error ? error.message : String(error)}\n`
+						provider.log(`[Git] Error executing ${cmd}: ${error}`)
+						break
+					}
+				}
+
+				if (success) {
+					await vscode.window.showInformationMessage(t("chat:gitCommit.success"))
+				} else {
+					await vscode.window.showErrorMessage(t("common:errors.git_commit_failed"))
+				}
+
+				await provider.postMessageToWebview({
+					type: "gitCommitResult",
+					success,
+					branch: selectedBranch,
+					text:
+						output.trim() ||
+						(success
+							? `Changes committed and pushed to ${selectedBranch} successfully!`
+							: "Failed to commit changes"),
+				})
+			} catch (error) {
+				provider.log(`Error in gitCommitPush: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				await vscode.window.showErrorMessage(t("common:errors.git_commit_failed"))
+				await provider.postMessageToWebview({
+					type: "gitCommitResult",
+					success: false,
+					text: error instanceof Error ? error.message : String(error),
+				})
+			}
+
+			break
+		}
+
+		case "openTerminal": {
+			try {
+				const command = message.text || ""
+				if (!command) {
+					await vscode.window.showErrorMessage("No command provided")
+					break
+				}
+
+				const cwd = getCurrentCwd()
+				if (!cwd) {
+					await vscode.window.showErrorMessage(t("common:errors.no_workspace"))
+					break
+				}
+
+				const terminal = await TerminalRegistry.getOrCreateTerminal(cwd, provider.getCurrentTask()?.taskId)
+				if (!terminal) {
+					await vscode.window.showErrorMessage("Terminal not available")
+					break
+				}
+
+				await terminal.runCommand(command, {
+					onLine: (line: string) => {
+						provider.log(`[Terminal] ${line}`)
+					},
+					onCompleted: (output: string | undefined) => {
+						provider.log(`[Terminal] Completed: ${output || ""}`)
+					},
+					onShellExecutionStarted: () => {},
+					onShellExecutionComplete: () => {},
+				})
+
+				await provider.postMessageToWebview({
+					type: "terminalOpened",
+					text: command,
+				})
+			} catch (error) {
+				provider.log(`Error opening terminal: ${JSON.stringify(error, Object.getOwnPropertyNames(error), 2)}`)
+				await vscode.window.showErrorMessage(t("common:errors.terminal_open_failed"))
 			}
 
 			break

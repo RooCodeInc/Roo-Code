@@ -10,6 +10,7 @@ import { isEmpty } from "../../utils/object"
 
 import { McpHub } from "../../services/mcp/McpHub"
 import { CodeIndexManager } from "../../services/code-index/manager"
+import { ContextEngineService } from "../../services/context-engine"
 import { SkillsManager } from "../../services/skills/SkillsManager"
 
 import { PromptVariables, loadSystemPromptFile } from "./sections/custom-system-prompt"
@@ -78,6 +79,44 @@ async function generatePrompt(
 	// Tool calling is native-only.
 	const effectiveProtocol = "native"
 
+	const contextEngine = ContextEngineService.getInstance()
+	let contextEngineSection = ""
+
+	if (contextEngine) {
+		try {
+			const result = await contextEngine.buildContext(
+				"", // Empty query for general project context
+				{
+					currentFile: undefined,
+					openFiles: [],
+				},
+				{
+					maxTokens: 5000, // Generous limit for system prompt
+					includeDecisions: true,
+					includePatterns: true,
+				},
+			)
+
+			if (result.context.items.length > 0) {
+				const items = result.context.items
+					.map((item) => {
+						const typeLabel = item.type.charAt(0).toUpperCase() + item.type.slice(1)
+						return `### ${typeLabel}: ${item.source}\n${item.content}`
+					})
+					.join("\n\n")
+
+				contextEngineSection = `
+# Project Context & Insights
+The following context has been automatically gathered from the project's memory and knowledge graph:
+
+${items}
+`
+			}
+		} catch (error) {
+			console.warn("Failed to generate context for system prompt:", error)
+		}
+	}
+
 	const [modesSection, skillsSection] = await Promise.all([
 		getModesSection(context),
 		getSkillsSection(skillsManager, mode as string),
@@ -101,7 +140,7 @@ ${skillsSection ? `\n${skillsSection}` : ""}
 ${getRulesSection(cwd, settings)}
 
 ${getSystemInfoSection(cwd)}
-
+${contextEngineSection}
 ${getObjectiveSection()}
 
 ${await addCustomInstructions(baseInstructions, globalCustomInstructions || "", cwd, mode, {

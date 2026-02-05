@@ -501,5 +501,28 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"contextDashboard": {
+		"title": "Context",
+		"expand": "Expand context",
+		"collapse": "Collapse context",
+		"stats": "{{files}} files, {{tabs}} tabs",
+		"openedTabs": "Open Tabs",
+		"workspaceFiles": "Workspace Files",
+		"more": "+{{count}} more",
+		"moreFiles": "+{{count}} more files",
+		"tooltip": "View context files and folders"
+	},
+	"gitCommit": {
+		"title": "Git Commit & Push",
+		"tooltip": "Git operations",
+		"description": "Quick git commands for your changes",
+		"commitPush": "Commit & Push",
+		"terminal": "Terminal",
+		"currentBranch": "Current Branch",
+		"quickCommands": "Quick Commands",
+		"prompt": "Enter commit message...",
+		"success": "Changes committed and pushed!",
+		"error": "Error during git operation"
 	}
 }

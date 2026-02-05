@@ -1,13 +1,67 @@
 import * as vscode from "vscode"
 import * as path from "path"
+import { createHash } from "crypto"
 import { CodeIndexConfigManager } from "./config-manager"
 import { CodeIndexStateManager, IndexingState } from "./state-manager"
-import { IFileWatcher, IVectorStore, BatchProcessingSummary } from "./interfaces"
-import { DirectoryScanner } from "./processors"
+import { IFileWatcher, IVectorStore, BatchProcessingSummary, CodeBlock } from "./interfaces"
+import { DirectoryScanner, CodeParser } from "./processors"
 import { CacheManager } from "./cache-manager"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 import { t } from "../../i18n"
+import { IGraphStore, IGraphParser, DependencyType } from "./graph"
+
+/**
+ * File priority levels for priority-based processing
+ */
+export enum FilePriority {
+	CRITICAL = 1, // Currently open files
+	HIGH = 2, // Recently modified files
+	MEDIUM = 3, // Files in context
+	LOW = 4, // All other files
+}
+
+/**
+ * Interface representing an indexed file with its metadata
+ */
+export interface IndexedFile {
+	path: string
+	contentHash: string
+	lastIndexed: number
+	priority: number
+}
+
+/**
+ * Interface for parse result cache entry
+ */
+interface ParseResultCacheEntry {
+	result: CodeBlock[]
+	contentHash: string
+	timestamp: number
+}
+
+/**
+ * Result interface for incremental scan operations
+ */
+export interface ScanResult {
+	changed: number
+	deleted: number
+}
+
+/**
+ * Interface for file type statistics
+ */
+export interface FileTypeStats {
+	extension: string
+	count: number
+}
+
+/**
+ * Interface for file type count map
+ */
+export interface FileTypeCountMap {
+	[extension: string]: number
+}
 
 /**
  * Manages the code indexing workflow, coordinating between different services and managers.
@@ -15,6 +69,32 @@ import { t } from "../../i18n"
 export class CodeIndexOrchestrator {
 	private _fileWatcherSubscriptions: vscode.Disposable[] = []
 	private _isProcessing: boolean = false
+
+	// Smart Incremental Indexing: Track indexed files with their metadata
+	private indexedFiles: Map<string, IndexedFile> = new Map()
+
+	// Parse Result Caching: Cache parsed results to avoid re-parsing unchanged files
+	private parseResultCache: Map<string, ParseResultCacheEntry> = new Map()
+
+	// Code parser instance for parse result caching
+	private readonly codeParser: CodeParser
+
+	// Track currently open files for priority calculation
+	private openFiles: Set<string> = new Set()
+
+	// Recently modified threshold (5 minutes)
+	private readonly recentModificationThreshold = 5 * 60 * 1000
+
+	// Maximum cache size for parse results (500 entries)
+	private readonly maxParseCacheSize = 500
+
+	// Knowledge Graph components (optional - fail-safe)
+	private graphStore?: IGraphStore
+	private graphBuilder?: IGraphParser
+	private graphEnabled: boolean = false
+
+	// Graph periodic save timer (every 5 minutes)
+	private graphSaveTimer?: vscode.Disposable
 
 	constructor(
 		private readonly configManager: CodeIndexConfigManager,
@@ -24,7 +104,58 @@ export class CodeIndexOrchestrator {
 		private readonly vectorStore: IVectorStore,
 		private readonly scanner: DirectoryScanner,
 		private readonly fileWatcher: IFileWatcher,
-	) {}
+		codeParser?: CodeParser,
+	) {
+		this.codeParser = codeParser ?? new CodeParser()
+	}
+
+	/**
+	 * Enables Knowledge Graph features with the provided services.
+	 * This is optional and graph failures won't affect vector indexing.
+	 * @param graphStore - The graph storage service
+	 * @param graphBuilder - The graph parser service
+	 */
+	public enableGraphFeatures(graphStore: IGraphStore, graphBuilder: IGraphParser): void {
+		this.graphStore = graphStore
+		this.graphBuilder = graphBuilder
+		this.graphEnabled = true
+
+		// Start periodic save timer (every 5 minutes) using setInterval
+		const saveGraph = async (): Promise<void> => {
+			if (this.graphStore) {
+				try {
+					const result = await this.graphStore.save()
+					if (result.success) {
+						console.log(
+							`[CodeIndexOrchestrator] Graph saved: ${result.nodeCount} nodes, ${result.edgeCount} edges`,
+						)
+					} else {
+						console.warn(`[CodeIndexOrchestrator] Graph save failed: ${result.error}`)
+					}
+				} catch (saveError) {
+					console.warn("[CodeIndexOrchestrator] Graph save failed:", saveError)
+				}
+			}
+		}
+
+		// Initial save
+		saveGraph()
+
+		// Periodic save every 5 minutes
+		const intervalId = setInterval(saveGraph, 5 * 60 * 1000)
+
+		// Create VSCode disposable for cleanup
+		this.graphSaveTimer = { dispose: () => clearInterval(intervalId) }
+
+		console.log("[CodeIndexOrchestrator] Knowledge Graph features enabled with periodic save")
+	}
+
+	/**
+	 * Check if graph features are enabled
+	 */
+	public isGraphEnabled(): boolean {
+		return this.graphEnabled && !!this.graphStore && !!this.graphBuilder
+	}
 
 	/**
 	 * Starts the file watcher if not already running.
@@ -66,7 +197,32 @@ export class CodeIndexOrchestrator {
 				this.fileWatcher.onDidFinishBatchProcessing((summary: BatchProcessingSummary) => {
 					if (summary.batchError) {
 						console.error(`[CodeIndexOrchestrator] Batch processing failed:`, summary.batchError)
-					} else {
+					}
+
+					// Process successful results regardless of batch error (some might have succeeded)
+					let hasUpdates = false
+					for (const result of summary.processedFiles) {
+						if (result.status === "success") {
+							hasUpdates = true
+							if (result.operation === "delete") {
+								this.indexedFiles.delete(result.path)
+								this.parseResultCache.delete(result.path)
+							} else if (result.operation === "upsert") {
+								this.indexedFiles.set(result.path, {
+									path: result.path,
+									contentHash: result.newHash || "",
+									lastIndexed: Date.now(),
+									priority: this.calculateFilePriority(result.path),
+								})
+							}
+						}
+					}
+
+					if (hasUpdates) {
+						this.updateFileTypeStats()
+					}
+
+					if (!summary.batchError) {
 						const successCount = summary.processedFiles.filter(
 							(f: { status: string }) => f.status === "success",
 						).length
@@ -126,6 +282,7 @@ export class CodeIndexOrchestrator {
 		// Track whether we successfully connected to Qdrant and started indexing
 		// This helps us decide whether to preserve cache on error
 		let indexingStarted = false
+		let scanCompleted = false
 
 		try {
 			const collectionCreated = await this.vectorStore.initialize()
@@ -179,6 +336,7 @@ export class CodeIndexOrchestrator {
 					handleBlocksIndexed,
 					handleFileParsed,
 				)
+				scanCompleted = true
 
 				if (!result) {
 					throw new Error("Incremental scan failed, is scanner initialized?")
@@ -199,6 +357,9 @@ export class CodeIndexOrchestrator {
 				await this.vectorStore.markIndexingComplete()
 
 				this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
+
+				// Update file type statistics
+				this.updateFileTypeStats()
 			} else {
 				// No existing data or collection was just created - do a full scan
 				this.stateManager.setSystemState("Indexing", "Services ready. Starting workspace scan...")
@@ -232,6 +393,7 @@ export class CodeIndexOrchestrator {
 					handleBlocksIndexed,
 					handleFileParsed,
 				)
+				scanCompleted = true
 
 				if (!result) {
 					throw new Error("Scan failed, is scanner initialized?")
@@ -280,6 +442,28 @@ export class CodeIndexOrchestrator {
 				await this.vectorStore.markIndexingComplete()
 
 				this.stateManager.setSystemState("Indexed", t("embeddings:orchestrator.fileWatcherStarted"))
+
+				// Update file type statistics
+				this.updateFileTypeStats()
+
+				// Populate Knowledge Graph from cached files
+				if (this.isGraphEnabled()) {
+					this.stateManager.setSystemState("Indexing", "Building knowledge graph...")
+					try {
+						const graphStats = await this.populateGraphFromCache((current, total) => {
+							this.stateManager.setSystemState(
+								"Indexing",
+								`Building knowledge graph: ${current}/${total} files`,
+							)
+						})
+						console.log(
+							`[CodeIndexOrchestrator] Knowledge Graph built: ${graphStats.nodeCount} nodes, ${graphStats.edgeCount} edges`,
+						)
+					} catch (graphError) {
+						console.warn("[CodeIndexOrchestrator] Failed to build knowledge graph:", graphError)
+						// Continue - graph is optional
+					}
+				}
 			}
 		} catch (error: any) {
 			console.error("[CodeIndexOrchestrator] Error during indexing:", error)
@@ -301,9 +485,9 @@ export class CodeIndexOrchestrator {
 				}
 			}
 
-			// Only clear cache if indexing had started (Qdrant connection succeeded)
+			// Only clear cache if indexing had started (Qdrant connection succeeded) and scan didn't complete
 			// If we never connected to Qdrant, preserve cache for incremental scan when it comes back
-			if (indexingStarted) {
+			if (indexingStarted && !scanCompleted) {
 				// Indexing started but failed mid-way - clear cache to avoid cache-Qdrant mismatch
 				await this.cacheManager.clearCacheFile()
 				console.log(
@@ -332,6 +516,15 @@ export class CodeIndexOrchestrator {
 	 * Stops the file watcher and cleans up resources.
 	 */
 	public stopWatcher(): void {
+		// Save graph before stopping
+		this.saveGraphSync()
+
+		// Dispose periodic save timer
+		if (this.graphSaveTimer) {
+			this.graphSaveTimer.dispose()
+			this.graphSaveTimer = undefined
+		}
+
 		this.fileWatcher.dispose()
 		this._fileWatcherSubscriptions.forEach((sub) => sub.dispose())
 		this._fileWatcherSubscriptions = []
@@ -340,6 +533,29 @@ export class CodeIndexOrchestrator {
 			this.stateManager.setSystemState("Standby", t("embeddings:orchestrator.fileWatcherStopped"))
 		}
 		this._isProcessing = false
+	}
+
+	/**
+	 * Save graph synchronously (for cleanup)
+	 */
+	private saveGraphSync(): void {
+		if (this.graphStore) {
+			try {
+				// Fire and forget - best effort save
+				this.graphStore
+					.save()
+					.then((result) => {
+						if (result.success) {
+							console.log(`[CodeIndexOrchestrator] Graph saved on shutdown: ${result.nodeCount} nodes`)
+						}
+					})
+					.catch((error) => {
+						console.warn("[CodeIndexOrchestrator] Graph save on shutdown failed:", error)
+					})
+			} catch {
+				// Best effort
+			}
+		}
 	}
 
 	/**
@@ -383,5 +599,512 @@ export class CodeIndexOrchestrator {
 	 */
 	public get state(): IndexingState {
 		return this.stateManager.state
+	}
+
+	// ==================== Smart Incremental Indexing ====================
+
+	/**
+	 * Performs an incremental scan to detect and process changed files
+	 * @returns Promise resolving to scan result with counts of changed and deleted files
+	 */
+	public async performIncrementalScan(): Promise<ScanResult> {
+		const changedFiles = await this.detectChangedFiles()
+		const deletedFiles = await this.detectDeletedFiles()
+
+		// Delete removed files from index
+		for (const file of deletedFiles) {
+			await this.vectorStore.deletePointsByFilePath(file)
+			this.indexedFiles.delete(file)
+			this.parseResultCache.delete(file)
+		}
+
+		// Reindex only changed files
+		for (const file of changedFiles) {
+			await this.reindexFile(file)
+		}
+
+		return { changed: changedFiles.length, deleted: deletedFiles.length }
+	}
+
+	/**
+	 * Detects files that have been modified since last indexing
+	 * @returns Promise resolving to array of changed file paths
+	 */
+	private async detectChangedFiles(): Promise<string[]> {
+		const changedFiles: string[] = []
+
+		// Get all files from the cache manager (persisted hashes)
+		const cachedHashes = this.cacheManager.getAllHashes()
+
+		for (const [filePath, cachedHash] of Object.entries(cachedHashes)) {
+			const indexedFile = this.indexedFiles.get(filePath)
+
+			if (!indexedFile) {
+				// New file not in our tracked list
+				changedFiles.push(filePath)
+				continue
+			}
+
+			if (indexedFile.contentHash !== cachedHash) {
+				// File has changed
+				changedFiles.push(filePath)
+			}
+		}
+
+		return changedFiles
+	}
+
+	/**
+	 * Detects files that have been deleted since last indexing
+	 * @returns Promise resolving to array of deleted file paths
+	 */
+	private async detectDeletedFiles(): Promise<string[]> {
+		const deletedFiles: string[] = []
+
+		// Get all files from the cache manager
+		const cachedHashes = this.cacheManager.getAllHashes()
+
+		for (const [filePath] of this.indexedFiles) {
+			// If a file is in our indexed list but not in cache, it was deleted
+			if (!(filePath in cachedHashes)) {
+				deletedFiles.push(filePath)
+			}
+		}
+
+		return deletedFiles
+	}
+
+	/**
+	 * Reindexes a single file and updates the indexed files map
+	 * @param filePath Path to the file to reindex
+	 */
+	private async reindexFile(filePath: string): Promise<void> {
+		try {
+			// Get the parse result (using cache if available)
+			const blocks = await this.getOrParseFile(filePath)
+
+			if (blocks.length === 0) {
+				return
+			}
+
+			// Get file hash for the indexed file
+			const cachedHash = this.cacheManager.getHash(filePath) || ""
+
+			// Delete old points from vector store
+			await this.vectorStore.deletePointsByFilePath(filePath)
+
+			// Convert blocks to points and upsert
+			const points = this.blocksToPoints(blocks)
+			await this.vectorStore.upsertPoints(points)
+
+			// Knowledge Graph update (fail-safe - won't affect vector indexing)
+			if (this.isGraphEnabled() && this.graphStore && this.graphBuilder && cachedHash.length > 0) {
+				try {
+					const content = blocks.map((b) => b.content).join("\n")
+					const graphResult = await this.graphBuilder.parseFile(filePath, content)
+
+					if (graphResult.success) {
+						await this.graphStore.updateNode(filePath, cachedHash, graphResult.imports, graphResult.exports)
+					}
+				} catch (graphError) {
+					// Log but don't fail - graph is optional
+					console.warn(`[CodeIndexOrchestrator] Graph update failed for ${filePath}:`, graphError)
+				}
+			}
+
+			// Update indexed files map
+			this.indexedFiles.set(filePath, {
+				path: filePath,
+				contentHash: cachedHash,
+				lastIndexed: Date.now(),
+				priority: this.calculateFilePriority(filePath),
+			})
+		} catch (error) {
+			console.error(`[CodeIndexOrchestrator] Error reindexing file ${filePath}:`, error)
+		}
+	}
+
+	// ==================== Priority-based File Processing ====================
+
+	/**
+	 * Calculates the priority level for a file based on various factors
+	 * @param filePath Path to the file
+	 * @returns Priority level for the file
+	 */
+	public calculateFilePriority(filePath: string): FilePriority {
+		if (this.isCurrentlyOpen(filePath)) {
+			return FilePriority.CRITICAL
+		}
+		if (this.isRecentlyModified(filePath)) {
+			return FilePriority.HIGH
+		}
+		if (this.isInContext(filePath)) {
+			return FilePriority.MEDIUM
+		}
+		return FilePriority.LOW
+	}
+
+	/**
+	 * Checks if a file is currently open in the editor
+	 * @param filePath Path to the file
+	 * @returns True if the file is currently open
+	 */
+	private isCurrentlyOpen(filePath: string): boolean {
+		return this.openFiles.has(filePath)
+	}
+
+	/**
+	 * Checks if a file was recently modified
+	 * @param filePath Path to the file
+	 * @returns True if the file was modified within the recent threshold
+	 */
+	private isRecentlyModified(filePath: string): boolean {
+		const indexedFile = this.indexedFiles.get(filePath)
+		if (!indexedFile) {
+			return false
+		}
+
+		const timeSinceLastIndex = Date.now() - indexedFile.lastIndexed
+		return timeSinceLastIndex < this.recentModificationThreshold
+	}
+
+	/**
+	 * Checks if a file is in the current context (e.g., related to open files)
+	 * @param filePath Path to the file
+	 * @returns True if the file is in context
+	 */
+	private isInContext(filePath: string): boolean {
+		// Simple implementation: check if file shares directory with open files
+		for (const openFile of this.openFiles) {
+			const openDir = path.dirname(openFile)
+			const fileDir = path.dirname(filePath)
+			if (
+				openDir === fileDir ||
+				openDir.startsWith(fileDir + path.sep) ||
+				fileDir.startsWith(openDir + path.sep)
+			) {
+				return true
+			}
+		}
+		return false
+	}
+
+	/**
+	 * Processes files in priority order (highest priority first)
+	 * @param files Array of file paths to process
+	 */
+	public async processFilesByPriority(files: string[]): Promise<void> {
+		// Sort files by priority
+		const sorted = files.sort((a, b) => this.calculateFilePriority(a) - this.calculateFilePriority(b))
+
+		// Process files in priority order
+		for (const file of sorted) {
+			await this.indexFile(file)
+		}
+	}
+
+	/**
+	 * Indexes a single file
+	 * @param filePath Path to the file to index
+	 */
+	private async indexFile(filePath: string): Promise<void> {
+		try {
+			const blocks = await this.getOrParseFile(filePath)
+
+			if (blocks.length === 0) {
+				return
+			}
+
+			// Get file hash
+			const cachedHash = this.cacheManager.getHash(filePath) || ""
+
+			// Convert blocks to points and upsert
+			const points = this.blocksToPoints(blocks)
+			await this.vectorStore.upsertPoints(points)
+
+			// Update indexed files map
+			this.indexedFiles.set(filePath, {
+				path: filePath,
+				contentHash: cachedHash,
+				lastIndexed: Date.now(),
+				priority: this.calculateFilePriority(filePath),
+			})
+		} catch (error) {
+			console.error(`[CodeIndexOrchestrator] Error indexing file ${filePath}:`, error)
+		}
+	}
+
+	/**
+	 * Converts code blocks to vector store points
+	 * @param blocks Array of code blocks
+	 * @returns Array of points for vector store
+	 */
+	private blocksToPoints(blocks: CodeBlock[]) {
+		return blocks.map((block) => ({
+			id: block.segmentHash,
+			vector: [], // Will be populated by embedder
+			payload: {
+				filePath: block.file_path,
+				codeChunk: block.content,
+				startLine: block.start_line,
+				endLine: block.end_line,
+				identifier: block.identifier,
+				type: block.type,
+				fileHash: block.fileHash,
+				segmentHash: block.segmentHash,
+			},
+		}))
+	}
+
+	// ==================== Parse Result Caching ====================
+
+	/**
+	 * Gets cached parse result or parses the file and caches the result
+	 * @param filePath Path to the file to parse
+	 * @returns Promise resolving to array of code blocks
+	 */
+	public async getOrParseFile(filePath: string): Promise<CodeBlock[]> {
+		try {
+			// Read file content
+			const content = await vscode.workspace.fs.readFile(vscode.Uri.file(filePath))
+			const contentStr = content.toString()
+			const contentHash = createHash("sha256").update(contentStr).digest("hex")
+
+			// Check cache
+			const cached = this.parseResultCache.get(filePath)
+			if (cached && cached.contentHash === contentHash) {
+				return cached.result
+			}
+
+			// Parse the file
+			const result = await this.codeParser.parseFile(filePath, { content: contentStr, fileHash: contentHash })
+
+			// Cache the result
+			this.setParseCache(filePath, result, contentHash)
+
+			return result
+		} catch (error) {
+			console.error(`[CodeIndexOrchestrator] Error parsing file ${filePath}:`, error)
+			return []
+		}
+	}
+
+	/**
+	 * Sets a parse result in the cache with LRU eviction
+	 * @param filePath Path to the file
+	 * @param result Parse result
+	 * @param contentHash Hash of the file content
+	 */
+	private setParseCache(filePath: string, result: CodeBlock[], contentHash: string): void {
+		// Check if cache is full and evict oldest entry
+		if (this.parseResultCache.size >= this.maxParseCacheSize) {
+			let oldestKey: string | null = null
+			let oldestTimestamp = Infinity
+
+			for (const [key, entry] of this.parseResultCache) {
+				if (entry.timestamp < oldestTimestamp) {
+					oldestTimestamp = entry.timestamp
+					oldestKey = key
+				}
+			}
+
+			if (oldestKey) {
+				this.parseResultCache.delete(oldestKey)
+			}
+		}
+
+		this.parseResultCache.set(filePath, {
+			result,
+			contentHash,
+			timestamp: Date.now(),
+		})
+	}
+
+	/**
+	 * Clears the parse result cache
+	 */
+	public clearParseCache(): void {
+		this.parseResultCache.clear()
+	}
+
+	/**
+	 * Gets statistics about the parse result cache
+	 * @returns Cache statistics
+	 */
+	public getParseCacheStats(): { size: number; maxSize: number } {
+		return {
+			size: this.parseResultCache.size,
+			maxSize: this.maxParseCacheSize,
+		}
+	}
+
+	// ==================== File Tracking ====================
+
+	/**
+	 * Marks a file as currently open
+	 * @param filePath Path to the file
+	 */
+	public markFileOpen(filePath: string): void {
+		this.openFiles.add(filePath)
+		// Update priority in indexed files
+		const indexedFile = this.indexedFiles.get(filePath)
+		if (indexedFile) {
+			indexedFile.priority = this.calculateFilePriority(filePath)
+		}
+	}
+
+	/**
+	 * Marks a file as no longer open
+	 * @param filePath Path to the file
+	 */
+	public markFileClosed(filePath: string): void {
+		this.openFiles.delete(filePath)
+		// Update priority in indexed files
+		const indexedFile = this.indexedFiles.get(filePath)
+		if (indexedFile) {
+			indexedFile.priority = this.calculateFilePriority(filePath)
+		}
+	}
+
+	/**
+	 * Gets the count of indexed files
+	 * @returns Number of indexed files
+	 */
+	public getIndexedFileCount(): number {
+		return this.indexedFiles.size
+	}
+
+	/**
+	 * Gets all indexed files
+	 * @returns Array of indexed file entries
+	 */
+	public getIndexedFiles(): IndexedFile[] {
+		return Array.from(this.indexedFiles.values())
+	}
+
+	// ==================== File Type Statistics ====================
+
+	/**
+	 * Gets file type statistics (count by extension)
+	 * @returns Array of file type stats sorted by count descending
+	 */
+	public getFileTypeStats(): FileTypeStats[] {
+		const counts: FileTypeCountMap = {}
+
+		// Use cacheManager to get all indexed files
+		// The indexedFiles Map is only populated during incremental operations,
+		// but cacheManager contains the actual indexed files from the scanner
+		const allHashes = this.cacheManager.getAllHashes()
+
+		for (const filePath of Object.keys(allHashes)) {
+			const ext = path.extname(filePath).toLowerCase() || ".noext"
+			counts[ext] = (counts[ext] || 0) + 1
+		}
+
+		return Object.entries(counts)
+			.map(([extension, count]) => ({ extension, count }))
+			.sort((a, b) => b.count - a.count)
+	}
+
+	/**
+	 * Gets total number of indexed files
+	 * @returns Total file count
+	 */
+	public getTotalFileCount(): number {
+		// Use cacheManager to get accurate count of indexed files
+		const allHashes = this.cacheManager.getAllHashes()
+		return Object.keys(allHashes).length
+	}
+
+	/**
+	 * Gets files filtered by extension
+	 * @param extension File extension to filter by (with or without dot)
+	 * @returns Array of indexed files with the specified extension
+	 */
+	public getFilesByExtension(extension: string): IndexedFile[] {
+		const normalizedExt = extension.toLowerCase()
+		const extWithDot = normalizedExt.startsWith(".") ? normalizedExt : `.${normalizedExt}`
+
+		return Array.from(this.indexedFiles.values()).filter(
+			(file) => path.extname(file.path).toLowerCase() === extWithDot,
+		)
+	}
+
+	/**
+	 * Updates file type stats in the state manager
+	 * This should be called when indexing is complete or when files change
+	 */
+	public updateFileTypeStats(): void {
+		const stats = this.getFileTypeStats()
+		const totalCount = this.getTotalFileCount()
+		this.stateManager.setFileTypeStats(stats, totalCount)
+	}
+
+	/**
+	 * Populates the knowledge graph from cached files.
+	 * This should be called after the initial scan to build the graph.
+	 * @param onProgress Optional progress callback
+	 */
+	public async populateGraphFromCache(
+		onProgress?: (current: number, total: number) => void,
+	): Promise<{ nodeCount: number; edgeCount: number }> {
+		if (!this.isGraphEnabled() || !this.graphStore || !this.graphBuilder) {
+			return { nodeCount: 0, edgeCount: 0 }
+		}
+
+		const allHashes = this.cacheManager.getAllHashes()
+		const filePaths = Object.keys(allHashes)
+		const total = filePaths.length
+		let processed = 0
+
+		console.log(`[CodeIndexOrchestrator] Populating graph from ${total} cached files...`)
+
+		// Process files in batches to avoid memory issues
+		const batchSize = 50
+		for (let i = 0; i < filePaths.length; i += batchSize) {
+			const batch = filePaths.slice(i, i + batchSize)
+
+			await Promise.all(
+				batch.map(async (filePath) => {
+					try {
+						let content: string | null = null
+						try {
+							content = await vscode.workspace.fs
+								.readFile(vscode.Uri.file(filePath))
+								.then((buffer) => Buffer.from(buffer).toString("utf-8"))
+						} catch {
+							// File may have been deleted
+							content = null
+						}
+
+						if (!content) return
+
+						const graphResult = await this.graphBuilder!.parseFile(filePath, content)
+						if (graphResult.success) {
+							await this.graphStore!.updateNode(
+								filePath,
+								allHashes[filePath] || "",
+								graphResult.imports,
+								graphResult.exports,
+							)
+						}
+					} catch (error) {
+						// Best effort - skip file
+						console.warn(`[CodeIndexOrchestrator] Failed to parse ${filePath} for graph:`, error)
+					}
+				}),
+			)
+
+			processed += batch.length
+			onProgress?.(processed, total)
+		}
+
+		// Save the graph
+		const saveResult = await this.graphStore.save()
+		console.log(
+			`[CodeIndexOrchestrator] Graph populated: ${saveResult.nodeCount} nodes, ${saveResult.edgeCount} edges`,
+		)
+
+		return { nodeCount: saveResult.nodeCount, edgeCount: saveResult.edgeCount }
 	}
 }

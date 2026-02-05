@@ -18,6 +18,7 @@ export const Markdown = memo(({ markdown, partial }: { markdown?: string; partia
 
 	return (
 		<div
+			dir="auto"
 			onMouseEnter={() => setIsHovering(true)}
 			onMouseLeave={() => setIsHovering(false)}
 			style={{ position: "relative" }}>
