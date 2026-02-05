@@ -34,7 +34,7 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 
 		// Create the DeepSeek provider using AI SDK
 		this.provider = createDeepSeek({
-			baseURL: options.deepSeekBaseUrl ?? "https://api.deepseek.com/v1",
+			baseURL: options.deepSeekBaseUrl || "https://api.deepseek.com/v1",
 			apiKey: options.deepSeekApiKey ?? "not-provided",
 			headers: DEFAULT_HEADERS,
 		})

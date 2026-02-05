@@ -15,7 +15,7 @@ export class MoonshotHandler extends OpenAICompatibleHandler {
 
 		const config: OpenAICompatibleConfig = {
 			providerName: "moonshot",
-			baseURL: options.moonshotBaseUrl ?? "https://api.moonshot.ai/v1",
+			baseURL: options.moonshotBaseUrl || "https://api.moonshot.ai/v1",
 			apiKey: options.moonshotApiKey ?? "not-provided",
 			modelId,
 			modelInfo,

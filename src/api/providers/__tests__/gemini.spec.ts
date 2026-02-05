@@ -23,6 +23,17 @@ vitest.mock("ai", async (importOriginal) => {
 	}
 })
 
+// Mock createGoogleGenerativeAI to capture constructor options
+const mockCreateGoogleGenerativeAI = vitest.fn().mockReturnValue(() => ({}))
+
+vitest.mock("@ai-sdk/google", async (importOriginal) => {
+	const original = await importOriginal<typeof import("@ai-sdk/google")>()
+	return {
+		...original,
+		createGoogleGenerativeAI: (...args: unknown[]) => mockCreateGoogleGenerativeAI(...args),
+	}
+})
+
 import { Anthropic } from "@anthropic-ai/sdk"
 
 import { type ModelInfo, geminiDefaultModelId, ApiProviderError } from "@roo-code/types"
@@ -40,6 +51,8 @@ describe("GeminiHandler", () => {
 		mockCaptureException.mockClear()
 		mockStreamText.mockClear()
 		mockGenerateText.mockClear()
+		mockCreateGoogleGenerativeAI.mockClear()
+		mockCreateGoogleGenerativeAI.mockReturnValue(() => ({}))
 
 		handler = new GeminiHandler({
 			apiKey: "test-key",
@@ -52,6 +65,37 @@ describe("GeminiHandler", () => {
 		it("should initialize with provided config", () => {
 			expect(handler["options"].geminiApiKey).toBe("test-key")
 			expect(handler["options"].apiModelId).toBe(GEMINI_MODEL_NAME)
+		})
+
+		it("should pass undefined baseURL when googleGeminiBaseUrl is empty string", () => {
+			mockCreateGoogleGenerativeAI.mockClear()
+			new GeminiHandler({
+				apiModelId: GEMINI_MODEL_NAME,
+				geminiApiKey: "test-key",
+				googleGeminiBaseUrl: "",
+			})
+			expect(mockCreateGoogleGenerativeAI).toHaveBeenCalledWith(expect.objectContaining({ baseURL: undefined }))
+		})
+
+		it("should pass undefined baseURL when googleGeminiBaseUrl is not provided", () => {
+			mockCreateGoogleGenerativeAI.mockClear()
+			new GeminiHandler({
+				apiModelId: GEMINI_MODEL_NAME,
+				geminiApiKey: "test-key",
+			})
+			expect(mockCreateGoogleGenerativeAI).toHaveBeenCalledWith(expect.objectContaining({ baseURL: undefined }))
+		})
+
+		it("should pass custom baseURL when googleGeminiBaseUrl is a valid URL", () => {
+			mockCreateGoogleGenerativeAI.mockClear()
+			new GeminiHandler({
+				apiModelId: GEMINI_MODEL_NAME,
+				geminiApiKey: "test-key",
+				googleGeminiBaseUrl: "https://custom-gemini.example.com/v1beta",
+			})
+			expect(mockCreateGoogleGenerativeAI).toHaveBeenCalledWith(
+				expect.objectContaining({ baseURL: "https://custom-gemini.example.com/v1beta" }),
+			)
 		})
 	})
 
