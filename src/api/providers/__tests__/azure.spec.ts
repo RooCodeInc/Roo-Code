@@ -274,7 +274,7 @@ describe("AzureHandler", () => {
 				for await (const chunk of stream) {
 					chunks.push(chunk)
 				}
-			}).rejects.toThrow("Azure OpenAI")
+			}).rejects.toThrow("Azure AI Foundry")
 		})
 	})
 

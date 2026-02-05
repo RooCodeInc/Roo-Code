@@ -2,7 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { createAzure } from "@ai-sdk/azure"
 import { streamText, generateText, ToolSet } from "ai"
 
-import { azureOpenAiDefaultApiVersion, openAiModelInfoSaneDefaults, type ModelInfo } from "@roo-code/types"
+import { azureOpenAiDefaultApiVersion, azureModels, azureDefaultModelInfo, type ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
@@ -23,7 +23,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 const AZURE_DEFAULT_TEMPERATURE = 0
 
 /**
- * Azure OpenAI provider using the dedicated @ai-sdk/azure package.
+ * Azure AI Foundry provider using the dedicated @ai-sdk/azure package.
  * Provides native support for Azure OpenAI deployments with proper resource-based routing.
  */
 export class AzureHandler extends BaseProvider implements SingleCompletionHandler {
@@ -38,25 +38,29 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		// The @ai-sdk/azure package uses resourceName-based routing
 		this.provider = createAzure({
 			resourceName: options.azureResourceName ?? "",
-			apiKey: options.azureApiKey ?? "not-provided",
+			apiKey: options.azureApiKey, // Optional — Azure supports managed identity / Entra ID auth
 			apiVersion: options.azureApiVersion ?? azureOpenAiDefaultApiVersion,
 			headers: DEFAULT_HEADERS,
 		})
 	}
 
 	override getModel(): { id: string; info: ModelInfo; maxTokens?: number; temperature?: number } {
-		// Azure uses deployment names as model IDs
-		// Use azureDeploymentName if provided, otherwise fall back to apiModelId
-		const id = this.options.azureDeploymentName ?? this.options.apiModelId ?? ""
-		const info: ModelInfo = openAiModelInfoSaneDefaults
+		// Azure uses deployment names for API calls, but apiModelId for model capabilities.
+		// deploymentId is sent to the Azure API; modelId is used for capability lookup.
+		const deploymentId = this.options.azureDeploymentName ?? this.options.apiModelId ?? ""
+		const modelId = this.options.apiModelId ?? deploymentId
+		const info: ModelInfo =
+			(azureModels as Record<string, ModelInfo>)[modelId] ??
+			(azureModels as Record<string, ModelInfo>)[deploymentId] ??
+			azureDefaultModelInfo
 		const params = getModelParams({
 			format: "openai",
-			modelId: id,
+			modelId: deploymentId, // deployment name for the API
 			model: info,
 			settings: this.options,
 			defaultTemperature: AZURE_DEFAULT_TEMPERATURE,
 		})
-		return { id, info, ...params }
+		return { id: deploymentId, info, ...params }
 	}
 
 	/**
@@ -69,7 +73,7 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 
 	/**
 	 * Process usage metrics from the AI SDK response.
-	 * Azure OpenAI provides standard OpenAI-compatible usage metrics.
+	 * Azure AI Foundry provides standard OpenAI-compatible usage metrics.
 	 */
 	protected processUsageMetrics(
 		usage: {
@@ -103,10 +107,13 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 
 	/**
 	 * Get the max tokens parameter to include in the request.
+	 * Returns undefined if no valid maxTokens is configured to let the API use its default.
 	 */
 	protected getMaxOutputTokens(): number | undefined {
 		const { info } = this.getModel()
-		return this.options.modelMaxTokens || info.maxTokens || undefined
+		const maxTokens = this.options.modelMaxTokens || info.maxTokens
+		// Azure AI Foundry API requires maxOutputTokens >= 1, so filter out invalid values
+		return maxTokens && maxTokens > 0 ? maxTokens : undefined
 	}
 
 	/**
@@ -157,7 +164,7 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 			}
 		} catch (error) {
 			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
-			throw handleAiSdkError(error, "Azure OpenAI")
+			throw handleAiSdkError(error, "Azure AI Foundry")
 		}
 	}
 

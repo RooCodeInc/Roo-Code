@@ -5,9 +5,15 @@ export function checkExistKey(config: ProviderSettings | undefined) {
 		return false
 	}
 
-	// Special case for fake-ai, openai-codex, qwen-code, and roo providers which don't need any configuration.
+	// Special case for providers which don't need standard API key configuration.
 	if (config.apiProvider && ["fake-ai", "openai-codex", "qwen-code", "roo"].includes(config.apiProvider)) {
 		return true
+	}
+
+	// Azure supports managed identity / Entra ID auth (no API key needed).
+	// Consider it configured if resource name or deployment name is set.
+	if (config.apiProvider === "azure") {
+		return !!(config.azureResourceName || config.azureDeploymentName || config.azureApiKey)
 	}
 
 	// Check all secret keys from the centralized SECRET_STATE_KEYS array.

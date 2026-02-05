@@ -156,9 +156,15 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 			}
 			break
 		case "azure":
-			if (!apiConfiguration.azureApiKey) {
-				return i18next.t("settings:validation.apiKey")
+			// Don't show validation errors when provider is freshly selected (all fields empty)
+			if (
+				!apiConfiguration.azureApiKey &&
+				!apiConfiguration.azureResourceName &&
+				!apiConfiguration.azureDeploymentName
+			) {
+				break
 			}
+			// API key is optional — Azure supports managed identity / Entra ID auth
 			if (!apiConfiguration.azureResourceName) {
 				return i18next.t("settings:validation.azureResourceName")
 			}
