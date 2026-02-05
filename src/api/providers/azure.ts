@@ -184,4 +184,8 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 
 		return text
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }
