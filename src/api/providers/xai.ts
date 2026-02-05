@@ -187,4 +187,8 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 			throw handleAiSdkError(error, "xAI")
 		}
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }

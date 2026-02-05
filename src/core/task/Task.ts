@@ -4567,21 +4567,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Preserve plain-text reasoning blocks for:
 					// - models explicitly opting in via preserveReasoning
 					// - AI SDK providers (provider packages decide what to include in the native request)
-					const aiSdkProviders = new Set([
-						"deepseek",
-						"fireworks",
-						"moonshot",
-						"mistral",
-						"groq",
-						"xai",
-						"cerebras",
-						"sambanova",
-						"huggingface",
-					])
-
 					const shouldPreserveForApi =
-						this.api.getModel().info.preserveReasoning === true ||
-						aiSdkProviders.has(this.apiConfiguration.apiProvider ?? "")
+						this.api.getModel().info.preserveReasoning === true || this.api.isAiSdkProvider()
 
 					let assistantContent: Anthropic.Messages.MessageParam["content"]
 

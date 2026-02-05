@@ -166,4 +166,8 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 
 		return text
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }

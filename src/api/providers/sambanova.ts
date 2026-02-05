@@ -177,4 +177,8 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 
 		return text
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }

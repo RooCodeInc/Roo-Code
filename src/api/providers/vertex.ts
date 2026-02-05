@@ -402,4 +402,8 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 
 		return totalCost
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }

@@ -397,4 +397,8 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 		return totalCost
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }

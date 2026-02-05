@@ -208,4 +208,8 @@ export class HuggingFaceHandler extends BaseProvider implements SingleCompletion
 
 		return text
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }

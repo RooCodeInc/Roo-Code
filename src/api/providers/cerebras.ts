@@ -156,4 +156,8 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 
 		return text
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }
