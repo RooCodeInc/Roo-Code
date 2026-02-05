@@ -267,10 +267,13 @@ export function flattenAiSdkMessagesToStringContent(
 		// Handle assistant messages
 		if (message.role === "assistant" && flattenAssistantMessages && Array.isArray(message.content)) {
 			const parts = message.content as Array<{ type: string; text?: string }>
-			// Only flatten if all parts are text (no tool calls)
-			const allText = parts.every((part) => part.type === "text")
-			if (allText && parts.length > 0) {
-				const textContent = parts.map((part) => part.text || "").join("\n")
+			// Only flatten if all parts are text or reasoning (no tool calls)
+			// Reasoning parts are included in text to avoid sending multipart content to string-only models
+			const allTextOrReasoning = parts.every((part) => part.type === "text" || part.type === "reasoning")
+			if (allTextOrReasoning && parts.length > 0) {
+				// Extract only text parts for the flattened content (reasoning is stripped for string-only models)
+				const textParts = parts.filter((part) => part.type === "text")
+				const textContent = textParts.map((part) => part.text || "").join("\n")
 				return {
 					...message,
 					content: textContent,

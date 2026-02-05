@@ -908,5 +908,54 @@ describe("AI SDK conversion utilities", () => {
 
 			expect(result[0].content).toBe("\nHello")
 		})
+
+		it("should strip reasoning parts and flatten text for string-only models", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [
+						{ type: "reasoning" as const, text: "I am thinking about this..." },
+						{ type: "text" as const, text: "Here is my answer" },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			// Reasoning should be stripped, only text should remain
+			expect(result[0].content).toBe("Here is my answer")
+		})
+
+		it("should handle messages with only reasoning parts", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [{ type: "reasoning" as const, text: "Only reasoning, no text" }],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			// Should flatten to empty string when only reasoning is present
+			expect(result[0].content).toBe("")
+		})
+
+		it("should not flatten if tool calls are present with reasoning", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [
+						{ type: "reasoning" as const, text: "Thinking..." },
+						{ type: "text" as const, text: "Using tool" },
+						{ type: "tool-call" as const, toolCallId: "abc", toolName: "test", input: {} },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			// Should not flatten because there's a tool call
+			expect(result[0]).toEqual(messages[0])
+		})
 	})
 })
