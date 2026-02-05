@@ -24,7 +24,7 @@ import type {
 	WebviewMessage,
 } from "@roo-code/types"
 import { createVSCodeAPI, IExtensionHost, ExtensionHostEventMap, setRuntimeConfigValues } from "@roo-code/vscode-shim"
-import { DebugLogger } from "@roo-code/core/cli"
+import { DebugLogger, setDebugLogEnabled } from "@roo-code/core/cli"
 
 import type { SupportedProvider } from "@/types/index.js"
 import type { User } from "@/lib/sdk/index.js"
@@ -43,10 +43,25 @@ const cliLogger = new DebugLogger("CLI")
 
 // Get the CLI package root directory (for finding node_modules/@vscode/ripgrep)
 // When running from a release tarball, ROO_CLI_ROOT is set by the wrapper script.
-// In development, we fall back to calculating from __dirname.
-// After bundling with tsup, the code is in dist/index.js (flat), so we go up one level.
+// In development, we fall back to finding the CLI package root by walking up to package.json.
+// This works whether running from dist/ (bundled) or src/agent/ (tsx dev).
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const CLI_PACKAGE_ROOT = process.env.ROO_CLI_ROOT || path.resolve(__dirname, "..")
+
+function findCliPackageRoot(): string {
+	let dir = __dirname
+
+	while (dir !== path.dirname(dir)) {
+		if (fs.existsSync(path.join(dir, "package.json"))) {
+			return dir
+		}
+
+		dir = path.dirname(dir)
+	}
+
+	return path.resolve(__dirname, "..")
+}
+
+const CLI_PACKAGE_ROOT = process.env.ROO_CLI_ROOT || findCliPackageRoot()
 
 export interface ExtensionHostOptions {
 	mode: string
@@ -153,6 +168,11 @@ export class ExtensionHost extends EventEmitter implements ExtensionHostInterfac
 		super()
 
 		this.options = options
+
+		// Enable file-based debug logging only when --debug is passed.
+		if (options.debug) {
+			setDebugLogEnabled(true)
+		}
 
 		// Set up quiet mode early, before any extension code runs.
 		// This suppresses console output from the extension during load.
