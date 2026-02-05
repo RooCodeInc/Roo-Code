@@ -23,6 +23,7 @@ import {
 	mainlandZAiModels,
 	fireworksModels,
 	basetenModels,
+	azureModels,
 	qwenCodeModels,
 	litellmDefaultModelInfo,
 	lMStudioDefaultModelInfo,
@@ -332,9 +333,14 @@ function getSelectedModel({
 			return { id, info }
 		}
 		case "azure": {
-			// Azure uses deployment names configured by the user
-			const id = apiConfiguration.azureDeploymentName ?? apiConfiguration.apiModelId ?? ""
-			return { id, info: undefined }
+			// apiModelId holds the base model selection (from model picker).
+			// azureDeploymentName is the deployment name sent to the Azure API.
+			// Only use apiModelId if it matches a known Azure model (prevents stale values from other providers).
+			const explicitModelId = apiConfiguration.apiModelId
+			const matchesAzureModel = explicitModelId && azureModels[explicitModelId as keyof typeof azureModels]
+			const id = matchesAzureModel ? explicitModelId : defaultModelId
+			const info = azureModels[id as keyof typeof azureModels]
+			return { id, info: info || undefined }
 		}
 		// case "anthropic":
 		// case "fake-ai":

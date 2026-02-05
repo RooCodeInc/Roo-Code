@@ -4,7 +4,6 @@ import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
 import { type ProviderSettings, azureOpenAiDefaultApiVersion } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
-import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 
 import { inputEventTransform } from "../transforms"
 
@@ -71,13 +70,6 @@ export const Azure = ({ apiConfiguration, setApiConfigurationField }: AzureProps
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.azureApiVersionDescription")}
 			</div>
-			{!apiConfiguration?.azureApiKey && (
-				<VSCodeButtonLink
-					href="https://azure.microsoft.com/en-us/products/ai-services/openai-service"
-					appearance="secondary">
-					{t("settings:providers.getAzureApiKey")}
-				</VSCodeButtonLink>
-			)}
 		</>
 	)
 }
