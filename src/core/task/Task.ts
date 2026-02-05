@@ -4564,28 +4564,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					continue
 				} else if (hasPlainTextReasoning) {
-					// Preserve plain-text reasoning blocks for:
-					// - models explicitly opting in via preserveReasoning
-					// - AI SDK providers (provider packages decide what to include in the native request)
-					const aiSdkProviders = new Set([
-						"deepseek",
-						"fireworks",
-						"moonshot",
-						"mistral",
-						"groq",
-						"xai",
-						"cerebras",
-						"sambanova",
-						"huggingface",
-					])
-
-					const shouldPreserveForApi =
-						this.api.getModel().info.preserveReasoning === true ||
-						aiSdkProviders.has(this.apiConfiguration.apiProvider ?? "")
-
+					// Check if the model's preserveReasoning flag is set
+					// If true, include the reasoning block in API requests
+					// If false/undefined, strip it out (stored for history only, not sent back to API)
+					const shouldPreserveForApi = this.api.getModel().info.preserveReasoning === true
 					let assistantContent: Anthropic.Messages.MessageParam["content"]
 
 					if (shouldPreserveForApi) {
+						// Include reasoning block in the content sent to API
 						assistantContent = contentArray
 					} else {
 						// Strip reasoning out - stored for history only, not sent back to API

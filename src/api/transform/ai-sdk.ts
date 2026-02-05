@@ -126,11 +126,6 @@ export function convertToAiSdkMessages(
 				}
 			} else if (message.role === "assistant") {
 				const textParts: string[] = []
-				const reasoningParts: string[] = []
-				const reasoningContent = (() => {
-					const maybe = (message as unknown as { reasoning_content?: unknown }).reasoning_content
-					return typeof maybe === "string" && maybe.length > 0 ? maybe : undefined
-				})()
 				const toolCalls: Array<{
 					type: "tool-call"
 					toolCallId: string
@@ -141,56 +136,20 @@ export function convertToAiSdkMessages(
 				for (const part of message.content) {
 					if (part.type === "text") {
 						textParts.push(part.text)
-						continue
-					}
-
-					if (part.type === "tool_use") {
+					} else if (part.type === "tool_use") {
 						toolCalls.push({
 							type: "tool-call",
 							toolCallId: part.id,
 							toolName: part.name,
 							input: part.input,
 						})
-						continue
-					}
-
-					// Some providers (DeepSeek, Gemini, etc.) require reasoning to be round-tripped.
-					// Task stores reasoning as a content block (type: "reasoning") and Anthropic extended
-					// thinking as (type: "thinking"). Convert both to AI SDK's reasoning part.
-					if ((part as unknown as { type?: string }).type === "reasoning") {
-						// If message-level reasoning_content is present, treat it as canonical and
-						// avoid mixing it with content-block reasoning (which can cause duplication).
-						if (reasoningContent) continue
-
-						const text = (part as unknown as { text?: string }).text
-						if (typeof text === "string" && text.length > 0) {
-							reasoningParts.push(text)
-						}
-						continue
-					}
-
-					if ((part as unknown as { type?: string }).type === "thinking") {
-						if (reasoningContent) continue
-
-						const thinking = (part as unknown as { thinking?: string }).thinking
-						if (typeof thinking === "string" && thinking.length > 0) {
-							reasoningParts.push(thinking)
-						}
-						continue
 					}
 				}
 
 				const content: Array<
-					| { type: "reasoning"; text: string }
 					| { type: "text"; text: string }
 					| { type: "tool-call"; toolCallId: string; toolName: string; input: unknown }
 				> = []
-
-				if (reasoningContent) {
-					content.push({ type: "reasoning", text: reasoningContent })
-				} else if (reasoningParts.length > 0) {
-					content.push({ type: "reasoning", text: reasoningParts.join("") })
-				}
 
 				if (textParts.length > 0) {
 					content.push({ type: "text", text: textParts.join("\n") })
