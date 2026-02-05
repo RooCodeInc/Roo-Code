@@ -112,15 +112,18 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 				extensionHostOptions.apiKey = rooToken
 				extensionHostOptions.user = me.user
 			} catch {
-				console.error("[CLI] Your Roo Code Router token is not valid.")
-				console.error("[CLI] Please run: roo auth login")
-				process.exit(1)
+				// If an explicit API key was provided via flag or env var, fall through
+				// to the general API key resolution below instead of exiting.
+				if (!flagOptions.apiKey && !getApiKeyFromEnv(extensionHostOptions.provider)) {
+					console.error("[CLI] Your Roo Code Router token is not valid.")
+					console.error("[CLI] Please run: roo auth login")
+					console.error("[CLI] Or use --api-key or set ROO_API_KEY to provide your own API key.")
+					process.exit(1)
+				}
 			}
-		} else {
-			console.error("[CLI] Your Roo Code Router token is missing.")
-			console.error("[CLI] Please run: roo auth login")
-			process.exit(1)
 		}
+		// If no rooToken, fall through to the general API key resolution below
+		// which will check flagOptions.apiKey and ROO_API_KEY env var.
 	}
 
 	// Validations

@@ -16,8 +16,8 @@
 		"build": "tsup",
 		"build:extension": "pnpm --filter roo-cline bundle",
 		"build:all": "pnpm --filter roo-cline bundle && tsup",
-		"dev": "tsup --watch",
-		"start": "ROO_AUTH_BASE_URL=http://localhost:3000 ROO_SDK_BASE_URL=http://localhost:3001 ROO_CODE_PROVIDER_URL=http://localhost:8080/proxy node dist/index.js",
+		"dev": "tsx src/index.ts",
+		"start": "ROO_AUTH_BASE_URL=http://localhost:3000 ROO_SDK_BASE_URL=http://localhost:3001 ROO_CODE_PROVIDER_URL=http://localhost:8080/proxy tsx src/index.ts",
 		"start:production": "node dist/index.js",
 		"build:local": "scripts/build.sh",
 		"clean": "rimraf dist .turbo"
