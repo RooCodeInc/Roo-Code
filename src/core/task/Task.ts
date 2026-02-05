@@ -4577,7 +4577,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						"cerebras",
 						"sambanova",
 						"huggingface",
-						"openai-compatible",
 					])
 
 					const shouldPreserveForApi =
