@@ -133,6 +133,7 @@ import { AutoApprovalHandler, checkAutoApproval } from "../auto-approval"
 import { MessageManager } from "../message-manager"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
 import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
+import { appendEnvironmentDetails, removeEnvironmentDetailsBlocks } from "./appendEnvironmentDetails"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -2558,20 +2559,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		if (lastUserMsgIndex >= 0) {
 			const lastUserMsg = this.apiConversationHistory[lastUserMsgIndex]
 			if (Array.isArray(lastUserMsg.content)) {
-				// Remove any existing environment_details blocks before adding fresh ones
-				const contentWithoutEnvDetails = lastUserMsg.content.filter(
-					(block: Anthropic.Messages.ContentBlockParam) => {
-						if (block.type === "text" && typeof block.text === "string") {
-							const isEnvironmentDetailsBlock =
-								block.text.trim().startsWith("<environment_details>") &&
-								block.text.trim().endsWith("</environment_details>")
-							return !isEnvironmentDetailsBlock
-						}
-						return true
-					},
+				// Remove any existing environment_details blocks before adding fresh ones,
+				// then append env details to the last text or tool_result block.
+				// This avoids creating standalone trailing text blocks which can break
+				// interleaved-thinking models like DeepSeek reasoner.
+				const contentWithoutEnvDetails = removeEnvironmentDetailsBlocks(
+					lastUserMsg.content as (
+						| Anthropic.Messages.TextBlockParam
+						| Anthropic.Messages.ImageBlockParam
+						| Anthropic.Messages.ToolResultBlockParam
+					)[],
 				)
-				// Add fresh environment details
-				lastUserMsg.content = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+				lastUserMsg.content = appendEnvironmentDetails(contentWithoutEnvDetails, environmentDetails)
 			}
 		}
 
@@ -2738,23 +2737,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Remove any existing environment_details blocks before adding fresh ones.
 			// This prevents duplicate environment details when resuming tasks,
 			// where the old user message content may already contain environment details from the previous session.
-			// We check for both opening and closing tags to ensure we're matching complete environment detail blocks,
-			// not just mentions of the tag in regular content.
-			const contentWithoutEnvDetails = parsedUserContent.filter((block) => {
-				if (block.type === "text" && typeof block.text === "string") {
-					// Check if this text block is a complete environment_details block
-					// by verifying it starts with the opening tag and ends with the closing tag
-					const isEnvironmentDetailsBlock =
-						block.text.trim().startsWith("<environment_details>") &&
-						block.text.trim().endsWith("</environment_details>")
-					return !isEnvironmentDetailsBlock
-				}
-				return true
-			})
+			const contentWithoutEnvDetails = removeEnvironmentDetailsBlocks(parsedUserContent)
 
-			// Add environment details as its own text block, separate from tool
-			// results.
-			let finalUserContent = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
+			// Append environment details to the last text or tool_result block.
+			// This avoids creating standalone trailing text blocks which can break
+			// interleaved-thinking models like DeepSeek reasoner that expect specific message shapes.
+			let finalUserContent = appendEnvironmentDetails(contentWithoutEnvDetails, environmentDetails)
 			// Only add user message to conversation history if:
 			// 1. This is the first attempt (retryAttempt === 0), AND
 			// 2. The original userContent was not empty (empty signals delegation resume where
