@@ -44,9 +44,8 @@ const Announcement = ({ hideAnnouncement }: AnnouncementProps) => {
 					<div className="mb-4">
 						<p className="mb-3">{t("chat:announcement.release.heading")}</p>
 						<ul className="list-disc list-inside text-sm space-y-1.5">
-							<li>{t("chat:announcement.release.parallelTools")}</li>
-							<li>{t("chat:announcement.release.readFileIndentation")}</li>
-							<li>{t("chat:announcement.release.readCommandOutput")}</li>
+							<li>{t("chat:announcement.release.claudeOpus")}</li>
+							<li>{t("chat:announcement.release.gptCodex")}</li>
 						</ul>
 					</div>
 

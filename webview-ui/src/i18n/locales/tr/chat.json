@@ -345,9 +345,8 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"parallelTools": "Paralel Araç Çağrıları: Araçlar artık varsayılan olarak paralel çalışır ve çok dosyalı işlemler ile karmaşık görevleri önemli ölçüde hızlandırır.",
-			"readFileIndentation": "Daha Akıllı Dosya Okuma: Yeni girinti modu, tam anlamsal kod bloklarını (işlevler, sınıflar) fonksiyon ortasında kesme olmadan ayıklar—arama sonuçlarından belirli satırları hedeflediğinizde idealdir.",
-			"readCommandOutput": "Kayıpsız Terminal Çıktısı: Yeni read_command_output aracı, sayfalandırma ve regex filtrelemesiyle kesilen yürütmelerden tam komut çıktısını alır."
+			"claudeOpus": "Claude Opus 4.6: Artık tüm sağlayıcılarda—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex ve OpenRouter—mevcut olup Anthropic'in en yetkin modelini tercih ettiğin platforma getiriyor.",
+			"gptCodex": "GPT-5.3-Codex: OpenAI'nin en son kodlama modeli artık OpenAI - ChatGPT sağlayıcısında desteklenmiş olup, ileri seviye kod oluşturma ve anlama sunuyor."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",

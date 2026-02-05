@@ -317,9 +317,8 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"parallelTools": "Parallelle Gereedschaproepen: Gereedschappen worden nu standaard parallel uitgevoerd, wat multi-file operaties en complexe taken aanzienlijk versnelt.",
-			"readFileIndentation": "Slimmer Bestand Lezen: Nieuwe inspringingmodus extraheert volledige semantische codeblokken (functies, klassen) zonder afkapping in het midden van de functie—ideaal voor het richten op specifieke lijnen uit zoekresultaten.",
-			"readCommandOutput": "Verliesvrije Terminaluitvoer: Nieuw read_command_output gereedschap haalt volledige opdrachtuitvoer op van afgekapte uitvoeringen met paginering en regex-filtering."
+			"claudeOpus": "Claude Opus 4.6: Nu beschikbaar bij alle providers—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex en OpenRouter—waardoor Anthropic's meest krachtige model naar je voorkeursplatform wordt gebracht.",
+			"gptCodex": "GPT-5.3-Codex: OpenAI's nieuwste coderingsmodel wordt nu ondersteund in de OpenAI - ChatGPT provider, met geavanceerde code-generatie en begrip."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",

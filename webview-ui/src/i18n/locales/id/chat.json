@@ -357,9 +357,8 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"parallelTools": "Panggilan Alat Paralel: Alat sekarang dijalankan secara paralel secara default, mempercepat operasi multi-file dan tugas kompleks secara signifikan.",
-			"readFileIndentation": "Pembacaan File yang Lebih Cerdas: Mode indentasi baru mengekstrak blok kode semantik lengkap (fungsi, kelas) tanpa pemotongan di tengah fungsi—ideal saat menargetkan baris tertentu dari hasil pencarian.",
-			"readCommandOutput": "Output Terminal Tanpa Kerugian: Alat read_command_output baru mengambil output perintah lengkap dari eksekusi yang dipotong dengan paginasi dan filter regex."
+			"claudeOpus": "Claude Opus 4.6: Sekarang tersedia di semua penyedia—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex, dan OpenRouter—membawa model paling canggih Anthropic ke platform pilihan Anda.",
+			"gptCodex": "GPT-5.3-Codex: Model coding terbaru OpenAI kini didukung di penyedia OpenAI - ChatGPT, memberikan generasi kode dan pemahaman terdepan."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",

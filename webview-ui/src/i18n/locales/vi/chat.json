@@ -345,9 +345,8 @@
 		},
 		"release": {
 			"heading": "Tính năng mới:",
-			"parallelTools": "Gọi Công cụ Song song: Các công cụ hiện chạy song song theo mặc định, tăng tốc độ đáng kể cho các hoạt động đa tệp và tác vụ phức tạp.",
-			"readFileIndentation": "Đọc tệp thông minh hơn: Chế độ thụt lề mới trích xuất các khối mã ngữ nghĩa hoàn chỉnh (hàm, lớp) mà không cắt ngắn ở giữa hàm—lý tưởng khi nhắm mục tiêu các dòng cụ thể từ kết quả tìm kiếm.",
-			"readCommandOutput": "Đầu ra Thiết bị đầu cuối Không mất dữ liệu: Công cụ read_command_output mới lấy đầu ra lệnh đầy đủ từ các thực thi bị cắt ngắn với phân trang và lọc regex."
+			"claudeOpus": "Claude Opus 4.6: Hiện có sẵn ở tất cả các nhà cung cấp—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex và OpenRouter—mang mô hình mạnh nhất của Anthropic đến nền tảng ưu tiên của bạn.",
+			"gptCodex": "GPT-5.3-Codex: Mô hình lập trình mới nhất của OpenAI hiện được hỗ trợ trong nhà cung cấp OpenAI - ChatGPT, cung cấp tạo mã và hiểu biết tân tiến."
 		},
 		"cloudAgents": {
 			"heading": "Mới trên Cloud:",

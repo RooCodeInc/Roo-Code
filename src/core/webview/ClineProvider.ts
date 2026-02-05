@@ -158,7 +158,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "jan-2026-v3.46.0-parallel-tools" // v3.46.0 Parallel Tools & Smarter Reading
+	public readonly latestAnnouncementId = "feb-2026-v3.47.0-opus-4.6-gpt-5.3-codex" // v3.47.0 Claude Opus 4.6 & GPT-5.3-Codex
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 

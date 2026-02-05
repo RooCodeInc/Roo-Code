@@ -344,9 +344,8 @@
 		},
 		"release": {
 			"heading": "Novidades:",
-			"parallelTools": "Chamadas de ferramentas paralelas: As ferramentas agora são executadas em paralelo por padrão, acelerando significativamente operações multi-arquivos e tarefas complexas.",
-			"readFileIndentation": "Leitura de arquivo mais inteligente: O novo modo de indentação extrai blocos de código semântico completos (funções, classes) sem truncamento no meio da função—ideal ao segmentar linhas específicas de resultados de busca.",
-			"readCommandOutput": "Saída de terminal sem perda: A nova ferramenta read_command_output recupera a saída completa do comando de execuções truncadas com paginação e filtro regex."
+			"claudeOpus": "Claude Opus 4.6: Agora disponível em todos os provedores—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex e OpenRouter—trazendo o modelo mais capaz do Anthropic para sua plataforma preferida.",
+			"gptCodex": "GPT-5.3-Codex: O modelo de codificação mais recente do OpenAI agora é suportado no provedor OpenAI - ChatGPT, oferecendo geração de código de ponta e compreensão."
 		},
 		"cloudAgents": {
 			"heading": "Novidades na Nuvem:",

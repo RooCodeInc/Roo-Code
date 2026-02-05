@@ -350,9 +350,8 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"parallelTools": "平行工具呼叫：工具現在預設會平行執行，大幅加快多檔案作業和複雜工作的速度。",
-			"readFileIndentation": "更聰慧的檔案讀取：新的縮排模式可提取完整的語義程式碼區塊（函數、類別），無需中斷函數——適合從搜尋結果中特定行為目標。",
-			"readCommandOutput": "無損終端輸出：新的 read_command_output 工具可從截斷的執行中擷取完整的指令輸出，並支援分頁和規則運算式過濾。"
+			"claudeOpus": "Claude Opus 4.6: 現已可在所有供應商——Roo Code Router、Anthropic、AWS Bedrock、Google Vertex 和 OpenRouter——上取得，將 Anthropic 最強大的模型帶到您偏好的平台。",
+			"gptCodex": "GPT-5.3-Codex: OpenAI 最新的編碼模型現已在 OpenAI - ChatGPT 供應商中受支援，提供尖端的程式碼生成和理解。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",
