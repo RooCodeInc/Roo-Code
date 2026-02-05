@@ -34,6 +34,14 @@ The VSCode extension has two main areas that require localization:
 | **Core Extension** | `src/i18n/locales/` | Extension backend strings |
 | **WebView UI** | `webview-ui/src/i18n/locales/` | User interface strings |
 
+## Brand Voice, Tone, and Word Choice
+
+For detailed brand voice, tone, and word choice guidance, refer to the guidance file:
+
+- [`.roo/guidances/roo-translator.md`](.roo/guidances/roo-translator.md)
+
+This guidance file is loaded at runtime and should be consulted for the latest brand and style standards.
+
 ## Voice, Style and Tone Guidelines
 
 - Always use informal speech (e.g., "du" instead of "Sie" in German) for all translations
