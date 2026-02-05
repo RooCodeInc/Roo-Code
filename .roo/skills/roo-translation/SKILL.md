@@ -38,7 +38,7 @@ The VSCode extension has two main areas that require localization:
 
 For detailed brand voice, tone, and word choice guidance, refer to the guidance file:
 
-- [`.roo/guidances/roo-translator.md`](.roo/guidances/roo-translator.md)
+- [`.roo/guidance/roo-translator.md`](.roo/guidance/roo-translator.md)
 
 This guidance file is loaded at runtime and should be consulted for the latest brand and style standards.
 
