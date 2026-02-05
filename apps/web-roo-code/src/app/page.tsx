@@ -111,9 +111,11 @@ export default async function Home() {
 						</div>
 					</div>
 
-					<div className="mb-12 px-4">
-						<CompanyLogos />
-					</div>
+					{!isValentines && (
+						<div className="mb-12 px-4">
+							<CompanyLogos />
+						</div>
+					)}
 				</div>
 			</section>
 
