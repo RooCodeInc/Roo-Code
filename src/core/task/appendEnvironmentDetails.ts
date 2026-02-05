@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk"
+import { Anthropic } from "@anthropic-ai/sdk"
 
 /**
  * Type for content block params that can appear in messages.
