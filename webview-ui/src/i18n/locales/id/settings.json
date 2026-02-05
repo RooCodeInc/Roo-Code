@@ -392,6 +392,8 @@
 		"getDeepSeekApiKey": "Dapatkan DeepSeek API Key",
 		"doubaoApiKey": "Kunci API Doubao",
 		"getDoubaoApiKey": "Dapatkan Kunci API Doubao",
+		"qwenApiKey": "Kunci API Qwen",
+		"getQwenApiKey": "Dapatkan Kunci API Qwen",
 		"moonshotApiKey": "Kunci API Moonshot",
 		"getMoonshotApiKey": "Dapatkan Kunci API Moonshot",
 		"moonshotBaseUrl": "Titik Masuk Moonshot",

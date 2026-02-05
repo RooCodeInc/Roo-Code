@@ -392,6 +392,8 @@
 		"getDeepSeekApiKey": "DeepSeek API-sleutel ophalen",
 		"doubaoApiKey": "Doubao API-sleutel",
 		"getDoubaoApiKey": "Doubao API-sleutel ophalen",
+		"qwenApiKey": "Qwen API-sleutel",
+		"getQwenApiKey": "Qwen API-sleutel ophalen",
 		"moonshotApiKey": "Moonshot API-sleutel",
 		"getMoonshotApiKey": "Moonshot API-sleutel ophalen",
 		"moonshotBaseUrl": "Moonshot-ingangspunt",

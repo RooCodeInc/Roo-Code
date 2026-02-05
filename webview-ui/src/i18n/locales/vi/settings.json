@@ -392,6 +392,8 @@
 		"getDeepSeekApiKey": "Lấy khóa API DeepSeek",
 		"doubaoApiKey": "Khóa API Doubao",
 		"getDoubaoApiKey": "Lấy khóa API Doubao",
+		"qwenApiKey": "Khóa API Qwen",
+		"getQwenApiKey": "Lấy khóa API Qwen",
 		"moonshotApiKey": "Khóa API Moonshot",
 		"getMoonshotApiKey": "Lấy khóa API Moonshot",
 		"moonshotBaseUrl": "Điểm vào Moonshot",
