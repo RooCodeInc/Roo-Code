@@ -78,6 +78,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		workspacePath: effectiveWorkspacePath,
 		extensionPath: path.resolve(flagOptions.extension || getDefaultExtensionPath(__dirname)),
 		nonInteractive: effectiveDangerouslySkipPermissions,
+		exitOnError: flagOptions.exitOnError,
 		ephemeral: flagOptions.ephemeral,
 		debug: flagOptions.debug,
 		exitOnComplete: effectiveExitOnComplete,
