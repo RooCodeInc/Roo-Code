@@ -18,7 +18,7 @@ type VertexProps = {
 export const Vertex = ({ apiConfiguration, setApiConfigurationField, simplifySettings }: VertexProps) => {
 	const { t } = useAppTranslation()
 
-	// Check if the selected model supports 1M context (Claude Sonnet 4 / 4.5)
+	// Check if the selected model supports 1M context (supported Claude 4 models)
 	const supports1MContextBeta =
 		!!apiConfiguration?.apiModelId &&
 		VERTEX_1M_CONTEXT_MODEL_IDS.includes(

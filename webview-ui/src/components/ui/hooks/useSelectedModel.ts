@@ -32,6 +32,7 @@ import {
 	litellmDefaultModelInfo,
 	lMStudioDefaultModelInfo,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
+	VERTEX_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
 	getProviderDefaultModelId,
 } from "@roo-code/types"
@@ -211,7 +212,7 @@ function getSelectedModel({
 				}
 			}
 
-			// Apply 1M context for Claude Sonnet 4 / 4.5 when enabled
+			// Apply 1M context for supported Claude 4 models when enabled
 			if (BEDROCK_1M_CONTEXT_MODEL_IDS.includes(id as any) && apiConfiguration.awsBedrock1MContext && baseInfo) {
 				// Create a new ModelInfo object with updated context window
 				const info: ModelInfo = {
@@ -225,8 +226,26 @@ function getSelectedModel({
 		}
 		case "vertex": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = vertexModels[id as keyof typeof vertexModels]
-			return { id, info }
+			const baseInfo = vertexModels[id as keyof typeof vertexModels]
+
+			// Apply 1M context for supported Claude 4 models when enabled
+			if (VERTEX_1M_CONTEXT_MODEL_IDS.includes(id as any) && apiConfiguration.vertex1MContext && baseInfo) {
+				const modelInfo: ModelInfo = baseInfo
+				const tier = modelInfo.tiers?.[0]
+				if (tier) {
+					const info: ModelInfo = {
+						...modelInfo,
+						contextWindow: tier.contextWindow,
+						inputPrice: tier.inputPrice,
+						outputPrice: tier.outputPrice,
+						cacheWritesPrice: tier.cacheWritesPrice,
+						cacheReadsPrice: tier.cacheReadsPrice,
+					}
+					return { id, info }
+				}
+			}
+
+			return { id, info: baseInfo }
 		}
 		case "gemini": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
@@ -375,10 +394,10 @@ function getSelectedModel({
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const baseInfo = anthropicModels[id as keyof typeof anthropicModels]
 
-			// Apply 1M context beta tier pricing for Claude Sonnet 4
+			// Apply 1M context beta tier pricing for supported Claude 4 models
 			if (
 				provider === "anthropic" &&
-				(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5") &&
+				(id === "claude-sonnet-4-20250514" || id === "claude-sonnet-4-5" || id === "claude-opus-4-6") &&
 				apiConfiguration.anthropicBeta1MContext &&
 				baseInfo
 			) {

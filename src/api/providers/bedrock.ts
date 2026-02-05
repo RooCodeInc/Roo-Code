@@ -408,7 +408,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			temperature: modelConfig.temperature ?? (this.options.modelTemperature as number),
 		}
 
-		// Check if 1M context is enabled for Claude Sonnet 4
+		// Check if 1M context is enabled for supported Claude 4 models
 		// Use parseBaseModelId to handle cross-region inference prefixes
 		const baseModelId = this.parseBaseModelId(modelConfig.id)
 		const is1MContextEnabled =
@@ -1097,7 +1097,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 		}
 
-		// Check if 1M context is enabled for Claude Sonnet 4 / 4.5
+		// Check if 1M context is enabled for supported Claude 4 models
 		// Use parseBaseModelId to handle cross-region inference prefixes
 		const baseModelId = this.parseBaseModelId(modelConfig.id)
 		if (BEDROCK_1M_CONTEXT_MODEL_IDS.includes(baseModelId as any) && this.options.awsBedrock1MContext) {
