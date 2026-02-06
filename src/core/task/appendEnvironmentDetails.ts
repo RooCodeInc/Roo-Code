@@ -143,3 +143,96 @@ export function removeEnvironmentDetailsBlocks(content: UserContentBlock[]): Use
 		return true
 	})
 }
+
+/**
+ * Strips environment details from the last text block or tool_result in the content.
+ * This handles the case where environment details were appended to an existing block
+ * rather than added as a standalone block.
+ *
+ * @param content - Array of content blocks
+ * @returns New array with environment details stripped from the last suitable block
+ */
+export function stripAppendedEnvironmentDetails(content: UserContentBlock[]): UserContentBlock[] {
+	if (content.length === 0) {
+		return content
+	}
+
+	// First, remove any standalone environment_details blocks
+	let result = removeEnvironmentDetailsBlocks(content)
+
+	if (result.length === 0) {
+		return result
+	}
+
+	// Then, strip appended environment details from the last block
+	const lastIndex = result.length - 1
+	const lastBlock = result[lastIndex]
+
+	if (lastBlock.type === "text") {
+		const strippedText = stripEnvDetailsFromText(lastBlock.text)
+		if (strippedText !== lastBlock.text) {
+			result = [...result]
+			result[lastIndex] = { type: "text" as const, text: strippedText }
+		}
+	} else if (lastBlock.type === "tool_result") {
+		const strippedToolResult = stripEnvDetailsFromToolResult(lastBlock)
+		if (strippedToolResult !== lastBlock) {
+			result = [...result]
+			result[lastIndex] = strippedToolResult
+		}
+	}
+
+	return result
+}
+
+/**
+ * Strips environment details from the end of a text string.
+ */
+function stripEnvDetailsFromText(text: string): string {
+	// Match environment details at the end of the string, with optional preceding newlines
+	const envDetailsPattern = /\n*<environment_details>[\s\S]*<\/environment_details>\s*$/
+	return text.replace(envDetailsPattern, "")
+}
+
+/**
+ * Strips environment details from a tool_result block's content.
+ */
+function stripEnvDetailsFromToolResult(
+	toolResult: Anthropic.Messages.ToolResultBlockParam,
+): Anthropic.Messages.ToolResultBlockParam {
+	const { content, ...rest } = toolResult
+
+	if (content === undefined || content === null) {
+		return toolResult
+	}
+
+	if (typeof content === "string") {
+		const strippedContent = stripEnvDetailsFromText(content)
+		if (strippedContent === content) {
+			return toolResult
+		}
+		return { ...rest, content: strippedContent }
+	}
+
+	if (Array.isArray(content)) {
+		let changed = false
+		const newContent = content.map((block) => {
+			if (block.type === "text") {
+				const strippedText = stripEnvDetailsFromText(block.text)
+				if (strippedText !== block.text) {
+					changed = true
+					return { type: "text" as const, text: strippedText }
+				}
+			}
+			return block
+		})
+
+		if (!changed) {
+			return toolResult
+		}
+
+		return { ...rest, content: newContent }
+	}
+
+	return toolResult
+}

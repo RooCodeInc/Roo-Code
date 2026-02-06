@@ -1,5 +1,10 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import { appendEnvironmentDetails, removeEnvironmentDetailsBlocks, UserContentBlock } from "../appendEnvironmentDetails"
+import {
+	appendEnvironmentDetails,
+	removeEnvironmentDetailsBlocks,
+	stripAppendedEnvironmentDetails,
+	UserContentBlock,
+} from "../appendEnvironmentDetails"
 
 describe("appendEnvironmentDetails", () => {
 	const envDetails = "<environment_details>\n# Test\nSome details\n</environment_details>"
@@ -312,5 +317,98 @@ describe("removeEnvironmentDetailsBlocks", () => {
 		const result = removeEnvironmentDetailsBlocks(content)
 
 		expect(result).toHaveLength(0)
+	})
+})
+
+describe("stripAppendedEnvironmentDetails", () => {
+	const envDetails = "<environment_details>\n# Test\nSome details\n</environment_details>"
+
+	it("should strip environment details from the end of a text block", () => {
+		const content: UserContentBlock[] = [{ type: "text", text: "User message\n\n" + envDetails }]
+
+		const result = stripAppendedEnvironmentDetails(content)
+
+		expect(result).toHaveLength(1)
+		expect((result[0] as Anthropic.Messages.TextBlockParam).text).toBe("User message")
+	})
+
+	it("should strip environment details from tool_result string content", () => {
+		const content: UserContentBlock[] = [
+			{
+				type: "tool_result",
+				tool_use_id: "tool-123",
+				content: "Tool result\n\n" + envDetails,
+			},
+		]
+
+		const result = stripAppendedEnvironmentDetails(content)
+
+		expect(result).toHaveLength(1)
+		expect((result[0] as Anthropic.Messages.ToolResultBlockParam).content).toBe("Tool result")
+	})
+
+	it("should strip environment details from tool_result array content", () => {
+		const content: UserContentBlock[] = [
+			{
+				type: "tool_result",
+				tool_use_id: "tool-123",
+				content: [{ type: "text", text: "Result text\n\n" + envDetails }],
+			},
+		]
+
+		const result = stripAppendedEnvironmentDetails(content)
+
+		const toolResult = result[0] as Anthropic.Messages.ToolResultBlockParam
+		const contentArray = toolResult.content as Anthropic.Messages.TextBlockParam[]
+		expect(contentArray[0].text).toBe("Result text")
+	})
+
+	it("should also remove standalone environment_details blocks", () => {
+		const content: UserContentBlock[] = [
+			{ type: "text", text: "User message" },
+			{ type: "text", text: envDetails },
+		]
+
+		const result = stripAppendedEnvironmentDetails(content)
+
+		expect(result).toHaveLength(1)
+		expect((result[0] as Anthropic.Messages.TextBlockParam).text).toBe("User message")
+	})
+
+	it("should handle content without environment details", () => {
+		const content: UserContentBlock[] = [
+			{ type: "text", text: "User message" },
+			{
+				type: "tool_result",
+				tool_use_id: "tool-123",
+				content: "Tool result",
+			},
+		]
+
+		const result = stripAppendedEnvironmentDetails(content)
+
+		expect(result).toEqual(content)
+	})
+
+	it("should handle empty content", () => {
+		const result = stripAppendedEnvironmentDetails([])
+		expect(result).toHaveLength(0)
+	})
+
+	it("should preserve is_error flag when stripping from tool_result", () => {
+		const content: UserContentBlock[] = [
+			{
+				type: "tool_result",
+				tool_use_id: "tool-123",
+				content: "Error\n\n" + envDetails,
+				is_error: true,
+			},
+		]
+
+		const result = stripAppendedEnvironmentDetails(content)
+
+		const toolResult = result[0] as Anthropic.Messages.ToolResultBlockParam
+		expect(toolResult.is_error).toBe(true)
+		expect(toolResult.content).toBe("Error")
 	})
 })
