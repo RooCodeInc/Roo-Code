@@ -232,6 +232,13 @@ export const globalSettingsSchema = z.object({
 	 * @default true
 	 */
 	showWorktreesInHomeScreen: z.boolean().optional(),
+
+	/**
+	 * The model ID to use for "light" tasks when model routing is enabled.
+	 * Must be a model available from the same provider as the primary model.
+	 * Requires the "modelRouting" experiment to be enabled.
+	 */
+	modelRoutingLightModelId: z.string().optional(),
 })
 
 export type GlobalSettings = z.infer<typeof globalSettingsSchema>
