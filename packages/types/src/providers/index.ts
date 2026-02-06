@@ -21,6 +21,7 @@ export * from "./openai-codex.js"
 export * from "./openai-codex-rate-limits.js"
 export * from "./openrouter.js"
 export * from "./qwen-code.js"
+export * from "./qwen.js"
 export * from "./requesty.js"
 export * from "./roo.js"
 export * from "./sambanova.js"
@@ -51,6 +52,7 @@ import { moonshotDefaultModelId } from "./moonshot.js"
 import { openAiCodexDefaultModelId } from "./openai-codex.js"
 import { openRouterDefaultModelId } from "./openrouter.js"
 import { qwenCodeDefaultModelId } from "./qwen-code.js"
+import { qwenDefaultModelId } from "./qwen.js"
 import { requestyDefaultModelId } from "./requesty.js"
 import { rooDefaultModelId } from "./roo.js"
 import { sambaNovaDefaultModelId } from "./sambanova.js"
@@ -140,6 +142,8 @@ export function getProviderDefaultModelId(
 			return rooDefaultModelId
 		case "qwen-code":
 			return qwenCodeDefaultModelId
+		case "qwen":
+			return qwenDefaultModelId
 		case "vercel-ai-gateway":
 			return vercelAiGatewayDefaultModelId
 		case "anthropic":

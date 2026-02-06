@@ -392,6 +392,8 @@
 		"getDeepSeekApiKey": "DeepSeek API Anahtarı Al",
 		"doubaoApiKey": "Doubao API Anahtarı",
 		"getDoubaoApiKey": "Doubao API Anahtarı Al",
+		"qwenApiKey": "Qwen API Anahtarı",
+		"getQwenApiKey": "Qwen API Anahtarı Al",
 		"moonshotApiKey": "Moonshot API Anahtarı",
 		"getMoonshotApiKey": "Moonshot API Anahtarı Al",
 		"moonshotBaseUrl": "Moonshot Giriş Noktası",
