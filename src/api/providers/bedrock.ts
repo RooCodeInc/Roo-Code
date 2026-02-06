@@ -39,25 +39,6 @@ import { logger } from "../../utils/logging"
 import { Package } from "../../shared/package"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
-// Re-export StreamEvent type for backward compatibility (used by tests)
-export interface StreamEvent {
-	messageStart?: { role?: string }
-	messageStop?: { stopReason?: string; additionalModelResponseFields?: Record<string, unknown> }
-	contentBlockStart?: Record<string, unknown>
-	contentBlockDelta?: Record<string, unknown>
-	metadata?: { usage?: Record<string, number>; metrics?: { latencyMs: number } }
-	trace?: { promptRouter?: { invokedModelId?: string; usage?: Record<string, number> } }
-}
-
-export type UsageType = {
-	inputTokens?: number
-	outputTokens?: number
-	cacheReadInputTokens?: number
-	cacheWriteInputTokens?: number
-	cacheReadInputTokenCount?: number
-	cacheWriteInputTokenCount?: number
-}
-
 /************************************************************************************
  *
  *     PROVIDER
@@ -102,7 +83,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			}
 
 			this.options.apiModelId = this.arnInfo.modelId
-			if (this.arnInfo.awsUseCrossRegionInference) this.options.awsUseCrossRegionInference = true
+			if (this.arnInfo.crossRegionInference) this.options.awsUseCrossRegionInference = true
 		}
 
 		if (!this.options.modelTemperature) {
@@ -774,12 +755,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				aiSdkIdx++
 			} else if (origMsg.role === "user") {
 				// User message with array content may split into tool + user messages.
-				const hasToolResults = origMsg.content.some(
-					(part) => (part as { type: string }).type === "tool_result",
-				)
+				const hasToolResults = origMsg.content.some((part) => (part as { type: string }).type === "tool_result")
 				const hasNonToolContent = origMsg.content.some(
-					(part) =>
-						(part as { type: string }).type === "text" || (part as { type: string }).type === "image",
+					(part) => (part as { type: string }).type === "text" || (part as { type: string }).type === "image",
 				)
 
 				if (hasToolResults && hasNonToolContent) {
