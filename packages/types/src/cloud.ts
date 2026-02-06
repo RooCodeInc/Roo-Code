@@ -102,6 +102,7 @@ export const organizationDefaultSettingsSchema = globalSettingsSchema
 		terminalShellIntegrationDisabled: true,
 		terminalShellIntegrationTimeout: true,
 		terminalZshClearEolMark: true,
+		disabledTools: true,
 	})
 	// Add stronger validations for some fields.
 	.merge(

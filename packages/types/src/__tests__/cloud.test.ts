@@ -2,10 +2,12 @@
 
 import {
 	organizationCloudSettingsSchema,
+	organizationDefaultSettingsSchema,
 	organizationFeaturesSchema,
 	organizationSettingsSchema,
 	userSettingsConfigSchema,
 	type OrganizationCloudSettings,
+	type OrganizationDefaultSettings,
 	type OrganizationFeatures,
 	type OrganizationSettings,
 	type UserSettingsConfig,
@@ -479,5 +481,40 @@ describe("userSettingsConfigSchema with llmEnhancedFeaturesEnabled", () => {
 		const result = userSettingsConfigSchema.safeParse(input)
 		expect(result.success).toBe(true)
 		expect(result.data?.llmEnhancedFeaturesEnabled).toBe(true)
+	})
+})
+
+describe("organizationDefaultSettingsSchema with disabledTools", () => {
+	it("should accept disabledTools as an array of valid tool names", () => {
+		const input: OrganizationDefaultSettings = {
+			disabledTools: ["execute_command", "browser_action"],
+		}
+		const result = organizationDefaultSettingsSchema.safeParse(input)
+		expect(result.success).toBe(true)
+		expect(result.data?.disabledTools).toEqual(["execute_command", "browser_action"])
+	})
+
+	it("should accept empty disabledTools array", () => {
+		const input: OrganizationDefaultSettings = {
+			disabledTools: [],
+		}
+		const result = organizationDefaultSettingsSchema.safeParse(input)
+		expect(result.success).toBe(true)
+		expect(result.data?.disabledTools).toEqual([])
+	})
+
+	it("should accept omitted disabledTools", () => {
+		const input: OrganizationDefaultSettings = {}
+		const result = organizationDefaultSettingsSchema.safeParse(input)
+		expect(result.success).toBe(true)
+		expect(result.data?.disabledTools).toBeUndefined()
+	})
+
+	it("should reject invalid tool names in disabledTools", () => {
+		const input = {
+			disabledTools: ["not_a_real_tool"],
+		}
+		const result = organizationDefaultSettingsSchema.safeParse(input)
+		expect(result.success).toBe(false)
 	})
 })

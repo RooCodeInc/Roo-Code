@@ -1657,6 +1657,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxReadFileLine: state?.maxReadFileLine ?? -1,
 				maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
+				disabledTools: state?.disabledTools,
 				modelInfo,
 				includeAllToolsWithRestrictions: false,
 			})
@@ -3866,6 +3867,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxReadFileLine: state?.maxReadFileLine ?? -1,
 				maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
+				disabledTools: state?.disabledTools,
 				modelInfo,
 				includeAllToolsWithRestrictions: false,
 			})
@@ -4082,6 +4084,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						maxReadFileLine: state?.maxReadFileLine ?? -1,
 						maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
 						browserToolEnabled: state?.browserToolEnabled ?? true,
+						disabledTools: state?.disabledTools,
 						modelInfo,
 						includeAllToolsWithRestrictions: false,
 					})
@@ -4248,6 +4251,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				maxReadFileLine: state?.maxReadFileLine ?? -1,
 				maxConcurrentFileReads: state?.maxConcurrentFileReads ?? 5,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
+				disabledTools: state?.disabledTools,
 				modelInfo,
 				includeAllToolsWithRestrictions: supportsAllowedFunctionNames,
 			})

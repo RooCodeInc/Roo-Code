@@ -25,6 +25,7 @@ interface BuildToolsOptions {
 	maxReadFileLine: number
 	maxConcurrentFileReads: number
 	browserToolEnabled: boolean
+	disabledTools?: string[]
 	modelInfo?: ModelInfo
 	/**
 	 * If true, returns all tools without mode filtering, but also includes
@@ -92,6 +93,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 		maxReadFileLine,
 		maxConcurrentFileReads,
 		browserToolEnabled,
+		disabledTools,
 		modelInfo,
 		includeAllToolsWithRestrictions,
 	} = options
@@ -106,6 +108,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	const filterSettings = {
 		todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 		browserToolEnabled: browserToolEnabled ?? true,
+		disabledTools,
 		modelInfo,
 	}
 
