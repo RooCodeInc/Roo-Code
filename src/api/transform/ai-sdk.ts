@@ -126,7 +126,8 @@ export function convertToAiSdkMessages(
 				}
 			} else if (message.role === "assistant") {
 				const textParts: string[] = []
-				const reasoningParts: string[] = []
+				const reasoningEntries: Array<{ text: string; signature?: string }> = []
+				const redactedReasoningEntries: Array<{ data: string }> = []
 				const reasoningContent = (() => {
 					const maybe = (message as unknown as { reasoning_content?: unknown }).reasoning_content
 					return typeof maybe === "string" && maybe.length > 0 ? maybe : undefined
@@ -188,7 +189,7 @@ export function convertToAiSdkMessages(
 
 						const text = (part as unknown as { text?: string }).text
 						if (typeof text === "string" && text.length > 0) {
-							reasoningParts.push(text)
+							reasoningEntries.push({ text })
 						}
 						continue
 					}
@@ -196,16 +197,31 @@ export function convertToAiSdkMessages(
 					if ((part as unknown as { type?: string }).type === "thinking") {
 						if (reasoningContent) continue
 
-						const thinking = (part as unknown as { thinking?: string }).thinking
+						const partAny2 = part as unknown as { thinking?: string; signature?: string }
+						const thinking = partAny2.thinking
 						if (typeof thinking === "string" && thinking.length > 0) {
-							reasoningParts.push(thinking)
+							reasoningEntries.push({
+								text: thinking,
+								...(partAny2.signature ? { signature: partAny2.signature } : {}),
+							})
+						}
+						continue
+					}
+
+					// Anthropic redacted_thinking blocks must be round-tripped verbatim.
+					// The AI SDK represents these as { type: "redacted-reasoning", data: "..." }.
+					if ((part as unknown as { type?: string }).type === "redacted_thinking") {
+						const data = (part as unknown as { data?: string }).data
+						if (typeof data === "string") {
+							redactedReasoningEntries.push({ data })
 						}
 						continue
 					}
 				}
 
 				const content: Array<
-					| { type: "reasoning"; text: string }
+					| { type: "reasoning"; text: string; signature?: string }
+					| { type: "redacted-reasoning"; data: string }
 					| { type: "text"; text: string }
 					| {
 							type: "tool-call"
@@ -218,8 +234,26 @@ export function convertToAiSdkMessages(
 
 				if (reasoningContent) {
 					content.push({ type: "reasoning", text: reasoningContent })
-				} else if (reasoningParts.length > 0) {
-					content.push({ type: "reasoning", text: reasoningParts.join("") })
+				} else {
+					// When any entry carries a signature (Anthropic extended thinking),
+					// keep entries separate so signatures are preserved for round-tripping.
+					const hasSignatures = reasoningEntries.some((e) => e.signature)
+
+					if (hasSignatures) {
+						for (const entry of reasoningEntries) {
+							content.push({
+								type: "reasoning",
+								text: entry.text,
+								...(entry.signature ? { signature: entry.signature } : {}),
+							})
+						}
+					} else if (reasoningEntries.length > 0) {
+						content.push({ type: "reasoning", text: reasoningEntries.map((e) => e.text).join("") })
+					}
+
+					for (const entry of redactedReasoningEntries) {
+						content.push({ type: "redacted-reasoning", data: entry.data })
+					}
 				}
 
 				if (textParts.length > 0) {
@@ -416,6 +450,16 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			}
 			break
 
+		case "reasoning-end": {
+			// Anthropic extended thinking: reasoning-end may carry a signature
+			// needed for tool use continuations. Emit as thinking_complete.
+			const signature = (part as any).signature
+			if (signature) {
+				yield { type: "thinking_complete", signature }
+			}
+			break
+		}
+
 		// Ignore lifecycle events that don't need to yield chunks.
 		// Note: tool-call is intentionally ignored because tool-input-start/delta/end already
 		// provide complete tool call information. Emitting tool-call would cause duplicate
@@ -423,7 +467,6 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 		case "text-start":
 		case "text-end":
 		case "reasoning-start":
-		case "reasoning-end":
 		case "start-step":
 		case "finish-step":
 		case "start":
