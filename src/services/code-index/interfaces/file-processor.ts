@@ -30,20 +30,17 @@ export interface IDirectoryScanner {
 	 * Scans a directory for code blocks
 	 * @param directoryPath Path to the directory to scan
 	 * @param options Optional scanning options
-	 * @returns Promise resolving to scan results
+	 * @returns AsyncGenerator that yields progress updates and final result
 	 */
 	scanDirectory(
 		directory: string,
 		onError?: (error: Error) => void,
 		onBlocksIndexed?: (indexedCount: number) => void,
 		onFileParsed?: (fileBlockCount: number) => void,
-	): Promise<{
-		stats: {
-			processed: number
-			skipped: number
-		}
-		totalBlockCount: number
-	}>
+	): AsyncGenerator<
+		| { type: "progress"; processed: number; skipped: number; totalBlockCount: number; currentFile?: string }
+		| { type: "complete"; stats: { processed: number; skipped: number }; totalBlockCount: number }
+	>
 }
 
 /**

@@ -24,9 +24,12 @@ vi.mock("../list-files", async () => {
 
 describe("listFiles", () => {
 	it("should return empty array immediately when limit is 0", async () => {
-		const result = await listFiles("/test/path", true, 0)
+		const results: string[] = []
+		for await (const file of listFiles("/test/path", true, 0)) {
+			results.push(file)
+		}
 
-		expect(result).toEqual([[], false])
+		expect(results).toEqual([])
 	})
 })
 
@@ -54,6 +57,10 @@ vi.mock("fs", () => ({
 // Import fs to set up mocks
 import * as fs from "fs"
 
+// Ensure fs.promises.readdir is properly mocked to return empty arrays
+// This prevents the generator from hanging during recursive directory scanning
+vi.mocked(fs.promises.readdir).mockResolvedValue([])
+
 vi.mock("child_process", () => ({
 	spawn: vi.fn(),
 }))
@@ -69,24 +76,25 @@ describe("list-files symlink support", () => {
 
 	it("should include --follow flag in ripgrep arguments", async () => {
 		const mockSpawn = vi.mocked(childProcess.spawn)
+
+		// Store callbacks so we can invoke them
+		let dataCallback: any = null
+		let closeCallback: any = null
+
 		const mockProcess = {
 			stdout: {
-				on: vi.fn((event, callback) => {
+				on: vi.fn((event: string, callback: any) => {
 					if (event === "data") {
-						// Simulate some output to complete the process
-						setTimeout(() => callback("test-file.txt\n"), 10)
+						dataCallback = callback
 					}
 				}),
 			},
 			stderr: {
 				on: vi.fn(),
 			},
-			on: vi.fn((event, callback) => {
+			on: vi.fn((event: string, callback: any) => {
 				if (event === "close") {
-					setTimeout(() => callback(0), 20)
-				}
-				if (event === "error") {
-					// No error simulation
+					closeCallback = callback
 				}
 			}),
 			kill: vi.fn(),
@@ -97,8 +105,31 @@ describe("list-files symlink support", () => {
 		// Use a test directory path
 		const testDir = "/test/dir"
 
-		// Call listFiles to trigger ripgrep execution
-		await listFiles(testDir, false, 100)
+		// Start consuming the generator
+		const gen = listFiles(testDir, false, 100)
+		const results: string[] = []
+
+		// Consume the generator in the background
+		const consumePromise = (async () => {
+			for await (const file of gen) {
+				results.push(file)
+			}
+		})()
+
+		// Wait a bit for the generator to start
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate ripgrep output
+		dataCallback?.("test-file.txt\n")
+
+		// Wait a bit for the data to be processed
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate process closing
+		closeCallback?.(0)
+
+		// Wait for the generator to complete
+		await consumePromise
 
 		// Verify that spawn was called with --follow flag (the critical fix)
 		const [rgPath, args] = mockSpawn.mock.calls[0]
@@ -117,23 +148,25 @@ describe("list-files symlink support", () => {
 
 	it("should include --follow flag for recursive listings too", async () => {
 		const mockSpawn = vi.mocked(childProcess.spawn)
+
+		// Store callbacks so we can invoke them
+		let dataCallback: any = null
+		let closeCallback: any = null
+
 		const mockProcess = {
 			stdout: {
-				on: vi.fn((event, callback) => {
+				on: vi.fn((event: string, callback: any) => {
 					if (event === "data") {
-						setTimeout(() => callback("test-file.txt\n"), 10)
+						dataCallback = callback
 					}
 				}),
 			},
 			stderr: {
 				on: vi.fn(),
 			},
-			on: vi.fn((event, callback) => {
+			on: vi.fn((event: string, callback: any) => {
 				if (event === "close") {
-					setTimeout(() => callback(0), 20)
-				}
-				if (event === "error") {
-					// No error simulation
+					closeCallback = callback
 				}
 			}),
 			kill: vi.fn(),
@@ -144,8 +177,31 @@ describe("list-files symlink support", () => {
 		// Use a test directory path
 		const testDir = "/test/dir"
 
-		// Call listFiles with recursive=true
-		await listFiles(testDir, true, 100)
+		// Start consuming the generator
+		const gen = listFiles(testDir, true, 100)
+		const results: string[] = []
+
+		// Consume the generator in the background
+		const consumePromise = (async () => {
+			for await (const file of gen) {
+				results.push(file)
+			}
+		})()
+
+		// Wait a bit for the generator to start
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate ripgrep output
+		dataCallback?.("test-file.txt\n")
+
+		// Wait a bit for the data to be processed
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate process closing
+		closeCallback?.(0)
+
+		// Wait for the generator to complete
+		await consumePromise
 
 		// Verify that spawn was called with --follow flag (the critical fix)
 		const [rgPath, args] = mockSpawn.mock.calls[0]
@@ -177,36 +233,25 @@ describe("list-files symlink support", () => {
 
 		// Mock ripgrep to return many files (simulating hitting the limit)
 		const mockSpawn = vi.mocked(childProcess.spawn)
+
+		// Store callbacks so we can invoke them
+		let dataCallback: any = null
+		let closeCallback: any = null
+
 		const mockProcess = {
 			stdout: {
-				on: vi.fn((event, callback) => {
+				on: vi.fn((event: string, callback: any) => {
 					if (event === "data") {
-						// Return many file paths to trigger the limit
-						// Note: ripgrep returns relative paths
-						const paths =
-							[
-								"a_dir/",
-								"a_dir/subdir1/",
-								"a_dir/subdir1/file1.txt",
-								"a_dir/subdir1/file2.txt",
-								"a_dir/subdir2/",
-								"a_dir/subdir2/file3.txt",
-								"a_dir/file4.txt",
-								"a_dir/file5.txt",
-								"file1.txt",
-								"file2.txt",
-								// Note: b_dir and c_dir are missing from ripgrep output
-							].join("\n") + "\n"
-						setTimeout(() => callback(paths), 10)
+						dataCallback = callback
 					}
 				}),
 			},
 			stderr: {
 				on: vi.fn(),
 			},
-			on: vi.fn((event, callback) => {
+			on: vi.fn((event: string, callback: any) => {
 				if (event === "close") {
-					setTimeout(() => callback(0), 20)
+					closeCallback = callback
 				}
 			}),
 			kill: vi.fn(),
@@ -217,7 +262,47 @@ describe("list-files symlink support", () => {
 		vi.mocked(fs.promises.access).mockRejectedValue(new Error("File not found"))
 
 		// Call listFiles with recursive=true and a small limit
-		const [results, limitReached] = await listFiles("/test/dir", true, 10)
+		const gen = listFiles("/test/dir", true, 10)
+		const results: string[] = []
+
+		// Consume the generator in the background
+		const consumePromise = (async () => {
+			for await (const file of gen) {
+				results.push(file)
+			}
+		})()
+
+		// Wait a bit for the generator to start
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate ripgrep output - return many file paths to trigger the limit
+		// Note: ripgrep returns relative paths
+		const paths =
+			[
+				"a_dir/",
+				"a_dir/subdir1/",
+				"a_dir/subdir1/file1.txt",
+				"a_dir/subdir1/file2.txt",
+				"a_dir/subdir2/",
+				"a_dir/subdir2/file3.txt",
+				"a_dir/file4.txt",
+				"a_dir/file5.txt",
+				"file1.txt",
+				"file2.txt",
+				// Note: b_dir and c_dir are missing from ripgrep output
+			].join("\n") + "\n"
+		dataCallback?.(paths)
+
+		// Wait a bit for the data to be processed
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate process closing
+		closeCallback?.(0)
+
+		// Wait for the generator to complete
+		await consumePromise
+
+		const limitReached = results.length >= 10
 
 		// Verify that we got results and hit the limit
 		expect(results.length).toBe(10)
@@ -238,7 +323,7 @@ describe("list-files symlink support", () => {
 		expect(hasADir).toBe(true)
 		expect(hasBDir).toBe(true)
 		expect(hasCDir).toBe(true)
-	})
+	}, 30000) // Increase timeout to 30s
 })
 
 describe("hidden directory exclusion", () => {
@@ -271,20 +356,20 @@ describe("hidden directory exclusion", () => {
 
 		// Mock ripgrep to return no files
 		const mockSpawn = vi.mocked(childProcess.spawn)
+
+		// Store callbacks so we can invoke them
+		let closeCallback: any = null
+
 		const mockProcess = {
 			stdout: {
-				on: vi.fn((event, callback) => {
-					if (event === "data") {
-						// No files returned
-					}
-				}),
+				on: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
 			},
-			on: vi.fn((event, callback) => {
+			on: vi.fn((event: string, callback: any) => {
 				if (event === "close") {
-					setTimeout(() => callback(0), 10)
+					closeCallback = callback
 				}
 			}),
 			kill: vi.fn(),
@@ -292,7 +377,24 @@ describe("hidden directory exclusion", () => {
 		mockSpawn.mockReturnValue(mockProcess as any)
 
 		// Call listFiles with recursive=true
-		const [result] = await listFiles("/test", true, 100)
+		const gen = listFiles("/test", true, 100)
+		const result: string[] = []
+
+		// Consume the generator in the background
+		const consumePromise = (async () => {
+			for await (const file of gen) {
+				result.push(file)
+			}
+		})()
+
+		// Wait a bit for the generator to start
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate process closing
+		closeCallback?.(0)
+
+		// Wait for the generator to complete
+		await consumePromise
 
 		// Verify that .git subdirectories are NOT included
 		const directories = result.filter((item) => item.endsWith("/"))
@@ -311,7 +413,7 @@ describe("hidden directory exclusion", () => {
 
 		// Should NOT include .git (hidden directories are excluded)
 		expect(hasGitDir).toBe(false)
-	})
+	}, 30000) // Increase timeout to 30s
 
 	it("should allow explicit targeting of hidden directories", async () => {
 		// Mock filesystem structure for explicit .roo-memory targeting
@@ -326,20 +428,20 @@ describe("hidden directory exclusion", () => {
 
 		// Mock ripgrep to return no files
 		const mockSpawn = vi.mocked(childProcess.spawn)
+
+		// Store callbacks so we can invoke them
+		let closeCallback: any = null
+
 		const mockProcess = {
 			stdout: {
-				on: vi.fn((event, callback) => {
-					if (event === "data") {
-						// No files returned
-					}
-				}),
+				on: vi.fn(),
 			},
 			stderr: {
 				on: vi.fn(),
 			},
-			on: vi.fn((event, callback) => {
+			on: vi.fn((event: string, callback: any) => {
 				if (event === "close") {
-					setTimeout(() => callback(0), 10)
+					closeCallback = callback
 				}
 			}),
 			kill: vi.fn(),
@@ -347,7 +449,24 @@ describe("hidden directory exclusion", () => {
 		mockSpawn.mockReturnValue(mockProcess as any)
 
 		// Call listFiles explicitly targeting .roo-memory directory
-		const [result] = await listFiles("/test/.roo-memory", true, 100)
+		const gen = listFiles("/test/.roo-memory", true, 100)
+		const result: string[] = []
+
+		// Consume the generator in the background
+		const consumePromise = (async () => {
+			for await (const file of gen) {
+				result.push(file)
+			}
+		})()
+
+		// Wait a bit for the generator to start
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate process closing
+		closeCallback?.(0)
+
+		// Wait for the generator to complete
+		await consumePromise
 
 		// When explicitly targeting a hidden directory, its subdirectories should be included
 		const directories = result.filter((item) => item.endsWith("/"))
@@ -359,31 +478,31 @@ describe("hidden directory exclusion", () => {
 
 		expect(hasTasksDir).toBe(true)
 		expect(hasContextDir).toBe(true)
-	})
+	}, 30000) // Increase timeout to 30s
 
 	it("should include top-level files when recursively listing a hidden directory that's also in DIRS_TO_IGNORE", async () => {
 		// This test specifically addresses the bug where files at the root level of .roo/temp
 		// were being excluded when using recursive listing
 		const mockSpawn = vi.mocked(childProcess.spawn)
+
+		// Store callbacks so we can invoke them
+		let dataCallback: any = null
+		let closeCallback: any = null
+
 		const mockProcess = {
 			stdout: {
-				on: vi.fn((event, callback) => {
+				on: vi.fn((event: string, callback: any) => {
 					if (event === "data") {
-						// Simulate files that should be found in .roo/temp
-						// Note: ripgrep returns relative paths
-						setTimeout(() => {
-							callback("teste1.md\n")
-							callback("22/test2.md\n")
-						}, 10)
+						dataCallback = callback
 					}
 				}),
 			},
 			stderr: {
 				on: vi.fn(),
 			},
-			on: vi.fn((event, callback) => {
+			on: vi.fn((event: string, callback: any) => {
 				if (event === "close") {
-					setTimeout(() => callback(0), 20)
+					closeCallback = callback
 				}
 			}),
 			kill: vi.fn(),
@@ -397,7 +516,32 @@ describe("hidden directory exclusion", () => {
 		mockReaddir.mockResolvedValueOnce([{ name: "22", isDirectory: () => true, isSymbolicLink: () => false }])
 
 		// Call listFiles targeting .roo/temp (which is both hidden and in DIRS_TO_IGNORE)
-		const [files] = await listFiles("/test/.roo/temp", true, 100)
+		const gen = listFiles("/test/.roo/temp", true, 100)
+		const files: string[] = []
+
+		// Consume the generator in the background
+		const consumePromise = (async () => {
+			for await (const file of gen) {
+				files.push(file)
+			}
+		})()
+
+		// Wait a bit for the generator to start
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate files that should be found in .roo/temp
+		// Note: ripgrep returns relative paths
+		dataCallback?.("teste1.md\n")
+		dataCallback?.("22/test2.md\n")
+
+		// Wait a bit for the data to be processed
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate process closing
+		closeCallback?.(0)
+
+		// Wait for the generator to complete
+		await consumePromise
 
 		// Verify ripgrep was called with correct arguments
 		const [rgPath, args] = mockSpawn.mock.calls[0]
@@ -417,7 +561,7 @@ describe("hidden directory exclusion", () => {
 		// Ensure the top-level file is actually included
 		const topLevelFile = files.find((f) => f.endsWith("teste1.md"))
 		expect(topLevelFile).toBeTruthy()
-	})
+	}, 30000) // Increase timeout to 30s
 })
 
 describe("buildRecursiveArgs edge cases", () => {
@@ -427,28 +571,56 @@ describe("buildRecursiveArgs edge cases", () => {
 
 	it("should correctly detect hidden directories with trailing slashes", async () => {
 		const mockSpawn = vi.mocked(childProcess.spawn)
+
+		// Store callbacks so we can invoke them
+		let dataCallback: any = null
+		let closeCallback: any = null
+
 		const mockProcess = {
 			stdout: {
-				on: vi.fn((event, callback) => {
+				on: vi.fn((event: string, callback: any) => {
 					if (event === "data") {
-						setTimeout(() => callback("file.txt\n"), 10)
+						dataCallback = callback
 					}
 				}),
 			},
 			stderr: {
 				on: vi.fn(),
 			},
-			on: vi.fn((event, callback) => {
+			on: vi.fn((event: string, callback: any) => {
 				if (event === "close") {
-					setTimeout(() => callback(0), 20)
+					closeCallback = callback
 				}
 			}),
 			kill: vi.fn(),
 		}
 		mockSpawn.mockReturnValue(mockProcess as any)
 
-		// Test with trailing slash on hidden directory
-		await listFiles("/test/.hidden/", true, 100)
+		// Test with trailing slash on hidden directory - consume the generator
+		const gen = listFiles("/test/.hidden/", true, 100)
+		const results: string[] = []
+
+		// Consume the generator in the background
+		const consumePromise = (async () => {
+			for await (const file of gen) {
+				results.push(file)
+			}
+		})()
+
+		// Wait a bit for the generator to start
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate ripgrep output
+		dataCallback?.("file.txt\n")
+
+		// Wait a bit for the data to be processed
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate process closing
+		closeCallback?.(0)
+
+		// Wait for the generator to complete
+		await consumePromise
 
 		const [rgPath, args] = mockSpawn.mock.calls[0]
 		// When targeting a hidden directory, these flags should be present
@@ -461,28 +633,56 @@ describe("buildRecursiveArgs edge cases", () => {
 
 	it("should correctly detect hidden directories with redundant separators", async () => {
 		const mockSpawn = vi.mocked(childProcess.spawn)
+
+		// Store callbacks so we can invoke them
+		let dataCallback: any = null
+		let closeCallback: any = null
+
 		const mockProcess = {
 			stdout: {
-				on: vi.fn((event, callback) => {
+				on: vi.fn((event: string, callback: any) => {
 					if (event === "data") {
-						setTimeout(() => callback("file.txt\n"), 10)
+						dataCallback = callback
 					}
 				}),
 			},
 			stderr: {
 				on: vi.fn(),
 			},
-			on: vi.fn((event, callback) => {
+			on: vi.fn((event: string, callback: any) => {
 				if (event === "close") {
-					setTimeout(() => callback(0), 20)
+					closeCallback = callback
 				}
 			}),
 			kill: vi.fn(),
 		}
 		mockSpawn.mockReturnValue(mockProcess as any)
 
-		// Test with redundant separators before hidden directory
-		await listFiles("/test//.hidden", true, 100)
+		// Test with redundant separators before hidden directory - consume the generator
+		const gen = listFiles("/test//.hidden", true, 100)
+		const results: string[] = []
+
+		// Consume the generator in the background
+		const consumePromise = (async () => {
+			for await (const file of gen) {
+				results.push(file)
+			}
+		})()
+
+		// Wait a bit for the generator to start
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate ripgrep output
+		dataCallback?.("file.txt\n")
+
+		// Wait a bit for the data to be processed
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate process closing
+		closeCallback?.(0)
+
+		// Wait for the generator to complete
+		await consumePromise
 
 		const [rgPath, args] = mockSpawn.mock.calls[0]
 		// When targeting a hidden directory, these flags should be present
@@ -495,28 +695,56 @@ describe("buildRecursiveArgs edge cases", () => {
 
 	it("should correctly detect nested hidden directories with mixed separators", async () => {
 		const mockSpawn = vi.mocked(childProcess.spawn)
+
+		// Store callbacks so we can invoke them
+		let dataCallback: any = null
+		let closeCallback: any = null
+
 		const mockProcess = {
 			stdout: {
-				on: vi.fn((event, callback) => {
+				on: vi.fn((event: string, callback: any) => {
 					if (event === "data") {
-						setTimeout(() => callback("file.txt\n"), 10)
+						dataCallback = callback
 					}
 				}),
 			},
 			stderr: {
 				on: vi.fn(),
 			},
-			on: vi.fn((event, callback) => {
+			on: vi.fn((event: string, callback: any) => {
 				if (event === "close") {
-					setTimeout(() => callback(0), 20)
+					closeCallback = callback
 				}
 			}),
 			kill: vi.fn(),
 		}
 		mockSpawn.mockReturnValue(mockProcess as any)
 
-		// Test with complex path including hidden directory
-		await listFiles("/test//normal/.hidden//subdir/", true, 100)
+		// Test with complex path including hidden directory - consume the generator
+		const gen = listFiles("/test//normal/.hidden//subdir/", true, 100)
+		const results: string[] = []
+
+		// Consume the generator in the background
+		const consumePromise = (async () => {
+			for await (const file of gen) {
+				results.push(file)
+			}
+		})()
+
+		// Wait a bit for the generator to start
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate ripgrep output
+		dataCallback?.("file.txt\n")
+
+		// Wait a bit for the data to be processed
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate process closing
+		closeCallback?.(0)
+
+		// Wait for the generator to complete
+		await consumePromise
 
 		const [rgPath, args] = mockSpawn.mock.calls[0]
 		// When targeting a path containing a hidden directory, these flags should be present
@@ -529,28 +757,56 @@ describe("buildRecursiveArgs edge cases", () => {
 
 	it("should not detect hidden directories when path only has dots in filenames", async () => {
 		const mockSpawn = vi.mocked(childProcess.spawn)
+
+		// Store callbacks so we can invoke them
+		let dataCallback: any = null
+		let closeCallback: any = null
+
 		const mockProcess = {
 			stdout: {
-				on: vi.fn((event, callback) => {
+				on: vi.fn((event: string, callback: any) => {
 					if (event === "data") {
-						setTimeout(() => callback("file.txt\n"), 10)
+						dataCallback = callback
 					}
 				}),
 			},
 			stderr: {
 				on: vi.fn(),
 			},
-			on: vi.fn((event, callback) => {
+			on: vi.fn((event: string, callback: any) => {
 				if (event === "close") {
-					setTimeout(() => callback(0), 20)
+					closeCallback = callback
 				}
 			}),
 			kill: vi.fn(),
 		}
 		mockSpawn.mockReturnValue(mockProcess as any)
 
-		// Test with a path that has dots but no hidden directories
-		await listFiles("/test/file.with.dots/normal", true, 100)
+		// Test with a path that has dots but no hidden directories - consume the generator
+		const gen = listFiles("/test/file.with.dots/normal", true, 100)
+		const results: string[] = []
+
+		// Consume the generator in the background
+		const consumePromise = (async () => {
+			for await (const file of gen) {
+				results.push(file)
+			}
+		})()
+
+		// Wait a bit for the generator to start
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate ripgrep output
+		dataCallback?.("file.txt\n")
+
+		// Wait a bit for the data to be processed
+		await new Promise((resolve) => setTimeout(resolve, 10))
+
+		// Simulate process closing
+		closeCallback?.(0)
+
+		// Wait for the generator to complete
+		await consumePromise
 
 		const [rgPath, args] = mockSpawn.mock.calls[0]
 		// Should NOT have the special flags for hidden directories

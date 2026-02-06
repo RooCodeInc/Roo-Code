@@ -166,12 +166,11 @@ export class CodeIndexOrchestrator {
 					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
 				}
 
-				// Run incremental scan - scanner will skip unchanged files using cache
-				const result = await this.scanner.scanDirectory(
+				const scanGenerator = await this.scanner.scanDirectory(
 					this.workspacePath,
 					(batchError: Error) => {
 						console.error(
-							`[CodeIndexOrchestrator] Error during incremental scan batch: ${batchError.message}`,
+							`[CodeIndexOrchestrator] Error during initial scan batch: ${batchError.message}`,
 							batchError,
 						)
 						batchErrors.push(batchError)
@@ -180,8 +179,15 @@ export class CodeIndexOrchestrator {
 					handleFileParsed,
 				)
 
-				if (!result) {
-					throw new Error("Incremental scan failed, is scanner initialized?")
+				let stats = null
+				for await (const update of scanGenerator) {
+					if (update.type === "complete") {
+						stats = update.stats
+					}
+				}
+
+				if (!stats) {
+					throw new Error("Scan failed, is scanner initialized?")
 				}
 
 				// If new files were found and indexed, log the results
@@ -220,7 +226,7 @@ export class CodeIndexOrchestrator {
 					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
 				}
 
-				const result = await this.scanner.scanDirectory(
+				const scanGenerator = await this.scanner.scanDirectory(
 					this.workspacePath,
 					(batchError: Error) => {
 						console.error(
@@ -233,11 +239,16 @@ export class CodeIndexOrchestrator {
 					handleFileParsed,
 				)
 
-				if (!result) {
-					throw new Error("Scan failed, is scanner initialized?")
+				let stats = null
+				for await (const update of scanGenerator) {
+					if (update.type === "complete") {
+						stats = update.stats
+					}
 				}
 
-				const { stats } = result
+				if (!stats) {
+					throw new Error("Scan failed, is scanner initialized?")
+				}
 
 				// Check if any blocks were actually indexed successfully
 				// If no blocks were indexed but blocks were found, it means all batches failed

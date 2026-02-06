@@ -7,6 +7,7 @@ import ignore from "ignore"
 import { arePathsEqual } from "../../utils/path"
 import { getBinPath } from "../../services/ripgrep"
 import { DIRS_TO_IGNORE } from "./constants"
+import { createAsyncQueue } from "../../utils/asyncQueue"
 
 /**
  * Context object for directory scanning operations
@@ -28,51 +29,69 @@ interface ScanContext {
  * @param dirPath - Directory path to list files from
  * @param recursive - Whether to recursively list files in subdirectories
  * @param limit - Maximum number of files to return
- * @returns Tuple of [file paths array, whether the limit was reached]
+ * @returns AsyncGenerator that yields file paths one at a time
  */
-export async function listFiles(dirPath: string, recursive: boolean, limit: number): Promise<[string[], boolean]> {
+export async function* listFiles(dirPath: string, recursive: boolean, limit: number): AsyncGenerator<string> {
 	// Early return for limit of 0 - no need to scan anything
 	if (limit === 0) {
-		return [[], false]
+		return
 	}
 
 	// Handle special directories
 	const specialResult = await handleSpecialDirectories(dirPath)
 
 	if (specialResult) {
-		return specialResult
+		const [paths] = specialResult
+		for (const path of paths) {
+			yield path
+		}
+		return
 	}
 
 	// Get ripgrep path
 	const rgPath = await getRipgrepPath()
 
-	if (!recursive) {
-		// For non-recursive, use the existing approach
-		const files = await listFilesWithRipgrep(rgPath, dirPath, false, limit)
-		const ignoreInstance = await createIgnoreInstance(dirPath)
-		// Calculate remaining limit for directories
-		const remainingLimit = Math.max(0, limit - files.length)
-		const directories = await listFilteredDirectories(dirPath, false, ignoreInstance, remainingLimit)
-		return formatAndCombineResults(files, directories, limit)
+	// Create async queue for streaming results
+	const asyncQueue = createAsyncQueue<string>({ limit })
+	let yieldedCount = 0
+
+	// Start background task to discover and queue paths
+	const discoveryTask = (async () => {
+		try {
+			const ignoreInstance = await createIgnoreInstance(dirPath)
+
+			// Add first-level directories first so they have priority
+			const firstLevelDirs = await getFirstLevelDirectories(dirPath, ignoreInstance)
+			for (const dir of firstLevelDirs) {
+				asyncQueue.enqueue(dir)
+			}
+
+			// Stream files from ripgrep
+			for await (const file of listFilesWithRipgrep(rgPath, dirPath, recursive, limit)) {
+				asyncQueue.enqueue(file)
+			}
+
+			// Stream directories directly to the main queue
+			await listFilteredDirectories(dirPath, recursive, ignoreInstance, asyncQueue, limit)
+		} catch (error) {
+			// Set the error in the queue for consumers who are still iterating
+			const errorObj = error instanceof Error ? error : new Error(String(error))
+			asyncQueue.error(errorObj)
+			// Rethrow to ensure it propagates to the caller
+			throw errorObj
+		} finally {
+			asyncQueue.complete()
+		}
+	})()
+
+	// Yield paths from the queue as they become available
+	for await (const path of asyncQueue) {
+		yieldedCount++
+		yield path
 	}
 
-	// For recursive mode, use the original approach but ensure first-level directories are included
-	const files = await listFilesWithRipgrep(rgPath, dirPath, true, limit)
-	const ignoreInstance = await createIgnoreInstance(dirPath)
-	// Calculate remaining limit for directories
-	const remainingLimit = Math.max(0, limit - files.length)
-	const directories = await listFilteredDirectories(dirPath, true, ignoreInstance, remainingLimit)
-
-	// Combine and check if we hit the limits
-	const [results, limitReached] = formatAndCombineResults(files, directories, limit)
-
-	// If we hit the limit, ensure all first-level directories are included
-	if (limitReached) {
-		const firstLevelDirs = await getFirstLevelDirectories(dirPath, ignoreInstance)
-		return ensureFirstLevelDirectoriesIncluded(results, firstLevelDirs, limit)
-	}
-
-	return [results, limitReached]
+	// Wait for discovery task to complete
+	await discoveryTask
 }
 
 /**
@@ -197,20 +216,20 @@ async function getRipgrepPath(): Promise<string> {
 /**
  * List files using ripgrep with appropriate arguments
  */
-async function listFilesWithRipgrep(
+async function* listFilesWithRipgrep(
 	rgPath: string,
 	dirPath: string,
 	recursive: boolean,
 	limit: number,
-): Promise<string[]> {
+): AsyncGenerator<string> {
 	const rgArgs = buildRipgrepArgs(dirPath, recursive)
 
-	const relativePaths = await execRipgrep(rgPath, rgArgs, limit)
-
-	// Convert relative paths from ripgrep to absolute paths
 	// Resolve dirPath once here for the mapping operation
 	const absolutePath = path.resolve(dirPath)
-	return relativePaths.map((relativePath) => path.resolve(absolutePath, relativePath))
+
+	for await (const relativePath of execRipgrep(rgPath, rgArgs, limit)) {
+		yield path.resolve(absolutePath, relativePath)
+	}
 }
 
 /**
@@ -388,12 +407,12 @@ async function listFilteredDirectories(
 	dirPath: string,
 	recursive: boolean,
 	ignoreInstance: ReturnType<typeof ignore>,
+	queue: ReturnType<typeof createAsyncQueue<string>>,
 	limit?: number,
-): Promise<string[]> {
+): Promise<void> {
 	const absolutePath = path.resolve(dirPath)
-	const directories: string[] = []
-	let dirCount = 0
 	const effectiveLimit = limit ?? Number.MAX_SAFE_INTEGER
+	let dirCount = 0
 
 	// For environment details generation, we don't want to treat the root as a "target"
 	// if we're doing a general recursive scan, as this would include hidden directories
@@ -408,10 +427,10 @@ async function listFilteredDirectories(
 		ignoreInstance,
 	}
 
-	async function scanDirectory(currentPath: string, context: ScanContext): Promise<boolean> {
+	async function scanDirectory(currentPath: string, context: ScanContext): Promise<void> {
 		// Check if we've reached the limit
 		if (dirCount >= effectiveLimit) {
-			return true // Signal that limit was reached
+			return
 		}
 
 		try {
@@ -422,9 +441,8 @@ async function listFilteredDirectories(
 			for (const entry of entries) {
 				// Check limit before processing each directory
 				if (dirCount >= effectiveLimit) {
-					return true
+					return
 				}
-
 				if (entry.isDirectory() && !entry.isSymbolicLink()) {
 					const dirName = entry.name
 					const fullDirPath = path.join(currentPath, dirName)
@@ -441,12 +459,12 @@ async function listFilteredDirectories(
 						// Add the directory to our results (with trailing slash)
 						// fullDirPath is already absolute since it's built with path.join from absolutePath
 						const formattedPath = fullDirPath.endsWith("/") ? fullDirPath : `${fullDirPath}/`
-						directories.push(formattedPath)
+						queue.enqueue(formattedPath)
 						dirCount++
 
 						// Check if we've reached the limit after adding
 						if (dirCount >= effectiveLimit) {
-							return true
+							return
 						}
 					}
 
@@ -468,6 +486,7 @@ async function listFilteredDirectories(
 					const shouldRecurse =
 						recursive &&
 						shouldRecurseIntoDir &&
+						dirCount < effectiveLimit &&
 						!(
 							isHiddenDir &&
 							DIRS_TO_IGNORE.includes(".*") &&
@@ -484,10 +503,7 @@ async function listFilteredDirectories(
 							isTargetDir: false,
 							insideExplicitHiddenTarget: newInsideExplicitHiddenTarget,
 						}
-						const limitReached = await scanDirectory(fullDirPath, newContext)
-						if (limitReached) {
-							return true
-						}
+						await scanDirectory(fullDirPath, newContext)
 					}
 				}
 			}
@@ -495,14 +511,10 @@ async function listFilteredDirectories(
 			// Continue if we can't read a directory
 			console.warn(`Could not read directory ${currentPath}: ${err}`)
 		}
-
-		return false // Limit not reached
 	}
 
 	// Start scanning from the root directory
 	await scanDirectory(absolutePath, initialContext)
-
-	return directories
 }
 
 /**
@@ -646,82 +658,67 @@ function formatAndCombineResults(files: string[], directories: string[], limit: 
 /**
  * Execute ripgrep command and return list of files
  */
-async function execRipgrep(rgPath: string, args: string[], limit: number): Promise<string[]> {
-	return new Promise((resolve, reject) => {
-		// Extract the directory path from args (it's the last argument)
-		const searchDir = args[args.length - 1]
+async function* execRipgrep(rgPath: string, args: string[], limit: number): AsyncGenerator<string> {
+	const rgProcess = childProcess.spawn(rgPath, args)
+	let output = ""
 
-		const rgProcess = childProcess.spawn(rgPath, args)
-		let output = ""
-		let results: string[] = []
-
-		// Set timeout to avoid hanging
-		const timeoutId = setTimeout(() => {
+	const asyncQueue = createAsyncQueue<string>({
+		limit,
+		timeout: 10_000,
+		onTimeout: () => {
 			rgProcess.kill()
 			console.warn("ripgrep timed out, returning partial results")
-			resolve(results.slice(0, limit))
-		}, 10_000)
+		},
+	})
 
-		// Process stdout data as it comes in
-		rgProcess.stdout.on("data", (data) => {
-			output += data.toString()
-			processRipgrepOutput()
+	// Process stdout data as it comes in
+	rgProcess.stdout.on("data", (data) => {
+		output += data.toString()
+		processRipgrepOutput()
+	})
 
-			// Kill the process if we've reached the limit
-			if (results.length >= limit) {
-				rgProcess.kill()
-				clearTimeout(timeoutId) // Clear the timeout when we kill the process due to reaching the limit
-			}
-		})
+	// Process stderr but don't fail on non-zero exit codes
+	rgProcess.stderr.on("data", (data) => {
+		console.error(`ripgrep stderr: ${data}`)
+	})
 
-		// Process stderr but don't fail on non-zero exit codes
-		rgProcess.stderr.on("data", (data) => {
-			console.error(`ripgrep stderr: ${data}`)
-		})
+	// Handle process completion
+	rgProcess.on("close", (code) => {
+		// Process any remaining output
+		processRipgrepOutput(true)
 
-		// Handle process completion
-		rgProcess.on("close", (code) => {
-			// Clear the timeout to avoid memory leaks
-			clearTimeout(timeoutId)
+		// Log non-zero exit codes but don't fail
+		if (code !== 0 && code !== null && code !== 143 /* SIGTERM */) {
+			console.warn(`ripgrep process exited with code ${code}, returning partial results`)
+		}
 
-			// Process any remaining output
-			processRipgrepOutput(true)
+		asyncQueue.complete()
+	})
 
-			// Log non-zero exit codes but don't fail
-			if (code !== 0 && code !== null && code !== 143 /* SIGTERM */) {
-				console.warn(`ripgrep process exited with code ${code}, returning partial results`)
-			}
+	// Handle process errors
+	rgProcess.on("error", (error) => {
+		asyncQueue.error(new Error(`ripgrep process error: ${error.message}`))
+	})
 
-			resolve(results.slice(0, limit))
-		})
+	// Helper function to process output buffer
+	function processRipgrepOutput(isFinal = false) {
+		const lines = output.split("\n")
 
-		// Handle process errors
-		rgProcess.on("error", (error) => {
-			// Clear the timeout to avoid memory leaks
-			clearTimeout(timeoutId)
-			reject(new Error(`ripgrep process error: ${error.message}`))
-		})
+		// Keep the last incomplete line unless this is the final processing
+		if (!isFinal) {
+			output = lines.pop() || ""
+		} else {
+			output = ""
+		}
 
-		// Helper function to process output buffer
-		function processRipgrepOutput(isFinal = false) {
-			const lines = output.split("\n")
-
-			// Keep the last incomplete line unless this is the final processing
-			if (!isFinal) {
-				output = lines.pop() || ""
-			} else {
-				output = ""
-			}
-
-			// Process each complete line
-			for (const line of lines) {
-				if (line.trim() && results.length < limit) {
-					// Keep the relative path as returned by ripgrep
-					results.push(line)
-				} else if (results.length >= limit) {
-					break
-				}
+		// Process each complete line
+		for (const line of lines) {
+			if (line.trim()) {
+				// Keep the relative path as returned by ripgrep
+				asyncQueue.enqueue(line)
 			}
 		}
-	})
+	}
+
+	yield* asyncQueue
 }

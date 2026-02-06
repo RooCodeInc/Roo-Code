@@ -273,7 +273,13 @@ export async function getEnvironmentDetails(cline: Task, includeFileDetails: boo
 			if (maxFiles === 0) {
 				details += "(Workspace files context disabled. Use list_files to explore if needed.)"
 			} else {
-				const [files, didHitLimit] = await listFiles(cline.cwd, true, maxFiles)
+				// Collect files from the generator
+				const files: string[] = []
+				for await (const file of listFiles(cline.cwd, true, maxFiles)) {
+					files.push(file)
+				}
+				const didHitLimit = files.length >= maxFiles
+
 				const { showRooIgnoredFiles = false } = state ?? {}
 
 				const result = formatResponse.formatFilesList(

@@ -25,6 +25,9 @@ vi.mock("../../path", () => ({
 import { listFiles } from "../list-files"
 import * as childProcess from "child_process"
 
+// Note: These tests use real filesystem operations (mkdtemp, mkdir, writeFile, etc.)
+// so we don't mock fs module. The tests create temporary directories for testing.
+
 describe("list-files gitignore support", () => {
 	let tempDir: string
 	let originalCwd: string
@@ -85,7 +88,10 @@ describe("list-files gitignore support", () => {
 		mockSpawn.mockReturnValue(mockProcess as any)
 
 		// Call listFiles in recursive mode
-		const [files, didHitLimit] = await listFiles(tempDir, true, 100)
+		const files: string[] = []
+		for await (const file of listFiles(tempDir, true, 100)) {
+			files.push(file)
+		}
 
 		// Verify that gitignored directories are not included
 		const directoriesInResult = files.filter((f) => f.endsWith("/"))
@@ -134,7 +140,10 @@ describe("list-files gitignore support", () => {
 		mockSpawn.mockReturnValue(mockProcess as any)
 
 		// Call listFiles in recursive mode
-		const [files, didHitLimit] = await listFiles(tempDir, true, 100)
+		const files: string[] = []
+		for await (const file of listFiles(tempDir, true, 100)) {
+			files.push(file)
+		}
 
 		// Verify that nested gitignored directories are not included
 		const directoriesInResult = files.filter((f) => f.endsWith("/"))

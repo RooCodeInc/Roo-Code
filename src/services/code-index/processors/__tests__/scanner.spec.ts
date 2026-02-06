@@ -61,8 +61,14 @@ vi.mock("../../../../core/ignore/RooIgnoreController")
 vi.mock("ignore")
 
 // Override the Jest-based mock with a vitest-compatible version
+// Mock listFiles as an async generator
+async function* mockListFilesGenerator(dirPath: string, recursive: boolean, limit: number): AsyncGenerator<string> {
+	yield "test/file1.js"
+	yield "test/file2.js"
+}
+
 vi.mock("../../../glob/list-files", () => ({
-	listFiles: vi.fn(),
+	listFiles: vi.fn().mockImplementation(mockListFilesGenerator),
 }))
 
 describe("DirectoryScanner", () => {
@@ -145,16 +151,20 @@ describe("DirectoryScanner", () => {
 			birthtimeNs: BigInt(0),
 		}
 		vi.mocked(stat).mockResolvedValue(mockStats)
-
-		// Get and mock the listFiles function
-		const { listFiles } = await import("../../../glob/list-files")
-		vi.mocked(listFiles).mockResolvedValue([["test/file1.js", "test/file2.js"], false])
 	})
 
 	describe("scanDirectory", () => {
 		it("should skip files larger than MAX_FILE_SIZE_BYTES", async () => {
+			// Mock listFiles as an async generator
+			async function* mockListFilesGenerator(
+				dirPath: string,
+				recursive: boolean,
+				limit: number,
+			): AsyncGenerator<string> {
+				yield "test/file1.js"
+			}
 			const { listFiles } = await import("../../../glob/list-files")
-			vi.mocked(listFiles).mockResolvedValue([["test/file1.js"], false])
+			vi.mocked(listFiles).mockImplementation(mockListFilesGenerator)
 
 			// Create large file mock stats
 			const largeFileStats = {
@@ -163,8 +173,15 @@ describe("DirectoryScanner", () => {
 			}
 			vi.mocked(stat).mockResolvedValueOnce(largeFileStats)
 
-			const result = await scanner.scanDirectory("/test")
-			expect(result.stats.skipped).toBe(1)
+			// Consume the generator
+			let finalResult: any = null
+			for await (const update of scanner.scanDirectory("/test")) {
+				if (update.type === "complete") {
+					finalResult = update
+				}
+			}
+
+			expect(finalResult.stats.skipped).toBe(1)
 			expect(mockCodeParser.parseFile).not.toHaveBeenCalled()
 		})
 
@@ -178,8 +195,17 @@ describe("DirectoryScanner", () => {
 				mockIgnoreInstance,
 			)
 
+			// Mock listFiles as an async generator
+			async function* mockListFilesGenerator(
+				dirPath: string,
+				recursive: boolean,
+				limit: number,
+			): AsyncGenerator<string> {
+				yield "test/file1.js"
+			}
 			const { listFiles } = await import("../../../glob/list-files")
-			vi.mocked(listFiles).mockResolvedValue([["test/file1.js"], false])
+			vi.mocked(listFiles).mockImplementation(mockListFilesGenerator)
+
 			const mockBlocks: any[] = [
 				{
 					file_path: "test/file1.js",
@@ -194,8 +220,15 @@ describe("DirectoryScanner", () => {
 			]
 			;(mockCodeParser.parseFile as any).mockResolvedValue(mockBlocks)
 
-			const result = await scannerNoEmbeddings.scanDirectory("/test")
-			expect(result.stats.processed).toBe(1)
+			// Consume the generator
+			let finalResult: any = null
+			for await (const update of scannerNoEmbeddings.scanDirectory("/test")) {
+				if (update.type === "complete") {
+					finalResult = update
+				}
+			}
+
+			expect(finalResult.stats.processed).toBe(1)
 		})
 
 		it("should process embeddings for new/changed files", async () => {
@@ -213,7 +246,11 @@ describe("DirectoryScanner", () => {
 			]
 			;(mockCodeParser.parseFile as any).mockResolvedValue(mockBlocks)
 
-			await scanner.scanDirectory("/test")
+			// Consume the generator
+			for await (const update of scanner.scanDirectory("/test")) {
+				// Just consume all updates
+			}
+
 			expect(mockEmbedder.createEmbeddings).toHaveBeenCalled()
 			expect(mockVectorStore.upsertPoints).toHaveBeenCalled()
 		})
@@ -221,24 +258,30 @@ describe("DirectoryScanner", () => {
 		it("should delete points for removed files", async () => {
 			;(mockCacheManager.getAllHashes as any).mockReturnValue({ "old/file.js": "old-hash" })
 
-			await scanner.scanDirectory("/test")
+			// Consume the generator
+			for await (const update of scanner.scanDirectory("/test")) {
+				// Just consume all updates
+			}
+
 			expect(mockVectorStore.deletePointsByFilePath).toHaveBeenCalledWith("old/file.js")
 			expect(mockCacheManager.deleteHash).toHaveBeenCalledWith("old/file.js")
 		})
 
 		it("should filter out files in hidden directories", async () => {
+			// Mock listFiles as an async generator
+			async function* mockListFilesGenerator(
+				dirPath: string,
+				recursive: boolean,
+				limit: number,
+			): AsyncGenerator<string> {
+				yield "test/file1.js"
+				yield "test/.hidden/file2.js"
+				yield ".git/config"
+				yield "src/.next/static/file3.js"
+				yield "normal/file4.js"
+			}
 			const { listFiles } = await import("../../../glob/list-files")
-			// Mock listFiles to return files including some in hidden directories
-			vi.mocked(listFiles).mockResolvedValue([
-				[
-					"test/file1.js",
-					"test/.hidden/file2.js",
-					".git/config",
-					"src/.next/static/file3.js",
-					"normal/file4.js",
-				],
-				false,
-			])
+			vi.mocked(listFiles).mockImplementation(mockListFilesGenerator)
 
 			// Mock parseFile to track which files are actually processed
 			const processedFiles: string[] = []
@@ -247,7 +290,10 @@ describe("DirectoryScanner", () => {
 				return []
 			})
 
-			await scanner.scanDirectory("/test")
+			// Consume the generator
+			for await (const update of scanner.scanDirectory("/test")) {
+				// Just consume all updates
+			}
 
 			// Verify that only non-hidden files were processed
 			expect(processedFiles).toEqual(["test/file1.js", "normal/file4.js"])
@@ -269,8 +315,18 @@ describe("DirectoryScanner", () => {
 				mockIgnoreInstance,
 			)
 
+			// Mock listFiles as an async generator
+			async function* mockListFilesGenerator(
+				dirPath: string,
+				recursive: boolean,
+				limit: number,
+			): AsyncGenerator<string> {
+				yield "test/README.md"
+				yield "test/app.js"
+				yield "docs/guide.markdown"
+			}
 			const { listFiles } = await import("../../../glob/list-files")
-			vi.mocked(listFiles).mockResolvedValue([["test/README.md", "test/app.js", "docs/guide.markdown"], false])
+			vi.mocked(listFiles).mockImplementation(mockListFilesGenerator)
 
 			const mockMarkdownBlocks: any[] = [
 				{
@@ -323,7 +379,13 @@ describe("DirectoryScanner", () => {
 				return []
 			})
 
-			const result = await scannerNoEmbeddings.scanDirectory("/test")
+			// Consume the generator
+			let finalResult: any = null
+			for await (const update of scannerNoEmbeddings.scanDirectory("/test")) {
+				if (update.type === "complete") {
+					finalResult = update
+				}
+			}
 
 			// Verify all files were processed
 			expect(mockCodeParser.parseFile).toHaveBeenCalledTimes(3)
@@ -332,12 +394,20 @@ describe("DirectoryScanner", () => {
 			expect(mockCodeParser.parseFile).toHaveBeenCalledWith("docs/guide.markdown", expect.any(Object))
 
 			// Verify processing still works without codeBlocks accumulation
-			expect(result.stats.processed).toBe(3)
+			expect(finalResult.stats.processed).toBe(3)
 		})
 
 		it("should generate unique point IDs for each block from the same file", async () => {
+			// Mock listFiles as an async generator
+			async function* mockListFilesGenerator(
+				dirPath: string,
+				recursive: boolean,
+				limit: number,
+			): AsyncGenerator<string> {
+				yield "test/large-doc.md"
+			}
 			const { listFiles } = await import("../../../glob/list-files")
-			vi.mocked(listFiles).mockResolvedValue([["test/large-doc.md"], false])
+			vi.mocked(listFiles).mockImplementation(mockListFilesGenerator)
 
 			// Mock multiple blocks from the same file with different segmentHash values
 			const mockBlocks: any[] = [
@@ -375,7 +445,10 @@ describe("DirectoryScanner", () => {
 
 			;(mockCodeParser.parseFile as any).mockResolvedValue(mockBlocks)
 
-			await scanner.scanDirectory("/test")
+			// Consume the generator
+			for await (const update of scanner.scanDirectory("/test")) {
+				// Just consume all updates
+			}
 
 			// Verify that upsertPoints was called with unique IDs for each block
 			expect(mockVectorStore.upsertPoints).toHaveBeenCalledTimes(1)

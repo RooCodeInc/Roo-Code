@@ -26,6 +26,9 @@ vi.mock("../../path", () => ({
 import { listFiles } from "../list-files"
 import * as childProcess from "child_process"
 
+// Note: These tests use real filesystem operations (mkdtemp, mkdir, writeFile, etc.)
+// so we don't mock fs module. The tests create temporary directories for testing.
+
 describe("list-files gitignore integration", () => {
 	let tempDir: string
 	let originalCwd: string
@@ -88,7 +91,10 @@ describe("list-files gitignore integration", () => {
 		mockSpawn.mockReturnValue(mockProcess as any)
 
 		// Call listFiles in recursive mode
-		const [files, didHitLimit] = await listFiles(tempDir, true, 100)
+		const files: string[] = []
+		for await (const file of listFiles(tempDir, true, 100)) {
+			files.push(file)
+		}
 
 		// Filter out only directories from the results
 		const directoriesInResult = files.filter((f) => f.endsWith("/"))
@@ -140,7 +146,10 @@ describe("list-files gitignore integration", () => {
 		mockSpawn.mockReturnValue(mockProcess as any)
 
 		// Call listFiles in recursive mode
-		const [files, didHitLimit] = await listFiles(tempDir, true, 100)
+		const files: string[] = []
+		for await (const file of listFiles(tempDir, true, 100)) {
+			files.push(file)
+		}
 
 		// Filter out only directories from the results
 		const directoriesInResult = files.filter((f) => f.endsWith("/"))
@@ -189,7 +198,10 @@ describe("list-files gitignore integration", () => {
 		mockSpawn.mockReturnValue(mockProcess as any)
 
 		// Call listFiles in NON-recursive mode
-		const [files, didHitLimit] = await listFiles(tempDir, false, 100)
+		const files: string[] = []
+		for await (const file of listFiles(tempDir, false, 100)) {
+			files.push(file)
+		}
 
 		// Verify ripgrep was called without --no-ignore-vcs (should respect .gitignore)
 		const [rgPath, args] = mockSpawn.mock.calls[0]
