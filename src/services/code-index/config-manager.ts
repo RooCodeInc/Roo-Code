@@ -2,7 +2,7 @@ import { ApiHandlerOptions } from "../../shared/api"
 import { ContextProxy } from "../../core/config/ContextProxy"
 import { EmbedderProvider } from "./interfaces/manager"
 import { CodeIndexConfig, PreviousConfigSnapshot } from "./interfaces/config"
-import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS } from "./constants"
+import { DEFAULT_SEARCH_MIN_SCORE, DEFAULT_MAX_SEARCH_RESULTS, DEFAULT_AUTO_START, DEFAULT_MAX_CONCURRENT } from "./constants"
 import { getDefaultModelId, getModelDimension, getModelScoreThreshold } from "../../shared/embeddingModels"
 
 /**
@@ -26,6 +26,9 @@ export class CodeIndexConfigManager {
 	private qdrantApiKey?: string
 	private searchMinScore?: number
 	private searchMaxResults?: number
+	// Auto-start and concurrency control settings
+	private autoStart?: boolean
+	private maxConcurrent?: number
 
 	constructor(private readonly contextProxy: ContextProxy) {
 		// Initialize with current configuration to avoid false restart triggers
@@ -148,6 +151,10 @@ export class CodeIndexConfigManager {
 		this.bedrockOptions = bedrockRegion
 			? { region: bedrockRegion, profile: bedrockProfile || undefined }
 			: undefined
+
+		// Load auto-start and concurrency control settings
+		this.autoStart = codebaseIndexConfig.codebaseIndexAutoStart
+		this.maxConcurrent = codebaseIndexConfig.codebaseIndexMaxConcurrent
 	}
 
 	/**
@@ -540,5 +547,21 @@ export class CodeIndexConfigManager {
 	 */
 	public get currentSearchMaxResults(): number {
 		return this.searchMaxResults ?? DEFAULT_MAX_SEARCH_RESULTS
+	}
+
+	/**
+	 * Gets whether indexing should auto-start on extension activation.
+	 * Returns user setting if configured, otherwise returns default (true).
+	 */
+	public get shouldAutoStart(): boolean {
+		return this.autoStart ?? DEFAULT_AUTO_START
+	}
+
+	/**
+	 * Gets the maximum number of concurrent indexing operations.
+	 * Returns user setting if configured, otherwise returns default (1).
+	 */
+	public get currentMaxConcurrent(): number {
+		return this.maxConcurrent ?? DEFAULT_MAX_CONCURRENT
 	}
 }

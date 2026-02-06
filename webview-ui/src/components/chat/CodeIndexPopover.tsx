@@ -66,6 +66,9 @@ interface LocalCodeIndexSettings {
 	codebaseIndexEmbedderModelDimension?: number // Generic dimension for all providers
 	codebaseIndexSearchMaxResults?: number
 	codebaseIndexSearchMinScore?: number
+	// Auto-start and concurrency control settings
+	codebaseIndexAutoStart?: boolean
+	codebaseIndexMaxConcurrent?: number
 
 	// Bedrock-specific settings
 	codebaseIndexBedrockRegion?: string
@@ -214,6 +217,8 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexEmbedderModelDimension: undefined,
 		codebaseIndexSearchMaxResults: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 		codebaseIndexSearchMinScore: CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+		codebaseIndexAutoStart: CODEBASE_INDEX_DEFAULTS.DEFAULT_AUTO_START,
+		codebaseIndexMaxConcurrent: CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CONCURRENT,
 		codebaseIndexBedrockRegion: "",
 		codebaseIndexBedrockProfile: "",
 		codeIndexOpenAiKey: "",
@@ -253,6 +258,10 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					codebaseIndexConfig.codebaseIndexSearchMaxResults ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
 				codebaseIndexSearchMinScore:
 					codebaseIndexConfig.codebaseIndexSearchMinScore ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_MIN_SCORE,
+				codebaseIndexAutoStart:
+					codebaseIndexConfig.codebaseIndexAutoStart ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_AUTO_START,
+				codebaseIndexMaxConcurrent:
+					codebaseIndexConfig.codebaseIndexMaxConcurrent ?? CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CONCURRENT,
 				codebaseIndexBedrockRegion: codebaseIndexConfig.codebaseIndexBedrockRegion || "",
 				codebaseIndexBedrockProfile: codebaseIndexConfig.codebaseIndexBedrockProfile || "",
 				codeIndexOpenAiKey: "",
@@ -1580,6 +1589,71 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 													updateSetting(
 														"codebaseIndexSearchMaxResults",
 														CODEBASE_INDEX_DEFAULTS.DEFAULT_SEARCH_RESULTS,
+													)
+												}>
+												<span className="codicon codicon-discard" />
+											</VSCodeButton>
+										</div>
+									</div>
+
+									{/* Auto-start Checkbox */}
+									<div className="space-y-2 pt-4 border-t border-vscode-dropdown-border">
+										<div className="flex items-center gap-2">
+											<VSCodeCheckbox
+												checked={
+													currentSettings.codebaseIndexAutoStart ??
+													CODEBASE_INDEX_DEFAULTS.DEFAULT_AUTO_START
+												}
+												onChange={(e: any) =>
+													updateSetting("codebaseIndexAutoStart", e.target.checked)
+														}>
+														<span className="font-medium">
+															{t("settings:codeIndex.autoStart.label")}
+														</span>
+													</VSCodeCheckbox>
+													<StandardTooltip content={t("settings:codeIndex.autoStart.description")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+									</div>
+
+									{/* Max Concurrent Indexing Slider */}
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<label className="text-sm font-medium">
+												{t("settings:codeIndex.maxConcurrent.label")}
+											</label>
+											<StandardTooltip
+												content={t("settings:codeIndex.maxConcurrent.description")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
+										</div>
+										<div className="flex items-center gap-2">
+											<Slider
+												min={CODEBASE_INDEX_DEFAULTS.MIN_MAX_CONCURRENT}
+												max={CODEBASE_INDEX_DEFAULTS.MAX_MAX_CONCURRENT}
+												step={1}
+												value={[
+													currentSettings.codebaseIndexMaxConcurrent ??
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CONCURRENT,
+												]}
+												onValueChange={(values) =>
+													updateSetting("codebaseIndexMaxConcurrent", values[0])
+												}
+												className="flex-1"
+												data-testid="max-concurrent-slider"
+											/>
+											<span className="w-12 text-center">
+												{currentSettings.codebaseIndexMaxConcurrent ??
+													CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CONCURRENT}
+											</span>
+											<VSCodeButton
+												appearance="icon"
+												title={t("settings:codeIndex.resetToDefault")}
+												onClick={() =>
+													updateSetting(
+														"codebaseIndexMaxConcurrent",
+														CODEBASE_INDEX_DEFAULTS.DEFAULT_MAX_CONCURRENT,
 													)
 												}>
 												<span className="codicon codicon-discard" />
