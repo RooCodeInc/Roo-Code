@@ -153,14 +153,18 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 		const { temperature } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		const { text } = await generateText({
-			model: languageModel,
-			prompt,
-			maxOutputTokens: this.getMaxOutputTokens(),
-			temperature: this.options.modelTemperature ?? temperature ?? ZAI_DEFAULT_TEMPERATURE,
-		})
+		try {
+			const { text } = await generateText({
+				model: languageModel,
+				prompt,
+				maxOutputTokens: this.getMaxOutputTokens(),
+				temperature: this.options.modelTemperature ?? temperature ?? ZAI_DEFAULT_TEMPERATURE,
+			})
 
-		return text
+			return text
+		} catch (error) {
+			throw handleAiSdkError(error, "Z.ai")
+		}
 	}
 
 	override isAiSdkProvider(): boolean {
