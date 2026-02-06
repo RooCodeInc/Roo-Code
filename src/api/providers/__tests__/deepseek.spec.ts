@@ -156,25 +156,18 @@ describe("DeepSeekHandler", () => {
 			expect(model).toHaveProperty("maxTokens")
 		})
 
-		it("should use DEEP_SEEK_DEFAULT_TEMPERATURE (0.3) when no custom temperature is set", () => {
-			// Ensures the fix for defaulting to 0 instead of 0.3 is in place
-			// See: https://github.com/RooCodeInc/Roo-Code/issues/11194
-			const handlerWithoutTemperature = new DeepSeekHandler({
-				...mockOptions,
-				modelTemperature: undefined,
-			})
-			const model = handlerWithoutTemperature.getModel()
+		it("should use DEEP_SEEK_DEFAULT_TEMPERATURE as the default temperature", () => {
+			const model = handler.getModel()
 			expect(model.temperature).toBe(DEEP_SEEK_DEFAULT_TEMPERATURE)
 		})
 
-		it("should use user-provided temperature when explicitly set", () => {
-			const customTemperature = 0.7
-			const handlerWithTemperature = new DeepSeekHandler({
+		it("should respect user-provided temperature over DEEP_SEEK_DEFAULT_TEMPERATURE", () => {
+			const handlerWithTemp = new DeepSeekHandler({
 				...mockOptions,
-				modelTemperature: customTemperature,
+				modelTemperature: 0.9,
 			})
-			const model = handlerWithTemperature.getModel()
-			expect(model.temperature).toBe(customTemperature)
+			const model = handlerWithTemp.getModel()
+			expect(model.temperature).toBe(0.9)
 		})
 	})
 

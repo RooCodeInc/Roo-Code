@@ -70,6 +70,7 @@ export class UnboundHandler extends RouterProvider implements SingleCompletionHa
 			modelId: id,
 			model: info,
 			settings: this.options,
+			defaultTemperature: 0,
 		})
 
 		return { id, info, ...params }

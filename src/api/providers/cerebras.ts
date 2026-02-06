@@ -49,7 +49,13 @@ export class CerebrasHandler extends BaseProvider implements SingleCompletionHan
 	override getModel(): { id: string; info: ModelInfo; maxTokens?: number; temperature?: number } {
 		const id = (this.options.apiModelId ?? cerebrasDefaultModelId) as CerebrasModelId
 		const info = cerebrasModels[id as keyof typeof cerebrasModels] || cerebrasModels[cerebrasDefaultModelId]
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: CEREBRAS_DEFAULT_TEMPERATURE,
+		})
 		return { id, info, ...params }
 	}
 

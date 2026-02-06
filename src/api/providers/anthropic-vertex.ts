@@ -231,7 +231,13 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			}
 		}
 
-		const params = getModelParams({ format: "anthropic", modelId: id, model: info, settings: this.options })
+		const params = getModelParams({
+			format: "anthropic",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: 0,
+		})
 
 		// Build betas array for request headers
 		const betas: string[] = []

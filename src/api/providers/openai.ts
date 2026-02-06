@@ -282,7 +282,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	override getModel() {
 		const id = this.options.openAiModelId ?? ""
 		const info: ModelInfo = this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: 0,
+		})
 		return { id, info, ...params }
 	}
 

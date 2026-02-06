@@ -55,7 +55,13 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 	override getModel(): { id: string; info: ModelInfo; maxTokens?: number; temperature?: number } {
 		const id = (this.options.apiModelId ?? mistralDefaultModelId) as MistralModelId
 		const info = mistralModels[id as keyof typeof mistralModels] || mistralModels[mistralDefaultModelId]
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: 0,
+		})
 		return { id, info, ...params }
 	}
 
