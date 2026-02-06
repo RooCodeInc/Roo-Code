@@ -451,6 +451,7 @@
 	},
 	"dependencies": {
 		"@ai-sdk/amazon-bedrock": "^4.0.50",
+		"@ai-sdk/baseten": "^1.0.31",
 		"@ai-sdk/cerebras": "^1.0.0",
 		"@ai-sdk/deepseek": "^2.0.14",
 		"@ai-sdk/fireworks": "^2.0.26",

@@ -44,6 +44,22 @@ async function main() {
 	 */
 	const plugins = [
 		{
+			// Stub out @basetenlabs/performance-client which contains native .node
+			// binaries that esbuild cannot bundle. This module is only used by
+			// @ai-sdk/baseten for embedding models, not for chat completions.
+			name: "stub-baseten-native",
+			setup(build) {
+				build.onResolve({ filter: /^@basetenlabs\/performance-client/ }, (args) => ({
+					path: args.path,
+					namespace: "stub-baseten-native",
+				}))
+				build.onLoad({ filter: /.*/, namespace: "stub-baseten-native" }, () => ({
+					contents: "module.exports = { PerformanceClient: class PerformanceClient {} };",
+					loader: "js",
+				}))
+			},
+		},
+		{
 			name: "copyFiles",
 			setup(build) {
 				build.onEnd(() => {

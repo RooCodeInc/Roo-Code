@@ -749,6 +749,9 @@ importers:
       '@ai-sdk/amazon-bedrock':
         specifier: ^4.0.50
         version: 4.0.50(zod@3.25.76)
+      '@ai-sdk/baseten':
+        specifier: ^1.0.31
+        version: 1.0.31(zod@3.25.76)
       '@ai-sdk/cerebras':
         specifier: ^1.0.0
         version: 1.0.35(zod@3.25.76)
@@ -1435,6 +1438,12 @@ packages:
     peerDependencies:
       zod: 3.25.76
 
+  '@ai-sdk/baseten@1.0.31':
+    resolution: {integrity: sha512-tGbV96WBb5nnfyUYFrPyBxrhw53YlKSJbMC+rH3HhQlUaIs8+m/Bm4M0isrek9owIIf4MmmSDZ5VZL08zz7eFQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
+
   '@ai-sdk/cerebras@1.0.35':
     resolution: {integrity: sha512-JrNdMYptrOUjNthibgBeAcBjZ/H+fXb49sSrWhOx5Aq8eUcrYvwQ2DtSAi8VraHssZu78NAnBMrgFWSUOTXFxw==}
     engines: {node: '>=18'}
@@ -1513,6 +1522,12 @@ packages:
     peerDependencies:
       zod: 3.25.76
 
+  '@ai-sdk/openai-compatible@2.0.28':
+    resolution: {integrity: sha512-WzDnU0B13FMSSupDtm2lksFZvWGXnOfhG5S0HoPI0pkX5uVkr6N1UTATMyVaxLCG0MRkMhXCjkg4NXgEbb330Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
+
   '@ai-sdk/provider-utils@3.0.20':
     resolution: {integrity: sha512-iXHVe0apM2zUEzauqJwqmpC37A5rihrStAih5Ks+JE32iTe4LZ58y17UGBjpQQTCRw9YxMeo2UFLxLpBluyvLQ==}
     engines: {node: '>=18'}
@@ -1543,6 +1558,12 @@ packages:
     peerDependencies:
       zod: 3.25.76
 
+  '@ai-sdk/provider-utils@4.0.14':
+    resolution: {integrity: sha512-7bzKd9lgiDeXM7O4U4nQ8iTxguAOkg8LZGD9AfDVZYjO5cKYRwBPwVjboFcVrxncRHu0tYxZtXZtiLKpG4pEng==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
+
   '@ai-sdk/provider@2.0.0':
     resolution: {integrity: sha512-6o7Y2SeO9vFKB8lArHXehNuusnpddKPk7xqL7T2/b+OvXMRIXUO1rR4wcv1hAFUAT9avGZshty3Wlua/XA7TvA==}
     engines: {node: '>=18'}
@@ -1561,6 +1582,10 @@ packages:
 
   '@ai-sdk/provider@3.0.7':
     resolution: {integrity: sha512-VkPLrutM6VdA924/mG8OS+5frbVTcu6e046D2bgDo00tehBANR1QBJ/mPcZ9tXMFOsVcm6SQArOregxePzTFPw==}
+    engines: {node: '>=18'}
+
+  '@ai-sdk/provider@3.0.8':
+    resolution: {integrity: sha512-oGMAgGoQdBXbZqNG0Ze56CHjDZ1IDYOwGYxYjO5KLSlz5HiNQ9udIXsPZ61VWaHGZ5XW/jyjmr6t2xz2jGVwbQ==}
     engines: {node: '>=18'}
 
   '@ai-sdk/xai@3.0.46':
@@ -1879,6 +1904,93 @@ packages:
   '@babel/types@7.27.1':
     resolution: {integrity: sha512-+EzkxvLNfiUeKMgy/3luqfsCWFRXLb7U6wNQTk60tovuckwB15B191tJWvpp4HjiQWdJkCxO3Wbvc6jlk3Xb2Q==}
     engines: {node: '>=6.9.0'}
+
+  '@basetenlabs/performance-client-android-arm-eabi@0.0.10':
+    resolution: {integrity: sha512-gwDZ6GDJA0AAmQAHxt2vaCz0tYTaLjxJKZnoYt+0Eji4gy231JZZFAwvbAqNdQCrGEQ9lXnk7SNM1Apet4NlYg==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [android]
+
+  '@basetenlabs/performance-client-android-arm64@0.0.10':
+    resolution: {integrity: sha512-oGRB/6hH89majhsmoVmj1IAZv4C7F2aLeTSebevBelmdYO4CFkn5qewxLzU1pDkkmxVVk2k+TRpYa1Dt4B96qQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [android]
+
+  '@basetenlabs/performance-client-darwin-arm64@0.0.10':
+    resolution: {integrity: sha512-QpBOUjeO05tWgFWkDw2RUQZa3BMplX5jNiBBTi5mH1lIL/m1sm2vkxoc0iorEESp1mMPstYFS/fr4ssBuO7wyA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@basetenlabs/performance-client-darwin-universal@0.0.10':
+    resolution: {integrity: sha512-CBM38GAhekjylrlf7jW/0WNyFAGnAMBCNHZxaPnAjjhDNzJh1tcrwhvtOs66XbAqCOjO/tkt5Pdu6mg2Ui2Pjw==}
+    engines: {node: '>= 10'}
+    os: [darwin]
+
+  '@basetenlabs/performance-client-darwin-x64@0.0.10':
+    resolution: {integrity: sha512-R+NsA72Axclh1CUpmaWOCLTWCqXn5/tFMj2z9BnHVSRTelx/pYFlx6ZngVTB1HYp1n21m3upPXGo8CHF8R7Itw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@basetenlabs/performance-client-linux-arm-gnueabihf@0.0.10':
+    resolution: {integrity: sha512-96kEo0Eas4GVQdFkxIB1aAv6dy5Ga57j+RIg5l0Yiawv+AYIEmgk9BsGkqcwayp8Iiu6LN22Z+AUsGY2gstNrg==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [linux]
+
+  '@basetenlabs/performance-client-linux-arm-musleabihf@0.0.10':
+    resolution: {integrity: sha512-lzEHeu+/BWDl2q+QZcqCkg1rDGF4MeyM3HgYwX+07t+vGZoqtM2we9vEV68wXMpl6ToEHQr7ML2KHA1Gb6ogxg==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [linux]
+
+  '@basetenlabs/performance-client-linux-arm64-gnu@0.0.10':
+    resolution: {integrity: sha512-MnY2cIRY/cQOYERWIHhh5CoaS2wgmmXtGDVGSLYyZvjwizrXZvjkEz7Whv2jaQ21T5S56VER67RABjz2TItrHQ==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@basetenlabs/performance-client-linux-riscv64-gnu@0.0.10':
+    resolution: {integrity: sha512-2KUvdK4wuoZdIqNnJhx7cu6ybXCwtiwGAtlrEvhai3FOkUQ3wE2Xa+TQ33mNGSyFbw6wAvLawYtKVFmmw27gJw==}
+    engines: {node: '>= 10'}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@basetenlabs/performance-client-linux-x64-gnu@0.0.10':
+    resolution: {integrity: sha512-9jjQPjHLiVOGwUPlmhnBl7OmmO7hQ8WMt+v3mJuxkS5JTNDmVOngfmgGlbN9NjBhQMENjdcMUVOquVo7HeybGQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@basetenlabs/performance-client-linux-x64-musl@0.0.10':
+    resolution: {integrity: sha512-bjYB8FKcPvEa251Ep2Gm3tvywADL9eavVjZsikdf0AvJ1K5pT+vLLvJBU9ihBsTPWnbF4pJgxVjwS6UjVObsQA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@basetenlabs/performance-client-win32-arm64-msvc@0.0.10':
+    resolution: {integrity: sha512-Vxq5UXEmfh3C3hpwXdp3Daaf0dnLR9zFH2x8MJ1Hf/TcilmOP1clneewNpIv0e7MrnT56Z4pM6P3d8VFMZqBKg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@basetenlabs/performance-client-win32-ia32-msvc@0.0.10':
+    resolution: {integrity: sha512-KJrm7CgZdP/UDC5+tHtqE6w9XMfY5YUfMOxJfBZGSsLMqS2OGsakQsaF0a55k+58l29X5w/nAkjHrI1BcQO03w==}
+    engines: {node: '>= 10'}
+    cpu: [ia32]
+    os: [win32]
+
+  '@basetenlabs/performance-client-win32-x64-msvc@0.0.10':
+    resolution: {integrity: sha512-M/mhvfTItUcUX+aeXRb5g5MbRlndfg6yelV7tSYfLU4YixMIe5yoGaAP3iDilpFJjcC99f+EU4l4+yLbPtpXig==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@basetenlabs/performance-client@0.0.10':
+    resolution: {integrity: sha512-H6bpd1JcDbuJsOS2dNft+CCGLzBqHJO/ST/4mMKhLAW641J6PpVJUw1szYsk/dTetdedbWxHpMkvFObOKeP8nw==}
+    engines: {node: '>= 10'}
 
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
@@ -11016,6 +11128,14 @@ snapshots:
       '@ai-sdk/provider-utils': 4.0.13(zod@3.25.76)
       zod: 3.25.76
 
+  '@ai-sdk/baseten@1.0.31(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/openai-compatible': 2.0.28(zod@3.25.76)
+      '@ai-sdk/provider': 3.0.8
+      '@ai-sdk/provider-utils': 4.0.14(zod@3.25.76)
+      '@basetenlabs/performance-client': 0.0.10
+      zod: 3.25.76
+
   '@ai-sdk/cerebras@1.0.35(zod@3.25.76)':
     dependencies:
       '@ai-sdk/openai-compatible': 1.0.31(zod@3.25.76)
@@ -11102,6 +11222,12 @@ snapshots:
       '@ai-sdk/provider-utils': 4.0.13(zod@3.25.76)
       zod: 3.25.76
 
+  '@ai-sdk/openai-compatible@2.0.28(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.8
+      '@ai-sdk/provider-utils': 4.0.14(zod@3.25.76)
+      zod: 3.25.76
+
   '@ai-sdk/provider-utils@3.0.20(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 2.0.1
@@ -11138,6 +11264,13 @@ snapshots:
       eventsource-parser: 3.0.6
       zod: 3.25.76
 
+  '@ai-sdk/provider-utils@4.0.14(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.8
+      '@standard-schema/spec': 1.1.0
+      eventsource-parser: 3.0.6
+      zod: 3.25.76
+
   '@ai-sdk/provider@2.0.0':
     dependencies:
       json-schema: 0.4.0
@@ -11155,6 +11288,10 @@ snapshots:
       json-schema: 0.4.0
 
   '@ai-sdk/provider@3.0.7':
+    dependencies:
+      json-schema: 0.4.0
+
+  '@ai-sdk/provider@3.0.8':
     dependencies:
       json-schema: 0.4.0
 
@@ -11892,6 +12029,65 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.27.1
+
+  '@basetenlabs/performance-client-android-arm-eabi@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-android-arm64@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-darwin-arm64@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-darwin-universal@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-darwin-x64@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-linux-arm-gnueabihf@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-linux-arm-musleabihf@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-linux-arm64-gnu@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-linux-riscv64-gnu@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-linux-x64-gnu@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-linux-x64-musl@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-win32-arm64-msvc@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-win32-ia32-msvc@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client-win32-x64-msvc@0.0.10':
+    optional: true
+
+  '@basetenlabs/performance-client@0.0.10':
+    optionalDependencies:
+      '@basetenlabs/performance-client-android-arm-eabi': 0.0.10
+      '@basetenlabs/performance-client-android-arm64': 0.0.10
+      '@basetenlabs/performance-client-darwin-arm64': 0.0.10
+      '@basetenlabs/performance-client-darwin-universal': 0.0.10
+      '@basetenlabs/performance-client-darwin-x64': 0.0.10
+      '@basetenlabs/performance-client-linux-arm-gnueabihf': 0.0.10
+      '@basetenlabs/performance-client-linux-arm-musleabihf': 0.0.10
+      '@basetenlabs/performance-client-linux-arm64-gnu': 0.0.10
+      '@basetenlabs/performance-client-linux-riscv64-gnu': 0.0.10
+      '@basetenlabs/performance-client-linux-x64-gnu': 0.0.10
+      '@basetenlabs/performance-client-linux-x64-musl': 0.0.10
+      '@basetenlabs/performance-client-win32-arm64-msvc': 0.0.10
+      '@basetenlabs/performance-client-win32-ia32-msvc': 0.0.10
+      '@basetenlabs/performance-client-win32-x64-msvc': 0.0.10
 
   '@bcoe/v8-coverage@0.2.3': {}
 

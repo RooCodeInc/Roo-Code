@@ -15,8 +15,8 @@ vi.mock("ai", async (importOriginal) => {
 	}
 })
 
-vi.mock("@ai-sdk/openai-compatible", () => ({
-	createOpenAICompatible: vi.fn(() => {
+vi.mock("@ai-sdk/baseten", () => ({
+	createBaseten: vi.fn(() => {
 		return vi.fn(() => ({
 			modelId: "zai-org/GLM-4.6",
 			provider: "baseten",
@@ -123,12 +123,9 @@ describe("BasetenHandler", () => {
 				outputTokens: 5,
 			})
 
-			const mockProviderMetadata = Promise.resolve({})
-
 			mockStreamText.mockReturnValue({
 				fullStream: mockFullStream(),
 				usage: mockUsage,
-				providerMetadata: mockProviderMetadata,
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
@@ -153,12 +150,9 @@ describe("BasetenHandler", () => {
 				outputTokens: 20,
 			})
 
-			const mockProviderMetadata = Promise.resolve({})
-
 			mockStreamText.mockReturnValue({
 				fullStream: mockFullStream(),
 				usage: mockUsage,
-				providerMetadata: mockProviderMetadata,
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
@@ -181,7 +175,6 @@ describe("BasetenHandler", () => {
 			mockStreamText.mockReturnValue({
 				fullStream: mockFullStream(),
 				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
-				providerMetadata: Promise.resolve({}),
 			})
 
 			const handlerWithDefaultTemp = new BasetenHandler({
@@ -209,7 +202,6 @@ describe("BasetenHandler", () => {
 			mockStreamText.mockReturnValue({
 				fullStream: mockFullStream(),
 				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
-				providerMetadata: Promise.resolve({}),
 			})
 
 			const handlerWithCustomTemp = new BasetenHandler({
@@ -239,7 +231,6 @@ describe("BasetenHandler", () => {
 			mockStreamText.mockReturnValue({
 				fullStream: mockFullStream(),
 				usage: Promise.resolve({ inputTokens: 5, outputTokens: 10 }),
-				providerMetadata: Promise.resolve({}),
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
@@ -320,12 +311,9 @@ describe("BasetenHandler", () => {
 				outputTokens: 5,
 			})
 
-			const mockProviderMetadata = Promise.resolve({})
-
 			mockStreamText.mockReturnValue({
 				fullStream: mockFullStream(),
 				usage: mockUsage,
-				providerMetadata: mockProviderMetadata,
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages, {
@@ -381,12 +369,9 @@ describe("BasetenHandler", () => {
 				outputTokens: 5,
 			})
 
-			const mockProviderMetadata = Promise.resolve({})
-
 			mockStreamText.mockReturnValue({
 				fullStream: mockFullStream(),
 				usage: mockUsage,
-				providerMetadata: mockProviderMetadata,
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
@@ -420,7 +405,6 @@ describe("BasetenHandler", () => {
 			mockStreamText.mockReturnValue({
 				fullStream: mockFullStream(),
 				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
-				providerMetadata: Promise.resolve({}),
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
@@ -444,7 +428,6 @@ describe("BasetenHandler", () => {
 			mockStreamText.mockReturnValue({
 				fullStream: mockFullStream(),
 				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
-				providerMetadata: Promise.resolve({}),
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
