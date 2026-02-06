@@ -755,6 +755,9 @@ importers:
       '@ai-sdk/cerebras':
         specifier: ^2.0.31
         version: 2.0.31(zod@3.25.76)
+      '@ai-sdk/deepinfra':
+        specifier: ^2.0.31
+        version: 2.0.32(zod@3.25.76)
       '@ai-sdk/deepseek':
         specifier: ^2.0.18
         version: 2.0.18(zod@3.25.76)
@@ -1443,6 +1446,12 @@ packages:
 
   '@ai-sdk/cerebras@2.0.31':
     resolution: {integrity: sha512-s7o4BRsbG2RFina4VwHs46RWlQPGCL1CrfOoMomYneJeA0CgpxPigPqwlrupaWWB42KIDDHN5gNOIsLst0oOPg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
+
+  '@ai-sdk/deepinfra@2.0.32':
+    resolution: {integrity: sha512-GgQQgoYpyn4GDrgrKJORMrL1MaRy8iX/pK/k6WGeAgsEAK97m95DcVpW68YwhLD+oQpwIJgDfocr+KIbvPLaIg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: 3.25.76
@@ -11068,6 +11077,13 @@ snapshots:
       zod: 3.25.76
 
   '@ai-sdk/cerebras@2.0.31(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/openai-compatible': 2.0.28(zod@3.25.76)
+      '@ai-sdk/provider': 3.0.8
+      '@ai-sdk/provider-utils': 4.0.14(zod@3.25.76)
+      zod: 3.25.76
+
+  '@ai-sdk/deepinfra@2.0.32(zod@3.25.76)':
     dependencies:
       '@ai-sdk/openai-compatible': 2.0.28(zod@3.25.76)
       '@ai-sdk/provider': 3.0.8

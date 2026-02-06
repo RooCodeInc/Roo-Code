@@ -1,44 +1,75 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
+import { createDeepInfra } from "@ai-sdk/deepinfra"
+import { streamText, generateText, ToolSet } from "ai"
 
-import { deepInfraDefaultModelId, deepInfraDefaultModelInfo } from "@roo-code/types"
+import { deepInfraDefaultModelId, deepInfraDefaultModelInfo, type ModelInfo, type ModelRecord } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	mapToolChoice,
+	handleAiSdkError,
+} from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
-import { convertToOpenAiMessages } from "../transform/openai-format"
-
-import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import { RouterProvider } from "./router-provider"
 import { getModelParams } from "../transform/model-params"
-import { getModels } from "./fetchers/modelCache"
 
-export class DeepInfraHandler extends RouterProvider implements SingleCompletionHandler {
+import { BaseProvider } from "./base-provider"
+import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { getModels, getModelsFromCache } from "./fetchers/modelCache"
+
+const DEEPINFRA_DEFAULT_BASE_URL = "https://api.deepinfra.com/v1/openai"
+
+const DEEPINFRA_HEADERS = {
+	"X-Deepinfra-Source": "roo-code",
+	"X-Deepinfra-Version": "2025-08-25",
+}
+
+/**
+ * DeepInfra provider using the official @ai-sdk/deepinfra package.
+ * Supports dynamic model fetching, reasoning_effort, prompt caching, and custom cost calculation.
+ */
+export class DeepInfraHandler extends BaseProvider implements SingleCompletionHandler {
+	protected options: ApiHandlerOptions
+	protected models: ModelRecord = {}
+
 	constructor(options: ApiHandlerOptions) {
-		super({
-			options: {
-				...options,
-				openAiHeaders: {
-					"X-Deepinfra-Source": "roo-code",
-					"X-Deepinfra-Version": `2025-08-25`,
-				},
-			},
-			name: "deepinfra",
-			baseURL: `${options.deepInfraBaseUrl || "https://api.deepinfra.com/v1/openai"}`,
-			apiKey: options.deepInfraApiKey || "not-provided",
-			modelId: options.deepInfraModelId,
-			defaultModelId: deepInfraDefaultModelId,
-			defaultModelInfo: deepInfraDefaultModelInfo,
+		super()
+		this.options = options
+	}
+
+	/**
+	 * Create the DeepInfra AI SDK provider instance.
+	 */
+	protected createProvider() {
+		return createDeepInfra({
+			apiKey: this.options.deepInfraApiKey ?? "not-provided",
+			baseURL: this.options.deepInfraBaseUrl || DEEPINFRA_DEFAULT_BASE_URL,
+			headers: DEEPINFRA_HEADERS,
 		})
 	}
 
-	public override async fetchModel() {
-		this.models = await getModels({ provider: this.name, apiKey: this.client.apiKey, baseUrl: this.client.baseURL })
+	/**
+	 * Fetch models dynamically from the DeepInfra API and return the resolved model.
+	 */
+	async fetchModel() {
+		this.models = await getModels({
+			provider: "deepinfra",
+			apiKey: this.options.deepInfraApiKey,
+			baseUrl: this.options.deepInfraBaseUrl || DEEPINFRA_DEFAULT_BASE_URL,
+		})
 		return this.getModel()
 	}
 
 	override getModel() {
+		const cachedModels = getModelsFromCache("deepinfra")
+		if (cachedModels) {
+			this.models = cachedModels
+		}
+
 		const id = this.options.deepInfraModelId ?? deepInfraDefaultModelId
 		const info = this.models[id] ?? deepInfraDefaultModelInfo
 
@@ -53,100 +84,35 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 		return { id, info, ...params }
 	}
 
-	override async *createMessage(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		_metadata?: ApiHandlerCreateMessageMetadata,
-	): ApiStream {
-		// Ensure we have up-to-date model metadata
-		await this.fetchModel()
-		const { id: modelId, info, reasoningEffort: reasoning_effort } = await this.fetchModel()
-		let prompt_cache_key = undefined
-		if (info.supportsPromptCache && _metadata?.taskId) {
-			prompt_cache_key = _metadata.taskId
-		}
-
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
-			model: modelId,
-			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
-			stream: true,
-			stream_options: { include_usage: true },
-			reasoning_effort,
-			prompt_cache_key,
-			tools: this.convertToolsForOpenAI(_metadata?.tools),
-			tool_choice: _metadata?.tool_choice,
-			parallel_tool_calls: _metadata?.parallelToolCalls ?? true,
-		} as OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming
-
-		if (this.supportsTemperature(modelId)) {
-			requestOptions.temperature = this.options.modelTemperature ?? 0
-		}
-
-		if (this.options.includeMaxTokens === true && info.maxTokens) {
-			;(requestOptions as any).max_completion_tokens = this.options.modelMaxTokens || info.maxTokens
-		}
-
-		const { data: stream } = await this.client.chat.completions.create(requestOptions).withResponse()
-
-		let lastUsage: OpenAI.CompletionUsage | undefined
-		for await (const chunk of stream) {
-			const delta = chunk.choices[0]?.delta
-
-			if (delta?.content) {
-				yield { type: "text", text: delta.content }
-			}
-
-			if (delta && "reasoning_content" in delta && delta.reasoning_content) {
-				yield { type: "reasoning", text: (delta.reasoning_content as string | undefined) || "" }
-			}
-
-			// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
-			if (delta?.tool_calls) {
-				for (const toolCall of delta.tool_calls) {
-					yield {
-						type: "tool_call_partial",
-						index: toolCall.index,
-						id: toolCall.id,
-						name: toolCall.function?.name,
-						arguments: toolCall.function?.arguments,
-					}
-				}
-			}
-
-			if (chunk.usage) {
-				lastUsage = chunk.usage
-			}
-		}
-
-		if (lastUsage) {
-			yield this.processUsageMetrics(lastUsage, info)
-		}
+	/**
+	 * Get the language model for the given model ID.
+	 */
+	protected getLanguageModel(modelId: string) {
+		const provider = this.createProvider()
+		return provider(modelId)
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
-		await this.fetchModel()
-		const { id: modelId, info } = this.getModel()
+	/**
+	 * Process usage metrics with DeepInfra-specific cost calculation using calculateApiCostOpenAI.
+	 */
+	protected processUsageMetrics(
+		usage: {
+			inputTokens?: number
+			outputTokens?: number
+			details?: {
+				cachedInputTokens?: number
+				reasoningTokens?: number
+			}
+		},
+		providerMetadata?: Record<string, any>,
+		modelInfo?: ModelInfo,
+	): ApiStreamUsageChunk {
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
 
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
-			model: modelId,
-			messages: [{ role: "user", content: prompt }],
-		}
-		if (this.supportsTemperature(modelId)) {
-			requestOptions.temperature = this.options.modelTemperature ?? 0
-		}
-		if (this.options.includeMaxTokens === true && info.maxTokens) {
-			;(requestOptions as any).max_completion_tokens = this.options.modelMaxTokens || info.maxTokens
-		}
-
-		const resp = await this.client.chat.completions.create(requestOptions)
-		return resp.choices[0]?.message?.content || ""
-	}
-
-	protected processUsageMetrics(usage: any, modelInfo?: any): ApiStreamUsageChunk {
-		const inputTokens = usage?.prompt_tokens || 0
-		const outputTokens = usage?.completion_tokens || 0
-		const cacheWriteTokens = usage?.prompt_tokens_details?.cache_write_tokens || 0
-		const cacheReadTokens = usage?.prompt_tokens_details?.cached_tokens || 0
+		const cacheWriteTokens = providerMetadata?.deepinfra?.cacheWriteTokens ?? undefined
+		const cacheReadTokens =
+			providerMetadata?.deepinfra?.cachedTokens ?? usage.details?.cachedInputTokens ?? undefined
 
 		const { totalCost } = modelInfo
 			? calculateApiCostOpenAI(modelInfo, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens)
@@ -160,5 +126,96 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 			cacheReadTokens: cacheReadTokens || undefined,
 			totalCost,
 		}
+	}
+
+	/**
+	 * Get the max output tokens parameter, only when includeMaxTokens is enabled.
+	 */
+	protected getMaxOutputTokens(): number | undefined {
+		const { info } = this.getModel()
+		if (this.options.includeMaxTokens !== true || !info.maxTokens) {
+			return undefined
+		}
+		return this.options.modelMaxTokens || info.maxTokens
+	}
+
+	/**
+	 * Create a message stream using the AI SDK.
+	 * Handles dynamic model fetching, reasoning_effort, prompt caching, and custom cost metrics.
+	 */
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		const { id: modelId, info, temperature, reasoningEffort } = await this.fetchModel()
+		const languageModel = this.getLanguageModel(modelId)
+
+		const aiSdkMessages = convertToAiSdkMessages(messages)
+
+		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+
+		// Build DeepInfra-specific provider options
+		const deepinfraProviderOptions: Record<string, string> = {}
+		if (reasoningEffort) {
+			deepinfraProviderOptions.reasoningEffort = reasoningEffort
+		}
+		if (info.supportsPromptCache && metadata?.taskId) {
+			deepinfraProviderOptions.promptCacheKey = metadata.taskId
+		}
+
+		const requestOptions: Parameters<typeof streamText>[0] = {
+			model: languageModel,
+			system: systemPrompt,
+			messages: aiSdkMessages,
+			temperature,
+			maxOutputTokens: this.getMaxOutputTokens(),
+			tools: aiSdkTools,
+			toolChoice: mapToolChoice(metadata?.tool_choice),
+			...(Object.keys(deepinfraProviderOptions).length > 0 && {
+				providerOptions: { deepinfra: deepinfraProviderOptions },
+			}),
+		}
+
+		const result = streamText(requestOptions)
+
+		try {
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
+				}
+			}
+
+			const usage = await result.usage
+			const providerMetadata = await result.providerMetadata
+			if (usage) {
+				yield this.processUsageMetrics(usage, providerMetadata as any, info)
+			}
+		} catch (error) {
+			throw handleAiSdkError(error, "DeepInfra")
+		}
+	}
+
+	/**
+	 * Complete a prompt using AI SDK generateText.
+	 */
+	async completePrompt(prompt: string): Promise<string> {
+		await this.fetchModel()
+		const { id: modelId, temperature } = this.getModel()
+		const languageModel = this.getLanguageModel(modelId)
+
+		const { text } = await generateText({
+			model: languageModel,
+			prompt,
+			maxOutputTokens: this.getMaxOutputTokens(),
+			temperature,
+		})
+
+		return text
+	}
+
+	override isAiSdkProvider(): boolean {
+		return true
 	}
 }

@@ -453,6 +453,7 @@
 		"@ai-sdk/amazon-bedrock": "^4.0.51",
 		"@ai-sdk/baseten": "^1.0.31",
 		"@ai-sdk/cerebras": "^2.0.31",
+		"@ai-sdk/deepinfra": "^2.0.31",
 		"@ai-sdk/deepseek": "^2.0.18",
 		"@ai-sdk/fireworks": "^2.0.32",
 		"@ai-sdk/google": "^3.0.22",
