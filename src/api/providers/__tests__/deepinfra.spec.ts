@@ -24,6 +24,14 @@ vi.mock("@ai-sdk/deepinfra", () => ({
 	}),
 }))
 
+vi.mock("../constants", () => ({
+	DEFAULT_HEADERS: {
+		"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
+		"X-Title": "Roo Code",
+		"User-Agent": "RooCode/test",
+	},
+}))
+
 import { deepInfraDefaultModelId, deepInfraDefaultModelInfo } from "@roo-code/types"
 
 vi.mock("../fetchers/modelCache", () => ({
@@ -65,22 +73,22 @@ describe("DeepInfraHandler", () => {
 		})
 	})
 
-	describe("createProvider", () => {
-		it("should create provider with correct options", () => {
-			// Trigger provider creation via getLanguageModel
+	describe("constructor provider creation", () => {
+		it("should create provider with correct options including DEFAULT_HEADERS", () => {
 			const testHandler = new DeepInfraHandler({
 				deepInfraApiKey: "my-key",
 				deepInfraBaseUrl: "https://custom.deepinfra.com/v1",
 			})
 
-			// Access protected method via any
-			;(testHandler as any).createProvider()
-
+			expect(testHandler).toBeInstanceOf(DeepInfraHandler)
 			expect(mockCreateDeepInfra).toHaveBeenCalledWith(
 				expect.objectContaining({
 					apiKey: "my-key",
 					baseURL: "https://custom.deepinfra.com/v1",
 					headers: {
+						"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
+						"X-Title": "Roo Code",
+						"User-Agent": "RooCode/test",
 						"X-Deepinfra-Source": "roo-code",
 						"X-Deepinfra-Version": "2025-08-25",
 					},
@@ -89,8 +97,11 @@ describe("DeepInfraHandler", () => {
 		})
 
 		it("should use default base URL when not provided", () => {
-			;(handler as any).createProvider()
+			const testHandler = new DeepInfraHandler({
+				deepInfraApiKey: "test-key",
+			})
 
+			expect(testHandler).toBeInstanceOf(DeepInfraHandler)
 			expect(mockCreateDeepInfra).toHaveBeenCalledWith(
 				expect.objectContaining({
 					baseURL: "https://api.deepinfra.com/v1/openai",
@@ -100,13 +111,26 @@ describe("DeepInfraHandler", () => {
 
 		it("should use 'not-provided' as API key when not set", () => {
 			const handlerWithoutKey = new DeepInfraHandler({})
-			;(handlerWithoutKey as any).createProvider()
 
+			expect(handlerWithoutKey).toBeInstanceOf(DeepInfraHandler)
 			expect(mockCreateDeepInfra).toHaveBeenCalledWith(
 				expect.objectContaining({
 					apiKey: "not-provided",
 				}),
 			)
+		})
+
+		it("should cache provider instance (not re-create per request)", () => {
+			const testHandler = new DeepInfraHandler({
+				deepInfraApiKey: "my-key",
+			})
+			mockCreateDeepInfra.mockClear()
+
+			// Access getLanguageModel multiple times - should NOT call createDeepInfra again
+			;(testHandler as any).getLanguageModel("model-1")
+			;(testHandler as any).getLanguageModel("model-2")
+
+			expect(mockCreateDeepInfra).not.toHaveBeenCalled()
 		})
 	})
 
