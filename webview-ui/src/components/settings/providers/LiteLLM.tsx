@@ -182,6 +182,20 @@ export const LiteLLM = ({
 				}
 				return null
 			})()}
+
+			{/* Flatten content option for auto_router compatibility */}
+			<div className="mt-4">
+				<VSCodeCheckbox
+					checked={apiConfiguration.litellmFlattenContent !== false}
+					onChange={(e: any) => {
+						setApiConfigurationField("litellmFlattenContent", e.target.checked)
+					}}>
+					<span className="font-medium">{t("settings:providers.litellmFlattenContent")}</span>
+				</VSCodeCheckbox>
+				<div className="text-sm text-vscode-descriptionForeground ml-6 mt-1">
+					{t("settings:providers.litellmFlattenContentDescription")}
+				</div>
+			</div>
 		</>
 	)
 }
