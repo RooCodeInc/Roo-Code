@@ -373,20 +373,56 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	 * Process usage metrics from the AI SDK response.
 	 */
 	private processUsageMetrics(
-		usage: { inputTokens?: number; outputTokens?: number; details?: Record<string, number | undefined> },
+		usage: { inputTokens?: number; outputTokens?: number },
 		info: ModelInfo,
 		providerMetadata?: Record<string, Record<string, unknown>>,
 	): ApiStreamUsageChunk {
 		const inputTokens = usage.inputTokens ?? 0
 		const outputTokens = usage.outputTokens ?? 0
-		const reasoningTokens = usage.details?.reasoningTokens ?? 0
 
-		// Extract cache metrics from provider metadata
+		// The AI SDK exposes reasoningTokens as a top-level field on usage, and also
+		// under outputTokenDetails.reasoningTokens — there is no .details property.
+		const reasoningTokens =
+			(usage as any).reasoningTokens ?? (usage as any).outputTokenDetails?.reasoningTokens ?? 0
+
+		// Extract cache metrics primarily from usage (AI SDK standard locations),
+		// falling back to providerMetadata.bedrock.usage for provider-specific fields.
 		const bedrockUsage = providerMetadata?.bedrock?.usage as
 			| { cacheReadInputTokens?: number; cacheWriteInputTokens?: number }
 			| undefined
-		const cacheReadTokens = bedrockUsage?.cacheReadInputTokens ?? 0
-		const cacheWriteTokens = bedrockUsage?.cacheWriteInputTokens ?? 0
+		const cacheReadTokens =
+			(usage as any).inputTokenDetails?.cacheReadTokens ??
+			(usage as any).cachedInputTokens ??
+			bedrockUsage?.cacheReadInputTokens ??
+			0
+		const cacheWriteTokens =
+			(usage as any).inputTokenDetails?.cacheWriteTokens ?? bedrockUsage?.cacheWriteInputTokens ?? 0
+
+		// For prompt routers, the AI SDK surfaces the invoked model ID in
+		// providerMetadata.bedrock.trace.promptRouter.invokedModelId.
+		// When present, look up that model's pricing info for accurate cost calculation.
+		const invokedModelId = (providerMetadata?.bedrock as any)?.trace?.promptRouter?.invokedModelId as
+			| string
+			| undefined
+		let costInfo = info
+		if (invokedModelId) {
+			try {
+				const invokedArnInfo = this.parseArn(invokedModelId)
+				const invokedModel = this.getModelById(invokedArnInfo.modelId as string, invokedArnInfo.modelType)
+				if (invokedModel) {
+					// Update costModelConfig so subsequent requests use the invoked model's pricing,
+					// but keep the router's ID so requests continue through the router.
+					invokedModel.id = this.costModelConfig.id || invokedModel.id
+					this.costModelConfig = invokedModel
+					costInfo = invokedModel.info
+				}
+			} catch (error) {
+				logger.error("Error handling Bedrock invokedModelId", {
+					ctx: "bedrock",
+					error: error instanceof Error ? error : String(error),
+				})
+			}
+		}
 
 		return {
 			type: "usage",
@@ -401,7 +437,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				cacheWriteTokens,
 				cacheReadTokens,
 				reasoningTokens,
-				info,
+				info: costInfo,
 			}),
 		}
 	}
