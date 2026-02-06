@@ -2543,6 +2543,7 @@ export const webviewMessageHandler = async (
 					codebaseIndexSearchMaxResults: settings.codebaseIndexSearchMaxResults,
 					codebaseIndexSearchMinScore: settings.codebaseIndexSearchMinScore,
 					codebaseIndexOpenRouterSpecificProvider: settings.codebaseIndexOpenRouterSpecificProvider,
+					codebaseIndexRespectGitIgnore: settings.codebaseIndexRespectGitIgnore,
 				}
 
 				// Save global state first

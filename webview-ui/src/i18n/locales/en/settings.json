@@ -230,6 +230,8 @@
 		"searchMaxResultsLabel": "Maximum Search Results",
 		"searchMaxResultsDescription": "Maximum number of search results to return when querying the codebase index. Higher values provide more context but may include less relevant results.",
 		"resetToDefault": "Reset to default",
+		"respectGitIgnoreLabel": "Respect .gitignore",
+		"respectGitIgnoreDescription": "When enabled, files listed in .gitignore are excluded from indexing and file listings. When disabled, only .rooignore is used for filtering, allowing gitignored files to be indexed and discovered by Roo Code.",
 		"startIndexingButton": "Start Indexing",
 		"clearIndexDataButton": "Clear Index Data",
 		"unsavedSettingsMessage": "Please save your settings before starting the indexing process.",

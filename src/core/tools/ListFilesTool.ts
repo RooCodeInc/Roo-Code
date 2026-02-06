@@ -37,8 +37,10 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 			const absolutePath = path.resolve(task.cwd, relDirPath)
 			const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
-			const [files, didHitLimit] = await listFiles(absolutePath, recursive || false, 200)
-			const { showRooIgnoredFiles = false } = (await task.providerRef.deref()?.getState()) ?? {}
+			const state = await task.providerRef.deref()?.getState()
+			const respectGitIgnore = state?.codebaseIndexConfig?.codebaseIndexRespectGitIgnore ?? true
+			const [files, didHitLimit] = await listFiles(absolutePath, recursive || false, 200, respectGitIgnore)
+			const { showRooIgnoredFiles = false } = state ?? {}
 
 			const result = formatResponse.formatFilesList(
 				absolutePath,
