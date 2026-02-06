@@ -919,6 +919,34 @@
 		"useCustomModel": "Gunakan kustom: {{modelId}}",
 		"simplifiedExplanation": "Anda dapat menyesuaikan pengaturan model terperinci nanti."
 	},
+	"aboutRetention": {
+		"label": "Hapus otomatis riwayat tugas",
+		"warning": "Saat diaktifkan, tugas yang lebih lama dari periode yang dipilih akan dihapus secara permanen saat VS Code dimulai ulang.",
+		"confirmDialog": {
+			"title": "Aktifkan hapus otomatis?",
+			"description": "Ini akan menghapus tugas yang lebih lama dari {{period}} hari secara permanen setiap kali VS Code dimulai ulang. Tindakan ini tidak dapat dibatalkan.",
+			"descriptionNever": "Hapus otomatis akan dinonaktifkan. Riwayat tugas Anda akan dipertahankan.",
+			"confirm": "Aktifkan hapus otomatis",
+			"confirmNever": "Nonaktifkan hapus otomatis",
+			"cancel": "Batal"
+		},
+		"options": {
+			"never": "Tidak pernah (default)",
+			"90": "90 hari",
+			"60": "60 hari",
+			"30": "30 hari",
+			"7": "7 hari",
+			"3": "3 hari"
+		}
+	},
+	"taskHistoryStorage": {
+		"label": "Riwayat tugas",
+		"clickToCount": "Klik untuk menghitung",
+		"count": "{{count}} tugas dalam riwayat",
+		"countSingular": "1 tugas dalam riwayat",
+		"empty": "Belum ada tugas",
+		"refresh": "Segarkan"
+	},
 	"footer": {
 		"telemetry": {
 			"label": "Izinkan pelaporan error dan penggunaan anonim",

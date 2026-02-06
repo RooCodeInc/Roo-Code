@@ -919,6 +919,34 @@
 		"useCustomModel": "Usar personalizado: {{modelId}}",
 		"simplifiedExplanation": "Você pode ajustar as configurações detalhadas do modelo mais tarde."
 	},
+	"aboutRetention": {
+		"label": "Excluir automaticamente o histórico de tarefas",
+		"warning": "Quando ativado, tarefas mais antigas que o período selecionado são excluídas permanentemente ao reiniciar o VS Code.",
+		"confirmDialog": {
+			"title": "Ativar exclusão automática?",
+			"description": "Isso excluirá permanentemente tarefas com mais de {{period}} dias sempre que o VS Code for reiniciado. Esta ação não pode ser desfeita.",
+			"descriptionNever": "A exclusão automática será desativada. Seu histórico de tarefas será preservado.",
+			"confirm": "Ativar exclusão automática",
+			"confirmNever": "Desativar exclusão automática",
+			"cancel": "Cancelar"
+		},
+		"options": {
+			"never": "Nunca (padrão)",
+			"90": "90 dias",
+			"60": "60 dias",
+			"30": "30 dias",
+			"7": "7 dias",
+			"3": "3 dias"
+		}
+	},
+	"taskHistoryStorage": {
+		"label": "Histórico de tarefas",
+		"clickToCount": "Clique para contar",
+		"count": "{{count}} tarefas no histórico",
+		"countSingular": "1 tarefa no histórico",
+		"empty": "Nenhuma tarefa ainda",
+		"refresh": "Atualizar"
+	},
 	"footer": {
 		"telemetry": {
 			"label": "Permitir relatórios anônimos de erros e uso",

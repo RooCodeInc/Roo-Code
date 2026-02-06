@@ -74,6 +74,14 @@ export const MAX_CHECKPOINT_TIMEOUT_SECONDS = 60
 export const DEFAULT_CHECKPOINT_TIMEOUT_SECONDS = 15
 
 /**
+ * Allowed values for the task history retention setting.
+ * Stored as strings in most UI/extension flows.
+ */
+export const TASK_HISTORY_RETENTION_OPTIONS = ["never", "90", "60", "30", "7", "3"] as const
+
+export type TaskHistoryRetentionSetting = (typeof TASK_HISTORY_RETENTION_OPTIONS)[number]
+
+/**
  * GlobalSettings
  */
 
@@ -205,6 +213,16 @@ export const globalSettingsSchema = z.object({
 	customSupportPrompts: customSupportPromptsSchema.optional(),
 	enhancementApiConfigId: z.string().optional(),
 	includeTaskHistoryInEnhance: z.boolean().optional(),
+	// Auto-delete task history on extension reload.
+	taskHistoryRetention: z.enum(TASK_HISTORY_RETENTION_OPTIONS).optional(),
+	// Calculated task history count for the Settings > About page
+	// Note: Size calculation was removed for performance reasons - with large numbers of
+	// tasks (e.g., 9000+), recursively stat'ing every file caused significant delays.
+	taskHistorySize: z
+		.object({
+			taskCount: z.number(),
+		})
+		.optional(),
 	historyPreviewCollapsed: z.boolean().optional(),
 	reasoningBlockCollapsed: z.boolean().optional(),
 	/**

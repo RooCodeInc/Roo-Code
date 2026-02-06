@@ -38,6 +38,8 @@ import {
 	type TelemetrySetting,
 	DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
 	ImageGenerationProvider,
+	TASK_HISTORY_RETENTION_OPTIONS,
+	type TaskHistoryRetentionSetting,
 } from "@roo-code/types"
 
 import { vscode } from "@src/utils/vscode"
@@ -212,6 +214,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
+		taskHistoryRetention,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -235,6 +238,20 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			setChangeDetected(false)
 		}
 	}, [settingsImportedAt, extensionState])
+
+	// Sync taskHistoryRetention from extensionState when it changes and the user
+	// hasn't made local changes yet. This handles the race condition where
+	// cachedState is initialized before the initial state message arrives.
+	useEffect(() => {
+		if (!isChangeDetected && extensionState.taskHistoryRetention !== undefined) {
+			setCachedState((prev) => {
+				if (prev.taskHistoryRetention === extensionState.taskHistoryRetention) {
+					return prev // No change needed
+				}
+				return { ...prev, taskHistoryRetention: extensionState.taskHistoryRetention }
+			})
+		}
+	}, [extensionState.taskHistoryRetention, isChangeDetected])
 
 	const setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType> = useCallback((field, value) => {
 		setCachedState((prevState) => {
@@ -418,6 +435,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
 					maxGitStatusFiles: maxGitStatusFiles ?? 0,
+					taskHistoryRetention: normalizedTaskHistoryRetention,
 					profileThresholds,
 					imageGenerationProvider,
 					openRouterImageApiKey,
@@ -610,6 +628,12 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 	// Determine which tab content to render (for indexing or active display)
 	const renderTab = isIndexing ? sectionNames[indexingTabIndex] : activeTab
+
+	const normalizedTaskHistoryRetention: TaskHistoryRetentionSetting = TASK_HISTORY_RETENTION_OPTIONS.includes(
+		taskHistoryRetention as TaskHistoryRetentionSetting,
+	)
+		? (taskHistoryRetention as TaskHistoryRetentionSetting)
+		: "never"
 
 	// Handle search navigation - switch to the correct tab and scroll to the element
 	const handleSearchNavigate = useCallback(

@@ -49,6 +49,8 @@ import {
 } from "./activate"
 import { initializeI18n } from "./i18n"
 import { flushModels, initializeModelCacheRefresh, refreshModels } from "./api/providers/fetchers/modelCache"
+import { startBackgroundRetentionPurge, startBackgroundCheckpointPurge } from "./utils/task-history-retention"
+import { TASK_HISTORY_RETENTION_OPTIONS, type TaskHistoryRetentionSetting } from "@roo-code/types"
 
 /**
  * Built using https://github.com/microsoft/vscode-webview-ui-toolkit
@@ -168,6 +170,8 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	const contextProxy = await ContextProxy.getInstance(context)
 
+	// Initialize the provider *before* the Roo Code Cloud service so we can reuse its task deletion logic.
+	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
 	// Initialize code index managers for all workspace folders.
 	const codeIndexManagers: CodeIndexManager[] = []
 
@@ -190,9 +194,6 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		}
 	}
-
-	// Initialize the provider *before* the Roo Code Cloud service.
-	const provider = new ClineProvider(context, outputChannel, "sidebar", contextProxy, mdmService)
 
 	// Initialize Roo Code Cloud service.
 	const postStateListener = () => ClineProvider.getVisibleInstance()?.postStateToWebview()
@@ -392,6 +393,34 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// Allows other extensions to activate once Roo is ready.
 	vscode.commands.executeCommand(`${Package.name}.activationCompleted`)
+
+	// Task history retention purge (runs in background after activation)
+	// By this point, provider is fully initialized and ready to handle deletions
+	{
+		const retentionValue = contextProxy.getValue("taskHistoryRetention")
+		const retention: TaskHistoryRetentionSetting = TASK_HISTORY_RETENTION_OPTIONS.includes(
+			retentionValue as TaskHistoryRetentionSetting,
+		)
+			? (retentionValue as TaskHistoryRetentionSetting)
+			: "never"
+		startBackgroundRetentionPurge({
+			globalStoragePath: contextProxy.globalStorageUri.fsPath,
+			log: (m) => outputChannel.appendLine(m),
+			deleteTaskById: async (taskId: string) => {
+				// Reuse the same internal deletion logic as the History view so that
+				// checkpoints, shadow repositories, and task state are cleaned up consistently.
+				await provider.deleteTaskWithId(taskId)
+			},
+			retention,
+		})
+	}
+
+	// Checkpoint culling (runs in background after activation)
+	// Automatically removes checkpoints from tasks not touched in 30 days (non-configurable)
+	startBackgroundCheckpointPurge({
+		globalStoragePath: contextProxy.globalStorageUri.fsPath,
+		log: (m) => outputChannel.appendLine(m),
+	})
 
 	// Implements the `RooCodeAPI` interface.
 	const socketPath = process.env.ROO_CODE_IPC_SOCKET_PATH

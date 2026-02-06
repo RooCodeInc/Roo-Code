@@ -919,6 +919,34 @@
 		"useCustomModel": "カスタムを使用: {{modelId}}",
 		"simplifiedExplanation": "詳細なモデル設定は後で調整できます。"
 	},
+	"aboutRetention": {
+		"label": "タスク履歴を自動削除",
+		"warning": "有効にすると、選択した期間より古いタスクはVS Code再起動時に完全に削除されます。",
+		"confirmDialog": {
+			"title": "自動削除を有効にしますか？",
+			"description": "VS Codeを再起動するたびに、{{period}}日以上経過したタスクが完全に削除されます。この操作は取り消せません。",
+			"descriptionNever": "自動削除が無効になります。タスク履歴は保持されます。",
+			"confirm": "自動削除を有効にする",
+			"confirmNever": "自動削除を無効にする",
+			"cancel": "キャンセル"
+		},
+		"options": {
+			"never": "削除しない（デフォルト）",
+			"90": "90日",
+			"60": "60日",
+			"30": "30日",
+			"7": "7日",
+			"3": "3日"
+		}
+	},
+	"taskHistoryStorage": {
+		"label": "タスク履歴",
+		"clickToCount": "クリックしてカウント",
+		"count": "履歴に{{count}}件のタスク",
+		"countSingular": "履歴に1件のタスク",
+		"empty": "タスクはまだありません",
+		"refresh": "更新"
+	},
 	"footer": {
 		"telemetry": {
 			"label": "匿名のエラーと使用状況レポートを許可",

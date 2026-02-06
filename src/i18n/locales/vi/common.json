@@ -270,5 +270,13 @@
 	"docsLink": {
 		"label": "Docs",
 		"url": "https://docs.roocode.com"
+	},
+	"taskHistoryRetention": {
+		"purgeNotification": "Roo Code đã xóa {{count}} tác vụ cũ hơn {{days}} ngày",
+		"purgeNotification_plural": "Roo Code đã xóa {{count}} tác vụ cũ hơn {{days}} ngày",
+		"actions": {
+			"viewSettings": "Xem Cài Đặt",
+			"dismiss": "Đóng"
+		}
 	}
 }
