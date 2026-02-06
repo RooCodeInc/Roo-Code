@@ -38,6 +38,12 @@
 	--chart-12: 298 100% 50%;
 	--chart-13: 324 100% 50%;
 	--chart-14: 358 100% 50%;
+
+	/* Valentine's Day Theme Colors */
+	--valentine-pink: 330 81% 60%;
+	--valentine-pink-light: 330 81% 75%;
+	--valentine-red: 350 80% 55%;
+	--valentine-rose: 340 82% 52%;
 }
 
 .dark {
@@ -60,6 +66,12 @@
 	--border: 0 0% 14.9%;
 	--input: 0 0% 14.9%;
 	--ring: 0 0% 83.1%;
+
+	/* Valentine's Day Theme Colors (Dark Mode) */
+	--valentine-pink: 330 70% 50%;
+	--valentine-pink-light: 330 70% 65%;
+	--valentine-red: 350 70% 45%;
+	--valentine-rose: 340 72% 42%;
 }
 
 @layer base {
@@ -69,4 +81,58 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+}
+
+/* Valentine's Day Floating Hearts Animation */
+@keyframes float-heart {
+	0% {
+		transform: translateY(100vh) rotate(0deg) scale(0);
+		opacity: 0;
+	}
+	10% {
+		opacity: 1;
+		transform: translateY(90vh) rotate(15deg) scale(1);
+	}
+	90% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(-10vh) rotate(-15deg) scale(0.8);
+		opacity: 0;
+	}
+}
+
+@keyframes pulse-heart {
+	0%,
+	100% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.1);
+	}
+}
+
+@keyframes sparkle {
+	0%,
+	100% {
+		opacity: 0;
+		transform: scale(0);
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.floating-heart {
+	animation: float-heart linear forwards;
+	pointer-events: none;
+}
+
+.pulse-heart {
+	animation: pulse-heart 1.5s ease-in-out infinite;
+}
+
+.sparkle {
+	animation: sparkle 2s ease-in-out infinite;
 }
