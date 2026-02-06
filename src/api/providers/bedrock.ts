@@ -29,6 +29,7 @@ import {
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
 	mapToolChoice,
+	handleAiSdkError,
 } from "../transform/ai-sdk"
 import { getModelParams } from "../transform/model-params"
 import { shouldUseReasoningBudget } from "../../shared/api"
@@ -277,11 +278,28 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// The AI SDK's @ai-sdk/amazon-bedrock supports cachePoint in providerOptions per message
 		const usePromptCache = Boolean(this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig))
 
+		if (usePromptCache) {
+			// Add cache points to the last two user messages in the AI SDK messages array.
+			// The @ai-sdk/amazon-bedrock provider reads providerOptions.bedrock.cachePoint per message.
+			const cachePointOption = { bedrock: { cachePoint: { type: "default" as const } } }
+			const userMessageIndices = aiSdkMessages
+				.map((msg, idx) => (msg.role === "user" ? idx : -1))
+				.filter((idx) => idx !== -1)
+			const indicesToCache = userMessageIndices.slice(-2)
+			for (const idx of indicesToCache) {
+				const msg = aiSdkMessages[idx]
+				msg.providerOptions = { ...msg.providerOptions, ...cachePointOption }
+			}
+		}
+
 		// Build streamText request
 		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelConfig.id),
 			system: systemPrompt,
+			...(usePromptCache && {
+				systemProviderOptions: { bedrock: { cachePoint: { type: "default" } } } as Record<string, unknown>,
+			}),
 			messages: aiSdkMessages,
 			temperature: modelConfig.temperature ?? (this.options.modelTemperature as number),
 			maxOutputTokens: modelConfig.maxTokens || (modelConfig.info.maxTokens as number),
@@ -302,17 +320,6 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				// event with providerMetadata.bedrock.signature (empty delta text, signature in metadata).
 				// Also check tool-call events for thoughtSignature (Gemini pattern).
 				const partAny = part as any
-				// DEBUG: Log all events with providerMetadata to help identify signature location
-				if (partAny.providerMetadata) {
-					logger.info("Stream event with providerMetadata", {
-						ctx: "bedrock",
-						eventType: partAny.type,
-						providerMetadataKeys: Object.keys(partAny.providerMetadata),
-						bedrockKeys: partAny.providerMetadata?.bedrock
-							? Object.keys(partAny.providerMetadata.bedrock)
-							: undefined,
-					})
-				}
 				if (partAny.providerMetadata?.bedrock?.signature) {
 					this.lastThoughtSignature = partAny.providerMetadata.bedrock.signature
 					logger.info("Captured thinking signature from stream", {
@@ -349,7 +356,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			const apiError = new ApiProviderError(errorMessage, this.providerName, modelConfig.id, "createMessage")
 			TelemetryService.instance.captureException(apiError)
 
-			// Check for throttling errors that should trigger retry
+			// Check for throttling errors that should trigger retry (re-throw original to preserve status)
 			if (this.isThrottlingError(error)) {
 				if (error instanceof Error) {
 					throw error
@@ -357,10 +364,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				throw new Error("Throttling error occurred")
 			}
 
-			if (error instanceof Error) {
-				throw new Error(`Bedrock error: ${error.message}`)
-			}
-			throw error
+			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
+			throw handleAiSdkError(error, this.providerName)
 		}
 	}
 
@@ -411,10 +416,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		const msg = error.message.toLowerCase()
 		return (
 			msg.includes("throttl") ||
-			msg.includes("rate") ||
-			msg.includes("limit") ||
-			msg.includes("bedrock is unable to process your request") ||
-			msg.includes("too many requests")
+			msg.includes("rate limit") ||
+			msg.includes("too many requests") ||
+			msg.includes("bedrock is unable to process your request")
 		)
 	}
 
@@ -435,10 +439,8 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			const apiError = new ApiProviderError(errorMessage, this.providerName, modelConfig.id, "completePrompt")
 			TelemetryService.instance.captureException(apiError)
 
-			if (error instanceof Error) {
-				throw new Error(`Bedrock completion error: ${error.message}`)
-			}
-			throw error
+			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
+			throw handleAiSdkError(error, this.providerName)
 		}
 	}
 
