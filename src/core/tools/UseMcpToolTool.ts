@@ -325,17 +325,18 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				// Build the result text
 				let resultText = outputText || ""
 
-				// If there are images, save them to temp storage and provide file paths to the LLM
-				// This avoids passing raw base64 through LLM context which causes corruption and high costs
+				// If there are images, save them to temp storage and provide both file paths and raw data to the LLM.
+				// File paths enable efficient persistence for future context, while raw base64 data allows
+				// the model to analyze images in the current turn.
 				if (images.length > 0) {
 					const savedImagePaths = await this.saveImagesToTempStorage(task, images, serverName, toolName)
 					const imagePathsSection = savedImagePaths
 						.map(
 							(imgPath, index) =>
-								`<image_${index + 1}>\n  <source_path>${imgPath}</source_path>\n</image_${index + 1}>`,
+								`<image_${index + 1}>\n  <source_path>${imgPath}</source_path>\n  <data>${images[index]}</data>\n</image_${index + 1}>`,
 						)
 						.join("\n\n")
-					const imageInfo = `\n\n[${images.length} image(s) received and saved to temporary storage. Use save_image tool with source_path to save to your desired location.]\n\n${imagePathsSection}`
+					const imageInfo = `\n\n[${images.length} image(s) received and saved to temporary storage. Use save_image tool with source_path (preferred) or data to save to your desired location.]\n\n${imagePathsSection}`
 					resultText = resultText ? resultText + imageInfo : imageInfo.trim()
 				}
 
