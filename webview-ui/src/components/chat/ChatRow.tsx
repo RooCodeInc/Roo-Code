@@ -742,51 +742,12 @@ export const ChatRowContent = ({
 					</>
 				)
 			}
-			case "listFilesTopLevel": {
-				// Check if this is a batch directory listing request
-				const isBatchDirRequest = message.type === "ask" && tool.batchDirs && Array.isArray(tool.batchDirs)
-
-				if (isBatchDirRequest) {
-					return (
-						<>
-							<div style={headerStyle}>
-								<ListTree className="w-4 shrink-0" aria-label="List files icon" />
-								<span style={{ fontWeight: "bold" }}>
-									{t("chat:directoryOperations.wantsToViewMultipleDirectories")}
-								</span>
-							</div>
-							<BatchListFilesPermission dirs={tool.batchDirs || []} ts={message?.ts} />
-						</>
-					)
-				}
-
-				return (
-					<>
-						<div style={headerStyle}>
-							<ListTree className="w-4 shrink-0" aria-label="List files icon" />
-							<span style={{ fontWeight: "bold" }}>
-								{message.type === "ask"
-									? tool.isOutsideWorkspace
-										? t("chat:directoryOperations.wantsToViewTopLevelOutsideWorkspace")
-										: t("chat:directoryOperations.wantsToViewTopLevel")
-									: tool.isOutsideWorkspace
-										? t("chat:directoryOperations.didViewTopLevelOutsideWorkspace")
-										: t("chat:directoryOperations.didViewTopLevel")}
-							</span>
-						</div>
-						<div className="pl-6">
-							<CodeAccordian
-								path={tool.path}
-								code={tool.content}
-								language="shell-session"
-								isExpanded={isExpanded}
-								onToggleExpand={handleToggleExpand}
-							/>
-						</div>
-					</>
-				)
-			}
+			case "listFilesTopLevel":
 			case "listFilesRecursive": {
+				const isRecursive = tool.tool === "listFilesRecursive"
+				const DirIcon = isRecursive ? FolderTree : ListTree
+				const dirIconLabel = isRecursive ? "Folder tree icon" : "List files icon"
+
 				// Check if this is a batch directory listing request
 				const isBatchDirRequest = message.type === "ask" && tool.batchDirs && Array.isArray(tool.batchDirs)
 
@@ -794,7 +755,7 @@ export const ChatRowContent = ({
 					return (
 						<>
 							<div style={headerStyle}>
-								<FolderTree className="w-4 shrink-0" aria-label="Folder tree icon" />
+								<DirIcon className="w-4 shrink-0" aria-label={dirIconLabel} />
 								<span style={{ fontWeight: "bold" }}>
 									{t("chat:directoryOperations.wantsToViewMultipleDirectories")}
 								</span>
@@ -804,25 +765,33 @@ export const ChatRowContent = ({
 					)
 				}
 
+				const labelKey = isRecursive
+					? message.type === "ask"
+						? tool.isOutsideWorkspace
+							? "chat:directoryOperations.wantsToViewRecursiveOutsideWorkspace"
+							: "chat:directoryOperations.wantsToViewRecursive"
+						: tool.isOutsideWorkspace
+							? "chat:directoryOperations.didViewRecursiveOutsideWorkspace"
+							: "chat:directoryOperations.didViewRecursive"
+					: message.type === "ask"
+						? tool.isOutsideWorkspace
+							? "chat:directoryOperations.wantsToViewTopLevelOutsideWorkspace"
+							: "chat:directoryOperations.wantsToViewTopLevel"
+						: tool.isOutsideWorkspace
+							? "chat:directoryOperations.didViewTopLevelOutsideWorkspace"
+							: "chat:directoryOperations.didViewTopLevel"
+
 				return (
 					<>
 						<div style={headerStyle}>
-							<FolderTree className="w-4 shrink-0" aria-label="Folder tree icon" />
-							<span style={{ fontWeight: "bold" }}>
-								{message.type === "ask"
-									? tool.isOutsideWorkspace
-										? t("chat:directoryOperations.wantsToViewRecursiveOutsideWorkspace")
-										: t("chat:directoryOperations.wantsToViewRecursive")
-									: tool.isOutsideWorkspace
-										? t("chat:directoryOperations.didViewRecursiveOutsideWorkspace")
-										: t("chat:directoryOperations.didViewRecursive")}
-							</span>
+							<DirIcon className="w-4 shrink-0" aria-label={dirIconLabel} />
+							<span style={{ fontWeight: "bold" }}>{t(labelKey)}</span>
 						</div>
 						<div className="pl-6">
 							<CodeAccordian
 								path={tool.path}
 								code={tool.content}
-								language="shellsession"
+								language={isRecursive ? "shellsession" : "shell-session"}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
 							/>
