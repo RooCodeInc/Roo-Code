@@ -28,7 +28,9 @@ vi.mock("../../search/file-search", () => ({
 
 import {
 	getGlobalRooDirectory,
+	getGlobalAgentsDirectory,
 	getProjectRooDirectoryForCwd,
+	getProjectAgentsDirectoryForCwd,
 	directoryExists,
 	fileExists,
 	readFileIfExists,
@@ -67,6 +69,27 @@ describe("RooConfigService", () => {
 			const cwd = "/custom/project/path"
 			const result = getProjectRooDirectoryForCwd(cwd)
 			expect(result).toBe(path.join(cwd, ".roo"))
+		})
+	})
+
+	describe("getGlobalAgentsDirectory", () => {
+		it("should return correct path for global .agents directory", () => {
+			const result = getGlobalAgentsDirectory()
+			expect(result).toBe(path.join("/mock/home", ".agents"))
+		})
+
+		it("should handle different home directories", () => {
+			mockHomedir.mockReturnValue("/different/home")
+			const result = getGlobalAgentsDirectory()
+			expect(result).toBe(path.join("/different/home", ".agents"))
+		})
+	})
+
+	describe("getProjectAgentsDirectoryForCwd", () => {
+		it("should return correct path for given cwd", () => {
+			const cwd = "/custom/project/path"
+			const result = getProjectAgentsDirectoryForCwd(cwd)
+			expect(result).toBe(path.join(cwd, ".agents"))
 		})
 	})
 
