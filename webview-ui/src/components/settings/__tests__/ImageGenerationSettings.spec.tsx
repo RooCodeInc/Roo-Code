@@ -13,6 +13,10 @@ describe("ImageGenerationSettings", () => {
 	const mockSetImageGenerationProvider = vi.fn()
 	const mockSetOpenRouterImageApiKey = vi.fn()
 	const mockSetImageGenerationSelectedModel = vi.fn()
+	const mockSetCustomImageGenBaseUrl = vi.fn()
+	const mockSetCustomImageGenApiKey = vi.fn()
+	const mockSetCustomImageGenModel = vi.fn()
+	const mockSetCustomImageGenApiMethod = vi.fn()
 	const mockOnChange = vi.fn()
 
 	const defaultProps = {
@@ -24,6 +28,14 @@ describe("ImageGenerationSettings", () => {
 		setImageGenerationProvider: mockSetImageGenerationProvider,
 		setOpenRouterImageApiKey: mockSetOpenRouterImageApiKey,
 		setImageGenerationSelectedModel: mockSetImageGenerationSelectedModel,
+		customImageGenBaseUrl: undefined,
+		customImageGenApiKey: undefined,
+		customImageGenModel: undefined,
+		customImageGenApiMethod: undefined,
+		setCustomImageGenBaseUrl: mockSetCustomImageGenBaseUrl,
+		setCustomImageGenApiKey: mockSetCustomImageGenApiKey,
+		setCustomImageGenModel: mockSetCustomImageGenModel,
+		setCustomImageGenApiMethod: mockSetCustomImageGenApiMethod,
 	}
 
 	beforeEach(() => {

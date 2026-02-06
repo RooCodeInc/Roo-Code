@@ -18,6 +18,9 @@
 	},
 	"generateImage": {
 		"openRouterApiKeyRequired": "OpenRouter API-Schlüssel ist für die Bildgenerierung mit OpenRouter-Modellen erforderlich. Bitte konfiguriere ihn in den Experimentellen Einstellungen für Bildgenerierung.",
+		"customBaseUrlRequired": "Base URL is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customApiKeyRequired": "API key is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customModelRequired": "Model ID is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
 		"failedWithStatus": "Bildgenerierung fehlgeschlagen: {{status}} {{statusText}}",
 		"failedWithMessage": "Bildgenerierung fehlgeschlagen: {{message}}",
 		"noImageGenerated": "In der Antwort wurde kein Bild generiert",

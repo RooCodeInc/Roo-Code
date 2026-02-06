@@ -2069,6 +2069,10 @@ export class ClineProvider
 			imageGenerationProvider,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
+			customImageGenBaseUrl,
+			customImageGenApiKey,
+			customImageGenModel,
+			customImageGenApiMethod,
 			featureRoomoteControlEnabled,
 			isBrowserSessionActive,
 		} = await this.getState()
@@ -2231,6 +2235,10 @@ export class ClineProvider
 			imageGenerationProvider,
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
+			customImageGenBaseUrl,
+			customImageGenApiKey,
+			customImageGenModel,
+			customImageGenApiMethod,
 			featureRoomoteControlEnabled,
 			openAiCodexIsAuthenticated: await (async () => {
 				try {
@@ -2473,6 +2481,10 @@ export class ClineProvider
 			imageGenerationProvider: stateValues.imageGenerationProvider,
 			openRouterImageApiKey: stateValues.openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel: stateValues.openRouterImageGenerationSelectedModel,
+			customImageGenBaseUrl: stateValues.customImageGenBaseUrl,
+			customImageGenApiKey: stateValues.customImageGenApiKey,
+			customImageGenModel: stateValues.customImageGenModel,
+			customImageGenApiMethod: stateValues.customImageGenApiMethod,
 			featureRoomoteControlEnabled: (() => {
 				try {
 					const userSettings = CloudService.instance.getUserSettings()

@@ -26,6 +26,14 @@ type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	setImageGenerationProvider?: (provider: ImageGenerationProvider) => void
 	setOpenRouterImageApiKey?: (apiKey: string) => void
 	setImageGenerationSelectedModel?: (model: string) => void
+	customImageGenBaseUrl?: string
+	customImageGenApiKey?: string
+	customImageGenModel?: string
+	customImageGenApiMethod?: string
+	setCustomImageGenBaseUrl?: (url: string) => void
+	setCustomImageGenApiKey?: (apiKey: string) => void
+	setCustomImageGenModel?: (model: string) => void
+	setCustomImageGenApiMethod?: (method: string) => void
 }
 
 export const ExperimentalSettings = ({
@@ -39,6 +47,14 @@ export const ExperimentalSettings = ({
 	setImageGenerationProvider,
 	setOpenRouterImageApiKey,
 	setImageGenerationSelectedModel,
+	customImageGenBaseUrl,
+	customImageGenApiKey,
+	customImageGenModel,
+	customImageGenApiMethod,
+	setCustomImageGenBaseUrl,
+	setCustomImageGenApiKey,
+	setCustomImageGenModel,
+	setCustomImageGenApiMethod,
 	className,
 	...props
 }: ExperimentalSettingsProps) => {
@@ -60,7 +76,11 @@ export const ExperimentalSettings = ({
 							config[0] === "IMAGE_GENERATION" &&
 							setImageGenerationProvider &&
 							setOpenRouterImageApiKey &&
-							setImageGenerationSelectedModel
+							setImageGenerationSelectedModel &&
+							setCustomImageGenBaseUrl &&
+							setCustomImageGenApiKey &&
+							setCustomImageGenModel &&
+							setCustomImageGenApiMethod
 						) {
 							return (
 								<SearchableSetting
@@ -79,6 +99,14 @@ export const ExperimentalSettings = ({
 										setImageGenerationProvider={setImageGenerationProvider}
 										setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 										setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+										customImageGenBaseUrl={customImageGenBaseUrl}
+										customImageGenApiKey={customImageGenApiKey}
+										customImageGenModel={customImageGenModel}
+										customImageGenApiMethod={customImageGenApiMethod}
+										setCustomImageGenBaseUrl={setCustomImageGenBaseUrl}
+										setCustomImageGenApiKey={setCustomImageGenApiKey}
+										setCustomImageGenModel={setCustomImageGenModel}
+										setCustomImageGenApiMethod={setCustomImageGenApiMethod}
 									/>
 								</SearchableSetting>
 							)

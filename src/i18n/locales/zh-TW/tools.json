@@ -18,6 +18,9 @@
 	},
 	"generateImage": {
 		"openRouterApiKeyRequired": "使用 OpenRouter 模型生成圖像需要 OpenRouter API 金鑰。請在圖像生成實驗設定中配置。",
+		"customBaseUrlRequired": "Base URL is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customApiKeyRequired": "API key is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customModelRequired": "Model ID is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
 		"failedWithStatus": "圖像生成失敗：{{status}} {{statusText}}",
 		"failedWithMessage": "圖像生成失敗：{{message}}",
 		"noImageGenerated": "回應中未生成圖像",

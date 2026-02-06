@@ -21,6 +21,9 @@
 	},
 	"generateImage": {
 		"openRouterApiKeyRequired": "Kunci API OpenRouter diperlukan untuk menghasilkan gambar dengan model OpenRouter. Silakan konfigurasikan di pengaturan eksperimental Pembuatan Gambar.",
+		"customBaseUrlRequired": "Base URL is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customApiKeyRequired": "API key is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customModelRequired": "Model ID is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
 		"failedWithStatus": "Gagal menghasilkan gambar: {{status}} {{statusText}}",
 		"failedWithMessage": "Gagal menghasilkan gambar: {{message}}",
 		"noImageGenerated": "Tidak ada gambar yang dihasilkan dalam respons",

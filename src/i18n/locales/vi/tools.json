@@ -18,6 +18,9 @@
 	},
 	"generateImage": {
 		"openRouterApiKeyRequired": "Yêu cầu khóa API OpenRouter để tạo hình ảnh với các mô hình OpenRouter. Vui lòng cấu hình trong cài đặt thử nghiệm Tạo hình ảnh.",
+		"customBaseUrlRequired": "Base URL is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customApiKeyRequired": "API key is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customModelRequired": "Model ID is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
 		"failedWithStatus": "Tạo hình ảnh thất bại: {{status}} {{statusText}}",
 		"failedWithMessage": "Tạo hình ảnh thất bại: {{message}}",
 		"noImageGenerated": "Không có hình ảnh nào được tạo trong phản hồi",

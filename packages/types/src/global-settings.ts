@@ -88,9 +88,15 @@ export const globalSettingsSchema = z.object({
 	dismissedUpsells: z.array(z.string()).optional(),
 
 	// Image generation settings (experimental) - flattened for simplicity
-	imageGenerationProvider: z.enum(["openrouter", "roo"]).optional(),
+	imageGenerationProvider: z.enum(["openrouter", "roo", "openai-compatible"]).optional(),
 	openRouterImageApiKey: z.string().optional(),
 	openRouterImageGenerationSelectedModel: z.string().optional(),
+
+	// Custom OpenAI-compatible image generation settings
+	customImageGenBaseUrl: z.string().optional(),
+	customImageGenApiKey: z.string().optional(),
+	customImageGenModel: z.string().optional(),
+	customImageGenApiMethod: z.enum(["chat_completions", "images_api"]).optional(),
 
 	customCondensingPrompt: z.string().optional(),
 
@@ -292,7 +298,8 @@ export const SECRET_STATE_KEYS = [
 
 // Global secrets that are part of GlobalSettings (not ProviderSettings)
 export const GLOBAL_SECRET_KEYS = [
-	"openRouterImageApiKey", // For image generation
+	"openRouterImageApiKey", // For image generation (OpenRouter)
+	"customImageGenApiKey", // For image generation (OpenAI-compatible)
 ] as const
 
 // Type for the actual secret storage keys

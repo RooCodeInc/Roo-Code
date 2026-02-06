@@ -12,6 +12,14 @@ interface ImageGenerationSettingsProps {
 	setImageGenerationProvider: (provider: ImageGenerationProvider) => void
 	setOpenRouterImageApiKey: (apiKey: string) => void
 	setImageGenerationSelectedModel: (model: string) => void
+	customImageGenBaseUrl?: string
+	customImageGenApiKey?: string
+	customImageGenModel?: string
+	customImageGenApiMethod?: string
+	setCustomImageGenBaseUrl: (url: string) => void
+	setCustomImageGenApiKey: (apiKey: string) => void
+	setCustomImageGenModel: (model: string) => void
+	setCustomImageGenApiMethod: (method: string) => void
 }
 
 export const ImageGenerationSettings = ({
@@ -23,6 +31,14 @@ export const ImageGenerationSettings = ({
 	setImageGenerationProvider,
 	setOpenRouterImageApiKey,
 	setImageGenerationSelectedModel,
+	customImageGenBaseUrl,
+	customImageGenApiKey,
+	customImageGenModel,
+	customImageGenApiMethod,
+	setCustomImageGenBaseUrl,
+	setCustomImageGenApiKey,
+	setCustomImageGenModel,
+	setCustomImageGenApiMethod,
 }: ImageGenerationSettingsProps) => {
 	const { t } = useAppTranslation()
 
@@ -58,6 +74,11 @@ export const ImageGenerationSettings = ({
 		const newProvider = value as ImageGenerationProvider
 		setImageGenerationProvider(newProvider)
 
+		// For openai-compatible, no model lookup from hardcoded list needed
+		if (newProvider === "openai-compatible") {
+			return
+		}
+
 		// Smart model selection when switching providers:
 		// 1. If current model exists for new provider (same model name), keep it
 		// 2. Otherwise, switch to first available model for new provider
@@ -88,7 +109,10 @@ export const ImageGenerationSettings = ({
 	}
 
 	const requiresApiKey = currentProvider === "openrouter"
-	const isConfigured = !requiresApiKey || (requiresApiKey && openRouterImageApiKey)
+	const isCustomProvider = currentProvider === "openai-compatible"
+	const isConfigured = isCustomProvider
+		? !!(customImageGenBaseUrl && customImageGenApiKey && customImageGenModel)
+		: !requiresApiKey || (requiresApiKey && openRouterImageApiKey)
 
 	return (
 		<div className="space-y-4">
@@ -119,6 +143,9 @@ export const ImageGenerationSettings = ({
 							</VSCodeOption>
 							<VSCodeOption value="openrouter" className="py-2 px-3">
 								OpenRouter
+							</VSCodeOption>
+							<VSCodeOption value="openai-compatible" className="py-2 px-3">
+								OpenAI Compatible
 							</VSCodeOption>
 						</VSCodeDropdown>
 						<p className="text-vscode-descriptionForeground text-xs mt-1">
@@ -152,30 +179,110 @@ export const ImageGenerationSettings = ({
 						</div>
 					)}
 
-					{/* Model Selection */}
-					<div>
-						<label className="block font-medium mb-1">
-							{t("settings:experimental.IMAGE_GENERATION.modelSelectionLabel")}
-						</label>
-						<VSCodeDropdown
-							value={currentModel}
-							onChange={(e: any) => handleModelChange(e.target.value)}
-							className="w-full">
-							{availableModels.map((model) => (
-								<VSCodeOption key={model.value} value={model.value} className="py-2 px-3">
-									{model.label}
-								</VSCodeOption>
-							))}
-						</VSCodeDropdown>
-						<p className="text-vscode-descriptionForeground text-xs mt-1">
-							{t("settings:experimental.IMAGE_GENERATION.modelSelectionDescription")}
-						</p>
-					</div>
+					{/* OpenAI Compatible Configuration */}
+					{isCustomProvider && (
+						<>
+							{/* Base URL */}
+							<div>
+								<label className="block font-medium mb-1">
+									{t("settings:experimental.IMAGE_GENERATION.customBaseUrlLabel")}
+								</label>
+								<VSCodeTextField
+									value={customImageGenBaseUrl || ""}
+									onInput={(e: any) => setCustomImageGenBaseUrl(e.target.value)}
+									placeholder={t("settings:experimental.IMAGE_GENERATION.customBaseUrlPlaceholder")}
+									className="w-full"
+								/>
+								<p className="text-vscode-descriptionForeground text-xs mt-1">
+									{t("settings:experimental.IMAGE_GENERATION.customBaseUrlDescription")}
+								</p>
+							</div>
+
+							{/* API Key */}
+							<div>
+								<label className="block font-medium mb-1">
+									{t("settings:experimental.IMAGE_GENERATION.customApiKeyLabel")}
+								</label>
+								<VSCodeTextField
+									value={customImageGenApiKey || ""}
+									onInput={(e: any) => setCustomImageGenApiKey(e.target.value)}
+									placeholder={t("settings:experimental.IMAGE_GENERATION.customApiKeyPlaceholder")}
+									className="w-full"
+									type="password"
+								/>
+							</div>
+
+							{/* Model ID (free text) */}
+							<div>
+								<label className="block font-medium mb-1">
+									{t("settings:experimental.IMAGE_GENERATION.customModelLabel")}
+								</label>
+								<VSCodeTextField
+									value={customImageGenModel || ""}
+									onInput={(e: any) => setCustomImageGenModel(e.target.value)}
+									placeholder={t("settings:experimental.IMAGE_GENERATION.customModelPlaceholder")}
+									className="w-full"
+								/>
+								<p className="text-vscode-descriptionForeground text-xs mt-1">
+									{t("settings:experimental.IMAGE_GENERATION.customModelDescription")}
+								</p>
+							</div>
+
+							{/* API Method */}
+							<div>
+								<label className="block font-medium mb-1">
+									{t("settings:experimental.IMAGE_GENERATION.customApiMethodLabel")}
+								</label>
+								<VSCodeDropdown
+									value={customImageGenApiMethod || "images_api"}
+									onChange={(e: any) => setCustomImageGenApiMethod(e.target.value)}
+									className="w-full">
+									<VSCodeOption value="images_api" className="py-2 px-3">
+										/images/generations
+									</VSCodeOption>
+									<VSCodeOption value="chat_completions" className="py-2 px-3">
+										/chat/completions
+									</VSCodeOption>
+								</VSCodeDropdown>
+								<p className="text-vscode-descriptionForeground text-xs mt-1">
+									{t("settings:experimental.IMAGE_GENERATION.customApiMethodDescription")}
+								</p>
+							</div>
+						</>
+					)}
+
+					{/* Model Selection (only for providers with hardcoded models) */}
+					{!isCustomProvider && (
+						<div>
+							<label className="block font-medium mb-1">
+								{t("settings:experimental.IMAGE_GENERATION.modelSelectionLabel")}
+							</label>
+							<VSCodeDropdown
+								value={currentModel}
+								onChange={(e: any) => handleModelChange(e.target.value)}
+								className="w-full">
+								{availableModels.map((model) => (
+									<VSCodeOption key={model.value} value={model.value} className="py-2 px-3">
+										{model.label}
+									</VSCodeOption>
+								))}
+							</VSCodeDropdown>
+							<p className="text-vscode-descriptionForeground text-xs mt-1">
+								{t("settings:experimental.IMAGE_GENERATION.modelSelectionDescription")}
+							</p>
+						</div>
+					)}
 
 					{/* Status Message */}
-					{enabled && !isConfigured && (
+					{enabled && !isConfigured && !isCustomProvider && (
 						<div className="p-2 bg-vscode-editorWarning-background text-vscode-editorWarning-foreground rounded text-sm">
 							{t("settings:experimental.IMAGE_GENERATION.warningMissingKey")}
+						</div>
+					)}
+
+					{enabled && !isConfigured && isCustomProvider && (
+						<div className="p-2 bg-vscode-editorWarning-background text-vscode-editorWarning-foreground rounded text-sm">
+							{t("settings:experimental.IMAGE_GENERATION.warningMissingCustomConfig")}
 						</div>
 					)}
 

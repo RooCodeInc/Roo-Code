@@ -18,6 +18,9 @@
 	},
 	"generateImage": {
 		"openRouterApiKeyRequired": "OpenRouterモデルでの画像生成にはOpenRouter APIキーが必要です。画像生成の実験設定で設定してください。",
+		"customBaseUrlRequired": "Base URL is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customApiKeyRequired": "API key is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customModelRequired": "Model ID is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
 		"failedWithStatus": "画像生成に失敗しました: {{status}} {{statusText}}",
 		"failedWithMessage": "画像生成に失敗しました: {{message}}",
 		"noImageGenerated": "レスポンスに画像が生成されませんでした",

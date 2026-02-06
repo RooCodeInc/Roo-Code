@@ -872,7 +872,18 @@
 			"modelSelectionLabel": "Modèle de génération d'images",
 			"modelSelectionDescription": "Sélectionnez le modèle pour la génération d'images",
 			"warningMissingKey": "⚠️ Une clé API OpenRouter est requise pour la génération d'images. Veuillez la configurer ci-dessus.",
-			"successConfigured": "✓ La génération d'images est configurée et prête à utiliser"
+			"warningMissingCustomConfig": "⚠️ Base URL, API key, and model ID are all required for OpenAI Compatible image generation. Please configure them above.",
+			"successConfigured": "✓ La génération d'images est configurée et prête à utiliser",
+			"customBaseUrlLabel": "Base URL",
+			"customBaseUrlPlaceholder": "e.g., http://localhost:8320/v1",
+			"customBaseUrlDescription": "The base URL of your OpenAI-compatible image generation API endpoint.",
+			"customApiKeyLabel": "API Key",
+			"customApiKeyPlaceholder": "Enter your API key",
+			"customModelLabel": "Model",
+			"customModelPlaceholder": "e.g., dall-e-3, stable-diffusion-xl",
+			"customModelDescription": "The model identifier supported by your endpoint.",
+			"customApiMethodLabel": "API Method",
+			"customApiMethodDescription": "Choose the API endpoint format. Use '/images/generations' for standard OpenAI-compatible APIs, or '/chat/completions' for chat-based image generation."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "Activer les commandes slash initiées par le modèle",

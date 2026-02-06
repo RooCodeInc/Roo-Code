@@ -18,6 +18,9 @@
 	},
 	"generateImage": {
 		"openRouterApiKeyRequired": "OpenRouter modelleriyle görüntü oluşturma için OpenRouter API anahtarı gereklidir. Lütfen Görüntü Oluşturma deneysel ayarlarında yapılandırın.",
+		"customBaseUrlRequired": "Base URL is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customApiKeyRequired": "API key is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customModelRequired": "Model ID is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
 		"failedWithStatus": "Görüntü oluşturma başarısız: {{status}} {{statusText}}",
 		"failedWithMessage": "Görüntü oluşturma başarısız: {{message}}",
 		"noImageGenerated": "Yanıtta görüntü oluşturulmadı",

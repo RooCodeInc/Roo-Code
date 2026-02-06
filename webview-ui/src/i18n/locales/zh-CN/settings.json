@@ -872,7 +872,18 @@
 			"modelSelectionLabel": "图像生成模型",
 			"modelSelectionDescription": "选择用于图像生成的模型",
 			"warningMissingKey": "⚠️ 图像生成需要 OpenRouter API 密钥。请在上方配置。",
-			"successConfigured": "✓ 图像生成已配置完成，可以使用"
+			"warningMissingCustomConfig": "⚠️ Base URL, API key, and model ID are all required for OpenAI Compatible image generation. Please configure them above.",
+			"successConfigured": "✓ 图像生成已配置完成，可以使用",
+			"customBaseUrlLabel": "Base URL",
+			"customBaseUrlPlaceholder": "e.g., http://localhost:8320/v1",
+			"customBaseUrlDescription": "The base URL of your OpenAI-compatible image generation API endpoint.",
+			"customApiKeyLabel": "API Key",
+			"customApiKeyPlaceholder": "Enter your API key",
+			"customModelLabel": "Model",
+			"customModelPlaceholder": "e.g., dall-e-3, stable-diffusion-xl",
+			"customModelDescription": "The model identifier supported by your endpoint.",
+			"customApiMethodLabel": "API Method",
+			"customApiMethodDescription": "Choose the API endpoint format. Use '/images/generations' for standard OpenAI-compatible APIs, or '/chat/completions' for chat-based image generation."
 		},
 		"RUN_SLASH_COMMAND": {
 			"name": "启用模型发起的斜杠命令",

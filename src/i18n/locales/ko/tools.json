@@ -18,6 +18,9 @@
 	},
 	"generateImage": {
 		"openRouterApiKeyRequired": "OpenRouter 모델로 이미지를 생성하려면 OpenRouter API 키가 필요합니다. 이미지 생성 실험 설정에서 구성하세요.",
+		"customBaseUrlRequired": "Base URL is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customApiKeyRequired": "API key is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
+		"customModelRequired": "Model ID is required for OpenAI Compatible image generation. Please configure it in Settings > Experimental > Image Generation.",
 		"failedWithStatus": "이미지 생성 실패: {{status}} {{statusText}}",
 		"failedWithMessage": "이미지 생성 실패: {{message}}",
 		"noImageGenerated": "응답에서 이미지가 생성되지 않았습니다",

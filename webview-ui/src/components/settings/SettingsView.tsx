@@ -207,6 +207,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		imageGenerationProvider,
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
+		customImageGenBaseUrl,
+		customImageGenApiKey,
+		customImageGenModel,
+		customImageGenApiMethod,
 		reasoningBlockCollapsed,
 		enterBehavior,
 		includeCurrentTime,
@@ -338,6 +342,42 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		})
 	}, [])
 
+	const setCustomImageGenBaseUrl = useCallback((url: string) => {
+		setCachedState((prevState) => {
+			if (prevState.customImageGenBaseUrl !== url) {
+				setChangeDetected(true)
+			}
+			return { ...prevState, customImageGenBaseUrl: url }
+		})
+	}, [])
+
+	const setCustomImageGenApiKey = useCallback((apiKey: string) => {
+		setCachedState((prevState) => {
+			if (prevState.customImageGenApiKey !== apiKey) {
+				setChangeDetected(true)
+			}
+			return { ...prevState, customImageGenApiKey: apiKey }
+		})
+	}, [])
+
+	const setCustomImageGenModel = useCallback((model: string) => {
+		setCachedState((prevState) => {
+			if (prevState.customImageGenModel !== model) {
+				setChangeDetected(true)
+			}
+			return { ...prevState, customImageGenModel: model }
+		})
+	}, [])
+
+	const setCustomImageGenApiMethod = useCallback((method: string) => {
+		setCachedState((prevState) => {
+			if (prevState.customImageGenApiMethod !== method) {
+				setChangeDetected(true)
+			}
+			return { ...prevState, customImageGenApiMethod: method as "chat_completions" | "images_api" }
+		})
+	}, [])
+
 	const setCustomSupportPromptsField = useCallback((prompts: Record<string, string | undefined>) => {
 		setCachedState((prevState) => {
 			const previousStr = JSON.stringify(prevState.customSupportPrompts)
@@ -422,6 +462,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					imageGenerationProvider,
 					openRouterImageApiKey,
 					openRouterImageGenerationSelectedModel,
+					customImageGenBaseUrl,
+					customImageGenApiKey,
+					customImageGenModel,
+					customImageGenApiMethod,
 					experiments,
 					customSupportPrompts,
 				},
@@ -927,6 +971,14 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								setImageGenerationProvider={setImageGenerationProvider}
 								setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 								setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+								customImageGenBaseUrl={customImageGenBaseUrl as string | undefined}
+								customImageGenApiKey={customImageGenApiKey as string | undefined}
+								customImageGenModel={customImageGenModel as string | undefined}
+								customImageGenApiMethod={customImageGenApiMethod as string | undefined}
+								setCustomImageGenBaseUrl={setCustomImageGenBaseUrl}
+								setCustomImageGenApiKey={setCustomImageGenApiKey}
+								setCustomImageGenModel={setCustomImageGenModel}
+								setCustomImageGenApiMethod={setCustomImageGenApiMethod}
 							/>
 						)}
 

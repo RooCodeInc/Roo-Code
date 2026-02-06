@@ -15,6 +15,7 @@ import { isPathOutsideWorkspace } from "../../utils/pathUtils"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { OpenRouterHandler } from "../../api/providers/openrouter"
 import { RooHandler } from "../../api/providers/roo"
+import { generateImageWithProvider, generateImageWithImagesApi } from "../../api/providers/utils/image-generation"
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 import type { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
@@ -190,7 +191,53 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 			}
 
 			let result
-			if (modelProvider === "roo") {
+			if (imageProvider === "openai-compatible") {
+				// Use custom OpenAI-compatible provider
+				const customBaseUrl = state?.customImageGenBaseUrl
+				const customApiKey = state?.customImageGenApiKey
+				const customModel = state?.customImageGenModel
+				const customApiMethod = state?.customImageGenApiMethod || "images_api"
+
+				if (!customBaseUrl) {
+					const errorMessage = t("tools:generateImage.customBaseUrlRequired")
+					await task.say("error", errorMessage)
+					pushToolResult(formatResponse.toolError(errorMessage))
+					return
+				}
+
+				if (!customApiKey) {
+					const errorMessage = t("tools:generateImage.customApiKeyRequired")
+					await task.say("error", errorMessage)
+					pushToolResult(formatResponse.toolError(errorMessage))
+					return
+				}
+
+				if (!customModel) {
+					const errorMessage = t("tools:generateImage.customModelRequired")
+					await task.say("error", errorMessage)
+					pushToolResult(formatResponse.toolError(errorMessage))
+					return
+				}
+
+				if (customApiMethod === "images_api") {
+					result = await generateImageWithImagesApi({
+						baseURL: customBaseUrl,
+						authToken: customApiKey,
+						model: customModel,
+						prompt,
+						inputImage: inputImageData,
+						outputFormat: "png",
+					})
+				} else {
+					result = await generateImageWithProvider({
+						baseURL: customBaseUrl,
+						authToken: customApiKey,
+						model: customModel,
+						prompt,
+						inputImage: inputImageData,
+					})
+				}
+			} else if (modelProvider === "roo") {
 				// Use Roo Code Cloud provider (supports both chat completions and images API)
 				const rooHandler = new RooHandler({} as any)
 				result = await rooHandler.generateImage(prompt, selectedModel, inputImageData, apiMethod)
