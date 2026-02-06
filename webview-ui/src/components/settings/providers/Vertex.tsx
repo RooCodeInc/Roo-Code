@@ -12,10 +12,9 @@ import { inputEventTransform } from "../transforms"
 type VertexProps = {
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
-	simplifySettings?: boolean
 }
 
-export const Vertex = ({ apiConfiguration, setApiConfigurationField, simplifySettings }: VertexProps) => {
+export const Vertex = ({ apiConfiguration, setApiConfigurationField }: VertexProps) => {
 	const { t } = useAppTranslation()
 
 	// Check if the selected model supports 1M context (supported Claude 4 models)
@@ -113,30 +112,6 @@ export const Vertex = ({ apiConfiguration, setApiConfigurationField, simplifySet
 					</Checkbox>
 					<div className="text-sm text-vscode-descriptionForeground mt-1 ml-6">
 						{t("settings:providers.vertex1MContextBetaDescription")}
-					</div>
-				</div>
-			)}
-
-			{!simplifySettings && apiConfiguration.apiModelId?.startsWith("gemini") && (
-				<div className="mt-6">
-					<Checkbox
-						data-testid="checkbox-url-context"
-						checked={!!apiConfiguration.enableUrlContext}
-						onChange={(checked: boolean) => setApiConfigurationField("enableUrlContext", checked)}>
-						{t("settings:providers.geminiParameters.urlContext.title")}
-					</Checkbox>
-					<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
-						{t("settings:providers.geminiParameters.urlContext.description")}
-					</div>
-
-					<Checkbox
-						data-testid="checkbox-grounding-search"
-						checked={!!apiConfiguration.enableGrounding}
-						onChange={(checked: boolean) => setApiConfigurationField("enableGrounding", checked)}>
-						{t("settings:providers.geminiParameters.groundingSearch.title")}
-					</Checkbox>
-					<div className="text-sm text-vscode-descriptionForeground mb-3 mt-1.5">
-						{t("settings:providers.geminiParameters.groundingSearch.description")}
 					</div>
 				</div>
 			)}
