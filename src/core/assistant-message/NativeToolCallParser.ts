@@ -466,7 +466,9 @@ export class NativeToolCallParser {
 				break
 
 			case "write_to_file":
-				if (partialArgs.path || partialArgs.content) {
+				// Only create nativeArgs when BOTH path and content are present
+				// This prevents showing undefined path (project root) in UI during streaming
+				if (partialArgs.path && partialArgs.content) {
 					nativeArgs = {
 						path: partialArgs.path,
 						content: partialArgs.content,
@@ -484,7 +486,9 @@ export class NativeToolCallParser {
 				break
 
 			case "apply_diff":
-				if (partialArgs.path !== undefined || partialArgs.diff !== undefined) {
+				// Only create nativeArgs when BOTH path and diff are present
+				// This prevents showing undefined path (project root) in UI during streaming
+				if (partialArgs.path && partialArgs.diff) {
 					nativeArgs = {
 						path: partialArgs.path,
 						diff: partialArgs.diff,
