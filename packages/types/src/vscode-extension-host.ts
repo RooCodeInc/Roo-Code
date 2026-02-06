@@ -334,6 +334,7 @@ export type ExtensionState = Pick<
 	| "maxGitStatusFiles"
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
+	| "modelRoutingLightModelId"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

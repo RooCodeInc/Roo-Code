@@ -2411,6 +2411,7 @@ export class ClineProvider
 			customSupportPrompts: stateValues.customSupportPrompts ?? {},
 			enhancementApiConfigId: stateValues.enhancementApiConfigId,
 			experiments: stateValues.experiments ?? experimentDefault,
+			modelRoutingLightModelId: stateValues.modelRoutingLightModelId,
 			autoApprovalEnabled: stateValues.autoApprovalEnabled ?? false,
 			customModes,
 			maxOpenTabsContext: stateValues.maxOpenTabsContext ?? 20,

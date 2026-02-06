@@ -5,6 +5,7 @@ export const EXPERIMENT_IDS = {
 	IMAGE_GENERATION: "imageGeneration",
 	RUN_SLASH_COMMAND: "runSlashCommand",
 	CUSTOM_TOOLS: "customTools",
+	MODEL_ROUTING: "modelRouting",
 } as const satisfies Record<string, ExperimentId>
 
 type _AssertExperimentIds = AssertEqual<Equals<ExperimentId, Values<typeof EXPERIMENT_IDS>>>
@@ -20,6 +21,7 @@ export const experimentConfigsMap: Record<ExperimentKey, ExperimentConfig> = {
 	IMAGE_GENERATION: { enabled: false },
 	RUN_SLASH_COMMAND: { enabled: false },
 	CUSTOM_TOOLS: { enabled: false },
+	MODEL_ROUTING: { enabled: false },
 }
 
 export const experimentDefault = Object.fromEntries(

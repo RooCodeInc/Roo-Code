@@ -96,6 +96,7 @@ import { getTaskDirectoryPath } from "../../utils/storage"
 import { formatResponse } from "../prompts/responses"
 import { SYSTEM_PROMPT } from "../prompts/system"
 import { buildNativeToolsArrayWithRestrictions } from "./build-tools"
+import { ModelRouter } from "./ModelRouter"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
@@ -297,6 +298,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	toolRepetitionDetector: ToolRepetitionDetector
+	modelRouter: ModelRouter
 	rooIgnoreController?: RooIgnoreController
 	rooProtectedController?: RooProtectedController
 	fileContextTracker: FileContextTracker
@@ -614,6 +616,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		this.apiConfiguration = apiConfiguration
 		this.api = buildApiHandler(this.apiConfiguration)
+		this.modelRouter = new ModelRouter()
 		this.autoApprovalHandler = new AutoApprovalHandler()
 
 		this.urlContentFetcher = new UrlContentFetcher(provider.context)
@@ -2894,6 +2897,28 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				await this.diffViewProvider.reset()
 
+				// Model routing: temporarily swap to light model if heuristics say so
+				let primaryApiHandler: typeof this.api | undefined
+				{
+					const routingState = await this.providerRef.deref()?.getState()
+					if (
+						ModelRouter.isEnabled(routingState?.experiments, routingState?.modelRoutingLightModelId) &&
+						this.modelRouter.shouldUseLightModel()
+					) {
+						const lightHandler = ModelRouter.buildLightModelHandler(
+							this.apiConfiguration,
+							routingState!.modelRoutingLightModelId!,
+						)
+						if (lightHandler) {
+							primaryApiHandler = this.api
+							this.api = lightHandler
+							console.log(
+								`[Task#${this.taskId}] Model routing: using light model "${routingState!.modelRoutingLightModelId}" for this turn`,
+							)
+						}
+					}
+				}
+
 				// Cache model info once per API request to avoid repeated calls during streaming
 				// This is especially important for tools and background usage collection
 				this.cachedStreamingModel = this.api.getModel()
@@ -3597,6 +3622,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// }
 
 					await pWaitFor(() => this.userMessageContentReady)
+
+					// Model routing: end current turn and restore primary handler
+					this.modelRouter.endTurn()
+					if (primaryApiHandler) {
+						this.api = primaryApiHandler
+						primaryApiHandler = undefined
+					}
 
 					// If the model did not tool use, then we need to tell it to
 					// either use a tool or attempt_completion.
@@ -4639,6 +4671,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		this.toolUsage[toolName].attempts++
+		this.modelRouter.recordToolUse(toolName)
 	}
 
 	public recordToolError(toolName: ToolName, error?: string) {
