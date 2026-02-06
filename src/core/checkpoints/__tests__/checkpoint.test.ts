@@ -475,7 +475,9 @@ describe("Checkpoint functionality", () => {
 					const provider = mockTask.providerRef.deref()
 					provider?.postMessageToWebview({
 						type: "checkpointInitWarning",
-						checkpointWarning: i18nModule.t("common:errors.wait_checkpoint_long_time", { timeout: 5 }),
+						checkpointWarning: i18nModule.t("common:errors.wait_checkpoint_long_time", {
+							timeout: mockTask.checkpointTimeout,
+						}),
 					})
 				}
 
@@ -490,7 +492,7 @@ describe("Checkpoint functionality", () => {
 			expect(simulateConditionCheck(5000)).toBe(false)
 			expect(mockProvider.postMessageToWebview).toHaveBeenCalledWith({
 				type: "checkpointInitWarning",
-				checkpointWarning: "Checkpoint initialization is taking longer than 5 seconds...",
+				checkpointWarning: "Checkpoint initialization is taking longer than 15 seconds...",
 			})
 
 			// Test: At 6 seconds, warning should not be sent again (warningShown is true)
