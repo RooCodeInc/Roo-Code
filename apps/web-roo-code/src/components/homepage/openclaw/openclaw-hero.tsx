@@ -37,8 +37,8 @@ export function OpenClawHero() {
 					transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
 					className="flex items-center gap-4 mb-8">
 					<div className="flex items-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg px-5 py-3">
-						<div className="size-10 rounded-xl bg-violet-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-							R
+						<div className="size-10 rounded-xl bg-violet-600 flex items-center justify-center text-2xl shadow-md">
+							🦘
 						</div>
 						<span className="text-lg font-semibold">Roo Code</span>
 					</div>
@@ -51,8 +51,8 @@ export function OpenClawHero() {
 					</motion.div>
 
 					<div className="flex items-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg px-5 py-3">
-						<div className="size-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
-							O
+						<div className="size-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-2xl shadow-md">
+							🦞
 						</div>
 						<span className="text-lg font-semibold">OpenClaw</span>
 					</div>

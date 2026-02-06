@@ -206,7 +206,7 @@ export function OpenClawIntegrationSection() {
 									<div className="rounded-xl bg-violet-500/5 dark:bg-violet-500/10 border border-violet-500/10 dark:border-violet-500/20 p-4">
 										<div className="flex items-center gap-2 mb-2">
 											<div className="size-6 rounded-md bg-violet-600 flex items-center justify-center">
-												<span className="text-white text-xs font-bold">R</span>
+												<span className="text-sm">🦘</span>
 											</div>
 											<span className="text-xs font-semibold text-violet-700 dark:text-violet-400">
 												Roo Code
@@ -219,7 +219,7 @@ export function OpenClawIntegrationSection() {
 									<div className="rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/10 dark:border-amber-500/20 p-4">
 										<div className="flex items-center gap-2 mb-2">
 											<div className="size-6 rounded-md bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-												<span className="text-white text-xs font-bold">O</span>
+												<span className="text-sm">🦞</span>
 											</div>
 											<span className="text-xs font-semibold text-amber-700 dark:text-amber-400">
 												OpenClaw
