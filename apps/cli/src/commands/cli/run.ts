@@ -2,8 +2,6 @@ import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
 
-import { createElement } from "react"
-
 import { setLogger } from "@roo-code/vscode-shim"
 
 import {
@@ -204,19 +202,26 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 	if (isTuiEnabled) {
 		try {
-			const { render } = await import("ink")
-			const { App } = await import("../../ui/App.js")
+			// Resolve the ui-next bundle path relative to CLI package root
+			const cliRoot = process.env.ROO_CLI_ROOT || path.resolve(__dirname, "..")
+			const tuiBundlePath = path.join(cliRoot, "dist", "ui-next", "main.js")
 
-			render(
-				createElement(App, {
-					...extensionHostOptions,
-					initialPrompt: prompt,
-					version: VERSION,
-					createExtensionHost: (opts: ExtensionHostOptions) => new ExtensionHost(opts),
-				}),
-				// Handle Ctrl+C in App component for double-press exit.
-				{ exitOnCtrlC: false },
-			)
+			if (!fs.existsSync(tuiBundlePath)) {
+				throw new Error(
+					`TUI bundle not found at: ${tuiBundlePath}\n` +
+						`Run 'cd apps/cli && bun scripts/build-ui-next.ts' to build it.`,
+				)
+			}
+
+			// Dynamic import the pre-built SolidJS/opentui TUI bundle
+			const { startTUI } = await import(tuiBundlePath)
+
+			await startTUI({
+				...extensionHostOptions,
+				initialPrompt: prompt,
+				version: VERSION,
+				createExtensionHost: (opts: ExtensionHostOptions) => new ExtensionHost(opts),
+			})
 		} catch (error) {
 			console.error("[CLI] Failed to start TUI:", error instanceof Error ? error.message : String(error))
 
