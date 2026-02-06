@@ -122,7 +122,7 @@ vi.mock("openai", () => {
 import OpenAI from "openai"
 import type { Anthropic } from "@anthropic-ai/sdk"
 
-import { deepSeekDefaultModelId, type ModelInfo } from "@roo-code/types"
+import { deepSeekDefaultModelId, DEEP_SEEK_DEFAULT_TEMPERATURE, type ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
 
@@ -278,6 +278,20 @@ describe("DeepSeekHandler", () => {
 			const model = handler.getModel()
 			expect(model).toHaveProperty("temperature")
 			expect(model).toHaveProperty("maxTokens")
+		})
+
+		it("should use DEEP_SEEK_DEFAULT_TEMPERATURE as the default temperature", () => {
+			const model = handler.getModel()
+			expect(model.temperature).toBe(DEEP_SEEK_DEFAULT_TEMPERATURE)
+		})
+
+		it("should respect user-provided temperature over DEEP_SEEK_DEFAULT_TEMPERATURE", () => {
+			const handlerWithTemp = new DeepSeekHandler({
+				...mockOptions,
+				modelTemperature: 0.9,
+			})
+			const model = handlerWithTemp.getModel()
+			expect(model.temperature).toBe(0.9)
 		})
 	})
 

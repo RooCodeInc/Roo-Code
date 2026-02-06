@@ -37,7 +37,13 @@ export class DeepSeekHandler extends OpenAiHandler {
 	override getModel() {
 		const id = this.options.apiModelId ?? deepSeekDefaultModelId
 		const info = deepSeekModels[id as keyof typeof deepSeekModels] || deepSeekModels[deepSeekDefaultModelId]
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: DEEP_SEEK_DEFAULT_TEMPERATURE,
+		})
 		return { id, info, ...params }
 	}
 
