@@ -81,6 +81,13 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 	private lastSentMessageCount = 0
 	private isSessionInitialized = false
 
+	/**
+	 * Tool names from the first turn, stored for inclusion in delta prompts.
+	 * Without these, the model "forgets" what tools are available and responds
+	 * with only text, triggering "no tools used" errors in Roo Code's task loop.
+	 */
+	private cachedToolNames: string[] = []
+
 	constructor(options: ClaudeCodeAcpHandlerOptions) {
 		super()
 		this.options = options
@@ -104,6 +111,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		if (this.sessionId !== session.sessionId) {
 			this.lastSentMessageCount = 0
 			this.isSessionInitialized = false
+			this.cachedToolNames = []
 		}
 		this.sessionId = session.sessionId
 
@@ -133,8 +141,59 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 
 		const fullText = textChunks.join("")
 
+		// Handle empty response — reset session so next call sends full prompt
+		// This triggers Roo Code's task loop to retry, which will send a fresh full prompt
+		if (!fullText.trim()) {
+			console.debug("[ClaudeCodeAcpHandler] Empty response from ACP, resetting session")
+			this.isSessionInitialized = false
+			this.lastSentMessageCount = 0
+			throw new Error("Empty response from ACP session — no assistant messages received")
+		}
+
 		// Parse response for text and tool calls
-		const parsed = this.parseProxyResponse(fullText)
+		let parsed = this.parseProxyResponse(fullText)
+
+		// Check if the model responded with only text (no tool calls).
+		// This triggers "no tools used" errors in Roo Code's task loop.
+		// If tool use is expected, retry ONCE with a strong enforcement prompt.
+		const hasToolCalls = parsed.some((chunk) => chunk.type === "tool_call")
+		const toolUseExpected = metadata?.tool_choice !== "none"
+
+		if (!hasToolCalls && toolUseExpected && fullText.trim().length > 0) {
+			console.debug("[ClaudeCodeAcpHandler] Model responded with only text, retrying with tool-use enforcement")
+
+			// Retry with a very explicit enforcement prompt
+			const retryPrompt = this.buildToolEnforcementRetryPrompt(fullText)
+			const retryChunks: string[] = []
+			const retryInputChars = retryPrompt.length
+
+			const retryResult = await this.sendPromptStreaming(session.sessionId, retryPrompt, (text) => {
+				retryChunks.push(text)
+			})
+
+			if (!retryResult.error) {
+				const retryFullText = retryChunks.join("")
+				const retryParsed = this.parseProxyResponse(retryFullText)
+				const retryHasToolCalls = retryParsed.some((chunk) => chunk.type === "tool_call")
+
+				if (retryHasToolCalls) {
+					// Retry succeeded — use the retry response instead
+					parsed = retryParsed
+					// Add retry tokens to usage estimate
+					yield {
+						type: "usage",
+						inputTokens: Math.ceil((totalInputChars + retryInputChars) / 4),
+						outputTokens: Math.ceil((fullText.length + retryFullText.length) / 4),
+					}
+
+					for (const chunk of parsed) {
+						yield chunk
+					}
+					return
+				}
+			}
+			// Retry failed or still no tool calls — fall through to yield original response
+		}
 
 		// Yield all parsed chunks
 		for (const chunk of parsed) {
@@ -255,6 +314,11 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		// Compact tool definitions (function-signature style)
 		if (tools && tools.length > 0) {
 			parts.push(this.formatCompactToolDefinitions(tools))
+			// Cache tool names for delta prompts
+			this.cachedToolNames = tools
+				.filter((t) => t.type === "function")
+				.map((t) => (t as any).function?.name as string)
+				.filter(Boolean)
 		}
 
 		// Conversation history (environment_details fully stripped)
@@ -272,9 +336,11 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 	 * Since the ACP session already has the system prompt, tool definitions,
 	 * and previous conversation from earlier turns, we only send:
 	 * 1. New messages (tool results, new user content)
-	 * 2. A brief continuation reminder
+	 * 2. Available tool names (so the model remembers what tools exist)
+	 * 3. Strong tool-use enforcement instructions
 	 *
-	 * This prevents O(N²) context growth that causes "Prompt is too long" errors.
+	 * This prevents O(N²) context growth that causes "Prompt is too long" errors,
+	 * while ensuring the model doesn't "forget" to use tools on subsequent turns.
 	 */
 	private buildDeltaPrompt(
 		messages: Anthropic.Messages.MessageParam[],
@@ -290,24 +356,86 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			parts.push(this.formatDeltaMessages(newMessages))
 		}
 
-		// Brief continuation instruction
-		let toolChoiceReminder = ""
+		// Tool choice enforcement
+		let toolChoiceInstruction = ""
 		if (toolChoice === "required") {
-			toolChoiceReminder = " You MUST use at least one tool."
+			toolChoiceInstruction = "You MUST use at least one tool in your response."
 		} else if (toolChoice === "none") {
-			toolChoiceReminder = " Do NOT use any tools, respond with text only."
+			toolChoiceInstruction = "Do NOT use any tools. Respond with text only."
 		} else if (typeof toolChoice === "object") {
 			const fnName = (toolChoice as unknown as { function?: { name?: string } })?.function?.name
 			if (fnName) {
-				toolChoiceReminder = ` You MUST use the "${fnName}" tool.`
+				toolChoiceInstruction = `You MUST use the "${fnName}" tool.`
 			}
+		} else {
+			// "auto" — still require tool use since Roo Code task loop expects it
+			toolChoiceInstruction = "You MUST use at least one tool in your response."
 		}
 
+		// Include available tool names so the model remembers what tools exist.
+		// Without this, the model often responds with only text on subsequent turns.
+		const toolNamesReminder =
+			this.cachedToolNames.length > 0 ? `Available tools: ${this.cachedToolNames.join(", ")}` : ""
+
+		// Concrete example to reinforce the format (model tends to forget XML tags)
+		const concreteExample = this.cachedToolNames.includes("read_file")
+			? `${TOOL_CALL_OPEN_TAG}\n{"name": "read_file", "arguments": {"path": "package.json"}}\n${TOOL_CALL_CLOSE_TAG}`
+			: `${TOOL_CALL_OPEN_TAG}\n{"name": "attempt_completion", "arguments": {"result": "Done."}}\n${TOOL_CALL_CLOSE_TAG}`
+
+		// Strong continuation instructions with tool-use enforcement
 		parts.push(
-			`Continue with your task. Remember to use ${TOOL_CALL_OPEN_TAG} format for tool calls.${toolChoiceReminder}`,
+			[
+				`[CONTINUE]`,
+				toolChoiceInstruction,
+				`Tool call format example:`,
+				concreteExample,
+				toolNamesReminder,
+				`If the task is complete, use attempt_completion. If you need info, use read_file/search_files/list_files. NEVER respond with only text.`,
+			]
+				.filter(Boolean)
+				.join("\n"),
 		)
 
 		return parts.join("\n\n")
+	}
+
+	/**
+	 * Build a retry prompt when the model responded with only text (no tool calls).
+	 *
+	 * This is a last-resort enforcement: we tell the model its previous response
+	 * was rejected because it didn't include any tool calls, and it MUST retry
+	 * with at least one tool call.
+	 */
+	private buildToolEnforcementRetryPrompt(previousTextResponse: string): string {
+		// Truncate previous response to avoid sending too much back
+		const truncatedResponse =
+			previousTextResponse.length > 500 ? previousTextResponse.slice(0, 500) + "..." : previousTextResponse
+
+		const toolNamesReminder =
+			this.cachedToolNames.length > 0 ? `\nAvailable tools: ${this.cachedToolNames.join(", ")}` : ""
+
+		// Pick a concrete example based on available tools
+		const concreteExample = this.cachedToolNames.includes("read_file")
+			? `${TOOL_CALL_OPEN_TAG}\n{"name": "read_file", "arguments": {"path": "package.json"}}\n${TOOL_CALL_CLOSE_TAG}`
+			: `${TOOL_CALL_OPEN_TAG}\n{"name": "attempt_completion", "arguments": {"result": "Task completed."}}\n${TOOL_CALL_CLOSE_TAG}`
+
+		return `[ERROR: RESPONSE REJECTED - NO TOOL CALLS]
+Your previous response was REJECTED because it contained only text without any tool calls:
+"${truncatedResponse}"
+
+This system REQUIRES at least one tool call in every response. Text-only responses are not accepted.
+${toolNamesReminder}
+
+You MUST now respond with at least one tool call. Here is a concrete example:
+${concreteExample}
+
+- If the task is complete → use attempt_completion
+- If you need to read a file → use read_file
+- If you need to search → use search_files or list_files
+- If you need to ask the user → use ask_followup_question
+- If you need to run a command → use execute_command
+
+Respond NOW with the appropriate tool call(s). Do NOT use your built-in tools (Bash, Read, Write, etc.) — ONLY use ${TOOL_CALL_OPEN_TAG} XML format.`
 	}
 
 	/**
@@ -461,7 +589,11 @@ Current time: ${new Date().toISOString()}`
 
 	/**
 	 * Format tool parameters as compact TypeScript-like signatures.
-	 * Handles required/optional, enums, and basic types.
+	 * Handles required/optional, enums, basic types, and nested objects.
+	 *
+	 * For nested objects (e.g., array items with properties), recursively
+	 * formats inner fields so the model knows the expected structure.
+	 * Example: `follow_up: {text: string, mode: string|null}[]`
 	 */
 	private formatCompactParams(schema: any): string {
 		if (!schema?.properties) {
@@ -477,18 +609,29 @@ Current time: ${new Date().toISOString()}`
 				if (prop.enum) {
 					return `${name}${opt}: ${prop.enum.map((e: string) => `"${e}"`).join("|")}`
 				}
-				// Handle array types
+				// Handle array of objects with known properties (e.g., follow_up: {text, mode}[])
+				if (prop.type === "array" && prop.items?.properties) {
+					const innerFields = this.formatCompactParams(prop.items)
+					return `${name}${opt}: {${innerFields}}[]`
+				}
+				// Handle array of simple types
 				if (prop.type === "array") {
 					const itemType = prop.items?.type || "any"
 					return `${name}${opt}: ${itemType}[]`
 				}
-				// Handle nested object types (show as 'object' to keep compact)
+				// Handle nested object with known properties
+				if (prop.type === "object" && prop.properties) {
+					const innerFields = this.formatCompactParams(prop)
+					return `${name}${opt}: {${innerFields}}`
+				}
+				// Handle generic object (no known properties)
 				if (prop.type === "object") {
 					return `${name}${opt}: object`
 				}
-				// Basic types
+				// Handle nullable types like ["string", "null"]
 				const type = Array.isArray(prop.type)
-					? prop.type.filter((t: string) => t !== "null").join("|")
+					? prop.type.filter((t: string) => t !== "null").join("|") +
+						(prop.type.includes("null") ? "|null" : "")
 					: prop.type || "any"
 				return `${name}${opt}: ${type}`
 			})
