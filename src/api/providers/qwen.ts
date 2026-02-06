@@ -2,13 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { createQwen } from "qwen-ai-provider-v5"
 import { streamText, generateText, ToolSet } from "ai"
 
-import {
-	qwenModels,
-	qwenDefaultModelId,
-	QWEN_API_BASE_URL,
-	QWEN_API_BASE_URL_CHINA,
-	type ModelInfo,
-} from "@roo-code/types"
+import { qwenModels, qwenDefaultModelId, QWEN_API_BASE_URL, type ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
