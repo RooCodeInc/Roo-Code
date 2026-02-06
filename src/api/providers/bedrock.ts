@@ -201,6 +201,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	private client: BedrockRuntimeClient
 	private arnInfo: any
 	private readonly providerName = "Bedrock"
+	private lastThoughtSignature: string | undefined
 
 	constructor(options: ProviderSettings) {
 		super()
@@ -491,6 +492,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				throw new Error("No stream available in the response")
 			}
 
+			// Reset thought signature for this request
+			this.lastThoughtSignature = undefined
+
 			for await (const chunk of response.stream) {
 				// Parse the chunk as JSON if it's a string (for tests)
 				let streamEvent: StreamEvent
@@ -639,6 +643,18 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 								type: "reasoning",
 								text: delta.reasoningContent.text,
 							}
+							continue
+						}
+
+						// Capture the thinking signature from reasoningContent.signature delta.
+						// Bedrock Converse API sends the signature as a separate delta after all
+						// reasoning text deltas. This signature must be round-tripped back for
+						// multi-turn conversations with tool use (Anthropic API requirement).
+						// Note: The AWS SDK types may not include 'signature' yet, so we use
+						// a type assertion to access it from the raw stream data.
+						const reasoningSig = (delta.reasoningContent as { signature?: string } | undefined)?.signature
+						if (reasoningSig) {
+							this.lastThoughtSignature = reasoningSig
 							continue
 						}
 
@@ -1578,5 +1594,15 @@ Please check:
 			// For non-streaming context, add the expected prefix
 			return `Bedrock completion error: ${errorMessage}`
 		}
+	}
+
+	/**
+	 * Returns the thinking signature captured from the last Bedrock Converse API response.
+	 * Claude models with extended thinking return a cryptographic signature in the
+	 * reasoning content delta, which must be round-tripped back for multi-turn
+	 * conversations with tool use (Anthropic API requirement).
+	 */
+	getThoughtSignature(): string | undefined {
+		return this.lastThoughtSignature
 	}
 }

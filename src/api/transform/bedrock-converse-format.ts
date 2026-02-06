@@ -195,15 +195,43 @@ export function convertToBedrockConverseMessages(anthropicMessages: Anthropic.Me
 				} as ContentBlock
 			}
 
+			// Handle Anthropic thinking blocks (stored by Task.ts for extended thinking)
+			// Convert to Bedrock Converse API's reasoningContent format
+			const blockAny = block as { type: string; thinking?: string; signature?: string }
+			if (blockAny.type === "thinking" && blockAny.thinking) {
+				return {
+					reasoningContent: {
+						reasoningText: {
+							text: blockAny.thinking,
+							signature: blockAny.signature,
+						},
+					},
+				} as ContentBlock
+			}
+
+			// Handle redacted thinking blocks (Anthropic sends these when content is filtered)
+			if (blockAny.type === "redacted_thinking") {
+				// Skip redacted thinking — Bedrock doesn't support redactedContent in input
+				return undefined as unknown as ContentBlock
+			}
+
+			// Skip reasoning blocks (internal Roo Code format, not for the API)
+			if (blockAny.type === "reasoning" || blockAny.type === "thoughtSignature") {
+				return undefined as unknown as ContentBlock
+			}
+
 			// Default case for unknown block types
 			return {
 				text: "[Unknown Block Type]",
 			} as ContentBlock
 		})
 
+		// Filter out undefined entries (from skipped block types like redacted_thinking, reasoning)
+		const filteredContent = content.filter((block): block is ContentBlock => block != null)
+
 		return {
 			role,
-			content,
+			content: filteredContent,
 		}
 	})
 }
