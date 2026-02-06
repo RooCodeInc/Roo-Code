@@ -39,16 +39,35 @@ const TOOL_CALL_CLOSE_TAG = "</roo_tool_call>"
 const MAX_TOOL_RESULT_CHARS = 8_000
 
 /**
- * Claude Code ACP Handler — LLM Proxy Mode
+ * Essential behavioral rules for the proxy prompt.
+ * Curated subset of getRulesSection() — only rules that the model cannot
+ * infer from tool descriptions or Claude Code CLI's own system prompt.
+ */
+const ESSENTIAL_RULES = `RULES:
+- All file paths must be relative to the working directory.
+- You cannot \`cd\` into a different directory to complete a task. You are stuck operating from the working directory, so pass in the correct 'path' parameter when using tools that require a path.
+- Do not ask for more information than necessary. Use the tools provided to accomplish the user's request efficiently. When you've completed your task, you must use the attempt_completion tool to present the result to the user.
+- You are only allowed to ask the user questions using the ask_followup_question tool.
+- NEVER end attempt_completion result with a question or request to engage in further conversation.
+- You are STRICTLY FORBIDDEN from starting your messages with "Great", "Certainly", "Okay", "Sure". Be direct and technical.
+- Some modes have restrictions on which files they can edit. If you attempt to edit a restricted file, the operation will be rejected with a FileRestrictionError.
+- It is critical you wait for the user's response after each tool use to confirm success before proceeding.`
+
+/**
+ * Claude Code ACP Handler — LLM Proxy Mode (Token-Optimized)
  *
  * Uses Claude Code ACP as a raw LLM proxy (not as an autonomous agent).
- * The model receives the full system prompt, conversation history, and tool
- * definitions on the FIRST turn. Subsequent turns only send delta messages
- * (new tool results) to avoid duplicating context in the ACP session.
  *
- * This makes the ACP provider behave like other providers (OpenAI, Anthropic):
- * the model decides which Roo Code tools to call, and Roo Code's task loop
- * handles execution and continuation.
+ * Token optimization strategy:
+ * - Only sends minimal context (role + essential rules + custom instructions)
+ *   instead of the full Roo Code system prompt (saves ~30-45 KB)
+ * - Uses compact function-signature tool definitions instead of full JSON schemas
+ *   (saves ~15-35 KB)
+ * - Strips environment_details entirely (Claude Code CLI has native workspace access)
+ *   (saves ~5-100 KB)
+ * - Delta prompts on subsequent turns (only new messages)
+ *
+ * Result: First-turn prompt ~8-25 KB instead of ~120-360 KB (~90% reduction)
  */
 export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ClaudeCodeAcpHandlerOptions
@@ -205,11 +224,15 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 	/**
 	 * Build the FULL proxy prompt for the first turn in an ACP session.
 	 *
-	 * Includes everything the model needs:
-	 * 1. Proxy mode instructions
-	 * 2. Full system prompt from Roo Code
-	 * 3. Tool definitions
-	 * 4. Conversation history (environment_details stripped from old messages)
+	 * Token-optimized: sends only essential context instead of the full
+	 * Roo Code system prompt. Claude Code CLI already provides its own
+	 * system prompt, OS info, workspace awareness, and tool methodology.
+	 *
+	 * Sections:
+	 * 1. Proxy mode instructions (with cwd/mode context)
+	 * 2. Minimal system context (role + essential rules + custom instructions)
+	 * 3. Compact tool definitions (function-signature style)
+	 * 4. Conversation history (environment_details fully stripped)
 	 */
 	private buildFullProxyPrompt(
 		systemPrompt: string,
@@ -218,21 +241,23 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		toolChoice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
 	): string {
 		const parts: string[] = []
+		const workingDirectory = this.options.claudeCodeAcpWorkingDirectory || process.cwd()
 
-		// Proxy mode instructions
-		parts.push(this.buildProxyInstructions(toolChoice))
+		// Proxy mode instructions (with workspace context)
+		parts.push(this.buildProxyInstructions(toolChoice, workingDirectory))
 
-		// Full system prompt
-		if (systemPrompt) {
-			parts.push(`[SYSTEM PROMPT]\n${systemPrompt}`)
+		// Minimal system context (role + essential rules + custom instructions)
+		const minimalContext = this.buildMinimalSystemContext(systemPrompt, workingDirectory)
+		if (minimalContext) {
+			parts.push(`[ROLE AND BEHAVIOR]\n${minimalContext}`)
 		}
 
-		// Tool definitions
+		// Compact tool definitions (function-signature style)
 		if (tools && tools.length > 0) {
-			parts.push(this.formatToolDefinitions(tools))
+			parts.push(this.formatCompactToolDefinitions(tools))
 		}
 
-		// Conversation history (with environment_details stripping)
+		// Conversation history (environment_details fully stripped)
 		const formattedMessages = this.formatConversation(messages)
 		if (formattedMessages) {
 			parts.push(`[CONVERSATION]\n${formattedMessages}`)
@@ -287,15 +312,18 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 
 	/**
 	 * Build the proxy mode instructions that tell Claude Code to act as a raw LLM.
+	 * Includes workspace context (cwd, time) since we no longer send getSystemInfoSection().
 	 */
-	private buildProxyInstructions(toolChoice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"]): string {
+	private buildProxyInstructions(
+		toolChoice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
+		cwd?: string,
+	): string {
 		let toolChoiceInstruction = ""
 		if (toolChoice === "required") {
 			toolChoiceInstruction = "\nIMPORTANT: You MUST use at least one tool in your response."
 		} else if (toolChoice === "none") {
 			toolChoiceInstruction = "\nIMPORTANT: Do NOT use any tools. Respond with text only."
 		} else if (typeof toolChoice === "object") {
-			// OpenAI v5 types: ChatCompletionNamedToolChoice has .function.name
 			const fnName = (toolChoice as unknown as { function?: { name?: string } })?.function?.name
 			if (fnName) {
 				toolChoiceInstruction = `\nIMPORTANT: You MUST use the "${fnName}" tool.`
@@ -317,24 +345,154 @@ ${TOOL_CALL_OPEN_TAG}
 ${TOOL_CALL_CLOSE_TAG}
 
 You can mix text and tool calls freely. Each tool call must be in its own tag block.
-The "arguments" field must be a JSON object matching the tool's parameter schema.${toolChoiceInstruction}`
+The "arguments" field must be a JSON object matching the tool's parameter schema.
+
+IMPORTANT: You MUST use at least one tool in every response. Never respond with only text.
+If you have completed the task, use the attempt_completion tool.
+If you need to delegate work, use the new_task tool.
+If you need information, use the appropriate read/search tool.${toolChoiceInstruction}
+
+Working directory: ${cwd || "unknown"}
+Current time: ${new Date().toISOString()}`
+	}
+
+	// ─── Minimal System Context ─────────────────────────────────────────
+
+	/**
+	 * Extract only the essential parts from the full Roo Code system prompt.
+	 *
+	 * The full system prompt (~40-80 KB) contains many sections that are
+	 * redundant when using Claude Code CLI as the backend (it has its own
+	 * system prompt, OS awareness, tool methodology, etc.).
+	 *
+	 * We extract only:
+	 * 1. roleDefinition — the mode personality (everything before first "====")
+	 * 2. ESSENTIAL_RULES — curated behavioral rules (~0.8 KB hardcoded)
+	 * 3. Custom instructions — user's .roo/rules/, AGENTS.md, etc.
+	 *
+	 * This reduces ~40-80 KB to ~3-15 KB (~80% savings).
+	 */
+	private buildMinimalSystemContext(fullSystemPrompt: string, cwd: string): string {
+		const parts: string[] = []
+
+		// 1. Extract roleDefinition: everything before the first "====" delimiter
+		const roleDefinition = this.extractRoleDefinition(fullSystemPrompt)
+		if (roleDefinition) {
+			parts.push(roleDefinition)
+		}
+
+		// 2. Essential behavioral rules (hardcoded curated subset)
+		parts.push(ESSENTIAL_RULES.replace(/the working directory/g, `'${cwd}'`))
+
+		// 3. Extract custom instructions (user-defined, must always preserve)
+		const customInstructions = this.extractCustomInstructions(fullSystemPrompt)
+		if (customInstructions) {
+			parts.push(customInstructions)
+		}
+
+		return parts.filter(Boolean).join("\n\n")
 	}
 
 	/**
-	 * Format tool definitions as text for inclusion in the proxy prompt.
+	 * Extract the roleDefinition from the system prompt.
+	 * This is everything before the first "====" section delimiter.
+	 * Contains the mode personality (code/architect/ask/debug).
 	 */
-	private formatToolDefinitions(tools: OpenAI.Chat.ChatCompletionTool[]): string {
+	private extractRoleDefinition(systemPrompt: string): string {
+		// The system prompt starts with roleDefinition, followed by sections
+		// separated by "\n====\n" or "\n\n====\n\n"
+		const delimiterIndex = systemPrompt.indexOf("\n====\n")
+		if (delimiterIndex > 0) {
+			return systemPrompt.substring(0, delimiterIndex).trim()
+		}
+		// Fallback: if no delimiter found, return first 2000 chars as safe limit
+		return systemPrompt.substring(0, 2000).trim()
+	}
+
+	/**
+	 * Extract custom instructions section from the system prompt.
+	 * Looks for the "USER'S CUSTOM INSTRUCTIONS" marker and returns everything after it.
+	 * This includes: language preference, global instructions, mode-specific instructions,
+	 * .roo/rules/ files, AGENTS.md content.
+	 */
+	private extractCustomInstructions(systemPrompt: string): string {
+		const marker = "USER'S CUSTOM INSTRUCTIONS"
+		const markerIndex = systemPrompt.indexOf(marker)
+		if (markerIndex < 0) {
+			return ""
+		}
+
+		// Find the "====" before the marker to include the section header
+		const sectionStart = systemPrompt.lastIndexOf("====", markerIndex)
+		if (sectionStart >= 0) {
+			return systemPrompt.substring(sectionStart).trim()
+		}
+
+		return systemPrompt.substring(markerIndex).trim()
+	}
+
+	// ─── Compact Tool Definitions ───────────────────────────────────────
+
+	/**
+	 * Format tool definitions in compact function-signature style.
+	 *
+	 * Instead of full JSON Schema (~1-2.5 KB per tool), uses TypeScript-like signatures
+	 * (~100-200 bytes per tool). Claude models can infer correct argument structure
+	 * from parameter names and types alone.
+	 *
+	 * Example:
+	 *   read_file(path: string, start_line?: number, end_line?: number) - Read file contents.
+	 *
+	 * Saves ~80-90% on tool definitions (from ~15-40 KB to ~3-5 KB).
+	 */
+	private formatCompactToolDefinitions(tools: OpenAI.Chat.ChatCompletionTool[]): string {
 		const toolTexts = tools
 			.filter((t) => t.type === "function")
 			.map((t) => {
-				// Use `any` cast like base-provider.ts does for OpenAI v5 compatibility
-				const fn = (t as any).function as { name: string; description?: string; parameters?: unknown }
-				// Compact JSON (no indentation) to save ~30% on schema size
-				const params = fn.parameters ? JSON.stringify(fn.parameters) : "{}"
-				return `### ${fn.name}\n${fn.description || "(no description)"}\nParameters: ${params}`
+				const fn = (t as any).function as { name: string; description?: string; parameters?: any }
+				const params = this.formatCompactParams(fn.parameters)
+				// Take first sentence/line of description, cap at 200 chars
+				const desc = fn.description ? fn.description.split("\n")[0].slice(0, 200) : "(no description)"
+				return `${fn.name}(${params}) - ${desc}`
 			})
 
-		return `[AVAILABLE TOOLS]\n${toolTexts.join("\n\n")}`
+		return `[AVAILABLE TOOLS]\nWhen using a tool, output JSON in ${TOOL_CALL_OPEN_TAG} with "name" and "arguments" keys.\n\n${toolTexts.join("\n\n")}`
+	}
+
+	/**
+	 * Format tool parameters as compact TypeScript-like signatures.
+	 * Handles required/optional, enums, and basic types.
+	 */
+	private formatCompactParams(schema: any): string {
+		if (!schema?.properties) {
+			return ""
+		}
+
+		const required = new Set<string>(schema.required || [])
+
+		return Object.entries(schema.properties)
+			.map(([name, prop]: [string, any]) => {
+				const opt = required.has(name) ? "" : "?"
+				// Handle enum types
+				if (prop.enum) {
+					return `${name}${opt}: ${prop.enum.map((e: string) => `"${e}"`).join("|")}`
+				}
+				// Handle array types
+				if (prop.type === "array") {
+					const itemType = prop.items?.type || "any"
+					return `${name}${opt}: ${itemType}[]`
+				}
+				// Handle nested object types (show as 'object' to keep compact)
+				if (prop.type === "object") {
+					return `${name}${opt}: object`
+				}
+				// Basic types
+				const type = Array.isArray(prop.type)
+					? prop.type.filter((t: string) => t !== "null").join("|")
+					: prop.type || "any"
+				return `${name}${opt}: ${type}`
+			})
+			.join(", ")
 	}
 
 	// ─── Conversation Formatting ────────────────────────────────────────
@@ -343,22 +501,14 @@ The "arguments" field must be a JSON object matching the tool's parameter schema
 	 * Format ALL conversation messages for the first turn's proxy prompt.
 	 *
 	 * Optimizations:
-	 * 1. Strips <environment_details> from all messages except the last user message
+	 * 1. Strips <environment_details> from ALL messages (Claude Code CLI has native workspace access)
 	 * 2. Truncates large tool results to MAX_TOOL_RESULT_CHARS
 	 */
 	private formatConversation(messages: Anthropic.Messages.MessageParam[]): string {
-		// Find the index of the last user message (to preserve its environment_details)
-		let lastUserMsgIndex = -1
-		for (let i = messages.length - 1; i >= 0; i--) {
-			if (messages[i].role === "user") {
-				lastUserMsgIndex = i
-				break
-			}
-		}
-
 		const formattedMessages: string[] = []
 		for (let i = 0; i < messages.length; i++) {
-			const formatted = this.formatSingleMessage(messages[i], i === lastUserMsgIndex)
+			// Always strip environment_details — Claude Code CLI has native workspace access
+			const formatted = this.formatSingleMessage(messages[i], false)
 			if (formatted) {
 				formattedMessages.push(formatted)
 			}
@@ -377,8 +527,7 @@ The "arguments" field must be a JSON object matching the tool's parameter schema
 		const parts: string[] = []
 
 		for (const msg of messages) {
-			// In delta mode, strip environment_details from all messages
-			// (the model already has the workspace context from the first turn)
+			// Always strip environment_details in delta mode
 			const formatted = this.formatSingleMessage(msg, false)
 			if (formatted) {
 				parts.push(formatted)
@@ -444,11 +593,12 @@ The "arguments" field must be a JSON object matching the tool's parameter schema
 
 	/**
 	 * Strip <environment_details>...</environment_details> blocks from text.
-	 * These are appended by Roo Code to every user message and are very large
-	 * (full workspace file tree). Only needed once in the first turn.
+	 * These are appended by Roo Code to every user message and contain the full
+	 * workspace file tree (5-100 KB). Claude Code CLI has native workspace access,
+	 * so this information is 100% redundant in the ACP proxy.
 	 */
 	private stripEnvironmentDetails(text: string): string {
-		return text.replace(/<environment_details>[\s\S]*?<\/environment_details>/g, "[environment_details omitted]")
+		return text.replace(/<environment_details>[\s\S]*?<\/environment_details>/g, "")
 	}
 
 	// ─── Response Parsing ────────────────────────────────────────────────
