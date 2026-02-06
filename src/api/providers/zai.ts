@@ -40,7 +40,7 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 	}
 
 	/**
-	 * Override createStream to handle GLM-4.7's thinking mode.
+	 * Override createStream to handle GLM-4.7's thinking mode and add top_p parameter.
 	 * GLM-4.7 has thinking enabled by default in the API, so we need to
 	 * explicitly send { type: "disabled" } when the user turns off reasoning.
 	 */
@@ -64,8 +64,48 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 			return this.createStreamWithThinking(systemPrompt, messages, metadata, useReasoning)
 		}
 
-		// For non-thinking models, use the default behavior
-		return super.createStream(systemPrompt, messages, metadata, requestOptions)
+		// For non-thinking models, use the default behavior with added top_p
+		return this.createStreamWithTopP(systemPrompt, messages, metadata, requestOptions)
+	}
+
+	/**
+	 * Creates a stream with top_p parameter for non-thinking models
+	 */
+	private createStreamWithTopP(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+		requestOptions?: OpenAI.RequestOptions,
+	) {
+		const { id: model, info } = this.getModel()
+
+		const max_tokens =
+			getModelMaxOutputTokens({
+				modelId: model,
+				model: info,
+				settings: this.options,
+				format: "openai",
+			}) ?? undefined
+
+		const temperature = this.options.modelTemperature ?? info.defaultTemperature ?? this.defaultTemperature
+
+		const params: OpenAI.Chat.ChatCompletionCreateParamsStreaming = {
+			model,
+			max_tokens,
+			temperature,
+			top_p: 0.95,
+			messages: [
+				{ role: "system", content: systemPrompt },
+				...convertToZAiFormat(messages, { mergeToolResultText: true }),
+			],
+			stream: true,
+			stream_options: { include_usage: true },
+			tools: this.convertToolsForOpenAI(metadata?.tools),
+			tool_choice: metadata?.tool_choice,
+			parallel_tool_calls: metadata?.parallelToolCalls ?? false,
+		}
+
+		return this.client.chat.completions.create(params, requestOptions)
 	}
 
 	/**
@@ -96,6 +136,7 @@ export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
 			model,
 			max_tokens,
 			temperature,
+			top_p: 0.95,
 			messages: [{ role: "system", content: systemPrompt }, ...convertedMessages],
 			stream: true,
 			stream_options: { include_usage: true },
