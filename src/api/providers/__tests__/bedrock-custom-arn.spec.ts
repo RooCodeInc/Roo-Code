@@ -22,38 +22,6 @@ vitest.mock("../../../utils/logging", () => ({
 	},
 }))
 
-// Mock AWS SDK
-vitest.mock("@aws-sdk/client-bedrock-runtime", () => {
-	const mockModule = {
-		lastCommandInput: null as Record<string, any> | null,
-		mockSend: vitest.fn().mockImplementation(async function () {
-			return {
-				output: new TextEncoder().encode(JSON.stringify({ content: "Test response" })),
-			}
-		}),
-		mockConverseCommand: vitest.fn(function (input) {
-			mockModule.lastCommandInput = input
-			return { input }
-		}),
-		MockBedrockRuntimeClient: class {
-			public config: any
-			public send: any
-
-			constructor(config: { region?: string }) {
-				this.config = config
-				this.send = mockModule.mockSend
-			}
-		},
-	}
-
-	return {
-		BedrockRuntimeClient: mockModule.MockBedrockRuntimeClient,
-		ConverseCommand: mockModule.mockConverseCommand,
-		ConverseStreamCommand: vitest.fn(),
-		__mock: mockModule, // Expose mock internals for testing
-	}
-})
-
 describe("Bedrock ARN Handling", () => {
 	// Helper function to create a handler with specific options
 	const createHandler = (options: Partial<ApiHandlerOptions> = {}) => {

@@ -459,7 +459,6 @@
 		"@ai-sdk/groq": "^3.0.19",
 		"@ai-sdk/mistral": "^3.0.0",
 		"@ai-sdk/xai": "^3.0.46",
-		"@anthropic-ai/bedrock-sdk": "^0.10.2",
 		"@anthropic-ai/sdk": "^0.37.0",
 		"@anthropic-ai/vertex-sdk": "^0.7.0",
 		"@aws-sdk/client-bedrock-runtime": "^3.922.0",
