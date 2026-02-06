@@ -275,20 +275,89 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		}
 
 		// Prompt caching: use AI SDK's cachePoint mechanism
-		// The AI SDK's @ai-sdk/amazon-bedrock supports cachePoint in providerOptions per message
+		// The AI SDK's @ai-sdk/amazon-bedrock supports cachePoint in providerOptions per message.
+		//
+		// We identify the last two *original* Anthropic user messages (before AI SDK conversion)
+		// because convertToAiSdkMessages() splits user messages containing tool_results into
+		// separate "tool" + "user" role messages, which would skew naive counting on the
+		// converted array. Instead we build a mapping from each original Anthropic message to
+		// the AI SDK message(s) it produced, then apply cachePoint to the correct AI SDK message
+		// that represents the tail of each targeted original user message.
 		const usePromptCache = Boolean(this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig))
 
 		if (usePromptCache) {
-			// Add cache points to the last two user messages in the AI SDK messages array.
-			// The @ai-sdk/amazon-bedrock provider reads providerOptions.bedrock.cachePoint per message.
 			const cachePointOption = { bedrock: { cachePoint: { type: "default" as const } } }
-			const userMessageIndices = aiSdkMessages
-				.map((msg, idx) => (msg.role === "user" ? idx : -1))
-				.filter((idx) => idx !== -1)
-			const indicesToCache = userMessageIndices.slice(-2)
-			for (const idx of indicesToCache) {
-				const msg = aiSdkMessages[idx]
-				msg.providerOptions = { ...msg.providerOptions, ...cachePointOption }
+
+			// Find the last two user messages in the original (pre-conversion) message array.
+			// This matches the Anthropic provider's strategy: cache the latest user message
+			// (write to cache for next request) and the second-to-last user message (read
+			// from cache for the current request).
+			const originalUserIndices = filteredMessages.reduce<number[]>(
+				(acc, msg, idx) => (msg.role === "user" ? [...acc, idx] : acc),
+				[],
+			)
+			const targetOriginalIndices = new Set(originalUserIndices.slice(-2))
+
+			// Build a mapping from original message index → last AI SDK message index.
+			// convertToAiSdkMessages produces messages in order; a single original user
+			// message with tool_results becomes [tool-role msg, user-role msg], while a
+			// plain user message becomes [user-role msg]. We walk both arrays in parallel
+			// to track which AI SDK messages correspond to each original message.
+			if (targetOriginalIndices.size > 0) {
+				let aiSdkIdx = 0
+				for (let origIdx = 0; origIdx < filteredMessages.length; origIdx++) {
+					const origMsg = filteredMessages[origIdx]
+
+					if (typeof origMsg.content === "string") {
+						// Simple string content → 1 AI SDK message
+						if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+							const msg = aiSdkMessages[aiSdkIdx]
+							msg.providerOptions = { ...msg.providerOptions, ...cachePointOption }
+						}
+						aiSdkIdx++
+					} else if (origMsg.role === "user") {
+						// User message with array content may split into tool + user messages.
+						const hasToolResults = origMsg.content.some(
+							(part) => (part as { type: string }).type === "tool_result",
+						)
+						const hasNonToolContent = origMsg.content.some(
+							(part) =>
+								(part as { type: string }).type === "text" ||
+								(part as { type: string }).type === "image",
+						)
+
+						if (hasToolResults && hasNonToolContent) {
+							// Split into tool msg + user msg — cache the user msg (the second one)
+							const toolMsgIdx = aiSdkIdx
+							const userMsgIdx = aiSdkIdx + 1
+							if (
+								targetOriginalIndices.has(origIdx) &&
+								userMsgIdx < aiSdkMessages.length
+							) {
+								const msg = aiSdkMessages[userMsgIdx]
+								msg.providerOptions = { ...msg.providerOptions, ...cachePointOption }
+							}
+							aiSdkIdx += 2
+						} else if (hasToolResults) {
+							// Only tool results, no text/image → becomes 1 tool msg
+							if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+								const msg = aiSdkMessages[aiSdkIdx]
+								msg.providerOptions = { ...msg.providerOptions, ...cachePointOption }
+							}
+							aiSdkIdx++
+						} else {
+							// Only text/image content → 1 user msg
+							if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+								const msg = aiSdkMessages[aiSdkIdx]
+								msg.providerOptions = { ...msg.providerOptions, ...cachePointOption }
+							}
+							aiSdkIdx++
+						}
+					} else {
+						// Assistant message → 1 AI SDK message
+						aiSdkIdx++
+					}
+				}
 			}
 		}
 
