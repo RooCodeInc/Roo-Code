@@ -329,11 +329,11 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 				// File paths enable efficient persistence for future context, while raw base64 data allows
 				// the model to analyze images in the current turn.
 				if (images.length > 0) {
-					const savedImagePaths = await this.saveImagesToTempStorage(task, images, serverName, toolName)
-					const imagePathsSection = savedImagePaths
+					const savedImages = await this.saveImagesToTempStorage(task, images, serverName, toolName)
+					const imagePathsSection = savedImages
 						.map(
-							(imgPath, index) =>
-								`<image_${index + 1}>\n  <source_path>${imgPath}</source_path>\n  <data>${images[index]}</data>\n</image_${index + 1}>`,
+							(savedImage, index) =>
+								`<image_${index + 1}>\n  <source_path>${savedImage.path}</source_path>\n  <data>${images[savedImage.originalIndex]}</data>\n</image_${index + 1}>`,
 						)
 						.join("\n\n")
 					const imageInfo = `\n\n[${images.length} image(s) received and saved to temporary storage. Use save_image tool with source_path (preferred) or data to save to your desired location.]\n\n${imagePathsSection}`
@@ -364,17 +364,20 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 	}
 
 	/**
-	 * Save images to task-specific temp storage and return file paths.
+	 * Save images to task-specific temp storage and return file paths with original indices.
 	 * This allows passing file paths to the LLM instead of raw base64 data,
 	 * which prevents data corruption and reduces token costs.
+	 * The originalIndex tracks each saved image's position in the source array so that
+	 * callers can correctly pair paths with the original data URLs even when some
+	 * images are skipped (e.g. unsupported formats).
 	 */
 	private async saveImagesToTempStorage(
 		task: Task,
 		images: string[],
 		serverName: string,
 		toolName: string,
-	): Promise<string[]> {
-		const savedPaths: string[] = []
+	): Promise<{ path: string; originalIndex: number }[]> {
+		const savedImages: { path: string; originalIndex: number }[] = []
 
 		try {
 			const provider = task.providerRef.deref()
@@ -406,15 +409,15 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 					const imageBuffer = Buffer.from(data, "base64")
 					await fs.writeFile(filePath, imageBuffer)
 
-					savedPaths.push(filePath)
+					savedImages.push({ path: filePath, originalIndex: i })
 				}
 			}
 		} catch (error) {
 			console.error("Error saving images to temp storage:", error)
-			// Return empty paths array on error - the LLM will see the error and handle accordingly
+			// Return empty array on error - the LLM will see the error and handle accordingly
 		}
 
-		return savedPaths
+		return savedImages
 	}
 
 	/**
@@ -425,8 +428,8 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		images: string[],
 		serverName: string,
 		toolName: string,
-	): Promise<string[]> {
-		const savedPaths: string[] = []
+	): Promise<{ path: string; originalIndex: number }[]> {
+		const savedImages: { path: string; originalIndex: number }[] = []
 
 		try {
 			const tempDir = path.join(task.cwd, ".roo", "temp", "mcp_images")
@@ -445,14 +448,14 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 					const imageBuffer = Buffer.from(data, "base64")
 					await fs.writeFile(filePath, imageBuffer)
 
-					savedPaths.push(filePath)
+					savedImages.push({ path: filePath, originalIndex: i })
 				}
 			}
 		} catch (error) {
 			console.error("Error saving images to fallback location:", error)
 		}
 
-		return savedPaths
+		return savedImages
 	}
 
 	/**

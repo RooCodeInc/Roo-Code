@@ -867,5 +867,88 @@ describe("useMcpToolTool", () => {
 			)
 			expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("with 2 image(s)"))
 		})
+
+		it("should correctly pair saved paths with original images when unsupported formats are skipped", async () => {
+			const block: ToolUse = {
+				type: "tool_use",
+				name: "use_mcp_tool",
+				params: {
+					server_name: "figma-server",
+					tool_name: "get_screenshots",
+					arguments: '{"nodeIds": ["1", "2", "3"]}',
+				},
+				nativeArgs: {
+					server_name: "figma-server",
+					tool_name: "get_screenshots",
+					arguments: { nodeIds: ["1", "2", "3"] },
+				},
+				partial: false,
+			}
+
+			mockAskApproval.mockResolvedValue(true)
+
+			// Mix of supported (png) and unsupported (tiff) image formats.
+			// processToolContent pushes all three into images[], but
+			// saveImagesToTempStorage skips the tiff because parseImageDataUrl
+			// doesn't match it.
+			const mockToolResult = {
+				content: [
+					{
+						type: "image",
+						mimeType: "image/png",
+						data: "firstPngData",
+					},
+					{
+						type: "image",
+						mimeType: "image/tiff",
+						data: "tiffDataSkipped",
+					},
+					{
+						type: "image",
+						mimeType: "image/png",
+						data: "secondPngData",
+					},
+				],
+				isError: false,
+			}
+
+			mockProviderRef.deref.mockReturnValue({
+				getMcpHub: () => ({
+					callTool: vi.fn().mockResolvedValue(mockToolResult),
+					getAllServers: vi.fn().mockReturnValue([
+						{
+							name: "figma-server",
+							tools: [{ name: "get_screenshots", description: "Get screenshots" }],
+						},
+					]),
+				}),
+				postMessageToWebview: vi.fn(),
+			})
+
+			await useMcpToolTool.handle(mockTask as Task, block as any, {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+			})
+
+			// The tiff image ends up in images[] as "data:image/tiff;base64,tiffDataSkipped"
+			// but parseImageDataUrl won't match it, so only 2 paths are saved.
+			// Thanks to originalIndex tracking, each <source_path> pairs with the
+			// correct <data> value even though the middle image was skipped.
+			const sayCall = vi.mocked(mockTask.say!).mock.calls.find(
+				(call: any[]) =>
+					call[0] === "mcp_server_response" && typeof call[1] === "string" && call[1].includes("<image_1>"),
+			)
+
+			expect(sayCall).toBeDefined()
+			const responseText = sayCall![1] as string
+
+			// image_1 should pair with the first png (index 0), not the tiff
+			expect(responseText).toContain("<data>data:image/png;base64,firstPngData</data>")
+			// image_2 should pair with the second png (index 2), not the tiff
+			expect(responseText).toContain("<data>data:image/png;base64,secondPngData</data>")
+			// The tiff data URL should NOT appear in any <data> tag
+			expect(responseText).not.toContain("tiffDataSkipped")
+		})
 	})
 })
