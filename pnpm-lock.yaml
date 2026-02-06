@@ -749,6 +749,9 @@ importers:
       '@ai-sdk/cerebras':
         specifier: ^1.0.0
         version: 1.0.35(zod@3.25.76)
+      '@ai-sdk/deepinfra':
+        specifier: ^2.0.31
+        version: 2.0.31(zod@3.25.76)
       '@ai-sdk/deepseek':
         specifier: ^2.0.14
         version: 2.0.14(zod@3.25.76)
@@ -1429,6 +1432,12 @@ packages:
     peerDependencies:
       zod: 3.25.76
 
+  '@ai-sdk/deepinfra@2.0.31':
+    resolution: {integrity: sha512-kKo5hX83yrPLO4gkzLc5hgF+iNNMVYDkyXXXkdbBsgc3x1Dttl3oRO9nDAVPNkxDauZ7t1tSxLELpGo7l5QD3g==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
+
   '@ai-sdk/deepseek@2.0.14':
     resolution: {integrity: sha512-1vXh8sVwRJYd1JO57qdy1rACucaNLDoBRCwOER3EbPgSF2vNVPcdJywGutA01Bhn7Cta+UJQ+k5y/yzMAIpP2w==}
     engines: {node: '>=18'}
@@ -1497,6 +1506,12 @@ packages:
 
   '@ai-sdk/openai-compatible@2.0.26':
     resolution: {integrity: sha512-l6jdFjI1C2eDAEm7oo+dnRn0oG1EkcyqfbEZ7ozT0TnYrah6amX2JkftYMP1GRzNtAeCB3WNN8XspXdmi6ZNlQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
+
+  '@ai-sdk/openai-compatible@2.0.27':
+    resolution: {integrity: sha512-YpAZe7OQuMkYqcM/m1BMX0xFn4QdhuL4qGo8sNaiLq1VjEeU/pPfz51rnlpCfCvYanUL5TjIZEbdclBUwLooSQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: 3.25.76
@@ -11143,6 +11158,13 @@ snapshots:
       '@ai-sdk/provider-utils': 3.0.20(zod@3.25.76)
       zod: 3.25.76
 
+  '@ai-sdk/deepinfra@2.0.31(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/openai-compatible': 2.0.27(zod@3.25.76)
+      '@ai-sdk/provider': 3.0.7
+      '@ai-sdk/provider-utils': 4.0.13(zod@3.25.76)
+      zod: 3.25.76
+
   '@ai-sdk/deepseek@2.0.14(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.5
@@ -11217,6 +11239,12 @@ snapshots:
       zod: 3.25.76
 
   '@ai-sdk/openai-compatible@2.0.26(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.7
+      '@ai-sdk/provider-utils': 4.0.13(zod@3.25.76)
+      zod: 3.25.76
+
+  '@ai-sdk/openai-compatible@2.0.27(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.7
       '@ai-sdk/provider-utils': 4.0.13(zod@3.25.76)
@@ -15261,7 +15289,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.17.50)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
