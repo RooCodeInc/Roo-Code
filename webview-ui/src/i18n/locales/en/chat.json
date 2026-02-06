@@ -29,7 +29,8 @@
 		"openInCloudIntro": "Keep monitoring or interacting with Roo from anywhere. Scan, click or copy to open.",
 		"openApiHistory": "Open API History",
 		"openUiHistory": "Open UI History",
-		"backToParentTask": "Parent task"
+		"backToParentTask": "Parent task",
+		"linesChanged": "Lines Changed"
 	},
 	"unpin": "Unpin",
 	"pin": "Pin",
