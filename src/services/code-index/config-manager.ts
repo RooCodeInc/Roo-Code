@@ -26,6 +26,7 @@ export class CodeIndexConfigManager {
 	private qdrantApiKey?: string
 	private searchMinScore?: number
 	private searchMaxResults?: number
+	private respectGitIgnore: boolean = true
 
 	constructor(private readonly contextProxy: ContextProxy) {
 		// Initialize with current configuration to avoid false restart triggers
@@ -86,6 +87,7 @@ export class CodeIndexConfigManager {
 		this.qdrantApiKey = qdrantApiKey ?? ""
 		this.searchMinScore = codebaseIndexSearchMinScore
 		this.searchMaxResults = codebaseIndexSearchMaxResults
+		this.respectGitIgnore = codebaseIndexConfig.respectGitIgnore ?? true
 
 		// Validate and set model dimension
 		const rawDimension = codebaseIndexConfig.codebaseIndexEmbedderModelDimension
@@ -194,6 +196,7 @@ export class CodeIndexConfigManager {
 			openRouterSpecificProvider: this.openRouterOptions?.specificProvider ?? "",
 			qdrantUrl: this.qdrantUrl ?? "",
 			qdrantApiKey: this.qdrantApiKey ?? "",
+			respectGitIgnore: this.respectGitIgnore,
 		}
 
 		// Refresh secrets from VSCode storage to ensure we have the latest values
@@ -407,6 +410,12 @@ export class CodeIndexConfigManager {
 
 		// Vector dimension changes (still important for compatibility)
 		if (this._hasVectorDimensionChanged(prevProvider, prev?.modelId)) {
+			return true
+		}
+
+		// respectGitIgnore change
+		const prevRespectGitIgnore = prev?.respectGitIgnore ?? true
+		if (prevRespectGitIgnore !== this.respectGitIgnore) {
 			return true
 		}
 

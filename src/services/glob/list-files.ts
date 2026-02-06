@@ -233,20 +233,20 @@ function buildRipgrepArgs(dirPath: string, recursive: boolean, respectGitIgnore:
 	}
 
 	if (recursive) {
-		return [...args, ...buildRecursiveArgs(dirPath, respectGitIgnore), dirPath]
+		return [...args, ...buildRecursiveArgs(dirPath), dirPath]
 	} else {
-		return [...args, ...buildNonRecursiveArgs(respectGitIgnore), dirPath]
+		return [...args, ...buildNonRecursiveArgs(), dirPath]
 	}
 }
 
 /**
  * Build ripgrep arguments for recursive directory traversal
  */
-function buildRecursiveArgs(dirPath: string, respectGitIgnore: boolean = true): string[] {
+function buildRecursiveArgs(dirPath: string): string[] {
 	const args: string[] = []
 
 	// In recursive mode, respect .gitignore by default
-	// (ripgrep does this automatically when respectGitIgnore is true)
+	// (ripgrep does this automatically; --no-ignore-vcs is added at buildRipgrepArgs level when needed)
 
 	// Check if we're explicitly targeting a hidden directory
 	// Normalize the path first to handle edge cases
@@ -307,7 +307,7 @@ function buildRecursiveArgs(dirPath: string, respectGitIgnore: boolean = true): 
 /**
  * Build ripgrep arguments for non-recursive directory listing
  */
-function buildNonRecursiveArgs(respectGitIgnore: boolean = true): string[] {
+function buildNonRecursiveArgs(): string[] {
 	const args: string[] = []
 
 	// For non-recursive, limit to the current directory level
@@ -315,8 +315,7 @@ function buildNonRecursiveArgs(respectGitIgnore: boolean = true): string[] {
 	args.push("--maxdepth", "1") // ripgrep uses maxdepth, not max-depth
 
 	// Respect .gitignore in non-recursive mode too
-	// (ripgrep respects .gitignore by default when respectGitIgnore is true;
-	// --no-ignore-vcs is added at a higher level when respectGitIgnore is false)
+	// (ripgrep respects .gitignore by default; --no-ignore-vcs is added at buildRipgrepArgs level when needed)
 
 	// Apply directory exclusions for non-recursive searches
 	for (const dir of DIRS_TO_IGNORE) {

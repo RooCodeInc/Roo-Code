@@ -2211,7 +2211,7 @@ export class ClineProvider
 				codebaseIndexBedrockRegion: codebaseIndexConfig?.codebaseIndexBedrockRegion,
 				codebaseIndexBedrockProfile: codebaseIndexConfig?.codebaseIndexBedrockProfile,
 				codebaseIndexOpenRouterSpecificProvider: codebaseIndexConfig?.codebaseIndexOpenRouterSpecificProvider,
-				codebaseIndexRespectGitIgnore: codebaseIndexConfig?.codebaseIndexRespectGitIgnore,
+				respectGitIgnore: codebaseIndexConfig?.respectGitIgnore,
 			},
 			// Only set mdmCompliant if there's an actual MDM policy
 			// undefined means no MDM policy, true means compliant, false means non-compliant
@@ -2451,7 +2451,7 @@ export class ClineProvider
 				codebaseIndexBedrockProfile: stateValues.codebaseIndexConfig?.codebaseIndexBedrockProfile,
 				codebaseIndexOpenRouterSpecificProvider:
 					stateValues.codebaseIndexConfig?.codebaseIndexOpenRouterSpecificProvider,
-				codebaseIndexRespectGitIgnore: stateValues.codebaseIndexConfig?.codebaseIndexRespectGitIgnore,
+				respectGitIgnore: stateValues.codebaseIndexConfig?.respectGitIgnore,
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,
