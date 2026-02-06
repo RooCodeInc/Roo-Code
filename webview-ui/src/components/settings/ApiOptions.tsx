@@ -77,6 +77,7 @@ import {
 	Bedrock,
 	Cerebras,
 	Chutes,
+	ClaudeCodeAcp,
 	DeepSeek,
 	Doubao,
 	Gemini,
@@ -640,6 +641,14 @@ const ApiOptions = ({
 
 			{selectedProvider === "doubao" && (
 				<Doubao
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
+			{selectedProvider === "claude-code-acp" && (
+				<ClaudeCodeAcp
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					simplifySettings={fromWelcomeView}

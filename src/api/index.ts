@@ -9,6 +9,7 @@ import {
 	AnthropicHandler,
 	AwsBedrockHandler,
 	CerebrasHandler,
+	ClaudeCodeAcpHandler,
 	OpenRouterHandler,
 	VertexHandler,
 	AnthropicVertexHandler,
@@ -150,6 +151,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new LmStudioHandler(options)
 		case "gemini":
 			return new GeminiHandler(options)
+		case "claude-code-acp":
+			return new ClaudeCodeAcpHandler(options)
 		case "openai-codex":
 			return new OpenAiCodexHandler(options)
 		case "openai-native":

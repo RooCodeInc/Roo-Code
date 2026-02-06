@@ -1,5 +1,6 @@
 export * from "./anthropic.js"
 export * from "./baseten.js"
+export * from "./claude-code-acp.js"
 export * from "./bedrock.js"
 export * from "./cerebras.js"
 export * from "./chutes.js"
@@ -38,6 +39,7 @@ import { basetenDefaultModelId } from "./baseten.js"
 import { bedrockDefaultModelId } from "./bedrock.js"
 import { cerebrasDefaultModelId } from "./cerebras.js"
 import { chutesDefaultModelId } from "./chutes.js"
+import { claudeCodeAcpDefaultModelId } from "./claude-code-acp.js"
 import { deepSeekDefaultModelId } from "./deepseek.js"
 import { doubaoDefaultModelId } from "./doubao.js"
 import { featherlessDefaultModelId } from "./featherless.js"
@@ -140,6 +142,8 @@ export function getProviderDefaultModelId(
 			return rooDefaultModelId
 		case "qwen-code":
 			return qwenCodeDefaultModelId
+		case "claude-code-acp":
+			return claudeCodeAcpDefaultModelId
 		case "vercel-ai-gateway":
 			return vercelAiGatewayDefaultModelId
 		case "anthropic":

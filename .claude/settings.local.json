@@ -1,0 +1,30 @@
+{
+	"permissions": {
+		"allow": [
+			"WebFetch(domain:agentclientprotocol.com)",
+			"WebFetch(domain:github.com)",
+			"mcp__filesystem__directory_tree",
+			"WebFetch(domain:raw.githubusercontent.com)",
+			"WebFetch(domain:api.github.com)",
+			"WebFetch(domain:docs.anthropic.com)",
+			"WebFetch(domain:www.npmjs.com)",
+			"WebFetch(domain:docs.claude.com)",
+			"WebFetch(domain:agentclientprotocol.github.io)",
+			"WebFetch(domain:zed.dev)",
+			"Bash(npm run compile:*)",
+			"Bash(npm run:*)",
+			"Bash(ls -la \"c:\\\\Users\\\\Wesley Marinho\\\\Documents\\\\Projetos Gerais\\\\Roo-Code\\\\src\"\"*.vsix 2>/dev/null || dir \"c:UsersWesley MarinhoDocumentsProjetos GeraisRoo-Codesrc*.vsix \")",
+			"Bash(dir:*)",
+			"WebFetch(domain:deepwiki.com)",
+			"WebFetch(domain:hexdocs.pm)",
+			"WebFetch(domain:docs.rs)",
+			"Bash(gh api:*)",
+			"Bash(pnpm vsix:*)",
+			"Bash(python:*)",
+			"Bash(node:*)",
+			"Bash(git checkout:*)",
+			"Bash(git add:*)",
+			"Bash(git commit:*)"
+		]
+	}
+}

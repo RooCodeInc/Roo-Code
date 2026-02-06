@@ -7,6 +7,7 @@ import {
 	basetenModels,
 	bedrockModels,
 	cerebrasModels,
+	claudeCodeAcpModels,
 	deepSeekModels,
 	doubaoModels,
 	featherlessModels,
@@ -122,6 +123,7 @@ export const providerNames = [
 	"bedrock",
 	"baseten",
 	"cerebras",
+	"claude-code-acp",
 	"doubao",
 	"deepseek",
 	"featherless",
@@ -282,6 +284,13 @@ const geminiCliSchema = apiModelIdProviderModelSchema.extend({
 	geminiCliProjectId: z.string().optional(),
 })
 
+const claudeCodeAcpSchema = apiModelIdProviderModelSchema.extend({
+	// Path to custom claude-code-acp executable (optional)
+	claudeCodeAcpExecutablePath: z.string().optional(),
+	// Working directory for the Claude Code session (optional, defaults to workspace)
+	claudeCodeAcpWorkingDirectory: z.string().optional(),
+})
+
 const openAiCodexSchema = apiModelIdProviderModelSchema.extend({
 	// No additional settings needed - uses OAuth authentication
 })
@@ -432,6 +441,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	lmStudioSchema.merge(z.object({ apiProvider: z.literal("lmstudio") })),
 	geminiSchema.merge(z.object({ apiProvider: z.literal("gemini") })),
 	geminiCliSchema.merge(z.object({ apiProvider: z.literal("gemini-cli") })),
+	claudeCodeAcpSchema.merge(z.object({ apiProvider: z.literal("claude-code-acp") })),
 	openAiCodexSchema.merge(z.object({ apiProvider: z.literal("openai-codex") })),
 	openAiNativeSchema.merge(z.object({ apiProvider: z.literal("openai-native") })),
 	mistralSchema.merge(z.object({ apiProvider: z.literal("mistral") })),
@@ -473,6 +483,7 @@ export const providerSettingsSchema = z.object({
 	...lmStudioSchema.shape,
 	...geminiSchema.shape,
 	...geminiCliSchema.shape,
+	...claudeCodeAcpSchema.shape,
 	...openAiCodexSchema.shape,
 	...openAiNativeSchema.shape,
 	...mistralSchema.shape,
@@ -555,6 +566,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	openrouter: "openRouterModelId",
 	bedrock: "apiModelId",
 	vertex: "apiModelId",
+	"claude-code-acp": "apiModelId",
 	"openai-codex": "apiModelId",
 	"openai-native": "openAiModelId",
 	ollama: "ollamaModelId",
@@ -637,6 +649,11 @@ export const MODELS_BY_PROVIDER: Record<
 		id: "cerebras",
 		label: "Cerebras",
 		models: Object.keys(cerebrasModels),
+	},
+	"claude-code-acp": {
+		id: "claude-code-acp",
+		label: "Claude Code (ACP)",
+		models: Object.keys(claudeCodeAcpModels),
 	},
 	deepseek: {
 		id: "deepseek",
