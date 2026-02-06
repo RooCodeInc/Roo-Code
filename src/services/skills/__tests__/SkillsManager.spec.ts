@@ -55,10 +55,13 @@ vi.mock("vscode", () => ({
 
 // Global roo directory - computed once
 const GLOBAL_ROO_DIR = p(HOME_DIR, ".roo")
+const GLOBAL_AGENTS_DIR = p(HOME_DIR, ".agents")
 
 // Mock roo-config
 vi.mock("../../roo-config", () => ({
 	getGlobalRooDirectory: () => GLOBAL_ROO_DIR,
+	getGlobalAgentsDirectory: () => GLOBAL_AGENTS_DIR,
+	getProjectAgentsDirectoryForCwd: (cwd: string) => p(cwd, ".agents"),
 	directoryExists: mockDirectoryExists,
 	fileExists: mockFileExists,
 }))
@@ -84,6 +87,11 @@ describe("SkillsManager", () => {
 	const globalSkillsArchitectDir = p(GLOBAL_ROO_DIR, "skills-architect")
 	const projectRooDir = p(PROJECT_DIR, ".roo")
 	const projectSkillsDir = p(projectRooDir, "skills")
+	// .agents directory paths
+	const globalAgentsSkillsDir = p(GLOBAL_AGENTS_DIR, "skills")
+	const globalAgentsSkillsCodeDir = p(GLOBAL_AGENTS_DIR, "skills-code")
+	const projectAgentsDir = p(PROJECT_DIR, ".agents")
+	const projectAgentsSkillsDir = p(projectAgentsDir, "skills")
 
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -571,6 +579,216 @@ Instructions here...`
 			expect(skills).toHaveLength(1)
 			expect(skills[0].name).toBe("my-alias")
 			expect(skills[0].source).toBe("global")
+		})
+
+		it("should discover skills from global .agents directory", async () => {
+			const agentSkillDir = p(globalAgentsSkillsDir, "agent-skill")
+			const agentSkillMd = p(agentSkillDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => {
+				return dir === globalAgentsSkillsDir
+			})
+
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalAgentsSkillsDir) {
+					return ["agent-skill"]
+				}
+				return []
+			})
+
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === agentSkillDir) {
+					return { isDirectory: () => true }
+				}
+				throw new Error("Not found")
+			})
+
+			mockFileExists.mockImplementation(async (file: string) => {
+				return file === agentSkillMd
+			})
+
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === agentSkillMd) {
+					return `---
+name: agent-skill
+description: A skill from .agents directory shared across AI coding tools
+---
+
+# Agent Skill
+
+Instructions here...`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			const skills = skillsManager.getAllSkills()
+			expect(skills).toHaveLength(1)
+			expect(skills[0].name).toBe("agent-skill")
+			expect(skills[0].description).toBe("A skill from .agents directory shared across AI coding tools")
+			expect(skills[0].source).toBe("global")
+		})
+
+		it("should discover skills from project .agents directory", async () => {
+			const projectAgentSkillDir = p(projectAgentsSkillsDir, "project-agent-skill")
+			const projectAgentSkillMd = p(projectAgentSkillDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => {
+				return dir === projectAgentsSkillsDir
+			})
+
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === projectAgentsSkillsDir) {
+					return ["project-agent-skill"]
+				}
+				return []
+			})
+
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === projectAgentSkillDir) {
+					return { isDirectory: () => true }
+				}
+				throw new Error("Not found")
+			})
+
+			mockFileExists.mockImplementation(async (file: string) => {
+				return file === projectAgentSkillMd
+			})
+
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === projectAgentSkillMd) {
+					return `---
+name: project-agent-skill
+description: A project-level skill from .agents directory
+---
+
+# Project Agent Skill
+
+Instructions here...`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			const skills = skillsManager.getAllSkills()
+			expect(skills).toHaveLength(1)
+			expect(skills[0].name).toBe("project-agent-skill")
+			expect(skills[0].source).toBe("project")
+		})
+
+		it("should prioritize .roo skills over .agents skills with same name", async () => {
+			const agentSkillDir = p(globalAgentsSkillsDir, "common-skill")
+			const agentSkillMd = p(agentSkillDir, "SKILL.md")
+			const rooSkillDir = p(globalSkillsDir, "common-skill")
+			const rooSkillMd = p(rooSkillDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => {
+				return dir === globalAgentsSkillsDir || dir === globalSkillsDir
+			})
+
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalAgentsSkillsDir || dir === globalSkillsDir) {
+					return ["common-skill"]
+				}
+				return []
+			})
+
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === agentSkillDir || pathArg === rooSkillDir) {
+					return { isDirectory: () => true }
+				}
+				throw new Error("Not found")
+			})
+
+			mockFileExists.mockImplementation(async (file: string) => {
+				return file === agentSkillMd || file === rooSkillMd
+			})
+
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === agentSkillMd) {
+					return `---
+name: common-skill
+description: Agent version (should be overridden)
+---
+
+# Agent Common Skill`
+				}
+				if (file === rooSkillMd) {
+					return `---
+name: common-skill
+description: Roo version (should take priority)
+---
+
+# Roo Common Skill`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			const skills = skillsManager.getSkillsForMode("code")
+			const commonSkill = skills.find((s) => s.name === "common-skill")
+			expect(commonSkill).toBeDefined()
+			// .roo should override .agents
+			expect(commonSkill?.description).toBe("Roo version (should take priority)")
+		})
+
+		it("should discover mode-specific skills from .agents directory", async () => {
+			const agentCodeSkillDir = p(globalAgentsSkillsCodeDir, "agent-code-skill")
+			const agentCodeSkillMd = p(agentCodeSkillDir, "SKILL.md")
+
+			mockDirectoryExists.mockImplementation(async (dir: string) => {
+				return dir === globalAgentsSkillsCodeDir
+			})
+
+			mockRealpath.mockImplementation(async (pathArg: string) => pathArg)
+
+			mockReaddir.mockImplementation(async (dir: string) => {
+				if (dir === globalAgentsSkillsCodeDir) {
+					return ["agent-code-skill"]
+				}
+				return []
+			})
+
+			mockStat.mockImplementation(async (pathArg: string) => {
+				if (pathArg === agentCodeSkillDir) {
+					return { isDirectory: () => true }
+				}
+				throw new Error("Not found")
+			})
+
+			mockFileExists.mockImplementation(async (file: string) => {
+				return file === agentCodeSkillMd
+			})
+
+			mockReadFile.mockImplementation(async (file: string) => {
+				if (file === agentCodeSkillMd) {
+					return `---
+name: agent-code-skill
+description: A code mode skill from .agents directory
+---
+
+# Agent Code Skill
+
+Instructions here...`
+				}
+				throw new Error("File not found")
+			})
+
+			await skillsManager.discoverSkills()
+
+			const skills = skillsManager.getAllSkills()
+			expect(skills).toHaveLength(1)
+			expect(skills[0].name).toBe("agent-code-skill")
+			expect(skills[0].mode).toBe("code")
 		})
 	})
 
