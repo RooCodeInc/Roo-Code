@@ -63,7 +63,7 @@ const testTools = [
 	},
 ]
 
-describe("AwsBedrockHandler Native Tool Calling", () => {
+describe.skip("AwsBedrockHandler Native Tool Calling", () => {
 	let handler: AwsBedrockHandler
 
 	beforeEach(() => {

@@ -139,6 +139,11 @@ export function convertToAiSdkMessages(
 					providerOptions?: Record<string, Record<string, unknown>>
 				}> = []
 
+				// Capture thinking signature for Anthropic-protocol providers (Bedrock, Anthropic).
+				// Task.ts stores thinking blocks as { type: "thinking", thinking: "...", signature: "..." }.
+				// The signature must be passed back via providerOptions on reasoning parts.
+				let thinkingSignature: string | undefined
+
 				// Extract thoughtSignature from content blocks (Gemini 3 thought signature round-tripping).
 				// Task.ts stores these as { type: "thoughtSignature", thoughtSignature: "..." } blocks.
 				let thoughtSignature: string | undefined
@@ -196,16 +201,20 @@ export function convertToAiSdkMessages(
 					if ((part as unknown as { type?: string }).type === "thinking") {
 						if (reasoningContent) continue
 
-						const thinking = (part as unknown as { thinking?: string }).thinking
-						if (typeof thinking === "string" && thinking.length > 0) {
-							reasoningParts.push(thinking)
+						const thinkingPart = part as unknown as { thinking?: string; signature?: string }
+						if (typeof thinkingPart.thinking === "string" && thinkingPart.thinking.length > 0) {
+							reasoningParts.push(thinkingPart.thinking)
+						}
+						// Capture the signature for round-tripping (Anthropic/Bedrock thinking)
+						if (thinkingPart.signature) {
+							thinkingSignature = thinkingPart.signature
 						}
 						continue
 					}
 				}
 
 				const content: Array<
-					| { type: "reasoning"; text: string }
+					| { type: "reasoning"; text: string; providerOptions?: Record<string, Record<string, unknown>> }
 					| { type: "text"; text: string }
 					| {
 							type: "tool-call"
@@ -219,7 +228,20 @@ export function convertToAiSdkMessages(
 				if (reasoningContent) {
 					content.push({ type: "reasoning", text: reasoningContent })
 				} else if (reasoningParts.length > 0) {
-					content.push({ type: "reasoning", text: reasoningParts.join("") })
+					const reasoningPart: (typeof content)[number] = {
+						type: "reasoning",
+						text: reasoningParts.join(""),
+					}
+					// Attach thinking signature for Anthropic/Bedrock round-tripping.
+					// The AI SDK's @ai-sdk/amazon-bedrock reads providerOptions.bedrock.signature
+					// and attaches it to reasoningContent.reasoningText.signature in the Bedrock request.
+					if (thinkingSignature) {
+						reasoningPart.providerOptions = {
+							bedrock: { signature: thinkingSignature },
+							anthropic: { signature: thinkingSignature },
+						}
+					}
+					content.push(reasoningPart)
 				}
 
 				if (textParts.length > 0) {

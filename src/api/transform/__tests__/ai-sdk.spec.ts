@@ -349,7 +349,14 @@ describe("AI SDK conversion utilities", () => {
 			expect(result[0]).toEqual({
 				role: "assistant",
 				content: [
-					{ type: "reasoning", text: "Deep thought" },
+					{
+						type: "reasoning",
+						text: "Deep thought",
+						providerOptions: {
+							bedrock: { signature: "sig" },
+							anthropic: { signature: "sig" },
+						},
+					},
 					{ type: "text", text: "OK" },
 				],
 			})

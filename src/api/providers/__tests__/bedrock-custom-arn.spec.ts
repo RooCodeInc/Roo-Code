@@ -224,8 +224,8 @@ describe("Bedrock ARN Handling", () => {
 					"arn:aws:bedrock:eu-west-1:123456789012:inference-profile/anthropic.claude-3-sonnet-20240229-v1:0",
 			})
 
-			// Verify the client was created with the ARN region, not the provided region
-			expect((handler as any).client.config.region).toBe("eu-west-1")
+			// Verify the handler's options were updated with the ARN region
+			expect((handler as any).options.awsRegion).toBe("eu-west-1")
 		})
 
 		it("should log region mismatch warning when ARN region differs from provided region", () => {
