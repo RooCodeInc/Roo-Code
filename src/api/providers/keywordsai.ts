@@ -8,6 +8,97 @@ import type { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { OpenAiHandler } from "./openai"
 import { ingestKeywordsAiTraceSpans, type KeywordsAiSpanLog } from "./keywordsaiTracing"
 
+type ToolCallSummary = {
+	id: string
+	name?: string
+	arguments: string
+	arguments_json?: unknown
+}
+
+type ToolApprovalSummary = {
+	approved: boolean
+	status: string
+	feedback?: string
+}
+
+type TrackedChatSpan = {
+	span: KeywordsAiSpanLog
+	assistantText: string
+	toolCalls: ToolCallSummary[]
+	toolApprovalsByToolUseId: Record<string, ToolApprovalSummary>
+}
+
+function formatToolCallsInputText(toolCalls: ToolCallSummary[]): string {
+	if (!toolCalls || toolCalls.length === 0) return ""
+	const lines = toolCalls.map((tc) => `- ${tc.name ?? "unknown"}`)
+	return `tool_call:\n${lines.join("\n")}`
+}
+
+function formatToolCallsOutputText(toolCalls: ToolCallSummary[]): string {
+	if (!toolCalls || toolCalls.length === 0) return ""
+	return `tool_args:\n${JSON.stringify(
+		toolCalls.map((tc) => ({
+			name: tc.name,
+			arguments: tc.arguments_json ?? tc.arguments,
+		})),
+		null,
+		2,
+	)}`
+}
+
+function approvalToUserFacingText(approval: ToolApprovalSummary): string {
+	return approval.approved ? "user approve the tool" : "user deny the tool"
+}
+
+function formatToolApprovalText(toolApprovalsByToolUseId: Record<string, ToolApprovalSummary>): string {
+	const entries = Object.entries(toolApprovalsByToolUseId)
+	if (entries.length === 0) return ""
+
+	const lines = entries.map(([toolUseId, approval]) => {
+		const base = `${toolUseId}: ${approvalToUserFacingText(approval)}`
+		return approval.feedback ? `${base} (feedback: ${approval.feedback})` : base
+	})
+
+	return `tool_approval:\n${lines.map((l) => `- ${l}`).join("\n")}`
+}
+
+function safeJsonParse(value: string): unknown | undefined {
+	try {
+		return JSON.parse(value)
+	} catch {
+		return undefined
+	}
+}
+
+function extractToolApprovalSummary(toolOutput: string): ToolApprovalSummary {
+	const trimmed = toolOutput.trim()
+	if (!trimmed) {
+		// If we have a tool_result block at all, assume execution was approved.
+		return { approved: true, status: "approved" }
+	}
+
+	// Our approval/denial tool_result payloads are JSON, sometimes followed by additional output.
+	// Parse only the first line to avoid mis-parsing arbitrary tool output.
+	const firstLine = trimmed.split(/\r?\n/, 1)[0]?.trim() ?? ""
+	const parsed = firstLine.startsWith("{") ? safeJsonParse(firstLine) : undefined
+
+	if (parsed && typeof parsed === "object" && parsed !== null) {
+		const status = (parsed as any).status
+		const feedback = (parsed as any).feedback
+		if (typeof status === "string") {
+			const approved = status !== "denied"
+			return {
+				approved,
+				status,
+				...(typeof feedback === "string" && feedback.trim() ? { feedback } : {}),
+			}
+		}
+	}
+
+	// Default: tool produced output, therefore it was executed (approved).
+	return { approved: true, status: "approved" }
+}
+
 function extractLatestUserMessageText(messages: Anthropic.Messages.MessageParam[]): string | undefined {
 	const re = /<user_message>\s*([\s\S]*?)\s*<\/user_message>/g
 	const lastUser = [...messages].reverse().find((m) => m.role === "user")
@@ -46,6 +137,8 @@ type TraceContext = {
 	traceStartTimeMs: number
 	traceEndTimeMs: number
 	loggedToolResultIds: Set<string>
+	toolUseIdToChatSpanId: Map<string, string>
+	trackedChatSpansById: Map<string, TrackedChatSpan>
 }
 
 /**
@@ -104,6 +197,8 @@ export class KeywordsAiHandler extends OpenAiHandler {
 				traceStartTimeMs: now,
 				traceEndTimeMs: now,
 				loggedToolResultIds: new Set<string>(),
+				toolUseIdToChatSpanId: new Map<string, string>(),
+				trackedChatSpansById: new Map<string, TrackedChatSpan>(),
 			}
 		}
 
@@ -176,6 +271,53 @@ export class KeywordsAiHandler extends OpenAiHandler {
 						})
 					}
 				}
+			}
+		}
+
+		// If any tool_result blocks are present, update the ORIGINAL chat span that produced
+		// the corresponding tool_use with the user's approval/denial decision.
+		//
+		// This avoids creating new spans and fills in missing input/output for tool-approval steps.
+		if (promptToolResults.length > 0 && ctx.toolUseIdToChatSpanId.size > 0) {
+			const updateSpans: KeywordsAiSpanLog[] = []
+
+			for (const tr of promptToolResults) {
+				const chatSpanId = ctx.toolUseIdToChatSpanId.get(tr.toolUseId)
+				if (!chatSpanId) continue
+
+				const tracked = ctx.trackedChatSpansById.get(chatSpanId)
+				if (!tracked) continue
+
+				tracked.toolApprovalsByToolUseId[tr.toolUseId] = extractToolApprovalSummary(tr.toolOutput)
+
+				const toolCallsText = formatToolCallsOutputText(tracked.toolCalls)
+				const approvalsText = formatToolApprovalText(tracked.toolApprovalsByToolUseId)
+				const completionContent = [tracked.assistantText, toolCallsText, approvalsText]
+					.map((s) => (s ?? "").trim())
+					.filter(Boolean)
+					.join("\n\n")
+
+				const updatedOutput: Record<string, unknown> = {
+					role: "assistant",
+					content: completionContent,
+					...(tracked.toolCalls.length > 0 ? { tool_calls: tracked.toolCalls } : {}),
+					tool_approval: tracked.toolApprovalsByToolUseId,
+				}
+
+				tracked.span.output = JSON.stringify(updatedOutput)
+				tracked.span.completion_message = { role: "assistant", content: completionContent }
+				updateSpans.push(tracked.span)
+
+				// Once updated, we don't need to keep this per-tool mapping.
+				ctx.toolUseIdToChatSpanId.delete(tr.toolUseId)
+			}
+
+			if (updateSpans.length > 0) {
+				void ingestKeywordsAiTraceSpans({
+					apiKey,
+					baseUrl: this.options.keywordsaiBaseUrl,
+					spans: updateSpans,
+				}).catch(() => {})
 			}
 		}
 
@@ -268,10 +410,49 @@ export class KeywordsAiHandler extends OpenAiHandler {
 			const startIso = new Date(requestStartTimeMs).toISOString()
 			const endIso = new Date(requestEndTimeMs).toISOString()
 			const latencySeconds = Math.max(0, (requestEndTimeMs - requestStartTimeMs) / 1000)
+
+			const toolCallsSummary: ToolCallSummary[] = [...toolCalls.entries()].map(([id, tc]) => {
+				const argsTrimmed = (tc.args ?? "").trim()
+				const argsJson = argsTrimmed ? safeJsonParse(argsTrimmed) : undefined
+				return {
+					id,
+					name: tc.name,
+					arguments: tc.args,
+					...(argsJson !== undefined ? { arguments_json: argsJson } : {}),
+				}
+			})
+
+			const toolCallsInputText = formatToolCallsInputText(toolCallsSummary)
+			const toolCallsText = formatToolCallsOutputText(toolCallsSummary)
+			const assistantContent = assistantText.trim()
+			const completionContent = [assistantContent, toolCallsText].filter(Boolean).join("\n\n")
+
+			// When there is no explicit new <user_message> turn, the prior logic produced an empty
+			// user input in KeywordsAI (content: ""). If this request is driving tool approval UI,
+			// the tool call attributes are what matter most, so put them in the chat span input.
+			const chatInput = question
+				? [{ role: "user", content: question }]
+				: toolCallsSummary.length > 0
+					? {
+							tool_calls: toolCallsSummary.map((tc) => ({
+								id: tc.id,
+								name: tc.name,
+							})),
+						}
+					: [{ role: "user", content: "" }]
+
+			// If the model emitted only tool calls, ensure chat span output is still meaningful.
+			const chatOutput: Record<string, unknown> = {
+				role: "assistant",
+				content: completionContent,
+				...(toolCallsSummary.length > 0 ? { tool_calls: toolCallsSummary } : {}),
+			}
+
+			const chatSpanId = randomUUID()
 			spans.push({
 				log_type: "chat",
 				trace_unique_id: ctx.traceUniqueId,
-				span_unique_id: randomUUID(),
+				span_unique_id: chatSpanId,
 				span_name: "keywordsai.chat",
 				span_parent_id: ctx.rootSpanId,
 				start_time: startIso,
@@ -280,12 +461,14 @@ export class KeywordsAiHandler extends OpenAiHandler {
 				span_path: "",
 				provider_id: "keywordsai",
 				model,
-				input: JSON.stringify(
-					question ? [{ role: "user", content: question }] : [{ role: "user", content: "" }],
-				),
-				output: JSON.stringify({ role: "assistant", content: assistantText.trim() }),
-				...(question ? { prompt_messages: [{ role: "user", content: question }] } : {}),
-				completion_message: { role: "assistant", content: assistantText.trim() },
+				input: JSON.stringify(chatInput),
+				output: JSON.stringify(chatOutput),
+				...(question
+					? { prompt_messages: [{ role: "user", content: question }] }
+					: toolCallsInputText
+						? { prompt_messages: [{ role: "user", content: toolCallsInputText }] }
+						: {}),
+				completion_message: { role: "assistant", content: completionContent },
 				...(typeof usage?.inputTokens === "number" ? { prompt_tokens: usage.inputTokens } : {}),
 				...(typeof usage?.outputTokens === "number" ? { completion_tokens: usage.outputTokens } : {}),
 				...(typeof usage?.totalCost === "number" ? { cost: usage.totalCost } : {}),
@@ -299,6 +482,21 @@ export class KeywordsAiHandler extends OpenAiHandler {
 					tool_call_count: toolCalls.size,
 				},
 			})
+
+			// Track this chat span by tool_use_id so we can update its output later with the user's
+			// approval/denial decision, without creating any new spans.
+			if (toolCallsSummary.length > 0) {
+				const spanRef = spans[spans.length - 1]
+				ctx.trackedChatSpansById.set(chatSpanId, {
+					span: spanRef,
+					assistantText: assistantContent,
+					toolCalls: toolCallsSummary,
+					toolApprovalsByToolUseId: {},
+				})
+				for (const tc of toolCallsSummary) {
+					ctx.toolUseIdToChatSpanId.set(tc.id, chatSpanId)
+				}
+			}
 		}
 
 		// Tool-call spans (these represent the model's tool calls; execution happens elsewhere).
