@@ -420,24 +420,22 @@ export const ChatRowContent = ({
 				style={{ color: "var(--vscode-foreground)", marginBottom: "-1.5px" }}></span>
 		)
 
+		// Handle batch diffs for any file-edit tool type
+		if (message.type === "ask" && tool.batchDiffs && Array.isArray(tool.batchDiffs)) {
+			return (
+				<>
+					<div style={headerStyle}>
+						<FileDiff className="w-4 shrink-0" aria-label="Batch diff icon" />
+						<span style={{ fontWeight: "bold" }}>{t("chat:fileOperations.wantsToApplyBatchChanges")}</span>
+					</div>
+					<BatchDiffApproval files={tool.batchDiffs} ts={message.ts} />
+				</>
+			)
+		}
+
 		switch (tool.tool as string) {
 			case "editedExistingFile":
 			case "appliedDiff":
-				// Check if this is a batch diff request
-				if (message.type === "ask" && tool.batchDiffs && Array.isArray(tool.batchDiffs)) {
-					return (
-						<>
-							<div style={headerStyle}>
-								<FileDiff className="w-4 shrink-0" aria-label="Batch diff icon" />
-								<span style={{ fontWeight: "bold" }}>
-									{t("chat:fileOperations.wantsToApplyBatchChanges")}
-								</span>
-							</div>
-							<BatchDiffApproval files={tool.batchDiffs} ts={message.ts} />
-						</>
-					)
-				}
-
 				// Regular single file diff
 				return (
 					<>

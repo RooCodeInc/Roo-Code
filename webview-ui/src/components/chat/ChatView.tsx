@@ -1167,6 +1167,26 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 		}
 
+		// Set of tool names that represent file-editing operations
+		const editFileTools = new Set([
+			"editedExistingFile",
+			"appliedDiff",
+			"newFileCreated",
+			"insertContent",
+			"searchAndReplace",
+		])
+
+		// Helper to check if a message is a file-edit ask that should be batched
+		const isEditFileAsk = (msg: ClineMessage): boolean => {
+			if (msg.type !== "ask" || msg.ask !== "tool") return false
+			try {
+				const tool = JSON.parse(msg.text || "{}")
+				return editFileTools.has(tool.tool) && !tool.batchDiffs // Don't re-batch already batched
+			} catch {
+				return false
+			}
+		}
+
 		// Consolidate consecutive read_file ask messages into batches
 		const readFileBatched: ClineMessage[] = []
 		let i = 0
@@ -1226,7 +1246,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 
 		// Consolidate consecutive list_files ask messages into batches
-		const result: ClineMessage[] = []
+		const listFilesBatched: ClineMessage[] = []
 		i = 0
 		while (i < readFileBatched.length) {
 			const msg = readFileBatched[i]
@@ -1269,10 +1289,68 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						_batchedMessages: batch,
 					} as ClineMessage & { _batchedMessages: ClineMessage[] }
 
-					result.push(syntheticMessage)
+					listFilesBatched.push(syntheticMessage)
 					i = j // Skip past all batched messages
 				} else {
 					// Single list_files ask, keep as-is
+					listFilesBatched.push(msg)
+					i++
+				}
+			} else {
+				listFilesBatched.push(msg)
+				i++
+			}
+		}
+
+		// Consolidate consecutive file-edit ask messages into batches
+		const result: ClineMessage[] = []
+		i = 0
+		while (i < listFilesBatched.length) {
+			const msg = listFilesBatched[i]
+
+			// Check if this starts a sequence of file-edit asks
+			if (isEditFileAsk(msg)) {
+				// Collect all consecutive file-edit asks
+				const batch: ClineMessage[] = [msg]
+				let j = i + 1
+				while (j < listFilesBatched.length && isEditFileAsk(listFilesBatched[j])) {
+					batch.push(listFilesBatched[j])
+					j++
+				}
+
+				if (batch.length > 1) {
+					// Create a synthetic batch message with batchDiffs
+					const batchDiffs = batch.map((batchMsg) => {
+						try {
+							const tool = JSON.parse(batchMsg.text || "{}")
+							return {
+								path: tool.path || "",
+								changeCount: 1,
+								key: tool.path || "",
+								content: tool.content || tool.diff || "",
+								diffStats: tool.diffStats,
+							}
+						} catch {
+							return { path: "", changeCount: 0, key: "", content: "" }
+						}
+					})
+
+					// Use the first message as the base, but add batchDiffs
+					const firstTool = JSON.parse(msg.text || "{}")
+					const syntheticMessage: ClineMessage = {
+						...msg,
+						text: JSON.stringify({
+							...firstTool,
+							batchDiffs,
+						}),
+						// Store original messages for response handling
+						_batchedMessages: batch,
+					} as ClineMessage & { _batchedMessages: ClineMessage[] }
+
+					result.push(syntheticMessage)
+					i = j // Skip past all batched messages
+				} else {
+					// Single file-edit ask, keep as-is
 					result.push(msg)
 					i++
 				}
