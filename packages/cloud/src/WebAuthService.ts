@@ -625,8 +625,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			)?.email_address
 		}
 
-		let extensionBridgeEnabled = true
-
 		// Fetch organization info if user is in organization context
 		try {
 			const storedOrgId = this.getStoredOrganizationId()
@@ -640,8 +638,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 
 					if (userMembership) {
 						this.setUserOrganizationInfo(userInfo, userMembership)
-
-						extensionBridgeEnabled = await this.isExtensionBridgeEnabledForOrganization(storedOrgId)
 
 						this.log("[auth] User in organization context:", {
 							id: userMembership.organization.id,
@@ -662,10 +658,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 				if (primaryOrgMembership) {
 					this.setUserOrganizationInfo(userInfo, primaryOrgMembership)
 
-					extensionBridgeEnabled = await this.isExtensionBridgeEnabledForOrganization(
-						primaryOrgMembership.organization.id,
-					)
-
 					this.log("[auth] Legacy credentials: Found organization membership:", {
 						id: primaryOrgMembership.organization.id,
 						name: primaryOrgMembership.organization.name,
@@ -679,9 +671,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			this.log("[auth] Failed to fetch organization info:", error)
 			// Don't throw - organization info is optional
 		}
-
-		// Set the extension bridge enabled flag
-		userInfo.extensionBridgeEnabled = extensionBridgeEnabled
 
 		return userInfo
 	}
@@ -752,11 +741,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 			this.log("[auth] Error fetching organization metadata:", error)
 			return null
 		}
-	}
-
-	private async isExtensionBridgeEnabledForOrganization(organizationId: string): Promise<boolean> {
-		const orgMetadata = await this.getOrganizationMetadata(organizationId)
-		return orgMetadata?.public_metadata?.extension_bridge_enabled === true
 	}
 
 	private async clerkLogout(credentials: AuthCredentials): Promise<void> {

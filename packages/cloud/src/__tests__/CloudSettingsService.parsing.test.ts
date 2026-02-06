@@ -105,12 +105,8 @@ describe("CloudSettingsService - Response Parsing", () => {
 				},
 			},
 			user: {
-				features: {
-					roomoteControlEnabled: true,
-				},
-				settings: {
-					extensionBridgeEnabled: true,
-				},
+				features: {},
+				settings: {},
 				version: 1,
 			},
 		}

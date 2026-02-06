@@ -41,7 +41,6 @@ export interface CloudUserInfo {
 	organizationName?: string
 	organizationRole?: string
 	organizationImageUrl?: string
-	extensionBridgeEnabled?: boolean
 }
 
 /**
@@ -142,9 +141,7 @@ export type OrganizationCloudSettings = z.infer<typeof organizationCloudSettings
  * OrganizationFeatures
  */
 
-export const organizationFeaturesSchema = z.object({
-	roomoteControlEnabled: z.boolean().optional(),
-})
+export const organizationFeaturesSchema = z.object({})
 
 export type OrganizationFeatures = z.infer<typeof organizationFeaturesSchema>
 
@@ -170,14 +167,11 @@ export type OrganizationSettings = z.infer<typeof organizationSettingsSchema>
  * User Settings Schemas
  */
 
-export const userFeaturesSchema = z.object({
-	roomoteControlEnabled: z.boolean().optional(),
-})
+export const userFeaturesSchema = z.object({})
 
 export type UserFeatures = z.infer<typeof userFeaturesSchema>
 
 export const userSettingsConfigSchema = z.object({
-	extensionBridgeEnabled: z.boolean().optional(),
 	taskSyncEnabled: z.boolean().optional(),
 	llmEnhancedFeaturesEnabled: z.boolean().optional(),
 })
