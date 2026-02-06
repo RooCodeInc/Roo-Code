@@ -461,7 +461,7 @@
 		"sambanova-ai-provider": "^1.2.2",
 		"@anthropic-ai/bedrock-sdk": "^0.10.2",
 		"@anthropic-ai/sdk": "^0.37.0",
-		"@anthropic-ai/vertex-sdk": "^0.7.0",
+		"@anthropic-ai/vertex-sdk": "^0.13.0",
 		"@aws-sdk/client-bedrock-runtime": "^3.922.0",
 		"@aws-sdk/credential-providers": "^3.922.0",
 		"@google/genai": "^1.29.1",
