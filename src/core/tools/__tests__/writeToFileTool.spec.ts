@@ -41,6 +41,10 @@ vi.mock("../../prompts/responses", () => ({
 
 vi.mock("../../../utils/pathUtils", () => ({
 	isPathOutsideWorkspace: vi.fn().mockReturnValue(false),
+	normalizeToolPath: vi.fn().mockImplementation((rawPath: string, _cwd: string) => ({
+		relPath: rawPath,
+		isValid: true,
+	})),
 }))
 
 vi.mock("../../../utils/path", () => ({
@@ -110,7 +114,9 @@ describe("writeToFileTool", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks()
-		writeToFileTool.resetPartialState()
+		// Reset partial state for clean test isolation
+		// Since mockCline is defined outside, reset it after mocks are cleared
+		writeToFileTool.resetPartialState(mockCline)
 
 		mockedPathResolve.mockReturnValue(absoluteFilePath)
 		mockedFileExistsAtPath.mockResolvedValue(false)
@@ -453,15 +459,28 @@ describe("writeToFileTool", () => {
 		})
 
 		it("handles partial streaming errors after path stabilizes", async () => {
+			// With error suppression, partial errors are logged but not passed to handleError
+			// The error will be properly reported when execute() runs with the final params
+			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 			mockCline.diffViewProvider.open.mockRejectedValue(new Error("Open failed"))
 
 			// First call - path not yet stabilized, no error yet
 			await executeWriteFileTool({}, { isPartial: true })
 			expect(mockHandleError).not.toHaveBeenCalled()
+			expect(consoleErrorSpy).not.toHaveBeenCalled()
 
 			// Second call with same path - path is now stabilized, error occurs
+			// Error is logged via notifyPartialError but NOT passed to handleError
 			await executeWriteFileTool({}, { isPartial: true })
-			expect(mockHandleError).toHaveBeenCalledWith("handling partial write_to_file", expect.any(Error))
+			expect(mockHandleError).not.toHaveBeenCalled() // Error suppression: no handleError call
+			expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("Partial error"))
+
+			// Third call with same error - suppressed (not logged again)
+			consoleErrorSpy.mockClear()
+			await executeWriteFileTool({}, { isPartial: true })
+			expect(consoleErrorSpy).not.toHaveBeenCalled() // Duplicate suppressed
+
+			consoleErrorSpy.mockRestore()
 		})
 	})
 })

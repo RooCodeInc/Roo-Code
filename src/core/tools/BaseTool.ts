@@ -4,6 +4,29 @@ import { Task } from "../task/Task"
 import type { ToolUse, HandleError, PushToolResult, AskApproval, NativeToolArgs } from "../../shared/tools"
 
 /**
+ * State tracking for partial (streaming) tool execution.
+ *
+ * Uses a discriminated union to prevent impossible states:
+ * - Can't have errorCount without firstErrorTime
+ * - Can't be in "erroring" state without error metadata
+ * - Reset is trivial: `{ status: "idle" }`
+ */
+type PartialExecutionState =
+	| { status: "idle" }
+	| {
+			status: "streaming"
+			lastSeenPath?: string
+	  }
+	| {
+			status: "erroring"
+			errorCount: number
+			lastErrorMessage: string
+			firstErrorTime: number
+			lastSeenPath?: string
+			isPathValidationError?: boolean
+	  }
+
+/**
  * Callbacks passed to tool execution
  */
 export interface ToolCallbacks {
@@ -33,10 +56,30 @@ export abstract class BaseTool<TName extends ToolName> {
 	abstract readonly name: TName
 
 	/**
-	 * Track the last seen path during streaming to detect when the path has stabilized.
-	 * Used by hasPathStabilized() to prevent displaying truncated paths from partial-json parsing.
+	 * Per-task partial execution state.
+	 * WeakMap ensures no memory leak - state is GC'd when Task is GC'd.
+	 * Static so state is shared across tool instances but isolated per task.
 	 */
-	protected lastSeenPartialPath: string | undefined = undefined
+	private static partialStateByTask = new WeakMap<Task, PartialExecutionState>()
+
+	/**
+	 * Get partial state for a task, initializing if needed.
+	 */
+	protected getPartialState(task: Task): PartialExecutionState {
+		let state = BaseTool.partialStateByTask.get(task)
+		if (!state) {
+			state = { status: "idle" }
+			BaseTool.partialStateByTask.set(task, state)
+		}
+		return state
+	}
+
+	/**
+	 * Set partial state for a task.
+	 */
+	protected setPartialState(task: Task, state: PartialExecutionState): void {
+		BaseTool.partialStateByTask.set(task, state)
+	}
 
 	/**
 	 * Execute the tool with typed parameters.
@@ -73,38 +116,111 @@ export abstract class BaseTool<TName extends ToolName> {
 	 *
 	 * Usage in handlePartial():
 	 * ```typescript
-	 * if (!this.hasPathStabilized(block.params.path)) {
+	 * if (!this.hasPathStabilized(task, block.params.path)) {
 	 *     return // Path still changing, wait for it to stabilize
 	 * }
 	 * // Path is stable, proceed with UI updates
 	 * ```
 	 *
+	 * @param task - Task instance for per-task state isolation
 	 * @param path - The current path value from the partial block
 	 * @returns true if path has stabilized (same value seen twice) and is non-empty, false otherwise
 	 */
-	protected hasPathStabilized(path: string | undefined): boolean {
-		const pathHasStabilized = this.lastSeenPartialPath !== undefined && this.lastSeenPartialPath === path
-		this.lastSeenPartialPath = path
+	protected hasPathStabilized(task: Task, path: string | undefined): boolean {
+		const state = this.getPartialState(task)
+		const lastSeenPath = state.status !== "idle" ? state.lastSeenPath : undefined
+		const pathHasStabilized = lastSeenPath !== undefined && lastSeenPath === path
+
+		// Update state with new path, preserving other state fields
+		if (state.status === "idle") {
+			this.setPartialState(task, { status: "streaming", lastSeenPath: path })
+		} else if (state.status === "streaming") {
+			this.setPartialState(task, { ...state, lastSeenPath: path })
+		} else {
+			// erroring state - preserve error info
+			this.setPartialState(task, { ...state, lastSeenPath: path })
+		}
+
 		return pathHasStabilized && !!path
 	}
 
 	/**
-	 * Reset the partial state tracking.
+	 * Reset the partial state tracking for a task.
 	 *
 	 * Should be called at the end of execute() (both success and error paths)
 	 * to ensure clean state for the next tool invocation.
+	 *
+	 * @param task - Task instance to reset state for
 	 */
-	resetPartialState(): void {
-		this.lastSeenPartialPath = undefined
+	resetPartialState(task: Task): void {
+		this.setPartialState(task, { status: "idle" })
+	}
+
+	/**
+	 * Notify about a partial execution error with suppression for repeated errors.
+	 *
+	 * This method implements error suppression to prevent log spam during streaming
+	 * when the same error (e.g., invalid path) repeats on every chunk.
+	 *
+	 * Behavior:
+	 * - First error: logs and returns true (caller should handle)
+	 * - Subsequent identical errors: suppressed, returns false
+	 * - Different error message: logs and returns true
+	 *
+	 * @param task - Task instance for per-task state isolation
+	 * @param errorMessage - The error message to report
+	 * @param isPathValidationError - Whether this is a path validation error (enables fast-path guard)
+	 * @returns true if the error should be handled (first occurrence), false if suppressed
+	 */
+	protected notifyPartialError(task: Task, errorMessage: string, isPathValidationError = false): boolean {
+		const state = this.getPartialState(task)
+
+		if (state.status === "erroring" && state.lastErrorMessage === errorMessage) {
+			// Suppress repeated identical error
+			this.setPartialState(task, {
+				...state,
+				errorCount: state.errorCount + 1,
+			})
+			return false
+		}
+
+		// First error or different error message - log and track
+		const now = Date.now()
+		this.setPartialState(task, {
+			status: "erroring",
+			errorCount: 1,
+			lastErrorMessage: errorMessage,
+			firstErrorTime: now,
+			lastSeenPath: state.status !== "idle" ? state.lastSeenPath : undefined,
+			isPathValidationError,
+		})
+
+		console.error(`[${this.name}] Partial error: ${errorMessage}`)
+		return true
+	}
+
+	/**
+	 * Check if we should skip expensive work due to a known path validation error.
+	 *
+	 * This is a fast-path optimization: once we know the path is invalid, skip
+	 * filesystem operations and other expensive work on subsequent streaming chunks.
+	 *
+	 * @param task - Task instance for per-task state isolation
+	 * @returns true if we should skip (path validation error is active), false otherwise
+	 */
+	protected shouldSkipDueToPathError(task: Task): boolean {
+		const state = this.getPartialState(task)
+		return state.status === "erroring" && state.isPathValidationError === true
 	}
 
 	/**
 	 * Main entry point for tool execution.
 	 *
 	 * Handles the complete flow:
-	 * 1. Partial message handling (if partial)
-	 * 2. Parameter parsing (nativeArgs only)
-	 * 3. Core execution (execute)
+	 * 1. Fast-path guard for known path validation errors (skip expensive work)
+	 * 2. Partial message handling with error suppression (if partial)
+	 * 3. Parameter parsing (nativeArgs only)
+	 * 4. Core execution (execute)
 	 *
 	 * @param task - Task instance
 	 * @param block - ToolUse block from assistant message
@@ -113,14 +229,25 @@ export abstract class BaseTool<TName extends ToolName> {
 	async handle(task: Task, block: ToolUse<TName>, callbacks: ToolCallbacks): Promise<void> {
 		// Handle partial messages
 		if (block.partial) {
+			// Fast-path guard: skip expensive work if we already know the path is invalid.
+			// This prevents repeated filesystem operations on every streaming chunk.
+			if (this.shouldSkipDueToPathError(task)) {
+				return
+			}
+
 			try {
 				await this.handlePartial(task, block)
 			} catch (error) {
-				console.error(`Error in handlePartial:`, error)
-				await callbacks.handleError(
-					`handling partial ${this.name}`,
-					error instanceof Error ? error : new Error(String(error)),
-				)
+				const errorMessage = error instanceof Error ? error.message : String(error)
+				const isPathError = errorMessage.includes("Invalid path:")
+
+				// Use error suppression: only handle first occurrence of each error
+				if (this.notifyPartialError(task, errorMessage, isPathError)) {
+					// First error - let the caller know (but don't spam handleError)
+					// Note: We log in notifyPartialError, so just return silently here
+					// The error will be properly reported when execute() runs
+				}
+				// Suppressed errors: silently skip
 			}
 			return
 		}
