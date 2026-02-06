@@ -1019,6 +1019,9 @@ importers:
       yaml:
         specifier: ^2.8.0
         version: 2.8.0
+      zhipu-ai-provider:
+        specifier: ^0.2.2
+        version: 0.2.2(zod@3.25.76)
       zod:
         specifier: 3.25.76
         version: 3.25.76
@@ -11053,6 +11056,10 @@ packages:
   yoga-layout@3.2.1:
     resolution: {integrity: sha512-0LPOt3AxKqMdFBZA3HBAt/t/8vIKq7VaQYbuA8WxCgung+p9TVyKRYdpvCb80HcdTN2NkbIKbhNwKUfm3tQywQ==}
 
+  zhipu-ai-provider@0.2.2:
+    resolution: {integrity: sha512-UjX1ho4DI9ICUv/mrpAnzmrRe5/LXrGkS5hF6h4WDY2aup5GketWWopFzWYCqsbArXAM5wbzzdH9QzZusgGiBg==}
+    engines: {node: '>=18'}
+
   zip-stream@4.1.1:
     resolution: {integrity: sha512-9qv4rlDiopXg4E69k+vMHjNN63YFMe9sZMrdlvKnCjlCRWeCBswPPMPUfx+ipsAWq1LXHe70RcbaHdJJpS6hyQ==}
     engines: {node: '>= 10'}
@@ -15095,7 +15102,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.17.50)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -22385,6 +22392,13 @@ snapshots:
   yoctocolors@2.1.1: {}
 
   yoga-layout@3.2.1: {}
+
+  zhipu-ai-provider@0.2.2(zod@3.25.76):
+    dependencies:
+      '@ai-sdk/provider': 2.0.1
+      '@ai-sdk/provider-utils': 3.0.20(zod@3.25.76)
+    transitivePeerDependencies:
+      - zod
 
   zip-stream@4.1.1:
     dependencies:
