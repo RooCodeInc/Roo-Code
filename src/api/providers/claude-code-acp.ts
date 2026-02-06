@@ -39,6 +39,20 @@ const TOOL_CALL_CLOSE_TAG = "</roo_tool_call>"
 const MAX_TOOL_RESULT_CHARS = 8_000
 
 /**
+ * Hard cap for the total proxy prompt size sent to claude-code-acp.
+ *
+ * ACP adds its own system/context overhead; additionally, Roo can surface very large tool results
+ * (e.g., subtask transcripts). Without a hard cap, a fresh ACP session can resend the entire
+ * conversation and exceed ACP's internal limits ("Prompt is too long").
+ */
+const MAX_ACP_PROXY_PROMPT_CHARS = 120_000
+
+/**
+ * Marker used when we have to omit earlier conversation due to prompt size constraints.
+ */
+const OMITTED_CONVERSATION_MARKER = "[... earlier conversation omitted due to length ...]"
+
+/**
  * Essential behavioral rules for the proxy prompt.
  * Curated subset of getRulesSection() — only rules that the model cannot
  * infer from tool descriptions or Claude Code CLI's own system prompt.
@@ -115,10 +129,12 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		}
 		this.sessionId = session.sessionId
 
+		const maxPromptChars = this.getMaxProxyPromptChars(model.info)
+
 		// Build prompt: full on first turn, delta on subsequent turns
 		const proxyPrompt = this.isSessionInitialized
-			? this.buildDeltaPrompt(messages, metadata?.tool_choice)
-			: this.buildFullProxyPrompt(systemPrompt, messages, metadata?.tools, metadata?.tool_choice)
+			? this.buildDeltaPrompt(messages, metadata?.tool_choice, maxPromptChars)
+			: this.buildFullProxyPrompt(systemPrompt, messages, metadata?.tools, metadata?.tool_choice, maxPromptChars)
 
 		// Update state BEFORE sending (so if we crash, we don't re-send full prompt)
 		this.lastSentMessageCount = messages.length
@@ -309,6 +325,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		messages: Anthropic.Messages.MessageParam[],
 		tools?: OpenAI.Chat.ChatCompletionTool[],
 		toolChoice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
+		maxPromptChars: number = MAX_ACP_PROXY_PROMPT_CHARS,
 	): string {
 		const parts: string[] = []
 		const workingDirectory = this.options.claudeCodeAcpWorkingDirectory || process.cwd()
@@ -332,13 +349,21 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 				.filter(Boolean)
 		}
 
-		// Conversation history (environment_details fully stripped)
-		const formattedMessages = this.formatConversation(messages)
+		const separator = "\n\n---\n\n"
+		const conversationHeader = "[CONVERSATION]\n"
+
+		// Conversation history (environment_details fully stripped), constrained to a prompt budget
+		// so a fresh ACP session (e.g., after switching tasks/workspaces) can't blow up in size.
+		const prefix = parts.join(separator)
+		const prefixWithHeader = prefix ? `${prefix}${separator}${conversationHeader}` : conversationHeader
+		const maxConversationChars = Math.max(0, maxPromptChars - prefixWithHeader.length)
+
+		const formattedMessages = this.formatConversation(messages, maxConversationChars)
 		if (formattedMessages) {
-			parts.push(`[CONVERSATION]\n${formattedMessages}`)
+			return `${prefixWithHeader}${formattedMessages}`.slice(0, maxPromptChars)
 		}
 
-		return parts.join("\n\n---\n\n")
+		return prefixWithHeader.slice(0, maxPromptChars)
 	}
 
 	/**
@@ -356,16 +381,12 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 	private buildDeltaPrompt(
 		messages: Anthropic.Messages.MessageParam[],
 		toolChoice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
+		maxPromptChars: number = MAX_ACP_PROXY_PROMPT_CHARS,
 	): string {
 		// Get only the new messages since last prompt
 		const newMessages = messages.slice(this.lastSentMessageCount)
 
 		const parts: string[] = []
-
-		// Format new messages (typically tool results + maybe new user text)
-		if (newMessages.length > 0) {
-			parts.push(this.formatDeltaMessages(newMessages))
-		}
 
 		// Tool choice enforcement
 		let toolChoiceInstruction = ""
@@ -394,20 +415,48 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			: `${TOOL_CALL_OPEN_TAG}\n{"name": "attempt_completion", "arguments": {"result": "Done."}}\n${TOOL_CALL_CLOSE_TAG}`
 
 		// Strong continuation instructions with tool-use enforcement
-		parts.push(
-			[
-				`[CONTINUE]`,
-				toolChoiceInstruction,
-				`Tool call format example:`,
-				concreteExample,
-				toolNamesReminder,
-				`If the task is complete, use attempt_completion. If you need info, use read_file/search_files/list_files. NEVER respond with only text.`,
-			]
-				.filter(Boolean)
-				.join("\n"),
-		)
+		const continuationBlock = [
+			`[CONTINUE]`,
+			toolChoiceInstruction,
+			`Tool call format example:`,
+			concreteExample,
+			toolNamesReminder,
+			`If the task is complete, use attempt_completion. If you need info, use read_file/search_files/list_files. NEVER respond with only text.`,
+		]
+			.filter(Boolean)
+			.join("\n")
 
-		return parts.join("\n\n")
+		// Format new messages (typically tool results + maybe new user text), constrained by the
+		// overall prompt budget after reserving space for the continuation block.
+		if (newMessages.length > 0) {
+			const separatorLen = 2 // "\n\n" between delta messages and continuation block
+			const budgetForDelta = Math.max(0, maxPromptChars - continuationBlock.length - separatorLen)
+			const deltaText = this.formatDeltaMessages(newMessages, budgetForDelta)
+			if (deltaText) {
+				parts.push(deltaText)
+			}
+		}
+
+		parts.push(continuationBlock)
+
+		const prompt = parts.join("\n\n")
+		return prompt.length > maxPromptChars ? prompt.slice(0, maxPromptChars) : prompt
+	}
+
+	/**
+	 * Determine a safe max prompt size for ACP.
+	 *
+	 * We keep an absolute hard cap (ACP internal limits vary), but also respect the
+	 * model's context window as an upper bound (approximate char->token conversion).
+	 */
+	private getMaxProxyPromptChars(modelInfo: ModelInfo): number {
+		const approxCharsPerToken = 4
+		const contextWindow = modelInfo.contextWindow ?? 128_000
+		const maxTokens = modelInfo.maxTokens ?? 4_096
+		const availableTokens = Math.max(0, contextWindow - maxTokens)
+		const modelBoundChars = Math.floor(availableTokens * approxCharsPerToken * 0.9)
+		// Prefer the stricter bound to avoid ACP-side "Prompt is too long" failures.
+		return Math.max(10_000, Math.min(MAX_ACP_PROXY_PROMPT_CHARS, modelBoundChars || MAX_ACP_PROXY_PROMPT_CHARS))
 	}
 
 	/**
@@ -738,7 +787,7 @@ Current time: ${new Date().toISOString()}`
 	 * 1. Strips <environment_details> from ALL messages (Claude Code CLI has native workspace access)
 	 * 2. Truncates large tool results to MAX_TOOL_RESULT_CHARS
 	 */
-	private formatConversation(messages: Anthropic.Messages.MessageParam[]): string {
+	private formatConversation(messages: Anthropic.Messages.MessageParam[], maxChars?: number): string {
 		const formattedMessages: string[] = []
 		for (let i = 0; i < messages.length; i++) {
 			// Always strip environment_details — Claude Code CLI has native workspace access
@@ -748,7 +797,7 @@ Current time: ${new Date().toISOString()}`
 			}
 		}
 
-		return formattedMessages.join("\n\n")
+		return this.fitFormattedMessagesToBudget(formattedMessages, maxChars)
 	}
 
 	/**
@@ -757,7 +806,7 @@ Current time: ${new Date().toISOString()}`
 	 * These are typically tool_result blocks from Roo Code after executing
 	 * the tools the model requested in its previous response.
 	 */
-	private formatDeltaMessages(messages: Anthropic.Messages.MessageParam[]): string {
+	private formatDeltaMessages(messages: Anthropic.Messages.MessageParam[], maxChars?: number): string {
 		const parts: string[] = []
 
 		for (const msg of messages) {
@@ -768,7 +817,63 @@ Current time: ${new Date().toISOString()}`
 			}
 		}
 
-		return parts.join("\n\n")
+		return this.fitFormattedMessagesToBudget(parts, maxChars)
+	}
+
+	/**
+	 * Fit a list of already-formatted message strings to an optional character budget.
+	 *
+	 * If the budget is exceeded, keeps the most recent messages that fit and inserts a marker.
+	 * This prevents ACP failures like "-32603: Internal error: Prompt is too long", which can
+	 * happen when returning from subtasks with large transcripts.
+	 */
+	private fitFormattedMessagesToBudget(formattedMessages: string[], maxChars?: number): string {
+		const joined = formattedMessages.join("\n\n")
+		if (maxChars === undefined || maxChars <= 0 || joined.length <= maxChars) {
+			return joined
+		}
+
+		const last = formattedMessages[formattedMessages.length - 1] || ""
+		if (!last) return ""
+
+		if (maxChars < OMITTED_CONVERSATION_MARKER.length + 10) {
+			return this.truncateText(last, maxChars)
+		}
+
+		const kept: string[] = []
+		let keptLen = 0
+		const separatorLen = 2 // "\n\n"
+		const budget = Math.max(0, maxChars - OMITTED_CONVERSATION_MARKER.length - separatorLen)
+
+		for (let i = formattedMessages.length - 1; i >= 0; i--) {
+			const msg = formattedMessages[i]
+			const addLen = msg.length + (kept.length > 0 ? separatorLen : 0)
+			if (keptLen + addLen > budget) {
+				continue
+			}
+			kept.unshift(msg)
+			keptLen += addLen
+		}
+
+		if (kept.length === 0) {
+			return this.truncateText(last, maxChars)
+		}
+
+		console.debug("[ClaudeCodeAcpHandler] Truncated conversation for ACP prompt budget", {
+			originalChars: joined.length,
+			maxChars,
+			totalMessages: formattedMessages.length,
+			keptMessages: kept.length,
+		})
+
+		return `${OMITTED_CONVERSATION_MARKER}\n\n${kept.join("\n\n")}`
+	}
+
+	private truncateText(text: string, maxChars: number): string {
+		if (maxChars <= 0) return ""
+		if (text.length <= maxChars) return text
+		if (maxChars <= 30) return text.slice(0, maxChars)
+		return `${text.slice(0, maxChars - 18)}...[truncated]`
 	}
 
 	/**
@@ -803,11 +908,13 @@ Current time: ${new Date().toISOString()}`
 								.filter(Boolean)
 								.join("\n") || ""
 
-				// Truncate large tool results
+				// Truncate large tool results (keep head + tail; important details often appear at the end)
 				if (content.length > MAX_TOOL_RESULT_CHARS) {
-					content =
-						content.slice(0, MAX_TOOL_RESULT_CHARS) +
-						`\n[...truncated, showing first ${MAX_TOOL_RESULT_CHARS} of ${content.length} chars]`
+					const headChars = Math.min(6_000, MAX_TOOL_RESULT_CHARS - 1_200)
+					const tailChars = Math.min(1_000, MAX_TOOL_RESULT_CHARS - headChars)
+					const head = content.slice(0, headChars)
+					const tail = content.slice(-tailChars)
+					content = `${head}\n[...truncated, showing first ${headChars} and last ${tailChars} of ${content.length} chars]\n${tail}`
 				}
 
 				// Strip environment_details from tool results too
