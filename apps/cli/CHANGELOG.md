@@ -5,6 +5,12 @@ All notable changes to the `@roo-code/cli` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.51] - 2026-02-06
+
+### Changed
+
+- **Default Model Update**: Changed the default model from Opus 4.5 to Opus 4.6 for improved performance and capabilities
+
 ## [0.0.50] - 2026-02-05
 
 ### Added
