@@ -23,9 +23,9 @@ export const BatchListFilesPermission = memo(({ dirs = [], ts }: BatchListFilesP
 	return (
 		<div className="pt-[5px]">
 			<div className="flex flex-col gap-0 border border-border rounded-md p-1">
-				{dirs.map((dir) => {
+				{dirs.map((dir, index) => {
 					return (
-						<div key={`${dir.path}-${ts}`} className="flex items-center gap-2">
+						<div key={`${dir.path}-${index}-${ts}`} className="flex items-center gap-2">
 							<ToolUseBlock className="flex-1">
 								<ToolUseBlockHeader>
 									<PathTooltip content={dir.path}>

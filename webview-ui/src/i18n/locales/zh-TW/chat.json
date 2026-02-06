@@ -242,8 +242,7 @@
 		"didSearch": "Roo 已在此目錄中搜尋 <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
 		"didSearchOutsideWorkspace": "Roo 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
-		"wantsToViewMultipleDirectories": "Roo 想要查看多個目錄",
-		"didViewMultipleDirectories": "Roo 查看了多個目錄"
+		"wantsToViewMultipleDirectories": "Roo 想要查看多個目錄"
 	},
 	"codebaseSearch": {
 		"wantsToSearch": "Roo 想要在程式碼庫中搜尋 <code>{{query}}</code>",

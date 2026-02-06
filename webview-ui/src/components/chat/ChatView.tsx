@@ -11,6 +11,7 @@ import { Trans } from "react-i18next"
 import { useDebounceEffect } from "@src/utils/useDebounceEffect"
 import { appendImages } from "@src/utils/imageUtils"
 import { getCostBreakdownIfNeeded } from "@src/utils/costFormatting"
+import { batchConsecutive } from "@src/utils/batchConsecutive"
 
 import type { ClineAsk, ClineSayTool, ClineMessage, ExtensionMessage, AudioType } from "@roo-code/types"
 
@@ -321,6 +322,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 									break
 								case "readFile":
 									if (tool.batchFiles && Array.isArray(tool.batchFiles)) {
+										setPrimaryButtonText(t("chat:read-batch.approve.title"))
+										setSecondaryButtonText(t("chat:read-batch.deny.title"))
+									} else {
+										setPrimaryButtonText(t("chat:approve.title"))
+										setSecondaryButtonText(t("chat:reject.title"))
+									}
+									break
+								case "listFilesTopLevel":
+								case "listFilesRecursive":
+									if (tool.batchDirs && Array.isArray(tool.batchDirs)) {
 										setPrimaryButtonText(t("chat:read-batch.approve.title"))
 										setSecondaryButtonText(t("chat:read-batch.deny.title"))
 									} else {
@@ -1187,178 +1198,81 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 		}
 
-		// Consolidate consecutive read_file ask messages into batches
-		const readFileBatched: ClineMessage[] = []
-		let i = 0
-		while (i < filtered.length) {
-			const msg = filtered[i]
-
-			// Check if this starts a sequence of read_file asks
-			if (isReadFileAsk(msg)) {
-				// Collect all consecutive read_file asks
-				const batch: ClineMessage[] = [msg]
-				let j = i + 1
-				while (j < filtered.length && isReadFileAsk(filtered[j])) {
-					batch.push(filtered[j])
-					j++
+		// Synthesize a batch of consecutive read_file asks into a single message
+		const synthesizeReadFileBatch = (batch: ClineMessage[]): ClineMessage => {
+			const batchFiles = batch.map((batchMsg) => {
+				try {
+					const tool = JSON.parse(batchMsg.text || "{}")
+					return {
+						path: tool.path || "",
+						lineSnippet: tool.reason || "",
+						isOutsideWorkspace: tool.isOutsideWorkspace || false,
+						key: `${tool.path}${tool.reason ? ` (${tool.reason})` : ""}`,
+						content: tool.content || "",
+					}
+				} catch {
+					return { path: "", lineSnippet: "", key: "", content: "" }
 				}
+			})
 
-				if (batch.length > 1) {
-					// Create a synthetic batch message
-					const batchFiles = batch.map((batchMsg) => {
-						try {
-							const tool = JSON.parse(batchMsg.text || "{}")
-							return {
-								path: tool.path || "",
-								lineSnippet: tool.reason || "",
-								isOutsideWorkspace: tool.isOutsideWorkspace || false,
-								key: `${tool.path}${tool.reason ? ` (${tool.reason})` : ""}`,
-								content: tool.content || "",
-							}
-						} catch {
-							return { path: "", lineSnippet: "", key: "", content: "" }
-						}
-					})
-
-					// Use the first message as the base, but add batchFiles
-					const firstTool = JSON.parse(msg.text || "{}")
-					const syntheticMessage: ClineMessage = {
-						...msg,
-						text: JSON.stringify({
-							...firstTool,
-							batchFiles,
-						}),
-						// Store original messages for response handling
-						_batchedMessages: batch,
-					} as ClineMessage & { _batchedMessages: ClineMessage[] }
-
-					readFileBatched.push(syntheticMessage)
-					i = j // Skip past all batched messages
-				} else {
-					// Single read_file ask, keep as-is
-					readFileBatched.push(msg)
-					i++
-				}
-			} else {
-				readFileBatched.push(msg)
-				i++
+			const firstTool = JSON.parse(batch[0].text || "{}")
+			return {
+				...batch[0],
+				text: JSON.stringify({ ...firstTool, batchFiles }),
 			}
 		}
 
-		// Consolidate consecutive list_files ask messages into batches
-		const listFilesBatched: ClineMessage[] = []
-		i = 0
-		while (i < readFileBatched.length) {
-			const msg = readFileBatched[i]
-
-			// Check if this starts a sequence of list_files asks
-			if (isListFilesAsk(msg)) {
-				// Collect all consecutive list_files asks
-				const batch: ClineMessage[] = [msg]
-				let j = i + 1
-				while (j < readFileBatched.length && isListFilesAsk(readFileBatched[j])) {
-					batch.push(readFileBatched[j])
-					j++
+		// Synthesize a batch of consecutive list_files asks into a single message
+		const synthesizeListFilesBatch = (batch: ClineMessage[]): ClineMessage => {
+			const batchDirs = batch.map((batchMsg) => {
+				try {
+					const tool = JSON.parse(batchMsg.text || "{}")
+					return {
+						path: tool.path || "",
+						recursive: tool.tool === "listFilesRecursive",
+						isOutsideWorkspace: tool.isOutsideWorkspace || false,
+						key: tool.path || "",
+					}
+				} catch {
+					return { path: "", recursive: false, key: "" }
 				}
+			})
 
-				if (batch.length > 1) {
-					// Create a synthetic batch message
-					const batchDirs = batch.map((batchMsg) => {
-						try {
-							const tool = JSON.parse(batchMsg.text || "{}")
-							return {
-								path: tool.path || "",
-								recursive: tool.tool === "listFilesRecursive",
-								isOutsideWorkspace: tool.isOutsideWorkspace || false,
-								key: tool.path || "",
-							}
-						} catch {
-							return { path: "", recursive: false, key: "" }
-						}
-					})
-
-					// Use the first message as the base, but add batchDirs
-					const firstTool = JSON.parse(msg.text || "{}")
-					const syntheticMessage: ClineMessage = {
-						...msg,
-						text: JSON.stringify({
-							...firstTool,
-							batchDirs,
-						}),
-						// Store original messages for response handling
-						_batchedMessages: batch,
-					} as ClineMessage & { _batchedMessages: ClineMessage[] }
-
-					listFilesBatched.push(syntheticMessage)
-					i = j // Skip past all batched messages
-				} else {
-					// Single list_files ask, keep as-is
-					listFilesBatched.push(msg)
-					i++
-				}
-			} else {
-				listFilesBatched.push(msg)
-				i++
+			const firstTool = JSON.parse(batch[0].text || "{}")
+			return {
+				...batch[0],
+				text: JSON.stringify({ ...firstTool, batchDirs }),
 			}
 		}
 
-		// Consolidate consecutive file-edit ask messages into batches
-		const result: ClineMessage[] = []
-		i = 0
-		while (i < listFilesBatched.length) {
-			const msg = listFilesBatched[i]
-
-			// Check if this starts a sequence of file-edit asks
-			if (isEditFileAsk(msg)) {
-				// Collect all consecutive file-edit asks
-				const batch: ClineMessage[] = [msg]
-				let j = i + 1
-				while (j < listFilesBatched.length && isEditFileAsk(listFilesBatched[j])) {
-					batch.push(listFilesBatched[j])
-					j++
+		// Synthesize a batch of consecutive file-edit asks into a single message
+		const synthesizeEditFileBatch = (batch: ClineMessage[]): ClineMessage => {
+			const batchDiffs = batch.map((batchMsg) => {
+				try {
+					const tool = JSON.parse(batchMsg.text || "{}")
+					return {
+						path: tool.path || "",
+						changeCount: 1,
+						key: tool.path || "",
+						content: tool.content || tool.diff || "",
+						diffStats: tool.diffStats,
+					}
+				} catch {
+					return { path: "", changeCount: 0, key: "", content: "" }
 				}
+			})
 
-				if (batch.length > 1) {
-					// Create a synthetic batch message with batchDiffs
-					const batchDiffs = batch.map((batchMsg) => {
-						try {
-							const tool = JSON.parse(batchMsg.text || "{}")
-							return {
-								path: tool.path || "",
-								changeCount: 1,
-								key: tool.path || "",
-								content: tool.content || tool.diff || "",
-								diffStats: tool.diffStats,
-							}
-						} catch {
-							return { path: "", changeCount: 0, key: "", content: "" }
-						}
-					})
-
-					// Use the first message as the base, but add batchDiffs
-					const firstTool = JSON.parse(msg.text || "{}")
-					const syntheticMessage: ClineMessage = {
-						...msg,
-						text: JSON.stringify({
-							...firstTool,
-							batchDiffs,
-						}),
-						// Store original messages for response handling
-						_batchedMessages: batch,
-					} as ClineMessage & { _batchedMessages: ClineMessage[] }
-
-					result.push(syntheticMessage)
-					i = j // Skip past all batched messages
-				} else {
-					// Single file-edit ask, keep as-is
-					result.push(msg)
-					i++
-				}
-			} else {
-				result.push(msg)
-				i++
+			const firstTool = JSON.parse(batch[0].text || "{}")
+			return {
+				...batch[0],
+				text: JSON.stringify({ ...firstTool, batchDiffs }),
 			}
 		}
+
+		// Consolidate consecutive ask messages into batches
+		const readFileBatched = batchConsecutive(filtered, isReadFileAsk, synthesizeReadFileBatch)
+		const listFilesBatched = batchConsecutive(readFileBatched, isListFilesAsk, synthesizeListFilesBatch)
+		const result = batchConsecutive(listFilesBatched, isEditFileAsk, synthesizeEditFileBatch)
 
 		if (isCondensing) {
 			result.push({

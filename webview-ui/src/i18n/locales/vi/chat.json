@@ -219,8 +219,7 @@
 		"didViewTopLevelOutsideWorkspace": "Roo đã xem các tệp cấp cao nhất trong thư mục này (ngoài không gian làm việc)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo muốn xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
 		"didViewRecursiveOutsideWorkspace": "Roo đã xem đệ quy tất cả các tệp trong thư mục này (ngoài không gian làm việc)",
-		"wantsToViewMultipleDirectories": "Roo muốn xem nhiều thư mục",
-		"didViewMultipleDirectories": "Roo đã xem nhiều thư mục"
+		"wantsToViewMultipleDirectories": "Roo muốn xem nhiều thư mục"
 	},
 	"commandOutput": "Kết quả lệnh",
 	"commandExecution": {

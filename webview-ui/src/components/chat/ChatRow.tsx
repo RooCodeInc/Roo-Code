@@ -789,7 +789,7 @@ export const ChatRowContent = ({
 							<CodeAccordian
 								path={tool.path}
 								code={tool.content}
-								language={isRecursive ? "shellsession" : "shell-session"}
+								language="shellsession"
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
 							/>
