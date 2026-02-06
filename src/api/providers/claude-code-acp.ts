@@ -33,12 +33,18 @@ const TOOL_CALL_OPEN_TAG = "<roo_tool_call>"
 const TOOL_CALL_CLOSE_TAG = "</roo_tool_call>"
 
 /**
+ * Maximum characters per individual tool result content.
+ * Larger results are truncated with a marker.
+ */
+const MAX_TOOL_RESULT_CHARS = 8_000
+
+/**
  * Claude Code ACP Handler — LLM Proxy Mode
  *
  * Uses Claude Code ACP as a raw LLM proxy (not as an autonomous agent).
  * The model receives the full system prompt, conversation history, and tool
- * definitions. It responds with text and tool calls in a structured format
- * that this handler parses into proper ApiStream chunks.
+ * definitions on the FIRST turn. Subsequent turns only send delta messages
+ * (new tool results) to avoid duplicating context in the ACP session.
  *
  * This makes the ACP provider behave like other providers (OpenAI, Anthropic):
  * the model decides which Roo Code tools to call, and Roo Code's task loop
@@ -47,6 +53,14 @@ const TOOL_CALL_CLOSE_TAG = "</roo_tool_call>"
 export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ClaudeCodeAcpHandlerOptions
 	private sessionId: string | null = null
+
+	/**
+	 * Tracks number of messages sent in the last prompt.
+	 * Used to compute delta (new messages only) for subsequent ACP turns.
+	 * Reset when session changes.
+	 */
+	private lastSentMessageCount = 0
+	private isSessionInitialized = false
 
 	constructor(options: ClaudeCodeAcpHandlerOptions) {
 		super()
@@ -66,10 +80,22 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 
 		// Get or create a session
 		const session = await manager.getOrCreateSession(workingDirectory, model.id)
+
+		// Detect session change — reset state if new session
+		if (this.sessionId !== session.sessionId) {
+			this.lastSentMessageCount = 0
+			this.isSessionInitialized = false
+		}
 		this.sessionId = session.sessionId
 
-		// Build a proxy prompt: system prompt + tools + conversation
-		const proxyPrompt = this.buildProxyPrompt(systemPrompt, messages, metadata?.tools, metadata?.tool_choice)
+		// Build prompt: full on first turn, delta on subsequent turns
+		const proxyPrompt = this.isSessionInitialized
+			? this.buildDeltaPrompt(messages, metadata?.tool_choice)
+			: this.buildFullProxyPrompt(systemPrompt, messages, metadata?.tools, metadata?.tool_choice)
+
+		// Update state BEFORE sending (so if we crash, we don't re-send full prompt)
+		this.lastSentMessageCount = messages.length
+		this.isSessionInitialized = true
 
 		// Collect all text from streaming updates
 		const textChunks: string[] = []
@@ -80,6 +106,9 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		})
 
 		if (result.error) {
+			// On error, reset session state so next call sends full prompt
+			this.isSessionInitialized = false
+			this.lastSentMessageCount = 0
 			throw result.error
 		}
 
@@ -174,15 +203,15 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 	// ─── Proxy Prompt Building ───────────────────────────────────────────
 
 	/**
-	 * Build a proxy prompt that makes Claude Code act as a raw LLM.
+	 * Build the FULL proxy prompt for the first turn in an ACP session.
 	 *
-	 * Includes:
-	 * 1. Proxy mode instructions (don't use built-in tools, use XML format)
+	 * Includes everything the model needs:
+	 * 1. Proxy mode instructions
 	 * 2. Full system prompt from Roo Code
 	 * 3. Tool definitions
-	 * 4. Conversation history
+	 * 4. Conversation history (environment_details stripped from old messages)
 	 */
-	private buildProxyPrompt(
+	private buildFullProxyPrompt(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		tools?: OpenAI.Chat.ChatCompletionTool[],
@@ -193,7 +222,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		// Proxy mode instructions
 		parts.push(this.buildProxyInstructions(toolChoice))
 
-		// Full system prompt (no truncation)
+		// Full system prompt
 		if (systemPrompt) {
 			parts.push(`[SYSTEM PROMPT]\n${systemPrompt}`)
 		}
@@ -203,13 +232,57 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			parts.push(this.formatToolDefinitions(tools))
 		}
 
-		// Conversation history
+		// Conversation history (with environment_details stripping)
 		const formattedMessages = this.formatConversation(messages)
 		if (formattedMessages) {
 			parts.push(`[CONVERSATION]\n${formattedMessages}`)
 		}
 
 		return parts.join("\n\n---\n\n")
+	}
+
+	/**
+	 * Build a DELTA prompt for subsequent turns in the same ACP session.
+	 *
+	 * Since the ACP session already has the system prompt, tool definitions,
+	 * and previous conversation from earlier turns, we only send:
+	 * 1. New messages (tool results, new user content)
+	 * 2. A brief continuation reminder
+	 *
+	 * This prevents O(N²) context growth that causes "Prompt is too long" errors.
+	 */
+	private buildDeltaPrompt(
+		messages: Anthropic.Messages.MessageParam[],
+		toolChoice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
+	): string {
+		// Get only the new messages since last prompt
+		const newMessages = messages.slice(this.lastSentMessageCount)
+
+		const parts: string[] = []
+
+		// Format new messages (typically tool results + maybe new user text)
+		if (newMessages.length > 0) {
+			parts.push(this.formatDeltaMessages(newMessages))
+		}
+
+		// Brief continuation instruction
+		let toolChoiceReminder = ""
+		if (toolChoice === "required") {
+			toolChoiceReminder = " You MUST use at least one tool."
+		} else if (toolChoice === "none") {
+			toolChoiceReminder = " Do NOT use any tools, respond with text only."
+		} else if (typeof toolChoice === "object") {
+			const fnName = (toolChoice as unknown as { function?: { name?: string } })?.function?.name
+			if (fnName) {
+				toolChoiceReminder = ` You MUST use the "${fnName}" tool.`
+			}
+		}
+
+		parts.push(
+			`Continue with your task. Remember to use ${TOOL_CALL_OPEN_TAG} format for tool calls.${toolChoiceReminder}`,
+		)
+
+		return parts.join("\n\n")
 	}
 
 	/**
@@ -256,59 +329,126 @@ The "arguments" field must be a JSON object matching the tool's parameter schema
 			.map((t) => {
 				// Use `any` cast like base-provider.ts does for OpenAI v5 compatibility
 				const fn = (t as any).function as { name: string; description?: string; parameters?: unknown }
-				const params = fn.parameters ? JSON.stringify(fn.parameters, null, 2) : "{}"
-				return `### ${fn.name}\n${fn.description || "(no description)"}\nParameters:\n${params}`
+				// Compact JSON (no indentation) to save ~30% on schema size
+				const params = fn.parameters ? JSON.stringify(fn.parameters) : "{}"
+				return `### ${fn.name}\n${fn.description || "(no description)"}\nParameters: ${params}`
 			})
 
 		return `[AVAILABLE TOOLS]\n${toolTexts.join("\n\n")}`
 	}
 
+	// ─── Conversation Formatting ────────────────────────────────────────
+
 	/**
-	 * Format conversation messages for the proxy prompt.
+	 * Format ALL conversation messages for the first turn's proxy prompt.
 	 *
-	 * Includes all messages (not just the last one) so the model has full context.
-	 * Handles text blocks, tool_use blocks, and tool_result blocks.
+	 * Optimizations:
+	 * 1. Strips <environment_details> from all messages except the last user message
+	 * 2. Truncates large tool results to MAX_TOOL_RESULT_CHARS
 	 */
 	private formatConversation(messages: Anthropic.Messages.MessageParam[]): string {
+		// Find the index of the last user message (to preserve its environment_details)
+		let lastUserMsgIndex = -1
+		for (let i = messages.length - 1; i >= 0; i--) {
+			if (messages[i].role === "user") {
+				lastUserMsgIndex = i
+				break
+			}
+		}
+
+		const formattedMessages: string[] = []
+		for (let i = 0; i < messages.length; i++) {
+			const formatted = this.formatSingleMessage(messages[i], i === lastUserMsgIndex)
+			if (formatted) {
+				formattedMessages.push(formatted)
+			}
+		}
+
+		return formattedMessages.join("\n\n")
+	}
+
+	/**
+	 * Format only NEW messages for delta prompts (subsequent turns).
+	 *
+	 * These are typically tool_result blocks from Roo Code after executing
+	 * the tools the model requested in its previous response.
+	 */
+	private formatDeltaMessages(messages: Anthropic.Messages.MessageParam[]): string {
 		const parts: string[] = []
 
 		for (const msg of messages) {
-			const role = msg.role === "user" ? "Human" : "Assistant"
-
-			if (typeof msg.content === "string") {
-				parts.push(`[${role}]:\n${msg.content}`)
-				continue
-			}
-
-			const blockTexts: string[] = []
-			for (const block of msg.content) {
-				if (block.type === "text") {
-					blockTexts.push(block.text)
-				} else if (block.type === "tool_use") {
-					// Previous assistant tool call
-					blockTexts.push(
-						`${TOOL_CALL_OPEN_TAG}\n${JSON.stringify({ name: block.name, arguments: block.input })}\n${TOOL_CALL_CLOSE_TAG}`,
-					)
-				} else if (block.type === "tool_result") {
-					// Tool result from Roo Code
-					const content =
-						typeof block.content === "string"
-							? block.content
-							: block.content
-									?.map((c) => (c.type === "text" ? c.text : ""))
-									.filter(Boolean)
-									.join("\n") || ""
-					const errorFlag = block.is_error ? " [ERROR]" : ""
-					blockTexts.push(`[Tool Result${errorFlag} for ${block.tool_use_id}]:\n${content}`)
-				}
-			}
-
-			if (blockTexts.length > 0) {
-				parts.push(`[${role}]:\n${blockTexts.join("\n\n")}`)
+			// In delta mode, strip environment_details from all messages
+			// (the model already has the workspace context from the first turn)
+			const formatted = this.formatSingleMessage(msg, false)
+			if (formatted) {
+				parts.push(formatted)
 			}
 		}
 
 		return parts.join("\n\n")
+	}
+
+	/**
+	 * Format a single message (user or assistant) for inclusion in the prompt.
+	 */
+	private formatSingleMessage(
+		msg: Anthropic.Messages.MessageParam,
+		preserveEnvironmentDetails: boolean,
+	): string | null {
+		const role = msg.role === "user" ? "Human" : "Assistant"
+
+		if (typeof msg.content === "string") {
+			const text = preserveEnvironmentDetails ? msg.content : this.stripEnvironmentDetails(msg.content)
+			return `[${role}]:\n${text}`
+		}
+
+		const blockTexts: string[] = []
+		for (const block of msg.content) {
+			if (block.type === "text") {
+				const text = preserveEnvironmentDetails ? block.text : this.stripEnvironmentDetails(block.text)
+				blockTexts.push(text)
+			} else if (block.type === "tool_use") {
+				blockTexts.push(
+					`${TOOL_CALL_OPEN_TAG}\n${JSON.stringify({ name: block.name, arguments: block.input })}\n${TOOL_CALL_CLOSE_TAG}`,
+				)
+			} else if (block.type === "tool_result") {
+				let content =
+					typeof block.content === "string"
+						? block.content
+						: block.content
+								?.map((c) => (c.type === "text" ? c.text : ""))
+								.filter(Boolean)
+								.join("\n") || ""
+
+				// Truncate large tool results
+				if (content.length > MAX_TOOL_RESULT_CHARS) {
+					content =
+						content.slice(0, MAX_TOOL_RESULT_CHARS) +
+						`\n[...truncated, showing first ${MAX_TOOL_RESULT_CHARS} of ${content.length} chars]`
+				}
+
+				// Strip environment_details from tool results too
+				content = this.stripEnvironmentDetails(content)
+
+				const errorFlag = block.is_error ? " [ERROR]" : ""
+				blockTexts.push(`[Tool Result${errorFlag} for ${block.tool_use_id}]:\n${content}`)
+			}
+		}
+
+		if (blockTexts.length > 0) {
+			return `[${role}]:\n${blockTexts.join("\n\n")}`
+		}
+
+		return null
+	}
+
+	/**
+	 * Strip <environment_details>...</environment_details> blocks from text.
+	 * These are appended by Roo Code to every user message and are very large
+	 * (full workspace file tree). Only needed once in the first turn.
+	 */
+	private stripEnvironmentDetails(text: string): string {
+		return text.replace(/<environment_details>[\s\S]*?<\/environment_details>/g, "[environment_details omitted]")
 	}
 
 	// ─── Response Parsing ────────────────────────────────────────────────
