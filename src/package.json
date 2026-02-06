@@ -451,6 +451,7 @@
 	},
 	"dependencies": {
 		"@ai-sdk/cerebras": "^1.0.0",
+		"@ai-sdk/deepinfra": "^2.0.31",
 		"@ai-sdk/deepseek": "^2.0.14",
 		"@ai-sdk/fireworks": "^2.0.26",
 		"@ai-sdk/google": "^3.0.20",
@@ -458,7 +459,6 @@
 		"@ai-sdk/groq": "^3.0.19",
 		"@ai-sdk/mistral": "^3.0.0",
 		"@ai-sdk/xai": "^3.0.46",
-		"sambanova-ai-provider": "^1.2.2",
 		"@anthropic-ai/bedrock-sdk": "^0.10.2",
 		"@anthropic-ai/sdk": "^0.37.0",
 		"@anthropic-ai/vertex-sdk": "^0.7.0",
@@ -518,6 +518,7 @@
 		"puppeteer-core": "^23.4.0",
 		"reconnecting-eventsource": "^1.6.4",
 		"safe-stable-stringify": "^2.5.0",
+		"sambanova-ai-provider": "^1.2.2",
 		"sanitize-filename": "^1.6.3",
 		"say": "^0.16.0",
 		"semver-compare": "^1.0.0",
