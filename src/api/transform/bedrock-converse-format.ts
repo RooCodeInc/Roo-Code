@@ -209,9 +209,21 @@ export function convertToBedrockConverseMessages(anthropicMessages: Anthropic.Me
 				} as ContentBlock
 			}
 
-			// Handle redacted thinking blocks (Anthropic sends these when content is filtered)
+			// Handle redacted thinking blocks (Anthropic sends these when content is filtered).
+			// Convert base64-encoded data back to Uint8Array for Bedrock Converse API's
+			// reasoningContent.redactedContent format.
+			if (blockAny.type === "redacted_thinking" && (blockAny as unknown as { data?: string }).data) {
+				const base64Data = (blockAny as unknown as { data: string }).data
+				const binaryData = Buffer.from(base64Data, "base64")
+				return {
+					reasoningContent: {
+						redactedContent: new Uint8Array(binaryData),
+					},
+				} as ContentBlock
+			}
+
+			// Skip redacted_thinking blocks without data (shouldn't happen, but be safe)
 			if (blockAny.type === "redacted_thinking") {
-				// Skip redacted thinking — Bedrock doesn't support redactedContent in input
 				return undefined as unknown as ContentBlock
 			}
 

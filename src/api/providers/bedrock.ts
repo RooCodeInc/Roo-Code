@@ -125,8 +125,11 @@ interface ContentBlockDeltaEvent {
 		thinking?: string
 		type?: string
 		// AWS SDK structure for reasoning content deltas
+		// Includes text (reasoning), signature (verification token), and redactedContent (safety-filtered)
 		reasoningContent?: {
 			text?: string
+			signature?: string
+			redactedContent?: Uint8Array
 		}
 		// Tool use input delta
 		toolUse?: {
@@ -202,6 +205,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	private arnInfo: any
 	private readonly providerName = "Bedrock"
 	private lastThoughtSignature: string | undefined
+	private lastRedactedThinkingBlocks: Array<{ type: "redacted_thinking"; data: string }> = []
 
 	constructor(options: ProviderSettings) {
 		super()
@@ -492,8 +496,9 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 				throw new Error("No stream available in the response")
 			}
 
-			// Reset thought signature for this request
+			// Reset thinking state for this request
 			this.lastThoughtSignature = undefined
+			this.lastRedactedThinkingBlocks = []
 
 			for await (const chunk of response.stream) {
 				// Parse the chunk as JSON if it's a string (for tests)
@@ -650,11 +655,20 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 						// Bedrock Converse API sends the signature as a separate delta after all
 						// reasoning text deltas. This signature must be round-tripped back for
 						// multi-turn conversations with tool use (Anthropic API requirement).
-						// Note: The AWS SDK types may not include 'signature' yet, so we use
-						// a type assertion to access it from the raw stream data.
-						const reasoningSig = (delta.reasoningContent as { signature?: string } | undefined)?.signature
-						if (reasoningSig) {
-							this.lastThoughtSignature = reasoningSig
+						if (delta.reasoningContent?.signature) {
+							this.lastThoughtSignature = delta.reasoningContent.signature
+							continue
+						}
+
+						// Capture redacted thinking content (opaque binary data from safety-filtered reasoning).
+						// Anthropic returns this when extended thinking content is filtered. It must be
+						// passed back verbatim in multi-turn conversations for proper reasoning continuity.
+						if (delta.reasoningContent?.redactedContent) {
+							const redactedContent = delta.reasoningContent.redactedContent
+							this.lastRedactedThinkingBlocks.push({
+								type: "redacted_thinking",
+								data: Buffer.from(redactedContent).toString("base64"),
+							})
 							continue
 						}
 
@@ -1604,5 +1618,15 @@ Please check:
 	 */
 	getThoughtSignature(): string | undefined {
 		return this.lastThoughtSignature
+	}
+
+	/**
+	 * Returns any redacted thinking blocks captured from the last Bedrock response.
+	 * Anthropic returns these when safety filters trigger on the model's internal
+	 * reasoning. They contain opaque binary data (base64-encoded) that must be
+	 * passed back verbatim for proper reasoning continuity.
+	 */
+	getRedactedThinkingBlocks(): Array<{ type: "redacted_thinking"; data: string }> | undefined {
+		return this.lastRedactedThinkingBlocks.length > 0 ? this.lastRedactedThinkingBlocks : undefined
 	}
 }

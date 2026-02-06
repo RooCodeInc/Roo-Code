@@ -556,4 +556,139 @@ describe("convertToBedrockConverseMessages", () => {
 			}
 		})
 	})
+
+	describe("thinking and reasoning block handling", () => {
+		it("should convert thinking blocks to reasoningContent format", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "thinking", thinking: "Let me think about this...", signature: "sig-abc123" } as any,
+						{ type: "text", text: "Here is my answer." },
+					],
+				},
+			]
+
+			const result = convertToBedrockConverseMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0].role).toBe("assistant")
+			expect(result[0].content).toHaveLength(2)
+
+			const reasoningBlock = result[0].content![0] as any
+			expect(reasoningBlock.reasoningContent).toBeDefined()
+			expect(reasoningBlock.reasoningContent.reasoningText.text).toBe("Let me think about this...")
+			expect(reasoningBlock.reasoningContent.reasoningText.signature).toBe("sig-abc123")
+
+			const textBlock = result[0].content![1] as any
+			expect(textBlock.text).toBe("Here is my answer.")
+		})
+
+		it("should convert redacted_thinking blocks with data to reasoningContent.redactedContent", () => {
+			const testData = Buffer.from("encrypted-redacted-content").toString("base64")
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [{ type: "redacted_thinking", data: testData } as any, { type: "text", text: "Response" }],
+				},
+			]
+
+			const result = convertToBedrockConverseMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0].content).toHaveLength(2)
+
+			const redactedBlock = result[0].content![0] as any
+			expect(redactedBlock.reasoningContent).toBeDefined()
+			expect(redactedBlock.reasoningContent.redactedContent).toBeInstanceOf(Uint8Array)
+			// Verify round-trip: decode back and compare
+			const decoded = Buffer.from(redactedBlock.reasoningContent.redactedContent).toString("utf-8")
+			expect(decoded).toBe("encrypted-redacted-content")
+		})
+
+		it("should skip redacted_thinking blocks without data", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [{ type: "redacted_thinking" } as any, { type: "text", text: "Response" }],
+				},
+			]
+
+			const result = convertToBedrockConverseMessages(messages)
+
+			expect(result).toHaveLength(1)
+			// Only the text block should remain (redacted_thinking without data is filtered out)
+			expect(result[0].content).toHaveLength(1)
+			expect((result[0].content![0] as any).text).toBe("Response")
+		})
+
+		it("should skip reasoning blocks (internal Roo Code format)", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "reasoning", text: "Internal reasoning" } as any,
+						{ type: "text", text: "Response" },
+					],
+				},
+			]
+
+			const result = convertToBedrockConverseMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0].content).toHaveLength(1)
+			expect((result[0].content![0] as any).text).toBe("Response")
+		})
+
+		it("should skip thoughtSignature blocks (Gemini format)", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "Response" },
+						{ type: "thoughtSignature", thoughtSignature: "gemini-sig" } as any,
+					],
+				},
+			]
+
+			const result = convertToBedrockConverseMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0].content).toHaveLength(1)
+			expect((result[0].content![0] as any).text).toBe("Response")
+		})
+
+		it("should handle full thinking + redacted_thinking + text + tool_use message", () => {
+			const redactedData = Buffer.from("redacted-binary").toString("base64")
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "thinking", thinking: "Deep thought", signature: "sig-xyz" } as any,
+						{ type: "redacted_thinking", data: redactedData } as any,
+						{ type: "text", text: "I'll use a tool." },
+						{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "test.txt" } },
+					],
+				},
+			]
+
+			const result = convertToBedrockConverseMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0].content).toHaveLength(4)
+
+			// thinking → reasoningContent.reasoningText
+			expect((result[0].content![0] as any).reasoningContent.reasoningText.text).toBe("Deep thought")
+			expect((result[0].content![0] as any).reasoningContent.reasoningText.signature).toBe("sig-xyz")
+
+			// redacted_thinking → reasoningContent.redactedContent
+			expect((result[0].content![1] as any).reasoningContent.redactedContent).toBeInstanceOf(Uint8Array)
+
+			// text
+			expect((result[0].content![2] as any).text).toBe("I'll use a tool.")
+
+			// tool_use → toolUse
+			expect((result[0].content![3] as any).toolUse.name).toBe("read_file")
+		})
+	})
 })

@@ -1022,6 +1022,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			getThoughtSignature?: () => string | undefined
 			getSummary?: () => any[] | undefined
 			getReasoningDetails?: () => any[] | undefined
+			getRedactedThinkingBlocks?: () => Array<{ type: "redacted_thinking"; data: string }> | undefined
 		}
 
 		if (message.role === "assistant") {
@@ -1071,6 +1072,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					messageWithTs.content = [thinkingBlock, ...messageWithTs.content]
 				} else if (!messageWithTs.content) {
 					messageWithTs.content = [thinkingBlock]
+				}
+
+				// Also insert any redacted_thinking blocks after the thinking block.
+				// Anthropic returns these when safety filters trigger on reasoning content.
+				// They must be passed back verbatim for proper reasoning continuity.
+				const redactedBlocks = handler.getRedactedThinkingBlocks?.()
+				if (redactedBlocks && Array.isArray(messageWithTs.content)) {
+					// Insert after the thinking block (index 1, right after thinking at index 0)
+					messageWithTs.content.splice(1, 0, ...redactedBlocks)
 				}
 			} else if (reasoning && !reasoningDetails) {
 				// Other providers (non-Anthropic): Store as generic reasoning block
