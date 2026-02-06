@@ -30,14 +30,14 @@ export const Azure = ({ apiConfiguration, setApiConfigurationField }: AzureProps
 	return (
 		<>
 			<VSCodeTextField
-				value={apiConfiguration?.azureResourceName || ""}
-				onInput={handleInputChange("azureResourceName")}
-				placeholder={t("settings:placeholders.azureResourceName")}
+				value={apiConfiguration?.azureBaseUrl || ""}
+				onInput={handleInputChange("azureBaseUrl")}
+				placeholder={t("settings:placeholders.azureBaseUrl")}
 				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.azureResourceName")}</label>
+				<label className="block font-medium mb-1">{t("settings:providers.azureBaseUrl")}</label>
 			</VSCodeTextField>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
-				{t("settings:providers.azureResourceNameDescription")}
+				{t("settings:providers.azureBaseUrlDescription")}
 			</div>
 			<VSCodeTextField
 				value={apiConfiguration?.azureDeploymentName || ""}

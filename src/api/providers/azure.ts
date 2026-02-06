@@ -35,12 +35,13 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		this.options = options
 
 		// Create the Azure provider using AI SDK
-		// The @ai-sdk/azure package uses resourceName-based routing.
+		// baseURL supports both classic Azure OpenAI resources
+		// (.openai.azure.com) and newer AI Foundry resources
+		// (.cognitiveservices.azure.com).
 		// useDeploymentBasedUrls produces the universally compatible
-		// /deployments/{id}/{path} URL shape that works on both classic
-		// Azure OpenAI resources and newer AI Foundry resources.
+		// /deployments/{id}/{path} URL shape.
 		this.provider = createAzure({
-			resourceName: options.azureResourceName ?? "",
+			baseURL: options.azureBaseUrl ?? "",
 			apiKey: options.azureApiKey, // Optional — Azure supports managed identity / Entra ID auth
 			apiVersion: options.azureApiVersion ?? azureOpenAiDefaultApiVersion,
 			useDeploymentBasedUrls: true,

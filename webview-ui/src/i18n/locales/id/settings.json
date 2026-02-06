@@ -379,8 +379,8 @@
 		"getBasetenApiKey": "Dapatkan Baseten API Key",
 		"cerebrasApiKey": "Cerebras API Key",
 		"getCerebrasApiKey": "Dapatkan Cerebras API Key",
-		"azureResourceName": "Nama Resource Azure",
-		"azureResourceNameDescription": "Nama resource Azure OpenAI Anda (contoh: 'my-openai-resource').",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "URL endpoint Azure OpenAI kamu. Dapat ditemukan di portal Azure di bagian Keys & Endpoint.",
 		"azureDeploymentName": "Nama Deployment Azure",
 		"azureDeploymentNameDescription": "Nama deployment model dalam resource.",
 		"azureApiKey": "Azure API Key",
@@ -959,7 +959,7 @@
 		"modelNotAllowed": "Model '{{model}}' tidak diizinkan untuk provider '{{provider}}' oleh organisasi kamu",
 		"profileInvalid": "Profil ini berisi provider atau model yang tidak diizinkan oleh organisasi kamu",
 		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid",
-		"azureResourceName": "Kamu harus memberikan nama sumber daya Azure.",
+		"azureBaseUrl": "Kamu harus memberikan base URL Azure.",
 		"azureDeploymentName": "Kamu harus memberikan nama deployment Azure."
 	},
 	"placeholders": {
@@ -973,7 +973,7 @@
 		"projectId": "Masukkan Project ID...",
 		"customArn": "Masukkan ARN (misalnya arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Masukkan base URL...",
-		"azureResourceName": "e.g. my-openai-resource",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
 		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "misalnya meta-llama-3.1-8b-instruct",

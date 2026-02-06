@@ -379,8 +379,8 @@
 		"getBasetenApiKey": "Baseten API कुंजी प्राप्त करें",
 		"cerebrasApiKey": "Cerebras API कुंजी",
 		"getCerebrasApiKey": "Cerebras API कुंजी प्राप्त करें",
-		"azureResourceName": "Azure रिसोर्स नाम",
-		"azureResourceNameDescription": "आपके Azure OpenAI रिसोर्स का नाम (उदा. 'my-openai-resource')।",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "आपके Azure OpenAI एंडपॉइंट का URL। Azure पोर्टल में Keys & Endpoint के अंतर्गत उपलब्ध।",
 		"azureDeploymentName": "Azure डिप्लॉयमेंट नाम",
 		"azureDeploymentNameDescription": "रिसोर्स के अंदर आपके मॉडल डिप्लॉयमेंट का नाम।",
 		"azureApiKey": "Azure API कुंजी",
@@ -959,7 +959,7 @@
 		"modelNotAllowed": "मॉडल '{{model}}' प्रदाता '{{provider}}' के लिए आपके संगठन द्वारा अनुमत नहीं है",
 		"profileInvalid": "इस प्रोफ़ाइल में एक प्रदाता या मॉडल शामिल है जो आपके संगठन द्वारा अनुमत नहीं है",
 		"qwenCodeOauthPath": "आपको एक वैध OAuth क्रेडेंशियल पथ प्रदान करना होगा",
-		"azureResourceName": "आपको एक Azure संसाधन नाम प्रदान करना होगा।",
+		"azureBaseUrl": "आपको एक Azure base URL प्रदान करना होगा।",
 		"azureDeploymentName": "आपको एक Azure परिनियोजन नाम प्रदान करना होगा।"
 	},
 	"placeholders": {
@@ -973,7 +973,7 @@
 		"projectId": "प्रोजेक्ट ID दर्ज करें...",
 		"customArn": "ARN दर्ज करें (उदा. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "बेस URL दर्ज करें...",
-		"azureResourceName": "e.g. my-openai-resource",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
 		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "उदा. meta-llama-3.1-8b-instruct",

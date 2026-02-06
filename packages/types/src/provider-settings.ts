@@ -416,7 +416,7 @@ const basetenSchema = apiModelIdProviderModelSchema.extend({
 
 const azureSchema = apiModelIdProviderModelSchema.extend({
 	azureApiKey: z.string().optional(),
-	azureResourceName: z.string().optional(),
+	azureBaseUrl: z.string().optional(),
 	azureDeploymentName: z.string().optional(),
 	azureApiVersion: z.string().optional(),
 })

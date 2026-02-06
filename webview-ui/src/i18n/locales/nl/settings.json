@@ -379,8 +379,8 @@
 		"getBasetenApiKey": "Baseten API-sleutel verkrijgen",
 		"cerebrasApiKey": "Cerebras API-sleutel",
 		"getCerebrasApiKey": "Cerebras API-sleutel verkrijgen",
-		"azureResourceName": "Azure Resource-naam",
-		"azureResourceNameDescription": "De naam van je Azure OpenAI resource (bijv. 'mijn-openai-resource').",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "De eindpunt-URL van je Azure OpenAI. Te vinden in het Azure-portaal onder Sleutels en eindpunt.",
 		"azureDeploymentName": "Azure Deployment-naam",
 		"azureDeploymentNameDescription": "De naam van je model deployment binnen de resource.",
 		"azureApiKey": "Azure API-sleutel",
@@ -959,7 +959,7 @@
 		"modelNotAllowed": "Model '{{model}}' is niet toegestaan voor provider '{{provider}}' door je organisatie",
 		"profileInvalid": "Dit profiel bevat een provider of model dat niet is toegestaan door je organisatie",
 		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven",
-		"azureResourceName": "Je moet een Azure-resourcenaam opgeven.",
+		"azureBaseUrl": "Je moet een Azure-basis-URL opgeven.",
 		"azureDeploymentName": "Je moet een Azure-implementatienaam opgeven."
 	},
 	"placeholders": {
@@ -973,7 +973,7 @@
 		"projectId": "Voer project-ID in...",
 		"customArn": "Voer ARN in (bijv. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Voer basis-URL in...",
-		"azureResourceName": "e.g. my-openai-resource",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
 		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "bijv. meta-llama-3.1-8b-instruct",

@@ -379,8 +379,8 @@
 		"getBasetenApiKey": "Lấy khóa API Baseten",
 		"cerebrasApiKey": "Khóa API Cerebras",
 		"getCerebrasApiKey": "Lấy khóa API Cerebras",
-		"azureResourceName": "Tên tài nguyên Azure",
-		"azureResourceNameDescription": "Tên tài nguyên Azure OpenAI của bạn (ví dụ: 'my-openai-resource').",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "URL endpoint Azure OpenAI của bạn. Có thể tìm thấy trong cổng Azure dưới mục Khóa và Endpoint.",
 		"azureDeploymentName": "Tên triển khai Azure",
 		"azureDeploymentNameDescription": "Tên triển khai mô hình trong tài nguyên.",
 		"azureApiKey": "Khóa API Azure",
@@ -959,7 +959,7 @@
 		"modelNotAllowed": "Mô hình '{{model}}' không được phép cho nhà cung cấp '{{provider}}' bởi tổ chức của bạn",
 		"profileInvalid": "Hồ sơ này chứa một nhà cung cấp hoặc mô hình không được phép bởi tổ chức của bạn",
 		"qwenCodeOauthPath": "Bạn phải cung cấp đường dẫn thông tin xác thực OAuth hợp lệ",
-		"azureResourceName": "Bạn phải cung cấp tên tài nguyên Azure.",
+		"azureBaseUrl": "Bạn phải cung cấp URL cơ sở Azure.",
 		"azureDeploymentName": "Bạn phải cung cấp tên triển khai Azure."
 	},
 	"placeholders": {
@@ -973,7 +973,7 @@
 		"projectId": "Nhập ID dự án...",
 		"customArn": "Nhập ARN (vd: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Nhập URL cơ sở...",
-		"azureResourceName": "e.g. my-openai-resource",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
 		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "vd: meta-llama-3.1-8b-instruct",

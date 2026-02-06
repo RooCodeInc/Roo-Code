@@ -389,8 +389,8 @@
 		"getBasetenApiKey": "取得 Baseten API 金鑰",
 		"cerebrasApiKey": "Cerebras API 金鑰",
 		"getCerebrasApiKey": "取得 Cerebras API 金鑰",
-		"azureResourceName": "Azure 資源名稱",
-		"azureResourceNameDescription": "您的 Azure OpenAI 資源名稱（例如：'my-openai-resource'）。",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "Azure OpenAI 的端點 URL。可在 Azure 入口網站的「金鑰和端點」中找到。",
 		"azureDeploymentName": "Azure 部署名稱",
 		"azureDeploymentNameDescription": "資源中的模型部署名稱。",
 		"azureApiKey": "Azure API 金鑰",
@@ -969,7 +969,7 @@
 		"modelNotAllowed": "模型 '{{model}}' 不允許用於供應商 '{{provider}}'，此設定已被組織禁止",
 		"profileInvalid": "此設定檔包含您的組織不允許的供應商或模型",
 		"qwenCodeOauthPath": "您必須提供有效的 OAuth 憑證路徑",
-		"azureResourceName": "您必須提供 Azure 資源名稱。",
+		"azureBaseUrl": "您必須提供 Azure 基礎 URL。",
 		"azureDeploymentName": "您必須提供 Azure 部署名稱。"
 	},
 	"placeholders": {
@@ -983,7 +983,7 @@
 		"projectId": "請輸入專案 ID...",
 		"customArn": "請輸入 ARN（例：arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model）",
 		"baseUrl": "請輸入基礎 URL...",
-		"azureResourceName": "e.g. my-openai-resource",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
 		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "例：meta-llama-3.1-8b-instruct",

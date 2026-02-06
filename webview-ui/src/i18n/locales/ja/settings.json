@@ -379,8 +379,8 @@
 		"getBasetenApiKey": "Baseten APIキーを取得",
 		"cerebrasApiKey": "Cerebras APIキー",
 		"getCerebrasApiKey": "Cerebras APIキーを取得",
-		"azureResourceName": "Azureリソース名",
-		"azureResourceNameDescription": "Azure OpenAIリソースの名前（例：'my-openai-resource'）。",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "Azure OpenAIのエンドポイントURL。Azureポータルの「キーとエンドポイント」で確認できます。",
 		"azureDeploymentName": "Azureデプロイメント名",
 		"azureDeploymentNameDescription": "リソース内のモデルデプロイメントの名前。",
 		"azureApiKey": "Azure APIキー",
@@ -959,7 +959,7 @@
 		"modelNotAllowed": "モデル「{{model}}」はプロバイダー「{{provider}}」に対して組織によって許可されていません",
 		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
 		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります",
-		"azureResourceName": "Azureリソース名を入力してください。",
+		"azureBaseUrl": "AzureのベースURLを入力してください。",
 		"azureDeploymentName": "Azureデプロイメント名を入力してください。"
 	},
 	"placeholders": {
@@ -973,7 +973,7 @@
 		"projectId": "プロジェクト ID を入力...",
 		"customArn": "ARN を入力（例：arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model）",
 		"baseUrl": "ベース URL を入力...",
-		"azureResourceName": "e.g. my-openai-resource",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
 		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "例：meta-llama-3.1-8b-instruct",

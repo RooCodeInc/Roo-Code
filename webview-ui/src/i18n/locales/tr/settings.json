@@ -379,8 +379,8 @@
 		"getBasetenApiKey": "Baseten API Anahtarı Al",
 		"cerebrasApiKey": "Cerebras API Anahtarı",
 		"getCerebrasApiKey": "Cerebras API Anahtarını Al",
-		"azureResourceName": "Azure Kaynak Adı",
-		"azureResourceNameDescription": "Azure OpenAI kaynak adınız (örn. 'benim-openai-kaynagim').",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "Azure OpenAI uç nokta URL'n. Azure portalında Anahtarlar ve Uç Nokta altında bulunur.",
 		"azureDeploymentName": "Azure Dağıtım Adı",
 		"azureDeploymentNameDescription": "Kaynak içindeki model dağıtım adınız.",
 		"azureApiKey": "Azure API Anahtarı",
@@ -959,7 +959,7 @@
 		"modelNotAllowed": "Model '{{model}}' sağlayıcı '{{provider}}' için kuruluşunuz tarafından izin verilmiyor",
 		"profileInvalid": "Bu profil, kuruluşunuz tarafından izin verilmeyen bir sağlayıcı veya model içeriyor",
 		"qwenCodeOauthPath": "Geçerli bir OAuth kimlik bilgileri yolu sağlamalısın",
-		"azureResourceName": "Bir Azure kaynak adı sağlamalısın.",
+		"azureBaseUrl": "Bir Azure temel URL'si sağlamalısın.",
 		"azureDeploymentName": "Bir Azure dağıtım adı sağlamalısın."
 	},
 	"placeholders": {
@@ -973,7 +973,7 @@
 		"projectId": "Proje ID'sini girin...",
 		"customArn": "ARN girin (örn. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Temel URL'yi girin...",
-		"azureResourceName": "e.g. my-openai-resource",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
 		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "örn. meta-llama-3.1-8b-instruct",

@@ -11,9 +11,9 @@ export function checkExistKey(config: ProviderSettings | undefined) {
 	}
 
 	// Azure supports managed identity / Entra ID auth (no API key needed).
-	// Consider it configured if resource name or deployment name is set.
+	// Consider it configured if base URL or deployment name is set.
 	if (config.apiProvider === "azure") {
-		return !!(config.azureResourceName || config.azureDeploymentName || config.azureApiKey)
+		return !!(config.azureBaseUrl || config.azureDeploymentName || config.azureApiKey)
 	}
 
 	// Check all secret keys from the centralized SECRET_STATE_KEYS array.

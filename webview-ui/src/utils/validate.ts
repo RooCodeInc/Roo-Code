@@ -159,14 +159,14 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 			// Don't show validation errors when provider is freshly selected (all fields empty)
 			if (
 				!apiConfiguration.azureApiKey &&
-				!apiConfiguration.azureResourceName &&
+				!apiConfiguration.azureBaseUrl &&
 				!apiConfiguration.azureDeploymentName
 			) {
 				break
 			}
 			// API key is optional — Azure supports managed identity / Entra ID auth
-			if (!apiConfiguration.azureResourceName) {
-				return i18next.t("settings:validation.azureResourceName")
+			if (!apiConfiguration.azureBaseUrl) {
+				return i18next.t("settings:validation.azureBaseUrl")
 			}
 			if (!apiConfiguration.azureDeploymentName) {
 				return i18next.t("settings:validation.azureDeploymentName")

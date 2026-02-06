@@ -442,8 +442,8 @@
 		"getBasetenApiKey": "Get Baseten API Key",
 		"cerebrasApiKey": "Cerebras API Key",
 		"getCerebrasApiKey": "Get Cerebras API Key",
-		"azureResourceName": "Azure Resource Name",
-		"azureResourceNameDescription": "The name of your Azure OpenAI resource (e.g., 'my-openai-resource').",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "Your Azure OpenAI endpoint URL. Found in the Azure portal under Keys & Endpoint.",
 		"azureDeploymentName": "Azure Deployment Name",
 		"azureDeploymentNameDescription": "The name of your model deployment within the resource.",
 		"azureApiKey": "Azure API Key",
@@ -1022,7 +1022,7 @@
 		"modelNotAllowed": "Model '{{model}}' is not allowed for provider '{{provider}}' by your organization",
 		"profileInvalid": "This profile contains a provider or model that is not allowed by your organization",
 		"qwenCodeOauthPath": "You must provide a valid OAuth credentials path.",
-		"azureResourceName": "You must provide an Azure resource name.",
+		"azureBaseUrl": "You must provide an Azure base URL.",
 		"azureDeploymentName": "You must provide an Azure deployment name."
 	},
 	"placeholders": {
@@ -1036,7 +1036,7 @@
 		"projectId": "Enter Project ID...",
 		"customArn": "Enter ARN (e.g. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Enter base URL...",
-		"azureResourceName": "e.g. my-openai-resource",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
 		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "e.g. meta-llama-3.1-8b-instruct",

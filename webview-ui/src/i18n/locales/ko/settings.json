@@ -379,8 +379,8 @@
 		"getBasetenApiKey": "Baseten API 키 가져오기",
 		"cerebrasApiKey": "Cerebras API 키",
 		"getCerebrasApiKey": "Cerebras API 키 가져오기",
-		"azureResourceName": "Azure 리소스 이름",
-		"azureResourceNameDescription": "Azure OpenAI 리소스 이름 (예: 'my-openai-resource').",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "Azure OpenAI 엔드포인트 URL입니다. Azure 포털의 키 및 엔드포인트에서 확인할 수 있습니다.",
 		"azureDeploymentName": "Azure 배포 이름",
 		"azureDeploymentNameDescription": "리소스 내 모델 배포 이름.",
 		"azureApiKey": "Azure API 키",
@@ -959,7 +959,7 @@
 		"modelNotAllowed": "모델 '{{model}}'은 제공자 '{{provider}}'에 대해 조직에서 허용되지 않습니다",
 		"profileInvalid": "이 프로필에는 조직에서 허용되지 않는 제공자 또는 모델이 포함되어 있습니다",
 		"qwenCodeOauthPath": "유효한 OAuth 자격 증명 경로를 제공해야 합니다",
-		"azureResourceName": "Azure 리소스 이름을 입력해야 합니다.",
+		"azureBaseUrl": "Azure 기본 URL을 입력해야 합니다.",
 		"azureDeploymentName": "Azure 배포 이름을 입력해야 합니다."
 	},
 	"placeholders": {
@@ -973,7 +973,7 @@
 		"projectId": "프로젝트 ID 입력...",
 		"customArn": "ARN 입력 (예: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "기본 URL 입력...",
-		"azureResourceName": "e.g. my-openai-resource",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
 		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "예: meta-llama-3.1-8b-instruct",

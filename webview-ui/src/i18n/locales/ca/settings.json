@@ -379,8 +379,8 @@
 		"getBasetenApiKey": "Obtenir clau API de Baseten",
 		"cerebrasApiKey": "Clau API de Cerebras",
 		"getCerebrasApiKey": "Obtenir clau API de Cerebras",
-		"azureResourceName": "Nom del recurs d'Azure",
-		"azureResourceNameDescription": "El nom del teu recurs Azure OpenAI (p. ex. 'el-meu-recurs-openai').",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "L'URL del punt d'accés d'Azure OpenAI. Es pot trobar al portal d'Azure a Claus i punt d'accés.",
 		"azureDeploymentName": "Nom del desplegament d'Azure",
 		"azureDeploymentNameDescription": "El nom del desplegament del model dins del recurs.",
 		"azureApiKey": "Clau API d'Azure",
@@ -959,7 +959,7 @@
 		"modelNotAllowed": "El model '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
 		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
 		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth",
-		"azureResourceName": "Has de proporcionar un nom de recurs d'Azure.",
+		"azureBaseUrl": "Has de proporcionar una URL base d'Azure.",
 		"azureDeploymentName": "Has de proporcionar un nom de desplegament d'Azure."
 	},
 	"placeholders": {
@@ -973,7 +973,7 @@
 		"projectId": "Introduïu l'ID del projecte...",
 		"customArn": "Introduïu l'ARN (p. ex. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Introduïu l'URL base...",
-		"azureResourceName": "e.g. my-openai-resource",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
 		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "p. ex. meta-llama-3.1-8b-instruct",

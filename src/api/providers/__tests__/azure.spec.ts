@@ -36,7 +36,7 @@ describe("AzureHandler", () => {
 	beforeEach(() => {
 		mockOptions = {
 			azureApiKey: "test-api-key",
-			azureResourceName: "test-resource",
+			azureBaseUrl: "https://test-resource.openai.azure.com/openai",
 			azureDeploymentName: "gpt-4o",
 			azureApiVersion: "2024-08-01-preview",
 		}
