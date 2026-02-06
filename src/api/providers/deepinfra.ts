@@ -17,6 +17,7 @@ import {
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
+import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { getModels, getModelsFromCache } from "./fetchers/modelCache"
@@ -34,21 +35,21 @@ const DEEPINFRA_HEADERS = {
  */
 export class DeepInfraHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
+	protected provider: ReturnType<typeof createDeepInfra>
 	protected models: ModelRecord = {}
 
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
-	}
 
-	/**
-	 * Create the DeepInfra AI SDK provider instance.
-	 */
-	protected createProvider() {
-		return createDeepInfra({
+		// Create the DeepInfra provider once in the constructor (cached)
+		this.provider = createDeepInfra({
 			apiKey: this.options.deepInfraApiKey ?? "not-provided",
 			baseURL: this.options.deepInfraBaseUrl || DEEPINFRA_DEFAULT_BASE_URL,
-			headers: DEEPINFRA_HEADERS,
+			headers: {
+				...DEFAULT_HEADERS,
+				...DEEPINFRA_HEADERS,
+			},
 		})
 	}
 
@@ -88,8 +89,7 @@ export class DeepInfraHandler extends BaseProvider implements SingleCompletionHa
 	 * Get the language model for the given model ID.
 	 */
 	protected getLanguageModel(modelId: string) {
-		const provider = this.createProvider()
-		return provider(modelId)
+		return this.provider(modelId)
 	}
 
 	/**
