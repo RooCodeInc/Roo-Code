@@ -12,6 +12,42 @@ import { getModelParams } from "../transform/model-params"
 import type { ApiHandlerCreateMessageMetadata } from "../index"
 import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compatible"
 
+/**
+ * Merge consecutive Anthropic messages that share the same role.
+ * DeepSeek R1 does not support successive messages with the same role,
+ * so this is needed when the system prompt is injected as a user message
+ * before the existing conversation (which may also start with a user message).
+ */
+function mergeConsecutiveSameRoleMessages(
+	messages: Anthropic.Messages.MessageParam[],
+): Anthropic.Messages.MessageParam[] {
+	if (messages.length <= 1) {
+		return messages
+	}
+
+	const merged: Anthropic.Messages.MessageParam[] = []
+
+	for (const msg of messages) {
+		const prev = merged[merged.length - 1]
+
+		if (prev && prev.role === msg.role) {
+			const prevBlocks: Anthropic.Messages.ContentBlockParam[] =
+				typeof prev.content === "string" ? [{ type: "text", text: prev.content }] : prev.content
+			const currBlocks: Anthropic.Messages.ContentBlockParam[] =
+				typeof msg.content === "string" ? [{ type: "text", text: msg.content }] : msg.content
+
+			merged[merged.length - 1] = {
+				role: prev.role,
+				content: [...prevBlocks, ...currBlocks],
+			}
+		} else {
+			merged.push(msg)
+		}
+	}
+
+	return merged
+}
+
 export class FeatherlessHandler extends OpenAICompatibleHandler {
 	constructor(options: ApiHandlerOptions) {
 		const modelId = options.apiModelId ?? featherlessDefaultModelId
@@ -55,9 +91,11 @@ export class FeatherlessHandler extends OpenAICompatibleHandler {
 		const model = this.getModel()
 
 		if (model.id.includes("DeepSeek-R1")) {
-			// R1 path: merge system prompt into user messages, use TagMatcher for <think> tags
+			// R1 path: merge system prompt into user messages, use TagMatcher for <think> tags.
+			// mergeConsecutiveSameRoleMessages ensures no two successive messages share the
+			// same role (e.g. the injected system-as-user + original first user message).
 			const r1Messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: systemPrompt }, ...messages]
-			const aiSdkMessages = convertToAiSdkMessages(r1Messages)
+			const aiSdkMessages = convertToAiSdkMessages(mergeConsecutiveSameRoleMessages(r1Messages))
 
 			const result = streamText({
 				model: this.getLanguageModel(),

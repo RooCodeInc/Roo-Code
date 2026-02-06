@@ -284,6 +284,51 @@ describe("FeatherlessHandler", () => {
 			expect(callArgs.system).toBeUndefined()
 			expect(callArgs.messages).toBeDefined()
 		})
+
+		it("should merge consecutive user messages in R1 path to avoid DeepSeek rejection", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+			})
+
+			vi.spyOn(handler, "getModel").mockReturnValue({
+				id: "some-DeepSeek-R1-model",
+				info: { maxTokens: 2048, temperature: 0.6 },
+				maxTokens: 2048,
+				temperature: 0.6,
+			} as any)
+
+			// messages starts with a user message, so after prepending the system
+			// prompt as a user message we'd have two consecutive user messages.
+			const userFirstMessages: Anthropic.Messages.MessageParam[] = [
+				{ role: "user", content: "Hello!" },
+				{ role: "assistant", content: "Hi there" },
+				{ role: "user", content: "Follow-up" },
+			]
+
+			const stream = handler.createMessage(systemPrompt, userFirstMessages)
+			for await (const _ of stream) {
+				// drain
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			const passedMessages = callArgs.messages
+
+			// Verify no two consecutive messages share the same role
+			for (let i = 1; i < passedMessages.length; i++) {
+				expect(passedMessages[i].role).not.toBe(passedMessages[i - 1].role)
+			}
+
+			// The system prompt and first user message should be merged into a single user message
+			expect(passedMessages[0].role).toBe("user")
+			expect(passedMessages[1].role).toBe("assistant")
+			expect(passedMessages[2].role).toBe("user")
+			expect(passedMessages).toHaveLength(3)
+		})
 	})
 
 	describe("completePrompt", () => {
