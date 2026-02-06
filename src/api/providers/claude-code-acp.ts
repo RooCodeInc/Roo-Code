@@ -1,4 +1,5 @@
 import { Anthropic } from "@anthropic-ai/sdk"
+import OpenAI from "openai"
 
 import {
 	type ModelInfo,
@@ -9,7 +10,7 @@ import {
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { ApiStream } from "../transform/stream"
+import { ApiStream, ApiStreamChunk } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -25,26 +26,23 @@ interface ClaudeCodeAcpHandlerOptions extends ApiHandlerOptions {
 }
 
 /**
- * Maximum number of continuation retries when tool calls are still pending.
+ * Tag used in the proxy prompt to delimit tool calls in the model's response.
+ * The model outputs JSON tool calls wrapped in these tags.
  */
-const MAX_CONTINUATION_RETRIES = 3
+const TOOL_CALL_OPEN_TAG = "<roo_tool_call>"
+const TOOL_CALL_CLOSE_TAG = "</roo_tool_call>"
 
 /**
- * Maximum characters from system prompt to include as context.
- */
-const MAX_SYSTEM_PROMPT_CONTEXT = 4000
-
-/**
- * Claude Code ACP Handler
+ * Claude Code ACP Handler — LLM Proxy Mode
  *
- * Integrates Claude Code through the Agent Client Protocol (ACP).
- * Authentication is handled by the Claude Code CLI (stored in system keychain).
+ * Uses Claude Code ACP as a raw LLM proxy (not as an autonomous agent).
+ * The model receives the full system prompt, conversation history, and tool
+ * definitions. It responds with text and tool calls in a structured format
+ * that this handler parses into proper ApiStream chunks.
  *
- * Key behaviors:
- * - Includes Roo Code mode context (system prompt) in the prompt sent to the ACP agent
- * - Tracks tool call states to detect incomplete work
- * - Sends continuation prompts when tool calls are still pending at end of turn
- * - Only synthesizes attempt_completion when all work is truly complete
+ * This makes the ACP provider behave like other providers (OpenAI, Anthropic):
+ * the model decides which Roo Code tools to call, and Roo Code's task loop
+ * handles execution and continuation.
  */
 export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ClaudeCodeAcpHandlerOptions
@@ -70,103 +68,29 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		const session = await manager.getOrCreateSession(workingDirectory, model.id)
 		this.sessionId = session.sessionId
 
-		// Extract only the last user message - ACP sessions maintain their own context
-		const lastUserMessage = this.extractLastUserMessage(messages)
+		// Build a proxy prompt: system prompt + tools + conversation
+		const proxyPrompt = this.buildProxyPrompt(systemPrompt, messages, metadata?.tools, metadata?.tool_choice)
 
-		// Build an enriched prompt that includes mode context and completion instructions
-		const enrichedPrompt = this.buildEnrichedPrompt(systemPrompt, lastUserMessage)
-
-		// Track tool call states across the entire interaction (including retries)
-		const toolCallStates = new Map<string, string>()
-
-		// Collect ALL text from streaming updates
+		// Collect all text from streaming updates
 		const textChunks: string[] = []
-		let hasYieldedText = false
-		let totalInputChars = enrichedPrompt.length
+		const totalInputChars = proxyPrompt.length
 
-		// Run the first prompt and stream results
-		const firstResult = await this.sendPromptStreaming(
-			session.sessionId,
-			enrichedPrompt,
-			toolCallStates,
-			(text) => {
-				textChunks.push(text)
-				hasYieldedText = true
-			},
-		)
+		const result = await this.sendPromptStreaming(session.sessionId, proxyPrompt, (text) => {
+			textChunks.push(text)
+		})
 
-		// Yield all collected text chunks from the first prompt
-		for (const chunk of textChunks) {
-			yield { type: "text", text: chunk }
+		if (result.error) {
+			throw result.error
 		}
 
-		if (firstResult.error) {
-			throw firstResult.error
-		}
-
-		// Check for pending tool calls and retry if needed
-		let retries = 0
-		while (this.hasPendingToolCalls(toolCallStates) && retries < MAX_CONTINUATION_RETRIES) {
-			retries++
-			const pendingTools = this.getPendingToolNames(toolCallStates)
-			console.debug(
-				`[ClaudeCodeAcpHandler] Retry ${retries}/${MAX_CONTINUATION_RETRIES}: ${pendingTools.length} tool(s) still pending: ${pendingTools.join(", ")}`,
-			)
-
-			const continuationPrompt = this.buildContinuationPrompt(pendingTools)
-			totalInputChars += continuationPrompt.length
-
-			const retryChunks: string[] = []
-			const retryResult = await this.sendPromptStreaming(
-				session.sessionId,
-				continuationPrompt,
-				toolCallStates,
-				(text) => {
-					retryChunks.push(text)
-					textChunks.push(text)
-					hasYieldedText = true
-				},
-			)
-
-			// Yield retry text chunks
-			for (const chunk of retryChunks) {
-				yield { type: "text", text: chunk }
-			}
-
-			if (retryResult.error) {
-				console.error("[ClaudeCodeAcpHandler] Continuation prompt error:", retryResult.error)
-				break
-			}
-
-			// If the agent ended for a non-recoverable reason, stop retrying
-			if (retryResult.stopReason === "cancelled" || retryResult.stopReason === "refusal") {
-				break
-			}
-		}
-
-		if (retries >= MAX_CONTINUATION_RETRIES && this.hasPendingToolCalls(toolCallStates)) {
-			const pending = this.getPendingToolNames(toolCallStates)
-			console.warn(
-				`[ClaudeCodeAcpHandler] Max retries reached with ${pending.length} tool(s) still pending: ${pending.join(", ")}`,
-			)
-		}
-
-		// If no text was yielded, something went wrong with streaming
-		if (!hasYieldedText) {
-			console.warn("[ClaudeCodeAcpHandler] No text received from ACP session updates")
-			textChunks.push(
-				"[Claude Code ACP: Response received but no text content was streamed. Check the ACP adapter logs for details.]",
-			)
-		}
-
-		// Synthesize attempt_completion with the complete response.
-		// At this point, either all tool calls completed or we exhausted retries.
 		const fullText = textChunks.join("")
-		yield {
-			type: "tool_call",
-			id: `acp_${Date.now()}`,
-			name: "attempt_completion",
-			arguments: JSON.stringify({ result: fullText }),
+
+		// Parse response for text and tool calls
+		const parsed = this.parseProxyResponse(fullText)
+
+		// Yield all parsed chunks
+		for (const chunk of parsed) {
+			yield chunk
 		}
 
 		// Emit usage estimate
@@ -178,18 +102,11 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 	}
 
 	/**
-	 * Send a prompt to the ACP session and collect streaming updates.
-	 *
-	 * This is a non-generator helper that manages the streaming lifecycle.
-	 * Text chunks are delivered via the onText callback.
-	 * Tool call states are tracked in the provided stateMap.
-	 *
-	 * Returns the prompt result (including stopReason) or an error.
+	 * Send a prompt to the ACP session and collect streaming text.
 	 */
 	private async sendPromptStreaming(
 		sessionId: string,
 		prompt: string,
-		toolCallStates: Map<string, string>,
 		onText: (text: string) => void,
 	): Promise<{ stopReason?: string; error?: Error }> {
 		const manager = getSharedSessionManager(this.options.claudeCodeAcpExecutablePath)
@@ -201,7 +118,6 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 
 		const onUpdate = (update: AcpSessionUpdate) => {
 			const rawUpdate = update as unknown as Record<string, unknown>
-			this.trackToolCallState(rawUpdate, toolCallStates)
 			updateQueue.push(rawUpdate)
 			if (resolveWaiting) {
 				resolveWaiting()
@@ -247,7 +163,6 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			}
 		}
 
-		// Wait for completion and capture the result directly
 		const promptResult = await promptPromise
 
 		return {
@@ -256,192 +171,251 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		}
 	}
 
+	// ─── Proxy Prompt Building ───────────────────────────────────────────
+
 	/**
-	 * Build an enriched prompt that includes Roo Code mode context.
+	 * Build a proxy prompt that makes Claude Code act as a raw LLM.
 	 *
-	 * The system prompt from Roo Code contains critical information about the
-	 * current mode (orchestrator, code, architect, etc.), available tools, and
-	 * behavioral instructions. Without this context, the ACP agent operates
-	 * blindly, potentially ending turns with work still incomplete.
+	 * Includes:
+	 * 1. Proxy mode instructions (don't use built-in tools, use XML format)
+	 * 2. Full system prompt from Roo Code
+	 * 3. Tool definitions
+	 * 4. Conversation history
 	 */
-	private buildEnrichedPrompt(systemPrompt: string, userMessage: string): string {
+	private buildProxyPrompt(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		tools?: OpenAI.Chat.ChatCompletionTool[],
+		toolChoice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
+	): string {
 		const parts: string[] = []
 
-		// Include a truncated system prompt as context
-		if (systemPrompt) {
-			const truncatedPrompt =
-				systemPrompt.length > MAX_SYSTEM_PROMPT_CONTEXT
-					? systemPrompt.slice(0, MAX_SYSTEM_PROMPT_CONTEXT) + "\n... [truncated]"
-					: systemPrompt
+		// Proxy mode instructions
+		parts.push(this.buildProxyInstructions(toolChoice))
 
-			parts.push(`[Roo Code Mode Context]\n${truncatedPrompt}`)
+		// Full system prompt (no truncation)
+		if (systemPrompt) {
+			parts.push(`[SYSTEM PROMPT]\n${systemPrompt}`)
 		}
 
-		// Add completion requirements
-		parts.push(`[Completion Requirements]
-CRITICAL: You MUST complete ALL work before ending your response. Specifically:
-1. Do NOT launch tasks in the background. Wait for every task/subtask to finish before moving on.
-2. If you launch parallel tasks, wait for ALL of them to return their results.
-3. Provide the COMPLETE final output including all results, analysis, and conclusions.
-4. Do NOT end your response with "running tasks..." or "waiting for results..." — include the actual results.
-5. Your response will be presented to the user as the FINAL output. There is no follow-up turn.`)
+		// Tool definitions
+		if (tools && tools.length > 0) {
+			parts.push(this.formatToolDefinitions(tools))
+		}
 
-		// Add the actual user message
-		parts.push(`[User Request]\n${userMessage}`)
+		// Conversation history
+		const formattedMessages = this.formatConversation(messages)
+		if (formattedMessages) {
+			parts.push(`[CONVERSATION]\n${formattedMessages}`)
+		}
 
 		return parts.join("\n\n---\n\n")
 	}
 
 	/**
-	 * Build a continuation prompt for when tool calls are still pending.
+	 * Build the proxy mode instructions that tell Claude Code to act as a raw LLM.
 	 */
-	private buildContinuationPrompt(pendingToolNames: string[]): string {
-		return `Your previous response ended with ${pendingToolNames.length} tool(s) still running or pending: ${pendingToolNames.join(", ")}.
+	private buildProxyInstructions(toolChoice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"]): string {
+		let toolChoiceInstruction = ""
+		if (toolChoice === "required") {
+			toolChoiceInstruction = "\nIMPORTANT: You MUST use at least one tool in your response."
+		} else if (toolChoice === "none") {
+			toolChoiceInstruction = "\nIMPORTANT: Do NOT use any tools. Respond with text only."
+		} else if (typeof toolChoice === "object") {
+			// OpenAI v5 types: ChatCompletionNamedToolChoice has .function.name
+			const fnName = (toolChoice as unknown as { function?: { name?: string } })?.function?.name
+			if (fnName) {
+				toolChoiceInstruction = `\nIMPORTANT: You MUST use the "${fnName}" tool.`
+			}
+		}
 
-Please continue and provide the COMPLETE results from ALL tasks. Do not summarize or skip any results. Wait for every pending task to finish and include their full output in your response.`
+		return `[LLM PROXY MODE]
+You are acting as a direct LLM assistant for Roo Code. CRITICAL RULES:
+
+1. Do NOT use your built-in tools (Bash, Read, Write, Edit, Glob, Grep, Task, etc.)
+2. Instead, express ALL tool calls using the ${TOOL_CALL_OPEN_TAG} XML format shown below
+3. Your text response and tool calls will be parsed by Roo Code's system
+4. Roo Code will execute the tools and provide results in follow-up messages
+5. Respond EXACTLY as if you were a Claude API being called directly
+
+TOOL CALL FORMAT — when you want to use a tool, output EXACTLY:
+${TOOL_CALL_OPEN_TAG}
+{"name": "tool_name", "arguments": {"param1": "value1", "param2": "value2"}}
+${TOOL_CALL_CLOSE_TAG}
+
+You can mix text and tool calls freely. Each tool call must be in its own tag block.
+The "arguments" field must be a JSON object matching the tool's parameter schema.${toolChoiceInstruction}`
 	}
 
 	/**
-	 * Track tool call states from streaming updates.
+	 * Format tool definitions as text for inclusion in the proxy prompt.
+	 */
+	private formatToolDefinitions(tools: OpenAI.Chat.ChatCompletionTool[]): string {
+		const toolTexts = tools
+			.filter((t) => t.type === "function")
+			.map((t) => {
+				// Use `any` cast like base-provider.ts does for OpenAI v5 compatibility
+				const fn = (t as any).function as { name: string; description?: string; parameters?: unknown }
+				const params = fn.parameters ? JSON.stringify(fn.parameters, null, 2) : "{}"
+				return `### ${fn.name}\n${fn.description || "(no description)"}\nParameters:\n${params}`
+			})
+
+		return `[AVAILABLE TOOLS]\n${toolTexts.join("\n\n")}`
+	}
+
+	/**
+	 * Format conversation messages for the proxy prompt.
 	 *
-	 * Monitors tool_call and tool_call_update events to maintain a map
-	 * of each tool call's current status (pending, in_progress, completed, failed).
+	 * Includes all messages (not just the last one) so the model has full context.
+	 * Handles text blocks, tool_use blocks, and tool_result blocks.
 	 */
-	private trackToolCallState(update: Record<string, unknown>, stateMap: Map<string, string>): void {
-		const updateType = (update.sessionUpdate ?? update.type) as string | undefined
-		if (!updateType) return
+	private formatConversation(messages: Anthropic.Messages.MessageParam[]): string {
+		const parts: string[] = []
 
-		if (updateType === "tool_call" || updateType === "ToolCall") {
-			const toolCallId = update.toolCallId as string
-			const status = (update.status as string) || "pending"
-			if (toolCallId) {
-				stateMap.set(toolCallId, status)
+		for (const msg of messages) {
+			const role = msg.role === "user" ? "Human" : "Assistant"
+
+			if (typeof msg.content === "string") {
+				parts.push(`[${role}]:\n${msg.content}`)
+				continue
+			}
+
+			const blockTexts: string[] = []
+			for (const block of msg.content) {
+				if (block.type === "text") {
+					blockTexts.push(block.text)
+				} else if (block.type === "tool_use") {
+					// Previous assistant tool call
+					blockTexts.push(
+						`${TOOL_CALL_OPEN_TAG}\n${JSON.stringify({ name: block.name, arguments: block.input })}\n${TOOL_CALL_CLOSE_TAG}`,
+					)
+				} else if (block.type === "tool_result") {
+					// Tool result from Roo Code
+					const content =
+						typeof block.content === "string"
+							? block.content
+							: block.content
+									?.map((c) => (c.type === "text" ? c.text : ""))
+									.filter(Boolean)
+									.join("\n") || ""
+					const errorFlag = block.is_error ? " [ERROR]" : ""
+					blockTexts.push(`[Tool Result${errorFlag} for ${block.tool_use_id}]:\n${content}`)
+				}
+			}
+
+			if (blockTexts.length > 0) {
+				parts.push(`[${role}]:\n${blockTexts.join("\n\n")}`)
 			}
 		}
 
-		if (updateType === "tool_call_update" || updateType === "ToolCallUpdate") {
-			const toolCallId = update.toolCallId as string
-			const status = (update.status ?? (update.fields as Record<string, unknown> | undefined)?.status) as
-				| string
-				| undefined
-			if (toolCallId && status) {
-				stateMap.set(toolCallId, status)
-			}
-		}
+		return parts.join("\n\n")
 	}
 
-	/**
-	 * Check if any tool calls are still pending or in progress.
-	 */
-	private hasPendingToolCalls(stateMap: Map<string, string>): boolean {
-		for (const status of stateMap.values()) {
-			if (status === "pending" || status === "in_progress") {
-				return true
-			}
-		}
-		return false
-	}
+	// ─── Response Parsing ────────────────────────────────────────────────
 
 	/**
-	 * Get names/IDs of pending tool calls for logging and continuation prompts.
-	 */
-	private getPendingToolNames(stateMap: Map<string, string>): string[] {
-		const pending: string[] = []
-		for (const [id, status] of stateMap) {
-			if (status === "pending" || status === "in_progress") {
-				pending.push(id)
-			}
-		}
-		return pending
-	}
-
-	/**
-	 * Extract text from any ACP session update.
+	 * Parse the proxy response to extract text and tool calls.
 	 *
-	 * Per the ACP spec, updates use a "sessionUpdate" discriminator field
-	 * with snake_case values (e.g., "agent_message_chunk", "tool_call").
+	 * Scans for <roo_tool_call> blocks, parses their JSON content,
+	 * and yields ApiStreamChunks for both text and tool calls.
+	 */
+	private parseProxyResponse(text: string): ApiStreamChunk[] {
+		const chunks: ApiStreamChunk[] = []
+		const regex = new RegExp(
+			`${this.escapeRegex(TOOL_CALL_OPEN_TAG)}\\s*([\\s\\S]*?)\\s*${this.escapeRegex(TOOL_CALL_CLOSE_TAG)}`,
+			"g",
+		)
+
+		let lastIndex = 0
+		let match: RegExpExecArray | null
+		let toolCallIndex = 0
+
+		while ((match = regex.exec(text)) !== null) {
+			// Text before this tool call
+			const textBefore = text.slice(lastIndex, match.index).trim()
+			if (textBefore) {
+				chunks.push({ type: "text", text: textBefore })
+			}
+
+			// Parse the tool call JSON
+			try {
+				const toolCall = JSON.parse(match[1])
+				const toolName = toolCall.name as string
+				const toolArgs = toolCall.arguments
+
+				if (toolName) {
+					chunks.push({
+						type: "tool_call",
+						id: `acp_proxy_${Date.now()}_${toolCallIndex++}`,
+						name: toolName,
+						arguments: typeof toolArgs === "string" ? toolArgs : JSON.stringify(toolArgs ?? {}),
+					})
+				} else {
+					// Invalid tool call format — yield as text
+					chunks.push({ type: "text", text: match[0] })
+				}
+			} catch {
+				// JSON parse error — yield raw text
+				console.debug("[ClaudeCodeAcpHandler] Failed to parse tool call JSON:", match[1].slice(0, 200))
+				chunks.push({ type: "text", text: match[0] })
+			}
+
+			lastIndex = match.index + match[0].length
+		}
+
+		// Remaining text after last tool call
+		const remaining = text.slice(lastIndex).trim()
+		if (remaining) {
+			chunks.push({ type: "text", text: remaining })
+		}
+
+		return chunks
+	}
+
+	/**
+	 * Escape special regex characters in a string.
+	 */
+	private escapeRegex(str: string): string {
+		return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+	}
+
+	// ─── ACP Update Extraction ───────────────────────────────────────────
+
+	/**
+	 * Extract text from an ACP session update.
+	 *
+	 * In proxy mode, we only extract text from agent_message_chunk events.
+	 * Tool calls from the ACP agent are ignored since we told it not to use them.
 	 */
 	private extractTextFromUpdate(update: Record<string, unknown>): string | null {
-		// ACP spec uses "sessionUpdate" as the discriminator field
 		const updateType = (update.sessionUpdate ?? update.type) as string | undefined
+		if (!updateType) return null
 
-		if (!updateType) {
-			console.debug(
-				"[ClaudeCodeAcpHandler] Update without sessionUpdate/type field:",
-				JSON.stringify(update).slice(0, 200),
-			)
-			return null
-		}
-
-		// Handle agent message chunks (the main text response)
+		// Agent message chunks — the main text response
 		if (updateType === "agent_message_chunk" || updateType === "AgentMessageChunk") {
 			return this.extractTextFromContent(update.content as Record<string, unknown> | undefined)
 		}
 
-		// Handle thought/reasoning chunks
+		// Thought/reasoning chunks — include as text
 		if (updateType === "agent_thought_chunk" || updateType === "AgentThoughtChunk") {
-			const text = this.extractTextFromContent(update.content as Record<string, unknown> | undefined)
-			if (text) {
-				return text
-			}
-			return null
+			return this.extractTextFromContent(update.content as Record<string, unknown> | undefined)
 		}
 
-		// Handle tool calls - show them as informational text
-		if (updateType === "tool_call" || updateType === "ToolCall") {
-			const title = (update.title as string) || (update.name as string) || "unknown"
-			const status = update.status as string
-			if (status === "pending" || status === "in_progress") {
-				return `\n[Tool: ${title}]\n`
-			}
-			return null
-		}
-
-		// Handle tool call updates
-		// ACP spec sends fields flat (status, content, etc.) not nested under "fields"
-		if (updateType === "tool_call_update" || updateType === "ToolCallUpdate") {
-			const status = (update.status ?? (update.fields as Record<string, unknown> | undefined)?.status) as
-				| string
-				| undefined
-			if (status === "completed") {
-				const content = (update.content ?? (update.fields as Record<string, unknown> | undefined)?.content) as
-					| Array<Record<string, unknown>>
-					| undefined
-				if (content) {
-					const texts = content.filter((c) => c.type === "text" && c.text).map((c) => c.text as string)
-					if (texts.length > 0) {
-						return texts.join("")
-					}
-				}
-			}
-			return null
-		}
-
-		// Skip plan updates silently (they don't contain streamable text)
-		if (updateType === "plan") {
-			return null
-		}
-
-		// Log any unrecognized update types for debugging
-		console.debug(
-			`[ClaudeCodeAcpHandler] Unhandled update type: "${updateType}"`,
-			JSON.stringify(update).slice(0, 300),
-		)
+		// In proxy mode, skip tool_call and tool_call_update events
+		// (if the agent uses its own tools despite our instructions, we ignore them)
 		return null
 	}
 
 	/**
-	 * Extract text from a content block
+	 * Extract text from a content block.
 	 */
 	private extractTextFromContent(content: Record<string, unknown> | undefined): string | null {
 		if (!content) return null
 
-		// Direct text content: { type: "text", text: "..." }
 		if (content.type === "text" && typeof content.text === "string") {
 			return content.text
 		}
 
-		// Maybe the content IS the text directly
 		if (typeof content.text === "string") {
 			return content.text
 		}
@@ -449,50 +423,7 @@ Please continue and provide the COMPLETE results from ALL tasks. Do not summariz
 		return null
 	}
 
-	/**
-	 * Extract the last user message text from the conversation.
-	 * In ACP, the session manages conversation history, so we only send the latest message.
-	 */
-	private extractLastUserMessage(messages: Anthropic.Messages.MessageParam[]): string {
-		// Find the last user message
-		for (let i = messages.length - 1; i >= 0; i--) {
-			if (messages[i].role === "user") {
-				return this.extractTextContent(messages[i].content)
-			}
-		}
-
-		// Fallback: combine all messages
-		return messages
-			.map((m) => this.extractTextContent(m.content))
-			.filter(Boolean)
-			.join("\n\n")
-	}
-
-	/**
-	 * Extract text content from message content
-	 */
-	private extractTextContent(content: string | Anthropic.Messages.ContentBlockParam[]): string {
-		if (typeof content === "string") {
-			return content
-		}
-
-		const textParts: string[] = []
-		for (const block of content) {
-			if (block.type === "text") {
-				textParts.push(block.text)
-			} else if (block.type === "tool_result") {
-				const resultContent =
-					typeof block.content === "string"
-						? block.content
-						: block.content?.map((c) => (c.type === "text" ? c.text : "")).join("") || ""
-				if (resultContent) {
-					textParts.push(resultContent)
-				}
-			}
-		}
-
-		return textParts.join("\n")
-	}
+	// ─── Model & Completion ──────────────────────────────────────────────
 
 	override getModel(): { id: string; info: ModelInfo } {
 		const id = (this.options.apiModelId as ClaudeCodeAcpModelId) ?? claudeCodeAcpDefaultModelId
