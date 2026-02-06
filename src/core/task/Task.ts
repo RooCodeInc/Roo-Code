@@ -1787,6 +1787,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				experiments: state?.experiments,
 				apiConfiguration,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
+				disabledTools: state?.disabledTools,
 				modelInfo,
 				includeAllToolsWithRestrictions: false,
 			})
@@ -3888,6 +3889,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				experiments: state?.experiments,
 				apiConfiguration,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
+				disabledTools: state?.disabledTools,
 				modelInfo,
 				includeAllToolsWithRestrictions: false,
 			})
@@ -4102,6 +4104,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						experiments: state?.experiments,
 						apiConfiguration,
 						browserToolEnabled: state?.browserToolEnabled ?? true,
+						disabledTools: state?.disabledTools,
 						modelInfo,
 						includeAllToolsWithRestrictions: false,
 					})
@@ -4266,6 +4269,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				experiments: state?.experiments,
 				apiConfiguration,
 				browserToolEnabled: state?.browserToolEnabled ?? true,
+				disabledTools: state?.disabledTools,
 				modelInfo,
 				includeAllToolsWithRestrictions: supportsAllowedFunctionNames,
 			})

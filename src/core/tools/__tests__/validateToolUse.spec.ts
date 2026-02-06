@@ -200,5 +200,50 @@ describe("mode-validator", () => {
 		it("handles undefined requirements gracefully", () => {
 			expect(() => validateToolUse("apply_diff", codeMode, [], undefined)).not.toThrow()
 		})
+
+		it("blocks tool when disabledTools is converted to toolRequirements", () => {
+			const disabledTools = ["execute_command", "browser_action"]
+			const toolRequirements = disabledTools.reduce(
+				(acc: Record<string, boolean>, tool: string) => {
+					acc[tool] = false
+					return acc
+				},
+				{} as Record<string, boolean>,
+			)
+
+			expect(() => validateToolUse("execute_command", codeMode, [], toolRequirements)).toThrow(
+				'Tool "execute_command" is not allowed in code mode.',
+			)
+			expect(() => validateToolUse("browser_action", codeMode, [], toolRequirements)).toThrow(
+				'Tool "browser_action" is not allowed in code mode.',
+			)
+		})
+
+		it("allows non-disabled tools when disabledTools is converted to toolRequirements", () => {
+			const disabledTools = ["execute_command"]
+			const toolRequirements = disabledTools.reduce(
+				(acc: Record<string, boolean>, tool: string) => {
+					acc[tool] = false
+					return acc
+				},
+				{} as Record<string, boolean>,
+			)
+
+			expect(() => validateToolUse("read_file", codeMode, [], toolRequirements)).not.toThrow()
+			expect(() => validateToolUse("write_to_file", codeMode, [], toolRequirements)).not.toThrow()
+		})
+
+		it("handles empty disabledTools array converted to toolRequirements", () => {
+			const disabledTools: string[] = []
+			const toolRequirements = disabledTools.reduce(
+				(acc: Record<string, boolean>, tool: string) => {
+					acc[tool] = false
+					return acc
+				},
+				{} as Record<string, boolean>,
+			)
+
+			expect(() => validateToolUse("execute_command", codeMode, [], toolRequirements)).not.toThrow()
+		})
 	})
 })
