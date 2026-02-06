@@ -13,7 +13,3 @@ This file contains brand voice, tone, and word choice guidelines for Roo Code tr
 ## Word Choice
 
 <!-- Add word choice preferences here -->
-
-## Language-Specific Guidance
-
-<!-- Add any language-specific guidance below -->
