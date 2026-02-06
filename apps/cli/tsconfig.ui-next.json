@@ -1,0 +1,18 @@
+{
+	"extends": "@roo-code/config-typescript/base.json",
+	"compilerOptions": {
+		"types": [],
+		"outDir": "dist/ui-next",
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["src/*"]
+		},
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"target": "ESNext"
+	},
+	"include": ["src/ui-next"],
+	"exclude": ["node_modules"]
+}
