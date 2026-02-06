@@ -495,13 +495,14 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				// Handle Enter key based on enterBehavior setting
 				if (event.key === "Enter" && !isComposing) {
 					if (enterBehavior === "newline") {
-						// New behavior: Enter = newline, Shift+Enter or Ctrl+Enter = send
-						if (event.shiftKey || event.ctrlKey || event.metaKey) {
+						// New behavior: Enter = newline, Ctrl/Cmd+Enter = send
+						// Shift+Enter also inserts newline (consistent with standard text editing)
+						if (event.ctrlKey || event.metaKey) {
 							event.preventDefault()
 							resetHistoryNavigation()
 							onSend()
 						}
-						// Otherwise, let Enter create newline (don't preventDefault)
+						// Otherwise, let Enter/Shift+Enter create newline (don't preventDefault)
 					} else {
 						// Default behavior: Enter = send, Shift+Enter = newline
 						if (!event.shiftKey) {
