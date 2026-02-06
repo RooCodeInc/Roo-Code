@@ -488,7 +488,18 @@ export class EditFileTool extends BaseTool<"edit_file"> {
 		const filePath: string | undefined = block.params.file_path
 		const oldString: string | undefined = block.params.old_string
 
-		// Wait for path to stabilize before showing UI (prevents truncated paths)
+		// Send initial "preparing" message immediately (before path stabilizes)
+		if (!this.hasSentInitialMessage) {
+			this.hasSentInitialMessage = true
+			const initialMessageProps: ClineSayTool = {
+				tool: "appliedDiff",
+				path: undefined as any, // Undefined path triggers "preparing to edit" message in frontend
+				diff: undefined,
+			}
+			await task.ask("tool", JSON.stringify(initialMessageProps), block.partial).catch(() => {})
+		}
+
+		// Wait for path to stabilize before showing the full UI with filename
 		if (!this.hasPathStabilized(filePath)) {
 			return
 		}
