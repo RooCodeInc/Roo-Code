@@ -158,7 +158,7 @@ Tokens are valid for 90 days. The CLI will prompt you to re-authenticate when yo
 | `-y, --yes, --dangerously-skip-permissions` | Auto-approve all actions (use with caution)                                             | `false`                                  |
 | `-k, --api-key <key>`                       | API key for the LLM provider                                                            | From env var                             |
 | `--provider <provider>`                     | API provider (roo, anthropic, openai, openrouter, etc.)                                 | `openrouter` (or `roo` if authenticated) |
-| `-m, --model <model>`                       | Model to use                                                                            | `anthropic/claude-opus-4.5`              |
+| `-m, --model <model>`                       | Model to use                                                                            | `anthropic/claude-opus-4.6`              |
 | `--mode <mode>`                             | Mode to start in (code, architect, ask, debug, etc.)                                    | `code`                                   |
 | `-r, --reasoning-effort <effort>`           | Reasoning effort level (unspecified, disabled, none, minimal, low, medium, high, xhigh) | `medium`                                 |
 | `--ephemeral`                               | Run without persisting state (uses temporary storage)                                   | `false`                                  |
