@@ -35,6 +35,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 	protected options: ApiHandlerOptions
 	protected provider: GoogleVertexProvider
 	private readonly providerName = "Vertex"
+	private lastThoughtSignature: string | undefined
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -138,11 +139,26 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		try {
+			// Reset thought signature for this request
+			this.lastThoughtSignature = undefined
+
 			// Use streamText for streaming responses
 			const result = streamText(requestOptions)
 
 			// Process the full stream to get all events including reasoning
 			for await (const part of result.fullStream) {
+				// Capture thoughtSignature from tool-call events (Gemini 3 thought signatures)
+				// The AI SDK's tool-call event includes providerMetadata with the signature
+				// Vertex AI stores it under the "vertex" key in providerMetadata
+				if (part.type === "tool-call") {
+					const vertexMeta = (part as any).providerMetadata?.vertex
+					const googleMeta = (part as any).providerMetadata?.google
+					const sig = vertexMeta?.thoughtSignature ?? googleMeta?.thoughtSignature
+					if (sig) {
+						this.lastThoughtSignature = sig
+					}
+				}
+
 				for (const chunk of processAiSdkStreamPart(part)) {
 					yield chunk
 				}
@@ -405,5 +421,14 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 
 	override isAiSdkProvider(): boolean {
 		return true
+	}
+
+	/**
+	 * Returns the thought signature captured from the last Vertex AI response.
+	 * Gemini 3 models return thoughtSignature on function call parts,
+	 * which must be round-tripped back for tool use continuations.
+	 */
+	getThoughtSignature(): string | undefined {
+		return this.lastThoughtSignature
 	}
 }

@@ -136,7 +136,18 @@ export function convertToAiSdkMessages(
 					toolCallId: string
 					toolName: string
 					input: unknown
+					providerOptions?: Record<string, Record<string, unknown>>
 				}> = []
+
+				// Extract thoughtSignature from content blocks (Gemini 3 thought signature round-tripping).
+				// Task.ts stores these as { type: "thoughtSignature", thoughtSignature: "..." } blocks.
+				let thoughtSignature: string | undefined
+				for (const part of message.content) {
+					const partAny = part as unknown as { type?: string; thoughtSignature?: string }
+					if (partAny.type === "thoughtSignature" && partAny.thoughtSignature) {
+						thoughtSignature = partAny.thoughtSignature
+					}
+				}
 
 				for (const part of message.content) {
 					if (part.type === "text") {
@@ -145,12 +156,25 @@ export function convertToAiSdkMessages(
 					}
 
 					if (part.type === "tool_use") {
-						toolCalls.push({
+						const toolCall: (typeof toolCalls)[number] = {
 							type: "tool-call",
 							toolCallId: part.id,
 							toolName: part.name,
 							input: part.input,
-						})
+						}
+
+						// Attach thoughtSignature as providerOptions on tool-call parts.
+						// The AI SDK's @ai-sdk/google provider reads providerOptions.google.thoughtSignature
+						// and attaches it to the Gemini functionCall part.
+						// Per Gemini 3 rules: only the FIRST functionCall in a parallel batch gets the signature.
+						if (thoughtSignature && toolCalls.length === 0) {
+							toolCall.providerOptions = {
+								google: { thoughtSignature },
+								vertex: { thoughtSignature },
+							}
+						}
+
+						toolCalls.push(toolCall)
 						continue
 					}
 
@@ -183,7 +207,13 @@ export function convertToAiSdkMessages(
 				const content: Array<
 					| { type: "reasoning"; text: string }
 					| { type: "text"; text: string }
-					| { type: "tool-call"; toolCallId: string; toolName: string; input: unknown }
+					| {
+							type: "tool-call"
+							toolCallId: string
+							toolName: string
+							input: unknown
+							providerOptions?: Record<string, Record<string, unknown>>
+					  }
 				> = []
 
 				if (reasoningContent) {

@@ -31,6 +31,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 	protected options: ApiHandlerOptions
 	protected provider: GoogleGenerativeAIProvider
 	private readonly providerName = "Gemini"
+	private lastThoughtSignature: string | undefined
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -124,11 +125,23 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 
 		try {
+			// Reset thought signature for this request
+			this.lastThoughtSignature = undefined
+
 			// Use streamText for streaming responses
 			const result = streamText(requestOptions)
 
 			// Process the full stream to get all events including reasoning
 			for await (const part of result.fullStream) {
+				// Capture thoughtSignature from tool-call events (Gemini 3 thought signatures)
+				// The AI SDK's tool-call event includes providerMetadata with the signature
+				if (part.type === "tool-call") {
+					const googleMeta = (part as any).providerMetadata?.google
+					if (googleMeta?.thoughtSignature) {
+						this.lastThoughtSignature = googleMeta.thoughtSignature
+					}
+				}
+
 				for (const chunk of processAiSdkStreamPart(part)) {
 					yield chunk
 				}
@@ -400,5 +413,14 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 	override isAiSdkProvider(): boolean {
 		return true
+	}
+
+	/**
+	 * Returns the thought signature captured from the last Gemini response.
+	 * Gemini 3 models return thoughtSignature on function call parts,
+	 * which must be round-tripped back for tool use continuations.
+	 */
+	getThoughtSignature(): string | undefined {
+		return this.lastThoughtSignature
 	}
 }
