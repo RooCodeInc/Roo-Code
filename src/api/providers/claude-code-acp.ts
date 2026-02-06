@@ -14,7 +14,7 @@ import { ApiStream } from "../transform/stream"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
-import { getSharedSessionManager, type AcpSessionUpdate, type AcpTextContent } from "../../integrations/claude-code-acp"
+import { getSharedSessionManager, type AcpSessionUpdate } from "../../integrations/claude-code-acp"
 
 /**
  * Extended options for Claude Code ACP handler
@@ -25,10 +25,26 @@ interface ClaudeCodeAcpHandlerOptions extends ApiHandlerOptions {
 }
 
 /**
+ * Maximum number of continuation retries when tool calls are still pending.
+ */
+const MAX_CONTINUATION_RETRIES = 3
+
+/**
+ * Maximum characters from system prompt to include as context.
+ */
+const MAX_SYSTEM_PROMPT_CONTEXT = 4000
+
+/**
  * Claude Code ACP Handler
  *
  * Integrates Claude Code through the Agent Client Protocol (ACP).
  * Authentication is handled by the Claude Code CLI (stored in system keychain).
+ *
+ * Key behaviors:
+ * - Includes Roo Code mode context (system prompt) in the prompt sent to the ACP agent
+ * - Tracks tool call states to detect incomplete work
+ * - Sends continuation prompts when tool calls are still pending at end of turn
+ * - Only synthesizes attempt_completion when all work is truly complete
  */
 export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ClaudeCodeAcpHandlerOptions
@@ -57,19 +73,136 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		// Extract only the last user message - ACP sessions maintain their own context
 		const lastUserMessage = this.extractLastUserMessage(messages)
 
-		// Collect ALL text from streaming updates using a simple buffer approach
+		// Build an enriched prompt that includes mode context and completion instructions
+		const enrichedPrompt = this.buildEnrichedPrompt(systemPrompt, lastUserMessage)
+
+		// Track tool call states across the entire interaction (including retries)
+		const toolCallStates = new Map<string, string>()
+
+		// Collect ALL text from streaming updates
 		const textChunks: string[] = []
 		let hasYieldedText = false
+		let totalInputChars = enrichedPrompt.length
 
-		// Create a deferred promise pattern for streaming
+		// Run the first prompt and stream results
+		const firstResult = await this.sendPromptStreaming(
+			session.sessionId,
+			enrichedPrompt,
+			toolCallStates,
+			(text) => {
+				textChunks.push(text)
+				hasYieldedText = true
+			},
+		)
+
+		// Yield all collected text chunks from the first prompt
+		for (const chunk of textChunks) {
+			yield { type: "text", text: chunk }
+		}
+
+		if (firstResult.error) {
+			throw firstResult.error
+		}
+
+		// Check for pending tool calls and retry if needed
+		let retries = 0
+		while (this.hasPendingToolCalls(toolCallStates) && retries < MAX_CONTINUATION_RETRIES) {
+			retries++
+			const pendingTools = this.getPendingToolNames(toolCallStates)
+			console.debug(
+				`[ClaudeCodeAcpHandler] Retry ${retries}/${MAX_CONTINUATION_RETRIES}: ${pendingTools.length} tool(s) still pending: ${pendingTools.join(", ")}`,
+			)
+
+			const continuationPrompt = this.buildContinuationPrompt(pendingTools)
+			totalInputChars += continuationPrompt.length
+
+			const retryChunks: string[] = []
+			const retryResult = await this.sendPromptStreaming(
+				session.sessionId,
+				continuationPrompt,
+				toolCallStates,
+				(text) => {
+					retryChunks.push(text)
+					textChunks.push(text)
+					hasYieldedText = true
+				},
+			)
+
+			// Yield retry text chunks
+			for (const chunk of retryChunks) {
+				yield { type: "text", text: chunk }
+			}
+
+			if (retryResult.error) {
+				console.error("[ClaudeCodeAcpHandler] Continuation prompt error:", retryResult.error)
+				break
+			}
+
+			// If the agent ended for a non-recoverable reason, stop retrying
+			if (retryResult.stopReason === "cancelled" || retryResult.stopReason === "refusal") {
+				break
+			}
+		}
+
+		if (retries >= MAX_CONTINUATION_RETRIES && this.hasPendingToolCalls(toolCallStates)) {
+			const pending = this.getPendingToolNames(toolCallStates)
+			console.warn(
+				`[ClaudeCodeAcpHandler] Max retries reached with ${pending.length} tool(s) still pending: ${pending.join(", ")}`,
+			)
+		}
+
+		// If no text was yielded, something went wrong with streaming
+		if (!hasYieldedText) {
+			console.warn("[ClaudeCodeAcpHandler] No text received from ACP session updates")
+			textChunks.push(
+				"[Claude Code ACP: Response received but no text content was streamed. Check the ACP adapter logs for details.]",
+			)
+		}
+
+		// Synthesize attempt_completion with the complete response.
+		// At this point, either all tool calls completed or we exhausted retries.
+		const fullText = textChunks.join("")
+		yield {
+			type: "tool_call",
+			id: `acp_${Date.now()}`,
+			name: "attempt_completion",
+			arguments: JSON.stringify({ result: fullText }),
+		}
+
+		// Emit usage estimate
+		yield {
+			type: "usage",
+			inputTokens: Math.ceil(totalInputChars / 4),
+			outputTokens: Math.ceil(fullText.length / 4),
+		}
+	}
+
+	/**
+	 * Send a prompt to the ACP session and collect streaming updates.
+	 *
+	 * This is a non-generator helper that manages the streaming lifecycle.
+	 * Text chunks are delivered via the onText callback.
+	 * Tool call states are tracked in the provided stateMap.
+	 *
+	 * Returns the prompt result (including stopReason) or an error.
+	 */
+	private async sendPromptStreaming(
+		sessionId: string,
+		prompt: string,
+		toolCallStates: Map<string, string>,
+		onText: (text: string) => void,
+	): Promise<{ stopReason?: string; error?: Error }> {
+		const manager = getSharedSessionManager(this.options.claudeCodeAcpExecutablePath)
+
 		const updateQueue: Array<Record<string, unknown>> = []
 		let resolveWaiting: (() => void) | null = null
 		let isComplete = false
 		let promptError: Error | null = null
 
 		const onUpdate = (update: AcpSessionUpdate) => {
-			// Store the raw update for processing
-			updateQueue.push(update as unknown as Record<string, unknown>)
+			const rawUpdate = update as unknown as Record<string, unknown>
+			this.trackToolCallState(rawUpdate, toolCallStates)
+			updateQueue.push(rawUpdate)
 			if (resolveWaiting) {
 				resolveWaiting()
 				resolveWaiting = null
@@ -78,7 +211,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 
 		// Start the prompt (don't await - process updates as they arrive)
 		const promptPromise = manager
-			.sendPrompt(session.sessionId, lastUserMessage, onUpdate)
+			.sendPrompt(sessionId, prompt, onUpdate)
 			.then((result) => {
 				isComplete = true
 				if (resolveWaiting) {
@@ -94,6 +227,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 					resolveWaiting()
 					resolveWaiting = null
 				}
+				return undefined
 			})
 
 		// Process updates as they arrive
@@ -108,48 +242,117 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 				const rawUpdate = updateQueue.shift()!
 				const text = this.extractTextFromUpdate(rawUpdate)
 				if (text) {
-					textChunks.push(text)
-					hasYieldedText = true
-					yield { type: "text", text }
+					onText(text)
 				}
 			}
 		}
 
-		// Check for errors
-		if (promptError) {
-			throw promptError
+		// Wait for completion and capture the result directly
+		const promptResult = await promptPromise
+
+		return {
+			stopReason: promptResult?.stopReason,
+			error: promptError ?? undefined,
+		}
+	}
+
+	/**
+	 * Build an enriched prompt that includes Roo Code mode context.
+	 *
+	 * The system prompt from Roo Code contains critical information about the
+	 * current mode (orchestrator, code, architect, etc.), available tools, and
+	 * behavioral instructions. Without this context, the ACP agent operates
+	 * blindly, potentially ending turns with work still incomplete.
+	 */
+	private buildEnrichedPrompt(systemPrompt: string, userMessage: string): string {
+		const parts: string[] = []
+
+		// Include a truncated system prompt as context
+		if (systemPrompt) {
+			const truncatedPrompt =
+				systemPrompt.length > MAX_SYSTEM_PROMPT_CONTEXT
+					? systemPrompt.slice(0, MAX_SYSTEM_PROMPT_CONTEXT) + "\n... [truncated]"
+					: systemPrompt
+
+			parts.push(`[Roo Code Mode Context]\n${truncatedPrompt}`)
 		}
 
-		// Wait for completion
-		await promptPromise
+		// Add completion requirements
+		parts.push(`[Completion Requirements]
+CRITICAL: You MUST complete ALL work before ending your response. Specifically:
+1. Do NOT launch tasks in the background. Wait for every task/subtask to finish before moving on.
+2. If you launch parallel tasks, wait for ALL of them to return their results.
+3. Provide the COMPLETE final output including all results, analysis, and conclusions.
+4. Do NOT end your response with "running tasks..." or "waiting for results..." — include the actual results.
+5. Your response will be presented to the user as the FINAL output. There is no follow-up turn.`)
 
-		// If no text was yielded, something went wrong with streaming
-		// but the request completed - yield a placeholder
-		if (!hasYieldedText) {
-			console.warn("[ClaudeCodeAcpHandler] No text received from ACP session updates")
-			textChunks.push(
-				"[Claude Code ACP: Response received but no text content was streamed. Check the ACP adapter logs for details.]",
-			)
+		// Add the actual user message
+		parts.push(`[User Request]\n${userMessage}`)
+
+		return parts.join("\n\n---\n\n")
+	}
+
+	/**
+	 * Build a continuation prompt for when tool calls are still pending.
+	 */
+	private buildContinuationPrompt(pendingToolNames: string[]): string {
+		return `Your previous response ended with ${pendingToolNames.length} tool(s) still running or pending: ${pendingToolNames.join(", ")}.
+
+Please continue and provide the COMPLETE results from ALL tasks. Do not summarize or skip any results. Wait for every pending task to finish and include their full output in your response.`
+	}
+
+	/**
+	 * Track tool call states from streaming updates.
+	 *
+	 * Monitors tool_call and tool_call_update events to maintain a map
+	 * of each tool call's current status (pending, in_progress, completed, failed).
+	 */
+	private trackToolCallState(update: Record<string, unknown>, stateMap: Map<string, string>): void {
+		const updateType = (update.sessionUpdate ?? update.type) as string | undefined
+		if (!updateType) return
+
+		if (updateType === "tool_call" || updateType === "ToolCall") {
+			const toolCallId = update.toolCallId as string
+			const status = (update.status as string) || "pending"
+			if (toolCallId) {
+				stateMap.set(toolCallId, status)
+			}
 		}
 
-		// Synthesize an attempt_completion tool call so Roo Code's task
-		// validation sees a proper tool_use block instead of text-only output.
-		// The ACP session is a separate agent that doesn't know about Roo Code's
-		// tools, so we wrap its response as a completed action.
-		const fullText = textChunks.join("")
-		yield {
-			type: "tool_call",
-			id: `acp_${Date.now()}`,
-			name: "attempt_completion",
-			arguments: JSON.stringify({ result: fullText }),
+		if (updateType === "tool_call_update" || updateType === "ToolCallUpdate") {
+			const toolCallId = update.toolCallId as string
+			const status = (update.status ?? (update.fields as Record<string, unknown> | undefined)?.status) as
+				| string
+				| undefined
+			if (toolCallId && status) {
+				stateMap.set(toolCallId, status)
+			}
 		}
+	}
 
-		// Emit usage estimate
-		yield {
-			type: "usage",
-			inputTokens: Math.ceil(lastUserMessage.length / 4),
-			outputTokens: Math.ceil(fullText.length / 4),
+	/**
+	 * Check if any tool calls are still pending or in progress.
+	 */
+	private hasPendingToolCalls(stateMap: Map<string, string>): boolean {
+		for (const status of stateMap.values()) {
+			if (status === "pending" || status === "in_progress") {
+				return true
+			}
 		}
+		return false
+	}
+
+	/**
+	 * Get names/IDs of pending tool calls for logging and continuation prompts.
+	 */
+	private getPendingToolNames(stateMap: Map<string, string>): string[] {
+		const pending: string[] = []
+		for (const [id, status] of stateMap) {
+			if (status === "pending" || status === "in_progress") {
+				pending.push(id)
+			}
+		}
+		return pending
 	}
 
 	/**
