@@ -471,16 +471,6 @@
 		"cacheUsageNote": "注意：如果您沒有看到快取使用情況，請嘗試選擇其他模型，然後重新選擇您想要的模型。",
 		"vscodeLmModel": "語言模型",
 		"vscodeLmWarning": "注意：透過 VS Code Language Model API 存取的模型可能由供應商封裝或微調，因此其行為可能與直接從一般供應商或路由器使用相同模型時不同。要使用「Language Model」下拉式選單中的模型，請先切換到該模型，然後在 Copilot Chat 提示中點選「接受」；否則可能會出現 400「The requested model is not supported」等錯誤。",
-		"geminiParameters": {
-			"urlContext": {
-				"title": "啟用 URL 上下文",
-				"description": "讓 Gemini 讀取連結的頁面，以擷取、比較並統整其內容，提供更有根據的回覆。"
-			},
-			"groundingSearch": {
-				"title": "啟用 Google 搜尋 Grounding",
-				"description": "將 Gemini 連線到即時網路資料，以取得準確、最新且附可驗證引用的答案。"
-			}
-		},
 		"googleCloudSetup": {
 			"title": "要使用 Google Cloud Vertex AI，您需要：",
 			"step1": "1. 建立 Google Cloud 帳戶，啟用 Vertex AI API 並啟用所需的 Claude 模型。",

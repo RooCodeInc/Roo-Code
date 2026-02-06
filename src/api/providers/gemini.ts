@@ -286,20 +286,6 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		const { id: modelId, info } = this.getModel()
 
 		try {
-			// Build tools for grounding - cast to any to bypass strict typing
-			// Google provider tools have a different shape than standard ToolSet
-			const tools: Record<string, any> = {}
-
-			// Add URL context tool if enabled
-			if (this.options.enableUrlContext) {
-				tools.url_context = this.provider.tools.urlContext({})
-			}
-
-			// Add Google Search grounding tool if enabled
-			if (this.options.enableGrounding) {
-				tools.google_search = this.provider.tools.googleSearch({})
-			}
-
 			const supportsTemperature = info.supportsTemperature !== false
 			const temperatureConfig: number | undefined = supportsTemperature
 				? (this.options.modelTemperature ?? info.defaultTemperature ?? 1)
@@ -309,7 +295,6 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				model: this.provider(modelId),
 				prompt,
 				temperature: temperatureConfig,
-				...(Object.keys(tools).length > 0 && { tools: tools as ToolSet }),
 			})
 
 			let text = result.text ?? ""

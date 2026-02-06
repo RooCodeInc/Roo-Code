@@ -5,17 +5,12 @@ vitest.mock("vscode", () => ({}))
 
 // Mock the createVertex function from @ai-sdk/google-vertex
 const mockCreateVertex = vitest.fn()
-const mockGoogleSearchTool = vitest.fn()
-const mockUrlContextTool = vitest.fn()
 
 vitest.mock("@ai-sdk/google-vertex", () => ({
 	createVertex: (...args: unknown[]) => {
 		mockCreateVertex(...args)
 		const provider = Object.assign((modelId: string) => ({ modelId }), {
-			tools: {
-				googleSearch: mockGoogleSearchTool,
-				urlContext: mockUrlContextTool,
-			},
+			tools: {},
 		})
 		return provider
 	},
@@ -48,8 +43,6 @@ describe("VertexHandler", () => {
 		mockStreamText.mockClear()
 		mockGenerateText.mockClear()
 		mockCreateVertex.mockClear()
-		mockGoogleSearchTool.mockClear()
-		mockUrlContextTool.mockClear()
 
 		handler = new VertexHandler({
 			apiModelId: "gemini-1.5-pro-001",
@@ -240,58 +233,6 @@ describe("VertexHandler", () => {
 
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("")
-		})
-
-		it("should add Google Search tool when grounding is enabled", async () => {
-			const handlerWithGrounding = new VertexHandler({
-				apiModelId: "gemini-1.5-pro-001",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-				enableGrounding: true,
-			})
-
-			mockGenerateText.mockResolvedValue({
-				text: "Search result",
-				providerMetadata: {},
-			})
-			mockGoogleSearchTool.mockReturnValue({ type: "googleSearch" })
-
-			await handlerWithGrounding.completePrompt("Search query")
-
-			expect(mockGoogleSearchTool).toHaveBeenCalledWith({})
-			expect(mockGenerateText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.objectContaining({
-						google_search: { type: "googleSearch" },
-					}),
-				}),
-			)
-		})
-
-		it("should add URL Context tool when enabled", async () => {
-			const handlerWithUrlContext = new VertexHandler({
-				apiModelId: "gemini-1.5-pro-001",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-				enableUrlContext: true,
-			})
-
-			mockGenerateText.mockResolvedValue({
-				text: "URL context result",
-				providerMetadata: {},
-			})
-			mockUrlContextTool.mockReturnValue({ type: "urlContext" })
-
-			await handlerWithUrlContext.completePrompt("Fetch URL")
-
-			expect(mockUrlContextTool).toHaveBeenCalledWith({})
-			expect(mockGenerateText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.objectContaining({
-						url_context: { type: "urlContext" },
-					}),
-				}),
-			)
 		})
 	})
 

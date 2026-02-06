@@ -461,16 +461,6 @@
 		"cacheUsageNote": "Not: Önbellek kullanımını görmüyorsanız, farklı bir model seçip ardından istediğiniz modeli tekrar seçmeyi deneyin.",
 		"vscodeLmModel": "Dil Modeli",
 		"vscodeLmWarning": "Not: VS Code Language Model API üzerinden erişilen modeller sağlayıcı tarafından sarılmış veya ince ayarlanmış olabilir; bu nedenle davranış, aynı modelin tipik bir sağlayıcı ya da yönlendirici üzerinden doğrudan kullanılmasından farklı olabilir. «Language Model» açılır menüsünden bir model kullanmak için önce o modele geçin ve ardından Copilot Chat isteminde «Kabul Et»e tıklayın; aksi takdirde 400 «The requested model is not supported» gibi bir hata görebilirsiniz.",
-		"geminiParameters": {
-			"urlContext": {
-				"title": "URL bağlamını etkinleştir",
-				"description": "Yanıtlar oluşturulurken ek bağlam için Gemini'nin URL'lere erişmesine ve işlemesine izin verir. Web içeriği analizi gerektiren görevler için faydalıdır."
-			},
-			"groundingSearch": {
-				"title": "Google Aramasıyla Grounding Etkinleştir",
-				"description": "Gemini'nin güncel bilgileri almak için Google'da arama yapmasına ve yanıtları gerçek zamanlı verilere dayandırmasına izin verir. Güncel bilgi gerektiren sorgular için kullanışlıdır."
-			}
-		},
 		"googleCloudSetup": {
 			"title": "Google Cloud Vertex AI'yi kullanmak için şunları yapmanız gerekir:",
 			"step1": "1. Google Cloud hesabı oluşturun, Vertex AI API'sini etkinleştirin ve istediğiniz Claude modellerini etkinleştirin.",

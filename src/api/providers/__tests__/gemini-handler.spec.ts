@@ -27,8 +27,6 @@ describe("GeminiHandler backend support", () => {
 	it("createMessage uses AI SDK tools format", async () => {
 		const options = {
 			apiProvider: "gemini",
-			enableUrlContext: true,
-			enableGrounding: true,
 		} as ApiHandlerOptions
 		const handler = new GeminiHandler(options)
 
@@ -50,36 +48,9 @@ describe("GeminiHandler backend support", () => {
 		)
 	})
 
-	it("completePrompt passes tools when URL context and grounding enabled", async () => {
+	it("completePrompt generates text without tools", async () => {
 		const options = {
 			apiProvider: "gemini",
-			enableUrlContext: true,
-			enableGrounding: true,
-		} as ApiHandlerOptions
-		const handler = new GeminiHandler(options)
-
-		mockGenerateText.mockResolvedValue({
-			text: "ok",
-			providerMetadata: {},
-		})
-
-		const res = await handler.completePrompt("hi")
-		expect(res).toBe("ok")
-
-		// Verify generateText was called with tools
-		expect(mockGenerateText).toHaveBeenCalledWith(
-			expect.objectContaining({
-				prompt: "hi",
-				tools: expect.any(Object),
-			}),
-		)
-	})
-
-	it("completePrompt passes config overrides without tools when URL context and grounding disabled", async () => {
-		const options = {
-			apiProvider: "gemini",
-			enableUrlContext: false,
-			enableGrounding: false,
 		} as ApiHandlerOptions
 		const handler = new GeminiHandler(options)
 
@@ -100,7 +71,6 @@ describe("GeminiHandler backend support", () => {
 		it("should handle grounding metadata extraction failure gracefully", async () => {
 			const options = {
 				apiProvider: "gemini",
-				enableGrounding: true,
 			} as ApiHandlerOptions
 			const handler = new GeminiHandler(options)
 
@@ -134,7 +104,6 @@ describe("GeminiHandler backend support", () => {
 		it("should handle malformed grounding metadata", async () => {
 			const options = {
 				apiProvider: "gemini",
-				enableGrounding: true,
 			} as ApiHandlerOptions
 			const handler = new GeminiHandler(options)
 
@@ -181,11 +150,9 @@ describe("GeminiHandler backend support", () => {
 			}
 		})
 
-		it("should handle API errors when tools are enabled", async () => {
+		it("should handle API errors", async () => {
 			const options = {
 				apiProvider: "gemini",
-				enableUrlContext: true,
-				enableGrounding: true,
 			} as ApiHandlerOptions
 			const handler = new GeminiHandler(options)
 

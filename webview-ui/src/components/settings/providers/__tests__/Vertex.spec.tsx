@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import { Vertex } from "../Vertex"
 import type { ProviderSettings } from "@roo-code/types"
 import { VERTEX_REGIONS } from "@roo-code/types"
@@ -45,8 +44,6 @@ describe("Vertex", () => {
 		vertexJsonCredentials: "",
 		vertexProjectId: "",
 		vertexRegion: "",
-		enableUrlContext: false,
-		enableGrounding: false,
 		apiModelId: "gemini-2.0-flash-001",
 	}
 
@@ -114,172 +111,15 @@ describe("Vertex", () => {
 		})
 	})
 
-	describe("URL Context Checkbox", () => {
-		it("should render URL context checkbox unchecked by default for Gemini models", () => {
-			render(
-				<Vertex
-					apiConfiguration={defaultApiConfiguration}
-					setApiConfigurationField={mockSetApiConfigurationField}
-				/>,
-			)
+	it("should not render URL context or grounding search checkboxes", () => {
+		render(
+			<Vertex
+				apiConfiguration={defaultApiConfiguration}
+				setApiConfigurationField={mockSetApiConfigurationField}
+			/>,
+		)
 
-			const urlContextCheckbox = screen.getByTestId("checkbox-url-context")
-			const checkbox = urlContextCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
-			expect(checkbox.checked).toBe(false)
-		})
-
-		it("should NOT render URL context checkbox for non-Gemini models", () => {
-			const apiConfiguration = { ...defaultApiConfiguration, apiModelId: "claude-3-opus@20240229" }
-			render(
-				<Vertex apiConfiguration={apiConfiguration} setApiConfigurationField={mockSetApiConfigurationField} />,
-			)
-
-			const urlContextCheckbox = screen.queryByTestId("checkbox-url-context")
-			expect(urlContextCheckbox).toBeNull()
-		})
-
-		it("should NOT render URL context checkbox when simplifySettings is true", () => {
-			render(
-				<Vertex
-					apiConfiguration={defaultApiConfiguration}
-					setApiConfigurationField={mockSetApiConfigurationField}
-					simplifySettings={true}
-				/>,
-			)
-
-			const urlContextCheckbox = screen.queryByTestId("checkbox-url-context")
-			expect(urlContextCheckbox).toBeNull()
-		})
-
-		it("should render URL context checkbox checked when enableUrlContext is true for Gemini models", () => {
-			const apiConfiguration = {
-				...defaultApiConfiguration,
-				enableUrlContext: true,
-				apiModelId: "gemini-2.0-flash-001",
-			}
-			render(
-				<Vertex apiConfiguration={apiConfiguration} setApiConfigurationField={mockSetApiConfigurationField} />,
-			)
-
-			const urlContextCheckbox = screen.getByTestId("checkbox-url-context")
-			const checkbox = urlContextCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
-			expect(checkbox.checked).toBe(true)
-		})
-
-		it("should call setApiConfigurationField with correct parameters when URL context checkbox is toggled", async () => {
-			const user = userEvent.setup()
-			render(
-				<Vertex
-					apiConfiguration={defaultApiConfiguration}
-					setApiConfigurationField={mockSetApiConfigurationField}
-				/>,
-			)
-
-			const urlContextCheckbox = screen.getByTestId("checkbox-url-context")
-			const checkbox = urlContextCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
-
-			await user.click(checkbox)
-
-			expect(mockSetApiConfigurationField).toHaveBeenCalledWith("enableUrlContext", true)
-		})
-	})
-
-	describe("Grounding with Google Search Checkbox", () => {
-		it("should render grounding search checkbox unchecked by default for Gemini models", () => {
-			render(
-				<Vertex
-					apiConfiguration={defaultApiConfiguration}
-					setApiConfigurationField={mockSetApiConfigurationField}
-				/>,
-			)
-
-			const groundingCheckbox = screen.getByTestId("checkbox-grounding-search")
-			const checkbox = groundingCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
-			expect(checkbox.checked).toBe(false)
-		})
-
-		it("should NOT render grounding search checkbox for non-Gemini models", () => {
-			const apiConfiguration = { ...defaultApiConfiguration, apiModelId: "claude-3-opus@20240229" }
-			render(
-				<Vertex apiConfiguration={apiConfiguration} setApiConfigurationField={mockSetApiConfigurationField} />,
-			)
-
-			const groundingCheckbox = screen.queryByTestId("checkbox-grounding-search")
-			expect(groundingCheckbox).toBeNull()
-		})
-
-		it("should NOT render grounding search checkbox when simplifySettings is true", () => {
-			render(
-				<Vertex
-					apiConfiguration={defaultApiConfiguration}
-					setApiConfigurationField={mockSetApiConfigurationField}
-					simplifySettings={true}
-				/>,
-			)
-
-			const groundingCheckbox = screen.queryByTestId("checkbox-grounding-search")
-			expect(groundingCheckbox).toBeNull()
-		})
-
-		it("should render grounding search checkbox checked when enableGrounding is true for Gemini models", () => {
-			const apiConfiguration = {
-				...defaultApiConfiguration,
-				enableGrounding: true,
-				apiModelId: "gemini-2.0-flash-001",
-			}
-			render(
-				<Vertex apiConfiguration={apiConfiguration} setApiConfigurationField={mockSetApiConfigurationField} />,
-			)
-
-			const groundingCheckbox = screen.getByTestId("checkbox-grounding-search")
-			const checkbox = groundingCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
-			expect(checkbox.checked).toBe(true)
-		})
-
-		it("should call setApiConfigurationField with correct parameters when grounding search checkbox is toggled", async () => {
-			const user = userEvent.setup()
-			render(
-				<Vertex
-					apiConfiguration={defaultApiConfiguration}
-					setApiConfigurationField={mockSetApiConfigurationField}
-				/>,
-			)
-
-			const groundingCheckbox = screen.getByTestId("checkbox-grounding-search")
-			const checkbox = groundingCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
-
-			await user.click(checkbox)
-
-			expect(mockSetApiConfigurationField).toHaveBeenCalledWith("enableGrounding", true)
-		})
-	})
-
-	describe("Both checkboxes interaction", () => {
-		it("should be able to toggle both checkboxes independently", async () => {
-			const user = userEvent.setup()
-			render(
-				<Vertex
-					apiConfiguration={defaultApiConfiguration}
-					setApiConfigurationField={mockSetApiConfigurationField}
-				/>,
-			)
-
-			const urlContextCheckbox = screen.getByTestId("checkbox-url-context")
-			const urlCheckbox = urlContextCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
-
-			const groundingCheckbox = screen.getByTestId("checkbox-grounding-search")
-			const groundCheckbox = groundingCheckbox.querySelector("input[type='checkbox']") as HTMLInputElement
-
-			// Toggle URL context
-			await user.click(urlCheckbox)
-			expect(mockSetApiConfigurationField).toHaveBeenCalledWith("enableUrlContext", true)
-
-			// Toggle grounding
-			await user.click(groundCheckbox)
-			expect(mockSetApiConfigurationField).toHaveBeenCalledWith("enableGrounding", true)
-
-			// Both should have been called
-			expect(mockSetApiConfigurationField).toHaveBeenCalledTimes(2)
-		})
+		expect(screen.queryByTestId("checkbox-url-context")).not.toBeInTheDocument()
+		expect(screen.queryByTestId("checkbox-grounding-search")).not.toBeInTheDocument()
 	})
 })

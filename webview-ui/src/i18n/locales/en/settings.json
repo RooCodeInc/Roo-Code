@@ -524,16 +524,6 @@
 		"cacheUsageNote": "Note: If you don't see cache usage, try selecting a different model and then selecting your desired model again.",
 		"vscodeLmModel": "Language Model",
 		"vscodeLmWarning": "Note: Models accessed via the VS Code Language Model API may be wrapped or fine-tuned by the provider, so behavior can differ from using the same model directly from a typical provider or router. To use a model from the Language Model dropdown, first switch to that model and then click Accept in the Copilot Chat prompt; otherwise you may see an error such as 400 \"The requested model is not supported\".",
-		"geminiParameters": {
-			"urlContext": {
-				"title": "Enable URL context",
-				"description": "Lets Gemini read linked pages to extract, compare, and synthesize their content into informed responses."
-			},
-			"groundingSearch": {
-				"title": "Enable Grounding with Google search",
-				"description": "Connects Gemini to real‑time web data for accurate, up‑to‑date answers with verifiable citations."
-			}
-		},
 		"googleCloudSetup": {
 			"title": "To use Google Cloud Vertex AI, you need to:",
 			"step1": "1. Create a Google Cloud account, enable the Vertex AI API & enable the desired Claude models.",
