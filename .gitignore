@@ -10,7 +10,9 @@ mock/
 .DS_Store
 
 # IDEs
-.idea
+.idea/
+.qodo/
+.vscode/settings.json
 
 # Builds
 bin/
@@ -42,11 +44,17 @@ logs
 # Turborepo
 .turbo
 
-# IntelliJ and Qodo plugin folders
-.idea/
-.qodo/
+# Vercel
 .vercel
+
+# Roo Code local config (may contain sensitive MCP settings)
 .roo/mcp.json
+
+# Claude Code local settings (contains permissions, may vary per machine)
+.claude/
+
+# Serena local config
+.serena/
 
 # Qdrant
 qdrant_storage/
@@ -55,3 +63,15 @@ qdrant_storage/
 plans/
 
 roo-cli-*.tar.gz*
+
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Credentials and secrets
+*.pem
+*.key
+*.cert
+credentials.json
+secrets.json
+token.json
