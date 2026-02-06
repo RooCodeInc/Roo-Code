@@ -40,6 +40,7 @@ import { Mention } from "./Mention"
 import { CheckpointSaved } from "./checkpoints/CheckpointSaved"
 import { FollowUpSuggest } from "./FollowUpSuggest"
 import { BatchFilePermission } from "./BatchFilePermission"
+import { BatchListFilesPermission } from "./BatchListFilesPermission"
 import { BatchDiffApproval } from "./BatchDiffApproval"
 import { ProgressIndicator } from "./ProgressIndicator"
 import { Markdown } from "./Markdown"
@@ -741,7 +742,24 @@ export const ChatRowContent = ({
 					</>
 				)
 			}
-			case "listFilesTopLevel":
+			case "listFilesTopLevel": {
+				// Check if this is a batch directory listing request
+				const isBatchDirRequest = message.type === "ask" && tool.batchDirs && Array.isArray(tool.batchDirs)
+
+				if (isBatchDirRequest) {
+					return (
+						<>
+							<div style={headerStyle}>
+								<ListTree className="w-4 shrink-0" aria-label="List files icon" />
+								<span style={{ fontWeight: "bold" }}>
+									{t("chat:directoryOperations.wantsToViewMultipleDirectories")}
+								</span>
+							</div>
+							<BatchListFilesPermission dirs={tool.batchDirs || []} ts={message?.ts} />
+						</>
+					)
+				}
+
 				return (
 					<>
 						<div style={headerStyle}>
@@ -767,7 +785,25 @@ export const ChatRowContent = ({
 						</div>
 					</>
 				)
-			case "listFilesRecursive":
+			}
+			case "listFilesRecursive": {
+				// Check if this is a batch directory listing request
+				const isBatchDirRequest = message.type === "ask" && tool.batchDirs && Array.isArray(tool.batchDirs)
+
+				if (isBatchDirRequest) {
+					return (
+						<>
+							<div style={headerStyle}>
+								<FolderTree className="w-4 shrink-0" aria-label="Folder tree icon" />
+								<span style={{ fontWeight: "bold" }}>
+									{t("chat:directoryOperations.wantsToViewMultipleDirectories")}
+								</span>
+							</div>
+							<BatchListFilesPermission dirs={tool.batchDirs || []} ts={message?.ts} />
+						</>
+					)
+				}
+
 				return (
 					<>
 						<div style={headerStyle}>
@@ -793,6 +829,7 @@ export const ChatRowContent = ({
 						</div>
 					</>
 				)
+			}
 			case "searchFiles":
 				return (
 					<>

@@ -1154,8 +1154,21 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 		}
 
+		// Helper to check if a message is a list_files ask that should be batched
+		const isListFilesAsk = (msg: ClineMessage): boolean => {
+			if (msg.type !== "ask" || msg.ask !== "tool") return false
+			try {
+				const tool = JSON.parse(msg.text || "{}")
+				return (
+					(tool.tool === "listFilesTopLevel" || tool.tool === "listFilesRecursive") && !tool.batchDirs // Don't re-batch already batched
+				)
+			} catch {
+				return false
+			}
+		}
+
 		// Consolidate consecutive read_file ask messages into batches
-		const result: ClineMessage[] = []
+		const readFileBatched: ClineMessage[] = []
 		let i = 0
 		while (i < filtered.length) {
 			const msg = filtered[i]
@@ -1199,10 +1212,67 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						_batchedMessages: batch,
 					} as ClineMessage & { _batchedMessages: ClineMessage[] }
 
-					result.push(syntheticMessage)
+					readFileBatched.push(syntheticMessage)
 					i = j // Skip past all batched messages
 				} else {
 					// Single read_file ask, keep as-is
+					readFileBatched.push(msg)
+					i++
+				}
+			} else {
+				readFileBatched.push(msg)
+				i++
+			}
+		}
+
+		// Consolidate consecutive list_files ask messages into batches
+		const result: ClineMessage[] = []
+		i = 0
+		while (i < readFileBatched.length) {
+			const msg = readFileBatched[i]
+
+			// Check if this starts a sequence of list_files asks
+			if (isListFilesAsk(msg)) {
+				// Collect all consecutive list_files asks
+				const batch: ClineMessage[] = [msg]
+				let j = i + 1
+				while (j < readFileBatched.length && isListFilesAsk(readFileBatched[j])) {
+					batch.push(readFileBatched[j])
+					j++
+				}
+
+				if (batch.length > 1) {
+					// Create a synthetic batch message
+					const batchDirs = batch.map((batchMsg) => {
+						try {
+							const tool = JSON.parse(batchMsg.text || "{}")
+							return {
+								path: tool.path || "",
+								recursive: tool.tool === "listFilesRecursive",
+								isOutsideWorkspace: tool.isOutsideWorkspace || false,
+								key: tool.path || "",
+							}
+						} catch {
+							return { path: "", recursive: false, key: "" }
+						}
+					})
+
+					// Use the first message as the base, but add batchDirs
+					const firstTool = JSON.parse(msg.text || "{}")
+					const syntheticMessage: ClineMessage = {
+						...msg,
+						text: JSON.stringify({
+							...firstTool,
+							batchDirs,
+						}),
+						// Store original messages for response handling
+						_batchedMessages: batch,
+					} as ClineMessage & { _batchedMessages: ClineMessage[] }
+
+					result.push(syntheticMessage)
+					i = j // Skip past all batched messages
+				} else {
+					// Single list_files ask, keep as-is
 					result.push(msg)
 					i++
 				}

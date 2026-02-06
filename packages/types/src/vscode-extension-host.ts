@@ -845,6 +845,12 @@ export interface ClineSayTool {
 			startLine?: number
 		}>
 	}>
+	batchDirs?: Array<{
+		path: string
+		recursive: boolean
+		isOutsideWorkspace?: boolean
+		key: string
+	}>
 	question?: string
 	imageData?: string // Base64 encoded image data for generated images
 	// Properties for runSlashCommand tool
