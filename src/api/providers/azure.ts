@@ -23,7 +23,7 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 const AZURE_DEFAULT_TEMPERATURE = 0
 
 /**
- * Azure AI Foundry provider using the dedicated @ai-sdk/azure package.
+ * Azure OpenAI provider using the dedicated @ai-sdk/azure package.
  * Provides native support for Azure OpenAI deployments with proper resource-based routing.
  */
 export class AzureHandler extends BaseProvider implements SingleCompletionHandler {
@@ -77,7 +77,7 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 
 	/**
 	 * Process usage metrics from the AI SDK response.
-	 * Azure AI Foundry provides standard OpenAI-compatible usage metrics.
+	 * Azure OpenAI provides standard OpenAI-compatible usage metrics.
 	 */
 	protected processUsageMetrics(
 		usage: {
@@ -116,7 +116,7 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 	protected getMaxOutputTokens(): number | undefined {
 		const { info } = this.getModel()
 		const maxTokens = this.options.modelMaxTokens || info.maxTokens
-		// Azure AI Foundry API requires maxOutputTokens >= 1, so filter out invalid values
+		// Azure OpenAI API requires maxOutputTokens >= 1, so filter out invalid values
 		return maxTokens && maxTokens > 0 ? maxTokens : undefined
 	}
 
@@ -168,7 +168,7 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 			}
 		} catch (error) {
 			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
-			throw handleAiSdkError(error, "Azure AI Foundry")
+			throw handleAiSdkError(error, "Azure OpenAI")
 		}
 	}
 

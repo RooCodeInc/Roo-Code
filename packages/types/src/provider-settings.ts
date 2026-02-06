@@ -637,7 +637,7 @@ export const MODELS_BY_PROVIDER: Record<
 	},
 	azure: {
 		id: "azure",
-		label: "Azure AI Foundry",
+		label: "Azure OpenAI",
 		// Azure uses deployment names configured by the user (not a fixed upstream model ID list)
 		models: [],
 	},
