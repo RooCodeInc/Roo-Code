@@ -277,87 +277,67 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Prompt caching: use AI SDK's cachePoint mechanism
 		// The AI SDK's @ai-sdk/amazon-bedrock supports cachePoint in providerOptions per message.
 		//
-		// We identify the last two *original* Anthropic user messages (before AI SDK conversion)
+		// Strategy: Bedrock allows up to 4 cache checkpoints. We use them as:
+		//   1. System prompt (via systemProviderOptions below)
+		//   2-4. Up to 3 user messages in the conversation history
+		//
+		// For the message cache points, we target the last 2 user messages (matching
+		// Anthropic's strategy: write-to-cache + read-from-cache) PLUS an earlier "anchor"
+		// user message near the middle of the conversation. This anchor ensures the 20-block
+		// lookback window has a stable cache entry to hit, covering all assistant/tool messages
+		// between the anchor and the recent messages.
+		//
+		// We identify targets in the ORIGINAL Anthropic messages (before AI SDK conversion)
 		// because convertToAiSdkMessages() splits user messages containing tool_results into
-		// separate "tool" + "user" role messages, which would skew naive counting on the
-		// converted array. Instead we build a mapping from each original Anthropic message to
-		// the AI SDK message(s) it produced, then apply cachePoint to the correct AI SDK message
-		// that represents the tail of each targeted original user message.
+		// separate "tool" + "user" role messages, which would skew naive counting.
 		const usePromptCache = Boolean(this.options.awsUsePromptCache && this.supportsAwsPromptCache(modelConfig))
 
 		if (usePromptCache) {
 			const cachePointOption = { bedrock: { cachePoint: { type: "default" as const } } }
 
-			// Find the last two user messages in the original (pre-conversion) message array.
-			// This matches the Anthropic provider's strategy: cache the latest user message
-			// (write to cache for next request) and the second-to-last user message (read
-			// from cache for the current request).
+			// Find all user message indices in the original (pre-conversion) message array.
 			const originalUserIndices = filteredMessages.reduce<number[]>(
 				(acc, msg, idx) => (msg.role === "user" ? [...acc, idx] : acc),
 				[],
 			)
-			const targetOriginalIndices = new Set(originalUserIndices.slice(-2))
 
-			// Build a mapping from original message index → last AI SDK message index.
-			// convertToAiSdkMessages produces messages in order; a single original user
-			// message with tool_results becomes [tool-role msg, user-role msg], while a
-			// plain user message becomes [user-role msg]. We walk both arrays in parallel
-			// to track which AI SDK messages correspond to each original message.
-			if (targetOriginalIndices.size > 0) {
-				let aiSdkIdx = 0
-				for (let origIdx = 0; origIdx < filteredMessages.length; origIdx++) {
-					const origMsg = filteredMessages[origIdx]
+			// Select up to 3 user messages for cache points (system prompt uses the 4th):
+			// - Last user message: write to cache for next request
+			// - Second-to-last user message: read from cache for current request
+			// - An "anchor" message earlier in the conversation for 20-block window coverage
+			const targetOriginalIndices = new Set<number>()
+			const numUserMsgs = originalUserIndices.length
 
-					if (typeof origMsg.content === "string") {
-						// Simple string content → 1 AI SDK message
-						if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-							const msg = aiSdkMessages[aiSdkIdx]
-							msg.providerOptions = { ...msg.providerOptions, ...cachePointOption }
-						}
-						aiSdkIdx++
-					} else if (origMsg.role === "user") {
-						// User message with array content may split into tool + user messages.
-						const hasToolResults = origMsg.content.some(
-							(part) => (part as { type: string }).type === "tool_result",
-						)
-						const hasNonToolContent = origMsg.content.some(
-							(part) =>
-								(part as { type: string }).type === "text" ||
-								(part as { type: string }).type === "image",
-						)
-
-						if (hasToolResults && hasNonToolContent) {
-							// Split into tool msg + user msg — cache the user msg (the second one)
-							const toolMsgIdx = aiSdkIdx
-							const userMsgIdx = aiSdkIdx + 1
-							if (
-								targetOriginalIndices.has(origIdx) &&
-								userMsgIdx < aiSdkMessages.length
-							) {
-								const msg = aiSdkMessages[userMsgIdx]
-								msg.providerOptions = { ...msg.providerOptions, ...cachePointOption }
-							}
-							aiSdkIdx += 2
-						} else if (hasToolResults) {
-							// Only tool results, no text/image → becomes 1 tool msg
-							if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-								const msg = aiSdkMessages[aiSdkIdx]
-								msg.providerOptions = { ...msg.providerOptions, ...cachePointOption }
-							}
-							aiSdkIdx++
-						} else {
-							// Only text/image content → 1 user msg
-							if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-								const msg = aiSdkMessages[aiSdkIdx]
-								msg.providerOptions = { ...msg.providerOptions, ...cachePointOption }
-							}
-							aiSdkIdx++
-						}
-					} else {
-						// Assistant message → 1 AI SDK message
-						aiSdkIdx++
-					}
+			if (numUserMsgs >= 1) {
+				// Always cache the last user message
+				targetOriginalIndices.add(originalUserIndices[numUserMsgs - 1])
+			}
+			if (numUserMsgs >= 2) {
+				// Cache the second-to-last user message
+				targetOriginalIndices.add(originalUserIndices[numUserMsgs - 2])
+			}
+			if (numUserMsgs >= 5) {
+				// Add an anchor cache point roughly in the first third of user messages.
+				// This ensures that the 20-block lookback from the second-to-last breakpoint
+				// can find a stable cache entry, covering all the assistant and tool messages
+				// in the middle of the conversation. We pick the user message at ~1/3 position.
+				const anchorIdx = Math.floor(numUserMsgs / 3)
+				// Only add if it's not already one of the last-2 targets
+				if (!targetOriginalIndices.has(originalUserIndices[anchorIdx])) {
+					targetOriginalIndices.add(originalUserIndices[anchorIdx])
 				}
+			}
+
+			// Apply cachePoint to the correct AI SDK messages by walking both arrays in parallel.
+			// A single original user message with tool_results becomes [tool-role msg, user-role msg]
+			// in the AI SDK array, while a plain user message becomes [user-role msg].
+			if (targetOriginalIndices.size > 0) {
+				this.applyCachePointsToAiSdkMessages(
+					filteredMessages,
+					aiSdkMessages,
+					targetOriginalIndices,
+					cachePointOption,
+				)
 			}
 		}
 
@@ -763,6 +743,79 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			(modelConfig?.info as any)?.cachableFields &&
 			(modelConfig?.info as any)?.cachableFields?.length > 0
 		)
+	}
+
+	/**
+	 * Apply cachePoint providerOptions to the correct AI SDK messages by walking
+	 * the original Anthropic messages and converted AI SDK messages in parallel.
+	 *
+	 * convertToAiSdkMessages() can split a single Anthropic user message (containing
+	 * tool_results + text) into 2 AI SDK messages (tool role + user role). This method
+	 * accounts for that split so cache points land on the right message.
+	 */
+	private applyCachePointsToAiSdkMessages(
+		originalMessages: Anthropic.Messages.MessageParam[],
+		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
+		targetOriginalIndices: Set<number>,
+		cachePointOption: Record<string, Record<string, unknown>>,
+	): void {
+		let aiSdkIdx = 0
+		for (let origIdx = 0; origIdx < originalMessages.length; origIdx++) {
+			const origMsg = originalMessages[origIdx]
+
+			if (typeof origMsg.content === "string") {
+				// Simple string content → 1 AI SDK message
+				if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+					aiSdkMessages[aiSdkIdx].providerOptions = {
+						...aiSdkMessages[aiSdkIdx].providerOptions,
+						...cachePointOption,
+					}
+				}
+				aiSdkIdx++
+			} else if (origMsg.role === "user") {
+				// User message with array content may split into tool + user messages.
+				const hasToolResults = origMsg.content.some(
+					(part) => (part as { type: string }).type === "tool_result",
+				)
+				const hasNonToolContent = origMsg.content.some(
+					(part) =>
+						(part as { type: string }).type === "text" || (part as { type: string }).type === "image",
+				)
+
+				if (hasToolResults && hasNonToolContent) {
+					// Split into tool msg + user msg — cache the user msg (the second one)
+					const userMsgIdx = aiSdkIdx + 1
+					if (targetOriginalIndices.has(origIdx) && userMsgIdx < aiSdkMessages.length) {
+						aiSdkMessages[userMsgIdx].providerOptions = {
+							...aiSdkMessages[userMsgIdx].providerOptions,
+							...cachePointOption,
+						}
+					}
+					aiSdkIdx += 2
+				} else if (hasToolResults) {
+					// Only tool results → 1 tool msg
+					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+						aiSdkMessages[aiSdkIdx].providerOptions = {
+							...aiSdkMessages[aiSdkIdx].providerOptions,
+							...cachePointOption,
+						}
+					}
+					aiSdkIdx++
+				} else {
+					// Only text/image content → 1 user msg
+					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+						aiSdkMessages[aiSdkIdx].providerOptions = {
+							...aiSdkMessages[aiSdkIdx].providerOptions,
+							...cachePointOption,
+						}
+					}
+					aiSdkIdx++
+				}
+			} else {
+				// Assistant message → 1 AI SDK message
+				aiSdkIdx++
+			}
+		}
 	}
 
 	/************************************************************************************
