@@ -162,7 +162,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		if (!hasToolCalls && toolUseExpected && fullText.trim().length > 0) {
 			console.debug("[ClaudeCodeAcpHandler] Model responded with only text, retrying with tool-use enforcement")
 
-			// Retry with a very explicit enforcement prompt
+			// Build a smarter retry prompt with intent detection
 			const retryPrompt = this.buildToolEnforcementRetryPrompt(fullText)
 			const retryChunks: string[] = []
 			const retryInputChars = retryPrompt.length
@@ -192,7 +192,18 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 					return
 				}
 			}
-			// Retry failed or still no tool calls — fall through to yield original response
+
+			// Retry also failed — reset session so Roo Code's NEXT call sends a fresh
+			// full proxy prompt with complete instructions, tool definitions, and examples.
+			// This is critical: the ACP session context is "polluted" and further retries
+			// in the same session won't help. A fresh full prompt gives the model clean context.
+			console.debug(
+				"[ClaudeCodeAcpHandler] Retry also failed (no tool calls), resetting session for fresh full prompt on next call",
+			)
+			this.isSessionInitialized = false
+			this.lastSentMessageCount = 0
+			// Fall through to yield original response — Roo Code's task loop will
+			// see "no tools used" and retry, which will now get a fresh full prompt
 		}
 
 		// Yield all parsed chunks
@@ -402,9 +413,8 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 	/**
 	 * Build a retry prompt when the model responded with only text (no tool calls).
 	 *
-	 * This is a last-resort enforcement: we tell the model its previous response
-	 * was rejected because it didn't include any tool calls, and it MUST retry
-	 * with at least one tool call.
+	 * Uses intent detection to analyze the text-only response and suggest the
+	 * most appropriate tool, making the retry more likely to succeed.
 	 */
 	private buildToolEnforcementRetryPrompt(previousTextResponse: string): string {
 		// Truncate previous response to avoid sending too much back
@@ -414,10 +424,11 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		const toolNamesReminder =
 			this.cachedToolNames.length > 0 ? `\nAvailable tools: ${this.cachedToolNames.join(", ")}` : ""
 
-		// Pick a concrete example based on available tools
-		const concreteExample = this.cachedToolNames.includes("read_file")
-			? `${TOOL_CALL_OPEN_TAG}\n{"name": "read_file", "arguments": {"path": "package.json"}}\n${TOOL_CALL_CLOSE_TAG}`
-			: `${TOOL_CALL_OPEN_TAG}\n{"name": "attempt_completion", "arguments": {"result": "Task completed."}}\n${TOOL_CALL_CLOSE_TAG}`
+		// Detect intent from the text to suggest the most relevant tool
+		const suggestedTool = this.detectToolIntent(previousTextResponse)
+
+		// Build a concrete example using the detected intent
+		const concreteExample = suggestedTool.example
 
 		return `[ERROR: RESPONSE REJECTED - NO TOOL CALLS]
 Your previous response was REJECTED because it contained only text without any tool calls:
@@ -426,16 +437,96 @@ Your previous response was REJECTED because it contained only text without any t
 This system REQUIRES at least one tool call in every response. Text-only responses are not accepted.
 ${toolNamesReminder}
 
-You MUST now respond with at least one tool call. Here is a concrete example:
+${suggestedTool.suggestion}
+
+You MUST now respond with at least one tool call using the ${TOOL_CALL_OPEN_TAG} XML format.
+Example:
 ${concreteExample}
 
-- If the task is complete → use attempt_completion
-- If you need to read a file → use read_file
-- If you need to search → use search_files or list_files
-- If you need to ask the user → use ask_followup_question
-- If you need to run a command → use execute_command
+IMPORTANT: Do NOT use your built-in tools (Bash, Read, Write, Edit, Glob, Grep, etc.).
+ONLY use the ${TOOL_CALL_OPEN_TAG}...${TOOL_CALL_CLOSE_TAG} XML format with tools from the available tools list above.
 
-Respond NOW with the appropriate tool call(s). Do NOT use your built-in tools (Bash, Read, Write, etc.) — ONLY use ${TOOL_CALL_OPEN_TAG} XML format.`
+Respond NOW with the appropriate tool call(s).`
+	}
+
+	/**
+	 * Detect the likely intent from a text-only response to suggest the best tool.
+	 *
+	 * Analyzes keywords in the model's text response to determine what it was
+	 * "trying" to do, then suggests the appropriate Roo Code tool.
+	 */
+	private detectToolIntent(text: string): { suggestion: string; example: string } {
+		const lowerText = text.toLowerCase()
+
+		// Check for completion/summary patterns — model thinks it's done
+		if (
+			lowerText.includes("complete") ||
+			lowerText.includes("finished") ||
+			lowerText.includes("done") ||
+			lowerText.includes("summary") ||
+			lowerText.includes("conclusion") ||
+			lowerText.includes("here is") ||
+			lowerText.includes("i have") ||
+			lowerText.includes("análise") ||
+			lowerText.includes("concluí")
+		) {
+			return {
+				suggestion:
+					"It looks like you were summarizing or completing the task. You MUST wrap your result in the attempt_completion tool.",
+				example: `${TOOL_CALL_OPEN_TAG}\n{"name": "attempt_completion", "arguments": {"result": "Your completion summary here"}}\n${TOOL_CALL_CLOSE_TAG}`,
+			}
+		}
+
+		// Check for question patterns — model is asking a question
+		if (
+			lowerText.includes("?") ||
+			lowerText.includes("would you") ||
+			lowerText.includes("should i") ||
+			lowerText.includes("do you want") ||
+			lowerText.includes("gostaria") ||
+			lowerText.includes("deseja")
+		) {
+			return {
+				suggestion:
+					"It looks like you were asking the user a question. You MUST use the ask_followup_question tool for that.",
+				example: `${TOOL_CALL_OPEN_TAG}\n{"name": "ask_followup_question", "arguments": {"question": "Your question here", "follow_up": [{"text": "Option 1", "mode": null}, {"text": "Option 2", "mode": null}]}}\n${TOOL_CALL_CLOSE_TAG}`,
+			}
+		}
+
+		// Check for file reading intent
+		if (
+			lowerText.includes("let me read") ||
+			lowerText.includes("check the file") ||
+			lowerText.includes("look at") ||
+			lowerText.includes("examine")
+		) {
+			return {
+				suggestion: "It looks like you want to read a file. Use the read_file tool.",
+				example: `${TOOL_CALL_OPEN_TAG}\n{"name": "read_file", "arguments": {"path": "src/index.ts"}}\n${TOOL_CALL_CLOSE_TAG}`,
+			}
+		}
+
+		// Check for command execution intent
+		if (
+			lowerText.includes("run") ||
+			lowerText.includes("execute") ||
+			lowerText.includes("install") ||
+			lowerText.includes("npm") ||
+			lowerText.includes("build")
+		) {
+			return {
+				suggestion: "It looks like you want to execute a command. Use the execute_command tool.",
+				example: `${TOOL_CALL_OPEN_TAG}\n{"name": "execute_command", "arguments": {"command": "your command here"}}\n${TOOL_CALL_CLOSE_TAG}`,
+			}
+		}
+
+		// Default — suggest attempt_completion as it's the most common case
+		// (model usually responds with text when it thinks the task is done)
+		return {
+			suggestion:
+				"Based on your text response, you likely need to use attempt_completion (if done) or a file/search tool (if you need more info).",
+			example: `${TOOL_CALL_OPEN_TAG}\n{"name": "attempt_completion", "arguments": {"result": "Your result here"}}\n${TOOL_CALL_CLOSE_TAG}`,
+		}
 	}
 
 	/**
