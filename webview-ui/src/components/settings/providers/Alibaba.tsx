@@ -8,13 +8,13 @@ import { VSCodeButtonLink } from "@src/components/common/VSCodeButtonLink"
 
 import { inputEventTransform } from "../transforms"
 
-type QwenProps = {
+type AlibabaProps = {
 	apiConfiguration: ProviderSettings
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
 	simplifySettings?: boolean
 }
 
-export const Qwen = ({ apiConfiguration, setApiConfigurationField }: QwenProps) => {
+export const Alibaba = ({ apiConfiguration, setApiConfigurationField }: AlibabaProps) => {
 	const { t } = useAppTranslation()
 
 	const handleInputChange = useCallback(
@@ -31,19 +31,19 @@ export const Qwen = ({ apiConfiguration, setApiConfigurationField }: QwenProps) 
 	return (
 		<>
 			<VSCodeTextField
-				value={apiConfiguration?.qwenApiKey || ""}
+				value={apiConfiguration?.alibabaApiKey || ""}
 				type="password"
-				onInput={handleInputChange("qwenApiKey")}
+				onInput={handleInputChange("alibabaApiKey")}
 				placeholder={t("settings:placeholders.apiKey")}
 				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.qwenApiKey")}</label>
+				<label className="block font-medium mb-1">{t("settings:providers.alibabaApiKey")}</label>
 			</VSCodeTextField>
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>
-			{!apiConfiguration?.qwenApiKey && (
-				<VSCodeButtonLink href="https://dashscope.console.aliyun.com/apiKey" appearance="secondary">
-					{t("settings:providers.getQwenApiKey")}
+			{!apiConfiguration?.alibabaApiKey && (
+				<VSCodeButtonLink href="https://modelstudio.console.alibabacloud.com/" appearance="secondary">
+					{t("settings:providers.getAlibabaApiKey")}
 				</VSCodeButtonLink>
 			)}
 		</>

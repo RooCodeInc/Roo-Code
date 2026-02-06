@@ -13,66 +13,65 @@ vi.mock("ai", async (importOriginal) => {
 	}
 })
 
-vi.mock("qwen-ai-provider-v5", () => ({
-	createQwen: vi.fn(() => {
-		// Return a function that returns a mock language model
+vi.mock("@ai-sdk/alibaba", () => ({
+	createAlibaba: vi.fn(() => {
 		return vi.fn(() => ({
 			modelId: "qwen-plus",
-			provider: "qwen",
+			provider: "alibaba",
 		}))
 	}),
 }))
 
 import type { Anthropic } from "@anthropic-ai/sdk"
 
-import { qwenDefaultModelId } from "@roo-code/types"
+import { alibabaDefaultModelId } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
 
-import { QwenHandler } from "../qwen"
+import { AlibabaHandler } from "../alibaba"
 
-describe("QwenHandler", () => {
-	let handler: QwenHandler
+describe("AlibabaHandler", () => {
+	let handler: AlibabaHandler
 	let mockOptions: ApiHandlerOptions
 
 	beforeEach(() => {
 		mockOptions = {
-			qwenApiKey: "test-api-key",
+			alibabaApiKey: "test-api-key",
 			apiModelId: "qwen-plus",
 		}
-		handler = new QwenHandler(mockOptions)
+		handler = new AlibabaHandler(mockOptions)
 		vi.clearAllMocks()
 	})
 
 	describe("constructor", () => {
 		it("should initialize with provided options", () => {
-			expect(handler).toBeInstanceOf(QwenHandler)
+			expect(handler).toBeInstanceOf(AlibabaHandler)
 			expect(handler.getModel().id).toBe(mockOptions.apiModelId)
 		})
 
 		it("should use default model ID if not provided", () => {
-			const handlerWithoutModel = new QwenHandler({
+			const handlerWithoutModel = new AlibabaHandler({
 				...mockOptions,
 				apiModelId: undefined,
 			})
-			expect(handlerWithoutModel.getModel().id).toBe(qwenDefaultModelId)
+			expect(handlerWithoutModel.getModel().id).toBe(alibabaDefaultModelId)
 		})
 
 		it("should use default base URL if not provided", () => {
-			const handlerWithoutBaseUrl = new QwenHandler({
+			const handlerWithoutBaseUrl = new AlibabaHandler({
 				...mockOptions,
-				qwenBaseUrl: undefined,
+				alibabaBaseUrl: undefined,
 			})
-			expect(handlerWithoutBaseUrl).toBeInstanceOf(QwenHandler)
+			expect(handlerWithoutBaseUrl).toBeInstanceOf(AlibabaHandler)
 		})
 
 		it("should use custom base URL if provided", () => {
 			const customBaseUrl = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-			const handlerWithCustomUrl = new QwenHandler({
+			const handlerWithCustomUrl = new AlibabaHandler({
 				...mockOptions,
-				qwenBaseUrl: customBaseUrl,
+				alibabaBaseUrl: customBaseUrl,
 			})
-			expect(handlerWithCustomUrl).toBeInstanceOf(QwenHandler)
+			expect(handlerWithCustomUrl).toBeInstanceOf(AlibabaHandler)
 		})
 	})
 
@@ -81,14 +80,14 @@ describe("QwenHandler", () => {
 			const model = handler.getModel()
 			expect(model.id).toBe(mockOptions.apiModelId)
 			expect(model.info).toBeDefined()
-			expect(model.info.maxTokens).toBe(8_192) // qwen-plus has 8K max output
+			expect(model.info.maxTokens).toBe(8_192)
 			expect(model.info.contextWindow).toBe(131_072)
 			expect(model.info.supportsImages).toBe(false)
-			expect(model.info.supportsPromptCache).toBe(false)
+			expect(model.info.supportsPromptCache).toBe(true)
 		})
 
 		it("should return correct model info for qwen-max", () => {
-			const handlerWithMax = new QwenHandler({
+			const handlerWithMax = new AlibabaHandler({
 				...mockOptions,
 				apiModelId: "qwen-max",
 			})
@@ -101,7 +100,7 @@ describe("QwenHandler", () => {
 		})
 
 		it("should return correct model info for qwen-vl-max (vision model)", () => {
-			const handlerWithVision = new QwenHandler({
+			const handlerWithVision = new AlibabaHandler({
 				...mockOptions,
 				apiModelId: "qwen-vl-max",
 			})
@@ -112,24 +111,23 @@ describe("QwenHandler", () => {
 		})
 
 		it("should return provided model ID with default model info if model does not exist", () => {
-			const handlerWithInvalidModel = new QwenHandler({
+			const handlerWithInvalidModel = new AlibabaHandler({
 				...mockOptions,
 				apiModelId: "invalid-model",
 			})
 			const model = handlerWithInvalidModel.getModel()
-			expect(model.id).toBe("invalid-model") // Returns provided ID
+			expect(model.id).toBe("invalid-model")
 			expect(model.info).toBeDefined()
-			// With the current implementation, it's the same object reference when using default model info
 			expect(model.info).toBe(handler.getModel().info)
 		})
 
 		it("should return default model if no model ID is provided", () => {
-			const handlerWithoutModel = new QwenHandler({
+			const handlerWithoutModel = new AlibabaHandler({
 				...mockOptions,
 				apiModelId: undefined,
 			})
 			const model = handlerWithoutModel.getModel()
-			expect(model.id).toBe(qwenDefaultModelId)
+			expect(model.id).toBe(alibabaDefaultModelId)
 			expect(model.info).toBeDefined()
 		})
 
@@ -155,12 +153,10 @@ describe("QwenHandler", () => {
 		]
 
 		it("should handle streaming responses", async () => {
-			// Mock the fullStream async generator
 			async function* mockFullStream() {
 				yield { type: "text-delta", text: "Test response" }
 			}
 
-			// Mock usage promise
 			const mockUsage = Promise.resolve({
 				inputTokens: 10,
 				outputTokens: 5,
@@ -195,7 +191,6 @@ describe("QwenHandler", () => {
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
-			// Consume the stream
 			for await (const _ of stream) {
 				// Just consume
 			}
@@ -288,9 +283,7 @@ describe("QwenHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// Should have text chunks
 			expect(chunks.some((c: any) => c?.type === "text")).toBe(true)
-			// Should have tool call start, delta, and end chunks
 			expect(chunks.some((c: any) => c?.type === "tool_call_start")).toBe(true)
 			expect(chunks.some((c: any) => c?.type === "tool_call_delta")).toBe(true)
 			expect(chunks.some((c: any) => c?.type === "tool_call_end")).toBe(true)
@@ -374,7 +367,7 @@ describe("QwenHandler", () => {
 
 	describe("model variants", () => {
 		it("should handle qwen-turbo model", () => {
-			const turboHandler = new QwenHandler({
+			const turboHandler = new AlibabaHandler({
 				...mockOptions,
 				apiModelId: "qwen-turbo",
 			})
@@ -385,7 +378,7 @@ describe("QwenHandler", () => {
 		})
 
 		it("should handle qwen2.5-72b-instruct model", () => {
-			const modelHandler = new QwenHandler({
+			const modelHandler = new AlibabaHandler({
 				...mockOptions,
 				apiModelId: "qwen2.5-72b-instruct",
 			})
@@ -395,7 +388,7 @@ describe("QwenHandler", () => {
 		})
 
 		it("should handle qwen2.5-14b-instruct-1m model with 1M context", () => {
-			const modelHandler = new QwenHandler({
+			const modelHandler = new AlibabaHandler({
 				...mockOptions,
 				apiModelId: "qwen2.5-14b-instruct-1m",
 			})

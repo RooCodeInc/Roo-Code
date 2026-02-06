@@ -513,7 +513,7 @@
 		"ps-tree": "^1.2.0",
 		"puppeteer-chromium-resolver": "^24.0.0",
 		"puppeteer-core": "^23.4.0",
-		"qwen-ai-provider-v5": "^2.1.0",
+		"@ai-sdk/alibaba": "^1.0.0",
 		"reconnecting-eventsource": "^1.6.4",
 		"safe-stable-stringify": "^2.5.0",
 		"sambanova-ai-provider": "^1.2.2",

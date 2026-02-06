@@ -318,8 +318,8 @@
 		"getVercelAiGatewayApiKey": "Vercel AI Gateway API-Schlüssel erhalten",
 		"doubaoApiKey": "Doubao API-Schlüssel",
 		"getDoubaoApiKey": "Doubao API-Schlüssel erhalten",
-		"qwenApiKey": "Qwen API-Schlüssel",
-		"getQwenApiKey": "Qwen API-Schlüssel erhalten",
+		"alibabaApiKey": "Alibaba API-Schlüssel",
+		"getAlibabaApiKey": "Alibaba API-Schlüssel erhalten",
 		"apiKeyStorageNotice": "API-Schlüssel werden sicher im VSCode Secret Storage gespeichert",
 		"openAiCodexRateLimits": {
 			"title": "Usage Limits for Codex{{planLabel}}",

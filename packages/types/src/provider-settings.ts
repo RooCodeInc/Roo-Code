@@ -19,7 +19,7 @@ import {
 	openAiCodexModels,
 	openAiNativeModels,
 	qwenCodeModels,
-	qwenModels,
+	alibabaModels,
 	sambaNovaModels,
 	vertexModels,
 	vscodeLlmModels,
@@ -136,7 +136,7 @@ export const providerNames = [
 	"openai-codex",
 	"openai-native",
 	"qwen-code",
-	"qwen",
+	"alibaba",
 	"roo",
 	"sambanova",
 	"vertex",
@@ -405,9 +405,9 @@ const qwenCodeSchema = apiModelIdProviderModelSchema.extend({
 	qwenCodeOauthPath: z.string().optional(),
 })
 
-const qwenSchema = apiModelIdProviderModelSchema.extend({
-	qwenApiKey: z.string().optional(),
-	qwenBaseUrl: z.string().optional(),
+const alibabaSchema = apiModelIdProviderModelSchema.extend({
+	alibabaApiKey: z.string().optional(),
+	alibabaBaseUrl: z.string().optional(),
 })
 
 const rooSchema = apiModelIdProviderModelSchema.extend({
@@ -463,7 +463,7 @@ export const providerSettingsSchemaDiscriminated = z.discriminatedUnion("apiProv
 	featherlessSchema.merge(z.object({ apiProvider: z.literal("featherless") })),
 	ioIntelligenceSchema.merge(z.object({ apiProvider: z.literal("io-intelligence") })),
 	qwenCodeSchema.merge(z.object({ apiProvider: z.literal("qwen-code") })),
-	qwenSchema.merge(z.object({ apiProvider: z.literal("qwen") })),
+	alibabaSchema.merge(z.object({ apiProvider: z.literal("alibaba") })),
 	rooSchema.merge(z.object({ apiProvider: z.literal("roo") })),
 	vercelAiGatewaySchema.merge(z.object({ apiProvider: z.literal("vercel-ai-gateway") })),
 	defaultSchema,
@@ -505,7 +505,7 @@ export const providerSettingsSchema = z.object({
 	...featherlessSchema.shape,
 	...ioIntelligenceSchema.shape,
 	...qwenCodeSchema.shape,
-	...qwenSchema.shape,
+	...alibabaSchema.shape,
 	...rooSchema.shape,
 	...vercelAiGatewaySchema.shape,
 	...codebaseIndexProviderSchema.shape,
@@ -577,7 +577,7 @@ export const modelIdKeysByProvider: Record<TypicalProvider, ModelIdKey> = {
 	deepinfra: "deepInfraModelId",
 	doubao: "apiModelId",
 	"qwen-code": "apiModelId",
-	qwen: "apiModelId",
+	alibaba: "apiModelId",
 	unbound: "unboundModelId",
 	requesty: "requestyModelId",
 	xai: "apiModelId",
@@ -701,7 +701,7 @@ export const MODELS_BY_PROVIDER: Record<
 		models: Object.keys(openAiNativeModels),
 	},
 	"qwen-code": { id: "qwen-code", label: "Qwen Code", models: Object.keys(qwenCodeModels) },
-	qwen: { id: "qwen", label: "Qwen", models: Object.keys(qwenModels) },
+	alibaba: { id: "alibaba", label: "Alibaba", models: Object.keys(alibabaModels) },
 	roo: { id: "roo", label: "Roo Code Router", models: [] },
 	sambanova: {
 		id: "sambanova",

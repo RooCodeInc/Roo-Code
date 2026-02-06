@@ -29,7 +29,7 @@ import {
 	ioIntelligenceModels,
 	basetenModels,
 	qwenCodeModels,
-	qwenModels,
+	alibabaModels,
 	litellmDefaultModelInfo,
 	lMStudioDefaultModelInfo,
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
@@ -355,9 +355,9 @@ function getSelectedModel({
 			const info = qwenCodeModels[id as keyof typeof qwenCodeModels]
 			return { id, info }
 		}
-		case "qwen": {
+		case "alibaba": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = qwenModels[id as keyof typeof qwenModels]
+			const info = alibabaModels[id as keyof typeof alibabaModels]
 			return { id, info }
 		}
 		case "openai-codex": {
