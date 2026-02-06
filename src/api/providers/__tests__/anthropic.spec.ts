@@ -1,90 +1,56 @@
 // npx vitest run src/api/providers/__tests__/anthropic.spec.ts
 
-import { AnthropicHandler } from "../anthropic"
-import { ApiHandlerOptions } from "../../../shared/api"
+const mockCaptureException = vitest.fn()
 
-// Mock TelemetryService
 vitest.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
-			captureException: vitest.fn(),
+			captureException: (...args: unknown[]) => mockCaptureException(...args),
 		},
 	},
 }))
 
-const mockCreate = vitest.fn()
+// Mock the AI SDK functions
+const mockStreamText = vitest.fn()
+const mockGenerateText = vitest.fn()
 
-vitest.mock("@anthropic-ai/sdk", () => {
-	const mockAnthropicConstructor = vitest.fn().mockImplementation(() => ({
-		messages: {
-			create: mockCreate.mockImplementation(async (options) => {
-				if (!options.stream) {
-					return {
-						id: "test-completion",
-						content: [{ type: "text", text: "Test response" }],
-						role: "assistant",
-						model: options.model,
-						usage: {
-							input_tokens: 10,
-							output_tokens: 5,
-						},
-					}
-				}
-				return {
-					async *[Symbol.asyncIterator]() {
-						yield {
-							type: "message_start",
-							message: {
-								usage: {
-									input_tokens: 100,
-									output_tokens: 50,
-									cache_creation_input_tokens: 20,
-									cache_read_input_tokens: 10,
-								},
-							},
-						}
-						yield {
-							type: "content_block_start",
-							index: 0,
-							content_block: {
-								type: "text",
-								text: "Hello",
-							},
-						}
-						yield {
-							type: "content_block_delta",
-							delta: {
-								type: "text_delta",
-								text: " world",
-							},
-						}
-					},
-				}
-			}),
-		},
-	}))
-
+vitest.mock("ai", async (importOriginal) => {
+	const original = await importOriginal<typeof import("ai")>()
 	return {
-		Anthropic: mockAnthropicConstructor,
+		...original,
+		streamText: (...args: unknown[]) => mockStreamText(...args),
+		generateText: (...args: unknown[]) => mockGenerateText(...args),
 	}
 })
 
-// Import after mock
-import { Anthropic } from "@anthropic-ai/sdk"
+// Mock createAnthropic to capture constructor options
+const mockCreateAnthropic = vitest.fn().mockReturnValue(() => ({}))
 
-const mockAnthropicConstructor = vitest.mocked(Anthropic)
+vitest.mock("@ai-sdk/anthropic", () => ({
+	createAnthropic: (...args: unknown[]) => mockCreateAnthropic(...args),
+}))
+
+import { Anthropic } from "@anthropic-ai/sdk"
+import { type ModelInfo, anthropicDefaultModelId, ApiProviderError } from "@roo-code/types"
+import { AnthropicHandler } from "../anthropic"
+import { ApiHandlerOptions } from "../../../shared/api"
 
 describe("AnthropicHandler", () => {
 	let handler: AnthropicHandler
 	let mockOptions: ApiHandlerOptions
 
 	beforeEach(() => {
+		mockCaptureException.mockClear()
+		mockStreamText.mockClear()
+		mockGenerateText.mockClear()
+		mockCreateAnthropic.mockClear()
+		mockCreateAnthropic.mockReturnValue(() => ({}))
+
 		mockOptions = {
 			apiKey: "test-api-key",
 			apiModelId: "claude-3-5-sonnet-20241022",
 		}
 		handler = new AnthropicHandler(mockOptions)
-		vitest.clearAllMocks()
 	})
 
 	describe("constructor", () => {
@@ -93,133 +59,521 @@ describe("AnthropicHandler", () => {
 			expect(handler.getModel().id).toBe(mockOptions.apiModelId)
 		})
 
+		it("should create provider with apiKey", () => {
+			mockCreateAnthropic.mockClear()
+			new AnthropicHandler(mockOptions)
+			expect(mockCreateAnthropic).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: "test-api-key",
+				}),
+			)
+		})
+
+		it("should use custom base URL if provided", () => {
+			mockCreateAnthropic.mockClear()
+			new AnthropicHandler({
+				...mockOptions,
+				anthropicBaseUrl: "https://custom.anthropic.com",
+			})
+			expect(mockCreateAnthropic).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: "https://custom.anthropic.com",
+				}),
+			)
+		})
+
+		it("should pass undefined baseURL when anthropicBaseUrl is not provided", () => {
+			mockCreateAnthropic.mockClear()
+			new AnthropicHandler(mockOptions)
+			expect(mockCreateAnthropic).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: undefined,
+				}),
+			)
+		})
+
+		it("should use Bearer auth when anthropicBaseUrl and anthropicUseAuthToken are set", () => {
+			mockCreateAnthropic.mockClear()
+			new AnthropicHandler({
+				...mockOptions,
+				anthropicBaseUrl: "https://custom.anthropic.com",
+				anthropicUseAuthToken: true,
+			})
+			expect(mockCreateAnthropic).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: "",
+					headers: expect.objectContaining({
+						Authorization: "Bearer test-api-key",
+					}),
+				}),
+			)
+		})
+
+		it("should use apiKey auth when anthropicUseAuthToken is set but no base URL", () => {
+			mockCreateAnthropic.mockClear()
+			new AnthropicHandler({
+				...mockOptions,
+				anthropicUseAuthToken: true,
+			})
+			expect(mockCreateAnthropic).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: "test-api-key",
+				}),
+			)
+			// Should not have Authorization header
+			const calledHeaders = mockCreateAnthropic.mock.calls[0][0].headers
+			expect(calledHeaders.Authorization).toBeUndefined()
+		})
+
 		it("should initialize with undefined API key", () => {
-			// The SDK will handle API key validation, so we just verify it initializes
 			const handlerWithoutKey = new AnthropicHandler({
 				...mockOptions,
 				apiKey: undefined,
 			})
 			expect(handlerWithoutKey).toBeInstanceOf(AnthropicHandler)
 		})
-
-		it("should use custom base URL if provided", () => {
-			const customBaseUrl = "https://custom.anthropic.com"
-			const handlerWithCustomUrl = new AnthropicHandler({
-				...mockOptions,
-				anthropicBaseUrl: customBaseUrl,
-			})
-			expect(handlerWithCustomUrl).toBeInstanceOf(AnthropicHandler)
-		})
-
-		it("use apiKey for passing token if anthropicUseAuthToken is not set", () => {
-			const handlerWithCustomUrl = new AnthropicHandler({
-				...mockOptions,
-			})
-			expect(handlerWithCustomUrl).toBeInstanceOf(AnthropicHandler)
-			expect(mockAnthropicConstructor).toHaveBeenCalledTimes(1)
-			expect(mockAnthropicConstructor.mock.calls[0]![0]!.apiKey).toEqual("test-api-key")
-			expect(mockAnthropicConstructor.mock.calls[0]![0]!.authToken).toBeUndefined()
-		})
-
-		it("use apiKey for passing token if anthropicUseAuthToken is set but custom base URL is not given", () => {
-			const handlerWithCustomUrl = new AnthropicHandler({
-				...mockOptions,
-				anthropicUseAuthToken: true,
-			})
-			expect(handlerWithCustomUrl).toBeInstanceOf(AnthropicHandler)
-			expect(mockAnthropicConstructor).toHaveBeenCalledTimes(1)
-			expect(mockAnthropicConstructor.mock.calls[0]![0]!.apiKey).toEqual("test-api-key")
-			expect(mockAnthropicConstructor.mock.calls[0]![0]!.authToken).toBeUndefined()
-		})
-
-		it("use authToken for passing token if both of anthropicBaseUrl and anthropicUseAuthToken are set", () => {
-			const customBaseUrl = "https://custom.anthropic.com"
-			const handlerWithCustomUrl = new AnthropicHandler({
-				...mockOptions,
-				anthropicBaseUrl: customBaseUrl,
-				anthropicUseAuthToken: true,
-			})
-			expect(handlerWithCustomUrl).toBeInstanceOf(AnthropicHandler)
-			expect(mockAnthropicConstructor).toHaveBeenCalledTimes(1)
-			expect(mockAnthropicConstructor.mock.calls[0]![0]!.authToken).toEqual("test-api-key")
-			expect(mockAnthropicConstructor.mock.calls[0]![0]!.apiKey).toBeUndefined()
-		})
 	})
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
+		const mockMessages: Anthropic.Messages.MessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text" as const, text: "First message" }],
+			},
+			{
+				role: "assistant",
+				content: [{ type: "text" as const, text: "Response" }],
+			},
+			{
+				role: "user",
+				content: [{ type: "text" as const, text: "Second message" }],
+			},
+		]
 
-		it("should handle prompt caching for supported models", async () => {
-			const stream = handler.createMessage(systemPrompt, [
-				{
-					role: "user",
-					content: [{ type: "text" as const, text: "First message" }],
-				},
-				{
-					role: "assistant",
-					content: [{ type: "text" as const, text: "Response" }],
-				},
-				{
-					role: "user",
-					content: [{ type: "text" as const, text: "Second message" }],
-				},
-			])
+		it("should handle text messages correctly", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "Hello" }
+				yield { type: "text-delta", text: " world!" }
+			})()
 
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([]),
+				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
 			const chunks: any[] = []
+
 			for await (const chunk of stream) {
 				chunks.push(chunk)
 			}
 
-			// Verify usage information
-			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk?.inputTokens).toBe(100)
-			expect(usageChunk?.outputTokens).toBe(50)
-			expect(usageChunk?.cacheWriteTokens).toBe(20)
-			expect(usageChunk?.cacheReadTokens).toBe(10)
-
-			// Verify text content
-			const textChunks = chunks.filter((chunk) => chunk.type === "text")
+			// Should have text chunks + usage
+			const textChunks = chunks.filter((c) => c.type === "text")
 			expect(textChunks).toHaveLength(2)
-			expect(textChunks[0].text).toBe("Hello")
-			expect(textChunks[1].text).toBe(" world")
+			expect(textChunks[0]).toEqual({ type: "text", text: "Hello" })
+			expect(textChunks[1]).toEqual({ type: "text", text: " world!" })
 
-			// Verify API
-			expect(mockCreate).toHaveBeenCalled()
+			// Should have usage chunk
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks.length).toBeGreaterThan(0)
+			expect(usageChunks[0]).toMatchObject({
+				type: "usage",
+				inputTokens: 100,
+				outputTokens: 50,
+			})
+
+			// Verify streamText was called
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					temperature: 0,
+				}),
+			)
+		})
+
+		it("should pass beta headers", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "Hi" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([]),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"anthropic-beta": expect.stringContaining("fine-grained-tool-streaming-2025-05-14"),
+					}),
+				}),
+			)
+		})
+
+		it("should include prompt-caching beta for supported models", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "Hi" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([]),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"anthropic-beta": expect.stringContaining("prompt-caching-2024-07-31"),
+					}),
+				}),
+			)
+		})
+
+		it("should use system array with cache control for cache-supported models", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "Hi" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([]),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			// For cache-supported models, system should be an array with providerOptions
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(Array.isArray(callArgs.system)).toBe(true)
+			expect(callArgs.system[0]).toEqual({
+				type: "text",
+				text: systemPrompt,
+				providerOptions: { anthropic: { cacheControl: { type: "ephemeral" } } },
+			})
+		})
+
+		it("should handle API errors", async () => {
+			const mockError = new Error("Anthropic API error")
+			// eslint-disable-next-line require-yield
+			const mockFullStream = (async function* () {
+				throw mockError
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([]),
+				usage: Promise.resolve({}),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// Should throw
+				}
+			}).rejects.toThrow("Anthropic API error")
+
+			// Should capture telemetry
+			expect(mockCaptureException).toHaveBeenCalled()
+		})
+
+		it("should handle reasoning stream parts", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "reasoning-delta", text: "Let me think..." }
+				yield { type: "text-delta", text: "The answer is 42." }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([{ type: "text", text: "Let me think...", signature: "sig123" }]),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks: any[] = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(1)
+			expect(reasoningChunks[0]).toEqual({ type: "reasoning", text: "Let me think..." })
+
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0]).toEqual({ type: "text", text: "The answer is 42." })
+		})
+
+		it("should capture thought signature from reasoning", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "reasoning-delta", text: "Thinking..." }
+				yield { type: "text-delta", text: "Answer" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([{ type: "text", text: "Thinking...", signature: "thought-sig-abc" }]),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			expect(handler.getThoughtSignature()).toBe("thought-sig-abc")
+		})
+
+		it("should capture redacted thinking blocks from reasoning", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "Answer" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([
+					{ type: "text", text: "Thinking...", signature: "sig1" },
+					{ type: "redacted", data: "base64redacteddata" },
+				]),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const redacted = handler.getRedactedThinkingBlocks()
+			expect(redacted).toEqual([{ type: "redacted_thinking", data: "base64redacteddata" }])
+		})
+
+		it("should handle usage with cache tokens from provider metadata", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "Hi" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([]),
+				usage: Promise.resolve({
+					inputTokens: 100,
+					outputTokens: 50,
+					details: { cachedInputTokens: 30 },
+				}),
+				providerMetadata: Promise.resolve({
+					anthropic: { cacheCreationInputTokens: 20 },
+				}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks: any[] = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toMatchObject({
+				type: "usage",
+				inputTokens: 100,
+				outputTokens: 50,
+				cacheReadTokens: 30,
+				cacheWriteTokens: 20,
+			})
+			expect(usageChunk.totalCost).toBeDefined()
+		})
+
+		it("should pass tools to streamText", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "Hi" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([]),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const mockTools = [
+				{
+					type: "function" as const,
+					function: {
+						name: "get_weather",
+						description: "Get the current weather",
+						parameters: {
+							type: "object",
+							properties: { location: { type: "string" } },
+							required: ["location"],
+						},
+					},
+				},
+			]
+
+			const stream = handler.createMessage(systemPrompt, mockMessages, {
+				taskId: "test-task",
+				tools: mockTools,
+			})
+
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					tools: expect.objectContaining({
+						get_weather: expect.any(Object),
+					}),
+				}),
+			)
+		})
+
+		it("should handle tool call stream parts", async () => {
+			const mockFullStream = (async function* () {
+				yield { type: "tool-input-start", id: "toolu_123", toolName: "get_weather" }
+				yield { type: "tool-input-delta", id: "toolu_123", delta: '{"location":' }
+				yield { type: "tool-input-delta", id: "toolu_123", delta: '"London"}' }
+				yield { type: "tool-input-end", id: "toolu_123" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				reasoning: Promise.resolve([]),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks: any[] = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const startChunk = chunks.find((c) => c.type === "tool_call_start")
+			expect(startChunk).toEqual({
+				type: "tool_call_start",
+				id: "toolu_123",
+				name: "get_weather",
+			})
+
+			const deltaChunks = chunks.filter((c) => c.type === "tool_call_delta")
+			expect(deltaChunks).toHaveLength(2)
+			expect(deltaChunks[0]).toEqual({
+				type: "tool_call_delta",
+				id: "toolu_123",
+				delta: '{"location":',
+			})
+
+			const endChunk = chunks.find((c) => c.type === "tool_call_end")
+			expect(endChunk).toEqual({
+				type: "tool_call_end",
+				id: "toolu_123",
+			})
+		})
+
+		it("should reset reasoning state on each call", async () => {
+			// First call with signature
+			const mockFullStream1 = (async function* () {
+				yield { type: "text-delta", text: "First" }
+			})()
+
+			mockStreamText.mockReturnValueOnce({
+				fullStream: mockFullStream1,
+				reasoning: Promise.resolve([{ type: "text", text: "Think", signature: "sig1" }]),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream1 = handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream1) {
+				// consume
+			}
+			expect(handler.getThoughtSignature()).toBe("sig1")
+
+			// Second call without signature
+			const mockFullStream2 = (async function* () {
+				yield { type: "text-delta", text: "Second" }
+			})()
+
+			mockStreamText.mockReturnValueOnce({
+				fullStream: mockFullStream2,
+				reasoning: Promise.resolve([]),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream2 = handler.createMessage(systemPrompt, mockMessages)
+			for await (const _chunk of stream2) {
+				// consume
+			}
+			expect(handler.getThoughtSignature()).toBeUndefined()
+			expect(handler.getRedactedThinkingBlocks()).toBeUndefined()
 		})
 	})
 
 	describe("completePrompt", () => {
 		it("should complete prompt successfully", async () => {
+			mockGenerateText.mockResolvedValue({
+				text: "Test response",
+			})
+
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.apiModelId,
-				messages: [{ role: "user", content: "Test prompt" }],
-				max_tokens: 8192,
-				temperature: 0,
-				thinking: undefined,
-				stream: false,
-			})
+
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					prompt: "Test prompt",
+					temperature: 0,
+				}),
+			)
 		})
 
 		it("should handle API errors", async () => {
-			mockCreate.mockRejectedValueOnce(new Error("Anthropic completion error: API Error"))
+			const mockError = new Error("Anthropic completion error: API Error")
+			mockGenerateText.mockRejectedValue(mockError)
 			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("Anthropic completion error: API Error")
+			expect(mockCaptureException).toHaveBeenCalled()
 		})
 
-		it("should handle non-text content", async () => {
-			mockCreate.mockImplementationOnce(async () => ({
-				content: [{ type: "image" }],
-			}))
+		it("should handle empty response", async () => {
+			mockGenerateText.mockResolvedValue({
+				text: "",
+			})
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("")
 		})
 
-		it("should handle empty response", async () => {
-			mockCreate.mockImplementationOnce(async () => ({
-				content: [{ type: "text", text: "" }],
-			}))
+		it("should handle undefined text", async () => {
+			mockGenerateText.mockResolvedValue({
+				text: undefined,
+			})
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("")
 		})
@@ -297,449 +651,33 @@ describe("AnthropicHandler", () => {
 			expect(model.info.inputPrice).toBe(6.0)
 			expect(model.info.outputPrice).toBe(22.5)
 		})
-	})
 
-	describe("reasoning block filtering", () => {
-		const systemPrompt = "You are a helpful assistant."
-
-		it("should filter out internal reasoning blocks before sending to API", async () => {
-			handler = new AnthropicHandler({
+		it("should strip :thinking suffix from model ID", () => {
+			const handler = new AnthropicHandler({
 				apiKey: "test-api-key",
-				apiModelId: "claude-3-5-sonnet-20241022",
+				apiModelId: "claude-3-7-sonnet-20250219:thinking",
 			})
-
-			// Messages with internal reasoning blocks (from stored conversation history)
-			const messagesWithReasoning: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello",
-				},
-				{
-					role: "assistant",
-					content: [
-						{
-							type: "reasoning" as any,
-							text: "This is internal reasoning that should be filtered",
-						},
-						{
-							type: "text",
-							text: "This is the response",
-						},
-					],
-				},
-				{
-					role: "user",
-					content: "Continue",
-				},
-			]
-
-			const stream = handler.createMessage(systemPrompt, messagesWithReasoning)
-			const chunks: any[] = []
-
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Verify the API was called with filtered messages (no reasoning blocks)
-			const calledMessages = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0].messages
-			expect(calledMessages).toHaveLength(3)
-
-			// Check assistant message - should have reasoning block filtered out
-			const assistantMessage = calledMessages.find((m: any) => m.role === "assistant")
-			expect(assistantMessage).toBeDefined()
-			expect(assistantMessage.content).toEqual([{ type: "text", text: "This is the response" }])
-
-			// Verify reasoning blocks were NOT sent to the API
-			expect(assistantMessage.content).not.toContainEqual(expect.objectContaining({ type: "reasoning" }))
-		})
-
-		it("should filter empty messages after removing all reasoning blocks", async () => {
-			handler = new AnthropicHandler({
-				apiKey: "test-api-key",
-				apiModelId: "claude-3-5-sonnet-20241022",
-			})
-
-			// Message with only reasoning content (should be completely filtered)
-			const messagesWithOnlyReasoning: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello",
-				},
-				{
-					role: "assistant",
-					content: [
-						{
-							type: "reasoning" as any,
-							text: "Only reasoning, no actual text",
-						},
-					],
-				},
-				{
-					role: "user",
-					content: "Continue",
-				},
-			]
-
-			const stream = handler.createMessage(systemPrompt, messagesWithOnlyReasoning)
-			const chunks: any[] = []
-
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Verify empty message was filtered out
-			const calledMessages = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0].messages
-			expect(calledMessages.length).toBe(2) // Only the two user messages
-			expect(calledMessages.every((m: any) => m.role === "user")).toBe(true)
+			const model = handler.getModel()
+			expect(model.id).toBe("claude-3-7-sonnet-20250219")
+			expect(model.betas).toContain("output-128k-2025-02-19")
 		})
 	})
 
-	describe("native tool calling", () => {
-		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
-			{
-				role: "user",
-				content: [{ type: "text" as const, text: "What's the weather in London?" }],
-			},
-		]
-
-		const mockTools = [
-			{
-				type: "function" as const,
-				function: {
-					name: "get_weather",
-					description: "Get the current weather",
-					parameters: {
-						type: "object",
-						properties: {
-							location: { type: "string" },
-						},
-						required: ["location"],
-					},
-				},
-			},
-		]
-
-		it("should include tools in request when tools are provided", async () => {
-			const stream = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				tools: mockTools,
-			})
-
-			// Consume the stream to trigger the API call
-			for await (const _chunk of stream) {
-				// Just consume
-			}
-
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.arrayContaining([
-						expect.objectContaining({
-							name: "get_weather",
-							description: "Get the current weather",
-							input_schema: expect.objectContaining({
-								type: "object",
-								properties: expect.objectContaining({
-									location: { type: "string" },
-								}),
-							}),
-						}),
-					]),
-				}),
-				expect.anything(),
-			)
+	describe("isAiSdkProvider", () => {
+		it("should return true", () => {
+			expect(handler.isAiSdkProvider()).toBe(true)
 		})
+	})
 
-		it("should include tools when tools are provided", async () => {
-			const xmlHandler = new AnthropicHandler({
-				...mockOptions,
-			})
-
-			const stream = xmlHandler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				tools: mockTools,
-			})
-
-			// Consume the stream to trigger the API call
-			for await (const _chunk of stream) {
-				// Just consume
-			}
-
-			// Tool calling is request-driven: if tools are provided, we should include them.
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.arrayContaining([
-						expect.objectContaining({
-							name: "get_weather",
-						}),
-					]),
-				}),
-				expect.anything(),
-			)
+	describe("getThoughtSignature", () => {
+		it("should return undefined before any call", () => {
+			expect(handler.getThoughtSignature()).toBeUndefined()
 		})
+	})
 
-		it("should always include tools in request (tools are always present after PR #10841)", async () => {
-			// Handler uses native protocol by default
-			const stream = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-			})
-
-			// Consume the stream to trigger the API call
-			for await (const _chunk of stream) {
-				// Just consume
-			}
-
-			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.any(Array),
-					tool_choice: expect.any(Object),
-				}),
-				expect.anything(),
-			)
-		})
-
-		it("should convert tool_choice 'auto' to Anthropic format", async () => {
-			// Handler uses native protocol by default
-			const stream = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				tools: mockTools,
-				tool_choice: "auto",
-			})
-
-			// Consume the stream to trigger the API call
-			for await (const _chunk of stream) {
-				// Just consume
-			}
-
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tool_choice: { type: "auto", disable_parallel_tool_use: false },
-				}),
-				expect.anything(),
-			)
-		})
-
-		it("should convert tool_choice 'required' to Anthropic 'any' format", async () => {
-			// Handler uses native protocol by default
-			const stream = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				tools: mockTools,
-				tool_choice: "required",
-			})
-
-			// Consume the stream to trigger the API call
-			for await (const _chunk of stream) {
-				// Just consume
-			}
-
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tool_choice: { type: "any", disable_parallel_tool_use: false },
-				}),
-				expect.anything(),
-			)
-		})
-
-		it("should set tool_choice to undefined when tool_choice is 'none' (tools are still passed)", async () => {
-			// Handler uses native protocol by default
-			const stream = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				tools: mockTools,
-				tool_choice: "none",
-			})
-
-			// Consume the stream to trigger the API call
-			for await (const _chunk of stream) {
-				// Just consume
-			}
-
-			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
-			// When tool_choice is 'none', the converter returns undefined for tool_choice
-			// but tools are still passed since they're always present
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.any(Array),
-					tool_choice: undefined,
-				}),
-				expect.anything(),
-			)
-		})
-
-		it("should convert specific tool_choice to Anthropic 'tool' format", async () => {
-			// Handler uses native protocol by default
-			const stream = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				tools: mockTools,
-				tool_choice: { type: "function" as const, function: { name: "get_weather" } },
-			})
-
-			// Consume the stream to trigger the API call
-			for await (const _chunk of stream) {
-				// Just consume
-			}
-
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tool_choice: { type: "tool", name: "get_weather", disable_parallel_tool_use: false },
-				}),
-				expect.anything(),
-			)
-		})
-
-		it("should enable parallel tool calls when parallelToolCalls is true", async () => {
-			// Handler uses native protocol by default
-			const stream = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				tools: mockTools,
-				tool_choice: "auto",
-				parallelToolCalls: true,
-			})
-
-			// Consume the stream to trigger the API call
-			for await (const _chunk of stream) {
-				// Just consume
-			}
-
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tool_choice: { type: "auto", disable_parallel_tool_use: false },
-				}),
-				expect.anything(),
-			)
-		})
-
-		it("should handle tool_use blocks in stream and emit tool_call_partial", async () => {
-			mockCreate.mockImplementationOnce(async () => ({
-				async *[Symbol.asyncIterator]() {
-					yield {
-						type: "message_start",
-						message: {
-							usage: {
-								input_tokens: 100,
-								output_tokens: 50,
-							},
-						},
-					}
-					yield {
-						type: "content_block_start",
-						index: 0,
-						content_block: {
-							type: "tool_use",
-							id: "toolu_123",
-							name: "get_weather",
-						},
-					}
-				},
-			}))
-
-			// Handler uses native protocol by default
-			const stream = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				tools: mockTools,
-			})
-
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Find the tool_call_partial chunk
-			const toolCallChunk = chunks.find((chunk) => chunk.type === "tool_call_partial")
-			expect(toolCallChunk).toBeDefined()
-			expect(toolCallChunk).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: "toolu_123",
-				name: "get_weather",
-				arguments: undefined,
-			})
-		})
-
-		it("should handle input_json_delta in stream and emit tool_call_partial arguments", async () => {
-			mockCreate.mockImplementationOnce(async () => ({
-				async *[Symbol.asyncIterator]() {
-					yield {
-						type: "message_start",
-						message: {
-							usage: {
-								input_tokens: 100,
-								output_tokens: 50,
-							},
-						},
-					}
-					yield {
-						type: "content_block_start",
-						index: 0,
-						content_block: {
-							type: "tool_use",
-							id: "toolu_123",
-							name: "get_weather",
-						},
-					}
-					yield {
-						type: "content_block_delta",
-						index: 0,
-						delta: {
-							type: "input_json_delta",
-							partial_json: '{"location":',
-						},
-					}
-					yield {
-						type: "content_block_delta",
-						index: 0,
-						delta: {
-							type: "input_json_delta",
-							partial_json: '"London"}',
-						},
-					}
-					yield {
-						type: "content_block_stop",
-						index: 0,
-					}
-				},
-			}))
-
-			// Handler uses native protocol by default
-			const stream = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				tools: mockTools,
-			})
-
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Find the tool_call_partial chunks
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-			expect(toolCallChunks).toHaveLength(3)
-
-			// First chunk has id and name
-			expect(toolCallChunks[0]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: "toolu_123",
-				name: "get_weather",
-				arguments: undefined,
-			})
-
-			// Subsequent chunks have arguments
-			expect(toolCallChunks[1]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: undefined,
-				name: undefined,
-				arguments: '{"location":',
-			})
-
-			expect(toolCallChunks[2]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: undefined,
-				name: undefined,
-				arguments: '"London"}',
-			})
+	describe("getRedactedThinkingBlocks", () => {
+		it("should return undefined before any call", () => {
+			expect(handler.getRedactedThinkingBlocks()).toBeUndefined()
 		})
 	})
 })

@@ -746,6 +746,9 @@ importers:
 
   src:
     dependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^3.0.37
+        version: 3.0.37(zod@3.25.76)
       '@ai-sdk/cerebras':
         specifier: ^1.0.0
         version: 1.0.35(zod@3.25.76)
@@ -1419,6 +1422,12 @@ packages:
 
   '@ai-sdk/anthropic@2.0.58':
     resolution: {integrity: sha512-CkNW5L1Arv8gPtPlEmKd+yf/SG9ucJf0XQdpMG8OiYEtEMc2smuCA+tyCp8zI7IBVg/FE7nUfFHntQFaOjRwJQ==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: 3.25.76
+
+  '@ai-sdk/anthropic@3.0.37':
+    resolution: {integrity: sha512-tEgcJPw+a6obbF+SHrEiZsx3DNxOHqeY8bK4IpiNsZ8YPZD141R34g3lEAaQnmNN5mGsEJ8SXoEDabuzi8wFJQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: 3.25.76
@@ -11134,6 +11143,12 @@ snapshots:
     dependencies:
       '@ai-sdk/provider': 2.0.1
       '@ai-sdk/provider-utils': 3.0.20(zod@3.25.76)
+      zod: 3.25.76
+
+  '@ai-sdk/anthropic@3.0.37(zod@3.25.76)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.7
+      '@ai-sdk/provider-utils': 4.0.13(zod@3.25.76)
       zod: 3.25.76
 
   '@ai-sdk/cerebras@1.0.35(zod@3.25.76)':
