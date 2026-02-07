@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import { clineMessageSchema, queuedMessageSchema, tokenUsageSchema } from "./message.js"
+import { modelInfoSchema } from "./model.js"
 import { toolNamesSchema, toolUsageSchema } from "./tool.js"
 
 /**
@@ -44,6 +45,11 @@ export enum RooCodeEventName {
 	// Configuration Changes
 	ModeChanged = "modeChanged",
 	ProviderProfileChanged = "providerProfileChanged",
+
+	// Query Responses
+	CommandsResponse = "commandsResponse",
+	ModesResponse = "modesResponse",
+	ModelsResponse = "modelsResponse",
 
 	// Evals
 	EvalPass = "evalPass",
@@ -108,6 +114,20 @@ export const rooCodeEventsSchema = z.object({
 
 	[RooCodeEventName.ModeChanged]: z.tuple([z.string()]),
 	[RooCodeEventName.ProviderProfileChanged]: z.tuple([z.object({ name: z.string(), provider: z.string() })]),
+
+	[RooCodeEventName.CommandsResponse]: z.tuple([
+		z.array(
+			z.object({
+				name: z.string(),
+				source: z.enum(["global", "project", "built-in"]),
+				filePath: z.string().optional(),
+				description: z.string().optional(),
+				argumentHint: z.string().optional(),
+			}),
+		),
+	]),
+	[RooCodeEventName.ModesResponse]: z.tuple([z.array(z.object({ slug: z.string(), name: z.string() }))]),
+	[RooCodeEventName.ModelsResponse]: z.tuple([z.record(z.string(), modelInfoSchema)]),
 })
 
 export type RooCodeEvents = z.infer<typeof rooCodeEventsSchema>
@@ -234,6 +254,23 @@ export const taskEventSchema = z.discriminatedUnion("eventName", [
 	z.object({
 		eventName: z.literal(RooCodeEventName.TaskTokenUsageUpdated),
 		payload: rooCodeEventsSchema.shape[RooCodeEventName.TaskTokenUsageUpdated],
+		taskId: z.number().optional(),
+	}),
+
+	// Query Responses
+	z.object({
+		eventName: z.literal(RooCodeEventName.CommandsResponse),
+		payload: rooCodeEventsSchema.shape[RooCodeEventName.CommandsResponse],
+		taskId: z.number().optional(),
+	}),
+	z.object({
+		eventName: z.literal(RooCodeEventName.ModesResponse),
+		payload: rooCodeEventsSchema.shape[RooCodeEventName.ModesResponse],
+		taskId: z.number().optional(),
+	}),
+	z.object({
+		eventName: z.literal(RooCodeEventName.ModelsResponse),
+		payload: rooCodeEventsSchema.shape[RooCodeEventName.ModelsResponse],
 		taskId: z.number().optional(),
 	}),
 
