@@ -270,7 +270,13 @@ describe("Task persistence", () => {
 		})
 
 		it("returns false on failure", async () => {
-			mockSaveApiMessages.mockRejectedValueOnce(new Error("disk full"))
+			vi.useFakeTimers()
+
+			// All 3 retry attempts must fail for retrySaveApiConversationHistory to return false
+			mockSaveApiMessages
+				.mockRejectedValueOnce(new Error("fail 1"))
+				.mockRejectedValueOnce(new Error("fail 2"))
+				.mockRejectedValueOnce(new Error("fail 3"))
 
 			const task = new Task({
 				provider: mockProvider,
@@ -279,8 +285,36 @@ describe("Task persistence", () => {
 				startTask: false,
 			})
 
-			const result = await task.retrySaveApiConversationHistory()
+			const promise = task.retrySaveApiConversationHistory()
+			await vi.runAllTimersAsync()
+			const result = await promise
+
 			expect(result).toBe(false)
+			expect(mockSaveApiMessages).toHaveBeenCalledTimes(3)
+
+			vi.useRealTimers()
+		})
+
+		it("succeeds on 2nd retry attempt", async () => {
+			vi.useFakeTimers()
+
+			mockSaveApiMessages.mockRejectedValueOnce(new Error("fail 1")).mockResolvedValueOnce(undefined) // succeeds on 2nd try
+
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			const promise = task.retrySaveApiConversationHistory()
+			await vi.runAllTimersAsync()
+			const result = await promise
+
+			expect(result).toBe(true)
+			expect(mockSaveApiMessages).toHaveBeenCalledTimes(2)
+
+			vi.useRealTimers()
 		})
 
 		it("snapshots the array before passing to saveApiMessages", async () => {

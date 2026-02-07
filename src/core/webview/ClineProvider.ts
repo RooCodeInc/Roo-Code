@@ -3201,6 +3201,9 @@ export class ClineProvider
 					console.error(
 						`[delegateParentAndOpenChild] CRITICAL: Parent ${parentTaskId} API history not persisted to disk. Child return may produce stale state.`,
 					)
+					vscode.window.showWarningMessage(
+						"Warning: Parent task state could not be saved. The parent task may lose recent context when resumed.",
+					)
 				}
 			}
 		} catch (error) {

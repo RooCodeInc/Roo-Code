@@ -51,4 +51,36 @@ describe("apiMessages.readApiMessages", () => {
 			.catch(() => false)
 		expect(stillExists).toBe(true)
 	})
+
+	it("returns [] when file contains valid JSON that is not an array", async () => {
+		const taskId = "task-non-array-api"
+		const taskDir = path.join(tmpBaseDir, "tasks", taskId)
+		await fs.mkdir(taskDir, { recursive: true })
+		const filePath = path.join(taskDir, "api_conversation_history.json")
+		await fs.writeFile(filePath, JSON.stringify("hello"), "utf8")
+
+		const result = await readApiMessages({
+			taskId,
+			globalStoragePath: tmpBaseDir,
+		})
+
+		expect(result).toEqual([])
+	})
+
+	it("returns [] when fallback file contains valid JSON that is not an array", async () => {
+		const taskId = "task-non-array-fallback"
+		const taskDir = path.join(tmpBaseDir, "tasks", taskId)
+		await fs.mkdir(taskDir, { recursive: true })
+
+		// Only write the old fallback file, NOT the new one
+		const oldPath = path.join(taskDir, "claude_messages.json")
+		await fs.writeFile(oldPath, JSON.stringify({ key: "value" }), "utf8")
+
+		const result = await readApiMessages({
+			taskId,
+			globalStoragePath: tmpBaseDir,
+		})
+
+		expect(result).toEqual([])
+	})
 })

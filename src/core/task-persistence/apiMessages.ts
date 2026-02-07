@@ -51,7 +51,13 @@ export async function readApiMessages({
 		const fileContent = await fs.readFile(filePath, "utf8")
 		try {
 			const parsedData = JSON.parse(fileContent)
-			if (Array.isArray(parsedData) && parsedData.length === 0) {
+			if (!Array.isArray(parsedData)) {
+				console.warn(
+					`[readApiMessages] Parsed data is not an array (got ${typeof parsedData}), returning empty. TaskId: ${taskId}, Path: ${filePath}`,
+				)
+				return []
+			}
+			if (parsedData.length === 0) {
 				console.error(
 					`[Roo-Debug] readApiMessages: Found API conversation history file, but it's empty (parsed as []). TaskId: ${taskId}, Path: ${filePath}`,
 				)
@@ -70,7 +76,13 @@ export async function readApiMessages({
 			const fileContent = await fs.readFile(oldPath, "utf8")
 			try {
 				const parsedData = JSON.parse(fileContent)
-				if (Array.isArray(parsedData) && parsedData.length === 0) {
+				if (!Array.isArray(parsedData)) {
+					console.warn(
+						`[readApiMessages] Parsed OLD data is not an array (got ${typeof parsedData}), returning empty. TaskId: ${taskId}, Path: ${oldPath}`,
+					)
+					return []
+				}
+				if (parsedData.length === 0) {
 					console.error(
 						`[Roo-Debug] readApiMessages: Found OLD API conversation history file (claude_messages.json), but it's empty (parsed as []). TaskId: ${taskId}, Path: ${oldPath}`,
 					)

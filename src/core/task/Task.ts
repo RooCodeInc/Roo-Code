@@ -1270,7 +1270,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private async saveApiConversationHistory(): Promise<boolean> {
 		try {
 			await saveApiMessages({
-				messages: [...this.apiConversationHistory],
+				messages: structuredClone(this.apiConversationHistory),
 				taskId: this.taskId,
 				globalStoragePath: this.globalStoragePath,
 			})
@@ -1283,10 +1283,26 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	/**
 	 * Public wrapper to retry saving the API conversation history.
+	 * Uses exponential backoff: up to 3 attempts with delays of 100 ms, 500 ms, 1500 ms.
 	 * Used by delegation flow when flushPendingToolResultsToHistory reports failure.
 	 */
 	public async retrySaveApiConversationHistory(): Promise<boolean> {
-		return this.saveApiConversationHistory()
+		const delays = [100, 500, 1500]
+
+		for (let attempt = 0; attempt < delays.length; attempt++) {
+			await new Promise<void>((resolve) => setTimeout(resolve, delays[attempt]))
+			console.warn(
+				`[Task#${this.taskId}] retrySaveApiConversationHistory: retry attempt ${attempt + 1}/${delays.length}`,
+			)
+
+			const success = await this.saveApiConversationHistory()
+
+			if (success) {
+				return true
+			}
+		}
+
+		return false
 	}
 
 	// Cline Messages
@@ -1353,7 +1369,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	private async saveClineMessages(): Promise<boolean> {
 		try {
 			await saveTaskMessages({
-				messages: [...this.clineMessages],
+				messages: structuredClone(this.clineMessages),
 				taskId: this.taskId,
 				globalStoragePath: this.globalStoragePath,
 			})

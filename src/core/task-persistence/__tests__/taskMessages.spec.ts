@@ -83,4 +83,19 @@ describe("taskMessages.readTaskMessages", () => {
 
 		expect(result).toEqual([])
 	})
+
+	it("returns [] when file contains valid JSON that is not an array", async () => {
+		const taskId = "task-non-array-json"
+		const taskDir = path.join(tmpBaseDir, "tasks", taskId)
+		await fs.mkdir(taskDir, { recursive: true })
+		const filePath = path.join(taskDir, "ui_messages.json")
+		await fs.writeFile(filePath, JSON.stringify("hello"), "utf8")
+
+		const result = await readTaskMessages({
+			taskId,
+			globalStoragePath: tmpBaseDir,
+		})
+
+		expect(result).toEqual([])
+	})
 })
