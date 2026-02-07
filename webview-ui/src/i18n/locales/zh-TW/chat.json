@@ -74,6 +74,22 @@
 			"title": "全部拒絕"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "全部核准"
+		},
+		"deny": {
+			"title": "全部拒絕"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "全部儲存"
+		},
+		"deny": {
+			"title": "全部拒絕"
+		}
+	},
 	"runCommand": {
 		"title": "執行",
 		"tooltip": "執行此命令"

@@ -441,6 +441,22 @@
 			"title": "Từ chối tất cả"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Chấp nhận tất cả"
+		},
+		"deny": {
+			"title": "Từ chối tất cả"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Lưu tất cả"
+		},
+		"deny": {
+			"title": "Từ chối tất cả"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Chỉ mục sẵn sàng",
 		"indexing": "Đang lập chỉ mục {{percentage}}%",

@@ -440,6 +440,22 @@
 			"title": "すべて拒否"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "すべて承認"
+		},
+		"deny": {
+			"title": "すべて拒否"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "すべて保存"
+		},
+		"deny": {
+			"title": "すべて拒否"
+		}
+	},
 	"indexingStatus": {
 		"ready": "インデックス準備完了",
 		"indexing": "インデックス作成中 {{percentage}}%",

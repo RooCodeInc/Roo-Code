@@ -440,6 +440,22 @@
 			"title": "Denegar todo"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Aprobar todo"
+		},
+		"deny": {
+			"title": "Denegar todo"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Guardar todo"
+		},
+		"deny": {
+			"title": "Denegar todo"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Índice listo",
 		"indexing": "Indexando {{percentage}}%",

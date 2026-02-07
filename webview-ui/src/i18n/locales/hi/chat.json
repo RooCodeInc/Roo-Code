@@ -440,6 +440,22 @@
 			"title": "सभी अस्वीकार करें"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "सभी स्वीकृत करें"
+		},
+		"deny": {
+			"title": "सभी अस्वीकार करें"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "सभी सहेजें"
+		},
+		"deny": {
+			"title": "सभी अस्वीकार करें"
+		}
+	},
 	"indexingStatus": {
 		"ready": "इंडेक्स तैयार",
 		"indexing": "इंडेक्सिंग {{percentage}}%",

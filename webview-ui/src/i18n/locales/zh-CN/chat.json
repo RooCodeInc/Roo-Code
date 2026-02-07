@@ -441,6 +441,22 @@
 			"title": "全部拒绝"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "全部批准"
+		},
+		"deny": {
+			"title": "全部拒绝"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "全部保存"
+		},
+		"deny": {
+			"title": "全部拒绝"
+		}
+	},
 	"indexingStatus": {
 		"ready": "索引就绪",
 		"indexing": "索引中 {{percentage}}%",

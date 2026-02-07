@@ -440,6 +440,22 @@
 			"title": "Tout refuser"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Tout approuver"
+		},
+		"deny": {
+			"title": "Tout refuser"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Tout enregistrer"
+		},
+		"deny": {
+			"title": "Tout refuser"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Index prêt",
 		"indexing": "Indexation {{percentage}}%",

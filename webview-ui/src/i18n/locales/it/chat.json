@@ -440,6 +440,22 @@
 			"title": "Nega tutto"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Approva tutto"
+		},
+		"deny": {
+			"title": "Nega tutto"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Salva tutto"
+		},
+		"deny": {
+			"title": "Nega tutto"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Indice pronto",
 		"indexing": "Indicizzazione {{percentage}}%",

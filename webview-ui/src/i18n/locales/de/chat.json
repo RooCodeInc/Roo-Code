@@ -440,6 +440,22 @@
 			"title": "Alle ablehnen"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Alle genehmigen"
+		},
+		"deny": {
+			"title": "Alle ablehnen"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Alle speichern"
+		},
+		"deny": {
+			"title": "Alle ablehnen"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Index bereit",
 		"indexing": "Indizierung {{percentage}}%",

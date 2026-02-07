@@ -441,6 +441,22 @@
 			"title": "Tümünü Reddet"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Tümünü Onayla"
+		},
+		"deny": {
+			"title": "Tümünü Reddet"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Tümünü Kaydet"
+		},
+		"deny": {
+			"title": "Tümünü Reddet"
+		}
+	},
 	"indexingStatus": {
 		"ready": "İndeks hazır",
 		"indexing": "İndeksleniyor {{percentage}}%",

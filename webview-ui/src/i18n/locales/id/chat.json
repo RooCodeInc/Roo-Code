@@ -80,6 +80,22 @@
 			"title": "Tolak Semua"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Setujui Semua"
+		},
+		"deny": {
+			"title": "Tolak Semua"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Simpan Semua"
+		},
+		"deny": {
+			"title": "Tolak Semua"
+		}
+	},
 	"runCommand": {
 		"title": "Perintah",
 		"tooltip": "Jalankan perintah ini"

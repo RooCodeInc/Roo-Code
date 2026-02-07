@@ -440,6 +440,22 @@
 			"title": "Odrzuć wszystko"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Zatwierdź wszystko"
+		},
+		"deny": {
+			"title": "Odrzuć wszystko"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Zapisz wszystko"
+		},
+		"deny": {
+			"title": "Odrzuć wszystko"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Indeks gotowy",
 		"indexing": "Indeksowanie {{percentage}}%",

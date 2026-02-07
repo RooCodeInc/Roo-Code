@@ -440,6 +440,22 @@
 			"title": "Denegar tot"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Aprovar tot"
+		},
+		"deny": {
+			"title": "Denegar tot"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Desar tot"
+		},
+		"deny": {
+			"title": "Denegar tot"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Índex preparat",
 		"indexing": "Indexant {{percentage}}%",

@@ -440,6 +440,22 @@
 			"title": "Alles weigeren"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Alles goedkeuren"
+		},
+		"deny": {
+			"title": "Alles weigeren"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Alles opslaan"
+		},
+		"deny": {
+			"title": "Alles weigeren"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Index gereed",
 		"indexing": "Indexeren {{percentage}}%",

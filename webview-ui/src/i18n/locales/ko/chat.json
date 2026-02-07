@@ -440,6 +440,22 @@
 			"title": "모두 거부"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "모두 승인"
+		},
+		"deny": {
+			"title": "모두 거부"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "모두 저장"
+		},
+		"deny": {
+			"title": "모두 거부"
+		}
+	},
 	"indexingStatus": {
 		"ready": "인덱스 준비됨",
 		"indexing": "인덱싱 중 {{percentage}}%",
