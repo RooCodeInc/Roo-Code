@@ -14,6 +14,7 @@ interface OpenAICodexProps {
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
 	simplifySettings?: boolean
 	openAiCodexIsAuthenticated?: boolean
+	openAiCodexEmail?: string
 }
 
 export const OpenAICodex: React.FC<OpenAICodexProps> = ({
@@ -21,6 +22,7 @@ export const OpenAICodex: React.FC<OpenAICodexProps> = ({
 	setApiConfigurationField,
 	simplifySettings,
 	openAiCodexIsAuthenticated = false,
+	openAiCodexEmail,
 }) => {
 	const { t } = useAppTranslation()
 
@@ -29,7 +31,20 @@ export const OpenAICodex: React.FC<OpenAICodexProps> = ({
 			{/* Authentication Section */}
 			<div className="flex flex-col gap-2">
 				{openAiCodexIsAuthenticated ? (
-					<div className="flex justify-end">
+					<div className="flex items-center justify-between bg-vscode-notifications-background p-2 rounded border border-vscode-notifications-border">
+						<div className="flex flex-col overflow-hidden mr-2">
+							<span className="text-xs text-vscode-descriptionForeground uppercase font-bold">
+								{t("settings:providers.openAiCodex.authenticatedAs", {
+									defaultValue: "Authenticated as",
+								})}
+							</span>
+							<span className="text-sm truncate font-medium text-vscode-foreground">
+								{openAiCodexEmail ||
+									t("settings:providers.openAiCodex.activeAccount", {
+										defaultValue: "Active Account",
+									})}
+							</span>
+						</div>
 						<Button
 							variant="secondary"
 							size="sm"

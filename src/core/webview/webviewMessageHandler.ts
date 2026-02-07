@@ -2398,7 +2398,8 @@ export const webviewMessageHandler = async (
 		case "openAiCodexSignIn": {
 			try {
 				const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
-				const authUrl = openAiCodexOAuthManager.startAuthorizationFlow()
+				const profileId = getGlobalState("currentApiConfigName")
+				const authUrl = openAiCodexOAuthManager.startAuthorizationFlow(profileId)
 
 				// Open the authorization URL in the browser
 				await vscode.env.openExternal(vscode.Uri.parse(authUrl))
@@ -2425,7 +2426,8 @@ export const webviewMessageHandler = async (
 		case "openAiCodexSignOut": {
 			try {
 				const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
-				await openAiCodexOAuthManager.clearCredentials()
+				const profileId = getGlobalState("currentApiConfigName")
+				await openAiCodexOAuthManager.clearCredentials(profileId)
 				vscode.window.showInformationMessage("Signed out from OpenAI Codex")
 				await provider.postStateToWebview()
 			} catch (error) {
@@ -3265,7 +3267,8 @@ export const webviewMessageHandler = async (
 		case "requestOpenAiCodexRateLimits": {
 			try {
 				const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
-				const accessToken = await openAiCodexOAuthManager.getAccessToken()
+				const profileId = getGlobalState("currentApiConfigName")
+				const accessToken = await openAiCodexOAuthManager.getAccessToken(profileId)
 
 				if (!accessToken) {
 					provider.postMessageToWebview({
@@ -3275,7 +3278,7 @@ export const webviewMessageHandler = async (
 					break
 				}
 
-				const accountId = await openAiCodexOAuthManager.getAccountId()
+				const accountId = await openAiCodexOAuthManager.getAccountId(profileId)
 				const { fetchOpenAiCodexRateLimitInfo } = await import("../../integrations/openai-codex/rate-limits")
 				const rateLimits = await fetchOpenAiCodexRateLimitInfo(accessToken, { accountId })
 
