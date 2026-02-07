@@ -5,8 +5,6 @@ import { PathTooltip } from "../ui/PathTooltip"
 
 interface DirPermissionItem {
 	path: string
-	recursive: boolean
-	isOutsideWorkspace?: boolean
 	key: string
 }
 

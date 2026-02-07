@@ -72,8 +72,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const isMountedRef = useRef(true)
 
 	const [audioBaseUri] = useState(() => {
-		const w = window as any
-		return w.AUDIO_BASE_URI || ""
+		return (window as unknown as { AUDIO_BASE_URI?: string }).AUDIO_BASE_URI || ""
 	})
 
 	const { t } = useAppTranslation()
@@ -976,10 +975,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			if (
 				msg.say === "user_feedback" &&
 				msg.checkpoint &&
-				(msg.checkpoint as any).type === "user_message" &&
-				(msg.checkpoint as any).hash
+				msg.checkpoint["type"] === "user_message" &&
+				msg.checkpoint["hash"]
 			) {
-				userMessageCheckpointHashes.add((msg.checkpoint as any).hash)
+				userMessageCheckpointHashes.add(msg.checkpoint["hash"] as string)
 			}
 		})
 
@@ -1303,7 +1302,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				say: "condense_context",
 				ts: Date.now(),
 				partial: true,
-			} as any)
+			} as ClineMessage)
 		}
 		return result
 	}, [isCondensing, visibleMessages, isBrowserSessionMessage])
@@ -1320,9 +1319,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	useEffect(() => {
 		return () => {
-			if (scrollToBottomSmooth && typeof (scrollToBottomSmooth as any).cancel === "function") {
-				;(scrollToBottomSmooth as any).cancel()
-			}
+			scrollToBottomSmooth.clear()
 		}
 	}, [scrollToBottomSmooth])
 

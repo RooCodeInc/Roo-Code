@@ -9,20 +9,14 @@ describe("BatchListFilesPermission", () => {
 		{
 			key: "apps/cli",
 			path: "apps/cli",
-			recursive: false,
-			isOutsideWorkspace: false,
 		},
 		{
 			key: "apps/web-roo-code",
 			path: "apps/web-roo-code",
-			recursive: false,
-			isOutsideWorkspace: false,
 		},
 		{
 			key: "packages/core",
 			path: "packages/core",
-			recursive: true,
-			isOutsideWorkspace: false,
 		},
 	]
 
@@ -90,8 +84,6 @@ describe("BatchListFilesPermission", () => {
 			{
 				key: "apps/cli",
 				path: "apps/cli",
-				recursive: false,
-				isOutsideWorkspace: false,
 			},
 		]
 
