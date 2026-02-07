@@ -456,13 +456,15 @@ describe("rewind-integration", () => {
 		expect(parsedContent.status).toBe("completed")
 	})
 
-	it("attempt_completion alongside another tool_use in same assistant message", () => {
+	it("attempt_completion alongside another tool_use in same assistant message returns undefined", () => {
 		const task = createTask(mockProvider)
 		const now = Date.now()
 
 		// Edge case: assistant message contains both a read_file tool_use and
 		// an attempt_completion tool_use. getPendingAttemptCompletionToolUseId
-		// should still detect the attempt_completion.
+		// should return undefined so the rewind path is used instead —
+		// the other tool_uses never executed, so treating it as a pending
+		// completion would bypass the rewind and produce misleading context.
 		task.apiConversationHistory = [
 			{
 				role: "user",
@@ -491,6 +493,6 @@ describe("rewind-integration", () => {
 		] as any[]
 
 		const pendingId: string | undefined = (task as any).getPendingAttemptCompletionToolUseId()
-		expect(pendingId).toBe("toolu_completion_888")
+		expect(pendingId).toBeUndefined()
 	})
 })

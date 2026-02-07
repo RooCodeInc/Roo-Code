@@ -2129,6 +2129,13 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				block.type === "tool_use" && block.name === "attempt_completion",
 		)
 
+		// Only treat as pending completion if there are no other unanswered
+		// tool_use blocks — otherwise the rewind path is more appropriate.
+		if (toolUse) {
+			const hasOtherToolUse = content.some((block) => block.type === "tool_use" && block !== toolUse)
+			if (hasOtherToolUse) return undefined
+		}
+
 		return toolUse?.id
 	}
 
