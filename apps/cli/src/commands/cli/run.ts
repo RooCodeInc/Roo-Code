@@ -202,7 +202,6 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 	if (isTuiEnabled) {
 		try {
-			// Resolve the ui-next bundle path relative to CLI package root
 			const cliRoot = process.env.ROO_CLI_ROOT || path.resolve(__dirname, "..")
 			const tuiBundlePath = path.join(cliRoot, "dist", "ui-next", "main.js")
 
@@ -214,7 +213,16 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 			}
 
 			// Dynamic import the pre-built SolidJS/opentui TUI bundle
-			const { startTUI } = await import(tuiBundlePath)
+			interface UINextModule {
+				startTUI: (
+					props: ExtensionHostOptions & {
+						initialPrompt?: string
+						version: string
+						createExtensionHost: (opts: ExtensionHostOptions) => ExtensionHost
+					},
+				) => Promise<void>
+			}
+			const { startTUI } = (await import(tuiBundlePath)) as UINextModule
 
 			await startTUI({
 				...extensionHostOptions,

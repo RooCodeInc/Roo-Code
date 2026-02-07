@@ -1,6 +1,10 @@
 import type { ProviderSettings } from "@roo-code/types"
 
-import type { RouterModels } from "@/ui/store.js"
+/**
+ * Map of provider name → model ID → model info (including context window).
+ * Previously imported from the old React/Ink UI store; now defined locally.
+ */
+export type RouterModels = Record<string, Record<string, { contextWindow?: number }>>
 
 const DEFAULT_CONTEXT_WINDOW = 200_000
 

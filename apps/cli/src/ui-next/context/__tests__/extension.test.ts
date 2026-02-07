@@ -1,9 +1,9 @@
 /**
  * Tests for extension context message handling and state management logic.
  *
- * Since extension.tsx uses SolidJS JSX (createStore, batch, etc.) which requires
- * a SolidJS compilation pipeline not available in the standard vitest config,
- * we test the core logic by replicating the state management patterns in plain TS.
+ * The core message-processing logic lives in extension-logic.ts as pure functions.
+ * This test harness applies the results of those functions to a plain store object,
+ * mirroring how extension.tsx applies them via SolidJS setStore().
  *
  * This tests:
  * 1. handleSayMessage behavior (message filtering, role assignment, dedup)
@@ -16,7 +16,7 @@
 
 import type { ClineAsk, ClineSay, TodoItem } from "@roo-code/types"
 
-vi.mock("../../../ui/utils/tools.js", () => ({
+vi.mock("../../../lib/utils/tools.js", () => ({
 	extractToolData: vi.fn((toolInfo: Record<string, unknown>) => ({
 		tool: toolInfo.tool as string,
 		path: toolInfo.path as string | undefined,
@@ -34,40 +34,22 @@ vi.mock("../../../lib/utils/commands.js", () => ({
 	getGlobalCommandsForAutocomplete: vi.fn(() => []),
 }))
 
+import { formatToolAskMessage, parseTodosFromToolInfo } from "../../../lib/utils/tools.js"
+
+import type { TUIMessage, PendingAsk } from "../../types.js"
 import {
-	extractToolData,
-	formatToolOutput,
-	formatToolAskMessage,
-	parseTodosFromToolInfo,
-} from "../../../ui/utils/tools.js"
-import { getGlobalCommand } from "../../../lib/utils/commands.js"
+	processSayMessage,
+	processAskMessage,
+	computeSubmitAction,
+	type MessageContext,
+	type SayMessageResult,
+	type AskMessageResult,
+} from "../extension-logic.js"
 
 // ================================================================
-// Types mirrored from extension.tsx and types.ts
+// ExtensionStore type (simplified version for tests — avoids
+// importing from extension.tsx which requires SolidJS compilation)
 // ================================================================
-
-type MessageRole = "system" | "user" | "assistant" | "tool" | "thinking"
-
-interface TUIMessage {
-	id: string
-	role: MessageRole
-	content: string
-	toolName?: string
-	toolDisplayName?: string
-	toolDisplayOutput?: string
-	partial?: boolean
-	originalType?: ClineAsk | ClineSay
-	toolData?: Record<string, unknown>
-	todos?: TodoItem[]
-	previousTodos?: TodoItem[]
-}
-
-interface PendingAsk {
-	id: string
-	type: ClineAsk
-	content: string
-	suggestions?: Array<{ answer: string; mode?: string | null }>
-}
 
 interface ExtensionStore {
 	messages: TUIMessage[]
@@ -89,12 +71,14 @@ interface ExtensionStore {
 }
 
 // ================================================================
-// Replicate extension context logic as testable class
+// Test harness — thin wrapper that delegates to pure functions
+// from extension-logic.ts and applies the results to a plain store.
 // ================================================================
 
 /**
- * Portable replica of the extension context state machine.
- * This mirrors all the pure logic in extension.tsx without SolidJS dependencies.
+ * Portable test harness that uses the shared pure functions from
+ * extension-logic.ts. This ensures test and production code execute
+ * the same business logic.
  */
 class ExtensionContextTestHarness {
 	store: ExtensionStore = {
@@ -133,7 +117,19 @@ class ExtensionContextTestHarness {
 		this.sentMessages.push(msg)
 	}
 
-	/** Mirror of addMessage from extension.tsx */
+	/** Build a MessageContext snapshot for pure functions. */
+	private get messageContext(): MessageContext {
+		return {
+			seenMessageIds: this.seenMessageIds,
+			firstTextMessageSkipped: this.firstTextMessageSkipped,
+			isResumingTask: this.store.isResumingTask,
+			pendingCommandRef: this.pendingCommandRef,
+			nonInteractive: this.nonInteractive,
+			currentTodos: this.store.currentTodos,
+		}
+	}
+
+	/** Add or update a message in the store (no streaming debounce in tests). */
 	addMessage(msg: TUIMessage) {
 		const existingIndex = this.store.messages.findIndex((m) => m.id === msg.id)
 
@@ -156,255 +152,110 @@ class ExtensionContextTestHarness {
 		this.store.messages = msgs
 	}
 
-	/** Mirror of handleSayMessage from extension.tsx */
+	/** Apply result from processSayMessage to the store. */
+	private applySayResult(result: SayMessageResult) {
+		if (result.trackId) this.seenMessageIds.add(result.trackId)
+		if (result.setFirstTextSkipped) this.firstTextMessageSkipped = true
+		if (result.clearPendingCommand) this.pendingCommandRef = null
+		if (result.message) this.addMessage(result.message)
+	}
+
+	/** Apply result from processAskMessage to the store. */
+	private applyAskResult(result: AskMessageResult) {
+		if (result.trackId) this.seenMessageIds.add(result.trackId)
+		if (result.pendingCommand !== undefined) this.pendingCommandRef = result.pendingCommand
+
+		const u = result.storeUpdates
+		if (u.isLoading !== undefined) this.store.isLoading = u.isLoading
+		if (u.hasStartedTask !== undefined) this.store.hasStartedTask = u.hasStartedTask
+		if (u.isResumingTask !== undefined) this.store.isResumingTask = u.isResumingTask
+		if (u.isComplete !== undefined) this.store.isComplete = u.isComplete
+		if (result.todoUpdate) {
+			this.store.previousTodos = result.todoUpdate.previousTodos
+			this.store.currentTodos = result.todoUpdate.currentTodos
+		}
+		if (result.pendingAsk) this.store.pendingAsk = result.pendingAsk
+		if (result.message) this.addMessage(result.message)
+	}
+
+	/** Delegates to processSayMessage pure function. */
 	handleSayMessage(ts: number, say: ClineSay, text: string, partial: boolean) {
-		const messageId = ts.toString()
-
-		if (say === "checkpoint_saved" || say === "api_req_started" || say === "user_feedback") {
-			if (say === "user_feedback") this.seenMessageIds.add(messageId)
-			return
-		}
-
-		if (say === "text" && !this.firstTextMessageSkipped && !this.store.isResumingTask) {
-			this.firstTextMessageSkipped = true
-			this.seenMessageIds.add(messageId)
-			return
-		}
-
-		if (this.seenMessageIds.has(messageId) && !partial) return
-
-		let role: MessageRole = "assistant"
-		let toolName: string | undefined
-		let toolDisplayName: string | undefined
-		let toolDisplayOutput: string | undefined
-		let toolData: Record<string, unknown> | undefined
-
-		if (say === "command_output") {
-			role = "tool"
-			toolName = "execute_command"
-			toolDisplayName = "bash"
-			toolDisplayOutput = text
-			const trackedCommand = this.pendingCommandRef
-			toolData = { tool: "execute_command", command: trackedCommand || undefined, output: text }
-			this.pendingCommandRef = null
-		} else if (say === "reasoning") {
-			role = "thinking"
-		}
-
-		this.seenMessageIds.add(messageId)
-
-		this.addMessage({
-			id: messageId,
-			role,
-			content: text || "",
-			toolName,
-			toolDisplayName,
-			toolDisplayOutput,
-			partial,
-			originalType: say,
-			toolData,
-		})
+		this.applySayResult(processSayMessage(this.messageContext, ts, say, text, partial))
 	}
 
-	/** Mirror of handleAskMessage from extension.tsx */
+	/** Delegates to processAskMessage pure function. */
 	handleAskMessage(ts: number, ask: ClineAsk, text: string, partial: boolean) {
-		const messageId = ts.toString()
-
-		if (partial) return
-		if (this.seenMessageIds.has(messageId)) return
-		if (ask === "command_output") {
-			this.seenMessageIds.add(messageId)
-			return
-		}
-
-		if (ask === "resume_task" || ask === "resume_completed_task") {
-			this.seenMessageIds.add(messageId)
-			this.store.isLoading = false
-			this.store.hasStartedTask = true
-			this.store.isResumingTask = false
-			return
-		}
-
-		if (ask === "completion_result") {
-			this.seenMessageIds.add(messageId)
-			this.store.isComplete = true
-			this.store.isLoading = false
-
-			try {
-				const completionInfo = JSON.parse(text) as Record<string, unknown>
-				const toolDataVal = {
-					tool: "attempt_completion",
-					result: completionInfo.result as string | undefined,
-					content: completionInfo.result as string | undefined,
-				}
-
-				this.addMessage({
-					id: messageId,
-					role: "tool",
-					content: text,
-					toolName: "attempt_completion",
-					toolDisplayName: "Task Complete",
-					toolDisplayOutput: (formatToolOutput as ReturnType<typeof vi.fn>)({
-						tool: "attempt_completion",
-						...completionInfo,
-					}),
-					originalType: ask,
-					toolData: toolDataVal,
-				})
-			} catch {
-				this.addMessage({
-					id: messageId,
-					role: "tool",
-					content: text || "Task completed",
-					toolName: "attempt_completion",
-					toolDisplayName: "Task Complete",
-					toolDisplayOutput: "✅ Task completed",
-					originalType: ask,
-					toolData: { tool: "attempt_completion", content: text },
-				})
-			}
-			return
-		}
-
-		if (ask === "command") {
-			this.pendingCommandRef = text
-		}
-
-		if (this.nonInteractive && ask !== "followup") {
-			this.seenMessageIds.add(messageId)
-
-			if (ask === "tool") {
-				let localToolName: string | undefined
-				let localToolDisplayName: string | undefined
-				let localToolDisplayOutput: string | undefined
-				let formattedContent = text || ""
-				let localToolData: Record<string, unknown> | undefined
-
-				try {
-					const toolInfo = JSON.parse(text) as Record<string, unknown>
-					localToolName = toolInfo.tool as string
-					localToolDisplayName = toolInfo.tool as string
-					localToolDisplayOutput = (formatToolOutput as ReturnType<typeof vi.fn>)(toolInfo)
-					formattedContent = (formatToolAskMessage as ReturnType<typeof vi.fn>)(toolInfo)
-					localToolData = (extractToolData as ReturnType<typeof vi.fn>)(toolInfo)
-				} catch {
-					// Use raw text
-				}
-
-				this.addMessage({
-					id: messageId,
-					role: "tool",
-					content: formattedContent,
-					toolName: localToolName,
-					toolDisplayName: localToolDisplayName,
-					toolDisplayOutput: localToolDisplayOutput,
-					originalType: ask,
-					toolData: localToolData,
-				})
-			} else {
-				this.addMessage({
-					id: messageId,
-					role: "assistant",
-					content: text || "",
-					originalType: ask,
-				})
-			}
-			return
-		}
-
-		let suggestions: Array<{ answer: string; mode?: string | null }> | undefined
-		let questionText = text
-
-		if (ask === "followup") {
-			try {
-				const data = JSON.parse(text)
-				questionText = data.question || text
-				suggestions = Array.isArray(data.suggest) ? data.suggest : undefined
-			} catch {
-				// Use raw text
-			}
-		} else if (ask === "tool") {
-			try {
-				const toolInfo = JSON.parse(text) as Record<string, unknown>
-				questionText = (formatToolAskMessage as ReturnType<typeof vi.fn>)(toolInfo)
-			} catch {
-				// Use raw text
-			}
-		}
-
-		this.seenMessageIds.add(messageId)
-
-		this.store.pendingAsk = {
-			id: messageId,
-			type: ask,
-			content: questionText,
-			suggestions,
-		}
+		this.applyAskResult(processAskMessage(this.messageContext, ts, ask, text, partial))
 	}
 
-	/** Mirror of handleSubmit from extension.tsx */
+	/** Delegates to computeSubmitAction pure function, then applies. */
 	async handleSubmit(text: string) {
-		if (!text.trim()) return
+		const action = computeSubmitAction(
+			{
+				pendingAsk: this.store.pendingAsk,
+				hasStartedTask: this.store.hasStartedTask,
+				isComplete: this.store.isComplete,
+			},
+			text,
+			() => `uuid-${Date.now()}`,
+		)
 
-		const trimmedText = text.trim()
-		if (trimmedText === "__CUSTOM__") return
+		switch (action.kind) {
+			case "none":
+				return
 
-		// Check for CLI global action commands
-		if (trimmedText.startsWith("/")) {
-			const commandMatch = trimmedText.match(/^\/(\w+)(?:\s|$)/)
-			if (commandMatch && commandMatch[1]) {
-				const globalCommand = (getGlobalCommand as ReturnType<typeof vi.fn>)(commandMatch[1])
-				if (globalCommand?.action === "clearTask") {
-					this.store.messages = []
-					this.store.pendingAsk = null
-					this.store.isLoading = false
-					this.store.isComplete = false
-					this.store.hasStartedTask = false
-					this.store.error = null
-					this.store.isResumingTask = false
-					this.store.tokenUsage = null
-					this.store.currentTodos = []
-					this.store.previousTodos = []
-
-					this.seenMessageIds.clear()
-					this.firstTextMessageSkipped = false
-					this.sendToExtension({ type: "clearTask" })
-					this.sendToExtension({ type: "requestCommands" })
-					this.sendToExtension({ type: "requestModes" })
-					return
-				}
-			}
-		}
-
-		if (this.store.pendingAsk) {
-			this.addMessage({ id: `uuid-${Date.now()}`, role: "user", content: trimmedText })
-			this.sendToExtension({
-				type: "askResponse",
-				askResponse: "messageResponse",
-				text: trimmedText,
-			})
-			this.store.pendingAsk = null
-			this.store.isLoading = true
-		} else if (!this.store.hasStartedTask) {
-			this.store.hasStartedTask = true
-			this.store.isLoading = true
-			this.addMessage({ id: `uuid-${Date.now()}`, role: "user", content: trimmedText })
-			try {
-				this.runTaskCalls.push(trimmedText)
-				if (this.runTaskError) throw this.runTaskError
-			} catch (err) {
-				this.store.error = err instanceof Error ? err.message : String(err)
+			case "clearTask":
+				this.store.messages = []
+				this.store.pendingAsk = null
 				this.store.isLoading = false
-			}
-		} else {
-			if (this.store.isComplete) this.store.isComplete = false
-			this.store.isLoading = true
-			this.addMessage({ id: `uuid-${Date.now()}`, role: "user", content: trimmedText })
-			this.sendToExtension({
-				type: "askResponse",
-				askResponse: "messageResponse",
-				text: trimmedText,
-			})
+				this.store.isComplete = false
+				this.store.hasStartedTask = false
+				this.store.error = null
+				this.store.isResumingTask = false
+				this.store.tokenUsage = null
+				this.store.currentTodos = []
+				this.store.previousTodos = []
+				this.seenMessageIds.clear()
+				this.firstTextMessageSkipped = false
+				this.sendToExtension({ type: "clearTask" })
+				this.sendToExtension({ type: "requestCommands" })
+				this.sendToExtension({ type: "requestModes" })
+				return
+
+			case "respondToAsk":
+				this.addMessage(action.userMessage)
+				this.sendToExtension({
+					type: "askResponse",
+					askResponse: "messageResponse",
+					text: action.text,
+				})
+				this.store.pendingAsk = null
+				this.store.isLoading = true
+				return
+
+			case "startNewTask":
+				this.store.hasStartedTask = true
+				this.store.isLoading = true
+				this.addMessage(action.userMessage)
+				try {
+					this.runTaskCalls.push(action.text)
+					if (this.runTaskError) throw this.runTaskError
+				} catch (err) {
+					this.store.error = err instanceof Error ? err.message : String(err)
+					this.store.isLoading = false
+				}
+				return
+
+			case "continueTask":
+				if (this.store.isComplete) this.store.isComplete = false
+				this.store.isLoading = true
+				this.addMessage(action.userMessage)
+				this.sendToExtension({
+					type: "askResponse",
+					askResponse: "messageResponse",
+					text: action.text,
+				})
+				return
 		}
 	}
 
@@ -728,6 +579,31 @@ describe("Extension Context Logic", () => {
 				expect(nonInteractiveCtx.store.messages).toHaveLength(1)
 				expect(nonInteractiveCtx.store.messages[0]!.content).toBe("invalid json")
 				expect(nonInteractiveCtx.store.messages[0]!.toolName).toBeUndefined()
+			})
+
+			it("handles update_todo_list tool by updating todos in store", () => {
+				const mockTodos: TodoItem[] = [
+					{ id: "1", content: "Fix bug", status: "in_progress" },
+					{ id: "2", content: "Write tests", status: "pending" },
+				]
+				vi.mocked(parseTodosFromToolInfo).mockReturnValueOnce(mockTodos)
+
+				// Set some existing todos
+				nonInteractiveCtx.store.currentTodos = [{ id: "0", content: "Old todo", status: "completed" }]
+
+				const toolInfo = JSON.stringify({ tool: "update_todo_list", todos: "..." })
+				nonInteractiveCtx.handleAskMessage(8004, "tool", toolInfo, false)
+
+				// Store todos should be updated
+				expect(nonInteractiveCtx.store.currentTodos).toEqual(mockTodos)
+				expect(nonInteractiveCtx.store.previousTodos).toEqual([
+					{ id: "0", content: "Old todo", status: "completed" },
+				])
+
+				// Message should contain todo data
+				const msg = nonInteractiveCtx.store.messages[0]!
+				expect(msg.todos).toEqual(mockTodos)
+				expect(msg.previousTodos).toEqual([{ id: "0", content: "Old todo", status: "completed" }])
 			})
 		})
 	})

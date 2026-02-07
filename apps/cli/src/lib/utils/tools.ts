@@ -1,6 +1,6 @@
 import type { TodoItem } from "@roo-code/types"
 
-import type { ToolData } from "../types.js"
+import type { ToolData } from "../../ui-next/types.js"
 
 /**
  * Extract structured ToolData from parsed tool JSON

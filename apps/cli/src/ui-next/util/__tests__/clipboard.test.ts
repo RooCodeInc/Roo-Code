@@ -11,22 +11,26 @@ describe("copyToClipboard", () => {
 	beforeEach(() => {
 		originalWrite = process.stdout.write
 		writeSpy = vi.fn()
-		process.stdout.write = writeSpy as any
+		process.stdout.write = writeSpy as typeof process.stdout.write
 	})
 
 	afterEach(() => {
 		process.stdout.write = originalWrite
 	})
 
+	const ESC = String.fromCharCode(0x1b)
+	const BEL = String.fromCharCode(0x07)
+	const OSC52_RE = new RegExp(`^${ESC}\\]52;c;(.*)${BEL}$`)
+
 	it("writes OSC 52 escape sequence for simple text", () => {
 		copyToClipboard("hello")
 		expect(writeSpy).toHaveBeenCalledTimes(1)
 
 		const output = writeSpy.mock.calls[0]![0] as string
-		expect(output).toMatch(/^\x1b\]52;c;.*\x07$/)
+		expect(output).toMatch(OSC52_RE)
 
 		// Verify base64 encoding
-		const base64Match = output.match(/^\x1b\]52;c;(.*)\x07$/)
+		const base64Match = output.match(OSC52_RE)
 		expect(base64Match).toBeTruthy()
 		const base64 = base64Match![1]!
 		expect(Buffer.from(base64, "base64").toString("utf-8")).toBe("hello")
@@ -37,7 +41,7 @@ describe("copyToClipboard", () => {
 		expect(writeSpy).toHaveBeenCalledTimes(1)
 
 		const output = writeSpy.mock.calls[0]![0] as string
-		const base64Match = output.match(/^\x1b\]52;c;(.*)\x07$/)
+		const base64Match = output.match(OSC52_RE)
 		const base64 = base64Match![1]!
 		expect(Buffer.from(base64, "base64").toString("utf-8")).toBe("")
 	})
@@ -47,7 +51,7 @@ describe("copyToClipboard", () => {
 		copyToClipboard(text)
 
 		const output = writeSpy.mock.calls[0]![0] as string
-		const base64Match = output.match(/^\x1b\]52;c;(.*)\x07$/)
+		const base64Match = output.match(OSC52_RE)
 		const base64 = base64Match![1]!
 		expect(Buffer.from(base64, "base64").toString("utf-8")).toBe(text)
 	})
@@ -57,7 +61,7 @@ describe("copyToClipboard", () => {
 		copyToClipboard(text)
 
 		const output = writeSpy.mock.calls[0]![0] as string
-		const base64Match = output.match(/^\x1b\]52;c;(.*)\x07$/)
+		const base64Match = output.match(OSC52_RE)
 		const base64 = base64Match![1]!
 		expect(Buffer.from(base64, "base64").toString("utf-8")).toBe(text)
 	})
@@ -67,7 +71,7 @@ describe("copyToClipboard", () => {
 		copyToClipboard(text)
 
 		const output = writeSpy.mock.calls[0]![0] as string
-		const base64Match = output.match(/^\x1b\]52;c;(.*)\x07$/)
+		const base64Match = output.match(OSC52_RE)
 		const base64 = base64Match![1]!
 		expect(Buffer.from(base64, "base64").toString("utf-8")).toBe(text)
 	})
@@ -77,7 +81,7 @@ describe("copyToClipboard", () => {
 		copyToClipboard(largeText)
 
 		const output = writeSpy.mock.calls[0]![0] as string
-		const base64Match = output.match(/^\x1b\]52;c;(.*)\x07$/)
+		const base64Match = output.match(OSC52_RE)
 		const base64 = base64Match![1]!
 		expect(Buffer.from(base64, "base64").toString("utf-8")).toBe(largeText)
 	})
@@ -90,7 +94,7 @@ describe("clearClipboard", () => {
 	beforeEach(() => {
 		originalWrite = process.stdout.write
 		writeSpy = vi.fn()
-		process.stdout.write = writeSpy as any
+		process.stdout.write = writeSpy as typeof process.stdout.write
 	})
 
 	afterEach(() => {

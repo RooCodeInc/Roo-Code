@@ -13,7 +13,7 @@
 		"lint": "eslint src --ext .ts --max-warnings=0",
 		"check-types": "tsc --noEmit",
 		"test": "vitest run",
-		"build": "tsup",
+		"build": "tsup && bun scripts/build-ui-next.ts",
 		"build:ui-next": "bun scripts/build-ui-next.ts",
 		"build:extension": "pnpm --filter roo-cline bundle",
 		"dev": "ROO_AUTH_BASE_URL=https://app.roocode.com ROO_SDK_BASE_URL=https://cloud-api.roocode.com ROO_CODE_PROVIDER_URL=https://api.roocode.com/proxy tsx src/index.ts -y",
@@ -21,9 +21,7 @@
 		"clean": "rimraf dist .turbo"
 	},
 	"dependencies": {
-		"@inkjs/ui": "^2.0.0",
 		"@opentui/core": "^0.1.77",
-		"@opentui/core-darwin-arm64": "^0.1.77",
 		"@opentui/solid": "^0.1.77",
 		"@roo-code/core": "workspace:^",
 		"@roo-code/types": "workspace:^",
@@ -36,22 +34,23 @@
 		"cross-spawn": "^7.0.6",
 		"execa": "^9.5.2",
 		"fuzzysort": "^3.1.0",
-		"ink": "^6.6.0",
-		"opentui-spinner": "^0.0.6",
 		"p-wait-for": "^5.0.2",
-		"react": "^19.1.0",
 		"solid-js": "^1.9.11",
-		"superjson": "^2.2.6",
-		"zustand": "^5.0.0"
+		"superjson": "^2.2.6"
+	},
+	"optionalDependencies": {
+		"@opentui/core-darwin-arm64": "^0.1.77",
+		"@opentui/core-darwin-x64": "^0.1.77",
+		"@opentui/core-linux-x64": "^0.1.77",
+		"@opentui/core-linux-arm64": "^0.1.77",
+		"@opentui/core-win32-x64": "^0.1.77"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.29.0",
 		"@roo-code/config-eslint": "workspace:^",
 		"@roo-code/config-typescript": "workspace:^",
 		"@types/node": "^24.1.0",
-		"@types/react": "^19.1.6",
 		"babel-preset-solid": "^1.9.10",
-		"ink-testing-library": "^4.0.0",
 		"rimraf": "^6.0.1",
 		"tsup": "^8.4.0",
 		"vitest": "^3.2.3"

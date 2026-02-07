@@ -2,7 +2,7 @@
  * Tests for trigger detection logic.
  */
 
-import { detectTrigger, formatRelativeTime, truncateText, getReplacementText } from "../triggers.js"
+import { detectTrigger, formatRelativeTime, truncateText, getReplacementText, type TriggerType } from "../triggers.js"
 
 describe("detectTrigger", () => {
 	it("returns null for empty input", () => {
@@ -187,8 +187,8 @@ describe("getReplacementText", () => {
 	})
 
 	it("handles unknown type by returning currentLine", () => {
-		// Cast to any to pass an unknown type
-		expect(getReplacementText("unknown" as any, "val", "current", 0)).toBe("current")
+		// Cast to test the default branch with an unknown type
+		expect(getReplacementText("unknown" as TriggerType, "val", "current", 0)).toBe("current")
 	})
 })
 

@@ -3,7 +3,7 @@
  * approval prompts, and text input.
  */
 
-import { For, Show, Switch, Match, createMemo, createSignal } from "solid-js"
+import { For, Show, Switch, Match, createSignal } from "solid-js"
 import { useTerminalDimensions, useKeyboard } from "@opentui/solid"
 import { type KeyEvent } from "@opentui/core"
 import { useTheme } from "../../context/theme.js"
@@ -181,7 +181,7 @@ function FollowupPrompt(props: { content: string; suggestions?: Array<{ answer: 
 }
 
 export function Session(props: SessionProps) {
-	const { theme } = useTheme()
+	const { theme: _theme } = useTheme()
 	const ext = useExtension()
 	const dims = useTerminalDimensions()
 

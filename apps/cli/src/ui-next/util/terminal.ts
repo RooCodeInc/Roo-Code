@@ -9,20 +9,19 @@
 export async function getTerminalBackgroundColor(): Promise<"dark" | "light"> {
 	if (!process.stdin.isTTY) return "dark"
 
+	const ESC = String.fromCharCode(0x1b)
+	const BEL = String.fromCharCode(0x07)
+	const OSC11_PATTERN = new RegExp(`${ESC}]11;([^${BEL}${ESC}]+)`)
+
 	return new Promise((resolve) => {
-		let timeout: NodeJS.Timeout
-
-		const cleanup = () => {
-			process.stdin.setRawMode(false)
-			process.stdin.removeListener("data", handler)
-			clearTimeout(timeout)
-		}
-
 		const handler = (data: Buffer) => {
 			const str = data.toString()
-			const match = str.match(/\x1b]11;([^\x07\x1b]+)/)
+			const match = str.match(OSC11_PATTERN)
 			if (match) {
-				cleanup()
+				clearTimeout(timeout)
+				process.stdin.setRawMode(false)
+				process.stdin.removeListener("data", handler)
+
 				const color = match[1]!
 				let r = 0,
 					g = 0,
@@ -46,10 +45,11 @@ export async function getTerminalBackgroundColor(): Promise<"dark" | "light"> {
 
 		process.stdin.setRawMode(true)
 		process.stdin.on("data", handler)
-		process.stdout.write("\x1b]11;?\x07")
+		process.stdout.write(`${ESC}]11;?${BEL}`)
 
-		timeout = setTimeout(() => {
-			cleanup()
+		const timeout = setTimeout(() => {
+			process.stdin.setRawMode(false)
+			process.stdin.removeListener("data", handler)
 			resolve("dark")
 		}, 1000)
 	})

@@ -9,36 +9,14 @@ import { createStore, produce } from "solid-js/store"
 import { batch, onCleanup, onMount } from "solid-js"
 import { randomUUID } from "crypto"
 
-import type {
-	ClineAsk,
-	ClineMessage,
-	ClineSay,
-	ExtensionMessage,
-	TodoItem,
-	TokenUsage,
-	WebviewMessage,
-} from "@roo-code/types"
+import type { ClineMessage, ExtensionMessage, TodoItem, TokenUsage, WebviewMessage } from "@roo-code/types"
 import { consolidateTokenUsage, consolidateApiRequests, consolidateCommands } from "@roo-code/core/cli"
 
 import type { ExtensionHostInterface, ExtensionHostOptions } from "../../agent/index.js"
 
-import type {
-	TUIMessage,
-	PendingAsk,
-	ToolData,
-	FileResult,
-	SlashCommandResult,
-	ModeResult,
-	TaskHistoryItem,
-} from "../types.js"
-import {
-	extractToolData,
-	formatToolOutput,
-	formatToolAskMessage,
-	parseTodosFromToolInfo,
-} from "../../ui/utils/tools.js"
-import { getGlobalCommand, getGlobalCommandsForAutocomplete } from "../../lib/utils/commands.js"
+import type { TUIMessage, PendingAsk, FileResult, SlashCommandResult, ModeResult, TaskHistoryItem } from "../types.js"
 import { createSimpleContext } from "./helper.js"
+import { processSayMessage, processAskMessage, computeSubmitAction, type MessageContext } from "./extension-logic.js"
 
 /** Streaming message debounce configuration. */
 const STREAMING_DEBOUNCE_MS = 150
@@ -113,8 +91,20 @@ export const { use: useExtension, provider: ExtensionProvider } = createSimpleCo
 		let streamingDebounceTimer: ReturnType<typeof setTimeout> | null = null
 
 		// ================================================================
-		// Message handling (ported from useMessageHandlers)
+		// Message handling (delegates to pure functions in extension-logic)
 		// ================================================================
+
+		/** Build a MessageContext snapshot for pure functions. */
+		function getMessageContext(): MessageContext {
+			return {
+				seenMessageIds,
+				firstTextMessageSkipped,
+				isResumingTask: store.isResumingTask,
+				pendingCommandRef,
+				nonInteractive: props.options.nonInteractive ?? false,
+				currentTodos: store.currentTodos,
+			}
+		}
 
 		function addMessage(msg: TUIMessage) {
 			const existingIndex = store.messages.findIndex((m) => m.id === msg.id)
@@ -166,203 +156,45 @@ export const { use: useExtension, provider: ExtensionProvider } = createSimpleCo
 			)
 		}
 
-		function handleSayMessage(ts: number, say: ClineSay, text: string, partial: boolean) {
-			const messageId = ts.toString()
+		function handleSayMessage(
+			ts: number,
+			say: Parameters<typeof processSayMessage>[2],
+			text: string,
+			partial: boolean,
+		) {
+			const result = processSayMessage(getMessageContext(), ts, say, text, partial)
 
-			if (say === "checkpoint_saved" || say === "api_req_started" || say === "user_feedback") {
-				if (say === "user_feedback") seenMessageIds.add(messageId)
-				return
-			}
-
-			if (say === "text" && !firstTextMessageSkipped && !store.isResumingTask) {
-				firstTextMessageSkipped = true
-				seenMessageIds.add(messageId)
-				return
-			}
-
-			if (seenMessageIds.has(messageId) && !partial) return
-
-			let role: TUIMessage["role"] = "assistant"
-			let toolName: string | undefined
-			let toolDisplayName: string | undefined
-			let toolDisplayOutput: string | undefined
-			let toolData: ToolData | undefined
-
-			if (say === "command_output") {
-				role = "tool"
-				toolName = "execute_command"
-				toolDisplayName = "bash"
-				toolDisplayOutput = text
-				const trackedCommand = pendingCommandRef
-				toolData = { tool: "execute_command", command: trackedCommand || undefined, output: text }
-				pendingCommandRef = null
-			} else if (say === "reasoning") {
-				role = "thinking"
-			}
-
-			seenMessageIds.add(messageId)
-
-			addMessage({
-				id: messageId,
-				role,
-				content: text || "",
-				toolName,
-				toolDisplayName,
-				toolDisplayOutput,
-				partial,
-				originalType: say,
-				toolData,
-			})
+			if (result.trackId) seenMessageIds.add(result.trackId)
+			if (result.setFirstTextSkipped) firstTextMessageSkipped = true
+			if (result.clearPendingCommand) pendingCommandRef = null
+			if (result.message) addMessage(result.message)
 		}
 
-		function handleAskMessage(ts: number, ask: ClineAsk, text: string, partial: boolean) {
-			const messageId = ts.toString()
+		function handleAskMessage(
+			ts: number,
+			ask: Parameters<typeof processAskMessage>[2],
+			text: string,
+			partial: boolean,
+		) {
+			const result = processAskMessage(getMessageContext(), ts, ask, text, partial)
 
-			if (partial) return
-			if (seenMessageIds.has(messageId)) return
-			if (ask === "command_output") {
-				seenMessageIds.add(messageId)
-				return
-			}
+			if (result.trackId) seenMessageIds.add(result.trackId)
+			if (result.pendingCommand !== undefined) pendingCommandRef = result.pendingCommand
 
-			if (ask === "resume_task" || ask === "resume_completed_task") {
-				seenMessageIds.add(messageId)
-				batch(() => {
-					setStore("isLoading", false)
-					setStore("hasStartedTask", true)
-					setStore("isResumingTask", false)
-				})
-				return
-			}
-
-			if (ask === "completion_result") {
-				seenMessageIds.add(messageId)
-				batch(() => {
-					setStore("isComplete", true)
-					setStore("isLoading", false)
-				})
-
-				try {
-					const completionInfo = JSON.parse(text) as Record<string, unknown>
-					const toolDataVal: ToolData = {
-						tool: "attempt_completion",
-						result: completionInfo.result as string | undefined,
-						content: completionInfo.result as string | undefined,
-					}
-
-					addMessage({
-						id: messageId,
-						role: "tool",
-						content: text,
-						toolName: "attempt_completion",
-						toolDisplayName: "Task Complete",
-						toolDisplayOutput: formatToolOutput({ tool: "attempt_completion", ...completionInfo }),
-						originalType: ask,
-						toolData: toolDataVal,
-					})
-				} catch {
-					addMessage({
-						id: messageId,
-						role: "tool",
-						content: text || "Task completed",
-						toolName: "attempt_completion",
-						toolDisplayName: "Task Complete",
-						toolDisplayOutput: "✅ Task completed",
-						originalType: ask,
-						toolData: { tool: "attempt_completion", content: text },
-					})
+			batch(() => {
+				const u = result.storeUpdates
+				if (u.isLoading !== undefined) setStore("isLoading", u.isLoading)
+				if (u.hasStartedTask !== undefined) setStore("hasStartedTask", u.hasStartedTask)
+				if (u.isResumingTask !== undefined) setStore("isResumingTask", u.isResumingTask)
+				if (u.isComplete !== undefined) setStore("isComplete", u.isComplete)
+				if (result.todoUpdate) {
+					setStore("previousTodos", result.todoUpdate.previousTodos)
+					setStore("currentTodos", result.todoUpdate.currentTodos)
 				}
-				return
-			}
-
-			if (ask === "command") {
-				pendingCommandRef = text
-			}
-
-			if (props.options.nonInteractive && ask !== "followup") {
-				seenMessageIds.add(messageId)
-
-				if (ask === "tool") {
-					let localToolName: string | undefined
-					let localToolDisplayName: string | undefined
-					let localToolDisplayOutput: string | undefined
-					let formattedContent = text || ""
-					let localToolData: ToolData | undefined
-					let todos: TodoItem[] | undefined
-					let previousTodos: TodoItem[] | undefined
-
-					try {
-						const toolInfo = JSON.parse(text) as Record<string, unknown>
-						localToolName = toolInfo.tool as string
-						localToolDisplayName = toolInfo.tool as string
-						localToolDisplayOutput = formatToolOutput(toolInfo)
-						formattedContent = formatToolAskMessage(toolInfo)
-						localToolData = extractToolData(toolInfo)
-
-						if (localToolName === "update_todo_list" || localToolName === "updateTodoList") {
-							const parsedTodos = parseTodosFromToolInfo(toolInfo)
-							if (parsedTodos && parsedTodos.length > 0) {
-								todos = parsedTodos
-								previousTodos = [...store.currentTodos]
-								setStore("previousTodos", store.currentTodos)
-								setStore("currentTodos", parsedTodos)
-							}
-						}
-					} catch {
-						// Use raw text
-					}
-
-					addMessage({
-						id: messageId,
-						role: "tool",
-						content: formattedContent,
-						toolName: localToolName,
-						toolDisplayName: localToolDisplayName,
-						toolDisplayOutput: localToolDisplayOutput,
-						originalType: ask,
-						toolData: localToolData,
-						todos,
-						previousTodos,
-					})
-				} else {
-					addMessage({
-						id: messageId,
-						role: "assistant",
-						content: text || "",
-						originalType: ask,
-					})
-				}
-				return
-			}
-
-			let suggestions: Array<{ answer: string; mode?: string | null }> | undefined
-			let questionText = text
-
-			if (ask === "followup") {
-				try {
-					const data = JSON.parse(text)
-					questionText = data.question || text
-					suggestions = Array.isArray(data.suggest) ? data.suggest : undefined
-				} catch {
-					// Use raw text
-				}
-			} else if (ask === "tool") {
-				try {
-					const toolInfo = JSON.parse(text) as Record<string, unknown>
-					questionText = formatToolAskMessage(toolInfo)
-				} catch {
-					// Use raw text
-				}
-			}
-
-			seenMessageIds.add(messageId)
-
-			setStore("pendingAsk", {
-				id: messageId,
-				type: ask,
-				content: questionText,
-				suggestions,
+				if (result.pendingAsk) setStore("pendingAsk", result.pendingAsk)
 			})
+
+			if (result.message) addMessage(result.message)
 		}
 
 		function handleExtensionMessage(msg: ExtensionMessage) {
@@ -432,74 +264,81 @@ export const { use: useExtension, provider: ExtensionProvider } = createSimpleCo
 		}
 
 		async function handleSubmit(text: string) {
-			if (!host || !text.trim()) return
+			if (!host) return
 
-			const trimmedText = text.trim()
-			if (trimmedText === "__CUSTOM__") return
+			const action = computeSubmitAction(
+				{
+					pendingAsk: store.pendingAsk,
+					hasStartedTask: store.hasStartedTask,
+					isComplete: store.isComplete,
+				},
+				text,
+				() => randomUUID(),
+			)
 
-			// Check for CLI global action commands
-			if (trimmedText.startsWith("/")) {
-				const commandMatch = trimmedText.match(/^\/(\w+)(?:\s|$)/)
-				if (commandMatch && commandMatch[1]) {
-					const globalCommand = getGlobalCommand(commandMatch[1])
-					if (globalCommand?.action === "clearTask") {
-						// Reset state
-						batch(() => {
-							setStore("messages", [])
-							setStore("pendingAsk", null)
-							setStore("isLoading", false)
-							setStore("isComplete", false)
-							setStore("hasStartedTask", false)
-							setStore("error", null)
-							setStore("isResumingTask", false)
-							setStore("tokenUsage", null)
-							setStore("currentTodos", [])
-							setStore("previousTodos", [])
-						})
-						seenMessageIds.clear()
-						firstTextMessageSkipped = false
-						sendToExtension({ type: "clearTask" })
-						sendToExtension({ type: "requestCommands" })
-						sendToExtension({ type: "requestModes" })
-						return
-					}
-				}
-			}
+			switch (action.kind) {
+				case "none":
+					return
 
-			if (store.pendingAsk) {
-				addMessage({ id: randomUUID(), role: "user", content: trimmedText })
-				sendToExtension({
-					type: "askResponse",
-					askResponse: "messageResponse",
-					text: trimmedText,
-				})
-				batch(() => {
-					setStore("pendingAsk", null)
-					setStore("isLoading", true)
-				})
-			} else if (!store.hasStartedTask) {
-				batch(() => {
-					setStore("hasStartedTask", true)
-					setStore("isLoading", true)
-				})
-				addMessage({ id: randomUUID(), role: "user", content: trimmedText })
-				try {
-					await runTask(trimmedText)
-				} catch (err) {
+				case "clearTask":
 					batch(() => {
-						setStore("error", err instanceof Error ? err.message : String(err))
+						setStore("messages", [])
+						setStore("pendingAsk", null)
 						setStore("isLoading", false)
+						setStore("isComplete", false)
+						setStore("hasStartedTask", false)
+						setStore("error", null)
+						setStore("isResumingTask", false)
+						setStore("tokenUsage", null)
+						setStore("currentTodos", [])
+						setStore("previousTodos", [])
 					})
-				}
-			} else {
-				if (store.isComplete) setStore("isComplete", false)
-				setStore("isLoading", true)
-				addMessage({ id: randomUUID(), role: "user", content: trimmedText })
-				sendToExtension({
-					type: "askResponse",
-					askResponse: "messageResponse",
-					text: trimmedText,
-				})
+					seenMessageIds.clear()
+					firstTextMessageSkipped = false
+					sendToExtension({ type: "clearTask" })
+					sendToExtension({ type: "requestCommands" })
+					sendToExtension({ type: "requestModes" })
+					return
+
+				case "respondToAsk":
+					addMessage(action.userMessage)
+					sendToExtension({
+						type: "askResponse",
+						askResponse: "messageResponse",
+						text: action.text,
+					})
+					batch(() => {
+						setStore("pendingAsk", null)
+						setStore("isLoading", true)
+					})
+					return
+
+				case "startNewTask":
+					batch(() => {
+						setStore("hasStartedTask", true)
+						setStore("isLoading", true)
+					})
+					addMessage(action.userMessage)
+					try {
+						await runTask(action.text)
+					} catch (err) {
+						batch(() => {
+							setStore("error", err instanceof Error ? err.message : String(err))
+							setStore("isLoading", false)
+						})
+					}
+					return
+
+				case "continueTask":
+					if (store.isComplete) setStore("isComplete", false)
+					setStore("isLoading", true)
+					addMessage(action.userMessage)
+					sendToExtension({
+						type: "askResponse",
+						askResponse: "messageResponse",
+						text: action.text,
+					})
+					return
 			}
 		}
 

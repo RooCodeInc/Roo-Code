@@ -18,10 +18,10 @@ describe("getTerminalBackgroundColor", () => {
 		mockRemoveListener = vi.fn()
 		mockStdoutWrite = vi.fn()
 
-		process.stdin.setRawMode = mockSetRawMode as any
-		process.stdin.on = mockOn as any
-		process.stdin.removeListener = mockRemoveListener as any
-		process.stdout.write = mockStdoutWrite as any
+		process.stdin.setRawMode = mockSetRawMode as typeof process.stdin.setRawMode
+		process.stdin.on = mockOn as typeof process.stdin.on
+		process.stdin.removeListener = mockRemoveListener as typeof process.stdin.removeListener
+		process.stdout.write = mockStdoutWrite as typeof process.stdout.write
 	})
 
 	afterEach(() => {
