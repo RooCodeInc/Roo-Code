@@ -8,7 +8,6 @@ import { ApiStream } from "./transform/stream"
 import {
 	AnthropicHandler,
 	AwsBedrockHandler,
-	CerebrasHandler,
 	OpenRouterHandler,
 	VertexHandler,
 	AnthropicVertexHandler,
@@ -21,24 +20,16 @@ import {
 	MoonshotHandler,
 	MistralHandler,
 	VsCodeLmHandler,
-	UnboundHandler,
 	RequestyHandler,
 	FakeAIHandler,
 	XAIHandler,
-	GroqHandler,
-	HuggingFaceHandler,
-	ChutesHandler,
 	LiteLLMHandler,
 	QwenCodeHandler,
 	SambaNovaHandler,
-	IOIntelligenceHandler,
-	DoubaoHandler,
 	ZAiHandler,
 	FireworksHandler,
 	RooHandler,
-	FeatherlessHandler,
 	VercelAiGatewayHandler,
-	DeepInfraHandler,
 	MiniMaxHandler,
 	BasetenHandler,
 } from "./providers"
@@ -51,16 +42,13 @@ export interface SingleCompletionHandler {
 export interface ApiHandlerCreateMessageMetadata {
 	/**
 	 * Task ID used for tracking and provider-specific features:
-	 * - DeepInfra: Used as prompt_cache_key for caching
 	 * - Roo: Sent as X-Roo-Task-ID header
 	 * - Requesty: Sent as trace_id
-	 * - Unbound: Sent in unbound_metadata
 	 */
 	taskId: string
 	/**
 	 * Current mode slug for provider-specific tracking:
 	 * - Requesty: Sent in extra metadata
-	 * - Unbound: Sent in unbound_metadata
 	 */
 	mode?: string
 	suppressPreviousResponseId?: boolean
@@ -156,8 +144,6 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new OpenAiNativeHandler(options)
 		case "deepseek":
 			return new DeepSeekHandler(options)
-		case "doubao":
-			return new DoubaoHandler(options)
 		case "qwen-code":
 			return new QwenCodeHandler(options)
 		case "moonshot":
@@ -166,40 +152,24 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new VsCodeLmHandler(options)
 		case "mistral":
 			return new MistralHandler(options)
-		case "unbound":
-			return new UnboundHandler(options)
 		case "requesty":
 			return new RequestyHandler(options)
 		case "fake-ai":
 			return new FakeAIHandler(options)
 		case "xai":
 			return new XAIHandler(options)
-		case "groq":
-			return new GroqHandler(options)
-		case "deepinfra":
-			return new DeepInfraHandler(options)
-		case "huggingface":
-			return new HuggingFaceHandler(options)
-		case "chutes":
-			return new ChutesHandler(options)
 		case "litellm":
 			return new LiteLLMHandler(options)
-		case "cerebras":
-			return new CerebrasHandler(options)
 		case "sambanova":
 			return new SambaNovaHandler(options)
 		case "zai":
 			return new ZAiHandler(options)
 		case "fireworks":
 			return new FireworksHandler(options)
-		case "io-intelligence":
-			return new IOIntelligenceHandler(options)
 		case "roo":
 			// Never throw exceptions from provider constructors
 			// The provider-proxy server will handle authentication and return appropriate error codes
 			return new RooHandler(options)
-		case "featherless":
-			return new FeatherlessHandler(options)
 		case "vercel-ai-gateway":
 			return new VercelAiGatewayHandler(options)
 		case "minimax":

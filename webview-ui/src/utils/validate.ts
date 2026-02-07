@@ -42,18 +42,8 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
-		case "unbound":
-			if (!apiConfiguration.unboundApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
 		case "requesty":
 			if (!apiConfiguration.requestyApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
-		case "deepinfra":
-			if (!apiConfiguration.deepInfraApiKey) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
@@ -112,31 +102,8 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.modelSelector")
 			}
 			break
-		case "huggingface":
-			if (!apiConfiguration.huggingFaceApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			if (!apiConfiguration.huggingFaceModelId) {
-				return i18next.t("settings:validation.modelId")
-			}
-			break
-		case "cerebras":
-			if (!apiConfiguration.cerebrasApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
 		case "fireworks":
 			if (!apiConfiguration.fireworksApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
-		case "io-intelligence":
-			if (!apiConfiguration.ioIntelligenceApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
-		case "featherless":
-			if (!apiConfiguration.featherlessApiKey) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break

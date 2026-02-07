@@ -810,9 +810,9 @@ describe("AI SDK conversion utilities", () => {
 				lastError: { message: "Too Many Requests", status: 429 },
 			}
 
-			const result = handleAiSdkError(retryError, "Groq")
+			const result = handleAiSdkError(retryError, "SambaNova")
 
-			expect(result.message).toContain("Groq:")
+			expect(result.message).toContain("SambaNova:")
 			expect(result.message).toContain("429")
 			expect((result as any).status).toBe(429)
 		})
@@ -833,7 +833,7 @@ describe("AI SDK conversion utilities", () => {
 
 		it("should preserve original error as cause", () => {
 			const originalError = new Error("Original error")
-			const result = handleAiSdkError(originalError, "Cerebras")
+			const result = handleAiSdkError(originalError, "Mistral")
 
 			expect((result as any).cause).toBe(originalError)
 		})

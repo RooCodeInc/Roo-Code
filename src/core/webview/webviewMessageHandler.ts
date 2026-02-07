@@ -874,16 +874,11 @@ export const webviewMessageHandler = async (
 				: {
 						openrouter: {},
 						"vercel-ai-gateway": {},
-						huggingface: {},
 						litellm: {},
-						deepinfra: {},
-						"io-intelligence": {},
 						requesty: {},
-						unbound: {},
 						ollama: {},
 						lmstudio: {},
 						roo: {},
-						chutes: {},
 					}
 
 			const safeGetModels = async (options: GetModelsOptions): Promise<ModelRecord> => {
@@ -910,16 +905,7 @@ export const webviewMessageHandler = async (
 						baseUrl: apiConfiguration.requestyBaseUrl,
 					},
 				},
-				{ key: "unbound", options: { provider: "unbound", apiKey: apiConfiguration.unboundApiKey } },
 				{ key: "vercel-ai-gateway", options: { provider: "vercel-ai-gateway" } },
-				{
-					key: "deepinfra",
-					options: {
-						provider: "deepinfra",
-						apiKey: apiConfiguration.deepInfraApiKey,
-						baseUrl: apiConfiguration.deepInfraBaseUrl,
-					},
-				},
 				{
 					key: "roo",
 					options: {
@@ -930,19 +916,7 @@ export const webviewMessageHandler = async (
 							: undefined,
 					},
 				},
-				{
-					key: "chutes",
-					options: { provider: "chutes", apiKey: apiConfiguration.chutesApiKey },
-				},
 			]
-
-			// IO Intelligence is conditional on api key
-			if (apiConfiguration.ioIntelligenceApiKey) {
-				candidates.push({
-					key: "io-intelligence",
-					options: { provider: "io-intelligence", apiKey: apiConfiguration.ioIntelligenceApiKey },
-				})
-			}
 
 			// LiteLLM is conditional on baseUrl+apiKey
 			const litellmApiKey = apiConfiguration.litellmApiKey || message?.values?.litellmApiKey
@@ -1130,21 +1104,6 @@ export const webviewMessageHandler = async (
 			const vsCodeLmModels = await getVsCodeLmModels()
 			// TODO: Cache like we do for OpenRouter, etc?
 			provider.postMessageToWebview({ type: "vsCodeLmModels", vsCodeLmModels })
-			break
-		case "requestHuggingFaceModels":
-			// TODO: Why isn't this handled by `requestRouterModels` above?
-			try {
-				const { getHuggingFaceModelsWithMetadata } = await import("../../api/providers/fetchers/huggingface")
-				const huggingFaceModelsResponse = await getHuggingFaceModelsWithMetadata()
-
-				provider.postMessageToWebview({
-					type: "huggingFaceModels",
-					huggingFaceModels: huggingFaceModelsResponse.models,
-				})
-			} catch (error) {
-				console.error("Failed to fetch Hugging Face models:", error)
-				provider.postMessageToWebview({ type: "huggingFaceModels", huggingFaceModels: [] })
-			}
 			break
 		case "openImage":
 			openImage(message.text!, { values: message.values })
