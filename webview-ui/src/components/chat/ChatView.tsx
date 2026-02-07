@@ -44,6 +44,7 @@ import TaskHeader from "./TaskHeader"
 import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
+import { InitialCheckpoint } from "./checkpoints/InitialCheckpoint"
 import { QueuedMessages } from "./QueuedMessages"
 import { WorktreeSelector } from "./WorktreeSelector"
 import DismissibleUpsell from "../common/DismissibleUpsell"
@@ -97,6 +98,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		messageQueue = [],
 		isBrowserSessionActive,
 		showWorktreesInHomeScreen,
+		initialCheckpointState,
+		initialCheckpointHash,
+		enableCheckpoints,
 	} = useExtensionState()
 
 	const messagesRef = useRef(messages)
@@ -1593,6 +1597,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					{checkpointWarning && (
 						<div className="px-3">
 							<CheckpointWarning warning={checkpointWarning} />
+						</div>
+					)}
+
+					{/* Initial Checkpoint UI - state-driven element */}
+					{initialCheckpointState && enableCheckpoints && (
+						<div className="px-3">
+							<InitialCheckpoint state={initialCheckpointState} hash={initialCheckpointHash} />
 						</div>
 					)}
 				</>

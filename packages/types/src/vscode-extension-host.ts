@@ -60,6 +60,7 @@ export interface ExtensionMessage {
 		| "deleteCustomModeCheck"
 		| "currentCheckpointUpdated"
 		| "checkpointInitWarning"
+		| "initialCheckpointState"
 		| "browserToolEnabled"
 		| "browserConnectionResult"
 		| "remoteBrowserEnabled"
@@ -115,6 +116,9 @@ export interface ExtensionMessage {
 		type: "WAIT_TIMEOUT" | "INIT_TIMEOUT"
 		timeout: number
 	}
+	// Initial checkpoint state for state-driven UI
+	initialCheckpointState?: "pending" | "ready" | "failed" | null
+	initialCheckpointHash?: string | null
 	action?:
 		| "chatButtonClicked"
 		| "settingsButtonClicked"
@@ -405,6 +409,10 @@ export type ExtensionState = Pick<
 	featureRoomoteControlEnabled: boolean
 	openAiCodexIsAuthenticated?: boolean
 	debug?: boolean
+
+	// Initial checkpoint state for state-driven UI
+	initialCheckpointState?: "pending" | "ready" | "failed" | null
+	initialCheckpointHash?: string | null
 }
 
 export interface Command {
@@ -734,6 +742,7 @@ export const checkoutRestorePayloadSchema = z.object({
 	ts: z.number(),
 	commitHash: z.string(),
 	mode: z.enum(["preview", "restore"]),
+	isInitial: z.boolean().optional(),
 })
 
 export type CheckpointRestorePayload = z.infer<typeof checkoutRestorePayloadSchema>

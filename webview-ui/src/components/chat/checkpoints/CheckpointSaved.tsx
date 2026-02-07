@@ -83,7 +83,9 @@ export const CheckpointSaved = ({ checkpoint, currentHash, ...props }: Checkpoin
 			onMouseLeave={handleMouseLeave}>
 			<div className="flex items-center gap-2 text-blue-400 whitespace-nowrap">
 				<GitCommitVertical className="w-4" />
-				<span className="font-semibold">{t("chat:checkpoint.regular")}</span>
+				<span className="font-semibold">
+					{metadata.isInitial ? t("chat:checkpoint.initial") : t("chat:checkpoint.regular")}
+				</span>
 				{isCurrent && <span className="text-muted">({t("chat:checkpoint.current")})</span>}
 			</div>
 			<span
@@ -99,6 +101,7 @@ export const CheckpointSaved = ({ checkpoint, currentHash, ...props }: Checkpoin
 					ts={props.ts}
 					commitHash={props.commitHash}
 					checkpoint={metadata}
+					isInitial={metadata.isInitial ?? false}
 					onOpenChange={handlePopoverOpenChange}
 				/>
 			</div>
