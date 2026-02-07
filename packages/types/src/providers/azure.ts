@@ -376,6 +376,6 @@ export const azureModels = {
 
 export type AzureModelId = keyof typeof azureModels
 
-export const azureDefaultModelId: AzureModelId = "gpt-4o"
+export const azureDefaultModelId: AzureModelId = "gpt-5.2"
 
 export const azureDefaultModelInfo: ModelInfo = azureModels[azureDefaultModelId]
