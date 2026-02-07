@@ -1,4 +1,5 @@
 import { TodoItem } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
 import { AttemptCompletionToolUse } from "../../../shared/tools"
 
@@ -6,6 +7,8 @@ import { AttemptCompletionToolUse } from "../../../shared/tools"
 vi.mock("../../prompts/responses", () => ({
 	formatResponse: {
 		toolError: vi.fn((msg: string) => `Error: ${msg}`),
+		toolResult: vi.fn((text: string, images?: string[]) => text),
+		imageBlocks: vi.fn((images?: string[]) => []),
 	},
 }))
 
@@ -39,6 +42,10 @@ describe("attemptCompletionTool", () => {
 	let mockGetConfiguration: ReturnType<typeof vi.fn>
 
 	beforeEach(() => {
+		if (!TelemetryService.hasInstance()) {
+			TelemetryService.createInstance([])
+		}
+
 		mockPushToolResult = vi.fn()
 		mockAskApproval = vi.fn()
 		mockHandleError = vi.fn()
@@ -467,6 +474,160 @@ describe("attemptCompletionTool", () => {
 				expect(mockTask.consecutiveMistakeCount).toBe(0)
 				expect(mockTask.recordToolError).not.toHaveBeenCalled()
 			})
+		})
+	})
+
+	describe("yesButtonClicked completion acceptance", () => {
+		it("should wait for follow-up after yesButtonClicked and push 'completed' if no text", async () => {
+			const block: AttemptCompletionToolUse = {
+				type: "tool_use",
+				name: "attempt_completion",
+				params: { result: "Task completed successfully" },
+				nativeArgs: { result: "Task completed successfully" },
+				partial: false,
+			}
+
+			mockTask.todoList = undefined
+			mockTask.didToolFailInCurrentTurn = false
+
+			// First ask returns yesButtonClicked (completion_result),
+			// second ask returns yesButtonClicked with no text (resume_completed_task)
+			mockTask.ask = vi
+				.fn()
+				.mockResolvedValueOnce({ response: "yesButtonClicked", text: "", images: [] })
+				.mockResolvedValueOnce({ response: "yesButtonClicked", text: "", images: [] })
+
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+			// handleError should NOT have been called
+			expect(mockHandleError).not.toHaveBeenCalled()
+
+			// ask should have been called twice: completion_result + resume_completed_task
+			expect(mockTask.ask).toHaveBeenCalledTimes(2)
+			expect(mockTask.ask).toHaveBeenNthCalledWith(1, "completion_result", "", false)
+			expect(mockTask.ask).toHaveBeenNthCalledWith(2, "resume_completed_task")
+
+			// Should push a "completed" tool_result
+			expect(mockPushToolResult).toHaveBeenCalledTimes(1)
+			const toolResultArg = mockPushToolResult.mock.calls[0][0]
+			const parsed = JSON.parse(toolResultArg)
+			expect(parsed.status).toBe("completed")
+		})
+
+		it("should push follow-up text as tool_result when user returns with a message", async () => {
+			const block: AttemptCompletionToolUse = {
+				type: "tool_use",
+				name: "attempt_completion",
+				params: { result: "Task completed" },
+				nativeArgs: { result: "Task completed" },
+				partial: false,
+			}
+
+			mockTask.todoList = undefined
+			mockTask.didToolFailInCurrentTurn = false
+
+			// First ask returns yesButtonClicked (completion_result),
+			// second ask returns messageResponse with follow-up text (resume_completed_task)
+			mockTask.ask = vi
+				.fn()
+				.mockResolvedValueOnce({ response: "yesButtonClicked", text: "", images: [] })
+				.mockResolvedValueOnce({ response: "messageResponse", text: "Actually, also fix Y", images: [] })
+
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+			// Should push a tool_result with the follow-up text
+			expect(mockPushToolResult).toHaveBeenCalledTimes(1)
+			const toolResultArg = mockPushToolResult.mock.calls[0][0]
+			expect(toolResultArg).toContain("Actually, also fix Y")
+		})
+
+		it("should push tool_result with user feedback when user provides direct feedback", async () => {
+			const block: AttemptCompletionToolUse = {
+				type: "tool_use",
+				name: "attempt_completion",
+				params: { result: "Task completed" },
+				nativeArgs: { result: "Task completed" },
+				partial: false,
+			}
+
+			mockTask.todoList = undefined
+			mockTask.didToolFailInCurrentTurn = false
+
+			// Simulate user providing feedback directly (messageResponse on first ask)
+			mockTask.ask = vi
+				.fn()
+				.mockResolvedValue({ response: "messageResponse", text: "Please also fix X", images: [] })
+
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+			// Only one ask call - user provided feedback directly
+			expect(mockTask.ask).toHaveBeenCalledTimes(1)
+
+			// Should push a tool_result with the user's feedback
+			expect(mockPushToolResult).toHaveBeenCalledTimes(1)
+			const toolResultArg = mockPushToolResult.mock.calls[0][0]
+			expect(toolResultArg).toContain("Please also fix X")
+		})
+
+		it("should fall through to error handler when resume_completed_task ask throws (abort)", async () => {
+			const block: AttemptCompletionToolUse = {
+				type: "tool_use",
+				name: "attempt_completion",
+				params: { result: "Task completed" },
+				nativeArgs: { result: "Task completed" },
+				partial: false,
+			}
+
+			mockTask.todoList = undefined
+			mockTask.didToolFailInCurrentTurn = false
+
+			// First ask returns yesButtonClicked (completion_result),
+			// second ask throws (simulating task abort during resume_completed_task)
+			mockTask.ask = vi
+				.fn()
+				.mockResolvedValueOnce({ response: "yesButtonClicked", text: "", images: [] })
+				.mockRejectedValueOnce(new Error("Task was aborted"))
+
+			const callbacks: AttemptCompletionCallbacks = {
+				askApproval: mockAskApproval,
+				handleError: mockHandleError,
+				pushToolResult: mockPushToolResult,
+				askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+				toolDescription: mockToolDescription,
+			}
+
+			await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+			// ask should have been called twice: completion_result + resume_completed_task (which threw)
+			expect(mockTask.ask).toHaveBeenCalledTimes(2)
+
+			// handleError should have been called with "completing task"
+			expect(mockHandleError).toHaveBeenCalledTimes(1)
+			expect(mockHandleError).toHaveBeenCalledWith("completing task", expect.any(Error))
 		})
 	})
 })
