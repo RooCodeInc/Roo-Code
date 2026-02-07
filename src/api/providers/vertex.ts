@@ -134,7 +134,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 			// Add thinking/reasoning configuration if present
 			// Cast to any to bypass strict JSONObject typing - the AI SDK accepts the correct runtime values
 			...(thinkingConfig && {
-				providerOptions: { google: { thinkingConfig } } as any,
+				providerOptions: { vertex: { thinkingConfig } } as any,
 			}),
 		}
 
@@ -166,7 +166,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 
 			// Extract grounding sources from providerMetadata if available
 			const providerMetadata = await result.providerMetadata
-			const groundingMetadata = providerMetadata?.google as
+			const groundingMetadata = (providerMetadata?.vertex ?? providerMetadata?.google) as
 				| {
 						groundingMetadata?: {
 							groundingChunks?: Array<{
@@ -318,7 +318,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 
 			// Extract grounding citations from providerMetadata if available
 			const providerMetadata = result.providerMetadata
-			const groundingMetadata = providerMetadata?.google as
+			const groundingMetadata = (providerMetadata?.vertex ?? providerMetadata?.google) as
 				| {
 						groundingMetadata?: {
 							groundingChunks?: Array<{
