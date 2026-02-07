@@ -267,3 +267,45 @@ describe("validateBedrockArn", () => {
 		})
 	})
 })
+
+describe("azure validation", () => {
+	it("should return no errors when all Azure fields are empty (fresh provider selection)", () => {
+		const config: ProviderSettings = {
+			apiProvider: "azure",
+		}
+
+		const result = validateApiConfigurationExcludingModelErrors(config)
+		expect(result).toBeUndefined()
+	})
+
+	it("should require azureBaseUrl when other Azure fields are set", () => {
+		const config: ProviderSettings = {
+			apiProvider: "azure",
+			azureDeploymentName: "my-deployment",
+		}
+
+		const result = validateApiConfigurationExcludingModelErrors(config)
+		expect(result).toBe("settings:validation.azureBaseUrl")
+	})
+
+	it("should require azureDeploymentName when azureBaseUrl is set", () => {
+		const config: ProviderSettings = {
+			apiProvider: "azure",
+			azureBaseUrl: "https://my-resource.openai.azure.com",
+		}
+
+		const result = validateApiConfigurationExcludingModelErrors(config)
+		expect(result).toBe("settings:validation.azureDeploymentName")
+	})
+
+	it("should accept valid config without azureApiKey (managed identity)", () => {
+		const config: ProviderSettings = {
+			apiProvider: "azure",
+			azureBaseUrl: "https://my-resource.openai.azure.com",
+			azureDeploymentName: "my-deployment",
+		}
+
+		const result = validateApiConfigurationExcludingModelErrors(config)
+		expect(result).toBeUndefined()
+	})
+})

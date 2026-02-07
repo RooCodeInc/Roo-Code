@@ -1,4 +1,4 @@
-import { getApiProtocol } from "../provider-settings.js"
+import { getApiProtocol, providerSettingsSchemaDiscriminated } from "../provider-settings.js"
 
 describe("getApiProtocol", () => {
 	describe("Anthropic-style providers", () => {
@@ -59,6 +59,37 @@ describe("getApiProtocol", () => {
 			expect(getApiProtocol("openai", "claude-3-sonnet")).toBe("openai")
 			expect(getApiProtocol("litellm", "claude-instant")).toBe("openai")
 			expect(getApiProtocol("ollama", "claude-model")).toBe("openai")
+		})
+	})
+
+	describe("azure provider settings", () => {
+		it("accepts valid Azure config with all fields", () => {
+			const result = providerSettingsSchemaDiscriminated.safeParse({
+				apiProvider: "azure",
+				azureApiKey: "test-key-123",
+				azureBaseUrl: "https://my-resource.openai.azure.com/openai",
+				azureDeploymentName: "gpt-5.2",
+				azureApiVersion: "2024-10-21",
+				apiModelId: "gpt-5.2",
+			})
+			expect(result.success).toBe(true)
+		})
+
+		it("accepts Azure config without optional azureApiKey (managed identity)", () => {
+			const result = providerSettingsSchemaDiscriminated.safeParse({
+				apiProvider: "azure",
+				azureBaseUrl: "https://my-resource.openai.azure.com/openai",
+				azureDeploymentName: "gpt-4o",
+			})
+			expect(result.success).toBe(true)
+		})
+
+		it("rejects Azure config with invalid field types", () => {
+			const result = providerSettingsSchemaDiscriminated.safeParse({
+				apiProvider: "azure",
+				azureApiKey: 12345,
+			})
+			expect(result.success).toBe(false)
 		})
 	})
 

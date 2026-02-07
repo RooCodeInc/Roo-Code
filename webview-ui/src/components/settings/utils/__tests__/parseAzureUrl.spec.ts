@@ -106,4 +106,24 @@ describe("parseAzureUrl", () => {
 			deploymentName: "gpt-4o",
 		})
 	})
+
+	describe("additional edge cases", () => {
+		it("should handle URL with port number", () => {
+			const result = parseAzureUrl("https://localhost:8080/openai/deployments/test/chat/completions")
+			expect(result).toEqual({ baseUrl: "https://localhost:8080/openai", deploymentName: "test" })
+		})
+
+		it("should return null for URL with /openai but no /deployments/ segment", () => {
+			const result = parseAzureUrl("https://myresource.openai.azure.com/openai/models")
+			expect(result).toBeNull()
+		})
+
+		it("should handle URL with deep subdomain", () => {
+			const result = parseAzureUrl("https://dept.team.openai.azure.com/openai/deployments/gpt4/chat")
+			expect(result).toEqual({
+				baseUrl: "https://dept.team.openai.azure.com/openai",
+				deploymentName: "gpt4",
+			})
+		})
+	})
 })
