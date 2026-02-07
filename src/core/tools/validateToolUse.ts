@@ -4,7 +4,7 @@ import { customToolRegistry } from "@roo-code/core"
 
 import { type Mode, FileRestrictionError, getModeBySlug, getGroupName } from "../../shared/modes"
 import { EXPERIMENT_IDS } from "../../shared/experiments"
-import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS } from "../../shared/tools"
+import { TOOL_GROUPS, ALWAYS_AVAILABLE_TOOLS, TOOL_ALIASES } from "../../shared/tools"
 
 /**
  * Checks if a tool name is a valid, known tool.
@@ -126,11 +126,18 @@ export function isToolAllowedForMode(
 	experiments?: Record<string, boolean>,
 	includedTools?: string[], // Opt-in tools explicitly included (e.g., from modelInfo)
 ): boolean {
+	// Resolve alias to canonical name (e.g., "search_and_replace" → "edit")
+	const resolvedTool = TOOL_ALIASES[tool] ?? tool
+	const resolvedIncludedTools = includedTools?.map((t) => TOOL_ALIASES[t] ?? t)
+
 	// Check tool requirements first — explicit disabling takes priority over everything,
 	// including ALWAYS_AVAILABLE_TOOLS. This ensures disabledTools works consistently
 	// at both the filtering layer and the execution-time validation layer.
 	if (toolRequirements && typeof toolRequirements === "object") {
-		if (tool in toolRequirements && !toolRequirements[tool]) {
+		if (
+			(tool in toolRequirements && !toolRequirements[tool]) ||
+			(resolvedTool in toolRequirements && !toolRequirements[resolvedTool])
+		) {
 			return false
 		}
 	} else if (toolRequirements === false) {
@@ -179,10 +186,11 @@ export function isToolAllowedForMode(
 		}
 
 		// Check if the tool is in the group's regular tools
-		const isRegularTool = groupConfig.tools.includes(tool)
+		const isRegularTool = groupConfig.tools.includes(resolvedTool)
 
 		// Check if the tool is a custom tool that has been explicitly included
-		const isCustomTool = groupConfig.customTools?.includes(tool) && includedTools?.includes(tool)
+		const isCustomTool =
+			groupConfig.customTools?.includes(resolvedTool) && resolvedIncludedTools?.includes(resolvedTool)
 
 		// If the tool isn't in regular tools and isn't an included custom tool, continue to next group
 		if (!isRegularTool && !isCustomTool) {
