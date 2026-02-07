@@ -18,6 +18,7 @@ vi.mock("../../cache-manager")
 vi.mock("../../../core/ignore/RooIgnoreController", () => ({
 	RooIgnoreController: vi.fn().mockImplementation(() => ({
 		validateAccess: vi.fn().mockReturnValue(true),
+		dispose: vi.fn(),
 	})),
 }))
 vi.mock("ignore")
@@ -283,6 +284,34 @@ describe("FileWatcher", () => {
 			fileWatcher.dispose()
 
 			expect(mockWatcher.dispose).toHaveBeenCalled()
+		})
+
+		it("should dispose the internally-owned RooIgnoreController", async () => {
+			await fileWatcher.initialize()
+			const ignoreController = (fileWatcher as any).ignoreController as { dispose: () => void }
+			const disposeSpy = vi.spyOn(ignoreController, "dispose")
+			fileWatcher.dispose()
+
+			// The internally created controller should be disposed
+			expect(disposeSpy).toHaveBeenCalledTimes(1)
+		})
+
+		it("should not dispose a provided RooIgnoreController", async () => {
+			const providedIgnoreController = { validateAccess: vi.fn().mockReturnValue(true), dispose: vi.fn() }
+			const customWatcher = new FileWatcher(
+				"/mock/workspace",
+				mockContext,
+				mockCacheManager,
+				mockEmbedder,
+				mockVectorStore,
+				mockIgnoreInstance,
+				providedIgnoreController as any,
+			)
+
+			await customWatcher.initialize()
+			customWatcher.dispose()
+
+			expect(providedIgnoreController.dispose).not.toHaveBeenCalled()
 		})
 	})
 })
