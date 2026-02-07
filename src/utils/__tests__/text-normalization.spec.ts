@@ -29,6 +29,17 @@ describe("Text normalization utilities", () => {
 			const input = "Let\u2019s test this\u2014with some \u201Cfancy\u201D punctuation\u2026 and   spaces"
 			expect(normalizeString(input)).toBe('Let\'s test this-with some "fancy" punctuation... and spaces')
 		})
+
+		it("normalizes middle dot and arrow characters", () => {
+			expect(normalizeString("migrated \u00B7 19 remaining")).toBe("migrated - 19 remaining")
+			expect(normalizeString("convert (1\u21922)")).toBe("convert (1->2)")
+			expect(normalizeString("Anthropic \u2194 OpenAI")).toBe("Anthropic <-> OpenAI")
+			expect(normalizeString("item \u2190 NEW")).toBe("item <- NEW")
+		})
+
+		it("strips variation selectors", () => {
+			expect(normalizeString("\u26A0\uFE0F Warning")).toBe("\u26A0 Warning")
+		})
 	})
 
 	describe("unescapeHtmlEntities", () => {
