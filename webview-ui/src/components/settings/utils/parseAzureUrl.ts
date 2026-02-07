@@ -3,13 +3,14 @@ export interface ParsedAzureUrl {
 	baseUrl: string
 	/** e.g. "gpt-5.2" */
 	deploymentName: string
-	/** e.g. "2024-05-01-preview" */
-	apiVersion?: string
 }
 
 /**
  * Parses a full Azure OpenAI URL into its components.
  * Returns null if the URL doesn't match the expected pattern.
+ *
+ * Extracts the base URL and deployment name only — the api-version query
+ * parameter is intentionally ignored so the application default is used.
  *
  * Supported URL formats:
  * - https://{resource}.openai.azure.com/openai/deployments/{deployment}/chat/completions?api-version={ver}
@@ -32,7 +33,6 @@ export function parseAzureUrl(input: string): ParsedAzureUrl | null {
 
 	const baseUrl = `${url.origin}${match[1]}`
 	const deploymentName = decodeURIComponent(match[2])
-	const apiVersion = url.searchParams.get("api-version") ?? undefined
 
-	return { baseUrl, deploymentName, ...(apiVersion !== undefined && { apiVersion }) }
+	return { baseUrl, deploymentName }
 }

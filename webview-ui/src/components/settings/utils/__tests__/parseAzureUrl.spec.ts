@@ -1,14 +1,13 @@
 import { parseAzureUrl } from "../parseAzureUrl"
 
 describe("parseAzureUrl", () => {
-	it("parses a full openai.azure.com URL with api-version", () => {
+	it("parses a full openai.azure.com URL (ignores api-version)", () => {
 		const result = parseAzureUrl(
 			"https://my-resource.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-10-21",
 		)
 		expect(result).toEqual({
 			baseUrl: "https://my-resource.openai.azure.com/openai",
 			deploymentName: "gpt-4o",
-			apiVersion: "2024-10-21",
 		})
 	})
 
@@ -19,7 +18,6 @@ describe("parseAzureUrl", () => {
 		expect(result).toEqual({
 			baseUrl: "https://my-deployment.cognitiveservices.azure.com/openai",
 			deploymentName: "gpt-5.2",
-			apiVersion: "2024-05-01-preview",
 		})
 	})
 
@@ -30,7 +28,6 @@ describe("parseAzureUrl", () => {
 		expect(result).toEqual({
 			baseUrl: "https://my-resource.services.ai.azure.com/openai",
 			deploymentName: "my-model",
-			apiVersion: "2025-01-01",
 		})
 	})
 
@@ -57,7 +54,6 @@ describe("parseAzureUrl", () => {
 		expect(result).toEqual({
 			baseUrl: "https://my-resource.openai.azure.com/openai",
 			deploymentName: "gpt-4.turbo.2024",
-			apiVersion: "2024-10-21",
 		})
 	})
 
@@ -68,7 +64,6 @@ describe("parseAzureUrl", () => {
 		expect(result).toEqual({
 			baseUrl: "https://my-resource.openai.azure.com/openai",
 			deploymentName: "my-deploy",
-			apiVersion: "2024-10-21",
 		})
 	})
 
@@ -102,14 +97,13 @@ describe("parseAzureUrl", () => {
 		})
 	})
 
-	it("handles additional query parameters besides api-version", () => {
+	it("ignores query parameters including api-version", () => {
 		const result = parseAzureUrl(
 			"https://my-resource.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-10-21&extra=param",
 		)
 		expect(result).toEqual({
 			baseUrl: "https://my-resource.openai.azure.com/openai",
 			deploymentName: "gpt-4o",
-			apiVersion: "2024-10-21",
 		})
 	})
 })

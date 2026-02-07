@@ -36,9 +36,6 @@ export const Azure = ({ apiConfiguration, setApiConfigurationField }: AzureProps
 			if (parsed) {
 				setApiConfigurationField("azureBaseUrl", parsed.baseUrl)
 				setApiConfigurationField("azureDeploymentName", parsed.deploymentName)
-				if (parsed.apiVersion) {
-					setApiConfigurationField("azureApiVersion", parsed.apiVersion)
-				}
 			} else {
 				setApiConfigurationField("azureBaseUrl", rawValue)
 			}
