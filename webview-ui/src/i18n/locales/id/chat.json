@@ -80,6 +80,22 @@
 			"title": "Tolak Semua"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Setujui Semua"
+		},
+		"deny": {
+			"title": "Tolak Semua"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Simpan Semua"
+		},
+		"deny": {
+			"title": "Tolak Semua"
+		}
+	},
 	"runCommand": {
 		"title": "Perintah",
 		"tooltip": "Jalankan perintah ini"
@@ -246,7 +262,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo ingin melihat file tingkat atas di direktori ini (di luar workspace)",
 		"didViewTopLevelOutsideWorkspace": "Roo melihat file tingkat atas di direktori ini (di luar workspace)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo ingin melihat semua file secara rekursif di direktori ini (di luar workspace)",
-		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)"
+		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)",
+		"wantsToViewMultipleDirectories": "Roo ingin melihat beberapa direktori"
 	},
 	"codebaseSearch": {
 		"wantsToSearch": "Roo ingin mencari codebase untuk <code>{{query}}</code>",

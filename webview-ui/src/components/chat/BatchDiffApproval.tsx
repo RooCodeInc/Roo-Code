@@ -35,12 +35,12 @@ export const BatchDiffApproval = memo(({ files = [], ts }: BatchDiffApprovalProp
 	return (
 		<div className="pt-[5px]">
 			<div className="flex flex-col gap-0 border border-border rounded-md p-1">
-				{files.map((file) => {
+				{files.map((file, index) => {
 					// Use backend-provided unified diff only. Stats also provided by backend.
 					const unified = file.content || ""
 
 					return (
-						<div key={`${file.path}-${ts}`}>
+						<div key={`${file.path}-${index}-${ts}`}>
 							<CodeAccordian
 								path={file.path}
 								code={unified}

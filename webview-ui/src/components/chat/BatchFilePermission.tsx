@@ -29,9 +29,9 @@ export const BatchFilePermission = memo(({ files = [], onPermissionResponse, ts 
 		<div className="pt-[5px]">
 			{/* Individual files */}
 			<div className="flex flex-col gap-0 border border-border rounded-md p-1">
-				{files.map((file) => {
+				{files.map((file, index) => {
 					return (
-						<div key={`${file.path}-${ts}`} className="flex items-center gap-2">
+						<div key={`${file.path}-${index}-${ts}`} className="flex items-center gap-2">
 							<ToolUseBlock className="flex-1">
 								<ToolUseBlockHeader
 									onClick={() => vscode.postMessage({ type: "openFile", text: file.content })}>
