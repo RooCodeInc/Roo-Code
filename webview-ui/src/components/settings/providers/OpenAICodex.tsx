@@ -14,6 +14,8 @@ interface OpenAICodexProps {
 	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
 	simplifySettings?: boolean
 	openAiCodexIsAuthenticated?: boolean
+	openAiCodexAccountEmail?: string | null
+	currentApiConfigName?: string
 }
 
 export const OpenAICodex: React.FC<OpenAICodexProps> = ({
@@ -21,6 +23,8 @@ export const OpenAICodex: React.FC<OpenAICodexProps> = ({
 	setApiConfigurationField,
 	simplifySettings,
 	openAiCodexIsAuthenticated = false,
+	openAiCodexAccountEmail,
+	currentApiConfigName,
 }) => {
 	const { t } = useAppTranslation()
 
@@ -29,15 +33,39 @@ export const OpenAICodex: React.FC<OpenAICodexProps> = ({
 			{/* Authentication Section */}
 			<div className="flex flex-col gap-2">
 				{openAiCodexIsAuthenticated ? (
-					<div className="flex justify-end">
-						<Button
-							variant="secondary"
-							size="sm"
-							onClick={() => vscode.postMessage({ type: "openAiCodexSignOut" })}>
-							{t("settings:providers.openAiCodex.signOutButton", {
-								defaultValue: "Sign Out",
-							})}
-						</Button>
+					<div className="flex flex-col gap-2">
+						<div className="flex flex-wrap items-center justify-between gap-2">
+							<div className="flex flex-col gap-1">
+								<div className="text-sm font-medium text-vscode-foreground">
+									{t("settings:providers.openAiCodex.connectedLabel", {
+										defaultValue: "Connected",
+									})}
+								</div>
+								{openAiCodexAccountEmail ? (
+									<div className="text-sm text-vscode-descriptionForeground">
+										{openAiCodexAccountEmail}
+									</div>
+								) : null}
+							</div>
+							<div className="flex items-center gap-2">
+								<Button
+									variant="secondary"
+									size="sm"
+									onClick={() => vscode.postMessage({ type: "openAiCodexSignIn" })}>
+									{t("settings:providers.openAiCodex.reauthButton", {
+										defaultValue: "Reconnect account",
+									})}
+								</Button>
+								<Button
+									variant="secondary"
+									size="sm"
+									onClick={() => vscode.postMessage({ type: "openAiCodexSignOut" })}>
+									{t("settings:providers.openAiCodex.signOutButton", {
+										defaultValue: "Sign Out",
+									})}
+								</Button>
+							</div>
+						</div>
 					</div>
 				) : (
 					<Button
@@ -52,7 +80,10 @@ export const OpenAICodex: React.FC<OpenAICodexProps> = ({
 			</div>
 
 			{/* Rate Limit Dashboard - only shown when authenticated */}
-			<OpenAICodexRateLimitDashboard isAuthenticated={openAiCodexIsAuthenticated} />
+			<OpenAICodexRateLimitDashboard
+				isAuthenticated={openAiCodexIsAuthenticated}
+				currentApiConfigName={currentApiConfigName}
+			/>
 
 			{/* Model Picker */}
 			<ModelPicker

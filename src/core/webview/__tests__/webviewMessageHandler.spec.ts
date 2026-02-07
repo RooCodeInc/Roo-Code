@@ -599,6 +599,10 @@ describe("webviewMessageHandler - requestRouterModels", () => {
 describe("webviewMessageHandler - requestOpenAiCodexRateLimits", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		mockClineProvider.getState = vi.fn().mockResolvedValue({
+			currentApiConfigName: "test-profile",
+			listApiConfigMeta: [{ id: "test-profile-id", name: "test-profile" }],
+		})
 		mockGetAccessToken.mockResolvedValue(null)
 		mockGetAccountId.mockResolvedValue(null)
 	})

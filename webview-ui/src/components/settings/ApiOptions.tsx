@@ -145,7 +145,13 @@ const ApiOptions = ({
 	setErrorMessage,
 }: ApiOptionsProps) => {
 	const { t } = useAppTranslation()
-	const { organizationAllowList, cloudIsAuthenticated, openAiCodexIsAuthenticated } = useExtensionState()
+	const {
+		organizationAllowList,
+		cloudIsAuthenticated,
+		openAiCodexIsAuthenticated,
+		openAiCodexAccountEmail,
+		currentApiConfigName,
+	} = useExtensionState()
 
 	const [customHeaders, setCustomHeaders] = useState<[string, string][]>(() => {
 		const headers = apiConfiguration?.openAiHeaders || {}
@@ -563,6 +569,8 @@ const ApiOptions = ({
 					setApiConfigurationField={setApiConfigurationField}
 					simplifySettings={fromWelcomeView}
 					openAiCodexIsAuthenticated={openAiCodexIsAuthenticated}
+					openAiCodexAccountEmail={openAiCodexAccountEmail}
+					currentApiConfigName={currentApiConfigName}
 				/>
 			)}
 

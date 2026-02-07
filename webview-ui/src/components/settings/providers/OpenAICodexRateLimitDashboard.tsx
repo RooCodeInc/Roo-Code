@@ -6,6 +6,7 @@ import { vscode } from "@src/utils/vscode"
 
 interface OpenAICodexRateLimitDashboardProps {
 	isAuthenticated: boolean
+	currentApiConfigName?: string
 }
 
 type Translate = (key: string, options?: Record<string, any>) => string
@@ -84,7 +85,10 @@ const UsageProgressBar: React.FC<{ usedPercent: number; label?: string }> = ({ u
 	)
 }
 
-export const OpenAICodexRateLimitDashboard: React.FC<OpenAICodexRateLimitDashboardProps> = ({ isAuthenticated }) => {
+export const OpenAICodexRateLimitDashboard: React.FC<OpenAICodexRateLimitDashboardProps> = ({
+	isAuthenticated,
+	currentApiConfigName,
+}) => {
 	const { t } = useAppTranslation()
 	const [rateLimits, setRateLimits] = useState<OpenAiCodexRateLimitInfo | null>(null)
 	const [isLoading, setIsLoading] = useState(false)
@@ -120,10 +124,13 @@ export const OpenAICodexRateLimitDashboard: React.FC<OpenAICodexRateLimitDashboa
 	}, [])
 
 	useEffect(() => {
+		setRateLimits(null)
+		setError(null)
+		setIsLoading(false)
 		if (isAuthenticated) {
 			fetchRateLimits()
 		}
-	}, [isAuthenticated, fetchRateLimits])
+	}, [isAuthenticated, currentApiConfigName, fetchRateLimits])
 
 	if (!isAuthenticated) return null
 
