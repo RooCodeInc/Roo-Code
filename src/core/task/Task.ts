@@ -105,6 +105,7 @@ import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
 import { type AssistantMessageContent, presentAssistantMessage } from "../assistant-message"
 import { NativeToolCallParser } from "../assistant-message/NativeToolCallParser"
+import { parseXmlToolCalls } from "../assistant-message/XmlToolCallFallbackParser"
 import { manageContext, willManageContext } from "../context-management"
 import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
@@ -3425,9 +3426,44 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Check if we have any content to process (text or tool uses)
 				const hasTextContent = assistantMessage.length > 0
 
-				const hasToolUses = this.assistantMessageContent.some(
+				let hasToolUses = this.assistantMessageContent.some(
 					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 				)
+
+				// XML tool call fallback: When the model doesn't support native function calling
+				// (common with some OpenAI-compatible proxies), it may output tool calls as XML
+				// text. If we have text content but no native tool uses, try to parse XML tool
+				// calls from the text as a fallback. (See: GitHub issue #11187)
+				if (hasTextContent && !hasToolUses) {
+					const fallbackResult = parseXmlToolCalls(assistantMessage)
+					if (fallbackResult.found) {
+						console.log(
+							`[Task#${this.taskId}] XML tool call fallback: parsed ${fallbackResult.toolUses.length} tool(s) from text`,
+						)
+
+						// Replace the text block(s) with the parsed tool uses
+						// Keep only non-text blocks (if any) from the original content
+						this.assistantMessageContent = this.assistantMessageContent.filter(
+							(block) => block.type !== "text",
+						)
+
+						// Add the parsed tool uses
+						for (const toolUse of fallbackResult.toolUses) {
+							this.assistantMessageContent.push(toolUse)
+						}
+
+						// Present each tool call so they are processed by presentAssistantMessage
+						this.userMessageContentReady = false
+						for (const toolUse of fallbackResult.toolUses) {
+							presentAssistantMessage(this)
+						}
+
+						// Re-check hasToolUses now that we've added fallback-parsed tools
+						hasToolUses = this.assistantMessageContent.some(
+							(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+						)
+					}
+				}
 
 				if (hasTextContent || hasToolUses) {
 					// Reset counter when we get a successful response with content
