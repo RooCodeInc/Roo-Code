@@ -109,7 +109,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 		let totalBlockCount = 0
 
 		// Create async queues for streaming file processing and progress updates
-		const fileQueue = createAsyncQueue<string>({ limit: Number.MAX_SAFE_INTEGER })
+		const fileQueue = createAsyncQueue<string>({ limit: MAX_LIST_FILES_LIMIT_CODE_INDEX })
 
 		// Progress queue to collect updates from parallel tasks
 		type ProgressUpdate = {
@@ -118,7 +118,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 			skipped: number
 			totalBlockCount: number
 		}
-		const progressQueue = createAsyncQueue<ProgressUpdate>({ limit: Number.MAX_SAFE_INTEGER })
+		const progressQueue = createAsyncQueue<ProgressUpdate>({ limit: MAX_LIST_FILES_LIMIT_CODE_INDEX })
 
 		// Start background task to discover and queue files
 		const discoveryTask = (async () => {

@@ -7,7 +7,7 @@
  */
 
 export interface AsyncQueueOptions<T> {
-	/** Maximum number of items to yield (optional limit) */
+	/** Maximum number of items that can be in the queue at the same time (concurrency limit) */
 	limit?: number
 	/** Timeout in milliseconds per item (optional) */
 	timeout?: number
@@ -16,8 +16,8 @@ export interface AsyncQueueOptions<T> {
 }
 
 export interface AsyncQueue<T> {
-	/** Add an item to the queue and signal readiness */
-	enqueue(item: T): void
+	/** Add an item to the queue and signal readiness. Waits if the queue is at capacity. */
+	enqueue(item: T): Promise<void>
 	/** Signal that an error occurred */
 	error(error: Error): void
 	/** Signal that the queue is complete (no more items will be added) */
@@ -60,10 +60,10 @@ export function createAsyncQueue<T>(options: AsyncQueueOptions<T> = {}): AsyncQu
 
 	let resumeCallback: (() => void) | null = null
 	const queue: T[] = []
-	let yieldedItems = 0
 	let lastError: Error | null = null
 	let isComplete = false
 	let timeoutId: NodeJS.Timeout | null = null
+	let dequeueCallbacks: Array<() => void> = []
 
 	/**
 	 * Reset the timeout timer
@@ -96,6 +96,16 @@ export function createAsyncQueue<T>(options: AsyncQueueOptions<T> = {}): AsyncQu
 	}
 
 	/**
+	 * Signal one waiting enqueue call that space is available
+	 */
+	function signalDequeue() {
+		if (dequeueCallbacks.length > 0) {
+			const cb = dequeueCallbacks.shift()!
+			cb()
+		}
+	}
+
+	/**
 	 * Cleanup resources
 	 */
 	function cleanup() {
@@ -108,9 +118,10 @@ export function createAsyncQueue<T>(options: AsyncQueueOptions<T> = {}): AsyncQu
 	return {
 		/**
 		 * Add an item to the queue and signal readiness
+		 * Waits if the queue is at capacity (limit reached)
 		 * Resets the timeout when an item is added
 		 */
-		enqueue(item: T) {
+		async enqueue(item: T) {
 			if (isComplete) {
 				return
 			}
@@ -120,17 +131,25 @@ export function createAsyncQueue<T>(options: AsyncQueueOptions<T> = {}): AsyncQu
 				return
 			}
 
-			// Only add if we haven't reached the limit
-			if (yieldedItems < limit) {
-				queue.push(item)
-				resetTimeout()
-				resume()
+			// Wait if the queue is at capacity
+			while (queue.length >= limit) {
+				await new Promise<void>((resolve) => {
+					dequeueCallbacks.push(resolve)
+				})
+				// Check again after waking up in case state changed
+				if (isComplete || lastError) {
+					return
+				}
 			}
+
+			queue.push(item)
+			resetTimeout()
+			resume()
 		},
 
 		/**
 		 * Signal that an error occurred
-		 * Errors are always stored and thrown, even after completion or limit is reached
+		 * Errors are always stored and thrown, even after completion
 		 */
 		error(error: Error) {
 			// Always store the error, even if already complete
@@ -139,6 +158,11 @@ export function createAsyncQueue<T>(options: AsyncQueueOptions<T> = {}): AsyncQu
 				lastError = error
 				cleanup()
 				resume()
+				// Wake up any waiting enqueue calls
+				while (dequeueCallbacks.length > 0) {
+					const cb = dequeueCallbacks.shift()!
+					cb()
+				}
 			}
 		},
 
@@ -152,6 +176,11 @@ export function createAsyncQueue<T>(options: AsyncQueueOptions<T> = {}): AsyncQu
 			isComplete = true
 			cleanup()
 			resume()
+			// Wake up any waiting enqueue calls
+			while (dequeueCallbacks.length > 0) {
+				const cb = dequeueCallbacks.shift()!
+				cb()
+			}
 		},
 
 		/**
@@ -172,9 +201,10 @@ export function createAsyncQueue<T>(options: AsyncQueueOptions<T> = {}): AsyncQu
 				}
 
 				// Yield items from the queue
-				while (queue.length > 0 && yieldedItems < limit) {
-					yieldedItems++
+				while (queue.length > 0) {
 					const item = queue.shift()!
+					// Signal waiting enqueue calls that space is available
+					signalDequeue()
 					// Reset timeout after yielding an item
 					resetTimeout()
 					yield item
@@ -184,16 +214,10 @@ export function createAsyncQueue<T>(options: AsyncQueueOptions<T> = {}): AsyncQu
 				if (lastError) {
 					throw lastError
 				}
-
-				// If we've reached the limit, we're done
-				if (yieldedItems >= limit) {
-					break
-				}
 			}
 
 			// Final error check after the loop to ensure errors are never silently swallowed
-			// This handles the case where an error is set after the limit is reached
-			// or after the queue is complete
+			// This handles the case where an error is set after the queue is complete
 			if (lastError) {
 				throw lastError
 			}
