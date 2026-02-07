@@ -122,6 +122,8 @@
 	},
 	"selectMode": "選擇互動模式",
 	"selectApiConfig": "選取 API 設定",
+	"lockApiConfigAcrossModes": "鎖定此工作區所有模式的 API 設定",
+	"unlockApiConfigAcrossModes": "此工作區所有模式的 API 設定已鎖定（點擊解鎖）",
 	"enhancePrompt": "使用額外內容強化提示詞",
 	"modeSelector": {
 		"title": "模式",

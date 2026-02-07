@@ -111,6 +111,8 @@
 	},
 	"selectMode": "Seleziona modalità di interazione",
 	"selectApiConfig": "Seleziona la configurazione API",
+	"lockApiConfigAcrossModes": "Blocca la configurazione API per tutte le modalità in questo workspace",
+	"unlockApiConfigAcrossModes": "La configurazione API è bloccata per tutte le modalità in questo workspace (clicca per sbloccare)",
 	"enhancePrompt": "Migliora prompt con contesto aggiuntivo",
 	"addImages": "Aggiungi immagini al messaggio",
 	"sendMessage": "Invia messaggio",

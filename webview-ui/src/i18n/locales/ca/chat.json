@@ -111,6 +111,8 @@
 	},
 	"selectMode": "Selecciona el mode d'interacció",
 	"selectApiConfig": "Seleccioneu la configuració de l'API",
+	"lockApiConfigAcrossModes": "Bloqueja la configuració de l'API a tots els modes en aquest espai de treball",
+	"unlockApiConfigAcrossModes": "La configuració de l'API està bloquejada a tots els modes en aquest espai de treball (fes clic per desbloquejar)",
 	"enhancePrompt": "Millora la sol·licitud amb context addicional",
 	"addImages": "Afegeix imatges al missatge",
 	"sendMessage": "Envia el missatge",

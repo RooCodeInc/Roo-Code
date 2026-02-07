@@ -111,6 +111,8 @@
 	},
 	"selectMode": "Sélectionner le mode d'interaction",
 	"selectApiConfig": "Sélectionner la configuration de l'API",
+	"lockApiConfigAcrossModes": "Verrouiller la configuration API pour tous les modes dans cet espace de travail",
+	"unlockApiConfigAcrossModes": "La configuration API est verrouillée pour tous les modes dans cet espace de travail (cliquer pour déverrouiller)",
 	"enhancePrompt": "Améliorer la requête avec un contexte supplémentaire",
 	"addImages": "Ajouter des images au message",
 	"sendMessage": "Envoyer le message",

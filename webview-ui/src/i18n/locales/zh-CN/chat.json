@@ -111,6 +111,8 @@
 	},
 	"selectMode": "选择交互模式",
 	"selectApiConfig": "选择 API 配置",
+	"lockApiConfigAcrossModes": "锁定此工作区所有模式的 API 配置",
+	"unlockApiConfigAcrossModes": "此工作区所有模式的 API 配置已锁定（点击解锁）",
 	"enhancePrompt": "增强提示词",
 	"addImages": "添加图片到消息",
 	"sendMessage": "发送消息",
