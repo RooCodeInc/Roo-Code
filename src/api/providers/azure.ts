@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createAzure } from "@ai-sdk/azure"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, type ProviderMetadata } from "ai"
 
 import { azureOpenAiDefaultApiVersion, azureModels, azureDefaultModelInfo, type ModelInfo } from "@roo-code/types"
 
@@ -41,7 +41,7 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		// useDeploymentBasedUrls produces the universally compatible
 		// /deployments/{id}/{path} URL shape.
 		this.provider = createAzure({
-			baseURL: options.azureBaseUrl ?? "",
+			baseURL: options.azureBaseUrl || undefined,
 			apiKey: options.azureApiKey, // Optional — Azure supports managed identity / Entra ID auth
 			apiVersion: options.azureApiVersion ?? azureOpenAiDefaultApiVersion,
 			useDeploymentBasedUrls: true,
@@ -89,16 +89,14 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 				reasoningTokens?: number
 			}
 		},
-		providerMetadata?: {
-			azure?: {
-				promptCacheHitTokens?: number
-				promptCacheMissTokens?: number
-			}
-		},
+		providerMetadata?: ProviderMetadata,
 	): ApiStreamUsageChunk {
 		// Extract cache metrics from Azure's providerMetadata if available
-		const cacheReadTokens = providerMetadata?.azure?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
-		const cacheWriteTokens = providerMetadata?.azure?.promptCacheMissTokens
+		const azureMeta = providerMetadata?.azure as
+			| { promptCacheHitTokens?: number; promptCacheMissTokens?: number }
+			| undefined
+		const cacheReadTokens = azureMeta?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
+		const cacheWriteTokens = azureMeta?.promptCacheMissTokens
 
 		return {
 			type: "usage",
@@ -165,7 +163,7 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 			const usage = await result.usage
 			const providerMetadata = await result.providerMetadata
 			if (usage) {
-				yield this.processUsageMetrics(usage, providerMetadata as any)
+				yield this.processUsageMetrics(usage, providerMetadata)
 			}
 		} catch (error) {
 			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)

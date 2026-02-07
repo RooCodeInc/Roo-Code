@@ -6,6 +6,7 @@ import { type ProviderSettings, azureOpenAiDefaultApiVersion } from "@roo-code/t
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 
 import { inputEventTransform } from "../transforms"
+import { parseAzureUrl } from "../utils/parseAzureUrl"
 
 type AzureProps = {
 	apiConfiguration: ProviderSettings
@@ -27,11 +28,29 @@ export const Azure = ({ apiConfiguration, setApiConfigurationField }: AzureProps
 		[setApiConfigurationField],
 	)
 
+	const handleBaseUrlInput = useCallback(
+		(event: unknown) => {
+			const rawValue = inputEventTransform(event)
+			const parsed = parseAzureUrl(rawValue)
+
+			if (parsed) {
+				setApiConfigurationField("azureBaseUrl", parsed.baseUrl)
+				setApiConfigurationField("azureDeploymentName", parsed.deploymentName)
+				if (parsed.apiVersion) {
+					setApiConfigurationField("azureApiVersion", parsed.apiVersion)
+				}
+			} else {
+				setApiConfigurationField("azureBaseUrl", rawValue)
+			}
+		},
+		[setApiConfigurationField],
+	)
+
 	return (
 		<>
 			<VSCodeTextField
 				value={apiConfiguration?.azureBaseUrl || ""}
-				onInput={handleInputChange("azureBaseUrl")}
+				onInput={handleBaseUrlInput}
 				placeholder={t("settings:placeholders.azureBaseUrl")}
 				className="w-full">
 				<label className="block font-medium mb-1">{t("settings:providers.azureBaseUrl")}</label>

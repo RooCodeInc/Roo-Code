@@ -33,7 +33,7 @@ export interface ProviderServiceConfig {
 export const PROVIDER_SERVICE_CONFIG: Partial<Record<ProviderName, ProviderServiceConfig>> = {
 	anthropic: { serviceName: "Anthropic", serviceUrl: "https://console.anthropic.com" },
 	azure: {
-		serviceName: "Azure AI Foundry",
+		serviceName: "Azure OpenAI",
 		serviceUrl: "https://azure.microsoft.com/en-us/products/ai-foundry/models/openai",
 	},
 	bedrock: { serviceName: "Amazon Bedrock", serviceUrl: "https://aws.amazon.com/bedrock" },
