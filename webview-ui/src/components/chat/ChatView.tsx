@@ -233,15 +233,24 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const secondLastMessage = useMemo(() => messages.at(-2), [messages])
 
 	const volume = typeof soundVolume === "number" ? soundVolume : 0.5
-	const [playNotification] = useSound(`${audioBaseUri}/notification.wav`, { volume, soundEnabled })
-	const [playCelebration] = useSound(`${audioBaseUri}/celebration.wav`, { volume, soundEnabled })
-	const [playProgressLoop] = useSound(`${audioBaseUri}/progress_loop.wav`, { volume, soundEnabled })
+	const [playNotification] = useSound(`${audioBaseUri}/notification.wav`, { volume, soundEnabled, interrupt: true })
+	const [playCelebration] = useSound(`${audioBaseUri}/celebration.wav`, { volume, soundEnabled, interrupt: true })
+	const [playProgressLoop] = useSound(`${audioBaseUri}/progress_loop.wav`, { volume, soundEnabled, interrupt: true })
+
+	const lastPlayedRef = useRef<Record<string, number>>({})
 
 	const playSound = useCallback(
 		(audioType: AudioType) => {
 			if (!soundEnabled) {
 				return
 			}
+
+			const now = Date.now()
+			const lastPlayed = lastPlayedRef.current[audioType] ?? 0
+			if (now - lastPlayed < 100) {
+				return
+			} // debounce: skip if played within 100ms
+			lastPlayedRef.current[audioType] = now
 
 			switch (audioType) {
 				case "notification":
