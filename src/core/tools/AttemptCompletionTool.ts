@@ -137,16 +137,40 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			const { response, text, images } = await task.ask("completion_result", "", false)
 
 			if (response === "yesButtonClicked") {
+				// User accepted completion. Don't push a tool_result yet.
+				// Instead, wait for a potential follow-up message by asking
+				// resume_completed_task. This keeps the task alive so any
+				// subsequent user message routes as a tool_result for this
+				// attempt_completion tool_use (not as a bare user message).
+				const resume = await task.ask("resume_completed_task")
+
+				if (resume.response === "messageResponse" && resume.text) {
+					// User came back with a follow-up message.
+					// Push it as the tool_result for attempt_completion.
+					await task.say("user_feedback", resume.text, resume.images)
+					const feedbackText = `<user_message>\n${resume.text}\n</user_message>`
+					pushToolResult(formatResponse.toolResult(feedbackText, resume.images))
+					return
+				}
+
+				// User didn't provide text (or task was aborted).
+				// Push a "completed" tool_result to close the tool contract.
+				pushToolResult(
+					JSON.stringify({
+						status: "completed",
+						message: "The user is satisfied with the result.",
+					}),
+				)
 				return
 			}
 
-			// User provided feedback - push tool result to continue the conversation
+			// User provided feedback directly (typed text in the completion UI)
 			await task.say("user_feedback", text ?? "", images)
 
 			const feedbackText = `<user_message>\n${text}\n</user_message>`
 			pushToolResult(formatResponse.toolResult(feedbackText, images))
 		} catch (error) {
-			await handleError("inspecting site", error as Error)
+			await handleError("completing task", error as Error)
 		}
 	}
 

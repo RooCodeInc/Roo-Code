@@ -613,7 +613,7 @@ describe("validateAndFixToolResultIds", () => {
 			expect(resultContent.length).toBe(2)
 			// The missing tool_result is prepended
 			expect(resultContent[0].tool_use_id).toBe("tool-2")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
+			expect(resultContent[0].content).toBe("No result available for this tool call.")
 			// The original is fixed
 			expect(resultContent[1].tool_use_id).toBe("tool-1")
 		})
@@ -652,7 +652,7 @@ describe("validateAndFixToolResultIds", () => {
 			expect(resultContent[0].type).toBe("tool_result")
 			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-123")
 			expect((resultContent[0] as Anthropic.ToolResultBlockParam).content).toBe(
-				"Tool execution was interrupted before completion.",
+				"No result available for this tool call.",
 			)
 			// Original text block should be preserved
 			expect(resultContent[1].type).toBe("text")
@@ -738,7 +738,7 @@ describe("validateAndFixToolResultIds", () => {
 			expect(resultContent.length).toBe(2)
 			// Missing tool_result for tool-2 should be prepended
 			expect(resultContent[0].tool_use_id).toBe("tool-2")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
+			expect(resultContent[0].content).toBe("No result available for this tool call.")
 			// Existing tool_result should be preserved
 			expect(resultContent[1].tool_use_id).toBe("tool-1")
 			expect(resultContent[1].content).toBe("Content for tool 1")
@@ -769,7 +769,7 @@ describe("validateAndFixToolResultIds", () => {
 			expect(resultContent.length).toBe(1)
 			expect(resultContent[0].type).toBe("tool_result")
 			expect(resultContent[0].tool_use_id).toBe("tool-1")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
+			expect(resultContent[0].content).toBe("No result available for this tool call.")
 		})
 	})
 
