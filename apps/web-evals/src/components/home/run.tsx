@@ -44,13 +44,7 @@ import {
 	ScrollArea,
 } from "@/components/ui"
 
-// Tool group type (same as in runs.tsx)
-type ToolGroup = {
-	id: string
-	name: string
-	icon: string
-	tools: string[]
-}
+import type { ToolGroup } from "@/lib/tool-groups"
 
 type RunProps = {
 	run: EvalsRun

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, memo } from "react"
 import { useRouter } from "next/navigation"
+import { useLocalStorage } from "usehooks-ts"
 import {
 	ArrowDown,
 	ArrowUp,
@@ -88,6 +89,8 @@ import {
 	TooltipTrigger,
 } from "@/components/ui"
 import { Run as Row } from "@/components/home/run"
+import { deserializeEnum, deserializeStringArray } from "@/lib/storage"
+import { type ToolGroup, deserializeToolGroups, serializeToolGroups } from "@/lib/tool-groups"
 
 // Available icons for tool groups
 const TOOL_GROUP_ICONS: { name: string; icon: LucideIcon }[] = [
@@ -123,14 +126,6 @@ const TOOL_GROUP_ICONS: { name: string; icon: LucideIcon }[] = [
 	{ name: "settings", icon: Settings2 },
 	{ name: "tag", icon: Tag },
 ]
-
-// Tool group type
-export type ToolGroup = {
-	id: string
-	name: string
-	icon: string
-	tools: string[]
-}
 
 // Helper to get icon component by name
 function getIconByName(name: string): LucideIcon {
@@ -256,6 +251,8 @@ type SortDirection = "asc" | "desc"
 
 type TimeframeOption = "all" | "24h" | "7d" | "30d" | "90d"
 
+const TIMEFRAME_OPTION_VALUES: ReadonlySet<TimeframeOption> = new Set(["all", "24h", "7d", "30d", "90d"])
+
 const TIMEFRAME_OPTIONS: { value: TimeframeOption; label: string }[] = [
 	{ value: "all", label: "All time" },
 	{ value: "24h", label: "Last 24 hours" },
@@ -263,6 +260,10 @@ const TIMEFRAME_OPTIONS: { value: TimeframeOption; label: string }[] = [
 	{ value: "30d", label: "Last 30 days" },
 	{ value: "90d", label: "Last 90 days" },
 ]
+
+function deserializeTimeframe(value: string): TimeframeOption {
+	return deserializeEnum(value, TIMEFRAME_OPTION_VALUES, "all")
+}
 
 // LocalStorage keys
 const STORAGE_KEYS = {
@@ -317,35 +318,26 @@ export function Runs({ runs }: { runs: RunWithTaskMetrics[] }) {
 	const [sortColumn, setSortColumn] = useState<SortColumn | null>("createdAt")
 	const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
 
-	// Filter state - initialize from localStorage
-	const [timeframeFilter, setTimeframeFilter] = useState<TimeframeOption>(() => {
-		if (typeof window === "undefined") return "all"
-		const stored = localStorage.getItem(STORAGE_KEYS.TIMEFRAME)
-		return (stored as TimeframeOption) || "all"
+	// Filter state (persistent)
+	const [timeframeFilter, setTimeframeFilter] = useLocalStorage<TimeframeOption>(STORAGE_KEYS.TIMEFRAME, "all", {
+		serializer: (value: TimeframeOption) => value, // keep legacy raw-string storage
+		deserializer: deserializeTimeframe,
+		initializeWithValue: false,
 	})
-	const [modelFilter, setModelFilter] = useState<string[]>(() => {
-		if (typeof window === "undefined") return []
-		const stored = localStorage.getItem(STORAGE_KEYS.MODEL_FILTER)
-		return stored ? JSON.parse(stored) : []
+	const [modelFilter, setModelFilter] = useLocalStorage<string[]>(STORAGE_KEYS.MODEL_FILTER, [], {
+		deserializer: deserializeStringArray,
+		initializeWithValue: false,
 	})
-	const [providerFilter, setProviderFilter] = useState<string[]>(() => {
-		if (typeof window === "undefined") return []
-		const stored = localStorage.getItem(STORAGE_KEYS.PROVIDER_FILTER)
-		return stored ? JSON.parse(stored) : []
+	const [providerFilter, setProviderFilter] = useLocalStorage<string[]>(STORAGE_KEYS.PROVIDER_FILTER, [], {
+		deserializer: deserializeStringArray,
+		initializeWithValue: false,
 	})
 
-	// Tool groups state - initialize from localStorage
-	const [toolGroups, setToolGroups] = useState<ToolGroup[]>(() => {
-		if (typeof window === "undefined") return []
-		const stored = localStorage.getItem(STORAGE_KEYS.TOOL_GROUPS)
-		if (stored) {
-			try {
-				return JSON.parse(stored)
-			} catch {
-				return []
-			}
-		}
-		return []
+	// Tool groups state (persistent)
+	const [toolGroups, setToolGroups] = useLocalStorage<ToolGroup[]>(STORAGE_KEYS.TOOL_GROUPS, [], {
+		serializer: serializeToolGroups,
+		deserializer: deserializeToolGroups,
+		initializeWithValue: false,
 	})
 
 	// Tool group editor dialog state
@@ -356,23 +348,6 @@ export function Runs({ runs }: { runs: RunWithTaskMetrics[] }) {
 	const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 	const [showDeleteOldConfirm, setShowDeleteOldConfirm] = useState(false)
 	const [isDeleting, setIsDeleting] = useState(false)
-
-	// Persist filters to localStorage
-	useEffect(() => {
-		localStorage.setItem(STORAGE_KEYS.TIMEFRAME, timeframeFilter)
-	}, [timeframeFilter])
-
-	useEffect(() => {
-		localStorage.setItem(STORAGE_KEYS.MODEL_FILTER, JSON.stringify(modelFilter))
-	}, [modelFilter])
-
-	useEffect(() => {
-		localStorage.setItem(STORAGE_KEYS.PROVIDER_FILTER, JSON.stringify(providerFilter))
-	}, [providerFilter])
-
-	useEffect(() => {
-		localStorage.setItem(STORAGE_KEYS.TOOL_GROUPS, JSON.stringify(toolGroups))
-	}, [toolGroups])
 
 	// Count incomplete runs (runs without taskMetricsId)
 	const incompleteRunsCount = useMemo(() => {
@@ -618,8 +593,8 @@ export function Runs({ runs }: { runs: RunWithTaskMetrics[] }) {
 
 	const handleSaveGroup = useCallback(
 		(group: ToolGroup) => {
-			setToolGroups((prev) => {
-				const existingIndex = prev.findIndex((g) => g.id === group.id)
+			setToolGroups((prev: ToolGroup[]) => {
+				const existingIndex = prev.findIndex((g: ToolGroup) => g.id === group.id)
 				if (existingIndex >= 0) {
 					// Update existing group
 					const newGroups = [...prev]
@@ -632,13 +607,16 @@ export function Runs({ runs }: { runs: RunWithTaskMetrics[] }) {
 			})
 			toast.success(editingGroup ? "Group updated" : "Group created")
 		},
-		[editingGroup],
+		[editingGroup, setToolGroups],
 	)
 
-	const handleDeleteGroup = useCallback((groupId: string) => {
-		setToolGroups((prev) => prev.filter((g) => g.id !== groupId))
-		toast.success("Group deleted")
-	}, [])
+	const handleDeleteGroup = useCallback(
+		(groupId: string) => {
+			setToolGroups((prev: ToolGroup[]) => prev.filter((g: ToolGroup) => g.id !== groupId))
+			toast.success("Group deleted")
+		},
+		[setToolGroups],
+	)
 
 	// Get available tools for group editor (tools not in other groups)
 	const availableToolsForEditor = useMemo(() => {
@@ -715,7 +693,7 @@ export function Runs({ runs }: { runs: RunWithTaskMetrics[] }) {
 						<DropdownMenuContent align="start" className="w-64">
 							{toolGroups.length > 0 ? (
 								<>
-									{toolGroups.map((group) => {
+									{toolGroups.map((group: ToolGroup) => {
 										const IconComponent = getIconByName(group.icon)
 										return (
 											<DropdownMenuItem
@@ -858,7 +836,7 @@ export function Runs({ runs }: { runs: RunWithTaskMetrics[] }) {
 						</TableHead>
 						<TableHead>Tokens</TableHead>
 						{/* Tool Group Columns */}
-						{toolGroups.map((group) => {
+						{toolGroups.map((group: ToolGroup) => {
 							const IconComponent = getIconByName(group.icon)
 							return (
 								<TableHead key={group.id} className="text-center">
@@ -870,7 +848,7 @@ export function Runs({ runs }: { runs: RunWithTaskMetrics[] }) {
 											<TooltipContent>
 												<div className="text-xs">
 													<div className="font-semibold mb-1">{group.name}</div>
-													{group.tools.map((tool) => (
+													{group.tools.map((tool: string) => (
 														<div key={tool}>{tool}</div>
 													))}
 												</div>
