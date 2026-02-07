@@ -379,6 +379,14 @@
 		"getBasetenApiKey": "Dapatkan Baseten API Key",
 		"cerebrasApiKey": "Cerebras API Key",
 		"getCerebrasApiKey": "Dapatkan Cerebras API Key",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "URL endpoint Azure OpenAI kamu. Dapat ditemukan di portal Azure di bagian Keys & Endpoint.",
+		"azureDeploymentName": "Nama Deployment Azure",
+		"azureDeploymentNameDescription": "Nama deployment model dalam resource.",
+		"azureApiKey": "Azure API Key",
+		"getAzureApiKey": "Dapatkan Akses Azure OpenAI",
+		"azureApiVersion": "Versi API Azure",
+		"azureApiVersionDescription": "Versi API yang akan digunakan (contoh: '2024-10-21'). Biarkan kosong untuk nilai default.",
 		"chutesApiKey": "Chutes API Key",
 		"getChutesApiKey": "Dapatkan Chutes API Key",
 		"fireworksApiKey": "Fireworks API Key",
@@ -950,7 +958,9 @@
 		"providerNotAllowed": "Provider '{{provider}}' tidak diizinkan oleh organisasi kamu",
 		"modelNotAllowed": "Model '{{model}}' tidak diizinkan untuk provider '{{provider}}' oleh organisasi kamu",
 		"profileInvalid": "Profil ini berisi provider atau model yang tidak diizinkan oleh organisasi kamu",
-		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid"
+		"qwenCodeOauthPath": "Kamu harus memberikan jalur kredensial OAuth yang valid",
+		"azureBaseUrl": "Kamu harus memberikan base URL Azure.",
+		"azureDeploymentName": "Kamu harus memberikan nama deployment Azure."
 	},
 	"placeholders": {
 		"apiKey": "Masukkan API Key...",
@@ -963,6 +973,8 @@
 		"projectId": "Masukkan Project ID...",
 		"customArn": "Masukkan ARN (misalnya arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Masukkan base URL...",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "misalnya meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "misalnya lmstudio-community/llama-3.2-1b-instruct",

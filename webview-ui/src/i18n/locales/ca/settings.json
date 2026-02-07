@@ -379,6 +379,14 @@
 		"getBasetenApiKey": "Obtenir clau API de Baseten",
 		"cerebrasApiKey": "Clau API de Cerebras",
 		"getCerebrasApiKey": "Obtenir clau API de Cerebras",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "L'URL del punt d'accés d'Azure OpenAI. Es pot trobar al portal d'Azure a Claus i punt d'accés.",
+		"azureDeploymentName": "Nom del desplegament d'Azure",
+		"azureDeploymentNameDescription": "El nom del desplegament del model dins del recurs.",
+		"azureApiKey": "Clau API d'Azure",
+		"getAzureApiKey": "Obtenir accés a Azure OpenAI",
+		"azureApiVersion": "Versió de l'API d'Azure",
+		"azureApiVersionDescription": "La versió de l'API a utilitzar (p. ex. '2024-10-21'). Deixa buit per al valor per defecte.",
 		"chutesApiKey": "Clau API de Chutes",
 		"getChutesApiKey": "Obtenir clau API de Chutes",
 		"fireworksApiKey": "Clau API de Fireworks",
@@ -950,7 +958,9 @@
 		"providerNotAllowed": "El proveïdor '{{provider}}' no està permès per la vostra organització",
 		"modelNotAllowed": "El model '{{model}}' no està permès per al proveïdor '{{provider}}' per la vostra organització",
 		"profileInvalid": "Aquest perfil conté un proveïdor o model que no està permès per la vostra organització",
-		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth"
+		"qwenCodeOauthPath": "Has de proporcionar una ruta vàlida de credencials OAuth",
+		"azureBaseUrl": "Has de proporcionar una URL base d'Azure.",
+		"azureDeploymentName": "Has de proporcionar un nom de desplegament d'Azure."
 	},
 	"placeholders": {
 		"apiKey": "Introduïu la clau API...",
@@ -963,6 +973,8 @@
 		"projectId": "Introduïu l'ID del projecte...",
 		"customArn": "Introduïu l'ARN (p. ex. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Introduïu l'URL base...",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "p. ex. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "p. ex. lmstudio-community/llama-3.2-1b-instruct",

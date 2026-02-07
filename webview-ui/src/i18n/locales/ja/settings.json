@@ -379,6 +379,14 @@
 		"getBasetenApiKey": "Baseten APIキーを取得",
 		"cerebrasApiKey": "Cerebras APIキー",
 		"getCerebrasApiKey": "Cerebras APIキーを取得",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "Azure OpenAIのエンドポイントURL。Azureポータルの「キーとエンドポイント」で確認できます。",
+		"azureDeploymentName": "Azureデプロイメント名",
+		"azureDeploymentNameDescription": "リソース内のモデルデプロイメントの名前。",
+		"azureApiKey": "Azure APIキー",
+		"getAzureApiKey": "Azure OpenAIアクセスを取得",
+		"azureApiVersion": "Azure APIバージョン",
+		"azureApiVersionDescription": "使用するAPIバージョン（例：'2024-10-21'）。デフォルトを使用する場合は空にしてください。",
 		"chutesApiKey": "Chutes APIキー",
 		"getChutesApiKey": "Chutes APIキーを取得",
 		"fireworksApiKey": "Fireworks APIキー",
@@ -950,7 +958,9 @@
 		"providerNotAllowed": "プロバイダー「{{provider}}」は組織によって許可されていません",
 		"modelNotAllowed": "モデル「{{model}}」はプロバイダー「{{provider}}」に対して組織によって許可されていません",
 		"profileInvalid": "このプロファイルには、組織によって許可されていないプロバイダーまたはモデルが含まれています",
-		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります"
+		"qwenCodeOauthPath": "有効なOAuth認証情報のパスを提供する必要があります",
+		"azureBaseUrl": "AzureのベースURLを入力してください。",
+		"azureDeploymentName": "Azureデプロイメント名を入力してください。"
 	},
 	"placeholders": {
 		"apiKey": "API キーを入力...",
@@ -963,6 +973,8 @@
 		"projectId": "プロジェクト ID を入力...",
 		"customArn": "ARN を入力（例：arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model）",
 		"baseUrl": "ベース URL を入力...",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "例：meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "例：lmstudio-community/llama-3.2-1b-instruct",

@@ -88,3 +88,36 @@ describe("checkExistKey", () => {
 		expect(checkExistKey(config)).toBe(true)
 	})
 })
+
+describe("azure", () => {
+	it("should return true when azureBaseUrl is set", () => {
+		const config: ProviderSettings = {
+			apiProvider: "azure",
+			azureBaseUrl: "https://my-resource.openai.azure.com",
+		}
+		expect(checkExistKey(config)).toBe(true)
+	})
+
+	it("should return true when azureDeploymentName is set", () => {
+		const config: ProviderSettings = {
+			apiProvider: "azure",
+			azureDeploymentName: "my-deployment",
+		}
+		expect(checkExistKey(config)).toBe(true)
+	})
+
+	it("should return true when azureApiKey is set", () => {
+		const config: ProviderSettings = {
+			apiProvider: "azure",
+			azureApiKey: "my-api-key",
+		}
+		expect(checkExistKey(config)).toBe(true)
+	})
+
+	it("should return false when no Azure fields are set", () => {
+		const config: ProviderSettings = {
+			apiProvider: "azure",
+		}
+		expect(checkExistKey(config)).toBe(false)
+	})
+})

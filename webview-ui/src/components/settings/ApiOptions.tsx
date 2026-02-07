@@ -73,6 +73,7 @@ import {
 
 import {
 	Anthropic,
+	Azure,
 	Baseten,
 	Bedrock,
 	Cerebras,
@@ -551,6 +552,14 @@ const ApiOptions = ({
 
 			{selectedProvider === "anthropic" && (
 				<Anthropic
+					apiConfiguration={apiConfiguration}
+					setApiConfigurationField={setApiConfigurationField}
+					simplifySettings={fromWelcomeView}
+				/>
+			)}
+
+			{selectedProvider === "azure" && (
+				<Azure
 					apiConfiguration={apiConfiguration}
 					setApiConfigurationField={setApiConfigurationField}
 					simplifySettings={fromWelcomeView}

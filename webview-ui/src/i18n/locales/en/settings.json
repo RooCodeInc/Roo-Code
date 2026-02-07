@@ -442,6 +442,14 @@
 		"getBasetenApiKey": "Get Baseten API Key",
 		"cerebrasApiKey": "Cerebras API Key",
 		"getCerebrasApiKey": "Get Cerebras API Key",
+		"azureBaseUrl": "Azure Endpoint",
+		"azureBaseUrlDescription": "Your Azure OpenAI endpoint. You can paste a full deployment URL (e.g., https://myresource.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=...) and all fields below will auto-fill, or enter just the endpoint from the Azure portal (e.g., https://myresource.openai.azure.com/openai).",
+		"azureDeploymentName": "Azure Deployment Name",
+		"azureDeploymentNameDescription": "The name of your model deployment. This may differ from the model name — it's the name you chose when deploying the model in Azure.",
+		"azureApiKey": "Azure API Key",
+		"getAzureApiKey": "Get Azure OpenAI Access",
+		"azureApiVersion": "Azure API Version",
+		"azureApiVersionDescription": "The API version to use. Leave empty to use the default (2025-04-01-preview).",
 		"chutesApiKey": "Chutes API Key",
 		"getChutesApiKey": "Get Chutes API Key",
 		"fireworksApiKey": "Fireworks API Key",
@@ -1013,7 +1021,9 @@
 		"providerNotAllowed": "Provider '{{provider}}' is not allowed by your organization",
 		"modelNotAllowed": "Model '{{model}}' is not allowed for provider '{{provider}}' by your organization",
 		"profileInvalid": "This profile contains a provider or model that is not allowed by your organization",
-		"qwenCodeOauthPath": "You must provide a valid OAuth credentials path."
+		"qwenCodeOauthPath": "You must provide a valid OAuth credentials path.",
+		"azureBaseUrl": "You must provide an Azure base URL.",
+		"azureDeploymentName": "You must provide an Azure deployment name."
 	},
 	"placeholders": {
 		"apiKey": "Enter API Key...",
@@ -1026,6 +1036,8 @@
 		"projectId": "Enter Project ID...",
 		"customArn": "Enter ARN (e.g. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Enter base URL...",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "e.g. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "e.g. lmstudio-community/llama-3.2-1b-instruct",

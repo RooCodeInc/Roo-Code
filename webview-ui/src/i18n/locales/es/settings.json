@@ -379,6 +379,14 @@
 		"getBasetenApiKey": "Obtener clave API de Baseten",
 		"cerebrasApiKey": "Clave API de Cerebras",
 		"getCerebrasApiKey": "Obtener clave API de Cerebras",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "La URL del endpoint de Azure OpenAI. Se encuentra en el portal de Azure en Claves y punto de conexión.",
+		"azureDeploymentName": "Nombre del despliegue Azure",
+		"azureDeploymentNameDescription": "El nombre del despliegue de tu modelo dentro del recurso.",
+		"azureApiKey": "Clave API de Azure",
+		"getAzureApiKey": "Obtener acceso a Azure OpenAI",
+		"azureApiVersion": "Versión de API de Azure",
+		"azureApiVersionDescription": "La versión de la API a usar (ej. '2024-10-21'). Dejar vacío para usar el valor predeterminado.",
 		"chutesApiKey": "Clave API de Chutes",
 		"getChutesApiKey": "Obtener clave API de Chutes",
 		"fireworksApiKey": "Clave API de Fireworks",
@@ -950,7 +958,9 @@
 		"providerNotAllowed": "El proveedor '{{provider}}' no está permitido por su organización",
 		"modelNotAllowed": "El modelo '{{model}}' no está permitido para el proveedor '{{provider}}' por su organización",
 		"profileInvalid": "Este perfil contiene un proveedor o modelo que no está permitido por su organización",
-		"qwenCodeOauthPath": "Debes proporcionar una ruta válida de credenciales OAuth"
+		"qwenCodeOauthPath": "Debes proporcionar una ruta válida de credenciales OAuth",
+		"azureBaseUrl": "Debes proporcionar una URL base de Azure.",
+		"azureDeploymentName": "Debes proporcionar un nombre de despliegue de Azure."
 	},
 	"placeholders": {
 		"apiKey": "Ingrese clave API...",
@@ -963,6 +973,8 @@
 		"projectId": "Ingrese ID del proyecto...",
 		"customArn": "Ingrese ARN (ej. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Ingrese URL base...",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "ej. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "ej. lmstudio-community/llama-3.2-1b-instruct",

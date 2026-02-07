@@ -103,7 +103,7 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 	const modelDefaultReasoningEffort = modelInfo?.reasoningEffort as ReasoningEffortWithMinimal | undefined
 	const defaultReasoningEffort: ReasoningEffortOption = modelInfo?.requiredReasoningEffort
 		? modelDefaultReasoningEffort || "medium"
-		: "disable"
+		: modelDefaultReasoningEffort || "disable"
 	// Current reasoning effort from settings, or fall back to default
 	const storedReasoningEffort = apiConfiguration.reasoningEffort as ReasoningEffortOption | undefined
 	const currentReasoningEffort: ReasoningEffortOption = storedReasoningEffort || defaultReasoningEffort
@@ -112,7 +112,7 @@ export const ThinkingBudget = ({ apiConfiguration, setApiConfigurationField, mod
 	useEffect(() => {
 		if (isReasoningEffortSupported && !apiConfiguration.reasoningEffort) {
 			// Only set a default if reasoning is required, otherwise leave as undefined (which maps to "disable")
-			if (modelInfo?.requiredReasoningEffort && defaultReasoningEffort !== "disable") {
+			if (defaultReasoningEffort !== "disable") {
 				setApiConfigurationField("reasoningEffort", defaultReasoningEffort as ReasoningEffortWithMinimal, false)
 			}
 		}

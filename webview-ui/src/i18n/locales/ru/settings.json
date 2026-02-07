@@ -379,6 +379,14 @@
 		"getBasetenApiKey": "Получить Baseten API-ключ",
 		"cerebrasApiKey": "Cerebras API-ключ",
 		"getCerebrasApiKey": "Получить Cerebras API-ключ",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "URL-адрес конечной точки Azure OpenAI. Находится на портале Azure в разделе «Ключи и конечная точка».",
+		"azureDeploymentName": "Имя развертывания Azure",
+		"azureDeploymentNameDescription": "Имя развертывания модели внутри ресурса.",
+		"azureApiKey": "API-ключ Azure",
+		"getAzureApiKey": "Получить доступ к Azure OpenAI",
+		"azureApiVersion": "Версия API Azure",
+		"azureApiVersionDescription": "Версия API для использования (напр. '2024-10-21'). Оставьте пустым для значения по умолчанию.",
 		"chutesApiKey": "Chutes API-ключ",
 		"getChutesApiKey": "Получить Chutes API-ключ",
 		"fireworksApiKey": "Fireworks API-ключ",
@@ -950,7 +958,9 @@
 		"providerNotAllowed": "Провайдер '{{provider}}' не разрешен вашей организацией",
 		"modelNotAllowed": "Модель '{{model}}' не разрешена для провайдера '{{provider}}' вашей организацией",
 		"profileInvalid": "Этот профиль содержит провайдера или модель, которые не разрешены вашей организацией",
-		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth"
+		"qwenCodeOauthPath": "Вы должны указать допустимый путь к учетным данным OAuth",
+		"azureBaseUrl": "Вы должны указать базовый URL Azure.",
+		"azureDeploymentName": "Вы должны указать имя развёртывания Azure."
 	},
 	"placeholders": {
 		"apiKey": "Введите API-ключ...",
@@ -963,6 +973,8 @@
 		"projectId": "Введите Project ID...",
 		"customArn": "Введите ARN (например, arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Введите базовый URL...",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "например, meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "например, lmstudio-community/llama-3.2-1b-instruct",

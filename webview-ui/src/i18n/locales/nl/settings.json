@@ -379,6 +379,14 @@
 		"getBasetenApiKey": "Baseten API-sleutel verkrijgen",
 		"cerebrasApiKey": "Cerebras API-sleutel",
 		"getCerebrasApiKey": "Cerebras API-sleutel verkrijgen",
+		"azureBaseUrl": "Base URL",
+		"azureBaseUrlDescription": "De eindpunt-URL van je Azure OpenAI. Te vinden in het Azure-portaal onder Sleutels en eindpunt.",
+		"azureDeploymentName": "Azure Deployment-naam",
+		"azureDeploymentNameDescription": "De naam van je model deployment binnen de resource.",
+		"azureApiKey": "Azure API-sleutel",
+		"getAzureApiKey": "Azure OpenAI-toegang verkrijgen",
+		"azureApiVersion": "Azure API-versie",
+		"azureApiVersionDescription": "De API-versie om te gebruiken (bijv. '2024-10-21'). Laat leeg voor standaardwaarde.",
 		"chutesApiKey": "Chutes API-sleutel",
 		"getChutesApiKey": "Chutes API-sleutel ophalen",
 		"fireworksApiKey": "Fireworks API-sleutel",
@@ -950,7 +958,9 @@
 		"providerNotAllowed": "Provider '{{provider}}' is niet toegestaan door je organisatie",
 		"modelNotAllowed": "Model '{{model}}' is niet toegestaan voor provider '{{provider}}' door je organisatie",
 		"profileInvalid": "Dit profiel bevat een provider of model dat niet is toegestaan door je organisatie",
-		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven"
+		"qwenCodeOauthPath": "Je moet een geldig OAuth-referentiepad opgeven",
+		"azureBaseUrl": "Je moet een Azure-basis-URL opgeven.",
+		"azureDeploymentName": "Je moet een Azure-implementatienaam opgeven."
 	},
 	"placeholders": {
 		"apiKey": "Voer API-sleutel in...",
@@ -963,6 +973,8 @@
 		"projectId": "Voer project-ID in...",
 		"customArn": "Voer ARN in (bijv. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Voer basis-URL in...",
+		"azureBaseUrl": "https://your-resource.openai.azure.com/openai",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "bijv. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "bijv. lmstudio-community/llama-3.2-1b-instruct",
