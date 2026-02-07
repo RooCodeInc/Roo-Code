@@ -306,9 +306,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 					setIndexingStatus({
 						systemStatus: event.data.values.systemStatus,
 						message: event.data.values.message || "",
-						processedItems: event.data.values.processedItems,
-						totalItems: event.data.values.totalItems,
-						currentItemUnit: event.data.values.currentItemUnit || "items",
+						progress: event.data.values.progress || 0,
 					})
 				}
 			} else if (event.data.type === "codeIndexSettingsSaved") {
@@ -563,13 +561,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		})
 	}
 
-	const progressPercentage = useMemo(
-		() =>
-			indexingStatus.totalItems > 0
-				? Math.round((indexingStatus.processedItems / indexingStatus.totalItems) * 100)
-				: 0,
-		[indexingStatus.processedItems, indexingStatus.totalItems],
-	)
+	const progressPercentage = indexingStatus.progress
 
 	const transformStyleString = `translateX(-${100 - progressPercentage}%)`
 

@@ -2658,9 +2658,7 @@ export const webviewMessageHandler = async (
 						values: {
 							systemStatus: "Error",
 							message: t("embeddings:orchestrator.indexingRequiresWorkspace"),
-							processedItems: 0,
-							totalItems: 0,
-							currentItemUnit: "items",
+							progress: 0,
 						},
 					})
 				}
@@ -2684,10 +2682,7 @@ export const webviewMessageHandler = async (
 					values: {
 						systemStatus: "Error",
 						message: t("embeddings:orchestrator.indexingRequiresWorkspace"),
-						processedItems: 0,
-						totalItems: 0,
-						currentItemUnit: "items",
-						workerspacePath: undefined,
+						progress: 0,
 					},
 				})
 				return
@@ -2698,10 +2693,7 @@ export const webviewMessageHandler = async (
 				: {
 						systemStatus: "Standby",
 						message: "No workspace folder open",
-						processedItems: 0,
-						totalItems: 0,
-						currentItemUnit: "items",
-						workspacePath: undefined,
+						progress: 0,
 					}
 
 			provider.postMessageToWebview({
@@ -2748,9 +2740,7 @@ export const webviewMessageHandler = async (
 						values: {
 							systemStatus: "Error",
 							message: t("embeddings:orchestrator.indexingRequiresWorkspace"),
-							processedItems: 0,
-							totalItems: 0,
-							currentItemUnit: "items",
+							progress: 0,
 						},
 					})
 					provider.log("Cannot start indexing: No workspace folder open")

@@ -37,8 +37,10 @@ export interface IDirectoryScanner {
 		onError?: (error: Error) => void,
 		onBlocksIndexed?: (indexedCount: number) => void,
 		onFileParsed?: (fileBlockCount: number) => void,
+		onFileDiscovered?: () => void,
+		onFileFullyProcessedOrAlreadyProcessed?: (fileBlockCount?: number) => void,
 	): AsyncGenerator<
-		| { type: "progress"; processed: number; skipped: number; totalBlockCount: number; currentFile?: string }
+		| { type: "progress"; processed: number; skipped: number; totalBlockCount: number }
 		| { type: "complete"; stats: { processed: number; skipped: number }; totalBlockCount: number }
 	>
 }

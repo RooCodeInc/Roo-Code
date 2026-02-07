@@ -22,9 +22,8 @@ export const IndexingStatusBadge: React.FC<IndexingStatusBadgeProps> = ({ classN
 
 	const [indexingStatus, setIndexingStatus] = useState<IndexingStatus>({
 		systemStatus: "Standby",
-		processedItems: 0,
-		totalItems: 0,
-		currentItemUnit: "items",
+		message: "",
+		progress: 0,
 	})
 
 	useEffect(() => {
@@ -48,13 +47,7 @@ export const IndexingStatusBadge: React.FC<IndexingStatusBadgeProps> = ({ classN
 		}
 	}, [cwd])
 
-	const progressPercentage = useMemo(
-		() =>
-			indexingStatus.totalItems > 0
-				? Math.round((indexingStatus.processedItems / indexingStatus.totalItems) * 100)
-				: 0,
-		[indexingStatus.processedItems, indexingStatus.totalItems],
-	)
+	const progressPercentage = indexingStatus.progress
 
 	const tooltipText = useMemo(() => {
 		switch (indexingStatus.systemStatus) {

@@ -767,10 +767,8 @@ export type WebViewMessagePayload =
 
 export interface IndexingStatus {
 	systemStatus: string
-	message?: string
-	processedItems: number
-	totalItems: number
-	currentItemUnit?: string
+	message: string
+	progress: number
 	workspacePath?: string
 }
 

@@ -45,11 +45,7 @@ export class CodeIndexOrchestrator {
 					if (totalInBatch > 0 && this.stateManager.state !== "Indexing") {
 						this.stateManager.setSystemState("Indexing", "Processing file changes...")
 					}
-					this.stateManager.reportFileQueueProgress(
-						processedInBatch,
-						totalInBatch,
-						currentFile ? path.basename(currentFile) : undefined,
-					)
+					this.stateManager.reportFilesProgress(processedInBatch, totalInBatch)
 					if (processedInBatch === totalInBatch) {
 						// Covers (N/N) and (0/0)
 						if (totalInBatch > 0) {
@@ -156,14 +152,14 @@ export class CodeIndexOrchestrator {
 				let cumulativeBlocksFoundSoFar = 0
 				let batchErrors: Error[] = []
 
-				const handleFileParsed = (fileBlockCount: number) => {
-					cumulativeBlocksFoundSoFar += fileBlockCount
-					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
+				const handleBlocksIndexes = (blocks: number) => {
+					cumulativeBlocksIndexed += blocks
+					this.stateManager.reportBlocksIndexed(blocks)
 				}
 
-				const handleBlocksIndexed = (indexedCount: number) => {
-					cumulativeBlocksIndexed += indexedCount
-					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
+				const handleFileParsed = (fileBlockCount: number) => {
+					cumulativeBlocksFoundSoFar += fileBlockCount
+					this.stateManager.reportFileParsed(fileBlockCount)
 				}
 
 				const scanGenerator = await this.scanner.scanDirectory(
@@ -175,8 +171,10 @@ export class CodeIndexOrchestrator {
 						)
 						batchErrors.push(batchError)
 					},
-					handleBlocksIndexed,
+					handleBlocksIndexes,
 					handleFileParsed,
+					this.stateManager.reportFileDiscovered.bind(this.stateManager),
+					this.stateManager.reportFileFullyProcessedOrAlreadyProcessed.bind(this.stateManager),
 				)
 
 				let stats = null
@@ -216,14 +214,14 @@ export class CodeIndexOrchestrator {
 				let cumulativeBlocksFoundSoFar = 0
 				let batchErrors: Error[] = []
 
-				const handleFileParsed = (fileBlockCount: number) => {
-					cumulativeBlocksFoundSoFar += fileBlockCount
-					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
+				const handleBlocksIndexed = (blocks: number) => {
+					cumulativeBlocksIndexed += blocks
+					this.stateManager.reportBlocksIndexed(blocks)
 				}
 
-				const handleBlocksIndexed = (indexedCount: number) => {
-					cumulativeBlocksIndexed += indexedCount
-					this.stateManager.reportBlockIndexingProgress(cumulativeBlocksIndexed, cumulativeBlocksFoundSoFar)
+				const handleFileParsed = (fileBlockCount: number) => {
+					cumulativeBlocksFoundSoFar += fileBlockCount
+					this.stateManager.reportFileParsed(fileBlockCount)
 				}
 
 				const scanGenerator = await this.scanner.scanDirectory(
@@ -237,6 +235,8 @@ export class CodeIndexOrchestrator {
 					},
 					handleBlocksIndexed,
 					handleFileParsed,
+					this.stateManager.reportFileDiscovered.bind(this.stateManager),
+					this.stateManager.reportFileFullyProcessedOrAlreadyProcessed.bind(this.stateManager),
 				)
 
 				let stats = null

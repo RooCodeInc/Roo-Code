@@ -72,8 +72,10 @@ export class DirectoryScanner implements IDirectoryScanner {
 		onError?: (error: Error) => void,
 		onBlocksIndexed?: (indexedCount: number) => void,
 		onFileParsed?: (fileBlockCount: number) => void,
+		onFileDiscovered?: () => void,
+		onFileFullyProcessedOrAlreadyProcessed?: (fileBlockCount?: number) => void,
 	): AsyncGenerator<
-		| { type: "progress"; processed: number; skipped: number; totalBlockCount: number; currentFile?: string }
+		| { type: "progress"; processed: number; skipped: number; totalBlockCount: number }
 		| { type: "complete"; stats: { processed: number; skipped: number }; totalBlockCount: number }
 	> {
 		const directoryPath = directory
@@ -98,7 +100,9 @@ export class DirectoryScanner implements IDirectoryScanner {
 		let currentBatchBlocks: CodeBlock[] = []
 		let currentBatchTexts: string[] = []
 		let currentBatchFileInfos: { filePath: string; fileHash: string; isNew: boolean }[] = []
-		const activeBatchPromises = new Set<Promise<void>>()
+		// Track block count per file in the current batch
+		let currentBatchFileBlockCounts: Map<string, number> = new Map()
+		const activeBatchPromises = new Set<Promise<unknown>>()
 		let pendingBatchCount = 0
 
 		// Initialize block counter
@@ -113,7 +117,6 @@ export class DirectoryScanner implements IDirectoryScanner {
 			processed: number
 			skipped: number
 			totalBlockCount: number
-			currentFile?: string
 		}
 		const progressQueue = createAsyncQueue<ProgressUpdate>({ limit: Number.MAX_SAFE_INTEGER })
 
@@ -143,6 +146,8 @@ export class DirectoryScanner implements IDirectoryScanner {
 						// Filter paths using .rooignore
 						const allowedPaths = ignoreController.filterPaths([filePath])
 						if (allowedPaths.length > 0) {
+							// Report file discovery
+							onFileDiscovered?.()
 							// Queue file for processing
 							fileQueue.enqueue(filePath)
 						}
@@ -182,7 +187,8 @@ export class DirectoryScanner implements IDirectoryScanner {
 						const cachedFileHash = this.cacheManager.getHash(filePath)
 						const isNewFile = !cachedFileHash
 						if (cachedFileHash === currentFileHash) {
-							// File is unchanged
+							// File is unchanged - report as fully processed
+							onFileFullyProcessedOrAlreadyProcessed?.()
 							skippedCount++
 							return
 						}
@@ -199,13 +205,14 @@ export class DirectoryScanner implements IDirectoryScanner {
 							processed: processedCount,
 							skipped: skippedCount,
 							totalBlockCount,
-							currentFile: filePath,
 						})
 
 						// Process embeddings if configured
 						if (this.embedder && this.qdrantClient && blocks.length > 0) {
 							// Add to batch accumulators
 							let addedBlocksFromFile = false
+							const fileBlocksPromises = []
+
 							for (const block of blocks) {
 								const trimmedContent = block.content.trim()
 								if (trimmedContent) {
@@ -227,9 +234,11 @@ export class DirectoryScanner implements IDirectoryScanner {
 											const batchBlocks = [...currentBatchBlocks]
 											const batchTexts = [...currentBatchTexts]
 											const batchFileInfos = [...currentBatchFileInfos]
+											const batchFileBlockCounts = new Map(currentBatchFileBlockCounts)
 											currentBatchBlocks = []
 											currentBatchTexts = []
 											currentBatchFileInfos = []
+											currentBatchFileBlockCounts.clear()
 
 											// Increment pending batch count
 											pendingBatchCount++
@@ -240,12 +249,15 @@ export class DirectoryScanner implements IDirectoryScanner {
 													batchBlocks,
 													batchTexts,
 													batchFileInfos,
+													batchFileBlockCounts,
 													scanWorkspace,
 													onError,
 													onBlocksIndexed,
+													onFileFullyProcessedOrAlreadyProcessed,
 												),
 											)
 											activeBatchPromises.add(batchPromise)
+											fileBlocksPromises.push(batchPromise)
 
 											// Clean up completed promises to prevent memory accumulation
 											batchPromise.finally(() => {
@@ -261,6 +273,12 @@ export class DirectoryScanner implements IDirectoryScanner {
 
 							// Add file info once per file (outside the block loop)
 							if (addedBlocksFromFile) {
+								let fileProcessedPromise = Promise.all(fileBlocksPromises)
+								activeBatchPromises.add(fileProcessedPromise)
+								fileProcessedPromise.finally(() => {
+									activeBatchPromises.delete(fileProcessedPromise)
+								})
+
 								const release = await mutex.acquire()
 								try {
 									totalBlockCount += fileBlockCount
@@ -269,6 +287,8 @@ export class DirectoryScanner implements IDirectoryScanner {
 										fileHash: currentFileHash,
 										isNew: isNewFile,
 									})
+									// Track block count for this file in the current batch
+									currentBatchFileBlockCounts.set(filePath, fileBlockCount)
 								} finally {
 									release()
 								}
@@ -326,16 +346,27 @@ export class DirectoryScanner implements IDirectoryScanner {
 				const batchBlocks = [...currentBatchBlocks]
 				const batchTexts = [...currentBatchTexts]
 				const batchFileInfos = [...currentBatchFileInfos]
+				const batchFileBlockCounts = new Map(currentBatchFileBlockCounts)
 				currentBatchBlocks = []
 				currentBatchTexts = []
 				currentBatchFileInfos = []
+				currentBatchFileBlockCounts.clear()
 
 				// Increment pending batch count for final batch
 				pendingBatchCount++
 
 				// Queue final batch processing
 				const batchPromise = batchLimiter(() =>
-					this.processBatch(batchBlocks, batchTexts, batchFileInfos, scanWorkspace, onError, onBlocksIndexed),
+					this.processBatch(
+						batchBlocks,
+						batchTexts,
+						batchFileInfos,
+						batchFileBlockCounts,
+						scanWorkspace,
+						onError,
+						onBlocksIndexed,
+						onFileFullyProcessedOrAlreadyProcessed,
+					),
 				)
 				activeBatchPromises.add(batchPromise)
 
@@ -413,9 +444,11 @@ export class DirectoryScanner implements IDirectoryScanner {
 		batchBlocks: CodeBlock[],
 		batchTexts: string[],
 		batchFileInfos: { filePath: string; fileHash: string; isNew: boolean }[],
+		batchFileBlockCounts: Map<string, number>,
 		scanWorkspace: string,
 		onError?: (error: Error) => void,
 		onBlocksIndexed?: (indexedCount: number) => void,
+		onFileFullyProcessedOrAlreadyProcessed?: (fileBlockCount?: number) => void,
 	): Promise<void> {
 		if (batchBlocks.length === 0) return
 
@@ -497,6 +530,11 @@ export class DirectoryScanner implements IDirectoryScanner {
 				// Update hashes for successfully processed files in this batch
 				for (const fileInfo of batchFileInfos) {
 					await this.cacheManager.updateHash(fileInfo.filePath, fileInfo.fileHash)
+					// Report that this file has been fully processed
+					const fileBlockCount = batchFileBlockCounts.get(fileInfo.filePath)
+					if (fileBlockCount !== undefined) {
+						onFileFullyProcessedOrAlreadyProcessed?.(fileBlockCount)
+					}
 				}
 				success = true
 			} catch (error) {
