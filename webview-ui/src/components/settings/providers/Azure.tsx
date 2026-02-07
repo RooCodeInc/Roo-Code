@@ -14,7 +14,7 @@ type AzureProps = {
 	simplifySettings?: boolean
 }
 
-export const Azure = ({ apiConfiguration, setApiConfigurationField }: AzureProps) => {
+export const Azure = ({ apiConfiguration, setApiConfigurationField, simplifySettings }: AzureProps) => {
 	const { t } = useAppTranslation()
 
 	const handleInputChange = useCallback(
@@ -76,16 +76,20 @@ export const Azure = ({ apiConfiguration, setApiConfigurationField }: AzureProps
 			<div className="text-sm text-vscode-descriptionForeground -mt-2">
 				{t("settings:providers.apiKeyStorageNotice")}
 			</div>
-			<VSCodeTextField
-				value={apiConfiguration?.azureApiVersion || ""}
-				onInput={handleInputChange("azureApiVersion")}
-				placeholder={`Default: ${azureOpenAiDefaultApiVersion}`}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.azureApiVersion")}</label>
-			</VSCodeTextField>
-			<div className="text-sm text-vscode-descriptionForeground -mt-2">
-				{t("settings:providers.azureApiVersionDescription")}
-			</div>
+			{!simplifySettings && (
+				<>
+					<VSCodeTextField
+						value={apiConfiguration?.azureApiVersion || ""}
+						onInput={handleInputChange("azureApiVersion")}
+						placeholder={`Default: ${azureOpenAiDefaultApiVersion}`}
+						className="w-full">
+						<label className="block font-medium mb-1">{t("settings:providers.azureApiVersion")}</label>
+					</VSCodeTextField>
+					<div className="text-sm text-vscode-descriptionForeground -mt-2">
+						{t("settings:providers.azureApiVersionDescription")}
+					</div>
+				</>
+			)}
 		</>
 	)
 }
