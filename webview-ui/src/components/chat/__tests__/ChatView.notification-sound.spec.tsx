@@ -520,3 +520,110 @@ describe("ChatView - Notification Sound with Queued Messages", () => {
 		)
 	})
 })
+
+describe("ChatView - Sound Debounce", () => {
+	beforeEach(() => vi.clearAllMocks())
+
+	it("should not play the same sound type twice within 100ms", async () => {
+		const now = 1_000_000
+		const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(now)
+
+		renderChatView()
+
+		// Hydrate with initial task
+		mockPostMessage({
+			soundEnabled: true,
+			messageQueue: [],
+			clineMessages: [{ type: "say", say: "task", ts: now - 2000, text: "Initial task" }],
+		})
+
+		// Clear any setup calls
+		mockPlayFunction.mockClear()
+
+		// First completion_result — should trigger celebration sound
+		mockPostMessage({
+			soundEnabled: true,
+			messageQueue: [],
+			clineMessages: [
+				{ type: "say", say: "task", ts: now - 2000, text: "Initial task" },
+				{ type: "ask", ask: "completion_result", ts: now, text: "Task completed", partial: false },
+			],
+		})
+
+		await waitFor(() => {
+			expect(mockPlayFunction).toHaveBeenCalledTimes(1)
+		})
+
+		// Simulate only 50ms passing — still inside the 100ms debounce window
+		dateNowSpy.mockReturnValue(now + 50)
+
+		// Second completion_result with slightly different content to force useDeepCompareEffect re-fire
+		mockPostMessage({
+			soundEnabled: true,
+			messageQueue: [],
+			clineMessages: [
+				{ type: "say", say: "task", ts: now - 2000, text: "Initial task" },
+				{ type: "ask", ask: "completion_result", ts: now + 50, text: "Task completed again", partial: false },
+			],
+		})
+
+		// Allow time for the second state update to propagate through React effects
+		await new Promise((resolve) => setTimeout(resolve, 300))
+
+		// Debounce should have prevented the second play
+		expect(mockPlayFunction).toHaveBeenCalledTimes(1)
+
+		dateNowSpy.mockRestore()
+	})
+
+	it("should allow playing the same sound type again after 100ms", async () => {
+		const now = 1_000_000
+		const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(now)
+
+		renderChatView()
+
+		// Hydrate with initial task
+		mockPostMessage({
+			soundEnabled: true,
+			messageQueue: [],
+			clineMessages: [{ type: "say", say: "task", ts: now - 2000, text: "Initial task" }],
+		})
+
+		// Clear any setup calls
+		mockPlayFunction.mockClear()
+
+		// First completion_result — triggers sound
+		mockPostMessage({
+			soundEnabled: true,
+			messageQueue: [],
+			clineMessages: [
+				{ type: "say", say: "task", ts: now - 2000, text: "Initial task" },
+				{ type: "ask", ask: "completion_result", ts: now, text: "Task completed", partial: false },
+			],
+		})
+
+		await waitFor(() => {
+			expect(mockPlayFunction).toHaveBeenCalledTimes(1)
+		})
+
+		// Advance past the 100ms debounce window
+		dateNowSpy.mockReturnValue(now + 101)
+
+		// Second completion_result with different content to trigger a fresh effect cycle
+		mockPostMessage({
+			soundEnabled: true,
+			messageQueue: [],
+			clineMessages: [
+				{ type: "say", say: "task", ts: now - 2000, text: "Initial task" },
+				{ type: "ask", ask: "completion_result", ts: now + 101, text: "Second task completed", partial: false },
+			],
+		})
+
+		// This time the debounce window has elapsed — sound should play again
+		await waitFor(() => {
+			expect(mockPlayFunction).toHaveBeenCalledTimes(2)
+		})
+
+		dateNowSpy.mockRestore()
+	})
+})
