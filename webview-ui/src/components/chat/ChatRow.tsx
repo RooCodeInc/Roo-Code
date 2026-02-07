@@ -743,11 +743,19 @@ export const ChatRowContent = ({
 			case "listFilesTopLevel":
 			case "listFilesRecursive": {
 				const isRecursive = tool.tool === "listFilesRecursive"
-				const DirIcon = isRecursive ? FolderTree : ListTree
-				const dirIconLabel = isRecursive ? "Folder tree icon" : "List files icon"
 
 				// Check if this is a batch directory listing request
 				const isBatchDirRequest = message.type === "ask" && tool.batchDirs && Array.isArray(tool.batchDirs)
+
+				// When batching, check if all dirs share the same recursive value
+				const allTopLevel = tool.batchDirs?.every((d: { recursive: boolean }) => !d.recursive)
+				const DirIcon = isBatchDirRequest && !allTopLevel ? FolderTree : isRecursive ? FolderTree : ListTree
+				const dirIconLabel =
+					isBatchDirRequest && !allTopLevel
+						? "Folder tree icon"
+						: isRecursive
+							? "Folder tree icon"
+							: "List files icon"
 
 				if (isBatchDirRequest) {
 					return (

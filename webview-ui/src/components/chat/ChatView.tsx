@@ -312,6 +312,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								case "editedExistingFile":
 								case "appliedDiff":
 								case "newFileCreated":
+									if (tool.batchDiffs && Array.isArray(tool.batchDiffs)) {
+										setPrimaryButtonText(t("chat:edit-batch.approve.title"))
+										setSecondaryButtonText(t("chat:edit-batch.deny.title"))
+									} else {
+										setPrimaryButtonText(t("chat:save.title"))
+										setSecondaryButtonText(t("chat:reject.title"))
+									}
+									break
 								case "generateImage":
 									setPrimaryButtonText(t("chat:save.title"))
 									setSecondaryButtonText(t("chat:reject.title"))
@@ -332,8 +340,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								case "listFilesTopLevel":
 								case "listFilesRecursive":
 									if (tool.batchDirs && Array.isArray(tool.batchDirs)) {
-										setPrimaryButtonText(t("chat:read-batch.approve.title"))
-										setSecondaryButtonText(t("chat:read-batch.deny.title"))
+										setPrimaryButtonText(t("chat:list-batch.approve.title"))
+										setSecondaryButtonText(t("chat:list-batch.deny.title"))
 									} else {
 										setPrimaryButtonText(t("chat:approve.title"))
 										setSecondaryButtonText(t("chat:reject.title"))
@@ -1215,7 +1223,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 			})
 
-			const firstTool = JSON.parse(batch[0].text || "{}")
+			let firstTool
+			try {
+				firstTool = JSON.parse(batch[0].text || "{}")
+			} catch {
+				return batch[0]
+			}
 			return {
 				...batch[0],
 				text: JSON.stringify({ ...firstTool, batchFiles }),
@@ -1238,7 +1251,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 			})
 
-			const firstTool = JSON.parse(batch[0].text || "{}")
+			let firstTool
+			try {
+				firstTool = JSON.parse(batch[0].text || "{}")
+			} catch {
+				return batch[0]
+			}
 			return {
 				...batch[0],
 				text: JSON.stringify({ ...firstTool, batchDirs }),
@@ -1262,7 +1280,12 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				}
 			})
 
-			const firstTool = JSON.parse(batch[0].text || "{}")
+			let firstTool
+			try {
+				firstTool = JSON.parse(batch[0].text || "{}")
+			} catch {
+				return batch[0]
+			}
 			return {
 				...batch[0],
 				text: JSON.stringify({ ...firstTool, batchDiffs }),

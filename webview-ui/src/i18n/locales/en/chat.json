@@ -74,6 +74,22 @@
 			"title": "Deny All"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Approve All"
+		},
+		"deny": {
+			"title": "Deny All"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Save All"
+		},
+		"deny": {
+			"title": "Deny All"
+		}
+	},
 	"runCommand": {
 		"title": "Run",
 		"tooltip": "Execute this command"

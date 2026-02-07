@@ -84,4 +84,28 @@ describe("BatchListFilesPermission", () => {
 		// All 3 dirs should be inside this container
 		expect(container?.querySelectorAll(".flex.items-center.gap-2")).toHaveLength(mockDirs.length)
 	})
+
+	it("renders a single directory", () => {
+		const singleDir = [
+			{
+				key: "apps/cli",
+				path: "apps/cli",
+				recursive: false,
+				isOutsideWorkspace: false,
+			},
+		]
+
+		render(
+			<TranslationProvider>
+				<BatchListFilesPermission dirs={singleDir} ts={Date.now()} />
+			</TranslationProvider>,
+		)
+
+		expect(screen.getByText("apps/cli")).toBeInTheDocument()
+
+		// Single directory should still be rendered inside the container
+		const bordered = screen.getByText("apps/cli").closest(".border.border-border.rounded-md")
+		expect(bordered).toBeInTheDocument()
+		expect(bordered?.querySelectorAll(".flex.items-center.gap-2")).toHaveLength(1)
+	})
 })

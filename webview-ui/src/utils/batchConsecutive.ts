@@ -1,29 +1,23 @@
-import type { ClineMessage } from "@roo-code/types"
-
 /**
- * Walk a message array and batch runs of consecutive messages that match
- * `predicate` into synthetic messages produced by `synthesize`.
+ * Walk an item array and batch runs of consecutive items that match
+ * `predicate` into synthetic items produced by `synthesize`.
  *
  * - Runs of length 1 are passed through unchanged.
- * - Runs of length >= 2 are replaced by a single synthetic message.
- * - Non-matching messages are preserved in-order.
+ * - Runs of length >= 2 are replaced by a single synthetic item.
+ * - Non-matching items are preserved in-order.
  */
-export function batchConsecutive(
-	messages: ClineMessage[],
-	predicate: (msg: ClineMessage) => boolean,
-	synthesize: (batch: ClineMessage[]) => ClineMessage,
-): ClineMessage[] {
-	const result: ClineMessage[] = []
+export function batchConsecutive<T>(items: T[], predicate: (item: T) => boolean, synthesize: (batch: T[]) => T): T[] {
+	const result: T[] = []
 	let i = 0
 
-	while (i < messages.length) {
-		if (predicate(messages[i])) {
+	while (i < items.length) {
+		if (predicate(items[i])) {
 			// Collect consecutive matches into a batch
-			const batch: ClineMessage[] = [messages[i]]
+			const batch: T[] = [items[i]]
 			let j = i + 1
 
-			while (j < messages.length && predicate(messages[j])) {
-				batch.push(messages[j])
+			while (j < items.length && predicate(items[j])) {
+				batch.push(items[j])
 				j++
 			}
 
@@ -35,7 +29,7 @@ export function batchConsecutive(
 
 			i = j
 		} else {
-			result.push(messages[i])
+			result.push(items[i])
 			i++
 		}
 	}
