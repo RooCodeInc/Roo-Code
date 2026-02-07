@@ -23,7 +23,14 @@ export async function readTaskMessages({
 	const fileExists = await fileExistsAtPath(filePath)
 
 	if (fileExists) {
-		return JSON.parse(await fs.readFile(filePath, "utf8"))
+		try {
+			return JSON.parse(await fs.readFile(filePath, "utf8"))
+		} catch (error) {
+			console.warn(
+				`[readTaskMessages] Failed to parse ${filePath} for task ${taskId}, returning empty: ${error instanceof Error ? error.message : String(error)}`,
+			)
+			return []
+		}
 	}
 
 	return []

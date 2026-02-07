@@ -12,7 +12,7 @@ vi.mock("../../../utils/safeWriteJson", () => ({
 }))
 
 // Import after mocks
-import { saveTaskMessages } from "../taskMessages"
+import { saveTaskMessages, readTaskMessages } from "../taskMessages"
 
 let tmpBaseDir: string
 
@@ -64,5 +64,23 @@ describe("taskMessages.saveTaskMessages", () => {
 
 		const [, persisted] = hoisted.safeWriteJsonMock.mock.calls[0]
 		expect(persisted).toEqual(messages)
+	})
+})
+
+describe("taskMessages.readTaskMessages", () => {
+	it("returns empty array when file contains invalid JSON", async () => {
+		const taskId = "task-corrupt-json"
+		// Manually create the task directory and write corrupted JSON
+		const taskDir = path.join(tmpBaseDir, "tasks", taskId)
+		await fs.mkdir(taskDir, { recursive: true })
+		const filePath = path.join(taskDir, "ui_messages.json")
+		await fs.writeFile(filePath, "{not valid json!!!", "utf8")
+
+		const result = await readTaskMessages({
+			taskId,
+			globalStoragePath: tmpBaseDir,
+		})
+
+		expect(result).toEqual([])
 	})
 })

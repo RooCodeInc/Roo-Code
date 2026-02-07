@@ -58,10 +58,10 @@ export async function readApiMessages({
 			}
 			return parsedData
 		} catch (error) {
-			console.error(
-				`[Roo-Debug] readApiMessages: Error parsing API conversation history file. TaskId: ${taskId}, Path: ${filePath}, Error: ${error}`,
+			console.warn(
+				`[readApiMessages] Error parsing API conversation history file, returning empty. TaskId: ${taskId}, Path: ${filePath}, Error: ${error}`,
 			)
-			throw error
+			return []
 		}
 	} else {
 		const oldPath = path.join(taskDir, "claude_messages.json")
@@ -78,11 +78,11 @@ export async function readApiMessages({
 				await fs.unlink(oldPath)
 				return parsedData
 			} catch (error) {
-				console.error(
-					`[Roo-Debug] readApiMessages: Error parsing OLD API conversation history file (claude_messages.json). TaskId: ${taskId}, Path: ${oldPath}, Error: ${error}`,
+				console.warn(
+					`[readApiMessages] Error parsing OLD API conversation history file (claude_messages.json), returning empty. TaskId: ${taskId}, Path: ${oldPath}, Error: ${error}`,
 				)
-				// DO NOT unlink oldPath if parsing failed, throw error instead.
-				throw error
+				// DO NOT unlink oldPath if parsing failed.
+				return []
 			}
 		}
 	}
