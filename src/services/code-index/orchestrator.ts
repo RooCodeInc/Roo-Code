@@ -130,7 +130,7 @@ export class CodeIndexOrchestrator {
 			indexingStarted = true
 
 			if (collectionCreated) {
-				await this.cacheManager.clearCacheFile()
+				this.cacheManager.clearCacheFile()
 			}
 
 			// Check if the collection already has indexed data
@@ -316,7 +316,7 @@ export class CodeIndexOrchestrator {
 			// If we never connected to Qdrant, preserve cache for incremental scan when it comes back
 			if (indexingStarted) {
 				// Indexing started but failed mid-way - clear cache to avoid cache-Qdrant mismatch
-				await this.cacheManager.clearCacheFile()
+				this.cacheManager.clearCacheFile()
 				console.log(
 					"[CodeIndexOrchestrator] Indexing failed after starting. Clearing cache to avoid inconsistency.",
 				)
@@ -379,7 +379,7 @@ export class CodeIndexOrchestrator {
 				this.stateManager.setSystemState("Error", `Failed to clear vector collection: ${error.message}`)
 			}
 
-			await this.cacheManager.clearCacheFile()
+			this.cacheManager.clearCacheFile()
 
 			if (this.stateManager.state !== "Error") {
 				this.stateManager.setSystemState("Standby", "Index data cleared successfully.")

@@ -99,10 +99,12 @@ describe("DirectoryScanner", () => {
 			parseFile: vi.fn().mockResolvedValue([]),
 		}
 		mockCacheManager = {
-			getHash: vi.fn().mockReturnValue(undefined),
-			getAllHashes: vi.fn().mockReturnValue({}),
+			getHash: vi.fn().mockResolvedValue(undefined),
 			updateHash: vi.fn().mockResolvedValue(undefined),
+			updateHashes: vi.fn().mockResolvedValue(undefined),
 			deleteHash: vi.fn().mockResolvedValue(undefined),
+			deleteHashes: vi.fn().mockResolvedValue(undefined),
+			deleteHashesNotIn: vi.fn().mockResolvedValue([]),
 			initialize: vi.fn().mockResolvedValue(undefined),
 			clearCacheFile: vi.fn().mockResolvedValue(undefined),
 		}
@@ -255,16 +257,16 @@ describe("DirectoryScanner", () => {
 			expect(mockVectorStore.upsertPoints).toHaveBeenCalled()
 		})
 
-		it("should delete points for removed files", async () => {
-			;(mockCacheManager.getAllHashes as any).mockReturnValue({ "old/file.js": "old-hash" })
+		it("should delete points for removed files using deleteHashesNotIn", async () => {
+			;(mockCacheManager.deleteHashesNotIn as any).mockResolvedValue(["old/file.js"])
 
 			// Consume the generator
 			for await (const update of scanner.scanDirectory("/test")) {
 				// Just consume all updates
 			}
 
-			expect(mockVectorStore.deletePointsByFilePath).toHaveBeenCalledWith("old/file.js")
-			expect(mockCacheManager.deleteHash).toHaveBeenCalledWith("old/file.js")
+			expect(mockCacheManager.deleteHashesNotIn).toHaveBeenCalled()
+			expect(mockVectorStore.deletePointsByMultipleFilePaths).toHaveBeenCalledWith(["old/file.js"])
 		})
 
 		it("should filter out files in hidden directories", async () => {

@@ -103,7 +103,8 @@ async function main() {
 		// global-agent must be external because it dynamically patches Node.js http/https modules
 		// which breaks when bundled. It needs access to the actual Node.js module instances.
 		// undici must be bundled because our VSIX is packaged with `--no-dependencies`.
-		external: ["vscode", "esbuild", "global-agent"],
+		// better-sqlite3 must be external because it's a native module that cannot be bundled.
+		external: ["vscode", "esbuild", "global-agent", "better-sqlite3"],
 	}
 
 	/**

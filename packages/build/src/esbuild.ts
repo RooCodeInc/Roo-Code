@@ -122,6 +122,12 @@ export function copyWasms(srcDir: string, distDir: string): void {
 		path.join(distDir, "tiktoken_bg.wasm"),
 	)
 
+	// node-sqlite3-wasm WASM file
+	fs.copyFileSync(
+		path.join(nodeModulesDir, "node-sqlite3-wasm", "dist", "node-sqlite3-wasm.wasm"),
+		path.join(distDir, "node-sqlite3-wasm.wasm"),
+	)
+
 	console.log(`[copyWasms] Copied tiktoken WASMs to ${distDir}`)
 
 	// Also copy Tiktoken WASMs to the workers directory.

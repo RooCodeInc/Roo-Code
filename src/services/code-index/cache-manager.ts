@@ -1,18 +1,16 @@
 import * as vscode from "vscode"
 import { createHash } from "crypto"
 import { ICacheManager } from "./interfaces/cache"
-import debounce from "lodash.debounce"
-import { safeWriteJson } from "../../utils/safeWriteJson"
+import { Database } from "node-sqlite3-wasm"
 import { TelemetryService } from "@roo-code/telemetry"
 import { TelemetryEventName } from "@roo-code/types"
 
 /**
- * Manages the cache for code indexing
+ * Manages the cache for code indexing using SQLite database with node-sqlite3-wasm
  */
 export class CacheManager implements ICacheManager {
-	private cachePath: vscode.Uri
-	private fileHashes: Record<string, string> = {}
-	private _debouncedSaveCache: () => void
+	private dbPath: vscode.Uri
+	private db: Database | null = null
 
 	/**
 	 * Creates a new cache manager
@@ -23,62 +21,58 @@ export class CacheManager implements ICacheManager {
 		private context: vscode.ExtensionContext,
 		private workspacePath: string,
 	) {
-		this.cachePath = vscode.Uri.joinPath(
+		this.dbPath = vscode.Uri.joinPath(
 			context.globalStorageUri,
-			`roo-index-cache-${createHash("sha256").update(workspacePath).digest("hex")}.json`,
+			`roo-index-cache-${createHash("sha256").update(workspacePath).digest("hex")}.v2.db`,
 		)
-		this._debouncedSaveCache = debounce(async () => {
-			await this._performSave()
-		}, 1500)
 	}
 
 	/**
-	 * Initializes the cache manager by loading the cache file
+	 * Initializes the cache manager by opening the database and creating the table
 	 */
-	async initialize(): Promise<void> {
+	initialize(): void {
+		if (this.db) {
+			return
+		}
+
 		try {
-			const cacheData = await vscode.workspace.fs.readFile(this.cachePath)
-			this.fileHashes = JSON.parse(cacheData.toString())
+			this.db = new Database(this.dbPath.fsPath)
+			// Changing the journal mode to "Write-Ahead Log" is known to bring significantly better performance in most case
+			this.db.exec("PRAGMA journal_mode = WAL2")
+			// Disable synchronous mode for better performance,
+			// as we don't need to ensure the database file is safely written to disk at every transaction
+			this.db.exec("PRAGMA synchronous = OFF")
+			this.db.exec(`
+				CREATE TABLE IF NOT EXISTS file_hashes (
+					file_path TEXT PRIMARY KEY,
+					hash TEXT NOT NULL
+				)
+			`)
 		} catch (error) {
-			this.fileHashes = {}
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "initialize",
-			})
+			this.dispose()
+			console.error("Failed to initialize cache manager:", error)
+			throw error
 		}
 	}
 
 	/**
-	 * Saves the cache to disk
+	 * Clears the cache file by deleting all rows from the table
 	 */
-	private async _performSave(): Promise<void> {
+	clearCacheFile(): void {
 		try {
-			await safeWriteJson(this.cachePath.fsPath, this.fileHashes)
+			this.initialize()
+			if (!this.db) {
+				throw new Error("Database not initialized")
+			}
+			this.db.exec("DELETE FROM file_hashes")
 		} catch (error) {
-			console.error("Failed to save cache:", error)
-			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				location: "_performSave",
-			})
-		}
-	}
-
-	/**
-	 * Clears the cache file by writing an empty object to it
-	 */
-	async clearCacheFile(): Promise<void> {
-		try {
-			await safeWriteJson(this.cachePath.fsPath, {})
-			this.fileHashes = {}
-		} catch (error) {
-			console.error("Failed to clear cache file:", error, this.cachePath)
 			TelemetryService.instance.captureEvent(TelemetryEventName.CODE_INDEX_ERROR, {
 				error: error instanceof Error ? error.message : String(error),
 				stack: error instanceof Error ? error.stack : undefined,
 				location: "clearCacheFile",
 			})
+			console.error("Failed to clear cache file:", error, this.dbPath)
+			throw error
 		}
 	}
 
@@ -88,7 +82,18 @@ export class CacheManager implements ICacheManager {
 	 * @returns The hash for the file or undefined if not found
 	 */
 	getHash(filePath: string): string | undefined {
-		return this.fileHashes[filePath]
+		try {
+			if (!this.db) {
+				throw new Error("Database not initialized")
+			}
+			const result = this.db.get("SELECT hash FROM file_hashes WHERE file_path = ?", filePath) as
+				| { hash: string }
+				| undefined
+			return result?.hash
+		} catch (error) {
+			console.error("Failed to get hash:", error)
+			throw error
+		}
 	}
 
 	/**
@@ -97,8 +102,46 @@ export class CacheManager implements ICacheManager {
 	 * @param hash New hash value
 	 */
 	updateHash(filePath: string, hash: string): void {
-		this.fileHashes[filePath] = hash
-		this._debouncedSaveCache()
+		try {
+			this.initialize()
+			if (!this.db) {
+				throw new Error("Database not initialized")
+			}
+			this.db.run("INSERT OR REPLACE INTO file_hashes (file_path, hash) VALUES (?, ?)", [filePath, hash])
+		} catch (error) {
+			console.error("Failed to update hash:", error)
+			throw error
+		}
+	}
+
+	/**
+	 * Updates multiple hashes in a single transaction
+	 * @param entries Array of {filePath, hash} entries to update
+	 */
+	updateHashes(entries: Array<{ filePath: string; hash: string }>): void {
+		try {
+			if (!this.db) {
+				throw new Error("Database not initialized")
+			}
+			this.db.exec("BEGIN TRANSACTION")
+			try {
+				for (const item of entries) {
+					this.db.run("INSERT OR REPLACE INTO file_hashes (file_path, hash) VALUES (?, ?)", [
+						item.filePath,
+						item.hash,
+					])
+				}
+				this.db.exec("COMMIT")
+			} catch (err) {
+				if (this.db.inTransaction) {
+					this.db.exec("ROLLBACK")
+				}
+				throw err
+			}
+		} catch (error) {
+			console.error("Failed to update hashes:", error)
+			throw error
+		}
 	}
 
 	/**
@@ -106,15 +149,98 @@ export class CacheManager implements ICacheManager {
 	 * @param filePath Path to the file
 	 */
 	deleteHash(filePath: string): void {
-		delete this.fileHashes[filePath]
-		this._debouncedSaveCache()
+		try {
+			this.initialize()
+			if (!this.db) {
+				throw new Error("Database not initialized")
+			}
+			this.db.run("DELETE FROM file_hashes WHERE file_path = ?", filePath)
+		} catch (error) {
+			console.error("Failed to delete hash:", error)
+			throw error
+		}
 	}
 
 	/**
-	 * Gets a copy of all file hashes
-	 * @returns A copy of the file hashes record
+	 * Deletes multiple hashes in a single transaction
+	 * @param filePaths Array of file paths to delete
 	 */
-	getAllHashes(): Record<string, string> {
-		return { ...this.fileHashes }
+	deleteHashes(filePaths: string[]): void {
+		if (filePaths.length === 0) {
+			return
+		}
+		try {
+			if (!this.db) {
+				throw new Error("Database not initialized")
+			}
+			this.db.exec("BEGIN TRANSACTION")
+			try {
+				for (const path of filePaths) {
+					this.db.run("DELETE FROM file_hashes WHERE file_path = ?", path)
+				}
+				this.db.exec("COMMIT")
+			} catch (err) {
+				if (this.db.inTransaction) {
+					this.db.exec("ROLLBACK")
+				}
+				throw err
+			}
+		} catch (error) {
+			console.error("Failed to delete hashes:", error)
+			throw error
+		}
+	}
+
+	/**
+	 * Deletes hashes for file paths that are NOT in the provided list
+	 * Returns the list of deleted file paths
+	 * @param filePaths Array of file paths to keep (all others will be deleted)
+	 */
+	deleteHashesNotIn(filePaths: string[]): string[] {
+		try {
+			this.initialize()
+			if (!this.db) {
+				return []
+			}
+
+			// First, get the paths that will be deleted
+			let deletedPaths: string[] = []
+			if (filePaths.length === 0) {
+				// If no paths to keep, delete everything and return all paths
+				const rows = this.db.all("SELECT file_path FROM file_hashes") as { file_path: string }[]
+				deletedPaths = rows.map((row) => row.file_path)
+				this.db.exec("DELETE FROM file_hashes")
+			} else {
+				// Build the NOT IN query
+				const placeholders = filePaths.map(() => "?").join(",")
+				const rows = this.db.all(
+					`SELECT file_path FROM file_hashes WHERE file_path NOT IN (${placeholders})`,
+					...filePaths,
+				) as { file_path: string }[]
+				deletedPaths = rows.map((row) => row.file_path)
+
+				// Delete the rows
+				this.db.run(`DELETE FROM file_hashes WHERE file_path NOT IN (${placeholders})`, ...filePaths)
+			}
+
+			return deletedPaths
+		} catch (error) {
+			console.error("Failed to delete hashes not in list:", error)
+			throw error
+		}
+	}
+
+	/**
+	 * Closes the database connection (cleanup)
+	 */
+	dispose(): void {
+		if (this.db) {
+			try {
+				this.db.close()
+			} catch (error) {
+				console.error("Error disposing cache manager:", error)
+			}
+			this.db = null
+		}
 	}
 }

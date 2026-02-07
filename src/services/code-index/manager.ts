@@ -141,7 +141,7 @@ export class CodeIndexManager {
 		// 4. CacheManager Initialization
 		if (!this._cacheManager) {
 			this._cacheManager = new CacheManager(this.context, this.workspacePath)
-			await this._cacheManager.initialize()
+			this._cacheManager.initialize()
 		}
 
 		// 4. Determine if Core Services Need Recreation
@@ -251,6 +251,7 @@ export class CodeIndexManager {
 			this.stopWatcher()
 		}
 		this._stateManager.dispose()
+		this._cacheManager?.dispose()
 	}
 
 	/**
@@ -263,7 +264,7 @@ export class CodeIndexManager {
 		}
 		this.assertInitialized()
 		await this._orchestrator!.clearIndexData()
-		await this._cacheManager!.clearCacheFile()
+		this._cacheManager!.clearCacheFile()
 	}
 
 	// --- Private Helpers ---
@@ -400,7 +401,7 @@ export class CodeIndexManager {
 					// Ensure cacheManager is initialized before recreating services
 					if (!this._cacheManager) {
 						this._cacheManager = new CacheManager(this.context, this.workspacePath)
-						await this._cacheManager.initialize()
+						this._cacheManager.initialize()
 					}
 
 					// Recreate services with new configuration

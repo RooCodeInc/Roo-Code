@@ -107,7 +107,9 @@ describe("FileWatcher", () => {
 		mockCacheManager = {
 			getHash: vi.fn(),
 			updateHash: vi.fn(),
+			updateHashes: vi.fn().mockResolvedValue(undefined),
 			deleteHash: vi.fn(),
+			deleteHashes: vi.fn().mockResolvedValue(undefined),
 		}
 
 		mockEmbedder = {

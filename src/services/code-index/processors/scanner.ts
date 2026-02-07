@@ -295,7 +295,8 @@ export class DirectoryScanner implements IDirectoryScanner {
 							}
 						} else {
 							// Only update hash if not being processed in a batch
-							await this.cacheManager.updateHash(filePath, currentFileHash)
+
+							this.cacheManager.updateHash(filePath, currentFileHash)
 						}
 					} catch (error) {
 						console.error(`Error processing file ${filePath} in workspace ${scanWorkspace}:`, error)
@@ -385,19 +386,21 @@ export class DirectoryScanner implements IDirectoryScanner {
 		await Promise.all(activeBatchPromises)
 
 		// Handle deleted files
-		for (const cachedFilePath of Object.keys(this.cacheManager.getAllHashes())) {
-			if (!processedFiles.has(cachedFilePath)) {
-				// File was deleted or is no longer supported/indexed
-				if (this.qdrantClient) {
+		if (this.qdrantClient) {
+			try {
+				// Delete hashes for files that were not processed (deleted or no longer supported)
+				const deletedFilePaths = this.cacheManager.deleteHashesNotIn(Array.from(processedFiles))
+
+				// Delete points from vector store for the deleted files
+				if (deletedFilePaths.length > 0) {
 					try {
-						await this.qdrantClient.deletePointsByFilePath(cachedFilePath)
-						await this.cacheManager.deleteHash(cachedFilePath)
+						await this.qdrantClient.deletePointsByMultipleFilePaths(deletedFilePaths)
 					} catch (error: any) {
 						const errorStatus = error?.status || error?.response?.status || error?.statusCode
 						const errorMessage = error instanceof Error ? error.message : String(error)
 
 						console.error(
-							`[DirectoryScanner] Failed to delete points for ${cachedFilePath} in workspace ${scanWorkspace}:`,
+							`[DirectoryScanner] Failed to delete points for ${deletedFilePaths.length} files in workspace ${scanWorkspace}:`,
 							error,
 						)
 
@@ -406,6 +409,7 @@ export class DirectoryScanner implements IDirectoryScanner {
 							stack: error instanceof Error ? sanitizeErrorMessage(error.stack || "") : undefined,
 							location: "scanDirectory:deleteRemovedFiles",
 							errorStatus: errorStatus,
+							fileCount: deletedFilePaths.length,
 						})
 
 						if (onError) {
@@ -413,18 +417,28 @@ export class DirectoryScanner implements IDirectoryScanner {
 							onError(
 								error instanceof Error
 									? new Error(
-											`${error.message} (Workspace: ${scanWorkspace}, File: ${cachedFilePath})`,
+											`Failed to delete points for ${deletedFilePaths.length} files. ${error.message} (Workspace: ${scanWorkspace})`,
 										)
 									: new Error(
 											t("embeddings:scanner.unknownErrorDeletingPoints", {
-												filePath: cachedFilePath,
+												filePath: `${deletedFilePaths.length} files`,
 											}) + ` (Workspace: ${scanWorkspace})`,
 										),
 							)
 						}
 						// Log error and continue processing instead of re-throwing
-						console.error(`Failed to delete points for removed file: ${cachedFilePath}`, error)
+						console.error(`Failed to delete points for removed files in workspace ${scanWorkspace}:`, error)
 					}
+				}
+			} catch (error: any) {
+				console.error(`[DirectoryScanner] Failed to handle deleted files in workspace ${scanWorkspace}:`, error)
+
+				if (onError) {
+					onError(
+						error instanceof Error
+							? new Error(`${error.message} (Workspace: ${scanWorkspace})`)
+							: new Error(`Failed to handle deleted files (Workspace: ${scanWorkspace})`),
+					)
 				}
 			}
 		}
@@ -528,9 +542,12 @@ export class DirectoryScanner implements IDirectoryScanner {
 				onBlocksIndexed?.(batchBlocks.length)
 
 				// Update hashes for successfully processed files in this batch
+				this.cacheManager.updateHashes(
+					batchFileInfos.map((info) => ({ filePath: info.filePath, hash: info.fileHash })),
+				)
+
+				// Report that files have been fully processed
 				for (const fileInfo of batchFileInfos) {
-					await this.cacheManager.updateHash(fileInfo.filePath, fileInfo.fileHash)
-					// Report that this file has been fully processed
 					const fileBlockCount = batchFileBlockCounts.get(fileInfo.filePath)
 					if (fileBlockCount !== undefined) {
 						onFileFullyProcessedOrAlreadyProcessed?.(fileBlockCount)

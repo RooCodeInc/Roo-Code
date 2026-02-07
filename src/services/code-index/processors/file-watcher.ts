@@ -211,15 +211,18 @@ export class FileWatcher implements IFileWatcher {
 			try {
 				await this.vectorStore.deletePointsByMultipleFilePaths(Array.from(allPathsToClearFromDB))
 
-				for (const path of pathsToExplicitlyDelete) {
-					this.cacheManager.deleteHash(path)
-					batchResults.push({ path, status: "success" })
-					processedCountInBatch++
-					this._onBatchProgressUpdate.fire({
-						processedInBatch: processedCountInBatch,
-						totalInBatch: totalFilesInBatch,
-						currentFile: path,
-					})
+				// Batch delete hashes for explicitly deleted files
+				if (pathsToExplicitlyDelete.length > 0) {
+					this.cacheManager.deleteHashes(pathsToExplicitlyDelete)
+					for (const path of pathsToExplicitlyDelete) {
+						batchResults.push({ path, status: "success" })
+						processedCountInBatch++
+						this._onBatchProgressUpdate.fire({
+							processedInBatch: processedCountInBatch,
+							totalInBatch: totalFilesInBatch,
+							currentFile: path,
+						})
+					}
 				}
 			} catch (error: any) {
 				const errorStatus = error?.status || error?.response?.status || error?.statusCode
@@ -389,10 +392,15 @@ export class FileWatcher implements IFileWatcher {
 					}
 				}
 
-				for (const { path, newHash } of successfullyProcessedForUpsert) {
-					if (newHash) {
-						this.cacheManager.updateHash(path, newHash)
-					}
+				// Batch update hashes for successfully processed files
+				const hashEntries = successfullyProcessedForUpsert
+					.filter((item) => item.newHash !== undefined)
+					.map((item) => ({ filePath: item.path, hash: item.newHash! }))
+				if (hashEntries.length > 0) {
+					this.cacheManager.updateHashes(hashEntries)
+				}
+
+				for (const { path } of successfullyProcessedForUpsert) {
 					batchResults.push({ path, status: "success" })
 				}
 			} catch (error) {
