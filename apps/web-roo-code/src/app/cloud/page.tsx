@@ -5,9 +5,9 @@ import {
 	ChartLine,
 	Github,
 	History,
+	ListChecks,
 	LucideIcon,
 	Pencil,
-	Router,
 	Share2,
 	Slack,
 	Users,
@@ -112,9 +112,9 @@ const features: Feature[] = [
 		description: "Start tasks, get updates, and collaborate with agents directly from your team's Slack channels.",
 	},
 	{
-		icon: Router,
-		title: "Roomote Control",
-		description: "Connect to your local VS Code instance and control the extension remotely from the browser.",
+		icon: ListChecks,
+		title: "Linear Integration",
+		description: "Assign issues to Roo Code directly from Linear. Get PRs back without switching tools.",
 	},
 	{
 		icon: Users,
