@@ -42,7 +42,7 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		// /deployments/{id}/{path} URL shape.
 		this.provider = createAzure({
 			baseURL: options.azureBaseUrl || undefined,
-			apiKey: options.azureApiKey, // Optional — Azure supports managed identity / Entra ID auth
+			apiKey: options.azureApiKey || undefined, // Optional — Azure supports managed identity / Entra ID auth
 			apiVersion: options.azureApiVersion ?? azureOpenAiDefaultApiVersion,
 			useDeploymentBasedUrls: true,
 			headers: DEFAULT_HEADERS,
