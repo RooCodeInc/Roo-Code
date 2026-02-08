@@ -119,7 +119,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		const workingDirectory = this.options.claudeCodeAcpWorkingDirectory || process.cwd()
 
 		// Get or create a session
-		const session = await manager.getOrCreateSession(workingDirectory, model.id)
+		let session = await manager.getOrCreateSession(workingDirectory, model.id)
 
 		// Detect session change — reset state if new session
 		if (this.sessionId !== session.sessionId) {
@@ -131,22 +131,68 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 
 		const maxPromptChars = this.getMaxProxyPromptChars(model.info)
 
-		// Build prompt: full on first turn, delta on subsequent turns
-		const proxyPrompt = this.isSessionInitialized
-			? this.buildDeltaPrompt(messages, metadata?.tool_choice, maxPromptChars)
-			: this.buildFullProxyPrompt(systemPrompt, messages, metadata?.tools, metadata?.tool_choice, maxPromptChars)
-
-		// Update state BEFORE sending (so if we crash, we don't re-send full prompt)
-		this.lastSentMessageCount = messages.length
-		this.isSessionInitialized = true
+		const buildProxyPrompt = (budget: number, forceFull: boolean) =>
+			forceFull || !this.isSessionInitialized
+				? this.buildFullProxyPrompt(systemPrompt, messages, metadata?.tools, metadata?.tool_choice, budget)
+				: this.buildDeltaPrompt(messages, metadata?.tool_choice, budget)
 
 		// Collect all text from streaming updates
 		const textChunks: string[] = []
-		const totalInputChars = proxyPrompt.length
+		let totalInputChars = 0
 
-		const result = await this.sendPromptStreaming(session.sessionId, proxyPrompt, (text) => {
-			textChunks.push(text)
-		})
+		const sendOnce = async (sessionId: string, prompt: string) => {
+			textChunks.length = 0
+			totalInputChars += prompt.length
+			return this.sendPromptStreaming(sessionId, prompt, (text) => {
+				textChunks.push(text)
+			})
+		}
+
+		// Build prompt: full on first turn, delta on subsequent turns
+		let proxyPrompt = buildProxyPrompt(maxPromptChars, false)
+		let result = await sendOnce(session.sessionId, proxyPrompt)
+
+		// ACP/Claude Code can still error with "Prompt is too long" even when the model's
+		// context window should theoretically support it (ACP adds its own overhead).
+		// In that case, retry with progressively smaller prompts in a fresh ACP session.
+		if (result.error && this.isPromptTooLongError(result.error)) {
+			console.debug("[ClaudeCodeAcpHandler] ACP prompt too long; retrying with smaller prompt in fresh session")
+
+			manager.closeSession(session.sessionId)
+			this.sessionId = null
+			this.lastSentMessageCount = 0
+			this.isSessionInitialized = false
+			this.cachedToolNames = []
+
+			const retryBudgets = [
+				Math.min(60_000, Math.floor(maxPromptChars * 0.5)),
+				Math.min(30_000, Math.floor(maxPromptChars * 0.25)),
+			].filter((b) => b >= 10_000)
+
+			for (const budget of retryBudgets) {
+				session = await manager.getOrCreateSession(workingDirectory, model.id)
+				if (this.sessionId !== session.sessionId) {
+					this.lastSentMessageCount = 0
+					this.isSessionInitialized = false
+					this.cachedToolNames = []
+				}
+				this.sessionId = session.sessionId
+
+				proxyPrompt = buildProxyPrompt(budget, true)
+				result = await sendOnce(session.sessionId, proxyPrompt)
+				if (!result.error) break
+
+				if (!this.isPromptTooLongError(result.error)) {
+					break
+				}
+
+				manager.closeSession(session.sessionId)
+				this.sessionId = null
+				this.lastSentMessageCount = 0
+				this.isSessionInitialized = false
+				this.cachedToolNames = []
+			}
+		}
 
 		if (result.error) {
 			// On error, reset session state so next call sends full prompt
@@ -156,6 +202,10 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		}
 
 		const fullText = textChunks.join("")
+
+		// Update state AFTER a successful send
+		this.lastSentMessageCount = messages.length
+		this.isSessionInitialized = true
 
 		// Handle empty response — reset session so next call sends full prompt
 		// This triggers Roo Code's task loop to retry, which will send a fresh full prompt
@@ -457,6 +507,11 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		const modelBoundChars = Math.floor(availableTokens * approxCharsPerToken * 0.9)
 		// Prefer the stricter bound to avoid ACP-side "Prompt is too long" failures.
 		return Math.max(10_000, Math.min(MAX_ACP_PROXY_PROMPT_CHARS, modelBoundChars || MAX_ACP_PROXY_PROMPT_CHARS))
+	}
+
+	private isPromptTooLongError(error: Error): boolean {
+		const msg = error.message?.toLowerCase?.() ?? ""
+		return msg.includes("prompt is too long") || msg.includes("token limit") || msg.includes("context length")
 	}
 
 	/**
