@@ -37,6 +37,8 @@ i18next.use(initReactI18next).init({
 	interpolation: {
 		escapeValue: false, // React already escapes by default
 	},
+	// Note: returnObjects is not set to true because i18next should automatically
+	// resolve plural objects to strings when count parameter is provided
 })
 
 export function loadTranslations() {

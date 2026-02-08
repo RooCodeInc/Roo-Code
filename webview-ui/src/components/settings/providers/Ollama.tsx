@@ -1,15 +1,23 @@
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useState, useCallback, useMemo, useEffect, useRef } from "react"
 import { useEvent } from "react-use"
-import { VSCodeTextField } from "@vscode/webview-ui-toolkit/react"
+import { Trans } from "react-i18next"
+import {
+	VSCodeTextField,
+	VSCodeRadioGroup,
+	VSCodeRadio,
+	VSCodeCheckbox,
+	VSCodeLink,
+} from "@vscode/webview-ui-toolkit/react"
 
 import type { ProviderSettings, ExtensionMessage, ModelRecord } from "@roo-code/types"
 
 import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useRouterModels } from "@src/components/ui/hooks/useRouterModels"
 import { vscode } from "@src/utils/vscode"
+import { Button } from "@src/components/ui/button"
+import prettyBytes from "pretty-bytes"
 
 import { inputEventTransform } from "../transforms"
-import { ModelPicker } from "../ModelPicker"
 
 type OllamaProps = {
 	apiConfiguration: ProviderSettings
@@ -20,7 +28,34 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 	const { t } = useAppTranslation()
 
 	const [ollamaModels, setOllamaModels] = useState<ModelRecord>({})
+	const [modelsWithTools, setModelsWithTools] = useState<
+		Array<{
+			name: string
+			contextWindow: number
+			size?: number
+			quantizationLevel?: string
+			family?: string
+			supportsImages: boolean
+			modelInfo: any
+		}>
+	>([])
+	const [modelsWithoutTools, setModelsWithoutTools] = useState<string[]>([])
+	const [testingConnection, setTestingConnection] = useState(false)
+	const [testResult, setTestResult] = useState<{ success: boolean; message: string; durationMs?: number } | null>(
+		null,
+	)
+	const [refreshingModels, setRefreshingModels] = useState(false)
+	const [refreshResult, setRefreshResult] = useState<{
+		success: boolean
+		message: string
+		durationMs?: number
+	} | null>(null)
+	const [showAdvanced, setShowAdvanced] = useState(false)
+
 	const routerModels = useRouterModels()
+
+	const testResultTimerRef = useRef<NodeJS.Timeout>()
+	const refreshResultTimerRef = useRef<NodeJS.Timeout>()
 
 	const handleInputChange = useCallback(
 		<K extends keyof ProviderSettings, E>(
@@ -33,16 +68,164 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 		[setApiConfigurationField],
 	)
 
-	const onMessage = useCallback((event: MessageEvent) => {
-		const message: ExtensionMessage = event.data
+	// Helper function to translate backend messages
+	const translateMessage = useCallback(
+		(msg: string): string => {
+			if (!msg) return msg
 
-		switch (message.type) {
-			case "ollamaModels":
-				{
-					const newModels = message.ollamaModels ?? {}
-					setOllamaModels(newModels)
-				}
-				break
+			// Successfully connected to Ollama at {url}
+			const successMatch = msg.match(/^Successfully connected to Ollama at (.+)$/)
+			if (successMatch) {
+				return t("settings:providers.ollama.messages.connectionSuccess", { baseUrl: successMatch[1] })
+			}
+
+			// Invalid URL: {url}
+			const invalidUrlMatch = msg.match(/^Invalid URL: (.+)$/)
+			if (invalidUrlMatch) {
+				return t("settings:providers.ollama.messages.connectionInvalidUrl", { baseUrl: invalidUrlMatch[1] })
+			}
+
+			// Cannot connect to Ollama at {url}. Make sure Ollama is running.
+			const refusedMatch = msg.match(/^Cannot connect to Ollama at (.+)\. Make sure Ollama is running\.$/)
+			if (refusedMatch) {
+				return t("settings:providers.ollama.messages.connectionRefused", { baseUrl: refusedMatch[1] })
+			}
+
+			// Connection to Ollama timed out. Check if the URL is correct and Ollama is accessible.
+			if (msg.includes("Connection to Ollama timed out")) {
+				return t("settings:providers.ollama.messages.connectionTimeout")
+			}
+
+			// Network error connecting to Ollama. Check your network connection.
+			if (msg.includes("Network error connecting to Ollama")) {
+				return t("settings:providers.ollama.messages.connectionNetworkError")
+			}
+
+			// Ollama returned error: {status} {statusText}
+			const httpErrorMatch = msg.match(/^Ollama returned error: (\d+) (.+)$/)
+			if (httpErrorMatch) {
+				return t("settings:providers.ollama.messages.connectionHttpError", {
+					status: httpErrorMatch[1],
+					statusText: httpErrorMatch[2],
+				})
+			}
+
+			// Failed to connect: {error}
+			const failedMatch = msg.match(/^Failed to connect: (.+)$/)
+			if (failedMatch) {
+				return t("settings:providers.ollama.messages.connectionFailed", { error: failedMatch[1] })
+			}
+
+			// Error testing connection: {error}
+			const testErrorMatch = msg.match(/^Error testing connection: (.+)$/)
+			if (testErrorMatch) {
+				return t("settings:providers.ollama.messages.connectionTestError", { error: testErrorMatch[1] })
+			}
+
+			// Found {count} model(s) with tools support ({total} total)
+			const refreshSuccessMatch = msg.match(/^Found (\d+) model\(s\) with tools support \((\d+) total\)$/)
+			if (refreshSuccessMatch) {
+				return t("settings:providers.ollama.messages.refreshSuccess", {
+					count: refreshSuccessMatch[1],
+					total: refreshSuccessMatch[2],
+				})
+			}
+
+			// No models found. Make sure Ollama is running and has models installed.
+			if (msg === "No models found. Make sure Ollama is running and has models installed.") {
+				return t("settings:providers.ollama.messages.refreshNoModels")
+			}
+
+			// Failed to refresh models: {error}
+			const refreshFailedMatch = msg.match(/^Failed to refresh models: (.+)$/)
+			if (refreshFailedMatch) {
+				return t("settings:providers.ollama.messages.refreshFailed", { error: refreshFailedMatch[1] })
+			}
+
+			// Unknown message - return as is
+			return msg
+		},
+		[t],
+	)
+
+	const onMessage = useCallback(
+		(event: MessageEvent) => {
+			const message: ExtensionMessage = event.data
+
+			switch (message.type) {
+				case "ollamaModels":
+					{
+						const newModels = message.ollamaModels ?? {}
+						setOllamaModels(newModels)
+						if (message.ollamaModelsWithTools) {
+							setModelsWithTools(message.ollamaModelsWithTools)
+						}
+						setModelsWithoutTools(message.modelsWithoutTools ?? [])
+					}
+					break
+				case "ollamaConnectionTestResult":
+					setTestResult({
+						success: message.success ?? false,
+						message: translateMessage(message.message ?? "Unknown error"),
+						durationMs: message.durationMs,
+					})
+					setTestingConnection(false)
+					if (testResultTimerRef.current) {
+						clearTimeout(testResultTimerRef.current)
+					}
+					testResultTimerRef.current = setTimeout(() => setTestResult(null), 5000)
+					break
+				case "ollamaModelsRefreshResult":
+					setRefreshResult({
+						success: message.success ?? false,
+						message: translateMessage(message.message ?? "Unknown error"),
+						durationMs: message.durationMs,
+					})
+					setRefreshingModels(false)
+					if (message.ollamaModelsWithTools) {
+						setModelsWithTools(message.ollamaModelsWithTools)
+					}
+					if (message.modelsWithoutTools) {
+						setModelsWithoutTools(message.modelsWithoutTools)
+					}
+					if (refreshResultTimerRef.current) {
+						clearTimeout(refreshResultTimerRef.current)
+					}
+					refreshResultTimerRef.current = setTimeout(() => setRefreshResult(null), 5000)
+					break
+			}
+		},
+		[translateMessage],
+	)
+
+	const handleTestConnection = useCallback(() => {
+		setTestingConnection(true)
+		setTestResult(null)
+		vscode.postMessage({
+			type: "testOllamaConnection",
+			ollamaBaseUrl: apiConfiguration?.ollamaBaseUrl || "",
+			ollamaApiKey: apiConfiguration?.ollamaApiKey || "",
+		})
+	}, [apiConfiguration?.ollamaBaseUrl, apiConfiguration?.ollamaApiKey])
+
+	const handleRefreshModels = useCallback(() => {
+		setRefreshingModels(true)
+		setRefreshResult(null)
+		vscode.postMessage({
+			type: "refreshOllamaModels",
+			ollamaBaseUrl: apiConfiguration?.ollamaBaseUrl || "",
+			ollamaApiKey: apiConfiguration?.ollamaApiKey || "",
+		})
+	}, [apiConfiguration?.ollamaBaseUrl, apiConfiguration?.ollamaApiKey])
+
+	useEffect(() => {
+		return () => {
+			if (testResultTimerRef.current) {
+				clearTimeout(testResultTimerRef.current)
+			}
+			if (refreshResultTimerRef.current) {
+				clearTimeout(refreshResultTimerRef.current)
+			}
 		}
 	}, [])
 
@@ -77,16 +260,39 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 		return undefined
 	}, [apiConfiguration?.ollamaModelId, routerModels.data, ollamaModels, t])
 
+	// Sort models with tools by name for consistent ordering
+	const sortedModelsWithTools = useMemo(() => {
+		return [...modelsWithTools].sort((a, b) => a.name.localeCompare(b.name))
+	}, [modelsWithTools])
+
 	return (
 		<>
-			<VSCodeTextField
-				value={apiConfiguration?.ollamaBaseUrl || ""}
-				type="url"
-				onInput={handleInputChange("ollamaBaseUrl")}
-				placeholder={t("settings:defaults.ollamaUrl")}
-				className="w-full">
-				<label className="block font-medium mb-1">{t("settings:providers.ollama.baseUrl")}</label>
-			</VSCodeTextField>
+			<div className="flex items-center gap-2">
+				<VSCodeTextField
+					value={apiConfiguration?.ollamaBaseUrl || ""}
+					type="url"
+					onInput={handleInputChange("ollamaBaseUrl")}
+					placeholder={t("settings:defaults.ollamaUrl")}
+					className="flex-1">
+					<label className="block font-medium mb-1">{t("settings:providers.ollama.baseUrl")}</label>
+				</VSCodeTextField>
+				<Button onClick={handleTestConnection} disabled={testingConnection} variant="outline" className="mt-6">
+					{testingConnection ? t("settings:providers.ollama.testing") : t("settings:providers.ollama.test")}
+				</Button>
+			</div>
+			{testResult && (
+				<div
+					className={`p-2 rounded-xs text-sm ${
+						testResult.success ? "bg-green-800/20 text-green-400" : "bg-red-800/20 text-red-400"
+					}`}>
+					<div>{testResult.message}</div>
+					{testResult.durationMs !== undefined && (
+						<div className="text-xs mt-1 opacity-80">
+							{t("settings:providers.ollama.completedIn", { duration: testResult.durationMs })}
+						</div>
+					)}
+				</div>
+			)}
 			{apiConfiguration?.ollamaBaseUrl && (
 				<VSCodeTextField
 					value={apiConfiguration?.ollamaApiKey || ""}
@@ -100,17 +306,140 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 					</div>
 				</VSCodeTextField>
 			)}
-			<ModelPicker
-				apiConfiguration={apiConfiguration}
-				setApiConfigurationField={setApiConfigurationField}
-				defaultModelId=""
-				models={ollamaModels}
-				modelIdKey="ollamaModelId"
-				serviceName="Ollama"
-				serviceUrl="https://ollama.ai"
-				errorMessage={modelNotAvailableError}
-				hidePricing
-			/>
+			<div className="flex items-center gap-2">
+				<VSCodeTextField
+					value={apiConfiguration?.ollamaModelId || ""}
+					onInput={handleInputChange("ollamaModelId")}
+					placeholder={t("settings:placeholders.modelId.ollama")}
+					className="flex-1">
+					<label className="block font-medium mb-1">{t("settings:providers.ollama.modelId")}</label>
+				</VSCodeTextField>
+				<Button onClick={handleRefreshModels} disabled={refreshingModels} variant="outline" className="mt-6">
+					{refreshingModels
+						? t("settings:providers.ollama.refreshing")
+						: t("settings:providers.ollama.refreshModels")}
+				</Button>
+			</div>
+			{refreshResult && (
+				<div
+					className={`p-2 rounded-xs text-sm ${
+						refreshResult.success ? "bg-green-800/20 text-green-400" : "bg-red-800/20 text-red-400"
+					}`}>
+					<div>{refreshResult.message}</div>
+					{refreshResult.durationMs !== undefined && (
+						<div className="text-xs mt-1 opacity-80">
+							{t("settings:providers.ollama.completedIn", { duration: refreshResult.durationMs })}
+						</div>
+					)}
+				</div>
+			)}
+			{modelNotAvailableError && (
+				<div className="flex flex-col gap-2 text-vscode-errorForeground text-sm">
+					<div className="flex flex-row items-center gap-1">
+						<div className="codicon codicon-close" />
+						<div>{modelNotAvailableError}</div>
+					</div>
+				</div>
+			)}
+			{/* Tools Support Section */}
+			{modelsWithTools.length > 0 && (
+				<div className="flex flex-col gap-2 mt-4">
+					<div className="text-sm font-medium text-vscode-foreground">
+						{t("settings:providers.ollama.toolsSupport")} ({modelsWithTools.length}{" "}
+						{t("settings:providers.ollama.models", { count: modelsWithTools.length })})
+					</div>
+					<VSCodeRadioGroup
+						value={apiConfiguration?.ollamaModelId || ""}
+						onChange={(e: Event | React.FormEvent<HTMLElement>) => {
+							const target = ((e as CustomEvent)?.detail?.target ||
+								(e.target as HTMLInputElement)) as HTMLInputElement
+							if (target?.value) {
+								setApiConfigurationField("ollamaModelId", target.value)
+							}
+						}}>
+						<div className="overflow-x-auto">
+							<table className="w-full border-collapse text-sm">
+								<thead>
+									<tr className="border-b border-vscode-foreground/10">
+										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
+											{t("settings:providers.ollama.table.modelName")}
+										</th>
+										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
+											{t("settings:providers.ollama.table.context")}
+										</th>
+										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
+											{t("settings:providers.ollama.table.size")}
+										</th>
+										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
+											{t("settings:providers.ollama.table.quantization")}
+										</th>
+										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
+											{t("settings:providers.ollama.table.family")}
+										</th>
+										<th className="text-left py-2 px-3 font-medium text-vscode-foreground">
+											{t("settings:providers.ollama.table.images")}
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+									{sortedModelsWithTools.map((model) => (
+										<tr
+											key={model.name}
+											className="border-b border-vscode-foreground/5 hover:bg-vscode-foreground/5">
+											<td className="py-2 px-3">
+												<VSCodeRadio
+													value={model.name}
+													checked={apiConfiguration?.ollamaModelId === model.name}>
+													{model.name}
+												</VSCodeRadio>
+											</td>
+											<td className="py-2 px-3 text-vscode-descriptionForeground">
+												{model.contextWindow.toLocaleString()}
+											</td>
+											<td className="py-2 px-3 text-vscode-descriptionForeground">
+												{model.size ? prettyBytes(model.size) : "-"}
+											</td>
+											<td className="py-2 px-3 text-vscode-descriptionForeground">
+												{model.quantizationLevel || "-"}
+											</td>
+											<td className="py-2 px-3 text-vscode-descriptionForeground">
+												{model.family || "-"}
+											</td>
+											<td className="py-2 px-3 text-vscode-descriptionForeground">
+												{model.supportsImages
+													? t("settings:providers.ollama.table.yes")
+													: t("settings:providers.ollama.table.no")}
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</VSCodeRadioGroup>
+				</div>
+			)}
+			{/* No Tools Support Section */}
+			{modelsWithoutTools.length > 0 && (
+				<div className="flex flex-col gap-2 mt-4">
+					<div className="text-sm font-medium text-vscode-descriptionForeground">
+						{t("settings:providers.ollama.noToolsSupport")} ({modelsWithoutTools.length}{" "}
+						{t("settings:providers.ollama.models", { count: modelsWithoutTools.length })})
+					</div>
+					<div className="text-xs text-vscode-descriptionForeground mb-2">
+						{t("settings:providers.ollama.noToolsSupportHelp")}
+					</div>
+					<div className="flex flex-col gap-1 pl-4">
+						{modelsWithoutTools.map((model) => (
+							<div
+								key={model}
+								className="text-sm text-vscode-descriptionForeground flex items-center gap-2">
+								<span className="codicon codicon-circle-small" />
+								<span>{model}</span>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
 			<VSCodeTextField
 				value={apiConfiguration?.ollamaNumCtx?.toString() || ""}
 				onInput={(e) => {
@@ -131,10 +460,128 @@ export const Ollama = ({ apiConfiguration, setApiConfigurationField }: OllamaPro
 					{t("settings:providers.ollama.numCtxHelp")}
 				</div>
 			</VSCodeTextField>
-			<div className="text-sm text-vscode-descriptionForeground">
-				{t("settings:providers.ollama.description")}
-				<span className="text-vscode-errorForeground ml-1">{t("settings:providers.ollama.warning")}</span>
+			<div className="text-sm text-vscode-descriptionForeground mt-4">
+				<Trans
+					i18nKey="settings:providers.ollama.description"
+					components={{
+						quickstartLink: <VSCodeLink href="https://docs.ollama.com/quickstart" />,
+					}}
+				/>
 			</div>
+			<div className="text-sm text-vscode-descriptionForeground">
+				<span className="text-vscode-errorForeground">{t("settings:providers.ollama.warning")}</span>
+			</div>
+			<button
+				onClick={() => setShowAdvanced(!showAdvanced)}
+				className="flex items-center gap-2 text-vscode-foreground hover:text-vscode-foreground/80 mt-4">
+				<span className={`codicon ${showAdvanced ? "codicon-chevron-down" : "codicon-chevron-right"}`} />
+				{t("settings:providers.ollama.connectionSettings")}
+			</button>
+			{showAdvanced && (
+				<div className="flex flex-col gap-3 pl-4 border-l-2 border-vscode-foreground/10 mt-2">
+					<VSCodeCheckbox checked={true} disabled={true}>
+						<label className="block font-medium mb-1">{t("settings:providers.ollama.streaming")}</label>
+						<div className="text-xs text-vscode-descriptionForeground mt-1">
+							{t("settings:providers.ollama.streamingHelp")}
+						</div>
+					</VSCodeCheckbox>
+
+					<VSCodeTextField
+						value={apiConfiguration?.ollamaRequestTimeout?.toString() || "3600000"}
+						onInput={(e: any) => {
+							const value = e.target?.value
+							if (value === "") {
+								setApiConfigurationField("ollamaRequestTimeout", undefined)
+							} else {
+								const numValue = parseInt(value, 10)
+								if (!isNaN(numValue) && numValue >= 1000 && numValue <= 7200000) {
+									setApiConfigurationField("ollamaRequestTimeout", numValue)
+								}
+							}
+						}}
+						className="w-full">
+						<label className="block font-medium mb-1">
+							{t("settings:providers.ollama.requestTimeout")}
+						</label>
+						<div className="text-xs text-vscode-descriptionForeground mt-1">
+							{t("settings:providers.ollama.requestTimeoutHelp")}
+						</div>
+					</VSCodeTextField>
+
+					<VSCodeTextField
+						value={apiConfiguration?.ollamaModelDiscoveryTimeout?.toString() || "10000"}
+						onInput={(e: any) => {
+							const value = e.target?.value
+							if (value === "") {
+								setApiConfigurationField("ollamaModelDiscoveryTimeout", undefined)
+							} else {
+								const numValue = parseInt(value, 10)
+								if (!isNaN(numValue) && numValue >= 1000 && numValue <= 600000) {
+									setApiConfigurationField("ollamaModelDiscoveryTimeout", numValue)
+								}
+							}
+						}}
+						className="w-full">
+						<label className="block font-medium mb-1">
+							{t("settings:providers.ollama.modelDiscoveryTimeout")}
+						</label>
+						<div className="text-xs text-vscode-descriptionForeground mt-1">
+							{t("settings:providers.ollama.modelDiscoveryTimeoutHelp")}
+						</div>
+					</VSCodeTextField>
+
+					<VSCodeTextField
+						value={apiConfiguration?.ollamaMaxRetries?.toString() || "0"}
+						onInput={(e: any) => {
+							const value = e.target?.value
+							if (value === "") {
+								setApiConfigurationField("ollamaMaxRetries", undefined)
+							} else {
+								const numValue = parseInt(value, 10)
+								if (!isNaN(numValue) && numValue >= 0 && numValue <= 10) {
+									setApiConfigurationField("ollamaMaxRetries", numValue)
+								}
+							}
+						}}
+						className="w-full">
+						<label className="block font-medium mb-1">{t("settings:providers.ollama.maxRetries")}</label>
+						<div className="text-xs text-vscode-descriptionForeground mt-1">
+							{t("settings:providers.ollama.maxRetriesHelp")}
+						</div>
+					</VSCodeTextField>
+
+					<VSCodeTextField
+						value={apiConfiguration?.ollamaRetryDelay?.toString() || "1000"}
+						onInput={(e: any) => {
+							const value = e.target?.value
+							if (value === "") {
+								setApiConfigurationField("ollamaRetryDelay", undefined)
+							} else {
+								const numValue = parseInt(value, 10)
+								if (!isNaN(numValue) && numValue >= 100 && numValue <= 10000) {
+									setApiConfigurationField("ollamaRetryDelay", numValue)
+								}
+							}
+						}}
+						className="w-full">
+						<label className="block font-medium mb-1">{t("settings:providers.ollama.retryDelay")}</label>
+						<div className="text-xs text-vscode-descriptionForeground mt-1">
+							{t("settings:providers.ollama.retryDelayHelp")}
+						</div>
+					</VSCodeTextField>
+
+					<VSCodeCheckbox
+						checked={apiConfiguration?.ollamaEnableLogging ?? false}
+						onChange={(e: any) => {
+							setApiConfigurationField("ollamaEnableLogging", e.target.checked)
+						}}>
+						<label className="block font-medium mb-1">{t("settings:providers.ollama.enableLogging")}</label>
+						<div className="text-xs text-vscode-descriptionForeground mt-1">
+							{t("settings:providers.ollama.enableLoggingHelp")}
+						</div>
+					</VSCodeCheckbox>
+				</div>
+			)}
 		</>
 	)
 }

@@ -1,4 +1,87 @@
-import { getApiProtocol } from "../provider-settings.js"
+import { getApiProtocol, providerSettingsSchema } from "../provider-settings.js"
+
+describe("Ollama Settings Schema", () => {
+	it("should accept valid ollamaRequestTimeout", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaRequestTimeout: 3600000,
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it("should reject ollamaRequestTimeout below minimum", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaRequestTimeout: 500,
+		})
+		expect(result.success).toBe(false)
+	})
+
+	it("should reject ollamaRequestTimeout above maximum", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaRequestTimeout: 8000000,
+		})
+		expect(result.success).toBe(false)
+	})
+
+	it("should accept valid ollamaModelDiscoveryTimeout", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaModelDiscoveryTimeout: 10000,
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it("should reject ollamaModelDiscoveryTimeout above maximum", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaModelDiscoveryTimeout: 700000,
+		})
+		expect(result.success).toBe(false)
+	})
+
+	it("should accept valid ollamaMaxRetries", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaMaxRetries: 3,
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it("should reject ollamaMaxRetries above maximum", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaMaxRetries: 15,
+		})
+		expect(result.success).toBe(false)
+	})
+
+	it("should accept valid ollamaRetryDelay", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaRetryDelay: 2000,
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it("should reject ollamaRetryDelay below minimum", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaRetryDelay: 50,
+		})
+		expect(result.success).toBe(false)
+	})
+
+	it("should accept ollamaEnableLogging boolean", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaEnableLogging: true,
+		})
+		expect(result.success).toBe(true)
+	})
+
+	it("should accept all optional fields together", () => {
+		const result = providerSettingsSchema.safeParse({
+			ollamaRequestTimeout: 3600000,
+			ollamaModelDiscoveryTimeout: 10000,
+			ollamaMaxRetries: 2,
+			ollamaRetryDelay: 1000,
+			ollamaEnableLogging: true,
+		})
+		expect(result.success).toBe(true)
+	})
+})
 
 describe("getApiProtocol", () => {
 	describe("Anthropic-style providers", () => {
