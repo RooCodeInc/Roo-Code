@@ -453,7 +453,7 @@ export class ClineProvider
 
 	// Removes and destroys the top Cline instance (the current finished task),
 	// activating the previous one (resuming the parent task).
-	async removeClineFromStack() {
+	async removeClineFromStack(options?: { skipDelegationRepair?: boolean }) {
 		if (this.clineStack.length === 0) {
 			return
 		}
@@ -495,7 +495,10 @@ export class ClineProvider
 			// If the popped task was a delegated child, repair the parent's metadata
 			// so it transitions from "delegated" back to "active" and becomes resumable
 			// from the task history list.
-			if (parentTaskId && childTaskId) {
+			// Skip when called from delegateParentAndOpenChild() during nested delegation
+			// transitions (A→B→C), where the caller intentionally replaces the active
+			// child and will update the parent to point at the new child.
+			if (parentTaskId && childTaskId && !options?.skipDelegationRepair) {
 				try {
 					const { historyItem: parentHistory } = await this.getTaskWithId(parentTaskId)
 
@@ -3262,7 +3265,7 @@ export class ClineProvider
 		//    This ensures we never have >1 tasks open at any time during delegation.
 		//    Await abort completion to ensure clean disposal and prevent unhandled rejections.
 		try {
-			await this.removeClineFromStack()
+			await this.removeClineFromStack({ skipDelegationRepair: true })
 		} catch (error) {
 			this.log(
 				`[delegateParentAndOpenChild] Error during parent disposal (non-fatal): ${

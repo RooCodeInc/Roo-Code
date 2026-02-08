@@ -192,4 +192,90 @@ describe("ClineProvider.removeClineFromStack() delegation awareness", () => {
 		expect(provider.getTaskWithId).not.toHaveBeenCalled()
 		expect(provider.updateTaskHistory).not.toHaveBeenCalled()
 	})
+
+	it("skips delegation repair when skipDelegationRepair option is true", async () => {
+		const { provider, updateTaskHistory, getTaskWithId } = buildMockProvider({
+			childTaskId: "child-1",
+			parentTaskId: "parent-1",
+			parentHistoryItem: {
+				id: "parent-1",
+				task: "Parent task",
+				ts: 1000,
+				number: 1,
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				status: "delegated",
+				awaitingChildId: "child-1",
+				delegatedToId: "child-1",
+				childIds: ["child-1"],
+			},
+		})
+
+		// Call with skipDelegationRepair: true (as delegateParentAndOpenChild would)
+		await (ClineProvider.prototype as any).removeClineFromStack.call(provider, { skipDelegationRepair: true })
+
+		// Stack should be empty after pop
+		expect(provider.clineStack).toHaveLength(0)
+
+		// Parent lookup should NOT have been called — repair was skipped entirely
+		expect(getTaskWithId).not.toHaveBeenCalled()
+		expect(updateTaskHistory).not.toHaveBeenCalled()
+	})
+
+	it("does NOT reset grandparent during A→B→C nested delegation transition", async () => {
+		// Scenario: A delegated to B, B is now delegating to C.
+		// delegateParentAndOpenChild() pops B via removeClineFromStack({ skipDelegationRepair: true }).
+		// Grandparent A should remain "delegated" — its metadata must not be repaired.
+		const grandparentHistory = {
+			id: "task-A",
+			task: "Grandparent task",
+			ts: 1000,
+			number: 1,
+			tokensIn: 0,
+			tokensOut: 0,
+			totalCost: 0,
+			status: "delegated",
+			awaitingChildId: "task-B",
+			delegatedToId: "task-B",
+			childIds: ["task-B"],
+		}
+
+		const taskB = {
+			taskId: "task-B",
+			instanceId: "inst-B",
+			parentTaskId: "task-A",
+			emit: vi.fn(),
+			abortTask: vi.fn().mockResolvedValue(undefined),
+		}
+
+		const getTaskWithId = vi.fn().mockImplementation(async (id: string) => {
+			if (id === "task-A") {
+				return { historyItem: { ...grandparentHistory } }
+			}
+			throw new Error("Task not found")
+		})
+		const updateTaskHistory = vi.fn().mockResolvedValue([])
+
+		const provider = {
+			clineStack: [taskB] as any[],
+			taskEventListeners: new Map(),
+			log: vi.fn(),
+			getTaskWithId,
+			updateTaskHistory,
+		}
+
+		// Simulate what delegateParentAndOpenChild does: pop B with skipDelegationRepair
+		await (ClineProvider.prototype as any).removeClineFromStack.call(provider, { skipDelegationRepair: true })
+
+		// B was popped
+		expect(provider.clineStack).toHaveLength(0)
+
+		// Grandparent A should NOT have been looked up or modified
+		expect(getTaskWithId).not.toHaveBeenCalled()
+		expect(updateTaskHistory).not.toHaveBeenCalled()
+
+		// Grandparent A's metadata remains intact (delegated, awaitingChildId: task-B)
+		// The caller (delegateParentAndOpenChild) will update A to point to C separately.
+	})
 })
