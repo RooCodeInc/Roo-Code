@@ -1,5 +1,7 @@
 // npx vitest run src/api/providers/__tests__/gemini.spec.ts
 
+import { NoOutputGeneratedError } from "ai"
+
 const mockCaptureException = vitest.fn()
 
 vitest.mock("@roo-code/telemetry", () => ({
@@ -147,6 +149,84 @@ describe("GeminiHandler", () => {
 					temperature: 1,
 				}),
 			)
+		})
+
+		it("should yield informative message when stream produces no text content", async () => {
+			// Stream with only reasoning (no text-delta) simulates thinking-only response
+			const mockFullStream = (async function* () {
+				yield { type: "reasoning-delta", id: "1", text: "thinking..." }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 0 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have: reasoning chunk, empty-stream informative message, usage
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0]).toEqual({
+				type: "text",
+				text: "Model returned an empty response. This may be caused by an unsupported thinking configuration or content filtering.",
+			})
+		})
+
+		it("should suppress NoOutputGeneratedError when no text content was yielded", async () => {
+			// Empty stream - nothing yielded at all
+			const mockFullStream = (async function* () {
+				// empty stream
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.reject(new NoOutputGeneratedError({ message: "No output generated." })),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const chunks = []
+
+			// Should NOT throw - the error is suppressed
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// Should have the informative empty-stream message only (no usage since it errored)
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0]).toMatchObject({
+				type: "text",
+				text: expect.stringContaining("empty response"),
+			})
+		})
+
+		it("should re-throw NoOutputGeneratedError when text content was yielded", async () => {
+			// Stream yields text content but usage still throws NoOutputGeneratedError (unexpected)
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "Hello" }
+			})()
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.reject(new NoOutputGeneratedError({ message: "No output generated." })),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, mockMessages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// consume stream
+				}
+			}).rejects.toThrow()
 		})
 
 		it("should handle API errors", async () => {
