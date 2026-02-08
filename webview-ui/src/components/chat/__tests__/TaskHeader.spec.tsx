@@ -470,4 +470,119 @@ describe("TaskHeader", () => {
 			expect(screen.getByText("0%")).toBeInTheDocument()
 		})
 	})
+
+	describe("Diff stats display", () => {
+		beforeEach(() => {
+			mockExtensionState = {
+				apiConfiguration: {
+					apiProvider: "anthropic",
+					apiKey: "test-api-key",
+					apiModelId: "claude-3-opus-20240229",
+				} as ProviderSettings,
+				currentTaskItem: { id: "test-task-id" },
+				clineMessages: [],
+			}
+			mockModelInfo = undefined
+			mockMaxOutputTokens = 0
+		})
+
+		it("should not show diff stats when there are no file edits", () => {
+			mockExtensionState.clineMessages = [{ type: "say", say: "text", ts: Date.now(), text: "hello" }]
+			renderTaskHeader()
+			expect(screen.queryByTestId("compact-diff-stats")).not.toBeInTheDocument()
+		})
+
+		it("should show compact diff stats in collapsed view when file edits exist", () => {
+			mockExtensionState.clineMessages = [
+				{
+					type: "ask",
+					ask: "tool",
+					ts: Date.now(),
+					text: JSON.stringify({
+						tool: "editedExistingFile",
+						path: "test.ts",
+						diffStats: { added: 10, removed: 3 },
+					}),
+				},
+			]
+			renderTaskHeader()
+			const compactStats = screen.getByTestId("compact-diff-stats")
+			expect(compactStats).toBeInTheDocument()
+			expect(compactStats).toHaveTextContent("+10")
+			expect(compactStats).toHaveTextContent("-3")
+		})
+
+		it("should show lines changed row in expanded view when file edits exist", () => {
+			mockExtensionState.clineMessages = [
+				{
+					type: "ask",
+					ask: "tool",
+					ts: Date.now(),
+					text: JSON.stringify({
+						tool: "editedExistingFile",
+						path: "test.ts",
+						diffStats: { added: 25, removed: 8 },
+					}),
+				},
+			]
+			renderTaskHeader()
+
+			// Expand the task header
+			const taskText = screen.getByText("Test task")
+			fireEvent.click(taskText)
+
+			// Check for the lines changed label and values
+			expect(screen.getByTestId("lines-changed-label")).toBeInTheDocument()
+			expect(screen.getByTestId("lines-changed-label")).toHaveTextContent("chat:task.linesChanged")
+			const value = screen.getByTestId("lines-changed-value")
+			expect(value).toHaveTextContent("+25")
+			expect(value).toHaveTextContent("-8")
+		})
+
+		it("should aggregate diff stats across multiple tool messages", () => {
+			mockExtensionState.clineMessages = [
+				{
+					type: "ask",
+					ask: "tool",
+					ts: Date.now(),
+					text: JSON.stringify({
+						tool: "editedExistingFile",
+						path: "a.ts",
+						diffStats: { added: 10, removed: 2 },
+					}),
+				},
+				{
+					type: "ask",
+					ask: "tool",
+					ts: Date.now(),
+					text: JSON.stringify({
+						tool: "newFileCreated",
+						path: "b.ts",
+						diffStats: { added: 30, removed: 0 },
+					}),
+				},
+			]
+			renderTaskHeader()
+			const compactStats = screen.getByTestId("compact-diff-stats")
+			expect(compactStats).toHaveTextContent("+40")
+			expect(compactStats).toHaveTextContent("-2")
+		})
+
+		it("should not show diff stats when all diffStats are zero", () => {
+			mockExtensionState.clineMessages = [
+				{
+					type: "ask",
+					ask: "tool",
+					ts: Date.now(),
+					text: JSON.stringify({
+						tool: "editedExistingFile",
+						path: "test.ts",
+						diffStats: { added: 0, removed: 0 },
+					}),
+				},
+			]
+			renderTaskHeader()
+			expect(screen.queryByTestId("compact-diff-stats")).not.toBeInTheDocument()
+		})
+	})
 })
