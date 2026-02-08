@@ -5,6 +5,7 @@ import { UISettings } from "../UISettings"
 describe("UISettings", () => {
 	const defaultProps = {
 		reasoningBlockCollapsed: false,
+		autoExpandDiffs: false,
 		enterBehavior: "send" as const,
 		setCachedStateField: vi.fn(),
 	}

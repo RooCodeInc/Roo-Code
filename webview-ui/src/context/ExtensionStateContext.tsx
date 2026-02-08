@@ -237,6 +237,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		terminalZdotdir: false, // Default ZDOTDIR handling setting
 		historyPreviewCollapsed: false, // Initialize the new state (default to expanded)
 		reasoningBlockCollapsed: true, // Default to collapsed
+		autoExpandDiffs: false, // Default to collapsed diffs
 		enterBehavior: "send", // Default: Enter sends, Shift+Enter creates newline
 		cloudUserInfo: null,
 		cloudIsAuthenticated: false,
@@ -480,6 +481,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const contextValue: ExtensionStateContextType = {
 		...state,
 		reasoningBlockCollapsed: state.reasoningBlockCollapsed ?? true,
+		autoExpandDiffs: state.autoExpandDiffs ?? false,
 		didHydrateState,
 		showWelcome,
 		theme,

@@ -11,12 +11,14 @@ import { ExtensionStateContextType } from "@/context/ExtensionStateContext"
 
 interface UISettingsProps extends HTMLAttributes<HTMLDivElement> {
 	reasoningBlockCollapsed: boolean
+	autoExpandDiffs: boolean
 	enterBehavior: "send" | "newline"
 	setCachedStateField: SetCachedStateField<keyof ExtensionStateContextType>
 }
 
 export const UISettings = ({
 	reasoningBlockCollapsed,
+	autoExpandDiffs,
 	enterBehavior,
 	setCachedStateField,
 	...props
@@ -36,6 +38,10 @@ export const UISettings = ({
 		telemetryClient.capture("ui_settings_collapse_thinking_changed", {
 			enabled: value,
 		})
+	}
+
+	const handleAutoExpandDiffsChange = (value: boolean) => {
+		setCachedStateField("autoExpandDiffs", value)
 	}
 
 	const handleEnterBehaviorChange = (requireCtrlEnter: boolean) => {
@@ -68,6 +74,24 @@ export const UISettings = ({
 							</VSCodeCheckbox>
 							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 								{t("settings:ui.collapseThinking.description")}
+							</div>
+						</div>
+					</SearchableSetting>
+
+					{/* Auto-Expand Diffs Setting */}
+					<SearchableSetting
+						settingId="ui-auto-expand-diffs"
+						section="ui"
+						label={t("settings:ui.autoExpandDiffs.label")}>
+						<div className="flex flex-col gap-1">
+							<VSCodeCheckbox
+								checked={autoExpandDiffs}
+								onChange={(e: any) => handleAutoExpandDiffsChange(e.target.checked)}
+								data-testid="auto-expand-diffs-checkbox">
+								<span className="font-medium">{t("settings:ui.autoExpandDiffs.label")}</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
+								{t("settings:ui.autoExpandDiffs.description")}
 							</div>
 						</div>
 					</SearchableSetting>

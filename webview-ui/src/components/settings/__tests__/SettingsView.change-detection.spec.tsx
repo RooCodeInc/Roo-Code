@@ -260,6 +260,7 @@ describe("SettingsView - Change Detection Fix", () => {
 		openRouterImageApiKey: undefined,
 		openRouterImageGenerationSelectedModel: undefined,
 		reasoningBlockCollapsed: true,
+		autoExpandDiffs: false,
 		...overrides,
 	})
 
