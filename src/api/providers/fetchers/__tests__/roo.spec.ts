@@ -24,11 +24,11 @@ describe("getRooModels", () => {
 			object: "list",
 			data: [
 				{
-					id: "xai/grok-code-fast-1",
+					id: "anthropic/claude-sonnet-4.5",
 					object: "model",
 					created: 1234567890,
-					owned_by: "xai",
-					name: "Grok Code Fast 1",
+					owned_by: "anthropic",
+					name: "Claude Sonnet 4.5",
 					description: "Fast coding model",
 					context_window: 262144,
 					max_tokens: 16384,
@@ -63,7 +63,7 @@ describe("getRooModels", () => {
 		)
 
 		expect(models).toEqual({
-			"xai/grok-code-fast-1": {
+			"anthropic/claude-sonnet-4.5": {
 				maxTokens: 16384,
 				contextWindow: 262144,
 				supportsImages: true,
