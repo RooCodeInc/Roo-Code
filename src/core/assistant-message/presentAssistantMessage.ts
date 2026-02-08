@@ -1048,6 +1048,25 @@ function containsXmlToolMarkup(text: string): boolean {
 	// Avoid regex so we don't keep legacy XML parsing artifacts around.
 	// Note: This is a best-effort safeguard; tool_use blocks without an id are rejected elsewhere.
 
+	const isTagBoundary = (char: string | undefined): boolean => {
+		if (char === undefined) {
+			return true
+		}
+		return char === ">" || char === "/" || char === " " || char === "\n" || char === "\r" || char === "\t"
+	}
+
+	const hasTagReference = (haystack: string, prefix: string): boolean => {
+		let index = haystack.indexOf(prefix)
+		while (index !== -1) {
+			const nextChar = haystack[index + prefix.length]
+			if (isTagBoundary(nextChar)) {
+				return true
+			}
+			index = haystack.indexOf(prefix, index + 1)
+		}
+		return false
+	}
+
 	// First, strip out content inside markdown code fences to avoid false positives
 	// when users paste documentation or examples containing tool tag references.
 	// This handles both fenced code blocks (```) and inline code (`).
@@ -1085,5 +1104,5 @@ function containsXmlToolMarkup(text: string): boolean {
 		"write_to_file",
 	] as const
 
-	return toolNames.some((name) => lower.includes(`<${name}`) || lower.includes(`</${name}`))
+	return toolNames.some((name) => hasTagReference(lower, `<${name}`) || hasTagReference(lower, `</${name}`))
 }
