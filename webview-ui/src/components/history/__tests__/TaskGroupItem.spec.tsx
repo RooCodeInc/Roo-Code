@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from "@/utils/test-utils"
 
 import TaskGroupItem from "../TaskGroupItem"
-import type { TaskGroup, DisplayHistoryItem } from "../types"
+import type { TaskGroup, DisplayHistoryItem, SubtaskTreeNode } from "../types"
 
 vi.mock("@src/utils/vscode")
 vi.mock("@src/i18n/TranslationContext", () => ({
@@ -34,6 +34,16 @@ const createMockDisplayHistoryItem = (overrides: Partial<DisplayHistoryItem> = {
 	...overrides,
 })
 
+const createMockSubtaskNode = (
+	itemOverrides: Partial<DisplayHistoryItem> = {},
+	children: SubtaskTreeNode[] = [],
+	isExpanded = false,
+): SubtaskTreeNode => ({
+	item: createMockDisplayHistoryItem(itemOverrides),
+	children,
+	isExpanded,
+})
+
 const createMockGroup = (overrides: Partial<TaskGroup> = {}): TaskGroup => ({
 	parent: createMockDisplayHistoryItem({ id: "parent-1", task: "Parent task" }),
 	subtasks: [],
@@ -55,7 +65,9 @@ describe("TaskGroupItem", () => {
 				}),
 			})
 
-			render(<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} onToggleSubtaskExpand={vi.fn()} />,
+			)
 
 			expect(screen.getByText("Test parent task content")).toBeInTheDocument()
 		})
@@ -65,7 +77,9 @@ describe("TaskGroupItem", () => {
 				parent: createMockDisplayHistoryItem({ id: "my-parent-id" }),
 			})
 
-			render(<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} onToggleSubtaskExpand={vi.fn()} />,
+			)
 
 			expect(screen.getByTestId("task-group-my-parent-id")).toBeInTheDocument()
 		})
@@ -75,23 +89,27 @@ describe("TaskGroupItem", () => {
 		it("shows correct subtask count", () => {
 			const group = createMockGroup({
 				subtasks: [
-					createMockDisplayHistoryItem({ id: "child-1", task: "Child 1" }),
-					createMockDisplayHistoryItem({ id: "child-2", task: "Child 2" }),
-					createMockDisplayHistoryItem({ id: "child-3", task: "Child 3" }),
+					createMockSubtaskNode({ id: "child-1", task: "Child 1" }),
+					createMockSubtaskNode({ id: "child-2", task: "Child 2" }),
+					createMockSubtaskNode({ id: "child-3", task: "Child 3" }),
 				],
 			})
 
-			render(<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} onToggleSubtaskExpand={vi.fn()} />,
+			)
 
 			expect(screen.getByText("3 Subtasks")).toBeInTheDocument()
 		})
 
 		it("shows singular subtask text for single subtask", () => {
 			const group = createMockGroup({
-				subtasks: [createMockDisplayHistoryItem({ id: "child-1", task: "Child 1" })],
+				subtasks: [createMockSubtaskNode({ id: "child-1", task: "Child 1" })],
 			})
 
-			render(<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} onToggleSubtaskExpand={vi.fn()} />,
+			)
 
 			expect(screen.getByText("1 Subtask")).toBeInTheDocument()
 		})
@@ -99,9 +117,30 @@ describe("TaskGroupItem", () => {
 		it("does not show subtask row when no subtasks", () => {
 			const group = createMockGroup({ subtasks: [] })
 
-			render(<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} onToggleSubtaskExpand={vi.fn()} />,
+			)
 
 			expect(screen.queryByTestId("subtask-collapsible-row")).not.toBeInTheDocument()
+		})
+
+		it("renders correct total subtask count with nested children", () => {
+			const group = createMockGroup({
+				subtasks: [
+					createMockSubtaskNode({ id: "child-1", task: "Child 1" }, [
+						createMockSubtaskNode({ id: "grandchild-1", task: "Grandchild 1" }),
+						createMockSubtaskNode({ id: "grandchild-2", task: "Grandchild 2" }),
+					]),
+					createMockSubtaskNode({ id: "child-2", task: "Child 2" }),
+				],
+			})
+
+			render(
+				<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} onToggleSubtaskExpand={vi.fn()} />,
+			)
+
+			// 2 direct children + 2 grandchildren = 4 total
+			expect(screen.getByText("4 Subtasks")).toBeInTheDocument()
 		})
 	})
 
@@ -109,10 +148,17 @@ describe("TaskGroupItem", () => {
 		it("calls onToggleExpand when chevron row is clicked", () => {
 			const onToggleExpand = vi.fn()
 			const group = createMockGroup({
-				subtasks: [createMockDisplayHistoryItem({ id: "child-1", task: "Child 1" })],
+				subtasks: [createMockSubtaskNode({ id: "child-1", task: "Child 1" })],
 			})
 
-			render(<TaskGroupItem group={group} variant="full" onToggleExpand={onToggleExpand} />)
+			render(
+				<TaskGroupItem
+					group={group}
+					variant="full"
+					onToggleExpand={onToggleExpand}
+					onToggleSubtaskExpand={vi.fn()}
+				/>,
+			)
 
 			const collapsibleRow = screen.getByTestId("subtask-collapsible-row")
 			fireEvent.click(collapsibleRow)
@@ -124,12 +170,14 @@ describe("TaskGroupItem", () => {
 			const group = createMockGroup({
 				isExpanded: true,
 				subtasks: [
-					createMockDisplayHistoryItem({ id: "child-1", task: "Subtask content 1" }),
-					createMockDisplayHistoryItem({ id: "child-2", task: "Subtask content 2" }),
+					createMockSubtaskNode({ id: "child-1", task: "Subtask content 1" }),
+					createMockSubtaskNode({ id: "child-2", task: "Subtask content 2" }),
 				],
 			})
 
-			render(<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} onToggleSubtaskExpand={vi.fn()} />,
+			)
 
 			expect(screen.getByTestId("subtask-list")).toBeInTheDocument()
 			expect(screen.getByText("Subtask content 1")).toBeInTheDocument()
@@ -139,15 +187,38 @@ describe("TaskGroupItem", () => {
 		it("hides subtasks when collapsed", () => {
 			const group = createMockGroup({
 				isExpanded: false,
-				subtasks: [createMockDisplayHistoryItem({ id: "child-1", task: "Subtask content" })],
+				subtasks: [createMockSubtaskNode({ id: "child-1", task: "Subtask content" })],
 			})
 
-			render(<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} onToggleSubtaskExpand={vi.fn()} />,
+			)
 
 			// The subtask-list element is present but collapsed via CSS (max-h-0)
 			const subtaskList = screen.queryByTestId("subtask-list")
 			expect(subtaskList).toBeInTheDocument()
 			expect(subtaskList).toHaveClass("max-h-0")
+		})
+
+		it("renders nested subtask when a node has children and is expanded", () => {
+			const group = createMockGroup({
+				isExpanded: true,
+				subtasks: [
+					createMockSubtaskNode(
+						{ id: "child-1", task: "Parent subtask" },
+						[createMockSubtaskNode({ id: "grandchild-1", task: "Nested subtask" })],
+						true, // child-1 is expanded
+					),
+				],
+			})
+
+			render(
+				<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} onToggleSubtaskExpand={vi.fn()} />,
+			)
+
+			expect(screen.getByText("Parent subtask")).toBeInTheDocument()
+			expect(screen.getByText("Nested subtask")).toBeInTheDocument()
+			expect(screen.getByTestId("subtask-row-grandchild-1")).toBeInTheDocument()
 		})
 	})
 
@@ -166,6 +237,7 @@ describe("TaskGroupItem", () => {
 					isSelected={false}
 					onToggleSelection={onToggleSelection}
 					onToggleExpand={vi.fn()}
+					onToggleSubtaskExpand={vi.fn()}
 				/>,
 			)
 
@@ -188,6 +260,7 @@ describe("TaskGroupItem", () => {
 					isSelected={true}
 					onToggleSelection={vi.fn()}
 					onToggleExpand={vi.fn()}
+					onToggleSubtaskExpand={vi.fn()}
 				/>,
 			)
 
@@ -201,7 +274,14 @@ describe("TaskGroupItem", () => {
 		it("passes compact variant to TaskItem", () => {
 			const group = createMockGroup()
 
-			render(<TaskGroupItem group={group} variant="compact" onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem
+					group={group}
+					variant="compact"
+					onToggleExpand={vi.fn()}
+					onToggleSubtaskExpand={vi.fn()}
+				/>,
+			)
 
 			// TaskItem should be rendered with compact styling
 			const taskItem = screen.getByTestId("task-item-parent-1")
@@ -211,7 +291,9 @@ describe("TaskGroupItem", () => {
 		it("passes full variant to TaskItem", () => {
 			const group = createMockGroup()
 
-			render(<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem group={group} variant="full" onToggleExpand={vi.fn()} onToggleSubtaskExpand={vi.fn()} />,
+			)
 
 			const taskItem = screen.getByTestId("task-item-parent-1")
 			expect(taskItem).toBeInTheDocument()
@@ -225,7 +307,15 @@ describe("TaskGroupItem", () => {
 				parent: createMockDisplayHistoryItem({ id: "parent-1", task: "Parent task" }),
 			})
 
-			render(<TaskGroupItem group={group} variant="full" onDelete={onDelete} onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem
+					group={group}
+					variant="full"
+					onDelete={onDelete}
+					onToggleExpand={vi.fn()}
+					onToggleSubtaskExpand={vi.fn()}
+				/>,
+			)
 
 			// Delete button uses "delete-task-button" as testid
 			const deleteButton = screen.getByTestId("delete-task-button")
@@ -244,7 +334,15 @@ describe("TaskGroupItem", () => {
 				}),
 			})
 
-			render(<TaskGroupItem group={group} variant="full" showWorkspace={true} onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem
+					group={group}
+					variant="full"
+					showWorkspace={true}
+					onToggleExpand={vi.fn()}
+					onToggleSubtaskExpand={vi.fn()}
+				/>,
+			)
 
 			// Workspace should be displayed in TaskItem
 			const taskItem = screen.getByTestId("task-item-parent-1")
@@ -258,7 +356,15 @@ describe("TaskGroupItem", () => {
 		it("applies custom className to container", () => {
 			const group = createMockGroup()
 
-			render(<TaskGroupItem group={group} variant="full" className="custom-class" onToggleExpand={vi.fn()} />)
+			render(
+				<TaskGroupItem
+					group={group}
+					variant="full"
+					className="custom-class"
+					onToggleExpand={vi.fn()}
+					onToggleSubtaskExpand={vi.fn()}
+				/>,
+			)
 
 			const container = screen.getByTestId("task-group-parent-1")
 			expect(container).toHaveClass("custom-class")
