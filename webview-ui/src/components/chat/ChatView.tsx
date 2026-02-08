@@ -623,8 +623,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				// WarningRow instead of sending anything to the backend.
 				if (apiConfiguration?.apiProvider && isRetiredProvider(apiConfiguration.apiProvider)) {
 					setShowRetiredProviderWarning(true)
-					setInputValue("")
-					setSelectedImages([])
 					return
 				}
 
@@ -1682,16 +1680,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							initialTopMostItemIndex={groupedMessages.length - 1}
 						/>
 					</div>
-					{showRetiredProviderWarning && (
-						<div className="px-[15px] py-1">
-							<WarningRow
-								title="Provider no longer supported"
-								message="Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know."
-								actionText="Open Settings"
-								onAction={() => vscode.postMessage({ type: "switchTab", tab: "settings" })}
-							/>
-						</div>
-					)}
 					{areButtonsVisible && (
 						<div
 							className={`flex h-9 items-center mb-1 px-[15px] ${
@@ -1792,6 +1780,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 				}}
 			/>
+			{showRetiredProviderWarning && (
+				<div className="px-[15px] py-1">
+					<WarningRow
+						title="Provider no longer supported"
+						message="Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know."
+						actionText="Open Settings"
+						onAction={() => vscode.postMessage({ type: "switchTab", tab: "settings" })}
+					/>
+				</div>
+			)}
 			<ChatTextArea
 				ref={textAreaRef}
 				inputValue={inputValue}
