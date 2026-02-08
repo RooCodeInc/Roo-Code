@@ -36,7 +36,7 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 				suggest: follow_up.map((s) => ({ answer: s.text, mode: s.mode })),
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 			const { text, images } = await task.ask("followup", JSON.stringify(follow_up_json), false)
 			await task.say("user_feedback", text ?? "", images)
 			pushToolResult(formatResponse.toolResult(`<user_message>\n${text}\n</user_message>`, images))

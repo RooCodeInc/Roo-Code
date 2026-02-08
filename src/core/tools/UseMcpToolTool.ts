@@ -49,7 +49,7 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 			const resolvedToolName = toolValidation.resolvedToolName ?? toolName
 
 			// Reset mistake count on successful validation
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			// Get user approval
 			const completeMessage = JSON.stringify({

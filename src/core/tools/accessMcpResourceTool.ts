@@ -33,7 +33,7 @@ export class AccessMcpResourceTool extends BaseTool<"access_mcp_resource"> {
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			const completeMessage = JSON.stringify({
 				type: "access_mcp_resource",

@@ -82,7 +82,7 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 				}
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			// Un-escape one level of backslashes before '@' for hierarchical subtasks
 			// Un-escape one level: \\@ -> \@ (removes one backslash for hierarchical subtasks)

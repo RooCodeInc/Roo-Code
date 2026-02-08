@@ -175,7 +175,7 @@ export class GenerateImageTool extends BaseTool<"generate_image"> {
 		}
 
 		try {
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			const approvalMessage = JSON.stringify({
 				...sharedMessageProps,
