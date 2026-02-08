@@ -1978,8 +1978,7 @@ export class ClineProvider
 				? workspaceCommands.filter((cmd) => typeof cmd === "string" && cmd.trim().length > 0)
 				: []
 
-			// Combine and deduplicate commands
-			// Global state takes precedence over workspace configuration
+			// Combine and deduplicate commands from global state and workspace configuration
 			const mergedCommands = [...new Set([...validGlobalCommands, ...validWorkspaceCommands])]
 
 			return mergedCommands
