@@ -3,11 +3,16 @@ const { mockStreamText, mockGenerateText, mockCreateAzure } = vi.hoisted(() => (
 	mockStreamText: vi.fn(),
 	mockGenerateText: vi.fn(),
 	mockCreateAzure: vi.fn(() => {
-		// Return a function that returns a mock language model
-		return vi.fn(() => ({
+		// Return a provider function that supports Responses API model creation
+		const mockProvider = vi.fn(() => ({
 			modelId: "gpt-4o",
 			provider: "azure",
 		}))
+		;(mockProvider as any).responses = vi.fn(() => ({
+			modelId: "gpt-4o",
+			provider: "azure.responses",
+		}))
+		return mockProvider
 	}),
 }))
 
@@ -138,6 +143,27 @@ describe("AzureHandler", () => {
 				],
 			},
 		]
+
+		it("should use the Responses API language model", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 1, outputTokens: 1 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// exhaust stream
+			}
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const requestOptions = mockStreamText.mock.calls[0][0]
+			expect((requestOptions.model as any).provider).toBe("azure.responses")
+		})
 
 		it("should handle streaming responses", async () => {
 			// Mock the fullStream async generator

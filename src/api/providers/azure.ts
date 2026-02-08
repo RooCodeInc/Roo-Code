@@ -72,10 +72,11 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 
 	/**
 	 * Get the language model for the configured deployment name.
+	 * Azure provider is wired to use the Responses API endpoint.
 	 */
 	protected getLanguageModel() {
 		const { id } = this.getModel()
-		return this.provider(id)
+		return this.provider.responses(id)
 	}
 
 	/**
