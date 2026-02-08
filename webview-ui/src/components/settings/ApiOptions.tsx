@@ -171,7 +171,8 @@ const ApiOptions = ({
 
 			// Only update if the processed object is different from the current config.
 			if (JSON.stringify(currentConfigHeaders) !== JSON.stringify(newHeadersObject)) {
-				setApiConfigurationField("openAiHeaders", newHeadersObject)
+				// Pass false to indicate this is automatic sync, not a user action
+				setApiConfigurationField("openAiHeaders", newHeadersObject, false)
 			}
 		},
 		300,
