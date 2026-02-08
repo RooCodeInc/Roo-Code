@@ -318,78 +318,55 @@ describe("ClineProvider - Lock API Config Across Modes", () => {
 		})
 	})
 
-	describe("activateProviderProfile applies config to all modes when lock is enabled", () => {
+	describe("handleModeSwitch honors lockApiConfigAcrossModes as a read-time override", () => {
 		beforeEach(async () => {
 			await provider.resolveWebviewView(mockWebviewView)
 		})
 
-		it("should apply config to all modes when lockApiConfigAcrossModes is true", async () => {
-			// Set lockApiConfigAcrossModes via workspaceState
+		it("skips mode-specific config lookup/load when lockApiConfigAcrossModes is true", async () => {
 			await mockContext.workspaceState.update("lockApiConfigAcrossModes", true)
 
-			// Mock providerSettingsManager.activateProfile
-			vi.spyOn(provider.providerSettingsManager, "activateProfile").mockResolvedValue({
-				name: "new-profile",
-				id: "new-profile-id",
-				apiProvider: "anthropic",
-			})
-
-			// Mock providerSettingsManager.listConfig
-			vi.spyOn(provider.providerSettingsManager, "listConfig").mockResolvedValue([
-				{ name: "new-profile", id: "new-profile-id", apiProvider: "anthropic" },
-			])
-
-			// Spy on setModeConfig
-			const setModeConfigSpy = vi
-				.spyOn(provider.providerSettingsManager, "setModeConfig")
+			const getModeConfigIdSpy = vi
+				.spyOn(provider.providerSettingsManager, "getModeConfigId")
+				.mockResolvedValue("architect-profile-id")
+			const listConfigSpy = vi
+				.spyOn(provider.providerSettingsManager, "listConfig")
+				.mockResolvedValue([
+					{ name: "architect-profile", id: "architect-profile-id", apiProvider: "anthropic" },
+				])
+			const activateProviderProfileSpy = vi
+				.spyOn(provider, "activateProviderProfile")
 				.mockResolvedValue(undefined)
 
-			// Mock updateTaskHistory to avoid side effects
-			vi.spyOn(provider, "updateTaskHistory").mockImplementation(() => Promise.resolve([]))
+			await provider.handleModeSwitch("architect")
 
-			// Call activateProviderProfile with persistModeConfig: true
-			await provider.activateProviderProfile({ id: "new-profile-id" }, { persistModeConfig: true })
-
-			// Should call setModeConfig for the current mode (code) first,
-			// then for all other modes (architect, ask, debug, orchestrator)
-			expect(setModeConfigSpy).toHaveBeenCalledTimes(5)
-			expect(setModeConfigSpy).toHaveBeenCalledWith("code", "new-profile-id")
-			expect(setModeConfigSpy).toHaveBeenCalledWith("architect", "new-profile-id")
-			expect(setModeConfigSpy).toHaveBeenCalledWith("ask", "new-profile-id")
-			expect(setModeConfigSpy).toHaveBeenCalledWith("debug", "new-profile-id")
-			expect(setModeConfigSpy).toHaveBeenCalledWith("orchestrator", "new-profile-id")
+			expect(getModeConfigIdSpy).not.toHaveBeenCalled()
+			expect(listConfigSpy).not.toHaveBeenCalled()
+			expect(activateProviderProfileSpy).not.toHaveBeenCalled()
 		})
 
-		it("should apply config to only current mode when lockApiConfigAcrossModes is false", async () => {
-			// Set lockApiConfigAcrossModes to false via workspaceState
+		it("keeps normal mode-specific lookup/load behavior when lockApiConfigAcrossModes is false", async () => {
 			await mockContext.workspaceState.update("lockApiConfigAcrossModes", false)
 
-			// Mock providerSettingsManager.activateProfile
-			vi.spyOn(provider.providerSettingsManager, "activateProfile").mockResolvedValue({
-				name: "new-profile",
-				id: "new-profile-id",
+			const getModeConfigIdSpy = vi
+				.spyOn(provider.providerSettingsManager, "getModeConfigId")
+				.mockResolvedValue("architect-profile-id")
+			vi.spyOn(provider.providerSettingsManager, "listConfig").mockResolvedValue([
+				{ name: "architect-profile", id: "architect-profile-id", apiProvider: "anthropic" },
+			])
+			vi.spyOn(provider.providerSettingsManager, "getProfile").mockResolvedValue({
+				name: "architect-profile",
 				apiProvider: "anthropic",
 			})
 
-			// Mock providerSettingsManager.listConfig
-			vi.spyOn(provider.providerSettingsManager, "listConfig").mockResolvedValue([
-				{ name: "new-profile", id: "new-profile-id", apiProvider: "anthropic" },
-			])
-
-			// Spy on setModeConfig
-			const setModeConfigSpy = vi
-				.spyOn(provider.providerSettingsManager, "setModeConfig")
+			const activateProviderProfileSpy = vi
+				.spyOn(provider, "activateProviderProfile")
 				.mockResolvedValue(undefined)
 
-			// Mock updateTaskHistory to avoid side effects
-			vi.spyOn(provider, "updateTaskHistory").mockImplementation(() => Promise.resolve([]))
+			await provider.handleModeSwitch("architect")
 
-			// Call activateProviderProfile with persistModeConfig: true
-			await provider.activateProviderProfile({ id: "new-profile-id" }, { persistModeConfig: true })
-
-			// Should call setModeConfig only for the current mode (code)
-			expect(setModeConfigSpy).toHaveBeenCalledTimes(1)
-			expect(setModeConfigSpy).toHaveBeenCalledWith("code", "new-profile-id")
+			expect(getModeConfigIdSpy).toHaveBeenCalledWith("architect")
+			expect(activateProviderProfileSpy).toHaveBeenCalledWith({ name: "architect-profile" })
 		})
 	})
 })

@@ -44,22 +44,14 @@ describe("webviewMessageHandler - lockApiConfigAcrossModes", () => {
 		}
 	})
 
-	it("sets lockApiConfigAcrossModes to true and applies config to all modes", async () => {
+	it("sets lockApiConfigAcrossModes to true and posts state without mode config fan-out", async () => {
 		await webviewMessageHandler(mockProvider as unknown as ClineProvider, {
 			type: "lockApiConfigAcrossModes",
 			bool: true,
 		})
 
 		expect(mockProvider.context.workspaceState.update).toHaveBeenCalledWith("lockApiConfigAcrossModes", true)
-
-		// Should apply config to all 5 default modes
-		expect(mockProvider.providerSettingsManager.setModeConfig).toHaveBeenCalledTimes(5)
-		expect(mockProvider.providerSettingsManager.setModeConfig).toHaveBeenCalledWith("architect", "config-123")
-		expect(mockProvider.providerSettingsManager.setModeConfig).toHaveBeenCalledWith("code", "config-123")
-		expect(mockProvider.providerSettingsManager.setModeConfig).toHaveBeenCalledWith("ask", "config-123")
-		expect(mockProvider.providerSettingsManager.setModeConfig).toHaveBeenCalledWith("debug", "config-123")
-		expect(mockProvider.providerSettingsManager.setModeConfig).toHaveBeenCalledWith("orchestrator", "config-123")
-
+		expect(mockProvider.providerSettingsManager.setModeConfig).not.toHaveBeenCalled()
 		expect(mockProvider.postStateToWebview).toHaveBeenCalled()
 	})
 

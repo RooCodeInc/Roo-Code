@@ -64,7 +64,7 @@ import { openMention } from "../mentions"
 import { resolveImageMentions } from "../mentions/resolveImageMentions"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 import { getWorkspacePath } from "../../utils/path"
-import { Mode, defaultModeSlug, getAllModes } from "../../shared/modes"
+import { Mode, defaultModeSlug } from "../../shared/modes"
 import { getModels, flushModels } from "../../api/providers/fetchers/modelCache"
 import { GetModelsOptions } from "../../shared/api"
 import { generateSystemPrompt } from "./generateSystemPrompt"
@@ -1664,20 +1664,6 @@ export const webviewMessageHandler = async (
 		case "lockApiConfigAcrossModes": {
 			const enabled = message.bool ?? false
 			await provider.context.workspaceState.update("lockApiConfigAcrossModes", enabled)
-
-			// When enabling the lock, apply the current config to all modes immediately
-			if (enabled) {
-				const state = await provider.getState()
-				const currentConfigId = state.listApiConfigMeta?.find(
-					(c: { name: string }) => c.name === state.currentApiConfigName,
-				)?.id
-				if (currentConfigId) {
-					const allModes = getAllModes(state.customModes)
-					for (const modeConfig of allModes) {
-						await provider.providerSettingsManager.setModeConfig(modeConfig.slug, currentConfigId)
-					}
-				}
-			}
 
 			await provider.postStateToWebview()
 			break

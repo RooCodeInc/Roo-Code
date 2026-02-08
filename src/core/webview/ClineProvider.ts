@@ -54,7 +54,7 @@ import { Package } from "../../shared/package"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
 import { GlobalFileNames } from "../../shared/globalFileNames"
-import { Mode, defaultModeSlug, getAllModes, getModeBySlug } from "../../shared/modes"
+import { Mode, defaultModeSlug, getModeBySlug } from "../../shared/modes"
 import { experimentDefault } from "../../shared/experiments"
 import { formatLanguage } from "../../shared/language"
 import { WebviewMessage } from "../../shared/WebviewMessage"
@@ -899,7 +899,8 @@ export class ClineProvider
 			// Load the saved API config for the restored mode if it exists.
 			// Skip mode-based profile activation if historyItem.apiConfigName exists,
 			// since the task's specific provider profile will override it anyway.
-			if (!historyItem.apiConfigName) {
+			const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", false)
+			if (!historyItem.apiConfigName && !lockApiConfigAcrossModes) {
 				const savedConfigId = await this.providerSettingsManager.getModeConfigId(historyItem.mode)
 				const listApiConfig = await this.providerSettingsManager.listConfig()
 
@@ -1316,6 +1317,13 @@ export class ClineProvider
 
 		this.emit(RooCodeEventName.ModeChanged, newMode)
 
+		// If workspace lock is on, keep the current API config — don't load mode-specific config
+		const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", false)
+		if (lockApiConfigAcrossModes) {
+			await this.postStateToWebview()
+			return
+		}
+
 		// Load the saved API config for the new mode if it exists.
 		const savedConfigId = await this.providerSettingsManager.getModeConfigId(newMode)
 		const listApiConfig = await this.providerSettingsManager.listConfig()
@@ -1538,18 +1546,6 @@ export class ClineProvider
 
 		if (id && persistModeConfig) {
 			await this.providerSettingsManager.setModeConfig(mode, id)
-
-			// If lock is enabled, apply this config to ALL modes
-			const lockApiConfigAcrossModes = (await this.getState()).lockApiConfigAcrossModes
-			if (lockApiConfigAcrossModes) {
-				const { customModes } = await this.getState()
-				const allModes = getAllModes(customModes)
-				for (const modeConfig of allModes) {
-					if (modeConfig.slug !== mode) {
-						await this.providerSettingsManager.setModeConfig(modeConfig.slug, id)
-					}
-				}
-			}
 		}
 
 		// Change the provider for the current task.
