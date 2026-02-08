@@ -1783,9 +1783,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			{showRetiredProviderWarning && (
 				<div className="px-[15px] py-1">
 					<WarningRow
-						title="Provider no longer supported"
-						message="Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know."
-						actionText="Open Settings"
+						title={t("chat:retiredProvider.title")}
+						message={t("chat:retiredProvider.message")}
+						actionText={t("chat:retiredProvider.openSettings")}
 						onAction={() => vscode.postMessage({ type: "switchTab", tab: "settings" })}
 					/>
 				</div>

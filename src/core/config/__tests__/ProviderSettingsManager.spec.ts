@@ -567,7 +567,7 @@ describe("ProviderSettingsManager", () => {
 			)
 		})
 
-		it("should preserve full fields when saving retired provider profiles", async () => {
+		it("should preserve full fields including legacy provider-specific keys when saving retired provider profiles", async () => {
 			mockSecrets.get.mockResolvedValue(
 				JSON.stringify({
 					currentApiConfigName: "default",
@@ -582,14 +582,17 @@ describe("ProviderSettingsManager", () => {
 				}),
 			)
 
-			const retiredConfig: ProviderSettings = {
+			// Include a legacy provider-specific field (groqApiKey) that is no
+			// longer in the schema — passthrough() must keep it.
+			const retiredConfig = {
 				apiProvider: "groq",
 				apiKey: "legacy-key",
 				apiModelId: "legacy-model",
 				openAiBaseUrl: "https://legacy.example/v1",
 				openAiApiKey: "legacy-openai-key",
 				modelMaxTokens: 4096,
-			}
+				groqApiKey: "legacy-groq-specific-key",
+			} as ProviderSettings
 
 			await providerSettingsManager.saveConfig("retired", retiredConfig)
 
@@ -600,6 +603,8 @@ describe("ProviderSettingsManager", () => {
 			expect(storedConfig.apiConfigs.retired.openAiBaseUrl).toBe("https://legacy.example/v1")
 			expect(storedConfig.apiConfigs.retired.openAiApiKey).toBe("legacy-openai-key")
 			expect(storedConfig.apiConfigs.retired.modelMaxTokens).toBe(4096)
+			// Verify legacy provider-specific field is preserved via passthrough
+			expect(storedConfig.apiConfigs.retired.groqApiKey).toBe("legacy-groq-specific-key")
 			expect(storedConfig.apiConfigs.retired.id).toBeTruthy()
 		})
 	})
@@ -778,7 +783,7 @@ describe("ProviderSettingsManager", () => {
 			expect(storedConfig.apiConfigs.unknownProvider.id).toBe("removed-id")
 		})
 
-		it("should preserve retired providers and their fields during initialize", async () => {
+		it("should preserve retired providers and their fields including legacy provider-specific keys during initialize", async () => {
 			const configWithRetiredProvider = {
 				currentApiConfigName: "retiredProvider",
 				apiConfigs: {
@@ -789,6 +794,8 @@ describe("ProviderSettingsManager", () => {
 						apiModelId: "legacy-model",
 						openAiBaseUrl: "https://legacy.example/v1",
 						modelMaxTokens: 1024,
+						// Legacy provider-specific field no longer in schema
+						groqApiKey: "legacy-groq-key",
 					},
 				},
 				migrations: {
@@ -816,6 +823,8 @@ describe("ProviderSettingsManager", () => {
 			expect(storedConfig.apiConfigs.retiredProvider.apiModelId).toBe("legacy-model")
 			expect(storedConfig.apiConfigs.retiredProvider.openAiBaseUrl).toBe("https://legacy.example/v1")
 			expect(storedConfig.apiConfigs.retiredProvider.modelMaxTokens).toBe(1024)
+			// Verify legacy provider-specific field is preserved via passthrough
+			expect(storedConfig.apiConfigs.retiredProvider.groqApiKey).toBe("legacy-groq-key")
 		})
 
 		it("should sanitize invalid providers and remove non-object profiles during load", async () => {

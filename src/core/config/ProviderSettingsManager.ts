@@ -361,10 +361,12 @@ export class ProviderSettingsManager {
 				const id = config.id || existingId || this.generateId()
 
 				// For active providers, filter out settings from other providers.
-				// For retired providers, preserve full profile fields to avoid data loss.
+				// For retired providers, preserve full profile fields (including legacy
+				// provider-specific keys) to avoid data loss — passthrough() keeps
+				// unknown keys that strict parse() would strip.
 				const filteredConfig =
 					typeof config.apiProvider === "string" && isRetiredProvider(config.apiProvider)
-						? providerSettingsWithIdSchema.parse(config)
+						? providerSettingsWithIdSchema.passthrough().parse(config)
 						: discriminatedProviderSettingsWithIdSchema.parse(config)
 				providerProfiles.apiConfigs[name] = { ...filteredConfig, id }
 				await this.store(providerProfiles)
@@ -594,7 +596,21 @@ export class ProviderSettingsManager {
 					// First, sanitize invalid apiProvider values before parsing
 					// This handles removed providers (like "glama") gracefully
 					const sanitizedConfig = this.sanitizeProviderConfig(apiConfig)
-					const result = providerSettingsWithIdSchema.safeParse(sanitizedConfig)
+
+					// For retired providers, use passthrough() to preserve legacy
+					// provider-specific fields (e.g. groqApiKey, deepInfraModelId)
+					// that strict parse() would strip.
+					const providerValue =
+						typeof sanitizedConfig === "object" &&
+						sanitizedConfig !== null &&
+						"apiProvider" in sanitizedConfig
+							? (sanitizedConfig as Record<string, unknown>).apiProvider
+							: undefined
+					const schema =
+						typeof providerValue === "string" && isRetiredProvider(providerValue)
+							? providerSettingsWithIdSchema.passthrough()
+							: providerSettingsWithIdSchema
+					const result = schema.safeParse(sanitizedConfig)
 					return result.success ? { ...acc, [key]: result.data } : acc
 				},
 				{} as Record<string, ProviderSettingsWithId>,
