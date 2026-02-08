@@ -512,5 +512,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo las Befehlsausgabe"
+	},
+	"retiredProvider": {
+		"title": "Anbieter wird nicht mehr unterstützt",
+		"message": "Leider wird dieser Anbieter nicht mehr unterstützt. Wir haben festgestellt, dass nur sehr wenige Roo-Nutzer ihn tatsächlich verwendet haben, und wir müssen den Umfang unserer Codebasis reduzieren, damit wir weiterhin schnell liefern und unserer Community in diesem Bereich gut dienen können. Es war eine wirklich schwere Entscheidung, aber sie ermöglicht uns, uns auf das zu konzentrieren, was dir am wichtigsten ist. Es ist ärgerlich, das wissen wir.",
+		"openSettings": "Einstellungen öffnen"
 	}
 }
