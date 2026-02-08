@@ -22,12 +22,17 @@ import TaskItem from "../TaskItem"
 const mockUseTaskSearch = useTaskSearch as any
 const mockTaskItem = TaskItem as any
 
+// Use fixed, descending timestamps so that useGroupedTasks (which sorts
+// newest-first) always returns task-1 first.  Date.now() can tick between
+// calls on Windows, reversing the expected order.
+const baseTs = 1700000000000
+
 const mockTasks: HistoryItem[] = [
 	{
 		id: "task-1",
 		number: 1,
 		task: "First task",
-		ts: Date.now(),
+		ts: baseTs,
 		tokensIn: 100,
 		tokensOut: 50,
 		totalCost: 0.01,
@@ -36,7 +41,7 @@ const mockTasks: HistoryItem[] = [
 		id: "task-2",
 		number: 2,
 		task: "Second task",
-		ts: Date.now(),
+		ts: baseTs - 1000,
 		tokensIn: 200,
 		tokensOut: 100,
 		totalCost: 0.02,
@@ -45,7 +50,7 @@ const mockTasks: HistoryItem[] = [
 		id: "task-3",
 		number: 3,
 		task: "Third task",
-		ts: Date.now(),
+		ts: baseTs - 2000,
 		tokensIn: 150,
 		tokensOut: 75,
 		totalCost: 0.015,
@@ -54,7 +59,7 @@ const mockTasks: HistoryItem[] = [
 		id: "task-4",
 		number: 4,
 		task: "Fourth task",
-		ts: Date.now(),
+		ts: baseTs - 3000,
 		tokensIn: 300,
 		tokensOut: 150,
 		totalCost: 0.03,
@@ -63,7 +68,7 @@ const mockTasks: HistoryItem[] = [
 		id: "task-5",
 		number: 5,
 		task: "Fifth task",
-		ts: Date.now(),
+		ts: baseTs - 4000,
 		tokensIn: 250,
 		tokensOut: 125,
 		totalCost: 0.025,
@@ -72,7 +77,7 @@ const mockTasks: HistoryItem[] = [
 		id: "task-6",
 		number: 6,
 		task: "Sixth task",
-		ts: Date.now(),
+		ts: baseTs - 5000,
 		tokensIn: 400,
 		tokensOut: 200,
 		totalCost: 0.04,
