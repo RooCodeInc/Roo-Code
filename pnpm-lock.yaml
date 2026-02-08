@@ -244,8 +244,8 @@ importers:
         specifier: workspace:^
         version: link:../../packages/evals
       '@roo-code/types':
-        specifier: ^1.108.0
-        version: 1.108.0
+        specifier: workspace:^
+        version: link:../../packages/types
       '@tanstack/react-query':
         specifier: ^5.69.0
         version: 5.76.1(react@18.3.1)
@@ -752,9 +752,6 @@ importers:
       '@ai-sdk/baseten':
         specifier: ^1.0.31
         version: 1.0.31(zod@3.25.76)
-      '@ai-sdk/cerebras':
-        specifier: ^2.0.31
-        version: 2.0.31(zod@3.25.76)
       '@ai-sdk/deepseek':
         specifier: ^2.0.18
         version: 2.0.18(zod@3.25.76)
@@ -767,9 +764,6 @@ importers:
       '@ai-sdk/google-vertex':
         specifier: ^4.0.45
         version: 4.0.45(zod@3.25.76)
-      '@ai-sdk/groq':
-        specifier: ^3.0.22
-        version: 3.0.22(zod@3.25.76)
       '@ai-sdk/mistral':
         specifier: ^3.0.19
         version: 3.0.19(zod@3.25.76)
@@ -1441,12 +1435,6 @@ packages:
     peerDependencies:
       zod: 3.25.76
 
-  '@ai-sdk/cerebras@2.0.31':
-    resolution: {integrity: sha512-s7o4BRsbG2RFina4VwHs46RWlQPGCL1CrfOoMomYneJeA0CgpxPigPqwlrupaWWB42KIDDHN5gNOIsLst0oOPg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: 3.25.76
-
   '@ai-sdk/deepseek@2.0.18':
     resolution: {integrity: sha512-AwtmFm7acnCsz3z82Yu5QKklSZz+cBwtxrc2hbw47tPF/38xr1zX3Vf/pP627EHwWkLV18UWivIxg0SHPP2w3A==}
     engines: {node: '>=18'}
@@ -1473,12 +1461,6 @@ packages:
 
   '@ai-sdk/google@3.0.22':
     resolution: {integrity: sha512-g1N5P/jfTiH4qwdv4WT3hkKzzAbITFz457NomtBfjP8Q3SCzdbU9oPK5ACBMG8RN5mc2QPL6DLtM3Hf5T8KPmw==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: 3.25.76
-
-  '@ai-sdk/groq@3.0.22':
-    resolution: {integrity: sha512-QBkqBmlts2qz2vX54gXeP9IdztMFxZw7xPNwjOjHYhEL7RynzB2aFafPIbAYTVNosrU0YEETxhw9LISjS2TtXw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: 3.25.76
@@ -11067,13 +11049,6 @@ snapshots:
       '@basetenlabs/performance-client': 0.0.10
       zod: 3.25.76
 
-  '@ai-sdk/cerebras@2.0.31(zod@3.25.76)':
-    dependencies:
-      '@ai-sdk/openai-compatible': 2.0.28(zod@3.25.76)
-      '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.14(zod@3.25.76)
-      zod: 3.25.76
-
   '@ai-sdk/deepseek@2.0.18(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
@@ -11106,12 +11081,6 @@ snapshots:
       - supports-color
 
   '@ai-sdk/google@3.0.22(zod@3.25.76)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.8
-      '@ai-sdk/provider-utils': 4.0.14(zod@3.25.76)
-      zod: 3.25.76
-
-  '@ai-sdk/groq@3.0.22(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@ai-sdk/provider-utils': 4.0.14(zod@3.25.76)
@@ -14958,7 +14927,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@20.17.50)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.2.1)(@vitest/ui@3.2.4)(jiti@2.4.2)(jsdom@26.1.0)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -22251,8 +22220,8 @@ snapshots:
 
   zhipu-ai-provider@0.2.2(zod@3.25.76):
     dependencies:
-      '@ai-sdk/provider': 2.0.1
-      '@ai-sdk/provider-utils': 3.0.20(zod@3.25.76)
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.5(zod@3.25.76)
     transitivePeerDependencies:
       - zod
 

@@ -6,7 +6,6 @@ import {
 	type RouterModels,
 	anthropicModels,
 	bedrockModels,
-	cerebrasModels,
 	deepSeekModels,
 	moonshotModels,
 	minimaxModels,
@@ -16,17 +15,13 @@ import {
 	openAiNativeModels,
 	vertexModels,
 	xaiModels,
-	groqModels,
 	vscodeLlmModels,
 	vscodeLlmDefaultModelId,
 	openAiCodexModels,
 	sambaNovaModels,
-	doubaoModels,
 	internationalZAiModels,
 	mainlandZAiModels,
 	fireworksModels,
-	featherlessModels,
-	ioIntelligenceModels,
 	basetenModels,
 	qwenCodeModels,
 	litellmDefaultModelInfo,
@@ -160,11 +155,6 @@ function getSelectedModel({
 			const routerInfo = routerModels.requesty?.[id]
 			return { id, info: routerInfo }
 		}
-		case "unbound": {
-			const id = getValidatedModelId(apiConfiguration.unboundModelId, routerModels.unbound, defaultModelId)
-			const routerInfo = routerModels.unbound?.[id]
-			return { id, info: routerInfo }
-		}
 		case "litellm": {
 			const id = getValidatedModelId(apiConfiguration.litellmModelId, routerModels.litellm, defaultModelId)
 			const routerInfo = routerModels.litellm?.[id]
@@ -174,26 +164,6 @@ function getSelectedModel({
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = xaiModels[id as keyof typeof xaiModels]
 			return info ? { id, info } : { id, info: undefined }
-		}
-		case "groq": {
-			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = groqModels[id as keyof typeof groqModels]
-			return { id, info }
-		}
-		case "huggingface": {
-			const id = apiConfiguration.huggingFaceModelId ?? "meta-llama/Llama-3.3-70B-Instruct"
-			const info = {
-				maxTokens: 8192,
-				contextWindow: 131072,
-				supportsImages: false,
-				supportsPromptCache: false,
-			}
-			return { id, info }
-		}
-		case "chutes": {
-			const id = getValidatedModelId(apiConfiguration.apiModelId, routerModels.chutes, defaultModelId)
-			const info = routerModels.chutes?.[id]
-			return { id, info }
 		}
 		case "baseten": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
@@ -257,11 +227,6 @@ function getSelectedModel({
 			const info = deepSeekModels[id as keyof typeof deepSeekModels]
 			return { id, info }
 		}
-		case "doubao": {
-			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = doubaoModels[id as keyof typeof doubaoModels]
-			return { id, info }
-		}
 		case "moonshot": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = moonshotModels[id as keyof typeof moonshotModels]
@@ -320,11 +285,6 @@ function getSelectedModel({
 				info: modelInfo ? { ...lMStudioDefaultModelInfo, ...modelInfo } : undefined,
 			}
 		}
-		case "deepinfra": {
-			const id = getValidatedModelId(apiConfiguration.deepInfraModelId, routerModels.deepinfra, defaultModelId)
-			const info = routerModels.deepinfra?.[id]
-			return { id, info }
-		}
 		case "vscode-lm": {
 			const id = apiConfiguration?.vsCodeLmModelSelector
 				? `${apiConfiguration.vsCodeLmModelSelector.vendor}/${apiConfiguration.vsCodeLmModelSelector.family}`
@@ -332,11 +292,6 @@ function getSelectedModel({
 			const modelFamily = apiConfiguration?.vsCodeLmModelSelector?.family ?? vscodeLlmDefaultModelId
 			const info = vscodeLlmModels[modelFamily as keyof typeof vscodeLlmModels]
 			return { id, info: { ...openAiModelInfoSaneDefaults, ...info, supportsImages: false } } // VSCode LM API currently doesn't support images.
-		}
-		case "cerebras": {
-			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = cerebrasModels[id as keyof typeof cerebrasModels]
-			return { id, info }
 		}
 		case "sambanova": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
@@ -346,21 +301,6 @@ function getSelectedModel({
 		case "fireworks": {
 			const id = apiConfiguration.apiModelId ?? defaultModelId
 			const info = fireworksModels[id as keyof typeof fireworksModels]
-			return { id, info }
-		}
-		case "featherless": {
-			const id = apiConfiguration.apiModelId ?? defaultModelId
-			const info = featherlessModels[id as keyof typeof featherlessModels]
-			return { id, info }
-		}
-		case "io-intelligence": {
-			const id = getValidatedModelId(
-				apiConfiguration.ioIntelligenceModelId,
-				routerModels["io-intelligence"],
-				defaultModelId,
-			)
-			const info =
-				routerModels["io-intelligence"]?.[id] ?? ioIntelligenceModels[id as keyof typeof ioIntelligenceModels]
 			return { id, info }
 		}
 		case "roo": {

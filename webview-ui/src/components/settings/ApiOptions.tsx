@@ -10,21 +10,16 @@ import {
 	DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 	openRouterDefaultModelId,
 	requestyDefaultModelId,
-	unboundDefaultModelId,
 	litellmDefaultModelId,
 	openAiNativeDefaultModelId,
 	openAiCodexDefaultModelId,
 	anthropicDefaultModelId,
-	doubaoDefaultModelId,
 	qwenCodeDefaultModelId,
 	geminiDefaultModelId,
 	deepSeekDefaultModelId,
 	moonshotDefaultModelId,
 	mistralDefaultModelId,
 	xaiDefaultModelId,
-	groqDefaultModelId,
-	cerebrasDefaultModelId,
-	chutesDefaultModelId,
 	basetenDefaultModelId,
 	bedrockDefaultModelId,
 	vertexDefaultModelId,
@@ -32,11 +27,8 @@ import {
 	internationalZAiDefaultModelId,
 	mainlandZAiDefaultModelId,
 	fireworksDefaultModelId,
-	featherlessDefaultModelId,
-	ioIntelligenceDefaultModelId,
 	rooDefaultModelId,
 	vercelAiGatewayDefaultModelId,
-	deepInfraDefaultModelId,
 	minimaxDefaultModelId,
 } from "@roo-code/types"
 
@@ -75,14 +67,8 @@ import {
 	Anthropic,
 	Baseten,
 	Bedrock,
-	Cerebras,
-	Chutes,
 	DeepSeek,
-	Doubao,
 	Gemini,
-	Groq,
-	HuggingFace,
-	IOIntelligence,
 	LMStudio,
 	LiteLLM,
 	Mistral,
@@ -96,15 +82,12 @@ import {
 	Requesty,
 	Roo,
 	SambaNova,
-	Unbound,
 	Vertex,
 	VSCodeLM,
 	XAI,
 	ZAi,
 	Fireworks,
-	Featherless,
 	VercelAiGateway,
-	DeepInfra,
 	MiniMax,
 } from "./providers"
 
@@ -243,11 +226,7 @@ const ApiOptions = ({
 				vscode.postMessage({ type: "requestLmStudioModels" })
 			} else if (selectedProvider === "vscode-lm") {
 				vscode.postMessage({ type: "requestVsCodeLmModels" })
-			} else if (
-				selectedProvider === "litellm" ||
-				selectedProvider === "deepinfra" ||
-				selectedProvider === "roo"
-			) {
+			} else if (selectedProvider === "litellm" || selectedProvider === "roo") {
 				vscode.postMessage({ type: "requestRouterModels" })
 			}
 		},
@@ -261,8 +240,6 @@ const ApiOptions = ({
 			apiConfiguration?.lmStudioBaseUrl,
 			apiConfiguration?.litellmBaseUrl,
 			apiConfiguration?.litellmApiKey,
-			apiConfiguration?.deepInfraApiKey,
-			apiConfiguration?.deepInfraBaseUrl,
 			customHeaders,
 		],
 	)
@@ -282,7 +259,7 @@ const ApiOptions = ({
 
 			// It would be much easier to have a single attribute that stores
 			// the modelId, but we have a separate attribute for each of
-			// OpenRouter, Unbound, and Requesty.
+			// OpenRouter and Requesty.
 			// If you switch to one of these providers and the corresponding
 			// modelId is not set then you immediately end up in an error state.
 			// To address that we set the modelId to the default value for th
@@ -336,25 +313,19 @@ const ApiOptions = ({
 					}
 				>
 			> = {
-				deepinfra: { field: "deepInfraModelId", default: deepInfraDefaultModelId },
 				openrouter: { field: "openRouterModelId", default: openRouterDefaultModelId },
-				unbound: { field: "unboundModelId", default: unboundDefaultModelId },
 				requesty: { field: "requestyModelId", default: requestyDefaultModelId },
 				litellm: { field: "litellmModelId", default: litellmDefaultModelId },
 				anthropic: { field: "apiModelId", default: anthropicDefaultModelId },
-				cerebras: { field: "apiModelId", default: cerebrasDefaultModelId },
 				"openai-codex": { field: "apiModelId", default: openAiCodexDefaultModelId },
 				"qwen-code": { field: "apiModelId", default: qwenCodeDefaultModelId },
 				"openai-native": { field: "apiModelId", default: openAiNativeDefaultModelId },
 				gemini: { field: "apiModelId", default: geminiDefaultModelId },
 				deepseek: { field: "apiModelId", default: deepSeekDefaultModelId },
-				doubao: { field: "apiModelId", default: doubaoDefaultModelId },
 				moonshot: { field: "apiModelId", default: moonshotDefaultModelId },
 				minimax: { field: "apiModelId", default: minimaxDefaultModelId },
 				mistral: { field: "apiModelId", default: mistralDefaultModelId },
 				xai: { field: "apiModelId", default: xaiDefaultModelId },
-				groq: { field: "apiModelId", default: groqDefaultModelId },
-				chutes: { field: "apiModelId", default: chutesDefaultModelId },
 				baseten: { field: "apiModelId", default: basetenDefaultModelId },
 				bedrock: { field: "apiModelId", default: bedrockDefaultModelId },
 				vertex: { field: "apiModelId", default: vertexDefaultModelId },
@@ -367,8 +338,6 @@ const ApiOptions = ({
 							: internationalZAiDefaultModelId,
 				},
 				fireworks: { field: "apiModelId", default: fireworksDefaultModelId },
-				featherless: { field: "apiModelId", default: featherlessDefaultModelId },
-				"io-intelligence": { field: "ioIntelligenceModelId", default: ioIntelligenceDefaultModelId },
 				roo: { field: "apiModelId", default: rooDefaultModelId },
 				"vercel-ai-gateway": { field: "vercelAiGatewayModelId", default: vercelAiGatewayDefaultModelId },
 				openai: { field: "openAiModelId" },
@@ -526,29 +495,6 @@ const ApiOptions = ({
 				/>
 			)}
 
-			{selectedProvider === "unbound" && (
-				<Unbound
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					routerModels={routerModels}
-					organizationAllowList={organizationAllowList}
-					modelValidationError={modelValidationError}
-					simplifySettings={fromWelcomeView}
-				/>
-			)}
-
-			{selectedProvider === "deepinfra" && (
-				<DeepInfra
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					routerModels={routerModels}
-					refetchRouterModels={refetchRouterModels}
-					organizationAllowList={organizationAllowList}
-					modelValidationError={modelValidationError}
-					simplifySettings={fromWelcomeView}
-				/>
-			)}
-
 			{selectedProvider === "anthropic" && (
 				<Anthropic
 					apiConfiguration={apiConfiguration}
@@ -630,14 +576,6 @@ const ApiOptions = ({
 				/>
 			)}
 
-			{selectedProvider === "doubao" && (
-				<Doubao
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					simplifySettings={fromWelcomeView}
-				/>
-			)}
-
 			{selectedProvider === "qwen-code" && (
 				<QwenCode
 					apiConfiguration={apiConfiguration}
@@ -670,29 +608,6 @@ const ApiOptions = ({
 				<XAI apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
-			{selectedProvider === "groq" && (
-				<Groq apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "huggingface" && (
-				<HuggingFace apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "cerebras" && (
-				<Cerebras apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "chutes" && (
-				<Chutes
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					routerModels={routerModels}
-					organizationAllowList={organizationAllowList}
-					modelValidationError={modelValidationError}
-					simplifySettings={fromWelcomeView}
-				/>
-			)}
-
 			{selectedProvider === "litellm" && (
 				<LiteLLM
 					apiConfiguration={apiConfiguration}
@@ -709,16 +624,6 @@ const ApiOptions = ({
 
 			{selectedProvider === "zai" && (
 				<ZAi apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-			)}
-
-			{selectedProvider === "io-intelligence" && (
-				<IOIntelligence
-					apiConfiguration={apiConfiguration}
-					setApiConfigurationField={setApiConfigurationField}
-					organizationAllowList={organizationAllowList}
-					modelValidationError={modelValidationError}
-					simplifySettings={fromWelcomeView}
-				/>
 			)}
 
 			{selectedProvider === "vercel-ai-gateway" && (
@@ -746,10 +651,6 @@ const ApiOptions = ({
 					modelValidationError={modelValidationError}
 					simplifySettings={fromWelcomeView}
 				/>
-			)}
-
-			{selectedProvider === "featherless" && (
-				<Featherless apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 			)}
 
 			{/* Generic model picker for providers with static models */}

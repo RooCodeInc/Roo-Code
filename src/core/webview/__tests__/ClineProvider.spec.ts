@@ -2552,7 +2552,6 @@ describe("ClineProvider - Router Models", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				unboundApiKey: "unbound-key",
 				litellmApiKey: "litellm-key",
 				litellmBaseUrl: "http://localhost:4000",
 			},
@@ -2581,9 +2580,7 @@ describe("ClineProvider - Router Models", () => {
 		// Verify getModels was called for each provider with correct options
 		expect(getModels).toHaveBeenCalledWith({ provider: "openrouter" })
 		expect(getModels).toHaveBeenCalledWith({ provider: "requesty", apiKey: "requesty-key" })
-		expect(getModels).toHaveBeenCalledWith({ provider: "unbound", apiKey: "unbound-key" })
 		expect(getModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
-		expect(getModels).toHaveBeenCalledWith({ provider: "deepinfra" })
 		expect(getModels).toHaveBeenCalledWith(
 			expect.objectContaining({
 				provider: "roo",
@@ -2595,24 +2592,18 @@ describe("ClineProvider - Router Models", () => {
 			apiKey: "litellm-key",
 			baseUrl: "http://localhost:4000",
 		})
-		expect(getModels).toHaveBeenCalledWith({ provider: "chutes" })
 
 		// Verify response was sent
 		expect(mockPostMessage).toHaveBeenCalledWith({
 			type: "routerModels",
 			routerModels: {
-				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: mockModels,
-				unbound: mockModels,
 				roo: mockModels,
-				chutes: mockModels,
 				litellm: mockModels,
 				ollama: {},
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
 			},
 			values: undefined,
 		})
@@ -2626,7 +2617,6 @@ describe("ClineProvider - Router Models", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				unboundApiKey: "unbound-key",
 				litellmApiKey: "litellm-key",
 				litellmBaseUrl: "http://localhost:4000",
 			},
@@ -2641,11 +2631,8 @@ describe("ClineProvider - Router Models", () => {
 		vi.mocked(getModels)
 			.mockResolvedValueOnce(mockModels) // openrouter success
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty fail
-			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound fail
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway success
-			.mockResolvedValueOnce(mockModels) // deepinfra success
 			.mockResolvedValueOnce(mockModels) // roo success
-			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes fail
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm fail
 
 		await messageHandler({ type: "requestRouterModels" })
@@ -2654,18 +2641,13 @@ describe("ClineProvider - Router Models", () => {
 		expect(mockPostMessage).toHaveBeenCalledWith({
 			type: "routerModels",
 			routerModels: {
-				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: {},
-				unbound: {},
 				roo: mockModels,
-				chutes: {},
 				ollama: {},
 				lmstudio: {},
 				litellm: {},
 				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
 			},
 			values: undefined,
 		})
@@ -2676,27 +2658,6 @@ describe("ClineProvider - Router Models", () => {
 			success: false,
 			error: "Requesty API error",
 			values: { provider: "requesty" },
-		})
-
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "singleRouterModelFetchResponse",
-			success: false,
-			error: "Unbound API error",
-			values: { provider: "unbound" },
-		})
-
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "singleRouterModelFetchResponse",
-			success: false,
-			error: "Unbound API error",
-			values: { provider: "unbound" },
-		})
-
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "singleRouterModelFetchResponse",
-			success: false,
-			error: "Chutes API error",
-			values: { provider: "chutes" },
 		})
 
 		expect(mockPostMessage).toHaveBeenCalledWith({
@@ -2716,7 +2677,6 @@ describe("ClineProvider - Router Models", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				unboundApiKey: "unbound-key",
 				// No litellm config
 			},
 		} as any)
@@ -2751,7 +2711,6 @@ describe("ClineProvider - Router Models", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				unboundApiKey: "unbound-key",
 				// No litellm config
 			},
 		} as any)
@@ -2775,18 +2734,13 @@ describe("ClineProvider - Router Models", () => {
 		expect(mockPostMessage).toHaveBeenCalledWith({
 			type: "routerModels",
 			routerModels: {
-				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: mockModels,
-				unbound: mockModels,
 				roo: mockModels,
-				chutes: mockModels,
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
 			},
 			values: undefined,
 		})

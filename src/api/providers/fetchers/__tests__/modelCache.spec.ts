@@ -41,8 +41,6 @@ vi.mock("fs", () => ({
 vi.mock("../litellm")
 vi.mock("../openrouter")
 vi.mock("../requesty")
-vi.mock("../unbound")
-vi.mock("../io-intelligence")
 
 // Mock ContextProxy with a simple static instance
 vi.mock("../../../core/config/ContextProxy", () => ({
@@ -63,18 +61,12 @@ import { getModels, getModelsFromCache } from "../modelCache"
 import { getLiteLLMModels } from "../litellm"
 import { getOpenRouterModels } from "../openrouter"
 import { getRequestyModels } from "../requesty"
-import { getUnboundModels } from "../unbound"
-import { getIOIntelligenceModels } from "../io-intelligence"
 
 const mockGetLiteLLMModels = getLiteLLMModels as Mock<typeof getLiteLLMModels>
 const mockGetOpenRouterModels = getOpenRouterModels as Mock<typeof getOpenRouterModels>
 const mockGetRequestyModels = getRequestyModels as Mock<typeof getRequestyModels>
-const mockGetUnboundModels = getUnboundModels as Mock<typeof getUnboundModels>
-const mockGetIOIntelligenceModels = getIOIntelligenceModels as Mock<typeof getIOIntelligenceModels>
 
 const DUMMY_REQUESTY_KEY = "requesty-key-for-testing"
-const DUMMY_UNBOUND_KEY = "unbound-key-for-testing"
-const DUMMY_IOINTELLIGENCE_KEY = "io-intelligence-key-for-testing"
 
 describe("getModels with new GetModelsOptions", () => {
 	beforeEach(() => {
@@ -133,40 +125,6 @@ describe("getModels with new GetModelsOptions", () => {
 		const result = await getModels({ provider: "requesty", apiKey: DUMMY_REQUESTY_KEY })
 
 		expect(mockGetRequestyModels).toHaveBeenCalledWith(undefined, DUMMY_REQUESTY_KEY)
-		expect(result).toEqual(mockModels)
-	})
-
-	it("calls getUnboundModels with optional API key", async () => {
-		const mockModels = {
-			"unbound/model": {
-				maxTokens: 4096,
-				contextWindow: 8192,
-				supportsPromptCache: false,
-				description: "Unbound model",
-			},
-		}
-		mockGetUnboundModels.mockResolvedValue(mockModels)
-
-		const result = await getModels({ provider: "unbound", apiKey: DUMMY_UNBOUND_KEY })
-
-		expect(mockGetUnboundModels).toHaveBeenCalledWith(DUMMY_UNBOUND_KEY)
-		expect(result).toEqual(mockModels)
-	})
-
-	it("calls IOIntelligenceModels for IO-Intelligence provider", async () => {
-		const mockModels = {
-			"io-intelligence/model": {
-				maxTokens: 4096,
-				contextWindow: 8192,
-				supportsPromptCache: false,
-				description: "IO Intelligence Model",
-			},
-		}
-		mockGetIOIntelligenceModels.mockResolvedValue(mockModels)
-
-		const result = await getModels({ provider: "io-intelligence", apiKey: DUMMY_IOINTELLIGENCE_KEY })
-
-		expect(mockGetIOIntelligenceModels).toHaveBeenCalled()
 		expect(result).toEqual(mockModels)
 	})
 
