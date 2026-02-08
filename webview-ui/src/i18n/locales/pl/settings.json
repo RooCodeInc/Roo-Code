@@ -1005,6 +1005,10 @@
 		}
 	},
 	"ui": {
+		"taskCompleteColor": {
+			"label": "Podświetlenie nagłówka zadania",
+			"description": "Podświetla nagłówek zadania kolorowym wskaźnikiem, gdy zadania zostaną ukończone lub wymagają twojej uwagi, pomagając szybko zauważyć, kiedy wymagane jest działanie"
+		},
 		"collapseThinking": {
 			"label": "Domyślnie zwijaj komunikaty o myśleniu",
 			"description": "Gdy włączone, bloki myślenia będą domyślnie zwinięte, dopóki nie wejdziesz z nimi w interakcję"

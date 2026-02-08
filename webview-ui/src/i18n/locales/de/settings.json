@@ -1005,6 +1005,10 @@
 		}
 	},
 	"ui": {
+		"taskCompleteColor": {
+			"label": "Aufgaben-Header-Hervorhebung",
+			"description": "Hebt den Aufgaben-Header mit einem Farbindikator hervor, wenn Aufgaben abgeschlossen werden oder deine Aufmerksamkeit erfordern, damit du schnell erkennst, wann eine Aktion nötig ist"
+		},
 		"collapseThinking": {
 			"label": "Gedankenblöcke standardmäßig ausblenden",
 			"description": "Wenn aktiviert, werden Gedankenblöcke standardmäßig ausgeblendet, bis du mit ihnen interagierst"

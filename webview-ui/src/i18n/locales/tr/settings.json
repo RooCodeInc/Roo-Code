@@ -1005,6 +1005,10 @@
 		}
 	},
 	"ui": {
+		"taskCompleteColor": {
+			"label": "Görev Başlığı Vurgulama",
+			"description": "Görevler tamamlandığında veya dikkatine ihtiyaç duyulduğunda görev başlığını renk göstergesiyle vurgular, eylem gerektiğinde hızlıca fark etmene yardımcı olur"
+		},
 		"collapseThinking": {
 			"label": "Düşünme mesajlarını varsayılan olarak daralt",
 			"description": "Etkinleştirildiğinde, düşünme blokları siz onlarla etkileşime girene kadar varsayılan olarak daraltılır"

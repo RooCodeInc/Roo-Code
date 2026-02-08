@@ -167,6 +167,7 @@ export const globalSettingsSchema = z.object({
 	ttsSpeed: z.number().optional(),
 	soundEnabled: z.boolean().optional(),
 	soundVolume: z.number().optional(),
+	taskHeaderHighlightEnabled: z.boolean().optional(),
 
 	maxOpenTabsContext: z.number().optional(),
 	maxWorkspaceFiles: z.number().optional(),
@@ -368,6 +369,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	ttsSpeed: 1,
 	soundEnabled: false,
 	soundVolume: 0.5,
+	taskHeaderHighlightEnabled: false,
 
 	terminalShellIntegrationTimeout: 30000,
 	terminalCommandDelay: 0,
