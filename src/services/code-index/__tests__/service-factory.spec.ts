@@ -5,12 +5,14 @@ import { CodeIndexOllamaEmbedder } from "../embedders/ollama"
 import { OpenAICompatibleEmbedder } from "../embedders/openai-compatible"
 import { GeminiEmbedder } from "../embedders/gemini"
 import { QdrantVectorStore } from "../vector-store/qdrant-client"
+import { RooEmbedder } from "../embedders/roo"
 
 // Mock the embedders and vector store
 vitest.mock("../embedders/openai")
 vitest.mock("../embedders/ollama")
 vitest.mock("../embedders/openai-compatible")
 vitest.mock("../embedders/gemini")
+vitest.mock("../embedders/roo")
 vitest.mock("../vector-store/qdrant-client")
 
 // Mock the embedding models module
@@ -33,6 +35,7 @@ const MockedCodeIndexOllamaEmbedder = CodeIndexOllamaEmbedder as MockedClass<typ
 const MockedOpenAICompatibleEmbedder = OpenAICompatibleEmbedder as MockedClass<typeof OpenAICompatibleEmbedder>
 const MockedGeminiEmbedder = GeminiEmbedder as MockedClass<typeof GeminiEmbedder>
 const MockedQdrantVectorStore = QdrantVectorStore as MockedClass<typeof QdrantVectorStore>
+const MockedRooEmbedder = RooEmbedder as MockedClass<typeof RooEmbedder>
 
 // Import the mocked functions
 import { getDefaultModelId, getModelDimension } from "../../../shared/embeddingModels"
@@ -343,6 +346,21 @@ describe("CodeIndexServiceFactory", () => {
 
 			// Act & Assert
 			expect(() => factory.createEmbedder()).toThrow("serviceFactory.geminiConfigMissing")
+		})
+
+		it("should create RooEmbedder when using Roo provider", () => {
+			// Arrange
+			const testConfig = {
+				embedderProvider: "roo",
+				modelId: "text-embedding-3-small",
+			}
+			mockConfigManager.getConfig.mockReturnValue(testConfig as any)
+
+			// Act
+			factory.createEmbedder()
+
+			// Assert
+			expect(MockedRooEmbedder).toHaveBeenCalledWith("text-embedding-3-small")
 		})
 
 		it("should throw error for invalid embedder provider", () => {
