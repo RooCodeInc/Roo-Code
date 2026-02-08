@@ -80,47 +80,31 @@ const TaskHeader = ({
 	// Determine if this is a subtask (has a parent)
 	const isSubtask = !!parentTaskId
 
+	// Find the last message that isn't a resume action (shared by isTaskComplete and highlightClass)
+	const lastRelevantMessage = useMemo(() => {
+		const msgs = clineMessages || []
+		const idx = findLastIndex(msgs, (m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"))
+		return idx !== -1 ? msgs[idx] : undefined
+	}, [clineMessages])
+
 	// Check if the task is complete by looking at the last relevant message (skipping resume messages)
-	const isTaskComplete =
-		clineMessages && clineMessages.length > 0
-			? (() => {
-					const lastRelevantIndex = findLastIndex(
-						clineMessages,
-						(m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"),
-					)
-					return lastRelevantIndex !== -1
-						? clineMessages[lastRelevantIndex]?.ask === "completion_result"
-						: false
-				})()
-			: false
+	const isTaskComplete = lastRelevantMessage?.ask === "completion_result"
 
 	// Compute highlight CSS class: green for task complete, yellow for user attention needed
 	const highlightClass = useMemo(() => {
 		if (!taskHeaderHighlightEnabled || isSubtask) return undefined
+		if (!lastRelevantMessage || lastRelevantMessage.partial) return undefined
 
-		const msgs = clineMessages || []
-		// Find the last message that isn't a resume action
-		const lastRelevantIndex = findLastIndex(
-			msgs,
-			(m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"),
-		)
-		if (lastRelevantIndex === -1) return undefined
-
-		const lastMsg = msgs[lastRelevantIndex]
-		if (lastMsg.partial) return undefined
-
-		// Task complete = green
-		if (lastMsg.ask === "completion_result") {
+		if (lastRelevantMessage.ask === "completion_result") {
 			return "task-header-highlight-green"
 		}
 
-		// Any other ask type = needs user attention = yellow
-		if (lastMsg.ask) {
+		if (lastRelevantMessage.ask) {
 			return "task-header-highlight-yellow"
 		}
 
 		return undefined
-	}, [taskHeaderHighlightEnabled, isSubtask, clineMessages])
+	}, [taskHeaderHighlightEnabled, isSubtask, lastRelevantMessage])
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
