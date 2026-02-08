@@ -13,7 +13,6 @@ import { appendImages } from "@src/utils/imageUtils"
 import { getCostBreakdownIfNeeded } from "@src/utils/costFormatting"
 
 import type { ClineAsk, ClineSayTool, ClineMessage, ExtensionMessage, AudioType } from "@roo-code/types"
-import { isRetiredProvider } from "@roo-code/types"
 
 import { findLast } from "@roo/array"
 import { SuggestionItem } from "@roo-code/types"
@@ -225,11 +224,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const isProfileDisabled = useMemo(
 		() => !!apiConfiguration && !ProfileValidator.isProfileAllowed(apiConfiguration, organizationAllowList),
 		[apiConfiguration, organizationAllowList],
-	)
-
-	const isRetiredProviderActive = useMemo(
-		() => !!apiConfiguration?.apiProvider && isRetiredProvider(apiConfiguration.apiProvider),
-		[apiConfiguration?.apiProvider],
 	)
 
 	// UI layout depends on the last 2 messages (since it relies on the content
@@ -1521,7 +1515,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 			if (enableButtons && primaryButtonText) {
 				handlePrimaryButtonClick(inputValue, selectedImages)
-			} else if (!sendingDisabled && !isProfileDisabled && !isRetiredProviderActive && hasInput) {
+			} else if (!sendingDisabled && !isProfileDisabled && hasInput) {
 				handleSendMessage(inputValue, selectedImages)
 			}
 		},
@@ -1600,12 +1594,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					{checkpointWarning && (
 						<div className="px-3">
 							<CheckpointWarning warning={checkpointWarning} />
-						</div>
-					)}
-
-					{isRetiredProviderActive && (
-						<div className="px-3">
-							<RetiredProviderWarning />
 						</div>
 					)}
 				</>
@@ -1769,7 +1757,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				ref={textAreaRef}
 				inputValue={inputValue}
 				setInputValue={setInputValue}
-				sendingDisabled={sendingDisabled || isProfileDisabled || isRetiredProviderActive}
+				sendingDisabled={sendingDisabled || isProfileDisabled}
 				selectApiConfigDisabled={sendingDisabled && clineAsk !== "api_req_failed"}
 				placeholderText={placeholderText}
 				selectedImages={selectedImages}
@@ -1792,11 +1780,9 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				onEnqueueMessage={handleEnqueueCurrentMessage}
 			/>
 
-			{isRetiredProviderActive && !task && (
-				<div className="px-3">
-					<RetiredProviderWarning />
-				</div>
-			)}
+			<div className="px-3">
+				<RetiredProviderWarning />
+			</div>
 
 			{isProfileDisabled && (
 				<div className="px-3">
