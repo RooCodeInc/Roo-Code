@@ -126,7 +126,19 @@ export function isToolAllowedForMode(
 	experiments?: Record<string, boolean>,
 	includedTools?: string[], // Opt-in tools explicitly included (e.g., from modelInfo)
 ): boolean {
-	// Always allow these tools
+	// Check tool requirements first — explicit disabling takes priority over everything,
+	// including ALWAYS_AVAILABLE_TOOLS. This ensures disabledTools works consistently
+	// at both the filtering layer and the execution-time validation layer.
+	if (toolRequirements && typeof toolRequirements === "object") {
+		if (tool in toolRequirements && !toolRequirements[tool]) {
+			return false
+		}
+	} else if (toolRequirements === false) {
+		// If toolRequirements is a boolean false, all tools are disabled
+		return false
+	}
+
+	// Always allow these tools (unless explicitly disabled above)
 	if (ALWAYS_AVAILABLE_TOOLS.includes(tool as any)) {
 		return true
 	}
@@ -145,16 +157,6 @@ export function isToolAllowedForMode(
 		if (!experiments[tool]) {
 			return false
 		}
-	}
-
-	// Check tool requirements if any exist
-	if (toolRequirements && typeof toolRequirements === "object") {
-		if (tool in toolRequirements && !toolRequirements[tool]) {
-			return false
-		}
-	} else if (toolRequirements === false) {
-		// If toolRequirements is a boolean false, all tools are disabled
-		return false
 	}
 
 	const mode = getModeBySlug(modeSlug, customModes)

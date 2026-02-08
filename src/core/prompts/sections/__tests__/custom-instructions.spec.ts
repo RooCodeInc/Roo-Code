@@ -1587,4 +1587,136 @@ describe("Rules directory reading", () => {
 		const result = await loadRuleFiles("/fake/path")
 		expect(result).toBe("\n# Rules from .roorules:\nfallback content\n")
 	})
+
+	it("should load AGENTS.local.md alongside AGENTS.md for personal overrides", async () => {
+		// Simulate no .roo/rules-test-mode directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+
+		// Mock lstat to indicate both AGENTS.md and AGENTS.local.md exist (not symlinks)
+		lstatMock.mockImplementation((filePath: PathLike) => {
+			const pathStr = filePath.toString()
+			if (pathStr.endsWith("AGENTS.md") || pathStr.endsWith("AGENTS.local.md")) {
+				return Promise.resolve({
+					isSymbolicLink: vi.fn().mockReturnValue(false),
+				})
+			}
+			return Promise.reject({ code: "ENOENT" })
+		})
+
+		readFileMock.mockImplementation((filePath: PathLike) => {
+			const pathStr = filePath.toString()
+			if (pathStr.endsWith("AGENTS.local.md")) {
+				return Promise.resolve("Local overrides from AGENTS.local.md")
+			}
+			if (pathStr.endsWith("AGENTS.md")) {
+				return Promise.resolve("Base rules from AGENTS.md")
+			}
+			return Promise.reject({ code: "ENOENT" })
+		})
+
+		const result = await addCustomInstructions(
+			"mode instructions",
+			"global instructions",
+			"/fake/path",
+			"test-mode",
+			{
+				settings: {
+					todoListEnabled: true,
+					useAgentRules: true,
+					newTaskRequireTodos: false,
+				},
+			},
+		)
+
+		// Should contain both AGENTS.md and AGENTS.local.md content
+		expect(result).toContain("# Agent Rules Standard (AGENTS.md):")
+		expect(result).toContain("Base rules from AGENTS.md")
+		expect(result).toContain("# Agent Rules Local (AGENTS.local.md):")
+		expect(result).toContain("Local overrides from AGENTS.local.md")
+	})
+
+	it("should load AGENTS.local.md even when base AGENTS.md does not exist", async () => {
+		// Simulate no .roo/rules-test-mode directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+
+		// Mock lstat to indicate only AGENTS.local.md exists (no base file)
+		lstatMock.mockImplementation((filePath: PathLike) => {
+			const pathStr = filePath.toString()
+			if (pathStr.endsWith("AGENTS.local.md")) {
+				return Promise.resolve({
+					isSymbolicLink: vi.fn().mockReturnValue(false),
+				})
+			}
+			return Promise.reject({ code: "ENOENT" })
+		})
+
+		readFileMock.mockImplementation((filePath: PathLike) => {
+			const pathStr = filePath.toString()
+			if (pathStr.endsWith("AGENTS.local.md")) {
+				return Promise.resolve("Local overrides without base file")
+			}
+			return Promise.reject({ code: "ENOENT" })
+		})
+
+		const result = await addCustomInstructions(
+			"mode instructions",
+			"global instructions",
+			"/fake/path",
+			"test-mode",
+			{
+				settings: {
+					todoListEnabled: true,
+					useAgentRules: true,
+					newTaskRequireTodos: false,
+				},
+			},
+		)
+
+		// Should contain AGENTS.local.md content even without base AGENTS.md
+		expect(result).toContain("# Agent Rules Local (AGENTS.local.md):")
+		expect(result).toContain("Local overrides without base file")
+	})
+
+	it("should load AGENTS.md without .local.md when local file does not exist", async () => {
+		// Simulate no .roo/rules-test-mode directory
+		statMock.mockRejectedValueOnce({ code: "ENOENT" })
+
+		// Mock lstat to indicate only AGENTS.md exists (no local override)
+		lstatMock.mockImplementation((filePath: PathLike) => {
+			const pathStr = filePath.toString()
+			if (pathStr.endsWith("AGENTS.md")) {
+				return Promise.resolve({
+					isSymbolicLink: vi.fn().mockReturnValue(false),
+				})
+			}
+			return Promise.reject({ code: "ENOENT" })
+		})
+
+		readFileMock.mockImplementation((filePath: PathLike) => {
+			const pathStr = filePath.toString()
+			if (pathStr.endsWith("AGENTS.md")) {
+				return Promise.resolve("Base rules from AGENTS.md only")
+			}
+			return Promise.reject({ code: "ENOENT" })
+		})
+
+		const result = await addCustomInstructions(
+			"mode instructions",
+			"global instructions",
+			"/fake/path",
+			"test-mode",
+			{
+				settings: {
+					todoListEnabled: true,
+					useAgentRules: true,
+					newTaskRequireTodos: false,
+				},
+			},
+		)
+
+		// Should contain only AGENTS.md content
+		expect(result).toContain("# Agent Rules Standard (AGENTS.md):")
+		expect(result).toContain("Base rules from AGENTS.md only")
+		expect(result).not.toContain("AGENTS.local.md")
+	})
 })

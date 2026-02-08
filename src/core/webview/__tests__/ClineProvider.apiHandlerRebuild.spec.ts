@@ -171,6 +171,11 @@ describe("ClineProvider - API Handler Rebuild Guard", () => {
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
 			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
 			subscriptions: [],
 			extension: {
 				packageJSON: { version: "1.0.0" },

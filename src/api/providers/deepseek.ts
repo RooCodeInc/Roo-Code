@@ -34,7 +34,7 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 
 		// Create the DeepSeek provider using AI SDK
 		this.provider = createDeepSeek({
-			baseURL: options.deepSeekBaseUrl ?? "https://api.deepseek.com/v1",
+			baseURL: options.deepSeekBaseUrl || "https://api.deepseek.com/v1",
 			apiKey: options.deepSeekApiKey ?? "not-provided",
 			headers: DEFAULT_HEADERS,
 		})
@@ -43,7 +43,13 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 	override getModel(): { id: string; info: ModelInfo; maxTokens?: number; temperature?: number } {
 		const id = this.options.apiModelId ?? deepSeekDefaultModelId
 		const info = deepSeekModels[id as keyof typeof deepSeekModels] || deepSeekModels[deepSeekDefaultModelId]
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: DEEP_SEEK_DEFAULT_TEMPERATURE,
+		})
 		return { id, info, ...params }
 	}
 
@@ -165,5 +171,9 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 		})
 
 		return text
+	}
+
+	override isAiSdkProvider(): boolean {
+		return true
 	}
 }

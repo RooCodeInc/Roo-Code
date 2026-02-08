@@ -47,6 +47,7 @@ export class DeepInfraHandler extends RouterProvider implements SingleCompletion
 			modelId: id,
 			model: info,
 			settings: this.options,
+			defaultTemperature: 0,
 		})
 
 		return { id, info, ...params }

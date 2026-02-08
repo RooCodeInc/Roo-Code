@@ -119,4 +119,12 @@ export abstract class BaseProvider implements ApiHandler {
 
 		return countTokens(content, { useWorker: true })
 	}
+
+	/**
+	 * Default implementation returns false.
+	 * AI SDK providers should override this to return true.
+	 */
+	isAiSdkProvider(): boolean {
+		return false
+	}
 }

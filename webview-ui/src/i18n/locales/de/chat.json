@@ -111,6 +111,8 @@
 	},
 	"selectMode": "Interaktionsmodus auswählen",
 	"selectApiConfig": "API-Konfiguration auswählen",
+	"lockApiConfigAcrossModes": "API-Konfiguration für alle Modi in diesem Arbeitsbereich sperren",
+	"unlockApiConfigAcrossModes": "API-Konfiguration ist für alle Modi in diesem Arbeitsbereich gesperrt (klicke zum Entsperren)",
 	"enhancePrompt": "Prompt mit zusätzlichem Kontext verbessern",
 	"addImages": "Bilder zur Nachricht hinzufügen",
 	"sendMessage": "Nachricht senden",
@@ -344,9 +346,8 @@
 		},
 		"release": {
 			"heading": "Was ist neu:",
-			"parallelTools": "Parallele Tool-Aufrufe: Tools werden jetzt standardmäßig parallel ausgeführt und beschleunigen Dateioperationen und komplexe Aufgaben erheblich.",
-			"readFileIndentation": "Intelligenteres Dateienlesen: Neuer Indentationsmodus extrahiert komplette semantische Codeblöcke (Funktionen, Klassen) ohne Unterbrechung in der Mitte—ideal für die Arbeit mit spezifischen Zeilen aus Suchergebnissen.",
-			"readCommandOutput": "Verlustfreie Terminalausgabe: Neues read_command_output-Tool ruft vollständige Befehlsausgabe aus abgekürzten Ausführungen mit Paginierung und Regex-Filterung ab."
+			"claudeOpus": "Claude Opus 4.6: Jetzt über alle Provider verfügbar—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex und OpenRouter—mit Anthropics fähigstem Modell auf deiner bevorzugten Plattform.",
+			"gptCodex": "GPT-5.3-Codex: OpenAIs neuestes Coding-Modell wird nun im OpenAI - ChatGPT Provider unterstützt und liefert hochmoderne Code-Generierung und Verständnis."
 		},
 		"cloudAgents": {
 			"heading": "Neu in der Cloud:",

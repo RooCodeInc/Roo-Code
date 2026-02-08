@@ -405,6 +405,11 @@ describe("ClineProvider", () => {
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
 			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
 			subscriptions: [],
 			extension: {
 				packageJSON: { version: "1.0.0" },
@@ -2147,6 +2152,11 @@ describe("Project MCP Settings", () => {
 				store: vi.fn(),
 				delete: vi.fn(),
 			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
 			subscriptions: [],
 			extension: {
 				packageJSON: { version: "1.0.0" },
@@ -2277,6 +2287,11 @@ describe.skip("ContextProxy integration", () => {
 				update: vi.fn(),
 				keys: vi.fn().mockReturnValue([]),
 			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
 			secrets: { get: vi.fn(), store: vi.fn(), delete: vi.fn() },
 			extensionUri: {} as vscode.Uri,
 			globalStorageUri: { fsPath: "/test/path" },
@@ -2340,6 +2355,11 @@ describe("getTelemetryProperties", () => {
 					return undefined
 				}),
 				update: vi.fn(),
+				keys: vi.fn().mockReturnValue([]),
+			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
 				keys: vi.fn().mockReturnValue([]),
 			},
 			secrets: { get: vi.fn(), store: vi.fn(), delete: vi.fn() },
@@ -2503,6 +2523,11 @@ describe("ClineProvider - Router Models", () => {
 				get: vi.fn().mockImplementation((key: string) => secrets[key]),
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
+			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
 			},
 			subscriptions: [],
 			extension: {
@@ -2856,6 +2881,11 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				get: vi.fn().mockImplementation((key: string) => secrets[key]),
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
+			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
 			},
 			subscriptions: [],
 			extension: {
@@ -3768,6 +3798,55 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				expect(mockCline.overwriteClineMessages).toHaveBeenCalled()
 				expect(mockCline.submitUserMessage).toHaveBeenCalled()
 			})
+		})
+	})
+
+	describe("getTaskWithId", () => {
+		it("returns empty apiConversationHistory when file is missing", async () => {
+			const historyItem = { id: "missing-api-file-task", task: "test task", ts: Date.now() }
+			vi.mocked(mockContext.globalState.get).mockImplementation((key: string) => {
+				if (key === "taskHistory") {
+					return [historyItem]
+				}
+				return undefined
+			})
+
+			const deleteTaskSpy = vi.spyOn(provider, "deleteTaskFromState")
+
+			const result = await (provider as any).getTaskWithId("missing-api-file-task")
+
+			expect(result.historyItem).toEqual(historyItem)
+			expect(result.apiConversationHistory).toEqual([])
+			expect(deleteTaskSpy).not.toHaveBeenCalled()
+		})
+
+		it("returns empty apiConversationHistory when file contains invalid JSON", async () => {
+			const historyItem = { id: "corrupt-api-task", task: "test task", ts: Date.now() }
+			vi.mocked(mockContext.globalState.get).mockImplementation((key: string) => {
+				if (key === "taskHistory") {
+					return [historyItem]
+				}
+				return undefined
+			})
+
+			// Make fileExistsAtPath return true so the read path is exercised
+			const fsUtils = await import("../../../utils/fs")
+			vi.spyOn(fsUtils, "fileExistsAtPath").mockResolvedValue(true)
+
+			// Make readFile return corrupted JSON
+			const fsp = await import("fs/promises")
+			vi.mocked(fsp.readFile).mockResolvedValueOnce("{not valid json!!!" as never)
+
+			const deleteTaskSpy = vi.spyOn(provider, "deleteTaskFromState")
+
+			const result = await (provider as any).getTaskWithId("corrupt-api-task")
+
+			expect(result.historyItem).toEqual(historyItem)
+			expect(result.apiConversationHistory).toEqual([])
+			expect(deleteTaskSpy).not.toHaveBeenCalled()
+
+			// Restore the spy
+			vi.mocked(fsUtils.fileExistsAtPath).mockRestore()
 		})
 	})
 })

@@ -158,7 +158,7 @@ export class ClineProvider
 
 	public isViewLaunched = false
 	public settingsImportedAt?: number
-	public readonly latestAnnouncementId = "jan-2026-v3.46.0-parallel-tools" // v3.46.0 Parallel Tools & Smarter Reading
+	public readonly latestAnnouncementId = "feb-2026-v3.47.0-opus-4.6-gpt-5.3-codex" // v3.47.0 Claude Opus 4.6 & GPT-5.3-Codex
 	public readonly providerSettingsManager: ProviderSettingsManager
 	public readonly customModesManager: CustomModesManager
 
@@ -899,7 +899,8 @@ export class ClineProvider
 			// Load the saved API config for the restored mode if it exists.
 			// Skip mode-based profile activation if historyItem.apiConfigName exists,
 			// since the task's specific provider profile will override it anyway.
-			if (!historyItem.apiConfigName) {
+			const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", false)
+			if (!historyItem.apiConfigName && !lockApiConfigAcrossModes) {
 				const savedConfigId = await this.providerSettingsManager.getModeConfigId(historyItem.mode)
 				const listApiConfig = await this.providerSettingsManager.listConfig()
 
@@ -1316,6 +1317,13 @@ export class ClineProvider
 
 		this.emit(RooCodeEventName.ModeChanged, newMode)
 
+		// If workspace lock is on, keep the current API config — don't load mode-specific config
+		const lockApiConfigAcrossModes = this.context.workspaceState.get("lockApiConfigAcrossModes", false)
+		if (lockApiConfigAcrossModes) {
+			await this.postStateToWebview()
+			return
+		}
+
 		// Load the saved API config for the new mode if it exists.
 		const savedConfigId = await this.providerSettingsManager.getModeConfigId(newMode)
 		const listApiConfig = await this.providerSettingsManager.listConfig()
@@ -1665,31 +1673,40 @@ export class ClineProvider
 		const history = this.getGlobalState("taskHistory") ?? []
 		const historyItem = history.find((item) => item.id === id)
 
-		if (historyItem) {
-			const { getTaskDirectoryPath } = await import("../../utils/storage")
-			const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
-			const taskDirPath = await getTaskDirectoryPath(globalStoragePath, id)
-			const apiConversationHistoryFilePath = path.join(taskDirPath, GlobalFileNames.apiConversationHistory)
-			const uiMessagesFilePath = path.join(taskDirPath, GlobalFileNames.uiMessages)
-			const fileExists = await fileExistsAtPath(apiConversationHistoryFilePath)
-
-			if (fileExists) {
-				const apiConversationHistory = JSON.parse(await fs.readFile(apiConversationHistoryFilePath, "utf8"))
-
-				return {
-					historyItem,
-					taskDirPath,
-					apiConversationHistoryFilePath,
-					uiMessagesFilePath,
-					apiConversationHistory,
-				}
-			}
+		if (!historyItem) {
+			throw new Error("Task not found")
 		}
 
-		// if we tried to get a task that doesn't exist, remove it from state
-		// FIXME: this seems to happen sometimes when the json file doesnt save to disk for some reason
-		await this.deleteTaskFromState(id)
-		throw new Error("Task not found")
+		const { getTaskDirectoryPath } = await import("../../utils/storage")
+		const globalStoragePath = this.contextProxy.globalStorageUri.fsPath
+		const taskDirPath = await getTaskDirectoryPath(globalStoragePath, id)
+		const apiConversationHistoryFilePath = path.join(taskDirPath, GlobalFileNames.apiConversationHistory)
+		const uiMessagesFilePath = path.join(taskDirPath, GlobalFileNames.uiMessages)
+		const fileExists = await fileExistsAtPath(apiConversationHistoryFilePath)
+
+		let apiConversationHistory: Anthropic.MessageParam[] = []
+
+		if (fileExists) {
+			try {
+				apiConversationHistory = JSON.parse(await fs.readFile(apiConversationHistoryFilePath, "utf8"))
+			} catch (error) {
+				console.warn(
+					`[getTaskWithId] api_conversation_history.json corrupted for task ${id}, returning empty history: ${error instanceof Error ? error.message : String(error)}`,
+				)
+			}
+		} else {
+			console.warn(
+				`[getTaskWithId] api_conversation_history.json missing for task ${id}, returning empty history`,
+			)
+		}
+
+		return {
+			historyItem,
+			taskDirPath,
+			apiConversationHistoryFilePath,
+			uiMessagesFilePath,
+			apiConversationHistory,
+		}
 	}
 
 	async getTaskWithAggregatedCosts(taskId: string): Promise<{
@@ -2037,6 +2054,7 @@ export class ClineProvider
 			maxOpenTabsContext,
 			maxWorkspaceFiles,
 			browserToolEnabled,
+			disabledTools,
 			telemetrySetting,
 			showRooIgnoredFiles,
 			enableSubfolderRules,
@@ -2071,6 +2089,7 @@ export class ClineProvider
 			openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled,
 			isBrowserSessionActive,
+			lockApiConfigAcrossModes,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -2174,6 +2193,7 @@ export class ClineProvider
 			maxWorkspaceFiles: maxWorkspaceFiles ?? 200,
 			cwd,
 			browserToolEnabled: browserToolEnabled ?? true,
+			disabledTools,
 			telemetrySetting,
 			telemetryKey,
 			machineId,
@@ -2218,6 +2238,7 @@ export class ClineProvider
 			profileThresholds: profileThresholds ?? {},
 			cloudApiUrl: getRooCodeApiUrl(),
 			hasOpenedModeSelector: this.getGlobalState("hasOpenedModeSelector") ?? false,
+			lockApiConfigAcrossModes: lockApiConfigAcrossModes ?? false,
 			alwaysAllowFollowupQuestions: alwaysAllowFollowupQuestions ?? false,
 			followupAutoApproveTimeoutMs: followupAutoApproveTimeoutMs ?? 60000,
 			includeDiagnosticMessages: includeDiagnosticMessages ?? true,
@@ -2416,6 +2437,7 @@ export class ClineProvider
 			maxOpenTabsContext: stateValues.maxOpenTabsContext ?? 20,
 			maxWorkspaceFiles: stateValues.maxWorkspaceFiles ?? 200,
 			browserToolEnabled: stateValues.browserToolEnabled ?? true,
+			disabledTools: stateValues.disabledTools,
 			telemetrySetting: stateValues.telemetrySetting || "unset",
 			showRooIgnoredFiles: stateValues.showRooIgnoredFiles ?? false,
 			enableSubfolderRules: stateValues.enableSubfolderRules ?? false,
@@ -2452,6 +2474,7 @@ export class ClineProvider
 					stateValues.codebaseIndexConfig?.codebaseIndexOpenRouterSpecificProvider,
 			},
 			profileThresholds: stateValues.profileThresholds ?? {},
+			lockApiConfigAcrossModes: this.context.workspaceState.get("lockApiConfigAcrossModes", false),
 			includeDiagnosticMessages: stateValues.includeDiagnosticMessages ?? true,
 			maxDiagnosticMessages: stateValues.maxDiagnosticMessages ?? 50,
 			includeTaskHistoryInEnhance: stateValues.includeTaskHistoryInEnhance ?? true,
@@ -3179,7 +3202,21 @@ export class ClineProvider
 		//    recursivelyMakeClineRequests BEFORE tools start executing. We only need to
 		//    flush the pending user message with tool_results.
 		try {
-			await parent.flushPendingToolResultsToHistory()
+			const flushSuccess = await parent.flushPendingToolResultsToHistory()
+
+			if (!flushSuccess) {
+				console.warn(`[delegateParentAndOpenChild] Flush failed for parent ${parentTaskId}, retrying...`)
+				const retrySuccess = await parent.retrySaveApiConversationHistory()
+
+				if (!retrySuccess) {
+					console.error(
+						`[delegateParentAndOpenChild] CRITICAL: Parent ${parentTaskId} API history not persisted to disk. Child return may produce stale state.`,
+					)
+					vscode.window.showWarningMessage(
+						"Warning: Parent task state could not be saved. The parent task may lose recent context when resumed.",
+					)
+				}
+			}
 		} catch (error) {
 			this.log(
 				`[delegateParentAndOpenChild] Error flushing pending tool results (non-fatal): ${

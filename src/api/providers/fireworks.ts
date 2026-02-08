@@ -172,4 +172,8 @@ export class FireworksHandler extends BaseProvider implements SingleCompletionHa
 
 		return text
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }

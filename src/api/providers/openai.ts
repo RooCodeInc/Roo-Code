@@ -37,7 +37,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		super()
 		this.options = options
 
-		const baseURL = this.options.openAiBaseUrl ?? "https://api.openai.com/v1"
+		const baseURL = this.options.openAiBaseUrl || "https://api.openai.com/v1"
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
 		const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 		const urlHost = this._getUrlHost(this.options.openAiBaseUrl)
@@ -282,7 +282,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 	override getModel() {
 		const id = this.options.openAiModelId ?? ""
 		const info: ModelInfo = this.options.openAiCustomModelInfo ?? openAiModelInfoSaneDefaults
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: 0,
+		})
 		return { id, info, ...params }
 	}
 

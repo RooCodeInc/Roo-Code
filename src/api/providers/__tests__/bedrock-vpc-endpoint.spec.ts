@@ -7,38 +7,40 @@ vi.mock("@aws-sdk/credential-providers", () => {
 	return { fromIni: mockFromIni }
 })
 
-// Mock BedrockRuntimeClient and ConverseStreamCommand
-vi.mock("@aws-sdk/client-bedrock-runtime", () => {
-	const mockSend = vi.fn().mockResolvedValue({
-		stream: [],
-	})
-	const mockBedrockRuntimeClient = vi.fn().mockImplementation(() => ({
-		send: mockSend,
-	}))
+// Use vi.hoisted to define mock functions for AI SDK
+const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+}))
 
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
 	return {
-		BedrockRuntimeClient: mockBedrockRuntimeClient,
-		ConverseStreamCommand: vi.fn(),
-		ConverseCommand: vi.fn(),
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
 	}
 })
 
-import { AwsBedrockHandler } from "../bedrock"
-import { BedrockRuntimeClient } from "@aws-sdk/client-bedrock-runtime"
+// Mock createAmazonBedrock so we can inspect how it was called
+const { mockCreateAmazonBedrock } = vi.hoisted(() => ({
+	mockCreateAmazonBedrock: vi.fn(() => vi.fn(() => ({ modelId: "test", provider: "bedrock" }))),
+}))
 
-// Get access to the mocked functions
-const mockBedrockRuntimeClient = vi.mocked(BedrockRuntimeClient)
+vi.mock("@ai-sdk/amazon-bedrock", () => ({
+	createAmazonBedrock: mockCreateAmazonBedrock,
+}))
+
+import { AwsBedrockHandler } from "../bedrock"
 
 describe("Amazon Bedrock VPC Endpoint Functionality", () => {
 	beforeEach(() => {
-		// Clear all mocks before each test
 		vi.clearAllMocks()
 	})
 
 	// Test Scenario 1: Input Validation Test
 	describe("VPC Endpoint URL Validation", () => {
-		it("should configure client with endpoint URL when both URL and enabled flag are provided", () => {
-			// Create handler with endpoint URL and enabled flag
+		it("should configure provider with baseURL when both URL and enabled flag are provided", () => {
 			new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
@@ -48,17 +50,15 @@ describe("Amazon Bedrock VPC Endpoint Functionality", () => {
 				awsBedrockEndpointEnabled: true,
 			})
 
-			// Verify the client was created with the correct endpoint
-			expect(mockBedrockRuntimeClient).toHaveBeenCalledWith(
+			expect(mockCreateAmazonBedrock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					region: "us-east-1",
-					endpoint: "https://bedrock-vpc.example.com",
+					baseURL: "https://bedrock-vpc.example.com",
 				}),
 			)
 		})
 
-		it("should not configure client with endpoint URL when URL is provided but enabled flag is false", () => {
-			// Create handler with endpoint URL but disabled flag
+		it("should not configure provider with baseURL when URL is provided but enabled flag is false", () => {
 			new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
@@ -68,23 +68,23 @@ describe("Amazon Bedrock VPC Endpoint Functionality", () => {
 				awsBedrockEndpointEnabled: false,
 			})
 
-			// Verify the client was created without the endpoint
-			expect(mockBedrockRuntimeClient).toHaveBeenCalledWith(
+			expect(mockCreateAmazonBedrock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					region: "us-east-1",
 				}),
 			)
 
-			// Verify the endpoint property is not present
-			const clientConfig = mockBedrockRuntimeClient.mock.calls[0][0]
-			expect(clientConfig).not.toHaveProperty("endpoint")
+			const providerSettings = (mockCreateAmazonBedrock.mock.calls as unknown[][])[0][0] as Record<
+				string,
+				unknown
+			>
+			expect(providerSettings).not.toHaveProperty("baseURL")
 		})
 	})
 
 	// Test Scenario 2: Edge Case Tests
 	describe("Edge Cases", () => {
 		it("should handle empty endpoint URL gracefully", () => {
-			// Create handler with empty endpoint URL but enabled flag
 			new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
@@ -94,20 +94,21 @@ describe("Amazon Bedrock VPC Endpoint Functionality", () => {
 				awsBedrockEndpointEnabled: true,
 			})
 
-			// Verify the client was created without the endpoint (since it's empty)
-			expect(mockBedrockRuntimeClient).toHaveBeenCalledWith(
+			expect(mockCreateAmazonBedrock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					region: "us-east-1",
 				}),
 			)
 
-			// Verify the endpoint property is not present
-			const clientConfig = mockBedrockRuntimeClient.mock.calls[0][0]
-			expect(clientConfig).not.toHaveProperty("endpoint")
+			// Empty string is falsy, so baseURL should not be set
+			const providerSettings = (mockCreateAmazonBedrock.mock.calls as unknown[][])[0][0] as Record<
+				string,
+				unknown
+			>
+			expect(providerSettings).not.toHaveProperty("baseURL")
 		})
 
 		it("should handle undefined endpoint URL gracefully", () => {
-			// Create handler with undefined endpoint URL but enabled flag
 			new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
@@ -117,23 +118,23 @@ describe("Amazon Bedrock VPC Endpoint Functionality", () => {
 				awsBedrockEndpointEnabled: true,
 			})
 
-			// Verify the client was created without the endpoint
-			expect(mockBedrockRuntimeClient).toHaveBeenCalledWith(
+			expect(mockCreateAmazonBedrock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					region: "us-east-1",
 				}),
 			)
 
-			// Verify the endpoint property is not present
-			const clientConfig = mockBedrockRuntimeClient.mock.calls[0][0]
-			expect(clientConfig).not.toHaveProperty("endpoint")
+			const providerSettings = (mockCreateAmazonBedrock.mock.calls as unknown[][])[0][0] as Record<
+				string,
+				unknown
+			>
+			expect(providerSettings).not.toHaveProperty("baseURL")
 		})
 	})
 
-	// Test Scenario 4: Error Handling Tests
+	// Test Scenario 3: Error Handling Tests
 	describe("Error Handling", () => {
-		it("should handle invalid endpoint URLs by passing them directly to AWS SDK", () => {
-			// Create handler with an invalid URL format
+		it("should handle invalid endpoint URLs by passing them directly to the provider", () => {
 			new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
@@ -143,21 +144,24 @@ describe("Amazon Bedrock VPC Endpoint Functionality", () => {
 				awsBedrockEndpointEnabled: true,
 			})
 
-			// Verify the client was created with the invalid endpoint
-			// (AWS SDK will handle the validation/errors)
-			expect(mockBedrockRuntimeClient).toHaveBeenCalledWith(
+			// The invalid URL is passed directly; the provider/SDK will handle validation
+			expect(mockCreateAmazonBedrock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					region: "us-east-1",
-					endpoint: "invalid-url-format",
+					baseURL: "invalid-url-format",
 				}),
 			)
 		})
 	})
 
-	// Test Scenario 5: Persistence Tests
+	// Test Scenario 4: Persistence Tests
 	describe("Persistence", () => {
 		it("should maintain consistent behavior across multiple requests", async () => {
-			// Create handler with endpoint URL and enabled flag
+			mockGenerateText.mockResolvedValue({
+				text: "test response",
+				usage: { promptTokens: 10, completionTokens: 5 },
+			})
+
 			const handler = new AwsBedrockHandler({
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsAccessKey: "test-access-key",
@@ -167,23 +171,23 @@ describe("Amazon Bedrock VPC Endpoint Functionality", () => {
 				awsBedrockEndpointEnabled: true,
 			})
 
-			// Verify the client was configured with the endpoint
-			expect(mockBedrockRuntimeClient).toHaveBeenCalledWith(
+			// Verify the provider was configured with the endpoint
+			expect(mockCreateAmazonBedrock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					region: "us-east-1",
-					endpoint: "https://bedrock-vpc.example.com",
+					baseURL: "https://bedrock-vpc.example.com",
 				}),
 			)
 
 			// Make a request to ensure the endpoint configuration persists
 			try {
 				await handler.completePrompt("Test prompt")
-			} catch (error) {
-				// Ignore errors, we're just testing the client configuration persistence
+			} catch {
+				// Ignore errors — we're just testing the provider configuration persistence
 			}
 
-			// Verify the client instance was created and used
-			expect(mockBedrockRuntimeClient).toHaveBeenCalled()
+			// The provider factory should have been called exactly once (during construction)
+			expect(mockCreateAmazonBedrock).toHaveBeenCalledTimes(1)
 		})
 	})
 })

@@ -1,37 +1,48 @@
-// npx vitest api/providers/__tests__/bedrock-reasoning.test.ts
+// npx vitest run api/providers/__tests__/bedrock-reasoning.spec.ts
+
+// Use vi.hoisted to define mock functions for AI SDK
+const { mockStreamText, mockGenerateText, mockCreateAmazonBedrock } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+	mockCreateAmazonBedrock: vi.fn(() => vi.fn(() => ({ modelId: "test", provider: "bedrock" }))),
+}))
+
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
+	return {
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
+	}
+})
+
+vi.mock("@ai-sdk/amazon-bedrock", () => ({
+	createAmazonBedrock: mockCreateAmazonBedrock,
+}))
+
+// Mock AWS SDK credential providers
+vi.mock("@aws-sdk/credential-providers", () => ({
+	fromIni: vi.fn().mockReturnValue(async () => ({
+		accessKeyId: "profile-access-key",
+		secretAccessKey: "profile-secret-key",
+	})),
+}))
+
+vi.mock("../../../utils/logging", () => ({
+	logger: {
+		info: vi.fn(),
+		error: vi.fn(),
+		warn: vi.fn(),
+		debug: vi.fn(),
+	},
+}))
 
 import { AwsBedrockHandler } from "../bedrock"
-import { BedrockRuntimeClient, ConverseStreamCommand } from "@aws-sdk/client-bedrock-runtime"
 import { logger } from "../../../utils/logging"
 
-// Mock the AWS SDK
-vi.mock("@aws-sdk/client-bedrock-runtime")
-vi.mock("../../../utils/logging")
-
-// Store the command payload for verification
-let capturedPayload: any = null
-
 describe("AwsBedrockHandler - Extended Thinking", () => {
-	let handler: AwsBedrockHandler
-	let mockSend: ReturnType<typeof vi.fn>
-
 	beforeEach(() => {
-		capturedPayload = null
-		mockSend = vi.fn()
-
-		// Mock ConverseStreamCommand to capture the payload
-		;(ConverseStreamCommand as unknown as ReturnType<typeof vi.fn>).mockImplementation((payload) => {
-			capturedPayload = payload
-			return {
-				input: payload,
-			}
-		})
-		;(BedrockRuntimeClient as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => ({
-			send: mockSend,
-			config: { region: "us-east-1" },
-		}))
-		;(logger.info as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {})
-		;(logger.error as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => {})
+		vi.clearAllMocks()
 	})
 
 	afterEach(() => {
@@ -39,8 +50,8 @@ describe("AwsBedrockHandler - Extended Thinking", () => {
 	})
 
 	describe("Extended Thinking Support", () => {
-		it("should include thinking parameter for Claude Sonnet 4 when reasoning is enabled", async () => {
-			handler = new AwsBedrockHandler({
+		it("should include reasoningConfig in providerOptions when reasoning is enabled", async () => {
+			const handler = new AwsBedrockHandler({
 				apiProvider: "bedrock",
 				apiModelId: "anthropic.claude-sonnet-4-20250514-v1:0",
 				awsRegion: "us-east-1",
@@ -49,35 +60,17 @@ describe("AwsBedrockHandler - Extended Thinking", () => {
 				modelMaxThinkingTokens: 4096,
 			})
 
-			// Mock the stream response
-			mockSend.mockResolvedValue({
-				stream: (async function* () {
-					yield {
-						messageStart: { role: "assistant" },
-					}
-					yield {
-						contentBlockStart: {
-							content_block: { type: "thinking", thinking: "Let me think..." },
-							contentBlockIndex: 0,
-						},
-					}
-					yield {
-						contentBlockDelta: {
-							delta: { type: "thinking_delta", thinking: " about this problem." },
-						},
-					}
-					yield {
-						contentBlockStart: {
-							start: { text: "Here's the answer:" },
-							contentBlockIndex: 1,
-						},
-					}
-					yield {
-						metadata: {
-							usage: { inputTokens: 100, outputTokens: 50 },
-						},
-					}
-				})(),
+			// Mock stream with reasoning content
+			async function* mockFullStream() {
+				yield { type: "reasoning", text: "Let me think..." }
+				yield { type: "reasoning", text: " about this problem." }
+				yield { type: "text-delta", text: "Here's the answer:" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50 }),
+				providerMetadata: Promise.resolve({}),
 			})
 
 			const messages = [{ role: "user" as const, content: "Test message" }]
@@ -88,13 +81,14 @@ describe("AwsBedrockHandler - Extended Thinking", () => {
 				chunks.push(chunk)
 			}
 
-			// Verify the command was called with the correct payload
-			expect(mockSend).toHaveBeenCalledTimes(1)
-			expect(capturedPayload).toBeDefined()
-			expect(capturedPayload.additionalModelRequestFields).toBeDefined()
-			expect(capturedPayload.additionalModelRequestFields.thinking).toEqual({
+			// Verify streamText was called with providerOptions containing reasoningConfig
+			expect(mockStreamText).toHaveBeenCalledTimes(1)
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions).toBeDefined()
+			expect(callArgs.providerOptions.bedrock).toBeDefined()
+			expect(callArgs.providerOptions.bedrock.reasoningConfig).toEqual({
 				type: "enabled",
-				budget_tokens: 4096, // Uses the full modelMaxThinkingTokens value
+				budgetTokens: 4096,
 			})
 
 			// Verify reasoning chunks were yielded
@@ -102,110 +96,24 @@ describe("AwsBedrockHandler - Extended Thinking", () => {
 			expect(reasoningChunks).toHaveLength(2)
 			expect(reasoningChunks[0].text).toBe("Let me think...")
 			expect(reasoningChunks[1].text).toBe(" about this problem.")
-
-			// Verify that topP is NOT present when thinking is enabled
-			expect(capturedPayload.inferenceConfig).not.toHaveProperty("topP")
 		})
 
-		it("should pass thinking parameters from metadata", async () => {
-			handler = new AwsBedrockHandler({
-				apiProvider: "bedrock",
-				apiModelId: "anthropic.claude-3-7-sonnet-20250219-v1:0",
-				awsRegion: "us-east-1",
-			})
-
-			mockSend.mockResolvedValue({
-				stream: (async function* () {
-					yield { messageStart: { role: "assistant" } }
-					yield { metadata: { usage: { inputTokens: 100, outputTokens: 50 } } }
-				})(),
-			})
-
-			const messages = [{ role: "user" as const, content: "Test message" }]
-			const metadata = {
-				taskId: "test-task",
-				thinking: {
-					enabled: true,
-					maxTokens: 16384,
-					maxThinkingTokens: 8192,
-				},
-			}
-
-			const stream = handler.createMessage("System prompt", messages, metadata)
-			const chunks = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Verify the thinking parameter was passed correctly
-			expect(mockSend).toHaveBeenCalledTimes(1)
-			expect(capturedPayload).toBeDefined()
-			expect(capturedPayload.additionalModelRequestFields).toBeDefined()
-			expect(capturedPayload.additionalModelRequestFields.thinking).toEqual({
-				type: "enabled",
-				budget_tokens: 8192,
-			})
-
-			// Verify that topP is NOT present when thinking is enabled via metadata
-			expect(capturedPayload.inferenceConfig).not.toHaveProperty("topP")
-		})
-
-		it("should log when extended thinking is enabled", async () => {
-			handler = new AwsBedrockHandler({
-				apiProvider: "bedrock",
-				apiModelId: "anthropic.claude-opus-4-20250514-v1:0",
-				awsRegion: "us-east-1",
-				enableReasoningEffort: true,
-				modelMaxThinkingTokens: 5000,
-			})
-
-			mockSend.mockResolvedValue({
-				stream: (async function* () {
-					yield { messageStart: { role: "assistant" } }
-				})(),
-			})
-
-			const messages = [{ role: "user" as const, content: "Test" }]
-			const stream = handler.createMessage("System prompt", messages)
-
-			for await (const chunk of stream) {
-				// consume stream
-			}
-
-			// Verify logging
-			expect(logger.info).toHaveBeenCalledWith(
-				expect.stringContaining("Extended thinking enabled"),
-				expect.objectContaining({
-					ctx: "bedrock",
-					modelId: "anthropic.claude-opus-4-20250514-v1:0",
-				}),
-			)
-		})
-
-		it("should not include topP when thinking is disabled (global removal)", async () => {
-			handler = new AwsBedrockHandler({
+		it("should not include reasoningConfig when reasoning is disabled", async () => {
+			const handler = new AwsBedrockHandler({
 				apiProvider: "bedrock",
 				apiModelId: "anthropic.claude-3-7-sonnet-20250219-v1:0",
 				awsRegion: "us-east-1",
 				// Note: no enableReasoningEffort = true, so thinking is disabled
 			})
 
-			mockSend.mockResolvedValue({
-				stream: (async function* () {
-					yield { messageStart: { role: "assistant" } }
-					yield {
-						contentBlockStart: {
-							start: { text: "Hello" },
-							contentBlockIndex: 0,
-						},
-					}
-					yield {
-						contentBlockDelta: {
-							delta: { text: " world" },
-						},
-					}
-					yield { metadata: { usage: { inputTokens: 100, outputTokens: 50 } } }
-				})(),
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Hello world" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50 }),
+				providerMetadata: Promise.resolve({}),
 			})
 
 			const messages = [{ role: "user" as const, content: "Test message" }]
@@ -216,43 +124,117 @@ describe("AwsBedrockHandler - Extended Thinking", () => {
 				chunks.push(chunk)
 			}
 
-			// Verify that topP is NOT present for any model (removed globally)
-			expect(mockSend).toHaveBeenCalledTimes(1)
-			expect(capturedPayload).toBeDefined()
-			expect(capturedPayload.inferenceConfig).not.toHaveProperty("topP")
-
-			// Verify that additionalModelRequestFields contains fine-grained-tool-streaming for Claude models
-			expect(capturedPayload.additionalModelRequestFields).toBeDefined()
-			expect(capturedPayload.additionalModelRequestFields.anthropic_beta).toContain(
-				"fine-grained-tool-streaming-2025-05-14",
-			)
+			// Verify streamText was called — providerOptions should not contain reasoningConfig
+			expect(mockStreamText).toHaveBeenCalledTimes(1)
+			const callArgs = mockStreamText.mock.calls[0][0]
+			const bedrockOpts = callArgs.providerOptions?.bedrock
+			expect(bedrockOpts?.reasoningConfig).toBeUndefined()
 		})
 
-		it("should enable reasoning when enableReasoningEffort is true in settings", async () => {
-			handler = new AwsBedrockHandler({
+		it("should capture thinking signature from stream providerMetadata", async () => {
+			const handler = new AwsBedrockHandler({
 				apiProvider: "bedrock",
 				apiModelId: "anthropic.claude-sonnet-4-20250514-v1:0",
 				awsRegion: "us-east-1",
-				enableReasoningEffort: true, // This should trigger reasoning
+				enableReasoningEffort: true,
 				modelMaxThinkingTokens: 4096,
 			})
 
-			mockSend.mockResolvedValue({
-				stream: (async function* () {
-					yield { messageStart: { role: "assistant" } }
-					yield {
-						contentBlockStart: {
-							content_block: { type: "thinking", thinking: "Let me think..." },
-							contentBlockIndex: 0,
-						},
-					}
-					yield {
-						contentBlockDelta: {
-							delta: { type: "thinking_delta", thinking: " about this problem." },
-						},
-					}
-					yield { metadata: { usage: { inputTokens: 100, outputTokens: 50 } } }
-				})(),
+			const testSignature = "test-thinking-signature-abc123"
+
+			// Mock stream with reasoning content that includes a signature in providerMetadata
+			async function* mockFullStream() {
+				yield { type: "reasoning", text: "Let me think..." }
+				// The SDK emits signature as a reasoning-delta with providerMetadata.bedrock.signature
+				yield {
+					type: "reasoning",
+					text: "",
+					providerMetadata: { bedrock: { signature: testSignature } },
+				}
+				yield { type: "text-delta", text: "Answer" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const messages = [{ role: "user" as const, content: "Test message" }]
+			const stream = handler.createMessage("System prompt", messages)
+
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			// Verify thinking signature was captured
+			expect(handler.getThoughtSignature()).toBe(testSignature)
+		})
+
+		it("should capture redacted thinking blocks from stream providerMetadata", async () => {
+			const handler = new AwsBedrockHandler({
+				apiProvider: "bedrock",
+				apiModelId: "anthropic.claude-sonnet-4-20250514-v1:0",
+				awsRegion: "us-east-1",
+				enableReasoningEffort: true,
+				modelMaxThinkingTokens: 4096,
+			})
+
+			const redactedData = "base64-encoded-redacted-data"
+
+			// Mock stream with redacted reasoning content
+			async function* mockFullStream() {
+				yield { type: "reasoning", text: "Some thinking..." }
+				yield {
+					type: "reasoning",
+					text: "",
+					providerMetadata: { bedrock: { redactedData } },
+				}
+				yield { type: "text-delta", text: "Answer" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const messages = [{ role: "user" as const, content: "Test message" }]
+			const stream = handler.createMessage("System prompt", messages)
+
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			// Verify redacted thinking blocks were captured
+			const redactedBlocks = handler.getRedactedThinkingBlocks()
+			expect(redactedBlocks).toBeDefined()
+			expect(redactedBlocks).toHaveLength(1)
+			expect(redactedBlocks![0]).toEqual({
+				type: "redacted_thinking",
+				data: redactedData,
+			})
+		})
+
+		it("should enable reasoning when enableReasoningEffort is true in settings", async () => {
+			const handler = new AwsBedrockHandler({
+				apiProvider: "bedrock",
+				apiModelId: "anthropic.claude-sonnet-4-20250514-v1:0",
+				awsRegion: "us-east-1",
+				enableReasoningEffort: true,
+				modelMaxThinkingTokens: 4096,
+			})
+
+			async function* mockFullStream() {
+				yield { type: "reasoning", text: "Let me think..." }
+				yield { type: "reasoning", text: " about this problem." }
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50 }),
+				providerMetadata: Promise.resolve({}),
 			})
 
 			const messages = [{ role: "user" as const, content: "Test message" }]
@@ -264,16 +246,12 @@ describe("AwsBedrockHandler - Extended Thinking", () => {
 			}
 
 			// Verify thinking was enabled via settings
-			expect(mockSend).toHaveBeenCalledTimes(1)
-			expect(capturedPayload).toBeDefined()
-			expect(capturedPayload.additionalModelRequestFields).toBeDefined()
-			expect(capturedPayload.additionalModelRequestFields.thinking).toEqual({
+			expect(mockStreamText).toHaveBeenCalledTimes(1)
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions?.bedrock?.reasoningConfig).toEqual({
 				type: "enabled",
-				budget_tokens: 4096,
+				budgetTokens: 4096,
 			})
-
-			// Verify that topP is NOT present when thinking is enabled via settings
-			expect(capturedPayload.inferenceConfig).not.toHaveProperty("topP")
 
 			// Verify reasoning chunks were yielded
 			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
@@ -282,8 +260,8 @@ describe("AwsBedrockHandler - Extended Thinking", () => {
 			expect(reasoningChunks[1].text).toBe(" about this problem.")
 		})
 
-		it("should support API key authentication", async () => {
-			handler = new AwsBedrockHandler({
+		it("should support API key authentication via createAmazonBedrock", () => {
+			new AwsBedrockHandler({
 				apiProvider: "bedrock",
 				apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
 				awsRegion: "us-east-1",
@@ -291,41 +269,13 @@ describe("AwsBedrockHandler - Extended Thinking", () => {
 				awsApiKey: "test-api-key-token",
 			})
 
-			mockSend.mockResolvedValue({
-				stream: (async function* () {
-					yield { messageStart: { role: "assistant" } }
-					yield {
-						contentBlockStart: {
-							start: { text: "Hello from API key auth" },
-							contentBlockIndex: 0,
-						},
-					}
-					yield { metadata: { usage: { inputTokens: 100, outputTokens: 50 } } }
-				})(),
-			})
-
-			const messages = [{ role: "user" as const, content: "Test message" }]
-			const stream = handler.createMessage("System prompt", messages)
-
-			const chunks = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Verify the client was created with API key token
-			expect(BedrockRuntimeClient).toHaveBeenCalledWith(
+			// Verify the provider was created with API key
+			expect(mockCreateAmazonBedrock).toHaveBeenCalledWith(
 				expect.objectContaining({
 					region: "us-east-1",
-					token: { token: "test-api-key-token" },
-					authSchemePreference: ["httpBearerAuth"],
+					apiKey: "test-api-key-token",
 				}),
 			)
-
-			// Verify the stream worked correctly
-			expect(mockSend).toHaveBeenCalledTimes(1)
-			const textChunks = chunks.filter((c) => c.type === "text")
-			expect(textChunks).toHaveLength(1)
-			expect(textChunks[0].text).toBe("Hello from API key auth")
 		})
 	})
 })

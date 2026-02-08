@@ -335,7 +335,7 @@ export async function presentAssistantMessage(cline: Task) {
 
 			// Fetch state early so it's available for toolDescription and validation
 			const state = await cline.providerRef.deref()?.getState()
-			const { mode, customModes, experiments: stateExperiments } = state ?? {}
+			const { mode, customModes, experiments: stateExperiments, disabledTools } = state ?? {}
 
 			const toolDescription = (): string => {
 				switch (block.name) {
@@ -625,11 +625,20 @@ export async function presentAssistantMessage(cline: Task) {
 				const includedTools = rawIncludedTools?.map((tool) => resolveToolAlias(tool))
 
 				try {
+					const toolRequirements =
+						disabledTools?.reduce(
+							(acc: Record<string, boolean>, tool: string) => {
+								acc[tool] = false
+								return acc
+							},
+							{} as Record<string, boolean>,
+						) ?? {}
+
 					validateToolUse(
 						block.name as ToolName,
 						mode ?? defaultModeSlug,
 						customModes ?? [],
-						{},
+						toolRequirements,
 						block.params,
 						stateExperiments,
 						includedTools,

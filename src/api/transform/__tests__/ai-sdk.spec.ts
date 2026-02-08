@@ -7,6 +7,7 @@ import {
 	mapToolChoice,
 	extractAiSdkErrorMessage,
 	handleAiSdkError,
+	flattenAiSdkMessagesToStringContent,
 } from "../ai-sdk"
 
 vitest.mock("ai", () => ({
@@ -306,6 +307,199 @@ describe("AI SDK conversion utilities", () => {
 				role: "assistant",
 				content: [{ type: "text", text: "" }],
 			})
+		})
+
+		it("converts assistant reasoning blocks", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "reasoning" as any, text: "Thinking..." },
+						{ type: "text", text: "Answer" },
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "assistant",
+				content: [
+					{ type: "reasoning", text: "Thinking..." },
+					{ type: "text", text: "Answer" },
+				],
+			})
+		})
+
+		it("converts assistant thinking blocks to reasoning", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "thinking" as any, thinking: "Deep thought", signature: "sig" },
+						{ type: "text", text: "OK" },
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "assistant",
+				content: [
+					{
+						type: "reasoning",
+						text: "Deep thought",
+						providerOptions: {
+							bedrock: { signature: "sig" },
+							anthropic: { signature: "sig" },
+						},
+					},
+					{ type: "text", text: "OK" },
+				],
+			})
+		})
+
+		it("converts assistant message-level reasoning_content to reasoning part", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [{ type: "text", text: "Answer" }],
+					reasoning_content: "Thinking...",
+				} as any,
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "assistant",
+				content: [
+					{ type: "reasoning", text: "Thinking..." },
+					{ type: "text", text: "Answer" },
+				],
+			})
+		})
+
+		it("prefers message-level reasoning_content over reasoning blocks", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "reasoning" as any, text: "BLOCK" },
+						{ type: "text", text: "Answer" },
+					],
+					reasoning_content: "MSG",
+				} as any,
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0]).toEqual({
+				role: "assistant",
+				content: [
+					{ type: "reasoning", text: "MSG" },
+					{ type: "text", text: "Answer" },
+				],
+			})
+		})
+
+		it("attaches thoughtSignature to first tool-call part for Gemini 3 round-tripping", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "Let me check that." },
+						{
+							type: "tool_use",
+							id: "tool-1",
+							name: "read_file",
+							input: { path: "test.txt" },
+						},
+						{ type: "thoughtSignature", thoughtSignature: "encrypted-sig-abc" } as any,
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			const assistantMsg = result[0]
+			expect(assistantMsg.role).toBe("assistant")
+
+			const content = assistantMsg.content as any[]
+			expect(content).toHaveLength(2) // text + tool-call (thoughtSignature block is consumed, not passed through)
+
+			const toolCallPart = content.find((p: any) => p.type === "tool-call")
+			expect(toolCallPart).toBeDefined()
+			expect(toolCallPart.providerOptions).toEqual({
+				google: { thoughtSignature: "encrypted-sig-abc" },
+				vertex: { thoughtSignature: "encrypted-sig-abc" },
+			})
+		})
+
+		it("attaches thoughtSignature only to the first tool-call in parallel calls", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{
+							type: "tool_use",
+							id: "tool-1",
+							name: "get_weather",
+							input: { city: "Paris" },
+						},
+						{
+							type: "tool_use",
+							id: "tool-2",
+							name: "get_weather",
+							input: { city: "London" },
+						},
+						{ type: "thoughtSignature", thoughtSignature: "sig-parallel" } as any,
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+			const content = (result[0] as any).content as any[]
+
+			const toolCalls = content.filter((p: any) => p.type === "tool-call")
+			expect(toolCalls).toHaveLength(2)
+
+			// Only the first tool call should have the signature
+			expect(toolCalls[0].providerOptions).toEqual({
+				google: { thoughtSignature: "sig-parallel" },
+				vertex: { thoughtSignature: "sig-parallel" },
+			})
+			// Second tool call should NOT have the signature
+			expect(toolCalls[1].providerOptions).toBeUndefined()
+		})
+
+		it("does not attach providerOptions when no thoughtSignature block is present", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "Using tool" },
+						{
+							type: "tool_use",
+							id: "tool-1",
+							name: "read_file",
+							input: { path: "test.txt" },
+						},
+					],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+			const content = (result[0] as any).content as any[]
+			const toolCallPart = content.find((p: any) => p.type === "tool-call")
+
+			expect(toolCallPart).toBeDefined()
+			expect(toolCallPart.providerOptions).toBeUndefined()
 		})
 	})
 
@@ -642,6 +836,228 @@ describe("AI SDK conversion utilities", () => {
 			const result = handleAiSdkError(originalError, "Cerebras")
 
 			expect((result as any).cause).toBe(originalError)
+		})
+	})
+
+	describe("flattenAiSdkMessagesToStringContent", () => {
+		it("should return messages unchanged if content is already a string", () => {
+			const messages = [
+				{ role: "user" as const, content: "Hello" },
+				{ role: "assistant" as const, content: "Hi there" },
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should flatten user messages with only text parts to string", () => {
+			const messages = [
+				{
+					role: "user" as const,
+					content: [
+						{ type: "text" as const, text: "Hello" },
+						{ type: "text" as const, text: "World" },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0].role).toBe("user")
+			expect(result[0].content).toBe("Hello\nWorld")
+		})
+
+		it("should flatten assistant messages with only text parts to string", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [{ type: "text" as const, text: "I am an assistant" }],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toHaveLength(1)
+			expect(result[0].role).toBe("assistant")
+			expect(result[0].content).toBe("I am an assistant")
+		})
+
+		it("should not flatten user messages with image parts", () => {
+			const messages = [
+				{
+					role: "user" as const,
+					content: [
+						{ type: "text" as const, text: "Look at this" },
+						{ type: "image" as const, image: "data:image/png;base64,abc123" },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should not flatten assistant messages with tool calls", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [
+						{ type: "text" as const, text: "Let me use a tool" },
+						{
+							type: "tool-call" as const,
+							toolCallId: "123",
+							toolName: "read_file",
+							input: { path: "test.txt" },
+						},
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should not flatten tool role messages", () => {
+			const messages = [
+				{
+					role: "tool" as const,
+					content: [
+						{
+							type: "tool-result" as const,
+							toolCallId: "123",
+							toolName: "test",
+							output: { type: "text" as const, value: "result" },
+						},
+					],
+				},
+			] as any
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should respect flattenUserMessages option", () => {
+			const messages = [
+				{
+					role: "user" as const,
+					content: [{ type: "text" as const, text: "Hello" }],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages, { flattenUserMessages: false })
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should respect flattenAssistantMessages option", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [{ type: "text" as const, text: "Hi" }],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages, { flattenAssistantMessages: false })
+
+			expect(result).toEqual(messages)
+		})
+
+		it("should handle mixed message types correctly", () => {
+			const messages = [
+				{ role: "user" as const, content: "Simple string" },
+				{
+					role: "user" as const,
+					content: [{ type: "text" as const, text: "Text parts" }],
+				},
+				{
+					role: "assistant" as const,
+					content: [{ type: "text" as const, text: "Assistant text" }],
+				},
+				{
+					role: "assistant" as const,
+					content: [
+						{ type: "text" as const, text: "With tool" },
+						{ type: "tool-call" as const, toolCallId: "456", toolName: "test", input: {} },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result[0].content).toBe("Simple string") // unchanged
+			expect(result[1].content).toBe("Text parts") // flattened
+			expect(result[2].content).toBe("Assistant text") // flattened
+			expect(result[3]).toEqual(messages[3]) // unchanged (has tool call)
+		})
+
+		it("should handle empty text parts", () => {
+			const messages = [
+				{
+					role: "user" as const,
+					content: [
+						{ type: "text" as const, text: "" },
+						{ type: "text" as const, text: "Hello" },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			expect(result[0].content).toBe("\nHello")
+		})
+
+		it("should strip reasoning parts and flatten text for string-only models", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [
+						{ type: "reasoning" as const, text: "I am thinking about this..." },
+						{ type: "text" as const, text: "Here is my answer" },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			// Reasoning should be stripped, only text should remain
+			expect(result[0].content).toBe("Here is my answer")
+		})
+
+		it("should handle messages with only reasoning parts", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [{ type: "reasoning" as const, text: "Only reasoning, no text" }],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			// Should flatten to empty string when only reasoning is present
+			expect(result[0].content).toBe("")
+		})
+
+		it("should not flatten if tool calls are present with reasoning", () => {
+			const messages = [
+				{
+					role: "assistant" as const,
+					content: [
+						{ type: "reasoning" as const, text: "Thinking..." },
+						{ type: "text" as const, text: "Using tool" },
+						{ type: "tool-call" as const, toolCallId: "abc", toolName: "test", input: {} },
+					],
+				},
+			]
+
+			const result = flattenAiSdkMessagesToStringContent(messages)
+
+			// Should not flatten because there's a tool call
+			expect(result[0]).toEqual(messages[0])
 		})
 	})
 })

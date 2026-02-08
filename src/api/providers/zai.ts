@@ -1,5 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
+import { createZhipu } from "zhipu-ai-provider"
+import { streamText, generateText, ToolSet } from "ai"
 
 import {
 	internationalZAiModels,
@@ -11,101 +12,162 @@ import {
 	zaiApiLineConfigs,
 } from "@roo-code/types"
 
-import { type ApiHandlerOptions, getModelMaxOutputTokens, shouldUseReasoningEffort } from "../../shared/api"
-import { convertToZAiFormat } from "../transform/zai-format"
+import { type ApiHandlerOptions, shouldUseReasoningEffort } from "../../shared/api"
 
-import type { ApiHandlerCreateMessageMetadata } from "../index"
-import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	mapToolChoice,
+	handleAiSdkError,
+} from "../transform/ai-sdk"
+import { ApiStream } from "../transform/stream"
+import { getModelParams } from "../transform/model-params"
 
-// Custom interface for Z.ai params to support thinking mode
-type ZAiChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParamsStreaming & {
-	thinking?: { type: "enabled" | "disabled" }
-}
+import { DEFAULT_HEADERS } from "./constants"
+import { BaseProvider } from "./base-provider"
+import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
-export class ZAiHandler extends BaseOpenAiCompatibleProvider<string> {
+/**
+ * Z.ai provider using the dedicated zhipu-ai-provider package.
+ * Provides native support for GLM-4.7 thinking mode and region-based model selection.
+ */
+export class ZAiHandler extends BaseProvider implements SingleCompletionHandler {
+	protected options: ApiHandlerOptions
+	protected provider: ReturnType<typeof createZhipu>
+	private isChina: boolean
+
 	constructor(options: ApiHandlerOptions) {
-		const isChina = zaiApiLineConfigs[options.zaiApiLine ?? "international_coding"].isChina
-		const models = (isChina ? mainlandZAiModels : internationalZAiModels) as unknown as Record<string, ModelInfo>
-		const defaultModelId = (isChina ? mainlandZAiDefaultModelId : internationalZAiDefaultModelId) as string
+		super()
+		this.options = options
+		this.isChina = zaiApiLineConfigs[options.zaiApiLine ?? "international_coding"].isChina
 
-		super({
-			...options,
-			providerName: "Z.ai",
+		this.provider = createZhipu({
 			baseURL: zaiApiLineConfigs[options.zaiApiLine ?? "international_coding"].baseUrl,
 			apiKey: options.zaiApiKey ?? "not-provided",
-			defaultProviderModelId: defaultModelId,
-			providerModels: models,
-			defaultTemperature: ZAI_DEFAULT_TEMPERATURE,
+			headers: DEFAULT_HEADERS,
 		})
 	}
 
-	/**
-	 * Override createStream to handle GLM-4.7's thinking mode.
-	 * GLM-4.7 has thinking enabled by default in the API, so we need to
-	 * explicitly send { type: "disabled" } when the user turns off reasoning.
-	 */
-	protected override createStream(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
-		requestOptions?: OpenAI.RequestOptions,
-	) {
-		const { id: modelId, info } = this.getModel()
+	override getModel(): { id: string; info: ModelInfo; maxTokens?: number; temperature?: number } {
+		const models = (this.isChina ? mainlandZAiModels : internationalZAiModels) as unknown as Record<
+			string,
+			ModelInfo
+		>
+		const defaultModelId = (this.isChina ? mainlandZAiDefaultModelId : internationalZAiDefaultModelId) as string
 
-		// Check if this is a GLM-4.7 model with thinking support
-		const isThinkingModel = modelId === "glm-4.7" && Array.isArray(info.supportsReasoningEffort)
+		const id = this.options.apiModelId ?? defaultModelId
+		const info = models[id] || models[defaultModelId]
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: ZAI_DEFAULT_TEMPERATURE,
+		})
 
-		if (isThinkingModel) {
-			// For GLM-4.7, thinking is ON by default in the API.
-			// We need to explicitly disable it when reasoning is off.
-			const useReasoning = shouldUseReasoningEffort({ model: info, settings: this.options })
-
-			// Create the stream with our custom thinking parameter
-			return this.createStreamWithThinking(systemPrompt, messages, metadata, useReasoning)
-		}
-
-		// For non-thinking models, use the default behavior
-		return super.createStream(systemPrompt, messages, metadata, requestOptions)
+		return { id, info, ...params }
 	}
 
 	/**
-	 * Creates a stream with explicit thinking control for GLM-4.7
+	 * Get the language model for the configured model ID.
 	 */
-	private createStreamWithThinking(
+	protected getLanguageModel() {
+		const { id } = this.getModel()
+		return this.provider(id)
+	}
+
+	/**
+	 * Get the max tokens parameter to include in the request.
+	 */
+	protected getMaxOutputTokens(): number | undefined {
+		const { info } = this.getModel()
+		return this.options.modelMaxTokens || info.maxTokens || undefined
+	}
+
+	/**
+	 * Create a message stream using the AI SDK.
+	 * For GLM-4.7, passes the thinking parameter via providerOptions.
+	 */
+	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
-		useReasoning?: boolean,
-	) {
-		const { id: model, info } = this.getModel()
+	): ApiStream {
+		const { id: modelId, info, temperature } = this.getModel()
+		const languageModel = this.getLanguageModel()
 
-		const max_tokens =
-			getModelMaxOutputTokens({
-				modelId: model,
-				model: info,
-				settings: this.options,
-				format: "openai",
-			}) ?? undefined
+		const aiSdkMessages = convertToAiSdkMessages(messages)
 
-		const temperature = this.options.modelTemperature ?? this.defaultTemperature
+		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
-		// Use Z.ai format to preserve reasoning_content and merge post-tool text into tool messages
-		const convertedMessages = convertToZAiFormat(messages, { mergeToolResultText: true })
-
-		const params: ZAiChatCompletionParams = {
-			model,
-			max_tokens,
-			temperature,
-			messages: [{ role: "system", content: systemPrompt }, ...convertedMessages],
-			stream: true,
-			stream_options: { include_usage: true },
-			// For GLM-4.7: thinking is ON by default, so we explicitly disable when needed
-			thinking: useReasoning ? { type: "enabled" } : { type: "disabled" },
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+		const requestOptions: Parameters<typeof streamText>[0] = {
+			model: languageModel,
+			system: systemPrompt,
+			messages: aiSdkMessages,
+			temperature: this.options.modelTemperature ?? temperature ?? ZAI_DEFAULT_TEMPERATURE,
+			maxOutputTokens: this.getMaxOutputTokens(),
+			tools: aiSdkTools,
+			toolChoice: mapToolChoice(metadata?.tool_choice),
 		}
 
-		return this.client.chat.completions.create(params)
+		// GLM-4.7 thinking mode: pass thinking parameter via providerOptions
+		const isThinkingModel = modelId === "glm-4.7" && Array.isArray(info.supportsReasoningEffort)
+
+		if (isThinkingModel) {
+			const useReasoning = shouldUseReasoningEffort({ model: info, settings: this.options })
+			requestOptions.providerOptions = {
+				zhipu: {
+					thinking: useReasoning ? { type: "enabled" } : { type: "disabled" },
+				},
+			}
+		}
+
+		const result = streamText(requestOptions)
+
+		try {
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
+				}
+			}
+
+			const usage = await result.usage
+			if (usage) {
+				yield {
+					type: "usage" as const,
+					inputTokens: usage.inputTokens || 0,
+					outputTokens: usage.outputTokens || 0,
+				}
+			}
+		} catch (error) {
+			throw handleAiSdkError(error, "Z.ai")
+		}
+	}
+
+	/**
+	 * Complete a prompt using the AI SDK generateText.
+	 */
+	async completePrompt(prompt: string): Promise<string> {
+		const { temperature } = this.getModel()
+		const languageModel = this.getLanguageModel()
+
+		try {
+			const { text } = await generateText({
+				model: languageModel,
+				prompt,
+				maxOutputTokens: this.getMaxOutputTokens(),
+				temperature: this.options.modelTemperature ?? temperature ?? ZAI_DEFAULT_TEMPERATURE,
+			})
+
+			return text
+		} catch (error) {
+			throw handleAiSdkError(error, "Z.ai")
+		}
+	}
+
+	override isAiSdkProvider(): boolean {
+		return true
 	}
 }
