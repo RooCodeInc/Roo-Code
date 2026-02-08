@@ -265,11 +265,13 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 			2. (?<!\\)<<<<<<< SEARCH\s*\n  
 			  Matches the line "<<<<<<< SEARCH" (ignoring any trailing spaces) – the negative lookbehind makes sure it isn't escaped.
 
-			3. ((?:\:start_line:\s*(\d+)\s*\n))?  
-			  Optionally matches a ":start_line:" line. The outer capturing group is group 1 and the inner (\d+) is group 2.
+			3. ((?:\:start_line:\s*\[?(\d+)\]?\s*\n))?
+			  Optionally matches a ":start_line:" line with optional brackets around the number. The outer capturing group is group 1 and the inner (\d+) is group 2.
+			  Accepts formats: :start_line:5, :start_line: 5, :start_line:[5], :start_line: [5]
 
-			4. ((?:\:end_line:\s*(\d+)\s*\n))?  
-			  Optionally matches a ":end_line:" line. Group 3 is the whole match and group 4 is the digits.
+			4. ((?:\:end_line:\s*\[?(\d+)\]?\s*\n))?
+			  Optionally matches a ":end_line:" line with optional brackets around the number. Group 3 is the whole match and group 4 is the digits.
+			  Accepts formats: :end_line:5, :end_line: 5, :end_line:[5], :end_line: [5]
 
 			5. ((?<!\\)-------\s*\n)?  
 			  Optionally matches the "-------" marker line (group 5).
@@ -289,7 +291,7 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 
 		let matches = [
 			...diffContent.matchAll(
-				/(?:^|\n)(?<!\\)<<<<<<< SEARCH>?\s*\n((?:\:start_line:\s*(\d+)\s*\n))?((?:\:end_line:\s*(\d+)\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)/g,
+				/(?:^|\n)(?<!\\)<<<<<<< SEARCH>?\s*\n((?:\:start_line:\s*\[?(\d+)\]?\s*\n))?((?:\:end_line:\s*\[?(\d+)\]?\s*\n))?((?<!\\)-------\s*\n)?([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)=======\s*\n)([\s\S]*?)(?:\n)?(?:(?<=\n)(?<!\\)>>>>>>> REPLACE)(?=\n|$)/g,
 			),
 		]
 
