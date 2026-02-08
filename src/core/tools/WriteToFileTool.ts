@@ -10,7 +10,7 @@ import { RecordSource } from "../context-tracking/FileContextTrackerTypes"
 import { fileExistsAtPath, createDirectoriesForFile } from "../../utils/fs"
 import { stripLineNumbers, everyLineHasLineNumbers } from "../../integrations/misc/extract-text"
 import { getReadablePath } from "../../utils/path"
-import { isPathOutsideWorkspace } from "../../utils/pathUtils"
+import { isPathOutsideWorkspace, normalizeToolPath } from "../../utils/pathUtils"
 import { unescapeHtmlEntities } from "../../utils/text-normalization"
 import { EXPERIMENT_IDS, experiments } from "../../shared/experiments"
 import { convertNewFileToUnifiedDiff, computeDiffStats, sanitizeUnifiedDiff } from "../diff/stats"
@@ -28,13 +28,23 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 	async execute(params: WriteToFileParams, task: Task, callbacks: ToolCallbacks): Promise<void> {
 		const { pushToolResult, handleError, askApproval } = callbacks
-		const relPath = params.path
 		let newContent = params.content
 
-		if (!relPath) {
+		if (!params.path) {
 			task.consecutiveMistakeCount++
 			task.recordToolError("write_to_file")
 			pushToolResult(await task.sayAndCreateMissingParamError("write_to_file", "path"))
+			await task.diffViewProvider.reset()
+			return
+		}
+
+		// Normalize path using shared helper (fixes #11208)
+		const { relPath, isValid, error } = normalizeToolPath(params.path, task.cwd)
+
+		if (!isValid) {
+			task.consecutiveMistakeCount++
+			task.recordToolError("write_to_file")
+			pushToolResult(formatResponse.toolError(`Invalid path: ${error}`))
 			await task.diffViewProvider.reset()
 			return
 		}
@@ -180,7 +190,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			pushToolResult(message)
 
 			await task.diffViewProvider.reset()
-			this.resetPartialState()
+			this.resetPartialState(task)
 
 			task.processQueuedMessages()
 
@@ -188,17 +198,17 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		} catch (error) {
 			await handleError("writing file", error as Error)
 			await task.diffViewProvider.reset()
-			this.resetPartialState()
+			this.resetPartialState(task)
 			return
 		}
 	}
 
 	override async handlePartial(task: Task, block: ToolUse<"write_to_file">): Promise<void> {
-		const relPath: string | undefined = block.params.path
+		const rawPath: string | undefined = block.params.path
 		let newContent: string | undefined = block.params.content
 
 		// Wait for path to stabilize before showing UI (prevents truncated paths)
-		if (!this.hasPathStabilized(relPath) || newContent === undefined) {
+		if (!this.hasPathStabilized(task, rawPath) || newContent === undefined) {
 			return
 		}
 
@@ -213,9 +223,16 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			return
 		}
 
-		// relPath is guaranteed non-null after hasPathStabilized
+		// Normalize path using shared helper (fixes #11208)
+		const { relPath, isValid, error } = normalizeToolPath(rawPath!, task.cwd)
+
+		if (!isValid) {
+			// Invalid paths during streaming throw (will be suppressed after first error)
+			throw new Error(`Invalid path: ${error}`)
+		}
+
 		let fileExists: boolean
-		const absolutePath = path.resolve(task.cwd, relPath!)
+		const absolutePath = path.resolve(task.cwd, relPath)
 
 		if (task.diffViewProvider.editType !== undefined) {
 			fileExists = task.diffViewProvider.editType === "modify"
@@ -230,12 +247,12 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 			await createDirectoriesForFile(absolutePath)
 		}
 
-		const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath!) || false
+		const isWriteProtected = task.rooProtectedController?.isWriteProtected(relPath) || false
 		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: fileExists ? "editedExistingFile" : "newFileCreated",
-			path: getReadablePath(task.cwd, relPath!),
+			path: getReadablePath(task.cwd, relPath),
 			content: newContent || "",
 			isOutsideWorkspace,
 			isProtected: isWriteProtected,
@@ -246,7 +263,7 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 
 		if (newContent) {
 			if (!task.diffViewProvider.isEditing) {
-				await task.diffViewProvider.open(relPath!)
+				await task.diffViewProvider.open(relPath)
 			}
 
 			await task.diffViewProvider.update(

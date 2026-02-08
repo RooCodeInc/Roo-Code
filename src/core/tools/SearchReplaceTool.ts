@@ -228,14 +228,14 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 			// Record successful tool usage and cleanup
 			task.recordToolUsage("search_replace")
 			await task.diffViewProvider.reset()
-			this.resetPartialState()
+			this.resetPartialState(task)
 
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
 		} catch (error) {
 			await handleError("search and replace", error as Error)
 			await task.diffViewProvider.reset()
-			this.resetPartialState()
+			this.resetPartialState(task)
 		}
 	}
 
@@ -244,7 +244,7 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 		const oldString: string | undefined = block.params.old_string
 
 		// Wait for path to stabilize before showing UI (prevents truncated paths)
-		if (!this.hasPathStabilized(filePath)) {
+		if (!this.hasPathStabilized(task, filePath)) {
 			return
 		}
 

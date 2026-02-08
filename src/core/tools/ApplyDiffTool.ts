@@ -252,7 +252,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 			}
 
 			await task.diffViewProvider.reset()
-			this.resetPartialState()
+			this.resetPartialState(task)
 
 			// Process any queued messages after file edit completes
 			task.processQueuedMessages()
@@ -261,7 +261,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 		} catch (error) {
 			await handleError("applying diff", error as Error)
 			await task.diffViewProvider.reset()
-			this.resetPartialState()
+			this.resetPartialState(task)
 			task.processQueuedMessages()
 			return
 		}
@@ -272,7 +272,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 		const diffContent: string | undefined = block.params.diff
 
 		// Wait for path to stabilize before showing UI (prevents truncated paths)
-		if (!this.hasPathStabilized(relPath)) {
+		if (!this.hasPathStabilized(task, relPath)) {
 			return
 		}
 
