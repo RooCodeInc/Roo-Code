@@ -1,6 +1,19 @@
 // npx vitest utils/__tests__/config.spec.ts
 
-import { injectEnv, injectVariables } from "../config"
+import { injectEnv, injectVariables, interpolateHeaders } from "../config"
+
+// Mock vscode module for interpolateHeaders tests
+vi.mock("vscode", () => ({
+	workspace: {
+		workspaceFolders: [
+			{
+				uri: {
+					fsPath: "/home/user/projects/my-awesome-app",
+				},
+			},
+		],
+	},
+}))
 
 describe("injectEnv", () => {
 	const originalEnv = process.env
@@ -252,4 +265,108 @@ describe("injectVariables", () => {
 	})
 
 	// Variable maps are already tested by `injectEnv` tests above.
+})
+
+describe("interpolateHeaders", () => {
+	const originalEnv = process.env
+
+	beforeEach(() => {
+		vitest.resetModules()
+		process.env = { ...originalEnv }
+	})
+
+	afterAll(() => {
+		process.env = originalEnv
+	})
+
+	it("should return undefined for undefined headers", () => {
+		const result = interpolateHeaders(undefined)
+		expect(result).toBeUndefined()
+	})
+
+	it("should return empty object for empty headers", () => {
+		const result = interpolateHeaders({})
+		expect(result).toEqual({})
+	})
+
+	it("should pass through headers without variables unchanged", () => {
+		const headers = {
+			"Content-Type": "application/json",
+			"X-Custom-Header": "static-value",
+		}
+		const result = interpolateHeaders(headers)
+		expect(result).toEqual(headers)
+	})
+
+	it("should interpolate ${workspaceFolderBasename} variable", () => {
+		const headers = {
+			"X-App-ID": "${workspaceFolderBasename}",
+			"X-Other": "static",
+		}
+		const result = interpolateHeaders(headers)
+		expect(result).toEqual({
+			"X-App-ID": "my-awesome-app",
+			"X-Other": "static",
+		})
+	})
+
+	it("should interpolate ${workspaceFolder} variable", () => {
+		const headers = {
+			"X-Workspace": "${workspaceFolder}",
+		}
+		const result = interpolateHeaders(headers)
+		expect(result).toEqual({
+			"X-Workspace": "/home/user/projects/my-awesome-app",
+		})
+	})
+
+	it("should interpolate ${env:VAR_NAME} variables", () => {
+		process.env.MY_API_KEY = "secret-key-123"
+		const headers = {
+			Authorization: "Bearer ${env:MY_API_KEY}",
+		}
+		const result = interpolateHeaders(headers)
+		expect(result).toEqual({
+			Authorization: "Bearer secret-key-123",
+		})
+	})
+
+	it("should handle mixed variables in headers", () => {
+		process.env.TENANT_ID = "tenant-001"
+		const headers = {
+			"X-App-ID": "${workspaceFolderBasename}",
+			"X-Tenant-ID": "${env:TENANT_ID}",
+			"X-Static": "no-variables",
+		}
+		const result = interpolateHeaders(headers)
+		expect(result).toEqual({
+			"X-App-ID": "my-awesome-app",
+			"X-Tenant-ID": "tenant-001",
+			"X-Static": "no-variables",
+		})
+	})
+
+	it("should handle missing env variables by keeping the original pattern", () => {
+		const consoleWarnSpy = vitest.spyOn(console, "warn").mockImplementation(() => {})
+		const headers = {
+			"X-Missing": "${env:NON_EXISTENT_VAR}",
+		}
+		const result = interpolateHeaders(headers)
+		expect(result).toEqual({
+			"X-Missing": "${env:NON_EXISTENT_VAR}",
+		})
+		expect(consoleWarnSpy).toHaveBeenCalled()
+		consoleWarnSpy.mockRestore()
+	})
+
+	it("should interpolate multiple variables in a single header value", () => {
+		process.env.PREFIX = "prod"
+		const headers = {
+			"X-Identifier": "${env:PREFIX}-${workspaceFolderBasename}",
+		}
+		const result = interpolateHeaders(headers)
+		expect(result).toEqual({
+			"X-Identifier": "prod-my-awesome-app",
+		})
+	})
 })
