@@ -251,6 +251,78 @@ describe("executeCommandTool", () => {
 		})
 	})
 
+	describe("Unbalanced quote validation", () => {
+		it("should reject commands with unbalanced double quotes", async () => {
+			// Setup - command with missing closing double quote
+			mockToolUse.params.command = 'echo "hello'
+			mockToolUse.nativeArgs = { command: 'echo "hello' }
+
+			// Execute
+			await executeCommandTool.handle(mockCline as unknown as Task, mockToolUse, {
+				askApproval: mockAskApproval as unknown as AskApproval,
+				handleError: mockHandleError as unknown as HandleError,
+				pushToolResult: mockPushToolResult as unknown as PushToolResult,
+			})
+
+			// Verify - should record error and push error result
+			expect(mockCline.consecutiveMistakeCount).toBe(1)
+			expect(mockCline.recordToolError).toHaveBeenCalledWith("execute_command")
+			expect(mockPushToolResult).toHaveBeenCalled()
+			const result = mockPushToolResult.mock.calls[0][0]
+			expect(result).toContain("unbalanced")
+			expect(result).toContain("double")
+			expect(result).toContain("quotes")
+			// Should not reach approval step
+			expect(mockAskApproval).not.toHaveBeenCalled()
+			// executeCommandInTerminal should not be called
+			expect(executeCommandModule.executeCommandInTerminal).not.toHaveBeenCalled()
+		})
+
+		it("should reject commands with unbalanced single quotes", async () => {
+			// Setup - command with missing closing single quote
+			mockToolUse.params.command = "echo 'hello"
+			mockToolUse.nativeArgs = { command: "echo 'hello" }
+
+			// Execute
+			await executeCommandTool.handle(mockCline as unknown as Task, mockToolUse, {
+				askApproval: mockAskApproval as unknown as AskApproval,
+				handleError: mockHandleError as unknown as HandleError,
+				pushToolResult: mockPushToolResult as unknown as PushToolResult,
+			})
+
+			// Verify - should record error and push error result
+			expect(mockCline.consecutiveMistakeCount).toBe(1)
+			expect(mockCline.recordToolError).toHaveBeenCalledWith("execute_command")
+			expect(mockPushToolResult).toHaveBeenCalled()
+			const result = mockPushToolResult.mock.calls[0][0]
+			expect(result).toContain("unbalanced")
+			expect(result).toContain("single")
+			expect(result).toContain("quotes")
+			// Should not reach approval step
+			expect(mockAskApproval).not.toHaveBeenCalled()
+			// executeCommandInTerminal should not be called
+			expect(executeCommandModule.executeCommandInTerminal).not.toHaveBeenCalled()
+		})
+
+		it("should accept commands with balanced quotes", async () => {
+			// Setup - command with properly balanced quotes
+			mockToolUse.params.command = 'echo "hello world"'
+			mockToolUse.nativeArgs = { command: 'echo "hello world"' }
+
+			// Execute
+			await executeCommandTool.handle(mockCline as unknown as Task, mockToolUse, {
+				askApproval: mockAskApproval as unknown as AskApproval,
+				handleError: mockHandleError as unknown as HandleError,
+				pushToolResult: mockPushToolResult as unknown as PushToolResult,
+			})
+
+			// Verify - should proceed to approval
+			expect(mockAskApproval).toHaveBeenCalled()
+			// Should not record an error for quote validation
+			expect(mockCline.recordToolError).not.toHaveBeenCalledWith("execute_command")
+		})
+	})
+
 	describe("Command execution timeout configuration", () => {
 		it("should include timeout parameter in ExecuteCommandOptions", () => {
 			// This test verifies that the timeout configuration is properly typed

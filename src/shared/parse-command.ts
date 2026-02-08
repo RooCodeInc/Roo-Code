@@ -3,6 +3,165 @@ import { parse } from "shell-quote"
 export type ShellToken = string | { op: string } | { command: string }
 
 /**
+ * Result of quote validation.
+ * - `valid: true` means the command has balanced quotes
+ * - `valid: false` means the command has unbalanced quotes with details
+ */
+export type QuoteValidationResult =
+	| { valid: true }
+	| { valid: false; quoteType: "single" | "double"; position: number; context: string }
+
+/**
+ * Validates that a command has balanced quotes and won't cause the shell to hang
+ * waiting for more input.
+ *
+ * This function detects:
+ * - Unbalanced single quotes (')
+ * - Unbalanced double quotes (")
+ *
+ * It correctly handles:
+ * - Escaped quotes within strings (\' and \")
+ * - Quotes nested within the opposite quote type ("it's" or 'say "hi"')
+ * - Heredoc syntax (<<EOF, <<'EOF', <<"EOF") which legitimately spans lines
+ * - ANSI-C quoting ($'...')
+ *
+ * @param command The shell command to validate
+ * @returns QuoteValidationResult indicating if quotes are balanced
+ */
+export function validateCommandQuotes(command: string): QuoteValidationResult {
+	if (!command || command.trim().length === 0) {
+		return { valid: true }
+	}
+
+	// Check for heredoc patterns which legitimately expect more input
+	// Common heredoc patterns: <<EOF, <<-EOF, <<'EOF', <<"EOF", << 'EOF'
+	const heredocPattern = /<<-?\s*['"]?\w+['"]?\s*$/
+	if (heredocPattern.test(command.trim())) {
+		// Heredocs are valid multi-line constructs - don't flag as unbalanced
+		return { valid: true }
+	}
+
+	let inSingleQuote = false
+	let inDoubleQuote = false
+	let singleQuoteStart = -1
+	let doubleQuoteStart = -1
+	let i = 0
+
+	while (i < command.length) {
+		const char = command[i]
+
+		// Handle ANSI-C quoting: $'...' - treat as single quote
+		if (char === "$" && i + 1 < command.length && command[i + 1] === "'") {
+			if (!inSingleQuote && !inDoubleQuote) {
+				inSingleQuote = true
+				singleQuoteStart = i
+				i += 2 // Skip $'
+				continue
+			}
+		}
+
+		// Count consecutive backslashes before this character
+		// An even number of backslashes means the quote is NOT escaped
+		// An odd number means it IS escaped
+		const isEscaped = (): boolean => {
+			let backslashCount = 0
+			let j = i - 1
+			while (j >= 0 && command[j] === "\\") {
+				backslashCount++
+				j--
+			}
+			// Odd number of backslashes = escaped
+			return backslashCount % 2 === 1
+		}
+
+		// Handle single quotes
+		if (char === "'") {
+			// Inside double quotes, single quotes are literal
+			if (inDoubleQuote) {
+				i++
+				continue
+			}
+
+			// Check for escape sequence (only valid outside quotes in some shells,
+			// but we're conservative and check for \' pattern)
+			// Note: In single quotes, backslash is literal, so \' doesn't escape
+			// But outside quotes or at string boundaries, it can be an escape
+			if (!inSingleQuote && isEscaped()) {
+				// Escaped single quote outside any quotes - skip it
+				i++
+				continue
+			}
+
+			if (inSingleQuote) {
+				// Closing single quote
+				inSingleQuote = false
+				singleQuoteStart = -1
+			} else {
+				// Opening single quote
+				inSingleQuote = true
+				singleQuoteStart = i
+			}
+		}
+
+		// Handle double quotes
+		if (char === '"') {
+			// Inside single quotes, double quotes are literal
+			if (inSingleQuote) {
+				i++
+				continue
+			}
+
+			// Check for escape sequence \" (valid inside double quotes)
+			// Must account for escaped backslashes: \\" means backslash + unescaped quote
+			if (isEscaped()) {
+				// Escaped double quote - skip it
+				i++
+				continue
+			}
+
+			if (inDoubleQuote) {
+				// Closing double quote
+				inDoubleQuote = false
+				doubleQuoteStart = -1
+			} else {
+				// Opening double quote
+				inDoubleQuote = true
+				doubleQuoteStart = i
+			}
+		}
+
+		i++
+	}
+
+	// Check for unbalanced quotes
+	if (inSingleQuote) {
+		const contextStart = Math.max(0, singleQuoteStart - 10)
+		const contextEnd = Math.min(command.length, singleQuoteStart + 20)
+		const context = command.slice(contextStart, contextEnd)
+		return {
+			valid: false,
+			quoteType: "single",
+			position: singleQuoteStart,
+			context: context,
+		}
+	}
+
+	if (inDoubleQuote) {
+		const contextStart = Math.max(0, doubleQuoteStart - 10)
+		const contextEnd = Math.min(command.length, doubleQuoteStart + 20)
+		const context = command.slice(contextStart, contextEnd)
+		return {
+			valid: false,
+			quoteType: "double",
+			position: doubleQuoteStart,
+			context: context,
+		}
+	}
+
+	return { valid: true }
+}
+
+/**
  * Split a command string into individual sub-commands by
  * chaining operators (&&, ||, ;, |, or &) and newlines.
  *
