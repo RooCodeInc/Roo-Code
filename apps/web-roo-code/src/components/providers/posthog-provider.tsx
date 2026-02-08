@@ -3,26 +3,43 @@
 import { usePathname, useSearchParams } from "next/navigation"
 import posthog from "posthog-js"
 import { PostHogProvider as OriginalPostHogProvider } from "posthog-js/react"
-import { useEffect, Suspense } from "react"
+import { useEffect, useRef, Suspense } from "react"
 import { hasConsent } from "@/lib/analytics/consent-manager"
 
 function PageViewTracker() {
 	const pathname = usePathname()
 	const searchParams = useSearchParams()
+	const previousUrl = useRef<string | null>(null)
 
-	// Track page views
+	// Track page views with proper referrer for SPA navigations
 	useEffect(() => {
 		if (pathname && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
-			let url = window.location.origin + pathname
-			if (searchParams && searchParams.toString()) {
-				url = url + `?${searchParams.toString()}`
+			const searchString = searchParams?.toString() ?? ""
+			const currentUrl = window.location.origin + pathname + (searchString ? `?${searchString}` : "")
+
+			// Get referrer - for SPA navigations, use previous URL; otherwise use document.referrer
+			const referrer = previousUrl.current ?? document.referrer
+			let referringDomain = ""
+
+			if (referrer) {
+				try {
+					referringDomain = new URL(referrer).hostname
+				} catch {
+					// Invalid URL, leave empty
+				}
 			}
+
 			posthog.capture("$pageview", {
-				$current_url: url,
+				$current_url: currentUrl,
+				$referrer: referrer,
+				$referring_domain: referringDomain,
 			})
+
+			// Update previous URL for next navigation
+			previousUrl.current = currentUrl
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [pathname, searchParams.toString()])
+	}, [pathname, searchParams?.toString()])
 
 	return null
 }
