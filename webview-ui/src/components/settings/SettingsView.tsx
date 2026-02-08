@@ -192,6 +192,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		terminalZshP10k,
 		terminalZdotdir,
 		writeDelayMs,
+		fuzzyMatchThreshold,
 		showRooIgnoredFiles,
 		enableSubfolderRules,
 		remoteBrowserEnabled,
@@ -857,6 +858,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								includeDiagnosticMessages={includeDiagnosticMessages}
 								maxDiagnosticMessages={maxDiagnosticMessages}
 								writeDelayMs={writeDelayMs}
+								fuzzyMatchThreshold={fuzzyMatchThreshold}
 								includeCurrentTime={includeCurrentTime}
 								includeCurrentCost={includeCurrentCost}
 								maxGitStatusFiles={maxGitStatusFiles}
