@@ -187,7 +187,7 @@ export class ModelRouter {
 		if (!experimentsConfig || !lightModelId || lightModelId.trim() === "") {
 			return false
 		}
-		return experiments.isEnabled(experimentsConfig, EXPERIMENT_IDS.MODEL_ROUTING as any)
+		return experiments.isEnabled(experimentsConfig, EXPERIMENT_IDS.MODEL_ROUTING)
 	}
 
 	/**

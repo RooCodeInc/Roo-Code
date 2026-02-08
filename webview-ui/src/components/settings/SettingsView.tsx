@@ -207,6 +207,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		imageGenerationProvider,
 		openRouterImageApiKey,
 		openRouterImageGenerationSelectedModel,
+		modelRoutingLightModelId,
 		reasoningBlockCollapsed,
 		enterBehavior,
 		includeCurrentTime,
@@ -338,6 +339,16 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		})
 	}, [])
 
+	const setModelRoutingLightModelId = useCallback((modelId: string) => {
+		setCachedState((prevState) => {
+			if (prevState.modelRoutingLightModelId !== modelId) {
+				setChangeDetected(true)
+			}
+
+			return { ...prevState, modelRoutingLightModelId: modelId }
+		})
+	}, [])
+
 	const setCustomSupportPromptsField = useCallback((prompts: Record<string, string | undefined>) => {
 		setCachedState((prevState) => {
 			const previousStr = JSON.stringify(prevState.customSupportPrompts)
@@ -422,6 +433,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					imageGenerationProvider,
 					openRouterImageApiKey,
 					openRouterImageGenerationSelectedModel,
+					modelRoutingLightModelId,
 					experiments,
 					customSupportPrompts,
 				},
@@ -927,6 +939,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								setImageGenerationProvider={setImageGenerationProvider}
 								setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 								setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+								modelRoutingLightModelId={modelRoutingLightModelId}
+								setModelRoutingLightModelId={setModelRoutingLightModelId}
 							/>
 						)}
 

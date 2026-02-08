@@ -2795,6 +2795,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.saveClineMessages()
 			await this.providerRef.deref()?.postStateToWebviewWithoutTaskHistory()
 
+			// Model routing: declare outside try block so catch can restore it
+			let primaryApiHandler: typeof this.api | undefined
+
 			try {
 				let cacheWriteTokens = 0
 				let cacheReadTokens = 0
@@ -2898,7 +2901,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				await this.diffViewProvider.reset()
 
 				// Model routing: temporarily swap to light model if heuristics say so
-				let primaryApiHandler: typeof this.api | undefined
 				{
 					const routingState = await this.providerRef.deref()?.getState()
 					if (
@@ -3604,6 +3606,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					presentAssistantMessage(this)
 				}
 
+				// Model routing: always restore primary API handler after streaming completes,
+				// regardless of whether the turn had content or not. This prevents permanently
+				// losing the primary model on empty-response retries or error paths.
+				if (primaryApiHandler) {
+					this.api = primaryApiHandler
+					primaryApiHandler = undefined
+				}
+
 				if (hasTextContent || hasToolUses) {
 					// NOTE: This comment is here for future reference - this was a
 					// workaround for `userMessageContent` not getting set to true.
@@ -3623,12 +3633,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					await pWaitFor(() => this.userMessageContentReady)
 
-					// Model routing: end current turn and restore primary handler
+					// Model routing: end current turn classification
 					this.modelRouter.endTurn()
-					if (primaryApiHandler) {
-						this.api = primaryApiHandler
-						primaryApiHandler = undefined
-					}
 
 					// If the model did not tool use, then we need to tell it to
 					// either use a tool or attempt_completion.
@@ -3770,6 +3776,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// If we reach here without continuing, return false (will always be false for now)
 				return false
 			} catch (error) {
+				// Model routing: restore primary API handler on error paths
+				if (primaryApiHandler) {
+					this.api = primaryApiHandler
+					primaryApiHandler = undefined
+				}
 				// This should never happen since the only thing that can throw an
 				// error is the attemptApiRequest, which is wrapped in a try catch
 				// that sends an ask where if noButtonClicked, will clear current

@@ -14,6 +14,7 @@ import { SearchableSetting } from "./SearchableSetting"
 import { ExperimentalFeature } from "./ExperimentalFeature"
 import { ImageGenerationSettings } from "./ImageGenerationSettings"
 import { CustomToolsSettings } from "./CustomToolsSettings"
+import { ModelRoutingSettings } from "./ModelRoutingSettings"
 
 type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	experiments: Experiments
@@ -26,6 +27,8 @@ type ExperimentalSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	setImageGenerationProvider?: (provider: ImageGenerationProvider) => void
 	setOpenRouterImageApiKey?: (apiKey: string) => void
 	setImageGenerationSelectedModel?: (model: string) => void
+	modelRoutingLightModelId?: string
+	setModelRoutingLightModelId?: (modelId: string) => void
 }
 
 export const ExperimentalSettings = ({
@@ -39,6 +42,8 @@ export const ExperimentalSettings = ({
 	setImageGenerationProvider,
 	setOpenRouterImageApiKey,
 	setImageGenerationSelectedModel,
+	modelRoutingLightModelId,
+	setModelRoutingLightModelId,
 	className,
 	...props
 }: ExperimentalSettingsProps) => {
@@ -79,6 +84,24 @@ export const ExperimentalSettings = ({
 										setImageGenerationProvider={setImageGenerationProvider}
 										setOpenRouterImageApiKey={setOpenRouterImageApiKey}
 										setImageGenerationSelectedModel={setImageGenerationSelectedModel}
+									/>
+								</SearchableSetting>
+							)
+						}
+						if (config[0] === "MODEL_ROUTING" && setModelRoutingLightModelId) {
+							return (
+								<SearchableSetting
+									key={config[0]}
+									settingId={`experimental-${config[0].toLowerCase()}`}
+									section="experimental"
+									label={label}>
+									<ModelRoutingSettings
+										enabled={experiments[EXPERIMENT_IDS.MODEL_ROUTING] ?? false}
+										onChange={(enabled) =>
+											setExperimentEnabled(EXPERIMENT_IDS.MODEL_ROUTING, enabled)
+										}
+										modelRoutingLightModelId={modelRoutingLightModelId}
+										setModelRoutingLightModelId={setModelRoutingLightModelId}
 									/>
 								</SearchableSetting>
 							)

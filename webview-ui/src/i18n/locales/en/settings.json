@@ -941,6 +941,12 @@
 			"refreshSuccess": "Tools refreshed successfully",
 			"refreshError": "Failed to refresh tools",
 			"toolParameters": "Parameters"
+		},
+		"MODEL_ROUTING": {
+			"name": "Enable model routing",
+			"description": "When enabled, Roo dynamically routes API calls to a lighter (cheaper) model during information-gathering phases. The light model must be from the same provider as your primary model.",
+			"lightModelIdLabel": "Light Model ID",
+			"lightModelIdPlaceholder": "e.g. claude-3-haiku-20241022"
 		}
 	},
 	"promptCaching": {
