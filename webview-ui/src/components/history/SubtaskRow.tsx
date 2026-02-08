@@ -71,7 +71,7 @@ const SubtaskRow = ({ node, depth, onToggleExpand, className }: SubtaskRowProps)
 				<div
 					className={cn(
 						"overflow-clip transition-all duration-300",
-						isExpanded ? "max-h-[500px]" : "max-h-0",
+						isExpanded ? "max-h-[2000px]" : "max-h-0",
 					)}>
 					{children.map((child) => (
 						<SubtaskRow

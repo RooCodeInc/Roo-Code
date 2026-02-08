@@ -21,7 +21,7 @@ import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Tab, TabContent, TabHeader } from "../common/Tab"
 import { useTaskSearch } from "./useTaskSearch"
 import { useGroupedTasks } from "./useGroupedTasks"
-import type { SubtaskTreeNode } from "./types"
+import { countAllSubtasks } from "./types"
 import TaskItem from "./TaskItem"
 import TaskGroupItem from "./TaskGroupItem"
 
@@ -55,16 +55,9 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 
 	// Get subtask count for a task (recursive total)
 	const getSubtaskCount = useMemo(() => {
-		const countAll = (nodes: SubtaskTreeNode[]): number => {
-			let count = 0
-			for (const node of nodes) {
-				count += 1 + countAll(node.children)
-			}
-			return count
-		}
 		const countMap = new Map<string, number>()
 		for (const group of groups) {
-			countMap.set(group.parent.id, countAll(group.subtasks))
+			countMap.set(group.parent.id, countAllSubtasks(group.subtasks))
 		}
 		return (taskId: string) => countMap.get(taskId) || 0
 	}, [groups])
