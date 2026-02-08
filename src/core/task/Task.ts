@@ -41,6 +41,7 @@ import {
 	TodoItem,
 	getApiProtocol,
 	getModelId,
+	isRetiredProvider,
 	isIdleAsk,
 	isInteractiveAsk,
 	isResumableAsk,
@@ -1035,7 +1036,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Other providers (notably Gemini 3) use different signature semantics (e.g. `thoughtSignature`)
 			// and require round-tripping the signature in their own format.
 			const modelId = getModelId(this.apiConfiguration)
-			const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
+			const apiProvider = this.apiConfiguration.apiProvider
+			const apiProtocol = getApiProtocol(
+				apiProvider && !isRetiredProvider(apiProvider) ? apiProvider : undefined,
+				modelId,
+			)
 			const isAnthropicProtocol = apiProtocol === "anthropic"
 
 			// Start from the original assistant message
@@ -2695,7 +2700,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Determine API protocol based on provider and model
 			const modelId = getModelId(this.apiConfiguration)
-			const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
+			const apiProvider = this.apiConfiguration.apiProvider
+			const apiProtocol = getApiProtocol(
+				apiProvider && !isRetiredProvider(apiProvider) ? apiProvider : undefined,
+				modelId,
+			)
 
 			// Respect user-configured provider rate limiting BEFORE we emit api_req_started.
 			// This prevents the UI from showing an "API Request..." spinner while we are
@@ -2816,7 +2825,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 					// Calculate total tokens and cost using provider-aware function
 					const modelId = getModelId(this.apiConfiguration)
-					const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
+					const apiProvider = this.apiConfiguration.apiProvider
+					const apiProtocol = getApiProtocol(
+						apiProvider && !isRetiredProvider(apiProvider) ? apiProvider : undefined,
+						modelId,
+					)
 
 					const costResult =
 						apiProtocol === "anthropic"
@@ -3140,7 +3153,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 								// Capture telemetry with provider-aware cost calculation
 								const modelId = getModelId(this.apiConfiguration)
-								const apiProtocol = getApiProtocol(this.apiConfiguration.apiProvider, modelId)
+								const apiProvider = this.apiConfiguration.apiProvider
+								const apiProtocol = getApiProtocol(
+									apiProvider && !isRetiredProvider(apiProvider) ? apiProvider : undefined,
+									modelId,
+								)
 
 								// Use the appropriate cost function based on the API protocol
 								const costResult =

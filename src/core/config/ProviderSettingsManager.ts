@@ -12,6 +12,7 @@ import {
 	getModelId,
 	type ProviderName,
 	isProviderName,
+	isRetiredProvider,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
@@ -359,8 +360,12 @@ export class ProviderSettingsManager {
 				const existingId = providerProfiles.apiConfigs[name]?.id
 				const id = config.id || existingId || this.generateId()
 
-				// Filter out settings from other providers.
-				const filteredConfig = discriminatedProviderSettingsWithIdSchema.parse(config)
+				// For active providers, filter out settings from other providers.
+				// For retired providers, preserve full profile fields to avoid data loss.
+				const filteredConfig =
+					typeof config.apiProvider === "string" && isRetiredProvider(config.apiProvider)
+						? providerSettingsWithIdSchema.parse(config)
+						: discriminatedProviderSettingsWithIdSchema.parse(config)
 				providerProfiles.apiConfigs[name] = { ...filteredConfig, id }
 				await this.store(providerProfiles)
 				return id
@@ -507,7 +512,14 @@ export class ProviderSettingsManager {
 				const profiles = providerProfilesSchema.parse(await this.load())
 				const configs = profiles.apiConfigs
 				for (const name in configs) {
-					// Avoid leaking properties from other providers.
+					const apiProvider = configs[name].apiProvider
+
+					if (typeof apiProvider === "string" && isRetiredProvider(apiProvider)) {
+						// Preserve retired-provider profiles as-is to prevent dropping legacy fields.
+						continue
+					}
+
+					// Avoid leaking properties from other active providers.
 					configs[name] = discriminatedProviderSettingsWithIdSchema.parse(configs[name])
 
 					// If it has no apiProvider, skip filtering
@@ -607,7 +619,8 @@ export class ProviderSettingsManager {
 	}
 
 	/**
-	 * Sanitizes a provider config by resetting invalid/removed apiProvider values.
+	 * Sanitizes a provider config by resetting unknown apiProvider values.
+	 * Retired providers are preserved.
 	 * This handles cases where a user had a provider selected that was later removed
 	 * from the extension (e.g., "glama").
 	 */
@@ -618,10 +631,15 @@ export class ProviderSettingsManager {
 
 		const config = apiConfig as Record<string, unknown>
 
-		// Check if apiProvider is set and if it's still valid
-		if (config.apiProvider !== undefined && !isProviderName(config.apiProvider)) {
+		const apiProvider = config.apiProvider
+
+		// Check if apiProvider is set and if it's still recognized (active or retired)
+		if (
+			apiProvider !== undefined &&
+			(typeof apiProvider !== "string" || (!isProviderName(apiProvider) && !isRetiredProvider(apiProvider)))
+		) {
 			console.log(
-				`[ProviderSettingsManager] Sanitizing invalid provider "${config.apiProvider}" - resetting to undefined`,
+				`[ProviderSettingsManager] Sanitizing unknown provider "${config.apiProvider}" - resetting to undefined`,
 			)
 			// Return a new config object without the invalid apiProvider
 			// This effectively resets the profile so the user can select a valid provider

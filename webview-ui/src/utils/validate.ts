@@ -7,6 +7,7 @@ import {
 	type RouterModels,
 	modelIdKeysByProvider,
 	isProviderName,
+	isRetiredProvider,
 	isDynamicProvider,
 	isFauxProvider,
 	isCustomProvider,
@@ -153,7 +154,8 @@ function validateProviderAgainstOrganizationSettings(
 		}
 
 		if (!providerConfig.allowAll) {
-			const modelId = getModelIdForProvider(apiConfiguration, provider)
+			const activeProvider = isRetiredProvider(provider) ? undefined : provider
+			const modelId = activeProvider ? getModelIdForProvider(apiConfiguration, activeProvider) : undefined
 			const allowedModels = providerConfig.models || []
 
 			if (modelId && !allowedModels.includes(modelId)) {

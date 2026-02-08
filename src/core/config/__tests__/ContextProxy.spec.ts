@@ -424,7 +424,7 @@ describe("ContextProxy", () => {
 
 		it("should reinitialize caches after reset", async () => {
 			// Spy on initialization methods
-			const initializeSpy = vi.spyOn(proxy as any, "initialize")
+			const initializeSpy = vi.spyOn(proxy, "initialize")
 
 			// Reset all state
 			await proxy.resetAllState()
@@ -452,6 +452,25 @@ describe("ContextProxy", () => {
 			expect(mockGlobalState.update).toHaveBeenCalledWith("apiProvider", undefined)
 		})
 
+		it("should not clear retired apiProvider from storage during initialization", async () => {
+			// Reset and create a new proxy with retired provider in state
+			vi.clearAllMocks()
+			mockGlobalState.get.mockImplementation((key: string) => {
+				if (key === "apiProvider") {
+					return "groq" // Retired provider
+				}
+				return undefined
+			})
+
+			const proxyWithRetiredProvider = new ContextProxy(mockContext)
+			await proxyWithRetiredProvider.initialize()
+
+			// Should NOT have called update for apiProvider (retired should be preserved)
+			const updateCalls = mockGlobalState.update.mock.calls
+			const apiProviderUpdateCalls = updateCalls.filter((call: unknown[]) => call[0] === "apiProvider")
+			expect(apiProviderUpdateCalls).toHaveLength(0)
+		})
+
 		it("should not modify valid apiProvider during initialization", async () => {
 			// Reset and create a new proxy with valid provider in state
 			vi.clearAllMocks()
@@ -467,23 +486,50 @@ describe("ContextProxy", () => {
 
 			// Should NOT have called update for apiProvider (it's valid)
 			const updateCalls = mockGlobalState.update.mock.calls
-			const apiProviderUpdateCalls = updateCalls.filter((call: any[]) => call[0] === "apiProvider")
+			const apiProviderUpdateCalls = updateCalls.filter((call: unknown[]) => call[0] === "apiProvider")
 			expect(apiProviderUpdateCalls.length).toBe(0)
 		})
 	})
 
 	describe("getProviderSettings", () => {
 		it("should sanitize invalid apiProvider before parsing", async () => {
-			// Set an invalid provider in state
-			await proxy.updateGlobalState("apiProvider", "invalid-removed-provider" as any)
-			await proxy.updateGlobalState("apiModelId", "some-model")
+			// Reset and create a new proxy with an unknown provider in state
+			vi.clearAllMocks()
+			mockGlobalState.get.mockImplementation((key: string) => {
+				if (key === "apiProvider") {
+					return "invalid-removed-provider"
+				}
+				if (key === "apiModelId") {
+					return "some-model"
+				}
+				return undefined
+			})
 
-			const settings = proxy.getProviderSettings()
+			const proxyWithInvalidProvider = new ContextProxy(mockContext)
+			await proxyWithInvalidProvider.initialize()
+
+			const settings = proxyWithInvalidProvider.getProviderSettings()
 
 			// The invalid apiProvider should be sanitized (removed)
 			expect(settings.apiProvider).toBeUndefined()
 			// Other settings should still be present
 			expect(settings.apiModelId).toBe("some-model")
+		})
+
+		it("should preserve retired apiProvider and provider fields", async () => {
+			await proxy.setValues({
+				apiProvider: "groq",
+				apiModelId: "llama3-70b",
+				openAiBaseUrl: "https://api.retired-provider.example/v1",
+				apiKey: "retired-provider-key",
+			})
+
+			const settings = proxy.getProviderSettings()
+
+			expect(settings.apiProvider).toBe("groq")
+			expect(settings.apiModelId).toBe("llama3-70b")
+			expect(settings.openAiBaseUrl).toBe("https://api.retired-provider.example/v1")
+			expect(settings.apiKey).toBe("retired-provider-key")
 		})
 
 		it("should pass through valid apiProvider", async () => {

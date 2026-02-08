@@ -29,6 +29,7 @@ import {
 	BEDROCK_1M_CONTEXT_MODEL_IDS,
 	VERTEX_1M_CONTEXT_MODEL_IDS,
 	isDynamicProvider,
+	isRetiredProvider,
 	getProviderDefaultModelId,
 } from "@roo-code/types"
 
@@ -51,14 +52,16 @@ function getValidatedModelId(
 
 export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 	const provider = apiConfiguration?.apiProvider || "anthropic"
-	const openRouterModelId = provider === "openrouter" ? apiConfiguration?.openRouterModelId : undefined
-	const lmStudioModelId = provider === "lmstudio" ? apiConfiguration?.lmStudioModelId : undefined
-	const ollamaModelId = provider === "ollama" ? apiConfiguration?.ollamaModelId : undefined
+	const activeProvider: ProviderName | undefined = isRetiredProvider(provider) ? undefined : provider
+	const dynamicProvider = activeProvider && isDynamicProvider(activeProvider) ? activeProvider : undefined
+	const openRouterModelId = activeProvider === "openrouter" ? apiConfiguration?.openRouterModelId : undefined
+	const lmStudioModelId = activeProvider === "lmstudio" ? apiConfiguration?.lmStudioModelId : undefined
+	const ollamaModelId = activeProvider === "ollama" ? apiConfiguration?.ollamaModelId : undefined
 
 	// Only fetch router models for dynamic providers
-	const shouldFetchRouterModels = isDynamicProvider(provider)
+	const shouldFetchRouterModels = !!dynamicProvider
 	const routerModels = useRouterModels({
-		provider: shouldFetchRouterModels ? provider : undefined,
+		provider: dynamicProvider,
 		enabled: shouldFetchRouterModels,
 	})
 
@@ -68,16 +71,17 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 
 	// Compute readiness only for the data actually needed for the selected provider
 	const needRouterModels = shouldFetchRouterModels
-	const needOpenRouterProviders = provider === "openrouter"
+	const needOpenRouterProviders = activeProvider === "openrouter"
 	const needLmStudio = typeof lmStudioModelId !== "undefined"
 	const needOllama = typeof ollamaModelId !== "undefined"
 
-	const hasValidRouterData = needRouterModels
-		? routerModels.data &&
-			routerModels.data[provider] !== undefined &&
-			typeof routerModels.data[provider] === "object" &&
-			!routerModels.isLoading
-		: true
+	const hasValidRouterData =
+		needRouterModels && dynamicProvider
+			? routerModels.data &&
+				routerModels.data[dynamicProvider] !== undefined &&
+				typeof routerModels.data[dynamicProvider] === "object" &&
+				!routerModels.isLoading
+			: true
 
 	const isReady =
 		(!needLmStudio || typeof lmStudioModels.data !== "undefined") &&
@@ -86,16 +90,16 @@ export const useSelectedModel = (apiConfiguration?: ProviderSettings) => {
 		(!needOpenRouterProviders || typeof openRouterModelProviders.data !== "undefined")
 
 	const { id, info } =
-		apiConfiguration && isReady
+		apiConfiguration && isReady && activeProvider
 			? getSelectedModel({
-					provider,
+					provider: activeProvider,
 					apiConfiguration,
 					routerModels: (routerModels.data || {}) as RouterModels,
 					openRouterModelProviders: (openRouterModelProviders.data || {}) as Record<string, ModelInfo>,
 					lmStudioModels: (lmStudioModels.data || undefined) as ModelRecord | undefined,
 					ollamaModels: (ollamaModels.data || undefined) as ModelRecord | undefined,
 				})
-			: { id: getProviderDefaultModelId(provider), info: undefined }
+			: { id: getProviderDefaultModelId(activeProvider ?? "anthropic"), info: undefined }
 
 	return {
 		provider,

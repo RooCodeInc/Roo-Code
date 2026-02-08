@@ -43,6 +43,7 @@ import { ChatTextArea } from "./ChatTextArea"
 import TaskHeader from "./TaskHeader"
 import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
+import RetiredProviderWarning from "./RetiredProviderWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
 import { WorktreeSelector } from "./WorktreeSelector"
@@ -1778,6 +1779,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				onStop={handleStopTask}
 				onEnqueueMessage={handleEnqueueCurrentMessage}
 			/>
+
+			<div className="px-3">
+				<RetiredProviderWarning />
+			</div>
 
 			{isProfileDisabled && (
 				<div className="px-3">
