@@ -146,7 +146,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 
 				for (const chunk of processAiSdkStreamPart(part)) {
-					if (chunk.type === "text") {
+					if (chunk.type === "text" || chunk.type === "tool_call_start") {
 						hasContent = true
 					}
 					yield chunk
