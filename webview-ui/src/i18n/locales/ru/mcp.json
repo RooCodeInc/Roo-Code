@@ -20,7 +20,9 @@
 		"alwaysAllow": "Всегда разрешать",
 		"parameters": "Параметры",
 		"noDescription": "Нет описания",
-		"togglePromptInclusion": "Переключить включение в промпт"
+		"togglePromptInclusion": "Переключить включение в промпт",
+		"expand": "Развернуть описание",
+		"collapse": "Свернуть описание"
 	},
 	"tabs": {
 		"tools": "Инструменты",
