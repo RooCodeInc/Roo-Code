@@ -1,8 +1,10 @@
 import fs from "fs"
+import os from "os"
 import path from "path"
 import { fileURLToPath } from "url"
 
 import { createElement } from "react"
+import pWaitFor from "p-wait-for"
 
 import { setLogger } from "@roo-code/vscode-shim"
 
@@ -64,7 +66,11 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 	const effectiveReasoningEffort =
 		flagOptions.reasoningEffort || settings.reasoningEffort || DEFAULT_FLAGS.reasoningEffort
 	const effectiveProvider = flagOptions.provider ?? settings.provider ?? (rooToken ? "roo" : "openrouter")
-	const effectiveWorkspacePath = flagOptions.workspace ? path.resolve(flagOptions.workspace) : process.cwd()
+	const effectiveWorkspacePath = flagOptions.workspace
+		? path.resolve(flagOptions.workspace)
+		: process.env.ROO_CODE_WORKSPACE_PATH
+			? path.resolve(process.env.ROO_CODE_WORKSPACE_PATH)
+			: process.cwd()
 	const effectiveDangerouslySkipPermissions =
 		flagOptions.yes || flagOptions.dangerouslySkipPermissions || settings.dangerouslySkipPermissions || false
 	const effectiveExitOnComplete = flagOptions.print || flagOptions.oneshot || settings.oneshot || false
@@ -82,6 +88,25 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		ephemeral: flagOptions.ephemeral,
 		debug: flagOptions.debug,
 		exitOnComplete: effectiveExitOnComplete,
+	}
+
+	// IPC (headless) mode detection.
+	// Activates when: --ipc flag is set, or ROO_CODE_IPC_SOCKET_PATH is set without a prompt.
+	const isIpcMode = !!flagOptions.ipc || (!!process.env.ROO_CODE_IPC_SOCKET_PATH && !prompt && !flagOptions.print)
+
+	// Resolve the IPC socket path: --ipc <path> > ROO_CODE_IPC_SOCKET_PATH > auto-generated temp path.
+	let ipcSocketPath: string | undefined
+	if (isIpcMode) {
+		ipcSocketPath =
+			(typeof flagOptions.ipc === "string" ? flagOptions.ipc : undefined) ||
+			process.env.ROO_CODE_IPC_SOCKET_PATH ||
+			path.join(os.tmpdir(), `roo-ipc-${process.pid}.sock`)
+
+		// Set the env var so the extension picks it up during activation.
+		process.env.ROO_CODE_IPC_SOCKET_PATH = ipcSocketPath
+
+		extensionHostOptions.disableOutput = true
+		extensionHostOptions.exitOnComplete = false
 	}
 
 	// Roo Code Cloud Authentication
@@ -187,7 +212,7 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 		process.exit(1)
 	}
 
-	if (!isTuiEnabled) {
+	if (!isTuiEnabled && !isIpcMode) {
 		if (!prompt) {
 			console.error("[CLI] Error: prompt is required in print mode")
 			console.error("[CLI] Usage: roo <prompt> --print [options]")
@@ -202,7 +227,51 @@ export async function run(promptArg: string | undefined, flagOptions: FlagOption
 
 	// Run!
 
-	if (isTuiEnabled) {
+	if (isIpcMode) {
+		const host = new ExtensionHost(extensionHostOptions)
+
+		async function shutdown(signal: string, exitCode: number): Promise<void> {
+			console.error(`\n[IPC] Received ${signal}, shutting down...`)
+			await host.dispose()
+
+			if (ipcSocketPath && fs.existsSync(ipcSocketPath)) {
+				try {
+					fs.unlinkSync(ipcSocketPath)
+				} catch {
+					// Socket may already be cleaned up.
+				}
+			}
+
+			process.exit(exitCode)
+		}
+
+		process.on("SIGINT", () => shutdown("SIGINT", 130))
+		process.on("SIGTERM", () => shutdown("SIGTERM", 0))
+
+		try {
+			await host.activate()
+
+			// Verify the IPC socket is ready. The extension creates the IPC server
+			// internally during activation, but ipc.serve() is async so we poll
+			// for the socket file.
+			await pWaitFor(() => fs.existsSync(ipcSocketPath!), { interval: 100, timeout: 10_000 })
+
+			console.error(`[IPC] IPC server ready: ${ipcSocketPath}`)
+
+			// Stay alive indefinitely until SIGTERM/SIGINT.
+			await new Promise<never>(() => {})
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			console.error(`[IPC] Error: ${errorMessage}`)
+
+			if (error instanceof Error) {
+				console.error(error.stack)
+			}
+
+			await host.dispose()
+			process.exit(1)
+		}
+	} else if (isTuiEnabled) {
 		try {
 			const { render } = await import("ink")
 			const { App } = await import("../../ui/App.js")

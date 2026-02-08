@@ -33,6 +33,10 @@ program
 	.option("--ephemeral", "Run without persisting state (uses temporary storage)", false)
 	.option("--oneshot", "Exit upon task completion", false)
 	.option(
+		"--ipc [socket-path]",
+		"Run as a headless IPC server (optionally specify socket path, or set ROO_CODE_IPC_SOCKET_PATH)",
+	)
+	.option(
 		"--output-format <format>",
 		'Output format (only works with --print): "text" (default), "json" (single result), or "stream-json" (realtime streaming)',
 		"text",

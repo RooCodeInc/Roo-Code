@@ -35,6 +35,7 @@ export type FlagOptions = {
 	ephemeral: boolean
 	oneshot: boolean
 	outputFormat?: OutputFormat
+	ipc?: boolean | string
 }
 
 export enum OnboardingProviderChoice {
