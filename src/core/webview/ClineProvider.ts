@@ -147,6 +147,7 @@ export class ClineProvider
 	private taskCreationCallback: (task: Task) => void
 	private taskEventListeners: WeakMap<Task, Array<() => void>> = new WeakMap()
 	private currentWorkspacePath: string | undefined
+	private _disposed = false
 
 	private recentTasksCache?: string[]
 	private pendingOperations: Map<string, PendingEditOperation> = new Map()
@@ -577,6 +578,11 @@ export class ClineProvider
 	}
 
 	async dispose() {
+		if (this._disposed) {
+			return
+		}
+
+		this._disposed = true
 		this.log("Disposing ClineProvider...")
 
 		// Clear all tasks from the stack.
@@ -1080,7 +1086,11 @@ export class ClineProvider
 	}
 
 	public async postMessageToWebview(message: ExtensionMessage) {
-		await this.view?.webview.postMessage(message)
+		try {
+			await this.view?.webview.postMessage(message)
+		} catch {
+			// View disposed, drop message silently
+		}
 	}
 
 	private async getHMRHtmlContent(webview: vscode.Webview): Promise<string> {
