@@ -18,7 +18,7 @@ import { listFilesTool } from "../tools/ListFilesTool"
 import { readFileTool } from "../tools/ReadFileTool"
 import { readCommandOutputTool } from "../tools/ReadCommandOutputTool"
 import { writeToFileTool } from "../tools/WriteToFileTool"
-import { searchAndReplaceTool } from "../tools/SearchAndReplaceTool"
+import { editTool } from "../tools/EditTool"
 import { searchReplaceTool } from "../tools/SearchReplaceTool"
 import { editFileTool } from "../tools/EditFileTool"
 import { applyPatchTool } from "../tools/ApplyPatchTool"
@@ -357,8 +357,9 @@ export async function presentAssistantMessage(cline: Task) {
 						return `[${block.name} for '${block.params.regex}'${
 							block.params.file_pattern ? ` in '${block.params.file_pattern}'` : ""
 						}]`
+					case "edit":
 					case "search_and_replace":
-						return `[${block.name} for '${block.params.path}']`
+						return `[${block.name} for '${block.params.file_path}']`
 					case "search_replace":
 						return `[${block.name} for '${block.params.file_path}']`
 					case "edit_file":
@@ -739,9 +740,10 @@ export async function presentAssistantMessage(cline: Task) {
 						pushToolResult,
 					})
 					break
+				case "edit":
 				case "search_and_replace":
 					await checkpointSaveAndMark(cline)
-					await searchAndReplaceTool.handle(cline, block as ToolUse<"search_and_replace">, {
+					await editTool.handle(cline, block as ToolUse<"edit">, {
 						askApproval,
 						handleError,
 						pushToolResult,
@@ -1073,6 +1075,7 @@ function containsXmlToolMarkup(text: string): boolean {
 		"new_task",
 		"read_command_output",
 		"read_file",
+		"edit",
 		"search_and_replace",
 		"search_files",
 		"search_replace",
