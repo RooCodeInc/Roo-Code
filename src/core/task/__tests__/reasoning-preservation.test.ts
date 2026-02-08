@@ -219,41 +219,33 @@ describe("Task reasoning preservation", () => {
 		// Spy on addToApiConversationHistory
 		const addToApiHistorySpy = vi.spyOn(task as any, "addToApiConversationHistory")
 
-		// Simulate what happens in the streaming loop when preserveReasoning is true
-		let finalAssistantMessage = assistantMessage
-		if (reasoningMessage && task.api.getModel().info.preserveReasoning) {
-			finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
-		}
+		await (task as any).addToApiConversationHistory(
+			{
+				role: "assistant",
+				content: [{ type: "text", text: assistantMessage }],
+			},
+			reasoningMessage,
+		)
 
-		await (task as any).addToApiConversationHistory({
-			role: "assistant",
-			content: [{ type: "text", text: finalAssistantMessage }],
-		})
+		// Verify that reasoning was stored as a separate reasoning block
+		expect(addToApiHistorySpy).toHaveBeenCalledWith(
+			{
+				role: "assistant",
+				content: [{ type: "text", text: assistantMessage }],
+			},
+			reasoningMessage,
+		)
 
-		// Verify that reasoning was prepended in <think> tags to the assistant message
-		expect(addToApiHistorySpy).toHaveBeenCalledWith({
-			role: "assistant",
-			content: [
-				{
-					type: "text",
-					text: "<think>Let me think about this step by step. First, I need to...</think>\nHere is my response to your question.",
-				},
-			],
-		})
-
-		// Verify the API conversation history contains the message with reasoning
+		// Verify the API conversation history contains the message with reasoning block
 		expect(task.apiConversationHistory).toHaveLength(1)
-		expect((task.apiConversationHistory[0].content[0] as { text: string }).text).toContain("<think>")
-		expect((task.apiConversationHistory[0].content[0] as { text: string }).text).toContain("</think>")
-		expect((task.apiConversationHistory[0].content[0] as { text: string }).text).toContain(
-			"Here is my response to your question.",
-		)
-		expect((task.apiConversationHistory[0].content[0] as { text: string }).text).toContain(
-			"Let me think about this step by step. First, I need to...",
-		)
+		expect(task.apiConversationHistory[0].role).toBe("assistant")
+		expect(task.apiConversationHistory[0].content).toEqual([
+			{ type: "reasoning", text: reasoningMessage, summary: [] },
+			{ type: "text", text: assistantMessage },
+		])
 	})
 
-	it("should NOT append reasoning to assistant message when preserveReasoning is false", async () => {
+	it("should store reasoning blocks even when preserveReasoning is false", async () => {
 		// Create a task instance
 		const task = new Task({
 			provider: mockProvider as ClineProvider,
@@ -279,36 +271,25 @@ describe("Task reasoning preservation", () => {
 		// Mock the API conversation history
 		task.apiConversationHistory = []
 
-		// Simulate adding an assistant message with reasoning
+		// Add an assistant message while passing reasoning separately (Task does this in normal streaming).
 		const assistantMessage = "Here is my response to your question."
 		const reasoningMessage = "Let me think about this step by step. First, I need to..."
 
-		// Spy on addToApiConversationHistory
-		const addToApiHistorySpy = vi.spyOn(task as any, "addToApiConversationHistory")
-
-		// Simulate what happens in the streaming loop when preserveReasoning is false
-		let finalAssistantMessage = assistantMessage
-		if (reasoningMessage && task.api.getModel().info.preserveReasoning) {
-			finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
-		}
-
-		await (task as any).addToApiConversationHistory({
-			role: "assistant",
-			content: [{ type: "text", text: finalAssistantMessage }],
-		})
-
-		// Verify that reasoning was NOT appended to the assistant message
-		expect(addToApiHistorySpy).toHaveBeenCalledWith({
-			role: "assistant",
-			content: [{ type: "text", text: "Here is my response to your question." }],
-		})
-
-		// Verify the API conversation history does NOT contain reasoning
-		expect(task.apiConversationHistory).toHaveLength(1)
-		expect((task.apiConversationHistory[0].content[0] as { text: string }).text).toBe(
-			"Here is my response to your question.",
+		await (task as any).addToApiConversationHistory(
+			{
+				role: "assistant",
+				content: [{ type: "text", text: assistantMessage }],
+			},
+			reasoningMessage,
 		)
-		expect((task.apiConversationHistory[0].content[0] as { text: string }).text).not.toContain("<think>")
+
+		// Verify the API conversation history contains a reasoning block (storage is unconditional)
+		expect(task.apiConversationHistory).toHaveLength(1)
+		expect(task.apiConversationHistory[0].role).toBe("assistant")
+		expect(task.apiConversationHistory[0].content).toEqual([
+			{ type: "reasoning", text: reasoningMessage, summary: [] },
+			{ type: "text", text: assistantMessage },
+		])
 	})
 
 	it("should handle empty reasoning message gracefully when preserveReasoning is true", async () => {
@@ -340,29 +321,16 @@ describe("Task reasoning preservation", () => {
 		const assistantMessage = "Here is my response."
 		const reasoningMessage = "" // Empty reasoning
 
-		// Spy on addToApiConversationHistory
-		const addToApiHistorySpy = vi.spyOn(task as any, "addToApiConversationHistory")
+		await (task as any).addToApiConversationHistory(
+			{
+				role: "assistant",
+				content: [{ type: "text", text: assistantMessage }],
+			},
+			reasoningMessage || undefined,
+		)
 
-		// Simulate what happens in the streaming loop
-		let finalAssistantMessage = assistantMessage
-		if (reasoningMessage && task.api.getModel().info.preserveReasoning) {
-			finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
-		}
-
-		await (task as any).addToApiConversationHistory({
-			role: "assistant",
-			content: [{ type: "text", text: finalAssistantMessage }],
-		})
-
-		// Verify that no reasoning tags were added when reasoning is empty
-		expect(addToApiHistorySpy).toHaveBeenCalledWith({
-			role: "assistant",
-			content: [{ type: "text", text: "Here is my response." }],
-		})
-
-		// Verify the message doesn't contain reasoning tags
-		expect((task.apiConversationHistory[0].content[0] as { text: string }).text).toBe("Here is my response.")
-		expect((task.apiConversationHistory[0].content[0] as { text: string }).text).not.toContain("<think>")
+		// Verify no reasoning blocks were added when reasoning is empty
+		expect(task.apiConversationHistory[0].content).toEqual([{ type: "text", text: "Here is my response." }])
 	})
 
 	it("should handle undefined preserveReasoning (defaults to false)", async () => {
@@ -394,20 +362,19 @@ describe("Task reasoning preservation", () => {
 		const assistantMessage = "Here is my response."
 		const reasoningMessage = "Some reasoning here."
 
-		// Simulate what happens in the streaming loop
-		let finalAssistantMessage = assistantMessage
-		if (reasoningMessage && task.api.getModel().info.preserveReasoning) {
-			finalAssistantMessage = `<think>${reasoningMessage}</think>\n${assistantMessage}`
-		}
+		await (task as any).addToApiConversationHistory(
+			{
+				role: "assistant",
+				content: [{ type: "text", text: assistantMessage }],
+			},
+			reasoningMessage,
+		)
 
-		await (task as any).addToApiConversationHistory({
-			role: "assistant",
-			content: [{ type: "text", text: finalAssistantMessage }],
-		})
-
-		// Verify reasoning was NOT prepended (undefined defaults to false)
-		expect((task.apiConversationHistory[0].content[0] as { text: string }).text).toBe("Here is my response.")
-		expect((task.apiConversationHistory[0].content[0] as { text: string }).text).not.toContain("<think>")
+		// Verify reasoning is stored even when preserveReasoning is undefined
+		expect(task.apiConversationHistory[0].content).toEqual([
+			{ type: "reasoning", text: reasoningMessage, summary: [] },
+			{ type: "text", text: assistantMessage },
+		])
 	})
 
 	it("should embed encrypted reasoning as first assistant content block", async () => {

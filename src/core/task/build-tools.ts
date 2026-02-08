@@ -23,6 +23,7 @@ interface BuildToolsOptions {
 	experiments: Record<string, boolean> | undefined
 	apiConfiguration: ProviderSettings | undefined
 	browserToolEnabled: boolean
+	disabledTools?: string[]
 	modelInfo?: ModelInfo
 	/**
 	 * If true, returns all tools without mode filtering, but also includes
@@ -88,6 +89,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 		experiments,
 		apiConfiguration,
 		browserToolEnabled,
+		disabledTools,
 		modelInfo,
 		includeAllToolsWithRestrictions,
 	} = options
@@ -102,6 +104,7 @@ export async function buildNativeToolsArrayWithRestrictions(options: BuildToolsO
 	const filterSettings = {
 		todoListEnabled: apiConfiguration?.todoListEnabled ?? true,
 		browserToolEnabled: browserToolEnabled ?? true,
+		disabledTools,
 		modelInfo,
 	}
 

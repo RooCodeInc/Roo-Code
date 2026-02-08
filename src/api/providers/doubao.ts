@@ -64,7 +64,13 @@ export class DoubaoHandler extends OpenAiHandler {
 	override getModel() {
 		const id = this.options.apiModelId ?? doubaoDefaultModelId
 		const info = doubaoModels[id as keyof typeof doubaoModels] || doubaoModels[doubaoDefaultModelId]
-		const params = getModelParams({ format: "openai", modelId: id, model: info, settings: this.options })
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: 0,
+		})
 		return { id, info, ...params }
 	}
 

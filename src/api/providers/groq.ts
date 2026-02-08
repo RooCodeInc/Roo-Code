@@ -174,4 +174,8 @@ export class GroqHandler extends BaseProvider implements SingleCompletionHandler
 
 		return text
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }

@@ -17,16 +17,19 @@ describe("getModelParams", () => {
 	const anthropicParams = {
 		modelId: "test",
 		format: "anthropic" as const,
+		defaultTemperature: 0,
 	}
 
 	const openaiParams = {
 		modelId: "test",
 		format: "openai" as const,
+		defaultTemperature: 0,
 	}
 
 	const openrouterParams = {
 		modelId: "test",
 		format: "openrouter" as const,
+		defaultTemperature: 0,
 	}
 
 	describe("Basic functionality", () => {
@@ -48,11 +51,12 @@ describe("getModelParams", () => {
 			})
 		})
 
-		it("should use default temperature of 0 when no defaultTemperature is provided", () => {
+		it("should use the provided defaultTemperature when no user or model temperature is set", () => {
 			const result = getModelParams({
 				...anthropicParams,
 				settings: {},
 				model: baseModel,
+				defaultTemperature: 0,
 			})
 
 			expect(result.temperature).toBe(0)
@@ -193,6 +197,7 @@ describe("getModelParams", () => {
 				format: "openrouter" as const,
 				settings: {},
 				model: baseModel,
+				defaultTemperature: 0,
 			})
 
 			expect(result.maxTokens).toBe(ANTHROPIC_DEFAULT_MAX_TOKENS)
@@ -214,6 +219,7 @@ describe("getModelParams", () => {
 				format: "openrouter" as const,
 				settings: {},
 				model: baseModel,
+				defaultTemperature: 0,
 			})
 
 			expect(result.maxTokens).toBeUndefined()
@@ -374,6 +380,7 @@ describe("getModelParams", () => {
 					format: "gemini" as const,
 					settings: { modelMaxTokens: 2000, modelMaxThinkingTokens: 50 },
 					model,
+					defaultTemperature: 0,
 				}),
 			).toEqual({
 				format: "gemini",
@@ -400,6 +407,7 @@ describe("getModelParams", () => {
 					format: "openrouter" as const,
 					settings: { modelMaxTokens: 4000 },
 					model,
+					defaultTemperature: 0,
 				}),
 			).toEqual({
 				format: "openrouter",

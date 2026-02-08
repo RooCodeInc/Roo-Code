@@ -8,6 +8,7 @@
 		"not_found": "在 {{source}}{{modeInfo}} 中未找到技能 \"{{name}}\"",
 		"missing_create_fields": "缺少必填字段：skillName、source 或 skillDescription",
 		"missing_move_fields": "缺少必填字段：skillName 或 source",
+		"missing_update_modes_fields": "缺少必填字段：skillName 或 source",
 		"manager_unavailable": "技能管理器不可用",
 		"missing_delete_fields": "缺少必填字段：skillName 或 source",
 		"skill_not_found": "未找到技能 \"{{name}}\"",

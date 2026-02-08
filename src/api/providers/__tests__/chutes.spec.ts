@@ -1,336 +1,490 @@
 // npx vitest run api/providers/__tests__/chutes.spec.ts
 
-import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
+const { mockStreamText, mockGenerateText, mockGetModels, mockGetModelsFromCache } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+	mockGetModels: vi.fn(),
+	mockGetModelsFromCache: vi.fn(),
+}))
+
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
+	return {
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
+	}
+})
+
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: vi.fn(() => {
+		return vi.fn((modelId: string) => ({
+			modelId,
+			provider: "chutes",
+		}))
+	}),
+}))
+
+vi.mock("../fetchers/modelCache", () => ({
+	getModels: mockGetModels,
+	getModelsFromCache: mockGetModelsFromCache,
+}))
+
+import type { Anthropic } from "@anthropic-ai/sdk"
 
 import { chutesDefaultModelId, chutesDefaultModelInfo, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
 
 import { ChutesHandler } from "../chutes"
-
-// Create mock functions
-const mockCreate = vi.fn()
-const mockFetchModel = vi.fn()
-
-// Mock OpenAI module
-vi.mock("openai", () => ({
-	default: vi.fn(() => ({
-		chat: {
-			completions: {
-				create: mockCreate,
-			},
-		},
-	})),
-}))
 
 describe("ChutesHandler", () => {
 	let handler: ChutesHandler
 
 	beforeEach(() => {
 		vi.clearAllMocks()
-		// Set up default mock implementation
-		mockCreate.mockImplementation(async () => ({
-			[Symbol.asyncIterator]: async function* () {
-				yield {
-					choices: [
-						{
-							delta: { content: "Test response" },
-							index: 0,
-						},
-					],
-					usage: null,
-				}
-				yield {
-					choices: [
-						{
-							delta: {},
-							index: 0,
-						},
-					],
-					usage: {
-						prompt_tokens: 10,
-						completion_tokens: 5,
-						total_tokens: 15,
-					},
-				}
-			},
-		}))
-		handler = new ChutesHandler({ chutesApiKey: "test-key" })
-		// Mock fetchModel to return default model
-		mockFetchModel.mockResolvedValue({
-			id: chutesDefaultModelId,
-			info: chutesDefaultModelInfo,
+		mockGetModels.mockResolvedValue({
+			[chutesDefaultModelId]: chutesDefaultModelInfo,
 		})
-		handler.fetchModel = mockFetchModel
+		mockGetModelsFromCache.mockReturnValue(undefined)
+		handler = new ChutesHandler({ chutesApiKey: "test-key" })
 	})
 
 	afterEach(() => {
 		vi.restoreAllMocks()
 	})
 
-	it("should use the correct Chutes base URL", () => {
-		new ChutesHandler({ chutesApiKey: "test-chutes-api-key" })
-		expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ baseURL: "https://llm.chutes.ai/v1" }))
+	describe("constructor", () => {
+		it("should initialize with provided options", () => {
+			expect(handler).toBeInstanceOf(ChutesHandler)
+		})
+
+		it("should use default model when no model ID is provided", () => {
+			const model = handler.getModel()
+			expect(model.id).toBe(chutesDefaultModelId)
+		})
 	})
 
-	it("should use the provided API key", () => {
-		const chutesApiKey = "test-chutes-api-key"
-		new ChutesHandler({ chutesApiKey })
-		expect(OpenAI).toHaveBeenCalledWith(expect.objectContaining({ apiKey: chutesApiKey }))
+	describe("getModel", () => {
+		it("should return default model when no model is specified and no cache", () => {
+			const model = handler.getModel()
+			expect(model.id).toBe(chutesDefaultModelId)
+			expect(model.info).toEqual(
+				expect.objectContaining({
+					...chutesDefaultModelInfo,
+				}),
+			)
+		})
+
+		it("should return model info from fetched models", async () => {
+			const testModelInfo = {
+				maxTokens: 4096,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+			}
+			mockGetModels.mockResolvedValue({
+				"some-model": testModelInfo,
+			})
+
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "some-model",
+				chutesApiKey: "test-key",
+			})
+			const model = await handlerWithModel.fetchModel()
+			expect(model.id).toBe("some-model")
+			expect(model.info).toEqual(expect.objectContaining(testModelInfo))
+		})
+
+		it("should fall back to global cache when instance models are empty", () => {
+			const cachedInfo = {
+				maxTokens: 2048,
+				contextWindow: 64000,
+				supportsImages: false,
+				supportsPromptCache: false,
+			}
+			mockGetModelsFromCache.mockReturnValue({
+				"cached-model": cachedInfo,
+			})
+
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "cached-model",
+				chutesApiKey: "test-key",
+			})
+			const model = handlerWithModel.getModel()
+			expect(model.id).toBe("cached-model")
+			expect(model.info).toEqual(expect.objectContaining(cachedInfo))
+		})
+
+		it("should apply DeepSeek default temperature for R1 models", () => {
+			const r1Info = {
+				maxTokens: 32768,
+				contextWindow: 163840,
+				supportsImages: false,
+				supportsPromptCache: false,
+			}
+			mockGetModelsFromCache.mockReturnValue({
+				"deepseek-ai/DeepSeek-R1-0528": r1Info,
+			})
+
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "deepseek-ai/DeepSeek-R1-0528",
+				chutesApiKey: "test-key",
+			})
+			const model = handlerWithModel.getModel()
+			expect(model.info.defaultTemperature).toBe(DEEP_SEEK_DEFAULT_TEMPERATURE)
+			expect(model.temperature).toBe(DEEP_SEEK_DEFAULT_TEMPERATURE)
+		})
+
+		it("should use default temperature for non-DeepSeek models", () => {
+			const modelInfo = {
+				maxTokens: 4096,
+				contextWindow: 128000,
+				supportsImages: false,
+				supportsPromptCache: false,
+			}
+			mockGetModelsFromCache.mockReturnValue({
+				"unsloth/Llama-3.3-70B-Instruct": modelInfo,
+			})
+
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "unsloth/Llama-3.3-70B-Instruct",
+				chutesApiKey: "test-key",
+			})
+			const model = handlerWithModel.getModel()
+			expect(model.info.defaultTemperature).toBe(0.5)
+			expect(model.temperature).toBe(0.5)
+		})
 	})
 
-	it("should handle DeepSeek R1 reasoning format", async () => {
-		// Override the mock for this specific test
-		mockCreate.mockImplementationOnce(async () => ({
-			[Symbol.asyncIterator]: async function* () {
-				yield {
-					choices: [
-						{
-							delta: { content: "<think>Thinking..." },
-							index: 0,
-						},
-					],
-					usage: null,
-				}
-				yield {
-					choices: [
-						{
-							delta: { content: "</think>Hello" },
-							index: 0,
-						},
-					],
-					usage: null,
-				}
-				yield {
-					choices: [
-						{
-							delta: {},
-							index: 0,
-						},
-					],
-					usage: { prompt_tokens: 10, completion_tokens: 5 },
-				}
-			},
-		}))
+	describe("fetchModel", () => {
+		it("should fetch models and return the resolved model", async () => {
+			const model = await handler.fetchModel()
+			expect(mockGetModels).toHaveBeenCalledWith(
+				expect.objectContaining({
+					provider: "chutes",
+				}),
+			)
+			expect(model.id).toBe(chutesDefaultModelId)
+		})
+	})
 
+	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
 		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hi" }]
-		mockFetchModel.mockResolvedValueOnce({
-			id: "deepseek-ai/DeepSeek-R1-0528",
-			info: { maxTokens: 1024, temperature: 0.7 },
-		})
 
-		const stream = handler.createMessage(systemPrompt, messages)
-		const chunks = []
-		for await (const chunk of stream) {
-			chunks.push(chunk)
-		}
+		it("should handle non-DeepSeek models with standard streaming", async () => {
+			mockGetModels.mockResolvedValue({
+				"some-other-model": { maxTokens: 1024, contextWindow: 8192, supportsPromptCache: false },
+			})
 
-		expect(chunks).toEqual([
-			{ type: "reasoning", text: "Thinking..." },
-			{ type: "text", text: "Hello" },
-			{ type: "usage", inputTokens: 10, outputTokens: 5 },
-		])
-	})
-
-	it("should handle non-DeepSeek models", async () => {
-		// Use default mock implementation which returns text content
-		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hi" }]
-		mockFetchModel.mockResolvedValueOnce({
-			id: "some-other-model",
-			info: { maxTokens: 1024, temperature: 0.7 },
-		})
-
-		const stream = handler.createMessage(systemPrompt, messages)
-		const chunks = []
-		for await (const chunk of stream) {
-			chunks.push(chunk)
-		}
-
-		expect(chunks).toEqual([
-			{ type: "text", text: "Test response" },
-			{ type: "usage", inputTokens: 10, outputTokens: 5 },
-		])
-	})
-
-	it("should return default model when no model is specified", async () => {
-		const model = await handler.fetchModel()
-		expect(model.id).toBe(chutesDefaultModelId)
-		expect(model.info).toEqual(expect.objectContaining(chutesDefaultModelInfo))
-	})
-
-	it("should return specified model when valid model is provided", async () => {
-		const testModelId = "deepseek-ai/DeepSeek-R1"
-		const handlerWithModel = new ChutesHandler({
-			apiModelId: testModelId,
-			chutesApiKey: "test-chutes-api-key",
-		})
-		// Mock fetchModel for this handler to return the test model from dynamic fetch
-		handlerWithModel.fetchModel = vi.fn().mockResolvedValue({
-			id: testModelId,
-			info: { maxTokens: 32768, contextWindow: 163840, supportsImages: false, supportsPromptCache: false },
-		})
-		const model = await handlerWithModel.fetchModel()
-		expect(model.id).toBe(testModelId)
-	})
-
-	it("completePrompt method should return text from Chutes API", async () => {
-		const expectedResponse = "This is a test response from Chutes"
-		mockCreate.mockResolvedValueOnce({ choices: [{ message: { content: expectedResponse } }] })
-		const result = await handler.completePrompt("test prompt")
-		expect(result).toBe(expectedResponse)
-	})
-
-	it("should handle errors in completePrompt", async () => {
-		const errorMessage = "Chutes API error"
-		mockCreate.mockRejectedValueOnce(new Error(errorMessage))
-		await expect(handler.completePrompt("test prompt")).rejects.toThrow(`Chutes completion error: ${errorMessage}`)
-	})
-
-	it("createMessage should yield text content from stream", async () => {
-		const testContent = "This is test content from Chutes stream"
-
-		mockCreate.mockImplementationOnce(() => {
-			return {
-				[Symbol.asyncIterator]: () => ({
-					next: vi
-						.fn()
-						.mockResolvedValueOnce({
-							done: false,
-							value: { choices: [{ delta: { content: testContent } }] },
-						})
-						.mockResolvedValueOnce({ done: true }),
-				}),
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
 			}
-		})
 
-		const stream = handler.createMessage("system prompt", [])
-		const firstChunk = await stream.next()
+			const mockUsage = Promise.resolve({
+				inputTokens: 10,
+				outputTokens: 5,
+			})
 
-		expect(firstChunk.done).toBe(false)
-		expect(firstChunk.value).toEqual({ type: "text", text: testContent })
-	})
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: mockUsage,
+			})
 
-	it("createMessage should yield usage data from stream", async () => {
-		mockCreate.mockImplementationOnce(() => {
-			return {
-				[Symbol.asyncIterator]: () => ({
-					next: vi
-						.fn()
-						.mockResolvedValueOnce({
-							done: false,
-							value: { choices: [{ delta: {} }], usage: { prompt_tokens: 10, completion_tokens: 20 } },
-						})
-						.mockResolvedValueOnce({ done: true }),
-				}),
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "some-other-model",
+				chutesApiKey: "test-key",
+			})
+
+			const stream = handlerWithModel.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
 			}
-		})
 
-		const stream = handler.createMessage("system prompt", [])
-		const firstChunk = await stream.next()
-
-		expect(firstChunk.done).toBe(false)
-		expect(firstChunk.value).toEqual({ type: "usage", inputTokens: 10, outputTokens: 20 })
-	})
-
-	it("createMessage should yield tool_call_partial from stream", async () => {
-		mockCreate.mockImplementationOnce(() => {
-			return {
-				[Symbol.asyncIterator]: () => ({
-					next: vi
-						.fn()
-						.mockResolvedValueOnce({
-							done: false,
-							value: {
-								choices: [
-									{
-										delta: {
-											tool_calls: [
-												{
-													index: 0,
-													id: "call_123",
-													function: { name: "test_tool", arguments: '{"arg":"value"}' },
-												},
-											],
-										},
-									},
-								],
-							},
-						})
-						.mockResolvedValueOnce({ done: true }),
-				}),
-			}
-		})
-
-		const stream = handler.createMessage("system prompt", [])
-		const firstChunk = await stream.next()
-
-		expect(firstChunk.done).toBe(false)
-		expect(firstChunk.value).toEqual({
-			type: "tool_call_partial",
-			index: 0,
-			id: "call_123",
-			name: "test_tool",
-			arguments: '{"arg":"value"}',
-		})
-	})
-
-	it("createMessage should pass tools and tool_choice to API", async () => {
-		const tools = [
-			{
-				type: "function" as const,
-				function: {
-					name: "test_tool",
-					description: "A test tool",
-					parameters: { type: "object", properties: {} },
+			expect(chunks).toEqual([
+				{ type: "text", text: "Test response" },
+				{
+					type: "usage",
+					inputTokens: 10,
+					outputTokens: 5,
+					cacheReadTokens: undefined,
+					reasoningTokens: undefined,
 				},
-			},
-		]
-		const tool_choice = "auto" as const
+			])
+		})
 
-		mockCreate.mockImplementationOnce(() => {
-			return {
-				[Symbol.asyncIterator]: () => ({
-					next: vi.fn().mockResolvedValueOnce({ done: true }),
-				}),
+		it("should handle DeepSeek R1 reasoning format with TagMatcher", async () => {
+			mockGetModels.mockResolvedValue({
+				"deepseek-ai/DeepSeek-R1-0528": {
+					maxTokens: 32768,
+					contextWindow: 163840,
+					supportsImages: false,
+					supportsPromptCache: false,
+				},
+			})
+
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "<think>Thinking..." }
+				yield { type: "text-delta", text: "</think>Hello" }
 			}
+
+			const mockUsage = Promise.resolve({
+				inputTokens: 10,
+				outputTokens: 5,
+			})
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: mockUsage,
+			})
+
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "deepseek-ai/DeepSeek-R1-0528",
+				chutesApiKey: "test-key",
+			})
+
+			const stream = handlerWithModel.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			expect(chunks).toEqual([
+				{ type: "reasoning", text: "Thinking..." },
+				{ type: "text", text: "Hello" },
+				{
+					type: "usage",
+					inputTokens: 10,
+					outputTokens: 5,
+					cacheReadTokens: undefined,
+					reasoningTokens: undefined,
+				},
+			])
 		})
 
-		const stream = handler.createMessage("system prompt", [], { tools, tool_choice, taskId: "test-task-id" })
-		// Consume stream
-		for await (const _ of stream) {
-			// noop
-		}
+		it("should handle tool calls in R1 path", async () => {
+			mockGetModels.mockResolvedValue({
+				"deepseek-ai/DeepSeek-R1-0528": {
+					maxTokens: 32768,
+					contextWindow: 163840,
+					supportsImages: false,
+					supportsPromptCache: false,
+				},
+			})
 
-		expect(mockCreate).toHaveBeenCalledWith(
-			expect.objectContaining({
-				tools,
-				tool_choice,
-			}),
-		)
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Let me help" }
+				yield {
+					type: "tool-input-start",
+					id: "call_123",
+					toolName: "test_tool",
+				}
+				yield {
+					type: "tool-input-delta",
+					id: "call_123",
+					delta: '{"arg":"value"}',
+				}
+				yield {
+					type: "tool-input-end",
+					id: "call_123",
+				}
+			}
+
+			const mockUsage = Promise.resolve({
+				inputTokens: 15,
+				outputTokens: 10,
+			})
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: mockUsage,
+			})
+
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "deepseek-ai/DeepSeek-R1-0528",
+				chutesApiKey: "test-key",
+			})
+
+			const stream = handlerWithModel.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			expect(chunks).toContainEqual({ type: "text", text: "Let me help" })
+			expect(chunks).toContainEqual({
+				type: "tool_call_start",
+				id: "call_123",
+				name: "test_tool",
+			})
+			expect(chunks).toContainEqual({
+				type: "tool_call_delta",
+				id: "call_123",
+				delta: '{"arg":"value"}',
+			})
+			expect(chunks).toContainEqual({
+				type: "tool_call_end",
+				id: "call_123",
+			})
+		})
+
+		it("should merge system prompt into first user message for R1 path", async () => {
+			mockGetModels.mockResolvedValue({
+				"deepseek-ai/DeepSeek-R1-0528": {
+					maxTokens: 32768,
+					contextWindow: 163840,
+					supportsImages: false,
+					supportsPromptCache: false,
+				},
+			})
+
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 5, outputTokens: 3 }),
+			})
+
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "deepseek-ai/DeepSeek-R1-0528",
+				chutesApiKey: "test-key",
+			})
+
+			const stream = handlerWithModel.createMessage(systemPrompt, messages)
+			for await (const _ of stream) {
+				// consume
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					messages: expect.any(Array),
+				}),
+			)
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.system).toBeUndefined()
+		})
+
+		it("should pass system prompt separately for non-R1 path", async () => {
+			mockGetModels.mockResolvedValue({
+				"some-model": { maxTokens: 1024, contextWindow: 8192, supportsPromptCache: false },
+			})
+
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 5, outputTokens: 3 }),
+			})
+
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "some-model",
+				chutesApiKey: "test-key",
+			})
+
+			const stream = handlerWithModel.createMessage(systemPrompt, messages)
+			for await (const _ of stream) {
+				// consume
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					system: systemPrompt,
+				}),
+			)
+		})
+
+		it("should include usage information from stream", async () => {
+			mockGetModels.mockResolvedValue({
+				"some-model": { maxTokens: 1024, contextWindow: 8192, supportsPromptCache: false },
+			})
+
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Hello" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 20,
+					outputTokens: 10,
+				}),
+			})
+
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "some-model",
+				chutesApiKey: "test-key",
+			})
+
+			const stream = handlerWithModel.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0].inputTokens).toBe(20)
+			expect(usageChunks[0].outputTokens).toBe(10)
+		})
 	})
 
-	it("should apply DeepSeek default temperature for R1 models", () => {
-		const testModelId = "deepseek-ai/DeepSeek-R1"
-		const handlerWithModel = new ChutesHandler({
-			apiModelId: testModelId,
-			chutesApiKey: "test-chutes-api-key",
+	describe("completePrompt", () => {
+		it("should return text from generateText", async () => {
+			const expectedResponse = "This is a test response from Chutes"
+			mockGenerateText.mockResolvedValue({ text: expectedResponse })
+
+			const result = await handler.completePrompt("test prompt")
+			expect(result).toBe(expectedResponse)
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					prompt: "test prompt",
+				}),
+			)
 		})
-		const model = handlerWithModel.getModel()
-		expect(model.info.temperature).toBe(DEEP_SEEK_DEFAULT_TEMPERATURE)
+
+		it("should handle errors in completePrompt", async () => {
+			const errorMessage = "Chutes API error"
+			mockGenerateText.mockRejectedValue(new Error(errorMessage))
+			await expect(handler.completePrompt("test prompt")).rejects.toThrow(
+				`Chutes completion error: ${errorMessage}`,
+			)
+		})
+
+		it("should pass temperature for R1 models in completePrompt", async () => {
+			mockGetModels.mockResolvedValue({
+				"deepseek-ai/DeepSeek-R1-0528": {
+					maxTokens: 32768,
+					contextWindow: 163840,
+					supportsImages: false,
+					supportsPromptCache: false,
+				},
+			})
+
+			mockGenerateText.mockResolvedValue({ text: "response" })
+
+			const handlerWithModel = new ChutesHandler({
+				apiModelId: "deepseek-ai/DeepSeek-R1-0528",
+				chutesApiKey: "test-key",
+			})
+
+			await handlerWithModel.completePrompt("test prompt")
+
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					temperature: DEEP_SEEK_DEFAULT_TEMPERATURE,
+				}),
+			)
+		})
 	})
 
-	it("should use default temperature for non-DeepSeek models", () => {
-		const testModelId = "unsloth/Llama-3.3-70B-Instruct"
-		const handlerWithModel = new ChutesHandler({
-			apiModelId: testModelId,
-			chutesApiKey: "test-chutes-api-key",
+	describe("isAiSdkProvider", () => {
+		it("should return true", () => {
+			expect(handler.isAiSdkProvider()).toBe(true)
 		})
-		// Note: getModel() returns fallback default without calling fetchModel
-		// Since we haven't called fetchModel, it returns the default chutesDefaultModelId
-		// which is DeepSeek-R1-0528, therefore temperature will be DEEP_SEEK_DEFAULT_TEMPERATURE
-		const model = handlerWithModel.getModel()
-		// The default model is DeepSeek-R1, so it returns DEEP_SEEK_DEFAULT_TEMPERATURE
-		expect(model.info.temperature).toBe(DEEP_SEEK_DEFAULT_TEMPERATURE)
 	})
 })

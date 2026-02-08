@@ -296,6 +296,13 @@ export function filterNativeToolsForMode(
 		allowedToolNames.delete("browser_action")
 	}
 
+	// Remove tools that are explicitly disabled via the disabledTools setting
+	if (settings?.disabledTools?.length) {
+		for (const toolName of settings.disabledTools) {
+			allowedToolNames.delete(toolName)
+		}
+	}
+
 	// Conditionally exclude access_mcp_resource if MCP is not enabled or there are no resources
 	if (!mcpHub || !hasAnyMcpResources(mcpHub)) {
 		allowedToolNames.delete("access_mcp_resource")

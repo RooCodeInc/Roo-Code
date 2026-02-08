@@ -186,4 +186,8 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 
 		return text
 	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
 }

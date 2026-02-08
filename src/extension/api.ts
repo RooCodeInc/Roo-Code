@@ -20,10 +20,13 @@ import {
 	IpcMessageType,
 } from "@roo-code/types"
 import { IpcServer } from "@roo-code/ipc"
+import { CloudService } from "@roo-code/cloud"
 
 import { Package } from "../shared/package"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import { openClineInNewTab } from "../activate/registerCommands"
+import { getCommands } from "../services/command/commands"
+import { getModels } from "../api/providers/fetchers/modelCache"
 
 export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 	private readonly outputChannel: vscode.OutputChannel
@@ -64,7 +67,15 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 			ipc.listen()
 			this.log(`[API] ipc server started: socketPath=${socketPath}, pid=${process.pid}, ppid=${process.ppid}`)
 
-			ipc.on(IpcMessageType.TaskCommand, async (_clientId, command) => {
+			ipc.on(IpcMessageType.TaskCommand, async (clientId, command) => {
+				const sendResponse = (eventName: RooCodeEventName, payload: unknown[]) => {
+					ipc.send(clientId, {
+						type: IpcMessageType.TaskEvent,
+						origin: IpcOrigin.Server,
+						data: { eventName, payload } as TaskEvent,
+					})
+				}
+
 				switch (command.commandName) {
 					case TaskCommandName.StartNewTask:
 						this.log(
@@ -88,13 +99,56 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 						} catch (error) {
 							const errorMessage = error instanceof Error ? error.message : String(error)
 							this.log(`[API] ResumeTask failed for taskId ${command.data}: ${errorMessage}`)
-							// Don't rethrow - we want to prevent IPC server crashes
-							// The error is logged for debugging purposes
+							// Don't rethrow - we want to prevent IPC server crashes.
+							// The error is logged for debugging purposes.
 						}
 						break
 					case TaskCommandName.SendMessage:
 						this.log(`[API] SendMessage -> ${command.data.text}`)
 						await this.sendMessage(command.data.text, command.data.images)
+						break
+					case TaskCommandName.GetCommands:
+						try {
+							const commands = await getCommands(this.sidebarProvider.cwd)
+
+							sendResponse(RooCodeEventName.CommandsResponse, [
+								commands.map((cmd) => ({
+									name: cmd.name,
+									source: cmd.source,
+									filePath: cmd.filePath,
+									description: cmd.description,
+									argumentHint: cmd.argumentHint,
+								})),
+							])
+						} catch (error) {
+							sendResponse(RooCodeEventName.CommandsResponse, [[]])
+						}
+
+						break
+					case TaskCommandName.GetModes:
+						try {
+							const modes = await this.sidebarProvider.getModes()
+							sendResponse(RooCodeEventName.ModesResponse, [modes])
+						} catch (error) {
+							sendResponse(RooCodeEventName.ModesResponse, [[]])
+						}
+
+						break
+					case TaskCommandName.GetModels:
+						try {
+							const models = await getModels({
+								provider: "roo" as const,
+								baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+								apiKey: CloudService.hasInstance()
+									? CloudService.instance.authService?.getSessionToken()
+									: undefined,
+							})
+
+							sendResponse(RooCodeEventName.ModelsResponse, [models])
+						} catch (error) {
+							sendResponse(RooCodeEventName.ModelsResponse, [{}])
+						}
+
 						break
 				}
 			})

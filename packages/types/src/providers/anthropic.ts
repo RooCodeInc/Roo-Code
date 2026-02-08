@@ -1,6 +1,7 @@
 import type { ModelInfo } from "../model.js"
 
 // https://docs.anthropic.com/en/docs/about-claude/models
+// https://platform.claude.com/docs/en/about-claude/pricing
 
 export type AnthropicModelId = keyof typeof anthropicModels
 export const anthropicDefaultModelId: AnthropicModelId = "claude-sonnet-4-5"
@@ -45,6 +46,27 @@ export const anthropicModels = {
 				outputPrice: 22.5, // $22.50 per million output tokens (>200K context)
 				cacheWritesPrice: 7.5, // $7.50 per million tokens (>200K context)
 				cacheReadsPrice: 0.6, // $0.60 per million tokens (>200K context)
+			},
+		],
+	},
+	"claude-opus-4-6": {
+		maxTokens: 128_000, // Overridden to 8k if `enableReasoningEffort` is false.
+		contextWindow: 200_000, // Default 200K, extendable to 1M with beta flag
+		supportsImages: true,
+		supportsPromptCache: true,
+		inputPrice: 5.0, // $5 per million input tokens (≤200K context)
+		outputPrice: 25.0, // $25 per million output tokens (≤200K context)
+		cacheWritesPrice: 6.25, // $6.25 per million tokens
+		cacheReadsPrice: 0.5, // $0.50 per million tokens
+		supportsReasoningBudget: true,
+		// Tiered pricing for extended context (requires beta flag)
+		tiers: [
+			{
+				contextWindow: 1_000_000, // 1M tokens with beta flag
+				inputPrice: 10.0, // $10 per million input tokens (>200K context)
+				outputPrice: 37.5, // $37.50 per million output tokens (>200K context)
+				cacheWritesPrice: 12.5, // $12.50 per million tokens (>200K context)
+				cacheReadsPrice: 1.0, // $1.00 per million tokens (>200K context)
 			},
 		],
 	},

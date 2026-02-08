@@ -32,6 +32,14 @@ vi.mock("@/utils/docLinks", () => ({
 	buildDocLink: (path: string, anchor?: string) => `https://docs.example.com/${path}${anchor ? `#${anchor}` : ""}`,
 }))
 
+// Mock modes
+vi.mock("@roo/modes", () => ({
+	getAllModes: () => [
+		{ slug: "code", name: "Code" },
+		{ slug: "architect", name: "Architect" },
+	],
+}))
+
 // Mock UI components
 vi.mock("@/components/ui", () => ({
 	AlertDialog: ({ children, open }: any) => (
@@ -65,23 +73,43 @@ vi.mock("@/components/ui", () => ({
 			{children}
 		</button>
 	),
-}))
-
-// Mock SkillItem component
-vi.mock("../SkillItem", () => ({
-	SkillItem: ({ skill, onEdit, onDelete }: any) => (
-		<div data-testid={`skill-item-${skill.name}`}>
-			<span>{skill.name}</span>
-			{skill.description && <span>{skill.description}</span>}
-			{skill.mode && <span data-testid={`skill-mode-${skill.name}`}>{skill.mode}</span>}
-			<button onClick={onEdit} data-testid={`edit-${skill.name}`}>
-				Edit
-			</button>
-			<button onClick={onDelete} data-testid={`delete-${skill.name}`}>
-				Delete
-			</button>
+	StandardTooltip: ({ children }: any) => <>{children}</>,
+	Dialog: ({ children, open, _onOpenChange }: any) => (
+		<div data-testid="mode-dialog" data-open={open}>
+			{open && children}
 		</div>
 	),
+	DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
+	DialogHeader: ({ children }: any) => <div data-testid="dialog-header">{children}</div>,
+	DialogTitle: ({ children }: any) => <div data-testid="dialog-title">{children}</div>,
+	DialogDescription: ({ children }: any) => <div data-testid="dialog-description">{children}</div>,
+	DialogFooter: ({ children }: any) => <div data-testid="dialog-footer">{children}</div>,
+	Checkbox: ({ id, checked, onCheckedChange }: any) => (
+		<input
+			type="checkbox"
+			id={id}
+			checked={checked}
+			onChange={(e) => onCheckedChange?.(e.target.checked)}
+			data-testid={`checkbox-${id}`}
+		/>
+	),
+	Select: ({ children, value, _onValueChange }: any) => (
+		<div data-testid="select" data-value={value}>
+			{children}
+		</div>
+	),
+	SelectTrigger: ({ children, className }: any) => (
+		<button data-testid="select-trigger" className={className}>
+			{children}
+		</button>
+	),
+	SelectContent: ({ children }: any) => <div data-testid="select-content">{children}</div>,
+	SelectItem: ({ children, value }: any) => (
+		<div data-testid={`select-item-${value}`} data-value={value}>
+			{children}
+		</div>
+	),
+	SelectValue: () => <span data-testid="select-value" />,
 }))
 
 // Mock CreateSkillDialog component
@@ -102,18 +130,9 @@ vi.mock("../CreateSkillDialog", () => ({
 	),
 }))
 
-// Mock SectionHeader and Section components
+// Mock SectionHeader component
 vi.mock("../SectionHeader", () => ({
 	SectionHeader: ({ children }: any) => <div data-testid="section-header">{children}</div>,
-}))
-
-vi.mock("../Section", () => ({
-	Section: ({ children }: any) => <div data-testid="section">{children}</div>,
-}))
-
-// Mock SearchableSetting
-vi.mock("../SearchableSetting", () => ({
-	SearchableSetting: ({ children }: any) => <div data-testid="searchable-setting">{children}</div>,
 }))
 
 const mockSkills: SkillMetadata[] = [
@@ -126,9 +145,9 @@ const mockSkills: SkillMetadata[] = [
 	{
 		name: "project-mode-skill",
 		description: "A project mode-specific skill",
-		path: "/workspace/.roo/skills-architect/project-mode-skill/SKILL.md",
+		path: "/workspace/.roo/skills/project-mode-skill/SKILL.md",
 		source: "project",
-		mode: "architect",
+		modeSlugs: ["architect"],
 	},
 	{
 		name: "global-skill",
@@ -192,29 +211,29 @@ describe("SkillsSettings", () => {
 	it("displays project skills section when in a workspace", () => {
 		renderSkillsSettings()
 
-		expect(screen.getByText("settings:skills.projectSkills")).toBeInTheDocument()
-		expect(screen.getByTestId("skill-item-project-skill")).toBeInTheDocument()
+		expect(screen.getByText("settings:skills.workspaceSkills")).toBeInTheDocument()
+		expect(screen.getByText("project-skill")).toBeInTheDocument()
 	})
 
 	it("displays global skills section", () => {
 		renderSkillsSettings()
 
 		expect(screen.getByText("settings:skills.globalSkills")).toBeInTheDocument()
-		expect(screen.getByTestId("skill-item-global-skill")).toBeInTheDocument()
+		expect(screen.getByText("global-skill")).toBeInTheDocument()
 	})
 
 	it("does not display project skills section when not in a workspace", () => {
 		const globalOnlySkills = mockSkills.filter((s) => s.source === "global")
 		renderSkillsSettings(globalOnlySkills, "")
 
-		expect(screen.queryByText("settings:skills.projectSkills")).not.toBeInTheDocument()
+		expect(screen.queryByText("settings:skills.workspaceSkills")).not.toBeInTheDocument()
 	})
 
 	it("shows empty state for project skills when none exist", () => {
 		const globalOnlySkills = mockSkills.filter((s) => s.source === "global")
 		renderSkillsSettings(globalOnlySkills)
 
-		expect(screen.getByText("settings:skills.noProjectSkills")).toBeInTheDocument()
+		expect(screen.getByText("settings:skills.noWorkspaceSkills")).toBeInTheDocument()
 	})
 
 	it("shows empty state for global skills when none exist", () => {
@@ -228,25 +247,29 @@ describe("SkillsSettings", () => {
 		renderSkillsSettings()
 
 		// Project skills
-		expect(screen.getByTestId("skill-item-project-skill")).toBeInTheDocument()
-		expect(screen.getByTestId("skill-item-project-mode-skill")).toBeInTheDocument()
+		expect(screen.getByText("project-skill")).toBeInTheDocument()
+		expect(screen.getByText("project-mode-skill")).toBeInTheDocument()
 
 		// Global skills
-		expect(screen.getByTestId("skill-item-global-skill")).toBeInTheDocument()
+		expect(screen.getByText("global-skill")).toBeInTheDocument()
 	})
 
-	it("displays mode badge for mode-specific skills", () => {
+	it("displays skill descriptions", () => {
 		renderSkillsSettings()
 
-		expect(screen.getByTestId("skill-mode-project-mode-skill")).toBeInTheDocument()
-		expect(screen.getByText("architect")).toBeInTheDocument()
+		expect(screen.getByText("A project skill")).toBeInTheDocument()
+		expect(screen.getByText("A global skill")).toBeInTheDocument()
 	})
 
 	it("opens create skill dialog when add button is clicked", () => {
 		renderSkillsSettings()
 
-		const addButtons = screen.getAllByTestId("button")
-		fireEvent.click(addButtons[0])
+		// There's now a single "Add Skill" button at the top
+		const addButton = screen
+			.getAllByTestId("button")
+			.find((btn) => btn.textContent?.includes("settings:skills.addSkill"))
+		expect(addButton).toBeInTheDocument()
+		fireEvent.click(addButton!)
 
 		expect(screen.getByTestId("create-skill-dialog")).toHaveAttribute("data-open", "true")
 	})
@@ -254,8 +277,13 @@ describe("SkillsSettings", () => {
 	it("opens delete confirmation dialog when delete button is clicked", () => {
 		renderSkillsSettings()
 
-		const deleteButton = screen.getByTestId("delete-project-skill")
-		fireEvent.click(deleteButton)
+		// Find all delete buttons (buttons with Trash icon)
+		const buttons = screen.getAllByTestId("button")
+		// The delete button should be after the edit button for each skill
+		// Find the first delete button (for project-skill)
+		const deleteButtons = buttons.filter((btn) => btn.querySelector('[class*="text-destructive"]'))
+		expect(deleteButtons.length).toBeGreaterThan(0)
+		fireEvent.click(deleteButtons[0])
 
 		expect(screen.getByTestId("alert-dialog")).toHaveAttribute("data-open", "true")
 		expect(screen.getByText("settings:skills.deleteDialog.title")).toBeInTheDocument()
@@ -264,8 +292,10 @@ describe("SkillsSettings", () => {
 	it("deletes skill when confirmation is clicked", async () => {
 		renderSkillsSettings()
 
-		const deleteButton = screen.getByTestId("delete-project-skill")
-		fireEvent.click(deleteButton)
+		// Find and click delete button
+		const buttons = screen.getAllByTestId("button")
+		const deleteButtons = buttons.filter((btn) => btn.querySelector('[class*="text-destructive"]'))
+		fireEvent.click(deleteButtons[0])
 
 		const confirmButton = screen.getByTestId("alert-dialog-action")
 		fireEvent.click(confirmButton)
@@ -283,8 +313,10 @@ describe("SkillsSettings", () => {
 	it("cancels deletion when cancel is clicked", () => {
 		renderSkillsSettings()
 
-		const deleteButton = screen.getByTestId("delete-project-skill")
-		fireEvent.click(deleteButton)
+		// Find and click delete button
+		const buttons = screen.getAllByTestId("button")
+		const deleteButtons = buttons.filter((btn) => btn.querySelector('[class*="text-destructive"]'))
+		fireEvent.click(deleteButtons[0])
 
 		const cancelButton = screen.getByTestId("alert-dialog-cancel")
 		fireEvent.click(cancelButton)
@@ -295,8 +327,19 @@ describe("SkillsSettings", () => {
 	it("opens skill file when edit button is clicked", () => {
 		renderSkillsSettings()
 
-		const editButton = screen.getByTestId("edit-project-skill")
-		fireEvent.click(editButton)
+		// Find edit buttons (buttons without destructive class that are icon size)
+		const buttons = screen.getAllByTestId("button")
+		// Filter to find edit buttons (the ones with Edit icon, not Add, Delete, or Settings/Gear)
+		// Edit button uses lucide-square-pen icon, Settings uses lucide-settings
+		const editButtons = buttons.filter(
+			(btn) =>
+				btn.getAttribute("data-size") === "icon" &&
+				!btn.querySelector('[class*="text-destructive"]') &&
+				!btn.querySelector('[class*="lucide-settings"]') &&
+				btn.querySelector('[class*="lucide-square-pen"]'),
+		)
+		// Click the first edit button (for project-skill)
+		fireEvent.click(editButtons[0])
 
 		expect(vscode.postMessage).toHaveBeenCalledWith({
 			type: "openSkillFile",
@@ -306,47 +349,16 @@ describe("SkillsSettings", () => {
 		})
 	})
 
-	it("sends mode when editing mode-specific skill", () => {
-		renderSkillsSettings()
-
-		const editButton = screen.getByTestId("edit-project-mode-skill")
-		fireEvent.click(editButton)
-
-		expect(vscode.postMessage).toHaveBeenCalledWith({
-			type: "openSkillFile",
-			skillName: "project-mode-skill",
-			source: "project",
-			skillMode: "architect",
-		})
-	})
-
-	it("sends mode when deleting mode-specific skill", async () => {
-		renderSkillsSettings()
-
-		const deleteButton = screen.getByTestId("delete-project-mode-skill")
-		fireEvent.click(deleteButton)
-
-		const confirmButton = screen.getByTestId("alert-dialog-action")
-		fireEvent.click(confirmButton)
-
-		await waitFor(() => {
-			expect(vscode.postMessage).toHaveBeenCalledWith({
-				type: "deleteSkill",
-				skillName: "project-mode-skill",
-				source: "project",
-				skillMode: "architect",
-			})
-		})
-	})
-
 	it("does not manually refresh after deletion (backend sends updated skills via context)", async () => {
 		renderSkillsSettings()
 
 		// Clear mock calls after initial mount
 		;(vscode.postMessage as any).mockClear()
 
-		const deleteButton = screen.getByTestId("delete-project-skill")
-		fireEvent.click(deleteButton)
+		// Find and click delete button
+		const buttons = screen.getAllByTestId("button")
+		const deleteButtons = buttons.filter((btn) => btn.querySelector('[class*="text-destructive"]'))
+		fireEvent.click(deleteButtons[0])
 
 		const confirmButton = screen.getByTestId("alert-dialog-action")
 		fireEvent.click(confirmButton)
@@ -375,8 +387,10 @@ describe("SkillsSettings", () => {
 		;(vscode.postMessage as any).mockClear()
 
 		// Open create dialog
-		const addButtons = screen.getAllByTestId("button")
-		fireEvent.click(addButtons[0])
+		const addButton = screen
+			.getAllByTestId("button")
+			.find((btn) => btn.textContent?.includes("settings:skills.addSkill"))
+		fireEvent.click(addButton!)
 
 		// Simulate skill creation
 		const createButton = screen.getByTestId("create-skill-button")
@@ -392,7 +406,7 @@ describe("SkillsSettings", () => {
 	it("renders empty state when no skills exist", () => {
 		renderSkillsSettings([])
 
-		expect(screen.getByText("settings:skills.noProjectSkills")).toBeInTheDocument()
+		expect(screen.getByText("settings:skills.noWorkspaceSkills")).toBeInTheDocument()
 		expect(screen.getByText("settings:skills.noGlobalSkills")).toBeInTheDocument()
 	})
 
@@ -420,17 +434,17 @@ describe("SkillsSettings", () => {
 
 		renderSkillsSettings(multipleSkills)
 
-		expect(screen.getByTestId("skill-item-skill-1")).toBeInTheDocument()
-		expect(screen.getByTestId("skill-item-skill-2")).toBeInTheDocument()
-		expect(screen.getByTestId("skill-item-skill-3")).toBeInTheDocument()
+		expect(screen.getByText("skill-1")).toBeInTheDocument()
+		expect(screen.getByText("skill-2")).toBeInTheDocument()
+		expect(screen.getByText("skill-3")).toBeInTheDocument()
 	})
 
-	it("renders add skill button in each section", () => {
+	it("renders a single add skill button", () => {
 		renderSkillsSettings()
 
-		// Should have two "Add Skill" buttons - one for project, one for global
+		// Should have one "Add Skill" button at the top
 		const buttons = screen.getAllByTestId("button")
 		const addButtons = buttons.filter((btn) => btn.textContent?.includes("settings:skills.addSkill"))
-		expect(addButtons.length).toBe(2)
+		expect(addButtons.length).toBe(1)
 	})
 })

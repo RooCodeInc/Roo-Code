@@ -37,6 +37,7 @@ import {
 	handleCreateSkill,
 	handleDeleteSkill,
 	handleMoveSkill,
+	handleUpdateSkillModes,
 	handleOpenSkillFile,
 } from "./skillsMessageHandler"
 import { changeLanguage, t } from "../../i18n"
@@ -497,12 +498,18 @@ export const webviewMessageHandler = async (
 						if (!checkExistKey(listApiConfig[0])) {
 							const { apiConfiguration } = await provider.getState()
 
-							await provider.providerSettingsManager.saveConfig(
-								listApiConfig[0].name ?? "default",
-								apiConfiguration,
-							)
+							// Only save if the current configuration has meaningful settings
+							// (e.g., API keys). This prevents saving a default "anthropic"
+							// fallback when no real config exists, which can happen during
+							// CLI initialization before provider settings are applied.
+							if (checkExistKey(apiConfiguration)) {
+								await provider.providerSettingsManager.saveConfig(
+									listApiConfig[0].name ?? "default",
+									apiConfiguration,
+								)
 
-							listApiConfig[0].apiProvider = apiConfiguration.apiProvider
+								listApiConfig[0].apiProvider = apiConfiguration.apiProvider
+							}
 						}
 					}
 
@@ -894,7 +901,7 @@ export const webviewMessageHandler = async (
 
 			// Base candidates (only those handled by this aggregate fetcher)
 			const candidates: { key: RouterName; options: GetModelsOptions }[] = [
-				{ key: "openrouter", options: { provider: "openrouter" } },
+				{ key: "openrouter", options: { provider: "openrouter", baseUrl: apiConfiguration.openRouterBaseUrl } },
 				{
 					key: "requesty",
 					options: {
@@ -1653,6 +1660,14 @@ export const webviewMessageHandler = async (
 			await updateGlobalState("hasOpenedModeSelector", message.bool ?? true)
 			await provider.postStateToWebview()
 			break
+
+		case "lockApiConfigAcrossModes": {
+			const enabled = message.bool ?? false
+			await provider.context.workspaceState.update("lockApiConfigAcrossModes", enabled)
+
+			await provider.postStateToWebview()
+			break
+		}
 
 		case "toggleApiConfigPin":
 			if (message.text) {
@@ -2990,6 +3005,10 @@ export const webviewMessageHandler = async (
 		}
 		case "moveSkill": {
 			await handleMoveSkill(provider, message)
+			break
+		}
+		case "updateSkillModes": {
+			await handleUpdateSkillModes(provider, message)
 			break
 		}
 		case "openSkillFile": {

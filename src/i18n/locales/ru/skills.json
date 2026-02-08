@@ -8,6 +8,7 @@
 		"not_found": "Навык \"{{name}}\" не найден в {{source}}{{modeInfo}}",
 		"missing_create_fields": "Отсутствуют обязательные поля: skillName, source или skillDescription",
 		"missing_move_fields": "Отсутствуют обязательные поля: skillName или source",
+		"missing_update_modes_fields": "Отсутствуют обязательные поля: skillName или source",
 		"manager_unavailable": "Менеджер навыков недоступен",
 		"missing_delete_fields": "Отсутствуют обязательные поля: skillName или source",
 		"skill_not_found": "Навык \"{{name}}\" не найден",
