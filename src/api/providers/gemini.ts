@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createGoogleGenerativeAI, type GoogleGenerativeAIProvider } from "@ai-sdk/google"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, NoOutputGeneratedError, ToolSet } from "ai"
 
 import {
 	type ModelInfo,
@@ -131,6 +131,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			// Use streamText for streaming responses
 			const result = streamText(requestOptions)
 
+			// Track whether any text content was yielded (not just reasoning/thinking)
+			let hasContent = false
+
 			// Process the full stream to get all events including reasoning
 			for await (const part of result.fullStream) {
 				// Capture thoughtSignature from tool-call events (Gemini 3 thought signatures)
@@ -143,7 +146,19 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 
 				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "text" || chunk.type === "tool_call_start") {
+						hasContent = true
+					}
 					yield chunk
+				}
+			}
+
+			// If the stream completed without yielding any text content, inform the user
+			// TODO: Move to i18n key common:errors.gemini.empty_response once translation pipeline is updated
+			if (!hasContent) {
+				yield {
+					type: "text" as const,
+					text: "Model returned an empty response. This may be caused by an unsupported thinking configuration or content filtering.",
 				}
 			}
 
@@ -167,9 +182,23 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			// Yield usage metrics at the end
-			const usage = await result.usage
-			if (usage) {
-				yield this.processUsageMetrics(usage, info, providerMetadata)
+			// Wrap in try-catch to handle NoOutputGeneratedError thrown by the AI SDK
+			// when the stream produces no output (e.g., thinking-only, safety block)
+			try {
+				const usage = await result.usage
+				if (usage) {
+					yield this.processUsageMetrics(usage, info, providerMetadata)
+				}
+			} catch (usageError) {
+				if (usageError instanceof NoOutputGeneratedError) {
+					// If we already yielded the empty-stream message, suppress this error
+					if (hasContent) {
+						throw usageError
+					}
+					// Otherwise the informative message was already yielded above — no-op
+				} else {
+					throw usageError
+				}
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)
