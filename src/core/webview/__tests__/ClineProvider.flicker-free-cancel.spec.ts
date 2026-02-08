@@ -78,9 +78,6 @@ vi.mock("@roo-code/cloud", () => ({
 			isAuthenticated: vi.fn().mockReturnValue(false),
 		},
 	},
-	BridgeOrchestrator: {
-		isEnabled: vi.fn().mockReturnValue(false),
-	},
 	getRooCodeApiUrl: vi.fn().mockReturnValue("https://api.roo-code.com"),
 }))
 

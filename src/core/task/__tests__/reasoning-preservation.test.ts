@@ -80,9 +80,6 @@ vi.mock("@roo-code/cloud", () => ({
 	CloudService: {
 		isEnabled: () => false,
 	},
-	BridgeOrchestrator: {
-		subscribeToTask: vi.fn(),
-	},
 }))
 
 // Mock delay to prevent actual delays

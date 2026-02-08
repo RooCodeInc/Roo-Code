@@ -89,7 +89,6 @@ describe("StaticTokenAuthService", () => {
 			const userInfo = serviceWithJWT.getUserInfo()
 			expect(userInfo?.id).toBe("user_2xmBhejNeDTwanM8CgIOnMgVxzC")
 			expect(userInfo?.organizationId).toBe("org_123abc")
-			expect(userInfo?.extensionBridgeEnabled).toBe(true)
 		})
 
 		it("should parse job token without orgId (null orgId case)", () => {
@@ -98,7 +97,6 @@ describe("StaticTokenAuthService", () => {
 			const userInfo = serviceWithJWT.getUserInfo()
 			expect(userInfo?.id).toBe("user_2xmBhejNeDTwanM8CgIOnMgVxzC")
 			expect(userInfo?.organizationId).toBeUndefined()
-			expect(userInfo?.extensionBridgeEnabled).toBe(true)
 		})
 
 		it("should parse auth token and extract userId from r.u", () => {
@@ -107,7 +105,6 @@ describe("StaticTokenAuthService", () => {
 			const userInfo = serviceWithAuthToken.getUserInfo()
 			expect(userInfo?.id).toBe("user_123")
 			expect(userInfo?.organizationId).toBeUndefined()
-			expect(userInfo?.extensionBridgeEnabled).toBe(true)
 		})
 
 		it("should handle legacy JWT format with sub field", () => {
@@ -116,7 +113,6 @@ describe("StaticTokenAuthService", () => {
 			const userInfo = serviceWithLegacyJWT.getUserInfo()
 			expect(userInfo?.id).toBe("user_123")
 			expect(userInfo?.organizationId).toBeUndefined()
-			expect(userInfo?.extensionBridgeEnabled).toBe(true)
 		})
 
 		it("should handle invalid JWT gracefully", () => {
@@ -125,7 +121,6 @@ describe("StaticTokenAuthService", () => {
 			const userInfo = serviceWithInvalidJWT.getUserInfo()
 			expect(userInfo?.id).toBeUndefined()
 			expect(userInfo?.organizationId).toBeUndefined()
-			expect(userInfo?.extensionBridgeEnabled).toBe(true)
 
 			expect(mockLog).toHaveBeenCalledWith("[auth] Failed to parse JWT:", expect.any(Error))
 		})
@@ -183,9 +178,7 @@ describe("StaticTokenAuthService", () => {
 			authService.broadcast()
 
 			expect(spy).toHaveBeenCalledWith({
-				userInfo: expect.objectContaining({
-					extensionBridgeEnabled: true,
-				}),
+				userInfo: expect.objectContaining({}),
 			})
 		})
 
@@ -199,7 +192,6 @@ describe("StaticTokenAuthService", () => {
 
 			expect(spy).toHaveBeenCalledWith({
 				userInfo: {
-					extensionBridgeEnabled: true,
 					id: "user_2xmBhejNeDTwanM8CgIOnMgVxzC",
 					organizationId: "org_123abc",
 				},
@@ -220,10 +212,9 @@ describe("StaticTokenAuthService", () => {
 	})
 
 	describe("getUserInfo", () => {
-		it("should return object with extensionBridgeEnabled flag", () => {
+		it("should return user info object", () => {
 			const userInfo = authService.getUserInfo()
-			expect(userInfo).toHaveProperty("extensionBridgeEnabled")
-			expect(userInfo?.extensionBridgeEnabled).toBe(true)
+			expect(userInfo).toBeDefined()
 		})
 	})
 
@@ -305,9 +296,7 @@ describe("StaticTokenAuthService", () => {
 			})
 
 			expect(userInfoSpy).toHaveBeenCalledWith({
-				userInfo: expect.objectContaining({
-					extensionBridgeEnabled: true,
-				}),
+				userInfo: expect.objectContaining({}),
 			})
 		})
 	})

@@ -54,7 +54,7 @@ import {
 	countEnabledMcpTools,
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
-import { CloudService, BridgeOrchestrator } from "@roo-code/cloud"
+import { CloudService } from "@roo-code/cloud"
 
 // api
 import { ApiHandler, ApiHandlerCreateMessageMetadata, buildApiHandler } from "../../api"
@@ -144,7 +144,6 @@ export interface TaskOptions extends CreateTaskOptions {
 	apiConfiguration: ProviderSettings
 	enableCheckpoints?: boolean
 	checkpointTimeout?: number
-	enableBridge?: boolean
 	consecutiveMistakeLimit?: number
 	task?: string
 	images?: string[]
@@ -336,9 +335,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	checkpointTimeout: number
 	checkpointService?: RepoPerTaskCheckpointService
 	checkpointServiceInitializing = false
-
-	// Task Bridge
-	enableBridge: boolean
 
 	// Message Queue Service
 	public readonly messageQueueService: MessageQueueService
@@ -551,7 +547,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		apiConfiguration,
 		enableCheckpoints = true,
 		checkpointTimeout = DEFAULT_CHECKPOINT_TIMEOUT_SECONDS,
-		enableBridge = false,
 		consecutiveMistakeLimit = DEFAULT_CONSECUTIVE_MISTAKE_LIMIT,
 		task,
 		images,
@@ -645,7 +640,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.diffViewProvider = new DiffViewProvider(this.cwd, this)
 		this.enableCheckpoints = enableCheckpoints
 		this.checkpointTimeout = checkpointTimeout
-		this.enableBridge = enableBridge
 
 		this.parentTask = parentTask
 		this.taskNumber = taskNumber
@@ -2068,16 +2062,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	private async startTask(task?: string, images?: string[]): Promise<void> {
 		try {
-			if (this.enableBridge) {
-				try {
-					await BridgeOrchestrator.subscribeToTask(this)
-				} catch (error) {
-					console.error(
-						`[Task#startTask] BridgeOrchestrator.subscribeToTask() failed: ${error instanceof Error ? error.message : String(error)}`,
-					)
-				}
-			}
-
 			// `conversationHistory` (for API) and `clineMessages` (for webview)
 			// need to be in sync.
 			// If the extension process were killed, then on restart the
@@ -2141,16 +2125,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	private async resumeTaskFromHistory() {
-		if (this.enableBridge) {
-			try {
-				await BridgeOrchestrator.subscribeToTask(this)
-			} catch (error) {
-				console.error(
-					`[Task#resumeTaskFromHistory] BridgeOrchestrator.subscribeToTask() failed: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-		}
-
 		const modifiedClineMessages = await this.getSavedClineMessages()
 
 		// Remove any resume messages that may have been added before.
@@ -2458,16 +2432,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			this.removeAllListeners()
 		} catch (error) {
 			console.error("Error removing event listeners:", error)
-		}
-
-		if (this.enableBridge) {
-			BridgeOrchestrator.getInstance()
-				?.unsubscribeFromTask(this.taskId)
-				.catch((error) =>
-					console.error(
-						`[Task#dispose] BridgeOrchestrator#unsubscribeFromTask() failed: ${error instanceof Error ? error.message : String(error)}`,
-					),
-				)
 		}
 
 		// Release any terminals associated with this task.
