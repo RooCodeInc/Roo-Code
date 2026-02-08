@@ -10,6 +10,7 @@ import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCal
 import { TagMatcher } from "../../utils/tag-matcher"
 
 import { convertToOpenAiMessages } from "../transform/openai-format"
+import { convertToZAiFormat } from "../transform/zai-format"
 import { ApiStream } from "../transform/stream"
 
 import { BaseProvider } from "./base-provider"
@@ -17,11 +18,13 @@ import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from ".
 import { getModelsFromCache } from "./fetchers/modelCache"
 import { getApiRequestTimeout } from "./utils/timeout-config"
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { detectGlmModel, logGlmDetection, type GlmModelConfig } from "./utils/glm-model-detection"
 
 export class LmStudioHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
 	private client: OpenAI
 	private readonly providerName = "LM Studio"
+	private glmConfig: GlmModelConfig
 
 	constructor(options: ApiHandlerOptions) {
 		super()
@@ -35,6 +38,12 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 			apiKey: apiKey,
 			timeout: getApiRequestTimeout(),
 		})
+
+		// Detect if this is a GLM model and apply optimizations
+		this.glmConfig = detectGlmModel(this.options.lmStudioModelId)
+		if (this.options.lmStudioModelId) {
+			logGlmDetection(this.providerName, this.options.lmStudioModelId, this.glmConfig)
+		}
 	}
 
 	override async *createMessage(
@@ -42,10 +51,19 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
-		]
+		// For GLM models, use Z.ai format with mergeToolResultText to prevent conversation flow disruption
+		// For other models, use standard OpenAI format
+		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[]
+		if (this.glmConfig.isGlm && this.glmConfig.mergeToolResultText) {
+			// Use Z.ai format converter which merges text after tool results into tool messages
+			const convertedMessages = convertToZAiFormat(messages, { mergeToolResultText: true })
+			openAiMessages = [{ role: "system", content: systemPrompt }, ...convertedMessages]
+		} else {
+			openAiMessages = [
+				{ role: "system", content: systemPrompt },
+				...convertToOpenAiMessages(messages),
+			]
+		}
 
 		// -------------------------
 		// Track token usage
@@ -83,14 +101,27 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 		let assistantText = ""
 
 		try {
+			// Determine temperature: use GLM default (0.6) for GLM models, otherwise LM Studio default (0)
+			const temperature = this.options.modelTemperature ??
+				(this.glmConfig.isGlm ? this.glmConfig.temperature : LMSTUDIO_DEFAULT_TEMPERATURE)
+
+			// For GLM models, disable parallel_tool_calls as GLM models may not support it
+			const parallelToolCalls = this.glmConfig.isGlm && this.glmConfig.disableParallelToolCalls
+				? false
+				: (metadata?.parallelToolCalls ?? true)
+
+			if (this.glmConfig.isGlm && this.glmConfig.disableParallelToolCalls) {
+				console.log(`[${this.providerName}] parallel_tool_calls disabled for GLM model`)
+			}
+
 			const params: OpenAI.Chat.ChatCompletionCreateParamsStreaming & { draft_model?: string } = {
 				model: this.getModel().id,
 				messages: openAiMessages,
-				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
+				temperature,
 				stream: true,
 				tools: this.convertToolsForOpenAI(metadata?.tools),
 				tool_choice: metadata?.tool_choice,
-				parallel_tool_calls: metadata?.parallelToolCalls ?? true,
+				parallel_tool_calls: parallelToolCalls,
 			}
 
 			if (this.options.lmStudioSpeculativeDecodingEnabled && this.options.lmStudioDraftModelId) {
@@ -187,11 +218,15 @@ export class LmStudioHandler extends BaseProvider implements SingleCompletionHan
 
 	async completePrompt(prompt: string): Promise<string> {
 		try {
+			// Determine temperature: use GLM default (0.6) for GLM models, otherwise LM Studio default (0)
+			const temperature = this.options.modelTemperature ??
+				(this.glmConfig.isGlm ? this.glmConfig.temperature : LMSTUDIO_DEFAULT_TEMPERATURE)
+
 			// Create params object with optional draft model
 			const params: any = {
 				model: this.getModel().id,
 				messages: [{ role: "user", content: prompt }],
-				temperature: this.options.modelTemperature ?? LMSTUDIO_DEFAULT_TEMPERATURE,
+				temperature,
 				stream: false,
 			}
 
