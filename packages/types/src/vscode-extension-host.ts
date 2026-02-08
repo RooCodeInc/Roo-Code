@@ -696,6 +696,7 @@ export interface WebviewMessage {
 		codebaseIndexSearchMaxResults?: number
 		codebaseIndexSearchMinScore?: number
 		codebaseIndexOpenRouterSpecificProvider?: string // OpenRouter provider routing
+		respectGitIgnore?: boolean // Whether to respect .gitignore when listing files
 
 		// Secret settings
 		codeIndexOpenAiKey?: string

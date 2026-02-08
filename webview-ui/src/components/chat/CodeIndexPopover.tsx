@@ -81,6 +81,7 @@ interface LocalCodeIndexSettings {
 	codebaseIndexVercelAiGatewayApiKey?: string
 	codebaseIndexOpenRouterApiKey?: string
 	codebaseIndexOpenRouterSpecificProvider?: string
+	respectGitIgnore?: boolean
 }
 
 // Validation schema for codebase index settings
@@ -225,6 +226,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 		codebaseIndexVercelAiGatewayApiKey: "",
 		codebaseIndexOpenRouterApiKey: "",
 		codebaseIndexOpenRouterSpecificProvider: "",
+		respectGitIgnore: true,
 	})
 
 	// Initial settings state - stores the settings when popover opens
@@ -265,6 +267,7 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 				codebaseIndexOpenRouterApiKey: "",
 				codebaseIndexOpenRouterSpecificProvider:
 					codebaseIndexConfig.codebaseIndexOpenRouterSpecificProvider || "",
+				respectGitIgnore: codebaseIndexConfig.respectGitIgnore ?? true,
 			}
 			setInitialSettings(settings)
 			setCurrentSettings(settings)
@@ -1584,6 +1587,24 @@ export const CodeIndexPopover: React.FC<CodeIndexPopoverProps> = ({
 												}>
 												<span className="codicon codicon-discard" />
 											</VSCodeButton>
+										</div>
+									</div>
+									{/* Respect .gitignore toggle */}
+									<div className="space-y-2">
+										<div className="flex items-center gap-2">
+											<VSCodeCheckbox
+												checked={currentSettings.respectGitIgnore ?? true}
+												onChange={(e: any) =>
+													updateSetting("respectGitIgnore", e.target.checked)
+												}>
+												<span className="font-medium">
+													{t("settings:codeIndex.respectGitIgnoreLabel")}
+												</span>
+											</VSCodeCheckbox>
+											<StandardTooltip
+												content={t("settings:codeIndex.respectGitIgnoreDescription")}>
+												<span className="codicon codicon-info text-xs text-vscode-descriptionForeground cursor-help" />
+											</StandardTooltip>
 										</div>
 									</div>
 								</div>
