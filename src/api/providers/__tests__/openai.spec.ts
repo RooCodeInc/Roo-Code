@@ -66,6 +66,7 @@ vitest.mock("openai", () => {
 				},
 			},
 		})),
+		AzureOpenAI: mockConstructor,
 	}
 })
 
@@ -599,6 +600,34 @@ describe("OpenAiHandler", () => {
 			const azureHandler = new OpenAiHandler(azureOptions)
 			expect(azureHandler).toBeInstanceOf(OpenAiHandler)
 			expect(azureHandler.getModel().id).toBe(azureOptions.openAiModelId)
+		})
+
+		it("should not treat /messages endpoints as Azure AI Inference", async () => {
+			const foundryMessagesHandler = new OpenAiHandler({
+				...azureOptions,
+				openAiBaseUrl:
+					"https://test.services.ai.azure.com/models/claude/messages?api-version=2024-05-01-preview",
+				openAiModelId: "claude-sonnet-4-5",
+			})
+			const systemPrompt = "You are a helpful assistant."
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "user",
+					content: "Hello!",
+				},
+			]
+
+			const stream = foundryMessagesHandler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "claude-sonnet-4-5",
+				}),
+				{},
+			)
 		})
 
 		it("should handle streaming responses with Azure AI Inference Service", async () => {

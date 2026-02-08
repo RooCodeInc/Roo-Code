@@ -6,6 +6,12 @@ import type { ModelInfo } from "../model.js"
 export type AnthropicModelId = keyof typeof anthropicModels
 export const anthropicDefaultModelId: AnthropicModelId = "claude-sonnet-4-5"
 
+export const anthropicEndpointModes = ["anthropic", "azure-ai-foundry"] as const
+export type AnthropicEndpointMode = (typeof anthropicEndpointModes)[number]
+
+export const anthropicAuthHeaderModes = ["x-api-key", "api-key", "bearer"] as const
+export type AnthropicAuthHeaderMode = (typeof anthropicAuthHeaderModes)[number]
+
 export const anthropicModels = {
 	"claude-sonnet-4-5": {
 		maxTokens: 64_000, // Overridden to 8k if `enableReasoningEffort` is false.

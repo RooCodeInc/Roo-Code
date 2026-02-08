@@ -41,7 +41,11 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		const apiKey = this.options.openAiApiKey ?? "not-provided"
 		const isAzureAiInference = this._isAzureAiInference(this.options.openAiBaseUrl)
 		const urlHost = this._getUrlHost(this.options.openAiBaseUrl)
-		const isAzureOpenAi = urlHost === "azure.com" || urlHost.endsWith(".azure.com") || options.openAiUseAzure
+		const isAzureAiInferenceHost = urlHost.endsWith(".services.ai.azure.com")
+		const isAzureOpenAi =
+			urlHost === "azure.com" ||
+			(urlHost.endsWith(".azure.com") && !isAzureAiInferenceHost) ||
+			options.openAiUseAzure
 
 		const headers = {
 			...DEFAULT_HEADERS,
@@ -504,6 +508,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		}
 	}
 
+	protected _getUrlPath(baseUrl?: string): string {
+		try {
+			return new URL(baseUrl ?? "").pathname.toLowerCase()
+		} catch (error) {
+			return ""
+		}
+	}
+
 	private _isGrokXAI(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
 		return urlHost.includes("x.ai")
@@ -511,7 +523,14 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 
 	protected _isAzureAiInference(baseUrl?: string): boolean {
 		const urlHost = this._getUrlHost(baseUrl)
-		return urlHost.endsWith(".services.ai.azure.com")
+		if (!urlHost.endsWith(".services.ai.azure.com")) {
+			return false
+		}
+
+		// Anthropic-compatible Azure AI Foundry endpoints terminate at /messages and
+		// should not use OpenAI Azure AI Inference path/header handling.
+		const urlPath = this._getUrlPath(baseUrl)
+		return !urlPath.includes("/messages")
 	}
 
 	/**

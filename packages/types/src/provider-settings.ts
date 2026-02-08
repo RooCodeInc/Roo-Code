@@ -3,6 +3,8 @@ import { z } from "zod"
 import { modelInfoSchema, reasoningEffortSettingSchema, verbosityLevelsSchema, serviceTierSchema } from "./model.js"
 import { codebaseIndexProviderSchema } from "./codebase-index.js"
 import {
+	anthropicAuthHeaderModes,
+	anthropicEndpointModes,
 	anthropicModels,
 	basetenModels,
 	bedrockModels,
@@ -192,6 +194,10 @@ const anthropicSchema = apiModelIdProviderModelSchema.extend({
 	apiKey: z.string().optional(),
 	anthropicBaseUrl: z.string().optional(),
 	anthropicUseAuthToken: z.boolean().optional(),
+	anthropicEndpointMode: z.enum(anthropicEndpointModes).optional(),
+	anthropicModelOverride: z.string().optional(),
+	anthropicMessagesUrlOverride: z.string().optional(),
+	anthropicAuthHeaderMode: z.enum(anthropicAuthHeaderModes).optional(),
 	anthropicBeta1MContext: z.boolean().optional(), // Enable 'context-1m-2025-08-07' beta for 1M context window.
 })
 

@@ -1,10 +1,10 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { Stream as AnthropicStream } from "@anthropic-ai/sdk/streaming"
 import { CacheControlEphemeral } from "@anthropic-ai/sdk/resources"
-import OpenAI from "openai"
 
 import {
 	type ModelInfo,
+	type AnthropicAuthHeaderMode,
 	type AnthropicModelId,
 	anthropicDefaultModelId,
 	anthropicModels,
@@ -18,7 +18,6 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import { filterNonAnthropicBlocks } from "../transform/anthropic-filter"
-import { handleProviderError } from "./utils/error-handler"
 
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
@@ -27,6 +26,9 @@ import {
 	convertOpenAIToolsToAnthropic,
 	convertOpenAIToolChoiceToAnthropic,
 } from "../../core/prompts/tools/native-tools/converters"
+
+const ANTHROPIC_API_VERSION = "2023-06-01"
+type AnthropicClientOptions = NonNullable<ConstructorParameters<typeof Anthropic>[0]>
 
 export class AnthropicHandler extends BaseProvider implements SingleCompletionHandler {
 	private options: ApiHandlerOptions
@@ -37,13 +39,100 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		super()
 		this.options = options
 
-		const apiKeyFieldName =
-			this.options.anthropicBaseUrl && this.options.anthropicUseAuthToken ? "authToken" : "apiKey"
+		const messagesUrlOverride = this.getAnthropicMessagesUrlOverride()
+		const useAzureAiFoundry = this.options.anthropicEndpointMode === "azure-ai-foundry" || !!messagesUrlOverride
 
-		this.client = new Anthropic({
+		if (useAzureAiFoundry) {
+			if (!messagesUrlOverride) {
+				throw new Error(
+					"anthropicMessagesUrlOverride is required when anthropicEndpointMode is azure-ai-foundry",
+				)
+			}
+
+			const clientOptions: AnthropicClientOptions = {
+				// Required by the SDK, but all requests are rerouted by the custom fetch to messagesUrlOverride.
+				apiKey: this.options.apiKey ?? "not-provided",
+				defaultHeaders: { "anthropic-version": ANTHROPIC_API_VERSION },
+				fetch: this.createAzureAiFoundryFetch(messagesUrlOverride, this.resolveAnthropicAuthHeaderMode()),
+			}
+			this.client = new Anthropic(clientOptions)
+			return
+		}
+
+		const clientOptions: AnthropicClientOptions = {
 			baseURL: this.options.anthropicBaseUrl || undefined,
-			[apiKeyFieldName]: this.options.apiKey,
-		})
+			defaultHeaders: { "anthropic-version": ANTHROPIC_API_VERSION },
+			apiKey: this.options.apiKey,
+		}
+
+		if (this.options.anthropicBaseUrl && this.options.anthropicUseAuthToken) {
+			delete clientOptions.apiKey
+			clientOptions.authToken = this.options.apiKey
+		}
+
+		this.client = new Anthropic(clientOptions)
+	}
+
+	private getAnthropicMessagesUrlOverride(): string | undefined {
+		const override = this.options.anthropicMessagesUrlOverride?.trim()
+		if (!override) {
+			return undefined
+		}
+
+		if (!URL.canParse(override)) {
+			throw new Error("anthropicMessagesUrlOverride must be a valid URL")
+		}
+
+		return override
+	}
+
+	private resolveAnthropicAuthHeaderMode(): AnthropicAuthHeaderMode {
+		if (this.options.anthropicAuthHeaderMode) {
+			return this.options.anthropicAuthHeaderMode
+		}
+
+		// Keep backward compatibility with the old toggle when endpoint mode is Foundry.
+		if (this.options.anthropicUseAuthToken) {
+			return "bearer"
+		}
+
+		return "x-api-key"
+	}
+
+	private createAzureAiFoundryFetch(messagesUrlOverride: string, authHeaderMode: AnthropicAuthHeaderMode) {
+		const apiKey = this.options.apiKey
+
+		return async (_input: Parameters<typeof fetch>[0], init?: Parameters<typeof fetch>[1]): Promise<Response> => {
+			const headers = new Headers(init?.headers ?? {})
+
+			// Remove SDK defaults so only the selected authentication mode is sent.
+			headers.delete("x-api-key")
+			headers.delete("api-key")
+			headers.delete("authorization")
+
+			if (apiKey) {
+				switch (authHeaderMode) {
+					case "api-key":
+						headers.set("api-key", apiKey)
+						break
+					case "bearer":
+						headers.set("authorization", `Bearer ${apiKey}`)
+						break
+					case "x-api-key":
+					default:
+						headers.set("x-api-key", apiKey)
+				}
+			}
+
+			headers.set("anthropic-version", ANTHROPIC_API_VERSION)
+
+			return fetch(messagesUrlOverride, { ...init, headers })
+		}
+	}
+
+	private resolveRequestModelId(defaultModelId: string): string {
+		const override = this.options.anthropicModelOverride?.trim()
+		return override && override.length > 0 ? override : defaultModelId
 	}
 
 	async *createMessage(
@@ -60,6 +149,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			temperature,
 			reasoning: thinking,
 		} = this.getModel()
+		const requestModelId = this.resolveRequestModelId(modelId)
 
 		// Filter out non-Anthropic blocks (reasoning, thoughtSignature, etc.) before sending to the API
 		const sanitizedMessages = filterNonAnthropicBlocks(messages)
@@ -113,7 +203,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				try {
 					stream = await this.client.messages.create(
 						{
-							model: modelId,
+							model: requestModelId,
 							max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
 							temperature,
 							thinking,
@@ -180,7 +270,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			default: {
 				try {
 					stream = (await this.client.messages.create({
-						model: modelId,
+						model: requestModelId,
 						max_tokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
 						temperature,
 						system: [{ text: systemPrompt, type: "text" }],
@@ -375,11 +465,12 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 	async completePrompt(prompt: string) {
 		let { id: model, temperature } = this.getModel()
+		const requestModel = this.resolveRequestModelId(model)
 
 		let message
 		try {
 			message = await this.client.messages.create({
-				model,
+				model: requestModel,
 				max_tokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
 				thinking: undefined,
 				temperature,

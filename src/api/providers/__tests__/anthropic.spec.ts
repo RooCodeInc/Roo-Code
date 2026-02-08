@@ -77,6 +77,7 @@ const mockAnthropicConstructor = vitest.mocked(Anthropic)
 describe("AnthropicHandler", () => {
 	let handler: AnthropicHandler
 	let mockOptions: ApiHandlerOptions
+	const originalFetch = globalThis.fetch
 
 	beforeEach(() => {
 		mockOptions = {
@@ -85,6 +86,10 @@ describe("AnthropicHandler", () => {
 		}
 		handler = new AnthropicHandler(mockOptions)
 		vitest.clearAllMocks()
+	})
+
+	afterEach(() => {
+		;(globalThis as any).fetch = originalFetch
 	})
 
 	describe("constructor", () => {
@@ -144,6 +149,51 @@ describe("AnthropicHandler", () => {
 			expect(mockAnthropicConstructor.mock.calls[0]![0]!.authToken).toEqual("test-api-key")
 			expect(mockAnthropicConstructor.mock.calls[0]![0]!.apiKey).toBeUndefined()
 		})
+
+		it("requires messages URL override in Azure AI Foundry mode", () => {
+			expect(
+				() =>
+					new AnthropicHandler({
+						...mockOptions,
+						anthropicEndpointMode: "azure-ai-foundry",
+					}),
+			).toThrow("anthropicMessagesUrlOverride is required when anthropicEndpointMode is azure-ai-foundry")
+		})
+
+		it("should route Foundry mode requests through messages URL override and selected auth header", async () => {
+			const mockFetch = vitest.fn().mockResolvedValue({ ok: true } as Response)
+			;(globalThis as any).fetch = mockFetch
+
+			new AnthropicHandler({
+				...mockOptions,
+				anthropicEndpointMode: "azure-ai-foundry",
+				anthropicMessagesUrlOverride:
+					"https://test.services.ai.azure.com/models/claude/messages?api-version=2024-05-01-preview",
+				anthropicAuthHeaderMode: "api-key",
+			})
+
+			const fetchOverride = mockAnthropicConstructor.mock.calls[0]![0]!.fetch as (
+				input: Parameters<typeof fetch>[0],
+				init?: Parameters<typeof fetch>[1],
+			) => Promise<Response>
+
+			expect(fetchOverride).toBeTypeOf("function")
+
+			await fetchOverride("https://api.anthropic.com/v1/messages", {
+				method: "POST",
+				headers: { "x-api-key": "old-key" },
+			})
+
+			expect(mockFetch).toHaveBeenCalledWith(
+				"https://test.services.ai.azure.com/models/claude/messages?api-version=2024-05-01-preview",
+				expect.any(Object),
+			)
+
+			const headers = new Headers(mockFetch.mock.calls[0]![1]!.headers as HeadersInit)
+			expect(headers.get("api-key")).toBe("test-api-key")
+			expect(headers.get("x-api-key")).toBeNull()
+			expect(headers.get("anthropic-version")).toBe("2023-06-01")
+		})
 	})
 
 	describe("createMessage", () => {
@@ -187,6 +237,28 @@ describe("AnthropicHandler", () => {
 			// Verify API
 			expect(mockCreate).toHaveBeenCalled()
 		})
+
+		it("should use anthropicModelOverride when provided", async () => {
+			const overrideModel = "claude-sonnet-4-5-deployment"
+			const handlerWithOverride = new AnthropicHandler({
+				...mockOptions,
+				anthropicModelOverride: overrideModel,
+			})
+
+			const stream = handlerWithOverride.createMessage(systemPrompt, [
+				{
+					role: "user",
+					content: [{ type: "text" as const, text: "hello" }],
+				},
+			])
+
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockCreate).toHaveBeenCalled()
+			expect(mockCreate.mock.calls[0]![0]!.model).toBe(overrideModel)
+		})
 	})
 
 	describe("completePrompt", () => {
@@ -201,6 +273,21 @@ describe("AnthropicHandler", () => {
 				thinking: undefined,
 				stream: false,
 			})
+		})
+
+		it("should apply model override in completePrompt", async () => {
+			const handlerWithOverride = new AnthropicHandler({
+				...mockOptions,
+				anthropicModelOverride: "claude-opus-4-6-deployment",
+			})
+
+			await handlerWithOverride.completePrompt("Test prompt")
+
+			expect(mockCreate).toHaveBeenCalledWith(
+				expect.objectContaining({
+					model: "claude-opus-4-6-deployment",
+				}),
+			)
 		})
 
 		it("should handle API errors", async () => {
