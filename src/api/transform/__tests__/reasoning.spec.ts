@@ -745,7 +745,7 @@ describe("reasoning.ts", () => {
 			expect(result).toBeUndefined()
 		})
 
-		it("should fall back to model default for none effort (invalid for Gemini but model has default)", () => {
+		it("should return undefined for none effort (invalid for Gemini)", () => {
 			const geminiModel: ModelInfo = {
 				...baseModel,
 				supportsReasoningEffort: ["minimal", "low", "medium", "high"] as ModelInfo["supportsReasoningEffort"],
@@ -764,9 +764,9 @@ describe("reasoning.ts", () => {
 				settings,
 			}
 
-			const result = getGeminiReasoning(options) as GeminiReasoningParams | undefined
-			// "none" is not in ["minimal", "low", "medium", "high"], falls back to model.reasoningEffort "low"
-			expect(result).toEqual({ thinkingLevel: "low", includeThoughts: true })
+			const result = getGeminiReasoning(options)
+			// "none" is not a valid GeminiThinkingLevel, so no fallback — returns undefined
+			expect(result).toBeUndefined()
 		})
 
 		it("should use thinkingBudget for budget-based models", () => {

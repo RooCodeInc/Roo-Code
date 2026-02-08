@@ -154,6 +154,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			// If the stream completed without yielding any text content, inform the user
+			// TODO: Move to i18n key common:errors.gemini.empty_response once translation pipeline is updated
 			if (!hasContent) {
 				yield {
 					type: "text" as const,

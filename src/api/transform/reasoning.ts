@@ -154,7 +154,9 @@ export const getGeminiReasoning = ({
 	// e.g. gemini-3-pro-preview only supports ["low", "high"] — sending
 	// "medium" (carried over from a different model's settings) causes errors.
 	const effortToUse =
-		Array.isArray(model.supportsReasoningEffort) && !model.supportsReasoningEffort.includes(selectedEffort)
+		Array.isArray(model.supportsReasoningEffort) &&
+		isGeminiThinkingLevel(selectedEffort) &&
+		!model.supportsReasoningEffort.includes(selectedEffort)
 			? model.reasoningEffort
 			: selectedEffort
 
