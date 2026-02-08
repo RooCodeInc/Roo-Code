@@ -224,6 +224,12 @@ export const globalSettingsSchema = z.object({
 	lastImageSavePath: z.string().optional(),
 
 	/**
+	 * Whether to show multiple questions one by one or all at once.
+	 * @default false (all at once)
+	 */
+	showQuestionsOneByOne: z.boolean().optional(),
+
+	/**
 	 * Path to worktree to auto-open after switching workspaces.
 	 * Used by the worktree feature to open the Roo Code sidebar in a new window.
 	 */
@@ -399,6 +405,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	mode: "code", // "architect",
 
 	customModes: [],
+	showQuestionsOneByOne: false,
 }
 
 export const EVALS_TIMEOUT = 5 * 60 * 1_000

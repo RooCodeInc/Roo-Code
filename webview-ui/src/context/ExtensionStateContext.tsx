@@ -154,6 +154,8 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setIncludeCurrentTime: (value: boolean) => void
 	includeCurrentCost?: boolean
 	setIncludeCurrentCost: (value: boolean) => void
+	showQuestionsOneByOne?: boolean
+	setShowQuestionsOneByOne: (value: boolean) => void
 	showWorktreesInHomeScreen: boolean
 	setShowWorktreesInHomeScreen: (value: boolean) => void
 }
@@ -264,6 +266,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		openRouterImageGenerationSelectedModel: "",
 		includeCurrentTime: true,
 		includeCurrentCost: true,
+		showQuestionsOneByOne: false,
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)
@@ -287,6 +290,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 	const [prevCloudIsAuthenticated, setPrevCloudIsAuthenticated] = useState(false)
 	const [includeCurrentTime, setIncludeCurrentTime] = useState(true)
 	const [includeCurrentCost, setIncludeCurrentCost] = useState(true)
+	const [showQuestionsOneByOne, setShowQuestionsOneByOne] = useState(false)
 
 	const setListApiConfigMeta = useCallback(
 		(value: ProviderSettingsEntry[]) => setState((prevState) => ({ ...prevState, listApiConfigMeta: value })),
@@ -331,6 +335,10 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 					// Update includeCurrentCost if present in state message
 					if ((newState as any).includeCurrentCost !== undefined) {
 						setIncludeCurrentCost((newState as any).includeCurrentCost)
+					}
+					// Update showQuestionsOneByOne if present in state message
+					if ((newState as any).showQuestionsOneByOne !== undefined) {
+						setShowQuestionsOneByOne((newState as any).showQuestionsOneByOne)
 					}
 					// Handle marketplace data if present in state message
 					if (newState.marketplaceItems !== undefined) {
@@ -609,6 +617,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setIncludeCurrentTime,
 		includeCurrentCost,
 		setIncludeCurrentCost,
+		showQuestionsOneByOne,
+		setShowQuestionsOneByOne,
 		showWorktreesInHomeScreen: state.showWorktreesInHomeScreen ?? true,
 		setShowWorktreesInHomeScreen: (value) =>
 			setState((prevState) => ({ ...prevState, showWorktreesInHomeScreen: value })),

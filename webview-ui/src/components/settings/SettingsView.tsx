@@ -212,6 +212,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentTime,
 		includeCurrentCost,
 		maxGitStatusFiles,
+		showQuestionsOneByOne,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -417,6 +418,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					enterBehavior: enterBehavior ?? "send",
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
+					showQuestionsOneByOne: showQuestionsOneByOne ?? false,
 					maxGitStatusFiles: maxGitStatusFiles ?? 0,
 					profileThresholds,
 					imageGenerationProvider,
@@ -908,6 +910,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 							<UISettings
 								reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
 								enterBehavior={enterBehavior ?? "send"}
+								showQuestionsOneByOne={showQuestionsOneByOne ?? false}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
