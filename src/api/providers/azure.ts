@@ -2,7 +2,7 @@ import { Anthropic } from "@anthropic-ai/sdk"
 import { createAzure } from "@ai-sdk/azure"
 import { streamText, generateText, ToolSet } from "ai"
 
-import { azureOpenAiDefaultApiVersion, azureModels, azureDefaultModelInfo, type ModelInfo } from "@roo-code/types"
+import { azureModels, azureDefaultModelInfo, type ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
@@ -34,12 +34,19 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		super()
 		this.options = options
 
+		const rawApiVersion = (options.azureApiVersion ?? "").trim()
+		const queryLikeApiVersion = rawApiVersion.replace(/^\?/, "").trim()
+		const normalizedApiVersion = queryLikeApiVersion.toLowerCase().includes("api-version=")
+			? (new URLSearchParams(queryLikeApiVersion).get("api-version") ?? "")
+			: queryLikeApiVersion
+		const apiVersion = normalizedApiVersion.replace(/^api-version=/i, "").trim()
+
 		// Create the Azure provider using AI SDK
 		// The @ai-sdk/azure package uses resourceName-based routing
 		this.provider = createAzure({
 			resourceName: options.azureResourceName ?? "",
 			apiKey: options.azureApiKey, // Optional — Azure supports managed identity / Entra ID auth
-			apiVersion: options.azureApiVersion ?? azureOpenAiDefaultApiVersion,
+			...(apiVersion ? { apiVersion } : {}),
 			headers: DEFAULT_HEADERS,
 		})
 	}

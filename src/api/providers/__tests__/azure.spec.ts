@@ -1,7 +1,14 @@
 // Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
-const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
+const { mockStreamText, mockGenerateText, mockCreateAzure } = vi.hoisted(() => ({
 	mockStreamText: vi.fn(),
 	mockGenerateText: vi.fn(),
+	mockCreateAzure: vi.fn(() => {
+		// Return a function that returns a mock language model
+		return vi.fn(() => ({
+			modelId: "gpt-4o",
+			provider: "azure",
+		}))
+	}),
 }))
 
 vi.mock("ai", async (importOriginal) => {
@@ -14,13 +21,7 @@ vi.mock("ai", async (importOriginal) => {
 })
 
 vi.mock("@ai-sdk/azure", () => ({
-	createAzure: vi.fn(() => {
-		// Return a function that returns a mock language model
-		return vi.fn(() => ({
-			modelId: "gpt-4o",
-			provider: "azure",
-		}))
-	}),
+	createAzure: mockCreateAzure,
 }))
 
 import type { Anthropic } from "@anthropic-ai/sdk"
@@ -34,6 +35,7 @@ describe("AzureHandler", () => {
 	let mockOptions: ApiHandlerOptions
 
 	beforeEach(() => {
+		vi.clearAllMocks()
 		mockOptions = {
 			azureApiKey: "test-api-key",
 			azureResourceName: "test-resource",
@@ -41,7 +43,6 @@ describe("AzureHandler", () => {
 			azureApiVersion: "2024-08-01-preview",
 		}
 		handler = new AzureHandler(mockOptions)
-		vi.clearAllMocks()
 	})
 
 	describe("constructor", () => {
@@ -74,6 +75,33 @@ describe("AzureHandler", () => {
 				azureApiVersion: undefined,
 			})
 			expect(handlerWithoutVersion).toBeInstanceOf(AzureHandler)
+			expect(mockCreateAzure).toHaveBeenLastCalledWith(
+				expect.not.objectContaining({ apiVersion: expect.anything() }),
+			)
+		})
+
+		it("should normalize query-style API version input", () => {
+			new AzureHandler({
+				...mockOptions,
+				azureApiVersion: " ?api-version=2024-10-21&foo=bar ",
+			})
+
+			expect(mockCreateAzure).toHaveBeenLastCalledWith(
+				expect.objectContaining({
+					apiVersion: "2024-10-21",
+				}),
+			)
+		})
+
+		it("should omit API version when configured value is blank", () => {
+			new AzureHandler({
+				...mockOptions,
+				azureApiVersion: "   ",
+			})
+
+			expect(mockCreateAzure).toHaveBeenLastCalledWith(
+				expect.not.objectContaining({ apiVersion: expect.anything() }),
+			)
 		})
 	})
 
