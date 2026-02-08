@@ -462,6 +462,11 @@ export class ClineProvider
 		let task = this.clineStack.pop()
 
 		if (task) {
+			// Capture delegation metadata before abort/dispose, since abortTask(true)
+			// is async and the task reference is cleared afterwards.
+			const childTaskId = task.taskId
+			const parentTaskId = task.parentTaskId
+
 			task.emit(RooCodeEventName.TaskUnfocused)
 
 			try {
@@ -485,6 +490,34 @@ export class ClineProvider
 			// Make sure no reference kept, once promises end it will be
 			// garbage collected.
 			task = undefined
+
+			// Delegation-aware parent metadata repair:
+			// If the popped task was a delegated child, repair the parent's metadata
+			// so it transitions from "delegated" back to "active" and becomes resumable
+			// from the task history list.
+			if (parentTaskId && childTaskId) {
+				try {
+					const { historyItem: parentHistory } = await this.getTaskWithId(parentTaskId)
+
+					if (parentHistory.status === "delegated" && parentHistory.awaitingChildId === childTaskId) {
+						await this.updateTaskHistory({
+							...parentHistory,
+							status: "active",
+							awaitingChildId: undefined,
+						})
+						this.log(
+							`[ClineProvider#removeClineFromStack] Repaired parent ${parentTaskId} metadata: delegated → active (child ${childTaskId} removed)`,
+						)
+					}
+				} catch (err) {
+					// Non-fatal: log but do not block the pop operation.
+					this.log(
+						`[ClineProvider#removeClineFromStack] Failed to repair parent metadata for ${parentTaskId} (non-fatal): ${
+							err instanceof Error ? err.message : String(err)
+						}`,
+					)
+				}
+			}
 		}
 	}
 
