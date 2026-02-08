@@ -13,6 +13,7 @@ import { appendImages } from "@src/utils/imageUtils"
 import { getCostBreakdownIfNeeded } from "@src/utils/costFormatting"
 
 import type { ClineAsk, ClineSayTool, ClineMessage, ExtensionMessage, AudioType } from "@roo-code/types"
+import { isRetiredProvider } from "@roo-code/types"
 
 import { findLast } from "@roo/array"
 import { SuggestionItem } from "@roo-code/types"
@@ -39,11 +40,11 @@ import Announcement from "./Announcement"
 import BrowserActionRow from "./BrowserActionRow"
 import BrowserSessionStatusRow from "./BrowserSessionStatusRow"
 import ChatRow from "./ChatRow"
+import WarningRow from "./WarningRow"
 import { ChatTextArea } from "./ChatTextArea"
 import TaskHeader from "./TaskHeader"
 import SystemPromptWarning from "./SystemPromptWarning"
 import ProfileViolationWarning from "./ProfileViolationWarning"
-import RetiredProviderWarning from "./RetiredProviderWarning"
 import { CheckpointWarning } from "./CheckpointWarning"
 import { QueuedMessages } from "./QueuedMessages"
 import { WorktreeSelector } from "./WorktreeSelector"
@@ -99,6 +100,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		isBrowserSessionActive,
 		showWorktreesInHomeScreen,
 	} = useExtensionState()
+
+	// Show a WarningRow when the user sends a message with a retired provider.
+	const [showRetiredProviderWarning, setShowRetiredProviderWarning] = useState(false)
+
+	// When the provider changes, clear the retired-provider warning.
+	const providerName = apiConfiguration?.apiProvider
+	useEffect(() => {
+		setShowRetiredProviderWarning(false)
+	}, [providerName])
 
 	const messagesRef = useRef(messages)
 
@@ -609,6 +619,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			text = text.trim()
 
 			if (text || images.length > 0) {
+				// Intercept when the active provider is retired — show a
+				// WarningRow instead of sending anything to the backend.
+				if (apiConfiguration?.apiProvider && isRetiredProvider(apiConfiguration.apiProvider)) {
+					setShowRetiredProviderWarning(true)
+					setInputValue("")
+					setSelectedImages([])
+					return
+				}
+
 				// Queue message if:
 				// - Task is busy (sendingDisabled)
 				// - API request in progress (isStreaming)
@@ -674,7 +693,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				handleChatReset()
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, isStreaming, messageQueue.length], // messagesRef and clineAskRef are stable
+		[
+			handleChatReset,
+			markFollowUpAsAnswered,
+			sendingDisabled,
+			isStreaming,
+			messageQueue.length,
+			apiConfiguration?.apiProvider,
+		], // messagesRef and clineAskRef are stable
 	)
 
 	const handleSetChatBoxMessage = useCallback(
@@ -692,7 +718,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[inputValue, selectedImages],
 	)
 
-	const startNewTask = useCallback(() => vscode.postMessage({ type: "clearTask" }), [])
+	const startNewTask = useCallback(() => {
+		setShowRetiredProviderWarning(false)
+		vscode.postMessage({ type: "clearTask" })
+	}, [])
 
 	// Handle stop button click from textarea
 	const handleStopTask = useCallback(() => {
@@ -1653,6 +1682,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							initialTopMostItemIndex={groupedMessages.length - 1}
 						/>
 					</div>
+					{showRetiredProviderWarning && (
+						<div className="px-[15px] py-1">
+							<WarningRow
+								title="Provider no longer supported"
+								message="Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know."
+								actionText="Open Settings"
+								onAction={() => vscode.postMessage({ type: "switchTab", tab: "settings" })}
+							/>
+						</div>
+					)}
 					{areButtonsVisible && (
 						<div
 							className={`flex h-9 items-center mb-1 px-[15px] ${
@@ -1779,10 +1818,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				onStop={handleStopTask}
 				onEnqueueMessage={handleEnqueueCurrentMessage}
 			/>
-
-			<div className="px-3">
-				<RetiredProviderWarning />
-			</div>
 
 			{isProfileDisabled && (
 				<div className="px-3">
