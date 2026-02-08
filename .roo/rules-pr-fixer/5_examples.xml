@@ -81,12 +81,61 @@
        </tool_use>
        <analysis>Monitor checks continuously until all complete. The --watch flag provides real-time updates as check statuses change.</analysis>
      </step>
+
+     <step number="7">
+       <description>Fetch all review threads to find unresolved ones that were addressed.</description>
+       <tool_use>
+         <execute_command>
+           <command><![CDATA[gh api graphql -f query='
+query($owner: String!, $repo: String!, $number: Int!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $number) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          comments(first: 1) {
+            nodes {
+              body
+              path
+              line
+            }
+          }
+        }
+      }
+    }
+  }
+}' -f owner=RooCodeInc -f repo=Roo-Code -F number=4365]]></command>
+         </execute_command>
+       </tool_use>
+       <analysis>Parse the output to identify unresolved threads. Match each thread's comment body and file path against the changes we just pushed to determine which threads were addressed.</analysis>
+     </step>
+
+     <step number="8">
+       <description>Resolve each addressed review thread using the GraphQL mutation.</description>
+       <tool_use>
+         <execute_command>
+           <command><![CDATA[gh api graphql -f query='
+mutation($threadId: ID!) {
+  resolveReviewThread(input: {threadId: $threadId}) {
+    thread {
+      id
+      isResolved
+    }
+  }
+}' -f threadId=PRT_kwDOExample123]]></command>
+         </execute_command>
+       </tool_use>
+       <analysis>Repeat for each thread that was addressed. Only resolve threads where the feedback was acted on. Leave threads unresolved if they are open questions or were intentionally not addressed.</analysis>
+     </step>
     </workflow>
 
     <key_takeaways>
       <takeaway>Always gather all information before proposing a solution.</takeaway>
       <takeaway>Use the GitHub CLI to get a complete picture of the PR's status.</takeaway>
       <takeaway>The --watch flag on gh pr checks provides real-time monitoring of CI status.</takeaway>
+      <takeaway>After addressing review feedback, resolve the corresponding review threads on GitHub using the GraphQL API instead of just checking off checkboxes.</takeaway>
     </key_takeaways>
   </example>
 

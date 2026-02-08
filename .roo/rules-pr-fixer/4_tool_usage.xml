@@ -81,6 +81,50 @@
       </best_practices>
     </tool>
     
+    <tool name="gh api graphql (resolve review threads)">
+      <best_practices>
+        <practice>After pushing code changes that address review feedback, use the GraphQL API to resolve the corresponding review threads on GitHub.</practice>
+        <practice>First fetch all review threads: use the pullRequest.reviewThreads query to get each thread's node ID, isResolved status, and the first comment for context.</practice>
+        <practice>Only resolve threads where the feedback has actually been addressed in the pushed code changes. Do not resolve threads for open questions, future work items, or feedback that was intentionally skipped.</practice>
+        <practice>Resolve threads one at a time using the resolveReviewThread mutation with the thread's node ID.</practice>
+        <practice>If a thread is already resolved (isResolved: true) or outdated (isOutdated: true), skip it.</practice>
+      </best_practices>
+      <fetch_threads_query><![CDATA[
+gh api graphql -f query='
+query($owner: String!, $repo: String!, $number: Int!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $number) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          comments(first: 1) {
+            nodes {
+              body
+              path
+              line
+            }
+          }
+        }
+      }
+    }
+  }
+}' -f owner=[owner] -f repo=[repo] -F number=[pr_number]
+      ]]></fetch_threads_query>
+      <resolve_thread_mutation><![CDATA[
+gh api graphql -f query='
+mutation($threadId: ID!) {
+  resolveReviewThread(input: {threadId: $threadId}) {
+    thread {
+      id
+      isResolved
+    }
+  }
+}' -f threadId=[thread_node_id]
+      ]]></resolve_thread_mutation>
+    </tool>
+
     <tool name="ask_followup_question">
       <best_practices>
         <practice>After analyzing all the problems (reviews, tests, conflicts), present a summary to the user.</practice>
@@ -151,6 +195,11 @@ Please ensure all supported languages (ca, de, es, fr, hi, id, it, ja, ko, nl, p
       <command>gh run list --pr [PR_NUMBER] --repo [owner]/[repo]</command>
       <command>gh run view [RUN_ID] --repo [owner]/[repo] --log-failed</command>
       <command>gh workflow view [WORKFLOW_NAME] --repo [owner]/[repo]</command>
+    </command_group>
+
+    <command_group name="review_thread_operations">
+      <command>gh api graphql -f query='query { repository(owner:"[owner]", name:"[repo]") { pullRequest(number:[PR_NUMBER]) { reviewThreads(first:100) { nodes { id isResolved isOutdated comments(first:1) { nodes { body path line } } } } } } }'</command>
+      <command>gh api graphql -f query='mutation { resolveReviewThread(input:{threadId:"[THREAD_NODE_ID]"}) { thread { id isResolved } } }'</command>
     </command_group>
   </github_cli_reference>
 </tool_usage_guide>

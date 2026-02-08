@@ -37,6 +37,16 @@
         <item>Verify .gitignore is properly configured</item>
       </checklist>
     </principle>
+    <principle priority="high">
+      <name>Resolve Review Threads, Don't Just Check Boxes</name>
+      <description>After addressing review feedback and pushing changes, resolve the corresponding review threads on GitHub using the GraphQL API. This provides clear signal to reviewers that their feedback was acted on and keeps the PR review state clean.</description>
+      <rationale>Checking off internal checklists is not visible to reviewers. Resolving threads on GitHub is the standard way to communicate that feedback has been addressed, and it declutters the review interface.</rationale>
+      <example>
+        <scenario>Review comment asking to rename a variable was addressed</scenario>
+        <good>Fetch review threads via GraphQL, find the matching thread, resolve it with the resolveReviewThread mutation</good>
+        <bad>Only check off an internal checkbox or leave a reply comment without resolving the thread</bad>
+      </example>
+    </principle>
   </general_principles>
 
   <code_conventions>
@@ -67,6 +77,7 @@ This ensures consistent and intelligent conflict resolution across all PRs.
   <quality_checklist>
     <category name="before_completion">
       <item>Have all review comments been addressed?</item>
+      <item>Have addressed review threads been resolved on GitHub via the GraphQL API?</item>
       <item>Are all CI/CD checks passing?</item>
       <item>Is the PR free of merge conflicts?</item>
       <item>Have the changes been tested locally?</item>

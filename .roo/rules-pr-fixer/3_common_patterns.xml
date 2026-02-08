@@ -106,6 +106,92 @@
       <command tool="git">git commit -m "<commit_message>"</command>
     </template>
   </pattern>
+  <pattern name="fetch_review_threads">
+    <usage>Fetch all review threads for a PR using the GitHub GraphQL API. This returns each thread's node ID, resolution status, and the first comment's body/path/line for context.</usage>
+    <template>
+      <command tool="gh"><![CDATA[gh api graphql -f query='
+query($owner: String!, $repo: String!, $number: Int!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $number) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          comments(first: 1) {
+            nodes {
+              body
+              path
+              line
+            }
+          }
+        }
+      }
+    }
+  }
+}' -f owner=<owner> -f repo=<repo> -F number=<pr_number>]]></command>
+      <comment>Parse the JSON output to get each thread's id (node ID) and isResolved status.</comment>
+      <comment>Only threads where isResolved is false need to be resolved.</comment>
+    </template>
+  </pattern>
+
+  <pattern name="resolve_review_thread">
+    <usage>Resolve a single review thread on GitHub using its node ID via the GraphQL API. Use this after addressing the feedback in the thread.</usage>
+    <template>
+      <command tool="gh"><![CDATA[gh api graphql -f query='
+mutation($threadId: ID!) {
+  resolveReviewThread(input: {threadId: $threadId}) {
+    thread {
+      id
+      isResolved
+    }
+  }
+}' -f threadId=<thread_node_id>]]></command>
+      <comment>Replace thread_node_id with the actual node ID from the fetch_review_threads query.</comment>
+      <comment>Only resolve threads whose feedback has actually been addressed in code.</comment>
+    </template>
+  </pattern>
+
+  <pattern name="resolve_all_addressed_threads">
+    <usage>End-to-end pattern: fetch all unresolved review threads, then resolve each one that was addressed.</usage>
+    <template>
+      <comment>Step 1: Fetch all review threads</comment>
+      <command tool="gh"><![CDATA[gh api graphql -f query='
+query($owner: String!, $repo: String!, $number: Int!) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $number) {
+      reviewThreads(first: 100) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          comments(first: 1) {
+            nodes {
+              body
+              path
+              line
+            }
+          }
+        }
+      }
+    }
+  }
+}' -f owner=<owner> -f repo=<repo> -F number=<pr_number>]]></command>
+      <comment>Step 2: For each unresolved thread (isResolved: false), check if the feedback was addressed</comment>
+      <comment>Step 3: Resolve each addressed thread individually</comment>
+      <command tool="gh"><![CDATA[gh api graphql -f query='
+mutation($threadId: ID!) {
+  resolveReviewThread(input: {threadId: $threadId}) {
+    thread {
+      id
+      isResolved
+    }
+  }
+}' -f threadId=<thread_node_id>]]></command>
+      <comment>Repeat step 3 for each addressed thread. Do NOT resolve threads for open questions or unaddressed feedback.</comment>
+    </template>
+  </pattern>
+
   <pattern name="safe_file_staging">
     <usage>Safely stage files for commit while avoiding temporary files and respecting .gitignore.</usage>
     <template>
