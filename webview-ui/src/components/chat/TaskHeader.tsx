@@ -68,8 +68,7 @@ const TaskHeader = ({
 	todos,
 }: TaskHeaderProps) => {
 	const { t } = useTranslation()
-	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive, taskHeaderHighlightEnabled } =
-		useExtensionState()
+	const { apiConfiguration, currentTaskItem, clineMessages, isBrowserSessionActive } = useExtensionState()
 	const { id: modelId, info: model } = useSelectedModel(apiConfiguration)
 	const [isTaskExpanded, setIsTaskExpanded] = useState(false)
 	const [showLongRunningTaskMessage, setShowLongRunningTaskMessage] = useState(false)
@@ -77,34 +76,19 @@ const TaskHeader = ({
 		autoOpenOnAuth: false,
 	})
 
-	// Determine if this is a subtask (has a parent)
-	const isSubtask = !!parentTaskId
-
-	// Find the last message that isn't a resume action (shared by isTaskComplete and highlightClass)
-	const lastRelevantMessage = useMemo(() => {
-		const msgs = clineMessages || []
-		const idx = findLastIndex(msgs, (m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"))
-		return idx !== -1 ? msgs[idx] : undefined
-	}, [clineMessages])
-
 	// Check if the task is complete by looking at the last relevant message (skipping resume messages)
-	const isTaskComplete = lastRelevantMessage?.ask === "completion_result"
-
-	// Compute highlight CSS class: green for task complete, yellow for user attention needed
-	const highlightClass = useMemo(() => {
-		if (!taskHeaderHighlightEnabled || isSubtask) return undefined
-		if (!lastRelevantMessage || lastRelevantMessage.partial) return undefined
-
-		if (lastRelevantMessage.ask === "completion_result") {
-			return "task-header-highlight-green"
-		}
-
-		if (lastRelevantMessage.ask) {
-			return "task-header-highlight-yellow"
-		}
-
-		return undefined
-	}, [taskHeaderHighlightEnabled, isSubtask, lastRelevantMessage])
+	const isTaskComplete =
+		clineMessages && clineMessages.length > 0
+			? (() => {
+					const lastRelevantIndex = findLastIndex(
+						clineMessages,
+						(m) => !(m.ask === "resume_task" || m.ask === "resume_completed_task"),
+					)
+					return lastRelevantIndex !== -1
+						? clineMessages[lastRelevantIndex]?.ask === "completion_result"
+						: false
+				})()
+			: false
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -157,6 +141,9 @@ const TaskHeader = ({
 
 	const hasTodos = todos && Array.isArray(todos) && todos.length > 0
 
+	// Determine if this is a subtask (has a parent)
+	const isSubtask = !!parentTaskId
+
 	const handleBackToParent = () => {
 		if (parentTaskId) {
 			vscode.postMessage({ type: "showTaskWithId", text: parentTaskId })
@@ -187,14 +174,12 @@ const TaskHeader = ({
 				</DismissibleUpsell>
 			)}
 			<div
-				data-testid="task-header-container"
 				className={cn(
 					"px-3 pt-2.5 pb-2 flex flex-col gap-1.5 relative z-1 cursor-pointer",
 					"bg-vscode-input-background hover:bg-vscode-input-background/90",
 					"text-vscode-foreground/80 hover:text-vscode-foreground",
 					"shadow-lg shadow-vscode-sideBar-background/50 rounded-xl",
 					hasTodos && "border-b-0",
-					highlightClass,
 				)}
 				onClick={(e) => {
 					// Don't expand if clicking on todos section

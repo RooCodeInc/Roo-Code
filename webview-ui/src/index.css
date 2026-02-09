@@ -590,30 +590,3 @@ input[cmdk-input]:focus {
 	padding: 8px;
 	margin: -8px;
 }
-
-/* Task header highlight overrides - force all children to use contrasting text.
-   Uses hardcoded background colors instead of theme-dependent --vscode-charts-*
-   variables to guarantee WCAG AA 4.5:1 contrast with text colors. */
-.task-header-highlight-green {
-	--vscode-foreground: white;
-	background-color: #15803d !important; /* green-700, WCAG AA ~6.5:1 with white */
-}
-.task-header-highlight-green,
-.task-header-highlight-green * {
-	color: white !important;
-}
-.task-header-highlight-green svg {
-	stroke: white !important;
-}
-
-.task-header-highlight-yellow {
-	--vscode-foreground: black;
-	background-color: #ca8a04 !important; /* yellow-600, WCAG AA ~6.2:1 with black */
-}
-.task-header-highlight-yellow,
-.task-header-highlight-yellow * {
-	color: black !important;
-}
-.task-header-highlight-yellow svg {
-	stroke: black !important;
-}

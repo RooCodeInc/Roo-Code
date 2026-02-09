@@ -1018,10 +1018,6 @@
 		}
 	},
 	"ui": {
-		"taskCompleteColor": {
-			"label": "Surlignage de l'en-tête de tâche",
-			"description": "Surligne l'en-tête de la tâche avec un indicateur de couleur lorsque les tâches sont terminées ou nécessitent ton attention, t'aidant à repérer rapidement quand une action est requise"
-		},
 		"collapseThinking": {
 			"label": "Réduire les messages de réflexion par défaut",
 			"description": "Si activé, les blocs de réflexion seront réduits par défaut jusqu'à ce que vous interagissiez avec eux"

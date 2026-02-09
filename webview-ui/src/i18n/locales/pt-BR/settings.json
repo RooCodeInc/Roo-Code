@@ -1018,10 +1018,6 @@
 		}
 	},
 	"ui": {
-		"taskCompleteColor": {
-			"label": "Destaque do cabeçalho da tarefa",
-			"description": "Destaca o cabeçalho da tarefa com um indicador de cor quando as tarefas são concluídas ou precisam da sua atenção, ajudando você a identificar rapidamente quando uma ação é necessária"
-		},
 		"collapseThinking": {
 			"label": "Recolher mensagens de pensamento por padrão",
 			"description": "Quando ativado, os blocos de pensamento serão recolhidos por padrão até que você interaja com eles"

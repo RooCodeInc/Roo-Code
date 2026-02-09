@@ -157,10 +157,6 @@
 		"footer": "Create your own skills with the Skill Writer mode, available in the <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	},
 	"ui": {
-		"taskCompleteColor": {
-			"label": "Task Header Highlight",
-			"description": "Highlights the task header with a color indicator when tasks complete or need your attention, helping you quickly spot when action is required"
-		},
 		"collapseThinking": {
 			"label": "Collapse Thinking messages by default",
 			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"

@@ -40,7 +40,6 @@ let mockExtensionState: {
 	apiConfiguration: ProviderSettings
 	currentTaskItem: { id: string } | null
 	clineMessages: any[]
-	taskHeaderHighlightEnabled?: boolean
 } = {
 	apiConfiguration: {
 		apiProvider: "anthropic",
@@ -49,7 +48,6 @@ let mockExtensionState: {
 	} as ProviderSettings,
 	currentTaskItem: { id: "test-task-id" },
 	clineMessages: [],
-	taskHeaderHighlightEnabled: false,
 }
 
 // Mock the ExtensionStateContext
@@ -217,7 +215,6 @@ describe("TaskHeader", () => {
 				} as ProviderSettings,
 				currentTaskItem: { id: "test-task-id" },
 				clineMessages: [],
-				taskHeaderHighlightEnabled: false,
 			}
 		})
 
@@ -423,175 +420,6 @@ describe("TaskHeader", () => {
 			const backButton = screen.getByText("chat:task.backToParentTask").closest("button")
 			expect(backButton).toBeInTheDocument()
 			expect(backButton?.querySelector("svg.lucide-arrow-left")).toBeInTheDocument()
-		})
-	})
-
-	describe("Task header highlight", () => {
-		const completionMessages = [
-			{
-				type: "ask",
-				ask: "completion_result",
-				ts: Date.now(),
-				text: "Task completed!",
-			},
-		]
-
-		beforeEach(() => {
-			mockExtensionState = {
-				apiConfiguration: {
-					apiProvider: "anthropic",
-					apiKey: "test-api-key",
-					apiModelId: "claude-3-opus-20240229",
-				} as ProviderSettings,
-				currentTaskItem: { id: "test-task-id" },
-				clineMessages: [],
-				taskHeaderHighlightEnabled: false,
-			}
-		})
-
-		it("should apply green highlight class when task is complete and highlight is enabled", () => {
-			mockExtensionState = {
-				...mockExtensionState,
-				clineMessages: completionMessages,
-				taskHeaderHighlightEnabled: true,
-			}
-
-			renderTaskHeader()
-
-			const container = screen.getByTestId("task-header-container")
-			expect(container.classList.contains("task-header-highlight-green")).toBe(true)
-			expect(container.classList.contains("task-header-highlight-yellow")).toBe(false)
-		})
-
-		it("should apply yellow highlight class when task needs user attention and highlight is enabled", () => {
-			mockExtensionState = {
-				...mockExtensionState,
-				clineMessages: [
-					{
-						type: "ask",
-						ask: "tool",
-						ts: Date.now(),
-						text: "Need permission to use tool",
-					},
-				],
-				taskHeaderHighlightEnabled: true,
-			}
-
-			renderTaskHeader()
-
-			const container = screen.getByTestId("task-header-container")
-			expect(container.classList.contains("task-header-highlight-yellow")).toBe(true)
-			expect(container.classList.contains("task-header-highlight-green")).toBe(false)
-		})
-
-		it("should not apply highlight when highlight is disabled", () => {
-			mockExtensionState = {
-				...mockExtensionState,
-				clineMessages: completionMessages,
-				taskHeaderHighlightEnabled: false,
-			}
-
-			renderTaskHeader()
-
-			const container = screen.getByTestId("task-header-container")
-			expect(container.classList.contains("task-header-highlight-green")).toBe(false)
-			expect(container.classList.contains("task-header-highlight-yellow")).toBe(false)
-		})
-
-		it("should not apply highlight when task is a subtask", () => {
-			mockExtensionState = {
-				...mockExtensionState,
-				clineMessages: completionMessages,
-				taskHeaderHighlightEnabled: true,
-			}
-
-			renderTaskHeader({ parentTaskId: "parent-task-123" })
-
-			const container = screen.getByTestId("task-header-container")
-			expect(container.classList.contains("task-header-highlight-green")).toBe(false)
-			expect(container.classList.contains("task-header-highlight-yellow")).toBe(false)
-		})
-
-		it("should not apply highlight when last message is partial", () => {
-			mockExtensionState = {
-				...mockExtensionState,
-				clineMessages: [
-					{
-						type: "ask",
-						ask: "completion_result",
-						ts: Date.now(),
-						text: "Task completed!",
-						partial: true,
-					},
-				],
-				taskHeaderHighlightEnabled: true,
-			}
-
-			renderTaskHeader()
-
-			const container = screen.getByTestId("task-header-container")
-			expect(container.classList.contains("task-header-highlight-green")).toBe(false)
-			expect(container.classList.contains("task-header-highlight-yellow")).toBe(false)
-		})
-
-		it("should not apply highlight when no clineMessages exist", () => {
-			mockExtensionState = {
-				...mockExtensionState,
-				clineMessages: [],
-				taskHeaderHighlightEnabled: true,
-			}
-
-			renderTaskHeader()
-
-			const container = screen.getByTestId("task-header-container")
-			expect(container.classList.contains("task-header-highlight-green")).toBe(false)
-			expect(container.classList.contains("task-header-highlight-yellow")).toBe(false)
-		})
-
-		it("should not apply highlight when last relevant message has no ask type", () => {
-			mockExtensionState = {
-				...mockExtensionState,
-				clineMessages: [{ type: "say", say: "text", ts: Date.now(), text: "Working..." }],
-				taskHeaderHighlightEnabled: true,
-			}
-
-			renderTaskHeader()
-
-			const container = screen.getByTestId("task-header-container")
-			expect(container.classList.contains("task-header-highlight-green")).toBe(false)
-			expect(container.classList.contains("task-header-highlight-yellow")).toBe(false)
-		})
-
-		it("should apply green class when completion_result is followed by resume messages", () => {
-			mockExtensionState = {
-				...mockExtensionState,
-				clineMessages: [
-					{
-						type: "ask",
-						ask: "completion_result",
-						ts: Date.now() - 2000,
-						text: "Task completed!",
-					},
-					{
-						type: "ask",
-						ask: "resume_completed_task",
-						ts: Date.now() - 1000,
-						text: "Resume completed task?",
-					},
-					{
-						type: "ask",
-						ask: "resume_task",
-						ts: Date.now(),
-						text: "Resume task?",
-					},
-				],
-				taskHeaderHighlightEnabled: true,
-			}
-
-			renderTaskHeader()
-
-			const container = screen.getByTestId("task-header-container")
-			expect(container.classList.contains("task-header-highlight-green")).toBe(true)
 		})
 	})
 

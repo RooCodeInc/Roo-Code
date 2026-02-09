@@ -1018,10 +1018,6 @@
 		}
 	},
 	"ui": {
-		"taskCompleteColor": {
-			"label": "Đánh dấu tiêu đề tác vụ",
-			"description": "Đánh dấu tiêu đề tác vụ bằng chỉ báo màu khi tác vụ hoàn thành hoặc cần sự chú ý của bạn, giúp bạn nhanh chóng nhận biết khi nào cần hành động"
-		},
 		"collapseThinking": {
 			"label": "Thu gọn tin nhắn Suy nghĩ theo mặc định",
 			"description": "Khi được bật, các khối suy nghĩ sẽ được thu gọn theo mặc định cho đến khi bạn tương tác với chúng"

@@ -1018,10 +1018,6 @@
 		}
 	},
 	"ui": {
-		"taskCompleteColor": {
-			"label": "任务标题高亮",
-			"description": "当任务完成或需要你关注时，通过颜色指示器高亮任务标题，帮助你快速发现需要操作的时机"
-		},
 		"collapseThinking": {
 			"label": "默认折叠「思考」消息",
 			"description": "启用后，「思考」块将默认折叠，直到您与其交互"

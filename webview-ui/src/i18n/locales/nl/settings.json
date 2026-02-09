@@ -1018,10 +1018,6 @@
 		}
 	},
 	"ui": {
-		"taskCompleteColor": {
-			"label": "Taakkop markering",
-			"description": "Markeert de taakkop met een kleurindicator wanneer taken voltooid zijn of je aandacht nodig hebben, zodat je snel kunt zien wanneer actie vereist is"
-		},
 		"collapseThinking": {
 			"label": "Denkberichten standaard samenvouwen",
 			"description": "Indien ingeschakeld, worden denkblokken standaard samengevouwen totdat je ermee interageert"
