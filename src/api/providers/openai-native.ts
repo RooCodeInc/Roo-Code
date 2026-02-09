@@ -196,7 +196,9 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		const outputTokens = usage.outputTokens || 0
 
 		const cacheReadTokens = usage.details?.cachedInputTokens ?? 0
-		const cacheWriteTokens = providerMetadata?.openai?.cacheWriteTokens ?? 0
+		// The OpenAI Responses API does not report cache write tokens separately;
+		// only cached (read) tokens are available via usage.details.cachedInputTokens.
+		const cacheWriteTokens = 0
 		const reasoningTokens = usage.details?.reasoningTokens
 
 		const effectiveTier =
