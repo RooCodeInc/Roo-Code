@@ -654,6 +654,8 @@ export const webviewMessageHandler = async (
 						}
 					} else if (key === "rpiAutopilotEnabled") {
 						newValue = value ?? true
+					} else if (key === "rpiCouncilEngineEnabled") {
+						newValue = value ?? true
 					} else if (key === "experiments") {
 						if (!value) {
 							continue

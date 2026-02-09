@@ -338,6 +338,7 @@ export type ExtensionState = Pick<
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
 	| "rpiAutopilotEnabled"
+	| "rpiCouncilEngineEnabled"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

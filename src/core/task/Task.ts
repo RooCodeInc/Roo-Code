@@ -4696,6 +4696,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return setting ?? true
 	}
 
+	private isRpiCouncilEngineEnabled(): boolean {
+		const provider = this.providerRef.deref()
+		const setting = provider?.contextProxy.getValue("rpiCouncilEngineEnabled")
+		return setting ?? true
+	}
+
 	private async getRpiAutopilot(): Promise<RpiAutopilot> {
 		if (!this.rpiAutopilot) {
 			this.rpiAutopilot = new RpiAutopilot({
@@ -4703,6 +4709,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				cwd: this.cwd,
 				getMode: async () => this.getTaskMode(),
 				getTaskText: () => this.metadata.task,
+				getApiConfiguration: () => this.apiConfiguration,
+				isCouncilEngineEnabled: () => this.isRpiCouncilEngineEnabled(),
 			})
 		}
 		return this.rpiAutopilot

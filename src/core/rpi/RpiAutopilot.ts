@@ -1,8 +1,12 @@
 import fs from "fs/promises"
 import * as path from "path"
+import type { ProviderSettings } from "@roo-code/types"
+
+import { type RpiCouncilResult, RpiCouncilEngine, type RpiCouncilInput } from "./engine/RpiCouncilEngine"
 
 type RpiStrategy = "quick" | "standard" | "full"
 type RpiPhase = "discovery" | "planning" | "implementation" | "verification" | "done"
+type RpiCouncilPhase = Exclude<RpiPhase, "implementation" | "done">
 
 type RpiEventLevel = "info" | "warn" | "error"
 
@@ -19,6 +23,8 @@ interface RpiState {
 	writeOps: number
 	commandOps: number
 	notesCount: number
+	councilTotalRuns: number
+	councilRunsByPhase: Partial<Record<RpiCouncilPhase, number>>
 	lastTool?: string
 	lastToolAt?: string
 	lastUpdatedAt: string
@@ -30,6 +36,8 @@ interface RpiAutopilotContext {
 	cwd: string
 	getMode: () => Promise<string>
 	getTaskText: () => string | undefined
+	getApiConfiguration: () => ProviderSettings | undefined
+	isCouncilEngineEnabled: () => boolean
 }
 
 const WRITE_TOOLS = new Set<string>([
@@ -60,13 +68,26 @@ const DISCOVERY_TOOLS = new Set<string>([
 ])
 
 const MODES_REQUIRING_IMPLEMENTATION_EVIDENCE = new Set<string>(["code", "debug", "orchestrator"])
+const MODES_WITH_HIGH_COUNCIL_SENSITIVITY = new Set<string>(["architect", "orchestrator"])
+const COUNCIL_PHASES: readonly RpiCouncilPhase[] = ["discovery", "planning", "verification"]
+const MAX_COUNCIL_RUNS_PER_PHASE = 1
+const MAX_COUNCIL_RUNS_PER_TASK = 3
+const DEFAULT_COUNCIL_PROMPT_MAX_CHARS = 5000
+const MAX_COUNCIL_FINDINGS = 6
+const MAX_COUNCIL_RISKS = 4
 
 export class RpiAutopilot {
 	private state?: RpiState
 	private initialized = false
 	private ioQueue: Promise<void> = Promise.resolve()
+	private readonly councilEngine: RpiCouncilEngine
 
-	constructor(private readonly context: RpiAutopilotContext) {}
+	constructor(
+		private readonly context: RpiAutopilotContext,
+		councilEngine?: RpiCouncilEngine,
+	) {
+		this.councilEngine = councilEngine ?? new RpiCouncilEngine()
+	}
 
 	async ensureInitialized(): Promise<void> {
 		if (this.initialized) {
@@ -84,7 +105,7 @@ export class RpiAutopilot {
 			const fromDisk = await this.readStateFile()
 
 			if (fromDisk && fromDisk.taskId === this.context.taskId) {
-				this.state = fromDisk
+				this.state = this.normalizeState(fromDisk)
 			} else {
 				this.state = this.createInitialState(mode, taskText)
 			}
@@ -106,6 +127,7 @@ export class RpiAutopilot {
 			`Current strategy: ${this.state.strategy}.`,
 			`Current phase: ${this.state.phase}.`,
 			`Completed phases: ${completed}.`,
+			`Council engine: ${this.context.isCouncilEngineEnabled() ? "enabled" : "disabled"}.`,
 			`Before major decisions, align with ${this.relativeTaskPlanPath}.`,
 			`Keep durable notes in ${this.relativeFindingsPath} and ${this.relativeProgressPath}.`,
 		].join(" ")
@@ -122,6 +144,7 @@ export class RpiAutopilot {
 				return
 			}
 
+			const previousPhase = this.state.phase
 			this.state.toolRuns += 1
 			this.state.lastTool = toolName
 			this.state.lastToolAt = new Date().toISOString()
@@ -136,6 +159,7 @@ export class RpiAutopilot {
 			}
 
 			this.applyAutomaticPhaseTransition(toolName)
+			const currentPhase = this.state.phase
 
 			if (DISCOVERY_TOOLS.has(toolName) && this.state.phase === "discovery") {
 				this.state.notesCount += 1
@@ -150,6 +174,14 @@ export class RpiAutopilot {
 				await this.appendProgress(`Tool \`${toolName}\` started on \`${params.path}\`.`)
 			} else if (IMPLEMENTATION_TOOLS.has(toolName)) {
 				await this.appendProgress(`Tool \`${toolName}\` started.`)
+			}
+
+			if (currentPhase !== previousPhase) {
+				await this.maybeRunCouncilForPhase(currentPhase, "phase_change")
+			}
+
+			if (currentPhase === "discovery" && this.hasComplexitySignal()) {
+				await this.maybeRunCouncilForPhase("discovery", "complexity_threshold")
 			}
 
 			await this.syncArtifacts()
@@ -207,6 +239,10 @@ export class RpiAutopilot {
 			const currentMode = (await this.context.getMode()) || this.state.modeAtStart
 			const requiresImplementationEvidence = MODES_REQUIRING_IMPLEMENTATION_EVIDENCE.has(currentMode)
 			const hasImplementationEvidence = this.state.writeOps > 0 || this.state.commandOps > 0
+
+			if (this.shouldRunVerificationCouncil(currentMode, hasImplementationEvidence)) {
+				await this.maybeRunCouncilForPhase("verification", "completion_attempt")
+			}
 
 			if (requiresImplementationEvidence && !hasImplementationEvidence) {
 				this.state.lastUpdatedAt = new Date().toISOString()
@@ -356,8 +392,18 @@ export class RpiAutopilot {
 			writeOps: 0,
 			commandOps: 0,
 			notesCount: 0,
+			councilTotalRuns: 0,
+			councilRunsByPhase: {},
 			lastUpdatedAt: now,
 			createdAt: now,
+		}
+	}
+
+	private normalizeState(state: RpiState): RpiState {
+		return {
+			...state,
+			councilTotalRuns: state.councilTotalRuns ?? 0,
+			councilRunsByPhase: state.councilRunsByPhase ?? {},
 		}
 	}
 
@@ -412,6 +458,162 @@ export class RpiAutopilot {
 				this.completePhase("planning")
 			}
 			this.state.phase = "implementation"
+		}
+	}
+
+	private async maybeRunCouncilForPhase(
+		phase: RpiPhase,
+		trigger: "phase_change" | "completion_attempt" | "complexity_threshold",
+	): Promise<void> {
+		if (!this.state || !this.context.isCouncilEngineEnabled()) {
+			return
+		}
+
+		if (!COUNCIL_PHASES.includes(phase as RpiCouncilPhase)) {
+			return
+		}
+
+		const councilPhase = phase as RpiCouncilPhase
+		if (this.state.councilTotalRuns >= MAX_COUNCIL_RUNS_PER_TASK) {
+			return
+		}
+		if (this.getCouncilPhaseRunCount(councilPhase) >= MAX_COUNCIL_RUNS_PER_PHASE) {
+			return
+		}
+
+		const mode = (await this.context.getMode()) || this.state.modeAtStart
+		if (!this.shouldRunCouncilForPhase(councilPhase, mode, trigger)) {
+			return
+		}
+
+		const apiConfiguration = this.context.getApiConfiguration()
+		if (!apiConfiguration?.apiProvider) {
+			return
+		}
+
+		const input = this.buildCouncilInput(mode)
+		try {
+			let result: RpiCouncilResult
+			if (councilPhase === "discovery") {
+				result = await this.councilEngine.analyzeContext(apiConfiguration, input)
+			} else if (councilPhase === "planning") {
+				await this.councilEngine.decomposeTask(apiConfiguration, input)
+				result = await this.councilEngine.buildDecision(apiConfiguration, input)
+			} else {
+				result = await this.councilEngine.runVerificationReview(apiConfiguration, input)
+			}
+
+			this.markCouncilRun(councilPhase)
+			this.state.lastUpdatedAt = new Date().toISOString()
+			this.state.notesCount += 1
+			await this.appendFinding("info", `Council ${councilPhase}: ${result.summary}`)
+			for (const finding of result.findings.slice(0, MAX_COUNCIL_FINDINGS)) {
+				await this.appendFinding("info", `Council ${councilPhase} finding: ${finding}`)
+			}
+			for (const risk of result.risks.slice(0, MAX_COUNCIL_RISKS)) {
+				await this.appendFinding("warn", `Council ${councilPhase} risk: ${risk}`)
+			}
+			await this.appendProgress(`Council ${councilPhase} run completed (${trigger}).`)
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error)
+			await this.appendFinding("warn", `Council ${councilPhase} skipped: ${message}`)
+			await this.appendProgress(`Council ${councilPhase} run skipped (${trigger}).`)
+		}
+	}
+
+	private shouldRunVerificationCouncil(mode: string, hasImplementationEvidence: boolean): boolean {
+		const normalizedMode = (mode || "").toLowerCase()
+		if (!MODES_REQUIRING_IMPLEMENTATION_EVIDENCE.has(normalizedMode)) {
+			return false
+		}
+		return hasImplementationEvidence
+	}
+
+	private shouldRunCouncilForPhase(
+		phase: RpiCouncilPhase,
+		mode: string,
+		trigger: "phase_change" | "completion_attempt" | "complexity_threshold",
+	): boolean {
+		const normalizedMode = (mode || "").toLowerCase()
+		if (normalizedMode === "ask") {
+			return false
+		}
+
+		if (phase === "discovery") {
+			return this.hasComplexitySignal()
+		}
+
+		if (phase === "planning") {
+			return this.state?.strategy !== "quick" || MODES_WITH_HIGH_COUNCIL_SENSITIVITY.has(normalizedMode)
+		}
+
+		if (phase === "verification") {
+			if (trigger !== "completion_attempt" && trigger !== "phase_change") {
+				return false
+			}
+			return this.state
+				? this.shouldRunVerificationCouncil(
+						normalizedMode,
+						this.state.writeOps > 0 || this.state.commandOps > 0,
+					)
+				: false
+		}
+
+		return false
+	}
+
+	private hasComplexitySignal(): boolean {
+		if (!this.state) {
+			return false
+		}
+
+		const mode = (this.state.modeAtStart || "").toLowerCase()
+		if (this.state.strategy === "full") {
+			return true
+		}
+		if (MODES_WITH_HIGH_COUNCIL_SENSITIVITY.has(mode) && this.state.strategy !== "quick") {
+			return true
+		}
+
+		const taskText = (this.context.getTaskText() || "").toLowerCase()
+		if (taskText.length > 240) {
+			return true
+		}
+
+		const complexityKeywords = [
+			"architecture",
+			"refactor",
+			"migration",
+			"integration",
+			"multi-step",
+			"workflow",
+			"security",
+		]
+		return complexityKeywords.some((keyword) => taskText.includes(keyword))
+	}
+
+	private getCouncilPhaseRunCount(phase: RpiCouncilPhase): number {
+		if (!this.state) {
+			return 0
+		}
+		return this.state.councilRunsByPhase[phase] ?? 0
+	}
+
+	private markCouncilRun(phase: RpiCouncilPhase): void {
+		if (!this.state) {
+			return
+		}
+		this.state.councilRunsByPhase[phase] = this.getCouncilPhaseRunCount(phase) + 1
+		this.state.councilTotalRuns += 1
+	}
+
+	private buildCouncilInput(mode: string): RpiCouncilInput {
+		return {
+			taskSummary: this.state?.taskSummary ?? "",
+			taskText: this.context.getTaskText() ?? "",
+			mode: mode || this.state?.modeAtStart || "code",
+			strategy: this.state?.strategy ?? "quick",
+			maxPromptChars: DEFAULT_COUNCIL_PROMPT_MAX_CHARS,
 		}
 	}
 
@@ -505,6 +707,7 @@ export class RpiAutopilot {
 			`- Mode at start: ${this.state.modeAtStart}`,
 			`- Strategy: ${this.state.strategy}`,
 			`- Current phase: ${this.state.phase}`,
+			`- Council runs: ${this.state.councilTotalRuns}`,
 			`- Last tool: ${this.state.lastTool ?? "none"}`,
 			`- Last update: ${this.state.lastUpdatedAt}`,
 			"",

@@ -797,6 +797,10 @@
 			"label": "Enable RPI autopilot",
 			"description": "When enabled, Roo automatically keeps the RPI planning files and completion checks in sync during the task. Disable to run without RPI automation."
 		},
+		"rpiCouncilEngine": {
+			"label": "Enable RPI council engine",
+			"description": "When enabled, Roo runs the internal council analysis automatically during discovery, planning, and verification using the active mode provider."
+		},
 		"maxGitStatusFiles": {
 			"label": "Git status max files",
 			"description": "Maximum number of file entries to include in git status context. Set to 0 to disable. Branch info is always shown when > 0."

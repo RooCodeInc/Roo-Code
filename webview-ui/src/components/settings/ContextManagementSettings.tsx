@@ -43,6 +43,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	includeCurrentCost?: boolean
 	maxGitStatusFiles?: number
 	rpiAutopilotEnabled?: boolean
+	rpiCouncilEngineEnabled?: boolean
 	customSupportPrompts: Record<string, string | undefined>
 	setCustomSupportPrompts: (prompts: Record<string, string | undefined>) => void
 	setCachedStateField: SetCachedStateField<
@@ -62,6 +63,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "includeCurrentCost"
 		| "maxGitStatusFiles"
 		| "rpiAutopilotEnabled"
+		| "rpiCouncilEngineEnabled"
 	>
 }
 
@@ -84,6 +86,7 @@ export const ContextManagementSettings = ({
 	includeCurrentCost,
 	maxGitStatusFiles,
 	rpiAutopilotEnabled,
+	rpiCouncilEngineEnabled,
 	customSupportPrompts,
 	setCustomSupportPrompts,
 	className,
@@ -423,6 +426,23 @@ export const ContextManagementSettings = ({
 					</VSCodeCheckbox>
 					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
 						{t("settings:contextManagement.rpiAutopilot.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="context-rpi-council-engine"
+					section="contextManagement"
+					label={t("settings:contextManagement.rpiCouncilEngine.label")}>
+					<VSCodeCheckbox
+						checked={rpiCouncilEngineEnabled ?? true}
+						onChange={(e: any) => setCachedStateField("rpiCouncilEngineEnabled", e.target.checked)}
+						data-testid="rpi-council-engine-enabled-checkbox">
+						<label className="block font-medium mb-1">
+							{t("settings:contextManagement.rpiCouncilEngine.label")}
+						</label>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:contextManagement.rpiCouncilEngine.description")}
 					</div>
 				</SearchableSetting>
 
