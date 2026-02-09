@@ -78,6 +78,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setShowAnnouncement: (value: boolean) => void
 	setAllowedCommands: (value: string[]) => void
 	setDeniedCommands: (value: string[]) => void
+	preventCompletionWithEslintProblems?: boolean
 	setAllowedMaxRequests: (value: number | undefined) => void
 	setAllowedMaxCost: (value: number | undefined) => void
 	setSoundEnabled: (value: boolean) => void
@@ -195,6 +196,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		shouldShowAnnouncement: false,
 		allowedCommands: [],
 		deniedCommands: [],
+		preventCompletionWithEslintProblems: true,
 		soundEnabled: false,
 		soundVolume: 0.5,
 		isBrowserSessionActive: false,

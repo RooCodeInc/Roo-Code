@@ -154,6 +154,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		alwaysAllowReadOnlyOutsideWorkspace,
 		allowedCommands,
 		deniedCommands,
+		preventCompletionWithEslintProblems,
 		allowedMaxRequests,
 		allowedMaxCost,
 		language,
@@ -413,6 +414,8 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					alwaysAllowModeSwitch,
 					allowedCommands: allowedCommands ?? [],
 					deniedCommands: deniedCommands ?? [],
+					preventCompletionWithEslintProblems:
+						preventCompletionWithEslintProblems !== undefined ? preventCompletionWithEslintProblems : true,
 					// Note that we use `null` instead of `undefined` since `JSON.stringify`
 					// will omit `undefined` when serializing the object and passing it to the
 					// extension host. We may need to do the same for other nullable fields.
@@ -910,6 +913,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								maxGitStatusFiles={maxGitStatusFiles}
 								rpiAutopilotEnabled={rpiAutopilotEnabled}
 								rpiCouncilEngineEnabled={rpiCouncilEngineEnabled}
+								preventCompletionWithEslintProblems={preventCompletionWithEslintProblems}
 								customSupportPrompts={customSupportPrompts || {}}
 								setCustomSupportPrompts={setCustomSupportPromptsField}
 								setCachedStateField={setCachedStateField}

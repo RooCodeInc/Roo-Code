@@ -2390,6 +2390,7 @@ export class ClineProvider
 			taskHistory: stateValues.taskHistory ?? [],
 			allowedCommands: stateValues.allowedCommands,
 			deniedCommands: stateValues.deniedCommands,
+			preventCompletionWithEslintProblems: stateValues.preventCompletionWithEslintProblems ?? true,
 			soundEnabled: stateValues.soundEnabled ?? false,
 			ttsEnabled: stateValues.ttsEnabled ?? false,
 			ttsSpeed: stateValues.ttsSpeed ?? 1.0,

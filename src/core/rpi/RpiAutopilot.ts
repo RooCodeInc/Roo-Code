@@ -38,6 +38,13 @@ interface RpiAutopilotContext {
 	getTaskText: () => string | undefined
 	getApiConfiguration: () => ProviderSettings | undefined
 	isCouncilEngineEnabled: () => boolean
+	onCouncilEvent?: (event: {
+		phase: RpiCouncilPhase
+		trigger: "phase_change" | "completion_attempt" | "complexity_threshold"
+		outcome: "completed" | "skipped"
+		summary?: string
+		error?: string
+	}) => void
 }
 
 const WRITE_TOOLS = new Set<string>([
@@ -514,10 +521,38 @@ export class RpiAutopilot {
 				await this.appendFinding("warn", `Council ${councilPhase} risk: ${risk}`)
 			}
 			await this.appendProgress(`Council ${councilPhase} run completed (${trigger}).`)
+			this.notifyCouncilEvent({
+				phase: councilPhase,
+				trigger,
+				outcome: "completed",
+				summary: result.summary,
+			})
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error)
 			await this.appendFinding("warn", `Council ${councilPhase} skipped: ${message}`)
 			await this.appendProgress(`Council ${councilPhase} run skipped (${trigger}).`)
+			this.notifyCouncilEvent({
+				phase: councilPhase,
+				trigger,
+				outcome: "skipped",
+				error: message,
+			})
+		}
+	}
+
+	private notifyCouncilEvent(event: {
+		phase: RpiCouncilPhase
+		trigger: "phase_change" | "completion_attempt" | "complexity_threshold"
+		outcome: "completed" | "skipped"
+		summary?: string
+		error?: string
+	}): void {
+		try {
+			this.context.onCouncilEvent?.(event)
+		} catch (error) {
+			console.error(
+				`[RpiAutopilot] Failed to notify council event: ${(error as Error)?.message ?? String(error)}`,
+			)
 		}
 	}
 

@@ -776,6 +776,10 @@
 				"description": "Time to wait after file writes before proceeding, allowing diagnostic tools to process changes and detect issues."
 			}
 		},
+		"eslintCompletion": {
+			"label": "Block completion when ESLint reports problems",
+			"description": "When enabled, Roo will refuse to complete a task if ESLint diagnostics (errors or warnings) remain in files it edited."
+		},
 		"condensingThreshold": {
 			"label": "Condensing Trigger Threshold",
 			"selectProfile": "Configure threshold for profile",

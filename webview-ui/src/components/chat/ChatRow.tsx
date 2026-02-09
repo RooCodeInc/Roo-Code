@@ -67,6 +67,7 @@ import {
 	FolderTree,
 	TerminalSquare,
 	MessageCircle,
+	Users2,
 	Repeat2,
 	Split,
 	ArrowRight,
@@ -369,6 +370,16 @@ export const ChatRowContent = ({
 				return [
 					<MessageCircleQuestionMark className="w-4 shrink-0" aria-label="Question icon" />,
 					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:questions.hasQuestion")}</span>,
+				]
+			case "rpi_autopilot":
+				return [
+					<MessageCircle className="w-4 shrink-0" aria-label="RPI autopilot icon" />,
+					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:rpi.autopilot")}</span>,
+				]
+			case "rpi_council":
+				return [
+					<Users2 className="w-4 shrink-0" aria-label="RPI council icon" />,
+					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:rpi.council")}</span>,
 				]
 			default:
 				return [null, null]
@@ -1226,6 +1237,21 @@ export const ChatRowContent = ({
 				}
 				case "api_req_finished":
 					return null // we should never see this message type
+				case "rpi_autopilot":
+				case "rpi_council":
+					return (
+						<div className="group">
+							<div style={headerStyle}>
+								{icon}
+								{title}
+								<div style={{ flexGrow: 1 }} />
+								<OpenMarkdownPreviewButton markdown={message.text} />
+							</div>
+							<div className="pl-6">
+								<Markdown markdown={message.text ?? ""} partial={message.partial} />
+							</div>
+						</div>
+					)
 				case "text":
 					return (
 						<div className="group">

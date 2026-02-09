@@ -548,6 +548,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	// MessageManager for high-level message operations (lazy initialized)
 	private _messageManager?: MessageManager
 	private rpiAutopilot?: RpiAutopilot
+	private rpiAutopilotAnnounced = false
 
 	constructor({
 		provider,
@@ -4711,6 +4712,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				getTaskText: () => this.metadata.task,
 				getApiConfiguration: () => this.apiConfiguration,
 				isCouncilEngineEnabled: () => this.isRpiCouncilEngineEnabled(),
+				onCouncilEvent: (event) => {
+					void this.handleRpiCouncilEvent(event)
+				},
 			})
 		}
 		return this.rpiAutopilot
@@ -4723,6 +4727,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 			const autopilot = await this.getRpiAutopilot()
 			await autopilot.ensureInitialized()
+			await this.maybeAnnounceRpiAutopilot()
 		} catch (error) {
 			console.error(
 				`[Task#initializeRpiAutopilot] Failed: ${error instanceof Error ? error.message : String(error)}`,
@@ -4797,6 +4802,45 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			console.error(
 				`[Task#markRpiCompletionAccepted] Failed: ${error instanceof Error ? error.message : String(error)}`,
 			)
+		}
+	}
+
+	private async maybeAnnounceRpiAutopilot(): Promise<void> {
+		if (this.rpiAutopilotAnnounced) {
+			return
+		}
+
+		this.rpiAutopilotAnnounced = true
+		try {
+			await this.say("rpi_autopilot", "Autopilot active.")
+		} catch (error) {
+			console.error(`[Task#maybeAnnounceRpiAutopilot] Failed: ${(error as Error)?.message ?? String(error)}`)
+		}
+	}
+
+	private async handleRpiCouncilEvent(event: {
+		phase: "discovery" | "planning" | "verification"
+		trigger: "phase_change" | "completion_attempt" | "complexity_threshold"
+		outcome: "completed" | "skipped"
+		summary?: string
+		error?: string
+	}): Promise<void> {
+		const phaseLabel = event.phase.charAt(0).toUpperCase() + event.phase.slice(1)
+		const suffix =
+			event.outcome === "completed"
+				? event.summary
+					? ` ${event.summary}`
+					: ""
+				: event.error
+					? ` ${event.error}`
+					: ""
+		const text =
+			event.outcome === "completed" ? `(${phaseLabel}) completed.${suffix}` : `(${phaseLabel}) skipped.${suffix}`
+
+		try {
+			await this.say("rpi_council", text)
+		} catch (error) {
+			console.error(`[Task#handleRpiCouncilEvent] Failed: ${(error as Error)?.message ?? String(error)}`)
 		}
 	}
 

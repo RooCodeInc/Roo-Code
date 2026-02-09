@@ -120,6 +120,7 @@ export const globalSettingsSchema = z.object({
 	commandExecutionTimeout: z.number().optional(),
 	commandTimeoutAllowlist: z.array(z.string()).optional(),
 	preventCompletionWithOpenTodos: z.boolean().optional(),
+	preventCompletionWithEslintProblems: z.boolean().optional(),
 	allowedMaxRequests: z.number().nullish(),
 	allowedMaxCost: z.number().nullish(),
 	autoCondenseContext: z.boolean().optional(),
@@ -360,6 +361,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	commandExecutionTimeout: 20,
 	commandTimeoutAllowlist: [],
 	preventCompletionWithOpenTodos: false,
+	preventCompletionWithEslintProblems: true,
 
 	browserToolEnabled: false,
 	browserViewportSize: "900x600",

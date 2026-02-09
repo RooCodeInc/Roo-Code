@@ -242,6 +242,10 @@
 	"text": {
 		"rooSaid": "Roo disse"
 	},
+	"rpi": {
+		"autopilot": "RPI autopilot",
+		"council": "RPI Conselho"
+	},
 	"feedback": {
 		"youSaid": "Você disse"
 	},

@@ -44,6 +44,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	maxGitStatusFiles?: number
 	rpiAutopilotEnabled?: boolean
 	rpiCouncilEngineEnabled?: boolean
+	preventCompletionWithEslintProblems?: boolean
 	customSupportPrompts: Record<string, string | undefined>
 	setCustomSupportPrompts: (prompts: Record<string, string | undefined>) => void
 	setCachedStateField: SetCachedStateField<
@@ -64,6 +65,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "maxGitStatusFiles"
 		| "rpiAutopilotEnabled"
 		| "rpiCouncilEngineEnabled"
+		| "preventCompletionWithEslintProblems"
 	>
 }
 
@@ -87,6 +89,7 @@ export const ContextManagementSettings = ({
 	maxGitStatusFiles,
 	rpiAutopilotEnabled,
 	rpiCouncilEngineEnabled,
+	preventCompletionWithEslintProblems,
 	customSupportPrompts,
 	setCustomSupportPrompts,
 	className,
@@ -409,6 +412,25 @@ export const ContextManagementSettings = ({
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.diagnostics.delayAfterWrite.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="context-eslint-completion"
+					section="contextManagement"
+					label={t("settings:contextManagement.eslintCompletion.label")}>
+					<VSCodeCheckbox
+						checked={preventCompletionWithEslintProblems ?? true}
+						onChange={(e: any) =>
+							setCachedStateField("preventCompletionWithEslintProblems", e.target.checked)
+						}
+						data-testid="prevent-completion-eslint-checkbox">
+						<label className="block font-medium mb-1">
+							{t("settings:contextManagement.eslintCompletion.label")}
+						</label>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:contextManagement.eslintCompletion.description")}
 					</div>
 				</SearchableSetting>
 

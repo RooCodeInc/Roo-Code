@@ -1,4 +1,5 @@
 import * as vscode from "vscode"
+import * as path from "path"
 
 import { RooCodeEventName, type HistoryItem } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -8,6 +9,7 @@ import { formatResponse } from "../prompts/responses"
 import { Package } from "../../shared/package"
 import type { ToolUse } from "../../shared/tools"
 import { t } from "../../i18n"
+import { diagnosticsToProblemsString } from "../../integrations/diagnostics"
 
 import { BaseTool, ToolCallbacks } from "./BaseTool"
 
@@ -77,6 +79,14 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		}
 
 		try {
+			const eslintBlocker = await this.getEslintCompletionBlocker(task)
+			if (eslintBlocker) {
+				task.consecutiveMistakeCount++
+				task.recordToolError("attempt_completion")
+				pushToolResult(formatResponse.toolError(eslintBlocker))
+				return
+			}
+
 			if (!result) {
 				task.consecutiveMistakeCount++
 				task.recordToolError("attempt_completion")
@@ -228,6 +238,111 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		} else {
 			await task.say("completion_result", result ?? "", undefined, block.partial)
 		}
+	}
+
+	private async getEslintCompletionBlocker(task: Task): Promise<string | undefined> {
+		const provider = task.providerRef?.deref()
+		const preventCompletionWithEslintProblems =
+			provider?.contextProxy.getValue("preventCompletionWithEslintProblems") ?? true
+
+		if (!preventCompletionWithEslintProblems) {
+			return undefined
+		}
+
+		const eslintDiagnostics = await this.getEslintDiagnosticsForTask(task)
+		if (eslintDiagnostics.length === 0) {
+			return undefined
+		}
+
+		const cwd = this.getTaskCwd(task)
+		const includeDiagnosticMessages = provider?.contextProxy.getValue("includeDiagnosticMessages") ?? true
+		const maxDiagnosticMessages = provider?.contextProxy.getValue("maxDiagnosticMessages")
+
+		const problems = await diagnosticsToProblemsString(
+			eslintDiagnostics,
+			[vscode.DiagnosticSeverity.Error, vscode.DiagnosticSeverity.Warning],
+			cwd,
+			includeDiagnosticMessages,
+			maxDiagnosticMessages,
+		)
+
+		const detailSection = problems ? `\n\n${problems}` : ""
+		return `Cannot complete task while ESLint diagnostics remain in files edited by Roo. Fix them before completing.${detailSection}`
+	}
+
+	private async getEslintDiagnosticsForTask(task: Task): Promise<[vscode.Uri, vscode.Diagnostic[]][]> {
+		const editedFiles = await this.getRooEditedFileKeys(task)
+		if (editedFiles.size === 0) {
+			return []
+		}
+
+		const allDiagnostics = vscode.languages.getDiagnostics()
+		if (allDiagnostics.length === 0) {
+			return []
+		}
+
+		const eslintDiagnostics = allDiagnostics
+			.map(
+				([uri, diagnostics]) =>
+					[uri, diagnostics.filter((diagnostic) => this.isEslintDiagnostic(diagnostic))] as [
+						vscode.Uri,
+						vscode.Diagnostic[],
+					],
+			)
+			.filter(([, diagnostics]) => diagnostics.length > 0)
+
+		if (eslintDiagnostics.length === 0) {
+			return []
+		}
+
+		return eslintDiagnostics.filter(([uri]) => {
+			const relativeKey = this.getRelativePathKey(task, uri.fsPath)
+			return editedFiles.has(relativeKey)
+		})
+	}
+
+	private isEslintDiagnostic(diagnostic: vscode.Diagnostic): boolean {
+		if (!(diagnostic.source ?? "").toLowerCase().includes("eslint")) {
+			return false
+		}
+		return (
+			diagnostic.severity === vscode.DiagnosticSeverity.Error ||
+			diagnostic.severity === vscode.DiagnosticSeverity.Warning
+		)
+	}
+
+	private async getRooEditedFileKeys(task: Task): Promise<Set<string>> {
+		try {
+			const metadata = await task.fileContextTracker?.getTaskMetadata(task.taskId)
+			const entries = metadata?.files_in_context ?? []
+			return new Set(
+				entries
+					.filter((entry) => entry.record_source === "roo_edited")
+					.map((entry) => this.normalizePathKey(entry.path)),
+			)
+		} catch (error) {
+			console.error(
+				`[AttemptCompletionTool] Failed to read task metadata for ESLint check: ${
+					(error as Error)?.message ?? String(error)
+				}`,
+			)
+			return new Set()
+		}
+	}
+
+	private getRelativePathKey(task: Task, fsPath: string): string {
+		const cwd = this.getTaskCwd(task)
+		const relative = path.isAbsolute(fsPath) ? path.relative(cwd, fsPath) : fsPath
+		return this.normalizePathKey(relative)
+	}
+
+	private normalizePathKey(filePath: string): string {
+		const normalized = filePath.replace(/\\/g, "/")
+		return process.platform === "win32" ? normalized.toLowerCase() : normalized
+	}
+
+	private getTaskCwd(task: Task): string {
+		return task.cwd ?? vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? process.cwd()
 	}
 }
 

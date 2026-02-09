@@ -703,6 +703,10 @@
 				"description": "Tempo de espera após a gravação de arquivos antes de prosseguir, permitindo que as ferramentas de diagnóstico processem as alterações e detectem problemas."
 			}
 		},
+		"eslintCompletion": {
+			"label": "Bloquear conclusão quando o ESLint reportar problemas",
+			"description": "Quando ativado, o Roo recusará concluir a tarefa se existirem diagnósticos do ESLint (erros ou avisos) nos arquivos que ele editou."
+		},
 		"condensingThreshold": {
 			"label": "Limite de Ativação de Condensação",
 			"selectProfile": "Configurar limite para perfil",

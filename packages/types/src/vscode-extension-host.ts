@@ -291,6 +291,7 @@ export type ExtensionState = Pick<
 	| "followupAutoApproveTimeoutMs"
 	| "allowedCommands"
 	| "deniedCommands"
+	| "preventCompletionWithEslintProblems"
 	| "allowedMaxRequests"
 	| "allowedMaxCost"
 	| "browserToolEnabled"

@@ -1,3 +1,4 @@
+import * as path from "path"
 import { TodoItem } from "@roo-code/types"
 
 import { AttemptCompletionToolUse } from "../../../shared/tools"
@@ -9,12 +10,26 @@ vi.mock("../../prompts/responses", () => ({
 	},
 }))
 
+vi.mock("../../../integrations/diagnostics", () => ({
+	diagnosticsToProblemsString: vi.fn(),
+}))
+
 // Mock vscode module
 vi.mock("vscode", () => ({
 	workspace: {
 		getConfiguration: vi.fn(() => ({
 			get: vi.fn(),
 		})),
+		workspaceFolders: [],
+	},
+	languages: {
+		getDiagnostics: vi.fn(),
+	},
+	DiagnosticSeverity: {
+		Error: 0,
+		Warning: 1,
+		Information: 2,
+		Hint: 3,
 	},
 }))
 
@@ -28,6 +43,7 @@ vi.mock("../../../shared/package", () => ({
 import { attemptCompletionTool, AttemptCompletionCallbacks } from "../AttemptCompletionTool"
 import { Task } from "../../task/Task"
 import * as vscode from "vscode"
+import { diagnosticsToProblemsString } from "../../../integrations/diagnostics"
 
 describe("attemptCompletionTool", () => {
 	let mockTask: Partial<Task>
@@ -37,6 +53,7 @@ describe("attemptCompletionTool", () => {
 	let mockToolDescription: ReturnType<typeof vi.fn>
 	let mockAskFinishSubTaskApproval: ReturnType<typeof vi.fn>
 	let mockGetConfiguration: ReturnType<typeof vi.fn>
+	let mockGetDiagnostics: ReturnType<typeof vi.fn>
 
 	beforeEach(() => {
 		mockPushToolResult = vi.fn()
@@ -44,6 +61,7 @@ describe("attemptCompletionTool", () => {
 		mockHandleError = vi.fn()
 		mockToolDescription = vi.fn()
 		mockAskFinishSubTaskApproval = vi.fn()
+		mockGetDiagnostics = vi.fn().mockReturnValue([])
 		mockGetConfiguration = vi.fn(() => ({
 			get: vi.fn((key: string, defaultValue: any) => {
 				if (key === "preventCompletionWithOpenTodos") {
@@ -55,6 +73,8 @@ describe("attemptCompletionTool", () => {
 
 		// Setup vscode mock
 		vi.mocked(vscode.workspace.getConfiguration).mockImplementation(mockGetConfiguration)
+		vi.mocked(vscode.languages.getDiagnostics).mockImplementation(mockGetDiagnostics)
+		vi.mocked(diagnosticsToProblemsString).mockResolvedValue("")
 
 		mockTask = {
 			consecutiveMistakeCount: 0,
@@ -466,6 +486,187 @@ describe("attemptCompletionTool", () => {
 
 				expect(mockTask.consecutiveMistakeCount).toBe(0)
 				expect(mockTask.recordToolError).not.toHaveBeenCalled()
+			})
+		})
+
+		describe("eslint completion guard", () => {
+			it("should prevent completion when ESLint diagnostics exist in edited files", async () => {
+				const cwd = path.resolve("repo")
+				const editedPath = path.join(cwd, "src", "edited.ts")
+				const diagnostics: [any, any[]][] = [
+					[
+						{ fsPath: editedPath },
+						[
+							{
+								source: "eslint",
+								severity: vscode.DiagnosticSeverity.Warning,
+								message: "Unused variable",
+							},
+						],
+					],
+				]
+
+				mockGetDiagnostics.mockReturnValue(diagnostics)
+				vi.mocked(diagnosticsToProblemsString).mockResolvedValue("PROBLEMS")
+
+				mockTask.cwd = cwd
+				mockTask.fileContextTracker = {
+					getTaskMetadata: vi.fn().mockResolvedValue({
+						files_in_context: [{ path: "src/edited.ts", record_source: "roo_edited" }],
+					}),
+				} as any
+
+				mockTask.providerRef = {
+					deref: () => ({
+						contextProxy: {
+							getValue: vi.fn((key: string) => {
+								if (key === "preventCompletionWithEslintProblems") return true
+								if (key === "includeDiagnosticMessages") return true
+								if (key === "maxDiagnosticMessages") return 50
+								return undefined
+							}),
+						},
+					}),
+				} as any
+
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "Task completed successfully" },
+					nativeArgs: { result: "Task completed successfully" },
+					partial: false,
+				}
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+				}
+
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockTask.consecutiveMistakeCount).toBe(1)
+				expect(mockTask.recordToolError).toHaveBeenCalledWith("attempt_completion")
+				expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("ESLint diagnostics"))
+				expect(mockPushToolResult).toHaveBeenCalledWith(expect.stringContaining("PROBLEMS"))
+			})
+
+			it("should allow completion when ESLint diagnostics are only in other files", async () => {
+				const cwd = path.resolve("repo")
+				const otherPath = path.join(cwd, "src", "other.ts")
+				const diagnostics: [any, any[]][] = [
+					[
+						{ fsPath: otherPath },
+						[
+							{
+								source: "eslint",
+								severity: vscode.DiagnosticSeverity.Warning,
+								message: "Unused variable",
+							},
+						],
+					],
+				]
+
+				mockGetDiagnostics.mockReturnValue(diagnostics)
+
+				mockTask.cwd = cwd
+				mockTask.fileContextTracker = {
+					getTaskMetadata: vi.fn().mockResolvedValue({
+						files_in_context: [{ path: "src/edited.ts", record_source: "roo_edited" }],
+					}),
+				} as any
+
+				mockTask.providerRef = {
+					deref: () => ({
+						contextProxy: {
+							getValue: vi.fn((key: string) => {
+								if (key === "preventCompletionWithEslintProblems") return true
+								return undefined
+							}),
+						},
+					}),
+				} as any
+
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "Task completed successfully" },
+					nativeArgs: { result: "Task completed successfully" },
+					partial: false,
+				}
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+				}
+
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockTask.recordToolError).not.toHaveBeenCalledWith("attempt_completion")
+				expect(mockPushToolResult).not.toHaveBeenCalledWith(expect.stringContaining("ESLint diagnostics"))
+			})
+
+			it("should allow completion when ESLint guard is disabled", async () => {
+				const cwd = path.resolve("repo")
+				const editedPath = path.join(cwd, "src", "edited.ts")
+				const diagnostics: [any, any[]][] = [
+					[
+						{ fsPath: editedPath },
+						[
+							{
+								source: "eslint",
+								severity: vscode.DiagnosticSeverity.Warning,
+								message: "Unused variable",
+							},
+						],
+					],
+				]
+
+				mockGetDiagnostics.mockReturnValue(diagnostics)
+
+				mockTask.cwd = cwd
+				mockTask.fileContextTracker = {
+					getTaskMetadata: vi.fn().mockResolvedValue({
+						files_in_context: [{ path: "src/edited.ts", record_source: "roo_edited" }],
+					}),
+				} as any
+
+				mockTask.providerRef = {
+					deref: () => ({
+						contextProxy: {
+							getValue: vi.fn((key: string) => {
+								if (key === "preventCompletionWithEslintProblems") return false
+								return undefined
+							}),
+						},
+					}),
+				} as any
+
+				const block: AttemptCompletionToolUse = {
+					type: "tool_use",
+					name: "attempt_completion",
+					params: { result: "Task completed successfully" },
+					nativeArgs: { result: "Task completed successfully" },
+					partial: false,
+				}
+
+				const callbacks: AttemptCompletionCallbacks = {
+					askApproval: mockAskApproval,
+					handleError: mockHandleError,
+					pushToolResult: mockPushToolResult,
+					askFinishSubTaskApproval: mockAskFinishSubTaskApproval,
+					toolDescription: mockToolDescription,
+				}
+
+				await attemptCompletionTool.handle(mockTask as Task, block, callbacks)
+
+				expect(mockTask.recordToolError).not.toHaveBeenCalledWith("attempt_completion")
+				expect(mockPushToolResult).not.toHaveBeenCalledWith(expect.stringContaining("ESLint diagnostics"))
 			})
 		})
 
