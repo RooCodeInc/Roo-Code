@@ -1028,7 +1028,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 						content: [{ type: "input_text", text: prompt }],
 					},
 				],
-				stream: false,
+				stream: true,
 				store: false,
 				instructions: "You are Roo internal council engine.",
 				...(reasoningEffort ? { include: ["reasoning.encrypted_content"] } : {}),
@@ -1075,25 +1075,18 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				)
 			}
 
-			const responseData = await response.json()
+			if (!response.body) {
+				throw new Error(t("common:errors.openAiCodex.noResponseBody"))
+			}
 
-			if (responseData?.output && Array.isArray(responseData.output)) {
-				for (const outputItem of responseData.output) {
-					if (outputItem.type === "message" && outputItem.content) {
-						for (const content of outputItem.content) {
-							if (content.type === "output_text" && content.text) {
-								return content.text
-							}
-						}
-					}
+			let outputText = ""
+			for await (const chunk of this.handleStreamResponse(response.body, model)) {
+				if (chunk.type === "text") {
+					outputText += chunk.text
 				}
 			}
 
-			if (responseData?.text) {
-				return responseData.text
-			}
-
-			return ""
+			return outputText.trim()
 		} catch (error) {
 			const errorModel = this.getModel()
 			const errorMessage = error instanceof Error ? error.message : String(error)
