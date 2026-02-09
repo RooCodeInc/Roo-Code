@@ -747,29 +747,31 @@ export class ClineProvider
 
 		// Initialize out-of-scope variables that need to receive persistent
 		// global state values.
-		const {
-			terminalShellIntegrationTimeout = Terminal.defaultShellIntegrationTimeout,
-			terminalShellIntegrationDisabled = false,
-			terminalCommandDelay = 0,
-			terminalZshClearEolMark = true,
-			terminalZshOhMy = false,
-			terminalZshP10k = false,
-			terminalPowershellCounter = false,
-			terminalZdotdir = false,
-			ttsEnabled,
-			ttsSpeed,
-		} = await this.getState()
-
-		Terminal.setShellIntegrationTimeout(terminalShellIntegrationTimeout)
-		Terminal.setShellIntegrationDisabled(terminalShellIntegrationDisabled)
-		Terminal.setCommandDelay(terminalCommandDelay)
-		Terminal.setTerminalZshClearEolMark(terminalZshClearEolMark)
-		Terminal.setTerminalZshOhMy(terminalZshOhMy)
-		Terminal.setTerminalZshP10k(terminalZshP10k)
-		Terminal.setPowershellCounter(terminalPowershellCounter)
-		Terminal.setTerminalZdotdir(terminalZdotdir)
-		setTtsEnabled(ttsEnabled ?? false)
-		setTtsSpeed(ttsSpeed ?? 1)
+		this.getState().then(
+			({
+				terminalShellIntegrationTimeout = Terminal.defaultShellIntegrationTimeout,
+				terminalShellIntegrationDisabled = false,
+				terminalCommandDelay = 0,
+				terminalZshClearEolMark = true,
+				terminalZshOhMy = false,
+				terminalZshP10k = false,
+				terminalPowershellCounter = false,
+				terminalZdotdir = false,
+				ttsEnabled,
+				ttsSpeed,
+			}) => {
+				Terminal.setShellIntegrationTimeout(terminalShellIntegrationTimeout)
+				Terminal.setShellIntegrationDisabled(terminalShellIntegrationDisabled)
+				Terminal.setCommandDelay(terminalCommandDelay)
+				Terminal.setTerminalZshClearEolMark(terminalZshClearEolMark)
+				Terminal.setTerminalZshOhMy(terminalZshOhMy)
+				Terminal.setTerminalZshP10k(terminalZshP10k)
+				Terminal.setPowershellCounter(terminalPowershellCounter)
+				Terminal.setTerminalZdotdir(terminalZdotdir)
+				setTtsEnabled(ttsEnabled ?? false)
+				setTtsSpeed(ttsSpeed ?? 1)
+			},
+		)
 
 		// Set up webview options with proper resource roots
 		const resourceRoots = [this.contextProxy.extensionUri]
