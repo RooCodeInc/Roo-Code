@@ -157,6 +157,19 @@ export abstract class BaseTool<TName extends ToolName> {
 		}
 
 		// Execute with typed parameters
-		await this.execute(params, task, callbacks)
+		await (task as any).onRpiToolStart?.(
+			this.name,
+			typeof params === "object" && params !== null ? (params as Record<string, unknown>) : undefined,
+		)
+
+		let executionError: Error | undefined
+		try {
+			await this.execute(params, task, callbacks)
+		} catch (error) {
+			executionError = error instanceof Error ? error : new Error(String(error))
+			throw error
+		} finally {
+			await (task as any).onRpiToolFinish?.(this.name, executionError)
+		}
 	}
 }

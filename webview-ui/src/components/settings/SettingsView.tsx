@@ -175,6 +175,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		maxOpenTabsContext,
 		maxWorkspaceFiles,
 		mcpEnabled,
+		rpiAutopilotEnabled,
 		remoteBrowserHost,
 		screenshotQuality,
 		soundEnabled,
@@ -440,6 +441,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					terminalZdotdir,
 					terminalOutputPreviewSize: terminalOutputPreviewSize ?? "medium",
 					mcpEnabled,
+					rpiAutopilotEnabled: rpiAutopilotEnabled ?? true,
 					maxOpenTabsContext: Math.min(Math.max(0, maxOpenTabsContext ?? 20), 500),
 					maxWorkspaceFiles: Math.min(Math.max(0, maxWorkspaceFiles ?? 200), 500),
 					showRooIgnoredFiles: showRooIgnoredFiles ?? true,
@@ -904,6 +906,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								includeCurrentTime={includeCurrentTime}
 								includeCurrentCost={includeCurrentCost}
 								maxGitStatusFiles={maxGitStatusFiles}
+								rpiAutopilotEnabled={rpiAutopilotEnabled}
 								customSupportPrompts={customSupportPrompts || {}}
 								setCustomSupportPrompts={setCustomSupportPromptsField}
 								setCachedStateField={setCachedStateField}

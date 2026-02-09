@@ -208,6 +208,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		screenshotQuality: 75,
 		terminalShellIntegrationTimeout: 4000,
 		mcpEnabled: true,
+		rpiAutopilotEnabled: true,
 		remoteControlEnabled: false,
 		taskSyncEnabled: false,
 		featureRoomoteControlEnabled: false,

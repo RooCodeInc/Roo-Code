@@ -42,6 +42,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 	includeCurrentTime?: boolean
 	includeCurrentCost?: boolean
 	maxGitStatusFiles?: number
+	rpiAutopilotEnabled?: boolean
 	customSupportPrompts: Record<string, string | undefined>
 	setCustomSupportPrompts: (prompts: Record<string, string | undefined>) => void
 	setCachedStateField: SetCachedStateField<
@@ -60,6 +61,7 @@ type ContextManagementSettingsProps = HTMLAttributes<HTMLDivElement> & {
 		| "includeCurrentTime"
 		| "includeCurrentCost"
 		| "maxGitStatusFiles"
+		| "rpiAutopilotEnabled"
 	>
 }
 
@@ -81,6 +83,7 @@ export const ContextManagementSettings = ({
 	includeCurrentTime,
 	includeCurrentCost,
 	maxGitStatusFiles,
+	rpiAutopilotEnabled,
 	customSupportPrompts,
 	setCustomSupportPrompts,
 	className,
@@ -403,6 +406,23 @@ export const ContextManagementSettings = ({
 					</div>
 					<div className="text-vscode-descriptionForeground text-sm mt-1">
 						{t("settings:contextManagement.diagnostics.delayAfterWrite.description")}
+					</div>
+				</SearchableSetting>
+
+				<SearchableSetting
+					settingId="context-rpi-autopilot"
+					section="contextManagement"
+					label={t("settings:contextManagement.rpiAutopilot.label")}>
+					<VSCodeCheckbox
+						checked={rpiAutopilotEnabled ?? true}
+						onChange={(e: any) => setCachedStateField("rpiAutopilotEnabled", e.target.checked)}
+						data-testid="rpi-autopilot-enabled-checkbox">
+						<label className="block font-medium mb-1">
+							{t("settings:contextManagement.rpiAutopilot.label")}
+						</label>
+					</VSCodeCheckbox>
+					<div className="text-vscode-descriptionForeground text-sm mt-1 mb-3">
+						{t("settings:contextManagement.rpiAutopilot.description")}
 					</div>
 				</SearchableSetting>
 

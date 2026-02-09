@@ -652,6 +652,8 @@ export const webviewMessageHandler = async (
 						if (mcpHub) {
 							await mcpHub.handleMcpEnabledChange(newValue as boolean)
 						}
+					} else if (key === "rpiAutopilotEnabled") {
+						newValue = value ?? true
 					} else if (key === "experiments") {
 						if (!value) {
 							continue

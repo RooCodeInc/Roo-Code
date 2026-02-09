@@ -793,6 +793,10 @@
 			"label": "Include current cost in context",
 			"description": "When enabled, the current API usage cost will be included in the system prompt. Disable this if models are stopping work due to cost concerns."
 		},
+		"rpiAutopilot": {
+			"label": "Enable RPI autopilot",
+			"description": "When enabled, Roo automatically keeps the RPI planning files and completion checks in sync during the task. Disable to run without RPI automation."
+		},
 		"maxGitStatusFiles": {
 			"label": "Git status max files",
 			"description": "Maximum number of file entries to include in git status context. Set to 0 to disable. Branch info is always shown when > 0."

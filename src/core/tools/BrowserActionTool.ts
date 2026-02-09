@@ -21,6 +21,7 @@ export async function browserActionTool(
 	const text: string | undefined = block.params.text
 	const size: string | undefined = block.params.size
 	const filePath: string | undefined = block.params.path
+	let executionError: Error | undefined
 
 	if (!action || !browserActions.includes(action)) {
 		// checking for action to ensure it is complete and valid
@@ -37,6 +38,17 @@ export async function browserActionTool(
 	}
 
 	try {
+		if (!block.partial) {
+			await (cline as any).onRpiToolStart?.("browser_action", {
+				action,
+				url,
+				coordinate,
+				text,
+				size,
+				path: filePath,
+			})
+		}
+
 		if (block.partial) {
 			if (action === "launch") {
 				await cline.ask("browser_action_launch", url ?? "", block.partial).catch(() => {})
@@ -273,8 +285,13 @@ export async function browserActionTool(
 			return
 		}
 	} catch (error) {
+		executionError = error instanceof Error ? error : new Error(String(error))
 		// Keep the browser session alive on errors; report the error without terminating the session
 		await handleError("executing browser action", error)
 		return
+	} finally {
+		if (!block.partial) {
+			await (cline as any).onRpiToolFinish?.("browser_action", executionError)
+		}
 	}
 }

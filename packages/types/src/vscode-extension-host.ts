@@ -337,6 +337,7 @@ export type ExtensionState = Pick<
 	| "maxGitStatusFiles"
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
+	| "rpiAutopilotEnabled"
 > & {
 	version: string
 	clineMessages: ClineMessage[]

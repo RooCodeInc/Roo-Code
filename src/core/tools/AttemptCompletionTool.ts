@@ -68,6 +68,14 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			return
 		}
 
+		const rpiCompletionBlocker = await (task as any).getRpiCompletionBlocker?.()
+		if (rpiCompletionBlocker) {
+			task.consecutiveMistakeCount++
+			task.recordToolError("attempt_completion")
+			pushToolResult(formatResponse.toolError(rpiCompletionBlocker))
+			return
+		}
+
 		try {
 			if (!result) {
 				task.consecutiveMistakeCount++
@@ -137,6 +145,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 			const { response, text, images } = await task.ask("completion_result", "", false)
 
 			if (response === "yesButtonClicked") {
+				await (task as any).markRpiCompletionAccepted?.()
 				return
 			}
 
@@ -169,6 +178,7 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		}
 
 		pushToolResult("")
+		await (task as any).markRpiCompletionAccepted?.()
 
 		await provider.reopenParentFromDelegation({
 			parentTaskId: task.parentTaskId!,

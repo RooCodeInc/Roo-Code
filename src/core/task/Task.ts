@@ -134,6 +134,7 @@ import { MessageManager } from "../message-manager"
 import { validateAndFixToolResultIds } from "./validateToolResultIds"
 import { mergeConsecutiveApiMessages } from "./mergeConsecutiveApiMessages"
 import { appendEnvironmentDetails, removeEnvironmentDetailsBlocks } from "./appendEnvironmentDetails"
+import { RpiAutopilot } from "../rpi/RpiAutopilot"
 
 const MAX_EXPONENTIAL_BACKOFF_SECONDS = 600 // 10 minutes
 const DEFAULT_USAGE_COLLECTION_TIMEOUT_MS = 5000 // 5 seconds
@@ -546,6 +547,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// MessageManager for high-level message operations (lazy initialized)
 	private _messageManager?: MessageManager
+	private rpiAutopilot?: RpiAutopilot
 
 	constructor({
 		provider,
@@ -2058,6 +2060,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			await this.providerRef.deref()?.postStateToWebviewWithoutTaskHistory()
 
 			await this.say("text", task, images)
+			await this.initializeRpiAutopilot()
 
 			// Check for too many MCP tools and warn the user
 			const { enabledToolCount, enabledServerCount } = await this.getEnabledMcpToolsCount()
@@ -2180,6 +2183,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		this.isInitialized = true
+		await this.initializeRpiAutopilot()
 
 		const { response, text, images } = await this.ask(askType) // Calls `postStateToWebview`.
 
@@ -3779,6 +3783,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			apiConfiguration,
 			enableSubfolderRules,
 		} = state ?? {}
+		const rpiGuidance = await this.getRpiPromptGuidance()
+		const mergedCustomInstructions = [customInstructions, rpiGuidance]
+			.filter((value): value is string => !!value && value.trim().length > 0)
+			.join("\n\n")
 
 		return await (async () => {
 			const provider = this.providerRef.deref()
@@ -3808,7 +3816,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				mode ?? defaultModeSlug,
 				customModePrompts,
 				customModes,
-				customInstructions,
+				mergedCustomInstructions,
 				experiments,
 				language,
 				rooIgnoreInstructions,
@@ -4680,6 +4688,108 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	public get cwd() {
 		return this.workspacePath
+	}
+
+	private isRpiAutopilotEnabled(): boolean {
+		const provider = this.providerRef.deref()
+		const setting = provider?.contextProxy.getValue("rpiAutopilotEnabled")
+		return setting ?? true
+	}
+
+	private async getRpiAutopilot(): Promise<RpiAutopilot> {
+		if (!this.rpiAutopilot) {
+			this.rpiAutopilot = new RpiAutopilot({
+				taskId: this.taskId,
+				cwd: this.cwd,
+				getMode: async () => this.getTaskMode(),
+				getTaskText: () => this.metadata.task,
+			})
+		}
+		return this.rpiAutopilot
+	}
+
+	public async initializeRpiAutopilot(): Promise<void> {
+		try {
+			if (!this.isRpiAutopilotEnabled()) {
+				return
+			}
+			const autopilot = await this.getRpiAutopilot()
+			await autopilot.ensureInitialized()
+		} catch (error) {
+			console.error(
+				`[Task#initializeRpiAutopilot] Failed: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
+	}
+
+	public async getRpiPromptGuidance(): Promise<string | undefined> {
+		try {
+			if (!this.isRpiAutopilotEnabled()) {
+				return undefined
+			}
+			const autopilot = await this.getRpiAutopilot()
+			return await autopilot.getPromptGuidance()
+		} catch (error) {
+			console.error(
+				`[Task#getRpiPromptGuidance] Failed: ${error instanceof Error ? error.message : String(error)}`,
+			)
+			return undefined
+		}
+	}
+
+	public async onRpiToolStart(toolName: string, params?: Record<string, unknown>): Promise<void> {
+		try {
+			if (!this.isRpiAutopilotEnabled()) {
+				return
+			}
+			const autopilot = await this.getRpiAutopilot()
+			await autopilot.onToolStart(toolName, params)
+		} catch (error) {
+			console.error(`[Task#onRpiToolStart] Failed: ${error instanceof Error ? error.message : String(error)}`)
+		}
+	}
+
+	public async onRpiToolFinish(toolName: string, error?: Error): Promise<void> {
+		try {
+			if (!this.isRpiAutopilotEnabled()) {
+				return
+			}
+			const autopilot = await this.getRpiAutopilot()
+			await autopilot.onToolFinish(toolName, error)
+		} catch (finishError) {
+			console.error(
+				`[Task#onRpiToolFinish] Failed: ${finishError instanceof Error ? finishError.message : String(finishError)}`,
+			)
+		}
+	}
+
+	public async getRpiCompletionBlocker(): Promise<string | undefined> {
+		try {
+			if (!this.isRpiAutopilotEnabled()) {
+				return undefined
+			}
+			const autopilot = await this.getRpiAutopilot()
+			return await autopilot.getCompletionBlocker()
+		} catch (error) {
+			console.error(
+				`[Task#getRpiCompletionBlocker] Failed: ${error instanceof Error ? error.message : String(error)}`,
+			)
+			return undefined
+		}
+	}
+
+	public async markRpiCompletionAccepted(): Promise<void> {
+		try {
+			if (!this.isRpiAutopilotEnabled()) {
+				return
+			}
+			const autopilot = await this.getRpiAutopilot()
+			await autopilot.markCompletionAccepted()
+		} catch (error) {
+			console.error(
+				`[Task#markRpiCompletionAccepted] Failed: ${error instanceof Error ? error.message : String(error)}`,
+			)
+		}
 	}
 
 	/**
