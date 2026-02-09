@@ -230,12 +230,6 @@ export const globalSettingsSchema = z.object({
 	showQuestionsOneByOne: z.boolean().optional(),
 
 	/**
-	 * Whether to highlight the task header in the chat view.
-	 * @default false
-	 */
-	taskHeaderHighlightEnabled: z.boolean().optional(),
-
-	/**
 	 * Path to worktree to auto-open after switching workspaces.
 	 * Used by the worktree feature to open the Roo Code sidebar in a new window.
 	 */
@@ -404,7 +398,6 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 
 	customModes: [],
 	showQuestionsOneByOne: false,
-	taskHeaderHighlightEnabled: false,
 }
 
 export const EVALS_TIMEOUT = 5 * 60 * 1_000

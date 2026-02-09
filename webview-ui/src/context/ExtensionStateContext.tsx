@@ -158,8 +158,6 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setShowQuestionsOneByOne: (value: boolean) => void
 	showWorktreesInHomeScreen: boolean
 	setShowWorktreesInHomeScreen: (value: boolean) => void
-	taskHeaderHighlightEnabled: boolean
-	setTaskHeaderHighlightEnabled: (value: boolean) => void
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
@@ -269,7 +267,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		includeCurrentTime: true,
 		includeCurrentCost: true,
 		showQuestionsOneByOne: false,
-		taskHeaderHighlightEnabled: false,
 		lockApiConfigAcrossModes: false,
 	})
 
@@ -623,9 +620,6 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setIncludeCurrentCost,
 		showQuestionsOneByOne,
 		setShowQuestionsOneByOne,
-		taskHeaderHighlightEnabled: state.taskHeaderHighlightEnabled ?? false,
-		setTaskHeaderHighlightEnabled: (value) =>
-			setState((prevState) => ({ ...prevState, taskHeaderHighlightEnabled: value })),
 		showWorktreesInHomeScreen: state.showWorktreesInHomeScreen ?? true,
 		setShowWorktreesInHomeScreen: (value) =>
 			setState((prevState) => ({ ...prevState, showWorktreesInHomeScreen: value })),
