@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-    </details>
+      </details>
 
 ---
 
@@ -58,7 +58,6 @@ Roo Code s'adapte à votre façon de travailler, pas l'inverse :
 - Mode Demande : réponses rapides, explications et documents
 - Mode Débogage : tracer les problèmes, ajouter des journaux, isoler les causes profondes
 - Modes Personnalisés : créez des modes spécialisés pour votre équipe ou votre flux de travail
-- Roomote Control : Roomote Control te permet de piloter à distance les tâches exécutées dans ton instance VS Code locale.
 
 En savoir plus : [Utiliser les Modes](https://docs.roocode.com/basic-usage/using-modes) • [Modes personnalisés](https://docs.roocode.com/advanced-usage/custom-modes)
 
