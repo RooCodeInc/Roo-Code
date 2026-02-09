@@ -327,6 +327,7 @@ vi.mock("@roo-code/cloud", () => ({
 		get instance() {
 			return {
 				isAuthenticated: vi.fn().mockReturnValue(false),
+				off: vi.fn(),
 			}
 		},
 	},
@@ -595,6 +596,43 @@ describe("ClineProvider", () => {
 		await provider.postMessageToWebview(message)
 
 		expect(mockPostMessage).toHaveBeenCalledWith(message)
+	})
+
+	test("postMessageToWebview does not throw when webview is disposed", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+
+		// Simulate postMessage throwing after webview disposal
+		mockPostMessage.mockRejectedValueOnce(new Error("Webview is disposed"))
+
+		const message: ExtensionMessage = { type: "action", action: "chatButtonClicked" }
+
+		// Should not throw
+		await expect(provider.postMessageToWebview(message)).resolves.toBeUndefined()
+	})
+
+	test("postMessageToWebview skips postMessage after dispose", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+
+		await provider.dispose()
+		mockPostMessage.mockClear()
+
+		const message: ExtensionMessage = { type: "action", action: "chatButtonClicked" }
+		await provider.postMessageToWebview(message)
+
+		expect(mockPostMessage).not.toHaveBeenCalled()
+	})
+
+	test("dispose is idempotent — second call is a no-op", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+
+		await provider.dispose()
+		await provider.dispose()
+
+		// dispose body runs only once: log "Disposing ClineProvider..." appears once
+		const disposeCalls = (mockOutputChannel.appendLine as ReturnType<typeof vi.fn>).mock.calls.filter(
+			([msg]) => typeof msg === "string" && msg.includes("Disposing ClineProvider..."),
+		)
+		expect(disposeCalls).toHaveLength(1)
 	})
 
 	test("handles webviewDidLaunch message", async () => {
