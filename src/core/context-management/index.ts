@@ -1,11 +1,10 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import crypto from "crypto"
 
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiHandler, ApiHandlerCreateMessageMetadata } from "../../api"
 import { MAX_CONDENSE_THRESHOLD, MIN_CONDENSE_THRESHOLD, summarizeConversation, SummarizeResponse } from "../condense"
-import { ApiMessage } from "../task-persistence/apiMessages"
+import { type ApiMessage, type NeutralContentBlock } from "../task-persistence"
 import { ANTHROPIC_DEFAULT_MAX_TOKENS } from "@roo-code/types"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
 
@@ -32,10 +31,7 @@ export const TOKEN_BUFFER_PERCENTAGE = 0.1
  * @param {ApiHandler} apiHandler - The API handler to use for token counting
  * @returns {Promise<number>} A promise resolving to the token count
  */
-export async function estimateTokenCount(
-	content: Array<Anthropic.Messages.ContentBlockParam>,
-	apiHandler: ApiHandler,
-): Promise<number> {
+export async function estimateTokenCount(content: Array<NeutralContentBlock>, apiHandler: ApiHandler): Promise<number> {
 	if (!content || content.length === 0) return 0
 	return apiHandler.countTokens(content)
 }

@@ -1,45 +1,49 @@
-import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
+import { streamText, generateText, ToolSet } from "ai"
 
 import { rooDefaultModelId, getApiProtocol, type ImageGenerationApiMethod } from "@roo-code/types"
 import { CloudService } from "@roo-code/cloud"
 
-import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
-
 import { Package } from "../../shared/package"
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
-import { ApiStream } from "../transform/stream"
+
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	mapToolChoice,
+	handleAiSdkError,
+} from "../transform/ai-sdk"
+import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
-import { convertToOpenAiMessages } from "../transform/openai-format"
-import type { RooReasoningParams } from "../transform/reasoning"
 import { getRooReasoning } from "../transform/reasoning"
 
+import { OpenAICompatibleHandler, type OpenAICompatibleConfig } from "./openai-compatible"
+import { DEFAULT_HEADERS } from "./constants"
 import type { ApiHandlerCreateMessageMetadata } from "../index"
-import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
 import { getModels, getModelsFromCache } from "../providers/fetchers/modelCache"
-import { handleOpenAIError } from "./utils/openai-error-handler"
 import { generateImageWithProvider, generateImageWithImagesApi, ImageGenerationResult } from "./utils/image-generation"
 import { t } from "../../i18n"
-
-// Extend OpenAI's CompletionUsage to include Roo specific fields
-interface RooUsage extends OpenAI.CompletionUsage {
-	cache_creation_input_tokens?: number
-	cost?: number
-}
-
-// Add custom interface for Roo params to support reasoning
-type RooChatCompletionParams = OpenAI.Chat.ChatCompletionCreateParamsStreaming & {
-	reasoning?: RooReasoningParams
-}
 
 function getSessionToken(): string {
 	const token = CloudService.hasInstance() ? CloudService.instance.authService?.getSessionToken() : undefined
 	return token ?? "unauthenticated"
 }
 
-export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
+const FALLBACK_MODEL_INFO = {
+	maxTokens: 16_384,
+	contextWindow: 262_144,
+	supportsImages: false,
+	supportsReasoningEffort: false,
+	supportsPromptCache: true,
+	inputPrice: 0,
+	outputPrice: 0,
+	isFree: false,
+}
+
+export class RooHandler extends OpenAICompatibleHandler {
 	private fetcherBaseURL: string
-	private currentReasoningDetails: any[] = []
 
 	constructor(options: ApiHandlerOptions) {
 		const sessionToken = options.rooApiKey ?? getSessionToken()
@@ -51,16 +55,19 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			baseURL = `${baseURL}/v1`
 		}
 
-		// Always construct the handler, even without a valid token.
-		// The provider-proxy server will return 401 if authentication fails.
-		super({
-			...options,
-			providerName: "Roo Code Cloud",
-			baseURL, // Already has /v1 suffix
+		const modelId = options.apiModelId || rooDefaultModelId
+		const models = getModelsFromCache("roo") || {}
+		const modelInfo = models[modelId] || FALLBACK_MODEL_INFO
+
+		const config: OpenAICompatibleConfig = {
+			providerName: "roo",
+			baseURL,
 			apiKey: sessionToken,
-			defaultProviderModelId: rooDefaultModelId,
-			providerModels: {},
-		})
+			modelId,
+			modelInfo,
+		}
+
+		super(options, config)
 
 		// Load dynamic models asynchronously - strip /v1 from baseURL for fetcher
 		this.fetcherBaseURL = baseURL.endsWith("/v1") ? baseURL.slice(0, -3) : baseURL
@@ -70,277 +77,54 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		})
 	}
 
-	protected override createStream(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
-		requestOptions?: OpenAI.RequestOptions,
-	) {
-		const { id: model, info } = this.getModel()
+	// ── Auth & Provider recreation ─────────────────────────────────
 
-		// Get model parameters including reasoning
-		const params = getModelParams({
-			format: "openai",
-			modelId: model,
-			model: info,
-			settings: this.options,
-			defaultTemperature: this.defaultTemperature,
+	/**
+	 * Refresh the session token and recreate the AI SDK provider with
+	 * up-to-date credentials and per-request custom headers.
+	 * `createOpenAICompatible()` captures baseURL/apiKey at creation time,
+	 * so the provider must be recreated for dynamic credentials.
+	 */
+	private refreshProvider(taskId?: string): void {
+		const sessionToken = this.options.rooApiKey ?? getSessionToken()
+		this.config.apiKey = sessionToken
+
+		const headers: Record<string, string> = {
+			...DEFAULT_HEADERS,
+			"X-Roo-App-Version": Package.version,
+		}
+
+		if (taskId) {
+			headers["X-Roo-Task-ID"] = taskId
+		}
+
+		this.provider = createOpenAICompatible({
+			name: this.config.providerName,
+			baseURL: this.config.baseURL,
+			apiKey: this.config.apiKey,
+			headers,
 		})
-
-		// Get Roo-specific reasoning parameters
-		const reasoning = getRooReasoning({
-			model: info,
-			reasoningBudget: params.reasoningBudget,
-			reasoningEffort: params.reasoningEffort,
-			settings: this.options,
-		})
-
-		const max_tokens = params.maxTokens ?? undefined
-		const temperature = params.temperature ?? this.defaultTemperature
-
-		const rooParams: RooChatCompletionParams = {
-			model,
-			max_tokens,
-			temperature,
-			messages: [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)],
-			stream: true,
-			stream_options: { include_usage: true },
-			...(reasoning && { reasoning }),
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
-		}
-
-		try {
-			this.client.apiKey = this.options.rooApiKey ?? getSessionToken()
-			return this.client.chat.completions.create(rooParams, requestOptions)
-		} catch (error) {
-			throw handleOpenAIError(error, this.providerName)
-		}
 	}
 
-	getReasoningDetails(): any[] | undefined {
-		return this.currentReasoningDetails.length > 0 ? this.currentReasoningDetails : undefined
-	}
+	// ── Model resolution ───────────────────────────────────────────
 
-	override async *createMessage(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
-	): ApiStream {
-		try {
-			// Reset reasoning_details accumulator for this request
-			this.currentReasoningDetails = []
+	override getModel() {
+		const modelId = this.options.apiModelId || rooDefaultModelId
 
-			const headers: Record<string, string> = {
-				"X-Roo-App-Version": Package.version,
-			}
+		// Get models from shared cache (settings are already applied by the fetcher)
+		const models = getModelsFromCache("roo") || {}
+		const modelInfo = models[modelId]
 
-			if (metadata?.taskId) {
-				headers["X-Roo-Task-ID"] = metadata.taskId
-			}
-
-			const stream = await this.createStream(systemPrompt, messages, metadata, { headers })
-
-			let lastUsage: RooUsage | undefined = undefined
-			// Accumulator for reasoning_details FROM the API.
-			// We preserve the original shape of reasoning_details to prevent malformed responses.
-			const reasoningDetailsAccumulator = new Map<
-				string,
-				{
-					type: string
-					text?: string
-					summary?: string
-					data?: string
-					id?: string | null
-					format?: string
-					signature?: string
-					index: number
-				}
-			>()
-
-			// Track whether we've yielded displayable text from reasoning_details.
-			// When reasoning_details has displayable content (reasoning.text or reasoning.summary),
-			// we skip yielding the top-level reasoning field to avoid duplicate display.
-			let hasYieldedReasoningFromDetails = false
-
-			for await (const chunk of stream) {
-				const delta = chunk.choices[0]?.delta
-				const finishReason = chunk.choices[0]?.finish_reason
-
-				if (delta) {
-					// Handle reasoning_details array format (used by Gemini 3, Claude, OpenAI o-series, etc.)
-					// See: https://openrouter.ai/docs/use-cases/reasoning-tokens#preserving-reasoning-blocks
-					// Priority: Check for reasoning_details first, as it's the newer format
-					const deltaWithReasoning = delta as typeof delta & {
-						reasoning_details?: Array<{
-							type: string
-							text?: string
-							summary?: string
-							data?: string
-							id?: string | null
-							format?: string
-							signature?: string
-							index?: number
-						}>
-					}
-
-					if (deltaWithReasoning.reasoning_details && Array.isArray(deltaWithReasoning.reasoning_details)) {
-						for (const detail of deltaWithReasoning.reasoning_details) {
-							const index = detail.index ?? 0
-							// Use id as key when available to merge chunks that share the same reasoning block id
-							// This ensures that reasoning.summary and reasoning.encrypted chunks with the same id
-							// are merged into a single object, matching the provider's expected format
-							const key = detail.id ?? `${detail.type}-${index}`
-							const existing = reasoningDetailsAccumulator.get(key)
-
-							if (existing) {
-								// Accumulate text/summary/data for existing reasoning detail
-								if (detail.text !== undefined) {
-									existing.text = (existing.text || "") + detail.text
-								}
-								if (detail.summary !== undefined) {
-									existing.summary = (existing.summary || "") + detail.summary
-								}
-								if (detail.data !== undefined) {
-									existing.data = (existing.data || "") + detail.data
-								}
-								// Update other fields if provided
-								// Note: Don't update type - keep original type (e.g., reasoning.summary)
-								// even when encrypted data chunks arrive with type reasoning.encrypted
-								if (detail.id !== undefined) existing.id = detail.id
-								if (detail.format !== undefined) existing.format = detail.format
-								if (detail.signature !== undefined) existing.signature = detail.signature
-							} else {
-								// Start new reasoning detail accumulation
-								reasoningDetailsAccumulator.set(key, {
-									type: detail.type,
-									text: detail.text,
-									summary: detail.summary,
-									data: detail.data,
-									id: detail.id,
-									format: detail.format,
-									signature: detail.signature,
-									index,
-								})
-							}
-
-							// Yield text for display (still fragmented for live streaming)
-							// Only reasoning.text and reasoning.summary have displayable content
-							// reasoning.encrypted is intentionally skipped as it contains redacted content
-							let reasoningText: string | undefined
-							if (detail.type === "reasoning.text" && typeof detail.text === "string") {
-								reasoningText = detail.text
-							} else if (detail.type === "reasoning.summary" && typeof detail.summary === "string") {
-								reasoningText = detail.summary
-							}
-
-							if (reasoningText) {
-								hasYieldedReasoningFromDetails = true
-								yield { type: "reasoning", text: reasoningText }
-							}
-						}
-					}
-
-					// Handle top-level reasoning field for UI display.
-					// Skip if we've already yielded from reasoning_details to avoid duplicate display.
-					if ("reasoning" in delta && delta.reasoning && typeof delta.reasoning === "string") {
-						if (!hasYieldedReasoningFromDetails) {
-							yield { type: "reasoning", text: delta.reasoning }
-						}
-					} else if ("reasoning_content" in delta && typeof delta.reasoning_content === "string") {
-						// Also check for reasoning_content for backward compatibility
-						if (!hasYieldedReasoningFromDetails) {
-							yield { type: "reasoning", text: delta.reasoning_content }
-						}
-					}
-
-					// Emit raw tool call chunks - NativeToolCallParser handles state management
-					if ("tool_calls" in delta && Array.isArray(delta.tool_calls)) {
-						for (const toolCall of delta.tool_calls) {
-							yield {
-								type: "tool_call_partial",
-								index: toolCall.index,
-								id: toolCall.id,
-								name: toolCall.function?.name,
-								arguments: toolCall.function?.arguments,
-							}
-						}
-					}
-
-					if (delta.content) {
-						yield {
-							type: "text",
-							text: delta.content,
-						}
-					}
-				}
-
-				if (finishReason) {
-					const endEvents = NativeToolCallParser.processFinishReason(finishReason)
-					for (const event of endEvents) {
-						yield event
-					}
-				}
-
-				if (chunk.usage) {
-					lastUsage = chunk.usage as RooUsage
-				}
-			}
-
-			// After streaming completes, store ONLY the reasoning_details we received from the API.
-			if (reasoningDetailsAccumulator.size > 0) {
-				this.currentReasoningDetails = Array.from(reasoningDetailsAccumulator.values())
-			}
-
-			if (lastUsage) {
-				// Check if the current model is marked as free
-				const model = this.getModel()
-				const isFreeModel = model.info.isFree ?? false
-
-				// Normalize input tokens based on protocol expectations:
-				// - OpenAI protocol expects TOTAL input tokens (cached + non-cached)
-				// - Anthropic protocol expects NON-CACHED input tokens (caches passed separately)
-				const modelId = model.id
-				const apiProtocol = getApiProtocol("roo", modelId)
-
-				const promptTokens = lastUsage.prompt_tokens || 0
-				const cacheWrite = lastUsage.cache_creation_input_tokens || 0
-				const cacheRead = lastUsage.prompt_tokens_details?.cached_tokens || 0
-				const nonCached = Math.max(0, promptTokens - cacheWrite - cacheRead)
-
-				const inputTokensForDownstream = apiProtocol === "anthropic" ? nonCached : promptTokens
-
-				yield {
-					type: "usage",
-					inputTokens: inputTokensForDownstream,
-					outputTokens: lastUsage.completion_tokens || 0,
-					cacheWriteTokens: cacheWrite,
-					cacheReadTokens: cacheRead,
-					totalCost: isFreeModel ? 0 : (lastUsage.cost ?? 0),
-				}
-			}
-		} catch (error) {
-			const errorContext = {
-				error: error instanceof Error ? error.message : String(error),
-				stack: error instanceof Error ? error.stack : undefined,
-				modelId: this.options.apiModelId,
-				hasTaskId: Boolean(metadata?.taskId),
-			}
-
-			console.error(`[RooHandler] Error during message streaming: ${JSON.stringify(errorContext)}`)
-
-			throw error
+		if (modelInfo) {
+			return { id: modelId, info: modelInfo }
 		}
-	}
-	override async completePrompt(prompt: string): Promise<string> {
-		// Update API key before making request to ensure we use the latest session token
-		this.client.apiKey = this.options.rooApiKey ?? getSessionToken()
-		return super.completePrompt(prompt)
+
+		// Return the requested model ID even if not found, with fallback info.
+		return { id: modelId, info: FALLBACK_MODEL_INFO }
 	}
 
 	private async loadDynamicModels(baseURL: string, apiKey?: string): Promise<void> {
 		try {
-			// Fetch models and cache them in the shared cache
 			await getModels({
 				provider: "roo",
 				baseUrl: baseURL,
@@ -357,34 +141,140 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 		}
 	}
 
-	override getModel() {
-		const modelId = this.options.apiModelId || rooDefaultModelId
+	// ── API methods ────────────────────────────────────────────────
 
-		// Get models from shared cache (settings are already applied by the fetcher)
-		const models = getModelsFromCache("roo") || {}
-		const modelInfo = models[modelId]
+	override async *createMessage(
+		systemPrompt: string,
+		messages: NeutralMessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		// Refresh auth and recreate provider with custom headers
+		this.refreshProvider(metadata?.taskId)
 
-		if (modelInfo) {
-			return { id: modelId, info: modelInfo }
-		}
+		const { id: modelId, info } = this.getModel()
 
-		// Return the requested model ID even if not found, with fallback info.
-		const fallbackInfo = {
-			maxTokens: 16_384,
-			contextWindow: 262_144,
-			supportsImages: false,
-			supportsReasoningEffort: false,
-			supportsPromptCache: true,
-			inputPrice: 0,
-			outputPrice: 0,
-			isFree: false,
-		}
+		// Get model parameters including reasoning settings
+		const params = getModelParams({
+			format: "openai",
+			modelId,
+			model: info,
+			settings: this.options,
+			defaultTemperature: 0,
+		})
 
-		return {
-			id: modelId,
-			info: fallbackInfo,
+		// Get Roo-specific reasoning parameters
+		const reasoning = getRooReasoning({
+			model: info,
+			reasoningBudget: params.reasoningBudget,
+			reasoningEffort: params.reasoningEffort,
+			settings: this.options,
+		})
+
+		// Create language model with transformRequestBody for reasoning params
+		const languageModel = this.provider.languageModel(modelId, {
+			transformRequestBody: (body: Record<string, unknown>) => {
+				const modified = { ...body }
+				if (reasoning) {
+					modified.reasoning = reasoning as any
+				}
+				return modified
+			},
+		})
+
+		// Convert messages and tools to AI SDK format
+		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+
+		const result = streamText({
+			model: languageModel,
+			system: systemPrompt,
+			messages: aiSdkMessages,
+			temperature: params.temperature ?? 0,
+			maxOutputTokens: params.maxTokens ?? undefined,
+			tools: aiSdkTools,
+			toolChoice: mapToolChoice(metadata?.tool_choice),
+		})
+
+		try {
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
+				}
+			}
+
+			const usage = await result.usage
+			if (usage) {
+				yield this.processUsageMetrics(usage)
+			}
+		} catch (error) {
+			throw handleAiSdkError(error, this.config.providerName)
 		}
 	}
+
+	override async completePrompt(prompt: string): Promise<string> {
+		// Refresh auth and recreate provider
+		this.refreshProvider()
+
+		const { id: modelId, info } = this.getModel()
+
+		const params = getModelParams({
+			format: "openai",
+			modelId,
+			model: info,
+			settings: this.options,
+			defaultTemperature: 0,
+		})
+
+		const languageModel = this.provider.languageModel(modelId)
+
+		const { text } = await generateText({
+			model: languageModel,
+			prompt,
+			maxOutputTokens: params.maxTokens ?? undefined,
+			temperature: params.temperature ?? 0,
+		})
+
+		return text
+	}
+
+	// ── Usage metrics ──────────────────────────────────────────────
+
+	protected override processUsageMetrics(usage: {
+		inputTokens?: number
+		outputTokens?: number
+		details?: { cachedInputTokens?: number; reasoningTokens?: number }
+		raw?: Record<string, unknown>
+	}): ApiStreamUsageChunk {
+		const model = this.getModel()
+		const isFreeModel = (model.info as any).isFree ?? false
+
+		const rawUsage = usage.raw as RooRawUsage | undefined
+
+		// Normalize input tokens based on protocol expectations:
+		// - OpenAI protocol expects TOTAL input tokens (cached + non-cached)
+		// - Anthropic protocol expects NON-CACHED input tokens (caches passed separately)
+		const apiProtocol = getApiProtocol("roo", model.id)
+
+		const promptTokens = rawUsage?.prompt_tokens || usage.inputTokens || 0
+		const cacheWrite = rawUsage?.cache_creation_input_tokens || 0
+		const cacheRead = rawUsage?.prompt_tokens_details?.cached_tokens || usage.details?.cachedInputTokens || 0
+		const nonCached = Math.max(0, promptTokens - cacheWrite - cacheRead)
+
+		const inputTokensForDownstream = apiProtocol === "anthropic" ? nonCached : promptTokens
+		const outputTokens = usage.outputTokens || 0
+
+		return {
+			type: "usage",
+			inputTokens: inputTokensForDownstream,
+			outputTokens,
+			cacheWriteTokens: cacheWrite > 0 ? cacheWrite : undefined,
+			cacheReadTokens: cacheRead > 0 ? cacheRead : undefined,
+			totalCost: isFreeModel ? 0 : (rawUsage?.cost ?? 0),
+		}
+	}
+
+	// ── Image generation ───────────────────────────────────────────
 
 	/**
 	 * Generate an image using Roo Code Cloud's image generation API
@@ -432,4 +322,13 @@ export class RooHandler extends BaseOpenAiCompatibleProvider<string> {
 			inputImage,
 		})
 	}
+}
+
+/** Roo proxy raw usage data with cache-related and cost fields */
+interface RooRawUsage {
+	prompt_tokens?: number
+	completion_tokens?: number
+	cache_creation_input_tokens?: number
+	prompt_tokens_details?: { cached_tokens?: number }
+	cost?: number
 }

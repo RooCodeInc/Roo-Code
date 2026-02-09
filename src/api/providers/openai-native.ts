@@ -1,8 +1,7 @@
 import * as os from "os"
 import { v7 as uuidv7 } from "uuid"
-import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAI } from "@ai-sdk/openai"
-import { streamText, generateText, ToolSet, type ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import { Package } from "../../shared/package"
 import {
@@ -14,8 +13,12 @@ import {
 	type VerbosityLevel,
 	type ReasoningEffortExtended,
 	type ServiceTier,
+	ApiProviderError,
 } from "@roo-code/types"
+import { TelemetryService } from "@roo-code/telemetry"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
+import type { ModelMessage } from "ai"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
@@ -33,6 +36,10 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
+
+// ---------------------------------------------------------------------------
+// Encrypted reasoning helpers (used by createMessage for OpenAI Responses API)
+// ---------------------------------------------------------------------------
 
 /**
  * An encrypted reasoning item extracted from the conversation history.
@@ -57,10 +64,8 @@ export interface EncryptedReasoningItem {
  * This function removes them BEFORE conversion. If an assistant message's
  * content becomes empty after filtering, the message is removed entirely.
  */
-export function stripPlainTextReasoningBlocks(
-	messages: Anthropic.Messages.MessageParam[],
-): Anthropic.Messages.MessageParam[] {
-	return messages.reduce<Anthropic.Messages.MessageParam[]>((acc, msg) => {
+export function stripPlainTextReasoningBlocks(messages: NeutralMessageParam[]): NeutralMessageParam[] {
+	return messages.reduce<NeutralMessageParam[]>((acc, msg) => {
 		if (msg.role !== "assistant" || typeof msg.content === "string") {
 			acc.push(msg)
 			return acc
@@ -92,7 +97,7 @@ export function stripPlainTextReasoningBlocks(
  * injected by `buildCleanConversationHistory` for OpenAI Responses API
  * reasoning continuity.
  */
-export function collectEncryptedReasoningItems(messages: Anthropic.Messages.MessageParam[]): EncryptedReasoningItem[] {
+export function collectEncryptedReasoningItems(messages: NeutralMessageParam[]): EncryptedReasoningItem[] {
 	const items: EncryptedReasoningItem[] = []
 	messages.forEach((msg, index) => {
 		const m = msg as unknown as Record<string, unknown>
@@ -124,7 +129,7 @@ export function collectEncryptedReasoningItems(messages: Anthropic.Messages.Mess
 export function injectEncryptedReasoning(
 	aiSdkMessages: ModelMessage[],
 	encryptedItems: EncryptedReasoningItem[],
-	originalMessages: Anthropic.Messages.MessageParam[],
+	originalMessages: NeutralMessageParam[],
 ): void {
 	if (encryptedItems.length === 0) return
 
@@ -194,43 +199,29 @@ export function injectEncryptedReasoning(
 }
 
 /**
- * OpenAI Native provider using the dedicated @ai-sdk/openai package.
- * Uses the OpenAI Responses API by default (AI SDK 5+).
- * Supports reasoning models, service tiers, verbosity control,
- * encrypted reasoning content, and prompt cache retention.
+ * OpenAI Native provider using the AI SDK (@ai-sdk/openai) with the Responses API.
+ * Supports GPT-4o/4.1, o-series reasoning models, GPT-5 family, and Codex models.
  */
 export class OpenAiNativeHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
-	protected provider: ReturnType<typeof createOpenAI>
 	private readonly providerName = "OpenAI Native"
+	// Session ID for request tracking (persists for the lifetime of the handler)
 	private readonly sessionId: string
-
-	private lastResponseId: string | undefined
-	private lastEncryptedContent: { encrypted_content: string; id?: string } | undefined
+	// Resolved service tier from last response
 	private lastServiceTier: ServiceTier | undefined
+	// Last response ID from Responses API
+	private lastResponseId: string | undefined
+	// Last encrypted reasoning content for stateless continuity
+	private lastEncryptedContent: { encrypted_content: string; id?: string } | undefined
 
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
 		this.sessionId = uuidv7()
-
+		// Default to including reasoning summaries unless explicitly disabled
 		if (this.options.enableResponsesReasoningSummary === undefined) {
 			this.options.enableResponsesReasoningSummary = true
 		}
-
-		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
-		const baseURL = this.options.openAiNativeBaseUrl || undefined
-		const userAgent = `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
-
-		this.provider = createOpenAI({
-			apiKey,
-			baseURL,
-			headers: {
-				originator: "roo-code",
-				session_id: this.sessionId,
-				"User-Agent": userAgent,
-			},
-		})
 	}
 
 	override getModel() {
@@ -249,25 +240,48 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			defaultTemperature: OPENAI_NATIVE_DEFAULT_TEMPERATURE,
 		})
 
+		// The o3-mini models are named like "o3-mini-[reasoning-effort]",
+		// which are not valid model ids, so strip the suffix.
 		return { id: id.startsWith("o3-mini") ? "o3-mini" : id, info, ...params, verbosity: params.verbosity }
 	}
 
+	override isAiSdkProvider(): boolean {
+		return true
+	}
+
 	/**
-	 * Get the language model for the configured model ID.
-	 * Uses the Responses API (default for @ai-sdk/openai since AI SDK 5).
+	 * Create the AI SDK OpenAI provider with per-request headers.
+	 * Headers include session tracking, originator, and User-Agent.
 	 */
-	protected getLanguageModel() {
-		const { id } = this.getModel()
-		return this.provider.responses(id)
-	}
+	private createProvider(metadata?: ApiHandlerCreateMessageMetadata) {
+		const apiKey = this.options.openAiNativeApiKey ?? "not-provided"
+		const baseUrl = this.options.openAiNativeBaseUrl
+		const taskId = metadata?.taskId
+		const userAgent = `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
 
-	private getReasoningEffort(model: OpenAiNativeModel): ReasoningEffortExtended | undefined {
-		const selected = (this.options.reasoningEffort as any) ?? (model.info.reasoningEffort as any)
-		return selected && selected !== "disable" ? (selected as any) : undefined
+		return createOpenAI({
+			apiKey,
+			baseURL: baseUrl || undefined,
+			headers: {
+				originator: "roo-code",
+				session_id: taskId || this.sessionId,
+				"User-Agent": userAgent,
+			},
+		})
 	}
 
 	/**
-	 * Returns the appropriate prompt cache retention policy for the given model, if any.
+	 * Get the reasoning effort for models that support it.
+	 */
+	private getReasoningEffort(model: OpenAiNativeModel): ReasoningEffortExtended | undefined {
+		const selected =
+			(this.options.reasoningEffort as ReasoningEffortExtended | undefined) ??
+			(model.info.reasoningEffort as ReasoningEffortExtended | undefined)
+		return selected && selected !== ("disable" as string) ? selected : undefined
+	}
+
+	/**
+	 * Returns the appropriate prompt cache retention policy for the given model.
 	 */
 	private getPromptCacheRetention(model: OpenAiNativeModel): "24h" | undefined {
 		if (!model.info.supportsPromptCache) return undefined
@@ -276,14 +290,12 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	}
 
 	/**
-	 * Returns a shallow-cloned ModelInfo with pricing overridden for the given tier, if available.
+	 * Returns a shallow-cloned ModelInfo with pricing overridden for the given tier.
 	 */
 	private applyServiceTierPricing(info: ModelInfo, tier?: ServiceTier): ModelInfo {
 		if (!tier || tier === "default") return info
-
 		const tierInfo = info.tiers?.find((t) => t.name === tier)
 		if (!tierInfo) return info
-
 		return {
 			...info,
 			inputPrice: tierInfo.inputPrice ?? info.inputPrice,
@@ -294,52 +306,53 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	}
 
 	/**
-	 * Build OpenAI-specific provider options for the Responses API.
+	 * Build the providerOptions for the Responses API.
+	 * Maps all Roo-specific settings to AI SDK's OpenAIResponsesProviderOptions.
 	 */
 	private buildProviderOptions(
 		model: OpenAiNativeModel,
 		metadata?: ApiHandlerCreateMessageMetadata,
-	): Record<string, any> {
+	): Record<string, unknown> {
+		const { verbosity } = model
 		const reasoningEffort = this.getReasoningEffort(model)
 		const promptCacheRetention = this.getPromptCacheRetention(model)
 
+		// Validate service tier against model support
 		const requestedTier = (this.options.openAiNativeServiceTier as ServiceTier | undefined) || undefined
 		const allowedTierNames = new Set(model.info.tiers?.map((t) => t.name).filter(Boolean) || [])
 
-		const openaiOptions: Record<string, any> = {
+		const opts: Record<string, unknown> = {
+			// Always use stateless operation
 			store: false,
+			// Reasoning configuration
+			...(reasoningEffort
+				? {
+						reasoningEffort,
+						include: ["reasoning.encrypted_content"],
+					}
+				: {}),
+			...(reasoningEffort && this.options.enableResponsesReasoningSummary ? { reasoningSummary: "auto" } : {}),
+			// Service tier
+			...(requestedTier && (requestedTier === "default" || allowedTierNames.has(requestedTier))
+				? { serviceTier: requestedTier }
+				: {}),
+			// Verbosity for GPT-5 models
+			...(model.info.supportsVerbosity === true
+				? { textVerbosity: (verbosity || "medium") as VerbosityLevel }
+				: {}),
+			// Prompt cache retention
+			...(promptCacheRetention ? { promptCacheRetention } : {}),
+			// Tool configuration
 			parallelToolCalls: metadata?.parallelToolCalls ?? true,
 		}
 
-		if (reasoningEffort) {
-			openaiOptions.reasoningEffort = reasoningEffort
-			openaiOptions.include = ["reasoning.encrypted_content"]
-
-			if (this.options.enableResponsesReasoningSummary) {
-				openaiOptions.reasoningSummary = "auto"
-			}
-		}
-
-		if (model.info.supportsVerbosity === true) {
-			openaiOptions.textVerbosity = (model.verbosity || "medium") as VerbosityLevel
-		}
-
-		if (requestedTier && (requestedTier === "default" || allowedTierNames.has(requestedTier))) {
-			openaiOptions.serviceTier = requestedTier
-		}
-
-		if (promptCacheRetention) {
-			openaiOptions.promptCacheRetention = promptCacheRetention
-		}
-
-		return { openai: openaiOptions }
+		return opts
 	}
 
 	/**
-	 * Process usage metrics from the AI SDK response, including OpenAI-specific
-	 * cache metrics and service-tier-adjusted pricing.
+	 * Process usage metrics from the AI SDK response with cost calculation.
 	 */
-	protected processUsageMetrics(
+	private processUsageMetrics(
 		usage: {
 			inputTokens?: number
 			outputTokens?: number
@@ -348,22 +361,21 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 				reasoningTokens?: number
 			}
 		},
+		providerMetadata: Record<string, Record<string, unknown>> | undefined,
 		model: OpenAiNativeModel,
-		providerMetadata?: Record<string, any>,
 	): ApiStreamUsageChunk {
+		const openaiMeta = providerMetadata?.openai as Record<string, unknown> | undefined
+
 		const inputTokens = usage.inputTokens || 0
 		const outputTokens = usage.outputTokens || 0
-
-		const cacheReadTokens = usage.details?.cachedInputTokens ?? 0
-		// The OpenAI Responses API does not report cache write tokens separately;
-		// only cached (read) tokens are available via usage.details.cachedInputTokens.
-		const cacheWriteTokens = 0
+		const cacheReadTokens = usage.details?.cachedInputTokens ?? (openaiMeta?.cachedInputTokens as number) ?? 0
+		const cacheWriteTokens = (openaiMeta?.cacheCreationInputTokens as number) ?? 0
 		const reasoningTokens = usage.details?.reasoningTokens
 
+		// Calculate cost with service tier pricing
 		const effectiveTier =
 			this.lastServiceTier || (this.options.openAiNativeServiceTier as ServiceTier | undefined) || undefined
 		const effectiveInfo = this.applyServiceTierPricing(model.info, effectiveTier)
-
 		const { totalCost } = calculateApiCostOpenAI(
 			effectiveInfo,
 			inputTokens,
@@ -383,169 +395,165 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		}
 	}
 
-	/**
-	 * Get the max output tokens parameter.
-	 */
-	protected getMaxOutputTokens(): number | undefined {
-		const model = this.getModel()
-		return model.maxTokens ?? undefined
-	}
-
-	/**
-	 * Create a message stream using the AI SDK.
-	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
-		const languageModel = this.getLanguageModel()
 
+		// Reset per-request state
+		this.lastServiceTier = undefined
 		this.lastResponseId = undefined
 		this.lastEncryptedContent = undefined
-		this.lastServiceTier = undefined
 
-		// Step 1: Collect encrypted reasoning items and their positions before filtering.
-		// These are standalone items injected by buildCleanConversationHistory:
-		// { type: "reasoning", encrypted_content: "...", id: "...", summary: [...] }
-		const encryptedReasoningItems = collectEncryptedReasoningItems(messages)
+		const provider = this.createProvider(metadata)
+		const languageModel = provider.responses(model.id)
 
-		// Step 2: Filter out standalone encrypted reasoning items (they lack role
-		// and would break convertToAiSdkMessages which expects user/assistant/tool).
-		const standardMessages = messages.filter(
-			(msg) =>
-				(msg as unknown as Record<string, unknown>).type !== "reasoning" ||
-				!(msg as unknown as Record<string, unknown>).encrypted_content,
-		)
-
-		// Step 3: Strip plain-text reasoning blocks from assistant content arrays.
-		// These would be converted to AI SDK reasoning parts WITHOUT
-		// providerOptions.openai.itemId, which the Responses provider rejects.
-		const cleanedMessages = stripPlainTextReasoningBlocks(standardMessages)
-
-		// Step 4: Convert to AI SDK messages.
-		const aiSdkMessages = convertToAiSdkMessages(cleanedMessages)
-
-		// Step 5: Re-inject encrypted reasoning as properly-formed AI SDK reasoning
-		// parts with providerOptions.openai.itemId and reasoningEncryptedContent.
-		if (encryptedReasoningItems.length > 0) {
-			injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages)
-		}
-
+		// Convert messages and tools to AI SDK format
+		const aiSdkMessages = convertToAiSdkMessages(messages)
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
-		const taskId = metadata?.taskId
-		const userAgent = `roo-code/${Package.version} (${os.platform()} ${os.release()}; ${os.arch()}) node/${process.version.slice(1)}`
-		const requestHeaders: Record<string, string> = {
-			originator: "roo-code",
-			session_id: taskId || this.sessionId,
-			"User-Agent": userAgent,
-		}
+		// Build provider options for Responses API features
+		const openaiProviderOptions = this.buildProviderOptions(model, metadata)
 
-		const providerOptions = this.buildProviderOptions(model, metadata)
+		// Determine temperature (some models like GPT-5 don't support it)
+		const temperature =
+			model.info.supportsTemperature !== false
+				? (this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE)
+				: undefined
 
-		const requestOptions: Parameters<typeof streamText>[0] = {
+		const result = streamText({
 			model: languageModel,
 			system: systemPrompt,
 			messages: aiSdkMessages,
+			temperature,
+			maxOutputTokens: model.maxTokens || undefined,
 			tools: aiSdkTools,
 			toolChoice: mapToolChoice(metadata?.tool_choice),
-			headers: requestHeaders,
-			providerOptions,
-			...(model.info.supportsTemperature !== false && {
-				temperature: this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE,
-			}),
-			...(model.maxTokens ? { maxOutputTokens: model.maxTokens } : {}),
-		}
-
-		const result = streamText(requestOptions)
+			providerOptions: {
+				openai: openaiProviderOptions as Record<string, string>,
+			},
+		})
 
 		try {
+			// Process the full stream
 			for await (const part of result.fullStream) {
 				for (const chunk of processAiSdkStreamPart(part)) {
 					yield chunk
 				}
 			}
 
-			const providerMeta = await result.providerMetadata
-			const openaiMeta = (providerMeta as any)?.openai
+			// Extract provider metadata after streaming
+			const usage = await result.usage
+			const providerMetadata = await result.providerMetadata
+			const openaiMeta = (providerMetadata as Record<string, Record<string, unknown>> | undefined)?.openai
 
+			// Store response ID and service tier for getResponseId() / cost calculation
 			if (openaiMeta?.responseId) {
-				this.lastResponseId = openaiMeta.responseId
+				this.lastResponseId = openaiMeta.responseId as string
 			}
 			if (openaiMeta?.serviceTier) {
 				this.lastServiceTier = openaiMeta.serviceTier as ServiceTier
 			}
 
-			// Capture encrypted content from reasoning parts in the response
+			// Extract encrypted reasoning content from response for stateless continuity
 			try {
-				const content = await (result as any).content
-				if (Array.isArray(content)) {
-					for (const part of content) {
-						if (part.type === "reasoning" && part.providerMetadata) {
-							const partMeta = (part.providerMetadata as any)?.openai
-							if (partMeta?.reasoningEncryptedContent) {
-								this.lastEncryptedContent = {
-									encrypted_content: partMeta.reasoningEncryptedContent,
-									...(partMeta.itemId ? { id: partMeta.itemId } : {}),
+				const response = await result.response
+				if (response?.messages) {
+					for (const message of response.messages) {
+						if (!Array.isArray(message.content)) continue
+						for (const contentPart of message.content) {
+							if (contentPart.type === "reasoning") {
+								const reasoningMeta = (
+									contentPart as {
+										providerMetadata?: {
+											openai?: {
+												itemId?: string
+												reasoningEncryptedContent?: string
+											}
+										}
+									}
+								).providerMetadata?.openai
+								if (reasoningMeta?.reasoningEncryptedContent) {
+									this.lastEncryptedContent = {
+										encrypted_content: reasoningMeta.reasoningEncryptedContent,
+										...(reasoningMeta.itemId ? { id: reasoningMeta.itemId } : {}),
+									}
 								}
-								break
 							}
 						}
 					}
 				}
 			} catch {
-				// Content parts with encrypted reasoning may not always be available
+				// Encrypted content extraction is best-effort
 			}
 
-			const usage = await result.usage
+			// Yield usage metrics with cost calculation
 			if (usage) {
-				yield this.processUsageMetrics(usage, model, providerMeta as any)
+				yield this.processUsageMetrics(
+					usage,
+					providerMetadata as Record<string, Record<string, unknown>> | undefined,
+					model,
+				)
 			}
 		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, model.id, "createMessage")
+			TelemetryService.instance.captureException(apiError)
+			throw handleAiSdkError(error, "OpenAI Native")
+		}
+	}
+
+	async completePrompt(prompt: string): Promise<string> {
+		try {
+			const model = this.getModel()
+			const provider = this.createProvider()
+			const languageModel = provider.responses(model.id)
+			const openaiProviderOptions = this.buildProviderOptions(model)
+
+			const temperature =
+				model.info.supportsTemperature !== false
+					? (this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE)
+					: undefined
+
+			const { text } = await generateText({
+				model: languageModel,
+				prompt,
+				temperature,
+				maxOutputTokens: model.maxTokens || undefined,
+				providerOptions: {
+					openai: openaiProviderOptions as Record<string, string>,
+				},
+			})
+
+			return text
+		} catch (error) {
+			const errorModel = this.getModel()
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, errorModel.id, "completePrompt")
+			TelemetryService.instance.captureException(apiError)
+
+			if (error instanceof Error) {
+				throw new Error(`OpenAI Native completion error: ${error.message}`)
+			}
+			throw error
 		}
 	}
 
 	/**
-	 * Extracts encrypted_content and id from the last response's reasoning output.
+	 * Extracts encrypted_content from the last response's reasoning items.
+	 * Used for stateless API continuity across requests.
 	 */
 	getEncryptedContent(): { encrypted_content: string; id?: string } | undefined {
 		return this.lastEncryptedContent
 	}
 
+	/**
+	 * Returns the last response ID from the Responses API.
+	 */
 	getResponseId(): string | undefined {
 		return this.lastResponseId
-	}
-
-	/**
-	 * Complete a prompt using the AI SDK generateText.
-	 */
-	async completePrompt(prompt: string): Promise<string> {
-		const model = this.getModel()
-		const languageModel = this.getLanguageModel()
-		const providerOptions = this.buildProviderOptions(model)
-
-		try {
-			const { text } = await generateText({
-				model: languageModel,
-				prompt,
-				providerOptions,
-				...(model.info.supportsTemperature !== false && {
-					temperature: this.options.modelTemperature ?? OPENAI_NATIVE_DEFAULT_TEMPERATURE,
-				}),
-				...(model.maxTokens ? { maxOutputTokens: model.maxTokens } : {}),
-			})
-
-			return text
-		} catch (error) {
-			throw handleAiSdkError(error, this.providerName)
-		}
-	}
-
-	override isAiSdkProvider(): boolean {
-		return true
 	}
 }

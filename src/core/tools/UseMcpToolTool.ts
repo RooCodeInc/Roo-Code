@@ -80,8 +80,8 @@ export class UseMcpToolTool extends BaseTool<"use_mcp_tool"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"use_mcp_tool">): Promise<void> {
-		const params = block.params
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const params = block.input
 		const partialMessage = JSON.stringify({
 			type: "use_mcp_tool",
 			serverName: params.server_name ?? "",

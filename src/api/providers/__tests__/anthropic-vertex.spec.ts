@@ -1,232 +1,125 @@
-// npx vitest run src/api/providers/__tests__/anthropic-vertex.spec.ts
+// npx vitest run api/providers/__tests__/anthropic-vertex.spec.ts
 
-import { AnthropicVertexHandler } from "../anthropic-vertex"
-import { ApiHandlerOptions } from "../../../shared/api"
+// Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
+const { mockStreamText, mockGenerateText, mockCreateVertexAnthropic } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+	mockCreateVertexAnthropic: vi.fn(),
+}))
 
-import { VERTEX_1M_CONTEXT_MODEL_IDS } from "@roo-code/types"
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
+	return {
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
+	}
+})
 
-import { ApiStreamChunk } from "../../transform/stream"
+vi.mock("@ai-sdk/google-vertex/anthropic", () => ({
+	createVertexAnthropic: mockCreateVertexAnthropic.mockImplementation(() => {
+		const modelFn = (id: string) => ({ modelId: id, provider: "vertex-anthropic" })
+		modelFn.languageModel = (id: string) => ({ modelId: id, provider: "vertex-anthropic" })
+		return modelFn
+	}),
+}))
 
-// Mock TelemetryService
-vitest.mock("@roo-code/telemetry", () => ({
+const mockCaptureException = vi.fn()
+
+vi.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
-			captureException: vitest.fn(),
+			captureException: (...args: unknown[]) => mockCaptureException(...args),
 		},
 	},
 }))
 
-// Mock the AI SDK
-const mockStreamText = vitest.fn()
-const mockGenerateText = vitest.fn()
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
+import { VERTEX_1M_CONTEXT_MODEL_IDS } from "@roo-code/types"
 
-vitest.mock("ai", () => ({
-	streamText: (...args: any[]) => mockStreamText(...args),
-	generateText: (...args: any[]) => mockGenerateText(...args),
-	tool: vitest.fn(),
-	jsonSchema: vitest.fn(),
-	ToolSet: {},
-}))
+import type { ApiHandlerOptions } from "../../../shared/api"
+import type { ApiStreamChunk } from "../../transform/stream"
+import { AnthropicVertexHandler } from "../anthropic-vertex"
 
-// Mock the @ai-sdk/google-vertex/anthropic provider
-const mockCreateVertexAnthropic = vitest.fn()
-
-vitest.mock("@ai-sdk/google-vertex/anthropic", () => ({
-	createVertexAnthropic: (...args: any[]) => mockCreateVertexAnthropic(...args),
-}))
-
-// Mock ai-sdk transform utilities
-vitest.mock("../../transform/ai-sdk", () => ({
-	convertToAiSdkMessages: vitest.fn().mockReturnValue([{ role: "user", content: [{ type: "text", text: "Hello" }] }]),
-	convertToolsForAiSdk: vitest.fn().mockReturnValue(undefined),
-	processAiSdkStreamPart: vitest.fn().mockImplementation(function* (part: any) {
-		if (part.type === "text-delta") {
-			yield { type: "text", text: part.text }
-		} else if (part.type === "reasoning-delta") {
-			yield { type: "reasoning", text: part.text }
-		} else if (part.type === "tool-input-start") {
-			yield { type: "tool_call_start", id: part.id, name: part.toolName }
-		} else if (part.type === "tool-input-delta") {
-			yield { type: "tool_call_delta", id: part.id, delta: part.delta }
-		} else if (part.type === "tool-input-end") {
-			yield { type: "tool_call_end", id: part.id }
+// Helper: create a standard mock fullStream async generator
+function createMockFullStream(parts: Array<Record<string, unknown>>) {
+	return async function* () {
+		for (const part of parts) {
+			yield part
 		}
-	}),
-	mapToolChoice: vitest.fn().mockReturnValue(undefined),
-	handleAiSdkError: vitest.fn().mockImplementation((error: any) => error),
-}))
-
-// Import mocked modules
-import { convertToAiSdkMessages, convertToolsForAiSdk, mapToolChoice } from "../../transform/ai-sdk"
-import { Anthropic } from "@anthropic-ai/sdk"
-
-// Helper: create a mock provider function
-function createMockProviderFn() {
-	const providerFn = vitest.fn().mockReturnValue("mock-model")
-	return providerFn
+	}
 }
 
-// Helper: create a mock streamText result
-function createMockStreamResult(
-	parts: any[],
-	usage?: { inputTokens: number; outputTokens: number },
-	providerMetadata?: Record<string, any>,
+// Helper: set up mock return value for streamText
+function mockStreamTextReturn(
+	parts: Array<Record<string, unknown>>,
+	usage = { inputTokens: 10, outputTokens: 5 },
+	providerMetadata: Record<string, unknown> = {},
 ) {
-	return {
-		fullStream: (async function* () {
-			for (const part of parts) {
-				yield part
-			}
-		})(),
-		usage: Promise.resolve(usage ?? { inputTokens: 0, outputTokens: 0 }),
-		providerMetadata: Promise.resolve(providerMetadata ?? {}),
+	mockStreamText.mockReturnValue({
+		fullStream: createMockFullStream(parts)(),
+		usage: Promise.resolve(usage),
+		providerMetadata: Promise.resolve(providerMetadata),
+	})
+}
+
+// Test subclass to expose protected methods
+class TestAnthropicVertexHandler extends AnthropicVertexHandler {
+	public testProcessUsageMetrics(
+		usage: { inputTokens?: number; outputTokens?: number },
+		providerMetadata?: Record<string, Record<string, unknown>>,
+		modelInfo?: Record<string, unknown>,
+	) {
+		return this.processUsageMetrics(usage, providerMetadata, modelInfo as any)
 	}
 }
 
 describe("AnthropicVertexHandler", () => {
-	let handler: AnthropicVertexHandler
-	let mockProviderFn: ReturnType<typeof createMockProviderFn>
+	const mockOptions: ApiHandlerOptions = {
+		apiModelId: "claude-3-5-sonnet-v2@20241022",
+		vertexProjectId: "test-project",
+		vertexRegion: "us-central1",
+	}
 
-	beforeEach(() => {
-		mockProviderFn = createMockProviderFn()
-		mockCreateVertexAnthropic.mockReturnValue(mockProviderFn)
-		vitest.clearAllMocks()
-	})
+	beforeEach(() => vi.clearAllMocks())
 
 	describe("constructor", () => {
-		it("should initialize with provided config for Claude", () => {
-			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-3-5-sonnet-v2@20241022",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-			})
-
-			expect(mockCreateVertexAnthropic).toHaveBeenCalledWith(
-				expect.objectContaining({
-					project: "test-project",
-					location: "us-central1",
-				}),
-			)
+		it("should initialize with provided config", () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			expect(handler).toBeInstanceOf(AnthropicVertexHandler)
+			expect(handler.getModel().id).toBe("claude-3-5-sonnet-v2@20241022")
 		})
+	})
 
-		it("should use JSON credentials when provided", () => {
-			const credentials = { client_email: "test@test.com", private_key: "test-key" }
-			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-3-5-sonnet-v2@20241022",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-				vertexJsonCredentials: JSON.stringify(credentials),
-			})
-
-			expect(mockCreateVertexAnthropic).toHaveBeenCalledWith(
-				expect.objectContaining({
-					googleAuthOptions: { credentials },
-				}),
-			)
-		})
-
-		it("should use key file when provided", () => {
-			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-3-5-sonnet-v2@20241022",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-				vertexKeyFile: "/path/to/key.json",
-			})
-
-			expect(mockCreateVertexAnthropic).toHaveBeenCalledWith(
-				expect.objectContaining({
-					googleAuthOptions: { keyFile: "/path/to/key.json" },
-				}),
-			)
-		})
-
-		it("should use default values when project/region not provided", () => {
-			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-3-5-sonnet-v2@20241022",
-			})
-
-			expect(mockCreateVertexAnthropic).toHaveBeenCalledWith(
-				expect.objectContaining({
-					project: "not-provided",
-					location: "us-east5",
-				}),
-			)
-		})
-
-		it("should include anthropic-beta header when 1M context is enabled", () => {
-			handler = new AnthropicVertexHandler({
-				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-				vertex1MContext: true,
-			})
-
-			expect(mockCreateVertexAnthropic).toHaveBeenCalledWith(
-				expect.objectContaining({
-					headers: expect.objectContaining({
-						"anthropic-beta": "context-1m-2025-08-07",
-					}),
-				}),
-			)
-		})
-
-		it("should not include anthropic-beta header when 1M context is disabled", () => {
-			handler = new AnthropicVertexHandler({
-				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-				vertex1MContext: false,
-			})
-
-			const calledHeaders = mockCreateVertexAnthropic.mock.calls[0][0].headers
-			expect(calledHeaders["anthropic-beta"]).toBeUndefined()
+	describe("isAiSdkProvider", () => {
+		it("should return true", () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			expect(handler.isAiSdkProvider()).toBe(true)
 		})
 	})
 
 	describe("createMessage", () => {
-		const mockMessages: Anthropic.Messages.MessageParam[] = [
-			{
-				role: "user",
-				content: "Hello",
-			},
-			{
-				role: "assistant",
-				content: "Hi there!",
-			},
+		const systemPrompt = "You are a helpful assistant"
+		const messages: NeutralMessageParam[] = [
+			{ role: "user", content: "Hello" },
+			{ role: "assistant", content: "Hi there!" },
 		]
 
-		const systemPrompt = "You are a helpful assistant"
+		it("should handle streaming text responses", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "Hello world!" }])
 
-		beforeEach(() => {
-			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-3-5-sonnet-v2@20241022",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-			})
-		})
-
-		it("should handle streaming responses correctly for Claude", async () => {
-			const streamParts = [
-				{ type: "text-delta", text: "Hello" },
-				{ type: "text-delta", text: " world!" },
-			]
-
-			mockStreamText.mockReturnValue(createMockStreamResult(streamParts, { inputTokens: 10, outputTokens: 5 }))
-
-			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: ApiStreamChunk[] = []
-
 			for await (const chunk of stream) {
 				chunks.push(chunk)
 			}
 
-			// Text chunks from processAiSdkStreamPart + final usage
 			const textChunks = chunks.filter((c) => c.type === "text")
-			expect(textChunks).toHaveLength(2)
-			expect(textChunks[0]).toEqual({ type: "text", text: "Hello" })
-			expect(textChunks[1]).toEqual({ type: "text", text: " world!" })
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0]).toEqual({ type: "text", text: "Hello world!" })
 
-			// Usage chunk at the end
+			// Verify usage chunk
 			const usageChunks = chunks.filter((c) => c.type === "usage")
 			expect(usageChunks).toHaveLength(1)
 			expect(usageChunks[0]).toMatchObject({
@@ -234,256 +127,294 @@ describe("AnthropicVertexHandler", () => {
 				inputTokens: 10,
 				outputTokens: 5,
 			})
-
-			// Verify streamText was called with correct params
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					model: "mock-model",
-					system: systemPrompt,
-				}),
-			)
 		})
 
-		it("should call convertToAiSdkMessages with the messages", async () => {
-			mockStreamText.mockReturnValue(createMockStreamResult([]))
+		it("should handle multiple text deltas", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([
+				{ type: "text-delta", text: "First line" },
+				{ type: "text-delta", text: " Second line" },
+			])
 
-			const stream = handler.createMessage(systemPrompt, mockMessages)
-			for await (const _chunk of stream) {
-				// consume
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: ApiStreamChunk[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
 			}
 
-			expect(convertToAiSdkMessages).toHaveBeenCalledWith(mockMessages)
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(2)
+			expect(textChunks[0]).toEqual({ type: "text", text: "First line" })
+			expect(textChunks[1]).toEqual({ type: "text", text: " Second line" })
 		})
 
-		it("should pass tools through AI SDK conversion pipeline", async () => {
-			mockStreamText.mockReturnValue(createMockStreamResult([]))
-
-			const mockTools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "get_weather",
-						description: "Get the current weather",
-						parameters: {
-							type: "object",
-							properties: { location: { type: "string" } },
-							required: ["location"],
-						},
-					},
-				},
-			]
-
-			const stream = handler.createMessage(systemPrompt, mockMessages, {
-				taskId: "test-task",
-				tools: mockTools,
-			})
-
-			for await (const _chunk of stream) {
-				// consume
-			}
-
-			expect(convertToolsForAiSdk).toHaveBeenCalled()
-		})
-
-		it("should handle API errors for Claude", async () => {
-			const mockError = new Error("Vertex API error")
+		it("should handle API errors and capture telemetry", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
 			mockStreamText.mockReturnValue({
 				fullStream: (async function* () {
-					yield { type: "text-delta", text: "" }
-					throw mockError
+					yield { type: "text-delta" as const, text: "" }
+					throw new Error("Vertex API error")
 				})(),
 				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
 				providerMetadata: Promise.resolve({}),
 			})
 
-			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const stream = handler.createMessage(systemPrompt, messages)
 
 			await expect(async () => {
 				for await (const _chunk of stream) {
-					// Should throw before yielding meaningful chunks
+					// consume
 				}
-			}).rejects.toThrow()
+			}).rejects.toThrow("Vertex API error")
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Vertex API error",
+					provider: "AnthropicVertex",
+					modelId: mockOptions.apiModelId,
+					operation: "createMessage",
+				}),
+			)
 		})
 
-		it("should handle cache-related usage metrics from providerMetadata", async () => {
-			mockStreamText.mockReturnValue(
-				createMockStreamResult(
-					[{ type: "text-delta", text: "Hello" }],
-					{ inputTokens: 10, outputTokens: 5 },
-					{
-						anthropic: {
-							cacheCreationInputTokens: 3,
-							cacheReadInputTokens: 2,
-						},
-					},
-				),
+		it("should apply cache control to system prompt and user messages for prompt-caching models", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const multiMessages: NeutralMessageParam[] = [
+				{ role: "user", content: "First message" },
+				{ role: "assistant", content: "Response" },
+				{ role: "user", content: "Second message" },
+			]
+
+			const stream = handler.createMessage(systemPrompt, multiMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+
+			// Verify system prompt has cache control
+			expect(callArgs.system).toEqual(
+				expect.objectContaining({
+					role: "system",
+					content: systemPrompt,
+					providerOptions: expect.objectContaining({
+						anthropic: { cacheControl: { type: "ephemeral" } },
+					}),
+				}),
 			)
 
-			const stream = handler.createMessage(systemPrompt, mockMessages)
-			const chunks: ApiStreamChunk[] = []
+			// Verify user messages have cache breakpoints applied
+			const aiSdkMessages = callArgs.messages
+			const userMessages = aiSdkMessages.filter((m: any) => m.role === "user")
 
+			for (const msg of userMessages) {
+				const content = Array.isArray(msg.content) ? msg.content : [msg.content]
+				const lastTextPart = [...content].reverse().find((p: any) => typeof p === "object" && p.type === "text")
+				if (lastTextPart) {
+					expect(lastTextPart.providerOptions).toEqual({
+						anthropic: { cacheControl: { type: "ephemeral" } },
+					})
+				}
+			}
+		})
+
+		it("should include Anthropic cache metrics from providerMetadata", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn(
+				[{ type: "text-delta", text: "response" }],
+				{ inputTokens: 100, outputTokens: 50 },
+				{
+					anthropic: {
+						cacheCreationInputTokens: 20,
+						cacheReadInputTokens: 10,
+					},
+				},
+			)
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: ApiStreamChunk[] = []
 			for await (const chunk of stream) {
 				chunks.push(chunk)
 			}
 
-			const usageChunks = chunks.filter((c) => c.type === "usage")
-			expect(usageChunks).toHaveLength(1)
-			expect(usageChunks[0]).toMatchObject({
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk).toMatchObject({
 				type: "usage",
-				inputTokens: 10,
-				outputTokens: 5,
-				cacheWriteTokens: 3,
-				cacheReadTokens: 2,
+				inputTokens: 100,
+				outputTokens: 50,
+				cacheWriteTokens: 20,
+				cacheReadTokens: 10,
 			})
 		})
+	})
 
-		it("should handle reasoning/thinking stream events", async () => {
-			const streamParts = [
-				{ type: "reasoning-delta", text: "Let me think about this..." },
-				{ type: "reasoning-delta", text: " I need to consider all options." },
+	describe("thinking functionality", () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages: NeutralMessageParam[] = [{ role: "user", content: "Hello" }]
+
+		it("should handle reasoning stream parts", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([
+				{ type: "reasoning", text: "Let me think about this..." },
 				{ type: "text-delta", text: "Here's my answer:" },
-			]
+			])
 
-			mockStreamText.mockReturnValue(createMockStreamResult(streamParts))
-
-			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: ApiStreamChunk[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
 
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(1)
+			expect(reasoningChunks[0]).toEqual({ type: "reasoning", text: "Let me think about this..." })
+
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0]).toEqual({ type: "text", text: "Here's my answer:" })
+		})
+
+		it("should handle multiple reasoning parts", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([
+				{ type: "reasoning", text: "First thinking block" },
+				{ type: "reasoning", text: "Second thinking block" },
+				{ type: "text-delta", text: "Answer" },
+			])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: ApiStreamChunk[] = []
 			for await (const chunk of stream) {
 				chunks.push(chunk)
 			}
 
 			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
 			expect(reasoningChunks).toHaveLength(2)
-			expect(reasoningChunks[0].text).toBe("Let me think about this...")
-			expect(reasoningChunks[1].text).toBe(" I need to consider all options.")
-
-			const textChunks = chunks.filter((c) => c.type === "text")
-			expect(textChunks).toHaveLength(1)
-			expect(textChunks[0].text).toBe("Here's my answer:")
+			expect(reasoningChunks[0]).toEqual({ type: "reasoning", text: "First thinking block" })
+			expect(reasoningChunks[1]).toEqual({ type: "reasoning", text: "Second thinking block" })
 		})
+	})
 
-		it("should capture thought signature from stream events", async () => {
-			const streamParts = [
+	describe("reasoning block handling", () => {
+		const systemPrompt = "You are a helpful assistant"
+
+		it("should pass reasoning blocks through convertToAiSdkMessages", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "Response" }])
+
+			const messagesWithReasoning: NeutralMessageParam[] = [
+				{ role: "user", content: "Hello" },
 				{
-					type: "reasoning-delta",
-					text: "thinking...",
-					providerMetadata: {
-						anthropic: { signature: "test-signature-abc123" },
-					},
+					role: "assistant",
+					content: [
+						{ type: "reasoning" as any, text: "This is internal reasoning" },
+						{ type: "text", text: "This is the response" },
+					],
 				},
-				{ type: "text-delta", text: "answer" },
+				{ role: "user", content: "Continue" },
 			]
 
-			mockStreamText.mockReturnValue(createMockStreamResult(streamParts))
-
-			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const stream = handler.createMessage(systemPrompt, messagesWithReasoning)
 			for await (const _chunk of stream) {
 				// consume
 			}
 
-			expect(handler.getThoughtSignature()).toBe("test-signature-abc123")
+			const callArgs = mockStreamText.mock.calls[0][0]
+			const aiSdkMessages = callArgs.messages
+
+			// Verify convertToAiSdkMessages processed the messages
+			expect(aiSdkMessages.length).toBeGreaterThan(0)
+
+			// Check assistant message exists with content
+			const assistantMessage = aiSdkMessages.find((m: any) => m.role === "assistant")
+			expect(assistantMessage).toBeDefined()
+			expect(assistantMessage.content).toBeDefined()
 		})
 
-		it("should capture redacted thinking blocks from stream events", async () => {
-			const streamParts = [
+		it("should handle messages with only reasoning content", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "Response" }])
+
+			const messagesWithOnlyReasoning: NeutralMessageParam[] = [
+				{ role: "user", content: "Hello" },
 				{
-					type: "reasoning-delta",
-					text: "",
-					providerMetadata: {
-						anthropic: { redactedData: "encrypted-redacted-data" },
-					},
+					role: "assistant",
+					content: [{ type: "reasoning" as any, text: "Only reasoning, no actual text" }],
 				},
-				{ type: "text-delta", text: "answer" },
+				{ role: "user", content: "Continue" },
 			]
 
-			mockStreamText.mockReturnValue(createMockStreamResult(streamParts))
-
-			const stream = handler.createMessage(systemPrompt, mockMessages)
+			const stream = handler.createMessage(systemPrompt, messagesWithOnlyReasoning)
 			for await (const _chunk of stream) {
 				// consume
 			}
 
-			const redactedBlocks = handler.getRedactedThinkingBlocks()
-			expect(redactedBlocks).toHaveLength(1)
-			expect(redactedBlocks![0]).toEqual({
-				type: "redacted_thinking",
-				data: "encrypted-redacted-data",
-			})
-		})
+			const callArgs = mockStreamText.mock.calls[0][0]
+			const aiSdkMessages = callArgs.messages
 
-		it("should configure thinking providerOptions for thinking models", async () => {
-			const thinkingHandler = new AnthropicVertexHandler({
-				apiModelId: "claude-3-7-sonnet@20250219:thinking",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-				modelMaxTokens: 16384,
-				modelMaxThinkingTokens: 4096,
-			})
-
-			mockStreamText.mockReturnValue(createMockStreamResult([]))
-
-			const stream = thinkingHandler.createMessage(systemPrompt, [{ role: "user", content: "Hello" }])
-			for await (const _chunk of stream) {
-				// consume
-			}
-
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					providerOptions: expect.objectContaining({
-						anthropic: expect.objectContaining({
-							thinking: {
-								type: "enabled",
-								budgetTokens: 4096,
-							},
-						}),
-					}),
-				}),
-			)
+			// The call should succeed and messages should be present
+			expect(aiSdkMessages.length).toBeGreaterThan(0)
 		})
 	})
 
 	describe("completePrompt", () => {
-		beforeEach(() => {
-			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-3-5-sonnet-v2@20241022",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-			})
-		})
-
-		it("should complete prompt successfully for Claude", async () => {
-			mockGenerateText.mockResolvedValue({
-				text: "Test response",
-			})
+		it("should complete prompt successfully", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockGenerateText.mockResolvedValue({ text: "Test response" })
 
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-
 			expect(mockGenerateText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					model: "mock-model",
 					prompt: "Test prompt",
+					temperature: 0,
 				}),
 			)
 		})
 
-		it("should handle API errors for Claude", async () => {
-			const mockError = new Error("Vertex API error")
-			mockGenerateText.mockRejectedValue(mockError)
+		it("should handle API errors and capture telemetry", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockGenerateText.mockRejectedValue(new Error("Vertex API error"))
 
-			await expect(handler.completePrompt("Test prompt")).rejects.toThrow()
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("Vertex API error")
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Vertex API error",
+					provider: "AnthropicVertex",
+					modelId: mockOptions.apiModelId,
+					operation: "completePrompt",
+				}),
+			)
+		})
+
+		it("should handle empty response", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockGenerateText.mockResolvedValue({ text: "" })
+
+			const result = await handler.completePrompt("Test prompt")
+			expect(result).toBe("")
+		})
+
+		it("should pass model and temperature to generateText", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockGenerateText.mockResolvedValue({ text: "response" })
+
+			await handler.completePrompt("Test prompt")
+
+			const callArgs = mockGenerateText.mock.calls[0][0]
+			expect(callArgs.prompt).toBe("Test prompt")
+			expect(callArgs.temperature).toBe(0)
+			expect(callArgs.model).toBeDefined()
 		})
 	})
 
 	describe("getModel", () => {
-		it("should return correct model info for Claude", () => {
-			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-3-5-sonnet-v2@20241022",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-			})
-
+		it("should return correct model info", () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
 			const modelInfo = handler.getModel()
 			expect(modelInfo.id).toBe("claude-3-5-sonnet-v2@20241022")
 			expect(modelInfo.info).toBeDefined()
@@ -491,10 +422,11 @@ describe("AnthropicVertexHandler", () => {
 			expect(modelInfo.info.contextWindow).toBe(200_000)
 		})
 
-		it("honors custom maxTokens for thinking models", () => {
+		it("should honor custom maxTokens for thinking models", () => {
 			const handler = new AnthropicVertexHandler({
-				apiKey: "test-api-key",
 				apiModelId: "claude-3-7-sonnet@20250219:thinking",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
 				modelMaxTokens: 32_768,
 				modelMaxThinkingTokens: 16_384,
 			})
@@ -505,10 +437,11 @@ describe("AnthropicVertexHandler", () => {
 			expect(result.temperature).toBe(1.0)
 		})
 
-		it("does not honor custom maxTokens for non-thinking models", () => {
+		it("should not honor custom maxTokens for non-thinking models", () => {
 			const handler = new AnthropicVertexHandler({
-				apiKey: "test-api-key",
 				apiModelId: "claude-3-7-sonnet@20250219",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
 				modelMaxTokens: 32_768,
 				modelMaxThinkingTokens: 16_384,
 			})
@@ -519,7 +452,7 @@ describe("AnthropicVertexHandler", () => {
 			expect(result.temperature).toBe(0)
 		})
 
-		it("should enable 1M context for Claude Sonnet 4 when beta flag is set", () => {
+		it("should enable 1M context for first supported model when beta flag is set", () => {
 			const handler = new AnthropicVertexHandler({
 				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
 				vertexProjectId: "test-project",
@@ -534,7 +467,7 @@ describe("AnthropicVertexHandler", () => {
 			expect(model.betas).toContain("context-1m-2025-08-07")
 		})
 
-		it("should enable 1M context for Claude Sonnet 4.5 when beta flag is set", () => {
+		it("should enable 1M context for second supported model when beta flag is set", () => {
 			const handler = new AnthropicVertexHandler({
 				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[1],
 				vertexProjectId: "test-project",
@@ -578,9 +511,52 @@ describe("AnthropicVertexHandler", () => {
 		})
 	})
 
+	describe("1M context beta header", () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages: NeutralMessageParam[] = [{ role: "user", content: "Hello" }]
+
+		it("should include anthropic-beta header when 1M context is enabled", async () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: true,
+			})
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.headers).toEqual({ "anthropic-beta": "context-1m-2025-08-07" })
+		})
+
+		it("should not include anthropic-beta header when 1M context is disabled", async () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: VERTEX_1M_CONTEXT_MODEL_IDS[0],
+				vertexProjectId: "test-project",
+				vertexRegion: "us-central1",
+				vertex1MContext: false,
+			})
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.headers).toBeUndefined()
+		})
+	})
+
 	describe("thinking model configuration", () => {
 		it("should configure thinking for models with :thinking suffix", () => {
-			const thinkingHandler = new AnthropicVertexHandler({
+			const handler = new AnthropicVertexHandler({
 				apiModelId: "claude-3-7-sonnet@20250219:thinking",
 				vertexProjectId: "test-project",
 				vertexRegion: "us-central1",
@@ -588,11 +564,10 @@ describe("AnthropicVertexHandler", () => {
 				modelMaxThinkingTokens: 4096,
 			})
 
-			const modelInfo = thinkingHandler.getModel()
-
+			const modelInfo = handler.getModel()
 			expect(modelInfo.id).toBe("claude-3-7-sonnet@20250219")
 			expect(modelInfo.reasoningBudget).toBe(4096)
-			expect(modelInfo.temperature).toBe(1.0)
+			expect(modelInfo.temperature).toBe(1.0) // Thinking requires temperature 1.0
 		})
 
 		it("should calculate thinking budget correctly", () => {
@@ -604,7 +579,6 @@ describe("AnthropicVertexHandler", () => {
 				modelMaxTokens: 16384,
 				modelMaxThinkingTokens: 5000,
 			})
-
 			expect(handlerWithBudget.getModel().reasoningBudget).toBe(5000)
 
 			// Test with default thinking budget (80% of max tokens)
@@ -614,7 +588,6 @@ describe("AnthropicVertexHandler", () => {
 				vertexRegion: "us-central1",
 				modelMaxTokens: 10000,
 			})
-
 			expect(handlerWithDefaultBudget.getModel().reasoningBudget).toBe(8000) // 80% of 10000
 
 			// Test with minimum thinking budget (should be at least 1024)
@@ -622,14 +595,13 @@ describe("AnthropicVertexHandler", () => {
 				apiModelId: "claude-3-7-sonnet@20250219:thinking",
 				vertexProjectId: "test-project",
 				vertexRegion: "us-central1",
-				modelMaxTokens: 1000, // This would result in 800 tokens for thinking, but minimum is 1024
+				modelMaxTokens: 1000,
 			})
-
 			expect(handlerWithSmallMaxTokens.getModel().reasoningBudget).toBe(1024)
 		})
 
-		it("should pass thinking configuration to API via providerOptions", async () => {
-			const thinkingHandler = new AnthropicVertexHandler({
+		it("should pass thinking configuration via providerOptions", async () => {
+			const handler = new AnthropicVertexHandler({
 				apiModelId: "claude-3-7-sonnet@20250219:thinking",
 				vertexProjectId: "test-project",
 				vertexRegion: "us-central1",
@@ -637,87 +609,273 @@ describe("AnthropicVertexHandler", () => {
 				modelMaxThinkingTokens: 4096,
 			})
 
-			mockStreamText.mockReturnValue(createMockStreamResult([]))
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
 
-			const stream = thinkingHandler.createMessage("You are a helpful assistant", [
-				{ role: "user", content: "Hello" },
-			])
-
+			const stream = handler.createMessage("You are a helpful assistant", [{ role: "user", content: "Hello" }])
 			for await (const _chunk of stream) {
 				// consume
 			}
 
-			expect(mockStreamText).toHaveBeenCalledWith(
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions).toBeDefined()
+			expect(callArgs.providerOptions.anthropic.thinking).toEqual({
+				type: "enabled",
+				budgetTokens: 4096,
+			})
+			expect(callArgs.temperature).toBe(1.0)
+		})
+
+		it("should not set providerOptions for non-thinking models", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage("You are a helpful assistant", [{ role: "user", content: "Hello" }])
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions).toBeUndefined()
+		})
+	})
+
+	describe("native tool calling", () => {
+		const systemPrompt = "You are a helpful assistant"
+		const messages: NeutralMessageParam[] = [
+			{ role: "user", content: [{ type: "text" as const, text: "What's the weather in London?" }] },
+		]
+
+		const mockTools = [
+			{
+				type: "function" as const,
+				function: {
+					name: "get_weather",
+					description: "Get the current weather",
+					parameters: {
+						type: "object",
+						properties: { location: { type: "string" } },
+						required: ["location"],
+					},
+				},
+			},
+		]
+
+		it("should include tools in streamText call when tools are provided", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tools: mockTools,
+			})
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.tools).toBeDefined()
+			expect(callArgs.tools.get_weather).toBeDefined()
+		})
+
+		it("should handle tool calls via AI SDK stream parts", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([
+				{ type: "tool-input-start", id: "toolu_123", toolName: "get_weather" },
+				{ type: "tool-input-delta", id: "toolu_123", delta: '{"location":' },
+				{ type: "tool-input-delta", id: "toolu_123", delta: '"London"}' },
+				{ type: "tool-input-end", id: "toolu_123" },
+			])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: ApiStreamChunk[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallStart = chunks.filter((c) => c.type === "tool_call_start")
+			expect(toolCallStart).toHaveLength(1)
+			expect(toolCallStart[0]).toMatchObject({
+				type: "tool_call_start",
+				id: "toolu_123",
+				name: "get_weather",
+			})
+
+			const toolCallDeltas = chunks.filter((c) => c.type === "tool_call_delta")
+			expect(toolCallDeltas).toHaveLength(2)
+
+			const toolCallEnd = chunks.filter((c) => c.type === "tool_call_end")
+			expect(toolCallEnd).toHaveLength(1)
+		})
+
+		it("should pass tool_choice via mapToolChoice", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tool_choice: "auto",
+			})
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.toolChoice).toBe("auto")
+		})
+
+		it("should include maxOutputTokens from model info", async () => {
+			const handler = new AnthropicVertexHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.maxOutputTokens).toBe(8192)
+		})
+	})
+
+	describe("processUsageMetrics", () => {
+		it("should correctly process basic usage metrics", () => {
+			const handler = new TestAnthropicVertexHandler(mockOptions)
+			const result = handler.testProcessUsageMetrics({ inputTokens: 100, outputTokens: 50 }, undefined, {
+				inputPrice: 3.0,
+				outputPrice: 15.0,
+			})
+
+			expect(result.type).toBe("usage")
+			expect(result.inputTokens).toBe(100)
+			expect(result.outputTokens).toBe(50)
+			expect(result.cacheWriteTokens).toBeUndefined()
+			expect(result.cacheReadTokens).toBeUndefined()
+		})
+
+		it("should extract Anthropic cache metrics from provider metadata", () => {
+			const handler = new TestAnthropicVertexHandler(mockOptions)
+			const result = handler.testProcessUsageMetrics(
+				{ inputTokens: 100, outputTokens: 50 },
+				{
+					anthropic: {
+						cacheCreationInputTokens: 20,
+						cacheReadInputTokens: 10,
+					},
+				},
+				{
+					inputPrice: 3.0,
+					outputPrice: 15.0,
+					cacheWritesPrice: 3.75,
+					cacheReadsPrice: 0.3,
+				},
+			)
+
+			expect(result.cacheWriteTokens).toBe(20)
+			expect(result.cacheReadTokens).toBe(10)
+			expect(result.totalCost).toBeDefined()
+			expect(result.totalCost).toBeGreaterThan(0)
+		})
+
+		it("should handle missing provider metadata gracefully", () => {
+			const handler = new TestAnthropicVertexHandler(mockOptions)
+			const result = handler.testProcessUsageMetrics({ inputTokens: 100, outputTokens: 50 }, undefined, {
+				inputPrice: 3.0,
+				outputPrice: 15.0,
+			})
+
+			expect(result.cacheWriteTokens).toBeUndefined()
+			expect(result.cacheReadTokens).toBeUndefined()
+		})
+
+		it("should calculate cost using Anthropic-specific pricing", () => {
+			const handler = new TestAnthropicVertexHandler(mockOptions)
+			const result = handler.testProcessUsageMetrics(
+				{ inputTokens: 1000, outputTokens: 500 },
+				{
+					anthropic: {
+						cacheCreationInputTokens: 200,
+						cacheReadInputTokens: 100,
+					},
+				},
+				{
+					inputPrice: 3.0,
+					outputPrice: 15.0,
+					cacheWritesPrice: 3.75,
+					cacheReadsPrice: 0.3,
+				},
+			)
+
+			// Cost = (3.0/1M * 1000) + (15.0/1M * 500) + (3.75/1M * 200) + (0.3/1M * 100)
+			const expectedCost = (3.0 * 1000 + 15.0 * 500 + 3.75 * 200 + 0.3 * 100) / 1_000_000
+			expect(result.totalCost).toBeCloseTo(expectedCost, 10)
+		})
+	})
+
+	describe("auth paths", () => {
+		it("should pass JSON credentials via googleAuthOptions", async () => {
+			const jsonCreds = JSON.stringify({ type: "service_account", project_id: "test" })
+			const handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-east5",
+				vertexJsonCredentials: jsonCreds,
+			})
+
+			mockGenerateText.mockResolvedValue({ text: "response" })
+			await handler.completePrompt("test")
+
+			expect(mockCreateVertexAnthropic).toHaveBeenCalledWith(
 				expect.objectContaining({
-					temperature: 1.0,
-					providerOptions: expect.objectContaining({
-						anthropic: expect.objectContaining({
-							thinking: {
-								type: "enabled",
-								budgetTokens: 4096,
-							},
-						}),
-					}),
+					project: "test-project",
+					location: "us-east5",
+					googleAuthOptions: {
+						credentials: JSON.parse(jsonCreds),
+					},
 				}),
 			)
 		})
-	})
 
-	describe("isAiSdkProvider", () => {
-		it("should return true", () => {
-			handler = new AnthropicVertexHandler({
+		it("should pass key file via googleAuthOptions", async () => {
+			const handler = new AnthropicVertexHandler({
 				apiModelId: "claude-3-5-sonnet-v2@20241022",
 				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
+				vertexRegion: "us-east5",
+				vertexKeyFile: "/path/to/key.json",
 			})
 
-			expect(handler.isAiSdkProvider()).toBe(true)
-		})
-	})
+			mockGenerateText.mockResolvedValue({ text: "response" })
+			await handler.completePrompt("test")
 
-	describe("thought signature and redacted thinking", () => {
-		beforeEach(() => {
-			handler = new AnthropicVertexHandler({
-				apiModelId: "claude-3-5-sonnet-v2@20241022",
-				vertexProjectId: "test-project",
-				vertexRegion: "us-central1",
-			})
-		})
-
-		it("should return undefined for thought signature before any request", () => {
-			expect(handler.getThoughtSignature()).toBeUndefined()
-		})
-
-		it("should return undefined for redacted thinking blocks before any request", () => {
-			expect(handler.getRedactedThinkingBlocks()).toBeUndefined()
-		})
-
-		it("should reset thought signature on each createMessage call", async () => {
-			// First call with signature
-			mockStreamText.mockReturnValue(
-				createMockStreamResult([
-					{
-						type: "reasoning-delta",
-						text: "thinking",
-						providerMetadata: { anthropic: { signature: "sig-1" } },
+			expect(mockCreateVertexAnthropic).toHaveBeenCalledWith(
+				expect.objectContaining({
+					project: "test-project",
+					location: "us-east5",
+					googleAuthOptions: {
+						keyFile: "/path/to/key.json",
 					},
-				]),
+				}),
 			)
+		})
 
-			const stream1 = handler.createMessage("test", [{ role: "user", content: "Hello" }])
-			for await (const _chunk of stream1) {
-				// consume
-			}
-			expect(handler.getThoughtSignature()).toBe("sig-1")
+		it("should not pass googleAuthOptions for default ADC", async () => {
+			const handler = new AnthropicVertexHandler({
+				apiModelId: "claude-3-5-sonnet-v2@20241022",
+				vertexProjectId: "test-project",
+				vertexRegion: "us-east5",
+			})
 
-			// Second call without signature
-			mockStreamText.mockReturnValue(createMockStreamResult([{ type: "text-delta", text: "just text" }]))
+			mockGenerateText.mockResolvedValue({ text: "response" })
+			await handler.completePrompt("test")
 
-			const stream2 = handler.createMessage("test", [{ role: "user", content: "Hello again" }])
-			for await (const _chunk of stream2) {
-				// consume
-			}
-			expect(handler.getThoughtSignature()).toBeUndefined()
+			expect(mockCreateVertexAnthropic).toHaveBeenCalledWith(
+				expect.objectContaining({
+					project: "test-project",
+					location: "us-east5",
+				}),
+			)
+			// googleAuthOptions should be undefined (not passed)
+			const callArg = mockCreateVertexAnthropic.mock.calls[0][0]
+			expect(callArg.googleAuthOptions).toBeUndefined()
 		})
 	})
 })

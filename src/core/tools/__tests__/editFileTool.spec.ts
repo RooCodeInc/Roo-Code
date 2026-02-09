@@ -160,7 +160,7 @@ describe("editFileTool", () => {
 	 * Helper function to execute the edit_file tool with different parameters
 	 */
 	async function executeEditFileTool(
-		params: Partial<ToolUse["params"]> = {},
+		params: Partial<ToolUse["input"]> = {},
 		options: {
 			fileExists?: boolean
 			fileContent?: string
@@ -191,9 +191,10 @@ describe("editFileTool", () => {
 		}
 
 		const toolUse: ToolUse = {
-			type: "tool_use",
-			name: "edit_file",
-			params: {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "edit_file",
+			input: {
 				file_path: testFilePath,
 				old_string: testOldString,
 				new_string: testNewString,
@@ -207,7 +208,7 @@ describe("editFileTool", () => {
 			toolResult = result
 		})
 
-		await editFileTool.handle(mockTask, toolUse as ToolUse<"edit_file">, {
+		await editFileTool.handle(mockTask, toolUse as ToolUse, {
 			askApproval: mockAskApproval,
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
@@ -272,9 +273,10 @@ describe("editFileTool", () => {
 				mockTask.rooIgnoreController.validateAccess.mockReturnValue(true)
 
 				const toolUse: ToolUse = {
-					type: "tool_use",
-					name: "edit_file",
-					params: {},
+					type: "tool-call",
+					toolCallId: "test-tool-call-id",
+					toolName: "edit_file",
+					input: {},
 					partial: false,
 					nativeArgs: nativeArgs as any,
 				}
@@ -284,7 +286,7 @@ describe("editFileTool", () => {
 					capturedResult = result
 				})
 
-				await editFileTool.handle(mockTask, toolUse as ToolUse<"edit_file">, {
+				await editFileTool.handle(mockTask, toolUse as ToolUse, {
 					askApproval: mockAskApproval,
 					handleError: mockHandleError,
 					pushToolResult: localPushToolResult,
@@ -633,9 +635,10 @@ describe("editFileTool", () => {
 			mockedFsReadFile.mockRejectedValueOnce(new Error("Read failed"))
 
 			const toolUse: ToolUse = {
-				type: "tool_use",
-				name: "edit_file",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "edit_file",
+				input: {
 					file_path: testFilePath,
 					old_string: testOldString,
 					new_string: testNewString,
@@ -653,7 +656,7 @@ describe("editFileTool", () => {
 				capturedResult = result
 			})
 
-			await editFileTool.handle(mockTask, toolUse as ToolUse<"edit_file">, {
+			await editFileTool.handle(mockTask, toolUse as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: localPushToolResult,

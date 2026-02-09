@@ -252,9 +252,10 @@ describe("flushPendingToolResultsToHistory", () => {
 		// Set up pending tool result in userMessageContent
 		task.userMessageContent = [
 			{
-				type: "tool_result",
-				tool_use_id: "tool-123",
-				content: "File written successfully",
+				type: "tool-result",
+				toolCallId: "tool-123",
+				toolName: "",
+				output: { type: "text" as const, value: "File written successfully" },
 			},
 		]
 
@@ -267,8 +268,8 @@ describe("flushPendingToolResultsToHistory", () => {
 		const userMessage = task.apiConversationHistory[0]
 		expect(userMessage.role).toBe("user")
 		expect(Array.isArray(userMessage.content)).toBe(true)
-		expect((userMessage.content as any[])[0].type).toBe("tool_result")
-		expect((userMessage.content as any[])[0].tool_use_id).toBe("tool-123")
+		expect((userMessage.content as any[])[0].type).toBe("tool-result")
+		expect((userMessage.content as any[])[0].toolCallId).toBe("tool-123")
 	})
 
 	it("should clear userMessageContent after flushing", async () => {
@@ -282,9 +283,10 @@ describe("flushPendingToolResultsToHistory", () => {
 		// Set up pending tool result
 		task.userMessageContent = [
 			{
-				type: "tool_result",
-				tool_use_id: "tool-456",
-				content: "Command executed",
+				type: "tool-result",
+				toolCallId: "tool-456",
+				toolName: "",
+				output: { type: "text" as const, value: "Command executed" },
 			},
 		]
 
@@ -305,14 +307,16 @@ describe("flushPendingToolResultsToHistory", () => {
 		// Set up multiple pending tool results
 		task.userMessageContent = [
 			{
-				type: "tool_result",
-				tool_use_id: "tool-1",
-				content: "First result",
+				type: "tool-result",
+				toolCallId: "tool-1",
+				toolName: "",
+				output: { type: "text" as const, value: "First result" },
 			},
 			{
-				type: "tool_result",
-				tool_use_id: "tool-2",
-				content: "Second result",
+				type: "tool-result",
+				toolCallId: "tool-2",
+				toolName: "",
+				output: { type: "text" as const, value: "Second result" },
 			},
 		]
 
@@ -322,8 +326,8 @@ describe("flushPendingToolResultsToHistory", () => {
 		const userMessage = task.apiConversationHistory[0]
 		expect(Array.isArray(userMessage.content)).toBe(true)
 		expect((userMessage.content as any[]).length).toBe(2)
-		expect((userMessage.content as any[])[0].tool_use_id).toBe("tool-1")
-		expect((userMessage.content as any[])[1].tool_use_id).toBe("tool-2")
+		expect((userMessage.content as any[])[0].toolCallId).toBe("tool-1")
+		expect((userMessage.content as any[])[1].toolCallId).toBe("tool-2")
 	})
 
 	it("should add timestamp to saved messages", async () => {
@@ -338,9 +342,10 @@ describe("flushPendingToolResultsToHistory", () => {
 
 		task.userMessageContent = [
 			{
-				type: "tool_result",
-				tool_use_id: "tool-ts",
-				content: "Result",
+				type: "tool-result",
+				toolCallId: "tool-ts",
+				toolName: "",
+				output: { type: "text" as const, value: "Result" },
 			},
 		]
 
@@ -367,9 +372,10 @@ describe("flushPendingToolResultsToHistory", () => {
 		// Set up pending tool result
 		task.userMessageContent = [
 			{
-				type: "tool_result",
-				tool_use_id: "tool-skip-wait",
-				content: "Result when flag is true",
+				type: "tool-result",
+				toolCallId: "tool-skip-wait",
+				toolName: "",
+				output: { type: "text" as const, value: "Result when flag is true" },
 			},
 		]
 
@@ -383,7 +389,7 @@ describe("flushPendingToolResultsToHistory", () => {
 
 		// Should still save the message
 		expect(task.apiConversationHistory.length).toBe(1)
-		expect((task.apiConversationHistory[0].content as any[])[0].tool_use_id).toBe("tool-skip-wait")
+		expect((task.apiConversationHistory[0].content as any[])[0].toolCallId).toBe("tool-skip-wait")
 	})
 
 	it("should wait for assistantMessageSavedToHistory when flag is false", async () => {
@@ -400,9 +406,10 @@ describe("flushPendingToolResultsToHistory", () => {
 		// Set up pending tool result
 		task.userMessageContent = [
 			{
-				type: "tool_result",
-				tool_use_id: "tool-wait",
-				content: "Result when flag is false",
+				type: "tool-result",
+				toolCallId: "tool-wait",
+				toolName: "",
+				output: { type: "text" as const, value: "Result when flag is false" },
 			},
 		]
 
@@ -432,9 +439,10 @@ describe("flushPendingToolResultsToHistory", () => {
 		// Set up pending tool result
 		task.userMessageContent = [
 			{
-				type: "tool_result",
-				tool_use_id: "tool-aborted",
-				content: "Should not be saved",
+				type: "tool-result",
+				toolCallId: "tool-aborted",
+				toolName: "",
+				output: { type: "text" as const, value: "Should not be saved" },
 			},
 		]
 

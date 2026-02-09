@@ -7,7 +7,6 @@ import EventEmitter from "events"
 
 import { AskIgnoredError } from "./AskIgnoredError"
 
-import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import debounce from "lodash.debounce"
 import delay from "delay"
@@ -111,6 +110,12 @@ import { ClineProvider } from "../webview/ClineProvider"
 import { MultiSearchReplaceDiffStrategy } from "../diff/strategies/multi-search-replace"
 import {
 	type ApiMessage,
+	type NeutralTextBlock,
+	type NeutralImageBlock,
+	type NeutralToolUseBlock,
+	type NeutralToolResultBlock,
+	type NeutralContentBlock,
+	type NeutralMessageParam,
 	readApiMessages,
 	saveApiMessages,
 	readTaskMessages,
@@ -353,7 +358,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	assistantMessageContent: AssistantMessageContent[] = []
 	presentAssistantMessageLocked = false
 	presentAssistantMessageHasPendingUpdates = false
-	userMessageContent: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam | Anthropic.ToolResultBlockParam)[] = []
+	userMessageContent: (NeutralTextBlock | NeutralImageBlock | NeutralToolResultBlock)[] = []
 	userMessageContentReady = false
 
 	/**
@@ -377,14 +382,14 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	 * @param toolResult - The tool_result block to add
 	 * @returns true if added, false if duplicate was skipped
 	 */
-	public pushToolResultToUserContent(toolResult: Anthropic.ToolResultBlockParam): boolean {
+	public pushToolResultToUserContent(toolResult: NeutralToolResultBlock): boolean {
 		const existingResult = this.userMessageContent.find(
-			(block): block is Anthropic.ToolResultBlockParam =>
-				block.type === "tool_result" && block.tool_use_id === toolResult.tool_use_id,
+			(block): block is NeutralToolResultBlock =>
+				block.type === "tool-result" && block.toolCallId === toolResult.toolCallId,
 		)
 		if (existingResult) {
 			console.warn(
-				`[Task#pushToolResultToUserContent] Skipping duplicate tool_result for tool_use_id: ${toolResult.tool_use_id}`,
+				`[Task#pushToolResultToUserContent] Skipping duplicate tool_result for toolCallId: ${toolResult.toolCallId}`,
 			)
 			return false
 		}
@@ -434,14 +439,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 			// Create initial partial tool use
 			const partialToolUse: ToolUse = {
-				type: "tool_use",
-				name: event.name as ToolName,
-				params: {},
+				type: "tool-call",
+				toolCallId: event.id,
+				toolName: event.name as ToolName,
+				input: {},
 				partial: true,
 			}
-
-			// Store the ID for native protocol
-			;(partialToolUse as any).id = event.id
 
 			// Add to content and present
 			this.assistantMessageContent.push(partialToolUse)
@@ -455,9 +458,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Get the index for this tool call
 				const toolUseIndex = this.streamingToolCallIndices.get(event.id)
 				if (toolUseIndex !== undefined) {
-					// Store the ID for native protocol
-					;(partialToolUse as any).id = event.id
-
 					// Update the existing tool use with new partial data
 					this.assistantMessageContent[toolUseIndex] = partialToolUse
 
@@ -473,9 +473,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const toolUseIndex = this.streamingToolCallIndices.get(event.id)
 
 			if (finalToolUse) {
-				// Store the tool call ID
-				;(finalToolUse as any).id = event.id
-
 				// Get the index and replace partial with final
 				if (toolUseIndex !== undefined) {
 					this.assistantMessageContent[toolUseIndex] = finalToolUse
@@ -494,10 +491,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				// Mark the tool as non-partial so it's presented as complete, but execution
 				// will be short-circuited in presentAssistantMessage with a structured tool_result.
 				const existingToolUse = this.assistantMessageContent[toolUseIndex]
-				if (existingToolUse && existingToolUse.type === "tool_use") {
+				if (existingToolUse && existingToolUse.type === "tool-call") {
 					existingToolUse.partial = false
-					// Ensure it has the ID for native protocol
-					;(existingToolUse as any).id = event.id
+					existingToolUse.toolCallId = event.id
 				}
 
 				// Clean up tracking
@@ -1015,7 +1011,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		return readApiMessages({ taskId: this.taskId, globalStoragePath: this.globalStoragePath })
 	}
 
-	private async addToApiConversationHistory(message: Anthropic.MessageParam, reasoning?: string) {
+	private async addToApiConversationHistory(message: NeutralMessageParam, reasoning?: string) {
 		// Capture the encrypted_content / thought signatures from the provider (e.g., OpenAI Responses API, Google GenAI) if present.
 		// We only persist data reported by the current response body.
 		const handler = this.api as ApiHandler & {
@@ -1060,19 +1056,19 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			// Store reasoning: Anthropic thinking (with signature), plain text (most providers), or encrypted (OpenAI Native)
 			// Skip if reasoning_details already contains the reasoning (to avoid duplication)
 			if (isAnthropicProtocol && reasoning && thoughtSignature && !reasoningDetails) {
-				// Anthropic provider with extended thinking: Store as proper `thinking` block
+				// Anthropic provider with extended thinking: Store as proper `reasoning` block
 				// This format passes through anthropic-filter.ts and is properly round-tripped
 				// for interleaved thinking with tool use (required by Anthropic API)
 				const thinkingBlock = {
-					type: "thinking",
-					thinking: reasoning,
-					signature: thoughtSignature,
+					type: "reasoning",
+					text: reasoning,
+					providerOptions: { anthropic: { thinking: reasoning, thinkingSignature: thoughtSignature } },
 				}
 
 				if (typeof messageWithTs.content === "string") {
 					messageWithTs.content = [
 						thinkingBlock,
-						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
+						{ type: "text", text: messageWithTs.content } satisfies NeutralTextBlock,
 					]
 				} else if (Array.isArray(messageWithTs.content)) {
 					messageWithTs.content = [thinkingBlock, ...messageWithTs.content]
@@ -1099,7 +1095,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				if (typeof messageWithTs.content === "string") {
 					messageWithTs.content = [
 						reasoningBlock,
-						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
+						{ type: "text", text: messageWithTs.content } satisfies NeutralTextBlock,
 					]
 				} else if (Array.isArray(messageWithTs.content)) {
 					messageWithTs.content = [reasoningBlock, ...messageWithTs.content]
@@ -1118,7 +1114,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				if (typeof messageWithTs.content === "string") {
 					messageWithTs.content = [
 						reasoningBlock,
-						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
+						{ type: "text", text: messageWithTs.content } satisfies NeutralTextBlock,
 					]
 				} else if (Array.isArray(messageWithTs.content)) {
 					messageWithTs.content = [reasoningBlock, ...messageWithTs.content]
@@ -1138,7 +1134,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 				if (typeof messageWithTs.content === "string") {
 					messageWithTs.content = [
-						{ type: "text", text: messageWithTs.content } satisfies Anthropic.Messages.TextBlockParam,
+						{ type: "text", text: messageWithTs.content } satisfies NeutralTextBlock,
 						thoughtSignatureBlock,
 					]
 				} else if (Array.isArray(messageWithTs.content)) {
@@ -1168,10 +1164,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				messageToAdd = {
 					...message,
 					content: message.content.map((block) =>
-						block.type === "tool_result"
+						block.type === "tool-result"
 							? {
 									type: "text" as const,
-									text: `Tool result:\n${typeof block.content === "string" ? block.content : JSON.stringify(block.content)}`,
+									text: `Tool result:\n${typeof (block as NeutralToolResultBlock).output === "object" && (block as NeutralToolResultBlock).output?.type === "text" ? ((block as NeutralToolResultBlock).output as { type: "text"; value: string }).value : JSON.stringify((block as NeutralToolResultBlock).output)}`,
 								}
 							: block,
 					),
@@ -1247,7 +1243,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		// Save the user message with tool_result blocks
-		const userMessage: Anthropic.MessageParam = {
+		const userMessage: NeutralMessageParam = {
 			role: "user",
 			content: this.userMessageContent,
 		}
@@ -2144,7 +2140,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			}
 			this.isInitialized = true
 
-			const imageBlocks: Anthropic.ImageBlockParam[] = formatResponse.imageBlocks(images)
+			const imageBlocks: NeutralImageBlock[] = formatResponse.imageBlocks(images)
 
 			// Task starting
 			await this.initiateTaskLoop([
@@ -2270,7 +2266,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 		// if the last message is a user message, we can need to get the assistant message before it to see if it made tool calls, and if so, fill in the remaining tool responses with 'interrupted'
 
-		let modifiedOldUserContent: Anthropic.Messages.ContentBlockParam[] // either the last message if its user message, or the user message before the last (assistant) message
+		let modifiedOldUserContent: NeutralContentBlock[] // either the last message if its user message, or the user message before the last (assistant) message
 		let modifiedApiConversationHistory: ApiMessage[] // need to remove the last user message to replace with new modified user message
 		if (existingApiConversationHistory.length > 0) {
 			const lastMessage = existingApiConversationHistory[existingApiConversationHistory.length - 1]
@@ -2279,16 +2275,18 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const content = Array.isArray(lastMessage.content)
 					? lastMessage.content
 					: [{ type: "text", text: lastMessage.content }]
-				const hasToolUse = content.some((block) => block.type === "tool_use")
+				const hasToolUse = content.some((block) => block.type === "tool-call")
 
 				if (hasToolUse) {
-					const toolUseBlocks = content.filter(
-						(block) => block.type === "tool_use",
-					) as Anthropic.Messages.ToolUseBlock[]
-					const toolResponses: Anthropic.ToolResultBlockParam[] = toolUseBlocks.map((block) => ({
-						type: "tool_result",
-						tool_use_id: block.id,
-						content: "Task was interrupted before this tool call could be completed.",
+					const toolUseBlocks = content.filter((block) => block.type === "tool-call") as NeutralToolUseBlock[]
+					const toolResponses: NeutralToolResultBlock[] = toolUseBlocks.map((block) => ({
+						type: "tool-result" as const,
+						toolCallId: block.toolCallId,
+						toolName: block.toolName,
+						output: {
+							type: "text" as const,
+							value: "Task was interrupted before this tool call could be completed.",
+						},
 					}))
 					modifiedApiConversationHistory = [...existingApiConversationHistory] // no changes
 					modifiedOldUserContent = [...toolResponses]
@@ -2300,7 +2298,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const previousAssistantMessage: ApiMessage | undefined =
 					existingApiConversationHistory[existingApiConversationHistory.length - 2]
 
-				const existingUserContent: Anthropic.Messages.ContentBlockParam[] = Array.isArray(lastMessage.content)
+				const existingUserContent: NeutralContentBlock[] = Array.isArray(lastMessage.content)
 					? lastMessage.content
 					: [{ type: "text", text: lastMessage.content }]
 				if (previousAssistantMessage && previousAssistantMessage.role === "assistant") {
@@ -2309,22 +2307,27 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						: [{ type: "text", text: previousAssistantMessage.content }]
 
 					const toolUseBlocks = assistantContent.filter(
-						(block) => block.type === "tool_use",
-					) as Anthropic.Messages.ToolUseBlock[]
+						(block) => block.type === "tool-call",
+					) as NeutralToolUseBlock[]
 
 					if (toolUseBlocks.length > 0) {
 						const existingToolResults = existingUserContent.filter(
-							(block) => block.type === "tool_result",
-						) as Anthropic.ToolResultBlockParam[]
+							(block) => block.type === "tool-result",
+						) as NeutralToolResultBlock[]
 
-						const missingToolResponses: Anthropic.ToolResultBlockParam[] = toolUseBlocks
+						const missingToolResponses: NeutralToolResultBlock[] = toolUseBlocks
 							.filter(
-								(toolUse) => !existingToolResults.some((result) => result.tool_use_id === toolUse.id),
+								(toolUse) =>
+									!existingToolResults.some((result) => result.toolCallId === toolUse.toolCallId),
 							)
 							.map((toolUse) => ({
-								type: "tool_result",
-								tool_use_id: toolUse.id,
-								content: "Task was interrupted before this tool call could be completed.",
+								type: "tool-result" as const,
+								toolCallId: toolUse.toolCallId,
+								toolName: toolUse.toolName,
+								output: {
+									type: "text" as const,
+									value: "Task was interrupted before this tool call could be completed.",
+								},
 							}))
 
 						modifiedApiConversationHistory = existingApiConversationHistory.slice(0, -1) // removes the last user message
@@ -2344,7 +2347,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			throw new Error("Unexpected: No existing API conversation history")
 		}
 
-		let newUserContent: Anthropic.Messages.ContentBlockParam[] = [...modifiedOldUserContent]
+		let newUserContent: NeutralContentBlock[] = [...modifiedOldUserContent]
 
 		const agoText = ((): string => {
 			const timestamp = lastClineMessage?.ts ?? Date.now()
@@ -2636,17 +2639,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			const lastUserMsg = this.apiConversationHistory[lastUserMsgIndex]
 			if (Array.isArray(lastUserMsg.content)) {
 				// Remove any existing environment_details blocks before adding fresh ones
-				const contentWithoutEnvDetails = lastUserMsg.content.filter(
-					(block: Anthropic.Messages.ContentBlockParam) => {
-						if (block.type === "text" && typeof block.text === "string") {
-							const isEnvironmentDetailsBlock =
-								block.text.trim().startsWith("<environment_details>") &&
-								block.text.trim().endsWith("</environment_details>")
-							return !isEnvironmentDetailsBlock
-						}
-						return true
-					},
-				)
+				const contentWithoutEnvDetails = lastUserMsg.content.filter((block: NeutralContentBlock) => {
+					if (block.type === "text" && typeof block.text === "string") {
+						const isEnvironmentDetailsBlock =
+							block.text.trim().startsWith("<environment_details>") &&
+							block.text.trim().endsWith("</environment_details>")
+						return !isEnvironmentDetailsBlock
+					}
+					return true
+				})
 				// Add fresh environment details
 				lastUserMsg.content = [...contentWithoutEnvDetails, { type: "text" as const, text: environmentDetails }]
 			}
@@ -2662,7 +2663,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	// Task Loop
 
-	private async initiateTaskLoop(userContent: Anthropic.Messages.ContentBlockParam[]): Promise<void> {
+	private async initiateTaskLoop(userContent: NeutralContentBlock[]): Promise<void> {
 		// Kicks off the checkpoints initialization process in the background.
 		getCheckpointService(this)
 
@@ -2697,11 +2698,11 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	public async recursivelyMakeClineRequests(
-		userContent: Anthropic.Messages.ContentBlockParam[],
+		userContent: NeutralContentBlock[],
 		includeFileDetails: boolean = false,
 	): Promise<boolean> {
 		interface StackItem {
-			userContent: Anthropic.Messages.ContentBlockParam[]
+			userContent: NeutralContentBlock[]
 			includeFileDetails: boolean
 			retryAttempt?: number
 			userMessageWasRemoved?: boolean // Track if user message was removed due to empty response
@@ -3089,10 +3090,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 									break
 								}
 
-								// Store the tool call ID on the ToolUse object for later reference
-								// This is needed to create tool_result blocks that reference the correct tool_use_id
-								toolUse.id = chunk.id
-
 								// Add the tool use to assistant message content
 								this.assistantMessageContent.push(toolUse)
 
@@ -3422,9 +3419,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						const toolUseIndex = this.streamingToolCallIndices.get(event.id)
 
 						if (finalToolUse) {
-							// Store the tool call ID
-							;(finalToolUse as any).id = event.id
-
 							// Get the index and replace partial with final
 							if (toolUseIndex !== undefined) {
 								this.assistantMessageContent[toolUseIndex] = finalToolUse
@@ -3443,10 +3437,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							// We still need to mark the tool as non-partial so it gets executed
 							// The tool's validation will catch any missing required parameters
 							const existingToolUse = this.assistantMessageContent[toolUseIndex]
-							if (existingToolUse && existingToolUse.type === "tool_use") {
+							if (existingToolUse && existingToolUse.type === "tool-call") {
 								existingToolUse.partial = false
-								// Ensure it has the ID for native protocol
-								;(existingToolUse as any).id = event.id
+								existingToolUse.toolCallId = event.id
 							}
 
 							// Clean up tracking
@@ -3504,7 +3497,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const hasTextContent = assistantMessage.length > 0
 
 				const hasToolUses = this.assistantMessageContent.some(
-					(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+					(block) => block.type === "tool-call" || block.type === "mcp_tool_use",
 				)
 
 				if (hasTextContent || hasToolUses) {
@@ -3521,7 +3514,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					}
 
 					// Build the assistant message content array
-					const assistantContent: Array<Anthropic.TextBlockParam | Anthropic.ToolUseBlockParam> = []
+					const assistantContent: Array<NeutralTextBlock | NeutralToolUseBlock> = []
 
 					// Add text content if present
 					if (assistantMessage) {
@@ -3538,7 +3531,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// "tool_use ids must be unique"
 					const seenToolUseIds = new Set<string>()
 					const toolUseBlocks = this.assistantMessageContent.filter(
-						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+						(block) => block.type === "tool-call" || block.type === "mcp_tool_use",
 					)
 					for (const block of toolUseBlocks) {
 						if (block.type === "mcp_tool_use") {
@@ -3556,39 +3549,39 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 								}
 								seenToolUseIds.add(sanitizedId)
 								assistantContent.push({
-									type: "tool_use" as const,
-									id: sanitizedId,
-									name: mcpBlock.name, // Original dynamic name
+									type: "tool-call" as const,
+									toolCallId: sanitizedId,
+									toolName: mcpBlock.name, // Original dynamic name
 									input: mcpBlock.arguments, // Direct tool arguments
 								})
 							}
 						} else {
 							// Regular ToolUse
 							const toolUse = block as import("../../shared/tools").ToolUse
-							const toolCallId = toolUse.id
+							const toolCallId = toolUse.toolCallId
 							if (toolCallId) {
 								const sanitizedId = sanitizeToolUseId(toolCallId)
 								// Pre-flight deduplication: Skip if we've already added this ID
 								if (seenToolUseIds.has(sanitizedId)) {
 									console.warn(
-										`[Task#${this.taskId}] Pre-flight deduplication: Skipping duplicate tool_use ID: ${sanitizedId} (tool: ${toolUse.name})`,
+										`[Task#${this.taskId}] Pre-flight deduplication: Skipping duplicate tool_use ID: ${sanitizedId} (tool: ${toolUse.toolName})`,
 									)
 									continue
 								}
 								seenToolUseIds.add(sanitizedId)
 								// nativeArgs is already in the correct API format for all tools
-								const input = toolUse.nativeArgs || toolUse.params
+								const input = toolUse.nativeArgs || toolUse.input
 
 								// Use originalName (alias) if present for API history consistency.
 								// When tool aliases are used (e.g., "edit_file" -> "search_and_replace"),
 								// we want the alias name in the conversation history to match what the model
 								// was told the tool was named, preventing confusion in multi-turn conversations.
-								const toolNameForHistory = toolUse.originalName ?? toolUse.name
+								const toolNameForHistory = toolUse.originalName ?? toolUse.toolName
 
 								assistantContent.push({
-									type: "tool_use" as const,
-									id: sanitizedId,
-									name: toolNameForHistory,
+									type: "tool-call" as const,
+									toolCallId: sanitizedId,
+									toolName: toolNameForHistory,
 									input,
 								})
 							}
@@ -3599,7 +3592,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// truncate any tools that come after it and inject error tool_results.
 					// This prevents orphaned tools when delegation disposes the parent task.
 					const newTaskIndex = assistantContent.findIndex(
-						(block) => block.type === "tool_use" && block.name === "new_task",
+						(block) => block.type === "tool-call" && block.toolName === "new_task",
 					)
 
 					if (newTaskIndex !== -1 && newTaskIndex < assistantContent.length - 1) {
@@ -3612,7 +3605,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						// Find new_task index in assistantMessageContent (may differ from assistantContent
 						// due to text blocks being structured differently).
 						const executionNewTaskIndex = this.assistantMessageContent.findIndex(
-							(block) => block.type === "tool_use" && block.name === "new_task",
+							(block) =>
+								block.type === "tool-call" &&
+								(block as import("../../shared/tools").ToolUse).toolName === "new_task",
 						)
 						if (executionNewTaskIndex !== -1) {
 							this.assistantMessageContent.length = executionNewTaskIndex + 1
@@ -3620,13 +3615,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 						// Pre-inject error tool_results for truncated tools
 						for (const tool of truncatedTools) {
-							if (tool.type === "tool_use" && (tool as Anthropic.ToolUseBlockParam).id) {
+							if (tool.type === "tool-call" && (tool as NeutralToolUseBlock).toolCallId) {
 								this.pushToolResultToUserContent({
-									type: "tool_result",
-									tool_use_id: (tool as Anthropic.ToolUseBlockParam).id,
-									content:
-										"This tool was not executed because new_task was called in the same message turn. The new_task tool must be the last tool in a message.",
-									is_error: true,
+									type: "tool-result" as const,
+									toolCallId: (tool as NeutralToolUseBlock).toolCallId,
+									toolName: (tool as NeutralToolUseBlock).toolName,
+									output: {
+										type: "error-text" as const,
+										value: "This tool was not executed because new_task was called in the same message turn. The new_task tool must be the last tool in a message.",
+									},
 								})
 							}
 						}
@@ -3680,7 +3677,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// If the model did not tool use, then we need to tell it to
 					// either use a tool or attempt_completion.
 					const didToolUse = this.assistantMessageContent.some(
-						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
+						(block) => block.type === "tool-call" || block.type === "mcp_tool_use",
 					)
 
 					if (!didToolUse) {
@@ -4383,7 +4380,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		// The provider accepts reasoning items alongside standard messages; cast to the expected parameter type.
 		const stream = this.api.createMessage(
 			systemPrompt,
-			cleanConversationHistory as unknown as Anthropic.Messages.MessageParam[],
+			cleanConversationHistory as unknown as NeutralMessageParam[],
 			metadata,
 		)
 		const iterator = stream[Symbol.asyncIterator]()
@@ -4557,9 +4554,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 
 	private buildCleanConversationHistory(
 		messages: ApiMessage[],
-	): Array<
-		Anthropic.Messages.MessageParam | { type: "reasoning"; encrypted_content: string; id?: string; summary?: any[] }
-	> {
+	): Array<NeutralMessageParam | { type: "reasoning"; encrypted_content: string; id?: string; summary?: any[] }> {
 		type ReasoningItemForRequest = {
 			type: "reasoning"
 			encrypted_content: string
@@ -4567,7 +4562,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			summary?: any[]
 		}
 
-		const cleanConversationHistory: (Anthropic.Messages.MessageParam | ReasoningItemForRequest)[] = []
+		const cleanConversationHistory: (NeutralMessageParam | ReasoningItemForRequest)[] = []
 
 		for (const msg of messages) {
 			// Standalone reasoning: send encrypted, skip plain text
@@ -4587,12 +4582,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			if (msg.role === "assistant") {
 				const rawContent = msg.content
 
-				const contentArray: Anthropic.Messages.ContentBlockParam[] = Array.isArray(rawContent)
-					? (rawContent as Anthropic.Messages.ContentBlockParam[])
+				const contentArray: NeutralContentBlock[] = Array.isArray(rawContent)
+					? (rawContent as NeutralContentBlock[])
 					: rawContent !== undefined
-						? ([
-								{ type: "text", text: rawContent } satisfies Anthropic.Messages.TextBlockParam,
-							] as Anthropic.Messages.ContentBlockParam[])
+						? ([{ type: "text", text: rawContent } satisfies NeutralTextBlock] as NeutralContentBlock[])
 						: []
 
 				const [first, ...rest] = contentArray
@@ -4601,12 +4594,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				const msgWithDetails = msg
 				if (msgWithDetails.reasoning_details && Array.isArray(msgWithDetails.reasoning_details)) {
 					// Build the assistant message with reasoning_details
-					let assistantContent: Anthropic.Messages.MessageParam["content"]
+					let assistantContent: NeutralMessageParam["content"]
 
 					if (contentArray.length === 0) {
 						assistantContent = ""
 					} else if (contentArray.length === 1 && contentArray[0].type === "text") {
-						assistantContent = (contentArray[0] as Anthropic.Messages.TextBlockParam).text
+						assistantContent = (contentArray[0] as NeutralTextBlock).text
 					} else {
 						assistantContent = contentArray
 					}
@@ -4639,12 +4632,12 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					})
 
 					// Send assistant message without reasoning
-					let assistantContent: Anthropic.Messages.MessageParam["content"]
+					let assistantContent: NeutralMessageParam["content"]
 
 					if (rest.length === 0) {
 						assistantContent = ""
 					} else if (rest.length === 1 && rest[0].type === "text") {
-						assistantContent = (rest[0] as Anthropic.Messages.TextBlockParam).text
+						assistantContent = (rest[0] as NeutralTextBlock).text
 					} else {
 						assistantContent = rest
 					}
@@ -4652,7 +4645,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					cleanConversationHistory.push({
 						role: "assistant",
 						content: assistantContent,
-					} satisfies Anthropic.Messages.MessageParam)
+					} satisfies NeutralMessageParam)
 
 					continue
 				} else if (hasPlainTextReasoning) {
@@ -4662,7 +4655,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const shouldPreserveForApi =
 						this.api.getModel().info.preserveReasoning === true || this.api.isAiSdkProvider()
 
-					let assistantContent: Anthropic.Messages.MessageParam["content"]
+					let assistantContent: NeutralMessageParam["content"]
 
 					if (shouldPreserveForApi) {
 						assistantContent = contentArray
@@ -4671,7 +4664,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						if (rest.length === 0) {
 							assistantContent = ""
 						} else if (rest.length === 1 && rest[0].type === "text") {
-							assistantContent = (rest[0] as Anthropic.Messages.TextBlockParam).text
+							assistantContent = (rest[0] as NeutralTextBlock).text
 						} else {
 							assistantContent = rest
 						}
@@ -4680,7 +4673,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					cleanConversationHistory.push({
 						role: "assistant",
 						content: assistantContent,
-					} satisfies Anthropic.Messages.MessageParam)
+					} satisfies NeutralMessageParam)
 
 					continue
 				}
@@ -4690,7 +4683,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 			if (msg.role) {
 				cleanConversationHistory.push({
 					role: msg.role,
-					content: msg.content as Anthropic.Messages.ContentBlockParam[] | string,
+					content: msg.content as NeutralContentBlock[] | string,
 				})
 			}
 		}

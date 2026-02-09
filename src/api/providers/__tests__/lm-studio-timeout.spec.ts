@@ -1,41 +1,31 @@
 // npx vitest run api/providers/__tests__/lm-studio-timeout.spec.ts
 
-import { LmStudioHandler } from "../lm-studio"
-import { ApiHandlerOptions } from "../../../shared/api"
-
-// Mock the timeout config utility
-vitest.mock("../utils/timeout-config", () => ({
-	getApiRequestTimeout: vitest.fn(),
+const { mockCreateOpenAICompatible } = vi.hoisted(() => ({
+	mockCreateOpenAICompatible: vi.fn(() => vi.fn(() => ({ modelId: "llama2", provider: "lmstudio" }))),
 }))
 
-import { getApiRequestTimeout } from "../utils/timeout-config"
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: mockCreateOpenAICompatible,
+}))
 
-// Mock OpenAI
-const mockOpenAIConstructor = vitest.fn()
-vitest.mock("openai", () => {
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
 	return {
-		__esModule: true,
-		default: vitest.fn().mockImplementation((config) => {
-			mockOpenAIConstructor(config)
-			return {
-				chat: {
-					completions: {
-						create: vitest.fn(),
-					},
-				},
-			}
-		}),
+		...actual,
+		streamText: vi.fn(),
+		generateText: vi.fn(),
 	}
 })
 
-describe("LmStudioHandler timeout configuration", () => {
+import { LmStudioHandler } from "../lm-studio"
+import { ApiHandlerOptions } from "../../../shared/api"
+
+describe("LmStudioHandler provider configuration", () => {
 	beforeEach(() => {
-		vitest.clearAllMocks()
+		vi.clearAllMocks()
 	})
 
-	it("should use default timeout of 600 seconds when no configuration is set", () => {
-		;(getApiRequestTimeout as any).mockReturnValue(600000)
-
+	it("should create provider with correct baseURL from options", () => {
 		const options: ApiHandlerOptions = {
 			apiModelId: "llama2",
 			lmStudioModelId: "llama2",
@@ -44,37 +34,16 @@ describe("LmStudioHandler timeout configuration", () => {
 
 		new LmStudioHandler(options)
 
-		expect(getApiRequestTimeout).toHaveBeenCalled()
-		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
+		expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
 			expect.objectContaining({
+				name: "lmstudio",
 				baseURL: "http://localhost:1234/v1",
 				apiKey: "noop",
-				timeout: 600000, // 600 seconds in milliseconds
 			}),
 		)
 	})
 
-	it("should use custom timeout when configuration is set", () => {
-		;(getApiRequestTimeout as any).mockReturnValue(1200000) // 20 minutes
-
-		const options: ApiHandlerOptions = {
-			apiModelId: "llama2",
-			lmStudioModelId: "llama2",
-			lmStudioBaseUrl: "http://localhost:1234",
-		}
-
-		new LmStudioHandler(options)
-
-		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
-			expect.objectContaining({
-				timeout: 1200000, // 1200 seconds in milliseconds
-			}),
-		)
-	})
-
-	it("should handle zero timeout (no timeout)", () => {
-		;(getApiRequestTimeout as any).mockReturnValue(0)
-
+	it("should use default baseURL when none is provided", () => {
 		const options: ApiHandlerOptions = {
 			apiModelId: "llama2",
 			lmStudioModelId: "llama2",
@@ -82,9 +51,56 @@ describe("LmStudioHandler timeout configuration", () => {
 
 		new LmStudioHandler(options)
 
-		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
+		expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
 			expect.objectContaining({
-				timeout: 0, // No timeout
+				baseURL: "http://localhost:1234/v1",
+			}),
+		)
+	})
+
+	it("should use default baseURL when empty string is provided", () => {
+		const options: ApiHandlerOptions = {
+			apiModelId: "llama2",
+			lmStudioModelId: "llama2",
+			lmStudioBaseUrl: "",
+		}
+
+		new LmStudioHandler(options)
+
+		expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+			expect.objectContaining({
+				baseURL: "http://localhost:1234/v1",
+			}),
+		)
+	})
+
+	it("should use custom baseURL when provided", () => {
+		const options: ApiHandlerOptions = {
+			apiModelId: "llama2",
+			lmStudioModelId: "llama2",
+			lmStudioBaseUrl: "http://custom-host:5678",
+		}
+
+		new LmStudioHandler(options)
+
+		expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+			expect.objectContaining({
+				baseURL: "http://custom-host:5678/v1",
+			}),
+		)
+	})
+
+	it("should always use 'noop' as the API key", () => {
+		const options: ApiHandlerOptions = {
+			apiModelId: "llama2",
+			lmStudioModelId: "llama2",
+		}
+
+		new LmStudioHandler(options)
+
+		expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+			expect.objectContaining({
+				apiKey: "noop",
 			}),
 		)
 	})

@@ -157,13 +157,14 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 				let toolProgressStatus
 
 				if (task.diffStrategy && task.diffStrategy.getProgressStatus) {
-					const block: ToolUse<"apply_diff"> = {
-						type: "tool_use",
-						name: "apply_diff",
-						params: { path: relPath, diff: diffContent },
+					const progressBlock: ToolUse = {
+						type: "tool-call",
+						toolCallId: "",
+						toolName: "apply_diff",
+						input: { path: relPath, diff: diffContent },
 						partial: false,
 					}
-					toolProgressStatus = task.diffStrategy.getProgressStatus(block, diffResult)
+					toolProgressStatus = task.diffStrategy.getProgressStatus(progressBlock, diffResult)
 				}
 
 				const didApprove = await askApproval("tool", completeMessage, toolProgressStatus, isWriteProtected)
@@ -201,13 +202,14 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 				let toolProgressStatus
 
 				if (task.diffStrategy && task.diffStrategy.getProgressStatus) {
-					const block: ToolUse<"apply_diff"> = {
-						type: "tool_use",
-						name: "apply_diff",
-						params: { path: relPath, diff: diffContent },
+					const progressBlock: ToolUse = {
+						type: "tool-call",
+						toolCallId: "",
+						toolName: "apply_diff",
+						input: { path: relPath, diff: diffContent },
 						partial: false,
 					}
-					toolProgressStatus = task.diffStrategy.getProgressStatus(block, diffResult)
+					toolProgressStatus = task.diffStrategy.getProgressStatus(progressBlock, diffResult)
 				}
 
 				const didApprove = await askApproval("tool", completeMessage, toolProgressStatus, isWriteProtected)
@@ -267,9 +269,9 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"apply_diff">): Promise<void> {
-		const relPath: string | undefined = block.params.path
-		const diffContent: string | undefined = block.params.diff
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const relPath: string | undefined = block.input.path
+		const diffContent: string | undefined = block.input.diff
 
 		// Wait for path to stabilize before showing UI (prevents truncated paths)
 		if (!this.hasPathStabilized(relPath)) {

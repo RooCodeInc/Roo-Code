@@ -3,13 +3,13 @@
  * This provides a parallel implementation to OpenAiHandler using @ai-sdk/openai-compatible.
  */
 
-import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import { streamText, generateText, LanguageModel, ToolSet } from "ai"
 
 import type { ModelInfo } from "@roo-code/types"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
@@ -124,7 +124,7 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()

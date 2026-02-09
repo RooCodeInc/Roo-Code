@@ -238,9 +238,9 @@ describe("History resume delegation - parent metadata transitions", () => {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						name: "new_task",
-						id: "toolu_abc123",
+						type: "tool-call",
+						toolName: "new_task",
+						toolCallId: "toolu_abc123",
 						input: { mode: "code", message: "Do something" },
 					},
 				],
@@ -265,9 +265,8 @@ describe("History resume delegation - parent metadata transitions", () => {
 						role: "user",
 						content: expect.arrayContaining([
 							expect.objectContaining({
-								type: "tool_result",
-								tool_use_id: "toolu_abc123",
-								content: expect.stringContaining("Subtask c-tool completed"),
+								type: "tool-result",
+								toolCallId: "toolu_abc123",
 							}),
 						]),
 					}),
@@ -281,11 +280,11 @@ describe("History resume delegation - parent metadata transitions", () => {
 		const apiCall = vi.mocked(saveApiMessages).mock.calls[0][0]
 		expect(apiCall.messages).toHaveLength(3)
 
-		// Verify the injected message is a user message with tool_result type
+		// Verify the injected message is a user message with tool-result type
 		const injectedMsg = apiCall.messages[2]
 		expect(injectedMsg.role).toBe("user")
-		expect((injectedMsg.content[0] as any).type).toBe("tool_result")
-		expect((injectedMsg.content[0] as any).tool_use_id).toBe("toolu_abc123")
+		expect((injectedMsg.content[0] as any).type).toBe("tool-result")
+		expect((injectedMsg.content[0] as any).toolCallId).toBe("toolu_abc123")
 	})
 
 	it("reopenParentFromDelegation injects plain text when no new_task tool_use exists in API history", async () => {

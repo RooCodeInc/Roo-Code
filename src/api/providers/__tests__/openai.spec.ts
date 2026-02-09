@@ -1,80 +1,68 @@
 // npx vitest run api/providers/__tests__/openai.spec.ts
 
-import { OpenAiHandler, getOpenAiModels } from "../openai"
-import { ApiHandlerOptions } from "../../../shared/api"
-import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
-import { openAiModelInfoSaneDefaults } from "@roo-code/types"
-import { Package } from "../../../shared/package"
-import axios from "axios"
+// Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
+const { mockStreamText, mockGenerateText, mockCreateOpenAI } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+	mockCreateOpenAI: vi.fn(),
+}))
 
-const mockCreate = vitest.fn()
-
-vitest.mock("openai", () => {
-	const mockConstructor = vitest.fn()
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
 	return {
-		__esModule: true,
-		default: mockConstructor.mockImplementation(() => ({
-			chat: {
-				completions: {
-					create: mockCreate.mockImplementation(async (options) => {
-						if (!options.stream) {
-							return {
-								id: "test-completion",
-								choices: [
-									{
-										message: { role: "assistant", content: "Test response", refusal: null },
-										finish_reason: "stop",
-										index: 0,
-									},
-								],
-								usage: {
-									prompt_tokens: 10,
-									completion_tokens: 5,
-									total_tokens: 15,
-								},
-							}
-						}
-
-						return {
-							[Symbol.asyncIterator]: async function* () {
-								yield {
-									choices: [
-										{
-											delta: { content: "Test response" },
-											index: 0,
-										},
-									],
-									usage: null,
-								}
-								yield {
-									choices: [
-										{
-											delta: {},
-											index: 0,
-										},
-									],
-									usage: {
-										prompt_tokens: 10,
-										completion_tokens: 5,
-										total_tokens: 15,
-									},
-								}
-							},
-						}
-					}),
-				},
-			},
-		})),
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
 	}
 })
 
+vi.mock("@ai-sdk/openai", () => ({
+	createOpenAI: mockCreateOpenAI.mockImplementation(() => ({
+		chat: vi.fn(() => ({
+			modelId: "gpt-4",
+			provider: "openai.chat",
+		})),
+	})),
+}))
+
 // Mock axios for getOpenAiModels tests
-vitest.mock("axios", () => ({
+vi.mock("axios", () => ({
 	default: {
-		get: vitest.fn(),
+		get: vi.fn(),
 	},
 }))
+
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
+import { openAiModelInfoSaneDefaults } from "@roo-code/types"
+import axios from "axios"
+
+import type { ApiHandlerOptions } from "../../../shared/api"
+
+import { OpenAiHandler, getOpenAiModels } from "../openai"
+
+// Helper: create a standard mock fullStream generator
+function createMockFullStream(
+	parts: Array<{ type: string; text?: string; id?: string; toolName?: string; delta?: string }>,
+) {
+	return async function* () {
+		for (const part of parts) {
+			yield part
+		}
+	}
+}
+
+// Helper: create default mock return value for streamText
+function mockStreamTextReturn(
+	parts: Array<{ type: string; text?: string; id?: string; toolName?: string; delta?: string }>,
+	usage = { inputTokens: 10, outputTokens: 5 },
+	providerMetadata: Record<string, any> = {},
+) {
+	mockStreamText.mockReturnValue({
+		fullStream: createMockFullStream(parts)(),
+		usage: Promise.resolve(usage),
+		providerMetadata: Promise.resolve(providerMetadata),
+	})
+}
 
 describe("OpenAiHandler", () => {
 	let handler: OpenAiHandler
@@ -87,7 +75,7 @@ describe("OpenAiHandler", () => {
 			openAiBaseUrl: "https://api.openai.com/v1",
 		}
 		handler = new OpenAiHandler(mockOptions)
-		mockCreate.mockClear()
+		vi.clearAllMocks()
 	})
 
 	describe("constructor", () => {
@@ -104,25 +92,17 @@ describe("OpenAiHandler", () => {
 			})
 			expect(handlerWithCustomUrl).toBeInstanceOf(OpenAiHandler)
 		})
+	})
 
-		it("should set default headers correctly", () => {
-			// Check that the OpenAI constructor was called with correct parameters
-			expect(vi.mocked(OpenAI)).toHaveBeenCalledWith({
-				baseURL: expect.any(String),
-				apiKey: expect.any(String),
-				defaultHeaders: {
-					"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
-					"X-Title": "Roo Code",
-					"User-Agent": `RooCode/${Package.version}`,
-				},
-				timeout: expect.any(Number),
-			})
+	describe("isAiSdkProvider", () => {
+		it("should return true", () => {
+			expect(handler.isAiSdkProvider()).toBe(true)
 		})
 	})
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -134,79 +114,9 @@ describe("OpenAiHandler", () => {
 			},
 		]
 
-		it("should handle non-streaming mode", async () => {
-			const handler = new OpenAiHandler({
-				...mockOptions,
-				openAiStreamingEnabled: false,
-			})
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			expect(chunks.length).toBeGreaterThan(0)
-			const textChunk = chunks.find((chunk) => chunk.type === "text")
-			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
-
-			expect(textChunk).toBeDefined()
-			expect(textChunk?.text).toBe("Test response")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk?.inputTokens).toBe(10)
-			expect(usageChunk?.outputTokens).toBe(5)
-		})
-
-		it("should handle tool calls in non-streaming mode", async () => {
-			mockCreate.mockResolvedValueOnce({
-				choices: [
-					{
-						message: {
-							role: "assistant",
-							content: null,
-							tool_calls: [
-								{
-									id: "call_1",
-									type: "function",
-									function: {
-										name: "test_tool",
-										arguments: '{"arg":"value"}',
-									},
-								},
-							],
-						},
-						finish_reason: "tool_calls",
-					},
-				],
-				usage: {
-					prompt_tokens: 10,
-					completion_tokens: 5,
-					total_tokens: 15,
-				},
-			})
-
-			const handler = new OpenAiHandler({
-				...mockOptions,
-				openAiStreamingEnabled: false,
-			})
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(1)
-			expect(toolCallChunks[0]).toEqual({
-				type: "tool_call",
-				id: "call_1",
-				name: "test_tool",
-				arguments: '{"arg":"value"}',
-			})
-		})
-
 		it("should handle streaming responses", async () => {
+			mockStreamTextReturn([{ type: "text-delta", text: "Test response" }])
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
 			for await (const chunk of stream) {
@@ -219,49 +129,8 @@ describe("OpenAiHandler", () => {
 			expect(textChunks[0].text).toBe("Test response")
 		})
 
-		it("should handle tool calls in streaming responses", async () => {
-			mockCreate.mockImplementation(async (options) => {
-				return {
-					[Symbol.asyncIterator]: async function* () {
-						yield {
-							choices: [
-								{
-									delta: {
-										tool_calls: [
-											{
-												index: 0,
-												id: "call_1",
-												function: { name: "test_tool", arguments: "" },
-											},
-										],
-									},
-									finish_reason: null,
-								},
-							],
-						}
-						yield {
-							choices: [
-								{
-									delta: {
-										tool_calls: [{ index: 0, function: { arguments: '{"arg":' } }],
-									},
-									finish_reason: null,
-								},
-							],
-						}
-						yield {
-							choices: [
-								{
-									delta: {
-										tool_calls: [{ index: 0, function: { arguments: '"value"}' } }],
-									},
-									finish_reason: "tool_calls",
-								},
-							],
-						}
-					},
-				}
-			})
+		it("should include usage information", async () => {
+			mockStreamTextReturn([{ type: "text-delta", text: "Test response" }], { inputTokens: 10, outputTokens: 5 })
 
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
@@ -269,70 +138,19 @@ describe("OpenAiHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// Provider now yields tool_call_partial chunks, NativeToolCallParser handles reassembly
-			const toolCallPartialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-			expect(toolCallPartialChunks).toHaveLength(3)
-			// First chunk has id and name
-			expect(toolCallPartialChunks[0]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: "call_1",
-				name: "test_tool",
-				arguments: "",
-			})
-			// Subsequent chunks have arguments
-			expect(toolCallPartialChunks[1]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: undefined,
-				name: undefined,
-				arguments: '{"arg":',
-			})
-			expect(toolCallPartialChunks[2]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: undefined,
-				name: undefined,
-				arguments: '"value"}',
-			})
-
-			// Verify tool_call_end event is emitted when finish_reason is "tool_calls"
-			const toolCallEndChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
-			expect(toolCallEndChunks).toHaveLength(1)
+			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk?.inputTokens).toBe(10)
+			expect(usageChunk?.outputTokens).toBe(5)
 		})
 
-		it("should yield tool calls even when finish_reason is not set (fallback behavior)", async () => {
-			mockCreate.mockImplementation(async (options) => {
-				return {
-					[Symbol.asyncIterator]: async function* () {
-						yield {
-							choices: [
-								{
-									delta: {
-										tool_calls: [
-											{
-												index: 0,
-												id: "call_fallback",
-												function: { name: "fallback_tool", arguments: '{"test":"fallback"}' },
-											},
-										],
-									},
-									finish_reason: null,
-								},
-							],
-						}
-						// Stream ends without finish_reason being set to "tool_calls"
-						yield {
-							choices: [
-								{
-									delta: {},
-									finish_reason: "stop", // Different finish reason
-								},
-							],
-						}
-					},
-				}
-			})
+		it("should handle tool calls via AI SDK stream parts", async () => {
+			mockStreamTextReturn([
+				{ type: "tool-input-start", id: "call_1", toolName: "test_tool" },
+				{ type: "tool-input-delta", id: "call_1", delta: '{"arg":' },
+				{ type: "tool-input-delta", id: "call_1", delta: '"value"}' },
+				{ type: "tool-input-end", id: "call_1" },
+			])
 
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
@@ -340,16 +158,16 @@ describe("OpenAiHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// Provider now yields tool_call_partial chunks, NativeToolCallParser handles reassembly
-			const toolCallPartialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-			expect(toolCallPartialChunks).toHaveLength(1)
-			expect(toolCallPartialChunks[0]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: "call_fallback",
-				name: "fallback_tool",
-				arguments: '{"test":"fallback"}',
-			})
+			const toolCallStart = chunks.filter((c) => c.type === "tool_call_start")
+			expect(toolCallStart).toHaveLength(1)
+			expect(toolCallStart[0].id).toBe("call_1")
+			expect(toolCallStart[0].name).toBe("test_tool")
+
+			const toolCallDeltas = chunks.filter((c) => c.type === "tool_call_delta")
+			expect(toolCallDeltas).toHaveLength(2)
+
+			const toolCallEnd = chunks.filter((c) => c.type === "tool_call_end")
+			expect(toolCallEnd).toHaveLength(1)
 		})
 
 		it("should include reasoning_effort when reasoning effort is enabled", async () => {
@@ -364,14 +182,17 @@ describe("OpenAiHandler", () => {
 				},
 			}
 			const reasoningHandler = new OpenAiHandler(reasoningOptions)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
 			const stream = reasoningHandler.createMessage(systemPrompt, messages)
-			// Consume the stream to trigger the API call
 			for await (const _chunk of stream) {
+				// consume stream
 			}
-			// Assert the mockCreate was called with reasoning_effort
-			expect(mockCreate).toHaveBeenCalled()
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs.reasoning_effort).toBe("high")
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions?.openai?.reasoningEffort).toBe("high")
 		})
 
 		it("should not include reasoning_effort when reasoning effort is disabled", async () => {
@@ -381,17 +202,20 @@ describe("OpenAiHandler", () => {
 				openAiCustomModelInfo: { contextWindow: 128_000, supportsPromptCache: false },
 			}
 			const noReasoningHandler = new OpenAiHandler(noReasoningOptions)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
 			const stream = noReasoningHandler.createMessage(systemPrompt, messages)
-			// Consume the stream to trigger the API call
 			for await (const _chunk of stream) {
+				// consume stream
 			}
-			// Assert the mockCreate was called without reasoning_effort
-			expect(mockCreate).toHaveBeenCalled()
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs.reasoning_effort).toBeUndefined()
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions).toBeUndefined()
 		})
 
-		it("should include max_tokens when includeMaxTokens is true", async () => {
+		it("should include maxOutputTokens when includeMaxTokens is true", async () => {
 			const optionsWithMaxTokens: ApiHandlerOptions = {
 				...mockOptions,
 				includeMaxTokens: true,
@@ -402,17 +226,20 @@ describe("OpenAiHandler", () => {
 				},
 			}
 			const handlerWithMaxTokens = new OpenAiHandler(optionsWithMaxTokens)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
 			const stream = handlerWithMaxTokens.createMessage(systemPrompt, messages)
-			// Consume the stream to trigger the API call
 			for await (const _chunk of stream) {
+				// consume stream
 			}
-			// Assert the mockCreate was called with max_tokens
-			expect(mockCreate).toHaveBeenCalled()
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs.max_completion_tokens).toBe(4096)
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.maxOutputTokens).toBe(4096)
 		})
 
-		it("should not include max_tokens when includeMaxTokens is false", async () => {
+		it("should not include maxOutputTokens when includeMaxTokens is false", async () => {
 			const optionsWithoutMaxTokens: ApiHandlerOptions = {
 				...mockOptions,
 				includeMaxTokens: false,
@@ -423,20 +250,22 @@ describe("OpenAiHandler", () => {
 				},
 			}
 			const handlerWithoutMaxTokens = new OpenAiHandler(optionsWithoutMaxTokens)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
 			const stream = handlerWithoutMaxTokens.createMessage(systemPrompt, messages)
-			// Consume the stream to trigger the API call
 			for await (const _chunk of stream) {
+				// consume stream
 			}
-			// Assert the mockCreate was called without max_tokens
-			expect(mockCreate).toHaveBeenCalled()
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs.max_completion_tokens).toBeUndefined()
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.maxOutputTokens).toBeUndefined()
 		})
 
-		it("should not include max_tokens when includeMaxTokens is undefined", async () => {
+		it("should not include maxOutputTokens when includeMaxTokens is undefined", async () => {
 			const optionsWithUndefinedMaxTokens: ApiHandlerOptions = {
 				...mockOptions,
-				// includeMaxTokens is not set, should not include max_tokens
 				openAiCustomModelInfo: {
 					contextWindow: 128_000,
 					maxTokens: 4096,
@@ -444,63 +273,97 @@ describe("OpenAiHandler", () => {
 				},
 			}
 			const handlerWithDefaultMaxTokens = new OpenAiHandler(optionsWithUndefinedMaxTokens)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
 			const stream = handlerWithDefaultMaxTokens.createMessage(systemPrompt, messages)
-			// Consume the stream to trigger the API call
 			for await (const _chunk of stream) {
+				// consume stream
 			}
-			// Assert the mockCreate was called without max_tokens
-			expect(mockCreate).toHaveBeenCalled()
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs.max_completion_tokens).toBeUndefined()
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.maxOutputTokens).toBeUndefined()
 		})
 
 		it("should use user-configured modelMaxTokens instead of model default maxTokens", async () => {
 			const optionsWithUserMaxTokens: ApiHandlerOptions = {
 				...mockOptions,
 				includeMaxTokens: true,
-				modelMaxTokens: 32000, // User-configured value
+				modelMaxTokens: 32000,
 				openAiCustomModelInfo: {
 					contextWindow: 128_000,
-					maxTokens: 4096, // Model's default value (should not be used)
+					maxTokens: 4096,
 					supportsPromptCache: false,
 				},
 			}
 			const handlerWithUserMaxTokens = new OpenAiHandler(optionsWithUserMaxTokens)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
 			const stream = handlerWithUserMaxTokens.createMessage(systemPrompt, messages)
-			// Consume the stream to trigger the API call
 			for await (const _chunk of stream) {
+				// consume stream
 			}
-			// Assert the mockCreate was called with user-configured modelMaxTokens (32000), not model default maxTokens (4096)
-			expect(mockCreate).toHaveBeenCalled()
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs.max_completion_tokens).toBe(32000)
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.maxOutputTokens).toBe(32000)
 		})
 
 		it("should fallback to model default maxTokens when user modelMaxTokens is not set", async () => {
 			const optionsWithoutUserMaxTokens: ApiHandlerOptions = {
 				...mockOptions,
 				includeMaxTokens: true,
-				// modelMaxTokens is not set
 				openAiCustomModelInfo: {
 					contextWindow: 128_000,
-					maxTokens: 4096, // Model's default value (should be used as fallback)
+					maxTokens: 4096,
 					supportsPromptCache: false,
 				},
 			}
 			const handlerWithoutUserMaxTokens = new OpenAiHandler(optionsWithoutUserMaxTokens)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
 			const stream = handlerWithoutUserMaxTokens.createMessage(systemPrompt, messages)
-			// Consume the stream to trigger the API call
 			for await (const _chunk of stream) {
+				// consume stream
 			}
-			// Assert the mockCreate was called with model default maxTokens (4096) as fallback
-			expect(mockCreate).toHaveBeenCalled()
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs.max_completion_tokens).toBe(4096)
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.maxOutputTokens).toBe(4096)
+		})
+
+		it("should pass system prompt to streamText", async () => {
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.system).toBe(systemPrompt)
+		})
+
+		it("should pass temperature 0 as default", async () => {
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.temperature).toBe(0)
 		})
 	})
 
 	describe("error handling", () => {
-		const testMessages: Anthropic.Messages.MessageParam[] = [
+		const testMessages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -513,7 +376,14 @@ describe("OpenAiHandler", () => {
 		]
 
 		it("should handle API errors", async () => {
-			mockCreate.mockRejectedValueOnce(new Error("API Error"))
+			mockStreamText.mockReturnValue({
+				fullStream: (async function* () {
+					yield { type: "text-delta" as const, textDelta: "" }
+					throw new Error("API Error")
+				})(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+				providerMetadata: Promise.resolve({}),
+			})
 
 			const stream = handler.createMessage("system prompt", testMessages)
 
@@ -526,9 +396,16 @@ describe("OpenAiHandler", () => {
 
 		it("should handle rate limiting", async () => {
 			const rateLimitError = new Error("Rate limit exceeded")
-			rateLimitError.name = "Error"
 			;(rateLimitError as any).status = 429
-			mockCreate.mockRejectedValueOnce(rateLimitError)
+
+			mockStreamText.mockReturnValue({
+				fullStream: (async function* () {
+					yield { type: "text-delta" as const, textDelta: "" }
+					throw rateLimitError
+				})(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+				providerMetadata: Promise.resolve({}),
+			})
 
 			const stream = handler.createMessage("system prompt", testMessages)
 
@@ -542,26 +419,24 @@ describe("OpenAiHandler", () => {
 
 	describe("completePrompt", () => {
 		it("should complete prompt successfully", async () => {
+			mockGenerateText.mockResolvedValue({ text: "Test response" })
+
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-			expect(mockCreate).toHaveBeenCalledWith(
-				{
-					model: mockOptions.openAiModelId,
-					messages: [{ role: "user", content: "Test prompt" }],
-				},
-				{},
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					prompt: "Test prompt",
+				}),
 			)
 		})
 
 		it("should handle API errors", async () => {
-			mockCreate.mockRejectedValueOnce(new Error("API Error"))
+			mockGenerateText.mockRejectedValue(new Error("API Error"))
 			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("OpenAI completion error: API Error")
 		})
 
 		it("should handle empty response", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				choices: [{ message: { content: "" } }],
-			}))
+			mockGenerateText.mockResolvedValue({ text: "" })
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("")
 		})
@@ -585,10 +460,35 @@ describe("OpenAiHandler", () => {
 			expect(model.id).toBe("")
 			expect(model.info).toBeDefined()
 		})
+
+		it("should use sane defaults when no custom model info is provided", () => {
+			const model = handler.getModel()
+			expect(model.info).toBe(openAiModelInfoSaneDefaults)
+		})
+
+		it("should include model parameters from getModelParams", () => {
+			const model = handler.getModel()
+			expect(model).toHaveProperty("temperature")
+			expect(model).toHaveProperty("maxTokens")
+		})
+
+		it("should use 0 as the default temperature", () => {
+			const model = handler.getModel()
+			expect(model.temperature).toBe(0)
+		})
+
+		it("should respect user-provided temperature", () => {
+			const handlerWithTemp = new OpenAiHandler({
+				...mockOptions,
+				modelTemperature: 0.7,
+			})
+			const model = handlerWithTemp.getModel()
+			expect(model.temperature).toBe(0.7)
+		})
 	})
 
 	describe("Azure AI Inference Service", () => {
-		const azureOptions = {
+		const azureOptions: ApiHandlerOptions = {
 			...mockOptions,
 			openAiBaseUrl: "https://test.services.ai.azure.com",
 			openAiModelId: "deepseek-v3",
@@ -601,17 +501,34 @@ describe("OpenAiHandler", () => {
 			expect(azureHandler.getModel().id).toBe(azureOptions.openAiModelId)
 		})
 
+		it("should create provider with /models appended to baseURL for Azure AI Inference", async () => {
+			const azureHandler = new OpenAiHandler(azureOptions)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "Test response" }])
+
+			const stream = azureHandler.createMessage("You are a helpful assistant.", [
+				{ role: "user", content: "Hello!" },
+			])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			// Verify createOpenAI was called with /models appended to baseURL
+			expect(mockCreateOpenAI).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: "https://test.services.ai.azure.com/models",
+				}),
+			)
+		})
+
 		it("should handle streaming responses with Azure AI Inference Service", async () => {
 			const azureHandler = new OpenAiHandler(azureOptions)
-			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello!",
-				},
-			]
 
-			const stream = azureHandler.createMessage(systemPrompt, messages)
+			mockStreamTextReturn([{ type: "text-delta", text: "Test response" }])
+
+			const stream = azureHandler.createMessage("You are a helpful assistant.", [
+				{ role: "user", content: "Hello!" },
+			])
 			const chunks: any[] = []
 			for await (const chunk of stream) {
 				chunks.push(chunk)
@@ -621,139 +538,45 @@ describe("OpenAiHandler", () => {
 			const textChunks = chunks.filter((chunk) => chunk.type === "text")
 			expect(textChunks).toHaveLength(1)
 			expect(textChunks[0].text).toBe("Test response")
-
-			// Verify the API call was made with correct Azure AI Inference Service path
-			expect(mockCreate).toHaveBeenCalledWith(
-				{
-					model: azureOptions.openAiModelId,
-					messages: [
-						{ role: "system", content: systemPrompt },
-						{ role: "user", content: "Hello!" },
-					],
-					stream: true,
-					stream_options: { include_usage: true },
-					temperature: 0,
-					tools: undefined,
-					tool_choice: undefined,
-					parallel_tool_calls: true,
-				},
-				{ path: "/models/chat/completions" },
-			)
-
-			// Verify max_tokens is NOT included when not explicitly set
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).not.toHaveProperty("max_completion_tokens")
-		})
-
-		it("should handle non-streaming responses with Azure AI Inference Service", async () => {
-			const azureHandler = new OpenAiHandler({
-				...azureOptions,
-				openAiStreamingEnabled: false,
-			})
-			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello!",
-				},
-			]
-
-			const stream = azureHandler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			expect(chunks.length).toBeGreaterThan(0)
-			const textChunk = chunks.find((chunk) => chunk.type === "text")
-			const usageChunk = chunks.find((chunk) => chunk.type === "usage")
-
-			expect(textChunk).toBeDefined()
-			expect(textChunk?.text).toBe("Test response")
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk?.inputTokens).toBe(10)
-			expect(usageChunk?.outputTokens).toBe(5)
-
-			// Verify the API call was made with correct Azure AI Inference Service path
-			expect(mockCreate).toHaveBeenCalledWith(
-				{
-					model: azureOptions.openAiModelId,
-					messages: [
-						{ role: "system", content: systemPrompt },
-						{ role: "user", content: "Hello!" },
-					],
-					tools: undefined,
-					tool_choice: undefined,
-					parallel_tool_calls: true,
-				},
-				{ path: "/models/chat/completions" },
-			)
-
-			// Verify max_tokens is NOT included when not explicitly set
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).not.toHaveProperty("max_completion_tokens")
 		})
 
 		it("should handle completePrompt with Azure AI Inference Service", async () => {
 			const azureHandler = new OpenAiHandler(azureOptions)
+			mockGenerateText.mockResolvedValue({ text: "Test response" })
+
 			const result = await azureHandler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-			expect(mockCreate).toHaveBeenCalledWith(
-				{
-					model: azureOptions.openAiModelId,
-					messages: [{ role: "user", content: "Test prompt" }],
-				},
-				{ path: "/models/chat/completions" },
-			)
-
-			// Verify max_tokens is NOT included when includeMaxTokens is not set
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).not.toHaveProperty("max_completion_tokens")
 		})
 	})
 
-	describe("Grok xAI Provider", () => {
-		const grokOptions = {
-			...mockOptions,
-			openAiBaseUrl: "https://api.x.ai/v1",
-			openAiModelId: "grok-1",
-		}
+	describe("Azure OpenAI", () => {
+		it("should create provider with api-key header for Azure OpenAI", async () => {
+			const azureOptions: ApiHandlerOptions = {
+				...mockOptions,
+				openAiBaseUrl: "https://myresource.openai.azure.com",
+				openAiUseAzure: true,
+			}
+			const azureHandler = new OpenAiHandler(azureOptions)
 
-		it("should initialize with Grok xAI configuration", () => {
-			const grokHandler = new OpenAiHandler(grokOptions)
-			expect(grokHandler).toBeInstanceOf(OpenAiHandler)
-			expect(grokHandler.getModel().id).toBe(grokOptions.openAiModelId)
-		})
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
 
-		it("should exclude stream_options when streaming with Grok xAI", async () => {
-			const grokHandler = new OpenAiHandler(grokOptions)
-			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello!",
-				},
-			]
+			const stream = azureHandler.createMessage("system", [{ role: "user", content: "Hello!" }])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
 
-			const stream = grokHandler.createMessage(systemPrompt, messages)
-			await stream.next()
-
-			expect(mockCreate).toHaveBeenCalledWith(
+			expect(mockCreateOpenAI).toHaveBeenCalledWith(
 				expect.objectContaining({
-					model: grokOptions.openAiModelId,
-					stream: true,
+					headers: expect.objectContaining({
+						"api-key": "test-api-key",
+					}),
 				}),
-				{},
 			)
-
-			const mockCalls = mockCreate.mock.calls
-			const lastCall = mockCalls[mockCalls.length - 1]
-			expect(lastCall[0]).not.toHaveProperty("stream_options")
 		})
 	})
 
 	describe("O3 Family Models", () => {
-		const o3Options = {
+		const o3Options: ApiHandlerOptions = {
 			...mockOptions,
 			openAiModelId: "o3-mini",
 			openAiCustomModelInfo: {
@@ -764,285 +587,96 @@ describe("OpenAiHandler", () => {
 			},
 		}
 
-		it("should handle O3 model with streaming and include max_completion_tokens when includeMaxTokens is true", async () => {
+		it("should use developer systemMessageMode for O3 models", async () => {
+			const o3Handler = new OpenAiHandler(o3Options)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = o3Handler.createMessage("You are a helpful assistant.", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions?.openai?.systemMessageMode).toBe("developer")
+		})
+
+		it("should prepend 'Formatting re-enabled' to system prompt for O3 models", async () => {
+			const o3Handler = new OpenAiHandler(o3Options)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = o3Handler.createMessage("You are a helpful assistant.", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.system).toBe("Formatting re-enabled\nYou are a helpful assistant.")
+		})
+
+		it("should pass undefined temperature for O3 models", async () => {
+			const o3Handler = new OpenAiHandler(o3Options)
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = o3Handler.createMessage("You are a helpful assistant.", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.temperature).toBeUndefined()
+		})
+
+		it("should handle O3 model with maxOutputTokens when includeMaxTokens is true", async () => {
 			const o3Handler = new OpenAiHandler({
 				...o3Options,
 				includeMaxTokens: true,
 				modelMaxTokens: 32000,
-				modelTemperature: 0.5,
 			})
-			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello!",
-				},
-			]
 
-			const stream = o3Handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = o3Handler.createMessage("You are a helpful assistant.", [])
+			for await (const _chunk of stream) {
+				// consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					model: "o3-mini",
-					messages: [
-						{
-							role: "developer",
-							content: "Formatting re-enabled\nYou are a helpful assistant.",
-						},
-						{ role: "user", content: "Hello!" },
-					],
-					stream: true,
-					stream_options: { include_usage: true },
-					reasoning_effort: "medium",
-					temperature: undefined,
-					// O3 models do not support deprecated max_tokens but do support max_completion_tokens
-					max_completion_tokens: 32000,
-				}),
-				{},
-			)
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.maxOutputTokens).toBe(32000)
 		})
 
-		it("should handle tool calls with O3 model in streaming mode", async () => {
-			const o3Handler = new OpenAiHandler(o3Options)
-
-			mockCreate.mockImplementation(async (options) => {
-				return {
-					[Symbol.asyncIterator]: async function* () {
-						yield {
-							choices: [
-								{
-									delta: {
-										tool_calls: [
-											{
-												index: 0,
-												id: "call_1",
-												function: { name: "test_tool", arguments: "" },
-											},
-										],
-									},
-									finish_reason: null,
-								},
-							],
-						}
-						yield {
-							choices: [
-								{
-									delta: {
-										tool_calls: [{ index: 0, function: { arguments: "{}" } }],
-									},
-									finish_reason: "tool_calls",
-								},
-							],
-						}
-					},
-				}
-			})
-
-			const stream = o3Handler.createMessage("system", [])
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Provider now yields tool_call_partial chunks, NativeToolCallParser handles reassembly
-			const toolCallPartialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-			expect(toolCallPartialChunks).toHaveLength(2)
-			expect(toolCallPartialChunks[0]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: "call_1",
-				name: "test_tool",
-				arguments: "",
-			})
-			expect(toolCallPartialChunks[1]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: undefined,
-				name: undefined,
-				arguments: "{}",
-			})
-
-			// Verify tool_call_end event is emitted when finish_reason is "tool_calls"
-			const toolCallEndChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
-			expect(toolCallEndChunks).toHaveLength(1)
-		})
-
-		it("should yield tool calls for O3 model even when finish_reason is not set (fallback behavior)", async () => {
-			const o3Handler = new OpenAiHandler(o3Options)
-
-			mockCreate.mockImplementation(async (options) => {
-				return {
-					[Symbol.asyncIterator]: async function* () {
-						yield {
-							choices: [
-								{
-									delta: {
-										tool_calls: [
-											{
-												index: 0,
-												id: "call_o3_fallback",
-												function: { name: "o3_fallback_tool", arguments: '{"o3":"test"}' },
-											},
-										],
-									},
-									finish_reason: null,
-								},
-							],
-						}
-						// Stream ends with different finish reason
-						yield {
-							choices: [
-								{
-									delta: {},
-									finish_reason: "length", // Different finish reason
-								},
-							],
-						}
-					},
-				}
-			})
-
-			const stream = o3Handler.createMessage("system", [])
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Provider now yields tool_call_partial chunks, NativeToolCallParser handles reassembly
-			const toolCallPartialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-			expect(toolCallPartialChunks).toHaveLength(1)
-			expect(toolCallPartialChunks[0]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: "call_o3_fallback",
-				name: "o3_fallback_tool",
-				arguments: '{"o3":"test"}',
-			})
-		})
-
-		it("should handle O3 model with streaming and exclude max_tokens when includeMaxTokens is false", async () => {
+		it("should handle O3 model without maxOutputTokens when includeMaxTokens is false", async () => {
 			const o3Handler = new OpenAiHandler({
 				...o3Options,
 				includeMaxTokens: false,
-				modelTemperature: 0.7,
 			})
-			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello!",
-				},
-			]
 
-			const stream = o3Handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = o3Handler.createMessage("You are a helpful assistant.", [])
+			for await (const _chunk of stream) {
+				// consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					model: "o3-mini",
-					messages: [
-						{
-							role: "developer",
-							content: "Formatting re-enabled\nYou are a helpful assistant.",
-						},
-						{ role: "user", content: "Hello!" },
-					],
-					stream: true,
-					stream_options: { include_usage: true },
-					reasoning_effort: "medium",
-					temperature: undefined,
-				}),
-				{},
-			)
-
-			// Verify max_tokens is NOT included
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).not.toHaveProperty("max_completion_tokens")
+			expect(mockStreamText).toHaveBeenCalled()
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.maxOutputTokens).toBeUndefined()
 		})
 
-		it("should handle O3 model non-streaming with reasoning_effort and max_completion_tokens when includeMaxTokens is true", async () => {
-			const o3Handler = new OpenAiHandler({
-				...o3Options,
-				openAiStreamingEnabled: false,
-				includeMaxTokens: true,
-				modelTemperature: 0.3,
-			})
-			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello!",
-				},
-			]
+		it("should handle tool calls with O3 model", async () => {
+			const o3Handler = new OpenAiHandler(o3Options)
 
-			const stream = o3Handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					model: "o3-mini",
-					messages: [
-						{
-							role: "developer",
-							content: "Formatting re-enabled\nYou are a helpful assistant.",
-						},
-						{ role: "user", content: "Hello!" },
-					],
-					reasoning_effort: "medium",
-					temperature: undefined,
-					// O3 models do not support deprecated max_tokens but do support max_completion_tokens
-					max_completion_tokens: 65536, // Using default maxTokens from o3Options
-				}),
-				{},
-			)
-
-			// Verify stream is not set
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).not.toHaveProperty("stream")
-		})
-
-		it("should handle tool calls with O3 model in non-streaming mode", async () => {
-			const o3Handler = new OpenAiHandler({
-				...o3Options,
-				openAiStreamingEnabled: false,
-			})
-
-			mockCreate.mockResolvedValueOnce({
-				choices: [
-					{
-						message: {
-							role: "assistant",
-							content: null,
-							tool_calls: [
-								{
-									id: "call_1",
-									type: "function",
-									function: {
-										name: "test_tool",
-										arguments: "{}",
-									},
-								},
-							],
-						},
-						finish_reason: "tool_calls",
-					},
-				],
-				usage: {
-					prompt_tokens: 10,
-					completion_tokens: 5,
-					total_tokens: 15,
-				},
-			})
+			mockStreamTextReturn([
+				{ type: "tool-input-start", id: "call_1", toolName: "test_tool" },
+				{ type: "tool-input-delta", id: "call_1", delta: "{}" },
+				{ type: "tool-input-end", id: "call_1" },
+			])
 
 			const stream = o3Handler.createMessage("system", [])
 			const chunks: any[] = []
@@ -1050,93 +684,213 @@ describe("OpenAiHandler", () => {
 				chunks.push(chunk)
 			}
 
-			const toolCallChunks = chunks.filter((chunk) => chunk.type === "tool_call")
-			expect(toolCallChunks).toHaveLength(1)
-			expect(toolCallChunks[0]).toEqual({
-				type: "tool_call",
-				id: "call_1",
-				name: "test_tool",
-				arguments: "{}",
-			})
+			const toolCallStart = chunks.filter((c) => c.type === "tool_call_start")
+			expect(toolCallStart).toHaveLength(1)
+			expect(toolCallStart[0].name).toBe("test_tool")
 		})
 
-		it("should use default temperature of 0 when not specified for O3 models", async () => {
-			const o3Handler = new OpenAiHandler({
-				...o3Options,
-				// No modelTemperature specified
+		it("should detect o1 models as O3 family", async () => {
+			const o1Handler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "o1-preview",
 			})
-			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello!",
-				},
-			]
 
-			const stream = o3Handler.createMessage(systemPrompt, messages)
-			await stream.next()
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					temperature: undefined, // Temperature is not supported for O3 models
-				}),
-				{},
-			)
+			const stream = o1Handler.createMessage("system", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions?.openai?.systemMessageMode).toBe("developer")
 		})
 
-		it("should handle O3 model with Azure AI Inference Service respecting includeMaxTokens", async () => {
+		it("should detect o4 models as O3 family", async () => {
+			const o4Handler = new OpenAiHandler({
+				...mockOptions,
+				openAiModelId: "o4-mini",
+			})
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = o4Handler.createMessage("system", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions?.openai?.systemMessageMode).toBe("developer")
+		})
+
+		it("should handle O3 model with Azure AI Inference Service", async () => {
 			const o3AzureHandler = new OpenAiHandler({
 				...o3Options,
 				openAiBaseUrl: "https://test.services.ai.azure.com",
-				includeMaxTokens: false, // Should NOT include max_tokens
+				includeMaxTokens: false,
 			})
-			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello!",
-				},
-			]
 
-			const stream = o3AzureHandler.createMessage(systemPrompt, messages)
-			await stream.next()
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
 
-			expect(mockCreate).toHaveBeenCalledWith(
+			const stream = o3AzureHandler.createMessage("You are a helpful assistant.", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			// Verify Azure AI Inference baseURL with /models
+			expect(mockCreateOpenAI).toHaveBeenCalledWith(
 				expect.objectContaining({
-					model: "o3-mini",
+					baseURL: "https://test.services.ai.azure.com/models",
 				}),
-				{ path: "/models/chat/completions" },
 			)
 
-			// Verify max_tokens is NOT included when includeMaxTokens is false
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs).not.toHaveProperty("max_completion_tokens")
+			// Verify O3 family settings
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions?.openai?.systemMessageMode).toBe("developer")
+			expect(callArgs.temperature).toBeUndefined()
+			expect(callArgs.maxOutputTokens).toBeUndefined()
+		})
+	})
+
+	describe("processUsageMetrics", () => {
+		it("should correctly process usage metrics", () => {
+			class TestOpenAiHandler extends OpenAiHandler {
+				public testProcessUsageMetrics(usage: any, providerMetadata?: any) {
+					return this.processUsageMetrics(usage, providerMetadata)
+				}
+			}
+
+			const testHandler = new TestOpenAiHandler(mockOptions)
+
+			const usage = {
+				inputTokens: 100,
+				outputTokens: 50,
+			}
+
+			const result = testHandler.testProcessUsageMetrics(usage)
+
+			expect(result.type).toBe("usage")
+			expect(result.inputTokens).toBe(100)
+			expect(result.outputTokens).toBe(50)
 		})
 
-		it("should NOT include max_tokens for O3 model with Azure AI Inference Service even when includeMaxTokens is true", async () => {
-			const o3AzureHandler = new OpenAiHandler({
-				...o3Options,
-				openAiBaseUrl: "https://test.services.ai.azure.com",
-				includeMaxTokens: true, // Should include max_tokens
-			})
-			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user",
-					content: "Hello!",
+		it("should handle cache metrics from usage.details", () => {
+			class TestOpenAiHandler extends OpenAiHandler {
+				public testProcessUsageMetrics(usage: any, providerMetadata?: any) {
+					return this.processUsageMetrics(usage, providerMetadata)
+				}
+			}
+
+			const testHandler = new TestOpenAiHandler(mockOptions)
+
+			const usage = {
+				inputTokens: 100,
+				outputTokens: 50,
+				details: {
+					cachedInputTokens: 25,
+					reasoningTokens: 30,
 				},
-			]
+			}
 
-			const stream = o3AzureHandler.createMessage(systemPrompt, messages)
-			await stream.next()
+			const result = testHandler.testProcessUsageMetrics(usage)
 
-			expect(mockCreate).toHaveBeenCalledWith(
+			expect(result.cacheReadTokens).toBe(25)
+		})
+
+		it("should handle cache metrics from providerMetadata", () => {
+			class TestOpenAiHandler extends OpenAiHandler {
+				public testProcessUsageMetrics(usage: any, providerMetadata?: any) {
+					return this.processUsageMetrics(usage, providerMetadata)
+				}
+			}
+
+			const testHandler = new TestOpenAiHandler(mockOptions)
+
+			const usage = { inputTokens: 100, outputTokens: 50 }
+			const providerMetadata = {
+				openai: {
+					cacheCreationInputTokens: 80,
+					cachedInputTokens: 20,
+				},
+			}
+
+			const result = testHandler.testProcessUsageMetrics(usage, providerMetadata)
+
+			expect(result.cacheWriteTokens).toBe(80)
+			expect(result.cacheReadTokens).toBe(20)
+		})
+
+		it("should handle missing cache metrics gracefully", () => {
+			class TestOpenAiHandler extends OpenAiHandler {
+				public testProcessUsageMetrics(usage: any, providerMetadata?: any) {
+					return this.processUsageMetrics(usage, providerMetadata)
+				}
+			}
+
+			const testHandler = new TestOpenAiHandler(mockOptions)
+
+			const usage = { inputTokens: 100, outputTokens: 50 }
+			const result = testHandler.testProcessUsageMetrics(usage)
+
+			expect(result.cacheWriteTokens).toBeUndefined()
+			expect(result.cacheReadTokens).toBeUndefined()
+		})
+	})
+
+	describe("provider creation", () => {
+		it("should pass custom headers to createOpenAI", async () => {
+			const handlerWithHeaders = new OpenAiHandler({
+				...mockOptions,
+				openAiHeaders: { "X-Custom": "value" },
+			})
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handlerWithHeaders.createMessage("system", [{ role: "user", content: "Hello!" }])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockCreateOpenAI).toHaveBeenCalledWith(
 				expect.objectContaining({
-					model: "o3-mini",
-					// O3 models do not support max_tokens
+					headers: expect.objectContaining({
+						"X-Custom": "value",
+					}),
 				}),
-				{ path: "/models/chat/completions" },
 			)
+		})
+
+		it("should use default baseURL when none provided", async () => {
+			const handlerNoUrl = new OpenAiHandler({
+				...mockOptions,
+				openAiBaseUrl: undefined,
+			})
+
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handlerNoUrl.createMessage("system", [{ role: "user", content: "Hello!" }])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockCreateOpenAI).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: "https://api.openai.com/v1",
+				}),
+			)
+		})
+
+		it("should use provider.chat() to create model", async () => {
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage("system", [{ role: "user", content: "Hello!" }])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			// Verify the mock provider's chat method was called
+			const mockProviderInstance = mockCreateOpenAI.mock.results[0]?.value
+			expect(mockProviderInstance?.chat).toHaveBeenCalled()
 		})
 	})
 })

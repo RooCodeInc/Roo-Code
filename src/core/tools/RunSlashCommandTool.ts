@@ -115,9 +115,9 @@ export class RunSlashCommandTool extends BaseTool<"run_slash_command"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"run_slash_command">): Promise<void> {
-		const commandName: string | undefined = block.params.command
-		const args: string | undefined = block.params.args
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const commandName: string | undefined = block.input.command
+		const args: string | undefined = block.input.args
 
 		const partialMessage = JSON.stringify({
 			tool: "runSlashCommand",

@@ -24,8 +24,7 @@ vi.mock("@ai-sdk/mistral", () => ({
 	createMistral: mockCreateMistral,
 }))
 
-import type { Anthropic } from "@anthropic-ai/sdk"
-
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
 import { mistralDefaultModelId, mistralModels, type MistralModelId } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
@@ -102,7 +101,7 @@ describe("MistralHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -329,7 +328,7 @@ describe("MistralHandler", () => {
 
 	describe("tool handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],

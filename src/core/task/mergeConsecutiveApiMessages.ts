@@ -1,12 +1,10 @@
-import { Anthropic } from "@anthropic-ai/sdk"
-
-import type { ApiMessage } from "../task-persistence"
+import type { ApiMessage, NeutralContentBlock } from "../task-persistence"
 
 type Role = ApiMessage["role"]
 
-function normalizeContentToBlocks(content: ApiMessage["content"]): Anthropic.Messages.ContentBlockParam[] {
+function normalizeContentToBlocks(content: ApiMessage["content"]): NeutralContentBlock[] {
 	if (Array.isArray(content)) {
-		return content as Anthropic.Messages.ContentBlockParam[]
+		return content as NeutralContentBlock[]
 	}
 	if (content === undefined || content === null) {
 		return []

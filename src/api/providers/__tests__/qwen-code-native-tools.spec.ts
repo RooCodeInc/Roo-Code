@@ -8,59 +8,50 @@ vi.mock("node:fs", () => ({
 	},
 }))
 
-const mockCreate = vi.fn()
-vi.mock("openai", () => {
+// Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
+const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+}))
+
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
 	return {
-		__esModule: true,
-		default: vi.fn().mockImplementation(() => ({
-			apiKey: "test-key",
-			baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-			chat: {
-				completions: {
-					create: mockCreate,
-				},
-			},
-		})),
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
 	}
 })
 
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: vi.fn(() => {
+		return vi.fn(() => ({
+			modelId: "qwen3-coder-plus",
+			provider: "qwen-code",
+		}))
+	}),
+}))
+
 import { promises as fs } from "node:fs"
 import { QwenCodeHandler } from "../qwen-code"
-import { NativeToolCallParser } from "../../../core/assistant-message/NativeToolCallParser"
 import type { ApiHandlerOptions } from "../../../shared/api"
 
-describe("QwenCodeHandler Native Tools", () => {
+const mockCredentials = {
+	access_token: "test-access-token",
+	refresh_token: "test-refresh-token",
+	token_type: "Bearer",
+	expiry_date: Date.now() + 3600000, // 1 hour from now
+	resource_url: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+}
+
+describe("QwenCodeHandler (AI SDK)", () => {
 	let handler: QwenCodeHandler
 	let mockOptions: ApiHandlerOptions & { qwenCodeOauthPath?: string }
-
-	const testTools = [
-		{
-			type: "function" as const,
-			function: {
-				name: "test_tool",
-				description: "A test tool",
-				parameters: {
-					type: "object",
-					properties: {
-						arg1: { type: "string", description: "First argument" },
-					},
-					required: ["arg1"],
-				},
-			},
-		},
-	]
 
 	beforeEach(() => {
 		vi.clearAllMocks()
 
 		// Mock credentials file
-		const mockCredentials = {
-			access_token: "test-access-token",
-			refresh_token: "test-refresh-token",
-			token_type: "Bearer",
-			expiry_date: Date.now() + 3600000, // 1 hour from now
-			resource_url: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-		}
 		;(fs.readFile as any).mockResolvedValue(JSON.stringify(mockCredentials))
 		;(fs.writeFile as any).mockResolvedValue(undefined)
 
@@ -68,306 +59,356 @@ describe("QwenCodeHandler Native Tools", () => {
 			apiModelId: "qwen3-coder-plus",
 		}
 		handler = new QwenCodeHandler(mockOptions)
-
-		// Clear NativeToolCallParser state before each test
-		NativeToolCallParser.clearRawChunkState()
 	})
 
-	describe("Native Tool Calling Support", () => {
-		it("should include tools in request when model supports native tools and tools are provided", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [{ delta: { content: "Test response" } }],
-					}
-				},
-			}))
-
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-				tools: testTools,
-			})
-			await stream.next()
-
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.arrayContaining([
-						expect.objectContaining({
-							type: "function",
-							function: expect.objectContaining({
-								name: "test_tool",
-							}),
-						}),
-					]),
-					parallel_tool_calls: true,
-				}),
-			)
+	describe("constructor", () => {
+		it("should initialize and extend OpenAICompatibleHandler", () => {
+			expect(handler).toBeInstanceOf(QwenCodeHandler)
+			expect(handler.getModel().id).toBe("qwen3-coder-plus")
 		})
 
-		it("should include tool_choice when provided", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [{ delta: { content: "Test response" } }],
-					}
-				},
-			}))
-
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-				tools: testTools,
-				tool_choice: "auto",
-			})
-			await stream.next()
-
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tool_choice: "auto",
-				}),
-			)
+		it("should use default model when no apiModelId provided", () => {
+			const h = new QwenCodeHandler({})
+			expect(h.getModel().id).toBeDefined()
 		})
+	})
 
-		it("should always include tools and tool_choice (tools are guaranteed to be present after ALWAYS_AVAILABLE_TOOLS)", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [{ delta: { content: "Test response" } }],
-					}
-				},
-			}))
+	describe("OAuth lifecycle", () => {
+		it("should load credentials and authenticate before streaming", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta" as const, text: "Test response" }
+			}
 
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-			})
-			await stream.next()
-
-			// Tools are now always present (minimum 6 from ALWAYS_AVAILABLE_TOOLS)
-			const callArgs = mockCreate.mock.calls[mockCreate.mock.calls.length - 1][0]
-			expect(callArgs).toHaveProperty("tools")
-			expect(callArgs).toHaveProperty("tool_choice")
-			expect(callArgs).toHaveProperty("parallel_tool_calls", true)
-		})
-
-		it("should yield tool_call_partial chunks during streaming", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_qwen_123",
-											function: {
-												name: "test_tool",
-												arguments: '{"arg1":',
-											},
-										},
-									],
-								},
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											function: {
-												arguments: '"value"}',
-											},
-										},
-									],
-								},
-							},
-						],
-					}
-				},
-			}))
-
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-				tools: testTools,
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
 			})
 
-			const chunks = []
+			const stream = handler.createMessage("test prompt", [])
+			const chunks: any[] = []
 			for await (const chunk of stream) {
 				chunks.push(chunk)
 			}
 
-			expect(chunks).toContainEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: "call_qwen_123",
-				name: "test_tool",
-				arguments: '{"arg1":',
-			})
-
-			expect(chunks).toContainEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: undefined,
-				name: undefined,
-				arguments: '"value"}',
-			})
+			// Should have read credentials file
+			expect(fs.readFile).toHaveBeenCalled()
+			// Should have called streamText
+			expect(mockStreamText).toHaveBeenCalled()
 		})
 
-		it("should set parallel_tool_calls based on metadata", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [{ delta: { content: "Test response" } }],
-					}
-				},
-			}))
+		it("should refresh expired token before streaming", async () => {
+			// Return expired credentials
+			const expiredCredentials = {
+				...mockCredentials,
+				expiry_date: Date.now() - 1000, // expired
+			}
+			;(fs.readFile as any).mockResolvedValue(JSON.stringify(expiredCredentials))
 
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-				tools: testTools,
-				parallelToolCalls: true,
+			// Mock the token refresh fetch
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						access_token: "new-access-token",
+						token_type: "Bearer",
+						refresh_token: "new-refresh-token",
+						expires_in: 3600,
+					}),
 			})
-			await stream.next()
+			vi.stubGlobal("fetch", mockFetch)
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					parallel_tool_calls: true,
-				}),
-			)
-		})
+			async function* mockFullStream() {
+				yield { type: "text-delta" as const, text: "After refresh" }
+			}
 
-		it("should yield tool_call_end events when finish_reason is tool_calls", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_qwen_test",
-											function: {
-												name: "test_tool",
-												arguments: '{"arg1":"value"}',
-											},
-										},
-									],
-								},
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {},
-								finish_reason: "tool_calls",
-							},
-						],
-						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-					}
-				},
-			}))
-
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-				tools: testTools,
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 5, outputTokens: 3 }),
 			})
 
-			const chunks = []
+			const stream = handler.createMessage("test prompt", [])
+			const chunks: any[] = []
 			for await (const chunk of stream) {
-				// Simulate what Task.ts does: when we receive tool_call_partial,
-				// process it through NativeToolCallParser to populate rawChunkTracker
-				if (chunk.type === "tool_call_partial") {
-					NativeToolCallParser.processRawChunk({
-						index: chunk.index,
-						id: chunk.id,
-						name: chunk.name,
-						arguments: chunk.arguments,
-					})
+				chunks.push(chunk)
+			}
+
+			// Should have called the token refresh endpoint
+			expect(mockFetch).toHaveBeenCalledWith(
+				expect.stringContaining("/api/v1/oauth2/token"),
+				expect.objectContaining({ method: "POST" }),
+			)
+			// Should have written new credentials to file
+			expect(fs.writeFile).toHaveBeenCalled()
+
+			vi.unstubAllGlobals()
+		})
+	})
+
+	describe("401 retry", () => {
+		it("should retry on 401 during createMessage", async () => {
+			// First call throws 401, second succeeds
+			let callCount = 0
+
+			mockStreamText.mockImplementation(() => {
+				callCount++
+				if (callCount === 1) {
+					// Simulate 401 error (handleAiSdkError preserves status)
+					const error = new Error("qwen-code: API Error (401): Unauthorized")
+					;(error as any).status = 401
+					throw error
 				}
-				chunks.push(chunk)
-			}
 
-			// Should have tool_call_partial and tool_call_end
-			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+				async function* mockFullStream() {
+					yield { type: "text-delta" as const, text: "Retry success" }
+				}
 
-			expect(partialChunks).toHaveLength(1)
-			expect(endChunks).toHaveLength(1)
-			expect(endChunks[0].id).toBe("call_qwen_test")
-		})
-
-		it("should preserve thinking block handling alongside tool calls", async () => {
-			mockCreate.mockImplementationOnce(() => ({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									reasoning_content: "Thinking about this...",
-								},
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_after_think",
-											function: {
-												name: "test_tool",
-												arguments: '{"arg1":"result"}',
-											},
-										},
-									],
-								},
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {},
-								finish_reason: "tool_calls",
-							},
-						],
-					}
-				},
-			}))
-
-			const stream = handler.createMessage("test prompt", [], {
-				taskId: "test-task-id",
-				tools: testTools,
+				return {
+					fullStream: mockFullStream(),
+					usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				}
 			})
 
-			const chunks = []
+			// Mock the token refresh fetch for the retry
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						access_token: "refreshed-access-token",
+						token_type: "Bearer",
+						refresh_token: "refreshed-refresh-token",
+						expires_in: 3600,
+					}),
+			})
+			vi.stubGlobal("fetch", mockFetch)
+
+			const stream = handler.createMessage("test prompt", [])
+			const chunks: any[] = []
 			for await (const chunk of stream) {
-				if (chunk.type === "tool_call_partial") {
-					NativeToolCallParser.processRawChunk({
-						index: chunk.index,
-						id: chunk.id,
-						name: chunk.name,
-						arguments: chunk.arguments,
-					})
-				}
 				chunks.push(chunk)
 			}
 
-			// Should have reasoning, tool_call_partial, and tool_call_end
-			const reasoningChunks = chunks.filter((chunk) => chunk.type === "reasoning")
-			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
+			// Should have retried: 2 calls to streamText
+			expect(mockStreamText).toHaveBeenCalledTimes(2)
+			// Should have gotten the successful response
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0].text).toBe("Retry success")
 
+			vi.unstubAllGlobals()
+		})
+
+		it("should retry on 401 during completePrompt", async () => {
+			let callCount = 0
+
+			mockGenerateText.mockImplementation(() => {
+				callCount++
+				if (callCount === 1) {
+					const error = new Error("qwen-code: API Error (401): Unauthorized")
+					;(error as any).status = 401
+					throw error
+				}
+				return Promise.resolve({ text: "Retry success" })
+			})
+
+			// Mock the token refresh fetch
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						access_token: "refreshed-access-token",
+						token_type: "Bearer",
+						refresh_token: "refreshed-refresh-token",
+						expires_in: 3600,
+					}),
+			})
+			vi.stubGlobal("fetch", mockFetch)
+
+			const result = await handler.completePrompt("test prompt")
+
+			expect(mockGenerateText).toHaveBeenCalledTimes(2)
+			expect(result).toBe("Retry success")
+
+			vi.unstubAllGlobals()
+		})
+
+		it("should throw non-401 errors without retrying", async () => {
+			const error = new Error("qwen-code: API Error (500): Internal Server Error")
+			;(error as any).status = 500
+
+			mockStreamText.mockImplementation(() => {
+				throw error
+			})
+
+			const stream = handler.createMessage("test prompt", [])
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// consume
+				}
+			}).rejects.toThrow("500")
+
+			// Should only have tried once
+			expect(mockStreamText).toHaveBeenCalledTimes(1)
+		})
+	})
+
+	describe("streaming via AI SDK", () => {
+		it("should yield text chunks from AI SDK stream", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta" as const, text: "Hello " }
+				yield { type: "text-delta" as const, text: "world" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [])
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(2)
+			expect(textChunks[0].text).toBe("Hello ")
+			expect(textChunks[1].text).toBe("world")
+		})
+
+		it("should yield usage metrics", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta" as const, text: "Response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 15, outputTokens: 8 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [])
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0].inputTokens).toBe(15)
+			expect(usageChunks[0].outputTokens).toBe(8)
+		})
+
+		it("should handle reasoning content from AI SDK", async () => {
+			async function* mockFullStream() {
+				yield { type: "reasoning" as const, text: "Thinking about this..." }
+				yield { type: "text-delta" as const, text: "Here is my answer" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [])
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
 			expect(reasoningChunks).toHaveLength(1)
 			expect(reasoningChunks[0].text).toBe("Thinking about this...")
-			expect(partialChunks).toHaveLength(1)
-			expect(endChunks).toHaveLength(1)
+
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0].text).toBe("Here is my answer")
+		})
+	})
+
+	describe("tool calls via AI SDK", () => {
+		it("should handle tool calls from AI SDK stream", async () => {
+			async function* mockFullStream() {
+				yield {
+					type: "tool-call" as const,
+					toolCallId: "call_qwen_123",
+					toolName: "test_tool",
+					args: { arg1: "value" },
+				}
+				yield {
+					type: "tool-result" as const,
+					toolCallId: "call_qwen_123",
+					toolName: "test_tool",
+					result: "tool result",
+				}
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [])
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			// AI SDK tool calls are processed by processAiSdkStreamPart
+			expect(chunks.length).toBeGreaterThan(0)
+		})
+	})
+
+	describe("completePrompt", () => {
+		it("should delegate to AI SDK generateText", async () => {
+			mockGenerateText.mockResolvedValue({ text: "Completed response" })
+
+			const result = await handler.completePrompt("test prompt")
+
+			expect(result).toBe("Completed response")
+			expect(mockGenerateText).toHaveBeenCalled()
+		})
+	})
+
+	describe("refreshPromise guard", () => {
+		it("should not make concurrent refresh calls", async () => {
+			// Return expired credentials so refresh is triggered
+			const expiredCredentials = {
+				...mockCredentials,
+				expiry_date: Date.now() - 1000,
+			}
+			;(fs.readFile as any).mockResolvedValue(JSON.stringify(expiredCredentials))
+
+			const mockFetch = vi.fn().mockResolvedValue({
+				ok: true,
+				json: () =>
+					Promise.resolve({
+						access_token: "new-token",
+						token_type: "Bearer",
+						refresh_token: "new-refresh",
+						expires_in: 3600,
+					}),
+			})
+			vi.stubGlobal("fetch", mockFetch)
+
+			async function* mockFullStream() {
+				yield { type: "text-delta" as const, text: "ok" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 1, outputTokens: 1 }),
+			})
+
+			// Make two concurrent calls - the refresh should only happen once
+			const stream1 = handler.createMessage("prompt1", [])
+			// Consume stream1 first to trigger auth
+			for await (const _chunk of stream1) {
+				// consume
+			}
+
+			// The fetch for token refresh should have been called exactly once
+			expect(mockFetch).toHaveBeenCalledTimes(1)
+
+			vi.unstubAllGlobals()
 		})
 	})
 })

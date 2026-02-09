@@ -1,6 +1,7 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { Tiktoken } from "tiktoken/lite"
 import o200kBase from "tiktoken/encoders/o200k_base"
+
+import type { NeutralContentBlock, NeutralToolUseBlock, NeutralToolResultBlock } from "../core/task-persistence"
 
 const TOKEN_FUDGE_FACTOR = 1.5
 
@@ -10,8 +11,8 @@ let encoder: Tiktoken | null = null
  * Serializes a tool_use block to text for token counting.
  * Approximates how the API sees the tool call.
  */
-function serializeToolUse(block: Anthropic.Messages.ToolUseBlockParam): string {
-	const parts = [`Tool: ${block.name}`]
+function serializeToolUse(block: NeutralToolUseBlock): string {
+	const parts = [`Tool: ${block.toolName}`]
 	if (block.input !== undefined) {
 		try {
 			parts.push(`Arguments: ${JSON.stringify(block.input)}`)
@@ -26,19 +27,20 @@ function serializeToolUse(block: Anthropic.Messages.ToolUseBlockParam): string {
  * Serializes a tool_result block to text for token counting.
  * Handles both string content and array content.
  */
-function serializeToolResult(block: Anthropic.Messages.ToolResultBlockParam): string {
-	const parts = [`Tool Result (${block.tool_use_id})`]
+function serializeToolResult(block: NeutralToolResultBlock): string {
+	const parts = [`Tool Result (${block.toolCallId})`]
 
-	if (block.is_error) {
+	const isError = block.output?.type === "error-text" || block.output?.type === "error-json"
+	if (isError) {
 		parts.push(`[Error]`)
 	}
 
-	const content = block.content
-	if (typeof content === "string") {
-		parts.push(content)
-	} else if (Array.isArray(content)) {
+	const output = block.output
+	if (output?.type === "text" || output?.type === "error-text") {
+		parts.push(output.value)
+	} else if (output?.type === "content") {
 		// Handle array of content blocks recursively
-		for (const item of content) {
+		for (const item of output.value as Array<any>) {
 			if (item.type === "text") {
 				parts.push(item.text || "")
 			} else if (item.type === "image") {
@@ -47,12 +49,14 @@ function serializeToolResult(block: Anthropic.Messages.ToolResultBlockParam): st
 				parts.push(`[Unsupported content block: ${String((item as { type?: unknown }).type)}]`)
 			}
 		}
+	} else if (output?.type === "json" || output?.type === "error-json") {
+		parts.push(JSON.stringify(output.value))
 	}
 
 	return parts.join("\n")
 }
 
-export async function tiktoken(content: Anthropic.Messages.ContentBlockParam[]): Promise<number> {
+export async function tiktoken(content: NeutralContentBlock[]): Promise<number> {
 	if (content.length === 0) {
 		return 0
 	}
@@ -75,24 +79,23 @@ export async function tiktoken(content: Anthropic.Messages.ContentBlockParam[]):
 			}
 		} else if (block.type === "image") {
 			// For images, calculate based on data size.
-			const imageSource = block.source
+			const imageData = block.image
 
-			if (imageSource && typeof imageSource === "object" && "data" in imageSource) {
-				const base64Data = imageSource.data as string
-				totalTokens += Math.ceil(Math.sqrt(base64Data.length))
+			if (imageData && typeof imageData === "string") {
+				totalTokens += Math.ceil(Math.sqrt(imageData.length))
 			} else {
 				totalTokens += 300 // Conservative estimate for unknown images
 			}
-		} else if (block.type === "tool_use") {
-			// Serialize tool_use block to text and count tokens
-			const serialized = serializeToolUse(block as Anthropic.Messages.ToolUseBlockParam)
+		} else if (block.type === "tool-call") {
+			// Serialize tool-call block to text and count tokens
+			const serialized = serializeToolUse(block as NeutralToolUseBlock)
 			if (serialized.length > 0) {
 				const tokens = encoder.encode(serialized, undefined, [])
 				totalTokens += tokens.length
 			}
-		} else if (block.type === "tool_result") {
-			// Serialize tool_result block to text and count tokens
-			const serialized = serializeToolResult(block as Anthropic.Messages.ToolResultBlockParam)
+		} else if (block.type === "tool-result") {
+			// Serialize tool-result block to text and count tokens
+			const serialized = serializeToolResult(block as NeutralToolResultBlock)
 			if (serialized.length > 0) {
 				const tokens = encoder.encode(serialized, undefined, [])
 				totalTokens += tokens.length

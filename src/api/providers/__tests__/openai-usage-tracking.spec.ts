@@ -1,94 +1,32 @@
 // npx vitest run api/providers/__tests__/openai-usage-tracking.spec.ts
 
-import { Anthropic } from "@anthropic-ai/sdk"
+const { mockStreamText } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+}))
 
-import { ApiHandlerOptions } from "../../../shared/api"
-import { OpenAiHandler } from "../openai"
-
-const mockCreate = vitest.fn()
-
-vitest.mock("openai", () => {
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
 	return {
-		__esModule: true,
-		default: vitest.fn().mockImplementation(() => ({
-			chat: {
-				completions: {
-					create: mockCreate.mockImplementation(async (options) => {
-						if (!options.stream) {
-							return {
-								id: "test-completion",
-								choices: [
-									{
-										message: { role: "assistant", content: "Test response", refusal: null },
-										finish_reason: "stop",
-										index: 0,
-									},
-								],
-								usage: {
-									prompt_tokens: 10,
-									completion_tokens: 5,
-									total_tokens: 15,
-								},
-							}
-						}
-
-						// Return a stream with multiple chunks that include usage metrics
-						return {
-							[Symbol.asyncIterator]: async function* () {
-								// First chunk with partial usage
-								yield {
-									choices: [
-										{
-											delta: { content: "Test " },
-											index: 0,
-										},
-									],
-									usage: {
-										prompt_tokens: 10,
-										completion_tokens: 2,
-										total_tokens: 12,
-									},
-								}
-
-								// Second chunk with updated usage
-								yield {
-									choices: [
-										{
-											delta: { content: "response" },
-											index: 0,
-										},
-									],
-									usage: {
-										prompt_tokens: 10,
-										completion_tokens: 4,
-										total_tokens: 14,
-									},
-								}
-
-								// Final chunk with complete usage
-								yield {
-									choices: [
-										{
-											delta: {},
-											index: 0,
-										},
-									],
-									usage: {
-										prompt_tokens: 10,
-										completion_tokens: 5,
-										total_tokens: 15,
-									},
-								}
-							},
-						}
-					}),
-				},
-			},
-		})),
+		...actual,
+		streamText: mockStreamText,
+		generateText: vi.fn(),
 	}
 })
 
-describe("OpenAiHandler with usage tracking fix", () => {
+vi.mock("@ai-sdk/openai", () => ({
+	createOpenAI: vi.fn(() => ({
+		chat: vi.fn(() => ({
+			modelId: "gpt-4",
+			provider: "openai.chat",
+		})),
+	})),
+}))
+
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
+import type { ApiHandlerOptions } from "../../../shared/api"
+import { OpenAiHandler } from "../openai"
+
+describe("OpenAiHandler with usage tracking (AI SDK)", () => {
 	let handler: OpenAiHandler
 	let mockOptions: ApiHandlerOptions
 
@@ -99,12 +37,12 @@ describe("OpenAiHandler with usage tracking fix", () => {
 			openAiBaseUrl: "https://api.openai.com/v1",
 		}
 		handler = new OpenAiHandler(mockOptions)
-		mockCreate.mockClear()
+		vi.clearAllMocks()
 	})
 
 	describe("usage metrics with streaming", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -117,6 +55,21 @@ describe("OpenAiHandler with usage tracking fix", () => {
 		]
 
 		it("should only yield usage metrics once at the end of the stream", async () => {
+			// AI SDK provides usage once after the stream completes
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test " }
+				yield { type: "text-delta", text: "response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 10,
+					outputTokens: 5,
+				}),
+				providerMetadata: Promise.resolve({}),
+			})
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
 			for await (const chunk of stream) {
@@ -136,51 +89,36 @@ describe("OpenAiHandler with usage tracking fix", () => {
 				type: "usage",
 				inputTokens: 10,
 				outputTokens: 5,
+				cacheWriteTokens: undefined,
+				cacheReadTokens: undefined,
 			})
 
-			// Check the usage chunk is the last one reported from the API
+			// Check the usage chunk is the last one
 			const lastChunk = chunks[chunks.length - 1]
 			expect(lastChunk.type).toBe("usage")
 			expect(lastChunk.inputTokens).toBe(10)
 			expect(lastChunk.outputTokens).toBe(5)
 		})
 
-		it("should handle case where usage is only in the final chunk", async () => {
-			// Override the mock for this specific test
-			mockCreate.mockImplementationOnce(async (options) => {
-				if (!options.stream) {
-					return {
-						id: "test-completion",
-						choices: [{ message: { role: "assistant", content: "Test response" } }],
-						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-					}
-				}
+		it("should handle case where usage includes cache details", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
 
-				return {
-					[Symbol.asyncIterator]: async function* () {
-						// First chunk with no usage
-						yield {
-							choices: [{ delta: { content: "Test " }, index: 0 }],
-							usage: null,
-						}
-
-						// Second chunk with no usage
-						yield {
-							choices: [{ delta: { content: "response" }, index: 0 }],
-							usage: null,
-						}
-
-						// Final chunk with usage data
-						yield {
-							choices: [{ delta: {}, index: 0 }],
-							usage: {
-								prompt_tokens: 10,
-								completion_tokens: 5,
-								total_tokens: 15,
-							},
-						}
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 10,
+					outputTokens: 5,
+					details: {
+						cachedInputTokens: 3,
 					},
-				}
+				}),
+				providerMetadata: Promise.resolve({
+					openai: {
+						cacheCreationInputTokens: 7,
+					},
+				}),
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
@@ -189,39 +127,27 @@ describe("OpenAiHandler with usage tracking fix", () => {
 				chunks.push(chunk)
 			}
 
-			// Check usage metrics
+			// Check usage metrics include cache info
 			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
 			expect(usageChunks).toHaveLength(1)
 			expect(usageChunks[0]).toEqual({
 				type: "usage",
 				inputTokens: 10,
 				outputTokens: 5,
+				cacheReadTokens: 3,
+				cacheWriteTokens: 7,
 			})
 		})
 
 		it("should handle case where no usage is provided", async () => {
-			// Override the mock for this specific test
-			mockCreate.mockImplementationOnce(async (options) => {
-				if (!options.stream) {
-					return {
-						id: "test-completion",
-						choices: [{ message: { role: "assistant", content: "Test response" } }],
-						usage: null,
-					}
-				}
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
 
-				return {
-					[Symbol.asyncIterator]: async function* () {
-						yield {
-							choices: [{ delta: { content: "Test response" }, index: 0 }],
-							usage: null,
-						}
-						yield {
-							choices: [{ delta: {}, index: 0 }],
-							usage: null,
-						}
-					},
-				}
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve(undefined),
+				providerMetadata: Promise.resolve({}),
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
@@ -230,7 +156,7 @@ describe("OpenAiHandler with usage tracking fix", () => {
 				chunks.push(chunk)
 			}
 
-			// Check we don't have any usage chunks
+			// Check we don't have any usage chunks when usage is undefined
 			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
 			expect(usageChunks).toHaveLength(0)
 		})

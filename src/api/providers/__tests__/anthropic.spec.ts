@@ -1,548 +1,201 @@
-// npx vitest run src/api/providers/__tests__/anthropic.spec.ts
+// npx vitest run api/providers/__tests__/anthropic.spec.ts
 
-import { AnthropicHandler } from "../anthropic"
-import { ApiHandlerOptions } from "../../../shared/api"
+// Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
+const { mockStreamText, mockGenerateText, mockCreateAnthropic } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+	mockCreateAnthropic: vi.fn(),
+}))
 
-// Mock TelemetryService
-vitest.mock("@roo-code/telemetry", () => ({
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
+	return {
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
+	}
+})
+
+vi.mock("@ai-sdk/anthropic", () => ({
+	createAnthropic: mockCreateAnthropic.mockImplementation(() => ({
+		chat: vi.fn((id: string) => ({ modelId: id, provider: "anthropic" })),
+	})),
+}))
+
+const mockCaptureException = vi.fn()
+
+vi.mock("@roo-code/telemetry", () => ({
 	TelemetryService: {
 		instance: {
-			captureException: vitest.fn(),
+			captureException: (...args: unknown[]) => mockCaptureException(...args),
 		},
 	},
 }))
 
-// Mock the AI SDK
-const mockStreamText = vitest.fn()
-const mockGenerateText = vitest.fn()
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
+import type { ApiHandlerOptions } from "../../../shared/api"
+import { AnthropicHandler } from "../anthropic"
 
-vitest.mock("ai", () => ({
-	streamText: (...args: any[]) => mockStreamText(...args),
-	generateText: (...args: any[]) => mockGenerateText(...args),
-	tool: vitest.fn(),
-	jsonSchema: vitest.fn(),
-	ToolSet: {},
-}))
-
-// Mock the @ai-sdk/anthropic provider
-const mockCreateAnthropic = vitest.fn()
-
-vitest.mock("@ai-sdk/anthropic", () => ({
-	createAnthropic: (...args: any[]) => mockCreateAnthropic(...args),
-}))
-
-// Mock ai-sdk transform utilities
-vitest.mock("../../transform/ai-sdk", () => ({
-	convertToAiSdkMessages: vitest.fn().mockReturnValue([{ role: "user", content: [{ type: "text", text: "Hello" }] }]),
-	convertToolsForAiSdk: vitest.fn().mockReturnValue(undefined),
-	processAiSdkStreamPart: vitest.fn().mockImplementation(function* (part: any) {
-		if (part.type === "text-delta") {
-			yield { type: "text", text: part.text }
-		} else if (part.type === "reasoning-delta") {
-			yield { type: "reasoning", text: part.text }
-		} else if (part.type === "tool-input-start") {
-			yield { type: "tool_call_start", id: part.id, name: part.toolName }
-		} else if (part.type === "tool-input-delta") {
-			yield { type: "tool_call_delta", id: part.id, delta: part.delta }
-		} else if (part.type === "tool-input-end") {
-			yield { type: "tool_call_end", id: part.id }
+// Helper: create a standard mock fullStream async generator
+function createMockFullStream(parts: Array<Record<string, unknown>>) {
+	return async function* () {
+		for (const part of parts) {
+			yield part
 		}
-	}),
-	mapToolChoice: vitest.fn().mockReturnValue(undefined),
-	handleAiSdkError: vitest.fn().mockImplementation((error: any) => error),
-}))
+	}
+}
 
-// Import mocked modules
-import { convertToAiSdkMessages, convertToolsForAiSdk, mapToolChoice } from "../../transform/ai-sdk"
-import { Anthropic } from "@anthropic-ai/sdk"
+// Helper: set up mock return value for streamText
+function mockStreamTextReturn(
+	parts: Array<Record<string, unknown>>,
+	usage = { inputTokens: 10, outputTokens: 5 },
+	providerMetadata: Record<string, unknown> = {},
+) {
+	mockStreamText.mockReturnValue({
+		fullStream: createMockFullStream(parts)(),
+		usage: Promise.resolve(usage),
+		providerMetadata: Promise.resolve(providerMetadata),
+	})
+}
 
-// Helper: create a mock provider function
-function createMockProviderFn() {
-	const providerFn = vitest.fn().mockReturnValue("mock-model")
-	return providerFn
+// Test subclass to expose protected methods
+class TestAnthropicHandler extends AnthropicHandler {
+	public testProcessUsageMetrics(
+		usage: { inputTokens?: number; outputTokens?: number },
+		providerMetadata?: Record<string, Record<string, unknown>>,
+		modelInfo?: Record<string, unknown>,
+	) {
+		return this.processUsageMetrics(usage, providerMetadata, modelInfo as any)
+	}
 }
 
 describe("AnthropicHandler", () => {
-	let handler: AnthropicHandler
-	let mockOptions: ApiHandlerOptions
-	let mockProviderFn: ReturnType<typeof createMockProviderFn>
+	const mockOptions: ApiHandlerOptions = {
+		apiKey: "test-api-key",
+		apiModelId: "claude-3-5-sonnet-20241022",
+	}
 
-	beforeEach(() => {
-		mockOptions = {
-			apiKey: "test-api-key",
-			apiModelId: "claude-3-5-sonnet-20241022",
-		}
-
-		mockProviderFn = createMockProviderFn()
-		mockCreateAnthropic.mockReturnValue(mockProviderFn)
-
-		handler = new AnthropicHandler(mockOptions)
-		vitest.clearAllMocks()
-
-		// Re-set mock defaults after clearAllMocks
-		mockCreateAnthropic.mockReturnValue(mockProviderFn)
-		vitest
-			.mocked(convertToAiSdkMessages)
-			.mockReturnValue([{ role: "user", content: [{ type: "text", text: "Hello" }] }])
-		vitest.mocked(convertToolsForAiSdk).mockReturnValue(undefined)
-		vitest.mocked(mapToolChoice).mockReturnValue(undefined)
-	})
+	beforeEach(() => vi.clearAllMocks())
 
 	describe("constructor", () => {
 		it("should initialize with provided options", () => {
+			const handler = new AnthropicHandler(mockOptions)
 			expect(handler).toBeInstanceOf(AnthropicHandler)
 			expect(handler.getModel().id).toBe(mockOptions.apiModelId)
 		})
 
-		it("should initialize with undefined API key and pass it through for env-var fallback", () => {
-			mockCreateAnthropic.mockClear()
-			const handlerWithoutKey = new AnthropicHandler({
+		it("should initialize with undefined API key", () => {
+			const handler = new AnthropicHandler({ ...mockOptions, apiKey: undefined })
+			expect(handler).toBeInstanceOf(AnthropicHandler)
+		})
+
+		it("should use custom base URL if provided", async () => {
+			const handler = new AnthropicHandler({
 				...mockOptions,
-				apiKey: undefined,
+				anthropicBaseUrl: "https://custom.anthropic.com",
 			})
-			expect(handlerWithoutKey).toBeInstanceOf(AnthropicHandler)
-			const callArgs = mockCreateAnthropic.mock.calls[0]![0]!
-			expect(callArgs.apiKey).toBeUndefined()
-		})
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
 
-		it("should use custom base URL if provided", () => {
-			const customBaseUrl = "https://custom.anthropic.com"
-			const handlerWithCustomUrl = new AnthropicHandler({
-				...mockOptions,
-				anthropicBaseUrl: customBaseUrl,
-			})
-			expect(handlerWithCustomUrl).toBeInstanceOf(AnthropicHandler)
-		})
-
-		it("use apiKey for passing token if anthropicUseAuthToken is not set", () => {
-			mockCreateAnthropic.mockClear()
-			const _ = new AnthropicHandler({
-				...mockOptions,
-			})
-			expect(mockCreateAnthropic).toHaveBeenCalledTimes(1)
-			const callArgs = mockCreateAnthropic.mock.calls[0]![0]!
-			expect(callArgs.apiKey).toEqual("test-api-key")
-			expect(callArgs.authToken).toBeUndefined()
-		})
-
-		it("use apiKey for passing token if anthropicUseAuthToken is set but custom base URL is not given", () => {
-			mockCreateAnthropic.mockClear()
-			const _ = new AnthropicHandler({
-				...mockOptions,
-				anthropicUseAuthToken: true,
-			})
-			expect(mockCreateAnthropic).toHaveBeenCalledTimes(1)
-			const callArgs = mockCreateAnthropic.mock.calls[0]![0]!
-			expect(callArgs.apiKey).toEqual("test-api-key")
-			expect(callArgs.authToken).toBeUndefined()
-		})
-
-		it("use authToken for passing token if both of anthropicBaseUrl and anthropicUseAuthToken are set", () => {
-			mockCreateAnthropic.mockClear()
-			const customBaseUrl = "https://custom.anthropic.com"
-			const _ = new AnthropicHandler({
-				...mockOptions,
-				anthropicBaseUrl: customBaseUrl,
-				anthropicUseAuthToken: true,
-			})
-			expect(mockCreateAnthropic).toHaveBeenCalledTimes(1)
-			const callArgs = mockCreateAnthropic.mock.calls[0]![0]!
-			expect(callArgs.authToken).toEqual("test-api-key")
-			expect(callArgs.apiKey).toBeUndefined()
-		})
-
-		it("should include 1M context beta header when enabled", () => {
-			mockCreateAnthropic.mockClear()
-			const _ = new AnthropicHandler({
-				...mockOptions,
-				apiModelId: "claude-sonnet-4-5",
-				anthropicBeta1MContext: true,
-			})
-			expect(mockCreateAnthropic).toHaveBeenCalledTimes(1)
-			const callArgs = mockCreateAnthropic.mock.calls[0]![0]!
-			expect(callArgs.headers["anthropic-beta"]).toContain("context-1m-2025-08-07")
-		})
-
-		it("should include output-128k beta for thinking model", () => {
-			mockCreateAnthropic.mockClear()
-			const _ = new AnthropicHandler({
-				...mockOptions,
-				apiModelId: "claude-3-7-sonnet-20250219:thinking",
-			})
-			expect(mockCreateAnthropic).toHaveBeenCalledTimes(1)
-			const callArgs = mockCreateAnthropic.mock.calls[0]![0]!
-			expect(callArgs.headers["anthropic-beta"]).toContain("output-128k-2025-02-19")
-		})
-	})
-
-	describe("createMessage", () => {
-		const systemPrompt = "You are a helpful assistant."
-
-		function setupStreamTextMock(parts: any[], usage?: any, providerMetadata?: any) {
-			const asyncIterable = {
-				async *[Symbol.asyncIterator]() {
-					for (const part of parts) {
-						yield part
-					}
-				},
-			}
-			mockStreamText.mockReturnValue({
-				fullStream: asyncIterable,
-				usage: Promise.resolve(usage || { inputTokens: 100, outputTokens: 50 }),
-				providerMetadata: Promise.resolve(
-					providerMetadata || {
-						anthropic: {
-							cacheCreationInputTokens: 20,
-							cacheReadInputTokens: 10,
-						},
-					},
-				),
-			})
-		}
-
-		it("should stream text content using AI SDK", async () => {
-			setupStreamTextMock([
-				{ type: "text-delta", text: "Hello" },
-				{ type: "text-delta", text: " world" },
-			])
-
-			const stream = handler.createMessage(systemPrompt, [
-				{
-					role: "user",
-					content: [{ type: "text" as const, text: "First message" }],
-				},
-			])
-
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Verify text content
-			const textChunks = chunks.filter((chunk) => chunk.type === "text")
-			expect(textChunks).toHaveLength(2)
-			expect(textChunks[0].text).toBe("Hello")
-			expect(textChunks[1].text).toBe(" world")
-
-			// Verify usage information
-			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
-			expect(usageChunks.length).toBeGreaterThan(0)
-		})
-
-		it("should handle prompt caching for supported models", async () => {
-			setupStreamTextMock(
-				[{ type: "text-delta", text: "Hello" }],
-				{ inputTokens: 100, outputTokens: 50 },
-				{
-					anthropic: {
-						cacheCreationInputTokens: 20,
-						cacheReadInputTokens: 10,
-					},
-				},
-			)
-
-			const stream = handler.createMessage(systemPrompt, [
-				{
-					role: "user",
-					content: [{ type: "text" as const, text: "First message" }],
-				},
-				{
-					role: "assistant",
-					content: [{ type: "text" as const, text: "Response" }],
-				},
-				{
-					role: "user",
-					content: [{ type: "text" as const, text: "Second message" }],
-				},
-			])
-
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			// Verify usage information includes cache metrics
-			const usageChunk = chunks.find(
-				(chunk) => chunk.type === "usage" && (chunk.cacheWriteTokens || chunk.cacheReadTokens),
-			)
-			expect(usageChunk).toBeDefined()
-			expect(usageChunk?.cacheWriteTokens).toBe(20)
-			expect(usageChunk?.cacheReadTokens).toBe(10)
-
-			// Verify streamText was called
-			expect(mockStreamText).toHaveBeenCalled()
-		})
-
-		it("should pass tools via AI SDK when tools are provided", async () => {
-			const mockTools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "get_weather",
-						description: "Get the current weather",
-						parameters: {
-							type: "object",
-							properties: {
-								location: { type: "string" },
-							},
-							required: ["location"],
-						},
-					},
-				},
-			]
-
-			setupStreamTextMock([{ type: "text-delta", text: "Weather check" }])
-
-			const stream = handler.createMessage(
-				systemPrompt,
-				[{ role: "user", content: [{ type: "text" as const, text: "What's the weather?" }] }],
-				{ taskId: "test-task", tools: mockTools },
-			)
-
+			const stream = handler.createMessage("test", [{ role: "user", content: "hello" }])
 			for await (const _chunk of stream) {
-				// Consume stream
+				// consume
 			}
 
-			// Verify tools were converted
-			expect(convertToolsForAiSdk).toHaveBeenCalled()
-			expect(mockStreamText).toHaveBeenCalled()
-		})
-
-		it("should handle tool_choice mapping", async () => {
-			setupStreamTextMock([{ type: "text-delta", text: "test" }])
-
-			const stream = handler.createMessage(
-				systemPrompt,
-				[{ role: "user", content: [{ type: "text" as const, text: "test" }] }],
-				{ taskId: "test-task", tool_choice: "auto" },
-			)
-
-			for await (const _chunk of stream) {
-				// Consume stream
-			}
-
-			expect(mapToolChoice).toHaveBeenCalledWith("auto")
-		})
-
-		it("should disable parallel tool use when parallelToolCalls is false", async () => {
-			setupStreamTextMock([{ type: "text-delta", text: "test" }])
-
-			const stream = handler.createMessage(
-				systemPrompt,
-				[{ role: "user", content: [{ type: "text" as const, text: "test" }] }],
-				{ taskId: "test-task", parallelToolCalls: false },
-			)
-
-			for await (const _chunk of stream) {
-				// Consume stream
-			}
-
-			expect(mockStreamText).toHaveBeenCalledWith(
+			expect(mockCreateAnthropic).toHaveBeenCalledWith(
 				expect.objectContaining({
-					providerOptions: expect.objectContaining({
-						anthropic: expect.objectContaining({
-							disableParallelToolUse: true,
-						}),
-					}),
+					baseURL: "https://custom.anthropic.com",
 				}),
 			)
 		})
 
-		it("should not set disableParallelToolUse when parallelToolCalls is true or undefined", async () => {
-			setupStreamTextMock([{ type: "text-delta", text: "test" }])
-
-			const stream = handler.createMessage(
-				systemPrompt,
-				[{ role: "user", content: [{ type: "text" as const, text: "test" }] }],
-				{ taskId: "test-task", parallelToolCalls: true },
-			)
-
-			for await (const _chunk of stream) {
-				// Consume stream
-			}
-
-			// providerOptions should not include disableParallelToolUse
-			const callArgs = mockStreamText.mock.calls[0]![0]
-			const anthropicOptions = callArgs?.providerOptions?.anthropic
-			expect(anthropicOptions?.disableParallelToolUse).toBeUndefined()
-		})
-
-		it("should handle tool call streaming via AI SDK", async () => {
-			setupStreamTextMock([
-				{ type: "tool-input-start", id: "toolu_123", toolName: "get_weather" },
-				{ type: "tool-input-delta", id: "toolu_123", delta: '{"location":' },
-				{ type: "tool-input-delta", id: "toolu_123", delta: '"London"}' },
-				{ type: "tool-input-end", id: "toolu_123" },
-			])
-
-			const stream = handler.createMessage(
-				systemPrompt,
-				[{ role: "user", content: [{ type: "text" as const, text: "What's the weather?" }] }],
-				{ taskId: "test-task" },
-			)
-
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const startChunk = chunks.find((c) => c.type === "tool_call_start")
-			expect(startChunk).toBeDefined()
-			expect(startChunk?.id).toBe("toolu_123")
-			expect(startChunk?.name).toBe("get_weather")
-
-			const deltaChunks = chunks.filter((c) => c.type === "tool_call_delta")
-			expect(deltaChunks).toHaveLength(2)
-
-			const endChunk = chunks.find((c) => c.type === "tool_call_end")
-			expect(endChunk).toBeDefined()
-		})
-
-		it("should capture thinking signature from stream events", async () => {
-			const testSignature = "test-thinking-signature"
-			setupStreamTextMock([
-				{
-					type: "reasoning-delta",
-					text: "thinking...",
-					providerMetadata: { anthropic: { signature: testSignature } },
-				},
-				{ type: "text-delta", text: "Answer" },
-			])
-
-			const stream = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test" }] },
-			])
-
-			for await (const _chunk of stream) {
-				// Consume stream
-			}
-
-			expect(handler.getThoughtSignature()).toBe(testSignature)
-		})
-
-		it("should capture redacted thinking blocks from stream events", async () => {
-			setupStreamTextMock([
-				{
-					type: "reasoning-delta",
-					text: "",
-					providerMetadata: { anthropic: { redactedData: "redacted-data-base64" } },
-				},
-				{ type: "text-delta", text: "Answer" },
-			])
-
-			const stream = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test" }] },
-			])
-
-			for await (const _chunk of stream) {
-				// Consume stream
-			}
-
-			const redactedBlocks = handler.getRedactedThinkingBlocks()
-			expect(redactedBlocks).toBeDefined()
-			expect(redactedBlocks).toHaveLength(1)
-			expect(redactedBlocks![0]).toEqual({
-				type: "redacted_thinking",
-				data: "redacted-data-base64",
+		it("should pass undefined baseURL when empty string provided", async () => {
+			const handler = new AnthropicHandler({
+				...mockOptions,
+				anthropicBaseUrl: "",
 			})
-		})
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
 
-		it("should reset thinking state between requests", async () => {
-			// First request with signature
-			setupStreamTextMock([
-				{
-					type: "reasoning-delta",
-					text: "thinking...",
-					providerMetadata: { anthropic: { signature: "sig-1" } },
-				},
-			])
-
-			const stream1 = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test 1" }] },
-			])
-			for await (const _chunk of stream1) {
-				// Consume
-			}
-			expect(handler.getThoughtSignature()).toBe("sig-1")
-
-			// Second request without signature
-			setupStreamTextMock([{ type: "text-delta", text: "plain answer" }])
-
-			const stream2 = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test 2" }] },
-			])
-			for await (const _chunk of stream2) {
-				// Consume
-			}
-			expect(handler.getThoughtSignature()).toBeUndefined()
-		})
-
-		it("should pass system prompt via system param with systemProviderOptions for cache control", async () => {
-			setupStreamTextMock([{ type: "text-delta", text: "test" }])
-
-			const stream = handler.createMessage(systemPrompt, [
-				{ role: "user", content: [{ type: "text" as const, text: "test" }] },
-			])
-
+			const stream = handler.createMessage("test", [{ role: "user", content: "hello" }])
 			for await (const _chunk of stream) {
-				// Consume
+				// consume
 			}
 
-			// Verify streamText was called with system + systemProviderOptions (not as a message)
-			const callArgs = mockStreamText.mock.calls[0]![0]
-			expect(callArgs.system).toBe(systemPrompt)
-			expect(callArgs.systemProviderOptions).toEqual({
-				anthropic: { cacheControl: { type: "ephemeral" } },
-			})
-			// System prompt should NOT be in the messages array
-			const systemMessages = callArgs.messages.filter((m: any) => m.role === "system")
-			expect(systemMessages).toHaveLength(0)
-		})
-	})
-
-	describe("completePrompt", () => {
-		it("should complete prompt successfully", async () => {
-			mockGenerateText.mockResolvedValueOnce({
-				text: "Test response",
-			})
-
-			const result = await handler.completePrompt("Test prompt")
-			expect(result).toBe("Test response")
-			expect(mockGenerateText).toHaveBeenCalledWith(
+			expect(mockCreateAnthropic).toHaveBeenCalledWith(
 				expect.objectContaining({
-					prompt: "Test prompt",
-					temperature: 0,
+					baseURL: undefined,
 				}),
 			)
 		})
 
-		it("should handle API errors", async () => {
-			const error = new Error("Anthropic completion error: API Error")
-			mockGenerateText.mockRejectedValueOnce(error)
-			await expect(handler.completePrompt("Test prompt")).rejects.toThrow()
+		it("should use apiKey when anthropicUseAuthToken is not set", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage("test", [{ role: "user", content: "hello" }])
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			expect(mockCreateAnthropic).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "test-api-key" }))
+			expect(mockCreateAnthropic.mock.calls[0][0]).not.toHaveProperty("authToken")
 		})
 
-		it("should handle empty response", async () => {
-			mockGenerateText.mockResolvedValueOnce({
-				text: "",
+		it("should use apiKey when anthropicUseAuthToken is set but no base URL", async () => {
+			const handler = new AnthropicHandler({
+				...mockOptions,
+				anthropicUseAuthToken: true,
 			})
-			const result = await handler.completePrompt("Test prompt")
-			expect(result).toBe("")
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage("test", [{ role: "user", content: "hello" }])
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			expect(mockCreateAnthropic).toHaveBeenCalledWith(expect.objectContaining({ apiKey: "test-api-key" }))
+			expect(mockCreateAnthropic.mock.calls[0][0]).not.toHaveProperty("authToken")
+		})
+
+		it("should use authToken when both anthropicBaseUrl and anthropicUseAuthToken are set", async () => {
+			const handler = new AnthropicHandler({
+				...mockOptions,
+				anthropicBaseUrl: "https://custom.anthropic.com",
+				anthropicUseAuthToken: true,
+			})
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage("test", [{ role: "user", content: "hello" }])
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			expect(mockCreateAnthropic).toHaveBeenCalledWith(
+				expect.objectContaining({
+					authToken: "test-api-key",
+					baseURL: "https://custom.anthropic.com",
+				}),
+			)
+			expect(mockCreateAnthropic.mock.calls[0][0]).not.toHaveProperty("apiKey")
+		})
+	})
+
+	describe("isAiSdkProvider", () => {
+		it("should return true", () => {
+			const handler = new AnthropicHandler(mockOptions)
+			expect(handler.isAiSdkProvider()).toBe(true)
 		})
 	})
 
 	describe("getModel", () => {
 		it("should return default model if no model ID is provided", () => {
-			const handlerWithoutModel = new AnthropicHandler({
-				...mockOptions,
-				apiModelId: undefined,
-			})
-			const model = handlerWithoutModel.getModel()
+			const handler = new AnthropicHandler({ ...mockOptions, apiModelId: undefined })
+			const model = handler.getModel()
 			expect(model.id).toBeDefined()
 			expect(model.info).toBeDefined()
 		})
 
 		it("should return specified model if valid model ID is provided", () => {
+			const handler = new AnthropicHandler(mockOptions)
 			const model = handler.getModel()
 			expect(model.id).toBe(mockOptions.apiModelId)
 			expect(model.info).toBeDefined()
@@ -552,7 +205,7 @@ describe("AnthropicHandler", () => {
 			expect(model.info.supportsPromptCache).toBe(true)
 		})
 
-		it("honors custom maxTokens for thinking models", () => {
+		it("should honor custom maxTokens for thinking models", () => {
 			const handler = new AnthropicHandler({
 				apiKey: "test-api-key",
 				apiModelId: "claude-3-7-sonnet-20250219:thinking",
@@ -566,7 +219,7 @@ describe("AnthropicHandler", () => {
 			expect(result.temperature).toBe(1.0)
 		})
 
-		it("does not honor custom maxTokens for non-thinking models", () => {
+		it("should not honor custom maxTokens for non-thinking models", () => {
 			const handler = new AnthropicHandler({
 				apiKey: "test-api-key",
 				apiModelId: "claude-3-7-sonnet-20250219",
@@ -578,6 +231,17 @@ describe("AnthropicHandler", () => {
 			expect(result.maxTokens).toBe(8192)
 			expect(result.reasoningBudget).toBeUndefined()
 			expect(result.temperature).toBe(0)
+		})
+
+		it("should strip :thinking suffix from model ID and include betas", () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-3-7-sonnet-20250219:thinking",
+			})
+
+			const model = handler.getModel()
+			expect(model.id).toBe("claude-3-7-sonnet-20250219")
+			expect(model.betas).toContain("output-128k-2025-02-19")
 		})
 
 		it("should handle Claude 4.5 Sonnet model correctly", () => {
@@ -605,19 +269,594 @@ describe("AnthropicHandler", () => {
 		})
 	})
 
-	describe("isAiSdkProvider", () => {
-		it("should return true", () => {
-			expect(handler.isAiSdkProvider()).toBe(true)
+	describe("createMessage", () => {
+		const systemPrompt = "You are a helpful assistant."
+		const messages: NeutralMessageParam[] = [{ role: "user", content: [{ type: "text" as const, text: "Hello!" }] }]
+
+		it("should handle streaming text responses", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "Test response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0].text).toBe("Test response")
+		})
+
+		it("should include usage information", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }], { inputTokens: 100, outputTokens: 50 })
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk.inputTokens).toBe(100)
+			expect(usageChunk.outputTokens).toBe(50)
+		})
+
+		it("should include Anthropic cache metrics from providerMetadata", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn(
+				[{ type: "text-delta", text: "response" }],
+				{ inputTokens: 100, outputTokens: 50 },
+				{
+					anthropic: {
+						cacheCreationInputTokens: 20,
+						cacheReadInputTokens: 10,
+					},
+				},
+			)
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunk = chunks.find((c) => c.type === "usage")
+			expect(usageChunk).toBeDefined()
+			expect(usageChunk.cacheWriteTokens).toBe(20)
+			expect(usageChunk.cacheReadTokens).toBe(10)
+		})
+
+		it("should apply cache control to system prompt for prompt-caching models", async () => {
+			const handler = new AnthropicHandler(mockOptions) // claude-3-5-sonnet supports prompt cache
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.system).toEqual(
+				expect.objectContaining({
+					role: "system",
+					content: systemPrompt,
+					providerOptions: expect.objectContaining({
+						anthropic: { cacheControl: { type: "ephemeral" } },
+					}),
+				}),
+			)
+		})
+
+		it("should apply cache breakpoints to last 2 user messages", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const multiMessages: NeutralMessageParam[] = [
+				{ role: "user", content: [{ type: "text" as const, text: "First message" }] },
+				{ role: "assistant", content: [{ type: "text" as const, text: "Response" }] },
+				{ role: "user", content: [{ type: "text" as const, text: "Second message" }] },
+			]
+
+			const stream = handler.createMessage(systemPrompt, multiMessages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			const aiSdkMessages = callArgs.messages
+			const userMessages = aiSdkMessages.filter((m: any) => m.role === "user")
+
+			// Both user messages should have cache control applied
+			for (const msg of userMessages) {
+				const content = Array.isArray(msg.content) ? msg.content : [msg.content]
+				const lastTextPart = [...content].reverse().find((p: any) => typeof p === "object" && p.type === "text")
+				if (lastTextPart) {
+					expect(lastTextPart.providerOptions).toEqual({
+						anthropic: { cacheControl: { type: "ephemeral" } },
+					})
+				}
+			}
+		})
+
+		it("should pass temperature 0 as default", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.temperature).toBe(0)
+		})
+
+		it("should include maxOutputTokens from model info", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.maxOutputTokens).toBe(8192)
+		})
+
+		it("should handle reasoning stream parts", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([
+				{ type: "reasoning", text: "Let me think..." },
+				{ type: "text-delta", text: "The answer is 42" },
+			])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			expect(reasoningChunks).toHaveLength(1)
+			expect(reasoningChunks[0].text).toBe("Let me think...")
+
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0].text).toBe("The answer is 42")
+		})
+
+		it("should handle tool calls via AI SDK stream parts", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([
+				{ type: "tool-input-start", id: "toolu_123", toolName: "get_weather" },
+				{ type: "tool-input-delta", id: "toolu_123", delta: '{"location":' },
+				{ type: "tool-input-delta", id: "toolu_123", delta: '"London"}' },
+				{ type: "tool-input-end", id: "toolu_123" },
+			])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallStart = chunks.filter((c) => c.type === "tool_call_start")
+			expect(toolCallStart).toHaveLength(1)
+			expect(toolCallStart[0].id).toBe("toolu_123")
+			expect(toolCallStart[0].name).toBe("get_weather")
+
+			const toolCallDeltas = chunks.filter((c) => c.type === "tool_call_delta")
+			expect(toolCallDeltas).toHaveLength(2)
+
+			const toolCallEnd = chunks.filter((c) => c.type === "tool_call_end")
+			expect(toolCallEnd).toHaveLength(1)
+		})
+
+		it("should include tools in streamText call when tools are provided", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const mockTools = [
+				{
+					type: "function" as const,
+					function: {
+						name: "get_weather",
+						description: "Get the current weather",
+						parameters: {
+							type: "object",
+							properties: { location: { type: "string" } },
+							required: ["location"],
+						},
+					},
+				},
+			]
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tools: mockTools,
+			})
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.tools).toBeDefined()
+			expect(callArgs.tools.get_weather).toBeDefined()
+		})
+
+		it("should pass tool_choice 'auto' via mapToolChoice", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tool_choice: "auto",
+			})
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.toolChoice).toBe("auto")
+		})
+
+		it("should pass tool_choice 'required' via mapToolChoice", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tool_choice: "required",
+			})
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.toolChoice).toBe("required")
+		})
+
+		it("should pass tool_choice 'none' via mapToolChoice", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tool_choice: "none",
+			})
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.toolChoice).toBe("none")
+		})
+
+		it("should convert specific tool_choice to AI SDK format", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tool_choice: { type: "function" as const, function: { name: "get_weather" } },
+			})
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.toolChoice).toEqual({ type: "tool", toolName: "get_weather" })
+		})
+
+		it("should include anthropic-beta header with fine-grained-tool-streaming and prompt-caching", async () => {
+			const handler = new AnthropicHandler(mockOptions) // claude-3-5-sonnet supports prompt cache
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.headers).toBeDefined()
+			const betas: string = callArgs.headers["anthropic-beta"]
+			expect(betas).toContain("fine-grained-tool-streaming-2025-05-14")
+			expect(betas).toContain("prompt-caching-2024-07-31")
+		})
+
+		it("should include context-1m beta for supported models when enabled", async () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-sonnet-4-5",
+				anthropicBeta1MContext: true,
+			})
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.headers["anthropic-beta"]).toContain("context-1m-2025-08-07")
+		})
+
+		it("should not include context-1m beta for unsupported models", async () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-3-5-sonnet-20241022",
+				anthropicBeta1MContext: true,
+			})
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.headers["anthropic-beta"]).not.toContain("context-1m-2025-08-07")
+		})
+
+		it("should include output-128k beta for :thinking models", async () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-3-7-sonnet-20250219:thinking",
+			})
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.headers["anthropic-beta"]).toContain("output-128k-2025-02-19")
+		})
+
+		it("should set providerOptions with thinking for thinking models", async () => {
+			const handler = new AnthropicHandler({
+				apiKey: "test-api-key",
+				apiModelId: "claude-3-7-sonnet-20250219:thinking",
+				modelMaxTokens: 32_768,
+				modelMaxThinkingTokens: 16_384,
+			})
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions).toBeDefined()
+			expect(callArgs.providerOptions.anthropic.thinking).toEqual({
+				type: "enabled",
+				budgetTokens: 16_384,
+			})
+		})
+
+		it("should not set providerOptions for non-thinking models", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamTextReturn([{ type: "text-delta", text: "response" }])
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions).toBeUndefined()
+		})
+
+		it("should handle API errors and capture telemetry", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamText.mockReturnValue({
+				fullStream: (async function* () {
+					yield { type: "text-delta" as const, text: "" }
+					throw new Error("API Error")
+				})(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// consume
+				}
+			}).rejects.toThrow("API Error")
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "API Error",
+					provider: "Anthropic",
+					modelId: mockOptions.apiModelId,
+					operation: "createMessage",
+				}),
+			)
 		})
 	})
 
-	describe("thinking signature", () => {
-		it("should return undefined when no signature captured", () => {
-			expect(handler.getThoughtSignature()).toBeUndefined()
+	describe("completePrompt", () => {
+		it("should complete prompt successfully", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockGenerateText.mockResolvedValue({ text: "Test response" })
+
+			const result = await handler.completePrompt("Test prompt")
+			expect(result).toBe("Test response")
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					prompt: "Test prompt",
+					temperature: 0,
+				}),
+			)
 		})
 
-		it("should return undefined for redacted blocks when none captured", () => {
-			expect(handler.getRedactedThinkingBlocks()).toBeUndefined()
+		it("should handle API errors and capture telemetry", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockGenerateText.mockRejectedValue(new Error("API Error"))
+
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("API Error")
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "API Error",
+					provider: "Anthropic",
+					modelId: mockOptions.apiModelId,
+					operation: "completePrompt",
+				}),
+			)
+		})
+
+		it("should handle empty response", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockGenerateText.mockResolvedValue({ text: "" })
+
+			const result = await handler.completePrompt("Test prompt")
+			expect(result).toBe("")
+		})
+
+		it("should pass model and temperature to generateText", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockGenerateText.mockResolvedValue({ text: "response" })
+
+			await handler.completePrompt("Test prompt")
+
+			const callArgs = mockGenerateText.mock.calls[0][0]
+			expect(callArgs.prompt).toBe("Test prompt")
+			expect(callArgs.temperature).toBe(0)
+			expect(callArgs.model).toBeDefined()
+		})
+	})
+
+	describe("processUsageMetrics", () => {
+		it("should correctly process basic usage metrics", () => {
+			const handler = new TestAnthropicHandler(mockOptions)
+			const result = handler.testProcessUsageMetrics({ inputTokens: 100, outputTokens: 50 }, undefined, {
+				inputPrice: 3.0,
+				outputPrice: 15.0,
+			})
+
+			expect(result.type).toBe("usage")
+			expect(result.inputTokens).toBe(100)
+			expect(result.outputTokens).toBe(50)
+			expect(result.cacheWriteTokens).toBeUndefined()
+			expect(result.cacheReadTokens).toBeUndefined()
+		})
+
+		it("should extract Anthropic cache metrics from provider metadata", () => {
+			const handler = new TestAnthropicHandler(mockOptions)
+			const result = handler.testProcessUsageMetrics(
+				{ inputTokens: 100, outputTokens: 50 },
+				{
+					anthropic: {
+						cacheCreationInputTokens: 20,
+						cacheReadInputTokens: 10,
+					},
+				},
+				{
+					inputPrice: 3.0,
+					outputPrice: 15.0,
+					cacheWritesPrice: 3.75,
+					cacheReadsPrice: 0.3,
+				},
+			)
+
+			expect(result.cacheWriteTokens).toBe(20)
+			expect(result.cacheReadTokens).toBe(10)
+			expect(result.totalCost).toBeDefined()
+			expect(result.totalCost).toBeGreaterThan(0)
+		})
+
+		it("should handle missing provider metadata gracefully", () => {
+			const handler = new TestAnthropicHandler(mockOptions)
+			const result = handler.testProcessUsageMetrics({ inputTokens: 100, outputTokens: 50 }, undefined, {
+				inputPrice: 3.0,
+				outputPrice: 15.0,
+			})
+
+			expect(result.cacheWriteTokens).toBeUndefined()
+			expect(result.cacheReadTokens).toBeUndefined()
+		})
+
+		it("should calculate cost using Anthropic-specific pricing", () => {
+			const handler = new TestAnthropicHandler(mockOptions)
+			const result = handler.testProcessUsageMetrics(
+				{ inputTokens: 1000, outputTokens: 500 },
+				{
+					anthropic: {
+						cacheCreationInputTokens: 200,
+						cacheReadInputTokens: 100,
+					},
+				},
+				{
+					inputPrice: 3.0,
+					outputPrice: 15.0,
+					cacheWritesPrice: 3.75,
+					cacheReadsPrice: 0.3,
+				},
+			)
+
+			// Cost = (3.0/1M * 1000) + (15.0/1M * 500) + (3.75/1M * 200) + (0.3/1M * 100)
+			const expectedCost = (3.0 * 1000 + 15.0 * 500 + 3.75 * 200 + 0.3 * 100) / 1_000_000
+			expect(result.totalCost).toBeCloseTo(expectedCost, 10)
+		})
+	})
+
+	describe("error handling", () => {
+		const testMessages: NeutralMessageParam[] = [
+			{ role: "user", content: [{ type: "text" as const, text: "Hello" }] },
+		]
+
+		it("should capture telemetry when createMessage stream throws", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockStreamText.mockReturnValue({
+				fullStream: (async function* () {
+					yield { type: "text-delta" as const, text: "" }
+					throw new Error("Connection failed")
+				})(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const stream = handler.createMessage("test", testMessages)
+
+			await expect(async () => {
+				for await (const _chunk of stream) {
+					// consume
+				}
+			}).rejects.toThrow()
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Connection failed",
+					provider: "Anthropic",
+					modelId: mockOptions.apiModelId,
+					operation: "createMessage",
+				}),
+			)
+		})
+
+		it("should capture telemetry when completePrompt throws", async () => {
+			const handler = new AnthropicHandler(mockOptions)
+			mockGenerateText.mockRejectedValue(new Error("Unexpected error"))
+
+			await expect(handler.completePrompt("test")).rejects.toThrow("Unexpected error")
+
+			expect(mockCaptureException).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: "Unexpected error",
+					provider: "Anthropic",
+					modelId: mockOptions.apiModelId,
+					operation: "completePrompt",
+				}),
+			)
 		})
 	})
 })

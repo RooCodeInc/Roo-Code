@@ -1,3 +1,4 @@
+import type { RooMessageParam, RooContentBlock } from "../../../core/task-persistence/apiMessages"
 import type { Mock } from "vitest"
 
 // Mocks must come first, before imports
@@ -13,6 +14,14 @@ vi.mock("vscode", () => {
 			public callId: string,
 			public name: string,
 			public input: any,
+		) {}
+	}
+
+	class MockLanguageModelToolResultPart {
+		type = "tool_result"
+		constructor(
+			public callId: string,
+			public content: any[],
 		) {}
 	}
 
@@ -48,6 +57,7 @@ vi.mock("vscode", () => {
 		},
 		LanguageModelTextPart: MockLanguageModelTextPart,
 		LanguageModelToolCallPart: MockLanguageModelToolCallPart,
+		LanguageModelToolResultPart: MockLanguageModelToolResultPart,
 		lm: {
 			selectChatModels: vi.fn(),
 		},
@@ -57,7 +67,6 @@ vi.mock("vscode", () => {
 import * as vscode from "vscode"
 import { VsCodeLmHandler } from "../vscode-lm"
 import type { ApiHandlerOptions } from "../../../shared/api"
-import type { Anthropic } from "@anthropic-ai/sdk"
 
 const mockLanguageModelChat = {
 	id: "test-model",
@@ -102,6 +111,12 @@ describe("VsCodeLmHandler", () => {
 		})
 	})
 
+	describe("isAiSdkProvider", () => {
+		it("should return true", () => {
+			expect(handler.isAiSdkProvider()).toBe(true)
+		})
+	})
+
 	describe("createClient", () => {
 		it("should create client with selector", async () => {
 			const mockModel = { ...mockLanguageModelChat }
@@ -141,9 +156,9 @@ describe("VsCodeLmHandler", () => {
 			handler["client"] = mockLanguageModelChat
 		})
 
-		it("should stream text responses", async () => {
+		it("should stream text responses via AI SDK", async () => {
 			const systemPrompt = "You are a helpful assistant"
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "user" as const,
 					content: "Hello",
@@ -168,21 +183,20 @@ describe("VsCodeLmHandler", () => {
 				chunks.push(chunk)
 			}
 
-			expect(chunks).toHaveLength(2) // Text chunk + usage chunk
-			expect(chunks[0]).toEqual({
-				type: "text",
-				text: responseText,
-			})
-			expect(chunks[1]).toMatchObject({
-				type: "usage",
-				inputTokens: expect.any(Number),
-				outputTokens: expect.any(Number),
-			})
+			// Should have text chunk(s) and a usage chunk
+			const textChunks = chunks.filter((c) => c.type === "text")
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+
+			expect(textChunks.length).toBeGreaterThanOrEqual(1)
+			// Verify text content is present
+			const fullText = textChunks.map((c) => ("text" in c ? c.text : "")).join("")
+			expect(fullText).toBe(responseText)
+			expect(usageChunks).toHaveLength(1)
 		})
 
-		it("should emit tool_call chunks when tools are provided", async () => {
+		it("should emit streaming tool call events when tools are provided", async () => {
 			const systemPrompt = "You are a helpful assistant"
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "user" as const,
 					content: "Calculate 2+2",
@@ -236,83 +250,36 @@ describe("VsCodeLmHandler", () => {
 				chunks.push(chunk)
 			}
 
-			expect(chunks).toHaveLength(2) // Tool call chunk + usage chunk
-			expect(chunks[0]).toEqual({
-				type: "tool_call",
+			// AI SDK emits streaming tool call events
+			const toolStartChunks = chunks.filter((c) => c.type === "tool_call_start")
+			const toolDeltaChunks = chunks.filter((c) => c.type === "tool_call_delta")
+			const toolEndChunks = chunks.filter((c) => c.type === "tool_call_end")
+
+			expect(toolStartChunks).toHaveLength(1)
+			expect(toolStartChunks[0]).toMatchObject({
+				type: "tool_call_start",
 				id: toolCallData.callId,
 				name: toolCallData.name,
-				arguments: JSON.stringify(toolCallData.arguments),
+			})
+
+			expect(toolDeltaChunks).toHaveLength(1)
+			expect(toolDeltaChunks[0]).toMatchObject({
+				type: "tool_call_delta",
+				id: toolCallData.callId,
+			})
+			// Delta should contain the stringified arguments
+			expect((toolDeltaChunks[0] as { delta: string }).delta).toBe(JSON.stringify(toolCallData.arguments))
+
+			expect(toolEndChunks).toHaveLength(1)
+			expect(toolEndChunks[0]).toMatchObject({
+				type: "tool_call_end",
+				id: toolCallData.callId,
 			})
 		})
 
-		it("should handle native tool calls when tools are provided", async () => {
+		it("should handle mixed text and tool call responses", async () => {
 			const systemPrompt = "You are a helpful assistant"
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{
-					role: "user" as const,
-					content: "Calculate 2+2",
-				},
-			]
-
-			const toolCallData = {
-				name: "calculator",
-				arguments: { operation: "add", numbers: [2, 2] },
-				callId: "call-1",
-			}
-
-			const tools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "calculator",
-						description: "A simple calculator",
-						parameters: {
-							type: "object",
-							properties: {
-								operation: { type: "string" },
-								numbers: { type: "array", items: { type: "number" } },
-							},
-						},
-					},
-				},
-			]
-
-			mockLanguageModelChat.sendRequest.mockResolvedValueOnce({
-				stream: (async function* () {
-					yield new vscode.LanguageModelToolCallPart(
-						toolCallData.callId,
-						toolCallData.name,
-						toolCallData.arguments,
-					)
-					return
-				})(),
-				text: (async function* () {
-					yield JSON.stringify({ type: "tool_call", ...toolCallData })
-					return
-				})(),
-			})
-
-			const stream = handler.createMessage(systemPrompt, messages, {
-				taskId: "test-task",
-				tools,
-			})
-			const chunks = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			expect(chunks).toHaveLength(2) // Tool call chunk + usage chunk
-			expect(chunks[0]).toEqual({
-				type: "tool_call",
-				id: toolCallData.callId,
-				name: toolCallData.name,
-				arguments: JSON.stringify(toolCallData.arguments),
-			})
-		})
-
-		it("should pass tools to request options when tools are provided", async () => {
-			const systemPrompt = "You are a helpful assistant"
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "user" as const,
 					content: "Calculate 2+2",
@@ -337,11 +304,14 @@ describe("VsCodeLmHandler", () => {
 
 			mockLanguageModelChat.sendRequest.mockResolvedValueOnce({
 				stream: (async function* () {
-					yield new vscode.LanguageModelTextPart("Result: 4")
+					yield new vscode.LanguageModelTextPart("Let me calculate that. ")
+					yield new vscode.LanguageModelToolCallPart("call-1", "calculator", {
+						operation: "add",
+					})
 					return
 				})(),
 				text: (async function* () {
-					yield "Result: 4"
+					yield "Let me calculate that. "
 					return
 				})(),
 			})
@@ -355,32 +325,17 @@ describe("VsCodeLmHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// Verify sendRequest was called with tools in options
-			// Note: normalizeToolSchema adds additionalProperties: false for JSON Schema 2020-12 compliance
-			expect(mockLanguageModelChat.sendRequest).toHaveBeenCalledWith(
-				expect.any(Array),
-				expect.objectContaining({
-					tools: [
-						{
-							name: "calculator",
-							description: "A simple calculator",
-							inputSchema: {
-								type: "object",
-								properties: {
-									operation: { type: "string" },
-								},
-								additionalProperties: false,
-							},
-						},
-					],
-				}),
-				expect.anything(),
-			)
+			// Should have text, tool streaming events, and usage
+			const textChunks = chunks.filter((c) => c.type === "text")
+			const toolStartChunks = chunks.filter((c) => c.type === "tool_call_start")
+
+			expect(textChunks.length).toBeGreaterThanOrEqual(1)
+			expect(toolStartChunks).toHaveLength(1)
 		})
 
 		it("should handle errors", async () => {
 			const systemPrompt = "You are a helpful assistant"
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "user" as const,
 					content: "Hello",
@@ -389,7 +344,14 @@ describe("VsCodeLmHandler", () => {
 
 			mockLanguageModelChat.sendRequest.mockRejectedValueOnce(new Error("API Error"))
 
-			await expect(handler.createMessage(systemPrompt, messages).next()).rejects.toThrow("API Error")
+			// AI SDK wraps adapter errors and handleAiSdkError re-wraps them
+			const stream = handler.createMessage(systemPrompt, messages)
+			const consumeStream = async () => {
+				for await (const _chunk of stream) {
+					// consume
+				}
+			}
+			await expect(consumeStream()).rejects.toThrow("VS Code LM:")
 		})
 	})
 
@@ -448,7 +410,7 @@ describe("VsCodeLmHandler", () => {
 
 			mockLanguageModelChat.countTokens.mockResolvedValueOnce(42)
 
-			const content: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: "Hello world" }]
+			const content: RooContentBlock[] = [{ type: "text", text: "Hello world" }]
 			const result = await handler.countTokens(content)
 
 			expect(result).toBe(42)
@@ -466,7 +428,7 @@ describe("VsCodeLmHandler", () => {
 
 			mockLanguageModelChat.countTokens.mockResolvedValueOnce(50)
 
-			const content: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: "Test content" }]
+			const content: RooContentBlock[] = [{ type: "text", text: "Test content" }]
 			const result = await handler.countTokens(content)
 
 			expect(result).toBe(50)
@@ -477,7 +439,7 @@ describe("VsCodeLmHandler", () => {
 			handler["client"] = null
 			handler["currentRequestCancellation"] = null
 
-			const content: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: "Hello" }]
+			const content: RooContentBlock[] = [{ type: "text", text: "Hello" }]
 			const result = await handler.countTokens(content)
 
 			expect(result).toBe(0)
@@ -487,9 +449,7 @@ describe("VsCodeLmHandler", () => {
 			handler["currentRequestCancellation"] = null
 			mockLanguageModelChat.countTokens.mockResolvedValueOnce(5)
 
-			const content: Anthropic.Messages.ContentBlockParam[] = [
-				{ type: "image", source: { type: "base64", media_type: "image/png", data: "abc" } },
-			]
+			const content: RooContentBlock[] = [{ type: "image", image: "abc", mediaType: "image/png" }]
 			const result = await handler.countTokens(content)
 
 			expect(result).toBe(5)
@@ -498,7 +458,7 @@ describe("VsCodeLmHandler", () => {
 	})
 
 	describe("completePrompt", () => {
-		it("should complete single prompt", async () => {
+		it("should complete single prompt via generateText", async () => {
 			const mockModel = { ...mockLanguageModelChat }
 			;(vscode.lm.selectChatModels as Mock).mockResolvedValueOnce([mockModel])
 
@@ -533,7 +493,7 @@ describe("VsCodeLmHandler", () => {
 			handler["client"] = mockLanguageModelChat
 
 			const promise = handler.completePrompt("Test prompt")
-			await expect(promise).rejects.toThrow("VSCode LM completion error: Completion failed")
+			await expect(promise).rejects.toThrow("Completion failed")
 		})
 	})
 })

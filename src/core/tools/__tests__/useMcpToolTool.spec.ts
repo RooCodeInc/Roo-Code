@@ -79,9 +79,10 @@ describe("useMcpToolTool", () => {
 	describe("parameter validation", () => {
 		it("should handle missing server_name", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					tool_name: "test_tool",
 					arguments: "{}",
 				},
@@ -109,9 +110,10 @@ describe("useMcpToolTool", () => {
 
 		it("should handle missing tool_name", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "test_server",
 					arguments: "{}",
 				},
@@ -139,9 +141,10 @@ describe("useMcpToolTool", () => {
 
 		it("should handle invalid arguments type", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "test_server",
 					tool_name: "test_tool",
 					arguments: "invalid json",
@@ -187,9 +190,10 @@ describe("useMcpToolTool", () => {
 	describe("partial requests", () => {
 		it("should handle partial requests", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "test_server",
 					tool_name: "test_tool",
 					arguments: "{}",
@@ -212,9 +216,10 @@ describe("useMcpToolTool", () => {
 	describe("successful execution", () => {
 		it("should execute tool successfully with valid parameters", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "test_server",
 					tool_name: "test_tool",
 					arguments: '{"param": "value"}',
@@ -231,7 +236,6 @@ describe("useMcpToolTool", () => {
 
 			const mockToolResult = {
 				content: [{ type: "text", text: "Tool executed successfully" }],
-				isError: false,
 			}
 
 			mockProviderRef.deref.mockReturnValue({
@@ -256,9 +260,10 @@ describe("useMcpToolTool", () => {
 
 		it("should handle user rejection", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "test_server",
 					tool_name: "test_tool",
 					arguments: "{}",
@@ -301,9 +306,10 @@ describe("useMcpToolTool", () => {
 	describe("error handling", () => {
 		it("should handle unexpected errors", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "test_server",
 					tool_name: "test_tool",
 				},
@@ -362,9 +368,10 @@ describe("useMcpToolTool", () => {
 			})
 
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "test-server",
 					tool_name: "non-existing-tool",
 					arguments: JSON.stringify({ test: "data" }),
@@ -411,9 +418,10 @@ describe("useMcpToolTool", () => {
 			})
 
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "test-server",
 					tool_name: "any-tool",
 					arguments: JSON.stringify({ test: "data" }),
@@ -462,9 +470,10 @@ describe("useMcpToolTool", () => {
 			})
 
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "test-server",
 					tool_name: "valid-tool",
 					arguments: JSON.stringify({ test: "data" }),
@@ -507,9 +516,10 @@ describe("useMcpToolTool", () => {
 			})
 
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "unknown",
 					tool_name: "any-tool",
 					arguments: "{}",
@@ -552,9 +562,10 @@ describe("useMcpToolTool", () => {
 			})
 
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "unknown",
 					tool_name: "any-tool",
 					arguments: "{}",
@@ -609,9 +620,10 @@ describe("useMcpToolTool", () => {
 
 			// Model sends the mangled version with underscores
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "test-server",
 					tool_name: "get_user_profile", // Model mangled hyphens to underscores
 					arguments: "{}",
@@ -645,9 +657,10 @@ describe("useMcpToolTool", () => {
 	describe("image handling", () => {
 		it("should handle tool response with image content", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "figma-server",
 					tool_name: "get_screenshot",
 					arguments: '{"nodeId": "123"}',
@@ -670,7 +683,6 @@ describe("useMcpToolTool", () => {
 						data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ",
 					},
 				],
-				isError: false,
 			}
 
 			mockProviderRef.deref.mockReturnValue({
@@ -701,9 +713,10 @@ describe("useMcpToolTool", () => {
 
 		it("should handle tool response with both text and image content", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "figma-server",
 					tool_name: "get_node_info",
 					arguments: '{"nodeId": "123"}',
@@ -727,7 +740,6 @@ describe("useMcpToolTool", () => {
 						data: "base64imagedata",
 					},
 				],
-				isError: false,
 			}
 
 			mockProviderRef.deref.mockReturnValue({
@@ -757,9 +769,10 @@ describe("useMcpToolTool", () => {
 
 		it("should handle image with data URL already formatted", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "figma-server",
 					tool_name: "get_screenshot",
 					arguments: '{"nodeId": "123"}',
@@ -782,7 +795,6 @@ describe("useMcpToolTool", () => {
 						data: "data:image/jpeg;base64,/9j/4AAQSkZJRg==",
 					},
 				],
-				isError: false,
 			}
 
 			mockProviderRef.deref.mockReturnValue({
@@ -812,9 +824,10 @@ describe("useMcpToolTool", () => {
 
 		it("should handle multiple images in response", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "use_mcp_tool",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "use_mcp_tool",
+				input: {
 					server_name: "figma-server",
 					tool_name: "get_screenshots",
 					arguments: '{"nodeIds": ["1", "2"]}',
@@ -842,7 +855,6 @@ describe("useMcpToolTool", () => {
 						data: "image2data",
 					},
 				],
-				isError: false,
 			}
 
 			mockProviderRef.deref.mockReturnValue({

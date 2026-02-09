@@ -1,6 +1,5 @@
-import type { Anthropic } from "@anthropic-ai/sdk"
-import { createVertexAnthropic } from "@ai-sdk/google-vertex/anthropic"
-import { streamText, generateText, ToolSet } from "ai"
+import { createVertexAnthropic, type GoogleVertexAnthropicProvider } from "@ai-sdk/google-vertex/anthropic"
+import { streamText, generateText, type ToolSet, type SystemModelMessage } from "ai"
 
 import {
 	type ModelInfo,
@@ -13,11 +12,9 @@ import {
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
-import { shouldUseReasoningBudget } from "../../shared/api"
 
-import type { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
-import { getModelParams } from "../transform/model-params"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
@@ -25,294 +22,64 @@ import {
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
-import { calculateApiCostAnthropic } from "../../shared/cost"
+import type { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
+import { getModelParams } from "../transform/model-params"
+import { buildCachedSystemMessage, applyCacheBreakpoints } from "../transform/caching"
 
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { calculateApiCostAnthropic } from "../../shared/cost"
 
-// https://docs.anthropic.com/en/api/claude-on-vertex-ai
+/**
+ * Anthropic on Vertex AI provider using the AI SDK (@ai-sdk/google-vertex/anthropic).
+ * Supports extended thinking, prompt caching (4-block limit), 1M context beta, and cache cost metrics.
+ *
+ * @see https://docs.anthropic.com/en/api/claude-on-vertex-ai
+ */
 export class AnthropicVertexHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
-	private provider: ReturnType<typeof createVertexAnthropic>
-	private readonly providerName = "Vertex (Anthropic)"
-	private lastThoughtSignature: string | undefined
-	private lastRedactedThinkingBlocks: Array<{ type: "redacted_thinking"; data: string }> = []
+	private readonly providerName = "AnthropicVertex"
 
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
+	}
 
-		// https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude#regions
+	override isAiSdkProvider(): boolean {
+		return true
+	}
+
+	/**
+	 * Create the AI SDK Vertex Anthropic provider with appropriate configuration.
+	 * Handles three auth paths: JSON credentials, key file, or default ADC.
+	 */
+	protected createProvider(): GoogleVertexAnthropicProvider {
 		const projectId = this.options.vertexProjectId ?? "not-provided"
 		const region = this.options.vertexRegion ?? "us-east5"
 
 		// Build googleAuthOptions based on provided credentials
 		let googleAuthOptions: { credentials?: object; keyFile?: string } | undefined
-		if (options.vertexJsonCredentials) {
+
+		if (this.options.vertexJsonCredentials) {
 			try {
-				googleAuthOptions = { credentials: JSON.parse(options.vertexJsonCredentials) }
+				googleAuthOptions = { credentials: JSON.parse(this.options.vertexJsonCredentials) }
 			} catch {
-				// If JSON parsing fails, ignore and try other auth methods
+				// If JSON parsing fails, fall through to other auth methods
 			}
-		} else if (options.vertexKeyFile) {
-			googleAuthOptions = { keyFile: options.vertexKeyFile }
+		} else if (this.options.vertexKeyFile) {
+			googleAuthOptions = { keyFile: this.options.vertexKeyFile }
 		}
 
-		// Build beta headers for 1M context support
-		const modelId = options.apiModelId
-		const betas: string[] = []
-
-		if (modelId) {
-			const supports1MContext = VERTEX_1M_CONTEXT_MODEL_IDS.includes(
-				modelId as (typeof VERTEX_1M_CONTEXT_MODEL_IDS)[number],
-			)
-			if (supports1MContext && options.vertex1MContext) {
-				betas.push("context-1m-2025-08-07")
-			}
-		}
-
-		this.provider = createVertexAnthropic({
+		return createVertexAnthropic({
 			project: projectId,
 			location: region,
 			googleAuthOptions,
-			headers: {
-				...DEFAULT_HEADERS,
-				...(betas.length > 0 ? { "anthropic-beta": betas.join(",") } : {}),
-			},
+			headers: { ...DEFAULT_HEADERS },
 		})
 	}
 
-	override async *createMessage(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
-	): ApiStream {
-		const modelConfig = this.getModel()
-
-		// Reset thinking state for this request
-		this.lastThoughtSignature = undefined
-		this.lastRedactedThinkingBlocks = []
-
-		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(messages)
-
-		// Convert tools to AI SDK format
-		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
-
-		// Build Anthropic provider options
-		const anthropicProviderOptions: Record<string, unknown> = {}
-
-		// Configure thinking/reasoning if the model supports it
-		const isThinkingEnabled =
-			shouldUseReasoningBudget({ model: modelConfig.info, settings: this.options }) &&
-			modelConfig.reasoning &&
-			modelConfig.reasoningBudget
-
-		if (isThinkingEnabled) {
-			anthropicProviderOptions.thinking = {
-				type: "enabled",
-				budgetTokens: modelConfig.reasoningBudget,
-			}
-		}
-
-		// Forward parallelToolCalls setting
-		// When parallelToolCalls is explicitly false, disable parallel tool use
-		if (metadata?.parallelToolCalls === false) {
-			anthropicProviderOptions.disableParallelToolUse = true
-		}
-
-		/**
-		 * Vertex API has specific limitations for prompt caching:
-		 * 1. Maximum of 4 blocks can have cache_control
-		 * 2. Only text blocks can be cached (images and other content types cannot)
-		 * 3. Cache control can only be applied to user messages, not assistant messages
-		 *
-		 * Our caching strategy:
-		 * - Cache the system prompt (1 block)
-		 * - Cache the last text block of the second-to-last user message (1 block)
-		 * - Cache the last text block of the last user message (1 block)
-		 * This ensures we stay under the 4-block limit while maintaining effective caching
-		 * for the most relevant context.
-		 */
-		const cacheProviderOption = { anthropic: { cacheControl: { type: "ephemeral" as const } } }
-
-		const userMsgIndices = messages.reduce(
-			(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
-			[] as number[],
-		)
-
-		const targetIndices = new Set<number>()
-		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
-		const secondLastUserMsgIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
-
-		if (lastUserMsgIndex >= 0) targetIndices.add(lastUserMsgIndex)
-		if (secondLastUserMsgIndex >= 0) targetIndices.add(secondLastUserMsgIndex)
-
-		if (targetIndices.size > 0) {
-			this.applyCacheControlToAiSdkMessages(messages, aiSdkMessages, targetIndices, cacheProviderOption)
-		}
-
-		// Build streamText request
-		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
-		const requestOptions: Parameters<typeof streamText>[0] = {
-			model: this.provider(modelConfig.id),
-			system: systemPrompt,
-			...({
-				systemProviderOptions: { anthropic: { cacheControl: { type: "ephemeral" } } },
-			} as Record<string, unknown>),
-			messages: aiSdkMessages,
-			temperature: modelConfig.temperature,
-			maxOutputTokens: modelConfig.maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
-			tools: aiSdkTools,
-			toolChoice: mapToolChoice(metadata?.tool_choice),
-			...(Object.keys(anthropicProviderOptions).length > 0 && {
-				providerOptions: { anthropic: anthropicProviderOptions } as any,
-			}),
-		}
-
-		try {
-			const result = streamText(requestOptions)
-
-			for await (const part of result.fullStream) {
-				// Capture thinking signature from stream events
-				// The AI SDK's @ai-sdk/anthropic emits the signature as a reasoning-delta
-				// event with providerMetadata.anthropic.signature
-				const partAny = part as any
-				if (partAny.providerMetadata?.anthropic?.signature) {
-					this.lastThoughtSignature = partAny.providerMetadata.anthropic.signature
-				}
-
-				// Capture redacted thinking blocks from stream events
-				if (partAny.providerMetadata?.anthropic?.redactedData) {
-					this.lastRedactedThinkingBlocks.push({
-						type: "redacted_thinking",
-						data: partAny.providerMetadata.anthropic.redactedData,
-					})
-				}
-
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			// Yield usage metrics at the end, including cache metrics from providerMetadata
-			const usage = await result.usage
-			const providerMetadata = await result.providerMetadata
-			if (usage) {
-				yield this.processUsageMetrics(usage, modelConfig.info, providerMetadata)
-			}
-		} catch (error) {
-			const errorMessage = error instanceof Error ? error.message : String(error)
-			TelemetryService.instance.captureException(
-				new ApiProviderError(errorMessage, this.providerName, modelConfig.id, "createMessage"),
-			)
-			throw handleAiSdkError(error, this.providerName)
-		}
-	}
-
-	/**
-	 * Process usage metrics from the AI SDK response, including Anthropic's cache metrics.
-	 */
-	private processUsageMetrics(
-		usage: { inputTokens?: number; outputTokens?: number },
-		info: ModelInfo,
-		providerMetadata?: Record<string, Record<string, unknown>>,
-	): ApiStreamUsageChunk {
-		const inputTokens = usage.inputTokens ?? 0
-		const outputTokens = usage.outputTokens ?? 0
-
-		// Extract cache metrics from Anthropic's providerMetadata
-		const anthropicMeta = providerMetadata?.anthropic as
-			| { cacheCreationInputTokens?: number; cacheReadInputTokens?: number }
-			| undefined
-		const cacheWriteTokens = anthropicMeta?.cacheCreationInputTokens ?? 0
-		const cacheReadTokens = anthropicMeta?.cacheReadInputTokens ?? 0
-
-		const { totalCost } = calculateApiCostAnthropic(
-			info,
-			inputTokens,
-			outputTokens,
-			cacheWriteTokens,
-			cacheReadTokens,
-		)
-
-		return {
-			type: "usage",
-			inputTokens,
-			outputTokens,
-			cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
-			cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
-			totalCost,
-		}
-	}
-
-	/**
-	 * Apply cacheControl providerOptions to the correct AI SDK messages by walking
-	 * the original Anthropic messages and converted AI SDK messages in parallel.
-	 *
-	 * convertToAiSdkMessages() can split a single Anthropic user message (containing
-	 * tool_results + text) into 2 AI SDK messages (tool role + user role). This method
-	 * accounts for that split so cache control lands on the right message.
-	 */
-	private applyCacheControlToAiSdkMessages(
-		originalMessages: Anthropic.Messages.MessageParam[],
-		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-		targetOriginalIndices: Set<number>,
-		cacheProviderOption: Record<string, Record<string, unknown>>,
-	): void {
-		let aiSdkIdx = 0
-		for (let origIdx = 0; origIdx < originalMessages.length; origIdx++) {
-			const origMsg = originalMessages[origIdx]
-
-			if (typeof origMsg.content === "string") {
-				if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-					aiSdkMessages[aiSdkIdx].providerOptions = {
-						...aiSdkMessages[aiSdkIdx].providerOptions,
-						...cacheProviderOption,
-					}
-				}
-				aiSdkIdx++
-			} else if (origMsg.role === "user") {
-				const hasToolResults = origMsg.content.some((part) => (part as { type: string }).type === "tool_result")
-				const hasNonToolContent = origMsg.content.some(
-					(part) => (part as { type: string }).type === "text" || (part as { type: string }).type === "image",
-				)
-
-				if (hasToolResults && hasNonToolContent) {
-					const userMsgIdx = aiSdkIdx + 1
-					if (targetOriginalIndices.has(origIdx) && userMsgIdx < aiSdkMessages.length) {
-						aiSdkMessages[userMsgIdx].providerOptions = {
-							...aiSdkMessages[userMsgIdx].providerOptions,
-							...cacheProviderOption,
-						}
-					}
-					aiSdkIdx += 2
-				} else if (hasToolResults) {
-					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-						aiSdkMessages[aiSdkIdx].providerOptions = {
-							...aiSdkMessages[aiSdkIdx].providerOptions,
-							...cacheProviderOption,
-						}
-					}
-					aiSdkIdx++
-				} else {
-					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-						aiSdkMessages[aiSdkIdx].providerOptions = {
-							...aiSdkMessages[aiSdkIdx].providerOptions,
-							...cacheProviderOption,
-						}
-					}
-					aiSdkIdx++
-				}
-			} else {
-				aiSdkIdx++
-			}
-		}
-	}
-
-	getModel() {
+	override getModel() {
 		const modelId = this.options.apiModelId
 		let id = modelId && modelId in vertexModels ? (modelId as VertexModelId) : vertexDefaultModelId
 		let info: ModelInfo = vertexModels[id]
@@ -346,9 +113,10 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 			defaultTemperature: 0,
 		})
 
-		// Build betas array for request headers (kept for backward compatibility / testing)
+		// Build betas array for request headers
 		const betas: string[] = []
 
+		// Add 1M context beta flag if enabled for supported models
 		if (enable1MContext) {
 			betas.push("context-1m-2025-08-07")
 		}
@@ -365,49 +133,154 @@ export class AnthropicVertexHandler extends BaseProvider implements SingleComple
 		}
 	}
 
+	/**
+	 * Build Anthropic provider options for thinking configuration.
+	 * Converts from native Anthropic SDK format (budget_tokens) to AI SDK format (budgetTokens).
+	 */
+	private buildProviderOptions(reasoning: { type: string; budget_tokens?: number } | undefined) {
+		const anthropicOptions: Record<string, unknown> = {}
+
+		if (reasoning) {
+			if (reasoning.type === "enabled" && reasoning.budget_tokens) {
+				// Convert from native Anthropic SDK format to AI SDK format
+				anthropicOptions.thinking = {
+					type: "enabled",
+					budgetTokens: reasoning.budget_tokens,
+				}
+			} else {
+				anthropicOptions.thinking = reasoning
+			}
+		}
+
+		return Object.keys(anthropicOptions).length > 0 ? { anthropic: anthropicOptions } : undefined
+	}
+
+	override async *createMessage(
+		systemPrompt: string,
+		messages: NeutralMessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		const { id: modelId, info: modelInfo, maxTokens, temperature, reasoning, betas } = this.getModel()
+
+		const provider = this.createProvider()
+		const model = provider.languageModel(modelId)
+
+		// Convert messages and tools
+		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+
+		// Build system prompt with optional cache control for prompt caching models.
+		// Vertex has a 4-block limit for cache_control:
+		// - 1 block for system prompt
+		// - Up to 2 blocks for user messages (last 2 user messages)
+		let system: string | SystemModelMessage = systemPrompt
+
+		if (modelInfo.supportsPromptCache) {
+			system = buildCachedSystemMessage(systemPrompt, "anthropic")
+			applyCacheBreakpoints(aiSdkMessages, "anthropic")
+		}
+
+		// Build provider options for thinking
+		const providerOptions = this.buildProviderOptions(reasoning)
+
+		// Build per-request headers with betas (e.g. 1M context)
+		const headers = betas?.length ? { "anthropic-beta": betas.join(",") } : undefined
+
+		const result = streamText({
+			model,
+			system,
+			messages: aiSdkMessages,
+			temperature,
+			maxOutputTokens: maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
+			tools: aiSdkTools,
+			toolChoice: mapToolChoice(metadata?.tool_choice),
+			providerOptions: providerOptions as any,
+			headers,
+		})
+
+		try {
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
+				}
+			}
+
+			const usage = await result.usage
+			const providerMetadata = await result.providerMetadata
+			if (usage) {
+				yield this.processUsageMetrics(
+					usage,
+					providerMetadata as Record<string, Record<string, unknown>> | undefined,
+					modelInfo,
+				)
+			}
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "createMessage")
+			TelemetryService.instance.captureException(apiError)
+			throw handleAiSdkError(error, this.providerName)
+		}
+	}
+
 	async completePrompt(prompt: string): Promise<string> {
-		const { id, temperature } = this.getModel()
+		const { id: modelId, temperature } = this.getModel()
+		const provider = this.createProvider()
+		const model = provider.languageModel(modelId)
 
 		try {
 			const { text } = await generateText({
-				model: this.provider(id),
+				model,
 				prompt,
-				maxOutputTokens: ANTHROPIC_DEFAULT_MAX_TOKENS,
 				temperature,
 			})
-
 			return text
 		} catch (error) {
-			TelemetryService.instance.captureException(
-				new ApiProviderError(
-					error instanceof Error ? error.message : String(error),
-					this.providerName,
-					id,
-					"completePrompt",
-				),
-			)
+			const errorMessage = error instanceof Error ? error.message : String(error)
+			const apiError = new ApiProviderError(errorMessage, this.providerName, modelId, "completePrompt")
+			TelemetryService.instance.captureException(apiError)
 			throw handleAiSdkError(error, this.providerName)
 		}
 	}
 
 	/**
-	 * Returns the thinking signature captured from the last Anthropic response.
-	 * Claude models with extended thinking return a cryptographic signature
-	 * which must be round-tripped back for multi-turn conversations with tool use.
+	 * Process usage metrics from the AI SDK response, including Anthropic-specific
+	 * cache metrics from providerMetadata.anthropic.
 	 */
-	getThoughtSignature(): string | undefined {
-		return this.lastThoughtSignature
-	}
+	protected processUsageMetrics(
+		usage: {
+			inputTokens?: number
+			outputTokens?: number
+		},
+		providerMetadata?: Record<string, Record<string, unknown>>,
+		modelInfo?: ModelInfo,
+	): ApiStreamUsageChunk {
+		const anthropicMeta = providerMetadata?.anthropic as Record<string, unknown> | undefined
+		const inputTokens = usage.inputTokens || 0
+		const outputTokens = usage.outputTokens || 0
+		const cacheWriteTokens = (anthropicMeta?.cacheCreationInputTokens as number) ?? 0
+		const cacheReadTokens = (anthropicMeta?.cacheReadInputTokens as number) ?? 0
 
-	/**
-	 * Returns any redacted thinking blocks captured from the last Anthropic response.
-	 * Anthropic returns these when safety filters trigger on reasoning content.
-	 */
-	getRedactedThinkingBlocks(): Array<{ type: "redacted_thinking"; data: string }> | undefined {
-		return this.lastRedactedThinkingBlocks.length > 0 ? this.lastRedactedThinkingBlocks : undefined
-	}
+		// Calculate cost using Anthropic-specific pricing (cache read/write tokens)
+		let totalCost: number | undefined
+		if (modelInfo && (inputTokens > 0 || outputTokens > 0 || cacheWriteTokens > 0 || cacheReadTokens > 0)) {
+			const { totalCost: cost } = calculateApiCostAnthropic(
+				modelInfo,
+				inputTokens,
+				outputTokens,
+				cacheWriteTokens,
+				cacheReadTokens,
+			)
+			totalCost = cost
+		}
 
-	override isAiSdkProvider(): boolean {
-		return true
+		return {
+			type: "usage",
+			inputTokens,
+			outputTokens,
+			cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
+			cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
+			totalCost,
+		}
 	}
 }

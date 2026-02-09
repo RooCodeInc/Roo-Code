@@ -23,8 +23,7 @@ vi.mock("@ai-sdk/openai-compatible", () => ({
 	}),
 }))
 
-import type { Anthropic } from "@anthropic-ai/sdk"
-
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
 import { moonshotDefaultModelId } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
@@ -121,7 +120,7 @@ describe("MoonshotHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -344,7 +343,7 @@ describe("MoonshotHandler", () => {
 
 	describe("tool handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],

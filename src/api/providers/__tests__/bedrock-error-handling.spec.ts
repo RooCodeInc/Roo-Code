@@ -38,7 +38,6 @@ vi.mock("@ai-sdk/amazon-bedrock", () => ({
 }))
 
 import { AwsBedrockHandler } from "../bedrock"
-import type { Anthropic } from "@anthropic-ai/sdk"
 
 describe("AwsBedrockHandler Error Handling", () => {
 	let handler: AwsBedrockHandler

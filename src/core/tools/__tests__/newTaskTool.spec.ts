@@ -111,15 +111,15 @@ import { newTaskTool } from "../NewTaskTool"
 import { getModeBySlug } from "../../../shared/modes"
 import * as vscode from "vscode"
 
-const withNativeArgs = (block: ToolUse<"new_task">): ToolUse<"new_task"> => ({
+const withNativeArgs = (block: ToolUse): ToolUse => ({
 	...block,
 	// Native tool calling: `nativeArgs` is the source of truth for tool execution.
 	// These tests intentionally exercise missing-param behavior, so we allow undefined
 	// values and let the tool's runtime validation handle it.
 	nativeArgs: {
-		mode: block.params.mode,
-		message: block.params.message,
-		todos: block.params.todos,
+		mode: block.input.mode,
+		message: block.input.message,
+		todos: block.input.todos,
 	} as unknown as NativeToolArgs["new_task"],
 })
 
@@ -144,10 +144,11 @@ describe("newTaskTool", () => {
 	})
 
 	it("should correctly un-escape \\\\@ to \\@ in the message passed to the new task", async () => {
-		const block: ToolUse<"new_task"> = {
-			type: "tool_use", // Add required 'type' property
-			name: "new_task", // Correct property name
-			params: {
+		const block: ToolUse = {
+			type: "tool-call", // Add required 'type' property
+			toolCallId: "test-tool-call-id",
+			toolName: "new_task", // Correct property name
+			input: {
 				mode: "code",
 				message: "Review this: \\\\@file1.txt and also \\\\\\\\@file2.txt", // Input with \\@ and \\\\@
 				todos: "[ ] First task\n[ ] Second task",
@@ -179,10 +180,11 @@ describe("newTaskTool", () => {
 	})
 
 	it("should not un-escape single escaped \@", async () => {
-		const block: ToolUse<"new_task"> = {
-			type: "tool_use", // Add required 'type' property
-			name: "new_task", // Correct property name
-			params: {
+		const block: ToolUse = {
+			type: "tool-call", // Add required 'type' property
+			toolCallId: "test-tool-call-id",
+			toolName: "new_task", // Correct property name
+			input: {
 				mode: "code",
 				message: "This is already unescaped: \\@file1.txt",
 				todos: "[ ] Test todo",
@@ -204,10 +206,11 @@ describe("newTaskTool", () => {
 	})
 
 	it("should not un-escape non-escaped @", async () => {
-		const block: ToolUse<"new_task"> = {
-			type: "tool_use", // Add required 'type' property
-			name: "new_task", // Correct property name
-			params: {
+		const block: ToolUse = {
+			type: "tool-call", // Add required 'type' property
+			toolCallId: "test-tool-call-id",
+			toolName: "new_task", // Correct property name
+			input: {
 				mode: "code",
 				message: "A normal mention @file1.txt",
 				todos: "[ ] Test todo",
@@ -229,10 +232,11 @@ describe("newTaskTool", () => {
 	})
 
 	it("should handle mixed escaping scenarios", async () => {
-		const block: ToolUse<"new_task"> = {
-			type: "tool_use", // Add required 'type' property
-			name: "new_task", // Correct property name
-			params: {
+		const block: ToolUse = {
+			type: "tool-call", // Add required 'type' property
+			toolCallId: "test-tool-call-id",
+			toolName: "new_task", // Correct property name
+			input: {
 				mode: "code",
 				message: "Mix: @file0.txt, \\@file1.txt, \\\\@file2.txt, \\\\\\\\@file3.txt",
 				todos: "[ ] Test todo",
@@ -254,10 +258,11 @@ describe("newTaskTool", () => {
 	})
 
 	it("should handle missing todos parameter gracefully (backward compatibility)", async () => {
-		const block: ToolUse<"new_task"> = {
-			type: "tool_use",
-			name: "new_task",
-			params: {
+		const block: ToolUse = {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "new_task",
+			input: {
 				mode: "code",
 				message: "Test message",
 				// todos missing - should work for backward compatibility
@@ -284,10 +289,11 @@ describe("newTaskTool", () => {
 	})
 
 	it("should work with todos parameter when provided", async () => {
-		const block: ToolUse<"new_task"> = {
-			type: "tool_use",
-			name: "new_task",
-			params: {
+		const block: ToolUse = {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "new_task",
+			input: {
 				mode: "code",
 				message: "Test message with todos",
 				todos: "[ ] First task\n[ ] Second task",
@@ -315,10 +321,11 @@ describe("newTaskTool", () => {
 	})
 
 	it("should error when mode parameter is missing", async () => {
-		const block: ToolUse<"new_task"> = {
-			type: "tool_use",
-			name: "new_task",
-			params: {
+		const block: ToolUse = {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "new_task",
+			input: {
 				// mode missing
 				message: "Test message",
 				todos: "[ ] Test todo",
@@ -338,10 +345,11 @@ describe("newTaskTool", () => {
 	})
 
 	it("should error when message parameter is missing", async () => {
-		const block: ToolUse<"new_task"> = {
-			type: "tool_use",
-			name: "new_task",
-			params: {
+		const block: ToolUse = {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "new_task",
+			input: {
 				mode: "code",
 				// message missing
 				todos: "[ ] Test todo",
@@ -361,10 +369,11 @@ describe("newTaskTool", () => {
 	})
 
 	it("should parse todos with different statuses correctly", async () => {
-		const block: ToolUse<"new_task"> = {
-			type: "tool_use",
-			name: "new_task",
-			params: {
+		const block: ToolUse = {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "new_task",
+			input: {
 				mode: "code",
 				message: "Test message",
 				todos: "[ ] Pending task\n[x] Completed task\n[-] In progress task",
@@ -397,10 +406,11 @@ describe("newTaskTool", () => {
 				get: mockGet,
 			} as any)
 
-			const block: ToolUse<"new_task"> = {
-				type: "tool_use",
-				name: "new_task",
-				params: {
+			const block: ToolUse = {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "new_task",
+				input: {
 					mode: "code",
 					message: "Test message",
 					// todos missing - should work when setting is disabled
@@ -433,10 +443,11 @@ describe("newTaskTool", () => {
 				get: mockGet,
 			} as any)
 
-			const block: ToolUse<"new_task"> = {
-				type: "tool_use",
-				name: "new_task",
-				params: {
+			const block: ToolUse = {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "new_task",
+				input: {
 					mode: "code",
 					message: "Test message",
 					// todos missing - should error when setting is enabled
@@ -469,10 +480,11 @@ describe("newTaskTool", () => {
 				get: mockGet,
 			} as any)
 
-			const block: ToolUse<"new_task"> = {
-				type: "tool_use",
-				name: "new_task",
-				params: {
+			const block: ToolUse = {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "new_task",
+				input: {
 					mode: "code",
 					message: "Test message",
 					todos: "[ ] First task\n[ ] Second task",
@@ -511,10 +523,11 @@ describe("newTaskTool", () => {
 				get: mockGet,
 			} as any)
 
-			const block: ToolUse<"new_task"> = {
-				type: "tool_use",
-				name: "new_task",
-				params: {
+			const block: ToolUse = {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "new_task",
+				input: {
 					mode: "code",
 					message: "Test message",
 					todos: "", // Empty string should be accepted
@@ -546,10 +559,11 @@ describe("newTaskTool", () => {
 			} as any)
 			vi.mocked(vscode.workspace.getConfiguration).mockImplementation(mockGetConfiguration)
 
-			const block: ToolUse<"new_task"> = {
-				type: "tool_use",
-				name: "new_task",
-				params: {
+			const block: ToolUse = {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "new_task",
+				input: {
 					mode: "code",
 					message: "Test message",
 				},
@@ -579,10 +593,11 @@ describe("newTaskTool", () => {
 			const pkg = await import("../../../shared/package")
 			;(pkg.Package as any).name = "roo-code-nightly"
 
-			const block: ToolUse<"new_task"> = {
-				type: "tool_use",
-				name: "new_task",
-				params: {
+			const block: ToolUse = {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "new_task",
+				input: {
 					mode: "code",
 					message: "Test message",
 				},
@@ -636,10 +651,11 @@ describe("newTaskTool delegation flow", () => {
 			},
 		}
 
-		const block: ToolUse<"new_task"> = {
-			type: "tool_use",
-			name: "new_task",
-			params: {
+		const block: ToolUse = {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "new_task",
+			input: {
 				mode: "code",
 				message: "Do something",
 				// no todos -> should default to []

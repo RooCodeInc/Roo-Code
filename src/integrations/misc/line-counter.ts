@@ -1,7 +1,7 @@
 import fs, { createReadStream } from "fs"
 import { createInterface } from "readline"
 import { countTokens } from "../../utils/countTokens"
-import { Anthropic } from "@anthropic-ai/sdk"
+import type { NeutralContentBlock } from "../../core/task-persistence"
 
 /**
  * Efficiently counts lines in a file using streams without loading the entire file into memory
@@ -102,7 +102,7 @@ export async function countFileLinesAndTokens(
 			lineBuffer = [] // Clear buffer before processing
 
 			try {
-				const contentBlocks: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: bufferText }]
+				const contentBlocks: NeutralContentBlock[] = [{ type: "text", text: bufferText }]
 				const chunkTokens = await countTokens(contentBlocks)
 				tokenEstimate += chunkTokens
 			} catch (error) {

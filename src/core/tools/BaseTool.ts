@@ -58,7 +58,7 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * @param task - Task instance
 	 * @param block - Partial ToolUse block
 	 */
-	async handlePartial(task: Task, block: ToolUse<TName>): Promise<void> {
+	async handlePartial(task: Task, block: ToolUse): Promise<void> {
 		// Default: no-op for partial messages
 		// Tools can override to show streaming UI updates
 	}
@@ -110,7 +110,7 @@ export abstract class BaseTool<TName extends ToolName> {
 	 * @param block - ToolUse block from assistant message
 	 * @param callbacks - Tool execution callbacks
 	 */
-	async handle(task: Task, block: ToolUse<TName>, callbacks: ToolCallbacks): Promise<void> {
+	async handle(task: Task, block: ToolUse, callbacks: ToolCallbacks): Promise<void> {
 		// Handle partial messages
 		if (block.partial) {
 			try {
@@ -135,7 +135,7 @@ export abstract class BaseTool<TName extends ToolName> {
 				// If legacy/XML markup was provided via params, surface a clear error.
 				const paramsText = (() => {
 					try {
-						return JSON.stringify(block.params ?? {})
+						return JSON.stringify(block.input ?? {})
 					} catch {
 						return ""
 					}

@@ -65,7 +65,7 @@ export class ToolRepetitionDetector {
 				allowExecution: false,
 				askUser: {
 					messageKey: "mistake_limit_reached",
-					messageDetail: t("tools:toolRepetitionLimitReached", { toolName: currentToolCallBlock.name }),
+					messageDetail: t("tools:toolRepetitionLimitReached", { toolName: currentToolCallBlock.toolName }),
 				},
 			}
 		}
@@ -81,11 +81,11 @@ export class ToolRepetitionDetector {
 	 * @returns true if the tool is a browser_action with scroll_down or scroll_up action
 	 */
 	private isBrowserScrollAction(toolUse: ToolUse): boolean {
-		if (toolUse.name !== "browser_action") {
+		if (toolUse.toolName !== "browser_action") {
 			return false
 		}
 
-		const action = toolUse.params.action as string
+		const action = toolUse.input.action as string
 		return action === "scroll_down" || action === "scroll_up"
 	}
 
@@ -97,8 +97,8 @@ export class ToolRepetitionDetector {
 	 */
 	private serializeToolUse(toolUse: ToolUse): string {
 		const toolObject: Record<string, any> = {
-			name: toolUse.name,
-			params: toolUse.params,
+			name: toolUse.toolName,
+			params: toolUse.input,
 		}
 
 		// Only include nativeArgs if it has content

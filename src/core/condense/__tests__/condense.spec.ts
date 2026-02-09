@@ -1,6 +1,6 @@
 // npx vitest src/core/condense/__tests__/condense.spec.ts
 
-import { Anthropic } from "@anthropic-ai/sdk"
+import type { NeutralContentBlock } from "../../task-persistence/apiMessages"
 import type { ModelInfo } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
@@ -41,7 +41,7 @@ class MockApiHandler extends BaseProvider {
 		}
 	}
 
-	override async countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number> {
+	override async countTokens(content: Array<NeutralContentBlock>): Promise<number> {
 		// Simple token counting for testing
 		let tokens = 0
 		for (const block of content) {
@@ -228,7 +228,7 @@ Line 2
 		})
 
 		it("should handle complex first message content", async () => {
-			const complexContent: Anthropic.Messages.ContentBlockParam[] = [
+			const complexContent: NeutralContentBlock[] = [
 				{ type: "text", text: "/mode code" },
 				{ type: "text", text: "Additional context from the user" },
 			]

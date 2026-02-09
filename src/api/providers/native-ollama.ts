@@ -1,378 +1,118 @@
-import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
-import { Message, Ollama, Tool as OllamaTool, type Config as OllamaOptions } from "ollama"
-import { ModelInfo, openAiModelInfoSaneDefaults, DEEP_SEEK_DEFAULT_TEMPERATURE } from "@roo-code/types"
-import { ApiStream } from "../transform/stream"
-import { BaseProvider } from "./base-provider"
+import { streamText, generateText, ToolSet } from "ai"
+
+import { ollamaDefaultModelInfo } from "@roo-code/types"
+
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
-import { getOllamaModels } from "./fetchers/ollama"
-import { TagMatcher } from "../../utils/tag-matcher"
-import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
-interface OllamaChatOptions {
-	temperature: number
-	num_ctx?: number
-}
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	mapToolChoice,
+	handleAiSdkError,
+} from "../transform/ai-sdk"
+import { ApiStream } from "../transform/stream"
+import { getModelParams } from "../transform/model-params"
 
-function convertToOllamaMessages(anthropicMessages: Anthropic.Messages.MessageParam[]): Message[] {
-	const ollamaMessages: Message[] = []
+import { OpenAICompatibleHandler, type OpenAICompatibleConfig } from "./openai-compatible"
+import type { ApiHandlerCreateMessageMetadata } from "../index"
+import { getModelsFromCache } from "./fetchers/modelCache"
 
-	for (const anthropicMessage of anthropicMessages) {
-		if (typeof anthropicMessage.content === "string") {
-			ollamaMessages.push({
-				role: anthropicMessage.role,
-				content: anthropicMessage.content,
-			})
-		} else {
-			if (anthropicMessage.role === "user") {
-				const { nonToolMessages, toolMessages } = anthropicMessage.content.reduce<{
-					nonToolMessages: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[]
-					toolMessages: Anthropic.ToolResultBlockParam[]
-				}>(
-					(acc, part) => {
-						if (part.type === "tool_result") {
-							acc.toolMessages.push(part)
-						} else if (part.type === "text" || part.type === "image") {
-							acc.nonToolMessages.push(part)
-						}
-						return acc
-					},
-					{ nonToolMessages: [], toolMessages: [] },
-				)
-
-				// Process tool result messages FIRST since they must follow the tool use messages
-				const toolResultImages: string[] = []
-				toolMessages.forEach((toolMessage) => {
-					// The Anthropic SDK allows tool results to be a string or an array of text and image blocks, enabling rich and structured content. In contrast, the Ollama SDK only supports tool results as a single string, so we map the Anthropic tool result parts into one concatenated string to maintain compatibility.
-					let content: string
-
-					if (typeof toolMessage.content === "string") {
-						content = toolMessage.content
-					} else {
-						content =
-							toolMessage.content
-								?.map((part) => {
-									if (part.type === "image") {
-										// Handle base64 images only (Anthropic SDK uses base64)
-										// Ollama expects raw base64 strings, not data URLs
-										if ("source" in part && part.source.type === "base64") {
-											toolResultImages.push(part.source.data)
-										}
-										return "(see following user message for image)"
-									}
-									return part.text
-								})
-								.join("\n") ?? ""
-					}
-					ollamaMessages.push({
-						role: "user",
-						images: toolResultImages.length > 0 ? toolResultImages : undefined,
-						content: content,
-					})
-				})
-
-				// Process non-tool messages
-				if (nonToolMessages.length > 0) {
-					// Separate text and images for Ollama
-					const textContent = nonToolMessages
-						.filter((part) => part.type === "text")
-						.map((part) => part.text)
-						.join("\n")
-
-					const imageData: string[] = []
-					nonToolMessages.forEach((part) => {
-						if (part.type === "image" && "source" in part && part.source.type === "base64") {
-							// Ollama expects raw base64 strings, not data URLs
-							imageData.push(part.source.data)
-						}
-					})
-
-					ollamaMessages.push({
-						role: "user",
-						content: textContent,
-						images: imageData.length > 0 ? imageData : undefined,
-					})
-				}
-			} else if (anthropicMessage.role === "assistant") {
-				const { nonToolMessages, toolMessages } = anthropicMessage.content.reduce<{
-					nonToolMessages: (Anthropic.TextBlockParam | Anthropic.ImageBlockParam)[]
-					toolMessages: Anthropic.ToolUseBlockParam[]
-				}>(
-					(acc, part) => {
-						if (part.type === "tool_use") {
-							acc.toolMessages.push(part)
-						} else if (part.type === "text" || part.type === "image") {
-							acc.nonToolMessages.push(part)
-						} // assistant cannot send tool_result messages
-						return acc
-					},
-					{ nonToolMessages: [], toolMessages: [] },
-				)
-
-				// Process non-tool messages
-				let content: string = ""
-				if (nonToolMessages.length > 0) {
-					content = nonToolMessages
-						.map((part) => {
-							if (part.type === "image") {
-								return "" // impossible as the assistant cannot send images
-							}
-							return part.text
-						})
-						.join("\n")
-				}
-
-				// Convert tool_use blocks to Ollama tool_calls format
-				const toolCalls =
-					toolMessages.length > 0
-						? toolMessages.map((tool) => ({
-								function: {
-									name: tool.name,
-									arguments: tool.input as Record<string, unknown>,
-								},
-							}))
-						: undefined
-
-				ollamaMessages.push({
-					role: "assistant",
-					content,
-					tool_calls: toolCalls,
-				})
-			}
-		}
-	}
-
-	return ollamaMessages
-}
-
-export class NativeOllamaHandler extends BaseProvider implements SingleCompletionHandler {
-	protected options: ApiHandlerOptions
-	private client: Ollama | undefined
-	protected models: Record<string, ModelInfo> = {}
-
+export class NativeOllamaHandler extends OpenAICompatibleHandler {
 	constructor(options: ApiHandlerOptions) {
-		super()
-		this.options = options
-	}
+		const baseUrl = options.ollamaBaseUrl || "http://localhost:11434"
+		const modelId = options.ollamaModelId || ""
+		const models = getModelsFromCache("ollama")
+		const modelInfo = (models && modelId && models[modelId]) || ollamaDefaultModelInfo
 
-	private ensureClient(): Ollama {
-		if (!this.client) {
-			try {
-				const clientOptions: OllamaOptions = {
-					host: this.options.ollamaBaseUrl || "http://localhost:11434",
-					// Note: The ollama npm package handles timeouts internally
-				}
-
-				// Add API key if provided (for Ollama cloud or authenticated instances)
-				if (this.options.ollamaApiKey) {
-					clientOptions.headers = {
-						Authorization: `Bearer ${this.options.ollamaApiKey}`,
-					}
-				}
-
-				this.client = new Ollama(clientOptions)
-			} catch (error: any) {
-				throw new Error(`Error creating Ollama client: ${error.message}`)
-			}
-		}
-		return this.client
-	}
-
-	/**
-	 * Converts OpenAI-format tools to Ollama's native tool format.
-	 * This allows NativeOllamaHandler to use the same tool definitions
-	 * that are passed to OpenAI-compatible providers.
-	 */
-	private convertToolsToOllama(tools: OpenAI.Chat.ChatCompletionTool[] | undefined): OllamaTool[] | undefined {
-		if (!tools || tools.length === 0) {
-			return undefined
+		const config: OpenAICompatibleConfig = {
+			providerName: "ollama",
+			baseURL: `${baseUrl.replace(/\/+$/, "")}/v1`,
+			apiKey: options.ollamaApiKey || "ollama",
+			modelId,
+			modelInfo,
 		}
 
-		return tools
-			.filter((tool): tool is OpenAI.Chat.ChatCompletionTool & { type: "function" } => tool.type === "function")
-			.map((tool) => ({
-				type: tool.type,
-				function: {
-					name: tool.function.name,
-					description: tool.function.description,
-					parameters: tool.function.parameters as OllamaTool["function"]["parameters"],
-				},
-			}))
+		super(options, config)
+	}
+
+	override getModel() {
+		const models = getModelsFromCache("ollama")
+		const id = this.options.ollamaModelId || ""
+		const info = (models && id && models[id]) || ollamaDefaultModelInfo
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: 0,
+		})
+		return { id, info, ...params }
+	}
+
+	private get numCtxProviderOptions(): Record<string, unknown> | undefined {
+		if (this.options.ollamaNumCtx !== undefined) {
+			return { ollama: { num_ctx: this.options.ollamaNumCtx } } as Record<string, unknown>
+		}
+		return undefined
 	}
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		const client = this.ensureClient()
-		const { id: modelId } = await this.fetchModel()
-		const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
+		const providerOptions = this.numCtxProviderOptions
+		if (!providerOptions) {
+			yield* super.createMessage(systemPrompt, messages, metadata)
+			return
+		}
 
-		const ollamaMessages: Message[] = [
-			{ role: "system", content: systemPrompt },
-			...convertToOllamaMessages(messages),
-		]
+		const model = this.getModel()
+		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
-		const matcher = new TagMatcher(
-			"think",
-			(chunk) =>
-				({
-					type: chunk.matched ? "reasoning" : "text",
-					text: chunk.data,
-				}) as const,
-		)
+		const result = streamText({
+			model: this.getLanguageModel(),
+			system: systemPrompt,
+			messages: aiSdkMessages,
+			temperature: model.temperature ?? 0,
+			maxOutputTokens: this.getMaxOutputTokens(),
+			tools: aiSdkTools,
+			toolChoice: mapToolChoice(metadata?.tool_choice),
+			providerOptions: providerOptions as any,
+		})
 
 		try {
-			// Build options object conditionally
-			const chatOptions: OllamaChatOptions = {
-				temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
-			}
-
-			// Only include num_ctx if explicitly set via ollamaNumCtx
-			if (this.options.ollamaNumCtx !== undefined) {
-				chatOptions.num_ctx = this.options.ollamaNumCtx
-			}
-
-			// Create the actual API request promise
-			const stream = await client.chat({
-				model: modelId,
-				messages: ollamaMessages,
-				stream: true,
-				options: chatOptions,
-				tools: this.convertToolsToOllama(metadata?.tools),
-			})
-
-			let totalInputTokens = 0
-			let totalOutputTokens = 0
-			// Track tool calls across chunks (Ollama may send complete tool_calls in final chunk)
-			let toolCallIndex = 0
-			// Track tool call IDs for emitting end events
-			const toolCallIds: string[] = []
-
-			try {
-				for await (const chunk of stream) {
-					if (typeof chunk.message.content === "string" && chunk.message.content.length > 0) {
-						// Process content through matcher for reasoning detection
-						for (const matcherChunk of matcher.update(chunk.message.content)) {
-							yield matcherChunk
-						}
-					}
-
-					// Handle tool calls - emit partial chunks for NativeToolCallParser compatibility
-					if (chunk.message.tool_calls && chunk.message.tool_calls.length > 0) {
-						for (const toolCall of chunk.message.tool_calls) {
-							// Generate a unique ID for this tool call
-							const toolCallId = `ollama-tool-${toolCallIndex}`
-							toolCallIds.push(toolCallId)
-							yield {
-								type: "tool_call_partial",
-								index: toolCallIndex,
-								id: toolCallId,
-								name: toolCall.function.name,
-								arguments: JSON.stringify(toolCall.function.arguments),
-							}
-							toolCallIndex++
-						}
-					}
-
-					// Handle token usage if available
-					if (chunk.eval_count !== undefined || chunk.prompt_eval_count !== undefined) {
-						if (chunk.prompt_eval_count) {
-							totalInputTokens = chunk.prompt_eval_count
-						}
-						if (chunk.eval_count) {
-							totalOutputTokens = chunk.eval_count
-						}
-					}
-				}
-
-				// Yield any remaining content from the matcher
-				for (const chunk of matcher.final()) {
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
 					yield chunk
 				}
-
-				for (const toolCallId of toolCallIds) {
-					yield {
-						type: "tool_call_end",
-						id: toolCallId,
-					}
-				}
-
-				// Yield usage information if available
-				if (totalInputTokens > 0 || totalOutputTokens > 0) {
-					yield {
-						type: "usage",
-						inputTokens: totalInputTokens,
-						outputTokens: totalOutputTokens,
-					}
-				}
-			} catch (streamError: any) {
-				console.error("Error processing Ollama stream:", streamError)
-				throw new Error(`Ollama stream processing error: ${streamError.message || "Unknown error"}`)
 			}
-		} catch (error: any) {
-			// Enhance error reporting
-			const statusCode = error.status || error.statusCode
-			const errorMessage = error.message || "Unknown error"
-
-			if (error.code === "ECONNREFUSED") {
-				throw new Error(
-					`Ollama service is not running at ${this.options.ollamaBaseUrl || "http://localhost:11434"}. Please start Ollama first.`,
-				)
-			} else if (statusCode === 404) {
-				throw new Error(
-					`Model ${this.getModel().id} not found in Ollama. Please pull the model first with: ollama pull ${this.getModel().id}`,
-				)
+			const usage = await result.usage
+			if (usage) {
+				yield this.processUsageMetrics(usage)
 			}
-
-			console.error(`Ollama API error (${statusCode || "unknown"}): ${errorMessage}`)
-			throw error
-		}
-	}
-
-	async fetchModel() {
-		this.models = await getOllamaModels(this.options.ollamaBaseUrl, this.options.ollamaApiKey)
-		return this.getModel()
-	}
-
-	override getModel(): { id: string; info: ModelInfo } {
-		const modelId = this.options.ollamaModelId || ""
-		return {
-			id: modelId,
-			info: this.models[modelId] || openAiModelInfoSaneDefaults,
-		}
-	}
-
-	async completePrompt(prompt: string): Promise<string> {
-		try {
-			const client = this.ensureClient()
-			const { id: modelId } = await this.fetchModel()
-			const useR1Format = modelId.toLowerCase().includes("deepseek-r1")
-
-			// Build options object conditionally
-			const chatOptions: OllamaChatOptions = {
-				temperature: this.options.modelTemperature ?? (useR1Format ? DEEP_SEEK_DEFAULT_TEMPERATURE : 0),
-			}
-
-			// Only include num_ctx if explicitly set via ollamaNumCtx
-			if (this.options.ollamaNumCtx !== undefined) {
-				chatOptions.num_ctx = this.options.ollamaNumCtx
-			}
-
-			const response = await client.chat({
-				model: modelId,
-				messages: [{ role: "user", content: prompt }],
-				stream: false,
-				options: chatOptions,
-			})
-
-			return response.message?.content || ""
 		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`Ollama completion error: ${error.message}`)
-			}
-			throw error
+			throw handleAiSdkError(error, this.config.providerName)
 		}
+	}
+
+	override async completePrompt(prompt: string): Promise<string> {
+		const providerOptions = this.numCtxProviderOptions
+		if (!providerOptions) {
+			return super.completePrompt(prompt)
+		}
+
+		const { text } = await generateText({
+			model: this.getLanguageModel(),
+			prompt,
+			maxOutputTokens: this.getMaxOutputTokens(),
+			temperature: this.config.temperature ?? 0,
+			providerOptions: providerOptions as any,
+		})
+		return text
 	}
 }

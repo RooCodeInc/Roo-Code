@@ -1,4 +1,3 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { createZhipu } from "zhipu-ai-provider"
 import { streamText, generateText, ToolSet } from "ai"
 
@@ -12,6 +11,7 @@ import {
 	zaiApiLineConfigs,
 } from "@roo-code/types"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import { type ApiHandlerOptions, shouldUseReasoningEffort } from "../../shared/api"
 
 import {
@@ -91,7 +91,7 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info, temperature } = this.getModel()

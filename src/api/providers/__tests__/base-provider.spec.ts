@@ -1,5 +1,4 @@
-import { Anthropic } from "@anthropic-ai/sdk"
-
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
 import type { ModelInfo } from "@roo-code/types"
 
 import { BaseProvider } from "../base-provider"
@@ -7,7 +6,7 @@ import type { ApiStream } from "../../transform/stream"
 
 // Create a concrete implementation for testing
 class TestProvider extends BaseProvider {
-	createMessage(_systemPrompt: string, _messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	createMessage(_systemPrompt: string, _messages: NeutralMessageParam[]): ApiStream {
 		throw new Error("Not implemented")
 	}
 

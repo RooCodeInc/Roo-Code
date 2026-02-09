@@ -77,9 +77,10 @@ describe("processUserContentMentions", () => {
 		it("should process tool_result blocks with string content", async () => {
 			const userContent = [
 				{
-					type: "tool_result" as const,
-					tool_use_id: "123",
-					content: "<user_message>Tool feedback</user_message>",
+					type: "tool-result" as const,
+					toolCallId: "123",
+					toolName: "",
+					output: { type: "text" as const, value: "<user_message>Tool feedback</user_message>" },
 				},
 			]
 
@@ -93,14 +94,18 @@ describe("processUserContentMentions", () => {
 			expect(parseMentions).toHaveBeenCalled()
 			// String content is now converted to array format to support content blocks
 			expect(result.content[0]).toEqual({
-				type: "tool_result",
-				tool_use_id: "123",
-				content: [
-					{
-						type: "text",
-						text: "parsed: <user_message>Tool feedback</user_message>",
-					},
-				],
+				type: "tool-result",
+				toolCallId: "123",
+				toolName: "",
+				output: {
+					type: "content",
+					value: [
+						{
+							type: "text",
+							text: "parsed: <user_message>Tool feedback</user_message>",
+						},
+					],
+				},
 			})
 			expect(result.mode).toBeUndefined()
 		})
@@ -108,18 +113,22 @@ describe("processUserContentMentions", () => {
 		it("should process tool_result blocks with array content", async () => {
 			const userContent = [
 				{
-					type: "tool_result" as const,
-					tool_use_id: "123",
-					content: [
-						{
-							type: "text" as const,
-							text: "<user_message>Array task</user_message>",
-						},
-						{
-							type: "text" as const,
-							text: "Regular text",
-						},
-					],
+					type: "tool-result" as const,
+					toolCallId: "123",
+					toolName: "",
+					output: {
+						type: "content" as const,
+						value: [
+							{
+								type: "text" as const,
+								text: "<user_message>Array task</user_message>",
+							},
+							{
+								type: "text" as const,
+								text: "Regular text",
+							},
+						],
+					},
 				},
 			]
 
@@ -132,18 +141,22 @@ describe("processUserContentMentions", () => {
 
 			expect(parseMentions).toHaveBeenCalledTimes(1)
 			expect(result.content[0]).toEqual({
-				type: "tool_result",
-				tool_use_id: "123",
-				content: [
-					{
-						type: "text",
-						text: "parsed: <user_message>Array task</user_message>",
-					},
-					{
-						type: "text",
-						text: "Regular text",
-					},
-				],
+				type: "tool-result",
+				toolCallId: "123",
+				toolName: "",
+				output: {
+					type: "content",
+					value: [
+						{
+							type: "text",
+							text: "parsed: <user_message>Array task</user_message>",
+						},
+						{
+							type: "text",
+							text: "Regular text",
+						},
+					],
+				},
 			})
 			expect(result.mode).toBeUndefined()
 		})
@@ -156,16 +169,14 @@ describe("processUserContentMentions", () => {
 				},
 				{
 					type: "image" as const,
-					source: {
-						type: "base64" as const,
-						media_type: "image/png" as const,
-						data: "base64data",
-					},
+					image: "base64data",
+					mediaType: "image/png",
 				},
 				{
-					type: "tool_result" as const,
-					tool_use_id: "456",
-					content: "<user_message>Feedback</user_message>",
+					type: "tool-result" as const,
+					toolCallId: "456",
+					toolName: "",
+					output: { type: "text" as const, value: "<user_message>Feedback</user_message>" },
 				},
 			]
 
@@ -185,14 +196,18 @@ describe("processUserContentMentions", () => {
 			expect(result.content[1]).toEqual(userContent[1]) // Image block unchanged
 			// String content is now converted to array format to support content blocks
 			expect(result.content[2]).toEqual({
-				type: "tool_result",
-				tool_use_id: "456",
-				content: [
-					{
-						type: "text",
-						text: "parsed: <user_message>Feedback</user_message>",
-					},
-				],
+				type: "tool-result",
+				toolCallId: "456",
+				toolName: "",
+				output: {
+					type: "content",
+					value: [
+						{
+							type: "text",
+							text: "parsed: <user_message>Feedback</user_message>",
+						},
+					],
+				},
 			})
 			expect(result.mode).toBeUndefined()
 		})
@@ -299,9 +314,10 @@ describe("processUserContentMentions", () => {
 
 			const userContent = [
 				{
-					type: "tool_result" as const,
-					tool_use_id: "123",
-					content: "<user_message>Tool output</user_message>",
+					type: "tool-result" as const,
+					toolCallId: "123",
+					toolName: "",
+					output: { type: "text" as const, value: "<user_message>Tool output</user_message>" },
 				},
 			]
 
@@ -314,18 +330,22 @@ describe("processUserContentMentions", () => {
 
 			expect(result.content).toHaveLength(1)
 			expect(result.content[0]).toEqual({
-				type: "tool_result",
-				tool_use_id: "123",
-				content: [
-					{
-						type: "text",
-						text: "parsed tool output",
-					},
-					{
-						type: "text",
-						text: "command help",
-					},
-				],
+				type: "tool-result",
+				toolCallId: "123",
+				toolName: "",
+				output: {
+					type: "content",
+					value: [
+						{
+							type: "text",
+							text: "parsed tool output",
+						},
+						{
+							type: "text",
+							text: "command help",
+						},
+					],
+				},
 			})
 		})
 
@@ -339,14 +359,18 @@ describe("processUserContentMentions", () => {
 
 			const userContent = [
 				{
-					type: "tool_result" as const,
-					tool_use_id: "123",
-					content: [
-						{
-							type: "text" as const,
-							text: "<user_message>Array item</user_message>",
-						},
-					],
+					type: "tool-result" as const,
+					toolCallId: "123",
+					toolName: "",
+					output: {
+						type: "content" as const,
+						value: [
+							{
+								type: "text" as const,
+								text: "<user_message>Array item</user_message>",
+							},
+						],
+					},
 				},
 			]
 
@@ -359,18 +383,22 @@ describe("processUserContentMentions", () => {
 
 			expect(result.content).toHaveLength(1)
 			expect(result.content[0]).toEqual({
-				type: "tool_result",
-				tool_use_id: "123",
-				content: [
-					{
-						type: "text",
-						text: "parsed array item",
-					},
-					{
-						type: "text",
-						text: "command help",
-					},
-				],
+				type: "tool-result",
+				toolCallId: "123",
+				toolName: "",
+				output: {
+					type: "content",
+					value: [
+						{
+							type: "text",
+							text: "parsed array item",
+						},
+						{
+							type: "text",
+							text: "command help",
+						},
+					],
+				},
 			})
 		})
 	})

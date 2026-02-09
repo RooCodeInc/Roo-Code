@@ -29,8 +29,7 @@ vitest.mock("ai", async (importOriginal) => {
 	}
 })
 
-import { Anthropic } from "@anthropic-ai/sdk"
-
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
 import { ApiStreamChunk } from "../../transform/stream"
 
 import { t } from "i18next"
@@ -140,7 +139,7 @@ describe("VertexHandler", () => {
 	})
 
 	describe("createMessage", () => {
-		const mockMessages: Anthropic.Messages.MessageParam[] = [
+		const mockMessages: NeutralMessageParam[] = [
 			{ role: "user", content: "Hello" },
 			{ role: "assistant", content: "Hi there!" },
 		]

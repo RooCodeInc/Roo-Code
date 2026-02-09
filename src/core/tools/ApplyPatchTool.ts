@@ -420,8 +420,8 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 		task.processQueuedMessages()
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"apply_patch">): Promise<void> {
-		const patch: string | undefined = block.params.patch
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const patch: string | undefined = block.input.patch
 
 		let patchPreview: string | undefined
 		if (patch) {

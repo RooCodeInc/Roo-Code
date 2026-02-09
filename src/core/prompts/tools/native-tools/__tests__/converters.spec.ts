@@ -1,6 +1,5 @@
 import { describe, it, expect } from "vitest"
 import type OpenAI from "openai"
-import type Anthropic from "@anthropic-ai/sdk"
 import {
 	convertOpenAIToolToAnthropic,
 	convertOpenAIToolsToAnthropic,

@@ -239,9 +239,9 @@ export class SearchReplaceTool extends BaseTool<"search_replace"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"search_replace">): Promise<void> {
-		const filePath: string | undefined = block.params.file_path
-		const oldString: string | undefined = block.params.old_string
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const filePath: string | undefined = block.input.file_path
+		const oldString: string | undefined = block.input.old_string
 
 		// Wait for path to stabilize before showing UI (prevents truncated paths)
 		if (!this.hasPathStabilized(filePath)) {

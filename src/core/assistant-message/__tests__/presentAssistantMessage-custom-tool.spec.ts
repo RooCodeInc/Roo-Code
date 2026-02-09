@@ -85,7 +85,7 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 		// Add pushToolResultToUserContent method after mockTask is created so it can reference mockTask
 		mockTask.pushToolResultToUserContent = vi.fn().mockImplementation((toolResult: any) => {
 			const existingResult = mockTask.userMessageContent.find(
-				(block: any) => block.type === "tool_result" && block.tool_use_id === toolResult.tool_use_id,
+				(block: any) => block.type === "tool-result" && block.toolCallId === toolResult.toolCallId,
 			)
 			if (existingResult) {
 				return false
@@ -100,11 +100,10 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			const toolCallId = "tool_call_custom_123"
 			mockTask.assistantMessageContent = [
 				{
-					type: "tool_use",
-					id: toolCallId,
-					name: "my_custom_tool",
-					params: { value: "test" },
-					partial: false,
+					type: "tool-call",
+					toolCallId: toolCallId,
+					toolName: "my_custom_tool",
+					input: { value: "test" },
 				},
 			]
 
@@ -129,11 +128,10 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			const toolCallId = "tool_call_custom_error_123"
 			mockTask.assistantMessageContent = [
 				{
-					type: "tool_use",
-					id: toolCallId,
-					name: "failing_custom_tool",
-					params: {},
-					partial: false,
+					type: "tool-call",
+					toolCallId: toolCallId,
+					toolName: "failing_custom_tool",
+					input: {},
 				},
 			]
 
@@ -158,11 +156,10 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			const toolCallId = "tool_call_read_file_123"
 			mockTask.assistantMessageContent = [
 				{
-					type: "tool_use",
-					id: toolCallId,
-					name: "read_file",
-					params: { path: "test.txt" },
-					partial: false,
+					type: "tool-call",
+					toolCallId: toolCallId,
+					toolName: "read_file",
+					input: { path: "test.txt" },
 				},
 			]
 
@@ -180,15 +177,14 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			const toolCallId = "tool_call_mcp_123"
 			mockTask.assistantMessageContent = [
 				{
-					type: "tool_use",
-					id: toolCallId,
-					name: "use_mcp_tool",
-					params: {
+					type: "tool-call",
+					toolCallId: toolCallId,
+					toolName: "use_mcp_tool",
+					input: {
 						server_name: "test-server",
 						tool_name: "test-tool",
 						arguments: "{}",
 					},
-					partial: false,
 				},
 			]
 
@@ -224,11 +220,10 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 			const toolCallId = "tool_call_disabled_123"
 			mockTask.assistantMessageContent = [
 				{
-					type: "tool_use",
-					id: toolCallId,
-					name: "my_custom_tool",
-					params: {},
-					partial: false,
+					type: "tool-call",
+					toolCallId: toolCallId,
+					toolName: "my_custom_tool",
+					input: {},
 				},
 			]
 
@@ -272,11 +267,10 @@ describe("presentAssistantMessage - Custom Tool Recording", () => {
 		it("should not call customToolRegistry.has() when experiment is disabled", async () => {
 			mockTask.assistantMessageContent = [
 				{
-					type: "tool_use",
-					id: "tool_call_123",
-					name: "some_tool",
-					params: {},
-					partial: false,
+					type: "tool-call",
+					toolCallId: "tool_call_123",
+					toolName: "some_tool",
+					input: {},
 				},
 			]
 

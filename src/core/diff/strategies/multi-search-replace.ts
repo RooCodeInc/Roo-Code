@@ -521,7 +521,7 @@ export class MultiSearchReplaceDiffStrategy implements DiffStrategy {
 	}
 
 	getProgressStatus(toolUse: ToolUse, result?: DiffResult): ToolProgressStatus {
-		const diffContent = toolUse.params.diff
+		const diffContent = toolUse.input.diff
 		if (diffContent) {
 			const icon = "diff-multiple"
 			if (toolUse.partial) {

@@ -1,7 +1,6 @@
-import { Anthropic } from "@anthropic-ai/sdk"
-
 import type { ModelInfo } from "@roo-code/types"
 
+import type { NeutralMessageParam, NeutralContentBlock } from "../../core/task-persistence"
 import type { ApiHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { ApiStream } from "../transform/stream"
 import { countTokens } from "../../utils/countTokens"
@@ -13,7 +12,7 @@ import { isMcpTool } from "../../utils/mcp-name"
 export abstract class BaseProvider implements ApiHandler {
 	abstract createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream
 
@@ -112,7 +111,7 @@ export abstract class BaseProvider implements ApiHandler {
 	 * @param content The content to count tokens for
 	 * @returns A promise resolving to the token count
 	 */
-	async countTokens(content: Anthropic.Messages.ContentBlockParam[]): Promise<number> {
+	async countTokens(content: NeutralContentBlock[]): Promise<number> {
 		if (content.length === 0) {
 			return 0
 		}

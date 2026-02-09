@@ -1,4 +1,4 @@
-import { Anthropic } from "@anthropic-ai/sdk"
+import { NeutralTextBlock } from "../task-persistence"
 
 import { BrowserAction, BrowserActionResult, browserActions, ClineSayBrowserAction } from "@roo-code/types"
 
@@ -15,12 +15,12 @@ export async function browserActionTool(
 	handleError: HandleError,
 	pushToolResult: PushToolResult,
 ) {
-	const action: BrowserAction | undefined = block.params.action as BrowserAction
-	const url: string | undefined = block.params.url
-	const coordinate: string | undefined = block.params.coordinate
-	const text: string | undefined = block.params.text
-	const size: string | undefined = block.params.size
-	const filePath: string | undefined = block.params.path
+	const action: BrowserAction | undefined = block.input.action as BrowserAction
+	const url: string | undefined = block.input.url
+	const coordinate: string | undefined = block.input.coordinate
+	const text: string | undefined = block.input.text
+	const size: string | undefined = block.input.size
+	const filePath: string | undefined = block.input.path
 
 	if (!action || !browserActions.includes(action)) {
 		// checking for action to ensure it is complete and valid
@@ -251,7 +251,7 @@ export async function browserActionTool(
 					if (images.length > 0) {
 						const blocks = [
 							...formatResponse.imageBlocks(images),
-							{ type: "text", text: messageText } as Anthropic.TextBlockParam,
+							{ type: "text", text: messageText } as NeutralTextBlock,
 						]
 						pushToolResult(blocks)
 					} else {

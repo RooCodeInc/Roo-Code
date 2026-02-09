@@ -1,5 +1,25 @@
 import type OpenAI from "openai"
-import type Anthropic from "@anthropic-ai/sdk"
+
+/**
+ * Inline Anthropic-compatible types to avoid leaking `@anthropic-ai/sdk`
+ * into shared code. These are structurally identical to the SDK types.
+ */
+type AnthropicToolInputSchema = {
+	type: "object"
+	properties?: Record<string, unknown>
+	[key: string]: unknown
+}
+
+type AnthropicTool = {
+	name: string
+	description?: string
+	input_schema: AnthropicToolInputSchema
+}
+
+type AnthropicToolChoice =
+	| { type: "auto"; disable_parallel_tool_use?: boolean }
+	| { type: "any"; disable_parallel_tool_use?: boolean }
+	| { type: "tool"; name: string; disable_parallel_tool_use?: boolean }
 
 /**
  * Converts an OpenAI ChatCompletionTool to Anthropic's Tool format.
@@ -25,7 +45,7 @@ import type Anthropic from "@anthropic-ai/sdk"
  * // Returns: { name: "get_weather", description: "Get weather", input_schema: {...} }
  * ```
  */
-export function convertOpenAIToolToAnthropic(tool: OpenAI.Chat.ChatCompletionTool): Anthropic.Tool {
+export function convertOpenAIToolToAnthropic(tool: OpenAI.Chat.ChatCompletionTool): AnthropicTool {
 	// Handle both ChatCompletionFunctionTool and ChatCompletionCustomTool
 	if (tool.type !== "function") {
 		throw new Error(`Unsupported tool type: ${tool.type}`)
@@ -34,7 +54,7 @@ export function convertOpenAIToolToAnthropic(tool: OpenAI.Chat.ChatCompletionToo
 	return {
 		name: tool.function.name,
 		description: tool.function.description || "",
-		input_schema: tool.function.parameters as Anthropic.Tool.InputSchema,
+		input_schema: tool.function.parameters as AnthropicToolInputSchema,
 	}
 }
 
@@ -44,7 +64,7 @@ export function convertOpenAIToolToAnthropic(tool: OpenAI.Chat.ChatCompletionToo
  * @param tools - Array of OpenAI ChatCompletionTools to convert
  * @returns Array of Anthropic Tool definitions
  */
-export function convertOpenAIToolsToAnthropic(tools: OpenAI.Chat.ChatCompletionTool[]): Anthropic.Tool[] {
+export function convertOpenAIToolsToAnthropic(tools: OpenAI.Chat.ChatCompletionTool[]): AnthropicTool[] {
 	return tools.map(convertOpenAIToolToAnthropic)
 }
 
@@ -73,7 +93,7 @@ export function convertOpenAIToolsToAnthropic(tools: OpenAI.Chat.ChatCompletionT
 export function convertOpenAIToolChoiceToAnthropic(
 	toolChoice: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
 	parallelToolCalls?: boolean,
-): Anthropic.Messages.MessageCreateParams["tool_choice"] | undefined {
+): AnthropicToolChoice | undefined {
 	// Parallel tool calls are enabled by default. When parallelToolCalls is explicitly false,
 	// we disable parallel tool use to ensure one tool call at a time.
 	const disableParallelToolUse = parallelToolCalls === false

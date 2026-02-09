@@ -158,7 +158,7 @@ describe("searchReplaceTool", () => {
 	 * Helper function to execute the search replace tool with different parameters
 	 */
 	async function executeSearchReplaceTool(
-		params: Partial<ToolUse["params"]> = {},
+		params: Partial<ToolUse["input"]> = {},
 		options: {
 			fileExists?: boolean
 			fileContent?: string
@@ -185,9 +185,10 @@ describe("searchReplaceTool", () => {
 		}
 
 		const toolUse: ToolUse = {
-			type: "tool_use",
-			name: "search_replace",
-			params: {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "search_replace",
+			input: {
 				file_path: testFilePath,
 				old_string: testOldString,
 				new_string: testNewString,
@@ -201,7 +202,7 @@ describe("searchReplaceTool", () => {
 			toolResult = result
 		})
 
-		await searchReplaceTool.handle(mockCline, toolUse as ToolUse<"search_replace">, {
+		await searchReplaceTool.handle(mockCline, toolUse as ToolUse, {
 			askApproval: mockAskApproval,
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
@@ -343,9 +344,10 @@ describe("searchReplaceTool", () => {
 			mockedFsReadFile.mockRejectedValueOnce(new Error("Read failed"))
 
 			const toolUse: ToolUse = {
-				type: "tool_use",
-				name: "search_replace",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "search_replace",
+				input: {
 					file_path: testFilePath,
 					old_string: testOldString,
 					new_string: testNewString,
@@ -363,7 +365,7 @@ describe("searchReplaceTool", () => {
 				capturedResult = result
 			})
 
-			await searchReplaceTool.handle(mockCline, toolUse as ToolUse<"search_replace">, {
+			await searchReplaceTool.handle(mockCline, toolUse as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: localPushToolResult,

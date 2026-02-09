@@ -87,11 +87,8 @@ describe("maybeRemoveImageBlocks", () => {
 					},
 					{
 						type: "image",
-						source: {
-							type: "base64",
-							media_type: "image/jpeg",
-							data: "base64-encoded-image-data",
-						},
+						image: "base64-encoded-image-data",
+						mediaType: "image/jpeg",
 					},
 				],
 			},
@@ -116,11 +113,8 @@ describe("maybeRemoveImageBlocks", () => {
 					},
 					{
 						type: "image",
-						source: {
-							type: "base64",
-							media_type: "image/jpeg",
-							data: "base64-encoded-image-data",
-						},
+						image: "base64-encoded-image-data",
+						mediaType: "image/jpeg",
 					},
 				],
 			},
@@ -159,11 +153,8 @@ describe("maybeRemoveImageBlocks", () => {
 					},
 					{
 						type: "image",
-						source: {
-							type: "base64",
-							media_type: "image/jpeg",
-							data: "image-data-1",
-						},
+						image: "image-data-1",
+						mediaType: "image/jpeg",
 					},
 					{
 						type: "text",
@@ -171,11 +162,8 @@ describe("maybeRemoveImageBlocks", () => {
 					},
 					{
 						type: "image",
-						source: {
-							type: "base64",
-							media_type: "image/png",
-							data: "image-data-2",
-						},
+						image: "image-data-2",
+						mediaType: "image/png",
 					},
 				],
 			},
@@ -222,11 +210,8 @@ describe("maybeRemoveImageBlocks", () => {
 					},
 					{
 						type: "image",
-						source: {
-							type: "base64",
-							media_type: "image/jpeg",
-							data: "image-data-1",
-						},
+						image: "image-data-1",
+						mediaType: "image/jpeg",
 					},
 				],
 			},
@@ -243,11 +228,8 @@ describe("maybeRemoveImageBlocks", () => {
 					},
 					{
 						type: "image",
-						source: {
-							type: "base64",
-							media_type: "image/png",
-							data: "image-data-2",
-						},
+						image: "image-data-2",
+						mediaType: "image/png",
 					},
 				],
 			},
@@ -303,11 +285,8 @@ describe("maybeRemoveImageBlocks", () => {
 					},
 					{
 						type: "image",
-						source: {
-							type: "base64",
-							media_type: "image/jpeg",
-							data: "image-data",
-						},
+						image: "image-data",
+						mediaType: "image/jpeg",
 					},
 				],
 				ts: 1620000000000,

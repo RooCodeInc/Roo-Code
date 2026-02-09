@@ -126,10 +126,10 @@ export class NewTaskTool extends BaseTool<"new_task"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"new_task">): Promise<void> {
-		const mode: string | undefined = block.params.mode
-		const message: string | undefined = block.params.message
-		const todos: string | undefined = block.params.todos
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const mode: string | undefined = block.input.mode
+		const message: string | undefined = block.input.message
+		const todos: string | undefined = block.input.todos
 
 		const partialMessage = JSON.stringify({
 			tool: "newTask",

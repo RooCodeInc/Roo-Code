@@ -45,8 +45,8 @@ export class AskFollowupQuestionTool extends BaseTool<"ask_followup_question"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"ask_followup_question">): Promise<void> {
-		const question: string | undefined = block.nativeArgs?.question ?? block.params.question
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const question: string | undefined = block.nativeArgs?.question ?? block.input.question
 
 		// During partial streaming, only show the question to avoid displaying raw JSON
 		// The full JSON with suggestions will be sent when the tool call is complete (!block.partial)

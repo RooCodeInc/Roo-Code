@@ -191,7 +191,7 @@ describe("writeToFileTool", () => {
 	 * Helper function to execute the write file tool with different parameters
 	 */
 	async function executeWriteFileTool(
-		params: Partial<ToolUse["params"]> = {},
+		params: Partial<ToolUse["input"]> = {},
 		options: {
 			fileExists?: boolean
 			isPartial?: boolean
@@ -208,9 +208,10 @@ describe("writeToFileTool", () => {
 
 		// Create a tool use object
 		const toolUse: ToolUse = {
-			type: "tool_use",
-			name: "write_to_file",
-			params: {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "write_to_file",
+			input: {
 				path: testFilePath,
 				content: testContent,
 				...params,
@@ -226,7 +227,7 @@ describe("writeToFileTool", () => {
 			toolResult = result
 		})
 
-		await writeToFileTool.handle(mockCline, toolUse as ToolUse<"write_to_file">, {
+		await writeToFileTool.handle(mockCline, toolUse as ToolUse, {
 			askApproval: mockAskApproval,
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,

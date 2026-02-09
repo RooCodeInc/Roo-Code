@@ -39,10 +39,11 @@ describe("skillTool", () => {
 	})
 
 	it("should handle missing skill parameter", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				skill: "",
@@ -58,10 +59,11 @@ describe("skillTool", () => {
 	})
 
 	it("should handle skill not found", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				skill: "non-existent",
@@ -79,10 +81,11 @@ describe("skillTool", () => {
 	})
 
 	it("should handle empty available skills list", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				skill: "non-existent",
@@ -100,10 +103,11 @@ describe("skillTool", () => {
 	})
 
 	it("should successfully load built-in skill", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				skill: "create-mcp-server",
@@ -144,10 +148,11 @@ Step 1: Create the server...`,
 	})
 
 	it("should successfully load skill with arguments", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				skill: "create-mcp-server",
@@ -179,10 +184,11 @@ Step 1: Create the server...`,
 	})
 
 	it("should handle user rejection", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				skill: "create-mcp-server",
@@ -204,10 +210,11 @@ Step 1: Create the server...`,
 	})
 
 	it("should handle partial block", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {
 				skill: "create-mcp-server",
 				args: "",
 			},
@@ -230,10 +237,11 @@ Step 1: Create the server...`,
 	})
 
 	it("should handle errors during execution", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				skill: "create-mcp-server",
@@ -249,10 +257,11 @@ Step 1: Create the server...`,
 	})
 
 	it("should reset consecutive mistake count on valid skill", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				skill: "create-mcp-server",
@@ -276,10 +285,11 @@ Step 1: Create the server...`,
 	})
 
 	it("should handle Skills Manager not available", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				skill: "create-mcp-server",
@@ -300,10 +310,11 @@ Step 1: Create the server...`,
 	})
 
 	it("should load project skill", async () => {
-		const block: ToolUse<"skill"> = {
-			type: "tool_use" as const,
-			name: "skill" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "skill" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				skill: "my-project-skill",

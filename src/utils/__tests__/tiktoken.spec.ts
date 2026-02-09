@@ -1,7 +1,7 @@
 // npx vitest utils/__tests__/tiktoken.spec.ts
 
+import type { RooContentBlock } from "../../core/task-persistence/apiMessages"
 import { tiktoken } from "../tiktoken"
-import { Anthropic } from "@anthropic-ai/sdk"
 
 describe("tiktoken", () => {
 	it("should return 0 for empty content array", async () => {
@@ -10,7 +10,7 @@ describe("tiktoken", () => {
 	})
 
 	it("should correctly count tokens for text content", async () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: "Hello world" }]
+		const content: RooContentBlock[] = [{ type: "text", text: "Hello world" }]
 
 		const result = await tiktoken(content)
 		// We can't predict the exact token count without mocking,
@@ -19,16 +19,14 @@ describe("tiktoken", () => {
 	})
 
 	it("should handle empty text content", async () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: "" }]
+		const content: RooContentBlock[] = [{ type: "text", text: "" }]
 
 		const result = await tiktoken(content)
 		expect(result).toBe(0)
 	})
 
 	it("should not throw on text content with special tokens", async () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
-			{ type: "text", text: "something<|endoftext|>something" },
-		]
+		const content: RooContentBlock[] = [{ type: "text", text: "something<|endoftext|>something" }]
 
 		const result = await tiktoken(content)
 		expect(result).toBeGreaterThan(0)
@@ -37,7 +35,7 @@ describe("tiktoken", () => {
 	it("should handle missing text content", async () => {
 		// Using 'as any' to bypass TypeScript's type checking for this test case
 		// since we're specifically testing how the function handles undefined text
-		const content = [{ type: "text" }] as any as Anthropic.Messages.ContentBlockParam[]
+		const content = [{ type: "text" }] as any as RooContentBlock[]
 
 		const result = await tiktoken(content)
 		expect(result).toBe(0)
@@ -46,14 +44,11 @@ describe("tiktoken", () => {
 	it("should correctly count tokens for image content with data", async () => {
 		const base64Data =
 			"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: RooContentBlock[] = [
 			{
 				type: "image",
-				source: {
-					type: "base64",
-					media_type: "image/png",
-					data: base64Data,
-				},
+				image: base64Data,
+				mediaType: "image/png",
 			},
 		]
 
@@ -76,7 +71,7 @@ describe("tiktoken", () => {
 					// data is intentionally missing to test fallback
 				},
 			},
-		] as any as Anthropic.Messages.ContentBlockParam[]
+		] as any as RooContentBlock[]
 
 		const result = await tiktoken(content)
 		// Conservative estimate is 300 tokens, plus the fudge factor
@@ -87,15 +82,12 @@ describe("tiktoken", () => {
 	it("should correctly count tokens for mixed content", async () => {
 		const base64Data =
 			"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: RooContentBlock[] = [
 			{ type: "text", text: "Hello world" },
 			{
 				type: "image",
-				source: {
-					type: "base64",
-					media_type: "image/png",
-					data: base64Data,
-				},
+				image: base64Data,
+				mediaType: "image/png",
 			},
 			{ type: "text", text: "Goodbye world" },
 		]
@@ -107,7 +99,7 @@ describe("tiktoken", () => {
 
 	it("should apply a fudge factor to the token count", async () => {
 		// We can test the fudge factor by comparing the token count with a rough estimate
-		const content: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: "Test" }]
+		const content: RooContentBlock[] = [{ type: "text", text: "Test" }]
 
 		const result = await tiktoken(content)
 
@@ -126,7 +118,7 @@ describe("tiktoken", () => {
 		// but we can test that multiple calls with the same content return the same result
 		// which indirectly verifies the encoder is working consistently
 
-		const content: Anthropic.Messages.ContentBlockParam[] = [{ type: "text", text: "Hello world" }]
+		const content: RooContentBlock[] = [{ type: "text", text: "Hello world" }]
 
 		const result1 = await tiktoken(content)
 		const result2 = await tiktoken(content)
@@ -139,12 +131,12 @@ describe("tiktoken", () => {
 		it("should count tokens for tool_use blocks with simple arguments", async () => {
 			const content = [
 				{
-					type: "tool_use",
-					id: "tool_123",
-					name: "read_file",
+					type: "tool-call",
+					toolCallId: "tool_123",
+					toolName: "read_file",
 					input: { path: "/src/main.ts" },
 				},
-			] as Anthropic.Messages.ContentBlockParam[]
+			] as RooContentBlock[]
 
 			const result = await tiktoken(content)
 			// Should return a positive token count for the serialized tool call
@@ -154,16 +146,16 @@ describe("tiktoken", () => {
 		it("should count tokens for tool_use blocks with complex arguments", async () => {
 			const content = [
 				{
-					type: "tool_use",
-					id: "tool_456",
-					name: "write_to_file",
+					type: "tool-call",
+					toolCallId: "tool_456",
+					toolName: "write_to_file",
 					input: {
 						path: "/src/components/Button.tsx",
 						content:
 							"import React from 'react';\n\nexport const Button = ({ children, onClick }) => {\n  return <button onClick={onClick}>{children}</button>;\n};",
 					},
 				},
-			] as Anthropic.Messages.ContentBlockParam[]
+			] as RooContentBlock[]
 
 			const result = await tiktoken(content)
 			// Should return a token count reflecting the larger content
@@ -173,12 +165,12 @@ describe("tiktoken", () => {
 		it("should handle tool_use blocks with empty input", async () => {
 			const content = [
 				{
-					type: "tool_use",
-					id: "tool_789",
-					name: "list_files",
+					type: "tool-call",
+					toolCallId: "tool_789",
+					toolName: "list_files",
 					input: {},
 				},
-			] as Anthropic.Messages.ContentBlockParam[]
+			] as RooContentBlock[]
 
 			const result = await tiktoken(content)
 			// Should still count the tool name (and empty args)
@@ -190,11 +182,12 @@ describe("tiktoken", () => {
 		it("should count tokens for tool_result blocks with string content", async () => {
 			const content = [
 				{
-					type: "tool_result",
-					tool_use_id: "tool_123",
-					content: "File content: export const foo = 'bar';",
+					type: "tool-result",
+					toolCallId: "tool_123",
+					toolName: "",
+					output: { type: "text" as const, value: "File content: export const foo = 'bar';" },
 				},
-			] as Anthropic.Messages.ContentBlockParam[]
+			] as RooContentBlock[]
 
 			const result = await tiktoken(content)
 			// Should return a positive token count
@@ -204,14 +197,18 @@ describe("tiktoken", () => {
 		it("should count tokens for tool_result blocks with array content", async () => {
 			const content = [
 				{
-					type: "tool_result",
-					tool_use_id: "tool_456",
-					content: [
-						{ type: "text", text: "First part of the result" },
-						{ type: "text", text: "Second part of the result" },
-					],
+					type: "tool-result" as const,
+					toolCallId: "tool_456",
+					toolName: "",
+					output: {
+						type: "content" as const,
+						value: [
+							{ type: "text" as const, text: "First part of the result" },
+							{ type: "text" as const, text: "Second part of the result" },
+						],
+					},
 				},
-			] as Anthropic.Messages.ContentBlockParam[]
+			] as RooContentBlock[]
 
 			const result = await tiktoken(content)
 			// Should count tokens from all text parts
@@ -221,12 +218,12 @@ describe("tiktoken", () => {
 		it("should count tokens for tool_result blocks with error flag", async () => {
 			const content = [
 				{
-					type: "tool_result",
-					tool_use_id: "tool_789",
-					is_error: true,
-					content: "Error: File not found",
+					type: "tool-result",
+					toolCallId: "tool_789",
+					toolName: "",
+					output: { type: "text" as const, value: "Error: File not found" },
 				},
-			] as Anthropic.Messages.ContentBlockParam[]
+			] as RooContentBlock[]
 
 			const result = await tiktoken(content)
 			// Should include the error indicator and content
@@ -236,14 +233,18 @@ describe("tiktoken", () => {
 		it("should handle tool_result blocks with image content in array", async () => {
 			const content = [
 				{
-					type: "tool_result",
-					tool_use_id: "tool_abc",
-					content: [
-						{ type: "text", text: "Screenshot captured" },
-						{ type: "image", source: { type: "base64", media_type: "image/png", data: "abc123" } },
-					],
+					type: "tool-result" as const,
+					toolCallId: "tool_abc",
+					toolName: "",
+					output: {
+						type: "content" as const,
+						value: [
+							{ type: "text" as const, text: "Screenshot captured" },
+							{ type: "image-data" as const, data: "abc123", mediaType: "image/png" },
+						],
+					},
 				},
-			] as Anthropic.Messages.ContentBlockParam[]
+			] as RooContentBlock[]
 
 			const result = await tiktoken(content)
 			// Should count text and include placeholder for images
@@ -256,12 +257,12 @@ describe("tiktoken", () => {
 			const content = [
 				{ type: "text", text: "Let me read that file for you." },
 				{
-					type: "tool_use",
-					id: "tool_123",
-					name: "read_file",
+					type: "tool-call",
+					toolCallId: "tool_123",
+					toolName: "read_file",
 					input: { path: "/src/index.ts" },
 				},
-			] as Anthropic.Messages.ContentBlockParam[]
+			] as RooContentBlock[]
 
 			const result = await tiktoken(content)
 			// Should count both text and tool_use tokens
@@ -271,20 +272,24 @@ describe("tiktoken", () => {
 		it("should produce larger count for tool_result with large content vs small content", async () => {
 			const smallContent = [
 				{
-					type: "tool_result",
-					tool_use_id: "tool_1",
-					content: "OK",
+					type: "tool-result",
+					toolCallId: "tool_1",
+					toolName: "",
+					output: { type: "text" as const, value: "OK" },
 				},
-			] as Anthropic.Messages.ContentBlockParam[]
+			] as RooContentBlock[]
 
 			const largeContent = [
 				{
-					type: "tool_result",
-					tool_use_id: "tool_2",
-					content:
-						"This is a much longer result that contains a lot more text and should therefore have a significantly higher token count than the small content.",
+					type: "tool-result",
+					toolCallId: "tool_2",
+					toolName: "",
+					output: {
+						type: "text" as const,
+						value: "This is a much longer result that contains a lot more text and should therefore have a significantly higher token count than the small content.",
+					},
 				},
-			] as Anthropic.Messages.ContentBlockParam[]
+			] as RooContentBlock[]
 
 			const smallResult = await tiktoken(smallContent)
 			const largeResult = await tiktoken(largeContent)

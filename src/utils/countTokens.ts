@@ -1,4 +1,3 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import workerpool from "workerpool"
 
 import { countTokensResultSchema } from "../workers/types"
@@ -10,8 +9,10 @@ export type CountTokensOptions = {
 	useWorker?: boolean
 }
 
+import type { NeutralContentBlock } from "../core/task-persistence"
+
 export async function countTokens(
-	content: Anthropic.Messages.ContentBlockParam[],
+	content: NeutralContentBlock[],
 	{ useWorker = true }: CountTokensOptions = {},
 ): Promise<number> {
 	// Lazily create the worker pool if it doesn't exist.

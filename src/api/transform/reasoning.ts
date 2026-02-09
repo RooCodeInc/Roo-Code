@@ -1,4 +1,3 @@
-import { BetaThinkingConfigParam } from "@anthropic-ai/sdk/resources/beta"
 import OpenAI from "openai"
 import type { GenerateContentConfig } from "@google/genai"
 
@@ -17,7 +16,7 @@ export type RooReasoningParams = {
 	effort?: ReasoningEffortExtended
 }
 
-export type AnthropicReasoningParams = BetaThinkingConfigParam
+export type AnthropicReasoningParams = { type: "enabled"; budget_tokens: number } | { type: "disabled" }
 
 export type OpenAiReasoningParams = { reasoning_effort: OpenAI.Chat.ChatCompletionCreateParams["reasoning_effort"] }
 

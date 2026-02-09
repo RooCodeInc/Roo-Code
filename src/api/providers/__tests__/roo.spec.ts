@@ -1,67 +1,51 @@
 // npx vitest run api/providers/__tests__/roo.spec.ts
 
-import { Anthropic } from "@anthropic-ai/sdk"
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
 import { rooDefaultModelId } from "@roo-code/types"
 
 import { ApiHandlerOptions } from "../../../shared/api"
 
-// Mock OpenAI client
-const mockCreate = vitest.fn()
+// ── AI SDK mocks ──────────────────────────────────────────────────
 
-vitest.mock("openai", () => {
-	return {
-		__esModule: true,
-		default: vitest.fn().mockImplementation(() => ({
-			chat: {
-				completions: {
-					create: mockCreate.mockImplementation(async (options) => {
-						if (!options.stream) {
-							return {
-								id: "test-completion",
-								choices: [
-									{
-										message: { role: "assistant", content: "Test response" },
-										finish_reason: "stop",
-										index: 0,
-									},
-								],
-								usage: {
-									prompt_tokens: 10,
-									completion_tokens: 5,
-									total_tokens: 15,
-								},
-							}
-						}
+const { mockStreamText, mockGenerateText, mockLanguageModel, mockCreateOpenAICompatible } = vi.hoisted(() => {
+	const mockLanguageModel = vi.fn(() => ({
+		modelId: "test-model",
+		provider: "roo",
+	}))
 
-						return {
-							[Symbol.asyncIterator]: async function* () {
-								yield {
-									choices: [{ delta: { content: "Test response" }, index: 0 }],
-									usage: null,
-								}
-								yield {
-									choices: [{ delta: {}, index: 0 }],
-									usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-								}
-							},
-						}
-					}),
-				},
+	const mockCreateOpenAICompatible = vi.fn(() => {
+		const providerFn = Object.assign(
+			vi.fn(() => ({ modelId: "test-model", provider: "roo" })),
+			{
+				languageModel: mockLanguageModel,
 			},
-		})),
+		)
+		return providerFn
+	})
+
+	return {
+		mockStreamText: vi.fn(),
+		mockGenerateText: vi.fn(),
+		mockLanguageModel,
+		mockCreateOpenAICompatible,
 	}
 })
 
-// Mock CloudService - Define functions outside to avoid initialization issues
-const mockGetSessionToken = vitest.fn()
-const mockHasInstance = vitest.fn()
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
+	return { ...actual, streamText: mockStreamText, generateText: mockGenerateText }
+})
 
-// Create mock functions that we can control
-const mockGetSessionTokenFn = vitest.fn()
-const mockHasInstanceFn = vitest.fn()
-const mockOnFn = vitest.fn()
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: mockCreateOpenAICompatible,
+}))
 
-vitest.mock("@roo-code/cloud", () => ({
+// ── CloudService mocks ────────────────────────────────────────────
+
+const mockGetSessionTokenFn = vi.fn()
+const mockHasInstanceFn = vi.fn()
+
+vi.mock("@roo-code/cloud", () => ({
 	CloudService: {
 		hasInstance: () => mockHasInstanceFn(),
 		get instance() {
@@ -69,16 +53,17 @@ vitest.mock("@roo-code/cloud", () => ({
 				authService: {
 					getSessionToken: () => mockGetSessionTokenFn(),
 				},
-				on: vitest.fn(),
-				off: vitest.fn(),
+				on: vi.fn(),
+				off: vi.fn(),
 			}
 		},
 	},
 }))
 
-// Mock i18n
-vitest.mock("../../../i18n", () => ({
-	t: vitest.fn((key: string) => {
+// ── i18n mock ─────────────────────────────────────────────────────
+
+vi.mock("../../../i18n", () => ({
+	t: vi.fn((key: string) => {
 		if (key === "common:errors.roo.authenticationRequired") {
 			return "Authentication required for Roo Code Cloud"
 		}
@@ -86,18 +71,19 @@ vitest.mock("../../../i18n", () => ({
 	}),
 }))
 
-// Mock model cache
-vitest.mock("../../providers/fetchers/modelCache", () => ({
-	getModels: vitest.fn(),
-	flushModels: vitest.fn(),
-	getModelsFromCache: vitest.fn((provider: string) => {
+// ── Model cache mock ──────────────────────────────────────────────
+
+vi.mock("../../providers/fetchers/modelCache", () => ({
+	getModels: vi.fn(),
+	flushModels: vi.fn(),
+	getModelsFromCache: vi.fn((provider: string) => {
 		if (provider === "roo") {
 			return {
 				"xai/grok-code-fast-1": {
 					maxTokens: 16_384,
 					contextWindow: 262_144,
 					supportsImages: false,
-					supportsReasoningEffort: true, // Enable reasoning for tests
+					supportsReasoningEffort: true,
 					supportsPromptCache: true,
 					inputPrice: 0,
 					outputPrice: 0,
@@ -124,15 +110,39 @@ vitest.mock("../../providers/fetchers/modelCache", () => ({
 	}),
 }))
 
-// Import after mocks are set up
+// ── Import after mocks ────────────────────────────────────────────
+
 import { RooHandler } from "../roo"
-import { CloudService } from "@roo-code/cloud"
+
+// ── Test helpers ──────────────────────────────────────────────────
+
+function createDefaultStreamMock(
+	textContent = "Test response",
+	rawUsage: Record<string, unknown> = { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+) {
+	async function* fullStream() {
+		if (textContent) {
+			yield { type: "text-delta" as const, text: textContent }
+		}
+	}
+	return {
+		fullStream: fullStream(),
+		usage: Promise.resolve({
+			inputTokens: rawUsage.prompt_tokens ?? 10,
+			outputTokens: rawUsage.completion_tokens ?? 5,
+			details: {},
+			raw: rawUsage,
+		}),
+	}
+}
+
+// ── Tests ─────────────────────────────────────────────────────────
 
 describe("RooHandler", () => {
 	let handler: RooHandler
 	let mockOptions: ApiHandlerOptions
 	const systemPrompt = "You are a helpful assistant."
-	const messages: Anthropic.Messages.MessageParam[] = [
+	const messages: NeutralMessageParam[] = [
 		{
 			role: "user",
 			content: "Hello!",
@@ -146,8 +156,10 @@ describe("RooHandler", () => {
 		// Set up CloudService mocks for successful authentication
 		mockHasInstanceFn.mockReturnValue(true)
 		mockGetSessionTokenFn.mockReturnValue("test-session-token")
-		mockCreate.mockClear()
-		vitest.clearAllMocks()
+		vi.clearAllMocks()
+		// Restore default mock implementations after clearAllMocks
+		mockHasInstanceFn.mockReturnValue(true)
+		mockGetSessionTokenFn.mockReturnValue("test-session-token")
 	})
 
 	describe("constructor", () => {
@@ -162,7 +174,6 @@ describe("RooHandler", () => {
 			expect(() => {
 				new RooHandler(mockOptions)
 			}).not.toThrow()
-			// Constructor should succeed even without CloudService
 			const handler = new RooHandler(mockOptions)
 			expect(handler).toBeInstanceOf(RooHandler)
 		})
@@ -173,7 +184,6 @@ describe("RooHandler", () => {
 			expect(() => {
 				new RooHandler(mockOptions)
 			}).not.toThrow()
-			// Constructor should succeed even without session token
 			const handler = new RooHandler(mockOptions)
 			expect(handler).toBeInstanceOf(RooHandler)
 		})
@@ -187,29 +197,44 @@ describe("RooHandler", () => {
 		it("should pass correct configuration to base class", () => {
 			handler = new RooHandler(mockOptions)
 			expect(handler).toBeInstanceOf(RooHandler)
-			// The handler should be initialized with correct base URL and API key
-			// We can't directly test the parent class constructor, but we can verify the handler works
-			expect(handler).toBeDefined()
+			// Verify createOpenAICompatible was called with correct config
+			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+				expect.objectContaining({
+					name: "roo",
+					apiKey: "test-session-token",
+					baseURL: expect.stringContaining("/v1"),
+				}),
+			)
 		})
 	})
 
 	describe("createMessage", () => {
 		beforeEach(() => {
 			handler = new RooHandler(mockOptions)
+			// Clear mocks from constructor
+			mockCreateOpenAICompatible.mockClear()
+			mockLanguageModel.mockClear()
+			mockStreamText.mockReturnValue(createDefaultStreamMock())
 		})
 
-		it("should update API key before making request", async () => {
-			// Set up a fresh token that will be returned when createMessage is called
+		it("should refresh auth before making request", async () => {
 			const freshToken = "fresh-session-token"
 			mockGetSessionTokenFn.mockReturnValue(freshToken)
 
 			const stream = handler.createMessage(systemPrompt, messages)
-			// Consume the stream to trigger the API call
 			for await (const _chunk of stream) {
-				// Just consume
+				// Consume stream
 			}
 
-			// Verify getSessionToken was called to get the fresh token
+			// Verify provider was recreated with fresh token
+			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: freshToken,
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
+			)
 			expect(mockGetSessionTokenFn).toHaveBeenCalled()
 		})
 
@@ -240,33 +265,27 @@ describe("RooHandler", () => {
 		})
 
 		it("should handle API errors", async () => {
-			mockCreate.mockRejectedValueOnce(new Error("API Error"))
+			async function* failingStream(): AsyncGenerator<never> {
+				yield* [] as never[]
+				throw new Error("API Error")
+			}
+			mockStreamText.mockReturnValue({
+				fullStream: failingStream(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0, details: {}, raw: {} }),
+			})
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			await expect(async () => {
 				for await (const _chunk of stream) {
 					// Should not reach here
 				}
-			}).rejects.toThrow("API Error")
+			}).rejects.toThrow()
 		})
 
 		it("should handle empty response content", async () => {
-			mockCreate.mockResolvedValueOnce({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: { content: null },
-								index: 0,
-							},
-						],
-						usage: {
-							prompt_tokens: 10,
-							completion_tokens: 0,
-							total_tokens: 10,
-						},
-					}
-				},
-			})
+			mockStreamText.mockReturnValue(
+				createDefaultStreamMock("", { prompt_tokens: 10, completion_tokens: 0, total_tokens: 10 }),
+			)
 
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
@@ -281,30 +300,46 @@ describe("RooHandler", () => {
 		})
 
 		it("should handle multiple messages in conversation", async () => {
-			const multipleMessages: Anthropic.Messages.MessageParam[] = [
+			const multipleMessages: NeutralMessageParam[] = [
 				{ role: "user", content: "First message" },
 				{ role: "assistant", content: "First response" },
 				{ role: "user", content: "Second message" },
 			]
 
 			const stream = handler.createMessage(systemPrompt, multipleMessages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
+			for await (const _chunk of stream) {
+				// Consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
+			// Verify streamText was called with system prompt and messages
+			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					messages: expect.arrayContaining([
-						expect.objectContaining({ role: "system", content: systemPrompt }),
-						expect.objectContaining({ role: "user", content: "First message" }),
-						expect.objectContaining({ role: "assistant", content: "First response" }),
-						expect.objectContaining({ role: "user", content: "Second message" }),
-					]),
+					system: systemPrompt,
+					messages: expect.any(Array),
 				}),
+			)
+
+			// Verify custom headers were set on the provider
+			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
 				expect.objectContaining({
 					headers: expect.objectContaining({
 						"X-Roo-App-Version": expect.any(String),
+					}),
+				}),
+			)
+		})
+
+		it("should include X-Roo-Task-ID header when taskId is present", async () => {
+			const stream = handler.createMessage(systemPrompt, messages, { taskId: "task-abc-123" })
+			for await (const _chunk of stream) {
+				// Consume stream
+			}
+
+			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+				expect.objectContaining({
+					headers: expect.objectContaining({
+						"X-Roo-App-Version": expect.any(String),
+						"X-Roo-Task-ID": "task-abc-123",
 					}),
 				}),
 			)
@@ -314,55 +349,42 @@ describe("RooHandler", () => {
 	describe("completePrompt", () => {
 		beforeEach(() => {
 			handler = new RooHandler(mockOptions)
+			mockCreateOpenAICompatible.mockClear()
+			mockLanguageModel.mockClear()
+			mockGenerateText.mockResolvedValue({ text: "Test response" })
 		})
 
 		it("should complete prompt successfully", async () => {
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.apiModelId,
-				messages: [{ role: "user", content: "Test prompt" }],
-			})
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					prompt: "Test prompt",
+				}),
+			)
 		})
 
-		it("should update API key before making request", async () => {
-			// Set up a fresh token that will be returned when completePrompt is called
+		it("should refresh auth before making request", async () => {
 			const freshToken = "fresh-session-token"
 			mockGetSessionTokenFn.mockReturnValue(freshToken)
 
-			// Access the client's apiKey property to verify it gets updated
-			const clientApiKeyGetter = vitest.fn()
-			Object.defineProperty(handler["client"], "apiKey", {
-				get: clientApiKeyGetter,
-				set: vitest.fn(),
-				configurable: true,
-			})
-
 			await handler.completePrompt("Test prompt")
 
-			// Verify getSessionToken was called to get the fresh token
+			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: freshToken,
+				}),
+			)
 			expect(mockGetSessionTokenFn).toHaveBeenCalled()
 		})
 
 		it("should handle API errors", async () => {
-			mockCreate.mockRejectedValueOnce(new Error("API Error"))
-			await expect(handler.completePrompt("Test prompt")).rejects.toThrow(
-				"Roo Code Cloud completion error: API Error",
-			)
+			mockGenerateText.mockRejectedValueOnce(new Error("API Error"))
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("API Error")
 		})
 
 		it("should handle empty response", async () => {
-			mockCreate.mockResolvedValueOnce({
-				choices: [{ message: { content: "" } }],
-			})
-			const result = await handler.completePrompt("Test prompt")
-			expect(result).toBe("")
-		})
-
-		it("should handle missing response content", async () => {
-			mockCreate.mockResolvedValueOnce({
-				choices: [{ message: {} }],
-			})
+			mockGenerateText.mockResolvedValueOnce({ text: "" })
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("")
 		})
@@ -377,7 +399,6 @@ describe("RooHandler", () => {
 			const modelInfo = handler.getModel()
 			expect(modelInfo.id).toBe(mockOptions.apiModelId)
 			expect(modelInfo.info).toBeDefined()
-			// Models are loaded dynamically, so we just verify the structure
 			expect(modelInfo.info.maxTokens).toBeDefined()
 			expect(modelInfo.info.contextWindow).toBeDefined()
 		})
@@ -387,7 +408,6 @@ describe("RooHandler", () => {
 			const modelInfo = handlerWithoutModel.getModel()
 			expect(modelInfo.id).toBe(rooDefaultModelId)
 			expect(modelInfo.info).toBeDefined()
-			// Models are loaded dynamically
 			expect(modelInfo.info.maxTokens).toBeDefined()
 			expect(modelInfo.info.contextWindow).toBeDefined()
 		})
@@ -399,7 +419,6 @@ describe("RooHandler", () => {
 			const modelInfo = handlerWithUnknownModel.getModel()
 			expect(modelInfo.id).toBe("unknown-model-id")
 			expect(modelInfo.info).toBeDefined()
-			// Should return fallback info for unknown models (dynamic models will be merged in real usage)
 			expect(modelInfo.info.maxTokens).toBeDefined()
 			expect(modelInfo.info.contextWindow).toBeDefined()
 			expect(modelInfo.info.supportsImages).toBeDefined()
@@ -409,7 +428,6 @@ describe("RooHandler", () => {
 		})
 
 		it("should handle any model ID since models are loaded dynamically", () => {
-			// Test with various model IDs - they should all work since models are loaded dynamically
 			const testModelIds = ["xai/grok-code-fast-1", "roo/sonic", "deepseek/deepseek-chat-v3.1"]
 
 			for (const modelId of testModelIds) {
@@ -417,7 +435,6 @@ describe("RooHandler", () => {
 				const modelInfo = handlerWithModel.getModel()
 				expect(modelInfo.id).toBe(modelId)
 				expect(modelInfo.info).toBeDefined()
-				// Verify the structure has required fields
 				expect(modelInfo.info.maxTokens).toBeDefined()
 				expect(modelInfo.info.contextWindow).toBeDefined()
 			}
@@ -428,7 +445,6 @@ describe("RooHandler", () => {
 				apiModelId: "minimax/minimax-m2:free",
 			})
 			const modelInfo = handlerWithMinimax.getModel()
-			// The settings from API should already be applied in the cached model info
 			expect(modelInfo.info.inputPrice).toBe(0.15)
 			expect(modelInfo.info.outputPrice).toBe(0.6)
 		})
@@ -437,19 +453,18 @@ describe("RooHandler", () => {
 	describe("temperature and model configuration", () => {
 		it("should use default temperature of 0", async () => {
 			handler = new RooHandler(mockOptions)
+			mockCreateOpenAICompatible.mockClear()
+			mockLanguageModel.mockClear()
+			mockStreamText.mockReturnValue(createDefaultStreamMock())
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
+			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
 					temperature: 0,
-				}),
-				expect.objectContaining({
-					headers: expect.objectContaining({
-						"X-Roo-App-Version": expect.any(String),
-					}),
 				}),
 			)
 		})
@@ -459,29 +474,31 @@ describe("RooHandler", () => {
 				...mockOptions,
 				modelTemperature: 0.9,
 			})
+			mockCreateOpenAICompatible.mockClear()
+			mockLanguageModel.mockClear()
+			mockStreamText.mockReturnValue(createDefaultStreamMock())
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
+			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
 					temperature: 0.9,
-				}),
-				expect.objectContaining({
-					headers: expect.objectContaining({
-						"X-Roo-App-Version": expect.any(String),
-					}),
 				}),
 			)
 		})
 
 		it("should use correct API endpoint", () => {
-			// The base URL should be set to Roo's API endpoint
-			// We can't directly test the OpenAI client configuration, but we can verify the handler initializes
 			handler = new RooHandler(mockOptions)
 			expect(handler).toBeInstanceOf(RooHandler)
-			// The handler should work with the Roo API endpoint
+			// Verify the provider was created with the expected base URL
+			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+				expect.objectContaining({
+					baseURL: expect.stringMatching(/\/v1$/),
+				}),
+			)
 		})
 	})
 
@@ -493,36 +510,27 @@ describe("RooHandler", () => {
 			handler = new RooHandler(mockOptions)
 			expect(handler).toBeInstanceOf(RooHandler)
 			expect(mockGetSessionTokenFn).toHaveBeenCalled()
+			// Verify the provider was created with the session token
+			expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: testToken,
+				}),
+			)
 		})
 
 		it("should handle undefined auth service gracefully", () => {
-			mockHasInstanceFn.mockReturnValue(true)
-			// Mock CloudService with undefined authService
-			const originalGetSessionToken = mockGetSessionTokenFn.getMockImplementation()
-
-			// Temporarily make authService return undefined
+			const originalImpl = mockGetSessionTokenFn.getMockImplementation()
 			mockGetSessionTokenFn.mockImplementation(() => undefined)
 
 			try {
-				Object.defineProperty(CloudService, "instance", {
-					get: () => ({
-						authService: undefined,
-						on: vitest.fn(),
-						off: vitest.fn(),
-					}),
-					configurable: true,
-				})
-
 				expect(() => {
 					new RooHandler(mockOptions)
 				}).not.toThrow()
-				// Constructor should succeed even with undefined auth service
 				const handler = new RooHandler(mockOptions)
 				expect(handler).toBeInstanceOf(RooHandler)
 			} finally {
-				// Restore original mock implementation
-				if (originalGetSessionToken) {
-					mockGetSessionTokenFn.mockImplementation(originalGetSessionToken)
+				if (originalImpl) {
+					mockGetSessionTokenFn.mockImplementation(originalImpl)
 				} else {
 					mockGetSessionTokenFn.mockReturnValue("test-session-token")
 				}
@@ -535,34 +543,66 @@ describe("RooHandler", () => {
 			expect(() => {
 				new RooHandler(mockOptions)
 			}).not.toThrow()
-			// Constructor should succeed even with empty session token
 			const handler = new RooHandler(mockOptions)
 			expect(handler).toBeInstanceOf(RooHandler)
+		})
+
+		it("should recreate provider on each createMessage call", async () => {
+			handler = new RooHandler(mockOptions)
+			mockCreateOpenAICompatible.mockClear()
+			mockStreamText.mockReturnValue(createDefaultStreamMock())
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream) {
+				// Consume
+			}
+
+			// refreshProvider should have called createOpenAICompatible
+			expect(mockCreateOpenAICompatible).toHaveBeenCalledTimes(1)
+
+			// Call again
+			mockStreamText.mockReturnValue(createDefaultStreamMock())
+			const stream2 = handler.createMessage(systemPrompt, messages)
+			for await (const _chunk of stream2) {
+				// Consume
+			}
+
+			expect(mockCreateOpenAICompatible).toHaveBeenCalledTimes(2)
 		})
 	})
 
 	describe("reasoning effort support", () => {
+		/**
+		 * Helper to extract the transformRequestBody function from the most recent
+		 * `provider.languageModel()` call and invoke it with a test body.
+		 */
+		function getTransformedBody() {
+			const lastCall = mockLanguageModel.mock.calls[mockLanguageModel.mock.calls.length - 1] as unknown[]
+			const options = lastCall?.[1] as {
+				transformRequestBody?: (body: Record<string, unknown>) => Record<string, unknown>
+			}
+			const transformFn = options?.transformRequestBody
+			if (!transformFn) {
+				return { model: "test", messages: [] } as Record<string, unknown>
+			}
+			return transformFn({ model: "test", messages: [] })
+		}
+
+		beforeEach(() => {
+			mockStreamText.mockReturnValue(createDefaultStreamMock())
+		})
+
 		it("should include reasoning with enabled: false when not enabled", async () => {
 			handler = new RooHandler(mockOptions)
+			mockLanguageModel.mockClear()
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					model: mockOptions.apiModelId,
-					messages: expect.any(Array),
-					stream: true,
-					stream_options: { include_usage: true },
-					reasoning: { enabled: false },
-				}),
-				expect.objectContaining({
-					headers: expect.objectContaining({
-						"X-Roo-App-Version": expect.any(String),
-					}),
-				}),
-			)
+			const body = getTransformedBody()
+			expect(body.reasoning).toEqual({ enabled: false })
 		})
 
 		it("should include reasoning with enabled: false when explicitly disabled", async () => {
@@ -570,21 +610,15 @@ describe("RooHandler", () => {
 				...mockOptions,
 				enableReasoningEffort: false,
 			})
+			mockLanguageModel.mockClear()
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					reasoning: { enabled: false },
-				}),
-				expect.objectContaining({
-					headers: expect.objectContaining({
-						"X-Roo-App-Version": expect.any(String),
-					}),
-				}),
-			)
+			const body = getTransformedBody()
+			expect(body.reasoning).toEqual({ enabled: false })
 		})
 
 		it("should include reasoning with enabled: true and effort: low", async () => {
@@ -592,21 +626,15 @@ describe("RooHandler", () => {
 				...mockOptions,
 				reasoningEffort: "low",
 			})
+			mockLanguageModel.mockClear()
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					reasoning: { enabled: true, effort: "low" },
-				}),
-				expect.objectContaining({
-					headers: expect.objectContaining({
-						"X-Roo-App-Version": expect.any(String),
-					}),
-				}),
-			)
+			const body = getTransformedBody()
+			expect(body.reasoning).toEqual({ enabled: true, effort: "low" })
 		})
 
 		it("should include reasoning with enabled: true and effort: medium", async () => {
@@ -614,21 +642,15 @@ describe("RooHandler", () => {
 				...mockOptions,
 				reasoningEffort: "medium",
 			})
+			mockLanguageModel.mockClear()
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					reasoning: { enabled: true, effort: "medium" },
-				}),
-				expect.objectContaining({
-					headers: expect.objectContaining({
-						"X-Roo-App-Version": expect.any(String),
-					}),
-				}),
-			)
+			const body = getTransformedBody()
+			expect(body.reasoning).toEqual({ enabled: true, effort: "medium" })
 		})
 
 		it("should include reasoning with enabled: true and effort: high", async () => {
@@ -636,21 +658,15 @@ describe("RooHandler", () => {
 				...mockOptions,
 				reasoningEffort: "high",
 			})
+			mockLanguageModel.mockClear()
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					reasoning: { enabled: true, effort: "high" },
-				}),
-				expect.objectContaining({
-					headers: expect.objectContaining({
-						"X-Roo-App-Version": expect.any(String),
-					}),
-				}),
-			)
+			const body = getTransformedBody()
+			expect(body.reasoning).toEqual({ enabled: true, effort: "high" })
 		})
 
 		it("should not include reasoning for minimal (treated as none)", async () => {
@@ -658,14 +674,16 @@ describe("RooHandler", () => {
 				...mockOptions,
 				reasoningEffort: "minimal",
 			})
+			mockLanguageModel.mockClear()
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
 			// minimal should result in no reasoning parameter
-			const callArgs = mockCreate.mock.calls[0][0]
-			expect(callArgs.reasoning).toBeUndefined()
+			const body = getTransformedBody()
+			expect(body.reasoning).toBeUndefined()
 		})
 
 		it("should handle enableReasoningEffort: false overriding reasoningEffort setting", async () => {
@@ -674,75 +692,41 @@ describe("RooHandler", () => {
 				enableReasoningEffort: false,
 				reasoningEffort: "high",
 			})
+			mockLanguageModel.mockClear()
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _chunk of stream) {
 				// Consume stream
 			}
 
 			// When explicitly disabled, should send enabled: false regardless of effort setting
-			expect(mockCreate).toHaveBeenCalledWith(
-				expect.objectContaining({
-					reasoning: { enabled: false },
-				}),
-				expect.objectContaining({
-					headers: expect.objectContaining({
-						"X-Roo-App-Version": expect.any(String),
-					}),
-				}),
-			)
+			const body = getTransformedBody()
+			expect(body.reasoning).toEqual({ enabled: false })
 		})
 	})
 
 	describe("tool calls handling", () => {
 		beforeEach(() => {
 			handler = new RooHandler(mockOptions)
+			mockCreateOpenAICompatible.mockClear()
+			mockLanguageModel.mockClear()
 		})
 
-		it("should yield raw tool call chunks when tool_calls present", async () => {
-			mockCreate.mockResolvedValueOnce({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_123",
-											function: { name: "read_file", arguments: '{"path":"' },
-										},
-									],
-								},
-								index: 0,
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											function: { arguments: 'test.ts"}' },
-										},
-									],
-								},
-								index: 0,
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {},
-								finish_reason: "tool_calls",
-								index: 0,
-							},
-						],
-						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-					}
-				},
+		it("should yield tool call chunks from AI SDK stream", async () => {
+			async function* mockFullStream() {
+				yield { type: "tool-input-start" as const, id: "call_123", toolName: "read_file" }
+				yield { type: "tool-input-delta" as const, id: "call_123", delta: '{"path":"test.ts"}' }
+				yield { type: "tool-input-end" as const, id: "call_123" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 10,
+					outputTokens: 5,
+					details: {},
+					raw: { prompt_tokens: 10, completion_tokens: 5 },
+				}),
 			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
@@ -751,302 +735,230 @@ describe("RooHandler", () => {
 				chunks.push(chunk)
 			}
 
-			// Verify we get raw tool call chunks
-			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
+			const startChunks = chunks.filter((c) => c.type === "tool_call_start")
+			const deltaChunks = chunks.filter((c) => c.type === "tool_call_delta")
+			const endChunks = chunks.filter((c) => c.type === "tool_call_end")
 
-			expect(rawChunks).toHaveLength(2)
-			expect(rawChunks[0]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
+			expect(startChunks).toHaveLength(1)
+			expect(startChunks[0]).toEqual({
+				type: "tool_call_start",
 				id: "call_123",
 				name: "read_file",
-				arguments: '{"path":"',
 			})
-			expect(rawChunks[1]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: undefined,
-				name: undefined,
-				arguments: 'test.ts"}',
+			expect(deltaChunks).toHaveLength(1)
+			expect(deltaChunks[0]).toEqual({
+				type: "tool_call_delta",
+				id: "call_123",
+				delta: '{"path":"test.ts"}',
 			})
-		})
-
-		it("should yield raw tool call chunks even when finish_reason is not tool_calls", async () => {
-			mockCreate.mockResolvedValueOnce({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_456",
-											function: {
-												name: "write_to_file",
-												arguments: '{"path":"test.ts","content":"hello"}',
-											},
-										},
-									],
-								},
-								index: 0,
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {},
-								finish_reason: "stop",
-								index: 0,
-							},
-						],
-						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-					}
-				},
-			})
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-
-			expect(rawChunks).toHaveLength(1)
-			expect(rawChunks[0]).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: "call_456",
-				name: "write_to_file",
-				arguments: '{"path":"test.ts","content":"hello"}',
-			})
-		})
-
-		it("should handle multiple tool calls with different indices", async () => {
-			mockCreate.mockResolvedValueOnce({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_1",
-											function: { name: "read_file", arguments: '{"path":"file1.ts"}' },
-										},
-									],
-								},
-								index: 0,
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 1,
-											id: "call_2",
-											function: { name: "read_file", arguments: '{"path":"file2.ts"}' },
-										},
-									],
-								},
-								index: 0,
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {},
-								finish_reason: "tool_calls",
-								index: 0,
-							},
-						],
-						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-					}
-				},
-			})
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-
-			expect(rawChunks).toHaveLength(2)
-			expect(rawChunks[0].index).toBe(0)
-			expect(rawChunks[0].id).toBe("call_1")
-			expect(rawChunks[1].index).toBe(1)
-			expect(rawChunks[1].id).toBe("call_2")
-		})
-
-		it("should emit raw chunks for streaming arguments", async () => {
-			mockCreate.mockResolvedValueOnce({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_789",
-											function: { name: "execute_command", arguments: '{"command":"' },
-										},
-									],
-								},
-								index: 0,
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											function: { arguments: "npm install" },
-										},
-									],
-								},
-								index: 0,
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											function: { arguments: '"}' },
-										},
-									],
-								},
-								index: 0,
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {},
-								finish_reason: "tool_calls",
-								index: 0,
-							},
-						],
-						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-					}
-				},
-			})
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-
-			expect(rawChunks).toHaveLength(3)
-			expect(rawChunks[0].arguments).toBe('{"command":"')
-			expect(rawChunks[1].arguments).toBe("npm install")
-			expect(rawChunks[2].arguments).toBe('"}')
-		})
-
-		it("should not yield tool call chunks when no tool calls present", async () => {
-			mockCreate.mockResolvedValueOnce({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [{ delta: { content: "Regular text response" }, index: 0 }],
-					}
-					yield {
-						choices: [{ delta: {}, finish_reason: "stop", index: 0 }],
-						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-					}
-				},
-			})
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				chunks.push(chunk)
-			}
-
-			const rawChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-			expect(rawChunks).toHaveLength(0)
-		})
-
-		it("should yield tool_call_end events when finish_reason is tool_calls", async () => {
-			// Import NativeToolCallParser to set up state
-			const { NativeToolCallParser } = await import("../../../core/assistant-message/NativeToolCallParser")
-
-			// Clear any previous state
-			NativeToolCallParser.clearRawChunkState()
-
-			mockCreate.mockResolvedValueOnce({
-				[Symbol.asyncIterator]: async function* () {
-					yield {
-						choices: [
-							{
-								delta: {
-									tool_calls: [
-										{
-											index: 0,
-											id: "call_finish_test",
-											function: { name: "read_file", arguments: '{"path":"test.ts"}' },
-										},
-									],
-								},
-								index: 0,
-							},
-						],
-					}
-					yield {
-						choices: [
-							{
-								delta: {},
-								finish_reason: "tool_calls",
-								index: 0,
-							},
-						],
-						usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
-					}
-				},
-			})
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const chunks: any[] = []
-			for await (const chunk of stream) {
-				// Simulate what Task.ts does: when we receive tool_call_partial,
-				// process it through NativeToolCallParser to populate rawChunkTracker
-				if (chunk.type === "tool_call_partial") {
-					NativeToolCallParser.processRawChunk({
-						index: chunk.index,
-						id: chunk.id,
-						name: chunk.name,
-						arguments: chunk.arguments,
-					})
-				}
-				chunks.push(chunk)
-			}
-
-			// Should have tool_call_partial and tool_call_end
-			const partialChunks = chunks.filter((chunk) => chunk.type === "tool_call_partial")
-			const endChunks = chunks.filter((chunk) => chunk.type === "tool_call_end")
-
-			expect(partialChunks).toHaveLength(1)
 			expect(endChunks).toHaveLength(1)
-			expect(endChunks[0].id).toBe("call_finish_test")
+			expect(endChunks[0]).toEqual({
+				type: "tool_call_end",
+				id: "call_123",
+			})
+		})
+
+		it("should handle multiple tool calls", async () => {
+			async function* mockFullStream() {
+				yield { type: "tool-input-start" as const, id: "call_1", toolName: "read_file" }
+				yield { type: "tool-input-delta" as const, id: "call_1", delta: '{"path":"file1.ts"}' }
+				yield { type: "tool-input-end" as const, id: "call_1" }
+				yield { type: "tool-input-start" as const, id: "call_2", toolName: "read_file" }
+				yield { type: "tool-input-delta" as const, id: "call_2", delta: '{"path":"file2.ts"}' }
+				yield { type: "tool-input-end" as const, id: "call_2" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 10,
+					outputTokens: 5,
+					details: {},
+					raw: { prompt_tokens: 10, completion_tokens: 5 },
+				}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const startChunks = chunks.filter((c) => c.type === "tool_call_start")
+			const endChunks = chunks.filter((c) => c.type === "tool_call_end")
+
+			expect(startChunks).toHaveLength(2)
+			expect(startChunks[0].id).toBe("call_1")
+			expect(startChunks[1].id).toBe("call_2")
+			expect(endChunks).toHaveLength(2)
+		})
+
+		it("should handle streaming arguments across multiple deltas", async () => {
+			async function* mockFullStream() {
+				yield { type: "tool-input-start" as const, id: "call_789", toolName: "execute_command" }
+				yield { type: "tool-input-delta" as const, id: "call_789", delta: '{"command":"' }
+				yield { type: "tool-input-delta" as const, id: "call_789", delta: "npm install" }
+				yield { type: "tool-input-delta" as const, id: "call_789", delta: '"}' }
+				yield { type: "tool-input-end" as const, id: "call_789" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 10,
+					outputTokens: 5,
+					details: {},
+					raw: { prompt_tokens: 10, completion_tokens: 5 },
+				}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const deltaChunks = chunks.filter((c) => c.type === "tool_call_delta")
+			expect(deltaChunks).toHaveLength(3)
+			expect(deltaChunks[0].delta).toBe('{"command":"')
+			expect(deltaChunks[1].delta).toBe("npm install")
+			expect(deltaChunks[2].delta).toBe('"}')
+		})
+
+		it("should not yield tool call chunks when no tools present", async () => {
+			mockStreamText.mockReturnValue(createDefaultStreamMock())
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolChunks = chunks.filter(
+				(c) => c.type === "tool_call_start" || c.type === "tool_call_delta" || c.type === "tool_call_end",
+			)
+			expect(toolChunks).toHaveLength(0)
+		})
+	})
+
+	describe("reasoning streaming", () => {
+		beforeEach(() => {
+			handler = new RooHandler(mockOptions)
+			mockCreateOpenAICompatible.mockClear()
+			mockLanguageModel.mockClear()
+		})
+
+		it("should yield reasoning chunks from AI SDK stream", async () => {
+			async function* mockFullStream() {
+				yield { type: "reasoning-delta" as const, text: "Let me think..." }
+				yield { type: "reasoning-delta" as const, text: " about this." }
+				yield { type: "text-delta" as const, text: "Here is my answer." }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 10,
+					outputTokens: 5,
+					details: {},
+					raw: { prompt_tokens: 10, completion_tokens: 5 },
+				}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			const textChunks = chunks.filter((c) => c.type === "text")
+
+			expect(reasoningChunks).toHaveLength(2)
+			expect(reasoningChunks[0].text).toBe("Let me think...")
+			expect(reasoningChunks[1].text).toBe(" about this.")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0].text).toBe("Here is my answer.")
+		})
+	})
+
+	describe("usage metrics", () => {
+		beforeEach(() => {
+			handler = new RooHandler(mockOptions)
+			mockCreateOpenAICompatible.mockClear()
+			mockLanguageModel.mockClear()
+		})
+
+		it("should return cost from raw usage", async () => {
+			mockStreamText.mockReturnValue(
+				createDefaultStreamMock("response", {
+					prompt_tokens: 100,
+					completion_tokens: 50,
+					cost: 0.005,
+				}),
+			)
+
+			const chunks: any[] = []
+			for await (const chunk of handler.createMessage(systemPrompt, messages)) {
+				chunks.push(chunk)
+			}
+
+			const usage = chunks.find((c) => c.type === "usage")
+			expect(usage).toBeDefined()
+			expect(usage.totalCost).toBe(0.005)
+		})
+
+		it("should set totalCost to 0 for free models", async () => {
+			const freeHandler = new RooHandler({
+				apiModelId: "xai/grok-code-fast-1",
+			})
+			// Override getModel to return isFree
+			const origGetModel = freeHandler.getModel.bind(freeHandler)
+			vi.spyOn(freeHandler, "getModel").mockImplementation(() => {
+				const model = origGetModel()
+				return { ...model, info: { ...model.info, isFree: true } }
+			})
+
+			mockCreateOpenAICompatible.mockClear()
+			mockLanguageModel.mockClear()
+			mockStreamText.mockReturnValue(
+				createDefaultStreamMock("response", {
+					prompt_tokens: 100,
+					completion_tokens: 50,
+					cost: 0.005,
+				}),
+			)
+
+			const chunks: any[] = []
+			for await (const chunk of freeHandler.createMessage(systemPrompt, messages)) {
+				chunks.push(chunk)
+			}
+
+			const usage = chunks.find((c) => c.type === "usage")
+			expect(usage).toBeDefined()
+			expect(usage.totalCost).toBe(0)
+		})
+
+		it("should handle cache token metrics", async () => {
+			mockStreamText.mockReturnValue(
+				createDefaultStreamMock("response", {
+					prompt_tokens: 100,
+					completion_tokens: 50,
+					cache_creation_input_tokens: 20,
+					prompt_tokens_details: { cached_tokens: 30 },
+					cost: 0.003,
+				}),
+			)
+
+			const chunks: any[] = []
+			for await (const chunk of handler.createMessage(systemPrompt, messages)) {
+				chunks.push(chunk)
+			}
+
+			const usage = chunks.find((c) => c.type === "usage")
+			expect(usage).toBeDefined()
+			expect(usage.cacheWriteTokens).toBe(20)
+			expect(usage.cacheReadTokens).toBe(30)
 		})
 	})
 })

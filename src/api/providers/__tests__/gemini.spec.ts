@@ -36,8 +36,7 @@ vitest.mock("@ai-sdk/google", async (importOriginal) => {
 	}
 })
 
-import { Anthropic } from "@anthropic-ai/sdk"
-
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
 import { type ModelInfo, geminiDefaultModelId, ApiProviderError } from "@roo-code/types"
 
 import { t } from "i18next"
@@ -102,7 +101,7 @@ describe("GeminiHandler", () => {
 	})
 
 	describe("createMessage", () => {
-		const mockMessages: Anthropic.Messages.MessageParam[] = [
+		const mockMessages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: "Hello",
@@ -377,7 +376,7 @@ describe("GeminiHandler", () => {
 	})
 
 	describe("error telemetry", () => {
-		const mockMessages: Anthropic.Messages.MessageParam[] = [
+		const mockMessages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: "Hello",

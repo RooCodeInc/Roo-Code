@@ -1,9 +1,9 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { createDeepSeek } from "@ai-sdk/deepseek"
 import { streamText, generateText, ToolSet } from "ai"
 
 import { deepSeekModels, deepSeekDefaultModelId, DEEP_SEEK_DEFAULT_TEMPERATURE, type ModelInfo } from "@roo-code/types"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
@@ -109,7 +109,7 @@ export class DeepSeekHandler extends BaseProvider implements SingleCompletionHan
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { temperature } = this.getModel()

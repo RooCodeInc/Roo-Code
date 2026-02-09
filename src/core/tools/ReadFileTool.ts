@@ -635,7 +635,7 @@ export class ReadFileTool extends BaseTool<"read_file"> {
 		return `[${blockName} with missing path]`
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"read_file">): Promise<void> {
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
 		// Handle both legacy and new format for partial display
 		let filePath = ""
 		if (block.nativeArgs) {

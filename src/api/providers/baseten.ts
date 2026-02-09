@@ -1,9 +1,9 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { createBaseten } from "@ai-sdk/baseten"
 import { streamText, generateText, ToolSet } from "ai"
 
 import { basetenModels, basetenDefaultModelId, type ModelInfo } from "@roo-code/types"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
@@ -94,7 +94,7 @@ export class BasetenHandler extends BaseProvider implements SingleCompletionHand
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { temperature } = this.getModel()

@@ -1,6 +1,6 @@
 // pnpm --filter roo-cline test core/webview/__tests__/ClineProvider.spec.ts
 
-import Anthropic from "@anthropic-ai/sdk"
+import type { NeutralMessageParam } from "../../task-persistence/apiMessages"
 import * as vscode from "vscode"
 import axios from "axios"
 
@@ -1215,7 +1215,7 @@ describe("ClineProvider", () => {
 				{ ts: 4000 },
 				{ ts: 5000 },
 				{ ts: 6000 },
-			] as (Anthropic.MessageParam & { ts?: number })[]
+			] as (NeutralMessageParam & { ts?: number })[]
 
 			// Setup Task instance with auto-mock from the top of the file
 			const mockCline = new Task(defaultTaskOptions) // Create a new mocked instance
@@ -1303,7 +1303,7 @@ describe("ClineProvider", () => {
 				{ ts: 4000 },
 				{ ts: 5000 },
 				{ ts: 6000 },
-			] as (Anthropic.MessageParam & { ts?: number })[]
+			] as (NeutralMessageParam & { ts?: number })[]
 
 			// Setup Task instance with auto-mock from the top of the file
 			const mockCline = new Task(defaultTaskOptions) // Create a new mocked instance

@@ -1,7 +1,6 @@
 // cd src && npx vitest run core/context-management/__tests__/context-management.spec.ts
 
-import { Anthropic } from "@anthropic-ai/sdk"
-
+import type { RooContentBlock } from "../../task-persistence/apiMessages"
 import type { ModelInfo } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
@@ -185,9 +184,7 @@ describe("Context Management", () => {
 		})
 
 		it("should estimate tokens for text blocks", async () => {
-			const content: Array<Anthropic.Messages.ContentBlockParam> = [
-				{ type: "text", text: "This is a text block with 36 characters" },
-			]
+			const content: Array<RooContentBlock> = [{ type: "text", text: "This is a text block with 36 characters" }]
 
 			// With tiktoken, the exact token count may differ from character-based estimation
 			// Instead of expecting an exact number, we verify it's a reasonable positive number
@@ -195,7 +192,7 @@ describe("Context Management", () => {
 			expect(result).toBeGreaterThan(0)
 
 			// We can also verify that longer text results in more tokens
-			const longerContent: Array<Anthropic.Messages.ContentBlockParam> = [
+			const longerContent: Array<RooContentBlock> = [
 				{
 					type: "text",
 					text: "This is a longer text block with significantly more characters to encode into tokens",
@@ -207,12 +204,12 @@ describe("Context Management", () => {
 
 		it("should estimate tokens for image blocks based on data size", async () => {
 			// Small image
-			const smallImage: Array<Anthropic.Messages.ContentBlockParam> = [
-				{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: "small_dummy_data" } },
+			const smallImage: Array<RooContentBlock> = [
+				{ type: "image", image: "small_dummy_data", mediaType: "image/jpeg" },
 			]
 			// Larger image with more data
-			const largerImage: Array<Anthropic.Messages.ContentBlockParam> = [
-				{ type: "image", source: { type: "base64", media_type: "image/png", data: "X".repeat(1000) } },
+			const largerImage: Array<RooContentBlock> = [
+				{ type: "image", image: "X".repeat(1000), mediaType: "image/png" },
 			]
 
 			// Verify the token count scales with the size of the image data
@@ -230,9 +227,9 @@ describe("Context Management", () => {
 		})
 
 		it("should estimate tokens for mixed content blocks", async () => {
-			const content: Array<Anthropic.Messages.ContentBlockParam> = [
+			const content: Array<RooContentBlock> = [
 				{ type: "text", text: "A text block with 30 characters" },
-				{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: "dummy_data" } },
+				{ type: "image", image: "dummy_data", mediaType: "image/jpeg" },
 				{ type: "text", text: "Another text with 24 chars" },
 			]
 
@@ -245,15 +242,15 @@ describe("Context Management", () => {
 			expect(result).toBeGreaterThan(imageTokens)
 
 			// Also test against a version with only the image to verify text adds tokens
-			const imageOnlyContent: Array<Anthropic.Messages.ContentBlockParam> = [
-				{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: "dummy_data" } },
+			const imageOnlyContent: Array<RooContentBlock> = [
+				{ type: "image", image: "dummy_data", mediaType: "image/jpeg" },
 			]
 			const imageOnlyResult = await estimateTokenCount(imageOnlyContent, mockApiHandler)
 			expect(result).toBeGreaterThan(imageOnlyResult)
 		})
 
 		it("should handle empty text blocks", async () => {
-			const content: Array<Anthropic.Messages.ContentBlockParam> = [{ type: "text", text: "" }]
+			const content: Array<RooContentBlock> = [{ type: "text", text: "" }]
 			expect(await estimateTokenCount(content, mockApiHandler)).toBe(0)
 		})
 

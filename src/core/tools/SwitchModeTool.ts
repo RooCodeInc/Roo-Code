@@ -70,9 +70,9 @@ export class SwitchModeTool extends BaseTool<"switch_mode"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"switch_mode">): Promise<void> {
-		const mode_slug: string | undefined = block.params.mode_slug
-		const reason: string | undefined = block.params.reason
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const mode_slug: string | undefined = block.input.mode_slug
+		const reason: string | undefined = block.input.reason
 
 		const partialMessage = JSON.stringify({
 			tool: "switchMode",

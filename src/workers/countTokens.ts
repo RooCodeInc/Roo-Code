@@ -1,12 +1,12 @@
 import workerpool from "workerpool"
 
-import { Anthropic } from "@anthropic-ai/sdk"
+import type { NeutralContentBlock } from "../core/task-persistence"
 
 import { tiktoken } from "../utils/tiktoken"
 
 import { type CountTokensResult } from "./types"
 
-async function countTokens(content: Anthropic.Messages.ContentBlockParam[]): Promise<CountTokensResult> {
+async function countTokens(content: NeutralContentBlock[]): Promise<CountTokensResult> {
 	try {
 		const count = await tiktoken(content)
 		return { success: true, count }

@@ -23,8 +23,7 @@ vi.mock("@ai-sdk/deepseek", () => ({
 	}),
 }))
 
-import type { Anthropic } from "@anthropic-ai/sdk"
-
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
 import { deepSeekDefaultModelId, DEEP_SEEK_DEFAULT_TEMPERATURE, type ModelInfo } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
@@ -173,7 +172,7 @@ describe("DeepSeekHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -400,7 +399,7 @@ describe("DeepSeekHandler", () => {
 
 	describe("reasoning content with deepseek-reasoner", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -570,7 +569,7 @@ describe("DeepSeekHandler", () => {
 
 	describe("tool handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],

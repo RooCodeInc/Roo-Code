@@ -71,10 +71,10 @@ export class SearchFilesTool extends BaseTool<"search_files"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"search_files">): Promise<void> {
-		const relDirPath = block.params.path
-		const regex = block.params.regex
-		const filePattern = block.params.file_pattern
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const relDirPath = block.input.path
+		const regex = block.input.regex
+		const filePattern = block.input.file_pattern
 
 		const absolutePath = relDirPath ? path.resolve(task.cwd, relDirPath) : task.cwd
 		const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)

@@ -95,9 +95,9 @@ export class SkillTool extends BaseTool<"skill"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"skill">): Promise<void> {
-		const skillName: string | undefined = block.params.skill
-		const args: string | undefined = block.params.args
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const skillName: string | undefined = block.input.skill
+		const args: string | undefined = block.input.args
 
 		const partialMessage = JSON.stringify({
 			tool: "skill",

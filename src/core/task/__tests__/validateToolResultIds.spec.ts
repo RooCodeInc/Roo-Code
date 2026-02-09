@@ -1,4 +1,5 @@
-import { Anthropic } from "@anthropic-ai/sdk"
+import type { TextPart, ToolResultPart } from "ai"
+import type { RooMessageParam } from "../../task-persistence/apiMessages"
 import { TelemetryService } from "@roo-code/telemetry"
 import {
 	validateAndFixToolResultIds,
@@ -23,13 +24,14 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when there is no previous assistant message", () => {
 		it("should return the user message unchanged", () => {
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "tool-123",
-						content: "Result",
+						type: "tool-result",
+						toolCallId: "tool-123",
+						toolName: "",
+						output: { type: "text" as const, value: "Result" },
 					},
 				],
 			}
@@ -42,25 +44,26 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when tool_result IDs match tool_use IDs", () => {
 		it("should return the user message unchanged for single tool", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-123",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "tool-123",
-						content: "File content",
+						type: "tool-result",
+						toolCallId: "tool-123",
+						toolName: "",
+						output: { type: "text" as const, value: "File content" },
 					},
 				],
 			}
@@ -71,36 +74,38 @@ describe("validateAndFixToolResultIds", () => {
 		})
 
 		it("should return the user message unchanged for multiple tools", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-1",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-1",
+						toolName: "read_file",
 						input: { path: "a.txt" },
 					},
 					{
-						type: "tool_use",
-						id: "tool-2",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-2",
+						toolName: "read_file",
 						input: { path: "b.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "tool-1",
-						content: "Content A",
+						type: "tool-result",
+						toolCallId: "tool-1",
+						toolName: "",
+						output: { type: "text" as const, value: "Content A" },
 					},
 					{
-						type: "tool_result",
-						tool_use_id: "tool-2",
-						content: "Content B",
+						type: "tool-result",
+						toolCallId: "tool-2",
+						toolName: "",
+						output: { type: "text" as const, value: "Content B" },
 					},
 				],
 			}
@@ -113,25 +118,26 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when tool_result IDs do not match tool_use IDs", () => {
 		it("should fix single mismatched tool_use_id by position", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "correct-id-123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "correct-id-123",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-id-456",
-						content: "File content",
+						type: "tool-result",
+						toolCallId: "wrong-id-456",
+						toolName: "",
+						output: { type: "text" as const, value: "File content" },
 					},
 				],
 			}
@@ -139,42 +145,44 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
-			expect(resultContent[0].tool_use_id).toBe("correct-id-123")
-			expect(resultContent[0].content).toBe("File content")
+			const resultContent = result.content as ToolResultPart[]
+			expect(resultContent[0].toolCallId).toBe("correct-id-123")
+			expect((resultContent[0].output as { value: string }).value).toBe("File content")
 		})
 
 		it("should fix multiple mismatched tool_use_ids by position", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "correct-1",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "correct-1",
+						toolName: "read_file",
 						input: { path: "a.txt" },
 					},
 					{
-						type: "tool_use",
-						id: "correct-2",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "correct-2",
+						toolName: "read_file",
 						input: { path: "b.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-1",
-						content: "Content A",
+						type: "tool-result",
+						toolCallId: "wrong-1",
+						toolName: "",
+						output: { type: "text" as const, value: "Content A" },
 					},
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-2",
-						content: "Content B",
+						type: "tool-result",
+						toolCallId: "wrong-2",
+						toolName: "",
+						output: { type: "text" as const, value: "Content B" },
 					},
 				],
 			}
@@ -182,42 +190,44 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
-			expect(resultContent[0].tool_use_id).toBe("correct-1")
-			expect(resultContent[1].tool_use_id).toBe("correct-2")
+			const resultContent = result.content as ToolResultPart[]
+			expect(resultContent[0].toolCallId).toBe("correct-1")
+			expect(resultContent[1].toolCallId).toBe("correct-2")
 		})
 
 		it("should partially fix when some IDs match and some don't", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "id-1",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "id-1",
+						toolName: "read_file",
 						input: { path: "a.txt" },
 					},
 					{
-						type: "tool_use",
-						id: "id-2",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "id-2",
+						toolName: "read_file",
 						input: { path: "b.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "id-1", // Correct
-						content: "Content A",
+						type: "tool-result",
+						toolCallId: "id-1", // Correct
+						toolName: "",
+						output: { type: "text" as const, value: "Content A" },
 					},
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-id", // Wrong
-						content: "Content B",
+						type: "tool-result",
+						toolCallId: "wrong-id", // Wrong
+						toolName: "",
+						output: { type: "text" as const, value: "Content B" },
 					},
 				],
 			}
@@ -225,33 +235,34 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
-			expect(resultContent[0].tool_use_id).toBe("id-1")
-			expect(resultContent[1].tool_use_id).toBe("id-2")
+			const resultContent = result.content as ToolResultPart[]
+			expect(resultContent[0].toolCallId).toBe("id-1")
+			expect(resultContent[1].toolCallId).toBe("id-2")
 		})
 	})
 
 	describe("when user message has non-tool_result content", () => {
 		it("should preserve text blocks alongside tool_result blocks", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-123",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-id",
-						content: "File content",
+						type: "tool-result",
+						toolCallId: "wrong-id",
+						toolName: "",
+						output: { type: "text" as const, value: "File content" },
 					},
 					{
 						type: "text",
@@ -263,17 +274,17 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
-			expect(resultContent[0].type).toBe("tool_result")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-123")
+			const resultContent = result.content as Array<ToolResultPart | TextPart>
+			expect(resultContent[0].type).toBe("tool-result")
+			expect((resultContent[0] as ToolResultPart).toolCallId).toBe("tool-123")
 			expect(resultContent[1].type).toBe("text")
-			expect((resultContent[1] as Anthropic.TextBlockParam).text).toBe("Additional context")
+			expect((resultContent[1] as TextPart).text).toBe("Additional context")
 		})
 	})
 
 	describe("when assistant message has non-tool_use content", () => {
 		it("should only consider tool_use blocks for matching", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
@@ -281,21 +292,22 @@ describe("validateAndFixToolResultIds", () => {
 						text: "Let me read that file for you.",
 					},
 					{
-						type: "tool_use",
-						id: "tool-123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-123",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-id",
-						content: "File content",
+						type: "tool-result",
+						toolCallId: "wrong-id",
+						toolName: "",
+						output: { type: "text" as const, value: "File content" },
 					},
 				],
 			}
@@ -303,26 +315,26 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
-			expect(resultContent[0].tool_use_id).toBe("tool-123")
+			const resultContent = result.content as ToolResultPart[]
+			expect(resultContent[0].toolCallId).toBe("tool-123")
 		})
 	})
 
 	describe("when user message content is a string", () => {
 		it("should return the message unchanged", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-123",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: "Just a plain text message",
 			}
@@ -335,18 +347,19 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when assistant message content is a string", () => {
 		it("should return the user message unchanged", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: "Just some text, no tool use",
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "tool-123",
-						content: "Result",
+						type: "tool-result",
+						toolCallId: "tool-123",
+						toolName: "",
+						output: { type: "text" as const, value: "Result" },
 					},
 				],
 			}
@@ -359,30 +372,32 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("when there are more tool_results than tool_uses", () => {
 		it("should filter out orphaned tool_results with invalid IDs", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-1",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-1",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-1",
-						content: "Content 1",
+						type: "tool-result",
+						toolCallId: "wrong-1",
+						toolName: "",
+						output: { type: "text" as const, value: "Content 1" },
 					},
 					{
-						type: "tool_result",
-						tool_use_id: "extra-id",
-						content: "Content 2",
+						type: "tool-result",
+						toolCallId: "extra-id",
+						toolName: "",
+						output: { type: "text" as const, value: "Content 2" },
 					},
 				],
 			}
@@ -390,39 +405,41 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			const resultContent = result.content as ToolResultPart[]
 			// Only one tool_result should remain - the first one gets fixed to tool-1
 			expect(resultContent.length).toBe(1)
-			expect(resultContent[0].tool_use_id).toBe("tool-1")
+			expect(resultContent[0].toolCallId).toBe("tool-1")
 		})
 
 		it("should filter out duplicate tool_results when one already has a valid ID", () => {
 			// This is the exact scenario from the PostHog error:
 			// 2 tool_results (call_08230257, call_55577629), 1 tool_use (call_55577629)
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "call_55577629",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "call_55577629",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "call_08230257", // Invalid ID
-						content: "Content from first result",
+						type: "tool-result",
+						toolCallId: "call_08230257", // Invalid ID
+						toolName: "",
+						output: { type: "text" as const, value: "Content from first result" },
 					},
 					{
-						type: "tool_result",
-						tool_use_id: "call_55577629", // Valid ID
-						content: "Content from second result",
+						type: "tool-result",
+						toolCallId: "call_55577629", // Valid ID
+						toolName: "",
+						output: { type: "text" as const, value: "Content from second result" },
 					},
 				],
 			}
@@ -430,43 +447,45 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			const resultContent = result.content as ToolResultPart[]
 			// Should only keep one tool_result since there's only one tool_use
 			// The first invalid one gets fixed to the valid ID, then the second one
 			// (which already has that ID) becomes a duplicate and is filtered out
 			expect(resultContent.length).toBe(1)
-			expect(resultContent[0].tool_use_id).toBe("call_55577629")
+			expect(resultContent[0].toolCallId).toBe("call_55577629")
 		})
 
 		it("should preserve text blocks while filtering orphaned tool_results", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-1",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-1",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-1",
-						content: "Content 1",
+						type: "tool-result",
+						toolCallId: "wrong-1",
+						toolName: "",
+						output: { type: "text" as const, value: "Content 1" },
 					},
 					{
 						type: "text",
 						text: "Some additional context",
 					},
 					{
-						type: "tool_result",
-						tool_use_id: "extra-id",
-						content: "Content 2",
+						type: "tool-result",
+						toolCallId: "extra-id",
+						toolName: "",
+						output: { type: "text" as const, value: "Content 2" },
 					},
 				],
 			}
@@ -474,43 +493,48 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			const resultContent = result.content as Array<ToolResultPart | TextPart>
 			// Should have tool_result + text block, orphaned tool_result filtered out
 			expect(resultContent.length).toBe(2)
-			expect(resultContent[0].type).toBe("tool_result")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-1")
+			expect(resultContent[0].type).toBe("tool-result")
+			expect((resultContent[0] as ToolResultPart).toolCallId).toBe("tool-1")
 			expect(resultContent[1].type).toBe("text")
-			expect((resultContent[1] as Anthropic.TextBlockParam).text).toBe("Some additional context")
+			expect((resultContent[1] as TextPart).text).toBe("Some additional context")
 		})
 
 		// Verifies fix for GitHub #10465: Terminal fallback race condition can generate
 		// duplicate tool_results with the same valid tool_use_id, causing API protocol violations.
 		it("should filter out duplicate tool_results with identical valid tool_use_ids (terminal fallback scenario)", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tooluse_QZ-pU8v2QKO8L8fHoJRI2g",
-						name: "execute_command",
+						type: "tool-call",
+						toolCallId: "tooluse_QZ-pU8v2QKO8L8fHoJRI2g",
+						toolName: "execute_command",
 						input: { command: "ps aux | grep test", cwd: "/path/to/project" },
 					},
 				],
 			}
 
 			// Two tool_results with the SAME valid tool_use_id from terminal fallback race condition
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "tooluse_QZ-pU8v2QKO8L8fHoJRI2g", // First result from command execution
-						content: "No test processes found",
+						type: "tool-result",
+						toolCallId: "tooluse_QZ-pU8v2QKO8L8fHoJRI2g", // First result from command execution
+						toolName: "",
+						output: { type: "text" as const, value: "No test processes found" },
 					},
 					{
-						type: "tool_result",
-						tool_use_id: "tooluse_QZ-pU8v2QKO8L8fHoJRI2g", // Duplicate from user approval during fallback
-						content: '{"status":"approved","message":"The user approved this operation"}',
+						type: "tool-result",
+						toolCallId: "tooluse_QZ-pU8v2QKO8L8fHoJRI2g", // Duplicate from user approval during fallback
+						toolName: "",
+						output: {
+							type: "text" as const,
+							value: '{"status":"approved","message":"The user approved this operation"}',
+						},
 					},
 				],
 			}
@@ -518,43 +542,45 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			const resultContent = result.content as ToolResultPart[]
 
 			// Only ONE tool_result should remain to prevent API protocol violation
 			expect(resultContent.length).toBe(1)
-			expect(resultContent[0].tool_use_id).toBe("tooluse_QZ-pU8v2QKO8L8fHoJRI2g")
-			expect(resultContent[0].content).toBe("No test processes found")
+			expect(resultContent[0].toolCallId).toBe("tooluse_QZ-pU8v2QKO8L8fHoJRI2g")
+			expect((resultContent[0].output as { value: string }).value).toBe("No test processes found")
 		})
 
 		it("should preserve text blocks while deduplicating tool_results with same valid ID", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-123",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "tool-123",
-						content: "First result",
+						type: "tool-result",
+						toolCallId: "tool-123",
+						toolName: "",
+						output: { type: "text" as const, value: "First result" },
 					},
 					{
 						type: "text",
 						text: "Environment details here",
 					},
 					{
-						type: "tool_result",
-						tool_use_id: "tool-123", // Duplicate with same valid ID
-						content: "Duplicate result from fallback",
+						type: "tool-result",
+						toolCallId: "tool-123", // Duplicate with same valid ID
+						toolName: "",
+						output: { type: "text" as const, value: "Duplicate result from fallback" },
 					},
 				],
 			}
@@ -562,45 +588,46 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			const resultContent = result.content as Array<ToolResultPart | TextPart>
 
 			// Should have: 1 tool_result + 1 text block (duplicate filtered out)
 			expect(resultContent.length).toBe(2)
-			expect(resultContent[0].type).toBe("tool_result")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-123")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).content).toBe("First result")
+			expect(resultContent[0].type).toBe("tool-result")
+			expect((resultContent[0] as ToolResultPart).toolCallId).toBe("tool-123")
+			expect((resultContent[0] as ToolResultPart).output).toEqual({ type: "text", value: "First result" })
 			expect(resultContent[1].type).toBe("text")
-			expect((resultContent[1] as Anthropic.TextBlockParam).text).toBe("Environment details here")
+			expect((resultContent[1] as TextPart).text).toBe("Environment details here")
 		})
 	})
 
 	describe("when there are more tool_uses than tool_results", () => {
 		it("should fix the available tool_results and add missing ones", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-1",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-1",
+						toolName: "read_file",
 						input: { path: "a.txt" },
 					},
 					{
-						type: "tool_use",
-						id: "tool-2",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-2",
+						toolName: "read_file",
 						input: { path: "b.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-1",
-						content: "Content 1",
+						type: "tool-result",
+						toolCallId: "wrong-1",
+						toolName: "",
+						output: { type: "text" as const, value: "Content 1" },
 					},
 				],
 			}
@@ -608,32 +635,34 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			const resultContent = result.content as ToolResultPart[]
 			// Should now have 2 tool_results: one fixed and one added for the missing tool_use
 			expect(resultContent.length).toBe(2)
 			// The missing tool_result is prepended
-			expect(resultContent[0].tool_use_id).toBe("tool-2")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
+			expect(resultContent[0].toolCallId).toBe("tool-2")
+			expect((resultContent[0].output as { value: string }).value).toBe(
+				"Tool execution was interrupted before completion.",
+			)
 			// The original is fixed
-			expect(resultContent[1].tool_use_id).toBe("tool-1")
+			expect(resultContent[1].toolCallId).toBe("tool-1")
 		})
 	})
 
 	describe("when tool_results are completely missing", () => {
 		it("should add missing tool_result for single tool_use", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-123",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
@@ -646,38 +675,39 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			const resultContent = result.content as Array<ToolResultPart | TextPart>
 			expect(resultContent.length).toBe(2)
 			// Missing tool_result should be prepended
-			expect(resultContent[0].type).toBe("tool_result")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-123")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).content).toBe(
-				"Tool execution was interrupted before completion.",
-			)
+			expect(resultContent[0].type).toBe("tool-result")
+			expect((resultContent[0] as ToolResultPart).toolCallId).toBe("tool-123")
+			expect((resultContent[0] as ToolResultPart).output).toEqual({
+				type: "text",
+				value: "Tool execution was interrupted before completion.",
+			})
 			// Original text block should be preserved
 			expect(resultContent[1].type).toBe("text")
 		})
 
 		it("should add missing tool_results for multiple tool_uses", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-1",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-1",
+						toolName: "read_file",
 						input: { path: "a.txt" },
 					},
 					{
-						type: "tool_use",
-						id: "tool-2",
-						name: "write_to_file",
+						type: "tool-call",
+						toolCallId: "tool-2",
+						toolName: "write_to_file",
 						input: { path: "b.txt", content: "test" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
@@ -690,43 +720,44 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Array<Anthropic.ToolResultBlockParam | Anthropic.TextBlockParam>
+			const resultContent = result.content as Array<ToolResultPart | TextPart>
 			expect(resultContent.length).toBe(3)
 			// Both missing tool_results should be prepended
-			expect(resultContent[0].type).toBe("tool_result")
-			expect((resultContent[0] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-1")
-			expect(resultContent[1].type).toBe("tool_result")
-			expect((resultContent[1] as Anthropic.ToolResultBlockParam).tool_use_id).toBe("tool-2")
+			expect(resultContent[0].type).toBe("tool-result")
+			expect((resultContent[0] as ToolResultPart).toolCallId).toBe("tool-1")
+			expect(resultContent[1].type).toBe("tool-result")
+			expect((resultContent[1] as ToolResultPart).toolCallId).toBe("tool-2")
 			// Original text should be preserved
 			expect(resultContent[2].type).toBe("text")
 		})
 
 		it("should add only the missing tool_results when some exist", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-1",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-1",
+						toolName: "read_file",
 						input: { path: "a.txt" },
 					},
 					{
-						type: "tool_use",
-						id: "tool-2",
-						name: "write_to_file",
+						type: "tool-call",
+						toolCallId: "tool-2",
+						toolName: "write_to_file",
 						input: { path: "b.txt", content: "test" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "tool-1",
-						content: "Content for tool 1",
+						type: "tool-result",
+						toolCallId: "tool-1",
+						toolName: "",
+						output: { type: "text" as const, value: "Content for tool 1" },
 					},
 				],
 			}
@@ -734,30 +765,32 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			const resultContent = result.content as ToolResultPart[]
 			expect(resultContent.length).toBe(2)
 			// Missing tool_result for tool-2 should be prepended
-			expect(resultContent[0].tool_use_id).toBe("tool-2")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
+			expect(resultContent[0].toolCallId).toBe("tool-2")
+			expect((resultContent[0].output as { value: string }).value).toBe(
+				"Tool execution was interrupted before completion.",
+			)
 			// Existing tool_result should be preserved
-			expect(resultContent[1].tool_use_id).toBe("tool-1")
-			expect(resultContent[1].content).toBe("Content for tool 1")
+			expect(resultContent[1].toolCallId).toBe("tool-1")
+			expect((resultContent[1].output as { value: string }).value).toBe("Content for tool 1")
 		})
 
 		it("should handle empty user content array by adding all missing tool_results", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-1",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-1",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [],
 			}
@@ -765,35 +798,38 @@ describe("validateAndFixToolResultIds", () => {
 			const result = validateAndFixToolResultIds(userMessage, [assistantMessage])
 
 			expect(Array.isArray(result.content)).toBe(true)
-			const resultContent = result.content as Anthropic.ToolResultBlockParam[]
+			const resultContent = result.content as ToolResultPart[]
 			expect(resultContent.length).toBe(1)
-			expect(resultContent[0].type).toBe("tool_result")
-			expect(resultContent[0].tool_use_id).toBe("tool-1")
-			expect(resultContent[0].content).toBe("Tool execution was interrupted before completion.")
+			expect(resultContent[0].type).toBe("tool-result")
+			expect(resultContent[0].toolCallId).toBe("tool-1")
+			expect((resultContent[0].output as { value: string }).value).toBe(
+				"Tool execution was interrupted before completion.",
+			)
 		})
 	})
 
 	describe("telemetry", () => {
 		it("should call captureException for both missing and mismatch when there is a mismatch", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "correct-id",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "correct-id",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-id",
-						content: "Content",
+						type: "tool-result",
+						toolCallId: "wrong-id",
+						toolName: "",
+						output: { type: "text" as const, value: "Content" },
 					},
 				],
 			}
@@ -823,25 +859,26 @@ describe("validateAndFixToolResultIds", () => {
 		})
 
 		it("should not call captureException when IDs match", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-123",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "tool-123",
-						content: "Content",
+						type: "tool-result",
+						toolCallId: "tool-123",
+						toolName: "",
+						output: { type: "text" as const, value: "Content" },
 					},
 				],
 			}
@@ -884,19 +921,19 @@ describe("validateAndFixToolResultIds", () => {
 
 	describe("telemetry for missing tool_results", () => {
 		it("should call captureException when tool_results are missing", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-123",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
@@ -921,31 +958,32 @@ describe("validateAndFixToolResultIds", () => {
 		})
 
 		it("should call captureException twice when both mismatch and missing occur", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-1",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-1",
+						toolName: "read_file",
 						input: { path: "a.txt" },
 					},
 					{
-						type: "tool_use",
-						id: "tool-2",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-2",
+						toolName: "read_file",
 						input: { path: "b.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "wrong-id", // Wrong ID (mismatch)
-						content: "Content",
+						type: "tool-result",
+						toolCallId: "wrong-id", // Wrong ID (mismatch)
+						toolName: "",
+						output: { type: "text" as const, value: "Content" },
 					},
 					// Missing tool_result for tool-2
 				],
@@ -966,25 +1004,26 @@ describe("validateAndFixToolResultIds", () => {
 		})
 
 		it("should not call captureException for missing when all tool_results exist", () => {
-			const assistantMessage: Anthropic.MessageParam = {
+			const assistantMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
-						type: "tool_use",
-						id: "tool-123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "tool-123",
+						toolName: "read_file",
 						input: { path: "test.txt" },
 					},
 				],
 			}
 
-			const userMessage: Anthropic.MessageParam = {
+			const userMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "tool-123",
-						content: "Content",
+						type: "tool-result",
+						toolCallId: "tool-123",
+						toolName: "",
+						output: { type: "text" as const, value: "Content" },
 					},
 				],
 			}

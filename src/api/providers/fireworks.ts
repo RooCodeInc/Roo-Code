@@ -1,9 +1,9 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { createFireworks } from "@ai-sdk/fireworks"
 import { streamText, generateText, ToolSet } from "ai"
 
 import { fireworksModels, fireworksDefaultModelId, type ModelInfo } from "@roo-code/types"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
@@ -109,7 +109,7 @@ export class FireworksHandler extends BaseProvider implements SingleCompletionHa
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { temperature } = this.getModel()

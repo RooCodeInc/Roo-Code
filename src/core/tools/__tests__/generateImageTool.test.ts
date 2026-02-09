@@ -71,9 +71,10 @@ describe("generateImageTool", () => {
 	describe("partial block handling", () => {
 		it("should return early when block is partial", async () => {
 			const partialBlock: ToolUse = {
-				type: "tool_use",
-				name: "generate_image",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "generate_image",
+				input: {
 					prompt: "Generate a test image",
 					path: "test-image.png",
 				},
@@ -84,7 +85,7 @@ describe("generateImageTool", () => {
 				partial: true,
 			}
 
-			await generateImageTool.handle(mockCline as Task, partialBlock as ToolUse<"generate_image">, {
+			await generateImageTool.handle(mockCline as Task, partialBlock as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
@@ -98,9 +99,10 @@ describe("generateImageTool", () => {
 
 		it("should return early when block is partial even with image parameter", async () => {
 			const partialBlock: ToolUse = {
-				type: "tool_use",
-				name: "generate_image",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "generate_image",
+				input: {
 					prompt: "Upscale this image",
 					path: "upscaled-image.png",
 					image: "source-image.png",
@@ -113,7 +115,7 @@ describe("generateImageTool", () => {
 				partial: true,
 			}
 
-			await generateImageTool.handle(mockCline as Task, partialBlock as ToolUse<"generate_image">, {
+			await generateImageTool.handle(mockCline as Task, partialBlock as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
@@ -128,9 +130,10 @@ describe("generateImageTool", () => {
 
 		it("should process when block is not partial", async () => {
 			const completeBlock: ToolUse = {
-				type: "tool_use",
-				name: "generate_image",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "generate_image",
+				input: {
 					prompt: "Generate a test image",
 					path: "test-image.png",
 				},
@@ -154,7 +157,7 @@ describe("generateImageTool", () => {
 					}) as any,
 			)
 
-			await generateImageTool.handle(mockCline as Task, completeBlock as ToolUse<"generate_image">, {
+			await generateImageTool.handle(mockCline as Task, completeBlock as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
@@ -168,9 +171,10 @@ describe("generateImageTool", () => {
 
 		it("should add cache-busting parameter to image URI", async () => {
 			const completeBlock: ToolUse = {
-				type: "tool_use",
-				name: "generate_image",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "generate_image",
+				input: {
 					prompt: "Generate a test image",
 					path: "test-image.png",
 				},
@@ -198,7 +202,7 @@ describe("generateImageTool", () => {
 					}) as any,
 			)
 
-			await generateImageTool.handle(mockCline as Task, completeBlock as ToolUse<"generate_image">, {
+			await generateImageTool.handle(mockCline as Task, completeBlock as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
@@ -225,9 +229,10 @@ describe("generateImageTool", () => {
 	describe("missing parameters", () => {
 		it("should handle missing prompt parameter", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "generate_image",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "generate_image",
+				input: {
 					path: "test-image.png",
 				},
 				nativeArgs: {
@@ -236,7 +241,7 @@ describe("generateImageTool", () => {
 				partial: false,
 			}
 
-			await generateImageTool.handle(mockCline as Task, block as ToolUse<"generate_image">, {
+			await generateImageTool.handle(mockCline as Task, block as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
@@ -250,9 +255,10 @@ describe("generateImageTool", () => {
 
 		it("should handle missing path parameter", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "generate_image",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "generate_image",
+				input: {
 					prompt: "Generate a test image",
 				},
 				nativeArgs: {
@@ -261,7 +267,7 @@ describe("generateImageTool", () => {
 				partial: false,
 			}
 
-			await generateImageTool.handle(mockCline as Task, block as ToolUse<"generate_image">, {
+			await generateImageTool.handle(mockCline as Task, block as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
@@ -284,9 +290,10 @@ describe("generateImageTool", () => {
 			})
 
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "generate_image",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "generate_image",
+				input: {
 					prompt: "Generate a test image",
 					path: "test-image.png",
 				},
@@ -297,7 +304,7 @@ describe("generateImageTool", () => {
 				partial: false,
 			}
 
-			await generateImageTool.handle(mockCline as Task, block as ToolUse<"generate_image">, {
+			await generateImageTool.handle(mockCline as Task, block as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
@@ -316,9 +323,10 @@ describe("generateImageTool", () => {
 			vi.mocked(fileUtils.fileExistsAtPath).mockResolvedValue(false)
 
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "generate_image",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "generate_image",
+				input: {
 					prompt: "Upscale this image",
 					path: "upscaled.png",
 					image: "non-existent.png",
@@ -331,7 +339,7 @@ describe("generateImageTool", () => {
 				partial: false,
 			}
 
-			await generateImageTool.handle(mockCline as Task, block as ToolUse<"generate_image">, {
+			await generateImageTool.handle(mockCline as Task, block as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,
@@ -343,9 +351,10 @@ describe("generateImageTool", () => {
 
 		it("should handle unsupported image format", async () => {
 			const block: ToolUse = {
-				type: "tool_use",
-				name: "generate_image",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "generate_image",
+				input: {
 					prompt: "Upscale this image",
 					path: "upscaled.png",
 					image: "test.bmp", // Unsupported format
@@ -358,7 +367,7 @@ describe("generateImageTool", () => {
 				partial: false,
 			}
 
-			await generateImageTool.handle(mockCline as Task, block as ToolUse<"generate_image">, {
+			await generateImageTool.handle(mockCline as Task, block as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: mockPushToolResult,

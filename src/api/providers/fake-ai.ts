@@ -1,7 +1,6 @@
-import { Anthropic } from "@anthropic-ai/sdk"
-
 import type { ModelInfo } from "@roo-code/types"
 
+import type { NeutralMessageParam, NeutralContentBlock } from "../../core/task-persistence"
 import type { ApiHandler, SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { ApiStream } from "../transform/stream"
@@ -23,11 +22,11 @@ interface FakeAI {
 
 	createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream
 	getModel(): { id: string; info: ModelInfo }
-	countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number>
+	countTokens(content: NeutralContentBlock[]): Promise<number>
 	completePrompt(prompt: string): Promise<string>
 }
 
@@ -61,7 +60,7 @@ export class FakeAIHandler implements ApiHandler, SingleCompletionHandler {
 
 	async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		yield* this.ai.createMessage(systemPrompt, messages, metadata)
@@ -71,7 +70,7 @@ export class FakeAIHandler implements ApiHandler, SingleCompletionHandler {
 		return this.ai.getModel()
 	}
 
-	countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number> {
+	countTokens(content: NeutralContentBlock[]): Promise<number> {
 		return this.ai.countTokens(content)
 	}
 

@@ -86,8 +86,8 @@ export class UpdateTodoListTool extends BaseTool<"update_todo_list"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"update_todo_list">): Promise<void> {
-		const todosRaw = block.params.todos
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const todosRaw = block.input.todos
 
 		// Parse the markdown checklist to maintain consistent format with execute()
 		let todos: TodoItem[]

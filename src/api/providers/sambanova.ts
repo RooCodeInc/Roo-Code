@@ -1,9 +1,9 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { createSambaNova } from "sambanova-ai-provider"
 import { streamText, generateText, ToolSet } from "ai"
 
 import { sambaNovaModels, sambaNovaDefaultModelId, type ModelInfo } from "@roo-code/types"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
@@ -110,7 +110,7 @@ export class SambaNovaHandler extends BaseProvider implements SingleCompletionHa
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { temperature, info } = this.getModel()

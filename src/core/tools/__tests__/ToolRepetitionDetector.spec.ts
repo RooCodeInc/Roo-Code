@@ -16,11 +16,12 @@ vitest.mock("../../../i18n", () => ({
 	}),
 }))
 
-function createToolUse(name: string, displayName?: string, params: Record<string, string> = {}): ToolUse {
+function createToolUse(name: string, displayName?: string, input: Record<string, string> = {}): ToolUse {
 	return {
-		type: "tool_use",
-		name: (displayName || name) as ToolName,
-		params,
+		type: "tool-call",
+		toolCallId: "test-tool-call-id",
+		toolName: (displayName || name) as ToolName,
+		input,
 		partial: false,
 	}
 }
@@ -245,7 +246,7 @@ describe("ToolRepetitionDetector", () => {
 			const originalSerialize = (detector as any).serializeToolUse
 			;(detector as any).serializeToolUse = (tool: ToolUse) => {
 				// Use string comparison for the name since it's technically an enum
-				if (String(tool.name) === "tool-name-2") {
+				if (String(tool.toolName) === "tool-name-2") {
 					return originalSerialize.call(detector, toolUse1) // Return the same JSON as toolUse1
 				}
 				return originalSerialize.call(detector, tool)
@@ -410,9 +411,10 @@ describe("ToolRepetitionDetector", () => {
 
 			// Create browser_action tool use with scroll_down
 			const scrollDownTool: ToolUse = {
-				type: "tool_use",
-				name: "browser_action" as ToolName,
-				params: { action: "scroll_down" },
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "browser_action" as ToolName,
+				input: { action: "scroll_down" },
 				partial: false,
 			}
 
@@ -429,9 +431,10 @@ describe("ToolRepetitionDetector", () => {
 
 			// Create browser_action tool use with scroll_up
 			const scrollUpTool: ToolUse = {
-				type: "tool_use",
-				name: "browser_action" as ToolName,
-				params: { action: "scroll_up" },
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "browser_action" as ToolName,
+				input: { action: "scroll_up" },
 				partial: false,
 			}
 
@@ -447,16 +450,18 @@ describe("ToolRepetitionDetector", () => {
 			const detector = new ToolRepetitionDetector(2)
 
 			const scrollDownTool: ToolUse = {
-				type: "tool_use",
-				name: "browser_action" as ToolName,
-				params: { action: "scroll_down" },
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "browser_action" as ToolName,
+				input: { action: "scroll_down" },
 				partial: false,
 			}
 
 			const scrollUpTool: ToolUse = {
-				type: "tool_use",
-				name: "browser_action" as ToolName,
-				params: { action: "scroll_up" },
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "browser_action" as ToolName,
+				input: { action: "scroll_up" },
 				partial: false,
 			}
 
@@ -477,9 +482,10 @@ describe("ToolRepetitionDetector", () => {
 
 			// Create browser_action tool use with click action
 			const clickTool: ToolUse = {
-				type: "tool_use",
-				name: "browser_action" as ToolName,
-				params: { action: "click", coordinate: "[100, 200]" },
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "browser_action" as ToolName,
+				input: { action: "click", coordinate: "[100, 200]" },
 				partial: false,
 			}
 
@@ -516,9 +522,10 @@ describe("ToolRepetitionDetector", () => {
 			const detector = new ToolRepetitionDetector(2)
 
 			const scrollTool: ToolUse = {
-				type: "tool_use",
-				name: "browser_action" as ToolName,
-				params: { action: "scroll_down" },
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "browser_action" as ToolName,
+				input: { action: "scroll_down" },
 				partial: false,
 			}
 
@@ -548,9 +555,10 @@ describe("ToolRepetitionDetector", () => {
 
 			// Browser action without action parameter
 			const noActionTool: ToolUse = {
-				type: "tool_use",
-				name: "browser_action" as ToolName,
-				params: {},
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "browser_action" as ToolName,
+				input: {},
 				partial: false,
 			}
 
@@ -570,9 +578,10 @@ describe("ToolRepetitionDetector", () => {
 
 			// Create read_file tool use with nativeArgs (like native protocol does)
 			const readFile1: ToolUse = {
-				type: "tool_use",
-				name: "read_file" as ToolName,
-				params: {}, // Empty for native protocol
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "read_file" as ToolName,
+				input: {}, // Empty for native protocol
 				partial: false,
 				nativeArgs: {
 					path: "file1.ts",
@@ -580,9 +589,10 @@ describe("ToolRepetitionDetector", () => {
 			}
 
 			const readFile2: ToolUse = {
-				type: "tool_use",
-				name: "read_file" as ToolName,
-				params: {}, // Empty for native protocol
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "read_file" as ToolName,
+				input: {}, // Empty for native protocol
 				partial: false,
 				nativeArgs: {
 					path: "file2.ts",
@@ -604,9 +614,10 @@ describe("ToolRepetitionDetector", () => {
 
 			// Create identical read_file tool uses
 			const readFile: ToolUse = {
-				type: "tool_use",
-				name: "read_file" as ToolName,
-				params: {}, // Empty for native protocol
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "read_file" as ToolName,
+				input: {}, // Empty for native protocol
 				partial: false,
 				nativeArgs: {
 					path: "same-file.ts",
@@ -629,9 +640,10 @@ describe("ToolRepetitionDetector", () => {
 			const detector = new ToolRepetitionDetector(2)
 
 			const readFile1: ToolUse = {
-				type: "tool_use",
-				name: "read_file" as ToolName,
-				params: {},
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "read_file" as ToolName,
+				input: {},
 				partial: false,
 				nativeArgs: {
 					path: "a.ts",
@@ -641,9 +653,10 @@ describe("ToolRepetitionDetector", () => {
 			}
 
 			const readFile2: ToolUse = {
-				type: "tool_use",
-				name: "read_file" as ToolName,
-				params: {},
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "read_file" as ToolName,
+				input: {},
 				partial: false,
 				nativeArgs: {
 					path: "a.ts",
@@ -661,9 +674,10 @@ describe("ToolRepetitionDetector", () => {
 			const detector = new ToolRepetitionDetector(2)
 
 			const tool1: ToolUse = {
-				type: "tool_use",
-				name: "execute_command" as ToolName,
-				params: { command: "ls" },
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "execute_command" as ToolName,
+				input: { command: "ls" },
 				partial: false,
 				nativeArgs: {
 					command: "ls",
@@ -672,9 +686,10 @@ describe("ToolRepetitionDetector", () => {
 			}
 
 			const tool2: ToolUse = {
-				type: "tool_use",
-				name: "execute_command" as ToolName,
-				params: { command: "ls" },
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "execute_command" as ToolName,
+				input: { command: "ls" },
 				partial: false,
 				nativeArgs: {
 					command: "ls",

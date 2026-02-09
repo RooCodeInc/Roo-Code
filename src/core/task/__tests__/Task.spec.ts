@@ -1,10 +1,10 @@
 // npx vitest core/task/__tests__/Task.spec.ts
 
+import type { RooMessageParam } from "../../task-persistence/apiMessages"
 import * as os from "os"
 import * as path from "path"
 
 import * as vscode from "vscode"
-import { Anthropic } from "@anthropic-ai/sdk"
 
 import type { GlobalState, ProviderSettings, ModelInfo } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
@@ -23,6 +23,7 @@ vi.mock("delay", () => ({
 }))
 
 import delay from "delay"
+import type { ImagePart, TextPart, ToolResultPart } from "ai"
 
 vi.mock("uuid", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("uuid")>()
@@ -477,22 +478,19 @@ describe("Cline", () => {
 				}
 
 				// Create test conversation history with mixed content
-				const conversationHistory: (Anthropic.MessageParam & { ts?: number })[] = [
+				const conversationHistory: (RooMessageParam & { ts?: number })[] = [
 					{
 						role: "user" as const,
 						content: [
 							{
 								type: "text" as const,
 								text: "Here is an image",
-							} satisfies Anthropic.TextBlockParam,
+							} satisfies TextPart,
 							{
 								type: "image" as const,
-								source: {
-									type: "base64" as const,
-									media_type: "image/jpeg",
-									data: "base64data",
-								},
-							} satisfies Anthropic.ImageBlockParam,
+								image: "base64data",
+								mediaType: "image/jpeg",
+							} satisfies ImagePart,
 						],
 					},
 					{
@@ -501,7 +499,7 @@ describe("Cline", () => {
 							{
 								type: "text" as const,
 								text: "I see the image",
-							} satisfies Anthropic.TextBlockParam,
+							} satisfies TextPart,
 						],
 					},
 				]
@@ -585,7 +583,7 @@ describe("Cline", () => {
 						role: "user",
 						content: [
 							{ type: "text", text: "Here is an image" },
-							{ type: "image", source: { type: "base64", media_type: "image/jpeg", data: "base64data" } },
+							{ type: "image", image: "base64data", mediaType: "image/jpeg" },
 						],
 					},
 				]
@@ -883,25 +881,33 @@ describe("Cline", () => {
 							text: "<user_message>Text with 'some/path' (see below for file content) in user_message tags</user_message>",
 						} as const,
 						{
-							type: "tool_result",
-							tool_use_id: "test-id",
-							content: [
-								{
-									type: "text",
-									text: "<user_message>Check 'some/path' (see below for file content)</user_message>",
-								},
-							],
-						} as Anthropic.ToolResultBlockParam,
+							type: "tool-result",
+							toolCallId: "test-id",
+							toolName: "",
+							output: {
+								type: "content" as const,
+								value: [
+									{
+										type: "text",
+										text: "<user_message>Check 'some/path' (see below for file content)</user_message>",
+									},
+								],
+							},
+						} as ToolResultPart,
 						{
-							type: "tool_result",
-							tool_use_id: "test-id-2",
-							content: [
-								{
-									type: "text",
-									text: "Regular tool result with 'path' (see below for file content)",
-								},
-							],
-						} as Anthropic.ToolResultBlockParam,
+							type: "tool-result",
+							toolCallId: "test-id-2",
+							toolName: "",
+							output: {
+								type: "content" as const,
+								value: [
+									{
+										type: "text",
+										text: "Regular tool result with 'path' (see below for file content)",
+									},
+								],
+							},
+						} as ToolResultPart,
 					]
 
 					const { content: processedContent } = await processUserContentMentions({
@@ -912,30 +918,32 @@ describe("Cline", () => {
 					})
 
 					// Regular text should not be processed
-					expect((processedContent[0] as Anthropic.TextBlockParam).text).toBe(
+					expect((processedContent[0] as TextPart).text).toBe(
 						"Regular text with 'some/path' (see below for file content)",
 					)
 
 					// Text within user_message tags should be processed
-					expect((processedContent[1] as Anthropic.TextBlockParam).text).toContain("processed:")
-					expect((processedContent[1] as Anthropic.TextBlockParam).text).toContain(
+					expect((processedContent[1] as TextPart).text).toContain("processed:")
+					expect((processedContent[1] as TextPart).text).toContain(
 						"<user_message>Text with 'some/path' (see below for file content) in user_message tags</user_message>",
 					)
 
 					// user_message tag content should be processed
-					const toolResult1 = processedContent[2] as Anthropic.ToolResultBlockParam
-					const content1 = Array.isArray(toolResult1.content) ? toolResult1.content[0] : toolResult1.content
-					expect((content1 as Anthropic.TextBlockParam).text).toContain("processed:")
-					expect((content1 as Anthropic.TextBlockParam).text).toContain(
+					const toolResult1 = processedContent[2] as ToolResultPart
+					const output1 = (
+						toolResult1.output as { type: "content"; value: Array<{ type: "text"; text: string }> }
+					).value
+					expect(output1[0].text).toContain("processed:")
+					expect(output1[0].text).toContain(
 						"<user_message>Check 'some/path' (see below for file content)</user_message>",
 					)
 
 					// Regular tool result should not be processed
-					const toolResult2 = processedContent[3] as Anthropic.ToolResultBlockParam
-					const content2 = Array.isArray(toolResult2.content) ? toolResult2.content[0] : toolResult2.content
-					expect((content2 as Anthropic.TextBlockParam).text).toBe(
-						"Regular tool result with 'path' (see below for file content)",
-					)
+					const toolResult2 = processedContent[3] as ToolResultPart
+					const output2 = (
+						toolResult2.output as { type: "content"; value: Array<{ type: "text"; text: string }> }
+					).value
+					expect(output2[0].text).toBe("Regular tool result with 'path' (see below for file content)")
 
 					await cline.abortTask(true)
 					await task.catch(() => {})
@@ -2032,10 +2040,11 @@ describe("pushToolResultToUserContent", () => {
 			startTask: false,
 		})
 
-		const toolResult: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "test-id-1",
-			content: "Test result",
+		const toolResult: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "test-id-1",
+			toolName: "",
+			output: { type: "text" as const, value: "Test result" },
 		}
 
 		const added = task.pushToolResultToUserContent(toolResult)
@@ -2053,16 +2062,18 @@ describe("pushToolResultToUserContent", () => {
 			startTask: false,
 		})
 
-		const toolResult1: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "duplicate-id",
-			content: "First result",
+		const toolResult1: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "duplicate-id",
+			toolName: "",
+			output: { type: "text" as const, value: "First result" },
 		}
 
-		const toolResult2: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "duplicate-id",
-			content: "Second result (should be skipped)",
+		const toolResult2: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "duplicate-id",
+			toolName: "",
+			output: { type: "text" as const, value: "Second result (should be skipped)" },
 		}
 
 		// Spy on console.warn to verify warning is logged
@@ -2083,7 +2094,7 @@ describe("pushToolResultToUserContent", () => {
 
 		// Verify warning was logged
 		expect(warnSpy).toHaveBeenCalledWith(
-			expect.stringContaining("Skipping duplicate tool_result for tool_use_id: duplicate-id"),
+			expect.stringContaining("Skipping duplicate tool_result for toolCallId: duplicate-id"),
 		)
 
 		warnSpy.mockRestore()
@@ -2097,16 +2108,18 @@ describe("pushToolResultToUserContent", () => {
 			startTask: false,
 		})
 
-		const toolResult1: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "id-1",
-			content: "Result 1",
+		const toolResult1: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "id-1",
+			toolName: "",
+			output: { type: "text" as const, value: "Result 1" },
 		}
 
-		const toolResult2: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "id-2",
-			content: "Result 2",
+		const toolResult2: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "id-2",
+			toolName: "",
+			output: { type: "text" as const, value: "Result 2" },
 		}
 
 		const added1 = task.pushToolResultToUserContent(toolResult1)
@@ -2127,11 +2140,11 @@ describe("pushToolResultToUserContent", () => {
 			startTask: false,
 		})
 
-		const errorResult: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "error-id",
-			content: "Error message",
-			is_error: true,
+		const errorResult: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "error-id",
+			toolName: "",
+			output: { type: "text" as const, value: "Error message" },
 		}
 
 		const added = task.pushToolResultToUserContent(errorResult)
@@ -2152,13 +2165,14 @@ describe("pushToolResultToUserContent", () => {
 		// Add text and image blocks manually
 		task.userMessageContent.push(
 			{ type: "text", text: "Some text" },
-			{ type: "image", source: { type: "base64", media_type: "image/png", data: "base64data" } },
+			{ type: "image", image: "base64data", mediaType: "image/png" },
 		)
 
-		const toolResult: Anthropic.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "test-id",
-			content: "Result",
+		const toolResult: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "test-id",
+			toolName: "",
+			output: { type: "text" as const, value: "Result" },
 		}
 
 		const added = task.pushToolResultToUserContent(toolResult)

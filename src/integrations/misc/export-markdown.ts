@@ -1,19 +1,16 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import os from "os"
 import * as path from "path"
 import * as vscode from "vscode"
 
+import type { NeutralContentBlock, NeutralMessageParam, ReasoningPart } from "../../core/task-persistence"
+
 // Extended content block types to support new Anthropic API features
-interface ReasoningBlock {
-	type: "reasoning"
-	text: string
-}
 
 interface ThoughtSignatureBlock {
 	type: "thoughtSignature"
 }
 
-export type ExtendedContentBlock = Anthropic.Messages.ContentBlockParam | ReasoningBlock | ThoughtSignatureBlock
+export type ExtendedContentBlock = NeutralContentBlock | ReasoningPart | ThoughtSignatureBlock
 
 export function getTaskFileName(dateTs: number): string {
 	const date = new Date(dateTs)
@@ -31,7 +28,7 @@ export function getTaskFileName(dateTs: number): string {
 
 export async function downloadTask(
 	dateTs: number,
-	conversationHistory: Anthropic.MessageParam[],
+	conversationHistory: NeutralMessageParam[],
 	defaultUri: vscode.Uri,
 ): Promise<vscode.Uri | undefined> {
 	// File name
@@ -69,10 +66,10 @@ export function formatContentBlockToMarkdown(block: ExtendedContentBlock): strin
 			return block.text
 		case "image":
 			return `[Image]`
-		case "tool_use": {
-			let input: string
+		case "tool-call": {
+			let inputStr: string
 			if (typeof block.input === "object" && block.input !== null) {
-				input = Object.entries(block.input)
+				inputStr = Object.entries(block.input as Record<string, unknown>)
 					.map(([key, value]) => {
 						const formattedKey = key.charAt(0).toUpperCase() + key.slice(1)
 						// Handle nested objects/arrays by JSON stringifying them
@@ -82,22 +79,22 @@ export function formatContentBlockToMarkdown(block: ExtendedContentBlock): strin
 					})
 					.join("\n")
 			} else {
-				input = String(block.input)
+				inputStr = String(block.input)
 			}
-			return `[Tool Use: ${block.name}]\n${input}`
+			return `[Tool Use: ${block.toolName}]\n${inputStr}`
 		}
-		case "tool_result": {
-			// For now we're not doing tool name lookup since we don't use tools anymore
-			// const toolName = findToolName(block.tool_use_id, messages)
-			const toolName = "Tool"
-			if (typeof block.content === "string") {
-				return `[${toolName}${block.is_error ? " (Error)" : ""}]\n${block.content}`
-			} else if (Array.isArray(block.content)) {
-				return `[${toolName}${block.is_error ? " (Error)" : ""}]\n${block.content
-					.map((contentBlock) => formatContentBlockToMarkdown(contentBlock))
+		case "tool-result": {
+			const toolName = block.toolName || "Tool"
+			const isError = block.output?.type === "error-text" || block.output?.type === "error-json"
+			const errorSuffix = isError ? " (Error)" : ""
+			if (block.output?.type === "text" || block.output?.type === "error-text") {
+				return `[${toolName}${errorSuffix}]\n${block.output.value}`
+			} else if (block.output?.type === "content") {
+				return `[${toolName}${errorSuffix}]\n${(block.output.value as Array<any>)
+					.map((contentBlock: any) => formatContentBlockToMarkdown(contentBlock))
 					.join("\n")}`
 			} else {
-				return `[${toolName}${block.is_error ? " (Error)" : ""}]`
+				return `[${toolName}${errorSuffix}]`
 			}
 		}
 		case "reasoning":
@@ -110,12 +107,12 @@ export function formatContentBlockToMarkdown(block: ExtendedContentBlock): strin
 	}
 }
 
-export function findToolName(toolCallId: string, messages: Anthropic.MessageParam[]): string {
+export function findToolName(toolCallId: string, messages: NeutralMessageParam[]): string {
 	for (const message of messages) {
 		if (Array.isArray(message.content)) {
 			for (const block of message.content) {
-				if (block.type === "tool_use" && block.id === toolCallId) {
-					return block.name
+				if (block.type === "tool-call" && block.toolCallId === toolCallId) {
+					return block.toolName
 				}
 			}
 		}

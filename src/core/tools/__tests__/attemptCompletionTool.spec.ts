@@ -75,8 +75,11 @@ describe("attemptCompletionTool", () => {
 	describe("todo list validation", () => {
 		it("should allow completion when there is no todo list", async () => {
 			const block: AttemptCompletionToolUse = {
-				type: "tool_use",
-				name: "attempt_completion",
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "attempt_completion",
+				name: "attempt_completion" as const,
+				input: { result: "Task completed successfully" },
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -100,8 +103,11 @@ describe("attemptCompletionTool", () => {
 
 		it("should allow completion when todo list is empty", async () => {
 			const block: AttemptCompletionToolUse = {
-				type: "tool_use",
-				name: "attempt_completion",
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "attempt_completion",
+				name: "attempt_completion" as const,
+				input: { result: "Task completed successfully" },
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -124,8 +130,11 @@ describe("attemptCompletionTool", () => {
 
 		it("should allow completion when all todos are completed", async () => {
 			const block: AttemptCompletionToolUse = {
-				type: "tool_use",
-				name: "attempt_completion",
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "attempt_completion",
+				name: "attempt_completion" as const,
+				input: { result: "Task completed successfully" },
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -153,8 +162,11 @@ describe("attemptCompletionTool", () => {
 
 		it("should prevent completion when there are pending todos", async () => {
 			const block: AttemptCompletionToolUse = {
-				type: "tool_use",
-				name: "attempt_completion",
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "attempt_completion",
+				name: "attempt_completion" as const,
+				input: { result: "Task completed successfully" },
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -195,8 +207,11 @@ describe("attemptCompletionTool", () => {
 
 		it("should prevent completion when there are in-progress todos", async () => {
 			const block: AttemptCompletionToolUse = {
-				type: "tool_use",
-				name: "attempt_completion",
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "attempt_completion",
+				name: "attempt_completion" as const,
+				input: { result: "Task completed successfully" },
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -237,8 +252,11 @@ describe("attemptCompletionTool", () => {
 
 		it("should prevent completion when there are mixed incomplete todos", async () => {
 			const block: AttemptCompletionToolUse = {
-				type: "tool_use",
-				name: "attempt_completion",
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "attempt_completion",
+				name: "attempt_completion" as const,
+				input: { result: "Task completed successfully" },
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -280,8 +298,11 @@ describe("attemptCompletionTool", () => {
 
 		it("should allow completion when setting is disabled even with incomplete todos", async () => {
 			const block: AttemptCompletionToolUse = {
-				type: "tool_use",
-				name: "attempt_completion",
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "attempt_completion",
+				name: "attempt_completion" as const,
+				input: { result: "Task completed successfully" },
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -323,8 +344,11 @@ describe("attemptCompletionTool", () => {
 
 		it("should prevent completion when setting is enabled with incomplete todos", async () => {
 			const block: AttemptCompletionToolUse = {
-				type: "tool_use",
-				name: "attempt_completion",
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "attempt_completion",
+				name: "attempt_completion" as const,
+				input: { result: "Task completed successfully" },
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -366,8 +390,11 @@ describe("attemptCompletionTool", () => {
 
 		it("should allow completion when setting is enabled but all todos are completed", async () => {
 			const block: AttemptCompletionToolUse = {
-				type: "tool_use",
-				name: "attempt_completion",
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "attempt_completion",
+				name: "attempt_completion" as const,
+				input: { result: "Task completed successfully" },
 				params: { result: "Task completed successfully" },
 				nativeArgs: { result: "Task completed successfully" },
 				partial: false,
@@ -410,8 +437,11 @@ describe("attemptCompletionTool", () => {
 		describe("tool failure guardrail", () => {
 			it("should prevent completion when a previous tool failed in the current turn", async () => {
 				const block: AttemptCompletionToolUse = {
-					type: "tool_use",
-					name: "attempt_completion",
+					type: "tool-call",
+					toolCallId: "test-tool-call-id",
+					toolName: "attempt_completion",
+					name: "attempt_completion" as const,
+					input: { result: "Task completed successfully" },
 					params: { result: "Task completed successfully" },
 					nativeArgs: { result: "Task completed successfully" },
 					partial: false,
@@ -444,8 +474,11 @@ describe("attemptCompletionTool", () => {
 
 			it("should allow completion when no tools failed", async () => {
 				const block: AttemptCompletionToolUse = {
-					type: "tool_use",
-					name: "attempt_completion",
+					type: "tool-call",
+					toolCallId: "test-tool-call-id",
+					toolName: "attempt_completion",
+					name: "attempt_completion" as const,
+					input: { result: "Task completed successfully" },
 					params: { result: "Task completed successfully" },
 					nativeArgs: { result: "Task completed successfully" },
 					partial: false,

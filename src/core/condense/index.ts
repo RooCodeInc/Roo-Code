@@ -1,11 +1,17 @@
-import Anthropic from "@anthropic-ai/sdk"
 import crypto from "crypto"
 
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { t } from "../../i18n"
 import { ApiHandler, ApiHandlerCreateMessageMetadata } from "../../api"
-import { ApiMessage } from "../task-persistence/apiMessages"
+import {
+	type ApiMessage,
+	type NeutralContentBlock,
+	type NeutralTextBlock,
+	type NeutralToolUseBlock,
+	type NeutralToolResultBlock,
+	type NeutralMessageParam,
+} from "../task-persistence"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
@@ -18,10 +24,10 @@ export type { FoldedFileContextResult, FoldedFileContextOptions } from "./folded
  * Converts a tool_use block to a text representation.
  * This allows the conversation to be summarized without requiring the tools parameter.
  */
-export function toolUseToText(block: Anthropic.Messages.ToolUseBlockParam): string {
-	let input: string
+export function toolUseToText(block: NeutralToolUseBlock): string {
+	let inputStr: string
 	if (typeof block.input === "object" && block.input !== null) {
-		input = Object.entries(block.input)
+		inputStr = Object.entries(block.input as Record<string, unknown>)
 			.map(([key, value]) => {
 				const formattedValue =
 					typeof value === "object" && value !== null ? JSON.stringify(value, null, 2) : String(value)
@@ -29,22 +35,23 @@ export function toolUseToText(block: Anthropic.Messages.ToolUseBlockParam): stri
 			})
 			.join("\n")
 	} else {
-		input = String(block.input)
+		inputStr = String(block.input)
 	}
-	return `[Tool Use: ${block.name}]\n${input}`
+	return `[Tool Use: ${block.toolName}]\n${inputStr}`
 }
 
 /**
  * Converts a tool_result block to a text representation.
  * This allows the conversation to be summarized without requiring the tools parameter.
  */
-export function toolResultToText(block: Anthropic.Messages.ToolResultBlockParam): string {
-	const errorSuffix = block.is_error ? " (Error)" : ""
-	if (typeof block.content === "string") {
-		return `[Tool Result${errorSuffix}]\n${block.content}`
-	} else if (Array.isArray(block.content)) {
-		const contentText = block.content
-			.map((contentBlock) => {
+export function toolResultToText(block: NeutralToolResultBlock): string {
+	const isError = block.output?.type === "error-text" || block.output?.type === "error-json"
+	const errorSuffix = isError ? " (Error)" : ""
+	if (block.output?.type === "text" || block.output?.type === "error-text") {
+		return `[Tool Result${errorSuffix}]\n${block.output.value}`
+	} else if (block.output?.type === "content") {
+		const contentText = (block.output.value as Array<any>)
+			.map((contentBlock: any) => {
 				if (contentBlock.type === "text") {
 					return contentBlock.text
 				}
@@ -56,6 +63,8 @@ export function toolResultToText(block: Anthropic.Messages.ToolResultBlockParam)
 			})
 			.join("\n")
 		return `[Tool Result${errorSuffix}]\n${contentText}`
+	} else if (block.output?.type === "json" || block.output?.type === "error-json") {
+		return `[Tool Result${errorSuffix}]\n${JSON.stringify(block.output.value)}`
 	}
 	return `[Tool Result${errorSuffix}]`
 }
@@ -68,21 +77,19 @@ export function toolResultToText(block: Anthropic.Messages.ToolResultBlockParam)
  * @param content - The message content (string or array of content blocks)
  * @returns The transformed content with tool blocks converted to text blocks
  */
-export function convertToolBlocksToText(
-	content: string | Anthropic.Messages.ContentBlockParam[],
-): string | Anthropic.Messages.ContentBlockParam[] {
+export function convertToolBlocksToText(content: string | NeutralContentBlock[]): string | NeutralContentBlock[] {
 	if (typeof content === "string") {
 		return content
 	}
 
 	return content.map((block) => {
-		if (block.type === "tool_use") {
+		if (block.type === "tool-call") {
 			return {
 				type: "text" as const,
 				text: toolUseToText(block),
 			}
 		}
-		if (block.type === "tool_result") {
+		if (block.type === "tool-result") {
 			return {
 				type: "text" as const,
 				text: toolResultToText(block),
@@ -99,9 +106,9 @@ export function convertToolBlocksToText(
  * @param messages - The messages to transform
  * @returns The transformed messages with tool blocks converted to text
  */
-export function transformMessagesForCondensing<
-	T extends { role: string; content: string | Anthropic.Messages.ContentBlockParam[] },
->(messages: T[]): T[] {
+export function transformMessagesForCondensing<T extends { role: string; content: string | NeutralContentBlock[] }>(
+	messages: T[],
+): T[] {
 	return messages.map((msg) => ({
 		...msg,
 		content: convertToolBlocksToText(msg.content),
@@ -140,15 +147,15 @@ export function injectSyntheticToolResults(messages: ApiMessage[]): ApiMessage[]
 	for (const msg of messages) {
 		if (msg.role === "assistant" && Array.isArray(msg.content)) {
 			for (const block of msg.content) {
-				if (block.type === "tool_use") {
-					toolCallIds.add(block.id)
+				if (block.type === "tool-call") {
+					toolCallIds.add(block.toolCallId)
 				}
 			}
 		}
 		if (msg.role === "user" && Array.isArray(msg.content)) {
 			for (const block of msg.content) {
-				if (block.type === "tool_result") {
-					toolResultIds.add(block.tool_use_id)
+				if (block.type === "tool-result") {
+					toolResultIds.add(block.toolCallId)
 				}
 			}
 		}
@@ -162,10 +169,11 @@ export function injectSyntheticToolResults(messages: ApiMessage[]): ApiMessage[]
 	}
 
 	// Inject synthetic tool_results as a new user message
-	const syntheticResults: Anthropic.Messages.ToolResultBlockParam[] = orphanIds.map((id) => ({
-		type: "tool_result" as const,
-		tool_use_id: id,
-		content: "Context condensation triggered. Tool execution deferred.",
+	const syntheticResults: NeutralToolResultBlock[] = orphanIds.map((id) => ({
+		type: "tool-result" as const,
+		toolCallId: id,
+		toolName: "",
+		output: { type: "text" as const, value: "Context condensation triggered. Tool execution deferred." },
 	}))
 
 	const syntheticMessage: ApiMessage = {
@@ -193,7 +201,7 @@ export function extractCommandBlocks(message: ApiMessage): string {
 	} else if (Array.isArray(content)) {
 		// Concatenate all text blocks
 		text = content
-			.filter((block): block is Anthropic.Messages.TextBlockParam => block.type === "text")
+			.filter((block): block is NeutralTextBlock => block.type === "text")
 			.map((block) => block.text)
 			.join("\n")
 	} else {
@@ -298,7 +306,7 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	// This respects user's custom condensing prompt setting
 	const condenseInstructions = customCondensingPrompt?.trim() || supportPrompt.default.CONDENSE
 
-	const finalRequestMessage: Anthropic.MessageParam = {
+	const finalRequestMessage: NeutralMessageParam = {
 		role: "user",
 		content: condenseInstructions,
 	}
@@ -398,9 +406,7 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	const commandBlocks = firstMessage ? extractCommandBlocks(firstMessage) : ""
 
 	// Build the summary content as separate text blocks
-	const summaryContent: Anthropic.Messages.ContentBlockParam[] = [
-		{ type: "text", text: `## Conversation Summary\n${summary}` },
-	]
+	const summaryContent: NeutralContentBlock[] = [{ type: "text", text: `## Conversation Summary\n${summary}` }]
 
 	// Add command blocks (active workflows) in their own system-reminder block if present
 	if (commandBlocks) {
@@ -559,8 +565,8 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 		for (const msg of messagesFromSummary) {
 			if (msg.role === "assistant" && Array.isArray(msg.content)) {
 				for (const block of msg.content) {
-					if (block.type === "tool_use" && (block as Anthropic.Messages.ToolUseBlockParam).id) {
-						toolUseIds.add((block as Anthropic.Messages.ToolUseBlockParam).id)
+					if (block.type === "tool-call" && (block as NeutralToolUseBlock).toolCallId) {
+						toolUseIds.add((block as NeutralToolUseBlock).toolCallId)
 					}
 				}
 			}
@@ -571,8 +577,8 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 			.map((msg) => {
 				if (msg.role === "user" && Array.isArray(msg.content)) {
 					const filteredContent = msg.content.filter((block) => {
-						if (block.type === "tool_result") {
-							return toolUseIds.has((block as Anthropic.Messages.ToolResultBlockParam).tool_use_id)
+						if (block.type === "tool-result") {
+							return toolUseIds.has((block as NeutralToolResultBlock).toolCallId)
 						}
 						return true
 					})

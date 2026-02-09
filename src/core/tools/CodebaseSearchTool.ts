@@ -128,9 +128,9 @@ Code Chunk: ${result.codeChunk}
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"codebase_search">): Promise<void> {
-		const query: string | undefined = block.params.query
-		const directoryPrefix: string | undefined = block.params.path
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const query: string | undefined = block.input.query
+		const directoryPrefix: string | undefined = block.input.path
 
 		const sharedMessageProps = {
 			tool: "codebaseSearch",

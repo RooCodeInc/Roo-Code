@@ -83,9 +83,9 @@ export class AccessMcpResourceTool extends BaseTool<"access_mcp_resource"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"access_mcp_resource">): Promise<void> {
-		const server_name = block.params.server_name ?? ""
-		const uri = block.params.uri ?? ""
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const server_name = block.input.server_name ?? ""
+		const uri = block.input.uri ?? ""
 
 		const partialMessage = JSON.stringify({
 			type: "access_mcp_resource",

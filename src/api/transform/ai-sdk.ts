@@ -3,7 +3,7 @@
  * These utilities are designed to be reused across different AI SDK providers.
  */
 
-import { Anthropic } from "@anthropic-ai/sdk"
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import OpenAI from "openai"
 import { tool as createTool, jsonSchema, type ModelMessage, type TextStreamPart } from "ai"
 import type { ApiStreamChunk } from "./stream"
@@ -28,7 +28,7 @@ export interface ConvertToAiSdkMessagesOptions {
  * @returns Array of AI SDK ModelMessage objects
  */
 export function convertToAiSdkMessages(
-	messages: Anthropic.Messages.MessageParam[],
+	messages: NeutralMessageParam[],
 	options?: ConvertToAiSdkMessagesOptions,
 ): ModelMessage[] {
 	const modelMessages: ModelMessage[] = []
@@ -38,8 +38,8 @@ export function convertToAiSdkMessages(
 	for (const message of messages) {
 		if (message.role === "assistant" && typeof message.content !== "string") {
 			for (const part of message.content) {
-				if (part.type === "tool_use") {
-					toolCallIdToName.set(part.id, part.name)
+				if (part.type === "tool-call") {
+					toolCallIdToName.set(part.toolCallId, part.toolName)
 				}
 			}
 		}
@@ -67,40 +67,43 @@ export function convertToAiSdkMessages(
 					if (part.type === "text") {
 						parts.push({ type: "text", text: part.text })
 					} else if (part.type === "image") {
-						// Handle both base64 and URL source types
-						const source = part.source as { type: string; media_type?: string; data?: string; url?: string }
-						if (source.type === "base64" && source.media_type && source.data) {
+						// Handle image data - ImagePart has { image: DataContent | URL, mediaType?: string }
+						const imageData = part.image
+						if (typeof imageData === "string") {
 							parts.push({
 								type: "image",
-								image: `data:${source.media_type};base64,${source.data}`,
-								mimeType: source.media_type,
+								image: imageData,
+								mimeType: part.mediaType,
 							})
-						} else if (source.type === "url" && source.url) {
+						} else if (imageData instanceof URL) {
 							parts.push({
 								type: "image",
-								image: source.url,
+								image: imageData.toString(),
 							})
 						}
-					} else if (part.type === "tool_result") {
+					} else if (part.type === "tool-result") {
 						// Convert tool results to string content
 						let content: string
-						if (typeof part.content === "string") {
-							content = part.content
-						} else {
+						const output = part.output
+						if (output?.type === "text" || output?.type === "error-text") {
+							content = output.value
+						} else if (output?.type === "content") {
 							content =
-								part.content
-									?.map((c) => {
+								(output.value as Array<any>)
+									?.map((c: any) => {
 										if (c.type === "text") return c.text
 										if (c.type === "image") return "(image)"
 										return ""
 									})
 									.join("\n") ?? ""
+						} else {
+							content = output ? JSON.stringify(output) : ""
 						}
 						// Look up the tool name from the tool call ID
-						const toolName = toolCallIdToName.get(part.tool_use_id) ?? "unknown_tool"
+						const toolName = toolCallIdToName.get(part.toolCallId) ?? part.toolName ?? "unknown_tool"
 						toolResults.push({
 							type: "tool-result",
-							toolCallId: part.tool_use_id,
+							toolCallId: part.toolCallId,
 							toolName,
 							output: { type: "text", value: content || "(empty)" },
 						})
@@ -160,11 +163,11 @@ export function convertToAiSdkMessages(
 						continue
 					}
 
-					if (part.type === "tool_use") {
+					if (part.type === "tool-call") {
 						const toolCall: (typeof toolCalls)[number] = {
 							type: "tool-call",
-							toolCallId: part.id,
-							toolName: part.name,
+							toolCallId: part.toolCallId,
+							toolName: part.toolName,
 							input: part.input,
 						}
 

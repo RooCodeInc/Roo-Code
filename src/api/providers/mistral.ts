@@ -1,4 +1,3 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { createMistral } from "@ai-sdk/mistral"
 import { streamText, generateText, ToolSet, LanguageModel } from "ai"
 
@@ -10,6 +9,7 @@ import {
 	MISTRAL_DEFAULT_TEMPERATURE,
 } from "@roo-code/types"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
@@ -142,7 +142,7 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const languageModel = this.getLanguageModel()

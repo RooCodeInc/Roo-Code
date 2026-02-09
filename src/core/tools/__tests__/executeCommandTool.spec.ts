@@ -47,7 +47,7 @@ describe("executeCommandTool", () => {
 	let mockAskApproval: any
 	let mockHandleError: any
 	let mockPushToolResult: any
-	let mockToolUse: ToolUse<"execute_command">
+	let mockToolUse: ToolUse
 
 	beforeEach(() => {
 		// Reset mocks
@@ -94,9 +94,10 @@ describe("executeCommandTool", () => {
 
 		// Create a mock tool use object
 		mockToolUse = {
-			type: "tool_use",
-			name: "execute_command",
-			params: {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "execute_command",
+			input: {
 				command: "echo test",
 			},
 			nativeArgs: {
@@ -140,7 +141,7 @@ describe("executeCommandTool", () => {
 	describe("Basic functionality", () => {
 		it("should execute a command normally", async () => {
 			// Setup
-			mockToolUse.params.command = "echo test"
+			mockToolUse.input.command = "echo test"
 			mockToolUse.nativeArgs = { command: "echo test" }
 
 			// Execute using the class-based handle method
@@ -160,8 +161,8 @@ describe("executeCommandTool", () => {
 
 		it("should pass along custom working directory if provided", async () => {
 			// Setup
-			mockToolUse.params.command = "echo test"
-			mockToolUse.params.cwd = "/custom/path"
+			mockToolUse.input.command = "echo test"
+			mockToolUse.input.cwd = "/custom/path"
 			mockToolUse.nativeArgs = { command: "echo test", cwd: "/custom/path" }
 
 			// Execute
@@ -183,7 +184,7 @@ describe("executeCommandTool", () => {
 	describe("Error handling", () => {
 		it("should handle missing command parameter", async () => {
 			// Setup
-			mockToolUse.params.command = undefined
+			delete (mockToolUse.input as Record<string, string | undefined>).command
 			// Native tool calls must still supply a value; simulate a missing value with an empty string.
 			mockToolUse.nativeArgs = { command: "" }
 
@@ -204,7 +205,7 @@ describe("executeCommandTool", () => {
 
 		it("should handle command rejection", async () => {
 			// Setup
-			mockToolUse.params.command = "echo test"
+			mockToolUse.input.command = "echo test"
 			mockAskApproval.mockResolvedValue(false)
 			mockToolUse.nativeArgs = { command: "echo test" }
 
@@ -223,7 +224,7 @@ describe("executeCommandTool", () => {
 
 		it("should handle rooignore validation failures", async () => {
 			// Setup
-			mockToolUse.params.command = "cat .env"
+			mockToolUse.input.command = "cat .env"
 			mockToolUse.nativeArgs = { command: "cat .env" }
 			// Override the validateCommand mock to return a filename
 			const validateCommandMock = vitest.fn().mockReturnValue(".env")

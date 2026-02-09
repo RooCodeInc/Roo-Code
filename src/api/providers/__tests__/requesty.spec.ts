@@ -1,46 +1,56 @@
 // npx vitest run api/providers/__tests__/requesty.spec.ts
 
-import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
+const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+}))
 
-import { RequestyHandler } from "../requesty"
-import { ApiHandlerOptions } from "../../../shared/api"
-import { Package } from "../../../shared/package"
-import { ApiHandlerCreateMessageMetadata } from "../../index"
-
-const mockCreate = vitest.fn()
-
-vitest.mock("openai", () => {
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
 	return {
-		default: vitest.fn().mockImplementation(() => ({
-			chat: {
-				completions: {
-					create: mockCreate,
-				},
-			},
-		})),
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
 	}
 })
 
-vitest.mock("delay", () => ({ default: vitest.fn(() => Promise.resolve()) }))
-
-vitest.mock("../fetchers/modelCache", () => ({
-	getModels: vitest.fn().mockImplementation(() => {
-		return Promise.resolve({
-			"coding/claude-4-sonnet": {
-				maxTokens: 8192,
-				contextWindow: 200000,
-				supportsImages: true,
-				supportsPromptCache: true,
-				inputPrice: 3,
-				outputPrice: 15,
-				cacheWritesPrice: 3.75,
-				cacheReadsPrice: 0.3,
-				description: "Claude 4 Sonnet",
-			},
-		})
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: vi.fn(() => {
+		return vi.fn(() => ({
+			modelId: "coding/claude-4-sonnet",
+			provider: "requesty",
+		}))
 	}),
 }))
+
+vi.mock("delay", () => ({ default: vi.fn(() => Promise.resolve()) }))
+
+const mockGetModels = vi.fn()
+const mockGetModelsFromCache = vi.fn()
+
+vi.mock("../fetchers/modelCache", () => ({
+	getModels: (...args: unknown[]) => mockGetModels(...args),
+	getModelsFromCache: (...args: unknown[]) => mockGetModelsFromCache(...args),
+}))
+
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
+import { requestyDefaultModelId } from "@roo-code/types"
+
+import type { ApiHandlerOptions } from "../../../shared/api"
+
+import { RequestyHandler } from "../requesty"
+
+const testModelInfo = {
+	maxTokens: 8192,
+	contextWindow: 200000,
+	supportsImages: true,
+	supportsPromptCache: true,
+	inputPrice: 3,
+	outputPrice: 15,
+	cacheWritesPrice: 3.75,
+	cacheReadsPrice: 0.3,
+	description: "Claude 4 Sonnet",
+}
 
 describe("RequestyHandler", () => {
 	const mockOptions: ApiHandlerOptions = {
@@ -48,338 +58,329 @@ describe("RequestyHandler", () => {
 		requestyModelId: "coding/claude-4-sonnet",
 	}
 
-	beforeEach(() => vitest.clearAllMocks())
-
-	it("initializes with correct options", () => {
-		const handler = new RequestyHandler(mockOptions)
-		expect(handler).toBeInstanceOf(RequestyHandler)
-
-		expect(OpenAI).toHaveBeenCalledWith({
-			baseURL: "https://router.requesty.ai/v1",
-			apiKey: mockOptions.requestyApiKey,
-			defaultHeaders: {
-				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
-				"X-Title": "Roo Code",
-				"User-Agent": `RooCode/${Package.version}`,
-			},
+	beforeEach(() => {
+		vi.clearAllMocks()
+		mockGetModelsFromCache.mockReturnValue(null)
+		mockGetModels.mockResolvedValue({
+			"coding/claude-4-sonnet": testModelInfo,
 		})
 	})
 
-	it("can use a base URL instead of the default", () => {
-		const handler = new RequestyHandler({ ...mockOptions, requestyBaseUrl: "https://custom.requesty.ai/v1" })
-		expect(handler).toBeInstanceOf(RequestyHandler)
+	describe("constructor", () => {
+		it("should initialize with provided options", () => {
+			const handler = new RequestyHandler(mockOptions)
+			expect(handler).toBeInstanceOf(RequestyHandler)
+		})
 
-		expect(OpenAI).toHaveBeenCalledWith({
-			baseURL: "https://custom.requesty.ai/v1",
-			apiKey: mockOptions.requestyApiKey,
-			defaultHeaders: {
-				"HTTP-Referer": "https://github.com/RooVetGit/Roo-Cline",
-				"X-Title": "Roo Code",
-				"User-Agent": `RooCode/${Package.version}`,
-			},
+		it("should use default model ID if not provided", () => {
+			const handler = new RequestyHandler({ requestyApiKey: "test-key" })
+			const model = handler.getModel()
+			expect(model.id).toBe(requestyDefaultModelId)
+		})
+
+		it("should use cache if available at construction time", () => {
+			mockGetModelsFromCache.mockReturnValue({
+				"coding/claude-4-sonnet": testModelInfo,
+			})
+			const handler = new RequestyHandler(mockOptions)
+			const model = handler.getModel()
+			expect(model.id).toBe("coding/claude-4-sonnet")
+			expect(model.info).toMatchObject(testModelInfo)
 		})
 	})
 
 	describe("fetchModel", () => {
-		it("returns correct model info when options are provided", async () => {
+		it("returns correct model info after fetching", async () => {
 			const handler = new RequestyHandler(mockOptions)
 			const result = await handler.fetchModel()
 
+			expect(mockGetModels).toHaveBeenCalledWith(
+				expect.objectContaining({
+					provider: "requesty",
+					baseUrl: expect.stringContaining("requesty"),
+				}),
+			)
 			expect(result).toMatchObject({
-				id: mockOptions.requestyModelId,
-				info: {
-					maxTokens: 8192,
-					contextWindow: 200000,
-					supportsImages: true,
-					supportsPromptCache: true,
-					inputPrice: 3,
-					outputPrice: 15,
-					cacheWritesPrice: 3.75,
-					cacheReadsPrice: 0.3,
-					description: "Claude 4 Sonnet",
-				},
+				id: "coding/claude-4-sonnet",
+				info: expect.objectContaining(testModelInfo),
 			})
 		})
 
-		it("returns default model info when options are not provided", async () => {
-			const handler = new RequestyHandler({})
+		it("returns default model info when model not in fetched data", async () => {
+			mockGetModels.mockResolvedValue({})
+			const handler = new RequestyHandler(mockOptions)
 			const result = await handler.fetchModel()
 
-			expect(result).toMatchObject({
-				id: mockOptions.requestyModelId,
-				info: {
-					maxTokens: 8192,
-					contextWindow: 200000,
-					supportsImages: true,
-					supportsPromptCache: true,
-					inputPrice: 3,
-					outputPrice: 15,
-					cacheWritesPrice: 3.75,
-					cacheReadsPrice: 0.3,
-					description: "Claude 4 Sonnet",
-				},
+			expect(result.id).toBe("coding/claude-4-sonnet")
+			// Falls back to requestyDefaultModelInfo
+			expect(result.info).toBeDefined()
+		})
+	})
+
+	describe("getModel", () => {
+		it("should return model with anthropic format params", () => {
+			mockGetModelsFromCache.mockReturnValue({
+				"coding/claude-4-sonnet": testModelInfo,
 			})
+			const handler = new RequestyHandler(mockOptions)
+			const model = handler.getModel()
+
+			expect(model.id).toBe("coding/claude-4-sonnet")
+			expect(model.info).toBeDefined()
+			expect(model).toHaveProperty("temperature")
+			expect(model).toHaveProperty("maxTokens")
+		})
+
+		it("should apply router tool preferences for openai models", () => {
+			mockGetModelsFromCache.mockReturnValue({
+				"openai/gpt-4": { ...testModelInfo },
+			})
+			const handler = new RequestyHandler({
+				...mockOptions,
+				requestyModelId: "openai/gpt-4",
+			})
+			const model = handler.getModel()
+
+			expect(model.info.excludedTools).toContain("apply_diff")
+			expect(model.info.excludedTools).toContain("write_to_file")
+			expect(model.info.includedTools).toContain("apply_patch")
 		})
 	})
 
 	describe("createMessage", () => {
-		it("generates correct stream chunks", async () => {
+		const systemPrompt = "You are a helpful assistant."
+		const messages: NeutralMessageParam[] = [{ role: "user", content: [{ type: "text" as const, text: "Hello!" }] }]
+
+		it("should handle streaming responses", async () => {
 			const handler = new RequestyHandler(mockOptions)
 
-			const mockStream = {
-				async *[Symbol.asyncIterator]() {
-					yield {
-						id: mockOptions.requestyModelId,
-						choices: [{ delta: { content: "test response" } }],
-					}
-					yield {
-						id: "test-id",
-						choices: [{ delta: {} }],
-						usage: {
-							prompt_tokens: 10,
-							completion_tokens: 20,
-							prompt_tokens_details: {
-								caching_tokens: 5,
-								cached_tokens: 2,
-							},
-						},
-					}
-				},
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
 			}
 
-			mockCreate.mockResolvedValue(mockStream)
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 10,
+					outputTokens: 5,
+					details: {},
+					raw: {
+						prompt_tokens_details: { caching_tokens: 3, cached_tokens: 2 },
+					},
+				}),
+			})
 
-			const systemPrompt = "test system prompt"
-			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user" as const, content: "test message" }]
-
-			const generator = handler.createMessage(systemPrompt, messages)
-			const chunks = []
-
-			for await (const chunk of generator) {
+			const chunks: any[] = []
+			for await (const chunk of handler.createMessage(systemPrompt, messages)) {
 				chunks.push(chunk)
 			}
 
-			// Verify stream chunks
-			expect(chunks).toHaveLength(2) // One text chunk and one usage chunk
-			expect(chunks[0]).toEqual({ type: "text", text: "test response" })
-			expect(chunks[1]).toEqual({
-				type: "usage",
-				inputTokens: 10,
-				outputTokens: 20,
-				cacheWriteTokens: 5,
-				cacheReadTokens: 2,
-				totalCost: expect.any(Number),
+			const textChunks = chunks.filter((c) => c.type === "text")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0].text).toBe("Test response")
+		})
+
+		it("should pass requesty trace metadata as providerOptions", async () => {
+			const handler = new RequestyHandler(mockOptions)
+
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "response" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0, details: {}, raw: {} }),
 			})
 
-			// Verify OpenAI client was called with correct parameters
-			expect(mockCreate).toHaveBeenCalledWith(
+			const metadata = { taskId: "task-123", mode: "code" }
+			const stream = handler.createMessage(systemPrompt, messages, metadata)
+			// Consume the stream
+			for await (const _chunk of stream) {
+				// no-op
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					max_tokens: 8192,
-					messages: [
-						{
-							role: "system",
-							content: "test system prompt",
-						},
-						{
-							role: "user",
-							content: "test message",
-						},
-					],
-					model: "coding/claude-4-sonnet",
-					stream: true,
-					stream_options: { include_usage: true },
-					temperature: 0,
+					providerOptions: expect.objectContaining({
+						requesty: { trace_id: "task-123", extra: { mode: "code" } },
+					}),
 				}),
 			)
 		})
 
-		it("handles API errors", async () => {
+		it("should include tools and toolChoice when provided", async () => {
 			const handler = new RequestyHandler(mockOptions)
-			const mockError = new Error("API Error")
-			mockCreate.mockRejectedValue(mockError)
 
-			const generator = handler.createMessage("test", [])
-			await expect(generator.next()).rejects.toThrow("API Error")
-		})
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "response" }
+			}
 
-		describe("native tool support", () => {
-			const systemPrompt = "test system prompt"
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{ role: "user" as const, content: "What's the weather?" },
-			]
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0, details: {}, raw: {} }),
+			})
 
-			const mockTools: OpenAI.Chat.ChatCompletionTool[] = [
+			const mockTools = [
 				{
-					type: "function",
+					type: "function" as const,
 					function: {
 						name: "get_weather",
 						description: "Get the current weather",
 						parameters: {
 							type: "object",
-							properties: {
-								location: { type: "string" },
-							},
+							properties: { location: { type: "string" } },
 							required: ["location"],
 						},
 					},
 				},
 			]
 
-			beforeEach(() => {
-				const mockStream = {
-					async *[Symbol.asyncIterator]() {
-						yield {
-							id: "test-id",
-							choices: [{ delta: { content: "test response" } }],
-						}
-					},
-				}
-				mockCreate.mockResolvedValue(mockStream)
+			const metadata = { taskId: "test-task", tools: mockTools, tool_choice: "auto" as const }
+			for await (const _chunk of handler.createMessage(systemPrompt, messages, metadata)) {
+				// consume
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					tools: expect.any(Object),
+				}),
+			)
+		})
+
+		it("should handle API errors", async () => {
+			const handler = new RequestyHandler(mockOptions)
+			mockStreamText.mockReturnValue({
+				fullStream: (async function* () {
+					yield { type: "text-delta", text: "" }
+					throw new Error("API Error")
+				})(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
 			})
 
-			it("should include tools in request when tools are provided", async () => {
-				const metadata: ApiHandlerCreateMessageMetadata = {
-					taskId: "test-task",
-					tools: mockTools,
-					tool_choice: "auto",
+			const generator = handler.createMessage(systemPrompt, messages)
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// consume
 				}
-
-				const handler = new RequestyHandler(mockOptions)
-				const iterator = handler.createMessage(systemPrompt, messages, metadata)
-				await iterator.next()
-
-				expect(mockCreate).toHaveBeenCalledWith(
-					expect.objectContaining({
-						tools: expect.arrayContaining([
-							expect.objectContaining({
-								type: "function",
-								function: expect.objectContaining({
-									name: "get_weather",
-									description: "Get the current weather",
-								}),
-							}),
-						]),
-						tool_choice: "auto",
-					}),
-				)
-			})
-
-			it("should handle tool_call_partial chunks in streaming response", async () => {
-				const mockStreamWithToolCalls = {
-					async *[Symbol.asyncIterator]() {
-						yield {
-							id: "test-id",
-							choices: [
-								{
-									delta: {
-										tool_calls: [
-											{
-												index: 0,
-												id: "call_123",
-												function: {
-													name: "get_weather",
-													arguments: '{"location":',
-												},
-											},
-										],
-									},
-								},
-							],
-						}
-						yield {
-							id: "test-id",
-							choices: [
-								{
-									delta: {
-										tool_calls: [
-											{
-												index: 0,
-												function: {
-													arguments: '"New York"}',
-												},
-											},
-										],
-									},
-								},
-							],
-						}
-						yield {
-							id: "test-id",
-							choices: [{ delta: {} }],
-							usage: { prompt_tokens: 10, completion_tokens: 20 },
-						}
-					},
-				}
-				mockCreate.mockResolvedValue(mockStreamWithToolCalls)
-
-				const metadata: ApiHandlerCreateMessageMetadata = {
-					taskId: "test-task",
-					tools: mockTools,
-				}
-
-				const handler = new RequestyHandler(mockOptions)
-				const chunks = []
-				for await (const chunk of handler.createMessage(systemPrompt, messages, metadata)) {
-					chunks.push(chunk)
-				}
-
-				// Expect two tool_call_partial chunks and one usage chunk
-				expect(chunks).toHaveLength(3)
-				expect(chunks[0]).toEqual({
-					type: "tool_call_partial",
-					index: 0,
-					id: "call_123",
-					name: "get_weather",
-					arguments: '{"location":',
-				})
-				expect(chunks[1]).toEqual({
-					type: "tool_call_partial",
-					index: 0,
-					id: undefined,
-					name: undefined,
-					arguments: '"New York"}',
-				})
-				expect(chunks[2]).toMatchObject({
-					type: "usage",
-					inputTokens: 10,
-					outputTokens: 20,
-				})
-			})
+			}).rejects.toThrow()
 		})
 	})
 
 	describe("completePrompt", () => {
-		it("returns correct response", async () => {
+		it("should complete a prompt using generateText", async () => {
 			const handler = new RequestyHandler(mockOptions)
-			const mockResponse = { choices: [{ message: { content: "test completion" } }] }
+			mockGenerateText.mockResolvedValue({ text: "Test completion" })
 
-			mockCreate.mockResolvedValue(mockResponse)
+			const result = await handler.completePrompt("Test prompt")
 
-			const result = await handler.completePrompt("test prompt")
+			expect(result).toBe("Test completion")
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					prompt: "Test prompt",
+				}),
+			)
+		})
 
-			expect(result).toBe("test completion")
+		it("should call fetchModel before completing", async () => {
+			const handler = new RequestyHandler(mockOptions)
+			mockGenerateText.mockResolvedValue({ text: "done" })
 
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.requestyModelId,
-				max_tokens: 8192,
-				messages: [{ role: "system", content: "test prompt" }],
-				temperature: 0,
-			})
+			await handler.completePrompt("test")
+
+			expect(mockGetModels).toHaveBeenCalledWith(expect.objectContaining({ provider: "requesty" }))
 		})
 
 		it("handles API errors", async () => {
 			const handler = new RequestyHandler(mockOptions)
-			const mockError = new Error("API Error")
-			mockCreate.mockRejectedValue(mockError)
+			mockGenerateText.mockRejectedValue(new Error("API Error"))
 
 			await expect(handler.completePrompt("test prompt")).rejects.toThrow("API Error")
 		})
+	})
 
-		it("handles unexpected errors", async () => {
-			const handler = new RequestyHandler(mockOptions)
-			mockCreate.mockRejectedValue(new Error("Unexpected error"))
+	describe("processUsageMetrics", () => {
+		it("should correctly process usage metrics including cache and cost", async () => {
+			class TestRequestyHandler extends RequestyHandler {
+				public testProcessUsageMetrics(usage: any) {
+					return this.processUsageMetrics(usage)
+				}
+			}
 
-			await expect(handler.completePrompt("test prompt")).rejects.toThrow("Unexpected error")
+			mockGetModelsFromCache.mockReturnValue({
+				"coding/claude-4-sonnet": testModelInfo,
+			})
+			const handler = new TestRequestyHandler(mockOptions)
+
+			const usage = {
+				inputTokens: 100,
+				outputTokens: 50,
+				details: {},
+				raw: {
+					prompt_tokens_details: { caching_tokens: 5, cached_tokens: 2 },
+				},
+			}
+
+			const result = handler.testProcessUsageMetrics(usage)
+
+			expect(result.type).toBe("usage")
+			expect(result.inputTokens).toBe(100)
+			expect(result.outputTokens).toBe(50)
+			expect(result.cacheWriteTokens).toBe(5)
+			expect(result.cacheReadTokens).toBe(2)
+			expect(result.totalCost).toEqual(expect.any(Number))
+			expect(result.totalCost).toBeGreaterThan(0)
+		})
+
+		it("should handle missing cache metrics gracefully", async () => {
+			class TestRequestyHandler extends RequestyHandler {
+				public testProcessUsageMetrics(usage: any) {
+					return this.processUsageMetrics(usage)
+				}
+			}
+
+			mockGetModelsFromCache.mockReturnValue({
+				"coding/claude-4-sonnet": testModelInfo,
+			})
+			const handler = new TestRequestyHandler(mockOptions)
+
+			const usage = {
+				inputTokens: 100,
+				outputTokens: 50,
+				details: {},
+				raw: {},
+			}
+
+			const result = handler.testProcessUsageMetrics(usage)
+
+			expect(result.type).toBe("usage")
+			expect(result.inputTokens).toBe(100)
+			expect(result.outputTokens).toBe(50)
+			expect(result.cacheWriteTokens).toBe(0)
+			expect(result.cacheReadTokens).toBe(0)
+		})
+
+		it("should fall back to details.cachedInputTokens when raw is missing", async () => {
+			class TestRequestyHandler extends RequestyHandler {
+				public testProcessUsageMetrics(usage: any) {
+					return this.processUsageMetrics(usage)
+				}
+			}
+
+			mockGetModelsFromCache.mockReturnValue({
+				"coding/claude-4-sonnet": testModelInfo,
+			})
+			const handler = new TestRequestyHandler(mockOptions)
+
+			const usage = {
+				inputTokens: 100,
+				outputTokens: 50,
+				details: { cachedInputTokens: 15 },
+				raw: undefined,
+			}
+
+			const result = handler.testProcessUsageMetrics(usage)
+
+			expect(result.cacheReadTokens).toBe(15)
 		})
 	})
 })

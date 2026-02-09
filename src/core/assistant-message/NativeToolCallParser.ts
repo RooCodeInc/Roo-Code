@@ -647,9 +647,10 @@ export class NativeToolCallParser {
 		}
 
 		const result: ToolUse = {
-			type: "tool_use" as const,
-			name,
-			params,
+			type: "tool-call" as const,
+			toolCallId: id,
+			toolName: name,
+			input: params,
 			partial,
 			nativeArgs,
 		}
@@ -673,11 +674,11 @@ export class NativeToolCallParser {
 	 * @param toolCall - The native tool call from the API stream
 	 * @returns A properly typed ToolUse object
 	 */
-	public static parseToolCall<TName extends ToolName>(toolCall: {
+	public static parseToolCall(toolCall: {
 		id: string
-		name: TName
+		name: ToolName | string
 		arguments: string
-	}): ToolUse<TName> | McpToolUse | null {
+	}): ToolUse | McpToolUse | null {
 		// Check if this is a dynamic MCP tool (mcp--serverName--toolName)
 		// Also handle models that output underscores instead of hyphens (mcp__serverName__toolName)
 		const mcpPrefix = MCP_TOOL_PREFIX + MCP_TOOL_SEPARATOR
@@ -692,7 +693,7 @@ export class NativeToolCallParser {
 		}
 
 		// Resolve tool alias to canonical name
-		const resolvedName = resolveToolAlias(toolCall.name as string) as TName
+		const resolvedName = resolveToolAlias(toolCall.name as string) as ToolName
 
 		// Validate tool name (after alias resolution).
 		if (!toolNames.includes(resolvedName as ToolName) && !customToolRegistry.has(resolvedName)) {
@@ -725,7 +726,7 @@ export class NativeToolCallParser {
 			// Build typed nativeArgs for tool execution.
 			// Each case validates the minimum required parameters and constructs a properly typed
 			// nativeArgs object. If validation fails, we treat the tool call as invalid and fail fast.
-			let nativeArgs: NativeArgsFor<TName> | undefined = undefined
+			let nativeArgs: any = undefined
 
 			// Track if legacy format was used (for telemetry)
 			let usedLegacyFormat = false
@@ -756,7 +757,7 @@ export class NativeToolCallParser {
 							nativeArgs = {
 								files: this.convertFileEntries(filesArray),
 								_legacyFormat: true as const,
-							} as NativeArgsFor<TName>
+							}
 						}
 					}
 					// New format: { path: "...", mode: "..." }
@@ -778,13 +779,13 @@ export class NativeToolCallParser {
 											include_header: this.coerceOptionalBoolean(args.indentation.include_header),
 										}
 									: undefined,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
 				case "attempt_completion":
 					if (args.result) {
-						nativeArgs = { result: args.result } as NativeArgsFor<TName>
+						nativeArgs = { result: args.result }
 					}
 					break
 
@@ -793,7 +794,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							command: args.command,
 							cwd: args.cwd,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -802,7 +803,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							path: args.path,
 							diff: args.diff,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -811,7 +812,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							path: args.path,
 							operations: args.operations,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -820,7 +821,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							question: args.question,
 							follow_up: args.follow_up,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -833,7 +834,7 @@ export class NativeToolCallParser {
 							size: args.size,
 							text: args.text,
 							path: args.path,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -842,7 +843,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							query: args.query,
 							path: args.path,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -852,7 +853,7 @@ export class NativeToolCallParser {
 							prompt: args.prompt,
 							path: args.path,
 							image: args.image,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -861,7 +862,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							command: args.command,
 							args: args.args,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -870,7 +871,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							skill: args.skill,
 							args: args.args,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -880,7 +881,7 @@ export class NativeToolCallParser {
 							path: args.path,
 							regex: args.regex,
 							file_pattern: args.file_pattern,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -889,7 +890,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							mode_slug: args.mode_slug,
 							reason: args.reason,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -897,7 +898,7 @@ export class NativeToolCallParser {
 					if (args.todos !== undefined) {
 						nativeArgs = {
 							todos: args.todos,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -908,7 +909,7 @@ export class NativeToolCallParser {
 							search: args.search,
 							offset: args.offset,
 							limit: args.limit,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -917,7 +918,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							path: args.path,
 							content: args.content,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -927,7 +928,7 @@ export class NativeToolCallParser {
 							server_name: args.server_name,
 							tool_name: args.tool_name,
 							arguments: args.arguments,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -936,7 +937,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							server_name: args.server_name,
 							uri: args.uri,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -944,7 +945,7 @@ export class NativeToolCallParser {
 					if (args.patch !== undefined) {
 						nativeArgs = {
 							patch: args.patch,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -958,7 +959,7 @@ export class NativeToolCallParser {
 							file_path: args.file_path,
 							old_string: args.old_string,
 							new_string: args.new_string,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -973,7 +974,7 @@ export class NativeToolCallParser {
 							old_string: args.old_string,
 							new_string: args.new_string,
 							expected_replacements: args.expected_replacements,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -982,7 +983,7 @@ export class NativeToolCallParser {
 						nativeArgs = {
 							path: args.path,
 							recursive: this.coerceOptionalBoolean(args.recursive),
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
@@ -992,13 +993,13 @@ export class NativeToolCallParser {
 							mode: args.mode,
 							message: args.message,
 							todos: args.todos,
-						} as NativeArgsFor<TName>
+						}
 					}
 					break
 
 				default:
 					if (customToolRegistry.has(resolvedName)) {
-						nativeArgs = args as NativeArgsFor<TName>
+						nativeArgs = args
 					}
 
 					break
@@ -1014,17 +1015,18 @@ export class NativeToolCallParser {
 				)
 			}
 
-			const result: ToolUse<TName> = {
-				type: "tool_use" as const,
-				name: resolvedName,
-				params,
+			const result: ToolUse = {
+				type: "tool-call" as const,
+				toolCallId: toolCall.id,
+				toolName: resolvedName,
+				input: params,
 				partial: false, // Native tool calls are always complete when yielded
 				nativeArgs,
 			}
 
 			// Preserve original name for API history when an alias was used
 			if (toolCall.name !== resolvedName) {
-				result.originalName = toolCall.name
+				result.originalName = toolCall.name as string
 			}
 
 			// Track legacy format usage for telemetry

@@ -1,7 +1,7 @@
 // npx vitest src/core/condense/__tests__/foldedFileContext.spec.ts
 
+import type { NeutralContentBlock } from "../../task-persistence/apiMessages"
 import * as path from "path"
-import { Anthropic } from "@anthropic-ai/sdk"
 import type { ModelInfo } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 import { BaseProvider } from "../../../api/providers/base-provider"
@@ -246,7 +246,7 @@ describe("foldedFileContext", () => {
 				}
 			}
 
-			override async countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number> {
+			override async countTokens(content: Array<NeutralContentBlock>): Promise<number> {
 				let tokens = 0
 				for (const block of content) {
 					if (block.type === "text") {

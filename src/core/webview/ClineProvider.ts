@@ -3,7 +3,6 @@ import * as path from "path"
 import fs from "fs/promises"
 import EventEmitter from "events"
 
-import { Anthropic } from "@anthropic-ai/sdk"
 import delay from "delay"
 import axios from "axios"
 import pWaitFor from "p-wait-for"
@@ -98,7 +97,7 @@ import { getSystemPromptFilePath } from "../prompts/sections/custom-system-promp
 
 import { webviewMessageHandler } from "./webviewMessageHandler"
 import type { ClineMessage, TodoItem } from "@roo-code/types"
-import { readApiMessages, saveApiMessages, saveTaskMessages } from "../task-persistence"
+import { readApiMessages, saveApiMessages, saveTaskMessages, type NeutralMessageParam } from "../task-persistence"
 import { readTaskMessages } from "../task-persistence/taskMessages"
 import { getNonce } from "./getNonce"
 import { getUri } from "./getUri"
@@ -1680,7 +1679,7 @@ export class ClineProvider
 		taskDirPath: string
 		apiConversationHistoryFilePath: string
 		uiMessagesFilePath: string
-		apiConversationHistory: Anthropic.MessageParam[]
+		apiConversationHistory: NeutralMessageParam[]
 	}> {
 		const history = this.getGlobalState("taskHistory") ?? []
 		const historyItem = history.find((item) => item.id === id)
@@ -3398,8 +3397,8 @@ export class ClineProvider
 			const msg = parentApiMessages[i]
 			if (msg.role === "assistant" && Array.isArray(msg.content)) {
 				for (const block of msg.content) {
-					if (block.type === "tool_use" && block.name === "new_task") {
-						toolUseId = block.id
+					if (block.type === "tool-call" && block.toolName === "new_task") {
+						toolUseId = block.toolCallId
 						break
 					}
 				}
@@ -3417,9 +3416,12 @@ export class ClineProvider
 			let alreadyHasToolResult = false
 			if (lastMsg?.role === "user" && Array.isArray(lastMsg.content)) {
 				for (const block of lastMsg.content) {
-					if (block.type === "tool_result" && block.tool_use_id === toolUseId) {
-						// Update the existing tool_result content
-						block.content = `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`
+					if (block.type === "tool-result" && block.toolCallId === toolUseId) {
+						// Update the existing tool_result output
+						;(block as any).output = {
+							type: "text" as const,
+							value: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+						}
 						alreadyHasToolResult = true
 						break
 					}
@@ -3432,9 +3434,13 @@ export class ClineProvider
 					role: "user",
 					content: [
 						{
-							type: "tool_result" as const,
-							tool_use_id: toolUseId,
-							content: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+							type: "tool-result" as const,
+							toolCallId: toolUseId,
+							toolName: "new_task",
+							output: {
+								type: "text" as const,
+								value: `Subtask ${childTaskId} completed.\n\nResult:\n${completionResultSummary}`,
+							},
 						},
 					],
 					ts,

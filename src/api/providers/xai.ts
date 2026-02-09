@@ -1,9 +1,9 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { createXai } from "@ai-sdk/xai"
 import { streamText, generateText, ToolSet } from "ai"
 
 import { type XAIModelId, xaiDefaultModelId, xaiModels, type ModelInfo } from "@roo-code/types"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
@@ -118,7 +118,7 @@ export class XAIHandler extends BaseProvider implements SingleCompletionHandler 
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { temperature, reasoning } = this.getModel()

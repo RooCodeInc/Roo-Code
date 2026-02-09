@@ -1,6 +1,11 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { TelemetryService } from "@roo-code/telemetry"
 import { findLastIndex } from "../../shared/array"
+import type {
+	NeutralMessageParam,
+	NeutralContentBlock,
+	NeutralToolUseBlock,
+	NeutralToolResultBlock,
+} from "../task-persistence"
 
 /**
  * Custom error class for tool result ID mismatches.
@@ -48,9 +53,9 @@ export class MissingToolResultError extends Error {
  * @returns The validated user message with corrected tool_use_ids and any missing tool_results added
  */
 export function validateAndFixToolResultIds(
-	userMessage: Anthropic.MessageParam,
-	apiConversationHistory: Anthropic.MessageParam[],
-): Anthropic.MessageParam {
+	userMessage: NeutralMessageParam,
+	apiConversationHistory: NeutralMessageParam[],
+): NeutralMessageParam {
 	// Only process user messages with array content
 	if (userMessage.role !== "user" || !Array.isArray(userMessage.content)) {
 		return userMessage
@@ -70,7 +75,7 @@ export function validateAndFixToolResultIds(
 		return userMessage
 	}
 
-	const toolUseBlocks = assistantContent.filter((block): block is Anthropic.ToolUseBlock => block.type === "tool_use")
+	const toolUseBlocks = assistantContent.filter((block): block is NeutralToolUseBlock => block.type === "tool-call")
 
 	// No tool_use blocks to match against - no validation needed
 	if (toolUseBlocks.length === 0) {
@@ -79,7 +84,7 @@ export function validateAndFixToolResultIds(
 
 	// Find tool_result blocks in the user message
 	let toolResults = userMessage.content.filter(
-		(block): block is Anthropic.ToolResultBlockParam => block.type === "tool_result",
+		(block): block is NeutralToolResultBlock => block.type === "tool-result",
 	)
 
 	// Deduplicate tool_result blocks to prevent API protocol violations (GitHub #10465)
@@ -89,13 +94,13 @@ export function validateAndFixToolResultIds(
 	// deduplication remains as a defensive measure for unknown edge cases.
 	const seenToolResultIds = new Set<string>()
 	const deduplicatedContent = userMessage.content.filter((block) => {
-		if (block.type !== "tool_result") {
+		if (block.type !== "tool-result") {
 			return true
 		}
-		if (seenToolResultIds.has(block.tool_use_id)) {
+		if (seenToolResultIds.has(block.toolCallId)) {
 			return false // Duplicate - filter out
 		}
-		seenToolResultIds.add(block.tool_use_id)
+		seenToolResultIds.add(block.toolCallId)
 		return true
 	})
 
@@ -104,23 +109,21 @@ export function validateAndFixToolResultIds(
 		content: deduplicatedContent,
 	}
 
-	toolResults = deduplicatedContent.filter(
-		(block): block is Anthropic.ToolResultBlockParam => block.type === "tool_result",
-	)
+	toolResults = deduplicatedContent.filter((block): block is NeutralToolResultBlock => block.type === "tool-result")
 
 	// Build a set of valid tool_use IDs
-	const validToolUseIds = new Set(toolUseBlocks.map((block) => block.id))
+	const validToolUseIds = new Set(toolUseBlocks.map((block) => block.toolCallId))
 
 	// Build a set of existing tool_result IDs
-	const existingToolResultIds = new Set(toolResults.map((r) => r.tool_use_id))
+	const existingToolResultIds = new Set(toolResults.map((r) => r.toolCallId))
 
 	// Check for missing tool_results (tool_use IDs that don't have corresponding tool_results)
 	const missingToolUseIds = toolUseBlocks
-		.filter((toolUse) => !existingToolResultIds.has(toolUse.id))
-		.map((toolUse) => toolUse.id)
+		.filter((toolUse) => !existingToolResultIds.has(toolUse.toolCallId))
+		.map((toolUse) => toolUse.toolCallId)
 
 	// Check if any tool_result has an invalid ID
-	const hasInvalidIds = toolResults.some((result) => !validToolUseIds.has(result.tool_use_id))
+	const hasInvalidIds = toolResults.some((result) => !validToolUseIds.has(result.toolCallId))
 
 	// If no missing tool_results and no invalid IDs, no changes needed
 	if (missingToolUseIds.length === 0 && !hasInvalidIds) {
@@ -128,8 +131,8 @@ export function validateAndFixToolResultIds(
 	}
 
 	// We have issues - need to fix them
-	const toolResultIdList = toolResults.map((r) => r.tool_use_id)
-	const toolUseIdList = toolUseBlocks.map((b) => b.id)
+	const toolResultIdList = toolResults.map((r) => r.toolCallId)
+	const toolUseIdList = toolUseBlocks.map((b) => b.toolCallId)
 
 	// Report missing tool_results to PostHog error tracking
 	if (missingToolUseIds.length > 0 && TelemetryService.hasInstance()) {
@@ -167,34 +170,34 @@ export function validateAndFixToolResultIds(
 
 	// Match tool_results to tool_uses by position and fix incorrect IDs
 	const usedToolUseIds = new Set<string>()
-	const contentArray = userMessage.content as Anthropic.Messages.ContentBlockParam[]
+	const contentArray = userMessage.content as NeutralContentBlock[]
 
 	const correctedContent = contentArray
-		.map((block: Anthropic.Messages.ContentBlockParam) => {
-			if (block.type !== "tool_result") {
+		.map((block: NeutralContentBlock) => {
+			if (block.type !== "tool-result") {
 				return block
 			}
 
 			// If the ID is already valid and not yet used, keep it
-			if (validToolUseIds.has(block.tool_use_id) && !usedToolUseIds.has(block.tool_use_id)) {
-				usedToolUseIds.add(block.tool_use_id)
+			if (validToolUseIds.has(block.toolCallId) && !usedToolUseIds.has(block.toolCallId)) {
+				usedToolUseIds.add(block.toolCallId)
 				return block
 			}
 
 			// Find which tool_result index this block is by comparing references.
-			// This correctly handles duplicate tool_use_ids - we find the actual block's
+			// This correctly handles duplicate toolCallIds - we find the actual block's
 			// position among all tool_results, not the first block with a matching ID.
-			const toolResultIndex = toolResults.indexOf(block as Anthropic.ToolResultBlockParam)
+			const toolResultIndex = toolResults.indexOf(block as NeutralToolResultBlock)
 
 			// Try to match by position - only fix if there's a corresponding tool_use
 			if (toolResultIndex !== -1 && toolResultIndex < toolUseBlocks.length) {
-				const correctId = toolUseBlocks[toolResultIndex].id
+				const correctId = toolUseBlocks[toolResultIndex].toolCallId
 				// Only use this ID if it hasn't been used yet
 				if (!usedToolUseIds.has(correctId)) {
 					usedToolUseIds.add(correctId)
 					return {
 						...block,
-						tool_use_id: correctId,
+						toolCallId: correctId,
 					}
 				}
 			}
@@ -207,20 +210,18 @@ export function validateAndFixToolResultIds(
 	// Add missing tool_result blocks for any tool_use that doesn't have one
 	const coveredToolUseIds = new Set(
 		correctedContent
-			.filter(
-				(b: Anthropic.Messages.ContentBlockParam): b is Anthropic.ToolResultBlockParam =>
-					b.type === "tool_result",
-			)
-			.map((r: Anthropic.ToolResultBlockParam) => r.tool_use_id),
+			.filter((b: NeutralContentBlock): b is NeutralToolResultBlock => b.type === "tool-result")
+			.map((r: NeutralToolResultBlock) => r.toolCallId),
 	)
 
-	const stillMissingToolUseIds = toolUseBlocks.filter((toolUse) => !coveredToolUseIds.has(toolUse.id))
+	const stillMissingToolUseIds = toolUseBlocks.filter((toolUse) => !coveredToolUseIds.has(toolUse.toolCallId))
 
 	// Build final content: add missing tool_results at the beginning if any
-	const missingToolResults: Anthropic.ToolResultBlockParam[] = stillMissingToolUseIds.map((toolUse) => ({
-		type: "tool_result" as const,
-		tool_use_id: toolUse.id,
-		content: "Tool execution was interrupted before completion.",
+	const missingToolResults: NeutralToolResultBlock[] = stillMissingToolUseIds.map((toolUse) => ({
+		type: "tool-result" as const,
+		toolCallId: toolUse.toolCallId,
+		toolName: toolUse.toolName,
+		output: { type: "text" as const, value: "Tool execution was interrupted before completion." },
 	}))
 
 	// Insert missing tool_results at the beginning of the content array

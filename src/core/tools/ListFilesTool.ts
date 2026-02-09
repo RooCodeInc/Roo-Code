@@ -68,9 +68,9 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"list_files">): Promise<void> {
-		const relDirPath: string | undefined = block.params.path
-		const recursiveRaw: string | undefined = block.params.recursive
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const relDirPath: string | undefined = block.input.path
+		const recursiveRaw: string | undefined = block.input.recursive
 		const recursive = recursiveRaw?.toLowerCase() === "true"
 
 		const absolutePath = relDirPath ? path.resolve(task.cwd, relDirPath) : task.cwd

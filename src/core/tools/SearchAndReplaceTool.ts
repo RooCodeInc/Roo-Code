@@ -254,15 +254,15 @@ export class SearchAndReplaceTool extends BaseTool<"search_and_replace"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"search_and_replace">): Promise<void> {
-		const relPath: string | undefined = block.params.path
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const relPath: string | undefined = block.input.path
 
 		// Wait for path to stabilize before showing UI (prevents truncated paths)
 		if (!this.hasPathStabilized(relPath)) {
 			return
 		}
 
-		const operationsStr: string | undefined = block.params.operations
+		const operationsStr: string | undefined = block.input.operations
 
 		let operationsPreview: string | undefined
 		if (operationsStr) {

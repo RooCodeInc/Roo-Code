@@ -1,20 +1,19 @@
 import { promises as fs } from "node:fs"
-import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
 import * as os from "os"
 import * as path from "path"
 
-import { type ModelInfo, type QwenCodeModelId, qwenCodeModels, qwenCodeDefaultModelId } from "@roo-code/types"
+import { qwenCodeModels, qwenCodeDefaultModelId } from "@roo-code/types"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
-
-import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
+import { getModelParams } from "../transform/model-params"
 
-import { BaseProvider } from "./base-provider"
-import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import { OpenAICompatibleHandler, type OpenAICompatibleConfig } from "./openai-compatible"
+import { DEFAULT_HEADERS } from "./constants"
+import type { ApiHandlerCreateMessageMetadata } from "../index"
 
 const QWEN_OAUTH_BASE_URL = "https://chat.qwen.ai"
 const QWEN_OAUTH_TOKEN_ENDPOINT = `${QWEN_OAUTH_BASE_URL}/api/v1/oauth2/token`
@@ -36,7 +35,6 @@ interface QwenCodeHandlerOptions extends ApiHandlerOptions {
 
 function getQwenCachedCredentialPath(customPath?: string): string {
 	if (customPath) {
-		// Support custom path that starts with ~/ or is absolute
 		if (customPath.startsWith("~/")) {
 			return path.join(os.homedir(), customPath.slice(2))
 		}
@@ -51,28 +49,54 @@ function objectToUrlEncoded(data: Record<string, string>): string {
 		.join("&")
 }
 
-export class QwenCodeHandler extends BaseProvider implements SingleCompletionHandler {
-	protected options: QwenCodeHandlerOptions
+export class QwenCodeHandler extends OpenAICompatibleHandler {
+	protected override options: QwenCodeHandlerOptions
 	private credentials: QwenOAuthCredentials | null = null
-	private client: OpenAI | undefined
 	private refreshPromise: Promise<QwenOAuthCredentials> | null = null
 
 	constructor(options: QwenCodeHandlerOptions) {
-		super()
+		const modelId = options.apiModelId || ""
+		const modelInfo =
+			qwenCodeModels[modelId as keyof typeof qwenCodeModels] || qwenCodeModels[qwenCodeDefaultModelId]
+
+		const config: OpenAICompatibleConfig = {
+			providerName: "qwen-code",
+			baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+			apiKey: "",
+			modelId,
+			modelInfo,
+		}
+
+		super(options, config)
 		this.options = options
 	}
 
-	private ensureClient(): OpenAI {
-		if (!this.client) {
-			// Create the client instance with dummy key initially
-			// The API key will be updated dynamically via ensureAuthenticated
-			this.client = new OpenAI({
-				apiKey: "dummy-key-will-be-replaced",
-				baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-			})
-		}
-		return this.client
+	override getModel() {
+		const id = this.options.apiModelId ?? qwenCodeDefaultModelId
+		const info = qwenCodeModels[id as keyof typeof qwenCodeModels] || qwenCodeModels[qwenCodeDefaultModelId]
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: 0,
+		})
+		return { id, info, ...params }
 	}
+
+	/**
+	 * Recreate the AI SDK provider with current OAuth credentials.
+	 */
+	private updateProvider(): void {
+		this.provider = createOpenAICompatible({
+			name: this.config.providerName,
+			baseURL: this.config.baseURL,
+			apiKey: this.config.apiKey,
+			headers: DEFAULT_HEADERS,
+		})
+	}
+
+	// --- OAuth lifecycle (preserved as-is) ---
 
 	private async loadCachedQwenCredentials(): Promise<QwenOAuthCredentials> {
 		try {
@@ -172,10 +196,9 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 			this.credentials = await this.refreshAccessToken(this.credentials)
 		}
 
-		// After authentication, update the apiKey and baseURL on the existing client
-		const client = this.ensureClient()
-		client.apiKey = this.credentials.access_token
-		client.baseURL = this.getBaseUrl(this.credentials)
+		this.config.apiKey = this.credentials.access_token
+		this.config.baseURL = this.getBaseUrl(this.credentials)
+		this.updateProvider()
 	}
 
 	private getBaseUrl(creds: QwenOAuthCredentials): string {
@@ -186,154 +209,47 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		return baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/v1`
 	}
 
-	private async callApiWithRetry<T>(apiCall: () => Promise<T>): Promise<T> {
+	// --- Overrides with 401 retry ---
+
+	override async *createMessage(
+		systemPrompt: string,
+		messages: NeutralMessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		await this.ensureAuthenticated()
+
 		try {
-			return await apiCall()
-		} catch (error: any) {
-			if (error.status === 401) {
-				// Token expired, refresh and retry
+			yield* super.createMessage(systemPrompt, messages, metadata)
+		} catch (error: unknown) {
+			if ((error as any).status === 401) {
+				// Token expired mid-request, refresh and retry
 				this.credentials = await this.refreshAccessToken(this.credentials!)
-				const client = this.ensureClient()
-				client.apiKey = this.credentials.access_token
-				client.baseURL = this.getBaseUrl(this.credentials)
-				return await apiCall()
+				this.config.apiKey = this.credentials.access_token
+				this.config.baseURL = this.getBaseUrl(this.credentials)
+				this.updateProvider()
+				yield* super.createMessage(systemPrompt, messages, metadata)
 			} else {
 				throw error
 			}
 		}
 	}
 
-	override async *createMessage(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
-	): ApiStream {
+	override async completePrompt(prompt: string): Promise<string> {
 		await this.ensureAuthenticated()
-		const client = this.ensureClient()
-		const model = this.getModel()
 
-		const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
-			role: "system",
-			content: systemPrompt,
-		}
-
-		const convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
-
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
-			model: model.id,
-			temperature: 0,
-			messages: convertedMessages,
-			stream: true,
-			stream_options: { include_usage: true },
-			max_completion_tokens: model.info.maxTokens,
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
-		}
-
-		const stream = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
-
-		let fullContent = ""
-
-		for await (const apiChunk of stream) {
-			const delta = apiChunk.choices[0]?.delta ?? {}
-			const finishReason = apiChunk.choices[0]?.finish_reason
-
-			if (delta.content) {
-				let newText = delta.content
-				if (newText.startsWith(fullContent)) {
-					newText = newText.substring(fullContent.length)
-				}
-				fullContent = delta.content
-
-				if (newText) {
-					// Check for thinking blocks
-					if (newText.includes("<think>") || newText.includes("</think>")) {
-						// Simple parsing for thinking blocks
-						const parts = newText.split(/<\/?think>/g)
-						for (let i = 0; i < parts.length; i++) {
-							if (parts[i]) {
-								if (i % 2 === 0) {
-									// Outside thinking block
-									yield {
-										type: "text",
-										text: parts[i],
-									}
-								} else {
-									// Inside thinking block
-									yield {
-										type: "reasoning",
-										text: parts[i],
-									}
-								}
-							}
-						}
-					} else {
-						yield {
-							type: "text",
-							text: newText,
-						}
-					}
-				}
-			}
-
-			if ("reasoning_content" in delta && delta.reasoning_content) {
-				yield {
-					type: "reasoning",
-					text: (delta.reasoning_content as string | undefined) || "",
-				}
-			}
-
-			// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
-			if (delta.tool_calls) {
-				for (const toolCall of delta.tool_calls) {
-					yield {
-						type: "tool_call_partial",
-						index: toolCall.index,
-						id: toolCall.id,
-						name: toolCall.function?.name,
-						arguments: toolCall.function?.arguments,
-					}
-				}
-			}
-
-			// Process finish_reason to emit tool_call_end events
-			if (finishReason) {
-				const endEvents = NativeToolCallParser.processFinishReason(finishReason)
-				for (const event of endEvents) {
-					yield event
-				}
-			}
-
-			if (apiChunk.usage) {
-				yield {
-					type: "usage",
-					inputTokens: apiChunk.usage.prompt_tokens || 0,
-					outputTokens: apiChunk.usage.completion_tokens || 0,
-				}
+		try {
+			return await super.completePrompt(prompt)
+		} catch (error: unknown) {
+			if ((error as any).status === 401) {
+				// Token expired mid-request, refresh and retry
+				this.credentials = await this.refreshAccessToken(this.credentials!)
+				this.config.apiKey = this.credentials.access_token
+				this.config.baseURL = this.getBaseUrl(this.credentials)
+				this.updateProvider()
+				return await super.completePrompt(prompt)
+			} else {
+				throw error
 			}
 		}
-	}
-
-	override getModel(): { id: string; info: ModelInfo } {
-		const id = this.options.apiModelId ?? qwenCodeDefaultModelId
-		const info = qwenCodeModels[id as keyof typeof qwenCodeModels] || qwenCodeModels[qwenCodeDefaultModelId]
-		return { id, info }
-	}
-
-	async completePrompt(prompt: string): Promise<string> {
-		await this.ensureAuthenticated()
-		const client = this.ensureClient()
-		const model = this.getModel()
-
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
-			model: model.id,
-			messages: [{ role: "user", content: prompt }],
-			max_completion_tokens: model.info.maxTokens,
-		}
-
-		const response = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
-
-		return response.choices[0]?.message.content || ""
 	}
 }

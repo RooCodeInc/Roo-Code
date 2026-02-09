@@ -131,8 +131,8 @@ export class ExecuteCommandTool extends BaseTool<"execute_command"> {
 		}
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"execute_command">): Promise<void> {
-		const command = block.params.command
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const command = block.input.command
 		await task.ask("command", command ?? "", block.partial).catch(() => {})
 	}
 }

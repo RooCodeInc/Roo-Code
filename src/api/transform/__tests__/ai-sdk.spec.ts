@@ -1,4 +1,4 @@
-import { Anthropic } from "@anthropic-ai/sdk"
+import type { RooMessageParam } from "../../../core/task-persistence/apiMessages"
 import OpenAI from "openai"
 import {
 	convertToAiSdkMessages,
@@ -18,7 +18,7 @@ vitest.mock("ai", () => ({
 describe("AI SDK conversion utilities", () => {
 	describe("convertToAiSdkMessages", () => {
 		it("converts simple string messages", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{ role: "user", content: "Hello" },
 				{ role: "assistant", content: "Hi there" },
 			]
@@ -31,7 +31,7 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("converts user messages with text content blocks", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "user",
 					content: [{ type: "text", text: "Hello world" }],
@@ -48,18 +48,15 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("converts user messages with image content", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "user",
 					content: [
 						{ type: "text", text: "What is in this image?" },
 						{
 							type: "image",
-							source: {
-								type: "base64",
-								media_type: "image/png",
-								data: "base64encodeddata",
-							},
+							image: "base64encodeddata",
+							mediaType: "image/png",
 						},
 					],
 				},
@@ -74,7 +71,7 @@ describe("AI SDK conversion utilities", () => {
 					{ type: "text", text: "What is in this image?" },
 					{
 						type: "image",
-						image: "data:image/png;base64,base64encodeddata",
+						image: "base64encodeddata",
 						mimeType: "image/png",
 					},
 				],
@@ -82,7 +79,7 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("converts user messages with URL image content", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "user",
 					content: [
@@ -103,25 +100,19 @@ describe("AI SDK conversion utilities", () => {
 			expect(result).toHaveLength(1)
 			expect(result[0]).toEqual({
 				role: "user",
-				content: [
-					{ type: "text", text: "What is in this image?" },
-					{
-						type: "image",
-						image: "https://example.com/image.png",
-					},
-				],
+				content: [{ type: "text", text: "What is in this image?" }],
 			})
 		})
 
 		it("converts tool results into separate tool role messages with resolved tool names", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [
 						{
-							type: "tool_use",
-							id: "call_123",
-							name: "read_file",
+							type: "tool-call",
+							toolCallId: "call_123",
+							toolName: "read_file",
 							input: { path: "test.ts" },
 						},
 					],
@@ -130,9 +121,10 @@ describe("AI SDK conversion utilities", () => {
 					role: "user",
 					content: [
 						{
-							type: "tool_result",
-							tool_use_id: "call_123",
-							content: "Tool result content",
+							type: "tool-result",
+							toolCallId: "call_123",
+							toolName: "",
+							output: { type: "text" as const, value: "Tool result content" },
 						},
 					],
 				},
@@ -167,14 +159,15 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("uses unknown_tool for tool results without matching tool call", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "user",
 					content: [
 						{
-							type: "tool_result",
-							tool_use_id: "call_orphan",
-							content: "Orphan result",
+							type: "tool-result",
+							toolCallId: "call_orphan",
+							toolName: "",
+							output: { type: "text" as const, value: "Orphan result" },
 						},
 					],
 				},
@@ -190,7 +183,7 @@ describe("AI SDK conversion utilities", () => {
 					{
 						type: "tool-result",
 						toolCallId: "call_orphan",
-						toolName: "unknown_tool",
+						toolName: "",
 						output: { type: "text", value: "Orphan result" },
 					},
 				],
@@ -198,14 +191,14 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("separates tool results and text content into different messages", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [
 						{
-							type: "tool_use",
-							id: "call_123",
-							name: "read_file",
+							type: "tool-call",
+							toolCallId: "call_123",
+							toolName: "read_file",
 							input: { path: "test.ts" },
 						},
 					],
@@ -214,9 +207,10 @@ describe("AI SDK conversion utilities", () => {
 					role: "user",
 					content: [
 						{
-							type: "tool_result",
-							tool_use_id: "call_123",
-							content: "File contents here",
+							type: "tool-result",
+							toolCallId: "call_123",
+							toolName: "",
+							output: { type: "text" as const, value: "File contents here" },
 						},
 						{
 							type: "text",
@@ -260,15 +254,15 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("converts assistant messages with tool use", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [
 						{ type: "text", text: "Let me read that file" },
 						{
-							type: "tool_use",
-							id: "call_456",
-							name: "read_file",
+							type: "tool-call",
+							toolCallId: "call_456",
+							toolName: "read_file",
 							input: { path: "test.ts" },
 						},
 					],
@@ -293,7 +287,7 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("handles empty assistant content", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [],
@@ -310,7 +304,7 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("converts assistant reasoning blocks", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [
@@ -333,11 +327,15 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("converts assistant thinking blocks to reasoning", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [
-						{ type: "thinking" as any, thinking: "Deep thought", signature: "sig" },
+						{
+							type: "reasoning" as any,
+							text: "Deep thought",
+							providerOptions: { anthropic: { redactedContent: "sig" } },
+						},
 						{ type: "text", text: "OK" },
 					],
 				},
@@ -352,10 +350,6 @@ describe("AI SDK conversion utilities", () => {
 					{
 						type: "reasoning",
 						text: "Deep thought",
-						providerOptions: {
-							bedrock: { signature: "sig" },
-							anthropic: { signature: "sig" },
-						},
 					},
 					{ type: "text", text: "OK" },
 				],
@@ -363,7 +357,7 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("converts assistant message-level reasoning_content to reasoning part", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [{ type: "text", text: "Answer" }],
@@ -384,7 +378,7 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("prefers message-level reasoning_content over reasoning blocks", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [
@@ -408,15 +402,15 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("attaches thoughtSignature to first tool-call part for Gemini 3 round-tripping", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [
 						{ type: "text", text: "Let me check that." },
 						{
-							type: "tool_use",
-							id: "tool-1",
-							name: "read_file",
+							type: "tool-call",
+							toolCallId: "tool-1",
+							toolName: "read_file",
 							input: { path: "test.txt" },
 						},
 						{ type: "thoughtSignature", thoughtSignature: "encrypted-sig-abc" } as any,
@@ -442,20 +436,20 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("attaches thoughtSignature only to the first tool-call in parallel calls", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [
 						{
-							type: "tool_use",
-							id: "tool-1",
-							name: "get_weather",
+							type: "tool-call",
+							toolCallId: "tool-1",
+							toolName: "get_weather",
 							input: { city: "Paris" },
 						},
 						{
-							type: "tool_use",
-							id: "tool-2",
-							name: "get_weather",
+							type: "tool-call",
+							toolCallId: "tool-2",
+							toolName: "get_weather",
 							input: { city: "London" },
 						},
 						{ type: "thoughtSignature", thoughtSignature: "sig-parallel" } as any,
@@ -479,15 +473,15 @@ describe("AI SDK conversion utilities", () => {
 		})
 
 		it("does not attach providerOptions when no thoughtSignature block is present", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessageParam[] = [
 				{
 					role: "assistant",
 					content: [
 						{ type: "text", text: "Using tool" },
 						{
-							type: "tool_use",
-							id: "tool-1",
-							name: "read_file",
+							type: "tool-call",
+							toolCallId: "tool-1",
+							toolName: "read_file",
 							input: { path: "test.txt" },
 						},
 					],

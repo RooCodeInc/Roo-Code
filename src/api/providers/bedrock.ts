@@ -1,4 +1,3 @@
-import type { Anthropic } from "@anthropic-ai/sdk"
 import { createAmazonBedrock, type AmazonBedrockProvider } from "@ai-sdk/amazon-bedrock"
 import { streamText, generateText, ToolSet } from "ai"
 import { fromIni } from "@aws-sdk/credential-providers"
@@ -32,6 +31,7 @@ import {
 	handleAiSdkError,
 } from "../transform/ai-sdk"
 import { getModelParams } from "../transform/model-params"
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import { shouldUseReasoningBudget } from "../../shared/api"
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
@@ -188,7 +188,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const modelConfig = this.getModel()
@@ -200,7 +200,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Filter out provider-specific meta entries (e.g., { type: "reasoning" })
 		// that are not valid Anthropic MessageParam values
 		type ReasoningMetaLike = { type?: string }
-		const filteredMessages = messages.filter((message): message is Anthropic.Messages.MessageParam => {
+		const filteredMessages = messages.filter((message): message is NeutralMessageParam => {
 			const meta = message as ReasoningMetaLike
 			if (meta.type === "reasoning") {
 				return false
@@ -735,7 +735,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	 * accounts for that split so cache points land on the right message.
 	 */
 	private applyCachePointsToAiSdkMessages(
-		originalMessages: Anthropic.Messages.MessageParam[],
+		originalMessages: NeutralMessageParam[],
 		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
 		targetOriginalIndices: Set<number>,
 		cachePointOption: Record<string, Record<string, unknown>>,

@@ -156,7 +156,7 @@ describe("searchAndReplaceTool", () => {
 	 * Helper function to execute the search and replace tool with different parameters
 	 */
 	async function executeSearchAndReplaceTool(
-		params: Partial<ToolUse["params"]> = {},
+		params: Partial<ToolUse["input"]> = {},
 		options: {
 			fileExists?: boolean
 			fileContent?: string
@@ -185,9 +185,10 @@ describe("searchAndReplaceTool", () => {
 		}
 
 		const toolUse: ToolUse = {
-			type: "tool_use",
-			name: "search_and_replace",
-			params: fullParams as any,
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "search_and_replace",
+			input: fullParams as any,
 			nativeArgs: nativeArgs as any,
 			partial: isPartial,
 		}
@@ -196,7 +197,7 @@ describe("searchAndReplaceTool", () => {
 			toolResult = result
 		})
 
-		await searchAndReplaceTool.handle(mockTask, toolUse as ToolUse<"search_and_replace">, {
+		await searchAndReplaceTool.handle(mockTask, toolUse as ToolUse, {
 			askApproval: mockAskApproval,
 			handleError: mockHandleError,
 			pushToolResult: mockPushToolResult,
@@ -365,9 +366,10 @@ describe("searchAndReplaceTool", () => {
 			mockedFsReadFile.mockRejectedValueOnce(new Error("Read failed"))
 
 			const toolUse: ToolUse = {
-				type: "tool_use",
-				name: "search_and_replace",
-				params: {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "search_and_replace",
+				input: {
 					path: testFilePath,
 					operations: JSON.stringify([{ search: "Line 2", replace: "Modified" }]),
 				},
@@ -383,7 +385,7 @@ describe("searchAndReplaceTool", () => {
 				capturedResult = result
 			})
 
-			await searchAndReplaceTool.handle(mockTask, toolUse as ToolUse<"search_and_replace">, {
+			await searchAndReplaceTool.handle(mockTask, toolUse as ToolUse, {
 				askApproval: mockAskApproval,
 				handleError: mockHandleError,
 				pushToolResult: localPushToolResult,

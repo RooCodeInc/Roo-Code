@@ -43,10 +43,11 @@ describe("runSlashCommandTool", () => {
 	})
 
 	it("should handle missing command parameter", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "",
@@ -62,10 +63,11 @@ describe("runSlashCommandTool", () => {
 	})
 
 	it("should handle command not found", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "nonexistent",
@@ -84,10 +86,11 @@ describe("runSlashCommandTool", () => {
 	})
 
 	it("should handle user rejection", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "init",
@@ -112,10 +115,11 @@ describe("runSlashCommandTool", () => {
 	})
 
 	it("should successfully execute built-in command", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "init",
@@ -157,10 +161,11 @@ Initialize project content here`,
 	})
 
 	it("should successfully execute command with arguments", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "test",
@@ -195,10 +200,11 @@ Run tests with specific focus`,
 	})
 
 	it("should handle global command", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "deploy",
@@ -227,10 +233,11 @@ Deploy application to production`,
 	})
 
 	it("should handle partial block", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {
 				command: "init",
 				args: "",
 			},
@@ -253,10 +260,11 @@ Deploy application to production`,
 	})
 
 	it("should handle errors during execution", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "init",
@@ -272,10 +280,11 @@ Deploy application to production`,
 	})
 
 	it("should handle empty available commands list", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "nonexistent",
@@ -293,10 +302,11 @@ Deploy application to production`,
 	})
 
 	it("should reset consecutive mistake count on valid command", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "init",
@@ -321,10 +331,11 @@ Deploy application to production`,
 
 	it("should switch mode when mode is specified in command", async () => {
 		const mockHandleModeSwitch = vi.fn()
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "debug-app",
@@ -369,10 +380,11 @@ Start debugging the application`,
 
 	it("should not switch mode when mode is not specified in command", async () => {
 		const mockHandleModeSwitch = vi.fn()
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "test",
@@ -405,10 +417,11 @@ Start debugging the application`,
 	})
 
 	it("should include mode in askApproval message when mode is specified", async () => {
-		const block: ToolUse<"run_slash_command"> = {
-			type: "tool_use" as const,
-			name: "run_slash_command" as const,
-			params: {},
+		const block: ToolUse = {
+			type: "tool-call" as const,
+			toolCallId: "test-tool-call-id",
+			toolName: "run_slash_command" as const,
+			input: {},
 			partial: false,
 			nativeArgs: {
 				command: "debug-app",

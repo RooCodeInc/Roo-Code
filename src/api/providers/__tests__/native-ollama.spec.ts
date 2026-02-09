@@ -1,608 +1,417 @@
 // npx vitest run api/providers/__tests__/native-ollama.spec.ts
 
-import { NativeOllamaHandler } from "../native-ollama"
-import { ApiHandlerOptions } from "../../../shared/api"
-import { getOllamaModels } from "../fetchers/ollama"
+// Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
+const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+}))
 
-// Mock the ollama package
-const mockChat = vitest.fn()
-vitest.mock("ollama", () => {
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
 	return {
-		Ollama: vitest.fn().mockImplementation(() => ({
-			chat: mockChat,
-		})),
-		Message: vitest.fn(),
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
 	}
 })
 
-// Mock the getOllamaModels function
-vitest.mock("../fetchers/ollama", () => ({
-	getOllamaModels: vitest.fn(),
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: vi.fn(() => {
+		// Return a function that returns a mock language model
+		return vi.fn(() => ({
+			modelId: "llama2",
+			provider: "ollama",
+		}))
+	}),
 }))
 
-const mockGetOllamaModels = vitest.mocked(getOllamaModels)
+vi.mock("../fetchers/modelCache", () => ({
+	getModels: vi.fn().mockResolvedValue({}),
+	getModelsFromCache: vi.fn().mockReturnValue(undefined),
+}))
+
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
+
+import { ollamaDefaultModelInfo } from "@roo-code/types"
+
+import type { ApiHandlerOptions } from "../../../shared/api"
+
+import { NativeOllamaHandler } from "../native-ollama"
 
 describe("NativeOllamaHandler", () => {
 	let handler: NativeOllamaHandler
+	let mockOptions: ApiHandlerOptions
 
 	beforeEach(() => {
-		vitest.clearAllMocks()
-
-		// Default mock for getOllamaModels
-		mockGetOllamaModels.mockResolvedValue({
-			llama2: {
-				contextWindow: 4096,
-				maxTokens: 4096,
-				supportsImages: false,
-				supportsPromptCache: false,
-			},
-		})
-
-		const options: ApiHandlerOptions = {
-			apiModelId: "llama2",
+		vi.clearAllMocks()
+		mockOptions = {
 			ollamaModelId: "llama2",
 			ollamaBaseUrl: "http://localhost:11434",
+			ollamaApiKey: "test-key",
 		}
-
-		handler = new NativeOllamaHandler(options)
+		handler = new NativeOllamaHandler(mockOptions)
 	})
 
-	describe("createMessage", () => {
-		it("should stream messages from Ollama", async () => {
-			// Mock the chat response as an async generator
-			mockChat.mockImplementation(async function* () {
-				yield {
-					message: { content: "Hello" },
-					eval_count: undefined,
-					prompt_eval_count: undefined,
-				}
-				yield {
-					message: { content: " world" },
-					eval_count: 2,
-					prompt_eval_count: 10,
-				}
-			})
-
-			const systemPrompt = "You are a helpful assistant"
-			const messages = [{ role: "user" as const, content: "Hi there" }]
-
-			const stream = handler.createMessage(systemPrompt, messages)
-			const results = []
-
-			for await (const chunk of stream) {
-				results.push(chunk)
-			}
-
-			expect(results).toHaveLength(3)
-			expect(results[0]).toEqual({ type: "text", text: "Hello" })
-			expect(results[1]).toEqual({ type: "text", text: " world" })
-			expect(results[2]).toEqual({ type: "usage", inputTokens: 10, outputTokens: 2 })
+	describe("constructor", () => {
+		it("should initialize with provided options", () => {
+			expect(handler).toBeInstanceOf(NativeOllamaHandler)
+			expect(handler.getModel().id).toBe("llama2")
 		})
 
-		it("should not include num_ctx by default", async () => {
-			// Mock the chat response
-			mockChat.mockImplementation(async function* () {
-				yield { message: { content: "Response" } }
-			})
-
-			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }])
-
-			// Consume the stream
-			for await (const _ of stream) {
-				// consume stream
-			}
-
-			// Verify that num_ctx was NOT included in the options
-			expect(mockChat).toHaveBeenCalledWith(
+		it("should configure the provider with correct base URL", () => {
+			expect(createOpenAICompatible).toHaveBeenCalledWith(
 				expect.objectContaining({
-					options: expect.not.objectContaining({
-						num_ctx: expect.anything(),
-					}),
+					name: "ollama",
+					baseURL: "http://localhost:11434/v1",
 				}),
 			)
 		})
 
-		it("should include num_ctx when explicitly set via ollamaNumCtx", async () => {
-			const options: ApiHandlerOptions = {
-				apiModelId: "llama2",
-				ollamaModelId: "llama2",
-				ollamaBaseUrl: "http://localhost:11434",
-				ollamaNumCtx: 8192, // Explicitly set num_ctx
-			}
-
-			handler = new NativeOllamaHandler(options)
-
-			// Mock the chat response
-			mockChat.mockImplementation(async function* () {
-				yield { message: { content: "Response" } }
+		it("should strip trailing slashes from base URL", () => {
+			new NativeOllamaHandler({
+				...mockOptions,
+				ollamaBaseUrl: "http://localhost:11434/",
 			})
-
-			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }])
-
-			// Consume the stream
-			for await (const _ of stream) {
-				// consume stream
-			}
-
-			// Verify that num_ctx was included with the specified value
-			expect(mockChat).toHaveBeenCalledWith(
+			expect(createOpenAICompatible).toHaveBeenCalledWith(
 				expect.objectContaining({
-					options: expect.objectContaining({
-						num_ctx: 8192,
-					}),
+					baseURL: "http://localhost:11434/v1",
 				}),
 			)
 		})
 
-		it("should handle DeepSeek R1 models with reasoning detection", async () => {
-			const options: ApiHandlerOptions = {
-				apiModelId: "deepseek-r1",
-				ollamaModelId: "deepseek-r1",
-				ollamaBaseUrl: "http://localhost:11434",
-			}
-
-			handler = new NativeOllamaHandler(options)
-
-			// Mock response with thinking tags
-			mockChat.mockImplementation(async function* () {
-				yield { message: { content: "<think>Let me think" } }
-				yield { message: { content: " about this</think>" } }
-				yield { message: { content: "The answer is 42" } }
+		it("should use default base URL when not provided", () => {
+			new NativeOllamaHandler({
+				...mockOptions,
+				ollamaBaseUrl: undefined,
 			})
-
-			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Question?" }])
-			const results = []
-
-			for await (const chunk of stream) {
-				results.push(chunk)
-			}
-
-			// Should detect reasoning vs regular text
-			expect(results.some((r) => r.type === "reasoning")).toBe(true)
-			expect(results.some((r) => r.type === "text")).toBe(true)
-		})
-	})
-
-	describe("completePrompt", () => {
-		it("should complete a prompt without streaming", async () => {
-			mockChat.mockResolvedValue({
-				message: { content: "This is the response" },
-			})
-
-			const result = await handler.completePrompt("Tell me a joke")
-
-			expect(mockChat).toHaveBeenCalledWith({
-				model: "llama2",
-				messages: [{ role: "user", content: "Tell me a joke" }],
-				stream: false,
-				options: {
-					temperature: 0,
-				},
-			})
-			expect(result).toBe("This is the response")
-		})
-
-		it("should not include num_ctx in completePrompt by default", async () => {
-			mockChat.mockResolvedValue({
-				message: { content: "Response" },
-			})
-
-			await handler.completePrompt("Test prompt")
-
-			// Verify that num_ctx was NOT included in the options
-			expect(mockChat).toHaveBeenCalledWith(
+			expect(createOpenAICompatible).toHaveBeenCalledWith(
 				expect.objectContaining({
-					options: expect.not.objectContaining({
-						num_ctx: expect.anything(),
-					}),
+					baseURL: "http://localhost:11434/v1",
 				}),
 			)
 		})
 
-		it("should include num_ctx in completePrompt when explicitly set", async () => {
-			const options: ApiHandlerOptions = {
-				apiModelId: "llama2",
-				ollamaModelId: "llama2",
-				ollamaBaseUrl: "http://localhost:11434",
-				ollamaNumCtx: 4096, // Explicitly set num_ctx
-			}
-
-			handler = new NativeOllamaHandler(options)
-
-			mockChat.mockResolvedValue({
-				message: { content: "Response" },
+		it("should use 'ollama' as default API key when not provided", () => {
+			new NativeOllamaHandler({
+				...mockOptions,
+				ollamaApiKey: undefined,
 			})
-
-			await handler.completePrompt("Test prompt")
-
-			// Verify that num_ctx was included with the specified value
-			expect(mockChat).toHaveBeenCalledWith(
+			expect(createOpenAICompatible).toHaveBeenCalledWith(
 				expect.objectContaining({
-					options: expect.objectContaining({
-						num_ctx: 4096,
-					}),
+					apiKey: "ollama",
 				}),
 			)
 		})
-	})
 
-	describe("error handling", () => {
-		it("should handle connection refused errors", async () => {
-			const error = new Error("ECONNREFUSED") as any
-			error.code = "ECONNREFUSED"
-			mockChat.mockRejectedValue(error)
-
-			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }])
-
-			await expect(async () => {
-				for await (const _ of stream) {
-					// consume stream
-				}
-			}).rejects.toThrow("Ollama service is not running")
-		})
-
-		it("should handle model not found errors", async () => {
-			const error = new Error("Not found") as any
-			error.status = 404
-			mockChat.mockRejectedValue(error)
-
-			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }])
-
-			await expect(async () => {
-				for await (const _ of stream) {
-					// consume stream
-				}
-			}).rejects.toThrow("Model llama2 not found in Ollama")
+		it("should use provided API key", () => {
+			new NativeOllamaHandler({
+				...mockOptions,
+				ollamaApiKey: "my-secret-key",
+			})
+			expect(createOpenAICompatible).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: "my-secret-key",
+				}),
+			)
 		})
 	})
 
 	describe("getModel", () => {
-		it("should return the configured model", () => {
+		it("should return model info using defaults when cache is empty", () => {
 			const model = handler.getModel()
 			expect(model.id).toBe("llama2")
-			expect(model.info).toBeDefined()
+			expect(model.info).toEqual(ollamaDefaultModelInfo)
+		})
+
+		it("should return empty string model ID when no model is configured", () => {
+			const handlerNoModel = new NativeOllamaHandler({
+				...mockOptions,
+				ollamaModelId: undefined,
+			})
+			const model = handlerNoModel.getModel()
+			expect(model.id).toBe("")
+			expect(model.info).toEqual(ollamaDefaultModelInfo)
+		})
+
+		it("should include model parameters from getModelParams", () => {
+			const model = handler.getModel()
+			expect(model).toHaveProperty("temperature")
+			expect(model).toHaveProperty("maxTokens")
+		})
+
+		it("should use default temperature of 0", () => {
+			const handlerNoTemp = new NativeOllamaHandler({
+				...mockOptions,
+				modelTemperature: undefined,
+			})
+			const model = handlerNoTemp.getModel()
+			expect(model.temperature).toBe(0)
+		})
+
+		it("should use custom temperature when specified", () => {
+			const handlerCustomTemp = new NativeOllamaHandler({
+				...mockOptions,
+				modelTemperature: 0.7,
+			})
+			const model = handlerCustomTemp.getModel()
+			expect(model.temperature).toBe(0.7)
 		})
 	})
 
-	describe("tool calling", () => {
-		it("should include tools when tools are provided", async () => {
-			// Model metadata should not gate tool inclusion; metadata.tools controls it.
-			mockGetOllamaModels.mockResolvedValue({
-				"llama3.2": {
-					contextWindow: 128000,
-					maxTokens: 4096,
-					supportsImages: true,
-					supportsPromptCache: false,
-				},
-			})
-
-			const options: ApiHandlerOptions = {
-				apiModelId: "llama3.2",
-				ollamaModelId: "llama3.2",
-				ollamaBaseUrl: "http://localhost:11434",
-			}
-
-			handler = new NativeOllamaHandler(options)
-
-			// Mock the chat response
-			mockChat.mockImplementation(async function* () {
-				yield { message: { content: "I will use the tool" } }
-			})
-
-			const tools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "get_weather",
-						description: "Get the weather for a location",
-						parameters: {
-							type: "object",
-							properties: {
-								location: { type: "string", description: "The city name" },
-							},
-							required: ["location"],
-						},
+	describe("createMessage", () => {
+		const systemPrompt = "You are a helpful assistant."
+		const messages: NeutralMessageParam[] = [
+			{
+				role: "user",
+				content: [
+					{
+						type: "text" as const,
+						text: "Hello!",
 					},
-				},
-			]
+				],
+			},
+		]
 
-			const stream = handler.createMessage(
-				"System",
-				[{ role: "user" as const, content: "What's the weather?" }],
-				{ taskId: "test", tools },
-			)
-
-			// Consume the stream
-			for await (const _ of stream) {
-				// consume stream
+		it("should handle streaming responses", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Hello" }
+				yield { type: "text-delta", text: " world" }
 			}
 
-			// Verify tools were passed to the API
-			expect(mockChat).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: [
-						{
-							type: "function",
-							function: {
-								name: "get_weather",
-								description: "Get the weather for a location",
-								parameters: {
-									type: "object",
-									properties: {
-										location: { type: "string", description: "The city name" },
-									},
-									required: ["location"],
-								},
-							},
-						},
-					],
-				}),
-			)
+			const mockUsage = Promise.resolve({
+				inputTokens: 10,
+				outputTokens: 5,
+			})
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: mockUsage,
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			expect(chunks.length).toBeGreaterThan(0)
+			const textChunks = chunks.filter((chunk) => chunk.type === "text")
+			expect(textChunks).toHaveLength(2)
+			expect(textChunks[0].text).toBe("Hello")
+			expect(textChunks[1].text).toBe(" world")
 		})
 
-		it("should include tools even when model metadata doesn't advertise tool support", async () => {
-			// Model metadata should not gate tool inclusion; metadata.tools controls it.
-			mockGetOllamaModels.mockResolvedValue({
-				llama2: {
-					contextWindow: 4096,
-					maxTokens: 4096,
-					supportsImages: false,
-					supportsPromptCache: false,
-				},
-			})
-
-			// Mock the chat response
-			mockChat.mockImplementation(async function* () {
-				yield { message: { content: "Response without tools" } }
-			})
-
-			const tools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "get_weather",
-						description: "Get the weather",
-						parameters: { type: "object", properties: {} },
-					},
-				},
-			]
-
-			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }], {
-				taskId: "test",
-				tools,
-			})
-
-			// Consume the stream
-			for await (const _ of stream) {
-				// consume stream
+		it("should include usage information", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
 			}
 
-			// Verify tools were passed
-			expect(mockChat).toHaveBeenCalledWith(
-				expect.objectContaining({
-					tools: expect.any(Array),
-				}),
-			)
+			const mockUsage = Promise.resolve({
+				inputTokens: 10,
+				outputTokens: 5,
+			})
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: mockUsage,
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+			expect(usageChunks.length).toBeGreaterThan(0)
+			expect(usageChunks[0].inputTokens).toBe(10)
+			expect(usageChunks[0].outputTokens).toBe(5)
 		})
 
-		it("should not include tools when no tools are provided", async () => {
-			// Model metadata should not gate tool inclusion; metadata.tools controls it.
-			mockGetOllamaModels.mockResolvedValue({
-				"llama3.2": {
-					contextWindow: 128000,
-					maxTokens: 4096,
-					supportsImages: true,
-					supportsPromptCache: false,
-				},
-			})
-
-			const options: ApiHandlerOptions = {
-				apiModelId: "llama3.2",
-				ollamaModelId: "llama3.2",
-				ollamaBaseUrl: "http://localhost:11434",
+		it("should delegate to super.createMessage when num_ctx is not set", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
 			}
 
-			handler = new NativeOllamaHandler(options)
-
-			// Mock the chat response
-			mockChat.mockImplementation(async function* () {
-				yield { message: { content: "Response" } }
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 1, outputTokens: 1 }),
 			})
 
-			const stream = handler.createMessage("System", [{ role: "user" as const, content: "Test" }], {
-				taskId: "test",
-			})
-
-			// Consume the stream
+			const stream = handler.createMessage(systemPrompt, messages)
 			for await (const _ of stream) {
-				// consume stream
+				// consume
 			}
 
-			// Verify tools were NOT passed
-			expect(mockChat).toHaveBeenCalledWith(
+			// Should be called without providerOptions (base class call)
+			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.not.objectContaining({
-					tools: expect.anything(),
+					providerOptions: expect.anything(),
 				}),
 			)
 		})
 
-		it("should yield tool_call_partial when model returns tool calls", async () => {
-			// Model metadata should not gate tool inclusion; metadata.tools controls it.
-			mockGetOllamaModels.mockResolvedValue({
-				"llama3.2": {
-					contextWindow: 128000,
-					maxTokens: 4096,
-					supportsImages: true,
-					supportsPromptCache: false,
-				},
+		it("should pass num_ctx via providerOptions when ollamaNumCtx is set", async () => {
+			const handlerWithNumCtx = new NativeOllamaHandler({
+				...mockOptions,
+				ollamaNumCtx: 8192,
 			})
 
-			const options: ApiHandlerOptions = {
-				apiModelId: "llama3.2",
-				ollamaModelId: "llama3.2",
-				ollamaBaseUrl: "http://localhost:11434",
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
 			}
 
-			handler = new NativeOllamaHandler(options)
-
-			// Mock the chat response with tool calls
-			mockChat.mockImplementation(async function* () {
-				yield {
-					message: {
-						content: "",
-						tool_calls: [
-							{
-								function: {
-									name: "get_weather",
-									arguments: { location: "San Francisco" },
-								},
-							},
-						],
-					},
-				}
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 1, outputTokens: 1 }),
 			})
 
-			const tools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "get_weather",
-						description: "Get the weather for a location",
-						parameters: {
-							type: "object",
-							properties: {
-								location: { type: "string" },
-							},
-							required: ["location"],
-						},
-					},
-				},
-			]
+			const stream = handlerWithNumCtx.createMessage(systemPrompt, messages)
+			for await (const _ of stream) {
+				// consume
+			}
 
-			const stream = handler.createMessage(
-				"System",
-				[{ role: "user" as const, content: "What's the weather in SF?" }],
-				{ taskId: "test", tools },
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: { ollama: { num_ctx: 8192 } },
+				}),
 			)
-
-			const results = []
-			for await (const chunk of stream) {
-				results.push(chunk)
-			}
-
-			// Should yield a tool_call_partial chunk
-			const toolCallChunk = results.find((r) => r.type === "tool_call_partial")
-			expect(toolCallChunk).toBeDefined()
-			expect(toolCallChunk).toEqual({
-				type: "tool_call_partial",
-				index: 0,
-				id: "ollama-tool-0",
-				name: "get_weather",
-				arguments: JSON.stringify({ location: "San Francisco" }),
-			})
 		})
 
-		it("should yield tool_call_end events after tool_call_partial chunks", async () => {
-			// Model metadata should not gate tool inclusion; metadata.tools controls it.
-			mockGetOllamaModels.mockResolvedValue({
-				"llama3.2": {
-					contextWindow: 128000,
-					maxTokens: 4096,
-					supportsImages: true,
-					supportsPromptCache: false,
-				},
-			})
-
-			const options: ApiHandlerOptions = {
-				apiModelId: "llama3.2",
-				ollamaModelId: "llama3.2",
-				ollamaBaseUrl: "http://localhost:11434",
+		it("should handle errors through handleAiSdkError", async () => {
+			async function* mockFullStream() {
+				yield undefined // Need a yield before throwing (C9)
+				throw new Error("Connection refused")
 			}
 
-			handler = new NativeOllamaHandler(options)
-
-			// Mock the chat response with multiple tool calls
-			mockChat.mockImplementation(async function* () {
-				yield {
-					message: {
-						content: "",
-						tool_calls: [
-							{
-								function: {
-									name: "get_weather",
-									arguments: { location: "San Francisco" },
-								},
-							},
-							{
-								function: {
-									name: "get_time",
-									arguments: { timezone: "PST" },
-								},
-							},
-						],
-					},
-				}
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({}),
 			})
 
-			const tools = [
-				{
-					type: "function" as const,
-					function: {
-						name: "get_weather",
-						description: "Get the weather for a location",
-						parameters: {
-							type: "object",
-							properties: { location: { type: "string" } },
-							required: ["location"],
-						},
-					},
-				},
-				{
-					type: "function" as const,
-					function: {
-						name: "get_time",
-						description: "Get the current time in a timezone",
-						parameters: {
-							type: "object",
-							properties: { timezone: { type: "string" } },
-							required: ["timezone"],
-						},
-					},
-				},
-			]
+			const stream = handler.createMessage(systemPrompt, messages)
+			await expect(async () => {
+				for await (const _ of stream) {
+					// consume
+				}
+			}).rejects.toThrow()
+		})
+	})
 
-			const stream = handler.createMessage(
-				"System",
-				[{ role: "user" as const, content: "What's the weather and time in SF?" }],
-				{ taskId: "test", tools },
+	describe("completePrompt", () => {
+		it("should complete a prompt using generateText", async () => {
+			mockGenerateText.mockResolvedValue({
+				text: "Test completion",
+			})
+
+			const result = await handler.completePrompt("Test prompt")
+
+			expect(result).toBe("Test completion")
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					prompt: "Test prompt",
+				}),
 			)
+		})
 
-			const results = []
-			for await (const chunk of stream) {
-				results.push(chunk)
-			}
+		it("should delegate to super.completePrompt when num_ctx is not set", async () => {
+			mockGenerateText.mockResolvedValue({
+				text: "Test completion",
+			})
 
-			// Should yield tool_call_partial chunks
-			const toolCallPartials = results.filter((r) => r.type === "tool_call_partial")
-			expect(toolCallPartials).toHaveLength(2)
+			await handler.completePrompt("Test prompt")
 
-			// Should yield tool_call_end events for each tool call
-			const toolCallEnds = results.filter((r) => r.type === "tool_call_end")
-			expect(toolCallEnds).toHaveLength(2)
-			expect(toolCallEnds[0]).toEqual({ type: "tool_call_end", id: "ollama-tool-0" })
-			expect(toolCallEnds[1]).toEqual({ type: "tool_call_end", id: "ollama-tool-1" })
+			// Should be called without providerOptions (base class call)
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.not.objectContaining({
+					providerOptions: expect.anything(),
+				}),
+			)
+		})
 
-			// tool_call_end should come after tool_call_partial
-			// Find the last tool_call_partial index
-			let lastPartialIndex = -1
-			for (let i = results.length - 1; i >= 0; i--) {
-				if (results[i].type === "tool_call_partial") {
-					lastPartialIndex = i
-					break
+		it("should pass num_ctx via providerOptions when ollamaNumCtx is set", async () => {
+			const handlerWithNumCtx = new NativeOllamaHandler({
+				...mockOptions,
+				ollamaNumCtx: 16384,
+			})
+
+			mockGenerateText.mockResolvedValue({
+				text: "Test completion",
+			})
+
+			await handlerWithNumCtx.completePrompt("Test prompt")
+
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: { ollama: { num_ctx: 16384 } },
+				}),
+			)
+		})
+	})
+
+	describe("tool handling", () => {
+		const systemPrompt = "You are a helpful assistant."
+		const messages: NeutralMessageParam[] = [
+			{
+				role: "user",
+				content: [{ type: "text" as const, text: "Hello!" }],
+			},
+		]
+
+		it("should handle tool calls in streaming", async () => {
+			async function* mockFullStream() {
+				yield {
+					type: "tool-input-start",
+					id: "tool-call-1",
+					toolName: "read_file",
+				}
+				yield {
+					type: "tool-input-delta",
+					id: "tool-call-1",
+					delta: '{"path":"test.ts"}',
+				}
+				yield {
+					type: "tool-input-end",
+					id: "tool-call-1",
 				}
 			}
-			const firstEndIndex = results.findIndex((r) => r.type === "tool_call_end")
-			expect(firstEndIndex).toBeGreaterThan(lastPartialIndex)
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 10,
+					outputTokens: 5,
+				}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages, {
+				taskId: "test-task",
+				tools: [
+					{
+						type: "function",
+						function: {
+							name: "read_file",
+							description: "Read a file",
+							parameters: {
+								type: "object",
+								properties: { path: { type: "string" } },
+								required: ["path"],
+							},
+						},
+					},
+				],
+			})
+
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const toolCallStartChunks = chunks.filter((c) => c.type === "tool_call_start")
+			expect(toolCallStartChunks.length).toBe(1)
+			expect(toolCallStartChunks[0].name).toBe("read_file")
+			expect(toolCallStartChunks[0].id).toBe("tool-call-1")
 		})
 	})
 })

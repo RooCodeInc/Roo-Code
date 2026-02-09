@@ -24,8 +24,7 @@ vi.mock("@ai-sdk/baseten", () => ({
 	}),
 }))
 
-import type { Anthropic } from "@anthropic-ai/sdk"
-
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
 import { basetenDefaultModelId, basetenModels, type BasetenModelId } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
@@ -101,7 +100,7 @@ describe("BasetenHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -281,7 +280,7 @@ describe("BasetenHandler", () => {
 
 	describe("tool handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],
@@ -389,7 +388,7 @@ describe("BasetenHandler", () => {
 
 	describe("error handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],

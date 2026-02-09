@@ -1,8 +1,8 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import * as path from "path"
 import * as diff from "diff"
 import { RooIgnoreController, LOCK_TEXT_SYMBOL } from "../ignore/RooIgnoreController"
 import { RooProtectedController } from "../protect/RooProtectedController"
+import type { NeutralTextBlock, NeutralImageBlock } from "../task-persistence"
 
 export const formatResponse = {
 	toolDenied: () =>
@@ -96,13 +96,10 @@ Otherwise, if you have not completed the task and do not need additional informa
 			available_servers: availableServers.length > 0 ? availableServers : [],
 		}),
 
-	toolResult: (
-		text: string,
-		images?: string[],
-	): string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam> => {
+	toolResult: (text: string, images?: string[]): string | Array<NeutralTextBlock | NeutralImageBlock> => {
 		if (images && images.length > 0) {
-			const textBlock: Anthropic.TextBlockParam = { type: "text", text }
-			const imageBlocks: Anthropic.ImageBlockParam[] = formatImagesIntoBlocks(images)
+			const textBlock: NeutralTextBlock = { type: "text", text }
+			const imageBlocks: NeutralImageBlock[] = formatImagesIntoBlocks(images)
 			// Placing images after text leads to better results
 			return [textBlock, ...imageBlocks]
 		} else {
@@ -110,7 +107,7 @@ Otherwise, if you have not completed the task and do not need additional informa
 		}
 	},
 
-	imageBlocks: (images?: string[]): Anthropic.ImageBlockParam[] => {
+	imageBlocks: (images?: string[]): NeutralImageBlock[] => {
 		return formatImagesIntoBlocks(images)
 	},
 
@@ -202,7 +199,7 @@ Otherwise, if you have not completed the task and do not need additional informa
 }
 
 // to avoid circular dependency
-const formatImagesIntoBlocks = (images?: string[]): Anthropic.ImageBlockParam[] => {
+const formatImagesIntoBlocks = (images?: string[]): NeutralImageBlock[] => {
 	return images
 		? images.map((dataUrl) => {
 				// data:image/png;base64,base64string
@@ -210,8 +207,9 @@ const formatImagesIntoBlocks = (images?: string[]): Anthropic.ImageBlockParam[] 
 				const mimeType = rest.split(":")[1].split(";")[0]
 				return {
 					type: "image",
-					source: { type: "base64", media_type: mimeType, data: base64 },
-				} as Anthropic.ImageBlockParam
+					image: base64,
+					mediaType: mimeType,
+				} as NeutralImageBlock
 			})
 		: []
 }

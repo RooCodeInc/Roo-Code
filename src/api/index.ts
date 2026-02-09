@@ -1,8 +1,8 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 
 import { isRetiredProvider, type ProviderSettings, type ModelInfo } from "@roo-code/types"
 
+import type { NeutralMessageParam, NeutralContentBlock } from "../core/task-persistence"
 import { ApiStream } from "./transform/stream"
 
 import {
@@ -91,7 +91,7 @@ export interface ApiHandlerCreateMessageMetadata {
 export interface ApiHandler {
 	createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream
 
@@ -105,7 +105,7 @@ export interface ApiHandler {
 	 * @param content The content to count tokens for
 	 * @returns A promise resolving to the token count
 	 */
-	countTokens(content: Array<Anthropic.Messages.ContentBlockParam>): Promise<number>
+	countTokens(content: NeutralContentBlock[]): Promise<number>
 
 	/**
 	 * Indicates whether this provider uses the Vercel AI SDK for streaming.

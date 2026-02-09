@@ -23,9 +23,10 @@ describe("askFollowupQuestionTool", () => {
 
 	it("should parse suggestions without mode attributes", async () => {
 		const block: ToolUse = {
-			type: "tool_use",
-			name: "ask_followup_question",
-			params: {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "ask_followup_question",
+			input: {
 				question: "What would you like to do?",
 			},
 			nativeArgs: {
@@ -35,7 +36,7 @@ describe("askFollowupQuestionTool", () => {
 			partial: false,
 		}
 
-		await askFollowupQuestionTool.handle(mockCline, block as ToolUse<"ask_followup_question">, {
+		await askFollowupQuestionTool.handle(mockCline, block as ToolUse, {
 			askApproval: vi.fn(),
 			handleError: vi.fn(),
 			pushToolResult: mockPushToolResult,
@@ -50,9 +51,10 @@ describe("askFollowupQuestionTool", () => {
 
 	it("should parse suggestions with mode attributes", async () => {
 		const block: ToolUse = {
-			type: "tool_use",
-			name: "ask_followup_question",
-			params: {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "ask_followup_question",
+			input: {
 				question: "What would you like to do?",
 			},
 			nativeArgs: {
@@ -65,7 +67,7 @@ describe("askFollowupQuestionTool", () => {
 			partial: false,
 		}
 
-		await askFollowupQuestionTool.handle(mockCline, block as ToolUse<"ask_followup_question">, {
+		await askFollowupQuestionTool.handle(mockCline, block as ToolUse, {
 			askApproval: vi.fn(),
 			handleError: vi.fn(),
 			pushToolResult: mockPushToolResult,
@@ -82,9 +84,10 @@ describe("askFollowupQuestionTool", () => {
 
 	it("should handle mixed suggestions with and without mode attributes", async () => {
 		const block: ToolUse = {
-			type: "tool_use",
-			name: "ask_followup_question",
-			params: {
+			type: "tool-call",
+			toolCallId: "test-tool-call-id",
+			toolName: "ask_followup_question",
+			input: {
 				question: "What would you like to do?",
 			},
 			nativeArgs: {
@@ -94,7 +97,7 @@ describe("askFollowupQuestionTool", () => {
 			partial: false,
 		}
 
-		await askFollowupQuestionTool.handle(mockCline, block as ToolUse<"ask_followup_question">, {
+		await askFollowupQuestionTool.handle(mockCline, block as ToolUse, {
 			askApproval: vi.fn(),
 			handleError: vi.fn(),
 			pushToolResult: mockPushToolResult,
@@ -111,10 +114,11 @@ describe("askFollowupQuestionTool", () => {
 
 	describe("handlePartial with native protocol", () => {
 		it("should only send question during partial streaming to avoid raw JSON display", async () => {
-			const block: ToolUse<"ask_followup_question"> = {
-				type: "tool_use",
-				name: "ask_followup_question",
-				params: {
+			const block: ToolUse = {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "ask_followup_question",
+				input: {
 					question: "What would you like to do?",
 				},
 				partial: true,
@@ -135,10 +139,11 @@ describe("askFollowupQuestionTool", () => {
 		})
 
 		it("should handle partial with question from params", async () => {
-			const block: ToolUse<"ask_followup_question"> = {
-				type: "tool_use",
-				name: "ask_followup_question",
-				params: {
+			const block: ToolUse = {
+				type: "tool-call",
+				toolCallId: "test-tool-call-id",
+				toolName: "ask_followup_question",
+				input: {
 					question: "Choose wisely",
 				},
 				partial: true,
@@ -169,8 +174,8 @@ describe("askFollowupQuestionTool", () => {
 			const result1 = NativeToolCallParser.processStreamingChunk("call_123", chunk1)
 
 			expect(result1).not.toBeNull()
-			expect(result1?.name).toBe("ask_followup_question")
-			expect(result1?.params.question).toBe("What would you like?")
+			expect(result1?.toolName).toBe("ask_followup_question")
+			expect(result1?.input.question).toBe("What would you like?")
 			expect(result1?.nativeArgs).toBeDefined()
 			// Use type assertion to access the specific fields
 			const nativeArgs = result1?.nativeArgs as {
@@ -193,11 +198,11 @@ describe("askFollowupQuestionTool", () => {
 			const result = NativeToolCallParser.finalizeStreamingToolCall("call_456")
 
 			expect(result).not.toBeNull()
-			expect(result?.type).toBe("tool_use")
-			expect(result?.name).toBe("ask_followup_question")
+			expect(result?.type).toBe("tool-call")
+			expect(result?.toolName).toBe("ask_followup_question")
 			expect(result?.partial).toBe(false)
 			// Type guard: regular tools have type 'tool_use', MCP tools have type 'mcp_tool_use'
-			if (result?.type === "tool_use") {
+			if (result?.type === "tool-call") {
 				expect(result.nativeArgs).toEqual({
 					question: "Choose an option",
 					follow_up: [

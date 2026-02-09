@@ -1,10 +1,10 @@
-import { Anthropic } from "@anthropic-ai/sdk"
 import { parseMentions, ParseMentionsResult, MentionContentBlock } from "./index"
 import { UrlContentFetcher } from "../../services/browser/UrlContentFetcher"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
+import type { NeutralContentBlock, NeutralTextBlock } from "../task-persistence"
 
 export interface ProcessUserContentMentionsResult {
-	content: Anthropic.Messages.ContentBlockParam[]
+	content: NeutralContentBlock[]
 	mode?: string // Mode from the first slash command that has one
 }
 
@@ -13,7 +13,7 @@ export interface ProcessUserContentMentionsResult {
  * Each file/folder mention becomes a separate text block formatted
  * to look like a read_file tool result.
  */
-function contentBlocksToAnthropicBlocks(contentBlocks: MentionContentBlock[]): Anthropic.Messages.TextBlockParam[] {
+function contentBlocksToAnthropicBlocks(contentBlocks: MentionContentBlock[]): NeutralTextBlock[] {
 	return contentBlocks.map((block) => ({
 		type: "text" as const,
 		text: block.content,
@@ -37,7 +37,7 @@ export async function processUserContentMentions({
 	includeDiagnosticMessages = true,
 	maxDiagnosticMessages = 50,
 }: {
-	userContent: Anthropic.Messages.ContentBlockParam[]
+	userContent: NeutralContentBlock[]
 	cwd: string
 	urlContentFetcher: UrlContentFetcher
 	fileContextTracker: FileContextTracker
@@ -82,7 +82,7 @@ export async function processUserContentMentions({
 						// 1. User's text (with @ mentions replaced by clean paths)
 						// 2. File/folder content blocks (formatted like read_file results)
 						// 3. Slash command help (if any)
-						const blocks: Anthropic.Messages.ContentBlockParam[] = [
+						const blocks: NeutralContentBlock[] = [
 							{
 								...block,
 								text: result.text,
@@ -104,11 +104,11 @@ export async function processUserContentMentions({
 					}
 
 					return block
-				} else if (block.type === "tool_result") {
-					if (typeof block.content === "string") {
-						if (shouldProcessMentions(block.content)) {
+				} else if (block.type === "tool-result") {
+					if (block.output?.type === "text") {
+						if (shouldProcessMentions(block.output.value)) {
 							const result = await parseMentions(
-								block.content,
+								block.output.value,
 								cwd,
 								urlContentFetcher,
 								fileContextTracker,
@@ -123,7 +123,7 @@ export async function processUserContentMentions({
 							}
 
 							// Build content array with file blocks included
-							const contentParts: Array<{ type: "text"; text: string }> = [
+							const outputParts: Array<{ type: "text"; text: string }> = [
 								{
 									type: "text" as const,
 									text: result.text,
@@ -132,14 +132,14 @@ export async function processUserContentMentions({
 
 							// Add file/folder content blocks
 							for (const contentBlock of result.contentBlocks) {
-								contentParts.push({
+								outputParts.push({
 									type: "text" as const,
 									text: contentBlock.content,
 								})
 							}
 
 							if (result.slashCommandHelp) {
-								contentParts.push({
+								outputParts.push({
 									type: "text" as const,
 									text: result.slashCommandHelp,
 								})
@@ -147,15 +147,15 @@ export async function processUserContentMentions({
 
 							return {
 								...block,
-								content: contentParts,
+								output: { type: "content" as const, value: outputParts },
 							}
 						}
 
 						return block
-					} else if (Array.isArray(block.content)) {
+					} else if (block.output?.type === "content") {
 						const parsedContent = (
 							await Promise.all(
-								block.content.map(async (contentBlock) => {
+								(block.output.value as Array<any>).map(async (contentBlock: any) => {
 									if (contentBlock.type === "text" && shouldProcessMentions(contentBlock.text)) {
 										const result = await parseMentions(
 											contentBlock.text,
@@ -202,7 +202,7 @@ export async function processUserContentMentions({
 							)
 						).flat()
 
-						return { ...block, content: parsedContent }
+						return { ...block, output: { type: "content" as const, value: parsedContent } }
 					}
 
 					return block

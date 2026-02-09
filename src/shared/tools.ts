@@ -1,5 +1,3 @@
-import { Anthropic } from "@anthropic-ai/sdk"
-
 import type {
 	ClineAsk,
 	ToolProgressStatus,
@@ -9,7 +7,9 @@ import type {
 	GenerateImageParams,
 } from "@roo-code/types"
 
-export type ToolResponse = string | Array<Anthropic.TextBlockParam | Anthropic.ImageBlockParam>
+import type { NeutralTextBlock, NeutralImageBlock } from "../core/task-persistence"
+
+export type ToolResponse = string | Array<NeutralTextBlock | NeutralImageBlock>
 
 export type AskApproval = (
 	type: ClineAsk,
@@ -129,26 +129,15 @@ export type NativeToolArgs = {
  *
  * @template TName - The specific tool name, which determines the nativeArgs type
  */
-export interface ToolUse<TName extends ToolName = ToolName> {
-	type: "tool_use"
-	id?: string // Optional ID to track tool calls
-	name: TName
-	/**
-	 * The original tool name as called by the model (e.g. an alias like "edit_file"),
-	 * if it differs from the canonical tool name used for execution.
-	 * Used to preserve tool names in API conversation history.
-	 */
-	originalName?: string
-	// params is a partial record, allowing only some or none of the possible parameters to be used
-	params: Partial<Record<ToolParamName, string>>
-	partial: boolean
-	// nativeArgs is properly typed based on TName if it's in NativeToolArgs, otherwise never
-	nativeArgs?: TName extends keyof NativeToolArgs ? NativeToolArgs[TName] : never
-	/**
-	 * Flag indicating whether the tool call used a legacy/deprecated format.
-	 * Used for telemetry tracking to monitor migration from old formats.
-	 */
+export interface ToolUse {
+	type: "tool-call"
+	toolCallId: string
+	toolName: string
+	input: Record<string, string>
+	partial?: boolean
+	nativeArgs?: any
 	usedLegacyFormat?: boolean
+	originalName?: string
 }
 
 /**
@@ -171,13 +160,13 @@ export interface McpToolUse {
 	partial: boolean
 }
 
-export interface ExecuteCommandToolUse extends ToolUse<"execute_command"> {
+export interface ExecuteCommandToolUse extends ToolUse {
 	name: "execute_command"
 	// Pick<Record<ToolParamName, string>, "command"> makes "command" required, but Partial<> makes it optional
 	params: Partial<Pick<Record<ToolParamName, string>, "command" | "cwd">>
 }
 
-export interface ReadFileToolUse extends ToolUse<"read_file"> {
+export interface ReadFileToolUse extends ToolUse {
 	name: "read_file"
 	params: Partial<
 		Pick<
@@ -198,72 +187,72 @@ export interface ReadFileToolUse extends ToolUse<"read_file"> {
 	>
 }
 
-export interface WriteToFileToolUse extends ToolUse<"write_to_file"> {
+export interface WriteToFileToolUse extends ToolUse {
 	name: "write_to_file"
 	params: Partial<Pick<Record<ToolParamName, string>, "path" | "content">>
 }
 
-export interface CodebaseSearchToolUse extends ToolUse<"codebase_search"> {
+export interface CodebaseSearchToolUse extends ToolUse {
 	name: "codebase_search"
 	params: Partial<Pick<Record<ToolParamName, string>, "query" | "path">>
 }
 
-export interface SearchFilesToolUse extends ToolUse<"search_files"> {
+export interface SearchFilesToolUse extends ToolUse {
 	name: "search_files"
 	params: Partial<Pick<Record<ToolParamName, string>, "path" | "regex" | "file_pattern">>
 }
 
-export interface ListFilesToolUse extends ToolUse<"list_files"> {
+export interface ListFilesToolUse extends ToolUse {
 	name: "list_files"
 	params: Partial<Pick<Record<ToolParamName, string>, "path" | "recursive">>
 }
 
-export interface BrowserActionToolUse extends ToolUse<"browser_action"> {
+export interface BrowserActionToolUse extends ToolUse {
 	name: "browser_action"
 	params: Partial<Pick<Record<ToolParamName, string>, "action" | "url" | "coordinate" | "text" | "size" | "path">>
 }
 
-export interface UseMcpToolToolUse extends ToolUse<"use_mcp_tool"> {
+export interface UseMcpToolToolUse extends ToolUse {
 	name: "use_mcp_tool"
 	params: Partial<Pick<Record<ToolParamName, string>, "server_name" | "tool_name" | "arguments">>
 }
 
-export interface AccessMcpResourceToolUse extends ToolUse<"access_mcp_resource"> {
+export interface AccessMcpResourceToolUse extends ToolUse {
 	name: "access_mcp_resource"
 	params: Partial<Pick<Record<ToolParamName, string>, "server_name" | "uri">>
 }
 
-export interface AskFollowupQuestionToolUse extends ToolUse<"ask_followup_question"> {
+export interface AskFollowupQuestionToolUse extends ToolUse {
 	name: "ask_followup_question"
 	params: Partial<Pick<Record<ToolParamName, string>, "question" | "follow_up">>
 }
 
-export interface AttemptCompletionToolUse extends ToolUse<"attempt_completion"> {
+export interface AttemptCompletionToolUse extends ToolUse {
 	name: "attempt_completion"
 	params: Partial<Pick<Record<ToolParamName, string>, "result">>
 }
 
-export interface SwitchModeToolUse extends ToolUse<"switch_mode"> {
+export interface SwitchModeToolUse extends ToolUse {
 	name: "switch_mode"
 	params: Partial<Pick<Record<ToolParamName, string>, "mode_slug" | "reason">>
 }
 
-export interface NewTaskToolUse extends ToolUse<"new_task"> {
+export interface NewTaskToolUse extends ToolUse {
 	name: "new_task"
 	params: Partial<Pick<Record<ToolParamName, string>, "mode" | "message" | "todos">>
 }
 
-export interface RunSlashCommandToolUse extends ToolUse<"run_slash_command"> {
+export interface RunSlashCommandToolUse extends ToolUse {
 	name: "run_slash_command"
 	params: Partial<Pick<Record<ToolParamName, string>, "command" | "args">>
 }
 
-export interface SkillToolUse extends ToolUse<"skill"> {
+export interface SkillToolUse extends ToolUse {
 	name: "skill"
 	params: Partial<Pick<Record<ToolParamName, string>, "skill" | "args">>
 }
 
-export interface GenerateImageToolUse extends ToolUse<"generate_image"> {
+export interface GenerateImageToolUse extends ToolUse {
 	name: "generate_image"
 	params: Partial<Pick<Record<ToolParamName, string>, "prompt" | "path" | "image">>
 }

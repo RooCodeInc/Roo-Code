@@ -1,4 +1,3 @@
-import type { Anthropic } from "@anthropic-ai/sdk"
 import { createVertex, type GoogleVertexProvider } from "@ai-sdk/google-vertex"
 import { streamText, generateText, ToolSet } from "ai"
 
@@ -11,6 +10,7 @@ import {
 } from "@roo-code/types"
 import { TelemetryService } from "@roo-code/telemetry"
 
+import type { NeutralMessageParam } from "../../core/task-persistence"
 import type { ApiHandlerOptions } from "../../shared/api"
 
 import {
@@ -64,7 +64,7 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 
 	async *createMessage(
 		systemInstruction: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: NeutralMessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info, reasoning: thinkingConfig, maxTokens } = this.getModel()
@@ -91,10 +91,10 @@ export class VertexHandler extends BaseProvider implements SingleCompletionHandl
 		// The message list can include provider-specific meta entries such as
 		// `{ type: "reasoning", ... }` that are intended only for providers like
 		// openai-native. Vertex should never see those; they are not valid
-		// Anthropic.MessageParam values and will cause failures.
+		// NeutralMessageParam values and will cause failures.
 		type ReasoningMetaLike = { type?: string }
 
-		const filteredMessages = messages.filter((message): message is Anthropic.Messages.MessageParam => {
+		const filteredMessages = messages.filter((message): message is NeutralMessageParam => {
 			const meta = message as ReasoningMetaLike
 			if (meta.type === "reasoning") {
 				return false

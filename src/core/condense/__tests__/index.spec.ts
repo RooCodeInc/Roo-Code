@@ -1,8 +1,9 @@
 // npx vitest core/condense/__tests__/index.spec.ts
 
+import type { TextPart, ToolCallPart, ToolResultPart } from "ai"
+import type { RooContentBlock } from "../../task-persistence/apiMessages"
 import type { Mock } from "vitest"
 
-import { Anthropic } from "@anthropic-ai/sdk"
 import { TelemetryService } from "@roo-code/telemetry"
 
 import { ApiHandler } from "../../../api"
@@ -111,12 +112,21 @@ describe("injectSyntheticToolResults", () => {
 			{ role: "user", content: "Hello", ts: 1 },
 			{
 				role: "assistant",
-				content: [{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "test.ts" } }],
+				content: [
+					{ type: "tool-call", toolCallId: "tool-1", toolName: "read_file", input: { path: "test.ts" } },
+				],
 				ts: 2,
 			},
 			{
 				role: "user",
-				content: [{ type: "tool_result", tool_use_id: "tool-1", content: "file contents" }],
+				content: [
+					{
+						type: "tool-result",
+						toolCallId: "tool-1",
+						toolName: "",
+						output: { type: "text" as const, value: "file contents" },
+					},
+				],
 				ts: 3,
 			},
 		]
@@ -131,7 +141,12 @@ describe("injectSyntheticToolResults", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+					{
+						type: "tool-call",
+						toolCallId: "tool-orphan",
+						toolName: "attempt_completion",
+						input: { result: "Done" },
+					},
 				],
 				ts: 2,
 			},
@@ -145,9 +160,12 @@ describe("injectSyntheticToolResults", () => {
 
 		const content = result[2].content as any[]
 		expect(content.length).toBe(1)
-		expect(content[0].type).toBe("tool_result")
-		expect(content[0].tool_use_id).toBe("tool-orphan")
-		expect(content[0].content).toBe("Context condensation triggered. Tool execution deferred.")
+		expect(content[0].type).toBe("tool-result")
+		expect(content[0].toolCallId).toBe("tool-orphan")
+		expect(content[0].output).toEqual({
+			type: "text",
+			value: "Context condensation triggered. Tool execution deferred.",
+		})
 	})
 
 	it("should inject synthetic tool_results for multiple orphan tool_calls", () => {
@@ -156,8 +174,13 @@ describe("injectSyntheticToolResults", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "test.ts" } },
-					{ type: "tool_use", id: "tool-2", name: "write_file", input: { path: "out.ts", content: "code" } },
+					{ type: "tool-call", toolCallId: "tool-1", toolName: "read_file", input: { path: "test.ts" } },
+					{
+						type: "tool-call",
+						toolCallId: "tool-2",
+						toolName: "write_file",
+						input: { path: "out.ts", content: "code" },
+					},
 				],
 				ts: 2,
 			},
@@ -169,8 +192,8 @@ describe("injectSyntheticToolResults", () => {
 		expect(result.length).toBe(3)
 		const content = result[2].content as any[]
 		expect(content.length).toBe(2)
-		expect(content[0].tool_use_id).toBe("tool-1")
-		expect(content[1].tool_use_id).toBe("tool-2")
+		expect(content[0].toolCallId).toBe("tool-1")
+		expect(content[1].toolCallId).toBe("tool-2")
 	})
 
 	it("should only inject for orphan tool_calls, not matched ones", () => {
@@ -179,14 +202,31 @@ describe("injectSyntheticToolResults", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "matched-tool", name: "read_file", input: { path: "test.ts" } },
-					{ type: "tool_use", id: "orphan-tool", name: "attempt_completion", input: { result: "Done" } },
+					{
+						type: "tool-call",
+						toolCallId: "matched-tool",
+						toolName: "read_file",
+						input: { path: "test.ts" },
+					},
+					{
+						type: "tool-call",
+						toolCallId: "orphan-tool",
+						toolName: "attempt_completion",
+						input: { result: "Done" },
+					},
 				],
 				ts: 2,
 			},
 			{
 				role: "user",
-				content: [{ type: "tool_result", tool_use_id: "matched-tool", content: "file contents" }],
+				content: [
+					{
+						type: "tool-result",
+						toolCallId: "matched-tool",
+						toolName: "",
+						output: { type: "text" as const, value: "file contents" },
+					},
+				],
 				ts: 3,
 			},
 			// No tool_result for orphan-tool
@@ -197,7 +237,7 @@ describe("injectSyntheticToolResults", () => {
 		expect(result.length).toBe(4)
 		const syntheticContent = result[3].content as any[]
 		expect(syntheticContent.length).toBe(1)
-		expect(syntheticContent[0].tool_use_id).toBe("orphan-tool")
+		expect(syntheticContent[0].toolCallId).toBe("orphan-tool")
 	})
 
 	it("should handle messages with string content (no tool_use/tool_result)", () => {
@@ -221,19 +261,33 @@ describe("injectSyntheticToolResults", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-1", name: "read_file", input: { path: "a.ts" } },
-					{ type: "tool_use", id: "tool-2", name: "read_file", input: { path: "b.ts" } },
+					{ type: "tool-call", toolCallId: "tool-1", toolName: "read_file", input: { path: "a.ts" } },
+					{ type: "tool-call", toolCallId: "tool-2", toolName: "read_file", input: { path: "b.ts" } },
 				],
 				ts: 2,
 			},
 			{
 				role: "user",
-				content: [{ type: "tool_result", tool_use_id: "tool-1", content: "contents a" }],
+				content: [
+					{
+						type: "tool-result",
+						toolCallId: "tool-1",
+						toolName: "",
+						output: { type: "text" as const, value: "contents a" },
+					},
+				],
 				ts: 3,
 			},
 			{
 				role: "user",
-				content: [{ type: "tool_result", tool_use_id: "tool-2", content: "contents b" }],
+				content: [
+					{
+						type: "tool-result",
+						toolCallId: "tool-2",
+						toolName: "",
+						output: { type: "text" as const, value: "contents b" },
+					},
+				],
 				ts: 4,
 			},
 		]
@@ -416,7 +470,12 @@ describe("getEffectiveApiHistory", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+					{
+						type: "tool-call",
+						toolCallId: "tool-orphan",
+						toolName: "attempt_completion",
+						input: { result: "Done" },
+					},
 				],
 				condenseParent: condenseId,
 			},
@@ -430,7 +489,14 @@ describe("getEffectiveApiHistory", () => {
 			// This tool_result references a tool_use that was condensed away (orphan!)
 			{
 				role: "user",
-				content: [{ type: "tool_result", tool_use_id: "tool-orphan", content: "Rejected by user" }],
+				content: [
+					{
+						type: "tool-result",
+						toolCallId: "tool-orphan",
+						toolName: "",
+						output: { type: "text" as const, value: "Rejected by user" },
+					},
+				],
 			},
 		]
 
@@ -454,12 +520,21 @@ describe("getEffectiveApiHistory", () => {
 			// This tool_use is AFTER the summary, so it's not condensed away
 			{
 				role: "assistant",
-				content: [{ type: "tool_use", id: "tool-valid", name: "read_file", input: { path: "test.ts" } }],
+				content: [
+					{ type: "tool-call", toolCallId: "tool-valid", toolName: "read_file", input: { path: "test.ts" } },
+				],
 			},
 			// This tool_result has a matching tool_use, so it should be kept
 			{
 				role: "user",
-				content: [{ type: "tool_result", tool_use_id: "tool-valid", content: "file contents" }],
+				content: [
+					{
+						type: "tool-result",
+						toolCallId: "tool-valid",
+						toolName: "",
+						output: { type: "text" as const, value: "file contents" },
+					},
+				],
 			},
 		]
 
@@ -468,8 +543,8 @@ describe("getEffectiveApiHistory", () => {
 		// All messages after summary should be included
 		expect(result).toHaveLength(3)
 		expect(result[0].isSummary).toBe(true)
-		expect((result[1].content as any[])[0].id).toBe("tool-valid")
-		expect((result[2].content as any[])[0].tool_use_id).toBe("tool-valid")
+		expect((result[1].content as any[])[0].toolCallId).toBe("tool-valid")
+		expect((result[2].content as any[])[0].toolCallId).toBe("tool-valid")
 	})
 
 	it("should filter orphan tool_results but keep other content in mixed user message", () => {
@@ -479,7 +554,12 @@ describe("getEffectiveApiHistory", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+					{
+						type: "tool-call",
+						toolCallId: "tool-orphan",
+						toolName: "attempt_completion",
+						input: { result: "Done" },
+					},
 				],
 				condenseParent: condenseId,
 			},
@@ -492,14 +572,26 @@ describe("getEffectiveApiHistory", () => {
 			// This tool_use is AFTER the summary
 			{
 				role: "assistant",
-				content: [{ type: "tool_use", id: "tool-valid", name: "read_file", input: { path: "test.ts" } }],
+				content: [
+					{ type: "tool-call", toolCallId: "tool-valid", toolName: "read_file", input: { path: "test.ts" } },
+				],
 			},
 			// Mixed content: one orphan tool_result and one valid tool_result
 			{
 				role: "user",
 				content: [
-					{ type: "tool_result", tool_use_id: "tool-orphan", content: "Orphan result" },
-					{ type: "tool_result", tool_use_id: "tool-valid", content: "Valid result" },
+					{
+						type: "tool-result",
+						toolCallId: "tool-orphan",
+						toolName: "",
+						output: { type: "text" as const, value: "Orphan result" },
+					},
+					{
+						type: "tool-result",
+						toolCallId: "tool-valid",
+						toolName: "",
+						output: { type: "text" as const, value: "Valid result" },
+					},
 				],
 			},
 		]
@@ -512,7 +604,7 @@ describe("getEffectiveApiHistory", () => {
 		// The user message should only contain the valid tool_result
 		const userContent = result[2].content as any[]
 		expect(userContent).toHaveLength(1)
-		expect(userContent[0].tool_use_id).toBe("tool-valid")
+		expect(userContent[0].toolCallId).toBe("tool-valid")
 	})
 
 	it("should handle multiple orphan tool_results in a single message", () => {
@@ -521,8 +613,13 @@ describe("getEffectiveApiHistory", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "orphan-1", name: "read_file", input: { path: "a.ts" } },
-					{ type: "tool_use", id: "orphan-2", name: "write_file", input: { path: "b.ts", content: "code" } },
+					{ type: "tool-call", toolCallId: "orphan-1", toolName: "read_file", input: { path: "a.ts" } },
+					{
+						type: "tool-call",
+						toolCallId: "orphan-2",
+						toolName: "write_file",
+						input: { path: "b.ts", content: "code" },
+					},
 				],
 				condenseParent: condenseId,
 			},
@@ -536,8 +633,18 @@ describe("getEffectiveApiHistory", () => {
 			{
 				role: "user",
 				content: [
-					{ type: "tool_result", tool_use_id: "orphan-1", content: "Result 1" },
-					{ type: "tool_result", tool_use_id: "orphan-2", content: "Result 2" },
+					{
+						type: "tool-result",
+						toolCallId: "orphan-1",
+						toolName: "",
+						output: { type: "text" as const, value: "Result 1" },
+					},
+					{
+						type: "tool-result",
+						toolCallId: "orphan-2",
+						toolName: "",
+						output: { type: "text" as const, value: "Result 2" },
+					},
 				],
 			},
 		]
@@ -555,7 +662,12 @@ describe("getEffectiveApiHistory", () => {
 			{
 				role: "assistant",
 				content: [
-					{ type: "tool_use", id: "tool-orphan", name: "attempt_completion", input: { result: "Done" } },
+					{
+						type: "tool-call",
+						toolCallId: "tool-orphan",
+						toolName: "attempt_completion",
+						input: { result: "Done" },
+					},
 				],
 				condenseParent: condenseId,
 			},
@@ -570,7 +682,12 @@ describe("getEffectiveApiHistory", () => {
 				role: "user",
 				content: [
 					{ type: "text", text: "User added some text" },
-					{ type: "tool_result", tool_use_id: "tool-orphan", content: "Orphan result" },
+					{
+						type: "tool-result",
+						toolCallId: "tool-orphan",
+						toolName: "",
+						output: { type: "text" as const, value: "Orphan result" },
+					},
 				],
 			},
 		]
@@ -1289,10 +1406,10 @@ describe("summarizeConversation with custom settings", () => {
 
 describe("toolUseToText", () => {
 	it("should convert tool_use block with object input to text", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
-			type: "tool_use",
-			id: "tool-123",
-			name: "read_file",
+		const block: ToolCallPart = {
+			type: "tool-call",
+			toolCallId: "tool-123",
+			toolName: "read_file",
 			input: { path: "test.ts", encoding: "utf-8" },
 		}
 
@@ -1302,10 +1419,10 @@ describe("toolUseToText", () => {
 	})
 
 	it("should convert tool_use block with nested object input to text", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
-			type: "tool_use",
-			id: "tool-456",
-			name: "write_file",
+		const block: ToolCallPart = {
+			type: "tool-call",
+			toolCallId: "tool-456",
+			toolName: "write_file",
 			input: {
 				path: "output.json",
 				content: { key: "value", nested: { a: 1 } },
@@ -1322,10 +1439,10 @@ describe("toolUseToText", () => {
 	})
 
 	it("should convert tool_use block with string input to text", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
-			type: "tool_use",
-			id: "tool-789",
-			name: "execute_command",
+		const block: ToolCallPart = {
+			type: "tool-call",
+			toolCallId: "tool-789",
+			toolName: "execute_command",
 			input: "ls -la" as unknown as Record<string, unknown>,
 		}
 
@@ -1335,10 +1452,10 @@ describe("toolUseToText", () => {
 	})
 
 	it("should handle empty object input", () => {
-		const block: Anthropic.Messages.ToolUseBlockParam = {
-			type: "tool_use",
-			id: "tool-empty",
-			name: "some_tool",
+		const block: ToolCallPart = {
+			type: "tool-call",
+			toolCallId: "tool-empty",
+			toolName: "some_tool",
 			input: {},
 		}
 
@@ -1350,10 +1467,11 @@ describe("toolUseToText", () => {
 
 describe("toolResultToText", () => {
 	it("should convert tool_result with string content to text", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "tool-123",
-			content: "File contents here",
+		const block: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "tool-123",
+			toolName: "",
+			output: { type: "text" as const, value: "File contents here" },
 		}
 
 		const result = toolResultToText(block)
@@ -1362,11 +1480,11 @@ describe("toolResultToText", () => {
 	})
 
 	it("should convert tool_result with error flag to text", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "tool-456",
-			content: "File not found",
-			is_error: true,
+		const block: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "tool-456",
+			toolName: "",
+			output: { type: "error-text" as const, value: "File not found" },
 		}
 
 		const result = toolResultToText(block)
@@ -1375,13 +1493,17 @@ describe("toolResultToText", () => {
 	})
 
 	it("should convert tool_result with array content to text", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "tool-789",
-			content: [
-				{ type: "text", text: "First line" },
-				{ type: "text", text: "Second line" },
-			],
+		const block: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "tool-789",
+			toolName: "",
+			output: {
+				type: "content" as const,
+				value: [
+					{ type: "text", text: "First line" },
+					{ type: "text", text: "Second line" },
+				],
+			},
 		}
 
 		const result = toolResultToText(block)
@@ -1390,29 +1512,35 @@ describe("toolResultToText", () => {
 	})
 
 	it("should handle tool_result with image in array content", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "tool-img",
-			content: [
-				{ type: "text", text: "Screenshot:" },
-				{ type: "image", source: { type: "base64", media_type: "image/png", data: "abc123" } },
-			],
+		const block: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "tool-img",
+			toolName: "",
+			output: {
+				type: "content" as const,
+				value: [
+					{ type: "text", text: "Screenshot:" },
+					{ type: "image-data" as const, data: "abc123", mediaType: "image/png" },
+				],
+			},
 		}
 
 		const result = toolResultToText(block)
 
-		expect(result).toBe("[Tool Result]\nScreenshot:\n[Image]")
+		expect(result).toBe("[Tool Result]\nScreenshot:\n[image-data]")
 	})
 
 	it("should handle tool_result with no content", () => {
-		const block: Anthropic.Messages.ToolResultBlockParam = {
-			type: "tool_result",
-			tool_use_id: "tool-empty",
+		const block: ToolResultPart = {
+			type: "tool-result",
+			toolCallId: "tool-empty",
+			toolName: "",
+			output: { type: "text" as const, value: "" },
 		}
 
 		const result = toolResultToText(block)
 
-		expect(result).toBe("[Tool Result]")
+		expect(result).toBe("[Tool Result]\n")
 	})
 })
 
@@ -1426,11 +1554,11 @@ describe("convertToolBlocksToText", () => {
 	})
 
 	it("should convert tool_use blocks to text blocks", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: RooContentBlock[] = [
 			{
-				type: "tool_use",
-				id: "tool-123",
-				name: "read_file",
+				type: "tool-call",
+				toolCallId: "tool-123",
+				toolName: "read_file",
 				input: { path: "test.ts" },
 			},
 		]
@@ -1438,33 +1566,34 @@ describe("convertToolBlocksToText", () => {
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		expect((result as Anthropic.Messages.ContentBlockParam[])[0].type).toBe("text")
-		expect((result as Anthropic.Messages.TextBlockParam[])[0].text).toContain("[Tool Use: read_file]")
+		expect((result as RooContentBlock[])[0].type).toBe("text")
+		expect((result as TextPart[])[0].text).toContain("[Tool Use: read_file]")
 	})
 
 	it("should convert tool_result blocks to text blocks", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: RooContentBlock[] = [
 			{
-				type: "tool_result",
-				tool_use_id: "tool-123",
-				content: "File contents",
+				type: "tool-result",
+				toolCallId: "tool-123",
+				toolName: "",
+				output: { type: "text" as const, value: "File contents" },
 			},
 		]
 
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		expect((result as Anthropic.Messages.ContentBlockParam[])[0].type).toBe("text")
-		expect((result as Anthropic.Messages.TextBlockParam[])[0].text).toContain("[Tool Result]")
+		expect((result as RooContentBlock[])[0].type).toBe("text")
+		expect((result as TextPart[])[0].text).toContain("[Tool Result]")
 	})
 
 	it("should preserve non-tool blocks unchanged", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: RooContentBlock[] = [
 			{ type: "text", text: "Hello" },
 			{
-				type: "tool_use",
-				id: "tool-123",
-				name: "read_file",
+				type: "tool-call",
+				toolCallId: "tool-123",
+				toolName: "read_file",
 				input: { path: "test.ts" },
 			},
 			{ type: "text", text: "World" },
@@ -1473,37 +1602,38 @@ describe("convertToolBlocksToText", () => {
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		const resultArray = result as RooContentBlock[]
 		expect(resultArray).toHaveLength(3)
 		expect(resultArray[0]).toEqual({ type: "text", text: "Hello" })
 		expect(resultArray[1].type).toBe("text")
-		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
+		expect((resultArray[1] as TextPart).text).toContain("[Tool Use: read_file]")
 		expect(resultArray[2]).toEqual({ type: "text", text: "World" })
 	})
 
 	it("should handle mixed content with multiple tool blocks", () => {
-		const content: Anthropic.Messages.ContentBlockParam[] = [
+		const content: RooContentBlock[] = [
 			{
-				type: "tool_use",
-				id: "tool-1",
-				name: "read_file",
+				type: "tool-call",
+				toolCallId: "tool-1",
+				toolName: "read_file",
 				input: { path: "a.ts" },
 			},
 			{
-				type: "tool_result",
-				tool_use_id: "tool-1",
-				content: "contents of a.ts",
+				type: "tool-result",
+				toolCallId: "tool-1",
+				toolName: "",
+				output: { type: "text" as const, value: "contents of a.ts" },
 			},
 		]
 
 		const result = convertToolBlocksToText(content)
 
 		expect(Array.isArray(result)).toBe(true)
-		const resultArray = result as Anthropic.Messages.ContentBlockParam[]
+		const resultArray = result as RooContentBlock[]
 		expect(resultArray).toHaveLength(2)
-		expect((resultArray[0] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Use: read_file]")
-		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("[Tool Result]")
-		expect((resultArray[1] as Anthropic.Messages.TextBlockParam).text).toContain("contents of a.ts")
+		expect((resultArray[0] as TextPart).text).toContain("[Tool Use: read_file]")
+		expect((resultArray[1] as TextPart).text).toContain("[Tool Result]")
+		expect((resultArray[1] as TextPart).text).toContain("contents of a.ts")
 	})
 })
 
@@ -1515,9 +1645,9 @@ describe("transformMessagesForCondensing", () => {
 				role: "assistant" as const,
 				content: [
 					{
-						type: "tool_use" as const,
-						id: "tool-1",
-						name: "read_file",
+						type: "tool-call" as const,
+						toolCallId: "tool-1",
+						toolName: "read_file",
 						input: { path: "test.ts" },
 					},
 				],
@@ -1526,9 +1656,10 @@ describe("transformMessagesForCondensing", () => {
 				role: "user" as const,
 				content: [
 					{
-						type: "tool_result" as const,
-						tool_use_id: "tool-1",
-						content: "file contents",
+						type: "tool-result" as const,
+						toolCallId: "tool-1",
+						toolName: "",
+						output: { type: "text" as const, value: "file contents" },
 					},
 				],
 			},
@@ -1552,9 +1683,9 @@ describe("transformMessagesForCondensing", () => {
 				role: "assistant" as const,
 				content: [
 					{
-						type: "tool_use" as const,
-						id: "tool-1",
-						name: "execute",
+						type: "tool-call" as const,
+						toolCallId: "tool-1",
+						toolName: "execute",
 						input: { cmd: "ls" },
 					},
 				],
@@ -1575,9 +1706,9 @@ describe("transformMessagesForCondensing", () => {
 	it("should not mutate original messages", () => {
 		const originalContent = [
 			{
-				type: "tool_use" as const,
-				id: "tool-1",
-				name: "read_file",
+				type: "tool-call" as const,
+				toolCallId: "tool-1",
+				toolName: "read_file",
 				input: { path: "test.ts" },
 			},
 		]
@@ -1586,6 +1717,6 @@ describe("transformMessagesForCondensing", () => {
 		transformMessagesForCondensing(messages)
 
 		// Original should still have tool_use type
-		expect(messages[0].content[0].type).toBe("tool_use")
+		expect(messages[0].content[0].type).toBe("tool-call")
 	})
 })

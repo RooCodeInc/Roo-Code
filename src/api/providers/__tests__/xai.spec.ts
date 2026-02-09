@@ -25,8 +25,7 @@ vi.mock("@ai-sdk/xai", () => ({
 	}),
 }))
 
-import type { Anthropic } from "@anthropic-ai/sdk"
-
+import type { NeutralMessageParam } from "../../../core/task-persistence/apiMessages"
 import { xaiDefaultModelId, xaiModels, type XAIModelId } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../../shared/api"
@@ -141,7 +140,7 @@ describe("XAIHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [
@@ -538,7 +537,7 @@ describe("XAIHandler", () => {
 
 	describe("tool handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: NeutralMessageParam[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],

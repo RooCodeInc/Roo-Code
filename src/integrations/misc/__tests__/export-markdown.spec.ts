@@ -11,49 +11,64 @@ describe("export-markdown", () => {
 		it("should format image blocks", () => {
 			const block = {
 				type: "image",
-				source: { type: "base64", media_type: "image/png", data: "data" },
+				image: "data",
+				mediaType: "image/png",
 			} as ExtendedContentBlock
 			expect(formatContentBlockToMarkdown(block)).toBe("[Image]")
 		})
 
 		it("should format tool_use blocks with string input", () => {
-			const block = { type: "tool_use", name: "read_file", id: "123", input: "file.txt" } as ExtendedContentBlock
+			const block = {
+				type: "tool-call",
+				toolCallId: "123",
+				toolName: "read_file",
+				input: "file.txt",
+			} as ExtendedContentBlock
 			expect(formatContentBlockToMarkdown(block)).toBe("[Tool Use: read_file]\nfile.txt")
 		})
 
 		it("should format tool_use blocks with object input", () => {
 			const block = {
-				type: "tool_use",
-				name: "read_file",
-				id: "123",
+				type: "tool-call",
+				toolCallId: "123",
+				toolName: "read_file",
 				input: { path: "file.txt", line_count: 10 },
 			} as ExtendedContentBlock
 			expect(formatContentBlockToMarkdown(block)).toBe("[Tool Use: read_file]\nPath: file.txt\nLine_count: 10")
 		})
 
 		it("should format tool_result blocks with string content", () => {
-			const block = { type: "tool_result", tool_use_id: "123", content: "File content" } as ExtendedContentBlock
+			const block = {
+				type: "tool-result",
+				toolCallId: "123",
+				toolName: "",
+				output: { type: "text" as const, value: "File content" },
+			} as ExtendedContentBlock
 			expect(formatContentBlockToMarkdown(block)).toBe("[Tool]\nFile content")
 		})
 
 		it("should format tool_result blocks with error", () => {
 			const block = {
-				type: "tool_result",
-				tool_use_id: "123",
-				content: "Error message",
-				is_error: true,
+				type: "tool-result",
+				toolCallId: "123",
+				toolName: "",
+				output: { type: "text" as const, value: "Error message" },
 			} as ExtendedContentBlock
-			expect(formatContentBlockToMarkdown(block)).toBe("[Tool (Error)]\nError message")
+			expect(formatContentBlockToMarkdown(block)).toBe("[Tool]\nError message")
 		})
 
 		it("should format tool_result blocks with array content", () => {
 			const block = {
-				type: "tool_result",
-				tool_use_id: "123",
-				content: [
-					{ type: "text", text: "Line 1" },
-					{ type: "text", text: "Line 2" },
-				],
+				type: "tool-result",
+				toolCallId: "123",
+				toolName: "",
+				output: {
+					type: "content" as const,
+					value: [
+						{ type: "text", text: "Line 1" },
+						{ type: "text", text: "Line 2" },
+					],
+				},
 			} as ExtendedContentBlock
 			expect(formatContentBlockToMarkdown(block)).toBe("[Tool]\nLine 1\nLine 2")
 		})

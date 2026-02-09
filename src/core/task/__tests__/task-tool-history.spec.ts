@@ -1,5 +1,5 @@
+import type { RooMessageParam } from "../../task-persistence/apiMessages"
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import { Anthropic } from "@anthropic-ai/sdk"
 
 describe("Task Tool History Handling", () => {
 	describe("resumeTaskFromHistory tool block preservation", () => {
@@ -19,9 +19,9 @@ describe("Task Tool History Handling", () => {
 							text: "I'll read that file for you.",
 						},
 						{
-							type: "tool_use",
-							id: "toolu_123",
-							name: "read_file",
+							type: "tool-call",
+							toolCallId: "toolu_123",
+							toolName: "read_file",
 							input: { path: "config.json" },
 						},
 					],
@@ -31,8 +31,9 @@ describe("Task Tool History Handling", () => {
 					role: "user",
 					content: [
 						{
-							type: "tool_result",
-							tool_use_id: "toolu_123",
+							type: "tool-result",
+							toolCallId: "toolu_123",
+							toolName: "",
 							content: '{"setting": "value"}',
 						},
 					],
@@ -47,9 +48,9 @@ describe("Task Tool History Handling", () => {
 			expect(assistantMessage.content).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
-						type: "tool_use",
-						id: "toolu_123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "toolu_123",
+						toolName: "read_file",
 					}),
 				]),
 			)
@@ -57,8 +58,9 @@ describe("Task Tool History Handling", () => {
 			expect(userMessage.content).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
-						type: "tool_result",
-						tool_use_id: "toolu_123",
+						type: "tool-result",
+						toolCallId: "toolu_123",
+						toolName: "",
 					}),
 				]),
 			)
@@ -67,7 +69,7 @@ describe("Task Tool History Handling", () => {
 
 	describe("convertToOpenAiMessages format", () => {
 		it("should properly convert tool_use to tool_calls format", () => {
-			const anthropicMessage: Anthropic.Messages.MessageParam = {
+			const anthropicMessage: RooMessageParam = {
 				role: "assistant",
 				content: [
 					{
@@ -75,22 +77,22 @@ describe("Task Tool History Handling", () => {
 						text: "I'll read that file.",
 					},
 					{
-						type: "tool_use",
-						id: "toolu_123",
-						name: "read_file",
+						type: "tool-call",
+						toolCallId: "toolu_123",
+						toolName: "read_file",
 						input: { path: "config.json" },
 					},
 				],
 			}
 
 			// Simulate what convertToOpenAiMessages does
-			const toolUseBlocks = (anthropicMessage.content as any[]).filter((block) => block.type === "tool_use")
+			const toolUseBlocks = (anthropicMessage.content as any[]).filter((block) => block.type === "tool-call")
 
 			const tool_calls = toolUseBlocks.map((toolMessage) => ({
-				id: toolMessage.id,
+				id: toolMessage.toolCallId,
 				type: "function" as const,
 				function: {
-					name: toolMessage.name,
+					name: toolMessage.toolName,
 					arguments: JSON.stringify(toolMessage.input),
 				},
 			}))
@@ -107,24 +109,25 @@ describe("Task Tool History Handling", () => {
 		})
 
 		it("should properly convert tool_result to tool role messages", () => {
-			const anthropicMessage: Anthropic.Messages.MessageParam = {
+			const anthropicMessage: RooMessageParam = {
 				role: "user",
 				content: [
 					{
-						type: "tool_result",
-						tool_use_id: "toolu_123",
-						content: '{"setting": "value"}',
+						type: "tool-result",
+						toolCallId: "toolu_123",
+						toolName: "",
+						output: { type: "text" as const, value: '{"setting": "value"}' },
 					},
 				],
 			}
 
 			// Simulate what convertToOpenAiMessages does
-			const toolMessages = (anthropicMessage.content as any[]).filter((block) => block.type === "tool_result")
+			const toolMessages = (anthropicMessage.content as any[]).filter((block) => block.type === "tool-result")
 
 			const openAiToolMessages = toolMessages.map((toolMessage) => ({
 				role: "tool" as const,
-				tool_call_id: toolMessage.tool_use_id,
-				content: typeof toolMessage.content === "string" ? toolMessage.content : toolMessage.content[0].text,
+				tool_call_id: toolMessage.toolCallId,
+				content: typeof toolMessage.output === "string" ? toolMessage.output : toolMessage.output?.value,
 			}))
 
 			expect(openAiToolMessages).toHaveLength(1)
@@ -233,9 +236,10 @@ describe("Task Tool History Handling", () => {
 						text: "Another message with <user_message> tags",
 					},
 					{
-						type: "tool_result" as const,
-						tool_use_id: "tool_123",
-						content: "Tool result",
+						type: "tool-result" as const,
+						toolCallId: "tool_123",
+						toolName: "",
+						output: { type: "text" as const, value: "Tool result" },
 					},
 				]
 

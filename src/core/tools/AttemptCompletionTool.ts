@@ -179,9 +179,9 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		return true
 	}
 
-	override async handlePartial(task: Task, block: ToolUse<"attempt_completion">): Promise<void> {
-		const result: string | undefined = block.params.result
-		const command: string | undefined = block.params.command
+	override async handlePartial(task: Task, block: ToolUse): Promise<void> {
+		const result: string | undefined = block.input.result
+		const command: string | undefined = block.input.command
 
 		const lastMessage = task.clineMessages.at(-1)
 
