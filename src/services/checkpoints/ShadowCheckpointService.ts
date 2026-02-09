@@ -9,7 +9,6 @@ import pWaitFor from "p-wait-for"
 import * as vscode from "vscode"
 
 import { fileExistsAtPath } from "../../utils/fs"
-import { executeRipgrep } from "../../services/search/file-search"
 import { t } from "../../i18n"
 
 import { CheckpointDiff, CheckpointResult, CheckpointEventMap } from "./types"
@@ -221,45 +220,7 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 
 	private async getNestedGitRepository(): Promise<string | null> {
 		try {
-			// Find all .git/HEAD files that are not at the root level.
-			const args = ["--files", "--hidden", "--follow", "-g", "**/.git/HEAD", this.workspaceDir]
-
-			const gitPaths = await executeRipgrep({ args, workspacePath: this.workspaceDir })
-
-			// Filter to only include nested git directories (not the root .git).
-			// Since we're searching for HEAD files, we expect type to be "file"
-			const nestedGitPaths = gitPaths.filter(({ type, path: filePath }) => {
-				// Check if it's a file and is a nested .git/HEAD (not at root)
-				if (type !== "file") return false
-
-				// Ensure it's a .git/HEAD file and not the root one
-				const normalizedPath = filePath.replace(/\\/g, "/")
-				return (
-					normalizedPath.includes(".git/HEAD") &&
-					!normalizedPath.startsWith(".git/") &&
-					normalizedPath !== ".git/HEAD"
-				)
-			})
-
-			if (nestedGitPaths.length > 0) {
-				// Get the first nested git repository path
-				// Remove .git/HEAD from the path to get the repository directory
-				const headPath = nestedGitPaths[0].path
-
-				// Use path module to properly extract the repository directory
-				// The HEAD file is at .git/HEAD, so we need to go up two directories
-				const gitDir = path.dirname(headPath) // removes HEAD, gives us .git
-				const repoDir = path.dirname(gitDir) // removes .git, gives us the repo directory
-
-				const absolutePath = path.join(this.workspaceDir, repoDir)
-
-				this.log(
-					`[${this.constructor.name}#getNestedGitRepository] found ${nestedGitPaths.length} nested git repositories, first at: ${repoDir}`,
-				)
-				return absolutePath
-			}
-
-			return null
+			return await this.findNestedGitEntry(this.workspaceDir, /* isRoot */ true)
 		} catch (error) {
 			this.log(
 				`[${this.constructor.name}#getNestedGitRepository] failed to check for nested git repos: ${error instanceof Error ? error.message : String(error)}`,
@@ -268,6 +229,67 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 			// If we can't check, assume there are no nested repos to avoid blocking the feature.
 			return null
 		}
+	}
+
+	/**
+	 * Recursively walks the workspace directory to find nested .git entries.
+	 *
+	 * This detects both:
+	 * - `.git` directories (standard nested repos)
+	 * - `.git` files (submodule/worktree pointer files containing `gitdir: ...`)
+	 *
+	 * It uses `lstat` semantics via `withFileTypes` so symbolic links are never
+	 * followed, preventing false positives from symlinks pointing outside the
+	 * workspace.
+	 *
+	 * The root-level `.git` entry is always skipped so the workspace's own
+	 * repository is not treated as nested.
+	 */
+	private async findNestedGitEntry(dir: string, isRoot: boolean): Promise<string | null> {
+		let entries: import("fs").Dirent[]
+
+		try {
+			entries = await fs.readdir(dir, { withFileTypes: true })
+		} catch {
+			// Directory unreadable (permissions, etc.) -- skip silently.
+			return null
+		}
+
+		// Look for a .git entry in this directory (skip root level).
+		if (!isRoot) {
+			const hasGitEntry = entries.some((e) => e.name === ".git")
+
+			if (hasGitEntry) {
+				this.log(
+					`[${this.constructor.name}#getNestedGitRepository] found nested git repository at: ${path.relative(this.workspaceDir, dir)}`,
+				)
+				return dir
+			}
+		}
+
+		// Recurse into real subdirectories only (skip symlinks, .git dirs,
+		// and node_modules for performance).
+		for (const entry of entries) {
+			if (entry.isSymbolicLink()) {
+				continue
+			}
+
+			if (!entry.isDirectory()) {
+				continue
+			}
+
+			if (entry.name === ".git" || entry.name === "node_modules") {
+				continue
+			}
+
+			const result = await this.findNestedGitEntry(path.join(dir, entry.name), false)
+
+			if (result) {
+				return result
+			}
+		}
+
+		return null
 	}
 
 	private async getShadowGitConfigWorktree(git: SimpleGit) {
