@@ -184,6 +184,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		tryBeginPendingAction: tryBeginFollowUpSuggestionActionPending,
 		clearPendingAction: clearFollowUpSuggestionActionPending,
 	} = usePendingActionContract()
+	const approvalPendingMessagesSnapshotRef = useRef<ClineMessage[] | null>(null)
 	const everVisibleMessagesTsRef = useRef<LRUCache<number, boolean>>(
 		new LRUCache({
 			max: 100,
@@ -516,10 +517,18 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	useEffect(() => {
 		if (!isApprovalActionPending) {
+			approvalPendingMessagesSnapshotRef.current = null
 			return
 		}
 
-		clearApprovalActionPending()
+		if (approvalPendingMessagesSnapshotRef.current === null) {
+			approvalPendingMessagesSnapshotRef.current = messages
+			return
+		}
+
+		if (messages !== approvalPendingMessagesSnapshotRef.current) {
+			clearApprovalActionPending()
+		}
 	}, [messages, isApprovalActionPending, clearApprovalActionPending])
 
 	// Update button text when messages change (e.g., completion_result is added) for subtasks in resume_task state
@@ -923,6 +932,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				return
 			}
 
+			approvalPendingMessagesSnapshotRef.current = messagesRef.current
+
 			// Apply optimistic pending UI immediately on click.
 			beginActionResolutionTransition()
 
@@ -973,6 +984,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			if (!tryBeginApprovalActionPending()) {
 				return
 			}
+
+			approvalPendingMessagesSnapshotRef.current = messagesRef.current
 
 			// Apply optimistic pending UI immediately on click to avoid stale controls.
 			beginActionResolutionTransition()
