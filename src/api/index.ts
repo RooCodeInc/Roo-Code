@@ -9,7 +9,6 @@ import {
 	AnthropicHandler,
 	AwsBedrockHandler,
 	AzureHandler,
-	CerebrasHandler,
 	OpenRouterHandler,
 	VertexHandler,
 	AnthropicVertexHandler,

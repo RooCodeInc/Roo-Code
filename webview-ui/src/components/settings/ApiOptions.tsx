@@ -658,10 +658,6 @@ const ApiOptions = ({
 						<XAI apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
 					)}
 
-					{selectedProvider === "cerebras" && (
-						<Cerebras apiConfiguration={apiConfiguration} setApiConfigurationField={setApiConfigurationField} />
-					)}
-
 					{selectedProvider === "litellm" && (
 						<LiteLLM
 							apiConfiguration={apiConfiguration}
