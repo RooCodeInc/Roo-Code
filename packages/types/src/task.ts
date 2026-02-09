@@ -95,6 +95,9 @@ export interface CreateTaskOptions {
 	initialTodos?: TodoItem[]
 	/** Initial status for the task's history item (e.g., "active" for child tasks) */
 	initialStatus?: "active" | "delegated" | "completed"
+	/** Whether to start the task loop immediately (default: true).
+	 *  When false, the caller must invoke `task.start()` manually. */
+	startTask?: boolean
 }
 
 export enum TaskStatus {

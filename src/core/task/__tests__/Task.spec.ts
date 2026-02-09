@@ -1801,6 +1801,49 @@ describe("Cline", () => {
 			})
 		})
 	})
+
+	describe("start()", () => {
+		it("should be a no-op if the task was already started in the constructor", () => {
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: false,
+			})
+
+			// Manually trigger start
+			const startTaskSpy = vi.spyOn(task as any, "startTask").mockImplementation(async () => {})
+			task.start()
+
+			expect(startTaskSpy).toHaveBeenCalledTimes(1)
+
+			// Calling start() again should be a no-op
+			task.start()
+			expect(startTaskSpy).toHaveBeenCalledTimes(1)
+		})
+
+		it("should not call startTask if already started via constructor", () => {
+			// Create a task that starts immediately (startTask defaults to true)
+			// but mock startTask to prevent actual execution
+			const startTaskSpy = vi.spyOn(Task.prototype as any, "startTask").mockImplementation(async () => {})
+
+			const task = new Task({
+				provider: mockProvider,
+				apiConfiguration: mockApiConfig,
+				task: "test task",
+				startTask: true,
+			})
+
+			// startTask was called by the constructor
+			expect(startTaskSpy).toHaveBeenCalledTimes(1)
+
+			// Calling start() should be a no-op since _started is already true
+			task.start()
+			expect(startTaskSpy).toHaveBeenCalledTimes(1)
+
+			startTaskSpy.mockRestore()
+		})
+	})
 })
 
 describe("Queued message processing after condense", () => {
