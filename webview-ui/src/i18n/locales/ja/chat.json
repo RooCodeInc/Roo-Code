@@ -218,7 +218,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示したい",
 		"didViewTopLevelOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示しました",
 		"wantsToViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示したい",
-		"didViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示しました"
+		"didViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示しました",
+		"wantsToViewMultipleDirectories": "Roo は複数のディレクトリを表示したい"
 	},
 	"commandOutput": "コマンド出力",
 	"commandExecution": {
@@ -432,6 +433,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "すべて承認"
+		},
+		"deny": {
+			"title": "すべて拒否"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "すべて承認"
+		},
+		"deny": {
+			"title": "すべて拒否"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "すべて保存"
 		},
 		"deny": {
 			"title": "すべて拒否"

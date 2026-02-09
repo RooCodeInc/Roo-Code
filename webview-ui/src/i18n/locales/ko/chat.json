@@ -218,7 +218,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 최상위 파일을 보고 싶어합니다",
 		"didViewTopLevelOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 최상위 파일을 보았습니다",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 모든 파일을 재귀적으로 보고 싶어합니다",
-		"didViewRecursiveOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 모든 파일을 재귀적으로 보았습니다"
+		"didViewRecursiveOutsideWorkspace": "Roo가 이 디렉토리(워크스페이스 외부)의 모든 파일을 재귀적으로 보았습니다",
+		"wantsToViewMultipleDirectories": "Roo가 여러 디렉토리를 보려고 합니다"
 	},
 	"commandOutput": "명령 출력",
 	"commandExecution": {
@@ -432,6 +433,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "모두 승인"
+		},
+		"deny": {
+			"title": "모두 거부"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "모두 승인"
+		},
+		"deny": {
+			"title": "모두 거부"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "모두 저장"
 		},
 		"deny": {
 			"title": "모두 거부"

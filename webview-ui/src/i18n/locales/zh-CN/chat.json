@@ -218,7 +218,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "需要查看目录文件列表（工作区外）",
 		"didViewTopLevelOutsideWorkspace": "已查看目录文件列表（工作区外）",
 		"wantsToViewRecursiveOutsideWorkspace": "需要查看目录所有文件（工作区外）",
-		"didViewRecursiveOutsideWorkspace": "已查看目录所有文件（工作区外）"
+		"didViewRecursiveOutsideWorkspace": "已查看目录所有文件（工作区外）",
+		"wantsToViewMultipleDirectories": "Roo 想要查看多个目录"
 	},
 	"commandOutput": "命令输出",
 	"commandExecution": {
@@ -433,6 +434,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "全部批准"
+		},
+		"deny": {
+			"title": "全部拒绝"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "全部批准"
+		},
+		"deny": {
+			"title": "全部拒绝"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "全部保存"
 		},
 		"deny": {
 			"title": "全部拒绝"

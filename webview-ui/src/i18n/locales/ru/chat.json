@@ -213,7 +213,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo хочет просмотреть файлы верхнего уровня в этой директории (вне рабочего пространства)",
 		"didViewTopLevelOutsideWorkspace": "Roo просмотрел файлы верхнего уровня в этой директории (вне рабочего пространства)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo хочет рекурсивно просмотреть все файлы в этой директории (вне рабочего пространства)",
-		"didViewRecursiveOutsideWorkspace": "Roo рекурсивно просмотрел все файлы в этой директории (вне рабочего пространства)"
+		"didViewRecursiveOutsideWorkspace": "Roo рекурсивно просмотрел все файлы в этой директории (вне рабочего пространства)",
+		"wantsToViewMultipleDirectories": "Roo хочет просмотреть несколько директорий"
 	},
 	"commandOutput": "Вывод команды",
 	"commandExecution": {
@@ -433,6 +434,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "Одобрить все"
+		},
+		"deny": {
+			"title": "Отклонить все"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "Одобрить все"
+		},
+		"deny": {
+			"title": "Отклонить все"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Сохранить все"
 		},
 		"deny": {
 			"title": "Отклонить все"

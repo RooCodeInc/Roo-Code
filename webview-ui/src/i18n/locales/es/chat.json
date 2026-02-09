@@ -218,7 +218,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo quiere ver los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
 		"didViewTopLevelOutsideWorkspace": "Roo vio los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo quiere ver recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
-		"didViewRecursiveOutsideWorkspace": "Roo vio recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)"
+		"didViewRecursiveOutsideWorkspace": "Roo vio recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
+		"wantsToViewMultipleDirectories": "Roo quiere ver varios directorios"
 	},
 	"commandOutput": "Salida del comando",
 	"commandExecution": {
@@ -432,6 +433,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "Aprobar todo"
+		},
+		"deny": {
+			"title": "Denegar todo"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "Aprobar todo"
+		},
+		"deny": {
+			"title": "Denegar todo"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Guardar todo"
 		},
 		"deny": {
 			"title": "Denegar todo"

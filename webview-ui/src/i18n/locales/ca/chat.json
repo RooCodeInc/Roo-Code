@@ -218,7 +218,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo vol veure els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
 		"didViewTopLevelOutsideWorkspace": "Roo ha vist els fitxers de nivell superior en aquest directori (fora de l'espai de treball)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo vol veure recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
-		"didViewRecursiveOutsideWorkspace": "Roo ha vist recursivament tots els fitxers en aquest directori (fora de l'espai de treball)"
+		"didViewRecursiveOutsideWorkspace": "Roo ha vist recursivament tots els fitxers en aquest directori (fora de l'espai de treball)",
+		"wantsToViewMultipleDirectories": "Roo vol veure diversos directoris"
 	},
 	"commandOutput": "Sortida de la comanda",
 	"commandExecution": {
@@ -432,6 +433,22 @@
 	"read-batch": {
 		"approve": {
 			"title": "Aprovar tot"
+		},
+		"deny": {
+			"title": "Denegar tot"
+		}
+	},
+	"list-batch": {
+		"approve": {
+			"title": "Aprovar tot"
+		},
+		"deny": {
+			"title": "Denegar tot"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Desar tot"
 		},
 		"deny": {
 			"title": "Denegar tot"
