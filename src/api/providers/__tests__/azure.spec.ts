@@ -81,7 +81,7 @@ describe("AzureHandler", () => {
 			})
 			expect(handlerWithoutVersion).toBeInstanceOf(AzureHandler)
 			expect(mockCreateAzure).toHaveBeenLastCalledWith(
-				expect.not.objectContaining({ apiVersion: expect.anything() }),
+				expect.objectContaining({ apiVersion: "2025-04-01-preview" }),
 			)
 		})
 
@@ -98,14 +98,14 @@ describe("AzureHandler", () => {
 			)
 		})
 
-		it("should omit API version when configured value is blank", () => {
+		it("should use default API version when configured value is blank", () => {
 			new AzureHandler({
 				...mockOptions,
 				azureApiVersion: "   ",
 			})
 
 			expect(mockCreateAzure).toHaveBeenLastCalledWith(
-				expect.not.objectContaining({ apiVersion: expect.anything() }),
+				expect.objectContaining({ apiVersion: "2025-04-01-preview" }),
 			)
 		})
 	})
