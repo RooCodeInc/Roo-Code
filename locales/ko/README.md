@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-    </details>
+      </details>
 
 ---
 
@@ -59,7 +59,7 @@ Roo Code는 당신의 작업 방식에 맞춰 적응합니다.
 - 디버그 모드: 문제 추적, 로그 추가, 근본 원인 격리
 - 사용자 지정 모드: 팀이나 워크플로우를 위한 특수 모드 구축
 
-자세히: [모드 사용](https://docs.roocode.com/basic-usage/using-modes) • [사용자 지정 모드](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+자세히: [모드 사용](https://docs.roocode.com/basic-usage/using-modes) • [사용자 지정 모드](https://docs.roocode.com/advanced-usage/custom-modes)
 
 ## 튜토리얼 및 기능 비디오
 

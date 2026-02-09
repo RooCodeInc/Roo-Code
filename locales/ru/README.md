@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-    </details>
+      </details>
 
 ---
 
@@ -59,7 +59,7 @@ Roo Code адаптируется к вашему стилю работы, а н
 - Режим Отладка: отслеживание проблем, добавление логов, изоляция первопричин
 - Пользовательские режимы: создавайте специализированные режимы для вашей команды или рабочего процесса
 
-Подробнее: [Использование режимов](https://docs.roocode.com/basic-usage/using-modes) • [Пользовательские режимы](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Подробнее: [Использование режимов](https://docs.roocode.com/basic-usage/using-modes) • [Пользовательские режимы](https://docs.roocode.com/advanced-usage/custom-modes)
 
 ## Обучающие видео и видео о функциях
 

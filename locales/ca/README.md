@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-    </details>
+      </details>
 
 ---
 
@@ -59,7 +59,7 @@ Roo Code s'adapta a la teva manera de treballar, no a l'inrevés:
 - Mode Depuració: rastrejar problemes, afegir registres, aïllar les causes arrel
 - Modes personalitzats: crea modes especialitzats per al teu equip o flux de treball
 
-Més informació: [Ús de Modes](https://docs.roocode.com/basic-usage/using-modes) • [Modes personalitzats](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Més informació: [Ús de Modes](https://docs.roocode.com/basic-usage/using-modes) • [Modes personalitzats](https://docs.roocode.com/advanced-usage/custom-modes)
 
 ## Tutorials i vídeos de funcionalitats
 

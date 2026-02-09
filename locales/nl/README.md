@@ -35,7 +35,7 @@
 - [简体中文](../zh-CN/README.md)
 - [繁體中文](../zh-TW/README.md)
 - ...
-    </details>
+      </details>
 
 ---
 
@@ -59,7 +59,7 @@ Roo Code past zich aan jouw werkwijze aan, niet andersom:
 - Debug Modus: spoor problemen op, voeg logs toe, isoleer de oorzaak
 - Aangepaste Modi: bouw gespecialiseerde modi voor je team of workflow
 
-Meer info: [Modi gebruiken](https://docs.roocode.com/basic-usage/using-modes) • [Aangepaste modi](https://docs.roocode.com/advanced-usage/custom-modes) • [Roomote Control](https://docs.roocode.com/roo-code-cloud/roomote-control)
+Meer info: [Modi gebruiken](https://docs.roocode.com/basic-usage/using-modes) • [Aangepaste modi](https://docs.roocode.com/advanced-usage/custom-modes)
 
 ## Tutorial & Feature Videos
 
