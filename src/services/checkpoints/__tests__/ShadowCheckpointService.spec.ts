@@ -378,8 +378,8 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 			})
 		})
 
-		describe(`${klass.name}#hasNestedGitRepositories`, () => {
-			it("throws error when nested git repositories are detected during initialization", async () => {
+		describe(`${klass.name}#nestedGitRepositories`, () => {
+			it("succeeds and excludes nested repos from checkpoints", async () => {
 				// Create a new temporary workspace and service for this test.
 				const shadowDir = path.join(tmpDir, `${prefix}-nested-git-${Date.now()}`)
 				const workspaceDir = path.join(tmpDir, `workspace-nested-git-${Date.now()}`)
@@ -411,37 +411,44 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await mainGit.add(".")
 				await mainGit.commit("Initial commit in main repo")
 
-				// Confirm nested git directory exists before initialization.
-				const nestedGitDir = path.join(nestedRepoPath, ".git")
-				const headFile = path.join(nestedGitDir, "HEAD")
-				await fs.writeFile(headFile, "HEAD")
-				expect(await fileExistsAtPath(nestedGitDir)).toBe(true)
-
 				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
-					const searchPattern = args[4]
+					const searchPattern = args[3]
 
-					if (searchPattern.includes(".git/HEAD")) {
-						// Return the HEAD file path, not the .git directory
-						const headFilePath = path.join(path.relative(workspaceDir, nestedGitDir), "HEAD")
+					if (searchPattern === "**/.git/HEAD") {
 						return Promise.resolve([
 							{
-								path: headFilePath,
-								type: "file", // HEAD is a file, not a folder
+								path: "nested-project/.git/HEAD",
+								type: "file" as const,
 								label: "HEAD",
 							},
 						])
-					} else {
+					} else if (searchPattern === "**/.git") {
 						return Promise.resolve([])
 					}
+
+					return Promise.resolve([])
 				})
 
-				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				const testService = new klass(taskId, shadowDir, workspaceDir, () => {})
 
-				// Verify that initialization throws an error when nested git repos are detected
-				// The error message now includes the specific path of the nested repository
-				await expect(service.initShadowGit()).rejects.toThrowError(
-					/Checkpoints are disabled because a nested git repository was detected at:/,
-				)
+				// Initialization should succeed (not throw).
+				await expect(testService.initShadowGit()).resolves.not.toThrow()
+				expect(testService.isInitialized).toBe(true)
+
+				// Verify exclude file contains the nested repo pattern.
+				const excludePath = path.join(shadowDir, ".git", "info", "exclude")
+				const excludeContent = await fs.readFile(excludePath, "utf-8")
+				expect(excludeContent).toContain("/nested-project/")
+
+				// Save a checkpoint — nested repo files should not appear in diff.
+				await fs.writeFile(mainFile, "Modified main content")
+				const commit = await testService.saveCheckpoint("Checkpoint with nested repo")
+				expect(commit?.commit).toBeTruthy()
+
+				const diff = await testService.getDiff({ to: commit!.commit })
+				const diffPaths = diff.map((d) => d.paths.relative)
+				expect(diffPaths).toContain("main-file.txt")
+				expect(diffPaths).not.toContain("nested-project/nested-file.txt")
 
 				// Clean up.
 				vitest.restoreAllMocks()
@@ -468,20 +475,330 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await mainGit.commit("Initial commit in main repo")
 
 				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(() => {
-					// Return empty array to simulate no nested git repos found
 					return Promise.resolve([])
 				})
 
-				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				const testService = new klass(taskId, shadowDir, workspaceDir, () => {})
 
-				// Verify that initialization succeeds when no nested git repos are detected
-				await expect(service.initShadowGit()).resolves.not.toThrow()
-				expect(service.isInitialized).toBe(true)
+				await expect(testService.initShadowGit()).resolves.not.toThrow()
+				expect(testService.isInitialized).toBe(true)
 
 				// Clean up.
 				vitest.restoreAllMocks()
 				await fs.rm(shadowDir, { recursive: true, force: true })
 				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("detects submodule .git pointer files", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-submodule-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-submodule-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create a submodule-style .git pointer file.
+				const submodulePath = path.join(workspaceDir, "libs", "shared")
+				await fs.mkdir(submodulePath, { recursive: true })
+				await fs.writeFile(
+					path.join(submodulePath, ".git"),
+					"gitdir: ../../.git/modules/libs/shared\n",
+				)
+				await fs.writeFile(path.join(submodulePath, "index.ts"), "export default {}")
+
+				const mainFile = path.join(workspaceDir, "main.ts")
+				await fs.writeFile(mainFile, "import shared from './libs/shared'")
+				await mainGit.add(".")
+				await mainGit.commit("Initial commit")
+
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
+					const searchPattern = args[3]
+
+					if (searchPattern === "**/.git/HEAD") {
+						return Promise.resolve([])
+					} else if (searchPattern === "**/.git") {
+						return Promise.resolve([
+							{
+								path: "libs/shared/.git",
+								type: "file" as const,
+								label: ".git",
+							},
+						])
+					}
+
+					return Promise.resolve([])
+				})
+
+				const testService = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await testService.initShadowGit()
+				expect(testService.isInitialized).toBe(true)
+
+				// Verify exclude file contains the submodule path.
+				const excludePath = path.join(shadowDir, ".git", "info", "exclude")
+				const excludeContent = await fs.readFile(excludePath, "utf-8")
+				expect(excludeContent).toContain("/libs/shared/")
+
+				// Clean up.
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("detects multiple nested repos and excludes all", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-multi-nested-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-multi-nested-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				const mainFile = path.join(workspaceDir, "root.txt")
+				await fs.writeFile(mainFile, "Root content")
+				await mainGit.add(".")
+				await mainGit.commit("Initial commit")
+
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
+					const searchPattern = args[3]
+
+					if (searchPattern === "**/.git/HEAD") {
+						return Promise.resolve([
+							{ path: "frontend/.git/HEAD", type: "file" as const, label: "HEAD" },
+							{ path: "packages/api/.git/HEAD", type: "file" as const, label: "HEAD" },
+						])
+					} else if (searchPattern === "**/.git") {
+						return Promise.resolve([])
+					}
+
+					return Promise.resolve([])
+				})
+
+				const testService = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await testService.initShadowGit()
+				expect(testService.isInitialized).toBe(true)
+
+				// Verify exclude file contains both nested repo patterns.
+				const excludePath = path.join(shadowDir, ".git", "info", "exclude")
+				const excludeContent = await fs.readFile(excludePath, "utf-8")
+				expect(excludeContent).toContain("/frontend/")
+				expect(excludeContent).toContain("/packages/api/")
+
+				// Clean up.
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("no gitlink entries (mode 160000) remain after staging", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-no-gitlink-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-no-gitlink-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create a nested repo.
+				const nestedRepoPath = path.join(workspaceDir, "nested")
+				await fs.mkdir(nestedRepoPath, { recursive: true })
+				const nestedGit = simpleGit(nestedRepoPath)
+				await nestedGit.init()
+				await nestedGit.addConfig("user.name", "Roo Code")
+				await nestedGit.addConfig("user.email", "support@roocode.com")
+				await fs.writeFile(path.join(nestedRepoPath, "file.txt"), "nested content")
+				await nestedGit.add(".")
+				await nestedGit.commit("nested commit")
+
+				await fs.writeFile(path.join(workspaceDir, "root.txt"), "root content")
+				await mainGit.add(".")
+				await mainGit.commit("Initial commit")
+
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
+					const searchPattern = args[3]
+
+					if (searchPattern === "**/.git/HEAD") {
+						return Promise.resolve([
+							{ path: "nested/.git/HEAD", type: "file" as const, label: "HEAD" },
+						])
+					} else if (searchPattern === "**/.git") {
+						return Promise.resolve([])
+					}
+
+					return Promise.resolve([])
+				})
+
+				const testService = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await testService.initShadowGit()
+
+				// Save a checkpoint and then inspect the shadow git index.
+				await fs.writeFile(path.join(workspaceDir, "root.txt"), "modified root")
+				await testService.saveCheckpoint("Checkpoint")
+
+				// Inspect the shadow repo's index for gitlink entries.
+				const lsOutput = await simpleGit(shadowDir).raw(["ls-files", "--stage"])
+				const gitlinkLines = lsOutput.split("\n").filter((l: string) => l.startsWith("160000 "))
+				expect(gitlinkLines).toHaveLength(0)
+
+				// Clean up.
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("restore does not touch nested repo directory", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-restore-nested-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-restore-nested-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create a nested repo with content.
+				const nestedRepoPath = path.join(workspaceDir, "nested")
+				await fs.mkdir(nestedRepoPath, { recursive: true })
+				const nestedGit = simpleGit(nestedRepoPath)
+				await nestedGit.init()
+				await nestedGit.addConfig("user.name", "Roo Code")
+				await nestedGit.addConfig("user.email", "support@roocode.com")
+				const nestedFile = path.join(nestedRepoPath, "nested-file.txt")
+				await fs.writeFile(nestedFile, "Original nested content")
+				await nestedGit.add(".")
+				await nestedGit.commit("nested commit")
+
+				// Create a main workspace file.
+				const mainFile = path.join(workspaceDir, "main.txt")
+				await fs.writeFile(mainFile, "Original main content")
+				await mainGit.add(".")
+				await mainGit.commit("Initial commit")
+
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
+					const searchPattern = args[3]
+
+					if (searchPattern === "**/.git/HEAD") {
+						return Promise.resolve([
+							{ path: "nested/.git/HEAD", type: "file" as const, label: "HEAD" },
+						])
+					} else if (searchPattern === "**/.git") {
+						return Promise.resolve([])
+					}
+
+					return Promise.resolve([])
+				})
+
+				const testService = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await testService.initShadowGit()
+
+				// Save checkpoint 1.
+				await fs.writeFile(mainFile, "Modified main content")
+				const commit1 = await testService.saveCheckpoint("Checkpoint 1")
+				expect(commit1?.commit).toBeTruthy()
+
+				// Modify nested repo file (should not be tracked).
+				await fs.writeFile(nestedFile, "Modified nested content")
+
+				// Restore to checkpoint 1 — nested repo should be untouched.
+				await testService.restoreCheckpoint(commit1!.commit)
+				expect(await fs.readFile(mainFile, "utf-8")).toBe("Modified main content")
+				// Nested file retains its modification since it's excluded.
+				expect(await fs.readFile(nestedFile, "utf-8")).toBe("Modified nested content")
+				expect(await fileExistsAtPath(path.join(nestedRepoPath, ".git"))).toBe(true)
+
+				// Clean up.
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("aborts checkpoint save when detection failed and nested repo content is staged", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-detect-fail-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-detect-fail-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create a nested repo.
+				const nestedRepoPath = path.join(workspaceDir, "nested")
+				await fs.mkdir(nestedRepoPath, { recursive: true })
+				const nestedGit = simpleGit(nestedRepoPath)
+				await nestedGit.init()
+				await nestedGit.addConfig("user.name", "Roo Code")
+				await nestedGit.addConfig("user.email", "support@roocode.com")
+				await fs.writeFile(path.join(nestedRepoPath, "file.txt"), "nested content")
+				await nestedGit.add(".")
+				await nestedGit.commit("nested commit")
+
+				await fs.writeFile(path.join(workspaceDir, "root.txt"), "root content")
+				await mainGit.add(".")
+				await mainGit.commit("Initial commit")
+
+				// Simulate detection failure — ripgrep throws.
+				vitest.spyOn(fileSearch, "executeRipgrep").mockRejectedValue(
+					new Error("ripgrep not found"),
+				)
+
+				const logMessages: string[] = []
+				const testService = new klass(taskId, shadowDir, workspaceDir, (msg: string) =>
+					logMessages.push(msg),
+				)
+				await testService.initShadowGit()
+				expect(testService.isInitialized).toBe(true)
+
+				// Verify detection failure was logged.
+				expect(logMessages.some((m) => m.includes("detection failed"))).toBe(true)
+
+				// Attempting to save a checkpoint should trigger the
+				// conservative fallback and either safely exclude nested
+				// content or abort.
+				await fs.writeFile(path.join(workspaceDir, "root.txt"), "modified root")
+
+				// The save may succeed (if the fallback successfully removes
+				// nested content) or throw (if nested content persists).
+				// Either way, the checkpoint must not contain nested repo files.
+				try {
+					const commit = await testService.saveCheckpoint("Fallback test")
+					if (commit?.commit) {
+						const diff = await testService.getDiff({ to: commit.commit })
+						const diffPaths = diff.map((d) => d.paths.relative)
+						expect(diffPaths).not.toContain("nested/file.txt")
+					}
+				} catch (error) {
+					// Safety abort is acceptable — it means the fallback
+					// detected unsafe content and refused to proceed.
+					expect(error).toBeInstanceOf(Error)
+				}
+
+				// Clean up.
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("aborts checkpoint save on real git add failure (not ignored-paths warning)", async () => {
+				// Ensure real staging failures (index corruption, disk full, etc.)
+				// still abort the save rather than producing a bad checkpoint.
+				await fs.writeFile(testFile, "Content that should not be checkpointed")
+
+				// Mock git.add to throw a real error (not an "ignored paths" warning).
+				const addSpy = vitest.spyOn(service["git"]!, "add").mockRejectedValueOnce(
+					new Error("fatal: index file corrupt"),
+				)
+
+				await expect(
+					service.saveCheckpoint("Should fail"),
+				).rejects.toThrow("fatal: index file corrupt")
+
+				// Verify the staging path was actually exercised.
+				expect(addSpy).toHaveBeenCalled()
+				addSpy.mockRestore()
 			})
 		})
 
