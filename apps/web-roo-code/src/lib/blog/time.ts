@@ -98,6 +98,23 @@ export function formatPostDatePt(publishDate: string): string {
 }
 
 /**
+ * Repeatedly strip HTML tags until no more remain.
+ * A single-pass replacement is vulnerable to incomplete sanitization when
+ * the input contains nested/split patterns like `<scr<script>ipt>`.
+ */
+function stripHtmlTags(text: string): string {
+	const TAG_RE = /<[^>]+>/g
+	let previous = text
+	let result = text.replace(TAG_RE, "")
+	while (result !== previous) {
+		previous = result
+		result = result.replace(TAG_RE, "")
+	}
+	// Final safety: remove any remaining angle brackets
+	return result.replace(/[<>]/g, "")
+}
+
+/**
  * Calculate reading time for a piece of content
  * Uses average reading speed of 200 words per minute
  * @param content - The markdown content to calculate reading time for
@@ -105,23 +122,23 @@ export function formatPostDatePt(publishDate: string): string {
  */
 export function calculateReadingTime(content: string): number {
 	// Strip markdown syntax for more accurate word count
-	const plainText = content
-		// Remove code blocks
-		.replace(/```[\s\S]*?```/g, "")
-		// Remove inline code
-		.replace(/`[^`]+`/g, "")
-		// Remove images
-		.replace(/!\[.*?\]\(.*?\)/g, "")
-		// Remove links but keep text
-		.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-		// Remove headers markers
-		.replace(/^#{1,6}\s+/gm, "")
-		// Remove emphasis
-		.replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, "$1")
-		// Remove horizontal rules
-		.replace(/^[-*_]{3,}\s*$/gm, "")
-		// Remove HTML tags
-		.replace(/<[^>]+>/g, "")
+	const plainText = stripHtmlTags(
+		content
+			// Remove code blocks
+			.replace(/```[\s\S]*?```/g, "")
+			// Remove inline code
+			.replace(/`[^`]+`/g, "")
+			// Remove images
+			.replace(/!\[.*?\]\(.*?\)/g, "")
+			// Remove links but keep text
+			.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+			// Remove headers markers
+			.replace(/^#{1,6}\s+/gm, "")
+			// Remove emphasis
+			.replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, "$1")
+			// Remove horizontal rules
+			.replace(/^[-*_]{3,}\s*$/gm, ""),
+	)
 
 	// Count words (split on whitespace)
 	const words = plainText
