@@ -1,8 +1,14 @@
 import { Anthropic } from "@anthropic-ai/sdk"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { ClaudeCodeAcpHandler } from "../claude-code-acp"
+import * as pathUtils from "../../../utils/path"
 
 describe("ClaudeCodeAcpHandler", () => {
+	afterEach(() => {
+		vi.restoreAllMocks()
+	})
+
 	it("fits formatted conversation to a character budget", () => {
 		const handler = new ClaudeCodeAcpHandler({} as any)
 
@@ -44,5 +50,32 @@ describe("ClaudeCodeAcpHandler", () => {
 		expect(formatted).toContain("HEAD")
 		expect(formatted).toContain("TAIL")
 		expect(formatted).toContain("...truncated")
+	})
+
+	it("prefers explicitly configured ACP working directory", () => {
+		vi.spyOn(pathUtils, "getWorkspacePath").mockReturnValue("/workspace")
+
+		const handler = new ClaudeCodeAcpHandler({
+			claudeCodeAcpWorkingDirectory: "/configured",
+		} as any)
+
+		expect((handler as any).resolveWorkingDirectory()).toBe("/configured")
+	})
+
+	it("uses active workspace directory when ACP working directory is not configured", () => {
+		vi.spyOn(pathUtils, "getWorkspacePath").mockReturnValue("/workspace")
+
+		const handler = new ClaudeCodeAcpHandler({} as any)
+
+		expect((handler as any).resolveWorkingDirectory()).toBe("/workspace")
+	})
+
+	it("falls back to process cwd when no configured or workspace directory is available", () => {
+		vi.spyOn(pathUtils, "getWorkspacePath").mockReturnValue("")
+		vi.spyOn(process, "cwd").mockReturnValue("/process-cwd")
+
+		const handler = new ClaudeCodeAcpHandler({} as any)
+
+		expect((handler as any).resolveWorkingDirectory()).toBe("/process-cwd")
 	})
 })

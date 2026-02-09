@@ -2920,6 +2920,7 @@ export class ClineProvider
 			enableBridge: BridgeOrchestrator.isEnabled(cloudUserInfo, remoteControlEnabled),
 			initialTodos: options.initialTodos,
 			...options,
+			workspacePath: this.cwd,
 		})
 
 		await this.addClineToStack(task)
@@ -3149,7 +3150,14 @@ export class ClineProvider
 	}
 
 	public get cwd() {
-		return this.currentWorkspacePath || getWorkspacePath()
+		const fallbackWorkspacePath = this.currentWorkspacePath || path.join(os.homedir(), "Desktop")
+		const resolvedWorkspacePath = getWorkspacePath(fallbackWorkspacePath)
+
+		if (resolvedWorkspacePath && resolvedWorkspacePath !== this.currentWorkspacePath) {
+			this.currentWorkspacePath = resolvedWorkspacePath
+		}
+
+		return this.currentWorkspacePath || fallbackWorkspacePath
 	}
 
 	/**

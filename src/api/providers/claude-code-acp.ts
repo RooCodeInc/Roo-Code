@@ -16,6 +16,7 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 import { getSharedSessionManager, type AcpSessionUpdate } from "../../integrations/claude-code-acp"
+import { getWorkspacePath } from "../../utils/path"
 
 /**
  * Extended options for Claude Code ACP handler
@@ -107,6 +108,20 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		this.options = options
 	}
 
+	private resolveWorkingDirectory(): string {
+		const configuredDirectory = this.options.claudeCodeAcpWorkingDirectory?.trim()
+		if (configuredDirectory) {
+			return configuredDirectory
+		}
+
+		const workspaceDirectory = getWorkspacePath("")
+		if (workspaceDirectory) {
+			return workspaceDirectory
+		}
+
+		return process.cwd()
+	}
+
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -115,8 +130,8 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		const model = this.getModel()
 		const manager = getSharedSessionManager(this.options.claudeCodeAcpExecutablePath)
 
-		// Get working directory from options or use current
-		const workingDirectory = this.options.claudeCodeAcpWorkingDirectory || process.cwd()
+		// Get working directory from explicit options or active VS Code workspace.
+		const workingDirectory = this.resolveWorkingDirectory()
 
 		// Get or create a session
 		let session = await manager.getOrCreateSession(workingDirectory, model.id)
@@ -378,7 +393,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		maxPromptChars: number = MAX_ACP_PROXY_PROMPT_CHARS,
 	): string {
 		const parts: string[] = []
-		const workingDirectory = this.options.claudeCodeAcpWorkingDirectory || process.cwd()
+		const workingDirectory = this.resolveWorkingDirectory()
 
 		// Proxy mode instructions (with workspace context)
 		parts.push(this.buildProxyInstructions(toolChoice, workingDirectory))
@@ -1122,7 +1137,7 @@ Current time: ${new Date().toISOString()}`
 	async completePrompt(prompt: string): Promise<string> {
 		const manager = getSharedSessionManager(this.options.claudeCodeAcpExecutablePath)
 		const model = this.getModel()
-		const workingDirectory = this.options.claudeCodeAcpWorkingDirectory || process.cwd()
+		const workingDirectory = this.resolveWorkingDirectory()
 
 		const session = await manager.getOrCreateSession(workingDirectory, model.id)
 
