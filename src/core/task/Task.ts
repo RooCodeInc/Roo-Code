@@ -4715,6 +4715,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				onCouncilEvent: (event) => {
 					void this.handleRpiCouncilEvent(event)
 				},
+				onAutopilotEvent: (event) => {
+					void this.handleRpiAutopilotEvent(event)
+				},
 			})
 		}
 		return this.rpiAutopilot
@@ -4811,34 +4814,72 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 
 		this.rpiAutopilotAnnounced = true
+	}
+
+	private async handleRpiAutopilotEvent(event: {
+		status: "initialized" | "phase_changed"
+		phase: "discovery" | "planning" | "implementation" | "verification" | "done"
+		previousPhase?: "discovery" | "planning" | "implementation" | "verification" | "done"
+		trigger?: string
+	}): Promise<void> {
+		const phaseLabel = event.phase.charAt(0).toUpperCase() + event.phase.slice(1)
+		const previousLabel = event.previousPhase
+			? event.previousPhase.charAt(0).toUpperCase() + event.previousPhase.slice(1)
+			: undefined
+		const triggerLabel = event.trigger ? event.trigger.replace(/_/g, " ") : undefined
+		const prefix =
+			event.status === "initialized"
+				? `Initialized in ${phaseLabel}`
+				: event.previousPhase
+					? `Phase ${previousLabel} → ${phaseLabel}`
+					: `Phase changed to ${phaseLabel}`
+		const detail = triggerLabel ? ` (trigger: ${triggerLabel})` : ""
+
 		try {
-			await this.say("rpi_autopilot", "Autopilot active.")
+			await this.say("rpi_autopilot", `${prefix}${detail}`)
 		} catch (error) {
-			console.error(`[Task#maybeAnnounceRpiAutopilot] Failed: ${(error as Error)?.message ?? String(error)}`)
+			console.error(`[Task#handleRpiAutopilotEvent] Failed: ${(error as Error)?.message ?? String(error)}`)
 		}
 	}
 
 	private async handleRpiCouncilEvent(event: {
 		phase: "discovery" | "planning" | "verification"
 		trigger: "phase_change" | "completion_attempt" | "complexity_threshold"
-		outcome: "completed" | "skipped"
+		status: "started" | "heartbeat" | "completed" | "skipped"
 		summary?: string
 		error?: string
+		elapsedSeconds?: number
 	}): Promise<void> {
 		const phaseLabel = event.phase.charAt(0).toUpperCase() + event.phase.slice(1)
+		const triggerLabel = event.trigger.replace(/_/g, " ")
+		if (event.status === "heartbeat") {
+			const lastMessage = this.clineMessages.at(-1)
+			const canUpdate =
+				lastMessage?.type === "say" && lastMessage.say === "rpi_council" && lastMessage.partial === true
+			if (!canUpdate) {
+				return
+			}
+		}
 		const suffix =
-			event.outcome === "completed"
+			event.status === "completed"
 				? event.summary
 					? ` ${event.summary}`
 					: ""
-				: event.error
-					? ` ${event.error}`
+				: event.status === "skipped"
+					? event.error
+						? ` ${event.error}`
+						: ""
 					: ""
+		const elapsedLabel = event.elapsedSeconds ? ` ${event.elapsedSeconds}s` : ""
 		const text =
-			event.outcome === "completed" ? `(${phaseLabel}) completed.${suffix}` : `(${phaseLabel}) skipped.${suffix}`
+			event.status === "started" || event.status === "heartbeat"
+				? `(${phaseLabel} - ${triggerLabel}) running...${elapsedLabel}`
+				: event.status === "completed"
+					? `(${phaseLabel} - ${triggerLabel}) completed.${suffix}`
+					: `(${phaseLabel} - ${triggerLabel}) skipped.${suffix}`
 
 		try {
-			await this.say("rpi_council", text)
+			await this.say("rpi_council", text, undefined, event.status === "started" || event.status === "heartbeat")
 		} catch (error) {
 			console.error(`[Task#handleRpiCouncilEvent] Failed: ${(error as Error)?.message ?? String(error)}`)
 		}

@@ -41,9 +41,16 @@ interface RpiAutopilotContext {
 	onCouncilEvent?: (event: {
 		phase: RpiCouncilPhase
 		trigger: "phase_change" | "completion_attempt" | "complexity_threshold"
-		outcome: "completed" | "skipped"
+		status: "started" | "heartbeat" | "completed" | "skipped"
 		summary?: string
 		error?: string
+		elapsedSeconds?: number
+	}) => void
+	onAutopilotEvent?: (event: {
+		status: "initialized" | "phase_changed"
+		phase: RpiPhase
+		previousPhase?: RpiPhase
+		trigger?: string
 	}) => void
 }
 
@@ -119,6 +126,12 @@ export class RpiAutopilot {
 
 			await this.syncArtifacts()
 			this.initialized = true
+			if (this.state) {
+				this.notifyAutopilotEvent({
+					status: "initialized",
+					phase: this.state.phase,
+				})
+			}
 		})
 	}
 
@@ -184,6 +197,12 @@ export class RpiAutopilot {
 			}
 
 			if (currentPhase !== previousPhase) {
+				this.notifyAutopilotEvent({
+					status: "phase_changed",
+					phase: currentPhase,
+					previousPhase,
+					trigger: toolName,
+				})
 				await this.maybeRunCouncilForPhase(currentPhase, "phase_change")
 			}
 
@@ -232,8 +251,15 @@ export class RpiAutopilot {
 
 			// Move to verification automatically when completion is attempted.
 			if (this.state.phase !== "verification" && this.state.phase !== "done") {
+				const previousPhase = this.state.phase
 				this.completePhase(this.state.phase)
 				this.state.phase = "verification"
+				this.notifyAutopilotEvent({
+					status: "phase_changed",
+					phase: "verification",
+					previousPhase,
+					trigger: "completion_attempt",
+				})
 			}
 
 			// Discovery/planning are auto-completed when closing to keep flow simple.
@@ -282,6 +308,12 @@ export class RpiAutopilot {
 			this.state.lastUpdatedAt = new Date().toISOString()
 			await this.appendProgress("Task completion accepted by user.")
 			await this.syncArtifacts()
+			this.notifyAutopilotEvent({
+				status: "phase_changed",
+				phase: "done",
+				previousPhase: "verification",
+				trigger: "completion_accepted",
+			})
 		})
 	}
 
@@ -499,6 +531,14 @@ export class RpiAutopilot {
 		}
 
 		const input = this.buildCouncilInput(mode)
+		const startTime = Date.now()
+		this.notifyCouncilEvent({
+			phase: councilPhase,
+			trigger,
+			status: "started",
+			elapsedSeconds: 0,
+		})
+		const stopHeartbeat = this.startCouncilHeartbeat(councilPhase, trigger, startTime)
 		try {
 			let result: RpiCouncilResult
 			if (councilPhase === "discovery") {
@@ -524,8 +564,9 @@ export class RpiAutopilot {
 			this.notifyCouncilEvent({
 				phase: councilPhase,
 				trigger,
-				outcome: "completed",
+				status: "completed",
 				summary: result.summary,
+				elapsedSeconds: Math.max(1, Math.round((Date.now() - startTime) / 1000)),
 			})
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error)
@@ -534,18 +575,22 @@ export class RpiAutopilot {
 			this.notifyCouncilEvent({
 				phase: councilPhase,
 				trigger,
-				outcome: "skipped",
+				status: "skipped",
 				error: message,
+				elapsedSeconds: Math.max(1, Math.round((Date.now() - startTime) / 1000)),
 			})
+		} finally {
+			stopHeartbeat()
 		}
 	}
 
 	private notifyCouncilEvent(event: {
 		phase: RpiCouncilPhase
 		trigger: "phase_change" | "completion_attempt" | "complexity_threshold"
-		outcome: "completed" | "skipped"
+		status: "started" | "heartbeat" | "completed" | "skipped"
 		summary?: string
 		error?: string
+		elapsedSeconds?: number
 	}): void {
 		try {
 			this.context.onCouncilEvent?.(event)
@@ -553,6 +598,62 @@ export class RpiAutopilot {
 			console.error(
 				`[RpiAutopilot] Failed to notify council event: ${(error as Error)?.message ?? String(error)}`,
 			)
+		}
+	}
+
+	private notifyAutopilotEvent(event: {
+		status: "initialized" | "phase_changed"
+		phase: RpiPhase
+		previousPhase?: RpiPhase
+		trigger?: string
+	}): void {
+		try {
+			this.context.onAutopilotEvent?.(event)
+		} catch (error) {
+			console.error(
+				`[RpiAutopilot] Failed to notify autopilot event: ${(error as Error)?.message ?? String(error)}`,
+			)
+		}
+	}
+
+	private startCouncilHeartbeat(
+		phase: RpiCouncilPhase,
+		trigger: "phase_change" | "completion_attempt" | "complexity_threshold",
+		startTime: number,
+	): () => void {
+		const heartbeatIntervalMs = 15_000
+		const initialDelayMs = 15_000
+		let isCleared = false
+
+		let intervalId: ReturnType<typeof setInterval> | undefined
+		const timeoutId = setTimeout(() => {
+			if (isCleared) {
+				return
+			}
+			const elapsedSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000))
+			this.notifyCouncilEvent({
+				phase,
+				trigger,
+				status: "heartbeat",
+				elapsedSeconds,
+			})
+			intervalId = setInterval(() => {
+				const intervalElapsedSeconds = Math.max(1, Math.round((Date.now() - startTime) / 1000))
+				this.notifyCouncilEvent({
+					phase,
+					trigger,
+					status: "heartbeat",
+					elapsedSeconds: intervalElapsedSeconds,
+				})
+			}, heartbeatIntervalMs)
+		}, initialDelayMs)
+
+		return () => {
+			isCleared = true
+			if (intervalId) {
+				clearInterval(intervalId)
+			}
+			clearTimeout(timeoutId)
 		}
 	}
 
