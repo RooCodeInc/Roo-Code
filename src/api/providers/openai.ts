@@ -215,8 +215,9 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			const usage = await result.usage
+			const providerMetadata = await result.providerMetadata
 			if (usage) {
-				yield this.processUsageMetrics(usage, modelInfo)
+				yield this.processUsageMetrics(usage, modelInfo, providerMetadata as any)
 			}
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)
@@ -234,7 +235,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		modelInfo: ModelInfo,
 	): ApiStream {
 		try {
-			const { text, toolCalls, usage } = await generateText({
+			const { text, toolCalls, usage, providerMetadata } = await generateText({
 				model: languageModel,
 				system: systemPrompt,
 				messages,
@@ -262,7 +263,7 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			if (usage) {
-				yield this.processUsageMetrics(usage, modelInfo)
+				yield this.processUsageMetrics(usage, modelInfo, providerMetadata as any)
 			}
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)
@@ -279,12 +280,24 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 		},
 		_modelInfo?: ModelInfo,
+		providerMetadata?: {
+			openai?: {
+				cachedPromptTokens?: number
+				reasoningTokens?: number
+			}
+		},
 	): ApiStreamUsageChunk {
+		// Extract cache and reasoning metrics from OpenAI's providerMetadata when available,
+		// falling back to usage.details for standard AI SDK fields.
+		const cacheReadTokens = providerMetadata?.openai?.cachedPromptTokens ?? usage.details?.cachedInputTokens
+		const reasoningTokens = providerMetadata?.openai?.reasoningTokens ?? usage.details?.reasoningTokens
+
 		return {
 			type: "usage",
 			inputTokens: usage.inputTokens || 0,
 			outputTokens: usage.outputTokens || 0,
-			cacheReadTokens: usage.details?.cachedInputTokens,
+			cacheReadTokens,
+			reasoningTokens,
 		}
 	}
 

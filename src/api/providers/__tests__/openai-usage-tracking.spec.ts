@@ -155,5 +155,78 @@ describe("OpenAiHandler with usage tracking fix", () => {
 			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
 			expect(usageChunks).toHaveLength(0)
 		})
+
+		it("should include reasoningTokens from usage.details", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			mockStreamText.mockReturnValueOnce({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 10,
+					outputTokens: 5,
+					details: {
+						reasoningTokens: 3,
+					},
+				}),
+				providerMetadata: Promise.resolve(undefined),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0]).toEqual(
+				expect.objectContaining({
+					type: "usage",
+					inputTokens: 10,
+					outputTokens: 5,
+					reasoningTokens: 3,
+				}),
+			)
+		})
+
+		it("should extract cache and reasoning tokens from providerMetadata", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			mockStreamText.mockReturnValueOnce({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 100,
+					outputTokens: 50,
+				}),
+				providerMetadata: Promise.resolve({
+					openai: {
+						cachedPromptTokens: 80,
+						reasoningTokens: 20,
+					},
+				}),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0]).toEqual(
+				expect.objectContaining({
+					type: "usage",
+					inputTokens: 100,
+					outputTokens: 50,
+					cacheReadTokens: 80,
+					reasoningTokens: 20,
+				}),
+			)
+		})
 	})
 })
