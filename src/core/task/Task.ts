@@ -4836,7 +4836,9 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		const detail = triggerLabel ? ` (trigger: ${triggerLabel})` : ""
 
 		try {
-			await this.say("rpi_autopilot", `${prefix}${detail}`)
+			await this.say("rpi_autopilot", `${prefix}${detail}`, undefined, undefined, undefined, undefined, {
+				isNonInteractive: true,
+			})
 		} catch (error) {
 			console.error(`[Task#handleRpiAutopilotEvent] Failed: ${(error as Error)?.message ?? String(error)}`)
 		}
@@ -4879,7 +4881,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					: `(${phaseLabel} - ${triggerLabel}) skipped.${suffix}`
 
 		try {
-			await this.say("rpi_council", text, undefined, event.status === "started" || event.status === "heartbeat")
+			await this.say(
+				"rpi_council",
+				text,
+				undefined,
+				event.status === "started" || event.status === "heartbeat",
+				undefined,
+				undefined,
+				{ isNonInteractive: true },
+			)
 		} catch (error) {
 			console.error(`[Task#handleRpiCouncilEvent] Failed: ${(error as Error)?.message ?? String(error)}`)
 		}
