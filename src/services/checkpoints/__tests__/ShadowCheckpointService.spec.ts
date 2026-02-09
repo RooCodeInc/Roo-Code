@@ -456,6 +456,35 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await fs.rm(workspaceDir, { recursive: true, force: true })
 			})
 
+			it("ignores stray .git file without gitdir: content (no false positive)", async () => {
+				// Create a new temporary workspace and service for this test.
+				const shadowDir = path.join(tmpDir, `${prefix}-stray-gitfile-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-stray-gitfile-${Date.now()}`)
+
+				// Create a primary workspace repo.
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create a stray .git file that does NOT contain "gitdir:" --
+				// this should NOT be treated as a nested repo.
+				const strayDir = path.join(workspaceDir, "some-tool-output")
+				await fs.mkdir(strayDir, { recursive: true })
+				await fs.writeFile(path.join(strayDir, ".git"), "not a gitdir pointer\n")
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+
+				// Initialization should succeed because the .git file is not a valid pointer.
+				await expect(service.initShadowGit()).resolves.not.toThrow()
+				expect(service.isInitialized).toBe(true)
+
+				// Clean up.
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
 			it("does not follow symlinks outside the workspace", async () => {
 				// Create a new temporary workspace and service for this test.
 				const shadowDir = path.join(tmpDir, `${prefix}-symlink-${Date.now()}`)

@@ -236,7 +236,10 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 	 *
 	 * This detects both:
 	 * - `.git` directories (standard nested repos)
-	 * - `.git` files (submodule/worktree pointer files containing `gitdir: ...`)
+	 * - `.git` files containing a `gitdir:` pointer (submodules/worktrees)
+	 *
+	 * A `.git` file that does NOT begin with `gitdir:` is ignored to avoid
+	 * false positives from stray files.
 	 *
 	 * It uses `lstat` semantics via `withFileTypes` so symbolic links are never
 	 * followed, preventing false positives from symlinks pointing outside the
@@ -257,13 +260,30 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 
 		// Look for a .git entry in this directory (skip root level).
 		if (!isRoot) {
-			const hasGitEntry = entries.some((e) => e.name === ".git")
+			const gitEntry = entries.find((e) => e.name === ".git")
 
-			if (hasGitEntry) {
-				this.log(
-					`[${this.constructor.name}#getNestedGitRepository] found nested git repository at: ${path.relative(this.workspaceDir, dir)}`,
-				)
-				return dir
+			if (gitEntry) {
+				// .git directories are always valid nested repos.
+				// .git files are only valid if they contain a "gitdir:" pointer
+				// (used by submodules and worktrees). Stray .git files without
+				// "gitdir:" are not treated as nested repos to avoid false positives.
+				let isNestedRepo = gitEntry.isDirectory()
+
+				if (!isNestedRepo && !gitEntry.isSymbolicLink()) {
+					try {
+						const content = await fs.readFile(path.join(dir, ".git"), "utf-8")
+						isNestedRepo = content.trimStart().toLowerCase().startsWith("gitdir:")
+					} catch {
+						// Unreadable .git file -- skip gracefully.
+					}
+				}
+
+				if (isNestedRepo) {
+					this.log(
+						`[${this.constructor.name}#getNestedGitRepository] found nested git repository at: ${path.relative(this.workspaceDir, dir)}`,
+					)
+					return dir
+				}
 			}
 		}
 
