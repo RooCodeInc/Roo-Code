@@ -489,9 +489,6 @@ importers:
       p-wait-for:
         specifier: ^5.0.2
         version: 5.0.2
-      socket.io-client:
-        specifier: ^4.8.1
-        version: 4.8.1
       zod:
         specifier: 3.25.76
         version: 3.25.76

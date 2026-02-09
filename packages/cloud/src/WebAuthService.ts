@@ -718,31 +718,6 @@ export class WebAuthService extends EventEmitter<AuthServiceEvents> implements A
 		throw new Error(errorMessage)
 	}
 
-	private async getOrganizationMetadata(
-		organizationId: string,
-	): Promise<{ public_metadata?: Record<string, unknown> } | null> {
-		try {
-			const response = await fetch(`${getClerkBaseUrl()}/v1/organizations/${organizationId}`, {
-				headers: {
-					Authorization: `Bearer ${this.credentials!.clientToken}`,
-					"User-Agent": this.userAgent(),
-				},
-				signal: AbortSignal.timeout(10000),
-			})
-
-			if (!response.ok) {
-				this.log(`[auth] Failed to fetch organization metadata: ${response.status} ${response.statusText}`)
-				return null
-			}
-
-			const data = await response.json()
-			return data.response || data
-		} catch (error) {
-			this.log("[auth] Error fetching organization metadata:", error)
-			return null
-		}
-	}
-
 	private async clerkLogout(credentials: AuthCredentials): Promise<void> {
 		const formData = new URLSearchParams()
 		formData.append("_is_native", "1")
