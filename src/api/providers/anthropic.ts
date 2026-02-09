@@ -62,7 +62,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 
 		this.provider = createAnthropic({
 			baseURL: options.anthropicBaseUrl || undefined,
-			...(useAuthToken ? { authToken: options.apiKey } : { apiKey: options.apiKey ?? "not-provided" }),
+			...(useAuthToken ? { authToken: options.apiKey } : { apiKey: options.apiKey }),
 			headers: {
 				...DEFAULT_HEADERS,
 				...(betas.length > 0 ? { "anthropic-beta": betas.join(",") } : {}),
@@ -130,19 +130,15 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 			this.applyCacheControlToAiSdkMessages(messages, aiSdkMessages, targetIndices, cacheProviderOption)
 		}
 
-		// Prepend system prompt as a system message with cache control
-		const systemMessage = {
-			role: "system" as const,
-			content: systemPrompt,
-			providerOptions: {
-				anthropic: { cacheControl: { type: "ephemeral" } },
-			},
-		}
-
 		// Build streamText request
+		// Cast providerOptions to any to bypass strict JSONObject typing — the AI SDK accepts the correct runtime values
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: this.provider(modelConfig.id),
-			messages: [systemMessage, ...aiSdkMessages],
+			system: systemPrompt,
+			...({
+				systemProviderOptions: { anthropic: { cacheControl: { type: "ephemeral" } } },
+			} as Record<string, unknown>),
+			messages: aiSdkMessages,
 			temperature: modelConfig.temperature,
 			maxOutputTokens: modelConfig.maxTokens ?? ANTHROPIC_DEFAULT_MAX_TOKENS,
 			tools: aiSdkTools,

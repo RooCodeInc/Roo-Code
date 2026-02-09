@@ -94,12 +94,15 @@ describe("AnthropicHandler", () => {
 			expect(handler.getModel().id).toBe(mockOptions.apiModelId)
 		})
 
-		it("should initialize with undefined API key", () => {
+		it("should initialize with undefined API key and pass it through for env-var fallback", () => {
+			mockCreateAnthropic.mockClear()
 			const handlerWithoutKey = new AnthropicHandler({
 				...mockOptions,
 				apiKey: undefined,
 			})
 			expect(handlerWithoutKey).toBeInstanceOf(AnthropicHandler)
+			const callArgs = mockCreateAnthropic.mock.calls[0]![0]!
+			expect(callArgs.apiKey).toBeUndefined()
 		})
 
 		it("should use custom base URL if provided", () => {
@@ -474,7 +477,7 @@ describe("AnthropicHandler", () => {
 			expect(handler.getThoughtSignature()).toBeUndefined()
 		})
 
-		it("should include system message with cache control in the request", async () => {
+		it("should pass system prompt via system param with systemProviderOptions for cache control", async () => {
 			setupStreamTextMock([{ type: "text-delta", text: "test" }])
 
 			const stream = handler.createMessage(systemPrompt, [
@@ -485,20 +488,15 @@ describe("AnthropicHandler", () => {
 				// Consume
 			}
 
-			// Verify streamText was called with system message containing cache control
-			expect(mockStreamText).toHaveBeenCalledWith(
-				expect.objectContaining({
-					messages: expect.arrayContaining([
-						expect.objectContaining({
-							role: "system",
-							content: systemPrompt,
-							providerOptions: {
-								anthropic: { cacheControl: { type: "ephemeral" } },
-							},
-						}),
-					]),
-				}),
-			)
+			// Verify streamText was called with system + systemProviderOptions (not as a message)
+			const callArgs = mockStreamText.mock.calls[0]![0]
+			expect(callArgs.system).toBe(systemPrompt)
+			expect(callArgs.systemProviderOptions).toEqual({
+				anthropic: { cacheControl: { type: "ephemeral" } },
+			})
+			// System prompt should NOT be in the messages array
+			const systemMessages = callArgs.messages.filter((m: any) => m.role === "system")
+			expect(systemMessages).toHaveLength(0)
 		})
 	})
 
