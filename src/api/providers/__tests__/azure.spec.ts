@@ -269,7 +269,7 @@ describe("AzureHandler", () => {
 
 			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
 			expect(usageChunks.length).toBeGreaterThan(0)
-			expect(usageChunks[0].cacheWriteTokens).toBe(8) // promptCacheMissTokens
+			expect(usageChunks[0].cacheWriteTokens).toBeUndefined()
 			expect(usageChunks[0].cacheReadTokens).toBe(2) // promptCacheHitTokens
 		})
 

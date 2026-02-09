@@ -101,7 +101,9 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 	): ApiStreamUsageChunk {
 		// Extract cache metrics from Azure's providerMetadata if available
 		const cacheReadTokens = providerMetadata?.azure?.promptCacheHitTokens ?? usage.details?.cachedInputTokens
-		const cacheWriteTokens = providerMetadata?.azure?.promptCacheMissTokens
+		// Azure uses OpenAI-compatible caching which does not report cache write tokens separately;
+		// promptCacheMissTokens represents tokens NOT found in cache (processed from scratch), not tokens written to cache.
+		const cacheWriteTokens = undefined
 
 		return {
 			type: "usage",
