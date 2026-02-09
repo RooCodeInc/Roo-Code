@@ -128,8 +128,11 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 
 		let lastUsage: OpenAI.CompletionUsage | undefined
 		const activeToolCallIds = new Set<string>()
+		let hasReceivedContent = false
+		let chunkCount = 0
 
 		for await (const chunk of stream) {
+			chunkCount++
 			// Check for provider-specific error responses (e.g., MiniMax base_resp)
 			const chunkAny = chunk as any
 			if (chunkAny.base_resp?.status_code && chunkAny.base_resp.status_code !== 0) {
@@ -141,7 +144,23 @@ export abstract class BaseOpenAiCompatibleProvider<ModelName extends string>
 			const delta = chunk.choices?.[0]?.delta
 			const finishReason = chunk.choices?.[0]?.finish_reason
 
+			// Log diagnostic info if stream starts but has no content (helpful for debugging empty response issues)
+			if (delta && !hasReceivedContent && chunkCount === 1) {
+				const hasContent = !!(
+					delta.content ||
+					delta.tool_calls ||
+					(delta as any).reasoning ||
+					(delta as any).reasoning_content
+				)
+				if (!hasContent) {
+					console.debug(
+						`${this.providerName}: First chunk received but no content fields present. Delta keys: ${Object.keys(delta).join(", ")}`,
+					)
+				}
+			}
+
 			if (delta?.content) {
+				hasReceivedContent = true
 				for (const processedChunk of matcher.update(delta.content)) {
 					yield processedChunk
 				}

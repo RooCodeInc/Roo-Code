@@ -26,6 +26,7 @@ import {
 	FakeAIHandler,
 	XAIHandler,
 	GroqHandler,
+	HarmonyHandler,
 	HuggingFaceHandler,
 	ChutesHandler,
 	LiteLLMHandler,
@@ -176,6 +177,8 @@ export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 			return new XAIHandler(options)
 		case "groq":
 			return new GroqHandler(options)
+		case "harmony":
+			return new HarmonyHandler(options)
 		case "deepinfra":
 			return new DeepInfraHandler(options)
 		case "huggingface":

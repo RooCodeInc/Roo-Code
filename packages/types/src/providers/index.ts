@@ -9,6 +9,7 @@ export * from "./featherless.js"
 export * from "./fireworks.js"
 export * from "./gemini.js"
 export * from "./groq.js"
+export * from "./harmony.js"
 export * from "./huggingface.js"
 export * from "./io-intelligence.js"
 export * from "./lite-llm.js"
@@ -44,6 +45,7 @@ import { featherlessDefaultModelId } from "./featherless.js"
 import { fireworksDefaultModelId } from "./fireworks.js"
 import { geminiDefaultModelId } from "./gemini.js"
 import { groqDefaultModelId } from "./groq.js"
+import { harmonyDefaultModelId } from "./harmony.js"
 import { ioIntelligenceDefaultModelId } from "./io-intelligence.js"
 import { litellmDefaultModelId } from "./lite-llm.js"
 import { mistralDefaultModelId } from "./mistral.js"
@@ -88,6 +90,8 @@ export function getProviderDefaultModelId(
 			return xaiDefaultModelId
 		case "groq":
 			return groqDefaultModelId
+		case "harmony":
+			return harmonyDefaultModelId
 		case "huggingface":
 			return "meta-llama/Llama-3.3-70B-Instruct"
 		case "chutes":
