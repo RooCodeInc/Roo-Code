@@ -213,7 +213,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentCost,
 		maxGitStatusFiles,
 		showQuestionsOneByOne,
-		taskHeaderHighlightEnabled,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -925,7 +924,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 								reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
 								enterBehavior={enterBehavior ?? "send"}
 								showQuestionsOneByOne={showQuestionsOneByOne ?? false}
-								taskHeaderHighlightEnabled={taskHeaderHighlightEnabled ?? false}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}
