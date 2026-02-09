@@ -98,20 +98,14 @@ export function formatPostDatePt(publishDate: string): string {
 }
 
 /**
- * Repeatedly strip HTML tags until no more remain.
- * A single-pass replacement is vulnerable to incomplete sanitization when
- * the input contains nested/split patterns like `<scr<script>ipt>`.
+ * Strip all angle brackets from text to remove any HTML tags or fragments.
+ * This is used only for word-count purposes in reading-time calculation,
+ * so a single-pass removal of every `<` and `>` is sufficient and
+ * avoids the incomplete multi-character sanitization pattern that
+ * iterative tag-stripping is vulnerable to.
  */
 function stripHtmlTags(text: string): string {
-	const TAG_RE = /<[^>]+>/g
-	let previous = text
-	let result = text.replace(TAG_RE, "")
-	while (result !== previous) {
-		previous = result
-		result = result.replace(TAG_RE, "")
-	}
-	// Final safety: remove any remaining angle brackets
-	return result.replace(/[<>]/g, "")
+	return text.replace(/[<>]/g, "")
 }
 
 /**
