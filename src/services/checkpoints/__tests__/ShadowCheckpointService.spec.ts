@@ -418,21 +418,17 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				expect(await fileExistsAtPath(nestedGitDir)).toBe(true)
 
 				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
-					const searchPattern = args[4]
-
-					if (searchPattern.includes(".git/HEAD")) {
-						// Return the HEAD file path, not the .git directory
+					if (args.includes("**/.git/HEAD")) {
 						const headFilePath = path.join(path.relative(workspaceDir, nestedGitDir), "HEAD")
 						return Promise.resolve([
 							{
 								path: headFilePath,
-								type: "file", // HEAD is a file, not a folder
+								type: "file",
 								label: "HEAD",
 							},
 						])
-					} else {
-						return Promise.resolve([])
 					}
+					return Promise.resolve([])
 				})
 
 				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
@@ -479,6 +475,184 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				expect(service.isInitialized).toBe(true)
 
 				// Clean up.
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("throws error when a submodule .git file is detected", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-submodule-git-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-submodule-git-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				await fs.writeFile(path.join(workspaceDir, "main.txt"), "main content")
+				await mainGit.add("main.txt")
+				await mainGit.commit("Initial commit")
+
+				// Create submodule-style .git file after the commit.
+				const submodulePath = path.join(workspaceDir, "libs", "submodule")
+				await fs.mkdir(submodulePath, { recursive: true })
+				await fs.writeFile(path.join(submodulePath, ".git"), "gitdir: ../../.git/modules/libs/submodule\n")
+
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(() => {
+					return Promise.resolve([{ path: "libs/submodule/.git", type: "file", label: ".git" }])
+				})
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await expect(service.initShadowGit()).rejects.toThrowError(
+					/Checkpoints are disabled because a nested git repository was detected at:/,
+				)
+
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("ignores .git file without gitdir: prefix", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-stray-git-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-stray-git-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				await fs.writeFile(path.join(workspaceDir, "main.txt"), "main content")
+				await mainGit.add("main.txt")
+				await mainGit.commit("Initial commit")
+
+				// Create a stray .git file that is not a submodule pointer.
+				const strayDir = path.join(workspaceDir, "somedir")
+				await fs.mkdir(strayDir, { recursive: true })
+				await fs.writeFile(path.join(strayDir, ".git"), "this is not a real git pointer\n")
+
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(() => {
+					return Promise.resolve([{ path: "somedir/.git", type: "file", label: ".git" }])
+				})
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await service.initShadowGit()
+				expect(service.isInitialized).toBe(true)
+
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("ignores root .git/HEAD in results", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-root-head-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-root-head-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				await fs.writeFile(path.join(workspaceDir, "main.txt"), "main content")
+				await mainGit.add("main.txt")
+				await mainGit.commit("Initial commit")
+
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(() => {
+					return Promise.resolve([{ path: ".git/HEAD", type: "file", label: "HEAD" }])
+				})
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await service.initShadowGit()
+				expect(service.isInitialized).toBe(true)
+
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("ignores root .git match", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-root-gitfile-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-root-gitfile-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				await fs.writeFile(path.join(workspaceDir, "main.txt"), "main content")
+				await mainGit.add("main.txt")
+				await mainGit.commit("Initial commit")
+
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(() => {
+					return Promise.resolve([{ path: ".git", type: "file", label: ".git" }])
+				})
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await service.initShadowGit()
+				expect(service.isInitialized).toBe(true)
+
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("does not use --follow flag in ripgrep args", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-no-follow-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-no-follow-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				await fs.writeFile(path.join(workspaceDir, "main.txt"), "main content")
+				await mainGit.add("main.txt")
+				await mainGit.commit("Initial commit")
+
+				let capturedArgs: string[] = []
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
+					capturedArgs = args
+					return Promise.resolve([])
+				})
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await service.initShadowGit()
+
+				expect(capturedArgs).not.toContain("--follow")
+				expect(capturedArgs).toContain("**/.git/HEAD")
+				expect(capturedArgs).toContain("**/.git")
+
+				vitest.restoreAllMocks()
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("skips .git file that cannot be read", async () => {
+				const shadowDir = path.join(tmpDir, `${prefix}-unreadable-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-unreadable-${Date.now()}`)
+
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				await fs.writeFile(path.join(workspaceDir, "main.txt"), "main content")
+				await mainGit.add("main.txt")
+				await mainGit.commit("Initial commit")
+
+				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(() => {
+					return Promise.resolve([{ path: "nonexistent-dir/.git", type: "file", label: ".git" }])
+				})
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+				await service.initShadowGit()
+				expect(service.isInitialized).toBe(true)
+
 				vitest.restoreAllMocks()
 				await fs.rm(shadowDir, { recursive: true, force: true })
 				await fs.rm(workspaceDir, { recursive: true, force: true })

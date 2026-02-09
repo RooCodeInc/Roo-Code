@@ -220,52 +220,42 @@ export abstract class ShadowCheckpointService extends EventEmitter {
 	}
 
 	private async getNestedGitRepository(): Promise<string | null> {
+		const tag = `[${this.constructor.name}#getNestedGitRepository]`
 		try {
-			// Find all .git/HEAD files that are not at the root level.
-			const args = ["--files", "--hidden", "--follow", "-g", "**/.git/HEAD", this.workspaceDir]
-
+			const workspaceRoot = path.resolve(this.workspaceDir)
+			const args = ["--files", "--hidden", "-g", "**/.git/HEAD", "-g", "**/.git", this.workspaceDir]
 			const gitPaths = await executeRipgrep({ args, workspacePath: this.workspaceDir })
 
-			// Filter to only include nested git directories (not the root .git).
-			// Since we're searching for HEAD files, we expect type to be "file"
-			const nestedGitPaths = gitPaths.filter(({ type, path: filePath }) => {
-				// Check if it's a file and is a nested .git/HEAD (not at root)
-				if (type !== "file") return false
+			for (const { type, path: filePath } of gitPaths) {
+				if (type !== "file") continue
 
-				// Ensure it's a .git/HEAD file and not the root one
-				const normalizedPath = filePath.replace(/\\/g, "/")
-				return (
-					normalizedPath.includes(".git/HEAD") &&
-					!normalizedPath.startsWith(".git/") &&
-					normalizedPath !== ".git/HEAD"
-				)
-			})
+				if (path.basename(filePath) === "HEAD" && path.basename(path.dirname(filePath)) === ".git") {
+					const repoDir = path.dirname(path.dirname(filePath))
+					const absolutePath = path.resolve(this.workspaceDir, repoDir)
+					if (absolutePath === workspaceRoot) continue
+					this.log(`${tag} found nested git repository (directory) at: ${repoDir}`)
+					return absolutePath
+				}
 
-			if (nestedGitPaths.length > 0) {
-				// Get the first nested git repository path
-				// Remove .git/HEAD from the path to get the repository directory
-				const headPath = nestedGitPaths[0].path
-
-				// Use path module to properly extract the repository directory
-				// The HEAD file is at .git/HEAD, so we need to go up two directories
-				const gitDir = path.dirname(headPath) // removes HEAD, gives us .git
-				const repoDir = path.dirname(gitDir) // removes .git, gives us the repo directory
-
-				const absolutePath = path.join(this.workspaceDir, repoDir)
-
-				this.log(
-					`[${this.constructor.name}#getNestedGitRepository] found ${nestedGitPaths.length} nested git repositories, first at: ${repoDir}`,
-				)
-				return absolutePath
+				if (path.basename(filePath) === ".git") {
+					const repoDir = path.dirname(filePath)
+					const absolutePath = path.resolve(this.workspaceDir, repoDir)
+					if (absolutePath === workspaceRoot) continue
+					try {
+						const content = await fs.readFile(path.resolve(this.workspaceDir, filePath), "utf-8")
+						if (!content.trimStart().toLowerCase().startsWith("gitdir:")) continue
+					} catch {
+						continue
+					}
+					this.log(`${tag} found nested git repository (submodule/worktree) at: ${repoDir}`)
+					return absolutePath
+				}
 			}
 
 			return null
 		} catch (error) {
-			this.log(
-				`[${this.constructor.name}#getNestedGitRepository] failed to check for nested git repos: ${error instanceof Error ? error.message : String(error)}`,
-			)
-
-			// If we can't check, assume there are no nested repos to avoid blocking the feature.
+			const msg = error instanceof Error ? error.message : String(error)
+			this.log(`${tag} failed to check for nested git repos: ${msg}`)
 			return null
 		}
 	}
