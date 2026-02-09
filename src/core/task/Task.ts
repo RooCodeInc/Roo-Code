@@ -2069,13 +2069,15 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	/**
-	 * Manually start the task when it was created with `startTask: false`.
+	 * Manually start a **new** task when it was created with `startTask: false`.
 	 *
-	 * This fires `startTask` as a background async operation, identical to
-	 * what the constructor does when `startTask` is `true`.  The primary
-	 * use-case is in the delegation flow where the parent's metadata must
-	 * be persisted to globalState **before** the child task begins writing
-	 * its own history (avoiding a read-modify-write race on globalState).
+	 * This fires `startTask` as a background async operation for the
+	 * `task/images` code-path only.  It does **not** handle the
+	 * `historyItem` resume path (use the constructor with `startTask: true`
+	 * for that).  The primary use-case is in the delegation flow where the
+	 * parent's metadata must be persisted to globalState **before** the
+	 * child task begins writing its own history (avoiding a read-modify-write
+	 * race on globalState).
 	 */
 	public start(): void {
 		if (this._started) {
