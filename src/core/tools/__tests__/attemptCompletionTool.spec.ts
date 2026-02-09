@@ -468,5 +468,58 @@ describe("attemptCompletionTool", () => {
 				expect(mockTask.recordToolError).not.toHaveBeenCalled()
 			})
 		})
+
+		describe("delegation decision", () => {
+			it("should delegate when child is active", () => {
+				const shouldDelegate = (attemptCompletionTool as any).shouldDelegateToParent({
+					childStatus: "active",
+					parentHistory: {
+						id: "parent_1",
+					} as any,
+					childTaskId: "task_1",
+				})
+				expect(shouldDelegate).toBe(true)
+			})
+
+			it("should delegate when child is completed but parent is awaiting it", () => {
+				const shouldDelegate = (attemptCompletionTool as any).shouldDelegateToParent({
+					childStatus: "completed",
+					parentHistory: {
+						id: "parent_1",
+						status: "delegated",
+						awaitingChildId: "task_1",
+					} as any,
+					childTaskId: "task_1",
+				})
+				expect(shouldDelegate).toBe(true)
+			})
+
+			it("should delegate when parent delegated to this child", () => {
+				const shouldDelegate = (attemptCompletionTool as any).shouldDelegateToParent({
+					childStatus: "completed",
+					parentHistory: {
+						id: "parent_1",
+						status: "delegated",
+						delegatedToId: "task_1",
+					} as any,
+					childTaskId: "task_1",
+				})
+				expect(shouldDelegate).toBe(true)
+			})
+
+			it("should not delegate on history revisit when parent no longer references child", () => {
+				const shouldDelegate = (attemptCompletionTool as any).shouldDelegateToParent({
+					childStatus: "completed",
+					parentHistory: {
+						id: "parent_1",
+						status: "active",
+						awaitingChildId: undefined,
+						delegatedToId: undefined,
+					} as any,
+					childTaskId: "task_1",
+				})
+				expect(shouldDelegate).toBe(false)
+			})
+		})
 	})
 })

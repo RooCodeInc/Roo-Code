@@ -98,21 +98,25 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 
 			// Check for subtask using parentTaskId (metadata-driven delegation)
 			if (task.parentTaskId) {
-				// Check if this subtask has already completed and returned to parent
-				// to prevent duplicate tool_results when user revisits from history
+				// Check both child and parent metadata before deciding delegation.
+				// Parent metadata is authoritative for orchestration flow and prevents
+				// child tasks from "self-completing" when the parent is still awaiting them.
 				const provider = task.providerRef.deref() as DelegationProvider | undefined
 				if (provider) {
 					try {
-						const { historyItem } = await provider.getTaskWithId(task.taskId)
-						const status = historyItem?.status
+						const [{ historyItem: childHistory }, { historyItem: parentHistory }] = await Promise.all([
+							provider.getTaskWithId(task.taskId),
+							provider.getTaskWithId(task.parentTaskId),
+						])
+						const childStatus = childHistory?.status
+						const shouldDelegate = this.shouldDelegateToParent({
+							childStatus,
+							parentHistory,
+							childTaskId: task.taskId,
+						})
 
-						if (status === "completed") {
-							// Subtask already completed - skip delegation flow entirely
-							// Fall through to normal completion ask flow below (outside this if block)
-							// This shows the user the completion result and waits for acceptance
-							// without injecting another tool_result to the parent
-						} else if (status === "active") {
-							// Normal subtask completion - do delegation
+						if (shouldDelegate) {
+							// Normal subtask completion - delegate back to parent/orchestrator
 							const delegated = await this.delegateToParent(
 								task,
 								result,
@@ -121,15 +125,16 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 								pushToolResult,
 							)
 							if (delegated) return
-						} else {
-							// Unexpected status (undefined or "delegated") - log error and skip delegation
-							// undefined indicates a bug in status persistence during child creation
-							// "delegated" would mean this child has its own grandchild pending (shouldn't reach attempt_completion)
+						} else if (childStatus !== "completed") {
+							// Unexpected combination - log error and skip delegation to avoid corruption.
 							console.error(
-								`[AttemptCompletionTool] Unexpected child task status "${status}" for task ${task.taskId}. ` +
-									`Expected "active" or "completed". Skipping delegation to prevent data corruption.`,
+								`[AttemptCompletionTool] Unexpected delegation state for child ${task.taskId} -> parent ${task.parentTaskId}. ` +
+									`childStatus="${childStatus}", parentStatus="${parentHistory?.status}", awaitingChildId="${parentHistory?.awaitingChildId}", delegatedToId="${parentHistory?.delegatedToId}". ` +
+									`Skipping delegation to prevent duplicate completion writes.`,
 							)
-							// Fall through to normal completion ask flow
+						} else {
+							// Child is already completed and parent is not awaiting it.
+							// This is typically a history revisit; do not delegate again.
 						}
 					} catch (err) {
 						// If we can't get the history, log error and skip delegation
@@ -157,6 +162,17 @@ export class AttemptCompletionTool extends BaseTool<"attempt_completion"> {
 		} catch (error) {
 			await handleError("inspecting site", error as Error)
 		}
+	}
+
+	private shouldDelegateToParent(params: {
+		childStatus: HistoryItem["status"] | undefined
+		parentHistory: HistoryItem | undefined
+		childTaskId: string
+	}): boolean {
+		const { childStatus, parentHistory, childTaskId } = params
+		const parentAwaitingThisChild = parentHistory?.awaitingChildId === childTaskId
+		const parentDelegatedToThisChild = parentHistory?.delegatedToId === childTaskId
+		return childStatus === "active" || parentAwaitingThisChild || parentDelegatedToThisChild
 	}
 
 	/**
