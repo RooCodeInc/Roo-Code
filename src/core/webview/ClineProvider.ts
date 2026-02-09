@@ -2124,6 +2124,21 @@ export class ClineProvider
 		const currentMode = mode ?? defaultModeSlug
 		const hasSystemPromptOverride = await this.hasFileBasedSystemPromptOverride(currentMode)
 
+		const openAiCodexProfileId = Array.isArray(listApiConfigMeta)
+			? listApiConfigMeta.find((profile) => profile.name === currentApiConfigName)?.id
+			: undefined
+		let openAiCodexIsAuthenticated = false
+		let openAiCodexAccountEmail: string | null = null
+
+		try {
+			const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
+			openAiCodexIsAuthenticated = await openAiCodexOAuthManager.isAuthenticated(openAiCodexProfileId)
+			openAiCodexAccountEmail = await openAiCodexOAuthManager.getEmail(openAiCodexProfileId)
+		} catch {
+			openAiCodexIsAuthenticated = false
+			openAiCodexAccountEmail = null
+		}
+
 		return {
 			version: this.context.extension?.packageJSON?.version ?? "",
 			apiConfiguration,
@@ -2253,14 +2268,8 @@ export class ClineProvider
 			openRouterImageApiKey,
 			openRouterImageGenerationSelectedModel,
 			featureRoomoteControlEnabled,
-			openAiCodexIsAuthenticated: await (async () => {
-				try {
-					const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
-					return await openAiCodexOAuthManager.isAuthenticated()
-				} catch {
-					return false
-				}
-			})(),
+			openAiCodexIsAuthenticated,
+			openAiCodexAccountEmail,
 			debug: vscode.workspace.getConfiguration(Package.name).get<boolean>("debug", false),
 		}
 	}

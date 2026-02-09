@@ -26,6 +26,7 @@ import { isMcpTool } from "../../utils/mcp-name"
 import { sanitizeOpenAiCallId } from "../../utils/tool-id"
 import { openAiCodexOAuthManager } from "../../integrations/openai-codex/oauth"
 import { t } from "../../i18n"
+import { ContextProxy } from "../../core/config/ContextProxy"
 
 export type OpenAiCodexModel = ReturnType<OpenAiCodexHandler["getModel"]>
 
@@ -64,6 +65,20 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 	 */
 	private pendingToolCallId: string | undefined
 	private pendingToolCallName: string | undefined
+	private resolveProfileId(): string | undefined {
+		try {
+			const contextProxy = ContextProxy.instance
+			const currentApiConfigName = contextProxy.getValue("currentApiConfigName")
+			const listApiConfigMeta = contextProxy.getValue("listApiConfigMeta")
+			if (!Array.isArray(listApiConfigMeta)) {
+				return undefined
+			}
+			const match = listApiConfigMeta.find((profile) => profile?.name === currentApiConfigName)
+			return typeof match?.id === "string" ? match.id : undefined
+		} catch {
+			return undefined
+		}
+	}
 
 	// Event types handled by the shared event processor
 	private readonly coreHandledEventTypes = new Set<string>([
@@ -151,7 +166,8 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		this.pendingToolCallName = undefined
 
 		// Get access token from OAuth manager
-		let accessToken = await openAiCodexOAuthManager.getAccessToken()
+		const profileId = this.resolveProfileId()
+		let accessToken = await openAiCodexOAuthManager.getAccessToken(profileId)
 		if (!accessToken) {
 			throw new Error(
 				t("common:errors.openAiCodex.notAuthenticated", {
@@ -183,7 +199,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 
 				if (attempt === 0 && isAuthFailure) {
 					// Force refresh the token for retry
-					const refreshed = await openAiCodexOAuthManager.forceRefreshAccessToken()
+					const refreshed = await openAiCodexOAuthManager.forceRefreshAccessToken(profileId)
 					if (!refreshed) {
 						throw new Error(
 							t("common:errors.openAiCodex.notAuthenticated", {
@@ -341,7 +357,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			// is consistent across providers.
 			try {
 				// Get ChatGPT account ID for organization subscriptions
-				const accountId = await openAiCodexOAuthManager.getAccountId()
+				const accountId = await openAiCodexOAuthManager.getAccountId(this.resolveProfileId())
 
 				// Build Codex-specific headers. Authorization is provided by the SDK apiKey.
 				const codexHeaders: Record<string, string> = {
@@ -481,7 +497,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 		const url = `${CODEX_API_BASE_URL}/responses`
 
 		// Get ChatGPT account ID for organization subscriptions
-		const accountId = await openAiCodexOAuthManager.getAccountId()
+		const accountId = await openAiCodexOAuthManager.getAccountId(this.resolveProfileId())
 
 		// Build headers with required Codex-specific fields
 		const headers: Record<string, string> = {
@@ -1008,7 +1024,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			const model = this.getModel()
 
 			// Get access token
-			const accessToken = await openAiCodexOAuthManager.getAccessToken()
+			const accessToken = await openAiCodexOAuthManager.getAccessToken(this.resolveProfileId())
 			if (!accessToken) {
 				throw new Error(
 					t("common:errors.openAiCodex.notAuthenticated", {
@@ -1043,7 +1059,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 			const url = `${CODEX_API_BASE_URL}/responses`
 
 			// Get ChatGPT account ID for organization subscriptions
-			const accountId = await openAiCodexOAuthManager.getAccountId()
+			const accountId = await openAiCodexOAuthManager.getAccountId(this.resolveProfileId())
 
 			// Build headers with required Codex-specific fields
 			const headers: Record<string, string> = {

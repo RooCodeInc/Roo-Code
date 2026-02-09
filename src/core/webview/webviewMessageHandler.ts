@@ -2406,14 +2406,16 @@ export const webviewMessageHandler = async (
 		case "openAiCodexSignIn": {
 			try {
 				const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
-				const authUrl = openAiCodexOAuthManager.startAuthorizationFlow()
+				const { currentApiConfigName, listApiConfigMeta } = await provider.getState()
+				const profileId = listApiConfigMeta?.find((profile) => profile.name === currentApiConfigName)?.id
+				const authUrl = openAiCodexOAuthManager.startAuthorizationFlow(profileId)
 
 				// Open the authorization URL in the browser
 				await vscode.env.openExternal(vscode.Uri.parse(authUrl))
 
 				// Wait for the callback in a separate promise (non-blocking)
 				openAiCodexOAuthManager
-					.waitForCallback()
+					.waitForCallback(profileId)
 					.then(async () => {
 						vscode.window.showInformationMessage("Successfully signed in to OpenAI Codex")
 						await provider.postStateToWebview()
@@ -2433,7 +2435,9 @@ export const webviewMessageHandler = async (
 		case "openAiCodexSignOut": {
 			try {
 				const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
-				await openAiCodexOAuthManager.clearCredentials()
+				const { currentApiConfigName, listApiConfigMeta } = await provider.getState()
+				const profileId = listApiConfigMeta?.find((profile) => profile.name === currentApiConfigName)?.id
+				await openAiCodexOAuthManager.clearCredentials(profileId)
 				vscode.window.showInformationMessage("Signed out from OpenAI Codex")
 				await provider.postStateToWebview()
 			} catch (error) {
@@ -3273,7 +3277,9 @@ export const webviewMessageHandler = async (
 		case "requestOpenAiCodexRateLimits": {
 			try {
 				const { openAiCodexOAuthManager } = await import("../../integrations/openai-codex/oauth")
-				const accessToken = await openAiCodexOAuthManager.getAccessToken()
+				const { currentApiConfigName, listApiConfigMeta } = await provider.getState()
+				const profileId = listApiConfigMeta?.find((profile) => profile.name === currentApiConfigName)?.id
+				const accessToken = await openAiCodexOAuthManager.getAccessToken(profileId)
 
 				if (!accessToken) {
 					provider.postMessageToWebview({
@@ -3283,7 +3289,7 @@ export const webviewMessageHandler = async (
 					break
 				}
 
-				const accountId = await openAiCodexOAuthManager.getAccountId()
+				const accountId = await openAiCodexOAuthManager.getAccountId(profileId)
 				const { fetchOpenAiCodexRateLimitInfo } = await import("../../integrations/openai-codex/rate-limits")
 				const rateLimits = await fetchOpenAiCodexRateLimitInfo(accessToken, { accountId })
 
