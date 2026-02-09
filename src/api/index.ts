@@ -3,6 +3,8 @@ import OpenAI from "openai"
 
 import type { ProviderSettings, ModelInfo } from "@roo-code/types"
 
+import { interpolateHeaders } from "../utils/config"
+
 import { ApiStream } from "./transform/stream"
 
 import {
@@ -130,6 +132,11 @@ export interface ApiHandler {
 
 export function buildApiHandler(configuration: ProviderSettings): ApiHandler {
 	const { apiProvider, ...options } = configuration
+
+	// Interpolate variables in custom headers (e.g., ${workspaceFolderBasename}, ${env:VAR_NAME})
+	if (options.openAiHeaders) {
+		options.openAiHeaders = interpolateHeaders(options.openAiHeaders)
+	}
 
 	switch (apiProvider) {
 		case "anthropic":
