@@ -26,6 +26,9 @@ jobs:
           - os: ubuntu-latest
             platform: linux-x64
             runs-on: ubuntu-latest
+          - os: ubuntu-24.04-arm
+            platform: linux-arm64
+            runs-on: ubuntu-24.04-arm
 
     runs-on: ${{ matrix.runs-on }}
 
@@ -328,7 +331,7 @@ jobs:
           echo "## Requirements" >> "$NOTES_FILE"
           echo "" >> "$NOTES_FILE"
           echo "- Node.js 20 or higher" >> "$NOTES_FILE"
-          echo "- macOS Apple Silicon (M1/M2/M3/M4) or Linux x64" >> "$NOTES_FILE"
+          echo "- macOS Apple Silicon (M1/M2/M3/M4), Linux x64, or Linux ARM64" >> "$NOTES_FILE"
           echo "" >> "$NOTES_FILE"
           echo "## Usage" >> "$NOTES_FILE"
           echo "" >> "$NOTES_FILE"
@@ -345,6 +348,7 @@ jobs:
           echo "This release includes binaries for:" >> "$NOTES_FILE"
           echo '- `roo-cli-darwin-arm64.tar.gz` - macOS Apple Silicon (M1/M2/M3)' >> "$NOTES_FILE"
           echo '- `roo-cli-linux-x64.tar.gz` - Linux x64' >> "$NOTES_FILE"
+          echo '- `roo-cli-linux-arm64.tar.gz` - Linux ARM64' >> "$NOTES_FILE"
           echo "" >> "$NOTES_FILE"
           echo "## Checksums" >> "$NOTES_FILE"
           echo "" >> "$NOTES_FILE"
