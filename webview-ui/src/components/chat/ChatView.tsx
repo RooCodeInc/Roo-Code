@@ -277,13 +277,27 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}, [])
 
 	const activeFollowUpTs = useMemo<number | null>(() => {
-		const latestMessage = messages.at(-1)
+		const latestFollowUpIndex = messages.findLastIndex(
+			(message) => message.type === "ask" && message.ask === "followup",
+		)
 
-		if (latestMessage?.type !== "ask" || latestMessage.ask !== "followup") {
+		if (latestFollowUpIndex === -1) {
 			return null
 		}
 
-		return latestMessage.ts
+		const hasFollowUpResolutionSignal = messages
+			.slice(latestFollowUpIndex + 1)
+			.some(
+				(message) =>
+					(message.type === "ask" && message.ask !== "followup") ||
+					(message.type === "say" && message.say === "user_feedback"),
+			)
+
+		if (hasFollowUpResolutionSignal) {
+			return null
+		}
+
+		return messages[latestFollowUpIndex].ts
 	}, [messages])
 
 	const isCurrentSubtaskCompleted = useCallback((): boolean => {

@@ -2085,6 +2085,39 @@ describe("ChatView - Follow-up Responsiveness Guards", () => {
 		})
 	})
 
+	it("keeps the active follow-up actionable when a non-followup say is the latest message", async () => {
+		const { getByTestId } = renderChatView()
+
+		const followUpTs = 2_090
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: followUpTs,
+					text: "Should I continue?",
+				},
+				{
+					type: "say",
+					say: "text",
+					ts: 2_091,
+					text: "Interleaved non-followup message",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+		})
+	})
+
 	it("emits deterministic pending/settle/clear markers for follow-up answer lifecycle", async () => {
 		const markers: FollowUpInteractionMarker[] = []
 		setFollowUpInteractionInstrumentationSink((marker) => {
