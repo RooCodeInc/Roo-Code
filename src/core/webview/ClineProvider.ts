@@ -3305,12 +3305,20 @@ export class ClineProvider
 		// Pass initialStatus: "active" to ensure the child task's historyItem is created
 		// with status from the start, avoiding race conditions where the task might
 		// call attempt_completion before status is persisted separately.
+		//
+		// Pass startTask: false to prevent the child from beginning its task loop
+		// (and writing to globalState via saveClineMessages → updateTaskHistory)
+		// before we persist the parent's delegation metadata in step 5.
+		// Without this, the child's fire-and-forget startTask() races with step 5,
+		// and the last writer to globalState overwrites the other's changes—
+		// causing the parent's delegation fields to be lost.
 		const child = await this.createTask(message, undefined, parent as any, {
 			initialTodos,
 			initialStatus: "active",
+			startTask: false,
 		})
 
-		// 5) Persist parent delegation metadata
+		// 5) Persist parent delegation metadata BEFORE the child starts writing.
 		try {
 			const { historyItem } = await this.getTaskWithId(parentTaskId)
 			const childIds = Array.from(new Set([...(historyItem.childIds ?? []), child.taskId]))
@@ -3330,7 +3338,10 @@ export class ClineProvider
 			)
 		}
 
-		// 6) Emit TaskDelegated (provider-level)
+		// 6) Start the child task now that parent metadata is safely persisted.
+		child.start()
+
+		// 7) Emit TaskDelegated (provider-level)
 		try {
 			this.emit(RooCodeEventName.TaskDelegated, parentTaskId, child.taskId)
 		} catch {

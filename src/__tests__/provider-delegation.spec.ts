@@ -9,9 +9,10 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 		const providerEmit = vi.fn()
 		const parentTask = { taskId: "parent-1", emit: vi.fn() } as any
 
+		const childStart = vi.fn()
 		const updateTaskHistory = vi.fn()
 		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
-		const createTask = vi.fn().mockResolvedValue({ taskId: "child-1" })
+		const createTask = vi.fn().mockResolvedValue({ taskId: "child-1", start: childStart })
 		const handleModeSwitch = vi.fn().mockResolvedValue(undefined)
 		const getTaskWithId = vi.fn().mockImplementation(async (id: string) => {
 			if (id === "parent-1") {
@@ -62,10 +63,11 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 
 		// Invariant: parent closed before child creation
 		expect(removeClineFromStack).toHaveBeenCalledTimes(1)
-		// Child task is created with initialStatus: "active" to avoid race conditions
+		// Child task is created with startTask: false and initialStatus: "active"
 		expect(createTask).toHaveBeenCalledWith("Do something", undefined, parentTask, {
 			initialTodos: [],
 			initialStatus: "active",
+			startTask: false,
 		})
 
 		// Metadata persistence - parent gets "delegated" status (child status is set at creation via initialStatus)
@@ -83,10 +85,61 @@ describe("ClineProvider.delegateParentAndOpenChild()", () => {
 			}),
 		)
 
+		// child.start() must be called AFTER parent metadata is persisted
+		expect(childStart).toHaveBeenCalledTimes(1)
+
 		// Event emission (provider-level)
 		expect(providerEmit).toHaveBeenCalledWith(RooCodeEventName.TaskDelegated, "parent-1", "child-1")
 
 		// Mode switch
 		expect(handleModeSwitch).toHaveBeenCalledWith("code")
+	})
+
+	it("calls child.start() only after parent metadata is persisted (no race condition)", async () => {
+		const callOrder: string[] = []
+
+		const parentTask = { taskId: "parent-1", emit: vi.fn() } as any
+		const childStart = vi.fn(() => callOrder.push("child.start"))
+
+		const updateTaskHistory = vi.fn(async () => {
+			callOrder.push("updateTaskHistory")
+		})
+		const removeClineFromStack = vi.fn().mockResolvedValue(undefined)
+		const createTask = vi.fn(async () => {
+			callOrder.push("createTask")
+			return { taskId: "child-1", start: childStart }
+		})
+		const handleModeSwitch = vi.fn().mockResolvedValue(undefined)
+		const getTaskWithId = vi.fn().mockResolvedValue({
+			historyItem: {
+				id: "parent-1",
+				task: "Parent",
+				tokensIn: 0,
+				tokensOut: 0,
+				totalCost: 0,
+				childIds: [],
+			},
+		})
+
+		const provider = {
+			emit: vi.fn(),
+			getCurrentTask: vi.fn(() => parentTask),
+			removeClineFromStack,
+			createTask,
+			getTaskWithId,
+			updateTaskHistory,
+			handleModeSwitch,
+			log: vi.fn(),
+		} as unknown as ClineProvider
+
+		await (ClineProvider.prototype as any).delegateParentAndOpenChild.call(provider, {
+			parentTaskId: "parent-1",
+			message: "Do something",
+			initialTodos: [],
+			mode: "code",
+		})
+
+		// Verify ordering: createTask → updateTaskHistory → child.start
+		expect(callOrder).toEqual(["createTask", "updateTaskHistory", "child.start"])
 	})
 })

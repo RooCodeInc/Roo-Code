@@ -394,6 +394,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	didAlreadyUseTool = false
 	didToolFailInCurrentTurn = false
 	didCompleteReadingStream = false
+	private _started = false
 	// No streaming parser is required.
 	assistantMessageParser?: undefined
 	private providerProfileChangeListener?: (config: { name: string; provider?: string }) => void
@@ -598,6 +599,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		onCreated?.(this)
 
 		if (startTask) {
+			this._started = true
 			if (task || images) {
 				this.startTask(task, images)
 			} else if (historyItem) {
@@ -1932,6 +1934,30 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		} catch (error) {
 			console.error("[Task#getEnabledMcpToolsCount] Error counting MCP tools:", error)
 			return { enabledToolCount: 0, enabledServerCount: 0 }
+		}
+	}
+
+	/**
+	 * Manually start a **new** task when it was created with `startTask: false`.
+	 *
+	 * This fires `startTask` as a background async operation for the
+	 * `task/images` code-path only.  It does **not** handle the
+	 * `historyItem` resume path (use the constructor with `startTask: true`
+	 * for that).  The primary use-case is in the delegation flow where the
+	 * parent's metadata must be persisted to globalState **before** the
+	 * child task begins writing its own history (avoiding a read-modify-write
+	 * race on globalState).
+	 */
+	public start(): void {
+		if (this._started) {
+			return
+		}
+		this._started = true
+
+		const { task, images } = this.metadata
+
+		if (task || images) {
+			this.startTask(task ?? undefined, images ?? undefined)
 		}
 	}
 
