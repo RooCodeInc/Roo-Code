@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { ClipboardCopy, Timer } from "lucide-react"
 
 import { Button, StandardTooltip } from "@/components/ui"
@@ -7,6 +7,8 @@ import { useAppTranslation } from "@src/i18n/TranslationContext"
 import { useExtensionState } from "@src/context/ExtensionStateContext"
 import { SuggestionItem } from "@roo-code/types"
 import { cn } from "@/lib/utils"
+import { emitFollowUpInteractionMarker } from "./followUpInteractionInstrumentation"
+import { usePendingActionContract } from "./usePendingActionContract"
 
 const DEFAULT_FOLLOWUP_TIMEOUT_MS = 60000
 const COUNTDOWN_INTERVAL_MS = 1000
@@ -31,7 +33,36 @@ export const FollowUpSuggest = ({
 	const { autoApprovalEnabled, alwaysAllowFollowupQuestions, followupAutoApproveTimeoutMs } = useExtensionState()
 	const [countdown, setCountdown] = useState<number | null>(null)
 	const [suggestionSelected, setSuggestionSelected] = useState(false)
+	const [hasReachedTerminalState, setHasReachedTerminalState] = useState(isAnswered)
+	const {
+		isPending: isSuggestionActionPending,
+		tryBeginPendingAction: tryBeginSuggestionActionPending,
+		clearPendingAction: clearSuggestionActionPending,
+	} = usePendingActionContract()
 	const { t } = useAppTranslation()
+	const isFollowUpTerminal = hasReachedTerminalState || suggestionSelected
+	const shouldShowCountdown = countdown !== null
+	const followUpTerminalRef = useRef<boolean>(isFollowUpTerminal)
+
+	useEffect(() => {
+		if (!isAnswered) {
+			return
+		}
+
+		setHasReachedTerminalState(true)
+	}, [isAnswered])
+
+	useEffect(() => {
+		followUpTerminalRef.current = isFollowUpTerminal
+	}, [isFollowUpTerminal])
+
+	useEffect(() => {
+		if (!isSuggestionActionPending || !isFollowUpTerminal) {
+			return
+		}
+
+		clearSuggestionActionPending()
+	}, [isSuggestionActionPending, isFollowUpTerminal, clearSuggestionActionPending])
 
 	// Start countdown timer when auto-approval is enabled for follow-up questions
 	useEffect(() => {
@@ -41,8 +72,7 @@ export const FollowUpSuggest = ({
 			autoApprovalEnabled &&
 			alwaysAllowFollowupQuestions &&
 			suggestions.length > 0 &&
-			!suggestionSelected &&
-			!isAnswered &&
+			!isFollowUpTerminal &&
 			!isFollowUpAutoApprovalPaused
 		) {
 			// Start with the configured timeout in seconds
@@ -80,15 +110,32 @@ export const FollowUpSuggest = ({
 		alwaysAllowFollowupQuestions,
 		suggestions,
 		followupAutoApproveTimeoutMs,
-		suggestionSelected,
+		isFollowUpTerminal,
 		onCancelAutoApproval,
-		isAnswered,
 		isFollowUpAutoApprovalPaused,
 	])
 	const handleSuggestionClick = useCallback(
 		(suggestion: SuggestionItem, event: React.MouseEvent) => {
+			if (followUpTerminalRef.current || isSuggestionActionPending) {
+				return
+			}
+
+			const isShiftClick = event.shiftKey
+
+			if (!isShiftClick && !tryBeginSuggestionActionPending()) {
+				return
+			}
+
+			emitFollowUpInteractionMarker({
+				stage: "click",
+				followUpTs: ts,
+				source: "follow_up_suggest",
+			})
+
 			// Mark a suggestion as selected if it's not a shift-click (which just copies to input)
-			if (!event.shiftKey) {
+			if (!isShiftClick) {
+				followUpTerminalRef.current = true
+				setHasReachedTerminalState(true)
 				setSuggestionSelected(true)
 				// Also notify parent component to cancel auto-approval timeout
 				// This prevents race conditions between visual countdown and actual timeout
@@ -99,11 +146,26 @@ export const FollowUpSuggest = ({
 			// The parent component will handle mode switching if needed
 			onSuggestionClick?.(suggestion, event)
 		},
-		[onSuggestionClick, onCancelAutoApproval],
+		[onSuggestionClick, onCancelAutoApproval, ts, isSuggestionActionPending, tryBeginSuggestionActionPending],
+	)
+
+	const handleCopyToInputClick = useCallback(
+		(suggestion: SuggestionItem, event: React.MouseEvent<HTMLDivElement>) => {
+			if (followUpTerminalRef.current || isSuggestionActionPending) {
+				return
+			}
+
+			event.stopPropagation()
+			// Cancel the auto-approve timer when edit button is clicked
+			onCancelAutoApproval?.()
+			// Simulate shift-click by directly calling the handler with shiftKey=true.
+			onSuggestionClick?.(suggestion, { ...event, shiftKey: true })
+		},
+		[isSuggestionActionPending, onCancelAutoApproval, onSuggestionClick],
 	)
 
 	// Don't render if there are no suggestions or no click handler.
-	if (!suggestions?.length || !onSuggestionClick) {
+	if (!suggestions?.length || !onSuggestionClick || isFollowUpTerminal) {
 		return null
 	}
 
@@ -116,19 +178,19 @@ export const FollowUpSuggest = ({
 					<div key={`${suggestion.answer}-${ts}`} className="w-full relative group">
 						<Button
 							variant="outline"
+							disabled={isSuggestionActionPending}
+							aria-busy={isSuggestionActionPending || undefined}
 							className={cn(
 								"text-left whitespace-normal break-words w-full h-auto px-3 py-2 justify-start pr-8 rounded-xl",
 								isFirstSuggestion &&
-									countdown !== null &&
-									!suggestionSelected &&
-									!isAnswered &&
+									shouldShowCountdown &&
 									"border-vscode-foreground/60 rounded-b-none -mb-1",
 							)}
 							onClick={(event) => handleSuggestionClick(suggestion, event)}
 							aria-label={suggestion.answer}>
 							{suggestion.answer}
 						</Button>
-						{isFirstSuggestion && countdown !== null && !suggestionSelected && !isAnswered && (
+						{isFirstSuggestion && shouldShowCountdown && (
 							<p className="rounded-b-xl border-1 border-t-0 border-vscode-foreground/60 text-vscode-descriptionForeground text-xs m-0 mt-1 px-3 pt-2 pb-2">
 								<Timer className="size-3 inline-block -mt-0.5 mr-1 animate-pulse" />
 								{t("chat:followUpSuggest.timerPrefix", { seconds: countdown })}
@@ -143,14 +205,7 @@ export const FollowUpSuggest = ({
 						<StandardTooltip content={t("chat:followUpSuggest.copyToInput")}>
 							<div
 								className="absolute cursor-pointer top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity bg-vscode-input-background px-0.5 rounded"
-								onClick={(e) => {
-									e.stopPropagation()
-									// Cancel the auto-approve timer when edit button is clicked
-									setSuggestionSelected(true)
-									onCancelAutoApproval?.()
-									// Simulate shift-click by directly calling the handler with shiftKey=true.
-									onSuggestionClick?.(suggestion, { ...e, shiftKey: true })
-								}}>
+								onClick={(event) => handleCopyToInputClick(suggestion, event)}>
 								<ClipboardCopy className="w-4" />
 							</div>
 						</StandardTooltip>

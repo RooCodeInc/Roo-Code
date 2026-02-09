@@ -8,6 +8,10 @@ import { ExtensionStateContextProvider } from "@src/context/ExtensionStateContex
 import { vscode } from "@src/utils/vscode"
 
 import ChatView, { ChatViewProps } from "../ChatView"
+import {
+	setFollowUpInteractionInstrumentationSink,
+	type FollowUpInteractionMarker,
+} from "../followUpInteractionInstrumentation"
 
 // Define minimal types needed for testing
 interface ClineMessage {
@@ -17,6 +21,11 @@ interface ClineMessage {
 	ts: number
 	text?: string
 	partial?: boolean
+}
+
+interface SuggestionItem {
+	answer: string
+	mode?: string
 }
 
 interface ExtensionState {
@@ -52,8 +61,31 @@ vi.mock("../BrowserSessionRow", () => ({
 }))
 
 vi.mock("../ChatRow", () => ({
-	default: function MockChatRow({ message }: { message: ClineMessage }) {
-		return <div data-testid="chat-row">{JSON.stringify(message)}</div>
+	default: function MockChatRow({
+		message,
+		isFollowUpAnswered,
+		onSuggestionClick,
+	}: {
+		message: ClineMessage
+		isFollowUpAnswered?: boolean
+		onSuggestionClick?: (suggestion: SuggestionItem, event?: React.MouseEvent) => void
+	}) {
+		return (
+			<div
+				data-testid={`chat-row-${message.ts}`}
+				data-message-ask={message.ask ?? ""}
+				data-followup-answered={String(Boolean(isFollowUpAnswered))}>
+				{message.ask === "followup" && (
+					<button
+						type="button"
+						data-testid={`mock-followup-suggestion-${message.ts}`}
+						onClick={(event) => onSuggestionClick?.({ answer: "Mock suggestion", mode: "code" }, event)}>
+						Pick follow-up suggestion
+					</button>
+				)}
+				{JSON.stringify(message)}
+			</div>
+		)
 	},
 }))
 
@@ -313,6 +345,19 @@ const renderChatView = (props: Partial<ChatViewProps> = {}) => {
 			</QueryClientProvider>
 		</ExtensionStateContextProvider>,
 	)
+}
+
+const expectMonotonicMarkerTimes = (markers: FollowUpInteractionMarker[]): void => {
+	const markerTimes = markers.map((marker) => marker.atMs)
+	expect(
+		markerTimes.every((time, index) => {
+			if (index === 0) {
+				return true
+			}
+
+			return time >= markerTimes[index - 1]
+		}),
+	).toBe(true)
 }
 
 describe("ChatView - Sound Playing Tests", () => {
@@ -1082,7 +1127,7 @@ describe("ChatView - Message Queueing Tests", () => {
 		)
 	})
 
-	it("queues messages during command_output state instead of losing them", async () => {
+	it("queues the first interaction immediately during command_output without effect-sync delays", async () => {
 		const { getByTestId } = renderChatView()
 
 		// Hydrate state with command_output ask (Proceed While Running state)
@@ -1104,15 +1149,9 @@ describe("ChatView - Message Queueing Tests", () => {
 			],
 		})
 
-		// Wait for state to be updated - need to allow time for React effects to propagate
-		// (clineAsk state update -> clineAskRef.current update)
+		// Wait for state to be updated
 		await waitFor(() => {
 			expect(getByTestId("chat-textarea")).toBeInTheDocument()
-		})
-
-		// Allow React effects to complete (clineAsk -> clineAskRef sync)
-		await act(async () => {
-			await new Promise((resolve) => setTimeout(resolve, 50))
 		})
 
 		// Clear message calls before simulating user input
@@ -1145,6 +1184,1304 @@ describe("ChatView - Message Queueing Tests", () => {
 	})
 })
 
+describe("ChatView - Primary Action Responsiveness", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		vi.mocked(vscode.postMessage).mockClear()
+	})
+
+	it.each([
+		{
+			name: "primary approval",
+			buttonLabel: "chat:runCommand.title",
+			invoke: "primaryButtonClick",
+			expectedMessage: { type: "askResponse", askResponse: "yesButtonClicked" },
+		},
+		{
+			name: "secondary rejection",
+			buttonLabel: "chat:reject.title",
+			invoke: "secondaryButtonClick",
+			expectedMessage: { type: "askResponse", askResponse: "noButtonClicked" },
+		},
+	] as const)(
+		"emits only one dispatch path for $name when duplicate activation is attempted while pending",
+		async ({ buttonLabel, invoke, expectedMessage }) => {
+			const { getByRole } = renderChatView()
+
+			mockPostMessage({
+				clineMessages: [
+					{
+						type: "say",
+						say: "task",
+						ts: Date.now() - 2_000,
+						text: "Initial task",
+					},
+					{
+						type: "ask",
+						ask: "command",
+						ts: Date.now(),
+						text: "",
+						partial: false,
+					},
+				],
+			})
+
+			await waitFor(() => {
+				expect(getByRole("button", { name: buttonLabel })).toBeInTheDocument()
+			})
+
+			vi.mocked(vscode.postMessage).mockClear()
+
+			act(() => {
+				fireEvent.click(getByRole("button", { name: buttonLabel }))
+			})
+
+			await act(async () => {
+				window.dispatchEvent(
+					new MessageEvent("message", {
+						data: {
+							type: "invoke",
+							invoke,
+						},
+					}),
+				)
+			})
+
+			expect(vscode.postMessage).toHaveBeenCalledTimes(1)
+			expect(vscode.postMessage).toHaveBeenCalledWith(expectedMessage)
+		},
+	)
+
+	it("applies optimistic pending UI immediately when the primary action is clicked", async () => {
+		const { getByRole, getByTestId, queryByRole } = renderChatView()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: Date.now(),
+					text: "",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByRole("button", { name: "chat:runCommand.title" })).toBeInTheDocument()
+		})
+
+		const input = getByTestId("chat-textarea").querySelector("input") as HTMLInputElement
+		const primaryButton = getByRole("button", { name: "chat:runCommand.title" })
+
+		expect(input.getAttribute("data-sending-disabled")).toBe("false")
+
+		act(() => {
+			fireEvent.click(primaryButton)
+		})
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "askResponse", askResponse: "yesButtonClicked" })
+		expect(input.getAttribute("data-sending-disabled")).toBe("true")
+		expect(queryByRole("button", { name: "chat:runCommand.title" })).not.toBeInTheDocument()
+	})
+
+	it("keeps pending state stable through async ask-resolution updates", async () => {
+		const { getByRole, getByTestId, queryByRole } = renderChatView()
+
+		const taskTs = Date.now() - 2_000
+		const askTs = Date.now() - 1_000
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: taskTs,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: askTs,
+					text: "",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByRole("button", { name: "chat:runCommand.title" })).toBeInTheDocument()
+		})
+
+		const input = getByTestId("chat-textarea").querySelector("input") as HTMLInputElement
+
+		act(() => {
+			fireEvent.click(getByRole("button", { name: "chat:runCommand.title" }))
+		})
+
+		expect(input.getAttribute("data-sending-disabled")).toBe("true")
+		expect(queryByRole("button", { name: "chat:runCommand.title" })).not.toBeInTheDocument()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: taskTs,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: askTs,
+					text: "",
+					partial: false,
+				},
+				{
+					type: "say",
+					say: "api_req_started",
+					ts: Date.now(),
+					text: JSON.stringify({ apiProtocol: "anthropic" }),
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(input.getAttribute("data-sending-disabled")).toBe("true")
+			expect(queryByRole("button", { name: "chat:runCommand.title" })).not.toBeInTheDocument()
+		})
+	})
+
+	it("applies optimistic pending UI immediately when the secondary reject action is clicked", async () => {
+		const { getByRole, getByTestId, queryByRole } = renderChatView()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: Date.now(),
+					text: "",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByRole("button", { name: "chat:reject.title" })).toBeInTheDocument()
+		})
+
+		const input = getByTestId("chat-textarea").querySelector("input") as HTMLInputElement
+		const secondaryButton = getByRole("button", { name: "chat:reject.title" })
+
+		expect(input.getAttribute("data-sending-disabled")).toBe("false")
+
+		act(() => {
+			fireEvent.click(secondaryButton)
+		})
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "askResponse", askResponse: "noButtonClicked" })
+		expect(input.getAttribute("data-sending-disabled")).toBe("true")
+		expect(queryByRole("button", { name: "chat:runCommand.title" })).not.toBeInTheDocument()
+		expect(queryByRole("button", { name: "chat:reject.title" })).not.toBeInTheDocument()
+	})
+
+	it("restores deterministic error controls after secondary rejection settle", async () => {
+		const { getByRole, getByTestId, queryByRole } = renderChatView()
+
+		const taskTs = Date.now() - 2_000
+		const askTs = Date.now() - 1_000
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: taskTs,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: askTs,
+					text: "",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByRole("button", { name: "chat:reject.title" })).toBeInTheDocument()
+		})
+
+		const input = getByTestId("chat-textarea").querySelector("input") as HTMLInputElement
+
+		act(() => {
+			fireEvent.click(getByRole("button", { name: "chat:reject.title" }))
+		})
+
+		expect(input.getAttribute("data-sending-disabled")).toBe("true")
+		expect(queryByRole("button", { name: "chat:runCommand.title" })).not.toBeInTheDocument()
+		expect(queryByRole("button", { name: "chat:reject.title" })).not.toBeInTheDocument()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: taskTs,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: askTs,
+					text: "",
+					partial: false,
+				},
+				{
+					type: "say",
+					say: "error",
+					ts: Date.now(),
+					text: "Tool rejected by user",
+				},
+				{
+					type: "ask",
+					ask: "api_req_failed",
+					ts: Date.now() + 1,
+					text: "Tool rejected by user",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(input.getAttribute("data-sending-disabled")).toBe("true")
+			expect(getByRole("button", { name: "chat:retry.title" })).toBeInTheDocument()
+			expect(getByRole("button", { name: "chat:startNewTask.title" })).toBeInTheDocument()
+		})
+	})
+
+	it("applies optimistic pending transition when primary action is invoked via extension message", async () => {
+		const { getByRole, getByTestId, queryByRole } = renderChatView()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: Date.now(),
+					text: "",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByRole("button", { name: "chat:runCommand.title" })).toBeInTheDocument()
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		const input = getByTestId("chat-textarea").querySelector("input") as HTMLInputElement
+		expect(input.getAttribute("data-sending-disabled")).toBe("false")
+
+		await act(async () => {
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					data: {
+						type: "invoke",
+						invoke: "primaryButtonClick",
+					},
+				}),
+			)
+		})
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "askResponse", askResponse: "yesButtonClicked" })
+		expect(input.getAttribute("data-sending-disabled")).toBe("true")
+		expect(queryByRole("button", { name: "chat:runCommand.title" })).not.toBeInTheDocument()
+	})
+
+	it("blocks duplicate primary invoke activations while approval action resolution is pending", async () => {
+		const { getByRole } = renderChatView()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: Date.now(),
+					text: "",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByRole("button", { name: "chat:runCommand.title" })).toBeInTheDocument()
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		await act(async () => {
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					data: {
+						type: "invoke",
+						invoke: "primaryButtonClick",
+					},
+				}),
+			)
+
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					data: {
+						type: "invoke",
+						invoke: "primaryButtonClick",
+					},
+				}),
+			)
+		})
+
+		expect(vscode.postMessage).toHaveBeenCalledTimes(1)
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "askResponse", askResponse: "yesButtonClicked" })
+	})
+
+	it("applies optimistic pending transition when secondary action is invoked via extension message", async () => {
+		const { getByRole, getByTestId, queryByRole } = renderChatView()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: Date.now(),
+					text: "",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByRole("button", { name: "chat:reject.title" })).toBeInTheDocument()
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		const input = getByTestId("chat-textarea").querySelector("input") as HTMLInputElement
+		expect(input.getAttribute("data-sending-disabled")).toBe("false")
+
+		await act(async () => {
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					data: {
+						type: "invoke",
+						invoke: "secondaryButtonClick",
+					},
+				}),
+			)
+		})
+
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "askResponse", askResponse: "noButtonClicked" })
+		expect(input.getAttribute("data-sending-disabled")).toBe("true")
+		expect(queryByRole("button", { name: "chat:runCommand.title" })).not.toBeInTheDocument()
+		expect(queryByRole("button", { name: "chat:reject.title" })).not.toBeInTheDocument()
+	})
+
+	it("blocks duplicate secondary invoke activations while approval action resolution is pending", async () => {
+		const { getByRole } = renderChatView()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: Date.now() - 2_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: Date.now(),
+					text: "",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByRole("button", { name: "chat:reject.title" })).toBeInTheDocument()
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		await act(async () => {
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					data: {
+						type: "invoke",
+						invoke: "secondaryButtonClick",
+					},
+				}),
+			)
+
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					data: {
+						type: "invoke",
+						invoke: "secondaryButtonClick",
+					},
+				}),
+			)
+		})
+
+		expect(vscode.postMessage).toHaveBeenCalledTimes(1)
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "askResponse", askResponse: "noButtonClicked" })
+	})
+
+	it("keeps approval lock stable across rerenders and deterministically re-enables terminal controls after completion", async () => {
+		const { getByRole, queryByRole, rerender } = renderChatView()
+
+		const taskTs = Date.now() - 2_000
+		const commandAskTs = Date.now() - 1_000
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: taskTs,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: commandAskTs,
+					text: "",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByRole("button", { name: "chat:runCommand.title" })).toBeInTheDocument()
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		act(() => {
+			fireEvent.click(getByRole("button", { name: "chat:runCommand.title" }))
+		})
+
+		expect(vscode.postMessage).toHaveBeenCalledTimes(1)
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "askResponse", askResponse: "yesButtonClicked" })
+		expect(queryByRole("button", { name: "chat:runCommand.title" })).not.toBeInTheDocument()
+
+		rerender(
+			<ExtensionStateContextProvider>
+				<QueryClientProvider client={queryClient}>
+					<ChatView {...defaultProps} />
+				</QueryClientProvider>
+			</ExtensionStateContextProvider>,
+		)
+
+		await act(async () => {
+			window.dispatchEvent(
+				new MessageEvent("message", {
+					data: {
+						type: "invoke",
+						invoke: "primaryButtonClick",
+					},
+				}),
+			)
+		})
+
+		expect(vscode.postMessage).toHaveBeenCalledTimes(1)
+		expect(queryByRole("button", { name: "chat:runCommand.title" })).not.toBeInTheDocument()
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: taskTs,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "command",
+					ts: commandAskTs,
+					text: "",
+					partial: false,
+				},
+				{
+					type: "ask",
+					ask: "completion_result",
+					ts: Date.now(),
+					text: "Completed",
+					partial: false,
+				},
+			],
+		})
+
+		await waitFor(() => {
+			const startNewTaskButton = getByRole("button", { name: "chat:startNewTask.title" })
+			expect(startNewTaskButton).toBeInTheDocument()
+			expect(startNewTaskButton).toBeEnabled()
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		act(() => {
+			fireEvent.click(getByRole("button", { name: "chat:startNewTask.title" }))
+		})
+
+		expect(vscode.postMessage).toHaveBeenCalledTimes(1)
+		expect(vscode.postMessage).toHaveBeenCalledWith({ type: "clearTask" })
+	})
+})
+
+describe("ChatView - Follow-up Responsiveness Guards", () => {
+	beforeEach(() => {
+		vi.clearAllMocks()
+		vi.mocked(vscode.postMessage).mockClear()
+	})
+
+	afterEach(() => {
+		setFollowUpInteractionInstrumentationSink(undefined)
+	})
+
+	it("marks historical follow-up rows as answered while keeping only the newest follow-up actionable", async () => {
+		const { getByTestId } = renderChatView()
+
+		const olderFollowUpTs = 2_000
+		const newerFollowUpTs = 4_000
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: olderFollowUpTs,
+					text: "Older follow-up",
+				},
+				{
+					type: "say",
+					say: "text",
+					ts: 3_000,
+					text: "Interleaved text",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: newerFollowUpTs,
+					text: "Newest follow-up",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			const olderRow = getByTestId(`chat-row-${olderFollowUpTs}`)
+			const newerRow = getByTestId(`chat-row-${newerFollowUpTs}`)
+
+			expect(olderRow).toHaveAttribute("data-message-ask", "followup")
+			expect(newerRow).toHaveAttribute("data-message-ask", "followup")
+
+			expect(olderRow).toHaveAttribute("data-followup-answered", "true")
+			expect(newerRow).toHaveAttribute("data-followup-answered", "false")
+		})
+	})
+
+	it("clears active follow-up row controls on the next render cycle after user answers", async () => {
+		const { getByTestId } = renderChatView()
+
+		const followUpTs = 2_000
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: followUpTs,
+					text: "Should I continue?",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		const chatTextArea = getByTestId("chat-textarea")
+		const input = chatTextArea.querySelector("input")! as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "Proceed with this" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "askResponse",
+				askResponse: "messageResponse",
+				text: "Proceed with this",
+				images: [],
+			})
+
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "true")
+		})
+	})
+
+	it("blocks duplicate typed follow-up submit dispatches while pending and emits a single click marker", async () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		const { getByTestId } = renderChatView()
+
+		const followUpTs = 2_050
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: followUpTs,
+					text: "Should I continue?",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		const chatTextArea = getByTestId("chat-textarea")
+		const input = chatTextArea.querySelector("input")! as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "Proceed with this" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		const postMessages = vi.mocked(vscode.postMessage).mock.calls.map(([message]) => message)
+		const askResponseCalls = postMessages.filter((message) => {
+			if (typeof message !== "object" || message === null || !("type" in message)) {
+				return false
+			}
+
+			return message.type === "askResponse"
+		})
+
+		expect(askResponseCalls).toHaveLength(1)
+		expect(askResponseCalls[0]).toEqual({
+			type: "askResponse",
+			askResponse: "messageResponse",
+			text: "Proceed with this",
+			images: [],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "true")
+		})
+
+		await waitFor(() => {
+			expect(markers.map((marker) => marker.stage)).toEqual(["click", "pending_render", "settle"])
+		})
+		expect(markers.map((marker) => marker.source)).toEqual(["chat_view", "chat_view", "chat_view"])
+		expect(markers.map((marker) => marker.followUpTs)).toEqual([followUpTs, followUpTs, followUpTs])
+		expectMonotonicMarkerTimes(markers)
+	})
+
+	it("keeps typed follow-up submit single-dispatch and forward-only markers under rerender pressure", async () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		const { getByTestId, rerender } = renderChatView()
+
+		const followUpTs = 2_075
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: followUpTs,
+					text: "Should I continue?",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		const firstInput = getByTestId("chat-textarea").querySelector("input") as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(firstInput, { target: { value: "Proceed with this" } })
+			fireEvent.keyDown(firstInput, { key: "Enter", code: "Enter" })
+		})
+
+		rerender(
+			<ExtensionStateContextProvider>
+				<QueryClientProvider client={queryClient}>
+					<ChatView {...defaultProps} />
+				</QueryClientProvider>
+			</ExtensionStateContextProvider>,
+		)
+
+		const secondInput = getByTestId("chat-textarea").querySelector("input") as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.keyDown(secondInput, { key: "Enter", code: "Enter" })
+		})
+
+		const postMessages = vi.mocked(vscode.postMessage).mock.calls.map(([message]) => message)
+		const askResponseCalls = postMessages.filter((message) => {
+			if (typeof message !== "object" || message === null || !("type" in message)) {
+				return false
+			}
+
+			return message.type === "askResponse"
+		})
+
+		expect(askResponseCalls).toHaveLength(1)
+		expect(askResponseCalls[0]).toEqual({
+			type: "askResponse",
+			askResponse: "messageResponse",
+			text: "Proceed with this",
+			images: [],
+		})
+
+		await waitFor(() => {
+			expect(markers.map((marker) => marker.stage)).toEqual(["click", "pending_render", "settle"])
+		})
+		expect(markers.map((marker) => marker.followUpTs)).toEqual([followUpTs, followUpTs, followUpTs])
+		expectMonotonicMarkerTimes(markers)
+	})
+
+	it("marks the active follow-up as terminal in the first post-settle render cycle after auto-approval acceptance", async () => {
+		const { getByTestId } = renderChatView()
+
+		const followUpTs = 2_000
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: followUpTs,
+					text: JSON.stringify({
+						question: "Should I continue?",
+						suggest: [{ answer: "Proceed" }, { answer: "Pause" }],
+					}),
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+		})
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: followUpTs,
+					text: JSON.stringify({
+						question: "Should I continue?",
+						suggest: [{ answer: "Proceed" }, { answer: "Pause" }],
+					}),
+				},
+				{
+					type: "say",
+					say: "user_feedback",
+					ts: 3_000,
+					text: "Proceed",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "true")
+		})
+	})
+
+	it("emits deterministic pending/settle/clear markers for follow-up answer lifecycle", async () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		const { getByTestId, queryByTestId } = renderChatView()
+
+		const followUpTs = 2_000
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: followUpTs,
+					text: "Should I continue?",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+		})
+
+		const chatTextArea = getByTestId("chat-textarea")
+		const input = chatTextArea.querySelector("input") as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "Proceed" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "true")
+		})
+
+		mockPostMessage({ clineMessages: [] })
+
+		await waitFor(() => {
+			expect(queryByTestId(`chat-row-${followUpTs}`)).toBeNull()
+		})
+
+		await waitFor(() => {
+			expect(markers.map((marker) => marker.stage)).toEqual(["click", "pending_render", "settle", "clear"])
+		})
+
+		expect(markers.map((marker) => marker.followUpTs)).toEqual([followUpTs, followUpTs, followUpTs, followUpTs])
+		expect(markers.map((marker) => marker.source)).toEqual(["chat_view", "chat_view", "chat_view", "chat_view"])
+		expect(markers.every((marker) => typeof marker.atMs === "number")).toBe(true)
+		expectMonotonicMarkerTimes(markers)
+	})
+
+	it("uses current ask interaction state for suggestion clicks and emits pending->settle->clear once", async () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		const { getByTestId, queryByTestId } = renderChatView()
+
+		const followUpTs = 2_100
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: followUpTs,
+					text: JSON.stringify({
+						question: "Choose a follow-up path",
+						suggest: [{ answer: "Proceed", mode: "code" }],
+					}),
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+			expect(getByTestId(`mock-followup-suggestion-${followUpTs}`)).toBeInTheDocument()
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		act(() => {
+			fireEvent.click(getByTestId(`mock-followup-suggestion-${followUpTs}`))
+		})
+
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({ type: "mode", text: "code" })
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "askResponse",
+				askResponse: "messageResponse",
+				text: "Mock suggestion",
+				images: [],
+			})
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "true")
+		})
+
+		await waitFor(() => {
+			expect(markers.map((marker) => marker.stage)).toEqual(["pending_render", "settle"])
+		})
+
+		mockPostMessage({ clineMessages: [] })
+
+		await waitFor(() => {
+			expect(queryByTestId(`chat-row-${followUpTs}`)).toBeNull()
+		})
+
+		await waitFor(() => {
+			expect(markers.map((marker) => marker.stage)).toEqual(["pending_render", "settle", "clear"])
+		})
+		expect(markers.map((marker) => marker.followUpTs)).toEqual([followUpTs, followUpTs, followUpTs])
+		expectMonotonicMarkerTimes(markers)
+	})
+
+	it("blocks duplicate follow-up suggestion dispatch while the follow-up suggestion action is pending", async () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		const { getByTestId, queryByTestId } = renderChatView()
+
+		const followUpTs = 2_120
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: followUpTs,
+					text: JSON.stringify({
+						question: "Choose a follow-up path",
+						suggest: [{ answer: "Proceed", mode: "code" }],
+					}),
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+			expect(getByTestId(`mock-followup-suggestion-${followUpTs}`)).toBeInTheDocument()
+		})
+
+		vi.mocked(vscode.postMessage).mockClear()
+
+		const suggestionButton = getByTestId(`mock-followup-suggestion-${followUpTs}`)
+
+		act(() => {
+			fireEvent.click(suggestionButton)
+			fireEvent.click(suggestionButton)
+		})
+
+		await waitFor(() => {
+			expect(vscode.postMessage).toHaveBeenCalledWith({ type: "mode", text: "code" })
+			expect(vscode.postMessage).toHaveBeenCalledWith({
+				type: "askResponse",
+				askResponse: "messageResponse",
+				text: "Mock suggestion",
+				images: [],
+			})
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "true")
+		})
+
+		const postMessages = vi.mocked(vscode.postMessage).mock.calls.map(([message]) => message)
+		const askResponseCalls = postMessages.filter((message) => {
+			if (typeof message !== "object" || message === null || !("type" in message)) {
+				return false
+			}
+
+			return message.type === "askResponse"
+		})
+		const modeCalls = postMessages.filter((message) => {
+			if (typeof message !== "object" || message === null || !("type" in message)) {
+				return false
+			}
+
+			return message.type === "mode"
+		})
+
+		expect(askResponseCalls).toHaveLength(1)
+		expect(modeCalls).toHaveLength(1)
+
+		await waitFor(() => {
+			expect(markers.map((marker) => marker.stage)).toEqual(["pending_render", "settle"])
+		})
+
+		mockPostMessage({ clineMessages: [] })
+
+		await waitFor(() => {
+			expect(queryByTestId(`chat-row-${followUpTs}`)).toBeNull()
+		})
+
+		await waitFor(() => {
+			expect(markers.map((marker) => marker.stage)).toEqual(["pending_render", "settle", "clear"])
+		})
+		expect(markers.map((marker) => marker.followUpTs)).toEqual([followUpTs, followUpTs, followUpTs])
+		expectMonotonicMarkerTimes(markers)
+	})
+
+	it("keeps follow-up lifecycle forward-only when clear is re-attempted across rerenders", async () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		const { getByTestId, queryByTestId, rerender } = renderChatView()
+
+		const followUpTs = 2_130
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: followUpTs,
+					text: "Should I continue?",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${followUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+		})
+
+		const input = getByTestId("chat-textarea").querySelector("input") as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "Proceed" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		await waitFor(() => {
+			expect(markers.map((marker) => marker.stage)).toEqual(["click", "pending_render", "settle"])
+		})
+
+		mockPostMessage({ clineMessages: [] })
+
+		await waitFor(() => {
+			expect(queryByTestId(`chat-row-${followUpTs}`)).toBeNull()
+		})
+
+		await waitFor(() => {
+			expect(markers.map((marker) => marker.stage)).toEqual(["click", "pending_render", "settle", "clear"])
+		})
+
+		rerender(
+			<ExtensionStateContextProvider>
+				<QueryClientProvider client={queryClient}>
+					<ChatView {...defaultProps} />
+				</QueryClientProvider>
+			</ExtensionStateContextProvider>,
+		)
+
+		mockPostMessage({ clineMessages: [] })
+
+		await act(async () => {
+			await Promise.resolve()
+		})
+
+		expect(markers.map((marker) => marker.stage)).toEqual(["click", "pending_render", "settle", "clear"])
+		expect(markers.map((marker) => marker.followUpTs)).toEqual([followUpTs, followUpTs, followUpTs, followUpTs])
+		expectMonotonicMarkerTimes(markers)
+	})
+
+	it("handles failed follow-up attempt then retry with deterministic per-attempt marker progression", async () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		const { getByTestId } = renderChatView()
+
+		const firstFollowUpTs = 2_140
+		const retryFollowUpTs = 2_141
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: firstFollowUpTs,
+					text: "First follow-up",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${firstFollowUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+		})
+
+		const input = getByTestId("chat-textarea").querySelector("input") as HTMLInputElement
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "Attempt one" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${firstFollowUpTs}`)).toHaveAttribute("data-followup-answered", "true")
+			expect(markers.map((marker) => marker.stage)).toEqual(["click", "pending_render", "settle"])
+		})
+
+		mockPostMessage({
+			clineMessages: [
+				{
+					type: "say",
+					say: "task",
+					ts: 1_000,
+					text: "Initial task",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: firstFollowUpTs,
+					text: "First follow-up",
+				},
+				{
+					type: "say",
+					say: "error",
+					ts: 3_000,
+					text: "Attempt failed",
+				},
+				{
+					type: "ask",
+					ask: "followup",
+					ts: retryFollowUpTs,
+					text: "Retry follow-up",
+				},
+			],
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${firstFollowUpTs}`)).toHaveAttribute("data-followup-answered", "true")
+			expect(getByTestId(`chat-row-${retryFollowUpTs}`)).toHaveAttribute("data-followup-answered", "false")
+		})
+
+		await act(async () => {
+			fireEvent.change(input, { target: { value: "Attempt two" } })
+			fireEvent.keyDown(input, { key: "Enter", code: "Enter" })
+		})
+
+		await waitFor(() => {
+			expect(getByTestId(`chat-row-${retryFollowUpTs}`)).toHaveAttribute("data-followup-answered", "true")
+		})
+
+		expect(markers.map((marker) => marker.stage)).toEqual([
+			"click",
+			"pending_render",
+			"settle",
+			"click",
+			"pending_render",
+			"settle",
+		])
+		expect(markers.map((marker) => marker.followUpTs)).toEqual([
+			firstFollowUpTs,
+			firstFollowUpTs,
+			firstFollowUpTs,
+			retryFollowUpTs,
+			retryFollowUpTs,
+			retryFollowUpTs,
+		])
+		expectMonotonicMarkerTimes(markers)
+	})
+})
+
 describe("ChatView - Context Condensing Indicator Tests", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
@@ -1155,6 +2492,9 @@ describe("ChatView - Context Condensing Indicator Tests", () => {
 		// the isCondensing state is set to true and a synthetic condensing message is added
 		// to the grouped messages list
 		const { getByTestId, container } = renderChatView()
+		const taskTs = 11_000
+		const apiReqStartedTs = 12_000
+		const expectedSyntheticCondenseTs = -taskTs
 
 		// First hydrate state with an active task
 		mockPostMessage({
@@ -1162,13 +2502,13 @@ describe("ChatView - Context Condensing Indicator Tests", () => {
 				{
 					type: "say",
 					say: "task",
-					ts: Date.now() - 2000,
+					ts: taskTs,
 					text: "Initial task",
 				},
 				{
 					type: "say",
 					say: "api_req_started",
-					ts: Date.now() - 1000,
+					ts: apiReqStartedTs,
 					text: JSON.stringify({ apiProtocol: "anthropic" }),
 				},
 			],
@@ -1202,7 +2542,8 @@ describe("ChatView - Context Condensing Indicator Tests", () => {
 		// With Virtuoso mocked, items render directly and we can find the ChatRow with partial condense_context message
 		await waitFor(
 			() => {
-				const rows = container.querySelectorAll('[data-testid="chat-row"]')
+				const rows = container.querySelectorAll('[data-testid^="chat-row-"]')
+				expect(getByTestId(`chat-row-${expectedSyntheticCondenseTs}`)).toBeInTheDocument()
 				// Check for the actual message structure: partial condense_context message
 				const condensingRow = Array.from(rows).find((row) => {
 					const text = row.textContent || ""

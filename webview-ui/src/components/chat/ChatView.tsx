@@ -52,6 +52,8 @@ import { WorktreeSelector } from "./WorktreeSelector"
 import DismissibleUpsell from "../common/DismissibleUpsell"
 import { useCloudUpsell } from "@src/hooks/useCloudUpsell"
 import { Cloud } from "lucide-react"
+import { emitFollowUpInteractionMarker } from "./followUpInteractionInstrumentation"
+import { usePendingActionContract } from "./usePendingActionContract"
 
 export interface ChatViewProps {
 	isHidden: boolean
@@ -156,6 +158,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [enableButtons, setEnableButtons] = useState<boolean>(false)
 	const [primaryButtonText, setPrimaryButtonText] = useState<string | undefined>(undefined)
 	const [secondaryButtonText, setSecondaryButtonText] = useState<string | undefined>(undefined)
+	const clineAskRef = useRef<ClineAsk | undefined>(undefined)
 	const [_didClickCancel, setDidClickCancel] = useState(false)
 	const virtuosoRef = useRef<VirtuosoHandle>(null)
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
@@ -171,15 +174,35 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	>(undefined)
 	const [isCondensing, setIsCondensing] = useState<boolean>(false)
 	const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
+	const {
+		isPending: isApprovalActionPending,
+		tryBeginPendingAction: tryBeginApprovalActionPending,
+		clearPendingAction: clearApprovalActionPending,
+	} = usePendingActionContract()
+	const {
+		isPending: isFollowUpSuggestionActionPending,
+		tryBeginPendingAction: tryBeginFollowUpSuggestionActionPending,
+		clearPendingAction: clearFollowUpSuggestionActionPending,
+	} = usePendingActionContract()
 	const everVisibleMessagesTsRef = useRef<LRUCache<number, boolean>>(
 		new LRUCache({
 			max: 100,
 			ttl: 1000 * 60 * 5,
 		}),
 	)
-	const autoApproveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+	const cacheCleanupSnapshotRef = useRef<{
+		currentMessageIds: Set<number>
+		viewportMessageIds: Set<number>
+	}>({
+		currentMessageIds: new Set<number>(),
+		viewportMessageIds: new Set<number>(),
+	})
 	const userRespondedRef = useRef<boolean>(false)
 	const [currentFollowUpTs, setCurrentFollowUpTs] = useState<number | null>(null)
+	const followUpInstrumentationRef = useRef<{ pendingTs: number | null; settledTs: number | null }>({
+		pendingTs: null,
+		settledTs: null,
+	})
 	const [aggregatedCostsMap, setAggregatedCostsMap] = useState<
 		Map<
 			string,
@@ -190,11 +213,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 		>
 	>(new Map())
-
-	const clineAskRef = useRef(clineAsk)
-	useEffect(() => {
-		clineAskRef.current = clineAsk
-	}, [clineAsk])
 
 	const {
 		isOpen: isUpsellOpen,
@@ -209,6 +227,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useEffect(() => {
 		inputValueRef.current = inputValue
 	}, [inputValue])
+
+	useEffect(() => {
+		clineAskRef.current = clineAsk
+	}, [clineAsk])
 
 	// Compute whether auto-approval is paused (user is typing in a followup)
 	const isFollowUpAutoApprovalPaused = useMemo(() => {
@@ -242,6 +264,44 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	// would have to true again even if messages didn't change.
 	const lastMessage = useMemo(() => messages.at(-1), [messages])
 	const secondLastMessage = useMemo(() => messages.at(-2), [messages])
+
+	const getCurrentAskForInteraction = useCallback((): ClineAsk | undefined => {
+		const latestMessage = messagesRef.current.at(-1)
+
+		if (latestMessage?.type === "ask") {
+			return latestMessage.ask
+		}
+
+		return clineAskRef.current
+	}, [])
+
+	const activeFollowUpTs = useMemo<number | null>(() => {
+		const latestMessage = messages.at(-1)
+
+		if (latestMessage?.type !== "ask" || latestMessage.ask !== "followup") {
+			return null
+		}
+
+		return latestMessage.ts
+	}, [messages])
+
+	const isCurrentSubtaskCompleted = useCallback((): boolean => {
+		return Boolean(
+			currentTaskItem?.parentTaskId &&
+				messagesRef.current.some((msg) => msg.ask === "completion_result" || msg.say === "completion_result"),
+		)
+	}, [currentTaskItem?.parentTaskId])
+
+	const applyResumeTaskControlState = useCallback(() => {
+		if (isCurrentSubtaskCompleted()) {
+			setPrimaryButtonText(t("chat:startNewTask.title"))
+			setSecondaryButtonText(undefined)
+			return
+		}
+
+		setPrimaryButtonText(t("chat:resumeTask.title"))
+		setSecondaryButtonText(t("chat:terminate.title"))
+	}, [isCurrentSubtaskCompleted, t])
 
 	const volume = typeof soundVolume === "number" ? soundVolume : 0.5
 	const [playNotification] = useSound(`${audioBaseUri}/notification.wav`, { volume, soundEnabled })
@@ -407,22 +467,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(false)
 							setClineAsk("resume_task")
 							setEnableButtons(true)
-							// For completed subtasks, show "Start New Task" instead of "Resume"
-							// A subtask is considered completed if:
-							// - It has a parentTaskId AND
-							// - Its messages contain a completion_result (either ask or say)
-							const isCompletedSubtask =
-								currentTaskItem?.parentTaskId &&
-								messages.some(
-									(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
-								)
-							if (isCompletedSubtask) {
-								setPrimaryButtonText(t("chat:startNewTask.title"))
-								setSecondaryButtonText(undefined)
-							} else {
-								setPrimaryButtonText(t("chat:resumeTask.title"))
-								setSecondaryButtonText(t("chat:terminate.title"))
-							}
+							applyResumeTaskControlState()
 							setDidClickCancel(false) // special case where we reset the cancel button state
 							break
 						case "resume_completed_task":
@@ -467,20 +512,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					break
 			}
 		}
-	}, [lastMessage, secondLastMessage])
+	}, [lastMessage, secondLastMessage, applyResumeTaskControlState])
+
+	useEffect(() => {
+		if (!isApprovalActionPending) {
+			return
+		}
+
+		clearApprovalActionPending()
+	}, [messages, isApprovalActionPending, clearApprovalActionPending])
 
 	// Update button text when messages change (e.g., completion_result is added) for subtasks in resume_task state
 	useEffect(() => {
-		if (clineAsk === "resume_task" && currentTaskItem?.parentTaskId) {
-			const hasCompletionResult = messages.some(
-				(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
-			)
-			if (hasCompletionResult) {
-				setPrimaryButtonText(t("chat:startNewTask.title"))
-				setSecondaryButtonText(undefined)
-			}
+		if (clineAsk === "resume_task") {
+			applyResumeTaskControlState()
 		}
-	}, [clineAsk, currentTaskItem?.parentTaskId, messages, t])
+	}, [clineAsk, applyResumeTaskControlState])
 
 	useEffect(() => {
 		if (messages.length === 0) {
@@ -499,12 +546,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		setCurrentFollowUpTs(null) // Clear follow-up answered state for new task
 		setIsCondensing(false) // Reset condensing state when switching tasks
 		// Note: sendingDisabled is not reset here as it's managed by message effects
-
-		// Clear any pending auto-approval timeout from previous task
-		if (autoApproveTimeoutRef.current) {
-			clearTimeout(autoApproveTimeoutRef.current)
-			autoApproveTimeoutRef.current = null
-		}
 		// Reset user response flag for new task
 		userRespondedRef.current = false
 	}, [task?.ts])
@@ -603,16 +644,79 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const markFollowUpAsAnswered = useCallback(() => {
 		const lastFollowUpMessage = messagesRef.current.findLast((msg: ClineMessage) => msg.ask === "followup")
 		if (lastFollowUpMessage) {
+			if (followUpInstrumentationRef.current.pendingTs !== lastFollowUpMessage.ts) {
+				emitFollowUpInteractionMarker({
+					stage: "pending_render",
+					followUpTs: lastFollowUpMessage.ts,
+					source: "chat_view",
+				})
+				followUpInstrumentationRef.current.pendingTs = lastFollowUpMessage.ts
+				followUpInstrumentationRef.current.settledTs = null
+			}
+
 			setCurrentFollowUpTs(lastFollowUpMessage.ts)
 		}
 	}, [])
 
-	const handleChatReset = useCallback(() => {
-		// Clear any pending auto-approval timeout
-		if (autoApproveTimeoutRef.current) {
-			clearTimeout(autoApproveTimeoutRef.current)
-			autoApproveTimeoutRef.current = null
+	useEffect(() => {
+		const pendingTs = followUpInstrumentationRef.current.pendingTs
+
+		if (pendingTs === null || currentFollowUpTs !== pendingTs) {
+			return
 		}
+
+		if (followUpInstrumentationRef.current.settledTs === pendingTs) {
+			return
+		}
+
+		emitFollowUpInteractionMarker({
+			stage: "settle",
+			followUpTs: pendingTs,
+			source: "chat_view",
+		})
+		followUpInstrumentationRef.current.settledTs = pendingTs
+	}, [currentFollowUpTs])
+
+	useEffect(() => {
+		if (currentFollowUpTs !== null) {
+			return
+		}
+
+		const { pendingTs, settledTs } = followUpInstrumentationRef.current
+
+		if (pendingTs === null && settledTs === null) {
+			return
+		}
+
+		emitFollowUpInteractionMarker({
+			stage: "clear",
+			followUpTs: pendingTs,
+			source: "chat_view",
+		})
+
+		followUpInstrumentationRef.current.pendingTs = null
+		followUpInstrumentationRef.current.settledTs = null
+	}, [currentFollowUpTs])
+
+	useEffect(() => {
+		if (!isFollowUpSuggestionActionPending) {
+			return
+		}
+
+		const hasFollowUpAsk = messages.some((message) => message.type === "ask" && message.ask === "followup")
+
+		if (currentFollowUpTs !== null || !hasFollowUpAsk || getCurrentAskForInteraction() !== "followup") {
+			clearFollowUpSuggestionActionPending()
+		}
+	}, [
+		messages,
+		currentFollowUpTs,
+		isFollowUpSuggestionActionPending,
+		clearFollowUpSuggestionActionPending,
+		getCurrentAskForInteraction,
+	])
+
+	const handleChatReset = useCallback(() => {
 		// Reset user response flag for new message
 		userRespondedRef.current = false
 
@@ -633,8 +737,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	 * @param images - Array of image data URLs to send with the message
 	 */
 	const handleSendMessage = useCallback(
-		(text: string, images: string[]) => {
+		(
+			text: string,
+			images: string[],
+			options?: {
+				followUpInteractionSource?: "typed" | "suggestion"
+			},
+		) => {
 			text = text.trim()
+			const currentAsk = getCurrentAskForInteraction()
 
 			if (text || images.length > 0) {
 				// Intercept when the active provider is retired — show a
@@ -649,12 +760,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				// - API request in progress (isStreaming)
 				// - Queue has items (preserve message order during drain)
 				// - Command is running (command_output) - user's message should be queued for AI, not sent to terminal
-				if (
-					sendingDisabled ||
-					isStreaming ||
-					messageQueue.length > 0 ||
-					clineAskRef.current === "command_output"
-				) {
+				if (sendingDisabled || isStreaming || messageQueue.length > 0 || currentAsk === "command_output") {
 					try {
 						console.log("queueMessage", text, images)
 						vscode.postMessage({ type: "queueMessage", text, images })
@@ -669,20 +775,31 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					return
 				}
 
+				if (currentAsk === "followup") {
+					const isFollowUpSuggestionSource = options?.followUpInteractionSource === "suggestion"
+
+					if (!isFollowUpSuggestionSource && !tryBeginFollowUpSuggestionActionPending()) {
+						return
+					}
+
+					if (!isFollowUpSuggestionSource) {
+						emitFollowUpInteractionMarker({
+							stage: "click",
+							followUpTs:
+								messagesRef.current.findLast((msg: ClineMessage) => msg.ask === "followup")?.ts ?? null,
+							source: "chat_view",
+						})
+						markFollowUpAsAnswered()
+					}
+				}
+
 				// Mark that user has responded - this prevents any pending auto-approvals.
 				userRespondedRef.current = true
 
 				if (messagesRef.current.length === 0) {
 					vscode.postMessage({ type: "newTask", text, images })
-				} else if (clineAskRef.current) {
-					if (clineAskRef.current === "followup") {
-						markFollowUpAsAnswered()
-					}
-
-					// Use clineAskRef.current
-					switch (
-						clineAskRef.current // Use clineAskRef.current
-					) {
+				} else if (currentAsk) {
+					switch (currentAsk) {
 						case "followup":
 						case "tool":
 						case "browser_action_launch":
@@ -712,11 +829,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[
 			handleChatReset,
 			markFollowUpAsAnswered,
+			tryBeginFollowUpSuggestionActionPending,
 			sendingDisabled,
 			isStreaming,
 			messageQueue.length,
+			getCurrentAskForInteraction,
 			apiConfiguration?.apiProvider,
-		], // messagesRef and clineAskRef are stable
+		],
 	)
 
 	const handleSetChatBoxMessage = useCallback(
@@ -759,13 +878,53 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}
 	}, [inputValue, selectedImages])
 
+	const transitionActionHandlersToPendingState = useCallback(() => {
+		setSendingDisabled(true)
+		setClineAsk(undefined)
+		setEnableButtons(false)
+		setPrimaryButtonText(undefined)
+		setSecondaryButtonText(undefined)
+	}, [])
+
+	const beginActionResolutionTransition = useCallback(() => {
+		transitionActionHandlersToPendingState()
+		userRespondedRef.current = true
+	}, [transitionActionHandlersToPendingState])
+
+	const postAskResponseWithOptionalInput = useCallback(
+		(askResponse: "yesButtonClicked" | "noButtonClicked", text?: string, images?: string[]) => {
+			if (text || (images && images.length > 0)) {
+				vscode.postMessage({
+					type: "askResponse",
+					askResponse,
+					text,
+					images,
+				})
+				setInputValue("")
+				setSelectedImages([])
+				return
+			}
+
+			vscode.postMessage({ type: "askResponse", askResponse })
+		},
+		[],
+	)
+
 	// This logic depends on the useEffect[messages] above to set clineAsk,
 	// after which buttons are shown and we then send an askResponse to the
 	// extension.
 	const handlePrimaryButtonClick = useCallback(
 		(text?: string, images?: string[]) => {
-			// Mark that user has responded
-			userRespondedRef.current = true
+			if (!clineAsk) {
+				return
+			}
+
+			if (!tryBeginApprovalActionPending()) {
+				return
+			}
+
+			// Apply optimistic pending UI immediately on click.
+			beginActionResolutionTransition()
 
 			const trimmedInput = text?.trim()
 
@@ -776,46 +935,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "browser_action_launch":
 				case "use_mcp_server":
 				case "mistake_limit_reached":
-					// Only send text/images if they exist
-					if (trimmedInput || (images && images.length > 0)) {
-						vscode.postMessage({
-							type: "askResponse",
-							askResponse: "yesButtonClicked",
-							text: trimmedInput,
-							images: images,
-						})
-						// Clear input state after sending
-						setInputValue("")
-						setSelectedImages([])
-					} else {
-						vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
-					}
+					postAskResponseWithOptionalInput("yesButtonClicked", trimmedInput, images)
 					break
 				case "resume_task":
-					// For completed subtasks (tasks with a parentTaskId and a completion_result),
-					// start a new task instead of resuming since the subtask is done
-					const isCompletedSubtaskForClick =
-						currentTaskItem?.parentTaskId &&
-						messagesRef.current.some(
-							(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
-						)
-					if (isCompletedSubtaskForClick) {
+					if (isCurrentSubtaskCompleted()) {
 						startNewTask()
 					} else {
-						// Only send text/images if they exist
-						if (trimmedInput || (images && images.length > 0)) {
-							vscode.postMessage({
-								type: "askResponse",
-								askResponse: "yesButtonClicked",
-								text: trimmedInput,
-								images: images,
-							})
-							// Clear input state after sending
-							setInputValue("")
-							setSelectedImages([])
-						} else {
-							vscode.postMessage({ type: "askResponse", askResponse: "yesButtonClicked" })
-						}
+						postAskResponseWithOptionalInput("yesButtonClicked", trimmedInput, images)
 					}
 					break
 				case "completion_result":
@@ -827,20 +953,29 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					vscode.postMessage({ type: "terminalOperation", terminalOperation: "continue" })
 					break
 			}
-
-			setSendingDisabled(true)
-			setClineAsk(undefined)
-			setEnableButtons(false)
-			setPrimaryButtonText(undefined)
-			setSecondaryButtonText(undefined)
 		},
-		[clineAsk, startNewTask, currentTaskItem?.parentTaskId],
+		[
+			clineAsk,
+			startNewTask,
+			isCurrentSubtaskCompleted,
+			tryBeginApprovalActionPending,
+			beginActionResolutionTransition,
+			postAskResponseWithOptionalInput,
+		],
 	)
 
 	const handleSecondaryButtonClick = useCallback(
 		(text?: string, images?: string[]) => {
-			// Mark that user has responded
-			userRespondedRef.current = true
+			if (!clineAsk) {
+				return
+			}
+
+			if (!tryBeginApprovalActionPending()) {
+				return
+			}
+
+			// Apply optimistic pending UI immediately on click to avoid stale controls.
+			beginActionResolutionTransition()
 
 			const trimmedInput = text?.trim()
 
@@ -860,31 +995,22 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				case "tool":
 				case "browser_action_launch":
 				case "use_mcp_server":
-					// Only send text/images if they exist
-					if (trimmedInput || (images && images.length > 0)) {
-						vscode.postMessage({
-							type: "askResponse",
-							askResponse: "noButtonClicked",
-							text: trimmedInput,
-							images: images,
-						})
-						// Clear input state after sending
-						setInputValue("")
-						setSelectedImages([])
-					} else {
-						// Responds to the API with a "This operation failed" and lets it try again
-						vscode.postMessage({ type: "askResponse", askResponse: "noButtonClicked" })
-					}
+					postAskResponseWithOptionalInput("noButtonClicked", trimmedInput, images)
 					break
 				case "command_output":
 					vscode.postMessage({ type: "terminalOperation", terminalOperation: "abort" })
 					break
 			}
-			setSendingDisabled(true)
-			setClineAsk(undefined)
-			setEnableButtons(false)
 		},
-		[clineAsk, startNewTask, isStreaming, setDidClickCancel],
+		[
+			clineAsk,
+			startNewTask,
+			isStreaming,
+			setDidClickCancel,
+			tryBeginApprovalActionPending,
+			beginActionResolutionTransition,
+			postAskResponseWithOptionalInput,
+		],
 	)
 
 	const { info: model } = useSelectedModel(apiConfiguration)
@@ -1094,9 +1220,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useEffect(() => {
 		const cleanupInterval = setInterval(() => {
 			const cache = everVisibleMessagesTsRef.current
-			const currentMessageIds = new Set(modifiedMessages.map((m: ClineMessage) => m.ts))
-			const viewportMessages = visibleMessages.slice(Math.max(0, visibleMessages.length - 100))
-			const viewportMessageIds = new Set(viewportMessages.map((m: ClineMessage) => m.ts))
+			const { currentMessageIds, viewportMessageIds } = cacheCleanupSnapshotRef.current
 
 			cache.forEach((_value: boolean, key: number) => {
 				if (!currentMessageIds.has(key) && !viewportMessageIds.has(key)) {
@@ -1106,7 +1230,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		}, 60000)
 
 		return () => clearInterval(cleanupInterval)
-	}, [modifiedMessages, visibleMessages])
+	}, [])
 
 	useDebounceEffect(
 		() => {
@@ -1325,15 +1449,73 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		const result = batchConsecutive(listFilesBatched, isEditFileAsk, synthesizeEditFileBatch)
 
 		if (isCondensing) {
+			const syntheticCondenseTs = task?.ts ? -Math.abs(task.ts) : Number.MIN_SAFE_INTEGER + 1
 			result.push({
 				type: "say",
 				say: "condense_context",
-				ts: Date.now(),
+				ts: syntheticCondenseTs,
 				partial: true,
-			} as ClineMessage)
+			})
 		}
 		return result
-	}, [isCondensing, visibleMessages, isBrowserSessionMessage])
+	}, [isCondensing, visibleMessages, isBrowserSessionMessage, task?.ts])
+
+	const rowRenderMetadata = useMemo(() => {
+		const browserActions: ClineMessage[] = []
+		const browserActionResults: ClineMessage[] = []
+
+		for (const message of modifiedMessages) {
+			if (message.type !== "say") {
+				continue
+			}
+
+			if (message.say === "browser_action") {
+				browserActions.push(message)
+				continue
+			}
+
+			if (message.say === "browser_action_result") {
+				browserActionResults.push(message)
+			}
+		}
+
+		const browserActionIndexByTs = new Map<number, number>()
+		const nextBrowserActionResultByTs = new Map<number, ClineMessage | undefined>()
+		let resultCursor = 0
+
+		for (let actionIndex = 0; actionIndex < browserActions.length; actionIndex++) {
+			const actionMessage = browserActions[actionIndex]
+			browserActionIndexByTs.set(actionMessage.ts, actionIndex + 1)
+
+			while (
+				resultCursor < browserActionResults.length &&
+				browserActionResults[resultCursor].ts <= actionMessage.ts
+			) {
+				resultCursor++
+			}
+
+			nextBrowserActionResultByTs.set(actionMessage.ts, browserActionResults[resultCursor])
+		}
+
+		return {
+			hasCheckpoint: modifiedMessages.some((message) => message.say === "checkpoint_saved"),
+			lastModifiedMessage: modifiedMessages.at(-1),
+			totalBrowserActions: browserActions.length,
+			browserActionIndexByTs,
+			nextBrowserActionResultByTs,
+		}
+	}, [modifiedMessages])
+
+	useEffect(() => {
+		const viewportStart = Math.max(0, visibleMessages.length - 100)
+
+		cacheCleanupSnapshotRef.current = {
+			currentMessageIds: new Set(modifiedMessages.map((message: ClineMessage) => message.ts)),
+			viewportMessageIds: new Set(
+				visibleMessages.slice(viewportStart).map((message: ClineMessage) => message.ts),
+			),
+		}
+	}, [modifiedMessages, visibleMessages])
 
 	// scrolling
 
@@ -1384,7 +1566,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				if (isTaller) {
 					scrollToBottomSmooth()
 				} else {
-					setTimeout(() => scrollToBottomAuto(), 0)
+					scrollToBottomAuto()
 				}
 			}
 		},
@@ -1439,13 +1621,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const handleSuggestionClickInRow = useCallback(
 		(suggestion: SuggestionItem, event?: React.MouseEvent) => {
+			const currentAsk = getCurrentAskForInteraction()
+			const isFollowUpSuggestionSubmit = currentAsk === "followup" && !event?.shiftKey
+
+			if (isFollowUpSuggestionSubmit && !tryBeginFollowUpSuggestionActionPending()) {
+				return
+			}
+
 			// Mark that user has responded if this is a manual click (not auto-approval)
 			if (event) {
 				userRespondedRef.current = true
 			}
 
 			// Mark the current follow-up question as answered when a suggestion is clicked
-			if (clineAsk === "followup" && !event?.shiftKey) {
+			if (isFollowUpSuggestionSubmit) {
 				markFollowUpAsAnswered()
 			}
 
@@ -1468,12 +1657,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				// Don't clear the input value when sending a follow-up choice
 				// The message should be sent but the text area should preserve what the user typed
 				const preservedInput = inputValueRef.current
-				handleSendMessage(suggestion.answer, [])
+				handleSendMessage(suggestion.answer, [], { followUpInteractionSource: "suggestion" })
 				// Restore the input value after sending
 				setInputValue(preservedInput)
 			}
 		},
-		[handleSendMessage, setInputValue, switchToMode, alwaysAllowModeSwitch, clineAsk, markFollowUpAsAnswered],
+		[
+			handleSendMessage,
+			setInputValue,
+			switchToMode,
+			alwaysAllowModeSwitch,
+			markFollowUpAsAnswered,
+			getCurrentAskForInteraction,
+			tryBeginFollowUpSuggestionActionPending,
+		],
 	)
 
 	const handleBatchFileResponse = useCallback((response: { [key: string]: boolean }) => {
@@ -1483,19 +1680,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	const itemContent = useCallback(
 		(index: number, messageOrGroup: ClineMessage) => {
-			const hasCheckpoint = modifiedMessages.some((message) => message.say === "checkpoint_saved")
-
 			// Check if this is a browser action message
 			if (messageOrGroup.type === "say" && messageOrGroup.say === "browser_action") {
-				// Find the corresponding result message by looking for the next browser_action_result after this action's timestamp
-				const nextMessage = modifiedMessages.find(
-					(m) => m.ts > messageOrGroup.ts && m.say === "browser_action_result",
-				)
-
-				// Calculate action index and total count
-				const browserActions = modifiedMessages.filter((m) => m.say === "browser_action")
-				const actionIndex = browserActions.findIndex((m) => m.ts === messageOrGroup.ts) + 1
-				const totalActions = browserActions.length
+				const nextMessage = rowRenderMetadata.nextBrowserActionResultByTs.get(messageOrGroup.ts)
+				const actionIndex = rowRenderMetadata.browserActionIndexByTs.get(messageOrGroup.ts) ?? 1
+				const totalActions = rowRenderMetadata.totalBrowserActions
 
 				return (
 					<BrowserActionRow
@@ -1520,13 +1709,19 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					message={messageOrGroup}
 					isExpanded={expandedRows[messageOrGroup.ts] || false}
 					onToggleExpand={toggleRowExpansion} // This was already stabilized
-					lastModifiedMessage={modifiedMessages.at(-1)} // Original direct access
+					lastModifiedMessage={rowRenderMetadata.lastModifiedMessage}
 					isLast={index === groupedMessages.length - 1} // Original direct access
 					onHeightChange={handleRowHeightChange}
 					isStreaming={isStreaming}
 					onSuggestionClick={handleSuggestionClickInRow} // This was already stabilized
 					onBatchFileResponse={handleBatchFileResponse}
-					isFollowUpAnswered={messageOrGroup.isAnswered === true || messageOrGroup.ts === currentFollowUpTs}
+					isFollowUpAnswered={
+						messageOrGroup.isAnswered === true ||
+						messageOrGroup.ts === currentFollowUpTs ||
+						(messageOrGroup.type === "ask" &&
+							messageOrGroup.ask === "followup" &&
+							messageOrGroup.ts !== activeFollowUpTs)
+					}
 					isFollowUpAutoApprovalPaused={isFollowUpAutoApprovalPaused}
 					editable={
 						messageOrGroup.type === "ask" &&
@@ -1543,20 +1738,21 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							return tool.tool === "updateTodoList" && enableButtons && !!primaryButtonText
 						})()
 					}
-					hasCheckpoint={hasCheckpoint}
+					hasCheckpoint={rowRenderMetadata.hasCheckpoint}
 				/>
 			)
 		},
 		[
 			expandedRows,
 			toggleRowExpansion,
-			modifiedMessages,
+			rowRenderMetadata,
 			groupedMessages.length,
 			handleRowHeightChange,
 			isStreaming,
 			handleSuggestionClickInRow,
 			handleBatchFileResponse,
 			currentFollowUpTs,
+			activeFollowUpTs,
 			isFollowUpAutoApprovalPaused,
 			enableButtons,
 			primaryButtonText,
@@ -1612,10 +1808,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	useImperativeHandle(ref, () => ({
 		acceptInput: () => {
 			const hasInput = inputValue.trim() || selectedImages.length > 0
+			const currentAsk = getCurrentAskForInteraction()
 
 			// Special case: during command_output, queue the message instead of
 			// triggering the primary button action (which would lose the message)
-			if (clineAskRef.current === "command_output" && hasInput) {
+			if (currentAsk === "command_output" && hasInput) {
 				vscode.postMessage({ type: "queueMessage", text: inputValue.trim(), images: selectedImages })
 				setInputValue("")
 				setSelectedImages([])
@@ -1640,6 +1837,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	}
 
 	const areButtonsVisible = showScrollToBottom || primaryButtonText || secondaryButtonText
+	const areActionButtonsEnabled = enableButtons && !isApprovalActionPending
 
 	return (
 		<div
@@ -1810,7 +2008,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 											}>
 											<Button
 												variant="primary"
-												disabled={!enableButtons}
+												disabled={!areActionButtonsEnabled}
+												aria-busy={isApprovalActionPending || undefined}
 												className={secondaryButtonText ? "flex-1 mr-[6px]" : "flex-[2] mr-0"}
 												onClick={() => handlePrimaryButtonClick(inputValue, selectedImages)}>
 												{primaryButtonText}
@@ -1832,7 +2031,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 											}>
 											<Button
 												variant="secondary"
-												disabled={!enableButtons}
+												disabled={!areActionButtonsEnabled}
+												aria-busy={isApprovalActionPending || undefined}
 												className="flex-1 ml-[6px]"
 												onClick={() => handleSecondaryButtonClick(inputValue, selectedImages)}>
 												{secondaryButtonText}

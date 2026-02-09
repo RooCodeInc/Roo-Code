@@ -1,8 +1,12 @@
 import React, { createContext, useContext } from "react"
-import { render, screen, act } from "@testing-library/react"
+import { render, screen, act, fireEvent } from "@testing-library/react"
 import { TooltipProvider } from "@radix-ui/react-tooltip"
 
 import { FollowUpSuggest } from "../FollowUpSuggest"
+import {
+	setFollowUpInteractionInstrumentationSink,
+	type FollowUpInteractionMarker,
+} from "../followUpInteractionInstrumentation"
 
 // Mock the translation hook
 vi.mock("@src/i18n/TranslationContext", () => ({
@@ -81,6 +85,7 @@ describe("FollowUpSuggest", () => {
 
 	afterEach(() => {
 		vi.useRealTimers()
+		setFollowUpInteractionInstrumentationSink(undefined)
 	})
 
 	it("should display countdown timer when auto-approval is enabled", () => {
@@ -287,6 +292,303 @@ describe("FollowUpSuggest", () => {
 
 		// Verify onCancelAutoApproval was called when the countdown was stopped
 		expect(mockOnCancelAutoApproval).toHaveBeenCalled()
+	})
+
+	it("should hide follow-up controls immediately after accepting a suggestion", () => {
+		renderWithTestProviders(
+			<FollowUpSuggest
+				suggestions={mockSuggestions}
+				onSuggestionClick={mockOnSuggestionClick}
+				ts={123}
+				onCancelAutoApproval={mockOnCancelAutoApproval}
+				isAnswered={false}
+			/>,
+			defaultTestState,
+		)
+
+		const firstSuggestionButton = screen.getByRole("button", { name: "First suggestion" })
+		fireEvent.click(firstSuggestionButton)
+
+		expect(mockOnSuggestionClick).toHaveBeenCalledWith(mockSuggestions[0], expect.any(Object))
+		expect(mockOnCancelAutoApproval).toHaveBeenCalled()
+
+		// Terminal follow-up state should remove actionable controls on the next render cycle.
+		expect(screen.queryByRole("button", { name: "First suggestion" })).not.toBeInTheDocument()
+		expect(screen.queryByRole("button", { name: "Second suggestion" })).not.toBeInTheDocument()
+		expect(screen.queryByText(/Selecting in \d+s/)).not.toBeInTheDocument()
+	})
+
+	it("emits deterministic click instrumentation marker when a suggestion is clicked", () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		renderWithTestProviders(
+			<FollowUpSuggest
+				suggestions={mockSuggestions}
+				onSuggestionClick={mockOnSuggestionClick}
+				ts={123}
+				onCancelAutoApproval={mockOnCancelAutoApproval}
+				isAnswered={false}
+			/>,
+			defaultTestState,
+		)
+
+		const firstSuggestionButton = screen.getByRole("button", { name: "First suggestion" })
+		fireEvent.click(firstSuggestionButton)
+
+		expect(markers).toHaveLength(1)
+		expect(markers[0]).toMatchObject({
+			stage: "click",
+			followUpTs: 123,
+			source: "follow_up_suggest",
+		})
+		expect(typeof markers[0].atMs).toBe("number")
+	})
+
+	it("prevents duplicate non-shift clicks from re-firing handler and instrumentation after terminal transition", () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		renderWithTestProviders(
+			<FollowUpSuggest
+				suggestions={mockSuggestions}
+				onSuggestionClick={mockOnSuggestionClick}
+				ts={123}
+				onCancelAutoApproval={mockOnCancelAutoApproval}
+				isAnswered={false}
+			/>,
+			defaultTestState,
+		)
+
+		const firstSuggestionButton = screen.getByRole("button", { name: "First suggestion" })
+
+		fireEvent.click(firstSuggestionButton)
+		// Immediate second click before React commit should be blocked by followUpTerminalRef.
+		fireEvent.click(firstSuggestionButton)
+
+		expect(mockOnSuggestionClick).toHaveBeenCalledTimes(1)
+		expect(mockOnCancelAutoApproval).toHaveBeenCalled()
+		expect(markers.map((marker) => marker.stage)).toEqual(["click"])
+		expect(markers[0]).toMatchObject({
+			followUpTs: 123,
+			source: "follow_up_suggest",
+		})
+	})
+
+	/**
+	 * Verifies state-machine style suppression when a second suggestion click is attempted
+	 * before the first click's terminal transition has fully committed to the DOM.
+	 */
+	it("rejects rapid cross-suggestion clicks while pending, allowing only the first dispatch", () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		renderWithTestProviders(
+			<FollowUpSuggest
+				suggestions={mockSuggestions}
+				onSuggestionClick={mockOnSuggestionClick}
+				ts={123}
+				onCancelAutoApproval={mockOnCancelAutoApproval}
+				isAnswered={false}
+			/>,
+			defaultTestState,
+		)
+
+		const firstSuggestionButton = screen.getByRole("button", { name: "First suggestion" })
+		const secondSuggestionButton = screen.getByRole("button", { name: "Second suggestion" })
+
+		fireEvent.click(firstSuggestionButton)
+		// Attempt a competing click against another option in the same interaction turn.
+		fireEvent.click(secondSuggestionButton)
+
+		expect(mockOnSuggestionClick).toHaveBeenCalledTimes(1)
+		expect(mockOnSuggestionClick).toHaveBeenCalledWith(mockSuggestions[0], expect.any(Object))
+		expect(markers.map((marker) => marker.stage)).toEqual(["click"])
+		expect(screen.queryByRole("button", { name: "First suggestion" })).not.toBeInTheDocument()
+		expect(screen.queryByRole("button", { name: "Second suggestion" })).not.toBeInTheDocument()
+	})
+
+	it("keeps follow-up actionable for shift-click copy behavior, then transitions terminal on normal click", () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		renderWithTestProviders(
+			<FollowUpSuggest
+				suggestions={mockSuggestions}
+				onSuggestionClick={mockOnSuggestionClick}
+				ts={123}
+				onCancelAutoApproval={mockOnCancelAutoApproval}
+				isAnswered={false}
+			/>,
+			defaultTestState,
+		)
+
+		const firstSuggestionButton = screen.getByRole("button", { name: "First suggestion" })
+
+		fireEvent.click(firstSuggestionButton, { shiftKey: true })
+
+		expect(mockOnSuggestionClick).toHaveBeenCalledTimes(1)
+		expect(mockOnSuggestionClick).toHaveBeenNthCalledWith(
+			1,
+			mockSuggestions[0],
+			expect.objectContaining({ shiftKey: true }),
+		)
+		// Shift-click should not terminalize the follow-up controls.
+		expect(screen.getByRole("button", { name: "First suggestion" })).toBeInTheDocument()
+
+		fireEvent.click(screen.getByRole("button", { name: "First suggestion" }))
+
+		expect(mockOnSuggestionClick).toHaveBeenCalledTimes(2)
+		expect(mockOnSuggestionClick).toHaveBeenNthCalledWith(
+			2,
+			mockSuggestions[0],
+			expect.objectContaining({ shiftKey: false }),
+		)
+		expect(screen.queryByRole("button", { name: "First suggestion" })).not.toBeInTheDocument()
+		expect(markers.map((marker) => marker.stage)).toEqual(["click", "click"])
+	})
+
+	/**
+	 * Ensures once terminalized, rerenders cannot regress the component back to an actionable state.
+	 * This guards against invalid/out-of-order lifecycle progression under parent rerenders.
+	 */
+	it("accepts only forward follow-up lifecycle progression under rerender pressure", () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		const { rerender } = renderWithTestProviders(
+			<FollowUpSuggest
+				suggestions={mockSuggestions}
+				onSuggestionClick={mockOnSuggestionClick}
+				ts={123}
+				onCancelAutoApproval={mockOnCancelAutoApproval}
+				isAnswered={false}
+			/>,
+			defaultTestState,
+		)
+
+		const firstSuggestionButton = screen.getByRole("button", { name: "First suggestion" })
+		fireEvent.click(firstSuggestionButton)
+
+		expect(mockOnSuggestionClick).toHaveBeenCalledTimes(1)
+		expect(markers.map((marker) => marker.stage)).toEqual(["click"])
+		expect(screen.queryByRole("button", { name: "First suggestion" })).not.toBeInTheDocument()
+
+		const rerenderSequence: boolean[] = [false, true, false]
+		for (const isAnswered of rerenderSequence) {
+			rerender(
+				<TestExtensionStateProvider value={defaultTestState}>
+					<TooltipProvider>
+						<FollowUpSuggest
+							suggestions={mockSuggestions}
+							onSuggestionClick={mockOnSuggestionClick}
+							ts={123}
+							onCancelAutoApproval={mockOnCancelAutoApproval}
+							isAnswered={isAnswered}
+						/>
+					</TooltipProvider>
+				</TestExtensionStateProvider>,
+			)
+
+			expect(screen.queryByRole("button", { name: "First suggestion" })).not.toBeInTheDocument()
+			expect(screen.queryByRole("button", { name: "Second suggestion" })).not.toBeInTheDocument()
+		}
+
+		expect(mockOnSuggestionClick).toHaveBeenCalledTimes(1)
+	})
+
+	it("keeps answered state forward-only for a single follow-up interaction even if parent rerenders isAnswered out-of-order", () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		const { rerender } = renderWithTestProviders(
+			<FollowUpSuggest
+				suggestions={mockSuggestions}
+				onSuggestionClick={mockOnSuggestionClick}
+				ts={123}
+				onCancelAutoApproval={mockOnCancelAutoApproval}
+				isAnswered={true}
+			/>,
+			defaultTestState,
+		)
+
+		expect(screen.queryByRole("button", { name: "First suggestion" })).not.toBeInTheDocument()
+
+		rerender(
+			<TestExtensionStateProvider value={defaultTestState}>
+				<TooltipProvider>
+					<FollowUpSuggest
+						suggestions={mockSuggestions}
+						onSuggestionClick={mockOnSuggestionClick}
+						ts={123}
+						onCancelAutoApproval={mockOnCancelAutoApproval}
+						isAnswered={false}
+					/>
+				</TooltipProvider>
+			</TestExtensionStateProvider>,
+		)
+
+		expect(screen.queryByRole("button", { name: "First suggestion" })).not.toBeInTheDocument()
+		expect(screen.queryByRole("button", { name: "Second suggestion" })).not.toBeInTheDocument()
+		expect(markers).toHaveLength(0)
+		expect(mockOnSuggestionClick).not.toHaveBeenCalled()
+	})
+
+	it("allows deterministic retry on remount without stale disabled or hidden controls", () => {
+		const markers: FollowUpInteractionMarker[] = []
+		setFollowUpInteractionInstrumentationSink((marker) => {
+			markers.push(marker)
+		})
+
+		const firstRender = renderWithTestProviders(
+			<FollowUpSuggest
+				suggestions={mockSuggestions}
+				onSuggestionClick={mockOnSuggestionClick}
+				ts={123}
+				onCancelAutoApproval={mockOnCancelAutoApproval}
+				isAnswered={false}
+			/>,
+			defaultTestState,
+		)
+
+		fireEvent.click(screen.getByRole("button", { name: "First suggestion" }))
+
+		expect(mockOnSuggestionClick).toHaveBeenCalledTimes(1)
+		expect(screen.queryByRole("button", { name: "First suggestion" })).not.toBeInTheDocument()
+
+		firstRender.unmount()
+
+		renderWithTestProviders(
+			<FollowUpSuggest
+				suggestions={mockSuggestions}
+				onSuggestionClick={mockOnSuggestionClick}
+				ts={456}
+				onCancelAutoApproval={mockOnCancelAutoApproval}
+				isAnswered={false}
+			/>,
+			defaultTestState,
+		)
+
+		const retryButton = screen.getByRole("button", { name: "First suggestion" })
+		expect(retryButton).toBeEnabled()
+
+		fireEvent.click(retryButton)
+
+		expect(mockOnSuggestionClick).toHaveBeenCalledTimes(2)
+		expect(markers.map((marker) => marker.stage)).toEqual(["click", "click"])
+		expect(markers.map((marker) => marker.followUpTs)).toEqual([123, 456])
 	})
 
 	it("should handle race condition when timeout fires but user has already responded", () => {
