@@ -100,6 +100,7 @@ import { buildNativeToolsArrayWithRestrictions } from "./build-tools"
 
 // core modules
 import { ToolRepetitionDetector } from "../tools/ToolRepetitionDetector"
+import { ReasoningRepetitionDetector } from "../tools/ReasoningRepetitionDetector"
 import { restoreTodoListForTask } from "../tools/UpdateTodoListTool"
 import { FileContextTracker } from "../context-tracking/FileContextTracker"
 import { RooIgnoreController } from "../ignore/RooIgnoreController"
@@ -298,6 +299,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	}
 
 	toolRepetitionDetector: ToolRepetitionDetector
+	reasoningRepetitionDetector: ReasoningRepetitionDetector
+	reasoningRepetitionAborted: boolean = false
 	rooIgnoreController?: RooIgnoreController
 	rooProtectedController?: RooProtectedController
 	fileContextTracker: FileContextTracker
@@ -689,6 +692,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.diffStrategy = new MultiSearchReplaceDiffStrategy()
 
 		this.toolRepetitionDetector = new ToolRepetitionDetector(this.consecutiveMistakeLimit)
+		this.reasoningRepetitionDetector = new ReasoningRepetitionDetector()
 
 		// Initialize todo list if provided
 		if (initialTodos && initialTodos.length > 0) {
@@ -2935,6 +2939,8 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.didToolFailInCurrentTurn = false
 				this.presentAssistantMessageLocked = false
 				this.presentAssistantMessageHasPendingUpdates = false
+				this.reasoningRepetitionDetector.reset()
+				this.reasoningRepetitionAborted = false
 				// No legacy text-stream tool parser.
 				this.streamingToolCallIndices.clear()
 				// Clear any leftover streaming tool call state from previous interrupted streams
@@ -2997,6 +3003,22 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						switch (chunk.type) {
 							case "reasoning": {
 								reasoningMessage += chunk.text
+
+								// Detect repetitive reasoning during streaming to abort early
+								// and save tokens when the model gets stuck in a loop.
+								if (this.reasoningRepetitionDetector.addChunk(chunk.text)) {
+									console.warn(
+										`[Task#${this.taskId}.${this.instanceId}] Reasoning repetition detected, aborting stream`,
+									)
+									await this.say(
+										"error",
+										"Repetitive reasoning detected - the model's thinking got stuck in a loop. Aborting to save tokens.",
+									)
+									this.reasoningRepetitionAborted = true
+									this.cancelCurrentRequest()
+									break
+								}
+
 								// Only apply formatting if the message contains sentence-ending punctuation followed by **
 								let formattedReasoning = reasoningMessage
 								if (reasoningMessage.includes("**")) {
@@ -3310,6 +3332,31 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					// Cline instance to finish aborting (error is thrown here when
 					// any function in the for loop throws due to this.abort).
 					if (!this.abandoned) {
+						// Check if this abort was triggered by reasoning repetition detection.
+						// In this case we don't retry - instead we continue the task loop with
+						// a guidance message to break the model out of the loop.
+						if (this.reasoningRepetitionAborted) {
+							this.reasoningRepetitionAborted = false
+							this.consecutiveMistakeCount++
+
+							// Clean up partial state without treating it as a streaming failure
+							await abortStream("streaming_failed")
+
+							// Push guidance message onto the stack so the model gets feedback
+							// about the repetition and can try a different approach
+							stack.push({
+								userContent: [
+									{
+										type: "text" as const,
+										text: formatResponse.reasoningRepetitionDetected(),
+									},
+								],
+								includeFileDetails: false,
+							})
+
+							continue
+						}
+
 						// Determine cancellation reason
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
