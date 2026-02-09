@@ -1,0 +1,35 @@
+# Roo Code
+
+> Your AI Software Engineering Team in the IDE and the Cloud.
+
+Roo Code is an open-source, AI-powered coding agent that works as a VS Code extension and as autonomous cloud agents. It goes beyond simple autocompletion -- reading and writing across multiple files, executing terminal commands, reviewing PRs, and adapting to your workflow.
+
+## Products
+
+- [Roo Code VS Code Extension](https://roocode.com/extension): Free, open-source AI coding assistant that runs locally in VS Code. Model-agnostic, with role-specific modes and deep project-wide context.
+- [Roo Code Cloud](https://roocode.com/cloud): Autonomous AI agents in the cloud that handle tasks like planning, coding, PR review, and PR fixing -- triggered from the web, Slack, Linear, or GitHub.
+- [Roo Code for Slack](https://roocode.com/slack): Start tasks and collaborate with cloud agents directly from Slack channels.
+- [Roo Code for Linear](https://roocode.com/linear): Assign Linear issues to Roo Code and get PRs back without switching tools.
+- [Roo Code Router](https://roocode.com/provider): Access top AI models at cost with no markup.
+
+## Key Links
+
+- [Documentation](https://docs.roocode.com)
+- [Pricing](https://roocode.com/pricing)
+- [Enterprise](https://roocode.com/enterprise)
+- [Evals & Benchmarks](https://roocode.com/evals)
+- [GitHub Repository](https://github.com/RooCodeInc/Roo-Code)
+- [Blog](https://blog.roocode.com)
+- [Trust & Security Center](https://trust.roocode.com)
+- [Full LLM Context](https://roocode.com/llms-full.txt)
+
+## Quick Facts
+
+- Open source (Apache 2.0 license)
+- VS Code extension with millions of installs
+- Model-agnostic: works with OpenAI, Anthropic, Google Gemini, DeepSeek, Mistral, Ollama, and dozens more
+- Role-specific modes: Architect, Code, Ask, Debug, Test, plus custom modes
+- Cloud agents: Planner, Coder, Explainer, PR Reviewer, PR Fixer
+- Integrations: Slack, Linear, GitHub
+- SOC2 Type 2 compliant
+- Free extension (bring your own API key); Cloud has free and paid tiers
