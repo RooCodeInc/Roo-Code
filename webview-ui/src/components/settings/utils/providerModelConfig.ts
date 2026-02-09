@@ -130,6 +130,7 @@ export const isStaticModelProvider = (provider: ProviderName): boolean => {
 export const PROVIDERS_WITH_CUSTOM_MODEL_UI: ProviderName[] = [
 	"openrouter",
 	"requesty",
+	"keywords-ai",
 	"unbound",
 	"deepinfra",
 	"openai", // OpenAI Compatible

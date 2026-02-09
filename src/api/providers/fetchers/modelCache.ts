@@ -25,6 +25,7 @@ import { GetModelsOptions } from "../../../shared/api"
 import { getOllamaModels } from "./ollama"
 import { getLMStudioModels } from "./lmstudio"
 import { getIOIntelligenceModels } from "./io-intelligence"
+import { getKeywordsAiModels } from "./keywords-ai"
 import { getDeepInfraModels } from "./deepinfra"
 import { getHuggingFaceModels } from "./huggingface"
 import { getRooModels } from "./roo"
@@ -92,6 +93,9 @@ async function fetchModelsFromProvider(options: GetModelsOptions): Promise<Model
 			break
 		case "io-intelligence":
 			models = await getIOIntelligenceModels(options.apiKey)
+			break
+		case "keywords-ai":
+			models = await getKeywordsAiModels(options.apiKey, options.baseUrl)
 			break
 		case "vercel-ai-gateway":
 			models = await getVercelAiGatewayModels()
