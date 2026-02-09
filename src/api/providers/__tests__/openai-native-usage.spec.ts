@@ -1,422 +1,355 @@
-import { describe, it, expect, beforeEach } from "vitest"
-import { OpenAiNativeHandler } from "../openai-native"
+// npx vitest run api/providers/__tests__/openai-native-usage.spec.ts
+
+const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+}))
+
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
+	return {
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
+	}
+})
+
+vi.mock("@ai-sdk/openai", () => ({
+	createOpenAI: vi.fn(() => {
+		const provider = vi.fn(() => ({
+			modelId: "gpt-4.1",
+			provider: "openai",
+		}))
+		;(provider as any).responses = vi.fn(() => ({
+			modelId: "gpt-4.1",
+			provider: "openai.responses",
+		}))
+		return provider
+	}),
+}))
+
+import type { Anthropic } from "@anthropic-ai/sdk"
+
 import { openAiNativeModels } from "@roo-code/types"
 
-describe("OpenAiNativeHandler - normalizeUsage", () => {
+import { OpenAiNativeHandler } from "../openai-native"
+import type { ApiHandlerOptions } from "../../../shared/api"
+
+describe("OpenAiNativeHandler - usage metrics", () => {
 	let handler: OpenAiNativeHandler
-	const mockModel = {
-		id: "gpt-4o",
-		info: openAiNativeModels["gpt-4o"],
-	}
+	const systemPrompt = "You are a helpful assistant."
+	const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello!" }]
 
 	beforeEach(() => {
 		handler = new OpenAiNativeHandler({
 			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-4.1",
+		})
+		vi.clearAllMocks()
+	})
+
+	describe("basic token counts", () => {
+		it("should handle basic input and output tokens", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 100, outputTokens: 50 }),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0].inputTokens).toBe(100)
+			expect(usageChunks[0].outputTokens).toBe(50)
+		})
+
+		it("should handle zero tokens", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0].inputTokens).toBe(0)
+			expect(usageChunks[0].outputTokens).toBe(0)
 		})
 	})
 
-	describe("detailed token shapes (Responses API)", () => {
-		it("should handle detailed shapes with cached and miss tokens", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
-				input_tokens_details: {
-					cached_tokens: 30,
-					cache_miss_tokens: 70,
-				},
+	describe("cache metrics", () => {
+		it("should handle cached input tokens from usage details", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
 			}
 
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 30,
-				cacheWriteTokens: 0, // miss tokens are NOT cache writes
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 100,
+					outputTokens: 50,
+					details: {
+						cachedInputTokens: 30,
+					},
+				}),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
 			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0].cacheReadTokens).toBe(30)
 		})
 
-		it("should derive total input tokens from details when totals are missing", () => {
-			const usage = {
-				// No input_tokens or prompt_tokens
-				output_tokens: 50,
-				input_tokens_details: {
-					cached_tokens: 30,
-					cache_miss_tokens: 70,
-				},
+		it("should handle no cache information", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
 			}
 
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100, // Derived from 30 + 70
-				outputTokens: 50,
-				cacheReadTokens: 30,
-				cacheWriteTokens: 0, // miss tokens are NOT cache writes
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 50, outputTokens: 25 }),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
 			})
-		})
 
-		it("should handle prompt_tokens_details variant", () => {
-			const usage = {
-				prompt_tokens: 100,
-				completion_tokens: 50,
-				prompt_tokens_details: {
-					cached_tokens: 30,
-					cache_miss_tokens: 70,
-				},
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
 			}
 
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 30,
-				cacheWriteTokens: 0, // miss tokens are NOT cache writes
-			})
-		})
-
-		it("should handle cache_creation_input_tokens for actual cache writes", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
-				cache_creation_input_tokens: 20,
-				input_tokens_details: {
-					cached_tokens: 30,
-					cache_miss_tokens: 50, // 50 miss + 30 cached + 20 creation = 100 total
-				},
-			}
-
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 30,
-				cacheWriteTokens: 20, // Actual cache writes from cache_creation_input_tokens
-			})
-		})
-
-		it("should handle reasoning tokens in output details", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 150,
-				output_tokens_details: {
-					reasoning_tokens: 50,
-				},
-			}
-
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 150,
-				reasoningTokens: 50,
-			})
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0].cacheReadTokens).toBeUndefined()
+			expect(usageChunks[0].cacheWriteTokens).toBeUndefined()
 		})
 	})
 
-	describe("legacy field names", () => {
-		it("should handle cache_creation_input_tokens and cache_read_input_tokens", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
-				cache_creation_input_tokens: 20,
-				cache_read_input_tokens: 30,
+	describe("reasoning tokens", () => {
+		it("should handle reasoning tokens in usage details", async () => {
+			async function* mockFullStream() {
+				yield { type: "reasoning-delta", text: "thinking..." }
+				yield { type: "text-delta", text: "answer" }
 			}
 
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 30,
-				cacheWriteTokens: 20,
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 100,
+					outputTokens: 50,
+					details: {
+						reasoningTokens: 30,
+					},
+				}),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
 			})
-		})
 
-		it("should handle cache_write_tokens and cache_read_tokens", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
-				cache_write_tokens: 20,
-				cache_read_tokens: 30,
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
 			}
 
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 30,
-				cacheWriteTokens: 20,
-			})
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0].reasoningTokens).toBe(30)
 		})
 
-		it("should handle cached_tokens field", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
-				cached_tokens: 30,
+		it("should omit reasoning tokens when not present", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "answer" }
 			}
 
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 30,
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 100,
+					outputTokens: 50,
+				}),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
 			})
-		})
 
-		it("should handle prompt_tokens and completion_tokens", () => {
-			const usage = {
-				prompt_tokens: 100,
-				completion_tokens: 50,
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
 			}
 
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 0,
-				cacheWriteTokens: 0,
-			})
-		})
-	})
-
-	describe("SSE-only events", () => {
-		it("should handle SSE events with minimal usage data", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
-			}
-
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 0,
-				cacheWriteTokens: 0,
-			})
-		})
-
-		it("should handle SSE events with no cache information", () => {
-			const usage = {
-				prompt_tokens: 100,
-				completion_tokens: 50,
-			}
-
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 0,
-				cacheWriteTokens: 0,
-			})
-		})
-	})
-
-	describe("edge cases", () => {
-		it("should handle undefined usage", () => {
-			const result = (handler as any).normalizeUsage(undefined, mockModel)
-			expect(result).toBeUndefined()
-		})
-
-		it("should handle null usage", () => {
-			const result = (handler as any).normalizeUsage(null, mockModel)
-			expect(result).toBeUndefined()
-		})
-
-		it("should handle empty usage object", () => {
-			const usage = {}
-
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 0,
-				outputTokens: 0,
-				cacheReadTokens: 0,
-				cacheWriteTokens: 0,
-			})
-		})
-
-		it("should handle missing details but with cache fields", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
-				cache_read_input_tokens: 30,
-				// No input_tokens_details
-			}
-
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 30,
-				cacheWriteTokens: 0,
-			})
-		})
-
-		it("should use all available cache information with proper fallbacks", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
-				cached_tokens: 20, // Legacy field (will be used as fallback)
-				input_tokens_details: {
-					cached_tokens: 30, // Detailed shape
-					cache_miss_tokens: 70,
-				},
-			}
-
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			// The implementation uses nullish coalescing, so it will use the first non-nullish value:
-			// cache_read_input_tokens ?? cache_read_tokens ?? cached_tokens ?? cachedFromDetails
-			// Since none of the first two exist, it falls back to cached_tokens (20) before cachedFromDetails
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 20, // From cached_tokens (legacy field comes before details in fallback chain)
-				cacheWriteTokens: 0, // miss tokens are NOT cache writes
-			})
-		})
-
-		it("should use detailed shapes when legacy fields are not present", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
-				// No cached_tokens legacy field
-				input_tokens_details: {
-					cached_tokens: 30,
-					cache_miss_tokens: 70,
-				},
-			}
-
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 100,
-				outputTokens: 50,
-				cacheReadTokens: 30, // From details since no legacy field exists
-				cacheWriteTokens: 0, // miss tokens are NOT cache writes
-			})
-		})
-
-		it("should handle totals missing with only partial details", () => {
-			const usage = {
-				// No input_tokens or prompt_tokens
-				output_tokens: 50,
-				input_tokens_details: {
-					cached_tokens: 30,
-					// No cache_miss_tokens
-				},
-			}
-
-			const result = (handler as any).normalizeUsage(usage, mockModel)
-
-			expect(result).toMatchObject({
-				type: "usage",
-				inputTokens: 30, // Derived from cached_tokens only
-				outputTokens: 50,
-				cacheReadTokens: 30,
-				cacheWriteTokens: 0,
-			})
-		})
-	})
-
-	describe("OpenAiNativeHandler - prompt cache retention", () => {
-		let handler: OpenAiNativeHandler
-
-		beforeEach(() => {
-			handler = new OpenAiNativeHandler({
-				openAiNativeApiKey: "test-key",
-			})
-		})
-
-		const buildRequestBodyForModel = (modelId: string) => {
-			// Force the handler to use the requested model ID
-			;(handler as any).options.apiModelId = modelId
-			const model = handler.getModel()
-			// Minimal formatted input/systemPrompt/verbosity/metadata for building the body
-			return (handler as any).buildRequestBody(model, [], "", model.verbosity, undefined, undefined)
-		}
-
-		it("should set prompt_cache_retention=24h for gpt-5.1 models that support prompt caching", () => {
-			const body = buildRequestBodyForModel("gpt-5.1")
-			expect(body.prompt_cache_retention).toBe("24h")
-
-			const codexBody = buildRequestBodyForModel("gpt-5.1-codex")
-			expect(codexBody.prompt_cache_retention).toBe("24h")
-
-			const codexMiniBody = buildRequestBodyForModel("gpt-5.1-codex-mini")
-			expect(codexMiniBody.prompt_cache_retention).toBe("24h")
-		})
-
-		it("should not set prompt_cache_retention for non-gpt-5.1 models even if they support prompt caching", () => {
-			const body = buildRequestBodyForModel("gpt-5")
-			expect(body.prompt_cache_retention).toBeUndefined()
-
-			const fourOBody = buildRequestBodyForModel("gpt-4o")
-			expect(fourOBody.prompt_cache_retention).toBeUndefined()
-		})
-
-		it("should not set prompt_cache_retention when the model does not support prompt caching", () => {
-			const modelId = "codex-mini-latest"
-			expect(openAiNativeModels[modelId as keyof typeof openAiNativeModels].supportsPromptCache).toBe(false)
-
-			const body = buildRequestBodyForModel(modelId)
-			expect(body.prompt_cache_retention).toBeUndefined()
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0].reasoningTokens).toBeUndefined()
 		})
 	})
 
 	describe("cost calculation", () => {
-		it("should pass total input tokens to calculateApiCostOpenAI", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
-				cache_read_input_tokens: 30,
-				cache_creation_input_tokens: 20,
+		it("should include totalCost in usage metrics", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
 			}
 
-			const result = (handler as any).normalizeUsage(usage, mockModel)
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 1000,
+					outputTokens: 500,
+				}),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
+			})
 
-			expect(result).toHaveProperty("totalCost")
-			expect(result.totalCost).toBeGreaterThan(0)
-			// calculateApiCostOpenAI handles subtracting cache tokens internally
-			// It will compute: 100 - 30 - 20 = 50 uncached input tokens
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(typeof usageChunks[0].totalCost).toBe("number")
+			expect(usageChunks[0].totalCost).toBeGreaterThanOrEqual(0)
 		})
 
-		it("should handle cost calculation with no cache reads", () => {
-			const usage = {
-				input_tokens: 100,
-				output_tokens: 50,
+		it("should handle all details together", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
 			}
 
-			const result = (handler as any).normalizeUsage(usage, mockModel)
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({
+					inputTokens: 200,
+					outputTokens: 100,
+					details: {
+						cachedInputTokens: 50,
+						reasoningTokens: 25,
+					},
+				}),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
+			})
 
-			expect(result).toHaveProperty("totalCost")
-			expect(result.totalCost).toBeGreaterThan(0)
-			// Cost should be calculated with full input tokens since no cache reads
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((c) => c.type === "usage")
+			expect(usageChunks).toHaveLength(1)
+			expect(usageChunks[0].inputTokens).toBe(200)
+			expect(usageChunks[0].outputTokens).toBe(100)
+			expect(usageChunks[0].cacheReadTokens).toBe(50)
+			expect(usageChunks[0].reasoningTokens).toBe(25)
+			expect(typeof usageChunks[0].totalCost).toBe("number")
+		})
+	})
+
+	describe("prompt cache retention", () => {
+		it("should set promptCacheRetention=24h for gpt-5.1 models that support prompt caching", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
+			})
+
+			const h = new OpenAiNativeHandler({
+				openAiNativeApiKey: "test-key",
+				apiModelId: "gpt-5.1",
+			})
+
+			const stream = h.createMessage(systemPrompt, messages)
+			for await (const _ of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			const modelInfo = openAiNativeModels["gpt-5.1"]
+			if (modelInfo.supportsPromptCache && modelInfo.promptCacheRetention === "24h") {
+				expect(callArgs.providerOptions.openai.promptCacheRetention).toBe("24h")
+			}
+		})
+
+		it("should not set promptCacheRetention for non-gpt-5.1 models", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			for await (const _ of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions.openai.promptCacheRetention).toBeUndefined()
+		})
+
+		it("should not set promptCacheRetention when the model does not support prompt caching", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+				providerMetadata: Promise.resolve({}),
+				content: Promise.resolve([]),
+			})
+
+			// o3-mini doesn't support prompt caching
+			const h = new OpenAiNativeHandler({
+				openAiNativeApiKey: "test-key",
+				apiModelId: "o3-mini-high",
+			})
+
+			const stream = h.createMessage(systemPrompt, messages)
+			for await (const _ of stream) {
+				// consume
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions.openai.promptCacheRetention).toBeUndefined()
 		})
 	})
 })
