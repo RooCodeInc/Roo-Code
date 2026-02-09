@@ -1,39 +1,109 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
+import { createGateway, streamText, generateText, ToolSet } from "ai"
 
 import {
 	vercelAiGatewayDefaultModelId,
 	vercelAiGatewayDefaultModelInfo,
 	VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE,
-	VERCEL_AI_GATEWAY_PROMPT_CACHING_MODELS,
+	type ModelInfo,
+	type ModelRecord,
 } from "@roo-code/types"
 
-import { ApiHandlerOptions } from "../../shared/api"
+import type { ApiHandlerOptions } from "../../shared/api"
 
-import { ApiStream } from "../transform/stream"
-import { convertToOpenAiMessages } from "../transform/openai-format"
-import { addCacheBreakpoints } from "../transform/caching/vercel-ai-gateway"
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	mapToolChoice,
+	handleAiSdkError,
+} from "../transform/ai-sdk"
+import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 
+import { DEFAULT_HEADERS } from "./constants"
+import { BaseProvider } from "./base-provider"
+import { getModels, getModelsFromCache } from "./fetchers/modelCache"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import { RouterProvider } from "./router-provider"
 
-// Extend OpenAI's CompletionUsage to include Vercel AI Gateway specific fields
-interface VercelAiGatewayUsage extends OpenAI.CompletionUsage {
-	cache_creation_input_tokens?: number
-	cost?: number
-}
+/**
+ * Vercel AI Gateway provider using the built-in AI SDK gateway support.
+ * Uses `createGateway` from the `ai` package to communicate with the
+ * Vercel AI Gateway v3 API at https://ai-gateway.vercel.sh/v3/ai.
+ */
+export class VercelAiGatewayHandler extends BaseProvider implements SingleCompletionHandler {
+	protected options: ApiHandlerOptions
+	protected provider: ReturnType<typeof createGateway>
+	private readonly name = "vercel-ai-gateway" as const
+	private models: ModelRecord = {}
 
-export class VercelAiGatewayHandler extends RouterProvider implements SingleCompletionHandler {
 	constructor(options: ApiHandlerOptions) {
-		super({
-			options,
-			name: "vercel-ai-gateway",
-			baseURL: "https://ai-gateway.vercel.sh/v1",
-			apiKey: options.vercelAiGatewayApiKey,
-			modelId: options.vercelAiGatewayModelId,
-			defaultModelId: vercelAiGatewayDefaultModelId,
-			defaultModelInfo: vercelAiGatewayDefaultModelInfo,
+		super()
+		this.options = options
+
+		this.provider = createGateway({
+			apiKey: options.vercelAiGatewayApiKey ?? "not-provided",
+			headers: DEFAULT_HEADERS,
 		})
+	}
+
+	override getModel(): { id: string; info: ModelInfo } {
+		const id = this.options.vercelAiGatewayModelId ?? vercelAiGatewayDefaultModelId
+
+		if (this.models[id]) {
+			return { id, info: this.models[id] }
+		}
+
+		const cachedModels = getModelsFromCache(this.name)
+		if (cachedModels?.[id]) {
+			this.models = cachedModels
+			return { id, info: cachedModels[id] }
+		}
+
+		return { id: vercelAiGatewayDefaultModelId, info: vercelAiGatewayDefaultModelInfo }
+	}
+
+	public async fetchModel() {
+		this.models = await getModels({
+			provider: this.name,
+			apiKey: this.options.vercelAiGatewayApiKey ?? "not-provided",
+		})
+		return this.getModel()
+	}
+
+	protected getLanguageModel(modelId?: string) {
+		const id = modelId ?? this.getModel().id
+		return this.provider(id)
+	}
+
+	protected supportsTemperature(modelId: string): boolean {
+		return !modelId.startsWith("openai/o3-mini")
+	}
+
+	protected processUsageMetrics(
+		usage: {
+			inputTokens?: number
+			outputTokens?: number
+			details?: {
+				cachedInputTokens?: number
+				reasoningTokens?: number
+			}
+		},
+		providerMetadata?: Record<string, Record<string, unknown>>,
+	): ApiStreamUsageChunk {
+		const gatewayMeta = providerMetadata?.gateway as Record<string, unknown> | undefined
+
+		const cacheWriteTokens = (gatewayMeta?.cache_creation_input_tokens as number) ?? undefined
+		const cacheReadTokens = usage.details?.cachedInputTokens ?? (gatewayMeta?.cached_tokens as number) ?? undefined
+		const totalCost = (gatewayMeta?.cost as number) ?? 0
+
+		return {
+			type: "usage",
+			inputTokens: usage.inputTokens || 0,
+			outputTokens: usage.outputTokens || 0,
+			cacheWriteTokens,
+			cacheReadTokens,
+			totalCost,
+		}
 	}
 
 	override async *createMessage(
@@ -42,91 +112,67 @@ export class VercelAiGatewayHandler extends RouterProvider implements SingleComp
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info } = await this.fetchModel()
+		const languageModel = this.getLanguageModel(modelId)
 
-		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
-			{ role: "system", content: systemPrompt },
-			...convertToOpenAiMessages(messages),
-		]
+		const aiSdkMessages = convertToAiSdkMessages(messages)
 
-		if (VERCEL_AI_GATEWAY_PROMPT_CACHING_MODELS.has(modelId) && info.supportsPromptCache) {
-			addCacheBreakpoints(systemPrompt, openAiMessages)
-		}
+		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
 
-		const body: OpenAI.Chat.ChatCompletionCreateParams = {
-			model: modelId,
-			messages: openAiMessages,
-			temperature: this.supportsTemperature(modelId)
-				? (this.options.modelTemperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE)
-				: undefined,
-			max_completion_tokens: info.maxTokens,
-			stream: true,
-			stream_options: { include_usage: true },
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
-		}
+		const temperature = this.supportsTemperature(modelId)
+			? (this.options.modelTemperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE)
+			: undefined
 
-		const completion = await this.client.chat.completions.create(body)
+		const result = streamText({
+			model: languageModel,
+			system: systemPrompt,
+			messages: aiSdkMessages,
+			temperature,
+			maxOutputTokens: info.maxTokens ?? undefined,
+			tools: aiSdkTools,
+			toolChoice: mapToolChoice(metadata?.tool_choice),
+		})
 
-		for await (const chunk of completion) {
-			const delta = chunk.choices[0]?.delta
-			if (delta?.content) {
-				yield {
-					type: "text",
-					text: delta.content,
+		try {
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
 				}
 			}
 
-			// Emit raw tool call chunks - NativeToolCallParser handles state management
-			if (delta?.tool_calls) {
-				for (const toolCall of delta.tool_calls) {
-					yield {
-						type: "tool_call_partial",
-						index: toolCall.index,
-						id: toolCall.id,
-						name: toolCall.function?.name,
-						arguments: toolCall.function?.arguments,
-					}
-				}
+			const usage = await result.usage
+			const providerMetadata = await result.providerMetadata
+			if (usage) {
+				yield this.processUsageMetrics(usage, providerMetadata as any)
 			}
-
-			if (chunk.usage) {
-				const usage = chunk.usage as VercelAiGatewayUsage
-				yield {
-					type: "usage",
-					inputTokens: usage.prompt_tokens || 0,
-					outputTokens: usage.completion_tokens || 0,
-					cacheWriteTokens: usage.cache_creation_input_tokens || undefined,
-					cacheReadTokens: usage.prompt_tokens_details?.cached_tokens || undefined,
-					totalCost: usage.cost ?? 0,
-				}
-			}
+		} catch (error) {
+			throw handleAiSdkError(error, "Vercel AI Gateway")
 		}
 	}
 
 	async completePrompt(prompt: string): Promise<string> {
 		const { id: modelId, info } = await this.fetchModel()
+		const languageModel = this.getLanguageModel(modelId)
+
+		const temperature = this.supportsTemperature(modelId)
+			? (this.options.modelTemperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE)
+			: undefined
 
 		try {
-			const requestOptions: OpenAI.Chat.ChatCompletionCreateParams = {
-				model: modelId,
-				messages: [{ role: "user", content: prompt }],
-				stream: false,
-			}
+			const { text } = await generateText({
+				model: languageModel,
+				prompt,
+				maxOutputTokens: info.maxTokens ?? undefined,
+				temperature,
+			})
 
-			if (this.supportsTemperature(modelId)) {
-				requestOptions.temperature = this.options.modelTemperature ?? VERCEL_AI_GATEWAY_DEFAULT_TEMPERATURE
-			}
-
-			requestOptions.max_completion_tokens = info.maxTokens
-
-			const response = await this.client.chat.completions.create(requestOptions)
-			return response.choices[0]?.message.content || ""
+			return text
 		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`Vercel AI Gateway completion error: ${error.message}`)
-			}
-			throw error
+			throw handleAiSdkError(error, "Vercel AI Gateway")
 		}
+	}
+
+	override isAiSdkProvider(): boolean {
+		return true
 	}
 }
