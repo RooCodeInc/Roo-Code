@@ -124,7 +124,11 @@ export class LmStudioHandler extends OpenAICompatibleHandler implements SingleCo
 			}
 		}
 
-		const { text } = await generateText(options)
-		return text
+		try {
+			const { text } = await generateText(options)
+			return text
+		} catch (error) {
+			throw handleAiSdkError(error, "LM Studio")
+		}
 	}
 }
