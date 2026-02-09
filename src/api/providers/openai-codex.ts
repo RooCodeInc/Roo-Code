@@ -2,7 +2,7 @@ import * as os from "os"
 import { v7 as uuidv7 } from "uuid"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAI } from "@ai-sdk/openai"
-import { streamText, generateText, ToolSet, type ModelMessage } from "ai"
+import { streamText, generateText, ToolSet } from "ai"
 
 import { Package } from "../../shared/package"
 import {
