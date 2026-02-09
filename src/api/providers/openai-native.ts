@@ -247,7 +247,18 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.lastEncryptedContent = undefined
 		this.lastServiceTier = undefined
 
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		// Task.ts buildCleanConversationHistory injects standalone reasoning items
+		// { type: "reasoning", encrypted_content: "...", id: "..." } alongside standard
+		// Anthropic messages. These are OpenAI Responses API-specific items for stateless
+		// reasoning continuity. Filter them out before conversion since convertToAiSdkMessages
+		// only handles messages with role: "user" | "assistant" | "tool".
+		// The encrypted reasoning content is separately captured via getEncryptedContent()
+		// after each request for history persistence.
+		const standardMessages = messages.filter(
+			(msg) => (msg as any).type !== "reasoning" || !(msg as any).encrypted_content,
+		)
+
+		const aiSdkMessages = convertToAiSdkMessages(standardMessages)
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
