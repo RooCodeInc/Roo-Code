@@ -309,6 +309,7 @@
 		"searchProviderPlaceholder": "Zoek providers",
 		"noProviderMatchFound": "Geen providers gevonden",
 		"noMatchFound": "Geen overeenkomende profielen gevonden",
+		"retiredProviderMessage": "Sorry, deze provider wordt niet meer ondersteund. We zagen dat heel weinig Roo-gebruikers deze daadwerkelijk gebruikten en we moeten de omvang van onze codebase verkleinen zodat we snel kunnen blijven leveren en onze community goed kunnen bedienen. Het was een heel moeilijke beslissing, maar het laat ons focussen op wat het belangrijkst voor je is. Het is vervelend, dat weten we.",
 		"vscodeLmDescription": "De VS Code Language Model API stelt je in staat modellen te draaien die door andere VS Code-extensies worden geleverd (waaronder GitHub Copilot). De eenvoudigste manier om te beginnen is door de Copilot- en Copilot Chat-extensies te installeren vanuit de VS Code Marketplace.",
 		"awsCustomArnUse": "Voer een geldige Amazon Bedrock ARN in voor het model dat je wilt gebruiken. Voorbeeldformaten:",
 		"awsCustomArnDesc": "Zorg ervoor dat de regio in de ARN overeenkomt met je geselecteerde AWS-regio hierboven.",
