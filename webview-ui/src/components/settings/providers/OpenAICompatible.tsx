@@ -24,7 +24,11 @@ import { ThinkingBudget } from "../ThinkingBudget"
 
 type OpenAICompatibleProps = {
 	apiConfiguration: ProviderSettings
-	setApiConfigurationField: (field: keyof ProviderSettings, value: ProviderSettings[keyof ProviderSettings]) => void
+	setApiConfigurationField: <K extends keyof ProviderSettings>(
+		field: K,
+		value: ProviderSettings[K],
+		isUserAction?: boolean,
+	) => void
 	organizationAllowList: OrganizationAllowList
 	modelValidationError?: string
 	simplifySettings?: boolean
@@ -88,7 +92,7 @@ export const OpenAICompatible = ({
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			const headerObject = convertHeadersToObject(customHeaders)
-			setApiConfigurationField("openAiHeaders", headerObject)
+			setApiConfigurationField("openAiHeaders", headerObject, false)
 		}, 300)
 
 		return () => clearTimeout(timer)

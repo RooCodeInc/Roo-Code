@@ -255,9 +255,19 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 				const previousValue = prevState.apiConfiguration?.[field]
 
+				// Helper to check if two values are semantically equal
+				const areValuesEqual = (a: any, b: any): boolean => {
+					if (a === b) return true
+					if (a == null && b == null) return true
+					if (typeof a !== typeof b) return false
+					if (typeof a === "object" && typeof b === "object") {
+						return JSON.stringify(a) === JSON.stringify(b)
+					}
+					return false
+				}
+
 				// Only skip change detection for automatic initialization (not user actions)
 				// This prevents the dirty state when the component initializes and auto-syncs values
-				// Treat undefined, null, and empty string as uninitialized states
 				const isInitialSync =
 					!isUserAction &&
 					(previousValue === undefined || previousValue === "" || previousValue === null) &&
@@ -265,7 +275,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					value !== "" &&
 					value !== null
 
-				if (!isInitialSync) {
+				// Also skip if it's an automatic sync with semantically equal values
+				const isAutomaticNoOpSync = !isUserAction && areValuesEqual(previousValue, value)
+
+				if (!isInitialSync && !isAutomaticNoOpSync) {
 					setChangeDetected(true)
 				}
 				return { ...prevState, apiConfiguration: { ...prevState.apiConfiguration, [field]: value } }
