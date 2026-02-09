@@ -422,6 +422,20 @@ describe("LiteLLMHandler", () => {
 			const callArgs = mockGenerateText.mock.calls[0][0]
 			expect(callArgs.maxOutputTokens).toBeDefined()
 		})
+
+		it("should fetch models before completing prompt", async () => {
+			mockGenerateText.mockResolvedValue({
+				text: "Response",
+			})
+
+			await handler.completePrompt("Test prompt")
+
+			expect(getModels).toHaveBeenCalledWith({
+				provider: "litellm",
+				apiKey: "test-key",
+				baseUrl: "http://localhost:4000",
+			})
+		})
 	})
 
 	describe("isAiSdkProvider", () => {

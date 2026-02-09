@@ -87,6 +87,11 @@ export class LiteLLMHandler extends OpenAICompatibleHandler implements SingleCom
 		yield* super.createMessage(systemPrompt, messages, metadata)
 	}
 
+	override async completePrompt(prompt: string): Promise<string> {
+		await this.fetchModel()
+		return super.completePrompt(prompt)
+	}
+
 	protected override processUsageMetrics(usage: {
 		inputTokens?: number
 		outputTokens?: number
