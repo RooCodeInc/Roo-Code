@@ -2,7 +2,7 @@ import * as os from "os"
 import { v7 as uuidv7 } from "uuid"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAI } from "@ai-sdk/openai"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, type ModelMessage } from "ai"
 
 import { Package } from "../../shared/package"
 import {
@@ -33,6 +33,165 @@ import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 export type OpenAiNativeModel = ReturnType<OpenAiNativeHandler["getModel"]>
+
+/**
+ * An encrypted reasoning item extracted from the conversation history.
+ * These are standalone items injected by `buildCleanConversationHistory` with
+ * `{ type: "reasoning", encrypted_content: "...", id: "...", summary: [...] }`.
+ */
+export interface EncryptedReasoningItem {
+	id: string
+	encrypted_content: string
+	summary?: Array<{ type: string; text: string }>
+	originalIndex: number
+}
+
+/**
+ * Strip plain-text reasoning blocks from assistant message content arrays.
+ *
+ * Plain-text reasoning blocks (`{ type: "reasoning", text: "..." }`) inside
+ * assistant content arrays would be converted by `convertToAiSdkMessages`
+ * into AI SDK reasoning parts WITHOUT `providerOptions.openai.itemId`.
+ * The `@ai-sdk/openai` Responses provider rejects those with console warnings.
+ *
+ * This function removes them BEFORE conversion. If an assistant message's
+ * content becomes empty after filtering, the message is removed entirely.
+ */
+export function stripPlainTextReasoningBlocks(
+	messages: Anthropic.Messages.MessageParam[],
+): Anthropic.Messages.MessageParam[] {
+	return messages.reduce<Anthropic.Messages.MessageParam[]>((acc, msg) => {
+		if (msg.role !== "assistant" || typeof msg.content === "string") {
+			acc.push(msg)
+			return acc
+		}
+
+		const filteredContent = msg.content.filter((block) => {
+			const b = block as unknown as Record<string, unknown>
+			// Remove blocks that are plain-text reasoning:
+			// type === "reasoning" AND has "text" AND does NOT have "encrypted_content"
+			if (b.type === "reasoning" && typeof b.text === "string" && !b.encrypted_content) {
+				return false
+			}
+			return true
+		})
+
+		// Only include the message if it still has content
+		if (filteredContent.length > 0) {
+			acc.push({ ...msg, content: filteredContent })
+		}
+
+		return acc
+	}, [])
+}
+
+/**
+ * Collect encrypted reasoning items from the messages array.
+ *
+ * These are standalone items with `type: "reasoning"` and `encrypted_content`,
+ * injected by `buildCleanConversationHistory` for OpenAI Responses API
+ * reasoning continuity.
+ */
+export function collectEncryptedReasoningItems(messages: Anthropic.Messages.MessageParam[]): EncryptedReasoningItem[] {
+	const items: EncryptedReasoningItem[] = []
+	messages.forEach((msg, index) => {
+		const m = msg as unknown as Record<string, unknown>
+		if (m.type === "reasoning" && m.encrypted_content) {
+			items.push({
+				id: m.id as string,
+				encrypted_content: m.encrypted_content as string,
+				summary: m.summary as Array<{ type: string; text: string }> | undefined,
+				originalIndex: index,
+			})
+		}
+	})
+	return items
+}
+
+/**
+ * Inject encrypted reasoning parts into AI SDK messages.
+ *
+ * For each encrypted reasoning item, a reasoning part (with
+ * `providerOptions.openai.itemId` and `reasoningEncryptedContent`) is injected
+ * at the **beginning** of the next assistant message's content in the AI SDK
+ * messages array.
+ *
+ * @param aiSdkMessages  - The converted AI SDK messages (mutated in place).
+ * @param encryptedItems - Encrypted reasoning items with their original indices.
+ * @param originalMessages - The original (unfiltered) messages array, used to
+ *   determine which assistant message each encrypted item precedes.
+ */
+export function injectEncryptedReasoning(
+	aiSdkMessages: ModelMessage[],
+	encryptedItems: EncryptedReasoningItem[],
+	originalMessages: Anthropic.Messages.MessageParam[],
+): void {
+	if (encryptedItems.length === 0) return
+
+	// Map: original-array index of an assistant message -> encrypted items that precede it.
+	const itemsByAssistantOrigIdx = new Map<number, EncryptedReasoningItem[]>()
+
+	for (const item of encryptedItems) {
+		// Walk forward from the encrypted item to find its corresponding assistant message,
+		// skipping over any other encrypted reasoning items.
+		for (let i = item.originalIndex + 1; i < originalMessages.length; i++) {
+			const msg = originalMessages[i] as unknown as Record<string, unknown>
+			if (msg.type === "reasoning" && msg.encrypted_content) continue
+			if ((msg as { role?: string }).role === "assistant") {
+				const existing = itemsByAssistantOrigIdx.get(i) || []
+				existing.push(item)
+				itemsByAssistantOrigIdx.set(i, existing)
+				break
+			}
+			// Non-assistant, non-encrypted message — keep searching
+		}
+	}
+
+	if (itemsByAssistantOrigIdx.size === 0) return
+
+	// Collect the original indices of assistant messages that remain after
+	// encrypted reasoning items have been filtered out (order preserved).
+	const standardAssistantOriginalIndices: number[] = []
+	for (let i = 0; i < originalMessages.length; i++) {
+		const msg = originalMessages[i] as unknown as Record<string, unknown>
+		if (msg.type === "reasoning" && msg.encrypted_content) continue
+		if ((msg as { role?: string }).role === "assistant") {
+			standardAssistantOriginalIndices.push(i)
+		}
+	}
+
+	// Collect assistant-role indices in the AI SDK messages array.
+	const aiSdkAssistantIndices: number[] = []
+	for (let i = 0; i < aiSdkMessages.length; i++) {
+		if (aiSdkMessages[i].role === "assistant") {
+			aiSdkAssistantIndices.push(i)
+		}
+	}
+
+	// Match: Nth standard assistant (by original index) -> Nth AI SDK assistant.
+	for (let n = 0; n < standardAssistantOriginalIndices.length && n < aiSdkAssistantIndices.length; n++) {
+		const origIdx = standardAssistantOriginalIndices[n]
+		const items = itemsByAssistantOrigIdx.get(origIdx)
+		if (!items || items.length === 0) continue
+
+		const aiIdx = aiSdkAssistantIndices[n]
+		const msg = aiSdkMessages[aiIdx] as Record<string, unknown>
+		const content = Array.isArray(msg.content) ? (msg.content as unknown[]) : []
+
+		const reasoningParts = items.map((item) => ({
+			type: "reasoning" as const,
+			text: item.summary?.map((s) => s.text).join("\n") || "",
+			providerOptions: {
+				openai: {
+					itemId: item.id,
+					reasoningEncryptedContent: item.encrypted_content,
+				},
+			},
+		}))
+
+		msg.content = [...reasoningParts, ...content]
+	}
+}
 
 /**
  * OpenAI Native provider using the dedicated @ai-sdk/openai package.
@@ -247,18 +406,32 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		this.lastEncryptedContent = undefined
 		this.lastServiceTier = undefined
 
-		// Task.ts buildCleanConversationHistory injects standalone reasoning items
-		// { type: "reasoning", encrypted_content: "...", id: "..." } alongside standard
-		// Anthropic messages. These are OpenAI Responses API-specific items for stateless
-		// reasoning continuity. Filter them out before conversion since convertToAiSdkMessages
-		// only handles messages with role: "user" | "assistant" | "tool".
-		// The encrypted reasoning content is separately captured via getEncryptedContent()
-		// after each request for history persistence.
+		// Step 1: Collect encrypted reasoning items and their positions before filtering.
+		// These are standalone items injected by buildCleanConversationHistory:
+		// { type: "reasoning", encrypted_content: "...", id: "...", summary: [...] }
+		const encryptedReasoningItems = collectEncryptedReasoningItems(messages)
+
+		// Step 2: Filter out standalone encrypted reasoning items (they lack role
+		// and would break convertToAiSdkMessages which expects user/assistant/tool).
 		const standardMessages = messages.filter(
-			(msg) => (msg as any).type !== "reasoning" || !(msg as any).encrypted_content,
+			(msg) =>
+				(msg as unknown as Record<string, unknown>).type !== "reasoning" ||
+				!(msg as unknown as Record<string, unknown>).encrypted_content,
 		)
 
-		const aiSdkMessages = convertToAiSdkMessages(standardMessages)
+		// Step 3: Strip plain-text reasoning blocks from assistant content arrays.
+		// These would be converted to AI SDK reasoning parts WITHOUT
+		// providerOptions.openai.itemId, which the Responses provider rejects.
+		const cleanedMessages = stripPlainTextReasoningBlocks(standardMessages)
+
+		// Step 4: Convert to AI SDK messages.
+		const aiSdkMessages = convertToAiSdkMessages(cleanedMessages)
+
+		// Step 5: Re-inject encrypted reasoning as properly-formed AI SDK reasoning
+		// parts with providerOptions.openai.itemId and reasoningEncryptedContent.
+		if (encryptedReasoningItems.length > 0) {
+			injectEncryptedReasoning(aiSdkMessages, encryptedReasoningItems, messages)
+		}
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
