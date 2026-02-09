@@ -173,6 +173,10 @@
 	},
 	"checkpoint": {
 		"regular": "Checkpoint",
+		"initial": "Initial State",
+		"initializing": "Initializing checkpoint...",
+		"failed": "Checkpoint initialization failed",
+		"failedDescription": "Unable to create initial checkpoint. Restore features may be unavailable for this task.",
 		"initializingWarning": "Still initializing checkpoint... If this takes too long, you can disable checkpoints in <settingsLink>settings</settingsLink> and restart your task.",
 		"menu": {
 			"viewDiff": "View Diff",

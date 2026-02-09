@@ -25,6 +25,14 @@ function sendCheckpointInitWarn(task: Task, type?: "WAIT_TIMEOUT" | "INIT_TIMEOU
 	})
 }
 
+function sendInitialCheckpointState(task: Task, state: "pending" | "ready" | "failed" | null, hash?: string) {
+	task.providerRef.deref()?.postMessageToWebview({
+		type: "initialCheckpointState",
+		initialCheckpointState: state,
+		initialCheckpointHash: hash ?? null,
+	})
+}
+
 export async function getCheckpointService(task: Task, { interval = 250 }: { interval?: number } = {}) {
 	if (!task.enableCheckpoints) {
 		return undefined
@@ -98,6 +106,7 @@ export async function getCheckpointService(task: Task, { interval = 250 }: { int
 			)
 			if (!task?.checkpointService) {
 				sendCheckpointInitWarn(task, "INIT_TIMEOUT", task.checkpointTimeout)
+				sendInitialCheckpointState(task, "failed")
 				task.enableCheckpoints = false
 				return undefined
 			} else {
@@ -121,6 +130,7 @@ export async function getCheckpointService(task: Task, { interval = 250 }: { int
 	} catch (err) {
 		if (err.name === "TimeoutError" && task.enableCheckpoints) {
 			sendCheckpointInitWarn(task, "INIT_TIMEOUT", task.checkpointTimeout)
+			sendInitialCheckpointState(task, "failed")
 		}
 		log(`[Task#getCheckpointService] ${err.message}`)
 		task.enableCheckpoints = false
@@ -140,6 +150,7 @@ async function checkGitInstallation(
 
 		if (!gitInstalled) {
 			log("[Task#getCheckpointService] Git is not installed, disabling checkpoints")
+			sendInitialCheckpointState(task, "failed")
 			task.enableCheckpoints = false
 			task.checkpointServiceInitializing = false
 
@@ -157,9 +168,18 @@ async function checkGitInstallation(
 		}
 
 		// Git is installed, proceed with initialization
-		service.on("initialize", () => {
+		service.on("initialize", ({ baseHash }) => {
 			log("[Task#getCheckpointService] service initialized")
 			task.checkpointServiceInitializing = false
+
+			// Send initial checkpoint state as ready with the hash
+			sendInitialCheckpointState(task, "ready", baseHash)
+
+			// Update webview with initial checkpoint hash (for currentCheckpoint tracking)
+			provider?.postMessageToWebview({
+				type: "currentCheckpointUpdated",
+				text: baseHash,
+			})
 		})
 
 		service.on("checkpoint", ({ fromHash: from, toHash: to, suppressMessage }) => {
@@ -195,15 +215,20 @@ async function checkGitInstallation(
 
 		log("[Task#getCheckpointService] initializing shadow git")
 
+		// Set pending state before starting initialization
+		sendInitialCheckpointState(task, "pending")
+
 		try {
 			await service.initShadowGit()
 		} catch (err) {
 			log(`[Task#getCheckpointService] initShadowGit -> ${err.message}`)
+			sendInitialCheckpointState(task, "failed")
 			task.enableCheckpoints = false
 		}
 	} catch (err) {
 		log(`[Task#getCheckpointService] Unexpected error during Git check: ${err.message}`)
 		console.error("Git check error:", err)
+		sendInitialCheckpointState(task, "failed")
 		task.enableCheckpoints = false
 		task.checkpointServiceInitializing = false
 	}
@@ -298,6 +323,44 @@ export async function checkpointRestore(
 	} catch (err) {
 		provider?.log("[checkpointRestore] disabling checkpoints for this task")
 		task.enableCheckpoints = false
+	}
+}
+
+/**
+ * Restore to the initial checkpoint (base state when task started).
+ * This is used by the InitialCheckpoint component since it doesn't have a message timestamp.
+ */
+export async function checkpointRestoreToBase(task: Task): Promise<boolean> {
+	const service = await getCheckpointService(task)
+
+	if (!service) {
+		return false
+	}
+
+	const baseHash = service.baseHash
+
+	if (!baseHash) {
+		const provider = task.providerRef.deref()
+		provider?.log("[checkpointRestoreToBase] no baseHash available")
+		return false
+	}
+
+	const provider = task.providerRef.deref()
+
+	try {
+		await service.restoreCheckpoint(baseHash)
+		TelemetryService.instance.captureCheckpointRestored(task.taskId)
+		await provider?.postMessageToWebview({ type: "currentCheckpointUpdated", text: baseHash })
+
+		// Cancel the task to reinitialize with the restored state
+		// This follows the same pattern as checkpointRestore
+		provider?.cancelTask()
+
+		return true
+	} catch (err) {
+		provider?.log("[checkpointRestoreToBase] disabling checkpoints for this task")
+		task.enableCheckpoints = false
+		return false
 	}
 }
 

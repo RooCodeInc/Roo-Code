@@ -12,6 +12,7 @@ type CheckpointMenuBaseProps = {
 	ts: number
 	commitHash: string
 	checkpoint: Checkpoint
+	isInitial?: boolean
 }
 type CheckpointMenuControlledProps = {
 	onOpenChange: (open: boolean) => void
@@ -21,7 +22,7 @@ type CheckpointMenuUncontrolledProps = {
 }
 type CheckpointMenuProps = CheckpointMenuBaseProps & (CheckpointMenuControlledProps | CheckpointMenuUncontrolledProps)
 
-export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: CheckpointMenuProps) => {
+export const CheckpointMenu = ({ ts, commitHash, checkpoint, isInitial, onOpenChange }: CheckpointMenuProps) => {
 	const { t } = useTranslation()
 	const [internalRestoreOpen, setInternalRestoreOpen] = useState(false)
 	const [restoreConfirming, setRestoreConfirming] = useState(false)
@@ -74,14 +75,20 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: Che
 	}, [ts, commitHash])
 
 	const onPreview = useCallback(() => {
-		vscode.postMessage({ type: "checkpointRestore", payload: { ts, commitHash, mode: "preview" } })
+		vscode.postMessage({
+			type: "checkpointRestore",
+			payload: { ts, commitHash, mode: "preview", ...(isInitial && { isInitial: true }) },
+		})
 		setRestoreOpen(false)
-	}, [ts, commitHash, setRestoreOpen])
+	}, [ts, commitHash, isInitial, setRestoreOpen])
 
 	const onRestore = useCallback(() => {
-		vscode.postMessage({ type: "checkpointRestore", payload: { ts, commitHash, mode: "restore" } })
+		vscode.postMessage({
+			type: "checkpointRestore",
+			payload: { ts, commitHash, mode: "restore", ...(isInitial && { isInitial: true }) },
+		})
 		setRestoreOpen(false)
-	}, [ts, commitHash, setRestoreOpen])
+	}, [ts, commitHash, isInitial, setRestoreOpen])
 
 	const handleOpenChange = useCallback(
 		(open: boolean) => {
@@ -95,11 +102,14 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: Che
 
 	return (
 		<div className="flex flex-row gap-1">
-			<StandardTooltip content={t("chat:checkpoint.menu.viewDiff")}>
-				<Button variant="ghost" size="icon" onClick={onCheckpointDiff}>
-					<span className="codicon codicon-diff-single" />
-				</Button>
-			</StandardTooltip>
+			{/* Hide "View Diff" for initial checkpoint - no previous checkpoint to diff against */}
+			{!isInitial && (
+				<StandardTooltip content={t("chat:checkpoint.menu.viewDiff")}>
+					<Button variant="ghost" size="icon" onClick={onCheckpointDiff}>
+						<span className="codicon codicon-diff-single" />
+					</Button>
+				</StandardTooltip>
+			)}
 			<Popover
 				open={restoreOpen}
 				onOpenChange={(open) => {
@@ -175,15 +185,18 @@ export const CheckpointMenu = ({ ts, commitHash, checkpoint, onOpenChange }: Che
 				</StandardTooltip>
 				<PopoverContent align="end" container={portalContainer} className="w-auto min-w-max">
 					<div className="flex flex-col gap-2">
-						<Button
-							variant="secondary"
-							onClick={() => {
-								onDiffFromInit()
-								setMoreOpen(false)
-							}}>
-							<span className="codicon codicon-versions mr-2" />
-							{t("chat:checkpoint.menu.viewDiffFromInit")}
-						</Button>
+						{/* Hide "View All Changes" for initial checkpoint - already at init */}
+						{!isInitial && (
+							<Button
+								variant="secondary"
+								onClick={() => {
+									onDiffFromInit()
+									setMoreOpen(false)
+								}}>
+								<span className="codicon codicon-versions mr-2" />
+								{t("chat:checkpoint.menu.viewDiffFromInit")}
+							</Button>
+						)}
 						<Button
 							variant="secondary"
 							onClick={() => {

@@ -186,3 +186,147 @@ describe("CheckpointSaved popover visibility", () => {
 		})
 	})
 })
+
+describe("CheckpointSaved label rendering", () => {
+	const baseProps = {
+		ts: 123,
+		commitHash: "abc123",
+		currentHash: "zzz999",
+	}
+
+	it("renders initial checkpoint label when isInitial is true", () => {
+		const { getByText } = render(
+			<CheckpointSaved
+				{...baseProps}
+				checkpoint={{ from: "abc123", to: "abc123", isInitial: true } as Record<string, unknown>}
+			/>,
+		)
+
+		// Test uses i18n key since translations may not be loaded in test environment
+		expect(getByText("chat:checkpoint.initial")).toBeTruthy()
+	})
+
+	it("renders regular checkpoint label when isInitial is false", () => {
+		const { getByText } = render(
+			<CheckpointSaved
+				{...baseProps}
+				checkpoint={{ from: "prev123", to: "abc123", isInitial: false } as Record<string, unknown>}
+			/>,
+		)
+
+		expect(getByText("chat:checkpoint.regular")).toBeTruthy()
+	})
+
+	it("renders regular checkpoint label when isInitial is undefined", () => {
+		const { getByText } = render(
+			<CheckpointSaved
+				{...baseProps}
+				checkpoint={{ from: "prev123", to: "abc123" } as Record<string, unknown>}
+			/>,
+		)
+
+		expect(getByText("chat:checkpoint.regular")).toBeTruthy()
+	})
+})
+
+describe("CheckpointMenu isInitial behavior", () => {
+	const baseProps = {
+		ts: 123,
+		commitHash: "abc123",
+		currentHash: "zzz999",
+	}
+
+	it("hides View Diff button when isInitial is true", () => {
+		const { container } = render(
+			<CheckpointSaved
+				{...baseProps}
+				checkpoint={{ from: "abc123", to: "abc123", isInitial: true } as Record<string, unknown>}
+			/>,
+		)
+
+		// The View Diff button should not be rendered
+		const diffButton = container.querySelector('[aria-label="View Diff"]')
+		expect(diffButton).toBeNull()
+	})
+
+	it("shows View Diff button when isInitial is false", async () => {
+		const { container } = render(
+			<CheckpointSaved
+				{...baseProps}
+				checkpoint={{ from: "prev123", to: "abc123", isInitial: false } as Record<string, unknown>}
+			/>,
+		)
+
+		// Hover to make menu visible
+		const parentDiv = container.querySelector("[class*='flex items-center justify-between']") as HTMLElement
+		fireEvent.mouseEnter(parentDiv)
+
+		// The View Diff button should be rendered (using codicon class as identifier)
+		await waitFor(() => {
+			const diffIcon = container.querySelector(".codicon-diff-single")
+			expect(diffIcon).toBeTruthy()
+		})
+	})
+
+	it("hides View All Changes button when isInitial is true", async () => {
+		const { container } = render(
+			<CheckpointSaved
+				{...baseProps}
+				checkpoint={{ from: "abc123", to: "abc123", isInitial: true } as Record<string, unknown>}
+			/>,
+		)
+
+		// Hover to make menu visible
+		const parentDiv = container.querySelector("[class*='flex items-center justify-between']") as HTMLElement
+		fireEvent.mouseEnter(parentDiv)
+
+		// Open the "more" popover
+		await waitForOpenHandler()
+
+		// The "View All Changes" button with codicon-versions should not be rendered
+		const versionsIcon = container.querySelector(".codicon-versions")
+		expect(versionsIcon).toBeNull()
+	})
+
+	it("shows View Changes Since This Checkpoint regardless of isInitial", async () => {
+		const { container } = render(
+			<CheckpointSaved
+				{...baseProps}
+				checkpoint={{ from: "abc123", to: "abc123", isInitial: true } as Record<string, unknown>}
+			/>,
+		)
+
+		// Hover to make menu visible
+		const parentDiv = container.querySelector("[class*='flex items-center justify-between']") as HTMLElement
+		fireEvent.mouseEnter(parentDiv)
+
+		// The "View Changes Since This Checkpoint" button with codicon-diff should be present
+		await waitFor(() => {
+			const diffIcon = container.querySelector(".codicon-diff")
+			expect(diffIcon).toBeTruthy()
+		})
+	})
+
+	it("shows restore options regardless of isInitial", async () => {
+		const { getByTestId, container } = render(
+			<CheckpointSaved
+				{...baseProps}
+				checkpoint={{ from: "abc123", to: "abc123", isInitial: true } as Record<string, unknown>}
+			/>,
+		)
+
+		// Hover to make menu visible
+		const parentDiv = container.querySelector("[class*='flex items-center justify-between']") as HTMLElement
+		fireEvent.mouseEnter(parentDiv)
+
+		// Open the restore popover
+		await waitForOpenHandler()
+		lastOnOpenChange?.(true)
+
+		// Restore buttons should be available
+		await waitFor(() => {
+			expect(getByTestId("restore-files-btn")).toBeTruthy()
+			expect(getByTestId("restore-files-and-task-btn")).toBeTruthy()
+		})
+	})
+})
