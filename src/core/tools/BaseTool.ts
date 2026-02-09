@@ -39,6 +39,12 @@ export abstract class BaseTool<TName extends ToolName> {
 	protected lastSeenPartialPath: string | undefined = undefined
 
 	/**
+	 * Track whether the initial "preparing" message has been sent for this tool invocation.
+	 * Used by file editing tools to show immediate feedback before the path stabilizes.
+	 */
+	protected hasSentInitialMessage: boolean = false
+
+	/**
 	 * Execute the tool with typed parameters.
 	 *
 	 * Receives typed parameters from native tool calling via `ToolUse.nativeArgs`.
@@ -96,6 +102,7 @@ export abstract class BaseTool<TName extends ToolName> {
 	 */
 	resetPartialState(): void {
 		this.lastSeenPartialPath = undefined
+		this.hasSentInitialMessage = false
 	}
 
 	/**

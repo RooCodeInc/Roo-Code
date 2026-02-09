@@ -197,7 +197,18 @@ export class WriteToFileTool extends BaseTool<"write_to_file"> {
 		const relPath: string | undefined = block.params.path
 		let newContent: string | undefined = block.params.content
 
-		// Wait for path to stabilize before showing UI (prevents truncated paths)
+		// Send initial "preparing" message immediately (before path stabilizes)
+		if (!this.hasSentInitialMessage) {
+			this.hasSentInitialMessage = true
+			const initialMessageProps: ClineSayTool = {
+				tool: "newFileCreated",
+				path: undefined as any, // Undefined path triggers "preparing to edit" message in frontend
+				content: "",
+			}
+			await task.ask("tool", JSON.stringify(initialMessageProps), block.partial).catch(() => {})
+		}
+
+		// Wait for path to stabilize before showing the full UI with filename
 		if (!this.hasPathStabilized(relPath) || newContent === undefined) {
 			return
 		}
