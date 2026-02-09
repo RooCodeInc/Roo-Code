@@ -1018,10 +1018,6 @@
 		}
 	},
 	"ui": {
-		"taskCompleteColor": {
-			"label": "Evidenziazione intestazione attività",
-			"description": "Evidenzia l'intestazione dell'attività con un indicatore di colore quando le attività vengono completate o richiedono la tua attenzione, aiutandoti a individuare rapidamente quando è necessaria un'azione"
-		},
 		"collapseThinking": {
 			"label": "Comprimi i messaggi di pensiero per impostazione predefinita",
 			"description": "Se abilitato, i blocchi di pensiero verranno compressi per impostazione predefinita finché non interagisci con essi"

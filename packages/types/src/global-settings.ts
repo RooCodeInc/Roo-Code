@@ -167,7 +167,6 @@ export const globalSettingsSchema = z.object({
 	ttsSpeed: z.number().optional(),
 	soundEnabled: z.boolean().optional(),
 	soundVolume: z.number().optional(),
-	taskHeaderHighlightEnabled: z.boolean().optional(),
 
 	maxOpenTabsContext: z.number().optional(),
 	maxWorkspaceFiles: z.number().optional(),
@@ -229,6 +228,12 @@ export const globalSettingsSchema = z.object({
 	 * @default false (all at once)
 	 */
 	showQuestionsOneByOne: z.boolean().optional(),
+
+	/**
+	 * Whether to highlight the task header in the chat view.
+	 * @default false
+	 */
+	taskHeaderHighlightEnabled: z.boolean().optional(),
 
 	/**
 	 * Path to worktree to auto-open after switching workspaces.
@@ -367,7 +372,6 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 	ttsSpeed: 1,
 	soundEnabled: false,
 	soundVolume: 0.5,
-	taskHeaderHighlightEnabled: false,
 
 	terminalShellIntegrationTimeout: 30000,
 	terminalCommandDelay: 0,
@@ -400,6 +404,7 @@ export const EVALS_SETTINGS: RooCodeSettings = {
 
 	customModes: [],
 	showQuestionsOneByOne: false,
+	taskHeaderHighlightEnabled: false,
 }
 
 export const EVALS_TIMEOUT = 5 * 60 * 1_000

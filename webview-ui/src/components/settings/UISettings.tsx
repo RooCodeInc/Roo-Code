@@ -71,26 +71,6 @@ export const UISettings = ({
 
 			<Section>
 				<div className="space-y-6">
-					{/* Task Header Highlight Setting */}
-					<SearchableSetting
-						settingId="ui-task-complete-color"
-						section="ui"
-						label={t("settings:ui.taskCompleteColor.label")}>
-						<div className="flex flex-col gap-1">
-							<VSCodeCheckbox
-								checked={taskHeaderHighlightEnabled}
-								onChange={(event) =>
-									handleTaskHeaderHighlightChange((event.target as HTMLInputElement).checked)
-								}
-								data-testid="task-header-highlight-checkbox">
-								<span className="font-medium">{t("settings:ui.taskCompleteColor.label")}</span>
-							</VSCodeCheckbox>
-							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
-								{t("settings:ui.taskCompleteColor.description")}
-							</div>
-						</div>
-					</SearchableSetting>
-
 					{/* Collapse Thinking Messages Setting */}
 					<SearchableSetting
 						settingId="ui-collapse-thinking"
@@ -99,9 +79,7 @@ export const UISettings = ({
 						<div className="flex flex-col gap-1">
 							<VSCodeCheckbox
 								checked={reasoningBlockCollapsed}
-								onChange={(event) =>
-									handleReasoningBlockCollapsedChange((event.target as HTMLInputElement).checked)
-								}
+								onChange={(e: any) => handleReasoningBlockCollapsedChange(e.target.checked)}
 								data-testid="collapse-thinking-checkbox">
 								<span className="font-medium">{t("settings:ui.collapseThinking.label")}</span>
 							</VSCodeCheckbox>
@@ -119,9 +97,7 @@ export const UISettings = ({
 						<div className="flex flex-col gap-1">
 							<VSCodeCheckbox
 								checked={enterBehavior === "newline"}
-								onChange={(event) =>
-									handleEnterBehaviorChange((event.target as HTMLInputElement).checked)
-								}
+								onChange={(e: any) => handleEnterBehaviorChange(e.target.checked)}
 								data-testid="enter-behavior-checkbox">
 								<span className="font-medium">
 									{t("settings:ui.requireCtrlEnterToSend.label", { primaryMod })}
@@ -147,6 +123,24 @@ export const UISettings = ({
 							</VSCodeCheckbox>
 							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
 								{t("settings:ui.showQuestionsOneByOne.description")}
+							</div>
+						</div>
+					</SearchableSetting>
+
+					{/* Task Header Highlight Setting */}
+					<SearchableSetting
+						settingId="ui-task-header-highlight"
+						section="ui"
+						label={t("settings:ui.taskHeaderHighlight.label")}>
+						<div className="flex flex-col gap-1">
+							<VSCodeCheckbox
+								checked={taskHeaderHighlightEnabled}
+								onChange={(e: any) => handleTaskHeaderHighlightChange(e.target.checked)}
+								data-testid="task-header-highlight-checkbox">
+								<span className="font-medium">{t("settings:ui.taskHeaderHighlight.label")}</span>
+							</VSCodeCheckbox>
+							<div className="text-vscode-descriptionForeground text-sm ml-5 mt-1">
+								{t("settings:ui.taskHeaderHighlight.description")}
 							</div>
 						</div>
 					</SearchableSetting>

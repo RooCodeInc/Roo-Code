@@ -1018,10 +1018,6 @@
 		}
 	},
 	"ui": {
-		"taskCompleteColor": {
-			"label": "Ressaltat de la capçalera de tasca",
-			"description": "Ressalta la capçalera de la tasca amb un indicador de color quan les tasques es completen o necessiten la teva atenció, ajudant-te a detectar ràpidament quan cal actuar"
-		},
 		"collapseThinking": {
 			"label": "Replega els missatges de pensament per defecte",
 			"description": "Quan estigui activat, els blocs de pensament es replegaran per defecte fins que interactuïs amb ells"

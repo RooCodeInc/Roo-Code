@@ -1018,10 +1018,6 @@
 		}
 	},
 	"ui": {
-		"taskCompleteColor": {
-			"label": "Resaltado del encabezado de tarea",
-			"description": "Resalta el encabezado de la tarea con un indicador de color cuando las tareas se completan o necesitan tu atención, ayudándote a detectar rápidamente cuándo se requiere acción"
-		},
 		"collapseThinking": {
 			"label": "Colapsar mensajes de pensamiento por defecto",
 			"description": "Cuando está activado, los bloques de pensamiento se colapsarán por defecto hasta que interactúes con ellos"

@@ -124,11 +124,6 @@ type SettingsViewProps = {
 	targetSection?: string
 }
 
-const withCachedStateDefaults = (state: ExtensionStateContextType): ExtensionStateContextType => ({
-	...state,
-	taskHeaderHighlightEnabled: state.taskHeaderHighlightEnabled ?? false,
-})
-
 const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, targetSection }, ref) => {
 	const { t } = useAppTranslation()
 
@@ -152,7 +147,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const prevApiConfigName = useRef(currentApiConfigName)
 	const confirmDialogHandler = useRef<() => void>()
 
-	const [cachedState, setCachedState] = useState(() => withCachedStateDefaults(extensionState))
+	const [cachedState, setCachedState] = useState(() => extensionState)
 
 	const {
 		alwaysAllowReadOnly,
@@ -230,7 +225,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			return
 		}
 
-		setCachedState((prevCachedState) => withCachedStateDefaults({ ...prevCachedState, ...extensionState }))
+		setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
 		prevApiConfigName.current = currentApiConfigName
 		setChangeDetected(false)
 	}, [currentApiConfigName, extensionState])
@@ -238,7 +233,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	// Bust the cache when settings are imported.
 	useEffect(() => {
 		if (settingsImportedAt) {
-			setCachedState((prevCachedState) => withCachedStateDefaults({ ...prevCachedState, ...extensionState }))
+			setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
 			setChangeDetected(false)
 		}
 	}, [settingsImportedAt, extensionState])
@@ -435,7 +430,6 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
 					enterBehavior: enterBehavior ?? "send",
-					taskHeaderHighlightEnabled,
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
 					showQuestionsOneByOne: showQuestionsOneByOne ?? false,
@@ -477,7 +471,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		(confirm: boolean) => {
 			if (confirm) {
 				// Discard changes: Reset state and flag
-				setCachedState(withCachedStateDefaults(extensionState)) // Revert to original state
+				setCachedState(extensionState) // Revert to original state
 				setChangeDetected(false) // Reset change flag
 				confirmDialogHandler.current?.() // Execute the pending action (e.g., tab switch)
 			}
@@ -928,10 +922,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						{/* UI Section */}
 						{renderTab === "ui" && (
 							<UISettings
-								taskHeaderHighlightEnabled={taskHeaderHighlightEnabled ?? false}
 								reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
 								enterBehavior={enterBehavior ?? "send"}
 								showQuestionsOneByOne={showQuestionsOneByOne ?? false}
+								taskHeaderHighlightEnabled={taskHeaderHighlightEnabled ?? false}
 								setCachedStateField={setCachedStateField}
 							/>
 						)}

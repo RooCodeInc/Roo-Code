@@ -456,7 +456,7 @@ export class ClineProvider
 
 	// Removes and destroys the top Cline instance (the current finished task),
 	// activating the previous one (resuming the parent task).
-	async removeClineFromStack() {
+	async removeClineFromStack(options?: { skipDelegationRepair?: boolean }) {
 		if (this.clineStack.length === 0) {
 			return
 		}
@@ -465,6 +465,11 @@ export class ClineProvider
 		let task = this.clineStack.pop()
 
 		if (task) {
+			// Capture delegation metadata before abort/dispose, since abortTask(true)
+			// is async and the task reference is cleared afterwards.
+			const childTaskId = task.taskId
+			const parentTaskId = task.parentTaskId
+
 			task.emit(RooCodeEventName.TaskUnfocused)
 
 			try {
@@ -488,6 +493,37 @@ export class ClineProvider
 			// Make sure no reference kept, once promises end it will be
 			// garbage collected.
 			task = undefined
+
+			// Delegation-aware parent metadata repair:
+			// If the popped task was a delegated child, repair the parent's metadata
+			// so it transitions from "delegated" back to "active" and becomes resumable
+			// from the task history list.
+			// Skip when called from delegateParentAndOpenChild() during nested delegation
+			// transitions (A→B→C), where the caller intentionally replaces the active
+			// child and will update the parent to point at the new child.
+			if (parentTaskId && childTaskId && !options?.skipDelegationRepair) {
+				try {
+					const { historyItem: parentHistory } = await this.getTaskWithId(parentTaskId)
+
+					if (parentHistory.status === "delegated" && parentHistory.awaitingChildId === childTaskId) {
+						await this.updateTaskHistory({
+							...parentHistory,
+							status: "active",
+							awaitingChildId: undefined,
+						})
+						this.log(
+							`[ClineProvider#removeClineFromStack] Repaired parent ${parentTaskId} metadata: delegated → active (child ${childTaskId} removed)`,
+						)
+					}
+				} catch (err) {
+					// Non-fatal: log but do not block the pop operation.
+					this.log(
+						`[ClineProvider#removeClineFromStack] Failed to repair parent metadata for ${parentTaskId} (non-fatal): ${
+							err instanceof Error ? err.message : String(err)
+						}`,
+					)
+				}
+			}
 		}
 	}
 
@@ -2080,7 +2116,6 @@ export class ClineProvider
 			historyPreviewCollapsed,
 			reasoningBlockCollapsed,
 			enterBehavior,
-			taskHeaderHighlightEnabled,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
@@ -2226,7 +2261,6 @@ export class ClineProvider
 			historyPreviewCollapsed: historyPreviewCollapsed ?? false,
 			reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
 			enterBehavior: enterBehavior ?? "send",
-			taskHeaderHighlightEnabled: taskHeaderHighlightEnabled ?? false,
 			cloudUserInfo,
 			cloudIsAuthenticated: cloudIsAuthenticated ?? false,
 			cloudAuthSkipModel: this.context.globalState.get<boolean>("roo-auth-skip-model") ?? false,
@@ -3270,7 +3304,7 @@ export class ClineProvider
 		//    This ensures we never have >1 tasks open at any time during delegation.
 		//    Await abort completion to ensure clean disposal and prevent unhandled rejections.
 		try {
-			await this.removeClineFromStack()
+			await this.removeClineFromStack({ skipDelegationRepair: true })
 		} catch (error) {
 			this.log(
 				`[delegateParentAndOpenChild] Error during parent disposal (non-fatal): ${

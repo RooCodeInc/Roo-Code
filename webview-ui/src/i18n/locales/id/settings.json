@@ -1018,10 +1018,6 @@
 		}
 	},
 	"ui": {
-		"taskCompleteColor": {
-			"label": "Sorotan Header Tugas",
-			"description": "Menyoroti header tugas dengan indikator warna saat tugas selesai atau membutuhkan perhatianmu, membantumu dengan cepat mengetahui kapan tindakan diperlukan"
-		},
 		"collapseThinking": {
 			"label": "Ciutkan pesan Berpikir secara default",
 			"description": "Jika diaktifkan, blok berpikir akan diciutkan secara default sampai Anda berinteraksi dengannya"
