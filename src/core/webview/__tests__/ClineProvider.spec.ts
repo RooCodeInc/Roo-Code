@@ -327,6 +327,7 @@ vi.mock("@roo-code/cloud", () => ({
 		get instance() {
 			return {
 				isAuthenticated: vi.fn().mockReturnValue(false),
+				off: vi.fn(),
 			}
 		},
 	},
@@ -404,6 +405,11 @@ describe("ClineProvider", () => {
 				get: vi.fn().mockImplementation((key: string) => secrets[key]),
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
+			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
 			},
 			subscriptions: [],
 			extension: {
@@ -595,6 +601,43 @@ describe("ClineProvider", () => {
 		await provider.postMessageToWebview(message)
 
 		expect(mockPostMessage).toHaveBeenCalledWith(message)
+	})
+
+	test("postMessageToWebview does not throw when webview is disposed", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+
+		// Simulate postMessage throwing after webview disposal
+		mockPostMessage.mockRejectedValueOnce(new Error("Webview is disposed"))
+
+		const message: ExtensionMessage = { type: "action", action: "chatButtonClicked" }
+
+		// Should not throw
+		await expect(provider.postMessageToWebview(message)).resolves.toBeUndefined()
+	})
+
+	test("postMessageToWebview skips postMessage after dispose", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+
+		await provider.dispose()
+		mockPostMessage.mockClear()
+
+		const message: ExtensionMessage = { type: "action", action: "chatButtonClicked" }
+		await provider.postMessageToWebview(message)
+
+		expect(mockPostMessage).not.toHaveBeenCalled()
+	})
+
+	test("dispose is idempotent — second call is a no-op", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+
+		await provider.dispose()
+		await provider.dispose()
+
+		// dispose body runs only once: log "Disposing ClineProvider..." appears once
+		const disposeCalls = (mockOutputChannel.appendLine as ReturnType<typeof vi.fn>).mock.calls.filter(
+			([msg]) => typeof msg === "string" && msg.includes("Disposing ClineProvider..."),
+		)
+		expect(disposeCalls).toHaveLength(1)
 	})
 
 	test("handles webviewDidLaunch message", async () => {
@@ -2147,6 +2190,11 @@ describe("Project MCP Settings", () => {
 				store: vi.fn(),
 				delete: vi.fn(),
 			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
 			subscriptions: [],
 			extension: {
 				packageJSON: { version: "1.0.0" },
@@ -2277,6 +2325,11 @@ describe.skip("ContextProxy integration", () => {
 				update: vi.fn(),
 				keys: vi.fn().mockReturnValue([]),
 			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
 			secrets: { get: vi.fn(), store: vi.fn(), delete: vi.fn() },
 			extensionUri: {} as vscode.Uri,
 			globalStorageUri: { fsPath: "/test/path" },
@@ -2340,6 +2393,11 @@ describe("getTelemetryProperties", () => {
 					return undefined
 				}),
 				update: vi.fn(),
+				keys: vi.fn().mockReturnValue([]),
+			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
 				keys: vi.fn().mockReturnValue([]),
 			},
 			secrets: { get: vi.fn(), store: vi.fn(), delete: vi.fn() },
@@ -2504,6 +2562,11 @@ describe("ClineProvider - Router Models", () => {
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
 			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
+			},
 			subscriptions: [],
 			extension: {
 				packageJSON: { version: "1.0.0" },
@@ -2552,7 +2615,6 @@ describe("ClineProvider - Router Models", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				unboundApiKey: "unbound-key",
 				litellmApiKey: "litellm-key",
 				litellmBaseUrl: "http://localhost:4000",
 			},
@@ -2581,9 +2643,7 @@ describe("ClineProvider - Router Models", () => {
 		// Verify getModels was called for each provider with correct options
 		expect(getModels).toHaveBeenCalledWith({ provider: "openrouter" })
 		expect(getModels).toHaveBeenCalledWith({ provider: "requesty", apiKey: "requesty-key" })
-		expect(getModels).toHaveBeenCalledWith({ provider: "unbound", apiKey: "unbound-key" })
 		expect(getModels).toHaveBeenCalledWith({ provider: "vercel-ai-gateway" })
-		expect(getModels).toHaveBeenCalledWith({ provider: "deepinfra" })
 		expect(getModels).toHaveBeenCalledWith(
 			expect.objectContaining({
 				provider: "roo",
@@ -2595,24 +2655,18 @@ describe("ClineProvider - Router Models", () => {
 			apiKey: "litellm-key",
 			baseUrl: "http://localhost:4000",
 		})
-		expect(getModels).toHaveBeenCalledWith({ provider: "chutes" })
 
 		// Verify response was sent
 		expect(mockPostMessage).toHaveBeenCalledWith({
 			type: "routerModels",
 			routerModels: {
-				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: mockModels,
-				unbound: mockModels,
 				roo: mockModels,
-				chutes: mockModels,
 				litellm: mockModels,
 				ollama: {},
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
 			},
 			values: undefined,
 		})
@@ -2626,7 +2680,6 @@ describe("ClineProvider - Router Models", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				unboundApiKey: "unbound-key",
 				litellmApiKey: "litellm-key",
 				litellmBaseUrl: "http://localhost:4000",
 			},
@@ -2641,11 +2694,8 @@ describe("ClineProvider - Router Models", () => {
 		vi.mocked(getModels)
 			.mockResolvedValueOnce(mockModels) // openrouter success
 			.mockRejectedValueOnce(new Error("Requesty API error")) // requesty fail
-			.mockRejectedValueOnce(new Error("Unbound API error")) // unbound fail
 			.mockResolvedValueOnce(mockModels) // vercel-ai-gateway success
-			.mockResolvedValueOnce(mockModels) // deepinfra success
 			.mockResolvedValueOnce(mockModels) // roo success
-			.mockRejectedValueOnce(new Error("Chutes API error")) // chutes fail
 			.mockRejectedValueOnce(new Error("LiteLLM connection failed")) // litellm fail
 
 		await messageHandler({ type: "requestRouterModels" })
@@ -2654,18 +2704,13 @@ describe("ClineProvider - Router Models", () => {
 		expect(mockPostMessage).toHaveBeenCalledWith({
 			type: "routerModels",
 			routerModels: {
-				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: {},
-				unbound: {},
 				roo: mockModels,
-				chutes: {},
 				ollama: {},
 				lmstudio: {},
 				litellm: {},
 				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
 			},
 			values: undefined,
 		})
@@ -2676,27 +2721,6 @@ describe("ClineProvider - Router Models", () => {
 			success: false,
 			error: "Requesty API error",
 			values: { provider: "requesty" },
-		})
-
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "singleRouterModelFetchResponse",
-			success: false,
-			error: "Unbound API error",
-			values: { provider: "unbound" },
-		})
-
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "singleRouterModelFetchResponse",
-			success: false,
-			error: "Unbound API error",
-			values: { provider: "unbound" },
-		})
-
-		expect(mockPostMessage).toHaveBeenCalledWith({
-			type: "singleRouterModelFetchResponse",
-			success: false,
-			error: "Chutes API error",
-			values: { provider: "chutes" },
 		})
 
 		expect(mockPostMessage).toHaveBeenCalledWith({
@@ -2716,7 +2740,6 @@ describe("ClineProvider - Router Models", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				unboundApiKey: "unbound-key",
 				// No litellm config
 			},
 		} as any)
@@ -2751,7 +2774,6 @@ describe("ClineProvider - Router Models", () => {
 			apiConfiguration: {
 				openRouterApiKey: "openrouter-key",
 				requestyApiKey: "requesty-key",
-				unboundApiKey: "unbound-key",
 				// No litellm config
 			},
 		} as any)
@@ -2775,18 +2797,13 @@ describe("ClineProvider - Router Models", () => {
 		expect(mockPostMessage).toHaveBeenCalledWith({
 			type: "routerModels",
 			routerModels: {
-				deepinfra: mockModels,
 				openrouter: mockModels,
 				requesty: mockModels,
-				unbound: mockModels,
 				roo: mockModels,
-				chutes: mockModels,
 				litellm: {},
 				ollama: {},
 				lmstudio: {},
 				"vercel-ai-gateway": mockModels,
-				huggingface: {},
-				"io-intelligence": {},
 			},
 			values: undefined,
 		})
@@ -2856,6 +2873,11 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				get: vi.fn().mockImplementation((key: string) => secrets[key]),
 				store: vi.fn().mockImplementation((key: string, value: string | undefined) => (secrets[key] = value)),
 				delete: vi.fn().mockImplementation((key: string) => delete secrets[key]),
+			},
+			workspaceState: {
+				get: vi.fn().mockReturnValue(undefined),
+				update: vi.fn().mockResolvedValue(undefined),
+				keys: vi.fn().mockReturnValue([]),
 			},
 			subscriptions: [],
 			extension: {
@@ -3768,6 +3790,55 @@ describe("ClineProvider - Comprehensive Edit/Delete Edge Cases", () => {
 				expect(mockCline.overwriteClineMessages).toHaveBeenCalled()
 				expect(mockCline.submitUserMessage).toHaveBeenCalled()
 			})
+		})
+	})
+
+	describe("getTaskWithId", () => {
+		it("returns empty apiConversationHistory when file is missing", async () => {
+			const historyItem = { id: "missing-api-file-task", task: "test task", ts: Date.now() }
+			vi.mocked(mockContext.globalState.get).mockImplementation((key: string) => {
+				if (key === "taskHistory") {
+					return [historyItem]
+				}
+				return undefined
+			})
+
+			const deleteTaskSpy = vi.spyOn(provider, "deleteTaskFromState")
+
+			const result = await (provider as any).getTaskWithId("missing-api-file-task")
+
+			expect(result.historyItem).toEqual(historyItem)
+			expect(result.apiConversationHistory).toEqual([])
+			expect(deleteTaskSpy).not.toHaveBeenCalled()
+		})
+
+		it("returns empty apiConversationHistory when file contains invalid JSON", async () => {
+			const historyItem = { id: "corrupt-api-task", task: "test task", ts: Date.now() }
+			vi.mocked(mockContext.globalState.get).mockImplementation((key: string) => {
+				if (key === "taskHistory") {
+					return [historyItem]
+				}
+				return undefined
+			})
+
+			// Make fileExistsAtPath return true so the read path is exercised
+			const fsUtils = await import("../../../utils/fs")
+			vi.spyOn(fsUtils, "fileExistsAtPath").mockResolvedValue(true)
+
+			// Make readFile return corrupted JSON
+			const fsp = await import("fs/promises")
+			vi.mocked(fsp.readFile).mockResolvedValueOnce("{not valid json!!!" as never)
+
+			const deleteTaskSpy = vi.spyOn(provider, "deleteTaskFromState")
+
+			const result = await (provider as any).getTaskWithId("corrupt-api-task")
+
+			expect(result.historyItem).toEqual(historyItem)
+			expect(result.apiConversationHistory).toEqual([])
+			expect(deleteTaskSpy).not.toHaveBeenCalled()
+
+			// Restore the spy
+			vi.mocked(fsUtils.fileExistsAtPath).mockRestore()
 		})
 	})
 })

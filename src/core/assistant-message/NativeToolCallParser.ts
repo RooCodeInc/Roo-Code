@@ -250,7 +250,6 @@ export class NativeToolCallParser {
 	public static processStreamingChunk(id: string, chunk: string): ToolUse | null {
 		const toolCall = this.streamingToolCalls.get(id)
 		if (!toolCall) {
-			console.warn(`[NativeToolCallParser] Received chunk for unknown tool call: ${id}`)
 			return null
 		}
 
@@ -295,7 +294,6 @@ export class NativeToolCallParser {
 	public static finalizeStreamingToolCall(id: string): ToolUse | McpToolUse | null {
 		const toolCall = this.streamingToolCalls.get(id)
 		if (!toolCall) {
-			console.warn(`[NativeToolCallParser] Attempting to finalize unknown tool call: ${id}`)
 			return null
 		}
 

@@ -111,6 +111,8 @@
 	},
 	"selectMode": "选择交互模式",
 	"selectApiConfig": "选择 API 配置",
+	"lockApiConfigAcrossModes": "锁定此工作区所有模式的 API 配置",
+	"unlockApiConfigAcrossModes": "此工作区所有模式的 API 配置已锁定（点击解锁）",
 	"enhancePrompt": "增强提示词",
 	"addImages": "添加图片到消息",
 	"sendMessage": "发送消息",
@@ -218,7 +220,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "需要查看目录文件列表（工作区外）",
 		"didViewTopLevelOutsideWorkspace": "已查看目录文件列表（工作区外）",
 		"wantsToViewRecursiveOutsideWorkspace": "需要查看目录所有文件（工作区外）",
-		"didViewRecursiveOutsideWorkspace": "已查看目录所有文件（工作区外）"
+		"didViewRecursiveOutsideWorkspace": "已查看目录所有文件（工作区外）",
+		"wantsToViewMultipleDirectories": "Roo 想要查看多个目录"
 	},
 	"commandOutput": "命令输出",
 	"commandExecution": {
@@ -345,9 +348,8 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"parallelTools": "并行工具调用：工具现在默认并行执行，大大加快多文件操作和复杂任务的速度。",
-			"readFileIndentation": "更智能的文件读取：新的缩进模式可提取完整的语义代码块（函数、类），无需中断函数——适合从搜索结果中指定特定行。",
-			"readCommandOutput": "无损终端输出：新的 read_command_output 工具可从截断的执行中检索完整的命令输出，并支持分页和正则表达式过滤。"
+			"claudeOpus": "Claude Opus 4.6: 现已在所有供应商——Roo Code Router、Anthropic、AWS Bedrock、Google Vertex 和 OpenRouter——提供，将 Anthropic 最强大的模型带到您的首选平台。",
+			"gptCodex": "GPT-5.3-Codex: OpenAI 最新的编码模型现已在 OpenAI - ChatGPT 供应商中支持，提供尖端的代码生成和理解。"
 		},
 		"cloudAgents": {
 			"heading": "云端新功能：",
@@ -441,6 +443,22 @@
 			"title": "全部拒绝"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "全部批准"
+		},
+		"deny": {
+			"title": "全部拒绝"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "全部保存"
+		},
+		"deny": {
+			"title": "全部拒绝"
+		}
+	},
 	"indexingStatus": {
 		"ready": "索引就绪",
 		"indexing": "索引中 {{percentage}}%",
@@ -514,5 +532,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "供应商不再受支持",
+		"message": "抱歉，此供应商已不再受支持。我们发现实际使用它的 Roo 用户非常少，我们需要缩减代码库的范围，以便继续快速交付并更好地服务社区。这是一个非常艰难的决定，但它能让我们专注于对你最重要的事情。我们知道这很遗憾。",
+		"openSettings": "打开设置"
 	}
 }

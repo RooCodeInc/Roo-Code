@@ -21,6 +21,10 @@ vi.mock("execa", () => ({
 	execa: vi.fn(),
 }))
 
+vi.mock("../../../utils/safeWriteJson", () => ({
+	safeWriteJson: vi.fn().mockResolvedValue(undefined),
+}))
+
 vi.mock("fs/promises", async (importOriginal) => {
 	const actual = (await importOriginal()) as Record<string, any>
 	const mockFunctions = {

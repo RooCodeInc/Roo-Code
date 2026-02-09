@@ -139,6 +139,7 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setReasoningBlockCollapsed: (value: boolean) => void
 	enterBehavior?: "send" | "newline"
 	setEnterBehavior: (value: "send" | "newline") => void
+	taskHeaderHighlightEnabled?: boolean
 	autoCondenseContext: boolean
 	setAutoCondenseContext: (value: boolean) => void
 	autoCondenseContextPercent: number
@@ -240,6 +241,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		historyPreviewCollapsed: false, // Initialize the new state (default to expanded)
 		reasoningBlockCollapsed: true, // Default to collapsed
 		enterBehavior: "send", // Default: Enter sends, Shift+Enter creates newline
+		taskHeaderHighlightEnabled: false,
 		cloudUserInfo: null,
 		cloudIsAuthenticated: false,
 		cloudOrganizations: [],
@@ -267,6 +269,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		includeCurrentTime: true,
 		includeCurrentCost: true,
 		showQuestionsOneByOne: false,
+		lockApiConfigAcrossModes: false,
 	})
 
 	const [didHydrateState, setDidHydrateState] = useState(false)

@@ -47,7 +47,6 @@ export interface ExtensionMessage {
 		| "ollamaModels"
 		| "lmStudioModels"
 		| "vsCodeLmModels"
-		| "huggingFaceModels"
 		| "vsCodeLmApiAvailable"
 		| "updatePrompt"
 		| "systemPrompt"
@@ -144,23 +143,6 @@ export interface ExtensionMessage {
 	ollamaModels?: ModelRecord
 	lmStudioModels?: ModelRecord
 	vsCodeLmModels?: { vendor?: string; family?: string; version?: string; id?: string }[]
-	huggingFaceModels?: Array<{
-		id: string
-		object: string
-		created: number
-		owned_by: string
-		providers: Array<{
-			provider: string
-			status: "live" | "staging" | "error"
-			supports_tools?: boolean
-			supports_structured_output?: boolean
-			context_length?: number
-			pricing?: {
-				input: number
-				output: number
-			}
-		}>
-	}>
 	mcpServers?: McpServer[]
 	commits?: GitCommit[]
 	listApiConfig?: ProviderSettingsEntry[]
@@ -303,6 +285,7 @@ export type ExtensionState = Pick<
 	| "ttsSpeed"
 	| "soundEnabled"
 	| "soundVolume"
+	| "taskHeaderHighlightEnabled"
 	| "terminalOutputPreviewSize"
 	| "terminalShellIntegrationTimeout"
 	| "terminalShellIntegrationDisabled"
@@ -335,7 +318,9 @@ export type ExtensionState = Pick<
 	| "maxGitStatusFiles"
 	| "requestDelaySeconds"
 	| "showWorktreesInHomeScreen"
+	| "disabledTools"
 > & {
+	lockApiConfigAcrossModes?: boolean
 	version: string
 	clineMessages: ClineMessage[]
 	currentTaskItem?: HistoryItem
@@ -467,7 +452,6 @@ export interface WebviewMessage {
 		| "requestRooModels"
 		| "requestRooCreditBalance"
 		| "requestVsCodeLmModels"
-		| "requestHuggingFaceModels"
 		| "openImage"
 		| "saveImage"
 		| "openFile"
@@ -524,6 +508,7 @@ export interface WebviewMessage {
 		| "searchFiles"
 		| "toggleApiConfigPin"
 		| "hasOpenedModeSelector"
+		| "lockApiConfigAcrossModes"
 		| "clearCloudAuthSkipModel"
 		| "cloudButtonClicked"
 		| "rooCloudSignIn"
@@ -606,6 +591,7 @@ export interface WebviewMessage {
 		| "createSkill"
 		| "deleteSkill"
 		| "moveSkill"
+		| "updateSkillModes"
 		| "openSkillFile"
 	text?: string
 	editedMessageContent?: string
@@ -642,9 +628,15 @@ export interface WebviewMessage {
 	payload?: WebViewMessagePayload
 	source?: "global" | "project" | "built-in"
 	skillName?: string // For skill operations (createSkill, deleteSkill, moveSkill, openSkillFile)
+	/** @deprecated Use skillModeSlugs instead */
 	skillMode?: string // For skill operations (current mode restriction)
+	/** @deprecated Use newSkillModeSlugs instead */
 	newSkillMode?: string // For moveSkill (target mode)
 	skillDescription?: string // For createSkill (skill description)
+	/** Mode slugs for skill operations. undefined/empty = any mode */
+	skillModeSlugs?: string[] // For skill operations (mode restrictions)
+	/** Target mode slugs for updateSkillModes */
+	newSkillModeSlugs?: string[] // For updateSkillModes (new mode restrictions)
 	requestId?: string
 	ids?: string[]
 	hasSystemPromptOverride?: boolean
@@ -838,6 +830,12 @@ export interface ClineSayTool {
 			content: string
 			startLine?: number
 		}>
+	}>
+	batchDirs?: Array<{
+		path: string
+		recursive: boolean
+		isOutsideWorkspace?: boolean
+		key: string
 	}>
 	question?: string
 	imageData?: string // Base64 encoded image data for generated images

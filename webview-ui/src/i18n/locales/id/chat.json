@@ -80,6 +80,22 @@
 			"title": "Tolak Semua"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Setujui Semua"
+		},
+		"deny": {
+			"title": "Tolak Semua"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Simpan Semua"
+		},
+		"deny": {
+			"title": "Tolak Semua"
+		}
+	},
 	"runCommand": {
 		"title": "Perintah",
 		"tooltip": "Jalankan perintah ini"
@@ -125,6 +141,8 @@
 	},
 	"selectMode": "Pilih mode untuk interaksi",
 	"selectApiConfig": "Pilih konfigurasi API",
+	"lockApiConfigAcrossModes": "Kunci konfigurasi API di semua mode dalam workspace ini",
+	"unlockApiConfigAcrossModes": "Konfigurasi API terkunci di semua mode dalam workspace ini (klik untuk membuka kunci)",
 	"enhancePrompt": "Tingkatkan prompt dengan konteks tambahan",
 	"enhancePromptDescription": "Tombol 'Tingkatkan Prompt' membantu memperbaiki prompt kamu dengan memberikan konteks tambahan, klarifikasi, atau penyusunan ulang. Coba ketik prompt di sini dan klik tombol lagi untuk melihat cara kerjanya.",
 	"modeSelector": {
@@ -246,7 +264,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo ingin melihat file tingkat atas di direktori ini (di luar workspace)",
 		"didViewTopLevelOutsideWorkspace": "Roo melihat file tingkat atas di direktori ini (di luar workspace)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo ingin melihat semua file secara rekursif di direktori ini (di luar workspace)",
-		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)"
+		"didViewRecursiveOutsideWorkspace": "Roo melihat semua file secara rekursif di direktori ini (di luar workspace)",
+		"wantsToViewMultipleDirectories": "Roo ingin melihat beberapa direktori"
 	},
 	"codebaseSearch": {
 		"wantsToSearch": "Roo ingin mencari codebase untuk <code>{{query}}</code>",
@@ -357,9 +376,8 @@
 		},
 		"release": {
 			"heading": "Yang Baru:",
-			"parallelTools": "Panggilan Alat Paralel: Alat sekarang dijalankan secara paralel secara default, mempercepat operasi multi-file dan tugas kompleks secara signifikan.",
-			"readFileIndentation": "Pembacaan File yang Lebih Cerdas: Mode indentasi baru mengekstrak blok kode semantik lengkap (fungsi, kelas) tanpa pemotongan di tengah fungsi—ideal saat menargetkan baris tertentu dari hasil pencarian.",
-			"readCommandOutput": "Output Terminal Tanpa Kerugian: Alat read_command_output baru mengambil output perintah lengkap dari eksekusi yang dipotong dengan paginasi dan filter regex."
+			"claudeOpus": "Claude Opus 4.6: Sekarang tersedia di semua penyedia—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex, dan OpenRouter—membawa model paling canggih Anthropic ke platform pilihan Anda.",
+			"gptCodex": "GPT-5.3-Codex: Model coding terbaru OpenAI kini didukung di penyedia OpenAI - ChatGPT, memberikan generasi kode dan pemahaman terdepan."
 		},
 		"cloudAgents": {
 			"heading": "Baru di Cloud:",
@@ -519,5 +537,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Penyedia tidak lagi didukung",
+		"message": "Maaf, penyedia ini tidak lagi didukung. Kami melihat sangat sedikit pengguna Roo yang benar-benar menggunakannya dan kami perlu mengurangi cakupan kode kami agar bisa terus bergerak cepat dan melayani komunitas kami dengan baik. Ini adalah keputusan yang sangat sulit, tapi ini memungkinkan kami fokus pada apa yang paling penting bagimu. Memang menyebalkan, kami tahu.",
+		"openSettings": "Buka Pengaturan"
 	}
 }

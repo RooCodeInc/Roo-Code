@@ -7,17 +7,20 @@ import { useAppTranslation } from "@/i18n/TranslationContext"
 import { useExtensionState } from "@/context/ExtensionStateContext"
 import {
 	Button,
+	Checkbox,
 	Dialog,
 	DialogContent,
 	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
+	Input,
 	Select,
 	SelectContent,
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Textarea,
 } from "@/components/ui"
 import { vscode } from "@/utils/vscode"
 
@@ -65,9 +68,6 @@ const validateDescription = (description: string): string | null => {
 	return null
 }
 
-// Sentinel value for "Any mode" since Radix Select doesn't allow empty string values
-const MODE_ANY = "__any__"
-
 export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 	open,
 	onOpenChange,
@@ -80,11 +80,14 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 	const [name, setName] = useState("")
 	const [description, setDescription] = useState("")
 	const [source, setSource] = useState<"global" | "project">(hasWorkspace ? "project" : "global")
-	const [mode, setMode] = useState<string>(MODE_ANY)
 	const [nameError, setNameError] = useState<string | null>(null)
 	const [descriptionError, setDescriptionError] = useState<string | null>(null)
 
-	// Get available modes for the dropdown (built-in + custom modes)
+	// Multi-mode selection state (same pattern as SkillsSettings mode dialog)
+	const [selectedModes, setSelectedModes] = useState<string[]>([])
+	const [isAnyMode, setIsAnyMode] = useState(true)
+
+	// Get available modes for the checkboxes (built-in + custom modes)
 	const availableModes = useMemo(() => {
 		return getAllModes(customModes).map((m) => ({ slug: m.slug, name: m.name }))
 	}, [customModes])
@@ -93,7 +96,8 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 		setName("")
 		setDescription("")
 		setSource(hasWorkspace ? "project" : "global")
-		setMode(MODE_ANY)
+		setSelectedModes([])
+		setIsAnyMode(true)
 		setNameError(null)
 		setDescriptionError(null)
 	}, [hasWorkspace])
@@ -114,6 +118,33 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 		setDescriptionError(null)
 	}, [])
 
+	// Handle "Any mode" toggle - mutually exclusive with specific modes
+	const handleAnyModeToggle = useCallback((checked: boolean) => {
+		if (checked) {
+			setIsAnyMode(true)
+			setSelectedModes([]) // Clear specific modes when "Any mode" is selected
+		} else {
+			setIsAnyMode(false)
+		}
+	}, [])
+
+	// Handle specific mode toggle - unchecks "Any mode" when a specific mode is selected
+	const handleModeToggle = useCallback((modeSlug: string, checked: boolean) => {
+		if (checked) {
+			setIsAnyMode(false) // Uncheck "Any mode" when selecting a specific mode
+			setSelectedModes((prev) => [...prev, modeSlug])
+		} else {
+			setSelectedModes((prev) => {
+				const newModes = prev.filter((m) => m !== modeSlug)
+				// If no modes selected, default back to "Any mode"
+				if (newModes.length === 0) {
+					setIsAnyMode(true)
+				}
+				return newModes
+			})
+		}
+	}, [])
+
 	const handleCreate = useCallback(() => {
 		// Validate fields
 		const nameValidationError = validateSkillName(name)
@@ -130,73 +161,64 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 		}
 
 		// Send message to create skill
-		// Convert MODE_ANY sentinel value to undefined for the backend
+		// Convert to modeSlugs: undefined for "Any mode", or array of selected modes
+		const modeSlugs = isAnyMode ? undefined : selectedModes.length > 0 ? selectedModes : undefined
 		vscode.postMessage({
 			type: "createSkill",
 			skillName: name,
 			source,
 			skillDescription: description,
-			skillMode: mode === MODE_ANY ? undefined : mode,
+			skillModeSlugs: modeSlugs,
 		})
 
 		// Close dialog and notify parent
 		handleClose()
 		onSkillCreated()
-	}, [name, description, source, mode, handleClose, onSkillCreated])
+	}, [name, description, source, isAnyMode, selectedModes, handleClose, onSkillCreated])
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
 					<DialogTitle>{t("settings:skills.createDialog.title")}</DialogTitle>
-					<DialogDescription>{t("settings:skills.createDialog.description")}</DialogDescription>
+					<DialogDescription></DialogDescription>
 				</DialogHeader>
 
-				<div className="flex flex-col gap-4 py-4">
+				<div className="flex flex-col gap-4">
 					{/* Name Input */}
-					<div className="flex flex-col gap-1.5">
+					<div className="flex flex-col gap-1">
 						<label htmlFor="skill-name" className="text-sm font-medium text-vscode-foreground">
-							{t("settings:skills.createDialog.nameLabel")} *
+							{t("settings:skills.createDialog.nameLabel")}
 						</label>
-						<input
+						<Input
 							id="skill-name"
 							type="text"
 							value={name}
 							onChange={handleNameChange}
 							placeholder={t("settings:skills.createDialog.namePlaceholder")}
 							maxLength={64}
-							className="w-full bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded px-3 py-2 text-sm focus:outline-none focus:border-vscode-focusBorder"
+							className="w-full bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded-xl px-3 py-2 focus:outline-none focus:border-vscode-focusBorder"
 						/>
-						<span className="text-xs text-vscode-descriptionForeground">
-							{t("settings:skills.createDialog.nameHint")}
-						</span>
 						{nameError && <span className="text-xs text-vscode-errorForeground">{t(nameError)}</span>}
 					</div>
 
 					{/* Description Input */}
-					<div className="flex flex-col gap-1.5">
-						<label htmlFor="skill-description" className="text-sm font-medium text-vscode-foreground">
-							{t("settings:skills.createDialog.descriptionLabel")} *
-						</label>
-						<textarea
+					<div className="flex flex-col gap-1">
+						<Textarea
 							id="skill-description"
 							value={description}
 							onChange={handleDescriptionChange}
 							placeholder={t("settings:skills.createDialog.descriptionPlaceholder")}
 							maxLength={1024}
-							rows={3}
-							className="w-full bg-vscode-input-background text-vscode-input-foreground border border-vscode-input-border rounded px-3 py-2 text-sm focus:outline-none focus:border-vscode-focusBorder resize-none"
+							rows={5}
 						/>
-						<span className="text-xs text-vscode-descriptionForeground">
-							{t("settings:skills.createDialog.descriptionHint")}
-						</span>
 						{descriptionError && (
 							<span className="text-xs text-vscode-errorForeground">{t(descriptionError)}</span>
 						)}
 					</div>
 
 					{/* Source Selection */}
-					<div className="flex flex-col gap-1.5">
+					<div className="flex flex-col gap-1">
 						<label className="text-sm font-medium text-vscode-foreground">
 							{t("settings:skills.createDialog.sourceLabel")}
 						</label>
@@ -211,32 +233,45 @@ export const CreateSkillDialog: React.FC<CreateSkillDialogProps> = ({
 								)}
 							</SelectContent>
 						</Select>
-						<span className="text-xs text-vscode-descriptionForeground">
-							{t("settings:skills.createDialog.sourceHint")}
-						</span>
 					</div>
 
 					{/* Mode Selection (Optional) */}
-					<div className="flex flex-col gap-1.5">
+					<div className="flex flex-col gap-1">
 						<label className="text-sm font-medium text-vscode-foreground">
 							{t("settings:skills.createDialog.modeLabel")}
 						</label>
-						<Select value={mode} onValueChange={setMode}>
-							<SelectTrigger className="w-full">
-								<SelectValue placeholder={t("settings:skills.createDialog.modePlaceholder")} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value={MODE_ANY}>{t("settings:skills.createDialog.modeAny")}</SelectItem>
-								{availableModes.map((m) => (
-									<SelectItem key={m.slug} value={m.slug}>
-										{m.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-						<span className="text-xs text-vscode-descriptionForeground">
-							{t("settings:skills.createDialog.modeHint")}
+						<span className="text-xs text-vscode-descriptionForeground mb-1">
+							{t("settings:skills.modeDialog.intro")}
 						</span>
+
+						{/* Individual mode checkboxes */}
+						<div className="flex flex-col max-h-28 overflow-y-auto">
+							{/* Any mode option */}
+							<div className="flex items-center gap-3 p-1 rounded-lg hover:bg-vscode-list-hoverBackground">
+								<Checkbox
+									id="create-mode-any"
+									checked={isAnyMode}
+									onCheckedChange={(checked) => handleAnyModeToggle(checked === true)}
+								/>
+								<label htmlFor="create-mode-any" className="flex-1 cursor-pointer font-medium">
+									{t("settings:skills.modeDialog.anyMode")}
+								</label>
+							</div>
+							{availableModes.map((m) => (
+								<div
+									key={m.slug}
+									className="flex items-center gap-3 p-1 rounded-lg hover:bg-vscode-list-hoverBackground">
+									<Checkbox
+										id={`create-mode-${m.slug}`}
+										checked={selectedModes.includes(m.slug)}
+										onCheckedChange={(checked) => handleModeToggle(m.slug, checked === true)}
+									/>
+									<label htmlFor={`create-mode-${m.slug}`} className="flex-1 cursor-pointer">
+										{m.name}
+									</label>
+								</div>
+							))}
+						</div>
 					</div>
 				</div>
 

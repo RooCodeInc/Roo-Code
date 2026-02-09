@@ -38,6 +38,7 @@ const HistoryPreview = () => {
 							group={group}
 							variant="compact"
 							onToggleExpand={() => toggleExpand(group.parent.id)}
+							onToggleSubtaskExpand={toggleExpand}
 						/>
 					))}
 				</>

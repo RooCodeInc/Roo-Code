@@ -111,6 +111,8 @@
 	},
 	"selectMode": "対話モードを選択",
 	"selectApiConfig": "API構成を選択",
+	"lockApiConfigAcrossModes": "このワークスペースのすべてのモードでAPI構成をロック",
+	"unlockApiConfigAcrossModes": "このワークスペースのすべてのモードでAPI構成がロックされています（クリックで解除）",
 	"enhancePrompt": "追加コンテキストでプロンプトを強化",
 	"addImages": "メッセージに画像を追加",
 	"sendMessage": "メッセージを送信",
@@ -218,7 +220,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示したい",
 		"didViewTopLevelOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のトップレベルファイルを表示しました",
 		"wantsToViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示したい",
-		"didViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示しました"
+		"didViewRecursiveOutsideWorkspace": "Rooはこのディレクトリ（ワークスペース外）のすべてのファイルを再帰的に表示しました",
+		"wantsToViewMultipleDirectories": "Roo は複数のディレクトリを表示したい"
 	},
 	"commandOutput": "コマンド出力",
 	"commandExecution": {
@@ -344,9 +347,8 @@
 		},
 		"release": {
 			"heading": "新機能:",
-			"parallelTools": "並列ツール呼び出し: ツールはデフォルトで並列実行され、マルチファイル操作と複雑なタスクが大幅に高速化されます。",
-			"readFileIndentation": "より賢いファイル読み取り: 新しいインデンテーションモードは、完全なセマンティックコードブロック (関数、クラス) を関数中断なしで抽出—検索結果から特定の行をターゲットにするのに最適です。",
-			"readCommandOutput": "ロスレス端末出力: 新しい read_command_output ツールは、ページネーションと正規表現フィルタリングを備えた切り詰められた実行から完全なコマンド出力を取得します。"
+			"claudeOpus": "Claude Opus 4.6: すべてのプロバイダー（Roo Code Router、Anthropic、AWS Bedrock、Google Vertex、OpenRouter）で利用可能になり、Anthropicの最も強力なモデルをお好みのプラットフォームにもたらします。",
+			"gptCodex": "GPT-5.3-Codex: OpenAIの最新コーディングモデルはOpenAI - ChatGPTプロバイダーでサポートされ、最先端のコード生成と理解を実現します。"
 		},
 		"cloudAgents": {
 			"heading": "クラウドの新機能:",
@@ -440,6 +442,22 @@
 			"title": "すべて拒否"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "すべて承認"
+		},
+		"deny": {
+			"title": "すべて拒否"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "すべて保存"
+		},
+		"deny": {
+			"title": "すべて拒否"
+		}
+	},
 	"indexingStatus": {
 		"ready": "インデックス準備完了",
 		"indexing": "インデックス作成中 {{percentage}}%",
@@ -513,5 +531,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Rooがコマンド出力を読み込みました"
+	},
+	"retiredProvider": {
+		"title": "プロバイダーのサポート終了",
+		"message": "申し訳ございませんが、このプロバイダーはサポートを終了しました。実際に利用しているRooユーザーが非常に少なく、コードベースの範囲を縮小して、迅速な開発とコミュニティへの貢献を続ける必要がありました。本当に難しい決断でしたが、あなたにとって最も重要なことに集中するためです。残念ですが、ご理解ください。",
+		"openSettings": "設定を開く"
 	}
 }

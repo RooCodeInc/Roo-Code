@@ -111,6 +111,8 @@
 	},
 	"selectMode": "Wybierz tryb interakcji",
 	"selectApiConfig": "Wybierz konfigurację API",
+	"lockApiConfigAcrossModes": "Zablokuj konfigurację API dla wszystkich trybów w tym obszarze roboczym",
+	"unlockApiConfigAcrossModes": "Konfiguracja API jest zablokowana dla wszystkich trybów w tym obszarze roboczym (kliknij, aby odblokować)",
 	"enhancePrompt": "Ulepsz podpowiedź dodatkowym kontekstem",
 	"addImages": "Dodaj obrazy do wiadomości",
 	"sendMessage": "Wyślij wiadomość",
@@ -150,14 +152,14 @@
 		"rateLimitWait": "Ograniczenie szybkości",
 		"errorTitle": "Błąd dostawcy {{code}}",
 		"errorMessage": {
-			"docs": "Dokumentacja",
-			"goToSettings": "Ustawienia",
 			"400": "Dostawca nie mógł przetworzyć żądania. Zatrzymaj zadanie i spróbuj innego podejścia.",
 			"401": "Nie można uwierzytelnić u dostawcy. Sprawdź konfigurację klucza API.",
 			"402": "Wygląda na to, że wyczerpałeś środki/kredyty na swoim koncie. Przejdź do dostawcy i dodaj więcej, aby kontynuować.",
 			"403": "Brak autoryzacji. Twój klucz API jest ważny, ale dostawca odmówił ukończenia tego żądania.",
 			"429": "Zbyt wiele żądań. Dostawca ogranicza Ci szybkość żądań. Poczekaj chwilę przed następnym wywołaniem API.",
 			"500": "Błąd serwera dostawcy. Po stronie dostawcy coś się nie powiodło, w Twoim żądaniu nie ma nic złego.",
+			"docs": "Dokumentacja",
+			"goToSettings": "Ustawienia",
 			"unknown": "Nieznany błąd API. Skontaktuj się z pomocą techniczną Roo Code.",
 			"connection": "Błąd połączenia. Upewnij się, że masz działające połączenie internetowe.",
 			"claudeCodeNotAuthenticated": "Musisz się zalogować, aby korzystać z Claude Code. Przejdź do Ustawień i kliknij \"Zaloguj się do Claude Code\", aby się uwierzytelnić."
@@ -218,7 +220,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo chce zobaczyć pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
 		"didViewTopLevelOutsideWorkspace": "Roo zobaczył pliki najwyższego poziomu w tym katalogu (poza obszarem roboczym)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo chce rekurencyjnie zobaczyć wszystkie pliki w tym katalogu (poza obszarem roboczym)",
-		"didViewRecursiveOutsideWorkspace": "Roo rekurencyjnie zobaczył wszystkie pliki w tym katalogu (poza obszarem roboczym)"
+		"didViewRecursiveOutsideWorkspace": "Roo rekurencyjnie zobaczył wszystkie pliki w tym katalogu (poza obszarem roboczym)",
+		"wantsToViewMultipleDirectories": "Roo chce wyświetlić wiele katalogów"
 	},
 	"commandOutput": "Wyjście polecenia",
 	"commandExecution": {
@@ -344,9 +347,8 @@
 		},
 		"release": {
 			"heading": "Co nowego:",
-			"parallelTools": "Równoległe wywołania narzędzi: Narzędzia są teraz wykonywane równolegle domyślnie, znacznie przyspieszając operacje na wielu plikach i złożone zadania.",
-			"readFileIndentation": "Inteligentniejsze czytanie plików: Nowy tryb wcięcia wyodrębnia kompletne semantyczne bloki kodu (funkcje, klasy) bez przerwania w środku funkcji—idealny do kierowania się na określone linie z wyników wyszukiwania.",
-			"readCommandOutput": "Wyjście terminala bez strat: Nowe narzędzie read_command_output pobiera pełne wyjście polecenia ze skróconych wykonań z paginacją i filtrowaniem regex."
+			"claudeOpus": "Claude Opus 4.6: Teraz dostępny u wszystkich dostawców—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex i OpenRouter—przynoszący najbardziej zaawansowany model Anthropic na twoją preferowaną platformę.",
+			"gptCodex": "GPT-5.3-Codex: Najnowszy model kodowania OpenAI jest teraz obsługiwany u dostawcy OpenAI - ChatGPT, zapewniający zaawansowaną generację kodu i zrozumienie."
 		},
 		"cloudAgents": {
 			"heading": "Nowości w chmurze:",
@@ -440,6 +442,22 @@
 			"title": "Odrzuć wszystko"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Zatwierdź wszystko"
+		},
+		"deny": {
+			"title": "Odrzuć wszystko"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Zapisz wszystko"
+		},
+		"deny": {
+			"title": "Odrzuć wszystko"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Indeks gotowy",
 		"indexing": "Indeksowanie {{percentage}}%",
@@ -513,5 +531,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Dostawca nie jest już obsługiwany",
+		"message": "Przepraszamy, ten dostawca nie jest już obsługiwany. Zauważyliśmy, że bardzo niewielu użytkowników Roo faktycznie z niego korzystało, a my musimy zmniejszyć zakres naszego kodu, aby móc dalej szybko dostarczać i dobrze służyć naszej społeczności. To była naprawdę trudna decyzja, ale pozwala nam skupić się na tym, co jest dla ciebie najważniejsze. Wiemy, że to frustrujące.",
+		"openSettings": "Otwórz ustawienia"
 	}
 }

@@ -111,6 +111,8 @@
 	},
 	"selectMode": "Etkileşim modunu seçin",
 	"selectApiConfig": "API yapılandırmasını seçin",
+	"lockApiConfigAcrossModes": "Bu çalışma alanındaki tüm modlarda API yapılandırmasını kilitle",
+	"unlockApiConfigAcrossModes": "Bu çalışma alanındaki tüm modlarda API yapılandırması kilitli (kilidi açmak için tıkla)",
 	"enhancePrompt": "Ek bağlamla istemi geliştir",
 	"addImages": "Mesaja resim ekle",
 	"sendMessage": "Mesaj gönder",
@@ -218,7 +220,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) üst düzey dosyaları görüntülemek istiyor",
 		"didViewTopLevelOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) üst düzey dosyaları görüntüledi",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntülemek istiyor",
-		"didViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntüledi"
+		"didViewRecursiveOutsideWorkspace": "Roo bu dizindeki (çalışma alanı dışında) tüm dosyaları özyinelemeli olarak görüntüledi",
+		"wantsToViewMultipleDirectories": "Roo birden fazla dizini görüntülemek istiyor"
 	},
 	"commandOutput": "Komut Çıktısı",
 	"commandExecution": {
@@ -345,9 +348,8 @@
 		},
 		"release": {
 			"heading": "Yenilikler:",
-			"parallelTools": "Paralel Araç Çağrıları: Araçlar artık varsayılan olarak paralel çalışır ve çok dosyalı işlemler ile karmaşık görevleri önemli ölçüde hızlandırır.",
-			"readFileIndentation": "Daha Akıllı Dosya Okuma: Yeni girinti modu, tam anlamsal kod bloklarını (işlevler, sınıflar) fonksiyon ortasında kesme olmadan ayıklar—arama sonuçlarından belirli satırları hedeflediğinizde idealdir.",
-			"readCommandOutput": "Kayıpsız Terminal Çıktısı: Yeni read_command_output aracı, sayfalandırma ve regex filtrelemesiyle kesilen yürütmelerden tam komut çıktısını alır."
+			"claudeOpus": "Claude Opus 4.6: Artık tüm sağlayıcılarda—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex ve OpenRouter—mevcut olup Anthropic'in en yetkin modelini tercih ettiğin platforma getiriyor.",
+			"gptCodex": "GPT-5.3-Codex: OpenAI'nin en son kodlama modeli artık OpenAI - ChatGPT sağlayıcısında desteklenmiş olup, ileri seviye kod oluşturma ve anlama sunuyor."
 		},
 		"cloudAgents": {
 			"heading": "Cloud'daki yenilikler:",
@@ -441,6 +443,22 @@
 			"title": "Tümünü Reddet"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Tümünü Onayla"
+		},
+		"deny": {
+			"title": "Tümünü Reddet"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Tümünü Kaydet"
+		},
+		"deny": {
+			"title": "Tümünü Reddet"
+		}
+	},
 	"indexingStatus": {
 		"ready": "İndeks hazır",
 		"indexing": "İndeksleniyor {{percentage}}%",
@@ -514,5 +532,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Sağlayıcı artık desteklenmiyor",
+		"message": "Üzgünüz, bu sağlayıcı artık desteklenmiyor. Çok az Roo kullanıcısının bunu gerçekten kullandığını gördük ve hızlı gelişmeye devam edip topluluğumuza iyi hizmet verebilmek için kod tabanımızın kapsamını daraltmamız gerekiyor. Gerçekten zor bir karardı ama senin için en önemli olana odaklanmamızı sağlıyor. Bunun can sıkıcı olduğunu biliyoruz.",
+		"openSettings": "Ayarları aç"
 	}
 }

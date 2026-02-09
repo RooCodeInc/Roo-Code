@@ -38,7 +38,8 @@ export async function handleCreateSkill(
 		const skillName = message.skillName
 		const source = message.source
 		const skillDescription = message.skillDescription
-		const skillMode = message.skillMode
+		// Support new modeSlugs array or fall back to legacy skillMode
+		const modeSlugs = message.skillModeSlugs ?? (message.skillMode ? [message.skillMode] : undefined)
 
 		if (!skillName || !source || !skillDescription) {
 			throw new Error(t("skills:errors.missing_create_fields"))
@@ -54,7 +55,7 @@ export async function handleCreateSkill(
 			throw new Error(t("skills:errors.manager_unavailable"))
 		}
 
-		const createdPath = await skillsManager.createSkill(skillName, source, skillDescription, skillMode)
+		const createdPath = await skillsManager.createSkill(skillName, source, skillDescription, modeSlugs)
 
 		// Open the created file in the editor
 		openFile(createdPath)
@@ -81,7 +82,8 @@ export async function handleDeleteSkill(
 	try {
 		const skillName = message.skillName
 		const source = message.source
-		const skillMode = message.skillMode
+		// Support new skillModeSlugs array or fall back to legacy skillMode
+		const skillMode = message.skillModeSlugs?.[0] ?? message.skillMode
 
 		if (!skillName || !source) {
 			throw new Error(t("skills:errors.missing_delete_fields"))
@@ -153,13 +155,52 @@ export async function handleMoveSkill(
 }
 
 /**
+ * Handles the updateSkillModes message - updates the mode associations for a skill
+ */
+export async function handleUpdateSkillModes(
+	provider: ClineProvider,
+	message: WebviewMessage,
+): Promise<SkillMetadata[] | undefined> {
+	try {
+		const skillName = message.skillName
+		const source = message.source
+		const newModeSlugs = message.newSkillModeSlugs
+
+		if (!skillName || !source) {
+			throw new Error(t("skills:errors.missing_update_modes_fields"))
+		}
+
+		// Built-in skills cannot be modified
+		if (source === "built-in") {
+			throw new Error(t("skills:errors.cannot_modify_builtin"))
+		}
+
+		const skillsManager = provider.getSkillsManager()
+		if (!skillsManager) {
+			throw new Error(t("skills:errors.manager_unavailable"))
+		}
+
+		await skillsManager.updateSkillModes(skillName, source, newModeSlugs)
+
+		// Send updated skills list
+		const skills = skillsManager.getSkillsMetadata()
+		await provider.postMessageToWebview({ type: "skills", skills })
+		return skills
+	} catch (error) {
+		const errorMessage = error instanceof Error ? error.message : String(error)
+		provider.log(`Error updating skill modes: ${errorMessage}`)
+		vscode.window.showErrorMessage(`Failed to update skill modes: ${errorMessage}`)
+		return undefined
+	}
+}
+
+/**
  * Handles the openSkillFile message - opens a skill file in the editor
  */
 export async function handleOpenSkillFile(provider: ClineProvider, message: WebviewMessage): Promise<void> {
 	try {
 		const skillName = message.skillName
 		const source = message.source
-		const skillMode = message.skillMode
 
 		if (!skillName || !source) {
 			throw new Error(t("skills:errors.missing_delete_fields"))
@@ -175,7 +216,8 @@ export async function handleOpenSkillFile(provider: ClineProvider, message: Webv
 			throw new Error(t("skills:errors.manager_unavailable"))
 		}
 
-		const skill = skillsManager.getSkill(skillName, source, skillMode)
+		// Find skill by name and source (skills may have modeSlugs arrays now)
+		const skill = skillsManager.findSkillByNameAndSource(skillName, source)
 		if (!skill) {
 			throw new Error(t("skills:errors.skill_not_found", { name: skillName }))
 		}

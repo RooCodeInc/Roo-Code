@@ -20,17 +20,19 @@ import {
 	IpcMessageType,
 } from "@roo-code/types"
 import { IpcServer } from "@roo-code/ipc"
+import { CloudService } from "@roo-code/cloud"
 
 import { Package } from "../shared/package"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import { openClineInNewTab } from "../activate/registerCommands"
+import { getCommands } from "../services/command/commands"
+import { getModels } from "../api/providers/fetchers/modelCache"
 
 export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 	private readonly outputChannel: vscode.OutputChannel
 	private readonly sidebarProvider: ClineProvider
 	private readonly context: vscode.ExtensionContext
 	private readonly ipc?: IpcServer
-	private readonly taskMap = new Map<string, ClineProvider>()
 	private readonly log: (...args: unknown[]) => void
 	private logfile?: string
 
@@ -65,35 +67,88 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 			ipc.listen()
 			this.log(`[API] ipc server started: socketPath=${socketPath}, pid=${process.pid}, ppid=${process.ppid}`)
 
-			ipc.on(IpcMessageType.TaskCommand, async (_clientId, { commandName, data }) => {
-				switch (commandName) {
+			ipc.on(IpcMessageType.TaskCommand, async (clientId, command) => {
+				const sendResponse = (eventName: RooCodeEventName, payload: unknown[]) => {
+					ipc.send(clientId, {
+						type: IpcMessageType.TaskEvent,
+						origin: IpcOrigin.Server,
+						data: { eventName, payload } as TaskEvent,
+					})
+				}
+
+				switch (command.commandName) {
 					case TaskCommandName.StartNewTask:
-						this.log(`[API] StartNewTask -> ${data.text}, ${JSON.stringify(data.configuration)}`)
-						await this.startNewTask(data)
+						this.log(
+							`[API] StartNewTask -> ${command.data.text}, ${JSON.stringify(command.data.configuration)}`,
+						)
+						await this.startNewTask(command.data)
 						break
 					case TaskCommandName.CancelTask:
-						this.log(`[API] CancelTask -> ${data}`)
-						await this.cancelTask(data)
+						this.log(`[API] CancelTask`)
+						await this.cancelCurrentTask()
 						break
 					case TaskCommandName.CloseTask:
-						this.log(`[API] CloseTask -> ${data}`)
+						this.log(`[API] CloseTask`)
 						await vscode.commands.executeCommand("workbench.action.files.saveFiles")
 						await vscode.commands.executeCommand("workbench.action.closeWindow")
 						break
 					case TaskCommandName.ResumeTask:
-						this.log(`[API] ResumeTask -> ${data}`)
+						this.log(`[API] ResumeTask -> ${command.data}`)
 						try {
-							await this.resumeTask(data)
+							await this.resumeTask(command.data)
 						} catch (error) {
 							const errorMessage = error instanceof Error ? error.message : String(error)
-							this.log(`[API] ResumeTask failed for taskId ${data}: ${errorMessage}`)
-							// Don't rethrow - we want to prevent IPC server crashes
-							// The error is logged for debugging purposes
+							this.log(`[API] ResumeTask failed for taskId ${command.data}: ${errorMessage}`)
+							// Don't rethrow - we want to prevent IPC server crashes.
+							// The error is logged for debugging purposes.
 						}
 						break
 					case TaskCommandName.SendMessage:
-						this.log(`[API] SendMessage -> ${data.text}`)
-						await this.sendMessage(data.text, data.images)
+						this.log(`[API] SendMessage -> ${command.data.text}`)
+						await this.sendMessage(command.data.text, command.data.images)
+						break
+					case TaskCommandName.GetCommands:
+						try {
+							const commands = await getCommands(this.sidebarProvider.cwd)
+
+							sendResponse(RooCodeEventName.CommandsResponse, [
+								commands.map((cmd) => ({
+									name: cmd.name,
+									source: cmd.source,
+									filePath: cmd.filePath,
+									description: cmd.description,
+									argumentHint: cmd.argumentHint,
+								})),
+							])
+						} catch (error) {
+							sendResponse(RooCodeEventName.CommandsResponse, [[]])
+						}
+
+						break
+					case TaskCommandName.GetModes:
+						try {
+							const modes = await this.sidebarProvider.getModes()
+							sendResponse(RooCodeEventName.ModesResponse, [modes])
+						} catch (error) {
+							sendResponse(RooCodeEventName.ModesResponse, [[]])
+						}
+
+						break
+					case TaskCommandName.GetModels:
+						try {
+							const models = await getModels({
+								provider: "roo" as const,
+								baseUrl: process.env.ROO_CODE_PROVIDER_URL ?? "https://api.roocode.com/proxy",
+								apiKey: CloudService.hasInstance()
+									? CloudService.instance.authService?.getSessionToken()
+									: undefined,
+							})
+
+							sendResponse(RooCodeEventName.ModelsResponse, [models])
+						} catch (error) {
+							sendResponse(RooCodeEventName.ModelsResponse, [{}])
+						}
+
 						break
 				}
 			})
@@ -181,15 +236,6 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 		await this.sidebarProvider.cancelTask()
 	}
 
-	public async cancelTask(taskId: string) {
-		const provider = this.taskMap.get(taskId)
-
-		if (provider) {
-			await provider.cancelTask()
-			this.taskMap.delete(taskId)
-		}
-	}
-
 	public async sendMessage(text?: string, images?: string[]) {
 		await this.sidebarProvider.postMessageToWebview({ type: "invoke", invoke: "sendMessage", text, images })
 	}
@@ -212,7 +258,6 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 
 			task.on(RooCodeEventName.TaskStarted, async () => {
 				this.emit(RooCodeEventName.TaskStarted, task.taskId)
-				this.taskMap.set(task.taskId, provider)
 				await this.fileLog(`[${new Date().toISOString()}] taskStarted -> ${task.taskId}\n`)
 			})
 
@@ -221,8 +266,6 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 					isSubtask: !!task.parentTaskId,
 				})
 
-				this.taskMap.delete(task.taskId)
-
 				await this.fileLog(
 					`[${new Date().toISOString()}] taskCompleted -> ${task.taskId} | ${JSON.stringify(tokenUsage, null, 2)} | ${JSON.stringify(toolUsage, null, 2)}\n`,
 				)
@@ -230,7 +273,6 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 
 			task.on(RooCodeEventName.TaskAborted, () => {
 				this.emit(RooCodeEventName.TaskAborted, task.taskId)
-				this.taskMap.delete(task.taskId)
 			})
 
 			task.on(RooCodeEventName.TaskFocused, () => {
@@ -299,6 +341,10 @@ export class API extends EventEmitter<RooCodeEvents> implements RooCodeAPI {
 
 			task.on(RooCodeEventName.TaskAskResponded, () => {
 				this.emit(RooCodeEventName.TaskAskResponded, task.taskId)
+			})
+
+			task.on(RooCodeEventName.QueuedMessagesUpdated, (taskId, messages) => {
+				this.emit(RooCodeEventName.QueuedMessagesUpdated, taskId, messages)
 			})
 
 			// Task Analytics

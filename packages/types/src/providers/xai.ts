@@ -30,6 +30,8 @@ export const xaiModels = {
 		cacheReadsPrice: 0.05,
 		description:
 			"xAI's Grok 4.1 Fast model with 2M context window, optimized for high-performance agentic tool calling with reasoning",
+		supportsReasoningEffort: ["low", "high"],
+		reasoningEffort: "low",
 		includedTools: ["search_replace"],
 		excludedTools: ["apply_diff"],
 	},
@@ -58,6 +60,8 @@ export const xaiModels = {
 		cacheReadsPrice: 0.05,
 		description:
 			"xAI's Grok 4 Fast model with 2M context window, optimized for high-performance agentic tool calling with reasoning",
+		supportsReasoningEffort: ["low", "high"],
+		reasoningEffort: "low",
 		includedTools: ["search_replace"],
 		excludedTools: ["apply_diff"],
 	},

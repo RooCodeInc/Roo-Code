@@ -1,8 +1,8 @@
+// npx vitest run api/providers/__tests__/openai-native-tools.spec.ts
+
 import OpenAI from "openai"
 
 import { OpenAiHandler } from "../openai"
-import { OpenAiNativeHandler } from "../openai-native"
-import type { ApiHandlerOptions } from "../../../shared/api"
 
 describe("OpenAiHandler native tools", () => {
 	it("includes tools in request when tools are provided via metadata (regression test)", async () => {
@@ -68,35 +68,103 @@ describe("OpenAiHandler native tools", () => {
 	})
 })
 
-describe("OpenAiNativeHandler MCP tool schema handling", () => {
-	it("should add additionalProperties: false to MCP tools while keeping strict: false", async () => {
-		let capturedRequestBody: any
+// Use vi.hoisted to define mock functions for AI SDK
+const { mockStreamText } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+}))
+
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
+	return {
+		...actual,
+		streamText: mockStreamText,
+		generateText: vi.fn(),
+	}
+})
+
+vi.mock("@ai-sdk/openai", () => ({
+	createOpenAI: vi.fn(() => {
+		const provider = vi.fn(() => ({
+			modelId: "gpt-4o",
+			provider: "openai",
+		}))
+		;(provider as any).responses = vi.fn(() => ({
+			modelId: "gpt-4o",
+			provider: "openai.responses",
+		}))
+		return provider
+	}),
+}))
+
+import { OpenAiNativeHandler } from "../openai-native"
+import type { ApiHandlerOptions } from "../../../shared/api"
+
+describe("OpenAiNativeHandler tool handling with AI SDK", () => {
+	function createMockStreamReturn() {
+		async function* mockFullStream() {
+			yield { type: "text-delta", text: "test" }
+		}
+
+		return {
+			fullStream: mockFullStream(),
+			usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			providerMetadata: Promise.resolve({}),
+			content: Promise.resolve([]),
+		}
+	}
+
+	beforeEach(() => {
+		vi.clearAllMocks()
+	})
+
+	it("should pass tools through convertToolsForOpenAI and convertToolsForAiSdk to streamText", async () => {
+		mockStreamText.mockReturnValue(createMockStreamReturn())
 
 		const handler = new OpenAiNativeHandler({
 			openAiNativeApiKey: "test-key",
 			apiModelId: "gpt-4o",
 		} as ApiHandlerOptions)
 
-		// Mock the responses API call
-		const mockClient = {
-			responses: {
-				create: vi.fn().mockImplementation((body: any) => {
-					capturedRequestBody = body
-					return {
-						[Symbol.asyncIterator]: async function* () {
-							yield {
-								type: "response.done",
-								response: {
-									output: [{ type: "message", content: [{ type: "output_text", text: "test" }] }],
-									usage: { input_tokens: 10, output_tokens: 5 },
-								},
-							}
+		const tools: OpenAI.Chat.ChatCompletionTool[] = [
+			{
+				type: "function",
+				function: {
+					name: "read_file",
+					description: "Read a file from the filesystem",
+					parameters: {
+						type: "object",
+						properties: {
+							path: { type: "string", description: "File path" },
 						},
-					}
-				}),
+					},
+				},
 			},
+		]
+
+		const stream = handler.createMessage("system prompt", [], {
+			taskId: "test-task-id",
+			tools,
+		})
+		for await (const _ of stream) {
+			// consume
 		}
-		;(handler as any).client = mockClient
+
+		expect(mockStreamText).toHaveBeenCalledWith(
+			expect.objectContaining({
+				tools: expect.objectContaining({
+					read_file: expect.anything(),
+				}),
+			}),
+		)
+	})
+
+	it("should pass MCP tools to streamText", async () => {
+		mockStreamText.mockReturnValue(createMockStreamReturn())
+
+		const handler = new OpenAiNativeHandler({
+			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-4o",
+		} as ApiHandlerOptions)
 
 		const mcpTools: OpenAI.Chat.ChatCompletionTool[] = [
 			{
@@ -119,120 +187,36 @@ describe("OpenAiNativeHandler MCP tool schema handling", () => {
 			taskId: "test-task-id",
 			tools: mcpTools,
 		})
-
-		// Consume the stream
 		for await (const _ of stream) {
-			// Just consume
+			// consume
 		}
 
-		// Verify the request body
-		expect(capturedRequestBody.tools).toBeDefined()
-		expect(capturedRequestBody.tools.length).toBe(1)
-
-		const tool = capturedRequestBody.tools[0]
-		expect(tool.name).toBe("mcp--github--get_me")
-		expect(tool.strict).toBe(false) // MCP tools should have strict: false
-		expect(tool.parameters.additionalProperties).toBe(false) // Should have additionalProperties: false
-		expect(tool.parameters.required).toEqual(["token"]) // Should preserve original required array
+		expect(mockStreamText).toHaveBeenCalledWith(
+			expect.objectContaining({
+				tools: expect.objectContaining({
+					"mcp--github--get_me": expect.anything(),
+				}),
+			}),
+		)
 	})
 
-	it("should add additionalProperties: false and required array to non-MCP tools with strict: true", async () => {
-		let capturedRequestBody: any
+	it("should pass both regular and MCP tools together", async () => {
+		mockStreamText.mockReturnValue(createMockStreamReturn())
 
 		const handler = new OpenAiNativeHandler({
 			openAiNativeApiKey: "test-key",
 			apiModelId: "gpt-4o",
 		} as ApiHandlerOptions)
 
-		// Mock the responses API call
-		const mockClient = {
-			responses: {
-				create: vi.fn().mockImplementation((body: any) => {
-					capturedRequestBody = body
-					return {
-						[Symbol.asyncIterator]: async function* () {
-							yield {
-								type: "response.done",
-								response: {
-									output: [{ type: "message", content: [{ type: "output_text", text: "test" }] }],
-									usage: { input_tokens: 10, output_tokens: 5 },
-								},
-							}
-						},
-					}
-				}),
-			},
-		}
-		;(handler as any).client = mockClient
-
-		const regularTools: OpenAI.Chat.ChatCompletionTool[] = [
+		const mixedTools: OpenAI.Chat.ChatCompletionTool[] = [
 			{
 				type: "function",
 				function: {
 					name: "read_file",
-					description: "Read a file from the filesystem",
-					parameters: {
-						type: "object",
-						properties: {
-							path: { type: "string", description: "File path" },
-							encoding: { type: "string", description: "File encoding" },
-						},
-					},
+					description: "Read a file",
+					parameters: { type: "object", properties: { path: { type: "string" } } },
 				},
 			},
-		]
-
-		const stream = handler.createMessage("system prompt", [], {
-			taskId: "test-task-id",
-			tools: regularTools,
-		})
-
-		// Consume the stream
-		for await (const _ of stream) {
-			// Just consume
-		}
-
-		// Verify the request body
-		expect(capturedRequestBody.tools).toBeDefined()
-		expect(capturedRequestBody.tools.length).toBe(1)
-
-		const tool = capturedRequestBody.tools[0]
-		expect(tool.name).toBe("read_file")
-		expect(tool.strict).toBe(true) // Non-MCP tools should have strict: true
-		expect(tool.parameters.additionalProperties).toBe(false) // Should have additionalProperties: false
-		expect(tool.parameters.required).toEqual(["path", "encoding"]) // Should have all properties as required
-	})
-
-	it("should recursively add additionalProperties: false to nested objects in MCP tools", async () => {
-		let capturedRequestBody: any
-
-		const handler = new OpenAiNativeHandler({
-			openAiNativeApiKey: "test-key",
-			apiModelId: "gpt-4o",
-		} as ApiHandlerOptions)
-
-		// Mock the responses API call
-		const mockClient = {
-			responses: {
-				create: vi.fn().mockImplementation((body: any) => {
-					capturedRequestBody = body
-					return {
-						[Symbol.asyncIterator]: async function* () {
-							yield {
-								type: "response.done",
-								response: {
-									output: [{ type: "message", content: [{ type: "output_text", text: "test" }] }],
-									usage: { input_tokens: 10, output_tokens: 5 },
-								},
-							}
-						},
-					}
-				}),
-			},
-		}
-		;(handler as any).client = mockClient
-
-		const mcpToolsWithNestedObjects: OpenAI.Chat.ChatCompletionTool[] = [
 			{
 				type: "function",
 				function: {
@@ -240,24 +224,8 @@ describe("OpenAiNativeHandler MCP tool schema handling", () => {
 					description: "Create a Linear issue",
 					parameters: {
 						type: "object",
-						properties: {
-							title: { type: "string" },
-							metadata: {
-								type: "object",
-								properties: {
-									priority: { type: "number" },
-									labels: {
-										type: "array",
-										items: {
-											type: "object",
-											properties: {
-												name: { type: "string" },
-											},
-										},
-									},
-								},
-							},
-						},
+						properties: { title: { type: "string" } },
+						required: ["title"],
 					},
 				},
 			},
@@ -265,72 +233,64 @@ describe("OpenAiNativeHandler MCP tool schema handling", () => {
 
 		const stream = handler.createMessage("system prompt", [], {
 			taskId: "test-task-id",
-			tools: mcpToolsWithNestedObjects,
+			tools: mixedTools,
 		})
-
-		// Consume the stream
 		for await (const _ of stream) {
-			// Just consume
+			// consume
 		}
 
-		// Verify the request body
-		const tool = capturedRequestBody.tools[0]
-		expect(tool.strict).toBe(false) // MCP tool should have strict: false
-		expect(tool.parameters.additionalProperties).toBe(false) // Root level
-		expect(tool.parameters.properties.metadata.additionalProperties).toBe(false) // Nested object
-		expect(tool.parameters.properties.metadata.properties.labels.items.additionalProperties).toBe(false) // Array items
+		const callArgs = mockStreamText.mock.calls[0][0]
+		expect(callArgs.tools).toBeDefined()
+		expect(callArgs.tools.read_file).toBeDefined()
+		expect(callArgs.tools["mcp--linear--create_issue"]).toBeDefined()
 	})
 
-	it("should handle missing call_id and name in tool_call_arguments.delta by using pending tool identity", async () => {
+	it("should pass parallelToolCalls in provider options", async () => {
+		mockStreamText.mockReturnValue(createMockStreamReturn())
+
 		const handler = new OpenAiNativeHandler({
 			openAiNativeApiKey: "test-key",
 			apiModelId: "gpt-4o",
 		} as ApiHandlerOptions)
 
-		const mockClient = {
-			responses: {
-				create: vi.fn().mockImplementation(() => {
-					return {
-						[Symbol.asyncIterator]: async function* () {
-							// 1. Emit output_item.added with tool identity
-							yield {
-								type: "response.output_item.added",
-								item: {
-									type: "function_call",
-									call_id: "call_123",
-									name: "read_file",
-									arguments: "",
-								},
-							}
-
-							// 2. Emit tool_call_arguments.delta WITHOUT identity (just args)
-							yield {
-								type: "response.function_call_arguments.delta",
-								delta: '{"path":',
-							}
-
-							// 3. Emit another delta
-							yield {
-								type: "response.function_call_arguments.delta",
-								delta: '"/tmp/test.txt"}',
-							}
-
-							// 4. Emit output_item.done
-							yield {
-								type: "response.output_item.done",
-								item: {
-									type: "function_call",
-									call_id: "call_123",
-									name: "read_file",
-									arguments: '{"path":"/tmp/test.txt"}',
-								},
-							}
-						},
-					}
-				}),
-			},
+		const stream = handler.createMessage("system prompt", [], {
+			taskId: "test-task-id",
+			parallelToolCalls: false,
+		})
+		for await (const _ of stream) {
+			// consume
 		}
-		;(handler as any).client = mockClient
+
+		expect(mockStreamText).toHaveBeenCalledWith(
+			expect.objectContaining({
+				providerOptions: expect.objectContaining({
+					openai: expect.objectContaining({
+						parallelToolCalls: false,
+					}),
+				}),
+			}),
+		)
+	})
+
+	it("should handle tool call streaming events", async () => {
+		async function* mockFullStream() {
+			yield { type: "tool-input-start", id: "call_abc", toolName: "read_file" }
+			yield { type: "tool-input-delta", id: "call_abc", delta: '{"path":' }
+			yield { type: "tool-input-delta", id: "call_abc", delta: '"/tmp/test.txt"}' }
+			yield { type: "tool-input-end", id: "call_abc" }
+		}
+
+		mockStreamText.mockReturnValue({
+			fullStream: mockFullStream(),
+			usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			providerMetadata: Promise.resolve({}),
+			content: Promise.resolve([]),
+		})
+
+		const handler = new OpenAiNativeHandler({
+			openAiNativeApiKey: "test-key",
+			apiModelId: "gpt-4o",
+		} as ApiHandlerOptions)
 
 		const stream = handler.createMessage("system prompt", [], {
 			taskId: "test-task-id",
@@ -338,25 +298,19 @@ describe("OpenAiNativeHandler MCP tool schema handling", () => {
 
 		const chunks: any[] = []
 		for await (const chunk of stream) {
-			if (chunk.type === "tool_call_partial") {
-				chunks.push(chunk)
-			}
+			chunks.push(chunk)
 		}
 
-		expect(chunks.length).toBe(2)
-		expect(chunks[0]).toEqual({
-			type: "tool_call_partial",
-			index: 0,
-			id: "call_123", // Should be filled from pendingToolCallId
-			name: "read_file", // Should be filled from pendingToolCallName
-			arguments: '{"path":',
-		})
-		expect(chunks[1]).toEqual({
-			type: "tool_call_partial",
-			index: 0,
-			id: "call_123",
-			name: "read_file",
-			arguments: '"/tmp/test.txt"}',
-		})
+		const toolStart = chunks.filter((c) => c.type === "tool_call_start")
+		expect(toolStart).toHaveLength(1)
+		expect(toolStart[0].id).toBe("call_abc")
+		expect(toolStart[0].name).toBe("read_file")
+
+		const toolDeltas = chunks.filter((c) => c.type === "tool_call_delta")
+		expect(toolDeltas).toHaveLength(2)
+
+		const toolEnd = chunks.filter((c) => c.type === "tool_call_end")
+		expect(toolEnd).toHaveLength(1)
+		expect(toolEnd[0].id).toBe("call_abc")
 	})
 })

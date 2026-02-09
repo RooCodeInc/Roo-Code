@@ -11,8 +11,10 @@ import { Trans } from "react-i18next"
 import { useDebounceEffect } from "@src/utils/useDebounceEffect"
 import { appendImages } from "@src/utils/imageUtils"
 import { getCostBreakdownIfNeeded } from "@src/utils/costFormatting"
+import { batchConsecutive } from "@src/utils/batchConsecutive"
 
 import type { ClineAsk, ClineSayTool, ClineMessage, ExtensionMessage, AudioType } from "@roo-code/types"
+import { isRetiredProvider } from "@roo-code/types"
 
 import { findLast } from "@roo/array"
 import { SuggestionItem } from "@roo-code/types"
@@ -39,6 +41,7 @@ import Announcement from "./Announcement"
 import BrowserActionRow from "./BrowserActionRow"
 import BrowserSessionStatusRow from "./BrowserSessionStatusRow"
 import ChatRow from "./ChatRow"
+import WarningRow from "./WarningRow"
 import { ChatTextArea } from "./ChatTextArea"
 import TaskHeader from "./TaskHeader"
 import SystemPromptWarning from "./SystemPromptWarning"
@@ -71,8 +74,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const isMountedRef = useRef(true)
 
 	const [audioBaseUri] = useState(() => {
-		const w = window as any
-		return w.AUDIO_BASE_URI || ""
+		return (window as unknown as { AUDIO_BASE_URI?: string }).AUDIO_BASE_URI || ""
 	})
 
 	const { t } = useAppTranslation()
@@ -98,6 +100,15 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		isBrowserSessionActive,
 		showWorktreesInHomeScreen,
 	} = useExtensionState()
+
+	// Show a WarningRow when the user sends a message with a retired provider.
+	const [showRetiredProviderWarning, setShowRetiredProviderWarning] = useState(false)
+
+	// When the provider changes, clear the retired-provider warning.
+	const providerName = apiConfiguration?.apiProvider
+	useEffect(() => {
+		setShowRetiredProviderWarning(false)
+	}, [providerName])
 
 	const messagesRef = useRef(messages)
 
@@ -311,6 +322,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 								case "editedExistingFile":
 								case "appliedDiff":
 								case "newFileCreated":
+									if (tool.batchDiffs && Array.isArray(tool.batchDiffs)) {
+										setPrimaryButtonText(t("chat:edit-batch.approve.title"))
+										setSecondaryButtonText(t("chat:edit-batch.deny.title"))
+									} else {
+										setPrimaryButtonText(t("chat:save.title"))
+										setSecondaryButtonText(t("chat:reject.title"))
+									}
+									break
 								case "generateImage":
 									setPrimaryButtonText(t("chat:save.title"))
 									setSecondaryButtonText(t("chat:reject.title"))
@@ -323,6 +342,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 									if (tool.batchFiles && Array.isArray(tool.batchFiles)) {
 										setPrimaryButtonText(t("chat:read-batch.approve.title"))
 										setSecondaryButtonText(t("chat:read-batch.deny.title"))
+									} else {
+										setPrimaryButtonText(t("chat:approve.title"))
+										setSecondaryButtonText(t("chat:reject.title"))
+									}
+									break
+								case "listFilesTopLevel":
+								case "listFilesRecursive":
+									if (tool.batchDirs && Array.isArray(tool.batchDirs)) {
+										setPrimaryButtonText(t("chat:list-batch.approve.title"))
+										setSecondaryButtonText(t("chat:list-batch.deny.title"))
 									} else {
 										setPrimaryButtonText(t("chat:approve.title"))
 										setSecondaryButtonText(t("chat:reject.title"))
@@ -608,11 +637,24 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			text = text.trim()
 
 			if (text || images.length > 0) {
+				// Intercept when the active provider is retired — show a
+				// WarningRow instead of sending anything to the backend.
+				if (apiConfiguration?.apiProvider && isRetiredProvider(apiConfiguration.apiProvider)) {
+					setShowRetiredProviderWarning(true)
+					return
+				}
+
 				// Queue message if:
 				// - Task is busy (sendingDisabled)
 				// - API request in progress (isStreaming)
 				// - Queue has items (preserve message order during drain)
-				if (sendingDisabled || isStreaming || messageQueue.length > 0) {
+				// - Command is running (command_output) - user's message should be queued for AI, not sent to terminal
+				if (
+					sendingDisabled ||
+					isStreaming ||
+					messageQueue.length > 0 ||
+					clineAskRef.current === "command_output"
+				) {
 					try {
 						console.log("queueMessage", text, images)
 						vscode.postMessage({ type: "queueMessage", text, images })
@@ -645,7 +687,6 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 						case "tool":
 						case "browser_action_launch":
 						case "command": // User can provide feedback to a tool or command use.
-						case "command_output": // User can send input to command stdin.
 						case "use_mcp_server":
 						case "completion_result": // If this happens then the user has feedback for the completion result.
 						case "resume_task":
@@ -668,7 +709,14 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				handleChatReset()
 			}
 		},
-		[handleChatReset, markFollowUpAsAnswered, sendingDisabled, isStreaming, messageQueue.length], // messagesRef and clineAskRef are stable
+		[
+			handleChatReset,
+			markFollowUpAsAnswered,
+			sendingDisabled,
+			isStreaming,
+			messageQueue.length,
+			apiConfiguration?.apiProvider,
+		], // messagesRef and clineAskRef are stable
 	)
 
 	const handleSetChatBoxMessage = useCallback(
@@ -686,7 +734,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		[inputValue, selectedImages],
 	)
 
-	const startNewTask = useCallback(() => vscode.postMessage({ type: "clearTask" }), [])
+	const startNewTask = useCallback(() => {
+		setShowRetiredProviderWarning(false)
+		vscode.postMessage({ type: "clearTask" })
+	}, [])
 
 	// Handle stop button click from textarea
 	const handleStopTask = useCallback(() => {
@@ -952,10 +1003,10 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			if (
 				msg.say === "user_feedback" &&
 				msg.checkpoint &&
-				(msg.checkpoint as any).type === "user_message" &&
-				(msg.checkpoint as any).hash
+				msg.checkpoint["type"] === "user_message" &&
+				msg.checkpoint["hash"]
 			) {
-				userMessageCheckpointHashes.add((msg.checkpoint as any).hash)
+				userMessageCheckpointHashes.add(msg.checkpoint["hash"] as string)
 			}
 		})
 
@@ -1149,63 +1200,129 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 		}
 
-		// Consolidate consecutive read_file ask messages into batches
-		const result: ClineMessage[] = []
-		let i = 0
-		while (i < filtered.length) {
-			const msg = filtered[i]
-
-			// Check if this starts a sequence of read_file asks
-			if (isReadFileAsk(msg)) {
-				// Collect all consecutive read_file asks
-				const batch: ClineMessage[] = [msg]
-				let j = i + 1
-				while (j < filtered.length && isReadFileAsk(filtered[j])) {
-					batch.push(filtered[j])
-					j++
-				}
-
-				if (batch.length > 1) {
-					// Create a synthetic batch message
-					const batchFiles = batch.map((batchMsg) => {
-						try {
-							const tool = JSON.parse(batchMsg.text || "{}")
-							return {
-								path: tool.path || "",
-								lineSnippet: tool.reason || "",
-								isOutsideWorkspace: tool.isOutsideWorkspace || false,
-								key: `${tool.path}${tool.reason ? ` (${tool.reason})` : ""}`,
-								content: tool.content || "",
-							}
-						} catch {
-							return { path: "", lineSnippet: "", key: "", content: "" }
-						}
-					})
-
-					// Use the first message as the base, but add batchFiles
-					const firstTool = JSON.parse(msg.text || "{}")
-					const syntheticMessage: ClineMessage = {
-						...msg,
-						text: JSON.stringify({
-							...firstTool,
-							batchFiles,
-						}),
-						// Store original messages for response handling
-						_batchedMessages: batch,
-					} as ClineMessage & { _batchedMessages: ClineMessage[] }
-
-					result.push(syntheticMessage)
-					i = j // Skip past all batched messages
-				} else {
-					// Single read_file ask, keep as-is
-					result.push(msg)
-					i++
-				}
-			} else {
-				result.push(msg)
-				i++
+		// Helper to check if a message is a list_files ask that should be batched
+		const isListFilesAsk = (msg: ClineMessage): boolean => {
+			if (msg.type !== "ask" || msg.ask !== "tool") return false
+			try {
+				const tool = JSON.parse(msg.text || "{}")
+				return (
+					(tool.tool === "listFilesTopLevel" || tool.tool === "listFilesRecursive") && !tool.batchDirs // Don't re-batch already batched
+				)
+			} catch {
+				return false
 			}
 		}
+
+		// Set of tool names that represent file-editing operations
+		const editFileTools = new Set([
+			"editedExistingFile",
+			"appliedDiff",
+			"newFileCreated",
+			"insertContent",
+			"searchAndReplace",
+		])
+
+		// Helper to check if a message is a file-edit ask that should be batched
+		const isEditFileAsk = (msg: ClineMessage): boolean => {
+			if (msg.type !== "ask" || msg.ask !== "tool") return false
+			try {
+				const tool = JSON.parse(msg.text || "{}")
+				return editFileTools.has(tool.tool) && !tool.batchDiffs // Don't re-batch already batched
+			} catch {
+				return false
+			}
+		}
+
+		// Synthesize a batch of consecutive read_file asks into a single message
+		const synthesizeReadFileBatch = (batch: ClineMessage[]): ClineMessage => {
+			const batchFiles = batch.map((batchMsg) => {
+				try {
+					const tool = JSON.parse(batchMsg.text || "{}")
+					return {
+						path: tool.path || "",
+						lineSnippet: tool.reason || "",
+						isOutsideWorkspace: tool.isOutsideWorkspace || false,
+						key: `${tool.path}${tool.reason ? ` (${tool.reason})` : ""}`,
+						content: tool.content || "",
+					}
+				} catch {
+					return { path: "", lineSnippet: "", key: "", content: "" }
+				}
+			})
+
+			let firstTool
+			try {
+				firstTool = JSON.parse(batch[0].text || "{}")
+			} catch {
+				return batch[0]
+			}
+			return {
+				...batch[0],
+				text: JSON.stringify({ ...firstTool, batchFiles }),
+			}
+		}
+
+		// Synthesize a batch of consecutive list_files asks into a single message
+		const synthesizeListFilesBatch = (batch: ClineMessage[]): ClineMessage => {
+			const batchDirs = batch.map((batchMsg) => {
+				try {
+					const tool = JSON.parse(batchMsg.text || "{}")
+					return {
+						path: tool.path || "",
+						recursive: tool.tool === "listFilesRecursive",
+						isOutsideWorkspace: tool.isOutsideWorkspace || false,
+						key: tool.path || "",
+					}
+				} catch {
+					return { path: "", recursive: false, key: "" }
+				}
+			})
+
+			let firstTool
+			try {
+				firstTool = JSON.parse(batch[0].text || "{}")
+			} catch {
+				return batch[0]
+			}
+			return {
+				...batch[0],
+				text: JSON.stringify({ ...firstTool, batchDirs }),
+			}
+		}
+
+		// Synthesize a batch of consecutive file-edit asks into a single message
+		const synthesizeEditFileBatch = (batch: ClineMessage[]): ClineMessage => {
+			const batchDiffs = batch.map((batchMsg) => {
+				try {
+					const tool = JSON.parse(batchMsg.text || "{}")
+					return {
+						path: tool.path || "",
+						changeCount: 1,
+						key: tool.path || "",
+						content: tool.content || tool.diff || "",
+						diffStats: tool.diffStats,
+					}
+				} catch {
+					return { path: "", changeCount: 0, key: "", content: "" }
+				}
+			})
+
+			let firstTool
+			try {
+				firstTool = JSON.parse(batch[0].text || "{}")
+			} catch {
+				return batch[0]
+			}
+			return {
+				...batch[0],
+				text: JSON.stringify({ ...firstTool, batchDiffs }),
+			}
+		}
+
+		// Consolidate consecutive ask messages into batches
+		const readFileBatched = batchConsecutive(filtered, isReadFileAsk, synthesizeReadFileBatch)
+		const listFilesBatched = batchConsecutive(readFileBatched, isListFilesAsk, synthesizeListFilesBatch)
+		const result = batchConsecutive(listFilesBatched, isEditFileAsk, synthesizeEditFileBatch)
 
 		if (isCondensing) {
 			result.push({
@@ -1213,7 +1330,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				say: "condense_context",
 				ts: Date.now(),
 				partial: true,
-			} as any)
+			} as ClineMessage)
 		}
 		return result
 	}, [isCondensing, visibleMessages, isBrowserSessionMessage])
@@ -1230,9 +1347,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	useEffect(() => {
 		return () => {
-			if (scrollToBottomSmooth && typeof (scrollToBottomSmooth as any).cancel === "function") {
-				;(scrollToBottomSmooth as any).cancel()
-			}
+			scrollToBottomSmooth.clear()
 		}
 	}, [scrollToBottomSmooth])
 
@@ -1496,9 +1611,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 
 	useImperativeHandle(ref, () => ({
 		acceptInput: () => {
+			const hasInput = inputValue.trim() || selectedImages.length > 0
+
+			// Special case: during command_output, queue the message instead of
+			// triggering the primary button action (which would lose the message)
+			if (clineAskRef.current === "command_output" && hasInput) {
+				vscode.postMessage({ type: "queueMessage", text: inputValue.trim(), images: selectedImages })
+				setInputValue("")
+				setSelectedImages([])
+				return
+			}
+
 			if (enableButtons && primaryButtonText) {
 				handlePrimaryButtonClick(inputValue, selectedImages)
-			} else if (!sendingDisabled && !isProfileDisabled && (inputValue.trim() || selectedImages.length > 0)) {
+			} else if (!sendingDisabled && !isProfileDisabled && hasInput) {
 				handleSendMessage(inputValue, selectedImages)
 			}
 		},
@@ -1736,6 +1862,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 					}
 				}}
 			/>
+			{showRetiredProviderWarning && (
+				<div className="px-[15px] py-1">
+					<WarningRow
+						title={t("chat:retiredProvider.title")}
+						message={t("chat:retiredProvider.message")}
+						actionText={t("chat:retiredProvider.openSettings")}
+						onAction={() => vscode.postMessage({ type: "switchTab", tab: "settings" })}
+					/>
+				</div>
+			)}
 			<ChatTextArea
 				ref={textAreaRef}
 				inputValue={inputValue}

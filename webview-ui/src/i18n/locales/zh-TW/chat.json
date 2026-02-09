@@ -74,6 +74,22 @@
 			"title": "全部拒絕"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "全部核准"
+		},
+		"deny": {
+			"title": "全部拒絕"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "全部儲存"
+		},
+		"deny": {
+			"title": "全部拒絕"
+		}
+	},
 	"runCommand": {
 		"title": "執行",
 		"tooltip": "執行此命令"
@@ -122,6 +138,8 @@
 	},
 	"selectMode": "選擇互動模式",
 	"selectApiConfig": "選取 API 設定",
+	"lockApiConfigAcrossModes": "鎖定此工作區所有模式的 API 設定",
+	"unlockApiConfigAcrossModes": "此工作區所有模式的 API 設定已鎖定（點擊解鎖）",
 	"enhancePrompt": "使用額外內容強化提示詞",
 	"modeSelector": {
 		"title": "模式",
@@ -156,14 +174,14 @@
 		"rateLimitWait": "速率限制",
 		"errorTitle": "供應商錯誤 {{code}}",
 		"errorMessage": {
-			"docs": "說明文件",
-			"goToSettings": "設定",
 			"400": "供應商無法按照此方式處理請求。請停止工作並嘗試其他方法。",
 			"401": "無法向供應商進行身份驗證。請檢查您的 API 金鑰設定。",
 			"402": "您的帳戶資金／額度似乎已用盡。請前往供應商增加額度以繼續。",
 			"403": "無權存取。您的 API 金鑰有效，但供應商拒絕完成此請求。",
 			"429": "請求次數過多。供應商已對您的請求進行速率限制。請在下一次 API 呼叫前稍候。",
 			"500": "供應商伺服器錯誤。伺服器端發生問題，您的請求沒有問題。",
+			"docs": "說明文件",
+			"goToSettings": "設定",
 			"connection": "連線錯誤。請確保您有可用的網際網路連線。",
 			"unknown": "未知 API 錯誤。請聯絡 Roo Code 技術支援。",
 			"claudeCodeNotAuthenticated": "您需要登入才能使用 Claude Code。前往設定並點選「登入 Claude Code」以進行驗證。"
@@ -241,7 +259,8 @@
 		"wantsToSearch": "Roo 想要在此目錄中搜尋 <code>{{regex}}</code>",
 		"didSearch": "Roo 已在此目錄中搜尋 <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo 想要在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
-		"didSearchOutsideWorkspace": "Roo 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>"
+		"didSearchOutsideWorkspace": "Roo 已在此目錄（工作區外）中搜尋 <code>{{regex}}</code>",
+		"wantsToViewMultipleDirectories": "Roo 想要查看多個目錄"
 	},
 	"codebaseSearch": {
 		"wantsToSearch": "Roo 想要在程式碼庫中搜尋 <code>{{query}}</code>",
@@ -350,9 +369,8 @@
 		},
 		"release": {
 			"heading": "新增功能：",
-			"parallelTools": "平行工具呼叫：工具現在預設會平行執行，大幅加快多檔案作業和複雜工作的速度。",
-			"readFileIndentation": "更聰慧的檔案讀取：新的縮排模式可提取完整的語義程式碼區塊（函數、類別），無需中斷函數——適合從搜尋結果中特定行為目標。",
-			"readCommandOutput": "無損終端輸出：新的 read_command_output 工具可從截斷的執行中擷取完整的指令輸出，並支援分頁和規則運算式過濾。"
+			"claudeOpus": "Claude Opus 4.6: 現已可在所有供應商——Roo Code Router、Anthropic、AWS Bedrock、Google Vertex 和 OpenRouter——上取得，將 Anthropic 最強大的模型帶到您偏好的平台。",
+			"gptCodex": "GPT-5.3-Codex: OpenAI 最新的編碼模型現已在 OpenAI - ChatGPT 供應商中受支援，提供尖端的程式碼生成和理解。"
 		},
 		"cloudAgents": {
 			"heading": "雲端的新功能：",
@@ -504,5 +522,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "供應商不再受支援",
+		"message": "抱歉，此供應商已不再受支援。我們發現實際使用它的 Roo 使用者非常少，我們需要縮減程式碼庫的範圍，以便繼續快速交付並更好地服務社群。這是一個非常艱難的決定，但它能讓我們專注於對你最重要的事情。我們知道這很遺憾。",
+		"openSettings": "開啟設定"
 	}
 }

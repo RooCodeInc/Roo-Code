@@ -7,6 +7,7 @@ import {
 	type RouterModels,
 	modelIdKeysByProvider,
 	isProviderName,
+	isRetiredProvider,
 	isDynamicProvider,
 	isFauxProvider,
 	isCustomProvider,
@@ -42,18 +43,8 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
-		case "unbound":
-			if (!apiConfiguration.unboundApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
 		case "requesty":
 			if (!apiConfiguration.requestyApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
-		case "deepinfra":
-			if (!apiConfiguration.deepInfraApiKey) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
@@ -112,31 +103,8 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 				return i18next.t("settings:validation.modelSelector")
 			}
 			break
-		case "huggingface":
-			if (!apiConfiguration.huggingFaceApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			if (!apiConfiguration.huggingFaceModelId) {
-				return i18next.t("settings:validation.modelId")
-			}
-			break
-		case "cerebras":
-			if (!apiConfiguration.cerebrasApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
 		case "fireworks":
 			if (!apiConfiguration.fireworksApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
-		case "io-intelligence":
-			if (!apiConfiguration.ioIntelligenceApiKey) {
-				return i18next.t("settings:validation.apiKey")
-			}
-			break
-		case "featherless":
-			if (!apiConfiguration.featherlessApiKey) {
 				return i18next.t("settings:validation.apiKey")
 			}
 			break
@@ -153,6 +121,23 @@ function validateModelsAndKeysProvided(apiConfiguration: ProviderSettings): stri
 		case "baseten":
 			if (!apiConfiguration.basetenApiKey) {
 				return i18next.t("settings:validation.apiKey")
+			}
+			break
+		case "azure":
+			// Don't show validation errors when provider is freshly selected (all fields empty)
+			if (
+				!apiConfiguration.azureApiKey &&
+				!apiConfiguration.azureResourceName &&
+				!apiConfiguration.azureDeploymentName
+			) {
+				break
+			}
+			// API key is optional — Azure supports managed identity / Entra ID auth
+			if (!apiConfiguration.azureResourceName) {
+				return i18next.t("settings:validation.azureResourceName")
+			}
+			if (!apiConfiguration.azureDeploymentName) {
+				return i18next.t("settings:validation.azureDeploymentName")
 			}
 			break
 	}
@@ -186,7 +171,8 @@ function validateProviderAgainstOrganizationSettings(
 		}
 
 		if (!providerConfig.allowAll) {
-			const modelId = getModelIdForProvider(apiConfiguration, provider)
+			const activeProvider = isRetiredProvider(provider) ? undefined : provider
+			const modelId = activeProvider ? getModelIdForProvider(apiConfiguration, activeProvider) : undefined
 			const allowedModels = providerConfig.models || []
 
 			if (modelId && !allowedModels.includes(modelId)) {

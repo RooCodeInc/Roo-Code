@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Gerencie seus comandos de barra para executar rapidamente fluxos de trabalho e ações personalizadas. <DocsLink>Saiba mais</DocsLink>"
+		"description": "Gerencie seus comandos de barra para executar rapidamente fluxos de trabalho e ações personalizadas. <DocsLink>Saiba mais</DocsLink>",
+		"workspaceCommands": "Comandos do espaço de trabalho",
+		"globalCommands": "Comandos globais",
+		"noWorkspaceCommands": "Sem comandos neste projeto ainda.",
+		"noGlobalCommands": "Sem comandos globais ainda.",
+		"addCommand": "Adicionar comando de barra",
+		"editCommand": "Editar comando",
+		"deleteCommand": "Excluir comando",
+		"deleteDialog": {
+			"title": "Excluir comando",
+			"description": "Tem certeza de que deseja excluir o comando \"{{name}}\"? Esta ação não pode ser desfeita.",
+			"confirm": "Excluir",
+			"cancel": "Cancelar"
+		},
+		"createDialog": {
+			"title": "Criar novo comando de barra",
+			"nameLabel": "Nome",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Apenas letras minúsculas, números, hífens e sublinhados",
+			"sourceLabel": "Localização",
+			"create": "Criar",
+			"cancel": "Cancelar"
+		},
+		"source": {
+			"global": "Global (disponível em todos os espaços de trabalho)",
+			"project": "Espaço de trabalho"
+		},
+		"validation": {
+			"nameRequired": "Nome é obrigatório",
+			"nameTooLong": "O nome deve ter 64 caracteres ou menos",
+			"nameInvalid": "O nome pode conter apenas letras, números, hífens e sublinhados"
+		},
+		"footer": "Use comandos de barra para acesso rápido a prompts e fluxos de trabalho usados com frequência."
 	},
 	"prompts": {
 		"description": "Configure prompts de suporte usados para ações rápidas como melhorar prompts, explicar código e corrigir problemas. Esses prompts ajudam o Roo a fornecer melhor assistência para tarefas comuns de desenvolvimento."
@@ -244,7 +276,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Máximo de Solicitações",
-			"description": "Fazer automaticamente este número de requisições à API antes de pedir aprovação para continuar com a tarefa.",
 			"unlimited": "Ilimitado"
 		},
 		"selectOptionsFirst": "Selecione pelo menos uma opção abaixo para habilitar a aprovação automática",
@@ -278,6 +309,7 @@
 		"searchProviderPlaceholder": "Pesquisar provedores",
 		"noProviderMatchFound": "Nenhum provedor encontrado",
 		"noMatchFound": "Nenhum perfil correspondente encontrado",
+		"retiredProviderMessage": "Desculpe, este provedor não é mais suportado. Vimos que muito poucos usuários do Roo realmente o utilizavam e precisamos reduzir o escopo do nosso código para continuar avançando rapidamente e servir bem nossa comunidade. Foi uma decisão muito difícil, mas nos permite focar no que mais importa para você. Sabemos que é chato.",
 		"vscodeLmDescription": "A API do Modelo de Linguagem do VS Code permite executar modelos fornecidos por outras extensões do VS Code (incluindo, mas não se limitando, ao GitHub Copilot). A maneira mais fácil de começar é instalar as extensões Copilot e Copilot Chat no VS Code Marketplace.",
 		"awsCustomArnUse": "Insira um ARN Amazon Bedrock válido para o modelo que deseja usar. Exemplos de formato:",
 		"awsCustomArnDesc": "Certifique-se de que a região no ARN corresponde à região AWS selecionada acima.",
@@ -339,15 +371,23 @@
 		"getAnthropicApiKey": "Obter chave de API Anthropic",
 		"anthropicUseAuthToken": "Passar a chave de API Anthropic como cabeçalho Authorization em vez de X-Api-Key",
 		"anthropic1MContextBetaLabel": "Ativar janela de contexto de 1M (Beta)",
-		"anthropic1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4",
+		"anthropic1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "Ativar janela de contexto de 1M (Beta)",
-		"awsBedrock1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4",
+		"awsBedrock1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Ativar janela de contexto de 1M (Beta)",
-		"vertex1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4",
+		"vertex1MContextBetaDescription": "Estende a janela de contexto para 1 milhão de tokens para o Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
 		"basetenApiKey": "Chave de API Baseten",
 		"getBasetenApiKey": "Obter chave de API Baseten",
 		"cerebrasApiKey": "Chave de API Cerebras",
 		"getCerebrasApiKey": "Obter chave de API Cerebras",
+		"azureResourceName": "Nome do recurso Azure",
+		"azureResourceNameDescription": "O nome do seu recurso Azure AI Foundry (ex: 'meu-recurso-openai').",
+		"azureDeploymentName": "Nome da implantação Azure",
+		"azureDeploymentNameDescription": "O nome da implantação do modelo dentro do recurso.",
+		"azureApiKey": "Chave de API Azure",
+		"getAzureApiKey": "Obter acesso ao Azure AI Foundry",
+		"azureApiVersion": "Versão da API Azure",
+		"azureApiVersionDescription": "A versão da API a ser usada (ex: '2024-10-21'). Deixe vazio para o padrão.",
 		"chutesApiKey": "Chave de API Chutes",
 		"getChutesApiKey": "Obter chave de API Chutes",
 		"fireworksApiKey": "Chave de API Fireworks",
@@ -430,16 +470,6 @@
 		"cacheUsageNote": "Nota: Se você não vir o uso do cache, tente selecionar um modelo diferente e depois selecionar novamente o modelo desejado.",
 		"vscodeLmModel": "Modelo de Linguagem",
 		"vscodeLmWarning": "Observação: Modelos acessados pela VS Code Language Model API podem ser encapsulados ou ajustados pelo provedor, portanto o comportamento pode diferir do uso direto do mesmo modelo em um provedor ou roteador típico. Para usar um modelo no menu suspenso «Language Model», primeiro altere para esse modelo e depois clique em «Aceitar» no prompt do Copilot Chat; caso contrário, você pode ver um erro como 400 «The requested model is not supported».",
-		"geminiParameters": {
-			"urlContext": {
-				"title": "Ativar contexto de URL",
-				"description": "Permite que o Gemini acesse e processe URLs para contexto adicional ao gerar respostas. Útil para tarefas que exijam análise de conteúdo da web."
-			},
-			"groundingSearch": {
-				"title": "Ativar grounding com pesquisa no Google",
-				"description": "Permite que o Gemini pesquise informações atuais no Google e fundamente as respostas em dados em tempo real. Útil para consultas que requerem informações atualizadas."
-			}
-		},
 		"googleCloudSetup": {
 			"title": "Para usar o Google Cloud Vertex AI, você precisa:",
 			"step1": "1. Criar uma conta Google Cloud, ativar a API Vertex AI e ativar os modelos Claude desejados.",
@@ -665,7 +695,6 @@
 				"label": "Máximo de mensagens de diagnóstico",
 				"description": "Número máximo de mensagens de diagnóstico a serem incluídas por arquivo. Este limite se aplica tanto à inclusão automática (quando a caixa de seleção está ativada) quanto às menções manuais de @problems. Valores mais altos fornecem mais contexto, mas aumentam o uso de tokens.",
 				"resetTooltip": "Redefinir para o valor padrão (50)",
-				"unlimited": "Mensagens de diagnóstico ilimitadas",
 				"unlimitedLabel": "Ilimitado"
 			},
 			"delayAfterWrite": {
@@ -900,7 +929,6 @@
 		"simplifiedExplanation": "Você pode ajustar as configurações detalhadas do modelo mais tarde."
 	},
 	"footer": {
-		"feedback": "Se tiver alguma dúvida ou feedback, sinta-se à vontade para abrir um problema em <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou juntar-se a <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Permitir relatórios anônimos de erros e uso",
 			"description": "Ajude a melhorar o Roo Code enviando dados de uso anônimos e relatórios de erros. Esta telemetria não coleta código, prompts ou informações pessoais. Consulte nossa <privacyLink>política de privacidade</privacyLink> para mais detalhes."
@@ -931,7 +959,9 @@
 		"providerNotAllowed": "O provedor '{{provider}}' não é permitido pela sua organização",
 		"modelNotAllowed": "O modelo '{{model}}' não é permitido para o provedor '{{provider}}' pela sua organização",
 		"profileInvalid": "Este perfil contém um provedor ou modelo que não é permitido pela sua organização",
-		"qwenCodeOauthPath": "Você deve fornecer um caminho válido de credenciais OAuth"
+		"qwenCodeOauthPath": "Você deve fornecer um caminho válido de credenciais OAuth",
+		"azureResourceName": "Você deve fornecer um nome de recurso do Azure.",
+		"azureDeploymentName": "Você deve fornecer um nome de implantação do Azure."
 	},
 	"placeholders": {
 		"apiKey": "Digite a chave API...",
@@ -944,6 +974,8 @@
 		"projectId": "Digite o ID do projeto...",
 		"customArn": "Digite o ARN (ex: arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Digite a URL base...",
+		"azureResourceName": "e.g. my-openai-resource",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "ex: meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "ex: lmstudio-community/llama-3.2-1b-instruct",
@@ -986,6 +1018,10 @@
 		}
 	},
 	"ui": {
+		"taskCompleteColor": {
+			"label": "Destaque do cabeçalho da tarefa",
+			"description": "Destaca o cabeçalho da tarefa com um indicador de cor quando as tarefas são concluídas ou precisam da sua atenção, ajudando você a identificar rapidamente quando uma ação é necessária"
+		},
 		"collapseThinking": {
 			"label": "Recolher mensagens de pensamento por padrão",
 			"description": "Quando ativado, os blocos de pensamento serão recolhidos por padrão até que você interaja com eles"
@@ -997,32 +1033,37 @@
 	},
 	"skills": {
 		"description": "Gerencie skills que fornecem instruções contextuais ao agente. As skills são aplicadas automaticamente quando relevantes para suas tarefas. <DocsLink>Saiba mais</DocsLink>",
-		"projectSkills": "Skills do Projeto",
+		"workspaceSkills": "Skills do espaço de trabalho",
 		"globalSkills": "Skills Globais",
-		"noProjectSkills": "Nenhuma skill de projeto configurada. Crie uma para adicionar capacidades específicas do projeto ao agente.",
+		"noWorkspaceSkills": "Sem skills neste projeto ainda.",
 		"noGlobalSkills": "Nenhuma skill global configurada. Crie uma para adicionar capacidades ao agente disponíveis em todos os projetos.",
 		"addSkill": "Adicionar Skill",
 		"editSkill": "Editar skill",
 		"deleteSkill": "Excluir skill",
-		"changeMode": "Alterar modo",
+		"configureModes": "Disponibilidade de modo",
 		"modeAny": "Qualquer modo",
+		"modeCount": "{{count}} modos",
 		"deleteDialog": {
 			"title": "Excluir Skill",
 			"description": "Tem certeza de que deseja excluir a skill \"{{name}}\"? Esta ação não pode ser desfeita.",
 			"confirm": "Excluir",
 			"cancel": "Cancelar"
 		},
+		"modeDialog": {
+			"title": "Configurar modos de Skill",
+			"description": "Escolha quais modos podem usar esta skill",
+			"intro": "Para manter seu contexto leve, recomendamos tornar skills disponíveis apenas para os modos que os precisam.",
+			"anyMode": "Qualquer modo (disponível em qualquer lugar)",
+			"save": "Salvar",
+			"cancel": "Cancelar"
+		},
 		"createDialog": {
 			"title": "Criar Nova Skill",
-			"description": "Defina um novo modelo de skill que fornece instruções contextuais ao agente.",
 			"nameLabel": "Nome",
 			"namePlaceholder": "meu-nome-de-skill",
-			"nameHint": "Apenas letras minúsculas, números e hífens (1-64 caracteres)",
 			"descriptionLabel": "Descrição",
 			"descriptionPlaceholder": "Descreva quando esta skill deve ser usada...",
-			"descriptionHint": "Explique o que esta skill faz e quando o agente deve aplicá-la (1-1024 caracteres)",
 			"sourceLabel": "Localização",
-			"sourceHint": "Escolha se esta skill está disponível globalmente ou apenas neste projeto",
 			"modeLabel": "Modo (opcional)",
 			"modePlaceholder": "Qualquer modo",
 			"modeHint": "Restrinja esta skill a um modo específico",
@@ -1040,6 +1081,7 @@
 			"nameInvalid": "O nome deve ter 1-64 letras minúsculas, números ou hífens",
 			"descriptionRequired": "A descrição é obrigatória",
 			"descriptionTooLong": "A descrição deve ter no máximo 1024 caracteres"
-		}
+		},
+		"footer": "Crie suas próprias skills com o modo Skill Writer, disponível em <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

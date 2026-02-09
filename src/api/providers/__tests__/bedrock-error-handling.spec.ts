@@ -8,9 +8,6 @@ vi.mock("@roo-code/telemetry", () => ({
 	},
 }))
 
-// Mock BedrockRuntimeClient and commands
-const mockSend = vi.fn()
-
 // Mock AWS SDK credential providers
 vi.mock("@aws-sdk/credential-providers", () => {
 	return {
@@ -21,16 +18,27 @@ vi.mock("@aws-sdk/credential-providers", () => {
 	}
 })
 
-vi.mock("@aws-sdk/client-bedrock-runtime", () => ({
-	BedrockRuntimeClient: vi.fn().mockImplementation(() => ({
-		send: mockSend,
-	})),
-	ConverseStreamCommand: vi.fn(),
-	ConverseCommand: vi.fn(),
+// Use vi.hoisted to define mock functions for AI SDK
+const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+}))
+
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
+	return {
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
+	}
+})
+
+vi.mock("@ai-sdk/amazon-bedrock", () => ({
+	createAmazonBedrock: vi.fn(() => vi.fn(() => ({ modelId: "test", provider: "bedrock" }))),
 }))
 
 import { AwsBedrockHandler } from "../bedrock"
-import { Anthropic } from "@anthropic-ai/sdk"
+import type { Anthropic } from "@anthropic-ai/sdk"
 
 describe("AwsBedrockHandler Error Handling", () => {
 	let handler: AwsBedrockHandler
@@ -46,6 +54,10 @@ describe("AwsBedrockHandler Error Handling", () => {
 		})
 	})
 
+	/**
+	 * Helper: create an Error with optional extra properties that
+	 * the production code inspects (status, name, $metadata, __type).
+	 */
 	const createMockError = (options: {
 		message?: string
 		name?: string
@@ -56,505 +68,481 @@ describe("AwsBedrockHandler Error Handling", () => {
 			requestId?: string
 			extendedRequestId?: string
 			cfId?: string
-			[key: string]: any // Allow additional properties
+			[key: string]: unknown
 		}
 	}): Error => {
 		const error = new Error(options.message || "Test error") as any
 		if (options.name) error.name = options.name
-		if (options.status) error.status = options.status
+		if (options.status !== undefined) error.status = options.status
 		if (options.__type) error.__type = options.__type
 		if (options.$metadata) error.$metadata = options.$metadata
 		return error
 	}
 
-	describe("Throttling Error Detection", () => {
-		it("should detect throttling from HTTP 429 status code", async () => {
+	// -----------------------------------------------------------------------
+	// Throttling Detection — completePrompt path
+	//
+	// Production flow: generateText throws → catch → isThrottlingError() is
+	// NOT called in completePrompt (only in createMessage), so it falls
+	// through to handleAiSdkError which wraps with "Bedrock: <msg>".
+	//
+	// For createMessage: streamText throws → catch → isThrottlingError()
+	// returns true → re-throws original error.
+	// -----------------------------------------------------------------------
+
+	describe("Throttling Error Detection (createMessage)", () => {
+		it("should re-throw throttling errors with status 429 for retry", async () => {
 			const throttleError = createMockError({
 				message: "Request failed",
 				status: 429,
 			})
 
-			mockSend.mockRejectedValueOnce(throttleError)
+			mockStreamText.mockImplementation(() => {
+				throw throttleError
+			})
 
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("throttled or rate limited")
-			} catch (error) {
-				expect(error.message).toContain("throttled or rate limited")
-			}
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
+				}
+			}).rejects.toThrow("Request failed")
 		})
 
-		it("should detect throttling from AWS SDK $metadata.httpStatusCode", async () => {
+		it("should re-throw throttling errors detected via $metadata.httpStatusCode", async () => {
 			const throttleError = createMockError({
 				message: "Request failed",
 				$metadata: { httpStatusCode: 429 },
 			})
 
-			mockSend.mockRejectedValueOnce(throttleError)
-
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("throttled or rate limited")
-			} catch (error) {
-				expect(error.message).toContain("throttled or rate limited")
-			}
-		})
-
-		it("should detect throttling from ThrottlingException name", async () => {
-			const throttleError = createMockError({
-				message: "Request failed",
-				name: "ThrottlingException",
+			mockStreamText.mockImplementation(() => {
+				throw throttleError
 			})
-
-			mockSend.mockRejectedValueOnce(throttleError)
-
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("throttled or rate limited")
-			} catch (error) {
-				expect(error.message).toContain("throttled or rate limited")
-			}
-		})
-
-		it("should detect throttling from __type field", async () => {
-			const throttleError = createMockError({
-				message: "Request failed",
-				__type: "ThrottlingException",
-			})
-
-			mockSend.mockRejectedValueOnce(throttleError)
-
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("throttled or rate limited")
-			} catch (error) {
-				expect(error.message).toContain("throttled or rate limited")
-			}
-		})
-
-		it("should detect throttling from 'Bedrock is unable to process your request' message", async () => {
-			const throttleError = createMockError({
-				message: "Bedrock is unable to process your request",
-			})
-
-			mockSend.mockRejectedValueOnce(throttleError)
-
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("throttled or rate limited")
-			} catch (error) {
-				expect(error.message).toMatch(/throttled or rate limited/)
-			}
-		})
-
-		it("should detect throttling from various message patterns", async () => {
-			const throttlingMessages = [
-				"Request throttled",
-				"Rate limit exceeded",
-				"Too many requests",
-				"Service unavailable due to high demand",
-				"Server is overloaded",
-				"System is busy",
-				"Please wait and try again",
-			]
-
-			for (const message of throttlingMessages) {
-				const throttleError = createMockError({ message })
-				mockSend.mockRejectedValueOnce(throttleError)
-
-				try {
-					await handler.completePrompt("test")
-					// Should not reach here as completePrompt should throw
-					throw new Error("Expected error to be thrown")
-				} catch (error) {
-					expect(error.message).toContain("throttled or rate limited")
-				}
-			}
-		})
-
-		it("should display appropriate error information for throttling errors", async () => {
-			const throttlingError = createMockError({
-				message: "Bedrock is unable to process your request",
-				name: "ThrottlingException",
-				status: 429,
-				$metadata: {
-					httpStatusCode: 429,
-					requestId: "12345-abcde-67890",
-					extendedRequestId: "extended-12345",
-					cfId: "cf-12345",
-				},
-			})
-
-			mockSend.mockRejectedValueOnce(throttlingError)
-
-			try {
-				await handler.completePrompt("test")
-				throw new Error("Expected error to be thrown")
-			} catch (error) {
-				// Should contain the main error message
-				expect(error.message).toContain("throttled or rate limited")
-			}
-		})
-	})
-
-	describe("Service Quota Exceeded Detection", () => {
-		it("should detect service quota exceeded errors", async () => {
-			const quotaError = createMockError({
-				message: "Service quota exceeded for model requests",
-			})
-
-			mockSend.mockRejectedValueOnce(quotaError)
-
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("Service quota exceeded")
-			} catch (error) {
-				expect(error.message).toContain("Service quota exceeded")
-			}
-		})
-	})
-
-	describe("Model Not Ready Detection", () => {
-		it("should detect model not ready errors", async () => {
-			const modelError = createMockError({
-				message: "Model is not ready, please try again later",
-			})
-
-			mockSend.mockRejectedValueOnce(modelError)
-
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("Model is not ready")
-			} catch (error) {
-				expect(error.message).toContain("Model is not ready")
-			}
-		})
-	})
-
-	describe("Internal Server Error Detection", () => {
-		it("should detect internal server errors", async () => {
-			const serverError = createMockError({
-				message: "Internal server error occurred",
-			})
-
-			mockSend.mockRejectedValueOnce(serverError)
-
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("internal server error")
-			} catch (error) {
-				expect(error.message).toContain("internal server error")
-			}
-		})
-	})
-
-	describe("Token Limit Detection", () => {
-		it("should detect enhanced token limit errors", async () => {
-			const tokenErrors = [
-				"Too many tokens in request",
-				"Token limit exceeded",
-				"Maximum context length reached",
-				"Context length exceeds limit",
-			]
-
-			for (const message of tokenErrors) {
-				const tokenError = createMockError({ message })
-				mockSend.mockRejectedValueOnce(tokenError)
-
-				try {
-					await handler.completePrompt("test")
-					// Should not reach here as completePrompt should throw
-					throw new Error("Expected error to be thrown")
-				} catch (error) {
-					// Either "Too many tokens" for token-specific errors or "throttled" for limit-related errors
-					expect(error.message).toMatch(/Too many tokens|throttled or rate limited/)
-				}
-			}
-		})
-	})
-
-	describe("Streaming Context Error Handling", () => {
-		it("should handle throttling errors in streaming context", async () => {
-			const throttleError = createMockError({
-				message: "Bedrock is unable to process your request",
-				status: 429,
-			})
-
-			const mockStream = {
-				[Symbol.asyncIterator]() {
-					return {
-						async next() {
-							throw throttleError
-						},
-					}
-				},
-			}
-
-			mockSend.mockResolvedValueOnce({ stream: mockStream })
 
 			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
 
-			// For throttling errors, it should throw immediately without yielding chunks
-			// This allows the retry mechanism to catch and handle it
 			await expect(async () => {
-				for await (const chunk of generator) {
-					// Should not yield any chunks for throttling errors
+				for await (const _chunk of generator) {
+					// should throw
+				}
+			}).rejects.toThrow("Request failed")
+		})
+
+		it("should re-throw ThrottlingException by name", async () => {
+			const throttleError = createMockError({
+				message: "Request failed",
+				name: "ThrottlingException",
+			})
+
+			mockStreamText.mockImplementation(() => {
+				throw throttleError
+			})
+
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
+				}
+			}).rejects.toThrow("Request failed")
+		})
+
+		it("should re-throw 'Bedrock is unable to process your request' as throttling", async () => {
+			const throttleError = createMockError({
+				message: "Bedrock is unable to process your request",
+			})
+
+			mockStreamText.mockImplementation(() => {
+				throw throttleError
+			})
+
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
 				}
 			}).rejects.toThrow("Bedrock is unable to process your request")
 		})
 
-		it("should yield error chunks for non-throttling errors in streaming context", async () => {
-			const genericError = createMockError({
-				message: "Some other error",
-				status: 500,
-			})
+		it("should detect throttling from various message patterns", async () => {
+			const throttlingMessages = ["Request throttled", "Rate limit exceeded", "Too many requests"]
 
-			const mockStream = {
-				[Symbol.asyncIterator]() {
-					return {
-						async next() {
-							throw genericError
-						},
+			for (const message of throttlingMessages) {
+				vi.clearAllMocks()
+				const throttleError = createMockError({ message })
+
+				mockStreamText.mockImplementation(() => {
+					throw throttleError
+				})
+
+				const localHandler = new AwsBedrockHandler({
+					apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+					awsAccessKey: "test-access-key",
+					awsSecretKey: "test-secret-key",
+					awsRegion: "us-east-1",
+				})
+
+				const generator = localHandler.createMessage("system", [{ role: "user", content: "test" }])
+
+				// Throttling errors are re-thrown with original message for retry
+				await expect(async () => {
+					for await (const _chunk of generator) {
+						// should throw
 					}
-				},
+				}).rejects.toThrow(message)
 			}
-
-			mockSend.mockResolvedValueOnce({ stream: mockStream })
-
-			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
-
-			const chunks: any[] = []
-			try {
-				for await (const chunk of generator) {
-					chunks.push(chunk)
-				}
-			} catch (error) {
-				// Expected to throw after yielding chunks
-			}
-
-			// Should have yielded error chunks before throwing for non-throttling errors
-			expect(
-				chunks.some((chunk) => chunk.type === "text" && chunk.text && chunk.text.includes("Some other error")),
-			).toBe(true)
 		})
-	})
 
-	describe("Error Priority and Specificity", () => {
-		it("should prioritize HTTP status codes over message patterns", async () => {
-			// Error with both 429 status and generic message should be detected as throttling
+		it("should prioritize HTTP status 429 over message content for throttling", async () => {
 			const mixedError = createMockError({
 				message: "Some generic error message",
 				status: 429,
 			})
 
-			mockSend.mockRejectedValueOnce(mixedError)
+			mockStreamText.mockImplementation(() => {
+				throw mixedError
+			})
 
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("throttled or rate limited")
-			} catch (error) {
-				expect(error.message).toContain("throttled or rate limited")
-			}
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			// Because status=429, it's throttling → re-throws original error
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
+				}
+			}).rejects.toThrow("Some generic error message")
 		})
 
-		it("should prioritize AWS error types over message patterns", async () => {
-			// Error with ThrottlingException name but different message should still be throttling
+		it("should prioritize ThrottlingException name over message for throttling", async () => {
 			const specificError = createMockError({
 				message: "Some other error occurred",
 				name: "ThrottlingException",
 			})
 
-			mockSend.mockRejectedValueOnce(specificError)
+			mockStreamText.mockImplementation(() => {
+				throw specificError
+			})
 
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("throttled or rate limited")
-			} catch (error) {
-				expect(error.message).toContain("throttled or rate limited")
-			}
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			// ThrottlingException → re-throws original for retry
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
+				}
+			}).rejects.toThrow("Some other error occurred")
 		})
 	})
 
-	describe("Unknown Error Fallback", () => {
-		it("should still show unknown error for truly unrecognized errors", async () => {
-			const unknownError = createMockError({
+	// -----------------------------------------------------------------------
+	// Non-throttling errors (createMessage) are wrapped by handleAiSdkError
+	// -----------------------------------------------------------------------
+
+	describe("Non-throttling errors (createMessage)", () => {
+		it("should wrap non-throttling errors with provider name via handleAiSdkError", async () => {
+			const genericError = createMockError({
 				message: "Something completely unexpected happened",
 			})
 
-			mockSend.mockRejectedValueOnce(unknownError)
-
-			try {
-				const result = await handler.completePrompt("test")
-				expect(result).toContain("Unknown Error")
-			} catch (error) {
-				expect(error.message).toContain("Unknown Error")
-			}
-		})
-	})
-
-	describe("Enhanced Error Throw for Retry System", () => {
-		it("should throw enhanced error messages for completePrompt to display in retry system", async () => {
-			const throttlingError = createMockError({
-				message: "Too many tokens, rate limited",
-				status: 429,
-				$metadata: {
-					httpStatusCode: 429,
-					requestId: "test-request-id-12345",
-				},
+			mockStreamText.mockImplementation(() => {
+				throw genericError
 			})
-			mockSend.mockRejectedValueOnce(throttlingError)
+
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
+				}
+			}).rejects.toThrow("Bedrock: Something completely unexpected happened")
+		})
+
+		it("should preserve status code from non-throttling API errors", async () => {
+			const apiError = createMockError({
+				message: "Internal server error occurred",
+				status: 500,
+			})
+
+			mockStreamText.mockImplementation(() => {
+				throw apiError
+			})
+
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
 
 			try {
-				await handler.completePrompt("test")
+				for await (const _chunk of generator) {
+					// should throw
+				}
 				throw new Error("Expected error to be thrown")
-			} catch (error) {
-				// Should contain the verbose message template
-				expect(error.message).toContain("Request was throttled or rate limited")
-				// Should preserve original error properties
-				expect((error as any).status).toBe(429)
-				expect((error as any).$metadata.requestId).toBe("test-request-id-12345")
+			} catch (error: any) {
+				expect(error.message).toContain("Bedrock:")
+				expect(error.message).toContain("Internal server error occurred")
 			}
 		})
 
-		it("should throw enhanced error messages for createMessage streaming to display in retry system", async () => {
+		it("should handle validation errors (token limits) as non-throttling", async () => {
 			const tokenError = createMockError({
 				message: "Too many tokens in request",
 				name: "ValidationException",
-				$metadata: {
-					httpStatusCode: 400,
-					requestId: "token-error-id-67890",
-					extendedRequestId: "extended-12345",
-				},
 			})
 
-			const mockStream = {
-				[Symbol.asyncIterator]() {
-					return {
-						async next() {
-							throw tokenError
-						},
-					}
-				},
-			}
+			mockStreamText.mockImplementation(() => {
+				throw tokenError
+			})
 
-			mockSend.mockResolvedValueOnce({ stream: mockStream })
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
 
-			try {
-				const stream = handler.createMessage("system", [{ role: "user", content: "test" }])
-				for await (const chunk of stream) {
-					// Should not reach here as it should throw an error
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
 				}
-				throw new Error("Expected error to be thrown")
-			} catch (error) {
-				// Should contain error codes (note: this will be caught by the non-throttling error path)
-				expect(error.message).toContain("Too many tokens")
-				// Should preserve original error properties
-				expect(error.name).toBe("ValidationException")
-				expect((error as any).$metadata.requestId).toBe("token-error-id-67890")
-			}
+			}).rejects.toThrow("Bedrock: Too many tokens in request")
 		})
 	})
 
-	describe("Edge Case Test Coverage", () => {
-		it("should handle concurrent throttling errors correctly", async () => {
-			const throttlingError = createMockError({
+	// -----------------------------------------------------------------------
+	// Streaming context: errors mid-stream
+	// -----------------------------------------------------------------------
+
+	describe("Streaming Context Error Handling", () => {
+		it("should re-throw throttling errors that occur mid-stream", async () => {
+			const throttleError = createMockError({
 				message: "Bedrock is unable to process your request",
 				status: 429,
 			})
 
-			// Setup multiple concurrent requests that will all fail with throttling
-			mockSend.mockRejectedValue(throttlingError)
+			// Mock streamText to return an object whose fullStream throws mid-iteration
+			async function* failingStream() {
+				yield { type: "text-delta" as const, textDelta: "partial" }
+				throw throttleError
+			}
 
-			// Execute multiple concurrent requests
+			mockStreamText.mockReturnValue({
+				fullStream: failingStream(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// may yield partial text before throwing
+				}
+			}).rejects.toThrow("Bedrock is unable to process your request")
+		})
+
+		it("should wrap non-throttling errors that occur mid-stream via handleAiSdkError", async () => {
+			const genericError = createMockError({
+				message: "Some other error",
+				status: 500,
+			})
+
+			async function* failingStream() {
+				yield { type: "text-delta" as const, textDelta: "partial" }
+				throw genericError
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: failingStream(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+				providerMetadata: Promise.resolve({}),
+			})
+
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
+				}
+			}).rejects.toThrow("Bedrock: Some other error")
+		})
+	})
+
+	// -----------------------------------------------------------------------
+	// completePrompt errors — all go through handleAiSdkError (no throttle check)
+	// -----------------------------------------------------------------------
+
+	describe("completePrompt error handling", () => {
+		it("should wrap errors with provider name for completePrompt", async () => {
+			mockGenerateText.mockRejectedValueOnce(new Error("Bedrock API failure"))
+
+			await expect(handler.completePrompt("test")).rejects.toThrow("Bedrock: Bedrock API failure")
+		})
+
+		it("should wrap throttling-pattern errors with provider name for completePrompt", async () => {
+			const throttleError = createMockError({
+				message: "Bedrock is unable to process your request",
+				status: 429,
+			})
+
+			mockGenerateText.mockRejectedValueOnce(throttleError)
+
+			// completePrompt does NOT have the throttle-rethrow path; it always uses handleAiSdkError
+			await expect(handler.completePrompt("test")).rejects.toThrow(
+				"Bedrock: Bedrock is unable to process your request",
+			)
+		})
+
+		it("should handle concurrent generateText failures", async () => {
+			const error = new Error("API failure")
+			mockGenerateText.mockRejectedValue(error)
+
 			const promises = Array.from({ length: 5 }, () => handler.completePrompt("test"))
-
-			// All should throw with throttling error
 			const results = await Promise.allSettled(promises)
 
 			results.forEach((result) => {
 				expect(result.status).toBe("rejected")
 				if (result.status === "rejected") {
-					expect(result.reason.message).toContain("throttled or rate limited")
+					expect(result.reason.message).toContain("Bedrock:")
 				}
 			})
 		})
 
-		it("should handle mixed error scenarios with both throttling and other indicators", async () => {
-			// Error with both 429 status (throttling) and validation error message
-			const mixedError = createMockError({
-				message: "ValidationException: Your input is invalid, but also rate limited",
-				name: "ValidationException",
+		it("should preserve status code from API call errors in completePrompt", async () => {
+			const apiError = createMockError({
+				message: "Service unavailable",
+				status: 503,
+			})
+
+			mockGenerateText.mockRejectedValueOnce(apiError)
+
+			try {
+				await handler.completePrompt("test")
+				throw new Error("Expected error to be thrown")
+			} catch (error: any) {
+				expect(error.message).toContain("Bedrock:")
+				expect(error.message).toContain("Service unavailable")
+			}
+		})
+	})
+
+	// -----------------------------------------------------------------------
+	// Telemetry
+	// -----------------------------------------------------------------------
+
+	describe("Error telemetry", () => {
+		it("should capture telemetry for createMessage errors", async () => {
+			mockStreamText.mockImplementation(() => {
+				throw new Error("Stream failure")
+			})
+
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
+				}
+			}).rejects.toThrow()
+
+			expect(mockCaptureException).toHaveBeenCalled()
+		})
+
+		it("should capture telemetry for completePrompt errors", async () => {
+			mockGenerateText.mockRejectedValueOnce(new Error("Generate failure"))
+
+			await expect(handler.completePrompt("test")).rejects.toThrow()
+
+			expect(mockCaptureException).toHaveBeenCalled()
+		})
+
+		it("should capture telemetry for throttling errors too", async () => {
+			const throttleError = createMockError({
+				message: "Rate limit exceeded",
 				status: 429,
-				$metadata: {
-					httpStatusCode: 429,
-					requestId: "mixed-error-id",
-				},
 			})
 
-			mockSend.mockRejectedValueOnce(mixedError)
-
-			try {
-				await handler.completePrompt("test")
-			} catch (error) {
-				// Should be treated as throttling due to 429 status taking priority
-				expect(error.message).toContain("throttled or rate limited")
-				// Should still preserve metadata
-				expect((error as any).$metadata?.requestId).toBe("mixed-error-id")
-			}
-		})
-
-		it("should handle rapid successive retries in streaming context", async () => {
-			const throttlingError = createMockError({
-				message: "ThrottlingException",
-				name: "ThrottlingException",
+			mockStreamText.mockImplementation(() => {
+				throw throttleError
 			})
 
-			// Mock stream that throws immediately
-			const mockStream = {
-				// eslint-disable-next-line require-yield
-				[Symbol.asyncIterator]: async function* () {
-					throw throttlingError
-				},
-			}
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
 
-			mockSend.mockResolvedValueOnce({ stream: mockStream })
-
-			const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "test" }]
-
-			try {
-				// Should throw immediately without yielding any chunks
-				const stream = handler.createMessage("", messages)
-				const chunks = []
-				for await (const chunk of stream) {
-					chunks.push(chunk)
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
 				}
-				// Should not reach here
-				expect(chunks).toHaveLength(0)
-			} catch (error) {
-				// Error should be thrown immediately for retry mechanism
-				// The error might be a TypeError if the stream iterator fails
-				expect(error).toBeDefined()
-				// The important thing is that it throws immediately without yielding chunks
-			}
+			}).rejects.toThrow()
+
+			// Telemetry is captured even for throttling errors
+			expect(mockCaptureException).toHaveBeenCalled()
+		})
+	})
+
+	// -----------------------------------------------------------------------
+	// Edge cases
+	// -----------------------------------------------------------------------
+
+	describe("Edge Case Test Coverage", () => {
+		it("should handle non-Error objects thrown by generateText", async () => {
+			mockGenerateText.mockRejectedValueOnce("string error")
+
+			await expect(handler.completePrompt("test")).rejects.toThrow("Bedrock: string error")
 		})
 
-		it("should validate error properties exist before accessing them", async () => {
-			// Error with unusual structure
-			const unusualError = {
-				message: "Error with unusual structure",
-				// Missing typical properties like name, status, etc.
-			}
+		it("should handle non-Error objects thrown by streamText", async () => {
+			mockStreamText.mockImplementation(() => {
+				throw "string error"
+			})
 
-			mockSend.mockRejectedValueOnce(unusualError)
+			const generator = handler.createMessage("system", [{ role: "user", content: "test" }])
+
+			// Non-Error values are not detected as throttling → handleAiSdkError path
+			await expect(async () => {
+				for await (const _chunk of generator) {
+					// should throw
+				}
+			}).rejects.toThrow("Bedrock: string error")
+		})
+
+		it("should handle errors with unusual structure gracefully", async () => {
+			const unusualError = { message: "Error with unusual structure" }
+			mockGenerateText.mockRejectedValueOnce(unusualError)
 
 			try {
 				await handler.completePrompt("test")
-			} catch (error) {
-				// Should handle gracefully without accessing undefined properties
-				expect(error.message).toContain("Unknown Error")
-				// Should not have undefined values in the error message
+				throw new Error("Expected error to be thrown")
+			} catch (error: any) {
+				// handleAiSdkError wraps with "Bedrock: ..."
+				expect(error.message).toContain("Bedrock:")
 				expect(error.message).not.toContain("undefined")
 			}
+		})
+
+		it("should handle concurrent throttling errors in streaming context", async () => {
+			const throttlingError = createMockError({
+				message: "Bedrock is unable to process your request",
+				status: 429,
+			})
+
+			mockStreamText.mockImplementation(() => {
+				throw throttlingError
+			})
+
+			// Execute multiple concurrent streaming requests
+			const promises = Array.from({ length: 3 }, async () => {
+				const localHandler = new AwsBedrockHandler({
+					apiModelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+					awsAccessKey: "test-access-key",
+					awsSecretKey: "test-secret-key",
+					awsRegion: "us-east-1",
+				})
+				const gen = localHandler.createMessage("system", [{ role: "user", content: "test" }])
+				for await (const _chunk of gen) {
+					// should throw
+				}
+			})
+
+			const results = await Promise.allSettled(promises)
+			results.forEach((result) => {
+				expect(result.status).toBe("rejected")
+				if (result.status === "rejected") {
+					// Throttling errors are re-thrown with original message
+					expect(result.reason.message).toBe("Bedrock is unable to process your request")
+				}
+			})
 		})
 	})
 })

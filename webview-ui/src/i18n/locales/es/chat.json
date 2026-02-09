@@ -111,6 +111,8 @@
 	},
 	"selectMode": "Seleccionar modo de interacción",
 	"selectApiConfig": "Seleccionar configuración de API",
+	"lockApiConfigAcrossModes": "Bloquear la configuración de API en todos los modos de este espacio de trabajo",
+	"unlockApiConfigAcrossModes": "La configuración de API está bloqueada en todos los modos de este espacio de trabajo (clic para desbloquear)",
 	"enhancePrompt": "Mejorar el mensaje con contexto adicional",
 	"addImages": "Agregar imágenes al mensaje",
 	"sendMessage": "Enviar mensaje",
@@ -218,7 +220,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo quiere ver los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
 		"didViewTopLevelOutsideWorkspace": "Roo vio los archivos de nivel superior en este directorio (fuera del espacio de trabajo)",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo quiere ver recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
-		"didViewRecursiveOutsideWorkspace": "Roo vio recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)"
+		"didViewRecursiveOutsideWorkspace": "Roo vio recursivamente todos los archivos en este directorio (fuera del espacio de trabajo)",
+		"wantsToViewMultipleDirectories": "Roo quiere ver varios directorios"
 	},
 	"commandOutput": "Salida del comando",
 	"commandExecution": {
@@ -344,9 +347,8 @@
 		},
 		"release": {
 			"heading": "Qué hay de nuevo:",
-			"parallelTools": "Llamadas de herramientas paralelas: Las herramientas ahora se ejecutan en paralelo por defecto, acelerando significativamente operaciones con múltiples archivos y tareas complejas.",
-			"readFileIndentation": "Lectura de archivos más inteligente: El nuevo modo de indentación extrae bloques de código semántico completos (funciones, clases) sin truncamiento a mitad de función—ideal para apuntar a líneas específicas de resultados de búsqueda.",
-			"readCommandOutput": "Salida de terminal sin pérdida: La nueva herramienta read_command_output recupera la salida completa del comando desde ejecuciones truncadas con paginación y filtrado regex."
+			"claudeOpus": "Claude Opus 4.6: Ahora disponible en todos los proveedores—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex y OpenRouter—trayendo el modelo más capaz de Anthropic a tu plataforma preferida.",
+			"gptCodex": "GPT-5.3-Codex: El último modelo de codificación de OpenAI ahora es compatible con el proveedor OpenAI - ChatGPT, ofreciendo generación de código de vanguardia y comprensión."
 		},
 		"cloudAgents": {
 			"heading": "Novedades en la Nube:",
@@ -440,6 +442,22 @@
 			"title": "Denegar todo"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Aprobar todo"
+		},
+		"deny": {
+			"title": "Denegar todo"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Guardar todo"
+		},
+		"deny": {
+			"title": "Denegar todo"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Índice listo",
 		"indexing": "Indexando {{percentage}}%",
@@ -513,5 +531,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Proveedor ya no compatible",
+		"message": "Lo sentimos, este proveedor ya no es compatible. Vimos que muy pocos usuarios de Roo lo usaban realmente y necesitamos reducir el alcance de nuestro código para poder seguir avanzando rápido y servir bien a nuestra comunidad en este espacio. Fue una decisión muy difícil, pero nos permite enfocarnos en lo que más te importa. Lo sabemos, es una lástima.",
+		"openSettings": "Abrir configuración"
 	}
 }

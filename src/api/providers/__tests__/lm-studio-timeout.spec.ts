@@ -1,62 +1,69 @@
 // npx vitest run api/providers/__tests__/lm-studio-timeout.spec.ts
 
-import { LmStudioHandler } from "../lm-studio"
-import { ApiHandlerOptions } from "../../../shared/api"
-
-// Mock the timeout config utility
-vitest.mock("../utils/timeout-config", () => ({
-	getApiRequestTimeout: vitest.fn(),
+const { mockCreateOpenAICompatible } = vi.hoisted(() => ({
+	mockCreateOpenAICompatible: vi.fn(() => {
+		return vi.fn(() => ({
+			modelId: "llama2",
+			provider: "lmstudio",
+		}))
+	}),
 }))
 
-import { getApiRequestTimeout } from "../utils/timeout-config"
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: mockCreateOpenAICompatible,
+}))
 
-// Mock OpenAI
-const mockOpenAIConstructor = vitest.fn()
-vitest.mock("openai", () => {
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
 	return {
-		__esModule: true,
-		default: vitest.fn().mockImplementation((config) => {
-			mockOpenAIConstructor(config)
-			return {
-				chat: {
-					completions: {
-						create: vitest.fn(),
-					},
-				},
-			}
-		}),
+		...actual,
+		streamText: vi.fn(),
+		generateText: vi.fn(),
 	}
 })
 
-describe("LmStudioHandler timeout configuration", () => {
+import { LmStudioHandler } from "../lm-studio"
+import { ApiHandlerOptions } from "../../../shared/api"
+
+describe("LmStudioHandler configuration", () => {
 	beforeEach(() => {
-		vitest.clearAllMocks()
+		vi.clearAllMocks()
 	})
 
-	it("should use default timeout of 600 seconds when no configuration is set", () => {
-		;(getApiRequestTimeout as any).mockReturnValue(600000)
-
+	it("should configure the provider with default base URL", () => {
 		const options: ApiHandlerOptions = {
 			apiModelId: "llama2",
 			lmStudioModelId: "llama2",
-			lmStudioBaseUrl: "http://localhost:1234",
 		}
 
 		new LmStudioHandler(options)
 
-		expect(getApiRequestTimeout).toHaveBeenCalled()
-		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
+		expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
 			expect.objectContaining({
+				name: "lmstudio",
 				baseURL: "http://localhost:1234/v1",
 				apiKey: "noop",
-				timeout: 600000, // 600 seconds in milliseconds
 			}),
 		)
 	})
 
-	it("should use custom timeout when configuration is set", () => {
-		;(getApiRequestTimeout as any).mockReturnValue(1200000) // 20 minutes
+	it("should configure the provider with custom base URL", () => {
+		const options: ApiHandlerOptions = {
+			apiModelId: "llama2",
+			lmStudioModelId: "llama2",
+			lmStudioBaseUrl: "http://localhost:5678",
+		}
 
+		new LmStudioHandler(options)
+
+		expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
+			expect.objectContaining({
+				baseURL: "http://localhost:5678/v1",
+			}),
+		)
+	})
+
+	it("should use 'noop' as the API key", () => {
 		const options: ApiHandlerOptions = {
 			apiModelId: "llama2",
 			lmStudioModelId: "llama2",
@@ -65,26 +72,9 @@ describe("LmStudioHandler timeout configuration", () => {
 
 		new LmStudioHandler(options)
 
-		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
+		expect(mockCreateOpenAICompatible).toHaveBeenCalledWith(
 			expect.objectContaining({
-				timeout: 1200000, // 1200 seconds in milliseconds
-			}),
-		)
-	})
-
-	it("should handle zero timeout (no timeout)", () => {
-		;(getApiRequestTimeout as any).mockReturnValue(0)
-
-		const options: ApiHandlerOptions = {
-			apiModelId: "llama2",
-			lmStudioModelId: "llama2",
-		}
-
-		new LmStudioHandler(options)
-
-		expect(mockOpenAIConstructor).toHaveBeenCalledWith(
-			expect.objectContaining({
-				timeout: 0, // No timeout
+				apiKey: "noop",
 			}),
 		)
 	})

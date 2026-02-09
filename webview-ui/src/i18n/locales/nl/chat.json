@@ -111,6 +111,8 @@
 	},
 	"selectMode": "Selecteer modus voor interactie",
 	"selectApiConfig": "Selecteer API-configuratie",
+	"lockApiConfigAcrossModes": "API-configuratie vergrendelen voor alle modi in deze werkruimte",
+	"unlockApiConfigAcrossModes": "API-configuratie is vergrendeld voor alle modi in deze werkruimte (klik om te ontgrendelen)",
 	"enhancePrompt": "Prompt verbeteren met extra context",
 	"enhancePromptDescription": "De knop 'Prompt verbeteren' helpt je prompt te verbeteren door extra context, verduidelijking of herformulering te bieden. Probeer hier een prompt te typen en klik opnieuw op de knop om te zien hoe het werkt.",
 	"modeSelector": {
@@ -145,14 +147,14 @@
 		"rateLimitWait": "Snelheidsbeperking",
 		"errorTitle": "Fout van provider {{code}}",
 		"errorMessage": {
-			"docs": "Documentatie",
-			"goToSettings": "Instellingen",
 			"400": "De provider kon het verzoek niet verwerken zoals ingediend. Stop de taak en probeer een ander benadering.",
 			"401": "Kon niet authenticeren met provider. Controleer je API-sleutelconfiguratie.",
 			"402": "Het lijkt erop dat je funds/credits op je account op zijn. Ga naar je provider en voeg meer toe om door te gaan.",
 			"403": "Niet geautoriseerd. Je API-sleutel is geldig, maar de provider weigerde dit verzoek in te willigen.",
 			"429": "Te veel verzoeken. Je bent rate-gelimiteerd door de provider. Wacht alsjeblieft even voor je volgende API-aanroep.",
 			"500": "Provider-serverfout. Er is iets mis aan de kant van de provider, er is niets mis met je verzoek.",
+			"docs": "Documentatie",
+			"goToSettings": "Instellingen",
 			"unknown": "Onbekende API-fout. Neem alsjeblieft contact op met Roo Code-ondersteuning.",
 			"connection": "Verbindingsfout. Zorg ervoor dat je een werkende internetverbinding hebt.",
 			"claudeCodeNotAuthenticated": "Je moet inloggen om Claude Code te gebruiken. Ga naar Instellingen en klik op \"Inloggen bij Claude Code\" om te authenticeren."
@@ -213,7 +215,8 @@
 		"wantsToViewTopLevelOutsideWorkspace": "Roo wil de bovenliggende bestanden in deze map (buiten werkruimte) bekijken",
 		"didViewTopLevelOutsideWorkspace": "Roo heeft de bovenliggende bestanden in deze map (buiten werkruimte) bekeken",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo wil alle bestanden in deze map (buiten werkruimte) recursief bekijken",
-		"didViewRecursiveOutsideWorkspace": "Roo heeft alle bestanden in deze map (buiten werkruimte) recursief bekeken"
+		"didViewRecursiveOutsideWorkspace": "Roo heeft alle bestanden in deze map (buiten werkruimte) recursief bekeken",
+		"wantsToViewMultipleDirectories": "Roo wil meerdere mappen bekijken"
 	},
 	"commandOutput": "Commando-uitvoer",
 	"commandExecution": {
@@ -317,9 +320,8 @@
 		},
 		"release": {
 			"heading": "Wat is er nieuw:",
-			"parallelTools": "Parallelle Gereedschaproepen: Gereedschappen worden nu standaard parallel uitgevoerd, wat multi-file operaties en complexe taken aanzienlijk versnelt.",
-			"readFileIndentation": "Slimmer Bestand Lezen: Nieuwe inspringingmodus extraheert volledige semantische codeblokken (functies, klassen) zonder afkapping in het midden van de functie—ideaal voor het richten op specifieke lijnen uit zoekresultaten.",
-			"readCommandOutput": "Verliesvrije Terminaluitvoer: Nieuw read_command_output gereedschap haalt volledige opdrachtuitvoer op van afgekapte uitvoeringen met paginering en regex-filtering."
+			"claudeOpus": "Claude Opus 4.6: Nu beschikbaar bij alle providers—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex en OpenRouter—waardoor Anthropic's meest krachtige model naar je voorkeursplatform wordt gebracht.",
+			"gptCodex": "GPT-5.3-Codex: OpenAI's nieuwste coderingsmodel wordt nu ondersteund in de OpenAI - ChatGPT provider, met geavanceerde code-generatie en begrip."
 		},
 		"cloudAgents": {
 			"heading": "Nieuw in de Cloud:",
@@ -440,6 +442,22 @@
 			"title": "Alles weigeren"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Alles goedkeuren"
+		},
+		"deny": {
+			"title": "Alles weigeren"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Alles opslaan"
+		},
+		"deny": {
+			"title": "Alles weigeren"
+		}
+	},
 	"indexingStatus": {
 		"ready": "Index gereed",
 		"indexing": "Indexeren {{percentage}}%",
@@ -513,5 +531,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Provider wordt niet meer ondersteund",
+		"message": "Sorry, deze provider wordt niet meer ondersteund. We zagen dat heel weinig Roo-gebruikers het daadwerkelijk gebruikten en we moeten de omvang van onze codebase verkleinen zodat we snel kunnen blijven leveren en onze community goed kunnen blijven bedienen. Het was een heel moeilijke beslissing, maar het stelt ons in staat om ons te richten op wat het belangrijkst voor je is. Het is vervelend, dat weten we.",
+		"openSettings": "Instellingen openen"
 	}
 }

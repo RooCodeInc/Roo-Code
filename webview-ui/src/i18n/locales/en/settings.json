@@ -69,40 +69,77 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Manage your slash commands to quickly execute custom workflows and actions. <DocsLink>Learn more</DocsLink>"
+		"description": "Slash commands are shortcuts for reusable workflows and actions to be used on demand (like creating a PR, running a set of tasks, etc). <DocsLink>Learn more</DocsLink>",
+		"workspaceCommands": "Workspace Commands",
+		"globalCommands": "Global Commands",
+		"noWorkspaceCommands": "No commands in this project yet.",
+		"noGlobalCommands": "No global commands yet.",
+		"addCommand": "Add Slash Command",
+		"editCommand": "Edit command",
+		"deleteCommand": "Delete command",
+		"deleteDialog": {
+			"title": "Delete Command",
+			"description": "Are you sure you want to delete the command \"{{name}}\"? This action cannot be undone.",
+			"confirm": "Delete",
+			"cancel": "Cancel"
+		},
+		"createDialog": {
+			"title": "Create New Slash Command",
+			"nameLabel": "Name",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Lowercase letters, numbers, hyphens and underscores only",
+			"sourceLabel": "Location",
+			"create": "Create",
+			"cancel": "Cancel"
+		},
+		"source": {
+			"global": "Global (available in all workspaces)",
+			"project": "Workspace"
+		},
+		"validation": {
+			"nameRequired": "Name is required",
+			"nameTooLong": "Name must be 64 characters or less",
+			"nameInvalid": "Name must contain only letters, numbers, hyphens, and underscores"
+		},
+		"footer": "Use slash commands for quick access to frequently used prompts and workflows."
 	},
 	"skills": {
-		"description": "Manage skills that provide contextual instructions to the agent. Skills are automatically applied when relevant to your tasks. <DocsLink>Learn more</DocsLink>",
-		"projectSkills": "Project Skills",
+		"description": "Skills encapsulate contextual instructions and workflows, which the agent can load on-demand. They can include general instructions, specific workflows and even scripts to be run as needed. <DocsLink>Learn more</DocsLink>",
+		"workspaceSkills": "Workspace Skills",
 		"globalSkills": "Global Skills",
-		"noProjectSkills": "No project skills configured. Create one to add project-specific agent capabilities.",
-		"noGlobalSkills": "No global skills configured. Create one to add agent capabilities available across all projects.",
+		"noWorkspaceSkills": "No skills in this project yet.",
+		"noGlobalSkills": "No global skills yet.",
 		"addSkill": "Add Skill",
 		"editSkill": "Edit skill",
 		"deleteSkill": "Delete skill",
-		"changeMode": "Change mode",
+		"configureModes": "Mode availability",
 		"modeAny": "Any mode",
+		"modeCount": "{{count}} modes",
 		"deleteDialog": {
 			"title": "Delete Skill",
 			"description": "Are you sure you want to delete the skill \"{{name}}\"? This action cannot be undone.",
 			"confirm": "Delete",
 			"cancel": "Cancel"
 		},
+		"modeDialog": {
+			"title": "Configure Skill Modes",
+			"description": "Choose which modes can use this skill",
+			"intro": "To keep your context light, we recommend only making skills available for the modes that need them.",
+			"anyMode": "Any mode (available everywhere)",
+			"save": "Save",
+			"cancel": "Cancel"
+		},
 		"createDialog": {
 			"title": "Create New Skill",
-			"description": "Define a new skill template that provides contextual instructions to the agent.",
 			"nameLabel": "Name",
-			"namePlaceholder": "my-skill-name",
-			"nameHint": "Lowercase letters, numbers, and hyphens only (1-64 characters)",
+			"namePlaceholder": "my-skill-name (Lowercase letters, numbers, and hyphens only)",
 			"descriptionLabel": "Description",
-			"descriptionPlaceholder": "Describe when this skill should be used...",
-			"descriptionHint": "Explain what this skill does and when the agent should apply it (1-1024 characters)",
+			"descriptionPlaceholder": "Describe when this skill should be used and its contents...",
 			"sourceLabel": "Location",
-			"sourceHint": "Choose whether this skill is available globally or only in this project",
 			"modeLabel": "Mode (optional)",
 			"modePlaceholder": "Any mode",
-			"modeHint": "Restrict this skill to a specific mode",
 			"modeAny": "Any mode",
+			"modeHint": "Restrict this skill to a specific mode",
 			"create": "Create",
 			"cancel": "Cancel"
 		},
@@ -116,9 +153,14 @@
 			"nameInvalid": "Name must be 1-64 lowercase letters, numbers, or hyphens",
 			"descriptionRequired": "Description is required",
 			"descriptionTooLong": "Description must be 1024 characters or less"
-		}
+		},
+		"footer": "Create your own skills with the Skill Writer mode, available in the <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	},
 	"ui": {
+		"taskCompleteColor": {
+			"label": "Task Header Highlight",
+			"description": "Highlights the task header with a color indicator when tasks complete or need your attention, helping you quickly spot when action is required"
+		},
 		"collapseThinking": {
 			"label": "Collapse Thinking messages by default",
 			"description": "When enabled, thinking blocks will be collapsed by default until you interact with them"
@@ -338,6 +380,7 @@
 		"searchProviderPlaceholder": "Search providers",
 		"noProviderMatchFound": "No providers found",
 		"noMatchFound": "No matching profiles found",
+		"retiredProviderMessage": "Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know.",
 		"vscodeLmDescription": " The VS Code Language Model API allows you to run models provided by other VS Code extensions (including but not limited to GitHub Copilot). The easiest way to get started is to install the Copilot and Copilot Chat extensions from the VS Code Marketplace.",
 		"awsCustomArnUse": "Enter a valid Amazon Bedrock ARN for the model you want to use. Format examples:",
 		"awsCustomArnDesc": "Make sure the region in the ARN matches your selected AWS Region above.",
@@ -399,28 +442,29 @@
 		"getAnthropicApiKey": "Get Anthropic API Key",
 		"anthropicUseAuthToken": "Pass Anthropic API Key as Authorization header instead of X-Api-Key",
 		"anthropic1MContextBetaLabel": "Enable 1M context window (Beta)",
-		"anthropic1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4",
+		"anthropic1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "Enable 1M context window (Beta)",
-		"awsBedrock1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4",
+		"awsBedrock1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Enable 1M context window (Beta)",
-		"vertex1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4",
+		"vertex1MContextBetaDescription": "Extends context window to 1 million tokens for Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
 		"basetenApiKey": "Baseten API Key",
 		"getBasetenApiKey": "Get Baseten API Key",
 		"cerebrasApiKey": "Cerebras API Key",
 		"getCerebrasApiKey": "Get Cerebras API Key",
+		"azureResourceName": "Azure Resource Name",
+		"azureResourceNameDescription": "The name of your Azure AI Foundry resource (e.g., 'my-openai-resource').",
+		"azureDeploymentName": "Azure Deployment Name",
+		"azureDeploymentNameDescription": "The name of your model deployment within the resource.",
+		"azureApiKey": "Azure API Key",
+		"getAzureApiKey": "Get Azure AI Foundry Access",
+		"azureApiVersion": "Azure API Version",
+		"azureApiVersionDescription": "The API version to use (e.g., '2024-10-21'). Leave empty for the default.",
 		"chutesApiKey": "Chutes API Key",
 		"getChutesApiKey": "Get Chutes API Key",
 		"fireworksApiKey": "Fireworks API Key",
 		"getFireworksApiKey": "Get Fireworks API Key",
-		"featherlessApiKey": "Featherless API Key",
-		"getFeatherlessApiKey": "Get Featherless API Key",
-		"ioIntelligenceApiKey": "IO Intelligence API Key",
-		"ioIntelligenceApiKeyPlaceholder": "Enter your IO Intelligence API key",
-		"getIoIntelligenceApiKey": "Get IO Intelligence API Key",
 		"deepSeekApiKey": "DeepSeek API Key",
 		"getDeepSeekApiKey": "Get DeepSeek API Key",
-		"doubaoApiKey": "Doubao API Key",
-		"getDoubaoApiKey": "Get Doubao API Key",
 		"moonshotApiKey": "Moonshot API Key",
 		"getMoonshotApiKey": "Get Moonshot API Key",
 		"moonshotBaseUrl": "Moonshot Entrypoint",
@@ -432,23 +476,8 @@
 		"zaiEntrypoint": "Z AI Entrypoint",
 		"zaiEntrypointDescription": "Please select the appropriate API entrypoint based on your location. If you are in China, choose open.bigmodel.cn. Otherwise, choose api.z.ai.",
 		"geminiApiKey": "Gemini API Key",
-		"getGroqApiKey": "Get Groq API Key",
-		"groqApiKey": "Groq API Key",
 		"getSambaNovaApiKey": "Get SambaNova API Key",
 		"sambaNovaApiKey": "SambaNova API Key",
-		"getHuggingFaceApiKey": "Get Hugging Face API Key",
-		"huggingFaceApiKey": "Hugging Face API Key",
-		"huggingFaceModelId": "Model ID",
-		"huggingFaceLoading": "Loading...",
-		"huggingFaceModelsCount": "({{count}} models)",
-		"huggingFaceSelectModel": "Select a model...",
-		"huggingFaceSearchModels": "Search models...",
-		"huggingFaceNoModelsFound": "No models found",
-		"huggingFaceProvider": "Provider",
-		"huggingFaceProviderAuto": "Auto",
-		"huggingFaceSelectProvider": "Select a provider...",
-		"huggingFaceSearchProviders": "Search providers...",
-		"huggingFaceNoProvidersFound": "No providers found",
 		"getGeminiApiKey": "Get Gemini API Key",
 		"openAiApiKey": "OpenAI API Key",
 		"apiKey": "API Key",
@@ -490,16 +519,6 @@
 		"cacheUsageNote": "Note: If you don't see cache usage, try selecting a different model and then selecting your desired model again.",
 		"vscodeLmModel": "Language Model",
 		"vscodeLmWarning": "Note: Models accessed via the VS Code Language Model API may be wrapped or fine-tuned by the provider, so behavior can differ from using the same model directly from a typical provider or router. To use a model from the Language Model dropdown, first switch to that model and then click Accept in the Copilot Chat prompt; otherwise you may see an error such as 400 \"The requested model is not supported\".",
-		"geminiParameters": {
-			"urlContext": {
-				"title": "Enable URL context",
-				"description": "Lets Gemini read linked pages to extract, compare, and synthesize their content into informed responses."
-			},
-			"groundingSearch": {
-				"title": "Enable Grounding with Google search",
-				"description": "Connects Gemini to real‑time web data for accurate, up‑to‑date answers with verifiable citations."
-			}
-		},
 		"googleCloudSetup": {
 			"title": "To use Google Cloud Vertex AI, you need to:",
 			"step1": "1. Create a Google Cloud account, enable the Vertex AI API & enable the desired Claude models.",
@@ -530,10 +549,6 @@
 			"description": "Ollama allows you to run models locally on your computer. For instructions on how to get started, see their quickstart guide.",
 			"warning": "Note: Roo Code uses complex prompts and works best with Claude models. Less capable models may not work as expected."
 		},
-		"unboundApiKey": "Unbound API Key",
-		"getUnboundApiKey": "Get Unbound API Key",
-		"unboundRefreshModelsSuccess": "Models list updated! You can now select from the latest models.",
-		"unboundInvalidApiKey": "Invalid API key. Please check your API key and try again.",
 		"roo": {
 			"authenticatedMessage": "Securely authenticated through your Roo Code Cloud account.",
 			"connectButton": "Connect to Roo Code Cloud"
@@ -989,7 +1004,9 @@
 		"providerNotAllowed": "Provider '{{provider}}' is not allowed by your organization",
 		"modelNotAllowed": "Model '{{model}}' is not allowed for provider '{{provider}}' by your organization",
 		"profileInvalid": "This profile contains a provider or model that is not allowed by your organization",
-		"qwenCodeOauthPath": "You must provide a valid OAuth credentials path."
+		"qwenCodeOauthPath": "You must provide a valid OAuth credentials path.",
+		"azureResourceName": "You must provide an Azure resource name.",
+		"azureDeploymentName": "You must provide an Azure deployment name."
 	},
 	"placeholders": {
 		"apiKey": "Enter API Key...",
@@ -1002,6 +1019,8 @@
 		"projectId": "Enter Project ID...",
 		"customArn": "Enter ARN (e.g. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Enter base URL...",
+		"azureResourceName": "e.g. my-openai-resource",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "e.g. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "e.g. lmstudio-community/llama-3.2-1b-instruct",

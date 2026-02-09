@@ -248,6 +248,16 @@ export const parseOpenRouterModel = ({
 		modelInfo.maxTokens = anthropicModels["claude-opus-4-1-20250805"].maxTokens
 	}
 
+	// Set claude-opus-4.5 model to use the correct configuration
+	if (id === "anthropic/claude-opus-4.5") {
+		modelInfo.maxTokens = anthropicModels["claude-opus-4-5-20251101"].maxTokens
+	}
+
+	// Set claude-opus-4.6 model to use the correct configuration
+	if (id === "anthropic/claude-opus-4.6") {
+		modelInfo.maxTokens = anthropicModels["claude-opus-4-6"].maxTokens
+	}
+
 	// Ensure correct reasoning handling for Claude Haiku 4.5 on OpenRouter
 	// Use budget control and disable effort-based reasoning fallback
 	if (id === "anthropic/claude-haiku-4.5") {

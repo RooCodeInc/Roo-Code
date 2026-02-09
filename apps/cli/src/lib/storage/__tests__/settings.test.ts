@@ -103,7 +103,7 @@ describe("Settings Storage", () => {
 			await saveSettings({
 				mode: "architect",
 				provider: "anthropic" as const,
-				model: "claude-opus-4.5",
+				model: "claude-opus-4.6",
 				reasoningEffort: "medium" as const,
 			})
 
@@ -112,7 +112,7 @@ describe("Settings Storage", () => {
 
 			expect(settings.mode).toBe("architect")
 			expect(settings.provider).toBe("anthropic")
-			expect(settings.model).toBe("claude-opus-4.5")
+			expect(settings.model).toBe("claude-opus-4.6")
 			expect(settings.reasoningEffort).toBe("medium")
 		})
 

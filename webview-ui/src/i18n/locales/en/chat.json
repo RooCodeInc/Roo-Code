@@ -74,6 +74,22 @@
 			"title": "Deny All"
 		}
 	},
+	"list-batch": {
+		"approve": {
+			"title": "Approve All"
+		},
+		"deny": {
+			"title": "Deny All"
+		}
+	},
+	"edit-batch": {
+		"approve": {
+			"title": "Save All"
+		},
+		"deny": {
+			"title": "Deny All"
+		}
+	},
 	"runCommand": {
 		"title": "Run",
 		"tooltip": "Execute this command"
@@ -122,6 +138,8 @@
 	},
 	"selectMode": "Select mode for interaction",
 	"selectApiConfig": "Select API configuration",
+	"lockApiConfigAcrossModes": "Lock API configuration across all modes in this workspace",
+	"unlockApiConfigAcrossModes": "API configuration is locked across all modes in this workspace (click to unlock)",
 	"enhancePrompt": "Enhance prompt with additional context",
 	"modeSelector": {
 		"title": "Modes",
@@ -235,6 +253,7 @@
 		"didViewRecursive": "Roo recursively viewed all files in this directory",
 		"wantsToViewRecursiveOutsideWorkspace": "Roo wants to recursively view all files in this directory (outside workspace)",
 		"didViewRecursiveOutsideWorkspace": "Roo recursively viewed all files in this directory (outside workspace)",
+		"wantsToViewMultipleDirectories": "Roo wants to view multiple directories",
 		"wantsToSearch": "Roo wants to search this directory for <code>{{regex}}</code>",
 		"didSearch": "Roo searched this directory for <code>{{regex}}</code>",
 		"wantsToSearchOutsideWorkspace": "Roo wants to search this directory (outside workspace) for <code>{{regex}}</code>",
@@ -353,9 +372,8 @@
 		},
 		"release": {
 			"heading": "What's New:",
-			"parallelTools": "Parallel Tool Calls: Tools now execute in parallel by default, significantly speeding up multi-file operations and complex tasks.",
-			"readFileIndentation": "Smarter File Reading: New indentation mode extracts complete semantic code blocks (functions, classes) without mid-function truncation—ideal when targeting specific lines from search results.",
-			"readCommandOutput": "Lossless Terminal Output: New read_command_output tool retrieves full command output from truncated executions with pagination and regex filtering."
+			"claudeOpus": "Claude Opus 4.6: Now available across all providers—Roo Code Router, Anthropic, AWS Bedrock, Google Vertex, and OpenRouter—bringing Anthropic's most capable model to your preferred platform.",
+			"gptCodex": "GPT-5.3-Codex: OpenAI's latest coding model is now supported in the OpenAI - ChatGPT provider, delivering cutting-edge code generation and understanding."
 		},
 		"cloudAgents": {
 			"heading": "New in the Cloud:",
@@ -507,5 +525,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Provider no longer supported",
+		"message": "Sorry, this provider is no longer supported. We saw very few Roo users actually using it and we need to reduce the surface area of our codebase so we can keep shipping fast and serving our community well in this space. It was a really hard decision but it lets us focus on what matters most to you. It sucks, we know.",
+		"openSettings": "Open Settings"
 	}
 }

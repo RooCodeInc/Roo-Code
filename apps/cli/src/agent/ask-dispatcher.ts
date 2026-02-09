@@ -60,6 +60,11 @@ export interface AskDispatcherOptions {
 	nonInteractive?: boolean
 
 	/**
+	 * Whether to exit on API request errors instead of retrying.
+	 */
+	exitOnError?: boolean
+
+	/**
 	 * Whether to disable ask handling (for TUI mode).
 	 * In TUI mode, the TUI handles asks directly.
 	 */
@@ -87,6 +92,7 @@ export class AskDispatcher {
 	private promptManager: PromptManager
 	private sendMessage: (message: WebviewMessage) => void
 	private nonInteractive: boolean
+	private exitOnError: boolean
 	private disabled: boolean
 
 	/**
@@ -100,6 +106,7 @@ export class AskDispatcher {
 		this.promptManager = options.promptManager
 		this.sendMessage = options.sendMessage
 		this.nonInteractive = options.nonInteractive ?? false
+		this.exitOnError = options.exitOnError ?? false
 		this.disabled = options.disabled ?? false
 	}
 
@@ -517,6 +524,11 @@ export class AskDispatcher {
 		this.outputManager.output("\n[api request failed]")
 		this.outputManager.output(`  Error: ${text || "Unknown error"}`)
 		this.outputManager.markDisplayed(ts, text || "", false)
+
+		if (this.exitOnError) {
+			console.error(`[CLI] API request failed: ${text || "Unknown error"}`)
+			process.exit(1)
+		}
 
 		if (this.nonInteractive) {
 			this.outputManager.output("\n[retrying api request]")

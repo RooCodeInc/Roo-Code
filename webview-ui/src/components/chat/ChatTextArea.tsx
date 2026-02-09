@@ -103,6 +103,7 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			commands,
 			cloudUserInfo,
 			enterBehavior,
+			lockApiConfigAcrossModes,
 		} = useExtensionState()
 
 		// Find the ID and display text for the currently selected API configuration.
@@ -945,6 +946,11 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			vscode.postMessage({ type: "loadApiConfigurationById", text: value })
 		}, [])
 
+		const handleToggleLockApiConfig = useCallback(() => {
+			const newValue = !lockApiConfigAcrossModes
+			vscode.postMessage({ type: "lockApiConfigAcrossModes", bool: newValue })
+		}, [lockApiConfigAcrossModes])
+
 		return (
 			<div
 				className={cn(
@@ -1316,6 +1322,8 @@ export const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							listApiConfigMeta={listApiConfigMeta || []}
 							pinnedApiConfigs={pinnedApiConfigs}
 							togglePinnedApiConfig={togglePinnedApiConfig}
+							lockApiConfigAcrossModes={!!lockApiConfigAcrossModes}
+							onToggleLockApiConfig={handleToggleLockApiConfig}
 						/>
 						<AutoApproveDropdown triggerClassName="min-w-[28px] text-ellipsis overflow-hidden flex-shrink" />
 					</div>

@@ -1,62 +1,28 @@
-// Mock OpenAI client - must come before other imports
-const mockCreate = vi.fn()
-vi.mock("openai", () => {
-	return {
-		__esModule: true,
-		default: vi.fn().mockImplementation(() => ({
-			chat: {
-				completions: {
-					create: mockCreate.mockImplementation(async (options) => {
-						if (!options.stream) {
-							return {
-								id: "test-completion",
-								choices: [
-									{
-										message: { role: "assistant", content: "Test response" },
-										finish_reason: "stop",
-										index: 0,
-									},
-								],
-								usage: {
-									prompt_tokens: 10,
-									completion_tokens: 5,
-									total_tokens: 15,
-								},
-							}
-						}
+// Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
+const { mockStreamText, mockGenerateText, mockWrapLanguageModel } = vi.hoisted(() => ({
+	mockStreamText: vi.fn(),
+	mockGenerateText: vi.fn(),
+	mockWrapLanguageModel: vi.fn((opts: any) => opts.model),
+}))
 
-						return {
-							[Symbol.asyncIterator]: async function* () {
-								yield {
-									choices: [
-										{
-											delta: { content: "Test response" },
-											index: 0,
-										},
-									],
-									usage: null,
-								}
-								yield {
-									choices: [
-										{
-											delta: {},
-											index: 0,
-										},
-									],
-									usage: {
-										prompt_tokens: 10,
-										completion_tokens: 5,
-										total_tokens: 15,
-									},
-								}
-							},
-						}
-					}),
-				},
-			},
-		})),
+vi.mock("ai", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("ai")>()
+	return {
+		...actual,
+		streamText: mockStreamText,
+		generateText: mockGenerateText,
+		wrapLanguageModel: mockWrapLanguageModel,
 	}
 })
+
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: vi.fn(() => {
+		return vi.fn(() => ({
+			modelId: "local-model",
+			provider: "lmstudio",
+		}))
+	}),
+}))
 
 import type { Anthropic } from "@anthropic-ai/sdk"
 
@@ -74,7 +40,7 @@ describe("LmStudioHandler", () => {
 			lmStudioBaseUrl: "http://localhost:1234",
 		}
 		handler = new LmStudioHandler(mockOptions)
-		mockCreate.mockClear()
+		vi.clearAllMocks()
 	})
 
 	describe("constructor", () => {
@@ -102,6 +68,20 @@ describe("LmStudioHandler", () => {
 		]
 
 		it("should handle streaming responses", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			const mockUsage = Promise.resolve({
+				inputTokens: 10,
+				outputTokens: 5,
+			})
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: mockUsage,
+			})
+
 			const stream = handler.createMessage(systemPrompt, messages)
 			const chunks: any[] = []
 			for await (const chunk of stream) {
@@ -114,8 +94,43 @@ describe("LmStudioHandler", () => {
 			expect(textChunks[0].text).toBe("Test response")
 		})
 
+		it("should include usage information", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test response" }
+			}
+
+			const mockUsage = Promise.resolve({
+				inputTokens: 10,
+				outputTokens: 5,
+			})
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: mockUsage,
+			})
+
+			const stream = handler.createMessage(systemPrompt, messages)
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const usageChunks = chunks.filter((chunk) => chunk.type === "usage")
+			expect(usageChunks.length).toBeGreaterThan(0)
+			expect(usageChunks[0].inputTokens).toBe(10)
+			expect(usageChunks[0].outputTokens).toBe(5)
+		})
+
 		it("should handle API errors", async () => {
-			mockCreate.mockRejectedValueOnce(new Error("API Error"))
+			async function* mockFullStream(): AsyncGenerator<{ type: string; text: string }> {
+				yield { type: "text-delta", text: "" }
+				throw new Error("API Error")
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+			})
 
 			const stream = handler.createMessage(systemPrompt, messages)
 
@@ -123,35 +138,36 @@ describe("LmStudioHandler", () => {
 				for await (const _chunk of stream) {
 					// Should not reach here
 				}
-			}).rejects.toThrow("Please check the LM Studio developer logs to debug what went wrong")
+			}).rejects.toThrow()
 		})
 	})
 
 	describe("completePrompt", () => {
 		it("should complete prompt successfully", async () => {
+			mockGenerateText.mockResolvedValue({
+				text: "Test response",
+			})
+
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("Test response")
-			expect(mockCreate).toHaveBeenCalledWith({
-				model: mockOptions.lmStudioModelId,
-				messages: [{ role: "user", content: "Test prompt" }],
-				temperature: 0,
-				stream: false,
-			})
-		})
-
-		it("should handle API errors", async () => {
-			mockCreate.mockRejectedValueOnce(new Error("API Error"))
-			await expect(handler.completePrompt("Test prompt")).rejects.toThrow(
-				"Please check the LM Studio developer logs to debug what went wrong",
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					prompt: "Test prompt",
+				}),
 			)
 		})
 
 		it("should handle empty response", async () => {
-			mockCreate.mockResolvedValueOnce({
-				choices: [{ message: { content: "" } }],
+			mockGenerateText.mockResolvedValue({
+				text: "",
 			})
 			const result = await handler.completePrompt("Test prompt")
 			expect(result).toBe("")
+		})
+
+		it("should handle API errors with handleAiSdkError", async () => {
+			mockGenerateText.mockRejectedValueOnce(new Error("Connection refused"))
+			await expect(handler.completePrompt("Test prompt")).rejects.toThrow("LM Studio")
 		})
 	})
 
@@ -162,6 +178,133 @@ describe("LmStudioHandler", () => {
 			expect(modelInfo.info).toBeDefined()
 			expect(modelInfo.info.maxTokens).toBe(-1)
 			expect(modelInfo.info.contextWindow).toBe(128_000)
+		})
+	})
+
+	describe("speculative decoding", () => {
+		it("should include draft_model in providerOptions when speculative decoding is enabled", async () => {
+			const speculativeHandler = new LmStudioHandler({
+				...mockOptions,
+				lmStudioSpeculativeDecodingEnabled: true,
+				lmStudioDraftModelId: "draft-model-id",
+			})
+
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 5, outputTokens: 3 }),
+			})
+
+			const stream = speculativeHandler.createMessage("test prompt", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: {
+						lmstudio: { draft_model: "draft-model-id" },
+					},
+				}),
+			)
+		})
+
+		it("should not include draft_model when speculative decoding is disabled", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 5, outputTokens: 3 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [])
+			for await (const _chunk of stream) {
+				// consume stream
+			}
+
+			const callArgs = mockStreamText.mock.calls[0][0]
+			expect(callArgs.providerOptions).toBeUndefined()
+		})
+
+		it("should include draft_model in completePrompt when speculative decoding is enabled", async () => {
+			const speculativeHandler = new LmStudioHandler({
+				...mockOptions,
+				lmStudioSpeculativeDecodingEnabled: true,
+				lmStudioDraftModelId: "draft-model-id",
+			})
+
+			mockGenerateText.mockResolvedValue({ text: "Test" })
+
+			await speculativeHandler.completePrompt("Test prompt")
+
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					providerOptions: {
+						lmstudio: { draft_model: "draft-model-id" },
+					},
+				}),
+			)
+		})
+	})
+
+	describe("reasoning middleware", () => {
+		it("should wrap the language model with extractReasoningMiddleware for <think> tags", async () => {
+			async function* mockFullStream() {
+				yield { type: "text-delta", text: "Test" }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 5, outputTokens: 3 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [])
+			for await (const _chunk of stream) {
+				// consume stream to trigger getLanguageModel()
+			}
+
+			expect(mockWrapLanguageModel).toHaveBeenCalledWith(
+				expect.objectContaining({
+					middleware: expect.any(Object),
+				}),
+			)
+		})
+
+		it("should handle reasoning-delta chunks from middleware-processed stream", async () => {
+			async function* mockFullStream() {
+				yield { type: "reasoning-delta", text: "Let me think about this..." }
+				yield { type: "text-delta", text: "The answer is 42." }
+			}
+
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream(),
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 8 }),
+			})
+
+			const stream = handler.createMessage("test prompt", [])
+			const chunks: any[] = []
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+
+			const reasoningChunks = chunks.filter((c) => c.type === "reasoning")
+			const textChunks = chunks.filter((c) => c.type === "text")
+
+			expect(reasoningChunks).toHaveLength(1)
+			expect(reasoningChunks[0].text).toBe("Let me think about this...")
+			expect(textChunks).toHaveLength(1)
+			expect(textChunks[0].text).toBe("The answer is 42.")
+		})
+	})
+
+	describe("isAiSdkProvider", () => {
+		it("should return true", () => {
+			expect(handler.isAiSdkProvider()).toBe(true)
 		})
 	})
 })

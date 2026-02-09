@@ -111,15 +111,6 @@
 			"thinking_complete_safety": "（思考完了、安全設定により出力ブロック）",
 			"thinking_complete_recitation": "（思考完了、引用チェックにより出力ブロック）"
 		},
-		"cerebras": {
-			"authenticationFailed": "Cerebras API認証が失敗しました。APIキーが有効で期限切れではないことを確認してください。",
-			"accessForbidden": "Cerebras APIアクセスが禁止されています。あなたのAPIキーは要求されたモデルや機能にアクセスできない可能性があります。",
-			"rateLimitExceeded": "Cerebras APIレート制限を超過しました。別のリクエストを行う前にお待ちください。",
-			"serverError": "Cerebras APIサーバーエラー ({{status}})。しばらくしてからもう一度お試しください。",
-			"genericError": "Cerebras APIエラー ({{status}}): {{message}}",
-			"noResponseBody": "Cerebras APIエラー: レスポンスボディなし",
-			"completionError": "Cerebras完了エラー: {{error}}"
-		},
 		"roo": {
 			"authenticationRequired": "Rooプロバイダーはクラウド認証が必要です。Roo Code Cloudにサインインしてください。"
 		},
@@ -205,10 +196,7 @@
 		"task_placeholder": "タスクをここに入力してください"
 	},
 	"settings": {
-		"providers": {
-			"groqApiKey": "Groq APIキー",
-			"getGroqApiKey": "Groq APIキーを取得"
-		}
+		"providers": {}
 	},
 	"customModes": {
 		"errors": {

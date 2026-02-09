@@ -29,7 +29,7 @@ import {
 	Users2,
 	ArrowLeft,
 	GitCommitVertical,
-	Zap,
+	GraduationCap,
 } from "lucide-react"
 
 import {
@@ -124,6 +124,11 @@ type SettingsViewProps = {
 	targetSection?: string
 }
 
+const withCachedStateDefaults = (state: ExtensionStateContextType): ExtensionStateContextType => ({
+	...state,
+	taskHeaderHighlightEnabled: state.taskHeaderHighlightEnabled ?? false,
+})
+
 const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, targetSection }, ref) => {
 	const { t } = useAppTranslation()
 
@@ -147,7 +152,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	const prevApiConfigName = useRef(currentApiConfigName)
 	const confirmDialogHandler = useRef<() => void>()
 
-	const [cachedState, setCachedState] = useState(() => extensionState)
+	const [cachedState, setCachedState] = useState(() => withCachedStateDefaults(extensionState))
 
 	const {
 		alwaysAllowReadOnly,
@@ -213,6 +218,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		includeCurrentCost,
 		maxGitStatusFiles,
 		showQuestionsOneByOne,
+		taskHeaderHighlightEnabled,
 	} = cachedState
 
 	const apiConfiguration = useMemo(() => cachedState.apiConfiguration ?? {}, [cachedState.apiConfiguration])
@@ -224,7 +230,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 			return
 		}
 
-		setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
+		setCachedState((prevCachedState) => withCachedStateDefaults({ ...prevCachedState, ...extensionState }))
 		prevApiConfigName.current = currentApiConfigName
 		setChangeDetected(false)
 	}, [currentApiConfigName, extensionState])
@@ -232,7 +238,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 	// Bust the cache when settings are imported.
 	useEffect(() => {
 		if (settingsImportedAt) {
-			setCachedState((prevCachedState) => ({ ...prevCachedState, ...extensionState }))
+			setCachedState((prevCachedState) => withCachedStateDefaults({ ...prevCachedState, ...extensionState }))
 			setChangeDetected(false)
 		}
 	}, [settingsImportedAt, extensionState])
@@ -257,9 +263,19 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 
 				const previousValue = prevState.apiConfiguration?.[field]
 
+				// Helper to check if two values are semantically equal
+				const areValuesEqual = (a: any, b: any): boolean => {
+					if (a === b) return true
+					if (a == null && b == null) return true
+					if (typeof a !== typeof b) return false
+					if (typeof a === "object" && typeof b === "object") {
+						return JSON.stringify(a) === JSON.stringify(b)
+					}
+					return false
+				}
+
 				// Only skip change detection for automatic initialization (not user actions)
 				// This prevents the dirty state when the component initializes and auto-syncs values
-				// Treat undefined, null, and empty string as uninitialized states
 				const isInitialSync =
 					!isUserAction &&
 					(previousValue === undefined || previousValue === "" || previousValue === null) &&
@@ -267,7 +283,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					value !== "" &&
 					value !== null
 
-				if (!isInitialSync) {
+				// Also skip if it's an automatic sync with semantically equal values
+				const isAutomaticNoOpSync = !isUserAction && areValuesEqual(previousValue, value)
+
+				if (!isInitialSync && !isAutomaticNoOpSync) {
 					setChangeDetected(true)
 				}
 				return { ...prevState, apiConfiguration: { ...prevState.apiConfiguration, [field]: value } }
@@ -416,6 +435,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 					includeTaskHistoryInEnhance: includeTaskHistoryInEnhance ?? true,
 					reasoningBlockCollapsed: reasoningBlockCollapsed ?? true,
 					enterBehavior: enterBehavior ?? "send",
+					taskHeaderHighlightEnabled,
 					includeCurrentTime: includeCurrentTime ?? true,
 					includeCurrentCost: includeCurrentCost ?? true,
 					showQuestionsOneByOne: showQuestionsOneByOne ?? false,
@@ -457,7 +477,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		(confirm: boolean) => {
 			if (confirm) {
 				// Discard changes: Reset state and flag
-				setCachedState(extensionState) // Revert to original state
+				setCachedState(withCachedStateDefaults(extensionState)) // Revert to original state
 				setChangeDetected(false) // Reset change flag
 				confirmDialogHandler.current?.() // Execute the pending action (e.g., tab switch)
 			}
@@ -514,10 +534,10 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 		() => [
 			{ id: "providers", icon: Plug },
 			{ id: "modes", icon: Users2 },
-			{ id: "mcp", icon: Server },
-			{ id: "autoApprove", icon: CheckCheck },
+			{ id: "skills", icon: GraduationCap },
 			{ id: "slashCommands", icon: SquareSlash },
-			{ id: "skills", icon: Zap },
+			{ id: "autoApprove", icon: CheckCheck },
+			{ id: "mcp", icon: Server },
 			{ id: "browser", icon: SquareMousePointer },
 			{ id: "checkpoints", icon: GitCommitVertical },
 			{ id: "notifications", icon: Bell },
@@ -908,6 +928,7 @@ const SettingsView = forwardRef<SettingsViewRef, SettingsViewProps>(({ onDone, t
 						{/* UI Section */}
 						{renderTab === "ui" && (
 							<UISettings
+								taskHeaderHighlightEnabled={taskHeaderHighlightEnabled ?? false}
 								reasoningBlockCollapsed={reasoningBlockCollapsed ?? true}
 								enterBehavior={enterBehavior ?? "send"}
 								showQuestionsOneByOne={showQuestionsOneByOne ?? false}

@@ -69,7 +69,39 @@
 		}
 	},
 	"slashCommands": {
-		"description": "Gérez vos commandes slash pour exécuter rapidement des flux de travail et des actions personnalisées. <DocsLink>En savoir plus</DocsLink>"
+		"description": "Gérez vos commandes slash pour exécuter rapidement des flux de travail et des actions personnalisées. <DocsLink>En savoir plus</DocsLink>",
+		"workspaceCommands": "Commandes de l'espace de travail",
+		"globalCommands": "Commandes globales",
+		"noWorkspaceCommands": "Aucune commande dans ce projet pour le moment.",
+		"noGlobalCommands": "Aucune commande globale pour le moment.",
+		"addCommand": "Ajouter une commande slash",
+		"editCommand": "Modifier la commande",
+		"deleteCommand": "Supprimer la commande",
+		"deleteDialog": {
+			"title": "Supprimer la commande",
+			"description": "Êtes-vous sûr de vouloir supprimer la commande \"{{name}}\" ? Cette action ne peut pas être annulée.",
+			"confirm": "Supprimer",
+			"cancel": "Annuler"
+		},
+		"createDialog": {
+			"title": "Créer une nouvelle commande slash",
+			"nameLabel": "Nom",
+			"namePlaceholder": "my-command-name",
+			"nameHint": "Lettres minuscules, chiffres, tirets et traits de soulignement uniquement",
+			"sourceLabel": "Emplacement",
+			"create": "Créer",
+			"cancel": "Annuler"
+		},
+		"source": {
+			"global": "Global (disponible dans tous les espaces de travail)",
+			"project": "Espace de travail"
+		},
+		"validation": {
+			"nameRequired": "Le nom est obligatoire",
+			"nameTooLong": "Le nom doit contenir 64 caractères ou moins",
+			"nameInvalid": "Le nom ne peut contenir que des lettres, des chiffres, des tirets et des traits de soulignement"
+		},
+		"footer": "Utilisez les commandes slash pour accéder rapidement aux invites et flux de travail fréquemment utilisés."
 	},
 	"prompts": {
 		"description": "Configurez les invites de support utilisées pour les actions rapides comme l'amélioration des invites, l'explication du code et la résolution des problèmes. Ces invites aident Roo à fournir une meilleure assistance pour les tâches de développement courantes."
@@ -245,7 +277,6 @@
 		},
 		"apiRequestLimit": {
 			"title": "Requêtes maximales",
-			"description": "Effectuer automatiquement ce nombre de requêtes API avant de demander l'approbation pour continuer la tâche.",
 			"unlimited": "Illimité"
 		},
 		"apiCostLimit": {
@@ -278,6 +309,7 @@
 		"searchProviderPlaceholder": "Rechercher des fournisseurs",
 		"noProviderMatchFound": "Aucun fournisseur trouvé",
 		"noMatchFound": "Aucun profil correspondant trouvé",
+		"retiredProviderMessage": "Désolé, ce fournisseur n'est plus pris en charge. Nous avons constaté que très peu d'utilisateurs de Roo l'utilisaient réellement et nous devons réduire la surface de notre base de code pour continuer à avancer rapidement et bien servir notre communauté. C'était une décision vraiment difficile, mais elle nous permet de nous concentrer sur ce qui compte le plus pour toi. C'est nul, on sait.",
 		"vscodeLmDescription": "L'API du modèle de langage VS Code vous permet d'exécuter des modèles fournis par d'autres extensions VS Code (y compris, mais sans s'y limiter, GitHub Copilot). Le moyen le plus simple de commencer est d'installer les extensions Copilot et Copilot Chat depuis le VS Code Marketplace.",
 		"awsCustomArnUse": "Entrez un ARN Amazon Bedrock valide pour le modèle que vous souhaitez utiliser. Exemples de format :",
 		"awsCustomArnDesc": "Assurez-vous que la région dans l'ARN correspond à la région AWS sélectionnée ci-dessus.",
@@ -339,15 +371,23 @@
 		"getAnthropicApiKey": "Obtenir la clé API Anthropic",
 		"anthropicUseAuthToken": "Passer la clé API Anthropic comme en-tête d'autorisation au lieu de X-Api-Key",
 		"anthropic1MContextBetaLabel": "Activer la fenêtre de contexte de 1M (Bêta)",
-		"anthropic1MContextBetaDescription": "Étend la fenêtre de contexte à 1 million de tokens pour Claude Sonnet 4",
+		"anthropic1MContextBetaDescription": "Étend la fenêtre de contexte à 1 million de tokens pour Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
 		"awsBedrock1MContextBetaLabel": "Activer la fenêtre de contexte de 1M (Bêta)",
-		"awsBedrock1MContextBetaDescription": "Étend la fenêtre de contexte à 1 million de tokens pour Claude Sonnet 4",
+		"awsBedrock1MContextBetaDescription": "Étend la fenêtre de contexte à 1 million de tokens pour Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
 		"vertex1MContextBetaLabel": "Activer la fenêtre de contexte de 1M (Bêta)",
-		"vertex1MContextBetaDescription": "Étend la fenêtre de contexte à 1 million de tokens pour Claude Sonnet 4",
+		"vertex1MContextBetaDescription": "Étend la fenêtre de contexte à 1 million de tokens pour Claude Sonnet 4 / 4.5 / Claude Opus 4.6",
 		"basetenApiKey": "Clé API Baseten",
 		"getBasetenApiKey": "Obtenir la clé API Baseten",
 		"cerebrasApiKey": "Clé API Cerebras",
 		"getCerebrasApiKey": "Obtenir la clé API Cerebras",
+		"azureResourceName": "Nom de la ressource Azure",
+		"azureResourceNameDescription": "Le nom de votre ressource Azure AI Foundry (ex. 'ma-ressource-openai').",
+		"azureDeploymentName": "Nom du déploiement Azure",
+		"azureDeploymentNameDescription": "Le nom du déploiement de votre modèle dans la ressource.",
+		"azureApiKey": "Clé API Azure",
+		"getAzureApiKey": "Obtenir l'accès Azure AI Foundry",
+		"azureApiVersion": "Version de l'API Azure",
+		"azureApiVersionDescription": "La version de l'API à utiliser (ex. '2024-10-21'). Laisser vide pour la valeur par défaut.",
 		"chutesApiKey": "Clé API Chutes",
 		"getChutesApiKey": "Obtenir la clé API Chutes",
 		"fireworksApiKey": "Clé API Fireworks",
@@ -430,16 +470,6 @@
 		"cacheUsageNote": "Remarque : Si vous ne voyez pas l'utilisation du cache, essayez de sélectionner un modèle différent puis de sélectionner à nouveau votre modèle souhaité.",
 		"vscodeLmModel": "Modèle de langage",
 		"vscodeLmWarning": "Remarque : Les modèles accessibles via l’API VS Code Language Model peuvent être encapsulés ou ajustés par le fournisseur ; leur comportement peut donc différer de l’utilisation directe du même modèle auprès d’un fournisseur ou routeur classique. Pour utiliser un modèle depuis la liste « Language Model », bascule d’abord sur ce modèle puis clique sur « Accepter » dans l’invite de Copilot Chat ; sinon, une erreur telle que 400 « The requested model is not supported » peut apparaître.",
-		"geminiParameters": {
-			"urlContext": {
-				"title": "Activer le contexte d'URL",
-				"description": "Permet à Gemini d'accéder et de traiter les URL pour un contexte supplémentaire lors de la génération des réponses. Utile pour les tâches nécessitant l'analyse de contenu web."
-			},
-			"groundingSearch": {
-				"title": "Activer la mise en contexte via la recherche Google",
-				"description": "Permet à Gemini d'effectuer des recherches sur Google pour obtenir des informations actuelles et fonder les réponses sur des données en temps réel. Utile pour les requêtes nécessitant des informations à jour."
-			}
-		},
 		"googleCloudSetup": {
 			"title": "Pour utiliser Google Cloud Vertex AI, vous devez :",
 			"step1": "1. Créer un compte Google Cloud, activer l'API Vertex AI et activer les modèles Claude souhaités.",
@@ -899,7 +929,6 @@
 		"simplifiedExplanation": "Tu peux ajuster les paramètres détaillés du modèle ultérieurement."
 	},
 	"footer": {
-		"feedback": "Si vous avez des questions ou des commentaires, n'hésitez pas à ouvrir un problème sur <githubLink>github.com/RooCodeInc/Roo-Code</githubLink> ou à rejoindre <redditLink>reddit.com/r/RooCode</redditLink> ou <discordLink>discord.gg/roocode</discordLink>",
 		"telemetry": {
 			"label": "Autoriser les rapports anonymes d'erreurs et d'utilisation",
 			"description": "Aidez à améliorer Roo Code en envoyant des données d'utilisation anonymes et des rapports d'erreurs. Cette télémétrie ne collecte pas de code, de prompts ou d'informations personnelles. Consultez notre <privacyLink>politique de confidentialité</privacyLink> pour plus de détails."
@@ -930,7 +959,9 @@
 		"providerNotAllowed": "Le fournisseur '{{provider}}' n'est pas autorisé par votre organisation",
 		"modelNotAllowed": "Le modèle '{{model}}' n'est pas autorisé pour le fournisseur '{{provider}}' par votre organisation",
 		"profileInvalid": "Ce profil contient un fournisseur ou un modèle qui n'est pas autorisé par votre organisation",
-		"qwenCodeOauthPath": "Tu dois fournir un chemin valide pour les identifiants OAuth"
+		"qwenCodeOauthPath": "Tu dois fournir un chemin valide pour les identifiants OAuth",
+		"azureResourceName": "Tu dois fournir un nom de ressource Azure.",
+		"azureDeploymentName": "Tu dois fournir un nom de déploiement Azure."
 	},
 	"placeholders": {
 		"apiKey": "Saisissez la clé API...",
@@ -943,6 +974,8 @@
 		"projectId": "Saisissez l'ID du projet...",
 		"customArn": "Saisissez l'ARN (ex. arn:aws:bedrock:us-east-1:123456789012:foundation-model/my-model)",
 		"baseUrl": "Saisissez l'URL de base...",
+		"azureResourceName": "e.g. my-openai-resource",
+		"azureDeploymentName": "e.g. gpt-4o",
 		"modelId": {
 			"lmStudio": "ex. meta-llama-3.1-8b-instruct",
 			"lmStudioDraft": "ex. lmstudio-community/llama-3.2-1b-instruct",
@@ -985,6 +1018,10 @@
 		}
 	},
 	"ui": {
+		"taskCompleteColor": {
+			"label": "Surlignage de l'en-tête de tâche",
+			"description": "Surligne l'en-tête de la tâche avec un indicateur de couleur lorsque les tâches sont terminées ou nécessitent ton attention, t'aidant à repérer rapidement quand une action est requise"
+		},
 		"collapseThinking": {
 			"label": "Réduire les messages de réflexion par défaut",
 			"description": "Si activé, les blocs de réflexion seront réduits par défaut jusqu'à ce que vous interagissiez avec eux"
@@ -996,32 +1033,37 @@
 	},
 	"skills": {
 		"description": "Gérez les skills qui fournissent des instructions contextuelles à l'agent. Les skills sont automatiquement appliquées lorsqu'elles sont pertinentes pour vos tâches. <DocsLink>En savoir plus</DocsLink>",
-		"projectSkills": "Skills du Projet",
+		"workspaceSkills": "Skills de l'espace de travail",
 		"globalSkills": "Skills Globales",
-		"noProjectSkills": "Aucune skill de projet configurée. Créez-en une pour ajouter des capacités spécifiques au projet à l'agent.",
+		"noWorkspaceSkills": "Aucune skill dans ce projet pour le moment.",
 		"noGlobalSkills": "Aucune skill globale configurée. Créez-en une pour ajouter des capacités à l'agent disponibles dans tous les projets.",
 		"addSkill": "Ajouter une Skill",
 		"editSkill": "Modifier la skill",
 		"deleteSkill": "Supprimer la skill",
-		"changeMode": "Changer de mode",
+		"configureModes": "Disponibilité du mode",
 		"modeAny": "N'importe quel mode",
+		"modeCount": "{{count}} modes",
 		"deleteDialog": {
 			"title": "Supprimer la Skill",
 			"description": "Êtes-vous sûr de vouloir supprimer la skill \"{{name}}\" ? Cette action ne peut pas être annulée.",
 			"confirm": "Supprimer",
 			"cancel": "Annuler"
 		},
+		"modeDialog": {
+			"title": "Configurer les modes Skill",
+			"description": "Choisissez les modes qui peuvent utiliser cette skill",
+			"intro": "Pour garder votre contexte léger, nous vous recommandons de ne mettre les skills à disposition que pour les modes qui en ont besoin.",
+			"anyMode": "N'importe quel mode (disponible partout)",
+			"save": "Enregistrer",
+			"cancel": "Annuler"
+		},
 		"createDialog": {
 			"title": "Créer une Nouvelle Skill",
-			"description": "Définissez un nouveau modèle de skill qui fournit des instructions contextuelles à l'agent.",
 			"nameLabel": "Nom",
 			"namePlaceholder": "mon-nom-de-skill",
-			"nameHint": "Lettres minuscules, chiffres et tirets uniquement (1-64 caractères)",
 			"descriptionLabel": "Description",
 			"descriptionPlaceholder": "Décrivez quand cette skill devrait être utilisée...",
-			"descriptionHint": "Expliquez ce que fait cette skill et quand l'agent devrait l'appliquer (1-1024 caractères)",
 			"sourceLabel": "Emplacement",
-			"sourceHint": "Choisissez si cette skill est disponible globalement ou uniquement dans ce projet",
 			"modeLabel": "Mode (optionnel)",
 			"modePlaceholder": "N'importe quel mode",
 			"modeHint": "Restreindre cette skill à un mode spécifique",
@@ -1039,6 +1081,7 @@
 			"nameInvalid": "Le nom doit contenir entre 1 et 64 lettres minuscules, chiffres ou tirets",
 			"descriptionRequired": "La description est obligatoire",
 			"descriptionTooLong": "La description doit contenir au maximum 1024 caractères"
-		}
+		},
+		"footer": "Créez vos propres skills avec le mode Skill Writer, disponible dans le <MarketplaceLink>Modes Marketplace</MarketplaceLink>."
 	}
 }

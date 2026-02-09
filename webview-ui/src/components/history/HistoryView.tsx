@@ -21,6 +21,7 @@ import { useAppTranslation } from "@/i18n/TranslationContext"
 import { Tab, TabContent, TabHeader } from "../common/Tab"
 import { useTaskSearch } from "./useTaskSearch"
 import { useGroupedTasks } from "./useGroupedTasks"
+import { countAllSubtasks } from "./types"
 import TaskItem from "./TaskItem"
 import TaskGroupItem from "./TaskGroupItem"
 
@@ -52,11 +53,11 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 	const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
 	const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState<boolean>(false)
 
-	// Get subtask count for a task
+	// Get subtask count for a task (recursive total)
 	const getSubtaskCount = useMemo(() => {
 		const countMap = new Map<string, number>()
 		for (const group of groups) {
-			countMap.set(group.parent.id, group.subtasks.length)
+			countMap.set(group.parent.id, countAllSubtasks(group.subtasks))
 		}
 		return (taskId: string) => countMap.get(taskId) || 0
 	}, [groups])
@@ -300,6 +301,7 @@ const HistoryView = ({ onDone }: HistoryViewProps) => {
 								onToggleSelection={toggleTaskSelection}
 								onDelete={handleDelete}
 								onToggleExpand={() => toggleExpand(group.parent.id)}
+								onToggleSubtaskExpand={toggleExpand}
 								className="m-2"
 							/>
 						)}
