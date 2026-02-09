@@ -25,8 +25,6 @@
 		"sharingDisabledByOrganization": "Обмен отключен организацией",
 		"shareSuccessOrganization": "Ссылка организации скопирована в буфер обмена",
 		"shareSuccessPublic": "Публичная ссылка скопирована в буфер обмена",
-		"openInCloud": "Открыть задачу в Roo Code Cloud",
-		"openInCloudIntro": "Продолжай отслеживать или взаимодействовать с Roo откуда угодно. Отсканируй, нажми или скопируй для открытия.",
 		"openApiHistory": "Открыть историю API",
 		"openUiHistory": "Открыть историю UI",
 		"backToParentTask": "Родительская задача"
