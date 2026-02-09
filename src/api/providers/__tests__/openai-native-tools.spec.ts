@@ -4,15 +4,27 @@ import OpenAI from "openai"
 
 import { OpenAiHandler } from "../openai"
 
+vi.mock("@ai-sdk/openai-compatible", () => ({
+	createOpenAICompatible: vi.fn(() => vi.fn((modelId: string) => ({ modelId, provider: "openai-compatible" }))),
+}))
+
+vi.mock("@ai-sdk/azure", () => ({
+	createAzure: vi.fn(() => ({
+		chat: vi.fn((modelId: string) => ({ modelId, provider: "azure.chat" })),
+	})),
+}))
+
 describe("OpenAiHandler native tools", () => {
 	it("includes tools in request when tools are provided via metadata (regression test)", async () => {
-		const mockCreate = vi.fn().mockImplementationOnce(() => ({
-			[Symbol.asyncIterator]: async function* () {
-				yield {
-					choices: [{ delta: { content: "Test response" } }],
-				}
-			},
-		}))
+		async function* mockFullStream() {
+			yield { type: "text-delta", text: "Test response" }
+		}
+
+		mockStreamText.mockReturnValueOnce({
+			fullStream: mockFullStream(),
+			usage: Promise.resolve({ inputTokens: 10, outputTokens: 5 }),
+			providerMetadata: Promise.resolve(undefined),
+		})
 
 		// Set openAiCustomModelInfo without any tool capability flags; tools should
 		// still be passed whenever metadata.tools is present.
@@ -25,16 +37,6 @@ describe("OpenAiHandler native tools", () => {
 				contextWindow: 128000,
 			},
 		} as unknown as import("../../../shared/api").ApiHandlerOptions)
-
-		// Patch the OpenAI client call
-		const mockClient = {
-			chat: {
-				completions: {
-					create: mockCreate,
-				},
-			},
-		} as unknown as OpenAI
-		;(handler as unknown as { client: OpenAI }).client = mockClient
 
 		const tools: OpenAI.Chat.ChatCompletionTool[] = [
 			{
@@ -53,17 +55,12 @@ describe("OpenAiHandler native tools", () => {
 		})
 		await stream.next()
 
-		expect(mockCreate).toHaveBeenCalledWith(
+		expect(mockStreamText).toHaveBeenCalledWith(
 			expect.objectContaining({
-				tools: expect.arrayContaining([
-					expect.objectContaining({
-						type: "function",
-						function: expect.objectContaining({ name: "test_tool" }),
-					}),
-				]),
-				parallel_tool_calls: true,
+				tools: expect.objectContaining({
+					test_tool: expect.anything(),
+				}),
 			}),
-			expect.anything(),
 		)
 	})
 })
@@ -91,6 +88,10 @@ vi.mock("@ai-sdk/openai", () => ({
 		;(provider as any).responses = vi.fn(() => ({
 			modelId: "gpt-4o",
 			provider: "openai.responses",
+		}))
+		;(provider as any).chat = vi.fn((modelId: string) => ({
+			modelId,
+			provider: "openai.chat",
 		}))
 		return provider
 	}),
