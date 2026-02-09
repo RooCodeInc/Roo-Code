@@ -508,8 +508,7 @@ describe("attemptCompletionTool", () => {
 
 				mockGetDiagnostics.mockReturnValue(diagnostics)
 				vi.mocked(diagnosticsToProblemsString).mockResolvedValue("PROBLEMS")
-
-				mockTask.cwd = cwd
+				;(mockTask as any).workspacePath = cwd
 				mockTask.fileContextTracker = {
 					getTaskMetadata: vi.fn().mockResolvedValue({
 						files_in_context: [{ path: "src/edited.ts", record_source: "roo_edited" }],
@@ -570,8 +569,7 @@ describe("attemptCompletionTool", () => {
 				]
 
 				mockGetDiagnostics.mockReturnValue(diagnostics)
-
-				mockTask.cwd = cwd
+				;(mockTask as any).workspacePath = cwd
 				mockTask.fileContextTracker = {
 					getTaskMetadata: vi.fn().mockResolvedValue({
 						files_in_context: [{ path: "src/edited.ts", record_source: "roo_edited" }],
@@ -628,8 +626,7 @@ describe("attemptCompletionTool", () => {
 				]
 
 				mockGetDiagnostics.mockReturnValue(diagnostics)
-
-				mockTask.cwd = cwd
+				;(mockTask as any).workspacePath = cwd
 				mockTask.fileContextTracker = {
 					getTaskMetadata: vi.fn().mockResolvedValue({
 						files_in_context: [{ path: "src/edited.ts", record_source: "roo_edited" }],
