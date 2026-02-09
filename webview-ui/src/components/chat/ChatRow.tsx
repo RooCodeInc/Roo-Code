@@ -67,6 +67,7 @@ import {
 	FolderTree,
 	TerminalSquare,
 	MessageCircle,
+	Bot,
 	Users2,
 	Repeat2,
 	Split,
@@ -373,7 +374,7 @@ export const ChatRowContent = ({
 				]
 			case "rpi_autopilot":
 				return [
-					<MessageCircle className="w-4 shrink-0" aria-label="RPI autopilot icon" />,
+					<Bot className="w-4 shrink-0" aria-label="RPI autopilot icon" />,
 					<span style={{ color: normalColor, fontWeight: "bold" }}>{t("chat:rpi.autopilot")}</span>,
 				]
 			case "rpi_council":
