@@ -26,6 +26,7 @@ import {
 	addCustomInstructions,
 	markdownFormattingSection,
 	getSkillsSection,
+	getMcpServersSection,
 } from "./sections"
 
 // Helper function to get prompt component, filtering out empty objects
@@ -86,6 +87,8 @@ async function generatePrompt(
 	// Tools catalog is not included in the system prompt.
 	const toolsCatalog = ""
 
+	const mcpServersSection = shouldIncludeMcp ? getMcpServersSection(mcpHub) : ""
+
 	const basePrompt = `${roleDefinition}
 
 ${markdownFormattingSection()}
@@ -95,7 +98,7 @@ ${getSharedToolUseSection()}${toolsCatalog}
 	${getToolUseGuidelinesSection()}
 
 ${getCapabilitiesSection(cwd, shouldIncludeMcp ? mcpHub : undefined)}
-
+${mcpServersSection ? `\n${mcpServersSection}` : ""}
 ${modesSection}
 ${skillsSection ? `\n${skillsSection}` : ""}
 ${getRulesSection(cwd, settings)}
