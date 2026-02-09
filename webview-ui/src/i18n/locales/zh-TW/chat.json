@@ -482,5 +482,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "供應商不再受支援",
+		"message": "抱歉，此供應商已不再受支援。我們發現實際使用它的 Roo 使用者非常少，我們需要縮減程式碼庫的範圍，以便繼續快速交付並更好地服務社群。這是一個非常艱難的決定，但它能讓我們專注於對你最重要的事情。我們知道這很遺憾。",
+		"openSettings": "開啟設定"
 	}
 }

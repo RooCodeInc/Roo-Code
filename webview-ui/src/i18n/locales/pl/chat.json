@@ -491,5 +491,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Dostawca nie jest już obsługiwany",
+		"message": "Przepraszamy, ten dostawca nie jest już obsługiwany. Zauważyliśmy, że bardzo niewielu użytkowników Roo faktycznie z niego korzystało, a my musimy zmniejszyć zakres naszego kodu, aby móc dalej szybko dostarczać i dobrze służyć naszej społeczności. To była naprawdę trudna decyzja, ale pozwala nam skupić się na tym, co jest dla ciebie najważniejsze. Wiemy, że to frustrujące.",
+		"openSettings": "Otwórz ustawienia"
 	}
 }

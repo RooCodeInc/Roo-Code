@@ -492,5 +492,10 @@
 	},
 	"readCommandOutput": {
 		"title": "Roo read command output"
+	},
+	"retiredProvider": {
+		"title": "Sağlayıcı artık desteklenmiyor",
+		"message": "Üzgünüz, bu sağlayıcı artık desteklenmiyor. Çok az Roo kullanıcısının bunu gerçekten kullandığını gördük ve hızlı gelişmeye devam edip topluluğumuza iyi hizmet verebilmek için kod tabanımızın kapsamını daraltmamız gerekiyor. Gerçekten zor bir karardı ama senin için en önemli olana odaklanmamızı sağlıyor. Bunun can sıkıcı olduğunu biliyoruz.",
+		"openSettings": "Ayarları aç"
 	}
 }
