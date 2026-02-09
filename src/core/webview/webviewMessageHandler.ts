@@ -1457,24 +1457,9 @@ export const webviewMessageHandler = async (
 			}
 			break
 		}
-		case "remoteControlEnabled":
-			try {
-				await CloudService.instance.updateUserSettings({ extensionBridgeEnabled: message.bool ?? false })
-			} catch (error) {
-				provider.log(
-					`CloudService#updateUserSettings failed: ${error instanceof Error ? error.message : String(error)}`,
-				)
-			}
-			break
-
 		case "taskSyncEnabled":
 			const enabled = message.bool ?? false
 			const updatedSettings: Partial<UserSettingsConfig> = { taskSyncEnabled: enabled }
-
-			// If disabling task sync, also disable remote control.
-			if (!enabled) {
-				updatedSettings.extensionBridgeEnabled = false
-			}
 
 			try {
 				await CloudService.instance.updateUserSettings(updatedSettings)

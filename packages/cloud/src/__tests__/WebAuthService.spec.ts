@@ -636,7 +636,6 @@ describe("WebAuthService", () => {
 					name: "John Doe",
 					email: "john@example.com",
 					picture: "https://example.com/avatar.jpg",
-					extensionBridgeEnabled: true,
 				},
 			})
 		})
@@ -801,7 +800,6 @@ describe("WebAuthService", () => {
 				name: "Jane Smith",
 				email: "jane@example.com",
 				picture: "https://example.com/jane.jpg",
-				extensionBridgeEnabled: true,
 			})
 		})
 
@@ -869,7 +867,6 @@ describe("WebAuthService", () => {
 				name: "Jane Smith",
 				email: "jane@example.com",
 				picture: "https://example.com/jane.jpg",
-				extensionBridgeEnabled: false,
 				organizationId: "org_1",
 				organizationName: "Org 1",
 				organizationRole: "member",
@@ -920,7 +917,6 @@ describe("WebAuthService", () => {
 				name: "John Doe",
 				email: undefined,
 				picture: undefined,
-				extensionBridgeEnabled: true,
 			})
 		})
 	})
@@ -1045,7 +1041,6 @@ describe("WebAuthService", () => {
 					name: "Test User",
 					email: undefined,
 					picture: undefined,
-					extensionBridgeEnabled: true,
 				},
 			})
 		})

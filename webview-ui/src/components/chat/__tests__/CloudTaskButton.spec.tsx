@@ -68,7 +68,6 @@ describe("CloudTaskButton", () => {
 			cloudUserInfo: {
 				id: "test-user",
 				email: "test@example.com",
-				extensionBridgeEnabled: true,
 			},
 			cloudApiUrl: "https://app.roocode.com",
 		} as any)
@@ -87,7 +86,6 @@ describe("CloudTaskButton", () => {
 			cloudUserInfo: {
 				id: "test-user",
 				email: "test@example.com",
-				extensionBridgeEnabled: false,
 			},
 			cloudApiUrl: "https://app.roocode.com",
 		} as any)

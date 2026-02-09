@@ -78,7 +78,7 @@ export const CloudTaskButton = ({ item, disabled = false }: CloudTaskButtonProps
 		}
 	}, [dialogOpen, canvasElement, generateQRCode])
 
-	if (!cloudUserInfo?.extensionBridgeEnabled || !item?.id) {
+	if (!cloudUserInfo || !item?.id) {
 		return null
 	}
 
