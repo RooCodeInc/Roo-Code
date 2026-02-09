@@ -49,6 +49,8 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 				closeBrowser: vi.fn().mockResolvedValue(undefined),
 			},
 			recordToolUsage: vi.fn(),
+			recordToolError: vi.fn(),
+			sayAndCreateMissingParamError: vi.fn().mockResolvedValue("mock error message"),
 			toolRepetitionDetector: {
 				check: vi.fn().mockReturnValue({ allowExecution: true }),
 			},
@@ -85,8 +87,8 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 				type: "tool_use",
 				id: toolCallId, // ID indicates native tool calling
 				name: "ask_followup_question",
-				params: { question: "What do you see?" },
-				nativeArgs: { question: "What do you see?", follow_up: [] },
+				params: { questions: ["What do you see?"] },
+				nativeArgs: { questions: ["What do you see?"], follow_up: [] },
 			},
 		]
 
@@ -138,8 +140,8 @@ describe("presentAssistantMessage - Image Handling in Native Tool Calling", () =
 				type: "tool_use",
 				id: toolCallId,
 				name: "ask_followup_question",
-				params: { question: "What is your name?" },
-				nativeArgs: { question: "What is your name?", follow_up: [] },
+				params: { questions: ["What is your name?"] },
+				nativeArgs: { questions: ["What is your name?"], follow_up: [] },
 			},
 		]
 

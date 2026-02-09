@@ -816,7 +816,7 @@ export class NativeToolCallParser {
 					break
 
 				case "ask_followup_question":
-					if (args.questions !== undefined && args.follow_up !== undefined) {
+					if (args.questions !== undefined || args.follow_up !== undefined) {
 						nativeArgs = {
 							questions: Array.isArray(args.questions) ? args.questions : undefined,
 							follow_up: args.follow_up,

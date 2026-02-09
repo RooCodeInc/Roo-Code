@@ -112,7 +112,7 @@ export type NativeToolArgs = {
 	new_task: { mode: string; message: string; todos?: string }
 	ask_followup_question: {
 		questions: FollowUpQuestion[]
-		follow_up: Array<{ text: string; mode?: string }>
+		follow_up?: Array<{ text: string; mode?: string }>
 	}
 	browser_action: BrowserActionParams
 	codebase_search: { query: string; path?: string }

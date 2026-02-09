@@ -2107,6 +2107,7 @@ export class ClineProvider
 			featureRoomoteControlEnabled,
 			isBrowserSessionActive,
 			lockApiConfigAcrossModes,
+			showQuestionsOneByOne,
 		} = await this.getState()
 
 		let cloudOrganizations: CloudOrganizationMembership[] = []
@@ -2468,6 +2469,7 @@ export class ClineProvider
 			reasoningBlockCollapsed: stateValues.reasoningBlockCollapsed ?? true,
 			enterBehavior: stateValues.enterBehavior ?? "send",
 			taskHeaderHighlightEnabled: stateValues.taskHeaderHighlightEnabled ?? false,
+			showQuestionsOneByOne: stateValues.showQuestionsOneByOne ?? false,
 			cloudUserInfo,
 			cloudIsAuthenticated,
 			sharingEnabled,
