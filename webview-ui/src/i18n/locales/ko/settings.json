@@ -1029,6 +1029,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "메시지를 보내려면 {{primaryMod}}+Enter가 필요",
 			"description": "활성화하면 Enter만으로는 안 되고 {{primaryMod}}+Enter를 눌러야 메시지를 보낼 수 있습니다"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Show questions one by one",
+			"description": "When enabled, questions from the model will be displayed one at a time."
 		}
 	},
 	"skills": {

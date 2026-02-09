@@ -270,7 +270,13 @@
 		"goToSubtask": "Xem nhiệm vụ"
 	},
 	"questions": {
-		"hasQuestion": "Roo có một câu hỏi"
+		"hasQuestion": "Roo có một câu hỏi",
+		"questionNumber": "Question {{number}}",
+		"questionNumberOfTotal": "Question {{current}} of {{total}}",
+		"typeAnswer": "Type your answer here...",
+		"previous": "Previous",
+		"next": "Next",
+		"finish": "Finish"
 	},
 	"taskCompleted": "Nhiệm vụ hoàn thành",
 	"modelResponseIncomplete": "Phản hồi của mô hình không đầy đủ",

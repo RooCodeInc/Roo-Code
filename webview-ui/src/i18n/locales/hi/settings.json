@@ -1029,6 +1029,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "संदेश भेजने के लिए {{primaryMod}}+Enter की आवश्यकता है",
 			"description": "जब सक्षम हो, तो आपको केवल Enter के बजाय संदेश भेजने के लिए {{primaryMod}}+Enter दबाना होगा"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Show questions one by one",
+			"description": "When enabled, questions from the model will be displayed one at a time."
 		}
 	},
 	"skills": {

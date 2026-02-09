@@ -269,7 +269,13 @@
 		"goToSubtask": "Veure tasca"
 	},
 	"questions": {
-		"hasQuestion": "Roo té una pregunta"
+		"hasQuestion": "Roo té una pregunta",
+		"questionNumber": "Question {{number}}",
+		"questionNumberOfTotal": "Question {{current}} of {{total}}",
+		"typeAnswer": "Type your answer here...",
+		"previous": "Previous",
+		"next": "Next",
+		"finish": "Finish"
 	},
 	"taskCompleted": "Tasca completada",
 	"modelResponseIncomplete": "Resposta del model incompleta",

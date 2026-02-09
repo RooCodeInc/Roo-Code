@@ -1029,6 +1029,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "Memerlukan {{primaryMod}}+Enter untuk mengirim pesan",
 			"description": "Ketika diaktifkan, kamu harus menekan {{primaryMod}}+Enter untuk mengirim pesan alih-alih hanya Enter"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Show questions one by one",
+			"description": "When enabled, questions from the model will be displayed one at a time."
 		}
 	},
 	"skills": {

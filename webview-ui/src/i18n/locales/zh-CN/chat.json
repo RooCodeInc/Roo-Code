@@ -270,7 +270,13 @@
 		"goToSubtask": "查看任务"
 	},
 	"questions": {
-		"hasQuestion": "Roo有一个问题"
+		"hasQuestion": "Roo有一个问题",
+		"questionNumber": "Question {{number}}",
+		"questionNumberOfTotal": "Question {{current}} of {{total}}",
+		"typeAnswer": "Type your answer here...",
+		"previous": "Previous",
+		"next": "Next",
+		"finish": "Finish"
 	},
 	"taskCompleted": "任务完成",
 	"modelResponseIncomplete": "模型响应不完整",

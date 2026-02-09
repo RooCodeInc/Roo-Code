@@ -269,7 +269,13 @@
 		"goToSubtask": "작업 보기"
 	},
 	"questions": {
-		"hasQuestion": "Roo에게 질문이 있습니다"
+		"hasQuestion": "Roo에게 질문이 있습니다",
+		"questionNumber": "Question {{number}}",
+		"questionNumberOfTotal": "Question {{current}} of {{total}}",
+		"typeAnswer": "Type your answer here...",
+		"previous": "Previous",
+		"next": "Next",
+		"finish": "Finish"
 	},
 	"taskCompleted": "작업 완료",
 	"modelResponseIncomplete": "모델 응답 불완전",

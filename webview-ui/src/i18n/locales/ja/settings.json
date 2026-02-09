@@ -1029,6 +1029,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "メッセージを送信するには{{primaryMod}}+Enterが必要",
 			"description": "有効にすると、Enterだけでなく{{primaryMod}}+Enterを押してメッセージを送信する必要があります"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Show questions one by one",
+			"description": "When enabled, questions from the model will be displayed one at a time."
 		}
 	},
 	"skills": {

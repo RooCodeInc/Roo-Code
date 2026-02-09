@@ -1029,6 +1029,10 @@
 		"requireCtrlEnterToSend": {
 			"label": "{{primaryMod}}+Enter zum Senden erfordern",
 			"description": "Wenn aktiviert, musst du {{primaryMod}}+Enter drücken, um Nachrichten zu senden, anstatt nur Enter"
+		},
+		"showQuestionsOneByOne": {
+			"label": "Show questions one by one",
+			"description": "When enabled, questions from the model will be displayed one at a time."
 		}
 	},
 	"skills": {
