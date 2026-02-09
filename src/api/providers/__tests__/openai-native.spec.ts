@@ -328,7 +328,11 @@ describe("OpenAiNativeHandler", () => {
 
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					system: systemPrompt,
+					providerOptions: expect.objectContaining({
+						openai: expect.objectContaining({
+							instructions: systemPrompt,
+						}),
+					}),
 				}),
 			)
 		})

@@ -299,6 +299,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 	private buildProviderOptions(
 		model: OpenAiNativeModel,
 		metadata?: ApiHandlerCreateMessageMetadata,
+		systemPrompt?: string,
 	): Record<string, any> {
 		const reasoningEffort = this.getReasoningEffort(model)
 		const promptCacheRetention = this.getPromptCacheRetention(model)
@@ -309,6 +310,7 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 		const openaiOptions: Record<string, any> = {
 			store: false,
 			parallelToolCalls: metadata?.parallelToolCalls ?? true,
+			...(systemPrompt !== undefined && { instructions: systemPrompt }),
 		}
 
 		if (reasoningEffort) {
@@ -444,11 +446,10 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 			"User-Agent": userAgent,
 		}
 
-		const providerOptions = this.buildProviderOptions(model, metadata)
+		const providerOptions = this.buildProviderOptions(model, metadata, systemPrompt)
 
 		const requestOptions: Parameters<typeof streamText>[0] = {
 			model: languageModel,
-			system: systemPrompt,
 			messages: aiSdkMessages,
 			tools: aiSdkTools,
 			toolChoice: mapToolChoice(metadata?.tool_choice),
