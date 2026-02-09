@@ -308,6 +308,7 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		prompt: string,
 		onText: (text: string) => void,
 	): Promise<{ stopReason?: string; error?: Error }> {
+		const DRAIN_GRACE_MS = 75
 		const manager = getSharedSessionManager(this.options.claudeCodeAcpExecutablePath)
 
 		const updateQueue: Array<Record<string, unknown>> = []
@@ -345,12 +346,39 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 				return undefined
 			})
 
-		// Process updates as they arrive
-		while (!isComplete || updateQueue.length > 0) {
-			if (updateQueue.length === 0 && !isComplete) {
-				await new Promise<void>((resolve) => {
-					resolveWaiting = resolve
-				})
+		// Process updates as they arrive, with a short post-completion drain window
+		let didDrainAfterComplete = false
+		while (true) {
+			if (updateQueue.length === 0) {
+				if (!isComplete) {
+					await new Promise<void>((resolve) => {
+						resolveWaiting = resolve
+					})
+					continue
+				}
+
+				if (!didDrainAfterComplete) {
+					didDrainAfterComplete = true
+					await new Promise<void>((resolve) => {
+						const timeout = setTimeout(() => {
+							if (resolveWaiting === resolve) {
+								resolveWaiting = null
+							}
+							resolve()
+						}, DRAIN_GRACE_MS)
+
+						resolveWaiting = () => {
+							clearTimeout(timeout)
+							resolve()
+						}
+					})
+
+					if (updateQueue.length === 0) {
+						break
+					}
+				} else {
+					break
+				}
 			}
 
 			while (updateQueue.length > 0) {
@@ -1090,35 +1118,56 @@ Current time: ${new Date().toISOString()}`
 	 */
 	private extractTextFromUpdate(update: Record<string, unknown>): string | null {
 		const updateType = (update.sessionUpdate ?? update.type) as string | undefined
-		if (!updateType) return null
+		if (updateType) {
+			// Agent message chunks — the main text response
+			if (
+				updateType === "agent_message_chunk" ||
+				updateType === "AgentMessageChunk" ||
+				updateType === "assistant_message_chunk" ||
+				updateType === "assistant_message"
+			) {
+				return this.extractTextFromContent(update.content)
+			}
 
-		// Agent message chunks — the main text response
-		if (updateType === "agent_message_chunk" || updateType === "AgentMessageChunk") {
-			return this.extractTextFromContent(update.content as Record<string, unknown> | undefined)
-		}
-
-		// Thought/reasoning chunks — include as text
-		if (updateType === "agent_thought_chunk" || updateType === "AgentThoughtChunk") {
-			return this.extractTextFromContent(update.content as Record<string, unknown> | undefined)
+			// Thought/reasoning chunks — include as text
+			if (updateType === "agent_thought_chunk" || updateType === "AgentThoughtChunk") {
+				return this.extractTextFromContent(update.content)
+			}
 		}
 
 		// In proxy mode, skip tool_call and tool_call_update events
 		// (if the agent uses its own tools despite our instructions, we ignore them)
-		return null
+		const fallbackText = this.extractTextFromContent(update.content)
+		if (fallbackText) return fallbackText
+
+		const messageContent = (update as { message?: { content?: unknown } })?.message?.content
+		return this.extractTextFromContent(messageContent)
 	}
 
 	/**
 	 * Extract text from a content block.
 	 */
-	private extractTextFromContent(content: Record<string, unknown> | undefined): string | null {
+	private extractTextFromContent(content: unknown): string | null {
 		if (!content) return null
 
-		if (content.type === "text" && typeof content.text === "string") {
-			return content.text
+		if (typeof content === "string") {
+			return content
 		}
 
-		if (typeof content.text === "string") {
-			return content.text
+		if (Array.isArray(content)) {
+			const parts = content
+				.map((item) => this.extractTextFromContent(item))
+				.filter((text): text is string => !!text && text.trim().length > 0)
+			return parts.length > 0 ? parts.join("") : null
+		}
+
+		const typedContent = content as { type?: unknown; text?: unknown }
+		if (typedContent.type === "text" && typeof typedContent.text === "string") {
+			return typedContent.text
+		}
+
+		if (typeof typedContent.text === "string") {
+			return typedContent.text
 		}
 
 		return null

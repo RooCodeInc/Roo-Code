@@ -78,4 +78,25 @@ describe("ClaudeCodeAcpHandler", () => {
 
 		expect((handler as any).resolveWorkingDirectory()).toBe("/process-cwd")
 	})
+
+	it("extracts text from array content blocks", () => {
+		const handler = new ClaudeCodeAcpHandler({} as any)
+
+		const content = [
+			{ type: "text", text: "Hello " },
+			{ type: "text", text: "world" },
+		]
+
+		expect((handler as any).extractTextFromContent(content)).toBe("Hello world")
+	})
+
+	it("extracts text from updates without a known update type", () => {
+		const handler = new ClaudeCodeAcpHandler({} as any)
+
+		const update = {
+			content: { type: "text", text: "Fallback text" },
+		}
+
+		expect((handler as any).extractTextFromUpdate(update)).toBe("Fallback text")
+	})
 })
