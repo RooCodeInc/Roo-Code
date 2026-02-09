@@ -1030,6 +1030,7 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				],
 				stream: false,
 				store: false,
+				instructions: "You are Roo internal council engine.",
 				...(reasoningEffort ? { include: ["reasoning.encrypted_content"] } : {}),
 			}
 
