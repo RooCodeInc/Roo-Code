@@ -615,6 +615,18 @@ describe("ClineProvider", () => {
 		await expect(provider.postMessageToWebview(message)).resolves.toBeUndefined()
 	})
 
+	test("postMessageToWebview skips postMessage after dispose", async () => {
+		await provider.resolveWebviewView(mockWebviewView)
+
+		await provider.dispose()
+		mockPostMessage.mockClear()
+
+		const message: ExtensionMessage = { type: "action", action: "chatButtonClicked" }
+		await provider.postMessageToWebview(message)
+
+		expect(mockPostMessage).not.toHaveBeenCalled()
+	})
+
 	test("dispose is idempotent — second call is a no-op", async () => {
 		await provider.resolveWebviewView(mockWebviewView)
 
@@ -623,7 +635,7 @@ describe("ClineProvider", () => {
 
 		// dispose body runs only once: log "Disposing ClineProvider..." appears once
 		const disposeCalls = (mockOutputChannel.appendLine as ReturnType<typeof vi.fn>).mock.calls.filter(
-			([msg]: [string]) => typeof msg === "string" && msg.includes("Disposing ClineProvider..."),
+			([msg]) => typeof msg === "string" && msg.includes("Disposing ClineProvider..."),
 		)
 		expect(disposeCalls).toHaveLength(1)
 	})

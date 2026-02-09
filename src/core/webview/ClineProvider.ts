@@ -1086,6 +1086,10 @@ export class ClineProvider
 	}
 
 	public async postMessageToWebview(message: ExtensionMessage) {
+		if (this._disposed) {
+			return
+		}
+
 		try {
 			await this.view?.webview.postMessage(message)
 		} catch {
