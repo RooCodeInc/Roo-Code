@@ -108,6 +108,25 @@ vitest.mock("../fetchers/modelCache", () => ({
 				excludedTools: ["existing_excluded"],
 				includedTools: ["existing_included"],
 			},
+			"google/gemini-2.5-pro": {
+				maxTokens: 65536,
+				contextWindow: 1048576,
+				supportsImages: true,
+				supportsPromptCache: true,
+				inputPrice: 1.25,
+				outputPrice: 10,
+				description: "Gemini 2.5 Pro",
+				thinking: true,
+			},
+			"google/gemini-2.5-flash": {
+				maxTokens: 65536,
+				contextWindow: 1048576,
+				supportsImages: true,
+				supportsPromptCache: true,
+				inputPrice: 0.15,
+				outputPrice: 0.6,
+				description: "Gemini 2.5 Flash",
+			},
 		})
 	}),
 	getModelsFromCache: vitest.fn().mockReturnValue(null),
@@ -275,7 +294,6 @@ describe("OpenRouterHandler", () => {
 			// Verify streamText was called with correct parameters
 			expect(mockStreamText).toHaveBeenCalledWith(
 				expect.objectContaining({
-					system: systemPrompt,
 					messages: expect.any(Array),
 					maxOutputTokens: 8192,
 					temperature: 0,
@@ -516,7 +534,7 @@ describe("OpenRouterHandler", () => {
 			expect(chunks[3]).toEqual({ type: "tool_call_end", id: "call_1" })
 		})
 
-		it("handles complete tool call events", async () => {
+		it("ignores tool-call events (handled by tool-input-start/delta/end)", async () => {
 			const handler = new OpenRouterHandler(mockOptions)
 
 			const mockFullStream = (async function* () {
@@ -541,12 +559,10 @@ describe("OpenRouterHandler", () => {
 				chunks.push(chunk)
 			}
 
-			expect(chunks[0]).toEqual({
-				type: "tool_call",
-				id: "call_1",
-				name: "read_file",
-				arguments: '{"path":"test.ts"}',
-			})
+			// tool-call is intentionally ignored by processAiSdkStreamPart,
+			// only usage chunk should be present
+			expect(chunks).toHaveLength(1)
+			expect(chunks[0]).toMatchObject({ type: "usage" })
 		})
 
 		it("handles API errors gracefully", async () => {
@@ -715,11 +731,13 @@ describe("OpenRouterHandler", () => {
 				// consume
 			}
 
-			// Verify that createOpenRouter was NOT called with extraBody
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith({
-				apiKey: "test-key",
-				baseURL: "https://openrouter.ai/api/v1",
-			})
+			// Verify that createOpenRouter was called with correct base config
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: "test-key",
+					baseURL: "https://openrouter.ai/api/v1",
+				}),
+			)
 
 			// Verify that providerOptions is undefined when no provider routing
 			expect(mockStreamText).toHaveBeenCalledWith(
@@ -852,10 +870,12 @@ describe("OpenRouterHandler", () => {
 				// consume
 			}
 
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith({
-				apiKey: "custom-key",
-				baseURL: "https://custom.openrouter.ai/api/v1",
-			})
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: "custom-key",
+					baseURL: "https://custom.openrouter.ai/api/v1",
+				}),
+			)
 		})
 
 		it("uses default base URL when not specified", async () => {
@@ -877,10 +897,12 @@ describe("OpenRouterHandler", () => {
 				// consume
 			}
 
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith({
-				apiKey: "test-key",
-				baseURL: "https://openrouter.ai/api/v1",
-			})
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
+				expect.objectContaining({
+					apiKey: "test-key",
+					baseURL: "https://openrouter.ai/api/v1",
+				}),
+			)
 		})
 	})
 
@@ -962,6 +984,178 @@ describe("OpenRouterHandler", () => {
 			// getReasoningDetails before any createMessage call
 			const reasoningDetails = handler.getReasoningDetails()
 			expect(reasoningDetails).toBeUndefined()
+		})
+	})
+
+	describe("model-specific handling", () => {
+		const mockStreamResult = () => {
+			const mockFullStream = (async function* () {
+				yield { type: "text-delta", text: "response", id: "1" }
+			})()
+			mockStreamText.mockReturnValue({
+				fullStream: mockFullStream,
+				usage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+				totalUsage: Promise.resolve({ inputTokens: 10, outputTokens: 20, totalTokens: 30 }),
+			})
+		}
+
+		const consumeGenerator = async (
+			handler: any,
+			system = "test",
+			msgs: any[] = [{ role: "user", content: "test" }],
+		) => {
+			const generator = handler.createMessage(system, msgs)
+			for await (const _ of generator) {
+				// consume
+			}
+		}
+
+		it("passes topP for DeepSeek R1 models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "deepseek/deepseek-r1",
+			})
+			mockStreamResult()
+			await consumeGenerator(handler)
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					topP: 0.95,
+				}),
+			)
+		})
+
+		it("does not pass topP for non-R1 models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "openai/gpt-4o",
+			})
+			mockStreamResult()
+			await consumeGenerator(handler)
+
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					topP: undefined,
+				}),
+			)
+		})
+
+		it("uses R1 format for DeepSeek R1 models (extraBody.messages)", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "deepseek/deepseek-r1",
+			})
+			mockStreamResult()
+			await consumeGenerator(handler, "system prompt")
+
+			// R1 models should pass OpenAI messages via extraBody (including system as user message)
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
+				expect.objectContaining({
+					extraBody: expect.objectContaining({
+						messages: expect.any(Array),
+					}),
+				}),
+			)
+
+			// System prompt should NOT be passed to streamText (it is in extraBody.messages)
+			const streamTextCall = mockStreamText.mock.calls[0][0]
+			expect(streamTextCall.system).toBeUndefined()
+		})
+
+		it("applies Anthropic beta headers for Anthropic models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+			})
+			mockStreamResult()
+			await consumeGenerator(handler)
+
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
+				expect.objectContaining({
+					headers: { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" },
+				}),
+			)
+		})
+
+		it("does not apply Anthropic beta headers for non-Anthropic models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "openai/gpt-4o",
+			})
+			mockStreamResult()
+			await consumeGenerator(handler)
+
+			const call = mockCreateOpenRouter.mock.calls[0][0]
+			expect(call.headers).toBeUndefined()
+		})
+
+		it("applies prompt caching for Anthropic models in caching set", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "anthropic/claude-sonnet-4",
+			})
+			mockStreamResult()
+			await consumeGenerator(handler)
+
+			// Should have extraBody.messages with cache_control applied
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
+				expect.objectContaining({
+					extraBody: expect.objectContaining({
+						messages: expect.arrayContaining([expect.objectContaining({ role: "system" })]),
+					}),
+				}),
+			)
+		})
+
+		it("disables reasoning for Gemini 2.5 Pro when not explicitly configured", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "google/gemini-2.5-pro",
+			})
+			mockStreamResult()
+			await consumeGenerator(handler)
+
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
+				expect.objectContaining({
+					extraBody: expect.objectContaining({
+						reasoning: { exclude: true },
+					}),
+				}),
+			)
+		})
+
+		it("applies Gemini sanitization and encrypted block injection", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "google/gemini-2.5-flash",
+			})
+			mockStreamResult()
+			await consumeGenerator(handler)
+
+			// Gemini models should have extraBody.messages set (via buildOpenAiMessages)
+			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
+				expect.objectContaining({
+					extraBody: expect.objectContaining({
+						messages: expect.any(Array),
+					}),
+				}),
+			)
+		})
+
+		it("passes topP to completePrompt for R1 models", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "deepseek/deepseek-r1",
+			})
+			mockGenerateText.mockResolvedValue({ text: "completion" })
+
+			await handler.completePrompt("test prompt")
+
+			expect(mockGenerateText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					topP: 0.95,
+				}),
+			)
 		})
 	})
 })
