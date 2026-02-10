@@ -388,6 +388,14 @@ export type ExtensionState = Pick<
 	featureRoomoteControlEnabled: boolean
 	openAiCodexIsAuthenticated?: boolean
 	debug?: boolean
+
+	/**
+	 * Monotonically increasing sequence number for clineMessages state pushes.
+	 * When present, the frontend should only apply clineMessages from a state push
+	 * if its seq is greater than the last applied seq. This prevents stale state
+	 * (captured during async getStateToPostToWebview) from overwriting newer messages.
+	 */
+	clineMessagesSeq?: number
 }
 
 export interface Command {
