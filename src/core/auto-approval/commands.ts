@@ -65,6 +65,48 @@ export function containsDangerousSubstitution(source: string): boolean {
 }
 
 /**
+ * Detect shell file redirection operators that could alter command behavior
+ * in dangerous ways when executed with `shell: true`.
+ *
+ * When a user auto-approves a command prefix like "git show", the model can
+ * append redirection operators (e.g., "git show > ~/.ssh/id_rsa") that the
+ * prefix matcher would still approve. Since execution uses shell interpretation,
+ * the redirection is silently honored.
+ *
+ * This strips safe fd-to-fd redirections (2>&1, >&2) and then checks for any
+ * remaining < or > characters, which indicate file redirection.
+ *
+ * @param command - The command string to analyze
+ * @returns true if file redirection operators are detected
+ */
+export function containsShellFileRedirection(command: string): boolean {
+	// Strip fd-to-fd redirections which don't write to files.
+	// Output: 2>&1, >&2, 1>&2. Input: <&3, 0<&4.
+	// Token boundary prevents stripping >&2 from >&2file (which is file redirection).
+	const stripped = command
+		.replace(/\d*>&\d+(?=$|\s|[;&|()<>])/g, "")
+		.replace(/\d*<&\d+(?=$|\s|[;&|()<>])/g, "")
+	// Any remaining < or > is file redirection
+	return /[<>]/.test(stripped)
+}
+
+/**
+ * Detect standalone background operator (&) in a command string.
+ *
+ * Backgrounding is a control-flow modifier under `shell: true` that can
+ * detach processes or alter execution semantics. Auto-approval should not
+ * silently grant background execution.
+ *
+ * Matches standalone & but not && (chain operator), &> (redirection), >& (fd redirection), or <& (input fd duplication).
+ *
+ * @param command - The command string to analyze
+ * @returns true if a background operator is detected
+ */
+export function containsBackgroundOperator(command: string): boolean {
+	return /(^|[^&><])&([^&>]|$)/.test(command)
+}
+
+/**
  * Find the longest matching prefix from a list of prefixes for a given command.
  *
  * This is the core function that implements the "longest prefix match" strategy.
@@ -267,8 +309,12 @@ export function getCommandDecision(
 
 	// Check each sub-command and collect decisions
 	const decisions: CommandDecision[] = subCommands.map((cmd) => {
-		// Remove simple PowerShell-like redirections (e.g. 2>&1) before checking
-		const cmdWithoutRedirection = cmd.replace(/\d*>&\d*/, "").trim()
+		// Remove fd-to-fd redirections (e.g. 2>&1, <&3) before prefix matching.
+		// Token boundary prevents stripping >&2 from >&2file (which is file redirection).
+		const cmdWithoutRedirection = cmd
+			.replace(/\d*>&\d+(?=$|\s|[;&|()<>])/g, "")
+			.replace(/\d*<&\d+(?=$|\s|[;&|()<>])/g, "")
+			.trim()
 
 		return getSingleCommandDecision(cmdWithoutRedirection, allowedCommands, deniedCommands)
 	})
@@ -280,6 +326,15 @@ export function getCommandDecision(
 
 	// Require explicit user approval for dangerous patterns
 	if (containsDangerousSubstitution(command)) {
+		return "ask_user"
+	}
+
+	// Require explicit user approval for shell redirection or background operators.
+	// These can alter command semantics in ways the prefix matcher cannot evaluate
+	// (e.g., "git show > ~/.ssh/id_rsa" would prefix-match "git show" but redirect
+	// output to a sensitive file). Since commands execute with shell: true, these
+	// operators are interpreted by the shell.
+	if (containsShellFileRedirection(command) || containsBackgroundOperator(command)) {
 		return "ask_user"
 	}
 
