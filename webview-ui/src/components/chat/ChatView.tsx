@@ -65,6 +65,50 @@ export interface ChatViewRef {
 
 export const MAX_IMAGES_PER_MESSAGE = 20 // This is the Anthropic limit.
 
+// Button text keys - store translation keys instead of translated values
+// This ensures React Compiler doesn't cache stale translations
+type PrimaryButtonKey =
+	| "chat:retry.title"
+	| "chat:proceedAnyways.title"
+	| "chat:save.title"
+	| "chat:completeSubtaskAndReturn"
+	| "chat:read-batch.approve.title"
+	| "chat:approve.title"
+	| "chat:runCommand.title"
+	| "chat:proceedWhileRunning.title"
+	| "chat:startNewTask.title"
+	| "chat:resumeTask.title"
+
+type SecondaryButtonKey =
+	| "chat:startNewTask.title"
+	| "chat:reject.title"
+	| "chat:read-batch.deny.title"
+	| "chat:terminate.title"
+	| "chat:killCommand.title"
+
+// Map primary button keys to their tooltip keys
+const primaryButtonTooltipMap: Record<PrimaryButtonKey, string | undefined> = {
+	"chat:retry.title": "chat:retry.tooltip",
+	"chat:proceedAnyways.title": "chat:proceedAnyways.tooltip",
+	"chat:save.title": "chat:save.tooltip",
+	"chat:completeSubtaskAndReturn": undefined,
+	"chat:read-batch.approve.title": undefined,
+	"chat:approve.title": "chat:approve.tooltip",
+	"chat:runCommand.title": "chat:runCommand.tooltip",
+	"chat:proceedWhileRunning.title": "chat:proceedWhileRunning.tooltip",
+	"chat:startNewTask.title": "chat:startNewTask.tooltip",
+	"chat:resumeTask.title": "chat:resumeTask.tooltip",
+}
+
+// Map secondary button keys to their tooltip keys
+const secondaryButtonTooltipMap: Record<SecondaryButtonKey, string | undefined> = {
+	"chat:startNewTask.title": "chat:startNewTask.tooltip",
+	"chat:reject.title": "chat:reject.tooltip",
+	"chat:read-batch.deny.title": undefined,
+	"chat:terminate.title": "chat:terminate.tooltip",
+	"chat:killCommand.title": "chat:killCommand.tooltip",
+}
+
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
 const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewProps> = (
@@ -153,9 +197,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	// handleMessage is called, the last message might not be the ask anymore
 	// (it could be a say that followed).
 	const [clineAsk, setClineAsk] = useState<ClineAsk | undefined>(undefined)
-	const [enableButtons, setEnableButtons] = useState<boolean>(false)
-	const [primaryButtonText, setPrimaryButtonText] = useState<string | undefined>(undefined)
-	const [secondaryButtonText, setSecondaryButtonText] = useState<string | undefined>(undefined)
+	// Remove redundant <boolean> type annotation - React Compiler works better with inferred types
+	const [enableButtons, setEnableButtons] = useState(false)
+	// Store translation keys instead of translated values to avoid React Compiler caching issues
+	const [primaryButtonKey, setPrimaryButtonKey] = useState<PrimaryButtonKey | undefined>(undefined)
+	const [secondaryButtonKey, setSecondaryButtonKey] = useState<SecondaryButtonKey | undefined>(undefined)
 	const [_didClickCancel, setDidClickCancel] = useState(false)
 	const virtuosoRef = useRef<VirtuosoHandle>(null)
 	const [expandedRows, setExpandedRows] = useState<Record<number, boolean>>({})
@@ -165,11 +211,13 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 	const [showScrollToBottom, setShowScrollToBottom] = useState(false)
 	const isAtBottomRef = useRef(false)
 	const lastTtsRef = useRef<string>("")
-	const [wasStreaming, setWasStreaming] = useState<boolean>(false)
+	// Remove redundant <boolean> type annotation - React Compiler works better with inferred types
+	const [wasStreaming, setWasStreaming] = useState(false)
 	const [checkpointWarning, setCheckpointWarning] = useState<
 		{ type: "WAIT_TIMEOUT" | "INIT_TIMEOUT"; timeout: number } | undefined
 	>(undefined)
-	const [isCondensing, setIsCondensing] = useState<boolean>(false)
+	// Remove redundant <boolean> type annotation - React Compiler works better with inferred types
+	const [isCondensing, setIsCondensing] = useState(false)
 	const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
 	const everVisibleMessagesTsRef = useRef<LRUCache<number, boolean>>(
 		new LRUCache({
@@ -190,6 +238,21 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			}
 		>
 	>(new Map())
+
+	// Compute translated button text and tooltips at render time
+	// This ensures translations update correctly when language changes
+	const primaryButtonText = primaryButtonKey ? t(primaryButtonKey) : undefined
+	const secondaryButtonText = secondaryButtonKey ? t(secondaryButtonKey) : undefined
+	const primaryButtonTooltip = primaryButtonKey
+		? primaryButtonTooltipMap[primaryButtonKey]
+			? t(primaryButtonTooltipMap[primaryButtonKey]!)
+			: undefined
+		: undefined
+	const secondaryButtonTooltip = secondaryButtonKey
+		? secondaryButtonTooltipMap[secondaryButtonKey]
+			? t(secondaryButtonTooltipMap[secondaryButtonKey]!)
+			: undefined
+		: undefined
 
 	const clineAskRef = useRef(clineAsk)
 	useEffect(() => {
@@ -300,16 +363,16 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(true)
 							setClineAsk("api_req_failed")
 							setEnableButtons(true)
-							setPrimaryButtonText(t("chat:retry.title"))
-							setSecondaryButtonText(t("chat:startNewTask.title"))
+							setPrimaryButtonKey("chat:retry.title")
+							setSecondaryButtonKey("chat:startNewTask.title")
 							break
 						case "mistake_limit_reached":
 							playSound("progress_loop")
 							setSendingDisabled(false)
 							setClineAsk("mistake_limit_reached")
 							setEnableButtons(true)
-							setPrimaryButtonText(t("chat:proceedAnyways.title"))
-							setSecondaryButtonText(t("chat:startNewTask.title"))
+							setPrimaryButtonKey("chat:proceedAnyways.title")
+							setSecondaryButtonKey("chat:startNewTask.title")
 							break
 						case "followup":
 							setSendingDisabled(isPartial)
@@ -319,8 +382,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							// We have no buttons for this tool, so no problem having them "enabled"
 							// to workaround this issue.  See #1358.
 							setEnableButtons(true)
-							setPrimaryButtonText(undefined)
-							setSecondaryButtonText(undefined)
+							setPrimaryButtonKey(undefined)
+							setSecondaryButtonKey(undefined)
 							break
 						case "tool":
 							setSendingDisabled(isPartial)
@@ -340,20 +403,20 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 									}
 									break
 								case "generateImage":
-									setPrimaryButtonText(t("chat:save.title"))
-									setSecondaryButtonText(t("chat:reject.title"))
+									setPrimaryButtonKey("chat:save.title")
+									setSecondaryButtonKey("chat:reject.title")
 									break
 								case "finishTask":
-									setPrimaryButtonText(t("chat:completeSubtaskAndReturn"))
-									setSecondaryButtonText(undefined)
+									setPrimaryButtonKey("chat:completeSubtaskAndReturn")
+									setSecondaryButtonKey(undefined)
 									break
 								case "readFile":
 									if (tool.batchFiles && Array.isArray(tool.batchFiles)) {
-										setPrimaryButtonText(t("chat:read-batch.approve.title"))
-										setSecondaryButtonText(t("chat:read-batch.deny.title"))
+										setPrimaryButtonKey("chat:read-batch.approve.title")
+										setSecondaryButtonKey("chat:read-batch.deny.title")
 									} else {
-										setPrimaryButtonText(t("chat:approve.title"))
-										setSecondaryButtonText(t("chat:reject.title"))
+										setPrimaryButtonKey("chat:approve.title")
+										setSecondaryButtonKey("chat:reject.title")
 									}
 									break
 								case "listFilesTopLevel":
@@ -367,8 +430,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 									}
 									break
 								default:
-									setPrimaryButtonText(t("chat:approve.title"))
-									setSecondaryButtonText(t("chat:reject.title"))
+									setPrimaryButtonKey("chat:approve.title")
+									setSecondaryButtonKey("chat:reject.title")
 									break
 							}
 							break
@@ -376,29 +439,29 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(isPartial)
 							setClineAsk("browser_action_launch")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:approve.title"))
-							setSecondaryButtonText(t("chat:reject.title"))
+							setPrimaryButtonKey("chat:approve.title")
+							setSecondaryButtonKey("chat:reject.title")
 							break
 						case "command":
 							setSendingDisabled(isPartial)
 							setClineAsk("command")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:runCommand.title"))
-							setSecondaryButtonText(t("chat:reject.title"))
+							setPrimaryButtonKey("chat:runCommand.title")
+							setSecondaryButtonKey("chat:reject.title")
 							break
 						case "command_output":
 							setSendingDisabled(false)
 							setClineAsk("command_output")
 							setEnableButtons(true)
-							setPrimaryButtonText(t("chat:proceedWhileRunning.title"))
-							setSecondaryButtonText(t("chat:killCommand.title"))
+							setPrimaryButtonKey("chat:proceedWhileRunning.title")
+							setSecondaryButtonKey("chat:killCommand.title")
 							break
 						case "use_mcp_server":
 							setSendingDisabled(isPartial)
 							setClineAsk("use_mcp_server")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:approve.title"))
-							setSecondaryButtonText(t("chat:reject.title"))
+							setPrimaryButtonKey("chat:approve.title")
+							setSecondaryButtonKey("chat:reject.title")
 							break
 						case "completion_result":
 							// Extension waiting for feedback, but we can just present a new task button.
@@ -409,8 +472,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(isPartial)
 							setClineAsk("completion_result")
 							setEnableButtons(!isPartial)
-							setPrimaryButtonText(t("chat:startNewTask.title"))
-							setSecondaryButtonText(undefined)
+							setPrimaryButtonKey("chat:startNewTask.title")
+							setSecondaryButtonKey(undefined)
 							break
 						case "resume_task":
 							setSendingDisabled(false)
@@ -426,11 +489,11 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 									(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
 								)
 							if (isCompletedSubtask) {
-								setPrimaryButtonText(t("chat:startNewTask.title"))
-								setSecondaryButtonText(undefined)
+								setPrimaryButtonKey("chat:startNewTask.title")
+								setSecondaryButtonKey(undefined)
 							} else {
-								setPrimaryButtonText(t("chat:resumeTask.title"))
-								setSecondaryButtonText(t("chat:terminate.title"))
+								setPrimaryButtonKey("chat:resumeTask.title")
+								setSecondaryButtonKey("chat:terminate.title")
 							}
 							setDidClickCancel(false) // special case where we reset the cancel button state
 							break
@@ -438,8 +501,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							setSendingDisabled(false)
 							setClineAsk("resume_completed_task")
 							setEnableButtons(true)
-							setPrimaryButtonText(t("chat:startNewTask.title"))
-							setSecondaryButtonText(undefined)
+							setPrimaryButtonKey("chat:startNewTask.title")
+							setSecondaryButtonKey(undefined)
 							setDidClickCancel(false)
 							break
 					}
@@ -463,8 +526,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							// handlers (handleSendMessage, handlePrimaryButtonClick, etc.).
 							setClineAsk(undefined)
 							setEnableButtons(false)
-							setPrimaryButtonText(undefined)
-							setSecondaryButtonText(undefined)
+							setPrimaryButtonKey(undefined)
+							setSecondaryButtonKey(undefined)
 							break
 						case "api_req_finished":
 						case "error":
@@ -489,19 +552,19 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 				(msg) => msg.ask === "completion_result" || msg.say === "completion_result",
 			)
 			if (hasCompletionResult) {
-				setPrimaryButtonText(t("chat:startNewTask.title"))
-				setSecondaryButtonText(undefined)
+				setPrimaryButtonKey("chat:startNewTask.title")
+				setSecondaryButtonKey(undefined)
 			}
 		}
-	}, [clineAsk, currentTaskItem?.parentTaskId, messages, t])
+	}, [clineAsk, currentTaskItem?.parentTaskId, messages])
 
 	useEffect(() => {
 		if (messages.length === 0) {
 			setSendingDisabled(false)
 			setClineAsk(undefined)
 			setEnableButtons(false)
-			setPrimaryButtonText(undefined)
-			setSecondaryButtonText(undefined)
+			setPrimaryButtonKey(undefined)
+			setSecondaryButtonKey(undefined)
 		}
 	}, [messages.length])
 
@@ -653,8 +716,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 		setClineAsk(undefined)
 		setEnableButtons(false)
 		// Do not reset mode here as it should persist.
-		// setPrimaryButtonText(undefined)
-		// setSecondaryButtonText(undefined)
+		// setPrimaryButtonKey(undefined)
+		// setSecondaryButtonKey(undefined)
 	}, [])
 
 	/**
@@ -861,8 +924,8 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 			setSendingDisabled(true)
 			setClineAsk(undefined)
 			setEnableButtons(false)
-			setPrimaryButtonText(undefined)
-			setSecondaryButtonText(undefined)
+			setPrimaryButtonKey(undefined)
+			setSecondaryButtonKey(undefined)
 		},
 		[clineAsk, startNewTask, currentTaskItem?.parentTaskId],
 	)
@@ -1802,28 +1865,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 							) : (
 								<>
 									{primaryButtonText && (
-										<StandardTooltip
-											content={
-												primaryButtonText === t("chat:retry.title")
-													? t("chat:retry.tooltip")
-													: primaryButtonText === t("chat:save.title")
-														? t("chat:save.tooltip")
-														: primaryButtonText === t("chat:approve.title")
-															? t("chat:approve.tooltip")
-															: primaryButtonText === t("chat:runCommand.title")
-																? t("chat:runCommand.tooltip")
-																: primaryButtonText === t("chat:startNewTask.title")
-																	? t("chat:startNewTask.tooltip")
-																	: primaryButtonText === t("chat:resumeTask.title")
-																		? t("chat:resumeTask.tooltip")
-																		: primaryButtonText ===
-																			  t("chat:proceedAnyways.title")
-																			? t("chat:proceedAnyways.tooltip")
-																			: primaryButtonText ===
-																				  t("chat:proceedWhileRunning.title")
-																				? t("chat:proceedWhileRunning.tooltip")
-																				: undefined
-											}>
+										<StandardTooltip content={primaryButtonTooltip}>
 											<Button
 												variant="primary"
 												disabled={!enableButtons}
@@ -1834,18 +1876,7 @@ const ChatViewComponent: React.ForwardRefRenderFunction<ChatViewRef, ChatViewPro
 										</StandardTooltip>
 									)}
 									{secondaryButtonText && (
-										<StandardTooltip
-											content={
-												secondaryButtonText === t("chat:startNewTask.title")
-													? t("chat:startNewTask.tooltip")
-													: secondaryButtonText === t("chat:reject.title")
-														? t("chat:reject.tooltip")
-														: secondaryButtonText === t("chat:terminate.title")
-															? t("chat:terminate.tooltip")
-															: secondaryButtonText === t("chat:killCommand.title")
-																? t("chat:killCommand.tooltip")
-																: undefined
-											}>
+										<StandardTooltip content={secondaryButtonTooltip}>
 											<Button
 												variant="secondary"
 												disabled={!enableButtons}
