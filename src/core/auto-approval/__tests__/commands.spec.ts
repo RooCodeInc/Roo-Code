@@ -205,6 +205,23 @@ describe("containsShellFileRedirection", () => {
 	it("detects file redirection even with fd redirect present", () => {
 		expect(containsShellFileRedirection("cmd 2>&1 > out.txt")).toBe(true)
 	})
+
+	// Quote-aware: operators inside quotes are literal, not redirection
+	it("does not flag > inside double quotes (arrow function)", () => {
+		expect(containsShellFileRedirection(`node -e "const f=(a)=>a"`)).toBe(false)
+	})
+
+	it("does not flag > inside single quotes", () => {
+		expect(containsShellFileRedirection("echo 'hello > world'")).toBe(false)
+	})
+
+	it("detects > outside quotes even when quoted content has >", () => {
+		expect(containsShellFileRedirection(`node -e "x" > out.txt`)).toBe(true)
+	})
+
+	it("does not flag < inside double quotes", () => {
+		expect(containsShellFileRedirection(`node -e "if (a < b) {}"`)).toBe(false)
+	})
 })
 
 describe("containsBackgroundOperator", () => {
@@ -241,6 +258,11 @@ describe("containsBackgroundOperator", () => {
 
 	it("does not flag plain command", () => {
 		expect(containsBackgroundOperator("git status")).toBe(false)
+	})
+
+	// Quote-aware: & inside quotes is literal
+	it("does not flag & inside double quotes", () => {
+		expect(containsBackgroundOperator(`node -e "a & b"`)).toBe(false)
 	})
 })
 

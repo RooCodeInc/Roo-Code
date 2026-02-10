@@ -65,6 +65,54 @@ export function containsDangerousSubstitution(source: string): boolean {
 }
 
 /**
+ * Strip single-quoted and double-quoted segments from a shell command string,
+ * returning only the unquoted portions. This allows operator detection to
+ * ignore characters that the shell treats as literal data inside quotes.
+ *
+ * Respects backslash escapes outside single quotes (and inside double quotes).
+ * Single-quoted segments have no escape sequences per POSIX sh.
+ *
+ * @param cmd - The command string to process
+ * @returns The command with all quoted content removed
+ */
+function stripQuotedSegments(cmd: string): string {
+	let result = ""
+	let inSingle = false
+	let inDouble = false
+	let escape = false
+
+	for (let i = 0; i < cmd.length; i++) {
+		const ch = cmd[i]
+
+		if (escape) {
+			escape = false
+			continue
+		}
+
+		if (ch === "\\" && !inSingle) {
+			escape = true
+			continue
+		}
+
+		if (ch === "'" && !inDouble) {
+			inSingle = !inSingle
+			continue
+		}
+
+		if (ch === '"' && !inSingle) {
+			inDouble = !inDouble
+			continue
+		}
+
+		if (!inSingle && !inDouble) {
+			result += ch
+		}
+	}
+
+	return result
+}
+
+/**
  * Detect shell file redirection operators that could alter command behavior
  * in dangerous ways when executed with `shell: true`.
  *
@@ -73,17 +121,20 @@ export function containsDangerousSubstitution(source: string): boolean {
  * prefix matcher would still approve. Since execution uses shell interpretation,
  * the redirection is silently honored.
  *
- * This strips safe fd-to-fd redirections (2>&1, >&2) and then checks for any
- * remaining < or > characters, which indicate file redirection.
+ * This is quote-aware: operators inside single or double quotes are literal
+ * data to the shell and are not flagged (e.g., `node -e "const f=(a)=>a"`).
+ *
+ * Safe fd-to-fd redirections (2>&1, >&2) are stripped before detection.
  *
  * @param command - The command string to analyze
  * @returns true if file redirection operators are detected
  */
 export function containsShellFileRedirection(command: string): boolean {
+	const unquoted = stripQuotedSegments(command)
 	// Strip fd-to-fd redirections which don't write to files.
 	// Output: 2>&1, >&2, 1>&2. Input: <&3, 0<&4.
 	// Token boundary prevents stripping >&2 from >&2file (which is file redirection).
-	const stripped = command
+	const stripped = unquoted
 		.replace(/\d*>&\d+(?=$|\s|[;&|()<>])/g, "")
 		.replace(/\d*<&\d+(?=$|\s|[;&|()<>])/g, "")
 	// Any remaining < or > is file redirection
@@ -97,13 +148,16 @@ export function containsShellFileRedirection(command: string): boolean {
  * detach processes or alter execution semantics. Auto-approval should not
  * silently grant background execution.
  *
+ * This is quote-aware: & inside quotes is literal data, not a background operator.
+ *
  * Matches standalone & but not && (chain operator), &> (redirection), >& (fd redirection), or <& (input fd duplication).
  *
  * @param command - The command string to analyze
  * @returns true if a background operator is detected
  */
 export function containsBackgroundOperator(command: string): boolean {
-	return /(^|[^&><])&([^&>]|$)/.test(command)
+	const unquoted = stripQuotedSegments(command)
+	return /(^|[^&><])&([^&>]|$)/.test(unquoted)
 }
 
 /**
