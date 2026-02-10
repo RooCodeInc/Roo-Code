@@ -296,6 +296,12 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 							<div className="px-5 pb-2 pt-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
 								Resources
 							</div>
+							<Link
+								href="/what-is-roo-code"
+								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
+								onClick={() => setIsMenuOpen(false)}>
+								What is Roo Code?
+							</Link>
 							<ScrollButton
 								targetId="faq"
 								className="block w-full p-5 py-3 text-left text-foreground active:opacity-50"
