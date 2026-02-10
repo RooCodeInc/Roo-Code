@@ -2,7 +2,7 @@
 	"name": "roo-code",
 	"packageManager": "pnpm@10.8.1",
 	"engines": {
-		"node": "20.19.2"
+		"node": "20.20.0"
 	},
 	"scripts": {
 		"preinstall": "node scripts/bootstrap.mjs",
@@ -46,7 +46,7 @@
 		"prettier": "^3.4.2",
 		"rimraf": "^6.0.1",
 		"tsx": "^4.19.3",
-		"turbo": "^2.5.6",
+		"turbo": "^2.8.3",
 		"typescript": "5.8.3"
 	},
 	"lint-staged": {
