@@ -299,9 +299,6 @@ const CodeBlock = memo(
 		// potentially changes scrollHeight
 		const wasScrolledUpRef = useRef(false)
 
-		// Ref to track if outer container was near bottom
-		const outerContainerNearBottomRef = useRef(false)
-
 		// Effect to listen to scroll events and update the ref
 		useEffect(() => {
 			const preElement = preRef.current
@@ -322,28 +319,6 @@ const CodeBlock = memo(
 				preElement.removeEventListener("scroll", handleScroll)
 			}
 		}, []) // Empty dependency array: runs once on mount
-
-		// Effect to track outer container scroll position
-		useEffect(() => {
-			const scrollContainer = document.querySelector('[data-virtuoso-scroller="true"]')
-			if (!scrollContainer) return
-
-			const handleOuterScroll = () => {
-				const isAtBottom =
-					Math.abs(scrollContainer.scrollHeight - scrollContainer.scrollTop - scrollContainer.clientHeight) <
-					SCROLL_SNAP_TOLERANCE
-				outerContainerNearBottomRef.current = isAtBottom
-			}
-
-			scrollContainer.addEventListener("scroll", handleOuterScroll, { passive: true })
-
-			// Initial check
-			handleOuterScroll()
-
-			return () => {
-				scrollContainer.removeEventListener("scroll", handleOuterScroll)
-			}
-		}, [])
 
 		// Store whether we should scroll after highlighting completes
 		const shouldScrollAfterHighlightRef = useRef(false)
@@ -471,14 +446,8 @@ const CodeBlock = memo(
 						wasScrolledUpRef.current = false
 					}
 
-					// Also scroll outer container if it was near bottom
-					if (outerContainerNearBottomRef.current) {
-						const scrollContainer = document.querySelector('[data-virtuoso-scroller="true"]')
-						if (scrollContainer) {
-							scrollContainer.scrollTop = scrollContainer.scrollHeight
-							outerContainerNearBottomRef.current = true
-						}
-					}
+					// Outer container scrolling is handled by Virtuoso's followOutput
+					// and ChatView's handleRowHeightChange — no direct DOM manipulation needed.
 
 					// Reset the flag
 					shouldScrollAfterHighlightRef.current = false
