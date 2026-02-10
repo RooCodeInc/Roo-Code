@@ -452,7 +452,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 	override async handlePartial(task: Task, block: ToolUse<"apply_patch">): Promise<void> {
 		const patch: string | undefined = block.params.patch
 		const candidateRelPath = this.extractFirstPathFromPatch(patch)
-		const fallbackRelPath = task.cwd
+		const fallbackRelPath = ""
 		const resolvedRelPath = candidateRelPath ?? fallbackRelPath
 		const absolutePath = path.resolve(task.cwd, resolvedRelPath)
 
