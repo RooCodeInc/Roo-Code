@@ -198,7 +198,7 @@ export const Bedrock = ({ apiConfiguration, setApiConfigurationField, selectedMo
 			{selectedModelInfo?.supportsPromptCache && (
 				<>
 					<Checkbox
-						checked={apiConfiguration?.awsUsePromptCache || false}
+						checked={apiConfiguration?.awsUsePromptCache ?? true}
 						onChange={handleInputChange("awsUsePromptCache", noTransform)}>
 						<div className="flex items-center gap-1">
 							<span>{t("settings:providers.enablePromptCaching")}</span>

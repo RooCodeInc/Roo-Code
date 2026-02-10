@@ -464,6 +464,52 @@ describe("useSelectedModel", () => {
 		})
 	})
 
+	describe("bedrock provider with custom ARN", () => {
+		beforeEach(() => {
+			mockUseRouterModels.mockReturnValue({
+				data: {
+					openrouter: {},
+					requesty: {},
+					litellm: {},
+				},
+				isLoading: false,
+				isError: false,
+			} as any)
+
+			mockUseOpenRouterModelProviders.mockReturnValue({
+				data: {},
+				isLoading: false,
+				isError: false,
+			} as any)
+		})
+
+		it("should enable supportsPromptCache for custom-arn model", () => {
+			const apiConfiguration: ProviderSettings = {
+				apiProvider: "bedrock",
+				apiModelId: "custom-arn",
+			}
+
+			const wrapper = createWrapper()
+			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+			expect(result.current.id).toBe("custom-arn")
+			expect(result.current.info?.supportsPromptCache).toBe(true)
+		})
+
+		it("should enable supportsImages for custom-arn model", () => {
+			const apiConfiguration: ProviderSettings = {
+				apiProvider: "bedrock",
+				apiModelId: "custom-arn",
+			}
+
+			const wrapper = createWrapper()
+			const { result } = renderHook(() => useSelectedModel(apiConfiguration), { wrapper })
+
+			expect(result.current.id).toBe("custom-arn")
+			expect(result.current.info?.supportsImages).toBe(true)
+		})
+	})
+
 	describe("litellm provider", () => {
 		beforeEach(() => {
 			mockUseOpenRouterModelProviders.mockReturnValue({

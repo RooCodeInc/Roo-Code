@@ -182,7 +182,7 @@ function getSelectedModel({
 			if (id === "custom-arn") {
 				return {
 					id,
-					info: { maxTokens: 5000, contextWindow: 128_000, supportsPromptCache: false, supportsImages: true },
+					info: { maxTokens: 5000, contextWindow: 128_000, supportsPromptCache: true, supportsImages: true },
 				}
 			}
 
