@@ -3363,7 +3363,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							// Stream failed - log the error and retry with the same content
 							// The existing rate limiting will prevent rapid retries
 							console.error(
-								`[Task#${this.taskId}.${this.instanceId}] Stream failed, will retry: ${streamingFailedMessage}`,
+								`[Task#${this.taskId}.${this.instanceId}] Stream failed, will retry: ${rawErrorMessage}`,
 							)
 
 							// Apply exponential backoff similar to first-chunk errors when auto-resubmit is enabled
