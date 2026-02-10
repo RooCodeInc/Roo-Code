@@ -1,14 +1,7 @@
 import { promises as fs } from "node:fs"
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import {
-	streamText,
-	generateText,
-	type ToolSet,
-	wrapLanguageModel,
-	extractReasoningMiddleware,
-	type LanguageModel,
-} from "ai"
+import { wrapLanguageModel, extractReasoningMiddleware, type LanguageModel } from "ai"
 import * as os from "os"
 import * as path from "path"
 
@@ -17,13 +10,6 @@ import { type ModelInfo, type QwenCodeModelId, qwenCodeModels, qwenCodeDefaultMo
 import type { ApiHandlerOptions } from "../../shared/api"
 import { safeWriteJson } from "../../utils/safeWriteJson"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	processAiSdkStreamPart,
-	mapToolChoice,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
 import { getModelParams } from "../transform/model-params"
 import { ApiStream } from "../transform/stream"
 
@@ -286,62 +272,6 @@ export class QwenCodeHandler extends OpenAICompatibleHandler implements SingleCo
 		return false
 	}
 
-	private async *doCreateMessage(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		metadata?: ApiHandlerCreateMessageMetadata,
-	): ApiStream {
-		const model = this.getModel()
-		const languageModel = this.getLanguageModel()
-
-		const aiSdkMessages = convertToAiSdkMessages(messages)
-		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
-		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
-
-		const requestOptions: Parameters<typeof streamText>[0] = {
-			model: languageModel,
-			system: systemPrompt,
-			messages: aiSdkMessages,
-			temperature: model.temperature ?? this.config.temperature ?? 0,
-			maxOutputTokens: this.getMaxOutputTokens(),
-			tools: aiSdkTools,
-			toolChoice: mapToolChoice(metadata?.tool_choice),
-		}
-
-		const result = streamText(requestOptions)
-
-		try {
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			const usage = await result.usage
-			if (usage) {
-				yield this.processUsageMetrics(usage)
-			}
-		} catch (error) {
-			throw handleAiSdkError(error, "Qwen Code")
-		}
-	}
-
-	private async doCompletePrompt(prompt: string): Promise<string> {
-		const languageModel = this.getLanguageModel()
-
-		try {
-			const { text } = await generateText({
-				model: languageModel,
-				prompt,
-				maxOutputTokens: this.getMaxOutputTokens(),
-				temperature: this.config.temperature ?? 0,
-			})
-			return text
-		} catch (error) {
-			throw handleAiSdkError(error, "Qwen Code")
-		}
-	}
-
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -350,11 +280,11 @@ export class QwenCodeHandler extends OpenAICompatibleHandler implements SingleCo
 		await this.ensureAuthenticated()
 
 		try {
-			yield* this.doCreateMessage(systemPrompt, messages, metadata)
+			yield* super.createMessage(systemPrompt, messages, metadata)
 		} catch (error) {
 			if (this.isAuthError(error)) {
 				await this.forceRefreshAndAuthenticate()
-				yield* this.doCreateMessage(systemPrompt, messages, metadata)
+				yield* super.createMessage(systemPrompt, messages, metadata)
 			} else {
 				throw error
 			}
@@ -378,11 +308,11 @@ export class QwenCodeHandler extends OpenAICompatibleHandler implements SingleCo
 		await this.ensureAuthenticated()
 
 		try {
-			return await this.doCompletePrompt(prompt)
+			return await super.completePrompt(prompt)
 		} catch (error) {
 			if (this.isAuthError(error)) {
 				await this.forceRefreshAndAuthenticate()
-				return await this.doCompletePrompt(prompt)
+				return await super.completePrompt(prompt)
 			}
 			throw error
 		}
