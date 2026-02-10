@@ -123,6 +123,15 @@ export function NavBar({ stars, downloads }: NavBarProps) {
 									<li>
 										<NavigationMenuLink asChild>
 											<Link
+												href="/what-is-roo-code"
+												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+												What is Roo Code?
+											</Link>
+										</NavigationMenuLink>
+									</li>
+									<li>
+										<NavigationMenuLink asChild>
+											<Link
 												href="/evals"
 												className="block select-none rounded-md px-3 py-2 text-sm leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
 												Evals

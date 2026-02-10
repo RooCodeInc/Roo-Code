@@ -33,6 +33,9 @@ module.exports = {
     if (path === '/') {
       priority = 1.0;
       changefreq = 'yearly';
+    } else if (path === '/what-is-roo-code') {
+      priority = 0.9;
+      changefreq = 'monthly';
     } else if (path === '/enterprise' || path === '/evals') {
       priority = 0.8;
       changefreq = 'monthly';
