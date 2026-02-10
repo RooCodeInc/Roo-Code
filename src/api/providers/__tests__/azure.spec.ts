@@ -74,7 +74,7 @@ describe("AzureHandler", () => {
 			expect(handlerWithoutModel.getModel().id).toBe("")
 		})
 
-		it("should use default API version if not provided", () => {
+		it("should omit API version if not provided", () => {
 			const handlerWithoutVersion = new AzureHandler({
 				...mockOptions,
 				azureApiVersion: undefined,
