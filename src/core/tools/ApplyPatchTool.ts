@@ -466,7 +466,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",
-			path: displayPath,
+			path: displayPath || path.basename(task.cwd) || "workspace",
 			diff: patchPreview || "Parsing patch...",
 			isOutsideWorkspace: isPathOutsideWorkspace(absolutePath),
 		}
