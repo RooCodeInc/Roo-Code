@@ -4,8 +4,10 @@ import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
 	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	extractAiSdkErrorMessage,
+	extractMessageFromResponseBody,
 	handleAiSdkError,
 	flattenAiSdkMessagesToStringContent,
 } from "../ai-sdk"
@@ -793,6 +795,75 @@ describe("AI SDK conversion utilities", () => {
 			expect(extractAiSdkErrorMessage("string error")).toBe("string error")
 			expect(extractAiSdkErrorMessage({ custom: "object" })).toBe("[object Object]")
 		})
+
+		it("should extract message from AI_APICallError responseBody with JSON error", () => {
+			const apiError = {
+				name: "AI_APICallError",
+				message: "API call failed",
+				responseBody: '{"error":{"message":"Insufficient balance or no resource package.","code":"1113"}}',
+				statusCode: 402,
+			}
+
+			const result = extractAiSdkErrorMessage(apiError)
+			expect(result).toContain("Insufficient balance")
+			expect(result).not.toBe("API call failed")
+		})
+
+		it("should fall back to message when AI_APICallError responseBody is non-JSON", () => {
+			const apiError = {
+				name: "AI_APICallError",
+				message: "Server error",
+				responseBody: "Internal Server Error",
+				statusCode: 500,
+			}
+
+			const result = extractAiSdkErrorMessage(apiError)
+			expect(result).toContain("Server error")
+		})
+
+		it("should extract message from AI_RetryError lastError responseBody", () => {
+			const retryError = {
+				name: "AI_RetryError",
+				message: "Failed after retries",
+				lastError: {
+					name: "AI_APICallError",
+					message: "API call failed",
+					responseBody: '{"error":{"message":"Rate limit exceeded"}}',
+					statusCode: 429,
+				},
+				errors: [{}],
+			}
+
+			const result = extractAiSdkErrorMessage(retryError)
+			expect(result).toContain("Rate limit exceeded")
+		})
+
+		it("should extract message from NoOutputGeneratedError with APICallError cause", () => {
+			const error = {
+				name: "AI_NoOutputGeneratedError",
+				message: "No output generated",
+				cause: {
+					name: "AI_APICallError",
+					message: "Forbidden",
+					responseBody: '{"error":{"message":"Insufficient balance"}}',
+					statusCode: 403,
+				},
+			}
+
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toContain("Insufficient balance")
+			expect(result).not.toBe("No output generated")
+		})
+
+		it("should return own message from NoOutputGeneratedError without useful cause", () => {
+			const error = {
+				name: "AI_NoOutputGeneratedError",
+				message: "No output generated",
+			}
+
+			const result = extractAiSdkErrorMessage(error)
+			expect(result).toBe("No output generated")
+		})
 	})
 
 	describe("handleAiSdkError", () => {
@@ -836,6 +907,41 @@ describe("AI SDK conversion utilities", () => {
 			const result = handleAiSdkError(originalError, "Mistral")
 
 			expect((result as any).cause).toBe(originalError)
+		})
+	})
+
+	describe("extractMessageFromResponseBody", () => {
+		it("should extract message with code from error object", () => {
+			const body = '{"error": {"message": "Insufficient balance", "code": "1113"}}'
+			expect(extractMessageFromResponseBody(body)).toBe("[1113] Insufficient balance")
+		})
+
+		it("should extract message from error object without code", () => {
+			const body = '{"error": {"message": "Rate limit exceeded"}}'
+			expect(extractMessageFromResponseBody(body)).toBe("Rate limit exceeded")
+		})
+
+		it("should extract message from error string field", () => {
+			const body = '{"error": "Something went wrong"}'
+			expect(extractMessageFromResponseBody(body)).toBe("Something went wrong")
+		})
+
+		it("should extract message from top-level message field", () => {
+			const body = '{"message": "Bad request"}'
+			expect(extractMessageFromResponseBody(body)).toBe("Bad request")
+		})
+
+		it("should return undefined for non-JSON string", () => {
+			expect(extractMessageFromResponseBody("Not Found")).toBeUndefined()
+		})
+
+		it("should return undefined for empty string", () => {
+			expect(extractMessageFromResponseBody("")).toBeUndefined()
+		})
+
+		it("should return undefined for JSON without error fields", () => {
+			const body = '{"status": "ok"}'
+			expect(extractMessageFromResponseBody(body)).toBeUndefined()
 		})
 	})
 
@@ -1059,5 +1165,187 @@ describe("AI SDK conversion utilities", () => {
 			// Should not flatten because there's a tool call
 			expect(result[0]).toEqual(messages[0])
 		})
+	})
+})
+
+describe("consumeAiSdkStream", () => {
+	/**
+	 * Helper to create an AsyncIterable from an array of stream parts.
+	 */
+	async function* createAsyncIterable<T>(items: T[]): AsyncGenerator<T> {
+		for (const item of items) {
+			yield item
+		}
+	}
+
+	/**
+	 * Helper to collect all chunks from an async generator.
+	 * Returns { chunks, error } to support both success and error paths.
+	 */
+	async function collectStream(stream: AsyncGenerator<unknown>): Promise<{ chunks: unknown[]; error: Error | null }> {
+		const chunks: unknown[] = []
+		let error: Error | null = null
+		try {
+			for await (const chunk of stream) {
+				chunks.push(chunk)
+			}
+		} catch (e) {
+			error = e instanceof Error ? e : new Error(String(e))
+		}
+		return { chunks, error }
+	}
+
+	it("yields stream chunks from fullStream", async () => {
+		const result = {
+			fullStream: createAsyncIterable([
+				{ type: "text-delta" as const, id: "1", text: "hello" },
+				{ type: "text" as const, text: " world" },
+			]),
+			usage: Promise.resolve({ inputTokens: 5, outputTokens: 10 }),
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any))
+
+		expect(error).toBeNull()
+		// Two text chunks + one usage chunk
+		expect(chunks).toHaveLength(3)
+		expect(chunks[0]).toEqual({ type: "text", text: "hello" })
+		expect(chunks[1]).toEqual({ type: "text", text: " world" })
+	})
+
+	it("yields default usage chunk when no usageHandler provided", async () => {
+		const result = {
+			fullStream: createAsyncIterable([{ type: "text-delta" as const, id: "1", text: "hi" }]),
+			usage: Promise.resolve({ inputTokens: 10, outputTokens: 20 }),
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any))
+
+		expect(error).toBeNull()
+		const usageChunk = chunks.find((c: any) => c.type === "usage")
+		expect(usageChunk).toEqual({
+			type: "usage",
+			inputTokens: 10,
+			outputTokens: 20,
+		})
+	})
+
+	it("uses usageHandler when provided", async () => {
+		const result = {
+			fullStream: createAsyncIterable([{ type: "text-delta" as const, id: "1", text: "hi" }]),
+			usage: Promise.resolve({ inputTokens: 10, outputTokens: 20 }),
+		}
+
+		async function* customUsageHandler() {
+			yield {
+				type: "usage" as const,
+				inputTokens: 42,
+				outputTokens: 84,
+				cacheWriteTokens: 5,
+				cacheReadTokens: 3,
+			}
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any, customUsageHandler))
+
+		expect(error).toBeNull()
+		const usageChunk = chunks.find((c: any) => c.type === "usage")
+		expect(usageChunk).toEqual({
+			type: "usage",
+			inputTokens: 42,
+			outputTokens: 84,
+			cacheWriteTokens: 5,
+			cacheReadTokens: 3,
+		})
+	})
+
+	/**
+	 * THE KEY TEST: Verifies that when the stream contains an error chunk (e.g. "Insufficient balance")
+	 * and result.usage rejects with a generic error (AI SDK's NoOutputGeneratedError), the thrown
+	 * error preserves the specific stream error message rather than the generic one.
+	 */
+	it("captures stream error and throws it when usage fails", async () => {
+		const usageRejection = Promise.reject(new Error("No output generated. Check the stream for errors."))
+		// Prevent unhandled rejection warning — the rejection is intentionally caught inside consumeAiSdkStream
+		usageRejection.catch(() => {})
+
+		const result = {
+			fullStream: createAsyncIterable([
+				{ type: "text-delta" as const, id: "1", text: "partial" },
+				{
+					type: "error" as const,
+					error: new Error("Insufficient balance to complete this request"),
+				},
+			]),
+			usage: usageRejection,
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any))
+
+		// The error chunk IS still yielded during stream iteration
+		const errorChunk = chunks.find((c: any) => c.type === "error")
+		expect(errorChunk).toEqual({
+			type: "error",
+			error: "StreamError",
+			message: "Insufficient balance to complete this request",
+		})
+
+		// The thrown error uses the captured stream error, NOT the generic usage error
+		expect(error).not.toBeNull()
+		expect(error!.message).toBe("Insufficient balance to complete this request")
+		expect(error!.message).not.toContain("No output generated")
+	})
+
+	it("re-throws usage error when no stream error captured", async () => {
+		const usageRejection = Promise.reject(new Error("Rate limit exceeded"))
+		usageRejection.catch(() => {})
+
+		const result = {
+			fullStream: createAsyncIterable([{ type: "text-delta" as const, id: "1", text: "hello" }]),
+			usage: usageRejection,
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any))
+
+		// Text chunk should still be yielded
+		expect(chunks).toHaveLength(1)
+		expect(chunks[0]).toEqual({ type: "text", text: "hello" })
+
+		// The original usage error is re-thrown since no stream error was captured
+		expect(error).not.toBeNull()
+		expect(error!.message).toBe("Rate limit exceeded")
+	})
+
+	it("captures stream error and throws it when usageHandler fails", async () => {
+		const result = {
+			fullStream: createAsyncIterable([
+				{ type: "text-delta" as const, id: "1", text: "partial" },
+				{
+					type: "error" as const,
+					error: new Error("Insufficient balance to complete this request"),
+				},
+			]),
+			usage: Promise.resolve({ inputTokens: 0, outputTokens: 0 }),
+		}
+
+		// eslint-disable-next-line require-yield
+		async function* failingUsageHandler(): AsyncGenerator<never> {
+			throw new Error("No output generated. Check the stream for errors.")
+		}
+
+		const { chunks, error } = await collectStream(consumeAiSdkStream(result as any, failingUsageHandler))
+
+		// Error chunk was yielded during streaming
+		const errorChunk = chunks.find((c: any) => c.type === "error")
+		expect(errorChunk).toEqual({
+			type: "error",
+			error: "StreamError",
+			message: "Insufficient balance to complete this request",
+		})
+
+		// The thrown error uses the captured stream error, not the usageHandler error
+		expect(error).not.toBeNull()
+		expect(error!.message).toBe("Insufficient balance to complete this request")
+		expect(error!.message).not.toContain("No output generated")
 	})
 })

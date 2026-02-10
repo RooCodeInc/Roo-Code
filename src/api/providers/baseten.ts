@@ -9,7 +9,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
@@ -118,16 +118,11 @@ export class BasetenHandler extends BaseProvider implements SingleCompletionHand
 		const result = streamText(requestOptions)
 
 		try {
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			const usage = await result.usage
-			if (usage) {
-				yield this.processUsageMetrics(usage)
-			}
+			const processUsage = this.processUsageMetrics.bind(this)
+			yield* consumeAiSdkStream(result, async function* () {
+				const usage = await result.usage
+				yield processUsage(usage)
+			})
 		} catch (error) {
 			throw handleAiSdkError(error, "Baseten")
 		}

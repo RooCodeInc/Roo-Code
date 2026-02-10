@@ -3340,9 +3340,17 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 						const cancelReason: ClineApiReqCancelReason = this.abort ? "user_cancelled" : "streaming_failed"
 
 						const rawErrorMessage = error.message ?? JSON.stringify(serializeError(error), null, 2)
+
+						// Check auto-retry state BEFORE abortStream so we can suppress the error
+						// message on the api_req_started row when backoffAndAnnounce will display it instead.
+						const stateForBackoff = await this.providerRef.deref()?.getState()
+						const willAutoRetry = !this.abort && stateForBackoff?.autoApprovalEnabled
+
 						const streamingFailedMessage = this.abort
 							? undefined
-							: `${t("common:interruption.streamTerminatedByProvider")}: ${rawErrorMessage}`
+							: willAutoRetry
+								? undefined // backoffAndAnnounce will display the error with retry countdown
+								: `${t("common:interruption.streamTerminatedByProvider")}: ${rawErrorMessage}`
 
 						// Clean up partial state
 						await abortStream(cancelReason, streamingFailedMessage)
@@ -3359,7 +3367,6 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 							)
 
 							// Apply exponential backoff similar to first-chunk errors when auto-resubmit is enabled
-							const stateForBackoff = await this.providerRef.deref()?.getState()
 							if (stateForBackoff?.autoApprovalEnabled) {
 								await this.backoffAndAnnounce(currentItem.retryAttempt ?? 0, error)
 

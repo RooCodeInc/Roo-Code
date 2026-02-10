@@ -10,7 +10,7 @@ import { calculateApiCostOpenAI } from "../../shared/cost"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
@@ -199,17 +199,11 @@ export class RequestyHandler extends BaseProvider implements SingleCompletionHan
 		const result = streamText(requestOptions)
 
 		try {
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			const usage = await result.usage
-			const providerMetadata = await result.providerMetadata
-			if (usage) {
-				yield this.processUsageMetrics(usage, info, providerMetadata as RequestyProviderMetadata)
-			}
+			const processUsage = this.processUsageMetrics.bind(this)
+			yield* consumeAiSdkStream(result, async function* () {
+				const [usage, providerMetadata] = await Promise.all([result.usage, result.providerMetadata])
+				yield processUsage(usage, info, providerMetadata as RequestyProviderMetadata)
+			})
 		} catch (error) {
 			throw handleAiSdkError(error, "Requesty")
 		}

@@ -6,7 +6,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import { tool as createTool, jsonSchema, type ModelMessage, type TextStreamPart } from "ai"
-import type { ApiStreamChunk } from "./stream"
+import type { ApiStreamChunk, ApiStream } from "./stream"
 
 /**
  * Options for converting Anthropic messages to AI SDK format.
@@ -461,6 +461,59 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 }
 
 /**
+ * Consume an AI SDK stream result, processing stream parts and handling usage.
+ * Centralizes the common stream consumption pattern shared across all AI SDK
+ * providers, with built-in error recovery that preserves stream error messages
+ * when usage resolution throws (e.g. AI SDK's NoOutputGeneratedError).
+ *
+ * @param result - The stream result object from AI SDK's `streamText()`.
+ *   Must have `fullStream` and `usage` properties.
+ * @param usageHandler - Optional async generator that handles usage processing.
+ *   When provided, the handler is responsible for awaiting usage/providerMetadata
+ *   and yielding usage chunks. When omitted, a default handler awaits
+ *   `result.usage` and yields a basic usage chunk with inputTokens/outputTokens.
+ * @yields ApiStreamChunk objects from the stream and usage processing
+ */
+export async function* consumeAiSdkStream(
+	result: {
+		fullStream: AsyncIterable<ExtendedStreamPart>
+		usage: PromiseLike<{ inputTokens?: number; outputTokens?: number }>
+	},
+	usageHandler?: () => AsyncGenerator<ApiStreamChunk>,
+): ApiStream {
+	let lastStreamError: string | undefined
+
+	for await (const part of result.fullStream) {
+		for (const chunk of processAiSdkStreamPart(part)) {
+			if (chunk.type === "error") {
+				lastStreamError = chunk.message
+			}
+			yield chunk
+		}
+	}
+
+	try {
+		if (usageHandler) {
+			yield* usageHandler()
+		} else {
+			const usage = await result.usage
+			if (usage) {
+				yield {
+					type: "usage" as const,
+					inputTokens: usage.inputTokens || 0,
+					outputTokens: usage.outputTokens || 0,
+				}
+			}
+		}
+	} catch (usageError) {
+		if (lastStreamError) {
+			throw new Error(lastStreamError)
+		}
+		throw usageError
+	}
+}
+
+/**
  * Type for AI SDK tool choice format.
  */
 export type AiSdkToolChoice = "auto" | "none" | "required" | { type: "tool"; toolName: string } | undefined
@@ -502,6 +555,58 @@ export function mapToolChoice(toolChoice: any): AiSdkToolChoice {
 }
 
 /**
+ * Extract a human-readable error message from an API response body string.
+ * Handles common JSON error formats returned by AI providers.
+ *
+ * @param responseBody - The raw HTTP response body string
+ * @returns The extracted error message, or undefined if none found
+ */
+export function extractMessageFromResponseBody(responseBody: string): string | undefined {
+	if (!responseBody || typeof responseBody !== "string") {
+		return undefined
+	}
+
+	try {
+		const parsed: unknown = JSON.parse(responseBody)
+
+		if (typeof parsed !== "object" || parsed === null) {
+			return undefined
+		}
+
+		const obj = parsed as Record<string, unknown>
+
+		// Format: {"error": {"message": "...", "code": "..."}} or {"error": {"message": "..."}}
+		if (typeof obj.error === "object" && obj.error !== null) {
+			const errorObj = obj.error as Record<string, unknown>
+			if (typeof errorObj.message === "string" && errorObj.message) {
+				if (typeof errorObj.code === "string" && errorObj.code) {
+					return `[${errorObj.code}] ${errorObj.message}`
+				}
+				if (typeof errorObj.code === "number") {
+					return `[${errorObj.code}] ${errorObj.message}`
+				}
+				return errorObj.message
+			}
+		}
+
+		// Format: {"error": "string message"}
+		if (typeof obj.error === "string" && obj.error) {
+			return obj.error
+		}
+
+		// Format: {"message": "..."}
+		if (typeof obj.message === "string" && obj.message) {
+			return obj.message
+		}
+
+		return undefined
+	} catch {
+		// JSON parse failed — responseBody is not valid JSON
+		return undefined
+	}
+}
+
+/**
  * Extract a user-friendly error message from AI SDK errors.
  * The AI SDK wraps errors in types like AI_RetryError and AI_APICallError
  * which need to be unwrapped to get the actual error message.
@@ -514,18 +619,41 @@ export function extractAiSdkErrorMessage(error: unknown): string {
 		return "Unknown error"
 	}
 
-	// Cast to access AI SDK error properties
-	const anyError = error as any
+	if (typeof error !== "object") {
+		return String(error)
+	}
+
+	const errorObj = error as Record<string, unknown>
 
 	// AI_RetryError has a lastError property with the actual error
-	if (anyError.name === "AI_RetryError") {
-		const retryCount = anyError.errors?.length || 0
-		const lastError = anyError.lastError
-		const lastErrorMessage = lastError?.message || lastError?.toString() || "Unknown error"
+	if (errorObj.name === "AI_RetryError") {
+		const retryCount = Array.isArray(errorObj.errors) ? errorObj.errors.length : 0
+		const lastError = errorObj.lastError
+
+		// Try to extract message from lastError's responseBody first
+		let lastErrorMessage: string | undefined
+		if (
+			typeof lastError === "object" &&
+			lastError !== null &&
+			"responseBody" in lastError &&
+			typeof (lastError as Record<string, unknown>).responseBody === "string"
+		) {
+			lastErrorMessage = extractMessageFromResponseBody(
+				(lastError as Record<string, unknown>).responseBody as string,
+			)
+		}
+
+		if (!lastErrorMessage) {
+			lastErrorMessage =
+				typeof lastError === "object" && lastError !== null && "message" in lastError
+					? String((lastError as Record<string, unknown>).message)
+					: lastError
+						? String(lastError)
+						: "Unknown error"
+		}
 
 		// Extract status code if available
-		const statusCode =
-			lastError?.status || lastError?.statusCode || anyError.status || anyError.statusCode || undefined
+		const statusCode = getStatusCode(lastError) ?? getStatusCode(error)
 
 		if (statusCode) {
 			return `Failed after ${retryCount} attempts (${statusCode}): ${lastErrorMessage}`
@@ -533,13 +661,52 @@ export function extractAiSdkErrorMessage(error: unknown): string {
 		return `Failed after ${retryCount} attempts: ${lastErrorMessage}`
 	}
 
-	// AI_APICallError has message and optional status
-	if (anyError.name === "AI_APICallError") {
-		const statusCode = anyError.status || anyError.statusCode
-		if (statusCode) {
-			return `API Error (${statusCode}): ${anyError.message}`
+	// AI_APICallError has message, optional status, and responseBody
+	if (errorObj.name === "AI_APICallError") {
+		const statusCode = getStatusCode(error)
+
+		// Try to extract a richer message from responseBody
+		let message: string | undefined
+		if ("responseBody" in errorObj && typeof errorObj.responseBody === "string") {
+			message = extractMessageFromResponseBody(errorObj.responseBody)
 		}
-		return anyError.message || "API call failed"
+
+		if (!message) {
+			message = typeof errorObj.message === "string" ? errorObj.message : "API call failed"
+		}
+
+		if (statusCode) {
+			return `API Error (${statusCode}): ${message}`
+		}
+		return message
+	}
+
+	// AI_NoOutputGeneratedError wraps a cause that may be an APICallError
+	if (errorObj.name === "AI_NoOutputGeneratedError" || errorObj.name === "NoOutputGeneratedError") {
+		const cause = errorObj.cause
+		if (typeof cause === "object" && cause !== null) {
+			const causeObj = cause as Record<string, unknown>
+			// If cause is an AI_APICallError, recursively extract its message
+			if (causeObj.name === "AI_APICallError") {
+				return extractAiSdkErrorMessage(cause)
+			}
+			// Try responseBody on the cause directly
+			if ("responseBody" in causeObj && typeof causeObj.responseBody === "string") {
+				const bodyMessage = extractMessageFromResponseBody(causeObj.responseBody)
+				if (bodyMessage) {
+					return bodyMessage
+				}
+			}
+			// Fall through to cause's message
+			if ("message" in causeObj && typeof causeObj.message === "string") {
+				return causeObj.message
+			}
+		}
+		// Fall back to the error's own message
+		if (typeof errorObj.message === "string" && errorObj.message) {
+			return errorObj.message
+		}
+		return "No output generated"
 	}
 
 	// Standard Error
@@ -549,6 +716,23 @@ export function extractAiSdkErrorMessage(error: unknown): string {
 
 	// Fallback for non-Error objects
 	return String(error)
+}
+
+/**
+ * Extract a numeric status code from an error-like object.
+ */
+function getStatusCode(obj: unknown): number | undefined {
+	if (typeof obj !== "object" || obj === null) {
+		return undefined
+	}
+	const record = obj as Record<string, unknown>
+	if (typeof record.status === "number") {
+		return record.status
+	}
+	if (typeof record.statusCode === "number") {
+		return record.statusCode
+	}
+	return undefined
 }
 
 /**

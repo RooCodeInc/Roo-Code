@@ -151,6 +151,7 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 		try {
 			const result = streamText(requestOptions)
 
+			let lastStreamError: string | undefined
 			for await (const part of result.fullStream) {
 				// Capture thinking signature from stream events
 				// The AI SDK's @ai-sdk/anthropic emits the signature as a reasoning-delta
@@ -169,15 +170,25 @@ export class AnthropicHandler extends BaseProvider implements SingleCompletionHa
 				}
 
 				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "error") {
+						lastStreamError = chunk.message
+					}
 					yield chunk
 				}
 			}
 
 			// Yield usage metrics at the end, including cache metrics from providerMetadata
-			const usage = await result.usage
-			const providerMetadata = await result.providerMetadata
-			if (usage) {
-				yield this.processUsageMetrics(usage, modelConfig.info, providerMetadata)
+			try {
+				const usage = await result.usage
+				const providerMetadata = await result.providerMetadata
+				if (usage) {
+					yield this.processUsageMetrics(usage, modelConfig.info, providerMetadata)
+				}
+			} catch (usageError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
+				throw usageError
 			}
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error)

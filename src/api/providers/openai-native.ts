@@ -22,7 +22,7 @@ import { calculateApiCostOpenAI } from "../../shared/cost"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
@@ -463,48 +463,55 @@ export class OpenAiNativeHandler extends BaseProvider implements SingleCompletio
 
 		const result = streamText(requestOptions)
 
+		const processUsage = this.processUsageMetrics.bind(this)
+		const setResponseId = (id: string) => {
+			this.lastResponseId = id
+		}
+		const setServiceTier = (tier: ServiceTier) => {
+			this.lastServiceTier = tier
+		}
+		const setEncryptedContent = (content: { encrypted_content: string; id?: string }) => {
+			this.lastEncryptedContent = content
+		}
 		try {
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
+			yield* consumeAiSdkStream(result, async function* () {
+				const providerMeta = await result.providerMetadata
+				const openaiMeta = providerMeta?.openai as Record<string, unknown> | undefined
+
+				if (typeof openaiMeta?.responseId === "string") {
+					setResponseId(openaiMeta.responseId)
 				}
-			}
+				if (typeof openaiMeta?.serviceTier === "string") {
+					setServiceTier(openaiMeta.serviceTier as ServiceTier)
+				}
 
-			const providerMeta = await result.providerMetadata
-			const openaiMeta = (providerMeta as any)?.openai
-
-			if (openaiMeta?.responseId) {
-				this.lastResponseId = openaiMeta.responseId
-			}
-			if (openaiMeta?.serviceTier) {
-				this.lastServiceTier = openaiMeta.serviceTier as ServiceTier
-			}
-
-			// Capture encrypted content from reasoning parts in the response
-			try {
-				const content = await (result as any).content
-				if (Array.isArray(content)) {
-					for (const part of content) {
-						if (part.type === "reasoning" && part.providerMetadata) {
-							const partMeta = (part.providerMetadata as any)?.openai
-							if (partMeta?.reasoningEncryptedContent) {
-								this.lastEncryptedContent = {
-									encrypted_content: partMeta.reasoningEncryptedContent,
-									...(partMeta.itemId ? { id: partMeta.itemId } : {}),
+				// Capture encrypted content from reasoning parts in the response
+				try {
+					const content = await (result as unknown as { content?: Promise<unknown[]> }).content
+					if (Array.isArray(content)) {
+						for (const part of content) {
+							const p = part as Record<string, unknown>
+							if (p.type === "reasoning" && p.providerMetadata) {
+								const partMeta = (p.providerMetadata as Record<string, Record<string, unknown>>)?.openai
+								if (typeof partMeta?.reasoningEncryptedContent === "string") {
+									setEncryptedContent({
+										encrypted_content: partMeta.reasoningEncryptedContent,
+										...(typeof partMeta.itemId === "string" ? { id: partMeta.itemId } : {}),
+									})
+									break
 								}
-								break
 							}
 						}
 					}
+				} catch {
+					// Content parts with encrypted reasoning may not always be available
 				}
-			} catch {
-				// Content parts with encrypted reasoning may not always be available
-			}
 
-			const usage = await result.usage
-			if (usage) {
-				yield this.processUsageMetrics(usage, model, providerMeta as any)
-			}
+				const usage = await result.usage
+				if (usage) {
+					yield processUsage(usage, model, providerMeta as Parameters<typeof processUsage>[2])
+				}
+			})
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)
 		}

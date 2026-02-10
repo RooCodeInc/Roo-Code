@@ -17,7 +17,7 @@ import { type ApiHandlerOptions, shouldUseReasoningEffort } from "../../shared/a
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
@@ -127,20 +127,7 @@ export class ZAiHandler extends BaseProvider implements SingleCompletionHandler 
 		const result = streamText(requestOptions)
 
 		try {
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			const usage = await result.usage
-			if (usage) {
-				yield {
-					type: "usage" as const,
-					inputTokens: usage.inputTokens || 0,
-					outputTokens: usage.outputTokens || 0,
-				}
-			}
+			yield* consumeAiSdkStream(result)
 		} catch (error) {
 			throw handleAiSdkError(error, "Z.ai")
 		}

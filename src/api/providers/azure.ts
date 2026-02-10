@@ -9,7 +9,7 @@ import type { ApiHandlerOptions } from "../../shared/api"
 import {
 	convertToAiSdkMessages,
 	convertToolsForAiSdk,
-	processAiSdkStreamPart,
+	consumeAiSdkStream,
 	mapToolChoice,
 	handleAiSdkError,
 } from "../transform/ai-sdk"
@@ -159,19 +159,11 @@ export class AzureHandler extends BaseProvider implements SingleCompletionHandle
 		const result = streamText(requestOptions)
 
 		try {
-			// Process the full stream to get all events including reasoning
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			// Yield usage metrics at the end, including cache metrics from providerMetadata
-			const usage = await result.usage
-			const providerMetadata = await result.providerMetadata
-			if (usage) {
-				yield this.processUsageMetrics(usage, providerMetadata as any)
-			}
+			const processUsage = this.processUsageMetrics.bind(this)
+			yield* consumeAiSdkStream(result, async function* () {
+				const [usage, providerMetadata] = await Promise.all([result.usage, result.providerMetadata])
+				yield processUsage(usage, providerMetadata as Parameters<typeof processUsage>[1])
+			})
 		} catch (error) {
 			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
 			throw handleAiSdkError(error, "Azure AI Foundry")

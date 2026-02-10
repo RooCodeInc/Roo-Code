@@ -133,6 +133,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 			// Track whether any text content was yielded (not just reasoning/thinking)
 			let hasContent = false
+			let lastStreamError: string | undefined
 
 			// Process the full stream to get all events including reasoning
 			for await (const part of result.fullStream) {
@@ -146,6 +147,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 				}
 
 				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "error") {
+						lastStreamError = chunk.message
+					}
 					if (chunk.type === "text" || chunk.type === "tool_call_start") {
 						hasContent = true
 					}
@@ -163,7 +167,15 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 			}
 
 			// Extract grounding sources from providerMetadata if available
-			const providerMetadata = await result.providerMetadata
+			let providerMetadata: Awaited<typeof result.providerMetadata>
+			try {
+				providerMetadata = await result.providerMetadata
+			} catch (metaError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
+				throw metaError
+			}
 			const groundingMetadata = providerMetadata?.google as
 				| {
 						groundingMetadata?: {
@@ -190,6 +202,9 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 					yield this.processUsageMetrics(usage, info, providerMetadata)
 				}
 			} catch (usageError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
 				if (usageError instanceof NoOutputGeneratedError) {
 					// If we already yielded the empty-stream message, suppress this error
 					if (hasContent) {

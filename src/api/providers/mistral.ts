@@ -12,12 +12,7 @@ import {
 
 import type { ApiHandlerOptions } from "../../shared/api"
 
-import {
-	convertToAiSdkMessages,
-	convertToolsForAiSdk,
-	processAiSdkStreamPart,
-	handleAiSdkError,
-} from "../transform/ai-sdk"
+import { convertToAiSdkMessages, convertToolsForAiSdk, consumeAiSdkStream, handleAiSdkError } from "../transform/ai-sdk"
 import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 
@@ -170,20 +165,12 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 		const result = streamText(requestOptions)
 
 		try {
-			// Process the full stream to get all events including reasoning
-			for await (const part of result.fullStream) {
-				for (const chunk of processAiSdkStreamPart(part)) {
-					yield chunk
-				}
-			}
-
-			// Yield usage metrics at the end
-			const usage = await result.usage
-			if (usage) {
-				yield this.processUsageMetrics(usage)
-			}
+			const processUsage = this.processUsageMetrics.bind(this)
+			yield* consumeAiSdkStream(result, async function* () {
+				const usage = await result.usage
+				yield processUsage(usage)
+			})
 		} catch (error) {
-			// Handle AI SDK errors (AI_RetryError, AI_APICallError, etc.)
 			throw handleAiSdkError(error, "Mistral")
 		}
 	}
