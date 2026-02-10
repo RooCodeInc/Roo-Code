@@ -242,28 +242,17 @@ export default function WhatIsRooCodePage() {
 						files, executing commands, running tests, and adapting to your workflow.
 					</p>
 					<p className="text-lg text-muted-foreground text-center max-w-3xl mx-auto mb-10 leading-relaxed">
-						The{" "}
-						<Link href="/extension" className="text-primary underline-offset-4 hover:underline">
-							Roo Code VS Code Extension
-						</Link>{" "}
-						is free, open-source, and the #1 most-installed open-source AI coding extension.{" "}
 						<Link href="/cloud" className="text-primary underline-offset-4 hover:underline">
 							Roo Code Cloud
 						</Link>{" "}
-						extends this with autonomous AI agents that run 24/7 in the background.
+						gives you autonomous AI agents that run 24/7 in the background. The{" "}
+						<Link href="/extension" className="text-primary underline-offset-4 hover:underline">
+							Roo Code VS Code Extension
+						</Link>{" "}
+						is free, open-source, and the #1 most-installed open-source AI coding extension.
 					</p>
 					<div className="flex flex-col sm:flex-row items-center justify-center gap-4">
 						<Button size="lg" className="w-full sm:w-auto h-12 px-8 text-base" asChild>
-							<a
-								href={EXTERNAL_LINKS.MARKETPLACE}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center gap-2">
-								<Download className="h-4 w-4" />
-								Install on VS Code
-							</a>
-						</Button>
-						<Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-8 text-base" asChild>
 							<a
 								href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_HOME}
 								target="_blank"
@@ -271,6 +260,16 @@ export default function WhatIsRooCodePage() {
 								className="flex items-center gap-2">
 								Try Cloud for Free
 								<ArrowRight className="h-4 w-4" />
+							</a>
+						</Button>
+						<Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-8 text-base" asChild>
+							<a
+								href={EXTERNAL_LINKS.MARKETPLACE}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="flex items-center gap-2">
+								<Download className="h-4 w-4" />
+								Install on VS Code
 							</a>
 						</Button>
 					</div>
@@ -284,37 +283,10 @@ export default function WhatIsRooCodePage() {
 						Two products, one platform
 					</h2>
 					<p className="text-xl text-muted-foreground text-center max-w-2xl mx-auto mb-12">
-						Use the extension for hands-on work. Use Cloud to delegate tasks to autonomous agents.
+						Use Cloud to delegate tasks to autonomous agents. Use the extension for hands-on work.
 					</p>
 
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-						<div className="rounded-2xl bg-card border border-border p-8 shadow-sm">
-							<div className="flex items-center gap-3 mb-4">
-								<div className="rounded-lg bg-blue-100 dark:bg-blue-900/20 p-2.5">
-									<Laptop className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-								</div>
-								<h3 className="text-2xl font-bold">VS Code Extension</h3>
-							</div>
-							<p className="font-semibold text-blue-600 dark:text-blue-400 mb-3">
-								For interactive, hands-on work
-							</p>
-							<p className="text-muted-foreground mb-4 leading-relaxed">
-								Run Roo directly in VS Code (or any fork, including Cursor). Stay close to the code and
-								control everything: approve every action, manage the context window, preview changes
-								live, and write code by hand when you want to.
-							</p>
-							<p className="text-muted-foreground mb-6 leading-relaxed">
-								Ideal for real-time debugging, quick iteration, and hands-on development where you need
-								full, immediate control.
-							</p>
-							<Button size="sm" variant="outline" asChild>
-								<Link href="/extension" className="flex items-center gap-2">
-									Learn more
-									<ArrowRight className="h-3 w-3" />
-								</Link>
-							</Button>
-						</div>
-
 						<div className="rounded-2xl bg-card border border-border p-8 shadow-sm">
 							<div className="flex items-center gap-3 mb-4">
 								<div className="rounded-lg bg-violet-100 dark:bg-violet-900/20 p-2.5">
@@ -336,6 +308,33 @@ export default function WhatIsRooCodePage() {
 							</p>
 							<Button size="sm" variant="outline" asChild>
 								<Link href="/cloud" className="flex items-center gap-2">
+									Learn more
+									<ArrowRight className="h-3 w-3" />
+								</Link>
+							</Button>
+						</div>
+
+						<div className="rounded-2xl bg-card border border-border p-8 shadow-sm">
+							<div className="flex items-center gap-3 mb-4">
+								<div className="rounded-lg bg-blue-100 dark:bg-blue-900/20 p-2.5">
+									<Laptop className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+								</div>
+								<h3 className="text-2xl font-bold">VS Code Extension</h3>
+							</div>
+							<p className="font-semibold text-blue-600 dark:text-blue-400 mb-3">
+								For interactive, hands-on work
+							</p>
+							<p className="text-muted-foreground mb-4 leading-relaxed">
+								Run Roo directly in VS Code (or any fork, including Cursor). Stay close to the code and
+								control everything: approve every action, manage the context window, preview changes
+								live, and write code by hand when you want to.
+							</p>
+							<p className="text-muted-foreground mb-6 leading-relaxed">
+								Ideal for real-time debugging, quick iteration, and hands-on development where you need
+								full, immediate control.
+							</p>
+							<Button size="sm" variant="outline" asChild>
+								<Link href="/extension" className="flex items-center gap-2">
 									Learn more
 									<ArrowRight className="h-3 w-3" />
 								</Link>
@@ -688,22 +687,22 @@ export default function WhatIsRooCodePage() {
 					<div className="flex flex-col sm:flex-row items-center justify-center gap-4">
 						<Button size="lg" className="w-full sm:w-auto h-12 px-8 text-base" asChild>
 							<a
-								href={EXTERNAL_LINKS.MARKETPLACE}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center gap-2">
-								<Download className="h-4 w-4" />
-								Install on VS Code
-							</a>
-						</Button>
-						<Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-8 text-base" asChild>
-							<a
 								href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_HOME}
 								target="_blank"
 								rel="noopener noreferrer"
 								className="flex items-center gap-2">
 								Try Cloud for Free
 								<ArrowRight className="h-4 w-4" />
+							</a>
+						</Button>
+						<Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-8 text-base" asChild>
+							<a
+								href={EXTERNAL_LINKS.MARKETPLACE}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="flex items-center gap-2">
+								<Download className="h-4 w-4" />
+								Install on VS Code
 							</a>
 						</Button>
 					</div>
