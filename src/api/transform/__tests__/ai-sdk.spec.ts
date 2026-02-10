@@ -908,6 +908,55 @@ describe("AI SDK conversion utilities", () => {
 
 			expect((result as any).cause).toBe(originalError)
 		})
+
+		it("should call onError with extracted message and original error", () => {
+			const originalError = new Error("Quota exceeded")
+			const onError = vi.fn()
+
+			handleAiSdkError(originalError, "Gemini", { onError })
+
+			expect(onError).toHaveBeenCalledOnce()
+			expect(onError).toHaveBeenCalledWith("Quota exceeded", originalError)
+		})
+
+		it("should use formatMessage to override default message format", () => {
+			const error = new Error("Rate limit hit")
+			const formatMessage = (msg: string) => `Custom: ${msg}`
+
+			const result = handleAiSdkError(error, "Vertex", { formatMessage })
+
+			expect(result.message).toBe("Custom: Rate limit hit")
+		})
+
+		it("should call onError and use formatMessage together", () => {
+			const originalError = {
+				name: "AI_APICallError",
+				message: "Forbidden",
+				status: 403,
+			}
+			const onError = vi.fn()
+			const formatMessage = (msg: string) => `Translated: ${msg}`
+
+			const result = handleAiSdkError(originalError, "Gemini", { onError, formatMessage })
+
+			// onError receives the extracted message
+			expect(onError).toHaveBeenCalledOnce()
+			expect(onError.mock.calls[0][0]).toContain("403")
+			expect(onError.mock.calls[0][1]).toBe(originalError)
+
+			// formatMessage overrides the thrown message
+			expect(result.message).toMatch(/^Translated:/)
+
+			// Status code is still preserved
+			expect((result as any).status).toBe(403)
+		})
+
+		it("should use default format when no options are provided", () => {
+			const error = new Error("Something broke")
+			const result = handleAiSdkError(error, "TestProvider")
+
+			expect(result.message).toBe("TestProvider: Something broke")
+		})
 	})
 
 	describe("extractMessageFromResponseBody", () => {
