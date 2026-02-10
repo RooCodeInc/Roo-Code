@@ -125,9 +125,13 @@ export function getModelParams({
 			reasoningBudget = minThinkingTokens
 		}
 
-		// Let's assume that "Hybrid" reasoning models require a temperature of
-		// 1.0 since Anthropic does.
-		temperature = 1.0
+		// Hybrid reasoning models typically require temperature = 1.0
+		// (Anthropic enforces this server-side for extended thinking).
+		// However, respect the user's explicitly-set temperature if provided,
+		// especially for non-Anthropic providers routed through OpenRouter.
+		if (customTemperature === undefined) {
+			temperature = 1.0
+		}
 	} else if (shouldUseReasoningEffort({ model, settings })) {
 		// "Traditional" reasoning models use the `reasoningEffort` parameter.
 		// Only fallback to model default if user hasn't explicitly set a value.

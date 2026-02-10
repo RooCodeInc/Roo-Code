@@ -1,5 +1,4 @@
 import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
 import { streamText, generateText } from "ai"
 
@@ -9,7 +8,6 @@ import {
 	openRouterDefaultModelId,
 	openRouterDefaultModelInfo,
 	OPENROUTER_DEFAULT_PROVIDER_NAME,
-	OPEN_ROUTER_PROMPT_CACHING_MODELS,
 	DEEP_SEEK_DEFAULT_TEMPERATURE,
 	ApiProviderError,
 } from "@roo-code/types"
@@ -18,15 +16,7 @@ import { TelemetryService } from "@roo-code/telemetry"
 import type { ApiHandlerOptions } from "../../shared/api"
 import { calculateApiCostOpenAI } from "../../shared/cost"
 
-import {
-	convertToOpenAiMessages,
-	sanitizeGeminiMessages,
-	consolidateReasoningDetails,
-	type ReasoningDetail,
-} from "../transform/openai-format"
-import { convertToR1Format } from "../transform/r1-format"
-import { addCacheBreakpoints as addAnthropicCacheBreakpoints } from "../transform/caching/anthropic"
-import { addCacheBreakpoints as addGeminiCacheBreakpoints } from "../transform/caching/gemini"
+import { type ReasoningDetail } from "../transform/openai-format"
 import { getModelParams } from "../transform/model-params"
 import { convertToAiSdkMessages, convertToolsForAiSdk, processAiSdkStreamPart } from "../transform/ai-sdk"
 
@@ -77,16 +67,12 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 	private createOpenRouterProvider(options?: {
 		reasoning?: { effort?: string; max_tokens?: number; exclude?: boolean }
 		headers?: Record<string, string>
-		openAiMessages?: OpenAI.Chat.ChatCompletionMessageParam[]
 	}) {
 		const apiKey = this.options.openRouterApiKey ?? "not-provided"
 		const baseURL = this.options.openRouterBaseUrl || "https://openrouter.ai/api/v1"
 		const extraBody: Record<string, unknown> = {}
 		if (options?.reasoning) {
 			extraBody.reasoning = options.reasoning
-		}
-		if (options?.openAiMessages) {
-			extraBody.messages = options.openAiMessages
 		}
 		return createOpenRouter({
 			apiKey,
@@ -142,59 +128,6 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		}
 	}
 
-	private buildOpenAiMessages(
-		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
-		modelId: string,
-	): OpenAI.Chat.ChatCompletionMessageParam[] | undefined {
-		const isR1 = modelId.startsWith("deepseek/deepseek-r1") || modelId === "perplexity/sonar-reasoning"
-		const isGemini = modelId.startsWith("google/gemini")
-		const needsCaching = OPEN_ROUTER_PROMPT_CACHING_MODELS.has(modelId)
-		if (!isR1 && !isGemini && !needsCaching) {
-			return undefined
-		}
-		let openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[]
-		if (isR1) {
-			openAiMessages = convertToR1Format([{ role: "user", content: systemPrompt }, ...messages])
-		} else {
-			openAiMessages = [{ role: "system", content: systemPrompt }, ...convertToOpenAiMessages(messages)]
-		}
-		if (isGemini) {
-			openAiMessages = sanitizeGeminiMessages(openAiMessages, modelId)
-			openAiMessages = openAiMessages.map((msg) => {
-				if (msg.role === "assistant") {
-					const toolCalls = (msg as any).tool_calls as any[] | undefined
-					const existingDetails = (msg as any).reasoning_details as any[] | undefined
-					if (toolCalls && toolCalls.length > 0) {
-						const hasEncrypted = existingDetails?.some((d) => d.type === "reasoning.encrypted") ?? false
-						if (!hasEncrypted) {
-							const fakeEncrypted = {
-								type: "reasoning.encrypted",
-								data: "skip_thought_signature_validator",
-								id: toolCalls[0].id,
-								format: "google-gemini-v1",
-								index: 0,
-							}
-							return {
-								...msg,
-								reasoning_details: [...(existingDetails ?? []), fakeEncrypted],
-							}
-						}
-					}
-				}
-				return msg
-			})
-		}
-		if (needsCaching) {
-			if (modelId.startsWith("google/")) {
-				addGeminiCacheBreakpoints(systemPrompt, openAiMessages)
-			} else {
-				addAnthropicCacheBreakpoints(systemPrompt, openAiMessages)
-			}
-		}
-		return openAiMessages
-	}
-
 	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
@@ -216,12 +149,9 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			? { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" }
 			: undefined
 
-		const openAiMessages = this.buildOpenAiMessages(systemPrompt, messages, modelId)
-		const openrouter = this.createOpenRouterProvider({ reasoning, headers, openAiMessages })
+		const aiSdkMessages = convertToAiSdkMessages(messages)
 
-		const coreMessages = openAiMessages
-			? convertToAiSdkMessages([{ role: "user", content: "." }])
-			: convertToAiSdkMessages(messages)
+		const openrouter = this.createOpenRouterProvider({ reasoning, headers })
 
 		const tools = convertToolsForAiSdk(metadata?.tools)
 
@@ -250,8 +180,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 		try {
 			const result = streamText({
 				model: openrouter.chat(modelId),
-				...(openAiMessages ? {} : { system: systemPrompt }),
-				messages: coreMessages,
+				system: systemPrompt,
+				messages: aiSdkMessages,
 				maxOutputTokens: maxTokens && maxTokens > 0 ? maxTokens : undefined,
 				temperature,
 				topP,
@@ -261,7 +191,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			})
 
 			for await (const part of result.fullStream) {
-				if (part.type === "reasoning-delta") {
+				if (part.type === "reasoning-delta" && part.text !== "[REDACTED]") {
 					accumulatedReasoningText += part.text
 				}
 				yield* processAiSdkStreamPart(part)
@@ -283,7 +213,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				| undefined
 
 			if (providerReasoningDetails && providerReasoningDetails.length > 0) {
-				this.currentReasoningDetails = consolidateReasoningDetails(providerReasoningDetails)
+				this.currentReasoningDetails = providerReasoningDetails
 			}
 
 			const usage = await result.usage

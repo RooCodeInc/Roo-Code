@@ -501,6 +501,132 @@ describe("AI SDK conversion utilities", () => {
 			expect(toolCallPart).toBeDefined()
 			expect(toolCallPart.providerOptions).toBeUndefined()
 		})
+
+		it("attaches valid reasoning_details as providerOptions.openrouter, filtering invalid entries", () => {
+			const validEncrypted = {
+				type: "reasoning.encrypted",
+				data: "encrypted_blob_data",
+				id: "tool_call_123",
+				format: "google-gemini-v1",
+				index: 0,
+			}
+			const invalidEncrypted = {
+				// type is "reasoning.encrypted" but has text instead of data —
+				// this is a plaintext summary mislabeled as encrypted by Gemini/OpenRouter.
+				// The provider's ReasoningDetailEncryptedSchema requires `data: string`,
+				// so including this causes the entire Zod safeParse to fail.
+				type: "reasoning.encrypted",
+				text: "Plaintext reasoning summary",
+				id: "tool_call_123",
+				format: "google-gemini-v1",
+				index: 0,
+			}
+			const textWithSignature = {
+				type: "reasoning.text",
+				text: "Some reasoning content",
+				signature: "stale-signature-from-previous-model",
+			}
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "text", text: "Using a tool" },
+						{
+							type: "tool_use",
+							id: "tool_call_123",
+							name: "attempt_completion",
+							input: { result: "done" },
+						},
+					],
+					reasoning_details: [validEncrypted, invalidEncrypted, textWithSignature],
+				} as any,
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			const assistantMsg = result[0] as any
+			expect(assistantMsg.role).toBe("assistant")
+			expect(assistantMsg.providerOptions).toBeDefined()
+			expect(assistantMsg.providerOptions.openrouter).toBeDefined()
+			const details = assistantMsg.providerOptions.openrouter.reasoning_details
+			// Only the valid entries should survive filtering (invalidEncrypted dropped)
+			expect(details).toHaveLength(2)
+			expect(details[0]).toEqual(validEncrypted)
+			// Signatures should be preserved as-is for same-model Anthropic conversations via OpenRouter
+			expect(details[1]).toEqual(textWithSignature)
+		})
+
+		it("does not attach providerOptions when no reasoning_details are present", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [{ type: "text", text: "Just text" }],
+				},
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			const assistantMsg = result[0] as any
+			expect(assistantMsg.providerOptions).toBeUndefined()
+		})
+
+		it("does not attach providerOptions when reasoning_details is an empty array", () => {
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [{ type: "text", text: "Just text" }],
+					reasoning_details: [],
+				} as any,
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			const assistantMsg = result[0] as any
+			expect(assistantMsg.providerOptions).toBeUndefined()
+		})
+
+		it("preserves both reasoning_details and thoughtSignature providerOptions", () => {
+			const reasoningDetails = [
+				{
+					type: "reasoning.encrypted",
+					data: "encrypted_data",
+					id: "tool_call_abc",
+					format: "google-gemini-v1",
+					index: 0,
+				},
+			]
+
+			const messages: Anthropic.Messages.MessageParam[] = [
+				{
+					role: "assistant",
+					content: [
+						{ type: "thoughtSignature", thoughtSignature: "sig-xyz" } as any,
+						{ type: "text", text: "Using tool" },
+						{
+							type: "tool_use",
+							id: "tool_call_abc",
+							name: "read_file",
+							input: { path: "test.ts" },
+						},
+					],
+					reasoning_details: reasoningDetails,
+				} as any,
+			]
+
+			const result = convertToAiSdkMessages(messages)
+
+			expect(result).toHaveLength(1)
+			const assistantMsg = result[0] as any
+			// Message-level providerOptions carries reasoning_details
+			expect(assistantMsg.providerOptions.openrouter.reasoning_details).toEqual(reasoningDetails)
+			// Part-level providerOptions carries thoughtSignature on the first tool-call
+			const toolCallPart = assistantMsg.content.find((p: any) => p.type === "tool-call")
+			expect(toolCallPart.providerOptions.google.thoughtSignature).toBe("sig-xyz")
+		})
 	})
 
 	describe("convertToolsForAiSdk", () => {
@@ -685,6 +811,27 @@ describe("AI SDK conversion utilities", () => {
 				const chunks = [...processAiSdkStreamPart(event as any)]
 				expect(chunks).toHaveLength(0)
 			}
+		})
+		it("should filter [REDACTED] from reasoning-delta parts", () => {
+			const redactedPart = { type: "reasoning-delta" as const, text: "[REDACTED]" }
+			const normalPart = { type: "reasoning-delta" as const, text: "actual reasoning" }
+
+			const redactedResult = [...processAiSdkStreamPart(redactedPart as any)]
+			const normalResult = [...processAiSdkStreamPart(normalPart as any)]
+
+			expect(redactedResult).toEqual([])
+			expect(normalResult).toEqual([{ type: "reasoning", text: "actual reasoning" }])
+		})
+
+		it("should filter [REDACTED] from reasoning (fullStream format) parts", () => {
+			const redactedPart = { type: "reasoning" as const, text: "[REDACTED]" }
+			const normalPart = { type: "reasoning" as const, text: "actual reasoning" }
+
+			const redactedResult = [...processAiSdkStreamPart(redactedPart as any)]
+			const normalResult = [...processAiSdkStreamPart(normalPart as any)]
+
+			expect(redactedResult).toEqual([])
+			expect(normalResult).toEqual([{ type: "reasoning", text: "actual reasoning" }])
 		})
 	})
 

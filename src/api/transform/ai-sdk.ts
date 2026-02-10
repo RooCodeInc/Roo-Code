@@ -205,7 +205,7 @@ export function convertToAiSdkMessages(
 						if (typeof thinkingPart.thinking === "string" && thinkingPart.thinking.length > 0) {
 							reasoningParts.push(thinkingPart.thinking)
 						}
-						// Capture the signature for round-tripping (Anthropic/Bedrock thinking)
+						// Capture the signature for round-tripping (Anthropic/Bedrock thinking).
 						if (thinkingPart.signature) {
 							thinkingSignature = thinkingPart.signature
 						}
@@ -249,10 +249,40 @@ export function convertToAiSdkMessages(
 				}
 				content.push(...toolCalls)
 
-				modelMessages.push({
+				// Carry reasoning_details through to providerOptions for OpenRouter round-tripping
+				// (used by Gemini 3, xAI, etc. for encrypted reasoning chain continuity).
+				// The @openrouter/ai-sdk-provider reads message-level providerOptions.openrouter.reasoning_details
+				// and validates them against ReasoningDetailUnionSchema (a strict Zod union).
+				// Invalid entries (e.g. type "reasoning.encrypted" without a `data` field) must be
+				// filtered out here, otherwise the entire safeParse fails and NO reasoning_details
+				// are included in the outgoing request.
+				const rawReasoningDetails = (message as unknown as { reasoning_details?: Record<string, unknown>[] })
+					.reasoning_details
+				const validReasoningDetails = rawReasoningDetails?.filter((detail) => {
+					switch (detail.type) {
+						case "reasoning.encrypted":
+							return typeof detail.data === "string" && detail.data.length > 0
+						case "reasoning.text":
+							return typeof detail.text === "string"
+						case "reasoning.summary":
+							return typeof detail.summary === "string"
+						default:
+							return false
+					}
+				})
+
+				const assistantMessage: Record<string, unknown> = {
 					role: "assistant",
 					content: content.length > 0 ? content : [{ type: "text", text: "" }],
-				} as ModelMessage)
+				}
+
+				if (validReasoningDetails && validReasoningDetails.length > 0) {
+					assistantMessage.providerOptions = {
+						openrouter: { reasoning_details: validReasoningDetails },
+					}
+				}
+
+				modelMessages.push(assistantMessage as ModelMessage)
 			}
 		}
 	}
@@ -387,9 +417,13 @@ export function* processAiSdkStreamPart(part: ExtendedStreamPart): Generator<Api
 			break
 
 		case "reasoning":
-		case "reasoning-delta":
-			yield { type: "reasoning", text: (part as { text: string }).text }
+		case "reasoning-delta": {
+			const text = (part as { text: string }).text
+			if (text !== "[REDACTED]") {
+				yield { type: "reasoning", text }
+			}
 			break
+		}
 
 		case "tool-input-start":
 			yield {

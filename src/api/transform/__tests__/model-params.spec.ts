@@ -830,8 +830,28 @@ describe("getModelParams", () => {
 
 			expect(result.maxTokens).toBe(20000)
 			expect(result.reasoningBudget).toBe(10000)
-			expect(result.temperature).toBe(1.0) // Overridden for reasoning budget models
+			expect(result.temperature).toBe(0.8) // User-specified temperature is respected
 			expect(result.reasoningEffort).toBeUndefined() // Budget takes precedence
+		})
+
+		it("should default to temperature 1.0 for reasoning budget models when no custom temperature is set", () => {
+			const model: ModelInfo = {
+				...baseModel,
+				maxTokens: 16000,
+				supportsReasoningBudget: true,
+			}
+
+			const result = getModelParams({
+				...anthropicParams,
+				settings: {
+					enableReasoningEffort: true,
+					modelMaxTokens: 20000,
+				},
+				model,
+			})
+
+			expect(result.temperature).toBe(1.0) // Defaults to 1.0 when no custom temperature
+			expect(result.reasoningBudget).toBeDefined()
 		})
 	})
 

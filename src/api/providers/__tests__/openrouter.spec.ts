@@ -1040,7 +1040,7 @@ describe("OpenRouterHandler", () => {
 			)
 		})
 
-		it("uses R1 format for DeepSeek R1 models (extraBody.messages)", async () => {
+		it("does not use R1 format for DeepSeek R1 models (uses standard AI SDK path)", async () => {
 			const handler = new OpenRouterHandler({
 				openRouterApiKey: "test-key",
 				openRouterModelId: "deepseek/deepseek-r1",
@@ -1048,18 +1048,13 @@ describe("OpenRouterHandler", () => {
 			mockStreamResult()
 			await consumeGenerator(handler, "system prompt")
 
-			// R1 models should pass OpenAI messages via extraBody (including system as user message)
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
-				expect.objectContaining({
-					extraBody: expect.objectContaining({
-						messages: expect.any(Array),
-					}),
-				}),
-			)
+			// R1 models should NOT pass extraBody.messages (R1 format conversion removed)
+			const providerCall = mockCreateOpenRouter.mock.calls[0][0]
+			expect(providerCall?.extraBody?.messages).toBeUndefined()
 
-			// System prompt should NOT be passed to streamText (it is in extraBody.messages)
+			// System prompt should be passed normally via streamText
 			const streamTextCall = mockStreamText.mock.calls[0][0]
-			expect(streamTextCall.system).toBeUndefined()
+			expect(streamTextCall.system).toBe("system prompt")
 		})
 
 		it("applies Anthropic beta headers for Anthropic models", async () => {
@@ -1089,7 +1084,7 @@ describe("OpenRouterHandler", () => {
 			expect(call.headers).toBeUndefined()
 		})
 
-		it("applies prompt caching for Anthropic models in caching set", async () => {
+		it("passes system prompt directly for Anthropic models (no caching transform)", async () => {
 			const handler = new OpenRouterHandler({
 				openRouterApiKey: "test-key",
 				openRouterModelId: "anthropic/claude-sonnet-4",
@@ -1097,14 +1092,13 @@ describe("OpenRouterHandler", () => {
 			mockStreamResult()
 			await consumeGenerator(handler)
 
-			// Should have extraBody.messages with cache_control applied
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
-				expect.objectContaining({
-					extraBody: expect.objectContaining({
-						messages: expect.arrayContaining([expect.objectContaining({ role: "system" })]),
-					}),
-				}),
-			)
+			// System prompt should be passed directly via streamText
+			const streamTextCall = mockStreamText.mock.calls[0][0]
+			expect(streamTextCall.system).toBe("test")
+
+			// Messages should be the converted AI SDK messages (no system-role message injected)
+			const systemMsgs = streamTextCall.messages.filter((m: any) => m.role === "system")
+			expect(systemMsgs).toHaveLength(0)
 		})
 
 		it("disables reasoning for Gemini 2.5 Pro when not explicitly configured", async () => {
@@ -1124,7 +1118,7 @@ describe("OpenRouterHandler", () => {
 			)
 		})
 
-		it("applies Gemini sanitization and encrypted block injection", async () => {
+		it("passes system prompt directly for Gemini models (no caching transform)", async () => {
 			const handler = new OpenRouterHandler({
 				openRouterApiKey: "test-key",
 				openRouterModelId: "google/gemini-2.5-flash",
@@ -1132,14 +1126,28 @@ describe("OpenRouterHandler", () => {
 			mockStreamResult()
 			await consumeGenerator(handler)
 
-			// Gemini models should have extraBody.messages set (via buildOpenAiMessages)
-			expect(mockCreateOpenRouter).toHaveBeenCalledWith(
-				expect.objectContaining({
-					extraBody: expect.objectContaining({
-						messages: expect.any(Array),
-					}),
-				}),
-			)
+			// System prompt should be passed directly via streamText
+			const streamTextCall = mockStreamText.mock.calls[0][0]
+			expect(streamTextCall.system).toBe("test")
+
+			// No system-role message should be injected
+			const systemMsgs = streamTextCall.messages.filter((m: any) => m.role === "system")
+			expect(systemMsgs).toHaveLength(0)
+		})
+
+		it("does not use extraBody.messages for Gemini models outside caching set", async () => {
+			const handler = new OpenRouterHandler({
+				openRouterApiKey: "test-key",
+				openRouterModelId: "google/gemini-3-pro-preview",
+			})
+			mockStreamResult()
+			await consumeGenerator(handler)
+
+			// Non-caching Gemini models should go through the AI SDK natively
+			// (no extraBody.messages — reasoning_details are wired via providerOptions)
+			const callArgs = mockCreateOpenRouter.mock.calls[0]?.[0] ?? {}
+			const extraBody = callArgs.extraBody ?? {}
+			expect(extraBody.messages).toBeUndefined()
 		})
 
 		it("passes topP to completePrompt for R1 models", async () => {
