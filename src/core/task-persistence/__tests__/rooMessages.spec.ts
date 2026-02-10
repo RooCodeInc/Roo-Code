@@ -8,6 +8,7 @@ import { detectFormat, readRooMessages, saveRooMessages } from "../apiMessages"
 import type { ApiMessage } from "../apiMessages"
 import type { RooMessage, RooMessageHistory } from "../rooMessage"
 import { ROO_MESSAGE_VERSION } from "../rooMessage"
+import * as safeWriteJsonModule from "../../../utils/safeWriteJson"
 
 let tmpBaseDir: string
 
@@ -212,11 +213,17 @@ describe("saveRooMessages", () => {
 	it("returns false on write failure", async () => {
 		const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
-		// Use a path that will fail (no permission or invalid)
+		// Mock safeWriteJson to reject, rather than relying on OS-specific filesystem behavior
+		// (e.g. Windows can create /nonexistent/... paths under the current drive root)
+		vi.spyOn(safeWriteJsonModule, "safeWriteJson").mockRejectedValueOnce(new Error("simulated write failure"))
+
+		const taskDir = path.join(tmpBaseDir, "tasks", "task-fail")
+		await fs.mkdir(taskDir, { recursive: true })
+
 		const success = await saveRooMessages({
 			messages: sampleRooMessages,
 			taskId: "task-fail",
-			globalStoragePath: "/nonexistent/readonly/path",
+			globalStoragePath: tmpBaseDir,
 		})
 
 		expect(success).toBe(false)
