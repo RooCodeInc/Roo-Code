@@ -24,7 +24,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 	describe("getEffectiveApiHistory", () => {
 		it("should return summary and messages after summary (fresh start model)", () => {
 			const condenseId = "summary-123"
-			const messages: ApiMessage[] = [
+			const messages: any[] = [
 				{ role: "user", content: "First message", ts: 1, condenseParent: condenseId },
 				{ role: "assistant", content: "First response", ts: 2, condenseParent: condenseId },
 				{ role: "user", content: "Second message", ts: 3, condenseParent: condenseId },
@@ -39,12 +39,12 @@ describe("Rewind After Condense - Issue #8295", () => {
 			// Fresh start model: summary + all messages after it
 			expect(effective.length).toBe(3)
 			expect(effective[0].isSummary).toBe(true)
-			expect(effective[1].content).toBe("Third message")
-			expect(effective[2].content).toBe("Third response")
+			expect((effective[1] as any).content).toBe("Third message")
+			expect((effective[2] as any).content).toBe("Third response")
 		})
 
 		it("should include messages without condenseParent", () => {
-			const messages: ApiMessage[] = [
+			const messages: any[] = [
 				{ role: "user", content: "Hello", ts: 1 },
 				{ role: "assistant", content: "Hi", ts: 2 },
 			]
@@ -64,7 +64,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 	describe("cleanupAfterTruncation", () => {
 		it("should clear condenseParent when summary message is deleted", () => {
 			const condenseId = "summary-123"
-			const messages: ApiMessage[] = [
+			const messages: any[] = [
 				{ role: "user", content: "First message", ts: 1 },
 				{ role: "assistant", content: "First response", ts: 2, condenseParent: condenseId },
 				{ role: "user", content: "Second message", ts: 3, condenseParent: condenseId },
@@ -80,7 +80,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 
 		it("should preserve condenseParent when summary message still exists", () => {
 			const condenseId = "summary-123"
-			const messages: ApiMessage[] = [
+			const messages: any[] = [
 				{ role: "user", content: "First message", ts: 1 },
 				{ role: "assistant", content: "First response", ts: 2, condenseParent: condenseId },
 				{ role: "user", content: "Summary", ts: 3, isSummary: true, condenseId },
@@ -95,7 +95,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 		it("should handle multiple condense operations with different IDs", () => {
 			const condenseId1 = "summary-1"
 			const condenseId2 = "summary-2"
-			const messages: ApiMessage[] = [
+			const messages: any[] = [
 				{ role: "user", content: "Message 1", ts: 1, condenseParent: condenseId1 },
 				{ role: "user", content: "Summary 1", ts: 2, isSummary: true, condenseId: condenseId1 },
 				{ role: "user", content: "Message 2", ts: 3, condenseParent: condenseId2 },
@@ -111,7 +111,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 		})
 
 		it("should not modify messages without condenseParent", () => {
-			const messages: ApiMessage[] = [
+			const messages: any[] = [
 				{ role: "user", content: "Hello", ts: 1 },
 				{ role: "assistant", content: "Hi", ts: 2 },
 			]
@@ -132,7 +132,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 			const condenseId = "summary-abc"
 
 			// Simulate a conversation after condensing (all prior messages tagged)
-			const fullHistory: ApiMessage[] = [
+			const fullHistory: any[] = [
 				{ role: "user", content: "Initial task", ts: 1, condenseParent: condenseId },
 				{ role: "assistant", content: "Working on it", ts: 2, condenseParent: condenseId },
 				{ role: "user", content: "Continue", ts: 3, condenseParent: condenseId },
@@ -152,11 +152,11 @@ describe("Rewind After Condense - Issue #8295", () => {
 			}
 
 			// Verify effective history after cleanup: all messages should be visible now
-			const effectiveAfterCleanup = getEffectiveApiHistory(cleanedAfterDeletingSummary)
+			const effectiveAfterCleanup = getEffectiveApiHistory(cleanedAfterDeletingSummary as any)
 			expect(effectiveAfterCleanup.length).toBe(3)
-			expect(effectiveAfterCleanup[0].content).toBe("Initial task")
-			expect(effectiveAfterCleanup[1].content).toBe("Working on it")
-			expect(effectiveAfterCleanup[2].content).toBe("Continue")
+			expect((effectiveAfterCleanup[0] as any).content).toBe("Initial task")
+			expect((effectiveAfterCleanup[1] as any).content).toBe("Working on it")
+			expect((effectiveAfterCleanup[2] as any).content).toBe("Continue")
 		})
 
 		it("should properly restore context after rewind when summary was deleted", () => {
@@ -165,7 +165,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 			// Scenario: Most of the conversation was condensed, but the summary was deleted.
 			// getEffectiveApiHistory already correctly handles orphaned messages (includes them
 			// when their summary doesn't exist). cleanupAfterTruncation cleans up the tags.
-			const messages: ApiMessage[] = [
+			const messages: any[] = [
 				{ role: "user", content: "Start", ts: 1 },
 				{ role: "assistant", content: "Response 1", ts: 2, condenseParent: condenseId },
 				{ role: "user", content: "More", ts: 3, condenseParent: condenseId },
@@ -177,8 +177,8 @@ describe("Rewind After Condense - Issue #8295", () => {
 			// getEffectiveApiHistory already includes orphaned messages (summary doesn't exist)
 			const effectiveBefore = getEffectiveApiHistory(messages)
 			expect(effectiveBefore.length).toBe(5) // All messages visible since summary was deleted
-			expect(effectiveBefore[0].content).toBe("Start")
-			expect(effectiveBefore[1].content).toBe("Response 1")
+			expect((effectiveBefore[0] as any).content).toBe("Start")
+			expect((effectiveBefore[1] as any).content).toBe("Response 1")
 
 			// cleanupAfterTruncation clears the orphaned condenseParent tags for data hygiene
 			const cleaned = cleanupAfterTruncation(messages)
@@ -190,7 +190,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 			expect(cleaned[4].condenseParent).toBeUndefined()
 
 			// After cleanup, effective history is the same (all visible)
-			const effectiveAfter = getEffectiveApiHistory(cleaned)
+			const effectiveAfter = getEffectiveApiHistory(cleaned as any)
 			expect(effectiveAfter.length).toBe(5) // All messages visible
 		})
 
@@ -199,7 +199,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 
 			// Scenario: Messages were condensed and summary exists - fresh start model returns
 			// only the summary and messages after it, NOT messages before the summary
-			const messages: ApiMessage[] = [
+			const messages: any[] = [
 				{ role: "user", content: "Start", ts: 1 },
 				{ role: "assistant", content: "Response 1", ts: 2, condenseParent: condenseId },
 				{ role: "user", content: "More", ts: 3, condenseParent: condenseId },
@@ -211,9 +211,9 @@ describe("Rewind After Condense - Issue #8295", () => {
 			// "Start" is NOT included because it's before the summary
 			const effective = getEffectiveApiHistory(messages)
 			expect(effective.length).toBe(2) // Summary, After summary (NOT Start)
-			expect(effective[0].content).toBe("Summary")
+			expect((effective[0] as any).content).toBe("Summary")
 			expect(effective[0].isSummary).toBe(true)
-			expect(effective[1].content).toBe("After summary")
+			expect((effective[1] as any).content).toBe("After summary")
 
 			// cleanupAfterTruncation should NOT clear condenseParent since summary exists
 			const cleaned = cleanupAfterTruncation(messages)
@@ -241,7 +241,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 				// Simulate post-condense state where summary has unique timestamp (firstKeptTs - 1)
 				// In real usage, condensed messages have timestamps like 100, 200, 300...
 				// and firstKeptTs is much larger, so firstKeptTs - 1 = 999 is unique
-				const messagesAfterCondense: ApiMessage[] = [
+				const messagesAfterCondense: any[] = [
 					{ role: "user", content: "Initial task", ts: 100 },
 					{ role: "assistant", content: "Response 1", ts: 200, condenseParent: condenseId },
 					{ role: "user", content: "Continue", ts: 300, condenseParent: condenseId },
@@ -281,7 +281,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 				const condenseId = "summary-lookup-test"
 				const firstKeptTs = 8
 
-				const messages: ApiMessage[] = [
+				const messages: any[] = [
 					{ role: "user", content: "Initial", ts: 1 },
 					{ role: "user", content: "Summary", ts: firstKeptTs - 1, isSummary: true, condenseId },
 					{ role: "assistant", content: "First kept message", ts: firstKeptTs },
@@ -320,7 +320,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 				// - msg2-msg7 tagged with condenseParent
 				// - summary inserted with ts = msg8.ts - 1
 				// - msg8, msg9, msg10 kept
-				const storageAfterCondense: ApiMessage[] = [
+				const storageAfterCondense: any[] = [
 					{ role: "user", content: "Task: Build a feature", ts: 100, condenseParent: condenseId },
 					{ role: "assistant", content: "I'll help with that", ts: 200, condenseParent: condenseId },
 					{ role: "user", content: "Start with the API", ts: 300, condenseParent: condenseId },
@@ -350,23 +350,23 @@ describe("Rewind After Condense - Issue #8295", () => {
 				expect(effective.length).toBe(4)
 
 				// Verify exact order and content
-				expect(effective[0].role).toBe("user")
+				expect((effective[0] as any).role).toBe("user")
 				expect(effective[0].isSummary).toBe(true)
-				expect(effective[0].content).toBe("Summary: Built API with validation, working on tests")
+				expect((effective[0] as any).content).toBe("Summary: Built API with validation, working on tests")
 
-				expect(effective[1].role).toBe("assistant")
-				expect(effective[1].content).toBe("Writing unit tests now")
+				expect((effective[1] as any).role).toBe("assistant")
+				expect((effective[1] as any).content).toBe("Writing unit tests now")
 
-				expect(effective[2].role).toBe("user")
-				expect(effective[2].content).toBe("Include edge cases")
+				expect((effective[2] as any).role).toBe("user")
+				expect((effective[2] as any).content).toBe("Include edge cases")
 
-				expect(effective[3].role).toBe("assistant")
-				expect(effective[3].content).toBe("Added edge case tests")
+				expect((effective[3] as any).role).toBe("assistant")
+				expect((effective[3] as any).content).toBe("Added edge case tests")
 
 				// Verify condensed messages are NOT in effective history
 				const condensedContents = ["I'll help with that", "Start with the API", "Creating API endpoints"]
 				for (const content of condensedContents) {
-					expect(effective.find((m) => m.content === content)).toBeUndefined()
+					expect(effective.find((m) => (m as any).content === content)).toBeUndefined()
 				}
 			})
 
@@ -380,7 +380,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 				// Second condense: summary1 + msg8-msg17 condensed, summary2 created
 				//
 				// Storage after double condense:
-				const storageAfterDoubleCondense: ApiMessage[] = [
+				const storageAfterDoubleCondense: any[] = [
 					// First message - condensed during the first condense
 					{ role: "user", content: "Initial task: Build a full app", ts: 100, condenseParent: condenseId1 },
 
@@ -437,22 +437,22 @@ describe("Rewind After Condense - Issue #8295", () => {
 				expect(effective.length).toBe(4)
 
 				// Verify exact order and content
-				expect(effective[0].role).toBe("user")
+				expect((effective[0] as any).role).toBe("user")
 				expect(effective[0].isSummary).toBe(true)
 				expect(effective[0].condenseId).toBe(condenseId2) // Must be the SECOND summary
-				expect(effective[0].content).toContain("Summary2")
+				expect((effective[0] as any).content).toContain("Summary2")
 
-				expect(effective[1].role).toBe("assistant")
-				expect(effective[1].content).toBe("Writing integration tests")
+				expect((effective[1] as any).role).toBe("assistant")
+				expect((effective[1] as any).content).toBe("Writing integration tests")
 
-				expect(effective[2].role).toBe("user")
-				expect(effective[2].content).toBe("Test the auth flow")
+				expect((effective[2] as any).role).toBe("user")
+				expect((effective[2] as any).content).toBe("Test the auth flow")
 
-				expect(effective[3].role).toBe("assistant")
-				expect(effective[3].content).toBe("Auth tests passing")
+				expect((effective[3] as any).role).toBe("assistant")
+				expect((effective[3] as any).content).toBe("Auth tests passing")
 
 				// Verify Summary1 is NOT in effective history (it's tagged with condenseParent)
-				const summary1 = effective.find((m) => m.content?.toString().includes("Summary1"))
+				const summary1 = effective.find((m) => (m as any).content?.toString().includes("Summary1"))
 				expect(summary1).toBeUndefined()
 
 				// Verify all condensed messages are NOT in effective history
@@ -464,7 +464,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 					"Implemented error handlers",
 				]
 				for (const content of condensedContents) {
-					expect(effective.find((m) => m.content === content)).toBeUndefined()
+					expect(effective.find((m) => (m as any).content === content)).toBeUndefined()
 				}
 			})
 
@@ -473,7 +473,7 @@ describe("Rewind After Condense - Issue #8295", () => {
 
 				// Verify that after condense, the effective history maintains proper
 				// user/assistant message alternation (important for API compatibility)
-				const storage: ApiMessage[] = [
+				const storage: any[] = [
 					{ role: "user", content: "Start task", ts: 100, condenseParent: condenseId },
 					{ role: "assistant", content: "Response 1", ts: 200, condenseParent: condenseId },
 					{ role: "user", content: "Continue", ts: 300, condenseParent: condenseId },
@@ -488,17 +488,17 @@ describe("Rewind After Condense - Issue #8295", () => {
 
 				// Verify the sequence: user(summary), assistant, user, assistant
 				// This is the fresh-start model with user-role summaries
-				expect(effective[0].role).toBe("user")
+				expect((effective[0] as any).role).toBe("user")
 				expect(effective[0].isSummary).toBe(true)
-				expect(effective[1].role).toBe("assistant")
-				expect(effective[2].role).toBe("user")
-				expect(effective[3].role).toBe("assistant")
+				expect((effective[1] as any).role).toBe("assistant")
+				expect((effective[2] as any).role).toBe("user")
+				expect((effective[3] as any).role).toBe("assistant")
 			})
 
 			it("should preserve timestamps in chronological order in effective history", () => {
 				const condenseId = "summary-timestamps"
 
-				const storage: ApiMessage[] = [
+				const storage: any[] = [
 					{ role: "user", content: "First", ts: 100, condenseParent: condenseId },
 					{ role: "assistant", content: "Condensed", ts: 200, condenseParent: condenseId },
 					{ role: "user", content: "Summary", ts: 299, isSummary: true, condenseId },

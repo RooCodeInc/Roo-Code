@@ -32,6 +32,7 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 			currentStreamingContentIndex: 0,
 			assistantMessageContent: [],
 			userMessageContent: [],
+			pendingToolResults: [],
 			didCompleteReadingStream: false,
 			didRejectTool: false,
 			didAlreadyUseTool: false,
@@ -62,13 +63,13 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 
 		// Add pushToolResultToUserContent method after mockTask is created so 'this' binds correctly
 		mockTask.pushToolResultToUserContent = vi.fn().mockImplementation((toolResult: any) => {
-			const existingResult = mockTask.userMessageContent.find(
-				(block: any) => block.type === "tool_result" && block.tool_use_id === toolResult.tool_use_id,
+			const existingResult = mockTask.pendingToolResults.find(
+				(block: any) => block.type === "tool-result" && block.toolCallId === toolResult.toolCallId,
 			)
 			if (existingResult) {
 				return false
 			}
-			mockTask.userMessageContent.push(toolResult)
+			mockTask.pendingToolResults.push(toolResult)
 			return true
 		})
 	})
@@ -89,17 +90,17 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 		// Execute presentAssistantMessage
 		await presentAssistantMessage(mockTask)
 
-		// Verify that a tool_result with error was pushed
-		const toolResult = mockTask.userMessageContent.find(
-			(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId,
+		// Verify that a tool-result with error was pushed to pendingToolResults
+		const toolResult = mockTask.pendingToolResults.find(
+			(item: any) => item.type === "tool-result" && item.toolCallId === toolCallId,
 		)
 
 		expect(toolResult).toBeDefined()
-		expect(toolResult.tool_use_id).toBe(toolCallId)
-		// The error is wrapped in JSON by formatResponse.toolError
-		expect(toolResult.content).toContain("nonexistent_tool")
-		expect(toolResult.content).toContain("does not exist")
-		expect(toolResult.content).toContain("error")
+		expect(toolResult.toolCallId).toBe(toolCallId)
+		// The error is wrapped in output.value by formatResponse.toolError
+		expect(toolResult.output.value).toContain("nonexistent_tool")
+		expect(toolResult.output.value).toContain("does not exist")
+		expect(toolResult.output.value).toContain("error")
 
 		// Verify consecutiveMistakeCount was incremented
 		expect(mockTask.consecutiveMistakeCount).toBe(1)
@@ -169,9 +170,9 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 		const completed = await Promise.race([resultPromise, timeoutPromise])
 		expect(completed).toBe(true)
 
-		// Verify a tool_result was pushed (critical for API not to freeze)
-		const toolResult = mockTask.userMessageContent.find(
-			(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId,
+		// Verify a tool-result was pushed (critical for API not to freeze)
+		const toolResult = mockTask.pendingToolResults.find(
+			(item: any) => item.type === "tool-result" && item.toolCallId === toolCallId,
 		)
 		expect(toolResult).toBeDefined()
 	})
@@ -233,13 +234,13 @@ describe("presentAssistantMessage - Unknown Tool Handling", () => {
 
 		await presentAssistantMessage(mockTask)
 
-		// When didRejectTool is true, should send error tool_result
-		const toolResult = mockTask.userMessageContent.find(
-			(item: any) => item.type === "tool_result" && item.tool_use_id === toolCallId,
+		// When didRejectTool is true, should send error tool-result
+		const toolResult = mockTask.pendingToolResults.find(
+			(item: any) => item.type === "tool-result" && item.toolCallId === toolCallId,
 		)
 
 		expect(toolResult).toBeDefined()
-		expect(toolResult.is_error).toBe(true)
-		expect(toolResult.content).toContain("due to user rejecting a previous tool")
+		expect(toolResult.output.value).toContain("[ERROR]")
+		expect(toolResult.output.value).toContain("due to user rejecting a previous tool")
 	})
 })

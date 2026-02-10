@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run src/api/providers/__tests__/vertex.spec.ts
 
 // Mock vscode first to avoid import errors
@@ -140,7 +141,7 @@ describe("VertexHandler", () => {
 	})
 
 	describe("createMessage", () => {
-		const mockMessages: Anthropic.Messages.MessageParam[] = [
+		const mockMessages: RooMessage[] = [
 			{ role: "user", content: "Hello" },
 			{ role: "assistant", content: "Hi there!" },
 		]

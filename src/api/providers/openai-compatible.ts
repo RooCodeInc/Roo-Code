@@ -6,7 +6,7 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import OpenAI from "openai"
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { streamText, generateText, LanguageModel, ToolSet } from "ai"
+import { streamText, generateText, LanguageModel, ToolSet, ModelMessage } from "ai"
 
 import type { ModelInfo } from "@roo-code/types"
 
@@ -24,6 +24,7 @@ import { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Configuration options for creating an OpenAI-compatible provider.
@@ -124,14 +125,14 @@ export abstract class OpenAICompatibleHandler extends BaseProvider implements Si
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const model = this.getModel()
 		const languageModel = this.getLanguageModel()
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)

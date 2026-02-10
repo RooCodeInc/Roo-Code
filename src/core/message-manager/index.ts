@@ -168,7 +168,7 @@ export class MessageManager {
 			// at or after the cutoff to use as the actual boundary.
 			// This ensures assistant messages that preceded the user's response are preserved.
 			const firstUserMsgIndexToRemove = apiHistory.findIndex(
-				(m) => m.ts !== undefined && m.ts >= cutoffTs && m.role === "user",
+				(m) => m.ts !== undefined && m.ts >= cutoffTs && "role" in m && m.role === "user",
 			)
 
 			if (firstUserMsgIndexToRemove !== -1) {
@@ -207,7 +207,7 @@ export class MessageManager {
 
 		// Step 5: Cleanup orphaned tags (unless skipped)
 		if (!skipCleanup) {
-			apiHistory = cleanupAfterTruncation(apiHistory)
+			apiHistory = cleanupAfterTruncation(apiHistory as any) as typeof apiHistory
 		}
 
 		// Step 6: Cleanup orphaned command output artifacts

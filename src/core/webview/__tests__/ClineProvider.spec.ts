@@ -1220,7 +1220,7 @@ describe("ClineProvider", () => {
 			// Setup Task instance with auto-mock from the top of the file
 			const mockCline = new Task(defaultTaskOptions) // Create a new mocked instance
 			mockCline.clineMessages = mockMessages // Set test-specific messages
-			mockCline.apiConversationHistory = mockApiHistory // Set API history
+			mockCline.apiConversationHistory = mockApiHistory as any // Set API history
 			await provider.addClineToStack(mockCline) // Add the mocked instance to the stack
 
 			// Mock getTaskWithId
@@ -1308,7 +1308,7 @@ describe("ClineProvider", () => {
 			// Setup Task instance with auto-mock from the top of the file
 			const mockCline = new Task(defaultTaskOptions) // Create a new mocked instance
 			mockCline.clineMessages = mockMessages // Set test-specific messages
-			mockCline.apiConversationHistory = mockApiHistory // Set API history
+			mockCline.apiConversationHistory = mockApiHistory as any // Set API history
 
 			// Explicitly mock the overwrite methods since they're not being called in the tests
 			mockCline.overwriteClineMessages = vi.fn()

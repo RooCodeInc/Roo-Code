@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run api/providers/__tests__/openai-native-reasoning.spec.ts
 
 import type { Anthropic } from "@anthropic-ai/sdk"
@@ -16,54 +17,50 @@ describe("OpenAI Native reasoning helpers", () => {
 	// ───────────────────────────────────────────────────────────
 	describe("stripPlainTextReasoningBlocks", () => {
 		it("passes through user messages unchanged", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{ role: "user", content: [{ type: "text", text: "Hello" }] },
-			]
+			const messages: RooMessage[] = [{ role: "user", content: [{ type: "text", text: "Hello" }] }]
 			const result = stripPlainTextReasoningBlocks(messages)
 			expect(result).toEqual(messages)
 		})
 
 		it("passes through assistant messages with only text blocks", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
-				{ role: "assistant", content: [{ type: "text", text: "Hi there" }] },
-			]
+			const messages: RooMessage[] = [{ role: "assistant", content: [{ type: "text", text: "Hi there" }] }]
 			const result = stripPlainTextReasoningBlocks(messages)
 			expect(result).toEqual(messages)
 		})
 
 		it("passes through string-content assistant messages", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [{ role: "assistant", content: "Hello" }]
+			const messages: RooMessage[] = [{ role: "assistant", content: "Hello" }]
 			const result = stripPlainTextReasoningBlocks(messages)
 			expect(result).toEqual(messages)
 		})
 
 		it("strips plain-text reasoning blocks from assistant content", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "assistant",
 					content: [
 						{
 							type: "reasoning",
 							text: "Let me think...",
-						} as unknown as Anthropic.Messages.ContentBlockParam,
+						} as any,
 						{ type: "text", text: "The answer is 42" },
 					],
 				},
 			]
 			const result = stripPlainTextReasoningBlocks(messages)
 			expect(result).toHaveLength(1)
-			expect(result[0].content).toEqual([{ type: "text", text: "The answer is 42" }])
+			expect((result[0] as any).content).toEqual([{ type: "text", text: "The answer is 42" }])
 		})
 
 		it("removes assistant messages whose content becomes empty after filtering", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "assistant",
 					content: [
 						{
 							type: "reasoning",
 							text: "Thinking only...",
-						} as unknown as Anthropic.Messages.ContentBlockParam,
+						} as any,
 					],
 				},
 			]
@@ -72,24 +69,24 @@ describe("OpenAI Native reasoning helpers", () => {
 		})
 
 		it("preserves tool_use blocks alongside stripped reasoning", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "assistant",
 					content: [
-						{ type: "reasoning", text: "Thinking..." } as unknown as Anthropic.Messages.ContentBlockParam,
+						{ type: "reasoning", text: "Thinking..." } as any,
 						{ type: "tool_use", id: "call_1", name: "read_file", input: { path: "a.ts" } },
 					],
 				},
 			]
 			const result = stripPlainTextReasoningBlocks(messages)
 			expect(result).toHaveLength(1)
-			expect(result[0].content).toEqual([
+			expect((result[0] as any).content).toEqual([
 				{ type: "tool_use", id: "call_1", name: "read_file", input: { path: "a.ts" } },
 			])
 		})
 
 		it("does NOT strip blocks that have encrypted_content (those are not plain-text reasoning)", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "assistant",
 					content: [
@@ -97,7 +94,7 @@ describe("OpenAI Native reasoning helpers", () => {
 							type: "reasoning",
 							text: "summary",
 							encrypted_content: "abc123",
-						} as unknown as Anthropic.Messages.ContentBlockParam,
+						} as any,
 						{ type: "text", text: "Response" },
 					],
 				},
@@ -105,32 +102,26 @@ describe("OpenAI Native reasoning helpers", () => {
 			const result = stripPlainTextReasoningBlocks(messages)
 			expect(result).toHaveLength(1)
 			// Both blocks should remain
-			expect(result[0].content).toHaveLength(2)
+			expect((result[0] as any).content).toHaveLength(2)
 		})
 
 		it("handles multiple messages correctly", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{ role: "user", content: [{ type: "text", text: "Q1" }] },
 				{
 					role: "assistant",
-					content: [
-						{ type: "reasoning", text: "Think1" } as unknown as Anthropic.Messages.ContentBlockParam,
-						{ type: "text", text: "A1" },
-					],
+					content: [{ type: "reasoning", text: "Think1" } as any, { type: "text", text: "A1" }],
 				},
 				{ role: "user", content: [{ type: "text", text: "Q2" }] },
 				{
 					role: "assistant",
-					content: [
-						{ type: "reasoning", text: "Think2" } as unknown as Anthropic.Messages.ContentBlockParam,
-						{ type: "text", text: "A2" },
-					],
+					content: [{ type: "reasoning", text: "Think2" } as any, { type: "text", text: "A2" }],
 				},
 			]
 			const result = stripPlainTextReasoningBlocks(messages)
 			expect(result).toHaveLength(4)
-			expect(result[1].content).toEqual([{ type: "text", text: "A1" }])
-			expect(result[3].content).toEqual([{ type: "text", text: "A2" }])
+			expect((result[1] as any).content).toEqual([{ type: "text", text: "A1" }])
+			expect((result[3] as any).content).toEqual([{ type: "text", text: "A2" }])
 		})
 	})
 
@@ -139,7 +130,7 @@ describe("OpenAI Native reasoning helpers", () => {
 	// ───────────────────────────────────────────────────────────
 	describe("collectEncryptedReasoningItems", () => {
 		it("returns empty array when no encrypted reasoning items exist", () => {
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{ role: "user", content: [{ type: "text", text: "Hello" }] },
 				{ role: "assistant", content: [{ type: "text", text: "Hi" }] },
 			]
@@ -157,7 +148,7 @@ describe("OpenAI Native reasoning helpers", () => {
 					summary: [{ type: "summary_text", text: "I thought about it" }],
 				},
 				{ role: "assistant", content: [{ type: "text", text: "Hi" }] },
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			const result = collectEncryptedReasoningItems(messages)
 			expect(result).toHaveLength(1)
@@ -187,7 +178,7 @@ describe("OpenAI Native reasoning helpers", () => {
 					summary: [{ type: "summary_text", text: "Summary 2" }],
 				},
 				{ role: "assistant", content: [{ type: "text", text: "A2" }] },
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			const result = collectEncryptedReasoningItems(messages)
 			expect(result).toHaveLength(2)
@@ -201,7 +192,7 @@ describe("OpenAI Native reasoning helpers", () => {
 			const messages = [
 				{ type: "reasoning", id: "rs_x", text: "plain reasoning" },
 				{ role: "user", content: [{ type: "text", text: "Hello" }] },
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			const result = collectEncryptedReasoningItems(messages)
 			expect(result).toEqual([])
@@ -215,7 +206,7 @@ describe("OpenAI Native reasoning helpers", () => {
 					encrypted_content: "enc_data",
 				},
 				{ role: "assistant", content: [{ type: "text", text: "Hi" }] },
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			const result = collectEncryptedReasoningItems(messages)
 			expect(result).toHaveLength(1)
@@ -248,7 +239,7 @@ describe("OpenAI Native reasoning helpers", () => {
 					summary: [{ type: "summary_text", text: "I considered the question" }],
 				},
 				{ role: "assistant", content: [{ type: "text", text: "Hi there" }] },
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			// AI SDK messages (after filtering encrypted items + converting)
 			const aiSdkMessages: ModelMessage[] = [
@@ -304,7 +295,7 @@ describe("OpenAI Native reasoning helpers", () => {
 					summary: [{ type: "summary_text", text: "Thought 2" }],
 				},
 				{ role: "assistant", content: [{ type: "text", text: "A2" }] },
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			const aiSdkMessages: ModelMessage[] = [
 				{ role: "user", content: "Q1" },
@@ -362,7 +353,7 @@ describe("OpenAI Native reasoning helpers", () => {
 					],
 				},
 				{ role: "assistant", content: [{ type: "text", text: "Response" }] },
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			const aiSdkMessages: ModelMessage[] = [
 				{ role: "user", content: "Hi" },
@@ -397,7 +388,7 @@ describe("OpenAI Native reasoning helpers", () => {
 					encrypted_content: "enc_nosummary",
 				},
 				{ role: "assistant", content: [{ type: "text", text: "Response" }] },
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			const aiSdkMessages: ModelMessage[] = [
 				{ role: "user", content: "Hi" },
@@ -437,7 +428,7 @@ describe("OpenAI Native reasoning helpers", () => {
 					summary: [{ type: "summary_text", text: "Step B" }],
 				},
 				{ role: "assistant", content: [{ type: "text", text: "Done" }] },
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			const aiSdkMessages: ModelMessage[] = [
 				{ role: "user", content: "Hi" },
@@ -496,7 +487,7 @@ describe("OpenAI Native reasoning helpers", () => {
 					summary: [{ type: "summary_text", text: "Thought after tool" }],
 				},
 				{ role: "assistant", content: [{ type: "text", text: "OK" }] },
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			// AI SDK messages after conversion (tool_result splits into tool + user)
 			const aiSdkMessages: ModelMessage[] = [
@@ -539,7 +530,7 @@ describe("OpenAI Native reasoning helpers", () => {
 					id: "rs_orphan",
 					encrypted_content: "enc_orphan",
 				},
-			] as unknown as Anthropic.Messages.MessageParam[]
+			] as unknown as RooMessage[]
 
 			const aiSdkMessages: ModelMessage[] = [{ role: "user", content: "Hi" }]
 

@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run src/api/providers/__tests__/anthropic-vertex.spec.ts
 
 import { AnthropicVertexHandler } from "../anthropic-vertex"
@@ -184,7 +185,7 @@ describe("AnthropicVertexHandler", () => {
 	})
 
 	describe("createMessage", () => {
-		const mockMessages: Anthropic.Messages.MessageParam[] = [
+		const mockMessages: RooMessage[] = [
 			{
 				role: "user",
 				content: "Hello",
@@ -244,7 +245,7 @@ describe("AnthropicVertexHandler", () => {
 			)
 		})
 
-		it("should call convertToAiSdkMessages with the messages", async () => {
+		it("should pass messages directly to streamText as ModelMessage[]", async () => {
 			mockStreamText.mockReturnValue(createMockStreamResult([]))
 
 			const stream = handler.createMessage(systemPrompt, mockMessages)
@@ -252,7 +253,12 @@ describe("AnthropicVertexHandler", () => {
 				// consume
 			}
 
-			expect(convertToAiSdkMessages).toHaveBeenCalledWith(mockMessages)
+			// Messages are now already in ModelMessage format, passed directly to streamText
+			expect(mockStreamText).toHaveBeenCalledWith(
+				expect.objectContaining({
+					messages: mockMessages,
+				}),
+			)
 		})
 
 		it("should pass tools through AI SDK conversion pipeline", async () => {

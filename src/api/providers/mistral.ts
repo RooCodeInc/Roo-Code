@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createMistral } from "@ai-sdk/mistral"
-import { streamText, generateText, ToolSet, LanguageModel } from "ai"
+import { streamText, generateText, ToolSet, LanguageModel, ModelMessage } from "ai"
 
 import {
 	mistralModels,
@@ -19,6 +19,7 @@ import { getModelParams } from "../transform/model-params"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /**
  * Mistral provider using the dedicated @ai-sdk/mistral package.
@@ -137,13 +138,13 @@ export class MistralHandler extends BaseProvider implements SingleCompletionHand
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const languageModel = this.getLanguageModel()
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)

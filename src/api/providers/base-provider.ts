@@ -1,4 +1,5 @@
 import { Anthropic } from "@anthropic-ai/sdk"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 import type { ModelInfo } from "@roo-code/types"
 
@@ -13,7 +14,7 @@ import { isMcpTool } from "../../utils/mcp-name"
 export abstract class BaseProvider implements ApiHandler {
 	abstract createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream
 

@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createBaseten } from "@ai-sdk/baseten"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 
 import { basetenModels, basetenDefaultModelId, type ModelInfo } from "@roo-code/types"
 
@@ -19,6 +19,7 @@ import { getModelParams } from "../transform/model-params"
 import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 const BASETEN_DEFAULT_TEMPERATURE = 0.5
 
@@ -94,13 +95,13 @@ export class BasetenHandler extends BaseProvider implements SingleCompletionHand
 	 */
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { temperature } = this.getModel()
 		const languageModel = this.getLanguageModel()
 
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
 		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined

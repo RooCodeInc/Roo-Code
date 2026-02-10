@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createGoogleGenerativeAI, type GoogleGenerativeAIProvider } from "@ai-sdk/google"
-import { streamText, generateText, NoOutputGeneratedError, ToolSet } from "ai"
+import { streamText, generateText, NoOutputGeneratedError, ToolSet, ModelMessage } from "ai"
 
 import {
 	type ModelInfo,
@@ -27,6 +27,7 @@ import { getModelParams } from "../transform/model-params"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 import { BaseProvider } from "./base-provider"
 import { DEFAULT_HEADERS } from "./constants"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export class GeminiHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -51,7 +52,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 
 	async *createMessage(
 		systemInstruction: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const { id: modelId, info, reasoning: thinkingConfig, maxTokens } = this.getModel()
@@ -81,7 +82,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		// Anthropic.MessageParam values and will cause failures.
 		type ReasoningMetaLike = { type?: string }
 
-		const filteredMessages = messages.filter((message): message is Anthropic.Messages.MessageParam => {
+		const filteredMessages = messages.filter((message) => {
 			const meta = message as ReasoningMetaLike
 			if (meta.type === "reasoning") {
 				return false
@@ -90,7 +91,7 @@ export class GeminiHandler extends BaseProvider implements SingleCompletionHandl
 		})
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(filteredMessages)
+		const aiSdkMessages = filteredMessages as ModelMessage[]
 
 		// Convert tools to OpenAI format first, then to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)

@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run api/providers/__tests__/qwen-code-native-tools.spec.ts
 
 const {
@@ -261,7 +262,7 @@ describe("QwenCodeHandler (AI SDK)", () => {
 			})
 
 		const handler = new QwenCodeHandler({ apiModelId: "qwen3-coder-plus", qwenCodeOauthPath: oauthPath })
-		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hi" }]
+		const messages: RooMessage[] = [{ role: "user", content: "Hi" }]
 
 		const chunks = await collectStreamChunks(handler.createMessage("System", messages))
 
@@ -289,7 +290,7 @@ describe("QwenCodeHandler (AI SDK)", () => {
 		})
 
 		const handler = new QwenCodeHandler({ apiModelId: "qwen3-coder-plus" })
-		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+		const messages: RooMessage[] = [{ role: "user", content: "Hello" }]
 
 		const chunks = await collectStreamChunks(handler.createMessage("System", messages))
 
@@ -365,7 +366,7 @@ describe("QwenCodeHandler (AI SDK)", () => {
 		})
 
 		const handler = new QwenCodeHandler({ apiModelId: "qwen3-coder-plus" })
-		const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: "Hello" }]
+		const messages: RooMessage[] = [{ role: "user", content: "Hello" }]
 
 		await collectStreamChunks(handler.createMessage("System", messages))
 

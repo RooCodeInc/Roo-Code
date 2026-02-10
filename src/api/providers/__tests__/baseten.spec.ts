@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run src/api/providers/__tests__/baseten.spec.ts
 
 // Use vi.hoisted to define mock functions that can be referenced in hoisted vi.mock() calls
@@ -101,7 +102,7 @@ describe("BasetenHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: RooMessage[] = [
 			{
 				role: "user",
 				content: [
@@ -281,7 +282,7 @@ describe("BasetenHandler", () => {
 
 	describe("tool handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: RooMessage[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],
@@ -389,7 +390,7 @@ describe("BasetenHandler", () => {
 
 	describe("error handling", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: RooMessage[] = [
 			{
 				role: "user",
 				content: [{ type: "text" as const, text: "Hello!" }],

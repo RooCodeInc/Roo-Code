@@ -6,6 +6,14 @@ import { TelemetryService } from "@roo-code/telemetry"
 import { t } from "../../i18n"
 import { ApiHandler, ApiHandlerCreateMessageMetadata } from "../../api"
 import { ApiMessage } from "../task-persistence/apiMessages"
+import {
+	type RooMessage,
+	isRooAssistantMessage,
+	isRooToolMessage,
+	isRooUserMessage,
+	type ToolCallPart,
+	type ToolResultPart,
+} from "../task-persistence/rooMessage"
 import { maybeRemoveImageBlocks } from "../../api/transform/image-cleaning"
 import { findLast } from "../../shared/array"
 import { supportPrompt } from "../../shared/support-prompt"
@@ -276,7 +284,8 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	const response: SummarizeResponse = { messages, cost: 0, summary: "" }
 
 	// Get messages to summarize (all messages since the last summary, if any)
-	const messagesToSummarize = getMessagesSinceLastSummary(messages)
+	// Cast: summarizeConversation still works with ApiMessage[]; will be migrated in Task D.
+	const messagesToSummarize = getMessagesSinceLastSummary(messages as unknown as RooMessage[])
 
 	if (messagesToSummarize.length <= 1) {
 		const error =
@@ -287,7 +296,7 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	}
 
 	// Check if there's a recent summary in the messages (edge case)
-	const recentSummaryExists = messagesToSummarize.some((message: ApiMessage) => message.isSummary)
+	const recentSummaryExists = messagesToSummarize.some((message) => message.isSummary)
 
 	if (recentSummaryExists && messagesToSummarize.length <= 2) {
 		const error = t("common:errors.condensed_recently")
@@ -305,7 +314,8 @@ export async function summarizeConversation(options: SummarizeConversationOption
 
 	// Inject synthetic tool_results for orphan tool_calls to prevent API rejections
 	// (e.g., when user triggers condense after receiving attempt_completion but before responding)
-	const messagesWithToolResults = injectSyntheticToolResults(messagesToSummarize)
+	// Cast back: injectSyntheticToolResults still works with ApiMessage[]; will be migrated in Task D.
+	const messagesWithToolResults = injectSyntheticToolResults(messagesToSummarize as unknown as ApiMessage[])
 
 	// Transform tool_use and tool_result blocks to text representations.
 	// This is necessary because some providers (like Bedrock via LiteLLM) require the `tools` parameter
@@ -332,7 +342,7 @@ export async function summarizeConversation(options: SummarizeConversationOption
 	let outputTokens = 0
 
 	try {
-		const stream = apiHandler.createMessage(promptToUse, requestMessages, metadata)
+		const stream = apiHandler.createMessage(promptToUse, requestMessages as any, metadata)
 
 		for await (const chunk of stream) {
 			if (chunk.type === "text") {
@@ -516,7 +526,7 @@ ${commandBlocks}
  * Note: Summary messages are always created with role: "user" (fresh-start model),
  * so the first message since the last summary is guaranteed to be a user message.
  */
-export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[] {
+export function getMessagesSinceLastSummary(messages: RooMessage[]): RooMessage[] {
 	const lastSummaryIndexReverse = [...messages].reverse().findIndex((message) => message.isSummary)
 
 	if (lastSummaryIndexReverse === -1) {
@@ -543,7 +553,7 @@ export function getMessagesSinceLastSummary(messages: ApiMessage[]): ApiMessage[
  * @param messages - The full API conversation history including tagged messages
  * @returns The filtered history that should be sent to the API
  */
-export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
+export function getEffectiveApiHistory(messages: RooMessage[]): RooMessage[] {
 	// Find the most recent summary message
 	const lastSummary = findLast(messages, (msg) => msg.isSummary === true)
 
@@ -552,42 +562,55 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 		const summaryIndex = messages.indexOf(lastSummary)
 		let messagesFromSummary = messages.slice(summaryIndex)
 
-		// Collect all tool_use IDs from assistant messages in the result
-		// This is needed to filter out orphan tool_result blocks that reference
-		// tool_use IDs from messages that were condensed away
-		const toolUseIds = new Set<string>()
+		// Collect all tool call IDs from assistant messages in the result.
+		// This is needed to filter out orphan tool results that reference
+		// tool call IDs from messages that were condensed away.
+		const toolCallIds = new Set<string>()
 		for (const msg of messagesFromSummary) {
-			if (msg.role === "assistant" && Array.isArray(msg.content)) {
-				for (const block of msg.content) {
-					if (block.type === "tool_use" && (block as Anthropic.Messages.ToolUseBlockParam).id) {
-						toolUseIds.add((block as Anthropic.Messages.ToolUseBlockParam).id)
+			if (isRooAssistantMessage(msg) && Array.isArray(msg.content)) {
+				for (const part of msg.content) {
+					if (part.type === "tool-call") {
+						toolCallIds.add((part as ToolCallPart).toolCallId)
 					}
 				}
 			}
 		}
 
-		// Filter out orphan tool_result blocks from user messages
+		// Filter out orphan tool results from tool messages
 		messagesFromSummary = messagesFromSummary
 			.map((msg) => {
-				if (msg.role === "user" && Array.isArray(msg.content)) {
-					const filteredContent = msg.content.filter((block) => {
-						if (block.type === "tool_result") {
-							return toolUseIds.has((block as Anthropic.Messages.ToolResultBlockParam).tool_use_id)
+				if (isRooToolMessage(msg) && Array.isArray(msg.content)) {
+					const filteredContent = msg.content.filter((part) => {
+						if (part.type === "tool-result") {
+							return toolCallIds.has((part as ToolResultPart).toolCallId)
 						}
 						return true
 					})
-					// If all content was filtered out, mark for removal
 					if (filteredContent.length === 0) {
 						return null
 					}
-					// If some content was filtered, return updated message
 					if (filteredContent.length !== msg.content.length) {
 						return { ...msg, content: filteredContent }
 					}
 				}
+				// Also handle legacy user messages that may contain tool_result blocks
+				if (isRooUserMessage(msg) && Array.isArray(msg.content)) {
+					const filteredContent = msg.content.filter((block) => {
+						if ((block as any).type === "tool_result") {
+							return toolCallIds.has((block as any).tool_use_id)
+						}
+						return true
+					})
+					if (filteredContent.length === 0) {
+						return null
+					}
+					if (filteredContent.length !== msg.content.length) {
+						return { ...msg, content: filteredContent as typeof msg.content }
+					}
+				}
 				return msg
 			})
-			.filter((msg): msg is ApiMessage => msg !== null)
+			.filter((msg): msg is RooMessage => msg !== null)
 
 		// Still need to filter out any truncated messages within this range
 		const existingTruncationIds = new Set<string>()
@@ -598,7 +621,6 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 		}
 
 		return messagesFromSummary.filter((msg) => {
-			// Filter out truncated messages if their truncation marker exists
 			if (msg.truncationParent && existingTruncationIds.has(msg.truncationParent)) {
 				return false
 			}
@@ -609,9 +631,7 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 	// No summary - filter based on condenseParent and truncationParent as before
 	// This handles the case of orphaned condenseParent tags (summary was deleted via rewind)
 
-	// Collect all condenseIds of summaries that exist in the current history
 	const existingSummaryIds = new Set<string>()
-	// Collect all truncationIds of truncation markers that exist in the current history
 	const existingTruncationIds = new Set<string>()
 
 	for (const msg of messages) {
@@ -623,15 +643,10 @@ export function getEffectiveApiHistory(messages: ApiMessage[]): ApiMessage[] {
 		}
 	}
 
-	// Filter out messages whose condenseParent points to an existing summary
-	// or whose truncationParent points to an existing truncation marker.
-	// Messages with orphaned parents (summary/marker was deleted) are included.
 	return messages.filter((msg) => {
-		// Filter out condensed messages if their summary exists
 		if (msg.condenseParent && existingSummaryIds.has(msg.condenseParent)) {
 			return false
 		}
-		// Filter out truncated messages if their truncation marker exists
 		if (msg.truncationParent && existingTruncationIds.has(msg.truncationParent)) {
 			return false
 		}

@@ -1,6 +1,6 @@
 import { Anthropic } from "@anthropic-ai/sdk"
 import { createOpenRouter } from "@openrouter/ai-sdk-provider"
-import { streamText, generateText } from "ai"
+import { streamText, generateText, ModelMessage } from "ai"
 
 import {
 	type ModelRecord,
@@ -28,6 +28,7 @@ import { generateImageWithProvider, ImageGenerationResult } from "./utils/image-
 
 import type { ApiHandlerCreateMessageMetadata, SingleCompletionHandler } from "../index"
 import type { ApiStreamChunk, ApiStreamUsageChunk } from "../transform/stream"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 export class OpenRouterHandler extends BaseProvider implements SingleCompletionHandler {
 	protected options: ApiHandlerOptions
@@ -130,7 +131,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): AsyncGenerator<ApiStreamChunk> {
 		this.currentReasoningDetails = []
@@ -149,7 +150,7 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			? { "x-anthropic-beta": "fine-grained-tool-streaming-2025-05-14" }
 			: undefined
 
-		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const aiSdkMessages = messages as ModelMessage[]
 
 		const openrouter = this.createOpenRouterProvider({ reasoning, headers })
 

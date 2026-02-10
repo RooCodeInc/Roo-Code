@@ -1,3 +1,4 @@
+import type { RooMessage } from "../../../core/task-persistence/rooMessage"
 // npx vitest run api/providers/__tests__/openai.spec.ts
 
 const { mockStreamText, mockGenerateText } = vi.hoisted(() => ({
@@ -154,7 +155,7 @@ describe("OpenAiHandler", () => {
 
 	describe("createMessage", () => {
 		const systemPrompt = "You are a helpful assistant."
-		const messages: Anthropic.Messages.MessageParam[] = [
+		const messages: RooMessage[] = [
 			{
 				role: "user",
 				content: [
@@ -445,7 +446,7 @@ describe("OpenAiHandler", () => {
 	})
 
 	describe("error handling", () => {
-		const testMessages: Anthropic.Messages.MessageParam[] = [
+		const testMessages: RooMessage[] = [
 			{
 				role: "user",
 				content: [
@@ -578,7 +579,7 @@ describe("OpenAiHandler", () => {
 
 			const azureHandler = new OpenAiHandler(makeAzureOptions())
 			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Hello!",
@@ -609,7 +610,7 @@ describe("OpenAiHandler", () => {
 				openAiStreamingEnabled: false,
 			})
 			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Hello!",
@@ -684,7 +685,7 @@ describe("OpenAiHandler", () => {
 				modelMaxTokens: 32000,
 			})
 			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Hello!",
@@ -720,7 +721,7 @@ describe("OpenAiHandler", () => {
 				includeMaxTokens: false,
 			})
 			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Hello!",
@@ -750,7 +751,7 @@ describe("OpenAiHandler", () => {
 				includeMaxTokens: true,
 			})
 			const systemPrompt = "You are a helpful assistant."
-			const messages: Anthropic.Messages.MessageParam[] = [
+			const messages: RooMessage[] = [
 				{
 					role: "user",
 					content: "Hello!",

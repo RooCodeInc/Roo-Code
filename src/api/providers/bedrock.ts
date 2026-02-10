@@ -1,6 +1,6 @@
 import type { Anthropic } from "@anthropic-ai/sdk"
 import { createAmazonBedrock, type AmazonBedrockProvider } from "@ai-sdk/amazon-bedrock"
-import { streamText, generateText, ToolSet } from "ai"
+import { streamText, generateText, ToolSet, ModelMessage } from "ai"
 import { fromIni } from "@aws-sdk/credential-providers"
 import OpenAI from "openai"
 
@@ -38,6 +38,7 @@ import { DEFAULT_HEADERS } from "./constants"
 import { logger } from "../../utils/logging"
 import { Package } from "../../shared/package"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
+import type { RooMessage } from "../../core/task-persistence/rooMessage"
 
 /************************************************************************************
  *
@@ -188,7 +189,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 	override async *createMessage(
 		systemPrompt: string,
-		messages: Anthropic.Messages.MessageParam[],
+		messages: RooMessage[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		const modelConfig = this.getModel()
@@ -200,7 +201,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		// Filter out provider-specific meta entries (e.g., { type: "reasoning" })
 		// that are not valid Anthropic MessageParam values
 		type ReasoningMetaLike = { type?: string }
-		const filteredMessages = messages.filter((message): message is Anthropic.Messages.MessageParam => {
+		const filteredMessages = messages.filter((message) => {
 			const meta = message as ReasoningMetaLike
 			if (meta.type === "reasoning") {
 				return false
@@ -209,7 +210,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 		})
 
 		// Convert messages to AI SDK format
-		const aiSdkMessages = convertToAiSdkMessages(filteredMessages)
+		const aiSdkMessages = filteredMessages as ModelMessage[] as ModelMessage[]
 
 		// Convert tools to AI SDK format
 		let openAiTools = this.convertToolsForOpenAI(metadata?.tools)
@@ -278,7 +279,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 
 			// Find all user message indices in the original (pre-conversion) message array.
 			const originalUserIndices = filteredMessages.reduce<number[]>(
-				(acc, msg, idx) => (msg.role === "user" ? [...acc, idx] : acc),
+				(acc, msg, idx) => ("role" in msg && msg.role === "user" ? [...acc, idx] : acc),
 				[],
 			)
 
@@ -313,12 +314,7 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 			// A single original user message with tool_results becomes [tool-role msg, user-role msg]
 			// in the AI SDK array, while a plain user message becomes [user-role msg].
 			if (targetOriginalIndices.size > 0) {
-				this.applyCachePointsToAiSdkMessages(
-					filteredMessages,
-					aiSdkMessages,
-					targetOriginalIndices,
-					cachePointOption,
-				)
+				this.applyCachePointsToAiSdkMessages(aiSdkMessages, targetOriginalIndices, cachePointOption)
 			}
 		}
 
@@ -747,63 +743,16 @@ export class AwsBedrockHandler extends BaseProvider implements SingleCompletionH
 	 * accounts for that split so cache points land on the right message.
 	 */
 	private applyCachePointsToAiSdkMessages(
-		originalMessages: Anthropic.Messages.MessageParam[],
 		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
-		targetOriginalIndices: Set<number>,
+		targetIndices: Set<number>,
 		cachePointOption: Record<string, Record<string, unknown>>,
 	): void {
-		let aiSdkIdx = 0
-		for (let origIdx = 0; origIdx < originalMessages.length; origIdx++) {
-			const origMsg = originalMessages[origIdx]
-
-			if (typeof origMsg.content === "string") {
-				// Simple string content → 1 AI SDK message
-				if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-					aiSdkMessages[aiSdkIdx].providerOptions = {
-						...aiSdkMessages[aiSdkIdx].providerOptions,
-						...cachePointOption,
-					}
+		for (const idx of targetIndices) {
+			if (idx >= 0 && idx < aiSdkMessages.length) {
+				aiSdkMessages[idx].providerOptions = {
+					...aiSdkMessages[idx].providerOptions,
+					...cachePointOption,
 				}
-				aiSdkIdx++
-			} else if (origMsg.role === "user") {
-				// User message with array content may split into tool + user messages.
-				const hasToolResults = origMsg.content.some((part) => (part as { type: string }).type === "tool_result")
-				const hasNonToolContent = origMsg.content.some(
-					(part) => (part as { type: string }).type === "text" || (part as { type: string }).type === "image",
-				)
-
-				if (hasToolResults && hasNonToolContent) {
-					// Split into tool msg + user msg — cache the user msg (the second one)
-					const userMsgIdx = aiSdkIdx + 1
-					if (targetOriginalIndices.has(origIdx) && userMsgIdx < aiSdkMessages.length) {
-						aiSdkMessages[userMsgIdx].providerOptions = {
-							...aiSdkMessages[userMsgIdx].providerOptions,
-							...cachePointOption,
-						}
-					}
-					aiSdkIdx += 2
-				} else if (hasToolResults) {
-					// Only tool results → 1 tool msg
-					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-						aiSdkMessages[aiSdkIdx].providerOptions = {
-							...aiSdkMessages[aiSdkIdx].providerOptions,
-							...cachePointOption,
-						}
-					}
-					aiSdkIdx++
-				} else {
-					// Only text/image content → 1 user msg
-					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
-						aiSdkMessages[aiSdkIdx].providerOptions = {
-							...aiSdkMessages[aiSdkIdx].providerOptions,
-							...cachePointOption,
-						}
-					}
-					aiSdkIdx++
-				}
-			} else {
-				// Assistant message → 1 AI SDK message
-				aiSdkIdx++
 			}
 		}
 	}
