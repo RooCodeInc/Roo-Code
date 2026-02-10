@@ -1,19 +1,34 @@
 import { promises as fs } from "node:fs"
 import { Anthropic } from "@anthropic-ai/sdk"
-import OpenAI from "openai"
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
+import {
+	streamText,
+	generateText,
+	type ToolSet,
+	wrapLanguageModel,
+	extractReasoningMiddleware,
+	type LanguageModel,
+} from "ai"
 import * as os from "os"
 import * as path from "path"
 
 import { type ModelInfo, type QwenCodeModelId, qwenCodeModels, qwenCodeDefaultModelId } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
+import { safeWriteJson } from "../../utils/safeWriteJson"
 
-import { NativeToolCallParser } from "../../core/assistant-message/NativeToolCallParser"
-
-import { convertToOpenAiMessages } from "../transform/openai-format"
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	mapToolChoice,
+	handleAiSdkError,
+} from "../transform/ai-sdk"
+import { getModelParams } from "../transform/model-params"
 import { ApiStream } from "../transform/stream"
 
-import { BaseProvider } from "./base-provider"
+import { DEFAULT_HEADERS } from "./constants"
+import { OpenAICompatibleHandler, OpenAICompatibleConfig } from "./openai-compatible"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
 
 const QWEN_OAUTH_BASE_URL = "https://chat.qwen.ai"
@@ -30,7 +45,16 @@ interface QwenOAuthCredentials {
 	resource_url?: string
 }
 
-interface QwenCodeHandlerOptions extends ApiHandlerOptions {
+interface QwenTokenRefreshResponse {
+	access_token?: string
+	refresh_token?: string
+	token_type?: string
+	expires_in?: number
+	error?: string
+	error_description?: string
+}
+
+export interface QwenCodeHandlerOptions extends ApiHandlerOptions {
 	qwenCodeOauthPath?: string
 }
 
@@ -51,37 +75,57 @@ function objectToUrlEncoded(data: Record<string, string>): string {
 		.join("&")
 }
 
-export class QwenCodeHandler extends BaseProvider implements SingleCompletionHandler {
-	protected options: QwenCodeHandlerOptions
+export class QwenCodeHandler extends OpenAICompatibleHandler implements SingleCompletionHandler {
+	private qwenOptions: QwenCodeHandlerOptions
 	private credentials: QwenOAuthCredentials | null = null
-	private client: OpenAI | undefined
 	private refreshPromise: Promise<QwenOAuthCredentials> | null = null
 
 	constructor(options: QwenCodeHandlerOptions) {
-		super()
-		this.options = options
+		const modelId = options.apiModelId ?? qwenCodeDefaultModelId
+		const modelInfo =
+			qwenCodeModels[modelId as QwenCodeModelId] || qwenCodeModels[qwenCodeDefaultModelId as QwenCodeModelId]
+
+		const config: OpenAICompatibleConfig = {
+			providerName: "qwen-code",
+			baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+			apiKey: "pending-oauth",
+			modelId,
+			modelInfo,
+			modelMaxTokens: options.modelMaxTokens ?? undefined,
+			temperature: options.modelTemperature ?? undefined,
+		}
+
+		super(options, config)
+		this.qwenOptions = options
 	}
 
-	private ensureClient(): OpenAI {
-		if (!this.client) {
-			// Create the client instance with dummy key initially
-			// The API key will be updated dynamically via ensureAuthenticated
-			this.client = new OpenAI({
-				apiKey: "dummy-key-will-be-replaced",
-				baseURL: "https://dashscope.aliyuncs.com/compatible-mode/v1",
-			})
-		}
-		return this.client
+	protected override getLanguageModel(): LanguageModel {
+		const apiKey = this.credentials?.access_token ?? "pending-oauth"
+		const baseURL = this.credentials
+			? this.getBaseUrl(this.credentials)
+			: "https://dashscope.aliyuncs.com/compatible-mode/v1"
+		const provider = createOpenAICompatible({
+			name: "qwen-code",
+			baseURL,
+			apiKey,
+			headers: { ...DEFAULT_HEADERS },
+		})
+		const model = this.getModel()
+		const baseModel = provider(model.id)
+		return wrapLanguageModel({
+			model: baseModel,
+			middleware: extractReasoningMiddleware({ tagName: "think" }),
+		})
 	}
 
 	private async loadCachedQwenCredentials(): Promise<QwenOAuthCredentials> {
 		try {
-			const keyFile = getQwenCachedCredentialPath(this.options.qwenCodeOauthPath)
+			const keyFile = getQwenCachedCredentialPath(this.qwenOptions.qwenCodeOauthPath)
 			const credsStr = await fs.readFile(keyFile, "utf-8")
 			return JSON.parse(credsStr)
 		} catch (error) {
 			console.error(
-				`Error reading or parsing credentials file at ${getQwenCachedCredentialPath(this.options.qwenCodeOauthPath)}`,
+				`Error reading or parsing credentials file at ${getQwenCachedCredentialPath(this.qwenOptions.qwenCodeOauthPath)}`,
 			)
 			throw new Error(`Failed to load Qwen OAuth credentials: ${error}`)
 		}
@@ -130,13 +174,17 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 			throw new Error(`Token refresh failed: ${response.status} ${response.statusText}. Response: ${errorText}`)
 		}
 
-		const tokenData = await response.json()
+		const tokenData = (await response.json()) as QwenTokenRefreshResponse
 
 		if (tokenData.error) {
 			throw new Error(`Token refresh failed: ${tokenData.error} - ${tokenData.error_description}`)
 		}
 
-		const newCredentials = {
+		if (!tokenData.access_token || !tokenData.token_type || typeof tokenData.expires_in !== "number") {
+			throw new Error("Token refresh failed: invalid token response")
+		}
+
+		const newCredentials: QwenOAuthCredentials = {
 			...credentials,
 			access_token: tokenData.access_token,
 			token_type: tokenData.token_type,
@@ -144,9 +192,9 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 			expiry_date: Date.now() + tokenData.expires_in * 1000,
 		}
 
-		const filePath = getQwenCachedCredentialPath(this.options.qwenCodeOauthPath)
+		const filePath = getQwenCachedCredentialPath(this.qwenOptions.qwenCodeOauthPath)
 		try {
-			await fs.writeFile(filePath, JSON.stringify(newCredentials, null, 2))
+			await safeWriteJson(filePath, newCredentials)
 		} catch (error) {
 			console.error("Failed to save refreshed credentials:", error)
 			// Continue with the refreshed token in memory even if file write fails
@@ -171,11 +219,6 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		if (!this.isTokenValid(this.credentials)) {
 			this.credentials = await this.refreshAccessToken(this.credentials)
 		}
-
-		// After authentication, update the apiKey and baseURL on the existing client
-		const client = this.ensureClient()
-		client.apiKey = this.credentials.access_token
-		client.baseURL = this.getBaseUrl(this.credentials)
 	}
 
 	private getBaseUrl(creds: QwenOAuthCredentials): string {
@@ -186,20 +229,116 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		return baseUrl.endsWith("/v1") ? baseUrl : `${baseUrl}/v1`
 	}
 
-	private async callApiWithRetry<T>(apiCall: () => Promise<T>): Promise<T> {
-		try {
-			return await apiCall()
-		} catch (error: any) {
-			if (error.status === 401) {
-				// Token expired, refresh and retry
-				this.credentials = await this.refreshAccessToken(this.credentials!)
-				const client = this.ensureClient()
-				client.apiKey = this.credentials.access_token
-				client.baseURL = this.getBaseUrl(this.credentials)
-				return await apiCall()
-			} else {
-				throw error
+	private async forceRefreshAndAuthenticate(): Promise<void> {
+		if (!this.credentials) {
+			this.credentials = await this.loadCachedQwenCredentials()
+		}
+
+		this.credentials = await this.refreshAccessToken(this.credentials)
+	}
+
+	private getStatusCode(error: unknown): number | undefined {
+		if (!error || typeof error !== "object") {
+			return undefined
+		}
+
+		const obj = error as Record<string, unknown>
+
+		const parseStatusCode = (value: unknown): number | undefined => {
+			if (typeof value === "number") {
+				return value
 			}
+			if (typeof value === "string") {
+				const parsed = Number.parseInt(value, 10)
+				if (!Number.isNaN(parsed)) {
+					return parsed
+				}
+			}
+			return undefined
+		}
+
+		const directStatus = parseStatusCode(obj.status) ?? parseStatusCode(obj.statusCode)
+		if (directStatus !== undefined) {
+			return directStatus
+		}
+
+		const nestedError = obj.lastError ?? obj.cause
+		if (nestedError) {
+			return this.getStatusCode(nestedError)
+		}
+
+		return undefined
+	}
+
+	private isAuthError(error: unknown): boolean {
+		const statusCode = this.getStatusCode(error)
+		if (statusCode === 401) {
+			return true
+		}
+
+		if (error instanceof Error) {
+			const message = error.message || ""
+			if (message.includes("401") || message.includes("Unauthorized")) {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	private async *doCreateMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
+		const model = this.getModel()
+		const languageModel = this.getLanguageModel()
+
+		const aiSdkMessages = convertToAiSdkMessages(messages)
+		const openAiTools = this.convertToolsForOpenAI(metadata?.tools)
+		const aiSdkTools = convertToolsForAiSdk(openAiTools) as ToolSet | undefined
+
+		const requestOptions: Parameters<typeof streamText>[0] = {
+			model: languageModel,
+			system: systemPrompt,
+			messages: aiSdkMessages,
+			temperature: model.temperature ?? this.config.temperature ?? 0,
+			maxOutputTokens: this.getMaxOutputTokens(),
+			tools: aiSdkTools,
+			toolChoice: mapToolChoice(metadata?.tool_choice),
+		}
+
+		const result = streamText(requestOptions)
+
+		try {
+			for await (const part of result.fullStream) {
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
+				}
+			}
+
+			const usage = await result.usage
+			if (usage) {
+				yield this.processUsageMetrics(usage)
+			}
+		} catch (error) {
+			throw handleAiSdkError(error, "Qwen Code")
+		}
+	}
+
+	private async doCompletePrompt(prompt: string): Promise<string> {
+		const languageModel = this.getLanguageModel()
+
+		try {
+			const { text } = await generateText({
+				model: languageModel,
+				prompt,
+				maxOutputTokens: this.getMaxOutputTokens(),
+				temperature: this.config.temperature ?? 0,
+			})
+			return text
+		} catch (error) {
+			throw handleAiSdkError(error, "Qwen Code")
 		}
 	}
 
@@ -209,131 +348,43 @@ export class QwenCodeHandler extends BaseProvider implements SingleCompletionHan
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
 		await this.ensureAuthenticated()
-		const client = this.ensureClient()
-		const model = this.getModel()
 
-		const systemMessage: OpenAI.Chat.ChatCompletionSystemMessageParam = {
-			role: "system",
-			content: systemPrompt,
-		}
-
-		const convertedMessages = [systemMessage, ...convertToOpenAiMessages(messages)]
-
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
-			model: model.id,
-			temperature: 0,
-			messages: convertedMessages,
-			stream: true,
-			stream_options: { include_usage: true },
-			max_completion_tokens: model.info.maxTokens,
-			tools: this.convertToolsForOpenAI(metadata?.tools),
-			tool_choice: metadata?.tool_choice,
-			parallel_tool_calls: metadata?.parallelToolCalls ?? true,
-		}
-
-		const stream = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
-
-		let fullContent = ""
-
-		for await (const apiChunk of stream) {
-			const delta = apiChunk.choices[0]?.delta ?? {}
-			const finishReason = apiChunk.choices[0]?.finish_reason
-
-			if (delta.content) {
-				let newText = delta.content
-				if (newText.startsWith(fullContent)) {
-					newText = newText.substring(fullContent.length)
-				}
-				fullContent = delta.content
-
-				if (newText) {
-					// Check for thinking blocks
-					if (newText.includes("<think>") || newText.includes("</think>")) {
-						// Simple parsing for thinking blocks
-						const parts = newText.split(/<\/?think>/g)
-						for (let i = 0; i < parts.length; i++) {
-							if (parts[i]) {
-								if (i % 2 === 0) {
-									// Outside thinking block
-									yield {
-										type: "text",
-										text: parts[i],
-									}
-								} else {
-									// Inside thinking block
-									yield {
-										type: "reasoning",
-										text: parts[i],
-									}
-								}
-							}
-						}
-					} else {
-						yield {
-							type: "text",
-							text: newText,
-						}
-					}
-				}
-			}
-
-			if ("reasoning_content" in delta && delta.reasoning_content) {
-				yield {
-					type: "reasoning",
-					text: (delta.reasoning_content as string | undefined) || "",
-				}
-			}
-
-			// Handle tool calls in stream - emit partial chunks for NativeToolCallParser
-			if (delta.tool_calls) {
-				for (const toolCall of delta.tool_calls) {
-					yield {
-						type: "tool_call_partial",
-						index: toolCall.index,
-						id: toolCall.id,
-						name: toolCall.function?.name,
-						arguments: toolCall.function?.arguments,
-					}
-				}
-			}
-
-			// Process finish_reason to emit tool_call_end events
-			if (finishReason) {
-				const endEvents = NativeToolCallParser.processFinishReason(finishReason)
-				for (const event of endEvents) {
-					yield event
-				}
-			}
-
-			if (apiChunk.usage) {
-				yield {
-					type: "usage",
-					inputTokens: apiChunk.usage.prompt_tokens || 0,
-					outputTokens: apiChunk.usage.completion_tokens || 0,
-				}
+		try {
+			yield* this.doCreateMessage(systemPrompt, messages, metadata)
+		} catch (error) {
+			if (this.isAuthError(error)) {
+				await this.forceRefreshAndAuthenticate()
+				yield* this.doCreateMessage(systemPrompt, messages, metadata)
+			} else {
+				throw error
 			}
 		}
 	}
 
-	override getModel(): { id: string; info: ModelInfo } {
+	override getModel(): { id: string; info: ModelInfo; maxTokens?: number; temperature?: number } {
 		const id = this.options.apiModelId ?? qwenCodeDefaultModelId
-		const info = qwenCodeModels[id as keyof typeof qwenCodeModels] || qwenCodeModels[qwenCodeDefaultModelId]
-		return { id, info }
+		const info = qwenCodeModels[id as QwenCodeModelId] || qwenCodeModels[qwenCodeDefaultModelId as QwenCodeModelId]
+		const params = getModelParams({
+			format: "openai",
+			modelId: id,
+			model: info,
+			settings: this.options,
+			defaultTemperature: 0,
+		})
+		return { id, info, ...params }
 	}
 
-	async completePrompt(prompt: string): Promise<string> {
+	override async completePrompt(prompt: string): Promise<string> {
 		await this.ensureAuthenticated()
-		const client = this.ensureClient()
-		const model = this.getModel()
 
-		const requestOptions: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
-			model: model.id,
-			messages: [{ role: "user", content: prompt }],
-			max_completion_tokens: model.info.maxTokens,
+		try {
+			return await this.doCompletePrompt(prompt)
+		} catch (error) {
+			if (this.isAuthError(error)) {
+				await this.forceRefreshAndAuthenticate()
+				return await this.doCompletePrompt(prompt)
+			}
+			throw error
 		}
-
-		const response = await this.callApiWithRetry(() => client.chat.completions.create(requestOptions))
-
-		return response.choices[0]?.message.content || ""
 	}
 }
