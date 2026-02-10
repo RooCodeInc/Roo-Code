@@ -401,11 +401,15 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 							newClineMessages[lastIndex] = clineMessage
 							return { ...prevState, clineMessages: newClineMessages }
 						}
-						// If the message's timestamp is not found in the current clineMessages
-						// (e.g., due to a stale state push overwriting newer messages), append
-						// it rather than silently dropping it. This provides a recovery path
-						// for messages that exist in the backend but are missing from the frontend.
-						return { ...prevState, clineMessages: [...prevState.clineMessages, clineMessage] }
+						// Log a warning if messageUpdated arrives for a timestamp not in the
+						// frontend's clineMessages. With the seq guard and cloud event isolation
+						// (layers 1+2), this should not happen under normal conditions. If it
+						// does, it signals a state synchronization issue worth investigating.
+						console.warn(
+							`[messageUpdated] Received update for unknown message ts=${clineMessage.ts}, dropping. ` +
+								`Frontend has ${prevState.clineMessages.length} messages.`,
+						)
+						return prevState
 					})
 					break
 				}
