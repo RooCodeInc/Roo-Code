@@ -452,9 +452,10 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 	override async handlePartial(task: Task, block: ToolUse<"apply_patch">): Promise<void> {
 		const patch: string | undefined = block.params.patch
 		const candidateRelPath = this.extractFirstPathFromPatch(patch)
-		const fallbackRelPath = ""
-		const resolvedRelPath = candidateRelPath ?? fallbackRelPath
+		const fallbackDisplayPath = path.basename(task.cwd) || "workspace"
+		const resolvedRelPath = candidateRelPath ?? ""
 		const absolutePath = path.resolve(task.cwd, resolvedRelPath)
+		const displayPath = candidateRelPath ? getReadablePath(task.cwd, candidateRelPath) : fallbackDisplayPath
 
 		let patchPreview: string | undefined
 		if (patch) {
@@ -465,7 +466,7 @@ export class ApplyPatchTool extends BaseTool<"apply_patch"> {
 
 		const sharedMessageProps: ClineSayTool = {
 			tool: "appliedDiff",
-			path: getReadablePath(task.cwd, resolvedRelPath),
+			path: displayPath,
 			diff: patchPreview || "Parsing patch...",
 			isOutsideWorkspace: isPathOutsideWorkspace(absolutePath),
 		}
