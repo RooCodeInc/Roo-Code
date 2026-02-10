@@ -183,6 +183,7 @@ vi.mock("../core/webview/ClineProvider", async () => {
 		resolveWebviewView: vi.fn(),
 		postMessageToWebview: vi.fn(),
 		postStateToWebview: vi.fn(),
+		postStateToWebviewWithoutClineMessages: vi.fn(),
 		getState: vi.fn().mockResolvedValue({}),
 		remoteControlEnabled: vi.fn().mockImplementation(async (enabled: boolean) => {
 			if (!enabled) {

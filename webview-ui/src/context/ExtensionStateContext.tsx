@@ -176,6 +176,21 @@ export const mergeExtensionState = (prevState: ExtensionState, newState: Partial
 	const experiments = { ...prevExperiments, ...(newExperiments ?? {}) }
 	const rest = { ...prevRest, ...newRest }
 
+	// Protect clineMessages from stale state pushes using sequence numbering.
+	// Multiple async event sources (cloud auth, settings, task streaming) can trigger
+	// concurrent state pushes. If a stale push arrives after a newer one, its clineMessages
+	// would overwrite the newer messages. The sequence number prevents this by only applying
+	// clineMessages when the incoming seq is strictly greater than the last applied seq.
+	if (
+		newState.clineMessagesSeq !== undefined &&
+		prevState.clineMessagesSeq !== undefined &&
+		newState.clineMessagesSeq <= prevState.clineMessagesSeq &&
+		newState.clineMessages !== undefined
+	) {
+		rest.clineMessages = prevState.clineMessages
+		rest.clineMessagesSeq = prevState.clineMessagesSeq
+	}
+
 	// Note that we completely replace the previous apiConfiguration and customSupportPrompts objects
 	// with new ones since the state that is broadcast is the entire objects so merging is not necessary.
 	return {
@@ -383,6 +398,14 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 							newClineMessages[lastIndex] = clineMessage
 							return { ...prevState, clineMessages: newClineMessages }
 						}
+						// Log a warning if messageUpdated arrives for a timestamp not in the
+						// frontend's clineMessages. With the seq guard and cloud event isolation
+						// (layers 1+2), this should not happen under normal conditions. If it
+						// does, it signals a state synchronization issue worth investigating.
+						console.warn(
+							`[messageUpdated] Received update for unknown message ts=${clineMessage.ts}, dropping. ` +
+								`Frontend has ${prevState.clineMessages.length} messages.`,
+						)
 						return prevState
 					})
 					break
