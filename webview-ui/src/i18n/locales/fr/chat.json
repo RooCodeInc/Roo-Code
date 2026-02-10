@@ -271,11 +271,11 @@
 	"questions": {
 		"hasQuestion": "Roo a une question",
 		"questionNumber": "Question {{number}}",
-		"questionNumberOfTotal": "Question {{current}} of {{total}}",
-		"typeAnswer": "Type your answer here...",
-		"previous": "Previous",
-		"next": "Next",
-		"finish": "Finish"
+		"questionNumberOfTotal": "Question {{current}} sur {{total}}",
+		"typeAnswer": "Tapez votre réponse ici...",
+		"previous": "Précédent",
+		"next": "Suivant",
+		"finish": "Terminer"
 	},
 	"taskCompleted": "Tâche terminée",
 	"modelResponseIncomplete": "Réponse du modèle incomplète",

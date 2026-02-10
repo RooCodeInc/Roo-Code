@@ -270,12 +270,12 @@
 	},
 	"questions": {
 		"hasQuestion": "Roo ma pytanie",
-		"questionNumber": "Question {{number}}",
-		"questionNumberOfTotal": "Question {{current}} of {{total}}",
-		"typeAnswer": "Type your answer here...",
-		"previous": "Previous",
-		"next": "Next",
-		"finish": "Finish"
+		"questionNumber": "Pytanie {{number}}",
+		"questionNumberOfTotal": "Pytanie {{current}} z {{total}}",
+		"typeAnswer": "Wpisz swoją odpowiedź tutaj...",
+		"previous": "Poprzednie",
+		"next": "Następne",
+		"finish": "Zakończ"
 	},
 	"taskCompleted": "Zadanie zakończone",
 	"modelResponseIncomplete": "Odpowiedź modelu niekompletna",

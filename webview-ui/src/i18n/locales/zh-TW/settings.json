@@ -113,8 +113,12 @@
 			"description": "啟用後，必須按 {{primaryMod}}+Enter 傳送訊息，而不只是 Enter"
 		},
 		"showQuestionsOneByOne": {
-			"label": "Show questions one by one",
-			"description": "When enabled, questions from the model will be displayed one at a time."
+			"label": "逐個顯示問題",
+			"description": "啟用後，模型的問題將逐個顯示。"
+		},
+		"taskHeaderHighlight": {
+			"label": "高亮任務頁眉",
+			"description": "啟用後，任務頁眉將被高亮顯示，以幫助您專注於當前任務。"
 		}
 	},
 	"prompts": {

@@ -1027,8 +1027,12 @@
 			"description": "Etkinleştirildiğinde, sadece Enter yerine mesaj göndermek için {{primaryMod}}+Enter'a basmalısınız"
 		},
 		"showQuestionsOneByOne": {
-			"label": "Show questions one by one",
-			"description": "When enabled, questions from the model will be displayed one at a time."
+			"label": "Soruları tek tek göster",
+			"description": "Etkinleştirildiğinde, modelden gelen sorular tek tek görüntülenecektir."
+		},
+		"taskHeaderHighlight": {
+			"label": "Görev başlığını vurgula",
+			"description": "Etkinleştirildiğinde, mevcut göreve odaklanmanıza yardımcı olmak için görev başlığı vurgulanacaktır."
 		}
 	},
 	"skills": {

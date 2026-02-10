@@ -1027,8 +1027,12 @@
 			"description": "Ketika diaktifkan, kamu harus menekan {{primaryMod}}+Enter untuk mengirim pesan alih-alih hanya Enter"
 		},
 		"showQuestionsOneByOne": {
-			"label": "Show questions one by one",
-			"description": "When enabled, questions from the model will be displayed one at a time."
+			"label": "Tampilkan pertanyaan satu per satu",
+			"description": "Jika diaktifkan, pertanyaan từ model akan ditampilkan satu per satu."
+		},
+		"taskHeaderHighlight": {
+			"label": "Sorot header tugas",
+			"description": "Jika diaktifkan, header tugas akan disorot untuk membantu Anda fokus pada tugas saat ini."
 		}
 	},
 	"skills": {

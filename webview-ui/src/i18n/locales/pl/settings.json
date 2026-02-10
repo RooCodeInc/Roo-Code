@@ -1027,8 +1027,12 @@
 			"description": "Po włączeniu musisz nacisnąć {{primaryMod}}+Enter, aby wysłać wiadomości, zamiast tylko Enter"
 		},
 		"showQuestionsOneByOne": {
-			"label": "Show questions one by one",
-			"description": "When enabled, questions from the model will be displayed one at a time."
+			"label": "Pokaż pytania jedno po drugim",
+			"description": "Po włączeniu pytania z modelu będą wyświetlane jedno po drugim."
+		},
+		"taskHeaderHighlight": {
+			"label": "Wyróżnij nagłówek zadania",
+			"description": "Po włączeniu nagłówek zadania zostanie wyróżniony, aby pomóc Ci skupić się na bieżącym zadaniu."
 		}
 	},
 	"skills": {

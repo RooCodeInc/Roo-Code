@@ -1027,8 +1027,12 @@
 			"description": "有効にすると、Enterだけでなく{{primaryMod}}+Enterを押してメッセージを送信する必要があります"
 		},
 		"showQuestionsOneByOne": {
-			"label": "Show questions one by one",
-			"description": "When enabled, questions from the model will be displayed one at a time."
+			"label": "質問を1つずつ表示",
+			"description": "有効にすると、モデルからの質問が1つずつ表示されます。"
+		},
+		"taskHeaderHighlight": {
+			"label": "タスクヘッダーを強調表示",
+			"description": "有効にすると、現在のタスクに集中しやすいようにタスクヘッダーが強調表示されます。"
 		}
 	},
 	"skills": {

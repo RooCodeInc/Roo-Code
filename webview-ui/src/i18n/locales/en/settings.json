@@ -168,6 +168,10 @@
 		"showQuestionsOneByOne": {
 			"label": "Show questions one by one",
 			"description": "When enabled, questions from the model will be displayed one at a time."
+		},
+		"taskHeaderHighlight": {
+			"label": "Highlight task header",
+			"description": "When enabled, the task header will be highlighted to help you focus on the current task."
 		}
 	},
 	"prompts": {

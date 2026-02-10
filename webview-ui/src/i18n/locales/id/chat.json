@@ -321,12 +321,12 @@
 	},
 	"questions": {
 		"hasQuestion": "Roo punya pertanyaan",
-		"questionNumber": "Question {{number}}",
-		"questionNumberOfTotal": "Question {{current}} of {{total}}",
-		"typeAnswer": "Type your answer here...",
-		"previous": "Previous",
-		"next": "Next",
-		"finish": "Finish"
+		"questionNumber": "Pertanyaan {{number}}",
+		"questionNumberOfTotal": "Pertanyaan {{current}} dari {{total}}",
+		"typeAnswer": "Ketik jawaban Anda di sini...",
+		"previous": "Sebelumnya",
+		"next": "Berikutnya",
+		"finish": "Selesai"
 	},
 	"taskCompleted": "Tugas Selesai",
 	"error": "Error",

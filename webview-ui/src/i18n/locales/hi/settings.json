@@ -1027,8 +1027,12 @@
 			"description": "जब सक्षम हो, तो आपको केवल Enter के बजाय संदेश भेजने के लिए {{primaryMod}}+Enter दबाना होगा"
 		},
 		"showQuestionsOneByOne": {
-			"label": "Show questions one by one",
-			"description": "When enabled, questions from the model will be displayed one at a time."
+			"label": "एक-एक करके प्रश्न दिखाएं",
+			"description": "सक्षम होने पर, मॉडल के प्रश्न एक-एक करके प्रदर्शित किए जाएंगे।"
+		},
+		"taskHeaderHighlight": {
+			"label": "टास्क हेडर को हाइलाइट करें",
+			"description": "सक्षम होने पर, वर्तमान टास्क पर ध्यान केंद्रित करने में आपकी मदद करने के लिए टास्क हेडर को हाइलाइट किया जाएगा।"
 		}
 	},
 	"skills": {

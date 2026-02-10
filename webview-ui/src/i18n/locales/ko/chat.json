@@ -270,12 +270,12 @@
 	},
 	"questions": {
 		"hasQuestion": "Roo에게 질문이 있습니다",
-		"questionNumber": "Question {{number}}",
-		"questionNumberOfTotal": "Question {{current}} of {{total}}",
-		"typeAnswer": "Type your answer here...",
-		"previous": "Previous",
-		"next": "Next",
-		"finish": "Finish"
+		"questionNumber": "질문 {{number}}",
+		"questionNumberOfTotal": "질문 {{current}} / {{total}}",
+		"typeAnswer": "여기에 답변을 입력하세요...",
+		"previous": "이전",
+		"next": "다음",
+		"finish": "완료"
 	},
 	"taskCompleted": "작업 완료",
 	"modelResponseIncomplete": "모델 응답 불완전",

@@ -1027,8 +1027,12 @@
 			"description": "Lorsqu'activé, tu dois appuyer sur {{primaryMod}}+Entrée pour envoyer des messages au lieu de simplement Entrée"
 		},
 		"showQuestionsOneByOne": {
-			"label": "Show questions one by one",
-			"description": "When enabled, questions from the model will be displayed one at a time."
+			"label": "Afficher les questions une par une",
+			"description": "Lorsqu'elles sont activées, les questions du modèle s'affichent une à une."
+		},
+		"taskHeaderHighlight": {
+			"label": "Mettre en évidence l'en-tête de la tâche",
+			"description": "Lorsqu'il est activé, l'en-tête de la tâche sera mis en évidence pour vous aider à vous concentrer sur la tâche en cours."
 		}
 	},
 	"skills": {

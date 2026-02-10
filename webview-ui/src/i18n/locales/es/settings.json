@@ -1027,8 +1027,12 @@
 			"description": "Cuando está activado, debes presionar {{primaryMod}}+Enter para enviar mensajes en lugar de solo Enter"
 		},
 		"showQuestionsOneByOne": {
-			"label": "Show questions one by one",
-			"description": "When enabled, questions from the model will be displayed one at a time."
+			"label": "Mostrar preguntas de una en una",
+			"description": "Cuando está activado, las preguntas del modelo se mostrarán una a una."
+		},
+		"taskHeaderHighlight": {
+			"label": "Resaltar el encabezado de la tarea",
+			"description": "Cuando está activado, el encabezado de la tarea se resaltará para ayudarte a concentrarte en la tarea actual."
 		}
 	},
 	"skills": {

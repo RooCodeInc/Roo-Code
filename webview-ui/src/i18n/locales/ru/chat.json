@@ -266,12 +266,12 @@
 	},
 	"questions": {
 		"hasQuestion": "У Roo есть вопрос",
-		"questionNumber": "Question {{number}}",
-		"questionNumberOfTotal": "Question {{current}} of {{total}}",
-		"typeAnswer": "Type your answer here...",
-		"previous": "Previous",
-		"next": "Next",
-		"finish": "Finish"
+		"questionNumber": "Вопрос {{number}}",
+		"questionNumberOfTotal": "Вопрос {{current}} из {{total}}",
+		"typeAnswer": "Введите ваш ответ здесь...",
+		"previous": "Назад",
+		"next": "Далее",
+		"finish": "Завершить"
 	},
 	"taskCompleted": "Задача завершена",
 	"error": "Ошибка",

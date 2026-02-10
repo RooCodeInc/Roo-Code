@@ -270,12 +270,12 @@
 	},
 	"questions": {
 		"hasQuestion": "Roo hat eine Frage",
-		"questionNumber": "Question {{number}}",
-		"questionNumberOfTotal": "Question {{current}} of {{total}}",
-		"typeAnswer": "Type your answer here...",
-		"previous": "Previous",
-		"next": "Next",
-		"finish": "Finish"
+		"questionNumber": "Frage {{number}}",
+		"questionNumberOfTotal": "Frage {{current}} von {{total}}",
+		"typeAnswer": "Gib deine Antwort hier ein...",
+		"previous": "Zurück",
+		"next": "Weiter",
+		"finish": "Beenden"
 	},
 	"taskCompleted": "Aufgabe abgeschlossen",
 	"modelResponseIncomplete": "Modellantwort unvollständig",

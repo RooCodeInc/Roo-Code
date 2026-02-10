@@ -265,12 +265,12 @@
 	},
 	"questions": {
 		"hasQuestion": "Roo heeft een vraag",
-		"questionNumber": "Question {{number}}",
-		"questionNumberOfTotal": "Question {{current}} of {{total}}",
-		"typeAnswer": "Type your answer here...",
-		"previous": "Previous",
-		"next": "Next",
-		"finish": "Finish"
+		"questionNumber": "Vraag {{number}}",
+		"questionNumberOfTotal": "Vraag {{current}} van {{total}}",
+		"typeAnswer": "Typ hier je antwoord...",
+		"previous": "Vorige",
+		"next": "Volgende",
+		"finish": "Voltooien"
 	},
 	"taskCompleted": "Taak voltooid",
 	"error": "Fout",
