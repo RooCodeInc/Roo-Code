@@ -8,7 +8,6 @@ import { EventEmitter } from "events"
 import { simpleGit, SimpleGit } from "simple-git"
 
 import { fileExistsAtPath } from "../../../utils/fs"
-import * as fileSearch from "../../../services/search/file-search"
 
 import { RepoPerTaskCheckpointService } from "../RepoPerTaskCheckpointService"
 
@@ -379,7 +378,7 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 		})
 
 		describe(`${klass.name}#hasNestedGitRepositories`, () => {
-			it("throws error when nested git repositories are detected during initialization", async () => {
+			it("throws error when nested git directories are detected during initialization", async () => {
 				// Create a new temporary workspace and service for this test.
 				const shadowDir = path.join(tmpDir, `${prefix}-nested-git-${Date.now()}`)
 				const workspaceDir = path.join(tmpDir, `workspace-nested-git-${Date.now()}`)
@@ -391,7 +390,7 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await mainGit.addConfig("user.name", "Roo Code")
 				await mainGit.addConfig("user.email", "support@roocode.com")
 
-				// Create a nested repo inside the workspace.
+				// Create a nested repo inside the workspace (standard .git directory).
 				const nestedRepoPath = path.join(workspaceDir, "nested-project")
 				await fs.mkdir(nestedRepoPath, { recursive: true })
 				const nestedGit = simpleGit(nestedRepoPath)
@@ -413,40 +412,112 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 
 				// Confirm nested git directory exists before initialization.
 				const nestedGitDir = path.join(nestedRepoPath, ".git")
-				const headFile = path.join(nestedGitDir, "HEAD")
-				await fs.writeFile(headFile, "HEAD")
 				expect(await fileExistsAtPath(nestedGitDir)).toBe(true)
-
-				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(({ args }) => {
-					const searchPattern = args[4]
-
-					if (searchPattern.includes(".git/HEAD")) {
-						// Return the HEAD file path, not the .git directory
-						const headFilePath = path.join(path.relative(workspaceDir, nestedGitDir), "HEAD")
-						return Promise.resolve([
-							{
-								path: headFilePath,
-								type: "file", // HEAD is a file, not a folder
-								label: "HEAD",
-							},
-						])
-					} else {
-						return Promise.resolve([])
-					}
-				})
 
 				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
 
-				// Verify that initialization throws an error when nested git repos are detected
-				// The error message now includes the specific path of the nested repository
+				// Verify that initialization throws an error when nested git repos are detected.
 				await expect(service.initShadowGit()).rejects.toThrowError(
 					/Checkpoints are disabled because a nested git repository was detected at:/,
 				)
 
 				// Clean up.
-				vitest.restoreAllMocks()
 				await fs.rm(shadowDir, { recursive: true, force: true })
 				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("throws error when nested .git pointer file is detected (submodule/worktree)", async () => {
+				// Create a new temporary workspace and service for this test.
+				const shadowDir = path.join(tmpDir, `${prefix}-nested-gitfile-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-nested-gitfile-${Date.now()}`)
+
+				// Create a primary workspace repo.
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Simulate a submodule: create a directory with a .git *file*
+				// (not a directory) containing a gitdir pointer.
+				const submodulePath = path.join(workspaceDir, "my-submodule")
+				await fs.mkdir(submodulePath, { recursive: true })
+				await fs.writeFile(path.join(submodulePath, ".git"), "gitdir: ../.git/modules/my-submodule\n")
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+
+				// Verify that initialization throws when a .git file (submodule pointer) is detected.
+				await expect(service.initShadowGit()).rejects.toThrowError(
+					/Checkpoints are disabled because a nested git repository was detected at:/,
+				)
+
+				// Clean up.
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("ignores stray .git file without gitdir: content (no false positive)", async () => {
+				// Create a new temporary workspace and service for this test.
+				const shadowDir = path.join(tmpDir, `${prefix}-stray-gitfile-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-stray-gitfile-${Date.now()}`)
+
+				// Create a primary workspace repo.
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create a stray .git file that does NOT contain "gitdir:" --
+				// this should NOT be treated as a nested repo.
+				const strayDir = path.join(workspaceDir, "some-tool-output")
+				await fs.mkdir(strayDir, { recursive: true })
+				await fs.writeFile(path.join(strayDir, ".git"), "not a gitdir pointer\n")
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+
+				// Initialization should succeed because the .git file is not a valid pointer.
+				await expect(service.initShadowGit()).resolves.not.toThrow()
+				expect(service.isInitialized).toBe(true)
+
+				// Clean up.
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+			})
+
+			it("does not follow symlinks outside the workspace", async () => {
+				// Create a new temporary workspace and service for this test.
+				const shadowDir = path.join(tmpDir, `${prefix}-symlink-${Date.now()}`)
+				const workspaceDir = path.join(tmpDir, `workspace-symlink-${Date.now()}`)
+
+				// Create a primary workspace repo.
+				await fs.mkdir(workspaceDir, { recursive: true })
+				const mainGit = simpleGit(workspaceDir)
+				await mainGit.init()
+				await mainGit.addConfig("user.name", "Roo Code")
+				await mainGit.addConfig("user.email", "support@roocode.com")
+
+				// Create an external directory with a nested git repo (outside the workspace).
+				const externalDir = path.join(tmpDir, `external-repo-${Date.now()}`)
+				const externalRepoDir = path.join(externalDir, "repo-with-git")
+				await fs.mkdir(externalRepoDir, { recursive: true })
+				const externalGit = simpleGit(externalRepoDir)
+				await externalGit.init()
+
+				// Create a symlink inside the workspace pointing to the external directory.
+				const symlinkPath = path.join(workspaceDir, "external-link")
+				await fs.symlink(externalDir, symlinkPath, "dir")
+
+				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
+
+				// The symlink should NOT be followed, so no nested repo should be detected.
+				await expect(service.initShadowGit()).resolves.not.toThrow()
+				expect(service.isInitialized).toBe(true)
+
+				// Clean up.
+				await fs.rm(shadowDir, { recursive: true, force: true })
+				await fs.rm(workspaceDir, { recursive: true, force: true })
+				await fs.rm(externalDir, { recursive: true, force: true })
 			})
 
 			it("succeeds when no nested git repositories are detected", async () => {
@@ -467,19 +538,13 @@ describe.each([[RepoPerTaskCheckpointService, "RepoPerTaskCheckpointService"]])(
 				await mainGit.add(".")
 				await mainGit.commit("Initial commit in main repo")
 
-				vitest.spyOn(fileSearch, "executeRipgrep").mockImplementation(() => {
-					// Return empty array to simulate no nested git repos found
-					return Promise.resolve([])
-				})
-
 				const service = new klass(taskId, shadowDir, workspaceDir, () => {})
 
-				// Verify that initialization succeeds when no nested git repos are detected
+				// Verify that initialization succeeds when no nested git repos are detected.
 				await expect(service.initShadowGit()).resolves.not.toThrow()
 				expect(service.isInitialized).toBe(true)
 
 				// Clean up.
-				vitest.restoreAllMocks()
 				await fs.rm(shadowDir, { recursive: true, force: true })
 				await fs.rm(workspaceDir, { recursive: true, force: true })
 			})
