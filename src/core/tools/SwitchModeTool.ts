@@ -26,7 +26,7 @@ export class SwitchModeTool extends BaseTool<"switch_mode"> {
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			// Verify the mode exists
 			const targetMode = getModeBySlug(mode_slug, (await task.providerRef.deref()?.getState())?.customModes)

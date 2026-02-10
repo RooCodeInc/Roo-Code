@@ -191,7 +191,7 @@ export class ReadCommandOutputTool extends BaseTool<"read_command_output"> {
 				}),
 			)
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 			pushToolResult(result)
 		} catch (error) {
 			const errorMsg = error instanceof Error ? error.message : String(error)

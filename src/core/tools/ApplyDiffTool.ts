@@ -117,7 +117,7 @@ export class ApplyDiffTool extends BaseTool<"apply_diff"> {
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 			task.consecutiveMistakeCountForApplyDiff.delete(relPath)
 
 			// Generate backend-unified diff for display in chat/webview

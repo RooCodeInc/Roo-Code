@@ -32,7 +32,7 @@ export class ListFilesTool extends BaseTool<"list_files"> {
 				return
 			}
 
-			task.consecutiveMistakeCount = 0
+			task.recordToolSuccess()
 
 			const absolutePath = path.resolve(task.cwd, relDirPath)
 			const isOutsideWorkspace = isPathOutsideWorkspace(absolutePath)

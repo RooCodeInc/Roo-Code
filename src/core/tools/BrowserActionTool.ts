@@ -68,7 +68,7 @@ export async function browserActionTool(
 					return
 				}
 
-				cline.consecutiveMistakeCount = 0
+				cline.recordToolSuccess()
 				const didApprove = await askApproval("browser_action_launch", url)
 
 				if (!didApprove) {
@@ -164,7 +164,7 @@ export async function browserActionTool(
 					}
 				}
 
-				cline.consecutiveMistakeCount = 0
+				cline.recordToolSuccess()
 
 				// Prepare say payload; include executedCoordinate for pointer actions
 				const sayPayload: ClineSayBrowserAction & { executedCoordinate?: string } = {

@@ -332,6 +332,21 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	consecutiveNoAssistantMessagesCount: number = 0
 	toolUsage: ToolUsage = {}
 
+	/**
+	 * Tracks the consecutiveMistakeCount at the start of each tool batch (API request).
+	 * Used for parallel tool call failure reconciliation - when multiple tools are called
+	 * in parallel and all fail, we should only increment the counter by 1, not by the
+	 * number of failed tools.
+	 */
+	private consecutiveMistakeCountAtBatchStart: number = 0
+
+	/**
+	 * Tracks whether any tool succeeded in the current batch (API request).
+	 * If at least one tool succeeds, the consecutiveMistakeCount should be reset to 0.
+	 * If all tools fail, the counter should increment by 1 from the batch start value.
+	 */
+	private parallelToolSuccessInBatch: boolean = false
+
 	// Checkpoints
 	enableCheckpoints: boolean
 	checkpointTimeout: number
@@ -390,6 +405,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		}
 		this.userMessageContent.push(toolResult)
 		return true
+	}
+
+	/**
+	 * Records a successful tool execution for parallel tool call failure tracking.
+	 *
+	 * When parallel tool calls are made (multiple tools in a single API response), we need
+	 * to track success/failure at the batch level rather than individually. This method:
+	 * 1. Marks that at least one tool succeeded in this batch (parallelToolSuccessInBatch)
+	 * 2. Resets the consecutiveMistakeCount to 0 (existing behavior)
+	 *
+	 * The batch reconciliation logic (after all tools complete) will ensure that:
+	 * - If any tool succeeded: counter stays at 0 (this method already set it)
+	 * - If all tools failed: counter increments by 1 from batch start (not N failures)
+	 */
+	public recordToolSuccess(): void {
+		this.parallelToolSuccessInBatch = true
+		this.consecutiveMistakeCount = 0
 	}
 
 	/**
@@ -2961,6 +2993,10 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 				this.didToolFailInCurrentTurn = false
 				this.presentAssistantMessageLocked = false
 				this.presentAssistantMessageHasPendingUpdates = false
+				// Initialize parallel tool call failure tracking for this batch
+				// Save the current mistake count so we can reconcile after all tools complete
+				this.consecutiveMistakeCountAtBatchStart = this.consecutiveMistakeCount
+				this.parallelToolSuccessInBatch = false
 				// No legacy text-stream tool parser.
 				this.streamingToolCallIndices.clear()
 				// Clear any leftover streaming tool call state from previous interrupted streams
@@ -3689,6 +3725,23 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 					const didToolUse = this.assistantMessageContent.some(
 						(block) => block.type === "tool_use" || block.type === "mcp_tool_use",
 					)
+
+					// Reconcile parallel tool call failure counting
+					// When multiple tools are called in parallel and all fail, we should only
+					// increment the consecutiveMistakeCount by 1, not by the number of failed tools.
+					// This reconciliation runs after all tools in the batch have been processed.
+					if (didToolUse) {
+						if (this.parallelToolSuccessInBatch) {
+							// At least one tool succeeded - counter should remain at 0
+							// (recordToolSuccess already set it to 0, so nothing to do)
+						} else if (this.consecutiveMistakeCount > this.consecutiveMistakeCountAtBatchStart) {
+							// All tools failed - set counter to batch start + 1 (single failure event)
+							// This ensures parallel failures count as one failure, not N failures
+							this.consecutiveMistakeCount = this.consecutiveMistakeCountAtBatchStart + 1
+						}
+						// If consecutiveMistakeCount == consecutiveMistakeCountAtBatchStart,
+						// no tools failed, so no reconciliation needed
+					}
 
 					if (!didToolUse) {
 						// Increment consecutive no-tool-use counter
