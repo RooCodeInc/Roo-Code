@@ -46,7 +46,7 @@ export function containsDangerousSubstitution(source: string): boolean {
 
 	// Check for zsh process substitution =(...) which executes commands
 	// =(...) creates a temporary file containing the output of the command, but executes it
-	const zshProcessSubstitution = /(?<![a-zA-Z0-9_])=\([^)]+\)/.test(source)
+	const zshProcessSubstitution = /(?:(?<=^)|(?<=[\s;|&(<]))=\([^)]+\)/.test(source)
 
 	// Check for zsh glob qualifiers with code execution (e:...:)
 	// Patterns like *(e:whoami:) or ?(e:rm -rf /:) execute commands during glob expansion
