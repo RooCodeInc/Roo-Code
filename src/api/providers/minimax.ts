@@ -1,277 +1,271 @@
-import { Anthropic } from "@anthropic-ai/sdk"
-import { Stream as AnthropicStream } from "@anthropic-ai/sdk/streaming"
-import { CacheControlEphemeral } from "@anthropic-ai/sdk/resources"
-import OpenAI from "openai"
+import type { Anthropic } from "@anthropic-ai/sdk"
+import { createAnthropic } from "@ai-sdk/anthropic"
+import { streamText, generateText, ToolSet } from "ai"
 
-import { type MinimaxModelId, minimaxDefaultModelId, minimaxModels } from "@roo-code/types"
+import { type ModelInfo, minimaxDefaultModelId, minimaxModels } from "@roo-code/types"
 
 import type { ApiHandlerOptions } from "../../shared/api"
-
-import { ApiStream } from "../transform/stream"
+import type { ApiStream, ApiStreamUsageChunk } from "../transform/stream"
 import { getModelParams } from "../transform/model-params"
 import { mergeEnvironmentDetailsForMiniMax } from "../transform/minimax-format"
+import {
+	convertToAiSdkMessages,
+	convertToolsForAiSdk,
+	processAiSdkStreamPart,
+	mapToolChoice,
+	handleAiSdkError,
+} from "../transform/ai-sdk"
+import { calculateApiCostAnthropic } from "../../shared/cost"
 
+import { DEFAULT_HEADERS } from "./constants"
 import { BaseProvider } from "./base-provider"
 import type { SingleCompletionHandler, ApiHandlerCreateMessageMetadata } from "../index"
-import { calculateApiCostAnthropic } from "../../shared/cost"
-import { convertOpenAIToolsToAnthropic } from "../../core/prompts/tools/native-tools/converters"
 
-/**
- * Converts OpenAI tool_choice to Anthropic ToolChoice format
- */
-function convertOpenAIToolChoice(
-	toolChoice: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
-): Anthropic.Messages.MessageCreateParams["tool_choice"] | undefined {
-	if (!toolChoice) {
-		return undefined
-	}
-
-	if (typeof toolChoice === "string") {
-		switch (toolChoice) {
-			case "none":
-				return undefined // Anthropic doesn't have "none", just omit tools
-			case "auto":
-				return { type: "auto" }
-			case "required":
-				return { type: "any" }
-			default:
-				return { type: "auto" }
-		}
-	}
-
-	// Handle object form { type: "function", function: { name: string } }
-	if (typeof toolChoice === "object" && "function" in toolChoice) {
-		return {
-			type: "tool",
-			name: toolChoice.function.name,
-		}
-	}
-
-	return { type: "auto" }
+type LegacyApiConfiguration = {
+	apiKey?: string
+	baseUrl?: string
+	apiModelId?: string
 }
 
 export class MiniMaxHandler extends BaseProvider implements SingleCompletionHandler {
+	private client: ReturnType<typeof createAnthropic>
 	private options: ApiHandlerOptions
-	private client: Anthropic
+	private readonly providerName = "MiniMax"
+	private lastThoughtSignature: string | undefined
+	private lastRedactedThinkingBlocks: Array<{ type: "redacted_thinking"; data: string }> = []
 
 	constructor(options: ApiHandlerOptions) {
 		super()
 		this.options = options
 
-		// Use Anthropic-compatible endpoint
-		// Default to international endpoint: https://api.minimax.io/anthropic
-		// China endpoint: https://api.minimaxi.com/anthropic
-		let baseURL = options.minimaxBaseUrl || "https://api.minimax.io/anthropic"
+		const legacyConfig = this.getLegacyApiConfiguration()
+		const rawBaseUrl = legacyConfig?.baseUrl ?? this.options.minimaxBaseUrl
+		let resolvedBaseUrl: string | undefined
 
-		// If user provided a /v1 endpoint, convert to /anthropic
-		if (baseURL.endsWith("/v1")) {
-			baseURL = baseURL.replace(/\/v1$/, "/anthropic")
-		} else if (!baseURL.endsWith("/anthropic")) {
-			baseURL = `${baseURL.replace(/\/$/, "")}/anthropic`
+		if (rawBaseUrl) {
+			if (rawBaseUrl.endsWith("/anthropic/v1")) {
+				resolvedBaseUrl = rawBaseUrl
+			} else if (rawBaseUrl.endsWith("/v1")) {
+				resolvedBaseUrl = rawBaseUrl.slice(0, -3) + "/anthropic/v1"
+			} else if (rawBaseUrl.endsWith("/anthropic")) {
+				resolvedBaseUrl = rawBaseUrl + "/v1"
+			} else {
+				resolvedBaseUrl = rawBaseUrl + "/anthropic/v1"
+			}
+		} else {
+			resolvedBaseUrl = "https://api.minimax.io/anthropic/v1"
 		}
 
-		this.client = new Anthropic({
-			baseURL,
-			apiKey: options.minimaxApiKey,
+		this.client = createAnthropic({
+			baseURL: resolvedBaseUrl,
+			apiKey: legacyConfig?.apiKey ?? this.options.minimaxApiKey ?? "",
+			headers: DEFAULT_HEADERS,
 		})
 	}
 
-	async *createMessage(
+	override async *createMessage(
 		systemPrompt: string,
 		messages: Anthropic.Messages.MessageParam[],
 		metadata?: ApiHandlerCreateMessageMetadata,
 	): ApiStream {
-		let stream: AnthropicStream<Anthropic.Messages.RawMessageStreamEvent>
-		const cacheControl: CacheControlEphemeral = { type: "ephemeral" }
-		const { id: modelId, info, maxTokens, temperature } = this.getModel()
+		const modelConfig = this.getModel()
 
-		// MiniMax M2 models support prompt caching
-		const supportsPromptCache = info.supportsPromptCache ?? false
+		// Reset thinking state for this request
+		this.lastThoughtSignature = undefined
+		this.lastRedactedThinkingBlocks = []
 
-		// Merge environment_details from messages that follow tool_result blocks
-		// into the tool_result content. This preserves reasoning continuity for
-		// thinking models by preventing user messages from interrupting the
-		// reasoning context after tool use (similar to r1-format's mergeToolResultText).
-		const processedMessages = mergeEnvironmentDetailsForMiniMax(messages)
+		const modelParams = getModelParams({
+			format: "anthropic",
+			modelId: modelConfig.id,
+			model: modelConfig.info,
+			settings: this.options,
+			defaultTemperature: 1.0,
+		})
 
-		// Build the system blocks array
-		const systemBlocks: Anthropic.Messages.TextBlockParam[] = [
-			supportsPromptCache
-				? { text: systemPrompt, type: "text", cache_control: cacheControl }
-				: { text: systemPrompt, type: "text" },
-		]
+		const mergedMessages = mergeEnvironmentDetailsForMiniMax(messages)
+		const aiSdkMessages = convertToAiSdkMessages(mergedMessages)
+		const aiSdkTools = convertToolsForAiSdk(metadata?.tools) as ToolSet | undefined
 
-		// Prepare request parameters
-		const requestParams: Anthropic.Messages.MessageCreateParams = {
-			model: modelId,
-			max_tokens: maxTokens ?? 16_384,
-			temperature: temperature ?? 1.0,
-			system: systemBlocks,
-			messages: supportsPromptCache ? this.addCacheControl(processedMessages, cacheControl) : processedMessages,
-			stream: true,
-			tools: convertOpenAIToolsToAnthropic(metadata?.tools ?? []),
-			tool_choice: convertOpenAIToolChoice(metadata?.tool_choice),
-		}
+		const anthropicProviderOptions: Record<string, unknown> = {}
 
-		stream = await this.client.messages.create(requestParams)
-
-		let inputTokens = 0
-		let outputTokens = 0
-		let cacheWriteTokens = 0
-		let cacheReadTokens = 0
-
-		for await (const chunk of stream) {
-			switch (chunk.type) {
-				case "message_start": {
-					// Tells us cache reads/writes/input/output.
-					const {
-						input_tokens = 0,
-						output_tokens = 0,
-						cache_creation_input_tokens,
-						cache_read_input_tokens,
-					} = chunk.message.usage
-
-					yield {
-						type: "usage",
-						inputTokens: input_tokens,
-						outputTokens: output_tokens,
-						cacheWriteTokens: cache_creation_input_tokens || undefined,
-						cacheReadTokens: cache_read_input_tokens || undefined,
-					}
-
-					inputTokens += input_tokens
-					outputTokens += output_tokens
-					cacheWriteTokens += cache_creation_input_tokens || 0
-					cacheReadTokens += cache_read_input_tokens || 0
-
-					break
-				}
-				case "message_delta":
-					// Tells us stop_reason, stop_sequence, and output tokens
-					yield {
-						type: "usage",
-						inputTokens: 0,
-						outputTokens: chunk.usage.output_tokens || 0,
-					}
-
-					break
-				case "message_stop":
-					// No usage data, just an indicator that the message is done.
-					break
-				case "content_block_start":
-					switch (chunk.content_block.type) {
-						case "thinking":
-							// Yield thinking/reasoning content
-							if (chunk.index > 0) {
-								yield { type: "reasoning", text: "\n" }
-							}
-
-							yield { type: "reasoning", text: chunk.content_block.thinking }
-							break
-						case "text":
-							// We may receive multiple text blocks
-							if (chunk.index > 0) {
-								yield { type: "text", text: "\n" }
-							}
-
-							yield { type: "text", text: chunk.content_block.text }
-							break
-						case "tool_use": {
-							// Emit initial tool call partial with id and name
-							yield {
-								type: "tool_call_partial",
-								index: chunk.index,
-								id: chunk.content_block.id,
-								name: chunk.content_block.name,
-								arguments: undefined,
-							}
-							break
-						}
-					}
-					break
-				case "content_block_delta":
-					switch (chunk.delta.type) {
-						case "thinking_delta":
-							yield { type: "reasoning", text: chunk.delta.thinking }
-							break
-						case "text_delta":
-							yield { type: "text", text: chunk.delta.text }
-							break
-						case "input_json_delta": {
-							// Emit tool call partial chunks as arguments stream in
-							yield {
-								type: "tool_call_partial",
-								index: chunk.index,
-								id: undefined,
-								name: undefined,
-								arguments: chunk.delta.partial_json,
-							}
-							break
-						}
-					}
-
-					break
-				case "content_block_stop":
-					// Block is complete - no action needed, NativeToolCallParser handles completion
-					break
+		if (modelParams.reasoning && modelParams.reasoningBudget) {
+			anthropicProviderOptions.thinking = {
+				type: "enabled",
+				budgetTokens: modelParams.reasoningBudget,
 			}
 		}
 
-		// Calculate and yield final cost
-		if (inputTokens > 0 || outputTokens > 0 || cacheWriteTokens > 0 || cacheReadTokens > 0) {
-			const { totalCost } = calculateApiCostAnthropic(
-				this.getModel().info,
-				inputTokens,
-				outputTokens,
-				cacheWriteTokens,
-				cacheReadTokens,
-			)
-
-			yield {
-				type: "usage",
-				inputTokens: 0,
-				outputTokens: 0,
-				totalCost,
-			}
+		if (metadata?.parallelToolCalls === false) {
+			anthropicProviderOptions.disableParallelToolUse = true
 		}
-	}
 
-	/**
-	 * Add cache control to the last two user messages for prompt caching
-	 */
-	private addCacheControl(
-		messages: Anthropic.Messages.MessageParam[],
-		cacheControl: CacheControlEphemeral,
-	): Anthropic.Messages.MessageParam[] {
-		const userMsgIndices = messages.reduce(
+		const cacheProviderOption = { anthropic: { cacheControl: { type: "ephemeral" as const } } }
+		const userMsgIndices = mergedMessages.reduce(
 			(acc, msg, index) => (msg.role === "user" ? [...acc, index] : acc),
 			[] as number[],
 		)
 
+		const targetIndices = new Set<number>()
 		const lastUserMsgIndex = userMsgIndices[userMsgIndices.length - 1] ?? -1
-		const secondLastMsgUserIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
+		const secondLastUserMsgIndex = userMsgIndices[userMsgIndices.length - 2] ?? -1
 
-		return messages.map((message, index) => {
-			if (index === lastUserMsgIndex || index === secondLastMsgUserIndex) {
-				return {
-					...message,
-					content:
-						typeof message.content === "string"
-							? [{ type: "text", text: message.content, cache_control: cacheControl }]
-							: message.content.map((content, contentIndex) =>
-									contentIndex === message.content.length - 1
-										? { ...content, cache_control: cacheControl }
-										: content,
-								),
+		if (lastUserMsgIndex >= 0) targetIndices.add(lastUserMsgIndex)
+		if (secondLastUserMsgIndex >= 0) targetIndices.add(secondLastUserMsgIndex)
+
+		if (targetIndices.size > 0) {
+			this.applyCacheControlToAiSdkMessages(mergedMessages, aiSdkMessages, targetIndices, cacheProviderOption)
+		}
+
+		const requestOptions = {
+			model: this.client(modelConfig.id),
+			system: systemPrompt,
+			...({
+				systemProviderOptions: { anthropic: { cacheControl: { type: "ephemeral" } } },
+			} as Record<string, unknown>),
+			messages: aiSdkMessages,
+			temperature: modelParams.temperature,
+			maxOutputTokens: modelParams.maxTokens ?? modelConfig.info.maxTokens,
+			tools: aiSdkTools,
+			toolChoice: mapToolChoice(metadata?.tool_choice),
+			...(Object.keys(anthropicProviderOptions).length > 0 && {
+				providerOptions: { anthropic: anthropicProviderOptions } as Record<string, Record<string, unknown>>,
+			}),
+		}
+
+		try {
+			const result = streamText(requestOptions as Parameters<typeof streamText>[0])
+
+			for await (const part of result.fullStream) {
+				const anthropicMetadata = (
+					part as {
+						providerMetadata?: {
+							anthropic?: {
+								signature?: string
+								redactedData?: string
+							}
+						}
+					}
+				).providerMetadata?.anthropic
+
+				if (anthropicMetadata?.signature) {
+					this.lastThoughtSignature = anthropicMetadata.signature
+				}
+
+				if (anthropicMetadata?.redactedData) {
+					this.lastRedactedThinkingBlocks.push({
+						type: "redacted_thinking",
+						data: anthropicMetadata.redactedData,
+					})
+				}
+
+				for (const chunk of processAiSdkStreamPart(part)) {
+					yield chunk
 				}
 			}
-			return message
-		})
+
+			const usage = await result.usage
+			const providerMetadata = await result.providerMetadata
+			if (usage) {
+				yield this.processUsageMetrics(usage, modelConfig.info, providerMetadata)
+			}
+		} catch (error) {
+			throw handleAiSdkError(error, this.providerName)
+		}
+	}
+
+	private processUsageMetrics(
+		usage: { inputTokens?: number; outputTokens?: number },
+		info: ModelInfo,
+		providerMetadata?: Record<string, Record<string, unknown>>,
+	): ApiStreamUsageChunk {
+		const inputTokens = usage.inputTokens ?? 0
+		const outputTokens = usage.outputTokens ?? 0
+
+		const anthropicMeta = providerMetadata?.anthropic as
+			| { cacheCreationInputTokens?: number; cacheReadInputTokens?: number }
+			| undefined
+		const cacheWriteTokens = anthropicMeta?.cacheCreationInputTokens ?? 0
+		const cacheReadTokens = anthropicMeta?.cacheReadInputTokens ?? 0
+
+		const { totalCost } = calculateApiCostAnthropic(
+			info,
+			inputTokens,
+			outputTokens,
+			cacheWriteTokens,
+			cacheReadTokens,
+		)
+
+		return {
+			type: "usage",
+			inputTokens,
+			outputTokens,
+			cacheWriteTokens: cacheWriteTokens > 0 ? cacheWriteTokens : undefined,
+			cacheReadTokens: cacheReadTokens > 0 ? cacheReadTokens : undefined,
+			totalCost,
+		}
+	}
+
+	private applyCacheControlToAiSdkMessages(
+		originalMessages: Anthropic.Messages.MessageParam[],
+		aiSdkMessages: { role: string; providerOptions?: Record<string, Record<string, unknown>> }[],
+		targetOriginalIndices: Set<number>,
+		cacheProviderOption: Record<string, Record<string, unknown>>,
+	): void {
+		let aiSdkIdx = 0
+		for (let origIdx = 0; origIdx < originalMessages.length; origIdx++) {
+			const origMsg = originalMessages[origIdx]
+
+			if (typeof origMsg.content === "string") {
+				if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+					aiSdkMessages[aiSdkIdx].providerOptions = {
+						...aiSdkMessages[aiSdkIdx].providerOptions,
+						...cacheProviderOption,
+					}
+				}
+				aiSdkIdx++
+			} else if (origMsg.role === "user") {
+				const hasToolResults = origMsg.content.some((part) => (part as { type: string }).type === "tool_result")
+				const hasNonToolContent = origMsg.content.some(
+					(part) => (part as { type: string }).type === "text" || (part as { type: string }).type === "image",
+				)
+
+				if (hasToolResults && hasNonToolContent) {
+					const userMsgIdx = aiSdkIdx + 1
+					if (targetOriginalIndices.has(origIdx) && userMsgIdx < aiSdkMessages.length) {
+						aiSdkMessages[userMsgIdx].providerOptions = {
+							...aiSdkMessages[userMsgIdx].providerOptions,
+							...cacheProviderOption,
+						}
+					}
+					aiSdkIdx += 2
+				} else if (hasToolResults) {
+					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+						aiSdkMessages[aiSdkIdx].providerOptions = {
+							...aiSdkMessages[aiSdkIdx].providerOptions,
+							...cacheProviderOption,
+						}
+					}
+					aiSdkIdx++
+				} else {
+					if (targetOriginalIndices.has(origIdx) && aiSdkIdx < aiSdkMessages.length) {
+						aiSdkMessages[aiSdkIdx].providerOptions = {
+							...aiSdkMessages[aiSdkIdx].providerOptions,
+							...cacheProviderOption,
+						}
+					}
+					aiSdkIdx++
+				}
+			} else {
+				aiSdkIdx++
+			}
+		}
 	}
 
 	getModel() {
-		const modelId = this.options.apiModelId
-		const id = modelId && modelId in minimaxModels ? (modelId as MinimaxModelId) : minimaxDefaultModelId
+		const legacyConfig = this.getLegacyApiConfiguration()
+		const modelId = legacyConfig?.apiModelId ?? this.options.apiModelId
+
+		const id = modelId && modelId in minimaxModels ? (modelId as keyof typeof minimaxModels) : minimaxDefaultModelId
 		const info = minimaxModels[id]
 
 		const params = getModelParams({
@@ -289,18 +283,36 @@ export class MiniMaxHandler extends BaseProvider implements SingleCompletionHand
 		}
 	}
 
-	async completePrompt(prompt: string) {
-		const { id: model, temperature } = this.getModel()
+	async completePrompt(prompt: string): Promise<string> {
+		const { id, maxTokens, temperature } = this.getModel()
 
-		const message = await this.client.messages.create({
-			model,
-			max_tokens: 16_384,
-			temperature: temperature ?? 1.0,
-			messages: [{ role: "user", content: prompt }],
-			stream: false,
-		})
+		try {
+			const { text } = await generateText({
+				model: this.client(id),
+				prompt,
+				maxOutputTokens: maxTokens ?? minimaxModels[minimaxDefaultModelId].maxTokens,
+				temperature,
+			})
 
-		const content = message.content.find(({ type }) => type === "text")
-		return content?.type === "text" ? content.text : ""
+			return text
+		} catch (error) {
+			throw handleAiSdkError(error, this.providerName)
+		}
+	}
+
+	getThoughtSignature(): string | undefined {
+		return this.lastThoughtSignature
+	}
+
+	getRedactedThinkingBlocks(): Array<{ type: "redacted_thinking"; data: string }> | undefined {
+		return this.lastRedactedThinkingBlocks.length > 0 ? this.lastRedactedThinkingBlocks : undefined
+	}
+
+	override isAiSdkProvider(): boolean {
+		return true
+	}
+
+	private getLegacyApiConfiguration(): LegacyApiConfiguration | undefined {
+		return (this.options as ApiHandlerOptions & { apiConfiguration?: LegacyApiConfiguration }).apiConfiguration
 	}
 }
