@@ -8,4 +8,3 @@ export { isRooUserMessage, isRooAssistantMessage, isRooToolMessage, isRooReasoni
 export type { TextPart, ImagePart, FilePart, ToolCallPart, ToolResultPart, ReasoningPart } from "./rooMessage"
 export { convertAnthropicToRooMessages } from "./converters/anthropicToRoo"
 export { flattenModelMessagesToStringContent } from "./messageUtils"
-export type { FlattenMessagesOptions } from "./messageUtils"

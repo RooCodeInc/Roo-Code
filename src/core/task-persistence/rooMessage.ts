@@ -11,16 +11,7 @@
 import type { UserModelMessage, AssistantModelMessage, ToolModelMessage, AssistantContent } from "ai"
 
 // Re-export AI SDK content part types for convenience
-export type {
-	TextPart,
-	ImagePart,
-	FilePart,
-	ToolCallPart,
-	ToolResultPart,
-	UserContent,
-	AssistantContent,
-	ToolContent,
-} from "ai"
+export type { TextPart, ImagePart, FilePart, ToolCallPart, ToolResultPart } from "ai"
 
 /**
  * `ReasoningPart` is used by the AI SDK in `AssistantContent` but is not directly
@@ -102,7 +93,7 @@ export interface RooReasoningMessage extends RooMessageMetadata {
 	/** Provider response ID. */
 	id?: string
 	/** Summary of the reasoning, if provided by the model. */
-	summary?: any[]
+	summary?: Array<{ type: string; text: string }>
 }
 
 /**
