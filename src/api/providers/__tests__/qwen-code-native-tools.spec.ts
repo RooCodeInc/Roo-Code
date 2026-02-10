@@ -45,6 +45,7 @@ import type { Anthropic } from "@anthropic-ai/sdk"
 import { qwenCodeDefaultModelId, qwenCodeModels, type QwenCodeModelId } from "@roo-code/types"
 
 import { promises as fs } from "node:fs"
+import * as path from "node:path"
 
 import { QwenCodeHandler, type QwenCodeHandlerOptions } from "../qwen-code"
 import { safeWriteJson } from "../../../utils/safeWriteJson"
@@ -174,7 +175,7 @@ describe("QwenCodeHandler (AI SDK)", () => {
 		const result = await handler.completePrompt("Hello")
 
 		expect(result).toBe("ok")
-		expect(fs.readFile).toHaveBeenCalledWith(oauthPath, "utf-8")
+		expect(fs.readFile).toHaveBeenCalledWith(path.resolve(oauthPath), "utf-8")
 		expect(fetchMock).not.toHaveBeenCalled()
 	})
 
@@ -215,7 +216,7 @@ describe("QwenCodeHandler (AI SDK)", () => {
 		expect(String(refreshInit.body)).toContain("client_id=f0304373b74a44d2b584a3fb70ca9e56")
 
 		expect(safeWriteJson).toHaveBeenCalledWith(
-			oauthPath,
+			path.resolve(oauthPath),
 			expect.objectContaining({
 				access_token: "refreshed-access-token",
 				refresh_token: "refreshed-refresh-token",
