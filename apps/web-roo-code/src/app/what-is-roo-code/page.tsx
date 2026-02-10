@@ -25,8 +25,8 @@ import { ogImageUrl } from "@/lib/og"
 
 const TITLE = "What is Roo Code?"
 const DESCRIPTION =
-	"Roo Code is a free, open-source AI coding assistant for VS Code and an autonomous cloud agent platform. Model-agnostic, multi-file editing, permission-based control, and more."
-const OG_DESCRIPTION = "The open-source AI dev team for VS Code and the Cloud"
+	"Roo Code is an AI-powered development platform with autonomous cloud agents and a free, open-source VS Code extension. Delegate tasks to AI agents from the web, Slack, Linear, or GitHub."
+const OG_DESCRIPTION = "Your AI software engineering team in the Cloud and the IDE"
 const PATH = "/what-is-roo-code"
 
 export const metadata: Metadata = {
@@ -108,28 +108,28 @@ const modes = [
 
 const faqData = [
 	{
+		question: "What are Roo Code Cloud Agents?",
+		answer: "Roo Code Cloud Agents are autonomous AI agents that run 24/7 in isolated cloud containers. You can delegate tasks to specialized agents like the Planner, Coder, Explainer, PR Reviewer, and PR Fixer from the web, Slack, Linear, or GitHub. They work in the background while you focus on other things.",
+	},
+	{
 		question: "Is Roo Code free?",
-		answer: "Yes. The Roo Code VS Code extension is completely free and open source. You only pay for AI model usage if you use a paid API (like OpenAI or Anthropic). If you choose free or self-hosted models, there is no cost at all. Roo Code Cloud has both free and paid tiers.",
+		answer: "Roo Code Cloud has a free tier that includes access to Cloud Agents, the Roo Code Router, task history, and professional support. The VS Code extension is completely free and open source. Paid plans add team features, Slack and Linear integrations, and centralized billing.",
 	},
 	{
 		question: "Which AI models does Roo Code support?",
-		answer: "Roo Code is fully model-agnostic. It supports OpenAI models (GPT-4o, GPT-4, o1), Anthropic Claude (including Claude 3.5 Sonnet), Google Gemini, Grok, DeepSeek, Mistral, Qwen, local LLMs via Ollama, and any model accessible through OpenRouter or compatible APIs.",
+		answer: "Roo Code is fully model-agnostic. It supports OpenAI models (GPT-4o, GPT-4, o1), Anthropic Claude (including Claude 3.5 Sonnet), Google Gemini, Grok, DeepSeek, Mistral, Qwen, and any model accessible through OpenRouter or compatible APIs. Use the Roo Code Router for curated models at cost, or bring your own API key.",
 	},
 	{
-		question: "Will my code stay private?",
-		answer: "Yes. The Roo Code extension runs locally in VS Code, so your code never leaves your machine unless you connect to an external AI API. Even then, you control exactly what is sent. You can use .rooignore to exclude sensitive files, and you can run with offline/local models for full privacy.",
+		question: "Is my code secure?",
+		answer: "Yes. Cloud Agents run in isolated containers with access only to the repositories you explicitly authorize. The VS Code extension runs locally, so your code never leaves your machine unless you choose. Roo Code is SOC 2 Type II compliant, fully open source and auditable, and supports enterprise governance features like model allow-lists and data residency controls.",
 	},
 	{
 		question: "How does Roo Code differ from Copilot, Cursor, or Windsurf?",
-		answer: "Roo Code is open-source and fully customizable, letting you integrate any AI model you choose. It is built for multi-file edits, so it can read, refactor, and update multiple files at once. Its agentic abilities go beyond typical AI autocomplete, enabling it to run tests, open a browser, and handle deeper tasks. You are always in control: Roo Code is permission-based, meaning you control and approve any file changes or command executions.",
-	},
-	{
-		question: "Does Roo Code support my programming language?",
-		answer: "Likely yes. Roo Code supports Python, Java, C#, JavaScript, TypeScript, Go, Rust, and many more. Since it leverages AI model understanding, new or lesser-known languages may also work depending on model support.",
+		answer: "Roo Code is the only platform that combines autonomous cloud agents with a local IDE extension. Unlike Copilot, Cursor, or Windsurf, Roo Code is open source, model-agnostic, and offers specialized modes for different tasks. Cloud Agents can review PRs, fix code from GitHub comments, and be triggered from Slack or Linear -- capabilities the others do not offer.",
 	},
 	{
 		question: "Can it handle large, enterprise-scale projects?",
-		answer: "Yes. Roo Code uses efficient strategies like partial-file analysis, summarization, and configurable semantic search to handle large codebases. Enterprises can use on-premises or self-hosted models for compliance and security needs. SOC 2 Type II compliant.",
+		answer: "Yes. Roo Code Cloud provides enterprise-grade governance, SAML/SCIM, usage analytics, cost controls, and audit trails. Cloud Agents work in isolated containers and can be configured with model allow-lists and data residency controls. The VS Code extension uses efficient strategies like semantic search to handle large codebases locally.",
 	},
 ]
 
@@ -357,8 +357,8 @@ export default function WhatIsRooCodePage() {
 									className="text-primary underline-offset-4 hover:underline">
 									GitHub
 								</a>
-								. Community-driven with no throttling or surprises. Client-only architecture means no
-								code leaves your machine unless you choose. SOC 2 Type II compliant.
+								. Community-driven with no throttling or surprises. Cloud Agents run in isolated
+								containers; the extension runs locally. SOC 2 Type II compliant.
 							</p>
 						</div>
 					</div>
@@ -420,16 +420,6 @@ export default function WhatIsRooCodePage() {
 
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 						<div className="text-center md:text-left">
-							<h3 className="text-xl font-bold mb-3">Individual Developers</h3>
-							<p className="text-muted-foreground leading-relaxed">
-								Use the free VS Code extension with your favorite AI model. Roo Code handles
-								refactoring, debugging, test writing, and code exploration. Great for both serious
-								enterprise work and casual &ldquo;vibe coding&rdquo; -- quick prototyping, rapid
-								iteration, and design exploration.
-							</p>
-						</div>
-
-						<div className="text-center md:text-left">
 							<h3 className="text-xl font-bold mb-3">Development Teams</h3>
 							<p className="text-muted-foreground leading-relaxed">
 								Roo Code Cloud lets teams delegate work to autonomous agents. Get PR reviews
@@ -447,6 +437,15 @@ export default function WhatIsRooCodePage() {
 								</Link>{" "}
 								provides centralized AI management, SAML/SCIM, usage analytics, model allow-lists, cost
 								controls, and audit trails. Self-host AI models or use trusted providers for compliance.
+							</p>
+						</div>
+
+						<div className="text-center md:text-left">
+							<h3 className="text-xl font-bold mb-3">Individual Developers</h3>
+							<p className="text-muted-foreground leading-relaxed">
+								Use the free VS Code extension with your favorite AI model for hands-on coding. Or sign
+								up for Cloud to kick off tasks from anywhere. Great for both serious work and casual
+								prototyping.
 							</p>
 						</div>
 					</div>
@@ -559,7 +558,7 @@ export default function WhatIsRooCodePage() {
 				<div className="container px-4 mx-auto sm:px-6 lg:px-8 text-center">
 					<h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Ready to try Roo Code?</h2>
 					<p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-						The extension is free and open source. Cloud agents start free too.
+						Cloud Agents start free. The VS Code extension is free and open source.
 					</p>
 
 					<div className="flex flex-col sm:flex-row items-center justify-center gap-4">
