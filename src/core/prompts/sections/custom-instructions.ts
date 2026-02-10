@@ -534,6 +534,7 @@ function shouldIncludeRuleFile(filename: string): boolean {
 		"*.swp",
 		"*.temp",
 		"*.tmp",
+		"desktop.ini",
 		"Thumbs.db",
 	]
 
