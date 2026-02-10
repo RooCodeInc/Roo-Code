@@ -203,64 +203,77 @@ export class OpenAiCodexHandler extends BaseProvider implements SingleCompletion
 				})
 
 				// Stream parts
+				let lastStreamError: string | undefined
+
 				for await (const part of result.fullStream) {
 					for (const chunk of processAiSdkStreamPart(part)) {
+						if (chunk.type === "error") {
+							lastStreamError = chunk.message
+						}
 						yield chunk
 					}
 				}
 
-				// Extract metadata from completed response
-				const providerMeta = await result.providerMetadata
-				const openaiMeta = (providerMeta as any)?.openai
-
-				if (openaiMeta?.responseId) {
-					this.lastResponseId = openaiMeta.responseId
-				}
-
-				// Capture encrypted content from reasoning parts in the response
+				// Extract metadata and usage — wrap in try/catch for stream error fallback
 				try {
-					const content = await (result as any).content
-					if (Array.isArray(content)) {
-						for (const part of content) {
-							if (part.type === "reasoning" && part.providerMetadata) {
-								const partMeta = (part.providerMetadata as any)?.openai
-								if (partMeta?.reasoningEncryptedContent) {
-									this.lastEncryptedContent = {
-										encrypted_content: partMeta.reasoningEncryptedContent,
-										...(partMeta.itemId ? { id: partMeta.itemId } : {}),
+					// Extract metadata from completed response
+					const providerMeta = await result.providerMetadata
+					const openaiMeta = (providerMeta as any)?.openai
+
+					if (openaiMeta?.responseId) {
+						this.lastResponseId = openaiMeta.responseId
+					}
+
+					// Capture encrypted content from reasoning parts in the response
+					try {
+						const content = await (result as any).content
+						if (Array.isArray(content)) {
+							for (const part of content) {
+								if (part.type === "reasoning" && part.providerMetadata) {
+									const partMeta = (part.providerMetadata as any)?.openai
+									if (partMeta?.reasoningEncryptedContent) {
+										this.lastEncryptedContent = {
+											encrypted_content: partMeta.reasoningEncryptedContent,
+											...(partMeta.itemId ? { id: partMeta.itemId } : {}),
+										}
+										break
 									}
-									break
 								}
 							}
 						}
+					} catch {
+						// Content parts with encrypted reasoning may not always be available
 					}
-				} catch {
-					// Content parts with encrypted reasoning may not always be available
-				}
 
-				// Yield usage — subscription pricing means totalCost is always 0
-				const usage = await result.usage
-				if (usage) {
-					const inputTokens = usage.inputTokens || 0
-					const outputTokens = usage.outputTokens || 0
-					const details = (usage as any).details as
-						| { cachedInputTokens?: number; reasoningTokens?: number }
-						| undefined
-					const cacheReadTokens = details?.cachedInputTokens ?? 0
-					// The OpenAI Responses API does not report cache write tokens separately;
-					// only cached (read) tokens are available via usage.details.cachedInputTokens.
-					const cacheWriteTokens = 0
-					const reasoningTokens = details?.reasoningTokens
+					// Yield usage — subscription pricing means totalCost is always 0
+					const usage = await result.usage
+					if (usage) {
+						const inputTokens = usage.inputTokens || 0
+						const outputTokens = usage.outputTokens || 0
+						const details = (usage as any).details as
+							| { cachedInputTokens?: number; reasoningTokens?: number }
+							| undefined
+						const cacheReadTokens = details?.cachedInputTokens ?? 0
+						// The OpenAI Responses API does not report cache write tokens separately;
+						// only cached (read) tokens are available via usage.details.cachedInputTokens.
+						const cacheWriteTokens = 0
+						const reasoningTokens = details?.reasoningTokens
 
-					yield {
-						type: "usage",
-						inputTokens,
-						outputTokens,
-						cacheWriteTokens: cacheWriteTokens || undefined,
-						cacheReadTokens: cacheReadTokens || undefined,
-						...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
-						totalCost: 0, // Subscription-based pricing
+						yield {
+							type: "usage",
+							inputTokens,
+							outputTokens,
+							cacheWriteTokens: cacheWriteTokens || undefined,
+							cacheReadTokens: cacheReadTokens || undefined,
+							...(typeof reasoningTokens === "number" ? { reasoningTokens } : {}),
+							totalCost: 0, // Subscription-based pricing
+						}
 					}
+				} catch (usageError) {
+					if (lastStreamError) {
+						throw new Error(lastStreamError)
+					}
+					throw usageError
 				}
 
 				// Success — exit the retry loop

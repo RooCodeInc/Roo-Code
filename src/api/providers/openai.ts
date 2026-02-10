@@ -198,8 +198,13 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 		)
 
 		try {
+			let lastStreamError: string | undefined
+
 			for await (const part of result.fullStream) {
 				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "error") {
+						lastStreamError = chunk.message
+					}
 					if (chunk.type === "text") {
 						for (const matchedChunk of matcher.update(chunk.text)) {
 							yield matchedChunk
@@ -214,10 +219,17 @@ export class OpenAiHandler extends BaseProvider implements SingleCompletionHandl
 				yield chunk
 			}
 
-			const usage = await result.usage
-			const providerMetadata = await result.providerMetadata
-			if (usage) {
-				yield this.processUsageMetrics(usage, modelInfo, providerMetadata as any)
+			try {
+				const usage = await result.usage
+				const providerMetadata = await result.providerMetadata
+				if (usage) {
+					yield this.processUsageMetrics(usage, modelInfo, providerMetadata as any)
+				}
+			} catch (usageError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
+				throw usageError
 			}
 		} catch (error) {
 			throw handleAiSdkError(error, this.providerName)

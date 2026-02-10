@@ -134,16 +134,28 @@ export class VercelAiGatewayHandler extends BaseProvider implements SingleComple
 		})
 
 		try {
+			let lastStreamError: string | undefined
+
 			for await (const part of result.fullStream) {
 				for (const chunk of processAiSdkStreamPart(part)) {
+					if (chunk.type === "error") {
+						lastStreamError = chunk.message
+					}
 					yield chunk
 				}
 			}
 
-			const usage = await result.usage
-			const providerMetadata = await result.providerMetadata
-			if (usage) {
-				yield this.processUsageMetrics(usage, providerMetadata as any)
+			try {
+				const usage = await result.usage
+				const providerMetadata = await result.providerMetadata
+				if (usage) {
+					yield this.processUsageMetrics(usage, providerMetadata as any)
+				}
+			} catch (usageError) {
+				if (lastStreamError) {
+					throw new Error(lastStreamError)
+				}
+				throw usageError
 			}
 		} catch (error) {
 			throw handleAiSdkError(error, "Vercel AI Gateway")
