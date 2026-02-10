@@ -22,6 +22,7 @@ describe("filterNativeToolsForMode - disabledTools", () => {
 		makeTool("write_to_file"),
 		makeTool("browser_action"),
 		makeTool("apply_diff"),
+		makeTool("edit"),
 	]
 
 	it("removes tools listed in settings.disabledTools", () => {
@@ -76,5 +77,20 @@ describe("filterNativeToolsForMode - disabledTools", () => {
 		expect(resultNames).not.toContain("execute_command")
 		expect(resultNames).not.toContain("browser_action")
 		expect(resultNames).toContain("read_file")
+	})
+
+	it("disables canonical tool when disabledTools contains alias name", () => {
+		const settings = {
+			disabledTools: ["search_and_replace"],
+			modelInfo: {
+				includedTools: ["search_and_replace"],
+			},
+		}
+
+		const result = filterNativeToolsForMode(nativeTools, "code", undefined, undefined, undefined, settings)
+
+		const resultNames = result.map((t) => (t as any).function.name)
+		expect(resultNames).not.toContain("search_and_replace")
+		expect(resultNames).not.toContain("edit")
 	})
 })

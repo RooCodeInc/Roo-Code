@@ -618,6 +618,8 @@ export async function presentAssistantMessage(cline: Task) {
 						disabledTools?.reduce(
 							(acc: Record<string, boolean>, tool: string) => {
 								acc[tool] = false
+								const resolvedToolName = resolveToolAlias(tool)
+								acc[resolvedToolName] = false
 								return acc
 							},
 							{} as Record<string, boolean>,
