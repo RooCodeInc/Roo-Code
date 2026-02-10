@@ -185,7 +185,8 @@ export default function WhatIsRooCodePage() {
 						Team.
 					</h1>
 					<p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-						Autonomous agents in the cloud. A powerful coding assistant in your IDE.
+						Autonomous agents in the cloud.
+						<br />A powerful coding assistant in your IDE.
 					</p>
 					<div className="flex flex-col sm:flex-row items-center justify-center gap-4">
 						<Button size="xl" asChild>
