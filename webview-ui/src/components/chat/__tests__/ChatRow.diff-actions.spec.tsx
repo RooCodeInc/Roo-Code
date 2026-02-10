@@ -1,9 +1,17 @@
 import React from "react"
-import { render, screen } from "@/utils/test-utils"
+import { fireEvent, render, screen } from "@/utils/test-utils"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { ClineMessage } from "@roo-code/types"
 import { ExtensionStateContextProvider } from "@src/context/ExtensionStateContext"
 import { ChatRowContent } from "../ChatRow"
+
+const mockPostMessage = vi.fn()
+
+vi.mock("@src/utils/vscode", () => ({
+	vscode: {
+		postMessage: (...args: unknown[]) => mockPostMessage(...args),
+	},
+}))
 
 // Mock i18n
 vi.mock("react-i18next", () => ({
@@ -62,6 +70,7 @@ function renderChatRow(message: ClineMessage, isExpanded = false) {
 describe("ChatRow - inline diff stats and actions", () => {
 	beforeEach(() => {
 		vi.clearAllMocks()
+		mockPostMessage.mockClear()
 	})
 
 	it("uses appliedDiff edit treatment (header/icon/diff stats)", () => {
@@ -130,6 +139,30 @@ describe("ChatRow - inline diff stats and actions", () => {
 		expect(container.querySelector(".codicon-diff")).toBeInTheDocument()
 		expect(screen.getByText("+3")).toBeInTheDocument()
 		expect(screen.getByText("-0")).toBeInTheDocument()
+	})
+
+	it("preserves jump-to-file affordance for newFileCreated", () => {
+		const message = createToolAskMessage({
+			tool: "newFileCreated",
+			path: "src/new-file.ts",
+			content: "+new file",
+			diffStats: { added: 1, removed: 0 },
+		})
+
+		const { container } = renderChatRow(message)
+		const openFileIcon = container.querySelector(".codicon-link-external") as HTMLElement | null
+
+		expect(openFileIcon).toBeInTheDocument()
+		if (!openFileIcon) {
+			throw new Error("Expected external link icon for newFileCreated")
+		}
+
+		fireEvent.click(openFileIcon)
+
+		expect(mockPostMessage).toHaveBeenCalledWith({
+			type: "openFile",
+			text: "./src/new-file.ts",
+		})
 	})
 
 	it("preserves protected and outside-workspace messaging in unified branch", () => {

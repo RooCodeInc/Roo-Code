@@ -406,6 +406,14 @@ export const ChatRowContent = ({
 		return (tool.content ?? tool.diff) as string | undefined
 	}, [tool])
 
+	const onJumpToCreatedFile = useMemo(() => {
+		if (!tool || tool.tool !== "newFileCreated" || !tool.path) {
+			return undefined
+		}
+
+		return () => vscode.postMessage({ type: "openFile", text: "./" + tool.path })
+	}, [tool])
+
 	const followUpData = useMemo(() => {
 		if (message.type === "ask" && message.ask === "followup" && !message.partial) {
 			return safeJsonParse<FollowUpData>(message.text)
@@ -488,6 +496,7 @@ export const ChatRowContent = ({
 								isLoading={message.partial}
 								isExpanded={isExpanded}
 								onToggleExpand={handleToggleExpand}
+								onJumpToFile={onJumpToCreatedFile}
 								diffStats={tool.diffStats}
 							/>
 						</div>
