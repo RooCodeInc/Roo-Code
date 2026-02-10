@@ -235,10 +235,9 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 		let parsed = this.parseProxyResponse(fullText)
 
 		// Check if the model responded with only text (no tool calls).
-		// This triggers "no tools used" errors in Roo Code's task loop.
-		// If tool use is expected, retry ONCE with a strong enforcement prompt.
+		// If tool use is required, retry ONCE with a strong enforcement prompt.
 		const hasToolCalls = parsed.some((chunk) => chunk.type === "tool_call")
-		const toolUseExpected = metadata?.tool_choice !== "none"
+		const toolUseExpected = this.isToolUseRequired(metadata?.tool_choice)
 
 		if (!hasToolCalls && toolUseExpected && fullText.trim().length > 0) {
 			console.debug("[ClaudeCodeAcpHandler] Model responded with only text, retrying with tool-use enforcement")
@@ -481,21 +480,13 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 
 		const parts: string[] = []
 
-		// Tool choice enforcement
-		let toolChoiceInstruction = ""
-		if (toolChoice === "required") {
-			toolChoiceInstruction = "You MUST use at least one tool in your response."
-		} else if (toolChoice === "none") {
-			toolChoiceInstruction = "Do NOT use any tools. Respond with text only."
-		} else if (typeof toolChoice === "object") {
-			const fnName = (toolChoice as unknown as { function?: { name?: string } })?.function?.name
-			if (fnName) {
-				toolChoiceInstruction = `You MUST use the "${fnName}" tool.`
-			}
-		} else {
-			// "auto" — still require tool use since Roo Code task loop expects it
-			toolChoiceInstruction = "You MUST use at least one tool in your response."
-		}
+		// Tool choice guidance
+		const toolChoiceInstruction = this.buildToolChoiceInstruction(toolChoice, {
+			required: "You MUST use at least one tool in your response.",
+			none: "Do NOT use any tools. Respond with text only.",
+			auto: "Use tools when helpful. If no tool is needed, a text-only response is acceptable.",
+		})
+		const requiresToolUse = this.isToolUseRequired(toolChoice)
 
 		// Include available tool names so the model remembers what tools exist.
 		// Without this, the model often responds with only text on subsequent turns.
@@ -514,7 +505,9 @@ export class ClaudeCodeAcpHandler extends BaseProvider implements SingleCompleti
 			`Tool call format example:`,
 			concreteExample,
 			toolNamesReminder,
-			`If the task is complete, use attempt_completion. If you need info, use read_file/search_files/list_files. NEVER respond with only text.`,
+			requiresToolUse
+				? `If the task is complete, use attempt_completion. If you need info, use read_file/search_files/list_files. NEVER respond with only text.`
+				: `If the task is complete, use attempt_completion. If you need info, use read_file/search_files/list_files.`,
 		]
 			.filter(Boolean)
 			.join("\n")
@@ -684,17 +677,11 @@ Respond NOW with the appropriate tool call(s).`
 		toolChoice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"],
 		cwd?: string,
 	): string {
-		let toolChoiceInstruction = ""
-		if (toolChoice === "required") {
-			toolChoiceInstruction = "\nIMPORTANT: You MUST use at least one tool in your response."
-		} else if (toolChoice === "none") {
-			toolChoiceInstruction = "\nIMPORTANT: Do NOT use any tools. Respond with text only."
-		} else if (typeof toolChoice === "object") {
-			const fnName = (toolChoice as unknown as { function?: { name?: string } })?.function?.name
-			if (fnName) {
-				toolChoiceInstruction = `\nIMPORTANT: You MUST use the "${fnName}" tool.`
-			}
-		}
+		const toolChoiceInstruction = this.buildToolChoiceInstruction(toolChoice, {
+			required: "\nIMPORTANT: You MUST use at least one tool in your response. Never respond with only text.",
+			none: "\nIMPORTANT: Do NOT use any tools. Respond with text only.",
+			auto: "\nIMPORTANT: Use tools when helpful. If no tool is needed, a text-only response is acceptable.",
+		})
 
 		return `[LLM PROXY MODE]
 You are acting as a direct LLM assistant for Roo Code. CRITICAL RULES:
@@ -713,13 +700,40 @@ ${TOOL_CALL_CLOSE_TAG}
 You can mix text and tool calls freely. Each tool call must be in its own tag block.
 The "arguments" field must be a JSON object matching the tool's parameter schema.
 
-IMPORTANT: You MUST use at least one tool in every response. Never respond with only text.
 If you have completed the task, use the attempt_completion tool.
 If you need to delegate work, use the new_task tool.
 If you need information, use the appropriate read/search tool.${toolChoiceInstruction}
 
 Working directory: ${cwd || "unknown"}
 Current time: ${new Date().toISOString()}`
+	}
+
+	private isToolUseRequired(toolChoice?: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"]): boolean {
+		return toolChoice === "required" || typeof toolChoice === "object"
+	}
+
+	private buildToolChoiceInstruction(
+		toolChoice: OpenAI.Chat.ChatCompletionCreateParams["tool_choice"] | undefined,
+		messages: { required: string; none: string; auto: string },
+	): string {
+		if (toolChoice === "none") {
+			return messages.none
+		}
+
+		if (typeof toolChoice === "object") {
+			const fnName = (toolChoice as unknown as { function?: { name?: string } })?.function?.name
+			if (fnName) {
+				const prefix = messages.required.startsWith("\n") ? "\n" : ""
+				return `${prefix}You MUST use the "${fnName}" tool.`
+			}
+			return messages.required
+		}
+
+		if (toolChoice === "required") {
+			return messages.required
+		}
+
+		return messages.auto
 	}
 
 	// ─── Minimal System Context ─────────────────────────────────────────
