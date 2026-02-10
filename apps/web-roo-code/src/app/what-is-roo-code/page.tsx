@@ -168,20 +168,59 @@ export default function WhatIsRooCodePage() {
 			/>
 
 			{/* Hero */}
-			<section className="relative pt-20 pb-16 md:pt-28 md:pb-20">
-				<div className="absolute inset-y-0 left-1/2 h-full w-full max-w-[1200px] -translate-x-1/2 z-0">
-					<div className="absolute left-1/2 top-1/2 h-[400px] w-full -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-500/10 dark:bg-violet-700/20 blur-[140px]" />
+			<section className="relative pt-24 pb-20 md:pt-36 md:pb-28 overflow-hidden">
+				{/* Layered background effects */}
+				<div className="absolute inset-0 z-0">
+					<div className="absolute left-1/4 top-1/3 h-[500px] w-[500px] rounded-full bg-violet-500/8 dark:bg-violet-600/15 blur-[120px]" />
+					<div className="absolute right-1/4 bottom-1/4 h-[400px] w-[400px] rounded-full bg-blue-500/6 dark:bg-blue-600/10 blur-[100px]" />
 				</div>
-				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl">
-					<h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-6 text-center">
-						What is Roo Code?
+
+				<div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl text-center">
+					<h1 className="text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl mb-6">
+						Your AI{" "}
+						<span className="bg-gradient-to-r from-violet-600 via-purple-500 to-blue-500 bg-clip-text text-transparent">
+							Software Engineering
+						</span>
+						<br />
+						Team.
 					</h1>
-					<p className="text-xl text-muted-foreground text-center max-w-3xl mx-auto mb-8 leading-relaxed">
+					<p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
+						Autonomous agents in the cloud. A powerful coding assistant in your IDE.
+					</p>
+					<div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+						<Button size="xl" asChild>
+							<a
+								href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_HOME}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="flex items-center gap-2">
+								Try Cloud for Free
+								<ArrowRight className="h-5 w-5" />
+							</a>
+						</Button>
+						<Button variant="outline" size="xl" asChild>
+							<a
+								href={EXTERNAL_LINKS.MARKETPLACE}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="flex items-center gap-2">
+								<Download className="h-5 w-5" />
+								Install on VS Code
+							</a>
+						</Button>
+					</div>
+				</div>
+			</section>
+
+			{/* Overview prose -- AEO-rich content that reads naturally after the hero */}
+			<section className="py-16 md:py-20 border-t border-border">
+				<div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-3xl">
+					<p className="text-lg text-muted-foreground leading-relaxed mb-6">
 						Roo Code is an AI-powered software development platform that puts an entire AI dev team at your
 						disposal. It goes beyond simple code autocompletion by reading and writing across multiple
 						files, executing commands, running tests, and adapting to your workflow.
 					</p>
-					<p className="text-lg text-muted-foreground text-center max-w-3xl mx-auto mb-10 leading-relaxed">
+					<p className="text-lg text-muted-foreground leading-relaxed">
 						<Link href="/cloud" className="text-primary underline-offset-4 hover:underline">
 							Roo Code Cloud
 						</Link>{" "}
@@ -191,28 +230,6 @@ export default function WhatIsRooCodePage() {
 						</Link>{" "}
 						is free, open-source, and the #1 most-installed open-source AI coding extension.
 					</p>
-					<div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-						<Button size="lg" className="w-full sm:w-auto h-12 px-8 text-base" asChild>
-							<a
-								href={EXTERNAL_LINKS.CLOUD_APP_SIGNUP_HOME}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center gap-2">
-								Try Cloud for Free
-								<ArrowRight className="h-4 w-4" />
-							</a>
-						</Button>
-						<Button variant="outline" size="lg" className="w-full sm:w-auto h-12 px-8 text-base" asChild>
-							<a
-								href={EXTERNAL_LINKS.MARKETPLACE}
-								target="_blank"
-								rel="noopener noreferrer"
-								className="flex items-center gap-2">
-								<Download className="h-4 w-4" />
-								Install on VS Code
-							</a>
-						</Button>
-					</div>
 				</div>
 			</section>
 
